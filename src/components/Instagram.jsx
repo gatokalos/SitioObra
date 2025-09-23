@@ -1,0 +1,567 @@
+import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Instagram as InstagramIcon, ExternalLink, AlertCircle, ChevronLeft, ChevronRight, X } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { getInstagramPostsFromBucket } from '@/services/instagramService';
+
+const collagePattern = [
+  {
+    grid: 'col-span-2 row-span-2 sm:col-span-3 sm:row-span-3 md:col-span-2 md:row-span-3 lg:col-span-2 lg:row-span-3',
+    offset: 'lg:-translate-y-4 lg:-rotate-[1.2deg]',
+    frame: 'shadow-[14px_14px_0_rgba(244,114,182,0.12)]',
+    tint: 'from-pink-400/18 via-transparent to-slate-950/0',
+  },
+  {
+    grid: 'col-span-2 row-span-2 sm:col-span-2 sm:row-span-2 md:col-span-3 md:row-span-2 lg:col-span-3 lg:row-span-3',
+    offset: 'lg:translate-y-3 lg:rotate-[0.9deg]',
+    frame: 'shadow-[12px_12px_0_rgba(129,140,248,0.14)]',
+    tint: 'from-indigo-400/15 via-transparent to-slate-950/0',
+  },
+  {
+    grid: 'col-span-2 row-span-2 sm:col-span-3 sm:row-span-2 md:col-span-3 md:row-span-2 lg:col-span-3 lg:row-span-3',
+    offset: 'lg:-translate-y-2',
+    frame: 'shadow-[11px_11px_0_rgba(248,113,113,0.15)]',
+    tint: 'from-rose-400/14 via-transparent to-slate-950/0',
+  },
+  {
+    grid: 'col-span-2 row-span-3 sm:col-span-2 sm:row-span-3 md:col-span-2 md:row-span-3 lg:col-span-2 lg:row-span-4',
+    offset: 'lg:translate-y-2 lg:-rotate-[1.6deg]',
+    frame: 'shadow-[16px_16px_0_rgba(251,191,36,0.14)]',
+    tint: 'from-amber-300/16 via-transparent to-slate-950/0',
+  },
+  {
+    grid: 'col-span-2 row-span-2 sm:col-span-3 sm:row-span-2 md:col-span-3 md:row-span-2 lg:col-span-3 lg:row-span-2',
+    offset: 'lg:-translate-y-4 lg:rotate-[-0.7deg]',
+    frame: 'shadow-[13px_13px_0_rgba(45,212,191,0.15)]',
+    tint: 'from-teal-300/12 via-transparent to-slate-950/0',
+  },
+  {
+    grid: 'col-span-2 row-span-2 sm:col-span-2 sm:row-span-2 md:col-span-2 md:row-span-2 lg:col-span-2 lg:row-span-2',
+    offset: 'lg:translate-y-3 lg:rotate-[0.6deg]',
+    frame: 'shadow-[12px_12px_0_rgba(148,163,184,0.16)]',
+    tint: 'from-slate-300/12 via-transparent to-slate-950/0',
+  },
+  {
+    grid: 'col-span-2 row-span-3 sm:col-span-3 sm:row-span-3 md:col-span-3 md:row-span-3 lg:col-span-4 lg:row-span-4',
+    offset: 'lg:-translate-y-2 lg:rotate-[0.4deg]',
+    frame: 'shadow-[16px_16px_0_rgba(110,231,183,0.12)]',
+    tint: 'from-emerald-300/14 via-transparent to-slate-950/0',
+  },
+  {
+    grid: 'col-span-2 row-span-2 sm:col-span-2 sm:row-span-2 md:col-span-2 md:row-span-3 lg:col-span-2 lg:row-span-3',
+    offset: 'lg:translate-y-2 lg:-rotate-[0.9deg]',
+    frame: 'shadow-[13px_13px_0_rgba(244,162,97,0.13)]',
+    tint: 'from-orange-300/16 via-transparent to-slate-950/0',
+  },
+  {
+    grid: 'col-span-2 row-span-3 sm:col-span-3 sm:row-span-4 md:col-span-3 md:row-span-3 lg:col-span-3 lg:row-span-4',
+    offset: 'lg:-translate-y-3 lg:rotate-[0.7deg]',
+    frame: 'shadow-[17px_17px_0_rgba(164,196,248,0.14)]',
+    tint: 'from-sky-300/18 via-transparent to-slate-950/0',
+  },
+  {
+    grid: 'col-span-2 row-span-2 sm:col-span-3 sm:row-span-2 md:col-span-2 md:row-span-2 lg:col-span-2 lg:row-span-2',
+    offset: 'lg:translate-y-1 lg:-rotate-[0.5deg]',
+    frame: 'shadow-[11px_11px_0_rgba(250,204,21,0.15)]',
+    tint: 'from-yellow-300/15 via-transparent to-slate-950/0',
+  },
+  {
+    grid: 'col-span-2 row-span-2 sm:col-span-2 sm:row-span-3 md:col-span-3 md:row-span-3 lg:col-span-3 lg:row-span-3',
+    offset: 'lg:-translate-y-1 lg:rotate-[1deg]',
+    frame: 'shadow-[15px_15px_0_rgba(153,246,228,0.12)]',
+    tint: 'from-teal-200/14 via-transparent to-slate-950/0',
+  },
+  {
+    grid: 'col-span-2 row-span-3 sm:col-span-3 sm:row-span-3 md:col-span-2 md:row-span-4 lg:col-span-2 lg:row-span-4',
+    offset: 'lg:-translate-y-4 lg:-rotate-[1.1deg]',
+    frame: 'shadow-[20px_20px_0_rgba(203,213,225,0.13)]',
+    tint: 'from-slate-200/18 via-transparent to-slate-950/0',
+  },
+  {
+    grid: 'col-span-2 row-span-2 sm:col-span-3 sm:row-span-2 md:col-span-2 md:row-span-3 lg:col-span-2 lg:row-span-3',
+    offset: 'lg:translate-y-3 lg:rotate-[0.4deg]',
+    frame: 'shadow-[12px_12px_0_rgba(244,63,94,0.12)]',
+    tint: 'from-rose-500/14 via-transparent to-slate-950/0',
+  },
+];
+
+const curatedLayout = [
+  { match: 'dsc02497', patternIndex: 0, story: 'Ensayo nocturno' },
+  { match: 'copia de foto 5', patternIndex: 1, story: 'Vestigio de luces' },
+  { match: 'foto 4', patternIndex: 2, story: 'Pausa entre actos' },
+  { match: 'foto 3', patternIndex: 3, story: 'Ecos del telón' },
+  { match: 'foto 1', patternIndex: 4, story: 'Rastro de tinta y papel' },
+  { match: 'sketch', patternIndex: 5, story: 'Fragmento de libreto' },
+  { match: 'ensayo', patternIndex: 6, story: 'Ritual previo al acto' },
+  { match: 'behind', patternIndex: 7, story: 'Detrás del telón' },
+  { match: 'light', patternIndex: 8, story: 'Coreografía de luz' },
+  { match: 'prop', patternIndex: 9, story: 'Objetos encantados' },
+  { match: 'poema', patternIndex: 10, story: 'Verso suspendido' },
+  { match: 'vestuario backstage', patternIndex: 11, story: 'Memoria suspendida' },
+];
+
+const storyFragments = [
+  'Ensayo nocturno',
+  'Vestigio de luces',
+  'Boceto de la trama',
+  'Pausa entre actos',
+  'Ecos del telón',
+  'Mirada tras bastidores',
+  'Rastro de tinta y papel',
+  'Respiración entre luces',
+  'Coreografía de sombras',
+  'Fragmento de libreto',
+  'Ritual previo al acto',
+  'Detrás del telón',
+  'Memoria suspendida',
+];
+
+const Instagram = () => {
+  const [posts, setPosts] = useState([]);
+  const [error, setError] = useState(null);
+  const instagramProfileUrl = 'https://www.instagram.com/esungatonecerrado';
+  const VISIBLE_COUNT = 7;
+  const [selectedIndex, setSelectedIndex] = useState(null);
+  const lastFocusedRef = useRef(null);
+  const closeButtonRef = useRef(null);
+  const [slots, setSlots] = useState([]);
+  const nextIndexRef = useRef(0);
+  const orderedSequenceRef = useRef([]);
+
+  const matchesDescriptor = useCallback((post, descriptor) => {
+    if (!descriptor) return false;
+    const target = `${post.alt || ''} ${post.imgSrc || ''}`.toLowerCase();
+    if (Array.isArray(descriptor)) {
+      return descriptor.some((value) => target.includes(String(value).toLowerCase()));
+    }
+    return target.includes(String(descriptor).toLowerCase());
+  }, []);
+
+  const shouldExclude = useCallback((post) => {
+    const exclusions = ['susurro de vestuario', 'foto 2'];
+    return exclusions.some((descriptor) => matchesDescriptor(post, descriptor));
+  }, [matchesDescriptor]);
+
+  useEffect(() => {
+    const fetchPosts = async () => {
+      try {
+        const data = await getInstagramPostsFromBucket();
+        setPosts(data);
+      } catch (err) {
+        console.error('Error al traer imágenes del bucket:', err);
+        setError('No se pudieron cargar las imágenes del bucket.');
+      }
+    };
+
+    fetchPosts();
+  }, []);
+
+  useEffect(() => {
+    if (posts.length === 0) {
+      setSlots([]);
+      nextIndexRef.current = 0;
+      orderedSequenceRef.current = [];
+      return;
+    }
+
+    const availablePosts = posts
+      .map((post, idx) => ({ post, originalIndex: idx }))
+      .filter(({ post }) => !shouldExclude(post));
+
+    if (availablePosts.length === 0) {
+      setSlots([]);
+      nextIndexRef.current = 0;
+      orderedSequenceRef.current = [];
+      return;
+    }
+
+    const usedIndices = new Set();
+    const prioritized = [];
+
+    curatedLayout.forEach((entry) => {
+      const indexInAvailable = availablePosts.findIndex((candidate, idx) => !usedIndices.has(idx) && matchesDescriptor(candidate.post, entry.match));
+      if (indexInAvailable !== -1) {
+        const foundEntry = availablePosts[indexInAvailable];
+        usedIndices.add(indexInAvailable);
+        prioritized.push({
+          postIndex: foundEntry.originalIndex,
+          patternIndex: entry.patternIndex ?? (prioritized.length % collagePattern.length),
+          story: entry.story ?? storyFragments[prioritized.length % storyFragments.length],
+        });
+      }
+    });
+
+    const remaining = availablePosts
+      .map((entry, idx) => ({ ...entry, idx }))
+      .filter(({ idx }) => !usedIndices.has(idx))
+      .map((entry, offset) => ({
+        postIndex: entry.originalIndex,
+        patternIndex: (prioritized.length + offset) % collagePattern.length,
+        story: storyFragments[(prioritized.length + offset) % storyFragments.length],
+      }));
+
+    const fullSequence = [...prioritized, ...remaining];
+    orderedSequenceRef.current = fullSequence;
+
+    if (fullSequence.length === 0) {
+      setSlots([]);
+      nextIndexRef.current = 0;
+      return;
+    }
+
+    const visible = Math.min(VISIBLE_COUNT, fullSequence.length);
+    const initialSlots = fullSequence.slice(0, visible).map((item, index) => ({
+      slotId: `${Date.now()}-${index}-${item.postIndex}-${Math.random()}`,
+      postIndex: item.postIndex,
+      patternIndex: item.patternIndex,
+      story: item.story,
+    }));
+
+    setSlots(initialSlots);
+    nextIndexRef.current = fullSequence.length > 0 ? (visible % fullSequence.length) : 0;
+  }, [posts, VISIBLE_COUNT, matchesDescriptor, shouldExclude]);
+
+  const handleInstagramClick = (url) => {
+    window.open(url, '_blank', 'noopener,noreferrer');
+  };
+
+  const openModalAt = useCallback((index) => {
+    lastFocusedRef.current = document.activeElement;
+    setSelectedIndex(index);
+  }, []);
+
+  const closeModal = useCallback(() => {
+    setSelectedIndex(null);
+    if (lastFocusedRef.current && typeof lastFocusedRef.current.focus === 'function') {
+      lastFocusedRef.current.focus();
+    }
+  }, []);
+
+  const showPrev = useCallback(() => {
+    setSelectedIndex((index) => {
+      if (index === null) return index;
+      return (index - 1 + posts.length) % posts.length;
+    });
+  }, [posts.length]);
+
+  const showNext = useCallback(() => {
+    setSelectedIndex((index) => {
+      if (index === null) return index;
+      return (index + 1) % posts.length;
+    });
+  }, [posts.length]);
+
+  useEffect(() => {
+    if (selectedIndex === null) return;
+    const onKey = (e) => {
+      if (e.key === 'Escape') closeModal();
+      if (e.key === 'ArrowLeft') showPrev();
+      if (e.key === 'ArrowRight') showNext();
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [selectedIndex, closeModal, showPrev, showNext]);
+
+  const isModalOpen = selectedIndex !== null;
+  const activePost = isModalOpen && posts[selectedIndex] ? posts[selectedIndex] : null;
+  const totalPosts = posts.length;
+  const currentPosition = selectedIndex !== null ? selectedIndex : 0;
+  const progressPercent = totalPosts > 0 ? ((currentPosition + 1) / totalPosts) * 100 : 0;
+
+  useEffect(() => {
+    if (isModalOpen && closeButtonRef.current) {
+      closeButtonRef.current.focus();
+    }
+  }, [isModalOpen]);
+
+  const cardVariants = {
+    hidden: { opacity: 0, y: 40, scale: 0.95 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      scale: 1,
+      transition: { duration: 0.55, ease: 'easeOut' },
+    },
+    exit: {
+      opacity: 0,
+      y: -30,
+      scale: 0.94,
+      transition: { duration: 0.4, ease: 'easeInOut' },
+    },
+  };
+
+  const imageVariants = {
+    hidden: { scale: 1.08, y: 30 },
+    visible: {
+      scale: 1.02,
+      y: 0,
+      transition: { duration: 0.85, ease: 'easeOut' },
+    },
+  };
+
+  const handleViewportLeave = useCallback((slotIdx, entry) => {
+    if (!entry || posts.length <= VISIBLE_COUNT) return;
+
+    const viewportHeight = typeof window !== 'undefined' ? window.innerHeight : 0;
+    const isLeavingTop = entry.boundingClientRect.bottom <= 0;
+    const isLeavingBottom = viewportHeight ? entry.boundingClientRect.top >= viewportHeight : false;
+
+    if (!isLeavingTop && !isLeavingBottom) return;
+
+    setSlots((prevSlots) => {
+      if (!Array.isArray(prevSlots) || prevSlots.length === 0) {
+        return prevSlots;
+      }
+
+      const candidateSlots = [...prevSlots];
+      const usedIndices = new Set(
+        candidateSlots
+          .filter((_, idx) => idx !== slotIdx)
+          .map((slot) => slot.postIndex),
+      );
+
+      const pool = orderedSequenceRef.current;
+      if (!pool || pool.length === 0) {
+        return prevSlots;
+      }
+
+      let pointer = nextIndexRef.current ?? 0;
+      let guard = 0;
+
+      while (guard < pool.length && usedIndices.has(pool[pointer].postIndex)) {
+        pointer = (pointer + 1) % pool.length;
+        guard += 1;
+      }
+
+      if (guard >= pool.length) {
+        return prevSlots;
+      }
+
+      const chosen = pool[pointer];
+      nextIndexRef.current = (pointer + 1) % pool.length;
+
+      candidateSlots[slotIdx] = {
+        slotId: `${Date.now()}-${slotIdx}-${chosen.postIndex}-${Math.random()}`,
+        postIndex: chosen.postIndex,
+        patternIndex: chosen.patternIndex,
+        story: chosen.story,
+      };
+
+      return candidateSlots;
+    });
+  }, [posts.length, VISIBLE_COUNT]);
+
+  return (
+    <section id="instagram" className="py-20 relative">
+      <div className="section-divider mb-20" />
+
+      <div className="container mx-auto px-5 sm:px-6">
+        <motion.div
+          initial={{ opacity: 0, y: 50 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.75, ease: 'easeOut' }}
+          viewport={{ once: true }}
+          className="text-center mb-14"
+        >
+          <h2 className="font-display text-4xl md:text-5xl font-medium mb-5 text-gradient italic">
+            Galería de Recuerdos
+          </h2>
+          <p className="text-base md:text-lg text-slate-300/75 max-w-3xl mx-auto leading-relaxed mb-7 font-light">
+            Fragmentos de escena, bocetos y destellos del universo #GatoEncerrado para recorrer como un collage íntimo.
+          </p>
+
+          <Button
+            onClick={() => handleInstagramClick(instagramProfileUrl)}
+            className="bg-gradient-to-r from-pink-600/80 via-purple-600/80 to-indigo-600/80 hover:from-pink-600 hover:to-purple-600 text-white px-7 py-3 rounded-full font-semibold flex items-center gap-2 mx-auto hover-glow"
+          >
+            <InstagramIcon size={20} />
+            Seguir @esungatonecerrado
+            <ExternalLink size={16} />
+          </Button>
+        </motion.div>
+
+        {error && (
+          <div className="flex items-center justify-center gap-3 p-4 mb-6 text-center text-red-400 bg-red-900/20 rounded-lg">
+            <AlertCircle size={22} />
+            <p>{error}</p>
+          </div>
+        )}
+
+        {slots.length > 0 ? (
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 lg:grid-cols-8 auto-rows-[95px] sm:auto-rows-[110px] md:auto-rows-[130px] lg:auto-rows-[150px] gap-2 md:gap-3 lg:gap-3.5">
+            <AnimatePresence mode="popLayout">
+              {slots.map((slot, slotIdx) => {
+                const post = posts[slot.postIndex];
+                if (!post) {
+                  return null;
+                }
+
+                const pattern = collagePattern[slot.patternIndex % collagePattern.length];
+                const story = slot.story ?? storyFragments[(slotIdx + slot.postIndex) % storyFragments.length];
+
+                return (
+                  <motion.button
+                    key={slot.slotId}
+                    type="button"
+                    layout
+                    variants={cardVariants}
+                    initial="hidden"
+                    animate="visible"
+                    exit="exit"
+                    viewport={{ amount: 0.5, once: false }}
+                    onViewportLeave={(entry) => handleViewportLeave(slotIdx, entry)}
+                    onClick={() => openModalAt(slot.postIndex)}
+                    onKeyDown={(e) => { if (e.key === 'Enter') openModalAt(slot.postIndex); }}
+                    className={`group relative isolate flex h-full w-full cursor-pointer items-stretch focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pink-400/60 ${pattern.grid}`}
+                  >
+                    <div className={`relative h-full w-full transition-transform duration-300 ease-out ${pattern.offset}`}>
+                      <motion.div
+                        layout
+                        variants={cardVariants}
+                        initial="hidden"
+                        whileInView="visible"
+                        viewport={{ amount: 0.6, once: false }}
+                        whileHover={{ translateY: -6 }}
+                        transition={{ duration: 0.35, ease: 'easeOut' }}
+                        className={`relative flex h-full w-full overflow-hidden rounded-[20px] bg-slate-950/70 backdrop-blur-sm ${pattern.frame}`}
+                      >
+                        <span className={`pointer-events-none absolute inset-0 bg-gradient-to-br ${pattern.tint}`} aria-hidden="true" />
+                        <motion.img
+                          src={post.imgSrc}
+                          alt={post.alt || 'Recuerdo #GatoEncerrado'}
+                          className="absolute inset-0 h-full w-full object-cover"
+                          loading="lazy"
+                          variants={imageVariants}
+                          initial="hidden"
+                          whileInView="visible"
+                          viewport={{ amount: 0.75, once: false }}
+                          whileHover={{ scale: 1.06 }}
+                          transition={{ duration: 0.55, ease: 'easeOut' }}
+                        />
+
+                        <div className="relative flex h-full flex-col justify-between p-3 md:p-4">
+                          <div className="text-[0.58rem] uppercase tracking-[0.3em] text-slate-200/75 mix-blend-screen">
+                            #GatoEncerrado
+                          </div>
+                          <div className="flex flex-col gap-2">
+                            <div className="w-8 md:w-10 border-t border-slate-200/30" />
+                            <p className="text-[0.8rem] md:text-sm font-light text-slate-50/90 max-w-[10rem] md:max-w-[10.5rem] leading-relaxed drop-shadow-[0_10px_22px_rgba(15,23,42,0.6)]">
+                              {story}
+                            </p>
+                            <div className="flex items-center gap-2 text-[0.65rem] uppercase tracking-[0.22em] text-slate-300/80">
+                              <InstagramIcon size={14} />
+                              Ver recuerdo
+                            </div>
+                          </div>
+                        </div>
+                      </motion.div>
+                    </div>
+                  </motion.button>
+                );
+              })}
+            </AnimatePresence>
+          </div>
+        ) : !error && (
+            <div className="text-center text-slate-400 animate-pulse italic">
+              <p>Cargando recuerdos...</p>
+            </div>
+        )}
+
+        <AnimatePresence>
+          {isModalOpen && activePost && (
+            <motion.div
+              key="gallery-modal"
+              className="fixed inset-0 z-50 flex items-center justify-center px-6"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+            >
+              <motion.div
+                className="absolute inset-0 bg-slate-950/80"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                onClick={closeModal}
+              />
+
+              <motion.div
+                className="relative z-10 w-full max-w-5xl overflow-hidden rounded-[28px] bg-slate-900/90 backdrop-blur-xl shadow-2xl"
+                role="dialog"
+                aria-modal="true"
+                aria-label="Recuerdo ampliado"
+                initial={{ scale: 0.92, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                exit={{ scale: 0.92, opacity: 0 }}
+                transition={{ type: 'spring', stiffness: 220, damping: 26 }}
+              >
+                <div className="flex flex-col gap-4 p-6 md:flex-row md:items-center md:gap-6">
+                  <div className="flex-1">
+                    <div className="flex items-center justify-between text-slate-300/90">
+                      <p className="text-xs uppercase tracking-[0.35em] text-slate-300/70">#GatoEncerrado</p>
+                      <span className="text-xs font-medium tracking-wide">
+                        {totalPosts > 0 ? `${currentPosition + 1}` : '0'}
+                        <span className="text-slate-400/80">/{totalPosts}</span>
+                      </span>
+                    </div>
+                    <div className="mt-3 h-2 rounded-full bg-white/10 overflow-hidden">
+                      <div
+                        className="h-full rounded-full bg-gradient-to-r from-pink-400 via-purple-400 to-indigo-400 transition-all duration-500"
+                        style={{ width: `${progressPercent}%` }}
+                        aria-hidden="true"
+                      />
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-3 self-start md:self-center">
+                    <button
+                      aria-label="Anterior"
+                      onClick={showPrev}
+                      className="flex h-11 w-11 items-center justify-center rounded-full border border-white/20 text-white transition hover:bg-white/10"
+                    >
+                      <ChevronLeft size={20} />
+                    </button>
+                    <button
+                      aria-label="Siguiente"
+                      onClick={showNext}
+                      className="flex h-11 w-11 items-center justify-center rounded-full border border-white/20 text-white transition hover:bg-white/10"
+                    >
+                      <ChevronRight size={20} />
+                    </button>
+                    <button
+                      ref={closeButtonRef}
+                      aria-label="Cerrar"
+                      onClick={closeModal}
+                      className="flex h-11 w-11 items-center justify-center rounded-full border border-white/20 text-white transition hover:bg-white/10"
+                    >
+                      <X size={18} />
+                    </button>
+                  </div>
+                </div>
+
+                <div className="relative aspect-[3/2] w-full bg-black">
+                  <img
+                    src={activePost.imgSrc}
+                    alt={activePost.alt || 'Recuerdo #GatoEncerrado'}
+                    className="h-full w-full object-contain"
+                  />
+                  {activePost.postUrl && (
+                    <a
+                      href={activePost.postUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="absolute bottom-6 left-6 inline-flex items-center gap-2 rounded-full bg-white/10 px-4 py-2 text-xs uppercase tracking-[0.25em] text-white backdrop-blur"
+                    >
+                      Ver en Instagram
+                      <ExternalLink size={14} />
+                    </a>
+                  )}
+                </div>
+              </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
+    </section>
+  );
+};
+
+export default Instagram;

@@ -1,0 +1,152 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Inter:wght@300;400;500&display=swap');
+
+@layer base {
+  :root {
+    --background: 240 10% 3.9%; /* Very dark, almost black */
+    --foreground: 0 0% 100%; /* Pure white for contrast */
+ 
+    --card: 240 10% 3.9%; /* Dark card background */
+    --card-foreground: 0 0% 100%; /* White text on cards */
+ 
+    --popover: 240 10% 3.9%; /* Dark popover background */
+    --popover-foreground: 0 0% 100%; /* White text on popovers */
+ 
+    --primary: 290 60% 30%; /* Deep purple/magenta from the image */
+    --primary-foreground: 0 0% 100%; /* White text on primary */
+ 
+    --secondary: 270 40% 15%; /* A slightly lighter dark purple for secondary elements */
+    --secondary-foreground: 0 0% 100%; /* White text on secondary */
+ 
+    --muted: 240 10% 10%; /* A slightly lighter dark for muted elements */
+    --muted-foreground: 215 20.2% 65.1%; /* Grayish text for muted */
+ 
+    --accent: 290 60% 30%; /* Using primary accent for consistency */
+    --accent-foreground: 0 0% 100%; /* White text on accent */
+ 
+    --destructive: 0 62.8% 30.6%; /* Red for destructive actions */
+    --destructive-foreground: 0 0% 100%; /* White text on destructive */
+ 
+    --border: 240 10% 20%; /* Darker border for subtle separation */
+    --input: 240 10% 15%; /* Dark input fields */
+    --ring: 290 60% 30%; /* Ring color matching primary */
+
+    --radius: 0.5rem;
+  }
+ 
+  .dark {
+    --background: 240 10% 3.9%;
+    --foreground: 0 0% 100%;
+ 
+    --card: 240 10% 3.9%;
+    --card-foreground: 0 0% 100%;
+ 
+    --popover: 240 10% 3.9%;
+    --popover-foreground: 0 0% 100%;
+ 
+    --primary: 290 60% 30%;
+    --primary-foreground: 0 0% 100%;
+ 
+    --secondary: 270 40% 15%;
+    --secondary-foreground: 0 0% 100%;
+ 
+    --muted: 240 10% 10%;
+    --muted-foreground: 215 20.2% 65.1%;
+ 
+    --accent: 290 60% 30%;
+    --accent-foreground: 0 0% 100%;
+ 
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 0 0% 100%;
+ 
+    --border: 240 10% 20%;
+    --input: 240 10% 15%;
+    --ring: 290 60% 30%;
+  }
+}
+
+@layer base {
+  body {
+    @apply bg-background text-foreground;
+    scroll-behavior: smooth;
+  }
+}
+
+body {
+  font-family: 'Inter', sans-serif;
+  /* Adjusted background gradient to match new theatrical palette */
+  background-image: radial-gradient(circle at 10% 10%, hsl(290 60% 20% / 0.3) 0%, transparent 30%),
+                    radial-gradient(circle at 90% 80%, hsl(290 60% 10% / 0.3) 0%, transparent 30%);
+  background-attachment: fixed;
+}
+
+.font-display {
+  font-family: 'Playfair Display', serif;
+}
+
+.glass-effect {
+  background: hsl(240 10% 3.9% / 0.5); /* Using background color with transparency */
+  backdrop-filter: blur(12px);
+  border: 1px solid hsl(0 0% 100% / 0.08); /* Using foreground color with transparency */
+  box-shadow: 0 8px 32px 0 hsl(240 10% 3.9% / 0.37); /* Using background color for shadow */
+}
+
+.text-gradient {
+  background: linear-gradient(135deg, hsl(290 60% 50%), hsl(290 60% 30%), hsl(290 60% 40%)); /* Gradient with primary hues */
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.section-divider {
+  background: linear-gradient(90deg, transparent, hsl(290 60% 40% / 0.2), transparent); /* Divider with primary hue */
+  height: 1px;
+  width: 100%;
+}
+
+.hover-glow {
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.hover-glow:hover {
+  box-shadow: 0 0 25px hsl(290 60% 40% / 0.2), 0 0 50px hsl(290 60% 40% / 0.1); /* Glow with primary hue */
+  transform: translateY(-2px);
+}
+
+.hover-glow::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 300%;
+  height: 300%;
+  background: radial-gradient(circle, hsl(0 0% 100% / 0.15) 0%, hsl(0 0% 100% / 0) 60%); /* Light glow */
+  transform: translate(-50%, -50%) scale(0);
+  transition: transform 0.7s ease;
+}
+
+.hover-glow:hover::before {
+  transform: translate(-50%, -50%) scale(1);
+}
+
+/* Masonry helpers: used by the Instagram gallery for organic reordering */
+.masonry-container {
+  /* column-gap is handled by Tailwind utilities when possible; keep this as a sensible fallback */
+  column-gap: 1rem;
+}
+
+.masonry-item {
+  display: inline-block; /* needed so items flow into columns */
+  width: 100%;
+}
+
+.break-inside-avoid {
+  break-inside: avoid;
+  -webkit-column-break-inside: avoid;
+  page-break-inside: avoid;
+}
