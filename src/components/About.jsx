@@ -86,7 +86,7 @@ const About = () => {
               <img
                 className="w-full h-96 object-cover rounded-xl shadow-2xl shadow-black/50"
                 alt="Escena de la obra #GatoEncerrado, luz tenue y misteriosa"
-                src="https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/galeria%20de%20gatoencerrado/_V7M6281.jpg"
+                src="https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/trailers/DSC02497.jpg"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent rounded-xl" aria-hidden="true" />
             </div>
