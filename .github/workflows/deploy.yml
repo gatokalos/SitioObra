@@ -1,9 +1,9 @@
-name: Build and Deploy to Hostinger
+name: Deploy to Hostinger
 
 on:
   push:
     branches:
-      - main  # O la rama que uses como principal
+      - main   # Despliega cada vez que hagas push al branch main
 
 jobs:
   build:
@@ -15,24 +15,19 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: '20' # O la versión que uses
+          node-version: 18
 
       - name: Install dependencies
-        run: npm ci
+        run: npm install
 
       - name: Build project
         run: npm run build
 
-      - name: Deploy to Deploy Branch
-        run: |
-          git config --global user.name 'github-actions[bot]'
-          git config --global user.email 'github-actions[bot]@users.noreply.github.com'
-          git checkout deploy
-          # Elimina todo excepto el .git
-          find . -not -name '.git' -not -name '.' -not -name '..' -exec rm -rf {} +
-          # Copia el contenido de dist/ al root de la rama deploy
-          cp -r dist/* .
-          # Añade cambios y sube
-          git add .
-          git commit -m "Deploy from GitHub Actions"
-          git push origin deploy --force
+      - name: Deploy via FTP
+        uses: SamKirkland/FTP-Deploy-Action@4.3.4
+        with:
+          server: ${{ secrets.FTP_HOST }}
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          local-dir: dist
+          server-dir: public_html/
