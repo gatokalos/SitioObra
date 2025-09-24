@@ -27,9 +27,9 @@ function App() {
           <Hero />
           <About />
           <Team />
-          <Transmedia />
+           <Instagram />
           <Curatorial />
-          <Instagram />
+          <Transmedia />
           <NextShow />
           <Contact />
         </main>

@@ -11,19 +11,19 @@ const FALLBACK_IMAGE = 'https://images.unsplash.com/photo-1595872018818-97555653
 
 const teamData = {
   Dramaturgia: {
-    name: 'Carlos Ruiz',
+    name: 'Carlos Pérez',
     bio: 'Escritor y dramaturgo especializado en narrativas transmedia y teatro contemporáneo. Su trabajo explora la fragilidad de la memoria y la identidad en la era digital.',
-    image: 'https://images.unsplash.com/photo-1521737604893-d14cc237f11d?auto=format&fit=crop&w=800&q=80',
+    image: 'https://media3.giphy.com/media/v1.Y2lkPTZjMDliOTUybDZ2bG8xbXg4c3Z5ZWd4MTl3b3pjbDlzaGZqb3NzMWF2Mzd3ZjFhYyZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/Q5RjtPsU4Ds5ByAVI9/giphy.gif',
   },
   Dirección: {
-    name: 'Ana Martínez',
+    name: 'Gilberto Corales',
     bio: 'Directora teatral con más de 15 años de experiencia en teatro experimental. Su visión artística busca romper la cuarta pared y crear experiencias inmersivas y participativas.',
-    image: 'https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&w=800&q=80',
+    image: 'https://media2.giphy.com/media/v1.Y2lkPTZjMDliOTUyMnRvbmd6MmxvdzY3MnYybDhscHBtbnQ1MGkxMnRjYzU2bmQ5YWh6ZCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/dhk64E8l02062eyLwH/giphy.gif',
   },
   Producción: {
-    name: 'Lucía Fernandez',
+    name: 'Miroslava Wilson',
     bio: 'Productora ejecutiva con una trayectoria en proyectos culturales innovadores. Es la fuerza motriz que convierte las ideas artísticas en realidades escénicas.',
-    image: 'https://images.unsplash.com/photo-1544723795-3fb6469f5b39?auto=format&fit=crop&w=800&q=80',
+    image: 'https://media3.giphy.com/media/v1.Y2lkPTZjMDliOTUyaGx4MTJsNTZnY2UyZ3k0dTh0Nzc5NnZqbXplYTlzbW13Zzh6ZnBybSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/VDAPPNWRruFPG40guE/giphy.gif',
   },
   Elenco: {
     description:

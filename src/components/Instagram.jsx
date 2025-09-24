@@ -5,14 +5,19 @@ import { Button } from '@/components/ui/button';
 import { getInstagramPostsFromBucket } from '@/services/instagramService';
 
 const collagePattern = [
-  {
-    grid: 'col-span-2 row-span-2 sm:col-span-3 sm:row-span-3 md:col-span-2 md:row-span-3 lg:col-span-2 lg:row-span-3',
-    offset: 'lg:-translate-y-4 lg:-rotate-[1.2deg]',
-    frame: 'shadow-[14px_14px_0_rgba(244,114,182,0.12)]',
-    tint: 'from-pink-400/18 via-transparent to-slate-950/0',
+  { grid: 'col-span-2 row-span-3 sm:col-span-3 sm:row-span-4 md:col-span-3 md:row-span-3 lg:col-span-3 lg:row-span-4',
+    offset: 'lg:-translate-y-3 lg:rotate-[0.8deg]',
+    frame: 'shadow-[17px_17px_0_rgba(164,196,248,0.14)]',
+    tint: 'from-sky-300/18 via-transparent to-slate-950/0',
   },
   {
-    grid: 'col-span-2 row-span-2 sm:col-span-2 sm:row-span-2 md:col-span-3 md:row-span-2 lg:col-span-3 lg:row-span-3',
+    grid: 'col-span-2 row-span-2 sm:col-span-3 sm:row-span-2 md:col-span-2 md:row-span-2 lg:col-span-2 lg:row-span-2',
+    offset: 'lg:translate-y-2 lg:rotate-[0.3deg]',
+    frame: 'shadow-[14px_14px_0_rgba(167,139,250,0.14)]',
+    tint: 'from-purple-400/14 via-transparent to-slate-950/0',
+  },
+  {
+    grid: 'col-span-2 row-span-2 sm:col-span-2 sm:row-span-2 md:col-span-2 md:row-span-2 lg:col-span-3 lg:row-span-3',
     offset: 'lg:translate-y-3 lg:rotate-[0.9deg]',
     frame: 'shadow-[12px_12px_0_rgba(129,140,248,0.14)]',
     tint: 'from-indigo-400/15 via-transparent to-slate-950/0',
@@ -59,12 +64,12 @@ const collagePattern = [
     frame: 'shadow-[17px_17px_0_rgba(164,196,248,0.14)]',
     tint: 'from-sky-300/18 via-transparent to-slate-950/0',
   },
-  {
-    grid: 'col-span-2 row-span-2 sm:col-span-3 sm:row-span-2 md:col-span-2 md:row-span-2 lg:col-span-2 lg:row-span-2',
-    offset: 'lg:translate-y-1 lg:-rotate-[0.5deg]',
-    frame: 'shadow-[11px_11px_0_rgba(250,204,21,0.15)]',
-    tint: 'from-yellow-300/15 via-transparent to-slate-950/0',
-  },
+{
+  grid: 'col-span-3 row-span-2 sm:col-span-4 sm:row-span-2 md:col-span-4 md:row-span-2 lg:col-span-5 lg:row-span-3',
+  offset: 'lg:translate-y-1 lg:-rotate-[0.3deg]',
+  frame: 'shadow-[11px_11px_0_rgba(250,204,21,0.15)]',
+  tint: 'from-yellow-300/15 via-transparent to-slate-950/0',
+},
   {
     grid: 'col-span-2 row-span-2 sm:col-span-2 sm:row-span-3 md:col-span-3 md:row-span-3 lg:col-span-3 lg:row-span-3',
     offset: 'lg:-translate-y-1 lg:rotate-[1deg]',
@@ -78,49 +83,47 @@ const collagePattern = [
     tint: 'from-slate-200/18 via-transparent to-slate-950/0',
   },
   {
-    grid: 'col-span-2 row-span-2 sm:col-span-3 sm:row-span-2 md:col-span-2 md:row-span-3 lg:col-span-2 lg:row-span-3',
-    offset: 'lg:translate-y-3 lg:rotate-[0.4deg]',
-    frame: 'shadow-[12px_12px_0_rgba(244,63,94,0.12)]',
-    tint: 'from-rose-500/14 via-transparent to-slate-950/0',
+    grid: 'col-span-3 row-span-2 sm:col-span-4 sm:row-span-2 md:col-span-4 md:row-span-2 lg:col-span-5 lg:row-span-2',
+    offset: 'lg:translate-y-1 lg:-rotate-[0.3deg]',
+    frame: 'shadow-[31px_11px_0_rgba(250,204,21,0.15)]',
+    tint: 'from-sky-300/18 via-transparent to-slate-950/0',
+  },
+  {
+    grid: 'col-span-3 row-span-2 sm:col-span-4 sm:row-span-2 md:col-span-4 md:row-span-2 lg:col-span-5 lg:row-span-2',
+    offset: 'lg:translate-y-1 lg:-rotate-[0.33deg]',
+    frame: 'shadow-[11px_11px_0_rgba(250,204,21,0.15)]',
+    tint: 'from-sky-300/18 via-transparent to-slate-950/0',
   },
 ];
 
 const curatedLayout = [
-  { match: 'dsc02497', patternIndex: 0, story: 'Ensayo nocturno' },
-  { match: 'copia de foto 5', patternIndex: 1, story: 'Vestigio de luces' },
-  { match: 'foto 4', patternIndex: 2, story: 'Pausa entre actos' },
-  { match: 'foto 3', patternIndex: 3, story: 'Ecos del telón' },
-  { match: 'foto 1', patternIndex: 4, story: 'Rastro de tinta y papel' },
-  { match: 'sketch', patternIndex: 5, story: 'Fragmento de libreto' },
-  { match: 'ensayo', patternIndex: 6, story: 'Ritual previo al acto' },
-  { match: 'behind', patternIndex: 7, story: 'Detrás del telón' },
-  { match: 'light', patternIndex: 8, story: 'Coreografía de luz' },
-  { match: 'prop', patternIndex: 9, story: 'Objetos encantados' },
-  { match: 'poema', patternIndex: 10, story: 'Verso suspendido' },
-  { match: 'vestuario backstage', patternIndex: 11, story: 'Memoria suspendida' },
+  { match: 'Copia de Foto 1 (1)', patternIndex: 0, story: 'Corte al vacío' },
+  { match: 'PoloyEstela', patternIndex: 1, story: 'Microclimas invisibles' },
+  { match: 'Copia de Foto 4', patternIndex: 2, story: 'Un número interminable' },
+  { match: 'Copia de Foto 3 (1)', patternIndex: 3, story: 'Memoria desdoblada' },
+  { match: 'Pausa entre actos', patternIndex: 4, story: 'Coreografía de luces' },
+  { match: 'Copia de Foto 4 (1)', patternIndex: 5, story: 'Confesión en penumbra' },
+  { match: '_V7M6314', patternIndex: 6, story: 'Ritual previo al acto' },
+  { match: '_V7M6296', patternIndex: 7, story: 'Risa entre grietas' },
+  { match: '_V7M6348', patternIndex: 8, story: 'La jaula bajo la mesa' },
+  { match: 'Xanadu', patternIndex: 9, story: 'Voz que no se nombra' },
+  { match: '_V7M6281', patternIndex: 10, story: 'El pliegue del vestido' },
+  { match: '_V7M6324', patternIndex: 11, story: 'La cuerda floja' },
+  { match: '_V7M6329', patternIndex: 12, story: 'Luz que acusa' },
+  { match: 'Copia de Foto 5 (1)', patternIndex: 13, story: 'Un eco sin dueño' },
+  { match: 'DSC02497', patternIndex: 14, story: 'Vestigio de sombras' },
+  
 ];
 
 const storyFragments = [
-  'Ensayo nocturno',
-  'Vestigio de luces',
-  'Boceto de la trama',
-  'Pausa entre actos',
-  'Ecos del telón',
-  'Mirada tras bastidores',
-  'Rastro de tinta y papel',
-  'Respiración entre luces',
-  'Coreografía de sombras',
-  'Fragmento de libreto',
-  'Ritual previo al acto',
-  'Detrás del telón',
-  'Memoria suspendida',
+  'Vestigio de sombras',
 ];
 
 const Instagram = () => {
   const [posts, setPosts] = useState([]);
   const [error, setError] = useState(null);
-  const instagramProfileUrl = 'https://www.instagram.com/esungatonecerrado';
-  const VISIBLE_COUNT = 7;
+  const instagramProfileUrl = 'https://www.instagram.com/esungatoencerrado/?hl=en';
+  const VISIBLE_COUNT = 15;
   const [selectedIndex, setSelectedIndex] = useState(null);
   const lastFocusedRef = useRef(null);
   const closeButtonRef = useRef(null);
@@ -427,17 +430,14 @@ const Instagram = () => {
                       >
                         <span className={`pointer-events-none absolute inset-0 bg-gradient-to-br ${pattern.tint}`} aria-hidden="true" />
                         <motion.img
-                          src={post.imgSrc}
-                          alt={post.alt || 'Recuerdo #GatoEncerrado'}
-                          className="absolute inset-0 h-full w-full object-cover"
-                          loading="lazy"
-                          variants={imageVariants}
-                          initial="hidden"
-                          whileInView="visible"
-                          viewport={{ amount: 0.75, once: false }}
-                          whileHover={{ scale: 1.06 }}
-                          transition={{ duration: 0.55, ease: 'easeOut' }}
-                        />
+                        src={post.imgSrc}
+                        alt={post.alt || 'Recuerdo #GatoEncerrado'}
+                        className="absolute inset-0 h-full w-full object-cover"
+                        loading="lazy"
+                        initial={{ scale: 1.02, y: 0, opacity: 1 }}   // Estado inicial ya visible
+                        whileHover={{ scale: 1.06 }}                  // Solo efecto en hover
+                        transition={{ duration: 0.35, ease: 'easeOut' }}
+                      />
 
                         <div className="relative flex h-full flex-col justify-between p-3 md:p-4">
                           <div className="text-[0.58rem] uppercase tracking-[0.3em] text-slate-200/75 mix-blend-screen">
@@ -448,10 +448,7 @@ const Instagram = () => {
                             <p className="text-[0.8rem] md:text-sm font-light text-slate-50/90 max-w-[10rem] md:max-w-[10.5rem] leading-relaxed drop-shadow-[0_10px_22px_rgba(15,23,42,0.6)]">
                               {story}
                             </p>
-                            <div className="flex items-center gap-2 text-[0.65rem] uppercase tracking-[0.22em] text-slate-300/80">
-                              <InstagramIcon size={14} />
-                              Ver recuerdo
-                            </div>
+                    
                           </div>
                         </div>
                       </motion.div>
@@ -543,17 +540,6 @@ const Instagram = () => {
                     alt={activePost.alt || 'Recuerdo #GatoEncerrado'}
                     className="h-full w-full object-contain"
                   />
-                  {activePost.postUrl && (
-                    <a
-                      href={activePost.postUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="absolute bottom-6 left-6 inline-flex items-center gap-2 rounded-full bg-white/10 px-4 py-2 text-xs uppercase tracking-[0.25em] text-white backdrop-blur"
-                    >
-                      Ver en Instagram
-                      <ExternalLink size={14} />
-                    </a>
-                  )}
                 </div>
               </motion.div>
             </motion.div>
