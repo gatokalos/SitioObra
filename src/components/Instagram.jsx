@@ -367,10 +367,12 @@ const Instagram = () => {
           className="text-center mb-14"
         >
           <h2 className="font-display text-4xl md:text-5xl font-medium mb-5 text-gradient italic">
-            Galería de Recuerdos
+            Memoria Escénica
           </h2>
           <p className="text-base md:text-lg text-slate-300/75 max-w-3xl mx-auto leading-relaxed mb-7 font-light">
-            Fragmentos de escena, bocetos y destellos del universo #GatoEncerrado para recorrer como un collage íntimo.
+            Fragmentos de lo que solo sucede en escena…
+            Un homenaje visual al trabajo colectivo detrás de #GatoEncerrado:
+            las funciones, los cuerpos, los silencios, las luces… lo que solo existe cuando alguien lo mira.
           </p>
 
           <Button

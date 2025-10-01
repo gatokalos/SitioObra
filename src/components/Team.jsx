@@ -13,7 +13,7 @@ const teamData = {
   Dramaturgia: {
     name: 'Carlos Pérez',
     bio: 'Escritor y dramaturgo especializado en narrativas transmedia y teatro contemporáneo. Su trabajo explora la fragilidad de la memoria y la identidad en la era digital.',
-    image: 'https://media3.giphy.com/media/v1.Y2lkPTZjMDliOTUybDZ2bG8xbXg4c3Z5ZWd4MTl3b3pjbDlzaGZqb3NzMWF2Mzd3ZjFhYyZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/Q5RjtPsU4Ds5ByAVI9/giphy.gif',
+    image: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/trailers/GIF-2025-09-24-14-01-20.gif',
   },
   Dirección: {
     name: 'Gilberto Corales',

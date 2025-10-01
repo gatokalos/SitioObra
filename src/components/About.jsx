@@ -5,7 +5,11 @@ import { Button } from '@/components/ui/button';
 import { toast } from '@/components/ui/use-toast';
 import { getTrailerPublicUrl } from '@/services/trailerService';
 
-const aboutText = `#GatoEncerrado es una historia que comienza donde muchas terminan: cuando alguien desaparece. No del todo. No para siempre. Desaparece del escenario visible… pero deja preguntas en el aire, gestos suspendidos, recuerdos que no saben cómo irse. Esta no es solo una obra de teatro. Es una constelación de emociones, una caja que se abre para revelar retazos de memoria, cuerpo y misterio. Este sitio es un espacio donde la ficción se maquilla con verdad. Y donde tú, espectador o visitante, puedes entrar sin avisar, porque quizás… tú también has tenido un gato encerrado en el pecho.`;
+const aboutText = `#GatoEncerrado comienza donde otras historias terminan: con una ausencia.
+Pero esta obra no desaparece del todo. 
+Queda suspendida en gestos, en retazos de memoria, en las cosas que no se atreven a irse.
+Esto no es solo un montaje escénico. Es una caja que se abre y deja salir fragmentos de emoción, cuerpo, misterio y eco. Un espacio donde lo que parece ficción revela lo que no supimos decir.
+Tal vez tú también has sentido un gato encerrado en el pecho.`;
 
 const About = () => {
   const [trailer, setTrailer] = useState(null);
@@ -95,9 +99,10 @@ const About = () => {
                 El Espíritu de la Obra
               </h3>
               <p className="text-slate-300/80 leading-relaxed mb-8 font-light">
-                En un mundo donde las fronteras entre lo real y lo virtual se difuminan,
-                #GatoEncerrado propone una reflexión sobre el encierro, la libertad y
-                las múltiples capas de la existencia humana.
+                En un mundo donde ya no distinguimos lo real de lo imaginado,
+                #GatoEncerrado no ofrece certezas.
+                Ofrece preguntas:
+                ¿Qué es estar? ¿Qué es irse? ¿Qué queda cuando alguien se va?
               </p>
               <div className="flex flex-col sm:flex-row gap-4">
                 <Button
