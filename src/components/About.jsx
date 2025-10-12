@@ -5,11 +5,7 @@ import { Button } from '@/components/ui/button';
 import { toast } from '@/components/ui/use-toast';
 import { getTrailerPublicUrl } from '@/services/trailerService';
 
-const aboutText = `#GatoEncerrado comienza donde otras historias terminan: con una ausencia.
-Pero esta obra no desaparece del todo. 
-Queda suspendida en gestos, en retazos de memoria, en las cosas que no se atreven a irse.
-Esto no es solo un montaje escénico. Es una caja que se abre y deja salir fragmentos de emoción, cuerpo, misterio y eco. Un espacio donde lo que parece ficción revela lo que no supimos decir.
-Tal vez tú también has sentido un gato encerrado en el pecho.`;
+const aboutText = `Es un gato encerrado existe como obra y como universo transmedial: es, al mismo tiempo, un relato íntimo en un escenario y una constelación de la mente y del dolor humano en múltiples lenguajes artísticos. En otras palabras, esta obra es el corazón pulsante que mantiene abiertas esas preguntas que golpean las paredes de lo invisible hasta hacerse oír.  Es un gato encerrado no intenta contestarlas, sino sentirlas en compañía. Y cuando la obra se detiene, el universo #GatoEncerrado continúa latiendo en otras narrativas, recordándonos que la mente nunca se encierra del todo.`;
 
 const About = () => {
   const [trailer, setTrailer] = useState(null);
@@ -96,13 +92,10 @@ const About = () => {
             </div>
             <div className="order-1 md:order-2">
               <h3 className="font-display text-3xl font-medium text-slate-100 mb-6">
-                El Espíritu de la Obra
+                El Sueño de Silvestre
               </h3>
               <p className="text-slate-300/80 leading-relaxed mb-8 font-light">
-                En un mundo donde ya no distinguimos lo real de lo imaginado,
-                #GatoEncerrado no ofrece certezas.
-                Ofrece preguntas:
-                ¿Qué es estar? ¿Qué es irse? ¿Qué queda cuando alguien se va?
+                Silvestre vive en <strong>Es un gato encerrado</strong>. Este es el <i>rincón onírico</i> donde enfrenta sus desdoblamientos y dilemas existenciales. Aquí, lo real y lo imaginario ya no compiten. Y tú —espectador, visitante, cómplice— puedes entrar sin tocar la puerta, porque quizás… tú también tienes un gato encerrado en el pecho.
               </p>
               <div className="flex flex-col sm:flex-row gap-4">
                 <Button

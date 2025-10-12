@@ -99,9 +99,9 @@ const Contact = () => {
             <div className="glass-effect rounded-xl p-6">
               <h3 className="font-display text-xl font-medium text-slate-100 mb-4">Créditos Finales</h3>
               <p className="text-slate-300/70 text-sm leading-relaxed font-light">
-                Una producción de <span className="text-slate-200">Teatro de la Penumbra</span>.
+                Una producción de <span className="text-slate-200">#GatoEncerrado</span>.
                 <br />
-                Con el apoyo de <span className="text-slate-200">Fondo Nacional para la Cultura y las Artes</span>.
+                Con el apoyo de <span className="text-slate-200">Isabel Ayuda para la Vida, A.C.</span>.
                 <br />
                 Agradecimientos especiales a todos los que creyeron en esta locura.
               </p>

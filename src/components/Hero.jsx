@@ -58,7 +58,7 @@ const Hero = () => {
           duration: 1.5,
           delay: 0.5
         }} className="text-xl md:text-2xl text-slate-300/80 mb-12 leading-relaxed font-light">
-            La historia de alguien que desaparece… y deja una huella emocional.
+            Lo ves aquí, pero su voz también habita otras dimensiones.
           </motion.p>
 
           <motion.div initial={{
@@ -73,7 +73,7 @@ const Hero = () => {
         }} className="flex flex-col sm:flex-row gap-4 justify-center items-center">
             <Button onClick={handleTicketClick} className="bg-gradient-to-r from-purple-600/80 to-indigo-600/80 hover:from-purple-600 hover:to-indigo-600 text-white px-8 py-3 rounded-full font-semibold flex items-center gap-2 hover-glow text-base">
               <Ticket size={20} />
-              Comprar Boletos
+              Suscríbete
             </Button>
             
             <Button variant="ghost" onClick={handleButtonClick} className="text-slate-300 hover:text-white hover:bg-white/5 px-8 py-3 rounded-full font-semibold flex items-center gap-2 text-base">
