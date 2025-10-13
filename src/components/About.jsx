@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { toast } from '@/components/ui/use-toast';
 import { getTrailerPublicUrl } from '@/services/trailerService';
 
-const aboutText = `Es un gato encerrado existe como obra y como universo transmedial: es, al mismo tiempo, un relato íntimo en un escenario y una constelación de la mente y del dolor humano en múltiples lenguajes artísticos. En otras palabras, esta obra es el corazón pulsante que mantiene abiertas esas preguntas que golpean las paredes de lo invisible hasta hacerse oír.  Es un gato encerrado no intenta contestarlas, sino sentirlas en compañía. Y cuando la obra se detiene, el universo #GatoEncerrado continúa latiendo en otras narrativas, recordándonos que la mente nunca se encierra del todo.`;
+const aboutText = `Es un gato encerrado existe como obra y como universo transmedial: es, al mismo tiempo, un relato íntimo en un escenario y una constelación de la mente y del dolor humano en múltiples lenguajes artísticos. Es un gato encerrado es el corazón que hace pulsar aquellas preguntas que no están aquí para contestarse, sino para sentirlas en compañía. En pocas palabras, cuando la obra está latente, el universo #GatoEncerrado continúa latiendo en otras narrativas. Un recordatorio de que el corazón nunca se encierra del todo.`;
 
 const About = () => {
   const [trailer, setTrailer] = useState(null);
