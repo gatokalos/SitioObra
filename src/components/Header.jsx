@@ -49,7 +49,7 @@ const Header = () => {
             className="font-display text-2xl font-bold text-gradient cursor-pointer"
             onClick={() => handleNavClick('#hero')}
           >
-            #GatoEncerrado
+            #GatoEncerrado 💜
           </motion.div>
 
           <div className="hidden md:flex items-center space-x-1">
