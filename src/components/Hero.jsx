@@ -28,7 +28,7 @@ const Hero = () => {
         <img
           className="absolute inset-0 w-full h-full object-cover opacity-10 mix-blend-luminosity"
           alt="Textura de telón de teatro de terciopelo oscuro"
-          src="https://horizons-cdn.hostinger.com/97df2709-6244-412e-9fc4-b6382e776f4d/logo-by-enigma-gekDc.png"
+          src="public/assets/Logo by Enigma.png"
         />
       </div>
 

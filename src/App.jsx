@@ -11,6 +11,7 @@ import NextShow from '@/components/NextShow';
 import Contact from '@/components/Contact';
 import Footer from '@/components/Footer';
 import Curatorial from '@/components/Curatorial';
+import Blog from '@/components/Blog';
 
 function App() {
   return (
@@ -29,6 +30,7 @@ function App() {
           <Team />
            <Instagram />
           <Curatorial />
+          <Blog />
           <Transmedia />
           <NextShow />
           <Contact />

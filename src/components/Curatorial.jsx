@@ -1,10 +1,13 @@
-import React from 'react';
+import React, { useCallback, useState } from 'react';
 import { motion } from 'framer-motion';
 import { BookOpen, Quote, User, Calendar, Send } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { toast } from '@/components/ui/use-toast';
+import ContributionModal from '@/components/ContributionModal';
 
 const Curatorial = () => {
+  const [isContributionOpen, setIsContributionOpen] = useState(false);
+
   const texts = [
     {
       title: 'El Encierro Como Metáfora',
@@ -12,6 +15,7 @@ const Curatorial = () => {
       role: 'Crítica Teatral',
       date: 'Marzo 2024',
       excerpt: 'En #GatoEncerrado encontramos una reflexión profunda sobre los múltiples encierros que caracterizan la experiencia humana contemporánea. La obra trasciende la literalidad del espacio físico para explorar las prisiones mentales, sociales y emocionales que habitamos...',
+      slug: 'cartografia-emocional-gato-encerrado',
     },
     {
       title: 'Narrativas Transmedia en el Teatro',
@@ -19,14 +23,29 @@ const Curatorial = () => {
       role: 'Investigador en Artes Escénicas',
       date: 'Febrero 2024',
       excerpt: 'La integración de múltiples plataformas narrativas en #GatoEncerrado representa un paradigma emergente en las artes escénicas. Esta obra no solo utiliza el teatro como medio principal, sino que expande su universo narrativo...',
+      slug: 'practicas-transmedia-teatro',
     },
   ];
 
-  const handleReadMore = () => {
-    toast({
-      description: "🚧 Esta función no está implementada aún—¡pero no te preocupes! Puedes solicitarla en tu próximo prompt! 🚀"
-    });
-  };
+  const handleReadMore = useCallback((slug) => {
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(
+        new CustomEvent('gatoencerrado:open-blog', {
+          detail: { slug },
+        })
+      );
+    }
+
+    const blogSection = document.getElementById('blog');
+
+    if (blogSection) {
+      blogSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    } else {
+      toast({
+        description: 'El blog se abrirá en cuanto esté disponible.',
+      });
+    }
+  }, []);
 
   return (
     <section id="curatorial" className="py-24 relative">
@@ -73,7 +92,7 @@ const Curatorial = () => {
                 "{text.excerpt}"
               </p>
               <Button
-                onClick={handleReadMore}
+                onClick={() => handleReadMore(text.slug)}
                 variant="link"
                 className="text-purple-300 hover:text-white self-start p-0"
               >
@@ -99,7 +118,7 @@ const Curatorial = () => {
               sobre #GatoEncerrado y su impacto en el panorama teatral contemporáneo.
             </p>
             <Button
-              onClick={handleReadMore}
+              onClick={() => setIsContributionOpen(true)}
               className="bg-gradient-to-r from-purple-600/80 to-indigo-600/80 hover:from-purple-600 hover:to-indigo-600 text-white px-8 py-3 rounded-full font-semibold flex items-center gap-2 hover-glow"
             >
               <Send size={18} />
@@ -108,6 +127,7 @@ const Curatorial = () => {
           </div>
         </motion.div>
       </div>
+      <ContributionModal open={isContributionOpen} onClose={() => setIsContributionOpen(false)} />
     </section>
   );
 };

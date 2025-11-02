@@ -4,19 +4,35 @@ import { Download, Film, Ticket } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { toast } from '@/components/ui/use-toast';
 import { getTrailerPublicUrl } from '@/services/trailerService';
+import ReserveModal from '@/components/ReserveModal';
+import MiniverseModal from '@/components/MiniverseModal';
 
-const aboutText = `Es un gato encerrado existe como obra y como universo transmedial: es, al mismo tiempo, un relato íntimo en un escenario y una constelación de la mente y del dolor humano en múltiples lenguajes artísticos. Es un gato encerrado es el corazón que hace pulsar aquellas preguntas que no están aquí para contestarse, sino para sentirlas en compañía. En pocas palabras, cuando la obra está latente, el universo #GatoEncerrado continúa latiendo en otras narrativas. Un recordatorio de que el corazón nunca se encierra del todo.`;
+const aboutText = `Es un gato encerrado existe como obra y como universo transmedial: es, al mismo tiempo, un relato íntimo en un escenario y una constelación de la mente y del dolor humano en múltiples lenguajes artísticos. Esta obra es el corazón que hace pulsar aquellas preguntas que no están aquí para contestarse, sino para sentirlas en compañía. En pocas palabras, cuando la obra está latente, el universo #GatoEncerrado continúa latiendo en otras narrativas. Un recordatorio de que el corazón nunca se encierra del todo.`;
 
 const About = () => {
   const [trailer, setTrailer] = useState(null);
   const [isTrailerOpen, setIsTrailerOpen] = useState(false);
   const [isTrailerLoading, setIsTrailerLoading] = useState(false);
+  const [isReserveOpen, setIsReserveOpen] = useState(false);
+  const [reserveIntent, setReserveIntent] = useState('preventa');
+  const [isMiniverseOpen, setIsMiniverseOpen] = useState(false);
 
-  const handlePlaceholderClick = () => {
-    toast({
-      description: '🚧 Esta función no está implementada aún—¡pero no te preocupes! Puedes solicitarla en tu próximo prompt! 🚀',
-    });
-  };
+  const handleOpenReserve = useCallback((intent) => {
+    setReserveIntent(intent);
+    setIsReserveOpen(true);
+  }, []);
+
+  const handleCloseReserve = useCallback(() => {
+    setIsReserveOpen(false);
+  }, []);
+
+  const handleOpenMiniverse = useCallback(() => {
+    setIsMiniverseOpen(true);
+  }, []);
+
+  const handleCloseMiniverse = useCallback(() => {
+    setIsMiniverseOpen(false);
+  }, []);
 
   const handleWatchTrailer = useCallback(async () => {
     if (isTrailerLoading) {
@@ -55,6 +71,7 @@ const About = () => {
   }, []);
 
   return (
+    <>
     <section id="about" className="py-24 relative">
       <div className="section-divider mb-24"></div>
 
@@ -92,7 +109,7 @@ const About = () => {
             </div>
             <div className="order-1 md:order-2">
               <h3 className="font-display text-3xl font-medium text-slate-100 mb-6">
-                El Sueño de Silvestre
+                La Mente de Silvestre
               </h3>
               <p className="text-slate-300/80 leading-relaxed mb-8 font-light">
                 Silvestre vive en <strong>Es un gato encerrado</strong>. Este es el <i>rincón onírico</i> donde enfrenta sus desdoblamientos y dilemas existenciales. Aquí, lo real y lo imaginario ya no compiten. Y tú —espectador, visitante, cómplice— puedes entrar sin tocar la puerta, porque quizás… tú también tienes un gato encerrado en el pecho.
@@ -108,7 +125,7 @@ const About = () => {
                 </Button>
                 <Button
                   variant="outline"
-                  onClick={handlePlaceholderClick}
+                  onClick={() => handleOpenReserve('preventa')}
                   className="border-slate-100/20 text-slate-200 hover:bg-slate-100/10 px-6 py-3 rounded-full font-semibold flex items-center gap-2"
                 >
                   <Ticket size={20} />
@@ -117,11 +134,11 @@ const About = () => {
               </div>
               <Button
                 variant="link"
-                onClick={handlePlaceholderClick}
+                onClick={handleOpenMiniverse}
                 className="text-purple-400 hover:text-purple-300 mt-4 flex items-center gap-2"
               >
                 <Download size={16} />
-                Descargar App
+                Explora los miniversos
               </Button>
             </div>
           </div>
@@ -176,6 +193,18 @@ const About = () => {
         )}
       </AnimatePresence>
     </section>
+
+      <ReserveModal
+        open={isReserveOpen}
+        onClose={handleCloseReserve}
+        initialInterest={reserveIntent}
+      />
+
+      <MiniverseModal
+        open={isMiniverseOpen}
+        onClose={handleCloseMiniverse}
+      />
+    </>
   );
 };
 
