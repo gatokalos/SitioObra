@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { ArrowDown, Ticket } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import ReserveModal from '@/components/ReserveModal';
+import bgLogo from '@/assets/bg-logo.png';
 
 const Hero = () => {
   const [isReserveOpen, setIsReserveOpen] = useState(false);
@@ -32,7 +33,7 @@ const Hero = () => {
           <img
             className="absolute inset-0 w-full h-full object-cover opacity-10 mix-blend-luminosity"
             alt="Textura de telón de teatro de terciopelo oscuro"
-            src="/assets/bg-logo.png"
+            src={bgLogo}
           />
         </div>
 

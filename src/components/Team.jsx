@@ -23,6 +23,36 @@ const teamData = {
     bio: "Productora ejecutiva, directora y asesora de movimiento. Originaria de Hermosillo y radicada en Tijuana, es fundadora de Péndulo Cero A.C. y educadora de movimiento somático certificada por Body Mind Movement. Su trabajo interdisciplinario vincula arte, medio ambiente y humanismo. Ha presentado su obra en Asia, América y Europa, y actualmente impulsa proyectos como Casa Viva y SomasSomos.",
     image: "/images/placeholder-produccion.jpg",
   },
+    Elenco: {
+    description:
+      "Actores y actrices que encarnan el pulso emocional de la obra desde la fisicalidad, la voz y la presencia simbólica.",
+    members: [
+      {
+        name: "Ricardo Márquez Salgado",
+        role: "Intérprete",
+        bio: "Comunicólogo, modelo y actor. Ha participado en teatro, cine y publicidad. Destacan sus coprotagónicos en 'Ideas para no morir en el anonimato' y 'Entre Dos'. Su presencia combina energía escénica y precisión estética.",
+        image: "https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/equipo/ricardo.jpg",
+      },
+      {
+        name: "Cynthia Teresa Rodríguez Aguirre",
+        role: "Intérprete",
+        bio: "Artista interdisciplinaria egresada de la UABC. Su práctica integra fotografía, escritura y teatro. Ha participado en el San Diego Fringe Festival y en montajes de Incendio Producciones. Actualmente se enfoca en la dirección escénica y la exploración visual.",
+        image: "https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/equipo/cyndi.jpg",
+      },
+     {
+        name: "Mariana de los Santos",
+        role: "Intérprete",
+        bio: "Actriz tijuanense formada en CEART y con experiencia en cine y teatro contemporáneo. Su trabajo corporal revela una sensibilidad poética que dialoga entre lo íntimo y lo colectivo.",
+        image: "https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/equipo/mariana.jpg",
+      },
+      {
+        name: "Carlos Valdez Rosas",
+        role: "Intérprete",
+        bio: "Actor y productor de Incendio Producciones. Su trabajo combina performance, posdrama e interdisciplina. Ha participado en la Muestra Nacional de Teatro y festivales internacionales en Argentina y Estados Unidos.",
+        image: "https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/equipo/carlitos.jpg",
+      },
+    ],
+  },
   "Producción y Asistencia": {
     description:
       "Un equipo que coordina, articula y acompaña cada engranaje de la producción escénica con mirada sensible, técnica y humana.",
@@ -79,13 +109,13 @@ const teamData = {
         name: "Harold García",
         role: "Dirección Técnica",
         bio: "Arquitecto y diseñador lumínico. Ha colaborado en producciones como 'Matilda', 'Mamma Mia!' y 'Madame Butterfly'. Su trabajo abarca teatro, ópera y danza contemporánea, con presentaciones en México, Los Ángeles y festivales nacionales.",
-        image: "/images/placeholder-diseno.jpg",
+        image: "https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/equipo/harold.jpg",
       },
       {
         name: "Rebeca Hernández",
         role: "Realización Escenográfica",
         bio: "Diseñadora industrial egresada del CIDI-UNAM y fundadora de Atelier RHC en Tijuana. Su taller produce escenografías, mobiliario y piezas funcionales para teatro y espacios públicos, uniendo técnica artesanal con visión contemporánea.",
-        image: "/images/placeholder-diseno.jpg",
+        image: "https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/equipo/rebeca.jpg",
       },
       {
         name: "Ximena Inurreta",
@@ -110,36 +140,6 @@ const teamData = {
         role: "Pelucas",
         bio: "Artista de caracterización. Su trabajo artesanal da vida y coherencia visual a los personajes a través del detalle y la textura.",
         image: "/images/placeholder-diseno.jpg",
-      },
-    ],
-  },
-  Elenco: {
-    description:
-      "Actores y actrices que encarnan el pulso emocional de la obra desde la fisicalidad, la voz y la presencia simbólica.",
-    members: [
-      {
-        name: "Cynthia Teresa Rodríguez Aguirre",
-        role: "Intérprete",
-        bio: "Artista interdisciplinaria egresada de la UABC. Su práctica integra fotografía, escritura y teatro. Ha participado en el San Diego Fringe Festival y en montajes de Incendio Producciones. Actualmente se enfoca en la dirección escénica y la exploración visual.",
-        image: "/images/placeholder-elenco.jpg",
-      },
-      {
-        name: "Carlos Valdez Rosas",
-        role: "Intérprete",
-        bio: "Actor y productor de Incendio Producciones. Su trabajo combina performance, posdrama e interdisciplina. Ha participado en la Muestra Nacional de Teatro y festivales internacionales en Argentina y Estados Unidos.",
-        image: "/images/placeholder-elenco.jpg",
-      },
-      {
-        name: "Ricardo Márquez Salgado",
-        role: "Intérprete",
-        bio: "Comunicólogo, modelo y actor. Ha participado en teatro, cine y publicidad. Destacan sus coprotagónicos en 'Ideas para no morir en el anonimato' y 'Entre Dos'. Su presencia combina energía escénica y precisión estética.",
-        image: "/images/placeholder-elenco.jpg",
-      },
-      {
-        name: "Mariana de los Santos",
-        role: "Intérprete",
-        bio: "Actriz tijuanense formada en CEART y con experiencia en cine y teatro contemporáneo. Su trabajo corporal revela una sensibilidad poética que dialoga entre lo íntimo y lo colectivo.",
-        image: "/images/placeholder-elenco.jpg",
       },
     ],
   },
