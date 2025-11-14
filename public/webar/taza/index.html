@@ -253,11 +253,16 @@
     const portalPlane = document.getElementById("portalButton");
     const sceneEl = document.querySelector("a-scene");
     const targetEntity = document.querySelector("[mindar-image-target]");
-    const portalUrl = "https://esungatoencerrado.ai";
+    const portalUrl = "https://gatoencerrado.ai";
     let arSystem = null;
     let hasStarted = false;
-    let fallbackTimeoutId;
+    let videoCheckTimeoutId;
+    let forceFallbackTimeoutId;
     let fallbackShown = false;
+
+    const log = (...args) => {
+      console.log("[Miniverso Taza]", ...args);
+    };
 
     const openPortal = () => {
       window.location.href = portalUrl;
@@ -269,15 +274,44 @@
       hint.textContent = message;
       if (sceneEl) sceneEl.style.display = "none";
       fallback.style.display = "flex";
+      log("Mostrando fallback:", message || "sin mensaje específico");
+      if (videoCheckTimeoutId) {
+        clearTimeout(videoCheckTimeoutId);
+        videoCheckTimeoutId = null;
+      }
+      if (forceFallbackTimeoutId) {
+        clearTimeout(forceFallbackTimeoutId);
+        forceFallbackTimeoutId = null;
+      }
     };
 
-    const ensureSceneLoaded = () => {
-      if (!sceneEl) return Promise.resolve();
-      return sceneEl.hasLoaded
-        ? Promise.resolve()
-        : new Promise((resolve) => {
-            sceneEl.addEventListener("loaded", resolve, { once: true });
-          });
+    const waitForMindARComponent = () => {
+      if (!sceneEl) return Promise.reject(new Error("No hay escena AR"));
+      const existing = sceneEl.components?.["mindar-image"];
+      if (existing) return Promise.resolve(existing);
+      log("Esperando a que MindAR inicialice el componente");
+      return new Promise((resolve, reject) => {
+        let cancelled = false;
+        let resolved = false;
+        let timeoutId;
+        const checkComponent = () => {
+          if (cancelled || resolved) return;
+          const mindarComponent = sceneEl.components?.["mindar-image"];
+          if (mindarComponent) {
+            log("MindAR component listo");
+            resolved = true;
+            clearTimeout(timeoutId);
+            resolve(mindarComponent);
+          } else {
+            requestAnimationFrame(checkComponent);
+          }
+        };
+        timeoutId = setTimeout(() => {
+          cancelled = true;
+          reject(new Error("timeout"));
+        }, 6000);
+        checkComponent();
+      });
     };
 
     const getMindARSystem = () => {
@@ -289,7 +323,33 @@
         systems["mindar-image-system"] ||
         systems["mindar-image"] ||
         components["mindar-image"];
+      log("MindAR system detectado:", Boolean(arSystem));
       return arSystem;
+    };
+
+    const clearForceFallbackTimer = () => {
+      if (forceFallbackTimeoutId) {
+        clearTimeout(forceFallbackTimeoutId);
+        forceFallbackTimeoutId = null;
+      }
+    };
+
+    const scheduleFallbackChecks = () => {
+      if (videoCheckTimeoutId) clearTimeout(videoCheckTimeoutId);
+      videoCheckTimeoutId = window.setTimeout(checkVideoFeed, 6000);
+      log("Timeout para revisar video programado (6s)");
+
+      if (forceFallbackTimeoutId) clearTimeout(forceFallbackTimeoutId);
+      forceFallbackTimeoutId = window.setTimeout(() => {
+        showFallback("No pudimos iniciar la cámara. Intenta con otro dispositivo.");
+      }, 12000);
+      log("Timeout para forzar fallback programado (12s)");
+    };
+
+    const handleMindARSuccess = () => {
+      if (!fallbackShown) hint.textContent = "Apunta la cámara a la taza";
+      clearForceFallbackTimer();
+      log("MindAR reportó inicio exitoso");
     };
 
     const checkVideoFeed = () => {
@@ -300,32 +360,57 @@
         video.videoWidth === 0 ||
         video.videoHeight === 0;
       if (noVideo) {
+        log("No se detecta feed de video luego del timeout");
         showFallback("No pudimos usar la cámara de este dispositivo.");
       } else if (!fallbackShown) {
         hint.textContent = "Apunta la cámara a la taza";
+        clearForceFallbackTimer();
+        log("Feed de video detectado");
       }
     };
 
     const startMindAR = async () => {
       if (hasStarted || !sceneEl) return;
+      hasStarted = true;
       hint.textContent = "Preparando constelación...";
       startScreen.style.display = "none";
+      log("Usuario inició la experiencia");
 
-      await ensureSceneLoaded();
+      let component;
+      try {
+        component = await waitForMindARComponent();
+      } catch (error) {
+        console.warn("El componente MindAR no inicializó:", error);
+        showFallback("No pudimos preparar la escena AR en este dispositivo.");
+        return;
+      }
+
       const system = getMindARSystem();
+      const startFn =
+        (component && typeof component.start === "function" && (() => component.start())) ||
+        (system && typeof system.start === "function" && (() => system.start()));
 
-      if (!system || typeof system.start !== "function") {
+      if (!startFn) {
         console.warn("MindAR no está disponible en esta escena.");
         showFallback("Este navegador no soporta la activación WebAR.");
         return;
       }
 
       try {
-        await system.start();
-        hasStarted = true;
-        hint.textContent = "Apunta la cámara a la taza";
-        if (fallbackTimeoutId) clearTimeout(fallbackTimeoutId);
-        fallbackTimeoutId = window.setTimeout(checkVideoFeed, 6000);
+        const startResult = startFn();
+        log("Se llamó a mindar.start()");
+        scheduleFallbackChecks();
+
+        if (startResult && typeof startResult.then === "function") {
+          startResult
+            .then(handleMindARSuccess)
+            .catch((error) => {
+              console.error("Error al iniciar MindAR:", error);
+              showFallback("No pudimos iniciar la cámara. Intenta con otro dispositivo.");
+            });
+        } else {
+          handleMindARSuccess();
+        }
       } catch (error) {
         console.error("Error al iniciar MindAR:", error);
         showFallback("No pudimos iniciar la cámara. Intenta con otro dispositivo.");
@@ -340,6 +425,7 @@
     if (sceneEl) {
       sceneEl.addEventListener("arReady", () => {
         if (!fallbackShown) hint.textContent = "Apunta la cámara a la taza";
+        clearForceFallbackTimer();
       });
 
       sceneEl.addEventListener("arError", () => {
@@ -350,6 +436,7 @@
     if (targetEntity) {
       targetEntity.addEventListener("targetFound", () => {
         if (!fallbackShown) hint.textContent = "Constelación detectada · mantén la taza enfocada";
+        clearForceFallbackTimer();
       });
       targetEntity.addEventListener("targetLost", () => {
         if (!fallbackShown) hint.textContent = "Apunta la cámara a la taza";

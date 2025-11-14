@@ -87,7 +87,7 @@ const Footer = () => {
             >
               <span className="font-semibold text-slate-200 mb-4 block">Contacto</span>
               <ul className="space-y-3 text-sm font-light">
-                <li className="text-slate-400">info@gatoencerrado.com</li>
+                <li className="text-slate-400">info@gatoencerrado.ai</li>
                 <li className="text-slate-400">+34 123 456 789</li>
                 <li className="text-slate-400">Teatro Experimental<br />Madrid, España</li>
               </ul>
