@@ -20,7 +20,7 @@ const Header = () => {
     { name: 'La Obra', href: '#about' },
     { name: 'Equipo', href: '#team' },
     { name: 'Universo', href: '#transmedia' },
-    { name: 'Textos', href: '#curatorial' },
+    { name: 'Textos', href: '#dialogo-critico' },
     { name: 'Galería', href: '#instagram' },
     { name: 'Función', href: '#next-show' },
   ];

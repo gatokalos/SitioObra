@@ -1,4 +1,4 @@
-import { supabase } from '@/lib/customSupabaseClient';
+import { supabase } from '@/lib/supabaseClient';
 
 const TABLE_NAME = 'blog_posts';
 
@@ -81,13 +81,60 @@ export async function fetchPublishedBlogPosts() {
       return SAMPLE_POSTS;
     }
 
-    const publishedPosts = data.filter(
-      (item) => item.is_published === true || item.is_published === null || typeof item.is_published === 'undefined'
-    );
+    const publishedPosts = data
+      .filter((item) => item.is_published === true || item.is_published === null || typeof item.is_published === 'undefined')
+      .map(mapDatabasePost);
 
-    return publishedPosts.map(mapDatabasePost);
+    const supplementalSamples = SAMPLE_POSTS
+      .filter((sample) => !publishedPosts.some((post) => post.slug === sample.slug))
+      .map(mapDatabasePost);
+
+    return [...publishedPosts, ...supplementalSamples];
   } catch (err) {
     console.error('[blogService] Excepción al obtener posts:', err);
     return SAMPLE_POSTS;
+  }
+}
+
+export async function fetchBlogPostBySlug(slug) {
+  if (!slug) {
+    return null;
+  }
+
+  try {
+    const { data, error } = await supabase
+      .from(TABLE_NAME)
+      .select(
+        `
+        id,
+        slug,
+        title,
+        excerpt,
+        author,
+        author_role,
+        content,
+        published_at,
+        read_time_minutes,
+        tags,
+        featured_image_url,
+        is_published
+      `
+      )
+      .eq('slug', slug)
+      .maybeSingle();
+
+    if (error) {
+      console.error('[blogService] Error al obtener post por slug:', error.message);
+      return null;
+    }
+
+    if (!data || data.is_published === false) {
+      return null;
+    }
+
+    return mapDatabasePost(data);
+  } catch (err) {
+    console.error('[blogService] Excepción al buscar post por slug:', err);
+    return null;
   }
 }

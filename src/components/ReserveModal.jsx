@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { toast } from '@/components/ui/use-toast';
-import { supabase } from '@/lib/customSupabaseClient';
+import { supabase } from '@/lib/supabaseClient';
 
 const INTEREST_OPTIONS = [
   {
@@ -136,6 +136,14 @@ const ReserveModal = ({ open, onClose, initialInterest = INTEREST_OPTIONS[0].val
           return;
         }
 
+        await sendReserveConfirmationEmail({
+          email: payload.email,
+          name: payload.full_name,
+          interestLabel: selectedInterest.label,
+          city: payload.city,
+          notes: payload.notes,
+        });
+
         setStatus('success');
         toast({
           description:
@@ -147,7 +155,7 @@ const ReserveModal = ({ open, onClose, initialInterest = INTEREST_OPTIONS[0].val
         setErrorMessage('Ocurrió un error inesperado. Intenta más tarde.');
       }
     },
-    [formState, status]
+    [formState, selectedInterest.label, status]
   );
 
   const handleClose = useCallback(() => {
@@ -326,3 +334,27 @@ const ReserveModal = ({ open, onClose, initialInterest = INTEREST_OPTIONS[0].val
 };
 
 export default ReserveModal;
+
+async function sendReserveConfirmationEmail({ email, name, interestLabel, city, notes }) {
+  if (!email) {
+    return;
+  }
+
+  try {
+    const { error } = await supabase.functions.invoke('send-reserve-confirmation', {
+      body: {
+        email,
+        name,
+        interestLabel,
+        city,
+        notes,
+      },
+    });
+
+    if (error) {
+      console.error('[ReserveModal] Error en sendReserveConfirmationEmail:', error);
+    }
+  } catch (err) {
+    console.error('[ReserveModal] Excepción en sendReserveConfirmationEmail:', err);
+  }
+}

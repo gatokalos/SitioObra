@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>WebAR — Miniverso Taza</title>
+
+  <!-- A-Frame -->
+  <script src="https://cdn.jsdelivr.net/npm/aframe@1.5.0/dist/aframe.min.js"></script>
+
+  <!-- MindAR -->
+  <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.1.7/dist/mindar-image-aframe.prod.js"></script>
+
+  <style>
+    body, html {
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+      background-color: #000;
+      font-family: ui-sans-serif, system-ui, sans-serif;
+    }
+
+    #startScreen {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.92);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      padding: 2rem;
+      z-index: 9999;
+    }
+
+    #startButton {
+      background: #f9a825;
+      color: #111;
+      font-weight: 600;
+      padding: 14px 24px;
+      border-radius: 12px;
+      font-size: 1.1rem;
+      border: none;
+      cursor: pointer;
+      margin-top: 1.8rem;
+    }
+
+    #hint {
+      position: fixed;
+      bottom: 12px;
+      left: 0;
+      right: 0;
+      text-align: center;
+      color: white;
+      font-size: 0.9rem;
+      z-index: 20;
+      opacity: 0.8;
+    }
+
+    /* Glow for constellation points */
+    .glow {
+      animation: pulse 2s infinite ease-in-out;
+    }
+
+    @keyframes pulse {
+      0% { opacity: 0.8; }
+      50% { opacity: 1; }
+      100% { opacity: 0.8; }
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- Overlay inicial -->
+  <div id="startScreen">
+    <h2 style="color:white; margin-bottom: 0.5rem; font-size: 1.6rem;">WebAR · Miniverso Taza</h2>
+    <p style="color:white; text-align:center; max-width: 280px; opacity: .9;">
+      Apunta tu cámara a la taza. La constelación se revelará cuando el marcador sea detectado.
+    </p>
+    <button id="startButton">Iniciar WebAR</button>
+  </div>
+
+  <div id="hint">Permite acceso a la cámara</div>
+
+  <!-- ESCENA AR -->
+  <a-scene
+    mindar-image="imageTargetSrc: ./taza.mind; filterMinCF: 0.0001; warmupTolerance: 5"
+    color-management="true"
+    renderer="precision: mediump; antialias: true; physicallyCorrectLights: true"
+    vr-mode-ui="enabled: false"
+    device-orientation-permission-ui="enabled: false"
+    embedded
+  >
+
+    <!-- Cámara -->
+    <a-camera position="0 0 0"></a-camera>
+
+    <!-- Target -->
+    <a-entity mindar-image-target="targetIndex: 0">
+
+      <!-- Constelación -->
+      <a-sphere radius="0.015" position="0 0 0.1" color="#fff" class="glow"></a-sphere>
+      <a-sphere radius="0.012" position="0.05 0.04 0.1" color="#fff" class="glow"></a-sphere>
+      <a-sphere radius="0.01" position="-0.04 0.03 0.1" color="#fff" class="glow"></a-sphere>
+      <a-sphere radius="0.011" position="0.03 -0.03 0.1" color="#fff" class="glow"></a-sphere>
+      <a-sphere radius="0.01" position="-0.03 -0.03 0.1" color="#fff" class="glow"></a-sphere>
+
+      <!-- Líneas de conexión -->
+      <a-entity line="start: 0 0 0.1; end: 0.05 0.04 0.1; color: #fff"></a-entity>
+      <a-entity line="start: 0 0 0.1; end: -0.04 0.03 0.1; color: #fff"></a-entity>
+      <a-entity line="start: 0.05 0.04 0.1; end: 0.03 -0.03 0.1; color: #fff"></a-entity>
+      <a-entity line="start: -0.04 0.03 0.1; end: -0.03 -0.03 0.1; color: #fff"></a-entity>
+
+      <!-- Fecha -->
+      <a-entity
+        position="0 -0.15 0.1"
+        text="value: 28 de diciembre; align: center; color: #FFD54F; width: 1.2;"
+      ></a-entity>
+
+      <!-- Botón portal -->
+      <a-plane
+        id="portalButton"
+        position="0 -0.26 0.1"
+        width="0.75"
+        height="0.18"
+        color="#FFD54F"
+        opacity="0.95"
+        class="clickable"
+        style="cursor: pointer;"
+      >
+        <a-entity
+          position="0 0 0.02"
+          text="value: Entrar al portal; align: center; color: #111; width: 1.1;"
+        ></a-entity>
+      </a-plane>
+
+    </a-entity>
+  </a-scene>
+
+  <script>
+    // Ocultar overlay de inicio
+    document.getElementById("startButton").onclick = () => {
+      document.getElementById("startScreen").style.display = "none";
+    };
+
+    // Botón portal
+    const portalButton = document.getElementById("portalButton");
+    window.addEventListener("click", (ev) => {
+      const clicked = ev.target;
+      if (clicked === portalButton || portalButton.contains(clicked)) {
+        window.location.href = "http://esungatoencerrado.ai";
+      }
+    });
+  </script>
+</body>
+</html>

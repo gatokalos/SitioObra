@@ -36,7 +36,7 @@ const CallToAction = () => {
         animate={{ opacity: 1 }}
         transition={{ duration: 0.5, delay: 0.3 }}
       >
-        ¿Te unes al universo? Inicia tu membresía anual.
+        Tu suscripción mantiene vivo el universo transmedia y respalda la causa que sostiene a #GatoEncerrado.
       </motion.p>
 
       <input

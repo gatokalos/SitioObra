@@ -1,13 +1,27 @@
 import React, { useState, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Download, Film, Ticket } from 'lucide-react';
+import { Film, Ticket, Quote } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { toast } from '@/components/ui/use-toast';
 import { getTrailerPublicUrl } from '@/services/trailerService';
 import ReserveModal from '@/components/ReserveModal';
-import MiniverseModal from '@/components/MiniverseModal';
 
 const aboutText = `Es un gato encerrado existe como obra y como universo transmedial: es, al mismo tiempo, un relato íntimo en un escenario y una constelación de la mente y del dolor humano en múltiples lenguajes artísticos. Esta obra es el corazón que hace pulsar aquellas preguntas que no están aquí para contestarse, sino para sentirlas en compañía. En pocas palabras, cuando la obra está latente, el universo #GatoEncerrado continúa latiendo en otras narrativas. Un recordatorio de que el corazón nunca se encierra del todo.`;
+
+const testimonials = [
+  {
+    quote:
+      '“Salir de la función fue como despertar con nuevos recuerdos. La obra me obligó a conversar con mis propias ausencias.”',
+    author: 'Maru Solano',
+    role: 'Espectadora / Tijuana',
+  },
+  {
+    quote:
+      '“#GatoEncerrado nos recuerda que el teatro puede ser también archivo emocional y dispositivo de memoria.”',
+    author: 'Dr. Leonel Ceballos',
+    role: 'Crítico invitado',
+  },
+];
 
 const About = () => {
   const [trailer, setTrailer] = useState(null);
@@ -15,7 +29,6 @@ const About = () => {
   const [isTrailerLoading, setIsTrailerLoading] = useState(false);
   const [isReserveOpen, setIsReserveOpen] = useState(false);
   const [reserveIntent, setReserveIntent] = useState('preventa');
-  const [isMiniverseOpen, setIsMiniverseOpen] = useState(false);
 
   const handleOpenReserve = useCallback((intent) => {
     setReserveIntent(intent);
@@ -26,12 +39,9 @@ const About = () => {
     setIsReserveOpen(false);
   }, []);
 
-  const handleOpenMiniverse = useCallback(() => {
-    setIsMiniverseOpen(true);
-  }, []);
-
-  const handleCloseMiniverse = useCallback(() => {
-    setIsMiniverseOpen(false);
+  const handleScrollToTexts = useCallback(() => {
+    const section = document.querySelector('#textos-blog');
+    section?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }, []);
 
   const handleWatchTrailer = useCallback(async () => {
@@ -132,14 +142,46 @@ const About = () => {
                   Comprar Boletos
                 </Button>
               </div>
+            </div>
+          </div>
+        </motion.div>
+
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, delay: 0.3, ease: 'easeOut' }}
+          viewport={{ once: true }}
+          className="mt-16 glass-effect rounded-2xl p-8 md:p-12"
+        >
+          <div className="grid md:grid-cols-[3fr_2fr] gap-8 items-center">
+            <div>
+              <p className="uppercase tracking-[0.35em] text-xs text-slate-400/80 mb-4">Perspectivas del público</p>
+              <h3 className="font-display text-3xl text-slate-100 mb-6 italic">
+                ¿Qué provoca La Obra?
+              </h3>
+              <p className="text-slate-300/80 leading-relaxed mb-6 font-light">
+                Reunimos testimonios, críticas y preguntas abiertas que continúan la conversación. Haz scroll hacia
+                Textos y Blog para leer más y compartir tu propia mirada.
+              </p>
               <Button
-                variant="link"
-                onClick={handleOpenMiniverse}
-                className="text-purple-400 hover:text-purple-300 mt-4 flex items-center gap-2"
+                variant="outline"
+                onClick={handleScrollToTexts}
+                className="border-purple-400/40 text-purple-200 hover:bg-purple-500/20"
               >
-                <Download size={16} />
-                Explora los miniversos
+                Aquí puedes leer y compartir tu perspectiva sobre La Obra
               </Button>
+            </div>
+            <div className="space-y-6">
+              {testimonials.map((item) => (
+                <div key={item.author} className="rounded-2xl border border-white/10 bg-black/30 p-6">
+                  <Quote className="text-purple-300 mb-4" size={28} />
+                  <p className="text-slate-200 italic leading-relaxed mb-4">{item.quote}</p>
+                  <div className="text-sm text-slate-400">
+                    <p className="text-slate-200 font-semibold">{item.author}</p>
+                    <p>{item.role}</p>
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
         </motion.div>
@@ -198,11 +240,6 @@ const About = () => {
         open={isReserveOpen}
         onClose={handleCloseReserve}
         initialInterest={reserveIntent}
-      />
-
-      <MiniverseModal
-        open={isMiniverseOpen}
-        onClose={handleCloseMiniverse}
       />
     </>
   );

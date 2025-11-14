@@ -1,127 +1,656 @@
-import React from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { motion } from 'framer-motion';
-import { Smartphone, Book, Coffee, Film, Users, HelpCircle, ArrowRight } from 'lucide-react';
+import {
+  ArrowRight,
+  BookOpen,
+  HeartHandshake,
+  Feather,
+  Palette,
+  Smartphone,
+  Coffee,
+  Drama,
+  Film,
+  Video,
+} from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import MiniverseModal from '@/components/MiniverseModal';
+import CallToAction from '@/components/CallToAction';
+import { fetchBlogPostBySlug } from '@/services/blogService';
 import { toast } from '@/components/ui/use-toast';
+
+
+
+const blogSeriesEntries = [
+  {
+    id: 'novela-fragmentos-pdf',
+    title: 'Primeras páginas en PDF',
+    description: 'Lee los primeros diez fragmentos de “Mi Gato Encerrado” y descubre su voz híbrida.',
+    url: '/assets/fragmentos-novela.pdf',
+    status: 'live',
+  },
+  {
+    id: 'novela-grafica-bocetos',
+    title: 'Bocetos de Tres Pies al Gato',
+    description: 'Explora el proceso gráfico de la novela visual “Tres pies al gato”: trazos, manchas y líneas que narran.',
+    url: '/assets/proceso-novela-grafica.pdf',
+    status: 'live',
+  },
+  {
+    id: 'novela-reader-app',
+    title: 'Próxima app de lectura',
+    description: 'Un lector interactivo para desbloquear fragmentos, pistas y conversaciones dentro del miniverso.',
+    url: '#',
+    status: 'soon',
+  },
+];
+
+const showcaseDefinitions = {
+  copycats: {
+    label: '#CopyCats',
+    type: 'post-videos',
+    slug: 'carta-a-copycats',
+    intro:
+      'Te abrimos el expediente creativo de CopyCats: cartas del equipo, referencias audiovisuales y pistas para seguir expandiendo esta constelación.',
+    videos: [
+      {
+        id: 'copycats-v1',
+        title: 'CopyCats · Carta audiovisual',
+        author: 'Residencia #GatoEncerrado',
+        duration: '4:02',
+        url: 'https://player.vimeo.com/video/959782101?h=4ddeda92f4',
+      },
+      {
+        id: 'copycats-v2',
+        title: 'Ensayo abierto · Variación 2',
+        author: 'Laboratorio Transmedia',
+        duration: '5:46',
+        url: 'https://player.vimeo.com/video/959781265?h=9b3b018f3e',
+      },
+      {
+        id: 'copycats-v3',
+        title: 'Conversación con Silvestre',
+        author: 'Voces de la Comunidad',
+        duration: '3:58',
+        url: 'https://player.vimeo.com/video/959780402?h=8ad98b8f69',
+      },
+    ],
+  },
+  lataza: {
+    label: 'EstoNoEsUnaTaza',
+    type: 'object-webar',
+    slug: 'taza-que-habla',
+    subtitle: 'Esta no es una taza. Es un boleto.',
+    intro:
+      'Un objeto cotidiano convertido en símbolo de comunión. Cada taza está vinculada a un sentimiento. Cada sentimiento, a una historia personal.',
+    note: 'Apunta tu cámara a la taza. La pista aparecerá.',
+    ctaLabel: 'Probar activación WebAR',
+    ctaLink: '/webar/taza/index.html',
+    ctaMessage: 'Cuando liberes la activación WebAR, descubrirás la pista que le corresponde a tu taza.',
+    image: '/assets/tazafoto.jpeg',
+    sentiments: [
+      'Sentir rabia también es un acto de cuidado.',
+      'Para algunas personas, el café sabe a despedida.',
+      'Hay tazas que guardan confesiones en vez de azúcar.',
+    ],
+    comments: [
+      { id: 'la-taza-comment-1', quote: '“La taza me mostró una frase que me persiguió toda la semana.”', author: 'Usuario anónimo' },
+      { id: 'la-taza-comment-2', quote: '“No entendí nada… hasta que la leí al revés.”', author: 'Sofía B.' },
+    ],
+  },
+  miniversoNovela: {
+    label: 'Miniverso Novela',
+    type: 'blog-series',
+    slug: 'fragmentos-novela',
+    intro:
+      'Aquí se cruzan la autoficción, la novela gráfica y las vidas que aún no caben en escena. Fragmentos, procesos y lecturas que expanden el universo desde la palabra.',
+    entries: blogSeriesEntries,
+    ctaLabel: 'Leer los primeros fragmentos',
+  },
+};
 
 const formats = [
   {
-    title: "#DeTodxs",
-    description: "Una experiencia interactiva que expande la narrativa más allá del teatro.",
-    icon: "/assets/logoapp.png"
+    id: 'miniversos',
+    title: 'Miniverso Escénico',
+    description: 'La función que detonó este universo. Voces, cuerpos y gatos en escena.',
+    icon: Drama,
+    iconClass: 'text-purple-300',
   },
   {
-    title: "#Novelando",
-    description: "Una novela gráfica que explora los orígenes de los personajes.",
-    icon: "/assets/vidacomic.png"
+    id: 'miniversoNovela',
+    title: 'Miniverso Novela',
+    description: 'Desde la autoficción hasta las viñetas de la novela gráfica.',
+    icon: BookOpen,
+    iconClass: 'text-emerald-300',
   },
   {
-    title: "#LaTaza",
-    description: "Merchandising con frases y diseños que esconden pistas sobre la obra.",
-    icon: "/assets/logotaza.png"
+    id: 'lataza',
+    title: 'Miniverso Taza',
+    description: 'Objeto ritual con WebAR. Una excusa para seguir la historia desde lo cotidiano.',
+    icon: Coffee,
+    iconClass: 'text-amber-300',
   },
   {
-    title: "#CopyCats",
-    description: "Cortometrajes que funcionan como precuelas y secuelas de la historia principal.",
-    icon: "/assets/cortometrajes.png"
+    id: 'copycats',
+    title: 'Miniverso Cine',
+    description: '“Quirón” y otros filmes que piensan el cuerpo del Gato en clave cinematográfica.',
+    icon: Film,
+    iconClass: 'text-rose-300',
   },
   {
-    title: "#MiniVersos",
-    description: "Workshops de dramaturgia y performance inspirados en el proceso creativo.",
-    icon: "/assets/logoconvocatorias.png"
+    id: 'detodxs',
+    title: 'Miniverso Apps',
+    description: 'Experiencias digitales que te convierten en cómplice del universo.',
+    icon: Smartphone,
+    iconClass: 'text-lime-300',
   },
   {
-    title: "#ClubdeGato",
-    description: "Un foro online para debatir teorías y compartir interpretaciones de la obra.",
-    icon: "/assets/logomask.png"
-  }
+    id: 'clubdegato',
+    title: 'Miniverso Bitácora',
+    description: 'Crónicas, expansiones narrativas y debate vivo sobre el universo.',
+    icon: Video,
+    iconClass: 'text-indigo-300',
+  },
+];
+
+const CAUSE_ACCORDION = [
+  {
+    id: 'tratamientos',
+    title: 'Tratamientos emocionales',
+    description:
+      'Financia terapias para jóvenes que no pueden costearlas. Isabel Ayuda para la Vida, A.C. cubre sesiones cuando detectamos riesgo emocional.',
+    icon: HeartHandshake,
+    metric: '6 sesiones promedio por suscriptor',
+  },
+  {
+    id: 'residencias',
+    title: 'Residencias creativas',
+    description:
+      'Laboratorios donde arte y acompañamiento se combinan para reparar memoria y cuerpo. Becas completas para procesos de creación y contención.',
+    icon: Palette,
+    metric: '3 residencias activas por temporada',
+  },
+  {
+    id: 'app-escolar',
+    title: 'App Causa Social en escuelas',
+    description:
+      'Aplicación que detecta señales tempranas en estudiantes. Tu cuota permite capacitar psicólogos, visitar escuelas y dar seguimiento ante crisis.',
+    icon: Smartphone,
+    metric: '15 escuelas atendidas cada semestre',
+  },
 ];
 
 const Transmedia = () => {
-  const handleFormatClick = () => {
-    alert("Esta función aún no está implementada 😸");
-  };
-  
-    // 🚀 NUEVO: inicia el checkout de Stripe y redirige
-  const handleSubscribe = async () => {
-    try {
-      const res = await fetch("http://localhost:5050/api/stripe/create-checkout-session", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        // TODO: reemplaza "demo-user-uuid" por el user_id real de Supabase cuando tengas auth
-        body: JSON.stringify({ userId: "demo-user-uuid" }),
-      });
+  const [isMiniverseOpen, setIsMiniverseOpen] = useState(false);
+  const [activeShowcase, setActiveShowcase] = useState(null);
+  const [showcaseContent, setShowcaseContent] = useState({});
+  const showcaseRef = useRef(null);
+  const [openCauseId, setOpenCauseId] = useState(CAUSE_ACCORDION[0].id);
 
-      const data = await res.json();
+  const handleOpenMiniverses = useCallback(() => {
+    setIsMiniverseOpen(true);
+  }, []);
 
-      if (data?.url) {
-        window.location.href = data.url; // redirige a Stripe Checkout
-      } else {
-        alert("No se pudo iniciar el pago.");
-      }
-    } catch (err) {
-      console.error("Error creando checkout:", err);
-      alert("Error conectando con Stripe.");
+  const handleCloseMiniverses = useCallback(() => {
+    setIsMiniverseOpen(false);
+  }, []);
+
+  const loadShowcaseContent = useCallback(async (showcaseId) => {
+    const definition = showcaseDefinitions[showcaseId];
+    if (!definition || !definition.slug) {
+      return;
     }
+
+    setShowcaseContent((prev) => ({
+      ...prev,
+      [showcaseId]: { ...(prev[showcaseId] ?? {}), status: 'loading', error: null },
+    }));
+
+    try {
+      const post = await fetchBlogPostBySlug(definition.slug);
+      if (!post) {
+        throw new Error('No encontramos el texto asociado a este miniverso.');
+      }
+
+      setShowcaseContent((prev) => ({
+        ...prev,
+        [showcaseId]: { status: 'success', post, error: null },
+      }));
+    } catch (error) {
+      setShowcaseContent((prev) => ({
+        ...prev,
+        [showcaseId]: {
+          status: 'error',
+          post: null,
+          error: error?.message ?? 'Ocurrió un error al cargar este showcase.',
+        },
+      }));
+    }
+  }, []);
+
+  const handleFormatClick = useCallback(
+    (formatId) => {
+      if (showcaseDefinitions[formatId]) {
+        setActiveShowcase((prev) => (prev === formatId ? null : formatId));
+        const definition = showcaseDefinitions[formatId];
+        if (definition.slug) {
+          const entry = showcaseContent[formatId];
+          if (!entry || entry.status === 'error') {
+            loadShowcaseContent(formatId);
+          }
+        }
+        return;
+      }
+      handleOpenMiniverses();
+    },
+    [handleOpenMiniverses, loadShowcaseContent, showcaseContent]
+  );
+
+  const activeDefinition = activeShowcase ? showcaseDefinitions[activeShowcase] : null;
+  const activeData = activeShowcase ? showcaseContent[activeShowcase] : null;
+  const activeParagraphs = useMemo(() => {
+    if (!activeData?.post?.content) {
+      return [];
+    }
+    return activeData.post.content.split(/\n{2,}/).map((chunk) => chunk.trim()).filter(Boolean);
+  }, [activeData]);
+
+  useEffect(() => {
+    if (activeShowcase && showcaseRef.current) {
+      showcaseRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  }, [activeShowcase]);
+
+  const handleLaunchWebAR = (message) => {
+    toast({
+      description: message || 'Muy pronto liberaremos la activación WebAR de este objeto.',
+    });
+  };
+
+  const renderPostDetails = (emptyMessage = 'Pronto liberaremos la carta completa de este miniverso.') => {
+    if (!activeDefinition?.slug) {
+      return null;
+    }
+
+    if (activeData?.status === 'loading') {
+      return <p className="text-slate-400 text-sm">Cargando la carta que acompaña a este miniverso…</p>;
+    }
+
+    if (activeData?.status === 'error') {
+      return <p className="text-red-300 text-sm">{activeData.error}</p>;
+    }
+
+    if (activeData?.status === 'success' && activeData.post) {
+    if (activeDefinition.type === 'blog-series') {
+      const entries = Array.isArray(activeDefinition.entries) ? activeDefinition.entries : [];
+      return (
+        <div className="space-y-8">
+          <div>{renderPostDetails('Sigue la novela desde fragmentos, PDFs y lectores interactivos.')}</div>
+          {entries.length > 0 ? (
+            <div className="grid gap-6 md:grid-cols-2">
+              {entries.map((entry) => (
+                <div key={entry.id} className="rounded-2xl border border-white/10 p-6 bg-black/30 flex flex-col gap-2">
+                  <p className="text-xs uppercase tracking-[0.35em] text-slate-500 flex items-center gap-2">
+                    Fragmento
+                    {entry.status === 'soon' ? (
+                      <span className="rounded-full bg-purple-500/20 text-purple-200 px-2 py-0.5 text-[0.65rem] uppercase tracking-wide">
+                        Muy pronto
+                      </span>
+                    ) : null}
+                  </p>
+                  <h5 className="font-display text-xl text-slate-100">{entry.title}</h5>
+                  <p className="text-slate-300/80 text-sm flex-1 leading-relaxed">{entry.description}</p>
+                  <Button
+                    variant="outline"
+                    disabled={entry.status === 'soon'}
+                    onClick={() => entry.url && entry.url !== '#' ? window.open(entry.url, '_blank') : null}
+                    className="self-start border-purple-400/40 text-purple-200 hover:bg-purple-500/20 disabled:opacity-60 disabled:cursor-not-allowed"
+                  >
+                    {entry.status === 'soon' ? 'Disponible pronto' : 'Leer fragmento'}
+                  </Button>
+                </div>
+              ))}
+            </div>
+          ) : null}
+          {activeDefinition.ctaLabel && activeDefinition.entries?.[0]?.url ? (
+            <Button
+              onClick={() => window.open(activeDefinition.entries[0].url, '_blank')}
+              className="bg-gradient-to-r from-purple-600/80 to-indigo-600/80 hover:from-purple-600 hover:to-indigo-600 text-white px-8 py-3 rounded-full font-semibold flex items-center gap-2 hover-glow"
+            >
+              {activeDefinition.ctaLabel}
+              <ArrowRight size={18} />
+            </Button>
+          ) : null}
+        </div>
+      );
+    }
+
+    return (
+        <>
+          <div className="flex flex-wrap items-center gap-4 text-sm text-slate-400 mb-4">
+            {activeData.post.author ? (
+              <span className="inline-flex items-center gap-2">
+                <Feather size={16} />
+                {activeData.post.author}
+                {activeData.post.author_role ? (
+                  <span className="text-slate-500">/ {activeData.post.author_role}</span>
+                ) : null}
+              </span>
+            ) : null}
+            {activeData.post.published_at ? (
+              <span>
+                {new Date(activeData.post.published_at).toLocaleDateString('es-ES', {
+                  year: 'numeric',
+                  month: 'long',
+                  day: 'numeric',
+                })}
+              </span>
+            ) : null}
+          </div>
+          <h4 className="font-display text-2xl text-slate-100 mb-6">{activeData.post.title}</h4>
+          <div className="space-y-5 text-slate-200 leading-relaxed font-light">
+            {activeParagraphs.length === 0 ? (
+              <p>Muy pronto abriremos el expediente completo de este miniverso. Gracias por tu curiosidad.</p>
+            ) : (
+              activeParagraphs.map((paragraph, index) => <p key={index}>{paragraph}</p>)
+            )}
+          </div>
+        </>
+      );
+    }
+
+    return <p className="text-slate-400 text-sm">{emptyMessage}</p>;
+  };
+
+  const renderShowcaseContent = () => {
+    if (!activeDefinition) {
+      return null;
+    }
+
+    if (activeDefinition.type === 'object-webar') {
+      const postSection = activeDefinition.slug ? (
+        <div className="rounded-2xl border border-white/10 p-6 bg-black/30">{renderPostDetails('Esta carta se revelará en cuanto la terminemos de transcribir.')}</div>
+      ) : null;
+
+      return (
+        <div className="grid gap-8 lg:grid-cols-[3fr_2fr]">
+          <div className="space-y-6">
+            {postSection}
+            {activeDefinition.subtitle ? (
+              <p className="text-xs uppercase tracking-[0.4em] text-slate-400/70">{activeDefinition.subtitle}</p>
+            ) : null}
+            <p className="text-slate-300/85 leading-relaxed font-light">{activeDefinition.intro}</p>
+
+            <div className="rounded-3xl border border-white/10 overflow-hidden bg-black/30">
+              <img
+                src={activeDefinition.image}
+                alt="Ilustración de La Taza"
+                className="w-full h-64 object-cover bg-black/50"
+              />
+              <div className="p-6 space-y-3">
+                <p className="text-sm text-slate-400 uppercase tracking-[0.3em]">{activeDefinition.note}</p>
+                {activeDefinition.ctaLink ? (
+                  <a
+                    href={activeDefinition.ctaLink}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center justify-center rounded-full border border-purple-400/40 text-purple-200 hover:bg-purple-500/10 px-6 py-2 font-semibold"
+                  >
+                    {activeDefinition.ctaLabel}
+                  </a>
+                ) : (
+                  <Button
+                    variant="outline"
+                    className="border-purple-400/40 text-purple-200 hover:bg-purple-500/10"
+                    onClick={() => handleLaunchWebAR(activeDefinition.ctaMessage)}
+                  >
+                    {activeDefinition.ctaLabel}
+                  </Button>
+                )}
+              </div>
+            </div>
+
+            {activeDefinition.sentiments ? (
+              <div className="rounded-2xl border border-white/10 p-6 bg-black/30">
+                <p className="text-xs uppercase tracking-[0.4em] text-slate-400/70 mb-4">Sentimientos vinculados</p>
+                <ul className="space-y-3 text-slate-300/80 text-sm leading-relaxed">
+                  {activeDefinition.sentiments.map((item, index) => (
+                    <li key={index}>• {item}</li>
+                  ))}
+                </ul>
+              </div>
+            ) : null}
+          </div>
+
+          <div className="space-y-6">
+            {activeDefinition.comments ? (
+              <div className="rounded-2xl border border-white/10 p-6 bg-black/30">
+                <p className="text-xs uppercase tracking-[0.4em] text-slate-400/70 mb-4">Comentarios de la comunidad</p>
+                <div className="space-y-4">
+                  {activeDefinition.comments.map((comment) => (
+                    <div key={comment.id} className="rounded-xl border border-white/5 p-4 bg-black/20">
+                      <p className="text-slate-100 font-light mb-2">{comment.quote}</p>
+                      <p className="text-xs text-slate-500">{comment.author}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ) : null}
+          </div>
+        </div>
+      );
+    }
+
+    const videos = activeDefinition.videos ?? [];
+
+    return (
+      <div className="space-y-10">
+        <div>{renderPostDetails('Pronto liberaremos la carta completa de este miniverso. Mientras tanto puedes explorar la galería audiovisual.')}</div>
+
+        {videos.length > 0 ? (
+          <div>
+            <h5 className="font-display text-xl text-slate-100 mb-4">Galería audiovisual</h5>
+            <div className="grid gap-6 md:grid-cols-2">
+              {videos.map((video) => (
+                <div
+                  key={video.id}
+                  className="rounded-2xl border border-white/10 overflow-hidden bg-black/40 flex flex-col"
+                >
+                  <div className="aspect-video w-full">
+                    <iframe
+                      src={video.url}
+                      title={video.title}
+                      className="w-full h-full"
+                      frameBorder="0"
+                      allow="autoplay; fullscreen; picture-in-picture"
+                      allowFullScreen
+                    ></iframe>
+                  </div>
+                  <div className="p-4 space-y-1 text-sm text-slate-300">
+                    <p className="font-semibold text-slate-100">{video.title}</p>
+                    {video.author ? <p>{video.author}</p> : null}
+                    {video.duration ? <p className="text-slate-500">Duración: {video.duration}</p> : null}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        ) : null}
+      </div>
+    );
   };
 
   return (
-    <section id="transmedia" className="py-24 relative">
-      <div className="section-divider mb-24"></div>
+    <>
+      <section id="transmedia" className="py-24 relative">
+        <div className="section-divider mb-24"></div>
 
-      <div className="container mx-auto px-6">
-        <motion.div
-          initial={{ opacity: 0, y: 50 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, ease: "easeOut" }}
-          viewport={{ once: true }}
-          className="text-center mb-16"
-        >
-          <h2 className="font-display text-4xl md:text-5xl font-medium mb-6 text-gradient italic">
-            Universo Transmedia
-          </h2>
-          <p className="text-lg text-slate-300/80 max-w-3xl mx-auto leading-relaxed font-light">
-            #GatoEncerrado es un ecosistema narrativo que se expande a través de múltiples 
-            plataformas, ofreciendo diferentes puertas de entrada a la misma historia.
-          </p>
-        </motion.div>
-        
+        <div className="container mx-auto px-6">
+          <motion.div
+            initial={{ opacity: 0, y: 50 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, ease: 'easeOut' }}
+            viewport={{ once: true }}
+            className="text-center mb-16 space-y-6"
+          >
+            <p className="text-xs uppercase tracking-[0.4em] text-slate-400/70">Universo Transmedia</p>
+            <h2 className="font-display text-4xl md:text-5xl font-medium text-gradient italic">
+              Miniversos que sostienen la causa
+            </h2>
+            <p className="text-lg text-slate-300/80 max-w-3xl mx-auto leading-relaxed font-light">
+              #GatoEncerrado es un universo transmedial compuesto por miniversos narrativos. Cada experiencia digital, objeto o narrativa expandida 
+              financia el acompañamiento psicoemocional de Isabel Ayuda para la Vida, A.C.
+            </p>
+          </motion.div>
 
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {formats.map((format, index) => (
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {formats.map((format, index) => {
+              const Icon = format.icon;
+              const iconClass = format.iconClass ?? 'text-purple-200';
+              return (
+                <motion.div
+                  key={format.id}
+                  initial={{ opacity: 0, y: 30 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.6, delay: index * 0.1, ease: 'easeOut' }}
+                  viewport={{ once: true }}
+                  className="group glass-effect rounded-xl p-8 hover-glow cursor-pointer flex flex-col transition-all duration-300 hover:border-purple-400/50"
+                  onClick={() => handleFormatClick(format.id)}
+                >
+                  <div className="flex items-center justify-start mb-6 transition-all duration-300 group-hover:scale-110">
+                    <Icon
+                      size={32}
+                      className={`${iconClass} drop-shadow-[0_0_12px_rgba(168,85,247,0.4)]`}
+                    />
+                  </div>
+
+                  <h3 className="font-display text-2xl font-medium text-slate-100 mb-3">{format.title}</h3>
+
+                  <p className="text-slate-300/70 text-base leading-relaxed mb-4 flex-grow font-light">
+                    {format.description}
+                  </p>
+
+                  <div className="text-purple-300 flex items-center gap-2 font-semibold transition-all duration-300 group-hover:gap-3">
+                    Explorar
+                    <ArrowRight size={18} />
+                  </div>
+                </motion.div>
+              );
+            })}
+          </div>
+
+          {activeDefinition ? (
             <motion.div
-              key={index}
+              ref={showcaseRef}
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, ease: 'easeOut' }}
+              className="mt-12 glass-effect rounded-2xl p-8 md:p-12 border border-white/10"
+            >
+              <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
+                <div>
+                  <p className="text-xs uppercase tracking-[0.4em] text-slate-400/70 mb-2">Showcase</p>
+                  <h3 className="font-display text-3xl text-slate-100 mb-3">{activeDefinition.label}</h3>
+                  <p className="text-slate-300/80 leading-relaxed font-light max-w-3xl">
+                    {activeDefinition.intro}
+                  </p>
+                </div>
+                <button
+                  onClick={() => setActiveShowcase(null)}
+                  className="text-sm text-slate-400 hover:text-white transition self-start md:self-auto"
+                >
+                  Cerrar showcase ✕
+                </button>
+              </div>
+
+              <div className="mt-8">{renderShowcaseContent()}</div>
+            </motion.div>
+          ) : null}
+
+          <div className="mt-16 grid lg:grid-cols-[3fr_2fr] gap-10">
+            <motion.div
               initial={{ opacity: 0, y: 30 }}
               whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: index * 0.1, ease: "easeOut" }}
+              transition={{ duration: 0.8, delay: 0.2, ease: 'easeOut' }}
               viewport={{ once: true }}
-              className="group glass-effect rounded-xl p-8 hover-glow cursor-pointer flex flex-col transition-all duration-300 hover:border-purple-400/50"
-              onClick={handleFormatClick}
+              className="glass-effect rounded-2xl p-8 md:p-10 flex flex-col justify-between"
             >
-              <div className="flex items-center justify-start mb-6 transition-all duration-300 group-hover:scale-110">
-              <img
-                src={format.icon}
-                alt={format.title}
-                className="w-14 h-14 object-contain drop-shadow-[0_0_12px_rgba(168,85,247,0.4)] group-hover:drop-shadow-[0_0_20px_rgba(99,102,241,0.6)]"
-              />
-            </div>
+              <div className="space-y-5">
+                <p className="text-xs uppercase tracking-[0.4em] text-slate-400/80">Apoya el proyecto</p>
+                <h3 className="font-display text-3xl text-slate-100">
+                  Tu suscripción sostiene la causa social de #GatoEncerrado
+                </h3>
+                <p className="text-slate-300/80 leading-relaxed font-light">
+                  La taquilla mantiene la obra en escena; el universo transmedia financia acompañamiento emocional real.
+                  Cada cuota se distribuye en tres frentes que opera Isabel Ayuda para la Vida, A.C.
+                </p>
 
-              <h3 className="font-display text-2xl font-medium text-slate-100 mb-3">
-                {format.title}
-              </h3>
+                <div className="mt-4 space-y-3">
+                  {CAUSE_ACCORDION.map((item) => {
+                    const Icon = item.icon;
+                    const isOpen = openCauseId === item.id;
+                    return (
+                      <div
+                        key={item.id}
+                        className="border border-white/10 rounded-2xl bg-black/20 overflow-hidden transition"
+                      >
+                        <button
+                          type="button"
+                          onClick={() => setOpenCauseId((prev) => (prev === item.id ? null : item.id))}
+                          className="w-full flex items-center justify-between gap-4 px-4 py-3 text-left hover:bg-white/5 transition"
+                        >
+                          <div className="flex items-center gap-3">
+                            <div className="p-2 rounded-full bg-purple-500/15 text-purple-200">
+                              <Icon size={18} />
+                            </div>
+                            <div>
+                              <p className="font-medium text-slate-100">{item.title}</p>
+                              <p className="text-xs text-slate-400">{item.metric}</p>
+                            </div>
+                          </div>
+                          <span className="text-xs uppercase tracking-[0.35em] text-slate-500">
+                            {isOpen ? 'Ocultar' : 'Ver impacto'}
+                          </span>
+                        </button>
+                        {isOpen ? (
+                          <div className="px-4 pb-4 text-sm text-slate-300/90">{item.description}</div>
+                        ) : null}
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
 
-              <p className="text-slate-300/70 text-base leading-relaxed mb-4 flex-grow font-light">
-                {format.description}
-              </p>
-
-              <div className="text-purple-300 flex items-center gap-2 font-semibold transition-all duration-300 group-hover:gap-3">
-                Descubrir
-                <ArrowRight size={18} />
+              <div className="mt-8 flex flex-col gap-4 md:flex-row md:items-center">
+                <Button
+                  onClick={handleOpenMiniverses}
+                  variant="ghost"
+                  className="text-purple-200 hover:text-white hover:bg-white/10 justify-start md:justify-center"
+                >
+                  🧪 Ver miniversos activos
+                </Button>
+                <div className="flex items-center gap-3 text-slate-400 text-sm">
+                  <HeartHandshake size={20} className="text-purple-300" />
+                  <span>Tu suscripción = Apoyo directo</span>
+                </div>
               </div>
             </motion.div>
-          ))}
+
+            <motion.div
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8, delay: 0.3, ease: 'easeOut' }}
+              viewport={{ once: true }}
+              className="glass-effect rounded-2xl p-6 border border-white/10 bg-slate-950/50 shadow-2xl"
+            >
+              <CallToAction />
+            </motion.div>
+          </div>
         </div>
-      </div>
-    </section>
+      </section>
+
+      <MiniverseModal open={isMiniverseOpen} onClose={handleCloseMiniverses} />
+    </>
   );
 };
 

@@ -1,4 +1,4 @@
-import { supabase } from "../lib/customSupabaseClient.js";
+import { supabase } from "../lib/supabaseClient.js";
 
 export async function getInstagramPostsFromBucket() {
   const bucketName = "galeria de gatoencerrado";

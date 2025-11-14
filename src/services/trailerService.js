@@ -1,4 +1,4 @@
-import { supabase } from '../lib/customSupabaseClient.js';
+import { supabase } from '../lib/supabaseClient.js';
 
 const BUCKET_NAME = 'trailers';
 const DEFAULT_BASENAME = 'trailer';
