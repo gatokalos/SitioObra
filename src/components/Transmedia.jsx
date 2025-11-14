@@ -20,30 +20,6 @@ import { toast } from '@/components/ui/use-toast';
 
 
 
-const blogSeriesEntries = [
-  {
-    id: 'novela-fragmentos-pdf',
-    title: 'Primeras páginas en PDF',
-    description: 'Lee los primeros diez fragmentos de “Mi Gato Encerrado” y descubre su voz híbrida.',
-    url: '/assets/fragmentos-novela.pdf',
-    status: 'live',
-  },
-  {
-    id: 'novela-grafica-bocetos',
-    title: 'Bocetos de Tres Pies al Gato',
-    description: 'Explora el proceso gráfico de la novela visual “Tres pies al gato”: trazos, manchas y líneas que narran.',
-    url: '/assets/proceso-novela-grafica.pdf',
-    status: 'live',
-  },
-  {
-    id: 'novela-reader-app',
-    title: 'Próxima app de lectura',
-    description: 'Un lector interactivo para desbloquear fragmentos, pistas y conversaciones dentro del miniverso.',
-    url: '#',
-    status: 'soon',
-  },
-];
-
 const showcaseDefinitions = {
   copycats: {
     label: '#CopyCats',
@@ -100,10 +76,56 @@ const showcaseDefinitions = {
   miniversoNovela: {
     label: 'Miniverso Novela',
     type: 'blog-series',
-    slug: 'fragmentos-novela',
+    slug: null,
     intro:
-      'Aquí se cruzan la autoficción, la novela gráfica y las vidas que aún no caben en escena. Fragmentos, procesos y lecturas que expanden el universo desde la palabra.',
-    entries: blogSeriesEntries,
+      'Aquí se cruzan la autoficción, la novela gráfica y las vidas que aún no caben en escena. Fragmentos, procesos y pistas que solo existen cuando alguien las lee.',
+    entries: [
+      {
+        id: 'primer-fragmento',
+        title: 'Fragmentos iniciales',
+        description: 'Lee las primeras páginas de la novela.',
+        previewImage: '/assets/novela/fragmento-preview.jpg',
+        contentSlug: 'fragmento-novela',
+        type: 'internal-reading',
+      },
+      {
+        id: 'compra-libro',
+        title: 'Edición física',
+        description: 'La novela completa en su versión impresa. Incluye QR secreto.',
+        image: '/assets/novela/libro-mockup.jpg',
+        type: 'purchase-link',
+        url: '/comprar-novela',
+      },
+      {
+        id: 'qr-app',
+        title: 'Activa tu novela',
+        description: 'Escanea el QR de la contraportada para desbloquear la experiencia extendida.',
+        type: 'qr-scan',
+        action: 'openCameraForQR',
+      },
+      {
+        id: 'tres-pies-galeria',
+        title: 'Tres Pies al Gato — proceso visual',
+        description: 'Bocetos y exploraciones de la novela gráfica.',
+        type: 'horizontal-gallery',
+        images: [
+          '/assets/novela/boceto1.jpg',
+          '/assets/novela/boceto2.jpg',
+          '/assets/novela/boceto3.jpg',
+        ],
+      },
+      {
+        id: 'comentarios-lectores',
+        title: 'Conversaciones con lectores',
+        type: 'quotes',
+        quotes: [
+          {
+            quote: '“No sabía que un libro podía hablarme a mitad de la página.”',
+            author: 'Lectora anónima',
+          },
+        ],
+      },
+    ],
     ctaLabel: 'Leer los primeros fragmentos',
   },
 };
@@ -197,7 +219,7 @@ const Transmedia = () => {
 
   const loadShowcaseContent = useCallback(async (showcaseId) => {
     const definition = showcaseDefinitions[showcaseId];
-    if (!definition || !definition.slug) {
+    if (!definition || definition.type === 'blog-series' || !definition.slug) {
       return;
     }
 
@@ -233,7 +255,7 @@ const Transmedia = () => {
       if (showcaseDefinitions[formatId]) {
         setActiveShowcase((prev) => (prev === formatId ? null : formatId));
         const definition = showcaseDefinitions[formatId];
-        if (definition.slug) {
+        if (definition.slug && definition.type !== 'blog-series') {
           const entry = showcaseContent[formatId];
           if (!entry || entry.status === 'error') {
             loadShowcaseContent(formatId);
@@ -245,6 +267,18 @@ const Transmedia = () => {
     },
     [handleOpenMiniverses, loadShowcaseContent, showcaseContent]
   );
+
+  const handleOpenBlogEntry = useCallback((slug) => {
+    if (!slug) {
+      return;
+    }
+    window.dispatchEvent(
+      new CustomEvent('gatoencerrado:open-blog', {
+        detail: { slug },
+      })
+    );
+    document.getElementById('dialogo-critico')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }, []);
 
   const activeDefinition = activeShowcase ? showcaseDefinitions[activeShowcase] : null;
   const activeData = activeShowcase ? showcaseContent[activeShowcase] : null;
@@ -268,6 +302,15 @@ const Transmedia = () => {
   };
 
   const renderPostDetails = (emptyMessage = 'Pronto liberaremos la carta completa de este miniverso.') => {
+    if (activeDefinition?.type === 'blog-series') {
+      return (
+        <div className="rounded-2xl border border-white/10 p-6 bg-black/30 text-slate-300/80 text-sm leading-relaxed">
+          <p className="text-xs uppercase tracking-[0.35em] text-slate-500 mb-2">Carta abierta</p>
+          <p>{activeDefinition?.intro}</p>
+        </div>
+      );
+    }
+
     if (!activeDefinition?.slug) {
       return null;
     }
@@ -281,51 +324,7 @@ const Transmedia = () => {
     }
 
     if (activeData?.status === 'success' && activeData.post) {
-    if (activeDefinition.type === 'blog-series') {
-      const entries = Array.isArray(activeDefinition.entries) ? activeDefinition.entries : [];
       return (
-        <div className="space-y-8">
-          <div>{renderPostDetails('Sigue la novela desde fragmentos, PDFs y lectores interactivos.')}</div>
-          {entries.length > 0 ? (
-            <div className="grid gap-6 md:grid-cols-2">
-              {entries.map((entry) => (
-                <div key={entry.id} className="rounded-2xl border border-white/10 p-6 bg-black/30 flex flex-col gap-2">
-                  <p className="text-xs uppercase tracking-[0.35em] text-slate-500 flex items-center gap-2">
-                    Fragmento
-                    {entry.status === 'soon' ? (
-                      <span className="rounded-full bg-purple-500/20 text-purple-200 px-2 py-0.5 text-[0.65rem] uppercase tracking-wide">
-                        Muy pronto
-                      </span>
-                    ) : null}
-                  </p>
-                  <h5 className="font-display text-xl text-slate-100">{entry.title}</h5>
-                  <p className="text-slate-300/80 text-sm flex-1 leading-relaxed">{entry.description}</p>
-                  <Button
-                    variant="outline"
-                    disabled={entry.status === 'soon'}
-                    onClick={() => entry.url && entry.url !== '#' ? window.open(entry.url, '_blank') : null}
-                    className="self-start border-purple-400/40 text-purple-200 hover:bg-purple-500/20 disabled:opacity-60 disabled:cursor-not-allowed"
-                  >
-                    {entry.status === 'soon' ? 'Disponible pronto' : 'Leer fragmento'}
-                  </Button>
-                </div>
-              ))}
-            </div>
-          ) : null}
-          {activeDefinition.ctaLabel && activeDefinition.entries?.[0]?.url ? (
-            <Button
-              onClick={() => window.open(activeDefinition.entries[0].url, '_blank')}
-              className="bg-gradient-to-r from-purple-600/80 to-indigo-600/80 hover:from-purple-600 hover:to-indigo-600 text-white px-8 py-3 rounded-full font-semibold flex items-center gap-2 hover-glow"
-            >
-              {activeDefinition.ctaLabel}
-              <ArrowRight size={18} />
-            </Button>
-          ) : null}
-        </div>
-      );
-    }
-
-    return (
         <>
           <div className="flex flex-wrap items-center gap-4 text-sm text-slate-400 mb-4">
             {activeData.post.author ? (
@@ -364,21 +363,20 @@ const Transmedia = () => {
 
   const renderShowcaseContent = () => {
     if (!activeDefinition) {
-      return null;
+      return (
+        <p className="text-slate-400 text-sm">
+          Selecciona un miniverso para explorar su carta y materiales.
+        </p>
+      );
     }
 
     if (activeDefinition.type === 'object-webar') {
-      const postSection = activeDefinition.slug ? (
-        <div className="rounded-2xl border border-white/10 p-6 bg-black/30">{renderPostDetails('Esta carta se revelará en cuanto la terminemos de transcribir.')}</div>
-      ) : null;
-
       return (
-        <div className="grid gap-8 lg:grid-cols-[3fr_2fr]">
+        <div className="grid gap-10 lg:grid-cols-[2fr_1fr]">
           <div className="space-y-6">
-            {postSection}
-            {activeDefinition.subtitle ? (
-              <p className="text-xs uppercase tracking-[0.4em] text-slate-400/70">{activeDefinition.subtitle}</p>
-            ) : null}
+            <div>
+              {renderPostDetails('Pronto liberaremos la carta completa de este miniverso.')}
+            </div>
             <p className="text-slate-300/85 leading-relaxed font-light">{activeDefinition.intro}</p>
 
             <div className="rounded-3xl border border-white/10 overflow-hidden bg-black/30">
@@ -441,11 +439,147 @@ const Transmedia = () => {
       );
     }
 
+    if (activeDefinition.type === 'blog-series') {
+      const entries = activeDefinition.entries ?? [];
+      const renderEntryAction = (entry) => {
+        switch (entry.type) {
+          case 'internal-reading':
+            return entry.contentSlug ? (
+              <Button
+                onClick={() => handleOpenBlogEntry(entry.contentSlug)}
+                className="w-full md:w-auto justify-center"
+              >
+                Leer fragmento
+              </Button>
+            ) : null;
+          case 'purchase-link':
+            return entry.url ? (
+              <a
+                href={entry.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center justify-center rounded-full border border-purple-400/40 text-purple-200 hover:bg-purple-500/10 px-6 py-2 font-semibold transition"
+              >
+                Comprar edición
+              </a>
+            ) : null;
+          case 'qr-scan':
+            return (
+              <Button
+                variant="outline"
+                className="border-purple-400/40 text-purple-200 hover:bg-purple-500/10 w-full md:w-auto justify-center"
+                onClick={() =>
+                  toast({
+                    title: 'Escanea el QR',
+                    description: 'Abre la cámara de tu dispositivo y apunta al código para activar la experiencia.',
+                  })
+                }
+              >
+                Escanear QR
+              </Button>
+            );
+          default:
+            return null;
+        }
+      };
+
+      return (
+        <div className="space-y-10">
+          <div>{renderPostDetails()}</div>
+          {entries.length > 0 ? (
+            <div className="grid gap-6 md:grid-cols-2">
+              {entries.map((entry) => {
+                if (entry.type === 'horizontal-gallery') {
+                  return (
+                    <div
+                      key={entry.id}
+                      className="md:col-span-2 rounded-2xl border border-white/10 p-6 bg-black/30 space-y-4"
+                    >
+                      <div className="space-y-2">
+                        <h5 className="font-display text-xl text-slate-100">{entry.title}</h5>
+                        {entry.description ? (
+                          <p className="text-sm text-slate-300/80 leading-relaxed">{entry.description}</p>
+                        ) : null}
+                      </div>
+                      <div className="flex gap-4 overflow-x-auto pb-2">
+                        {entry.images?.map((image, index) => (
+                          <div
+                            key={`${entry.id}-${index}`}
+                            className="w-48 h-32 flex-shrink-0 rounded-xl overflow-hidden border border-white/5 bg-black/40"
+                          >
+                            <img
+                              src={image}
+                              alt={`${entry.title} ${index + 1}`}
+                              className="w-full h-full object-cover"
+                            />
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  );
+                }
+
+                if (entry.type === 'quotes') {
+                  return (
+                    <div
+                      key={entry.id}
+                      className="md:col-span-2 rounded-2xl border border-white/10 p-6 bg-black/30 space-y-4"
+                    >
+                      <h5 className="font-display text-xl text-slate-100">{entry.title}</h5>
+                      <div className="space-y-4">
+                        {entry.quotes?.map((quote, index) => (
+                          <blockquote
+                            key={`${entry.id}-quote-${index}`}
+                            className="text-slate-100 font-light leading-relaxed"
+                          >
+                            <p>{quote.quote}</p>
+                            {quote.author ? (
+                              <p className="text-xs text-slate-500 mt-2">{quote.author}</p>
+                            ) : null}
+                          </blockquote>
+                        ))}
+                      </div>
+                    </div>
+                  );
+                }
+
+                const imageSrc = entry.previewImage || entry.image;
+                const action = renderEntryAction(entry);
+
+                return (
+                  <div key={entry.id} className="rounded-2xl border border-white/10 p-6 bg-black/30 space-y-4">
+                    {imageSrc ? (
+                      <div className="rounded-xl overflow-hidden border border-white/5 bg-black/40">
+                        <img src={imageSrc} alt={entry.title} className="w-full h-48 object-cover" />
+                      </div>
+                    ) : null}
+                    <div className="space-y-2">
+                      <h5 className="font-display text-xl text-slate-100">{entry.title}</h5>
+                      {entry.description ? (
+                        <p className="text-sm text-slate-300/80 leading-relaxed">{entry.description}</p>
+                      ) : null}
+                    </div>
+                    {action}
+                  </div>
+                );
+              })}
+            </div>
+          ) : (
+            <p className="text-sm text-slate-400">Muy pronto liberaremos el resto de la serie.</p>
+          )}
+        </div>
+      );
+    }
+
     const videos = activeDefinition.videos ?? [];
 
     return (
       <div className="space-y-10">
-        <div>{renderPostDetails('Pronto liberaremos la carta completa de este miniverso. Mientras tanto puedes explorar la galería audiovisual.')}</div>
+        <div>
+          {renderPostDetails(
+            'Pronto liberaremos la carta completa de este miniverso. Mientras tanto puedes explorar la galería audiovisual.'
+          )}
+        </div>
 
         {videos.length > 0 ? (
           <div>

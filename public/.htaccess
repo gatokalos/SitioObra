@@ -1,19 +1,27 @@
 <IfModule mod_rewrite.c>
   RewriteEngine On
   RewriteBase /
+
+  # Permitir acceso directo a archivos y directorios
   RewriteCond %{REQUEST_FILENAME} !-f
   RewriteCond %{REQUEST_FILENAME} !-d
+
+  # Enrutamiento SPA
   RewriteRule ^ index.html [L]
 </IfModule>
 
 <IfModule mod_headers.c>
   Header set X-Powered-By "Hostinger Horizons"
 
-  # Cache everything on CDN by default
-  Header set Cache-Control "public, s-maxage=604800, max-age=0"
-  
-  # Cache in browser all assets
+  # HTML sin caché (el navegador siempre trae la versión más reciente)
+  <FilesMatch "\.(html|htm)$">
+    Header set Cache-Control "no-store, no-cache, must-revalidate, max-age=0"
+    Header set Pragma "no-cache"
+    Header set Expires 0
+  </FilesMatch>
+
+  # Assets estáticos (js/css/img) cacheables en navegador/CDN
   <If "%{REQUEST_URI} =~ m#^/assets/.*$#">
-    Header set Cache-Control "public, max-age=604800"
+    Header set Cache-Control "public, max-age=604800, s-maxage=604800"
   </If>
 </IfModule>
