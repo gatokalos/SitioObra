@@ -253,7 +253,7 @@
     const portalPlane = document.getElementById("portalButton");
     const sceneEl = document.querySelector("a-scene");
     const targetEntity = document.querySelector("[mindar-image-target]");
-    const portalUrl = "https://gatoencerrado.ai";
+    const portalUrl = "https://esungatoencerrado.ai";
     let arSystem = null;
     let hasStarted = false;
     let videoCheckTimeoutId;
@@ -285,33 +285,18 @@
       }
     };
 
-    const waitForMindARComponent = () => {
-      if (!sceneEl) return Promise.reject(new Error("No hay escena AR"));
-      const existing = sceneEl.components?.["mindar-image"];
-      if (existing) return Promise.resolve(existing);
-      log("Esperando a que MindAR inicialice el componente");
-      return new Promise((resolve, reject) => {
-        let cancelled = false;
-        let resolved = false;
-        let timeoutId;
-        const checkComponent = () => {
-          if (cancelled || resolved) return;
-          const mindarComponent = sceneEl.components?.["mindar-image"];
-          if (mindarComponent) {
-            log("MindAR component listo");
-            resolved = true;
-            clearTimeout(timeoutId);
-            resolve(mindarComponent);
-          } else {
-            requestAnimationFrame(checkComponent);
-          }
-        };
-        timeoutId = setTimeout(() => {
-          cancelled = true;
-          reject(new Error("timeout"));
-        }, 6000);
-        checkComponent();
-      });
+    const ensureSceneLoaded = () => {
+      if (!sceneEl) return Promise.resolve();
+      if (sceneEl.hasLoaded) {
+        log("Escena A-Frame ya cargada");
+        return Promise.resolve();
+      }
+      log("Esperando a que cargue la escena A-Frame");
+      return sceneEl.hasLoaded
+        ? Promise.resolve()
+        : new Promise((resolve) => {
+            sceneEl.addEventListener("loaded", resolve, { once: true });
+          });
     };
 
     const getMindARSystem = () => {
@@ -376,28 +361,17 @@
       startScreen.style.display = "none";
       log("Usuario inició la experiencia");
 
-      let component;
-      try {
-        component = await waitForMindARComponent();
-      } catch (error) {
-        console.warn("El componente MindAR no inicializó:", error);
-        showFallback("No pudimos preparar la escena AR en este dispositivo.");
-        return;
-      }
-
+      await ensureSceneLoaded();
       const system = getMindARSystem();
-      const startFn =
-        (component && typeof component.start === "function" && (() => component.start())) ||
-        (system && typeof system.start === "function" && (() => system.start()));
 
-      if (!startFn) {
+      if (!system || typeof system.start !== "function") {
         console.warn("MindAR no está disponible en esta escena.");
         showFallback("Este navegador no soporta la activación WebAR.");
         return;
       }
 
       try {
-        const startResult = startFn();
+        const startResult = system.start();
         log("Se llamó a mindar.start()");
         scheduleFallbackChecks();
 
