@@ -32,7 +32,7 @@ const Hero = () => {
           <img
             className="absolute inset-0 w-full h-full object-cover opacity-10 mix-blend-luminosity"
             alt="Textura de telón de teatro de terciopelo oscuro"
-            src="public/assets/Logo by Enigma.png"
+            src="/assets/bg-logo.png"
           />
         </div>
 
