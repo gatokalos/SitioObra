@@ -47,7 +47,7 @@ const showcaseDefinitions = {
         title: 'Conversación con Silvestre',
         author: 'Voces de la Comunidad',
         duration: '3:58',
-        url: 'https://player.vimeo.com/video/959780402?h=8ad98b8f69',
+        url: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Cine%20-%20teasers/Quiron.mp4',
       },
     ],
   },
@@ -586,19 +586,28 @@ const Transmedia = () => {
             <h5 className="font-display text-xl text-slate-100 mb-4">Galería audiovisual</h5>
             <div className="grid gap-6 md:grid-cols-2">
               {videos.map((video) => (
-                <div
-                  key={video.id}
-                  className="rounded-2xl border border-white/10 overflow-hidden bg-black/40 flex flex-col"
-                >
+                <div key={video.id} className="rounded-2xl border border-white/10 overflow-hidden bg-black/40 flex flex-col">
                   <div className="aspect-video w-full">
-                    <iframe
-                      src={video.url}
-                      title={video.title}
-                      className="w-full h-full"
-                      frameBorder="0"
-                      allow="autoplay; fullscreen; picture-in-picture"
-                      allowFullScreen
-                    ></iframe>
+                    {/\.mp4($|\?)/i.test(video.url) ? (
+                      <video
+                        src={video.url}
+                        title={video.title}
+                        className="w-full h-full object-cover bg-black"
+                        controls
+                        playsInline
+                        preload="metadata"
+                        poster={video.poster}
+                      />
+                    ) : (
+                      <iframe
+                        src={video.url}
+                        title={video.title}
+                        className="w-full h-full"
+                        frameBorder="0"
+                        allow="autoplay; fullscreen; picture-in-picture"
+                        allowFullScreen
+                      ></iframe>
+                    )}
                   </div>
                   <div className="p-4 space-y-1 text-sm text-slate-300">
                     <p className="font-semibold text-slate-100">{video.title}</p>
