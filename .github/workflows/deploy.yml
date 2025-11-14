@@ -38,5 +38,5 @@ jobs:
           timeout: 600000
 
           local-dir: dist/
-          server-dir: public_html/
+          server-dir: domains/esungatoencerrado.com/public_html/
           log-level: verbose
