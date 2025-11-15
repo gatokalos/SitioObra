@@ -74,6 +74,11 @@ const showcaseDefinitions = {
       'Para algunas personas, el café sabe a despedida.',
       'Hay tazas que guardan confesiones en vez de azúcar.',
     ],
+    phrases: [
+      'La taza te escucha.',
+      'Cada sorbo borra tu timidez, cada foto te libera.',
+      'Hay constelaciones que solo aparecen cuando murmuras su nombre.',
+    ],
     instructions: [
       'Permite el acceso a tu cámara para iniciar.',
       'Coloca la taza completa en cuadro, con buena iluminación.',
@@ -476,17 +481,12 @@ const Transmedia = () => {
 
             <div className="rounded-3xl border border-white/10 overflow-hidden bg-black/30">
               {activeShowcase === 'lataza' && isTazaARActive ? (
-                <div className="p-4">
-                  <ARExperience targetSrc="/webar/taza/taza.mind" />
-                  <div className="mt-4 flex justify-end">
-                    <Button
-                      variant="ghost"
-                      className="text-slate-200 hover:text-white"
-                      onClick={() => setIsTazaARActive(false)}
-                    >
-                      Volver a instrucciones
-                    </Button>
-                  </div>
+                <div className="p-0 sm:p-4">
+                  <ARExperience
+                    targetSrc="/webar/taza/taza.mind"
+                    phrases={activeDefinition.phrases}
+                    onExit={() => setIsTazaARActive(false)}
+                  />
                 </div>
               ) : (
                 <>
