@@ -42,6 +42,7 @@ const MindARScene = ({
     let mindarThree = null;
     let renderer = null;
     let animationLoop = null;
+    let attachedVideo = null;
 
     const start = async () => {
       setStatus('loading');
@@ -96,6 +97,23 @@ const MindARScene = ({
         anchor.group.add(pulse);
 
         await mindarThree.start();
+
+        const video = mindarThree.video;
+        if (video && !containerRef.current.contains(video)) {
+          video.setAttribute('playsinline', 'true');
+          video.muted = true;
+          video.style.position = 'absolute';
+          video.style.top = '0';
+          video.style.left = '0';
+          video.style.width = '100%';
+          video.style.height = '100%';
+          video.style.objectFit = 'cover';
+          video.style.zIndex = '0';
+          video.style.display = 'block';
+          containerRef.current.appendChild(video);
+          attachedVideo = video;
+        }
+
         setStatus('running');
 
         const clock = new THREE.Clock();
@@ -122,6 +140,9 @@ const MindARScene = ({
       if (mindarThree) {
         mindarThree.stop();
         mindarThree.renderer?.dispose();
+      }
+      if (attachedVideo && attachedVideo.parentElement === containerRef.current) {
+        containerRef.current.removeChild(attachedVideo);
       }
     };
   }, [isCameraReady, targetSrc, message]);
