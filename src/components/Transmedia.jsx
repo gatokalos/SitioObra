@@ -20,6 +20,7 @@ import { toast } from '@/components/ui/use-toast';
 import { Document, Page, pdfjs } from 'react-pdf';
 import 'react-pdf/dist/Page/AnnotationLayer.css';
 import 'react-pdf/dist/Page/TextLayer.css';
+import ARExperience from '@/components/ar/ARExperience';
 
 pdfjs.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`;
 
@@ -72,6 +73,11 @@ const showcaseDefinitions = {
       'Sentir rabia también es un acto de cuidado.',
       'Para algunas personas, el café sabe a despedida.',
       'Hay tazas que guardan confesiones en vez de azúcar.',
+    ],
+    instructions: [
+      'Permite el acceso a tu cámara para iniciar.',
+      'Coloca la taza completa en cuadro, con buena iluminación.',
+      'Mantén el marcador visible hasta que aparezca la constelación.',
     ],
     comments: [
       { id: 'la-taza-comment-1', quote: '“La taza me mostró una frase que me persiguió toda la semana.”', author: 'Usuario anónimo' },
@@ -222,6 +228,7 @@ const Transmedia = () => {
   const pdfContainerRef = useRef(null);
   const [pdfContainerWidth, setPdfContainerWidth] = useState(0);
   const pdfPageWidth = Math.max(pdfContainerWidth - 48, 320);
+  const [isTazaARActive, setIsTazaARActive] = useState(false);
 
   const handleOpenMiniverses = useCallback(() => {
     setIsMiniverseOpen(true);
@@ -348,6 +355,12 @@ const Transmedia = () => {
   }, [activeShowcase]);
 
   useEffect(() => {
+    if (activeShowcase !== 'lataza') {
+      setIsTazaARActive(false);
+    }
+  }, [activeShowcase]);
+
+  useEffect(() => {
     if (!imagePreview && !pdfPreview) {
       return undefined;
     }
@@ -458,51 +471,84 @@ const Transmedia = () => {
       return (
         <div className="grid gap-10 lg:grid-cols-[2fr_1fr]">
           <div className="space-y-6">
-            <div>
-              {renderPostDetails('Pronto liberaremos la carta completa de este miniverso.')}
-            </div>
+            <div>{renderPostDetails('Pronto liberaremos la carta completa de este miniverso.')}</div>
             <p className="text-slate-300/85 leading-relaxed font-light">{activeDefinition.intro}</p>
 
             <div className="rounded-3xl border border-white/10 overflow-hidden bg-black/30">
-              {/\.mp4($|\?)/i.test(activeDefinition.image) ? (
-                <video
-                  src={activeDefinition.image}
-                  className="w-full h-64 object-cover bg-black/50"
-                  autoPlay
-                  playsInline
-                  muted
-                  loop
-                  controls
-                  poster={activeDefinition.imagePoster}
-                />
+              {activeShowcase === 'lataza' && isTazaARActive ? (
+                <div className="p-4">
+                  <ARExperience targetSrc="/webar/taza/taza.mind" />
+                  <div className="mt-4 flex justify-end">
+                    <Button
+                      variant="ghost"
+                      className="text-slate-200 hover:text-white"
+                      onClick={() => setIsTazaARActive(false)}
+                    >
+                      Volver a instrucciones
+                    </Button>
+                  </div>
+                </div>
               ) : (
-                <img
-                  src={activeDefinition.image}
-                  alt="Ilustración de La Taza"
-                  className="w-full h-64 object-cover bg-black/50"
-                />
+                <>
+                  {/\.mp4($|\?)/i.test(activeDefinition.image) ? (
+                    <video
+                      src={activeDefinition.image}
+                      className="w-full h-64 object-cover bg-black/50"
+                      autoPlay
+                      playsInline
+                      muted
+                      loop
+                      controls
+                      poster={activeDefinition.imagePoster}
+                    />
+                  ) : (
+                    <img
+                      src={activeDefinition.image}
+                      alt="Ilustración de La Taza"
+                      className="w-full h-64 object-cover bg-black/50"
+                    />
+                  )}
+                  <div className="p-6 space-y-3">
+                    <p className="text-sm text-slate-400 uppercase tracking-[0.3em]">{activeDefinition.note}</p>
+                    {activeDefinition.instructions ? (
+                      <ul className="text-sm text-slate-300/90 space-y-2">
+                        {activeDefinition.instructions.map((step, index) => (
+                          <li key={index} className="flex items-start gap-2">
+                            <span className="text-purple-300 mt-1">●</span>
+                            <span>{step}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    ) : null}
+                    {activeShowcase === 'lataza' ? (
+                      <Button
+                        className="border-purple-400/40 text-purple-200 hover:bg-purple-500/10"
+                        variant="outline"
+                        onClick={() => setIsTazaARActive(true)}
+                      >
+                        {activeDefinition.ctaLabel}
+                      </Button>
+                    ) : activeDefinition.ctaLink ? (
+                      <a
+                        href={activeDefinition.ctaLink}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center justify-center rounded-full border border-purple-400/40 text-purple-200 hover:bg-purple-500/10 px-6 py-2 font-semibold"
+                      >
+                        {activeDefinition.ctaLabel}
+                      </a>
+                    ) : (
+                      <Button
+                        variant="outline"
+                        className="border-purple-400/40 text-purple-200 hover:bg-purple-500/10"
+                        onClick={() => handleLaunchWebAR(activeDefinition.ctaMessage)}
+                      >
+                        {activeDefinition.ctaLabel}
+                      </Button>
+                    )}
+                  </div>
+                </>
               )}
-              <div className="p-6 space-y-3">
-                <p className="text-sm text-slate-400 uppercase tracking-[0.3em]">{activeDefinition.note}</p>
-                {activeDefinition.ctaLink ? (
-                  <a
-                    href={activeDefinition.ctaLink}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center justify-center rounded-full border border-purple-400/40 text-purple-200 hover:bg-purple-500/10 px-6 py-2 font-semibold"
-                  >
-                    {activeDefinition.ctaLabel}
-                  </a>
-                ) : (
-                  <Button
-                    variant="outline"
-                    className="border-purple-400/40 text-purple-200 hover:bg-purple-500/10"
-                    onClick={() => handleLaunchWebAR(activeDefinition.ctaMessage)}
-                  >
-                    {activeDefinition.ctaLabel}
-                  </Button>
-                )}
-              </div>
             </div>
 
             {activeDefinition.sentiments ? (

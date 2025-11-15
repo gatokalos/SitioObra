@@ -32,7 +32,8 @@
     "react-helmet": "^6.1.0",
     "react-pdf": "^10.2.0",
     "tailwind-merge": "^1.1.4",
-    "tailwindcss-animate": "^1.0.7"
+    "tailwindcss-animate": "^1.0.7",
+    "three": "^0.181.1"
   },
   "devDependencies": {
     "@babel/generator": "^7.27.0",
