@@ -83,6 +83,7 @@ const MindARScene = forwardRef(({
   isCameraReady = false,
   className = '',
   message = 'La taza te escucha.',
+  overlay = null,
 }, ref) => {
   const containerRef = useRef(null);
   const panelRef = useRef(null);
@@ -208,7 +209,7 @@ const MindARScene = forwardRef(({
 
   return (
     <div
-      className={`relative w-full aspect-[3/4] bg-transparent rounded-3xl overflow-hidden ${className}`}
+      className={`relative w-full bg-transparent rounded-3xl overflow-hidden ${className}`}
       data-ar-container="true"
     >
       <div ref={containerRef} className="absolute inset-0" />
@@ -226,6 +227,11 @@ const MindARScene = forwardRef(({
       {status === 'error' ? (
         <div className="absolute inset-0 flex items-center justify-center text-center px-6 text-sm text-red-300 bg-black/70 pointer-events-none">
           {error}
+        </div>
+      ) : null}
+      {overlay ? (
+        <div className="absolute inset-x-0 bottom-4 px-4 pointer-events-none">
+          <div className="flex justify-center">{overlay}</div>
         </div>
       ) : null}
     </div>
