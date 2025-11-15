@@ -169,7 +169,7 @@ const ReserveModal = ({ open, onClose, initialInterest = INTEREST_OPTIONS[0].val
     <AnimatePresence>
       {open ? (
         <motion.div
-          className="fixed inset-0 z-50 flex items-center justify-center px-4 py-10"
+          className="fixed inset-0 z-50 flex items-start justify-center px-4 py-6 sm:py-10 overflow-y-auto"
           initial="hidden"
           animate="visible"
           exit="hidden"
@@ -186,7 +186,7 @@ const ReserveModal = ({ open, onClose, initialInterest = INTEREST_OPTIONS[0].val
             aria-modal="true"
             aria-labelledby="reserve-modal-title"
             variants={modalVariants}
-            className="relative z-10 w-full max-w-3xl rounded-3xl border border-white/10 bg-slate-950/95 p-6 sm:p-10 shadow-2xl"
+            className="relative z-10 w-full max-w-3xl rounded-3xl border border-white/10 bg-slate-950/95 p-6 sm:p-10 shadow-2xl max-h-[90vh] overflow-y-auto"
           >
             <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-6">
               <div>

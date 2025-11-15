@@ -202,7 +202,7 @@ const ContributionModal = ({ open, onClose }) => {
     <AnimatePresence>
       {open ? (
         <motion.div
-          className="fixed inset-0 z-50 flex items-center justify-center px-4 py-10 sm:py-16"
+          className="fixed inset-0 z-50 flex items-start justify-center px-4 py-6 sm:py-12 overflow-y-auto"
           initial="hidden"
           animate="visible"
           exit="hidden"
@@ -219,10 +219,10 @@ const ContributionModal = ({ open, onClose }) => {
             aria-modal="true"
             aria-labelledby="contribution-modal-title"
             variants={modalVariants}
-            className="relative z-10 w-full max-w-5xl rounded-3xl border border-white/10 bg-slate-950/95 p-4 sm:p-8 shadow-2xl"
+            className="relative z-10 w-full max-w-5xl rounded-3xl border border-white/10 bg-slate-950/95 p-4 sm:p-8 shadow-2xl max-h-[90vh] overflow-y-auto"
           >
-            <div className="grid gap-6 md:grid-cols-[1.05fr_1fr] max-h-[80vh] overflow-hidden">
-              <div className="flex flex-col border-white/10 md:border-r md:pr-5 overflow-y-auto">
+            <div className="grid gap-6 md:grid-cols-[1.05fr_1fr]">
+              <div className="flex flex-col border-white/10 md:border-r md:pr-5 overflow-y-auto max-h-[70vh] pr-1">
                 <div className="mb-5">
                   <p className="text-sm uppercase tracking-[0.35em] text-slate-400/80 mb-2">Blog / Diálogo vivo</p>
                   <h3 className="font-display text-2xl text-slate-50 mb-2">Explora el universo #GatoEncerrado</h3>
@@ -254,7 +254,7 @@ const ContributionModal = ({ open, onClose }) => {
                 </div>
               </div>
 
-              <div className="flex flex-col gap-4 overflow-y-auto pr-1">
+              <div className="flex flex-col gap-4 overflow-y-auto pr-1 max-h-[70vh]">
                 <div className="flex items-start justify-between gap-3">
                   <div>
                     <h2 id="contribution-modal-title" className="font-display text-3xl text-slate-50 mb-1">
