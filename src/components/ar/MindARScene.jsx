@@ -230,9 +230,7 @@ const MindARScene = forwardRef(({
         </div>
       ) : null}
       {overlay ? (
-        <div className="absolute inset-x-0 bottom-4 px-4 pointer-events-none">
-          <div className="flex justify-center">{overlay}</div>
-        </div>
+        <div className="absolute inset-0">{typeof overlay === 'function' ? overlay() : overlay}</div>
       ) : null}
     </div>
   );

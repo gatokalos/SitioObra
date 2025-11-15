@@ -73,23 +73,32 @@ const ARExperience = ({ targetSrc = '/assets/targets.mind', phrases = DEFAULT_PH
   const iconButtonClass =
     'rounded-full bg-black/55 text-white p-3 shadow-lg border border-white/15 hover:bg-black/70 transition backdrop-blur';
 
-  const overlayControls = (
-    <div className="pointer-events-auto flex items-center gap-3">
-      <button type="button" onClick={handleNextPhrase} className={iconButtonClass} aria-label="Nueva frase">
-        <RotateCcw size={18} />
-      </button>
-      <button type="button" onClick={handleShareCapture} className={iconButtonClass} aria-label="Compartir captura">
-        <Share2 size={18} />
-      </button>
-      <button type="button" onClick={handleExit} className={iconButtonClass} aria-label="Salir de AR">
-        <X size={18} />
-      </button>
+  const overlayControls = isCameraReady ? (
+    <div className="absolute inset-x-0 bottom-5 flex justify-center pointer-events-none">
+      <div className="flex items-center gap-3 pointer-events-auto">
+        <button type="button" onClick={handleNextPhrase} className={iconButtonClass} aria-label="Nueva frase">
+          <RotateCcw size={18} />
+        </button>
+        <button type="button" onClick={handleShareCapture} className={iconButtonClass} aria-label="Compartir captura">
+          <Share2 size={18} />
+        </button>
+        <button type="button" onClick={handleExit} className={iconButtonClass} aria-label="Salir de AR">
+          <X size={18} />
+        </button>
+      </div>
+    </div>
+  ) : (
+    <div className="absolute inset-0 flex items-center justify-center px-6">
+      <CameraPermissionPrompt
+        onGranted={() => setIsCameraReady(true)}
+        variant="overlay"
+        copy={{ idle: 'Activa tu cámara para revelar la frase de tu taza.' }}
+      />
     </div>
   );
 
   return (
     <section className="space-y-4 -mx-4 sm:mx-0">
-      <CameraPermissionPrompt onGranted={() => setIsCameraReady(true)} />
       <MindARScene
         ref={sceneRef}
         targetSrc={targetSrc}

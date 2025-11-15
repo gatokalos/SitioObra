@@ -71,13 +71,9 @@ const showcaseDefinitions = {
     image: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Merch/tazas.mp4',
     sentiments: [
       'Sentir rabia también es un acto de cuidado.',
-      'Para algunas personas, el café sabe a despedida.',
-      'Hay tazas que guardan confesiones en vez de azúcar.',
     ],
     phrases: [
-      'La taza te escucha.',
-      'Cada sorbo borra tu timidez, cada foto te libera.',
-      'Hay constelaciones que solo aparecen cuando murmuras su nombre.',
+      'La taza te habla.',
     ],
     instructions: [
       'Permite el acceso a tu cámara para iniciar.',
