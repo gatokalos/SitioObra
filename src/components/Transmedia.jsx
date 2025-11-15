@@ -17,6 +17,11 @@ import MiniverseModal from '@/components/MiniverseModal';
 import CallToAction from '@/components/CallToAction';
 import { fetchBlogPostBySlug } from '@/services/blogService';
 import { toast } from '@/components/ui/use-toast';
+import { Document, Page, pdfjs } from 'react-pdf';
+import 'react-pdf/dist/Page/AnnotationLayer.css';
+import 'react-pdf/dist/Page/TextLayer.css';
+
+pdfjs.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`;
 
 
 
@@ -62,7 +67,7 @@ const showcaseDefinitions = {
     ctaLabel: 'Probar activación WebAR',
     ctaLink: '/webar/taza/index.html',
     ctaMessage: 'Cuando liberes la activación WebAR, descubrirás la pista que le corresponde a tu taza.',
-    image: '/assets/tazafoto.jpeg',
+    image: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Merch/tazas.mp4',
     sentiments: [
       'Sentir rabia también es un acto de cuidado.',
       'Para algunas personas, el café sabe a despedida.',
@@ -84,15 +89,17 @@ const showcaseDefinitions = {
         id: 'primer-fragmento',
         title: 'Fragmentos iniciales',
         description: 'Lee las primeras páginas de la novela.',
-        previewImage: '/assets/novela/fragmento-preview.jpg',
+        previewImage: '/assets/primerfragmento.png',
         contentSlug: 'fragmento-novela',
         type: 'internal-reading',
+        previewMode: 'pdf',
+        previewPdfUrl: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/PDFs/10pages.pdf',
       },
       {
         id: 'compra-libro',
         title: 'Edición física',
         description: 'La novela completa en su versión impresa. Incluye QR secreto.',
-        image: '/assets/novela/libro-mockup.jpg',
+        image: 'public/assets/edicion-fisica.png',
         type: 'purchase-link',
         url: '/comprar-novela',
       },
@@ -208,6 +215,13 @@ const Transmedia = () => {
   const [showcaseContent, setShowcaseContent] = useState({});
   const showcaseRef = useRef(null);
   const [openCauseId, setOpenCauseId] = useState(CAUSE_ACCORDION[0].id);
+  const [imagePreview, setImagePreview] = useState(null);
+  const [pdfPreview, setPdfPreview] = useState(null);
+  const [pdfNumPages, setPdfNumPages] = useState(null);
+  const [pdfLoadError, setPdfLoadError] = useState(null);
+  const pdfContainerRef = useRef(null);
+  const [pdfContainerWidth, setPdfContainerWidth] = useState(0);
+  const pdfPageWidth = Math.max(pdfContainerWidth - 48, 320);
 
   const handleOpenMiniverses = useCallback(() => {
     setIsMiniverseOpen(true);
@@ -280,6 +294,44 @@ const Transmedia = () => {
     document.getElementById('dialogo-critico')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }, []);
 
+  const handleOpenImagePreview = useCallback((payload) => {
+    if (!payload?.src) {
+      return;
+    }
+    setImagePreview({
+      src: payload.src,
+      title: payload.title ?? '',
+      description: payload.description ?? '',
+    });
+  }, []);
+
+  const handleCloseImagePreview = useCallback(() => {
+    setImagePreview(null);
+  }, []);
+
+  const handleOpenPdfPreview = useCallback((payload) => {
+    if (!payload?.src) {
+      return;
+    }
+    setPdfPreview({
+      src: payload.src,
+      title: payload.title ?? '',
+      description: payload.description ?? '',
+    });
+    setPdfNumPages(null);
+    setPdfLoadError(null);
+  }, []);
+
+  const handleClosePdfPreview = useCallback(() => {
+    setPdfPreview(null);
+    setPdfNumPages(null);
+    setPdfLoadError(null);
+  }, []);
+
+  const handlePdfLoadSuccess = useCallback(({ numPages }) => {
+    setPdfNumPages(numPages);
+  }, []);
+
   const activeDefinition = activeShowcase ? showcaseDefinitions[activeShowcase] : null;
   const activeData = activeShowcase ? showcaseContent[activeShowcase] : null;
   const activeParagraphs = useMemo(() => {
@@ -294,6 +346,38 @@ const Transmedia = () => {
       showcaseRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
   }, [activeShowcase]);
+
+  useEffect(() => {
+    if (!imagePreview && !pdfPreview) {
+      return undefined;
+    }
+    const handleKeyDown = (event) => {
+      if (event.key === 'Escape') {
+        if (imagePreview) {
+          handleCloseImagePreview();
+        }
+        if (pdfPreview) {
+          handleClosePdfPreview();
+        }
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [imagePreview, pdfPreview, handleCloseImagePreview, handleClosePdfPreview]);
+
+  useEffect(() => {
+    if (!pdfPreview) {
+      return undefined;
+    }
+    const updateWidth = () => {
+      if (pdfContainerRef.current) {
+        setPdfContainerWidth(pdfContainerRef.current.offsetWidth);
+      }
+    };
+    updateWidth();
+    window.addEventListener('resize', updateWidth);
+    return () => window.removeEventListener('resize', updateWidth);
+  }, [pdfPreview]);
 
   const handleLaunchWebAR = (message) => {
     toast({
@@ -380,11 +464,24 @@ const Transmedia = () => {
             <p className="text-slate-300/85 leading-relaxed font-light">{activeDefinition.intro}</p>
 
             <div className="rounded-3xl border border-white/10 overflow-hidden bg-black/30">
-              <img
-                src={activeDefinition.image}
-                alt="Ilustración de La Taza"
-                className="w-full h-64 object-cover bg-black/50"
-              />
+              {/\.mp4($|\?)/i.test(activeDefinition.image) ? (
+                <video
+                  src={activeDefinition.image}
+                  className="w-full h-64 object-cover bg-black/50"
+                  autoPlay
+                  playsInline
+                  muted
+                  loop
+                  controls
+                  poster={activeDefinition.imagePoster}
+                />
+              ) : (
+                <img
+                  src={activeDefinition.image}
+                  alt="Ilustración de La Taza"
+                  className="w-full h-64 object-cover bg-black/50"
+                />
+              )}
               <div className="p-6 space-y-3">
                 <p className="text-sm text-slate-400 uppercase tracking-[0.3em]">{activeDefinition.note}</p>
                 {activeDefinition.ctaLink ? (
@@ -444,11 +541,40 @@ const Transmedia = () => {
       const renderEntryAction = (entry) => {
         switch (entry.type) {
           case 'internal-reading':
+            if (entry.previewMode === 'pdf' && entry.previewPdfUrl) {
+              return (
+                <Button
+                  onClick={() =>
+                    handleOpenPdfPreview({
+                      src: entry.previewPdfUrl,
+                      title: entry.title,
+                      description: entry.description,
+                    })
+                  }
+                  className="w-full md:w-auto justify-center"
+                >
+                  Leer fragmento
+                </Button>
+              );
+            }
+            if (entry.previewMode === 'image' && entry.previewImage) {
+              return (
+                <Button
+                  onClick={() =>
+                    handleOpenImagePreview({
+                      src: entry.previewImage,
+                      title: entry.title,
+                      description: entry.description,
+                    })
+                  }
+                  className="w-full md:w-auto justify-center"
+                >
+                  Ver fragmento
+                </Button>
+              );
+            }
             return entry.contentSlug ? (
-              <Button
-                onClick={() => handleOpenBlogEntry(entry.contentSlug)}
-                className="w-full md:w-auto justify-center"
-              >
+              <Button onClick={() => handleOpenBlogEntry(entry.contentSlug)} className="w-full md:w-auto justify-center">
                 Leer fragmento
               </Button>
             ) : null;
@@ -793,6 +919,95 @@ const Transmedia = () => {
       </section>
 
       <MiniverseModal open={isMiniverseOpen} onClose={handleCloseMiniverses} />
+
+      {pdfPreview ? (
+        <div className="fixed inset-0 z-50 flex items-center justify-center px-4 py-10">
+          <div className="absolute inset-0 bg-black/80 backdrop-blur-sm" onClick={handleClosePdfPreview} />
+          <div className="relative z-10 w-full max-w-5xl space-y-4">
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+              <div>
+                <p className="text-xs uppercase tracking-[0.4em] text-slate-400/70">Lectura en progreso</p>
+                <h4 className="font-display text-2xl text-slate-100">{pdfPreview.title || 'Fragmento en PDF'}</h4>
+                {pdfPreview.description ? (
+                  <p className="text-sm text-slate-300/80 leading-relaxed max-w-2xl">{pdfPreview.description}</p>
+                ) : null}
+              </div>
+              <button
+                type="button"
+                onClick={handleClosePdfPreview}
+                className="self-start rounded-full border border-white/10 px-4 py-2 text-sm text-slate-300 hover:text-white hover:border-white/30 transition"
+              >
+                Cerrar ✕
+              </button>
+            </div>
+
+            <div
+              ref={pdfContainerRef}
+              className="rounded-3xl border border-white/10 bg-slate-950/95 shadow-2xl p-4 max-h-[75vh] overflow-auto"
+            >
+              {pdfLoadError ? (
+                <p className="text-sm text-red-300 text-center py-8">{pdfLoadError}</p>
+              ) : (
+                <Document
+                  file={pdfPreview.src}
+                  onLoadSuccess={handlePdfLoadSuccess}
+                  onLoadError={(error) => {
+                    console.error('Error al cargar PDF del miniverso:', error);
+                    setPdfLoadError('No pudimos cargar el fragmento en PDF. Intenta de nuevo más tarde.');
+                  }}
+                  loading={<p className="text-sm text-slate-400 text-center py-8">Preparando páginas…</p>}
+                >
+                  {pdfNumPages
+                    ? Array.from(new Array(pdfNumPages), (_, index) => (
+                        <div key={`pdf-page-${index + 1}`} className="mb-6 last:mb-0">
+                          <Page
+                            pageNumber={index + 1}
+                            width={pdfPageWidth}
+                            renderTextLayer={false}
+                            renderAnnotationLayer={false}
+                          />
+                        </div>
+                      ))
+                    : null}
+                </Document>
+              )}
+            </div>
+          </div>
+        </div>
+      ) : null}
+
+      {imagePreview ? (
+        <div className="fixed inset-0 z-50 flex items-center justify-center px-4 py-10">
+          <div className="absolute inset-0 bg-black/80 backdrop-blur-sm" onClick={handleCloseImagePreview} />
+          <div className="relative z-10 w-full max-w-3xl">
+            <div className="flex justify-end mb-4">
+              <button
+                type="button"
+                onClick={handleCloseImagePreview}
+                className="rounded-full border border-white/10 px-4 py-2 text-sm text-slate-300 hover:text-white hover:border-white/30 transition"
+              >
+                Cerrar ✕
+              </button>
+            </div>
+            <div className="rounded-3xl border border-white/10 bg-slate-950/95 shadow-2xl overflow-hidden">
+              <div className="bg-black/60">
+                <img src={imagePreview.src} alt={imagePreview.title || 'Vista previa'} className="w-full h-auto" />
+              </div>
+              {(imagePreview.title || imagePreview.description) ? (
+                <div className="p-6 space-y-2">
+                  {imagePreview.title ? (
+                    <h4 className="font-display text-2xl text-slate-100">{imagePreview.title}</h4>
+                  ) : null}
+                  {imagePreview.description ? (
+                    <p className="text-sm text-slate-300/80 leading-relaxed">{imagePreview.description}</p>
+                  ) : null}
+                  <p className="text-xs uppercase tracking-[0.4em] text-slate-500">Ilustración de la novela</p>
+                </div>
+              ) : null}
+            </div>
+          </div>
+        </div>
+      ) : null}
     </>
   );
 };
