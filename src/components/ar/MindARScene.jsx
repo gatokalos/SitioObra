@@ -96,6 +96,15 @@ const MindARScene = ({
         pulse.rotation.x = -Math.PI / 2;
         anchor.group.add(pulse);
 
+        // Forzar visibilidad para depurar overlay sin depender del target.
+        anchor.group.visible = true;
+        anchor.onTargetFound(() => {
+          anchor.group.visible = true;
+        });
+        anchor.onTargetLost(() => {
+          anchor.group.visible = true;
+        });
+
         await mindarThree.start();
 
         const video = mindarThree.video;
