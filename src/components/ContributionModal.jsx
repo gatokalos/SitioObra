@@ -372,8 +372,6 @@ const ContributionModal = ({ open, onClose }) => {
                   ))}
                 </div>
               </div>
-
-              <div className="flex flex-col border-white/10 md:border-r md:pr-5 overflow-y-auto max-h-[70vh] pr-1 order-1 md:order-2">
             </div>
           </motion.div>
         </motion.div>

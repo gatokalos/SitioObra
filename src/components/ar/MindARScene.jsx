@@ -8,20 +8,26 @@ const createTextSprite = (THREE, message) => {
   canvas.width = size;
   canvas.height = size;
   const context = canvas.getContext('2d');
-  context.clearRect(0, 0, size, size);
-  context.fillStyle = 'rgba(9, 6, 21, 0.8)';
-  context.fillRect(0, size * 0.25, size, size * 0.5);
-  context.font = 'bold 48px "Space Grotesk", sans-serif';
-  context.fillStyle = '#f5d657';
-  context.textAlign = 'center';
-  context.fillText(message, size / 2, size / 2 + 16);
-
   const texture = new THREE.CanvasTexture(canvas);
   const material = new THREE.SpriteMaterial({ map: texture, transparent: true });
   const sprite = new THREE.Sprite(material);
   sprite.scale.set(1.6, 0.9, 1);
   sprite.position.set(0, 0.4, 0);
-  return sprite;
+
+  const drawMessage = (text) => {
+    context.clearRect(0, 0, size, size);
+    context.fillStyle = 'rgba(9, 6, 21, 0.8)';
+    context.fillRect(0, size * 0.25, size, size * 0.5);
+    context.font = 'bold 48px "Space Grotesk", sans-serif';
+    context.fillStyle = '#f5d657';
+    context.textAlign = 'center';
+    context.fillText(text, size / 2, size / 2 + 16);
+    texture.needsUpdate = true;
+  };
+
+  drawMessage(message);
+
+  return { sprite, update: drawMessage };
 };
 
 const MindARScene = ({
@@ -31,6 +37,7 @@ const MindARScene = ({
   message = 'La taza te escucha.',
 }) => {
   const containerRef = useRef(null);
+  const spriteRef = useRef(null);
   const [status, setStatus] = useState('idle');
   const [error, setError] = useState('');
 
@@ -70,33 +77,9 @@ const MindARScene = ({
         const anchor = mindarThree.addAnchor(0);
 
         // Text sprite
-        const sprite = createTextSprite(THREE, message);
+        const { sprite, update } = createTextSprite(THREE, message);
+        spriteRef.current = { sprite, update };
         anchor.group.add(sprite);
-
-        // Orbital object
-        const torusGeometry = new THREE.TorusKnotGeometry(0.25, 0.07, 120, 16);
-        const torusMaterial = new THREE.MeshStandardMaterial({
-          color: '#bc8cff',
-          metalness: 0.7,
-          roughness: 0.2,
-          emissive: '#4b1d66',
-        });
-        const torus = new THREE.Mesh(torusGeometry, torusMaterial);
-        torus.position.set(0, -0.1, 0);
-        anchor.group.add(torus);
-
-        const pulseGeometry = new THREE.RingGeometry(0.32, 0.34, 32);
-        const pulseMaterial = new THREE.MeshBasicMaterial({
-          color: '#ffffff',
-          opacity: 0.8,
-          transparent: true,
-          side: THREE.DoubleSide,
-        });
-        const pulse = new THREE.Mesh(pulseGeometry, pulseMaterial);
-        pulse.rotation.x = -Math.PI / 2;
-        anchor.group.add(pulse);
-
-        anchor.group.visible = true; // forzado temporal
 
         await mindarThree.start();
 
@@ -120,9 +103,7 @@ const MindARScene = ({
 
         const clock = new THREE.Clock();
         animationLoop = () => {
-          const elapsed = clock.getElapsedTime();
-          torus.rotation.y += 0.02;
-          pulse.material.opacity = 0.5 + 0.5 * Math.sin(elapsed * 2);
+          clock.getElapsedTime(); // mantener anim loop para renderizar continuamente
           renderer.render(scene, camera);
         };
         renderer.setAnimationLoop(animationLoop);
@@ -143,11 +124,18 @@ const MindARScene = ({
         mindarThree.stop();
         mindarThree.renderer?.dispose();
       }
+      spriteRef.current = null;
       if (attachedVideo && attachedVideo.parentElement === containerRef.current) {
         containerRef.current.removeChild(attachedVideo);
       }
     };
-  }, [isCameraReady, targetSrc, message]);
+  }, [isCameraReady, targetSrc]);
+
+  useEffect(() => {
+    if (spriteRef.current?.update) {
+      spriteRef.current.update(message);
+    }
+  }, [message]);
 
   return (
     <div
