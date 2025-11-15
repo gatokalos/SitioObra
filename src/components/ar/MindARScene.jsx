@@ -1,8 +1,8 @@
 import React, { useEffect, useRef, useState } from 'react';
-import * as THREE from 'three';
 import loadMindAR from '@/lib/loadMindAR';
+import loadThree from '@/lib/loadThree';
 
-const createTextSprite = (message) => {
+const createTextSprite = (THREE, message) => {
   const canvas = document.createElement('canvas');
   const size = 512;
   canvas.width = size;
@@ -47,6 +47,7 @@ const MindARScene = ({
       setStatus('loading');
       setError('');
       try {
+        const THREE = await loadThree();
         const MINDAR_IMAGE = await loadMindAR();
         mindarThree = new MINDAR_IMAGE.MindARThree({
           container: containerRef.current,
@@ -68,7 +69,7 @@ const MindARScene = ({
         const anchor = mindarThree.addAnchor(0);
 
         // Text sprite
-        const sprite = createTextSprite(message);
+        const sprite = createTextSprite(THREE, message);
         anchor.group.add(sprite);
 
         // Orbital object
