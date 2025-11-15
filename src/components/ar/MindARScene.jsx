@@ -154,18 +154,18 @@ const MindARScene = ({
     >
       <div ref={containerRef} className="absolute inset-0" />
       {status === 'idle' ? (
-        <div className="absolute inset-0 flex items-center justify-center text-slate-400 text-sm">
+        <div className="absolute inset-0 flex items-center justify-center text-slate-400 text-sm pointer-events-none">
           Esperando a que actives la cámara…
         </div>
       ) : null}
       {status === 'loading' ? (
-        <div className="absolute inset-0 flex flex-col items-center justify-center text-slate-200 text-sm bg-black/40">
+        <div className="absolute inset-0 flex flex-col items-center justify-center text-slate-200 text-sm bg-black/40 pointer-events-none">
           <div className="animate-spin rounded-full h-10 w-10 border-2 border-purple-300 border-t-transparent mb-3"></div>
           Preparando constelación…
         </div>
       ) : null}
       {status === 'error' ? (
-        <div className="absolute inset-0 flex items-center justify-center text-center px-6 text-sm text-red-300 bg-black/70">
+        <div className="absolute inset-0 flex items-center justify-center text-center px-6 text-sm text-red-300 bg-black/70 pointer-events-none">
           {error}
         </div>
       ) : null}
