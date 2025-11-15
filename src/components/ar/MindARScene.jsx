@@ -148,7 +148,10 @@ const MindARScene = ({
   }, [isCameraReady, targetSrc, message]);
 
   return (
-    <div className={`relative w-full aspect-[3/4] bg-black rounded-3xl overflow-hidden ${className}`}>
+    <div
+      className={`relative w-full aspect-[3/4] bg-black rounded-3xl overflow-hidden ${className}`}
+      data-ar-container="true"
+    >
       <div ref={containerRef} className="absolute inset-0" />
       {status === 'idle' ? (
         <div className="absolute inset-0 flex items-center justify-center text-slate-400 text-sm">
