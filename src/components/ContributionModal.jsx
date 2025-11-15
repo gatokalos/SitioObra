@@ -222,39 +222,7 @@ const ContributionModal = ({ open, onClose }) => {
             className="relative z-10 w-full max-w-5xl rounded-3xl border border-white/10 bg-slate-950/95 p-4 sm:p-8 shadow-2xl max-h-[90vh] overflow-y-auto"
           >
             <div className="grid gap-6 md:grid-cols-[1.05fr_1fr]">
-              <div className="flex flex-col border-white/10 md:border-r md:pr-5 overflow-y-auto max-h-[70vh] pr-1">
-                <div className="mb-5">
-                  <p className="text-sm uppercase tracking-[0.35em] text-slate-400/80 mb-2">Blog / Diálogo vivo</p>
-                  <h3 className="font-display text-2xl text-slate-50 mb-2">Explora el universo #GatoEncerrado</h3>
-                  <p className="text-sm text-slate-400/80">
-                    Elige la pieza del ecosistema sobre la que quieres escribir. Tu mirada nos ayuda a trazar esta
-                    constelación crítica.
-                  </p>
-                </div>
-
-                <div className="space-y-3 pr-2">
-                  {CATEGORIES.map((category) => (
-                    <button
-                      type="button"
-                      key={category.id}
-                      onClick={() => setSelectedCategory(category)}
-                      className={`w-full rounded-2xl border px-4 py-4 text-left transition ${
-                        selectedCategory.id === category.id
-                          ? 'bg-purple-500/15 border-purple-300/40'
-                          : 'bg-black/20 border-white/10 hover:border-purple-300/30'
-                      }`}
-                    >
-                      <div className="flex items-center gap-3 mb-2">
-                        {category.icon}
-                        <h4 className="text-slate-100 font-medium">{category.title}</h4>
-                      </div>
-                      <p className="text-sm text-slate-400/80 leading-relaxed">{category.description}</p>
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              <div className="flex flex-col gap-4 overflow-y-auto pr-1 max-h-[70vh]">
+              <div className="flex flex-col gap-4 overflow-y-auto pr-1 max-h-[70vh] order-2 md:order-1">
                 <div className="flex items-start justify-between gap-3">
                   <div>
                     <h2 id="contribution-modal-title" className="font-display text-3xl text-slate-50 mb-1">
@@ -372,6 +340,40 @@ const ContributionModal = ({ open, onClose }) => {
                   </Button>
                 </form>
               </div>
+
+              <div className="flex flex-col border-white/10 md:border-r md:pr-5 overflow-y-auto max-h-[70vh] pr-1 order-1 md:order-2">
+                <div className="mb-5">
+                  <p className="text-sm uppercase tracking-[0.35em] text-slate-400/80 mb-2">Blog / Diálogo vivo</p>
+                  <h3 className="font-display text-2xl text-slate-50 mb-2">Explora el universo #GatoEncerrado</h3>
+                  <p className="text-sm text-slate-400/80">
+                    Elige la pieza del ecosistema sobre la que quieres escribir. Tu mirada nos ayuda a trazar esta
+                    constelación crítica.
+                  </p>
+                </div>
+
+                <div className="space-y-3 pr-2">
+                  {CATEGORIES.map((category) => (
+                    <button
+                      type="button"
+                      key={category.id}
+                      onClick={() => setSelectedCategory(category)}
+                      className={`w-full rounded-2xl border px-4 py-4 text-left transition ${
+                        selectedCategory.id === category.id
+                          ? 'bg-purple-500/15 border-purple-300/40'
+                          : 'bg-black/20 border-white/10 hover:border-purple-300/30'
+                      }`}
+                    >
+                      <div className="flex items-center gap-3 mb-2">
+                        {category.icon}
+                        <h4 className="text-slate-100 font-medium">{category.title}</h4>
+                      </div>
+                      <p className="text-sm text-slate-400/80 leading-relaxed">{category.description}</p>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div className="flex flex-col border-white/10 md:border-r md:pr-5 overflow-y-auto max-h-[70vh] pr-1 order-1 md:order-2">
             </div>
           </motion.div>
         </motion.div>
