@@ -1,4 +1,4 @@
-const MINDAR_SCRIPT_URL = 'https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-three.prod.js';
+const MINDAR_MODULE_URL = 'https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-three.prod.js';
 
 let loaderPromise = null;
 
@@ -11,37 +11,24 @@ export function loadMindAR() {
     return Promise.resolve(window.MINDAR.IMAGE);
   }
 
-  if (loaderPromise) {
-    return loaderPromise;
-  }
-
-  loaderPromise = new Promise((resolve, reject) => {
-    const existingScript = document.querySelector(`script[src="${MINDAR_SCRIPT_URL}"]`);
-    if (existingScript) {
-      existingScript.addEventListener('load', () => {
-        if (window.MINDAR?.IMAGE) {
-          resolve(window.MINDAR.IMAGE);
-        } else {
-          reject(new Error('MindAR no se inicializó correctamente.'));
+  if (!loaderPromise) {
+    loaderPromise = import(/* @vite-ignore */ MINDAR_MODULE_URL)
+      .then((module) => {
+        if (module?.MindARThree) {
+          return module;
         }
-      });
-      existingScript.addEventListener('error', () => reject(new Error('No se pudo cargar MindAR.')));
-      return;
-    }
 
-    const script = document.createElement('script');
-    script.src = MINDAR_SCRIPT_URL;
-    script.async = true;
-    script.addEventListener('load', () => {
-      if (window.MINDAR?.IMAGE) {
-        resolve(window.MINDAR.IMAGE);
-      } else {
-        reject(new Error('MindAR no se inicializó correctamente.'));
-      }
-    });
-    script.addEventListener('error', () => reject(new Error('No se pudo cargar MindAR.')));
-    document.head.appendChild(script);
-  });
+        if (window.MINDAR?.IMAGE?.MindARThree) {
+          return window.MINDAR.IMAGE;
+        }
+
+        throw new Error('MindAR no se inicializó correctamente.');
+      })
+      .catch((error) => {
+        console.error('[loadMindAR] Error al importar MindAR:', error);
+        throw error;
+      });
+  }
 
   return loaderPromise;
 }
