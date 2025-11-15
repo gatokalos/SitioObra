@@ -149,7 +149,7 @@ const MindARScene = ({
 
   return (
     <div
-      className={`relative w-full aspect-[3/4] bg-black rounded-3xl overflow-hidden ${className}`}
+      className={`relative w-full aspect-[3/4] bg-transparent rounded-3xl overflow-hidden ${className}`}
       data-ar-container="true"
     >
       <div ref={containerRef} className="absolute inset-0" />
