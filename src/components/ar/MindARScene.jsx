@@ -1,23 +1,66 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { forwardRef, useEffect, useImperativeHandle, useRef, useState } from 'react';
 import loadMindAR from '@/lib/loadMindAR';
 import loadThree from '@/lib/loadThree';
 
-const createTextSprite = (THREE, message) => {
+const createTextPanel = (THREE, message) => {
   const canvas = document.createElement('canvas');
   const size = 512;
   canvas.width = size;
   canvas.height = size;
   const context = canvas.getContext('2d');
   const texture = new THREE.CanvasTexture(canvas);
-  const material = new THREE.SpriteMaterial({ map: texture, transparent: true });
-  const sprite = new THREE.Sprite(material);
-  sprite.scale.set(1.6, 0.9, 1);
-  sprite.position.set(0, 0.4, 0);
+
+  const panelMaterial = new THREE.MeshBasicMaterial({
+    map: texture,
+    transparent: true,
+    opacity: 0.95,
+    depthWrite: false,
+  });
+  const panelGeometry = new THREE.PlaneGeometry(1.9, 0.72);
+  const panel = new THREE.Mesh(panelGeometry, panelMaterial);
+  panel.position.set(0, 1.05, 0.02);
+
+  const glowGeometry = new THREE.PlaneGeometry(2.1, 0.9);
+  const glowMaterial = new THREE.MeshBasicMaterial({
+    color: '#6b46c1',
+    transparent: true,
+    opacity: 0.2,
+    depthWrite: false,
+  });
+  const glow = new THREE.Mesh(glowGeometry, glowMaterial);
+  glow.position.set(0, 1.05, -0.01);
+
+  const accentGeometry = new THREE.PlaneGeometry(1.7, 0.09);
+  const accentMaterial = new THREE.MeshBasicMaterial({
+    color: '#f5d657',
+    transparent: true,
+    opacity: 0.35,
+    depthWrite: false,
+  });
+  const accent = new THREE.Mesh(accentGeometry, accentMaterial);
+  accent.position.set(0, 1.15, 0.04);
+
+  const haloGeometry = new THREE.TorusGeometry(0.5, 0.012, 32, 140);
+  const haloMaterial = new THREE.MeshBasicMaterial({
+    color: '#f5d657',
+    transparent: true,
+    opacity: 0.5,
+  });
+  const halo = new THREE.Mesh(haloGeometry, haloMaterial);
+  halo.rotation.x = Math.PI / 2;
+  halo.position.set(0, 0.35, 0);
+
+  const group = new THREE.Group();
+  group.add(glow);
+  group.add(panel);
+  group.add(accent);
+  group.add(halo);
+  group.position.set(0, 0.25, -0.08);
 
   const drawMessage = (text) => {
     context.clearRect(0, 0, size, size);
-    context.fillStyle = 'rgba(9, 6, 21, 0.8)';
-    context.fillRect(0, size * 0.25, size, size * 0.5);
+    context.fillStyle = 'rgba(3, 3, 9, 0.85)';
+    context.fillRect(0, size * 0.27, size, size * 0.46);
     context.font = 'bold 48px "Space Grotesk", sans-serif';
     context.fillStyle = '#f5d657';
     context.textAlign = 'center';
@@ -27,17 +70,23 @@ const createTextSprite = (THREE, message) => {
 
   drawMessage(message);
 
-  return { sprite, update: drawMessage };
+  const animate = (elapsed) => {
+    group.rotation.z = Math.sin(elapsed * 0.4) * 0.04;
+    halo.rotation.z += 0.01;
+  };
+
+  return { group, update: drawMessage, animate };
 };
 
-const MindARScene = ({
+const MindARScene = forwardRef(({
   targetSrc = '/assets/targets.mind',
   isCameraReady = false,
   className = '',
   message = 'La taza te escucha.',
-}) => {
+}, ref) => {
   const containerRef = useRef(null);
-  const spriteRef = useRef(null);
+  const panelRef = useRef(null);
+  const videoRef = useRef(null);
   const [status, setStatus] = useState('idle');
   const [error, setError] = useState('');
 
@@ -76,10 +125,10 @@ const MindARScene = ({
 
         const anchor = mindarThree.addAnchor(0);
 
-        // Text sprite
-        const { sprite, update } = createTextSprite(THREE, message);
-        spriteRef.current = { sprite, update };
-        anchor.group.add(sprite);
+        // Text panel
+        const { group, update, animate } = createTextPanel(THREE, message);
+        panelRef.current = { update, animate };
+        anchor.group.add(group);
 
         await mindarThree.start();
 
@@ -97,13 +146,15 @@ const MindARScene = ({
           video.style.display = 'block';
           containerRef.current.appendChild(video);
           attachedVideo = video;
+          videoRef.current = video;
         }
 
         setStatus('running');
 
         const clock = new THREE.Clock();
         animationLoop = () => {
-          clock.getElapsedTime(); // mantener anim loop para renderizar continuamente
+          const elapsed = clock.getElapsedTime();
+          panelRef.current?.animate?.(elapsed);
           renderer.render(scene, camera);
         };
         renderer.setAnimationLoop(animationLoop);
@@ -124,7 +175,8 @@ const MindARScene = ({
         mindarThree.stop();
         mindarThree.renderer?.dispose();
       }
-      spriteRef.current = null;
+      panelRef.current = null;
+      videoRef.current = null;
       if (attachedVideo && attachedVideo.parentElement === containerRef.current) {
         containerRef.current.removeChild(attachedVideo);
       }
@@ -132,10 +184,27 @@ const MindARScene = ({
   }, [isCameraReady, targetSrc]);
 
   useEffect(() => {
-    if (spriteRef.current?.update) {
-      spriteRef.current.update(message);
+    if (panelRef.current?.update) {
+      panelRef.current.update(message);
     }
   }, [message]);
+
+  useImperativeHandle(ref, () => ({
+    async captureFrame() {
+      const video = videoRef.current;
+      if (!video || video.videoWidth === 0 || video.videoHeight === 0) {
+        return null;
+      }
+      const captureCanvas = document.createElement('canvas');
+      captureCanvas.width = video.videoWidth;
+      captureCanvas.height = video.videoHeight;
+      const ctx = captureCanvas.getContext('2d');
+      ctx.drawImage(video, 0, 0, captureCanvas.width, captureCanvas.height);
+      return await new Promise((resolve) => {
+        captureCanvas.toBlob((blob) => resolve(blob), 'image/jpeg', 0.95);
+      });
+    },
+  }), []);
 
   return (
     <div
@@ -161,6 +230,6 @@ const MindARScene = ({
       ) : null}
     </div>
   );
-};
+});
 
 export default MindARScene;

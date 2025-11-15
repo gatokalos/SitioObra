@@ -9,6 +9,7 @@ import {
   BLOG_CATEGORY_ORDER,
   deriveBlogCategory,
 } from '@/lib/blogCategories';
+import { WEBAR_GALLERY } from '@/lib/webarGallery';
 
 const containerVariants = {
   hidden: { opacity: 0, y: 40 },
@@ -353,6 +354,44 @@ const Blog = ({ posts = [], isLoading = false, error = null }) => {
                 filteredPosts.map((post) => <ArticleCard key={post.id} post={post} onSelect={handleSelectPost} />)
               )}
             </motion.div>
+
+            <motion.section
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8, delay: 0.1, ease: 'easeOut' }}
+              viewport={{ once: true }}
+              className="mt-16 space-y-6"
+            >
+              <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-4">
+                <div>
+                  <p className="text-xs uppercase tracking-[0.35em] text-slate-400/80">Galería WebAR</p>
+                  <h3 className="font-display text-3xl text-slate-100">Compartimos tus constelaciones</h3>
+                  <p className="text-slate-300/80">
+                    Estas capturas provienen de activaciones WebAR y publicaciones con #EstoNoEsUnaTaza. Comparte la tuya
+                    desde la experiencia para aparecer aquí.
+                  </p>
+                </div>
+              </div>
+              <div className="grid md:grid-cols-3 gap-6">
+                {WEBAR_GALLERY.map((entry) => (
+                  <div key={entry.id} className="glass-effect rounded-2xl overflow-hidden border border-white/10">
+                    <div className="aspect-[4/5] overflow-hidden">
+                      <img
+                        src={entry.image}
+                        alt={entry.phrase}
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                    <div className="p-4 space-y-2">
+                      <p className="text-slate-100 font-medium">{entry.phrase}</p>
+                      <p className="text-xs text-slate-400">
+                        {entry.author} · {entry.source}
+                      </p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </motion.section>
 
             <motion.div
               initial={{ opacity: 0, y: 30 }}
