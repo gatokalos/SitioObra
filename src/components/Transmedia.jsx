@@ -50,9 +50,9 @@ const showcaseDefinitions = {
       },
       {
         id: 'copycats-v3',
-        title: 'Conversación con Silvestre',
+        title: 'Teaser de Quirón',
         author: 'Voces de la Comunidad',
-        duration: '3:58',
+        duration: '0:58',
         url: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Cine%20-%20teasers/Quiron.mp4',
       },
     ],
