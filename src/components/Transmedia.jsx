@@ -230,6 +230,7 @@ const Transmedia = () => {
   const [pdfContainerWidth, setPdfContainerWidth] = useState(0);
   const pdfPageWidth = Math.max(pdfContainerWidth - 48, 320);
   const [isTazaARActive, setIsTazaARActive] = useState(false);
+  const [isMobileARFullscreen, setIsMobileARFullscreen] = useState(false);
 
   const handleOpenMiniverses = useCallback(() => {
     setIsMiniverseOpen(true);
@@ -336,6 +337,22 @@ const Transmedia = () => {
     setPdfLoadError(null);
   }, []);
 
+  const handleActivateAR = useCallback(() => {
+    setIsTazaARActive(true);
+    if (typeof window !== 'undefined' && window.matchMedia('(max-width: 768px)').matches) {
+      setIsMobileARFullscreen(true);
+      document.body.classList.add('overflow-hidden');
+    } else {
+      setIsMobileARFullscreen(false);
+    }
+  }, []);
+
+  const handleCloseARExperience = useCallback(() => {
+    setIsTazaARActive(false);
+    setIsMobileARFullscreen(false);
+    document.body.classList.remove('overflow-hidden');
+  }, []);
+
   const handlePdfLoadSuccess = useCallback(({ numPages }) => {
     setPdfNumPages(numPages);
   }, []);
@@ -358,6 +375,8 @@ const Transmedia = () => {
   useEffect(() => {
     if (activeShowcase !== 'lataza') {
       setIsTazaARActive(false);
+      setIsMobileARFullscreen(false);
+      document.body.classList.remove('overflow-hidden');
     }
   }, [activeShowcase]);
 
@@ -392,6 +411,12 @@ const Transmedia = () => {
     window.addEventListener('resize', updateWidth);
     return () => window.removeEventListener('resize', updateWidth);
   }, [pdfPreview]);
+
+  useEffect(() => {
+    return () => {
+      document.body.classList.remove('overflow-hidden');
+    };
+  }, []);
 
   const handleLaunchWebAR = (message) => {
     toast({
@@ -476,12 +501,12 @@ const Transmedia = () => {
             <p className="text-slate-300/85 leading-relaxed font-light">{activeDefinition.intro}</p>
 
             <div className="rounded-3xl border border-white/10 overflow-hidden bg-black/30">
-              {activeShowcase === 'lataza' && isTazaARActive ? (
+              {activeShowcase === 'lataza' && isTazaARActive && !isMobileARFullscreen ? (
                 <div className="p-0 sm:p-4">
                   <ARExperience
                     targetSrc="/webar/taza/taza.mind"
                     phrases={activeDefinition.phrases}
-                    onExit={() => setIsTazaARActive(false)}
+                    onExit={handleCloseARExperience}
                   />
                 </div>
               ) : (
@@ -520,7 +545,7 @@ const Transmedia = () => {
                       <Button
                         className="border-purple-400/40 text-purple-200 hover:bg-purple-500/10"
                         variant="outline"
-                        onClick={() => setIsTazaARActive(true)}
+                        onClick={handleActivateAR}
                       >
                         {activeDefinition.ctaLabel}
                       </Button>
@@ -1048,6 +1073,16 @@ const Transmedia = () => {
               ) : null}
             </div>
           </div>
+        </div>
+      ) : null}
+
+      {isTazaARActive && isMobileARFullscreen ? (
+        <div className="fixed inset-0 z-40 bg-black">
+          <ARExperience
+            targetSrc="/webar/taza/taza.mind"
+            phrases={showcaseDefinitions.lataza.phrases}
+            onExit={handleCloseARExperience}
+          />
         </div>
       ) : null}
     </>
