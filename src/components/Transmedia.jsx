@@ -44,7 +44,7 @@ const showcaseDefinitions = {
       {
         id: 'copycats-v2',
         title: 'Ensayo abierto · Variación 2',
-        author: 'Laboratorio Transmedia',
+        author: 'Detrás de cámaras',
         duration: '5:46',
         url: 'https://player.vimeo.com/video/959781265?h=9b3b018f3e',
       },

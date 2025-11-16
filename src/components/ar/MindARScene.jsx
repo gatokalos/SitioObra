@@ -50,11 +50,40 @@ const createTextPanel = (THREE, message) => {
   halo.rotation.x = Math.PI / 2;
   halo.position.set(0, 0.35, 0);
 
+  // Steam texture
+  const steamCanvas = document.createElement('canvas');
+  steamCanvas.width = 64;
+  steamCanvas.height = 256;
+  const steamCtx = steamCanvas.getContext('2d');
+  const steamGradient = steamCtx.createLinearGradient(0, 0, 0, 256);
+  steamGradient.addColorStop(0, 'rgba(255,255,255,0)');
+  steamGradient.addColorStop(0.2, 'rgba(255,255,255,0.3)');
+  steamGradient.addColorStop(1, 'rgba(255,255,255,0)');
+  steamCtx.fillStyle = steamGradient;
+  steamCtx.fillRect(0, 0, 64, 256);
+  const steamTexture = new THREE.CanvasTexture(steamCanvas);
+
+  const steamMaterial = new THREE.MeshBasicMaterial({
+    map: steamTexture,
+    transparent: true,
+    opacity: 0.4,
+    depthWrite: false,
+    blending: THREE.AdditiveBlending,
+  });
+
+  const steamPlanes = Array.from({ length: 4 }).map(() => {
+    const plane = new THREE.Mesh(new THREE.PlaneGeometry(0.35, 1.2), steamMaterial.clone());
+    plane.position.set((Math.random() - 0.5) * 0.4, 0.25, (Math.random() - 0.5) * 0.1);
+    plane.material.opacity = 0.25 + Math.random() * 0.2;
+    return plane;
+  });
+
   const group = new THREE.Group();
   group.add(glow);
   group.add(panel);
   group.add(accent);
   group.add(halo);
+  steamPlanes.forEach((plane) => group.add(plane));
   group.position.set(0, 0.25, -0.08);
 
   const drawMessage = (text) => {
@@ -73,6 +102,11 @@ const createTextPanel = (THREE, message) => {
   const animate = (elapsed) => {
     group.rotation.z = Math.sin(elapsed * 0.4) * 0.04;
     halo.rotation.z += 0.01;
+    steamPlanes.forEach((plane, index) => {
+      const speed = 0.15 + index * 0.05;
+      plane.position.y = 0.2 + ((elapsed * speed + index * 0.2) % 1.2);
+      plane.material.opacity = 0.2 + 0.15 * Math.sin(elapsed * 0.8 + index);
+    });
   };
 
   return { group, update: drawMessage, animate };
