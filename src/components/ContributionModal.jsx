@@ -93,6 +93,10 @@ const ContributionModal = ({ open, onClose }) => {
   const [errorMessage, setErrorMessage] = useState('');
   const [selectedCategory, setSelectedCategory] = useState(CATEGORIES[0]);
   const [notifyOnPublish, setNotifyOnPublish] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
+  const [isMobileFormOpen, setIsMobileFormOpen] = useState(false);
+
+  const MOBILE_SHEET_CLOSED_OFFSET = 340;
 
   useEffect(() => {
     if (!open) {
@@ -122,6 +126,21 @@ const ContributionModal = ({ open, onClose }) => {
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [open, onClose]);
+
+  useEffect(() => {
+    const checkViewport = () => {
+      if (typeof window === 'undefined') {
+        return;
+      }
+      const mobile = window.matchMedia('(max-width: 767px)').matches;
+      setIsMobile(mobile);
+      setIsMobileFormOpen(!mobile);
+    };
+
+    checkViewport();
+    window.addEventListener('resize', checkViewport);
+    return () => window.removeEventListener('resize', checkViewport);
+  }, []);
 
   const handleInputChange = useCallback((event) => {
     const { name, value } = event.target;
@@ -198,6 +217,171 @@ const ContributionModal = ({ open, onClose }) => {
     onClose?.();
   }, [onClose, status]);
 
+  const handleMobileSheetToggle = useCallback(() => {
+    setIsMobileFormOpen((prev) => !prev);
+  }, []);
+
+  const handleSheetDragEnd = useCallback(
+    (_, info) => {
+      if (info.offset.y > 60) {
+        setIsMobileFormOpen(false);
+      } else if (info.offset.y < -60) {
+        setIsMobileFormOpen(true);
+      }
+    },
+    []
+  );
+
+  const renderFormSection = (className = '') => (
+    <div className={`flex flex-col gap-4 ${className}`}>
+      <div className="flex items-start justify-between gap-3">
+        <div>
+          <h2 id="contribution-modal-title" className="font-display text-3xl text-slate-50 mb-1">
+            Contribuye al diálogo crítico
+          </h2>
+          <p className="text-sm text-slate-400/80">
+            Estás escribiendo sobre{' '}
+            <span className="text-purple-200 font-semibold">{selectedCategory.title}</span>
+          </p>
+        </div>
+        <button
+          onClick={handleClose}
+          className="text-slate-400 hover:text-white transition text-xl leading-none"
+          aria-label="Cerrar formulario de propuestas"
+        >
+          ✕
+        </button>
+      </div>
+
+      <form className="space-y-4" onSubmit={handleSubmit}>
+        <input
+          name="name"
+          type="text"
+          required
+          value={formState.name}
+          onChange={handleInputChange}
+          className="w-full rounded-lg border border-white/10 bg-black/30 px-4 py-3 text-slate-100 placeholder-slate-500 focus:border-purple-400 focus:ring-1 focus:ring-purple-400"
+          placeholder="¿Cómo quieres que te nombremos?"
+        />
+
+        <input
+          name="email"
+          type="email"
+          required
+          value={formState.email}
+          onChange={handleInputChange}
+          className="w-full rounded-lg border border-white/10 bg-black/30 px-4 py-3 text-slate-100 placeholder-slate-500 focus:border-purple-400 focus:ring-1 focus:ring-purple-400"
+          placeholder="nombre@correo.com"
+        />
+
+        <input
+          name="role"
+          type="text"
+          value={formState.role}
+          onChange={handleInputChange}
+          className="w-full rounded-lg border border-white/10 bg-black/30 px-4 py-3 text-slate-100 placeholder-slate-500 focus:border-purple-400 focus:ring-1 focus:ring-purple-400"
+          placeholder="Crítica teatral, artista, investigador, espectador..."
+        />
+
+        <textarea
+          name="proposal"
+          rows={5}
+          required
+          value={formState.proposal}
+          onChange={handleInputChange}
+          className="w-full rounded-lg border border-white/10 bg-black/30 px-4 py-3 text-slate-100 placeholder-slate-500 focus:border-purple-400 focus:ring-1 focus:ring-purple-400"
+          placeholder="Resume tu texto, crónica o propuesta curatorial..."
+        />
+
+        <input
+          name="attachmentUrl"
+          type="url"
+          value={formState.attachmentUrl}
+          onChange={handleInputChange}
+          className="w-full rounded-lg border border-white/10 bg-black/30 px-4 py-3 text-slate-100 placeholder-slate-500 focus:border-purple-400 focus:ring-1 focus:ring-purple-400"
+          placeholder="Enlace a material adicional (Drive, portfolio, video...)"
+        />
+
+        <div className="flex flex-col gap-2 rounded-lg border border-white/5 bg-black/20 px-4 py-3">
+          <div className="flex items-start gap-3">
+            <input
+              id="notify-on-publish"
+              type="checkbox"
+              checked={notifyOnPublish}
+              onChange={(event) => setNotifyOnPublish(event.target.checked)}
+              disabled={!isAuthenticated}
+              className={`mt-1 h-4 w-4 rounded border-white/20 bg-black/40 text-purple-500 focus:ring-purple-400 ${
+                !isAuthenticated ? 'opacity-40 cursor-not-allowed' : ''
+              }`}
+            />
+            <label htmlFor="notify-on-publish" className="text-sm text-slate-300/80 leading-relaxed">
+              Quiero recibir notificación cuando se publique mi propuesta
+              {!isAuthenticated ? (
+                <span className="block text-xs text-slate-500">Inicia sesión para activar esta opción.</span>
+              ) : null}
+            </label>
+          </div>
+
+          {!isAuthenticated ? <LoginAccordion /> : null}
+        </div>
+
+        {status === 'error' ? (
+          <div className="rounded-lg border border-red-500/60 bg-red-500/10 px-4 py-3 text-sm text-red-200">
+            {errorMessage}
+          </div>
+        ) : null}
+
+        {status === 'success' ? (
+          <div className="rounded-lg border border-emerald-500/60 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-200">
+            Recibimos tu propuesta. Te contactaremos si necesitamos más detalles.
+          </div>
+        ) : null}
+
+        <Button
+          type="submit"
+          disabled={status === 'loading'}
+          className="w-full bg-gradient-to-r from-purple-600/80 to-indigo-600/80 hover:from-purple-600 hover:to-indigo-600 text-white py-3 rounded-lg font-semibold flex items-center justify-center gap-2 hover-glow"
+        >
+          {status === 'loading' ? 'Enviando…' : 'Enviar propuesta'}
+        </Button>
+      </form>
+    </div>
+  );
+
+  const renderCategoriesSection = (className = '') => (
+    <div className={`flex flex-col ${className}`}>
+      <div className="mb-5">
+        <p className="text-sm uppercase tracking-[0.35em] text-slate-400/80 mb-2">Blog / Diálogo vivo</p>
+        <h3 className="font-display text-2xl text-slate-50 mb-2">Explora el universo #GatoEncerrado</h3>
+        <p className="text-sm text-slate-400/80">
+          Elige la pieza del ecosistema sobre la que quieres escribir. Tu mirada nos ayuda a trazar esta constelación
+          crítica.
+        </p>
+      </div>
+
+      <div className="space-y-3 pr-2">
+        {CATEGORIES.map((category) => (
+          <button
+            type="button"
+            key={category.id}
+            onClick={() => setSelectedCategory(category)}
+            className={`w-full rounded-2xl border px-4 py-4 text-left transition ${
+              selectedCategory.id === category.id
+                ? 'bg-purple-500/15 border-purple-300/40'
+                : 'bg-black/20 border-white/10 hover:border-purple-300/30'
+            }`}
+          >
+            <div className="flex items-center gap-3 mb-2">
+              {category.icon}
+              <h4 className="text-slate-100 font-medium">{category.title}</h4>
+            </div>
+            <p className="text-sm text-slate-400/80 leading-relaxed">{category.description}</p>
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+
   return (
     <AnimatePresence>
       {open ? (
@@ -219,160 +403,45 @@ const ContributionModal = ({ open, onClose }) => {
             aria-modal="true"
             aria-labelledby="contribution-modal-title"
             variants={modalVariants}
-            className="relative z-10 w-full max-w-5xl rounded-3xl border border-white/10 bg-slate-950/95 p-4 sm:p-8 shadow-2xl max-h-[90vh] overflow-y-auto"
+            className="relative z-10 w-full max-w-5xl rounded-3xl border border-white/10 bg-slate-950/95 p-4 sm:p-8 shadow-2xl max-h-[90vh] flex flex-col overflow-hidden"
           >
-            <div className="grid gap-6 md:grid-cols-[1.05fr_1fr]">
-              <div className="flex flex-col gap-4 overflow-y-auto pr-1 max-h-[70vh] order-2 md:order-1">
-                <div className="flex items-start justify-between gap-3">
-                  <div>
-                    <h2 id="contribution-modal-title" className="font-display text-3xl text-slate-50 mb-1">
-                      Contribuye al diálogo crítico
-                    </h2>
-                    <p className="text-sm text-slate-400/80">
-                      Estás escribiendo sobre{' '}
-                      <span className="text-purple-200 font-semibold">{selectedCategory.title}</span>
-                    </p>
-                  </div>
-                  <button
-                    onClick={handleClose}
-                    className="text-slate-400 hover:text-white transition text-xl leading-none"
-                    aria-label="Cerrar formulario de propuestas"
-                  >
-                    ✕
-                  </button>
-                </div>
-
-                <form className="space-y-4" onSubmit={handleSubmit}>
-                  <input
-                    name="name"
-                    type="text"
-                    required
-                    value={formState.name}
-                    onChange={handleInputChange}
-                    className="w-full rounded-lg border border-white/10 bg-black/30 px-4 py-3 text-slate-100 placeholder-slate-500 focus:border-purple-400 focus:ring-1 focus:ring-purple-400"
-                    placeholder="¿Cómo quieres que te nombremos?"
-                  />
-
-                  <input
-                    name="email"
-                    type="email"
-                    required
-                    value={formState.email}
-                    onChange={handleInputChange}
-                    className="w-full rounded-lg border border-white/10 bg-black/30 px-4 py-3 text-slate-100 placeholder-slate-500 focus:border-purple-400 focus:ring-1 focus:ring-purple-400"
-                    placeholder="nombre@correo.com"
-                  />
-
-                  <input
-                    name="role"
-                    type="text"
-                    value={formState.role}
-                    onChange={handleInputChange}
-                    className="w-full rounded-lg border border-white/10 bg-black/30 px-4 py-3 text-slate-100 placeholder-slate-500 focus:border-purple-400 focus:ring-1 focus:ring-purple-400"
-                    placeholder="Crítica teatral, artista, investigador, espectador..."
-                  />
-
-                  <textarea
-                    name="proposal"
-                    rows={5}
-                    required
-                    value={formState.proposal}
-                    onChange={handleInputChange}
-                    className="w-full rounded-lg border border-white/10 bg-black/30 px-4 py-3 text-slate-100 placeholder-slate-500 focus:border-purple-400 focus:ring-1 focus:ring-purple-400 resize-none"
-                    placeholder="Resume tu texto, crónica o propuesta curatorial..."
-                  />
-
-                  <input
-                    name="attachmentUrl"
-                    type="url"
-                    value={formState.attachmentUrl}
-                    onChange={handleInputChange}
-                    className="w-full rounded-lg border border-white/10 bg-black/30 px-4 py-3 text-slate-100 placeholder-slate-500 focus:border-purple-400 focus:ring-1 focus:ring-purple-400"
-                    placeholder="Enlace a material adicional (Drive, portfolio, video...)"
-                  />
-
-                  <div className="flex flex-col gap-2 rounded-lg border border-white/5 bg-black/20 px-4 py-3">
-                    <div className="flex items-start gap-3">
-                      <input
-                        id="notify-on-publish"
-                        type="checkbox"
-                        checked={notifyOnPublish}
-                        onChange={(event) => setNotifyOnPublish(event.target.checked)}
-                        disabled={!isAuthenticated}
-                        className={`mt-1 h-4 w-4 rounded border-white/20 bg-black/40 text-purple-500 focus:ring-purple-400 ${
-                          !isAuthenticated ? 'opacity-40 cursor-not-allowed' : ''
-                        }`}
-                      />
-                      <label
-                        htmlFor="notify-on-publish"
-                        className="text-sm text-slate-300/80 leading-relaxed"
-                      >
-                        Quiero recibir notificación cuando se publique mi propuesta
-                        {!isAuthenticated ? (
-                          <span className="block text-xs text-slate-500">
-                            Inicia sesión para activar esta opción.
-                          </span>
-                        ) : null}
-                      </label>
-                    </div>
-
-                    {!isAuthenticated ? <LoginAccordion /> : null}
-                  </div>
-
-                  {status === 'error' ? (
-                    <div className="rounded-lg border border-red-500/60 bg-red-500/10 px-4 py-3 text-sm text-red-200">
-                      {errorMessage}
-                    </div>
-                  ) : null}
-
-                  {status === 'success' ? (
-                    <div className="rounded-lg border border-emerald-500/60 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-200">
-                      Recibimos tu propuesta. Te contactaremos si necesitamos más detalles.
-                    </div>
-                  ) : null}
-
-                  <Button
-                    type="submit"
-                    disabled={status === 'loading'}
-                    className="w-full bg-gradient-to-r from-purple-600/80 to-indigo-600/80 hover:from-purple-600 hover:to-indigo-600 text-white py-3 rounded-lg font-semibold flex items-center justify-center gap-2 hover-glow"
-                  >
-                    {status === 'loading' ? 'Enviando…' : 'Enviar propuesta'}
-                  </Button>
-                </form>
-              </div>
-
-              <div className="flex flex-col border-white/10 md:border-r md:pr-5 overflow-y-auto max-h-[70vh] pr-1 order-1 md:order-2">
-                <div className="mb-5">
-                  <p className="text-sm uppercase tracking-[0.35em] text-slate-400/80 mb-2">Blog / Diálogo vivo</p>
-                  <h3 className="font-display text-2xl text-slate-50 mb-2">Explora el universo #GatoEncerrado</h3>
-                  <p className="text-sm text-slate-400/80">
-                    Elige la pieza del ecosistema sobre la que quieres escribir. Tu mirada nos ayuda a trazar esta
-                    constelación crítica.
-                  </p>
-                </div>
-
-                <div className="space-y-3 pr-2">
-                  {CATEGORIES.map((category) => (
-                    <button
-                      type="button"
-                      key={category.id}
-                      onClick={() => setSelectedCategory(category)}
-                      className={`w-full rounded-2xl border px-4 py-4 text-left transition ${
-                        selectedCategory.id === category.id
-                          ? 'bg-purple-500/15 border-purple-300/40'
-                          : 'bg-black/20 border-white/10 hover:border-purple-300/30'
-                      }`}
-                    >
-                      <div className="flex items-center gap-3 mb-2">
-                        {category.icon}
-                        <h4 className="text-slate-100 font-medium">{category.title}</h4>
-                      </div>
-                      <p className="text-sm text-slate-400/80 leading-relaxed">{category.description}</p>
-                    </button>
-                  ))}
-                </div>
-              </div>
+            <div className="flex items-center justify-center mb-4">
+              <div className="w-16 h-1 rounded-full bg-white/30" aria-hidden="true" />
             </div>
+            {isMobile ? (
+              <div className="md:hidden relative min-h-[65vh] pb-72">
+                {renderCategoriesSection('pr-1')}
+                <motion.div
+                  className="absolute left-0 right-0 bottom-0 rounded-3xl border border-white/10 bg-slate-950 shadow-2xl p-4"
+                  variants={mobileSheetVariants}
+                  initial="closed"
+                  animate={isMobileFormOpen ? 'open' : 'closed'}
+                  drag="y"
+                  dragElastic={0.2}
+                  dragMomentum={false}
+                  dragConstraints={{ top: 0, bottom: MOBILE_SHEET_CLOSED_OFFSET }}
+                  onDragEnd={handleSheetDragEnd}
+                >
+                  <button
+                    type="button"
+                    onClick={handleMobileSheetToggle}
+                    className="w-full flex flex-col items-center text-slate-400 text-xs uppercase tracking-[0.3em]"
+                    aria-label="Alternar formulario"
+                  >
+                    <div className="w-12 h-1.5 rounded-full bg-white/40 mb-2" />
+                    {isMobileFormOpen ? 'Desliza hacia abajo para minimizar' : 'Desliza hacia arriba para escribir'}
+                  </button>
+                  <div className="mt-4 overflow-y-auto max-h-[60vh] pr-1">
+                    {renderFormSection('gap-4')}
+                  </div>
+                </motion.div>
+              </div>
+            ) : (
+              <div className="hidden md:grid gap-6 md:grid-cols-[1.05fr_1fr] flex-1 min-h-0">
+                {renderFormSection('overflow-y-auto pr-1 min-h-0 order-2 md:order-1')}
+                {renderCategoriesSection('border-white/10 md:border-r md:pr-5 overflow-y-auto pr-1 order-1 md:order-2 min-h-0 pb-6')}
+              </div>
+            )}
           </motion.div>
         </motion.div>
       ) : null}

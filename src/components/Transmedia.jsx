@@ -32,15 +32,8 @@ const showcaseDefinitions = {
     type: 'post-videos',
     slug: 'carta-a-copycats',
     intro:
-      'Te abrimos el expediente creativo de CopyCats: cartas del equipo, referencias audiovisuales y pistas para seguir expandiendo esta constelación.',
+  'En el Miniverso Cine conviven dos pulsos del mismo universo: la mirada crítica y desbordada de CopyCats y la herida luminosa de Quirón. Aquí puedes asomarte a cartas creativas, ensayos abiertos y al proceso íntimo detrás del cortometraje que nació de nombrar tres tabúes: el suicidio, el tarot y el arte como puente hacia lo que no sabemos decir.',
     videos: [
-      {
-        id: 'copycats-v1',
-        title: 'CopyCats · Carta audiovisual',
-        author: 'Residencia #GatoEncerrado',
-        duration: '4:02',
-        url: 'https://player.vimeo.com/video/959782101?h=4ddeda92f4',
-      },
       {
         id: 'copycats-v2',
         title: 'Ensayo abierto · Variación 2',
@@ -111,21 +104,49 @@ const showcaseDefinitions = {
         url: '/comprar-novela',
       },
       {
-        id: 'qr-app',
-        title: 'Activa tu novela',
-        description: 'Escanea el QR de la contraportada para desbloquear la experiencia extendida.',
-        type: 'qr-scan',
-        action: 'openCameraForQR',
-      },
-      {
         id: 'tres-pies-galeria',
         title: 'Tres Pies al Gato — proceso visual',
-        description: 'Bocetos y exploraciones de la novela gráfica.',
-        type: 'horizontal-gallery',
-        images: [
-          '/assets/PrimerActo.png',
-          '/assets/vidacomic.png',
-          '/assets/cortometrajes.png',
+        description: 'Exploraciones de la novela gráfica.',
+        previewImage: '/assets/silvestre-comic.jpeg',
+        type: 'internal-reading',
+        previewMode: 'pdf',
+        previewPdfUrl: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/PDFs/Caps%201%20a%2024.pdf',
+      },
+      {
+        id: 'novel-apps',
+        title: 'Activa tus novelas',
+        description:
+          'Cada formato tiene su propia app interactiva. La novela de autoficción ya se puede activar; el cómic transmedia abre pronto su lector con pistas y capas expandidas.',
+        type: 'novel-apps',
+        apps: [
+          {
+            id: 'autoficcion-app',
+            name: 'Novela de autoficción',
+            status: 'Disponible',
+            description:
+              'Escanea el QR de la contraportada de tu ejemplar para redimirlo y activar la app. Allí, cada segmento narrativo se convierte en una experiencia guiada con preguntas académicas, psicológicas, narrativas y teatrales para vivir la escena como si estuvieras en un ensayo.',
+            snippet: {
+              tagline: 'Contraportada interactiva',
+              text: 'Abre la cámara, apunta al QR y desbloquea prompts y lecturas personalizadas para conversar con Silvestre.',
+            },
+            ctaLabel: 'Abrir cámara',
+            ctaAction: 'openCamera',
+          },
+          {
+            id: 'comic-app',
+            name: 'Novela gráfica / Cómic transmedia',
+            status: 'En desarrollo',
+            description:
+              'El lector digital del cómic desbloquea pistas visuales, pistas sonoras y activaciones AR que conectan con los miniversos.',
+            snippet: {
+              tagline: 'App del cómic',
+              text: 'Beta privada en curso. La experiencia combinará lectura, audio-ensayos y análisis visual.',
+              image: '/assets/imagen-comic.png',
+            },
+            ctaLabel: 'Recibir aviso',
+            ctaMessage:
+              'Déjanos tu correo en Apoya el proyecto para recibir el acceso prioritario cuando la app del cómic se libere.',
+          },
         ],
       },
       {
@@ -428,6 +449,42 @@ const Transmedia = () => {
       description: message || 'Muy pronto liberaremos la activación WebAR de este objeto.',
     });
   };
+
+  const handleOpenCameraForQR = useCallback(async () => {
+    if (typeof navigator === 'undefined' || !navigator.mediaDevices?.getUserMedia) {
+      toast({ description: 'Tu dispositivo no permite abrir la cámara desde el navegador.' });
+      return;
+    }
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: { ideal: 'environment' } },
+      });
+      stream.getTracks().forEach((track) => track.stop());
+      toast({
+        description: 'Listo. En la versión final validaremos el QR con geolocalización para redimir tu ejemplar.',
+      });
+    } catch (error) {
+      console.error('Error al acceder a la cámara:', error);
+      toast({ description: 'No pudimos acceder a la cámara. Revisa los permisos e inténtalo de nuevo.' });
+    }
+  }, []);
+
+  const handleNovelAppCTA = useCallback((app) => {
+    if (!app) {
+      return;
+    }
+    if (app.ctaUrl) {
+      window.open(app.ctaUrl, '_blank', 'noopener,noreferrer');
+      return;
+    }
+    if (app.ctaAction === 'openCamera') {
+      handleOpenCameraForQR();
+      return;
+    }
+    toast({
+      description: app.ctaMessage || 'Muy pronto liberaremos esta app interactiva.',
+    });
+  }, [handleOpenCameraForQR]);
 
   const renderPostDetails = (emptyMessage = 'Pronto liberaremos la carta completa de este miniverso.') => {
     if (activeDefinition?.type === 'blog-series') {
@@ -735,6 +792,65 @@ const Transmedia = () => {
                               <p className="text-xs text-slate-500 mt-2">{quote.author}</p>
                             ) : null}
                           </blockquote>
+                        ))}
+                      </div>
+                    </div>
+                  );
+                }
+
+                if (entry.type === 'novel-apps') {
+                  return (
+                    <div key={entry.id} className="md:col-span-2 rounded-2xl border border-white/10 p-6 bg-black/30 space-y-6">
+                      <div className="space-y-2">
+                        <h5 className="font-display text-xl text-slate-100">{entry.title}</h5>
+                        {entry.description ? (
+                          <p className="text-sm text-slate-300/80 leading-relaxed">{entry.description}</p>
+                        ) : null}
+                      </div>
+                      <div className="grid gap-4 sm:grid-cols-2">
+                        {entry.apps?.map((app) => (
+                          <div
+                            key={app.id}
+                            className="rounded-2xl border border-white/10 bg-black/40 p-4 flex flex-col gap-4"
+                          >
+                            <div className="flex items-center justify-between gap-4">
+                              <p className="font-semibold text-slate-100">{app.name}</p>
+                              <span
+                                className={`text-xs uppercase tracking-[0.3em] ${
+                                  app.status === 'Disponible' ? 'text-emerald-300' : 'text-slate-500'
+                                }`}
+                              >
+                                {app.status}
+                              </span>
+                            </div>
+                            <p className="text-sm text-slate-300/80 leading-relaxed">{app.description}</p>
+                            {app.snippet ? (
+                              <div className="rounded-xl border border-white/10 bg-slate-900/60 p-4 space-y-2">
+                                <p className="text-xs uppercase tracking-[0.3em] text-purple-300">{app.snippet.tagline}</p>
+                                {app.snippet.image ? (
+                                  <img
+                                    src={app.snippet.image}
+                                    alt={app.name}
+                                    className="w-full h-32 object-cover rounded-lg border border-white/5"
+                                  />
+                                ) : null}
+                                {app.snippet.text ? (
+                                  <p className="text-sm text-slate-200/90 leading-relaxed">{app.snippet.text}</p>
+                                ) : null}
+                              </div>
+                            ) : null}
+                            <Button
+                              onClick={() => handleNovelAppCTA(app)}
+                              variant={app.status === 'Disponible' ? 'default' : 'outline'}
+                              className={`w-full justify-center ${
+                                app.status === 'Disponible'
+                                  ? 'bg-purple-600/80 hover:bg-purple-600 text-white'
+                                  : 'border-purple-400/40 text-purple-200 hover:bg-purple-500/10'
+                              }`}
+                            >
+                              {app.ctaLabel}
+                            </Button>
+                          </div>
                         ))}
                       </div>
                     </div>
