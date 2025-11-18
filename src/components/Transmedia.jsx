@@ -106,7 +106,7 @@ const showcaseDefinitions = {
         id: 'compra-libro',
         title: 'Edición física',
         description: 'La novela completa en su versión impresa. Incluye QR secreto.',
-        image: 'public/assets/edicion-fisica.png',
+        image: '/assets/edicion-fisica.png',
         type: 'purchase-link',
         url: '/comprar-novela',
       },
@@ -123,9 +123,9 @@ const showcaseDefinitions = {
         description: 'Bocetos y exploraciones de la novela gráfica.',
         type: 'horizontal-gallery',
         images: [
-          '/assets/novela/boceto1.jpg',
-          '/assets/novela/boceto2.jpg',
-          '/assets/novela/boceto3.jpg',
+          '/assets/PrimerActo.png',
+          '/assets/vidacomic.png',
+          '/assets/cortometrajes.png',
         ],
       },
       {
@@ -623,7 +623,7 @@ const Transmedia = () => {
                       description: entry.description,
                     })
                   }
-                  className="w-full md:w-auto justify-center"
+                  className="w-full sm:w-auto justify-center"
                 >
                   Leer fragmento
                 </Button>
@@ -639,14 +639,14 @@ const Transmedia = () => {
                       description: entry.description,
                     })
                   }
-                  className="w-full md:w-auto justify-center"
+                  className="w-full sm:w-auto justify-center"
                 >
                   Ver fragmento
                 </Button>
               );
             }
             return entry.contentSlug ? (
-              <Button onClick={() => handleOpenBlogEntry(entry.contentSlug)} className="w-full md:w-auto justify-center">
+              <Button onClick={() => handleOpenBlogEntry(entry.contentSlug)} className="w-full sm:w-auto justify-center">
                 Leer fragmento
               </Button>
             ) : null;
@@ -656,7 +656,7 @@ const Transmedia = () => {
                 href={entry.url}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center justify-center rounded-full border border-purple-400/40 text-purple-200 hover:bg-purple-500/10 px-6 py-2 font-semibold transition"
+                className="inline-flex w-full sm:w-auto items-center justify-center rounded-full border border-purple-400/40 text-purple-200 hover:bg-purple-500/10 px-6 py-2 font-semibold transition"
               >
                 Comprar edición
               </a>
@@ -665,7 +665,7 @@ const Transmedia = () => {
             return (
               <Button
                 variant="outline"
-                className="border-purple-400/40 text-purple-200 hover:bg-purple-500/10 w-full md:w-auto justify-center"
+                className="border-purple-400/40 text-purple-200 hover:bg-purple-500/10 w-full sm:w-auto justify-center"
                 onClick={() =>
                   toast({
                     title: 'Escanea el QR',
@@ -747,8 +747,8 @@ const Transmedia = () => {
                 return (
                   <div key={entry.id} className="rounded-2xl border border-white/10 p-6 bg-black/30 space-y-4">
                     {imageSrc ? (
-                      <div className="rounded-xl overflow-hidden border border-white/5 bg-black/40">
-                        <img src={imageSrc} alt={entry.title} className="w-full h-48 object-cover" />
+                      <div className="rounded-xl overflow-hidden border border-white/5 bg-black/40 h-52 sm:h-64">
+                        <img src={imageSrc} alt={entry.title} className="w-full h-full object-cover" loading="lazy" />
                       </div>
                     ) : null}
                     <div className="space-y-2">
