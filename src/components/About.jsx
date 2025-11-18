@@ -40,7 +40,7 @@ const About = () => {
   }, []);
 
   const handleScrollToTexts = useCallback(() => {
-    const section = document.querySelector('#textos-blog');
+    const section = document.querySelector('#dialogo-critico');
     section?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }, []);
 
@@ -166,7 +166,7 @@ const About = () => {
               <Button
                 variant="outline"
                 onClick={handleScrollToTexts}
-                className="border-purple-400/40 text-purple-200 hover:bg-purple-500/20"
+                className="border-purple-400/40 text-purple-200 hover:bg-purple-500/20 w-full sm:w-auto whitespace-normal break-words text-center leading-snug"
               >
                 Aquí puedes leer y compartir tu perspectiva sobre La Obra
               </Button>

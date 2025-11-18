@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Calendar, Clock, Feather, PenLine, Search } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -148,6 +148,7 @@ const Blog = ({ posts = [], isLoading = false, error = null }) => {
   const [isContributionOpen, setIsContributionOpen] = useState(false);
   const [activeCategory, setActiveCategory] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
+  const articlesRef = useRef(null);
 
   const categorizedPosts = useMemo(
     () =>
@@ -168,17 +169,9 @@ const Blog = ({ posts = [], isLoading = false, error = null }) => {
     [categorizedPosts]
   );
 
-  const featuredPosts = useMemo(() => sortedPosts.slice(0, 3), [sortedPosts]);
-  const featuredIds = useMemo(() => new Set(featuredPosts.map((item) => item.id)), [featuredPosts]);
-
-  const libraryPosts = useMemo(
-    () => sortedPosts.filter((post) => !featuredIds.has(post.id)),
-    [sortedPosts, featuredIds]
-  );
-
   const filteredPosts = useMemo(() => {
     const query = searchQuery.trim().toLowerCase();
-    return libraryPosts.filter((post) => {
+    return sortedPosts.filter((post) => {
       const matchesCategory = activeCategory === 'all' ? true : post.category === activeCategory;
       if (!matchesCategory) {
         return false;
@@ -200,13 +193,20 @@ const Blog = ({ posts = [], isLoading = false, error = null }) => {
 
       return haystack.includes(query);
     });
-  }, [libraryPosts, activeCategory, searchQuery]);
+  }, [sortedPosts, activeCategory, searchQuery]);
 
   const handleSelectPost = useCallback((post) => {
     setActivePost(post);
     requestAnimationFrame(() => {
       const articleElement = document.getElementById('blog-article');
       articleElement?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+  }, []);
+
+  const handleExploreCategory = useCallback((category) => {
+    setActiveCategory(category);
+    requestAnimationFrame(() => {
+      articlesRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
     });
   }, []);
 
@@ -266,32 +266,36 @@ const Blog = ({ posts = [], isLoading = false, error = null }) => {
             </h2>
             <p className="text-lg text-slate-300/80 max-w-3xl mx-auto leading-relaxed font-light">
               Un espacio de pensamiento crítico, creatividad y poética donde convergen curaduría, ficción expandida y
-              noticias detrás de escena. Filtra por interés, busca autorías específicas o abre los textos destacados.
+              noticias detrás de escena. Filtra por interés, busca autorías específicas o explora las líneas editoriales.
             </p>
           </motion.div>
 
           <div className="space-y-16">
-            {isLoading ? null : featuredPosts.length > 0 ? (
-              <motion.div
-                initial="hidden"
-                whileInView="visible"
-                viewport={{ once: true }}
-                variants={{ visible: { transition: { staggerChildren: 0.12 } } }}
-                className="space-y-6"
-              >
-                <div className="flex items-center justify-between">
-                  <p className="text-sm uppercase tracking-[0.35em] text-slate-400/80">Textos destacados</p>
-                  <span className="text-xs text-slate-500">
-                    Elegidos por impacto y lectura dentro de la comunidad
-                  </span>
+            <motion.div
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8, delay: 0.1, ease: 'easeOut' }}
+              viewport={{ once: true }}
+              className="grid md:grid-cols-3 gap-6"
+            >
+              {BLOG_CATEGORY_ORDER.map((category) => (
+                <div key={category} className="glass-effect rounded-2xl p-6 border border-white/10 flex flex-col gap-3">
+                  <p className="text-xs uppercase tracking-[0.35em] text-slate-400/80">
+                    {BLOG_CATEGORY_CONFIG[category].label}
+                  </p>
+                  <p className="text-slate-300/80 text-sm leading-relaxed flex-1">
+                    {BLOG_CATEGORY_CONFIG[category].summary}
+                  </p>
+                  <Button
+                    variant="link"
+                    onClick={() => handleExploreCategory(category)}
+                    className="text-purple-300 hover:text-white self-start px-0"
+                  >
+                    Leer esta línea editorial
+                  </Button>
                 </div>
-                <div className="grid md:grid-cols-3 gap-6">
-                  {featuredPosts.map((post) => (
-                    <ArticleCard key={post.id} post={post} onSelect={handleSelectPost} />
-                  ))}
-                </div>
-              </motion.div>
-            ) : null}
+              ))}
+            </motion.div>
 
             <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
               <div className="flex flex-wrap gap-2">
@@ -335,6 +339,7 @@ const Blog = ({ posts = [], isLoading = false, error = null }) => {
             </div>
 
             <motion.div
+              ref={articlesRef}
               initial="hidden"
               whileInView="visible"
               viewport={{ once: true }}
@@ -352,34 +357,6 @@ const Blog = ({ posts = [], isLoading = false, error = null }) => {
               ) : (
                 filteredPosts.map((post) => <ArticleCard key={post.id} post={post} onSelect={handleSelectPost} />)
               )}
-            </motion.div>
-
-       
-
-            <motion.div
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, delay: 0.1, ease: 'easeOut' }}
-              viewport={{ once: true }}
-              className="grid md:grid-cols-3 gap-6"
-            >
-              {BLOG_CATEGORY_ORDER.map((category) => (
-                <div key={category} className="glass-effect rounded-2xl p-6 border border-white/10 flex flex-col gap-3">
-                  <p className="text-xs uppercase tracking-[0.35em] text-slate-400/80">
-                    {BLOG_CATEGORY_CONFIG[category].label}
-                  </p>
-                  <p className="text-slate-300/80 text-sm leading-relaxed flex-1">
-                    {BLOG_CATEGORY_CONFIG[category].summary}
-                  </p>
-                  <Button
-                    variant="link"
-                    onClick={() => setActiveCategory(category)}
-                    className="text-purple-300 hover:text-white self-start px-0"
-                  >
-                    Leer esta línea editorial
-                  </Button>
-                </div>
-              ))}
             </motion.div>
 
             <div id="blog-article">

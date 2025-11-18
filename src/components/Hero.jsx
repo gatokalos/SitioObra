@@ -8,9 +8,9 @@ import bgLogo from '@/assets/bg-logo.png';
 const Hero = () => {
   const [isReserveOpen, setIsReserveOpen] = useState(false);
 
-  const handleScrollToTransmedia = useCallback(() => {
-    const transmediaSection = document.querySelector('#transmedia');
-    transmediaSection?.scrollIntoView({ behavior: 'smooth' });
+  const handleScrollToAbout = useCallback(() => {
+    const aboutSection = document.querySelector('#about');
+    aboutSection?.scrollIntoView({ behavior: 'smooth' });
   }, []);
 
   const handleOpenReserve = useCallback(() => {
@@ -75,7 +75,7 @@ const Hero = () => {
 
               <Button
                 variant="ghost"
-                onClick={handleScrollToTransmedia}
+                onClick={handleScrollToAbout}
                 className="text-slate-300 hover:text-white hover:bg-white/5 px-8 py-3 rounded-full font-semibold flex items-center gap-2 text-base"
               >
                 Conoce Es Un Gato Encerrado

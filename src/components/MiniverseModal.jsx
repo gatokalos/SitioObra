@@ -144,7 +144,7 @@ const MiniverseModal = ({ open, onClose }) => {
     <AnimatePresence>
       {open ? (
         <motion.div
-          className="fixed inset-0 z-50 flex items-center justify-center px-4 py-10"
+          className="fixed inset-0 z-50 flex items-start sm:items-center justify-center px-3 py-6 sm:px-4 sm:py-10 overflow-y-auto"
           initial="hidden"
           animate="visible"
           exit="hidden"
@@ -161,7 +161,7 @@ const MiniverseModal = ({ open, onClose }) => {
             aria-modal="true"
             aria-labelledby="miniverse-modal-title"
             variants={modalVariants}
-            className="relative z-10 w-full max-w-4xl rounded-3xl border border-white/10 bg-slate-950/95 p-6 sm:p-10 shadow-2xl"
+            className="relative z-10 w-full max-w-4xl rounded-3xl border border-white/10 bg-slate-950/95 p-5 sm:p-10 shadow-2xl max-h-[90vh] overflow-y-auto"
           >
             <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-6">
               <div>

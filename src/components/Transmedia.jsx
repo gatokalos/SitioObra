@@ -227,6 +227,7 @@ const Transmedia = () => {
   const [pdfNumPages, setPdfNumPages] = useState(null);
   const [pdfLoadError, setPdfLoadError] = useState(null);
   const pdfContainerRef = useRef(null);
+  const supportSectionRef = useRef(null);
   const [pdfContainerWidth, setPdfContainerWidth] = useState(0);
   const pdfPageWidth = Math.max(pdfContainerWidth - 48, 320);
   const [isTazaARActive, setIsTazaARActive] = useState(false);
@@ -316,6 +317,10 @@ const Transmedia = () => {
 
   const handleCloseImagePreview = useCallback(() => {
     setImagePreview(null);
+  }, []);
+
+  const handleScrollToSupport = useCallback(() => {
+    supportSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }, []);
 
   const handleOpenPdfPreview = useCallback((payload) => {
@@ -835,7 +840,14 @@ const Transmedia = () => {
             </h2>
             <p className="text-lg text-slate-300/80 max-w-3xl mx-auto leading-relaxed font-light">
               #GatoEncerrado es un universo transmedial compuesto por miniversos narrativos. Cada experiencia digital, objeto o narrativa expandida 
-              financia el acompañamiento psicoemocional de Isabel Ayuda para la Vida, A.C.
+              financia el acompañamiento psicoemocional de{' '}
+              <button
+                type="button"
+                onClick={handleScrollToSupport}
+                className="text-purple-200 underline underline-offset-4 hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-400 rounded-sm"
+              >
+                Isabel Ayuda para la Vida, A.C.
+              </button>
             </p>
           </motion.div>
 
@@ -905,6 +917,7 @@ const Transmedia = () => {
 
           <div className="mt-16 grid lg:grid-cols-[3fr_2fr] gap-10">
             <motion.div
+              ref={supportSectionRef}
               initial={{ opacity: 0, y: 30 }}
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8, delay: 0.2, ease: 'easeOut' }}
@@ -918,7 +931,15 @@ const Transmedia = () => {
                 </h3>
                 <p className="text-slate-300/80 leading-relaxed font-light">
                   La taquilla mantiene la obra en escena; el universo transmedia financia acompañamiento emocional real.
-                  Cada cuota se distribuye en tres frentes que opera Isabel Ayuda para la Vida, A.C.
+                  Cada cuota se distribuye en tres frentes que opera Isabel Ayuda para la Vida, A.C.{' '}
+                  <a
+                    href="https://www.ayudaparalavida.com/index.html"
+                    target="_blank"
+                    rel="noreferrer"
+                    className="text-purple-200 underline underline-offset-4 hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-400 rounded-sm"
+                  >
+                    Visita su sitio
+                  </a>
                 </p>
 
                 <div className="mt-4 space-y-3">
