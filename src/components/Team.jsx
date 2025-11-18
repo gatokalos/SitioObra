@@ -18,12 +18,7 @@ const teamData = {
     bio: "Artista transmedial, autor y dramaturgo. Su obra habita entre teatro, escritura y tecnología, proponiendo una poética crítica y humana. Formado en el ITESO, la Universidad de Salamanca y LABASAD Barcelona, integra astrología psicológica, cuerpo y arte digital en una mirada simbólica. Creador del universo transmedia #GatoEncerrado, concibe el acto creativo como una forma de acompañamiento y transformación.",
     image: "/images/placeholder-dramaturgia.jpg",
   },
-  Producción: {
-    name: "Miroslava Wilson",
-    bio: "Productora ejecutiva, directora y asesora de movimiento. Originaria de Hermosillo y radicada en Tijuana, es fundadora de Péndulo Cero A.C. y educadora de movimiento somático certificada por Body Mind Movement. Su trabajo interdisciplinario vincula arte, medio ambiente y humanismo. Ha presentado su obra en Asia, América y Europa, y actualmente impulsa proyectos como Casa Viva y SomasSomos.",
-    image: "/images/placeholder-produccion.jpg",
-  },
-    Elenco: {
+  Elenco: {
     description:
       "Actores y actrices que encarnan el pulso emocional de la obra desde la fisicalidad, la voz y la presencia simbólica.",
     members: [
@@ -53,37 +48,7 @@ const teamData = {
       },
     ],
   },
-  "Producción y Asistencia": {
-    description:
-      "Un equipo que coordina, articula y acompaña cada engranaje de la producción escénica con mirada sensible, técnica y humana.",
-    members: [
-      {
-        name: "Marcela Durán Mulia",
-        role: "Producción Administrativa",
-        bio: "Actriz, gestora y representante legal de Incendio Producciones. Licenciada en Comunicación (UABC) y Maestra en Alta Dirección Corporativa (Humanitas). Ha participado en la Muestra Nacional de Teatro, ENARTES y otros festivales internacionales. Su mirada estratégica une la gestión cultural con la sensibilidad artística.",
-        image: "/images/placeholder-colaboradores.jpg",
-      },
-      {
-        name: "Rosalía Hernández Millán",
-        role: "Producción General y Vinculación Social",
-        bio: "Presidenta de Isabel A.C. Ayuda para la Vida, Maestra en Psicobiología y Neurociencia Cognitiva (UAB). Su labor impulsa la integración entre arte y bienestar emocional, fortaleciendo el puente entre el proyecto escénico y la comunidad.",
-        image: "/images/placeholder-colaboradores.jpg",
-      },
-      {
-        name: "Gabriel Monroy",
-        role: "Asistencia de Dirección y Gestión",
-        bio: "Actor, fotógrafo escénico y gestor. Licenciado en Artes Escénicas por la Universidad de Sonora. Creador de la serie fotográfica 'Reflejos de la escena', exhibida internacionalmente. Su mirada visual y su acompañamiento escénico fortalecen el proceso de dirección.",
-        image: "/images/placeholder-colaboradores.jpg",
-      },
-      {
-        name: "Rocío Morgán",
-        role: "Asistencia Ejecutiva",
-        bio: "Gestora cultural y apoyo logístico de producción. Su labor sostiene los procesos administrativos y humanos que hacen posible la operación cotidiana de la obra.",
-        image: "/images/placeholder-colaboradores.jpg",
-      },
-    ],
-  },
-  "Diseño y Técnica Escénica": {
+   "Diseño y Técnica Escénica": {
     description:
       "Un equipo de diseñadores y técnicos escénicos que entrelazan arquitectura, multimedia, sonido y luz para expandir la atmósfera de la obra.",
     members: [
@@ -143,6 +108,42 @@ const teamData = {
       },
     ],
   },
+  "Producción y Asistencia": {
+    description:
+      "Un equipo que coordina, articula y acompaña cada engranaje de la producción escénica con mirada sensible, técnica y humana.",
+    members: [
+      {
+        name: "Miroslava Wilson",
+        role: "Producción Ejecutiva",
+        bio: "Productora ejecutiva, directora y asesora de movimiento. Originaria de Hermosillo y radicada en Tijuana, es fundadora de Péndulo Cero A.C. y educadora de movimiento somático certificada por Body Mind Movement. Su trabajo interdisciplinario vincula arte, medio ambiente y humanismo. Ha presentado su obra en Asia, América y Europa, y actualmente impulsa proyectos como Casa Viva y SomasSomos.",
+        image: "/images/placeholder-produccion.jpg",
+        },
+      {
+        name: "Marcela Durán Mulia",
+        role: "Producción Administrativa",
+        bio: "Actriz, gestora y representante legal de Incendio Producciones. Licenciada en Comunicación (UABC) y Maestra en Alta Dirección Corporativa (Humanitas). Ha participado en la Muestra Nacional de Teatro, ENARTES y otros festivales internacionales. Su mirada estratégica une la gestión cultural con la sensibilidad artística.",
+        image: "/images/placeholder-colaboradores.jpg",
+      },
+      {
+        name: "Rosalía Hernández Millán",
+        role: "Producción General y Vinculación Social",
+        bio: "Presidenta de Isabel A.C. Ayuda para la Vida, Maestra en Psicobiología y Neurociencia Cognitiva (UAB). Su labor impulsa la integración entre arte y bienestar emocional, fortaleciendo el puente entre el proyecto escénico y la comunidad.",
+        image: "/images/placeholder-colaboradores.jpg",
+      },
+      {
+        name: "Gabriel Monroy",
+        role: "Asistencia de Dirección y Gestión",
+        bio: "Actor, fotógrafo escénico y gestor. Licenciado en Artes Escénicas por la Universidad de Sonora. Creador de la serie fotográfica 'Reflejos de la escena', exhibida internacionalmente. Su mirada visual y su acompañamiento escénico fortalecen el proceso de dirección.",
+        image: "/images/placeholder-colaboradores.jpg",
+      },
+      {
+        name: "Rocío Morgán",
+        role: "Asistencia Ejecutiva",
+        bio: "Gestora cultural y apoyo logístico de producción. Su labor sostiene los procesos administrativos y humanos que hacen posible la operación cotidiana de la obra.",
+        image: "/images/placeholder-colaboradores.jpg",
+      },
+    ],
+  },
   "Colaboradores y Agradecimientos": {
     description:
       "Detrás de cada función existe una constelación de manos, miradas y corazones que hacen posible el universo escénico de #GatoEncerrado. Este bloque celebra su labor silenciosa y luminosa.",
@@ -152,12 +153,6 @@ const teamData = {
         role: "",
         bio: "Asociación civil sin fines de lucro fundada en 2018 y dirigida por Rosalía Hernández Millán. Su misión es prevenir la violencia autoinfligida mediante el programa DySVAE, promoviendo el pedir ayuda como estrategia de vida. Colabora con #GatoEncerrado para visibilizar la salud emocional y la empatía en contextos artísticos y educativos.",
         image: "/images/placeholder-institucional.jpg",
-      },
-      {
-        name: "Diseño, Sonido y Escenografía Complementarios",
-        role: "",
-        bio: "Ximena Inurreta — asistente de diseño de escenografía. Diego Madera — tema musical. Karla Flores — realización de vestuario. Jonathan Lazcano — pelucas.",
-        image: "/images/placeholder-diseno.jpg",
       },
     ],
     details: {

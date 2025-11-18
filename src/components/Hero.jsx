@@ -71,21 +71,14 @@ const Hero = () => {
               transition={{ duration: 1, delay: 0.8 }}
               className="flex flex-col sm:flex-row gap-4 justify-center items-center"
             >
-              <Button
-                onClick={handleOpenReserve}
-                className="bg-gradient-to-r from-purple-600/80 to-indigo-600/80 hover:from-purple-600 hover:to-indigo-600 text-white px-8 py-3 rounded-full font-semibold flex items-center gap-2 hover-glow text-base"
-              >
-                <Ticket size={20} />
-                Comprar boletos
-              </Button>
+  
 
               <Button
                 variant="ghost"
                 onClick={handleScrollToTransmedia}
                 className="text-slate-300 hover:text-white hover:bg-white/5 px-8 py-3 rounded-full font-semibold flex items-center gap-2 text-base"
               >
-                Unirse a la causa
-                <ArrowDown size={20} />
+                Conoce Es Un Gato Encerrado
               </Button>
             </motion.div>
           </motion.div>
@@ -94,7 +87,7 @@ const Hero = () => {
           <motion.div
             animate={{ y: [0, 10, 0] }}
             transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
-            className="absolute bottom-10 left-1/2 -translate-x-1/2 text-slate-500"
+            className="absolute bottom-50 left-1/2 -translate-x-1/2 text-slate-500"
           >
             <ArrowDown size={24} />
           </motion.div>
