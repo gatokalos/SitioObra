@@ -2,6 +2,40 @@ import { serve } from "std/http/server.ts";
 
 const resendApiKey = Deno.env.get("RESEND_API_KEY");
 const resendFrom = Deno.env.get("RESEND_FROM");
+const landingUrl = Deno.env.get("LANDING_URL") ?? "https://gatoencerrado.ai";
+const logoUrl = Deno.env.get("LOGO_URL") ?? `${landingUrl}/assets/logoapp.png`;
+const stripeUrl = Deno.env.get("STRIPE_URL") ?? `${landingUrl}/reservaciones`;
+const calendarLink =
+  Deno.env.get("CALENDAR_LINK") ??
+  "https://calendar.google.com/calendar/render?action=TEMPLATE&text=Gato%20Encerrado%20%C2%B7%2028%20de%20diciembre&dates=20241228T210000Z/20241228T223000Z&details=Funci%C3%B3n%20especial%20en%20CEC&location=CECUT";
+const smsNumber = Deno.env.get("SMS_NUMBER") ?? "+5215550112233";
+const smsMessage = encodeURIComponent("Recordarme la función #GatoEncerrado el 28 de diciembre en CECUT.");
+
+const CTA_CONFIG: Record<
+  string,
+  {
+    title: string;
+    description: string;
+    html: string;
+    plainText: string;
+  }
+> = {
+  recordatorio: {
+    title: "Recordatorio de la función",
+    description: "Añade el evento a tu calendario o recibe un SMS el día del show.",
+    html: `<div class="cta-grid">
+        <a href="${calendarLink}" target="_blank" rel="noreferrer" class="cta-link">Añadir a mi calendario</a>
+        <a href="sms:${smsNumber}?body=${smsMessage}" class="cta-link">Solicitar notificación SMS</a>
+      </div>`,
+    plainText: `Añade al calendario: ${calendarLink} · Pide el SMS al ${smsNumber}`,
+  },
+  reservaciones: {
+    title: "Información sobre reservaciones",
+    description: "Accede a la línea de reservaciones y asegura tu paquete con Stripe.",
+    html: `<a href="${stripeUrl}" class="cta-link" target="_blank" rel="noreferrer">Abrir línea de reservaciones</a>`,
+    plainText: `Sigue la línea de reservaciones: ${stripeUrl}`,
+  },
+};
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -13,15 +47,17 @@ type Payload = {
   email?: string;
   name?: string;
   interestLabel?: string;
+  interestValue?: string;
   city?: string | null;
   notes?: string | null;
 };
 
-const buildHtmlEmail = ({ name, interestLabel, city, notes }: Required<Omit<Payload, "email">>) => {
+const buildHtmlEmail = ({ name, interestLabel, interestValue, city, notes }: Required<Omit<Payload, "email">>) => {
   const safeName = name || "amig@ del universo #GatoEncerrado";
   const safeInterest = interestLabel || "Experiencia #GatoEncerrado";
   const safeCity = city || "No especificado";
   const safeNotes = notes || "Sin mensaje adicional.";
+  const ctaDetails = CTA_CONFIG[interestValue ?? "recordatorio"] ?? CTA_CONFIG["recordatorio"];
 
   return `<!DOCTYPE html>
 <html lang="es">
@@ -39,12 +75,20 @@ const buildHtmlEmail = ({ name, interestLabel, city, notes }: Required<Omit<Payl
     .list { background: rgba(15, 23, 42, 0.6); border-radius: 18px; padding: 20px; border: 1px solid rgba(148, 163, 184, 0.15); }
     .list strong { color: #f8fafc; }
     .footer { text-align: center; margin-top: 28px; font-size: 12px; color: rgba(226, 232, 240, 0.6); }
+    .cta { display: inline-flex; margin-top: 18px; padding: 12px 22px; border-radius: 999px; border: 1px solid rgba(59, 130, 246, 0.45); background: rgba(59, 130, 246, 0.15); color: #c7d2fe; font-size: 13px; letter-spacing: 0.1em; text-transform: uppercase; text-decoration: none; font-weight: 600; }
+    .logo { display: block; width: 92px; margin-bottom: 16px; }
+    .cta-block { margin-top: 24px; border-radius: 20px; border: 1px solid rgba(148, 163, 184, 0.25); padding: 20px; background: rgba(15, 23, 42, 0.65); }
+    .cta-block h2 { margin: 0 0 4px; font-size: 16px; color: #f8fafc; }
+    .cta-block p { margin: 0 0 12px; color: rgba(226, 232, 240, 0.75); font-size: 14px; }
+    .cta-grid { display: flex; gap: 12px; flex-wrap: wrap; }
+    .cta-link { display: inline-flex; justify-content: center; align-items: center; padding: 10px 16px; border-radius: 999px; border: 1px solid rgba(129, 140, 248, 0.35); color: #c7d2fe; font-size: 13px; letter-spacing: 0.1em; text-transform: uppercase; text-decoration: none; background: rgba(129, 140, 248, 0.12); }
   </style>
 </head>
 <body>
   <div class="container">
     <div class="card">
       <span class="tag">#GatoEncerrado</span>
+      <img src="${logoUrl}" alt="#GatoEncerrado" class="logo" />
       <h1>Hola ${safeName.split(" ")[0]}, recibimos tu registro.</h1>
       <p>
         Te mantendremos al tanto de la preventa y activaciones transmedia vinculadas a
@@ -56,11 +100,17 @@ const buildHtmlEmail = ({ name, interestLabel, city, notes }: Required<Omit<Payl
         <p><strong>Interés:</strong> ${safeInterest}</p>
         <p><strong>Mensaje:</strong> ${safeNotes}</p>
       </div>
+      <div class="cta-block">
+        <h2>${ctaDetails.title}</h2>
+        <p>${ctaDetails.description}</p>
+        ${ctaDetails.html}
+      </div>
       <p>
         Este correo es tu constancia de registro. Si necesitas actualizar tus datos,
         sólo responde este mensaje y alguien del equipo te ayudará.
       </p>
       <p>Gracias por cuidar este universo.</p>
+      <a href="${landingUrl}" class="cta" target="_blank" rel="noreferrer">Ver paquetes abiertos</a>
       <p>#GatoEncerrado · Residencia Transmedia</p>
     </div>
     <p class="footer">
@@ -72,7 +122,13 @@ const buildHtmlEmail = ({ name, interestLabel, city, notes }: Required<Omit<Payl
 </html>`;
 };
 
-const buildTextEmail = ({ name, interestLabel, city, notes }: Required<Omit<Payload, "email">>) => {
+const buildTextEmail = ({
+  name,
+  interestLabel,
+  interestValue,
+  city,
+  notes,
+}: Required<Omit<Payload, "email">>) => {
   return [
     `Hola ${name || "amig@ del universo #GatoEncerrado"},`,
     "",
@@ -81,6 +137,10 @@ const buildTextEmail = ({ name, interestLabel, city, notes }: Required<Omit<Payl
     `Mensaje: ${notes || "Sin mensaje adicional."}`,
     "",
     "Cuando abramos la próxima ventana de preventa o actividades transmedia, te contactaremos.",
+    "",
+    `CTA: ${
+      CTA_CONFIG[interestValue ?? "recordatorio"]?.plainText ?? CTA_CONFIG["recordatorio"].plainText
+    }`,
     "",
     "#GatoEncerrado",
   ].join("\n");
@@ -124,12 +184,14 @@ serve(async (req) => {
   const html = buildHtmlEmail({
     name: payload.name ?? "",
     interestLabel: payload.interestLabel ?? "",
+    interestValue: payload.interestValue ?? "",
     city: payload.city ?? "",
     notes: payload.notes ?? "",
   });
   const text = buildTextEmail({
     name: payload.name ?? "",
     interestLabel: payload.interestLabel ?? "",
+    interestValue: payload.interestValue ?? "",
     city: payload.city ?? "",
     notes: payload.notes ?? "",
   });

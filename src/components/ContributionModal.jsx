@@ -232,6 +232,7 @@ const ContributionModal = ({ open, onClose }) => {
             email: formState.email.trim().toLowerCase(),
             name: formState.name.trim(),
             proposal: formState.proposal.trim(),
+            category: selectedCategory.title,
           });
         }
 
@@ -497,14 +498,14 @@ const ContributionModal = ({ open, onClose }) => {
   );
 };
 
-export async function sendConfirmationEmail({ email, name, proposal }) {
+export async function sendConfirmationEmail({ email, name, proposal, category }) {
   if (!email) {
     return;
   }
 
   try {
     const { error } = await supabase.functions.invoke('send-proposal-confirmation', {
-      body: { email, name, proposal },
+      body: { email, name, proposal, category },
     });
 
     if (error) {

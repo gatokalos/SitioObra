@@ -1,4 +1,3 @@
-// supabase/functions/send-proposal-confirmation/index.ts
 import { serve } from "std/http/server.ts";
 
 const resendApiKey = Deno.env.get("RESEND_API_KEY");
@@ -15,138 +14,138 @@ const corsHeaders = {
 type Payload = {
   email?: string;
   name?: string;
-  proposal?: string;
-  category?: string;
+  message?: string | null;
 };
 
-const buildHtmlEmail = ({ name, proposal, category }: Required<Payload>) => {
+const buildHtmlEmail = ({ name, message }: Required<Payload>) => {
   const safeName = name || "amig@ del universo #GatoEncerrado";
-  const safeProposal = proposal || "Sin texto adjunto.";
-  const safeCategory = category || "el universo misceláneo";
+  const safeMessage = message || "Sin mensaje adicional.";
+  const formattedMessage = safeMessage.replace(/\n/g, "<br />");
 
   return `<!DOCTYPE html>
 <html lang="es">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Gracias por tu propuesta · #GatoEncerrado</title>
+    <title>Recibimos tu mensaje · #GatoEncerrado</title>
     <style>
       body {
+        font-family: "Inter", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+        background-color: #020617;
         margin: 0;
         padding: 0;
-        font-family: "Inter", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
-        background-color: #01070d;
-        color: #e2e8f0;
       }
-      .shell {
-        max-width: 600px;
+      .container {
+        max-width: 580px;
         margin: 0 auto;
         padding: 32px 24px;
       }
       .card {
-        background: linear-gradient(180deg, rgba(15, 23, 42, 0.82), rgba(2, 6, 23, 0.95));
-        border: 1px solid rgba(59, 130, 246, 0.35);
-        border-radius: 28px;
+        background: radial-gradient(circle at top right, rgba(238, 210, 255, 0.08), transparent 45%),
+          #030712;
+        border: 1px solid rgba(148, 163, 184, 0.32);
+        border-radius: 24px;
         padding: 32px;
-        box-shadow: 0 30px 60px -20px rgba(2, 6, 23, 0.8);
+        box-shadow: 0 30px 60px -20px rgba(15, 23, 42, 0.8);
       }
-      .chip {
+      .tag {
         display: inline-flex;
-        padding: 6px 18px;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 14px;
         border-radius: 999px;
         background: rgba(129, 140, 248, 0.15);
-        border: 1px solid rgba(129, 140, 248, 0.35);
+        color: #c7d2fe;
         font-size: 12px;
         letter-spacing: 0.08em;
         text-transform: uppercase;
-        color: #c7d2fe;
       }
       h1 {
+        color: #e0e7ff;
+        margin-bottom: 12px;
         font-size: 24px;
-        margin: 12px 0;
-        color: #f8fafc;
+      }
+      p {
+        color: rgba(226, 232, 240, 0.85);
+        line-height: 1.6;
+        margin-bottom: 16px;
+        font-size: 15px;
       }
       .logo {
         display: block;
-        width: 90px;
-        margin-bottom: 14px;
+        width: 92px;
+        margin-bottom: 18px;
       }
-      p {
-        line-height: 1.6;
-        margin-bottom: 16px;
-        color: rgba(226, 232, 240, 0.8);
-      }
-      .proposal-card {
-        background: rgba(2, 6, 23, 0.85);
-        border-radius: 18px;
-        padding: 20px;
+      .quote {
+        background: rgba(15, 23, 42, 0.7);
         border: 1px solid rgba(148, 163, 184, 0.2);
+        border-radius: 16px;
+        padding: 16px;
         font-size: 14px;
-        color: #e2e8f0;
-        line-height: 1.7;
+        color: #cbd5f5;
+        line-height: 1.6;
       }
       .footer {
-        font-size: 12px;
-        color: rgba(226, 232, 240, 0.6);
         text-align: center;
         margin-top: 24px;
+        font-size: 12px;
+        color: rgba(226, 232, 240, 0.55);
       }
       .cta {
         display: inline-flex;
-        margin-top: 18px;
-        padding: 12px 22px;
+        margin-top: 16px;
+        padding: 10px 18px;
         border-radius: 999px;
-        border: 1px solid rgba(255, 255, 255, 0.25);
-        background: rgba(255, 255, 255, 0.05);
-        color: #f8fafc;
-        font-size: 13px;
-        letter-spacing: 0.1em;
-        text-transform: uppercase;
-        text-decoration: none;
         font-weight: 600;
+        font-size: 14px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        border: 1px solid rgba(129, 140, 248, 0.5);
+        background: rgba(129, 140, 248, 0.15);
+        color: #e0e7ff;
+        text-decoration: none;
       }
     </style>
   </head>
   <body>
-    <div class="shell">
+    <div class="container">
       <div class="card">
-        <span class="chip">Blog / Diálogo vivo</span>
+        <span class="tag">#GatoEncerrado</span>
         <img src="${logoUrl}" alt="#GatoEncerrado" class="logo" />
-        <h1>Gracias por compartir tu voz, ${safeName.split(" ")[0]}.</h1>
+        <h1>Hola ${safeName.split(" ")[0]}, recibimos tu mensaje.</h1>
         <p>
-          Acabamos de recibir tu propuesta para <strong>${safeCategory}</strong>.
-          Le daremos lectura con calma y, si necesitamos más detalles, te contactaremos.
+          Gracias por escribirnos desde la sección <strong>Contacto, Prensa & Créditos</strong>. Nuestro equipo lee cada mensaje con atención y te responderá apenas pueda.
         </p>
-        <div class="proposal-card">
-          <p><strong>Tu aporte:</strong></p>
-          <p>${safeProposal.replace(/\n/g, "<br />")}</p>
+          <div class="quote">
+            <p><strong>Mensaje recibido:</strong></p>
+            <p>${formattedMessage}</p>
         </div>
         <p>
-          Mantente atento a la bitácora y sigue compartiendo teorías. Tu narración alimenta al gato encerrado.
+          Mientras tanto, siempre puedes revisar nuestras novedades en redes o seguir la bitácora de #GatoEncerrado. Aquí sigue la historia y tú eres parte de ella.
         </p>
         <p>#GatoEncerrado · Residencia Transmedia</p>
         <a href="${landingUrl}" class="cta" target="_blank" rel="noreferrer">
-          Ver próximos pasos
+          Seguir descubriendo el miniverso
         </a>
       </div>
       <p class="footer">
-        Este correo confirma que guardamos tu propuesta. Si no lo solicitaste, ignora este mensaje.
+        Este correo confirma que recibimos tu mensaje. Si no reconoces este envío, ignóralo: nadie más lo verá.
       </p>
     </div>
   </body>
 </html>`;
 };
 
-const buildTextEmail = ({ name, proposal, category }: Required<Payload>) => {
+const buildTextEmail = ({ name, message }: Required<Payload>) => {
   return [
     `Hola ${name || "amig@ del universo #GatoEncerrado"},`,
     "",
-    `Recibimos tu propuesta para ${category || "el universo transmedia"}. Nuestro equipo la leyó y te responderemos si necesitamos más detalles.`,
+    "Gracias por escribirnos desde la sección Contacto, Prensa & Créditos. Leímos tu mensaje y te escribiremos pronto.",
     "",
-    "Tu propuesta:",
-    proposal || "Sin texto adjunto.",
+    "Tu mensaje:",
+    message || "Sin mensaje adicional.",
     "",
-    "Gracias por alimentar esta constelación narrativa.",
+    "Cuida ese amor por el Miniverso.",
     "",
     `CTA: ${landingUrl}`,
     "",
@@ -182,9 +181,7 @@ serve(async (req) => {
     return new Response("Invalid JSON body", { status: 400, headers: corsHeaders });
   }
 
-  const { email, name, proposal, category } = payload;
-
-  if (!email) {
+  if (!payload.email) {
     return new Response("Missing email", {
       status: 400,
       headers: corsHeaders,
@@ -192,29 +189,26 @@ serve(async (req) => {
   }
 
   const html = buildHtmlEmail({
-    email,
-    name: name || "",
-    proposal: proposal || "",
-    category: category || "",
+    name: payload.name || "",
+    message: payload.message || "",
+    email: payload.email,
   });
-
   const text = buildTextEmail({
-    email,
-    name: name || "",
-    proposal: proposal || "",
-    category: category || "",
+    name: payload.name || "",
+    message: payload.message || "",
+    email: payload.email,
   });
 
   const response = await fetch("https://api.resend.com/emails", {
     method: "POST",
     headers: {
-      "Authorization": `Bearer ${resendApiKey}`,
+      Authorization: `Bearer ${resendApiKey}`,
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
       from: resendFrom,
-      to: [email],
-      subject: "Recibimos tu propuesta para el blog #GatoEncerrado",
+      to: [payload.email],
+      subject: "Recibimos tu mensaje · #GatoEncerrado",
       text,
       html,
     }),

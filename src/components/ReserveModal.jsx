@@ -8,21 +8,39 @@ import { Button } from '@/components/ui/button';
 import { toast } from '@/components/ui/use-toast';
 import { supabase } from '@/lib/supabaseClient';
 
+const LOGO_SRC = '/assets/logoapp.png';
+
 const INTEREST_OPTIONS = [
   {
-    value: 'recordatorios',
-    label: 'Recordatorios del evento',
-    description: 'Fechas, horarios y detalles de la función en CECUT.',
+    value: 'recordatorio',
+    label: 'Recordatorio de la función',
+    description: 'Recibe el aviso oficial justo antes de que abra la función en diciembre.',
   },
   {
-    value: 'activaciones-transmedia',
-    label: 'Alertas de activaciones transmedia',
-    description: 'Acceso prioritario a dinámicas con objetos / QR / WebAR.',
+    value: 'reservaciones',
+    label: 'Información sobre reservaciones',
+    description: 'Accede a la línea de reservaciones y consulta los paquetes que aún quedan.',
+  },
+];
+
+const CALENDAR_LINK =
+  'https://calendar.google.com/calendar/render?action=TEMPLATE&text=Gato%20Encerrado%20%C2%B7%2028%20de%20diciembre&dates=20241228T210000Z/20241228T223000Z&details=Funci%C3%B3n%20especial%20en%20CEC&location=CECUT';
+const SMS_NUMBER = import.meta.env.VITE_SMS_NUMBER || '+5215550112233';
+const SMS_MESSAGE = encodeURIComponent(
+  'Recordarme la función #GatoEncerrado el 28 de diciembre en CECUT.'
+);
+const RECORDATORIO_ACTIONS = [
+  {
+    id: 'calendar',
+    label: 'Añadir a mi calendario',
+    description: 'Calendario de Google prellenado con lugar y horario.',
+    href: CALENDAR_LINK,
   },
   {
-    value: 'contenido-exclusivo',
-    label: 'Contenido exclusivo del universo Gato Encerrado',
-    description: 'Textos curatoriales, miniversos y material extendido.',
+    id: 'sms',
+    label: 'Enviar notificación vía SMS',
+    description: 'Recibe una alerta en tu celular el día del evento.',
+    href: `sms:${SMS_NUMBER}?body=${SMS_MESSAGE}`,
   },
 ];
 
@@ -182,6 +200,7 @@ const ReserveModal = ({ open, onClose, initialInterest = INTEREST_OPTIONS[0].val
           email: payload.email,
           name: payload.full_name,
           interestLabel: selectedInterest.label,
+          interestValue: payload.interest,
           city: payload.city,
           notes: payload.notes,
         });
@@ -229,13 +248,20 @@ const ReserveModal = ({ open, onClose, initialInterest = INTEREST_OPTIONS[0].val
           >
             {/* HEADER */}
             <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-6">
-              <div>
-                <p className="text-sm uppercase tracking-[0.35em] text-slate-400/80 mb-2">
-                  28 de diciembre · CECUT
-                </p>
-                <h2 className="font-display text-3xl text-slate-50">
-                  Regístrate para recibir acceso y novedades del Gato Encerrado
-                </h2>
+              <div className="flex items-center gap-4">
+                <img
+                  src={LOGO_SRC}
+                  alt="#GatoEncerrado"
+                  className="h-12 w-auto object-contain rounded-full border border-white/20 bg-white/5 p-1 shadow-lg"
+                />
+                <div>
+                  <p className="text-sm uppercase tracking-[0.35em] text-slate-400/80 mb-2">
+                    28 de diciembre · CECUT
+                  </p>
+                  <h2 className="font-display text-3xl text-slate-50">
+                    Regístrate para recibir acceso y novedades del Gato Encerrado
+                  </h2>
+                </div>
               </div>
 
               <button
@@ -354,6 +380,33 @@ const ReserveModal = ({ open, onClose, initialInterest = INTEREST_OPTIONS[0].val
                   <p className="text-xs text-slate-400/80">{selectedInterest.description}</p>
                 </div>
 
+                <div className="glass-effect rounded-2xl border border-white/5 bg-black/25 p-4 space-y-3">
+                  <h3 className="font-display text-lg text-slate-100">Acción preferida</h3>
+                  {formState.interest === 'recordatorio' ? (
+                    <div className="grid sm:grid-cols-2 gap-3">
+                      {RECORDATORIO_ACTIONS.map((action) => (
+                        <a
+                          key={action.id}
+                          href={action.href}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="flex flex-col gap-2 rounded-xl border border-white/10 bg-slate-900/40 px-4 py-3 text-slate-100 hover:border-purple-400/80 hover:bg-slate-900/70 transition"
+                        >
+                          <span className="text-sm font-semibold">{action.label}</span>
+                          <span className="text-xs text-slate-400/80">{action.description}</span>
+                        </a>
+                      ))}
+                    </div>
+                      ) : (
+                    <div className="space-y-3">
+                      <p className="text-xs text-slate-300/80">
+                        Recibirás en tu correo (y en el CTA de confirmación) la línea de reservaciones para concretar el paquete que quieras.
+                        Nos encargamos de enviarte la liga segura sin saturar este formulario.
+                      </p>
+                    </div>
+                  )}
+                </div>
+
                 {/* NOTES */}
                 <div className="space-y-2">
                   <label className="text-sm font-medium text-slate-200">Mensaje opcional</label>
@@ -409,12 +462,12 @@ const ReserveModal = ({ open, onClose, initialInterest = INTEREST_OPTIONS[0].val
 
 export default ReserveModal;
 
-async function sendReserveConfirmationEmail({ email, name, interestLabel, city, notes }) {
+async function sendReserveConfirmationEmail({ email, name, interestLabel, interestValue, city, notes }) {
   if (!email) return;
 
   try {
     const { error } = await supabase.functions.invoke('send-reserve-confirmation', {
-      body: { email, name, interestLabel, city, notes },
+      body: { email, name, interestLabel, interestValue, city, notes },
     });
 
     if (error) console.error('[ReserveModal] Error en sendReserveConfirmationEmail:', error);

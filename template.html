@@ -1,0 +1,48 @@
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Confirmación de registro · #GatoEncerrado</title>
+  <style>
+    body { font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, sans-serif; background-color: #0f172a; color: #e2e8f0; margin: 0; padding: 0; }
+    .container { max-width: 540px; margin: 0 auto; padding: 32px 24px; }
+    .card { background: linear-gradient(135deg, rgba(51, 65, 85, 0.8), rgba(15, 23, 42, 0.95)); border-radius: 24px; padding: 32px; border: 1px solid rgba(148, 163, 184, 0.25); box-shadow: 0 25px 50px -12px rgba(0,0,0,.65); }
+    h1 { font-size: 24px; margin-bottom: 12px; color: #f8fafc; }
+    p { line-height: 1.6; font-size: 15px; margin-bottom: 16px; }
+    .tag { display: inline-block; padding: 6px 14px; border-radius: 999px; background: rgba(129, 140, 248, 0.15); border: 1px solid rgba(129, 140, 248, 0.35); color: #c7d2fe; font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; margin-top: 8px; }
+    .list { background: rgba(15, 23, 42, 0.6); border-radius: 18px; padding: 20px; border: 1px solid rgba(148, 163, 184, 0.15); }
+    .list strong { color: #f8fafc; }
+    .footer { text-align: center; margin-top: 28px; font-size: 12px; color: rgba(226, 232, 240, 0.6); }
+    .cta { display: inline-flex; margin-top: 18px; padding: 12px 22px; border-radius: 999px; border: 1px solid rgba(59, 130, 246, 0.45); background: rgba(59, 130, 246, 0.15); color: #c7d2fe; font-size: 13px; letter-spacing: 0.1em; text-transform: uppercase; text-decoration: none; font-weight: 600; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="card">
+      <span class="tag">#GatoEncerrado</span>
+      <h1>Hola ${safeName.split(" ")[0]}, recibimos tu registro.</h1>
+      <p>
+        Te mantendremos al tanto de la preventa y activaciones transmedia vinculadas a
+        <strong>${safeInterest}</strong>. Cuando abramos la siguiente ventana,
+        serás de las primeras personas en enterarse.
+      </p>
+      <div class="list">
+        <p><strong>Ciudad:</strong> ${safeCity}</p>
+        <p><strong>Interés:</strong> ${safeInterest}</p>
+        <p><strong>Mensaje:</strong> ${safeNotes}</p>
+      </div>
+      <p>
+        Este correo es tu constancia de registro. Si necesitas actualizar tus datos,
+        sólo responde este mensaje y alguien del equipo te ayudará.
+      </p>
+      <p>Gracias por cuidar este universo.</p>
+      <a href="${landingUrl}" class="cta" target="_blank" rel="noreferrer">Ver paquetes abiertos</a>
+      <p>#GatoEncerrado · Residencia Transmedia</p>
+    </div>
+    <p class="footer">
+      Recibes este correo porque lo registraste en la landing de #GatoEncerrado.
+      Si no reconoces este mensaje, simplemente ignóralo.
+    </p>
+  </div>
+</body>
+</html>

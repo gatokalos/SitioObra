@@ -1,16 +1,59 @@
-import React from 'react';
+import React, { useCallback, useState } from 'react';
 import { motion } from 'framer-motion';
-import { Mail, Download, Send, Instagram, Twitter, Facebook } from 'lucide-react';
+import { Download, Send, Instagram, Twitter, Facebook } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { toast } from '@/components/ui/use-toast';
+import { supabase } from '@/lib/supabaseClient';
 
 const Contact = () => {
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    toast({
-      description: "🚧 Esta función no está implementada aún—¡pero no te preocupes! Puedes solicitarla en tu próximo prompt! 🚀"
-    });
-  };
+  const [formValues, setFormValues] = useState({ name: '', email: '', message: '' });
+  const [status, setStatus] = useState('idle');
+  const [errorMessage, setErrorMessage] = useState('');
+
+  const handleSubmit = useCallback(
+    async (e) => {
+      e.preventDefault();
+      if (status === 'loading') {
+        return;
+      }
+
+      const trimmedName = formValues.name.trim();
+      const trimmedEmail = formValues.email.trim();
+      const trimmedMessage = formValues.message.trim();
+
+      if (!trimmedName || !trimmedEmail || !trimmedMessage) {
+        toast({ description: 'Completa nombre, email y mensaje antes de enviar.' });
+        return;
+      }
+
+      setStatus('loading');
+      setErrorMessage('');
+
+      try {
+        const { error } = await supabase.functions.invoke('send-contact-message', {
+          body: {
+            name: trimmedName,
+            email: trimmedEmail.toLowerCase(),
+            message: trimmedMessage,
+          },
+        });
+
+        if (error) {
+          throw error;
+        }
+
+        setStatus('success');
+        setFormValues({ name: '', email: '', message: '' });
+        toast({ description: 'Recibimos tu mensaje y te escribiremos pronto.' });
+      } catch (err) {
+        console.error('[Contact] Error enviando mensaje:', err);
+        setStatus('error');
+        setErrorMessage('No pudimos enviar tu mensaje. Intenta de nuevo más tarde.');
+        toast({ description: 'No pudimos enviar tu mensaje. Intenta de nuevo.' });
+      }
+    },
+    [formValues, status]
+  );
 
   const handleActionClick = () => {
     toast({
@@ -54,19 +97,55 @@ const Contact = () => {
             <form onSubmit={handleSubmit} className="space-y-6">
               <div>
                 <label className="block text-slate-300/80 text-sm font-medium mb-2">Nombre</label>
-                <input type="text" className="w-full px-4 py-3 bg-black/30 border border-slate-100/20 rounded-lg text-slate-100 placeholder-slate-400 focus:outline-none focus:border-purple-400 focus:ring-1 focus:ring-purple-400" placeholder="Tu nombre"/>
+                <input
+                  name="name"
+                  type="text"
+                  value={formValues.name}
+                  onChange={(event) => setFormValues((prev) => ({ ...prev, name: event.target.value }))}
+                  className="w-full px-4 py-3 bg-black/30 border border-slate-100/20 rounded-lg text-slate-100 placeholder-slate-400 focus:outline-none focus:border-purple-400 focus:ring-1 focus:ring-purple-400"
+                  placeholder="Tu nombre"
+                />
               </div>
               <div>
                 <label className="block text-slate-300/80 text-sm font-medium mb-2">Email</label>
-                <input type="email" className="w-full px-4 py-3 bg-black/30 border border-slate-100/20 rounded-lg text-slate-100 placeholder-slate-400 focus:outline-none focus:border-purple-400 focus:ring-1 focus:ring-purple-400" placeholder="tu@email.com"/>
+                <input
+                  name="email"
+                  type="email"
+                  value={formValues.email}
+                  onChange={(event) => setFormValues((prev) => ({ ...prev, email: event.target.value }))}
+                  className="w-full px-4 py-3 bg-black/30 border border-slate-100/20 rounded-lg text-slate-100 placeholder-slate-400 focus:outline-none focus:border-purple-400 focus:ring-1 focus:ring-purple-400"
+                  placeholder="tu@email.com"
+                />
               </div>
               <div>
                 <label className="block text-slate-300/80 text-sm font-medium mb-2">Mensaje</label>
-                <textarea rows={5} className="w-full px-4 py-3 bg-black/30 border border-slate-100/20 rounded-lg text-slate-100 placeholder-slate-400 focus:outline-none focus:border-purple-400 focus:ring-1 focus:ring-purple-400 resize-none" placeholder="Cuéntanos más..."></textarea>
+                <textarea
+                  name="message"
+                  rows={5}
+                  value={formValues.message}
+                  onChange={(event) => setFormValues((prev) => ({ ...prev, message: event.target.value }))}
+                  className="w-full px-4 py-3 bg-black/30 border border-slate-100/20 rounded-lg text-slate-100 placeholder-slate-400 focus:outline-none focus:border-purple-400 focus:ring-1 focus:ring-purple-400 resize-none"
+                  placeholder="Cuéntanos más..."
+                ></textarea>
               </div>
-              <Button type="submit" className="w-full bg-gradient-to-r from-purple-600/80 to-indigo-600/80 hover:from-purple-600 hover:to-indigo-600 text-white py-3 rounded-lg font-semibold flex items-center justify-center gap-2 hover-glow">
+              {status === 'error' && (
+                <div className="rounded-lg border border-red-500/60 bg-red-500/10 px-4 py-3 text-sm text-red-200">
+                  {errorMessage}
+                </div>
+              )}
+
+              {status === 'success' && (
+                <div className="rounded-lg border border-emerald-500/60 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-200">
+                  Tu mensaje llegó. Te escribiremos a la brevedad.
+                </div>
+              )}
+              <Button
+                type="submit"
+                disabled={status === 'loading'}
+                className="w-full bg-gradient-to-r from-purple-600/80 to-indigo-600/80 hover:from-purple-600 hover:to-indigo-600 text-white py-3 rounded-lg font-semibold flex items-center justify-center gap-2 hover-glow"
+              >
                 <Send size={20} />
-                Enviar
+                {status === 'loading' ? 'Enviando…' : 'Enviar'}
               </Button>
             </form>
           </motion.div>

@@ -27,12 +27,12 @@ const Hero = () => {
         {/* Fondo */}
         <div className="absolute inset-0 bg-black">
           <div className="absolute inset-0 opacity-30">
-            <div className="absolute top-0 left-0 w-1/2 h-1/2 bg-gradient-to-br from-purple-900/80 via-transparent to-transparent blur-3xl"></div>
-            <div className="absolute bottom-0 right-0 w-1/2 h-1/2 bg-gradient-to-tl from-blue-900/60 via-transparent to-transparent blur-3xl"></div>
+            <div className="absolute top-0 left-0 w-1/2 h-1/2 bg-gradient-to-br from-violet-900/90 via-transparent to-transparent blur-4xl"></div>
+            <div className="absolute bottom-0 right-0 w-1/2 h-1/2 bg-gradient-to-tl from-pink-600/40 via-transparent to-transparent blur-3xl"></div>
           </div>
           <img
-            className="absolute inset-0 w-full h-full object-cover opacity-25 mix-blend-luminosity pointer-events-none"
-            style={{ filter: 'contrast(20%) brightness(45%)' }}
+            className="absolute inset-0 w-full h-full object-cover opacity-15 mix-blend-luminosity pointer-events-none"
+            style={{ filter: 'contrast(20%) brightness(75%)' }}
             alt="Textura de telón de teatro de terciopelo oscuro"
             src={bgLogo}
           />
