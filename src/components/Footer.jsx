@@ -89,7 +89,7 @@ const Footer = () => {
               <ul className="space-y-3 text-sm font-light">
                 <li className="text-slate-400">info@gatoencerrado.ai</li>
                 <li className="text-slate-400">+34 123 456 789</li>
-                <li className="text-slate-400">Teatro Experimental<br />Madrid, España</li>
+                <li className="text-slate-400">#UniversoTransmedia<br />Tijuana, México</li>
               </ul>
             </motion.div>
           </div>

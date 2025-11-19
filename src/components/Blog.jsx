@@ -367,6 +367,7 @@ const Blog = ({ posts = [], isLoading = false, error = null }) => {
           </div>
 
           <motion.div
+            id="blog-contribuye"
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.3, ease: 'easeOut' }}
@@ -379,6 +380,7 @@ const Blog = ({ posts = [], isLoading = false, error = null }) => {
               comunitarias, y damos seguimiento personal.
             </p>
             <Button
+              id="blog-contribuye"
               onClick={() => setIsContributionOpen(true)}
               className="bg-gradient-to-r from-purple-600/80 to-indigo-600/80 hover:from-purple-600 hover:to-indigo-600 text-white px-8 py-3 rounded-full font-semibold flex items-center gap-2 hover-glow mx-auto"
             >

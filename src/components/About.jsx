@@ -6,7 +6,7 @@ import { toast } from '@/components/ui/use-toast';
 import { getTrailerPublicUrl } from '@/services/trailerService';
 import ReserveModal from '@/components/ReserveModal';
 
-const aboutText = `Es un gato encerrado existe como obra y como universo #transmedial: es, al mismo tiempo, un relato íntimo en un escenario y una constelación de la mente y del dolor humano en múltiples lenguajes artísticos. Nuestra obra es el corazón que hace pulsar aquellas preguntas que no están aquí para contestarse, sino para sentirlas en compañía. En pocas palabras, cuando la obra está latente, el universo #GatoEncerrado continúa latiendo en otras narrativas. Un recordatorio de que el corazón nunca se encierra del todo.`;
+const aboutText = `Es un gato encerrado existe como obra y como #UniversoTransmedia: es, al mismo tiempo, un relato íntimo en un escenario y una constelación de la mente y del dolor humano en múltiples lenguajes artísticos. Nuestra obra es el corazón que hace pulsar aquellas preguntas que no están aquí para contestarse, sino para sentirlas en compañía. En pocas palabras, cuando la obra está latente, el universo #GatoEncerrado continúa latiendo en otras narrativas. Un recordatorio de que el corazón nunca se encierra del todo.`;
 
 const testimonials = [
   {
@@ -40,8 +40,13 @@ const About = () => {
   }, []);
 
   const handleScrollToTexts = useCallback(() => {
-    const section = document.querySelector('#dialogo-critico');
-    section?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    const ctaButton = document.getElementById('blog-submit-cta');
+    if (ctaButton) {
+      ctaButton.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      ctaButton.focus?.();
+      return;
+    }
+    document.querySelector('#blog-contribuye')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }, []);
 
   const handleWatchTrailer = useCallback(async () => {
@@ -139,7 +144,7 @@ const About = () => {
                   className="border-slate-100/20 text-slate-200 hover:bg-slate-100/10 px-6 py-3 rounded-full font-semibold flex items-center gap-2"
                 >
                   <Ticket size={20} />
-                  Comprar Boletos
+                  Reserva tu acceso
                 </Button>
               </div>
             </div>
@@ -161,14 +166,14 @@ const About = () => {
               </h3>
               <p className="text-slate-300/80 leading-relaxed mb-6 font-light">
                 Reunimos testimonios, críticas y preguntas abiertas que continúan la conversación. Haz scroll hacia
-                Textos y Blog para leer más y compartir tu propia mirada.
+                Textos y Blog para leer más y expandir tu propia mirada.
               </p>
               <Button
                 variant="outline"
                 onClick={handleScrollToTexts}
                 className="border-purple-400/40 text-purple-200 hover:bg-purple-500/20 w-full sm:w-auto whitespace-normal break-words text-center leading-snug"
               >
-                Aquí puedes leer y compartir tu perspectiva sobre La Obra
+                Clica aquí si ya quieres compartir tu perspectiva
               </Button>
             </div>
             <div className="space-y-6">

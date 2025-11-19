@@ -31,7 +31,8 @@ const Hero = () => {
             <div className="absolute bottom-0 right-0 w-1/2 h-1/2 bg-gradient-to-tl from-blue-900/60 via-transparent to-transparent blur-3xl"></div>
           </div>
           <img
-            className="absolute inset-0 w-full h-full object-cover opacity-10 mix-blend-luminosity"
+            className="absolute inset-0 w-full h-full object-cover opacity-25 mix-blend-luminosity pointer-events-none"
+            style={{ filter: 'contrast(20%) brightness(45%)' }}
             alt="Textura de telón de teatro de terciopelo oscuro"
             src={bgLogo}
           />
@@ -69,16 +70,23 @@ const Hero = () => {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 1, delay: 0.8 }}
-              className="flex flex-col sm:flex-row gap-4 justify-center items-center"
+              className="flex flex-col gap-4 justify-center items-center"
             >
-  
+                  <Button
+                    variant="outline"
+                    onClick={() => handleOpenReserve('preventa')}
+                    className="border-slate-100/20 text-slate-200 hover:bg-slate-100/10 px-6 py-3 rounded-full font-semibold flex items-center gap-2"
+                  >
+                    <Ticket size={20} />
+                    Reserva tu acceso
+                  </Button>
 
               <Button
                 variant="ghost"
                 onClick={handleScrollToAbout}
                 className="text-slate-300 hover:text-white hover:bg-white/5 px-8 py-3 rounded-full font-semibold flex items-center gap-2 text-base"
               >
-                Conoce Es Un Gato Encerrado
+                Conoce la Obra
               </Button>
             </motion.div>
           </motion.div>
