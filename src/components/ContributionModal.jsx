@@ -98,7 +98,7 @@ const ContributionModal = ({ open, onClose }) => {
 
   const MOBILE_SHEET_CLOSED_OFFSET = 340;
 
-  useEffect(() => {
+useEffect(() => {
     if (!open) {
       return;
     }
@@ -113,6 +113,18 @@ const ContributionModal = ({ open, onClose }) => {
     setErrorMessage('');
     setSelectedCategory(CATEGORIES[0]);
   }, [open, preferredName, user?.email]);
+
+  useEffect(() => {
+    if (!open) {
+      document.body.style.overflow = '';
+      return;
+    }
+    const previous = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.body.style.overflow = previous;
+    };
+  }, [open]);
 
   useEffect(() => {
     if (!open) {
