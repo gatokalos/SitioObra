@@ -69,6 +69,10 @@
 }
 
 @layer base {
+  html {
+    scroll-padding-top: 6rem;
+  }
+
   body {
     @apply bg-background text-foreground;
     scroll-behavior: smooth;

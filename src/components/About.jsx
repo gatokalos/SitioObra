@@ -17,8 +17,8 @@ const testimonials = [
   },
   {
     quote:
-      '“#GatoEncerrado nos recuerda que el teatro puede ser también archivo emocional y dispositivo de memoria.”',
-    author: 'Dr. Leonel Ceballos',
+      '“Es un Gato Encerrado nos recuerda que el teatro puede ser también archivo emocional y dispositivo de memoria.”',
+    author: 'Dr. Luis Miguel Sánchez',
     role: 'Crítico invitado',
   },
 ];
@@ -173,7 +173,7 @@ const About = () => {
                 onClick={handleScrollToTexts}
                 className="border-purple-400/40 text-purple-200 hover:bg-purple-500/20 w-full sm:w-auto whitespace-normal break-words text-center leading-snug"
               >
-                Clica aquí si ya quieres compartir tu perspectiva
+                Clica aquí si ya tienes un perspectiva que compartir
               </Button>
             </div>
             <div className="space-y-6">

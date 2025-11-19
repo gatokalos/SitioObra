@@ -29,7 +29,7 @@ function App() {
       <div className="min-h-screen overflow-x-hidden">
         <Header />
 
-        <main>
+        <main className="pt-24 lg:pt-28">
           <Hero />
           <About />
           <Team />

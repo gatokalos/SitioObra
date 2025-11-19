@@ -51,18 +51,10 @@ const NextShow = () => {
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
                 <Button
                   onClick={() => handleOpenReserve('preventa')}
-                  className="bg-gradient-to-r from-purple-600/80 to-indigo-600/80 hover:from-purple-600 hover:to-indigo-600 text-white px-8 py-3 rounded-full font-semibold flex items-center gap-2 hover-glow"
-                >
-                  <Ticket size={20} />
-                  Pre-venta de Boletos
-                </Button>
-                <Button
-                  variant="outline"
-                  onClick={() => handleOpenReserve('conversatorios')}
-                  className="border-slate-100/20 text-slate-200 hover:bg-slate-100/10 px-8 py-3 rounded-full font-semibold flex items-center gap-2"
-                >
-                  <Mail size={20} />
-                  RSVP / Contacto
+                                  className="bg-gradient-to-r from-orange-500/90 via-rose-500/90 to-pink-500/90 hover:from-orange-400 hover:to-pink-400 text-white px-6 py-3 rounded-full font-semibold flex items-center gap-2 shadow-lg shadow-orange-500/40 transition"
+                                >
+                                  <Ticket size={20} />
+                                  Reserva tu acceso
                 </Button>
               </div>
             </div>
