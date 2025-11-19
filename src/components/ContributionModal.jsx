@@ -232,6 +232,14 @@ const ContributionModal = ({ open, onClose }) => {
     []
   );
 
+  const mobileSheetVariants = useMemo(
+    () => ({
+      open: { y: 0 },
+      closed: { y: MOBILE_SHEET_CLOSED_OFFSET },
+    }),
+    []
+  );
+
   const renderFormSection = (className = '') => (
     <div className={`flex flex-col gap-4 ${className}`}>
       <div className="flex items-start justify-between gap-3">
