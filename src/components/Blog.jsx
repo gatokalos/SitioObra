@@ -142,13 +142,17 @@ const FullArticle = ({ post, onClose }) => {
   );
 };
 
+const BLOG_ONBOARDING_KEY = 'gatoencerrado-blog-onboarding';
+
 const Blog = ({ posts = [], isLoading = false, error = null }) => {
   const [activePost, setActivePost] = useState(null);
   const [pendingSlug, setPendingSlug] = useState(null);
   const [isContributionOpen, setIsContributionOpen] = useState(false);
   const [activeCategory, setActiveCategory] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
+  const [showOnboardingHint, setShowOnboardingHint] = useState(false);
   const articlesRef = useRef(null);
+  const onboardingStoredRef = useRef(false);
 
   const categorizedPosts = useMemo(
     () =>
@@ -227,7 +231,7 @@ const Blog = ({ posts = [], isLoading = false, error = null }) => {
   }, [error]);
 
   useEffect(() => {
-    const handleNavigate = (event) => {
+  const handleNavigate = (event) => {
       const { slug } = event.detail || {};
       if (!slug) {
         return;
@@ -246,6 +250,34 @@ const Blog = ({ posts = [], isLoading = false, error = null }) => {
     window.addEventListener('gatoencerrado:open-blog', handleNavigate);
     return () => window.removeEventListener('gatoencerrado:open-blog', handleNavigate);
   }, [handleSelectPost, categorizedPosts]);
+
+  const handleOpenContribution = useCallback(() => {
+    setIsContributionOpen(true);
+    setShowOnboardingHint(false);
+    onboardingStoredRef.current = true;
+    if (typeof window !== 'undefined') {
+      window.localStorage.setItem(BLOG_ONBOARDING_KEY, 'seen');
+    }
+  }, []);
+
+  useEffect(() => {
+    if (typeof window === 'undefined' || onboardingStoredRef.current) {
+      return;
+    }
+    const seen = window.localStorage.getItem(BLOG_ONBOARDING_KEY);
+    if (seen === 'seen') {
+      setShowOnboardingHint(false);
+      onboardingStoredRef.current = true;
+      return;
+    }
+    setShowOnboardingHint(true);
+    const timeout = setTimeout(() => {
+      setShowOnboardingHint(false);
+      window.localStorage.setItem(BLOG_ONBOARDING_KEY, 'seen');
+      onboardingStoredRef.current = true;
+    }, 6000);
+    return () => clearTimeout(timeout);
+  }, []);
 
   return (
     <>
@@ -379,14 +411,26 @@ const Blog = ({ posts = [], isLoading = false, error = null }) => {
               Ensayos, bitácoras, crítica y testimonios son bienvenidos. Recibimos propuestas curatoriales y
               comunitarias, y damos seguimiento personal.
             </p>
-            <Button
-              id="blog-contribuye"
-              onClick={() => setIsContributionOpen(true)}
-              className="bg-gradient-to-r from-purple-600/80 to-indigo-600/80 hover:from-purple-600 hover:to-indigo-600 text-white px-8 py-3 rounded-full font-semibold flex items-center gap-2 hover-glow mx-auto"
-            >
-              <PenLine size={18} />
-              ✍️ Enviar propuesta
-            </Button>
+            <div className="relative inline-flex flex-col items-center gap-2">
+              {showOnboardingHint ? (
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  className="absolute -top-10 bg-purple-600/80 text-white text-xs px-3 py-1 rounded-full shadow-lg"
+                >
+                  ¡Nuevo! Abre la bandeja lateral y comparte tu texto
+                </motion.div>
+              ) : null}
+              <Button
+                id="blog-submit-cta"
+                onClick={handleOpenContribution}
+                className="bg-gradient-to-r from-purple-600/80 to-indigo-600/80 hover:from-purple-600 hover:to-indigo-600 text-white px-8 py-3 rounded-full font-semibold flex items-center gap-2 hover-glow mx-auto"
+              >
+                <PenLine size={18} />
+                ✍️ Enviar propuesta
+              </Button>
+            </div>
           </motion.div>
         </div>
       </section>

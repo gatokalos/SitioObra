@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { toast } from '@/components/ui/use-toast';
@@ -80,6 +80,8 @@ const initialFormState = {
   attachmentUrl: '',
 };
 
+const FORM_STORAGE_KEY = 'gatoencerrado-contrib-form';
+
 const ContributionModal = ({ open, onClose }) => {
   const { user } = useAuth();
   const isAuthenticated = Boolean(user?.email);
@@ -94,22 +96,52 @@ const ContributionModal = ({ open, onClose }) => {
   const [selectedCategory, setSelectedCategory] = useState(CATEGORIES[0]);
   const [notifyOnPublish, setNotifyOnPublish] = useState(false);
   const [isFormPanelOpen, setIsFormPanelOpen] = useState(false);
+  const [confettiBursts, setConfettiBursts] = useState([]);
+  const storedFormRef = useRef(null);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') {
+      return;
+    }
+    const stored = window.localStorage.getItem(FORM_STORAGE_KEY);
+    if (stored) {
+      try {
+        const parsed = JSON.parse(stored);
+        storedFormRef.current = parsed;
+        setFormState((prev) => ({
+          ...prev,
+          ...parsed.formState,
+        }));
+        setNotifyOnPublish(Boolean(parsed.notifyOnPublish));
+        const storedCategory = CATEGORIES.find((item) => item.id === parsed.selectedCategory);
+        if (storedCategory) {
+          setSelectedCategory(storedCategory);
+        }
+      } catch {
+        storedFormRef.current = null;
+      }
+    }
+  }, []);
 
   useEffect(() => {
     if (!open) {
       return;
     }
 
-    setFormState({
-      ...initialFormState,
-      name: preferredName || '',
-      email: user?.email ?? '',
-    });
-    setNotifyOnPublish(false);
+    if (!storedFormRef.current) {
+      setFormState({
+        ...initialFormState,
+        name: preferredName || '',
+        email: user?.email ?? '',
+      });
+      setNotifyOnPublish(false);
+      setSelectedCategory(CATEGORIES[0]);
+      setIsFormPanelOpen(false);
+    } else {
+      setIsFormPanelOpen(true);
+    }
     setStatus('idle');
     setErrorMessage('');
-    setSelectedCategory(CATEGORIES[0]);
-    setIsFormPanelOpen(false);
   }, [open, preferredName, user?.email]);
 
   useEffect(() => {
@@ -128,6 +160,27 @@ const ContributionModal = ({ open, onClose }) => {
   const handleInputChange = useCallback((event) => {
     const { name, value } = event.target;
     setFormState((prev) => ({ ...prev, [name]: value }));
+  }, []);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') {
+      return;
+    }
+    const payload = {
+      formState,
+      notifyOnPublish,
+      selectedCategory: selectedCategory.id,
+    };
+    window.localStorage.setItem(FORM_STORAGE_KEY, JSON.stringify(payload));
+    storedFormRef.current = payload;
+  }, [formState, notifyOnPublish, selectedCategory]);
+
+  const triggerConfetti = useCallback(() => {
+    const id = Date.now();
+    setConfettiBursts((prev) => [...prev, id]);
+    setTimeout(() => {
+      setConfettiBursts((prev) => prev.filter((item) => item !== id));
+    }, 1100);
   }, []);
 
   const handleSubmit = useCallback(
@@ -183,14 +236,36 @@ const ContributionModal = ({ open, onClose }) => {
         }
 
         setStatus('success');
+        triggerConfetti();
         toast({ description: '¡Gracias! Revisaremos tu propuesta y te contactaremos pronto.' });
+        setFormState({
+          ...initialFormState,
+          name: preferredName || '',
+          email: user?.email ?? '',
+        });
+        setNotifyOnPublish(false);
+        setSelectedCategory(CATEGORIES[0]);
+        setIsFormPanelOpen(true);
+        if (typeof window !== 'undefined') {
+          window.localStorage.removeItem(FORM_STORAGE_KEY);
+        }
+        storedFormRef.current = null;
       } catch (err) {
         console.error('[ContributionModal] Excepción al guardar:', err);
         setStatus('error');
         setErrorMessage('Ocurrió un error inesperado. Intenta más tarde.');
       }
     },
-    [formState, status, selectedCategory, notifyOnPublish, isAuthenticated]
+    [
+      formState,
+      status,
+      selectedCategory,
+      notifyOnPublish,
+      isAuthenticated,
+      triggerConfetti,
+      preferredName,
+      user?.email,
+    ]
   );
 
   const handleClose = useCallback(() => {
@@ -289,32 +364,36 @@ const ContributionModal = ({ open, onClose }) => {
                     transition={{ type: 'spring', damping: 24, stiffness: 240 }}
                     className="absolute inset-y-0 right-0 w-full md:w-[520px] bg-slate-950 border-l border-white/15 shadow-2xl p-6 overflow-y-auto"
                   >
-                    <div className="flex items-start justify-between gap-3 mb-4">
-                      <div>
-                        <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Formulario</p>
-                        <h3 id="contribution-modal-title" className="font-display text-2xl text-slate-50">
-                          Contribuye al diálogo crítico
-                        </h3>
-                        <p className="text-sm text-slate-400/80">
-                          Estás escribiendo sobre{' '}
-                          <span className="text-purple-200 font-semibold">{selectedCategory.title}</span>
-                        </p>
+                    <div className="relative">
+                      {confettiBursts.map((burst) => (
+                        <ConfettiBurst key={burst} seed={burst} />
+                      ))}
+                      <div className="flex items-start justify-between gap-3 mb-4">
+                        <div>
+                          <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Formulario</p>
+                          <h3 id="contribution-modal-title" className="font-display text-2xl text-slate-50">
+                            Contribuye al diálogo crítico
+                          </h3>
+                          <p className="text-sm text-slate-400/80">
+                            Estás escribiendo sobre{' '}
+                            <span className="text-purple-200 font-semibold">{selectedCategory.title}</span>
+                          </p>
+                        </div>
+                        <button
+                          onClick={handleCloseFormPanel}
+                          className="text-slate-400 hover:text-white transition text-xl leading-none"
+                          aria-label="Cerrar formulario"
+                        >
+                          ✕
+                        </button>
                       </div>
-                      <button
-                        onClick={handleCloseFormPanel}
-                        className="text-slate-400 hover:text-white transition text-xl leading-none"
-                        aria-label="Cerrar formulario"
-                      >
-                        ✕
-                      </button>
-                    </div>
 
-                    <form className="space-y-4" onSubmit={handleSubmit}>
-                      <input
-                        name="name"
-                        type="text"
-                        required
-                        value={formState.name}
+                      <form className="space-y-4" onSubmit={handleSubmit}>
+                        <input
+                          name="name"
+                          type="text"
+                          required
+                          value={formState.name}
                         onChange={handleInputChange}
                         className="w-full rounded-lg border border-white/10 bg-black/30 px-4 py-3 text-slate-100 placeholder-slate-500 focus:border-purple-400 focus:ring-1 focus:ring-purple-400"
                         placeholder="¿Cómo quieres que te nombremos?"
@@ -405,7 +484,8 @@ const ContributionModal = ({ open, onClose }) => {
                       >
                         {status === 'loading' ? 'Enviando…' : 'Enviar propuesta'}
                       </Button>
-                    </form>
+                      </form>
+                    </div>
                   </motion.div>
                 </>
               ) : null}
@@ -434,5 +514,34 @@ export async function sendConfirmationEmail({ email, name, proposal }) {
     console.error('[ContributionModal] Excepción en sendConfirmationEmail:', err);
   }
 }
+
+const CONFETTI_COLORS = ['#f472b6', '#a855f7', '#facc15', '#34d399'];
+
+const ConfettiBurst = ({ seed }) => {
+  const pieces = useMemo(() => {
+    return Array.from({ length: 12 }, (_, index) => ({
+      left: Math.random() * 100,
+      delay: Math.random() * 0.2,
+      color: CONFETTI_COLORS[index % CONFETTI_COLORS.length],
+    }));
+  }, [seed]);
+
+  return (
+    <div className="confetti-layer">
+      {pieces.map((piece, index) => (
+        <span
+          key={`${seed}-${index}`}
+          className="confetti-piece"
+          style={{
+            left: `${piece.left}%`,
+            top: `${Math.random() * 20}%`,
+            backgroundColor: piece.color,
+            animationDelay: `${piece.delay}s`,
+          }}
+        />
+      ))}
+    </div>
+  );
+};
 
 export default ContributionModal;

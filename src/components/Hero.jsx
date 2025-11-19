@@ -87,14 +87,16 @@ const Hero = () => {
               >
                 Conoce la Obra
               </Button>
-              <motion.div
-                animate={{ y: [0, 10, 0] }}
-                transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
-                className="text-slate-500 pt-2"
-              >
-                <ArrowDown size={24} />
-              </motion.div>
             </motion.div>
+          </motion.div>
+
+          {/* Flechita animada abajo */}
+          <motion.div
+            animate={{ y: [0, 10, 0] }}
+            transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
+            className="absolute bottom-50 left-1/2 -translate-x-1/2 text-slate-500"
+          >
+            <ArrowDown size={24} />
           </motion.div>
         </div>
       </section>

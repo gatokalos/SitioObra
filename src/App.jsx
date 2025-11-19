@@ -1,5 +1,4 @@
-import React from 'react';
-import { Helmet } from 'react-helmet';
+import React, { useEffect } from 'react';
 import { Toaster } from '@/components/ui/toaster';
 import Header from '@/components/Header';
 import Hero from '@/components/Hero';
@@ -13,37 +12,42 @@ import Contact from '@/components/Contact';
 import Footer from '@/components/Footer';
 import { useBlogPosts } from '@/hooks/useBlogPosts';
 
+const pageTitle = '#GatoEncerrado - Obra de Teatro Transmedia';
+const pageDescription =
+  'La historia de alguien que desaparece… y deja una huella emocional. Una experiencia teatral única que explora múltiples formatos transmedia.';
+
 function App() {
   const blogData = useBlogPosts();
 
+  useEffect(() => {
+    document.title = pageTitle;
+    let meta = document.querySelector('meta[name="description"]');
+    if (!meta) {
+      meta = document.createElement('meta');
+      meta.setAttribute('name', 'description');
+      document.head.appendChild(meta);
+    }
+    meta.setAttribute('content', pageDescription);
+  }, []);
+
   return (
-    <>
-      <Helmet>
-        <title>#GatoEncerrado - Obra de Teatro Transmedia</title>
-        <meta
-          name="description"
-          content="La historia de alguien que desaparece… y deja una huella emocional. Una experiencia teatral única que explora múltiples formatos transmedia."
-        />
-      </Helmet>
+    <div className="min-h-screen overflow-x-hidden">
+      <Header />
 
-      <div className="min-h-screen overflow-x-hidden">
-        <Header />
+      <main className="pt-20 lg:pt-24">
+        <Hero />
+        <About />
+        <Team />
+        <Blog posts={blogData.posts} isLoading={blogData.isLoading} error={blogData.error} />
+        <Transmedia />
+        <Instagram />
+        <NextShow />
+        <Contact />
+      </main>
 
-        <main className="pt-24 lg:pt-28">
-          <Hero />
-          <About />
-          <Team />
-          <Blog posts={blogData.posts} isLoading={blogData.isLoading} error={blogData.error} />
-          <Transmedia />
-          <Instagram />
-          <NextShow />
-          <Contact />
-        </main>
-
-        <Footer />
-        <Toaster />
-      </div>
-    </>
+      <Footer />
+      <Toaster />
+    </div>
   );
 }
 
