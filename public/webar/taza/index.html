@@ -1,87 +1,153 @@
-Revisa bien si puedo usar este HMLT para la experiencia WebAR que tenemos en el showcase de la taza:
-
 <!DOCTYPE html>
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
-  <title>Miniverso Taza · Portal</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>WebAR — Miniverso Taza</title>
 
   <!-- A-Frame -->
   <script src="https://cdn.jsdelivr.net/npm/aframe@1.5.0/dist/aframe.min.js"></script>
-  <!-- MindAR + A-Frame -->
+
+  <!-- MindAR -->
   <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.1.7/dist/mindar-image-aframe.prod.js"></script>
 
   <style>
     * { box-sizing: border-box; }
-    html, body {
+    body, html {
       margin: 0;
       padding: 0;
-      width: 100%;
-      height: 100%;
       overflow: hidden;
-      background: #000;
+      background-color: #000;
       font-family: system-ui, -apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif;
     }
 
-    /* Pantalla de inicio */
     #startScreen {
       position: fixed;
       inset: 0;
+      background: radial-gradient(circle at top, #1b1030 0, #050509 60%);
       display: flex;
       flex-direction: column;
-      align-items: center;
       justify-content: center;
-      text-align: center;
+      align-items: center;
       padding: 2rem;
-      background: radial-gradient(circle at top, #1b1030 0, #050509 60%);
-      color: #fff;
       z-index: 20;
+      text-align: center;
+      color: #fff;
     }
 
-    #startScreen h1 {
-      margin: 0 0 0.5rem 0;
-      font-size: 1.3rem;
+    #startScreen h2 {
+      margin: 0 0 0.25rem 0;
+      font-size: 1.4rem;
+      letter-spacing: 0.03em;
     }
 
     #startScreen p {
       margin: 0;
       max-width: 260px;
+      opacity: 0.85;
+      font-size: 0.95rem;
+    }
+
+    #startButton {
+      margin-top: 1.8rem;
+      background: #f9a825;
+      color: #111;
+      font-weight: 600;
+      padding: 12px 22px;
+      border-radius: 999px;
+      font-size: 1rem;
+      border: none;
+      cursor: pointer;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+    }
+
+    #hint {
+      position: fixed;
+      bottom: 10px;
+      left: 0;
+      right: 0;
+      text-align: center;
+      color: white;
+      font-size: 0.8rem;
+      z-index: 10;
+      opacity: 0.8;
+    }
+
+    .glow {
+      animation: pulse 2s infinite ease-in-out;
+    }
+
+    @keyframes pulse {
+      0% { opacity: 0.7; }
+      50% { opacity: 1; }
+      100% { opacity: 0.7; }
+    }
+
+    /* Fallback (sin cámara / sin AR) */
+    #fallback {
+      position: fixed;
+      inset: 0;
+      display: none; /* se muestra solo si AR falla */
+      justify-content: center;
+      align-items: center;
+      background: radial-gradient(circle at top, #1b1030 0, #050509 60%);
+      padding: 1.5rem;
+      color: #fff;
+      z-index: 5;
+    }
+
+    .fallback-card {
+      width: 100%;
+      max-width: 360px;
+      background: rgba(8, 8, 16, 0.9);
+      border-radius: 24px;
+      padding: 1.75rem 1.5rem 1.5rem;
+      box-shadow: 0 18px 40px rgba(0,0,0,0.7);
+      border: 1px solid rgba(255,255,255,0.05);
+    }
+
+    .fallback-card h3 {
+      margin: 0 0 0.35rem 0;
+      font-size: 1.1rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      opacity: 0.9;
+    }
+
+    .fallback-card h2 {
+      margin: 0 0 0.6rem 0;
+      font-size: 1.3rem;
+    }
+
+    .fallback-card p {
+      margin: 0 0 1rem 0;
       font-size: 0.9rem;
       opacity: 0.85;
     }
 
-    #startButton {
-      margin-top: 1.5rem;
-      padding: 11px 22px;
-      border-radius: 999px;
-      border: none;
+    .fallback-highlight {
+      margin: 0 0 0.75rem 0;
+      font-size: 0.95rem;
+      color: #ffecb3;
+    }
+
+    .fallback-footer {
+      margin-top: 1.1rem;
+      font-size: 0.8rem;
+      opacity: 0.7;
+    }
+
+    #fallbackPortal {
+      margin-top: 0.75rem;
+      width: 100%;
       background: #f9a825;
       color: #111;
       font-weight: 600;
-      font-size: 0.95rem;
-      cursor: pointer;
-    }
-
-    /* Texto CTA en pantalla */
-    #ctaLabel {
-      position: fixed;
-      left: 50%;
-      bottom: 16px;
-      transform: translateX(-50%);
-      padding: 8px 14px;
+      padding: 10px 16px;
       border-radius: 999px;
-      background: rgba(0, 0, 0, 0.7);
-      color: #f9f9ff;
-      font-size: 0.85rem;
-      letter-spacing: 0.04em;
-      text-transform: uppercase;
-      opacity: 0;
-      transition: opacity 0.4s ease;
-      z-index: 10;
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      backdrop-filter: blur(10px);
-      pointer-events: none;
+      border: none;
+      cursor: pointer;
+      font-size: 0.95rem;
     }
 
     a-scene {
@@ -95,113 +161,269 @@ Revisa bien si puedo usar este HMLT para la experiencia WebAR que tenemos en el 
 
   <!-- Pantalla inicial -->
   <div id="startScreen">
-    <h1>Miniverso Taza</h1>
-    <p>
-      Apunta la cámara hacia el arte de tu taza.<br />
-      Cuando el portal aparezca, tócala para hablar con tu Gato Encerrado.
-    </p>
-    <button id="startButton">Iniciar portal</button>
+    <h2>WebAR · Miniverso Taza</h2>
+    <p>Apunta tu cámara a la taza. La constelación se revelará cuando el marcador sea detectado.</p>
+    <button id="startButton">Iniciar WebAR</button>
   </div>
 
-  <!-- Texto CTA en overlay -->
-  <div id="ctaLabel">Habla con tu Gato Encerrado</div>
+  <div id="hint">Permite acceso a la cámara</div>
+
+  <!-- Fallback sin cámara / sin AR -->
+  <div id="fallback">
+    <div class="fallback-card">
+      <h3>Miniverso Taza</h3>
+      <h2>Tu constelación está lista</h2>
+      <p class="fallback-highlight">
+        Si tu cámara no se activó, no pasa nada. Esta es la pista que le corresponde a tu taza.
+      </p>
+      <p>
+        28 de diciembre. Una fecha que se abre como una grieta luminosa:
+        el día en que #GatoEncerrado salió del escenario para habitar tu mesa.
+      </p>
+      <p>
+        Guarda esta taza como un recordatorio de que a veces el boleto no está en el papel, sino en el objeto
+        que decides sostener entre las manos.
+      </p>
+      <button id="fallbackPortal">Entrar al portal</button>
+      <div class="fallback-footer">
+        Si en otro dispositivo se activa la cámara, verás la constelación flotando sobre la taza.
+      </div>
+    </div>
+  </div>
 
   <!-- ESCENA AR -->
   <a-scene
-    mindar-image="imageTargetSrc: ./taza.mind; autoStart: false"
-    embedded
-    color-space="sRGB"
-    renderer="physicallyCorrectLights: true; colorManagement: true"
+    mindar-image="imageTargetSrc: ./taza.mind; filterMinCF: 0.0001; warmupTolerance: 5; autoStart: false"
+    color-management="true"
+    renderer="precision: mediump; antialias: true; physicallyCorrectLights: true"
     vr-mode-ui="enabled: false"
+    device-orientation-permission-ui="enabled: false"
+    embedded
   >
-    <!-- Cámara con cursor para detectar taps -->
     <a-camera
       position="0 0 0"
       look-controls="enabled: false"
-      cursor="fuse: false; rayOrigin: mouse"
+      cursor="rayOrigin: mouse"
       raycaster="objects: .clickable"
     ></a-camera>
 
-    <!-- Target de la taza (marcador) -->
-    <a-entity id="taza-target" mindar-image-target="targetIndex: 0">
+    <a-entity mindar-image-target="targetIndex: 0">
+      <!-- Constelación -->
+      <a-sphere radius="0.015" position="0 0 0.1" color="#fff" class="glow"></a-sphere>
+      <a-sphere radius="0.012" position="0.05 0.04 0.1" color="#fff" class="glow"></a-sphere>
+      <a-sphere radius="0.01" position="-0.04 0.03 0.1" color="#fff" class="glow"></a-sphere>
+      <a-sphere radius="0.011" position="0.03 -0.03 0.1" color="#fff" class="glow"></a-sphere>
+      <a-sphere radius="0.01" position="-0.03 -0.03 0.1" color="#fff" class="glow"></a-sphere>
 
-      <!-- Esfera-portal translúcida envolviendo la taza -->
-      <a-sphere
-        id="portal-sphere"
+      <a-entity line="start: 0 0 0.1; end: 0.05 0.04 0.1; color: #fff"></a-entity>
+      <a-entity line="start: 0 0 0.1; end: -0.04 0.03 0.1; color: #fff"></a-entity>
+      <a-entity line="start: 0.05 0.04 0.1; end: 0.03 -0.03 0.1; color: #fff"></a-entity>
+      <a-entity line="start: -0.04 0.03 0.1; end: -0.03 -0.03 0.1; color: #fff"></a-entity>
+
+      <!-- Fecha -->
+      <a-entity
+        position="0 -0.15 0.1"
+        text="value: 28 de diciembre; align: center; color: #FFD54F; width: 1.2;"
+      ></a-entity>
+
+      <!-- Botón portal (en AR) -->
+      <a-plane
+        id="portalButton"
+        position="0 -0.26 0.1"
+        width="0.75"
+        height="0.18"
+        color="#FFD54F"
+        opacity="0.95"
         class="clickable"
-        position="0 0 0"
-        radius="0.7"
-        color="#D1BFFB"
-        opacity="0.18"
-        segments-width="32"
-        segments-height="32"
-        material="shader: standard; metalness: 0.0; roughness: 0.7; transparent: true;"
-        animation__pulse="property: scale; from: 1 1 1; to: 1.06 1.06 1.06; dir: alternate; dur: 1400; loop: true; easing: easeInOutSine"
-      ></a-sphere>
-
-      <!-- Un sutil anillo interno, solo para dar lectura de “portal” -->
-      <a-torus
-        position="0 0 0.02"
-        rotation="90 0 0"
-        radius="0.42"
-        radius-tubular="0.01"
-        color="#E0D4FF"
-        opacity="0.6"
-        material="shader: flat; transparent: true;"
-      ></a-torus>
-
+      >
+        <a-entity
+          position="0 0 0.02"
+          text="value: Entrar al portal; align: center; color: #111; width: 1.1;"
+        ></a-entity>
+      </a-plane>
     </a-entity>
   </a-scene>
 
   <script>
     const startScreen = document.getElementById("startScreen");
     const startButton = document.getElementById("startButton");
-    const ctaLabel = document.getElementById("ctaLabel");
-
+    const hint = document.getElementById("hint");
+    const fallback = document.getElementById("fallback");
+    const fallbackPortal = document.getElementById("fallbackPortal");
+    const portalPlane = document.getElementById("portalButton");
     const sceneEl = document.querySelector("a-scene");
-    const targetEl = document.getElementById("taza-target");
-    const portalSphere = document.getElementById("portal-sphere");
+    const targetEntity = document.querySelector("[mindar-image-target]");
+    const portalUrl = "https://esungatoencerrado.ai";
+    let arSystem = null;
+    let hasStarted = false;
+    let videoCheckTimeoutId;
+    let forceFallbackTimeoutId;
+    let fallbackShown = false;
 
-    // Arrancamos MindAR solo después del gesto del usuario
-    startButton.addEventListener("click", () => {
-      startScreen.style.display = "none";
+    const log = (...args) => {
+      console.log("[Miniverso Taza]", ...args);
+    };
 
-      const startMindAR = () => {
-        const mindarComp = sceneEl.components["mindar-image"];
-        if (!mindarComp) {
-          console.error("[Taza/Portal] No se encontró el componente mindar-image.");
-          return;
-        }
-        try {
-          mindarComp.start();
-        } catch (e) {
-          console.error("[Taza/Portal] Error al iniciar MindAR:", e);
-        }
-      };
+    const openPortal = () => {
+      window.location.href = portalUrl;
+    };
 
-      if (sceneEl.hasLoaded) {
-        startMindAR();
-      } else {
-        sceneEl.addEventListener("loaded", startMindAR, { once: true });
+    const showFallback = (message = "") => {
+      if (fallbackShown) return;
+      fallbackShown = true;
+      hint.textContent = message;
+      if (sceneEl) sceneEl.style.display = "none";
+      fallback.style.display = "flex";
+      log("Mostrando fallback:", message || "sin mensaje específico");
+      if (videoCheckTimeoutId) {
+        clearTimeout(videoCheckTimeoutId);
+        videoCheckTimeoutId = null;
       }
+      if (forceFallbackTimeoutId) {
+        clearTimeout(forceFallbackTimeoutId);
+        forceFallbackTimeoutId = null;
+      }
+    };
+
+    const ensureSceneLoaded = () => {
+      if (!sceneEl) return Promise.resolve();
+      if (sceneEl.hasLoaded) {
+        log("Escena A-Frame ya cargada");
+        return Promise.resolve();
+      }
+      log("Esperando a que cargue la escena A-Frame");
+      return sceneEl.hasLoaded
+        ? Promise.resolve()
+        : new Promise((resolve) => {
+            sceneEl.addEventListener("loaded", resolve, { once: true });
+          });
+    };
+
+    const getMindARSystem = () => {
+      if (arSystem) return arSystem;
+      if (!sceneEl) return null;
+      const systems = sceneEl.systems || {};
+      const components = sceneEl.components || {};
+      arSystem =
+        systems["mindar-image-system"] ||
+        systems["mindar-image"] ||
+        components["mindar-image"];
+      log("MindAR system detectado:", Boolean(arSystem));
+      return arSystem;
+    };
+
+    const clearForceFallbackTimer = () => {
+      if (forceFallbackTimeoutId) {
+        clearTimeout(forceFallbackTimeoutId);
+        forceFallbackTimeoutId = null;
+      }
+    };
+
+    const scheduleFallbackChecks = () => {
+      if (videoCheckTimeoutId) clearTimeout(videoCheckTimeoutId);
+      videoCheckTimeoutId = window.setTimeout(checkVideoFeed, 6000);
+      log("Timeout para revisar video programado (6s)");
+
+      if (forceFallbackTimeoutId) clearTimeout(forceFallbackTimeoutId);
+      forceFallbackTimeoutId = window.setTimeout(() => {
+        showFallback("No pudimos iniciar la cámara. Intenta con otro dispositivo.");
+      }, 12000);
+      log("Timeout para forzar fallback programado (12s)");
+    };
+
+    const handleMindARSuccess = () => {
+      if (!fallbackShown) hint.textContent = "Apunta la cámara a la taza";
+      clearForceFallbackTimer();
+      log("MindAR reportó inicio exitoso");
+    };
+
+    const checkVideoFeed = () => {
+      const video = document.querySelector("video");
+      const noVideo =
+        !video ||
+        video.readyState < 2 ||
+        video.videoWidth === 0 ||
+        video.videoHeight === 0;
+      if (noVideo) {
+        log("No se detecta feed de video luego del timeout");
+        showFallback("No pudimos usar la cámara de este dispositivo.");
+      } else if (!fallbackShown) {
+        hint.textContent = "Apunta la cámara a la taza";
+        clearForceFallbackTimer();
+        log("Feed de video detectado");
+      }
+    };
+
+    const startMindAR = async () => {
+      if (hasStarted || !sceneEl) return;
+      hasStarted = true;
+      hint.textContent = "Preparando constelación...";
+      startScreen.style.display = "none";
+      log("Usuario inició la experiencia");
+
+      await ensureSceneLoaded();
+      const system = getMindARSystem();
+
+      if (!system || typeof system.start !== "function") {
+        console.warn("MindAR no está disponible en esta escena.");
+        showFallback("Este navegador no soporta la activación WebAR.");
+        return;
+      }
+
+      try {
+        const startResult = system.start();
+        log("Se llamó a mindar.start()");
+        scheduleFallbackChecks();
+
+        if (startResult && typeof startResult.then === "function") {
+          startResult
+            .then(handleMindARSuccess)
+            .catch((error) => {
+              console.error("Error al iniciar MindAR:", error);
+              showFallback("No pudimos iniciar la cámara. Intenta con otro dispositivo.");
+            });
+        } else {
+          handleMindARSuccess();
+        }
+      } catch (error) {
+        console.error("Error al iniciar MindAR:", error);
+        showFallback("No pudimos iniciar la cámara. Intenta con otro dispositivo.");
+      }
+    };
+
+    // Comportamiento del botón de inicio
+    startButton.addEventListener("click", () => {
+      startMindAR();
     });
 
-    // Cuando el marcador se detecta, mostramos el texto CTA
-    targetEl.addEventListener("targetFound", () => {
-      console.log("[Taza/Portal] Marcador encontrado.");
-      ctaLabel.style.opacity = 1;
-    });
+    if (sceneEl) {
+      sceneEl.addEventListener("arReady", () => {
+        if (!fallbackShown) hint.textContent = "Apunta la cámara a la taza";
+        clearForceFallbackTimer();
+      });
 
-    targetEl.addEventListener("targetLost", () => {
-      console.log("[Taza/Portal] Marcador perdido.");
-      ctaLabel.style.opacity = 0;
-    });
+      sceneEl.addEventListener("arError", () => {
+        showFallback("Este dispositivo no es compatible con la experiencia AR.");
+      });
+    }
 
-    // Click en la esfera-portal → llevar al chat
-    portalSphere.addEventListener("click", () => {
-      console.log("[Taza/Portal] Esfera tocada. Abriendo chat…");
-      window.location.href = "https://gatoencerrado.ai/chat";
-    });
+    if (targetEntity) {
+      targetEntity.addEventListener("targetFound", () => {
+        if (!fallbackShown) hint.textContent = "Constelación detectada · mantén la taza enfocada";
+        clearForceFallbackTimer();
+      });
+      targetEntity.addEventListener("targetLost", () => {
+        if (!fallbackShown) hint.textContent = "Apunta la cámara a la taza";
+      });
+    }
+
+    // Portal en AR y fallback
+    if (portalPlane) {
+      portalPlane.addEventListener("click", openPortal);
+    }
+    if (fallbackPortal) {
+      fallbackPortal.addEventListener("click", openPortal);
+    }
   </script>
 </body>
 </html>

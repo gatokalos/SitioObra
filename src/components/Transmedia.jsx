@@ -75,7 +75,7 @@ const showcaseDefinitions = {
     ],
     comments: [
       { id: 'la-taza-comment-1', quote: '“La taza me mostró una frase que me persiguió toda la semana.”', author: 'Usuario anónimo' },
-      { id: 'la-taza-comment-2', quote: '“No entendí nada… hasta que la leí al revés.”', author: 'Sofía B.' },
+      { id: 'la-taza-comment-2', quote: '“No entendí nada… hasta que le agarré el modo.”', author: 'Sofía B.' },
     ],
   },
   miniversoNovela: {
