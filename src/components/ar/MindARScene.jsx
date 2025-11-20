@@ -255,7 +255,7 @@ const MindARScene = forwardRef(({
       {status === 'loading' ? (
         <div className="absolute inset-0 flex flex-col items-center justify-center text-slate-200 text-sm bg-black/40 pointer-events-none">
           <div className="animate-spin rounded-full h-10 w-10 border-2 border-purple-300 border-t-transparent mb-3"></div>
-          Preparando constelación…
+          Preparando portal...
         </div>
       ) : null}
       {status === 'error' ? (

@@ -43,7 +43,7 @@ const ARExperience = ({ targetSrc = '/assets/targets.mind', phrases = DEFAULT_PH
       }
       const file = new File([blob], 'miniverso-taza.jpg', { type: 'image/jpeg' });
       const shareText =
-        '#EstoNoEsUnaTaza · Comparte tu constelación y etiqueta a @gatoencerradoai para aparecer en la galería.';
+        '#EstoNoEsUnaTaza · Comparte tu portal y etiqueta a @gatoencerradoai para aparecer en la galería.';
 
       if (navigator.share && navigator.canShare?.({ files: [file] })) {
         await navigator.share({
