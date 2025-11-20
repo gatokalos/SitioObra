@@ -66,7 +66,7 @@ const PACKAGE_OPTIONS = [
   },
   {
     id: 'combo-900',
-    title: 'Combo novela + taza con causa',
+    title: 'Combo dos tazas + novela',
     price: '$900',
     helper: 'Paquete completo disponible solo el día del evento.',
   },
@@ -307,9 +307,9 @@ const ReserveModal = ({ open, onClose, initialInterest = INTEREST_OPTIONS[0].val
                 </div>
 
                 <div className="glass-effect rounded-xl border border-purple-400/20 p-4 space-y-3">
-                  <h3 className="font-display text-lg text-purple-200">¿Qué te gustaría apartar?</h3>
+                  <h3 className="font-display text-lg text-purple-200">Mesa con Merch el día de la función</h3>
                   <p className="text-xs text-slate-400/80">
-                    Si deseas pagarlo por adelantado, déjalo marcado y te enviaremos un enlace seguro para completar tu compra.
+                    Si deseas apartar o pagar por adelantado, déjalo marcado y te enviaremos un enlace seguro para completar tu registro.
                   </p>
                   <div className="grid sm:grid-cols-2 gap-3 text-sm text-slate-200">
                     {PACKAGE_OPTIONS.map((option) => (
