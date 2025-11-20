@@ -207,16 +207,15 @@ const MiniverseModal = ({ open, onClose }) => {
                     <div className="glass-effect rounded-xl border border-white/5 p-4">
                       <h3 className="font-display text-lg text-slate-100 mb-3">¿Qué necesitas saber?</h3>
                       <ul className="space-y-2 text-slate-300/80">
-                        <li>• Las activaciones WebAR de la taza se liberarán primero para esta lista.</li>
-                        <li>• Algunas experiencias requieren tokens únicos impresos en la novela.</li>
-                        <li>• Los miniversos tienen ventanas de tiempo limitadas para preservar la intimidad.</li>
+                        <li>• Algunos miniversos aún están bajo construcción.</li>
+                        <li>• Puedes ser parte de las pruebas tempranas o versiones beta.</li>
+                        <li>• Si te unes a esta lista, recibirás avances exclusivos antes de que se abran al público.</li>
                       </ul>
                     </div>
                     <div className="glass-effect rounded-xl border border-purple-400/20 p-4">
                       <h3 className="font-display text-lg text-purple-200 mb-3">¿Qué recibirás?</h3>
                       <p>
-                        Invitaciones privadas, códigos de acceso, experimentos digitales y acceso anticipado a los
-                        contenidos de la Comunidad #GatoEncerrado.
+                        Invitaciones a exploraciones internas, accesos temporales, adelantos curatoriales y ventanas de activación anticipada en los miniversos en desarrollo.
                       </p>
                     </div>
                   </div>

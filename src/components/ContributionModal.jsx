@@ -22,7 +22,7 @@ const CATEGORIES = [
     id: 'obra_escenica',
     icon: <Drama size={20} className="text-purple-300" />,
     title: 'Miniverso Escénico - La Obra',
-    description: 'La función que detonó este universo literario. Voces, cuerpos y gatos en escena.',
+    description: 'La función que detonó este universo narrativo. Voces, cuerpos y trances en escena.',
   },
     {
     id: 'miniverso_novela',
@@ -58,7 +58,7 @@ const CATEGORIES = [
     id: 'bitacora',
     icon: <Video size={20} className="text-indigo-300" />,
     title: 'Miniverso Bitácora',
-    description: 'Crónicas, expansiones narrativas y debate vivo sobre el universo GatoEncerrado.',
+    description: 'Crónicas, expansiones narrativas y debate vivo sobre cosas de la vida... y la muerte .',
   },
   {
     id: 'otro',
@@ -88,6 +88,10 @@ const initialFormState = {
 };
 
 const FORM_STORAGE_KEY = 'gatoencerrado-contrib-form';
+
+const BETA_UNIVERSES = new Set(['apps', 'bitacora', 'sonoro']);
+
+const BETA_UNIVERSES = new Set(['apps', 'bitacora', 'sonoro']);
 
 const formTitlesByUniverse = {
   obra_escenica: 'Si la Obra te tocó, este espacio es tuyo.',
@@ -120,6 +124,12 @@ const ContributionModal = ({ open, onClose }) => {
       return false;
     }
     return window.matchMedia('(min-width: 768px)').matches;
+  });
+  const [isMobileLayout, setIsMobileLayout] = useState(() => {
+    if (typeof window === 'undefined') {
+      return false;
+    }
+    return window.matchMedia('(max-width: 767px)').matches;
   });
   const storedFormRef = useRef(null);
 
@@ -185,21 +195,30 @@ const ContributionModal = ({ open, onClose }) => {
     if (typeof window === 'undefined') {
       return undefined;
     }
-    const mediaQuery = window.matchMedia('(min-width: 768px)');
-    const handleChange = (event) => {
+    const desktopQuery = window.matchMedia('(min-width: 768px)');
+    const mobileQuery = window.matchMedia('(max-width: 767px)');
+    const handleDesktopChange = (event) => {
       setIsDesktopLayout(event.matches);
     };
-    setIsDesktopLayout(mediaQuery.matches);
-    if (mediaQuery.addEventListener) {
-      mediaQuery.addEventListener('change', handleChange);
+    const handleMobileChange = (event) => {
+      setIsMobileLayout(event.matches);
+    };
+    setIsDesktopLayout(desktopQuery.matches);
+    setIsMobileLayout(mobileQuery.matches);
+    if (desktopQuery.addEventListener) {
+      desktopQuery.addEventListener('change', handleDesktopChange);
+      mobileQuery.addEventListener('change', handleMobileChange);
     } else {
-      mediaQuery.addListener(handleChange);
+      desktopQuery.addListener(handleDesktopChange);
+      mobileQuery.addListener(handleMobileChange);
     }
     return () => {
-      if (mediaQuery.removeEventListener) {
-        mediaQuery.removeEventListener('change', handleChange);
+      if (desktopQuery.removeEventListener) {
+        desktopQuery.removeEventListener('change', handleDesktopChange);
+        mobileQuery.removeEventListener('change', handleMobileChange);
       } else {
-        mediaQuery.removeListener(handleChange);
+        desktopQuery.removeListener(handleDesktopChange);
+        mobileQuery.removeListener(handleMobileChange);
       }
     };
   }, []);
@@ -342,6 +361,21 @@ const ContributionModal = ({ open, onClose }) => {
     setIsFormPanelOpen(false);
   }, [status]);
 
+  const renderBetaCard = () => (
+    <div className="rounded-2xl border border-white/10 bg-black/20 px-4 py-3 text-[0.8rem] text-slate-300 leading-relaxed">
+      <p className="text-xs uppercase tracking-[0.35em] text-slate-500">¿Qué necesitas saber?</p>
+      <p>• Algunos miniversos aún están bajo construcción.</p>
+      <p>• Puedes ser parte de las pruebas tempranas o versiones beta.</p>
+      <p>• Si te unes a esta lista, recibirás avances exclusivos antes de que se abran al público.</p>
+      <div className="border-t border-white/10 pt-3 text-xs uppercase tracking-[0.35em] text-slate-500">
+        ✨ ¿Qué recibirás?
+      </div>
+      <p className="text-sm">
+        Invitaciones a exploraciones internas, accesos temporales, adelantos curatoriales y ventanas de activación anticipada en los miniversos en desarrollo.
+      </p>
+    </div>
+  );
+
   const renderFormPanelBody = () => (
     <div className="relative">
       <div className="mb-4">
@@ -354,7 +388,18 @@ const ContributionModal = ({ open, onClose }) => {
           <span className="text-purple-200 font-semibold">{selectedCategory.title}</span>
         </p>
       </div>
-
+      {isMobileLayout ? (
+        <button
+          type="button"
+          onClick={handleCloseFormPanel}
+          className="mb-4 flex items-center gap-2 text-sm font-semibold text-purple-300 hover:text-purple-200"
+        >
+          ← Regresar
+        </button>
+      ) : null}
+      {isMobileLayout && BETA_UNIVERSES.has(selectedCategory.id) ? (
+        <div className="mb-4">{renderBetaCard()}</div>
+      ) : null}
       <form className="space-y-4" onSubmit={handleSubmit}>
         <input
           name="name"
@@ -450,8 +495,11 @@ const ContributionModal = ({ open, onClose }) => {
           className="w-full bg-gradient-to-r from-purple-600/80 to-indigo-600/80 hover:from-purple-600 hover:to-indigo-600 text-white py-3 rounded-lg font-semibold flex items-center justify-center gap-2 hover-glow"
         >
           {status === 'loading' ? 'Enviando…' : 'Enviar propuesta'}
-        </Button>
+      </Button>
       </form>
+      {isDesktopLayout && BETA_UNIVERSES.has(selectedCategory.id) ? (
+        <div className="mt-6 space-y-3">{renderBetaCard()}</div>
+      ) : null}
     </div>
   );
 

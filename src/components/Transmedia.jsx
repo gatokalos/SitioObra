@@ -224,7 +224,7 @@ const formats = [
   {
     id: 'miniversos',
     title: 'Miniverso Escénico',
-    description: 'La función que detonó este universo. Voces, cuerpos y gatos en escena.',
+    description: 'La función que detonó este universo narrativo. Voces, cuerpos y trances en escena.',
     icon: Drama,
     iconClass: 'text-purple-300',
   },
