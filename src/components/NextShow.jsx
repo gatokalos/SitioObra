@@ -54,7 +54,7 @@ const NextShow = () => {
                                   className="bg-gradient-to-r from-orange-500/90 via-rose-500/90 to-pink-500/90 hover:from-orange-400 hover:to-pink-400 text-white px-6 py-3 rounded-full font-semibold flex items-center gap-2 shadow-lg shadow-orange-500/40 transition"
                                 >
                                   <Ticket size={20} />
-                                  Reserva tu acceso
+                                  Compra tu boleto
                 </Button>
               </div>
             </div>

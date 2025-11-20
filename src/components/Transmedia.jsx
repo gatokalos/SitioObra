@@ -173,19 +173,19 @@ const formats = [
     icon: Drama,
     iconClass: 'text-purple-300',
   },
+    {
+    id: 'lataza',
+    title: 'Miniverso Taza',
+    description: 'Objeto ritual con WebAR. Una excusa para seguir la historia desde lo cotidiano.',
+    icon: Coffee,
+    iconClass: 'text-amber-300',
+  },
   {
     id: 'miniversoNovela',
     title: 'Miniverso Novela',
     description: 'Desde la autoficción hasta las viñetas de la novela gráfica.',
     icon: BookOpen,
     iconClass: 'text-emerald-300',
-  },
-  {
-    id: 'lataza',
-    title: 'Miniverso Taza',
-    description: 'Objeto ritual con WebAR. Una excusa para seguir la historia desde lo cotidiano.',
-    icon: Coffee,
-    iconClass: 'text-amber-300',
   },
   {
     id: 'copycats',

@@ -408,8 +408,8 @@ const Blog = ({ posts = [], isLoading = false, error = null }) => {
           >
             <h3 className="font-display text-3xl font-medium text-slate-100 mb-6">¿Quieres publicar en el blog?</h3>
             <p className="text-slate-300/80 leading-relaxed mb-8 max-w-2xl mx-auto font-light">
-              Ensayos, bitácoras, crítica y testimonios son bienvenidos. Recibimos propuestas curatoriales y
-              comunitarias, y damos seguimiento personal.
+              Invitamos a espectadores, artistas, investigadores y espíritus curiosos a compartir cómo esta obra resonó en su forma de mirar, sentir, imaginar o habitar el mundo.
+              Tu palabra también construye este universo.
             </p>
             <div className="relative inline-flex flex-col items-center gap-2">
               {showOnboardingHint ? (

@@ -265,7 +265,7 @@ const ReserveModal = ({ open, onClose, initialInterest = INTEREST_OPTIONS[0].val
                     28 de diciembre · CECUT
                   </p>
                   <h2 className="font-display text-3xl text-slate-50">
-                    Regístrate para recibir acceso y novedades del Gato Encerrado
+                    Compra tu boleto y aparta tu lugar en el universo de #GatoEncerrado 
                   </h2>
                 </div>
               </div>
@@ -289,9 +289,9 @@ const ReserveModal = ({ open, onClose, initialInterest = INTEREST_OPTIONS[0].val
                   </h3>
                   <ul className="space-y-2 text-slate-300/80">
                     <li>• Taquilla del CECUT · Preventa disponible hasta agotar localidades.</li>
-                    <li>• Solo 45 tazas disponibles como incentivo de preventa.</li>
+                    <li>• Llévate una taza como incentivo de preventa.</li>
                     <li>• Las tazas se entregan exclusivamente en taquilla, hasta agotar existencias.</li>
-                    <li>• El día del evento habrá mesa de merch con tazas extra y la novela impresa.</li>
+                    <li>• Consulta los paquetes disponibles en la sección de apartados.</li>
                   </ul>
                 </div>
 

@@ -197,8 +197,9 @@ const Curatorial = ({ posts = [], isLoading = false }) => {
               Contribuye al Diálogo Crítico
             </h3>
             <p className="text-slate-300/80 leading-relaxed mb-8 max-w-2xl mx-auto font-light">
-              Invitamos a críticos, académicos y pensadores a contribuir con sus reflexiones 
-              sobre #GatoEncerrado y su impacto en el panorama teatral contemporáneo.
+              Invitamos a espectadores, artistas, investigadores y espíritus curiosos 
+              a compartir cómo esta obra resonó en su forma de mirar, sentir, imaginar o habitar el mundo.
+              Tu palabra también construye este universo.
             </p>
             <Button
               onClick={() => setIsContributionOpen(true)}

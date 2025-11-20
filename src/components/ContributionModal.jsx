@@ -20,7 +20,7 @@ const CATEGORIES = [
   {
     id: 'obra_escenica',
     icon: <Drama size={20} className="text-purple-300" />,
-    title: 'Miniverso Escénico',
+    title: 'Miniverso Escénico - La Obra',
     description: 'La función que detonó este universo literario. Voces, cuerpos y gatos en escena.',
   },
     {
@@ -51,7 +51,7 @@ const CATEGORIES = [
     id: 'bitacora',
     icon: <Video size={20} className="text-indigo-300" />,
     title: 'Miniverso Bitácora',
-    description: 'Crónicas, expansiones narrativas y debate vivo sobre el universo GatoEncerrado.',
+    description: 'Sueña imágenes, elige música, invoca un poema: combina tu propio universo.',
   },
   {
     id: 'otro',
@@ -82,6 +82,16 @@ const initialFormState = {
 
 const FORM_STORAGE_KEY = 'gatoencerrado-contrib-form';
 
+const formTitlesByUniverse = {
+  obra_escenica: 'Si la Obra te tocó, este espacio es tuyo.',
+  miniverso_novela: 'Si encontraste algo tuyo entre estas páginas, déjalo dicho.',
+  taza: '¿Qué historia se activó cuando tomaste la taza? Escríbela aquí.',
+  cine: '¿Qué imagen te persiguió después? Cuéntanos qué viste más allá de la pantalla.',
+  apps: '¿Cómo cambió tu forma de jugar o explorar este universo?',
+  bitacora: 'Comparte qué mezcla soñaste: qué viste, qué escuchaste, qué palabras eligieron.',
+  otro: 'Si no cabe en un miniverso… es porque aún no lo hemos nombrado.',
+};
+
 const ContributionModal = ({ open, onClose }) => {
   const { user } = useAuth();
   const isAuthenticated = Boolean(user?.email);
@@ -97,6 +107,14 @@ const ContributionModal = ({ open, onClose }) => {
   const [notifyOnPublish, setNotifyOnPublish] = useState(false);
   const [isFormPanelOpen, setIsFormPanelOpen] = useState(false);
   const [confettiBursts, setConfettiBursts] = useState([]);
+  const [lastSelectedButtonRect, setLastSelectedButtonRect] = useState(null);
+  const formPanelRef = useRef(null);
+  const [isDesktopLayout, setIsDesktopLayout] = useState(() => {
+    if (typeof window === 'undefined') {
+      return false;
+    }
+    return window.matchMedia('(min-width: 768px)').matches;
+  });
   const storedFormRef = useRef(null);
 
   useEffect(() => {
@@ -157,6 +175,29 @@ const ContributionModal = ({ open, onClose }) => {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [open, onClose]);
 
+  useEffect(() => {
+    if (typeof window === 'undefined') {
+      return undefined;
+    }
+    const mediaQuery = window.matchMedia('(min-width: 768px)');
+    const handleChange = (event) => {
+      setIsDesktopLayout(event.matches);
+    };
+    setIsDesktopLayout(mediaQuery.matches);
+    if (mediaQuery.addEventListener) {
+      mediaQuery.addEventListener('change', handleChange);
+    } else {
+      mediaQuery.addListener(handleChange);
+    }
+    return () => {
+      if (mediaQuery.removeEventListener) {
+        mediaQuery.removeEventListener('change', handleChange);
+      } else {
+        mediaQuery.removeListener(handleChange);
+      }
+    };
+  }, []);
+
   const handleInputChange = useCallback((event) => {
     const { name, value } = event.target;
     setFormState((prev) => ({ ...prev, [name]: value }));
@@ -175,13 +216,30 @@ const ContributionModal = ({ open, onClose }) => {
     storedFormRef.current = payload;
   }, [formState, notifyOnPublish, selectedCategory]);
 
+  const computeConfettiOrigin = useCallback(() => {
+    if (!lastSelectedButtonRect || !formPanelRef.current) {
+      return { left: 50, top: 10 };
+    }
+    const containerRect = formPanelRef.current.getBoundingClientRect();
+    const centerX = lastSelectedButtonRect.left + lastSelectedButtonRect.width / 2;
+    const bottomY = lastSelectedButtonRect.top + lastSelectedButtonRect.height;
+    const left =
+      ((centerX - containerRect.left) / containerRect.width) * 100;
+    const top =
+      ((bottomY - containerRect.top) / containerRect.height) * 100;
+    return {
+      left: Math.min(100, Math.max(0, left)),
+      top: Math.min(100, Math.max(0, top)),
+    };
+  }, [lastSelectedButtonRect]);
+
   const triggerConfetti = useCallback(() => {
     const id = Date.now();
-    setConfettiBursts((prev) => [...prev, id]);
+    setConfettiBursts((prev) => [...prev, { id, origin: computeConfettiOrigin() }]);
     setTimeout(() => {
-      setConfettiBursts((prev) => prev.filter((item) => item !== id));
+      setConfettiBursts((prev) => prev.filter((item) => item.id !== id));
     }, 1100);
-  }, []);
+  }, [computeConfettiOrigin]);
 
   const handleSubmit = useCallback(
     async (event) => {
@@ -246,7 +304,7 @@ const ContributionModal = ({ open, onClose }) => {
         });
         setNotifyOnPublish(false);
         setSelectedCategory(CATEGORIES[0]);
-        setIsFormPanelOpen(true);
+        setIsFormPanelOpen(false);
         if (typeof window !== 'undefined') {
           window.localStorage.removeItem(FORM_STORAGE_KEY);
         }
@@ -276,10 +334,28 @@ const ContributionModal = ({ open, onClose }) => {
     onClose?.();
   }, [onClose, status]);
 
-  const handleSelectCategory = useCallback((category) => {
+  const handleSelectCategory = useCallback((category, buttonElement) => {
     setSelectedCategory(category);
     setIsFormPanelOpen(true);
+    if (buttonElement) {
+      const rect = buttonElement.getBoundingClientRect();
+      setLastSelectedButtonRect({
+        left: rect.left,
+        top: rect.top,
+        width: rect.width,
+        height: rect.height,
+      });
+    } else {
+      setLastSelectedButtonRect(null);
+    }
   }, []);
+
+  const formTitle = useMemo(() => {
+    return (
+      formTitlesByUniverse[selectedCategory?.id] ??
+      'Contribuye al diálogo crítico'
+    );
+  }, [selectedCategory]);
 
   const handleCloseFormPanel = useCallback(() => {
     if (status === 'loading') {
@@ -287,6 +363,122 @@ const ContributionModal = ({ open, onClose }) => {
     }
     setIsFormPanelOpen(false);
   }, [status]);
+
+  const renderFormPanelBody = () => (
+    <div ref={formPanelRef} className="relative">
+      {confettiBursts.map((burst) => (
+        <ConfettiBurst key={burst.id} seed={burst.id} origin={burst.origin} />
+      ))}
+        <div className="mb-4">
+          <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Formulario</p>
+          <h3 id="contribution-modal-title" className="font-display text-2xl text-slate-50">
+            {formTitle}
+          </h3>
+          <p className="text-sm text-slate-400/80">
+            Estás escribiendo sobre{' '}
+            <span className="text-purple-200 font-semibold">{selectedCategory.title}</span>
+          </p>
+        </div>
+
+      <form className="space-y-4" onSubmit={handleSubmit}>
+        <input
+          name="name"
+          type="text"
+          required
+          value={formState.name}
+          onChange={handleInputChange}
+          className="w-full rounded-lg border border-white/10 bg-black/30 px-4 py-3 text-slate-100 placeholder-slate-500 focus:border-purple-400 focus:ring-1 focus:ring-purple-400"
+          placeholder="¿Cómo quieres que te nombremos?"
+        />
+
+        <input
+          name="email"
+          type="email"
+          required
+          value={formState.email}
+          onChange={handleInputChange}
+          className="w-full rounded-lg border border-white/10 bg-black/30 px-4 py-3 text-slate-100 placeholder-slate-500 focus:border-purple-400 focus:ring-1 focus:ring-purple-400"
+          placeholder="nombre@correo.com"
+        />
+
+        <input
+          name="role"
+          type="text"
+          value={formState.role}
+          onChange={handleInputChange}
+          className="w-full rounded-lg border border-white/10 bg-black/30 px-4 py-3 text-slate-100 placeholder-slate-500 focus:border-purple-400 focus:ring-1 focus:ring-purple-400"
+          placeholder="Crítica teatral, artista, investigador, espectador..."
+        />
+
+        <textarea
+          name="proposal"
+          rows={5}
+          required
+          value={formState.proposal}
+          onChange={handleInputChange}
+          className="w-full rounded-lg border border-white/10 bg-black/30 px-4 py-3 text-slate-100 placeholder-slate-500 focus:border-purple-400 focus:ring-1 focus:ring-purple-400 resize-none"
+          placeholder="Resume tu texto, crónica o propuesta curatorial..."
+        />
+
+        <input
+          name="attachmentUrl"
+          type="url"
+          value={formState.attachmentUrl}
+          onChange={handleInputChange}
+          className="w-full rounded-lg border border-white/10 bg-black/30 px-4 py-3 text-slate-100 placeholder-slate-500 focus:border-purple-400 focus:ring-1 focus:ring-purple-400"
+          placeholder="Enlace a material adicional (Drive, portfolio, video...)"
+        />
+
+        <div className="flex flex-col gap-2 rounded-lg border border-white/5 bg-black/20 px-4 py-3">
+          <div className="flex items-start gap-3">
+            <input
+              id="notify-on-publish"
+              type="checkbox"
+              checked={notifyOnPublish}
+              onChange={(event) => setNotifyOnPublish(event.target.checked)}
+              disabled={!isAuthenticated}
+              className={`mt-1 h-4 w-4 rounded border-white/20 bg-black/40 text-purple-500 focus:ring-purple-400 ${
+                !isAuthenticated ? 'opacity-40 cursor-not-allowed' : ''
+              }`}
+            />
+            <label
+              htmlFor="notify-on-publish"
+              className="text-sm text-slate-300/80 leading-relaxed"
+            >
+              Quiero recibir notificación cuando se publique mi propuesta
+              {!isAuthenticated ? (
+                <span className="block text-xs text-slate-500">
+                  Inicia sesión para activar esta opción.
+                </span>
+              ) : null}
+            </label>
+          </div>
+
+          {!isAuthenticated ? <LoginAccordion /> : null}
+        </div>
+
+        {status === 'error' ? (
+          <div className="rounded-lg border border-red-500/60 bg-red-500/10 px-4 py-3 text-sm text-red-200">
+            {errorMessage}
+          </div>
+        ) : null}
+
+        {status === 'success' ? (
+          <div className="rounded-lg border border-emerald-500/60 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-200">
+            Recibimos tu propuesta. Te contactaremos si necesitamos más detalles.
+          </div>
+        ) : null}
+
+        <Button
+          type="submit"
+          disabled={status === 'loading'}
+          className="w-full bg-gradient-to-r from-purple-600/80 to-indigo-600/80 hover:from-purple-600 hover:to-indigo-600 text-white py-3 rounded-lg font-semibold flex items-center justify-center gap-2 hover-glow"
+        >
+          {status === 'loading' ? 'Enviando…' : 'Enviar propuesta'}
+        </Button>
+      </form>
+    </div>
+  );
 
   return (
     <AnimatePresence>
@@ -309,12 +501,20 @@ const ContributionModal = ({ open, onClose }) => {
             aria-modal="true"
             aria-labelledby="contribution-modal-title"
             variants={modalVariants}
-            className="relative z-10 w-full max-w-5xl h-full max-h-[90vh] rounded-3xl border border-white/10 bg-slate-950 p-4 sm:p-8 shadow-2xl overflow-hidden flex flex-col"
+            className="relative z-10 w-full max-w-5xl h-full max-h-[90vh] rounded-3xl border border-white/10 bg-slate-950 p-4 sm:p-8 shadow-2xl overflow-hidden flex flex-col gap-6"
           >
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Blog / Diálogo vivo</p>
-                <h2 className="font-display text-2xl sm:text-3xl text-slate-50">Explora el universo #GatoEncerrado</h2>
+                <h2 className="font-display text-2xl sm:text-3xl text-slate-50">
+                  Contribuye al diálogo crítico
+                </h2>
+                <p className="mt-2 text-sm text-slate-400/80">
+                  También puedes compartir tu opinión sobre los{' '}
+                  <a href="#transmedia" className="font-semibold text-purple-300 transition hover:text-purple-200">
+                    otros miniversos de #GatoEncerrado
+                  </a>
+                </p>
               </div>
               <button
                 onClick={handleClose}
@@ -325,33 +525,55 @@ const ContributionModal = ({ open, onClose }) => {
               </button>
             </div>
 
-            <div className="mt-6 overflow-y-auto pr-3 flex-1 space-y-3">
-              {CATEGORIES.map((category) => (
-                <button
-                  type="button"
-                  key={category.id}
-                  onClick={() => handleSelectCategory(category)}
-                  className={`w-full rounded-2xl border px-4 py-4 text-left transition ${
-                    selectedCategory.id === category.id
-                      ? 'bg-purple-500/15 border-purple-300/40'
-                      : 'bg-black/20 border-white/10 hover:border-purple-300/30'
-                  }`}
-                >
-                  <div className="flex items-center gap-3 mb-2">
-                    {category.icon}
-                    <h4 className="text-slate-100 font-medium">{category.title}</h4>
-                  </div>
-                  <p className="text-sm text-slate-400/80 leading-relaxed">{category.description}</p>
-                </button>
-              ))}
+            <div className="mt-6 flex flex-col gap-6 md:flex-row md:items-start md:gap-6">
+              <div className="flex-1 space-y-3 overflow-y-auto pr-3 md:max-h-[72vh] md:pr-0">
+                {CATEGORIES.map((category) => (
+                  <button
+                    type="button"
+                    key={category.id}
+                  onClick={(event) => handleSelectCategory(category, event.currentTarget)}
+                    className={`w-full rounded-2xl border px-4 py-4 text-left transition ${
+                      selectedCategory.id === category.id
+                        ? 'bg-purple-500/15 border-purple-300/40'
+                        : 'bg-black/20 border-white/10 hover:border-purple-300/30'
+                    }`}
+                  >
+                    <div className="flex items-center gap-3 mb-2">
+                      {category.icon}
+                      <h4 className="text-slate-100 font-medium">{category.title}</h4>
+                    </div>
+                    <p className="text-sm text-slate-400/80 leading-relaxed">{category.description}</p>
+                  </button>
+                ))}
+              </div>
+
+              {isDesktopLayout ? (
+                <div className="md:w-[520px] md:shrink-0">
+                  {isFormPanelOpen ? (
+                    <motion.div
+                      initial={{ opacity: 0, x: 16 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      exit={{ opacity: 0, x: 16 }}
+                      transition={{ duration: 0.35, ease: 'easeOut' }}
+                      className="flex h-full max-h-[78vh] flex-col rounded-3xl border border-white/10 bg-slate-950/90 p-6 shadow-2xl overflow-y-auto"
+                    >
+                      {renderFormPanelBody()}
+                    </motion.div>
+                  ) : (
+                    <div className="flex h-full min-h-[320px] items-center justify-center rounded-3xl border border-dashed border-white/10 bg-black/30 px-4 text-center text-sm text-slate-400">
+                      Selecciona una categoría para abrir el formulario.
+                    </div>
+                  )}
+                </div>
+              ) : null}
             </div>
 
             <AnimatePresence>
-              {isFormPanelOpen ? (
+              {!isDesktopLayout && isFormPanelOpen ? (
                 <>
                   <motion.button
                     type="button"
-                    className="absolute inset-0 bg-black/40"
+                    className="absolute inset-0 bg-black/40 md:hidden"
                     aria-label="Cerrar formulario"
                     onClick={handleCloseFormPanel}
                     initial={{ opacity: 0 }}
@@ -363,130 +585,9 @@ const ContributionModal = ({ open, onClose }) => {
                     animate={{ x: 0 }}
                     exit={{ x: '100%' }}
                     transition={{ type: 'spring', damping: 24, stiffness: 240 }}
-                    className="absolute inset-y-0 right-0 w-full md:w-[520px] bg-slate-950 border-l border-white/15 shadow-2xl p-6 overflow-y-auto"
+                    className="absolute inset-y-0 right-0 w-full bg-slate-950 border-l border-white/15 shadow-2xl p-6 overflow-y-auto md:hidden"
                   >
-                    <div className="relative">
-                      {confettiBursts.map((burst) => (
-                        <ConfettiBurst key={burst} seed={burst} />
-                      ))}
-                      <div className="flex items-start justify-between gap-3 mb-4">
-                        <div>
-                          <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Formulario</p>
-                          <h3 id="contribution-modal-title" className="font-display text-2xl text-slate-50">
-                            Contribuye al diálogo crítico
-                          </h3>
-                          <p className="text-sm text-slate-400/80">
-                            Estás escribiendo sobre{' '}
-                            <span className="text-purple-200 font-semibold">{selectedCategory.title}</span>
-                          </p>
-                        </div>
-                        <button
-                          onClick={handleCloseFormPanel}
-                          className="text-slate-400 hover:text-white transition text-xl leading-none"
-                          aria-label="Cerrar formulario"
-                        >
-                          ✕
-                        </button>
-                      </div>
-
-                      <form className="space-y-4" onSubmit={handleSubmit}>
-                        <input
-                          name="name"
-                          type="text"
-                          required
-                          value={formState.name}
-                        onChange={handleInputChange}
-                        className="w-full rounded-lg border border-white/10 bg-black/30 px-4 py-3 text-slate-100 placeholder-slate-500 focus:border-purple-400 focus:ring-1 focus:ring-purple-400"
-                        placeholder="¿Cómo quieres que te nombremos?"
-                      />
-
-                      <input
-                        name="email"
-                        type="email"
-                        required
-                        value={formState.email}
-                        onChange={handleInputChange}
-                        className="w-full rounded-lg border border-white/10 bg-black/30 px-4 py-3 text-slate-100 placeholder-slate-500 focus:border-purple-400 focus:ring-1 focus:ring-purple-400"
-                        placeholder="nombre@correo.com"
-                      />
-
-                      <input
-                        name="role"
-                        type="text"
-                        value={formState.role}
-                        onChange={handleInputChange}
-                        className="w-full rounded-lg border border-white/10 bg-black/30 px-4 py-3 text-slate-100 placeholder-slate-500 focus:border-purple-400 focus:ring-1 focus:ring-purple-400"
-                        placeholder="Crítica teatral, artista, investigador, espectador..."
-                      />
-
-                      <textarea
-                        name="proposal"
-                        rows={5}
-                        required
-                        value={formState.proposal}
-                        onChange={handleInputChange}
-                        className="w-full rounded-lg border border-white/10 bg-black/30 px-4 py-3 text-slate-100 placeholder-slate-500 focus:border-purple-400 focus:ring-1 focus:ring-purple-400 resize-none"
-                        placeholder="Resume tu texto, crónica o propuesta curatorial..."
-                      />
-
-                      <input
-                        name="attachmentUrl"
-                        type="url"
-                        value={formState.attachmentUrl}
-                        onChange={handleInputChange}
-                        className="w-full rounded-lg border border-white/10 bg-black/30 px-4 py-3 text-slate-100 placeholder-slate-500 focus:border-purple-400 focus:ring-1 focus:ring-purple-400"
-                        placeholder="Enlace a material adicional (Drive, portfolio, video...)"
-                      />
-
-                      <div className="flex flex-col gap-2 rounded-lg border border-white/5 bg-black/20 px-4 py-3">
-                        <div className="flex items-start gap-3">
-                          <input
-                            id="notify-on-publish"
-                            type="checkbox"
-                            checked={notifyOnPublish}
-                            onChange={(event) => setNotifyOnPublish(event.target.checked)}
-                            disabled={!isAuthenticated}
-                            className={`mt-1 h-4 w-4 rounded border-white/20 bg-black/40 text-purple-500 focus:ring-purple-400 ${
-                              !isAuthenticated ? 'opacity-40 cursor-not-allowed' : ''
-                            }`}
-                          />
-                          <label
-                            htmlFor="notify-on-publish"
-                            className="text-sm text-slate-300/80 leading-relaxed"
-                          >
-                            Quiero recibir notificación cuando se publique mi propuesta
-                            {!isAuthenticated ? (
-                              <span className="block text-xs text-slate-500">
-                                Inicia sesión para activar esta opción.
-                              </span>
-                            ) : null}
-                          </label>
-                        </div>
-
-                        {!isAuthenticated ? <LoginAccordion /> : null}
-                      </div>
-
-                      {status === 'error' ? (
-                        <div className="rounded-lg border border-red-500/60 bg-red-500/10 px-4 py-3 text-sm text-red-200">
-                          {errorMessage}
-                        </div>
-                      ) : null}
-
-                      {status === 'success' ? (
-                        <div className="rounded-lg border border-emerald-500/60 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-200">
-                          Recibimos tu propuesta. Te contactaremos si necesitamos más detalles.
-                        </div>
-                      ) : null}
-
-                      <Button
-                        type="submit"
-                        disabled={status === 'loading'}
-                        className="w-full bg-gradient-to-r from-purple-600/80 to-indigo-600/80 hover:from-purple-600 hover:to-indigo-600 text-white py-3 rounded-lg font-semibold flex items-center justify-center gap-2 hover-glow"
-                      >
-                        {status === 'loading' ? 'Enviando…' : 'Enviar propuesta'}
-                      </Button>
-                      </form>
-                    </div>
+                    {renderFormPanelBody()}
                   </motion.div>
                 </>
               ) : null}
@@ -518,10 +619,11 @@ export async function sendConfirmationEmail({ email, name, proposal, category })
 
 const CONFETTI_COLORS = ['#f472b6', '#a855f7', '#facc15', '#34d399'];
 
-const ConfettiBurst = ({ seed }) => {
+const ConfettiBurst = ({ seed, origin }) => {
   const pieces = useMemo(() => {
     return Array.from({ length: 12 }, (_, index) => ({
       left: Math.random() * 100,
+      top: Math.random() * 6,
       delay: Math.random() * 0.2,
       color: CONFETTI_COLORS[index % CONFETTI_COLORS.length],
     }));
@@ -534,8 +636,8 @@ const ConfettiBurst = ({ seed }) => {
           key={`${seed}-${index}`}
           className="confetti-piece"
           style={{
-            left: `${piece.left}%`,
-            top: `${Math.random() * 20}%`,
+            left: `${Math.min(100, Math.max(0, (origin?.left ?? 50) + (piece.left - 50) / 5))}%`,
+            top: `${Math.min(100, Math.max(0, (origin?.top ?? 10) + piece.top))}%`,
             backgroundColor: piece.color,
             animationDelay: `${piece.delay}s`,
           }}
