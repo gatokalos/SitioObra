@@ -291,7 +291,18 @@ const ReserveModal = ({ open, onClose, initialInterest = INTEREST_OPTIONS[0].val
                     <li>• Taquilla del CECUT · Preventa disponible hasta agotar localidades.</li>
                     <li>• Llévate una taza como incentivo de preventa.</li>
                     <li>• Las tazas se entregan exclusivamente en taquilla, hasta agotar existencias.</li>
-                    <li>• Consulta los paquetes disponibles en la sección de apartados.</li>
+                    <li>
+                      • También puedes comprar en línea:
+                      {' '}
+                      <a
+                        href="https://www.taquillacecut.com.mx/eventos/saladeespectaculos/2025-12-28"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-purple-300 underline underline-offset-4 hover:text-white"
+                      >
+                        taquillacecut.com.mx · Entrada 28/12
+                      </a>
+                    </li>
                   </ul>
                 </div>
 

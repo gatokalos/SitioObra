@@ -91,8 +91,6 @@ const FORM_STORAGE_KEY = 'gatoencerrado-contrib-form';
 
 const BETA_UNIVERSES = new Set(['apps', 'bitacora', 'sonoro']);
 
-const BETA_UNIVERSES = new Set(['apps', 'bitacora', 'sonoro']);
-
 const formTitlesByUniverse = {
   obra_escenica: 'Si la Obra te tocó, este espacio es tuyo.',
   miniverso_novela: 'Si encontraste algo tuyo entre estas páginas, déjalo dicho.',

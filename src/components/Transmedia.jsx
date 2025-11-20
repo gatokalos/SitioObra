@@ -202,7 +202,7 @@ const showcaseDefinitions = {
       {
         id: 'ensayo-abierto',
         label: 'Ensayo Abierto (pista)',
-        url: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Sonoridades/EnsayoAbierto.mp3',
+        url: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Sonoridades/suenos.m4a',
       },
     ],
     poems: [
