@@ -7,6 +7,7 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { toast } from '@/components/ui/use-toast';
 import { supabase } from '@/lib/supabaseClient';
+import { ConfettiBurst, useConfettiBursts } from '@/components/Confetti';
 
 const LOGO_SRC = '/assets/logoapp.png';
 
@@ -110,6 +111,7 @@ const ReserveModal = ({ open, onClose, initialInterest = INTEREST_OPTIONS[0].val
   const [formState, setFormState] = useState(initialFormState);
   const [status, setStatus] = useState('idle');
   const [errorMessage, setErrorMessage] = useState('');
+  const { bursts: confettiBursts, fireConfetti } = useConfettiBursts();
 
   // Reset form when opened
   useEffect(() => {
@@ -205,6 +207,7 @@ const ReserveModal = ({ open, onClose, initialInterest = INTEREST_OPTIONS[0].val
           notes: payload.notes,
         });
 
+        fireConfetti();
         setStatus('success');
         toast({ description: '¡Gracias! Te enviaremos las próximas novedades.' });
       } catch (err) {
@@ -212,7 +215,7 @@ const ReserveModal = ({ open, onClose, initialInterest = INTEREST_OPTIONS[0].val
         setErrorMessage('Ocurrió un error inesperado. Intenta más tarde.');
       }
     },
-    [formState, selectedInterest.label, status]
+    [formState, selectedInterest.label, status, fireConfetti]
   );
 
   const handleClose = useCallback(() => {
@@ -246,6 +249,9 @@ const ReserveModal = ({ open, onClose, initialInterest = INTEREST_OPTIONS[0].val
             variants={modalVariants}
             className="relative z-10 w-full max-w-3xl rounded-3xl border border-white/10 bg-slate-950/95 p-6 sm:p-10 shadow-2xl max-h-[90vh] overflow-y-auto"
           >
+            {confettiBursts.map((burst) => (
+              <ConfettiBurst key={burst} seed={burst} />
+            ))}
             {/* HEADER */}
             <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-6">
               <div className="flex items-center gap-4">

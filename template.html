@@ -1,48 +1,208 @@
-<html lang="es">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Confirmación de registro · #GatoEncerrado</title>
-  <style>
-    body { font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, sans-serif; background-color: #0f172a; color: #e2e8f0; margin: 0; padding: 0; }
-    .container { max-width: 540px; margin: 0 auto; padding: 32px 24px; }
-    .card { background: linear-gradient(135deg, rgba(51, 65, 85, 0.8), rgba(15, 23, 42, 0.95)); border-radius: 24px; padding: 32px; border: 1px solid rgba(148, 163, 184, 0.25); box-shadow: 0 25px 50px -12px rgba(0,0,0,.65); }
-    h1 { font-size: 24px; margin-bottom: 12px; color: #f8fafc; }
-    p { line-height: 1.6; font-size: 15px; margin-bottom: 16px; }
-    .tag { display: inline-block; padding: 6px 14px; border-radius: 999px; background: rgba(129, 140, 248, 0.15); border: 1px solid rgba(129, 140, 248, 0.35); color: #c7d2fe; font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; margin-top: 8px; }
-    .list { background: rgba(15, 23, 42, 0.6); border-radius: 18px; padding: 20px; border: 1px solid rgba(148, 163, 184, 0.15); }
-    .list strong { color: #f8fafc; }
-    .footer { text-align: center; margin-top: 28px; font-size: 12px; color: rgba(226, 232, 240, 0.6); }
-    .cta { display: inline-flex; margin-top: 18px; padding: 12px 22px; border-radius: 999px; border: 1px solid rgba(59, 130, 246, 0.45); background: rgba(59, 130, 246, 0.15); color: #c7d2fe; font-size: 13px; letter-spacing: 0.1em; text-transform: uppercase; text-decoration: none; font-weight: 600; }
-  </style>
-</head>
-<body>
-  <div class="container">
-    <div class="card">
-      <span class="tag">#GatoEncerrado</span>
-      <h1>Hola ${safeName.split(" ")[0]}, recibimos tu registro.</h1>
-      <p>
-        Te mantendremos al tanto de la preventa y activaciones transmedia vinculadas a
-        <strong>${safeInterest}</strong>. Cuando abramos la siguiente ventana,
-        serás de las primeras personas en enterarse.
-      </p>
-      <div class="list">
-        <p><strong>Ciudad:</strong> ${safeCity}</p>
-        <p><strong>Interés:</strong> ${safeInterest}</p>
-        <p><strong>Mensaje:</strong> ${safeNotes}</p>
-      </div>
-      <p>
-        Este correo es tu constancia de registro. Si necesitas actualizar tus datos,
-        sólo responde este mensaje y alguien del equipo te ayudará.
-      </p>
-      <p>Gracias por cuidar este universo.</p>
-      <a href="${landingUrl}" class="cta" target="_blank" rel="noreferrer">Ver paquetes abiertos</a>
-      <p>#GatoEncerrado · Residencia Transmedia</p>
-    </div>
-    <p class="footer">
-      Recibes este correo porque lo registraste en la landing de #GatoEncerrado.
-      Si no reconoces este mensaje, simplemente ignóralo.
-    </p>
-  </div>
-</body>
+<!DOCTYPE html>
+<html lang="es" style="margin:0; padding:0;">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Catálogo transmedia · #GatoEncerrado</title>
+  </head>
+  <body
+    style="
+      margin:0;
+      padding:0;
+      background:#030712;
+      font-family:'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      color:#dbeafe;
+    "
+  >
+    <table width="100%" cellpadding="0" cellspacing="0" style="background:#030712; padding:32px 0;">
+      <tr>
+        <td align="center">
+          <table
+            width="680"
+            cellpadding="0"
+            cellspacing="0"
+            style="
+              background:rgba(15, 23, 42, 0.95);
+              border-radius:36px;
+              border:1px solid rgba(148, 163, 184, 0.3);
+              padding:48px;
+              box-shadow:0 40px 90px rgba(2, 6, 23, 0.85);
+            "
+          >
+            <tr>
+              <td>
+                <span
+                  style="
+                    display:inline-flex;
+                    align-items:center;
+                    gap:8px;
+                    letter-spacing:0.4em;
+                    text-transform:uppercase;
+                    font-size:11px;
+                    color:#c7d2fe;
+                    padding:6px 16px;
+                    border-radius:999px;
+                    background:rgba(129, 140, 248, 0.15);
+                  "
+                >
+                  GatoEncerrado · preventa
+                </span>
+                <h1
+                  style="
+                    margin:18px 0 10px;
+                    font-size:36px;
+                    color:#f8fafc;
+                    line-height:1.2;
+                  "
+                >
+                  Paquetes rituales del universo
+                </h1>
+                <p style="margin:0; color:#94a3b8; font-size:16px; line-height:1.7;">
+                  Cada paquete abre un portal: objetos, activaciones y relatos que expanden la experiencia
+                  transmedia de <strong>#GatoEncerrado</strong>. Escoge el nivel que quieres vivir durante la
+                  temporada.
+                </p>
+              </td>
+            </tr>
+
+            <tr>
+              <td style="padding-top:36px;">
+                <table width="100%" cellpadding="0" cellspacing="0" style="border-spacing:16px;">
+                  <tr>
+                    <td style="width:50%; vertical-align:top;">
+                      <div
+                        style="
+                          border-radius:24px;
+                          border:1px solid rgba(148, 163, 184, 0.25);
+                          padding:24px;
+                          background:linear-gradient(150deg, rgba(99, 102, 241, 0.1), rgba(15, 23, 42, 0.9));
+                        "
+                      >
+                        <img src="https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Merch/tazax1.jpeg" alt="Taza AR" style="width:100%; border-radius:16px; margin-bottom:14px;" />
+                        <p style="margin:0; font-size:18px; letter-spacing:0.08em; color:#c4b5fd;">🟣 1 · Taza AR</p>
+                        <h3 style="margin:10px 0 6px; font-size:22px; color:#f8fafc;">$300</h3>
+                        <p style="margin:0 0 10px; color:#cbd5f5; font-size:15px; line-height:1.5;">
+                          Taza con Realidad Aumentada. Funciona como portal y activa contenido extendido del universo.
+                        </p>
+                        <ul style="margin:0; padding-left:20px; color:#cbd5f5; font-size:14px; line-height:1.6;">
+                          <li>Taza física edición especial</li>
+                          <li>Activación AR</li>
+                          <li>3 meses de acceso al Chat Gato Encerrado</li>
+                        </ul>
+                        <p style="margin:10px 0 0; color:#94a3b8; font-size:13px;">Disponible el día del evento.</p>
+                      </div>
+                    </td>
+                    <td style="width:50%; vertical-align:top;">
+                      <div
+                        style="
+                          border-radius:24px;
+                          border:1px solid rgba(236, 72, 153, 0.35);
+                          padding:24px;
+                          background:linear-gradient(150deg, rgba(236, 72, 153, 0.1), rgba(15, 23, 42, 0.9));
+                        "
+                      >
+                        <img src="https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Merch/novelasola.jpeg" alt="Novela Mi Gato Encerrado" style="width:100%; border-radius:16px; margin-bottom:14px;" />
+                        <p style="margin:0; font-size:18px; letter-spacing:0.08em; color:#f472b6;">🟣 2 · Novela</p>
+                        <h3 style="margin:10px 0 6px; font-size:22px; color:#f8fafc;">$400</h3>
+                        <p style="margin:0 0 10px; color:#cbd5f5; font-size:15px; line-height:1.5;">
+                          Primera edición con QR secreto. Un objeto narrativo que introduce pasajes ocultos exclusivos.
+                        </p>
+                        <ul style="margin:0; padding-left:20px; color:#cbd5f5; font-size:14px; line-height:1.6;">
+                          <li>Primera edición del libro</li>
+                          <li>QR secreto</li>
+                          <li>3 meses de acceso al Chat Gato Encerrado</li>
+                        </ul>
+                        <p style="margin:10px 0 0; color:#94a3b8; font-size:13px;">Entrega el día del evento.</p>
+                      </div>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td style="width:50%; vertical-align:top;">
+                      <div
+                        style="
+                          border-radius:24px;
+                          border:1px solid rgba(59, 130, 246, 0.35);
+                          padding:24px;
+                          background:linear-gradient(150deg, rgba(59, 130, 246, 0.1), rgba(15, 23, 42, 0.9));
+                        "
+                      >
+                        <img src="https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Merch/NovelaTazaCombo.png" alt="Combo Novela + Taza" style="width:100%; border-radius:16px; margin-bottom:14px;" />
+                        <p style="margin:0; font-size:18px; letter-spacing:0.08em; color:#93c5fd;">🟣 3 · Combo Novela + Taza</p>
+                        <h3 style="margin:10px 0 6px; font-size:22px; color:#f8fafc;">$700</h3>
+                        <p style="margin:0 0 10px; color:#cbd5f5; font-size:15px; line-height:1.5;">
+                          Ritual completo: taza-portal más la primera edición con QR secreto, todo en un solo paquete.
+                        </p>
+                        <ul style="margin:0; padding-left:20px; color:#cbd5f5; font-size:14px; line-height:1.6;">
+                          <li>1 Taza AR</li>
+                          <li>1 Novela con QR secreto</li>
+                          <li>6 meses de acceso al Chat Gato Encerrado</li>
+                        </ul>
+                        <p style="margin:10px 0 0; color:#94a3b8; font-size:13px;">Disponible el día del evento.</p>
+                      </div>
+                    </td>
+                    <td style="width:50%; vertical-align:top;">
+                      <div
+                        style="
+                          border-radius:24px;
+                          border:1px solid rgba(245, 158, 11, 0.35);
+                          padding:24px;
+                          background:linear-gradient(150deg, rgba(245, 158, 11, 0.15), rgba(15, 23, 42, 0.9));
+                        "
+                      >
+                        <img src="https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Merch/taza2x1.jpeg" alt="Combo Novela + 2 Tazas" style="width:100%; border-radius:16px; margin-bottom:14px;" />
+                        <p style="margin:0; font-size:18px; letter-spacing:0.08em; color:#facc15;">🟣 4 · Combo Novela + 2 Tazas</p>
+                        <h3 style="margin:10px 0 6px; font-size:22px; color:#f8fafc;">$1000</h3>
+                        <p style="margin:0 0 10px; color:#cbd5f5; font-size:15px; line-height:1.5;">
+                          Combo familiar para compartir la experiencia AR con dos tazas rituales.
+                        </p>
+                        <ul style="margin:0; padding-left:20px; color:#cbd5f5; font-size:14px; line-height:1.6;">
+                          <li>2 Tazas con Realidad Aumentada</li>
+                          <li>Novela “Mi Gato Encerrado” con QR secreto</li>
+                          <li>6 meses de acceso al Chat Gato Encerrado</li>
+                          <li>Activaciones AR y contenido extendido</li>
+                        </ul>
+                        <p style="margin:10px 0 0; color:#94a3b8; font-size:13px;">Disponible el día del evento.</p>
+                      </div>
+                    </td>
+                  </tr>
+                </table>
+              </td>
+            </tr>
+
+            <tr>
+              <td align="center" style="padding-top:32px;">
+                <a
+                  href="https://tu-stripe-checkout.com"
+                  style="
+                    display:inline-flex;
+                    align-items:center;
+                    justify-content:center;
+                    gap:8px;
+                    padding:14px 32px;
+                    border-radius:16px;
+                    background:linear-gradient(135deg, #a855f7, #646cff);
+                    color:#ffffff;
+                    text-decoration:none;
+                    font-weight:600;
+                    letter-spacing:0.3px;
+                  "
+                >
+                  Ver línea de reservaciones
+                  <span style="font-size:18px;">➤</span>
+                </a>
+              </td>
+            </tr>
+
+            <tr>
+              <td align="center" style="padding-top:28px;">
+                <p style="margin:0; color:rgba(226, 232, 240, 0.6); font-size:12px; letter-spacing:0.12em;">
+                  #GatoEncerrado · Residencia Transmedia · 2025
+                </p>
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+    </table>
+  </body>
 </html>
