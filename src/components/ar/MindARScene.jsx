@@ -1,4 +1,4 @@
-import React, { forwardRef, useEffect, useImperativeHandle, useRef, useState } from 'react';
+import React, { forwardRef, useEffect, useImperativeHandle, useMemo, useRef, useState } from 'react';
 import loadMindAR from '@/lib/loadMindAR';
 import loadThree from '@/lib/loadThree';
 
@@ -119,6 +119,24 @@ const MindARScene = forwardRef(({
   message = 'La taza te escucha.',
   overlay = null,
 }, ref) => {
+  const resolvedTargetSrc = useMemo(() => {
+    if (!targetSrc) return targetSrc;
+
+    const absoluteUrlRegex = /^(https?:)?\/\//i;
+    if (absoluteUrlRegex.test(targetSrc)) {
+      return targetSrc;
+    }
+
+    const baseUrl = import.meta.env.BASE_URL ?? '/';
+    if (targetSrc.startsWith(baseUrl)) {
+      return targetSrc;
+    }
+
+    const normalizedBase = baseUrl.endsWith('/') ? baseUrl : `${baseUrl}/`;
+    const trimmed = targetSrc.replace(/^\/+/, '');
+    return `${normalizedBase}${trimmed}`;
+  }, [targetSrc]);
+
   const containerRef = useRef(null);
   const panelRef = useRef(null);
   const videoRef = useRef(null);
@@ -126,7 +144,7 @@ const MindARScene = forwardRef(({
   const [error, setError] = useState('');
 
   useEffect(() => {
-    if (!isCameraReady || !containerRef.current) {
+    if (!isCameraReady || !containerRef.current || !resolvedTargetSrc) {
       return undefined;
     }
 
@@ -143,7 +161,7 @@ const MindARScene = forwardRef(({
         const MINDAR_IMAGE = await loadMindAR();
         mindarThree = new MINDAR_IMAGE.MindARThree({
           container: containerRef.current,
-          imageTargetSrc: targetSrc,
+          imageTargetSrc: resolvedTargetSrc,
           uiLoading: 'no',
           uiError: 'no',
           uiScanning: 'no',
@@ -216,7 +234,7 @@ const MindARScene = forwardRef(({
         containerRef.current.removeChild(attachedVideo);
       }
     };
-  }, [isCameraReady, targetSrc]);
+  }, [isCameraReady, resolvedTargetSrc]);
 
   useEffect(() => {
     if (panelRef.current?.update) {

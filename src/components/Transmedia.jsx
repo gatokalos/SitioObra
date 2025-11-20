@@ -71,7 +71,7 @@ const showcaseDefinitions = {
     instructions: [
       'Permite el acceso a tu cámara para iniciar.',
       'Coloca la taza completa en cuadro, con buena iluminación.',
-      'Mantén el marcador visible hasta que aparezca la constelación.',
+      'Mantén el marcador visible hasta que aparezca la orbe.',
     ],
     comments: [
       { id: 'la-taza-comment-1', quote: '“La taza me mostró una frase que me persiguió toda la semana.”', author: 'Usuario anónimo' },
