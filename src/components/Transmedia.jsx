@@ -11,6 +11,7 @@ import {
   Drama,
   Film,
   Video,
+  Music,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import MiniverseModal from '@/components/MiniverseModal';
@@ -21,6 +22,7 @@ import { Document, Page, pdfjs } from 'react-pdf';
 import 'react-pdf/dist/Page/AnnotationLayer.css';
 import 'react-pdf/dist/Page/TextLayer.css';
 import ARExperience from '@/components/ar/ARExperience';
+import MiniversoSonoro from '@/components/MiniversoSonoro';
 
 pdfjs.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`;
 
@@ -32,7 +34,7 @@ const showcaseDefinitions = {
     type: 'post-videos',
     slug: 'carta-a-copycats',
     intro:
-  'En el Miniverso Cine conviven dos pulsos del mismo universo: la mirada crítica y desbordada de CopyCats y la herida luminosa de Quirón. Aquí puedes asomarte a cartas creativas, ensayos abiertos y al proceso íntimo detrás del cortometraje que nació de nombrar tres tabúes: el suicidio, el tarot y el arte como puente hacia lo que no sabemos decir.',
+      'En el Miniverso Cine conviven dos pulsos del mismo universo: la mirada crítica y desbordada de CopyCats y la herida luminosa de Quirón. Aquí puedes asomarte a cartas creativas, ensayos abiertos y al proceso íntimo detrás del cortometraje que nació de nombrar tres tabúes: el suicidio, el tarot y el arte como puente hacia lo que no sabemos decir.',
     videos: [
       {
         id: 'copycats-v2',
@@ -62,20 +64,24 @@ const showcaseDefinitions = {
     ctaLink: '/webar/taza/index.html',
     ctaMessage: 'Cuando liberes la activación WebAR, descubrirás la pista que le corresponde a tu taza.',
     image: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Merch/tazas.mp4',
-    sentiments: [
-      'Sentir rabia también es un acto de cuidado.',
-    ],
-    phrases: [
-      'La taza te habla.',
-    ],
+    sentiments: ['Sentir rabia también es un acto de cuidado.'],
+    phrases: ['La taza te habla.'],
     instructions: [
       'Permite el acceso a tu cámara para iniciar.',
       'Coloca la taza completa en cuadro, con buena iluminación.',
       'Mantén el marcador visible hasta que aparezca la orbe.',
     ],
     comments: [
-      { id: 'la-taza-comment-1', quote: '“La taza me mostró una frase que me persiguió toda la semana.”', author: 'Usuario anónimo' },
-      { id: 'la-taza-comment-2', quote: '“No entendí nada… hasta que le agarré el modo.”', author: 'Sofía B.' },
+      {
+        id: 'la-taza-comment-1',
+        quote: '“La taza me mostró una frase que me persiguió toda la semana.”',
+        author: 'Usuario anónimo',
+      },
+      {
+        id: 'la-taza-comment-2',
+        quote: '“No entendí nada… hasta que le agarré el modo.”',
+        author: 'Sofía B.',
+      },
     ],
   },
   miniversoNovela: {
@@ -93,7 +99,8 @@ const showcaseDefinitions = {
         contentSlug: 'fragmento-novela',
         type: 'internal-reading',
         previewMode: 'pdf',
-        previewPdfUrl: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/PDFs/10pages.pdf',
+        previewPdfUrl:
+          'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/PDFs/10pages.pdf',
       },
       {
         id: 'compra-libro',
@@ -110,7 +117,8 @@ const showcaseDefinitions = {
         previewImage: '/assets/silvestre-comic.jpeg',
         type: 'internal-reading',
         previewMode: 'pdf',
-        previewPdfUrl: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/PDFs/Caps%201%20a%2024.pdf',
+        previewPdfUrl:
+          'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/PDFs/Caps%201%20a%2024.pdf',
       },
       {
         id: 'novel-apps',
@@ -163,6 +171,53 @@ const showcaseDefinitions = {
     ],
     ctaLabel: 'Leer los primeros fragmentos',
   },
+  miniversoSonoro: {
+    label: 'Miniverso Sonoro · Sueña en Tres Capas',
+    type: 'audio-dream',
+    intro:
+      'Este miniverso mezcla imágenes errantes, pistas sonoras y palabras móviles para que crees tu propia atmósfera. Solo entra, prende un video, ponle la música que quieras, elige un poema… y deja que la combinación te sorprenda.',
+    highlights: [
+      'Video que fluye solo.',
+      'Música que tú eliges.',
+      'Poemas que respiran en pantalla.',
+    ],
+    exploration: [
+      'El video corre por su cuenta — cambia con cada visita.',
+      'Tú eliges la música — ajusta el ánimo del sueño.',
+      'Escoge un poema — y observa cómo se desliza mientras todo ocurre.',
+    ],
+    closing: [
+      'Cada mezcla es irrepetible.',
+      'Cada combinación abre un sueño distinto.',
+      'Entra y crea el tuyo.',
+    ],
+    videoUrl:
+      'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Sonoridades/Vacio.mov',
+    musicOptions: [
+      {
+        id: 'silencio',
+        label: 'Silencio',
+        url: '',
+      },
+      {
+        id: 'ensayo-abierto',
+        label: 'Ensayo Abierto (pista)',
+        url: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Sonoridades/EnsayoAbierto.mp3',
+      },
+    ],
+    poems: [
+      {
+        id: 'pulmon',
+        label: 'Poema 1 — “Pulmón”',
+        text: 'La noche se abre como un pulmón cansado.',
+      },
+      {
+        id: 'cuerpo',
+        label: 'Poema 2 — “Cuerpo”',
+        text: 'Lo que cae del sueño también cae del cuerpo.',
+      },
+    ],
+  },
 };
 
 const formats = [
@@ -193,6 +248,13 @@ const formats = [
     description: '“Quirón” y otros filmes que piensan el cuerpo del Gato en clave cinematográfica.',
     icon: Film,
     iconClass: 'text-rose-300',
+  },
+  {
+    id: 'miniversoSonoro',
+    title: 'Miniverso Sonoro',
+    description: 'Capas de imagen, sonido y poema para soñar.',
+    icon: Music,
+    iconClass: 'text-cyan-300',
   },
   {
     id: 'detodxs',
@@ -660,6 +722,39 @@ const Transmedia = () => {
                 </div>
               </div>
             ) : null}
+          </div>
+        </div>
+      );
+    }
+
+    if (activeDefinition.type === 'audio-dream') {
+      return (
+        <div className="grid gap-10 lg:grid-cols-[2fr_1fr]">
+          <div className="rounded-3xl border border-white/10 bg-black/30 p-6">
+            <MiniversoSonoro
+              title={activeDefinition.label}
+              subtitle={activeDefinition.intro}
+              videoUrl={activeDefinition.videoUrl}
+              musicOptions={activeDefinition.musicOptions}
+              poems={activeDefinition.poems}
+              highlights={activeDefinition.highlights}
+            />
+          </div>
+
+          <div className="space-y-6">
+            <div className="rounded-3xl border border-white/10 bg-black/30 p-6 space-y-4">
+              <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Cómo explorar</p>
+              <ol className="list-decimal list-inside space-y-3 text-slate-200 text-base leading-relaxed">
+                {activeDefinition.exploration?.map((step, index) => (
+                  <li key={index}>{step}</li>
+                ))}
+              </ol>
+            </div>
+            <div className="rounded-3xl border border-white/10 bg-black/20 p-6 space-y-3 text-sm text-slate-300">
+              {activeDefinition.closing?.map((line, index) => (
+                <p key={index}>{line}</p>
+              ))}
+            </div>
           </div>
         </div>
       );

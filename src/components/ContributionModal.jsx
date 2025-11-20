@@ -12,6 +12,7 @@ import {
   BookMarked,
   Video,
   Sparkles,
+  Music,
 } from 'lucide-react';
 import { useAuth } from '@/contexts/SupabaseAuthContext';
 import LoginAccordion from '@/components/ContributionModal/LoginAccordion';
@@ -47,11 +48,17 @@ const CATEGORIES = [
     title: 'Miniverso Apps',
     description: 'Experiencias digitales que te convierten en cómplice y guardián del universo.',
   },
+    {
+    id: 'sonoro',
+    icon: <Music size={20} className="text-cyan-300" />,
+    title: 'Miniverso Sonoro',
+    description: 'Sueña imágenes, elige música, invoca un poema: combina tu propio universo.',
+  },
   {
     id: 'bitacora',
     icon: <Video size={20} className="text-indigo-300" />,
     title: 'Miniverso Bitácora',
-    description: 'Sueña imágenes, elige música, invoca un poema: combina tu propio universo.',
+    description: 'Crónicas, expansiones narrativas y debate vivo sobre el universo GatoEncerrado.',
   },
   {
     id: 'otro',
@@ -90,6 +97,7 @@ const formTitlesByUniverse = {
   apps: '¿Cómo cambió tu forma de jugar o explorar este universo?',
   bitacora: 'Comparte qué mezcla soñaste: qué viste, qué escuchaste, qué palabras eligieron.',
   otro: 'Si no cabe en un miniverso… es porque aún no lo hemos nombrado.',
+  sonoro: 'Comparte qué mezcla soñaste: qué viste, qué escuchaste, qué palabras eligieron.',
 };
 
 const ContributionModal = ({ open, onClose }) => {
@@ -107,8 +115,6 @@ const ContributionModal = ({ open, onClose }) => {
   const [notifyOnPublish, setNotifyOnPublish] = useState(false);
   const [isFormPanelOpen, setIsFormPanelOpen] = useState(false);
   const [confettiBursts, setConfettiBursts] = useState([]);
-  const [lastSelectedButtonRect, setLastSelectedButtonRect] = useState(null);
-  const formPanelRef = useRef(null);
   const [isDesktopLayout, setIsDesktopLayout] = useState(() => {
     if (typeof window === 'undefined') {
       return false;
@@ -216,30 +222,13 @@ const ContributionModal = ({ open, onClose }) => {
     storedFormRef.current = payload;
   }, [formState, notifyOnPublish, selectedCategory]);
 
-  const computeConfettiOrigin = useCallback(() => {
-    if (!lastSelectedButtonRect || !formPanelRef.current) {
-      return { left: 50, top: 10 };
-    }
-    const containerRect = formPanelRef.current.getBoundingClientRect();
-    const centerX = lastSelectedButtonRect.left + lastSelectedButtonRect.width / 2;
-    const bottomY = lastSelectedButtonRect.top + lastSelectedButtonRect.height;
-    const left =
-      ((centerX - containerRect.left) / containerRect.width) * 100;
-    const top =
-      ((bottomY - containerRect.top) / containerRect.height) * 100;
-    return {
-      left: Math.min(100, Math.max(0, left)),
-      top: Math.min(100, Math.max(0, top)),
-    };
-  }, [lastSelectedButtonRect]);
-
   const triggerConfetti = useCallback(() => {
     const id = Date.now();
-    setConfettiBursts((prev) => [...prev, { id, origin: computeConfettiOrigin() }]);
+    setConfettiBursts((prev) => [...prev, id]);
     setTimeout(() => {
-      setConfettiBursts((prev) => prev.filter((item) => item.id !== id));
+      setConfettiBursts((prev) => prev.filter((item) => item !== id));
     }, 1100);
-  }, [computeConfettiOrigin]);
+  }, []);
 
   const handleSubmit = useCallback(
     async (event) => {
@@ -334,20 +323,9 @@ const ContributionModal = ({ open, onClose }) => {
     onClose?.();
   }, [onClose, status]);
 
-  const handleSelectCategory = useCallback((category, buttonElement) => {
+  const handleSelectCategory = useCallback((category) => {
     setSelectedCategory(category);
     setIsFormPanelOpen(true);
-    if (buttonElement) {
-      const rect = buttonElement.getBoundingClientRect();
-      setLastSelectedButtonRect({
-        left: rect.left,
-        top: rect.top,
-        width: rect.width,
-        height: rect.height,
-      });
-    } else {
-      setLastSelectedButtonRect(null);
-    }
   }, []);
 
   const formTitle = useMemo(() => {
@@ -365,20 +343,17 @@ const ContributionModal = ({ open, onClose }) => {
   }, [status]);
 
   const renderFormPanelBody = () => (
-    <div ref={formPanelRef} className="relative">
-      {confettiBursts.map((burst) => (
-        <ConfettiBurst key={burst.id} seed={burst.id} origin={burst.origin} />
-      ))}
-        <div className="mb-4">
-          <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Formulario</p>
-          <h3 id="contribution-modal-title" className="font-display text-2xl text-slate-50">
-            {formTitle}
-          </h3>
-          <p className="text-sm text-slate-400/80">
-            Estás escribiendo sobre{' '}
-            <span className="text-purple-200 font-semibold">{selectedCategory.title}</span>
-          </p>
-        </div>
+    <div className="relative">
+      <div className="mb-4">
+        <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Formulario</p>
+        <h3 id="contribution-modal-title" className="font-display text-2xl text-slate-50">
+          {formTitle}
+        </h3>
+        <p className="text-sm text-slate-400/80">
+          Estás escribiendo sobre{' '}
+          <span className="text-purple-200 font-semibold">{selectedCategory.title}</span>
+        </p>
+      </div>
 
       <form className="space-y-4" onSubmit={handleSubmit}>
         <input
@@ -503,26 +478,25 @@ const ContributionModal = ({ open, onClose }) => {
             variants={modalVariants}
             className="relative z-10 w-full max-w-5xl h-full max-h-[90vh] rounded-3xl border border-white/10 bg-slate-950 p-4 sm:p-8 shadow-2xl overflow-hidden flex flex-col gap-6"
           >
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Blog / Diálogo vivo</p>
-                <h2 className="font-display text-2xl sm:text-3xl text-slate-50">
-                  Contribuye al diálogo crítico
-                </h2>
-                <p className="mt-2 text-sm text-slate-400/80">
-                  También puedes compartir tu opinión sobre los{' '}
-                  <a href="#transmedia" className="font-semibold text-purple-300 transition hover:text-purple-200">
-                    otros miniversos de #GatoEncerrado
-                  </a>
-                </p>
+            <div className="relative overflow-visible">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Blog / Diálogo vivo</p>
+                  <h2 className="font-display text-2xl sm:text-3xl text-slate-50">
+                    Contribuye al diálogo crítico
+                  </h2>
+                </div>
+                <button
+                  onClick={handleClose}
+                  className="text-slate-400 hover:text-white transition text-xl leading-none"
+                  aria-label="Cerrar formulario de propuestas"
+                >
+                  ✕
+                </button>
               </div>
-              <button
-                onClick={handleClose}
-                className="text-slate-400 hover:text-white transition text-xl leading-none"
-                aria-label="Cerrar formulario de propuestas"
-              >
-                ✕
-              </button>
+              {confettiBursts.map((burst) => (
+                <ConfettiBurst key={burst} seed={burst} />
+              ))}
             </div>
 
             <div className="mt-6 flex flex-col gap-6 md:flex-row md:items-start md:gap-6">
@@ -531,7 +505,7 @@ const ContributionModal = ({ open, onClose }) => {
                   <button
                     type="button"
                     key={category.id}
-                  onClick={(event) => handleSelectCategory(category, event.currentTarget)}
+                  onClick={() => handleSelectCategory(category)}
                     className={`w-full rounded-2xl border px-4 py-4 text-left transition ${
                       selectedCategory.id === category.id
                         ? 'bg-purple-500/15 border-purple-300/40'
@@ -619,11 +593,11 @@ export async function sendConfirmationEmail({ email, name, proposal, category })
 
 const CONFETTI_COLORS = ['#f472b6', '#a855f7', '#facc15', '#34d399'];
 
-const ConfettiBurst = ({ seed, origin }) => {
+const ConfettiBurst = ({ seed }) => {
   const pieces = useMemo(() => {
     return Array.from({ length: 12 }, (_, index) => ({
       left: Math.random() * 100,
-      top: Math.random() * 6,
+      top: Math.random() * 20,
       delay: Math.random() * 0.2,
       color: CONFETTI_COLORS[index % CONFETTI_COLORS.length],
     }));
@@ -636,8 +610,8 @@ const ConfettiBurst = ({ seed, origin }) => {
           key={`${seed}-${index}`}
           className="confetti-piece"
           style={{
-            left: `${Math.min(100, Math.max(0, (origin?.left ?? 50) + (piece.left - 50) / 5))}%`,
-            top: `${Math.min(100, Math.max(0, (origin?.top ?? 10) + piece.top))}%`,
+            left: `${piece.left}%`,
+            top: `${piece.top}%`,
             backgroundColor: piece.color,
             animationDelay: `${piece.delay}s`,
           }}
