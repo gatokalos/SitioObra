@@ -7,6 +7,7 @@ export default function MiniversoSonoro({
   musicOptions = [],
   poems = [],
   highlights = [],
+  showHeader = true,
 }) {
   const videoRef = useRef(null);
   const audioRef = useRef(null);
@@ -60,33 +61,44 @@ export default function MiniversoSonoro({
     }
   }, [audioUrl]);
 
+  const renderHeaderSection =
+    showHeader || highlights.length > 0
+      ? (
+        <div className="space-y-4">
+          {showHeader && (
+            <>
+              <p className="text-xs uppercase tracking-[0.4em] text-slate-400">
+                Sala de escucha inmersiva
+              </p>
+
+              <h3 className="font-display text-4xl text-slate-50">{title}</h3>
+
+              {subtitle && (
+                <p className="max-w-2xl text-slate-300/80 leading-relaxed">{subtitle}</p>
+              )}
+            </>
+          )}
+
+          {highlights.length > 0 && (
+            <div className="flex flex-wrap gap-2 text-xs uppercase tracking-[0.25em] text-slate-400">
+              {highlights.map((tag, i) => (
+                <span
+                  key={i}
+                  className="rounded-full border border-white/10 px-3 py-1 text-[0.6rem]"
+                >
+                  {tag}
+                </span>
+              ))}
+            </div>
+          )}
+        </div>
+      )
+      : null;
+
   return (
     <div className="space-y-10">
       {/* ENCABEZADO */}
-      <div className="space-y-4">
-        <p className="text-xs uppercase tracking-[0.4em] text-slate-400">
-          Sala de escucha inmersiva
-        </p>
-
-        <h3 className="font-display text-4xl text-slate-50">{title}</h3>
-
-        {subtitle && (
-          <p className="max-w-2xl text-slate-300/80 leading-relaxed">{subtitle}</p>
-        )}
-
-        {highlights.length > 0 && (
-          <div className="flex flex-wrap gap-2 text-xs uppercase tracking-[0.25em] text-slate-400">
-            {highlights.map((tag, i) => (
-              <span
-                key={i}
-                className="rounded-full border border-white/10 px-3 py-1 text-[0.6rem]"
-              >
-                {tag}
-              </span>
-            ))}
-          </div>
-        )}
-      </div>
+      {renderHeaderSection}
 
       {/* VIDEO CON OVERLAY */}
       <div

@@ -64,7 +64,7 @@ const showcaseDefinitions = {
     ctaLink: '/webar/taza/index.html',
     ctaMessage: 'Cuando liberes la activación WebAR, descubrirás la pista que le corresponde a tu taza.',
     image: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Merch/tazas.mp4',
-    sentiments: ['Sentir rabia también es un acto de cuidado.'],
+    sentiments: ['Es tu manera de apoyar la causa social de Gato Encerrado.'], 
     phrases: ['La taza te habla.'],
     instructions: [
       'Permite el acceso a tu cámara para iniciar.',
@@ -161,7 +161,7 @@ const showcaseDefinitions = {
       'Entra y crea el tuyo.',
     ],
     videoUrl:
-      'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Sonoridades/videos-vertical/EnsayoAbierto.mov',
+      'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Sonoridades/videos-h/EnsayoAbierto.mov',
     musicOptions: [
       {
         id: 'silencio',
@@ -171,7 +171,7 @@ const showcaseDefinitions = {
       {
         id: 'ensayo-abierto',
         label: 'Ensayo Abierto (pista)',
-        url: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Sonoridades/audio/suenos.m4a',
+        url: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Sonoridades/audio/cat_theme.m4a',
       },
     ],
     poems: [
@@ -547,10 +547,16 @@ const Transmedia = () => {
     if (!activeDefinition?.notaAutoral) return null;
 
     return (
-      <div className="rounded-2xl border border-white/10 p-6 bg-black/30 text-slate-300/80 text-sm leading-relaxed mt-4">
-        <p className="text-xs uppercase tracking-[0.35em] text-slate-500 mb-2">Nota Autoral</p>
+      <motion.div
+        key={activeDefinition.id}
+        initial={{ opacity: 0, y: 12 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.45, ease: 'easeOut' }}
+        className="rounded-2xl border border-white/10 p-6 bg-black/30 text-slate-300/80 text-sm leading-relaxed mt-4 shadow-[0_25px_80px_rgba(0,0,0,0.45)]"
+      >
+        <p className="text-xs uppercase tracking-[0.35em] text-purple-300 mb-2">Nota Autoral</p>
         <p>{activeDefinition.notaAutoral}</p>
-      </div>
+      </motion.div>
     );
   };
 
@@ -618,8 +624,8 @@ const Transmedia = () => {
       return (
         <div className="grid gap-10 lg:grid-cols-[2fr_1fr]">
           <div className="space-y-6">
-            <div>{renderPostDetails('Pronto liberaremos la carta completa de este miniverso.')}</div>
-            <p className="text-slate-300/85 leading-relaxed font-light">{activeDefinition.intro}</p>
+          
+        
             <div className="rounded-3xl border border-white/10 overflow-hidden bg-black/30">
               {activeShowcase === 'lataza' && isTazaARActive && !isMobileARFullscreen ? (
                 <div className="p-0 sm:p-4">
@@ -726,16 +732,17 @@ const Transmedia = () => {
     if (activeDefinition.type === 'audio-dream') {
       return (
         <div className="grid gap-10 lg:grid-cols-[2fr_1fr]">
-          <div className="rounded-3xl border border-white/10 bg-black/30 p-6">
-            <MiniversoSonoro
-              title={activeDefinition.label}
-              subtitle={activeDefinition.intro}
-              videoUrl={activeDefinition.videoUrl}
-              musicOptions={activeDefinition.musicOptions}
-              poems={activeDefinition.poems}
-              highlights={activeDefinition.highlights}
-            />
-          </div>
+            <div className="rounded-3xl border border-white/10 bg-black/30 p-6">
+              <MiniversoSonoro
+                title={activeDefinition.label}
+                subtitle={activeDefinition.intro}
+                videoUrl={activeDefinition.videoUrl}
+                musicOptions={activeDefinition.musicOptions}
+                poems={activeDefinition.poems}
+                highlights={activeDefinition.highlights}
+                showHeader={false}
+              />
+            </div>
 
           <div className="space-y-6">
             <div className="rounded-3xl border border-white/10 bg-black/30 p-6 space-y-4">
