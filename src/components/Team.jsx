@@ -16,7 +16,7 @@ const teamData = {
   Dramaturgia: {
     name: "Carlos A. Pérez H.",
     bio: "Artista transmedial, autor y dramaturgo. Su obra habita entre teatro, escritura y tecnología, proponiendo una poética crítica y humana. Formado en el ITESO, la Universidad de Salamanca y LABASAD Barcelona, integra astrología psicológica, cuerpo y arte digital en una mirada simbólica. Creador del universo transmedia #GatoEncerrado, concibe el acto creativo como una forma de acompañamiento y transformación.",
-    image: "/images/placeholder-dramaturgia.jpg",
+    image: "https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/equipo/carlos_perez.gif",
   },
   Elenco: {
     description:
@@ -92,7 +92,7 @@ const teamData = {
         name: "Diego Madera",
         role: "Tema Musical",
         bio: "Músico y compositor cuyo trabajo explora la tensión entre sonido y silencio. Su pieza original acompaña los pasajes emocionales de la obra.",
-        image: "/images/placeholder-diseno.jpg",
+        image: "https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/equipo/diego.png",
       },
       {
         name: "Karla Flores",

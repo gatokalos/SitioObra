@@ -23,11 +23,9 @@ import 'react-pdf/dist/Page/AnnotationLayer.css';
 import 'react-pdf/dist/Page/TextLayer.css';
 import ARExperience from '@/components/ar/ARExperience';
 import MiniversoSonoro from '@/components/MiniversoSonoro';
+import AutoficcionPreview from '@/components/novela/AutoficcionPreview';
 
 pdfjs.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`;
-
-
-
 const showcaseDefinitions = {
   copycats: {
     label: '#CopyCats',
@@ -111,16 +109,6 @@ const showcaseDefinitions = {
         url: '/comprar-novela',
       },
       {
-        id: 'tres-pies-galeria',
-        title: 'Tres Pies al Gato — proceso visual',
-        description: 'Exploraciones de la novela gráfica.',
-        previewImage: '/assets/silvestre-comic.jpeg',
-        type: 'internal-reading',
-        previewMode: 'pdf',
-        previewPdfUrl:
-          'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/PDFs/Caps%201%20a%2024.pdf',
-      },
-      {
         id: 'novel-apps',
         title: 'Activa tus novelas',
         description:
@@ -140,6 +128,7 @@ const showcaseDefinitions = {
             ctaLabel: 'Abrir cámara',
             ctaAction: 'openCamera',
           },
+        
           {
             id: 'comic-app',
             name: 'Novela gráfica / Cómic transmedia',
@@ -192,7 +181,7 @@ const showcaseDefinitions = {
       'Entra y crea el tuyo.',
     ],
     videoUrl:
-      'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Sonoridades/Vacio.mov',
+      'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Sonoridades/videos-vertical/EnsayoAbierto.mov',
     musicOptions: [
       {
         id: 'silencio',
@@ -202,7 +191,7 @@ const showcaseDefinitions = {
       {
         id: 'ensayo-abierto',
         label: 'Ensayo Abierto (pista)',
-        url: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Sonoridades/suenos.m4a',
+        url: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Sonoridades/audio/suenos.m4a',
       },
     ],
     poems: [
@@ -315,6 +304,7 @@ const Transmedia = () => {
   const pdfPageWidth = Math.max(pdfContainerWidth - 48, 320);
   const [isTazaARActive, setIsTazaARActive] = useState(false);
   const [isMobileARFullscreen, setIsMobileARFullscreen] = useState(false);
+  const [showAutoficcionPreview, setShowAutoficcionPreview] = useState(false);
 
   const handleOpenMiniverses = useCallback(() => {
     setIsMiniverseOpen(true);
@@ -767,20 +757,14 @@ const Transmedia = () => {
           case 'internal-reading':
             if (entry.previewMode === 'pdf' && entry.previewPdfUrl) {
               return (
-                <Button
-                  onClick={() =>
-                    handleOpenPdfPreview({
-                      src: entry.previewPdfUrl,
-                      title: entry.title,
-                      description: entry.description,
-                    })
-                  }
-                  className="w-full sm:w-auto justify-center"
-                >
-                  Leer fragmento
-                </Button>
-              );
-            }
+               <Button
+            onClick={() => setShowAutoficcionPreview(true)}
+            className="w-full sm:w-auto justify-center"
+          >
+            Leer fragmento
+          </Button>
+          );
+                      }
             if (entry.previewMode === 'image' && entry.previewImage) {
               return (
                 <Button
@@ -1317,6 +1301,20 @@ const Transmedia = () => {
           />
         </div>
       ) : null}
+      {showAutoficcionPreview && (
+        <div className="fixed inset-0 z-[200] overflow-auto bg-black/80 backdrop-blur-xl p-6">
+          <div className="max-w-3xl mx-auto">
+            <button
+              onClick={() => setShowAutoficcionPreview(false)}
+              className="text-slate-300 hover:text-white mb-6"
+            >
+              Cerrar ✕
+            </button>
+
+            <AutoficcionPreview />
+          </div>
+        </div>
+      )}
     </>
   );
 };
