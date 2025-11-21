@@ -49,6 +49,8 @@ const showcaseDefinitions = {
         url: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Cine%20-%20teasers/Quiron.mp4',
       },
     ],
+    notaAutoral:
+      'La cámara miró lo que el teatro no podía sostener. CopyCats cuestiona; Quirón hiere con luz. Este espacio guarda esas miradas.',
   },
   lataza: {
     label: 'EstoNoEsUnaTaza',
@@ -81,6 +83,8 @@ const showcaseDefinitions = {
         author: 'Sofía B.',
       },
     ],
+    notaAutoral:
+      'Un objeto cotidiano que abrió un portal. La Taza no acompaña: revela. Lo que sostiene no es barro, sino vínculo.',
   },
   miniversoNovela: {
     label: 'Miniverso Novela',
@@ -88,18 +92,9 @@ const showcaseDefinitions = {
     slug: null,
     intro:
       'Aquí se cruzan la autoficción, la novela gráfica y las vidas que aún no caben en escena. Fragmentos, procesos y pistas que solo existen cuando alguien las lee.',
+    notaAutoral:
+      'La novela es donde la escena se desborda. Fragmentos que respiran distinto cuando alguien los lee. Aquí la historia sigue probándose.',
     entries: [
-      {
-        id: 'primer-fragmento',
-        title: 'Fragmentos iniciales',
-        description: 'Lee las primeras páginas de la novela.',
-        previewImage: '/assets/primerfragmento.png',
-        contentSlug: 'fragmento-novela',
-        type: 'internal-reading',
-        previewMode: 'pdf',
-        previewPdfUrl:
-          'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/PDFs/10pages.pdf',
-      },
       {
         id: 'compra-libro',
         title: 'Edición física',
@@ -110,39 +105,24 @@ const showcaseDefinitions = {
       },
       {
         id: 'novel-apps',
-        title: 'Activa tus novelas',
+        title: 'Activa tu novela',
         description:
           'Cada formato tiene su propia app interactiva. La novela de autoficción ya se puede activar; el cómic transmedia abre pronto su lector con pistas y capas expandidas.',
         type: 'novel-apps',
         apps: [
           {
             id: 'autoficcion-app',
-            name: 'Novela de autoficción',
-            status: 'Disponible',
+            name: 'Lector interactivo de la novela',
             description:
-              'Escanea el QR de la contraportada de tu ejemplar para redimirlo y activar la app. Allí, cada segmento narrativo se convierte en una experiencia guiada con preguntas académicas, psicológicas, narrativas y teatrales para vivir la escena como si estuvieras en un ensayo.',
+              'Lee los primeros fragmentos de la novela y desbloquea preguntas guiadas en cuatro planos de lectura: académico, psicológico, narrativo y teatral.',
             snippet: {
               tagline: 'Contraportada interactiva',
-              text: 'Abre la cámara, apunta al QR y desbloquea prompts y lecturas personalizadas para conversar con Silvestre.',
+              text:
+                'Al escanear tu ejemplar se desbloquean lecturas personalizadas. Aquí puedes probar una versión de inicio.',
+              sideLayout: true,
             },
-            ctaLabel: 'Abrir cámara',
-            ctaAction: 'openCamera',
-          },
-        
-          {
-            id: 'comic-app',
-            name: 'Novela gráfica / Cómic transmedia',
-            status: 'En desarrollo',
-            description:
-              'El lector digital del cómic desbloquea pistas visuales, pistas sonoras y activaciones AR que conectan con los miniversos.',
-            snippet: {
-              tagline: 'App del cómic',
-              text: 'Beta privada en curso. La experiencia combinará lectura, audio-ensayos y análisis visual.',
-              image: '/assets/imagen-comic.png',
-            },
-            ctaLabel: 'Recibir aviso',
-            ctaMessage:
-              'Déjanos tu correo en Apoya el proyecto para recibir el acceso prioritario cuando la app del cómic se libere.',
+            ctaLabel: 'Leer fragmento',
+            ctaAction: 'openAutoficcionPreview',
           },
         ],
       },
@@ -206,6 +186,8 @@ const showcaseDefinitions = {
         text: 'Lo que cae del sueño también cae del cuerpo.',
       },
     ],
+    notaAutoral:
+      'Imagen, música y palabra en suspensión. Cada mezcla inventa otro ánimo. Aquí el sueño se edita solo.',
   },
 };
 
@@ -216,13 +198,17 @@ const formats = [
     description: 'La función que detonó este universo narrativo. Voces, cuerpos y trances en escena.',
     icon: Drama,
     iconClass: 'text-purple-300',
+    notaAutoral:
+      'Aquí comenzó todo: un temblor en escena que sigue resonando fuera del teatro. Este miniverso guarda esa primera vibración.',
   },
-    {
+  {
     id: 'lataza',
     title: 'Miniverso Taza',
     description: 'Objeto ritual con WebAR. Una excusa para seguir la historia desde lo cotidiano.',
     icon: Coffee,
     iconClass: 'text-amber-300',
+    notaAutoral:
+      'Un objeto cotidiano que abrió un portal. La Taza no acompaña: revela. Lo que sostiene no es barro, sino vínculo.',
   },
   {
     id: 'miniversoNovela',
@@ -230,6 +216,8 @@ const formats = [
     description: 'Desde la autoficción hasta las viñetas de la novela gráfica.',
     icon: BookOpen,
     iconClass: 'text-emerald-300',
+    notaAutoral:
+      'La novela es donde la escena se desborda. Fragmentos que respiran distinto cuando alguien los lee. Aquí la historia sigue probándose.',
   },
   {
     id: 'copycats',
@@ -237,6 +225,8 @@ const formats = [
     description: '“Quirón” y otros filmes que piensan el cuerpo del Gato en clave cinematográfica.',
     icon: Film,
     iconClass: 'text-rose-300',
+    notaAutoral:
+      'La cámara miró lo que el teatro no podía sostener. CopyCats cuestiona; Quirón hiere con luz. Este espacio guarda esas miradas.',
   },
   {
     id: 'miniversoSonoro',
@@ -244,6 +234,8 @@ const formats = [
     description: 'Capas de imagen, sonido y poema para soñar.',
     icon: Music,
     iconClass: 'text-cyan-300',
+    notaAutoral:
+      'Imagen, música y palabra en suspensión. Cada mezcla inventa otro ánimo. Aquí el sueño se edita solo.',
   },
   {
     id: 'detodxs',
@@ -251,6 +243,8 @@ const formats = [
     description: 'Experiencias digitales que te convierten en cómplice del universo.',
     icon: Smartphone,
     iconClass: 'text-lime-300',
+    notaAutoral:
+      'Tecnología como acompañamiento, no como solución. Experiencias que cuidan, preguntan y extienden la historia cuando nadie está mirando.',
   },
   {
     id: 'clubdegato',
@@ -258,6 +252,8 @@ const formats = [
     description: 'Crónicas, expansiones narrativas y debate vivo sobre el universo.',
     icon: Video,
     iconClass: 'text-indigo-300',
+    notaAutoral:
+      'El rastro vivo del proyecto. Crónicas, ecos, desvíos. Donde lo que pasa en escena encuentra su segunda vida.',
   },
 ];
 
@@ -521,33 +517,44 @@ const Transmedia = () => {
     }
   }, []);
 
-  const handleNovelAppCTA = useCallback((app) => {
-    if (!app) {
-      return;
-    }
+  const handleNovelAppCTA = useCallback(
+  (app) => {
+    if (!app) return;
+
     if (app.ctaUrl) {
       window.open(app.ctaUrl, '_blank', 'noopener,noreferrer');
       return;
     }
+
     if (app.ctaAction === 'openCamera') {
       handleOpenCameraForQR();
       return;
     }
+
+    if (app.ctaAction === 'openAutoficcionPreview') {
+      setShowAutoficcionPreview(true);
+      return;
+    }
+
     toast({
       description: app.ctaMessage || 'Muy pronto liberaremos esta app interactiva.',
     });
-  }, [handleOpenCameraForQR]);
+  },
+  [handleOpenCameraForQR]
+);
+
+  const rendernotaAutoral = () => {
+    if (!activeDefinition?.notaAutoral) return null;
+
+    return (
+      <div className="rounded-2xl border border-white/10 p-6 bg-black/30 text-slate-300/80 text-sm leading-relaxed mt-4">
+        <p className="text-xs uppercase tracking-[0.35em] text-slate-500 mb-2">Nota Autoral</p>
+        <p>{activeDefinition.notaAutoral}</p>
+      </div>
+    );
+  };
 
   const renderPostDetails = (emptyMessage = 'Pronto liberaremos la carta completa de este miniverso.') => {
-    if (activeDefinition?.type === 'blog-series') {
-      return (
-        <div className="rounded-2xl border border-white/10 p-6 bg-black/30 text-slate-300/80 text-sm leading-relaxed">
-          <p className="text-xs uppercase tracking-[0.35em] text-slate-500 mb-2">Carta abierta</p>
-          <p>{activeDefinition?.intro}</p>
-        </div>
-      );
-    }
-
     if (!activeDefinition?.slug) {
       return null;
     }
@@ -613,7 +620,6 @@ const Transmedia = () => {
           <div className="space-y-6">
             <div>{renderPostDetails('Pronto liberaremos la carta completa de este miniverso.')}</div>
             <p className="text-slate-300/85 leading-relaxed font-light">{activeDefinition.intro}</p>
-
             <div className="rounded-3xl border border-white/10 overflow-hidden bg-black/30">
               {activeShowcase === 'lataza' && isTazaARActive && !isMobileARFullscreen ? (
                 <div className="p-0 sm:p-4">
@@ -879,15 +885,15 @@ const Transmedia = () => {
 
                 if (entry.type === 'novel-apps') {
                   return (
-                    <div key={entry.id} className="md:col-span-2 rounded-2xl border border-white/10 p-6 bg-black/30 space-y-6">
+                    <div key={entry.id} className="rounded-2xl border border-white/10 p-6 bg-black/30 space-y-6">
                       <div className="space-y-2">
                         <h5 className="font-display text-xl text-slate-100">{entry.title}</h5>
                         {entry.description ? (
                           <p className="text-sm text-slate-300/80 leading-relaxed">{entry.description}</p>
                         ) : null}
                       </div>
-                      <div className="grid gap-4 sm:grid-cols-2">
-                        {entry.apps?.map((app) => (
+<div className="grid gap-4 grid-cols-1">
+                          {entry.apps?.map((app) => (
                           <div
                             key={app.id}
                             className="rounded-2xl border border-white/10 bg-black/40 p-4 flex flex-col gap-4"
@@ -1094,9 +1100,10 @@ const Transmedia = () => {
                 <div>
                   <p className="text-xs uppercase tracking-[0.4em] text-slate-400/70 mb-2">Showcase</p>
                   <h3 className="font-display text-3xl text-slate-100 mb-3">{activeDefinition.label}</h3>
-                  <p className="text-slate-300/80 leading-relaxed font-light max-w-3xl">
-                    {activeDefinition.intro}
-                  </p>
+                <p className="text-slate-300/80 leading-relaxed font-light max-w-3xl">
+                  {activeDefinition.intro}
+                </p>
+                {rendernotaAutoral()}
                 </div>
                 <button
                   onClick={() => setActiveShowcase(null)}

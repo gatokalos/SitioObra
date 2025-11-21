@@ -17,9 +17,9 @@ const Header = () => {
 
   const menuItems = [
     { name: 'Inicio', href: '#hero' },
-    { name: 'La Obra', href: '#about' },
+    { name: 'Obra', href: '#about' },
     { name: 'Equipo', href: '#team' },
-    { name: 'Universo', href: '#transmedia' },
+    { name: 'Miniversos', href: '#transmedia' },
     { name: 'Textos', href: '#dialogo-critico' },
     { name: 'Galería', href: '#instagram' },
     { name: 'Función', href: '#next-show' },
