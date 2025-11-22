@@ -406,7 +406,7 @@ const Blog = ({ posts = [], isLoading = false, error = null }) => {
             viewport={{ once: true }}
             className="mt-20 glass-effect rounded-2xl p-8 md:p-12 text-center"
           >
-            <h3 className="font-display text-3xl font-medium text-slate-100 mb-6">¿Quieres publicar en el blog?</h3>
+            <h3 className="font-display text-3xl font-medium text-slate-100 mb-6">¿Algo de la obra se quedó contigo?</h3>
             <p className="text-slate-300/80 leading-relaxed mb-8 max-w-2xl mx-auto font-light">
               Invitamos a espectadores, artistas, investigadores y espíritus curiosos a compartir cómo esta obra resonó en su forma de mirar, sentir, imaginar o habitar el mundo.
               Tu palabra también construye este universo.
