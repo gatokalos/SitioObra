@@ -118,7 +118,7 @@ const ContributionModal = ({ open, onClose }) => {
   const [isFormPanelOpen, setIsFormPanelOpen] = useState(false);
   const [confettiBursts, setConfettiBursts] = useState([]);
   const [showLoginOverlay, setShowLoginOverlay] = useState(false);
-  const [trackingMessage, setTrackingMessage] = useState('');
+  const [isAnimatingCheckbox, setIsAnimatingCheckbox] = useState(false);
   const [isDesktopLayout, setIsDesktopLayout] = useState(() => {
     if (typeof window === 'undefined') {
       return false;
@@ -132,7 +132,7 @@ const ContributionModal = ({ open, onClose }) => {
     return window.matchMedia('(max-width: 767px)').matches;
   });
   const storedFormRef = useRef(null);
-  const wasAuthenticatedRef = useRef(isAuthenticated);
+  const loginDelayRef = useRef(null);
 
   useEffect(() => {
     if (typeof window === 'undefined') {
@@ -224,18 +224,72 @@ const ContributionModal = ({ open, onClose }) => {
     };
   }, []);
 
+  useEffect(() => {
+    if (isAuthenticated) {
+      setShowLoginOverlay(false);
+    }
+  }, [isAuthenticated]);
+
   const handleInputChange = useCallback((event) => {
     const { name, value } = event.target;
     setFormState((prev) => ({ ...prev, [name]: value }));
   }, []);
 
-  const openLoginOverlay = useCallback(() => {
-    setShowLoginOverlay(true);
-  }, []);
-
   const closeLoginOverlay = useCallback(() => {
     setShowLoginOverlay(false);
   }, []);
+
+  const handleNotifyAnimation = useCallback(() => {
+    setIsAnimatingCheckbox(true);
+    setTimeout(() => setIsAnimatingCheckbox(false), 420);
+  }, []);
+
+  const handleNotifySound = useCallback(() => {
+    if (typeof window === 'undefined') {
+      return;
+    }
+    const AudioContext = window.AudioContext || window.webkitAudioContext;
+    if (!AudioContext) {
+      return;
+    }
+    const context = new AudioContext();
+    const oscillator = context.createOscillator();
+    const gain = context.createGain();
+    oscillator.type = 'sine';
+    oscillator.frequency.value = 720;
+    gain.gain.value = 0.03;
+    oscillator.connect(gain);
+    gain.connect(context.destination);
+    oscillator.start();
+    oscillator.stop(context.currentTime + 0.1);
+    oscillator.onended = () => {
+      context.close();
+    };
+  }, []);
+
+  const triggerLoginOverlay = useCallback(() => {
+    if (loginDelayRef.current) {
+      return;
+    }
+    loginDelayRef.current = setTimeout(() => {
+      setShowLoginOverlay(true);
+      loginDelayRef.current = null;
+    }, 520);
+  }, []);
+
+  const handleNotifyCheckboxChange = useCallback(
+    (event) => {
+      handleNotifyAnimation();
+      handleNotifySound();
+      setTimeout(handleNotifySound, 140);
+      if (!isAuthenticated) {
+        triggerLoginOverlay();
+        return;
+      }
+      setNotifyOnPublish(event.target.checked);
+    },
+    [handleNotifyAnimation, handleNotifySound, isAuthenticated, triggerLoginOverlay]
+  );
 
   useEffect(() => {
     if (typeof window === 'undefined') {
@@ -251,19 +305,12 @@ const ContributionModal = ({ open, onClose }) => {
   }, [formState, notifyOnPublish, selectedCategory]);
 
   useEffect(() => {
-    if (!wasAuthenticatedRef.current && isAuthenticated) {
-      setNotifyOnPublish(true);
-      setTrackingMessage('✓ Seguimiento activado');
-      setShowLoginOverlay(false);
-    }
-    wasAuthenticatedRef.current = isAuthenticated;
-  }, [isAuthenticated]);
-
-  useEffect(() => {
-    if (!notifyOnPublish) {
-      setTrackingMessage('');
-    }
-  }, [notifyOnPublish]);
+    return () => {
+      if (loginDelayRef.current) {
+        clearTimeout(loginDelayRef.current);
+      }
+    };
+  }, []);
 
   const triggerConfetti = useCallback(() => {
     const id = Date.now();
@@ -475,40 +522,35 @@ const ContributionModal = ({ open, onClose }) => {
         />
 
         <div className="flex flex-col gap-2 rounded-lg border border-white/5 bg-black/20 px-4 py-3">
-          <div className="flex items-start gap-3">
-            <input
-              id="notify-on-publish"
-              type="checkbox"
-              checked={notifyOnPublish}
-              onChange={(event) => setNotifyOnPublish(event.target.checked)}
-              disabled={!isAuthenticated}
-              className={`mt-1 h-4 w-4 rounded border-white/20 bg-black/40 text-purple-500 focus:ring-purple-400 ${
-                !isAuthenticated ? 'opacity-40 cursor-not-allowed' : ''
+          <motion.button
+            type="button"
+            onClick={handleNotifyCheckboxChange}
+            aria-label="Activar notificación de publicación"
+            className="relative flex items-center gap-3 text-left group focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-purple-400/60"
+          >
+            <motion.div
+              animate={
+                isAnimatingCheckbox
+                  ? { scale: [1, 1.12, 0.96, 1.05, 1] }
+                  : notifyOnPublish
+                  ? { scale: [1, 1.04, 1], boxShadow: '0 0 12px rgba(150,100,255,0.45)' }
+                  : { scale: 1 }
+              }
+              transition={{ duration: 0.45, ease: 'easeOut' }}
+              className={`h-5 w-5 rounded-full border border-white/20 ${
+                notifyOnPublish
+                  ? 'bg-gradient-to-r from-purple-500 to-indigo-500 shadow-[0_0_12px_rgba(150,100,255,0.45)]'
+                  : 'bg-slate-600/40'
               }`}
             />
-            <label
-              htmlFor="notify-on-publish"
-              className="text-sm text-slate-300/80 leading-relaxed"
-            >
+            <span className="text-sm text-slate-300/80 leading-relaxed">
               Quiero recibir notificación cuando se publique mi propuesta
-            </label>
-          </div>
+            </span>
+          </motion.button>
 
-          <div className="flex flex-col gap-1 text-xs text-slate-400">
-            {!isAuthenticated ? (
-              <button
-                type="button"
-                onClick={openLoginOverlay}
-                className="self-start text-xs font-semibold text-purple-300 underline-offset-2 hover:text-purple-200 hover:underline"
-                aria-label="Iniciar sesión para activar el seguimiento"
-              >
-                Iniciar sesión para activar esta función
-              </button>
-            ) : null}
-            {trackingMessage ? (
-              <p className="text-xs text-emerald-300">{trackingMessage}</p>
-            ) : null}
-          </div>
+          {!isAuthenticated ? (
+            <span className="pl-8 text-xs text-slate-500">Inicia sesión para activar el seguimiento</span>
+          ) : null}
         </div>
 
         {status === 'error' ? (
@@ -659,6 +701,7 @@ const ContributionModal = ({ open, onClose }) => {
           <LoginOverlay onClose={closeLoginOverlay} />
         ) : null}
       </AnimatePresence>
+
     </>
   );
 };
