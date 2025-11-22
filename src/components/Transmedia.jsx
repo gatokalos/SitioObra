@@ -36,15 +36,15 @@ const showcaseDefinitions = {
     videos: [
       {
         id: 'copycats-v2',
-        title: 'Ensayo abierto · Variación 2',
-        author: 'Detrás de cámaras',
-        duration: '5:46',
+        title: 'Teaser de CopyCats',
+        author: 'Viviana González',
+        duration: '2:46',
         url: 'https://player.vimeo.com/video/959781265?h=9b3b018f3e',
       },
       {
         id: 'copycats-v3',
         title: 'Teaser de Quirón',
-        author: 'Voces de la Comunidad',
+        author: 'Viviana González',
         duration: '0:58',
         url: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Cine%20-%20teasers/Quiron.mp4',
       },

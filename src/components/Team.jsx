@@ -140,7 +140,7 @@ const teamData = {
         name: "Rocío Morgán",
         role: "Asistencia Ejecutiva",
         bio: "Gestora cultural y apoyo logístico de producción. Su labor sostiene los procesos administrativos y humanos que hacen posible la operación cotidiana de la obra.",
-        image: "/images/placeholder-colaboradores.jpg",
+        image: "https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/equipo/audio/rocio.png",
       },
     ],
   },
