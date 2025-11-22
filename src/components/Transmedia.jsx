@@ -262,7 +262,7 @@ const CAUSE_ACCORDION = [
     id: 'tratamientos',
     title: 'Tratamientos emocionales',
     description:
-      'Financia terapias para jóvenes que no pueden costearlas. Isabel Ayuda para la Vida, A.C. cubre sesiones cuando detectamos riesgo emocional.',
+      'Tu suscripción asigna hasta 6 sesiones a un joven sin costo para su familia. Isabel Ayuda para la Vida, A.C. activa las sesiones cuando se detecta riesgo emocional.',
     icon: HeartHandshake,
     metric: '6 sesiones promedio por suscriptor',
   },
@@ -270,7 +270,7 @@ const CAUSE_ACCORDION = [
     id: 'residencias',
     title: 'Residencias creativas',
     description:
-      'Laboratorios donde arte y acompañamiento se combinan para reparar memoria y cuerpo. Becas completas para procesos de creación y contención.',
+      'Laboratorios de 2 meses donde arte y acompañamiento reparan memoria y cuerpo. Cada 17 suscripciones financian una residencia completa.',
     icon: Palette,
     metric: '3 residencias activas por temporada',
   },
@@ -278,7 +278,7 @@ const CAUSE_ACCORDION = [
     id: 'app-escolar',
     title: 'App Causa Social en escuelas',
     description:
-      'Aplicación que detecta señales tempranas en estudiantes. Tu cuota permite capacitar psicólogos, visitar escuelas y dar seguimiento ante crisis.',
+      'Implementación y seguimiento semestral de la app de detección temprana. 75 suscripciones financian 1 escuela por semestre.',
     icon: Smartphone,
     metric: '15 escuelas atendidas cada semestre',
   },
@@ -1192,7 +1192,7 @@ const Transmedia = () => {
               <div className="space-y-5">
                 <p className="text-xs uppercase tracking-[0.4em] text-slate-400/80">Apoya el proyecto</p>
                 <h3 className="font-display text-3xl text-slate-100">
-                  Tu suscripción sostiene la causa social de #GatoEncerrado
+                  Nuestro impacto crece contigo
                 </h3>
                 <p className="text-slate-300/80 leading-relaxed font-light">
                   La taquilla mantiene la obra en escena; el universo transmedia financia acompañamiento emocional real.
