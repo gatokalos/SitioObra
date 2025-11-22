@@ -85,7 +85,7 @@ const Hero = () => {
                 onClick={handleScrollToAbout}
                 className="text-slate-300 hover:text-white hover:bg-white/5 px-8 py-3 rounded-full font-semibold flex items-center gap-2 text-base"
               >
-                Conoce la Obra
+                Conoce La Obra
               </Button>
             </motion.div>
           </motion.div>

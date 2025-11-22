@@ -9,6 +9,9 @@ const Contact = () => {
   const [formValues, setFormValues] = useState({ name: '', email: '', message: '' });
   const [status, setStatus] = useState('idle');
   const [errorMessage, setErrorMessage] = useState('');
+  const instagramUrl = 'https://www.instagram.com/esungatoencerrado/?hl=en';
+  const twitterUrl = 'https://x.com/SilvestreFilis';
+  const facebookUrl = 'https://www.facebook.com/share/16pHNpZjpM/?mibextid=wwXIfr';
 
   const handleSubmit = useCallback(
     async (e) => {
@@ -59,6 +62,16 @@ const Contact = () => {
     toast({
       description: "🚧 Esta función no está implementada aún—¡pero no te preocupes! Puedes solicitarla en tu próximo prompt! 🚀"
     });
+  };
+
+  const handleSocialClick = (url) => {
+    if (url) {
+      window.open(url, '_blank', 'noopener,noreferrer');
+    } else {
+      toast({
+        description: "🚧 Esta función no está implementada aún—¡pero no te preocupes! Puedes solicitarla en tu próximo prompt! 🚀"
+      });
+    }
   };
 
   return (
@@ -160,9 +173,9 @@ const Contact = () => {
             <div className="glass-effect rounded-xl p-6">
               <h3 className="font-display text-xl font-medium text-slate-100 mb-4">Redes Sociales</h3>
               <div className="flex gap-2">
-                <Button onClick={handleActionClick} variant="ghost" size="icon" className="text-slate-400 hover:text-white"><Instagram size={24} /></Button>
-                <Button onClick={handleActionClick} variant="ghost" size="icon" className="text-slate-400 hover:text-white"><Twitter size={24} /></Button>
-                <Button onClick={handleActionClick} variant="ghost" size="icon" className="text-slate-400 hover:text-white"><Facebook size={24} /></Button>
+                <Button onClick={() => handleSocialClick(instagramUrl)} variant="ghost" size="icon" className="text-slate-400 hover:text-white"><Instagram size={24} /></Button>
+                <Button onClick={() => handleSocialClick(twitterUrl)} variant="ghost" size="icon" className="text-slate-400 hover:text-white"><Twitter size={24} /></Button>
+                <Button onClick={() => handleSocialClick(facebookUrl)} variant="ghost" size="icon" className="text-slate-400 hover:text-white"><Facebook size={24} /></Button>
               </div>
             </div>
 

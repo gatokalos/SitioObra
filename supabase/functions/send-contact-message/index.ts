@@ -125,7 +125,7 @@ const buildHtmlEmail = ({ name, message }: Required<Payload>) => {
         </p>
         <p>#GatoEncerrado · Residencia Transmedia</p>
         <a href="${landingUrl}" class="cta" target="_blank" rel="noreferrer">
-          Seguir descubriendo el miniverso
+          Descubre nuestra causa social
         </a>
       </div>
       <p class="footer">
@@ -145,7 +145,7 @@ const buildTextEmail = ({ name, message }: Required<Payload>) => {
     "Tu mensaje:",
     message || "Sin mensaje adicional.",
     "",
-    "Cuida ese amor por el Miniverso.",
+    "Cuida ese amor por los Miniversos.",
     "",
     `CTA: ${landingUrl}`,
     "",

@@ -5,9 +5,9 @@ import { Button } from '@/components/ui/button';
 import { toast } from '@/components/ui/use-toast';
 
 const Footer = () => {
-  const instagramUrl = 'https://www.instagram.com/your_instagram_handle'; // ¡Cambia esto por tu URL de Instagram!
-  const twitterUrl = 'https://twitter.com/your_twitter_handle'; // ¡Cambia esto por tu URL de Twitter!
-  const facebookUrl = 'https://facebook.com/your_facebook_page'; // ¡Cambia esto por tu URL de Facebook!
+  const instagramUrl = 'https://www.instagram.com/esungatoencerrado/?hl=en';
+  const twitterUrl = 'https://x.com/SilvestreFilis';
+  const facebookUrl = 'https://www.facebook.com/share/16pHNpZjpM/?mibextid=wwXIfr';
 
   const handleSocialClick = (url) => {
     if (url) {
@@ -64,7 +64,7 @@ const Footer = () => {
             >
               <span className="font-semibold text-slate-200 mb-4 block">Navegación</span>
               <ul className="space-y-3">
-                {[{name: 'La Obra', href: '#about'}, {name: 'Equipo', href: '#team'}, {name: 'Miniversos', href: '#transmedia'}, {name: 'Galería', href: '#instagram'}, {name: 'Función', href: '#next-show'}].map((item) => (
+                {[{name: 'La Obra', href: '#about'}, {name: 'Equipo', href: '#team'}, {name: 'Miniversos', href: '#transmedia'}, {name: 'Textos', href: '#dialogos-criticos'}, {name: 'Galería', href: '#instagram'}, {name: 'Función', href: '#next-show'}].map((item) => (
                   <li key={item.name}>
                     <button
                       onClick={() => handleLinkClick(item.href)}
@@ -87,7 +87,7 @@ const Footer = () => {
             >
               <span className="font-semibold text-slate-200 mb-4 block">Contacto</span>
               <ul className="space-y-3 text-sm font-light">
-                <li className="text-slate-400">info@gatoencerrado.ai</li>
+                <li className="text-slate-400">contacto@gatoencerrado.info</li>
                 <li className="text-slate-400">+52 123 456 789</li>
                 <li className="text-slate-400">#UniversoTransmedia<br />Tijuana, México</li>
               </ul>
