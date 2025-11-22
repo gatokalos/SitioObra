@@ -188,7 +188,7 @@ const Team = () => {
                   src={member.image}
                   alt={`Retrato de ${member.name}`}
                 />
-                <div className="space-y-1">
+                <div className="space-y-2">
                   <h4 className="font-display text-lg text-purple-200">
                     {member.name}
                   </h4>
@@ -201,6 +201,16 @@ const Team = () => {
                     <p className="text-sm md:text-base sm:text-sm text-slate-300/80 leading-relaxed">
                       {member.bio}
                     </p>
+                  )}
+                  {member.url && (
+                    <a
+                      href={member.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-sm font-semibold text-purple-200 transition hover:text-purple-100 underline-offset-4"
+                    >
+                      {member.urlLabel ?? 'Ver perfil'}
+                    </a>
                   )}
                 </div>
               </div>

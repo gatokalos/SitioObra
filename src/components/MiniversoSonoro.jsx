@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 export default function MiniversoSonoro({
   title = "Miniverso Sonoro",
@@ -12,9 +12,16 @@ export default function MiniversoSonoro({
   const videoRef = useRef(null);
   const audioRef = useRef(null);
 
+  const noisePattern =
+    'data:image/svg+xml;utf8,<svg%20xmlns="http://www.w3.org/2000/svg"%20width="120"%20height="120"><filter%20id="n"><feTurbulence%20type="fractalNoise"%20baseFrequency="0.7"%20numOctaves="2"%20stitchTiles="stitch"/></filter><rect%20width="120"%20height="120"%20filter="url(%23n)"%20opacity="0.2"/></svg>';
+
   const [isVertical, setIsVertical] = useState(false);
   const [audioUrl, setAudioUrl] = useState("");
   const [selectedPoem, setSelectedPoem] = useState("");
+  const [videoError, setVideoError] = useState(false);
+  const [isDesktopViewport, setIsDesktopViewport] = useState(
+    typeof window !== "undefined" ? window.innerWidth >= 1024 : false
+  );
 
   // ——————————————
   // Detecta orientación del video automáticamente
@@ -61,6 +68,33 @@ export default function MiniversoSonoro({
     }
   }, [audioUrl]);
 
+  useEffect(() => {
+    setVideoError(false);
+  }, [videoUrl]);
+
+  useEffect(() => {
+    if (typeof window === "undefined") {
+      return undefined;
+    }
+    const updateViewport = () => {
+      setIsDesktopViewport(window.innerWidth >= 1024);
+    };
+    updateViewport();
+    window.addEventListener("resize", updateViewport);
+    return () => window.removeEventListener("resize", updateViewport);
+  }, []);
+
+  const isAudioSource = useMemo(() => {
+    if (!videoUrl) {
+      return false;
+    }
+    return /\.(m4a|mp3|wav|aac|flac|ogg)(\?.*)?$/i.test(videoUrl);
+  }, [videoUrl]);
+
+  const handleVideoError = useCallback(() => {
+    setVideoError(true);
+  }, []);
+
   const renderHeaderSection =
     showHeader || highlights.length > 0
       ? (
@@ -103,34 +137,77 @@ export default function MiniversoSonoro({
       {/* VIDEO CON OVERLAY */}
       <div
         className={`relative mx-auto border border-white/10 rounded-3xl overflow-hidden shadow-2xl backdrop-blur-3xl transition-all duration-500 ${
-          isVertical ? "w-[340px] h-[620px]" : "w-full max-w-5xl aspect-video"
+          isDesktopViewport
+            ? "w-full max-w-5xl aspect-[16/9]"
+            : isVertical
+            ? "w-[340px] h-[620px]"
+            : "w-full max-w-5xl aspect-video"
         }`}
       >
-        <video
-          ref={videoRef}
-          src={videoUrl}
-          autoPlay
-          muted
-          loop
-          playsInline
-          className="w-full h-full object-cover"
-        />
+        {!videoError ? (
+          <video
+            key={videoUrl ?? "miniverso-sonoro-video"}
+            ref={videoRef}
+            src={videoUrl}
+            autoPlay
+            muted
+            loop
+            playsInline
+            className="w-full h-full object-cover"
+            onError={handleVideoError}
+          />
+        ) : (
+          <div className="flex h-full w-full flex-col items-center justify-center gap-4 bg-black/60 px-6 py-8 text-center">
+            <p className="text-sm text-slate-300">
+              No pudimos cargar este {isAudioSource ? "audio" : "video"} en esta vista.
+            </p>
+            {videoUrl ? (
+              <a
+                href={videoUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-sm font-semibold text-purple-200 transition hover:text-purple-100 underline-offset-4"
+              >
+                {isAudioSource ? "Escuchar en nueva pestaña" : "Abrir en nueva pestaña"}
+              </a>
+            ) : (
+              <p className="text-xs text-slate-500">Revisa la fuente del archivo.</p>
+            )}
+          </div>
+        )}
+
+        {!videoError && (
+          <div
+            aria-hidden="true"
+            className="absolute inset-0 pointer-events-none"
+            style={{
+              backgroundImage: `linear-gradient(180deg, rgba(255,255,255,0.05), rgba(15,23,42,0.7)), url("${noisePattern}")`,
+              backgroundSize: "cover",
+              backgroundBlendMode: "screen, overlay",
+              opacity: 0.85,
+            }}
+          />
+        )}
 
         {/* Overlay superior */}
-        <div className="absolute top-0 left-0 right-0 p-6 bg-gradient-to-b from-black/60 to-transparent">
-          <p className="text-xs uppercase tracking-[0.3em] text-slate-300">
-            Cámara de resonancia
-          </p>
-          <p className="text-sm text-slate-100 opacity-90">Video ritual errante</p>
-        </div>
+        {!videoError && (
+          <>
+            <div className="absolute top-0 left-0 right-0 p-6 bg-gradient-to-b from-black/60 to-transparent">
+              <p className="text-xs uppercase tracking-[0.3em] text-slate-300">
+                Cámara de resonancia
+              </p>
+              <p className="text-sm text-slate-100 opacity-90">Video ritual errante</p>
+            </div>
 
-        {/* Poema */}
-        {poemText && (
-          <div className="absolute bottom-0 left-0 right-0 p-8 text-center bg-gradient-to-t from-black/70 to-transparent">
-            <p className="text-lg leading-relaxed font-light text-slate-100 drop-shadow-xl">
-              {poemText}
-            </p>
-          </div>
+            {/* Poema */}
+            {poemText && (
+              <div className="absolute bottom-0 left-0 right-0 p-8 text-center bg-gradient-to-t from-black/70 to-transparent">
+                <p className="text-lg leading-relaxed font-light text-slate-100 drop-shadow-xl">
+                  {poemText}
+                </p>
+              </div>
+            )}
+          </>
         )}
       </div>
 

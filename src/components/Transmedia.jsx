@@ -161,7 +161,7 @@ const showcaseDefinitions = {
       'Entra y crea el tuyo.',
     ],
     videoUrl:
-      'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Sonoridades/videos-h/EnsayoAbierto.mov',
+      'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Sonoridades/videos-v/Vacio.mov',
     musicOptions: [
       {
         id: 'silencio',
@@ -300,6 +300,7 @@ const Transmedia = () => {
   const pdfPageWidth = Math.max(pdfContainerWidth - 48, 320);
   const [isTazaARActive, setIsTazaARActive] = useState(false);
   const [isMobileARFullscreen, setIsMobileARFullscreen] = useState(false);
+  const [isMobileDreamOpen, setIsMobileDreamOpen] = useState(false);
   const [showAutoficcionPreview, setShowAutoficcionPreview] = useState(false);
 
   const handleOpenMiniverses = useCallback(() => {
@@ -426,6 +427,22 @@ const Transmedia = () => {
     setIsMobileARFullscreen(false);
     document.body.classList.remove('overflow-hidden');
   }, []);
+
+  const openMobileDream = useCallback(() => {
+    setIsMobileDreamOpen(true);
+  }, []);
+
+  const closeMobileDream = useCallback(() => {
+    setIsMobileDreamOpen(false);
+  }, []);
+
+  useEffect(() => {
+    if (isMobileDreamOpen) {
+      document.body.classList.add('overflow-hidden');
+    } else if (!isTazaARActive && !isMobileARFullscreen) {
+      document.body.classList.remove('overflow-hidden');
+    }
+  }, [isMobileDreamOpen, isTazaARActive, isMobileARFullscreen]);
 
   const handlePdfLoadSuccess = useCallback(({ numPages }) => {
     setPdfNumPages(numPages);
@@ -731,23 +748,11 @@ const Transmedia = () => {
 
     if (activeDefinition.type === 'audio-dream') {
       return (
-        <div className="grid gap-10 lg:grid-cols-[2fr_1fr]">
-            <div className="rounded-3xl border border-white/10 bg-black/30 p-6">
-              <MiniversoSonoro
-                title={activeDefinition.label}
-                subtitle={activeDefinition.intro}
-                videoUrl={activeDefinition.videoUrl}
-                musicOptions={activeDefinition.musicOptions}
-                poems={activeDefinition.poems}
-                highlights={activeDefinition.highlights}
-                showHeader={false}
-              />
-            </div>
-
-          <div className="space-y-6">
+        <div className="grid gap-6 lg:gap-10 lg:grid-cols-[2fr_1fr]">
+          <div className="space-y-6 order-1 lg:order-2">
             <div className="rounded-3xl border border-white/10 bg-black/30 p-6 space-y-4">
               <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Cómo explorar</p>
-              <ol className="list-decimal list-inside space-y-3 text-slate-200 text-base leading-relaxed">
+              <ol className="list-decimal list-inside space-y-3 text-slate-200 text-sm leading-relaxed md:text-base">
                 {activeDefinition.exploration?.map((step, index) => (
                   <li key={index}>{step}</li>
                 ))}
@@ -758,7 +763,58 @@ const Transmedia = () => {
                 <p key={index}>{line}</p>
               ))}
             </div>
+            <div className="lg:hidden">
+              <button
+                type="button"
+                onClick={openMobileDream}
+                className="w-full rounded-2xl border border-purple-400/60 bg-gradient-to-r from-purple-600/80 to-blue-500/60 px-4 py-3 text-sm font-semibold uppercase tracking-[0.3em] text-white transition hover:from-purple-500 hover:to-blue-400"
+              >
+                Abrir cámara de resonancia
+              </button>
+            </div>
           </div>
+
+          <div className="hidden lg:flex justify-center px-4 order-2 lg:order-1 lg:px-0">
+            <div className="w-full max-w-[420px] lg:max-w-[640px]">
+              <div className="rounded-3xl border border-white/10 bg-black/30 p-6">
+                <MiniversoSonoro
+                  title={activeDefinition.label}
+                  subtitle={activeDefinition.intro}
+                  videoUrl={activeDefinition.videoUrl}
+                  musicOptions={activeDefinition.musicOptions}
+                  poems={activeDefinition.poems}
+                  highlights={activeDefinition.highlights}
+                  showHeader={false}
+                />
+              </div>
+            </div>
+          </div>
+
+          {isMobileDreamOpen && (
+            <div className="fixed inset-0 z-50 flex flex-col bg-black/95">
+              <div className="flex items-center justify-between border-b border-white/10 px-4 py-3">
+                <p className="text-sm uppercase tracking-[0.4em] text-purple-300">Cámara de resonancia</p>
+                <button
+                  type="button"
+                  onClick={closeMobileDream}
+                  className="text-sm font-semibold text-purple-100 transition hover:text-purple-50"
+                >
+                  Cerrar
+                </button>
+              </div>
+              <div className="flex-1 overflow-auto p-4">
+                <MiniversoSonoro
+                  title={activeDefinition.label}
+                  subtitle={activeDefinition.intro}
+                  videoUrl={activeDefinition.videoUrl}
+                  musicOptions={activeDefinition.musicOptions}
+                  poems={activeDefinition.poems}
+                  highlights={activeDefinition.highlights}
+                  showHeader
+                />
+              </div>
+            </div>
+          )}
         </div>
       );
     }

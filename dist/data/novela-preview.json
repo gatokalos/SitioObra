@@ -1,0 +1,64 @@
+{
+  "segments": [
+    {
+      "id": "escena_andy_lucinda_01",
+      "text": "Andy salió del escenario con paso firme pero sin apuro, como si en ese breve trayecto buscara no solo un pañuelo para Lucinda, sino algo que pudiera darle sentido a lo que le estaba sucediendo.",
+      "questions": {
+        "academic": "¿Qué función narrativa cumple este cambio de foco hacia Andy, y cómo altera la perspectiva del relato?",
+        "psychological": "¿Qué conflicto interno se le activa a Andy al sentir que debe 'dar sentido' a lo que ocurre?",
+        "narrative": "¿Por qué es importante que Andy salga del escenario justo en este momento?",
+        "theatrical": "Si interpretaras a Andy, ¿desde qué energía caminarías fuera del escenario: contención, duda o deber?"
+      }
+    },
+    {
+      "id": "escena_andy_lucinda_02",
+      "text": "Se sentía dividido por haber intervenido en vez de haberse quedado al margen. Como terapeuta —o en el papel que le había tocado en este experimento escénico — debía contener la crisis antes de que se volviera real. Pero en una obra donde todo podía escapar del guion sin previo aviso, el derrumbe podía ser, paradójicamente, la forma más fiel de seguirlo.",
+      "questions": {
+        "academic": "¿Cómo articula este fragmento la tensión entre improvisación y estructura dentro de la autoficción?",
+        "psychological": "¿Qué revela la división interna de Andy sobre su identidad profesional y emocional?",
+        "narrative": "¿Qué consecuencias podría tener su intervención en el desarrollo de la historia?",
+        "theatrical": "Si tuvieras que actuar este dilema, ¿cómo se vería en tu postura o respiración esa tensión entre intervenir y retirarte?"
+      }
+    },
+    {
+      "id": "escena_andy_lucinda_03",
+      "text": "¿O acaso estaban ambos atrapados en un sueño sin textos, donde la única trama posible era la duda que se escribe a sí misma mientras alguien la observa?",
+      "questions": {
+        "academic": "¿Cómo usa el texto la metáfora del sueño para cuestionar la estabilidad narrativa?",
+        "psychological": "¿Qué dimensión de la conciencia se revela en esta imagen del 'sueño sin textos'?",
+        "narrative": "¿Qué aporta esta sospecha de sueño al estado emocional de los personajes y al rumbo de la escena?",
+        "theatrical": "Si tuvieras que actuar una escena 'como si fuera un sueño sin texto', ¿qué ritmo, gesto o tono usarías?"
+      }
+    },
+    {
+      "id": "escena_andy_lucinda_04",
+      "text": "El pensamiento analítico se impuso. Y lo dejó con un dilema a flor de piel —sabrá dios si fueron sus dudas o las mías, ni siquiera si alguna vez las llegaron a resolver —:\nA) ¿Y si sanar significa perder esa intensidad cruda que le da verdad a los personajes?\nB) ¿Y si esa vulnerabilidad es más valiosa rota que reparada?",
+      "questions": {
+        "academic": "¿Cómo dialogan estas preguntas con la tradición de la autoficción que valora la herida como motor narrativo?",
+        "psychological": "¿Qué miedo se expresa aquí: dejar de sentir o dejar de ser?",
+        "narrative": "¿Qué implicaría para la historia que la sanación le quite autenticidad a los personajes?",
+        "theatrical": "Si actuases esta duda, ¿qué método usarías para explorar la vulnerabilidad: sustitución, memoria emotiva, o imaginación sensorial?"
+      }
+    },
+    {
+      "id": "escena_andy_lucinda_05",
+      "text": "En lo que él volvía con el pañuelo, el llanto de Lucinda mutó a una risita de ternura desconcertada. Ya no se lo ofreció; las preguntas de Andy empezaron a aglutinarse: «¿Y si esa risa tierna… es para manipularme?» // «¿Y si se escala… hasta volverse psicótica?» // «¿Y si…?»",
+      "questions": {
+        "academic": "¿Qué efecto produce la acumulación de preguntas inconclusas en la construcción del ritmo del texto?",
+        "psychological": "¿Qué proyección emocional está haciendo Andy sobre la risa de Lucinda?",
+        "narrative": "¿Cómo cambia la dirección de la historia si la risa se interpreta como signo de manipulación o crisis?",
+        "theatrical": "Si interpretarás esta risa desde el escenario: ¿cómo diferenciarías una risa tierna de una risa que inquieta?"
+      }
+    },
+    {
+      "id": "escena_andy_lucinda_06",
+      "text": "—¿Dinos qué te está pasando?\n—Pues eso mismo: que yo tampoco sé qué pedo con esta pinche vida.",
+      "questions": {
+        "academic": "¿Cómo opera esta respuesta como cierre tonal del bloque, y qué dice sobre la voz narrativa?",
+        "psychological": "¿Qué tipo de sinceridad emerge cuando alguien admite no saber 'qué pedo con la vida'?",
+        "narrative": "¿Qué revela esta respuesta sobre el estado actual de Lucinda y cómo prepara el siguiente movimiento de la trama?",
+        "theatrical": "Si actuaras esta frase, ¿desde dónde la dirías: derrota, claridad brusca o humor involuntario?"
+      }
+    }
+  ]
+}

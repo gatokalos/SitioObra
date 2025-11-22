@@ -15,7 +15,7 @@ import {
   Music,
 } from 'lucide-react';
 import { useAuth } from '@/contexts/SupabaseAuthContext';
-import LoginAccordion from '@/components/ContributionModal/LoginAccordion';
+import LoginOverlay from '@/components/ContributionModal/LoginOverlay';
 
 const CATEGORIES = [
   {
@@ -117,6 +117,8 @@ const ContributionModal = ({ open, onClose }) => {
   const [notifyOnPublish, setNotifyOnPublish] = useState(false);
   const [isFormPanelOpen, setIsFormPanelOpen] = useState(false);
   const [confettiBursts, setConfettiBursts] = useState([]);
+  const [showLoginOverlay, setShowLoginOverlay] = useState(false);
+  const [trackingMessage, setTrackingMessage] = useState('');
   const [isDesktopLayout, setIsDesktopLayout] = useState(() => {
     if (typeof window === 'undefined') {
       return false;
@@ -130,6 +132,7 @@ const ContributionModal = ({ open, onClose }) => {
     return window.matchMedia('(max-width: 767px)').matches;
   });
   const storedFormRef = useRef(null);
+  const wasAuthenticatedRef = useRef(isAuthenticated);
 
   useEffect(() => {
     if (typeof window === 'undefined') {
@@ -226,6 +229,14 @@ const ContributionModal = ({ open, onClose }) => {
     setFormState((prev) => ({ ...prev, [name]: value }));
   }, []);
 
+  const openLoginOverlay = useCallback(() => {
+    setShowLoginOverlay(true);
+  }, []);
+
+  const closeLoginOverlay = useCallback(() => {
+    setShowLoginOverlay(false);
+  }, []);
+
   useEffect(() => {
     if (typeof window === 'undefined') {
       return;
@@ -238,6 +249,21 @@ const ContributionModal = ({ open, onClose }) => {
     window.localStorage.setItem(FORM_STORAGE_KEY, JSON.stringify(payload));
     storedFormRef.current = payload;
   }, [formState, notifyOnPublish, selectedCategory]);
+
+  useEffect(() => {
+    if (!wasAuthenticatedRef.current && isAuthenticated) {
+      setNotifyOnPublish(true);
+      setTrackingMessage('✓ Seguimiento activado');
+      setShowLoginOverlay(false);
+    }
+    wasAuthenticatedRef.current = isAuthenticated;
+  }, [isAuthenticated]);
+
+  useEffect(() => {
+    if (!notifyOnPublish) {
+      setTrackingMessage('');
+    }
+  }, [notifyOnPublish]);
 
   const triggerConfetti = useCallback(() => {
     const id = Date.now();
@@ -268,11 +294,12 @@ const ContributionModal = ({ open, onClose }) => {
       setErrorMessage('');
 
       try {
+        const topicId = selectedCategory?.id ?? 'obra_escenica';
         const payload = {
           name: formState.name.trim(),
           email: formState.email.trim().toLowerCase(),
           role: formState.role.trim() || null,
-          topic: selectedCategory.id,
+          topic: topicId,
           proposal: formState.proposal.trim(),
           attachment_url: formState.attachmentUrl.trim() || null,
           notify_on_publish: notifyOnPublish,
@@ -296,7 +323,7 @@ const ContributionModal = ({ open, onClose }) => {
             email: formState.email.trim().toLowerCase(),
             name: formState.name.trim(),
             proposal: formState.proposal.trim(),
-            category: selectedCategory.title,
+            category: selectedCategory?.title ?? CATEGORIES[0].title,
           });
         }
 
@@ -464,15 +491,24 @@ const ContributionModal = ({ open, onClose }) => {
               className="text-sm text-slate-300/80 leading-relaxed"
             >
               Quiero recibir notificación cuando se publique mi propuesta
-              {!isAuthenticated ? (
-                <span className="block text-xs text-slate-500">
-                  Inicia sesión para activar esta opción.
-                </span>
-              ) : null}
             </label>
           </div>
 
-          {!isAuthenticated ? <LoginAccordion /> : null}
+          <div className="flex flex-col gap-1 text-xs text-slate-400">
+            {!isAuthenticated ? (
+              <button
+                type="button"
+                onClick={openLoginOverlay}
+                className="self-start text-xs font-semibold text-purple-300 underline-offset-2 hover:text-purple-200 hover:underline"
+                aria-label="Iniciar sesión para activar el seguimiento"
+              >
+                Iniciar sesión para activar esta función
+              </button>
+            ) : null}
+            {trackingMessage ? (
+              <p className="text-xs text-emerald-300">{trackingMessage}</p>
+            ) : null}
+          </div>
         </div>
 
         {status === 'error' ? (
@@ -502,120 +538,128 @@ const ContributionModal = ({ open, onClose }) => {
   );
 
   return (
-    <AnimatePresence>
-      {open ? (
-        <motion.div
-          className="fixed inset-0 z-50 flex items-center justify-center px-4 py-6 sm:py-12"
-          initial="hidden"
-          animate="visible"
-          exit="hidden"
-        >
+    <>
+      <AnimatePresence>
+        {open ? (
           <motion.div
-            className="absolute inset-0 bg-black/80 backdrop-blur-sm"
-            variants={backdropVariants}
-            onClick={handleClose}
-            aria-hidden="true"
-          />
-
-          <motion.div
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby="contribution-modal-title"
-            variants={modalVariants}
-            className="relative z-10 w-full max-w-5xl h-full max-h-[90vh] rounded-3xl border border-white/10 bg-slate-950 p-4 sm:p-8 shadow-2xl overflow-hidden flex flex-col gap-6"
+            className="fixed inset-0 z-50 flex items-center justify-center px-4 py-6 sm:py-12"
+            initial="hidden"
+            animate="visible"
+            exit="hidden"
           >
-            <div className="relative overflow-visible">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Blog / Diálogo vivo</p>
-                  <h2 className="font-display text-2xl sm:text-3xl text-slate-50">
-                    Contribuye al diálogo crítico
-                  </h2>
-                </div>
-                <button
-                  onClick={handleClose}
-                  className="text-slate-400 hover:text-white transition text-xl leading-none"
-                  aria-label="Cerrar formulario de propuestas"
-                >
-                  ✕
-                </button>
-              </div>
-              {confettiBursts.map((burst) => (
-                <ConfettiBurst key={burst} seed={burst} />
-              ))}
-            </div>
+            <motion.div
+              className="absolute inset-0 bg-black/80 backdrop-blur-sm"
+              variants={backdropVariants}
+              onClick={handleClose}
+              aria-hidden="true"
+            />
 
-            <div className="mt-6 flex flex-col gap-6 md:flex-row md:items-start md:gap-6">
-              <div className="flex-1 space-y-3 overflow-y-auto pr-3 md:max-h-[72vh] md:pr-0">
-                {CATEGORIES.map((category) => (
+            <motion.div
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="contribution-modal-title"
+              variants={modalVariants}
+              className="relative z-10 w-full max-w-5xl h-full max-h-[90vh] rounded-3xl border border-white/10 bg-slate-950 p-4 sm:p-8 shadow-2xl overflow-hidden flex flex-col gap-6"
+            >
+              <div className="relative overflow-visible">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Blog / Diálogo vivo</p>
+                    <h2 className="font-display text-2xl sm:text-3xl text-slate-50">
+                      Contribuye al diálogo crítico
+                    </h2>
+                  </div>
                   <button
-                    type="button"
-                    key={category.id}
-                  onClick={() => handleSelectCategory(category)}
-                    className={`w-full rounded-2xl border px-4 py-4 text-left transition ${
-                      selectedCategory.id === category.id
-                        ? 'bg-purple-500/15 border-purple-300/40'
-                        : 'bg-black/20 border-white/10 hover:border-purple-300/30'
-                    }`}
+                    onClick={handleClose}
+                    className="text-slate-400 hover:text-white transition text-xl leading-none"
+                    aria-label="Cerrar formulario de propuestas"
                   >
-                    <div className="flex items-center gap-3 mb-2">
-                      {category.icon}
-                      <h4 className="text-slate-100 font-medium">{category.title}</h4>
-                    </div>
-                    <p className="text-sm text-slate-400/80 leading-relaxed">{category.description}</p>
+                    ✕
                   </button>
+                </div>
+                {confettiBursts.map((burst) => (
+                  <ConfettiBurst key={burst} seed={burst} />
                 ))}
               </div>
 
-              {isDesktopLayout ? (
-                <div className="md:w-[520px] md:shrink-0">
-                  {isFormPanelOpen ? (
+              <div className="mt-6 flex flex-col gap-6 md:flex-row md:items-start md:gap-6">
+                <div className="flex-1 space-y-3 overflow-y-auto pr-3 md:max-h-[72vh] md:pr-0">
+                  {CATEGORIES.map((category) => (
+                    <button
+                      type="button"
+                      key={category.id}
+                      onClick={() => handleSelectCategory(category)}
+                      className={`w-full rounded-2xl border px-4 py-4 text-left transition ${
+                        selectedCategory.id === category.id
+                          ? 'bg-purple-500/15 border-purple-300/40'
+                          : 'bg-black/20 border-white/10 hover:border-purple-300/30'
+                      }`}
+                    >
+                      <div className="flex items-center gap-3 mb-2">
+                        {category.icon}
+                        <h4 className="text-slate-100 font-medium">{category.title}</h4>
+                      </div>
+                      <p className="text-sm text-slate-400/80 leading-relaxed">{category.description}</p>
+                    </button>
+                  ))}
+                </div>
+
+                {isDesktopLayout ? (
+                  <div className="md:w-[520px] md:shrink-0">
+                    {isFormPanelOpen ? (
+                      <motion.div
+                        initial={{ opacity: 0, x: 16 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        exit={{ opacity: 0, x: 16 }}
+                        transition={{ duration: 0.35, ease: 'easeOut' }}
+                        className="flex h-full max-h-[78vh] flex-col rounded-3xl border border-white/10 bg-slate-950/90 p-6 shadow-2xl overflow-y-auto"
+                      >
+                        {renderFormPanelBody()}
+                      </motion.div>
+                    ) : (
+                      <div className="flex h-full min-h-[320px] items-center justify-center rounded-3xl border border-dashed border-white/10 bg-black/30 px-4 text-center text-sm text-slate-400">
+                        Selecciona una categoría para abrir el formulario.
+                      </div>
+                    )}
+                  </div>
+                ) : null}
+              </div>
+
+              <AnimatePresence>
+                {!isDesktopLayout && isFormPanelOpen ? (
+                  <>
+                    <motion.button
+                      type="button"
+                      className="absolute inset-0 bg-black/40 md:hidden"
+                      aria-label="Cerrar formulario"
+                      onClick={handleCloseFormPanel}
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      exit={{ opacity: 0 }}
+                    />
                     <motion.div
-                      initial={{ opacity: 0, x: 16 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      exit={{ opacity: 0, x: 16 }}
-                      transition={{ duration: 0.35, ease: 'easeOut' }}
-                      className="flex h-full max-h-[78vh] flex-col rounded-3xl border border-white/10 bg-slate-950/90 p-6 shadow-2xl overflow-y-auto"
+                      initial={{ x: '100%' }}
+                      animate={{ x: 0 }}
+                      exit={{ x: '100%' }}
+                      transition={{ type: 'spring', damping: 24, stiffness: 240 }}
+                      className="absolute inset-y-0 right-0 w-full bg-slate-950 border-l border-white/15 shadow-2xl p-6 overflow-y-auto md:hidden"
                     >
                       {renderFormPanelBody()}
                     </motion.div>
-                  ) : (
-                    <div className="flex h-full min-h-[320px] items-center justify-center rounded-3xl border border-dashed border-white/10 bg-black/30 px-4 text-center text-sm text-slate-400">
-                      Selecciona una categoría para abrir el formulario.
-                    </div>
-                  )}
-                </div>
-              ) : null}
-            </div>
-
-            <AnimatePresence>
-              {!isDesktopLayout && isFormPanelOpen ? (
-                <>
-                  <motion.button
-                    type="button"
-                    className="absolute inset-0 bg-black/40 md:hidden"
-                    aria-label="Cerrar formulario"
-                    onClick={handleCloseFormPanel}
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                  />
-                  <motion.div
-                    initial={{ x: '100%' }}
-                    animate={{ x: 0 }}
-                    exit={{ x: '100%' }}
-                    transition={{ type: 'spring', damping: 24, stiffness: 240 }}
-                    className="absolute inset-y-0 right-0 w-full bg-slate-950 border-l border-white/15 shadow-2xl p-6 overflow-y-auto md:hidden"
-                  >
-                    {renderFormPanelBody()}
-                  </motion.div>
-                </>
-              ) : null}
-            </AnimatePresence>
+                  </>
+                ) : null}
+              </AnimatePresence>
+            </motion.div>
           </motion.div>
-        </motion.div>
-      ) : null}
-    </AnimatePresence>
+        ) : null}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {showLoginOverlay ? (
+          <LoginOverlay onClose={closeLoginOverlay} />
+        ) : null}
+      </AnimatePresence>
+    </>
   );
 };
 

@@ -4,6 +4,8 @@ import { serve } from "std/http/server.ts";
 const resendApiKey = Deno.env.get("RESEND_API_KEY");
 const resendFrom = Deno.env.get("RESEND_FROM");
 const landingUrl = Deno.env.get("LANDING_URL") ?? "https://gatoencerrado.ai";
+const nextStepsUrl = Deno.env.get("LANDING_NEXT_STEPS_URL") ?? landingUrl;
+const loginUrl = Deno.env.get("LANDING_LOGIN_URL") ?? landingUrl;
 const logoUrl = Deno.env.get("LOGO_URL") ?? `${landingUrl}/assets/logoapp.png`;
 
 const corsHeaders = {
@@ -50,6 +52,12 @@ const buildHtmlEmail = ({ name, proposal, category }: Required<Payload>) => {
         padding: 32px;
         box-shadow: 0 30px 60px -20px rgba(2, 6, 23, 0.8);
       }
+      .header-row {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 24px;
+      }
       .chip {
         display: inline-flex;
         padding: 6px 18px;
@@ -66,11 +74,6 @@ const buildHtmlEmail = ({ name, proposal, category }: Required<Payload>) => {
         margin: 12px 0;
         color: #f8fafc;
       }
-      .logo {
-        display: block;
-        width: 90px;
-        margin-bottom: 14px;
-      }
       p {
         line-height: 1.6;
         margin-bottom: 16px;
@@ -84,6 +87,21 @@ const buildHtmlEmail = ({ name, proposal, category }: Required<Payload>) => {
         font-size: 14px;
         color: #e2e8f0;
         line-height: 1.7;
+      }
+      .logo-badge {
+        width: 68px;
+        height: 68px;
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.08);
+        border: 1px solid rgba(255, 255, 255, 0.25);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .logo-badge img {
+        width: 52px;
+        height: 52px;
+        object-fit: contain;
       }
       .footer {
         font-size: 12px;
@@ -105,18 +123,37 @@ const buildHtmlEmail = ({ name, proposal, category }: Required<Payload>) => {
         text-decoration: none;
         font-weight: 600;
       }
+      .cta-secondary {
+        margin-top: 10px;
+        background: rgba(129, 140, 248, 0.18);
+        border-color: rgba(129, 140, 248, 0.55);
+        color: #e0e7ff;
+        text-transform: none;
+        letter-spacing: 0.08em;
+      }
+      .cta-note {
+        margin-top: 12px;
+        font-size: 13px;
+        color: rgba(226, 232, 240, 0.75);
+      }
     </style>
   </head>
   <body>
     <div class="shell">
       <div class="card">
-        <span class="chip">Blog / Diálogo vivo</span>
-        <img src="${logoUrl}" alt="#GatoEncerrado" class="logo" />
-        <h1>Gracias por compartir tu voz, ${safeName.split(" ")[0]}.</h1>
-        <p>
-          Acabamos de recibir tu propuesta para <strong>${safeCategory}</strong>.
-          Le daremos lectura con calma y, si necesitamos más detalles, te contactaremos.
-        </p>
+        <div class="header-row">
+          <div>
+            <span class="chip">Blog / Diálogo vivo</span>
+            <h1>Gracias por compartir tu voz, ${safeName.split(" ")[0]}.</h1>
+            <p>
+              Acabamos de recibir tu propuesta para <strong>${safeCategory}</strong>.
+              Le daremos lectura con calma y, si necesitamos más detalles, te contactaremos.
+            </p>
+          </div>
+          <div class="logo-badge">
+            <img src="${logoUrl}" alt="#GatoEncerrado" />
+          </div>
+        </div>
         <div class="proposal-card">
           <p><strong>Tu aporte:</strong></p>
           <p>${safeProposal.replace(/\n/g, "<br />")}</p>
@@ -125,8 +162,14 @@ const buildHtmlEmail = ({ name, proposal, category }: Required<Payload>) => {
           Mantente atento a la bitácora y sigue compartiendo teorías. Tu narración alimenta al gato encerrado.
         </p>
         <p>#GatoEncerrado · Residencia Transmedia</p>
-        <a href="${landingUrl}" class="cta" target="_blank" rel="noreferrer">
+        <a href="${nextStepsUrl}" class="cta" target="_blank" rel="noreferrer">
           Ver próximos pasos
+        </a>
+        <p class="cta-note">
+          Si todavía no activaste tu cuenta, inicia sesión para activar notificaciones y seguir la conversación.
+        </p>
+        <a href="${loginUrl}" class="cta cta-secondary" target="_blank" rel="noreferrer">
+          Iniciar sesión
         </a>
       </div>
       <p class="footer">
@@ -148,7 +191,8 @@ const buildTextEmail = ({ name, proposal, category }: Required<Payload>) => {
     "",
     "Gracias por alimentar esta constelación narrativa.",
     "",
-    `CTA: ${landingUrl}`,
+    `Ver próximos pasos: ${nextStepsUrl}`,
+    `Iniciar sesión: ${loginUrl}`,
     "",
     "#GatoEncerrado",
   ].join("\n");
