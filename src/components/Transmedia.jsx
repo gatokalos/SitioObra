@@ -112,16 +112,16 @@ const showcaseDefinitions = {
         apps: [
           {
             id: 'autoficcion-app',
-            name: 'Lector interactivo de la novela',
+            name: 'Lector interactivo',
             description:
               'Lee los primeros fragmentos de la novela y desbloquea preguntas guiadas en cuatro planos de lectura: académico, psicológico, narrativo y teatral.',
             snippet: {
-              tagline: 'Contraportada interactiva',
+              tagline: 'Contraportada transmedial',
               text:
-                'Al escanear tu ejemplar se desbloquean lecturas personalizadas. Aquí puedes probar una versión de inicio.',
+                'Al escanear el QR de tu ejemplar se desbloquean lecturas personalizadas. Aquí puedes probar una versión de inicio.',
               sideLayout: true,
             },
-            ctaLabel: 'Leer fragmento',
+            ctaLabel: 'Leer fragmentos',
             ctaAction: 'openAutoficcionPreview',
           },
         ],

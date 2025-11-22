@@ -13,14 +13,14 @@ const LOGO_SRC = '/assets/logoapp.png';
 
 const INTEREST_OPTIONS = [
   {
-    value: 'recordatorio',
-    label: 'Recordatorio de la función',
-    description: 'Recibe el aviso oficial justo antes de que abra la función en diciembre.',
-  },
-  {
     value: 'reservaciones',
     label: 'Información sobre reservaciones',
     description: 'Accede a la línea de reservaciones y consulta los paquetes que aún quedan.',
+  },
+   {
+    value: 'recordatorio',
+    label: 'Recordatorio de la función',
+    description: 'Recibe el aviso oficial justo antes de que abra la función en diciembre.',
   },
 ];
 
