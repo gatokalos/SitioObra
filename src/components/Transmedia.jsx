@@ -30,6 +30,19 @@ import { recordShowcaseLike } from '@/services/showcaseLikeService';
 
 pdfjs.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`;
 const showcaseDefinitions = {
+  miniversos: {
+    label: 'Miniverso Trágico',
+    type: 'tragedia',
+    intro:
+      'Aquí nace la obra dentro de la obra. El gato encerrado de Es un gato encerrado.',
+    notaAutoral: 'Un escaparate no es solo para ver. Es para dejarse reflejar.',
+      narrative: [
+      'En este miniverso puedes entrar al mundo de Silvestre: escuchar sus ecos, leer a sus fantasmas… o conversar directamente con su trasunto, el Payasito Tiste, en un chat que habita la herida.',
+    ],
+    ctaLabel: 'Hablar con Silvestre',
+    ctaDescription:
+      'Activa el vínculo con la voz que aún no se apaga. Aquí es donde Silvestre —o lo que queda de él— te responde.',
+  },
   copycats: {
     label: '#CopyCats',
     type: 'post-videos',
@@ -248,12 +261,13 @@ const ShowcaseReactionInline = ({ showcaseId, title, description, buttonLabel })
 const formats = [
   {
     id: 'miniversos',
-    title: 'Miniverso Escénico',
-    description: 'La función que detonó este universo narrativo. Voces, cuerpos y trances en escena.',
+    title: 'Miniverso Trágico',
+    description:
+      'La obra como un miniverso dentro del mismo universo que ha generado.',
     icon: Drama,
     iconClass: 'text-purple-300',
     notaAutoral:
-      'Aquí comenzó todo: un temblor en escena que sigue resonando fuera del teatro. Este miniverso guarda esa primera vibración.',
+      'Aquí nunca abaca bien. Por lo menos no hasta el final.',
   },
   {
     id: 'lataza',
@@ -356,6 +370,14 @@ const Transmedia = () => {
   const [isMobileARFullscreen, setIsMobileARFullscreen] = useState(false);
   const [isMobileDreamOpen, setIsMobileDreamOpen] = useState(false);
   const [showAutoficcionPreview, setShowAutoficcionPreview] = useState(false);
+  const [isTragicoNotaOpen, setIsTragicoNotaOpen] = useState(false);
+  const [micPromptVisible, setMicPromptVisible] = useState(false);
+  const [hasShownMicPrompt, setHasShownMicPrompt] = useState(false);
+  const [transcript, setTranscript] = useState('');
+  const [micError, setMicError] = useState('');
+  const [isListening, setIsListening] = useState(false);
+  const recognitionRef = useRef(null);
+  const transcriptRef = useRef('');
 
   const handleOpenMiniverses = useCallback(() => {
     setIsMiniverseOpen(true);
@@ -427,6 +449,89 @@ const Transmedia = () => {
     );
     document.getElementById('dialogo-critico')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }, []);
+
+  const sendTranscript = useCallback(async (message) => {
+    if (!message) {
+      return;
+    }
+    try {
+      await fetch('http://localhost:3000/api/silvestre', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ mensaje: message }),
+      });
+    } catch (error) {
+      console.error('[Silvestre Voice] Error sending transcript:', error);
+      setMicError('No pudimos enviar tu mensaje de voz. Intenta nuevamente más tarde.');
+    }
+  }, []);
+
+  const handleOpenSilvestreChat = useCallback(() => {
+    if (typeof window === 'undefined') {
+      return;
+    }
+
+    if (!hasShownMicPrompt) {
+      setMicPromptVisible(true);
+      setHasShownMicPrompt(true);
+    } else if (!micPromptVisible) {
+      setMicPromptVisible(true);
+    }
+
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SpeechRecognition) {
+      setMicError(
+        'Tu navegador no permite activar el micrófono. Puedes escribirle a Silvestre si prefieres.'
+      );
+      window.dispatchEvent(new CustomEvent('gatoencerrado:open-silvestre'));
+      return;
+    }
+
+    if (!recognitionRef.current) {
+      const recognition = new SpeechRecognition();
+      recognition.continuous = true;
+      recognition.interimResults = true;
+      recognition.lang = 'es-MX';
+      recognition.maxAlternatives = 1;
+      recognition.onresult = (event) => {
+        const results = Array.from(event.results);
+        const text = results.map((result) => result[0]?.transcript ?? '').join(' ');
+        transcriptRef.current = text;
+        setTranscript(text);
+      };
+      recognition.onerror = (event) => {
+        console.error('[Silvestre Voice] recognition error:', event);
+        setMicError('No pudimos acceder al micrófono. Intenta nuevamente.');
+        setIsListening(false);
+      };
+      recognition.onend = () => {
+        setIsListening(false);
+        const finalText = transcriptRef.current.trim();
+        if (finalText) {
+          sendTranscript(finalText);
+          transcriptRef.current = '';
+        }
+      };
+      recognitionRef.current = recognition;
+    }
+
+    if (isListening) {
+      return;
+    }
+
+    try {
+      recognitionRef.current.start();
+      setIsListening(true);
+      setMicError('');
+    } catch (error) {
+      console.error('[Silvestre Voice] start error:', error);
+      setMicError('No pudimos abrir el micrófono. Intenta nuevamente.');
+    }
+
+    window.dispatchEvent(new CustomEvent('gatoencerrado:open-silvestre'));
+  }, [hasShownMicPrompt, isListening, micPromptVisible, sendTranscript]);
 
   const handleOpenImagePreview = useCallback((payload) => {
     if (!payload?.src) {
@@ -518,6 +623,10 @@ const Transmedia = () => {
   }, [activeShowcase]);
 
   useEffect(() => {
+    setIsTragicoNotaOpen(false);
+  }, [activeShowcase]);
+
+  useEffect(() => {
     if (activeShowcase !== 'lataza') {
       setIsTazaARActive(false);
       setIsMobileARFullscreen(false);
@@ -560,6 +669,13 @@ const Transmedia = () => {
   useEffect(() => {
     return () => {
       document.body.classList.remove('overflow-hidden');
+    };
+  }, []);
+
+  useEffect(() => {
+    return () => {
+      recognitionRef.current?.abort?.();
+      recognitionRef.current = null;
     };
   }, []);
 
@@ -884,6 +1000,88 @@ const Transmedia = () => {
               </div>
             </div>
           )}
+        </div>
+      );
+    }
+
+    if (activeDefinition.type === 'tragedia') {
+      return (
+        <div className="space-y-10">
+          <div className="relative overflow-hidden rounded-[2.5rem] border border-white/10 bg-gradient-to-br from-slate-900/90 via-black/60 to-rose-900/40 shadow-[0_25px_65px_rgba(15,23,42,0.65)]">
+            <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(255,255,255,0.15),_transparent_45%)]" />
+            <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_bottom,_rgba(15,23,42,0.8),_transparent_65%)]" />
+            <div className="relative mx-auto grid w-full max-w-[min(100vw-2rem,1100px)] gap-6 p-6 sm:p-8 lg:grid-cols-[3fr_2fr]">
+              <div className="space-y-6">
+                <div className="space-y-5 rounded-3xl border border-white/10 bg-black/30 p-6 shadow-[0_20px_40px_rgba(0,0,0,0.45)]">
+                  <p className="text-xs uppercase tracking-[0.4em] text-purple-300">Escaparate</p>
+                  <h3 className="font-display text-3xl leading-tight text-white md:text-4xl">{activeDefinition.label}</h3>
+                  <p className="text-lg text-slate-200/80 leading-relaxed font-light">{activeDefinition.intro}</p>
+                  <div className="space-y-3">
+                    {activeDefinition.narrative?.map((paragraph, index) => (
+                      <p key={`tragico-paragraph-${index}`} className="text-sm text-slate-300/90 leading-relaxed">
+                        {paragraph}
+                      </p>
+                    ))}
+                  </div>
+                  <div className="space-y-3 pt-4">
+                    <button
+                      type="button"
+                      className="text-xs uppercase tracking-[0.35em] text-slate-400 underline-offset-4 hover:text-white"
+                      onClick={() => setIsTragicoNotaOpen((prev) => !prev)}
+                    >
+                      {isTragicoNotaOpen ? 'Ocultar nota autoral' : 'Mostrar nota autoral'}
+                    </button>
+                    {isTragicoNotaOpen ? (
+                      <motion.div
+                        initial={{ opacity: 0, y: 8 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.35, ease: 'easeOut' }}
+                        className="rounded-2xl border border-purple-500/30 bg-purple-900/20 p-4 text-sm text-slate-100"
+                      >
+                        <p className="leading-relaxed">{activeDefinition.notaAutoral}</p>
+                      </motion.div>
+                    ) : null}
+                  </div>
+                </div>
+              </div>
+
+              <div className="rounded-3xl border border-white/10 bg-black/40 p-6 space-y-5 shadow-[0_25px_45px_rgba(0,0,0,0.45)]">
+                <p className="text-xs uppercase tracking-[0.4em] text-slate-400">Conciencia abierta</p>
+                <p className="text-sm text-slate-300/90 leading-relaxed">{activeDefinition.ctaDescription}</p>
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="w-full border border-purple-400/40 text-purple-100 hover:bg-purple-500/10 silvestre-cta"
+                  onClick={handleOpenSilvestreChat}
+                >
+                  {activeDefinition.ctaLabel}
+                </Button>
+                <p className="text-[11px] text-slate-500">
+                  La conversación se abre dentro del universo transmedial (pronto con GPT de Silvestre).
+                </p>
+                {micPromptVisible && !micError ? (
+                  <div className="mt-3 rounded-2xl border border-white/10 bg-black/40 p-4 text-sm text-slate-200">
+                    <p className="text-xs uppercase tracking-[0.35em] text-purple-300">Silvestre quiere escucharte</p>
+                    <p>Silvestre quiere escucharte. Dale acceso a tu micrófono para comenzar.</p>
+                  </div>
+                ) : null}
+                {micError ? (
+                  <div className="mt-3 rounded-2xl border border-red-500/30 bg-red-500/10 p-4 text-sm text-red-100">
+                    <p className="text-xs uppercase tracking-[0.35em] text-red-300">Sin micrófono</p>
+                    <p>Tu navegador no permite activar el micrófono. Puedes escribirle a Silvestre si prefieres.</p>
+                  </div>
+                ) : null}
+                {transcript ? (
+                  <div className="mt-3 rounded-2xl border border-purple-500/40 bg-white/5 p-4 text-sm text-slate-100">
+                    <p className="text-xs uppercase tracking-[0.35em] text-purple-300">
+                      Transcripción en vivo{isListening ? ' (escuchando...)' : ''}
+                    </p>
+                    <p className="break-words">{transcript}</p>
+                  </div>
+                ) : null}
+              </div>
+            </div>
+          </div>
         </div>
       );
     }
@@ -1242,12 +1440,16 @@ const Transmedia = () => {
             >
               <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
                 <div>
-                  <p className="text-xs uppercase tracking-[0.4em] text-slate-400/70 mb-2">Showcase</p>
-                  <h3 className="font-display text-3xl text-slate-100 mb-3">{activeDefinition.label}</h3>
-                <p className="text-slate-300/80 leading-relaxed font-light max-w-3xl">
-                  {activeDefinition.intro}
-                </p>
-                {rendernotaAutoral()}
+                  {activeDefinition.type !== 'tragedia' ? (
+                    <>
+                      <p className="text-xs uppercase tracking-[0.4em] text-slate-400/70 mb-2">Showcase</p>
+                      <h3 className="font-display text-3xl text-slate-100 mb-3">{activeDefinition.label}</h3>
+                      <p className="text-slate-300/80 leading-relaxed font-light max-w-3xl">
+                        {activeDefinition.intro}
+                      </p>
+                      {rendernotaAutoral()}
+                    </>
+                  ) : null}
                 </div>
                 <button
                   onClick={() => setActiveShowcase(null)}
