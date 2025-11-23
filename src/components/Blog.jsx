@@ -4,15 +4,93 @@ import { Calendar, Clock, Feather, PenLine, Search } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { toast } from '@/components/ui/use-toast';
 import ContributionModal from '@/components/ContributionModal';
+import LoginOverlay from '@/components/ContributionModal/LoginOverlay';
+import { useAuth } from '@/contexts/SupabaseAuthContext';
 import {
   BLOG_CATEGORY_CONFIG,
   BLOG_CATEGORY_ORDER,
   deriveBlogCategory,
 } from '@/lib/blogCategories';
+import { recordArticleInteraction } from '@/services/articleInteractionService';
 
 const containerVariants = {
   hidden: { opacity: 0, y: 40 },
   visible: { opacity: 1, y: 0, transition: { duration: 0.8, ease: 'easeOut' } },
+};
+
+const MINIVERSE_HIERARCHY = {
+  cine: {
+    label: 'Miniverso Cine',
+    views: 4320,
+    subcategories: ['Quirón', 'Copycats', 'Campo expandido'],
+  },
+  expansiones: {
+    label: 'Expansiones Narrativas',
+    views: 3860,
+    subcategories: ['Cartas', 'Bitácoras', 'Microrrelatos'],
+  },
+  curaduria: {
+    label: 'Curaduría Reflexiva',
+    views: 2780,
+    subcategories: ['Ensayo crítico', 'Cartografías emocionales'],
+  },
+  apps: {
+    label: 'Miniverso Apps',
+    views: 2190,
+    subcategories: ['Guardianes digitales', 'Glitches', 'Rituales móviles'],
+  },
+  sonoro: {
+    label: 'Miniverso Sonoro',
+    views: 2010,
+    subcategories: ['Pistas', 'Field recordings', 'Ondas'],
+  },
+  bitacora: {
+    label: 'Miniverso Bitácora',
+    views: 1760,
+    subcategories: ['Crónicas', 'Archivo vivo', 'Cartas'],
+  },
+  taza: {
+    label: 'Miniverso Taza',
+    views: 1630,
+    subcategories: ['Objetos rituales', 'Memorias líquidas'],
+  },
+  otro: {
+    label: 'Otra contribución',
+    views: 1480,
+    subcategories: ['Performance', 'Investigación híbrida'],
+  },
+};
+
+const MINIVERSE_KEYWORDS = {
+  cine: ['cine', 'quirón', 'copycats', 'film', 'película'],
+  expansiones: ['expansiones', 'miniverso', 'novela', 'diario', 'microficción'],
+  curaduria: ['curaduría', 'critica', 'analisis', 'ensayo'],
+  apps: ['app', 'apps', 'digital', 'interactivo'],
+  sonoro: ['sonoro', 'audio', 'música', 'sonidos'],
+  bitacora: ['bitácora', 'bitacora', 'cronica', 'crónica'],
+  taza: ['taza', 'objeto', 'cerámica', 'ritual'],
+  otro: ['performance', 'híbrido', 'glitch', 'experimental'],
+};
+
+const inferMiniverseFromPost = (post) => {
+  const haystack = [
+    post.category,
+    post.slug,
+    post.title,
+    post.excerpt,
+    ...(Array.isArray(post.tags) ? post.tags : []),
+  ]
+    .filter(Boolean)
+    .join(' ')
+    .toLowerCase();
+
+  for (const [key, keywords] of Object.entries(MINIVERSE_KEYWORDS)) {
+    if (keywords.some((keyword) => haystack.includes(keyword))) {
+      return key;
+    }
+  }
+
+  return 'curaduria';
 };
 
 const ArticleCard = ({ post, onSelect }) => {
@@ -138,7 +216,97 @@ const FullArticle = ({ post, onClose }) => {
           paragraphs.map((paragraph, index) => <p key={index}>{paragraph}</p>)
         )}
       </div>
+      <ArticleInteractionPanel post={post} />
     </motion.div>
+  );
+};
+
+const ArticleInteractionPanel = ({ post }) => {
+  const { user } = useAuth();
+  const [showLoginOverlay, setShowLoginOverlay] = useState(false);
+  const openLoginOverlay = useCallback(() => setShowLoginOverlay(true), []);
+  const closeLoginOverlay = useCallback(() => setShowLoginOverlay(false), []);
+
+  const inferredMiniverseKey = useMemo(() => inferMiniverseFromPost(post), [post]);
+  const miniverseInfo = MINIVERSE_HIERARCHY[inferredMiniverseKey] ?? MINIVERSE_HIERARCHY.curaduria;
+  const [liked, setLiked] = useState(false);
+  const [wantsNotification, setWantsNotification] = useState(false);
+  const [status, setStatus] = useState({ like: 'idle', notify: 'idle' });
+
+  const pushInteraction = async (action) => {
+    const nextLiked = action === 'like' ? !liked : liked;
+    const nextNotify = action === 'notify' ? !wantsNotification : wantsNotification;
+
+    if (action === 'notify' && !user) {
+      toast({
+        description: 'Inicia sesión para recibir notificaciones y continuar en el Backstage.',
+      });
+      openLoginOverlay();
+      return;
+    }
+
+    setStatus((prev) => ({ ...prev, [action]: 'loading' }));
+
+    const { success, error } = await recordArticleInteraction({
+      post,
+      action,
+      liked: nextLiked,
+      notify: nextNotify,
+      miniverse: inferredMiniverseKey,
+      mostViewedMiniverse: miniverseInfo.label,
+      mostViewedMiniverseCount: miniverseInfo.views ?? null,
+    });
+
+    if (!success) {
+      console.error('[ArticleInteraction] Error guardando interacción:', error);
+      toast({ description: 'No pudimos guardar tu interacción. Intenta nuevamente.' });
+    } else {
+      if (action === 'like') {
+        setLiked(nextLiked);
+        toast({ description: nextLiked ? 'Gracias por tu apoyo.' : 'Quitaste el Me gusta.' });
+      } else {
+        setWantsNotification(nextNotify);
+        toast({
+          description: nextNotify
+            ? 'Te avisaremos cuando haya novedades sobre este texto.'
+            : 'Ya no recibes notificaciones de este artículo.',
+        });
+      }
+    }
+
+    setStatus((prev) => ({ ...prev, [action]: 'idle' }));
+  };
+
+  return (
+    <>
+      <div className="mt-10 rounded-3xl border border-white/10 bg-black/40 p-6 shadow-[0_30px_80px_rgba(0,0,0,0.35)]">
+        <p className="text-base text-slate-200">¿La lectura te movió?</p>
+      <p className="text-sm text-slate-400 mt-1">
+        Clic en los botones y registramos la interacción para alimentar al gato del Backstage.
+      </p>
+        <div className="mt-6 flex flex-col gap-3 md:flex-row">
+          <Button
+            variant={liked ? 'secondary' : 'default'}
+            size="lg"
+            onClick={() => pushInteraction('like')}
+            disabled={status.like === 'loading'}
+            className="flex-1"
+          >
+            {liked ? 'Gracias por el Me gusta' : 'Me gustó este artículo'}
+          </Button>
+          <Button
+            variant="outline"
+            size="lg"
+            onClick={() => pushInteraction('notify')}
+            disabled={status.notify === 'loading'}
+            className="flex-1"
+          >
+            {wantsNotification ? 'Te avisaremos de novedades' : 'Quiero recibir notificaciones'}
+          </Button>
+        </div>
+      </div>
+      {showLoginOverlay ? <LoginOverlay onClose={closeLoginOverlay} /> : null}
+    </>
   );
 };
 

@@ -12,18 +12,21 @@ import {
   Film,
   Video,
   Music,
+  Heart,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import MiniverseModal from '@/components/MiniverseModal';
 import CallToAction from '@/components/CallToAction';
 import { fetchBlogPostBySlug } from '@/services/blogService';
 import { toast } from '@/components/ui/use-toast';
+import { useAuth } from '@/contexts/SupabaseAuthContext';
 import { Document, Page, pdfjs } from 'react-pdf';
 import 'react-pdf/dist/Page/AnnotationLayer.css';
 import 'react-pdf/dist/Page/TextLayer.css';
 import ARExperience from '@/components/ar/ARExperience';
 import MiniversoSonoro from '@/components/MiniversoSonoro';
 import AutoficcionPreview from '@/components/novela/AutoficcionPreview';
+import { recordShowcaseLike } from '@/services/showcaseLikeService';
 
 pdfjs.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`;
 const showcaseDefinitions = {
@@ -189,6 +192,57 @@ const showcaseDefinitions = {
     notaAutoral:
       'Imagen, música y palabra en suspensión. Cada mezcla inventa otro ánimo. Aquí el sueño se edita solo.',
   },
+};
+
+const ShowcaseReactionInline = ({ showcaseId, title, description, buttonLabel }) => {
+  const { user } = useAuth();
+  const [status, setStatus] = useState('idle');
+
+  const handleReaction = useCallback(async () => {
+    if (status === 'loading') {
+      return;
+    }
+
+    setStatus('loading');
+    const { success, error } = await recordShowcaseLike({ showcaseId, user });
+    if (!success) {
+      console.error('[ShowcaseReaction] Error guardando like:', error);
+      toast({ description: 'No pudimos registrar el like. Intenta de nuevo más tarde.' });
+      setStatus('idle');
+      return;
+    }
+
+    setStatus('success');
+    toast({ description: 'Gracias por tu apoyo en este showcase.' });
+  }, [showcaseId, status, user]);
+
+  return (
+    <div className="mt-4 flex flex-col gap-3 rounded-2xl border border-white/10 bg-black/20 p-4">
+      <div className="flex items-center justify-between gap-3">
+        <div>
+          <p className="text-[0.6rem] uppercase tracking-[0.35em] text-slate-500">{title}</p>
+          <p className="text-sm text-slate-300 leading-relaxed">{description}</p>
+        </div>
+        <button
+          type="button"
+          onClick={handleReaction}
+          className={`rounded-full p-3 transition ${
+            status === 'success'
+              ? 'bg-gradient-to-r from-pink-500 via-rose-500 to-yellow-500 shadow-[0_0_25px_rgba(244,114,182,0.6)] text-white border border-transparent'
+              : 'bg-gradient-to-r from-purple-600/80 to-indigo-600/80 text-white hover:from-purple-500 hover:to-indigo-500'
+          }`}
+          disabled={status === 'loading'}
+        >
+          <Heart size={20} />
+        </button>
+      </div>
+      {buttonLabel ? (
+        <p className="text-xs uppercase tracking-[0.3em] text-purple-300">
+          {status === 'loading' ? 'Enviando…' : buttonLabel}
+        </p>
+      ) : null}
+    </div>
+  );
 };
 
 const formats = [
@@ -728,19 +782,26 @@ const Transmedia = () => {
           </div>
 
           <div className="space-y-6">
-            {activeDefinition.comments ? (
-              <div className="rounded-2xl border border-white/10 p-6 bg-black/30">
-                <p className="text-xs uppercase tracking-[0.4em] text-slate-400/70 mb-4">Comentarios de la comunidad</p>
-                <div className="space-y-4">
-                  {activeDefinition.comments.map((comment) => (
-                    <div key={comment.id} className="rounded-xl border border-white/5 p-4 bg-black/20">
-                      <p className="text-slate-100 font-light mb-2">{comment.quote}</p>
-                      <p className="text-xs text-slate-500">{comment.author}</p>
+                {activeDefinition.comments ? (
+                  <div className="rounded-2xl border border-white/10 p-6 bg-black/30 space-y-6">
+                    <p className="text-xs uppercase tracking-[0.4em] text-slate-400/70 mb-0">Comentarios de la comunidad</p>
+                    <div className="space-y-4">
+                      {activeDefinition.comments.map((comment) => (
+                        <div key={comment.id} className="rounded-xl border border-white/5 p-4 bg-black/20">
+                          <p className="text-slate-100 font-light mb-2">{comment.quote}</p>
+                          <p className="text-xs text-slate-500">{comment.author}</p>
+                        </div>
+                      ))}
                     </div>
-                  ))}
-                </div>
-              </div>
-            ) : null}
+                    {activeShowcase === 'lataza' ? (
+                      <ShowcaseReactionInline
+                        showcaseId="lataza"
+                        description="Haz clic para guardar un like que conecta a la comunidad alrededor de la taza."
+                        buttonLabel="Resonar con la taza"
+                      />
+                    ) : null}
+                  </div>
+                ) : null}
           </div>
         </div>
       );
@@ -763,6 +824,14 @@ const Transmedia = () => {
                 <p key={index}>{line}</p>
               ))}
             </div>
+            {activeShowcase === 'miniversoSonoro' ? (
+              <ShowcaseReactionInline
+                showcaseId="miniversoSonoro"
+                title="La voz de quienes escuchan"
+                description="Comparte tu vibración y deja un like que resuene en este miniverso."
+                buttonLabel="Hacer latir la resonancia"
+              />
+            ) : null}
             <div className="lg:hidden">
               <button
                 type="button"
@@ -929,22 +998,27 @@ const Transmedia = () => {
                       className="md:col-span-2 rounded-2xl border border-white/10 p-6 bg-black/30 space-y-4"
                     >
                       <h5 className="font-display text-xl text-slate-100">{entry.title}</h5>
-                      <div className="space-y-4">
-                        {entry.quotes?.map((quote, index) => (
-                          <blockquote
-                            key={`${entry.id}-quote-${index}`}
-                            className="text-slate-100 font-light leading-relaxed"
-                          >
-                            <p>{quote.quote}</p>
-                            {quote.author ? (
-                              <p className="text-xs text-slate-500 mt-2">{quote.author}</p>
-                            ) : null}
-                          </blockquote>
-                        ))}
-                      </div>
-                    </div>
-                  );
-                }
+                <div className="space-y-4">
+                  {entry.quotes?.map((quote, index) => (
+                    <blockquote
+                      key={`${entry.id}-quote-${index}`}
+                      className="text-slate-100 font-light leading-relaxed"
+                    >
+                      <p>{quote.quote}</p>
+                      {quote.author ? (
+                        <p className="text-xs text-slate-500 mt-2">{quote.author}</p>
+                      ) : null}
+                    </blockquote>
+                  ))}
+                </div>
+                <ShowcaseReactionInline
+                  showcaseId="miniversoNovela"
+                  description="Haz clic para guardar un like y amplificar las conversaciones que la novela susurra."
+                  buttonLabel="Apoyar la novela"
+                />
+              </div>
+            );
+          }
 
                 if (entry.type === 'novel-apps') {
                   return (
@@ -1080,6 +1154,13 @@ const Transmedia = () => {
               ))}
             </div>
           </div>
+        ) : null}
+        {activeShowcase === 'copycats' ? (
+          <ShowcaseReactionInline
+            showcaseId="copycats"
+            description="Guarda un like que celebra las miradas que quedarán en escena."
+            title="Opiniones después del corte"
+          />
         ) : null}
       </div>
     );

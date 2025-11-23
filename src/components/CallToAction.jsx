@@ -1,6 +1,7 @@
 // SitioObra/src/components/CallToAction.jsx
 import React, { useEffect, useMemo, useState } from 'react';
 import { motion } from 'framer-motion';
+import { IMPACT_COPY as t } from '../copy/impact.es.js';
 
 const SESSIONS_PER_SUB = 6;
 const SUBS_PER_RESIDENCY = 17; // ≈ $10,000 / $600
@@ -22,9 +23,19 @@ const CallToAction = () => {
   const [loading, setLoading] = useState(false);
   const [msg, setMsg] = useState('');
   const [subs, setSubs] = useState(0);
+  const [canFetchStats, setCanFetchStats] = useState(Boolean(import.meta.env.VITE_API_URL));
 
   // 1) Cargar suscriptores en tiempo real
   useEffect(() => {
+    if (!import.meta.env.VITE_API_URL) {
+      console.warn('VITE_API_URL no está definido, se omite la carga de stats de suscriptores.');
+      return undefined;
+    }
+
+    if (!canFetchStats) {
+      return undefined;
+    }
+
     let active = true;
     async function fetchSubs() {
       try {
@@ -34,12 +45,13 @@ const CallToAction = () => {
         setSubs(Number(data?.total || 0));
       } catch (e) {
         console.error('Error stats/suscriptores', e);
+        setCanFetchStats(false);
       }
     }
     fetchSubs();
     const id = setInterval(fetchSubs, 15000); // refresco cada 15s
     return () => { active = false; clearInterval(id); };
-  }, []);
+  }, [canFetchStats]);
 
   // 2) Cálculos de impacto
   const stats = useMemo(() => {

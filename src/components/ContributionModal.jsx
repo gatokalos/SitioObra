@@ -365,6 +365,24 @@ const ContributionModal = ({ open, onClose }) => {
           return;
         }
 
+        try {
+          const backstagePayload = {
+            author_email: payload.email,
+            author_name: payload.name,
+            category: topicId,
+            content: payload.proposal,
+            meta: { origin: 'public_site' },
+          };
+          const { error: backstageError } = await supabase
+            .from('backstage_contributions')
+            .insert(backstagePayload);
+          if (backstageError) {
+            console.error('[ContributionModal] No se pudo duplicar en backstage_contributions:', backstageError);
+          }
+        } catch (backstageErr) {
+          console.error('[ContributionModal] Excepción duplicando en backstage_contributions:', backstageErr);
+        }
+
         if (formState.email.trim()) {
           await sendConfirmationEmail({
             email: formState.email.trim().toLowerCase(),

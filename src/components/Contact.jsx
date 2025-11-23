@@ -45,6 +45,21 @@ const Contact = () => {
           throw error;
         }
 
+        try {
+          const { error: backstageError } = await supabase.from('backstage_inbox').insert({
+            name: trimmedName,
+            email: trimmedEmail.toLowerCase(),
+            subject: 'Contacto público',
+            message: trimmedMessage,
+            meta: { route: 'contact' },
+          });
+          if (backstageError) {
+            console.error('[Contact] No se pudo duplicar en backstage_inbox:', backstageError);
+          }
+        } catch (backstageError) {
+          console.error('[Contact] Excepción duplicando en backstage_inbox:', backstageError);
+        }
+
         setStatus('success');
         setFormValues({ name: '', email: '', message: '' });
         toast({ description: 'Recibimos tu mensaje y te escribiremos pronto.' });
