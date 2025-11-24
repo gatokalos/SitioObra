@@ -137,6 +137,7 @@ const ContributionModal = ({ open, onClose }) => {
   const storedFormRef = useRef(null);
   const loginDelayRef = useRef(null);
   const [formStorageLoaded, setFormStorageLoaded] = useState(false);
+  const indicatorActive = isAuthenticated || notifyOnPublish;
 
   useEffect(() => {
     if (typeof window === 'undefined') {
@@ -601,14 +602,20 @@ const ContributionModal = ({ open, onClose }) => {
           >
             <motion.div
               animate={
-                notifyOnPublish
-                  ? { scale: [1, 1.05, 1], boxShadow: '0 0 15px rgba(74,222,128,0.5)' }
+                indicatorActive
+                  ? {
+                      scale: [1, 1.05, 1],
+                      boxShadow: notifyOnPublish
+                        ? '0 0 18px rgba(74,222,128,0.65)'
+                        : '0 0 12px rgba(74,222,128,0.45)',
+                      filter: 'drop-shadow(0 0 10px rgba(74,222,128,0.45))',
+                    }
                   : { scale: 1, boxShadow: '0 0 0 rgba(0,0,0,0)' }
               }
               transition={{ duration: 0.45, ease: 'easeOut' }}
               className={`h-5 w-5 rounded-full border border-white/20 ${
-                notifyOnPublish
-                  ? 'bg-gradient-to-r from-emerald-400 to-emerald-500'
+                indicatorActive
+                  ? 'bg-emerald-400 shadow-[0_0_12px_4px_rgba(52,211,153,0.65)] ring-2 ring-emerald-300/70'
                   : 'bg-slate-600/40'
               }`}
             />
