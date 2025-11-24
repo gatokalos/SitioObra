@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useEffect, useState, useCallback, useMemo } from 'react';
 
 import { supabase } from '@/lib/supabaseClient';
+import { safeGetItem, safeRemoveItem } from '@/lib/safeStorage';
 import { useToast } from '@/components/ui/use-toast';
 
 const AuthContext = createContext(undefined);
@@ -17,6 +18,80 @@ export const AuthProvider = ({ children }) => {
     setUser(session?.user ?? null);
     setLoading(false);
   }, []);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return undefined;
+
+    let cancelled = false;
+
+    const processRedirect = async () => {
+      const url = new URL(window.location.href);
+      const hashParams = new URLSearchParams(window.location.hash.replace(/^#/, ''));
+      const code = url.searchParams.get('code');
+      const accessToken = hashParams.get('access_token');
+      const refreshToken = hashParams.get('refresh_token');
+      const errorDescription = url.searchParams.get('error_description');
+      const shouldCleanHash =
+        window.location.hash.includes('access_token') || window.location.hash.includes('refresh_token');
+      const cleanUrl = `${url.origin}${url.pathname}${shouldCleanHash ? '' : url.hash}`;
+
+      const cleanup = () => {
+        window.history.replaceState({}, document.title, cleanUrl);
+      };
+
+      if (errorDescription) {
+        toast({
+          variant: 'destructive',
+          title: 'No pudimos iniciar sesión',
+          description: errorDescription || 'El enlace no es válido. Intenta abrirlo en el navegador nativo.',
+        });
+        cleanup();
+        return;
+      }
+
+      if (code) {
+        const { data, error } = await supabase.auth.exchangeCodeForSession(code);
+        if (!cancelled) {
+          if (error) {
+            toast({
+              variant: 'destructive',
+              title: 'No pudimos completar el login',
+              description: error.message || 'Intenta abrir el enlace en el navegador por defecto.',
+            });
+          } else {
+            handleSession(data.session);
+          }
+          cleanup();
+        }
+        return;
+      }
+
+      if (accessToken && refreshToken) {
+        const { data, error } = await supabase.auth.setSession({
+          access_token: accessToken,
+          refresh_token: refreshToken,
+        });
+        if (!cancelled) {
+          if (error) {
+            toast({
+              variant: 'destructive',
+              title: 'No pudimos completar el login',
+              description: error.message || 'Intenta abrir el enlace en el navegador por defecto.',
+            });
+          } else {
+            handleSession(data.session);
+          }
+          cleanup();
+        }
+      }
+    };
+
+    processRedirect();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [handleSession, toast]);
 
   useEffect(() => {
     const getSession = async () => {
@@ -95,9 +170,9 @@ export const AuthProvider = ({ children }) => {
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
-    if (session && window.localStorage.getItem('gatoencerrado:resume-contribution') === 'true') {
+    if (session && safeGetItem('gatoencerrado:resume-contribution') === 'true') {
       window.dispatchEvent(new CustomEvent('gatoencerrado:resume-contribution'));
-      window.localStorage.removeItem('gatoencerrado:resume-contribution');
+      safeRemoveItem('gatoencerrado:resume-contribution');
     }
   }, [session]);
 

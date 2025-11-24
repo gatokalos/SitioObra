@@ -13,6 +13,7 @@ import {
   deriveBlogCategory,
 } from '@/lib/blogCategories';
 import { recordArticleInteraction } from '@/services/articleInteractionService';
+import { safeGetItem, safeSetItem } from '@/lib/safeStorage';
 
 const containerVariants = {
   hidden: { opacity: 0, y: 40 },
@@ -432,16 +433,14 @@ const Blog = ({ posts = [], isLoading = false, error = null }) => {
     setIsContributionOpen(true);
     setShowOnboardingHint(false);
     onboardingStoredRef.current = true;
-    if (typeof window !== 'undefined') {
-      window.localStorage.setItem(BLOG_ONBOARDING_KEY, 'seen');
-    }
+    safeSetItem(BLOG_ONBOARDING_KEY, 'seen');
   }, []);
 
   useEffect(() => {
     if (typeof window === 'undefined' || onboardingStoredRef.current) {
       return;
     }
-    const seen = window.localStorage.getItem(BLOG_ONBOARDING_KEY);
+    const seen = safeGetItem(BLOG_ONBOARDING_KEY);
     if (seen === 'seen') {
       setShowOnboardingHint(false);
       onboardingStoredRef.current = true;
@@ -450,7 +449,7 @@ const Blog = ({ posts = [], isLoading = false, error = null }) => {
     setShowOnboardingHint(true);
     const timeout = setTimeout(() => {
       setShowOnboardingHint(false);
-      window.localStorage.setItem(BLOG_ONBOARDING_KEY, 'seen');
+      safeSetItem(BLOG_ONBOARDING_KEY, 'seen');
       onboardingStoredRef.current = true;
     }, 6000);
     return () => clearTimeout(timeout);

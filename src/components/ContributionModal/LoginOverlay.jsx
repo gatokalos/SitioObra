@@ -1,6 +1,7 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { motion } from 'framer-motion';
 import { supabase } from '@/lib/supabaseClient';
+import { safeSetItem, safeStorageType } from '@/lib/safeStorage';
 
 const overlayBackdropVariants = {
   hidden: { opacity: 0 },
@@ -16,11 +17,27 @@ const LoginOverlay = ({ onClose }) => {
   const [email, setEmail] = useState('');
   const [pendingMagic, setPendingMagic] = useState(false);
   const [feedback, setFeedback] = useState(null);
+  const storageBlocked = safeStorageType === 'memory';
+  const redirectTo = useMemo(() => {
+    if (typeof window === 'undefined') return undefined;
+    const { origin, pathname, hash } = window.location;
+    // Conservamos el hash si no contiene tokens de Supabase.
+    const cleanHash = hash && !hash.includes('access_token') ? hash : '';
+    return `${origin}${pathname}${cleanHash}`;
+  }, []);
 
   const handleMagicLink = useCallback(
     async (event) => {
       event.preventDefault();
       if (pendingMagic) {
+        return;
+      }
+
+      if (storageBlocked) {
+        setFeedback({
+          type: 'error',
+          text: 'Tu navegador móvil está bloqueando almacenamiento. Ábrelo en el navegador por defecto o desactiva el modo privado para iniciar sesión.',
+        });
         return;
       }
 
@@ -35,14 +52,12 @@ const LoginOverlay = ({ onClose }) => {
 
       setPendingMagic(true);
       setFeedback(null);
-      if (typeof window !== 'undefined') {
-        window.localStorage.setItem('gatoencerrado:resume-contribution', 'true');
-      }
+      safeSetItem('gatoencerrado:resume-contribution', 'true');
 
       const { error } = await supabase.auth.signInWithOtp({
         email: normalized,
         options: {
-          emailRedirectTo: typeof window !== 'undefined' ? window.location.href : undefined,
+          emailRedirectTo: redirectTo,
         },
       });
 
@@ -58,18 +73,23 @@ const LoginOverlay = ({ onClose }) => {
 
       setPendingMagic(false);
     },
-    [email, pendingMagic]
+    [email, pendingMagic, redirectTo, storageBlocked]
   );
 
   const handleGoogleLogin = useCallback(async () => {
     setFeedback(null);
-    if (typeof window !== 'undefined') {
-      window.localStorage.setItem('gatoencerrado:resume-contribution', 'true');
+    if (storageBlocked) {
+      setFeedback({
+        type: 'error',
+        text: 'No pudimos iniciar sesión porque el navegador bloquea cookies/almacenamiento. Prueba abrir en Safari/Chrome fuera de modo privado.',
+      });
+      return;
     }
+    safeSetItem('gatoencerrado:resume-contribution', 'true');
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
-        redirectTo: typeof window !== 'undefined' ? window.location.href : undefined,
+        redirectTo,
       },
     });
 
@@ -79,7 +99,7 @@ const LoginOverlay = ({ onClose }) => {
     }
 
     onClose?.();
-  }, [onClose]);
+  }, [onClose, redirectTo, storageBlocked]);
 
   useEffect(() => {
     const handleEsc = (event) => {
@@ -152,6 +172,11 @@ const LoginOverlay = ({ onClose }) => {
           >
             Iniciar sesión con Google
           </button>
+          {storageBlocked ? (
+            <p className="text-xs text-amber-300">
+              Tu navegador está bloqueando almacenamiento; abre el sitio en Safari/Chrome (fuera de modo privado) para completar el login.
+            </p>
+          ) : null}
 
           <form onSubmit={handleMagicLink} className="space-y-3">
             <label htmlFor="tracking-email" className="sr-only">

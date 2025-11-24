@@ -3,6 +3,7 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { toast } from '@/components/ui/use-toast';
 import { supabase } from '@/lib/supabaseClient';
+import { safeGetItem, safeRemoveItem, safeSetItem } from '@/lib/safeStorage';
 import {
   Drama,
   BookOpen,
@@ -141,7 +142,7 @@ const ContributionModal = ({ open, onClose }) => {
     if (typeof window === 'undefined') {
       return;
     }
-    const stored = window.localStorage.getItem(FORM_STORAGE_KEY);
+    const stored = safeGetItem(FORM_STORAGE_KEY);
     if (stored) {
       try {
         const parsed = JSON.parse(stored);
@@ -335,7 +336,7 @@ const ContributionModal = ({ open, onClose }) => {
       notifyOnPublish,
       selectedCategory: selectedCategory.id,
     };
-    window.localStorage.setItem(FORM_STORAGE_KEY, JSON.stringify(payload));
+    safeSetItem(FORM_STORAGE_KEY, JSON.stringify(payload));
     storedFormRef.current = payload;
   }, [formState, notifyOnPublish, selectedCategory]);
 
@@ -444,9 +445,7 @@ const ContributionModal = ({ open, onClose }) => {
         setNotifyOnPublish(false);
         setSelectedCategory(CATEGORIES[0]);
         setIsFormPanelOpen(false);
-        if (typeof window !== 'undefined') {
-          window.localStorage.removeItem(FORM_STORAGE_KEY);
-        }
+        safeRemoveItem(FORM_STORAGE_KEY);
         storedFormRef.current = null;
       } catch (err) {
         console.error('[ContributionModal] Excepción al guardar:', err);
