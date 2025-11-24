@@ -1,11 +1,41 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import { Menu, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { useToast } from '@/components/ui/use-toast';
+import { useAuth } from '@/contexts/SupabaseAuthContext';
+import LoginOverlay from '@/components/ContributionModal/LoginOverlay';
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
+  const [showLoginOverlay, setShowLoginOverlay] = useState(false);
+  const { user, signOut } = useAuth();
+  const { toast: showToast } = useToast();
+  const profileName =
+    user?.user_metadata?.alias ||
+    user?.user_metadata?.full_name ||
+    (user?.email ? user.email.split('@')[0] : '');
+  const authLabel = user ? `Hola ${profileName || 'gato'}` : 'Iniciar sesión';
+  const statusDotClass = user ? 'bg-emerald-400' : 'bg-slate-600';
+  const handleCloseOverlay = useCallback(() => setShowLoginOverlay(false), []);
+  const handleOpenOverlay = useCallback(() => setShowLoginOverlay(true), []);
+  const handleLogout = useCallback(async () => {
+    if (!user) {
+      setShowLoginOverlay(true);
+      return;
+    }
+    const { error } = await signOut();
+    if (error) {
+      showToast({
+        description: error.message || 'No pudimos cerrar sesión. Intenta más tarde.',
+      });
+    } else {
+      showToast({
+        description: 'Sesión cerrada correctamente.',
+      });
+    }
+  }, [signOut, showToast, user]);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -46,10 +76,12 @@ const Header = () => {
         <div className="flex items-center justify-between">
           <motion.div
             whileHover={{ scale: 1.05, textShadow: "0 0 8px rgba(233, 213, 255, 0.5)" }}
-            className="font-display text-2xl font-bold text-gradient cursor-pointer"
+            className="font-display text-2xl font-bold text-gradient cursor-pointer flex items-center gap-2"
             onClick={() => handleNavClick('#hero')}
           >
             #GatoEncerrado 💜
+            <span className={`h-2.5 w-2.5 rounded-full ${statusDotClass}`} />
+            <span className="hidden md:inline text-sm text-slate-100 font-semibold">{authLabel}</span>
           </motion.div>
 
           <div className="hidden md:flex items-center space-x-1">
@@ -72,14 +104,22 @@ const Header = () => {
               </motion.button>
           </div>
 
-          <Button
-            variant="ghost"
-            size="icon"
-            className="md:hidden text-slate-200"
-            onClick={() => setIsMenuOpen(!isMenuOpen)}
-          >
-            {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
-          </Button>
+          <div className="flex items-center gap-3">
+            <Button
+              variant="ghost"
+              size="icon"
+              className="md:hidden text-slate-200"
+              onClick={() => setIsMenuOpen(!isMenuOpen)}
+            >
+              {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
+            </Button>
+            <button
+              onClick={user ? handleLogout : handleOpenOverlay}
+              className="hidden md:inline text-sm font-semibold text-slate-100"
+            >
+              {user ? 'Cerrar sesión' : 'Iniciar sesión'}
+            </button>
+          </div>
         </div>
 
         {isMenuOpen && (
@@ -104,9 +144,16 @@ const Header = () => {
               >
                 Contacto
               </button>
+            <button
+              onClick={user ? handleLogout : handleOpenOverlay}
+              className="block w-full text-left py-3 text-slate-200 hover:text-white transition-colors mt-2"
+            >
+              {authLabel}
+            </button>
           </motion.div>
         )}
       </nav>
+      {showLoginOverlay ? <LoginOverlay onClose={handleCloseOverlay} /> : null}
     </motion.header>
   );
 };
