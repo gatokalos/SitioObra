@@ -21,7 +21,7 @@ const CATEGORIES = [
   {
     id: 'obra_escenica',
     icon: <Drama size={20} className="text-purple-300" />,
-    title: 'Miniverso Escénico - La Obra',
+    title: 'Miniverso Trágico - La Obra',
     description: 'La función que detonó este universo narrativo. Voces, cuerpos y trances en escena.',
   },
     {
@@ -109,6 +109,8 @@ const ContributionModal = ({ open, onClose }) => {
     () => user?.user_metadata?.alias || user?.user_metadata?.full_name || '',
     [user]
   );
+  const authEmail = user?.email ?? '';
+  const authDisplayName = preferredName || (authEmail ? authEmail.split('@')[0] : '');
 
   const [formState, setFormState] = useState(initialFormState);
   const [status, setStatus] = useState('idle');
@@ -133,6 +135,7 @@ const ContributionModal = ({ open, onClose }) => {
   });
   const storedFormRef = useRef(null);
   const loginDelayRef = useRef(null);
+  const [formStorageLoaded, setFormStorageLoaded] = useState(false);
 
   useEffect(() => {
     if (typeof window === 'undefined') {
@@ -156,28 +159,54 @@ const ContributionModal = ({ open, onClose }) => {
         storedFormRef.current = null;
       }
     }
+    setFormStorageLoaded(true);
   }, []);
 
   useEffect(() => {
-    if (!open) {
+    if (!open || !formStorageLoaded) {
       return;
     }
 
     if (!storedFormRef.current) {
       setFormState({
         ...initialFormState,
-        name: preferredName || '',
-        email: user?.email ?? '',
+        name: isAuthenticated ? authDisplayName : '',
+        email: isAuthenticated ? authEmail : '',
       });
-      setNotifyOnPublish(false);
+      setNotifyOnPublish(isAuthenticated);
       setSelectedCategory(CATEGORIES[0]);
       setIsFormPanelOpen(false);
     } else {
+      const storedState = storedFormRef.current.formState ?? initialFormState;
+      setFormState({
+        ...storedState,
+      });
+      const storedNotify = storedFormRef.current.notifyOnPublish;
+      setNotifyOnPublish(
+        typeof storedNotify === 'boolean' ? storedNotify : isAuthenticated
+      );
+      const storedCategory = CATEGORIES.find(
+        (item) => item.id === storedFormRef.current.selectedCategory
+      );
+      if (storedCategory) {
+        setSelectedCategory(storedCategory);
+      }
       setIsFormPanelOpen(true);
     }
     setStatus('idle');
     setErrorMessage('');
-  }, [open, preferredName, user?.email]);
+  }, [open, isAuthenticated, formStorageLoaded]);
+
+  useEffect(() => {
+    if (!open || !isAuthenticated) {
+      return;
+    }
+    setFormState((prev) => ({
+      ...prev,
+      name: prev.name?.trim() ? prev.name : authDisplayName,
+      email: authEmail || prev.email,
+    }));
+  }, [open, isAuthenticated, authDisplayName, authEmail]);
 
   useEffect(() => {
     if (!open) {
@@ -230,10 +259,16 @@ const ContributionModal = ({ open, onClose }) => {
     }
   }, [isAuthenticated]);
 
-  const handleInputChange = useCallback((event) => {
-    const { name, value } = event.target;
-    setFormState((prev) => ({ ...prev, [name]: value }));
-  }, []);
+  const handleInputChange = useCallback(
+    (event) => {
+      const { name, value } = event.target;
+      if (isAuthenticated && name === 'email') {
+        return;
+      }
+      setFormState((prev) => ({ ...prev, [name]: value }));
+    },
+    [isAuthenticated]
+  );
 
   const closeLoginOverlay = useCallback(() => {
     setShowLoginOverlay(false);
@@ -334,6 +369,12 @@ const ContributionModal = ({ open, onClose }) => {
 
       if (notifyOnPublish && !isAuthenticated) {
         toast({ description: 'Inicia sesión para recibir la notificación personalizada.' });
+        return;
+      }
+
+      if (!isAuthenticated) {
+        toast({ description: 'Inicia sesión para enviar tu propuesta.' });
+        triggerLoginOverlay();
         return;
       }
 
@@ -491,25 +532,38 @@ const ContributionModal = ({ open, onClose }) => {
         <div className="mb-4">{renderBetaCard()}</div>
       ) : null}
       <form className="space-y-4" onSubmit={handleSubmit}>
-        <input
-          name="name"
-          type="text"
-          required
-          value={formState.name}
-          onChange={handleInputChange}
-          className="w-full rounded-lg border border-white/10 bg-black/30 px-4 py-3 text-slate-100 placeholder-slate-500 focus:border-purple-400 focus:ring-1 focus:ring-purple-400"
-          placeholder="¿Cómo quieres que te nombremos?"
-        />
+        <div>
+          <input
+            name="name"
+            type="text"
+            required
+            value={formState.name}
+            onChange={handleInputChange}
+            className="w-full rounded-lg border border-white/10 bg-black/30 px-4 py-3 text-slate-100 placeholder-slate-500 focus:border-purple-400 focus:ring-1 focus:ring-purple-400"
+            placeholder="¿Cómo quieres que te nombremos?"
+          />
+          <p className="mt-1 text-xs text-slate-500">
+            ¿Así quieres que te llamemos? Dinos cómo te gusta que te nombren.
+          </p>
+        </div>
 
-        <input
-          name="email"
-          type="email"
-          required
-          value={formState.email}
-          onChange={handleInputChange}
-          className="w-full rounded-lg border border-white/10 bg-black/30 px-4 py-3 text-slate-100 placeholder-slate-500 focus:border-purple-400 focus:ring-1 focus:ring-purple-400"
-          placeholder="nombre@correo.com"
-        />
+        <div>
+          <input
+            name="email"
+            type="email"
+            required
+            value={formState.email}
+            onChange={handleInputChange}
+            readOnly={isAuthenticated}
+            className={`w-full rounded-lg border border-white/10 bg-black/30 px-4 py-3 text-slate-100 placeholder-slate-500 focus:border-purple-400 focus:ring-1 focus:ring-purple-400 ${
+              isAuthenticated ? 'cursor-not-allowed opacity-80' : ''
+            }`}
+            placeholder="nombre@correo.com"
+          />
+          {isAuthenticated ? (
+            <p className="mt-1 text-xs text-slate-500">El correo se toma de tu sesión actual.</p>
+          ) : null}
+        </div>
 
         <input
           name="role"
@@ -548,16 +602,14 @@ const ContributionModal = ({ open, onClose }) => {
           >
             <motion.div
               animate={
-                isAnimatingCheckbox
-                  ? { scale: [1, 1.12, 0.96, 1.05, 1] }
-                  : notifyOnPublish
-                  ? { scale: [1, 1.04, 1], boxShadow: '0 0 12px rgba(150,100,255,0.45)' }
-                  : { scale: 1 }
+                notifyOnPublish
+                  ? { scale: [1, 1.05, 1], boxShadow: '0 0 15px rgba(74,222,128,0.5)' }
+                  : { scale: 1, boxShadow: '0 0 0 rgba(0,0,0,0)' }
               }
               transition={{ duration: 0.45, ease: 'easeOut' }}
               className={`h-5 w-5 rounded-full border border-white/20 ${
                 notifyOnPublish
-                  ? 'bg-gradient-to-r from-purple-500 to-indigo-500 shadow-[0_0_12px_rgba(150,100,255,0.45)]'
+                  ? 'bg-gradient-to-r from-emerald-400 to-emerald-500'
                   : 'bg-slate-600/40'
               }`}
             />
@@ -643,7 +695,7 @@ const ContributionModal = ({ open, onClose }) => {
               </div>
 
               <div className="mt-6 flex flex-col gap-6 md:flex-row md:items-start md:gap-6">
-                <div className="flex-1 space-y-3 overflow-y-auto pr-3 md:max-h-[72vh] md:pr-0">
+                <div className="flex-1 space-y-3 overflow-y-auto pr-3 max-h-[60vh] md:max-h-[72vh] md:pr-0">
                   {CATEGORIES.map((category) => (
                     <button
                       type="button"

@@ -172,6 +172,46 @@ body {
   animation: confetti-fall 900ms ease-out forwards;
 }
 
+@keyframes silvestre-blink {
+  0%,
+  100% {
+    box-shadow: 0 0 35px hsl(290 70% 60% / 0.8);
+    opacity: 1;
+  }
+  50% {
+    box-shadow: 0 0 12px hsl(290 80% 60% / 0.4);
+    opacity: 0.85;
+  }
+}
+
+.silvestre-cta {
+  animation: silvestre-blink 6s ease-in-out infinite;
+  box-shadow: 0 0 35px hsl(290 70% 60% / 0.8);
+}
+
+.tran-accordion-trigger {
+  position: relative;
+}
+
+.tran-accordion-trigger .trigger-line {
+  position: absolute;
+  left: 1rem;
+  right: 4rem;
+  bottom: 0.75rem;
+  height: 2px;
+  background: linear-gradient(90deg, hsl(290 60% 70%), hsl(290 80% 50%));
+  transform: scaleX(0);
+  transform-origin: left;
+  opacity: 0.4;
+  transition: transform 0.35s ease, opacity 0.35s ease;
+  pointer-events: none;
+}
+
+.tran-accordion-trigger[data-state='open'] .trigger-line {
+  transform: scaleX(1);
+  opacity: 1;
+}
+
 @keyframes confetti-fall {
   0% {
     transform: translateY(0) rotate(0deg);

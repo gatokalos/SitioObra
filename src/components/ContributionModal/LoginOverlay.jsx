@@ -35,6 +35,9 @@ const LoginOverlay = ({ onClose }) => {
 
       setPendingMagic(true);
       setFeedback(null);
+      if (typeof window !== 'undefined') {
+        window.localStorage.setItem('gatoencerrado:resume-contribution', 'true');
+      }
 
       const { error } = await supabase.auth.signInWithOtp({
         email: normalized,
@@ -60,6 +63,9 @@ const LoginOverlay = ({ onClose }) => {
 
   const handleGoogleLogin = useCallback(async () => {
     setFeedback(null);
+    if (typeof window !== 'undefined') {
+      window.localStorage.setItem('gatoencerrado:resume-contribution', 'true');
+    }
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
@@ -126,14 +132,17 @@ const LoginOverlay = ({ onClose }) => {
           <div>
             <p className="text-xs uppercase tracking-[0.4em] text-slate-500/80">Seguimiento</p>
             <h3 id="tracking-overlay-title" className="font-display text-2xl text-slate-50">
-              Activa el seguimiento de tu propuesta
+              Inicia sesión para continuar el diálogo
             </h3>
           </div>
           <p
             id="tracking-overlay-desc"
             className="text-sm text-slate-300 leading-relaxed"
           >
-            Necesitamos confirmar tu identidad para enviarte una notificación cuando tu propuesta sea publicada. Esto no genera ningún cobro ni suscripción.
+            Queremos asegurarnos de que puedas retomar tu experiencia justo donde la dejaste.
+            
+
+          Esto no genera ningún cargo ni suscripción.
           </p>
 
           <button
@@ -177,7 +186,7 @@ const LoginOverlay = ({ onClose }) => {
           ) : null}
 
           <p className="text-xs text-slate-500">
-            Tu aporte no se perderá. Continuarás donde te quedaste.
+            Tu experienica no se perderá. Continuarás donde te quedaste.
           </p>
         </div>
       </motion.div>

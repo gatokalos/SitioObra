@@ -4,6 +4,8 @@ import { BookOpen, Quote, User, Calendar, Send } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { toast } from '@/components/ui/use-toast';
 import ContributionModal from '@/components/ContributionModal';
+import { useAuth } from '@/contexts/SupabaseAuthContext';
+import { cn } from '@/lib/utils';
 
 const CURATORIAL_SOURCES = [
   {
@@ -35,6 +37,14 @@ const CURATORIAL_SOURCES = [
 
 const Curatorial = ({ posts = [], isLoading = false }) => {
   const [isContributionOpen, setIsContributionOpen] = useState(false);
+  const { user } = useAuth();
+  const isLoggedIn = Boolean(user?.email);
+  const contributionButtonClassName = cn(
+    'px-8 py-3 rounded-full font-semibold flex items-center gap-2 hover-glow transition',
+    isLoggedIn
+      ? 'bg-gradient-to-r from-emerald-500/90 to-emerald-600/90 hover:from-emerald-400/90 hover:to-emerald-500/90 text-white shadow-[0_0_35px_rgba(16,185,129,0.5)] ring-2 ring-emerald-400/30'
+      : 'bg-gradient-to-r from-purple-600/80 to-indigo-600/80 hover:from-purple-600 hover:to-indigo-600 text-white'
+  );
 
   const curatedTexts = useMemo(() => {
     const curated = CURATORIAL_SOURCES.map((source) => {
@@ -108,6 +118,14 @@ const Curatorial = ({ posts = [], isLoading = false }) => {
         description: 'El blog se abrirá en cuanto esté disponible.',
       });
     }
+  }, []);
+
+  useEffect(() => {
+    const handleResumeContribution = () => {
+      setIsContributionOpen(true);
+    };
+    window.addEventListener('gatoencerrado:resume-contribution', handleResumeContribution);
+    return () => window.removeEventListener('gatoencerrado:resume-contribution', handleResumeContribution);
   }, []);
 
   return (
@@ -203,7 +221,7 @@ const Curatorial = ({ posts = [], isLoading = false }) => {
             </p>
             <Button
               onClick={() => setIsContributionOpen(true)}
-              className="bg-gradient-to-r from-purple-600/80 to-indigo-600/80 hover:from-purple-600 hover:to-indigo-600 text-white px-8 py-3 rounded-full font-semibold flex items-center gap-2 hover-glow"
+              className={contributionButtonClassName}
             >
               <Send size={18} />
               Enviar Propuesta

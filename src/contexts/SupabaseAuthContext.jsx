@@ -93,6 +93,14 @@ export const AuthProvider = ({ children }) => {
     signOut,
   }), [user, session, loading, signUp, signIn, signOut]);
 
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    if (session && window.localStorage.getItem('gatoencerrado:resume-contribution') === 'true') {
+      window.dispatchEvent(new CustomEvent('gatoencerrado:resume-contribution'));
+      window.localStorage.removeItem('gatoencerrado:resume-contribution');
+    }
+  }, [session]);
+
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
 

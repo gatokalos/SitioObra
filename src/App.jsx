@@ -12,9 +12,9 @@ import Contact from '@/components/Contact';
 import Footer from '@/components/Footer';
 import { useBlogPosts } from '@/hooks/useBlogPosts';
 
-const pageTitle = '#GatoEncerrado - Obra de Teatro Transmedia';
+const pageTitle = '#GatoEncerrado - Obra de Teatro Transmedial';
 const pageDescription =
-  'La historia de alguien que desaparece… y deja una huella emocional. Una experiencia teatral única que explora múltiples formatos transmedia.';
+  'La historia de alguien que desaparece… y deja una huella emocional. Una experiencia teatral única que explora múltiples formatos transmediales.';
 
 function App() {
   const blogData = useBlogPosts();

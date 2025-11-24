@@ -6,6 +6,7 @@ import { toast } from '@/components/ui/use-toast';
 import ContributionModal from '@/components/ContributionModal';
 import LoginOverlay from '@/components/ContributionModal/LoginOverlay';
 import { useAuth } from '@/contexts/SupabaseAuthContext';
+import { cn } from '@/lib/utils';
 import {
   BLOG_CATEGORY_CONFIG,
   BLOG_CATEGORY_ORDER,
@@ -321,6 +322,14 @@ const Blog = ({ posts = [], isLoading = false, error = null }) => {
   const [showOnboardingHint, setShowOnboardingHint] = useState(false);
   const articlesRef = useRef(null);
   const onboardingStoredRef = useRef(false);
+  const { user } = useAuth();
+  const isLoggedIn = Boolean(user?.email);
+  const contributionButtonClassName = cn(
+    'text-white px-8 py-3 rounded-full font-semibold flex items-center gap-2 hover-glow transition mx-auto',
+    isLoggedIn
+      ? 'bg-gradient-to-r from-emerald-500/90 to-emerald-600/90 hover:from-emerald-400/90 hover:to-emerald-500/90 shadow-[0_0_35px_rgba(16,185,129,0.5)] ring-2 ring-emerald-400/30'
+      : 'bg-gradient-to-r from-purple-600/80 to-indigo-600/80 hover:from-purple-600 hover:to-indigo-600'
+  );
 
   const categorizedPosts = useMemo(
     () =>
@@ -445,6 +454,16 @@ const Blog = ({ posts = [], isLoading = false, error = null }) => {
       onboardingStoredRef.current = true;
     }, 6000);
     return () => clearTimeout(timeout);
+  }, []);
+
+  useEffect(() => {
+    const handleResumeContribution = () => {
+      setIsContributionOpen(true);
+    };
+    window.addEventListener('gatoencerrado:resume-contribution', handleResumeContribution);
+    return () => {
+      window.removeEventListener('gatoencerrado:resume-contribution', handleResumeContribution);
+    };
   }, []);
 
   return (
@@ -593,7 +612,7 @@ const Blog = ({ posts = [], isLoading = false, error = null }) => {
               <Button
                 id="blog-submit-cta"
                 onClick={handleOpenContribution}
-                className="bg-gradient-to-r from-purple-600/80 to-indigo-600/80 hover:from-purple-600 hover:to-indigo-600 text-white px-8 py-3 rounded-full font-semibold flex items-center gap-2 hover-glow mx-auto"
+                className={contributionButtonClassName}
               >
                 <PenLine size={18} />
                 ✍️ Enviar propuesta

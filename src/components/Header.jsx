@@ -16,7 +16,9 @@ const Header = () => {
     user?.user_metadata?.alias ||
     user?.user_metadata?.full_name ||
     (user?.email ? user.email.split('@')[0] : '');
-  const authLabel = user ? `Hola ${profileName || 'gato'}` : 'Iniciar sesión';
+  const simplifiedName = profileName ? profileName.trim().split(/\s+/)[0] : '';
+  const greetingLabel = user ? `Hola ${simplifiedName || 'gato'}` : '';
+  const authActionLabel = user ? 'Cerrar sesión' : 'Iniciar sesión';
   const statusDotClass = user ? 'bg-emerald-400' : 'bg-slate-600';
   const handleCloseOverlay = useCallback(() => setShowLoginOverlay(false), []);
   const handleOpenOverlay = useCallback(() => setShowLoginOverlay(true), []);
@@ -46,7 +48,6 @@ const Header = () => {
   }, []);
 
   const menuItems = [
-    { name: 'Inicio', href: '#hero' },
     { name: 'La Obra', href: '#about' },
     { name: 'Equipo', href: '#team' },
     { name: 'Miniversos', href: '#transmedia' },
@@ -74,15 +75,20 @@ const Header = () => {
     >
       <nav className="container mx-auto px-6 py-3">
         <div className="flex items-center justify-between">
-          <motion.div
+          <motion.button
+            type="button"
             whileHover={{ scale: 1.05, textShadow: "0 0 8px rgba(233, 213, 255, 0.5)" }}
-            className="font-display text-2xl font-bold text-gradient cursor-pointer flex items-center gap-2"
+            className="flex items-center gap-3 cursor-pointer text-white"
             onClick={() => handleNavClick('#hero')}
           >
-            #GatoEncerrado 💜
+            <span className="font-display text-2xl font-bold text-gradient">#GatoEncerrado</span>
             <span className={`h-2.5 w-2.5 rounded-full ${statusDotClass}`} />
-            <span className="hidden md:inline text-sm text-slate-100 font-semibold">{authLabel}</span>
-          </motion.div>
+            {user ? (
+              <span className="text-sm md:text-base font-semibold tracking-tight text-white">
+                {greetingLabel}
+              </span>
+            ) : null}
+          </motion.button>
 
           <div className="hidden md:flex items-center space-x-1">
             {menuItems.map((item) => (
@@ -117,7 +123,7 @@ const Header = () => {
               onClick={user ? handleLogout : handleOpenOverlay}
               className="hidden md:inline text-sm font-semibold text-slate-100"
             >
-              {user ? 'Cerrar sesión' : 'Iniciar sesión'}
+              {authActionLabel}
             </button>
           </div>
         </div>
@@ -148,7 +154,7 @@ const Header = () => {
               onClick={user ? handleLogout : handleOpenOverlay}
               className="block w-full text-left py-3 text-slate-200 hover:text-white transition-colors mt-2"
             >
-              {authLabel}
+              {authActionLabel}
             </button>
           </motion.div>
         )}
