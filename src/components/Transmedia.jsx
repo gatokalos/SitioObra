@@ -44,27 +44,100 @@ const showcaseDefinitions = {
       'Activa el vínculo con la voz que aún no se apaga. Aquí es donde Silvestre —o lo que queda de él— te responde.',
   },
   copycats: {
-    label: '#CopyCats',
-    type: 'post-videos',
-    slug: 'carta-a-copycats',
-    intro:
-      'En el Miniverso Cine conviven dos pulsos del mismo universo: la mirada crítica y desbordada de CopyCats y la herida luminosa de Quirón. Aquí puedes asomarte a cartas creativas, ensayos abiertos y al proceso íntimo detrás del cortometraje que nació de nombrar tres tabúes: el suicidio, el tarot y el arte como puente hacia lo que no sabemos decir.',
-    videos: [
-      {
-        id: 'copycats-v2',
-        title: 'Teaser de CopyCats',
-        author: 'Viviana González',
-        duration: '2:46',
-        url: 'https://player.vimeo.com/video/959781265?h=9b3b018f3e',
-      },
-      {
-        id: 'copycats-v3',
-        title: 'Teaser de Quirón',
-        author: 'Viviana González',
-        duration: '0:58',
+    label: 'Miniverso Cine',
+    type: 'cinema',
+    intro: 'El cine dentro de #GatoEncerrado es un laboratorio donde la realidad se revela por roce, no por imitación. Obra, proceso y mirada se mezclan hasta volver indistinguibles sus fronteras.',
+    promise: 'Aquí no solo ves cine: te invitamos a entrar a su laboratorio.',
+    theme:
+      'La doble vida de una imagen: aquello que se ve y aquello que tiembla detrás. CopyCats (farsa lúcida) y Quirón (herida íntima) responden a la misma pregunta en dos lenguajes.',
+    tone: ['Premiere íntima', 'Laboratorio abierto', 'Cine con memoria'],
+    copycats: {
+      title: 'CopyCats',
+      description: 'Un juego serio sobre cómo nos repetimos sin notarlo. Mira su bitácora creativa y descubre cómo surgió esta pieza.',
+      microcopy:
+        'CopyCats es un ensayo cinematográfico sobre el desgaste creativo: un making-of que piensa el acto de crear mientras sucede. Se detiene en el burnout, en la autocrítica feroz, y en ese desprecio silencioso que a veces sentimos por la obra… justo cuando más nos necesita.',
+      assets: [
+        {
+          id: 'copycats-carta',
+          label: 'Carta audiovisual (4:02)',
+          url: 'https://player.vimeo.com/video/1139955789?badge=0&autopause=0&player_id=0&app_id=58479',
+        },
+        {
+          id: 'copycats-ensayo',
+          label: 'La Cadena del Gesto (4:28)',
+          url: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Cine%20-%20teasers/ensayos/4.%20La%20Cadena%20del%20Gesto.mp4',
+        },
+      ],
+      tags: ['Cine-ensayo', 'Identidad Digital', 'Archivo autoficcional'],
+    },
+    quiron: {
+      title: 'Quirón',
+      description: 'Mira el teaser y los stills de rodaje de un cortometraje que busca la vulnerabilidad donde casi no se nota.',
+      microcopy:
+        'Quirón explora un silencio heredado: una familia atravesada por el suicidio de un padre y un abuelo. La película nace para darle lenguaje a ese dolor y acercarnos a lo que normalmente se calla.',
+      teaser: {
+        id: 'quiron-teaser',
+        label: 'Teaser oficial',
         url: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Cine%20-%20teasers/Quiron.mp4',
       },
+      stills: [
+        {
+          id: 'quiron-still-01',
+          label: 'Still 01 · Primera llamada',
+          url: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Cine%20-%20teasers/stills%20-%20quiron/rodaje%201.jpg',
+        },
+        {
+          id: 'quiron-still-02',
+          label: 'Still 02 · Lectura en el set',
+          url: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Cine%20-%20teasers/stills%20-%20quiron/IMG_2290.JPG',
+        },
+        {
+          id: 'quiron-still-03',
+          label: 'Still 03 · Señales del día',
+          url: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Cine%20-%20teasers/stills%20-%20quiron/IMG_2382.JPG',
+        },
+      ],
+    },
+    collaborators: [
+      {
+        id: 'viviana-gonzalez',
+        name: 'Viviana González',
+        role: 'Dirección de foto y registro creativo',
+        bio: 'Cineasta y documentalista. Su cámara captura el pulso emocional de CopyCats y Quirón.',
+        image: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/equipo/placeholder-colaboradores.jpg',
+        anchor: '#team',
+      },
+      {
+        id: 'diego-madera',
+        name: 'Diego Madera',
+        role: 'Compositor · Tema musical',
+        bio: 'Músico y compositor cuyo trabajo explora la tensión entre sonido y silencio.',
+        image: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/equipo/diego.png',
+        anchor: '#team',
+      },
+      {
+        id: 'maria-diana-laura-rodriguez',
+        name: 'María Diana Laura Rodriguez',
+        role: 'Coordinadora',
+        bio: 'Productora en línea que facilita procesos con una disponibilidad impecable.',
+        image: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/equipo/placeholder-produccion.jpg',
+        anchor: '#team',
+      },
     ],
+    bridge: {
+      title: 'Una línea que vibra entre ambas historias',
+      description:
+        'CopyCats y Quirón dialogan desde extremos distintos del mismo territorio. Una filma el desgaste creativo y la fractura del proceso;la otra abre una confesión íntima que decide hablar del suicidio sin rodeos.',
+      note:
+        'Dos películas, dos vulnerabilidades distintas, un mismo impulso: usar el arte para tocar aquello que no queremos decir en voz alta y encontrar otra manera de contarlo.',
+    },
+    screening: {
+      title: 'Screening privado · Marzo · Cineteca CECUT',
+      description:
+        'Únete al universo transmedial y asegura tu acceso al primer screening doble de CopyCats + Quirón, con conservatorio del equipo.',
+      cta: 'Quiero ser parte del screening',
+      footnote: 'El cine es otro modo de entrar al encierro. Acompáñanos en marzo para ver ambas películas antes que nadie.',
+    },
     notaAutoral:
       'La cámara miró lo que el teatro no podía sostener. CopyCats cuestiona; Quirón hiere con luz. Este espacio guarda esas miradas.',
   },
@@ -205,6 +278,47 @@ const showcaseDefinitions = {
     notaAutoral:
       'Imagen, música y palabra en suspensión. Cada mezcla inventa otro ánimo. Aquí el sueño se edita solo.',
   },
+  miniversoGrafico: {
+    label: 'Miniverso Gráfico',
+    type: 'graphic-lab',
+    intro:
+      'Colección viva de exploraciones visuales: cómics en curso, viñetas interactivas, posters simbólicos, caricaturas conceptuales, murales colaborativos y avances con IA/técnicas mixtas.',
+    notaAutoral:
+      'Lo gráfico como portal emocional. Cada pieza es un disparo breve a la herida o a la curiosidad, nunca un catálogo plano.',
+    collection: [
+      'Cómics en curso y por venir',
+      'Viñetas interactivas',
+      'Posters simbólicos',
+      'Caricaturas conceptuales',
+      'Murales colaborativos',
+      'Avances con IA y técnicas mixtas',
+    ],
+    swipe: {
+      title: 'Swipe narrativo (modo viñeta)',
+      description: 'Haz scroll hacia arriba para navegar por tarjetas verticales.',
+      steps: [
+        'Cada tarjeta revela una escena, una decisión o una herida.',
+        'Desliza y elige: ¿quieres ver lo que pasa o lo que duele?',
+      ],
+    },
+    upcoming: {
+      title: 'Próximamente · Lector Visual Interactivo',
+      points: [
+        'Escanea la edición impresa o digital.',
+        'Desbloquea viñetas ocultas.',
+        'Escucha diálogos no escuchados.',
+        'Activa capas simbólicas.',
+      ],
+    },
+    quote: {
+      text: '“El cómic me habló justo cuando dudaba de seguir leyendo.”',
+      author: 'Lectora anónima',
+    },
+    ctas: {
+      primary: 'Explora el miniverso gráfico',
+      secondary: 'Súmate a la residencia gráfica',
+    },
+  },
 };
 
 const ShowcaseReactionInline = ({ showcaseId, title, description, buttonLabel }) => {
@@ -286,6 +400,15 @@ const formats = [
     iconClass: 'text-emerald-300',
     notaAutoral:
       'La novela es donde la escena se desborda. Fragmentos que respiran distinto cuando alguien los lee. Aquí la historia sigue probándose.',
+  },
+  {
+    id: 'miniversoGrafico',
+    title: 'Miniverso Gráfico',
+    description: 'Colección viva de cómics, viñetas interactivas y símbolos en mutación.',
+    icon: Palette,
+    iconClass: 'text-fuchsia-300',
+    notaAutoral:
+      'Lo gráfico como portal emocional. Cada pieza se siente antes de entenderse.',
   },
   {
     id: 'copycats',
@@ -378,6 +501,8 @@ const Transmedia = () => {
   const [isListening, setIsListening] = useState(false);
   const recognitionRef = useRef(null);
   const transcriptRef = useRef('');
+  const [isCinemaCreditsOpen, setIsCinemaCreditsOpen] = useState(false);
+  const [openCollaboratorId, setOpenCollaboratorId] = useState(null);
 
   const handleOpenMiniverses = useCallback(() => {
     setIsMiniverseOpen(true);
@@ -533,6 +658,13 @@ const Transmedia = () => {
     window.dispatchEvent(new CustomEvent('gatoencerrado:open-silvestre'));
   }, [hasShownMicPrompt, isListening, micPromptVisible, sendTranscript]);
 
+  const handleOpenSemblanza = useCallback((anchor = '#team') => {
+    const target = document.querySelector(anchor);
+    if (target) {
+      target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  }, []);
+
   const handleOpenImagePreview = useCallback((payload) => {
     if (!payload?.src) {
       return;
@@ -624,6 +756,13 @@ const Transmedia = () => {
 
   useEffect(() => {
     setIsTragicoNotaOpen(false);
+  }, [activeShowcase]);
+
+  useEffect(() => {
+    if (activeShowcase !== 'copycats') {
+      setIsCinemaCreditsOpen(false);
+      setOpenCollaboratorId(null);
+    }
   }, [activeShowcase]);
 
   useEffect(() => {
@@ -1080,6 +1219,360 @@ const Transmedia = () => {
                   </div>
                 ) : null}
               </div>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    if (activeDefinition.type === 'graphic-lab') {
+      return (
+        <div className="grid gap-6 lg:gap-10 lg:grid-cols-[2fr_1fr]">
+          <div className="space-y-6">
+            <div className="rounded-3xl border border-white/10 bg-black/30 p-6 space-y-3">
+              <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">
+                {activeDefinition.swipe?.title}
+              </p>
+              <p className="text-sm text-slate-300/80 leading-relaxed">
+                {activeDefinition.swipe?.description}
+              </p>
+              <ul className="space-y-2 text-sm text-slate-200/90 leading-relaxed">
+                {activeDefinition.swipe?.steps?.map((step, index) => (
+                  <li key={`swipe-step-${index}`} className="flex items-start gap-2">
+                    <span className="text-purple-300 mt-1">●</span>
+                    <span>{step}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            <div className="rounded-3xl border border-white/10 bg-black/20 p-6 space-y-4">
+              <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Colección viva</p>
+              <div className="flex flex-wrap gap-2">
+                {activeDefinition.collection?.map((item, index) => (
+                  <span
+                    key={`collection-pill-${index}`}
+                    className="px-3 py-1 rounded-full border border-white/10 bg-white/5 text-xs text-slate-100"
+                  >
+                    {item}
+                  </span>
+                ))}
+              </div>
+            </div>
+
+            <div className="rounded-3xl border border-white/10 bg-gradient-to-r from-slate-900/70 via-black/60 to-fuchsia-900/40 p-6 space-y-3">
+              <p className="text-xs uppercase tracking-[0.35em] text-fuchsia-200/80">
+                {activeDefinition.upcoming?.title}
+              </p>
+              <ul className="space-y-2 text-sm text-slate-100 leading-relaxed">
+                {activeDefinition.upcoming?.points?.map((point, index) => (
+                  <li key={`upcoming-point-${index}`} className="flex items-start gap-2">
+                    <span className="text-fuchsia-200 mt-1">●</span>
+                    <span>{point}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+
+          <div className="space-y-6">
+            <div className="rounded-3xl border border-white/10 bg-black/30 p-6 space-y-4">
+              <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Acciones</p>
+              <p className="text-sm text-slate-300/80 leading-relaxed">
+                Activa el lector visual o súmate a la residencia gráfica.
+              </p>
+              <div className="flex flex-col sm:flex-row gap-3">
+                <Button
+                  onClick={() =>
+                    toast({
+                      description: 'Muy pronto liberarás el lector visual interactivo desde aquí.',
+                    })
+                  }
+                  className="w-full sm:w-auto justify-center bg-gradient-to-r from-purple-600/80 to-fuchsia-500/80 hover:from-purple-500 hover:to-fuchsia-400 text-white"
+                >
+                  {activeDefinition.ctas?.primary}
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={() =>
+                    toast({
+                      description: 'Escríbenos o postula; abriremos la residencia gráfica en breve.',
+                    })
+                  }
+                  className="w-full sm:w-auto justify-center border-purple-400/40 text-purple-200 hover:bg-purple-500/10"
+                >
+                  {activeDefinition.ctas?.secondary}
+                </Button>
+              </div>
+            </div>
+
+            <div className="rounded-3xl border border-white/10 bg-black/30 p-6 space-y-3">
+              <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Testimonio</p>
+              <p className="text-lg text-slate-100 leading-relaxed italic">{activeDefinition.quote?.text}</p>
+              <p className="text-xs text-slate-500">{activeDefinition.quote?.author}</p>
+            </div>
+
+            {activeShowcase === 'miniversoGrafico' ? (
+              <ShowcaseReactionInline
+                showcaseId="miniversoGrafico"
+                title="Validación gráfica"
+                description="Haz clic para dejar un like y seguir curando esta colección."
+                buttonLabel="Resonar con el trazo"
+              />
+            ) : null}
+          </div>
+        </div>
+      );
+    }
+
+    if (activeDefinition.type === 'cinema') {
+      const copycatsAssets = (() => {
+        const seen = new Set();
+        return (activeDefinition.copycats?.assets ?? []).filter((asset) => {
+          const key = asset?.id || asset?.url;
+          if (!key) {
+            return true;
+          }
+          if (seen.has(key)) {
+            return false;
+          }
+          seen.add(key);
+          return true;
+        });
+      })();
+
+      const quironStills = (() => {
+        const seen = new Set();
+        return (activeDefinition.quiron?.stills ?? []).filter((still, index) => {
+          const key = typeof still === 'string' ? still : still?.id || still?.url || `idx-${index}`;
+          if (seen.has(key)) {
+            return false;
+          }
+          seen.add(key);
+          return true;
+        });
+      })();
+      const toneTags = activeDefinition.tone ?? [];
+
+      const renderMedia = (asset) => {
+        if (!asset?.url) return null;
+        const isVideoFile = /\.mp4($|\?)/i.test(asset.url);
+        return (
+          <div className="rounded-2xl border border-white/10 overflow-hidden bg-black/40">
+            <div className="aspect-video w-full bg-black/60">
+              {isVideoFile ? (
+                <video
+                  src={asset.url}
+                  title={asset.label}
+                  className="w-full h-full object-cover"
+                  controls
+                  playsInline
+                  preload="metadata"
+                />
+              ) : (
+                <iframe
+                  src={asset.url}
+                  title={asset.label}
+                  className="w-full h-full"
+                  frameBorder="0"
+                  allow="autoplay; fullscreen; picture-in-picture; clipboard-write; encrypted-media; web-share"
+                  allowFullScreen
+                  loading="lazy"
+                  referrerPolicy="strict-origin-when-cross-origin"
+                ></iframe>
+              )}
+            </div>
+            {asset.label ? (
+              <div className="px-4 py-3 text-sm text-slate-300 flex items-center justify-between gap-3">
+                <span>{asset.label}</span>
+              </div>
+            ) : null}
+          </div>
+        );
+      };
+
+      return (
+        <div className="space-y-8">
+          <div className="grid gap-6 lg:grid-cols-2">
+            <div className="rounded-3xl border border-white/10 bg-black/30 p-6 space-y-4">
+              <div className="flex items-start justify-between gap-3">
+                <div>
+                  <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Meta-documental</p>
+                  <h4 className="font-display text-xl text-slate-100">{activeDefinition.copycats?.title}</h4>
+                </div>
+              
+              </div>
+              <p className="text-sm text-slate-300/80 leading-relaxed">
+                {activeDefinition.copycats?.description}
+              </p>
+              <p className="text-sm text-slate-200/90 leading-relaxed">{activeDefinition.copycats?.microcopy}</p>
+              {activeDefinition.copycats?.tags?.length ? (
+                <div className="flex flex-wrap gap-2">
+                  {activeDefinition.copycats.tags.map((tag, index) => (
+                    <span
+                      key={`copycats-tag-${index}`}
+                      className="px-3 py-1 rounded-full border border-purple-400/30 bg-purple-900/20 text-xs text-purple-100"
+                    >
+                      {tag}
+                    </span>
+                  ))}
+                </div>
+              ) : null}
+              {copycatsAssets.length ? (
+                <div className="space-y-4">
+                  {copycatsAssets.map((asset) => (
+                    <div key={asset.id}>{renderMedia(asset)}</div>
+                  ))}
+                </div>
+              ) : null}
+            </div>
+
+            <div className="rounded-3xl border border-white/10 bg-black/30 p-6 space-y-4">
+              <div className="flex items-start justify-between gap-3">
+                <div>
+                  <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Cortometraje</p>
+                  <h4 className="font-display text-xl text-slate-100">{activeDefinition.quiron?.title}</h4>
+                </div>
+                <span className="text-[11px] uppercase tracking-[0.3em] text-rose-300">Teaser + stills</span>
+              </div>
+              <p className="text-sm text-slate-300/80 leading-relaxed">{activeDefinition.quiron?.description}</p>
+              <p className="text-sm text-slate-200/90 leading-relaxed">{activeDefinition.quiron?.microcopy}</p>
+              {activeDefinition.quiron?.teaser ? <div>{renderMedia(activeDefinition.quiron.teaser)}</div> : null}
+              {quironStills.length ? (
+                <div className="grid gap-3 sm:grid-cols-2">
+                  {quironStills.map((still, index) => {
+                    const label = typeof still === 'string' ? still : still.label || `Still ${index + 1}`;
+                    const url = typeof still === 'string' ? null : still.url;
+                    return url ? (
+                      <div
+                        key={still.id || `quiron-still-${index}`}
+                        className="overflow-hidden rounded-2xl border border-white/10 bg-black/20"
+                      >
+                        <div className="aspect-[4/3] bg-black/40">
+                          <img
+                            src={url}
+                            alt={label}
+                            className="h-full w-full object-cover"
+                            loading="lazy"
+                          />
+                        </div>
+                        <p className="px-4 py-3 text-xs uppercase tracking-[0.25em] text-slate-200">{label}</p>
+                      </div>
+                    ) : (
+                      <span
+                        key={`quiron-still-pill-${index}`}
+                        className="px-3 py-1 rounded-full border border-white/10 bg-white/5 text-xs text-slate-100"
+                      >
+                        {label}
+                      </span>
+                    );
+                  })}
+                </div>
+              ) : null}
+            </div>
+          </div>
+
+          {activeDefinition.collaborators?.length ? (
+            <div className="rounded-3xl border border-white/10 bg-black/30 p-6 space-y-4">
+              <div className="flex items-center justify-between gap-3">
+                <p className="text-xs uppercase tracking-[0.35em] text-purple-300">Colaboradores</p>
+                <button
+                  type="button"
+                  onClick={() => setIsCinemaCreditsOpen((prev) => !prev)}
+                  className="text-xs uppercase tracking-[0.3em] text-slate-300 hover:text-white transition"
+                >
+                  {isCinemaCreditsOpen ? 'Ocultar' : 'Ver'}
+                </button>
+              </div>
+              {isCinemaCreditsOpen ? (
+                <div className="space-y-3">
+                  {activeDefinition.collaborators.map((collab, index) => {
+                    const isOpen = openCollaboratorId === collab.id;
+                    const imageSrc = collab.image || '/images/placeholder-colaboradores.jpg';
+                    return (
+                      <div key={collab.id || `cinema-collab-${index}`} className="border border-white/10 rounded-2xl bg-black/20">
+                        <button
+                          type="button"
+                          onClick={() => setOpenCollaboratorId((prev) => (prev === collab.id ? null : collab.id))}
+                          className="w-full flex items-center justify-between gap-3 px-4 py-3 text-left hover:bg-white/5 transition"
+                        >
+                          <div className="flex items-center gap-3">
+                            <img
+                              src={imageSrc}
+                              alt={`Retrato de ${collab.name}`}
+                              className="h-12 w-12 rounded-full object-cover border border-white/10"
+                              loading="lazy"
+                            />
+                            <div>
+                              <p className="text-slate-100 font-semibold">{collab.name}</p>
+                              {collab.role ? (
+                                <p className="text-[11px] uppercase tracking-[0.3em] text-purple-300">{collab.role}</p>
+                              ) : null}
+                            </div>
+                          </div>
+                          <span className="text-slate-400 text-lg">{isOpen ? '−' : '+'}</span>
+                        </button>
+                        {isOpen ? (
+                          <div className="px-4 pb-4 text-sm text-slate-200/90 leading-relaxed space-y-3">
+                            {collab.bio ? <p>{collab.bio}</p> : null}
+                            <button
+                              type="button"
+                              onClick={() => handleOpenSemblanza(collab.anchor)}
+                              className="text-xs uppercase tracking-[0.3em] text-purple-300 hover:text-purple-100 underline underline-offset-4"
+                            >
+                              Ver semblanza
+                            </button>
+                          </div>
+                        ) : null}
+                      </div>
+                    );
+                  })}
+                </div>
+              ) : null}
+            </div>
+          ) : null}
+
+          <div className="rounded-3xl border border-white/10 bg-black/20 p-6 space-y-3">
+            <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Lo que las conecta</p>
+            <h4 className="font-display text-xl text-slate-100">{activeDefinition.bridge?.title}</h4>
+            <p className="text-sm text-slate-200/90 leading-relaxed">{activeDefinition.bridge?.description}</p>
+            <p className="text-sm text-slate-400 leading-relaxed">{activeDefinition.bridge?.note}</p>
+          </div>
+
+          <div className="grid gap-6 lg:grid-cols-[2fr_1fr]">
+            <div className="rounded-3xl border border-white/10 bg-gradient-to-r from-slate-900/80 via-black/60 to-purple-900/40 p-6 space-y-4">
+              <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Pantalla 5 · CTA final</p>
+              <h4 className="font-display text-2xl text-slate-100">{activeDefinition.screening?.title}</h4>
+              <p className="text-sm text-slate-200/90 leading-relaxed">{activeDefinition.screening?.description}</p>
+              <Button
+                onClick={() =>
+                  toast({
+                    description:
+                      'Guardaremos tu interés; pronto abriremos la lista de suscriptores para el screening doble en CECUT.',
+                  })
+                }
+                className="w-full sm:w-auto justify-center bg-gradient-to-r from-purple-600/80 to-indigo-500/80 hover:from-purple-500 hover:to-indigo-400 text-white"
+              >
+                {activeDefinition.screening?.cta}
+              </Button>
+              {activeDefinition.screening?.footnote ? (
+                <p className="text-xs text-slate-400 leading-relaxed">{activeDefinition.screening.footnote}</p>
+              ) : null}
+            </div>
+
+            <div className="space-y-4">
+              <ShowcaseReactionInline
+                showcaseId="copycats"
+                title="Validación cinematográfica"
+                description="Haz clic para dejar un like y amplificar el screening de CopyCats + Quirón."
+                buttonLabel="Sumar mi aplauso"
+              />
+              {activeDefinition.notaAutoral ? (
+                <div className="rounded-3xl border border-white/10 bg-black/30 p-5">
+                  <p className="text-xs uppercase tracking-[0.35em] text-purple-300 mb-2">Nota autoral</p>
+                  <p className="text-sm text-slate-200/90 leading-relaxed">{activeDefinition.notaAutoral}</p>
+                </div>
+              ) : null}
             </div>
           </div>
         </div>
