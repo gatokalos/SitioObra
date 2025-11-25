@@ -133,7 +133,7 @@ const showcaseDefinitions = {
         'Dos películas, dos vulnerabilidades distintas, un mismo impulso: usar el arte para tocar aquello que no queremos decir en voz alta y encontrar otra manera de contarlo.',
     },
     screening: {
-      title: 'Screening privado · Marzo · Cineteca CECUT',
+      title: 'Marzo 2024· Cineteca CECUT',
       description:
         'Únete al universo transmedial y asegura tu acceso al primer screening doble de CopyCats + Quirón, con conservatorio del equipo.',
       cta: 'Quiero ser parte del screening',
@@ -505,6 +505,13 @@ const Transmedia = () => {
   const [isCinemaCreditsOpen, setIsCinemaCreditsOpen] = useState(false);
   const [openCollaboratorId, setOpenCollaboratorId] = useState(null);
   const { canUseInlinePlayback, requestMobileVideoPresentation } = useMobileVideoPresentation();
+  const handleMobileVideoPresentation = useCallback((mode) => {
+    if (mode === 'pip') {
+      toast({
+        description: 'Continúa explorando mientras ves el video en Picture-in-Picture.',
+      });
+    }
+  }, []);
 
   const handleOpenMiniverses = useCallback(() => {
     setIsMiniverseOpen(true);
@@ -969,6 +976,13 @@ const Transmedia = () => {
                 <>
                   {/\.mp4($|\?)/i.test(activeDefinition.image) ? (
                     <div className="relative">
+                      <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-black/30 via-transparent to-black/50" />
+                      <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
+                        <div className="flex items-center gap-2 rounded-full bg-black/60 px-3 py-1 text-[0.7rem] font-semibold uppercase tracking-[0.25em] text-white/85">
+                          <Video size={14} />
+                          Ver video
+                        </div>
+                      </div>
                       <video
                         src={activeDefinition.image}
                         className="w-full h-64 object-cover bg-black/50"
@@ -977,7 +991,11 @@ const Transmedia = () => {
                         muted
                         loop
                         controls={canUseInlinePlayback(objectWebArVideoId)}
-                        onClick={(event) => requestMobileVideoPresentation(event, objectWebArVideoId)}
+                        onClick={(event) =>
+                          requestMobileVideoPresentation(event, objectWebArVideoId, {
+                            onPresentation: handleMobileVideoPresentation,
+                          })
+                        }
                         poster={activeDefinition.imagePoster}
                       />
                     </div>
@@ -1369,15 +1387,28 @@ const Transmedia = () => {
           <div className="rounded-2xl border border-white/10 overflow-hidden bg-black/40">
             <div className="relative aspect-video w-full bg-black/60">
               {isVideoFile ? (
-                <video
-                  src={asset.url}
-                  title={asset.label}
-                  className="w-full h-full object-cover"
-                  controls={canUseInlinePlayback(videoId)}
-                  onClick={(event) => requestMobileVideoPresentation(event, videoId)}
-                  playsInline
-                  preload="metadata"
-                />
+                <>
+                  <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-black/30 via-transparent to-black/60" />
+                  <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
+                    <div className="flex items-center gap-2 rounded-full bg-black/60 px-3 py-1 text-[0.7rem] font-semibold uppercase tracking-[0.25em] text-white/85">
+                      <Video size={14} />
+                      Ver video
+                    </div>
+                  </div>
+                  <video
+                    src={asset.url}
+                    title={asset.label}
+                    className="w-full h-full object-cover"
+                    controls={canUseInlinePlayback(videoId)}
+                    onClick={(event) =>
+                      requestMobileVideoPresentation(event, videoId, {
+                        onPresentation: handleMobileVideoPresentation,
+                      })
+                    }
+                    playsInline
+                    preload="metadata"
+                  />
+                </>
               ) : (
                 <iframe
                   src={asset.url}
@@ -1550,7 +1581,7 @@ const Transmedia = () => {
 
           <div className="grid gap-6 lg:grid-cols-[2fr_1fr]">
             <div className="rounded-3xl border border-white/10 bg-gradient-to-r from-slate-900/80 via-black/60 to-purple-900/40 p-6 space-y-4">
-              <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Pantalla 5 · CTA final</p>
+              <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Actividades de 2026</p>
               <h4 className="font-display text-2xl text-slate-100">{activeDefinition.screening?.title}</h4>
               <p className="text-sm text-slate-200/90 leading-relaxed">{activeDefinition.screening?.description}</p>
               <Button
@@ -1824,10 +1855,10 @@ const Transmedia = () => {
               {videos.map((video, index) => {
                 const videoId = video.id || video.url || `video-${index}`;
                 return (
-                  <div
-                    key={video.id || video.url || `video-${index}`}
-                    className="rounded-2xl border border-white/10 overflow-hidden bg-black/40 flex flex-col"
-                  >
+                    <div
+                      key={video.id || video.url || `video-${index}`}
+                      className="rounded-2xl border border-white/10 overflow-hidden bg-black/40 flex flex-col"
+                    >
                     <div className="relative aspect-video w-full">
                       {/\.mp4($|\?)/i.test(video.url) ? (
                         <video
@@ -1835,7 +1866,11 @@ const Transmedia = () => {
                           title={video.title}
                           className="w-full h-full object-cover bg-black"
                           controls={canUseInlinePlayback(videoId)}
-                          onClick={(event) => requestMobileVideoPresentation(event, videoId)}
+                          onClick={(event) =>
+                            requestMobileVideoPresentation(event, videoId, {
+                              onPresentation: handleMobileVideoPresentation,
+                            })
+                          }
                           playsInline
                           preload="metadata"
                           poster={video.poster}
@@ -1850,6 +1885,17 @@ const Transmedia = () => {
                           allowFullScreen
                         ></iframe>
                       )}
+                      {/\.mp4($|\?)/i.test(video.url) ? (
+                        <>
+                          <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-black/30 via-transparent to-black/60" />
+                          <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
+                            <div className="flex items-center gap-2 rounded-full bg-black/60 px-3 py-1 text-[0.7rem] font-semibold uppercase tracking-[0.25em] text-white/85">
+                              <Video size={14} />
+                              Ver video
+                            </div>
+                          </div>
+                        </>
+                      ) : null}
                     </div>
                     <div className="p-4 space-y-1 text-sm text-slate-300">
                       <p className="font-semibold text-slate-100">{video.title}</p>

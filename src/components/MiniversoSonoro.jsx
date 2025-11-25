@@ -1,4 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { Video } from "lucide-react";
+import { toast } from "@/components/ui/use-toast";
 import { useMobileVideoPresentation } from "@/hooks/useMobileVideoPresentation";
 
 export default function MiniversoSonoro({
@@ -98,6 +100,14 @@ export default function MiniversoSonoro({
     setVideoError(true);
   }, []);
 
+  const handleMobileVideoPresentation = useCallback((mode) => {
+    if (mode === "pip") {
+      toast({
+        description: "Continúa explorando mientras ves el video en Picture-in-Picture.",
+      });
+    }
+  }, []);
+
   const renderHeaderSection =
     showHeader || highlights.length > 0
       ? (
@@ -148,6 +158,14 @@ export default function MiniversoSonoro({
         }`}
       >
         {!videoError ? (
+          <div className="relative h-full w-full bg-black">
+            <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-black/30 via-transparent to-black/60" />
+            <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
+              <div className="flex items-center gap-2 rounded-full bg-black/60 px-3 py-1 text-[0.7rem] font-semibold uppercase tracking-[0.25em] text-white/85">
+                <Video size={14} />
+                Ver video
+              </div>
+            </div>
           <video
             key={videoUrl ?? "miniverso-sonoro-video"}
             ref={videoRef}
@@ -157,9 +175,14 @@ export default function MiniversoSonoro({
             loop
             playsInline
             className="w-full h-full object-cover"
-            onClick={(event) => requestMobileVideoPresentation(event, videoPresentationId)}
+            onClick={(event) =>
+              requestMobileVideoPresentation(event, videoPresentationId, {
+                onPresentation: handleMobileVideoPresentation,
+              })
+            }
             onError={handleVideoError}
           />
+          </div>
         ) : (
           <div className="flex h-full w-full flex-col items-center justify-center gap-4 bg-black/60 px-6 py-8 text-center">
             <p className="text-sm text-slate-300">
