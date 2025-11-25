@@ -25,6 +25,7 @@ import 'react-pdf/dist/Page/AnnotationLayer.css';
 import 'react-pdf/dist/Page/TextLayer.css';
 import ARExperience from '@/components/ar/ARExperience';
 import MiniversoSonoro from '@/components/MiniversoSonoro';
+import MiniversoSonoroPreview from '@/components/miniversos/sonoro/MiniversoSonoroPreview';
 import AutoficcionPreview from '@/components/novela/AutoficcionPreview';
 import { recordShowcaseLike } from '@/services/showcaseLikeService';
 import { useMobileVideoPresentation } from '@/hooks/useMobileVideoPresentation';
@@ -133,7 +134,7 @@ const showcaseDefinitions = {
         'Dos películas, dos vulnerabilidades distintas, un mismo impulso: usar el arte para tocar aquello que no queremos decir en voz alta y encontrar otra manera de contarlo.',
     },
     screening: {
-      title: 'Marzo 2024· Cineteca CECUT',
+      title: 'Screening privado · Marzo · Cineteca CECUT',
       description:
         'Únete al universo transmedial y asegura tu acceso al primer screening doble de CopyCats + Quirón, con conservatorio del equipo.',
       cta: 'Quiero ser parte del screening',
@@ -246,7 +247,6 @@ const showcaseDefinitions = {
       'Escoge un poema — y observa cómo se desliza mientras todo ocurre.',
     ],
     closing: [
-      'Cada mezcla es irrepetible.',
       'Cada combinación abre un sueño distinto.',
       'Entra y crea el tuyo.',
     ],
@@ -396,7 +396,7 @@ const formats = [
   {
     id: 'miniversoNovela',
     title: 'Miniverso Novela',
-    description: 'Desde la autoficción hasta las viñetas de la novela gráfica.',
+    description: 'El teatro terminó, pero algo siguió hablando y de ese eco nace esta autoficción.',
     icon: BookOpen,
     iconClass: 'text-emerald-300',
     notaAutoral:
@@ -405,7 +405,7 @@ const formats = [
   {
     id: 'miniversoGrafico',
     title: 'Miniverso Gráfico',
-    description: 'Colección viva de cómics, viñetas interactivas y símbolos en mutación.',
+    description: 'Colección de viñetas interactivas, garabatos y símbolos en mutación.',
     icon: Palette,
     iconClass: 'text-fuchsia-300',
     notaAutoral:
@@ -414,7 +414,7 @@ const formats = [
   {
     id: 'copycats',
     title: 'Miniverso Cine',
-    description: '“Quirón” y otros filmes que piensan el cuerpo del Gato en clave cinematográfica.',
+    description: 'Filmes que piensan el cuerpo del Gato en clave cinematográfica.',
     icon: Film,
     iconClass: 'text-rose-300',
     notaAutoral:
@@ -492,7 +492,6 @@ const Transmedia = () => {
   const pdfPageWidth = Math.max(pdfContainerWidth - 48, 320);
   const [isTazaARActive, setIsTazaARActive] = useState(false);
   const [isMobileARFullscreen, setIsMobileARFullscreen] = useState(false);
-  const [isMobileDreamOpen, setIsMobileDreamOpen] = useState(false);
   const [showAutoficcionPreview, setShowAutoficcionPreview] = useState(false);
   const [isTragicoNotaOpen, setIsTragicoNotaOpen] = useState(false);
   const [micPromptVisible, setMicPromptVisible] = useState(false);
@@ -504,14 +503,16 @@ const Transmedia = () => {
   const transcriptRef = useRef('');
   const [isCinemaCreditsOpen, setIsCinemaCreditsOpen] = useState(false);
   const [openCollaboratorId, setOpenCollaboratorId] = useState(null);
-  const { canUseInlinePlayback, requestMobileVideoPresentation } = useMobileVideoPresentation();
-  const handleMobileVideoPresentation = useCallback((mode) => {
-    if (mode === 'pip') {
-      toast({
-        description: 'Continúa explorando mientras ves el video en Picture-in-Picture.',
-      });
-    }
-  }, []);
+  const { isMobileViewport, canUseInlinePlayback, requestMobileVideoPresentation } = useMobileVideoPresentation();
+  const renderMobileVideoBadge = () =>
+    isMobileViewport ? (
+      <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
+        <div className="flex items-center gap-2 rounded-full bg-black/70 px-3 py-1 text-[0.65rem] font-semibold uppercase tracking-[0.2em] text-white/80">
+          <Video size={14} />
+          Ver video
+        </div>
+      </div>
+    ) : null;
 
   const handleOpenMiniverses = useCallback(() => {
     setIsMiniverseOpen(true);
@@ -727,22 +728,6 @@ const Transmedia = () => {
     setIsMobileARFullscreen(false);
     document.body.classList.remove('overflow-hidden');
   }, []);
-
-  const openMobileDream = useCallback(() => {
-    setIsMobileDreamOpen(true);
-  }, []);
-
-  const closeMobileDream = useCallback(() => {
-    setIsMobileDreamOpen(false);
-  }, []);
-
-  useEffect(() => {
-    if (isMobileDreamOpen) {
-      document.body.classList.add('overflow-hidden');
-    } else if (!isTazaARActive && !isMobileARFullscreen) {
-      document.body.classList.remove('overflow-hidden');
-    }
-  }, [isMobileDreamOpen, isTazaARActive, isMobileARFullscreen]);
 
   const handlePdfLoadSuccess = useCallback(({ numPages }) => {
     setPdfNumPages(numPages);
@@ -976,13 +961,10 @@ const Transmedia = () => {
                 <>
                   {/\.mp4($|\?)/i.test(activeDefinition.image) ? (
                     <div className="relative">
-                      <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-black/30 via-transparent to-black/50" />
-                      <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
-                        <div className="flex items-center gap-2 rounded-full bg-black/60 px-3 py-1 text-[0.7rem] font-semibold uppercase tracking-[0.25em] text-white/85">
-                          <Video size={14} />
-                          Ver video
-                        </div>
-                      </div>
+                      {isMobileViewport ? (
+                        <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-black/25 via-transparent to-black/55" />
+                      ) : null}
+                      {renderMobileVideoBadge()}
                       <video
                         src={activeDefinition.image}
                         className="w-full h-64 object-cover bg-black/50"
@@ -991,11 +973,7 @@ const Transmedia = () => {
                         muted
                         loop
                         controls={canUseInlinePlayback(objectWebArVideoId)}
-                        onClick={(event) =>
-                          requestMobileVideoPresentation(event, objectWebArVideoId, {
-                            onPresentation: handleMobileVideoPresentation,
-                          })
-                        }
+                        onClick={(event) => requestMobileVideoPresentation(event, objectWebArVideoId)}
                         poster={activeDefinition.imagePoster}
                       />
                     </div>
@@ -1113,13 +1091,15 @@ const Transmedia = () => {
               />
             ) : null}
             <div className="lg:hidden">
-              <button
-                type="button"
-                onClick={openMobileDream}
-                className="w-full rounded-2xl border border-purple-400/60 bg-gradient-to-r from-purple-600/80 to-blue-500/60 px-4 py-3 text-sm font-semibold uppercase tracking-[0.3em] text-white transition hover:from-purple-500 hover:to-blue-400"
-              >
-                Abrir cámara de resonancia
-              </button>
+              <MiniversoSonoroPreview
+                videoUrl={activeDefinition.videoUrl}
+                videoTitle={activeDefinition.label}
+                videoArtist="Residencia #GatoEncerrado"
+                audioOptions={activeDefinition.musicOptions}
+                poemOptions={activeDefinition.poems}
+                showHeader={false}
+                showCTA={false}
+              />
             </div>
           </div>
 
@@ -1139,31 +1119,6 @@ const Transmedia = () => {
             </div>
           </div>
 
-          {isMobileDreamOpen && (
-            <div className="fixed inset-0 z-50 flex flex-col bg-black/95">
-              <div className="flex items-center justify-between border-b border-white/10 px-4 py-3">
-                <p className="text-sm uppercase tracking-[0.4em] text-purple-300">Cámara de resonancia</p>
-                <button
-                  type="button"
-                  onClick={closeMobileDream}
-                  className="text-sm font-semibold text-purple-100 transition hover:text-purple-50"
-                >
-                  Cerrar
-                </button>
-              </div>
-              <div className="flex-1 overflow-auto p-4">
-                <MiniversoSonoro
-                  title={activeDefinition.label}
-                  subtitle={activeDefinition.intro}
-                  videoUrl={activeDefinition.videoUrl}
-                  musicOptions={activeDefinition.musicOptions}
-                  poems={activeDefinition.poems}
-                  highlights={activeDefinition.highlights}
-                  showHeader
-                />
-              </div>
-            </div>
-          )}
         </div>
       );
     }
@@ -1385,30 +1340,23 @@ const Transmedia = () => {
         const videoId = asset?.id || asset?.url;
         return (
           <div className="rounded-2xl border border-white/10 overflow-hidden bg-black/40">
-            <div className="relative aspect-video w-full bg-black/60">
+            <div className="aspect-video w-full bg-black/60">
               {isVideoFile ? (
-                <>
-                  <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-black/30 via-transparent to-black/60" />
-                  <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
-                    <div className="flex items-center gap-2 rounded-full bg-black/60 px-3 py-1 text-[0.7rem] font-semibold uppercase tracking-[0.25em] text-white/85">
-                      <Video size={14} />
-                      Ver video
-                    </div>
-                  </div>
+                <div className="relative h-full w-full">
+                  {isMobileViewport ? (
+                    <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-black/25 via-transparent to-black/55" />
+                  ) : null}
+                  {renderMobileVideoBadge()}
                   <video
                     src={asset.url}
                     title={asset.label}
                     className="w-full h-full object-cover"
                     controls={canUseInlinePlayback(videoId)}
-                    onClick={(event) =>
-                      requestMobileVideoPresentation(event, videoId, {
-                        onPresentation: handleMobileVideoPresentation,
-                      })
-                    }
+                    onClick={(event) => requestMobileVideoPresentation(event, videoId)}
                     playsInline
                     preload="metadata"
                   />
-                </>
+                </div>
               ) : (
                 <iframe
                   src={asset.url}
@@ -1581,7 +1529,7 @@ const Transmedia = () => {
 
           <div className="grid gap-6 lg:grid-cols-[2fr_1fr]">
             <div className="rounded-3xl border border-white/10 bg-gradient-to-r from-slate-900/80 via-black/60 to-purple-900/40 p-6 space-y-4">
-              <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Actividades de 2026</p>
+              <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Pantalla 5 · CTA final</p>
               <h4 className="font-display text-2xl text-slate-100">{activeDefinition.screening?.title}</h4>
               <p className="text-sm text-slate-200/90 leading-relaxed">{activeDefinition.screening?.description}</p>
               <Button
@@ -1855,26 +1803,28 @@ const Transmedia = () => {
               {videos.map((video, index) => {
                 const videoId = video.id || video.url || `video-${index}`;
                 return (
-                    <div
-                      key={video.id || video.url || `video-${index}`}
-                      className="rounded-2xl border border-white/10 overflow-hidden bg-black/40 flex flex-col"
-                    >
+                  <div
+                    key={video.id || video.url || `video-${index}`}
+                    className="rounded-2xl border border-white/10 overflow-hidden bg-black/40 flex flex-col"
+                  >
                     <div className="relative aspect-video w-full">
                       {/\.mp4($|\?)/i.test(video.url) ? (
-                        <video
-                          src={video.url}
-                          title={video.title}
-                          className="w-full h-full object-cover bg-black"
-                          controls={canUseInlinePlayback(videoId)}
-                          onClick={(event) =>
-                            requestMobileVideoPresentation(event, videoId, {
-                              onPresentation: handleMobileVideoPresentation,
-                            })
-                          }
-                          playsInline
-                          preload="metadata"
-                          poster={video.poster}
-                        />
+                        <>
+                          {isMobileViewport ? (
+                            <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-black/25 via-transparent to-black/55" />
+                          ) : null}
+                          {renderMobileVideoBadge()}
+                          <video
+                            src={video.url}
+                            title={video.title}
+                            className="w-full h-full object-cover bg-black"
+                            controls={canUseInlinePlayback(videoId)}
+                            onClick={(event) => requestMobileVideoPresentation(event, videoId)}
+                            playsInline
+                            preload="metadata"
+                            poster={video.poster}
+                          />
+                        </>
                       ) : (
                         <iframe
                           src={video.url}
@@ -1885,17 +1835,6 @@ const Transmedia = () => {
                           allowFullScreen
                         ></iframe>
                       )}
-                      {/\.mp4($|\?)/i.test(video.url) ? (
-                        <>
-                          <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-black/30 via-transparent to-black/60" />
-                          <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
-                            <div className="flex items-center gap-2 rounded-full bg-black/60 px-3 py-1 text-[0.7rem] font-semibold uppercase tracking-[0.25em] text-white/85">
-                              <Video size={14} />
-                              Ver video
-                            </div>
-                          </div>
-                        </>
-                      ) : null}
                     </div>
                     <div className="p-4 space-y-1 text-sm text-slate-300">
                       <p className="font-semibold text-slate-100">{video.title}</p>
