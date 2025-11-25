@@ -60,9 +60,11 @@ export function useMobileVideoPresentation() {
   );
 
   const requestMobileVideoPresentation = useCallback(
-    async (event, videoId) => {
+    async (event, videoId, options = {}) => {
+      const { onPresentation } = options;
+
       if (!isMobileViewport) {
-        return;
+        return "inline";
       }
 
       event.preventDefault();
@@ -70,7 +72,7 @@ export function useMobileVideoPresentation() {
 
       const video = event.currentTarget;
       if (!(video instanceof HTMLVideoElement)) {
-        return;
+        return "inline";
       }
 
       const ensurePlayback = async () => {
@@ -90,7 +92,8 @@ export function useMobileVideoPresentation() {
         try {
           await ensurePlayback();
           await video.requestPictureInPicture();
-          return;
+          onPresentation?.("pip");
+          return "pip";
         } catch (error) {
           /* Continue to fullscreen fallback. */
         }
@@ -107,7 +110,8 @@ export function useMobileVideoPresentation() {
         try {
           await ensurePlayback();
           await fullscreenRequest.call(video);
-          return;
+          onPresentation?.("fullscreen");
+          return "fullscreen";
         } catch (error) {
           /* Continue to inline fallback. */
         }
@@ -121,6 +125,9 @@ export function useMobileVideoPresentation() {
       } catch (error) {
         /* If playback fails, silently allow the default behavior. */
       }
+
+      onPresentation?.("inline");
+      return "inline";
     },
     [allowInlinePlayback, isMobileViewport]
   );
