@@ -26,7 +26,6 @@ export default function MiniversoSonoro({
   const [isDesktopViewport, setIsDesktopViewport] = useState(
     typeof window !== "undefined" ? window.innerWidth >= 1024 : false
   );
-  const [isVideoLoading, setIsVideoLoading] = useState(true);
 
   // ——————————————
   // Detecta orientación del video automáticamente
