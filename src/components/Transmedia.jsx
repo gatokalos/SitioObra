@@ -27,6 +27,7 @@ import ARExperience from '@/components/ar/ARExperience';
 import MiniversoSonoro from '@/components/MiniversoSonoro';
 import AutoficcionPreview from '@/components/novela/AutoficcionPreview';
 import { recordShowcaseLike } from '@/services/showcaseLikeService';
+import { useMobileVideoPresentation } from '@/hooks/useMobileVideoPresentation';
 
 pdfjs.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`;
 const showcaseDefinitions = {
@@ -60,12 +61,12 @@ const showcaseDefinitions = {
         {
           id: 'copycats-carta',
           label: 'Carta audiovisual (4:02)',
-          url: 'https://player.vimeo.com/video/1139955789?badge=0&autopause=0&player_id=0&app_id=58479',
+          url: '',
         },
         {
           id: 'copycats-ensayo',
           label: 'La Cadena del Gesto (4:28)',
-          url: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Cine%20-%20teasers/ensayos/4.%20La%20Cadena%20del%20Gesto.mp4',
+          url: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Cine%20-%20teasers/ensayos/La%20Cadena%20del%20Gesto.mp4',
         },
       ],
       tags: ['Cine-ensayo', 'Identidad Digital', 'Archivo autoficcional'],
@@ -503,6 +504,7 @@ const Transmedia = () => {
   const transcriptRef = useRef('');
   const [isCinemaCreditsOpen, setIsCinemaCreditsOpen] = useState(false);
   const [openCollaboratorId, setOpenCollaboratorId] = useState(null);
+  const { canUseInlinePlayback, requestMobileVideoPresentation } = useMobileVideoPresentation();
 
   const handleOpenMiniverses = useCallback(() => {
     setIsMiniverseOpen(true);
@@ -947,6 +949,8 @@ const Transmedia = () => {
     }
 
     if (activeDefinition.type === 'object-webar') {
+      const objectWebArVideoId = `${activeShowcase ?? 'object-webar'}-video`;
+
       return (
         <div className="grid gap-10 lg:grid-cols-[2fr_1fr]">
           <div className="space-y-6">
@@ -971,7 +975,8 @@ const Transmedia = () => {
                       playsInline
                       muted
                       loop
-                      controls
+                      controls={canUseInlinePlayback(objectWebArVideoId)}
+                      onClick={(event) => requestMobileVideoPresentation(event, objectWebArVideoId)}
                       poster={activeDefinition.imagePoster}
                     />
                   ) : (
@@ -1357,6 +1362,7 @@ const Transmedia = () => {
       const renderMedia = (asset) => {
         if (!asset?.url) return null;
         const isVideoFile = /\.mp4($|\?)/i.test(asset.url);
+        const videoId = asset?.id || asset?.url;
         return (
           <div className="rounded-2xl border border-white/10 overflow-hidden bg-black/40">
             <div className="aspect-video w-full bg-black/60">
@@ -1365,7 +1371,8 @@ const Transmedia = () => {
                   src={asset.url}
                   title={asset.label}
                   className="w-full h-full object-cover"
-                  controls
+                  controls={canUseInlinePlayback(videoId)}
+                  onClick={(event) => requestMobileVideoPresentation(event, videoId)}
                   playsInline
                   preload="metadata"
                 />
@@ -1812,37 +1819,44 @@ const Transmedia = () => {
           <div>
             <h5 className="font-display text-xl text-slate-100 mb-4">Galería audiovisual</h5>
             <div className="grid gap-6 md:grid-cols-2">
-              {videos.map((video) => (
-                <div key={video.id} className="rounded-2xl border border-white/10 overflow-hidden bg-black/40 flex flex-col">
-                  <div className="aspect-video w-full">
-                    {/\.mp4($|\?)/i.test(video.url) ? (
-                      <video
-                        src={video.url}
-                        title={video.title}
-                        className="w-full h-full object-cover bg-black"
-                        controls
-                        playsInline
-                        preload="metadata"
-                        poster={video.poster}
-                      />
-                    ) : (
-                      <iframe
-                        src={video.url}
-                        title={video.title}
-                        className="w-full h-full"
-                        frameBorder="0"
-                        allow="autoplay; fullscreen; picture-in-picture"
-                        allowFullScreen
-                      ></iframe>
-                    )}
+              {videos.map((video, index) => {
+                const videoId = video.id || video.url || `video-${index}`;
+                return (
+                  <div
+                    key={video.id || video.url || `video-${index}`}
+                    className="rounded-2xl border border-white/10 overflow-hidden bg-black/40 flex flex-col"
+                  >
+                    <div className="aspect-video w-full">
+                      {/\.mp4($|\?)/i.test(video.url) ? (
+                        <video
+                          src={video.url}
+                          title={video.title}
+                          className="w-full h-full object-cover bg-black"
+                          controls={canUseInlinePlayback(videoId)}
+                          onClick={(event) => requestMobileVideoPresentation(event, videoId)}
+                          playsInline
+                          preload="metadata"
+                          poster={video.poster}
+                        />
+                      ) : (
+                        <iframe
+                          src={video.url}
+                          title={video.title}
+                          className="w-full h-full"
+                          frameBorder="0"
+                          allow="autoplay; fullscreen; picture-in-picture"
+                          allowFullScreen
+                        ></iframe>
+                      )}
+                    </div>
+                    <div className="p-4 space-y-1 text-sm text-slate-300">
+                      <p className="font-semibold text-slate-100">{video.title}</p>
+                      {video.author ? <p>{video.author}</p> : null}
+                      {video.duration ? <p className="text-slate-500">Duración: {video.duration}</p> : null}
+                    </div>
                   </div>
-                  <div className="p-4 space-y-1 text-sm text-slate-300">
-                    <p className="font-semibold text-slate-100">{video.title}</p>
-                    {video.author ? <p>{video.author}</p> : null}
-                    {video.duration ? <p className="text-slate-500">Duración: {video.duration}</p> : null}
-                  </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
         ) : null}

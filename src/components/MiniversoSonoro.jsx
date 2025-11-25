@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useMobileVideoPresentation } from "@/hooks/useMobileVideoPresentation";
 
 export default function MiniversoSonoro({
   title = "Miniverso Sonoro",
@@ -11,6 +12,8 @@ export default function MiniversoSonoro({
 }) {
   const videoRef = useRef(null);
   const audioRef = useRef(null);
+  const { requestMobileVideoPresentation } = useMobileVideoPresentation();
+  const videoPresentationId = videoUrl || "miniverso-sonoro-video";
 
   const noisePattern =
     'data:image/svg+xml;utf8,<svg%20xmlns="http://www.w3.org/2000/svg"%20width="120"%20height="120"><filter%20id="n"><feTurbulence%20type="fractalNoise"%20baseFrequency="0.7"%20numOctaves="2"%20stitchTiles="stitch"/></filter><rect%20width="120"%20height="120"%20filter="url(%23n)"%20opacity="0.2"/></svg>';
@@ -154,6 +157,7 @@ export default function MiniversoSonoro({
             loop
             playsInline
             className="w-full h-full object-cover"
+            onClick={(event) => requestMobileVideoPresentation(event, videoPresentationId)}
             onError={handleVideoError}
           />
         ) : (

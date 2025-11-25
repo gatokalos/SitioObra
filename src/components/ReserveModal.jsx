@@ -186,7 +186,7 @@ const ReserveModal = ({ open, onClose, initialInterest = INTEREST_OPTIONS[0].val
           interest: formState.interest,
           channel: 'landing',
           object_type: 'boleto',
-          event: 'funcion-2024-12-28',
+          event: 'funcion-2025-12-28',
           notes: [packageSummary, formState.notes.trim()].filter(Boolean).join(' | ') || null,
         };
 
