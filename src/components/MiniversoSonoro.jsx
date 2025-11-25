@@ -1,5 +1,4 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { toast } from "@/components/ui/use-toast";
 import { useMobileVideoPresentation } from "@/hooks/useMobileVideoPresentation";
 
 export default function MiniversoSonoro({
@@ -99,14 +98,6 @@ export default function MiniversoSonoro({
     setVideoError(true);
   }, []);
 
-  const handleMobileVideoPresentation = useCallback((mode) => {
-    if (mode === "pip") {
-      toast({
-        description: "Continúa explorando mientras se reproduce tu video.",
-      });
-    }
-  }, []);
-
   const renderHeaderSection =
     showHeader || highlights.length > 0
       ? (
@@ -166,11 +157,7 @@ export default function MiniversoSonoro({
             loop
             playsInline
             className="w-full h-full object-cover"
-            onClick={(event) =>
-              requestMobileVideoPresentation(event, videoPresentationId, {
-                onPresentation: handleMobileVideoPresentation,
-              })
-            }
+            onClick={(event) => requestMobileVideoPresentation(event, videoPresentationId)}
             onError={handleVideoError}
           />
         ) : (

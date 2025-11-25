@@ -565,14 +565,6 @@ const Transmedia = () => {
     [handleOpenMiniverses, loadShowcaseContent, showcaseContent]
   );
 
-  const handleMobileVideoPresentation = useCallback((mode) => {
-    if (mode === 'pip') {
-      toast({
-        description: 'Continúa explorando mientras se reproduce tu video.',
-      });
-    }
-  }, []);
-
   const handleOpenBlogEntry = useCallback((slug) => {
     if (!slug) {
       return;
@@ -985,11 +977,7 @@ const Transmedia = () => {
                         muted
                         loop
                         controls={canUseInlinePlayback(objectWebArVideoId)}
-                        onClick={(event) =>
-                          requestMobileVideoPresentation(event, objectWebArVideoId, {
-                            onPresentation: handleMobileVideoPresentation,
-                          })
-                        }
+                        onClick={(event) => requestMobileVideoPresentation(event, objectWebArVideoId)}
                         poster={activeDefinition.imagePoster}
                       />
                     </div>
@@ -1386,11 +1374,7 @@ const Transmedia = () => {
                   title={asset.label}
                   className="w-full h-full object-cover"
                   controls={canUseInlinePlayback(videoId)}
-                  onClick={(event) =>
-                    requestMobileVideoPresentation(event, videoId, {
-                      onPresentation: handleMobileVideoPresentation,
-                    })
-                  }
+                  onClick={(event) => requestMobileVideoPresentation(event, videoId)}
                   playsInline
                   preload="metadata"
                 />
@@ -1851,11 +1835,7 @@ const Transmedia = () => {
                           title={video.title}
                           className="w-full h-full object-cover bg-black"
                           controls={canUseInlinePlayback(videoId)}
-                          onClick={(event) =>
-                            requestMobileVideoPresentation(event, videoId, {
-                              onPresentation: handleMobileVideoPresentation,
-                            })
-                          }
+                          onClick={(event) => requestMobileVideoPresentation(event, videoId)}
                           playsInline
                           preload="metadata"
                           poster={video.poster}
