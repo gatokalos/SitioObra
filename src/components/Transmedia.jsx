@@ -504,7 +504,8 @@ const Transmedia = () => {
   const transcriptRef = useRef('');
   const [isCinemaCreditsOpen, setIsCinemaCreditsOpen] = useState(false);
   const [openCollaboratorId, setOpenCollaboratorId] = useState(null);
-  const { canUseInlinePlayback, requestMobileVideoPresentation } = useMobileVideoPresentation();
+  const [mobileVideoLoading, setMobileVideoLoading] = useState({});
+  const { isMobileViewport, canUseInlinePlayback, requestMobileVideoPresentation } = useMobileVideoPresentation();
 
   const handleOpenMiniverses = useCallback(() => {
     setIsMiniverseOpen(true);
@@ -563,6 +564,32 @@ const Transmedia = () => {
       handleOpenMiniverses();
     },
     [handleOpenMiniverses, loadShowcaseContent, showcaseContent]
+  );
+
+  const updateMobileVideoLoading = useCallback((videoId, isLoading) => {
+    if (!videoId) return;
+    setMobileVideoLoading((prev) => {
+      if (prev[videoId] === isLoading) {
+        return prev;
+      }
+      return { ...prev, [videoId]: isLoading };
+    });
+  }, []);
+
+  const renderMobileVideoOverlay = useCallback(
+    (videoId) => {
+      if (!isMobileViewport) return null;
+      if (!mobileVideoLoading[videoId]) return null;
+      return (
+        <div className="pointer-events-none absolute inset-0 z-10 flex flex-col items-center justify-center gap-2 bg-black/50 text-center px-4">
+          <div className="h-6 w-6 animate-spin rounded-full border-2 border-white/30 border-t-white/80" aria-hidden="true" />
+          <p className="text-xs font-semibold uppercase tracking-[0.25em] text-white/80">
+            Continúa explorando mientras se carga tu video
+          </p>
+        </div>
+      );
+    },
+    [isMobileViewport, mobileVideoLoading]
   );
 
   const handleOpenBlogEntry = useCallback((slug) => {
@@ -968,17 +995,25 @@ const Transmedia = () => {
               ) : (
                 <>
                   {/\.mp4($|\?)/i.test(activeDefinition.image) ? (
-                    <video
-                      src={activeDefinition.image}
-                      className="w-full h-64 object-cover bg-black/50"
-                      autoPlay
-                      playsInline
-                      muted
-                      loop
-                      controls={canUseInlinePlayback(objectWebArVideoId)}
-                      onClick={(event) => requestMobileVideoPresentation(event, objectWebArVideoId)}
-                      poster={activeDefinition.imagePoster}
-                    />
+                    <div className="relative">
+                      {renderMobileVideoOverlay(objectWebArVideoId)}
+                      <video
+                        src={activeDefinition.image}
+                        className="w-full h-64 object-cover bg-black/50"
+                        autoPlay
+                        playsInline
+                        muted
+                        loop
+                        controls={canUseInlinePlayback(objectWebArVideoId)}
+                        onClick={(event) => requestMobileVideoPresentation(event, objectWebArVideoId)}
+                        onLoadStart={() => updateMobileVideoLoading(objectWebArVideoId, true)}
+                        onLoadedData={() => updateMobileVideoLoading(objectWebArVideoId, false)}
+                        onCanPlay={() => updateMobileVideoLoading(objectWebArVideoId, false)}
+                        onPlaying={() => updateMobileVideoLoading(objectWebArVideoId, false)}
+                        onError={() => updateMobileVideoLoading(objectWebArVideoId, false)}
+                        poster={activeDefinition.imagePoster}
+                      />
+                    </div>
                   ) : (
                     <img
                       src={activeDefinition.image}
@@ -1365,17 +1400,25 @@ const Transmedia = () => {
         const videoId = asset?.id || asset?.url;
         return (
           <div className="rounded-2xl border border-white/10 overflow-hidden bg-black/40">
-            <div className="aspect-video w-full bg-black/60">
+            <div className="relative aspect-video w-full bg-black/60">
               {isVideoFile ? (
-                <video
-                  src={asset.url}
-                  title={asset.label}
-                  className="w-full h-full object-cover"
-                  controls={canUseInlinePlayback(videoId)}
-                  onClick={(event) => requestMobileVideoPresentation(event, videoId)}
-                  playsInline
-                  preload="metadata"
-                />
+                <>
+                  {renderMobileVideoOverlay(videoId)}
+                  <video
+                    src={asset.url}
+                    title={asset.label}
+                    className="w-full h-full object-cover"
+                    controls={canUseInlinePlayback(videoId)}
+                    onClick={(event) => requestMobileVideoPresentation(event, videoId)}
+                    onLoadStart={() => updateMobileVideoLoading(videoId, true)}
+                    onLoadedData={() => updateMobileVideoLoading(videoId, false)}
+                    onCanPlay={() => updateMobileVideoLoading(videoId, false)}
+                    onPlaying={() => updateMobileVideoLoading(videoId, false)}
+                    onError={() => updateMobileVideoLoading(videoId, false)}
+                    playsInline
+                    preload="metadata"
+                  />
+                </>
               ) : (
                 <iframe
                   src={asset.url}
@@ -1826,18 +1869,26 @@ const Transmedia = () => {
                     key={video.id || video.url || `video-${index}`}
                     className="rounded-2xl border border-white/10 overflow-hidden bg-black/40 flex flex-col"
                   >
-                    <div className="aspect-video w-full">
+                    <div className="relative aspect-video w-full">
                       {/\.mp4($|\?)/i.test(video.url) ? (
-                        <video
-                          src={video.url}
-                          title={video.title}
-                          className="w-full h-full object-cover bg-black"
-                          controls={canUseInlinePlayback(videoId)}
-                          onClick={(event) => requestMobileVideoPresentation(event, videoId)}
-                          playsInline
-                          preload="metadata"
-                          poster={video.poster}
-                        />
+                        <>
+                          {renderMobileVideoOverlay(videoId)}
+                          <video
+                            src={video.url}
+                            title={video.title}
+                            className="w-full h-full object-cover bg-black"
+                            controls={canUseInlinePlayback(videoId)}
+                            onClick={(event) => requestMobileVideoPresentation(event, videoId)}
+                            onLoadStart={() => updateMobileVideoLoading(videoId, true)}
+                            onLoadedData={() => updateMobileVideoLoading(videoId, false)}
+                            onCanPlay={() => updateMobileVideoLoading(videoId, false)}
+                            onPlaying={() => updateMobileVideoLoading(videoId, false)}
+                            onError={() => updateMobileVideoLoading(videoId, false)}
+                            playsInline
+                            preload="metadata"
+                            poster={video.poster}
+                          />
+                        </>
                       ) : (
                         <iframe
                           src={video.url}

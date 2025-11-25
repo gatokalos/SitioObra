@@ -12,8 +12,9 @@ export default function MiniversoSonoro({
 }) {
   const videoRef = useRef(null);
   const audioRef = useRef(null);
-  const { requestMobileVideoPresentation } = useMobileVideoPresentation();
+  const { isMobileViewport, requestMobileVideoPresentation } = useMobileVideoPresentation();
   const videoPresentationId = videoUrl || "miniverso-sonoro-video";
+  const [isVideoLoading, setIsVideoLoading] = useState(true);
 
   const noisePattern =
     'data:image/svg+xml;utf8,<svg%20xmlns="http://www.w3.org/2000/svg"%20width="120"%20height="120"><filter%20id="n"><feTurbulence%20type="fractalNoise"%20baseFrequency="0.7"%20numOctaves="2"%20stitchTiles="stitch"/></filter><rect%20width="120"%20height="120"%20filter="url(%23n)"%20opacity="0.2"/></svg>';
@@ -25,6 +26,7 @@ export default function MiniversoSonoro({
   const [isDesktopViewport, setIsDesktopViewport] = useState(
     typeof window !== "undefined" ? window.innerWidth >= 1024 : false
   );
+  const [isVideoLoading, setIsVideoLoading] = useState(true);
 
   // ——————————————
   // Detecta orientación del video automáticamente
@@ -73,6 +75,7 @@ export default function MiniversoSonoro({
 
   useEffect(() => {
     setVideoError(false);
+    setIsVideoLoading(true);
   }, [videoUrl]);
 
   useEffect(() => {
@@ -96,6 +99,7 @@ export default function MiniversoSonoro({
 
   const handleVideoError = useCallback(() => {
     setVideoError(true);
+    setIsVideoLoading(false);
   }, []);
 
   const renderHeaderSection =
@@ -158,6 +162,10 @@ export default function MiniversoSonoro({
             playsInline
             className="w-full h-full object-cover"
             onClick={(event) => requestMobileVideoPresentation(event, videoPresentationId)}
+            onLoadStart={() => setIsVideoLoading(true)}
+            onLoadedData={() => setIsVideoLoading(false)}
+            onCanPlay={() => setIsVideoLoading(false)}
+            onPlaying={() => setIsVideoLoading(false)}
             onError={handleVideoError}
           />
         ) : (
@@ -177,6 +185,15 @@ export default function MiniversoSonoro({
             ) : (
               <p className="text-xs text-slate-500">Revisa la fuente del archivo.</p>
             )}
+          </div>
+        )}
+
+        {!videoError && isMobileViewport && isVideoLoading && (
+          <div className="pointer-events-none absolute inset-0 z-10 flex flex-col items-center justify-center gap-2 bg-black/50 text-center px-6">
+            <div className="h-7 w-7 animate-spin rounded-full border-2 border-white/30 border-t-white/80" aria-hidden="true" />
+            <p className="text-xs font-semibold uppercase tracking-[0.25em] text-white/80">
+              Continúa explorando mientras se carga tu video
+            </p>
           </div>
         )}
 
