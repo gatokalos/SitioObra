@@ -458,7 +458,7 @@ function MiniversoSonoroPreview({
       <aside className="sonoro-preview-controls">{controlsBlock}</aside>
       <section className="sonoro-preview-stage">
         {renderVideoCard()}
-        {showCTA && isMobile && (
+        {showCTA && (
           <button
             type="button"
             className="sonoro-preview-cta"

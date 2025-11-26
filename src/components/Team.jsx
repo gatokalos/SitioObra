@@ -67,7 +67,7 @@ const teamData = {
         name: "Daniel Primo",
         role: "Video Escenográfico e Iluminación",
         bio: "Artista visual y diseñador escénico. Explora la relación entre multimedia y espacio escénico. Integrante del Sistema Nacional de Creadores, su trabajo ha sido presentado en Europa, Asia y América. Cofundador de Engranaje Invertebrado.",
-        image: "/images/placeholder-diseno.jpg",
+        image: "https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/equipo/primo.jpg",
       },
       {
         name: "Lía Pérez",
@@ -91,7 +91,7 @@ const teamData = {
         name: "Ximena Inurreta",
         role: "Asistente de Diseño de Escenografía",
         bio: "Diseñadora escénica emergente que apoya el desarrollo de atmósferas visuales y transiciones espaciales en el montaje de #GatoEncerrado.",
-        image: "/images/placeholder-diseno.jpg",
+        image: "https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/equipo/Ximena.jpg",
       },
       {
         name: "Diego Madera",
@@ -127,7 +127,7 @@ const teamData = {
         name: "Miroslava Wilson",
         role: "Producción Ejecutiva",
         bio: "Productora ejecutiva, directora y asesora de movimiento. Originaria de Hermosillo y radicada en Tijuana, es fundadora de Péndulo Cero A.C. y educadora de movimiento somático certificada por Body Mind Movement. Su trabajo interdisciplinario vincula arte, medio ambiente y humanismo. Ha presentado su obra en Asia, América y Europa, y actualmente impulsa proyectos como Casa Viva y SomasSomos.",
-        image: "/images/placeholder-produccion.jpg",
+        image: "https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/equipo/Miroslava%20.jpg",
         },
       {
         name: "Marcela Durán Mulia",
