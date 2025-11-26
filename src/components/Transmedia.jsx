@@ -24,7 +24,6 @@ import { Document, Page, pdfjs } from 'react-pdf';
 import 'react-pdf/dist/Page/AnnotationLayer.css';
 import 'react-pdf/dist/Page/TextLayer.css';
 import ARExperience from '@/components/ar/ARExperience';
-import MiniversoSonoro from '@/components/MiniversoSonoro';
 import MiniversoSonoroPreview from '@/components/miniversos/sonoro/MiniversoSonoroPreview';
 import AutoficcionPreview from '@/components/novela/AutoficcionPreview';
 import { recordShowcaseLike } from '@/services/showcaseLikeService';
@@ -1077,19 +1076,21 @@ const Transmedia = () => {
                 ))}
               </ol>
             </div>
-            <div className="rounded-3xl border border-white/10 bg-black/20 p-6 space-y-3 text-sm text-slate-300">
-              {activeDefinition.closing?.map((line, index) => (
-                <p key={index}>{line}</p>
-              ))}
+            <div className="hidden lg:block space-y-4">
+              <div className="rounded-3xl border border-white/10 bg-black/20 p-6 space-y-3 text-sm text-slate-300">
+                {activeDefinition.closing?.map((line, index) => (
+                  <p key={index}>{line}</p>
+                ))}
+              </div>
+              {activeShowcase === 'miniversoSonoro' ? (
+                <ShowcaseReactionInline
+                  showcaseId="miniversoSonoro"
+                  title="La voz de quienes escuchan"
+                  description="Comparte tu vibración y deja un like que resuene en este miniverso."
+                  buttonLabel="Hacer latir la resonancia"
+                />
+              ) : null}
             </div>
-            {activeShowcase === 'miniversoSonoro' ? (
-              <ShowcaseReactionInline
-                showcaseId="miniversoSonoro"
-                title="La voz de quienes escuchan"
-                description="Comparte tu vibración y deja un like que resuene en este miniverso."
-                buttonLabel="Hacer latir la resonancia"
-              />
-            ) : null}
             <div className="lg:hidden">
               <MiniversoSonoroPreview
                 videoUrl={activeDefinition.videoUrl}
@@ -1097,23 +1098,38 @@ const Transmedia = () => {
                 videoArtist="Residencia #GatoEncerrado"
                 audioOptions={activeDefinition.musicOptions}
                 poemOptions={activeDefinition.poems}
-                showHeader={false}
-                showCTA={false}
+                showHeader
+                showCTA
               />
+              <div className="mt-4 space-y-4">
+                <div className="rounded-3xl border border-white/10 bg-black/20 p-6 space-y-3 text-sm text-slate-300">
+                  {activeDefinition.closing?.map((line, index) => (
+                    <p key={index}>{line}</p>
+                  ))}
+                </div>
+                {activeShowcase === 'miniversoSonoro' ? (
+                  <ShowcaseReactionInline
+                    showcaseId="miniversoSonoro"
+                    title="La voz de quienes escuchan"
+                    description="Comparte tu vibración y deja un like que resuene en este miniverso."
+                    buttonLabel="Hacer latir la resonancia"
+                  />
+                ) : null}
+              </div>
             </div>
           </div>
 
           <div className="hidden lg:flex justify-center px-4 order-2 lg:order-1 lg:px-0">
-            <div className="w-full max-w-[420px] lg:max-w-[640px]">
+            <div className="w-full max-w-[1100px]">
               <div className="rounded-3xl border border-white/10 bg-black/30 p-6">
-                <MiniversoSonoro
-                  title={activeDefinition.label}
-                  subtitle={activeDefinition.intro}
+                <MiniversoSonoroPreview
                   videoUrl={activeDefinition.videoUrl}
-                  musicOptions={activeDefinition.musicOptions}
-                  poems={activeDefinition.poems}
-                  highlights={activeDefinition.highlights}
-                  showHeader={false}
+                  videoTitle={activeDefinition.label}
+                  videoArtist="Residencia #GatoEncerrado"
+                  audioOptions={activeDefinition.musicOptions}
+                  poemOptions={activeDefinition.poems}
+                  showHeader
+                  showCTA
                 />
               </div>
             </div>

@@ -61,6 +61,14 @@
   grid-template-columns: minmax(0, 1fr);
 }
 
+@media (min-width: 1025px) {
+  .sonoro-preview-layout.is-desktop {
+    display: grid;
+    grid-template-columns: 420px 1fr;
+    gap: 2.2rem;
+  }
+}
+
 /* Stage de video */
 .sonoro-preview-stage {
   display: flex;
@@ -197,6 +205,90 @@
   transform: translateY(0);
 }
 
+/* Fullscreen ritual */
+.sonoro-fullscreen-layer {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background: radial-gradient(circle at 20% 20%, rgba(111, 176, 255, 0.25), transparent 40%),
+    radial-gradient(circle at 80% 80%, rgba(255, 179, 128, 0.2), transparent 45%),
+    rgba(4, 6, 12, 0.94);
+  backdrop-filter: blur(14px);
+  display: flex;
+  flex-direction: column;
+  padding: 1rem;
+}
+
+.sonoro-fullscreen-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.5rem 0.25rem 1rem;
+}
+
+.sonoro-fullscreen-kicker {
+  margin: 0;
+  text-transform: uppercase;
+  letter-spacing: 0.38em;
+  font-size: 0.7rem;
+  color: rgba(255, 255, 255, 0.75);
+}
+
+.sonoro-fullscreen-close {
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  border-radius: 999px;
+  padding: 0.55rem 1rem;
+  background: rgba(0, 0, 0, 0.25);
+  color: #f8f8f8;
+  font-size: 0.8rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.sonoro-fullscreen-body {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.5rem;
+}
+
+.sonoro-preview-video-card.is-full-experience {
+  width: 100%;
+  height: 100%;
+  max-width: none;
+  border-color: rgba(255, 255, 255, 0.25);
+  box-shadow: 0 28px 80px rgba(0, 0, 0, 0.85);
+  background: radial-gradient(circle at 50% 50%, rgba(255, 255, 255, 0.06), transparent 55%),
+    rgba(3, 4, 10, 0.95);
+}
+
+.sonoro-preview-video-card.is-full-experience .sonoro-preview-video {
+  opacity: 0.45;
+  filter: brightness(0.35) saturate(0.75) contrast(1.45) blur(6px);
+}
+
+.is-full-experience .sonoro-ambient-fog {
+  opacity: 0.95;
+  filter: blur(48px);
+}
+
+.is-full-experience .sonoro-ambient-shadow {
+  opacity: 0.85;
+  filter: blur(50px);
+}
+
+.is-full-experience .sonoro-ambient-breath {
+  opacity: 0.9;
+  filter: blur(42px);
+  transform: scale(1.28);
+}
+
+.is-full-experience .sonoro-ambient-grain {
+  opacity: 0.85;
+}
+
 /* Controles */
 .sonoro-preview-controls {
   display: flex;
@@ -301,6 +393,11 @@
   background: linear-gradient(120deg, #6a3bff, #1f9edc);
   color: #fff;
   box-shadow: 0 16px 40px rgba(0, 0, 0, 0.6);
+}
+
+.sonoro-preview-cta:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
 }
 
 .sonoro-preview-cta--subtle {

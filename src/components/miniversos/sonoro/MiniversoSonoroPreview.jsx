@@ -1,21 +1,25 @@
 // MiniversoSonoroPreview.jsx
 import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { useSonoroPreview } from '@/hooks/useSonoroPreview';
 import '@/components/miniversos/sonoro/MiniversoSonoroPreview.css';
 
 const VISUAL_MODES = [
   {
     id: 'neblina',
+    label: 'Modo',
     short: 'Neblina-Suave',
     copy: 'Neblina suave que difumina los bordes del sueño.',
   },
   {
     id: 'sombras',
+    label: 'Modo',
     short: 'Deep-Shadow',
     copy: 'Contrastes más profundos, como si todo ocurriera a media luz.',
   },
   {
     id: 'respiracion',
+    label: 'Modo',
     short: 'Pulse-Bloom',
     copy: 'La luz late con la escena, como si el sueño respirara.',
   },
@@ -81,6 +85,8 @@ function MiniversoSonoroPreview({
   const [poemLines, setLocalPoemLines] = useState([]);
   const [currentLineIndex, setCurrentLineIndex] = useState(null);
   const [isPoemVisible, setIsPoemVisible] = useState(false);
+  const [isFullExperience, setIsFullExperience] = useState(false);
+  const isSelectionReady = Boolean(selectedAudioId) && Boolean(selectedPoemId);
 
   const videoRef = useRef(null);
   const audioRef = useRef(null);
@@ -151,9 +157,9 @@ function MiniversoSonoroPreview({
       } else {
         setCurrentLineIndex((i) => (i === null ? 0 : i + 1));
       }
-    }, 4000);
+    }, 1500);
     return () => clearTimeout(timeout);
-  }, [poemLines, currentLineIndex]);
+  }, [poemLines, currentLineIndex, isFullExperience]);
 
   // Detectar móvil
   useEffect(() => {
@@ -165,9 +171,22 @@ function MiniversoSonoroPreview({
     return () => mq.removeEventListener('change', update);
   }, []);
 
+  useEffect(() => {
+    if (typeof document === 'undefined') return;
+    if (isFullExperience) {
+      document.body.classList.add('overflow-hidden');
+      if (typeof window !== 'undefined') {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+    } else {
+      document.body.classList.remove('overflow-hidden');
+    }
+    return () => document.body.classList.remove('overflow-hidden');
+  }, [isFullExperience]);
+
   // Desktop: autoplay de video (silencioso) cuando hay URL
   useEffect(() => {
-    if (isMobile) return; // en móvil no auto-play
+    if (isMobile && !isFullExperience) return; // en móvil solo en full experience
     const video = videoRef.current;
     if (!video || !currentVideo?.url_video) return;
 
@@ -178,6 +197,10 @@ function MiniversoSonoroPreview({
 
   useEffect(() => {
     if (!videoRef.current) return;
+    if (isMobile && !isFullExperience) {
+      videoRef.current.pause();
+      return;
+    }
     const v = videoRef.current;
     const attempt = v.play();
     if (attempt && attempt.catch) {
@@ -185,17 +208,17 @@ function MiniversoSonoroPreview({
         setTimeout(() => v.play().catch(() => {}), 250);
       });
     }
-  }, [currentVideo?.url_video]);
+  }, [currentVideo?.url_video, isFullExperience, isMobile]);
 
   // Reproducir audio cuando cambia la selección
   useEffect(() => {
     if (!audioRef.current) return;
-    if (selectedAudio && selectedAudio.url_audio) {
+    if (isFullExperience && selectedAudio && selectedAudio.url_audio) {
       audioRef.current.play().catch(() => {});
     } else {
       audioRef.current.pause();
     }
-  }, [selectedAudio]);
+  }, [selectedAudio, isFullExperience]);
 
   const handleAudioChange = (event) => {
     setSelectedAudioId(event.target.value);
@@ -223,15 +246,237 @@ function MiniversoSonoroPreview({
   };
 
   const handleEnterExperience = () => {
+    setIsFullExperience(true);
     if (onEnterExperience) {
       onEnterExperience();
-    } else if (experienceHref) {
-      window.location.href = experienceHref;
     }
   };
 
-  return (
-    <div className={`sonoro-preview root-mode-${visualMode}`}>
+  const handleExitExperience = () => {
+    setIsFullExperience(false);
+  };
+
+  // Al cambiar a full experience, reiniciar/reproducir medios; al salir, pausar y ocultar poema
+  useEffect(() => {
+    const video = videoRef.current;
+    const audio = audioRef.current;
+
+    if (isFullExperience) {
+      if (video) {
+        try {
+          video.currentTime = 0;
+        } catch (e) { /* noop */ }
+        video.play().catch(() => {});
+      }
+      if (audio && selectedAudio?.url_audio) {
+        try {
+          audio.currentTime = 0;
+        } catch (e) { /* noop */ }
+        audio.play().catch(() => {});
+      }
+      if (poemLines.length > 0) {
+        setCurrentLineIndex(0);
+        setIsPoemVisible(true);
+      }
+    } else {
+      if (video && isMobile) {
+        video.pause();
+      }
+      if (audio) {
+        audio.pause();
+      }
+      setIsPoemVisible(false);
+      setCurrentLineIndex(poemLines.length > 0 ? 0 : null);
+    }
+  }, [isFullExperience, isMobile, poemLines.length, selectedAudio?.url_audio]);
+
+  const renderVideoCard = (extraClass = '') => (
+    <div className={`sonoro-preview-video-card mode-${visualMode} ${extraClass}`}>
+      <div className="sonoro-preview-hud">
+        <div>
+          <p className="sonoro-preview-hud__kicker">Cámara de resonancia</p>
+          <p className="sonoro-preview-hud__title">
+            {currentVideo?.title || fallbackVideoTitle || 'Video ritual'}
+          </p>
+          <p className="sonoro-preview-hud__artist">
+            {currentVideo?.artist || fallbackVideoArtist || 'Residencia #GatoEncerrado'}
+          </p>
+        </div>
+        <div className="sonoro-preview-hud__mode">
+          <span className="sonoro-preview-pill">{currentMode.label}</span>
+          <small>{currentMode.short}</small>
+        </div>
+      </div>
+
+      <div className="sonoro-ambient">
+        <div className="sonoro-ambient-video">
+          {currentVideo?.url_video ? (
+            <video
+              key={currentVideo?.id || currentVideo?.url_video}
+              ref={videoRef}
+              className="sonoro-preview-video"
+              src={currentVideo?.url_video}
+              muted
+              autoPlay={!isMobile || isFullExperience}
+              playsInline
+              loop={!isMobile || isFullExperience}
+              onEnded={handleVideoEnd}
+            />
+          ) : (
+            <div className="sonoro-preview-video-placeholder">
+              <p>{isLoading ? 'Cargando el archivo sonoro…' : 'Pronto se abrirá un video ritual.'}</p>
+            </div>
+          )}
+        </div>
+
+        {/* Overlays y ambientación */}
+        <div className="sonoro-ambient-fog" aria-hidden="true" />
+        <div className="sonoro-ambient-shadow" aria-hidden="true" />
+        <div className="sonoro-ambient-breath" aria-hidden="true" />
+        <div className="sonoro-ambient-grain" aria-hidden="true" />
+
+        <div className="sonoro-video-overlay" aria-hidden="true">
+          <span className="sonoro-video-overlay__layer layer-1" />
+          <span className="sonoro-video-overlay__layer layer-2" />
+          <span className="sonoro-video-overlay__layer layer-3" />
+          <span className="sonoro-video-overlay__layer layer-4" />
+        </div>
+      </div>
+
+      {(poemLines?.length || poemText) && (
+        <div className="sonoro-preview-poem-overlay poem-overlay">
+          {poemLines?.length ? (
+            poemLines.map((line, idx) => (
+              <p
+                key={`${selectedPoem?.id || 'poema'}-${idx}`}
+                className={`poem-line ${idx === currentLineIndex && isPoemVisible ? 'is-visible' : ''}`}
+                style={{ zIndex: idx === currentLineIndex ? 2 : 1 }}
+              >
+                {line}
+              </p>
+            ))
+          ) : (
+            <p className="poem-line is-visible">{poemText}</p>
+          )}
+        </div>
+      )}
+    </div>
+  );
+
+  const controlsBlock = (
+    <>
+      <div className="sonoro-preview-control-group sonoro-preview-control-group--modes">
+        <p className="sonoro-preview-control-label">Modos de sueño</p>
+        <div className="sonoro-preview-mode-pills">
+          {VISUAL_MODES.map((mode) => (
+            <button
+              key={mode.id}
+              type="button"
+              className={`sonoro-preview-mode-pill ${visualMode === mode.id ? 'is-active' : ''}`}
+              onClick={() => setVisualMode(mode.id)}
+              aria-pressed={visualMode === mode.id}
+            >
+              <div className="sonoro-preview-mode-pill__header">
+                <span>{mode.label}</span>
+                <small>{mode.short}</small>
+              </div>
+              <p>{mode.copy}</p>
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <div className="sonoro-preview-control-group">
+        <p className="sonoro-preview-control-label">Elige la música</p>
+        <select
+          value={selectedAudio?.id ?? ''}
+          onChange={handleAudioChange}
+          className="sonoro-preview-select"
+        >
+          {audioOptions.map((track) => (
+            <option key={track.id} value={track.id}>
+              {track.label || track.title}
+            </option>
+          ))}
+        </select>
+      </div>
+
+      <div className="sonoro-preview-control-group">
+        <p className="sonoro-preview-control-label">Elige un poema</p>
+        <select
+          value={selectedPoem?.id ?? ''}
+          onChange={handlePoemChange}
+          className="sonoro-preview-select"
+        >
+          <option value="">Ninguno</option>
+          {poemOptions.map((poem) => (
+            <option key={poem.id} value={poem.id}>
+              {poem.label || poem.title || 'Poema ritual'}
+            </option>
+          ))}
+        </select>
+      </div>
+    </>
+  );
+
+  const mobileLayout = (
+    <div className={`sonoro-preview-layout ${isMobile ? 'is-mobile' : 'is-desktop'}`}>
+      <aside className="sonoro-preview-controls">{controlsBlock}</aside>
+      <section className="sonoro-preview-stage">
+        {renderVideoCard()}
+        {showCTA && (
+          <button
+            type="button"
+            className="sonoro-preview-cta"
+            onClick={handleEnterExperience}
+            disabled={!isSelectionReady}
+          >
+            Entrar a la cámara de resonancia
+          </button>
+        )}
+      </section>
+    </div>
+  );
+
+  const desktopLayout = (
+    <div className="sonoro-preview-layout is-desktop">
+      <aside className="sonoro-preview-controls">{controlsBlock}</aside>
+      <section className="sonoro-preview-stage">
+        {renderVideoCard()}
+        {showCTA && (
+          <button
+            type="button"
+            className="sonoro-preview-cta"
+            onClick={handleEnterExperience}
+            disabled={!isSelectionReady}
+          >
+            Entrar a la cámara de resonancia
+          </button>
+        )}
+      </section>
+    </div>
+  );
+
+  const fullscreenLayer =
+    typeof document !== 'undefined' && isFullExperience
+      ? createPortal(
+          <div className="sonoro-fullscreen-layer">
+            <div className="sonoro-fullscreen-header">
+              <p className="sonoro-fullscreen-kicker">Cámara de resonancia</p>
+              <button type="button" className="sonoro-fullscreen-close" onClick={handleExitExperience}>
+                Cerrar experiencia
+              </button>
+            </div>
+            <div className="sonoro-fullscreen-body">
+              {renderVideoCard('is-full-experience')}
+            </div>
+          </div>,
+          document.body,
+        )
+      : null;
+
+  const previewLayout = (
+    <>
       {showHeader && (
         <div className="sonoro-preview-header">
           <div className="sonoro-preview-header__top">
@@ -244,158 +489,14 @@ function MiniversoSonoroPreview({
           </p>
         </div>
       )}
+      {isMobile ? mobileLayout : desktopLayout}
+    </>
+  );
 
-      <div className={`sonoro-preview-layout ${isMobile ? 'is-mobile' : 'is-desktop'}`}>
-        {/* Controles (arriba del video en móvil, a un lado / debajo en desktop) */}
-        <aside className="sonoro-preview-controls">
-          <div className="sonoro-preview-control-group sonoro-preview-control-group--modes">
-            <p className="sonoro-preview-control-label">Modos de sueño</p>
-            <div className="sonoro-preview-mode-pills">
-              {VISUAL_MODES.map((mode) => (
-                <button
-                  key={mode.id}
-                  type="button"
-                  className={`sonoro-preview-mode-pill ${visualMode === mode.id ? 'is-active' : ''}`}
-                  onClick={() => setVisualMode(mode.id)}
-                  aria-pressed={visualMode === mode.id}
-                >
-                  <div className="sonoro-preview-mode-pill__header">
-                    <span>{mode.label}</span>
-                    <small>{mode.short}</small>
-                  </div>
-                  <p>{mode.copy}</p>
-                </button>
-              ))}
-            </div>
-          </div>
-
-          <div className="sonoro-preview-control-group">
-            <p className="sonoro-preview-control-label">Elige la música</p>
-            <select
-              value={selectedAudio?.id ?? ''}
-              onChange={handleAudioChange}
-              className="sonoro-preview-select"
-            >
-              {audioOptions.map((track) => (
-                <option key={track.id} value={track.id}>
-                  {track.label || track.title}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          <div className="sonoro-preview-control-group">
-            <p className="sonoro-preview-control-label">Elige un poema</p>
-            <select
-              value={selectedPoem?.id ?? ''}
-              onChange={handlePoemChange}
-              className="sonoro-preview-select"
-            >
-              <option value="">Ninguno</option>
-              {poemOptions.map((poem) => (
-                <option key={poem.id} value={poem.id}>
-                  {poem.label || poem.title || 'Poema ritual'}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          {isMobile && showCTA && (
-            <button
-              type="button"
-              className="sonoro-preview-cta"
-              onClick={handleEnterExperience}
-            >
-              Abrir cámara de resonancia
-            </button>
-          )}
-        </aside>
-
-        {/* Stage de video */}
-        <section className="sonoro-preview-stage">
-          <div className={`sonoro-preview-video-card mode-${visualMode}`}>
-            <div className="sonoro-preview-hud">
-              <div>
-                <p className="sonoro-preview-hud__kicker">Cámara de resonancia</p>
-                <p className="sonoro-preview-hud__title">
-                  {currentVideo?.title || fallbackVideoTitle || 'Video ritual'}
-                </p>
-                <p className="sonoro-preview-hud__artist">
-                  {currentVideo?.artist || fallbackVideoArtist || 'Residencia #GatoEncerrado'}
-                </p>
-              </div>
-              <div className="sonoro-preview-hud__mode">
-                <span className="sonoro-preview-pill">{currentMode.label}</span>
-                <small>{currentMode.short}</small>
-              </div>
-            </div>
-
-            <div className="sonoro-ambient">
-              <div className="sonoro-ambient-video">
-                {currentVideo?.url_video ? (
-                  <video
-                    key={currentVideo?.id || currentVideo?.url_video}
-                    ref={videoRef}
-                    className="sonoro-preview-video"
-                    src={currentVideo?.url_video}
-                    muted
-                    autoPlay
-                    playsInline
-                    loop
-                    onEnded={handleVideoEnd}
-                  />
-                ) : (
-                  <div className="sonoro-preview-video-placeholder">
-                    <p>{isLoading ? 'Cargando el archivo sonoro…' : 'Pronto se abrirá un video ritual.'}</p>
-                  </div>
-                )}
-              </div>
-
-              {/* Overlays y ambientación */}
-              <div className="sonoro-ambient-fog" aria-hidden="true" />
-              <div className="sonoro-ambient-shadow" aria-hidden="true" />
-              <div className="sonoro-ambient-breath" aria-hidden="true" />
-              <div className="sonoro-ambient-grain" aria-hidden="true" />
-
-              <div className="sonoro-video-overlay" aria-hidden="true">
-                <span className="sonoro-video-overlay__layer layer-1" />
-                <span className="sonoro-video-overlay__layer layer-2" />
-                <span className="sonoro-video-overlay__layer layer-3" />
-                <span className="sonoro-video-overlay__layer layer-4" />
-              </div>
-            </div>
-
-            {(poemLines?.length || poemText) && (
-              <div className="sonoro-preview-poem-overlay poem-overlay">
-                {poemLines?.length ? (
-                  poemLines.map((line, idx) => (
-                    <p
-                      key={`${selectedPoem?.id || 'poema'}-${idx}`}
-                      className={`poem-line ${idx === currentLineIndex && isPoemVisible ? 'is-visible' : ''}`}
-                      style={{ zIndex: idx === currentLineIndex ? 2 : 1 }}
-                    >
-                      {line}
-                    </p>
-                  ))
-                ) : (
-                  <p className="poem-line is-visible">{poemText}</p>
-                )}
-              </div>
-            )}
-          </div>
-
-          {/* Desktop: CTA opcional pequeño bajo el video */}
-          {!isMobile && showCTA && (
-            <button
-              type="button"
-              className="sonoro-preview-cta sonoro-preview-cta--subtle"
-              onClick={handleEnterExperience}
-            >
-              Entrar a la versión completa
-            </button>
-          )}
-        </section>
-      </div>
+  return (
+    <div className={`sonoro-preview root-mode-${visualMode}`}>
+      {!isFullExperience && previewLayout}
+      {fullscreenLayer}
 
       <audio
         ref={audioRef}

@@ -1,10 +1,18 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { useMobileVideoPresentation } from "@/hooks/useMobileVideoPresentation";
+import { useEffect, useMemo, useRef, useState } from "react";
+import "@/components/miniversos/sonoro/MiniversoSonoroPreview.css";
+
+const VISUAL_MODES = [
+  { id: "neblina", label: "Neblina" },
+  { id: "sombras", label: "Sombras" },
+  { id: "respiracion", label: "Respiración" },
+];
 
 export default function MiniversoSonoro({
   title = "Miniverso Sonoro",
   subtitle = "",
   videoUrl,
+  videoTitle = "Video ritual",
+  videoArtist = "Residencia #GatoEncerrado",
   musicOptions = [],
   poems = [],
   highlights = [],
@@ -12,91 +20,241 @@ export default function MiniversoSonoro({
 }) {
   const videoRef = useRef(null);
   const audioRef = useRef(null);
-  const { requestMobileVideoPresentation } = useMobileVideoPresentation();
-  const videoPresentationId = videoUrl || "miniverso-sonoro-video";
-
-  const noisePattern =
-    'data:image/svg+xml;utf8,<svg%20xmlns="http://www.w3.org/2000/svg"%20width="120"%20height="120"><filter%20id="n"><feTurbulence%20type="fractalNoise"%20baseFrequency="0.7"%20numOctaves="2"%20stitchTiles="stitch"/></filter><rect%20width="120"%20height="120"%20filter="url(%23n)"%20opacity="0.2"/></svg>';
 
   const [isVertical, setIsVertical] = useState(false);
-  const [audioUrl, setAudioUrl] = useState("");
-  const [selectedPoem, setSelectedPoem] = useState("");
-  const [videoError, setVideoError] = useState(false);
+  const [selectedAudioId, setSelectedAudioId] = useState("");
+  const [selectedPoemId, setSelectedPoemId] = useState("");
+  const [visualMode, setVisualMode] = useState("neblina");
   const [isDesktopViewport, setIsDesktopViewport] = useState(
     typeof window !== "undefined" ? window.innerWidth >= 1024 : false
   );
+  const [isRitualOpen, setIsRitualOpen] = useState(false);
 
-  // ——————————————
-  // Detecta orientación del video automáticamente
-  // ——————————————
   useEffect(() => {
     const video = videoRef.current;
     if (!video) return;
-
-    const handleMetadata = () => {
-      setIsVertical(video.videoHeight > video.videoWidth);
-    };
-
+    const handleMetadata = () => setIsVertical(video.videoHeight > video.videoWidth);
     video.addEventListener("loadedmetadata", handleMetadata);
     return () => video.removeEventListener("loadedmetadata", handleMetadata);
   }, [videoUrl]);
 
-  // ——————————————
-  // Poema seleccionado (overlay)
-  // ——————————————
-  const poemText = useMemo(() => {
-    const match = poems.find((item) => item.id === selectedPoem);
-    return match?.text ?? "";
-  }, [poems, selectedPoem]);
-
-  // ——————————————
-  // Música (o silencio)
-  // ——————————————
-  const availableMusic = useMemo(() => {
-    if (musicOptions.length > 0) return musicOptions;
-    return [{ id: "silencio", label: "Silencio", url: "" }];
-  }, [musicOptions]);
-
-  // ——————————————
-  // Reproducir música cuando se selecciona
-  // ——————————————
   useEffect(() => {
-    if (!audioRef.current) return;
-
-    if (audioUrl) {
-      audioRef.current.volume = 0.8;
-      audioRef.current.play().catch(() => {});
-    } else {
-      audioRef.current.pause();
-    }
-  }, [audioUrl]);
-
-  useEffect(() => {
-    setVideoError(false);
-  }, [videoUrl]);
-
-  useEffect(() => {
-    if (typeof window === "undefined") {
-      return undefined;
-    }
-    const updateViewport = () => {
-      setIsDesktopViewport(window.innerWidth >= 1024);
-    };
+    if (typeof window === "undefined") return undefined;
+    const updateViewport = () => setIsDesktopViewport(window.innerWidth >= 1024);
     updateViewport();
     window.addEventListener("resize", updateViewport);
     return () => window.removeEventListener("resize", updateViewport);
   }, []);
 
-  const isAudioSource = useMemo(() => {
-    if (!videoUrl) {
-      return false;
-    }
-    return /\.(m4a|mp3|wav|aac|flac|ogg)(\?.*)?$/i.test(videoUrl);
-  }, [videoUrl]);
+  const audioOptions = useMemo(() => {
+    if (musicOptions.length > 0) return musicOptions;
+    return [{ id: "silencio", label: "Silencio", url: "" }];
+  }, [musicOptions]);
 
-  const handleVideoError = useCallback(() => {
-    setVideoError(true);
-  }, []);
+  const selectedAudio = useMemo(
+    () => audioOptions.find((a) => a.id === selectedAudioId) || null,
+    [audioOptions, selectedAudioId],
+  );
+
+  const selectedPoem = useMemo(
+    () => poems.find((p) => p.id === selectedPoemId) || null,
+    [poems, selectedPoemId],
+  );
+
+  const poemText = selectedPoem?.text ?? "";
+
+  useEffect(() => {
+    if (!audioRef.current) return;
+    if (selectedAudio?.url) {
+      audioRef.current.volume = 0.8;
+      audioRef.current.play().catch(() => {});
+    } else {
+      audioRef.current.pause();
+    }
+  }, [selectedAudio]);
+
+  useEffect(() => {
+    if (!selectedAudioId && audioOptions[0]) {
+      setSelectedAudioId(audioOptions[0].id);
+    }
+    if (!selectedPoemId && poems[0]) {
+      setSelectedPoemId(poems[0].id);
+    }
+  }, [audioOptions, poems, selectedAudioId, selectedPoemId]);
+
+  const SonoroPlayer = ({ isFullscreen = false }) => {
+    const poemLines = useMemo(
+      () => (poemText ? poemText.split("\n").map((l) => l.trim()).filter(Boolean) : []),
+      [poemText],
+    );
+    const [currentLineIndex, setCurrentLineIndex] = useState(null);
+    const [poemVisible, setPoemVisible] = useState(false);
+
+    useEffect(() => {
+      if (!poemLines.length) {
+        setCurrentLineIndex(null);
+        setPoemVisible(false);
+        return;
+      }
+      setCurrentLineIndex(0);
+      setPoemVisible(true);
+    }, [poemLines]);
+
+    useEffect(() => {
+      if (currentLineIndex === null) return undefined;
+      const isLast = poemLines.length > 0 && currentLineIndex === poemLines.length - 1;
+      const t = setTimeout(() => {
+        if (isLast) {
+          setPoemVisible(false);
+        } else {
+          setCurrentLineIndex((i) => (i === null ? 0 : i + 1));
+        }
+      }, 3200);
+      return () => clearTimeout(t);
+    }, [currentLineIndex, poemLines.length]);
+
+    useEffect(() => {
+      const videoEl = videoRef.current;
+      if (!videoEl || !videoUrl) return;
+      videoEl.muted = true;
+      const attempt = videoEl.play();
+      if (attempt?.catch) {
+        attempt.catch(() => {
+          videoEl.muted = true;
+          setTimeout(() => videoEl.play().catch(() => {}), 200);
+        });
+      }
+    }, [videoUrl]);
+
+    return (
+      <div className={`sonoro-preview root-mode-${visualMode}`}>
+        <div className={`sonoro-preview-video-card mode-${visualMode} ${isFullscreen ? "is-full-experience" : ""}`}>
+          <div className="sonoro-preview-hud">
+            <div>
+              <p className="sonoro-preview-hud__kicker">Cámara de resonancia</p>
+              <p className="sonoro-preview-hud__title">{videoTitle}</p>
+              <p className="sonoro-preview-hud__artist">{videoArtist}</p>
+            </div>
+            <div className="sonoro-preview-hud__mode">
+              <span className="sonoro-preview-pill">{visualMode}</span>
+            </div>
+          </div>
+
+          <div className="sonoro-ambient">
+            <div className="sonoro-ambient-video">
+              {videoUrl ? (
+                <video
+                  key={videoUrl}
+                  ref={videoRef}
+                  className="sonoro-preview-video"
+                  src={videoUrl}
+                  muted
+                  autoPlay
+                  loop
+                  playsInline
+                />
+              ) : (
+                <div className="sonoro-preview-video-placeholder">
+                  <p>{"Pronto se abrirá un video ritual."}</p>
+                </div>
+              )}
+            </div>
+
+            <div className="sonoro-ambient-fog" aria-hidden="true" />
+            <div className="sonoro-ambient-shadow" aria-hidden="true" />
+            <div className="sonoro-ambient-breath" aria-hidden="true" />
+            <div className="sonoro-ambient-grain" aria-hidden="true" />
+
+            <div className="sonoro-video-overlay" aria-hidden="true">
+              <span className="sonoro-video-overlay__layer layer-1" />
+              <span className="sonoro-video-overlay__layer layer-2" />
+              <span className="sonoro-video-overlay__layer layer-3" />
+              <span className="sonoro-video-overlay__layer layer-4" />
+            </div>
+          </div>
+
+          {poemLines.length > 0 && (
+            <div className="sonoro-preview-poem-overlay">
+              {poemLines.map((line, idx) => (
+                <p
+                  key={`poem-${idx}`}
+                  className={`poem-line ${poemVisible && idx === currentLineIndex ? "is-visible" : ""}`}
+                >
+                  {line}
+                </p>
+              ))}
+            </div>
+          )}
+        </div>
+
+        <div className="sonoro-preview-controls">
+          <div className="sonoro-preview-control-group">
+            <p className="sonoro-preview-control-label">Modos</p>
+            <div className="sonoro-radio-group">
+              {VISUAL_MODES.map((mode) => (
+                <label key={mode.id} className="sonoro-radio-option">
+                  <input
+                    type="radio"
+                    name="sonoro-mode"
+                    value={mode.id}
+                    checked={visualMode === mode.id}
+                    onChange={() => setVisualMode(mode.id)}
+                  />
+                  <span>{mode.label}</span>
+                </label>
+              ))}
+            </div>
+          </div>
+
+          <div className="sonoro-preview-control-group">
+            <p className="sonoro-preview-control-label">Música</p>
+            <div className="sonoro-radio-group">
+              {audioOptions.map((track) => (
+                <label key={track.id} className="sonoro-radio-option">
+                  <input
+                    type="radio"
+                    name="sonoro-audio"
+                    value={track.id}
+                    checked={selectedAudio?.id === track.id}
+                    onChange={(e) => setSelectedAudioId(e.target.value)}
+                  />
+                  <span>{track.label || track.title}</span>
+                </label>
+              ))}
+            </div>
+          </div>
+
+          <div className="sonoro-preview-control-group">
+            <p className="sonoro-preview-control-label">Poema</p>
+            <div className="sonoro-radio-group">
+              <label className="sonoro-radio-option">
+                <input
+                  type="radio"
+                  name="sonoro-poem"
+                  value=""
+                  checked={!selectedPoem}
+                  onChange={() => setSelectedPoemId("")}
+                />
+                <span>Ninguno</span>
+              </label>
+              {poems.map((poem) => (
+                <label key={poem.id} className="sonoro-radio-option">
+                  <input
+                    type="radio"
+                    name="sonoro-poem"
+                    value={poem.id}
+                    checked={selectedPoem?.id === poem.id}
+                    onChange={(e) => setSelectedPoemId(e.target.value)}
+                  />
+                  <span>{poem.label}</span>
+                </label>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  };
 
   const renderHeaderSection =
     showHeader || highlights.length > 0
@@ -107,15 +265,12 @@ export default function MiniversoSonoro({
               <p className="text-xs uppercase tracking-[0.4em] text-slate-400">
                 Sala de escucha inmersiva
               </p>
-
               <h3 className="font-display text-4xl text-slate-50">{title}</h3>
-
               {subtitle && (
                 <p className="max-w-2xl text-slate-300/80 leading-relaxed">{subtitle}</p>
               )}
             </>
           )}
-
           {highlights.length > 0 && (
             <div className="flex flex-wrap gap-2 text-xs uppercase tracking-[0.25em] text-slate-400">
               {highlights.map((tag, i) => (
@@ -133,127 +288,47 @@ export default function MiniversoSonoro({
       : null;
 
   return (
-    <div className="space-y-10">
-      {/* ENCABEZADO */}
+    <div className="space-y-10 relative">
       {renderHeaderSection}
 
-      {/* VIDEO CON OVERLAY */}
-      <div
-        className={`relative mx-auto border border-white/10 rounded-3xl overflow-hidden shadow-2xl backdrop-blur-3xl transition-all duration-500 ${
-          isDesktopViewport
-            ? "w-full max-w-5xl aspect-[16/9]"
-            : isVertical
-            ? "w-[340px] h-[620px]"
-            : "w-full max-w-5xl aspect-video"
-        }`}
-      >
-        {!videoError ? (
-          <video
-            key={videoUrl ?? "miniverso-sonoro-video"}
-            ref={videoRef}
-            src={videoUrl}
-            autoPlay
-            muted
-            loop
-            playsInline
-            className="w-full h-full object-cover"
-            onClick={(event) => requestMobileVideoPresentation(event, videoPresentationId)}
-            onError={handleVideoError}
-          />
-        ) : (
-          <div className="flex h-full w-full flex-col items-center justify-center gap-4 bg-black/60 px-6 py-8 text-center">
-            <p className="text-sm text-slate-300">
-              No pudimos cargar este {isAudioSource ? "audio" : "video"} en esta vista.
-            </p>
-            {videoUrl ? (
-              <a
-                href={videoUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-sm font-semibold text-purple-200 transition hover:text-purple-100 underline-offset-4"
-              >
-                {isAudioSource ? "Escuchar en nueva pestaña" : "Abrir en nueva pestaña"}
-              </a>
-            ) : (
-              <p className="text-xs text-slate-500">Revisa la fuente del archivo.</p>
-            )}
-          </div>
-        )}
-
-        {!videoError && (
-          <div
-            aria-hidden="true"
-            className="absolute inset-0 pointer-events-none"
-            style={{
-              backgroundImage: `linear-gradient(180deg, rgba(255,255,255,0.05), rgba(15,23,42,0.7)), url("${noisePattern}")`,
-              backgroundSize: "cover",
-              backgroundBlendMode: "screen, overlay",
-              opacity: 0.85,
-            }}
-          />
-        )}
-
-        {/* Overlay superior */}
-        {!videoError && (
-          <>
-            <div className="absolute top-0 left-0 right-0 p-6 bg-gradient-to-b from-black/60 to-transparent">
-              <p className="text-xs uppercase tracking-[0.3em] text-slate-300">
-                Cámara de resonancia
-              </p>
-              <p className="text-sm text-slate-100 opacity-90">Video ritual errante</p>
-            </div>
-
-            {/* Poema */}
-            {poemText && (
-              <div className="absolute bottom-0 left-0 right-0 p-8 text-center bg-gradient-to-t from-black/70 to-transparent">
-                <p className="text-lg leading-relaxed font-light text-slate-100 drop-shadow-xl">
-                  {poemText}
+      {isDesktopViewport ? (
+        <SonoroPlayer isFullscreen />
+      ) : (
+        <>
+          {!isRitualOpen && (
+            <button
+              type="button"
+              className="w-full rounded-full border border-white/15 bg-gradient-to-r from-purple-600/80 to-blue-500/70 px-4 py-3 text-sm font-semibold uppercase tracking-[0.25em] text-white shadow-lg hover:from-purple-500 hover:to-blue-400 transition"
+              onClick={() => setIsRitualOpen(true)}
+            >
+              Entrar a Cámara de Resonancias
+            </button>
+          )}
+          {isRitualOpen && (
+            <div className="fixed inset-0 z-50 flex flex-col bg-black/90 backdrop-blur-xl p-4">
+              <div className="flex items-center justify-between mb-3">
+                <p className="text-xs uppercase tracking-[0.4em] text-purple-200">
+                  Cámara de resonancia
                 </p>
+                <button
+                  type="button"
+                  className="text-sm font-semibold text-purple-100 underline-offset-4"
+                  onClick={() => setIsRitualOpen(false)}
+                >
+                  Cerrar
+                </button>
               </div>
-            )}
-          </>
-        )}
-      </div>
+              <div className="flex-1 overflow-auto flex items-center justify-center">
+                <div className="w-full max-w-3xl">
+                  <SonoroPlayer isFullscreen />
+                </div>
+              </div>
+            </div>
+          )}
+        </>
+      )}
 
-      {/* CONTROLES */}
-      <div className="grid md:grid-cols-2 gap-10">
-        {/* Música */}
-        <div className="space-y-3">
-          <p className="text-sm text-slate-400">Elige la música</p>
-
-          <select
-            className="w-full rounded-2xl border border-white/10 bg-black/60 px-4 py-2 text-white"
-            value={audioUrl}
-            onChange={(e) => setAudioUrl(e.target.value)}
-          >
-            {availableMusic.map((track) => (
-              <option key={track.id} value={track.url}>
-                {track.label}
-              </option>
-            ))}
-          </select>
-
-          <audio ref={audioRef} src={audioUrl} loop />
-        </div>
-
-        {/* Poema */}
-        <div className="space-y-3">
-          <p className="text-sm text-slate-400">Elige un poema</p>
-
-          <select
-            className="w-full rounded-2xl border border-white/10 bg-black/60 px-4 py-2 text-white"
-            value={selectedPoem}
-            onChange={(e) => setSelectedPoem(e.target.value)}
-          >
-            <option value="">Ninguno</option>
-            {poems.map((p) => (
-              <option key={p.id} value={p.id}>
-                {p.label}
-              </option>
-            ))}
-          </select>
-        </div>
-      </div>
+      <audio ref={audioRef} src={selectedAudio?.url || ""} loop />
     </div>
   );
 }

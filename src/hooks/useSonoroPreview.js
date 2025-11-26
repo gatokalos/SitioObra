@@ -67,6 +67,10 @@ export const useSonoroPreview = ({
   fallbackVideoArtist = 'Residencia #GatoEncerrado',
   fallbackAudioOptions = [],
   fallbackPoemOptions = [],
+  videoLimit = null,
+  audioLimit = null,
+  poemLimit = null,
+  fragmentLines = 4,
 } = {}) => {
   const [isLoading, setIsLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState('');
@@ -112,22 +116,36 @@ export const useSonoroPreview = ({
               (typeof item.poemText === 'string' && item.poemText.trim() !== '');
             return (kind === 'poema' || kind === 'poem' || kind === 'poetry') && hasText;
           })
-          .map(normalizePoem);
+          .map((p, idx) => {
+            const base = normalizePoem(p, idx);
+            if (!base.poem_lines && base.poem_text) {
+              const lines = base.poem_text.split('\n').map((l) => l.trim()).filter(Boolean);
+              base.poem_lines = lines.slice(0, fragmentLines);
+            }
+            if (base.poem_lines && fragmentLines) {
+              base.poem_lines = base.poem_lines.slice(0, fragmentLines);
+            }
+            return base;
+          });
 
         const videoList =
           videos.length > 0
-            ? shuffleArray(videos)
+            ? shuffleArray(videoLimit ? videos.slice(0, videoLimit) : videos)
             : fallbackVideoUrl
               ? [normalizeVideo({ url_video: fallbackVideoUrl, title: fallbackVideoTitle, artist: fallbackVideoArtist }, 0)]
               : [];
         const audioList = ensureSilenceOption(
           audios.length > 0
-            ? audios
+            ? audioLimit
+              ? audios.slice(0, audioLimit)
+              : audios
             : (fallbackAudioOptions ?? []).map(normalizeAudio),
         );
         const poemList =
           poems.length > 0
-            ? poems
+            ? poemLimit
+              ? poems.slice(0, poemLimit)
+              : poems
             : (fallbackPoemOptions ?? []).map(normalizePoem);
 
         setVideoQueue(videoList);
