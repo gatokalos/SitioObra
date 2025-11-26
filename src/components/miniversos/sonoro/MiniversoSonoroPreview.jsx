@@ -3,8 +3,9 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useSonoroPreview } from '@/hooks/useSonoroPreview';
 import '@/components/miniversos/sonoro/MiniversoSonoroPreview.css';
+import '@/styles/dreamModes.css';
 
-const VISUAL_MODES = [
+const DREAM_MODES = [
   {
     id: 'neblina',
     label: 'Modo',
@@ -22,6 +23,12 @@ const VISUAL_MODES = [
     label: 'Modo',
     short: 'Pulse-Bloom',
     copy: 'La luz late con la escena, como si el sueño respirara.',
+  },
+  {
+    id: 'umbral',
+    label: 'Modo',
+    short: 'Umbral-Deep',
+    copy: 'Un túnel suave y profundo que suspende la temporalidad.',
   },
 ];
 
@@ -76,7 +83,7 @@ function MiniversoSonoroPreview({
     fallbackPoemOptions,
   });
 
-  const [visualMode, setVisualMode] = useState('neblina');
+  const [dreamMode, setDreamMode] = useState('neblina');
   const [isMobile, setIsMobile] = useState(false);
   const [selectedAudioId, setSelectedAudioId] = useState(
     resolvedInitialAudioId || initialAudioId || '',
@@ -90,6 +97,7 @@ function MiniversoSonoroPreview({
 
   const videoRef = useRef(null);
   const audioRef = useRef(null);
+  const previousScrollYRef = useRef(0);
   const isLoading = hookLoading || externalLoading;
 
   const selectedAudio = useMemo(
@@ -105,8 +113,8 @@ function MiniversoSonoroPreview({
   const poemText = selectedPoem?.poem_text || selectedPoem?.text || '';
 
   const currentMode = useMemo(
-    () => VISUAL_MODES.find((mode) => mode.id === visualMode) || VISUAL_MODES[0],
-    [visualMode],
+    () => DREAM_MODES.find((mode) => mode.id === dreamMode) || DREAM_MODES[0],
+    [dreamMode],
   );
 
   // Alinear selección cuando cambian las opciones
@@ -246,6 +254,9 @@ function MiniversoSonoroPreview({
   };
 
   const handleEnterExperience = () => {
+    if (typeof window !== 'undefined') {
+      previousScrollYRef.current = window.scrollY || 0;
+    }
     setIsFullExperience(true);
     if (onEnterExperience) {
       onEnterExperience();
@@ -254,6 +265,9 @@ function MiniversoSonoroPreview({
 
   const handleExitExperience = () => {
     setIsFullExperience(false);
+    if (typeof window !== 'undefined') {
+      window.scrollTo({ top: previousScrollYRef.current || 0, behavior: 'auto' });
+    }
   };
 
   // Al cambiar a full experience, reiniciar/reproducir medios; al salir, pausar y ocultar poema
@@ -291,7 +305,7 @@ function MiniversoSonoroPreview({
   }, [isFullExperience, isMobile, poemLines.length, selectedAudio?.url_audio]);
 
   const renderVideoCard = (extraClass = '') => (
-    <div className={`sonoro-preview-video-card mode-${visualMode} ${extraClass}`}>
+    <div className={`sonoro-preview-video-card mode-${dreamMode} ${extraClass}`}>
       <div className="sonoro-preview-hud">
         <div>
           <p className="sonoro-preview-hud__kicker">Cámara de resonancia</p>
@@ -327,6 +341,7 @@ function MiniversoSonoroPreview({
               <p>{isLoading ? 'Cargando el archivo sonoro…' : 'Pronto se abrirá un video ritual.'}</p>
             </div>
           )}
+          <div className={`dream-overlay dream-${dreamMode}`} aria-hidden="true" />
         </div>
 
         {/* Overlays y ambientación */}
@@ -368,13 +383,13 @@ function MiniversoSonoroPreview({
       <div className="sonoro-preview-control-group sonoro-preview-control-group--modes">
         <p className="sonoro-preview-control-label">Modos de sueño</p>
         <div className="sonoro-preview-mode-pills">
-          {VISUAL_MODES.map((mode) => (
+          {DREAM_MODES.map((mode) => (
             <button
               key={mode.id}
               type="button"
-              className={`sonoro-preview-mode-pill ${visualMode === mode.id ? 'is-active' : ''}`}
-              onClick={() => setVisualMode(mode.id)}
-              aria-pressed={visualMode === mode.id}
+              className={`sonoro-preview-mode-pill ${dreamMode === mode.id ? 'is-active' : ''}`}
+              onClick={() => setDreamMode(mode.id)}
+              aria-pressed={dreamMode === mode.id}
             >
               <div className="sonoro-preview-mode-pill__header">
                 <span>{mode.label}</span>
@@ -443,7 +458,7 @@ function MiniversoSonoroPreview({
       <aside className="sonoro-preview-controls">{controlsBlock}</aside>
       <section className="sonoro-preview-stage">
         {renderVideoCard()}
-        {showCTA && (
+        {showCTA && isMobile && (
           <button
             type="button"
             className="sonoro-preview-cta"
@@ -494,7 +509,7 @@ function MiniversoSonoroPreview({
   );
 
   return (
-    <div className={`sonoro-preview root-mode-${visualMode}`}>
+    <div className={`sonoro-preview root-mode-${dreamMode}`}>
       {!isFullExperience && previewLayout}
       {fullscreenLayer}
 
