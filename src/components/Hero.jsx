@@ -3,10 +3,12 @@ import { motion } from 'framer-motion';
 import { ArrowDown, Ticket } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import ReserveModal from '@/components/ReserveModal';
+import TicketPurchaseModal from '@/components/TicketPurchaseModal';
 import bgLogo from '@/assets/bg-logo.png';
 
 const Hero = () => {
   const [isReserveOpen, setIsReserveOpen] = useState(false);
+  const [isTicketModalOpen, setIsTicketModalOpen] = useState(false);
 
   const handleScrollToAbout = useCallback(() => {
     const aboutSection = document.querySelector('#about');
@@ -19,6 +21,14 @@ const Hero = () => {
 
   const handleCloseReserve = useCallback(() => {
     setIsReserveOpen(false);
+  }, []);
+
+  const handleOpenTicket = useCallback(() => {
+    setIsTicketModalOpen(true);
+  }, []);
+
+  const handleCloseTicket = useCallback(() => {
+    setIsTicketModalOpen(false);
   }, []);
 
   return (
@@ -72,13 +82,23 @@ const Hero = () => {
               transition={{ duration: 1, delay: 0.8 }}
               className="flex flex-col gap-4 justify-center items-center"
             >
-              <Button
-                onClick={() => handleOpenReserve('preventa')}
-                className="bg-gradient-to-r from-orange-500/90 via-rose-500/90 to-pink-500/90 hover:from-orange-400 hover:to-pink-400 text-white px-6 py-3 rounded-full font-semibold flex items-center gap-2 shadow-lg shadow-orange-500/40 transition"
-              >
-                <Ticket size={20} />
-                Compra tu boleto
-              </Button>
+              <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                <Button
+                  onClick={handleOpenTicket}
+                  className="bg-gradient-to-r from-orange-500/90 via-rose-500/90 to-pink-500/90 hover:from-orange-400 hover:to-pink-400 text-white px-6 py-3 rounded-full font-semibold flex items-center gap-2 shadow-lg shadow-orange-500/40 transition"
+                >
+                  <Ticket size={20} />
+                  Compra tu boleto
+                </Button>
+
+                <Button
+                  variant="outline"
+                  onClick={handleOpenReserve}
+                  className="border-slate-100/30 text-slate-200 hover:bg-white/5 px-6 py-3 rounded-full font-semibold flex items-center gap-2"
+                >
+                  RSVP
+                </Button>
+              </div>
 
               <Button
                 variant="ghost"
@@ -102,6 +122,7 @@ const Hero = () => {
       </section>
 
       <ReserveModal open={isReserveOpen} onClose={handleCloseReserve} initialInterest="preventa" />
+      <TicketPurchaseModal open={isTicketModalOpen} onClose={handleCloseTicket} />
     </>
   );
 };

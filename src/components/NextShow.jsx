@@ -1,20 +1,28 @@
 import React, { useCallback, useState } from 'react';
 import { motion } from 'framer-motion';
-import { Calendar, Ticket, Mail } from 'lucide-react';
+import { Calendar, Ticket } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import ReserveModal from '@/components/ReserveModal';
+import TicketPurchaseModal from '@/components/TicketPurchaseModal';
 
 const NextShow = () => {
   const [isReserveOpen, setIsReserveOpen] = useState(false);
-  const [reserveIntent, setReserveIntent] = useState('preventa');
+  const [isTicketModalOpen, setIsTicketModalOpen] = useState(false);
 
-  const handleOpenReserve = useCallback((intent) => {
-    setReserveIntent(intent);
+  const handleOpenReserve = useCallback(() => {
     setIsReserveOpen(true);
   }, []);
 
   const handleCloseReserve = useCallback(() => {
     setIsReserveOpen(false);
+  }, []);
+
+  const handleOpenTicket = useCallback(() => {
+    setIsTicketModalOpen(true);
+  }, []);
+
+  const handleCloseTicket = useCallback(() => {
+    setIsTicketModalOpen(false);
   }, []);
 
   return (
@@ -50,11 +58,18 @@ const NextShow = () => {
 
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
                 <Button
-                  onClick={() => handleOpenReserve('preventa')}
-                                  className="bg-gradient-to-r from-orange-500/90 via-rose-500/90 to-pink-500/90 hover:from-orange-400 hover:to-pink-400 text-white px-6 py-3 rounded-full font-semibold flex items-center gap-2 shadow-lg shadow-orange-500/40 transition"
-                                >
-                                  <Ticket size={20} />
-                                  Compra tu boleto
+                  onClick={handleOpenTicket}
+                  className="bg-gradient-to-r from-orange-500/90 via-rose-500/90 to-pink-500/90 hover:from-orange-400 hover:to-pink-400 text-white px-6 py-3 rounded-full font-semibold flex items-center gap-2 shadow-lg shadow-orange-500/40 transition"
+                >
+                  <Ticket size={20} />
+                  Compra tu boleto
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={handleOpenReserve}
+                  className="border-slate-100/30 text-slate-200 hover:bg-white/5 px-6 py-3 rounded-full font-semibold flex items-center gap-2"
+                >
+                  RSVP
                 </Button>
               </div>
             </div>
@@ -65,11 +80,8 @@ const NextShow = () => {
         </div>
       </section>
 
-      <ReserveModal
-        open={isReserveOpen}
-        onClose={handleCloseReserve}
-        initialInterest={reserveIntent}
-      />
+      <ReserveModal open={isReserveOpen} onClose={handleCloseReserve} initialInterest="recordatorio" />
+      <TicketPurchaseModal open={isTicketModalOpen} onClose={handleCloseTicket} />
     </>
   );
 };

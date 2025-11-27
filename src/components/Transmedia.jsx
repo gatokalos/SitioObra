@@ -1994,6 +1994,7 @@ const Transmedia = () => {
 
           <div className="mt-16 grid lg:grid-cols-[3fr_2fr] gap-10">
             <motion.div
+              id="apoya"
               ref={supportSectionRef}
               initial={{ opacity: 0, y: 30 }}
               whileInView={{ opacity: 1, y: 0 }}

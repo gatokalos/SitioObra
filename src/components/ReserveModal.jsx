@@ -14,8 +14,8 @@ const LOGO_SRC = '/assets/logoapp.png';
 const INTEREST_OPTIONS = [
   {
     value: 'reservaciones',
-    label: 'Información sobre reservaciones',
-    description: 'Accede a la línea de reservaciones y consulta los paquetes que aún quedan.',
+    label: 'Compra presencial en taquilla del CECUT',
+    description: 'Preventa disponible hasta agotar localidades. Incluye el incentivo de la taza mientras dure.',
   },
    {
     value: 'recordatorio',
@@ -45,7 +45,7 @@ const RECORDATORIO_ACTIONS = [
   },
 ];
 
-const PACKAGE_OPTIONS = [
+export const PACKAGE_OPTIONS = [
   {
     id: 'taza-250',
     title: 'Taza',
