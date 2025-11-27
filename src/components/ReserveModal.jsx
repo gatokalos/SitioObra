@@ -26,7 +26,7 @@ const INTEREST_OPTIONS = [
 
 const CALENDAR_LINK =
   'https://calendar.google.com/calendar/render?action=TEMPLATE&text=Gato%20Encerrado%20%C2%B7%2028%20de%20diciembre&dates=20241228T210000Z/20241228T223000Z&details=Funci%C3%B3n%20especial%20en%20CEC&location=CECUT';
-const SMS_NUMBER = import.meta.env.VITE_SMS_NUMBER || '+5215550112233';
+const SMS_NUMBER = import.meta.env.VITE_SMS_NUMBER || '+526623550516';
 const SMS_MESSAGE = encodeURIComponent(
   'Recordarme la función #GatoEncerrado el 28 de diciembre en CECUT.'
 );
