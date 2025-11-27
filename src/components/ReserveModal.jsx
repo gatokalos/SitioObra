@@ -1,6 +1,6 @@
-// ------------------------------------
-// RESERVE MODAL (versión corregida)
-// ------------------------------------
+// -------------------------------------------------------------
+// RESERVE MODAL – VERSIÓN DEFINITIVA, CLARA Y OPTIMIZADA (2025)
+// -------------------------------------------------------------
 
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
@@ -11,52 +11,21 @@ import { ConfettiBurst, useConfettiBursts } from '@/components/Confetti';
 
 const LOGO_SRC = '/assets/logoapp.png';
 
-const INTEREST_OPTIONS = [
-  {
-    value: 'reservaciones',
-    label: 'Compra presencial en taquilla del CECUT',
-    description: 'Preventa disponible hasta agotar localidades. Incluye el incentivo de la taza mientras dure.',
-  },
-   {
-    value: 'recordatorio',
-    label: 'Recordatorio de la función',
-    description: 'Recibe el aviso oficial justo antes de que abra la función en diciembre.',
-  },
-];
-
-const CALENDAR_LINK =
-  'https://calendar.google.com/calendar/render?action=TEMPLATE&text=Gato%20Encerrado%20%C2%B7%2028%20de%20diciembre&dates=20241228T210000Z/20241228T223000Z&details=Funci%C3%B3n%20especial%20en%20CEC&location=CECUT';
-const SMS_NUMBER = import.meta.env.VITE_SMS_NUMBER || '+526623550516';
-const SMS_MESSAGE = encodeURIComponent(
-  'Recordarme la función #GatoEncerrado el 28 de diciembre en CECUT.'
-);
-const RECORDATORIO_ACTIONS = [
-  {
-    id: 'calendar',
-    label: 'Añadir a mi calendario',
-    description: 'Calendario de Google prellenado con lugar y horario.',
-    href: CALENDAR_LINK,
-  },
-  {
-    id: 'sms',
-    label: 'Enviar notificación vía SMS',
-    description: 'Recibe una alerta en tu celular el día del evento.',
-    href: `sms:${SMS_NUMBER}?body=${SMS_MESSAGE}`,
-  },
-];
-
+// -------------------------------------------------------------
+// PRODUCTOS A APARTAR
+// -------------------------------------------------------------
 export const PACKAGE_OPTIONS = [
   {
     id: 'taza-250',
-    title: 'Taza',
+    title: 'Taza AR',
     price: '$250',
-    helper: 'Edición especial disponible el día del evento.',
+    helper: 'Taza especial con activación AR. Disponible el día del evento.',
   },
   {
     id: 'taza-causa-600',
     title: 'Taza con causa',
     price: '$600',
-    helper: 'Incluye membresía de 6 meses. Se entrega el 28 de diciembre.',
+    helper: 'Incluye membresía anual. Se entrega el 28 de diciembre.',
   },
   {
     id: 'novela-400',
@@ -66,7 +35,7 @@ export const PACKAGE_OPTIONS = [
   },
   {
     id: 'combo-900',
-    title: 'Combo dos tazas + novela',
+    title: 'Combo: novela + 2 tazas',
     price: '$900',
     helper: 'Paquete completo disponible solo el día del evento.',
   },
@@ -77,16 +46,20 @@ const PACKAGE_LABEL_MAP = PACKAGE_OPTIONS.reduce((acc, option) => {
   return acc;
 }, {});
 
+// -------------------------------------------------------------
+// ESTADO DEL FORMULARIO
+// -------------------------------------------------------------
 const initialFormState = {
   fullName: '',
   email: '',
   city: '',
-  interest: INTEREST_OPTIONS[0].value,
   notes: '',
   packages: [],
 };
 
-// Animation variants
+// -------------------------------------------------------------
+// ANIMACIONES
+// -------------------------------------------------------------
 const backdropVariants = {
   hidden: { opacity: 0 },
   visible: { opacity: 0.85 },
@@ -100,65 +73,65 @@ const modalVariants = {
     scale: 1,
     transition: { duration: 0.35, ease: 'easeOut' },
   },
-  exit: { opacity: 0, y: 20, scale: 0.97, transition: { duration: 0.2, ease: 'easeIn' } },
+  exit: {
+    opacity: 0,
+    y: 20,
+    scale: 0.97,
+    transition: { duration: 0.2, ease: 'easeIn' },
+  },
 };
 
-// -------------------------------------------------
-// MAIN COMPONENT
-// -------------------------------------------------
-
-const ReserveModal = ({ open, onClose, initialInterest = INTEREST_OPTIONS[0].value }) => {
+// -------------------------------------------------------------
+// COMPONENT
+// -------------------------------------------------------------
+const ReserveModal = ({ open, onClose }) => {
   const [formState, setFormState] = useState(initialFormState);
   const [status, setStatus] = useState('idle');
   const [errorMessage, setErrorMessage] = useState('');
   const { bursts: confettiBursts, fireConfetti } = useConfettiBursts();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Reset form when opened
+  // -------------------------------------------------------------
+  // Resetea cuando se abre
+  // -------------------------------------------------------------
   useEffect(() => {
     if (open) {
-      setFormState({ ...initialFormState, interest: initialInterest });
+      setFormState(initialFormState);
       setStatus('idle');
       setErrorMessage('');
     }
-  }, [open, initialInterest]);
+  }, [open]);
 
-  // Allow ESC close
+  // -------------------------------------------------------------
+  // Permitir cerrar con ESC
+  // -------------------------------------------------------------
   useEffect(() => {
     if (!open) return;
-
-    const handleKeyDown = (event) => {
-      if (event.key === 'Escape') onClose?.();
-    };
-
+    const handleKeyDown = (event) => event.key === 'Escape' && onClose?.();
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [open, onClose]);
 
-  // Form changes
+  // -------------------------------------------------------------
+  // Handlers
+  // -------------------------------------------------------------
   const handleInputChange = useCallback((event) => {
     const { name, value } = event.target;
     setFormState((prev) => ({ ...prev, [name]: value }));
   }, []);
 
-  const handleTogglePackage = useCallback((packageId) => {
+  const handleTogglePackage = useCallback((pkg) => {
     setFormState((prev) => {
-      const exists = prev.packages.includes(packageId);
+      const exists = prev.packages.includes(pkg);
       return {
         ...prev,
         packages: exists
-          ? prev.packages.filter((item) => item !== packageId)
-          : [...prev.packages, packageId],
+          ? prev.packages.filter((item) => item !== pkg)
+          : [...prev.packages, pkg],
       };
     });
   }, []);
 
-  const selectedInterest = useMemo(
-    () => INTEREST_OPTIONS.find((item) => item.value === formState.interest) ?? INTEREST_OPTIONS[0],
-    [formState.interest]
-  );
-
-  // Submission handler
   const handleSubmit = useCallback(
     async (event) => {
       event.preventDefault();
@@ -169,27 +142,28 @@ const ReserveModal = ({ open, onClose, initialInterest = INTEREST_OPTIONS[0].val
         return;
       }
 
+      if (formState.packages.length === 0) {
+        toast({ description: 'Selecciona al menos un artículo para apartar.' });
+        return;
+      }
+
       setStatus('loading');
       setIsSubmitting(true);
       setErrorMessage('');
 
       try {
-        const packageSummary =
-          formState.packages.length > 0
-            ? `Paquetes apartados (sin pago): ${formState.packages
-                .map((pkg) => PACKAGE_LABEL_MAP[pkg])
-                .join(', ')}`
-            : null;
+        const packagesSummary = formState.packages
+          .map((pkg) => PACKAGE_LABEL_MAP[pkg])
+          .join(', ');
 
         const payload = {
           full_name: formState.fullName.trim(),
           email: formState.email.trim().toLowerCase(),
           city: formState.city.trim() || null,
-          interest: formState.interest,
-          channel: 'landing',
-          object_type: 'boleto',
+          object_type: 'merch',
           event: 'funcion-2025-12-28',
-          notes: [packageSummary, formState.notes.trim()].filter(Boolean).join(' | ') || null,
+          channel: 'landing',
+          notes: `${packagesSummary} | ${formState.notes || ''}`.trim(),
         };
 
         const { error } = await supabase.from('rsvp_extended').insert(payload);
@@ -200,18 +174,17 @@ const ReserveModal = ({ open, onClose, initialInterest = INTEREST_OPTIONS[0].val
           return;
         }
 
+        // Envía correo de confirmación
         await sendReserveConfirmationEmail({
           email: payload.email,
           name: payload.full_name,
-          interestLabel: selectedInterest.label,
-          interestValue: payload.interest,
           city: payload.city,
           notes: payload.notes,
         });
 
         fireConfetti();
         setStatus('success');
-        toast({ description: '¡Gracias! Te enviaremos las próximas novedades.' });
+        toast({ description: '¡Apartado recibido! Revisa tu correo con los siguientes pasos.' });
       } catch (err) {
         setStatus('error');
         setErrorMessage('Ocurrió un error inesperado. Intenta más tarde.');
@@ -219,17 +192,16 @@ const ReserveModal = ({ open, onClose, initialInterest = INTEREST_OPTIONS[0].val
         setIsSubmitting(false);
       }
     },
-    [formState, selectedInterest.label, status, fireConfetti]
+    [formState, status, fireConfetti]
   );
 
   const handleClose = useCallback(() => {
     if (status !== 'loading') onClose?.();
-  }, [onClose, status]);
+  }, [status, onClose]);
 
-  // -------------------------------------------------
+  // -------------------------------------------------------------
   // RENDER
-  // -------------------------------------------------
-
+  // -------------------------------------------------------------
   return (
     <AnimatePresence>
       {open && (
@@ -251,13 +223,14 @@ const ReserveModal = ({ open, onClose, initialInterest = INTEREST_OPTIONS[0].val
             role="dialog"
             aria-modal="true"
             variants={modalVariants}
-            className="relative z-10 w-full max-w-3xl rounded-3xl border border-white/10 bg-slate-950/95 p-6 sm:p-10 shadow-2xl max-h-[90vh] overflow-y-auto"
+            className="relative z-10 w-full max-w-3xl rounded-3xl border border-white/10 bg-slate-950/95 p-6 sm:p-10 shadow-2xl max-h-[92vh] overflow-y-auto"
           >
             {confettiBursts.map((burst) => (
               <ConfettiBurst key={burst} seed={burst} />
             ))}
+
             {/* HEADER */}
-            <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-6">
+            <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-8">
               <div className="flex items-center gap-4">
                 <img
                   src={LOGO_SRC}
@@ -271,6 +244,9 @@ const ReserveModal = ({ open, onClose, initialInterest = INTEREST_OPTIONS[0].val
                   <h2 className="font-display text-3xl text-slate-50">
                     Aparta tus artículos de #GatoEncerrado
                   </h2>
+                  <p className="text-xs text-slate-400/80 mt-1">
+                    Estos productos son edición especial y se entregan únicamente en la mesa de merch el día del evento.
+                  </p>
                 </div>
               </div>
 
@@ -282,79 +258,83 @@ const ReserveModal = ({ open, onClose, initialInterest = INTEREST_OPTIONS[0].val
               </button>
             </div>
 
-            {/* CONTENT GRID */}
+            {/* Aviso anti confusión */}
+            <div className="mb-6 rounded-xl border border-yellow-400/20 bg-yellow-400/10 p-4 text-xs text-yellow-200">
+              Este formulario <strong>no es para comprar boletos</strong>.  
+              Aquí solo apartas artículos de merch (taza, novela o combo).  
+              Los boletos se adquieren directamente en taquilla CECUT.
+            </div>
+
+            {/* GRID */}
             <div className="grid md:grid-cols-2 gap-8">
 
               {/* LEFT COLUMN */}
-              <div className="space-y-5 text-sm text-slate-300/90 leading-relaxed">
-                <div className="glass-effect rounded-xl border border-white/5 p-4 space-y-2">
-                  <p className="text-xs uppercase tracking-[0.35em] text-purple-300/80">Mesa con merch el día de la función</p>
-                  <h3 className="font-display text-lg text-slate-100">
-                    Marca lo que quieras apartar.
+              <div className="space-y-5">
+                <div>
+                  <h3 className="font-display text-lg text-slate-100 mb-1">
+                    Paquetes disponibles
                   </h3>
                   <p className="text-xs text-slate-400/80">
-                    Te enviaremos un enlace seguro para confirmar antes del evento.
+                    Marca lo que quieras apartar. Te enviaremos tu línea de reservaciones y un enlace de pago seguro (Stripe).
                   </p>
                 </div>
 
                 <div className="grid sm:grid-cols-2 gap-3">
-                  {PACKAGE_OPTIONS.map((option) => {
-                    const isSelected = formState.packages.includes(option.id);
-                    return (
-                      <label
-                        key={option.id}
-                        className={`relative block rounded-2xl border ${
-                          isSelected ? 'border-purple-400/70 shadow-[0_12px_35px_rgba(126,34,206,0.35)]' : 'border-white/10'
-                        } bg-gradient-to-br from-slate-900/80 to-black/60 p-4 shadow-[0_12px_35px_rgba(0,0,0,0.35)] hover:border-purple-400/40 transition`}
-                      >
-                        <div className="mb-3 h-28 w-full rounded-xl border border-white/5 bg-gradient-to-br from-slate-800/70 via-slate-900/50 to-slate-950/80" />
-                        <div className="flex items-start gap-3">
-                          <input
-                            type="checkbox"
-                            checked={isSelected}
-                            onChange={() => handleTogglePackage(option.id)}
-                            className="mt-1 h-4 w-4 rounded border-slate-400 bg-black/40 text-purple-500 focus:ring-purple-400"
-                          />
-                          <div className="space-y-1">
-                            <p className="font-semibold text-slate-100">
-                              {option.title} <span className="text-slate-400 font-normal">· {option.price}</span>
-                            </p>
-                            <p className="text-xs text-slate-400">{option.helper}</p>
-                          </div>
-                        </div>
-                      </label>
-                    );
-                  })}
-                </div>
+  {PACKAGE_OPTIONS.map((option) => {
+    const isSelected = formState.packages.includes(option.id);
 
-                
+    // Mapeo de imágenes por paquete
+    const imageMap = {
+      'taza-250': 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Merch/tazax1.jpeg',
+      'taza-causa-600': 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Merch/taza2x1.jpeg',
+      'novela-400': 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Merch/novelasola.jpeg',
+      'combo-900': 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Merch/NovelaTazaCombo.png',
+    };
+
+    return (
+      <label
+        key={option.id}
+        className={`relative block rounded-2xl border ${
+          isSelected
+            ? 'border-purple-400/70 shadow-[0_12px_35px_rgba(126,34,206,0.35)]'
+            : 'border-white/10'
+        } bg-gradient-to-br from-slate-900/80 to-black/60 p-4 hover:border-purple-400/40 transition`}
+      >
+        {/* IMAGEN REAL DEL PAQUETE */}
+        <div className="mb-3 w-full h-32 rounded-xl overflow-hidden border border-white/5">
+          <img
+            src={imageMap[option.id]}
+            alt={option.title}
+            className="w-full h-full object-cover"
+            loading="lazy"
+          />
+        </div>
+
+        <div className="flex items-start gap-3">
+          <input
+            type="checkbox"
+            checked={isSelected}
+            onChange={() => handleTogglePackage(option.id)}
+            className="mt-1 h-4 w-4 rounded border-slate-400 bg-black/40 text-purple-500 focus:ring-purple-400"
+          />
+          <div className="space-y-1">
+            <p className="font-semibold text-slate-100">
+              {option.title}{' '}
+              <span className="text-slate-400 font-normal">· {option.price}</span>
+            </p>
+            <p className="text-xs text-slate-400">{option.helper}</p>
+          </div>
+        </div>
+      </label>
+    );
+  })}
+</div>
               </div>
 
               {/* RIGHT COLUMN — FORM */}
               <form className="space-y-5" onSubmit={handleSubmit}>
 
-                 {/* INTEREST DROPDOWN */}
-                <div className="space-y-2">
-                                       <h3 className="font-display text-lg text-slate-100">
-                    Dinos qué quieres recibir
-                  </h3>   
-        
-                  <select
-                    name="interest"
-                    value={formState.interest}
-                    onChange={handleInputChange}
-                    className="w-full rounded-lg border border-white/10 bg-black/30 px-4 py-3 text-slate-100 focus:border-purple-400 focus:ring-1 focus:ring-purple-400"
-                  >
-                    {INTEREST_OPTIONS.map((option) => (
-                      <option key={option.value} value={option.value}>
-                        {option.label}
-                      </option>
-                    ))}
-                  </select>
-                  <p className="text-xs text-slate-400/80">{selectedInterest.description}</p>
-                </div>
-
-                {/* nombre */}
+                {/* Nombre */}
                 <div className="space-y-2">
                   <label className="text-sm font-medium text-slate-200">Nombre completo *</label>
                   <input
@@ -368,7 +348,7 @@ const ReserveModal = ({ open, onClose, initialInterest = INTEREST_OPTIONS[0].val
                   />
                 </div>
 
-                {/* email */}
+                {/* Email */}
                 <div className="space-y-2">
                   <label className="text-sm font-medium text-slate-200">Correo electrónico *</label>
                   <input
@@ -382,7 +362,7 @@ const ReserveModal = ({ open, onClose, initialInterest = INTEREST_OPTIONS[0].val
                   />
                 </div>
 
-                {/* ciudad */}
+                {/* Ciudad */}
                 <div className="space-y-2">
                   <label className="text-sm font-medium text-slate-200">Ciudad</label>
                   <input
@@ -395,35 +375,7 @@ const ReserveModal = ({ open, onClose, initialInterest = INTEREST_OPTIONS[0].val
                   />
                 </div>
 
-               
-
-                <div className="glass-effect rounded-2xl border border-white/5 bg-black/25 p-4 space-y-3">
-                  <h3 className="font-display text-lg text-slate-100">Acción preferida</h3>
-                  {formState.interest === 'recordatorio' ? (
-                    <div className="grid sm:grid-cols-2 gap-3">
-                      {RECORDATORIO_ACTIONS.map((action) => (
-                        <a
-                          key={action.id}
-                          href={action.href}
-                          target="_blank"
-                          rel="noreferrer"
-                          className="flex flex-col gap-2 rounded-xl border border-white/10 bg-slate-900/40 px-4 py-3 text-slate-100 hover:border-purple-400/80 hover:bg-slate-900/70 transition"
-                        >
-                          <span className="text-sm font-semibold">{action.label}</span>
-                          <span className="text-xs text-slate-400/80">{action.description}</span>
-                        </a>
-                      ))}
-                    </div>
-                      ) : (
-                    <div className="space-y-3">
-                      <p className="text-xs text-slate-300/80">
-                        Recibirás en tu correo (y en el CTA de confirmación) la línea de reservaciones para concretar el paquete que quieras.
-                      </p>
-                    </div>
-                  )}
-                </div>
-
-                {/* NOTES */}
+                {/* Notes */}
                 <div className="space-y-2">
                   <label className="text-sm font-medium text-slate-200">Mensaje opcional</label>
                   <textarea
@@ -436,27 +388,28 @@ const ReserveModal = ({ open, onClose, initialInterest = INTEREST_OPTIONS[0].val
                   />
                 </div>
 
-                {/* ERRORS / SUCCESS */}
+                {/* Errors */}
                 {status === 'error' && (
                   <div className="rounded-lg border border-red-500/60 bg-red-500/10 px-4 py-3 text-sm text-red-200">
                     {errorMessage}
                   </div>
                 )}
 
+                {/* Success */}
                 {status === 'success' && (
                   <div className="rounded-lg border border-emerald-500/60 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-200">
-                    Tu registro quedó guardado. Revisaremos tu correo con los siguientes pasos.
+                    ¡Listo! Revisa tu correo para completar tu apartado.
                   </div>
                 )}
 
-                {/* BUTTONS */}
+                {/* Buttons */}
                 <div className="flex flex-col gap-3">
                   <Button
                     type="submit"
                     disabled={status === 'loading'}
                     className="w-full bg-gradient-to-r from-purple-600/80 to-indigo-600/80 hover:from-purple-600 hover:to-indigo-600 text-white py-3 rounded-lg font-semibold flex items-center justify-center gap-2 hover-glow"
                   >
-                    {isSubmitting ? 'Enviando…' : 'Guardar mi registro'}
+                    {isSubmitting ? 'Enviando…' : 'Apartar mis artículos'}
                   </Button>
 
                   <button
@@ -478,16 +431,19 @@ const ReserveModal = ({ open, onClose, initialInterest = INTEREST_OPTIONS[0].val
 
 export default ReserveModal;
 
-async function sendReserveConfirmationEmail({ email, name, interestLabel, interestValue, city, notes }) {
+// -------------------------------------------------------------
+// SEND EMAIL (Resend + Supabase Edge Function)
+// -------------------------------------------------------------
+async function sendReserveConfirmationEmail({ email, name, city, notes }) {
   if (!email) return;
 
   try {
     const { error } = await supabase.functions.invoke('send-reserve-confirmation', {
-      body: { email, name, interestLabel, interestValue, city, notes },
+      body: { email, name, city, notes },
     });
 
     if (error) console.error('[ReserveModal] Error en sendReserveConfirmationEmail:', error);
   } catch (err) {
-    console.error('[ReserveModal] Excepción en sendReserveConfirmationEmail:', err);
+    console.error('[ReserveModal] Exception in sendReserveConfirmationEmail:', err);
   }
 }

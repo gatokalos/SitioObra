@@ -91,13 +91,14 @@ const Hero = () => {
                   Compra tu boleto
                 </Button>
 
-                <Button
-                  variant="outline"
-                  onClick={handleOpenReserve}
-                  className="border-slate-100/30 text-slate-200 hover:bg-white/5 px-6 py-3 rounded-full font-semibold flex items-center gap-2"
-                >
-                  RSVP
-                </Button>
+                  <Button
+                                  variant="outline"
+                                  onClick={() => handleOpenReserve('preventa')}
+                                  className="border-slate-100/20 text-slate-200 hover:bg-slate-100/10 px-6 py-3 rounded-full font-semibold flex items-center gap-2"
+                                >
+                                  <Ticket size={20} />
+                                  RSVP
+                                </Button>
               </div>
 
               <Button

@@ -6,7 +6,7 @@ import logoApp from '/assets/logoapp.png';
 const CALENDAR_LINK =
   'https://calendar.google.com/calendar/render?action=TEMPLATE&text=Gato%20Encerrado%20%C2%B7%2028%20de%20diciembre&dates=20241228T210000Z/20241228T223000Z&details=Funci%C3%B3n%20especial%20en%20CEC&location=CECUT';
 
-const SMS_NUMBER = import.meta.env.VITE_SMS_NUMBER || '+5215550112233';
+const SMS_NUMBER = import.meta.env.VITE_SMS_NUMBER || '+526623550516';
 const SMS_MESSAGE = encodeURIComponent(
   'Hola equipo Gato Encerrado, recuérdenme la función del 28 de diciembre en CECUT.'
 );
@@ -118,23 +118,7 @@ const TicketPurchaseModal = ({ open, onClose }) => {
                     </span>
                   </p>
 
-                  <Button
-                    asChild
-                    className="
-                      w-full py-3 rounded-2xl font-semibold
-                      bg-gradient-to-r from-orange-500 via-rose-500 to-pink-500 
-                      hover:from-orange-400 hover:to-pink-400
-                      text-white shadow-[0_12px_40px_rgba(255,99,132,0.35)]
-                    "
-                  >
-                    <a
-                      href="https://www.taquillacecut.com.mx/eventos/saladeespectaculos/2025-12-28"
-                      target="_blank"
-                      rel="noreferrer"
-                    >
-                      Comprar en taquillacecut.com.mx
-                    </a>
-                  </Button>
+             
                 </div>
 
                 {/* Taza */}
@@ -215,13 +199,42 @@ const TicketPurchaseModal = ({ open, onClose }) => {
                 </div>
               </div>
 
-              {/* ======================================
-                  BLOQUE: DUDAS
-              ====================================== */}
-              <div className="rounded-2xl border border-white/10 bg-black/25 p-4 text-sm text-slate-300">
-                <p className="font-semibold text-slate-100 mb-1">¿Tienes dudas?</p>
-                <p>Estamos disponibles para orientarte antes de la función. Escríbenos y te acompañamos.</p>
-              </div>
+             {/* ======================================
+            BLOQUE: TE CHOCA HACER LÍNEA
+   ====================================== */}
+<div className="rounded-2xl border border-white/10 bg-black/25 p-4 text-sm text-slate-300 space-y-3">
+  <p className="text-xs uppercase tracking-[0.35em] text-purple-300/80">
+    ¿No te gusta hacer fila?
+  </p>
+
+  <h4 className="font-semibold text-slate-100">
+    También puedes comprar en línea desde tu celular
+  </h4>
+
+ 
+    <span className="text-slate-500 text-xs">
+      (La Taza Incentivo se entrega solo en compras presenciales.)
+    </span>
+
+
+  <Button
+    asChild
+    className="
+      w-full py-3 rounded-2xl font-semibold
+      bg-gradient-to-r from-orange-500 via-rose-500 to-pink-500 
+      hover:from-orange-400 hover:to-pink-400
+      text-white shadow-[0_12px_40px_rgba(255,99,132,0.35)]
+    "
+  >
+    <a
+      href="https://www.taquillacecut.com.mx/eventos/saladeespectaculos/2025-12-28"
+      target="_blank"
+      rel="noreferrer"
+    >
+      Comprar en taquillacecut.com.mx
+    </a>
+  </Button>
+</div>
             </div>
           </motion.div>
         </motion.div>
