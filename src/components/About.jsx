@@ -1,6 +1,6 @@
 import React, { useState, useCallback, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Film, Headphones, Ticket, Quote } from 'lucide-react';
+import { Film, Headphones, Quote, Send } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { toast } from '@/components/ui/use-toast';
 import {
@@ -27,12 +27,18 @@ const testimonials = [
   },
 ];
 
+const inviteMessage = `Hola 🐾
+Quiero invitarte a ver *Es un gato encerrado*.
+Mira el tráiler aquí: https://esungatoencerrado.com/trailer
+Si te late, vamos. 💜`;
+
 const About = () => {
   const [trailer, setTrailer] = useState(null);
   const [isTrailerOpen, setIsTrailerOpen] = useState(false);
   const [isTrailerLoading, setIsTrailerLoading] = useState(false);
   const [isReserveOpen, setIsReserveOpen] = useState(false);
   const [reserveIntent, setReserveIntent] = useState('preventa');
+  const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(
     () => typeof window !== 'undefined' && window.matchMedia('(max-width: 768px)').matches
   );
@@ -132,6 +138,45 @@ const About = () => {
     }
   }, []);
 
+  const handleInvite = useCallback(async () => {
+    const shareData = {
+      title: 'Es un gato encerrado',
+      url: 'https://esungatoencerrado.com/trailer',
+      text: inviteMessage,
+    };
+
+    if (typeof navigator !== 'undefined' && typeof navigator.share === 'function') {
+      try {
+        await navigator.share(shareData);
+        return;
+      } catch (error) {
+        if (error?.name === 'AbortError') {
+          return;
+        }
+        console.error('Error al compartir invitación:', error);
+      }
+    }
+
+    setIsInviteModalOpen(true);
+  }, []);
+
+  const handleCloseInviteModal = useCallback(() => {
+    setIsInviteModalOpen(false);
+  }, []);
+
+  const handleShareOption = useCallback((type) => {
+    const encodedMessage = encodeURIComponent(inviteMessage);
+    const whatsappUrl = `https://wa.me/?text=${encodedMessage}`;
+    const emailUrl = `mailto:?subject=${encodeURIComponent('Te invito a ver Es un gato encerrado')}&body=${encodedMessage}`;
+    const targetUrl = type === 'whatsapp' ? whatsappUrl : emailUrl;
+
+    if (typeof window !== 'undefined') {
+      window.open(targetUrl, '_blank', 'noopener,noreferrer');
+    }
+
+    setIsInviteModalOpen(false);
+  }, []);
+
   return (
     <>
     <section id="about" className="py-24 relative">
@@ -187,20 +232,17 @@ const About = () => {
                   disabled={isTrailerLoading}
                   className="relative bg-purple-500/20 border border-purple-400/30 text-purple-300 hover:bg-purple-500/30 hover:text-purple-200 disabled:opacity-60 disabled:cursor-not-allowed px-6 py-3 rounded-full font-semibold flex items-center gap-2 hover-glow"
                 >
-                  <Film size={20} />
-                  {isTrailerLoading ? 'Cargando…' : 'Ver Tráiler'}
-                  <Headphones
-                    size={18}
-                    className="absolute right-4 top-1/2 -translate-y-1/2 text-purple-200/80 pointer-events-none"
-                  />
+                  <Headphones size={20} />
+                  {isTrailerLoading ? 'Cargando…' : 'Escucha el Tráiler'}
+                 
                 </Button>
                 <Button
                   variant="outline"
-                  onClick={() => handleOpenReserve('preventa')}
+                  onClick={handleInvite}
                   className="border-slate-100/20 text-slate-200 hover:bg-slate-100/10 px-6 py-3 rounded-full font-semibold flex items-center gap-2"
                 >
-                  <Ticket size={20} />
-                  RSVP
+                  <Send size={20} />
+                  Invita a alguien
                 </Button>
               </div>
             </div>
@@ -308,6 +350,61 @@ const About = () => {
                     </div>
                   );
                 })()}
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+        {isInviteModalOpen && (
+          <motion.div
+            className="fixed inset-0 z-50 flex items-center justify-center p-4"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+          >
+            <motion.div
+              className="absolute inset-0 bg-black/70"
+              onClick={handleCloseInviteModal}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+            />
+
+            <motion.div
+              className="relative z-10 w-full max-w-md rounded-3xl border border-white/10 bg-slate-950/90 backdrop-blur-xl p-6 shadow-[0_18px_60px_rgba(0,0,0,0.55)]"
+              initial={{ scale: 0.96, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.96, opacity: 0 }}
+              transition={{ type: 'spring', stiffness: 220, damping: 28 }}
+            >
+              <div className="flex items-start justify-between mb-4">
+                <div>
+                  <p className="text-xs uppercase tracking-[0.35em] text-slate-400/80">Compartir</p>
+                  <h4 className="text-slate-100 font-display text-2xl">Invita a alguien</h4>
+                </div>
+                <button
+                  onClick={handleCloseInviteModal}
+                  className="text-slate-300 hover:text-white transition"
+                  aria-label="Cerrar invitación"
+                >
+                  ✕
+                </button>
+              </div>
+
+              <p className="text-slate-300/80 whitespace-pre-line text-sm mb-6 font-light">{inviteMessage}</p>
+
+              <div className="space-y-3">
+                <button
+                  onClick={() => handleShareOption('whatsapp')}
+                  className="w-full px-5 py-3 rounded-full font-semibold flex items-center justify-center gap-2 bg-emerald-500/15 hover:bg-emerald-500/25 border border-emerald-500/30 text-emerald-200 transition"
+                >
+                  Enviar por WhatsApp
+                </button>
+                <button
+                  onClick={() => handleShareOption('email')}
+                  className="w-full px-5 py-3 rounded-full font-semibold flex items-center justify-center gap-2 border border-slate-100/20 text-slate-200 hover:bg-slate-100/10 transition"
+                >
+                  Enviar por Email
+                </button>
               </div>
             </motion.div>
           </motion.div>

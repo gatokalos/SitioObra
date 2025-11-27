@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Calendar, Clock, Feather, PenLine, Search } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { toast } from '@/components/ui/use-toast';
+import ReactMarkdown from 'react-markdown';
 import ContributionModal from '@/components/ContributionModal';
 import LoginOverlay from '@/components/ContributionModal/LoginOverlay';
 import { useAuth } from '@/contexts/SupabaseAuthContext';
@@ -95,6 +96,35 @@ const inferMiniverseFromPost = (post) => {
   return 'curaduria';
 };
 
+const markdownComponents = {
+  p: ({ node: _node, ...props }) => (
+    <p className="leading-relaxed font-light text-slate-200" {...props} />
+  ),
+  strong: ({ node: _node, ...props }) => <strong className="font-semibold text-white" {...props} />,
+  em: ({ node: _node, ...props }) => <em className="italic text-slate-100" {...props} />,
+  blockquote: ({ node: _node, ...props }) => (
+    <blockquote
+      className="border-l-4 border-purple-400/60 pl-4 italic text-slate-200/90 bg-white/5 py-2 rounded-r-xl"
+      {...props}
+    />
+  ),
+  ul: ({ node: _node, ...props }) => (
+    <ul className="ml-6 list-disc space-y-2 text-slate-200" {...props} />
+  ),
+  ol: ({ node: _node, ...props }) => (
+    <ol className="ml-6 list-decimal space-y-2 text-slate-200" {...props} />
+  ),
+  li: ({ node: _node, ...props }) => <li className="leading-relaxed" {...props} />,
+  a: ({ node: _node, ...props }) => (
+    <a
+      className="text-purple-300 underline decoration-dotted hover:text-purple-200 transition-colors"
+      target="_blank"
+      rel="noopener noreferrer"
+      {...props}
+    />
+  ),
+};
+
 const ArticleCard = ({ post, onSelect }) => {
   const publishedDate = post.published_at ? new Date(post.published_at) : null;
 
@@ -159,12 +189,7 @@ const ArticleCard = ({ post, onSelect }) => {
 };
 
 const FullArticle = ({ post, onClose }) => {
-  const paragraphs = useMemo(() => {
-    if (!post?.content) {
-      return [];
-    }
-    return post.content.split(/\n{2,}/).map((chunk) => chunk.trim()).filter(Boolean);
-  }, [post]);
+  const articleContent = useMemo(() => post?.content?.trim() ?? '', [post]);
 
   const publishedDate = post.published_at ? new Date(post.published_at) : null;
 
@@ -208,16 +233,20 @@ const FullArticle = ({ post, onClose }) => {
 
       <h3 className="font-display text-3xl md:text-4xl font-semibold text-slate-50 mb-8">{post.title}</h3>
 
-      <div className="space-y-6 text-slate-200 leading-relaxed font-light">
-        {paragraphs.length === 0 ? (
+      {articleContent ? (
+        <div className="flex flex-col gap-6 text-slate-200 leading-relaxed font-light">
+          <ReactMarkdown components={markdownComponents} skipHtml={false} linkTarget="_blank">
+            {articleContent}
+          </ReactMarkdown>
+        </div>
+      ) : (
+        <div className="space-y-6 text-slate-200 leading-relaxed font-light">
           <p>
             Este artículo estará disponible muy pronto. Gracias por tu interés en la comunidad crítica de
             #GatoEncerrado.
           </p>
-        ) : (
-          paragraphs.map((paragraph, index) => <p key={index}>{paragraph}</p>)
-        )}
-      </div>
+        </div>
+      )}
       <ArticleInteractionPanel post={post} />
     </motion.div>
   );
@@ -585,39 +614,76 @@ const Blog = ({ posts = [], isLoading = false, error = null }) => {
           </div>
 
           <motion.div
-            id="blog-contribuye"
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.3, ease: 'easeOut' }}
-            viewport={{ once: true }}
-            className="mt-20 glass-effect rounded-2xl p-8 md:p-12 text-center"
-          >
-            <h3 className="font-display text-3xl font-medium text-slate-100 mb-6">¿Algo de la obra se quedó contigo?</h3>
-            <p className="text-slate-300/80 leading-relaxed mb-8 max-w-2xl mx-auto font-light">
-              Invitamos a espectadores, artistas, investigadores y espíritus curiosos a compartir cómo esta obra resonó en su forma de mirar, sentir, imaginar o habitar el mundo.
-              Tu palabra también construye este universo.
-            </p>
-            <div className="relative inline-flex flex-col items-center gap-2">
-              {showOnboardingHint ? (
-                <motion.div
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -10 }}
-                  className="absolute -top-10 bg-purple-600/80 text-white text-xs px-3 py-1 rounded-full shadow-lg"
-                >
-                  ¡Nuevo! Abre la bandeja lateral y comparte tu texto
-                </motion.div>
-              ) : null}
-              <Button
-                id="blog-submit-cta"
-                onClick={handleOpenContribution}
-                className={contributionButtonClassName}
-              >
-                <PenLine size={18} />
-                ✍️ Enviar propuesta
-              </Button>
-            </div>
-          </motion.div>
+  id="blog-contribuye"
+  initial={{ opacity: 0, y: 30 }}
+  whileInView={{ opacity: 1, y: 0 }}
+  transition={{ duration: 0.8, delay: 0.3, ease: 'easeOut' }}
+  viewport={{ once: true }}
+  className="relative mt-20 glass-effect rounded-2xl p-8 md:p-12 text-center overflow-hidden"
+>
+  {/* HALO VIOLETA DELICADO (DETRÁS) */}
+  <div
+    aria-hidden="true"
+    className="
+      absolute inset-0
+      pointer-events-none
+      flex items-center justify-center
+      z-0
+    "
+  >
+    <motion.div
+      initial={{ opacity: 0.35, scale: 0.9 }}
+      animate={{ opacity: [0.25, 0.45, 0.25], scale: [0.95, 1.05, 0.95] }}
+      transition={{ duration: 8, repeat: Infinity, ease: 'easeInOut' }}
+      className="
+        w-[85%] h-[85%]
+        md:w-[70%] md:h-[70%]
+        rounded-full
+        bg-purple-600/30
+        blur-[100px]
+      "
+    />
+  </div>
+
+  {/* CONTENIDO */}
+  <div className="relative z-10">
+    <h3 className="font-display text-3xl font-medium text-slate-100 mb-6">
+      ¿Algo de la obra se quedó contigo?
+    </h3>
+
+    <p className="text-slate-300/80 leading-relaxed mb-8 max-w-2xl mx-auto font-light whitespace-pre-line">
+      {`Si algo de la obra se movió contigo, nos encantará saberlo.
+    No buscamos “opiniones”: buscamos las huellas que dejó en tu manera de mirar, sentir o recordar.
+    Lo que compartas ayuda a seguir construyendo este universo.`}
+
+      <span className="block mt-4 text-sm text-slate-400/70 italic">
+        (O si hubo algo más que te llamó la atención durante tu visita, también puedes contarlo.)
+      </span>
+    </p>
+
+    <div className="relative inline-flex flex-col items-center gap-2">
+      {showOnboardingHint ? (
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -10 }}
+          className="absolute -top-10 bg-purple-600/80 text-white text-xs px-3 py-1 rounded-full shadow-lg"
+        >
+          ¡Nuevo! Abre la bandeja lateral y comparte tu texto
+        </motion.div>
+      ) : null}
+
+      <Button
+        id="blog-submit-cta"
+        onClick={handleOpenContribution}
+        className={contributionButtonClassName}
+      >
+        <PenLine size={18} />
+        Compartir lo que me dejó
+      </Button>
+    </div>
+  </div>
+</motion.div>
         </div>
       </section>
 

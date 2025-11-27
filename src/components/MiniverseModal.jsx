@@ -45,11 +45,12 @@ const modalVariants = {
   exit: { opacity: 0, y: 20, scale: 0.97, transition: { duration: 0.2, ease: 'easeIn' } },
 };
 
-const MiniverseModal = ({ open, onClose }) => {
+const MiniverseModal = ({ open, onClose, contextLabel }) => {
   const [activeTab, setActiveTab] = useState(TABS[0].id);
   const [formState, setFormState] = useState(initialFormState);
   const [status, setStatus] = useState('idle');
   const [errorMessage, setErrorMessage] = useState('');
+  const pendingMiniverseLabel = contextLabel?.trim() || 'Este miniverso';
 
   useEffect(() => {
     if (open) {
@@ -204,18 +205,23 @@ const MiniverseModal = ({ open, onClose }) => {
               {activeTab === 'waitlist' ? (
                 <>
                   <div className="space-y-4 text-slate-300/90 text-sm leading-relaxed">
-                    <div className="glass-effect rounded-xl border border-white/5 p-4">
-                      <h3 className="font-display text-lg text-slate-100 mb-3">¿Qué necesitas saber?</h3>
-                      <ul className="space-y-2 text-slate-300/80">
-                        <li>• Algunos miniversos aún están bajo construcción.</li>
-                        <li>• Puedes ser parte de las pruebas tempranas o versiones beta.</li>
-                        <li>• Si te unes a esta lista, recibirás avances exclusivos antes de que se abran al público.</li>
+                    <div className="glass-effect rounded-2xl border border-white/10 p-5 space-y-4">
+                      <p className="text-base uppercase tracking-[0.3em] text-slate-400">Próximamente</p>
+                      <h3 className="font-display text-2xl text-slate-100">
+                        Este miniverso aún no existe… pero puede existir contigo.
+                      </h3>
+                      <p>{pendingMiniverseLabel} es uno de nuestros miniversos por activar.</p>
+                      <p>Una visión lista para volverse realidad en cuanto la comunidad lo permita.</p>
+                      <ul className="space-y-2 text-sm leading-relaxed">
+                        <li>🪙 Cada suscripción a la plataforma apoya directamente los proyectos activos de la asociación.</li>
+                        <li>
+                          💡 Una vez cubiertas las metas básicas, todo lo recaudado se usará para dar vida a miniversos como este.
+                        </li>
+                        <li>🌐 Conectando arte, tecnología y territorio en experiencias reales e inmersivas.</li>
                       </ul>
-                    </div>
-                    <div className="glass-effect rounded-xl border border-purple-400/20 p-4">
-                      <h3 className="font-display text-lg text-purple-200 mb-3">¿Qué recibirás?</h3>
-                      <p>
-                        Invitaciones a exploraciones internas, accesos temporales, adelantos curatoriales y ventanas de activación anticipada en los miniversos en desarrollo.
+                      <p>¿Lo imaginaste? Ahora ayúdanos a realizarlo.</p>
+                      <p className="font-semibold text-purple-100">
+                        👉 Suscríbete, comparte o participa. Aquí, cada gesto cuenta.
                       </p>
                     </div>
                   </div>

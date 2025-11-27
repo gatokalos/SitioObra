@@ -15,6 +15,8 @@ import {
   Sparkles,
   Music,
   Coffee,
+  Palette,
+  Map,
 } from 'lucide-react';
 import { useAuth } from '@/contexts/SupabaseAuthContext';
 import LoginOverlay from '@/components/ContributionModal/LoginOverlay';
@@ -30,8 +32,8 @@ const CATEGORIES = [
     {
     id: 'miniverso_novela',
     icon: <BookOpen size={20} className="text-emerald-300" />,
-    title: 'Miniverso Novela',
-        description: 'La palabra devolvió lo que el gato se tragó:\nMi Gato Encerrado\n se cuenta a sí misma.',
+    title: 'Miniverso Literatura',
+        description: 'La palabra devolvió lo que el gato se tragó:\nMi Gato Encerrado\n huyó de sí misma y se encontró.',
   },
   {
     id: 'taza',
@@ -46,16 +48,28 @@ const CATEGORIES = [
     description: 'Cuando la escena no alcanza,\nla cámara recuerda\nQuirón, CopyCats,\nmismo espacio en otra luz.',
   },
   {
+    id: 'grafico',
+    icon: <Palette size={20} className="text-fuchsia-300" />,
+    title: 'Miniverso Gráfico',
+    description: 'Garabatea tu límite, dibuja tu refugio.\nLo gráfico como portal emocional.\nCada trazo se siente antes de entenderse.',
+  },
+  {
     id: 'apps',
     icon: <Smartphone size={20} className="text-lime-300" />,
     title: 'Miniverso Apps',
     description: 'Pantallas que acompañan.\nTecnologías que cuidan.\nAquí sigues el universo,\nsin salir del tuyo.',
   },
-    {
+  {
     id: 'sonoro',
     icon: <Music size={20} className="text-cyan-300" />,
     title: 'Miniverso Sonoro',
     description: 'Sueña una imagen.\nElige un pulso.\nDeja que el poema respire por ti.',
+  },
+  {
+    id: 'movimiento',
+    icon: <Map size={20} className="text-sky-300" />,
+    title: 'Miniverso Movimiento',
+    description: 'Diosas en danza.\nCiudades como escenario.\nLa ruta vibra cuando alguien baila.',
   },
   {
     id: 'bitacora',
@@ -99,10 +113,12 @@ const formTitlesByUniverse = {
   miniverso_novela: 'Si encontraste algo tuyo entre estas páginas, déjalo dicho.',
   taza: '¿Qué historia se activó cuando tomaste la taza? Escríbela aquí.',
   cine: '¿Qué imagen te persiguió después? Cuéntanos qué viste más allá de la pantalla.',
+  grafico: '¿Qué símbolo, trazo o glitch quieres sumar a este laboratorio visual?',
   apps: '¿Cómo cambió tu forma de jugar o explorar este universo?',
   bitacora: 'Comparte qué mezcla soñaste: qué viste, qué escuchaste, qué palabras eligieron.',
   otro: 'Si no cabe en un miniverso… es porque aún no lo hemos nombrado.',
   sonoro: 'Comparte qué mezcla soñaste: qué viste, qué escuchaste, qué palabras eligieron.',
+  movimiento: 'Cuéntanos qué ruta, coreografía o ritual colectivo quieres activar en la ciudad.',
 };
 
 const ContributionModal = ({ open, onClose }) => {

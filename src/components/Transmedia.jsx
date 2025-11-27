@@ -13,6 +13,12 @@ import {
   Video,
   Music,
   Heart,
+  Map,
+  Scan,
+  Users,
+  RadioTower,
+  Sparkles,
+  MapIcon,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import MiniverseModal from '@/components/MiniverseModal';
@@ -178,14 +184,14 @@ const showcaseDefinitions = {
     notaAutoral: 'Una taza que escucha.\nUn marcador que mira.\nLo cotidiano también es ritual.',
   },
   miniversoNovela: {
-    label: 'Miniverso Novela',
+    label: 'Miniverso Literatura',
     type: 'blog-series',
     slug: null,
     intro:
       'Aquí se cruzan la autoficción, la novela gráfica y las vidas que aún no caben en escena. Fragmentos, procesos y pistas que solo existen cuando alguien las lee.',
     cartaTitle: '#PáginaViva',
     notaAutoral:
-      'La palabra devolvió lo que el gato se tragó:\nMi Gato Encerrado\nse cuenta a sí misma.',
+      'La palabra devolvió lo que el gato se tragó:\nMi Gato Encerrado\nhuyó de sí misma y se encontró.',
     entries: [
       {
         id: 'compra-libro',
@@ -287,7 +293,7 @@ const showcaseDefinitions = {
       'Colección viva de exploraciones visuales: cómics en curso, viñetas interactivas, posters simbólicos, caricaturas conceptuales, murales colaborativos y avances con IA/técnicas mixtas.',
     cartaTitle: '#FronteraAbierta',
     notaAutoral:
-      'Lo gráfico como portal emocional. Cada pieza es un disparo breve a la herida o a la curiosidad, nunca un catálogo plano.',
+      'Garabatea tu límite, dibuja tu refugio.\nLo gráfico como portal emocional.\nCada trazo se siente antes de entenderse.',
     collection: [
       'Cómics en curso y por venir',
       'Viñetas interactivas',
@@ -322,6 +328,65 @@ const showcaseDefinitions = {
       secondary: 'Súmate a la residencia gráfica',
     },
   },
+  miniversoMovimiento: {
+    label: 'Miniverso Movimiento',
+    type: 'movement-ritual',
+    pendingName: 'La Ruta de las Diosas',
+    tagline: 'Diosas en danza. Ciudades como escenario. Tecnología como portal.',
+    overview: [
+      'En este miniverso, el cuerpo se convierte en conjuro. La danza, en escritura. Y la ciudad… en altar vivo.',
+      'La Ruta de las Diosas es una experiencia coreográfica transmedial que recorre plazas, parques y espacios públicos para activar un ritual contemporáneo con avatares, realidad aumentada y movimiento colectivo.',
+    ],
+    diosaHighlights: [
+      'Una presencia digital inspirada en mitologías mesoamericanas.',
+      'Diseñada con motion capture.',
+      'Acompañada de música original.',
+      'Proyectada con videomapping láser durante las noches.',
+    ],
+    dayNight: [
+      'Durante el día, los talleres coreográficos en comunidad trazan mapas sensibles sobre el territorio.',
+      'Durante la noche, los cuerpos físicos y virtuales se funden en un mismo acto escénico.',
+    ],
+    invitation: '¿Y tú? ¿Bailarás con nosotrxs o solo mirarás pasar a las diosas?',
+    actions: [
+      {
+        id: 'ruta',
+        label: 'Explora su ruta',
+        description: 'Sigue el mapa interactivo o la línea de tiempo animada de cada estación (Tijuana, La Paz, etc.).',
+        badge: 'CTA principal',
+        buttonLabel: 'Explorar',
+        toastMessage: 'Muy pronto liberaremos el mapa coreográfico y el timeline de estaciones.',
+        icon: Map,
+      },
+      {
+        id: 'marcador-ar',
+        label: 'Activa un marcador AR en tu ciudad',
+        description: 'Activa la cámara (WebAR) o abre la guía para instalar la app y recibir instrucciones.',
+        buttonLabel: 'Activar AR',
+        toastMessage: 'La guía WebAR se está terminando; te avisaremos cuando la cámara pueda abrir el portal.',
+        icon: Scan,
+      },
+      {
+        id: 'talleres',
+        label: 'Inscríbete a los talleres coreográficos',
+        description: 'Conecta con la comunidad y reserva tu lugar en los talleres diurnos que trazan la ruta.',
+        buttonLabel: 'Inscribirme',
+        toastMessage: 'Abriremos el formulario conectado a Supabase para registrar tu participación.',
+        icon: Users,
+      },
+      {
+        id: 'livestream',
+        label: 'Sigue el livestream de la función final',
+        description: 'Activa un embed o cuenta regresiva para ver la ruta completa cuando llegue la noche.',
+        buttonLabel: 'Ver livestream',
+        toastMessage: 'El livestream y su countdown estarán activos antes de la función final.',
+        icon: RadioTower,
+      },
+    ],
+  
+    cartaTitle: '#RitualEnMovimiento',
+    notaAutoral: 'El cuerpo es conjuro.\nLa ciudad tiembla y abre un portal.\nLa ruta solo existe si alguien baila.',
+  },
 };
 
 const ShowcaseReactionInline = ({ showcaseId, title, description, buttonLabel }) => {
@@ -343,7 +408,7 @@ const ShowcaseReactionInline = ({ showcaseId, title, description, buttonLabel })
     }
 
     setStatus('success');
-    toast({ description: 'Gracias por tu apoyo en este showcase.' });
+    toast({ description: 'Gracias por tu apoyo en este escaparate.' });
   }, [showcaseId, status, user]);
 
   return (
@@ -397,7 +462,7 @@ const formats = [
   },
   {
     id: 'miniversoNovela',
-    title: 'Miniverso Novela',
+    title: 'Miniverso Literatura',
     description: 'El teatro terminó, pero algo siguió hablando y de ese eco nace esta autoficción.',
     icon: BookOpen,
     iconClass: 'text-emerald-300',
@@ -411,7 +476,7 @@ const formats = [
     icon: Palette,
     iconClass: 'text-fuchsia-300',
     notaAutoral:
-      'Lo gráfico como portal emocional. Cada pieza se siente antes de entenderse.',
+      'Garabatea tu límite, dibuja tu refugio.\nLo gráfico como portal emocional.\nCada trazo se siente antes de entenderse.',
   },
   {
     id: 'copycats',
@@ -430,6 +495,15 @@ const formats = [
     iconClass: 'text-cyan-300',
     notaAutoral:
       'Imagen, música y palabra en suspensión. Cada mezcla inventa otro ánimo. Aquí el sueño se edita solo.',
+  },
+  {
+    id: 'miniversoMovimiento',
+    title: 'Miniverso Movimiento',
+    description: 'Ruta coreográfica transmedial donde la ciudad se convierte en altar vivo.',
+    icon: MapIcon,
+    iconClass: 'text-sky-300',
+    notaAutoral:
+      'Diosas en danza. El mapa vibra si alguien lo recorre.',
   },
   {
     id: 'detodxs',
@@ -480,6 +554,7 @@ const CAUSE_ACCORDION = [
 
 const Transmedia = () => {
   const [isMiniverseOpen, setIsMiniverseOpen] = useState(false);
+  const [miniverseContext, setMiniverseContext] = useState(null);
   const [activeShowcase, setActiveShowcase] = useState(null);
   const [showcaseContent, setShowcaseContent] = useState({});
   const showcaseRef = useRef(null);
@@ -516,12 +591,14 @@ const Transmedia = () => {
       </div>
     ) : null;
 
-  const handleOpenMiniverses = useCallback(() => {
+  const handleOpenMiniverses = useCallback((contextLabel = null) => {
+    setMiniverseContext(contextLabel);
     setIsMiniverseOpen(true);
   }, []);
 
   const handleCloseMiniverses = useCallback(() => {
     setIsMiniverseOpen(false);
+    setMiniverseContext(null);
   }, []);
 
   const loadShowcaseContent = useCallback(async (showcaseId) => {
@@ -551,7 +628,7 @@ const Transmedia = () => {
         [showcaseId]: {
           status: 'error',
           post: null,
-          error: error?.message ?? 'Ocurrió un error al cargar este showcase.',
+          error: error?.message ?? 'Ocurrió un error al cargar este escaparate.',
         },
       }));
     }
@@ -857,30 +934,40 @@ const Transmedia = () => {
   }, []);
 
   const handleNovelAppCTA = useCallback(
-  (app) => {
-    if (!app) return;
+    (app) => {
+      if (!app) return;
 
-    if (app.ctaUrl) {
-      window.open(app.ctaUrl, '_blank', 'noopener,noreferrer');
-      return;
-    }
+      if (app.ctaUrl) {
+        window.open(app.ctaUrl, '_blank', 'noopener,noreferrer');
+        return;
+      }
 
-    if (app.ctaAction === 'openCamera') {
-      handleOpenCameraForQR();
-      return;
-    }
+      if (app.ctaAction === 'openCamera') {
+        handleOpenCameraForQR();
+        return;
+      }
 
-    if (app.ctaAction === 'openAutoficcionPreview') {
-      setShowAutoficcionPreview(true);
-      return;
-    }
+      if (app.ctaAction === 'openAutoficcionPreview') {
+        setShowAutoficcionPreview(true);
+        return;
+      }
 
-    toast({
-      description: app.ctaMessage || 'Muy pronto liberaremos esta app interactiva.',
-    });
-  },
-  [handleOpenCameraForQR]
-);
+      toast({
+        description: app.ctaMessage || 'Muy pronto liberaremos esta app interactiva.',
+      });
+    },
+    [handleOpenCameraForQR]
+  );
+
+  const handleMovementAction = useCallback(
+    (action, contextLabel = null) => {
+      if (!action) {
+        return;
+      }
+      handleOpenMiniverses(contextLabel);
+    },
+    [handleOpenMiniverses]
+  );
 
   const rendernotaAutoral = () => {
     if (!activeDefinition?.notaAutoral) return null;
@@ -1304,22 +1391,14 @@ const Transmedia = () => {
               </p>
               <div className="flex flex-col sm:flex-row gap-3">
                 <Button
-                  onClick={() =>
-                    toast({
-                      description: 'Muy pronto liberarás el lector visual interactivo desde aquí.',
-                    })
-                  }
+                  onClick={() => handleOpenMiniverses('Miniverso Gráfico')}
                   className="w-full sm:w-auto justify-center bg-gradient-to-r from-purple-600/80 to-fuchsia-500/80 hover:from-purple-500 hover:to-fuchsia-400 text-white"
                 >
                   {activeDefinition.ctas?.primary}
                 </Button>
                 <Button
                   variant="outline"
-                  onClick={() =>
-                    toast({
-                      description: 'Escríbenos o postula; abriremos la residencia gráfica en breve.',
-                    })
-                  }
+                  onClick={() => handleOpenMiniverses('Miniverso Gráfico')}
                   className="w-full sm:w-auto justify-center border-purple-400/40 text-purple-200 hover:bg-purple-500/10"
                 >
                   {activeDefinition.ctas?.secondary}
@@ -1342,6 +1421,115 @@ const Transmedia = () => {
               />
             ) : null}
           </div>
+        </div>
+      );
+    }
+
+    if (activeDefinition.type === 'movement-ritual') {
+      return (
+        <div className="space-y-10">
+          <div className="grid gap-6 lg:gap-10 lg:grid-cols-[2fr_1fr]">
+            <div className="space-y-5 rounded-3xl border border-white/10 bg-gradient-to-br from-slate-950/80 via-black/60 to-purple-900/30 p-6 lg:p-8">
+              <p className="text-xs uppercase tracking-[0.35em] text-slate-400/80">Ruta coreográfica</p>
+              <h3 className="font-display text-3xl text-slate-100">{activeDefinition.tagline}</h3>
+              <div className="space-y-4 text-slate-300/85 leading-relaxed text-sm md:text-base">
+                {activeDefinition.overview?.map((paragraph, index) => (
+                  <p key={`movement-overview-${index}`}>{paragraph}</p>
+                ))}
+                {activeDefinition.diosaHighlights?.length ? (
+                  <div>
+                    <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">
+                      Cada estación revela una diosa distinta
+                    </p>
+                    <ul className="mt-3 space-y-2">
+                      {activeDefinition.diosaHighlights.map((item, index) => (
+                        <li key={`movement-highlight-${index}`} className="flex items-start gap-2">
+                          <span className="text-purple-300 mt-1">●</span>
+                          <span>{item}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                ) : null}
+                {activeDefinition.dayNight?.map((sentence, index) => (
+                  <p key={`movement-daynight-${index}`}>{sentence}</p>
+                ))}
+                {activeDefinition.invitation ? (
+                  <p className="text-lg text-slate-100 italic">{activeDefinition.invitation}</p>
+                ) : null}
+              </div>
+              {rendernotaAutoral()}
+            </div>
+
+            <div className="space-y-4">
+              {activeDefinition.actions?.map((action) => {
+                const ActionIcon = action.icon || ArrowRight;
+                return (
+                  <div
+                    key={action.id}
+                    className="rounded-2xl border border-white/10 bg-black/30 p-5 space-y-3 hover:border-purple-400/40 transition"
+                  >
+                    <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                      <div className="flex items-center gap-3">
+                        <div className="rounded-full border border-white/10 bg-white/5 p-3">
+                          <ActionIcon size={20} className="text-purple-200" />
+                        </div>
+                        <div>
+                          {action.badge ? (
+                            <p className="text-[0.6rem] uppercase tracking-[0.35em] text-slate-500">{action.badge}</p>
+                          ) : null}
+                          <p className="font-semibold text-slate-100">{action.label}</p>
+                        </div>
+                      </div>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        className="border-purple-400/40 text-purple-200 hover:bg-purple-500/10 w-full sm:w-auto justify-center"
+                        onClick={() =>
+                          handleMovementAction(action, activeDefinition.pendingName || activeDefinition.label)
+                        }
+                      >
+                        {action.buttonLabel ?? 'Activar'}
+                      </Button>
+                    </div>
+                    {action.description ? (
+                      <p className="text-sm text-slate-300/80 leading-relaxed">{action.description}</p>
+                    ) : null}
+                  </div>
+                );
+              })}
+              <ShowcaseReactionInline
+                showcaseId="miniversoMovimiento"
+                title="Resonancia colectiva"
+                description="Haz clic y deja un pulso para que la Ruta de las Diosas siga viva."
+                buttonLabel="Hacer vibrar la ruta"
+              />
+            </div>
+          </div>
+
+          {activeDefinition.microinteractions?.length ? (
+            <div className="grid gap-6 md:grid-cols-2">
+              {activeDefinition.microinteractions.map((micro, index) => (
+                <div
+                  key={`movement-micro-${index}`}
+                  className="rounded-3xl border border-white/10 bg-black/30 p-6 space-y-3 text-sm leading-relaxed"
+                >
+                  <p className="text-xs uppercase tracking-[0.35em] text-slate-400/80">{micro.title}</p>
+                  {micro.description ? <p className="text-slate-300/85">{micro.description}</p> : null}
+                  {micro.items?.length ? (
+                    <ul className="space-y-2 text-slate-200/85">
+                      {micro.items.map((item, bulletIndex) => (
+                        <li key={`movement-micro-item-${index}-${bulletIndex}`} className="flex items-start gap-2">
+                          <span className="text-purple-300 mt-1">●</span>
+                          <span>{item}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  ) : null}
+                </div>
+              ))}
+            </div>
+          ) : null}
         </div>
       );
     }
@@ -1971,7 +2159,7 @@ const Transmedia = () => {
                 <div>
                   {activeDefinition.type !== 'tragedia' ? (
                     <>
-                      <p className="text-xs uppercase tracking-[0.4em] text-slate-400/70 mb-2">Showcase</p>
+                      <p className="text-xs uppercase tracking-[0.4em] text-slate-400/70 mb-2">Escaparate</p>
                       <h3 className="font-display text-3xl text-slate-100 mb-3">{activeDefinition.label}</h3>
                       <p className="text-slate-300/80 leading-relaxed font-light max-w-3xl">
                         {activeDefinition.intro}
@@ -1984,7 +2172,7 @@ const Transmedia = () => {
                   onClick={() => setActiveShowcase(null)}
                   className="text-sm text-slate-400 hover:text-white transition self-start md:self-auto"
                 >
-                  Cerrar showcase ✕
+                  Cerrar escaparate ✕
                 </button>
               </div>
 
@@ -2084,7 +2272,7 @@ const Transmedia = () => {
         </div>
       </section>
 
-      <MiniverseModal open={isMiniverseOpen} onClose={handleCloseMiniverses} />
+      <MiniverseModal open={isMiniverseOpen} onClose={handleCloseMiniverses} contextLabel={miniverseContext} />
 
       {pdfPreview ? (
         <div className="fixed inset-0 z-50 flex items-center justify-center px-4 py-10">
