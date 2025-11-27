@@ -154,7 +154,7 @@ const showcaseDefinitions = {
     ctaLabel: 'Probar activación WebAR',
     ctaLink: '/webar/taza/index.html',
     ctaMessage: 'Cuando liberes la activación WebAR, descubrirás la pista que le corresponde a tu taza.',
-    image: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Merch/tazas.mp4',
+    image: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Merch/taza_h.png',
     sentiments: ['Es tu manera de apoyar la causa social de Gato Encerrado.'], 
     phrases: ['La taza te habla.'],
     instructions: [
@@ -887,8 +887,8 @@ const Transmedia = () => {
 
     const isTragedia = activeDefinition.type === 'tragedia';
     const containerClass = isTragedia
-      ? 'rounded-2xl border border-purple-500/30 bg-purple-900/20 p-4 text-sm text-slate-100'
-      : 'rounded-2xl border border-white/10 p-6 bg-black/30 text-slate-300/80 text-sm leading-relaxed shadow-[0_25px_80px_rgba(0,0,0,0.45)]';
+      ? 'rounded-2xl border border-purple-400/60 bg-purple-900/20 p-4 text-sm text-slate-100 shadow-[0_0_25px_rgba(168,85,247,0.45),0_0_55px_rgba(109,40,217,0.32)]'
+      : 'rounded-2xl border border-purple-300/45 p-6 bg-black/30 text-slate-300/80 text-sm leading-relaxed shadow-[0_0_22px_rgba(168,85,247,0.32),0_0_42px_rgba(59,130,246,0.18),0_20px_65px_rgba(0,0,0,0.45)]';
     const buttonClass = isTragedia
       ? 'text-xs uppercase tracking-[0.35em] text-slate-400 underline-offset-4 hover:text-white'
       : 'text-xs uppercase tracking-[0.35em] text-slate-400/80 underline-offset-4 hover:text-white';

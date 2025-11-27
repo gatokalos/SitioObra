@@ -9,6 +9,47 @@ import React, {
 import loadMindAR from '@/lib/loadMindAR';
 import loadThree from '@/lib/loadThree';
 
+const buildFallbackPortal = (THREE) => {
+  const group = new THREE.Group();
+
+  const core = new THREE.Mesh(
+    new THREE.IcosahedronGeometry(0.35, 1),
+    new THREE.MeshStandardMaterial({
+      color: '#c084fc',
+      emissive: '#6b21a8',
+      metalness: 0.2,
+      roughness: 0.35,
+      transparent: true,
+      opacity: 0.9,
+    }),
+  );
+
+  const halo = new THREE.Mesh(
+    new THREE.TorusGeometry(0.5, 0.035, 14, 48),
+    new THREE.MeshBasicMaterial({
+      color: '#e879f9',
+      transparent: true,
+      opacity: 0.65,
+    }),
+  );
+  halo.rotation.x = Math.PI / 2;
+
+  const glow = new THREE.Mesh(
+    new THREE.SphereGeometry(0.18, 16, 16),
+    new THREE.MeshBasicMaterial({
+      color: '#a5b4fc',
+      transparent: true,
+      opacity: 0.35,
+    }),
+  );
+
+  group.add(core);
+  group.add(halo);
+  group.add(glow);
+
+  return group;
+};
+
 const MindARScene = forwardRef(
   (
     {
@@ -90,11 +131,20 @@ const MindARScene = forwardRef(
           );
           const loader = new GLTFLoader();
 
-          // 🔴 AJUSTA LA RUTA SI ES NECESARIO
-          const gltf = await loader.loadAsync('/webar/taza/gato-abstracto.glb');
+          let modelScene = null;
+          try {
+            // Preferimos el modelo glb, pero si no está disponible hacemos fallback a una geometría procedimental.
+            const gltf = await loader.loadAsync('/webar/taza/gato-abstracto.glb');
+            modelScene = gltf.scene;
+          } catch (modelError) {
+            console.warn(
+              '[MindARScene] No se pudo cargar /webar/taza/gato-abstracto.glb, usando modelo fallback.',
+              modelError,
+            );
+            modelScene = buildFallbackPortal(THREE);
+          }
 
-          catModel = gltf.scene;
-          // Ajustes de escala / posición: aquí se hace fino
+          catModel = modelScene;
           catModel.scale.set(0.6, 0.6, 0.6);
           catModel.position.set(0, 0.3, 0); // flotando sobre el marcador
           catModel.rotation.set(0, Math.PI, 0); // girado hacia la cámara
