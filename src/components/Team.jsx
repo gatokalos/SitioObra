@@ -50,7 +50,7 @@ const teamData = {
       },
         Dramaturgia: {
         name: "Carlos A. Pérez H.",
-        bio: "Artista transmedial, autor y dramaturgo. Su obra habita entre teatro, escritura y tecnología, proponiendo una poética crítica y humana. Formado en el ITESO, la Universidad de Salamanca y LABASAD Barcelona, integra astrología psicológica, cuerpo y arte digital en una mirada simbólica. Creador del universo transmedia #GatoEncerrado, concibe el acto creativo como una forma de acompañamiento y transformación.",
+        bio: "Artista transmedia, autor y dramaturgo. Su obra habita entre teatro, escritura y tecnología, proponiendo una poética crítica y humana. Formado en el ITESO, la Universidad de Salamanca y LABASAD Barcelona, integra astrología psicológica, cuerpo y arte digital en una mirada simbólica. Creador del universo transmedia #GatoEncerrado, concibe el acto creativo como una forma de acompañamiento y transformación.",
         image: "https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/equipo/carlos_perez.gif",
      },
       "Diseño y Técnica Escénica": {

@@ -137,7 +137,7 @@ const showcaseDefinitions = {
     screening: {
       title: 'Screening privado · Marzo · Cineteca CECUT',
       description:
-        'Únete al universo transmedial y asegura tu acceso al primer screening doble de CopyCats + Quirón, con conservatorio del equipo.',
+        'Únete al universo transmedia y asegura tu acceso al primer screening doble de CopyCats + Quirón, con conservatorio del equipo.',
       cta: 'Quiero ser parte del screening',
       footnote: 'El cine es otro modo de entrar al encierro. Acompáñanos en marzo para ver ambas películas antes que nadie.',
     },
@@ -208,7 +208,7 @@ const showcaseDefinitions = {
             description:
               'Lee los primeros fragmentos de la novela y desbloquea preguntas guiadas en cuatro planos de lectura: académico, psicológico, narrativo y teatral.',
             snippet: {
-              tagline: 'Contraportada transmedial',
+              tagline: 'Contraportada transmedia',
               text:
                 'Al escanear el QR de tu ejemplar se desbloquean lecturas personalizadas. Aquí puedes probar una versión de inicio.',
               sideLayout: true,
@@ -1217,7 +1217,7 @@ const Transmedia = () => {
                   {activeDefinition.ctaLabel}
                 </Button>
                 <p className="text-[11px] text-slate-500">
-                  La conversación se abre dentro del universo transmedial (pronto con GPT de Silvestre).
+                  La conversación se abre dentro del universo transmedia (pronto con GPT de Silvestre).
                 </p>
                 {micPromptVisible && !micError ? (
                   <div className="mt-3 rounded-2xl border border-white/10 bg-black/40 p-4 text-sm text-slate-200">
@@ -1911,7 +1911,7 @@ const Transmedia = () => {
               Miniversos que sostienen la causa
             </h2>
             <p className="text-lg text-slate-300/80 max-w-3xl mx-auto leading-relaxed font-light">
-              #GatoEncerrado es un universo transmedial compuesto por miniversos narrativos. Cada experiencia digital, objeto o narrativa expandida 
+              #GatoEncerrado es un universo transmedia compuesto por miniversos narrativos. Cada experiencia digital, objeto o narrativa expandida 
               financia el acompañamiento psicoemocional de{' '}
               <button
                 type="button"

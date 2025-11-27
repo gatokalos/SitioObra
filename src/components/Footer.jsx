@@ -43,7 +43,7 @@ const Footer = () => {
                 #GatoEncerrado
               </span>
               <p className="text-slate-400 leading-relaxed mb-6 max-w-md font-light">
-                Una experiencia teatral transmedial que explora los límites entre 
+                Una experiencia teatral transmedia que explora los límites entre 
                 la realidad y la ficción, creando nuevas formas de narrativa artística.
               </p>
               <div className="flex gap-2">
@@ -89,7 +89,7 @@ const Footer = () => {
               <ul className="space-y-3 text-sm font-light">
                 <li className="text-slate-400">contacto@gatoencerrado.ai</li>
                 <li className="text-slate-400">+52 123 456 789</li>
-                <li className="text-slate-400">#UniversoTransmedial<br />Tijuana, México</li>
+                <li className="text-slate-400">#Universotransmedia<br />Tijuana, México</li>
               </ul>
             </motion.div>
           </div>

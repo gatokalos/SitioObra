@@ -1,6 +1,6 @@
 import React, { useCallback, useState } from 'react';
 import { motion } from 'framer-motion';
-import { ArrowDown, Ticket } from 'lucide-react';
+import { ArrowDown, Package, Ticket } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import ReserveModal from '@/components/ReserveModal';
 import TicketPurchaseModal from '@/components/TicketPurchaseModal';
@@ -34,19 +34,21 @@ const Hero = () => {
   return (
     <>
       <section id="hero" className="min-h-screen flex items-center justify-center relative overflow-hidden">
+        
         {/* Fondo */}
         <div className="absolute inset-0 bg-black">
           <div className="absolute inset-0 opacity-30">
-            <div className="absolute top-0 left-0 w-1/2 h-1/2 bg-gradient-to-br from-violet-900/90 via-transparent to-transparent blur-4xl"></div>
-            <div className="absolute bottom-0 right-0 w-1/2 h-1/2 bg-gradient-to-tl from-pink-600/40 via-transparent to-transparent blur-3xl"></div>
+            <div className="absolute top-0 left-0 w-1/2 h-1/2 bg-gradient-to-br from-pink-900/50 via-transparent to-transparent blur-4xl"></div>
+            <div className="absolute bottom-0 right-0 w-1/2 h-1/2 bg-gradient-to-tl from-purple-700/60 via-transparent to-transparent blur-3xl"></div>
           </div>
           <img
             className="absolute inset-0 w-full h-full object-cover opacity-15 mix-blend-luminosity pointer-events-none"
-            style={{ filter: 'contrast(20%) brightness(105%)' }}
+            style={{ filter: 'contrast(10%) brightness(95%)' }}
             alt="Textura de telón de teatro de terciopelo oscuro"
             src={bgLogo}
           />
         </div>
+        
 
         {/* Contenido */}
         <div className="container mx-auto px-6 text-center relative z-10">
@@ -67,13 +69,39 @@ const Hero = () => {
             </motion.h1>
 
             <motion.p
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ duration: 1.5, delay: 0.5 }}
-              className="text-xl md:text-2xl text-slate-300/80 mb-12 leading-relaxed font-light"
-            >
-              Lo ves aquí, pero su voz también habita otras dimensiones.
-            </motion.p>
+  initial={{ opacity: 0 }}
+  animate={{ opacity: 1 }}
+  transition={{ duration: 1.5, delay: 0.5 }}
+  className="text-xl md:text-2xl text-slate-300/80 mb-12 leading-relaxed font-light flex flex-col items-center gap-1"
+>
+  El espacio transmedia donde late la obra
+  <button
+    onClick={() =>
+      document.querySelector('#about')?.scrollIntoView({
+        behavior: 'smooth',
+        block: 'start',
+      })
+    }
+    className="
+      text-slate-200 underline underline-offset-4 decoration-slate-400/50
+      hover:text-white hover:decoration-purple-400 transition
+      font-normal flex items-center gap-1
+    "
+  >
+    Es un gato encerrado
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      className="h-4 w-4 opacity-80"
+      fill="none"
+      viewBox="0 0 24 24"
+      stroke="currentColor"
+      strokeWidth={2}
+    >
+      <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+    </svg>
+  </button>
+</motion.p>
+
 
             {/* Botones */}
             <motion.div
@@ -82,43 +110,61 @@ const Hero = () => {
               transition={{ duration: 1, delay: 0.8 }}
               className="flex flex-col gap-4 justify-center items-center"
             >
-              <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                <Button
-                  onClick={handleOpenTicket}
-                  className="bg-gradient-to-r from-orange-500/90 via-rose-500/90 to-pink-500/90 hover:from-orange-400 hover:to-pink-400 text-white px-6 py-3 rounded-full font-semibold flex items-center gap-2 shadow-lg shadow-orange-500/40 transition"
-                >
-                  <Ticket size={20} />
-                  Compra tu boleto
-                </Button>
+          <div className="flex flex-col gap-4 justify-center items-center">
 
-                  <Button
-                                  variant="outline"
-                                  onClick={() => handleOpenReserve('preventa')}
-                                  className="border-slate-100/20 text-slate-200 hover:bg-slate-100/10 px-6 py-3 rounded-full font-semibold flex items-center gap-2"
-                                >
-                                  <Ticket size={20} />
-                                  RSVP
-                                </Button>
-              </div>
+  {/* CTA PRINCIPAL */}
+  <Button
+    onClick={handleOpenTicket}
+    className="
+      px-8 py-4 rounded-full font-semibold
+      flex items-center gap-2 text-white
+      bg-gradient-to-r from-orange-400 via-rose-500 to-pink-500
+      shadow-[0_8px_32px_rgba(255,90,120,0.45)]
+      hover:shadow-[0_12px_42px_rgba(255,90,120,0.55)]
+      hover:scale-[1.03]
+      transition-all duration-300 ease-out
+      text-base tracking-wide
+    "
+  >
+    <Ticket size={22} className="drop-shadow-md" />
+    Comprar boleto
+  </Button>
 
-              <Button
-                variant="ghost"
-                onClick={handleScrollToAbout}
-                className="text-slate-300 hover:text-white hover:bg-white/5 px-8 py-3 rounded-full font-semibold flex items-center gap-2 text-base"
-              >
-                Conoce La Obra
-              </Button>
+  {/* CTA SECUNDARIO — APARTAR MERCH */}
+  <Button
+    variant="outline"
+    onClick={() => handleOpenReserve('preventa')}
+    className="
+      px-8 py-4 rounded-full font-semibold
+      flex items-center gap-2
+      backdrop-blur-xl 
+      bg-white/5
+      border border-purple-300/30
+      text-purple-200
+      hover:bg-purple-950/30
+      hover:border-purple-300/60
+      hover:shadow-[0_6px_24px_rgba(150,80,255,0.25)]
+      hover:scale-[1.02]
+      transition-all duration-300 ease-out
+      text-base tracking-wide
+    "
+  >
+    <Package size={20} className="text-purple-200/90 drop-shadow-sm" />
+    Apartar merch
+  </Button>
+   {/* Microtexto */}
+    <p className="text-xs text-slate-400/70 leading-tight">
+      Paquetes disponibles solo el día del evento.
+    </p>
+
+</div>
+
+
+     
             </motion.div>
           </motion.div>
 
-          {/* Flechita animada abajo */}
-          <motion.div
-            animate={{ y: [0, 10, 0] }}
-            transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
-            className="absolute bottom-50 left-1/2 -translate-x-1/2 text-slate-500"
-          >
-            <ArrowDown size={24} />
-          </motion.div>
+     
         </div>
       </section>
 
