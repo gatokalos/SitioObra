@@ -86,18 +86,32 @@ const About = () => {
       return;
     }
 
-    if (trailer?.url) {
+    const preferredName = isMobile ? 'trailer_landing_v' : 'trailerlanding';
+    const hasMatchingTrailer =
+      trailer?.url &&
+      (trailer.name?.toLowerCase().includes(preferredName) || trailer.url.toLowerCase().includes(preferredName));
+
+    if (hasMatchingTrailer) {
       setIsTrailerOpen(true);
       return;
     }
 
     try {
       setIsTrailerLoading(true);
-      const preferredName = isMobile ? 'trailer_landing' : 'trailerlanding';
       const trailerData = await getTrailerPublicUrl(preferredName);
 
       if (trailerData?.url) {
-        setTrailer(trailerData);
+        let finalTrailer = trailerData;
+
+        if (isMobile && !trailerData.url.toLowerCase().includes('trailer_landing_v')) {
+          finalTrailer = {
+            ...trailerData,
+            url: TRAILER_FALLBACK_URL_MOBILE,
+            name: 'trailer_landing_v.mp4',
+          };
+        }
+
+        setTrailer(finalTrailer);
         setIsTrailerOpen(true);
       } else {
         toast({ description: 'El tráiler aún no está disponible. Intenta más tarde.' });
@@ -237,7 +251,7 @@ const About = () => {
       <AnimatePresence>
         {isTrailerOpen && trailer?.url && (
           <motion.div
-            className="fixed inset-0 z-50 flex items-center justify-center px-6"
+            className="fixed inset-0 z-50 flex items-center justify-center"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
@@ -251,31 +265,49 @@ const About = () => {
             />
 
             <motion.div
-              className="relative z-10 w-full max-w-4xl overflow-hidden rounded-3xl bg-slate-950/90 backdrop-blur-xl border border-white/10 shadow-2xl"
-              initial={{ scale: 0.92, opacity: 0 }}
+              className={`relative z-10 w-full h-full ${isMobile ? 'max-w-4xl p-4' : 'p-6 sm:p-8'} overflow-hidden bg-slate-950/95 backdrop-blur-xl`}
+              initial={{ scale: 0.96, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.92, opacity: 0 }}
+              exit={{ scale: 0.96, opacity: 0 }}
               transition={{ type: 'spring', stiffness: 220, damping: 28 }}
             >
-              <div className="flex items-center justify-between px-6 py-4 border-b border-white/10 text-slate-200 uppercase tracking-[0.35em] text-xs">
-                <span>Tráiler #GatoEncerrado</span>
-                <button
-                  onClick={handleCloseTrailer}
-                  className="text-slate-300 hover:text-white transition"
-                  aria-label="Cerrar tráiler"
-                >
-                  ✕
-                </button>
-              </div>
-              <div className="relative aspect-video bg-black">
-                <video
-                  id="gato-encerrado-trailer"
-                  key={trailer.url}
-                  src={trailer.url}
-                  controls
-                  autoPlay
-                  className="h-full w-full object-contain"
-                />
+              <div className="w-full max-w-6xl mx-auto flex flex-col gap-4 h-full">
+                <div className="flex items-center justify-between px-4 sm:px-6 py-4 border border-white/10 rounded-2xl bg-black/40 text-slate-200 uppercase tracking-[0.35em] text-xs shadow-[0_12px_40px_rgba(0,0,0,0.45)]">
+                  <span>Tráiler #GatoEncerrado</span>
+                  <button
+                    onClick={handleCloseTrailer}
+                    className="text-slate-300 hover:text-white transition"
+                    aria-label="Cerrar tráiler"
+                  >
+                    ✕
+                  </button>
+                </div>
+                {/*
+                  Mantiene letterbox en desktop y usa formato vertical (9/16) en móvil
+                  cuando el tráiler es la versión vertical.
+                */}
+                {(() => {
+                  const isVerticalTrailer =
+                    isMobile &&
+                    (trailer?.url?.toLowerCase().includes('trailer_landing_v') ||
+                      trailer?.name?.toLowerCase().includes('trailer_landing_v'));
+                  const aspectClass = isVerticalTrailer ? 'aspect-[9/16]' : 'aspect-video';
+
+                  return (
+                    <div
+                      className={`relative w-full ${aspectClass} bg-black rounded-2xl overflow-hidden mx-auto flex items-center justify-center shadow-[0_18px_60px_rgba(0,0,0,0.55)]`}
+                    >
+                      <video
+                        id="gato-encerrado-trailer"
+                        key={trailer.url}
+                        src={trailer.url}
+                        controls
+                        autoPlay
+                        className="h-full w-full object-contain"
+                      />
+                    </div>
+                  );
+                })()}
               </div>
             </motion.div>
           </motion.div>

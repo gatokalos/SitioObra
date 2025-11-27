@@ -120,10 +120,6 @@ export async function getTrailerPublicUrl(preferredName = DEFAULT_BASENAME) {
     }
 
     if (!file) {
-      file = files.find((item) => VIDEO_REGEX.test(item.fullPath));
-    }
-
-    if (!file) {
       return { ...fallback };
     }
 
