@@ -36,7 +36,8 @@ const showcaseDefinitions = {
     type: 'tragedia',
     intro:
       'Aquí nace la obra dentro de la obra. El gato encerrado de Es un gato encerrado.',
-    notaAutoral: 'Un escaparate no es solo para ver. Es para dejarse reflejar.',
+    cartaTitle: '#VibraciónEscénica',
+    notaAutoral: 'De la escena brotó el universo:\nvoz, trance y cuerpo\nabriendo portales.',
       narrative: [
       'En este miniverso puedes entrar al mundo de Silvestre: escuchar sus ecos, leer a sus fantasmas… o conversar directamente con su trasunto, el Payasito Tiste, en un chat que habita la herida.',
     ],
@@ -52,6 +53,7 @@ const showcaseDefinitions = {
     theme:
       'La doble vida de una imagen: aquello que se ve y aquello que tiembla detrás. CopyCats (farsa lúcida) y Quirón (herida íntima) responden a la misma pregunta en dos lenguajes.',
     tone: ['Premiere íntima', 'Laboratorio abierto', 'Cine con memoria'],
+    cartaTitle: '#LuzQueHiere',
     copycats: {
       title: 'CopyCats',
       description: 'Un juego serio sobre cómo nos repetimos sin notarlo. Mira su bitácora creativa y descubre cómo surgió esta pieza.',
@@ -61,7 +63,7 @@ const showcaseDefinitions = {
         {
           id: 'copycats-carta',
           label: 'Carta audiovisual (4:02)',
-          url: '',
+          url: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Cine%20-%20teasers/ensayos/La%20Cadena%20del%20Gesto.mp4',
         },
         {
           id: 'copycats-ensayo',
@@ -139,8 +141,7 @@ const showcaseDefinitions = {
       cta: 'Quiero ser parte del screening',
       footnote: 'El cine es otro modo de entrar al encierro. Acompáñanos en marzo para ver ambas películas antes que nadie.',
     },
-    notaAutoral:
-      'La cámara miró lo que el teatro no podía sostener. CopyCats cuestiona; Quirón hiere con luz. Este espacio guarda esas miradas.',
+    notaAutoral: 'Cuando la escena no alcanza,\nla cámara recuerda\nQuirón, CopyCats,\nmismo espacio en otra luz.',
   },
   lataza: {
     label: 'EstoNoEsUnaTaza',
@@ -173,8 +174,8 @@ const showcaseDefinitions = {
         author: 'Sofía B.',
       },
     ],
-    notaAutoral:
-      'Un objeto cotidiano que abrió un portal. La Taza no acompaña: revela. Lo que sostiene no es barro, sino vínculo.',
+    cartaTitle: '#EstoNoEsUnaTaza',
+    notaAutoral: 'Una taza que escucha.\nUn marcador que mira.\nLo cotidiano también es ritual.',
   },
   miniversoNovela: {
     label: 'Miniverso Novela',
@@ -182,8 +183,9 @@ const showcaseDefinitions = {
     slug: null,
     intro:
       'Aquí se cruzan la autoficción, la novela gráfica y las vidas que aún no caben en escena. Fragmentos, procesos y pistas que solo existen cuando alguien las lee.',
+    cartaTitle: '#PáginaViva',
     notaAutoral:
-      'La novela es donde la escena se desborda. Fragmentos que respiran distinto cuando alguien los lee. Aquí la historia sigue probándose.',
+      'La palabra devolvió lo que el gato se tragó:\nMi Gato Encerrado\nse cuenta a sí misma.',
     entries: [
       {
         id: 'compra-libro',
@@ -275,14 +277,15 @@ const showcaseDefinitions = {
         text: 'Lo que cae del sueño también cae del cuerpo.',
       },
     ],
-    notaAutoral:
-      'Imagen, música y palabra en suspensión. Cada mezcla inventa otro ánimo. Aquí el sueño se edita solo.',
+    cartaTitle: '#SueñoEnCapas',
+    notaAutoral: 'sueña una imagen.\nElige un pulso.\nDeja que el poema respire por ti.',
   },
   miniversoGrafico: {
     label: 'Miniverso Gráfico',
     type: 'graphic-lab',
     intro:
       'Colección viva de exploraciones visuales: cómics en curso, viñetas interactivas, posters simbólicos, caricaturas conceptuales, murales colaborativos y avances con IA/técnicas mixtas.',
+    cartaTitle: '#FronteraAbierta',
     notaAutoral:
       'Lo gráfico como portal emocional. Cada pieza es un disparo breve a la herida o a la curiosidad, nunca un catálogo plano.',
     collection: [
@@ -492,7 +495,6 @@ const Transmedia = () => {
   const [isTazaARActive, setIsTazaARActive] = useState(false);
   const [isMobileARFullscreen, setIsMobileARFullscreen] = useState(false);
   const [showAutoficcionPreview, setShowAutoficcionPreview] = useState(false);
-  const [isTragicoNotaOpen, setIsTragicoNotaOpen] = useState(false);
   const [micPromptVisible, setMicPromptVisible] = useState(false);
   const [hasShownMicPrompt, setHasShownMicPrompt] = useState(false);
   const [transcript, setTranscript] = useState('');
@@ -502,6 +504,7 @@ const Transmedia = () => {
   const transcriptRef = useRef('');
   const [isCinemaCreditsOpen, setIsCinemaCreditsOpen] = useState(false);
   const [openCollaboratorId, setOpenCollaboratorId] = useState(null);
+  const [notaAutoralOpenMap, setNotaAutoralOpenMap] = useState({});
   const { isMobileViewport, canUseInlinePlayback, requestMobileVideoPresentation } = useMobileVideoPresentation();
   const renderMobileVideoBadge = () =>
     isMobileViewport ? (
@@ -728,11 +731,22 @@ const Transmedia = () => {
     document.body.classList.remove('overflow-hidden');
   }, []);
 
+  const toggleNotaAutoral = useCallback(() => {
+    if (!activeShowcase) {
+      return;
+    }
+    setNotaAutoralOpenMap((prev) => ({
+      ...prev,
+      [activeShowcase]: !prev[activeShowcase],
+    }));
+  }, [activeShowcase]);
+
   const handlePdfLoadSuccess = useCallback(({ numPages }) => {
     setPdfNumPages(numPages);
   }, []);
 
   const activeDefinition = activeShowcase ? showcaseDefinitions[activeShowcase] : null;
+  const isNotaAutoralOpen = activeShowcase ? notaAutoralOpenMap[activeShowcase] : false;
   const activeData = activeShowcase ? showcaseContent[activeShowcase] : null;
   const activeParagraphs = useMemo(() => {
     if (!activeData?.post?.content) {
@@ -748,7 +762,13 @@ const Transmedia = () => {
   }, [activeShowcase]);
 
   useEffect(() => {
-    setIsTragicoNotaOpen(false);
+    if (!activeShowcase) {
+      return;
+    }
+    setNotaAutoralOpenMap((prev) => ({
+      ...prev,
+      [activeShowcase]: false,
+    }));
   }, [activeShowcase]);
 
   useEffect(() => {
@@ -865,17 +885,40 @@ const Transmedia = () => {
   const rendernotaAutoral = () => {
     if (!activeDefinition?.notaAutoral) return null;
 
+    const isTragedia = activeDefinition.type === 'tragedia';
+    const containerClass = isTragedia
+      ? 'rounded-2xl border border-purple-500/30 bg-purple-900/20 p-4 text-sm text-slate-100'
+      : 'rounded-2xl border border-white/10 p-6 bg-black/30 text-slate-300/80 text-sm leading-relaxed shadow-[0_25px_80px_rgba(0,0,0,0.45)]';
+    const buttonClass = isTragedia
+      ? 'text-xs uppercase tracking-[0.35em] text-slate-400 underline-offset-4 hover:text-white'
+      : 'text-xs uppercase tracking-[0.35em] text-slate-400/80 underline-offset-4 hover:text-white';
+
     return (
-      <motion.div
-        key={activeDefinition.id}
-        initial={{ opacity: 0, y: 12 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.45, ease: 'easeOut' }}
-        className="rounded-2xl border border-white/10 p-6 bg-black/30 text-slate-300/80 text-sm leading-relaxed mt-4 shadow-[0_25px_80px_rgba(0,0,0,0.45)]"
-      >
-        <p className="text-xs uppercase tracking-[0.35em] text-purple-300 mb-2">Nota Autoral</p>
-        <p>{activeDefinition.notaAutoral}</p>
-      </motion.div>
+      <div className={`${isTragedia ? 'space-y-3 pt-4' : 'space-y-3 mt-4'}`}>
+        <button type="button" className={buttonClass} onClick={toggleNotaAutoral}>
+          {isNotaAutoralOpen ? 'Ocultar Verso del Autor' : 'Mostrar Verso del Autor'}
+        </button>
+        {isNotaAutoralOpen ? (
+          <motion.div
+            key={activeShowcase}
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.35, ease: 'easeOut' }}
+            className={containerClass}
+          >
+            <div className="mb-2 space-y-1">
+              <p
+                className={`text-xs uppercase tracking-[0.35em] ${
+                  isTragedia ? 'text-purple-200' : 'text-purple-300'
+                }`}
+              >
+                {activeDefinition.cartaTitle || 'Nota autoral'}
+              </p>
+            </div>
+            <p className="leading-relaxed whitespace-pre-line">{activeDefinition.notaAutoral}</p>
+          </motion.div>
+        ) : null}
+      </div>
     );
   };
 
@@ -1158,25 +1201,7 @@ const Transmedia = () => {
                       </p>
                     ))}
                   </div>
-                  <div className="space-y-3 pt-4">
-                    <button
-                      type="button"
-                      className="text-xs uppercase tracking-[0.35em] text-slate-400 underline-offset-4 hover:text-white"
-                      onClick={() => setIsTragicoNotaOpen((prev) => !prev)}
-                    >
-                      {isTragicoNotaOpen ? 'Ocultar nota autoral' : 'Mostrar nota autoral'}
-                    </button>
-                    {isTragicoNotaOpen ? (
-                      <motion.div
-                        initial={{ opacity: 0, y: 8 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.35, ease: 'easeOut' }}
-                        className="rounded-2xl border border-purple-500/30 bg-purple-900/20 p-4 text-sm text-slate-100"
-                      >
-                        <p className="leading-relaxed">{activeDefinition.notaAutoral}</p>
-                      </motion.div>
-                    ) : null}
-                  </div>
+                  {rendernotaAutoral()}
                 </div>
               </div>
 
@@ -1571,12 +1596,6 @@ const Transmedia = () => {
                 description="Haz clic para dejar un like y amplificar el screening de CopyCats + Quirón."
                 buttonLabel="Sumar mi aplauso"
               />
-              {activeDefinition.notaAutoral ? (
-                <div className="rounded-3xl border border-white/10 bg-black/30 p-5">
-                  <p className="text-xs uppercase tracking-[0.35em] text-purple-300 mb-2">Nota autoral</p>
-                  <p className="text-sm text-slate-200/90 leading-relaxed">{activeDefinition.notaAutoral}</p>
-                </div>
-              ) : null}
             </div>
           </div>
         </div>

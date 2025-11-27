@@ -1,9 +1,13 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Film, Ticket, Quote } from 'lucide-react';
+import { Film, Headphones, Ticket, Quote } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { toast } from '@/components/ui/use-toast';
-import { getTrailerPublicUrl } from '@/services/trailerService';
+import {
+  getTrailerPublicUrl,
+  TRAILER_FALLBACK_URL,
+  TRAILER_FALLBACK_URL_MOBILE,
+} from '@/services/trailerService';
 import ReserveModal from '@/components/ReserveModal';
 
 const aboutText = `Es un gato encerrado existe como obra escénica y como #UniversoTransmedia: es, al mismo tiempo, un relato íntimo en un escenario y una constelación de la mente y del dolor humano en múltiples lenguajes artísticos. Nuestra obra es el corazón que hace pulsar aquellas preguntas que no están aquí para contestarse, sino para sentirlas en compañía. En pocas palabras, cuando la obra está latente, el universo #GatoEncerrado continúa latiendo en otras narrativas. Un recordatorio de que el corazón nunca se encierra del todo.`;
@@ -29,6 +33,34 @@ const About = () => {
   const [isTrailerLoading, setIsTrailerLoading] = useState(false);
   const [isReserveOpen, setIsReserveOpen] = useState(false);
   const [reserveIntent, setReserveIntent] = useState('preventa');
+  const [isMobile, setIsMobile] = useState(
+    () => typeof window !== 'undefined' && window.matchMedia('(max-width: 768px)').matches
+  );
+
+  useEffect(() => {
+    if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') {
+      return undefined;
+    }
+
+    const mediaQuery = window.matchMedia('(max-width: 768px)');
+    const handleChange = (event) => setIsMobile(event.matches);
+
+    if (typeof mediaQuery.addEventListener === 'function') {
+      mediaQuery.addEventListener('change', handleChange);
+    } else if (typeof mediaQuery.addListener === 'function') {
+      mediaQuery.addListener(handleChange);
+    }
+
+    return () => {
+      if (typeof mediaQuery.removeEventListener === 'function') {
+        mediaQuery.removeEventListener('change', handleChange);
+      } else if (typeof mediaQuery.removeListener === 'function') {
+        mediaQuery.removeListener(handleChange);
+      }
+    };
+  }, []);
+
+  const trailerPreviewSrc = isMobile ? TRAILER_FALLBACK_URL_MOBILE : TRAILER_FALLBACK_URL;
 
   const handleOpenReserve = useCallback((intent) => {
     setReserveIntent(intent);
@@ -61,7 +93,8 @@ const About = () => {
 
     try {
       setIsTrailerLoading(true);
-      const trailerData = await getTrailerPublicUrl('trailer');
+      const preferredName = isMobile ? 'trailer_landing' : 'trailerlanding';
+      const trailerData = await getTrailerPublicUrl(preferredName);
 
       if (trailerData?.url) {
         setTrailer(trailerData);
@@ -75,7 +108,7 @@ const About = () => {
     } finally {
       setIsTrailerLoading(false);
     }
-  }, [isTrailerLoading, trailer]);
+  }, [isTrailerLoading, isMobile, trailer]);
 
   const handleCloseTrailer = useCallback(() => {
     setIsTrailerOpen(false);
@@ -115,10 +148,15 @@ const About = () => {
         >
           <div className="grid md:grid-cols-2 gap-12 items-center">
             <div className="relative order-2 md:order-1">
-              <img
+              <video
                 className="w-full h-96 object-cover rounded-xl shadow-2xl shadow-black/50"
-                alt="Escena de la obra #GatoEncerrado, luz tenue y misteriosa"
-                src="https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/trailers/DSC02497.jpg"
+                aria-label="Escena de la obra #GatoEncerrado, luz tenue y misteriosa"
+                src={trailerPreviewSrc}
+                autoPlay
+                loop
+                muted
+                playsInline
+                preload="metadata"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent rounded-xl" aria-hidden="true" />
             </div>
@@ -133,10 +171,14 @@ const About = () => {
                 <Button
                   onClick={handleWatchTrailer}
                   disabled={isTrailerLoading}
-                  className="bg-purple-500/20 border border-purple-400/30 text-purple-300 hover:bg-purple-500/30 hover:text-purple-200 disabled:opacity-60 disabled:cursor-not-allowed px-6 py-3 rounded-full font-semibold flex items-center gap-2 hover-glow"
+                  className="relative bg-purple-500/20 border border-purple-400/30 text-purple-300 hover:bg-purple-500/30 hover:text-purple-200 disabled:opacity-60 disabled:cursor-not-allowed px-6 py-3 rounded-full font-semibold flex items-center gap-2 hover-glow"
                 >
                   <Film size={20} />
                   {isTrailerLoading ? 'Cargando…' : 'Ver Tráiler'}
+                  <Headphones
+                    size={18}
+                    className="absolute right-4 top-1/2 -translate-y-1/2 text-purple-200/80 pointer-events-none"
+                  />
                 </Button>
                 <Button
                   variant="outline"
@@ -173,7 +215,7 @@ const About = () => {
                 onClick={handleScrollToTexts}
                 className="border-purple-400/40 text-purple-200 hover:bg-purple-500/20 w-full sm:w-auto whitespace-normal break-words text-center leading-snug"
               >
-                Clica aquí si ya tienes un perspectiva que compartir
+                Clicar para compartir tu perspectiva
               </Button>
             </div>
             <div className="space-y-6">

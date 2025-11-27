@@ -157,7 +157,7 @@ const teamData = {
   },
   "Colaboradores y Agradecimientos": {
     description:
-      "Detrás de cada función existe una constelación de manos, miradas y corazones que hacen posible el universo escénico de #GatoEncerrado. Este bloque celebra su labor silenciosa y luminosa.",
+      "Detrás de cada función existe una constelación de manos, miradas y corazones que hacen posible la obra de Es un Gato Encerrado. Este bloque celebra su labor silenciosa y luminosa.",
     members: [],
     details: {
       tecnicos:

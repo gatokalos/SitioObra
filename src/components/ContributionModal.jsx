@@ -14,6 +14,7 @@ import {
   Video,
   Sparkles,
   Music,
+  Coffee,
 } from 'lucide-react';
 import { useAuth } from '@/contexts/SupabaseAuthContext';
 import LoginOverlay from '@/components/ContributionModal/LoginOverlay';
@@ -22,44 +23,45 @@ const CATEGORIES = [
   {
     id: 'obra_escenica',
     icon: <Drama size={20} className="text-purple-300" />,
-    title: 'Miniverso Trágico - La Obra',
-    description: 'La función que detonó este universo narrativo. Voces, cuerpos y trances en escena.',
+    title: 'La Obra - Es un Gato Encerrado',
+    description: 'De la escena brotó el universo:\nvoz, trance y cuerpo\nabriendo portales.',
+
   },
     {
     id: 'miniverso_novela',
     icon: <BookOpen size={20} className="text-emerald-300" />,
     title: 'Miniverso Novela',
-    description: 'Desde la autoficción de *Mi Gato Encerrado* hasta las viñetas de *Tres pies al gato*.',
+        description: 'La palabra devolvió lo que el gato se tragó:\nMi Gato Encerrado\n se cuenta a sí misma.',
   },
   {
     id: 'taza',
-    icon: <CupSoda size={20} className="text-amber-300" />,
+    icon: <Coffee size={20} className="text-amber-300" />,
     title: 'Miniverso Taza',
-    description: 'Objeto ritual y marcador AR. Una excusa para seguir la historia desde lo cotidiano.',
+    description: 'Una taza que escucha.\nUn marcador que mira.\nLo cotidiano también es ritual.',
   },
   {
     id: 'cine',
     icon: <Film size={20} className="text-rose-300" />,
     title: 'Miniverso Cine',
-    description: '“Quirón” y otros filmes que piensan el cuerpo del Gato en clave cinematográfica.',
+    description: 'Cuando la escena no alcanza,\nla cámara recuerda\nQuirón, CopyCats,\nmismo espacio en otra luz.',
   },
   {
     id: 'apps',
     icon: <Smartphone size={20} className="text-lime-300" />,
     title: 'Miniverso Apps',
-    description: 'Experiencias digitales que te convierten en cómplice y guardián del universo.',
+    description: 'Pantallas que acompañan.\nTecnologías que cuidan.\nAquí sigues el universo,\nsin salir del tuyo.',
   },
     {
     id: 'sonoro',
     icon: <Music size={20} className="text-cyan-300" />,
     title: 'Miniverso Sonoro',
-    description: 'Sueña imágenes, elige música, invoca un poema: combina tu propio universo.',
+    description: 'Sueña una imagen.\nElige un pulso.\nDeja que el poema respire por ti.',
   },
   {
     id: 'bitacora',
     icon: <Video size={20} className="text-indigo-300" />,
     title: 'Miniverso Bitácora',
-    description: 'Crónicas, expansiones narrativas y debate vivo sobre cosas de la vida... y la muerte .',
+    description: 'Crónicas que laten.\nPistas que se desdoblan.\nLa vida y la muerte conversan aquí.',
   },
   {
     id: 'otro',
@@ -357,6 +359,19 @@ const ContributionModal = ({ open, onClose }) => {
     }, 1100);
   }, []);
 
+  const handleGoToMiniversos = useCallback(() => {
+    if (status === 'loading') {
+      return;
+    }
+    onClose?.();
+    if (typeof document === 'undefined') {
+      return;
+    }
+    setTimeout(() => {
+      document.querySelector('#transmedia')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 80);
+  }, [onClose, status]);
+
   const handleSubmit = useCallback(
     async (event) => {
       event.preventDefault();
@@ -525,7 +540,7 @@ const ContributionModal = ({ open, onClose }) => {
           onClick={handleCloseFormPanel}
           className="mb-4 flex items-center gap-2 text-sm font-semibold text-purple-300 hover:text-purple-200"
         >
-          ← Regresar
+          ← Ver Más
         </button>
       ) : null}
       {isMobileLayout && BETA_UNIVERSES.has(selectedCategory.id) ? (
@@ -677,7 +692,7 @@ const ContributionModal = ({ open, onClose }) => {
               aria-modal="true"
               aria-labelledby="contribution-modal-title"
               variants={modalVariants}
-              className="relative z-10 w-full max-w-5xl h-full max-h-[90vh] rounded-3xl border border-white/10 bg-slate-950 p-4 sm:p-8 shadow-2xl overflow-hidden flex flex-col gap-6"
+              className="relative z-10 w-full max-w-5xl h-full max-h-[90vh] rounded-3xl border border-white/10 bg-slate-950 p-4 sm:p-8 shadow-2xl overflow-y-auto md:overflow-hidden flex flex-col gap-6"
             >
               <div className="relative overflow-visible">
                 <div className="flex items-center justify-between">
@@ -701,7 +716,7 @@ const ContributionModal = ({ open, onClose }) => {
               </div>
 
               <div className="mt-6 flex flex-col gap-6 md:flex-row md:items-start md:gap-6">
-                <div className="flex-1 space-y-3 overflow-y-auto pr-3 max-h-[60vh] md:max-h-[72vh] md:pr-0">
+                <div className="flex-1 space-y-3 pr-3 md:pr-0 md:overflow-y-auto md:max-h-[72vh]">
                   {CATEGORIES.map((category) => (
                     <button
                       type="button"
@@ -717,9 +732,20 @@ const ContributionModal = ({ open, onClose }) => {
                         {category.icon}
                         <h4 className="text-slate-100 font-medium">{category.title}</h4>
                       </div>
-                      <p className="text-sm text-slate-400/80 leading-relaxed">{category.description}</p>
+                      <p className="text-sm text-slate-400/80 leading-relaxed whitespace-pre-line">
+                        {category.description}
+                      </p>
                     </button>
                   ))}
+                  <div className="pt-2 text-center text-xs text-purple-200/80">
+                    <button
+                      type="button"
+                      onClick={handleGoToMiniversos}
+                      className="underline-offset-4 hover:underline"
+                    >
+                      ¿No conoces los Miniversos? Clica aquí
+                    </button>
+                  </div>
                 </div>
 
                 {isDesktopLayout ? (
@@ -746,21 +772,12 @@ const ContributionModal = ({ open, onClose }) => {
               <AnimatePresence>
                 {!isDesktopLayout && isFormPanelOpen ? (
                   <>
-                    <motion.button
-                      type="button"
-                      className="absolute inset-0 bg-black/40 md:hidden"
-                      aria-label="Cerrar formulario"
-                      onClick={handleCloseFormPanel}
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      exit={{ opacity: 0 }}
-                    />
                     <motion.div
                       initial={{ x: '100%' }}
                       animate={{ x: 0 }}
                       exit={{ x: '100%' }}
                       transition={{ type: 'spring', damping: 24, stiffness: 240 }}
-                      className="absolute inset-y-0 right-0 w-full bg-slate-950 border-l border-white/15 shadow-2xl p-6 overflow-y-auto md:hidden"
+                      className="fixed inset-0 z-[60] w-full bg-slate-950 border-white/15 shadow-2xl p-6 overflow-y-auto md:hidden"
                     >
                       {renderFormPanelBody()}
                     </motion.div>
