@@ -271,7 +271,7 @@ const About = () => {
                 onClick={handleScrollToTexts}
                 className="border-purple-400/40 text-purple-200 hover:bg-purple-500/20 w-full sm:w-auto whitespace-normal break-words text-center leading-snug"
               >
-                Clicar para compartir tu perspectiva
+                Clica aquí
               </Button>
             </div>
             <div className="space-y-6">

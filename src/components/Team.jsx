@@ -53,10 +53,10 @@ const teamData = {
         bio: "Artista transmedia, autor y dramaturgo. Su obra habita entre teatro, escritura y tecnología, proponiendo una poética crítica y humana. Formado en el ITESO, la Universidad de Salamanca y LABASAD Barcelona, integra astrología psicológica, cuerpo y arte digital en una mirada simbólica. Creador del universo transmedia #GatoEncerrado, concibe el acto creativo como una forma de acompañamiento y transformación.",
         image: "https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/equipo/carlos_perez.gif",
      },
-      "Diseño y Técnica Escénica": {
-        description:
-          "Un equipo de diseñadores y técnicos escénicos que entrelazan arquitectura, multimedia, sonido y luz para expandir la atmósfera de la obra.",
-        members: [
+  "Diseño Escénico": {
+    description:
+      "Diseñadoras y diseñadores que construyen atmósferas visuales, sonoras y de vestuario para expandir la poética de la obra.",
+    members: [
       {
         name: "Jorge Ballina",
         role: "Escenografía",
@@ -74,18 +74,6 @@ const teamData = {
         role: "Diseño Sonoro",
         bio: "Artista sonora con más de doce años de experiencia. Fundadora de Concrete Sounds, ha colaborado en filmes como 'Ya no estoy aquí' y 'Monos'. Su especialidad es la creación de paisajes inmersivos que amplían la dimensión sensorial del teatro.",
         image: "/images/placeholder-diseno.jpg",
-      },
-      {
-        name: "Harold García",
-        role: "Dirección Técnica",
-        bio: "Arquitecto y diseñador lumínico. Ha colaborado en producciones como 'Matilda', 'Mamma Mia!' y 'Madame Butterfly'. Su trabajo abarca teatro, ópera y danza contemporánea, con presentaciones en México, Los Ángeles y festivales nacionales.",
-        image: "https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/equipo/harold.jpg",
-      },
-      {
-        name: "Rebeca Hernández",
-        role: "Realización Escenográfica",
-        bio: "Diseñadora industrial egresada del CIDI-UNAM y fundadora de Atelier RHC en Tijuana. Su taller produce escenografías, mobiliario y piezas funcionales para teatro y espacios públicos, uniendo técnica artesanal con visión contemporánea.",
-        image: "https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/equipo/rebeca.jpg",
       },
       {
         name: "Ximena Inurreta",
@@ -110,6 +98,24 @@ const teamData = {
         role: "Pelucas",
         bio: "Artista de caracterización. Su trabajo artesanal da vida y coherencia visual a los personajes a través del detalle y la textura.",
         image: "/images/placeholder-diseno.jpg",
+      },
+    ],
+  },
+  "Producción técnica": {
+    description:
+      "Especialistas que construyen y operan la infraestructura escénica para que cada función suceda con precisión y seguridad.",
+    members: [
+      {
+        name: "Harold García",
+        role: "Dirección Técnica",
+        bio: "Arquitecto y diseñador lumínico. Ha colaborado en producciones como 'Matilda', 'Mamma Mia!' y 'Madame Butterfly'. Su trabajo abarca teatro, ópera y danza contemporánea, con presentaciones en México, Los Ángeles y festivales nacionales.",
+        image: "https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/equipo/harold.jpg",
+      },
+      {
+        name: "Rebeca Hernández",
+        role: "Realización Escenográfica",
+        bio: "Diseñadora industrial egresada del CIDI-UNAM y fundadora de Atelier RHC en Tijuana. Su taller produce escenografías, mobiliario y piezas funcionales para teatro y espacios públicos, uniendo técnica artesanal con visión contemporánea.",
+        image: "https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/equipo/rebeca.jpg",
       },
     ],
   },
@@ -155,6 +161,11 @@ const teamData = {
       },
     ],
   },
+  "Alianza de Impacto Social": {
+        name: "Isabel Ayuda para la Vida A.C.",
+        bio: "Asociación civil sin fines de lucro fundada en 2018 y dirigida por Rosalía Hernández Millán. Su misión es prevenir la violencia autoinfligida mediante el programa DySVAE, promoviendo el pedir ayuda como estrategia de vida. Colabora con #GatoEncerrado para visibilizar la salud emocional y la empatía en contextos artísticos y educativos.",
+        image: "/images/placeholder-institucional.jpg",
+      },
   "Colaboradores y Agradecimientos": {
     description:
       "Detrás de cada función existe una constelación de manos, miradas y corazones que hacen posible la obra de Es un Gato Encerrado. Este bloque celebra su labor silenciosa y luminosa.",
@@ -168,18 +179,16 @@ const teamData = {
         "Apoyos institucionales: Agradecimiento a Teatro CAMAFEO y sus productoras Margarita Martínez de Camarena y Elsa Pérez de Vargas; CEART Tijuana, IMAC, Casa Viva y Adagio Studio por su apoyo en ensayos y espacios.",
     },
    },
-        "Alianza Estratégica de Impacto Social": {
-        name: "Isabel Ayuda para la Vida A.C.",
-        bio: "Asociación civil sin fines de lucro fundada en 2018 y dirigida por Rosalía Hernández Millán. Su misión es prevenir la violencia autoinfligida mediante el programa DySVAE, promoviendo el pedir ayuda como estrategia de vida. Colabora con #GatoEncerrado para visibilizar la salud emocional y la empatía en contextos artísticos y educativos.",
-        image: "/images/placeholder-institucional.jpg",
-      },
+        
 };
 
 // === COMPONENT ===
 const Team = () => {
   const [selectedElencoId, setSelectedElencoId] = useState(null);
   const [isMobile, setIsMobile] = useState(false);
-  const accordionRef = useRef(null);
+  const [openSection, setOpenSection] = useState(null);
+  const accordionItemRefs = useRef({});
+  const pendingScrollRef = useRef(null);
 
   useEffect(() => {
     const updateIsMobile = () => setIsMobile(typeof window !== "undefined" ? window.innerWidth < 768 : false);
@@ -194,10 +203,30 @@ const Team = () => {
     }
   }, [isMobile, selectedElencoId]);
 
+  useEffect(() => {
+    if (!pendingScrollRef.current) return;
+
+    const targetNode = accordionItemRefs.current[pendingScrollRef.current];
+    if (!targetNode) {
+      pendingScrollRef.current = null;
+      return;
+    }
+
+    requestAnimationFrame(() => {
+      const rect = targetNode.getBoundingClientRect();
+      const isFullyVisible = rect.top >= 0 && rect.bottom <= window.innerHeight;
+
+      if (!isFullyVisible) {
+        targetNode.scrollIntoView({ behavior: "smooth", block: "nearest", inline: "nearest" });
+      }
+    });
+    pendingScrollRef.current = null;
+  }, [openSection]);
+
   const renderRole = (data, roleKey) => {
     const isElenco = roleKey === "Elenco";
     const useRoundAvatars =
-      roleKey === "Diseño y Técnica Escénica" || roleKey === "Producción y Asistencia";
+      ["Diseño Escénico", "Producción técnica", "Producción y Asistencia"].includes(roleKey);
     if (Array.isArray(data?.members)) {
       const isElencoClickable = isElenco && !isMobile;
       const membersWithId = data.members.map((member, idx) => ({
@@ -206,14 +235,6 @@ const Team = () => {
         idx,
       }));
 
-      const orderedMembers =
-        isElencoClickable && selectedElencoId
-          ? [
-              ...membersWithId.filter((item) => item.id === selectedElencoId),
-              ...membersWithId.filter((item) => item.id !== selectedElencoId),
-            ]
-          : membersWithId;
-
       return (
         <div className="space-y-6">
           {data.description && (
@@ -221,8 +242,8 @@ const Team = () => {
               {data.description}
             </p>
           )}
-          <div className="grid gap-6 md:grid-cols-2">
-            {orderedMembers.map(({ member, id: memberId }) => {
+          <motion.div layout className="grid gap-6 md:grid-cols-2">
+            {membersWithId.map(({ member, id: memberId }) => {
               const isActive = isElencoClickable && selectedElencoId === memberId;
               const handleToggle = () =>
                 isElencoClickable
@@ -231,7 +252,9 @@ const Team = () => {
 
               if (isActive) {
                 return (
-                  <div
+                  <motion.div
+                    layout
+                    transition={{ layout: { duration: 0.35, ease: [0.22, 1, 0.36, 1] } }}
                     key={memberId}
                     className="glass-effect rounded-xl p-0 overflow-hidden border border-white/5 transition-all duration-300 md:col-span-2"
                   >
@@ -247,13 +270,15 @@ const Team = () => {
                         loading="lazy"
                       />
                     </button>
-                  </div>
+                  </motion.div>
                 );
               }
 
               if (useRoundAvatars) {
                 return (
-                  <div
+                  <motion.div
+                    layout
+                    transition={{ layout: { duration: 0.35, ease: [0.22, 1, 0.36, 1] } }}
                     key={memberId}
                     className="glass-effect rounded-xl p-5 flex gap-4 items-start border border-white/5"
                   >
@@ -288,12 +313,14 @@ const Team = () => {
                         </a>
                       )}
                     </div>
-                  </div>
+                  </motion.div>
                 );
               }
 
               return (
-                <div
+                <motion.div
+                  layout
+                  transition={{ layout: { duration: 0.35, ease: [0.22, 1, 0.36, 1] } }}
                   key={memberId}
                   className={`glass-effect rounded-xl p-5 flex flex-col md:flex-row gap-4 border border-white/5 transition-all duration-300 ${
                     isElencoClickable ? "cursor-pointer hover:border-purple-400/40" : ""
@@ -345,10 +372,10 @@ const Team = () => {
                       </a>
                     )}
                   </div>
-                </div>
+                </motion.div>
               );
             })}
-          </div>
+          </motion.div>
           {data.details && (
             <div className="text-slate-400 text-sm leading-relaxed space-y-4">
               <div className="border-t border-white/10 pt-4">
@@ -387,6 +414,12 @@ const Team = () => {
     );
   };
 
+  const handleAccordionChange = (nextValue) => {
+    const value = nextValue ?? null;
+    setOpenSection(value);
+    pendingScrollRef.current = value;
+  };
+
   return (
     <section id="team" className="py-24 relative">
       <div className="section-divider mb-24"></div>
@@ -419,27 +452,33 @@ const Team = () => {
             type="single"
             collapsible
             className="w-full space-y-4"
-            ref={accordionRef}
-            onValueChange={() => {
-              if (accordionRef.current) {
-                accordionRef.current.scrollIntoView({ behavior: "smooth", block: "start" });
-              }
-            }}
+            value={openSection ?? undefined}
+            onValueChange={handleAccordionChange}
           >
-            {Object.entries(teamData).map(([role, data], index) => (
-              <AccordionItem
-                value={`item-${index}`}
-                key={role}
-                className="glass-effect rounded-lg border-none overflow-hidden"
-              >
-                <AccordionTrigger className="font-display text-xl md:text-2xl text-slate-100 p-6 hover:no-underline hover:bg-white/5 transition-colors duration-300">
-                  {role}
-                </AccordionTrigger>
-                <AccordionContent className="p-6 pt-0 bg-black/20">
-                  {renderRole(data, role)}
-                </AccordionContent>
-              </AccordionItem>
-            ))}
+            {Object.entries(teamData).map(([role, data], index) => {
+              const itemValue = `item-${index}`;
+              return (
+                <AccordionItem
+                  value={itemValue}
+                  key={role}
+                  className="glass-effect rounded-lg border-none overflow-hidden scroll-mt-24"
+                  ref={(node) => {
+                    if (node) {
+                      accordionItemRefs.current[itemValue] = node;
+                    } else {
+                      delete accordionItemRefs.current[itemValue];
+                    }
+                  }}
+                >
+                  <AccordionTrigger className="font-display text-xl md:text-2xl text-slate-100 p-6 hover:no-underline hover:bg-white/5 transition-colors duration-300">
+                    {role}
+                  </AccordionTrigger>
+                  <AccordionContent className="p-6 pt-0 bg-black/20">
+                    {renderRole(data, role)}
+                  </AccordionContent>
+                </AccordionItem>
+              );
+            })}
           </Accordion>
         </motion.div>
       </div>
