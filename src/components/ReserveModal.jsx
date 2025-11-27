@@ -112,6 +112,7 @@ const ReserveModal = ({ open, onClose, initialInterest = INTEREST_OPTIONS[0].val
   const [status, setStatus] = useState('idle');
   const [errorMessage, setErrorMessage] = useState('');
   const { bursts: confettiBursts, fireConfetti } = useConfettiBursts();
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Reset form when opened
   useEffect(() => {
@@ -169,6 +170,7 @@ const ReserveModal = ({ open, onClose, initialInterest = INTEREST_OPTIONS[0].val
       }
 
       setStatus('loading');
+      setIsSubmitting(true);
       setErrorMessage('');
 
       try {
@@ -213,6 +215,8 @@ const ReserveModal = ({ open, onClose, initialInterest = INTEREST_OPTIONS[0].val
       } catch (err) {
         setStatus('error');
         setErrorMessage('Ocurrió un error inesperado. Intenta más tarde.');
+      } finally {
+        setIsSubmitting(false);
       }
     },
     [formState, selectedInterest.label, status, fireConfetti]
@@ -265,7 +269,7 @@ const ReserveModal = ({ open, onClose, initialInterest = INTEREST_OPTIONS[0].val
                     28 de diciembre · CECUT
                   </p>
                   <h2 className="font-display text-3xl text-slate-50">
-                    Compra tu boleto y aparta tu lugar en el universo de #GatoEncerrado 
+                    Aparta tus artículos de #GatoEncerrado
                   </h2>
                 </div>
               </div>
@@ -283,60 +287,72 @@ const ReserveModal = ({ open, onClose, initialInterest = INTEREST_OPTIONS[0].val
 
               {/* LEFT COLUMN */}
               <div className="space-y-5 text-sm text-slate-300/90 leading-relaxed">
-                <div className="glass-effect rounded-xl border border-white/5 p-4 space-y-3">
+                <div className="glass-effect rounded-xl border border-white/5 p-4 space-y-2">
+                  <p className="text-xs uppercase tracking-[0.35em] text-purple-300/80">Mesa con merch el día de la función</p>
                   <h3 className="font-display text-lg text-slate-100">
-                    Compra presencial en taquilla del CECUT
+                    Marca lo que quieras apartar.
                   </h3>
-                  <ul className="space-y-2 text-slate-300/80">
-                    <li>• Taquilla del CECUT · Preventa disponible hasta agotar localidades.</li>
-                    <li>• Llévate una taza como incentivo de preventa.</li>
-                    <li>• Las tazas se entregan exclusivamente en taquilla, hasta agotar existencias.</li>
-                    <li>
-                      • También puedes comprar en línea:
-                      {' '}
-                      <a
-                        href="https://www.taquillacecut.com.mx/eventos/saladeespectaculos/2025-12-28"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-purple-300 underline underline-offset-4 hover:text-white"
-                      >
-                        taquillacecut.com.mx · Entrada 28/12
-                      </a>
-                    </li>
-                  </ul>
+                  <p className="text-xs text-slate-400/80">
+                    Te enviaremos un enlace seguro para confirmar antes del evento.
+                  </p>
                 </div>
 
-                <div className="glass-effect rounded-xl border border-purple-400/20 p-4 space-y-3">
-                  <h3 className="font-display text-lg text-purple-200">Mesa con Merch el día de la función</h3>
-                  <p className="text-xs text-slate-400/80">
-                    Si deseas apartar o pagar por adelantado, déjalo marcado y te enviaremos un enlace seguro para completar tu registro.
-                  </p>
-                  <div className="grid sm:grid-cols-2 gap-3 text-sm text-slate-200">
-                    {PACKAGE_OPTIONS.map((option) => (
+                <div className="grid sm:grid-cols-2 gap-3">
+                  {PACKAGE_OPTIONS.map((option) => {
+                    const isSelected = formState.packages.includes(option.id);
+                    return (
                       <label
                         key={option.id}
-                        className="flex items-start gap-3 rounded-xl border border-white/10 bg-black/30 px-3 py-2"
+                        className={`relative block rounded-2xl border ${
+                          isSelected ? 'border-purple-400/70 shadow-[0_12px_35px_rgba(126,34,206,0.35)]' : 'border-white/10'
+                        } bg-gradient-to-br from-slate-900/80 to-black/60 p-4 shadow-[0_12px_35px_rgba(0,0,0,0.35)] hover:border-purple-400/40 transition`}
                       >
-                        <input
-                          type="checkbox"
-                          checked={formState.packages.includes(option.id)}
-                          onChange={() => handleTogglePackage(option.id)}
-                          className="mt-1 h-4 w-4 rounded border-slate-400 bg-black/40 text-purple-500 focus:ring-purple-400"
-                        />
-                        <div className="space-y-1">
-                          <p className="font-semibold text-slate-100">
-                            {option.title} <span className="text-slate-400 font-normal">· {option.price}</span>
-                          </p>
-                          <p className="text-xs text-slate-400">{option.helper}</p>
+                        <div className="mb-3 h-28 w-full rounded-xl border border-white/5 bg-gradient-to-br from-slate-800/70 via-slate-900/50 to-slate-950/80" />
+                        <div className="flex items-start gap-3">
+                          <input
+                            type="checkbox"
+                            checked={isSelected}
+                            onChange={() => handleTogglePackage(option.id)}
+                            className="mt-1 h-4 w-4 rounded border-slate-400 bg-black/40 text-purple-500 focus:ring-purple-400"
+                          />
+                          <div className="space-y-1">
+                            <p className="font-semibold text-slate-100">
+                              {option.title} <span className="text-slate-400 font-normal">· {option.price}</span>
+                            </p>
+                            <p className="text-xs text-slate-400">{option.helper}</p>
+                          </div>
                         </div>
                       </label>
-                    ))}
-                  </div>
+                    );
+                  })}
                 </div>
+
+                
               </div>
 
               {/* RIGHT COLUMN — FORM */}
               <form className="space-y-5" onSubmit={handleSubmit}>
+
+                 {/* INTEREST DROPDOWN */}
+                <div className="space-y-2">
+                                       <h3 className="font-display text-lg text-slate-100">
+                    Dinos qué quieres recibir
+                  </h3>   
+        
+                  <select
+                    name="interest"
+                    value={formState.interest}
+                    onChange={handleInputChange}
+                    className="w-full rounded-lg border border-white/10 bg-black/30 px-4 py-3 text-slate-100 focus:border-purple-400 focus:ring-1 focus:ring-purple-400"
+                  >
+                    {INTEREST_OPTIONS.map((option) => (
+                      <option key={option.value} value={option.value}>
+                        {option.label}
+                      </option>
+                    ))}
+                  </select>
+                  <p className="text-xs text-slate-400/80">{selectedInterest.description}</p>
+                </div>
 
                 {/* nombre */}
                 <div className="space-y-2">
@@ -379,23 +395,7 @@ const ReserveModal = ({ open, onClose, initialInterest = INTEREST_OPTIONS[0].val
                   />
                 </div>
 
-                {/* INTEREST DROPDOWN */}
-                <div className="space-y-2">
-                  <label className="text-sm font-medium text-slate-200">¿Qué quieres recibir?</label>
-                  <select
-                    name="interest"
-                    value={formState.interest}
-                    onChange={handleInputChange}
-                    className="w-full rounded-lg border border-white/10 bg-black/30 px-4 py-3 text-slate-100 focus:border-purple-400 focus:ring-1 focus:ring-purple-400"
-                  >
-                    {INTEREST_OPTIONS.map((option) => (
-                      <option key={option.value} value={option.value}>
-                        {option.label}
-                      </option>
-                    ))}
-                  </select>
-                  <p className="text-xs text-slate-400/80">{selectedInterest.description}</p>
-                </div>
+               
 
                 <div className="glass-effect rounded-2xl border border-white/5 bg-black/25 p-4 space-y-3">
                   <h3 className="font-display text-lg text-slate-100">Acción preferida</h3>
@@ -418,7 +418,6 @@ const ReserveModal = ({ open, onClose, initialInterest = INTEREST_OPTIONS[0].val
                     <div className="space-y-3">
                       <p className="text-xs text-slate-300/80">
                         Recibirás en tu correo (y en el CTA de confirmación) la línea de reservaciones para concretar el paquete que quieras.
-                        Nos encargamos de enviarte la liga segura sin saturar este formulario.
                       </p>
                     </div>
                   )}
@@ -457,7 +456,7 @@ const ReserveModal = ({ open, onClose, initialInterest = INTEREST_OPTIONS[0].val
                     disabled={status === 'loading'}
                     className="w-full bg-gradient-to-r from-purple-600/80 to-indigo-600/80 hover:from-purple-600 hover:to-indigo-600 text-white py-3 rounded-lg font-semibold flex items-center justify-center gap-2 hover-glow"
                   >
-                    {status === 'loading' ? 'Enviando…' : 'Guardar mi registro'}
+                    {isSubmitting ? 'Enviando…' : 'Guardar mi registro'}
                   </Button>
 
                   <button
