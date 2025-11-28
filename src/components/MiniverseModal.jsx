@@ -11,19 +11,28 @@ const TABS = [
 
 const MINIVERSE_CARDS = [
   {
-    title: 'Microficciones sonoras',
-    description: 'Voces internas de Silvestre publicadas en notas de voz efímeras.',
-    action: 'Pronto recibirás el enlace secreto.',
+    title: 'Miniverso Literatura',
+    description:
+      'Fragmentos de la novela Listen recaen en lectores que ya activaron narratives extendidas. Lecturas guiadas y comunidad de ensayo están al 90% del plan.',
+    action: 'Disponible hoy · lecturas y ritos de página.',
   },
   {
-    title: 'Bitácora interactiva',
-    description: 'Un recorrido visual por los objetos que habitan la habitación de Silvestre.',
-    action: 'Se liberará con la novela impresa.',
+    title: 'Miniverso Taza',
+    description:
+      'WebAR y rituales cotidianos listos para tomarse: la activación de la taza está en producción al 90% y acompaña cada sorbo con pistas sonoras.',
+    action: 'Actívala con tu taza · experiencia viva.',
   },
   {
-    title: 'Constelación de espectadores',
-    description: 'Mapa colaborativo donde la comunidad comparte sueños y teorías.',
-    action: 'Disponible a partir de enero 2025.',
+    title: 'Miniverso Cine',
+    description:
+      'CopyCats y Quirón se proyectan con conservatorio doble. El plan de sala y análisis crítico sobrevive con guardias de IA que ya operan en sala.',
+    action: 'Screening activo · boletos limitados.',
+  },
+  {
+    title: 'Miniverso Sonoro',
+    description:
+      'Sueños sonoros en tres capas se mezclan en la plataforma. La curaduría y los poemas interactivos están listos para tu escucha.',
+    action: 'Explora la mezcla · disponible ahora.',
   },
 ];
 
@@ -50,7 +59,8 @@ const MiniverseModal = ({ open, onClose, contextLabel }) => {
   const [formState, setFormState] = useState(initialFormState);
   const [status, setStatus] = useState('idle');
   const [errorMessage, setErrorMessage] = useState('');
-  const pendingMiniverseLabel = contextLabel?.trim() || 'Este miniverso';
+  const pendingMiniverseLabel =
+    (typeof contextLabel === 'string' ? contextLabel.trim() : '') || 'Este miniverso';
 
   useEffect(() => {
     if (open) {
@@ -210,8 +220,7 @@ const MiniverseModal = ({ open, onClose, contextLabel }) => {
                       <h3 className="font-display text-2xl text-slate-100">
                         Este miniverso aún no existe… pero puede existir contigo.
                       </h3>
-                      <p>{pendingMiniverseLabel} es uno de nuestros miniversos por activar.</p>
-                      <p>Una visión lista para volverse realidad en cuanto la comunidad lo permita.</p>
+                      
                       <ul className="space-y-2 text-sm leading-relaxed">
                         <li>🪙 Cada suscripción a la plataforma apoya directamente los proyectos activos de la asociación.</li>
                         <li>

@@ -1,5 +1,5 @@
 // src/components/Team.jsx
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import {
   Accordion,
@@ -203,24 +203,20 @@ const Team = () => {
     }
   }, [isMobile, selectedElencoId]);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (!pendingScrollRef.current) return;
 
     const targetNode = accordionItemRefs.current[pendingScrollRef.current];
-    if (!targetNode) {
-      pendingScrollRef.current = null;
-      return;
-    }
-
-    requestAnimationFrame(() => {
-      const rect = targetNode.getBoundingClientRect();
-      const isFullyVisible = rect.top >= 0 && rect.bottom <= window.innerHeight;
-
-      if (!isFullyVisible) {
-        targetNode.scrollIntoView({ behavior: "smooth", block: "nearest", inline: "nearest" });
-      }
-    });
     pendingScrollRef.current = null;
+    if (!targetNode) return;
+
+    const scrollMargin =
+      parseFloat(getComputedStyle(targetNode).scrollMarginTop) || 0;
+    const rect = targetNode.getBoundingClientRect();
+    const desiredY = window.scrollY + rect.top - scrollMargin;
+
+    // Ajuste inmediato antes del siguiente repintado; sin animar para evitar rebotes.
+    window.scrollTo({ top: desiredY, behavior: "auto" });
   }, [openSection]);
 
   const renderRole = (data, roleKey) => {
@@ -280,7 +276,7 @@ const Team = () => {
                     layout
                     transition={{ layout: { duration: 0.35, ease: [0.22, 1, 0.36, 1] } }}
                     key={memberId}
-                    className="glass-effect rounded-xl p-5 flex gap-4 items-start border border-white/5"
+                    className="glass-effect rounded-xl p-5 flex flex-col gap-4 border border-white/5 items-center sm:flex-row sm:items-start"
                   >
                     <img
                       className="h-20 w-20 flex-shrink-0 rounded-full object-cover shadow-lg shadow-black/30"
@@ -288,7 +284,7 @@ const Team = () => {
                       alt={`Retrato de ${member.name}`}
                       loading="lazy"
                     />
-                    <div className="space-y-2">
+                    <div className="space-y-2 text-center sm:text-left sm:flex-1">
                       <h4 className="font-display text-lg text-purple-200">
                         {member.name}
                       </h4>

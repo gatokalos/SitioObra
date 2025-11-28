@@ -146,6 +146,43 @@ const TicketPurchaseModal = ({ open, onClose }) => {
                 </div>
               </div>
 
+                           {/* ======================================
+            BLOQUE: TE CHOCA HACER LÍNEA
+   ====================================== */}
+<div className="rounded-2xl border border-white/10 bg-black/25 p-4 text-sm text-slate-300 space-y-3">
+  <p className="text-xs uppercase tracking-[0.35em] text-purple-300/80">
+    ¿No te gusta hacer fila?
+  </p>
+
+  <h4 className="font-semibold text-slate-100">
+    También puedes comprar en línea desde tu celular
+  </h4>
+
+ 
+    <span className="text-slate-500 text-xs">
+      (La Taza Incentivo se entrega solo en compras presenciales.)
+    </span>
+
+
+  <Button
+    asChild
+    className="
+      w-full py-3 rounded-2xl font-semibold
+      bg-gradient-to-r from-orange-500 via-rose-500 to-pink-500 
+      hover:from-orange-400 hover:to-pink-400
+      text-white shadow-[0_12px_40px_rgba(255,99,132,0.35)]
+    "
+  >
+    <a
+      href="https://www.taquillacecut.com.mx/eventos/saladeespectaculos/2025-12-28"
+      target="_blank"
+      rel="noreferrer"
+    >
+      Comprar en taquillacecut.com.mx
+    </a>
+  </Button>
+</div>
+
               {/* ======================================
                   BLOQUE: RECORDATORIOS
               ====================================== */}
@@ -199,42 +236,7 @@ const TicketPurchaseModal = ({ open, onClose }) => {
                 </div>
               </div>
 
-             {/* ======================================
-            BLOQUE: TE CHOCA HACER LÍNEA
-   ====================================== */}
-<div className="rounded-2xl border border-white/10 bg-black/25 p-4 text-sm text-slate-300 space-y-3">
-  <p className="text-xs uppercase tracking-[0.35em] text-purple-300/80">
-    ¿No te gusta hacer fila?
-  </p>
 
-  <h4 className="font-semibold text-slate-100">
-    También puedes comprar en línea desde tu celular
-  </h4>
-
- 
-    <span className="text-slate-500 text-xs">
-      (La Taza Incentivo se entrega solo en compras presenciales.)
-    </span>
-
-
-  <Button
-    asChild
-    className="
-      w-full py-3 rounded-2xl font-semibold
-      bg-gradient-to-r from-orange-500 via-rose-500 to-pink-500 
-      hover:from-orange-400 hover:to-pink-400
-      text-white shadow-[0_12px_40px_rgba(255,99,132,0.35)]
-    "
-  >
-    <a
-      href="https://www.taquillacecut.com.mx/eventos/saladeespectaculos/2025-12-28"
-      target="_blank"
-      rel="noreferrer"
-    >
-      Comprar en taquillacecut.com.mx
-    </a>
-  </Button>
-</div>
             </div>
           </motion.div>
         </motion.div>

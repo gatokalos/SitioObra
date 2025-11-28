@@ -13,12 +13,14 @@ import {
   Video,
   Music,
   Heart,
+  Brain,
   Map,
   Scan,
   Users,
   RadioTower,
   Sparkles,
   MapIcon,
+  Coins,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import MiniverseModal from '@/components/MiniverseModal';
@@ -34,6 +36,7 @@ import MiniversoSonoroPreview from '@/components/miniversos/sonoro/MiniversoSono
 import AutoficcionPreview from '@/components/novela/AutoficcionPreview';
 import { recordShowcaseLike } from '@/services/showcaseLikeService';
 import { useMobileVideoPresentation } from '@/hooks/useMobileVideoPresentation';
+import IAInsightCard from '@/components/IAInsightCard';
 
 pdfjs.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`;
 const showcaseDefinitions = {
@@ -50,6 +53,13 @@ const showcaseDefinitions = {
     ctaLabel: 'Hablar con Silvestre',
     ctaDescription:
       'Activa el vínculo con la voz que aún no se apaga. Aquí es donde Silvestre —o lo que queda de él— te responde.',
+    iaProfile: {
+      type: 'GPT-4o afinada para voz literaria y contención emocional.',
+      interaction: '1 a 3 mensajes con Silvestre (texto o voz).',
+      tokensRange: '250–600 tokens por sesión.',
+      coverage: 'Cubierto por suscriptores; entra en el plan de soporte colectivo.',
+      footnote: 'Cada conversación tiene un costo real. Gracias por mantenerla viva.',
+    },
   },
   copycats: {
     label: 'Miniverso Cine',
@@ -148,6 +158,13 @@ const showcaseDefinitions = {
       footnote: 'El cine es otro modo de entrar al encierro. Acompáñanos en marzo para ver ambas películas antes que nadie.',
     },
     notaAutoral: 'Cuando la escena no alcanza,\nla cámara recuerda\nQuirón, CopyCats,\nmismo espacio en otra luz.',
+    iaProfile: {
+      type: 'GPT-4o mini + subtítulos vivos y notas críticas asistidas.',
+      interaction: 'Notas críticas y captions contextuales por espectador.',
+      tokensRange: '200–450 tokens por visita.',
+      coverage: 'Incluido en las suscripciones transmedia.',
+      footnote: 'La IA acompaña la mirada; la decisión sigue siendo humana.',
+    },
   },
   lataza: {
     label: 'EstoNoEsUnaTaza',
@@ -182,6 +199,13 @@ const showcaseDefinitions = {
     ],
     cartaTitle: '#EstoNoEsUnaTaza',
     notaAutoral: 'Una taza que escucha.\nUn marcador que mira.\nLo cotidiano también es ritual.',
+    iaProfile: {
+      type: 'IA ligera para pistas contextuales + WebAR.',
+      interaction: '1 activación guiada por objeto (escaneo breve).',
+      tokensRange: '90–140 tokens por activación.',
+      coverage: 'Cubierto por suscriptores; no hay costo directo por usuario.',
+      footnote: 'La IA solo guía la pista; el ritual lo completa quien sostiene la taza.',
+    },
   },
   miniversoNovela: {
     label: 'Miniverso Literatura',
@@ -237,6 +261,13 @@ const showcaseDefinitions = {
       },
     ],
     ctaLabel: 'Leer los primeros fragmentos',
+    iaProfile: {
+      type: 'GPT-4o mini + voz sintética para fragmentos.',
+      interaction: 'Guía de lectura y acompañamiento breve por capítulo.',
+      tokensRange: '150–320 tokens por fragmento leído.',
+      coverage: 'Cubierto por suscriptores; lectura sin costo adicional.',
+      footnote: 'La IA susurra; la historia sigue siendo tuya.',
+    },
   },
   miniversoSonoro: {
     label: 'Miniverso Sonoro · Sueña en Tres Capas',
@@ -285,6 +316,13 @@ const showcaseDefinitions = {
     ],
     cartaTitle: '#SueñoEnCapas',
     notaAutoral: 'sueña una imagen.\nElige un pulso.\nDeja que el poema respire por ti.',
+    iaProfile: {
+      type: 'GPT-4o mini para poemas móviles + curaduría sonora.',
+      interaction: 'Selección de poema y mezcla guiada.',
+      tokensRange: '130–280 tokens por mezcla.',
+      coverage: 'Incluido en la suscripción transmedia.',
+      footnote: 'La IA elige la forma; tú eliges el ánimo.',
+    },
   },
   miniversoGrafico: {
     label: 'Miniverso Gráfico',
@@ -326,6 +364,13 @@ const showcaseDefinitions = {
     ctas: {
       primary: 'Explora el miniverso gráfico',
       secondary: 'Súmate a la residencia gráfica',
+    },
+    iaProfile: {
+      type: 'IA asistida para glifos y variaciones gráficas.',
+      interaction: 'Swipe narrativo con prompts curados.',
+      tokensRange: '110–220 tokens por sesión.',
+      coverage: 'Cubierto por suscriptores; sin costo por visitante.',
+      footnote: 'La IA abre caminos; el trazo final sigue siendo humano.',
     },
   },
   miniversoMovimiento: {
@@ -386,6 +431,49 @@ const showcaseDefinitions = {
   
     cartaTitle: '#RitualEnMovimiento',
     notaAutoral: 'El cuerpo es conjuro.\nLa ciudad tiembla y abre un portal.\nLa ruta solo existe si alguien baila.',
+    iaProfile: {
+      type: 'IA de ruta + prompts de movimiento guiados en app.',
+      interaction: 'Selección de estación y avatar ritual en AR.',
+      tokensRange: '180–320 tokens por usuario.',
+      coverage: 'Incluido en la suscripción transmedia.',
+      footnote: 'La IA guía; el rito sucede cuando alguien baila.',
+    },
+  },
+  oraculo: {
+    label: 'Miniverso Oráculo',
+    type: 'oracle',
+    intro:
+      'Preguntas que no buscan respuestas, sino resonancia. Alimenta la mente del Gato y gana GATokens por compartir tu pensamiento. El Oráculo no da respuestas, pero sí te recompensa por cada huella que dejas en la red del misterio. Tu pensamiento también construye este universo.',
+    loops: [
+      'Responde preguntas simbólicas, filosóficas, existenciales, absurdas o personales.',
+      'Cada respuesta se guarda como semilla de conocimiento simbólico para IA, literatura y obra interactiva.',
+      'Mientras más participas, más GATokens generas (proof-of-resonance con límites diarios anti-spam).',
+    ],
+    rewards: [
+      { title: 'Responder a una pregunta profunda', tokens: '+20 GAT', description: 'Comparte una reflexión que vibre en lo simbólico o emocional.' },
+      { title: 'Elegir y comentar reflexiones de otrxs', tokens: '+30 GAT', description: 'Modo foro: amplifica ideas y suma tu mirada.' },
+      { title: 'Volver tras una semana', tokens: '+30 GAT', description: 'Retorno que sostiene el hilo y da seguimiento a tu huella.' },
+      { title: 'Invitar a alguien con su primera reflexión', tokens: '+50 GAT', description: 'Trae a otra mente al Oráculo. Recompensa única por invitación.' },
+    ],
+    limitsNote: 'Límites por día para evitar spam y mantener el valor simbólico.',
+    seedNotes: [
+      'Las respuestas se almacenan como semillas de conocimiento simbólico.',
+      'Enriquecen una base de datos viviente para literatura, IA personalizada y obra interactiva.',
+      'Cada huella deja señal en la mente del Gato.',
+    ],
+    ctaLabel: 'Pregunta, responde y mintea',
+    ctaDescription:
+      'El Oráculo no da respuestas, pero sí te recompensa con GATokens por cada huella que dejas en la red del misterio. Tu pensamiento también construye este universo.',
+    tagline: '🧠 Interacción que deja huella. 🪙 Reflexión que te recompensa.',
+    cartaTitle: '#MinadoSimbólico',
+    notaAutoral: 'Juega con el misterio.\nPiensa con el corazón.\nMintea con el alma.',
+    iaProfile: {
+      type: 'GPT-4o + embeddings simbólicos curados por la comunidad.',
+      interaction: '1–3 reflexiones cortas por sesión; foro breve guiado.',
+      tokensRange: '20–120 tokens por reflexión (promedio ~20 GAT).',
+      coverage: 'Cubierto por suscriptores; las recompensas son GATokens internos.',
+      footnote: 'El minado es simbólico y humano: no es financiero, es resonancia.',
+    },
   },
 };
 
@@ -450,6 +538,7 @@ const formats = [
     iconClass: 'text-purple-300',
     notaAutoral:
       'Aquí nunca abaca bien. Por lo menos no hasta el final.',
+    iaTokensNote: '~300 gatokens por charla.',
   },
   {
     id: 'lataza',
@@ -459,6 +548,7 @@ const formats = [
     iconClass: 'text-amber-300',
     notaAutoral:
       'Un objeto cotidiano que abrió un portal. La Taza no acompaña: revela. Lo que sostiene no es barro, sino vínculo.',
+    iaTokensNote: '~90 gatokens por activación WebAR.',
   },
   {
     id: 'miniversoNovela',
@@ -468,6 +558,7 @@ const formats = [
     iconClass: 'text-emerald-300',
     notaAutoral:
       'La novela es donde la escena se desborda. Fragmentos que respiran distinto cuando alguien los lee. Aquí la historia sigue probándose.',
+    iaTokensNote: '~150 gatokens por página.',
   },
   {
     id: 'miniversoGrafico',
@@ -477,6 +568,7 @@ const formats = [
     iconClass: 'text-fuchsia-300',
     notaAutoral:
       'Garabatea tu límite, dibuja tu refugio.\nLo gráfico como portal emocional.\nCada trazo se siente antes de entenderse.',
+    iaTokensNote: '~110 gatokens por sesión.',
   },
   {
     id: 'copycats',
@@ -486,6 +578,7 @@ const formats = [
     iconClass: 'text-rose-300',
     notaAutoral:
       'La cámara miró lo que el teatro no podía sostener. CopyCats cuestiona; Quirón hiere con luz. Este espacio guarda esas miradas.',
+    iaTokensNote: '~200 gatokens por espectador.',
   },
   {
     id: 'miniversoSonoro',
@@ -495,6 +588,7 @@ const formats = [
     iconClass: 'text-cyan-300',
     notaAutoral:
       'Imagen, música y palabra en suspensión. Cada mezcla inventa otro ánimo. Aquí el sueño se edita solo.',
+    iaTokensNote: '~130 gatokens por mezcla.',
   },
   {
     id: 'miniversoMovimiento',
@@ -504,6 +598,7 @@ const formats = [
     iconClass: 'text-sky-300',
     notaAutoral:
       'Diosas en danza. El mapa vibra si alguien lo recorre.',
+    iaTokensNote: '~180 gatokens por mapa.',
   },
   {
     id: 'detodxs',
@@ -513,15 +608,17 @@ const formats = [
     iconClass: 'text-lime-300',
     notaAutoral:
       'Tecnología como acompañamiento, no como solución. Experiencias que cuidan, preguntan y extienden la historia cuando nadie está mirando.',
+    iaTokensNote: '~220 gatokens por mes.',
   },
   {
-    id: 'clubdegato',
-    title: 'Miniverso Bitácora',
-    description: 'Crónicas, expansiones narrativas y debate vivo sobre el universo.',
-    icon: Video,
+    id: 'oraculo',
+    title: 'Miniverso Oráculo',
+    description:
+      'Preguntas que no buscan respuestas, sino resonancia.',
+    icon: Brain,
     iconClass: 'text-indigo-300',
-    notaAutoral:
-      'El rastro vivo del proyecto. Crónicas, ecos, desvíos. Donde lo que pasa en escena encuentra su segunda vida.',
+    notaAutoral: 'Juega con el misterio. Piensa con el corazón. Mintea con el alma.',
+    iaTokensNote: '~20 gatokens por reflexión.',
   },
 ];
 
@@ -548,7 +645,7 @@ const CAUSE_ACCORDION = [
     description:
       'Implementación y seguimiento semestral de la app de detección temprana. 75 suscripciones financian 1 escuela por semestre.',
     icon: Smartphone,
-    metric: '15 escuelas atendidas cada semestre',
+    metric: '5 escuelas atendidas por ciclo escolar',
   },
 ];
 
@@ -592,7 +689,8 @@ const Transmedia = () => {
     ) : null;
 
   const handleOpenMiniverses = useCallback((contextLabel = null) => {
-    setMiniverseContext(contextLabel);
+    const normalizedLabel = typeof contextLabel === 'string' ? contextLabel : null;
+    setMiniverseContext(normalizedLabel);
     setIsMiniverseOpen(true);
   }, []);
 
@@ -1265,6 +1363,93 @@ const Transmedia = () => {
             </div>
           </div>
 
+        </div>
+      );
+    }
+
+    if (activeDefinition.type === 'oracle') {
+      return (
+        <div className="grid gap-6 lg:gap-10 lg:grid-cols-[2fr_1fr]">
+          <div className="space-y-6">
+            <div className="rounded-3xl border border-white/10 bg-black/30 p-6 space-y-4">
+              <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Minado simbólico</p>
+              {activeDefinition.loops ? (
+                <ul className="space-y-2 text-sm text-slate-200/90 leading-relaxed">
+                  {activeDefinition.loops.map((step, index) => (
+                    <li key={`oraculo-loop-${index}`} className="flex items-start gap-2">
+                      <span className="text-purple-300 mt-1">●</span>
+                      <span>{step}</span>
+                    </li>
+                  ))}
+                </ul>
+              ) : null}
+              {activeDefinition.tagline ? (
+                <p className="text-sm text-purple-200/90">{activeDefinition.tagline}</p>
+              ) : null}
+              <div className="space-y-2">
+                <Button
+                  variant="outline"
+                  className="border-purple-400/40 text-purple-200 hover:bg-purple-500/10"
+                  onClick={() =>
+                    toast({
+                      description: 'Muy pronto abriremos el Oráculo interactivo para mintear tus GATokens.',
+                    })
+                  }
+                >
+                  {activeDefinition.ctaLabel}
+                </Button>
+                <p className="text-xs text-slate-400 leading-relaxed">{activeDefinition.ctaDescription}</p>
+              </div>
+            </div>
+
+            <div className="rounded-3xl border border-white/10 bg-black/30 p-6 space-y-4">
+              <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Sistema de recompensas</p>
+              <div className="grid gap-3 md:grid-cols-2">
+                {activeDefinition.rewards?.map((reward, index) => (
+                  <div
+                    key={`oraculo-reward-${index}`}
+                    className="rounded-2xl border border-white/10 bg-white/5 p-4 space-y-2"
+                  >
+                    <div className="flex items-center justify-between">
+                      <p className="text-sm font-semibold text-slate-100">{reward.title}</p>
+                      <span className="inline-flex items-center gap-1 text-xs font-semibold text-amber-200">
+                        <Coins size={14} className="text-amber-200" />
+                        {reward.tokens}
+                      </span>
+                    </div>
+                    <p className="text-sm text-slate-300/90 leading-relaxed">{reward.description}</p>
+                  </div>
+                ))}
+              </div>
+              <p className="text-xs text-slate-500">{activeDefinition.limitsNote}</p>
+            </div>
+          </div>
+
+          <div className="space-y-4 lg:space-y-6">
+            <div className="rounded-3xl border border-white/10 bg-black/30 p-6 space-y-3">
+              <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Semillas de conocimiento</p>
+              <ul className="space-y-2 text-sm text-slate-300/85 leading-relaxed">
+                {activeDefinition.seedNotes?.map((seed, index) => (
+                  <li key={`oraculo-seed-${index}`} className="flex items-start gap-2">
+                    <Sparkles size={14} className="mt-1 text-amber-200" />
+                    <span>{seed}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            <div className="rounded-3xl border border-white/10 bg-black/30 p-6 space-y-3">
+              <div className="flex items-center gap-3">
+                <Brain size={18} className="text-purple-200" />
+                <p className="text-sm text-slate-200 font-semibold">Interacción que deja huella</p>
+              </div>
+              <p className="text-sm text-slate-300/85 leading-relaxed">
+                Tus reflexiones afinan la mente del Gato: entrenamiento simbólico, no binario y emocional. Cada
+                participación se audita para evitar ruido.
+              </p>
+              <p className="text-xs text-slate-500">El Oráculo es un espacio curado; el minado es resonancia, no dinero.</p>
+            </div>
+          </div>
         </div>
       );
     }
@@ -2099,15 +2284,18 @@ const Transmedia = () => {
               Miniversos que sostienen la causa
             </h2>
             <p className="text-lg text-slate-300/80 max-w-3xl mx-auto leading-relaxed font-light">
-              #GatoEncerrado es un universo transmedia compuesto por miniversos narrativos. Cada experiencia digital, objeto o narrativa expandida 
-              financia el acompañamiento psicoemocional de{' '}
+              #GatoEncerrado es un universo transmedia compuesto por miniversos narrativos. Cada experiencia digital, objeto o narrativa expandida activa tokens de IA (gatokens), que sostienen el ecosistima y financian la {' '}
               <button
                 type="button"
                 onClick={handleScrollToSupport}
                 className="text-purple-200 underline underline-offset-4 hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-400 rounded-sm"
               >
-                Isabel Ayuda para la Vida, A.C.
+                causa social 
               </button>
+             {' '} de Ayuda para la Vida, A.C.</p>
+            <p className="text-sm text-slate-400 max-w-3xl mx-auto leading-relaxed font-light">
+              Una suscripción de <span className="font-semibold text-purple-200">600 MXN</span> te otorga
+              {' '}<span className="font-semibold text-purple-200">12,000 GATOKENS</span>.
             </p>
           </motion.div>
 
@@ -2137,6 +2325,12 @@ const Transmedia = () => {
                   <p className="text-slate-300/70 text-base leading-relaxed mb-4 flex-grow font-light">
                     {format.description}
                   </p>
+                  {format.iaTokensNote ? (
+                    <div className="mb-3 flex items-center gap-2 text-amber-100">
+                      <Coins size={16} className="text-amber-200" />
+                      <span>{format.iaTokensNote}</span>
+                    </div>
+                  ) : null}
 
                   <div className="text-purple-300 flex items-center gap-2 font-semibold transition-all duration-300 group-hover:gap-3">
                     Explorar
@@ -2171,12 +2365,17 @@ const Transmedia = () => {
                 <button
                   onClick={() => setActiveShowcase(null)}
                   className="text-sm text-slate-400 hover:text-white transition self-start md:self-auto"
-                >
+                  >
                   Cerrar escaparate ✕
                 </button>
               </div>
 
               <div className="mt-8">{renderShowcaseContent()}</div>
+              {activeDefinition.iaProfile ? (
+                <div className="mt-9 max-w-xl">
+                  <IAInsightCard {...activeDefinition.iaProfile} compact />
+                </div>
+              ) : null}
             </motion.div>
           ) : null}
 
@@ -2188,12 +2387,23 @@ const Transmedia = () => {
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8, delay: 0.2, ease: 'easeOut' }}
               viewport={{ once: true }}
-              className="glass-effect rounded-2xl p-8 md:p-10 flex flex-col justify-between"
+              className="glass-effect rounded-2xl p-8 md:p-10 flex flex-col justify-between relative overflow-hidden opacity-100"
+              style={{ opacity: 1 }}
             >
-              <div className="space-y-5">
+            <div
+              aria-hidden="true"
+              className="pointer-events-none absolute inset-0 opacity-5 bg-no-repeat bg-center bg-[length:auto_100%] md:bg-[length:200%]"
+              style={{
+                backgroundImage:
+                  'linear-gradient(rgba(5,5,10,0.85), rgba(5,5,10,0.85)), url(/assets/bg-logo.png)',
+                backgroundBlendMode: 'screen',
+                filter: 'grayscale(0.25)',
+              }}
+            />
+            <div className="space-y-5">
                 <p className="text-xs uppercase tracking-[0.4em] text-slate-400/80">Apoya el proyecto</p>
                 <h3 className="font-display text-3xl text-slate-100">
-                  Nuestro impacto crece contigo
+                  Nuestro impacto social crece contigo
                 </h3>
                 <p className="text-slate-300/80 leading-relaxed font-light">
                   La taquilla mantiene la obra en escena; el universo transmedia financia acompañamiento emocional real.

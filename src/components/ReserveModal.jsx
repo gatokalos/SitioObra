@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { toast } from '@/components/ui/use-toast';
 import { supabase } from '@/lib/supabaseClient';
 import { ConfettiBurst, useConfettiBursts } from '@/components/Confetti';
+import { Heart } from 'lucide-react';
 
 const LOGO_SRC = '/assets/logoapp.png';
 
@@ -20,12 +21,6 @@ export const PACKAGE_OPTIONS = [
     title: 'Taza AR',
     price: '$250',
     helper: 'Taza especial con activación AR. Disponible el día del evento.',
-  },
-  {
-    id: 'taza-causa-600',
-    title: 'Taza con causa',
-    price: '$600',
-    helper: 'Incluye membresía anual. Se entrega el 28 de diciembre.',
   },
   {
     id: 'novela-400',
@@ -88,6 +83,8 @@ const ReserveModal = ({ open, onClose }) => {
   const [formState, setFormState] = useState(initialFormState);
   const [status, setStatus] = useState('idle');
   const [errorMessage, setErrorMessage] = useState('');
+  const [checkoutError, setCheckoutError] = useState('');
+  const [isCheckoutLoading, setIsCheckoutLoading] = useState(false);
   const { bursts: confettiBursts, fireConfetti } = useConfettiBursts();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -99,6 +96,8 @@ const ReserveModal = ({ open, onClose }) => {
       setFormState(initialFormState);
       setStatus('idle');
       setErrorMessage('');
+      setCheckoutError('');
+      setIsCheckoutLoading(false);
     }
   }, [open]);
 
@@ -132,24 +131,31 @@ const ReserveModal = ({ open, onClose }) => {
     });
   }, []);
 
+  const validateForm = useCallback(() => {
+    if (!formState.fullName.trim() || !formState.email.trim()) {
+      return 'Por favor completa tu nombre y correo electrónico.';
+    }
+    if (formState.packages.length === 0) {
+      return 'Selecciona al menos un artículo para apartar.';
+    }
+    return null;
+  }, [formState]);
+
   const handleSubmit = useCallback(
     async (event) => {
       event.preventDefault();
       if (status === 'loading') return;
 
-      if (!formState.fullName.trim() || !formState.email.trim()) {
-        toast({ description: 'Por favor completa tu nombre y correo electrónico.' });
-        return;
-      }
-
-      if (formState.packages.length === 0) {
-        toast({ description: 'Selecciona al menos un artículo para apartar.' });
+      const validationError = validateForm();
+      if (validationError) {
+        toast({ description: validationError });
         return;
       }
 
       setStatus('loading');
       setIsSubmitting(true);
       setErrorMessage('');
+      setCheckoutError('');
 
       try {
         const packagesSummary = formState.packages
@@ -192,7 +198,51 @@ const ReserveModal = ({ open, onClose }) => {
         setIsSubmitting(false);
       }
     },
-    [formState, status, fireConfetti]
+    [formState, status, fireConfetti, validateForm]
+  );
+
+  const handleCheckout = useCallback(
+    async (event) => {
+      event.preventDefault?.();
+      if (isCheckoutLoading || status === 'loading') return;
+
+      const validationError = validateForm();
+      if (validationError) {
+        toast({ description: validationError });
+        return;
+      }
+
+      setCheckoutError('');
+      setIsCheckoutLoading(true);
+
+      try {
+        const payload = {
+          full_name: formState.fullName.trim(),
+          email: formState.email.trim().toLowerCase(),
+          city: formState.city.trim() || null,
+          notes: formState.notes.trim() || '',
+          packages: formState.packages,
+          channel: 'landing',
+          event: 'funcion-2025-12-28',
+        };
+
+        const { data, error } = await supabase.functions.invoke('create-checkout', {
+          body: payload,
+        });
+
+        if (error || !data?.url) {
+          throw error || new Error('Falta la URL de pago.');
+        }
+
+        window.location.href = data.url;
+      } catch (err) {
+        console.error('[ReserveModal] Checkout error:', err);
+        setCheckoutError('No pudimos iniciar el pago. Intenta nuevamente.');
+      } finally {
+        setIsCheckoutLoading(false);
+      }
+    },
+    [formState, isCheckoutLoading, status, validateForm]
   );
 
   const handleClose = useCallback(() => {
@@ -282,14 +332,16 @@ const ReserveModal = ({ open, onClose }) => {
                 <div className="grid sm:grid-cols-2 gap-3">
   {PACKAGE_OPTIONS.map((option) => {
     const isSelected = formState.packages.includes(option.id);
+    const isCombo = option.id === 'combo-900';
 
     // Mapeo de imágenes por paquete
     const imageMap = {
-      'taza-250': 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Merch/tazax1.jpeg',
-      'taza-causa-600': 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Merch/taza2x1.jpeg',
-      'novela-400': 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Merch/novelasola.jpeg',
-      'combo-900': 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Merch/NovelaTazaCombo.png',
+      'taza-250': 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Merch/TazaPreventa.jpg',
+      'novela-400': 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Merch/novela_mesa.jpg',
+      'combo-900': 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Merch/NovelaTazaCombo.jpg',
     };
+
+    const imageHeightClass = isCombo ? 'h-48' : 'h-32';
 
     return (
       <label
@@ -298,10 +350,27 @@ const ReserveModal = ({ open, onClose }) => {
           isSelected
             ? 'border-purple-400/70 shadow-[0_12px_35px_rgba(126,34,206,0.35)]'
             : 'border-white/10'
-        } bg-gradient-to-br from-slate-900/80 to-black/60 p-4 hover:border-purple-400/40 transition`}
+        } bg-gradient-to-br from-slate-900/80 to-black/60 p-4 hover:border-purple-400/40 transition ${isCombo ? 'sm:col-span-2' : ''}`}
       >
-        {/* IMAGEN REAL DEL PAQUETE */}
-        <div className="mb-3 w-full h-32 rounded-xl overflow-hidden border border-white/5">
+        <input
+          type="checkbox"
+          checked={isSelected}
+          onChange={() => handleTogglePackage(option.id)}
+          className="sr-only"
+          aria-hidden="true"
+        />
+        <div
+          aria-hidden="true"
+          className={`absolute inset-0 flex items-center justify-center pointer-events-none transition duration-300 ${
+            isSelected ? 'scale-100 opacity-100' : 'scale-0 opacity-0'
+          }`}
+        >
+          <div className="flex h-20 w-20 items-center justify-center rounded-full bg-white/80 backdrop-blur-2xl shadow-[0_15px_35px_rgba(0,0,0,0.45)]">
+            <Heart size={48} className="text-purple-500" />
+          </div>
+        </div>
+
+        <div className={`mb-3 w-full ${imageHeightClass} rounded-xl overflow-hidden border border-white/5`}>
           <img
             src={imageMap[option.id]}
             alt={option.title}
@@ -310,20 +379,12 @@ const ReserveModal = ({ open, onClose }) => {
           />
         </div>
 
-        <div className="flex items-start gap-3">
-          <input
-            type="checkbox"
-            checked={isSelected}
-            onChange={() => handleTogglePackage(option.id)}
-            className="mt-1 h-4 w-4 rounded border-slate-400 bg-black/40 text-purple-500 focus:ring-purple-400"
-          />
-          <div className="space-y-1">
-            <p className="font-semibold text-slate-100">
-              {option.title}{' '}
-              <span className="text-slate-400 font-normal">· {option.price}</span>
-            </p>
-            <p className="text-xs text-slate-400">{option.helper}</p>
-          </div>
+        <div className="space-y-1">
+          <p className="font-semibold text-slate-100">
+            {option.title}{' '}
+            <span className="text-slate-400 font-normal">· {option.price}</span>
+          </p>
+          <p className="text-xs text-slate-400">{option.helper}</p>
         </div>
       </label>
     );
@@ -402,6 +463,13 @@ const ReserveModal = ({ open, onClose }) => {
                   </div>
                 )}
 
+                {/* Checkout error */}
+                {checkoutError && (
+                  <div className="rounded-lg border border-red-500/60 bg-red-500/10 px-4 py-3 text-sm text-red-200">
+                    {checkoutError}
+                  </div>
+                )}
+
                 {/* Buttons */}
                 <div className="flex flex-col gap-3">
                   <Button
@@ -412,13 +480,20 @@ const ReserveModal = ({ open, onClose }) => {
                     {isSubmitting ? 'Enviando…' : 'Apartar mis artículos'}
                   </Button>
 
-                  <button
+       
+
+                  <Button
                     type="button"
-                    onClick={handleClose}
-                    className="text-sm text-slate-400 hover:text-white transition"
+                    variant="outline"
+                    disabled={isCheckoutLoading || status === 'loading'}
+                    onClick={handleCheckout}
+                    className="w-full border-purple-400/40 text-purple-200 hover:bg-purple-500/10"
                   >
-                    Cerrar
-                  </button>
+                    {isCheckoutLoading ? 'Redirigiendo…' : 'Comprar ahora (Stripe)'}
+                  </Button>
+                  <p className="text-[11px] text-slate-500 text-center">
+                    Pagarás en Stripe. También enviaremos la liga a tu correo por si la necesitas más tarde.
+                  </p>
                 </div>
               </form>
             </div>

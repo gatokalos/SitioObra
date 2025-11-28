@@ -11,12 +11,12 @@ import {
   CupSoda,
   Film,
   BookMarked,
-  Video,
   Sparkles,
   Music,
   Coffee,
   Palette,
   Map,
+  Brain,
 } from 'lucide-react';
 import { useAuth } from '@/contexts/SupabaseAuthContext';
 import LoginOverlay from '@/components/ContributionModal/LoginOverlay';
@@ -72,10 +72,10 @@ const CATEGORIES = [
     description: 'Diosas en danza.\nCiudades como escenario.\nLa ruta vibra cuando alguien baila.',
   },
   {
-    id: 'bitacora',
-    icon: <Video size={20} className="text-indigo-300" />,
-    title: 'Miniverso Bitácora',
-    description: 'Crónicas que laten.\nPistas que se desdoblan.\nLa vida y la muerte conversan aquí.',
+    id: 'oraculo',
+    icon: <Brain size={20} className="text-indigo-300" />,
+    title: 'Miniverso Oráculo',
+    description: 'Preguntas que no buscan respuestas, sino resonancia. Mintea GATokens por cada huella.',
   },
   {
     id: 'otro',
@@ -106,7 +106,7 @@ const initialFormState = {
 
 const FORM_STORAGE_KEY = 'gatoencerrado-contrib-form';
 
-const BETA_UNIVERSES = new Set(['apps', 'bitacora', 'sonoro']);
+const BETA_UNIVERSES = new Set(['apps', 'oraculo', 'sonoro']);
 
 const formTitlesByUniverse = {
   obra_escenica: 'Si la Obra te tocó, este espacio es tuyo.',
@@ -115,7 +115,7 @@ const formTitlesByUniverse = {
   cine: '¿Qué imagen te persiguió después? Cuéntanos qué viste más allá de la pantalla.',
   grafico: '¿Qué símbolo, trazo o glitch quieres sumar a este laboratorio visual?',
   apps: '¿Cómo cambió tu forma de jugar o explorar este universo?',
-  bitacora: 'Comparte qué mezcla soñaste: qué viste, qué escuchaste, qué palabras eligieron.',
+  oraculo: 'Pregunta, responde y mintea: cada reflexión deja una huella y gana GATokens.',
   otro: 'Si no cabe en un miniverso… es porque aún no lo hemos nombrado.',
   sonoro: 'Comparte qué mezcla soñaste: qué viste, qué escuchaste, qué palabras eligieron.',
   movimiento: 'Cuéntanos qué ruta, coreografía o ritual colectivo quieres activar en la ciudad.',
