@@ -78,13 +78,35 @@ const About = () => {
   }, []);
 
   const handleScrollToTexts = useCallback(() => {
-    const ctaButton = document.getElementById('blog-submit-cta');
-    if (ctaButton) {
-      ctaButton.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      ctaButton.focus?.();
+    if (typeof window === 'undefined' || typeof document === 'undefined') {
       return;
     }
-    document.querySelector('#blog-contribuye')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+    const ctaButton = document.getElementById('blog-submit-cta');
+    const sectionTarget = document.getElementById('blog-contribuye');
+
+    // Prefer scrolling the actual CTA button into view (centered),
+    // fallback to the whole section (start). Use native scrollIntoView
+    // so the browser handles smooth scrolling and respects CSS scroll-padding.
+    if (ctaButton) {
+      ctaButton.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      // Keep focus but avoid additional scrolling when supported
+      try {
+        ctaButton.focus?.({ preventScroll: true });
+      } catch (e) {
+        // ignore if browser doesn't support the option
+        try {
+          ctaButton.focus?.();
+        } catch (err) {
+          /* noop */
+        }
+      }
+      return;
+    }
+
+    if (sectionTarget) {
+      sectionTarget.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
   }, []);
 
   const handleWatchTrailer = useCallback(async () => {
@@ -271,7 +293,7 @@ const About = () => {
                 onClick={handleScrollToTexts}
                 className="border-purple-400/40 text-purple-200 hover:bg-purple-500/20 w-full sm:w-auto whitespace-normal break-words text-center leading-snug"
               >
-                Si ya la viste, comparte aquí tu experiencia.
+                Si ya la viste, clica aquí para escucharte.
               </Button>
             </div>
             <div className="space-y-6">

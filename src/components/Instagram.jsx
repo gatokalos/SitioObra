@@ -375,6 +375,13 @@ const Instagram = () => {
             las funciones, los cuerpos, los silencios, las luces… lo que solo existe cuando alguien lo mira.
           </p>
 
+              {/* Crédito fotográfico: tipografía pequeña y gris tenue; enlace al Team */}
+              <p className="text-xs text-slate-400/70 mt-3">
+                Fotografías: Gabriel Monroy. Su semblanza está disponible en {' '}
+                <a href="#team" className="underline text-slate-300">Producción y Asistencia</a>.
+              </p>
+
+              
     
         </motion.div>
 

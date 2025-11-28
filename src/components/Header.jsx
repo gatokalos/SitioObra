@@ -50,9 +50,9 @@ const Header = () => {
   const menuItems = [
     { name: 'Obra', href: '#about' },
     { name: 'Equipo', href: '#team' },
-    { name: 'Miniversos', href: '#transmedia' },
-    { name: 'Textos', href: '#dialogo-critico' },
     { name: 'Galería', href: '#instagram' },
+    { name: 'Textos', href: '#dialogo-critico' },
+    { name: 'Miniversos', href: '#transmedia' },
     { name: 'Función', href: '#next-show' },
   ];
 
