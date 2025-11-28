@@ -371,18 +371,11 @@ const Instagram = () => {
           </h2>
           <p className="text-base md:text-lg text-slate-300/75 max-w-3xl mx-auto leading-relaxed mb-7 font-light">
             Fragmentos de lo que solo sucede en escena…
-            Un homenaje visual al trabajo colectivo detrás de #GatoEncerrado:
+            Un homenaje visual al trabajo colectivo detrás de Es un gato encerrado:
             las funciones, los cuerpos, los silencios, las luces… lo que solo existe cuando alguien lo mira.
           </p>
 
-          <Button
-            onClick={() => handleInstagramClick(instagramProfileUrl)}
-            className="bg-gradient-to-r from-pink-600/80 via-purple-600/80 to-indigo-600/80 hover:from-pink-600 hover:to-purple-600 text-white px-7 py-3 rounded-full font-semibold flex items-center gap-2 mx-auto hover-glow"
-          >
-            <InstagramIcon size={20} />
-            Seguir @esungatonecerrado
-            <ExternalLink size={16} />
-          </Button>
+    
         </motion.div>
 
         {error && (

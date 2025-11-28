@@ -102,7 +102,7 @@ const CallToAction = () => {
         animate={{ opacity: 1 }}
         transition={{ duration: 0.5, delay: 0.2 }}
       >
-        Cada suscripción abre un umbral: sostiene el universo y activa impacto real en la causa social.
+        Cada suscripción motiva al universo #GatoEncerrado y activa impacto real en su causa social.
       </motion.p>
 
       {/* Panel de impacto */}

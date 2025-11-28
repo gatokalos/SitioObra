@@ -6,6 +6,7 @@ import About from '@/components/About';
 import Transmedia from '@/components/Transmedia';
 import Blog from '@/components/Blog';
 import Team from '@/components/Team';
+import BlogContributionPrompt from '@/components/BlogContributionPrompt';
 import Instagram from '@/components/Instagram';
 import NextShow from '@/components/NextShow';
 import Contact from '@/components/Contact';
@@ -38,9 +39,10 @@ function App() {
         <Hero />
         <About />
         <Team />
+        <Instagram />
+        <BlogContributionPrompt />
         <Blog posts={blogData.posts} isLoading={blogData.isLoading} error={blogData.error} />
         <Transmedia />
-        <Instagram />
         <NextShow />
         <Contact />
       </main>

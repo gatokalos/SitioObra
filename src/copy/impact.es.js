@@ -1,6 +1,6 @@
 // src/copy/impact.es.js
 export const IMPACT_COPY = {
-  heading: 'Cada suscripción abre un umbral: sostiene el universo y activa impacto real en la causa social.',
+  heading: 'Cada suscripción sostiene el universo y activa impacto real en la causa social.',
   labels: {
     subs: 'Suscriptores activos',
     sessions: (total, perSub=6) => `${total*perSub} sesiones (1 suscripción = ${perSub} sesiones)`,
