@@ -41,7 +41,7 @@ import IAInsightCard from '@/components/IAInsightCard';
 pdfjs.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`;
 const showcaseDefinitions = {
   miniversos: {
-    label: 'Miniverso Trágico',
+    label: 'Drama',
     type: 'tragedia',
     intro:
       'Aquí nace la obra dentro de la obra. El gato encerrado de Es un gato encerrado.',
@@ -62,7 +62,7 @@ const showcaseDefinitions = {
     },
   },
   copycats: {
-    label: 'Miniverso Cine',
+    label: 'Cine',
     type: 'cinema',
     intro: 'El cine dentro de #GatoEncerrado es un laboratorio donde la realidad se revela por roce, no por imitación. Obra, proceso y mirada se mezclan hasta volver indistinguibles sus fronteras.',
     promise: 'Aquí no solo ves cine: te invitamos a entrar a su laboratorio.',
@@ -167,7 +167,7 @@ const showcaseDefinitions = {
     },
   },
   lataza: {
-    label: 'EstoNoEsUnaTaza',
+    label: 'Artesanías',
     type: 'object-webar',
     slug: 'taza-que-habla',
     subtitle: 'Esta no es una taza. Es un boleto.',
@@ -208,7 +208,7 @@ const showcaseDefinitions = {
     },
   },
   miniversoNovela: {
-    label: 'Miniverso Literatura',
+    label: 'Literatura',
     type: 'blog-series',
     slug: null,
     intro:
@@ -270,7 +270,7 @@ const showcaseDefinitions = {
     },
   },
   miniversoSonoro: {
-    label: 'Miniverso Sonoro · Sueña en Tres Capas',
+    label: 'Sonoridades',
     type: 'audio-dream',
     intro:
       'Este miniverso mezcla imágenes errantes, pistas sonoras y palabras móviles para que crees tu propia atmósfera. Solo entra, prende un video, ponle la música que quieras, elige un poema… y deja que la combinación te sorprenda.',
@@ -285,6 +285,7 @@ const showcaseDefinitions = {
       'Escoge un poema — y observa cómo se desliza mientras todo ocurre.',
     ],
     closing: [
+      'Sueño en tres capas',
       'Cada combinación abre un sueño distinto.',
       'Entra y crea el tuyo.',
     ],
@@ -325,7 +326,7 @@ const showcaseDefinitions = {
     },
   },
   miniversoGrafico: {
-    label: 'Miniverso Gráfico',
+    label: 'Gráficos',
     type: 'graphic-lab',
     intro:
       'Colección viva de exploraciones visuales: cómics en curso, viñetas interactivas, posters simbólicos, caricaturas conceptuales, murales colaborativos y avances con IA/técnicas mixtas.',
@@ -374,7 +375,7 @@ const showcaseDefinitions = {
     },
   },
   miniversoMovimiento: {
-    label: 'Miniverso Movimiento',
+    label: 'Movimiento',
     type: 'movement-ritual',
     pendingName: 'La Ruta de las Diosas',
     tagline: 'Diosas en danza. Ciudades como escenario. Tecnología como portal.',
@@ -440,7 +441,7 @@ const showcaseDefinitions = {
     },
   },
   oraculo: {
-    label: 'Miniverso Oráculo',
+    label: 'Oráculos',
     type: 'oracle',
     intro:
       'Preguntas que no buscan respuestas, sino resonancia. Alimenta la mente del Gato y gana GATokens por compartir tu pensamiento. El Oráculo no da respuestas, pero sí te recompensa por cada huella que dejas en la red del misterio. Tu pensamiento también construye este universo.',
@@ -538,7 +539,7 @@ const formats = [
     iconClass: 'text-purple-300',
     notaAutoral:
       'Aquí nunca abaca bien. Por lo menos no hasta el final.',
-    iaTokensNote: '~300 gatokens por charla.',
+    iaTokensNote: '~300 por charla.',
   },
   {
     id: 'lataza',
@@ -548,7 +549,7 @@ const formats = [
     iconClass: 'text-amber-300',
     notaAutoral:
       'Un objeto cotidiano que abrió un portal. La Taza no acompaña: revela. Lo que sostiene no es barro, sino vínculo.',
-    iaTokensNote: '~90 gatokens por activación WebAR.',
+    iaTokensNote: '~90 por activación WebAR.',
   },
   {
     id: 'miniversoNovela',
@@ -558,7 +559,7 @@ const formats = [
     iconClass: 'text-emerald-300',
     notaAutoral:
       'La novela es donde la escena se desborda. Fragmentos que respiran distinto cuando alguien los lee. Aquí la historia sigue probándose.',
-    iaTokensNote: '~150 gatokens por página.',
+    iaTokensNote: '~150 por capítulo.',
   },
   {
     id: 'miniversoGrafico',
@@ -568,7 +569,7 @@ const formats = [
     iconClass: 'text-fuchsia-300',
     notaAutoral:
       'Garabatea tu límite, dibuja tu refugio.\nLo gráfico como portal emocional.\nCada trazo se siente antes de entenderse.',
-    iaTokensNote: '~110 gatokens por sesión.',
+    iaTokensNote: '~110 por sesión.',
   },
   {
     id: 'copycats',
@@ -578,7 +579,7 @@ const formats = [
     iconClass: 'text-rose-300',
     notaAutoral:
       'La cámara miró lo que el teatro no podía sostener. CopyCats cuestiona; Quirón hiere con luz. Este espacio guarda esas miradas.',
-    iaTokensNote: '~200 gatokens por espectador.',
+    iaTokensNote: '~200 por espectador.',
   },
   {
     id: 'miniversoSonoro',
@@ -588,7 +589,7 @@ const formats = [
     iconClass: 'text-cyan-300',
     notaAutoral:
       'Imagen, música y palabra en suspensión. Cada mezcla inventa otro ánimo. Aquí el sueño se edita solo.',
-    iaTokensNote: '~130 gatokens por mezcla.',
+    iaTokensNote: '~130 por mezcla.',
   },
   {
     id: 'miniversoMovimiento',
@@ -598,7 +599,7 @@ const formats = [
     iconClass: 'text-sky-300',
     notaAutoral:
       'Diosas en danza. El mapa vibra si alguien lo recorre.',
-    iaTokensNote: '~180 gatokens por mapa.',
+    iaTokensNote: '~180 por mapa.',
   },
   {
     id: 'detodxs',
@@ -608,7 +609,7 @@ const formats = [
     iconClass: 'text-lime-300',
     notaAutoral:
       'Tecnología como acompañamiento, no como solución. Experiencias que cuidan, preguntan y extienden la historia cuando nadie está mirando.',
-    iaTokensNote: '~220 gatokens por mes.',
+    iaTokensNote: '~220 por mes.',
   },
   {
     id: 'oraculo',
@@ -618,7 +619,7 @@ const formats = [
     icon: Brain,
     iconClass: 'text-indigo-300',
     notaAutoral: 'Juega con el misterio. Piensa con el corazón. Mintea con el alma.',
-    iaTokensNote: '~20 gatokens por reflexión.',
+    iaTokensNote: '~20 por reflexión.',
   },
 ];
 
@@ -1293,10 +1294,13 @@ const Transmedia = () => {
     }
 
     if (activeDefinition.type === 'audio-dream') {
+      
       return (
-        <div className="grid gap-6 lg:gap-10 lg:grid-cols-[2fr_1fr]">
+        
+        <div className="grid gap-6 lg:gap-10 lg:grid-cols-[1fr_2fr]">
+           
           <div className="space-y-6 order-1 lg:order-2">
-            <div className="rounded-3xl border border-white/10 bg-black/30 p-6 space-y-4">
+           <div className="rounded-3xl border border-white/10 bg-black/30 p-6 space-y-4">
               <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Cómo explorar</p>
               <ol className="list-decimal list-inside space-y-3 text-slate-200 text-sm leading-relaxed md:text-base">
                 {activeDefinition.exploration?.map((step, index) => (

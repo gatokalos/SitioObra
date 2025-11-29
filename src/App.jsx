@@ -17,6 +17,7 @@ const pageTitle = '#GatoEncerrado - Obra de Teatro transmedia';
 const pageDescription =
   'La historia de alguien que desaparece… y deja una huella emocional. Una experiencia teatral única que explora múltiples formatos transmediaes.';
 
+  
 function App() {
   const blogData = useBlogPosts();
 
@@ -54,3 +55,4 @@ function App() {
 }
 
 export default App;
+

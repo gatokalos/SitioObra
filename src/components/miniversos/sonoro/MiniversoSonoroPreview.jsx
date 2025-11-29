@@ -495,13 +495,10 @@ function MiniversoSonoroPreview({
       {showHeader && (
         <div className="sonoro-preview-header">
           <div className="sonoro-preview-header__top">
-            <p className="sonoro-preview-small-title">Miniverso Sonoro · Sueña en Tres Capas</p>
-            <span className="sonoro-preview-tag">#GatoEncerrado</span>
+         
           </div>
-          <h2 className="sonoro-preview-title">Miniverso Sonoro</h2>
-          <p className="sonoro-preview-subtitle">
-            Una cámara de resonancia en miniatura: el video corre solo, tú eliges la música y el poema.
-          </p>
+         
+         
         </div>
       )}
       {isMobile ? mobileLayout : desktopLayout}
