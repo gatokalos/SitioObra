@@ -39,6 +39,9 @@ import { useMobileVideoPresentation } from '@/hooks/useMobileVideoPresentation';
 import IAInsightCard from '@/components/IAInsightCard';
 
 pdfjs.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`;
+const GAT_COSTS = {
+  quironFull: 200,
+};
 const showcaseDefinitions = {
   miniversos: {
     label: 'Drama',
@@ -529,10 +532,10 @@ const ShowcaseReactionInline = ({ showcaseId, title, description, buttonLabel })
   );
 };
 
-const formats = [
+  const formats = [
   {
     id: 'miniversos',
-    title: 'Miniverso Trágico',
+    title: 'Miniverso Dramático',
     description:
       'La obra como un miniverso dentro del mismo universo que ha generado.',
     icon: Drama,
@@ -543,7 +546,7 @@ const formats = [
   },
   {
     id: 'lataza',
-    title: 'Miniverso Taza',
+    title: 'Miniverso Artesanías',
     description: 'Objeto ritual con WebAR. Una excusa para seguir la historia desde lo cotidiano.',
     icon: Coffee,
     iconClass: 'text-amber-300',
@@ -559,7 +562,7 @@ const formats = [
     iconClass: 'text-emerald-300',
     notaAutoral:
       'La novela es donde la escena se desborda. Fragmentos que respiran distinto cuando alguien los lee. Aquí la historia sigue probándose.',
-    iaTokensNote: '~150 por capítulo.',
+    iaTokensNote: '~150 gatomonedas por capítulo.',
   },
   {
     id: 'miniversoGrafico',
@@ -673,12 +676,167 @@ const Transmedia = () => {
   const [transcript, setTranscript] = useState('');
   const [micError, setMicError] = useState('');
   const [isListening, setIsListening] = useState(false);
+  const [showSilvestreCoins, setShowSilvestreCoins] = useState(false);
   const recognitionRef = useRef(null);
   const transcriptRef = useRef('');
+  const micTimeoutRef = useRef(null);
   const [isCinemaCreditsOpen, setIsCinemaCreditsOpen] = useState(false);
   const [openCollaboratorId, setOpenCollaboratorId] = useState(null);
   const [notaAutoralOpenMap, setNotaAutoralOpenMap] = useState({});
   const { isMobileViewport, canUseInlinePlayback, requestMobileVideoPresentation } = useMobileVideoPresentation();
+  const { user } = useAuth();
+  const [quironSpent, setQuironSpent] = useState(false);
+  const [novelaQuestions, setNovelaQuestions] = useState(0);
+  const [sonoroSpent, setSonoroSpent] = useState(false);
+  const [tazaActivations, setTazaActivations] = useState(0);
+  const [showQuironCommunityPrompt, setShowQuironCommunityPrompt] = useState(false);
+  const [isQuironUnlocking, setIsQuironUnlocking] = useState(false);
+  const [showQuironCoins, setShowQuironCoins] = useState(false);
+  const [isQuironFullVisible, setIsQuironFullVisible] = useState(false);
+  const [isNovelaSubmitting, setIsNovelaSubmitting] = useState(false);
+  const [showNovelaCoins, setShowNovelaCoins] = useState(false);
+  const [showSonoroCoins, setShowSonoroCoins] = useState(false);
+  const [showTazaCoins, setShowTazaCoins] = useState(false);
+  const [isTazaActivating, setIsTazaActivating] = useState(false);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const storedSpent = window.localStorage?.getItem('gatoencerrado:quiron-spent');
+    if (storedSpent === 'true') {
+      setQuironSpent(true);
+      setIsQuironFullVisible(true);
+    }
+    const novelaStored = window.localStorage?.getItem('gatoencerrado:novela-questions');
+    if (novelaStored && !Number.isNaN(Number.parseInt(novelaStored, 10))) {
+      setNovelaQuestions(Number.parseInt(novelaStored, 10));
+    }
+    const sonoroStored = window.localStorage?.getItem('gatoencerrado:sonoro-spent');
+    if (sonoroStored === 'true') {
+      setSonoroSpent(true);
+    }
+    const tazaStored = window.localStorage?.getItem('gatoencerrado:taza-activations');
+    if (tazaStored && !Number.isNaN(Number.parseInt(tazaStored, 10))) {
+      setTazaActivations(Number.parseInt(tazaStored, 10));
+    }
+  }, []);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return undefined;
+
+    const handleStorage = (event) => {
+      if (event.key === 'gatoencerrado:novela-questions') {
+        const value = event.newValue ? Number.parseInt(event.newValue, 10) : 0;
+        if (!Number.isNaN(value)) {
+          setNovelaQuestions(value);
+        }
+      }
+      if (event.key === 'gatoencerrado:sonoro-spent' && event.newValue === 'true') {
+        setSonoroSpent(true);
+      }
+      if (event.key === 'gatoencerrado:sonoro-spent' && event.newValue === null) {
+        setSonoroSpent(false);
+      }
+      if (event.key === 'gatoencerrado:taza-activations') {
+        const value = event.newValue ? Number.parseInt(event.newValue, 10) : 0;
+        if (!Number.isNaN(value)) {
+          setTazaActivations(value);
+        }
+      }
+    };
+
+    const handleCustomSpent = (event) => {
+      if (event?.detail?.id === 'novela' && typeof event.detail.count === 'number') {
+        setNovelaQuestions(event.detail.count);
+      }
+      if (event?.detail?.id === 'sonoro' && typeof event.detail.spent === 'boolean') {
+        setSonoroSpent(event.detail.spent);
+      }
+      if (event?.detail?.id === 'taza' && typeof event.detail.count === 'number') {
+        setTazaActivations(event.detail.count);
+      }
+    };
+
+    window.addEventListener('storage', handleStorage);
+    window.addEventListener('gatoencerrado:miniverse-spent', handleCustomSpent);
+    return () => {
+      window.removeEventListener('storage', handleStorage);
+      window.removeEventListener('gatoencerrado:miniverse-spent', handleCustomSpent);
+    };
+  }, []);
+
+  const handleNovelaQuestionSend = useCallback(() => {
+    if (isNovelaSubmitting) {
+      return;
+    }
+    setIsNovelaSubmitting(true);
+    setShowNovelaCoins(true);
+    const delayPromise = new Promise((resolve) => setTimeout(resolve, 1100));
+    delayPromise.then(() => {
+      setShowNovelaCoins(false);
+      setIsNovelaSubmitting(false);
+      setNovelaQuestions((prev) => {
+        const next = prev + 1;
+        if (typeof window !== 'undefined') {
+          window.localStorage?.setItem('gatoencerrado:novela-questions', String(next));
+          window.dispatchEvent(
+            new CustomEvent('gatoencerrado:miniverse-spent', {
+              detail: { id: 'novela', spent: true, amount: 25, count: next },
+            })
+          );
+        }
+        return next;
+      });
+    });
+  }, [isNovelaSubmitting]);
+
+  const handleSonoroEnter = useCallback(() => {
+    if (sonoroSpent) {
+      return;
+    }
+    setShowSonoroCoins(true);
+    setTimeout(() => setShowSonoroCoins(false), 1100);
+    setSonoroSpent(true);
+    if (typeof window !== 'undefined') {
+      window.localStorage?.setItem('gatoencerrado:sonoro-spent', 'true');
+      window.dispatchEvent(
+        new CustomEvent('gatoencerrado:miniverse-spent', {
+          detail: { id: 'sonoro', spent: true, amount: 130 },
+        })
+      );
+    }
+  }, [sonoroSpent]);
+
+  const handleToggleQuironPrompt = useCallback(() => {
+    if (!user) {
+      setShowQuironCommunityPrompt((prev) => !prev);
+      return;
+    }
+
+    if (isQuironUnlocking) {
+      return;
+    }
+
+    setShowQuironCommunityPrompt(false);
+    setIsQuironUnlocking(true);
+    setShowQuironCoins(true);
+
+    const delayPromise = new Promise((resolve) => setTimeout(resolve, 1100));
+    delayPromise.then(() => {
+      setIsQuironFullVisible(true);
+      setShowQuironCoins(false);
+      setIsQuironUnlocking(false);
+      setQuironSpent(true);
+      if (typeof window !== 'undefined') {
+        window.localStorage?.setItem('gatoencerrado:quiron-spent', 'true');
+        window.dispatchEvent(
+          new CustomEvent('gatoencerrado:miniverse-spent', {
+            detail: { id: 'cine', spent: true, amount: GAT_COSTS.quironFull },
+          })
+        );
+      }
+    });
+  }, [isQuironUnlocking, user]);
+
   const renderMobileVideoBadge = () =>
     isMobileViewport ? (
       <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
@@ -765,7 +923,7 @@ const Transmedia = () => {
 
   const sendTranscript = useCallback(async (message) => {
     if (!message) {
-      return;
+      return false;
     }
     try {
       await fetch('http://localhost:3000/api/silvestre', {
@@ -775,11 +933,33 @@ const Transmedia = () => {
         },
         body: JSON.stringify({ mensaje: message }),
       });
+      setMicError('');
+      setShowSilvestreCoins(true);
+      setTimeout(() => setShowSilvestreCoins(false), 1200);
+      return true;
     } catch (error) {
       console.error('[Silvestre Voice] Error sending transcript:', error);
       setMicError('No pudimos enviar tu mensaje de voz. Intenta nuevamente más tarde.');
+      setShowSilvestreCoins(true);
+      setTimeout(() => setShowSilvestreCoins(false), 1200);
+      return false;
     }
   }, []);
+
+  const stopSilvestreListening = useCallback(() => {
+    if (micTimeoutRef.current) {
+      clearTimeout(micTimeoutRef.current);
+      micTimeoutRef.current = null;
+    }
+    if (recognitionRef.current && isListening) {
+      try {
+        recognitionRef.current.stop();
+      } catch (err) {
+        console.error('[Silvestre Voice] stop error:', err);
+      }
+    }
+    setIsListening(false);
+  }, [isListening]);
 
   const handleOpenSilvestreChat = useCallback(() => {
     if (typeof window === 'undefined') {
@@ -831,6 +1011,7 @@ const Transmedia = () => {
     }
 
     if (isListening) {
+      stopSilvestreListening();
       return;
     }
 
@@ -838,13 +1019,27 @@ const Transmedia = () => {
       recognitionRef.current.start();
       setIsListening(true);
       setMicError('');
+      if (micTimeoutRef.current) {
+        clearTimeout(micTimeoutRef.current);
+      }
+      micTimeoutRef.current = setTimeout(() => {
+        stopSilvestreListening();
+      }, 45000);
     } catch (error) {
       console.error('[Silvestre Voice] start error:', error);
       setMicError('No pudimos abrir el micrófono. Intenta nuevamente.');
     }
 
     window.dispatchEvent(new CustomEvent('gatoencerrado:open-silvestre'));
-  }, [hasShownMicPrompt, isListening, micPromptVisible, sendTranscript]);
+  }, [hasShownMicPrompt, isListening, micPromptVisible, sendTranscript, stopSilvestreListening]);
+
+  useEffect(() => {
+    return () => {
+      if (micTimeoutRef.current) {
+        clearTimeout(micTimeoutRef.current);
+      }
+    };
+  }, []);
 
   const handleOpenSemblanza = useCallback((anchor = '#team') => {
     const target = document.querySelector(anchor);
@@ -892,19 +1087,80 @@ const Transmedia = () => {
   }, []);
 
   const handleActivateAR = useCallback(() => {
-    setIsTazaARActive(true);
-    if (typeof window !== 'undefined' && window.matchMedia('(max-width: 768px)').matches) {
-      setIsMobileARFullscreen(true);
-      document.body.classList.add('overflow-hidden');
-    } else {
-      setIsMobileARFullscreen(false);
+    const remaining = Math.max(90 - tazaActivations * 30, 0);
+    if (remaining <= 0) {
+      toast({ description: 'Sin gatomonedas para esta activación.' });
+      return;
     }
-  }, []);
+    if (isTazaActivating) {
+      return;
+    }
+    const next = tazaActivations + 1;
+    setTazaActivations(next);
+    setShowTazaCoins(true);
+    setIsTazaActivating(true);
+    setTimeout(() => {
+      setShowTazaCoins(false);
+      setIsTazaActivating(false);
+      setIsTazaARActive(true);
+      if (typeof window !== 'undefined' && window.matchMedia('(max-width: 768px)').matches) {
+        setIsMobileARFullscreen(true);
+        document.body.classList.add('overflow-hidden');
+      } else {
+        setIsMobileARFullscreen(false);
+      }
+    }, 950);
+    if (typeof window !== 'undefined') {
+      window.localStorage?.setItem('gatoencerrado:taza-activations', String(next));
+      window.dispatchEvent(
+        new CustomEvent('gatoencerrado:miniverse-spent', {
+          detail: { id: 'taza', spent: true, amount: 30, count: next },
+        })
+      );
+    }
+  }, [isTazaActivating, tazaActivations]);
 
   const handleCloseARExperience = useCallback(() => {
     setIsTazaARActive(false);
     setIsMobileARFullscreen(false);
     document.body.classList.remove('overflow-hidden');
+    setIsTazaActivating(false);
+  }, []);
+
+  const handleResetCredits = useCallback(() => {
+    setQuironSpent(false);
+    setIsQuironFullVisible(false);
+    setNovelaQuestions(0);
+    setSonoroSpent(false);
+    setShowSonoroCoins(false);
+    setTazaActivations(0);
+    setShowTazaCoins(false);
+    if (typeof window !== 'undefined') {
+      window.localStorage?.removeItem('gatoencerrado:quiron-spent');
+      window.localStorage?.removeItem('gatoencerrado:novela-questions');
+      window.localStorage?.removeItem('gatoencerrado:sonoro-spent');
+      window.localStorage?.removeItem('gatoencerrado:taza-activations');
+      window.dispatchEvent(
+        new CustomEvent('gatoencerrado:miniverse-spent', {
+          detail: { id: 'novela', spent: false, amount: 0, count: 0 },
+        })
+      );
+      window.dispatchEvent(
+        new CustomEvent('gatoencerrado:miniverse-spent', {
+          detail: { id: 'cine', spent: false, amount: 0 },
+        })
+      );
+      window.dispatchEvent(
+        new CustomEvent('gatoencerrado:miniverse-spent', {
+          detail: { id: 'sonoro', spent: false, amount: 0 },
+        })
+      );
+      window.dispatchEvent(
+        new CustomEvent('gatoencerrado:miniverse-spent', {
+          detail: { id: 'taza', spent: false, amount: 0, count: 0 },
+        })
+      );
+    }
   }, []);
 
   const toggleNotaAutoral = useCallback(() => {
@@ -1177,6 +1433,13 @@ const Transmedia = () => {
           
         
             <div className="rounded-3xl border border-white/10 overflow-hidden bg-black/30">
+              <div className="flex items-center justify-between gap-3 px-6 pt-4">
+                <p className="text-xs uppercase tracking-[0.3em] text-slate-400/70">Activa tu objeto</p>
+                <span className="inline-flex items-center gap-2 rounded-full border border-amber-200/80 bg-amber-500/30 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.25em] text-amber-50">
+                  <Coins size={14} className="text-amber-50" />
+                  {Math.max(90 - tazaActivations * 30, 0)} gatomonedas
+                </span>
+              </div>
               {activeShowcase === 'lataza' && isTazaARActive && !isMobileARFullscreen ? (
                 <div className="p-0 sm:p-4">
                   <ARExperience
@@ -1225,13 +1488,49 @@ const Transmedia = () => {
                       </ul>
                     ) : null}
                     {activeShowcase === 'lataza' ? (
-                      <Button
-                        className="border-purple-400/40 text-purple-200 hover:bg-purple-500/10"
-                        variant="outline"
-                        onClick={handleActivateAR}
-                      >
-                        {activeDefinition.ctaLabel}
-                      </Button>
+                      <div className="relative inline-flex overflow-visible">
+                        {showTazaCoins ? (
+                          <motion.div
+                            initial={{ opacity: 0, y: 6 }}
+                            animate={{ opacity: 1, y: -6 }}
+                            exit={{ opacity: 0, y: -10 }}
+                            className="absolute -top-7 right-0 rounded-full border border-amber-200/60 bg-amber-500/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.25em] text-amber-100 shadow-[0_0_12px_rgba(250,204,21,0.25)]"
+                          >
+                            -30 gat
+                          </motion.div>
+                        ) : null}
+                        <Button
+                          className="relative border-purple-400/40 text-purple-200 hover:bg-purple-500/10 overflow-visible"
+                          variant="outline"
+                          onClick={handleActivateAR}
+                          disabled={Math.max(90 - tazaActivations * 30, 0) <= 0 || isTazaActivating}
+                        >
+                          <span className="relative z-10">
+                            {Math.max(90 - tazaActivations * 30, 0) <= 0
+                              ? 'Sin gatomonedas'
+                              : isTazaActivating
+                                ? 'Procesando...'
+                                : activeDefinition.ctaLabel}
+                          </span>
+                          {showTazaCoins ? (
+                            <span className="pointer-events-none absolute inset-0">
+                              {Array.from({ length: 6 }).map((_, index) => {
+                                const endX = 120 + index * 12;
+                                const endY = -110 - index * 12;
+                                return (
+                                  <motion.span
+                                    key={`taza-coin-${index}`}
+                                    className="absolute left-1/2 top-1/2 h-5 w-5 -translate-x-1/2 -translate-y-1/2 rounded-full bg-gradient-to-br from-amber-200 to-yellow-500 shadow-[0_0_12px_rgba(250,204,21,0.5)]"
+                                    initial={{ opacity: 0.9, scale: 0.7, x: 0, y: 0 }}
+                                    animate={{ opacity: 0, scale: 1, x: endX, y: endY, rotate: 120 + index * 22 }}
+                                    transition={{ duration: 1.05, ease: 'easeOut', delay: 0.05 }}
+                                  />
+                                );
+                              })}
+                            </span>
+                          ) : null}
+                        </Button>
+                      </div>
                     ) : activeDefinition.ctaLink ? (
                       <a
                         href={activeDefinition.ctaLink}
@@ -1332,6 +1631,10 @@ const Transmedia = () => {
                 poemOptions={activeDefinition.poems}
                 showHeader
                 showCTA
+                onEnterExperience={handleSonoroEnter}
+                isSpent={sonoroSpent}
+                coinBlast={showSonoroCoins}
+                costLabel="130 gatomonedas"
               />
               <div className="mt-4 space-y-4">
                 <div className="rounded-3xl border border-white/10 bg-black/20 p-6 space-y-3 text-sm text-slate-300">
@@ -1362,6 +1665,10 @@ const Transmedia = () => {
                   poemOptions={activeDefinition.poems}
                   showHeader
                   showCTA
+                  onEnterExperience={handleSonoroEnter}
+                  isSpent={sonoroSpent}
+                  coinBlast={showSonoroCoins}
+                  costLabel="130 gatomonedas"
                 />
               </div>
             </div>
@@ -1487,10 +1794,27 @@ const Transmedia = () => {
                 <Button
                   type="button"
                   variant="outline"
-                  className="w-full border border-purple-400/40 text-purple-100 hover:bg-purple-500/10 silvestre-cta"
+                  className="w-full border border-purple-400/40 text-purple-100 hover:bg-purple-500/10 silvestre-cta relative overflow-visible"
                   onClick={handleOpenSilvestreChat}
                 >
-                  {activeDefinition.ctaLabel}
+                  <span className="relative z-10">{isListening ? 'Detener y enviar' : activeDefinition.ctaLabel}</span>
+                  {showSilvestreCoins ? (
+                    <span className="pointer-events-none absolute inset-0 overflow-visible">
+                      {Array.from({ length: 6 }).map((_, index) => {
+                        const endX = 220 + index * 16;
+                        const endY = -240 - index * 14;
+                        return (
+                          <motion.span
+                            key={`silvestre-coin-${index}`}
+                            className="absolute left-1/2 top-1/2 h-5 w-5 -translate-x-1/2 -translate-y-1/2 rounded-full bg-gradient-to-br from-amber-200 to-yellow-500 shadow-[0_0_12px_rgba(250,204,21,0.5)]"
+                            initial={{ opacity: 0.95, scale: 0.8, x: 0, y: 0 }}
+                            animate={{ opacity: 0, scale: 1.05, x: endX, y: endY, rotate: 110 + index * 22 }}
+                            transition={{ duration: 1.15, ease: 'easeOut', delay: 0.05 }}
+                          />
+                        );
+                      })}
+                    </span>
+                  ) : null}
                 </Button>
                 <p className="text-[11px] text-slate-500">
                   La conversación se abre dentro del universo transmedia (pronto con GPT de Silvestre).
@@ -1501,7 +1825,7 @@ const Transmedia = () => {
                     <p>Silvestre quiere escucharte. Dale acceso a tu micrófono para comenzar.</p>
                   </div>
                 ) : null}
-                {micError ? (
+                {micError && !isListening && !transcript ? (
                   <div className="mt-3 rounded-2xl border border-red-500/30 bg-red-500/10 p-4 text-sm text-red-100">
                     <p className="text-xs uppercase tracking-[0.35em] text-red-300">Sin micrófono</p>
                     <p>Tu navegador no permite activar el micrófono. Puedes escribirle a Silvestre si prefieres.</p>
@@ -1833,17 +2157,123 @@ const Transmedia = () => {
               ) : null}
             </div>
 
-            <div className="rounded-3xl border border-white/10 bg-black/30 p-6 space-y-4">
+            <div className="relative rounded-3xl border border-white/10 bg-black/30 p-6 space-y-4">
               <div className="flex items-start justify-between gap-3">
                 <div>
-                  <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Cortometraje</p>
+                  <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Teaser + Stills</p>
                   <h4 className="font-display text-xl text-slate-100">{activeDefinition.quiron?.title}</h4>
                 </div>
-                <span className="text-[11px] uppercase tracking-[0.3em] text-rose-300">Teaser + stills</span>
+                <div className="flex flex-col items-end gap-1 text-right">
+                  <span className="text-[11px] uppercase tracking-[0.3em] text-rose-300">Teaser + stills</span>
+                  <span
+                    className={`inline-flex items-center gap-2 rounded-full px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.2em] ${
+                      quironSpent
+                        ? 'border border-emerald-200/60 bg-emerald-500/10 text-emerald-100'
+                        : 'border border-amber-200/50 bg-amber-500/10 text-amber-100'
+                    }`}
+                  >
+                    <Coins size={14} />
+                    {quironSpent ? '0 gatomonedas' : `${GAT_COSTS.quironFull} gatomonedas`}
+                  </span>
+                </div>
               </div>
               <p className="text-sm text-slate-300/80 leading-relaxed">{activeDefinition.quiron?.description}</p>
               <p className="text-sm text-slate-200/90 leading-relaxed">{activeDefinition.quiron?.microcopy}</p>
-              {activeDefinition.quiron?.teaser ? <div>{renderMedia(activeDefinition.quiron.teaser)}</div> : null}
+              <div className="flex flex-wrap items-center gap-3">
+                {quironSpent ? (
+                  <span className="inline-flex items-center gap-2 rounded-full border border-emerald-200/60 bg-emerald-500/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.25em] text-emerald-100">
+                    <Coins size={14} /> 0 gatomonedas
+                  </span>
+                ) : (
+                  <Button
+                    variant="secondary"
+                    onClick={handleToggleQuironPrompt}
+                    disabled={isQuironUnlocking}
+                    className="relative bg-gradient-to-r from-rose-500/80 via-amber-500/80 to-yellow-400/80 text-slate-900 hover:from-rose-400 hover:via-amber-400 hover:to-yellow-300 disabled:opacity-70 overflow-visible"
+                  >
+                    <span className="relative z-10">
+                      {isQuironUnlocking ? 'Procesando…' : 'Ver cortometraje completo'}
+                    </span>
+                    {showQuironCoins ? (
+                      <span className="pointer-events-none absolute inset-0">
+                        {Array.from({ length: 5 }).map((_, index) => {
+                          const startX = 0;
+                          const startY = 0;
+                          const endX = 140 + index * 10;
+                          const endY = -120 - index * 10;
+                          return (
+                            <motion.span
+                              key={`quiron-coin-btn-${index}`}
+                              className="absolute left-1/2 top-1/2 h-5 w-5 -translate-x-1/2 -translate-y-1/2 rounded-full bg-gradient-to-br from-amber-200 to-yellow-500 shadow-[0_0_12px_rgba(250,204,21,0.5)]"
+                              initial={{ opacity: 0.9, scale: 0.6, x: startX, y: startY }}
+                              animate={{ opacity: 0, scale: 0.9, x: endX, y: endY, rotate: 90 + index * 25 }}
+                              transition={{ duration: 1, ease: 'easeOut' }}
+                            />
+                          );
+                        })}
+                      </span>
+                    ) : null}
+                  </Button>
+                )}
+                <span className="text-xs uppercase tracking-[0.25em] text-slate-300/80">
+                  {quironSpent
+                    ? `0 gatomonedas pendientes · ${GAT_COSTS.quironFull} aplicadas`
+                    : `Se descontarán ${GAT_COSTS.quironFull} GAT o se cubre con tu suscripción`}
+                </span>
+              </div>
+              {showQuironCommunityPrompt ? (
+                <motion.div
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: 'auto' }}
+                  className="rounded-2xl border border-amber-200/40 bg-amber-500/10 p-4 text-sm text-amber-100"
+                >
+                  Únete a la comunidad para usar tus gatomonedas y desbloquear experiencias completas. Muy pronto podrás conectar tu saldo y suscripción aquí mismo.
+                </motion.div>
+              ) : null}
+              {showQuironCoins ? (
+                      <div className="pointer-events-none absolute inset-0 overflow-visible">
+                  {Array.from({ length: 6 }).map((_, index) => {
+                    const startLeft = 0.35 + index * 0.04;
+                    const startTop = 0.7;
+                    const x = 220 + index * 8;
+                    const y = -240 - index * 18;
+                    return (
+                      <motion.span
+                        key={`quiron-coin-flight-${index}`}
+                        className="absolute h-6 w-6 rounded-full bg-gradient-to-br from-amber-200 to-yellow-500 shadow-[0_0_18px_rgba(250,204,21,0.55)]"
+                        style={{ left: `${startLeft * 100}%`, top: `${startTop * 100}%` }}
+                        initial={{ opacity: 0.95, scale: 0.8, rotate: 0, x: 0, y: 0 }}
+                        animate={{ opacity: 0, scale: 1, rotate: 140 + index * 18, x, y }}
+                        transition={{ duration: 1.15, ease: 'easeOut' }}
+                      />
+                    );
+                  })}
+                </div>
+              ) : null}
+              {isQuironFullVisible ? (
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="overflow-hidden rounded-2xl border border-white/10 bg-black/25"
+                >
+                  <div className="aspect-video bg-gradient-to-br from-slate-800 via-slate-900 to-black flex items-center justify-center text-slate-200">
+                    <div className="space-y-2 text-center">
+                      <p className="text-sm uppercase tracking-[0.35em] text-amber-200">Mockup</p>
+                      <p className="text-lg font-semibold">Cortometraje completo · Placeholder</p>
+                      <p className="text-xs text-slate-300/80">Se carga después de la animación de monedas.</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center justify-between px-4 py-3 text-xs text-slate-300 border-t border-white/5">
+                    <span>Duración: 12:00 · Calidad: HD</span>
+                    <span className="inline-flex items-center gap-2 rounded-full border border-amber-200/40 px-2 py-1 text-amber-100">
+                      <Coins size={14} /> 200 GAT aplicados
+                    </span>
+                  </div>
+                </motion.div>
+              ) : null}
+              {activeDefinition.quiron?.teaser ? (
+                <div>{renderMedia(activeDefinition.quiron.teaser)}</div>
+              ) : null}
               {quironStills.length ? (
                 <div className="grid gap-3 sm:grid-cols-2">
                   {quironStills.map((still, index) => {
@@ -1981,6 +2411,7 @@ const Transmedia = () => {
 
     if (activeDefinition.type === 'blog-series') {
       const entries = activeDefinition.entries ?? [];
+      const novelaSpentAmount = novelaQuestions * 25;
       const renderEntryAction = (entry) => {
         switch (entry.type) {
           case 'internal-reading':
@@ -2112,16 +2543,25 @@ const Transmedia = () => {
           }
 
                 if (entry.type === 'novel-apps') {
+                  const novelaSpentAmount = novelaQuestions * 25;
                   return (
-                    <div key={entry.id} className="rounded-2xl border border-white/10 p-6 bg-black/30 space-y-6">
-                      <div className="space-y-2">
-                        <h5 className="font-display text-xl text-slate-100">{entry.title}</h5>
-                        {entry.description ? (
-                          <p className="text-sm text-slate-300/80 leading-relaxed">{entry.description}</p>
-                        ) : null}
+                    <div key={entry.id} className="rounded-2xl border border-white/10 bg-black/30 p-6 space-y-6 relative overflow-hidden">
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="space-y-2 flex-1">
+                          <div className="flex items-center justify-between gap-3">
+                            <h5 className="font-display text-xl text-slate-100">{entry.title}</h5>
+                            <span className="inline-flex items-center gap-2 rounded-full border border-amber-200/60 bg-amber-500/15 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.25em] text-amber-100 shrink-0">
+                              <Coins size={14} className="text-amber-50" />
+                              <span className="text-amber-50">150 gatomonedas</span>
+                            </span>
+                          </div>
+                          {entry.description ? (
+                            <p className="text-sm text-slate-300/80 leading-relaxed">{entry.description}</p>
+                          ) : null}
+                        </div>
                       </div>
-<div className="grid gap-4 grid-cols-1">
-                          {entry.apps?.map((app) => (
+                      <div className="grid gap-4 grid-cols-1">
+                        {entry.apps?.map((app) => (
                           <div
                             key={app.id}
                             className="rounded-2xl border border-white/10 bg-black/40 p-4 flex flex-col gap-4"
@@ -2152,17 +2592,24 @@ const Transmedia = () => {
                                 ) : null}
                               </div>
                             ) : null}
-                            <Button
-                              onClick={() => handleNovelAppCTA(app)}
-                              variant={app.status === 'Disponible' ? 'default' : 'outline'}
-                              className={`w-full justify-center ${
-                                app.status === 'Disponible'
-                                  ? 'bg-purple-600/80 hover:bg-purple-600 text-white'
-                                  : 'border-purple-400/40 text-purple-200 hover:bg-purple-500/10'
-                              }`}
-                            >
-                              {app.ctaLabel}
-                            </Button>
+                            <div className="space-y-2">
+                              <Button
+                                onClick={() => handleNovelAppCTA(app)}
+                                variant={app.status === 'Disponible' ? 'default' : 'outline'}
+                                className={`w-full justify-center ${
+                                  app.status === 'Disponible'
+                                    ? 'bg-purple-600/80 hover:bg-purple-600 text-white'
+                                    : 'border-purple-400/40 text-purple-200 hover:bg-purple-500/10'
+                                }`}
+                              >
+                                {app.ctaLabel}
+                              </Button>
+                              <div className="flex items-center justify-center text-[11px] uppercase tracking-[0.35em] text-amber-200/90">
+                                {novelaSpentAmount > 0
+                                  ? `${novelaSpentAmount} gatomonedas usadas · ${novelaQuestions} pregunta${novelaQuestions === 1 ? '' : 's'}`
+                                  : '0 gatomonedas usadas · 0 preguntas'}
+                              </div>
+                            </div>
                           </div>
                         ))}
                       </div>
@@ -2273,6 +2720,17 @@ const Transmedia = () => {
   return (
     <>
       <section id="transmedia" className="py-24 relative">
+        {import.meta.env?.DEV ? (
+          <div className="fixed bottom-4 right-4 z-50">
+            <button
+              type="button"
+              onClick={handleResetCredits}
+              className="rounded-full border border-amber-300/40 bg-amber-500/10 px-3 py-1 text-xs uppercase tracking-[0.3em] text-amber-200 shadow-[0_10px_25px_rgba(0,0,0,0.35)] hover:bg-amber-500/20"
+            >
+              Reset créditos
+            </button>
+          </div>
+        ) : null}
         <div className="section-divider mb-24"></div>
 
         <div className="container mx-auto px-6">
@@ -2329,12 +2787,43 @@ const Transmedia = () => {
                   <p className="text-slate-300/70 text-base leading-relaxed mb-4 flex-grow font-light">
                     {format.description}
                   </p>
-                  {format.iaTokensNote ? (
-                    <div className="mb-3 flex items-center gap-2 text-amber-100">
-                      <Coins size={16} className="text-amber-200" />
-                      <span>{format.iaTokensNote}</span>
-                    </div>
-                  ) : null}
+                  {(() => {
+                    const isCine = format.id === 'copycats';
+                    const isNovela = format.id === 'miniversoNovela';
+                    const isTaza = format.id === 'lataza';
+                    const novelaSpentAmount = novelaQuestions * 25;
+                    const novelaRemaining = Math.max(150 - novelaSpentAmount, 0);
+                    const tazaSpentAmount = tazaActivations * 30;
+                    const tazaRemaining = Math.max(90 - tazaSpentAmount, 0);
+                    let note = format.iaTokensNote;
+                    let toneClass = 'text-amber-100';
+                    let iconTone = 'text-amber-200';
+
+                    if (isCine && quironSpent) {
+                      note = '0 gatomonedas · 200 aplicadas';
+                      toneClass = 'text-emerald-200';
+                      iconTone = 'text-emerald-200';
+                    } else if (isNovela && novelaQuestions > 0) {
+                      note = `${novelaRemaining} gatomonedas restantes · ${novelaSpentAmount} usadas (${novelaQuestions} pregunta${novelaQuestions > 1 ? 's' : ''})`;
+                      toneClass = 'text-emerald-200';
+                      iconTone = 'text-emerald-200';
+                    } else if (isNovela) {
+                      note = '150 gatomonedas disponibles';
+                    } else if (isTaza && tazaActivations > 0) {
+                      note = `${tazaRemaining} gatomonedas restantes · ${tazaSpentAmount} usadas (${tazaActivations} activación${tazaActivations > 1 ? 'es' : ''})`;
+                      toneClass = 'text-emerald-200';
+                      iconTone = 'text-emerald-200';
+                    } else if (isTaza) {
+                      note = '90 gatomonedas disponibles';
+                    }
+
+                    return note ? (
+                      <div className={`mb-3 flex items-center gap-2 ${toneClass}`}>
+                        <Coins size={16} className={iconTone} />
+                        <span>{note}</span>
+                      </div>
+                    ) : null;
+                  })()}
 
                   <div className="text-purple-300 flex items-center gap-2 font-semibold transition-all duration-300 group-hover:gap-3">
                     Explorar

@@ -1,5 +1,6 @@
 // MiniversoSonoroPreview.jsx
 import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { motion } from 'framer-motion';
 import { createPortal } from 'react-dom';
 import { useSonoroPreview } from '@/hooks/useSonoroPreview';
 import '@/components/miniversos/sonoro/MiniversoSonoroPreview.css';
@@ -64,6 +65,9 @@ function MiniversoSonoroPreview({
   showCTA = true,
   onEnterExperience,
   experienceHref = '/miniverso-sonoro',
+  isSpent = false,
+  coinBlast = false,
+  costLabel = '130 gatomonedas',
 }) {
   const {
     currentVideo,
@@ -93,6 +97,7 @@ function MiniversoSonoroPreview({
   const [currentLineIndex, setCurrentLineIndex] = useState(null);
   const [isPoemVisible, setIsPoemVisible] = useState(false);
   const [isFullExperience, setIsFullExperience] = useState(false);
+  const [isEnteringExperience, setIsEnteringExperience] = useState(false);
   const isSelectionReady = Boolean(selectedAudioId) && Boolean(selectedPoemId);
 
   const videoRef = useRef(null);
@@ -254,13 +259,18 @@ function MiniversoSonoroPreview({
   };
 
   const handleEnterExperience = () => {
+    if (!isSelectionReady || isSpent || isEnteringExperience) return;
+    setIsEnteringExperience(true);
     if (typeof window !== 'undefined') {
       previousScrollYRef.current = window.scrollY || 0;
     }
-    setIsFullExperience(true);
     if (onEnterExperience) {
       onEnterExperience();
     }
+    setTimeout(() => {
+      setIsFullExperience(true);
+      setIsEnteringExperience(false);
+    }, 900);
   };
 
   const handleExitExperience = () => {
@@ -440,14 +450,45 @@ function MiniversoSonoroPreview({
       <section className="sonoro-preview-stage">
         {renderVideoCard()}
         {showCTA && (
-          <button
-            type="button"
-            className="sonoro-preview-cta"
-            onClick={handleEnterExperience}
-            disabled={!isSelectionReady}
-          >
-            Entrar a la cámara de resonancia
-          </button>
+          <div className="relative">
+            {coinBlast ? (
+              <motion.div
+                initial={{ opacity: 0, y: 6 }}
+                animate={{ opacity: 1, y: -6 }}
+                exit={{ opacity: 0, y: -10 }}
+                className="absolute -top-6 right-0 rounded-full border border-amber-200/60 bg-amber-500/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.25em] text-amber-100 shadow-[0_0_12px_rgba(250,204,21,0.25)]"
+              >
+                -{costLabel}
+              </motion.div>
+            ) : null}
+            <button
+              type="button"
+              className="sonoro-preview-cta relative overflow-hidden"
+              onClick={handleEnterExperience}
+              disabled={!isSelectionReady || isSpent || isEnteringExperience}
+            >
+              <span className="relative z-10">
+                {isSpent ? 'Créditos aplicados' : isEnteringExperience ? 'Entrando…' : 'Entrar a la cámara de resonancia'}
+              </span>
+              {coinBlast ? (
+                <span className="pointer-events-none absolute inset-0">
+                  {Array.from({ length: 7 }).map((_, index) => {
+                    const endX = 140 + index * 12;
+                    const endY = -130 - index * 14;
+                    return (
+                      <motion.span
+                        key={`sonoro-coin-${index}`}
+                        className="absolute left-1/2 top-1/2 h-5 w-5 -translate-x-1/2 -translate-y-1/2 rounded-full bg-gradient-to-br from-amber-200 to-yellow-500 shadow-[0_0_12px_rgba(250,204,21,0.5)]"
+                        initial={{ opacity: 0.9, scale: 0.7, x: 0, y: 0 }}
+                        animate={{ opacity: 0, scale: 1, x: endX, y: endY, rotate: 120 + index * 22 }}
+                        transition={{ duration: 1.1, ease: 'easeOut', delay: 0.05 }}
+                      />
+                    );
+                  })}
+                </span>
+              ) : null}
+            </button>
+          </div>
         )}
       </section>
     </div>
@@ -495,7 +536,16 @@ function MiniversoSonoroPreview({
       {showHeader && (
         <div className="sonoro-preview-header">
           <div className="sonoro-preview-header__top">
-         
+            <span
+              className={`inline-flex items-center gap-2 rounded-full border px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.25em] ${
+                isSpent
+                  ? 'border-emerald-200/60 bg-emerald-500/10 text-emerald-100'
+                  : 'border-amber-200/60 bg-amber-500/10 text-amber-100'
+              }`}
+            >
+              <span className="text-amber-200">◎</span>
+              {isSpent ? '0 gatomonedas' : costLabel}
+            </span>
           </div>
          
          

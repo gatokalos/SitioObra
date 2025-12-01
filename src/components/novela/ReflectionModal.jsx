@@ -1,4 +1,5 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
+import { motion } from "framer-motion";
 
 export default function ReflectionModal({
   isOpen,
@@ -9,6 +10,8 @@ export default function ReflectionModal({
   setReflection,
   onSubmit,
   loading,
+  triggerCoins,
+  setTriggerCoins,
 }) {
   useEffect(() => {
     if (!isOpen) return undefined;
@@ -63,13 +66,43 @@ export default function ReflectionModal({
           >
             Cancelar
           </button>
-          <button
-            onClick={onSubmit}
-            disabled={loading}
-            className="rounded-full bg-gradient-to-r from-purple-600/90 to-indigo-600/80 px-6 py-3 text-sm font-semibold text-white transition hover:from-purple-500/90 hover:to-indigo-500/90 disabled:opacity-60"
-          >
-            {loading ? "Enviando…" : "Enviar reflexión"}
-          </button>
+          <div className="relative">
+            {triggerCoins ? (
+              <motion.div
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: -4 }}
+                exit={{ opacity: 0, y: -10 }}
+                className="absolute -top-6 right-0 rounded-full border border-amber-200/60 bg-amber-500/15 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.25em] text-amber-100 shadow-[0_0_12px_rgba(250,204,21,0.25)]"
+              >
+                -25 gat
+              </motion.div>
+            ) : null}
+            <button
+              onClick={onSubmit}
+              disabled={loading}
+              className="relative overflow-hidden rounded-full bg-gradient-to-r from-purple-600/90 to-indigo-600/80 px-6 py-3 text-sm font-semibold text-white transition hover:from-purple-500/90 hover:to-indigo-500/90 disabled:opacity-60"
+            >
+              <span className="relative z-10">{loading ? "Enviando…" : "Enviar reflexión"}</span>
+              {triggerCoins ? (
+                <span className="pointer-events-none absolute inset-0">
+                  {Array.from({ length: 6 }).map((_, index) => {
+                    const endX = 120 + index * 12;
+                    const endY = -110 - index * 10;
+                    return (
+                      <motion.span
+                        key={`modal-coin-${index}`}
+                        className="absolute left-1/2 top-1/2 h-5 w-5 -translate-x-1/2 -translate-y-1/2 rounded-full bg-gradient-to-br from-amber-200 to-yellow-500 shadow-[0_0_12px_rgba(250,204,21,0.5)]"
+                        initial={{ opacity: 0.9, scale: 0.6, x: 0, y: 0 }}
+                        animate={{ opacity: 0, scale: 1, x: endX, y: endY, rotate: 110 + index * 22 }}
+                        transition={{ duration: 1.05, ease: "easeOut", delay: 0.1 }}
+                        onAnimationComplete={() => setTriggerCoins(false)}
+                      />
+                    );
+                  })}
+                </span>
+              ) : null}
+            </button>
+          </div>
         </div>
       </div>
     </div>
