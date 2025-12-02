@@ -41,6 +41,7 @@ import IAInsightCard from '@/components/IAInsightCard';
 pdfjs.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`;
 const GAT_COSTS = {
   quironFull: 200,
+  graficoSwipe: 110,
 };
 const showcaseDefinitions = {
   miniversos: {
@@ -352,15 +353,23 @@ const showcaseDefinitions = {
         'Desliza y elige: ¿quieres ver lo que pasa o lo que duele?',
       ],
     },
-    upcoming: {
-      title: 'Próximamente · Lector Visual Interactivo',
-      points: [
-        'Escanea la edición impresa o digital.',
-        'Desbloquea viñetas ocultas.',
-        'Escucha diálogos no escuchados.',
-        'Activa capas simbólicas.',
-      ],
-    },
+    swipeShowcases: [
+      {
+        id: 'tres-pies-galeria',
+        title: 'Tres Pies al Gato — proceso visual',
+        description: 'Exploraciones de la novela gráfica.',
+        previewImage: '/assets/silvestre-comic.jpeg',
+        type: 'internal-reading',
+        previewMode: 'pdf',
+        previewPdfUrl:
+          'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/grafico/Cap%20Aula.pdf',
+        swipeNotes: [
+          'Swipe vertical en PDF; cada página es una viñeta-ritual.',
+          'Optimizado para móvil y tableta.',
+        ],
+      },
+    ],
+    
     quote: {
       text: '“El cómic me habló justo cuando dudaba de seguir leyendo.”',
       author: 'Lectora anónima',
@@ -602,7 +611,7 @@ const ShowcaseReactionInline = ({ showcaseId, title, description, buttonLabel })
     iconClass: 'text-sky-300',
     notaAutoral:
       'Diosas en danza. El mapa vibra si alguien lo recorre.',
-    iaTokensNote: '~180 por mapa.',
+    iaTokensNote: '~280 por mapa.',
   },
   {
     id: 'detodxs',
@@ -622,7 +631,7 @@ const ShowcaseReactionInline = ({ showcaseId, title, description, buttonLabel })
     icon: Brain,
     iconClass: 'text-indigo-300',
     notaAutoral: 'Juega con el misterio. Piensa con el corazón. Mintea con el alma.',
-    iaTokensNote: '~20 por reflexión.',
+    iaTokensNote: 'Aquí ganas gatomonedas',
   },
 ];
 
@@ -686,6 +695,7 @@ const Transmedia = () => {
   const { isMobileViewport, canUseInlinePlayback, requestMobileVideoPresentation } = useMobileVideoPresentation();
   const { user } = useAuth();
   const [quironSpent, setQuironSpent] = useState(false);
+  const [graphicSpent, setGraphicSpent] = useState(false);
   const [novelaQuestions, setNovelaQuestions] = useState(0);
   const [sonoroSpent, setSonoroSpent] = useState(false);
   const [tazaActivations, setTazaActivations] = useState(0);
@@ -698,6 +708,8 @@ const Transmedia = () => {
   const [showSonoroCoins, setShowSonoroCoins] = useState(false);
   const [showTazaCoins, setShowTazaCoins] = useState(false);
   const [isTazaActivating, setIsTazaActivating] = useState(false);
+  const [showGraphicCoins, setShowGraphicCoins] = useState(false);
+  const [isGraphicUnlocking, setIsGraphicUnlocking] = useState(false);
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
@@ -709,6 +721,10 @@ const Transmedia = () => {
     const novelaStored = window.localStorage?.getItem('gatoencerrado:novela-questions');
     if (novelaStored && !Number.isNaN(Number.parseInt(novelaStored, 10))) {
       setNovelaQuestions(Number.parseInt(novelaStored, 10));
+    }
+    const graphicStored = window.localStorage?.getItem('gatoencerrado:graphic-spent');
+    if (graphicStored === 'true') {
+      setGraphicSpent(true);
     }
     const sonoroStored = window.localStorage?.getItem('gatoencerrado:sonoro-spent');
     if (sonoroStored === 'true') {
@@ -736,6 +752,9 @@ const Transmedia = () => {
       if (event.key === 'gatoencerrado:sonoro-spent' && event.newValue === null) {
         setSonoroSpent(false);
       }
+      if (event.key === 'gatoencerrado:graphic-spent') {
+        setGraphicSpent(event.newValue === 'true');
+      }
       if (event.key === 'gatoencerrado:taza-activations') {
         const value = event.newValue ? Number.parseInt(event.newValue, 10) : 0;
         if (!Number.isNaN(value)) {
@@ -750,6 +769,9 @@ const Transmedia = () => {
       }
       if (event?.detail?.id === 'sonoro' && typeof event.detail.spent === 'boolean') {
         setSonoroSpent(event.detail.spent);
+      }
+      if (event?.detail?.id === 'grafico' && typeof event.detail.spent === 'boolean') {
+        setGraphicSpent(event.detail.spent);
       }
       if (event?.detail?.id === 'taza' && typeof event.detail.count === 'number') {
         setTazaActivations(event.detail.count);
@@ -1086,6 +1108,46 @@ const Transmedia = () => {
     setPdfLoadError(null);
   }, []);
 
+  const handleOpenGraphicSwipe = useCallback(
+    (entry) => {
+      if (!entry?.previewPdfUrl || isGraphicUnlocking) {
+        return;
+      }
+
+      setIsGraphicUnlocking(true);
+
+      const openPdf = () => {
+        handleOpenPdfPreview({
+          src: entry.previewPdfUrl,
+          title: entry.title,
+          description: entry.description
+            ? `${entry.description} · Modo swipe vertical.`
+            : 'Modo swipe vertical del lector visual interactivo.',
+        });
+        setTimeout(() => setIsGraphicUnlocking(false), 150);
+      };
+
+      if (!graphicSpent) {
+        setGraphicSpent(true);
+        setShowGraphicCoins(true);
+        setTimeout(() => setShowGraphicCoins(false), 1100);
+        if (typeof window !== 'undefined') {
+          window.localStorage?.setItem('gatoencerrado:graphic-spent', 'true');
+          window.dispatchEvent(
+            new CustomEvent('gatoencerrado:miniverse-spent', {
+              detail: { id: 'grafico', spent: true, amount: GAT_COSTS.graficoSwipe },
+            })
+          );
+        }
+        setTimeout(openPdf, 450);
+        return;
+      }
+
+      openPdf();
+    },
+    [graphicSpent, handleOpenPdfPreview, isGraphicUnlocking]
+  );
+
   const handleActivateAR = useCallback(() => {
     const remaining = Math.max(90 - tazaActivations * 30, 0);
     if (remaining <= 0) {
@@ -1133,12 +1195,16 @@ const Transmedia = () => {
     setNovelaQuestions(0);
     setSonoroSpent(false);
     setShowSonoroCoins(false);
+    setGraphicSpent(false);
+    setShowGraphicCoins(false);
+    setIsGraphicUnlocking(false);
     setTazaActivations(0);
     setShowTazaCoins(false);
     if (typeof window !== 'undefined') {
       window.localStorage?.removeItem('gatoencerrado:quiron-spent');
       window.localStorage?.removeItem('gatoencerrado:novela-questions');
       window.localStorage?.removeItem('gatoencerrado:sonoro-spent');
+      window.localStorage?.removeItem('gatoencerrado:graphic-spent');
       window.localStorage?.removeItem('gatoencerrado:taza-activations');
       window.dispatchEvent(
         new CustomEvent('gatoencerrado:miniverse-spent', {
@@ -1153,6 +1219,11 @@ const Transmedia = () => {
       window.dispatchEvent(
         new CustomEvent('gatoencerrado:miniverse-spent', {
           detail: { id: 'sonoro', spent: false, amount: 0 },
+        })
+      );
+      window.dispatchEvent(
+        new CustomEvent('gatoencerrado:miniverse-spent', {
+          detail: { id: 'grafico', spent: false, amount: 0 },
         })
       );
       window.dispatchEvent(
@@ -1338,7 +1409,7 @@ const Transmedia = () => {
     return (
       <div className={`${isTragedia ? 'space-y-3 pt-4' : 'space-y-3 mt-4'}`}>
         <button type="button" className={buttonClass} onClick={toggleNotaAutoral}>
-          {isNotaAutoralOpen ? 'Ocultar Verso del Autor' : 'Mostrar Verso del Autor'}
+          {isNotaAutoralOpen ? 'Ocultar Mini-Verso' : 'Mostrar Mini-Verso'}
         </button>
         {isNotaAutoralOpen ? (
           <motion.div
@@ -1791,6 +1862,14 @@ const Transmedia = () => {
               <div className="rounded-3xl border border-white/10 bg-black/40 p-6 space-y-5 shadow-[0_25px_45px_rgba(0,0,0,0.45)]">
                 <p className="text-xs uppercase tracking-[0.4em] text-slate-400">Conciencia abierta</p>
                 <p className="text-sm text-slate-300/90 leading-relaxed">{activeDefinition.ctaDescription}</p>
+                <div className="rounded-2xl border border-amber-200/40 bg-amber-500/10 px-4 py-3 flex items-center justify-between gap-3">
+                  <div className="flex items-center gap-2 text-amber-100 font-semibold">
+                    <Coins size={16} />
+                    <span>~300 gatomonedas</span>
+                  </div>
+                  <span className="text-[11px] uppercase tracking-[0.3em] text-amber-100/80"></span>
+                </div>
+
                 <Button
                   type="button"
                   variant="outline"
@@ -1847,26 +1926,11 @@ const Transmedia = () => {
     }
 
     if (activeDefinition.type === 'graphic-lab') {
+      const swipeShowcases = activeDefinition.swipeShowcases ?? [];
+
       return (
         <div className="grid gap-6 lg:gap-10 lg:grid-cols-[2fr_1fr]">
           <div className="space-y-6">
-            <div className="rounded-3xl border border-white/10 bg-black/30 p-6 space-y-3">
-              <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">
-                {activeDefinition.swipe?.title}
-              </p>
-              <p className="text-sm text-slate-300/80 leading-relaxed">
-                {activeDefinition.swipe?.description}
-              </p>
-              <ul className="space-y-2 text-sm text-slate-200/90 leading-relaxed">
-                {activeDefinition.swipe?.steps?.map((step, index) => (
-                  <li key={`swipe-step-${index}`} className="flex items-start gap-2">
-                    <span className="text-purple-300 mt-1">●</span>
-                    <span>{step}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-
             <div className="rounded-3xl border border-white/10 bg-black/20 p-6 space-y-4">
               <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Colección viva</p>
               <div className="flex flex-wrap gap-2">
@@ -1881,19 +1945,123 @@ const Transmedia = () => {
               </div>
             </div>
 
-            <div className="rounded-3xl border border-white/10 bg-gradient-to-r from-slate-900/70 via-black/60 to-fuchsia-900/40 p-6 space-y-3">
-              <p className="text-xs uppercase tracking-[0.35em] text-fuchsia-200/80">
-                {activeDefinition.upcoming?.title}
-              </p>
-              <ul className="space-y-2 text-sm text-slate-100 leading-relaxed">
-                {activeDefinition.upcoming?.points?.map((point, index) => (
-                  <li key={`upcoming-point-${index}`} className="flex items-start gap-2">
-                    <span className="text-fuchsia-200 mt-1">●</span>
-                    <span>{point}</span>
-                  </li>
+            {swipeShowcases.length ? (
+              <div className="space-y-4">
+                {swipeShowcases.map((entry) => (
+                  <div
+                    key={entry.id}
+                    className="rounded-3xl border border-white/10 bg-gradient-to-r from-slate-900/70 via-black/60 to-fuchsia-900/40 overflow-hidden"
+                  >
+                    <div className="grid gap-0 md:grid-cols-[1fr_1.2fr]">
+                      {entry.previewImage ? (
+                        <div className="relative h-full min-h-[220px]">
+                          <img
+                            src={entry.previewImage}
+                            alt={entry.title}
+                            className="h-full w-full object-cover"
+                            loading="lazy"
+                          />
+                          <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/45 to-transparent" />
+                          <div className="absolute left-4 top-4 inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.3em] text-white">
+                            <Scan size={14} className="text-fuchsia-200" />
+                            Swipe PDF
+                          </div>
+                          <div className="absolute left-4 bottom-4 text-sm text-white/90">
+                            Lector visual · scroll vertical
+                          </div>
+                        </div>
+                      ) : null}
+
+                      <div className="p-6 space-y-3">
+                        <p className="text-xs uppercase tracking-[0.35em] text-fuchsia-200/80">
+                          Lector visual activo
+                        </p>
+                        <h4 className="font-display text-2xl text-slate-100">{entry.title}</h4>
+                        {entry.description ? (
+                          <p className="text-sm text-slate-200/90 leading-relaxed">{entry.description}</p>
+                        ) : null}
+                        {entry.swipeNotes?.length ? (
+                          <ul className="space-y-2 text-sm text-slate-100 leading-relaxed">
+                            {entry.swipeNotes.map((point, index) => (
+                              <li key={`${entry.id}-note-${index}`} className="flex items-start gap-2">
+                                <span className="text-fuchsia-200 mt-1">●</span>
+                                <span>{point}</span>
+                              </li>
+                            ))}
+                          </ul>
+                        ) : null}
+                        <div className="flex flex-wrap gap-3">
+                          {entry.previewImage ? (
+                            <Button
+                              className="sm:flex-none justify-center bg-gradient-to-r from-fuchsia-600/80 to-purple-500/80 hover:from-fuchsia-500 hover:to-purple-400 text-white"
+                              onClick={() =>
+                                handleOpenImagePreview({
+                                  src: entry.previewImage,
+                                  title: entry.title,
+                                  description: entry.description,
+                                })
+                              }
+                            >
+                              Ver portada
+                            </Button>
+                          ) : null}
+                          {entry.previewPdfUrl ? (
+                            <div className="relative inline-flex overflow-visible">
+                              {showGraphicCoins ? (
+                                <motion.div
+                                  initial={{ opacity: 0, y: 6 }}
+                                  animate={{ opacity: 1, y: -6 }}
+                                  exit={{ opacity: 0, y: -10 }}
+                                  className="absolute -top-7 right-0 rounded-full border border-amber-200/60 bg-amber-500/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.25em] text-amber-100 shadow-[0_0_12px_rgba(250,204,21,0.25)]"
+                                >
+                                  -{GAT_COSTS.graficoSwipe} gat
+                                </motion.div>
+                              ) : null}
+                              <Button
+                                variant="outline"
+                                disabled={isGraphicUnlocking}
+                                onClick={() => handleOpenGraphicSwipe(entry)}
+                                className="w-full sm:w-auto justify-center border-fuchsia-300/40 text-fuchsia-200 hover:bg-fuchsia-500/10 relative overflow-visible"
+                              >
+                                <span className="relative z-10">
+                                  {graphicSpent ? 'Abrir swipe en PDF' : isGraphicUnlocking ? 'Aplicando...' : 'Aplicar y abrir'}
+                                </span>
+                                {showGraphicCoins ? (
+                                  <span className="pointer-events-none absolute inset-0">
+                                    {Array.from({ length: 6 }).map((_, index) => {
+                                      const endX = 140 + index * 14;
+                                      const endY = -140 - index * 12;
+                                      return (
+                                        <motion.span
+                                          key={`graphic-coin-${index}`}
+                                          className="absolute left-1/2 top-1/2 h-5 w-5 -translate-x-1/2 -translate-y-1/2 rounded-full bg-gradient-to-br from-amber-200 to-yellow-500 shadow-[0_0_12px_rgba(250,204,21,0.5)]"
+                                          initial={{ opacity: 0.9, scale: 0.7, x: 0, y: 0 }}
+                                          animate={{
+                                            opacity: 0,
+                                            scale: 1.05,
+                                            x: endX,
+                                            y: endY,
+                                            rotate: 120 + index * 18,
+                                          }}
+                                          transition={{ duration: 1.1, ease: 'easeOut', delay: 0.05 }}
+                                        />
+                                      );
+                                    })}
+                                  </span>
+                                ) : null}
+                              </Button>
+                            </div>
+                          ) : null}
+                        </div>
+                        <p className="text-[11px] uppercase tracking-[0.3em] text-amber-100/80">
+                          Prototipo del lector visual interactivo
+                        </p>
+                      </div>
+                    </div>
+                  </div>
                 ))}
-              </ul>
-            </div>
+              </div>
+            ) : null}
           </div>
 
           <div className="space-y-6">
@@ -1901,6 +2069,20 @@ const Transmedia = () => {
               <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Acciones</p>
               <p className="text-sm text-slate-300/80 leading-relaxed">
                 Activa el lector visual o súmate a la residencia gráfica.
+              </p>
+              <div className="rounded-2xl border border-amber-200/40 bg-amber-500/10 px-4 py-3 flex items-center justify-between gap-3">
+                <div className="flex items-center gap-2 text-amber-100 font-semibold">
+                  <Coins size={16} />
+                  <span>{graphicSpent ? '0 gatomonedas' : `~${GAT_COSTS.graficoSwipe} gatomonedas`}</span>
+                </div>
+                <span className="text-[11px] uppercase tracking-[0.3em] text-amber-100/80">
+                  {graphicSpent ? 'Aplicado' : 'Por sesión / swipe'}
+                </span>
+              </div>
+              <p className="text-[11px] text-amber-100/70">
+                {graphicSpent
+                  ? 'Ya aplicaste tus gatomonedas al swipe en PDF.'
+                  : 'Al abrir el swipe en PDF se descontarán todas las gatomonedas disponibles.'}
               </p>
               <div className="flex flex-col sm:flex-row gap-3">
                 <Button
@@ -1975,6 +2157,16 @@ const Transmedia = () => {
             </div>
 
             <div className="space-y-4">
+              <div className="rounded-2xl border border-amber-200/40 bg-amber-500/10 px-4 py-3 flex items-center justify-between gap-3">
+                <div className="flex items-center gap-2 text-amber-100 font-semibold">
+                  <Coins size={16} />
+                  <span>~280 gatomonedas</span>
+                </div>
+                <span className="text-[11px] uppercase tracking-[0.3em] text-amber-100/80">Mapa + estación</span>
+              </div>
+              <p className="text-[11px] text-amber-100/70">
+                Se aplican al liberar la ruta, los talleres o el marcador AR; las suscripciones cubren el saldo.
+              </p>
               {activeDefinition.actions?.map((action) => {
                 const ActionIcon = action.icon || ArrowRight;
                 return (
@@ -2791,6 +2983,7 @@ const Transmedia = () => {
                     const isCine = format.id === 'copycats';
                     const isNovela = format.id === 'miniversoNovela';
                     const isTaza = format.id === 'lataza';
+                    const isGrafico = format.id === 'miniversoGrafico';
                     const novelaSpentAmount = novelaQuestions * 25;
                     const novelaRemaining = Math.max(150 - novelaSpentAmount, 0);
                     const tazaSpentAmount = tazaActivations * 30;
@@ -2803,12 +2996,18 @@ const Transmedia = () => {
                       note = '0 gatomonedas · 200 aplicadas';
                       toneClass = 'text-emerald-200';
                       iconTone = 'text-emerald-200';
+                    } else if (isGrafico && graphicSpent) {
+                      note = '0 gatomonedas · swipe aplicado';
+                      toneClass = 'text-emerald-200';
+                      iconTone = 'text-emerald-200';
                     } else if (isNovela && novelaQuestions > 0) {
                       note = `${novelaRemaining} gatomonedas restantes · ${novelaSpentAmount} usadas (${novelaQuestions} pregunta${novelaQuestions > 1 ? 's' : ''})`;
                       toneClass = 'text-emerald-200';
                       iconTone = 'text-emerald-200';
                     } else if (isNovela) {
                       note = '150 gatomonedas disponibles';
+                    } else if (isGrafico) {
+                      note = `${GAT_COSTS.graficoSwipe} gatomonedas disponibles`;
                     } else if (isTaza && tazaActivations > 0) {
                       note = `${tazaRemaining} gatomonedas restantes · ${tazaSpentAmount} usadas (${tazaActivations} activación${tazaActivations > 1 ? 'es' : ''})`;
                       toneClass = 'text-emerald-200';

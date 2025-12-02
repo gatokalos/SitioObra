@@ -80,7 +80,7 @@ export default function ReflectionModal({
             <button
               onClick={onSubmit}
               disabled={loading}
-              className="relative overflow-hidden rounded-full bg-gradient-to-r from-purple-600/90 to-indigo-600/80 px-6 py-3 text-sm font-semibold text-white transition hover:from-purple-500/90 hover:to-indigo-500/90 disabled:opacity-60"
+              className="relative rounded-full bg-gradient-to-r from-purple-600/90 to-indigo-600/80 px-6 py-3 text-sm font-semibold text-white transition hover:from-purple-500/90 hover:to-indigo-500/90 disabled:opacity-60"
             >
               <span className="relative z-10">{loading ? "Enviando…" : "Enviar reflexión"}</span>
               {triggerCoins ? (

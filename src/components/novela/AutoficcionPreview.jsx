@@ -18,9 +18,11 @@ export default function AutoficcionPreview() {
     sendReflection,
     loading,
     reflectionCount,
+    triggerCoins,
+    setTriggerCoins,
   } = useAutoficcionPreview();
   const iconsVisible = useHideIconsOnScroll();
-  const limitReached = reflectionCount >= 4;
+  const limitReached = reflectionCount >= 6;
   const [isTouchDevice, setIsTouchDevice] = useState(false);
   const [readingMode, setReadingMode] = useState("dark");
 
@@ -76,11 +78,7 @@ export default function AutoficcionPreview() {
           </div>
         </div>
 
-        {limitReached && (
-          <div className="w-full max-w-[650px] rounded-2xl border border-rose-500/40 bg-rose-500/10 px-4 py-3 text-center text-sm text-rose-200 shadow-lg shadow-rose-900/30">
-            Has alcanzado el límite de reflexiones del preview.
-          </div>
-        )}
+        {/* Nota: quitamos el banner superior para no bloquear el cierre; el límite sigue activo internamente */}
 
         <div className="space-y-6">
             {segments.map((segment) => (
@@ -116,6 +114,8 @@ export default function AutoficcionPreview() {
         setReflection={setReflection}
         loading={loading}
         onSubmit={sendReflection}
+        triggerCoins={triggerCoins}
+        setTriggerCoins={setTriggerCoins}
       />
     </div>
   );

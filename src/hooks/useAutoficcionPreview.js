@@ -10,6 +10,9 @@ export function useAutoficcionPreview() {
   const [reflection, setReflection] = useState("");
   const [loading, setLoading] = useState(false);
   const [reflectionCount, setReflectionCount] = useState(0);
+  const REFLECTION_COST = 25;
+  const REFLECTION_LIMIT = 6;
+  const [triggerCoins, setTriggerCoins] = useState(false);
 
   // ---- LOAD SEGMENTS FROM PUBLIC JSON ----
   const loadSegments = async () => {
@@ -24,10 +27,9 @@ export function useAutoficcionPreview() {
 
   // ---- OPEN/CLOSE MODAL ----
   const openModal = (segment, plan) => {
-    if (reflectionCount >= 4) {
+    if (reflectionCount >= REFLECTION_LIMIT) {
       return;
     }
-
     setActiveSegment(segment);
     setActivePlan(plan);
     setReflection("");
@@ -40,6 +42,14 @@ export function useAutoficcionPreview() {
     setActivePlan(null);
     setReflection("");
   };
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const stored = window.localStorage?.getItem("gatoencerrado:novela-questions");
+    if (stored && !Number.isNaN(Number.parseInt(stored, 10))) {
+      setReflectionCount(Number.parseInt(stored, 10));
+    }
+  }, []);
 
   // ---- SEND REFLECTION TO SUPABASE ----
   const sendReflection = async () => {
@@ -66,9 +76,24 @@ export function useAutoficcionPreview() {
         console.error("Supabase error:", error);
       }
 
-      setReflectionCount((prev) => Math.min(prev + 1, 4));
-      alert("Reflexión enviada.");
-      closeModal();
+      const nextCount = (prev) => {
+        const next = Math.min(prev + 1, REFLECTION_LIMIT);
+        if (typeof window !== "undefined") {
+          window.localStorage?.setItem("gatoencerrado:novela-questions", String(next));
+          window.dispatchEvent(
+            new CustomEvent("gatoencerrado:miniverse-spent", {
+              detail: { id: "novela", spent: true, amount: REFLECTION_COST, count: next },
+            })
+          );
+        }
+        setTriggerCoins(true);
+        return next;
+      };
+      setReflectionCount(nextCount);
+      // Esperamos un momento para que se vea la animación antes de cerrar el modal.
+      setTimeout(() => {
+        closeModal();
+      }, 900);
     } catch (err) {
       console.error("Error enviando reflexión:", err);
     }
@@ -95,6 +120,8 @@ export function useAutoficcionPreview() {
     setReflection,
     loading,
     reflectionCount,
+    triggerCoins,
+    setTriggerCoins,
 
     // actions
     sendReflection,

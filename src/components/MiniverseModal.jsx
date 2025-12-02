@@ -11,24 +11,30 @@ const TABS = [
 
 const MINIVERSE_CARDS = [
   {
+    id: 'literatura',
     title: 'Miniverso Literatura',
     description:
       'Fragmentos de la novela Listen recaen en lectores que ya activaron narratives extendidas. Lecturas guiadas y comunidad de ensayo están al 90% del plan.',
     action: 'Disponible hoy · lecturas y ritos de página.',
+    cost: 25,
   },
   {
+    id: 'taza',
     title: 'Miniverso Taza',
     description:
       'WebAR y rituales cotidianos listos para tomarse: la activación de la taza está en producción al 90% y acompaña cada sorbo con pistas sonoras.',
     action: 'Actívala con tu taza · experiencia viva.',
   },
   {
+    id: 'cine',
     title: 'Miniverso Cine',
     description:
       'CopyCats y Quirón se proyectan con conservatorio doble. El plan de sala y análisis crítico sobrevive con guardias de IA que ya operan en sala.',
     action: 'Screening activo · boletos limitados.',
+    cost: 200,
   },
   {
+    id: 'sonoro',
     title: 'Miniverso Sonoro',
     description:
       'Sueños sonoros en tres capas se mezclan en la plataforma. La curaduría y los poemas interactivos están listos para tu escucha.',
@@ -59,6 +65,9 @@ const MiniverseModal = ({ open, onClose, contextLabel }) => {
   const [formState, setFormState] = useState(initialFormState);
   const [status, setStatus] = useState('idle');
   const [errorMessage, setErrorMessage] = useState('');
+  const [cineSpent, setCineSpent] = useState(false);
+  const [novelaQuestions, setNovelaQuestions] = useState(0);
+  const [tazaActivations, setTazaActivations] = useState(0);
   const pendingMiniverseLabel =
     (typeof contextLabel === 'string' ? contextLabel.trim() : '') || 'Este miniverso';
 
@@ -70,6 +79,62 @@ const MiniverseModal = ({ open, onClose, contextLabel }) => {
       setErrorMessage('');
     }
   }, [open]);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const stored = window.localStorage?.getItem('gatoencerrado:quiron-spent');
+    if (stored === 'true') {
+      setCineSpent(true);
+    }
+    const novelaStored = window.localStorage?.getItem('gatoencerrado:novela-questions');
+    if (novelaStored && !Number.isNaN(Number.parseInt(novelaStored, 10))) {
+      setNovelaQuestions(Number.parseInt(novelaStored, 10));
+    }
+    const tazaStored = window.localStorage?.getItem('gatoencerrado:taza-activations');
+    if (tazaStored && !Number.isNaN(Number.parseInt(tazaStored, 10))) {
+      setTazaActivations(Number.parseInt(tazaStored, 10));
+    }
+    const handleStorage = (event) => {
+      if (event.key === 'gatoencerrado:quiron-spent' && event.newValue === 'true') {
+        setCineSpent(true);
+      }
+      if (event.key === 'gatoencerrado:quiron-spent' && event.newValue === null) {
+        setCineSpent(false);
+      }
+      if (event.key === 'gatoencerrado:novela-questions') {
+        const value = event.newValue ? Number.parseInt(event.newValue, 10) : 0;
+        if (!Number.isNaN(value)) {
+          setNovelaQuestions(value);
+        }
+      }
+      if (event.key === 'gatoencerrado:taza-activations') {
+        const value = event.newValue ? Number.parseInt(event.newValue, 10) : 0;
+        if (!Number.isNaN(value)) {
+          setTazaActivations(value);
+        }
+      }
+    };
+    const handleCustomSpent = (event) => {
+      if (event?.detail?.id === 'cine' && typeof event.detail.spent === 'boolean') {
+        setCineSpent(event.detail.spent);
+      }
+      if (event?.detail?.id === 'novela' && event.detail?.count) {
+        setNovelaQuestions(event.detail.count);
+      }
+      if (event?.detail?.id === 'novela' && event.detail?.count === 0) {
+        setNovelaQuestions(0);
+      }
+      if (event?.detail?.id === 'taza' && typeof event.detail.count === 'number') {
+        setTazaActivations(event.detail.count);
+      }
+    };
+    window.addEventListener('storage', handleStorage);
+    window.addEventListener('gatoencerrado:miniverse-spent', handleCustomSpent);
+    return () => {
+      window.removeEventListener('storage', handleStorage);
+      window.removeEventListener('gatoencerrado:miniverse-spent', handleCustomSpent);
+    };
+  }, []);
 
   useEffect(() => {
     if (!open) {
@@ -294,15 +359,43 @@ const MiniverseModal = ({ open, onClose, contextLabel }) => {
                 </>
               ) : (
                 <div className="md:col-span-2 grid md:grid-cols-3 gap-6">
-                  {MINIVERSE_CARDS.map((card) => (
-                    <div key={card.title} className="glass-effect rounded-2xl border border-white/10 p-6">
-                      <h3 className="font-display text-xl text-slate-100 mb-3">{card.title}</h3>
-                      <p className="text-sm text-slate-300/80 leading-relaxed mb-4">{card.description}</p>
-                      <span className="text-xs uppercase tracking-[0.25em] text-purple-200/80">
-                        {card.action}
-                      </span>
-                    </div>
-                  ))}
+                  {MINIVERSE_CARDS.map((card) => {
+                    const isCine = card.id === 'cine';
+                    const isNovela = card.id === 'literatura';
+                    const isTaza = card.id === 'taza';
+                    const novelaSpentAmount = novelaQuestions * 25;
+                    const tazaSpentAmount = tazaActivations * 30;
+                    const costLabel = isCine
+                      ? cineSpent
+                        ? '0 gatomonedas · 200 aplicadas'
+                        : `~${card.cost ?? 200} gatomonedas por espectador`
+                      : isNovela
+                        ? novelaQuestions > 0
+                          ? `${novelaSpentAmount} gatomonedas usadas (${novelaQuestions} pregunta${novelaQuestions === 1 ? '' : 's'})`
+                          : `~${card.cost ?? 25} gatomonedas por pregunta`
+                        : isTaza
+                          ? tazaActivations > 0
+                            ? `${tazaSpentAmount} gatomonedas usadas (${tazaActivations} activación${tazaActivations === 1 ? '' : 'es'})`
+                            : '90 gatomonedas disponibles'
+                          : null;
+                    const costTone =
+                      (isCine && cineSpent) || (isNovela && novelaQuestions > 0) || (isTaza && tazaActivations > 0)
+                        ? 'text-emerald-200'
+                        : 'text-amber-200';
+
+                    return (
+                      <div key={card.title} className="glass-effect rounded-2xl border border-white/10 p-6">
+                        <h3 className="font-display text-xl text-slate-100 mb-3">{card.title}</h3>
+                        <p className="text-sm text-slate-300/80 leading-relaxed mb-4">{card.description}</p>
+                        {costLabel ? (
+                          <p className={`text-sm font-semibold ${costTone} mb-2`}>⚯ {costLabel}</p>
+                        ) : null}
+                        <span className="text-xs uppercase tracking-[0.25em] text-purple-200/80">
+                          {card.action}
+                        </span>
+                      </div>
+                    );
+                  })}
                 </div>
               )}
             </div>

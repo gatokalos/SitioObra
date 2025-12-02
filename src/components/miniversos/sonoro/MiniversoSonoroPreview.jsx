@@ -463,7 +463,7 @@ function MiniversoSonoroPreview({
             ) : null}
             <button
               type="button"
-              className="sonoro-preview-cta relative overflow-hidden"
+              className="sonoro-preview-cta relative"
               onClick={handleEnterExperience}
               disabled={!isSelectionReady || isSpent || isEnteringExperience}
             >
@@ -539,11 +539,11 @@ function MiniversoSonoroPreview({
             <span
               className={`inline-flex items-center gap-2 rounded-full border px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.25em] ${
                 isSpent
-                  ? 'border-emerald-200/60 bg-emerald-500/10 text-emerald-100'
-                  : 'border-amber-200/60 bg-amber-500/10 text-amber-100'
+                  ? 'border-emerald-200/70 bg-emerald-500/25 text-emerald-50'
+                  : 'border-amber-200/80 bg-amber-500/30 text-amber-50'
               }`}
             >
-              <span className="text-amber-200">◎</span>
+              <span className="text-amber-50">◎</span>
               {isSpent ? '0 gatomonedas' : costLabel}
             </span>
           </div>

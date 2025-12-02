@@ -158,35 +158,21 @@ const ReserveModal = ({ open, onClose }) => {
       setCheckoutError('');
 
       try {
-        const packagesSummary = formState.packages
-          .map((pkg) => PACKAGE_LABEL_MAP[pkg])
-          .join(', ');
-
         const payload = {
-          full_name: formState.fullName.trim(),
+          fullName: formState.fullName.trim(),
           email: formState.email.trim().toLowerCase(),
           city: formState.city.trim() || null,
-          object_type: 'merch',
-          event: 'funcion-2025-12-28',
+          notes: formState.notes.trim() || '',
+          packages: formState.packages,
           channel: 'landing',
-          notes: `${packagesSummary} | ${formState.notes || ''}`.trim(),
+          event: 'cecutt_28dic',
         };
 
-        const { error } = await supabase.from('rsvp_extended').insert(payload);
-
-        if (error) {
-          setStatus('error');
-          setErrorMessage('No pudimos registrar tu solicitud. Intenta nuevamente.');
-          return;
-        }
-
-        // Envía correo de confirmación
-        await sendReserveConfirmationEmail({
-          email: payload.email,
-          name: payload.full_name,
-          city: payload.city,
-          notes: payload.notes,
+        const { error } = await supabase.functions.invoke('send-reserve-confirmation', {
+          body: payload,
         });
+
+        if (error) throw error;
 
         fireConfetti();
         setStatus('success');
@@ -505,20 +491,3 @@ const ReserveModal = ({ open, onClose }) => {
 };
 
 export default ReserveModal;
-
-// -------------------------------------------------------------
-// SEND EMAIL (Resend + Supabase Edge Function)
-// -------------------------------------------------------------
-async function sendReserveConfirmationEmail({ email, name, city, notes }) {
-  if (!email) return;
-
-  try {
-    const { error } = await supabase.functions.invoke('send-reserve-confirmation', {
-      body: { email, name, city, notes },
-    });
-
-    if (error) console.error('[ReserveModal] Error en sendReserveConfirmationEmail:', error);
-  } catch (err) {
-    console.error('[ReserveModal] Exception in sendReserveConfirmationEmail:', err);
-  }
-}
