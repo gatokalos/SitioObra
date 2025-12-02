@@ -67,7 +67,7 @@ function MiniversoSonoroPreview({
   experienceHref = '/miniverso-sonoro',
   isSpent = false,
   coinBlast = false,
-  costLabel = '130 gatomonedas',
+  costLabel = '130 gatokens',
 }) {
   const {
     currentVideo,
@@ -544,7 +544,7 @@ function MiniversoSonoroPreview({
               }`}
             >
               <span className="text-amber-50">◎</span>
-              {isSpent ? '0 gatomonedas' : costLabel}
+              {isSpent ? '0 gatokens' : costLabel}
             </span>
           </div>
          

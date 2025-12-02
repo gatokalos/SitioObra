@@ -367,16 +367,16 @@ const MiniverseModal = ({ open, onClose, contextLabel }) => {
                     const tazaSpentAmount = tazaActivations * 30;
                     const costLabel = isCine
                       ? cineSpent
-                        ? '0 gatomonedas · 200 aplicadas'
-                        : `~${card.cost ?? 200} gatomonedas por espectador`
+                        ? '0 gatokens · 200 aplicadas'
+                        : `~${card.cost ?? 200} gatokens por espectador`
                       : isNovela
                         ? novelaQuestions > 0
-                          ? `${novelaSpentAmount} gatomonedas usadas (${novelaQuestions} pregunta${novelaQuestions === 1 ? '' : 's'})`
-                          : `~${card.cost ?? 25} gatomonedas por pregunta`
+                          ? `${novelaSpentAmount} gatokens usadas (${novelaQuestions} pregunta${novelaQuestions === 1 ? '' : 's'})`
+                          : `~${card.cost ?? 25} gatokens por pregunta`
                         : isTaza
                           ? tazaActivations > 0
-                            ? `${tazaSpentAmount} gatomonedas usadas (${tazaActivations} activación${tazaActivations === 1 ? '' : 'es'})`
-                            : '90 gatomonedas disponibles'
+                            ? `${tazaSpentAmount} gatokens usadas (${tazaActivations} activación${tazaActivations === 1 ? '' : 'es'})`
+                            : '90 gatokens disponibles'
                           : null;
                     const costTone =
                       (isCine && cineSpent) || (isNovela && novelaQuestions > 0) || (isTaza && tazaActivations > 0)

@@ -42,6 +42,10 @@ pdfjs.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@${pdfjs.vers
 const GAT_COSTS = {
   quironFull: 200,
   graficoSwipe: 110,
+  novelaChapter: 150,
+  sonoroMix: 130,
+  tazaActivation: 90,
+  movimientoRuta: 280,
 };
 const showcaseDefinitions = {
   miniversos: {
@@ -60,7 +64,7 @@ const showcaseDefinitions = {
     iaProfile: {
       type: 'GPT-4o afinada para voz literaria y contención emocional.',
       interaction: '1 a 3 mensajes con Silvestre (texto o voz).',
-      tokensRange: '250–600 tokens por sesión.',
+      tokensRange: '250–600 tokens.',
       coverage: 'Cubierto por suscriptores; entra en el plan de soporte colectivo.',
       footnote: 'Cada conversación tiene un costo real. Gracias por mantenerla viva.',
     },
@@ -356,7 +360,7 @@ const showcaseDefinitions = {
     swipeShowcases: [
       {
         id: 'tres-pies-galeria',
-        title: 'Tres Pies al Gato — proceso visual',
+        title: 'Tres Pies al Gato',
         description: 'Exploraciones de la novela gráfica.',
         previewImage: '/assets/silvestre-comic.jpeg',
         type: 'internal-reading',
@@ -370,10 +374,6 @@ const showcaseDefinitions = {
       },
     ],
     
-    quote: {
-      text: '“El cómic me habló justo cuando dudaba de seguir leyendo.”',
-      author: 'Lectora anónima',
-    },
     ctas: {
       primary: 'Explora el miniverso gráfico',
       secondary: 'Súmate a la residencia gráfica',
@@ -546,67 +546,67 @@ const ShowcaseReactionInline = ({ showcaseId, title, description, buttonLabel })
     id: 'miniversos',
     title: 'Miniverso Dramático',
     description:
-      'La obra como un miniverso dentro del mismo universo que ha generado.',
+      'La obra sigue viva dentro del universo que la parió.',
     icon: Drama,
     iconClass: 'text-purple-300',
     notaAutoral:
       'Aquí nunca abaca bien. Por lo menos no hasta el final.',
-    iaTokensNote: '~300 por charla.',
+    iaTokensNote: 'Energía requerida: ~300 GAT',
   },
   {
     id: 'lataza',
     title: 'Miniverso Artesanías',
-    description: 'Objeto ritual con WebAR. Una excusa para seguir la historia desde lo cotidiano.',
+    description: 'Objeto ritual en WebAR: un gesto para sostener lo cotidiano.',
     icon: Coffee,
     iconClass: 'text-amber-300',
     notaAutoral:
-      'Un objeto cotidiano que abrió un portal. La Taza no acompaña: revela. Lo que sostiene no es barro, sino vínculo.',
-    iaTokensNote: '~90 por activación WebAR.',
+      'Un objeto cotidiano con WebAR que abren un portal. La Taza no acompaña: revela. Lo que sostiene no es barro, sino vínculo.',
+    iaTokensNote: 'Mantener ritual: ~90 GAT.',
   },
   {
     id: 'miniversoNovela',
     title: 'Miniverso Literatura',
-    description: 'El teatro terminó, pero algo siguió hablando y de ese eco nace esta autoficción.',
+    description: 'El teatro terminó, pero algo siguió hablando: así nació esta autoficción.',
     icon: BookOpen,
     iconClass: 'text-emerald-300',
     notaAutoral:
       'La novela es donde la escena se desborda. Fragmentos que respiran distinto cuando alguien los lee. Aquí la historia sigue probándose.',
-    iaTokensNote: '~150 gatomonedas por capítulo.',
+    iaTokensNote: 'Energía viva: ~150 GAT.',
   },
   {
     id: 'miniversoGrafico',
     title: 'Miniverso Gráfico',
-    description: 'Colección de viñetas interactivas, garabatos y símbolos en mutación.',
+    description: 'Viñetas que mutan: garabatos, símbolos y sus desvíos.',
     icon: Palette,
     iconClass: 'text-fuchsia-300',
     notaAutoral:
       'Garabatea tu límite, dibuja tu refugio.\nLo gráfico como portal emocional.\nCada trazo se siente antes de entenderse.',
-    iaTokensNote: '~110 por sesión.',
+    iaTokensNote: 'Requiere ~110 GAT.',
   },
   {
     id: 'copycats',
     title: 'Miniverso Cine',
-    description: 'Filmes que piensan el cuerpo del Gato en clave cinematográfica.',
+    description: 'Cine que toca la herida para entender la luz que deja.',
     icon: Film,
     iconClass: 'text-rose-300',
     notaAutoral:
       'La cámara miró lo que el teatro no podía sostener. CopyCats cuestiona; Quirón hiere con luz. Este espacio guarda esas miradas.',
-    iaTokensNote: '~200 por espectador.',
+    iaTokensNote: 'Requiere ~250 de atención.',
   },
   {
     id: 'miniversoSonoro',
     title: 'Miniverso Sonoro',
-    description: 'Capas de imagen, sonido y poema para soñar.',
+    description: 'Capas de imagen, sonido y poema para soñar despierto.',
     icon: Music,
     iconClass: 'text-cyan-300',
     notaAutoral:
       'Imagen, música y palabra en suspensión. Cada mezcla inventa otro ánimo. Aquí el sueño se edita solo.',
-    iaTokensNote: '~130 por mezcla.',
+    iaTokensNote: 'Requiere ~130 GAT de mezcla.',
   },
   {
     id: 'miniversoMovimiento',
     title: 'Miniverso Movimiento',
-    description: 'Ruta coreográfica transmedial donde la ciudad se convierte en altar vivo.',
+    description: 'Ruta danzada donde la ciudad se convierte en altar vivo.',
     icon: MapIcon,
     iconClass: 'text-sky-300',
     notaAutoral:
@@ -616,22 +616,22 @@ const ShowcaseReactionInline = ({ showcaseId, title, description, buttonLabel })
   {
     id: 'detodxs',
     title: 'Miniverso Apps',
-    description: 'Experiencias digitales que te convierten en cómplice del universo.',
+    description: 'Experiencias digitales que completan la vida del universo.',
     icon: Smartphone,
     iconClass: 'text-lime-300',
     notaAutoral:
       'Tecnología como acompañamiento, no como solución. Experiencias que cuidan, preguntan y extienden la historia cuando nadie está mirando.',
-    iaTokensNote: '~220 por mes.',
+    iaTokensNote: 'Requiere ~220 GAT de acceso.',
   },
   {
     id: 'oraculo',
     title: 'Miniverso Oráculo',
     description:
-      'Preguntas que no buscan respuestas, sino resonancia.',
+      'Preguntas sin respuesta; solo resonancia.',
     icon: Brain,
     iconClass: 'text-indigo-300',
     notaAutoral: 'Juega con el misterio. Piensa con el corazón. Mintea con el alma.',
-    iaTokensNote: 'Aquí ganas gatomonedas',
+    iaTokensNote: 'Aquí el Gato te regala GAT.',
   },
 ];
 
@@ -1139,7 +1139,7 @@ const Transmedia = () => {
             })
           );
         }
-        setTimeout(openPdf, 450);
+        setTimeout(openPdf, 900);
         return;
       }
 
@@ -1151,7 +1151,7 @@ const Transmedia = () => {
   const handleActivateAR = useCallback(() => {
     const remaining = Math.max(90 - tazaActivations * 30, 0);
     if (remaining <= 0) {
-      toast({ description: 'Sin gatomonedas para esta activación.' });
+      toast({ description: 'Sin gatokens para esta activación.' });
       return;
     }
     if (isTazaActivating) {
@@ -1508,7 +1508,7 @@ const Transmedia = () => {
                 <p className="text-xs uppercase tracking-[0.3em] text-slate-400/70">Activa tu objeto</p>
                 <span className="inline-flex items-center gap-2 rounded-full border border-amber-200/80 bg-amber-500/30 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.25em] text-amber-50">
                   <Coins size={14} className="text-amber-50" />
-                  {Math.max(90 - tazaActivations * 30, 0)} gatomonedas
+                  {Math.max(90 - tazaActivations * 30, 0)} gatokens
                 </span>
               </div>
               {activeShowcase === 'lataza' && isTazaARActive && !isMobileARFullscreen ? (
@@ -1578,7 +1578,7 @@ const Transmedia = () => {
                         >
                           <span className="relative z-10">
                             {Math.max(90 - tazaActivations * 30, 0) <= 0
-                              ? 'Sin gatomonedas'
+                              ? 'Sin gatokens'
                               : isTazaActivating
                                 ? 'Procesando...'
                                 : activeDefinition.ctaLabel}
@@ -1705,7 +1705,7 @@ const Transmedia = () => {
                 onEnterExperience={handleSonoroEnter}
                 isSpent={sonoroSpent}
                 coinBlast={showSonoroCoins}
-                costLabel="130 gatomonedas"
+                costLabel="130 gatokens"
               />
               <div className="mt-4 space-y-4">
                 <div className="rounded-3xl border border-white/10 bg-black/20 p-6 space-y-3 text-sm text-slate-300">
@@ -1739,7 +1739,7 @@ const Transmedia = () => {
                   onEnterExperience={handleSonoroEnter}
                   isSpent={sonoroSpent}
                   coinBlast={showSonoroCoins}
-                  costLabel="130 gatomonedas"
+                  costLabel="130 gatokens"
                 />
               </div>
             </div>
@@ -1865,7 +1865,7 @@ const Transmedia = () => {
                 <div className="rounded-2xl border border-amber-200/40 bg-amber-500/10 px-4 py-3 flex items-center justify-between gap-3">
                   <div className="flex items-center gap-2 text-amber-100 font-semibold">
                     <Coins size={16} />
-                    <span>~300 gatomonedas</span>
+                    <span>~300 gatokens</span>
                   </div>
                   <span className="text-[11px] uppercase tracking-[0.3em] text-amber-100/80"></span>
                 </div>
@@ -2053,8 +2053,8 @@ const Transmedia = () => {
                             </div>
                           ) : null}
                         </div>
-                        <p className="text-[11px] uppercase tracking-[0.3em] text-amber-100/80">
-                          Prototipo del lector visual interactivo
+                        <p className="text-[11px] uppercase tracking-[0.3em] text-gray-100/80">
+                          Prototipo del Capítulo 1
                         </p>
                       </div>
                     </div>
@@ -2073,16 +2073,16 @@ const Transmedia = () => {
               <div className="rounded-2xl border border-amber-200/40 bg-amber-500/10 px-4 py-3 flex items-center justify-between gap-3">
                 <div className="flex items-center gap-2 text-amber-100 font-semibold">
                   <Coins size={16} />
-                  <span>{graphicSpent ? '0 gatomonedas' : `~${GAT_COSTS.graficoSwipe} gatomonedas`}</span>
+                  <span>{graphicSpent ? '0 gatokens' : `~${GAT_COSTS.graficoSwipe} gatokens`}</span>
                 </div>
                 <span className="text-[11px] uppercase tracking-[0.3em] text-amber-100/80">
-                  {graphicSpent ? 'Aplicado' : 'Por sesión / swipe'}
+                  {graphicSpent ? 'Aplicado' : ''}
                 </span>
               </div>
               <p className="text-[11px] text-amber-100/70">
                 {graphicSpent
-                  ? 'Ya aplicaste tus gatomonedas al swipe en PDF.'
-                  : 'Al abrir el swipe en PDF se descontarán todas las gatomonedas disponibles.'}
+                  ? 'Ya aplicaste tus gatokens.'
+                  : 'Al abrir el swipe en PDF se descontarán todas las gatokens disponibles.'}
               </p>
               <div className="flex flex-col sm:flex-row gap-3">
                 <Button
@@ -2102,7 +2102,7 @@ const Transmedia = () => {
             </div>
 
             <div className="rounded-3xl border border-white/10 bg-black/30 p-6 space-y-3">
-              <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Testimonio</p>
+              
               <p className="text-lg text-slate-100 leading-relaxed italic">{activeDefinition.quote?.text}</p>
               <p className="text-xs text-slate-500">{activeDefinition.quote?.author}</p>
             </div>
@@ -2160,7 +2160,7 @@ const Transmedia = () => {
               <div className="rounded-2xl border border-amber-200/40 bg-amber-500/10 px-4 py-3 flex items-center justify-between gap-3">
                 <div className="flex items-center gap-2 text-amber-100 font-semibold">
                   <Coins size={16} />
-                  <span>~280 gatomonedas</span>
+                  <span>~280 gatokens</span>
                 </div>
                 <span className="text-[11px] uppercase tracking-[0.3em] text-amber-100/80">Mapa + estación</span>
               </div>
@@ -2365,7 +2365,7 @@ const Transmedia = () => {
                     }`}
                   >
                     <Coins size={14} />
-                    {quironSpent ? '0 gatomonedas' : `${GAT_COSTS.quironFull} gatomonedas`}
+                    {quironSpent ? '0 gatokens' : `${GAT_COSTS.quironFull} gatokens`}
                   </span>
                 </div>
               </div>
@@ -2374,7 +2374,7 @@ const Transmedia = () => {
               <div className="flex flex-wrap items-center gap-3">
                 {quironSpent ? (
                   <span className="inline-flex items-center gap-2 rounded-full border border-emerald-200/60 bg-emerald-500/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.25em] text-emerald-100">
-                    <Coins size={14} /> 0 gatomonedas
+                    <Coins size={14} /> 0 gatokens
                   </span>
                 ) : (
                   <Button
@@ -2409,7 +2409,7 @@ const Transmedia = () => {
                 )}
                 <span className="text-xs uppercase tracking-[0.25em] text-slate-300/80">
                   {quironSpent
-                    ? `0 gatomonedas pendientes · ${GAT_COSTS.quironFull} aplicadas`
+                    ? `0 gatokens pendientes · ${GAT_COSTS.quironFull} aplicadas`
                     : `Se descontarán ${GAT_COSTS.quironFull} GAT o se cubre con tu suscripción`}
                 </span>
               </div>
@@ -2419,7 +2419,7 @@ const Transmedia = () => {
                   animate={{ opacity: 1, height: 'auto' }}
                   className="rounded-2xl border border-amber-200/40 bg-amber-500/10 p-4 text-sm text-amber-100"
                 >
-                  Únete a la comunidad para usar tus gatomonedas y desbloquear experiencias completas. Muy pronto podrás conectar tu saldo y suscripción aquí mismo.
+                  Únete a la comunidad para usar tus gatokens y desbloquear experiencias completas. Muy pronto podrás conectar tu saldo y suscripción aquí mismo.
                 </motion.div>
               ) : null}
               {showQuironCoins ? (
@@ -2744,7 +2744,7 @@ const Transmedia = () => {
                             <h5 className="font-display text-xl text-slate-100">{entry.title}</h5>
                             <span className="inline-flex items-center gap-2 rounded-full border border-amber-200/60 bg-amber-500/15 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.25em] text-amber-100 shrink-0">
                               <Coins size={14} className="text-amber-50" />
-                              <span className="text-amber-50">150 gatomonedas</span>
+                              <span className="text-amber-50">150 gatokens</span>
                             </span>
                           </div>
                           {entry.description ? (
@@ -2798,8 +2798,8 @@ const Transmedia = () => {
                               </Button>
                               <div className="flex items-center justify-center text-[11px] uppercase tracking-[0.35em] text-amber-200/90">
                                 {novelaSpentAmount > 0
-                                  ? `${novelaSpentAmount} gatomonedas usadas · ${novelaQuestions} pregunta${novelaQuestions === 1 ? '' : 's'}`
-                                  : '0 gatomonedas usadas · 0 preguntas'}
+                                  ? `${novelaSpentAmount} gatokens usadas · ${novelaQuestions} pregunta${novelaQuestions === 1 ? '' : 's'}`
+                                  : '0 gatokens usadas · 0 preguntas'}
                               </div>
                             </div>
                           </div>
@@ -2938,7 +2938,7 @@ const Transmedia = () => {
               Miniversos que sostienen la causa
             </h2>
             <p className="text-lg text-slate-300/80 max-w-3xl mx-auto leading-relaxed font-light">
-              #GatoEncerrado es un universo transmedia compuesto por miniversos narrativos. Cada experiencia digital, objeto o narrativa expandida activa tokens de IA (gatokens), que sostienen el ecosistima y financian la {' '}
+              #GatoEncerrado es un universo transmedia compuesto por miniversos que dejan huella. Cada experiencia digital, objeto o narrativa expandida genera GATokens, el pulso que mueve este ecosistema y, al mismo tiempo, sostiene la  {' '}
               <button
                 type="button"
                 onClick={handleScrollToSupport}
@@ -2948,9 +2948,13 @@ const Transmedia = () => {
               </button>
              {' '} de Ayuda para la Vida, A.C.</p>
             <p className="text-sm text-slate-400 max-w-3xl mx-auto leading-relaxed font-light">
-              Una suscripción de <span className="font-semibold text-purple-200">600 MXN</span> te otorga
-              {' '}<span className="font-semibold text-purple-200">12,000 GATOKENS</span>.
+              Con <span className="font-semibold text-purple-200">600 MXN</span> recibes{' '}
+              <span className="font-semibold text-purple-200">12,000 GATOKENS:</span>
+              <span className="block mt-1">
+                Suficiente energía para que esto no se apague.
+              </span>
             </p>
+
           </motion.div>
 
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
@@ -2979,51 +2983,88 @@ const Transmedia = () => {
                   <p className="text-slate-300/70 text-base leading-relaxed mb-4 flex-grow font-light">
                     {format.description}
                   </p>
+                  
                   {(() => {
-                    const isCine = format.id === 'copycats';
-                    const isNovela = format.id === 'miniversoNovela';
-                    const isTaza = format.id === 'lataza';
-                    const isGrafico = format.id === 'miniversoGrafico';
-                    const novelaSpentAmount = novelaQuestions * 25;
-                    const novelaRemaining = Math.max(150 - novelaSpentAmount, 0);
-                    const tazaSpentAmount = tazaActivations * 30;
-                    const tazaRemaining = Math.max(90 - tazaSpentAmount, 0);
-                    let note = format.iaTokensNote;
-                    let toneClass = 'text-amber-100';
-                    let iconTone = 'text-amber-200';
+                    const parseFromNote = () => {
+                      if (typeof format.iaTokensNote !== 'string') return 0;
+                      const match = format.iaTokensNote.match(/(\d+)/);
+                      return match ? Number.parseInt(match[1], 10) : 0;
+                    };
 
-                    if (isCine && quironSpent) {
-                      note = '0 gatomonedas · 200 aplicadas';
-                      toneClass = 'text-emerald-200';
-                      iconTone = 'text-emerald-200';
-                    } else if (isGrafico && graphicSpent) {
-                      note = '0 gatomonedas · swipe aplicado';
-                      toneClass = 'text-emerald-200';
-                      iconTone = 'text-emerald-200';
-                    } else if (isNovela && novelaQuestions > 0) {
-                      note = `${novelaRemaining} gatomonedas restantes · ${novelaSpentAmount} usadas (${novelaQuestions} pregunta${novelaQuestions > 1 ? 's' : ''})`;
-                      toneClass = 'text-emerald-200';
-                      iconTone = 'text-emerald-200';
-                    } else if (isNovela) {
-                      note = '150 gatomonedas disponibles';
-                    } else if (isGrafico) {
-                      note = `${GAT_COSTS.graficoSwipe} gatomonedas disponibles`;
-                    } else if (isTaza && tazaActivations > 0) {
-                      note = `${tazaRemaining} gatomonedas restantes · ${tazaSpentAmount} usadas (${tazaActivations} activación${tazaActivations > 1 ? 'es' : ''})`;
-                      toneClass = 'text-emerald-200';
-                      iconTone = 'text-emerald-200';
-                    } else if (isTaza) {
-                      note = '90 gatomonedas disponibles';
+                    const baseEnergy = {
+                      required: parseFromNote(),
+                      remaining: parseFromNote(),
+                    };
+
+                    const energyData = (() => {
+                      switch (format.id) {
+                        case 'copycats': {
+                          const required = GAT_COSTS.quironFull;
+                          const remaining = quironSpent ? 0 : required;
+                          return { required, remaining };
+                        }
+                        case 'miniversoGrafico': {
+                          const required = GAT_COSTS.graficoSwipe;
+                          const remaining = graphicSpent ? 0 : required;
+                          return { required, remaining };
+                        }
+                        case 'miniversoNovela': {
+                          const required = GAT_COSTS.novelaChapter;
+                          const spent = novelaQuestions * 25;
+                          const remaining = Math.max(required - spent, 0);
+                          return { required, remaining };
+                        }
+                        case 'miniversoSonoro': {
+                          const required = GAT_COSTS.sonoroMix;
+                          const remaining = sonoroSpent ? 0 : required;
+                          return { required, remaining };
+                        }
+                        case 'lataza': {
+                          const required = GAT_COSTS.tazaActivation;
+                          const remaining = Math.max(required - tazaActivations * 30, 0);
+                          return { required, remaining };
+                        }
+                        case 'miniversoMovimiento': {
+                          const required = GAT_COSTS.movimientoRuta;
+                          return { required, remaining: required };
+                        }
+                        default:
+                          return baseEnergy;
+                      }
+                    })();
+
+                    const isExhausted = energyData.remaining <= 0;
+                    const isAvailable = !isExhausted && energyData.remaining < energyData.required;
+
+                    if (format.id === 'oraculo' && isExhausted) {
+                      return (
+                        <div className="mb-4 text-xs text-slate-200/80 flex items-center gap-2">
+                          <Coins size={14} className="text-amber-200" />
+                          <span className="font-semibold text-amber-200">Adquiere energía aquí</span>
+                        </div>
+                      );
                     }
 
-                    return note ? (
-                      <div className={`mb-3 flex items-center gap-2 ${toneClass}`}>
-                        <Coins size={16} className={iconTone} />
-                        <span>{note}</span>
-                      </div>
-                    ) : null;
-                  })()}
+                    const label = isExhausted
+                      ? 'Energía agotada:'
+                      : isAvailable
+                        ? 'Energía disponible:'
+                        : 'Energía requerida:';
+                    const value = isExhausted ? 0 : isAvailable ? energyData.remaining : energyData.required;
+                    const toneClass = isExhausted
+                      ? 'text-rose-200'
+                      : isAvailable
+                        ? 'text-emerald-200'
+                        : 'text-amber-200';
 
+                    return (
+                      <div className="mb-4 text-xs text-slate-200/80 flex items-center gap-2">
+                        <Coins size={14} className={toneClass} />
+                        <span className="uppercase tracking-[0.25em] text-slate-400">{label}</span>
+                        <span className={`font-semibold ${toneClass}`}>{value} GAT</span>
+                      </div>
+                    );
+                  })()}
                   <div className="text-purple-300 flex items-center gap-2 font-semibold transition-all duration-300 group-hover:gap-3">
                     Explorar
                     <ArrowRight size={18} />
