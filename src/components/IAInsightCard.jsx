@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { ChevronDown, Cpu, MessageCircle, ShieldCheck, Sparkles } from 'lucide-react';
 
 const IAInsightCard = ({
-  title = '¿Cómo se usa aquí la IA?',
+  title = '¿Cómo funciona aquí gatoencerrado.ai?',
   type,
   interaction,
   tokensRange,

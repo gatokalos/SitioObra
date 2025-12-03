@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { motion } from 'framer-motion';
+import { createPortal } from 'react-dom';
 import {
   ArrowRight,
   BookOpen,
@@ -662,6 +663,29 @@ const CAUSE_ACCORDION = [
   },
 ];
 
+const AutoficcionPreviewOverlay = ({ open, onClose }) => {
+  if (!open || typeof document === 'undefined') {
+    return null;
+  }
+
+  return createPortal(
+    <div className="fixed inset-0 z-[200] overflow-auto bg-black/80 backdrop-blur-xl p-6">
+      <div className="max-w-3xl mx-auto">
+        <button
+          type="button"
+          onClick={onClose}
+          className="text-slate-300 hover:text-white mb-6"
+        >
+          Cerrar ✕
+        </button>
+
+        <AutoficcionPreview />
+      </div>
+    </div>,
+    document.body,
+  );
+};
+
 const Transmedia = () => {
   const [isMiniverseOpen, setIsMiniverseOpen] = useState(false);
   const [miniverseContext, setMiniverseContext] = useState(null);
@@ -691,7 +715,6 @@ const Transmedia = () => {
   const micTimeoutRef = useRef(null);
   const [isCinemaCreditsOpen, setIsCinemaCreditsOpen] = useState(false);
   const [openCollaboratorId, setOpenCollaboratorId] = useState(null);
-  const [notaAutoralOpenMap, setNotaAutoralOpenMap] = useState({});
   const { isMobileViewport, canUseInlinePlayback, requestMobileVideoPresentation } = useMobileVideoPresentation();
   const { user } = useAuth();
   const [quironSpent, setQuironSpent] = useState(false);
@@ -1234,22 +1257,11 @@ const Transmedia = () => {
     }
   }, []);
 
-  const toggleNotaAutoral = useCallback(() => {
-    if (!activeShowcase) {
-      return;
-    }
-    setNotaAutoralOpenMap((prev) => ({
-      ...prev,
-      [activeShowcase]: !prev[activeShowcase],
-    }));
-  }, [activeShowcase]);
-
   const handlePdfLoadSuccess = useCallback(({ numPages }) => {
     setPdfNumPages(numPages);
   }, []);
 
   const activeDefinition = activeShowcase ? showcaseDefinitions[activeShowcase] : null;
-  const isNotaAutoralOpen = activeShowcase ? notaAutoralOpenMap[activeShowcase] : false;
   const activeData = activeShowcase ? showcaseContent[activeShowcase] : null;
   const activeParagraphs = useMemo(() => {
     if (!activeData?.post?.content) {
@@ -1262,16 +1274,6 @@ const Transmedia = () => {
     if (activeShowcase && showcaseRef.current) {
       showcaseRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
-  }, [activeShowcase]);
-
-  useEffect(() => {
-    if (!activeShowcase) {
-      return;
-    }
-    setNotaAutoralOpenMap((prev) => ({
-      ...prev,
-      [activeShowcase]: false,
-    }));
   }, [activeShowcase]);
 
   useEffect(() => {
@@ -1402,36 +1404,26 @@ const Transmedia = () => {
     const containerClass = isTragedia
       ? 'rounded-2xl border border-purple-400/60 bg-purple-900/20 p-4 text-sm text-slate-100 shadow-[0_0_25px_rgba(168,85,247,0.45),0_0_55px_rgba(109,40,217,0.32)]'
       : 'rounded-2xl border border-purple-300/45 p-6 bg-black/30 text-slate-300/80 text-sm leading-relaxed shadow-[0_0_22px_rgba(168,85,247,0.32),0_0_42px_rgba(59,130,246,0.18),0_20px_65px_rgba(0,0,0,0.45)]';
-    const buttonClass = isTragedia
-      ? 'text-xs uppercase tracking-[0.35em] text-slate-400 underline-offset-4 hover:text-white'
-      : 'text-xs uppercase tracking-[0.35em] text-slate-400/80 underline-offset-4 hover:text-white';
 
     return (
-      <div className={`${isTragedia ? 'space-y-3 pt-4' : 'space-y-3 mt-4'}`}>
-        <button type="button" className={buttonClass} onClick={toggleNotaAutoral}>
-          {isNotaAutoralOpen ? 'Ocultar Mini-Verso' : 'Mostrar Mini-Verso'}
-        </button>
-        {isNotaAutoralOpen ? (
-          <motion.div
-            key={activeShowcase}
-            initial={{ opacity: 0, y: 8 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.35, ease: 'easeOut' }}
-            className={containerClass}
+      <motion.div
+        key={activeShowcase}
+        initial={{ opacity: 0, y: 8 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.35, ease: 'easeOut' }}
+        className={containerClass}
+      >
+        <div className="mb-2 space-y-1">
+          <p
+            className={`text-xs uppercase tracking-[0.35em] ${
+              isTragedia ? 'text-purple-200' : 'text-purple-300'
+            }`}
           >
-            <div className="mb-2 space-y-1">
-              <p
-                className={`text-xs uppercase tracking-[0.35em] ${
-                  isTragedia ? 'text-purple-200' : 'text-purple-300'
-                }`}
-              >
-                {activeDefinition.cartaTitle || 'Nota autoral'}
-              </p>
-            </div>
-            <p className="leading-relaxed whitespace-pre-line">{activeDefinition.notaAutoral}</p>
-          </motion.div>
-        ) : null}
-      </div>
+            {activeDefinition.cartaTitle || 'Nota autoral'}
+          </p>
+        </div>
+        <p className="leading-relaxed whitespace-pre-line">{activeDefinition.notaAutoral}</p>
+      </motion.div>
     );
   };
 
@@ -1927,34 +1919,35 @@ const Transmedia = () => {
 
     if (activeDefinition.type === 'graphic-lab') {
       const swipeShowcases = activeDefinition.swipeShowcases ?? [];
+      const swipeMeta = activeDefinition.swipe ?? {};
 
       return (
-        <div className="grid gap-6 lg:gap-10 lg:grid-cols-[2fr_1fr]">
-          <div className="space-y-6">
-            <div className="rounded-3xl border border-white/10 bg-black/20 p-6 space-y-4">
-              <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Colección viva</p>
-              <div className="flex flex-wrap gap-2">
-                {activeDefinition.collection?.map((item, index) => (
-                  <span
-                    key={`collection-pill-${index}`}
-                    className="px-3 py-1 rounded-full border border-white/10 bg-white/5 text-xs text-slate-100"
-                  >
-                    {item}
-                  </span>
-                ))}
-              </div>
+        <div className="grid gap-6 lg:gap-8 lg:grid-cols-[3fr_2fr]">
+        <div className="space-y-6">
+          <div className="rounded-3xl border border-white/10 bg-black/20 p-6 space-y-4">
+            <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Colección viva</p>
+            <div className="flex flex-wrap gap-2">
+              {activeDefinition.collection?.map((item, index) => (
+                <span
+                  key={`collection-pill-${index}`}
+                  className="px-3 py-1 rounded-full border border-white/10 bg-white/5 text-xs text-slate-100"
+                >
+                  {item}
+                </span>
+              ))}
             </div>
+          </div>
 
             {swipeShowcases.length ? (
               <div className="space-y-4">
                 {swipeShowcases.map((entry) => (
                   <div
                     key={entry.id}
-                    className="rounded-3xl border border-white/10 bg-gradient-to-r from-slate-900/70 via-black/60 to-fuchsia-900/40 overflow-hidden"
+                    className="rounded-[32px] border border-white/10 bg-gradient-to-r from-slate-900/80 via-black/60 to-fuchsia-900/40 overflow-hidden shadow-[0_20px_60px_rgba(15,23,42,0.65)]"
                   >
-                    <div className="grid gap-0 md:grid-cols-[1fr_1.2fr]">
+                    <div className="grid gap-0 lg:grid-cols-[1fr_1.3fr]">
                       {entry.previewImage ? (
-                        <div className="relative h-full min-h-[220px]">
+                        <div className="relative h-full min-h-[240px]">
                           <img
                             src={entry.previewImage}
                             alt={entry.title}
@@ -1972,13 +1965,26 @@ const Transmedia = () => {
                         </div>
                       ) : null}
 
-                      <div className="p-6 space-y-3">
+                      <div className="flex flex-col space-y-4 p-6">
                         <p className="text-xs uppercase tracking-[0.35em] text-fuchsia-200/80">
-                          Lector visual activo
+                          {swipeMeta.title ?? 'Lector visual activo'}
                         </p>
                         <h4 className="font-display text-2xl text-slate-100">{entry.title}</h4>
                         {entry.description ? (
                           <p className="text-sm text-slate-200/90 leading-relaxed">{entry.description}</p>
+                        ) : null}
+                        {swipeMeta.description ? (
+                          <p className="text-sm text-slate-300/80 leading-relaxed">{swipeMeta.description}</p>
+                        ) : null}
+                        {swipeMeta.steps?.length ? (
+                          <ul className="space-y-2 text-sm text-slate-100 leading-relaxed">
+                            {swipeMeta.steps.map((step, index) => (
+                              <li key={`swipe-step-${index}`} className="flex items-start gap-2">
+                                <span className="text-fuchsia-200 mt-1">●</span>
+                                <span>{step}</span>
+                              </li>
+                            ))}
+                          </ul>
                         ) : null}
                         {entry.swipeNotes?.length ? (
                           <ul className="space-y-2 text-sm text-slate-100 leading-relaxed">
@@ -2065,6 +2071,7 @@ const Transmedia = () => {
           </div>
 
           <div className="space-y-6">
+            <div className="rounded-3xl border border-white/10 bg-black/30 p-6">{rendernotaAutoral()}</div>
             <div className="rounded-3xl border border-white/10 bg-black/30 p-6 space-y-4">
               <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Acciones</p>
               <p className="text-sm text-slate-300/80 leading-relaxed">
@@ -2084,29 +2091,22 @@ const Transmedia = () => {
                   ? 'Ya aplicaste tus gatokens.'
                   : 'Al abrir el swipe en PDF se descontarán todas las gatokens disponibles.'}
               </p>
-              <div className="flex flex-col sm:flex-row gap-3">
+              <div className="flex flex-col gap-3">
                 <Button
                   onClick={() => handleOpenMiniverses('Miniverso Gráfico')}
-                  className="w-full sm:w-auto justify-center bg-gradient-to-r from-purple-600/80 to-fuchsia-500/80 hover:from-purple-500 hover:to-fuchsia-400 text-white"
+                  className="w-full justify-center bg-gradient-to-r from-purple-600/80 to-fuchsia-500/80 hover:from-purple-500 hover:to-fuchsia-400 text-white"
                 >
                   {activeDefinition.ctas?.primary}
                 </Button>
                 <Button
                   variant="outline"
                   onClick={() => handleOpenMiniverses('Miniverso Gráfico')}
-                  className="w-full sm:w-auto justify-center border-purple-400/40 text-purple-200 hover:bg-purple-500/10"
+                  className="w-full justify-center border-purple-400/40 text-purple-200 hover:bg-purple-500/10"
                 >
                   {activeDefinition.ctas?.secondary}
                 </Button>
               </div>
             </div>
-
-            <div className="rounded-3xl border border-white/10 bg-black/30 p-6 space-y-3">
-              
-              <p className="text-lg text-slate-100 leading-relaxed italic">{activeDefinition.quote?.text}</p>
-              <p className="text-xs text-slate-500">{activeDefinition.quote?.author}</p>
-            </div>
-
             {activeShowcase === 'miniversoGrafico' ? (
               <ShowcaseReactionInline
                 showcaseId="miniversoGrafico"
@@ -3091,7 +3091,7 @@ const Transmedia = () => {
                       <p className="text-slate-300/80 leading-relaxed font-light max-w-3xl">
                         {activeDefinition.intro}
                       </p>
-                      {rendernotaAutoral()}
+                      {activeDefinition.type !== 'graphic-lab' ? rendernotaAutoral() : null}
                     </>
                   ) : null}
                 </div>
@@ -3315,20 +3315,10 @@ const Transmedia = () => {
           />
         </div>
       ) : null}
-      {showAutoficcionPreview && (
-        <div className="fixed inset-0 z-[200] overflow-auto bg-black/80 backdrop-blur-xl p-6">
-          <div className="max-w-3xl mx-auto">
-            <button
-              onClick={() => setShowAutoficcionPreview(false)}
-              className="text-slate-300 hover:text-white mb-6"
-            >
-              Cerrar ✕
-            </button>
-
-            <AutoficcionPreview />
-          </div>
-        </div>
-      )}
+      <AutoficcionPreviewOverlay
+        open={showAutoficcionPreview}
+        onClose={() => setShowAutoficcionPreview(false)}
+      />
     </>
   );
 };
