@@ -26,6 +26,7 @@ import {
 import { Button } from '@/components/ui/button';
 import MiniverseModal from '@/components/MiniverseModal';
 import CallToAction from '@/components/CallToAction';
+import InstallPWACTA from '@/components/InstallPWACTA';
 import { fetchBlogPostBySlug } from '@/services/blogService';
 import { toast } from '@/components/ui/use-toast';
 import { useAuth } from '@/contexts/SupabaseAuthContext';
@@ -388,10 +389,10 @@ const showcaseDefinitions = {
     },
   },
   miniversoMovimiento: {
-    label: 'Movimiento',
+    label: 'Movimiento • Diosas en danza',
     type: 'movement-ritual',
     pendingName: 'La Ruta de las Diosas',
-    tagline: 'Diosas en danza. Ciudades como escenario. Tecnología como portal.',
+    tagline: 'Ciudades como escenario. Tecnología como portal.',
     overview: [
       'En este miniverso, el cuerpo se convierte en conjuro. La danza, en escritura. Y la ciudad… en altar vivo.',
       'La Ruta de las Diosas es una experiencia coreográfica transmedial que recorre plazas, parques y espacios públicos para activar un ritual contemporáneo con avatares, realidad aumentada y movimiento colectivo.',
@@ -443,7 +444,7 @@ const showcaseDefinitions = {
       },
     ],
   
-    cartaTitle: '#RitualEnMovimiento',
+    cartaTitle: '#RutaCoreográfica',
     notaAutoral: 'El cuerpo es conjuro.\nLa ciudad tiembla y abre un portal.\nLa ruta solo existe si alguien baila.',
     iaProfile: {
       type: 'IA de ruta + prompts de movimiento guiados en app.',
@@ -491,7 +492,7 @@ const showcaseDefinitions = {
   },
 };
 
-const ShowcaseReactionInline = ({ showcaseId, title, description, buttonLabel }) => {
+const ShowcaseReactionInline = ({ showcaseId, title, description, buttonLabel, className = '' }) => {
   const { user } = useAuth();
   const [status, setStatus] = useState('idle');
 
@@ -514,7 +515,9 @@ const ShowcaseReactionInline = ({ showcaseId, title, description, buttonLabel })
   }, [showcaseId, status, user]);
 
   return (
-    <div className="mt-4 flex flex-col gap-3 rounded-2xl border border-white/10 bg-black/20 p-4">
+    <div
+      className={`mt-4 flex flex-col gap-3 rounded-2xl border border-white/10 bg-black/20 p-4 ${className}`}
+    >
       <div className="flex items-center justify-between gap-3">
         <div>
           <p className="text-[0.6rem] uppercase tracking-[0.35em] text-slate-500">{title}</p>
@@ -1834,9 +1837,15 @@ const Transmedia = () => {
           <div className="relative overflow-hidden rounded-[2.5rem] border border-white/10 bg-gradient-to-br from-slate-900/90 via-black/60 to-rose-900/40 shadow-[0_25px_65px_rgba(15,23,42,0.65)]">
             <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(255,255,255,0.15),_transparent_45%)]" />
             <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_bottom,_rgba(15,23,42,0.8),_transparent_65%)]" />
-            <div className="relative mx-auto grid w-full max-w-[min(100vw-2rem,1100px)] gap-6 p-6 sm:p-8 lg:grid-cols-[3fr_2fr]">
+            <div className="relative mx-auto grid w-full max-w-[min(100vw-2rem,1100px)] gap-6 p-4 sm:p-6 lg:p-8 lg:grid-cols-[3fr_2fr]">
               <div className="space-y-6">
-                <div className="space-y-5 rounded-3xl border border-white/10 bg-black/30 p-6 shadow-[0_20px_40px_rgba(0,0,0,0.45)]">
+                <div
+                  className={`space-y-5 ${
+                    isMobileViewport
+                      ? 'rounded-none border-0 bg-transparent p-0 shadow-none'
+                      : 'rounded-3xl border border-white/10 bg-black/30 p-6 shadow-[0_20px_40px_rgba(0,0,0,0.45)]'
+                  }`}
+                >
                   <p className="text-xs uppercase tracking-[0.4em] text-purple-300">Escaparate</p>
                   <h3 className="font-display text-3xl leading-tight text-white md:text-4xl">{activeDefinition.label}</h3>
                   <p className="text-lg text-slate-200/80 leading-relaxed font-light">{activeDefinition.intro}</p>
@@ -1851,7 +1860,13 @@ const Transmedia = () => {
                 </div>
               </div>
 
-              <div className="rounded-3xl border border-white/10 bg-black/40 p-6 space-y-5 shadow-[0_25px_45px_rgba(0,0,0,0.45)]">
+              <div
+                className={`space-y-5 ${
+                  isMobileViewport
+                    ? 'rounded-none border-0 bg-transparent p-0 shadow-none'
+                    : 'rounded-3xl border border-white/10 bg-black/40 p-6 shadow-[0_25px_45px_rgba(0,0,0,0.45)]'
+                }`}
+              >
                 <p className="text-xs uppercase tracking-[0.4em] text-slate-400">Conciencia abierta</p>
                 <p className="text-sm text-slate-300/90 leading-relaxed">{activeDefinition.ctaDescription}</p>
                 <div className="rounded-2xl border border-amber-200/40 bg-amber-500/10 px-4 py-3 flex items-center justify-between gap-3">
@@ -1893,7 +1908,7 @@ const Transmedia = () => {
                 {micPromptVisible && !micError ? (
                   <div className="mt-3 rounded-2xl border border-white/10 bg-black/40 p-4 text-sm text-slate-200">
                     <p className="text-xs uppercase tracking-[0.35em] text-purple-300">Silvestre quiere escucharte</p>
-                    <p>Silvestre quiere escucharte. Dale acceso a tu micrófono para comenzar.</p>
+                    <p>Dale acceso a tu micrófono para comenzar.</p>
                   </div>
                 ) : null}
                 {micError && !isListening && !transcript ? (
@@ -1905,11 +1920,17 @@ const Transmedia = () => {
                 {transcript ? (
                   <div className="mt-3 rounded-2xl border border-purple-500/40 bg-white/5 p-4 text-sm text-slate-100">
                     <p className="text-xs uppercase tracking-[0.35em] text-purple-300">
-                      Transcripción en vivo{isListening ? ' (escuchando...)' : ''}
+                      Tu voz{isListening ? ' (escuchando...)' : ''}
                     </p>
                     <p className="break-words">{transcript}</p>
                   </div>
                 ) : null}
+                <ShowcaseReactionInline
+                  showcaseId="miniversos"
+                  title="Resonancia colectiva"
+                  description="Haz clic para dejar un pulso que mantenga viva la conversación de Silvestre."
+                  buttonLabel="Enviar pulsaciones"
+                />
               </div>
             </div>
           </div>
@@ -2125,7 +2146,7 @@ const Transmedia = () => {
         <div className="space-y-10">
           <div className="grid gap-6 lg:gap-10 lg:grid-cols-[2fr_1fr]">
             <div className="space-y-5 rounded-3xl border border-white/10 bg-gradient-to-br from-slate-950/80 via-black/60 to-purple-900/30 p-6 lg:p-8">
-              <p className="text-xs uppercase tracking-[0.35em] text-slate-400/80">Ruta coreográfica</p>
+             
               <h3 className="font-display text-3xl text-slate-100">{activeDefinition.tagline}</h3>
               <div className="space-y-4 text-slate-300/85 leading-relaxed text-sm md:text-base">
                 {activeDefinition.overview?.map((paragraph, index) => (
@@ -2153,7 +2174,15 @@ const Transmedia = () => {
                   <p className="text-lg text-slate-100 italic">{activeDefinition.invitation}</p>
                 ) : null}
               </div>
-              {rendernotaAutoral()}
+              <div className="mt-6">
+                <ShowcaseReactionInline
+                  showcaseId="miniversoMovimiento"
+                  title="Resonancia colectiva"
+                  description="Haz clic y deja un pulso para que la Ruta de las Diosas siga viva."
+                  buttonLabel="Hacer vibrar la ruta"
+                  className="mt-0"
+                />
+              </div>
             </div>
 
             <div className="space-y-4">
@@ -2203,12 +2232,6 @@ const Transmedia = () => {
                   </div>
                 );
               })}
-              <ShowcaseReactionInline
-                showcaseId="miniversoMovimiento"
-                title="Resonancia colectiva"
-                description="Haz clic y deja un pulso para que la Ruta de las Diosas siga viva."
-                buttonLabel="Hacer vibrar la ruta"
-              />
             </div>
           </div>
 
@@ -3082,26 +3105,33 @@ const Transmedia = () => {
               transition={{ duration: 0.6, ease: 'easeOut' }}
               className="mt-12 glass-effect rounded-2xl p-8 md:p-12 border border-white/10"
             >
-              <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
-                <div>
-                  {activeDefinition.type !== 'tragedia' ? (
-                    <>
-                      <p className="text-xs uppercase tracking-[0.4em] text-slate-400/70 mb-2">Escaparate</p>
-                      <h3 className="font-display text-3xl text-slate-100 mb-3">{activeDefinition.label}</h3>
-                      <p className="text-slate-300/80 leading-relaxed font-light max-w-3xl">
-                        {activeDefinition.intro}
-                      </p>
-                      {activeDefinition.type !== 'graphic-lab' ? rendernotaAutoral() : null}
-                    </>
-                  ) : null}
-                </div>
-                <button
-                  onClick={() => setActiveShowcase(null)}
-                  className="text-sm text-slate-400 hover:text-white transition self-start md:self-auto"
+              {activeDefinition.type === 'tragedia' ? (
+                <div className="flex justify-end">
+                  <button
+                    onClick={() => setActiveShowcase(null)}
+                    className="text-sm text-slate-400 hover:text-white transition"
                   >
-                  Cerrar escaparate ✕
-                </button>
-              </div>
+                    Cerrar escaparate ✕
+                  </button>
+                </div>
+              ) : (
+                <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
+                  <div>
+                    <p className="text-xs uppercase tracking-[0.4em] text-slate-400/70 mb-2">Escaparate</p>
+                    <h3 className="font-display text-3xl text-slate-100 mb-3">{activeDefinition.label}</h3>
+                    <p className="text-slate-300/80 leading-relaxed font-light max-w-3xl">
+                      {activeDefinition.intro}
+                    </p>
+                    {activeDefinition.type !== 'graphic-lab' ? rendernotaAutoral() : null}
+                  </div>
+                  <button
+                    onClick={() => setActiveShowcase(null)}
+                    className="text-sm text-slate-400 hover:text-white transition self-start md:self-auto"
+                  >
+                    Cerrar escaparate ✕
+                  </button>
+                </div>
+              )}
 
               <div className="mt-8">{renderShowcaseContent()}</div>
               {activeDefinition.iaProfile ? (
@@ -3210,6 +3240,15 @@ const Transmedia = () => {
               className="glass-effect rounded-2xl p-6 border border-white/10 bg-slate-950/50 shadow-2xl"
             >
               <CallToAction />
+            </motion.div>
+            <motion.div
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8, delay: 0.4, ease: 'easeOut' }}
+              viewport={{ once: true }}
+              className="glass-effect rounded-2xl p-6 border border-white/10 bg-slate-950/50 shadow-2xl"
+            >
+              <InstallPWACTA />
             </motion.div>
           </div>
         </div>

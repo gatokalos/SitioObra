@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Instalar #GatoEncerrado como app</title>
+    <style>
+      body {
+        margin: 0;
+        font-family: 'Inter', system-ui, sans-serif;
+        background: #020617;
+        color: #e2e8f0;
+        line-height: 1.6;
+      }
+      .page {
+        max-width: 720px;
+        margin: 0 auto;
+        padding: 32px;
+      }
+      h1 {
+        font-size: 2rem;
+        margin-bottom: 0.5rem;
+      }
+      .lead {
+        color: #94a3b8;
+        margin-bottom: 1.5rem;
+      }
+      .card {
+        background: rgba(15, 23, 42, 0.85);
+        border: 1px solid rgba(148, 163, 184, 0.3);
+        border-radius: 24px;
+        padding: 24px;
+        margin-bottom: 20px;
+        box-shadow: 0 20px 40px rgba(2, 6, 23, 0.65);
+      }
+      .card h2 {
+        margin-top: 0;
+        color: #f8fafc;
+      }
+      .steps {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+      }
+      .steps li {
+        display: flex;
+        gap: 12px;
+        padding: 10px 0;
+        border-bottom: 1px solid rgba(226, 232, 240, 0.1);
+      }
+      .steps li:last-child {
+        border-bottom: none;
+      }
+      .step-number {
+        width: 28px;
+        height: 28px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #a855f7, #6366f1);
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 600;
+      }
+      .note {
+        font-size: 0.85rem;
+        color: #94a3b8;
+        margin-top: 0.5rem;
+      }
+      .footer {
+        margin-top: 32px;
+        padding: 16px;
+        border-radius: 16px;
+        background: rgba(249, 115, 22, 0.08);
+        border: 1px solid rgba(249, 115, 22, 0.3);
+        color: #fed7aa;
+      }
+      @media (max-width: 600px) {
+        .page {
+          padding: 24px 16px;
+        }
+        h1 {
+          font-size: 1.6rem;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="page">
+      <h1>Instalar #GatoEncerrado en tu pantalla de inicio</h1>
+      <p class="lead">
+        Sigue estos pasos para esconder las barras del navegador móvil y abrir la experiencia como una app nativa.
+        Puedes copiar este instructivo y enviarlo a tus suscriptores.
+      </p>
+
+      <div class="card">
+        <h2>1 · General (necesario para todos)</h2>
+        <p>
+          Nuestro sitio ya tiene un <strong>manifest.json</strong> con <code>display: "standalone"</code> y
+          se sirve con HTTPS, así que tu navegador lo detecta como instalable. Solo falta hacer lo siguiente:
+        </p>
+        <ul class="steps">
+          <li>
+            <div class="step-number">1</div>
+            <div>
+              <strong>Visita #GatoEncerrado</strong> desde tu navegador móvil (Chrome, Safari o cualquiera).
+            </div>
+          </li>
+          <li>
+            <div class="step-number">2</div>
+            <div>
+              Espera unos segundos o recarga la página; los navegadores necesitan un par de visitas para habilitar la instalación.
+            </div>
+          </li>
+          <li>
+            <div class="step-number">3</div>
+            <div>
+              Mantén el sitio abierto y sigue las instrucciones específicas para tu sistema operativo que vienen abajo.
+            </div>
+          </li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <h2>2 · Android (Chrome, Edge, Opera)</h2>
+        <ul class="steps">
+          <li>
+            <div class="step-number">1</div>
+            <div>
+              Toca el menú ⋮ de Chrome (arriba a la derecha) y busca “Instalar app” o “Agregar a pantalla de inicio”.
+            </div>
+          </li>
+          <li>
+            <div class="step-number">2</div>
+            <div>
+              En algunos dispositivos aparecerá un botón “Instalar” en el mismo menú. También puedes tocar el CTA de la tarjeta de impacto.
+            </div>
+          </li>
+          <li>
+            <div class="step-number">3</div>
+            <div>
+              Confirma y elige “Añadir” cuando Chrome muestre el cuadro de diálogo. El icono ya está listo en tu Home.
+            </div>
+          </li>
+        </ul>
+        <p class="note">
+          Chrome guarda el evento de instalación (beforeinstallprompt) cuando pulsas el botón “Instalar app” de la tarjeta dentro de la web.
+        </p>
+      </div>
+
+      <div class="card">
+        <h2>3 · iPhone / iPad (Safari)</h2>
+        <ul class="steps">
+          <li>
+            <div class="step-number">1</div>
+            <div>
+              Toca el botón compartir (el cuadrado con una flecha hacia arriba) que aparece en la barra inferior.
+            </div>
+          </li>
+          <li>
+            <div class="step-number">2</div>
+            <div>
+              Desliza las opciones hasta ver “Añadir a pantalla de inicio”. Si no aparece, toca “Más” y actívalo.
+            </div>
+          </li>
+          <li>
+            <div class="step-number">3</div>
+            <div>
+              Ajusta el nombre si quieres y confirma. Safari colocará el icono en tu Home y la experiencia se abrirá sin barras.
+            </div>
+          </li>
+        </ul>
+        <p class="note">
+          iOS no muestra un prompt automático; esta ruta manual es la única forma oficial de instalar la PWA.
+        </p>
+      </div>
+
+      <div class="card">
+        <h2>4 · Qué pueden hacer tus suscriptores</h2>
+        <p>
+          Nosotros recomendamos enviar este enlace después de que paguen: así saben que ya tienen la app lista y solo deben seguir un par de pasos. Puedes acompañar el mensaje con un recordatorio de
+          por qué abrir la experiencia como app nativa (más espacio, animaciones suaves, sin barras).
+        </p>
+        <p class="note">
+          Si necesitas un PDF o una u otra variante (por ejemplo, una versión con imágenes), avísame y lo adaptamos.
+        </p>
+      </div>
+
+      <div class="footer">
+        <p>
+          Esta página funciona como un “manifiesto visual” que explica cómo instalar #GatoEncerrado sin que el navegador lo haga por ti. Compártela, guarda el enlace, mándala por correo o WhatsApp.
+        </p>
+      </div>
+    </div>
+  </body>
+</html>
