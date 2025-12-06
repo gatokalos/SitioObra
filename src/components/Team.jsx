@@ -9,10 +9,62 @@ import {
 } from "@/components/ui/accordion";
 
 const teamData = {
+  Dramaturgia: {
+    name: "Carlos A. Pérez H.",
+    bio: "Comunicólogo, autor, y artista transmedia. Su obra habita entre teatro, escritura y tecnología, proponiendo una poética crítica y humana. Formado en el ITESO, la Universidad de Salamanca y LABASAD Barcelona, integra astrología psicológica, cuerpo y arte digital en una mirada simbólica. Creador del universo transmedia #GatoEncerrado, concibe el acto creativo como una forma de acompañamiento y transformación.",
+    image: "https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/equipo/carlos_perez.gif",
+  },
   Dirección: {
     name: "Gilberto Corrales",
     bio: "Director, dramaturgo y actor. Licenciado en Teatro por la Facultad de Artes de la UABC, ha dirigido más de cuarenta obras, la mayoría de su autoría. Su trabajo explora la transdisciplina y la investigación del lenguaje escénico. Fundador de Incendio Producciones, sus obras han estado presentes en la Muestra Nacional de Teatro y en festivales de Colombia, Argentina y EE.UU. Ganador del Premio Juventud 2016 y del FITU UNAM. Dirige el Contagio Tijuana y colabora con artistas como Jorge Ballina y Daniel Primo.",
     image: "https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/equipo/gil-corrales.gif",
+  },
+  "Producción": {
+    description:
+      "Un equipo que coordina, articula y acompaña cada engranaje de la producción escénica con mirada sensible, técnica y humana.",
+    members: [
+      {
+        name: "Rosalía Hernández Millán",
+        role: "Producción General y Vinculación Social",
+        bio: "Presidenta de Isabel A.C. Ayuda para la Vida, Maestra en Psicobiología y Neurociencia Cognitiva (UAB). Su labor impulsa la integración entre arte y bienestar emocional, fortaleciendo el puente entre el proyecto escénico y la comunidad.",
+        image: "/images/placeholder-colaboradores.jpg",
+      },
+      {
+        name: "Miroslava Wilson",
+        role: "Producción Ejecutiva",
+        bio: "Productora ejecutiva, directora y asesora de movimiento. Originaria de Hermosillo y radicada en Tijuana, es fundadora de Péndulo Cero A.C. y educadora de movimiento somático certificada por Body Mind Movement. Su trabajo interdisciplinario vincula arte, medio ambiente y humanismo. Ha presentado su obra en Asia, América y Europa, y actualmente impulsa proyectos como Casa Viva y SomasSomos.",
+        image: "https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/equipo/Miroslava%20.jpg",
+      },
+      {
+        name: "Marcela Durán Mulia",
+        role: "Producción Administrativa",
+        bio: "Actriz, gestora y representante legal de Incendio Producciones. Licenciada en Comunicación (UABC) y Maestra en Alta Dirección Corporativa (Humanitas). Ha participado en la Muestra Nacional de Teatro, ENARTES y otros festivales internacionales. Su mirada estratégica une la gestión cultural con la sensibilidad artística.",
+        image: "https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/equipo/marcela.png",
+      },
+      {
+        name: "Gabriel Monroy",
+        role: "Asistencia de Dirección y Gestión",
+        bio: "Actor, fotógrafo escénico y gestor. Licenciado en Artes Escénicas por la Universidad de Sonora. Creador de la serie fotográfica 'Reflejos de la escena', exhibida internacionalmente. Su mirada visual y su acompañamiento escénico fortalecen el proceso de dirección.",
+        image: "https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/equipo/gabriel.jpg",
+      },
+      {
+        name: "Rocío Morgan",
+        role: "Asistencia Ejecutiva",
+        bio: "Gestora cultural y apoyo logístico de producción. Su labor sostiene los procesos administrativos y humanos que hacen posible la operación cotidiana de la obra.",
+        image: "https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/equipo/rocio.jpg",
+      },
+      {
+        name: "María Diana Laura Rodriguez",
+        role: "Enlace de Producción",
+        bio: "Maquillista y traspunte en el Teatro Camafeo. Fue un apoyo operativo clave en la etapa temprana de #GatoEncerrado y facilitó el enlace con el director Gilberto Corrales, gesto que definió la continuidad del proyecto. Su iniciativa y acompañamiento hicieron posible que el montaje avanzara en el momento más decisivo.",
+        image: "/images/placeholder-produccion.jpg",
+      },
+    ],
+  },
+  "Alianza de Impacto Social": {
+    name: "Isabel Ayuda para la Vida A.C.",
+    bio: "Asociación civil sin fines de lucro fundada en 2018 y dirigida por Rosalía Hernández Millán. Su misión es prevenir la violencia autoinfligida mediante el programa DySVAE, promoviendo el pedir ayuda como estrategia de vida. Colabora con #GatoEncerrado para visibilizar la salud emocional y la empatía en contextos artísticos y educativos.",
+    image: "/images/placeholder-institucional.jpg",
   },
   Elenco: {
     description:
@@ -25,14 +77,14 @@ const teamData = {
         bio: "Artista interdisciplinaria egresada de la UABC. Su práctica integra fotografía, escritura y teatro. Ha participado en el San Diego Fringe Festival y en montajes de Incendio Producciones. Actualmente se enfoca en la dirección escénica y la exploración visual.",
         image: "https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/equipo/cyndi.jpg",
       },
-     {
+      {
         id: "elenco-mariana",
         name: "Mariana de los Santos",
         role: "Intérprete",
         bio: "Actriz tijuanense formada en CEART y con experiencia en cine y teatro contemporáneo. Su trabajo corporal revela una sensibilidad poética que dialoga entre lo íntimo y lo colectivo.",
         image: "https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/equipo/mariana.jpg",
       },
-           {
+      {
         id: "elenco-ricardo",
         name: "Ricardo Márquez Salgado",
         role: "Intérprete",
@@ -47,15 +99,10 @@ const teamData = {
         image: "https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/equipo/carlitos.jpg",
       },
     ],
-      },
-        Dramaturgia: {
-        name: "Carlos A. Pérez H.",
-        bio: "Artista transmedia, autor y dramaturgo. Su obra habita entre teatro, escritura y tecnología, proponiendo una poética crítica y humana. Formado en el ITESO, la Universidad de Salamanca y LABASAD Barcelona, integra astrología psicológica, cuerpo y arte digital en una mirada simbólica. Creador del universo transmedia #GatoEncerrado, concibe el acto creativo como una forma de acompañamiento y transformación.",
-        image: "https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/equipo/carlos_perez.gif",
-     },
+  },
   "Diseño Escénico": {
     description:
-      "Diseñadoras y diseñadores que construyen atmósferas visuales, sonoras y de vestuario para expandir la poética de la obra.",
+      "Diseñadoras y diseñadores que construyen atmósferas visuales y espaciales para expandir la poética de la obra.",
     members: [
       {
         name: "Jorge Ballina",
@@ -70,32 +117,44 @@ const teamData = {
         image: "https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/equipo/primo.jpg",
       },
       {
-        name: "Lía Pérez",
-        role: "Diseño Sonoro",
-        bio: "Artista sonora con más de doce años de experiencia. Fundadora de Concrete Sounds, ha colaborado en filmes como 'Ya no estoy aquí' y 'Monos'. Su especialidad es la creación de paisajes inmersivos que amplían la dimensión sensorial del teatro.",
-        image: "/images/placeholder-diseno.jpg",
-      },
-      {
         name: "Ximena Inurreta",
         role: "Asistente de Diseño de Escenografía",
         bio: "Diseñadora escénica emergente que apoya el desarrollo de atmósferas visuales y transiciones espaciales en el montaje de #GatoEncerrado.",
         image: "https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/equipo/Ximena.jpg",
       },
+    ],
+  },
+  "Música y Sonido": {
+    description:
+      "Artistas que modelan la experiencia auditiva, desde la composición musical hasta la espacialización del sonido.",
+    members: [
+      {
+        name: "Lía Pérez",
+        role: "Diseño Sonoro",
+        bio: "Artista sonora con más de doce años de experiencia. Fundadora de Concrete Sounds, ha colaborado en filmes como 'Ya no estoy aquí' y 'Monos'. Su especialidad es la creación de paisajes inmersivos que amplían la dimensión sensorial del teatro.",
+        image: "https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/equipo/lia.png",
+      },
       {
         name: "Diego Madera",
-        role: "Tema Musical",
+        role: "Composición Musical",
         bio: "Músico y compositor cuyo trabajo explora la tensión entre sonido y silencio. Su pieza original acompaña los pasajes emocionales de la obra.",
         image: "https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/equipo/diego.png",
       },
+    ],
+  },
+  "Vestuario y Caracterización": {
+    description:
+      "Diseño textil y caracterización que traducen la psicología de los personajes en textura, color y forma.",
+    members: [
       {
         name: "Karla Flores",
         role: "Realización de Vestuario",
         bio: "Diseñadora de vestuario que traduce emociones en textura, movimiento y color. Su trabajo aporta profundidad simbólica a la corporalidad de los intérpretes.",
-        image: "/images/placeholder-diseno.jpg",
+        image: "https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/equipo/Karla.jpg",
       },
       {
         name: "Jonathan Lazcano",
-        role: "Pelucas",
+        role: "Pelucas y Caracterización Capilar",
         bio: "Artista de caracterización. Su trabajo artesanal da vida y coherencia visual a los personajes a través del detalle y la textura.",
         image: "/images/placeholder-diseno.jpg",
       },
@@ -119,53 +178,7 @@ const teamData = {
       },
     ],
   },
-  "Producción y Asistencia": {
-    description:
-      "Un equipo que coordina, articula y acompaña cada engranaje de la producción escénica con mirada sensible, técnica y humana.",
-    members: [
-     {
-        name: "Rosalía Hernández Millán",
-        role: "Producción General y Vinculación Social",
-        bio: "Presidenta de Isabel A.C. Ayuda para la Vida, Maestra en Psicobiología y Neurociencia Cognitiva (UAB). Su labor impulsa la integración entre arte y bienestar emocional, fortaleciendo el puente entre el proyecto escénico y la comunidad.",
-        image: "/images/placeholder-colaboradores.jpg",
-      },
-      {
-        name: "Miroslava Wilson",
-        role: "Producción Ejecutiva",
-        bio: "Productora ejecutiva, directora y asesora de movimiento. Originaria de Hermosillo y radicada en Tijuana, es fundadora de Péndulo Cero A.C. y educadora de movimiento somático certificada por Body Mind Movement. Su trabajo interdisciplinario vincula arte, medio ambiente y humanismo. Ha presentado su obra en Asia, América y Europa, y actualmente impulsa proyectos como Casa Viva y SomasSomos.",
-        image: "https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/equipo/Miroslava%20.jpg",
-        },
-      {
-        name: "Marcela Durán Mulia",
-        role: "Producción Administrativa",
-        bio: "Actriz, gestora y representante legal de Incendio Producciones. Licenciada en Comunicación (UABC) y Maestra en Alta Dirección Corporativa (Humanitas). Ha participado en la Muestra Nacional de Teatro, ENARTES y otros festivales internacionales. Su mirada estratégica une la gestión cultural con la sensibilidad artística.",
-        image: "/images/placeholder-colaboradores.jpg",
-      },
-      {
-        name: "Gabriel Monroy",
-        role: "Asistencia de Dirección y Gestión",
-        bio: "Actor, fotógrafo escénico y gestor. Licenciado en Artes Escénicas por la Universidad de Sonora. Creador de la serie fotográfica 'Reflejos de la escena', exhibida internacionalmente. Su mirada visual y su acompañamiento escénico fortalecen el proceso de dirección.",
-        image: "https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/equipo/gabriel.jpg",
-      },
-      {
-        name: "Rocío Morgan",
-        role: "Asistencia Ejecutiva",
-        bio: "Gestora cultural y apoyo logístico de producción. Su labor sostiene los procesos administrativos y humanos que hacen posible la operación cotidiana de la obra.",
-        image: "https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/equipo/rocio.jpg",
-      },
-     {
-        name: "María Diana Laura Rodriguez",
-        role: "Enlace de Producción",
-        bio: "Maquillista y traspunte en el Teatro Camafeo. Fue un apoyo operativo clave en la etapa temprana de #GatoEncerrado y facilitó el enlace con el director Gilberto Corrales, gesto que definió la continuidad del proyecto. Su iniciativa y acompañamiento hicieron posible que el montaje avanzara en el momento más decisivo.",
-        image: "/images/placeholder-produccion.jpg",
-      },
-    ],
-  },
-  "Alianza de Impacto Social": {
-        name: "Isabel Ayuda para la Vida A.C.",
-        bio: "Asociación civil sin fines de lucro fundada en 2018 y dirigida por Rosalía Hernández Millán. Su misión es prevenir la violencia autoinfligida mediante el programa DySVAE, promoviendo el pedir ayuda como estrategia de vida. Colabora con #GatoEncerrado para visibilizar la salud emocional y la empatía en contextos artísticos y educativos.",
-        image: "/images/placeholder-institucional.jpg",
-      },
+
   "Colaboradores y Agradecimientos": {
     description:
       "Detrás de cada función existe una constelación de manos, miradas y corazones que hacen posible la obra de Es un Gato Encerrado. Este bloque celebra su labor silenciosa y luminosa.",
@@ -178,8 +191,7 @@ const teamData = {
       institucionales:
         "Apoyos institucionales: Agradecimiento a Teatro CAMAFEO y sus productoras Margarita Martínez de Camarena y Elsa Pérez de Vargas; CEART Tijuana, IMAC, Casa Viva y Adagio Studio por su apoyo en ensayos y espacios.",
     },
-   },
-        
+  },
 };
 
 // === COMPONENT ===
@@ -222,7 +234,13 @@ const Team = () => {
   const renderRole = (data, roleKey) => {
     const isElenco = roleKey === "Elenco";
     const useRoundAvatars =
-      ["Diseño Escénico", "Producción técnica", "Producción y Asistencia"].includes(roleKey);
+      [
+        "Diseño Escénico",
+        "Música y Sonido",
+        "Vestuario y Caracterización",
+        "Producción técnica",
+        "Producción y Asistencia",
+      ].includes(roleKey);
     if (Array.isArray(data?.members)) {
       const isElencoClickable = isElenco && !isMobile;
       const membersWithId = data.members.map((member, idx) => ({
@@ -230,6 +248,10 @@ const Team = () => {
         id: member.id || `${member.name}-${idx}`,
         idx,
       }));
+      const activeElencoMember =
+        isElencoClickable && selectedElencoId
+          ? membersWithId.find(({ id }) => id === selectedElencoId)?.member
+          : null;
 
       return (
         <div className="space-y-6">
@@ -238,6 +260,31 @@ const Team = () => {
               {data.description}
             </p>
           )}
+          {isElencoClickable && activeElencoMember && (
+            <motion.div
+              layout
+              transition={{ layout: { duration: 0.35, ease: [0.22, 1, 0.36, 1] } }}
+              className="relative overflow-hidden rounded-xl border border-white/5 shadow-lg shadow-black/30 max-h-[520px]"
+            >
+              <img
+                className="w-full h-full object-cover"
+                src={activeElencoMember.image}
+                alt={`Retrato de ${activeElencoMember.name}`}
+                loading="lazy"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/30 to-transparent" />
+              <div className="absolute bottom-0 left-0 p-6">
+                <h4 className="font-display text-2xl text-purple-100 drop-shadow">
+                  {activeElencoMember.name}
+                </h4>
+                {activeElencoMember.role && (
+                  <p className="text-xs uppercase tracking-[0.35em] text-purple-200/80">
+                    {activeElencoMember.role}
+                  </p>
+                )}
+              </div>
+            </motion.div>
+          )}
           <motion.div layout className="grid gap-6 md:grid-cols-2">
             {membersWithId.map(({ member, id: memberId }) => {
               const isActive = isElencoClickable && selectedElencoId === memberId;
@@ -245,30 +292,6 @@ const Team = () => {
                 isElencoClickable
                   ? setSelectedElencoId((prev) => (prev === memberId ? null : memberId))
                   : undefined;
-
-              if (isActive) {
-                return (
-                  <motion.div
-                    layout
-                    transition={{ layout: { duration: 0.35, ease: [0.22, 1, 0.36, 1] } }}
-                    key={memberId}
-                    className="glass-effect rounded-xl p-0 overflow-hidden border border-white/5 transition-all duration-300 md:col-span-2"
-                  >
-                    <button
-                      type="button"
-                      onClick={handleToggle}
-                      className="block w-full focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-400"
-                    >
-                      <img
-                        className="w-full h-full max-h-[520px] object-cover"
-                        src={member.image}
-                        alt={`Retrato de ${member.name}`}
-                        loading="lazy"
-                      />
-                    </button>
-                  </motion.div>
-                );
-              }
 
               if (useRoundAvatars) {
                 return (
@@ -319,7 +342,11 @@ const Team = () => {
                   transition={{ layout: { duration: 0.35, ease: [0.22, 1, 0.36, 1] } }}
                   key={memberId}
                   className={`glass-effect rounded-xl p-5 flex flex-col md:flex-row gap-4 border border-white/5 transition-all duration-300 ${
-                    isElencoClickable ? "cursor-pointer hover:border-purple-400/40" : ""
+                    isElencoClickable
+                      ? `cursor-pointer hover:border-purple-400/40 ${
+                          isActive ? "border-purple-400/60 ring-2 ring-purple-300/40" : ""
+                        }`
+                      : ""
                   }`}
                   onClick={handleToggle}
                   role={isElencoClickable ? "button" : undefined}
