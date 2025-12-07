@@ -61,11 +61,6 @@ const teamData = {
       },
     ],
   },
-  "Alianza de Impacto Social": {
-    name: "Isabel Ayuda para la Vida A.C.",
-    bio: "Asociación civil sin fines de lucro fundada en 2018 y dirigida por Rosalía Hernández Millán. Su misión es prevenir la violencia autoinfligida mediante el programa DySVAE, promoviendo el pedir ayuda como estrategia de vida. Colabora con #GatoEncerrado para visibilizar la salud emocional y la empatía en contextos artísticos y educativos.",
-    image: "/images/placeholder-institucional.jpg",
-  },
   Elenco: {
     description:
       "Actores y actrices que encarnan el pulso emocional de la obra desde la fisicalidad, la voz y la presencia simbólica.",
@@ -160,7 +155,7 @@ const teamData = {
       },
     ],
   },
-  "Gestión Técnica": {
+  "Realización Técnica": {
     description:
       "Especialistas que construyen y operan la infraestructura escénica para que cada función suceda con precisión y seguridad.",
     members: [
@@ -191,6 +186,11 @@ const teamData = {
       institucionales:
         "Apoyos institucionales: Agradecimiento a Teatro CAMAFEO y sus productoras Margarita Martínez de Camarena y Elsa Pérez de Vargas; CEART Tijuana, IMAC, Casa Viva y Adagio Studio por su apoyo en ensayos y espacios.",
     },
+  },
+  "Alianza de Impacto Social": {
+    name: "Isabel Ayuda para la Vida A.C.",
+    bio: "Asociación civil sin fines de lucro fundada en 2018 y dirigida por Rosalía Hernández Millán. Su misión es prevenir la violencia autoinfligida mediante el programa DySVAE, promoviendo el pedir ayuda como estrategia de vida. Colabora con #GatoEncerrado para visibilizar la salud emocional y la empatía en contextos artísticos y educativos.",
+    image: "/images/placeholder-institucional.jpg",
   },
 };
 
@@ -234,11 +234,12 @@ const Team = () => {
   const renderRole = (data, roleKey) => {
     const isElenco = roleKey === "Elenco";
     const useRoundAvatars =
+      isMobile &&
       [
         "Diseño Escénico",
         "Música y Sonido",
         "Vestuario y Caracterización",
-        "Gestión técnica",
+        "Realización Técnica",
         "Producción",
       ].includes(roleKey);
     if (Array.isArray(data?.members)) {
