@@ -160,7 +160,7 @@ const teamData = {
       },
     ],
   },
-  "Producción técnica": {
+  "Gestión Técnica": {
     description:
       "Especialistas que construyen y operan la infraestructura escénica para que cada función suceda con precisión y seguridad.",
     members: [
@@ -238,8 +238,8 @@ const Team = () => {
         "Diseño Escénico",
         "Música y Sonido",
         "Vestuario y Caracterización",
-        "Producción técnica",
-        "Producción y Asistencia",
+        "Gestión técnica",
+        "Producción",
       ].includes(roleKey);
     if (Array.isArray(data?.members)) {
       const isElencoClickable = isElenco && !isMobile;
