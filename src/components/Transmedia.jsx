@@ -43,7 +43,7 @@ import IAInsightCard from '@/components/IAInsightCard';
 
 pdfjs.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`;
 const GAT_COSTS = {
-  quironFull: 200,
+  quironFull: 300,
   graficoSwipe: 110,
   novelaChapter: 150,
   sonoroMix: 130,
@@ -92,11 +92,6 @@ const showcaseDefinitions = {
           label: 'Carta audiovisual (4:02)',
           url: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Cine%20-%20teasers/ensayos/La%20Cadena%20del%20Gesto.mp4',
         },
-        {
-          id: 'copycats-ensayo',
-          label: 'La Cadena del Gesto (4:28)',
-          url: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Cine%20-%20teasers/ensayos/La%20Cadena%20del%20Gesto.mp4',
-        },
       ],
       tags: ['Cine-ensayo', 'Identidad Digital', 'Archivo autoficcional'],
     },
@@ -105,6 +100,11 @@ const showcaseDefinitions = {
       description: 'Mira el teaser y los stills de rodaje de un cortometraje que busca la vulnerabilidad donde casi no se nota.',
       microcopy:
         'Quirón explora un silencio heredado: una familia atravesada por el suicidio de un padre y un abuelo. La película nace para darle lenguaje a ese dolor y acercarnos a lo que normalmente se calla.',
+      fullVideo: {
+        id: 'quiron-full',
+        label: 'Cortometraje completo',
+        url: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Cine%20-%20teasers/Quiron_10min.mp4',
+      },
       teaser: {
         id: 'quiron-teaser',
         label: 'Teaser oficial',
@@ -133,7 +133,7 @@ const showcaseDefinitions = {
         id: 'viviana-gonzalez',
         name: 'Viviana González',
         role: 'Dirección de foto y registro creativo',
-        bio: 'Cineasta y documentalista. Su cámara captura el pulso emocional de CopyCats y Quirón.',
+        bio: 'Viviana acompaña al Miniverso Cine con una mirada que piensa. Comunicóloga y docente en la Ibero, su experiencia ilumina procesos más que superficies. Fue quien sostuvo el pulso visual de Quirón y CopyCats: cámara, escucha y diálogo creativo continuo. Su presencia abrió rutas nuevas para traducir lo íntimo, lo incierto y lo que apenas empieza a nacer en pantalla',
         image: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/equipo/placeholder-colaboradores.jpg',
         anchor: '#team',
       },
@@ -141,16 +141,31 @@ const showcaseDefinitions = {
         id: 'diego-madera',
         name: 'Diego Madera',
         role: 'Compositor · Tema musical',
-        bio: 'Músico y compositor cuyo trabajo explora la tensión entre sonido y silencio.',
+        bio: 'Diego tiende puentes entre emoción y estructura. Compositor de formación precisa y sensibilidad abierta, su música respira junto al material filmado: acompaña, sostiene y revela. En el Miniverso Cine, sus partituras funcionan como una línea de vida, un lugar donde el caos ordena su ritmo. Es también maestro de piano, y esa pedagogía silenciosa terminó resonando en la obra.',
         image: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/equipo/diego.png',
         anchor: '#team',
+      },
+       {
+        id: 'lia-perez',
+        name: 'Lía Pérez',
+        role: 'Diseño Sonoro & Pulso emocional',
+        bio: 'Lía se sumó a Cine de #GatoEncerrado con una entrega luminosa: sin pedir nada a cambio y afinando cada capa de sonido en Quirón y CopyCats. Su oído construye atmósferas que no se escuchan: se sienten. Entre risas, ruidos, silencios y tormentas interiores, su trabajo sostuvo el timbre emocional de las piezas y dejó una huella discreta, pero imprescindible.',
+        image: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/equipo/lia.png',
       },
       {
         id: 'maria-diana-laura-rodriguez',
         name: 'María Diana Laura Rodriguez',
-        role: 'Coordinadora',
-        bio: 'Productora en línea que facilita procesos con una disponibilidad impecable.',
-        image: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/equipo/placeholder-produccion.jpg',
+        role: 'Producción en línea & Cuerpo en escena',
+        bio: 'María Diana Laura cruzó el Miniverso Cine desde dos frentes: coordinó la producción en línea del cortometraje y encarnó a Cirila en el oráculo, llevando esa figura entre lo ritual y lo doméstico a la pantalla. Su energía organizativa y su presencia performática sostuvieron momentos clave del proceso, dejando constancia de que producir también es un acto de imaginación.',
+        image: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/equipo/mariadianalaura.jpg',
+        anchor: '#team',
+      },
+      {
+        id: 'tania-fraire',
+        name: 'Tania Fraire Vázques',
+        role: 'Autoficción & Presenica natural en pantalla',
+        bio: 'Tania llegó a este proyecto transmedia desde la autoficción, pero pronto reveló algo más: una actriz natural, sin artificio, capaz de sostener la cámara como si respirara con ella. En el screening privado de Quirón, el maestro Gilberto Corrales lo señaló con asombro: su actuación encendía la escena desde un lugar genuino, vulnerable y preciso. Su participación abrió una grieta luminosa por donde la historia pudo volverse más humana. Tania colabora en una non-profit, es diseñadora gráfica y transfronteriza de corazón.',
+        image: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/equipo/tania.jpg',
         anchor: '#team',
       },
     ],
@@ -162,7 +177,7 @@ const showcaseDefinitions = {
         'Dos películas, dos vulnerabilidades distintas, un mismo impulso: usar el arte para tocar aquello que no queremos decir en voz alta y encontrar otra manera de contarlo.',
     },
     screening: {
-      title: 'Screening privado · Marzo · Cineteca CECUT',
+      title: 'Marzo 2026 · Cineteca CECUT',
       description:
         'Únete al universo transmedia y asegura tu acceso al primer screening doble de CopyCats + Quirón, con conservatorio del equipo.',
       cta: 'Quiero ser parte del screening',
@@ -181,15 +196,14 @@ const showcaseDefinitions = {
     label: 'Artesanías',
     type: 'object-webar',
     slug: 'taza-que-habla',
-    subtitle: 'Esta no es una taza. Es un boleto.',
+    subtitle: 'Esta no es una taza. Es un portal.',
     intro:
       'Un objeto cotidiano convertido en símbolo de comunión. Cada taza está vinculada a un sentimiento. Cada sentimiento, a una historia personal.',
-    note: 'Apunta tu cámara a la taza. La pista aparecerá.',
+    note: 'Apunta tu cámara... La clave aparecerá.',
     ctaLabel: 'Probar activación WebAR',
     ctaLink: '/webar/taza/index.html',
     ctaMessage: 'Cuando liberes la activación WebAR, descubrirás la pista que le corresponde a tu taza.',
     image: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Merch/taza_h.png',
-    sentiments: ['Es tu manera de apoyar la causa social de Gato Encerrado.'], 
     phrases: ['La taza te habla.'],
     instructions: [
       'Permite el acceso a tu cámara para iniciar.',
@@ -197,19 +211,27 @@ const showcaseDefinitions = {
       'Mantén el marcador visible hasta que aparezca la orbe.',
     ],
     collaborators: [
+       {
+        id: 'miroslava-wilson',
+        name: 'Miroslava Wilson',
+        role: 'Produtora ejecutiva',
+        bio: 'Miroslava fue pieza clave en la estrategia que convirtió la Taza en un gesto vivo: un puente entre la obra y su comunidad. Coordinó su uso como incentivo de preventa, cuidó los tiempos, los envíos y el pulso organizativo que permitió que cada taza llegara a manos que ya estaban esperando la historia. Su trabajo tejió logística con cariño y abrió el camino para que el universo creciera desde un objeto que también es símbolo.',
+        image: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/equipo/Miroslava%20.jpg',
+      },
       {
         id: 'taller-paco-padilla',
         name: 'Taller Paco Padilla',
         role: 'Cerámica artesanal de Tlaquepaque',
-        bio: 'Referente de la cerámica artesanal de Tlaquepaque. Su equipo produce piezas únicas hechas y esmaltadas a mano, combinando tradición y diseño contemporáneo. Las tazas creadas para Gato Encerrado son parte de esa misma búsqueda: objetos con alma.',
-        image: '/images/placeholder-colaboradores.jpg',
+        bio: 'Referente de la cerámica artesanal de Tlaquepaque.El Taller Paco Padilla puso sus manos y su fuego en la primera serie de tazas del universo. Cada pieza salió de su horno con una vibración artesanal única, sosteniendo en barro el pulso íntimo de Gato Encerrado y regalándole un hogar físico a lo que antes era solo símbolo.',
+        image: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/equipo/pacopadilla.webp',
       },
+      
       {
         id: 'yeraldin-roman',
         name: 'Yeraldín Román',
-        role: 'Coordinación de producción y difusión',
-        bio: 'Diseñadora gráfica y web. Coordinó la producción fotográfica y el enlace local desde Guadalajara. Su trabajo en difusión y diseño con Isabel Ayuda para la Vida A.C. refleja el mismo cuidado y sensibilidad que aporta a Gato Encerrado.',
-        image: '/images/placeholder-colaboradores.jpg',
+        role: 'Diseño gráfico, fotografía y enlace local',
+        bio: 'Yeraldín fue la primera en mirar la Taza en sus manos: tomó la iniciativa de fotografiarla y capturar su espíritu antes de que viajara al público. Desde su experiencia en diseño gráfico, afinó la estética del proyecto, puso en pantalla el logotipo y cuidó la coherencia visual del universo. En su trabajo continuo con Isabel Ayuda para la Vida y en este miniverso, su sensibilidad conectó imagen, artesanos y propósito.',
+        image: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/equipo/yeraldin.png',
       },
     ],
     comments: [
@@ -248,15 +270,15 @@ const showcaseDefinitions = {
         id: 'pepe-rojo',
         name: 'Pepe Rojo',
         role: 'Escritor y prólogo de Mi Gato Encerrado',
-        bio: 'Escritor y cómplice creativo. Su prólogo enmarca la novela, la interpela y la empuja a desplegarse: una lectura que entiende el corazón experimental del proyecto y lo celebra desde adentro.',
-        image: '/images/placeholder-colaboradores.jpg',
+        bio: 'Pepe Rojo acompañó el Miniverso Literatura con una lectura precisa y generosa. Autor emblemático de la narrativa fronteriza, ofreció el prólogo de Mi Gato Encerrado, abriendo el libro desde una mirada que entiende el artificio, la herida y la imaginación como un mismo territorio. Su intervención dio claridad y ruta al futuro de la obra.',
+        image: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/equipo/peperojo.jpeg',
       },
       {
         id: 'groppe-imprenta',
-        name: 'Groppe Imprenta',
+        name: 'Groppe Libros',
         role: 'Edición física',
         bio: 'Acompañaron la primera edición física de Mi Gato Encerrado con oficio paciente y preciso. Pusieron forma donde antes había solo palabras: papel, tinta y cuidado. Gracias a su trabajo, este universo encontró también su cuerpo de libro.',
-        image: '/images/placeholder-colaboradores.jpg',
+        image: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/equipo/groppelibros.png',
       },
     ],
     entries: [
@@ -789,6 +811,7 @@ const Transmedia = () => {
   const [isQuironUnlocking, setIsQuironUnlocking] = useState(false);
   const [showQuironCoins, setShowQuironCoins] = useState(false);
   const [isQuironFullVisible, setIsQuironFullVisible] = useState(false);
+  const [availableGATokens, setAvailableGATokens] = useState(150);
   const [isNovelaSubmitting, setIsNovelaSubmitting] = useState(false);
   const [showNovelaCoins, setShowNovelaCoins] = useState(false);
   const [showSonoroCoins, setShowSonoroCoins] = useState(false);
@@ -817,6 +840,12 @@ const Transmedia = () => {
     const sonoroStored = window.localStorage?.getItem('gatoencerrado:sonoro-spent');
     if (sonoroStored === 'true') {
       setSonoroSpent(true);
+    }
+    const storedBalance = window.localStorage?.getItem('gatoencerrado:gatokens-available');
+    if (storedBalance && !Number.isNaN(Number.parseInt(storedBalance, 10))) {
+      setAvailableGATokens(Number.parseInt(storedBalance, 10));
+    } else {
+      window.localStorage?.setItem('gatoencerrado:gatokens-available', '150');
     }
     const tazaStored = window.localStorage?.getItem('gatoencerrado:taza-activations');
     if (tazaStored && !Number.isNaN(Number.parseInt(tazaStored, 10))) {
@@ -933,6 +962,14 @@ const Transmedia = () => {
       return;
     }
 
+    if (availableGATokens < GAT_COSTS.quironFull) {
+      setShowQuironCommunityPrompt(false);
+      toast({
+        description: `Necesitas ${GAT_COSTS.quironFull} GATokens para ver el cortometraje completo. Tu saldo actual es ${availableGATokens}.`,
+      });
+      return;
+    }
+
     setShowQuironCommunityPrompt(false);
     setIsQuironUnlocking(true);
     setShowQuironCoins(true);
@@ -943,8 +980,11 @@ const Transmedia = () => {
       setShowQuironCoins(false);
       setIsQuironUnlocking(false);
       setQuironSpent(true);
+      const nextBalance = Math.max(availableGATokens - GAT_COSTS.quironFull, 0);
+      setAvailableGATokens(nextBalance);
       if (typeof window !== 'undefined') {
         window.localStorage?.setItem('gatoencerrado:quiron-spent', 'true');
+        window.localStorage?.setItem('gatoencerrado:gatokens-available', String(nextBalance));
         window.dispatchEvent(
           new CustomEvent('gatoencerrado:miniverse-spent', {
             detail: { id: 'cine', spent: true, amount: GAT_COSTS.quironFull },
@@ -952,7 +992,11 @@ const Transmedia = () => {
         );
       }
     });
-  }, [isQuironUnlocking, user]);
+  }, [availableGATokens, isQuironUnlocking, user]);
+
+  const handleCloseQuironFull = useCallback(() => {
+    setIsQuironFullVisible(false);
+  }, []);
 
   const renderMobileVideoBadge = () =>
     isMobileViewport ? (
@@ -1557,11 +1601,37 @@ const Transmedia = () => {
       );
     }
 
-    if (activeDefinition.type === 'object-webar') {
+  if (activeDefinition.type === 'object-webar') {
       const objectWebArVideoId = `${activeShowcase ?? 'object-webar'}-video`;
+      const remainingTazaGatokens = Math.max(90 - tazaActivations * 30, 0);
 
       return (
         <div className="space-y-8">
+          {isQuironFullVisible && activeDefinition.quiron?.fullVideo ? (
+            <div className="fixed inset-0 z-[120] bg-black/85 backdrop-blur-sm p-4 sm:p-6 overflow-auto">
+              <div className="max-w-5xl mx-auto space-y-4">
+                <div className="flex items-center justify-between gap-3">
+                  <p className="text-xs uppercase tracking-[0.35em] text-amber-200">
+                    Cortometraje completo desbloqueado
+                  </p>
+                  <Button
+                    variant="outline"
+                    className="border-white/30 text-slate-100 hover:bg-white/10"
+                    onClick={handleCloseQuironFull}
+                  >
+                    Cerrar
+                  </Button>
+                </div>
+                <div className="rounded-2xl border border-white/15 bg-black/40 overflow-hidden shadow-2xl">
+                  {renderMedia({
+                    id: activeDefinition.quiron.fullVideo.id || 'quiron-full',
+                    label: activeDefinition.quiron.fullVideo.label || 'Cortometraje completo',
+                    url: activeDefinition.quiron.fullVideo.url,
+                  })}
+                </div>
+              </div>
+            </div>
+          ) : null}
           {activeDefinition.collaborators?.length ? (
             <div className="rounded-3xl border border-white/10 bg-black/30 p-6 space-y-4">
               <div className="flex items-center justify-between gap-3">
@@ -1618,17 +1688,13 @@ const Transmedia = () => {
           <div className="grid gap-10 lg:grid-cols-[2fr_1fr]">
             <div className="space-y-6">
               <div className="rounded-3xl border border-white/10 overflow-hidden bg-black/30">
-              <div className="flex items-center justify-between gap-3 px-6 pt-4">
-                <p className="text-xs uppercase tracking-[0.3em] text-slate-400/70">Activa tu objeto</p>
-                <span className="inline-flex items-center gap-2 rounded-full border border-amber-200/80 bg-amber-500/30 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.25em] text-amber-50">
-                  <Coins size={14} className="text-amber-50" />
-                  {Math.max(90 - tazaActivations * 30, 0)} gatokens
-                </span>
-              </div>
-              {activeShowcase === 'lataza' && isTazaARActive && !isMobileARFullscreen ? (
-                <div className="p-0 sm:p-4">
-                  <ARExperience
-                    targetSrc="/webar/taza/taza.mind"
+                <div className="flex items-center justify-between gap-3 px-6 pt-4">
+                  <p className="text-xs uppercase tracking-[0.3em] text-slate-400/70">Activa tu objeto</p>
+                </div>
+                {activeShowcase === 'lataza' && isTazaARActive && !isMobileARFullscreen ? (
+                  <div className="p-0 sm:p-4">
+                    <ARExperience
+                      targetSrc="/webar/taza/taza.mind"
                     phrases={activeDefinition.phrases}
                     onExit={handleCloseARExperience}
                   />
@@ -1684,19 +1750,19 @@ const Transmedia = () => {
                             -30 gat
                           </motion.div>
                         ) : null}
-                        <Button
-                          className="relative border-purple-400/40 text-purple-200 hover:bg-purple-500/10 overflow-visible"
-                          variant="outline"
-                          onClick={handleActivateAR}
-                          disabled={Math.max(90 - tazaActivations * 30, 0) <= 0 || isTazaActivating}
-                        >
-                          <span className="relative z-10">
-                            {Math.max(90 - tazaActivations * 30, 0) <= 0
-                              ? 'Sin gatokens'
-                              : isTazaActivating
-                                ? 'Procesando...'
-                                : activeDefinition.ctaLabel}
-                          </span>
+                          <Button
+                            className="relative border-purple-400/40 text-purple-200 hover:bg-purple-500/10 overflow-visible"
+                            variant="outline"
+                            onClick={handleActivateAR}
+                            disabled={remainingTazaGatokens <= 0 || isTazaActivating}
+                          >
+                            <span className="relative z-10">
+                              {remainingTazaGatokens <= 0
+                                ? 'Sin gatokens'
+                                : isTazaActivating
+                                  ? 'Procesando...'
+                                  : activeDefinition.ctaLabel}
+                            </span>
                           {showTazaCoins ? (
                             <span className="pointer-events-none absolute inset-0">
                               {Array.from({ length: 6 }).map((_, index) => {
@@ -1714,9 +1780,9 @@ const Transmedia = () => {
                               })}
                             </span>
                           ) : null}
-                        </Button>
-                      </div>
-                    ) : activeDefinition.ctaLink ? (
+                          </Button>
+                        </div>
+                      ) : activeDefinition.ctaLink ? (
                       <a
                         href={activeDefinition.ctaLink}
                         target="_blank"
@@ -1730,13 +1796,22 @@ const Transmedia = () => {
                         variant="outline"
                         className="border-purple-400/40 text-purple-200 hover:bg-purple-500/10"
                         onClick={() => handleLaunchWebAR(activeDefinition.ctaMessage)}
-                      >
-                        {activeDefinition.ctaLabel}
-                      </Button>
-                    )}
-                  </div>
-                </>
-              )}
+                        >
+                          {activeDefinition.ctaLabel}
+                        </Button>
+                      )}
+                      <div className="mt-3 flex flex-wrap items-center gap-2 text-[11px] uppercase tracking-[0.25em] text-amber-100">
+                        <span className="inline-flex items-center gap-2 rounded-full border border-amber-200/60 bg-amber-500/15 px-3 py-1 text-amber-50">
+                          <Coins size={14} className="text-amber-50" />
+                          {remainingTazaGatokens} gatokens
+                        </span>
+                        {activeShowcase === 'lataza' ? (
+                          <span className="text-slate-400">Energía por activación: 30 gatokens</span>
+                        ) : null}
+                      </div>
+                    </div>
+                  </>
+                )}
             </div>
 
             {activeDefinition.sentiments ? (
@@ -2687,225 +2762,206 @@ const Transmedia = () => {
           ) : null}
 
           <div className="grid gap-6 lg:grid-cols-2">
-            <div className="rounded-3xl border border-white/10 bg-black/30 p-6 space-y-4">
-              <div className="flex items-start justify-between gap-3">
-                <div>
-                  <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Meta-documental</p>
-                  <h4 className="font-display text-xl text-slate-100">{activeDefinition.copycats?.title}</h4>
-                </div>
-              
-              </div>
-              <p className="text-sm text-slate-300/80 leading-relaxed">
-                {activeDefinition.copycats?.description}
-              </p>
-              <p className="text-sm text-slate-200/90 leading-relaxed">{activeDefinition.copycats?.microcopy}</p>
-              {activeDefinition.copycats?.tags?.length ? (
-                <div className="flex flex-wrap gap-2">
-                  {activeDefinition.copycats.tags.map((tag, index) => (
-                    <span
-                      key={`copycats-tag-${index}`}
-                      className="px-3 py-1 rounded-full border border-purple-400/30 bg-purple-900/20 text-xs text-purple-100"
-                    >
-                      {tag}
-                    </span>
-                  ))}
-                </div>
-              ) : null}
-              {copycatsAssets.length ? (
-                <div className="space-y-4">
-                  {copycatsAssets.map((asset) => (
-                    <div key={asset.id}>{renderMedia(asset)}</div>
-                  ))}
-                </div>
-              ) : null}
-            </div>
-
-            <div className="relative rounded-3xl border border-white/10 bg-black/30 p-6 space-y-4">
-              <div className="flex items-start justify-between gap-3">
-                <div>
-                  <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Teaser + Stills</p>
-                  <h4 className="font-display text-xl text-slate-100">{activeDefinition.quiron?.title}</h4>
-                </div>
-                <div className="flex flex-col items-end gap-1 text-right">
-                  <span className="text-[11px] uppercase tracking-[0.3em] text-rose-300">Teaser + stills</span>
-                  <span
-                    className={`inline-flex items-center gap-2 rounded-full px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.2em] ${
-                      quironSpent
-                        ? 'border border-emerald-200/60 bg-emerald-500/10 text-emerald-100'
-                        : 'border border-amber-200/50 bg-amber-500/10 text-amber-100'
-                    }`}
-                  >
-                    <Coins size={14} />
-                    {quironSpent ? '0 gatokens' : `${GAT_COSTS.quironFull} gatokens`}
-                  </span>
-                </div>
-              </div>
-              <p className="text-sm text-slate-300/80 leading-relaxed">{activeDefinition.quiron?.description}</p>
-              <p className="text-sm text-slate-200/90 leading-relaxed">{activeDefinition.quiron?.microcopy}</p>
-              <div className="flex flex-wrap items-center gap-3">
-                {quironSpent ? (
-                  <span className="inline-flex items-center gap-2 rounded-full border border-emerald-200/60 bg-emerald-500/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.25em] text-emerald-100">
-                    <Coins size={14} /> 0 gatokens
-                  </span>
-                ) : (
-                  <Button
-                    variant="secondary"
-                    onClick={handleToggleQuironPrompt}
-                    disabled={isQuironUnlocking}
-                    className="relative bg-gradient-to-r from-rose-500/80 via-amber-500/80 to-yellow-400/80 text-slate-900 hover:from-rose-400 hover:via-amber-400 hover:to-yellow-300 disabled:opacity-70 overflow-visible"
-                  >
-                    <span className="relative z-10">
-                      {isQuironUnlocking ? 'Procesando…' : 'Ver cortometraje completo'}
-                    </span>
-                    {showQuironCoins ? (
-                      <span className="pointer-events-none absolute inset-0">
-                        {Array.from({ length: 5 }).map((_, index) => {
-                          const startX = 0;
-                          const startY = 0;
-                          const endX = 140 + index * 10;
-                          const endY = -120 - index * 10;
-                          return (
-                            <motion.span
-                              key={`quiron-coin-btn-${index}`}
-                              className="absolute left-1/2 top-1/2 h-5 w-5 -translate-x-1/2 -translate-y-1/2 rounded-full bg-gradient-to-br from-amber-200 to-yellow-500 shadow-[0_0_12px_rgba(250,204,21,0.5)]"
-                              initial={{ opacity: 0.9, scale: 0.6, x: startX, y: startY }}
-                              animate={{ opacity: 0, scale: 0.9, x: endX, y: endY, rotate: 90 + index * 25 }}
-                              transition={{ duration: 1, ease: 'easeOut' }}
-                            />
-                          );
-                        })}
-                      </span>
-                    ) : null}
-                  </Button>
-                )}
-                <span className="text-xs uppercase tracking-[0.25em] text-slate-300/80">
-                  {quironSpent
-                    ? `0 gatokens pendientes · ${GAT_COSTS.quironFull} aplicadas`
-                    : `Se descontarán ${GAT_COSTS.quironFull} GAT o se cubre con tu suscripción`}
-                </span>
-              </div>
-              {showQuironCommunityPrompt ? (
-                <motion.div
-                  initial={{ opacity: 0, height: 0 }}
-                  animate={{ opacity: 1, height: 'auto' }}
-                  className="rounded-2xl border border-amber-200/40 bg-amber-500/10 p-4 text-sm text-amber-100"
-                >
-                  Únete a la comunidad para usar tus gatokens y desbloquear experiencias completas. Muy pronto podrás conectar tu saldo y suscripción aquí mismo.
-                </motion.div>
-              ) : null}
-              {showQuironCoins ? (
-                      <div className="pointer-events-none absolute inset-0 overflow-visible">
-                  {Array.from({ length: 6 }).map((_, index) => {
-                    const startLeft = 0.35 + index * 0.04;
-                    const startTop = 0.7;
-                    const x = 220 + index * 8;
-                    const y = -240 - index * 18;
-                    return (
-                      <motion.span
-                        key={`quiron-coin-flight-${index}`}
-                        className="absolute h-6 w-6 rounded-full bg-gradient-to-br from-amber-200 to-yellow-500 shadow-[0_0_18px_rgba(250,204,21,0.55)]"
-                        style={{ left: `${startLeft * 100}%`, top: `${startTop * 100}%` }}
-                        initial={{ opacity: 0.95, scale: 0.8, rotate: 0, x: 0, y: 0 }}
-                        animate={{ opacity: 0, scale: 1, rotate: 140 + index * 18, x, y }}
-                        transition={{ duration: 1.15, ease: 'easeOut' }}
-                      />
-                    );
-                  })}
-                </div>
-              ) : null}
-              {isQuironFullVisible ? (
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className="overflow-hidden rounded-2xl border border-white/10 bg-black/25"
-                >
-                  <div className="aspect-video bg-gradient-to-br from-slate-800 via-slate-900 to-black flex items-center justify-center text-slate-200">
-                    <div className="space-y-2 text-center">
-                      <p className="text-sm uppercase tracking-[0.35em] text-amber-200">Mockup</p>
-                      <p className="text-lg font-semibold">Cortometraje completo · Placeholder</p>
-                      <p className="text-xs text-slate-300/80">Se carga después de la animación de monedas.</p>
-                    </div>
+            <div className="space-y-6">
+              <div className="rounded-3xl border border-white/10 bg-black/30 p-6 space-y-4">
+                <div className="flex items-start justify-between gap-3">
+                  <div>
+                    <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Meta-documental</p>
+                    <h4 className="font-display text-xl text-slate-100">{activeDefinition.copycats?.title}</h4>
                   </div>
-                  <div className="flex items-center justify-between px-4 py-3 text-xs text-slate-300 border-t border-white/5">
-                    <span>Duración: 12:00 · Calidad: HD</span>
-                    <span className="inline-flex items-center gap-2 rounded-full border border-amber-200/40 px-2 py-1 text-amber-100">
-                      <Coins size={14} /> 200 GAT aplicados
-                    </span>
-                  </div>
-                </motion.div>
-              ) : null}
-              {activeDefinition.quiron?.teaser ? (
-                <div>{renderMedia(activeDefinition.quiron.teaser)}</div>
-              ) : null}
-              {quironStills.length ? (
-                <div className="grid gap-3 sm:grid-cols-2">
-                  {quironStills.map((still, index) => {
-                    const label = typeof still === 'string' ? still : still.label || `Still ${index + 1}`;
-                    const url = typeof still === 'string' ? null : still.url;
-                    return url ? (
-                      <div
-                        key={still.id || `quiron-still-${index}`}
-                        className="overflow-hidden rounded-2xl border border-white/10 bg-black/20"
-                      >
-                        <div className="aspect-[4/3] bg-black/40">
-                          <img
-                            src={url}
-                            alt={label}
-                            className="h-full w-full object-cover"
-                            loading="lazy"
-                          />
-                        </div>
-                        <p className="px-4 py-3 text-xs uppercase tracking-[0.25em] text-slate-200">{label}</p>
-                      </div>
-                    ) : (
+                
+                </div>
+                <p className="text-sm text-slate-300/80 leading-relaxed">
+                  {activeDefinition.copycats?.description}
+                </p>
+                <p className="text-sm text-slate-200/90 leading-relaxed">{activeDefinition.copycats?.microcopy}</p>
+                {activeDefinition.copycats?.tags?.length ? (
+                  <div className="flex flex-wrap gap-2">
+                    {activeDefinition.copycats.tags.map((tag, index) => (
                       <span
-                        key={`quiron-still-pill-${index}`}
-                        className="px-3 py-1 rounded-full border border-white/10 bg-white/5 text-xs text-slate-100"
+                        key={`copycats-tag-${index}`}
+                        className="px-3 py-1 rounded-full border border-purple-400/30 bg-purple-900/20 text-xs text-purple-100"
                       >
-                        {label}
+                        {tag}
                       </span>
-                    );
-                  })}
+                    ))}
+                  </div>
+                ) : null}
+                {copycatsAssets.length ? (
+                  <div className="space-y-4">
+                    {copycatsAssets.map((asset) => (
+                      <div key={asset.id}>{renderMedia(asset)}</div>
+                    ))}
+                  </div>
+                ) : null}
+              </div>
+
+              <div className="rounded-3xl border border-white/10 bg-gradient-to-r from-slate-900/80 via-black/60 to-purple-900/40 p-6 space-y-4">
+                <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Screening privado</p>
+                <h4 className="font-display text-2xl text-slate-100">{activeDefinition.screening?.title}</h4>
+                <p className="text-sm text-slate-200/90 leading-relaxed">{activeDefinition.screening?.description}</p>
+                <Button
+                  onClick={() =>
+                    toast({
+                      description:
+                        'Guardaremos tu interés; pronto abriremos la lista de suscriptores para el screening doble en CECUT.',
+                    })
+                  }
+                  className="w-full sm:w-auto justify-center bg-gradient-to-r from-purple-600/80 to-indigo-500/80 hover:from-purple-500 hover:to-indigo-400 text-white"
+                >
+                  {activeDefinition.screening?.cta}
+                </Button>
+                {activeDefinition.screening?.footnote ? (
+                  <p className="text-xs text-slate-400 leading-relaxed">{activeDefinition.screening.footnote}</p>
+                ) : null}
+              </div>
+
+              <div className="rounded-3xl border border-white/10 bg-black/20 p-6 space-y-3">
+                <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Lo que las conecta</p>
+                <h4 className="font-display text-xl text-slate-100">{activeDefinition.bridge?.title}</h4>
+                <p className="text-sm text-slate-200/90 leading-relaxed">{activeDefinition.bridge?.description}</p>
+                <p className="text-sm text-slate-400 leading-relaxed">{activeDefinition.bridge?.note}</p>
+              </div>
+            </div>
+
+            <div className="space-y-6">
+              <div className="relative rounded-3xl border border-white/10 bg-black/30 p-6 space-y-4">
+                <div className="space-y-2">
+                  <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Cortometraje</p>
+                  <div className="flex flex-wrap items-baseline gap-2">
+                    <h4 className="font-display text-xl text-slate-100">{activeDefinition.quiron?.title}</h4>
+                    <span className="text-[11px] uppercase tracking-[0.3em] text-rose-300">Teaser + stills</span>
+                  </div>
                 </div>
-              ) : null}
-            </div>
-          </div>
+                <p className="text-sm text-slate-300/80 leading-relaxed">{activeDefinition.quiron?.description}</p>
+                <p className="text-sm text-slate-200/90 leading-relaxed">{activeDefinition.quiron?.microcopy}</p>
+                <div className="space-y-3">
+                  {quironSpent ? (
+                    <span className="inline-flex items-center gap-2 rounded-full border border-emerald-200/60 bg-emerald-500/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.25em] text-emerald-100">
+                      <Coins size={14} /> 0 gatokens
+                    </span>
+                  ) : (
+                    <Button
+                      variant="outline"
+                      onClick={handleToggleQuironPrompt}
+                      disabled={isQuironUnlocking}
+                      className="relative w-full sm:w-auto justify-center border-purple-400/40 text-purple-200 hover:bg-purple-500/10 overflow-visible"
+                    >
+                      <span className="relative z-10">
+                        {isQuironUnlocking ? 'Procesando…' : 'Ver cortometraje completo'}
+                      </span>
+                      {showQuironCoins ? (
+                        <span className="pointer-events-none absolute inset-0">
+                          {Array.from({ length: 5 }).map((_, index) => {
+                            const startX = 0;
+                            const startY = 0;
+                            const endX = 140 + index * 10;
+                            const endY = -120 - index * 10;
+                            return (
+                              <motion.span
+                                key={`quiron-coin-btn-${index}`}
+                                className="absolute left-1/2 top-1/2 h-5 w-5 -translate-x-1/2 -translate-y-1/2 rounded-full bg-gradient-to-br from-amber-200 to-yellow-500 shadow-[0_0_12px_rgba(250,204,21,0.5)]"
+                                initial={{ opacity: 0.9, scale: 0.6, x: startX, y: startY }}
+                                animate={{ opacity: 0, scale: 0.9, x: endX, y: endY, rotate: 90 + index * 25 }}
+                                transition={{ duration: 1, ease: 'easeOut' }}
+                              />
+                            );
+                          })}
+                        </span>
+                      ) : null}
+                    </Button>
+                  )}
+                <div className="flex flex-wrap items-center gap-2 text-[11px] uppercase tracking-[0.25em] text-amber-100">
+                  <span className="inline-flex items-center gap-2 rounded-full border border-amber-200/60 bg-amber-500/15 px-3 py-1 text-amber-50">
+                    <Coins size={14} className="text-amber-50" />
+                    {GAT_COSTS.quironFull} gatokens
+                  </span>
+                  <span className="text-slate-400">
+                    {quironSpent
+                      ? `0 gatokens pendientes · ${GAT_COSTS.quironFull} aplicadas`
+                      : `Se descontarán ${GAT_COSTS.quironFull} GATokens de tu saldo`}
+                  </span>
+                  {!quironSpent ? (
+                    <span className="text-slate-500">Saldo actual: {availableGATokens} GATokens</span>
+                  ) : null}
+                </div>
+                </div>
+                {showQuironCommunityPrompt ? (
+                  <motion.div
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: 'auto' }}
+                    className="rounded-2xl border border-amber-200/40 bg-amber-500/10 p-4 text-sm text-amber-100"
+                  >
+                    Únete a la comunidad para usar tus gatokens y desbloquear experiencias completas. Muy pronto podrás conectar tu saldo y suscripción aquí mismo.
+                  </motion.div>
+                ) : null}
+                {showQuironCoins ? (
+                        <div className="pointer-events-none absolute inset-0 overflow-visible">
+                    {Array.from({ length: 6 }).map((_, index) => {
+                      const startLeft = 0.35 + index * 0.04;
+                      const startTop = 0.7;
+                      const x = 220 + index * 8;
+                      const y = -240 - index * 18;
+                      return (
+                        <motion.span
+                          key={`quiron-coin-flight-${index}`}
+                          className="absolute h-6 w-6 rounded-full bg-gradient-to-br from-amber-200 to-yellow-500 shadow-[0_0_18px_rgba(250,204,21,0.55)]"
+                          style={{ left: `${startLeft * 100}%`, top: `${startTop * 100}%` }}
+                          initial={{ opacity: 0.95, scale: 0.8, rotate: 0, x: 0, y: 0 }}
+                          animate={{ opacity: 0, scale: 1, rotate: 140 + index * 18, x, y }}
+                          transition={{ duration: 1.15, ease: 'easeOut' }}
+                        />
+                      );
+                    })}
+                  </div>
+                ) : null}
+                <p className="text-xs text-slate-400 leading-relaxed">
+                  Al desbloquear, el cortometraje se abre en vista completa fuera de esta tarjeta.
+                </p>
+                {activeDefinition.quiron?.teaser ? (
+                  <div>{renderMedia(activeDefinition.quiron.teaser)}</div>
+                ) : null}
+                {quironStills.length ? (
+                  <div className="grid gap-3 sm:grid-cols-2">
+                    {quironStills.map((still, index) => {
+                      const label = typeof still === 'string' ? still : still.label || `Still ${index + 1}`;
+                      const url = typeof still === 'string' ? null : still.url;
+                      return url ? (
+                        <div
+                          key={still.id || `quiron-still-${index}`}
+                          className="overflow-hidden rounded-2xl border border-white/10 bg-black/20"
+                        >
+                          <div className="aspect-[4/3] bg-black/40">
+                            <img
+                              src={url}
+                              alt={label}
+                              className="h-full w-full object-cover"
+                              loading="lazy"
+                            />
+                          </div>
+                          <p className="px-4 py-3 text-xs uppercase tracking-[0.25em] text-slate-200">{label}</p>
+                        </div>
+                      ) : (
+                        <span
+                          key={`quiron-still-pill-${index}`}
+                          className="px-3 py-1 rounded-full border border-white/10 bg-white/5 text-xs text-slate-100"
+                        >
+                          {label}
+                        </span>
+                      );
+                    })}
+                  </div>
+                ) : null}
+              </div>
 
-          <div className="rounded-3xl border border-white/10 bg-black/20 p-6 space-y-3">
-            <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Lo que las conecta</p>
-            <h4 className="font-display text-xl text-slate-100">{activeDefinition.bridge?.title}</h4>
-            <p className="text-sm text-slate-200/90 leading-relaxed">{activeDefinition.bridge?.description}</p>
-            <p className="text-sm text-slate-400 leading-relaxed">{activeDefinition.bridge?.note}</p>
-          </div>
-
-          <div className="grid gap-6 lg:grid-cols-[2fr_1fr]">
-            <div className="rounded-3xl border border-white/10 bg-gradient-to-r from-slate-900/80 via-black/60 to-purple-900/40 p-6 space-y-4">
-              <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Pantalla 5 · CTA final</p>
-              <h4 className="font-display text-2xl text-slate-100">{activeDefinition.screening?.title}</h4>
-              <p className="text-sm text-slate-200/90 leading-relaxed">{activeDefinition.screening?.description}</p>
-              <Button
-                onClick={() =>
-                  toast({
-                    description:
-                      'Guardaremos tu interés; pronto abriremos la lista de suscriptores para el screening doble en CECUT.',
-                  })
-                }
-                className="w-full sm:w-auto justify-center bg-gradient-to-r from-purple-600/80 to-indigo-500/80 hover:from-purple-500 hover:to-indigo-400 text-white"
-              >
-                {activeDefinition.screening?.cta}
-              </Button>
-              {activeDefinition.screening?.footnote ? (
-                <p className="text-xs text-slate-400 leading-relaxed">{activeDefinition.screening.footnote}</p>
-              ) : null}
-            </div>
-
-            <div className="space-y-4">
-              <ShowcaseReactionInline
-                showcaseId="copycats"
-                title="Validación cinematográfica"
-                description="Haz clic para dejar un like y amplificar el screening de CopyCats + Quirón."
-                buttonLabel="Sumar mi aplauso"
-              />
+              <div className="space-y-4">
+                <ShowcaseReactionInline
+                  showcaseId="copycats"
+                  title="Validación cinematográfica"
+                  description="Haz clic para dejar un like y amplificar el screening de CopyCats + Quirón."
+                  buttonLabel="Sumar mi aplauso"
+                />
+              </div>
             </div>
           </div>
         </div>
@@ -2920,14 +2976,23 @@ const Transmedia = () => {
           case 'internal-reading':
             if (entry.previewMode === 'pdf' && entry.previewPdfUrl) {
               return (
-               <Button
-            onClick={() => setShowAutoficcionPreview(true)}
-            className="w-full sm:w-auto justify-center"
-          >
-            Leer fragmento
-          </Button>
-          );
-                      }
+                <>
+                  <Button
+                    onClick={() => setShowAutoficcionPreview(true)}
+                    className="w-full sm:w-auto justify-center"
+                  >
+                    Leer fragmento
+                  </Button>
+                  <div className="mt-3 flex flex-wrap items-center gap-2 text-[11px] uppercase tracking-[0.25em] text-amber-100">
+                    <span className="inline-flex items-center gap-2 rounded-full border border-amber-200/60 bg-amber-500/15 px-3 py-1 text-amber-50">
+                      <Coins size={14} className="text-amber-50" />
+                      150 gatokens
+                    </span>
+                    <span className="text-slate-400">Lectura y desbloqueo del PDF interactivo</span>
+                  </div>
+                </>
+              );
+            }
             if (entry.previewMode === 'image' && entry.previewImage) {
               return (
                 <Button
@@ -2945,9 +3010,18 @@ const Transmedia = () => {
               );
             }
             return entry.contentSlug ? (
-              <Button onClick={() => handleOpenBlogEntry(entry.contentSlug)} className="w-full sm:w-auto justify-center">
-                Leer fragmento
-              </Button>
+              <>
+                <Button onClick={() => handleOpenBlogEntry(entry.contentSlug)} className="w-full sm:w-auto justify-center">
+                  Leer fragmento
+                </Button>
+                <div className="mt-3 flex flex-wrap items-center gap-2 text-[11px] uppercase tracking-[0.25em] text-amber-100">
+                  <span className="inline-flex items-center gap-2 rounded-full border border-amber-200/60 bg-amber-500/15 px-3 py-1 text-amber-50">
+                    <Coins size={14} className="text-amber-50" />
+                    150 gatokens
+                  </span>
+                  <span className="text-slate-400">Lectura y desbloqueo del fragmento</span>
+                </div>
+              </>
             ) : null;
           case 'purchase-link':
             return entry.url ? (
@@ -3103,13 +3177,7 @@ const Transmedia = () => {
                     <div key={entry.id} className="rounded-2xl border border-white/10 bg-black/30 p-6 space-y-6 relative overflow-hidden">
                       <div className="flex items-start justify-between gap-3">
                         <div className="space-y-2 flex-1">
-                          <div className="flex items-center justify-between gap-3">
-                            <h5 className="font-display text-xl text-slate-100">{entry.title}</h5>
-                            <span className="inline-flex items-center gap-2 rounded-full border border-amber-200/60 bg-amber-500/15 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.25em] text-amber-100 shrink-0">
-                              <Coins size={14} className="text-amber-50" />
-                              <span className="text-amber-50">150 gatokens</span>
-                            </span>
-                          </div>
+                          <h5 className="font-display text-xl text-slate-100">{entry.title}</h5>
                           {entry.description ? (
                             <p className="text-sm text-slate-300/80 leading-relaxed">{entry.description}</p>
                           ) : null}
@@ -3159,6 +3227,12 @@ const Transmedia = () => {
                               >
                                 {app.ctaLabel}
                               </Button>
+                              <div className="flex items-center justify-center gap-2 text-[11px] uppercase tracking-[0.35em] text-amber-200/90">
+                                <span className="inline-flex items-center gap-2 rounded-full border border-amber-200/60 bg-amber-500/15 px-3 py-1 text-amber-50">
+                                  <Coins size={14} className="text-amber-50" />
+                                  <span className="text-amber-50">150 gatokens</span>
+                                </span>
+                              </div>
                               <div className="flex items-center justify-center text-[11px] uppercase tracking-[0.35em] text-amber-200/90">
                                 {novelaSpentAmount > 0
                                   ? `${novelaSpentAmount} gatokens usadas · ${novelaQuestions} pregunta${novelaQuestions === 1 ? '' : 's'}`
@@ -3443,19 +3517,17 @@ const Transmedia = () => {
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, ease: 'easeOut' }}
-              className="mt-12 glass-effect rounded-2xl p-8 md:p-12 border border-white/10"
+              className="relative mt-12 glass-effect rounded-2xl p-8 md:p-12 border border-white/10"
             >
-              {activeDefinition.type === 'tragedia' ? (
-                <div className="flex justify-end">
-                  <button
-                    onClick={() => setActiveShowcase(null)}
-                    className="text-sm text-slate-400 hover:text-white transition"
-                  >
-                    Cerrar escaparate ✕
-                  </button>
-                </div>
-              ) : (
-                <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
+              <button
+                onClick={() => setActiveShowcase(null)}
+                className="absolute top-4 right-4 text-sm text-slate-400 hover:text-white transition"
+                aria-label="Cerrar escaparate"
+              >
+                Cerrar escaparate ✕
+              </button>
+              {activeDefinition.type !== 'tragedia' ? (
+                <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between pr-12 md:pr-0">
                   <div>
                     <p className="text-xs uppercase tracking-[0.4em] text-slate-400/70 mb-2">Escaparate</p>
                     <h3 className="font-display text-3xl text-slate-100 mb-3">{activeDefinition.label}</h3>
@@ -3464,14 +3536,8 @@ const Transmedia = () => {
                     </p>
                     {activeDefinition.type !== 'graphic-lab' ? rendernotaAutoral() : null}
                   </div>
-                  <button
-                    onClick={() => setActiveShowcase(null)}
-                    className="text-sm text-slate-400 hover:text-white transition self-start md:self-auto"
-                  >
-                    Cerrar escaparate ✕
-                  </button>
                 </div>
-              )}
+              ) : null}
 
               <div className="mt-8">{renderShowcaseContent()}</div>
               {activeDefinition.iaProfile ? (

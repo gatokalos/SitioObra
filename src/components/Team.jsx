@@ -27,7 +27,7 @@ const teamData = {
         name: "Rosalía Hernández Millán",
         role: "Producción General y Vinculación Social",
         bio: "Presidenta de Isabel A.C. Ayuda para la Vida, Maestra en Psicobiología y Neurociencia Cognitiva (UAB). Su labor impulsa la integración entre arte y bienestar emocional, fortaleciendo el puente entre el proyecto escénico y la comunidad.",
-        image: "/images/placeholder-colaboradores.jpg",
+        image: "https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/equipo/presidentaross.jpg",
       },
       {
         name: "Miroslava Wilson",
@@ -57,7 +57,7 @@ const teamData = {
         name: "María Diana Laura Rodriguez",
         role: "Enlace de Producción",
         bio: "Maquillista y traspunte en el Teatro Camafeo. Fue un apoyo operativo clave en la etapa temprana de #GatoEncerrado y facilitó el enlace con el director Gilberto Corrales, gesto que definió la continuidad del proyecto. Su iniciativa y acompañamiento hicieron posible que el montaje avanzara en el momento más decisivo.",
-        image: "/images/placeholder-produccion.jpg",
+        image: "https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/equipo/mariadianalaura.jpg",
       },
     ],
   },
