@@ -367,10 +367,10 @@ const Instagram = () => {
           className="text-center mb-14"
         >
           <h2 className="font-display text-4xl md:text-5xl font-medium mb-5 text-gradient italic">
-            Memoria Escénica
+            Fractales Escénicos
           </h2>
           <p className="text-base md:text-lg text-slate-300/75 max-w-3xl mx-auto leading-relaxed mb-7 font-light">
-            Fragmentos de lo que solo sucede en escena…
+            Memoria de lo que solo sucede una vez en escena…
             Un homenaje visual al trabajo colectivo detrás de Es un gato encerrado:
             las funciones, los cuerpos, los silencios, las luces… lo que solo existe cuando alguien lo mira.
           </p>

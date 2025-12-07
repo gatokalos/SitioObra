@@ -121,7 +121,7 @@ const formTitlesByUniverse = {
   movimiento: 'Cuéntanos qué ruta, coreografía o ritual colectivo quieres activar en la ciudad.',
 };
 
-const ContributionModal = ({ open, onClose }) => {
+const ContributionModal = ({ open, onClose, initialCategoryId = null }) => {
   const { user } = useAuth();
   const isAuthenticated = Boolean(user?.email);
   const preferredName = useMemo(
@@ -187,6 +187,9 @@ const ContributionModal = ({ open, onClose }) => {
       return;
     }
 
+    const preferredCategory =
+      (initialCategoryId && CATEGORIES.find((item) => item.id === initialCategoryId)) || null;
+
     if (!storedFormRef.current) {
       setFormState({
         ...initialFormState,
@@ -194,7 +197,7 @@ const ContributionModal = ({ open, onClose }) => {
         email: isAuthenticated ? authEmail : '',
       });
       setNotifyOnPublish(isAuthenticated);
-      setSelectedCategory(CATEGORIES[0]);
+      setSelectedCategory(preferredCategory ?? CATEGORIES[0]);
       setIsFormPanelOpen(false);
     } else {
       const storedState = storedFormRef.current.formState ?? initialFormState;
@@ -208,14 +211,12 @@ const ContributionModal = ({ open, onClose }) => {
       const storedCategory = CATEGORIES.find(
         (item) => item.id === storedFormRef.current.selectedCategory
       );
-      if (storedCategory) {
-        setSelectedCategory(storedCategory);
-      }
+      setSelectedCategory(preferredCategory ?? storedCategory ?? CATEGORIES[0]);
       setIsFormPanelOpen(true);
     }
     setStatus('idle');
     setErrorMessage('');
-  }, [open, isAuthenticated, formStorageLoaded]);
+  }, [open, isAuthenticated, formStorageLoaded, initialCategoryId, authDisplayName, authEmail]);
 
   useEffect(() => {
     if (!open || !isAuthenticated) {
