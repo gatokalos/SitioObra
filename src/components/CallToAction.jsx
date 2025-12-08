@@ -2,6 +2,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { motion } from 'framer-motion';
 import { IMPACT_COPY as t } from '../copy/impact.es.js';
+import { apiFetch } from '@/lib/apiClient';
 
 const SESSIONS_PER_SUB = 6;
 const SUBS_PER_RESIDENCY = 17; // ≈ $10,000 / $600
@@ -39,7 +40,7 @@ const CallToAction = () => {
     let active = true;
     async function fetchSubs() {
       try {
-        const res = await fetch(`${import.meta.env.VITE_API_URL}/stats/suscriptores`, { cache: 'no-store' });
+        const res = await apiFetch('/stats/suscriptores', { cache: 'no-store' });
         const data = await res.json();
         if (!active) return;
         setSubs(Number(data?.total || 0));
@@ -79,10 +80,9 @@ const CallToAction = () => {
     try {
       setLoading(true);
       setMsg('');
-      const res = await fetch(`${import.meta.env.VITE_API_URL}/stripe/create-checkout-session`, {
+      const res = await apiFetch('/stripe/create-checkout-session', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email })
+        body: JSON.stringify({ email }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data?.error || 'No se pudo crear la sesión');

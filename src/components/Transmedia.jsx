@@ -31,6 +31,7 @@ import ContributionModal from '@/components/ContributionModal';
 import { fetchBlogPostBySlug } from '@/services/blogService';
 import { toast } from '@/components/ui/use-toast';
 import { useAuth } from '@/contexts/SupabaseAuthContext';
+import { apiFetch } from '@/lib/apiClient';
 import { Document, Page, pdfjs } from 'react-pdf';
 import 'react-pdf/dist/Page/AnnotationLayer.css';
 import 'react-pdf/dist/Page/TextLayer.css';
@@ -1087,10 +1088,10 @@ const Transmedia = () => {
       return false;
     }
     try {
-      await fetch('https://api.gatoencerrado.ai/api/silvestre-voice', {
+      await apiFetch('/api/silvestre-voice', {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json',
+          'X-User-Id': user?.id ?? 'anonymous',
         },
         body: JSON.stringify({ mensaje: message }),
       });
@@ -1105,7 +1106,7 @@ const Transmedia = () => {
       setTimeout(() => setShowSilvestreCoins(false), 1200);
       return false;
     }
-  }, []);
+  }, [user]);
 
   const stopSilvestreListening = useCallback(() => {
     if (micTimeoutRef.current) {
