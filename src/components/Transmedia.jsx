@@ -1087,7 +1087,7 @@ const Transmedia = () => {
       return false;
     }
     try {
-      await fetch('http://localhost:3000/api/silvestre', {
+      await fetch('https://api.gatoencerrado.ai/api/silvestre-voice', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

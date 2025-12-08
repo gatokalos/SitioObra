@@ -32,7 +32,7 @@ export const PACKAGE_OPTIONS = [
     id: 'combo-900',
     title: 'Combo: novela + 2 tazas',
     price: '$900',
-    helper: 'Paquete completo disponible solo el día del evento.',
+    helper: 'Paquete completo disponible solo el día del evento (incluye suscripción al Universo Transmedia si lo solicitas en "Notas").',
   },
 ];
 
@@ -424,7 +424,7 @@ const ReserveModal = ({ open, onClose }) => {
 
                 {/* Notes */}
                 <div className="space-y-2">
-                  <label className="text-sm font-medium text-slate-200">Mensaje opcional</label>
+                  <label className="text-sm font-medium text-slate-200">Notas</label>
                   <textarea
                     name="notes"
                     rows={3}

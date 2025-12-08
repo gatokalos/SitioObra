@@ -7,6 +7,7 @@ const ALLOWED_PARENT_ORIGINS = [
 	'https://horizons.hostinger.dev',
 	'https://horizons-frontend-local.hostinger.dev',
 	'http://localhost:4000',
+  'https://api.gatoencerrado.ai',
 ];
 
 let disabledTooltipElement = null;
