@@ -47,6 +47,13 @@ const Header = () => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const handleOpenFromToast = () => setShowLoginOverlay(true);
+    window.addEventListener('open-login-modal', handleOpenFromToast);
+    return () => window.removeEventListener('open-login-modal', handleOpenFromToast);
+  }, [setShowLoginOverlay]);
+
   const menuItems = [
     { name: 'Obra', href: '#about' },
     { name: 'Equipo', href: '#team' },

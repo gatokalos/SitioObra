@@ -22,7 +22,7 @@
 
   // Mejor rendering
   "editor.codeActionsOnSave": {
-    "source.fixAll.eslint": true
+    "source.fixAll.eslint": "explicit"
   },
 
   // Opcional extra: evitar warnings innecesarios del TS server

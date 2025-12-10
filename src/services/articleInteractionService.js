@@ -1,4 +1,6 @@
 import { supabase } from '@/lib/supabaseClient';
+import { getAnonId } from '@/lib/identity';
+import { track } from '@/services/trackService';
 
 export async function recordArticleInteraction({
   post,
@@ -14,6 +16,14 @@ export async function recordArticleInteraction({
     return { success: false, error: new Error('Falta el identificador del artículo') };
   }
 
+  const anonId = getAnonId();
+  const metadata = {
+    author: post.author,
+    tags: post.tags ?? [],
+    published_at: post.published_at,
+    ...(anonId ? { anon_id: anonId } : {}),
+  };
+
   const payload = {
     post_id: post.id,
     post_slug: post.slug,
@@ -25,14 +35,22 @@ export async function recordArticleInteraction({
     most_viewed_miniverse: mostViewedMiniverse,
     most_viewed_miniverse_count: mostViewedMiniverseCount ?? null,
     interaction_context: interactionContext,
-    metadata: {
-      author: post.author,
-      tags: post.tags ?? [],
-      published_at: post.published_at,
-    },
+    metadata,
   };
 
   const { error } = await supabase.from('blog_article_interactions').insert(payload);
+
+  const { error: trackError } = await track('article_interaction', {
+    post_id: post.id,
+    post_slug: post.slug,
+    action,
+    miniverse: miniverse ?? null,
+    metadata,
+  });
+
+  if (trackError) {
+    console.error('articleInteractionService track error', trackError);
+  }
 
   return { success: !error, error };
 }

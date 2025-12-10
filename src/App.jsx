@@ -12,6 +12,8 @@ import NextShow from '@/components/NextShow';
 import Contact from '@/components/Contact';
 import Footer from '@/components/Footer';
 import { useBlogPosts } from '@/hooks/useBlogPosts';
+import { useEmailRedirect } from '@/hooks/useEmailRedirect';
+import LoginToast from '@/components/LoginToast';
 
 const pageTitle = '#GatoEncerrado - Obra de Teatro transmedia';
 const pageDescription =
@@ -20,6 +22,7 @@ const pageDescription =
   
 function App() {
   const blogData = useBlogPosts();
+  const { shouldShowToast, dismissToast, emailHash } = useEmailRedirect();
 
   useEffect(() => {
     document.title = pageTitle;
@@ -49,10 +52,12 @@ function App() {
       </main>
 
       <Footer />
+      {shouldShowToast && (
+        <LoginToast emailHash={emailHash} onDismiss={dismissToast} />
+      )}
       <Toaster />
     </div>
   );
 }
 
 export default App;
-

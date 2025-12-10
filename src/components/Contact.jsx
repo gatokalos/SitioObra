@@ -46,7 +46,7 @@ const Contact = () => {
         }
 
         try {
-          const { error: backstageError } = await supabase.from('backstage_inbox').insert({
+          const { error: backstageError } = await supabase.from('blog_contributions').insert({
             name: trimmedName,
             email: trimmedEmail.toLowerCase(),
             subject: 'Contacto público',
@@ -54,10 +54,10 @@ const Contact = () => {
             meta: { route: 'contact' },
           });
           if (backstageError) {
-            console.error('[Contact] No se pudo duplicar en backstage_inbox:', backstageError);
+            console.error('[Contact] No se pudo duplicar en blog_contributions:', backstageError);
           }
         } catch (backstageError) {
-          console.error('[Contact] Excepción duplicando en backstage_inbox:', backstageError);
+          console.error('[Contact] Excepción duplicando en blog_contributions:', backstageError);
         }
 
         setStatus('success');
