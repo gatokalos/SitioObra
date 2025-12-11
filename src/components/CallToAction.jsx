@@ -41,7 +41,7 @@ const CallToAction = () => {
     let active = true;
     async function fetchSubs() {
       try {
-        const res = await apiFetch('/stats/suscriptores', { cache: 'no-store' });
+        const res = await apiFetch('/stats-suscriptores', { cache: 'no-store' });
         const data = await res.json();
         if (!active) return;
         setSubs(Number(data?.total || 0));
