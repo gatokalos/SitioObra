@@ -4,6 +4,7 @@ import { motion } from 'framer-motion';
 import { IMPACT_COPY as t } from '../copy/impact.es.js';
 import { apiFetch } from '@/lib/apiClient';
 
+const SUBSCRIPTION_PRICE_ID = import.meta.env.VITE_STRIPE_SUBSCRIPTION_PRICE_ID || 'price_600mxn_monthly';
 const SESSIONS_PER_SUB = 6;
 const SUBS_PER_RESIDENCY = 17; // ≈ $10,000 / $600
 const SUBS_PER_SCHOOL = 75;    // ≈ $45,000 / $600
@@ -80,9 +81,23 @@ const CallToAction = () => {
     try {
       setLoading(true);
       setMsg('');
-      const res = await apiFetch('/stripe/create-checkout-session', {
+      const prepRes = await apiFetch('/prepare-checkout', {
         method: 'POST',
         body: JSON.stringify({ email }),
+      });
+      const prepData = await prepRes.json();
+      if (!prepRes.ok || !prepData?.audienceId) {
+        throw new Error(prepData?.error || 'No se pudo preparar el checkout');
+      }
+
+      const res = await apiFetch('/stripe/create-checkout-session', {
+        method: 'POST',
+        body: JSON.stringify({
+          priceId: SUBSCRIPTION_PRICE_ID,
+          audienceId: prepData.audienceId,
+          email: prepData.email || email,
+          mode: "subscription",
+        }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data?.error || 'No se pudo crear la sesión');
