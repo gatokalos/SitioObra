@@ -6,6 +6,9 @@ import { EMAIL_REDIRECT_SOURCE } from '@/lib/emailRedirectConfig';
 const LoginToast = ({ emailHash, onLoginClick, onDismiss }) => {
   const handleLoginClick = () => {
     void trackMetric('login_click', EMAIL_REDIRECT_SOURCE, emailHash);
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent('open-login-modal'));
+    }
     onLoginClick?.();
   };
 
