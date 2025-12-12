@@ -630,9 +630,7 @@ const ShowcaseReactionInline = ({ showcaseId, title, description, buttonLabel, c
   const formats = [
   {
     id: 'miniversos',
-    title: 'Miniverso Dramático',
-    description:
-      'La obra sigue viva dentro del universo que la parió.',
+    title: 'Dramaturgia',
     icon: Drama,
     iconClass: 'text-purple-300',
     notaAutoral:
@@ -641,8 +639,7 @@ const ShowcaseReactionInline = ({ showcaseId, title, description, buttonLabel, c
   },
   {
     id: 'lataza',
-    title: 'Miniverso Artesanías',
-    description: 'Objeto ritual en WebAR: un gesto para sostener lo cotidiano.',
+    title: 'Artesanías',
     icon: Coffee,
     iconClass: 'text-amber-300',
     notaAutoral:
@@ -651,8 +648,7 @@ const ShowcaseReactionInline = ({ showcaseId, title, description, buttonLabel, c
   },
   {
     id: 'miniversoNovela',
-    title: 'Miniverso Literatura',
-    description: 'El teatro terminó, pero algo siguió hablando: así nació esta autoficción.',
+    title: 'Literatura',
     icon: BookOpen,
     iconClass: 'text-emerald-300',
     notaAutoral:
@@ -661,8 +657,7 @@ const ShowcaseReactionInline = ({ showcaseId, title, description, buttonLabel, c
   },
   {
     id: 'miniversoGrafico',
-    title: 'Miniverso Gráfico',
-    description: 'Viñetas que mutan: garabatos, símbolos y sus desvíos.',
+    title: 'Gráficos',
     icon: Palette,
     iconClass: 'text-fuchsia-300',
     notaAutoral:
@@ -671,8 +666,7 @@ const ShowcaseReactionInline = ({ showcaseId, title, description, buttonLabel, c
   },
   {
     id: 'copycats',
-    title: 'Miniverso Cine',
-    description: 'Cine que toca la herida para entender la luz que deja.',
+    title: 'Cine',
     icon: Film,
     iconClass: 'text-rose-300',
     notaAutoral:
@@ -681,8 +675,7 @@ const ShowcaseReactionInline = ({ showcaseId, title, description, buttonLabel, c
   },
   {
     id: 'miniversoSonoro',
-    title: 'Miniverso Sonoro',
-    description: 'Capas de imagen, sonido y poema para soñar despierto.',
+    title: 'Sonoridades',
     icon: Music,
     iconClass: 'text-cyan-300',
     notaAutoral:
@@ -691,8 +684,7 @@ const ShowcaseReactionInline = ({ showcaseId, title, description, buttonLabel, c
   },
   {
     id: 'miniversoMovimiento',
-    title: 'Miniverso Movimiento',
-    description: 'Ruta danzada donde la ciudad se convierte en altar vivo.',
+    title: 'Movimiento',
     icon: MapIcon,
     iconClass: 'text-sky-300',
     notaAutoral:
@@ -701,8 +693,7 @@ const ShowcaseReactionInline = ({ showcaseId, title, description, buttonLabel, c
   },
   {
     id: 'detodxs',
-    title: 'Miniverso Apps',
-    description: 'Experiencias digitales que completan la vida del universo.',
+    title: 'Apps',
     icon: Smartphone,
     iconClass: 'text-lime-300',
     notaAutoral:
@@ -711,9 +702,7 @@ const ShowcaseReactionInline = ({ showcaseId, title, description, buttonLabel, c
   },
   {
     id: 'oraculo',
-    title: 'Miniverso Oráculo',
-    description:
-      'Preguntas sin respuesta; solo resonancia.',
+    title: 'Oráculo',
     icon: Brain,
     iconClass: 'text-indigo-300',
     notaAutoral: 'Juega con el misterio. Piensa con el corazón. Mintea con el alma.',
@@ -3478,7 +3467,7 @@ const Transmedia = () => {
                       return (
                         <div className="mb-4 text-xs text-slate-200/80 flex items-center gap-2">
                           <Coins size={14} className="text-amber-200" />
-                          <span className="font-semibold text-amber-200">Adquiere energía aquí</span>
+                          <span className="font-semibold text-amber-200">ADQUIERE MÁS ENERGÍA AQUÍ</span>
                         </div>
                       );
                     }
@@ -3487,7 +3476,7 @@ const Transmedia = () => {
                       ? 'Energía agotada:'
                       : isAvailable
                         ? 'Energía disponible:'
-                        : 'Energía requerida:';
+                        : 'Energía adquirida:';
                     const value = isExhausted ? 0 : isAvailable ? energyData.remaining : energyData.required;
                     const toneClass = isExhausted
                       ? 'text-rose-200'

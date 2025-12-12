@@ -12,6 +12,7 @@ router.use(requireUser);
 router.post("/identity-link", async (req, res) => {
   const userId = req.userId;
   const anonId = String(req.body?.anon_id ?? "").trim();
+  const email = req.body?.email;
 
   if (!anonId) {
     return res.status(400).json({ error: "anon_id es obligatorio." });
@@ -24,10 +25,13 @@ router.post("/identity-link", async (req, res) => {
       anon_id: anonId,
       linked_at: new Date().toISOString(),
     };
+    if (email) {
+      payload.email = email;
+    }
 
     // Asumimos tabla audience_profiles (ajustar si usas otro nombre)
     const { error } = await supabase
-      .from("audience_profiles")
+      .from("crm.audience")
       .upsert(payload, { onConflict: "user_id" });
 
     if (error) {

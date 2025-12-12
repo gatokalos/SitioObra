@@ -212,7 +212,7 @@ const ReserveModal = ({ open, onClose }) => {
           event: 'funcion-2025-12-28',
         };
 
-        const { data, error } = await supabase.functions.invoke('create-checkout', {
+        const { data, error } = await supabase.functions.invoke('create-checkout-session', {
           body: payload,
         });
 

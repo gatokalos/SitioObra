@@ -90,7 +90,7 @@ const CallToAction = () => {
         throw new Error(prepData?.error || 'No se pudo preparar el checkout');
       }
 
-      const res = await apiFetch('/stripe/create-checkout-session', {
+      const res = await apiFetch('/create-checkout-session', {
         method: 'POST',
         body: JSON.stringify({
           priceId: SUBSCRIPTION_PRICE_ID,
