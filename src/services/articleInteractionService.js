@@ -1,6 +1,5 @@
-import { supabase } from '@/lib/supabaseClient';
-import { getAnonId } from '@/lib/identity';
-import { track } from '@/services/trackService';
+import { ensureAnonId } from '@/lib/identity';
+import { trackInteraction } from '@/services/trackService';
 
 export async function recordArticleInteraction({
   post,
@@ -16,41 +15,37 @@ export async function recordArticleInteraction({
     return { success: false, error: new Error('Falta el identificador del artículo') };
   }
 
-  const anonId = getAnonId();
-  const metadata = {
-    author: post.author,
-    tags: post.tags ?? [],
-    published_at: post.published_at,
-    ...(anonId ? { anon_id: anonId } : {}),
+  const anonId = ensureAnonId();
+  if (!anonId) {
+    return { success: false, error: new Error('No se pudo generar un anon_id para la interacción.') };
+  }
+
+  const context = {
+    source: 'blog',
+    component: 'ArticleInteractionPanel',
+    interaction_context: interactionContext,
   };
 
-  const payload = {
+  const metadata = {
     post_id: post.id,
     post_slug: post.slug,
     post_title: post.title,
-    action,
+    author: post.author,
+    tags: post.tags ?? [],
+    published_at: post.published_at,
     liked: Boolean(liked),
     notify: Boolean(notify),
     miniverse,
     most_viewed_miniverse: mostViewedMiniverse,
     most_viewed_miniverse_count: mostViewedMiniverseCount ?? null,
-    interaction_context: interactionContext,
-    metadata,
   };
 
-  const { error } = await supabase.from('blog_article_interactions').insert(payload);
+  const actionType = action === 'like' ? 'article_like' : 'article_notify';
 
-  const { error: trackError } = await track('article_interaction', {
-    post_id: post.id,
-    post_slug: post.slug,
-    action,
-    miniverse: miniverse ?? null,
+  return trackInteraction({
+    action_type: actionType,
+    anon_id: anonId,
+    context,
     metadata,
   });
-
-  if (trackError) {
-    console.error('articleInteractionService track error', trackError);
-  }
-
-  return { success: !error, error };
 }

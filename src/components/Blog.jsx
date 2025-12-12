@@ -131,7 +131,7 @@ const ArticleCard = ({ post, onSelect }) => {
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, amount: 0.2 }}
       transition={{ duration: 0.5, ease: 'easeOut' }}
-      className="glass-effect rounded-2xl p-8 md:p-10 flex flex-col hover-glow transition-shadow"
+      className="glass-effect rounded-2xl p-8 md:p-10 flex flex-col hover-glow transition-shadow min-h-[420px]"
     >
       <div className="flex flex-wrap items-center gap-4 mb-6 text-sm text-slate-400">
         {publishedDate && (
@@ -185,8 +185,24 @@ const ArticleCard = ({ post, onSelect }) => {
   );
 };
 
+const ArticleCardSkeleton = () => (
+  <motion.div
+    variants={containerVariants}
+    className="glass-effect rounded-2xl p-8 md:p-10 flex flex-col gap-4 animate-pulse min-h-[420px]"
+  >
+    <div className="h-4 bg-white/10 rounded w-1/3" />
+    <div className="h-8 bg-white/10 rounded w-3/4" />
+    <div className="h-20 bg-white/5 rounded" />
+    <div className="flex gap-2 mt-auto">
+      <span className="h-8 w-24 bg-white/10 rounded-full" />
+      <span className="h-8 w-32 bg-white/10 rounded-full" />
+    </div>
+  </motion.div>
+);
+
 const FullArticle = ({ post, onClose }) => {
   const articleContent = useMemo(() => post?.content?.trim() ?? '', [post]);
+  const articleImage = post?.featured_image_url ?? null;
 
   const publishedDate = post.published_at ? new Date(post.published_at) : null;
 
@@ -229,6 +245,17 @@ const FullArticle = ({ post, onClose }) => {
       </div>
 
       <h3 className="font-display text-3xl md:text-4xl font-semibold text-slate-50 mb-8">{post.title}</h3>
+
+      {articleImage ? (
+        <div className="mb-10 overflow-hidden rounded-3xl border border-white/10 bg-white/5">
+          <img
+            src={articleImage}
+            alt={`https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/grafico/_V7M6281_.jpg ${post.title}`}
+            className="w-full max-h-[480px] object-cover"
+            loading="lazy"
+          />
+        </div>
+      ) : null}
 
       {articleContent ? (
         <div className="flex flex-col gap-6 text-slate-200 leading-relaxed font-light">
@@ -444,7 +471,7 @@ const Blog = ({ posts = [], isLoading = false, error = null }) => {
 
   return (
     <>
-      <section id="dialogo-critico" className="py-24 relative">
+      <section id="dialogo-critico" className="py-24 relative min-h-[900px]">
         <div className="section-divider mb-24"></div>
 
         <div className="container mx-auto px-6">
@@ -513,12 +540,10 @@ const Blog = ({ posts = [], isLoading = false, error = null }) => {
               whileInView="visible"
               viewport={{ once: true }}
               variants={{ visible: { transition: { staggerChildren: 0.12 } } }}
-              className="grid md:grid-cols-2 gap-8"
+              className="grid md:grid-cols-2 gap-8 min-h-[640px]"
             >
               {isLoading ? (
-                <motion.div variants={containerVariants} className="md:col-span-2 text-center text-slate-400 py-12">
-                  Cargando artículos…
-                </motion.div>
+                Array.from({ length: 4 }).map((_, index) => <ArticleCardSkeleton key={`skeleton-${index}`} />)
               ) : filteredPosts.length === 0 ? (
                 <motion.div variants={containerVariants} className="md:col-span-2 text-center text-slate-400 py-12">
                   No encontramos textos con ese criterio. Ajusta el filtro o comparte un nuevo testimonio.

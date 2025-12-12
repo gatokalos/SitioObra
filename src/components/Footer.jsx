@@ -27,7 +27,7 @@ const Footer = () => {
   };
 
   return (
-    <footer className="relative py-16 mt-24">
+    <footer className="relative py-16 mt-24 min-h-[560px]">
       <div className="section-divider mb-16"></div>
       
       <div className="container mx-auto px-6">

@@ -90,7 +90,7 @@ const Contact = () => {
   };
 
   return (
-    <section id="contact" className="py-24 relative">
+    <section id="contact" className="py-24 relative min-h-[880px]">
       <div className="section-divider mb-24"></div>
       
       <div className="container mx-auto px-6">

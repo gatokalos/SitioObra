@@ -26,14 +26,14 @@ const CATEGORIES = [
     id: 'obra_escenica',
     icon: <Drama size={20} className="text-purple-300" />,
     title: 'La Obra - Es un Gato Encerrado',
-    description: 'De la escena brotó el universo:\nvoz, trance y cuerpo\nabriendo portales.',
+    description: 'De la escena surgió el universo:\nvoz, trance y cuerpo\nactivando el paso.',
 
   },
     {
     id: 'miniverso_novela',
     icon: <BookOpen size={20} className="text-emerald-300" />,
     title: 'Literatura',
-        description: 'La palabra devolvió lo que el gato se tragó:\nMi Gato Encerrado\n huyó de sí misma y se encontró.',
+        description: 'La palabra devolvió lo que el gato se tragó:\nMi Gato Encerrado\n salió de sí para reconocerse.',
   },
   {
     id: 'taza',
@@ -45,7 +45,7 @@ const CATEGORIES = [
     id: 'cine',
     icon: <Film size={20} className="text-rose-300" />,
     title: 'Cine',
-    description: 'Cuando la escena no alcanza,\nla cámara recuerda\nQuirón, CopyCats,\nmismo espacio en otra luz.',
+    description: 'Cuando la escena no basta,\nla cámara sostiene la memoria\nQuirón, CopyCats:\nel mismo espacio, expuesto de otra forma.',
   },
   {
     id: 'grafico',
@@ -63,7 +63,7 @@ const CATEGORIES = [
     id: 'sonoro',
     icon: <Music size={20} className="text-cyan-300" />,
     title: 'Sonoridades',
-    description: 'Sueña una imagen.\nElige un pulso.\nDeja que el poema respire por ti.',
+    description: 'Sueña una imagen.\nAjusta el pulso.\nPermite que el poema respire sin ti.',
   },
   {
     id: 'movimiento',

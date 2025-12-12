@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { motion } from 'framer-motion';
 import { BookOpen, Quote, User, Calendar, Send } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -6,6 +6,24 @@ import { toast } from '@/components/ui/use-toast';
 import ContributionModal from '@/components/ContributionModal';
 import { useAuth } from '@/contexts/SupabaseAuthContext';
 import { cn } from '@/lib/utils';
+
+const CURATORIAL_PLACEHOLDER_IMAGE = `data:image/svg+xml,${encodeURIComponent(`
+  <svg width="1200" height="630" viewBox="0 0 1200 630" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <linearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stop-color="#1f1534" />
+        <stop offset="100%" stop-color="#40245d" />
+      </linearGradient>
+    </defs>
+    <rect width="1200" height="630" fill="url(#grad)" rx="32" />
+    <text x="50%" y="42%" dominant-baseline="middle" text-anchor="middle" font-family="Arial, sans-serif" font-size="48" fill="#f3e8ff" opacity="0.9">
+      #GatoEncerrado
+    </text>
+    <text x="50%" y="60%" dominant-baseline="middle" text-anchor="middle" font-family="Georgia, serif" font-size="38" fill="#f9dbff">
+      El Encierro Como Metáfora
+    </text>
+  </svg>
+`)}`;
 
 const CURATORIAL_SOURCES = [
   {
@@ -17,6 +35,7 @@ const CURATORIAL_SOURCES = [
       date: 'Marzo 2024',
       excerpt:
         'En #GatoEncerrado encontramos una reflexión profunda sobre los múltiples encierros que caracterizan la experiencia humana contemporánea. La obra trasciende la literalidad del espacio físico para explorar las prisiones mentales, sociales y emocionales que habitamos...',
+      imageUrl: CURATORIAL_PLACEHOLDER_IMAGE,
     },
   },
   {
@@ -72,6 +91,7 @@ const Curatorial = ({ posts = [], isLoading = false }) => {
         role: post?.author_role ?? source.fallback?.role ?? '',
         date: formattedDate,
         excerpt: excerpt || 'Muy pronto compartiremos este texto.',
+        imageUrl: post?.featured_image_url ?? source.fallback?.imageUrl ?? null,
       };
     }).filter(Boolean);
 
@@ -95,6 +115,7 @@ const Curatorial = ({ posts = [], isLoading = false }) => {
           excerpt:
             post.excerpt ||
             (post.content ? post.content.split(/\n{2,}/).map((chunk) => chunk.trim()).filter(Boolean)[0] : ''),
+          imageUrl: post.featured_image_url ?? null,
         })) ?? [];
 
     return [...curated, ...taggedPosts];
@@ -176,6 +197,16 @@ const Curatorial = ({ posts = [], isLoading = false }) => {
                 viewport={{ once: true }}
                 className="glass-effect rounded-2xl p-8 md:p-10 hover-glow flex flex-col"
               >
+                {text.imageUrl ? (
+                  <div className="mb-6 overflow-hidden rounded-2xl border border-white/5 bg-white/5">
+                    <img
+                      src={text.imageUrl}
+                      alt={`Imagen de "${text.title}"`}
+                      className="h-56 w-full object-cover"
+                      loading="lazy"
+                    />
+                  </div>
+                ) : null}
                 <div className="flex flex-wrap items-center gap-4 mb-4 text-sm text-slate-400">
                   <div className="flex items-center gap-2 text-purple-300">
                     <User size={16} />

@@ -51,6 +51,216 @@ const GAT_COSTS = {
   tazaActivation: 90,
   movimientoRuta: 280,
 };
+const MINIVERSO_TILE_GRADIENTS = {
+  miniversos: 'linear-gradient(135deg, rgba(31,21,52,0.95), rgba(64,36,93,0.85), rgba(122,54,127,0.65))',
+  copycats: 'linear-gradient(135deg, rgba(16,27,54,0.95), rgba(38,63,109,0.85), rgba(92,47,95,0.7))',
+  miniversoGrafico: 'linear-gradient(135deg, rgba(37,19,52,0.95), rgba(70,32,86,0.85), rgba(141,58,121,0.65))',
+  miniversoNovela: 'linear-gradient(135deg, rgba(26,24,60,0.95), rgba(59,43,95,0.85), rgba(108,56,118,0.7))',
+  miniversoSonoro: 'linear-gradient(135deg, rgba(18,29,62,0.95), rgba(32,65,103,0.85), rgba(70,91,146,0.65))',
+  lataza: 'linear-gradient(135deg, rgba(44,20,30,0.95), rgba(101,45,66,0.85), rgba(196,111,86,0.6))',
+  miniversoMovimiento: 'linear-gradient(135deg, rgba(24,30,45,0.95), rgba(40,64,65,0.85), rgba(74,123,102,0.65))',
+  oraculo: 'linear-gradient(135deg, rgba(38,18,56,0.95), rgba(86,33,115,0.85), rgba(168,68,139,0.65))',
+  default: 'linear-gradient(135deg, rgba(20,14,35,0.95), rgba(47,28,71,0.85), rgba(90,42,100,0.65))',
+};
+const MINIVERSO_TILE_COLORS = {
+  miniversos: {
+    background: 'rgba(31,21,52,0.75)',
+    border: 'rgba(186,131,255,0.35)',
+    text: '#e9d8ff',
+    accent: '#f4c8ff',
+  },
+  copycats: {
+    background: 'rgba(16,27,54,0.75)',
+    border: 'rgba(132,176,255,0.35)',
+    text: '#dbeafe',
+    accent: '#c6f6ff',
+  },
+  miniversoGrafico: {
+    background: 'rgba(37,19,52,0.75)',
+    border: 'rgba(214,146,255,0.35)',
+    text: '#fce7f3',
+    accent: '#fed7e2',
+  },
+  miniversoNovela: {
+    background: 'rgba(26,24,60,0.75)',
+    border: 'rgba(163,148,255,0.35)',
+    text: '#e0e7ff',
+    accent: '#c7d2fe',
+  },
+  miniversoSonoro: {
+    background: 'rgba(18,29,62,0.75)',
+    border: 'rgba(122,179,255,0.35)',
+    text: '#e0f2fe',
+    accent: '#bae6fd',
+  },
+  lataza: {
+    background: 'rgba(44,20,30,0.75)',
+    border: 'rgba(255,173,145,0.35)',
+    text: '#ffedd5',
+    accent: '#fed7aa',
+  },
+  miniversoMovimiento: {
+    background: 'rgba(24,30,45,0.75)',
+    border: 'rgba(163,233,208,0.35)',
+    text: '#d1fae5',
+    accent: '#a7f3d0',
+  },
+  oraculo: {
+    background: 'rgba(38,18,56,0.75)',
+    border: 'rgba(225,160,235,0.35)',
+    text: '#fbe7ff',
+    accent: '#f3d1ff',
+  },
+  default: {
+    background: 'rgba(20,14,35,0.7)',
+    border: 'rgba(186,131,255,0.3)',
+    text: '#f3e8ff',
+    accent: '#e9d8fd',
+  },
+};
+const MiniVersoCard = ({ title, verse, palette, effect = 'reveal', isTragedia = false }) => {
+  const [isActive, setIsActive] = useState(false);
+  const textClass = isTragedia ? 'text-sm' : 'text-sm leading-relaxed';
+
+  const baseCard = (
+    <motion.div
+      key={title}
+      initial={{ opacity: 0, y: 8 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.35, ease: 'easeOut' }}
+      className={`rounded-2xl border min-h-[220px] flex flex-col justify-between relative overflow-hidden cursor-pointer ${textClass}`}
+      style={{
+        backgroundImage: palette.gradient,
+        backgroundSize: '220% 220%',
+        borderColor: palette.border,
+        color: palette.text,
+        boxShadow: isActive
+          ? '0 10px 30px rgba(0,0,0,0.55)'
+          : '0 0 25px rgba(0,0,0,0.35)',
+      }}
+      onClick={() => setIsActive((prev) => !prev)}
+    >
+      <div className="absolute inset-0 opacity-30 bg-[radial-gradient(circle_at_top,_rgba(255,255,255,0.35),_transparent_60%)] pointer-events-none" />
+      <div className="relative z-10 mb-3 flex justify-center">
+        <span
+          className="inline-flex items-center gap-2 rounded-full px-4 py-1 text-[0.6rem] uppercase tracking-[0.35em] shadow-lg transition"
+          style={{
+            color: palette.accent,
+            backgroundColor: `${palette.background}cc`,
+            border: `1px solid ${palette.border}`,
+          }}
+        >
+          {title}
+        </span>
+      </div>
+      <div className="relative z-10 flex-1 flex items-center justify-center px-4">
+        <p
+          className={`leading-relaxed whitespace-pre-line text-center font-light transition-all duration-500 ${
+            isActive ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
+          }`}
+        >
+          {verse}
+        </p>
+        <div
+          className={`absolute inset-0 flex items-center justify-center text-xs uppercase tracking-[0.35em] text-white/70 transition-all duration-500 ${
+            isActive ? 'opacity-0 scale-95' : 'opacity-100 scale-100'
+          }`}
+        >
+          Toca para revelar
+        </div>
+      </div>
+    </motion.div>
+  );
+
+  if (effect === 'flip') {
+    return (
+      <div className="relative [perspective:1200px]" onClick={() => setIsActive((prev) => !prev)}>
+        <motion.div
+          animate={{ rotateY: isActive ? 180 : 0 }}
+          transition={{ duration: 0.7, ease: 'easeInOut' }}
+          className="relative min-h-[220px] [transform-style:preserve-3d]"
+        >
+          <div
+            className={`absolute inset-0 rounded-2xl border flex flex-col items-center justify-center gap-4 ${textClass} [backface-visibility:hidden]`}
+            style={{
+              backgroundImage: palette.gradient,
+              borderColor: palette.border,
+              color: palette.text,
+              inset: 0,
+            }}
+          >
+            <span
+              className="inline-flex items-center gap-2 rounded-full px-4 py-1 text-[0.6rem] uppercase tracking-[0.35em] shadow-lg"
+              style={{
+                color: palette.accent,
+                backgroundColor: `${palette.background}cc`,
+                border: `1px solid ${palette.border}`,
+              }}
+            >
+              {title}
+            </span>
+            <span className="text-xs tracking-[0.35em] text-white/70">Toca para girar</span>
+          </div>
+          <div
+            className={`absolute inset-0 rounded-2xl border px-6 py-5 [backface-visibility:hidden] flex items-center justify-center ${textClass}`}
+            style={{
+              backgroundImage: palette.gradient,
+              borderColor: palette.border,
+              color: palette.text,
+              transform: 'rotateY(180deg)',
+            }}
+          >
+            <p className="leading-relaxed whitespace-pre-line text-center font-light">{verse}</p>
+          </div>
+        </motion.div>
+      </div>
+    );
+  }
+
+  return baseCard;
+};
+const MINIVERSO_VERSE_EFFECTS = {
+  miniversoNovela: 'flip',
+  miniversoSonoro: 'flip',
+  lataza: 'flip',
+  copycats: 'flip',
+  miniversos: 'flip',
+  miniversoGrafico: 'flip',
+  miniversoMovimiento: 'flip',
+  oraculo: 'flip',
+  default: 'flip',
+};
+
+let hasInjectedMiniversoBreathStyle = false;
+function ensureMiniversoBreathStyle() {
+  if (hasInjectedMiniversoBreathStyle || typeof document === 'undefined') {
+    return;
+  }
+
+  const style = document.createElement('style');
+  style.id = 'miniverso-breath-style';
+  style.textContent = `
+    @keyframes miniverso-breath {
+      0% {
+        background-position: 0% 0%;
+        transform: scale(1);
+        filter: brightness(1);
+      }
+      50% {
+        background-position: 50% 50%;
+        transform: scale(1.03);
+        filter: brightness(1.08);
+      }
+      100% {
+        background-position: 100% 100%;
+        transform: scale(1);
+        filter: brightness(1);
+      }
+    }
+  `;
+  document.head.appendChild(style);
+  hasInjectedMiniversoBreathStyle = true;
+}
 const showcaseDefinitions = {
   miniversos: {
     label: 'Drama',
@@ -184,7 +394,7 @@ const showcaseDefinitions = {
       cta: 'Quiero ser parte del screening',
       footnote: 'El cine es otro modo de entrar al encierro. Acompáñanos en marzo para ver ambas películas antes que nadie.',
     },
-    notaAutoral: 'Cuando la escena no alcanza,\nla cámara recuerda\nQuirón, CopyCats,\nmismo espacio en otra luz.',
+    notaAutoral: 'Cuando la escena no basta,\nla cámara sostiene la memoria\nQuirón, CopyCats:\nel mismo espacio, expuesto de otra forma.',
     iaProfile: {
       type: 'GPT-4o mini + subtítulos vivos y notas críticas asistidas.',
       interaction: 'Notas críticas y captions contextuales por espectador.',
@@ -382,7 +592,7 @@ const showcaseDefinitions = {
       },
     ],
     cartaTitle: '#SueñoEnCapas',
-    notaAutoral: 'sueña una imagen.\nElige un pulso.\nDeja que el poema respire por ti.',
+    notaAutoral: 'Sueña una imagen.\nAjusta el pulso.\nPwermite que el poema respire sin ti.',
     iaProfile: {
       type: 'GPT-4o mini para poemas móviles + curaduría sonora.',
       interaction: 'Selección de poema y mezcla guiada.',
@@ -576,6 +786,10 @@ const showcaseDefinitions = {
 
 const ShowcaseReactionInline = ({ showcaseId, title, description, buttonLabel, className = '' }) => {
   const { user } = useAuth();
+
+  useEffect(() => {
+    ensureMiniversoBreathStyle();
+  }, []);
   const [status, setStatus] = useState('idle');
 
   const handleReaction = useCallback(async () => {
@@ -1501,35 +1715,35 @@ const Transmedia = () => {
     setIsContributionOpen(true);
   }, []);
 
-  const rendernotaAutoral = () => {
-    if (!activeDefinition?.notaAutoral) return null;
+const rendernotaAutoral = () => {
+  if (!activeDefinition?.notaAutoral) return null;
 
-    const isTragedia = activeDefinition.type === 'tragedia';
-    const containerClass = isTragedia
-      ? 'rounded-2xl border border-purple-400/60 bg-purple-900/20 p-4 text-sm text-slate-100 shadow-[0_0_25px_rgba(168,85,247,0.45),0_0_55px_rgba(109,40,217,0.32)]'
-      : 'rounded-2xl border border-purple-300/45 p-6 bg-black/30 text-slate-300/80 text-sm leading-relaxed shadow-[0_0_22px_rgba(168,85,247,0.32),0_0_42px_rgba(59,130,246,0.18),0_20px_65px_rgba(0,0,0,0.45)]';
+  const activeId = activeDefinition.id ?? activeShowcase;
+  const tileColors = MINIVERSO_TILE_COLORS[activeId] ?? MINIVERSO_TILE_COLORS.default;
+  const tileGradient = MINIVERSO_TILE_GRADIENTS[activeId] ?? MINIVERSO_TILE_GRADIENTS.default;
+  const isTragedia = activeDefinition.type === 'tragedia';
+  const effect = MINIVERSO_VERSE_EFFECTS[activeId] ?? MINIVERSO_VERSE_EFFECTS.default;
 
-    return (
-      <motion.div
-        key={activeShowcase}
-        initial={{ opacity: 0, y: 8 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.35, ease: 'easeOut' }}
-        className={containerClass}
-      >
-        <div className="mb-2 space-y-1">
-          <p
-            className={`text-xs uppercase tracking-[0.35em] ${
-              isTragedia ? 'text-purple-200' : 'text-purple-300'
-            }`}
-          >
-            {activeDefinition.cartaTitle || 'Nota autoral'}
-          </p>
-        </div>
-        <p className="leading-relaxed whitespace-pre-line">{activeDefinition.notaAutoral}</p>
-      </motion.div>
-    );
-  };
+  return (
+    <div className="relative flex flex-col gap-3">
+      <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Mini-verso Autoral</p>
+      <MiniVersoCard
+        title={activeDefinition.cartaTitle || 'Nota autoral'}
+        verse={activeDefinition.notaAutoral}
+        palette={{
+          gradient: tileGradient,
+          border: tileColors.border,
+          text: tileColors.text,
+          accent: tileColors.accent,
+          background: tileColors.background,
+        }}
+        effect={effect}
+        isTragedia={isTragedia}
+      />
+    </div>
+  );
+};
+
 
   const renderPostDetails = (emptyMessage = 'Pronto liberaremos la carta completa de este miniverso.') => {
     if (!activeDefinition?.slug) {
@@ -3338,7 +3552,7 @@ const Transmedia = () => {
 
   return (
     <>
-      <section id="transmedia" className="py-24 relative">
+      <section id="transmedia" className="py-24 relative min-h-[1200px]">
         {import.meta.env?.DEV ? (
           <div className="fixed bottom-4 right-4 z-50">
             <button
@@ -3384,10 +3598,12 @@ const Transmedia = () => {
 
           </motion.div>
 
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 min-h-[720px]">
             {formats.map((format, index) => {
               const Icon = format.icon;
               const iconClass = format.iconClass ?? 'text-purple-200';
+              const tileGradient =
+                MINIVERSO_TILE_GRADIENTS[format.id] ?? MINIVERSO_TILE_GRADIENTS.default;
               return (
                 <motion.div
                   key={format.id}
@@ -3395,106 +3611,121 @@ const Transmedia = () => {
                   whileInView={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.6, delay: index * 0.1, ease: 'easeOut' }}
                   viewport={{ once: true }}
-                  className="group glass-effect rounded-xl p-8 hover-glow cursor-pointer flex flex-col transition-all duration-300 hover:border-purple-400/50"
+                  className="group glass-effect rounded-xl p-8 hover-glow cursor-pointer flex flex-col transition-all duration-300 hover:border-purple-400/50 relative overflow-hidden"
                   onClick={() => handleFormatClick(format.id)}
                 >
-                  <div className="flex items-center justify-start mb-6 transition-all duration-300 group-hover:scale-110">
-                    <Icon
-                      size={32}
-                      className={`${iconClass} drop-shadow-[0_0_12px_rgba(168,85,247,0.4)]`}
-                    />
-                  </div>
+                  <div
+                    aria-hidden="true"
+                    className="absolute inset-0 opacity-80 group-hover:opacity-100 transition duration-500 pointer-events-none"
+                    style={{
+                      backgroundImage: tileGradient,
+                      filter: 'saturate(1.1)',
+                      backgroundSize: '160% 160%',
+                      backgroundPosition: '0% 0%',
+                      animation: 'miniverso-breath 14s ease-in-out infinite alternate',
+                      willChange: 'background-position, transform',
+                    }}
+                  />
+                  <div className="absolute inset-0 opacity-30 mix-blend-screen pointer-events-none bg-[radial-gradient(circle_at_top,_rgba(255,255,255,0.25),_transparent_55%)]" />
+                  <div className="relative z-10 flex flex-col h-full">
+                    <div className="flex items-center justify-start mb-6 transition-all duration-300 group-hover:scale-110">
+                      <Icon
+                        size={32}
+                        className={`${iconClass} drop-shadow-[0_0_12px_rgba(168,85,247,0.4)]`}
+                      />
+                    </div>
 
-                  <h3 className="font-display text-2xl font-medium text-slate-100 mb-3">{format.title}</h3>
+                    <h3 className="font-display text-2xl font-medium text-slate-100 mb-3">{format.title}</h3>
 
-                  <p className="text-slate-300/70 text-base leading-relaxed mb-4 flex-grow font-light">
-                    {format.description}
-                  </p>
-                  
-                  {(() => {
-                    const parseFromNote = () => {
-                      if (typeof format.iaTokensNote !== 'string') return 0;
-                      const match = format.iaTokensNote.match(/(\d+)/);
-                      return match ? Number.parseInt(match[1], 10) : 0;
-                    };
+                    <p className="text-slate-200/80 text-base leading-relaxed mb-4 flex-grow font-light">
+                      {format.description}
+                    </p>
+                    
+                    {(() => {
+                      const parseFromNote = () => {
+                        if (typeof format.iaTokensNote !== 'string') return 0;
+                        const match = format.iaTokensNote.match(/(\d+)/);
+                        return match ? Number.parseInt(match[1], 10) : 0;
+                      };
 
-                    const baseEnergy = {
-                      required: parseFromNote(),
-                      remaining: parseFromNote(),
-                    };
+                      const baseEnergy = {
+                        required: parseFromNote(),
+                        remaining: parseFromNote(),
+                      };
 
-                    const energyData = (() => {
-                      switch (format.id) {
-                        case 'copycats': {
-                          const required = GAT_COSTS.quironFull;
-                          const remaining = quironSpent ? 0 : required;
-                          return { required, remaining };
+                      const energyData = (() => {
+                        switch (format.id) {
+                          case 'copycats': {
+                            const required = GAT_COSTS.quironFull;
+                            const remaining = quironSpent ? 0 : required;
+                            return { required, remaining };
+                          }
+                          case 'miniversoGrafico': {
+                            const required = GAT_COSTS.graficoSwipe;
+                            const remaining = graphicSpent ? 0 : required;
+                            return { required, remaining };
+                          }
+                          case 'miniversoNovela': {
+                            const required = GAT_COSTS.novelaChapter;
+                            const spent = novelaQuestions * 25;
+                            const remaining = Math.max(required - spent, 0);
+                            return { required, remaining };
+                          }
+                          case 'miniversoSonoro': {
+                            const required = GAT_COSTS.sonoroMix;
+                            const remaining = sonoroSpent ? 0 : required;
+                            return { required, remaining };
+                          }
+                          case 'lataza': {
+                            const required = GAT_COSTS.tazaActivation;
+                            const remaining = Math.max(required - tazaActivations * 30, 0);
+                            return { required, remaining };
+                          }
+                          case 'miniversoMovimiento': {
+                            const required = GAT_COSTS.movimientoRuta;
+                            return { required, remaining: required };
+                          }
+                          default:
+                            return baseEnergy;
                         }
-                        case 'miniversoGrafico': {
-                          const required = GAT_COSTS.graficoSwipe;
-                          const remaining = graphicSpent ? 0 : required;
-                          return { required, remaining };
-                        }
-                        case 'miniversoNovela': {
-                          const required = GAT_COSTS.novelaChapter;
-                          const spent = novelaQuestions * 25;
-                          const remaining = Math.max(required - spent, 0);
-                          return { required, remaining };
-                        }
-                        case 'miniversoSonoro': {
-                          const required = GAT_COSTS.sonoroMix;
-                          const remaining = sonoroSpent ? 0 : required;
-                          return { required, remaining };
-                        }
-                        case 'lataza': {
-                          const required = GAT_COSTS.tazaActivation;
-                          const remaining = Math.max(required - tazaActivations * 30, 0);
-                          return { required, remaining };
-                        }
-                        case 'miniversoMovimiento': {
-                          const required = GAT_COSTS.movimientoRuta;
-                          return { required, remaining: required };
-                        }
-                        default:
-                          return baseEnergy;
+                      })();
+
+                      const isExhausted = energyData.remaining <= 0;
+                      const isAvailable = !isExhausted && energyData.remaining < energyData.required;
+
+                      if (format.id === 'oraculo' && isExhausted) {
+                        return (
+                          <div className="mb-4 text-xs text-slate-200/80 flex items-center gap-2">
+                            <Coins size={14} className="text-amber-200" />
+                            <span className="font-semibold text-amber-200">ADQUIERE ENERGÍA AQUÍ</span>
+                          </div>
+                        );
                       }
-                    })();
 
-                    const isExhausted = energyData.remaining <= 0;
-                    const isAvailable = !isExhausted && energyData.remaining < energyData.required;
+                      const label = isExhausted
+                        ? 'Energía agotada:'
+                        : isAvailable
+                          ? 'Disponible:'
+                          : 'Energía:';
+                      const value = isExhausted ? 0 : isAvailable ? energyData.remaining : energyData.required;
+                      const toneClass = isExhausted
+                        ? 'text-rose-200'
+                        : isAvailable
+                          ? 'text-emerald-200'
+                          : 'text-amber-200';
 
-                    if (format.id === 'oraculo' && isExhausted) {
                       return (
                         <div className="mb-4 text-xs text-slate-200/80 flex items-center gap-2">
-                          <Coins size={14} className="text-amber-200" />
-                          <span className="font-semibold text-amber-200">ADQUIERE MÁS ENERGÍA AQUÍ</span>
+                          <Coins size={14} className={toneClass} />
+                          <span className="uppercase tracking-[0.25em] text-slate-100/70">{label}</span>
+                          <span className={`font-semibold ${toneClass}`}>{value} GAT</span>
                         </div>
                       );
-                    }
-
-                    const label = isExhausted
-                      ? 'Energía agotada:'
-                      : isAvailable
-                        ? 'Energía disponible:'
-                        : 'Energía adquirida:';
-                    const value = isExhausted ? 0 : isAvailable ? energyData.remaining : energyData.required;
-                    const toneClass = isExhausted
-                      ? 'text-rose-200'
-                      : isAvailable
-                        ? 'text-emerald-200'
-                        : 'text-amber-200';
-
-                    return (
-                      <div className="mb-4 text-xs text-slate-200/80 flex items-center gap-2">
-                        <Coins size={14} className={toneClass} />
-                        <span className="uppercase tracking-[0.25em] text-slate-400">{label}</span>
-                        <span className={`font-semibold ${toneClass}`}>{value} GAT</span>
-                      </div>
-                    );
-                  })()}
-                  <div className="text-purple-300 flex items-center gap-2 font-semibold transition-all duration-300 group-hover:gap-3">
-                    Explorar
-                    <ArrowRight size={18} />
+                    })()}
+                    <div className="text-purple-300 flex items-center gap-2 font-semibold transition-all duration-300 group-hover:gap-3">
+                      Explorar
+                      <ArrowRight size={18} />
+                    </div>
                   </div>
                 </motion.div>
               );
@@ -3517,15 +3748,17 @@ const Transmedia = () => {
                 Cerrar escaparate ✕
               </button>
               {activeDefinition.type !== 'tragedia' ? (
-                <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between pr-12 md:pr-0">
-                  <div>
+                <div className="flex flex-col gap-6 md:flex-row md:items-start md:gap-10 pr-0">
+                  <div className="flex-1">
                     <p className="text-xs uppercase tracking-[0.4em] text-slate-400/70 mb-2">Escaparate</p>
                     <h3 className="font-display text-3xl text-slate-100 mb-3">{activeDefinition.label}</h3>
-                    <p className="text-slate-300/80 leading-relaxed font-light max-w-3xl">
-                      {activeDefinition.intro}
-                    </p>
-                    {activeDefinition.type !== 'graphic-lab' ? rendernotaAutoral() : null}
+                    <p className="text-slate-300/80 leading-relaxed font-light max-w-3xl">{activeDefinition.intro}</p>
                   </div>
+                  {activeDefinition.type !== 'graphic-lab' ? (
+                    <div className="md:w-[360px] flex-shrink-0">
+                      {rendernotaAutoral()}
+                    </div>
+                  ) : null}
                 </div>
               ) : null}
 
