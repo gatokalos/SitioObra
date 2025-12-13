@@ -58,9 +58,10 @@ const Header = () => {
     { name: 'Obra', href: '#about' },
     { name: 'Equipo', href: '#team' },
     { name: 'Galería', href: '#instagram' },
+    { name: 'Función', href: '#next-show' },
     { name: 'Textos', href: '#dialogo-critico' },
     { name: 'Miniversos', href: '#transmedia' },
-    { name: 'Función', href: '#next-show' },
+   
   ];
 
   const handleNavClick = (href) => {

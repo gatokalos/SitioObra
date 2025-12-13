@@ -41,6 +41,7 @@ import AutoficcionPreview from '@/components/novela/AutoficcionPreview';
 import { recordShowcaseLike } from '@/services/showcaseLikeService';
 import { useMobileVideoPresentation } from '@/hooks/useMobileVideoPresentation';
 import IAInsightCard from '@/components/IAInsightCard';
+import LoginOverlay from '@/components/ContributionModal/LoginOverlay';
 
 pdfjs.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`;
 const GAT_COSTS = {
@@ -50,6 +51,27 @@ const GAT_COSTS = {
   sonoroMix: 130,
   tazaActivation: 90,
   movimientoRuta: 280,
+};
+const SHOWCASE_BADGE_IDS = [
+  'miniversos',
+  'lataza',
+  'miniversoNovela',
+  'miniversoGrafico',
+  'copycats',
+  'miniversoSonoro',
+  'miniversoMovimiento',
+  'detodxs',
+  'oraculo',
+];
+const EXPLORER_BADGE_STORAGE_KEY = 'gatoencerrado:explorer-badge';
+const EXPLORER_BADGE_REWARD = 1000;
+const EXPLORER_BADGE_NAME = 'Errante Consagrado';
+const DEFAULT_BADGE_STATE = {
+  unlocked: false,
+  unlockedAt: null,
+  rewardClaimed: false,
+  claimedAt: null,
+  claimedType: null,
 };
 const MINIVERSO_TILE_GRADIENTS = {
   miniversos: 'linear-gradient(135deg, rgba(31,21,52,0.95), rgba(64,36,93,0.85), rgba(122,54,127,0.65))',
@@ -118,9 +140,47 @@ const MINIVERSO_TILE_COLORS = {
     accent: '#e9d8fd',
   },
 };
-const MiniVersoCard = ({ title, verse, palette, effect = 'reveal', isTragedia = false }) => {
+const MiniVersoCard = ({
+  title,
+  verse,
+  palette,
+  effect = 'reveal',
+  isTragedia = false,
+  onFirstReveal = null,
+  celebration = false,
+}) => {
   const [isActive, setIsActive] = useState(false);
   const textClass = isTragedia ? 'text-sm' : 'text-sm leading-relaxed';
+  const handleCardToggle = () => {
+    setIsActive((prev) => {
+      const next = !prev;
+      if (!prev && next && typeof onFirstReveal === 'function') {
+        onFirstReveal();
+      }
+      return next;
+    });
+  };
+
+  const renderCelebration = () => {
+    if (!celebration) return null;
+    return (
+      <div className="pointer-events-none absolute inset-0 z-20">
+        {Array.from({ length: 7 }).map((_, index) => {
+          const offsetX = (index - 3) * 22;
+          const offsetY = -50 - index * 10;
+          return (
+            <motion.span
+              key={`mini-coin-${index}`}
+              className="absolute left-1/2 top-1/2 h-4 w-4 -translate-x-1/2 -translate-y-1/2 rounded-full bg-gradient-to-br from-amber-200 to-yellow-500 shadow-[0_0_15px_rgba(250,204,21,0.5)]"
+              initial={{ opacity: 0.95, scale: 0.7, x: 0, y: 0 }}
+              animate={{ opacity: 0, scale: 1.1, x: offsetX, y: offsetY, rotate: 90 + index * 25 }}
+              transition={{ duration: 1.2, ease: 'easeOut', delay: index * 0.04 }}
+            />
+          );
+        })}
+      </div>
+    );
+  };
 
   const baseCard = (
     <motion.div
@@ -138,8 +198,9 @@ const MiniVersoCard = ({ title, verse, palette, effect = 'reveal', isTragedia = 
           ? '0 10px 30px rgba(0,0,0,0.55)'
           : '0 0 25px rgba(0,0,0,0.35)',
       }}
-      onClick={() => setIsActive((prev) => !prev)}
+      onClick={handleCardToggle}
     >
+      {renderCelebration()}
       <div className="absolute inset-0 opacity-30 bg-[radial-gradient(circle_at_top,_rgba(255,255,255,0.35),_transparent_60%)] pointer-events-none" />
       <div className="relative z-10 mb-3 flex justify-center">
         <span
@@ -174,7 +235,8 @@ const MiniVersoCard = ({ title, verse, palette, effect = 'reveal', isTragedia = 
 
   if (effect === 'flip') {
     return (
-      <div className="relative [perspective:1200px]" onClick={() => setIsActive((prev) => !prev)}>
+      <div className="relative [perspective:1200px]" onClick={handleCardToggle}>
+        {renderCelebration()}
         <motion.div
           animate={{ rotateY: isActive ? 180 : 0 }}
           transition={{ duration: 0.7, ease: 'easeInOut' }}
@@ -786,6 +848,13 @@ const showcaseDefinitions = {
 
 const ShowcaseReactionInline = ({ showcaseId, title, description, buttonLabel, className = '' }) => {
   const { user } = useAuth();
+  const isAuthenticated = Boolean(user);
+  const isSubscriber = Boolean(
+    user?.user_metadata?.isSubscriber ||
+      user?.user_metadata?.is_subscriber ||
+      user?.user_metadata?.subscription_status === 'active' ||
+      user?.app_metadata?.roles?.includes?.('subscriber')
+  );
 
   useEffect(() => {
     ensureMiniversoBreathStyle();
@@ -841,7 +910,7 @@ const ShowcaseReactionInline = ({ showcaseId, title, description, buttonLabel, c
   );
 };
 
-  const formats = [
+const formats = [
   {
     id: 'miniversos',
     title: 'Dramaturgia',
@@ -975,6 +1044,49 @@ const AutoficcionPreviewOverlay = ({ open, onClose }) => {
 };
 
 const Transmedia = () => {
+  const baseEnergyByShowcase = useMemo(() => {
+    const map = {};
+    const parseFromNote = (note) => {
+      if (typeof note !== 'string') return 0;
+      const match = note.match(/(\d+)/);
+      return match ? Number.parseInt(match[1], 10) : 0;
+    };
+    const registerEnergy = (id, note) => {
+      if (map[id]) {
+        return;
+      }
+      let baseAmount = 0;
+      switch (id) {
+        case 'copycats':
+          baseAmount = GAT_COSTS.quironFull;
+          break;
+        case 'miniversoGrafico':
+          baseAmount = GAT_COSTS.graficoSwipe;
+          break;
+        case 'miniversoNovela':
+          baseAmount = GAT_COSTS.novelaChapter;
+          break;
+        case 'miniversoSonoro':
+          baseAmount = GAT_COSTS.sonoroMix;
+          break;
+        case 'lataza':
+          baseAmount = GAT_COSTS.tazaActivation;
+          break;
+        case 'miniversoMovimiento':
+          baseAmount = GAT_COSTS.movimientoRuta;
+          break;
+        default:
+          baseAmount = 0;
+      }
+      if (!baseAmount) {
+        baseAmount = parseFromNote(note);
+      }
+      map[id] = baseAmount;
+    };
+    formats.forEach((format) => registerEnergy(format.id, format.iaTokensNote));
+    return map;
+  }, []);
+
   const [isMiniverseOpen, setIsMiniverseOpen] = useState(false);
   const [miniverseContext, setMiniverseContext] = useState(null);
   const [activeShowcase, setActiveShowcase] = useState(null);
@@ -1025,6 +1137,25 @@ const Transmedia = () => {
   const [isGraphicUnlocking, setIsGraphicUnlocking] = useState(false);
   const [isContributionOpen, setIsContributionOpen] = useState(false);
   const [contributionCategoryId, setContributionCategoryId] = useState(null);
+  const [explorerBadge, setExplorerBadge] = useState(DEFAULT_BADGE_STATE);
+  const [showBadgeCoins, setShowBadgeCoins] = useState(false);
+  const [showBadgeLoginOverlay, setShowBadgeLoginOverlay] = useState(false);
+  const [showcaseEnergy, setShowcaseEnergy] = useState({});
+  const [showcaseBoosts, setShowcaseBoosts] = useState({});
+  const [celebratedShowcaseId, setCelebratedShowcaseId] = useState(null);
+  const celebrationTimeoutRef = useRef(null);
+  const badgeCoinsTimeoutRef = useRef(null);
+  const isAuthenticated = Boolean(user);
+  const isSubscriber = Boolean(
+    user?.user_metadata?.isSubscriber ||
+      user?.user_metadata?.is_subscriber ||
+      user?.user_metadata?.subscription_status === 'active' ||
+      user?.app_metadata?.roles?.includes?.('subscriber')
+  );
+  const allShowcasesUnlocked = useMemo(
+    () => SHOWCASE_BADGE_IDS.every((id) => showcaseBoosts?.[id]),
+    [showcaseBoosts]
+  );
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
@@ -1055,13 +1186,63 @@ const Transmedia = () => {
     if (tazaStored && !Number.isNaN(Number.parseInt(tazaStored, 10))) {
       setTazaActivations(Number.parseInt(tazaStored, 10));
     }
-  }, []);
+    const energyStored = window.localStorage?.getItem('gatoencerrado:showcase-energy');
+    if (energyStored) {
+      try {
+        const parsed = JSON.parse(energyStored);
+        setShowcaseEnergy({ ...baseEnergyByShowcase, ...parsed });
+      } catch (error) {
+        console.warn('Error parsing showcase energy cache', error);
+        setShowcaseEnergy(baseEnergyByShowcase);
+      }
+    } else {
+      setShowcaseEnergy(baseEnergyByShowcase);
+      window.localStorage?.setItem('gatoencerrado:showcase-energy', JSON.stringify(baseEnergyByShowcase));
+    }
+    const boostsStored = window.localStorage?.getItem('gatoencerrado:showcase-boosts');
+    if (boostsStored) {
+      try {
+        setShowcaseBoosts(JSON.parse(boostsStored));
+      } catch (error) {
+        console.warn('Error parsing showcase boosts cache', error);
+        setShowcaseBoosts({});
+      }
+    }
+    const badgeStored = window.localStorage?.getItem(EXPLORER_BADGE_STORAGE_KEY);
+    if (badgeStored) {
+      try {
+        const parsed = JSON.parse(badgeStored);
+        setExplorerBadge((prev) => ({ ...prev, ...parsed }));
+      } catch (error) {
+        console.warn('Error parsing explorer badge cache', error);
+      }
+    }
+  }, [baseEnergyByShowcase]);
 
   useEffect(() => {
     if (typeof window === 'undefined') return undefined;
     const handleResumeContribution = () => setIsContributionOpen(true);
     window.addEventListener('gatoencerrado:resume-contribution', handleResumeContribution);
     return () => window.removeEventListener('gatoencerrado:resume-contribution', handleResumeContribution);
+  }, []);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') {
+      return undefined;
+    }
+    window.localStorage?.setItem(EXPLORER_BADGE_STORAGE_KEY, JSON.stringify(explorerBadge));
+    return undefined;
+  }, [explorerBadge]);
+
+  useEffect(() => {
+    return () => {
+      if (celebrationTimeoutRef.current) {
+        clearTimeout(celebrationTimeoutRef.current);
+      }
+      if (badgeCoinsTimeoutRef.current) {
+        clearTimeout(badgeCoinsTimeoutRef.current);
+      }
+    };
   }, []);
 
   useEffect(() => {
@@ -1113,6 +1294,17 @@ const Transmedia = () => {
       window.removeEventListener('gatoencerrado:miniverse-spent', handleCustomSpent);
     };
   }, []);
+
+  useEffect(() => {
+    if (!allShowcasesUnlocked || explorerBadge.unlocked) {
+      return;
+    }
+    setExplorerBadge((prev) => ({
+      ...prev,
+      unlocked: true,
+      unlockedAt: Date.now(),
+    }));
+  }, [allShowcasesUnlocked, explorerBadge.unlocked]);
 
   const handleNovelaQuestionSend = useCallback(() => {
     if (isNovelaSubmitting) {
@@ -1715,6 +1907,118 @@ const Transmedia = () => {
     setIsContributionOpen(true);
   }, []);
 
+  const handleBadgeLogin = useCallback(() => {
+    setShowBadgeLoginOverlay(true);
+  }, []);
+
+  const handleCloseBadgeLogin = useCallback(() => {
+    setShowBadgeLoginOverlay(false);
+  }, []);
+
+  const handleBadgeSubscribe = useCallback(() => {
+    const ctaSection = document.getElementById('cta');
+    if (ctaSection) {
+      ctaSection.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      return;
+    }
+    setIsContributionOpen(true);
+  }, []);
+
+  const handleExplorerReward = useCallback(
+    (rewardType = 'subscriber') => {
+      if (!allShowcasesUnlocked || explorerBadge.rewardClaimed) {
+        return;
+      }
+      const rewardAmount = rewardType === 'subscriber' ? EXPLORER_BADGE_REWARD : 0;
+      if (rewardAmount <= 0) {
+        return;
+      }
+      setShowBadgeCoins(true);
+      setAvailableGATokens((prev) => {
+        const next = prev + rewardAmount;
+        if (typeof window !== 'undefined') {
+          window.localStorage?.setItem('gatoencerrado:gatokens-available', String(next));
+        }
+        return next;
+      });
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(
+          new CustomEvent('gatoencerrado:miniverse-spent', {
+            detail: { id: 'explorer-badge', boost: true, amount: rewardAmount },
+          })
+        );
+      }
+      setExplorerBadge((prev) => ({
+        ...prev,
+        rewardClaimed: true,
+        claimedType: rewardType,
+        claimedAt: Date.now(),
+      }));
+      if (badgeCoinsTimeoutRef.current) {
+        clearTimeout(badgeCoinsTimeoutRef.current);
+      }
+      badgeCoinsTimeoutRef.current = setTimeout(() => setShowBadgeCoins(false), 1300);
+    },
+    [allShowcasesUnlocked, explorerBadge.rewardClaimed]
+  );
+
+  const handleShowcaseRevealBoost = useCallback(
+    (showcaseId) => {
+      if (!showcaseId || showcaseBoosts?.[showcaseId]) {
+        return;
+      }
+      const boostAmount = baseEnergyByShowcase[showcaseId] ?? 0;
+      if (!boostAmount) {
+        return;
+      }
+      setShowcaseBoosts((prev = {}) => {
+        const next = { ...prev, [showcaseId]: true };
+        if (typeof window !== 'undefined') {
+          window.localStorage?.setItem('gatoencerrado:showcase-boosts', JSON.stringify(next));
+        }
+        return next;
+      });
+      setShowcaseEnergy((prev = {}) => {
+        const currentValue = prev?.[showcaseId] ?? baseEnergyByShowcase[showcaseId];
+        const updatedValue = currentValue + boostAmount;
+        const next = { ...prev, [showcaseId]: updatedValue };
+        if (typeof window !== 'undefined') {
+          window.localStorage?.setItem('gatoencerrado:showcase-energy', JSON.stringify(next));
+        }
+        return next;
+      });
+      setAvailableGATokens((prev) => {
+        const next = prev + boostAmount;
+        if (typeof window !== 'undefined') {
+          window.localStorage?.setItem('gatoencerrado:gatokens-available', String(next));
+        }
+        return next;
+      });
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(
+          new CustomEvent('gatoencerrado:miniverse-spent', {
+            detail: { id: showcaseId, boost: true, amount: boostAmount },
+          })
+        );
+      }
+      setCelebratedShowcaseId(showcaseId);
+      if (celebrationTimeoutRef.current) {
+        clearTimeout(celebrationTimeoutRef.current);
+      }
+      celebrationTimeoutRef.current = setTimeout(() => {
+        setCelebratedShowcaseId((current) => (current === showcaseId ? null : current));
+      }, 1400);
+    },
+    [baseEnergyByShowcase, showcaseBoosts]
+  );
+
+  useEffect(() => {
+    if (!allShowcasesUnlocked || !isSubscriber || explorerBadge.rewardClaimed) {
+      return;
+    }
+    handleExplorerReward('subscriber');
+  }, [allShowcasesUnlocked, explorerBadge.rewardClaimed, handleExplorerReward, isSubscriber]);
+
 const rendernotaAutoral = () => {
   if (!activeDefinition?.notaAutoral) return null;
 
@@ -1739,6 +2043,8 @@ const rendernotaAutoral = () => {
         }}
         effect={effect}
         isTragedia={isTragedia}
+        onFirstReveal={() => handleShowcaseRevealBoost(activeId)}
+        celebration={celebratedShowcaseId === activeId}
       />
     </div>
   );
@@ -3550,6 +3856,90 @@ const rendernotaAutoral = () => {
     );
   };
 
+  const renderExplorerBadge = () => {
+    if (!explorerBadge.unlocked) {
+      return null;
+    }
+    const badgeStatus = !isAuthenticated ? 'guest' : isSubscriber ? 'subscriber' : 'member';
+    const alias =
+      user?.user_metadata?.alias ||
+      user?.user_metadata?.full_name ||
+      user?.user_metadata?.display_name ||
+      'Errante anónimo';
+    const statusCopy = {
+      guest:
+        'Inicia sesión para guardar esta insignia, nombrarla y recibir futuras recompensas vinculadas a tu cuenta.',
+      member:
+        'Tu badge ya está en tu cuenta. Hazte suscriptor para transformar este logro en energía real y recibir recargas automáticas.',
+      subscriber: `Recompensa activada. Sumamos ${EXPLORER_BADGE_REWARD} GATokens a tu saldo como agradecimiento.`,
+    };
+    const cta =
+      badgeStatus === 'guest' ? (
+        <Button onClick={handleBadgeLogin} className="bg-purple-600/80 hover:bg-purple-600 text-white">
+          Iniciar sesión
+        </Button>
+      ) : badgeStatus === 'member' ? (
+        <Button
+          onClick={handleBadgeSubscribe}
+          variant="outline"
+          className="border-amber-300/60 text-amber-200 hover:bg-amber-200/10"
+        >
+          Suscribirme
+        </Button>
+      ) : null;
+
+    return (
+      <motion.div
+        initial={{ opacity: 0, y: 24 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6, ease: 'easeOut' }}
+        viewport={{ once: true }}
+        className="mt-10 rounded-2xl border border-purple-500/40 bg-gradient-to-br from-slate-900/70 to-purple-900/30 p-6 md:p-8 shadow-[0_20px_80px_rgba(115,73,255,0.15)]"
+      >
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
+          <div className="flex items-start gap-4 md:gap-6">
+            <div className="relative h-16 w-16 rounded-2xl border border-purple-400/40 bg-black/40 flex items-center justify-center">
+              <Sparkles className="text-purple-200" size={28} />
+              {showBadgeCoins ? (
+                <span className="pointer-events-none absolute inset-0">
+                  {Array.from({ length: 6 }).map((_, index) => {
+                    const endX = (index - 2.5) * 18;
+                    const endY = -50 - index * 12;
+                    return (
+                      <motion.span
+                        key={`badge-coin-${index}`}
+                        className="absolute left-1/2 top-1/2 h-4 w-4 -translate-x-1/2 -translate-y-1/2 rounded-full bg-gradient-to-br from-amber-200 to-yellow-500 shadow-[0_0_12px_rgba(250,204,21,0.4)]"
+                        initial={{ opacity: 0.95, scale: 0.7, x: 0, y: 0 }}
+                        animate={{ opacity: 0, scale: 1.05, x: endX, y: endY, rotate: 100 + index * 24 }}
+                        transition={{ duration: 1.05, ease: 'easeOut', delay: index * 0.03 }}
+                      />
+                    );
+                  })}
+                </span>
+              ) : null}
+            </div>
+            <div className="space-y-2">
+              <p className="text-xs uppercase tracking-[0.35em] text-purple-200/80">Insignia secreta</p>
+              <h4 className="font-display text-2xl text-white">{EXPLORER_BADGE_NAME}</h4>
+              <p className="text-sm text-slate-300/80 leading-relaxed">
+                Leíste los nueve mini-versos autorales y abriste cada portal. {alias} ahora figura en el registro de
+                errantes.
+              </p>
+              <p className="text-xs text-slate-300/70 uppercase tracking-[0.25em]">{statusCopy[badgeStatus]}</p>
+              {badgeStatus === 'subscriber' && explorerBadge.rewardClaimed ? (
+                <div className="inline-flex items-center gap-2 rounded-full border border-emerald-300/40 bg-emerald-500/10 px-4 py-1 text-[0.65rem] uppercase tracking-[0.35em] text-emerald-200">
+                  <Coins size={14} className="text-emerald-200" />
+                  +{EXPLORER_BADGE_REWARD} GAT
+                </div>
+              ) : null}
+            </div>
+          </div>
+          {cta ? <div className="flex-shrink-0">{cta}</div> : null}
+        </div>
+      </motion.div>
+    );
+  };
+
   return (
     <>
       <section id="transmedia" className="py-24 relative min-h-[1200px]">
@@ -3576,10 +3966,10 @@ const rendernotaAutoral = () => {
           >
             <p className="text-xs uppercase tracking-[0.4em] text-slate-400/70">Universo Transmedia</p>
             <h2 className="font-display text-4xl md:text-5xl font-medium text-gradient italic">
-              Miniversos que sostienen la causa
+              Escaparate de Miniversos
             </h2>
             <p className="text-lg text-slate-300/80 max-w-3xl mx-auto leading-relaxed font-light">
-              #GatoEncerrado es un universo transmedia compuesto por miniversos que dejan huella. Cada experiencia digital, objeto o narrativa expandida genera GATokens, el pulso que mueve este ecosistema y, al mismo tiempo, sostiene la  {' '}
+              #GatoEncerrado es un universo transmedia compuesto por miniversos que sostienen una causa. Cada experiencia digital, objeto o narrativa expandida genera GATokens, el pulso que mueve este ecosistema y, al mismo tiempo, sostiene la  {' '}
               <button
                 type="button"
                 onClick={handleScrollToSupport}
@@ -3642,83 +4032,26 @@ const rendernotaAutoral = () => {
                     </p>
                     
                     {(() => {
-                      const parseFromNote = () => {
-                        if (typeof format.iaTokensNote !== 'string') return 0;
-                        const match = format.iaTokensNote.match(/(\d+)/);
-                        return match ? Number.parseInt(match[1], 10) : 0;
-                      };
-
-                      const baseEnergy = {
-                        required: parseFromNote(),
-                        remaining: parseFromNote(),
-                      };
-
-                      const energyData = (() => {
-                        switch (format.id) {
-                          case 'copycats': {
-                            const required = GAT_COSTS.quironFull;
-                            const remaining = quironSpent ? 0 : required;
-                            return { required, remaining };
-                          }
-                          case 'miniversoGrafico': {
-                            const required = GAT_COSTS.graficoSwipe;
-                            const remaining = graphicSpent ? 0 : required;
-                            return { required, remaining };
-                          }
-                          case 'miniversoNovela': {
-                            const required = GAT_COSTS.novelaChapter;
-                            const spent = novelaQuestions * 25;
-                            const remaining = Math.max(required - spent, 0);
-                            return { required, remaining };
-                          }
-                          case 'miniversoSonoro': {
-                            const required = GAT_COSTS.sonoroMix;
-                            const remaining = sonoroSpent ? 0 : required;
-                            return { required, remaining };
-                          }
-                          case 'lataza': {
-                            const required = GAT_COSTS.tazaActivation;
-                            const remaining = Math.max(required - tazaActivations * 30, 0);
-                            return { required, remaining };
-                          }
-                          case 'miniversoMovimiento': {
-                            const required = GAT_COSTS.movimientoRuta;
-                            return { required, remaining: required };
-                          }
-                          default:
-                            return baseEnergy;
-                        }
-                      })();
-
-                      const isExhausted = energyData.remaining <= 0;
-                      const isAvailable = !isExhausted && energyData.remaining < energyData.required;
-
-                      if (format.id === 'oraculo' && isExhausted) {
-                        return (
-                          <div className="mb-4 text-xs text-slate-200/80 flex items-center gap-2">
-                            <Coins size={14} className="text-amber-200" />
-                            <span className="font-semibold text-amber-200">ADQUIERE ENERGÍA AQUÍ</span>
-                          </div>
-                        );
-                      }
-
-                      const label = isExhausted
-                        ? 'Energía agotada:'
-                        : isAvailable
-                          ? 'Disponible:'
-                          : 'Energía:';
-                      const value = isExhausted ? 0 : isAvailable ? energyData.remaining : energyData.required;
-                      const toneClass = isExhausted
-                        ? 'text-rose-200'
-                        : isAvailable
-                          ? 'text-emerald-200'
-                          : 'text-amber-200';
-
+                      const baseValue = baseEnergyByShowcase[format.id] ?? 0;
+                      const currentValue =
+                        showcaseEnergy?.[format.id] ?? (baseValue > 0 ? baseValue : 0);
+                      const boostApplied = Boolean(showcaseBoosts?.[format.id]);
+                      const toneClass = boostApplied ? 'text-emerald-200' : 'text-amber-200';
+                      const label = boostApplied ? 'Saldo acumulado:' : 'Energía inicial:';
                       return (
-                        <div className="mb-4 text-xs text-slate-200/80 flex items-center gap-2">
+                        <div className="mb-4 text-xs text-slate-200/80 flex flex-wrap items-center gap-2">
                           <Coins size={14} className={toneClass} />
                           <span className="uppercase tracking-[0.25em] text-slate-100/70">{label}</span>
-                          <span className={`font-semibold ${toneClass}`}>{value} GAT</span>
+                          <span className={`font-semibold ${toneClass}`}>{currentValue} GAT</span>
+                          {boostApplied ? (
+                            <span className="text-[0.65rem] uppercase tracking-[0.35em] text-emerald-200">
+                              Miniverso leído
+                            </span>
+                          ) : (
+                            <span className="text-[0.65rem] uppercase tracking-[0.35em] text-slate-400">
+                              Descubre cómo sumar energía
+                            </span>
+                          )}
                         </div>
                       );
                     })()}
@@ -3749,10 +4082,15 @@ const rendernotaAutoral = () => {
               </button>
               {activeDefinition.type !== 'tragedia' ? (
                 <div className="flex flex-col gap-6 md:flex-row md:items-start md:gap-10 pr-0">
-                  <div className="flex-1">
+                  <div className="flex-1 space-y-6">
                     <p className="text-xs uppercase tracking-[0.4em] text-slate-400/70 mb-2">Escaparate</p>
                     <h3 className="font-display text-3xl text-slate-100 mb-3">{activeDefinition.label}</h3>
                     <p className="text-slate-300/80 leading-relaxed font-light max-w-3xl">{activeDefinition.intro}</p>
+                    {activeDefinition.iaProfile ? (
+                      <div className="max-w-xl">
+                        <IAInsightCard {...activeDefinition.iaProfile} compact />
+                      </div>
+                    ) : null}
                   </div>
                   {activeDefinition.type !== 'graphic-lab' ? (
                     <div className="md:w-[360px] flex-shrink-0">
@@ -3763,13 +4101,10 @@ const rendernotaAutoral = () => {
               ) : null}
 
               <div className="mt-8">{renderShowcaseContent()}</div>
-              {activeDefinition.iaProfile ? (
-                <div className="mt-9 max-w-xl">
-                  <IAInsightCard {...activeDefinition.iaProfile} compact />
-                </div>
-              ) : null}
             </motion.div>
           ) : null}
+
+          {renderExplorerBadge()}
 
           <div className="mt-16 grid lg:grid-cols-[3fr_2fr] gap-10">
             <motion.div
@@ -3862,6 +4197,7 @@ const rendernotaAutoral = () => {
             </motion.div>
 
             <motion.div
+              id="cta"
               initial={{ opacity: 0, y: 30 }}
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8, delay: 0.3, ease: 'easeOut' }}
@@ -3892,6 +4228,7 @@ const rendernotaAutoral = () => {
         }}
         initialCategoryId={contributionCategoryId}
       />
+      {showBadgeLoginOverlay ? <LoginOverlay onClose={handleCloseBadgeLogin} /> : null}
 
       {pdfPreview ? (
         <div className="fixed inset-0 z-50 flex items-center justify-center px-4 py-10">

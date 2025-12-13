@@ -43,7 +43,7 @@ const Hero = () => {
           </div>
           <img
             className="absolute inset-0 w-full h-full object-cover opacity-15 mix-blend-luminosity pointer-events-none"
-            style={{ filter: 'contrast(25%) brightness(95%)' }}
+            style={{ filter: 'contrast(85%) brightness(125%)' }}
             alt="Textura de telón de teatro de terciopelo oscuro"
             src={bgLogo}
           />
