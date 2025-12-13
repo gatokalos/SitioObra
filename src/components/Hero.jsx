@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import ReserveModal from '@/components/ReserveModal';
 import TicketPurchaseModal from '@/components/TicketPurchaseModal';
 import bgLogo from '@/assets/bg-logo.png';
+import isotipoGato from '@/assets/isotipo-gato.png';
 
 const Hero = () => {
   const [isReserveOpen, setIsReserveOpen] = useState(false);
@@ -42,8 +43,8 @@ const Hero = () => {
             <div className="absolute bottom-0 right-0 w-1/2 h-1/2 bg-gradient-to-tl from-purple-700/60 via-transparent to-transparent blur-3xl"></div>
           </div>
           <img
-            className="absolute inset-0 w-full h-full object-cover opacity-15 mix-blend-luminosity pointer-events-none"
-            style={{ filter: 'contrast(85%) brightness(125%)' }}
+            className="absolute inset-0 w-full h-full object-cover opacity-15 mix-blend-pin-light pointer-events-none"
+            style={{ filter: 'contrast(15%) brightness(75%)' }}
             alt="Textura de telón de teatro de terciopelo oscuro"
             src={bgLogo}
           />
@@ -58,11 +59,19 @@ const Hero = () => {
             transition={{ duration: 1, ease: "easeOut" }}
             className="max-w-4xl mx-auto"
           >
+            <motion.img
+              src={isotipoGato}
+              alt="Isotipo de Gato Encerrado"
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 1.2, ease: 'easeOut' }}
+              className="mx-auto mb-6 w-24 sm:w-28 md:w-32 drop-shadow-[0_12px_45px_rgba(233,213,255,0.35)]"
+            />
             <motion.h1
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ duration: 1.5, delay: 0.2 }}
-              className="font-display text-5xl md:text-7xl font-medium italic mb-6 text-gradient"
+              className="font-headline text-4xl sm:text-5xl md:text-7xl font-medium italic mb-6 text-gradient"
               style={{ textShadow: '0 0 20px rgba(233, 213, 255, 0.3)' }}
             >
               #GatoEncerrado
