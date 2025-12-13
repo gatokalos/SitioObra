@@ -27,16 +27,12 @@ jobs:
         run: ls -la dist/
 
       - name: Deploy via SFTP
-        uses: SamKirkland/FTP-Deploy-Action@v4.3.6
+        uses: wlixcc/SFTP-Deploy-Action@v1.2.6
         with:
           server: ${{ secrets.FTP_SERVER }}
           username: ${{ secrets.FTP_USERNAME }}
           password: ${{ secrets.FTP_PASSWORD }}
-
-          protocol: sftps
           port: 22
-          timeout: 600000
-
-          local-dir: dist/
-          server-dir: domains/esungatoencerrado.com/public_html/
-          log-level: verbose
+          sftp_only: true
+          local_path: dist/
+          remote_path: domains/esungatoencerrado.com/public_html/
