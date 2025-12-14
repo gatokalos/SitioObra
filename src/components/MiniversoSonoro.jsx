@@ -3,8 +3,8 @@ import "@/components/miniversos/sonoro/MiniversoSonoroPreview.css";
 
 const VISUAL_MODES = [
   { id: "neblina", label: "Neblina" },
-  { id: "sombras", label: "Sombras" },
-  { id: "respiracion", label: "Respiración" },
+  { id: "lucid", label: "Lucid Dream" },
+  { id: "umbral", label: "Umbral" },
 ];
 
 export default function MiniversoSonoro({

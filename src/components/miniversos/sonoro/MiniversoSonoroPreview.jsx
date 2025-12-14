@@ -14,16 +14,10 @@ const DREAM_MODES = [
     copy: 'Neblina suave que difumina los bordes del sueño.',
   },
   {
-    id: 'sombras',
+    id: 'lucid',
     label: 'Modo',
-    short: 'Deep-Shadow',
-    copy: 'Contrastes más profundos, como si todo ocurriera a media luz.',
-  },
-  {
-    id: 'respiracion',
-    label: 'Modo',
-    short: 'Pulse-Bloom',
-    copy: 'La luz late con la escena, como si el sueño respirara.',
+    short: 'Lucid-Dream',
+    copy: 'Contrastes profundos y luz que late con la escena, como si el sueño respirara.',
   },
   {
     id: 'umbral',
@@ -314,23 +308,42 @@ function MiniversoSonoroPreview({
     }
   }, [isFullExperience, isMobile, poemLines.length, selectedAudio?.url_audio]);
 
+  const overlayVisible = !isMobile && !isFullExperience && !isEnteringExperience;
+
+  const renderHudInfo = ({ variant = 'default' } = {}) => (
+    <div className={`sonoro-preview-hud ${variant === 'overlay' ? 'sonoro-preview-hud--overlay' : ''}`}>
+      <div className="sonoro-preview-hud__body">
+        <p className="sonoro-preview-hud__kicker">Cámara de resonancia</p>
+        <p className="sonoro-preview-hud__title">
+          {currentVideo?.title || fallbackVideoTitle || 'Video ritual'}
+        </p>
+        <p className="sonoro-preview-hud__artist">
+          {currentVideo?.artist || fallbackVideoArtist || 'Residencia #GatoEncerrado'}
+        </p>
+      </div>
+      <div className="sonoro-preview-hud__mode">
+        <span className="sonoro-preview-pill">{currentMode.label}</span>
+        <small>{currentMode.short}</small>
+      </div>
+    </div>
+  );
+
+  const renderCostBadge = (extraClass = '') => (
+    <span
+      className={`inline-flex items-center gap-2 rounded-full border px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.25em] ${
+        isSpent
+          ? 'border-emerald-200/70 bg-emerald-500/25 text-emerald-50'
+          : 'border-amber-200/80 bg-amber-500/30 text-amber-50'
+      } ${extraClass}`}
+    >
+      <span className="text-amber-50">◎</span>
+      {isSpent ? '0 gatokens' : costLabel}
+    </span>
+  );
+
   const renderVideoCard = (extraClass = '') => (
     <div className={`sonoro-preview-video-card mode-${dreamMode} ${extraClass}`}>
-      <div className="sonoro-preview-hud">
-        <div>
-          <p className="sonoro-preview-hud__kicker">Cámara de resonancia</p>
-          <p className="sonoro-preview-hud__title">
-            {currentVideo?.title || fallbackVideoTitle || 'Video ritual'}
-          </p>
-          <p className="sonoro-preview-hud__artist">
-            {currentVideo?.artist || fallbackVideoArtist || 'Residencia #GatoEncerrado'}
-          </p>
-        </div>
-        <div className="sonoro-preview-hud__mode">
-          <span className="sonoro-preview-pill">{currentMode.label}</span>
-          <small>{currentMode.short}</small>
-        </div>
-      </div>
+      {isMobile ? renderHudInfo() : null}
 
       <div className="sonoro-ambient">
         <div className="sonoro-ambient-video">
@@ -385,130 +398,160 @@ function MiniversoSonoroPreview({
           )}
         </div>
       )}
+      {!isMobile ? (
+        <motion.div
+          className="sonoro-preview-overlay"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: overlayVisible ? 1 : 0 }}
+          transition={{ duration: 0.4, ease: 'easeOut' }}
+          style={{ pointerEvents: overlayVisible ? 'auto' : 'none' }}
+        >
+          <div className="sonoro-preview-overlay-panel">
+            <div className="sonoro-overlay-head">
+              {renderHudInfo({ variant: 'overlay' })}
+              <div className="sonoro-overlay-cost">{renderCostBadge('sonoro-cost-chip--overlay')}</div>
+            </div>
+            {overlayControls}
+          </div>
+        </motion.div>
+      ) : null}
+    </div>
+  );
+
+  const renderCTAButton = (customClass = 'sonoro-preview-cta') => (
+    <div className="sonoro-preview-cta-wrapper">
+      {coinBlast ? (
+        <motion.div
+          initial={{ opacity: 0, y: 6 }}
+          animate={{ opacity: 1, y: -6 }}
+          exit={{ opacity: 0, y: -10 }}
+          className="sonoro-preview-cta-badge"
+        >
+          -{costLabel}
+        </motion.div>
+      ) : null}
+      <button
+        type="button"
+        className={`${customClass} relative`}
+        onClick={handleEnterExperience}
+        disabled={!isSelectionReady || isSpent || isEnteringExperience}
+      >
+        <span className="relative z-10">
+          {isSpent ? 'Créditos aplicados' : isEnteringExperience ? 'Entrando…' : 'Entrar a la cámara de resonancia'}
+        </span>
+        {coinBlast ? (
+          <span className="pointer-events-none absolute inset-0">
+            {Array.from({ length: 7 }).map((_, index) => {
+              const endX = 140 + index * 12;
+              const endY = -130 - index * 14;
+              return (
+                <motion.span
+                  key={`sonoro-coin-${index}`}
+                  className="absolute left-1/2 top-1/2 h-5 w-5 -translate-x-1/2 -translate-y-1/2 rounded-full bg-gradient-to-br from-amber-200 to-yellow-500 shadow-[0_0_12px_rgba(250,204,21,0.5)]"
+                  initial={{ opacity: 0.9, scale: 0.7, x: 0, y: 0 }}
+                  animate={{ opacity: 0, scale: 1, x: endX, y: endY, rotate: 120 + index * 22 }}
+                  transition={{ duration: 1.1, ease: 'easeOut', delay: 0.05 }}
+                />
+              );
+            })}
+          </span>
+        ) : null}
+      </button>
+    </div>
+  );
+
+  const renderModeControls = () => (
+    <div className="sonoro-preview-control-group sonoro-preview-control-group--modes">
+      <p className="sonoro-preview-control-label">Modos de sueño</p>
+      <div className="sonoro-preview-mode-pills">
+        {DREAM_MODES.map((mode) => (
+          <button
+            key={mode.id}
+            type="button"
+            className={`sonoro-preview-mode-pill ${dreamMode === mode.id ? 'is-active' : ''}`}
+            onClick={() => setDreamMode(mode.id)}
+            aria-pressed={dreamMode === mode.id}
+          >
+            <div className="sonoro-preview-mode-pill__header">
+              <span>{mode.label}</span>
+              <small>{mode.short}</small>
+            </div>
+            <p>{mode.copy}</p>
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+
+  const renderMusicControl = () => (
+    <div className="sonoro-preview-control-group">
+      <p className="sonoro-preview-control-label">Elige la música</p>
+      <select
+        value={selectedAudio?.id ?? ''}
+        onChange={handleAudioChange}
+        className="sonoro-preview-select"
+      >
+        {audioOptions.map((track) => (
+          <option key={track.id} value={track.id}>
+            {track.label || track.title}
+          </option>
+        ))}
+      </select>
+    </div>
+  );
+
+  const renderPoemControl = () => (
+    <div className="sonoro-preview-control-group">
+      <p className="sonoro-preview-control-label">Elige un poema</p>
+      <select
+        value={selectedPoem?.id ?? ''}
+        onChange={handlePoemChange}
+        className="sonoro-preview-select"
+      >
+        <option value="">Ninguno</option>
+        {poemOptions.map((poem) => (
+          <option key={poem.id} value={poem.id}>
+            {poem.label || poem.title || 'Poema ritual'}
+          </option>
+        ))}
+      </select>
     </div>
   );
 
   const controlsBlock = (
     <>
-      <div className="sonoro-preview-control-group sonoro-preview-control-group--modes">
-        <p className="sonoro-preview-control-label">Modos de sueño</p>
-        <div className="sonoro-preview-mode-pills">
-          {DREAM_MODES.map((mode) => (
-            <button
-              key={mode.id}
-              type="button"
-              className={`sonoro-preview-mode-pill ${dreamMode === mode.id ? 'is-active' : ''}`}
-              onClick={() => setDreamMode(mode.id)}
-              aria-pressed={dreamMode === mode.id}
-            >
-              <div className="sonoro-preview-mode-pill__header">
-                <span>{mode.label}</span>
-                <small>{mode.short}</small>
-              </div>
-              <p>{mode.copy}</p>
-            </button>
-          ))}
-        </div>
-      </div>
-
-      <div className="sonoro-preview-control-group">
-        <p className="sonoro-preview-control-label">Elige la música</p>
-        <select
-          value={selectedAudio?.id ?? ''}
-          onChange={handleAudioChange}
-          className="sonoro-preview-select"
-        >
-          {audioOptions.map((track) => (
-            <option key={track.id} value={track.id}>
-              {track.label || track.title}
-            </option>
-          ))}
-        </select>
-      </div>
-
-      <div className="sonoro-preview-control-group">
-        <p className="sonoro-preview-control-label">Elige un poema</p>
-        <select
-          value={selectedPoem?.id ?? ''}
-          onChange={handlePoemChange}
-          className="sonoro-preview-select"
-        >
-          <option value="">Ninguno</option>
-          {poemOptions.map((poem) => (
-            <option key={poem.id} value={poem.id}>
-              {poem.label || poem.title || 'Poema ritual'}
-            </option>
-          ))}
-        </select>
-      </div>
+      {renderModeControls()}
+      {renderMusicControl()}
+      {renderPoemControl()}
     </>
   );
 
+  const overlayControls = (
+    <div className="sonoro-overlay-controls">
+      <div className="sonoro-overlay-modes">{renderModeControls()}</div>
+      <div className="sonoro-overlay-meta">
+        {renderMusicControl()}
+        {renderPoemControl()}
+        {showCTA ? renderCTAButton('sonoro-preview-cta sonoro-preview-cta--overlay') : null}
+        <p className="sonoro-preview-overlay-hint">Necesitas {costLabel}</p>
+      </div>
+    </div>
+  );
+
   const mobileLayout = (
-    <div className={`sonoro-preview-layout ${isMobile ? 'is-mobile' : 'is-desktop'}`}>
+    <div className="sonoro-preview-layout is-mobile">
       <aside className="sonoro-preview-controls">{controlsBlock}</aside>
       <section className="sonoro-preview-stage">
         {renderVideoCard()}
-        {showCTA && (
-          <div className="relative">
-            {coinBlast ? (
-              <motion.div
-                initial={{ opacity: 0, y: 6 }}
-                animate={{ opacity: 1, y: -6 }}
-                exit={{ opacity: 0, y: -10 }}
-                className="absolute -top-6 right-0 rounded-full border border-amber-200/60 bg-amber-500/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.25em] text-amber-100 shadow-[0_0_12px_rgba(250,204,21,0.25)]"
-              >
-                -{costLabel}
-              </motion.div>
-            ) : null}
-            <button
-              type="button"
-              className="sonoro-preview-cta relative"
-              onClick={handleEnterExperience}
-              disabled={!isSelectionReady || isSpent || isEnteringExperience}
-            >
-              <span className="relative z-10">
-                {isSpent ? 'Créditos aplicados' : isEnteringExperience ? 'Entrando…' : 'Entrar a la cámara de resonancia'}
-              </span>
-              {coinBlast ? (
-                <span className="pointer-events-none absolute inset-0">
-                  {Array.from({ length: 7 }).map((_, index) => {
-                    const endX = 140 + index * 12;
-                    const endY = -130 - index * 14;
-                    return (
-                      <motion.span
-                        key={`sonoro-coin-${index}`}
-                        className="absolute left-1/2 top-1/2 h-5 w-5 -translate-x-1/2 -translate-y-1/2 rounded-full bg-gradient-to-br from-amber-200 to-yellow-500 shadow-[0_0_12px_rgba(250,204,21,0.5)]"
-                        initial={{ opacity: 0.9, scale: 0.7, x: 0, y: 0 }}
-                        animate={{ opacity: 0, scale: 1, x: endX, y: endY, rotate: 120 + index * 22 }}
-                        transition={{ duration: 1.1, ease: 'easeOut', delay: 0.05 }}
-                      />
-                    );
-                  })}
-                </span>
-              ) : null}
-            </button>
-          </div>
-        )}
+        {showCTA ? renderCTAButton() : null}
       </section>
     </div>
   );
 
   const desktopLayout = (
-    <div className="sonoro-preview-layout is-desktop">
-      <aside className="sonoro-preview-controls">{controlsBlock}</aside>
-      <section className="sonoro-preview-stage">
-        {renderVideoCard()}
-        {showCTA && (
-          <button
-            type="button"
-            className="sonoro-preview-cta"
-            onClick={handleEnterExperience}
-            disabled={!isSelectionReady}
-          >
-            Entrar a la cámara de resonancia
-          </button>
-        )}
+    <div className="sonoro-preview-layout is-single">
+      <section className="sonoro-preview-stage sonoro-preview-stage--wide">
+        {renderVideoCard('sonoro-preview-video-card--hero')}
       </section>
     </div>
   );
@@ -533,24 +576,13 @@ function MiniversoSonoroPreview({
 
   const previewLayout = (
     <>
-      {showHeader && (
+      {showHeader && isMobile ? (
         <div className="sonoro-preview-header">
           <div className="sonoro-preview-header__top">
-            <span
-              className={`inline-flex items-center gap-2 rounded-full border px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.25em] ${
-                isSpent
-                  ? 'border-emerald-200/70 bg-emerald-500/25 text-emerald-50'
-                  : 'border-amber-200/80 bg-amber-500/30 text-amber-50'
-              }`}
-            >
-              <span className="text-amber-50">◎</span>
-              {isSpent ? '0 gatokens' : costLabel}
-            </span>
+            {renderCostBadge()}
           </div>
-         
-         
         </div>
-      )}
+      ) : null}
       {isMobile ? mobileLayout : desktopLayout}
     </>
   );

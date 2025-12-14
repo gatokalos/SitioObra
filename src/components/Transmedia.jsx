@@ -325,18 +325,16 @@ function ensureMiniversoBreathStyle() {
 }
 const showcaseDefinitions = {
   miniversos: {
-    label: 'Drama',
+    label: 'Miniverso Drama',
     type: 'tragedia',
     intro:
       'Aquí nace la obra dentro de la obra. El gato encerrado de Es un gato encerrado.',
     cartaTitle: '#VibraciónEscénica',
     notaAutoral: 'De la escena brotó el universo:\nvoz, trance y cuerpo\nabriendo portales.',
-      narrative: [
-      'En este miniverso puedes entrar al mundo de Silvestre: escuchar sus ecos, leer a sus fantasmas… o conversar directamente con su trasunto, el Payasito Tiste, en un chat que habita la herida.',
-    ],
+
     ctaLabel: 'Hablar con Silvestre',
     ctaDescription:
-      'Activa el vínculo con la voz que aún no se apaga. Aquí es donde Silvestre —o lo que queda de él— te responde.',
+      'Chatea con Silvestre sobre la obra y el guion que lo vio nacer.',
     iaProfile: {
       type: 'GPT-4o afinada para voz literaria y contención emocional.',
       interaction: '1 a 3 mensajes con Silvestre (texto o voz).',
@@ -346,7 +344,7 @@ const showcaseDefinitions = {
     },
   },
   copycats: {
-    label: 'Cine',
+    label: 'Miniverso Cine',
     type: 'cinema',
     intro: 'El cine dentro de #GatoEncerrado es un laboratorio donde la realidad se revela por roce, no por imitación. Obra, proceso y mirada se mezclan hasta volver indistinguibles sus fronteras.',
     promise: 'Aquí no solo ves cine: te invitamos a entrar a su laboratorio.',
@@ -357,8 +355,7 @@ const showcaseDefinitions = {
     copycats: {
       title: 'CopyCats',
       description: 'Un juego serio sobre cómo nos repetimos sin notarlo. Mira su bitácora creativa y descubre cómo surgió esta pieza.',
-      microcopy:
-        'CopyCats es un ensayo cinematográfico sobre el desgaste creativo: un making-of que piensa el acto de crear mientras sucede. Se detiene en el burnout, en la autocrítica feroz, y en ese desprecio silencioso que a veces sentimos por la obra… justo cuando más nos necesita.',
+
       assets: [
         {
           id: 'copycats-carta',
@@ -370,9 +367,8 @@ const showcaseDefinitions = {
     },
     quiron: {
       title: 'Quirón',
-      description: 'Mira el teaser y los stills de rodaje de un cortometraje que busca la vulnerabilidad donde casi no se nota.',
-      microcopy:
-        'Quirón explora un silencio heredado: una familia atravesada por el suicidio de un padre y un abuelo. La película nace para darle lenguaje a ese dolor y acercarnos a lo que normalmente se calla.',
+      description: 'Mira el teaser de un cortometraje que busca la vulnerabilidad donde casi nunca se nombra.',
+     
       fullVideo: {
         id: 'quiron-full',
         label: 'Cortometraje completo',
@@ -383,23 +379,7 @@ const showcaseDefinitions = {
         label: 'Teaser oficial',
         url: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Cine%20-%20teasers/Quiron.mp4',
       },
-      stills: [
-        {
-          id: 'quiron-still-01',
-          label: 'Still 01 · Primera llamada',
-          url: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Cine%20-%20teasers/stills%20-%20quiron/rodaje%201.jpg',
-        },
-        {
-          id: 'quiron-still-02',
-          label: 'Still 02 · Lectura en el set',
-          url: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Cine%20-%20teasers/stills%20-%20quiron/IMG_2290.JPG',
-        },
-        {
-          id: 'quiron-still-03',
-          label: 'Still 03 · Señales del día',
-          url: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Cine%20-%20teasers/stills%20-%20quiron/IMG_2382.JPG',
-        },
-      ],
+     
     },
     collaborators: [
       {
@@ -440,6 +420,18 @@ const showcaseDefinitions = {
         bio: 'Tania llegó a este proyecto transmedia desde la autoficción, pero pronto reveló algo más: una actriz natural, sin artificio, capaz de sostener la cámara como si respirara con ella. En el screening privado de Quirón, el maestro Gilberto Corrales lo señaló con asombro: su actuación encendía la escena desde un lugar genuino, vulnerable y preciso. Su participación abrió una grieta luminosa por donde la historia pudo volverse más humana. Tania colabora en una non-profit, es diseñadora gráfica y transfronteriza de corazón.',
         image: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/equipo/tania.jpg',
         anchor: '#team',
+      },
+    ],
+    comments: [
+      {
+        id: 'copycats-comment-1',
+        quote: '“En el screening sentí que CopyCats nos dejó ver la forma en que nos copiamos para sobrevivir.”',
+        author: 'Invitada al laboratorio',
+      },
+      {
+        id: 'copycats-comment-2',
+        quote: '“Quirón me dejó en silencio, como si me hablara al oído.”',
+        author: 'Asistente al teaser privado',
       },
     ],
     bridge: {
@@ -595,6 +587,10 @@ const showcaseDefinitions = {
             quote: '“No sabía que un libro podía hablarme a mitad de la página.”',
             author: 'Lectora anónima',
           },
+          {
+            quote: '“Volví a subrayar y entendí que la obra también estaba escribiendo mi propia memoria.”',
+            author: 'Club de lectura Frontera',
+          },
         ],
       },
     ],
@@ -678,6 +674,18 @@ const showcaseDefinitions = {
         image: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/equipo/diego.png',
       },
     ],
+    comments: [
+      {
+        id: 'sonoro-comment-1',
+        quote: '“La mezcla se sintió como respirar dentro del sueño.”',
+        author: 'Escucha anónima',
+      },
+      {
+        id: 'sonoro-comment-2',
+        quote: '“Elegí la pista incorrecta y terminé llorando. Gracias por eso.”',
+        author: 'Residencia Sonora',
+      },
+    ],
   },
   miniversoGrafico: {
     label: 'Gráficos',
@@ -728,7 +736,18 @@ const showcaseDefinitions = {
         ],
       },
     ],
-    
+    comments: [
+      {
+        id: 'grafico-comment-1',
+        quote: '“Cada viñeta parecía escucharme; terminé subrayando con colores.”',
+        author: 'Residencia gráfica MX',
+      },
+      {
+        id: 'grafico-comment-2',
+        quote: '“El swipe me hizo sentir que estaba dentro del storyboard.”',
+        author: 'Colectivo Tres Pies',
+      },
+    ],
     ctas: {
       primary: 'Explora el miniverso gráfico',
       secondary: 'Súmate a la residencia gráfica',
@@ -742,12 +761,12 @@ const showcaseDefinitions = {
     },
   },
   miniversoMovimiento: {
-    label: 'Movimiento • Diosas en danza',
-    type: 'movement-ritual',
+    label: 'Miniverso Movimiento',
+     intro:'En este miniverso, el cuerpo se convierte en conjuro. La danza, en escritura. Y la ciudad… en altar vivo.',
+         type: 'movement-ritual',
     pendingName: 'La Ruta de las Diosas',
-    tagline: 'Ciudades como escenario. Tecnología como portal.',
+    tagline: 'Diosas en danza • Ciudades como escenario • Tecnología como portal.',
     overview: [
-      'En este miniverso, el cuerpo se convierte en conjuro. La danza, en escritura. Y la ciudad… en altar vivo.',
       'La Ruta de las Diosas es una experiencia coreográfica transmedial que recorre plazas, parques y espacios públicos para activar un ritual contemporáneo con avatares, realidad aumentada y movimiento colectivo.',
     ],
     diosaHighlights: [
@@ -2419,80 +2438,70 @@ const rendernotaAutoral = () => {
           </div>
         ) : null}
 
-        <div className="grid gap-6 lg:gap-10 lg:grid-cols-[1fr_2fr]">
-          <div className="space-y-6 order-1 lg:order-2">
-            <div className="rounded-3xl border border-white/10 bg-black/30 p-6 space-y-4">
-              <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Cómo explorar</p>
-              <ol className="list-decimal list-inside space-y-3 text-slate-200 text-sm leading-relaxed md:text-base">
-                {activeDefinition.exploration?.map((step, index) => (
-                  <li key={index}>{step}</li>
-                ))}
-              </ol>
-            </div>
-            <div className="hidden lg:block space-y-4">
-              <div className="rounded-3xl border border-white/10 bg-black/20 p-6 space-y-3 text-sm text-slate-300">
-                {activeDefinition.closing?.map((line, index) => (
-                  <p key={index}>{line}</p>
-                ))}
-              </div>
-              {activeShowcase === 'miniversoSonoro' ? (
-                <ShowcaseReactionInline
-                  showcaseId="miniversoSonoro"
-                  title="La voz de quienes escuchan"
-                  description="Comparte tu vibración y deja un like que resuene en este miniverso."
-                  buttonLabel="Hacer latir la resonancia"
-                />
-              ) : null}
-            </div>
-            <div className="lg:hidden">
-              <MiniversoSonoroPreview
-                videoUrl={activeDefinition.videoUrl}
-                videoTitle={activeDefinition.label}
-                videoArtist="Residencia #GatoEncerrado"
-                audioOptions={activeDefinition.musicOptions}
-                poemOptions={activeDefinition.poems}
-                showHeader
-                showCTA
-                onEnterExperience={handleSonoroEnter}
-                isSpent={sonoroSpent}
-                coinBlast={showSonoroCoins}
-                costLabel="130 gatokens"
-              />
-              <div className="mt-4 space-y-4">
-                <div className="rounded-3xl border border-white/10 bg-black/20 p-6 space-y-3 text-sm text-slate-300">
-                  {activeDefinition.closing?.map((line, index) => (
-                    <p key={index}>{line}</p>
-                  ))}
-                </div>
-                {activeShowcase === 'miniversoSonoro' ? (
-                  <ShowcaseReactionInline
-                    showcaseId="miniversoSonoro"
-                    title="La voz de quienes escuchan"
-                    description="Comparte tu vibración y deja un like que resuene en este miniverso."
-                    buttonLabel="Hacer latir la resonancia"
-                  />
-                ) : null}
-              </div>
-            </div>
+        <div className="space-y-8">
+          <div className="rounded-3xl border border-white/10 bg-black/30 p-0 lg:p-6">
+            <MiniversoSonoroPreview
+              videoUrl={activeDefinition.videoUrl}
+              videoTitle={activeDefinition.label}
+              videoArtist="Residencia #GatoEncerrado"
+              audioOptions={activeDefinition.musicOptions}
+              poemOptions={activeDefinition.poems}
+              showHeader
+              showCTA
+              onEnterExperience={handleSonoroEnter}
+              isSpent={sonoroSpent}
+              coinBlast={showSonoroCoins}
+              costLabel="130 gatokens"
+            />
           </div>
 
-          <div className="hidden lg:flex justify-center px-4 order-2 lg:order-1 lg:px-0">
-            <div className="w-full max-w-[1100px]">
-              <div className="rounded-3xl border border-white/10 bg-black/30 p-6">
-                <MiniversoSonoroPreview
-                  videoUrl={activeDefinition.videoUrl}
-                  videoTitle={activeDefinition.label}
-                  videoArtist="Residencia #GatoEncerrado"
-                  audioOptions={activeDefinition.musicOptions}
-                  poemOptions={activeDefinition.poems}
-                  showHeader
-                  showCTA
-                  onEnterExperience={handleSonoroEnter}
-                  isSpent={sonoroSpent}
-                  coinBlast={showSonoroCoins}
-                  costLabel="130 gatokens"
-                />
+          <div className="grid gap-6 lg:grid-cols-2">
+            <div className="space-y-6">
+              <div className="rounded-3xl border border-white/10 bg-black/30 p-6 space-y-4">
+                <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Cómo explorar</p>
+                <ol className="list-decimal list-inside space-y-3 text-slate-200 text-sm leading-relaxed md:text-base">
+                  {activeDefinition.exploration?.map((step, index) => (
+                    <li key={`sonoro-step-${index}`}>{step}</li>
+                  ))}
+                </ol>
               </div>
+              {activeDefinition.closing?.length ? (
+                <div className="rounded-3xl border border-white/10 bg-black/20 p-6 space-y-3 text-sm text-slate-300">
+                  {activeDefinition.closing.map((line, index) => (
+                    <p key={`sonoro-closing-${index}`}>{line}</p>
+                  ))}
+                </div>
+              ) : null}
+            </div>
+
+            <div className="space-y-6">
+              {(activeDefinition.comments?.length || activeShowcase === 'miniversoSonoro') ? (
+                <div className="rounded-3xl border border-white/10 bg-black/30 p-6 space-y-5">
+                  <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Comentarios de la comunidad</p>
+                  {activeDefinition.comments?.length ? (
+                    <div className="space-y-4">
+                      {activeDefinition.comments.map((comment) => (
+                        <div
+                          key={comment.id}
+                          className="rounded-2xl border border-white/5 bg-black/20 p-4"
+                        >
+                          <p className="text-slate-100 font-light leading-relaxed mb-2">{comment.quote}</p>
+                          <p className="text-xs uppercase tracking-[0.3em] text-slate-500">{comment.author}</p>
+                        </div>
+                      ))}
+                    </div>
+                  ) : null}
+                  {activeShowcase === 'miniversoSonoro' ? (
+                    <ShowcaseReactionInline
+                      showcaseId="miniversoSonoro"
+                      title="La voz de quienes escuchan"
+                      description="Comparte tu vibración y deja un like que resuene en este miniverso."
+                      buttonLabel="Hacer latir la resonancia"
+                      className="mt-0"
+                    />
+                  ) : null}
+                </div>
+              ) : null}
             </div>
           </div>
         </div>
@@ -2769,6 +2778,26 @@ const rendernotaAutoral = () => {
             </div>
           </div>
 
+          {(swipeMeta.title || swipeMeta.description || (swipeMeta.steps?.length ?? 0) > 0) ? (
+            <div className="rounded-3xl border border-white/10 bg-black/25 p-6 space-y-3">
+              <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Cómo funciona</p>
+              <h4 className="font-display text-2xl text-slate-100">{swipeMeta.title ?? 'Swipe narrativo activo'}</h4>
+              {swipeMeta.description ? (
+                <p className="text-sm text-slate-300/85 leading-relaxed">{swipeMeta.description}</p>
+              ) : null}
+              {swipeMeta.steps?.length ? (
+                <ul className="space-y-2 text-sm text-slate-200/90 leading-relaxed">
+                  {swipeMeta.steps.map((step, index) => (
+                    <li key={`swipe-meta-step-${index}`} className="flex items-start gap-2">
+                      <span className="text-fuchsia-200 mt-1">●</span>
+                      <span>{step}</span>
+                    </li>
+                  ))}
+                </ul>
+              ) : null}
+            </div>
+          ) : null}
+
             {swipeShowcases.length ? (
               <div className="space-y-4">
                 {swipeShowcases.map((entry) => (
@@ -2798,24 +2827,11 @@ const rendernotaAutoral = () => {
 
                       <div className="flex flex-col space-y-4 p-6">
                         <p className="text-xs uppercase tracking-[0.35em] text-fuchsia-200/80">
-                          {swipeMeta.title ?? 'Lector visual activo'}
+                          Lector visual activo
                         </p>
                         <h4 className="font-display text-2xl text-slate-100">{entry.title}</h4>
                         {entry.description ? (
                           <p className="text-sm text-slate-200/90 leading-relaxed">{entry.description}</p>
-                        ) : null}
-                        {swipeMeta.description ? (
-                          <p className="text-sm text-slate-300/80 leading-relaxed">{swipeMeta.description}</p>
-                        ) : null}
-                        {swipeMeta.steps?.length ? (
-                          <ul className="space-y-2 text-sm text-slate-100 leading-relaxed">
-                            {swipeMeta.steps.map((step, index) => (
-                              <li key={`swipe-step-${index}`} className="flex items-start gap-2">
-                                <span className="text-fuchsia-200 mt-1">●</span>
-                                <span>{step}</span>
-                              </li>
-                            ))}
-                          </ul>
                         ) : null}
                         {entry.swipeNotes?.length ? (
                           <ul className="space-y-2 text-sm text-slate-100 leading-relaxed">
@@ -2902,7 +2918,6 @@ const rendernotaAutoral = () => {
           </div>
 
           <div className="space-y-6">
-            <div className="rounded-3xl border border-white/10 bg-black/30 p-6">{rendernotaAutoral()}</div>
             <div className="rounded-3xl border border-white/10 bg-black/30 p-6 space-y-4">
               <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Acciones</p>
               <p className="text-sm text-slate-300/80 leading-relaxed">
@@ -2938,13 +2953,32 @@ const rendernotaAutoral = () => {
                 </Button>
               </div>
             </div>
-            {activeShowcase === 'miniversoGrafico' ? (
-              <ShowcaseReactionInline
-                showcaseId="miniversoGrafico"
-                title="Validación gráfica"
-                description="Haz clic para dejar un like y seguir curando esta colección."
-                buttonLabel="Resonar con el trazo"
-              />
+            {(activeDefinition.comments?.length || activeShowcase === 'miniversoGrafico') ? (
+              <div className="rounded-3xl border border-white/10 bg-black/30 p-6 space-y-5">
+                <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Comentarios de la comunidad</p>
+                {activeDefinition.comments?.length ? (
+                  <div className="space-y-4">
+                    {activeDefinition.comments.map((comment) => (
+                      <div
+                        key={comment.id}
+                        className="rounded-2xl border border-white/5 bg-black/20 p-4"
+                      >
+                        <p className="text-slate-100 font-light leading-relaxed mb-2">{comment.quote}</p>
+                        <p className="text-xs uppercase tracking-[0.3em] text-slate-500">{comment.author}</p>
+                      </div>
+                    ))}
+                  </div>
+                ) : null}
+                {activeShowcase === 'miniversoGrafico' ? (
+                  <ShowcaseReactionInline
+                    showcaseId="miniversoGrafico"
+                    title="Validación gráfica"
+                    description="Haz clic para dejar un like y seguir curando esta colección."
+                    buttonLabel="Resonar con el trazo"
+                    className="mt-0 bg-gradient-to-r from-fuchsia-900/20 to-black/40"
+                  />
+                ) : null}
+              </div>
             ) : null}
           </div>
         </div>
@@ -3306,96 +3340,65 @@ const rendernotaAutoral = () => {
                 ) : null}
               </div>
 
-              <div className="rounded-3xl border border-white/10 bg-gradient-to-r from-slate-900/80 via-black/60 to-purple-900/40 p-6 space-y-4">
+              <div className="relative overflow-hidden rounded-3xl border border-white/10 bg-gradient-to-r from-slate-900/80 via-black/60 to-purple-900/40 p-6 space-y-4">
+                <span className="absolute top-4 right-4 inline-flex items-center gap-2 rounded-full border border-amber-300/50 bg-amber-500/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.35em] text-amber-100 shadow-[0_0_25px_rgba(251,191,36,0.25)]">
+                  <Coins size={14} />
+                  {quironSpent ? 'Liberado' : `${GAT_COSTS.quironFull} GATokens`}
+                </span>
                 <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Screening privado</p>
                 <h4 className="font-display text-2xl text-slate-100">{activeDefinition.screening?.title}</h4>
                 <p className="text-sm text-slate-200/90 leading-relaxed">{activeDefinition.screening?.description}</p>
-                <Button
-                  onClick={() =>
-                    toast({
-                      description:
-                        'Guardaremos tu interés; pronto abriremos la lista de suscriptores para el screening doble en CECUT.',
-                    })
-                  }
-                  className="w-full sm:w-auto justify-center bg-gradient-to-r from-purple-600/80 to-indigo-500/80 hover:from-purple-500 hover:to-indigo-400 text-white"
-                >
-                  {activeDefinition.screening?.cta}
-                </Button>
-                {activeDefinition.screening?.footnote ? (
-                  <p className="text-xs text-slate-400 leading-relaxed">{activeDefinition.screening.footnote}</p>
-                ) : null}
-              </div>
-
-              <div className="rounded-3xl border border-white/10 bg-black/20 p-6 space-y-3">
-                <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Lo que las conecta</p>
-                <h4 className="font-display text-xl text-slate-100">{activeDefinition.bridge?.title}</h4>
-                <p className="text-sm text-slate-200/90 leading-relaxed">{activeDefinition.bridge?.description}</p>
-                <p className="text-sm text-slate-400 leading-relaxed">{activeDefinition.bridge?.note}</p>
-              </div>
-            </div>
-
-            <div className="space-y-6">
-              <div className="relative rounded-3xl border border-white/10 bg-black/30 p-6 space-y-4">
-                <div className="space-y-2">
-                  <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Cortometraje</p>
-                  <div className="flex flex-wrap items-baseline gap-2">
-                    <h4 className="font-display text-xl text-slate-100">{activeDefinition.quiron?.title}</h4>
-                    <span className="text-[11px] uppercase tracking-[0.3em] text-rose-300">Teaser + stills</span>
-                  </div>
-                </div>
-                <p className="text-sm text-slate-300/80 leading-relaxed">{activeDefinition.quiron?.description}</p>
-                <p className="text-sm text-slate-200/90 leading-relaxed">{activeDefinition.quiron?.microcopy}</p>
-                <div className="space-y-3">
+                <div className="flex flex-col gap-3 sm:flex-row">
+                  <Button
+                    onClick={() =>
+                      toast({
+                        description:
+                          'Guardaremos tu interés; pronto abriremos la lista de suscriptores para el screening doble en CECUT.',
+                      })
+                    }
+                    className="w-full justify-center bg-gradient-to-r from-purple-600/80 to-indigo-500/80 hover:from-purple-500 hover:to-indigo-400 text-white sm:w-auto"
+                  >
+                    {activeDefinition.screening?.cta}
+                  </Button>
                   {quironSpent ? (
-                    <span className="inline-flex items-center gap-2 rounded-full border border-emerald-200/60 bg-emerald-500/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.25em] text-emerald-100">
-                      <Coins size={14} /> 0 gatokens
+                    <span className="inline-flex w-full items-center justify-center gap-2 rounded-full border border-emerald-200/60 bg-emerald-500/10 px-4 py-3 text-[11px] font-semibold uppercase tracking-[0.3em] text-emerald-100 sm:w-auto">
+                      <Coins size={14} />
+                      Cortometraje desbloqueado
                     </span>
                   ) : (
-                    <Button
-                      variant="outline"
-                      onClick={handleToggleQuironPrompt}
-                      disabled={isQuironUnlocking}
-                      className="relative w-full sm:w-auto justify-center border-purple-400/40 text-purple-200 hover:bg-purple-500/10 overflow-visible"
-                    >
-                      <span className="relative z-10">
+                    <div className="relative flex-1 sm:flex-none">
+                      <Button
+                        variant="outline"
+                        onClick={handleToggleQuironPrompt}
+                        disabled={isQuironUnlocking}
+                        className="relative w-full justify-center border-purple-400/40 text-purple-200 hover:bg-purple-500/10 overflow-hidden"
+                      >
                         {isQuironUnlocking ? 'Procesando…' : 'Ver cortometraje completo'}
-                      </span>
+                      </Button>
                       {showQuironCoins ? (
-                        <span className="pointer-events-none absolute inset-0">
-                          {Array.from({ length: 5 }).map((_, index) => {
-                            const startX = 0;
-                            const startY = 0;
-                            const endX = 140 + index * 10;
-                            const endY = -120 - index * 10;
+                        <div className="pointer-events-none absolute inset-0 overflow-visible">
+                          {Array.from({ length: 6 }).map((_, index) => {
+                            const startLeft = 0.35 + index * 0.04;
+                            const startTop = 0.7;
+                            const x = 220 + index * 8;
+                            const y = -240 - index * 18;
                             return (
                               <motion.span
-                                key={`quiron-coin-btn-${index}`}
-                                className="absolute left-1/2 top-1/2 h-5 w-5 -translate-x-1/2 -translate-y-1/2 rounded-full bg-gradient-to-br from-amber-200 to-yellow-500 shadow-[0_0_12px_rgba(250,204,21,0.5)]"
-                                initial={{ opacity: 0.9, scale: 0.6, x: startX, y: startY }}
-                                animate={{ opacity: 0, scale: 0.9, x: endX, y: endY, rotate: 90 + index * 25 }}
-                                transition={{ duration: 1, ease: 'easeOut' }}
+                                key={`quiron-coin-flight-${index}`}
+                                className="absolute h-6 w-6 rounded-full bg-gradient-to-br from-amber-200 to-yellow-500 shadow-[0_0_18px_rgba(250,204,21,0.55)]"
+                                style={{ left: `${startLeft * 100}%`, top: `${startTop * 100}%` }}
+                                initial={{ opacity: 0.95, scale: 0.8, rotate: 0, x: 0, y: 0 }}
+                                animate={{ opacity: 0, scale: 1, rotate: 140 + index * 18, x, y }}
+                                transition={{ duration: 1.15, ease: 'easeOut' }}
                               />
                             );
                           })}
-                        </span>
+                        </div>
                       ) : null}
-                    </Button>
+                    </div>
                   )}
-                <div className="flex flex-wrap items-center gap-2 text-[11px] uppercase tracking-[0.25em] text-amber-100">
-                  <span className="inline-flex items-center gap-2 rounded-full border border-amber-200/60 bg-amber-500/15 px-3 py-1 text-amber-50">
-                    <Coins size={14} className="text-amber-50" />
-                    {GAT_COSTS.quironFull} gatokens
-                  </span>
-                  <span className="text-slate-400">
-                    {quironSpent
-                      ? `0 gatokens pendientes · ${GAT_COSTS.quironFull} aplicadas`
-                      : `Se descontarán ${GAT_COSTS.quironFull} GATokens de tu saldo`}
-                  </span>
-                  {!quironSpent ? (
-                    <span className="text-slate-500">Saldo actual: {availableGATokens} GATokens</span>
-                  ) : null}
                 </div>
-                </div>
+                
                 {showQuironCommunityPrompt ? (
                   <motion.div
                     initial={{ opacity: 0, height: 0 }}
@@ -3405,32 +3408,30 @@ const rendernotaAutoral = () => {
                     Únete a la comunidad para usar tus gatokens y desbloquear experiencias completas. Muy pronto podrás conectar tu saldo y suscripción aquí mismo.
                   </motion.div>
                 ) : null}
-                {showQuironCoins ? (
-                        <div className="pointer-events-none absolute inset-0 overflow-visible">
-                    {Array.from({ length: 6 }).map((_, index) => {
-                      const startLeft = 0.35 + index * 0.04;
-                      const startTop = 0.7;
-                      const x = 220 + index * 8;
-                      const y = -240 - index * 18;
-                      return (
-                        <motion.span
-                          key={`quiron-coin-flight-${index}`}
-                          className="absolute h-6 w-6 rounded-full bg-gradient-to-br from-amber-200 to-yellow-500 shadow-[0_0_18px_rgba(250,204,21,0.55)]"
-                          style={{ left: `${startLeft * 100}%`, top: `${startTop * 100}%` }}
-                          initial={{ opacity: 0.95, scale: 0.8, rotate: 0, x: 0, y: 0 }}
-                          animate={{ opacity: 0, scale: 1, rotate: 140 + index * 18, x, y }}
-                          transition={{ duration: 1.15, ease: 'easeOut' }}
-                        />
-                      );
-                    })}
-                  </div>
-                ) : null}
                 <p className="text-xs text-slate-400 leading-relaxed">
                   Al desbloquear, el cortometraje se abre en vista completa fuera de esta tarjeta.
                 </p>
-                {activeDefinition.quiron?.teaser ? (
-                  <div>{renderMedia(activeDefinition.quiron.teaser)}</div>
+                {activeDefinition.screening?.footnote ? (
+                  <p className="text-xs text-slate-400 leading-relaxed">{activeDefinition.screening.footnote}</p>
                 ) : null}
+              </div>
+
+            </div>
+
+            <div className="space-y-6">
+              <div className="relative rounded-3xl border border-white/10 bg-black/30 p-6 space-y-4">
+                <div className="space-y-2">
+                <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Cortometraje</p>
+                <div className="flex flex-wrap items-baseline gap-2">
+                  <h4 className="font-display text-xl text-slate-100">{activeDefinition.quiron?.title}</h4>
+                  <span className="text-[11px] uppercase tracking-[0.3em] text-rose-300">Teaser + stills</span>
+                </div>
+              </div>
+              <p className="text-sm text-slate-300/80 leading-relaxed">{activeDefinition.quiron?.description}</p>
+              <p className="text-sm text-slate-200/90 leading-relaxed">{activeDefinition.quiron?.microcopy}</p>
+              {activeDefinition.quiron?.teaser ? (
+                <div>{renderMedia(activeDefinition.quiron.teaser)}</div>
+              ) : null}
                 {quironStills.length ? (
                   <div className="grid gap-3 sm:grid-cols-2">
                     {quironStills.map((still, index) => {
@@ -3464,14 +3465,31 @@ const rendernotaAutoral = () => {
                 ) : null}
               </div>
 
-              <div className="space-y-4">
-                <ShowcaseReactionInline
-                  showcaseId="copycats"
-                  title="Validación cinematográfica"
-                  description="Haz clic para dejar un like y amplificar el screening de CopyCats + Quirón."
-                  buttonLabel="Sumar mi aplauso"
-                />
-              </div>
+              {(activeDefinition.comments?.length || activeShowcase === 'copycats') ? (
+                <div className="rounded-3xl border border-white/10 bg-black/25 p-6 space-y-5">
+                  <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Comentarios de la comunidad</p>
+                  {activeDefinition.comments?.length ? (
+                    <div className="space-y-4">
+                      {activeDefinition.comments.map((comment) => (
+                        <div
+                          key={comment.id}
+                          className="rounded-2xl border border-white/5 bg-black/30 p-4"
+                        >
+                          <p className="text-slate-100 font-light leading-relaxed mb-2">{comment.quote}</p>
+                          <p className="text-xs uppercase tracking-[0.3em] text-slate-500">{comment.author}</p>
+                        </div>
+                      ))}
+                    </div>
+                  ) : null}
+                  <ShowcaseReactionInline
+                    showcaseId="copycats"
+                    title="Validación cinematográfica"
+                    description="Haz clic para dejar un like y amplificar el screening de CopyCats + Quirón."
+                    buttonLabel="Sumar mi aplauso"
+                    className="mt-2 bg-gradient-to-r from-slate-900/40 to-purple-900/20"
+                  />
+                </div>
+              ) : null}
             </div>
           </div>
         </div>
@@ -3659,27 +3677,32 @@ const rendernotaAutoral = () => {
                       className="md:col-span-2 rounded-2xl border border-white/10 p-6 bg-black/30 space-y-4"
                     >
                       <h5 className="font-display text-xl text-slate-100">{entry.title}</h5>
-                <div className="space-y-4">
-                  {entry.quotes?.map((quote, index) => (
-                    <blockquote
-                      key={`${entry.id}-quote-${index}`}
-                      className="text-slate-100 font-light leading-relaxed"
-                    >
-                      <p>{quote.quote}</p>
-                      {quote.author ? (
-                        <p className="text-xs text-slate-500 mt-2">{quote.author}</p>
-                      ) : null}
-                    </blockquote>
-                  ))}
-                </div>
-                <ShowcaseReactionInline
-                  showcaseId="miniversoNovela"
-                  description="Haz clic para guardar un like y amplificar las conversaciones que la novela susurra."
-                  buttonLabel="Apoyar la novela"
-                />
-              </div>
-            );
-          }
+                      <div className="grid gap-6 md:grid-cols-2">
+                        <div className="space-y-4">
+                          {entry.quotes?.map((quote, index) => (
+                            <blockquote
+                              key={`${entry.id}-quote-${index}`}
+                              className="rounded-2xl border border-white/5 bg-black/20 p-4 text-slate-100 font-light leading-relaxed"
+                            >
+                              <p>{quote.quote}</p>
+                              {quote.author ? (
+                                <p className="text-xs text-slate-500 mt-2">{quote.author}</p>
+                              ) : null}
+                            </blockquote>
+                          ))}
+                        </div>
+                        <div className="flex">
+                          <ShowcaseReactionInline
+                            showcaseId="miniversoNovela"
+                            description="Haz clic para guardar un like y amplificar las conversaciones que la novela susurra."
+                            buttonLabel="Apoyar la novela"
+                            className="flex-1 h-full justify-between bg-gradient-to-br from-purple-900/20 to-black/40"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  );
+                }
 
                 if (entry.type === 'novel-apps') {
                   const novelaSpentAmount = novelaQuestions * 25;
@@ -4036,7 +4059,7 @@ const rendernotaAutoral = () => {
                       const currentValue =
                         showcaseEnergy?.[format.id] ?? (baseValue > 0 ? baseValue : 0);
                       const boostApplied = Boolean(showcaseBoosts?.[format.id]);
-                      const toneClass = boostApplied ? 'text-emerald-200' : 'text-amber-200';
+                      const toneClass = 'text-amber-200';
                       const label = boostApplied ? 'Saldo acumulado:' : 'Energía inicial:';
                       return (
                         <div className="mb-4 text-xs text-slate-200/80 flex flex-wrap items-center gap-2">
@@ -4092,11 +4115,9 @@ const rendernotaAutoral = () => {
                       </div>
                     ) : null}
                   </div>
-                  {activeDefinition.type !== 'graphic-lab' ? (
-                    <div className="md:w-[360px] flex-shrink-0">
-                      {rendernotaAutoral()}
-                    </div>
-                  ) : null}
+                  <div className="md:w-[360px] flex-shrink-0">
+                    {rendernotaAutoral()}
+                  </div>
                 </div>
               ) : null}
 
