@@ -27,6 +27,23 @@ const DREAM_MODES = [
   },
 ];
 
+const POEM_LINE_DURATION = 4200;
+const sanitizePoemLines = (lines = []) =>
+  lines
+    .map((line) => (typeof line === 'string' ? line.trim() : ''))
+    .filter((line) => line.length > 0);
+
+const findNextLineIndex = (lines, startIndex = -1) => {
+  if (!Array.isArray(lines)) return null;
+  for (let idx = startIndex + 1; idx < lines.length; idx += 1) {
+    const content = typeof lines[idx] === 'string' ? lines[idx].trim() : '';
+    if (content.length > 0) {
+      return idx;
+    }
+  }
+  return null;
+};
+
 /**
  * Props:
  * - videoUrl: string
@@ -141,30 +158,32 @@ function MiniversoSonoroPreview({
   useEffect(() => {
     if (!selectedPoem) {
       setLocalPoemLines([]);
-      setCurrentLineIndex(0);
+      setCurrentLineIndex(null);
+      setIsPoemVisible(false);
       return;
     }
     const lines =
       (selectedPoem.poem_lines && Array.isArray(selectedPoem.poem_lines) && selectedPoem.poem_lines.length > 0)
-        ? selectedPoem.poem_lines
+        ? sanitizePoemLines(selectedPoem.poem_lines)
         : typeof poemText === 'string'
-          ? poemText.split('\n').map((l) => l.trim()).filter(Boolean)
+          ? sanitizePoemLines(poemText.split('\n'))
           : [];
+    const firstLineIndex = findNextLineIndex(lines, -1);
     setLocalPoemLines(lines);
-    setCurrentLineIndex(lines.length > 0 ? 0 : null);
-    setIsPoemVisible(lines.length > 0);
+    setCurrentLineIndex(firstLineIndex);
+    setIsPoemVisible(firstLineIndex !== null);
   }, [selectedPoem, poemText]);
 
   useEffect(() => {
     if (!poemLines || poemLines.length === 0 || currentLineIndex === null) return undefined;
-    const isLast = currentLineIndex === poemLines.length - 1;
+    const nextIndex = findNextLineIndex(poemLines, currentLineIndex ?? -1);
     const timeout = setTimeout(() => {
-      if (isLast) {
+      if (nextIndex === null) {
         setIsPoemVisible(false);
       } else {
-        setCurrentLineIndex((i) => (i === null ? 0 : i + 1));
+        setCurrentLineIndex(nextIndex);
       }
-    }, 1500);
+    }, POEM_LINE_DURATION);
     return () => clearTimeout(timeout);
   }, [poemLines, currentLineIndex, isFullExperience]);
 

@@ -181,15 +181,24 @@
 
 .sonoro-preview-poem-overlay {
   position: absolute;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  padding: 1.8rem 1.6rem 1.4rem;
-  background: linear-gradient(180deg, transparent, rgba(0, 0, 0, 0.9));
-  font-size: 0.95rem;
-  line-height: 1.45;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: clamp(1rem, 4vw, 2.4rem);
   text-align: center;
   z-index: 4;
+  pointer-events: none;
+}
+
+.sonoro-preview-poem-overlay::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at center, rgba(2, 6, 18, 0.25), rgba(0, 0, 0, 0.8));
+  opacity: 0.6;
+  filter: blur(28px);
+  z-index: 0;
 }
 
 .sonoro-preview-poem-overlay p {
@@ -197,35 +206,42 @@
 }
 
 .poem-overlay {
-  position: absolute;
-  left: 50%;
-  bottom: 1.6rem;
-  transform: translateX(-50%);
-  width: min(680px, 86%);
+  width: min(800px, 90vw);
+  min-height: 3.4rem;
+  position: relative;
   display: flex;
   justify-content: center;
   align-items: center;
-  min-height: 2.4rem;
+  padding: clamp(0.5rem, 2vw, 1rem);
+  z-index: 1;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  position: absolute;
 }
 
 .poem-line {
   position: absolute;
-  left: 0;
-  right: 0;
-  margin: 0 auto;
+  left: 50%;
+  margin: 0;
+  width: 100%;
   text-align: center;
   opacity: 0;
-  transform: translateY(6px);
-  transition: opacity 1.6s ease, transform 1.6s ease;
+  transform: translate(-50%, 8px);
+  transition: opacity 1.2s ease, transform 1.2s ease;
   color: rgba(255, 255, 255, 0.85);
   line-height: 1.6;
   white-space: normal;
   word-break: break-word;
+  font-size: clamp(1rem, 2.4vw, 1.5rem);
+  font-weight: 300;
+  letter-spacing: 0.06em;
+  z-index: 1;
 }
 
 .poem-line.is-visible {
   opacity: 1;
-  transform: translateY(0);
+  transform: translate(-50%, 0);
 }
 
 .sonoro-preview-hud--overlay {

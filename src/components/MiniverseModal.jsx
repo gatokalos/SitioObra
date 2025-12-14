@@ -20,7 +20,7 @@ const MINIVERSE_CARDS = [
   },
   {
     id: 'taza',
-    title: 'Miniverso Taza',
+    title: 'Miniverso Artesanías',
     description:
       'WebAR y rituales cotidianos listos para tomarse: la activación de la taza está en producción al 90% y acompaña cada sorbo con pistas sonoras.',
     action: 'Actívala con tu taza · experiencia viva.',

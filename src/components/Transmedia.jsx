@@ -458,7 +458,7 @@ const showcaseDefinitions = {
     },
   },
   lataza: {
-    label: 'Artesanías',
+    label: 'Miniverso Artesanías',
     type: 'object-webar',
     slug: 'taza-que-habla',
     subtitle: 'Esta no es una taza. Es un portal.',
@@ -522,7 +522,7 @@ const showcaseDefinitions = {
     },
   },
   miniversoNovela: {
-    label: 'Literatura',
+    label: 'Miniverso Literatura',
     type: 'blog-series',
     slug: null,
     intro:
@@ -604,7 +604,7 @@ const showcaseDefinitions = {
     },
   },
   miniversoSonoro: {
-    label: 'Sonoridades',
+    label: 'Miniverso Sonoridades',
     type: 'audio-dream',
     intro:
       'Este miniverso mezcla imágenes errantes, pistas sonoras y palabras móviles para que crees tu propia atmósfera. Solo entra, prende un video, ponle la música que quieras, elige un poema… y deja que la combinación te sorprenda.',
@@ -688,7 +688,7 @@ const showcaseDefinitions = {
     ],
   },
   miniversoGrafico: {
-    label: 'Gráficos',
+    label: 'Miniverso Gráfico',
     type: 'graphic-lab',
     intro:
       'Colección viva de exploraciones visuales: cómics en curso, viñetas interactivas, posters simbólicos, caricaturas conceptuales, murales colaborativos y avances con IA/técnicas mixtas.',
@@ -828,7 +828,7 @@ const showcaseDefinitions = {
     },
   },
   oraculo: {
-    label: 'Oráculos',
+    label: 'Miniverso Oráculo',
     type: 'oracle',
     intro:
       'Preguntas que no buscan respuestas, sino resonancia. Alimenta la mente del Gato y gana GATokens por compartir tu pensamiento. El Oráculo no da respuestas, pero sí te recompensa por cada huella que dejas en la red del misterio. Tu pensamiento también construye este universo.',
@@ -3992,7 +3992,7 @@ const rendernotaAutoral = () => {
               Escaparate de Miniversos
             </h2>
             <p className="text-lg text-slate-300/80 max-w-3xl mx-auto leading-relaxed font-light">
-              #GatoEncerrado es un universo transmedia compuesto por miniversos que sostienen una causa. Cada experiencia digital, objeto o narrativa expandida genera GATokens, el pulso que mueve este ecosistema y, al mismo tiempo, sostiene la  {' '}
+              #GatoEncerrado está compuesto por miniversos que sostienen una causa. Cada experiencia digital, objeto o narrativa expandida genera GATokens, el pulso que mueve este ecosistema y, al mismo tiempo, sostiene la  {' '}
               <button
                 type="button"
                 onClick={handleScrollToSupport}

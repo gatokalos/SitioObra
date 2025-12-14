@@ -70,7 +70,7 @@ export const useSonoroPreview = ({
   videoLimit = null,
   audioLimit = null,
   poemLimit = null,
-  fragmentLines = 4,
+  fragmentLines = null,
 } = {}) => {
   const [isLoading, setIsLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState('');
@@ -120,9 +120,11 @@ export const useSonoroPreview = ({
             const base = normalizePoem(p, idx);
             if (!base.poem_lines && base.poem_text) {
               const lines = base.poem_text.split('\n').map((l) => l.trim()).filter(Boolean);
-              base.poem_lines = lines.slice(0, fragmentLines);
+              base.poem_lines = fragmentLines && Number.isFinite(fragmentLines) && fragmentLines > 0
+                ? lines.slice(0, fragmentLines)
+                : lines;
             }
-            if (base.poem_lines && fragmentLines) {
+            if (base.poem_lines && fragmentLines && Number.isFinite(fragmentLines) && fragmentLines > 0) {
               base.poem_lines = base.poem_lines.slice(0, fragmentLines);
             }
             return base;
