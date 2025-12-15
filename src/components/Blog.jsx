@@ -347,7 +347,7 @@ const ArticleInteractionPanel = ({ post }) => {
             size="lg"
             onClick={() => pushInteraction('like')}
             disabled={status.like === 'loading'}
-            className="flex-1"
+            className="border-purple-400/40 text-purple-200 hover:bg-purple-500/20 w-full sm:w-auto whitespace-normal break-words text-center leading-snug"
           >
             {liked ? 'Gracias por el Me gusta' : 'Me gustó este artículo'}
           </Button>
@@ -356,9 +356,9 @@ const ArticleInteractionPanel = ({ post }) => {
             size="lg"
             onClick={() => pushInteraction('notify')}
             disabled={status.notify === 'loading'}
-            className="flex-1"
+            className="border-slate-400/40 text-purple-200 hover:bg-purple-500/20 w-full sm:w-auto whitespace-normal break-words text-center leading-snug"
           >
-            {wantsNotification ? 'Te avisaremos de novedades' : 'Quiero recibir notificaciones'}
+            {wantsNotification ? 'Te avisaremos de novedades' : 'Quiero leer más de este autor'}
           </Button>
         </div>
       </div>

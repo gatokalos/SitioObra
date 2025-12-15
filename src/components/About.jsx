@@ -15,7 +15,7 @@ const aboutParagraphs = [
     text: `Es un gato encerrado existe como obra escénica y como estado mental del dolor humano: En ella, Silvestre y su terapeuta exploran los sueños lúcidos para confrontar el miedo, la desconexión y la fragilidad de la mente. Pero la experiencia no termina en el escenario: también es una narrativa expandida con otros lenguajes artísticos —cine, cómic, experiencias interactivas y poesía— que laten dentro del universo #GatoEncerrado. Porque hay preguntas que no se representan una sola vez: se siguen soñando.`,
     
     className:
-      'text-lg leading-relaxed font-light whitespace-pre-line bg-gradient-to-b from-purple-100/80 via-slate-200/80 to-slate-300/60 text-transparent bg-clip-text',
+      'text-lg leading-relaxed font-light whitespace-pre-line bg-gradient-to-b from-purple-400/100 via-slate-200/80 to-slate-400/60 text-transparent bg-clip-text',
   },
 
 ];
@@ -23,7 +23,7 @@ const aboutParagraphs = [
 const testimonials = [
   {
     quote:
-      '“Salir de la función fue como despertar con nuevos recuerdos. La obra me obligó a conversar con mis propias ausencias.”',
+      '“Salí de la función y fue como si despertara con nuevos recuerdos. Es un gato encerrado  me obligó a conversar con mis propios vacíos.”',
     author: 'Maru Solano',
     role: 'Espectadora / Tijuana',
   },
@@ -297,18 +297,17 @@ const About = () => {
             <div>
               <p className="uppercase tracking-[0.35em] text-xs text-slate-400/80 mb-4">Perspectivas del público</p>
               <h3 className="font-display text-3xl text-slate-100 mb-6 italic">
-                ¿Qué provoca La Obra?
+                ¿Qué provoca la obra?
               </h3>
               <p className="text-slate-300/80 leading-relaxed mb-6 font-light">
-                Reunimos testimonios, críticas y preguntas abiertas que continúan la conversación. Haz scroll hacia
-                Textos y Blog para leer más y expandir tu propia mirada.
+                Reunimos testimonios, críticas y preguntas abiertas que siguen vibrando después de la función. Puedes leer las voces que ya habitan este espacio o abrir una nueva compartiendo tu experiencia.
               </p>
               <Button
                 variant="outline"
                 onClick={handleScrollToTexts}
                 className="border-purple-400/40 text-purple-200 hover:bg-purple-500/20 w-full sm:w-auto whitespace-normal break-words text-center leading-snug"
               >
-                ¿Algo de ti se quedó en la obra?
+                Sumar mi voz
               </Button>
             </div>
             <div className="space-y-6">

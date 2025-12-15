@@ -544,6 +544,7 @@ const Team = () => {
             Equipo Creativo
           </h2>
           <p className="text-lg text-slate-300/80 max-w-3xl mx-auto leading-relaxed font-light md:text-base sm:text-sm">
+          
             Un colectivo de artistas y alianzas multidisciplinarias reunidas en el cruce entre creación escénica, pensamiento crítico y cuidado emocional.
 Cada colaboración forma parte activa del universo que la obra pone en escena.
           </p>

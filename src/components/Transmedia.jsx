@@ -752,10 +752,10 @@ const showcaseDefinitions = {
   },
   miniversoMovimiento: {
     label: 'Miniverso Movimiento',
-     intro:'En este miniverso, el cuerpo se convierte en conjuro. La danza, en escritura. Y la ciudad… en altar vivo.',
+     intro:'En este miniverso, el cuerpo se convierte en meta-. La danza, en escritura. Y la ciudad… en altar vivo.',
          type: 'movement-ritual',
     pendingName: 'La Ruta de las Diosas',
-    tagline: 'Diosas en danza • Ciudades como escenario • Tecnología como portal.',
+    tagline: 'Meta-corporeidad: Ciudades como escenario • Tecnología como portal.',
     overview: [
       'La Ruta de las Diosas es una experiencia coreográfica transmedial que recorre plazas, parques y espacios públicos para activar un ritual contemporáneo con avatares, realidad aumentada y movimiento colectivo.',
     ],
