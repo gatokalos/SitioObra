@@ -2,7 +2,6 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { toast } from '@/components/ui/use-toast';
-import { supabase } from '@/lib/supabaseClient';
 import { safeGetItem, safeRemoveItem, safeSetItem } from '@/lib/safeStorage';
 import {
   Drama,
@@ -421,50 +420,54 @@ const ContributionModal = ({ open, onClose, initialCategoryId = null }) => {
           name: formState.name.trim(),
           email: formState.email.trim().toLowerCase(),
           role: formState.role.trim() || null,
+          content: formState.proposal.trim(),
+          link: formState.attachmentUrl.trim() || null,
+          notify: notifyOnPublish,
           topic: topicId,
-          proposal: formState.proposal.trim(),
-          attachment_url: formState.attachmentUrl.trim() || null,
-          notify_on_publish: notifyOnPublish,
         };
 
-        const { error } = await supabase.from('blog_contributions').insert(payload);
-
-        if (error) {
-          console.error('[ContributionModal] Error al registrar propuesta:', error);
+        const supabaseFunctionsUrl = import.meta.env.VITE_SUPABASE_FUNCTIONS_URL;
+        const apiUrl = import.meta.env.VITE_API_URL;
+        const normalizedApiUrl = apiUrl?.replace(/\/+$/, '');
+        const apiFunctionsUrl =
+          normalizedApiUrl && normalizedApiUrl.endsWith('/functions/v1')
+            ? normalizedApiUrl
+            : normalizedApiUrl
+              ? `${normalizedApiUrl}/functions/v1`
+              : null;
+        const baseUrl = supabaseFunctionsUrl ?? apiFunctionsUrl;
+        if (!baseUrl) {
           setStatus('error');
-          setErrorMessage(
-            error.message?.includes('blog_contributions')
-              ? 'Asegúrate de crear la tabla blog_contributions en Supabase.'
-              : 'No pudimos registrar tu propuesta. Intenta nuevamente.'
-          );
+          setErrorMessage('El servicio de contribuciones no está disponible por ahora.');
           return;
         }
 
-        try {
-          const backstagePayload = {
-            author_email: payload.email,
-            author_name: payload.name,
-            category: topicId,
-            content: payload.proposal,
-            meta: { origin: 'public_site' },
-          };
-          const { error: backstageError } = await supabase
-            .from('backstage_contributions')
-            .insert(backstagePayload);
-          if (backstageError) {
-            console.error('[ContributionModal] No se pudo duplicar en backstage_contributions:', backstageError);
-          }
-        } catch (backstageErr) {
-          console.error('[ContributionModal] Excepción duplicando en backstage_contributions:', backstageErr);
+        const anonKey =
+          import.meta.env.VITE_SUPABASE_ANON_KEY ??
+          import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
+        if (!anonKey) {
+          setStatus('error');
+          setErrorMessage('El servicio de contribuciones no está disponible por ahora.');
+          return;
         }
 
-        if (formState.email.trim()) {
-          await sendConfirmationEmail({
-            email: formState.email.trim().toLowerCase(),
-            name: formState.name.trim(),
-            proposal: formState.proposal.trim(),
-            category: selectedCategory?.title ?? CATEGORIES[0].title,
-          });
+        const response = await fetch(`${baseUrl}/submit-blog-contribution`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${anonKey}`,
+            apikey: anonKey,
+          },
+          body: JSON.stringify(payload),
+        });
+
+        const body = await response.json().catch(() => ({}));
+        const success = response.ok && body?.ok === true;
+
+        if (!success) {
+          setStatus('error');
+          setErrorMessage('No pudimos registrar tu propuesta. Intenta nuevamente más tarde.');
+          return;
         }
 
         setStatus('success');
@@ -481,7 +484,6 @@ const ContributionModal = ({ open, onClose, initialCategoryId = null }) => {
         safeRemoveItem(FORM_STORAGE_KEY);
         storedFormRef.current = null;
       } catch (err) {
-        console.error('[ContributionModal] Excepción al guardar:', err);
         setStatus('error');
         setErrorMessage('Ocurrió un error inesperado. Intenta más tarde.');
       }
@@ -815,24 +817,6 @@ const ContributionModal = ({ open, onClose, initialCategoryId = null }) => {
     </>
   );
 };
-
-export async function sendConfirmationEmail({ email, name, proposal, category }) {
-  if (!email) {
-    return;
-  }
-
-  try {
-    const { error } = await supabase.functions.invoke('send-proposal-confirmation', {
-      body: { email, name, proposal, category },
-    });
-
-    if (error) {
-      console.error('[ContributionModal] Error en sendConfirmationEmail:', error);
-    }
-  } catch (err) {
-    console.error('[ContributionModal] Excepción en sendConfirmationEmail:', err);
-  }
-}
 
 const CONFETTI_COLORS = ['#f472b6', '#a855f7', '#facc15', '#34d399'];
 

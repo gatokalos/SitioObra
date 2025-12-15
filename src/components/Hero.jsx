@@ -83,7 +83,7 @@ const Hero = () => {
   transition={{ duration: 1.5, delay: 0.5 }}
   className="text-xl md:text-2xl text-slate-300/80 mb-12 leading-relaxed font-light flex flex-col items-center gap-1"
 >
-  El espacio transmedia donde late la obra
+  El espacio transmedia donde
   <button
     onClick={() =>
       document.querySelector('#about')?.scrollIntoView({
@@ -97,7 +97,7 @@ const Hero = () => {
       font-normal flex items-center gap-1
     "
   >
-    Es un gato encerrado
+    late la obra
     <svg
       xmlns="http://www.w3.org/2000/svg"
       className="h-4 w-4 opacity-80"

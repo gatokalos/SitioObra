@@ -10,7 +10,15 @@ import {
 } from '@/services/trailerService';
 import ReserveModal from '@/components/ReserveModal';
 
-const aboutText = `Es un gato encerrado existe como obra escénica y como #UniversoTransmedia: es, al mismo tiempo, un relato íntimo en un escenario y una constelación de la mente y del dolor humano en múltiples lenguajes artísticos. Nuestra obra es el corazón que hace pulsar aquellas preguntas que no están aquí para contestarse, sino para sentirlas en compañía. En pocas palabras, cuando la obra está latente, el universo #GatoEncerrado continúa latiendo en otras narrativas. Un recordatorio de que el corazón nunca se encierra del todo.`;
+const aboutParagraphs = [
+  {
+    text: `Es un gato encerrado existe como obra escénica y como estado mental del dolor humano: En ella, Silvestre y su terapeuta exploran los sueños lúcidos para confrontar el miedo, la desconexión y la fragilidad de la mente. Pero la experiencia no termina en el escenario: también es una narrativa expandida con otros lenguajes artísticos —cine, cómic, experiencias interactivas y poesía— que laten dentro del universo #GatoEncerrado. Porque hay preguntas que no se representan una sola vez: se siguen soñando.`,
+    
+    className:
+      'text-lg leading-relaxed font-light whitespace-pre-line bg-gradient-to-b from-purple-100/80 via-slate-200/80 to-slate-300/60 text-transparent bg-clip-text',
+  },
+
+];
 
 const testimonials = [
   {
@@ -215,9 +223,16 @@ const About = () => {
           <h2 className="font-display text-4xl md:text-5xl font-medium mb-6 text-gradient italic">
             Sobre la Obra
           </h2>
-          <p className="text-lg text-slate-300/80 max-w-3xl mx-auto leading-relaxed font-light whitespace-pre-line">
-            {aboutText}
-          </p>
+          <div className="max-w-3xl mx-auto">
+            {aboutParagraphs.map((paragraph) => (
+              <p
+                key={paragraph.text.slice(0, 40)}
+                className={`${paragraph.className} ${paragraph.extraClass ?? ''}`}
+              >
+                {paragraph.text}
+              </p>
+            ))}
+          </div>
         </motion.div>
 
         <motion.div
@@ -246,7 +261,7 @@ const About = () => {
                 La Mente de Silvestre
               </h3>
               <p className="text-slate-300/80 leading-relaxed mb-8 font-light">
-                Silvestre vive en <strong>Es un gato encerrado</strong>. Este es el <i>rincón onírico</i> donde enfrenta sus desdoblamientos y dilemas existenciales. Aquí, lo real y lo imaginario ya no compiten. Y tú —espectador, visitante, cómplice— puedes entrar sin tocar la puerta, porque quizás… tú también tienes un gato encerrado en el pecho.
+                Silvestre <strong>transforma su mente</strong> en escenario. Este es el <i>bucle onírico</i> donde enfrenta sus desdoblamientos y dilemas existenciales. Aquí, lo real y lo imaginario ya no compiten. Y tú —espectador, visitante, cómplice— puedes entrar sin tocar la puerta, porque quizás… tú también tienes un gato encerrado en el pecho.
               </p>
               <div className="flex flex-col sm:flex-row gap-4">
                 <Button

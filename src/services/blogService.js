@@ -1,4 +1,4 @@
-import { supabase } from '@/lib/supabaseClient';
+import { supabasePublic } from '@/lib/supabaseClient';
 
 const TABLE_NAME = 'blog_posts';
 
@@ -24,7 +24,7 @@ const mapDatabasePost = (post) => ({
 
 export async function fetchPublishedBlogPosts() {
   try {
-    const { data, error } = await supabase
+    const { data, error } = await supabasePublic
       .from(TABLE_NAME)
       .select(
         `
@@ -38,10 +38,10 @@ export async function fetchPublishedBlogPosts() {
         published_at,
         read_time_minutes,
         tags,
-        featured_image_url,
-        is_published
+        featured_image_url
       `
       )
+      .eq('is_published', true)
       .order('published_at', { ascending: false })
       .limit(20);
 
@@ -54,9 +54,7 @@ export async function fetchPublishedBlogPosts() {
       return SAMPLE_POSTS;
     }
 
-    const publishedPosts = data
-      .filter((item) => item.is_published === true || item.is_published === null || typeof item.is_published === 'undefined')
-      .map(mapDatabasePost);
+    const publishedPosts = data.map(mapDatabasePost);
 
     const supplementalSamples = SAMPLE_POSTS
       .filter((sample) => !publishedPosts.some((post) => post.slug === sample.slug))
@@ -75,7 +73,7 @@ export async function fetchBlogPostBySlug(slug) {
   }
 
   try {
-    const { data, error } = await supabase
+    const { data, error } = await supabasePublic
       .from(TABLE_NAME)
       .select(
         `
@@ -89,11 +87,11 @@ export async function fetchBlogPostBySlug(slug) {
         published_at,
         read_time_minutes,
         tags,
-        featured_image_url,
-        is_published
+        featured_image_url
       `
       )
       .eq('slug', slug)
+      .eq('is_published', true)
       .maybeSingle();
 
     if (error) {
@@ -101,7 +99,7 @@ export async function fetchBlogPostBySlug(slug) {
       return null;
     }
 
-    if (!data || data.is_published === false) {
+    if (!data) {
       return null;
     }
 

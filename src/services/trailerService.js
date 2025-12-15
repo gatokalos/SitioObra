@@ -3,6 +3,7 @@ import { supabase } from '../lib/supabaseClient.js';
 const BUCKET_NAME = 'trailers';
 const DEFAULT_BASENAME = 'trailerlanding';
 const VIDEO_REGEX = /\.(mp4|mov|webm|mkv|m4v)$/i;
+const STORAGE_LISTING_ENABLED = import.meta.env?.VITE_ENABLE_STORAGE_LISTING === 'true';
 
 const normalizeBaseName = (value = '') => value.toLowerCase().replace(/\.[^/.]+$/, '');
 
@@ -86,6 +87,10 @@ const listFilesRecursively = async (path = '') => {
 export async function getTrailerPublicUrl(preferredName = DEFAULT_BASENAME) {
   const normalizedPreferred = normalizeBaseName(preferredName) || DEFAULT_BASENAME;
   const fallback = getFallbackFor(normalizedPreferred);
+
+  if (!STORAGE_LISTING_ENABLED) {
+    return { ...fallback };
+  }
 
   try {
     let files;

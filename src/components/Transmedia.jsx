@@ -549,38 +549,26 @@ const showcaseDefinitions = {
     entries: [
       {
         id: 'compra-libro',
-        title: 'Edición física',
-        description: 'La novela completa en su versión impresa. Incluye QR secreto.',
+        title: 'Despierta dentro del libro',
+        description:
+          'Lectura como acto de conciencia: cruzar sus páginas es recorrer la mente misma.',
         image: '/assets/edicion-fisica.png',
         type: 'purchase-link',
         url: '/comprar-novela',
-      },
-      {
-        id: 'novel-apps',
-        title: 'Activa tu novela',
-        description:
-          'Cada formato tiene su propia app interactiva. La novela de autoficción ya se puede activar; el cómic transmedia abre pronto su lector con pistas y capas expandidas.',
-        type: 'novel-apps',
-        apps: [
-          {
-            id: 'autoficcion-app',
-            name: 'Lector interactivo',
-            description:
-              'Lee los primeros fragmentos de la novela y desbloquea preguntas guiadas en cuatro planos de lectura: académico, psicológico, narrativo y teatral.',
-            snippet: {
-              tagline: 'Contraportada transmedia',
-              text:
-                'Al escanear el QR de tu ejemplar se desbloquean lecturas personalizadas. Aquí puedes probar una versión de inicio.',
-              sideLayout: true,
-            },
-            ctaLabel: 'Leer fragmentos',
-            ctaAction: 'openAutoficcionPreview',
-          },
-        ],
+        snippet: {
+          tagline: 'Tu ejemplar como portal',
+          text:
+            'Escanea el QR de tu libro para acceder a lecturas ocultas y conversaciones con otros lectores del universo #GatoEncerrado.',
+        },
+        app: {
+          id: 'autoficcion-app',
+          ctaLabel: 'Leer fragmentos',
+          ctaAction: 'openAutoficcionPreview',
+        },
       },
       {
         id: 'comentarios-lectores',
-        title: 'Conversaciones con lectores',
+        title: 'Ecos del Club de Lectura',
         type: 'quotes',
         quotes: [
           {
@@ -588,8 +576,9 @@ const showcaseDefinitions = {
             author: 'Lectora anónima',
           },
           {
-            quote: '“Volví a subrayar y entendí que la obra también estaba escribiendo mi propia memoria.”',
-            author: 'Club de lectura Frontera',
+            quote:
+              '“Volví a subrayar y entendí que la obra también estaba escribiendo mi propia memoria.”',
+            author: 'Club de Lectura Frontera',
           },
         ],
       },
@@ -2478,6 +2467,15 @@ const rendernotaAutoral = () => {
               {(activeDefinition.comments?.length || activeShowcase === 'miniversoSonoro') ? (
                 <div className="rounded-3xl border border-white/10 bg-black/30 p-6 space-y-5">
                   <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Comentarios de la comunidad</p>
+                  <div className="mx-auto w-full max-w-md">
+                    <Button
+                      variant="outline"
+                      className="w-full rounded-full border border-purple-500/70 text-purple-100 shadow-[0_15px_45px_rgba(67,56,202,0.45)] hover:bg-purple-500/20 tracking-[0.25em] text-xs uppercase"
+                      onClick={handleOpenContribution}
+                    >
+                      Agrega tu comentario
+                    </Button>
+                  </div>
                   {activeDefinition.comments?.length ? (
                     <div className="space-y-4">
                       {activeDefinition.comments.map((comment) => (
@@ -2956,6 +2954,15 @@ const rendernotaAutoral = () => {
             {(activeDefinition.comments?.length || activeShowcase === 'miniversoGrafico') ? (
               <div className="rounded-3xl border border-white/10 bg-black/30 p-6 space-y-5">
                 <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Comentarios de la comunidad</p>
+                <div className="mx-auto w-full max-w-md">
+                  <Button
+                    variant="outline"
+                    className="w-full rounded-full border border-purple-500/70 text-purple-100 shadow-[0_15px_45px_rgba(67,56,202,0.45)] hover:bg-purple-500/20 tracking-[0.25em] text-xs uppercase"
+                    onClick={handleOpenContribution}
+                  >
+                    Agrega tu comentario
+                  </Button>
+                </div>
                 {activeDefinition.comments?.length ? (
                   <div className="space-y-4">
                     {activeDefinition.comments.map((comment) => (
@@ -3468,6 +3475,15 @@ const rendernotaAutoral = () => {
               {(activeDefinition.comments?.length || activeShowcase === 'copycats') ? (
                 <div className="rounded-3xl border border-white/10 bg-black/25 p-6 space-y-5">
                   <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Comentarios de la comunidad</p>
+                  <div className="mx-auto w-full max-w-md">
+                    <Button
+                      variant="outline"
+                      className="w-full rounded-full border border-purple-500/70 text-purple-100 shadow-[0_15px_45px_rgba(67,56,202,0.45)] hover:bg-purple-500/20 tracking-[0.25em] text-xs uppercase"
+                      onClick={handleOpenContribution}
+                    >
+                      Agrega tu comentario
+                    </Button>
+                  </div>
                   {activeDefinition.comments?.length ? (
                     <div className="space-y-4">
                       {activeDefinition.comments.map((comment) => (
@@ -3498,7 +3514,6 @@ const rendernotaAutoral = () => {
 
     if (activeDefinition.type === 'blog-series') {
       const entries = activeDefinition.entries ?? [];
-      const novelaSpentAmount = novelaQuestions * 25;
       const renderEntryAction = (entry) => {
         switch (entry.type) {
           case 'internal-reading':
@@ -3552,7 +3567,32 @@ const rendernotaAutoral = () => {
               </>
             ) : null;
           case 'purchase-link':
-            return entry.url ? (
+            if (!entry.url) {
+              return null;
+            }
+
+            if (entry.app) {
+              return (
+                <div className="flex flex-col gap-3 sm:flex-row">
+                  <a
+                    href={entry.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex w-full sm:w-auto items-center justify-center rounded-full border border-purple-400/40 text-purple-200 hover:bg-purple-500/10 px-6 py-2 font-semibold transition"
+                  >
+                    Comprar edición física
+                  </a>
+                  <Button
+                    onClick={() => handleNovelAppCTA(entry.app)}
+                    className="w-full sm:w-auto justify-center bg-purple-600/80 hover:bg-purple-600 text-white rounded-full"
+                  >
+                    {entry.app.ctaLabel || 'Leer fragmentos'}
+                  </Button>
+                </div>
+              );
+            }
+
+            return (
               <a
                 href={entry.url}
                 target="_blank"
@@ -3561,7 +3601,7 @@ const rendernotaAutoral = () => {
               >
                 Comprar edición
               </a>
-            ) : null;
+            );
           case 'qr-scan':
             return (
               <Button
@@ -3638,7 +3678,7 @@ const rendernotaAutoral = () => {
           ) : null}
           <div>{renderPostDetails()}</div>
           {entries.length > 0 ? (
-            <div className="grid gap-6 md:grid-cols-2">
+            <div className="grid gap-6 md:grid-cols-[3fr_2fr]">
               {entries.map((entry) => {
                 if (entry.type === 'horizontal-gallery') {
                   return (
@@ -3674,106 +3714,38 @@ const rendernotaAutoral = () => {
                   return (
                     <div
                       key={entry.id}
-                      className="md:col-span-2 rounded-2xl border border-white/10 p-6 bg-black/30 space-y-4"
+                      className="rounded-2xl border border-white/10 p-6 bg-black/30 space-y-6"
                     >
                       <h5 className="font-display text-xl text-slate-100">{entry.title}</h5>
-                      <div className="grid gap-6 md:grid-cols-2">
-                        <div className="space-y-4">
-                          {entry.quotes?.map((quote, index) => (
-                            <blockquote
-                              key={`${entry.id}-quote-${index}`}
-                              className="rounded-2xl border border-white/5 bg-black/20 p-4 text-slate-100 font-light leading-relaxed"
-                            >
-                              <p>{quote.quote}</p>
-                              {quote.author ? (
-                                <p className="text-xs text-slate-500 mt-2">{quote.author}</p>
-                              ) : null}
-                            </blockquote>
-                          ))}
-                        </div>
-                        <div className="flex">
-                          <ShowcaseReactionInline
-                            showcaseId="miniversoNovela"
-                            description="Haz clic para guardar un like y amplificar las conversaciones que la novela susurra."
-                            buttonLabel="Apoyar la novela"
-                            className="flex-1 h-full justify-between bg-gradient-to-br from-purple-900/20 to-black/40"
-                          />
-                        </div>
+                      <div className="mx-auto w-full max-w-md">
+                        <Button
+                          variant="outline"
+                          className="w-full rounded-full border border-purple-500/70 text-purple-100 shadow-[0_15px_45px_rgba(67,56,202,0.45)] hover:bg-purple-500/20 tracking-[0.25em] text-xs uppercase"
+                          onClick={handleOpenContribution}
+                        >
+                          Agrega tu comentario
+                        </Button>
                       </div>
-                    </div>
-                  );
-                }
-
-                if (entry.type === 'novel-apps') {
-                  const novelaSpentAmount = novelaQuestions * 25;
-                  return (
-                    <div key={entry.id} className="rounded-2xl border border-white/10 bg-black/30 p-6 space-y-6 relative overflow-hidden">
-                      <div className="flex items-start justify-between gap-3">
-                        <div className="space-y-2 flex-1">
-                          <h5 className="font-display text-xl text-slate-100">{entry.title}</h5>
-                          {entry.description ? (
-                            <p className="text-sm text-slate-300/80 leading-relaxed">{entry.description}</p>
-                          ) : null}
-                        </div>
-                      </div>
-                      <div className="grid gap-4 grid-cols-1">
-                        {entry.apps?.map((app) => (
-                          <div
-                            key={app.id}
-                            className="rounded-2xl border border-white/10 bg-black/40 p-4 flex flex-col gap-4"
+                      <div className="space-y-4">
+                        {entry.quotes?.map((quote, index) => (
+                          <blockquote
+                            key={`${entry.id}-quote-${index}`}
+                            className="rounded-2xl border border-white/5 bg-black/20 p-4 text-slate-100 font-light leading-relaxed"
                           >
-                            <div className="flex items-center justify-between gap-4">
-                              <p className="font-semibold text-slate-100">{app.name}</p>
-                              <span
-                                className={`text-xs uppercase tracking-[0.3em] ${
-                                  app.status === 'Disponible' ? 'text-emerald-300' : 'text-slate-500'
-                                }`}
-                              >
-                                {app.status}
-                              </span>
-                            </div>
-                            <p className="text-sm text-slate-300/80 leading-relaxed">{app.description}</p>
-                            {app.snippet ? (
-                              <div className="rounded-xl border border-white/10 bg-slate-900/60 p-4 space-y-2">
-                                <p className="text-xs uppercase tracking-[0.3em] text-purple-300">{app.snippet.tagline}</p>
-                                {app.snippet.image ? (
-                                  <img
-                                    src={app.snippet.image}
-                                    alt={app.name}
-                                    className="w-full h-32 object-cover rounded-lg border border-white/5"
-                                  />
-                                ) : null}
-                                {app.snippet.text ? (
-                                  <p className="text-sm text-slate-200/90 leading-relaxed">{app.snippet.text}</p>
-                                ) : null}
-                              </div>
+                            <p>{quote.quote}</p>
+                            {quote.author ? (
+                              <p className="text-xs text-slate-500 mt-2">{quote.author}</p>
                             ) : null}
-                            <div className="space-y-2">
-                              <Button
-                                onClick={() => handleNovelAppCTA(app)}
-                                variant={app.status === 'Disponible' ? 'default' : 'outline'}
-                                className={`w-full justify-center ${
-                                  app.status === 'Disponible'
-                                    ? 'bg-purple-600/80 hover:bg-purple-600 text-white'
-                                    : 'border-purple-400/40 text-purple-200 hover:bg-purple-500/10'
-                                }`}
-                              >
-                                {app.ctaLabel}
-                              </Button>
-                              <div className="flex items-center justify-center gap-2 text-[11px] uppercase tracking-[0.35em] text-amber-200/90">
-                                <span className="inline-flex items-center gap-2 rounded-full border border-amber-200/60 bg-amber-500/15 px-3 py-1 text-amber-50">
-                                  <Coins size={14} className="text-amber-50" />
-                                  <span className="text-amber-50">150 gatokens</span>
-                                </span>
-                              </div>
-                              <div className="flex items-center justify-center text-[11px] uppercase tracking-[0.35em] text-amber-200/90">
-                                {novelaSpentAmount > 0
-                                  ? `${novelaSpentAmount} gatokens usadas · ${novelaQuestions} pregunta${novelaQuestions === 1 ? '' : 's'}`
-                                  : '0 gatokens usadas · 0 preguntas'}
-                              </div>
-                            </div>
-                          </div>
+                          </blockquote>
                         ))}
+                      </div>
+                      <div className="mt-2 space-y-2">
+                        <ShowcaseReactionInline
+                          showcaseId="miniversoNovela"
+                          description="Haz clic para guardar un like y amplificar las conversaciones que la novela susurra."
+                          buttonLabel="Apoyar la novela"
+                          className="bg-gradient-to-br from-purple-900/20 to-black/40"
+                        />
                       </div>
                     </div>
                   );
@@ -3795,6 +3767,14 @@ const rendernotaAutoral = () => {
                         <p className="text-sm text-slate-300/80 leading-relaxed">{entry.description}</p>
                       ) : null}
                     </div>
+                    {entry.snippet ? (
+                      <div className="rounded-2xl border border-white/10 bg-slate-900/60 p-4 space-y-2">
+                        <p className="text-xs uppercase tracking-[0.3em] text-purple-300">{entry.snippet.tagline}</p>
+                        {entry.snippet.text ? (
+                          <p className="text-sm text-slate-200/90 leading-relaxed">{entry.snippet.text}</p>
+                        ) : null}
+                      </div>
+                    ) : null}
                     {action}
                   </div>
                 );

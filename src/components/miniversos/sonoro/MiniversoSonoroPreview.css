@@ -692,37 +692,53 @@
 }
 
 .mode-neblina .sonoro-ambient-fog {
-  opacity: 0.9;
-  filter: blur(42px);
-  background: radial-gradient(circle at 45% 35%, rgba(162, 210, 255, 0.32), transparent 45%),
-    radial-gradient(circle at 70% 70%, rgba(255, 255, 255, 0.2), transparent 55%);
+  opacity: 0.95;
+  filter: blur(46px);
+  background: radial-gradient(circle at 45% 35%, rgba(185, 225, 255, 0.36), transparent 50%),
+    radial-gradient(circle at 70% 70%, rgba(255, 255, 255, 0.24), transparent 58%);
 }
 
 .mode-neblina .sonoro-ambient-shadow {
-  opacity: 0.24;
+  opacity: 0.2;
 }
 
 .mode-neblina .sonoro-ambient-breath {
-  opacity: 0.32;
-  transform: scale(1.16);
+  opacity: 0.26;
+  transform: scale(1.12);
 }
 
 .mode-lucid .sonoro-ambient-shadow {
-  opacity: 0.7;
-  filter: blur(42px);
+  opacity: 0.18;
+  filter: blur(22px);
 }
 
 .mode-lucid .sonoro-ambient-fog {
-  opacity: 0.56;
-  filter: blur(28px);
-  background: radial-gradient(circle at 35% 40%, rgba(255, 238, 215, 0.25), transparent 50%),
-    radial-gradient(circle at 70% 70%, rgba(78, 133, 255, 0.18), transparent 65%);
+  opacity: 0.08;
+  filter: blur(12px);
+  background: radial-gradient(circle at 45% 45%, rgba(255, 255, 255, 0.08), transparent 60%);
 }
 
 .mode-lucid .sonoro-ambient-breath {
-  opacity: 0.6;
-  filter: blur(30px);
-  transform: scale(1.18);
+  opacity: 0.12;
+  filter: blur(16px);
+  transform: scale(1.04);
+}
+
+.mode-umbral .sonoro-ambient-shadow {
+  opacity: 0.62;
+  filter: blur(50px);
+}
+
+.mode-umbral .sonoro-ambient-fog {
+  opacity: 0.5;
+  filter: blur(26px);
+  background: radial-gradient(circle at 35% 45%, rgba(30, 30, 30, 0.42), transparent 62%),
+    radial-gradient(circle at 70% 75%, rgba(0, 0, 0, 0.45), transparent 68%);
+}
+
+.mode-umbral .sonoro-ambient-breath {
+  opacity: 0.36;
+  transform: scale(1.08);
 }
 
 @keyframes sonoroDrift {

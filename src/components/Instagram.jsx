@@ -122,6 +122,7 @@ const storyFragments = [
 const Instagram = () => {
   const [posts, setPosts] = useState([]);
   const [error, setError] = useState(null);
+  const [isGalleryDisabled, setIsGalleryDisabled] = useState(false);
   const instagramProfileUrl = 'https://www.instagram.com/esungatoencerrado/?hl=en';
   const VISIBLE_COUNT = 15;
   const [selectedIndex, setSelectedIndex] = useState(null);
@@ -149,10 +150,20 @@ const Instagram = () => {
     const fetchPosts = async () => {
       try {
         const data = await getInstagramPostsFromBucket();
-        setPosts(data);
+        if (Array.isArray(data) && data.length > 0) {
+          setPosts(data);
+          setIsGalleryDisabled(false);
+          setError(null);
+        } else {
+          setPosts([]);
+          setIsGalleryDisabled(true);
+          setError(null);
+        }
       } catch (err) {
-        console.error('Error al traer imágenes del bucket:', err);
-        setError('No se pudieron cargar las imágenes del bucket.');
+        console.warn('[Instagram] Galería no disponible temporalmente:', err);
+        setIsGalleryDisabled(true);
+        setPosts([]);
+        setError('La galería visual está en pausa temporalmente.');
       }
     };
 
@@ -385,10 +396,26 @@ const Instagram = () => {
     
         </motion.div>
 
-        {error && (
+        {error && !isGalleryDisabled && (
           <div className="flex items-center justify-center gap-3 p-4 mb-6 text-center text-red-400 bg-red-900/20 rounded-lg">
             <AlertCircle size={22} />
             <p>{error}</p>
+          </div>
+        )}
+
+        {isGalleryDisabled && (
+          <div className="flex flex-col md:flex-row items-center justify-between gap-4 p-4 mb-6 text-center md:text-left text-slate-200 bg-white/5 border border-white/10 rounded-lg">
+            <p className="text-sm md:text-base text-slate-300">
+              La galería visual está en pausa temporalmente. Puedes explorar más fotos en nuestro perfil de Instagram.
+            </p>
+            <Button
+              variant="outline"
+              className="inline-flex items-center gap-2 border-white/20 text-slate-200 hover:bg-white/10"
+              onClick={() => handleInstagramClick(instagramProfileUrl)}
+            >
+              Ver Instagram
+              <ExternalLink size={16} />
+            </Button>
           </div>
         )}
 
@@ -460,11 +487,11 @@ const Instagram = () => {
               })}
             </AnimatePresence>
           </div>
-        ) : !error && (
+        ) : !error && !isGalleryDisabled ? (
             <div className="text-center text-slate-400 animate-pulse italic">
               <p>Cargando recuerdos...</p>
             </div>
-        )}
+        ) : null}
 
         <AnimatePresence>
           {isModalOpen && activePost && (

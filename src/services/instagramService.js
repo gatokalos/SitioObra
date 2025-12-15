@@ -1,36 +1,67 @@
-import { supabase } from "../lib/supabaseClient.js";
+import { supabasePublic } from '@/lib/supabaseClient';
+
+const BUCKET_NAME = 'galeria de gatoencerrado';
+const IMAGE_FILE_REGEX = /\.(jpe?g|png|webp|avif|gif)$/i;
+const STORAGE_LISTING_FLAG = import.meta.env?.VITE_ENABLE_STORAGE_LISTING;
+const STORAGE_LISTING_ENABLED =
+  STORAGE_LISTING_FLAG === undefined || STORAGE_LISTING_FLAG === 'true';
+
+const formatAltText = (filename = '') => {
+  const withoutExtension = filename.replace(/\.[^/.]+$/, '');
+  return withoutExtension.replace(/[-_]+/g, ' ').trim() || 'Recuerdo #GatoEncerrado';
+};
 
 export async function getInstagramPostsFromBucket() {
-  const bucketName = "galeria de gatoencerrado";
+  if (!STORAGE_LISTING_ENABLED) {
+    return [];
+  }
 
   try {
-    const { data, error } = await supabase.storage.from(bucketName).list("", {
-      limit: 100,
+    const { data, error } = await supabasePublic.storage.from(BUCKET_NAME).list('', {
+      limit: 200,
       offset: 0,
-      sortBy: { column: "name", order: "desc" },
+      sortBy: { column: 'name', order: 'desc' },
     });
 
     if (error) {
-      console.error("Error al listar imágenes:", error.message);
+      console.error('[Instagram] Error al listar imágenes:', error.message);
       return [];
     }
 
-    const images = data
-      .filter((file) => file.name.match(/\.(jpg|jpeg|png|webp)$/i))
+    if (!Array.isArray(data) || data.length === 0) {
+      return [];
+    }
+
+    const imageFiles = data.filter((file) => IMAGE_FILE_REGEX.test(file.name));
+
+    const posts = imageFiles
       .map((file) => {
-        const publicUrl = supabase.storage.from(bucketName).getPublicUrl(file.name).data.publicUrl;
+        const { data: publicData } = supabasePublic.storage
+          .from(BUCKET_NAME)
+          .getPublicUrl(file.name);
+
+        if (!publicData?.publicUrl) {
+          return null;
+        }
+
+        const alt =
+          file.metadata?.description ||
+          file.metadata?.title ||
+          file.metadata?.name ||
+          formatAltText(file.name);
 
         return {
-          id: file.id || file.name,
-          imgSrc: publicUrl,
-          alt: file.name.replace(/\.[^/.]+$/, "").replace(/[-_]/g, " "), // alt basado en filename
-          postUrl: publicUrl, // o deja null si no necesitas que se abra al clic
+          id: file.id ?? file.name,
+          imgSrc: publicData.publicUrl,
+          alt,
+          filename: file.name,
         };
-      });
+      })
+      .filter(Boolean);
 
-    return images;
+    return posts;
   } catch (err) {
-    console.error("Excepción al obtener imágenes del bucket:", err);
+    console.error('[Instagram] Excepción al obtener imágenes del bucket:', err);
     return [];
   }
 }
