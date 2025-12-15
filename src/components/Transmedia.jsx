@@ -22,6 +22,7 @@ import {
   Sparkles,
   MapIcon,
   Coins,
+  CheckCheckIcon,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import MiniverseModal from '@/components/MiniverseModal';
@@ -400,7 +401,7 @@ const showcaseDefinitions = {
       },
        {
         id: 'lia-perez',
-        name: 'Lía Pérez. MPSE',
+        name: 'Lía Pérez, MPSE',
         role: 'Diseño Sonoro & Pulso emocional',
         bio: 'Lía se sumó a Cine de #GatoEncerrado con una entrega luminosa: sin pedir nada a cambio y afinando cada capa de sonido en Quirón y CopyCats. Su oído construye atmósferas que no se escuchan: se sienten. Entre risas, ruidos, silencios y tormentas interiores, su trabajo sostuvo el timbre emocional de las piezas y dejó una huella discreta, pero imprescindible.',
         image: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/equipo/lia.png',
@@ -3949,7 +3950,7 @@ const rendernotaAutoral = () => {
               Escaparate de Miniversos
             </h2>
             <p className="text-lg text-slate-300/80 max-w-3xl mx-auto leading-relaxed font-light">
-              #GatoEncerrado está compuesto por miniversos que sostienen una causa. Cada experiencia digital, objeto o narrativa expandida genera GATokens, el pulso que mueve este ecosistema y, al mismo tiempo, sostiene la  {' '}
+              #GatoEncerrado está compuesto por miniversos. Cada experiencia digital, objeto o narrativa expandida que puede habitarse de forma individual. Al interactuar con el universo se generan <span className="font-semibold text-purple-200">GATokens</span>: el pulso que conecta la experiencia artística con el sostenimiento de la  {' '}
               <button
                 type="button"
                 onClick={handleScrollToSupport}
@@ -3957,14 +3958,7 @@ const rendernotaAutoral = () => {
               >
                 causa social 
               </button>
-             {' '} de Ayuda para la Vida, A.C.</p>
-            <p className="text-sm text-slate-400 max-w-3xl mx-auto leading-relaxed font-light">
-              Con <span className="font-semibold text-purple-200">600 MXN</span> recibes{' '}
-              <span className="font-semibold text-purple-200">12,000 GATOKENS:</span>
-              <span className="block mt-1">
-                suficiente energía para que esto no se apague.
-              </span>
-            </p>
+             {' '} de Isabel Ayuda para la Vida, A.C.</p>
 
           </motion.div>
 
@@ -4017,7 +4011,7 @@ const rendernotaAutoral = () => {
                         showcaseEnergy?.[format.id] ?? (baseValue > 0 ? baseValue : 0);
                       const boostApplied = Boolean(showcaseBoosts?.[format.id]);
                       const toneClass = 'text-amber-200';
-                      const label = boostApplied ? 'Saldo acumulado:' : 'Energía inicial:';
+                      const label = boostApplied ? 'Energía acumulada:' : 'Energía inicial:';
                       return (
                         <div className="mb-4 text-xs text-slate-200/80 flex flex-wrap items-center gap-2">
                           <Coins size={14} className={toneClass} />
@@ -4025,8 +4019,8 @@ const rendernotaAutoral = () => {
                           <span className={`font-semibold ${toneClass}`}>{currentValue} GAT</span>
                           {boostApplied ? (
                             <span className="text-[0.65rem] uppercase tracking-[0.35em] text-emerald-200">
-                              Miniverso leído
-                            </span>
+                              Miniverso leído 
+                            </span> 
                           ) : (
                             <span className="text-[0.65rem] uppercase tracking-[0.35em] text-slate-400">
                               Descubre cómo sumar energía

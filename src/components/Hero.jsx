@@ -74,7 +74,7 @@ const Hero = () => {
               className="hero-title text-4xl sm:text-5xl md:text-7xl font-medium mb-6 text-center w-full"
               style={{ textShadow: '0 0 35px rgba(255, 223, 255, 0.45)' }}
             >
-              <span>#GatoEncerrado</span>
+              <span>#GATOENCERRADO</span>
             </motion.h1>
 
             <motion.p
@@ -97,7 +97,7 @@ const Hero = () => {
       font-normal flex items-center gap-1
     "
   >
-    late la obra
+    la obra pulsa
     <svg
       xmlns="http://www.w3.org/2000/svg"
       className="h-4 w-4 opacity-80"

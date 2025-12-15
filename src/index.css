@@ -106,13 +106,16 @@ body {
 }
 
 .hero-title {
-  font-family: 'Söhne', 'Space Grotesk', 'Inter', sans-serif;
- 
-  font-style: italic;
-  letter-spacing: 0.05em;
-  background: linear-gradient(125deg, #ffffff, #bdbdbd, #828282);
+  text-transform: uppercase;
+  font-feature-settings: "kern" 1, "liga" 0;
+  font-family: 'Vox Round', 'Söhne', 'Space Grotesk', 'Inter', sans-serif;
+  font-weight: 600;
+
+  letter-spacing: 0.25em;
+  background: linear-gradient(125deg, #ffffff, #bdbdbd, #2d2d2d);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
+
   text-shadow: 0 0 20px rgba(139, 92, 246, 0.35);
   display: inline-flex;
   width: 100%;
@@ -123,6 +126,37 @@ body {
 
 .hero-title span {
   width: 100%;
+  display: block;
+}
+
+@media (max-width: 480px) {
+  .hero-title {
+    font-size: clamp(1.6rem, 8vw, 2.2rem);
+    letter-spacing: 0.12em;
+    line-height: 1.15;
+  }
+}
+
+@media (min-width: 481px) and (max-width: 768px) {
+  .hero-title {
+    font-size: clamp(2.2rem, 6vw, 3rem);
+    letter-spacing: 0.18em;
+    line-height: 1.1;
+  }
+}
+
+@media (min-width: 769px) and (max-width: 1200px) {
+  .hero-title {
+    font-size: clamp(3rem, 4vw, 4rem);
+    letter-spacing: 0.22em;
+  }
+}
+
+@media (min-width: 1201px) {
+  .hero-title {
+    font-size: clamp(4rem, 3.5vw, 5rem);
+    letter-spacing: 0.25em;
+  }
 }
 
 .glass-effect {
@@ -133,7 +167,7 @@ body {
 }
 
 .text-gradient {
-  background: linear-gradient(135deg, hsl(290 60% 50%), hsl(290 60% 30%), hsl(290 100% 51.41%)); /* Gradient with primary hues */
+  background: linear-gradient(135deg, hsl(321.75deg 91.56% 12.19%), hsl(290 60% 30%), hsl(269.19deg 97.37% 85.1%)); /* Gradient with primary hues */
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;

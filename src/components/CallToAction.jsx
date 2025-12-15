@@ -117,7 +117,14 @@ const CallToAction = () => {
         animate={{ opacity: 1 }}
         transition={{ duration: 0.5, delay: 0.2 }}
       >
-        Cada suscripción motiva al universo #GatoEncerrado y activa impacto real en su causa social.
+       Cada suscripción se destina directamente a la causa social y activa impacto desde el primer aporte.       
+         <p className="text-xs text-slate-400/70 mt-3">
+                Los {' '}
+                <a href="#transmedia" className="underline text-slate-300">GATokens</a> funcionan como un registro de actividad colectiva y como una cortesía de acceso a sus miniversos.
+              </p>
+       
+    
+
       </motion.p>
 
       {/* Panel de impacto */}

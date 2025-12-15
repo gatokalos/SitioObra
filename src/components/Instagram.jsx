@@ -383,13 +383,13 @@ const Instagram = () => {
           <p className="text-base md:text-lg text-slate-300/75 max-w-3xl mx-auto leading-relaxed mb-7 font-light">
             Reflejos de lo que solo sucede una vez en escena…
             Un homenaje visual al pulso colectivo detrás de Es un gato encerrado:
-            los cuerpos, los silencios y las miradas hacia lo efímero. Esto solo que existe cuando alguien se atreve a mirar.
+            los cuerpos, los silencios y las miradas hacia lo efímero. Esto es lo que existe solo cuando alguien se atreve a mirar.
           </p>
 
               {/* Crédito fotográfico: tipografía pequeña y gris tenue; enlace al Team */}
               <p className="text-xs text-slate-400/70 mt-3">
-                Fotografías: Gabriel Monroy. Su semblanza está disponible en {' '}
-                <a href="#team" className="underline text-slate-300">Producción y Asistencia</a>.
+                Fotografía: Gabriel Monroy. Su semblanza está disponible en {' '}
+                <a href="#team" className="underline text-slate-300">Producción</a>.
               </p>
 
               
