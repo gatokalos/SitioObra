@@ -400,7 +400,7 @@ const showcaseDefinitions = {
       },
        {
         id: 'lia-perez',
-        name: 'Lía Pérez',
+        name: 'Lía Pérez. MPSE',
         role: 'Diseño Sonoro & Pulso emocional',
         bio: 'Lía se sumó a Cine de #GatoEncerrado con una entrega luminosa: sin pedir nada a cambio y afinando cada capa de sonido en Quirón y CopyCats. Su oído construye atmósferas que no se escuchan: se sienten. Entre risas, ruidos, silencios y tormentas interiores, su trabajo sostuvo el timbre emocional de las piezas y dejó una huella discreta, pero imprescindible.',
         image: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/equipo/lia.png',
@@ -526,7 +526,7 @@ const showcaseDefinitions = {
     type: 'blog-series',
     slug: null,
     intro:
-      'Aquí se cruzan la autoficción, la novela gráfica y las vidas que aún no caben en escena. Fragmentos, procesos y pistas que solo existen cuando alguien las lee.',
+      'Aquí la escritura no es un registro, sino un territorio que respira: fragmentos, voces, monólogos, poemas y apuntes que expanden la mente de Silvestre y la memoria de quienes lo rodean. Este es el espacio donde la literatura se vuelve espejo de lo escénico, preludio de lo cinematográfico y eco de lo humano.',
     cartaTitle: '#PáginaViva',
     notaAutoral:
       'La palabra devolvió lo que el gato se tragó:\nMi Gato Encerrado\nhuyó de sí misma y se encontró.',
@@ -650,7 +650,7 @@ const showcaseDefinitions = {
     collaborators: [
       {
         id: 'lia-perez',
-        name: 'Lía Pérez',
+        name: 'Lía Pérez, MPSE',
         role: 'Diseño Sonoro',
         bio: 'Artista sonora con más de doce años de experiencia. Fundadora de Concrete Sounds, ha colaborado en filmes como “Ya no estoy aquí” y “Monos”. Su especialidad es la creación de paisajes inmersivos que amplían la dimensión sensorial del teatro.',
         image: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/equipo/lia.png',
@@ -2206,131 +2206,108 @@ const rendernotaAutoral = () => {
           <div className="grid gap-10 lg:grid-cols-[2fr_1fr]">
             <div className="space-y-6">
               <div className="rounded-3xl border border-white/10 overflow-hidden bg-black/30">
-                <div className="flex items-center justify-between gap-3 px-6 pt-4">
-                  <p className="text-xs uppercase tracking-[0.3em] text-slate-400/70">Activa tu objeto</p>
-                </div>
-                {activeShowcase === 'lataza' && isTazaARActive && !isMobileARFullscreen ? (
-                  <div className="p-0 sm:p-4">
-                    <ARExperience
-                      targetSrc="/webar/taza/taza.mind"
-                    phrases={activeDefinition.phrases}
-                    onExit={handleCloseARExperience}
-                  />
-                </div>
-              ) : (
-                <>
-                  {/\.mp4($|\?)/i.test(activeDefinition.image) ? (
-                    <div className="relative">
-                      {isMobileViewport ? (
-                        <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-black/25 via-transparent to-black/55" />
-                      ) : null}
-                      {renderMobileVideoBadge()}
-                      <video
-                        src={activeDefinition.image}
-                        className="w-full h-64 object-cover bg-black/50"
-                        autoPlay
-                        playsInline
-                        muted
-                        loop
-                        controls={canUseInlinePlayback(objectWebArVideoId)}
-                        onClick={(event) => requestMobileVideoPresentation(event, objectWebArVideoId)}
-                        poster={activeDefinition.imagePoster}
-                      />
-                    </div>
-                  ) : (
-                    <img
-                      src={activeDefinition.image}
-                      alt="Ilustración de La Taza"
-                      className="w-full h-64 object-cover bg-black/50"
-                    />
-                  )}
-                  <div className="p-6 space-y-3">
-                    <p className="text-sm text-slate-400 uppercase tracking-[0.3em]">{activeDefinition.note}</p>
-                    {activeDefinition.instructions ? (
-                      <ul className="text-sm text-slate-300/90 space-y-2">
-                        {activeDefinition.instructions.map((step, index) => (
-                          <li key={index} className="flex items-start gap-2">
-                            <span className="text-purple-300 mt-1">●</span>
-                            <span>{step}</span>
-                          </li>
-                        ))}
-                      </ul>
-                    ) : null}
-                    {activeShowcase === 'lataza' ? (
-                      <div className="relative inline-flex overflow-visible">
-                        {showTazaCoins ? (
-                          <motion.div
-                            initial={{ opacity: 0, y: 6 }}
-                            animate={{ opacity: 1, y: -6 }}
-                            exit={{ opacity: 0, y: -10 }}
-                            className="absolute -top-7 right-0 rounded-full border border-amber-200/60 bg-amber-500/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.25em] text-amber-100 shadow-[0_0_12px_rgba(250,204,21,0.25)]"
-                          >
-                            -30 gat
-                          </motion.div>
-                        ) : null}
-                          <Button
-                            className="relative border-purple-400/40 text-purple-200 hover:bg-purple-500/10 overflow-visible"
-                            variant="outline"
-                            onClick={handleActivateAR}
-                            disabled={remainingTazaGatokens <= 0 || isTazaActivating}
-                          >
-                            <span className="relative z-10">
-                              {remainingTazaGatokens <= 0
-                                ? 'Sin gatokens'
-                                : isTazaActivating
-                                  ? 'Procesando...'
-                                  : activeDefinition.ctaLabel}
-                            </span>
-                          {showTazaCoins ? (
-                            <span className="pointer-events-none absolute inset-0">
-                              {Array.from({ length: 6 }).map((_, index) => {
-                                const endX = 120 + index * 12;
-                                const endY = -110 - index * 12;
-                                return (
-                                  <motion.span
-                                    key={`taza-coin-${index}`}
-                                    className="absolute left-1/2 top-1/2 h-5 w-5 -translate-x-1/2 -translate-y-1/2 rounded-full bg-gradient-to-br from-amber-200 to-yellow-500 shadow-[0_0_12px_rgba(250,204,21,0.5)]"
-                                    initial={{ opacity: 0.9, scale: 0.7, x: 0, y: 0 }}
-                                    animate={{ opacity: 0, scale: 1, x: endX, y: endY, rotate: 120 + index * 22 }}
-                                    transition={{ duration: 1.05, ease: 'easeOut', delay: 0.05 }}
-                                  />
-                                );
-                              })}
-                            </span>
-                          ) : null}
-                          </Button>
-                        </div>
-                      ) : activeDefinition.ctaLink ? (
-                      <a
-                        href={activeDefinition.ctaLink}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="inline-flex items-center justify-center rounded-full border border-purple-400/40 text-purple-200 hover:bg-purple-500/10 px-6 py-2 font-semibold"
-                      >
-                        {activeDefinition.ctaLabel}
-                      </a>
-                    ) : (
-                      <Button
-                        variant="outline"
-                        className="border-purple-400/40 text-purple-200 hover:bg-purple-500/10"
-                        onClick={() => handleLaunchWebAR(activeDefinition.ctaMessage)}
-                        >
-                          {activeDefinition.ctaLabel}
-                        </Button>
-                      )}
-                      <div className="mt-3 flex flex-wrap items-center gap-2 text-[11px] uppercase tracking-[0.25em] text-amber-100">
-                        <span className="inline-flex items-center gap-2 rounded-full border border-amber-200/60 bg-amber-500/15 px-3 py-1 text-amber-50">
-                          <Coins size={14} className="text-amber-50" />
-                          {remainingTazaGatokens} gatokens
-                        </span>
-                        {activeShowcase === 'lataza' ? (
-                          <span className="text-slate-400">Energía por activación: 30 gatokens</span>
-                        ) : null}
-                      </div>
-                    </div>
-                  </>
-                )}
-            </div>
+  <div className="flex items-center justify-between gap-3 px-6 pt-4">
+    <p className="text-xs uppercase tracking-[0.3em] text-slate-400/70">
+      Activa tu objeto
+    </p>
+  </div>
+
+  {activeShowcase === 'lataza' && isTazaARActive && !isMobileARFullscreen ? (
+    <div className="p-0 sm:p-4">
+      <ARExperience
+        targetSrc="/webar/taza/taza.mind"
+        phrases={activeDefinition.phrases}
+        onExit={handleCloseARExperience}
+      />
+    </div>
+  ) : (
+    <div className="p-6 grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
+      {/* ───────── Columna izquierda: taza ───────── */}
+      <div className="flex flex-col gap-4">
+        {/\.mp4($|\?)/i.test(activeDefinition.image) ? (
+          <video
+            src={activeDefinition.image}
+            className="w-full max-h-[220px] object-contain bg-black/50"
+            autoPlay
+            playsInline
+            muted
+            loop
+            controls={canUseInlinePlayback(objectWebArVideoId)}
+            poster={activeDefinition.imagePoster}
+          />
+        ) : (
+          <img
+            src={activeDefinition.image}
+            alt="Ilustración de La Taza"
+            className="w-full max-h-[220px] object-contain bg-black/50"
+          />
+        )}
+
+        <p className="text-sm text-slate-400 uppercase tracking-[0.3em]">
+          {activeDefinition.note}
+        </p>
+
+        {activeDefinition.instructions ? (
+          <ul className="text-sm text-slate-300/90 space-y-2">
+            {activeDefinition.instructions.map((step, index) => (
+              <li key={index} className="flex items-start gap-2">
+                <span className="text-purple-300 mt-1">●</span>
+                <span>{step}</span>
+              </li>
+            ))}
+          </ul>
+        ) : null}
+
+        {activeShowcase === 'lataza' ? (
+          <div className="relative inline-flex overflow-visible">
+            <Button
+              className="relative border-purple-400/40 text-purple-200 hover:bg-purple-500/10 overflow-visible"
+              variant="outline"
+              onClick={handleActivateAR}
+              disabled={remainingTazaGatokens <= 0 || isTazaActivating}
+            >
+              {remainingTazaGatokens <= 0
+                ? 'Sin gatokens'
+                : isTazaActivating
+                ? 'Procesando...'
+                : activeDefinition.ctaLabel}
+            </Button>
+          </div>
+        ) : null}
+
+        <div className="mt-2 flex flex-wrap items-center gap-2 text-[11px] uppercase tracking-[0.25em] text-amber-100">
+          <span className="inline-flex items-center gap-2 rounded-full border border-amber-200/60 bg-amber-500/15 px-3 py-1">
+            <Coins size={14} />
+            {remainingTazaGatokens} gatokens
+          </span>
+          <span className="text-slate-400">
+            Energía por activación: 30 gatokens
+          </span>
+        </div>
+      </div>
+
+      {/* ───────── Columna derecha: Próximos encuentros ───────── */}
+      <div className="rounded-2xl border border-white/10 bg-white/5 p-5 flex flex-col gap-3">
+        <h4 className="text-xs uppercase tracking-[0.35em] text-slate-300">
+          Próximos encuentros
+        </h4>
+
+        <p className="text-sm text-slate-400 leading-relaxed">
+          Aquí aparecerán los espacios donde la taza se activa en comunidad:
+          cafés, librerías y colaboraciones futuras.
+        </p>
+
+        <button
+          type="button"
+          onClick={handleOpenContribution}
+          className="mt-2 text-xs uppercase tracking-[0.3em] text-purple-300 hover:text-purple-200 self-start"
+        >
+          Quiero saber dónde se activa
+        </button>
+      </div>
+    </div>
+  )}
+</div>
 
             {activeDefinition.sentiments ? (
               <div className="rounded-2xl border border-white/10 p-6 bg-black/30">

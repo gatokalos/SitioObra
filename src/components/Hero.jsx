@@ -71,10 +71,10 @@ const Hero = () => {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ duration: 1.5, delay: 0.2 }}
-              className="font-headline text-4xl sm:text-5xl md:text-7xl font-medium italic mb-6 text-gradient"
-              style={{ textShadow: '0 0 20px rgba(233, 213, 255, 0.3)' }}
+              className="hero-title text-4xl sm:text-5xl md:text-7xl font-medium mb-6 text-center w-full"
+              style={{ textShadow: '0 0 35px rgba(255, 223, 255, 0.45)' }}
             >
-              #GatoEncerrado
+              <span>#GatoEncerrado</span>
             </motion.h1>
 
             <motion.p

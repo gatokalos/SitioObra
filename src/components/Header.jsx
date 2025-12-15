@@ -57,11 +57,10 @@ const Header = () => {
   const menuItems = [
     { name: 'Obra', href: '#about' },
     { name: 'Equipo', href: '#team' },
-    { name: 'Galería', href: '#instagram' },
     { name: 'Función', href: '#next-show' },
+    { name: 'Galería', href: '#instagram' },
     { name: 'Textos', href: '#dialogo-critico' },
     { name: 'Miniversos', href: '#transmedia' },
-   
   ];
 
   const handleNavClick = (href) => {
@@ -73,14 +72,15 @@ const Header = () => {
   };
 
   return (
-    <motion.header
-      initial={{ y: -100 }}
-      animate={{ y: 0 }}
-      transition={{ duration: 0.5, ease: 'easeOut' }}
-      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-        isScrolled ? 'bg-black/60 backdrop-blur-lg border-b border-slate-100/10' : 'bg-transparent'
-      }`}
-    >
+    <>
+      <motion.header
+        initial={{ y: -100 }}
+        animate={{ y: 0 }}
+        transition={{ duration: 0.5, ease: 'easeOut' }}
+        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
+          isScrolled ? 'bg-black/60 backdrop-blur-lg border-b border-slate-100/10' : 'bg-transparent'
+        }`}
+      >
       <nav className="container mx-auto px-6 py-3">
         <div className="flex items-center justify-between">
           <motion.button
@@ -99,6 +99,13 @@ const Header = () => {
           </motion.button>
 
           <div className="hidden md:flex items-center space-x-1">
+            <motion.button
+              whileHover={{ scale: 1.05, color: '#e9d5ff' }}
+              onClick={() => handleNavClick('#contact')}
+              className="text-slate-300 hover:text-white transition-colors font-medium px-4 py-2 rounded-md border border-purple-300/30 hover:bg-purple-500/20"
+            >
+              Contacto
+            </motion.button>
             {menuItems.map((item) => (
               <motion.button
                 key={item.name}
@@ -109,13 +116,6 @@ const Header = () => {
                 {item.name}
               </motion.button>
             ))}
-             <motion.button
-                whileHover={{ scale: 1.05, color: '#e9d5ff' }}
-                onClick={() => handleNavClick('#contact')}
-                className="text-slate-300 hover:text-white transition-colors font-medium px-4 py-2 rounded-md ml-4 border border-purple-300/30 hover:bg-purple-500/20"
-              >
-                Contacto
-              </motion.button>
           </div>
 
           <div className="flex items-center gap-3">
@@ -143,21 +143,21 @@ const Header = () => {
             exit={{ opacity: 0, height: 0 }}
             className="md:hidden mt-4 bg-black/80 backdrop-blur-md rounded-lg p-4 border border-slate-100/10"
           >
+            <button
+              onClick={() => handleNavClick('#contact')}
+              className="block w-full text-left py-3 text-slate-200 hover:text-white transition-colors border-b border-slate-100/10"
+            >
+              Contacto
+            </button>
             {menuItems.map((item) => (
               <button
                 key={item.name}
                 onClick={() => handleNavClick(item.href)}
-                className="block w-full text-left py-3 text-slate-200 hover:text-white transition-colors"
+                className="block w-full text-left py-3 text-slate-200 hover:text-white transition-colors mt-2"
               >
                 {item.name}
               </button>
             ))}
-            <button
-                onClick={() => handleNavClick('#contact')}
-                className="block w-full text-left py-3 text-slate-200 hover:text-white transition-colors mt-2 border-t border-slate-100/10"
-              >
-                Contacto
-              </button>
             <button
               onClick={user ? handleLogout : handleOpenOverlay}
               className="block w-full text-left py-3 text-slate-200 hover:text-white transition-colors mt-2"
@@ -167,8 +167,9 @@ const Header = () => {
           </motion.div>
         )}
       </nav>
+      </motion.header>
       {showLoginOverlay ? <LoginOverlay onClose={handleCloseOverlay} /> : null}
-    </motion.header>
+    </>
   );
 };
 

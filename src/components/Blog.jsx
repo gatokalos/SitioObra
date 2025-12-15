@@ -188,7 +188,7 @@ const ArticleCard = ({ post, onSelect }) => {
 const ArticleCardSkeleton = () => (
   <motion.div
     variants={containerVariants}
-    className="glass-effect rounded-2xl p-8 md:p-10 flex flex-col gap-4 animate-pulse min-h-[420px]"
+    className="glass-effect rounded-2xl p-8 md:p-10 flex flex-col gap-4 animate-pulse min-h-[520px]"
   >
     <div className="h-4 bg-white/10 rounded w-1/3" />
     <div className="h-8 bg-white/10 rounded w-3/4" />
@@ -212,7 +212,7 @@ const FullArticle = ({ post, onClose }) => {
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: 20 }}
       transition={{ duration: 0.4, ease: 'easeOut' }}
-      className="glass-effect rounded-3xl p-8 md:p-12 border border-white/10 shadow-2xl backdrop-blur-xl"
+      className="min-h-[600px] glass-effect rounded-3xl p-8 md:p-12 border border-white/10 shadow-2xl backdrop-blur-xl"
     >
       <div className="flex flex-wrap items-center justify-between gap-4 mb-8">
         <div className="flex flex-col gap-2 text-sm text-slate-400">
@@ -247,11 +247,13 @@ const FullArticle = ({ post, onClose }) => {
       <h3 className="font-display text-3xl md:text-4xl font-semibold text-slate-50 mb-8">{post.title}</h3>
 
       {articleImage ? (
-        <div className="mb-10 overflow-hidden rounded-3xl border border-white/10 bg-white/5">
+        <div
+          className="mb-10 overflow-hidden rounded-3xl border border-white/10 bg-white/5 aspect-[16/9]"
+        >
           <img
             src={articleImage}
-            alt={`https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/grafico/_V7M6281_.jpg ${post.title}`}
-            className="w-full max-h-[480px] object-cover"
+            alt={post.title}
+            className="w-full h-full object-cover"
             loading="lazy"
           />
         </div>
@@ -540,7 +542,7 @@ const Blog = ({ posts = [], isLoading = false, error = null }) => {
               whileInView="visible"
               viewport={{ once: true }}
               variants={{ visible: { transition: { staggerChildren: 0.12 } } }}
-              className="grid md:grid-cols-2 gap-8 min-h-[640px]"
+              className="grid md:grid-cols-2 gap-8 min-h-[900px]"
             >
               {isLoading ? (
                 Array.from({ length: 4 }).map((_, index) => <ArticleCardSkeleton key={`skeleton-${index}`} />)

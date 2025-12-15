@@ -9,6 +9,11 @@ import {
 } from "@/components/ui/accordion";
 
 const teamData = {
+  "Alianza de Impacto Social": {
+    name: "Isabel Ayuda para la Vida A.C.",
+    bio: "Isabel Ayuda para la Vida A.C. es una asociación civil fundada en 2018, dedicada a la prevención de la violencia autoinfligida y a la promoción del pedir ayuda como estrategia de vida. Su colaboración con #GatoEncerrado articula el cuidado emocional y la empatía como parte activa del proceso creativo, en contextos artísticos y educativos.",
+    image: "https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/equipo/IsabelAC.jpg",
+  },
   Dramaturgia: {
     name: "Carlos A. Pérez H.",
     bio: "Comunicólogo, autor, y artista transmedia. Su obra habita entre teatro, escritura y tecnología, proponiendo una poética crítica y humana. Formado en el ITESO, la Universidad de Salamanca y LABASAD Barcelona, integra astrología psicológica, cuerpo y arte digital en una mirada simbólica. Creador del universo transmedia #GatoEncerrado, concibe el acto creativo como una forma de acompañamiento y transformación.",
@@ -127,7 +132,7 @@ const teamData = {
         name: "Lía Pérez",
         role: "Diseño Sonoro",
         bio: "Artista sonora con más de doce años de experiencia. Fundadora de Concrete Sounds, ha colaborado en filmes como 'Ya no estoy aquí' y 'Monos'. Su especialidad es la creación de paisajes inmersivos que amplían la dimensión sensorial del teatro.",
-        image: "https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/equipo/lia.png",
+        image: "https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/equipo/lia.jpg",
       },
       {
         name: "Diego Madera",
@@ -187,11 +192,6 @@ const teamData = {
         "Apoyos institucionales: Agradecimiento a Teatro CAMAFEO y sus productoras Margarita Martínez de Camarena y Elsa Pérez de Vargas; CEART Tijuana, IMAC, Casa Viva y Adagio Studio por su apoyo en ensayos y espacios.",
     },
   },
-  "Alianza de Impacto Social": {
-    name: "Isabel Ayuda para la Vida A.C.",
-    bio: "Asociación civil sin fines de lucro fundada en 2018 y dirigida por Rosalía Hernández Millán. Su misión es prevenir la violencia autoinfligida mediante el programa DySVAE, promoviendo el pedir ayuda como estrategia de vida. Colabora con #GatoEncerrado para visibilizar la salud emocional y la empatía en contextos artísticos y educativos.",
-    image: "/images/placeholder-institucional.jpg",
-  },
 };
 
 // === COMPONENT ===
@@ -242,6 +242,15 @@ const Team = () => {
         "Realización Técnica",
         "Producción",
       ].includes(roleKey);
+    const desktopCircleGroups = [
+      "Diseño Escénico",
+      "Música y Sonido",
+      "Producción",
+      "Realización Técnica",
+      "Vestuario y Caracterización",
+    ];
+    const useDesktopCircleGrid = !isMobile && desktopCircleGroups.includes(roleKey);
+    const useElencoDesktopGrid = !isMobile && isElenco;
     if (Array.isArray(data?.members)) {
       const isElencoClickable = isElenco && !isMobile;
       const membersWithId = data.members.map((member, idx) => ({
@@ -286,29 +295,165 @@ const Team = () => {
               </div>
             </motion.div>
           )}
-          <motion.div layout className="grid gap-6 md:grid-cols-2">
-            {membersWithId.map(({ member, id: memberId }) => {
-              const isActive = isElencoClickable && selectedElencoId === memberId;
-              const handleToggle = () =>
-                isElencoClickable
-                  ? setSelectedElencoId((prev) => (prev === memberId ? null : memberId))
-                  : undefined;
+          {useElencoDesktopGrid ? (
+            <motion.div layout className="grid gap-6 md:grid-cols-3">
+              {membersWithId.map(({ member, id: memberId }) => {
+                const isActive = selectedElencoId === memberId;
+                const handleToggle = () =>
+                  setSelectedElencoId((prev) => (prev === memberId ? null : memberId));
 
-              if (useRoundAvatars) {
+                return (
+                  <motion.button
+                    key={memberId}
+                    type="button"
+                    layout
+                    transition={{ layout: { duration: 0.35, ease: [0.22, 1, 0.36, 1] } }}
+                    onClick={handleToggle}
+                    className={`flex flex-col items-center gap-3 text-center rounded-3xl p-6 border transition shadow-lg shadow-black/40 backdrop-blur-sm ${
+                      isActive
+                        ? "border-purple-400/60 bg-white/10 ring-2 ring-purple-200/50"
+                        : "border-white/10 bg-white/5"
+                    }`}
+                  >
+                    <div className="w-40 h-40 md:w-48 md:h-48 rounded-full overflow-hidden border border-white/10 shadow-xl shadow-black/50 bg-black/30 flex items-center justify-center">
+                      <img
+                        className="w-full h-full object-cover"
+                        src={member.image}
+                        alt={`Retrato de ${member.name}`}
+                        loading="lazy"
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <h4 className="font-display text-xl text-purple-100">{member.name}</h4>
+                      {member.role && (
+                        <p className="text-xs uppercase tracking-[0.35em] text-purple-200/70">
+                          {member.role}
+                        </p>
+                      )}
+                      {member.bio && (
+                        <p className="text-sm text-slate-200 leading-relaxed">{member.bio}</p>
+                      )}
+                    </div>
+                  </motion.button>
+                );
+              })}
+            </motion.div>
+          ) : useDesktopCircleGrid ? (
+            <div className="grid gap-6 md:grid-cols-3">
+              {membersWithId.map(({ member, id: memberId }) => (
+                <div
+                  key={memberId}
+                  className="flex flex-col items-center gap-3 text-center bg-white/5 border border-white/5 rounded-3xl p-6 backdrop-blur-sm shadow-lg shadow-black/40"
+                >
+                  <div className="w-40 h-40 md:w-48 md:h-48 rounded-full overflow-hidden border border-white/10 shadow-xl shadow-black/50 bg-black/30 flex items-center justify-center">
+                    <img
+                      className="w-full h-full object-cover"
+                      src={member.image}
+                      alt={`Retrato de ${member.name}`}
+                      loading="lazy"
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <h4 className="font-display text-xl text-purple-100">{member.name}</h4>
+                    {member.role && (
+                      <p className="text-xs uppercase tracking-[0.35em] text-purple-200/70">
+                        {member.role}
+                      </p>
+                    )}
+                    {member.bio && (
+                      <p className="text-sm text-slate-200 leading-relaxed">{member.bio}</p>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <motion.div layout className="grid gap-6 md:grid-cols-2">
+              {membersWithId.map(({ member, id: memberId }) => {
+                const isActive = isElencoClickable && selectedElencoId === memberId;
+                const handleToggle = () =>
+                  isElencoClickable
+                    ? setSelectedElencoId((prev) => (prev === memberId ? null : memberId))
+                    : undefined;
+
+                if (useRoundAvatars) {
+                  return (
+                    <motion.div
+                      layout
+                      transition={{ layout: { duration: 0.35, ease: [0.22, 1, 0.36, 1] } }}
+                      key={memberId}
+                      className="glass-effect rounded-xl p-5 flex flex-col gap-4 border border-white/5 items-center sm:flex-row sm:items-start"
+                    >
+                      <img
+                        className="h-20 w-20 flex-shrink-0 rounded-full object-cover shadow-lg shadow-black/30"
+                        src={member.image}
+                        alt={`Retrato de ${member.name}`}
+                        loading="lazy"
+                      />
+                      <div className="space-y-2 text-center sm:text-left sm:flex-1">
+                        <h4 className="font-display text-lg text-purple-200">
+                          {member.name}
+                        </h4>
+                        {member.role && (
+                          <p className="text-xs uppercase tracking-[0.35em] text-purple-300/70">
+                            {member.role}
+                          </p>
+                        )}
+                        {member.bio && (
+                          <p className="text-sm md:text-base sm:text-sm text-slate-300/80 leading-relaxed">
+                            {member.bio}
+                          </p>
+                        )}
+                        {member.url && (
+                          <a
+                            href={member.url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-sm font-semibold text-purple-200 transition hover:text-purple-100 underline-offset-4"
+                          >
+                            {member.urlLabel ?? "Ver perfil"}
+                          </a>
+                        )}
+                      </div>
+                    </motion.div>
+                  );
+                }
+
                 return (
                   <motion.div
                     layout
                     transition={{ layout: { duration: 0.35, ease: [0.22, 1, 0.36, 1] } }}
                     key={memberId}
-                    className="glass-effect rounded-xl p-5 flex flex-col gap-4 border border-white/5 items-center sm:flex-row sm:items-start"
+                    className={`glass-effect rounded-xl p-5 flex flex-col md:flex-row gap-4 border border-white/5 transition-all duration-300 ${
+                      isElencoClickable
+                        ? `cursor-pointer hover:border-purple-400/40 ${
+                            isActive ? "border-purple-400/60 ring-2 ring-purple-300/40" : ""
+                          }`
+                        : ""
+                    }`}
+                    onClick={handleToggle}
+                    role={isElencoClickable ? "button" : undefined}
+                    tabIndex={isElencoClickable ? 0 : undefined}
+                    onKeyDown={
+                      isElencoClickable
+                        ? (e) => {
+                            if (e.key === "Enter" || e.key === " ") {
+                              e.preventDefault();
+                              handleToggle();
+                            }
+                          }
+                        : undefined
+                    }
                   >
-                    <img
-                      className="h-20 w-20 flex-shrink-0 rounded-full object-cover shadow-lg shadow-black/30"
-                      src={member.image}
-                      alt={`Retrato de ${member.name}`}
-                      loading="lazy"
-                    />
-                    <div className="space-y-2 text-center sm:text-left sm:flex-1">
+                    <div className="w-full md:w-44 overflow-hidden rounded-lg border border-white/5 bg-black/30">
+                      <img
+                        className="w-full h-44 object-cover shadow-lg shadow-black/30"
+                        src={member.image}
+                        alt={`Retrato de ${member.name}`}
+                        loading="lazy"
+                      />
+                    </div>
+                    <div className="space-y-2 flex-1">
                       <h4 className="font-display text-lg text-purple-200">
                         {member.name}
                       </h4>
@@ -335,71 +480,9 @@ const Team = () => {
                     </div>
                   </motion.div>
                 );
-              }
-
-              return (
-                <motion.div
-                  layout
-                  transition={{ layout: { duration: 0.35, ease: [0.22, 1, 0.36, 1] } }}
-                  key={memberId}
-                  className={`glass-effect rounded-xl p-5 flex flex-col md:flex-row gap-4 border border-white/5 transition-all duration-300 ${
-                    isElencoClickable
-                      ? `cursor-pointer hover:border-purple-400/40 ${
-                          isActive ? "border-purple-400/60 ring-2 ring-purple-300/40" : ""
-                        }`
-                      : ""
-                  }`}
-                  onClick={handleToggle}
-                  role={isElencoClickable ? "button" : undefined}
-                  tabIndex={isElencoClickable ? 0 : undefined}
-                  onKeyDown={
-                    isElencoClickable
-                      ? (e) => {
-                          if (e.key === "Enter" || e.key === " ") {
-                            e.preventDefault();
-                            handleToggle();
-                          }
-                        }
-                      : undefined
-                  }
-                >
-                  <div className="w-full md:w-44 overflow-hidden rounded-lg border border-white/5 bg-black/30">
-                    <img
-                      className="w-full h-44 object-cover shadow-lg shadow-black/30"
-                      src={member.image}
-                      alt={`Retrato de ${member.name}`}
-                      loading="lazy"
-                    />
-                  </div>
-                  <div className="space-y-2 flex-1">
-                    <h4 className="font-display text-lg text-purple-200">
-                      {member.name}
-                    </h4>
-                    {member.role && (
-                      <p className="text-xs uppercase tracking-[0.35em] text-purple-300/70">
-                        {member.role}
-                      </p>
-                    )}
-                    {member.bio && (
-                      <p className="text-sm md:text-base sm:text-sm text-slate-300/80 leading-relaxed">
-                        {member.bio}
-                      </p>
-                    )}
-                    {member.url && (
-                      <a
-                        href={member.url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-sm font-semibold text-purple-200 transition hover:text-purple-100 underline-offset-4"
-                      >
-                        {member.urlLabel ?? "Ver perfil"}
-                      </a>
-                    )}
-                  </div>
-                </motion.div>
-              );
-            })}
-          </motion.div>
+              })}
+            </motion.div>
+          )}
           {data.details && (
             <div className="text-slate-400 text-sm leading-relaxed space-y-4">
               <div className="border-t border-white/10 pt-4">
@@ -460,8 +543,8 @@ const Team = () => {
             Equipo Creativo
           </h2>
           <p className="text-lg text-slate-300/80 max-w-3xl mx-auto leading-relaxed font-light md:text-base sm:text-sm">
-            Un colectivo de artistas multidisciplinarios unidos por la pasión de crear
-            experiencias teatrales que desafían los límites del arte escénico y la empatía.
+            Un colectivo de artistas y alianzas multidisciplinarias reunidas en el cruce entre creación escénica, pensamiento crítico y cuidado emocional.
+Cada colaboración forma parte activa del universo que la obra pone en escena.
           </p>
         </motion.div>
 

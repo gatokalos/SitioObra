@@ -97,26 +97,26 @@ const collagePattern = [
 ];
 
 const curatedLayout = [
-  { match: 'Copia de Foto 1 (1)', patternIndex: 0, story: 'Corte al vacío' },
-  { match: 'PoloyEstela', patternIndex: 1, story: 'Microclimas invisibles' },
-  { match: 'Copia de Foto 4', patternIndex: 2, story: 'Un número interminable' },
-  { match: 'Copia de Foto 3 (1)', patternIndex: 3, story: 'Memoria desdoblada' },
-  { match: 'Pausa entre actos', patternIndex: 4, story: 'Coreografía de luces' },
-  { match: 'Copia de Foto 4 (1)', patternIndex: 5, story: 'Confesión en penumbra' },
-  { match: '_V7M6314', patternIndex: 6, story: 'Ritual previo al acto' },
-  { match: '_V7M6296', patternIndex: 7, story: 'Risa entre grietas' },
-  { match: '_V7M6348', patternIndex: 8, story: 'La jaula bajo la mesa' },
-  { match: 'Xanadu', patternIndex: 9, story: 'Voz que no se nombra' },
-  { match: '_V7M6281', patternIndex: 10, story: 'El pliegue del vestido' },
-  { match: '_V7M6324', patternIndex: 11, story: 'La cuerda floja' },
-  { match: '_V7M6329', patternIndex: 12, story: 'Luz que acusa' },
-  { match: 'Copia de Foto 5 (1)', patternIndex: 13, story: 'Un eco sin dueño' },
-  { match: 'DSC02497', patternIndex: 14, story: 'Vestigio de sombras' },
+  { match: 'Copia de Foto 1 (1)', patternIndex: 0, story: 'El futuro ha arribado' },
+  { match: 'PoloyEstela', patternIndex: 1, story: 'Entre micro-climas' },
+  { match: 'Copia de Foto 4', patternIndex: 2, story: 'El Ensayo Final' },
+  { match: 'Copia de Foto 3 (1)', patternIndex: 3, story: 'No habrá un nosotros' },
+  { match: 'Pausa entre actos', patternIndex: 4, story: 'Coreografía del desamor' },
+  { match: 'Copia de Foto 4 (1)', patternIndex: 5, story: 'Señor de Paja' },
+  { match: '_V7M6314', patternIndex: 6, story: 'Encierro post-pandemia' },
+  { match: '_V7M6296', patternIndex: 7, story: 'No es un Ted-Talk' },
+  { match: '_V7M6348', patternIndex: 8, story: 'Odisea inter-estelar' },
+  { match: 'Xanadu', patternIndex: 9, story: 'Salvando el Xánadu' },
+  { match: '_V7M6281', patternIndex: 10, story: 'La intervención' },
+  { match: '_V7M6324', patternIndex: 11, story: 'Un arma de doble filo' },
+  { match: '_V7M6329', patternIndex: 12, story: 'Corazón del encerrado' },
+  { match: 'Copia de Foto 5 (1)', patternIndex: 13, story: 'Soneto sin dueño' },
+  { match: 'DSC02497', patternIndex: 14, story: 'El gatillo emocional' },
   
 ];
 
 const storyFragments = [
-  'Vestigio de sombras',
+  'El gatillo emocional',
 ];
 
 const Instagram = () => {
@@ -381,9 +381,9 @@ const Instagram = () => {
             Fractales Escénicos
           </h2>
           <p className="text-base md:text-lg text-slate-300/75 max-w-3xl mx-auto leading-relaxed mb-7 font-light">
-            Memoria de lo que solo sucede una vez en escena…
-            Un homenaje visual al trabajo colectivo detrás de Es un gato encerrado:
-            las funciones, los cuerpos, los silencios, las luces… lo que solo existe cuando alguien lo mira.
+            Reflejos de lo que solo sucede una vez en escena…
+            Un homenaje visual al pulso colectivo detrás de Es un gato encerrado:
+            los cuerpos, los silencios y las miradas hacia lo efímero. Esto solo que existe cuando alguien se atreve a mirar.
           </p>
 
               {/* Crédito fotográfico: tipografía pequeña y gris tenue; enlace al Team */}

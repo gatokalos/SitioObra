@@ -2,7 +2,9 @@
 @tailwind components;
 @tailwind utilities;
 
-@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Inter:wght@300;400;500&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Spectral+SC:wght@400;600&display=swap');
+@import url('https://fonts.cdnfonts.com/css/sohne');
+
 
 @layer base {
   :root {
@@ -101,6 +103,26 @@ body {
   .font-headline {
     letter-spacing: 0.04em;
   }
+}
+
+.hero-title {
+  font-family: 'Söhne', 'Space Grotesk', 'Inter', sans-serif;
+ 
+  font-style: italic;
+  letter-spacing: 0.05em;
+  background: linear-gradient(125deg, #ffffff, #bdbdbd, #828282);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  text-shadow: 0 0 20px rgba(139, 92, 246, 0.35);
+  display: inline-flex;
+  width: 100%;
+  justify-content: center;
+  text-align: center;
+  line-height: 1.05;
+}
+
+.hero-title span {
+  width: 100%;
 }
 
 .glass-effect {

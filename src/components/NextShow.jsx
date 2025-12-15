@@ -53,7 +53,7 @@ const NextShow = () => {
               <p className="text-lg text-slate-300/80 max-w-2xl mx-auto leading-relaxed mb-8 italic font-light">
                 "En el Día de los Santos Inocentes, te invitamos a dudar de todo, 
                 incluso de lo que crees ver en escena. Quizás la mayor inocentada 
-                es pensar que algo es real."
+                es pensar que nada es real."
               </p>
 
               <div className="flex flex-col sm:flex-row gap-4 justify-center">

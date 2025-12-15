@@ -1,9 +1,10 @@
 import React, { useCallback, useState } from 'react';
 import { motion } from 'framer-motion';
-import { Download, Send, Instagram, Twitter, Facebook } from 'lucide-react';
+import { Download, Send, Instagram, Twitter, Facebook, PenLine } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { toast } from '@/components/ui/use-toast';
 import { supabase } from '@/lib/supabaseClient';
+import { useAuth } from '@/contexts/SupabaseAuthContext';
 
 const Contact = () => {
   const [formValues, setFormValues] = useState({ name: '', email: '', message: '' });
@@ -12,6 +13,8 @@ const Contact = () => {
   const instagramUrl = 'https://www.instagram.com/esungatoencerrado/?hl=en';
   const twitterUrl = 'https://x.com/SilvestreFilis';
   const facebookUrl = 'https://www.facebook.com/share/16pHNpZjpM/?mibextid=wwXIfr';
+  const { user } = useAuth();
+  const isLoggedIn = Boolean(user?.email);
 
   const handleSubmit = useCallback(
     async (e) => {
@@ -89,10 +92,23 @@ const Contact = () => {
     }
   };
 
+  const handleOpenLoginOverlay = useCallback(() => {
+    if (typeof window === 'undefined' || isLoggedIn) {
+      return;
+    }
+    window.dispatchEvent(new CustomEvent('open-login-modal'));
+  }, [isLoggedIn]);
+
+  const contributionButtonClassName = [
+    'border-slate-100/20 text-slate-200 hover:bg-slate-100/10 px-6 py-3 rounded-full font-semibold flex items-center gap-2 transition',
+    isLoggedIn
+      ? 'bg-gradient-to-r from-emerald-500/90 to-emerald-600/90 hover:from-emerald-400/90 hover:to-emerald-500/90 shadow-[0_0_35px_rgba(16,185,129,0.5)] ring-2 ring-emerald-400/30 text-white border-transparent'
+      : 'bg-black/30 border border-slate-100/20'
+  ].join(' ');
+
   return (
     <section id="contact" className="py-24 relative min-h-[880px]">
       <div className="section-divider mb-24"></div>
-      
       <div className="container mx-auto px-6">
         <motion.div
           initial={{ opacity: 0, y: 50 }}
@@ -102,12 +118,15 @@ const Contact = () => {
           className="text-center mb-16"
         >
           <h2 className="font-display text-4xl md:text-5xl font-medium mb-6 text-gradient italic">
-            Contacto, Prensa & Créditos
+            ¿La obra se quedó en ti?
           </h2>
           <p className="text-lg text-slate-300/80 max-w-3xl mx-auto leading-relaxed font-light">
-            Para colaboraciones, entrevistas o simplemente para compartir tus teorías. 
-            Aquí cae el telón, pero la conversación continúa.
+            Si Es un gato encerrado te dejó una huella, este es tu espacio para contarlo. No buscamos opiniones, sino rastros: aquello que cambió tu forma de mirar, sentir o recordar. Aunque también puedes usar este espacio para compartir tus teorías, entrevistas o futuras colaboraciones.
           </p>
+              <p className="text-xs text-slate-400/70 mt-3">
+                Y si algo de la obra te movió más de lo esperado, el equipo de
+ {' '}                <a href="#team" className="underline text-slate-300">Ayuda para la Vida.</a>  puede orientarte de manera confidencial.
+              </p>
         </motion.div>
 
         <div className="grid lg:grid-cols-2 gap-12">
@@ -167,14 +186,33 @@ const Contact = () => {
                   Tu mensaje llegó. Te escribiremos a la brevedad.
                 </div>
               )}
-              <Button
-                type="submit"
-                disabled={status === 'loading'}
-                className="w-full bg-gradient-to-r from-purple-600/80 to-indigo-600/80 hover:from-purple-600 hover:to-indigo-600 text-white py-3 rounded-lg font-semibold flex items-center justify-center gap-2 hover-glow"
-              >
-                <Send size={20} />
-                {status === 'loading' ? 'Enviando…' : 'Enviar'}
-              </Button>
+              <div className="mt-4 space-y-3">
+                <p className="text-xs text-slate-400/70 text-center">
+                  {isLoggedIn
+                    ? 'Gracias por iniciar sesión, el equipo te responderá con gusto y cuidado.'
+                    : '¿No quieres escribir ahora? Inicia sesión aquí y recibirás un mensaje cordial de alguien del equipo.'}
+                </p>
+                <div className="flex flex-col gap-3 lg:flex-row lg:items-center">
+                  <Button
+                    type="submit"
+                    disabled={status === 'loading'}
+                    className="flex-1 bg-gradient-to-r from-purple-600/80 to-indigo-600/80 hover:from-purple-600 hover:to-indigo-600 text-white py-3 rounded-lg font-semibold flex items-center justify-center gap-2 hover-glow"
+                  >
+                    <Send size={20} />
+                    {status === 'loading' ? 'Enviando…' : 'Enviar'}
+                  </Button>
+                  <Button
+                    type="button"
+                    onClick={handleOpenLoginOverlay}
+                    disabled={isLoggedIn}
+                    className={`flex-1 lg:flex-none ${contributionButtonClassName}`}
+                  >
+                    <PenLine size={18} />
+                    {isLoggedIn ? 'Espera tu respuesta' : 'Recibir notificaciones'}
+                  </Button>
+                </div>
+              </div>
+              
             </form>
           </motion.div>
 
@@ -195,8 +233,8 @@ const Contact = () => {
             </div>
 
             <div className="glass-effect rounded-xl p-6">
-              <h3 className="font-display text-xl font-medium text-slate-100 mb-4">Kit de Prensa</h3>
-              <p className="text-slate-300/70 mb-4 font-light">Descarga nuestro kit de prensa con imágenes en alta resolución, dossier y más.</p>
+              <h3 className="font-display text-xl font-medium text-slate-100 mb-4">Prensa & Créditos</h3>
+              <p className="text-slate-300/70 mb-4 font-light">Imágenes, dossier y equipo creativo de Es un gato encerrado.</p>
               <Button onClick={handleActionClick} variant="outline" className="border-purple-400/50 text-purple-300 hover:bg-purple-500/20 hover:border-purple-400">
                 <Download size={18} className="mr-2" />
                 Descargar Kit
