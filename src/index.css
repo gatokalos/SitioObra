@@ -110,7 +110,7 @@ body {
 .hero-title {
   text-transform: uppercase;
   font-feature-settings: "kern" 1, "liga" 0;
-  font-family: "vox-round", 'Söhne', 'Space Grotesk', 'Inter', sans-serif;
+  font-family: "Vox Round", 'Söhne', 'Space Grotesk', 'Inter', sans-serif;
   font-weight: 600;
 
   letter-spacing: 0.25em;
@@ -124,6 +124,15 @@ body {
   justify-content: center;
   text-align: center;
   line-height: 1.05;
+}
+
+/* iOS Safari hardening: prevent font synthesis/fallback on mobile */
+@supports (-webkit-touch-callout: none) {
+  .hero-title {
+    font-synthesis: none;
+    font-weight: 600;
+    font-style: normal;
+  }
 }
 
 .hero-title span {
