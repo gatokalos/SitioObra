@@ -23,7 +23,7 @@ const aboutParagraphs = [
 const testimonials = [
   {
     quote:
-      '“Salí de la función y fue como si despertara con nuevos recuerdos. Es un gato encerrado  me obligó a conversar con mis propios vacíos.”',
+      '“Salí de la función y fue como si despertara con nuevos recuerdos. Es un gato encerrado me obligó a conversar con mis propios miedos.”',
     author: 'Maru Solano',
     role: 'Espectadora / Tijuana',
   },
@@ -221,7 +221,7 @@ const About = () => {
           className="text-center mb-16"
         >
           <h2 className="font-display text-4xl md:text-5xl font-medium mb-6 text-gradient italic">
-            Sobre la Obra
+            Nuestra Obra
           </h2>
           <div className="max-w-3xl mx-auto">
             {aboutParagraphs.map((paragraph) => (
@@ -261,7 +261,7 @@ const About = () => {
                 La Mente de Silvestre
               </h3>
               <p className="text-slate-300/80 leading-relaxed mb-8 font-light">
-                Silvestre <strong>transforma su mente</strong> en escenario. Este es el <i>bucle onírico</i> donde enfrenta sus desdoblamientos y dilemas existenciales. Aquí, lo real y lo imaginario ya no compiten. Y tú —espectador, visitante, cómplice— puedes entrar sin tocar la puerta, porque quizás… tú también tienes un gato encerrado en el pecho.
+                Silvestre <strong>transforma su mente</strong> en escenario. Aquí, lo real y lo imaginario ya no compiten. Y tú —espectador, visitante, cómplice— puedes entrar sin tocar la puerta, porque quizás… tú también tienes <i>un gato encerrado</i> en el pecho.
               </p>
               <div className="flex flex-col sm:flex-row gap-4">
                 <Button

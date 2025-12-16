@@ -96,40 +96,53 @@ const BlogContributionPrompt = () => {
               />
             </div>
 
-            {/* CONTENIDO */}
-            <div className="relative z-10">
-              <h3 className="font-display text-3xl font-medium text-slate-100 mb-6">
-                ¿Algo de la obra se quedó contigo?
-              </h3>
+           {/* CONTENIDO */}
+<div className="relative z-10">
+  <h3 className="font-display text-3xl font-medium text-slate-100 mb-6 text-center">
+    INTERMEDIO
+  </h3>
 
-              <p className="text-slate-300/80 leading-relaxed mb-8 max-w-2xl mx-auto font-light whitespace-pre-line">
-                {`Si algo de la obra se movió contigo, nos encantará saberlo.
-    No buscamos “opiniones”: buscamos las huellas que dejó en tu manera de mirar, sentir o recordar.
-    Lo que compartas ayuda a seguir construyendo este universo.`}
+  <p className="text-slate-300/80 leading-relaxed mb-8 max-w-2xl mx-auto font-light whitespace-pre-line text-center">
+    {`Las luces bajan y el escenario respira.
+Quizá aún no sepas si esto es una obra, un sueño o un laberinto.
+No pasa nada: en #GatoEncerrado, la confusión también forma parte del viaje.`}
 
-                <span className="block mt-4 text-sm text-slate-400/70 italic">
-                  (O si hubo algo más que te llamó la atención durante tu visita, también puedes contarlo.)
-                </span>
-              </p>
+    <span className="block mt-4 text-sm text-slate-400/70 italic">
+      (A veces, basta con dejar que la mente vuelva a su estado silvestre.)
+    </span>
+  </p>
 
-              <div className="relative inline-flex flex-col items-center gap-2">
-                {showOnboardingHint ? (
-                  <motion.div
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -10 }}
-                    className="absolute -top-10 bg-purple-600/80 text-white text-xs px-3 py-1 rounded-full shadow-lg"
-                  >
-                    ¡Nuevo! Abre la bandeja lateral y comparte tu texto
-                  </motion.div>
-                ) : null}
+  {/* BOTÓN DIVIDIDO */}
+  <div className="flex flex-col items-center">
+    <div className="inline-flex rounded-full overflow-hidden shadow-lg border border-slate-600/50 backdrop-blur-sm">
+      {/* Mitad izquierda: continuar */}
+      <button
+        onClick={() => {
+          document.querySelector('#dialogo-critico')?.scrollIntoView({
+            behavior: 'smooth',
+            block: 'start',
+          });
+        }}
+        className="px-6 py-3 text-sm sm:text-base font-medium text-slate-100 bg-gradient-to-r from-fuchsia-600 to-pink-500 hover:opacity-90 transition-all duration-300"
+      >
+        Continuar
+      </button>
 
-                <Button id="blog-submit-cta" onClick={handleOpenContribution} className={contributionButtonClassName}>
-                  <PenLine size={18} />
-                  Compartir lo que me dejó
-                </Button>
-              </div>
-            </div>
+      {/* Mitad derecha: contactar */}
+      <button
+        onClick={() => {
+          document.querySelector('#contact')?.scrollIntoView({
+            behavior: 'smooth',
+            block: 'start',
+          });
+        }}
+        className="px-6 py-3 text-sm sm:text-base font-medium text-slate-100 bg-gradient-to-r from-indigo-500 to-violet-600 hover:opacity-90 transition-all duration-300"
+      >
+        Preguntar
+      </button>
+    </div>
+  </div>
+</div>
           </motion.div>
         </div>
       </section>

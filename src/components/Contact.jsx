@@ -118,7 +118,7 @@ const Contact = () => {
           className="text-center mb-16"
         >
           <h2 className="font-display text-4xl md:text-5xl font-medium mb-6 text-gradient italic">
-            ¿La obra se quedó en ti?
+            ¿Algo de la obra se quedó contigo?
           </h2>
           <p className="text-lg text-slate-300/80 max-w-3xl mx-auto leading-relaxed font-light">
             Si Es un gato encerrado te dejó una huella, este es tu espacio para contarlo. No buscamos opiniones, sino rastros: aquello que cambió tu forma de mirar, sentir o recordar. Aunque también puedes usar este espacio para compartir tus teorías, entrevistas o futuras colaboraciones.
