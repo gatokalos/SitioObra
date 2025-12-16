@@ -137,7 +137,7 @@ const Hero = () => {
     "
   >
     <Ticket size={22} className="drop-shadow-md" />
-    Comprar boleto
+    Comprar boletos
   </Button>
 
   {/* CTA SECUNDARIO — APARTAR MERCH */}

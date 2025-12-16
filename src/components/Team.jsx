@@ -130,7 +130,7 @@ const teamData = {
       "Artistas que modelan la experiencia auditiva, desde la composición musical hasta la espacialización del sonido.",
     members: [
       {
-        name: "Lía Pérez",
+        name: "Lía Pérez, MPSE",
         role: "Diseño Sonoro",
         bio: "Artista sonora con más de doce años de experiencia. Fundadora de Concrete Sounds, ha colaborado en filmes como 'Ya no estoy aquí' y 'Monos'. Su especialidad es la creación de paisajes inmersivos que amplían la dimensión sensorial del teatro.",
         image: "https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/equipo/lia.jpg",

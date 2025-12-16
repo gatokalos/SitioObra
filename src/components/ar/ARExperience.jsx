@@ -48,7 +48,7 @@ const ARExperience = ({ targetSrc = '/assets/targets.mind', phrases = DEFAULT_PH
       if (navigator.share && navigator.canShare?.({ files: [file] })) {
         await navigator.share({
           files: [file],
-          title: 'Miniverso Taza',
+          title: 'Miniverso Artesanías',
           text: shareText,
         });
       } else {

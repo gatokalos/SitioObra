@@ -8,6 +8,7 @@ const SUBSCRIPTION_PRICE_ID = import.meta.env.VITE_STRIPE_SUBSCRIPTION_PRICE_ID 
 const SESSIONS_PER_SUB = 6;
 const SUBS_PER_RESIDENCY = 17; // ≈ $10,000 / $600
 const SUBS_PER_SCHOOL = 75;    // ≈ $45,000 / $600
+const SUBS_PER_UNIVERSO = 158; // Nueva meta para creación artística
 
 function ProgressBar({ value }) {
   return (
@@ -34,9 +35,7 @@ const CallToAction = () => {
       return undefined;
     }
 
-    if (!canFetchStats) {
-      return undefined;
-    }
+    if (!canFetchStats) return undefined;
 
     let active = true;
     async function fetchSubs() {
@@ -59,20 +58,29 @@ const CallToAction = () => {
   const stats = useMemo(() => {
     const sesiones = subs * SESSIONS_PER_SUB;
 
+    // Residencias
     const residencias = Math.floor(subs / SUBS_PER_RESIDENCY);
     const residenciasResto = subs % SUBS_PER_RESIDENCY;
     const residenciasFaltan = residenciasResto === 0 ? SUBS_PER_RESIDENCY : (SUBS_PER_RESIDENCY - residenciasResto);
     const residenciasProg = (residenciasResto / SUBS_PER_RESIDENCY) * 100;
 
+    // Escuelas
     const escuelas = Math.floor(subs / SUBS_PER_SCHOOL);
     const escuelasResto = subs % SUBS_PER_SCHOOL;
     const escuelasFaltan = escuelasResto === 0 ? SUBS_PER_SCHOOL : (SUBS_PER_SCHOOL - escuelasResto);
     const escuelasProg = (escuelasResto / SUBS_PER_SCHOOL) * 100;
 
+    // Universos / Creaciones nuevas
+    const universos = Math.floor(subs / SUBS_PER_UNIVERSO);
+    const universosResto = subs % SUBS_PER_UNIVERSO;
+    const universosFaltan = universosResto === 0 ? SUBS_PER_UNIVERSO : (SUBS_PER_UNIVERSO - universosResto);
+    const universosProg = (universosResto / SUBS_PER_UNIVERSO) * 100;
+
     return {
       sesiones,
       residencias, residenciasFaltan, residenciasProg,
-      escuelas, escuelasFaltan, escuelasProg
+      escuelas, escuelasFaltan, escuelasProg,
+      universos, universosFaltan, universosProg
     };
   }, [subs]);
 
@@ -109,6 +117,7 @@ const CallToAction = () => {
     }
   }
 
+  // 4) Renderizado
   return (
     <div className="max-w-xl mx-auto text-center space-y-6">
       <motion.p
@@ -117,14 +126,11 @@ const CallToAction = () => {
         animate={{ opacity: 1 }}
         transition={{ duration: 0.5, delay: 0.2 }}
       >
-       Cada suscripción se destina directamente a la causa social y activa impacto desde el primer aporte.       
-         <p className="text-xs text-slate-400/70 mt-3">
-                Los {' '}
-                <a href="#transmedia" className="underline text-slate-300">GATokens</a> funcionan como un registro de actividad colectiva y como una cortesía de acceso a sus miniversos.
-              </p>
-       
-    
-
+        Cuando la causa florece, su pulso regresa al universo: nuevos juegos, nuevas escenas, nuevas historias por nacer.
+        <p className="text-xs text-slate-400/70 mt-3">
+          Además, recibirás{' '}
+          <a href="#transmedia" className="underline text-slate-300">12,000 GATokens</a> como una cortesía por tu suscripción.
+        </p>
       </motion.p>
 
       {/* Panel de impacto */}
@@ -136,9 +142,12 @@ const CallToAction = () => {
 
         <div>
           <p className="text-sm mb-1 opacity-80">Terapias asignadas</p>
-          <p className="text-lg mb-2"><strong>{stats.sesiones}</strong> sesiones (1 suscripción = 6 sesiones)</p>
+          <p className="text-lg mb-2">
+            <strong>{stats.sesiones}</strong> sesiones (1 suscripción = 6 sesiones)
+          </p>
         </div>
 
+        {/* Residencias */}
         <div className="space-y-1">
           <div className="flex items-center justify-between text-sm opacity-80">
             <span>Residencias creativas</span>
@@ -150,6 +159,7 @@ const CallToAction = () => {
           </p>
         </div>
 
+        {/* Escuelas */}
         <div className="space-y-1">
           <div className="flex items-center justify-between text-sm opacity-80">
             <span>Escuelas con app activa</span>
@@ -161,11 +171,31 @@ const CallToAction = () => {
           </p>
         </div>
 
-        <p className="text-[11px] leading-4 text-slate-300/80 pt-2">
-          * Isabel Ayuda para la Vida, A.C. no cobra al usuario por sesión. Las sesiones se asignan sin costo para
-          las familias cuando se detecta riesgo, gracias a la combinación de suscripciones, aportes simbólicos y apoyos institucionales.
-        </p>
+        {/* 🌌 Nuevo medidor: Expansión creativa */}
+        <div className="space-y-1">
+          <div className="flex items-center justify-between text-sm opacity-80">
+            <span>Expansión creativa del universo</span>
+            <span>{stats.universos} activadas</span>
+          </div>
+          <ProgressBar value={stats.universosProg} />
+          <p className="text-xs opacity-70 mt-1">
+            Faltan <strong>{stats.universosFaltan}</strong> suscripciones para la siguiente creación artística (≈ 158/sub).
+          </p>
+        </div>
       </div>
+
+      <div className="flex flex-col gap-2 rounded-lg border border-white/5 bg-black/20 px-4 py-3 mt-4">
+  <button
+    type="button"
+    className="relative flex items-center gap-3 text-left group focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-purple-400/60"
+  >
+    <div className="h-5 w-5 rounded-full border border-white/20 bg-slate-600/40" />
+    <span className="text-sm text-slate-300/80 leading-relaxed">
+      Quiero estar al tanto de las expansiones e historias comunitarias.
+    </span>
+  </button>
+
+</div>
 
       {/* Email + Checkout */}
       <div className="grid gap-3">
@@ -181,13 +211,18 @@ const CallToAction = () => {
           disabled={loading || !email}
           className="bg-white/90 text-black px-4 py-2 rounded disabled:opacity-50"
         >
-          {loading ? 'Creando sesión…' : 'Quiero suscribirme'}
+          {loading ? 'Creando sesión…' : ' Apóyanos con tu suscripción'}
         </button>
       </div>
 
       {msg && <p className="text-red-300 text-sm">{msg}</p>}
+      {/* Activar notificaciones del universo */}
+
     </div>
+    
   );
 };
+
+
 
 export default CallToAction;

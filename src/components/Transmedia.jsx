@@ -925,8 +925,7 @@ const formats = [
     title: 'Dramaturgia',
     icon: Drama,
     iconClass: 'text-purple-300',
-    notaAutoral:
-      'Aquí nunca abaca bien. Por lo menos no hasta el final.',
+    instruccion: 'Habla con Silvestre sobre la obra.',
     iaTokensNote: 'Energía requerida: ~300 GAT',
   },
   {
@@ -934,8 +933,7 @@ const formats = [
     title: 'Artesanías',
     icon: Coffee,
     iconClass: 'text-amber-300',
-    notaAutoral:
-      'Un objeto cotidiano con WebAR que abren un portal. La Taza no acompaña: revela. Lo que sostiene no es barro, sino vínculo.',
+    instruccion: 'Escanea tu taza. Descubre tu frase.',
     iaTokensNote: 'Mantener ritual: ~90 GAT.',
   },
   {
@@ -943,8 +941,7 @@ const formats = [
     title: 'Literatura',
     icon: BookOpen,
     iconClass: 'text-emerald-300',
-    notaAutoral:
-      'La novela es donde la escena se desborda. Fragmentos que respiran distinto cuando alguien los lee. Aquí la historia sigue probándose.',
+    instruccion: 'Forma parte del club de lectura.',
     iaTokensNote: 'Energía viva: ~150 GAT.',
   },
   {
@@ -952,8 +949,7 @@ const formats = [
     title: 'Gráficos',
     icon: Palette,
     iconClass: 'text-fuchsia-300',
-    notaAutoral:
-      'Garabatea tu límite, dibuja tu refugio.\nLo gráfico como portal emocional.\nCada trazo se siente antes de entenderse.',
+    instruccion: 'Refúgiate en nuestros garabatos. ¡Dibuja el tuyo!',
     iaTokensNote: 'Requiere ~110 GAT.',
   },
   {
@@ -961,8 +957,7 @@ const formats = [
     title: 'Cine',
     icon: Film,
     iconClass: 'text-rose-300',
-    notaAutoral:
-      'La cámara miró lo que el teatro no podía sostener. CopyCats cuestiona; Quirón hiere con luz. Este espacio guarda esas miradas.',
+    instruccion: 'Acumula para entradas a la cineteca.',
     iaTokensNote: 'Requiere ~250 de atención.',
   },
   {
@@ -970,8 +965,7 @@ const formats = [
     title: 'Sonoridades',
     icon: Music,
     iconClass: 'text-cyan-300',
-    notaAutoral:
-      'Imagen, música y palabra en suspensión. Cada mezcla inventa otro ánimo. Aquí el sueño se edita solo.',
+    instruccion: 'Para compositortes de sueños y poesía.',
     iaTokensNote: 'Requiere ~130 GAT de mezcla.',
   },
   {
@@ -979,17 +973,15 @@ const formats = [
     title: 'Movimiento',
     icon: MapIcon,
     iconClass: 'text-sky-300',
-    notaAutoral:
-      'Diosas en danza. El mapa vibra si alguien lo recorre.',
+    instruccion: 'Queremos que todo México conozca este proyecto.',
     iaTokensNote: '~280 por mapa.',
   },
   {
     id: 'detodxs',
-    title: 'Apps',
+    title: 'Juegos',
     icon: Smartphone,
     iconClass: 'text-lime-300',
-    notaAutoral:
-      'Tecnología como acompañamiento, no como solución. Experiencias que cuidan, preguntan y extienden la historia cuando nadie está mirando.',
+    instruccion: 'Descarga la app y continúa la historia donde estés.',
     iaTokensNote: 'Requiere ~220 GAT de acceso.',
   },
   {
@@ -997,7 +989,7 @@ const formats = [
     title: 'Oráculo',
     icon: Brain,
     iconClass: 'text-indigo-300',
-    notaAutoral: 'Juega con el misterio. Piensa con el corazón. Mintea con el alma.',
+    instruccion: '¡Ponete a minar para generar GATokens!',
     iaTokensNote: 'Aquí el Gato te regala GAT.',
   },
 ];
@@ -3950,15 +3942,15 @@ const rendernotaAutoral = () => {
               Escaparate de Miniversos
             </h2>
             <p className="text-lg text-slate-300/80 max-w-3xl mx-auto leading-relaxed font-light">
-              #GatoEncerrado está compuesto por miniversos. Cada experiencia digital, objeto o narrativa expandida que puede habitarse de forma individual. Al interactuar con el universo se generan <span className="font-semibold text-purple-200">GATokens</span>: el pulso que conecta la experiencia artística con el sostenimiento de la  {' '}
+              El universo de #GatoEncerrado se expande en miniversos. Cada uno late por su cuenta —ya estaba ahí antes de le llegaras— y forma parte del mismo organismo narrativo. Al explorarlos, activas <span className="font-semibold text-purple-200">GATokens</span>: una energía simbólica que impulsa la experiencia artística y contribuye al sostenimiento de la causa social de {' '}
               <button
                 type="button"
                 onClick={handleScrollToSupport}
                 className="text-purple-200 underline underline-offset-4 hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-400 rounded-sm"
               >
-                causa social 
+                Isabel Ayuda para la Vida, A.C.
               </button>
-             {' '} de Isabel Ayuda para la Vida, A.C.</p>
+             {' '} </p>
 
           </motion.div>
 
@@ -3992,48 +3984,74 @@ const rendernotaAutoral = () => {
                   />
                   <div className="absolute inset-0 opacity-30 mix-blend-screen pointer-events-none bg-[radial-gradient(circle_at_top,_rgba(255,255,255,0.25),_transparent_55%)]" />
                   <div className="relative z-10 flex flex-col h-full">
-                    <div className="flex items-center justify-start mb-6 transition-all duration-300 group-hover:scale-110">
-                      <Icon
-                        size={32}
-                        className={`${iconClass} drop-shadow-[0_0_12px_rgba(168,85,247,0.4)]`}
-                      />
-                    </div>
 
-                    <h3 className="font-display text-2xl font-medium text-slate-100 mb-3">{format.title}</h3>
+  {/* BADGE SUPERIOR DERECHO (miniverso leído) */}
+  {(() => {
+    const boostApplied = Boolean(showcaseBoosts?.[format.id]);
+    if (boostApplied) {
+      return (
+        <div className="absolute top-4 right-4 bg-emerald-900/40 text-emerald-200 text-[0.65rem] uppercase tracking-[0.25em] px-3 py-1 rounded-full border border-emerald-300/40 shadow-[0_0_10px_rgba(16,185,129,0.3)] backdrop-blur-sm">
+          Miniverso leído
+        </div>
+      );
+    }
+    return null;
+  })()}
 
-                    <p className="text-slate-200/80 text-base leading-relaxed mb-4 flex-grow font-light">
-                      {format.description}
-                    </p>
-                    
-                    {(() => {
-                      const baseValue = baseEnergyByShowcase[format.id] ?? 0;
-                      const currentValue =
-                        showcaseEnergy?.[format.id] ?? (baseValue > 0 ? baseValue : 0);
-                      const boostApplied = Boolean(showcaseBoosts?.[format.id]);
-                      const toneClass = 'text-amber-200';
-                      const label = boostApplied ? 'Energía acumulada:' : 'Energía inicial:';
-                      return (
-                        <div className="mb-4 text-xs text-slate-200/80 flex flex-wrap items-center gap-2">
-                          <Coins size={14} className={toneClass} />
-                          <span className="uppercase tracking-[0.25em] text-slate-100/70">{label}</span>
-                          <span className={`font-semibold ${toneClass}`}>{currentValue} GAT</span>
-                          {boostApplied ? (
-                            <span className="text-[0.65rem] uppercase tracking-[0.35em] text-emerald-200">
-                              Miniverso leído 
-                            </span> 
-                          ) : (
-                            <span className="text-[0.65rem] uppercase tracking-[0.35em] text-slate-400">
-                              Descubre cómo sumar energía
-                            </span>
-                          )}
-                        </div>
-                      );
-                    })()}
-                    <div className="text-purple-300 flex items-center gap-2 font-semibold transition-all duration-300 group-hover:gap-3">
-                      Explorar
-                      <ArrowRight size={18} />
-                    </div>
-                  </div>
+  {/* Ícono y título */}
+  <div className="flex items-center justify-start mb-6 transition-all duration-300 group-hover:scale-110">
+    <Icon
+      size={32}
+      className={`${iconClass} drop-shadow-[0_0_12px_rgba(168,85,247,0.4)]`}
+    />
+  </div>
+
+  <h3 className="font-display text-2xl font-medium text-slate-100 mb-1">
+    {format.title}
+  </h3>
+
+  {/* SUBTEXTO — instrucción breve por miniverso */}
+{(() => {
+  const boostApplied = Boolean(showcaseBoosts?.[format.id]);
+  if (!boostApplied) {
+    return (
+<p className="font-display italic text-sm text-slate-200/90 tracking-wide mb-4 leading-snug">
+  {format.instruccion}
+</p>
+    );
+  }
+  return null;
+})()}
+
+  <p className="text-slate-200/80 text-base leading-relaxed mb-4 flex-grow font-light">
+    {format.description}
+  </p>
+
+  {/* BLOQUE DE ENERGÍA */}
+  {(() => {
+    const baseValue = baseEnergyByShowcase[format.id] ?? 0;
+    const currentValue =
+      showcaseEnergy?.[format.id] ?? (baseValue > 0 ? baseValue : 0);
+    const boostApplied = Boolean(showcaseBoosts?.[format.id]);
+    const toneClass = 'text-amber-200';
+    const label = boostApplied ? 'Energía acumulada:' : 'Energía inicial:';
+    return (
+      <div className="mb-4 text-xs text-slate-200/80 flex flex-wrap items-center gap-2">
+        <Coins size={14} className={toneClass} />
+        <span className="uppercase tracking-[0.25em] text-slate-100/70">
+          {label}
+        </span>
+        <span className={`font-semibold ${toneClass}`}>{currentValue} GAT</span>
+      </div>
+    );
+  })()}
+
+  {/* CTA */}
+  <div className="text-purple-300 flex items-center gap-2 font-semibold transition-all duration-300 group-hover:gap-3">
+    Gastar
+    <ArrowRight size={18} />
+  </div>
+</div>
                 </motion.div>
               );
             })}
@@ -4116,6 +4134,10 @@ const rendernotaAutoral = () => {
                     Visita su sitio
                   </a>
                 </p>
+                     <p className="text-[11px] leading-4 text-slate-300/80 pt-2">
+          * La asociación no cobra al usuario por sesión. Las sesiones se asignan sin costo para
+          las familias cuando se detecta riesgo, gracias a la combinación de suscripciones, aportes simbólicos y apoyos institucionales.
+        </p>
 
                 <div className="mt-4 space-y-3">
                   {CAUSE_ACCORDION.map((item) => {
@@ -4167,6 +4189,7 @@ const rendernotaAutoral = () => {
                 </div>
               </div>
             </motion.div>
+            
 
             <motion.div
               id="cta"

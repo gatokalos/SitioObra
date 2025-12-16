@@ -15,7 +15,7 @@ const aboutParagraphs = [
     text: `Es un gato encerrado existe como obra escénica y como estado mental del dolor humano: En ella, Silvestre y su terapeuta exploran los sueños lúcidos para confrontar el miedo, la desconexión y la fragilidad de la mente. Pero la experiencia no termina en el escenario: también es una narrativa expandida con otros lenguajes artísticos —cine, cómic, experiencias interactivas y poesía— que laten dentro del universo #GatoEncerrado. Porque hay preguntas que no se representan una sola vez: se siguen soñando.`,
     
     className:
-      'text-lg leading-relaxed font-light whitespace-pre-line bg-gradient-to-b from-purple-400/100 via-slate-200/80 to-slate-400/60 text-transparent bg-clip-text',
+      'text-lg leading-relaxed font-light whitespace-pre-line bg-gradient-to-b from-purple-200/100 via-slate-200/80 to-slate-400/60 text-transparent bg-clip-text',
   },
 
 ];
@@ -81,39 +81,22 @@ const About = () => {
     setIsReserveOpen(true);
   }, []);
 
-  const handleCloseReserve = useCallback(() => {
+
+    const handleCloseReserve = useCallback(() => {
     setIsReserveOpen(false);
   }, []);
 
-  const handleScrollToTexts = useCallback(() => {
+  const handleScrollToContacts = useCallback(() => {
     if (typeof window === 'undefined' || typeof document === 'undefined') {
       return;
     }
 
-    const ctaButton = document.getElementById('blog-submit-cta');
-    const sectionTarget = document.getElementById('blog-contribuye');
-
-    // Prefer scrolling the actual CTA button into view (centered),
-    // fallback to the whole section (start). Use native scrollIntoView
-    // so the browser handles smooth scrolling and respects CSS scroll-padding.
-    if (ctaButton) {
-      ctaButton.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      // Keep focus but avoid additional scrolling when supported
-      try {
-        ctaButton.focus?.({ preventScroll: true });
-      } catch (e) {
-        // ignore if browser doesn't support the option
-        try {
-          ctaButton.focus?.();
-        } catch (err) {
-          /* noop */
-        }
-      }
-      return;
-    }
-
-    if (sectionTarget) {
-      sectionTarget.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    const contactSection = document.getElementById('contact');
+    if (contactSection) {
+      contactSection.scrollIntoView({
+        behavior: 'smooth',
+        block: 'start',
+      });
     }
   }, []);
 
@@ -221,7 +204,7 @@ const About = () => {
           className="text-center mb-16"
         >
           <h2 className="font-display text-4xl md:text-5xl font-medium mb-6 text-gradient italic">
-            Nuestra Obra
+            Sobre la Obra
           </h2>
           <div className="max-w-3xl mx-auto">
             {aboutParagraphs.map((paragraph) => (
@@ -279,7 +262,7 @@ const About = () => {
                   className="border-slate-100/20 text-slate-200 hover:bg-slate-100/10 px-6 py-3 rounded-full font-semibold flex items-center gap-2"
                 >
                   <Send size={20} />
-                  Invita a alguien
+                  Invita a un cómplice
                 </Button>
               </div>
             </div>
@@ -297,14 +280,14 @@ const About = () => {
             <div>
               <p className="uppercase tracking-[0.35em] text-xs text-slate-400/80 mb-4">Perspectivas del público</p>
               <h3 className="font-display text-3xl text-slate-100 mb-6 italic">
-                ¿Qué provoca la obra?
+                ¿Qué te provoca nuestra obra?
               </h3>
               <p className="text-slate-300/80 leading-relaxed mb-6 font-light">
                 Reunimos testimonios, críticas y preguntas abiertas que siguen vibrando después de la función. Puedes leer las voces que ya habitan este espacio o abrir una nueva compartiendo tu experiencia.
               </p>
               <Button
                 variant="outline"
-                onClick={handleScrollToTexts}
+                onClick={handleScrollToContacts}
                 className="border-purple-400/40 text-purple-200 hover:bg-purple-500/20 w-full sm:w-auto whitespace-normal break-words text-center leading-snug"
               >
                 Sumar mi voz
