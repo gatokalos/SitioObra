@@ -654,7 +654,7 @@ const showcaseDefinitions = {
         name: 'Lía Pérez, MPSE',
         role: 'Diseño Sonoro',
         bio: 'Artista sonora con más de doce años de experiencia. Fundadora de Concrete Sounds, ha colaborado en filmes como “Ya no estoy aquí” y “Monos”. Su especialidad es la creación de paisajes inmersivos que amplían la dimensión sensorial del teatro.',
-        image: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/equipo/lia.png',
+        image: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/equipo/lia.jpg',
       },
       {
         id: 'diego-madera',
@@ -3942,7 +3942,7 @@ const rendernotaAutoral = () => {
               Escaparate de Miniversos
             </h2>
             <p className="text-lg text-slate-300/80 max-w-3xl mx-auto leading-relaxed font-light">
-              El universo de #GatoEncerrado se expande en miniversos. Cada uno late por su cuenta —ya estaba ahí antes de le llegaras— y forma parte del mismo organismo narrativo. Al explorarlos, activas <span className="font-semibold text-purple-200">GATokens</span>: una energía simbólica que impulsa la experiencia artística y contribuye al sostenimiento de la causa social de {' '}
+              El universo de #GatoEncerrado se expande en miniversos. Cada uno late por su cuenta —ya estaba ahí antes de que llegaras— y forma parte del mismo organismo narrativo. Al explorarlos, activas <span className="font-semibold text-purple-200">GATokens</span>: una energía simbólica que impulsa la experiencia artística y contribuye al sostenimiento de la causa social de {' '}
               <button
                 type="button"
                 onClick={handleScrollToSupport}

@@ -280,7 +280,7 @@ const About = () => {
             <div>
               <p className="uppercase tracking-[0.35em] text-xs text-slate-400/80 mb-4">Perspectivas del público</p>
               <h3 className="font-display text-3xl text-slate-100 mb-6 italic">
-                ¿Qué te provoca nuestra obra?
+                ¿Qué nos provoca esta obra?
               </h3>
               <p className="text-slate-300/80 leading-relaxed mb-6 font-light">
                 Reunimos testimonios, críticas y preguntas abiertas que siguen vibrando después de la función. Puedes leer las voces que ya habitan este espacio o abrir una nueva compartiendo tu experiencia.

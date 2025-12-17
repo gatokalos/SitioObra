@@ -120,18 +120,24 @@ const CallToAction = () => {
   // 4) Renderizado
   return (
     <div className="max-w-xl mx-auto text-center space-y-6">
-      <motion.p
-        className="text-md text-white"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ duration: 0.5, delay: 0.2 }}
-      >
-        Cuando la causa florece, su pulso regresa al universo: nuevos juegos, nuevas escenas, nuevas historias por nacer.
-        <p className="text-xs text-slate-400/70 mt-3">
-          Además, recibirás{' '}
-          <a href="#transmedia" className="underline text-slate-300">12,000 GATokens</a> como una cortesía por tu suscripción.
-        </p>
-      </motion.p>
+      <motion.div
+  className="text-md text-white"
+  initial={{ opacity: 0 }}
+  animate={{ opacity: 1 }}
+  transition={{ duration: 0.5, delay: 0.2 }}
+>
+  <p>
+    Cuando la causa florece, su pulso regresa al universo: nuevos juegos, nuevas escenas, nuevas historias por nacer.
+  </p>
+
+  <p className="text-xs text-slate-400/70 mt-3">
+    Además, recibirás{' '}
+    <a href="#transmedia" className="underline text-slate-300">
+      12,000 GATokens
+    </a>{' '}
+    como una cortesía por tu suscripción.
+  </p>
+</motion.div>
 
       {/* Panel de impacto */}
       <div className="rounded-2xl border border-white/10 bg-white/5 p-5 text-left text-slate-100 space-y-4">
