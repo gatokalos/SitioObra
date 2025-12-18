@@ -118,10 +118,11 @@ const Contact = () => {
           className="text-center mb-16"
         >
           <h2 className="font-display text-4xl md:text-5xl font-medium mb-6 text-gradient italic">
-            ¿Ya sientes la curiosidad del gato?
+            ¿Ya sientes la curiosidad gatuna?
           </h2>
           <p className="text-lg text-slate-300/80 max-w-3xl mx-auto leading-relaxed font-light">
-            Si Es un gato encerrado te dejó una huella, este es tu espacio para contarlo. No buscamos opiniones, sino rastros: aquello que cambió tu forma de mirar, sentir o recordar. Aunque también puedes usar este espacio para compartir tus teorías, entrevistas o futuras colaboraciones.
+            Si algo de la experiencia te dejó una huella o simplemente te intriga este universo, este es tu espacio para contarlo. No buscamos "opiniones" sino aquello que cambió tu forma de mirar, sentir o recordar. 
+            Aunque también puedes usar este espacio para compartir tus teorías, solicitar entrevistas o para colaboraciones.
           </p>
               <p className="text-xs text-slate-400/70 mt-3">
                 Y si algo de la obra te movió más de lo esperado, el equipo de

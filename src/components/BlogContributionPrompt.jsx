@@ -103,10 +103,10 @@ const BlogContributionPrompt = () => {
   </h3>
 
   <p className="text-slate-300/80 leading-relaxed mb-8 max-w-2xl mx-auto font-light whitespace-pre-line text-center">
-    {`Tal vez ya entendiste lo que es la transmedialidad o todavía no. No hace falta. A veces comprender llega después de perderse un poco.`}
+    {`Tal vez ya conocìas lo que es la transmedialidad. O tal vez no. En #GatoEncerrado, la confusión también es parte del viaje.`}
 
     <span className="block mt-4 text-sm text-slate-400/70 italic">
-      (Basta con dejar que la mente vuelva a su estado silvestre.)
+      (A veces basta con dejar que la mente vuelva a su estado silvestre.)
     </span>
   </p>
 

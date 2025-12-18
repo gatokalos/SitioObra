@@ -381,9 +381,7 @@ const Instagram = () => {
             Fractales Escénicos
           </h2>
           <p className="text-base md:text-lg text-slate-300/75 max-w-3xl mx-auto leading-relaxed mb-7 font-light">
-            Reflejos de lo que solo sucede una vez en escena…
-            Un homenaje visual al pulso colectivo detrás de Es un gato encerrado:
-            los cuerpos, los silencios y las miradas hacia lo efímero. Esto es lo que existe solo cuando alguien se atreve a mirar.
+            Un homenaje visual a los destellos de Es un gato encerrado... Esto es lo que existe solo cuando alguien se atreve a mirar.
           </p>
 
               {/* Crédito fotográfico: tipografía pequeña y gris tenue; enlace al Team */}
