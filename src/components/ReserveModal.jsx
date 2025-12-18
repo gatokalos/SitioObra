@@ -21,23 +21,33 @@ export const PACKAGE_OPTIONS = [
     title: 'Taza AR',
     price: '$250',
     helper: 'Taza especial con activación AR. Disponible el día del evento.',
+    priceId: import.meta.env.VITE_PRICE_TAZA,
   },
   {
     id: 'novela-400',
     title: 'Novela “Mi Gato Encerrado”',
     price: '$400',
     helper: 'Primera edición con QR secreto.',
+    priceId: import.meta.env.VITE_PRICE_NOVELA,
   },
   {
     id: 'combo-900',
     title: 'Combo: novela + 2 tazas',
     price: '$900',
     helper: 'Paquete completo disponible solo el día del evento (incluye suscripción al Universo Transmedia si lo solicitas en "Notas").',
+    priceId: import.meta.env.VITE_PRICE_COMBO,
   },
 ];
 
 const PACKAGE_LABEL_MAP = PACKAGE_OPTIONS.reduce((acc, option) => {
   acc[option.id] = `${option.title} — ${option.price}`;
+  return acc;
+}, {});
+
+const PACKAGE_PRICE_MAP = PACKAGE_OPTIONS.reduce((acc, option) => {
+  if (option.priceId) {
+    acc[option.id] = option.priceId;
+  }
   return acc;
 }, {});
 
@@ -202,14 +212,24 @@ const ReserveModal = ({ open, onClose }) => {
       setIsCheckoutLoading(true);
 
       try {
+        const line_items = formState.packages.map((pkgId) => ({
+          price: PACKAGE_PRICE_MAP[pkgId],
+          quantity: 1,
+        }));
+
+        if (line_items.some((item) => !item.price)) {
+          throw new Error('Faltan precios configurados para algunos paquetes.');
+        }
+
         const payload = {
-          full_name: formState.fullName.trim(),
-          email: formState.email.trim().toLowerCase(),
-          city: formState.city.trim() || null,
-          notes: formState.notes.trim() || '',
-          packages: formState.packages,
-          channel: 'landing',
-          event: 'funcion-2025-12-28',
+          mode: 'payment',
+          line_items,
+          customer_email: formState.email.trim().toLowerCase(),
+          metadata: {
+            channel: 'landing',
+            event: 'funcion-2025-12-28',
+            packages: formState.packages.join(','),
+          },
         };
 
         const { data, error } = await supabase.functions.invoke('create-checkout-session', {

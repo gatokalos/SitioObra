@@ -3,8 +3,9 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { motion } from 'framer-motion';
 import { IMPACT_COPY as t } from '../copy/impact.es.js';
 import { apiFetch } from '@/lib/apiClient';
+import { supabase } from '@/lib/supabaseClient';
 
-const SUBSCRIPTION_PRICE_ID = import.meta.env.VITE_STRIPE_SUBSCRIPTION_PRICE_ID || 'price_600mxn_monthly';
+const SUBSCRIPTION_PRICE_ID = import.meta.env.VITE_STRIPE_SUBSCRIPTION_PRICE_ID;
 const SESSIONS_PER_SUB = 6;
 const SUBS_PER_RESIDENCY = 17; // ≈ $10,000 / $600
 const SUBS_PER_SCHOOL = 75;    // ≈ $45,000 / $600
@@ -86,32 +87,50 @@ const CallToAction = () => {
 
   // 3) Checkout
   async function handleCheckout() {
+    const normalizedEmail = email.trim().toLowerCase();
+    if (!normalizedEmail) return;
+
+    if (!SUBSCRIPTION_PRICE_ID) {
+      setMsg('Configura VITE_STRIPE_SUBSCRIPTION_PRICE_ID antes de continuar.');
+      return;
+    }
+
+    const line_items = [
+      {
+        price: SUBSCRIPTION_PRICE_ID,
+        quantity: 1,
+      },
+    ];
+
+    if (line_items.some((item) => !item.price || !item.quantity)) {
+      setMsg('Faltan datos de la suscripción.');
+      return;
+    }
+
     try {
       setLoading(true);
       setMsg('');
-      const prepRes = await apiFetch('/prepare-checkout', {
-        method: 'POST',
-        body: JSON.stringify({ email }),
+      const { data, error } = await supabase.functions.invoke('create-checkout-session', {
+        body: {
+          mode: 'subscription',
+          line_items,
+          customer_email: normalizedEmail,
+          metadata: {
+            channel: 'landing',
+            event: 'suscripcion-landing',
+            packages: 'subscription',
+          },
+        },
       });
-      const prepData = await prepRes.json();
-      if (!prepRes.ok || !prepData?.audienceId) {
-        throw new Error(prepData?.error || 'No se pudo preparar el checkout');
+
+      if (error || !data?.url) {
+        throw error || new Error('No se pudo crear la sesión');
       }
 
-      const res = await apiFetch('/create-checkout-session', {
-        method: 'POST',
-        body: JSON.stringify({
-          priceId: SUBSCRIPTION_PRICE_ID,
-          audienceId: prepData.audienceId,
-          email: prepData.email || email,
-          mode: "subscription",
-        }),
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data?.error || 'No se pudo crear la sesión');
       window.location.href = data.url;
     } catch (e) {
-      setMsg(e.message);
+      console.error('[CallToAction] Checkout error:', e);
+      setMsg(e.message || 'No se pudo crear la sesión');
     } finally {
       setLoading(false);
     }

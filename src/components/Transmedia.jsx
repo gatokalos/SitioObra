@@ -161,6 +161,7 @@ const TOPIC_BY_SHOWCASE = {
   apps: 'apps',
   oraculo: 'oraculo',
 };
+const MINIVERSO_EDITORIAL_INTERCEPTION_ENABLED = import.meta.env?.VITE_MINIVERSO_INTERCEPTION !== 'false';
 const CONTRIBUTION_CATEGORY_BY_SHOWCASE = {
   miniversos: 'obra_escenica',
   copycats: 'cine',
@@ -365,8 +366,6 @@ const showcaseDefinitions = {
     notaAutoral: 'De la escena brotó el universo:\nvoz, trance y cuerpo\nabriendo portales.',
 
     ctaLabel: 'Hablar con Silvestre',
-    ctaDescription:
-      'Chatea con Silvestre sobre la obra y el guion que lo vio nacer.',
     conversationStarters: [
       '¿Qué escena te acompaña hoy y por qué?',
       'Si Silvestre te viera ahora, ¿qué pregunta te haría?',
@@ -381,6 +380,14 @@ const showcaseDefinitions = {
       coverage: 'Cubierto por suscriptores; entra en el plan de soporte colectivo.',
       footnote: 'Cada conversación tiene un costo real. Gracias por mantenerla viva.',
     },
+    collaborators: [
+      {
+        id: 'carlos-perez',
+        name: 'Carlos Pérez',
+        role: 'Coordinador de diálogo',
+        bio: 'Coordino la conversación entre el público y Silvestre, repartiendo preguntas y abriendo espacios para que cada voz encuentre su microforo.',
+      },
+    ],
   },
   copycats: {
     label: 'Miniverso Cine',
@@ -1254,6 +1261,7 @@ const Transmedia = () => {
   const [pdfLoadError, setPdfLoadError] = useState(null);
   const pdfContainerRef = useRef(null);
   const supportSectionRef = useRef(null);
+  const [isMiniversoEditorialModalOpen, setIsMiniversoEditorialModalOpen] = useState(false);
   const [pdfContainerWidth, setPdfContainerWidth] = useState(0);
   const pdfPageWidth = Math.max(pdfContainerWidth - 48, 320);
   const [isTazaARActive, setIsTazaARActive] = useState(false);
@@ -1610,6 +1618,10 @@ const Transmedia = () => {
 
   const handleFormatClick = useCallback(
     (formatId) => {
+      if (MINIVERSO_EDITORIAL_INTERCEPTION_ENABLED) {
+        setIsMiniversoEditorialModalOpen(true);
+        return;
+      }
       if (showcaseDefinitions[formatId]) {
         setActiveShowcase((prev) => (prev === formatId ? null : formatId));
         const definition = showcaseDefinitions[formatId];
@@ -1771,6 +1783,17 @@ const Transmedia = () => {
 
   const handleCloseImagePreview = useCallback(() => {
     setImagePreview(null);
+  }, []);
+
+  const handleCloseMiniversoEditorialModal = useCallback(() => {
+    setIsMiniversoEditorialModalOpen(false);
+  }, []);
+
+  const handleEditorialCtaClick = useCallback(() => {
+    setIsMiniversoEditorialModalOpen(false);
+    setTimeout(() => {
+      supportSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 150);
   }, []);
 
   const handleScrollToSupport = useCallback(() => {
@@ -1982,6 +2005,19 @@ const Transmedia = () => {
   }, [imagePreview, pdfPreview, handleCloseImagePreview, handleClosePdfPreview]);
 
   useEffect(() => {
+    if (!isMiniversoEditorialModalOpen) {
+      return undefined;
+    }
+    const handleKeyDown = (event) => {
+      if (event.key === 'Escape') {
+        handleCloseMiniversoEditorialModal();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isMiniversoEditorialModalOpen, handleCloseMiniversoEditorialModal]);
+
+  useEffect(() => {
     if (!pdfPreview) {
       return undefined;
     }
@@ -2068,6 +2104,11 @@ const Transmedia = () => {
     },
     [handleOpenMiniverses]
   );
+
+  const handleOpenExperienceSite = useCallback(() => {
+    if (typeof window === 'undefined') return;
+    window.open('https://gatoencerrado.ai', '_blank', 'noopener,noreferrer');
+  }, []);
 
   const handleOpenContribution = useCallback((categoryId = null) => {
     setContributionCategoryId(categoryId);
@@ -2219,6 +2260,7 @@ const Transmedia = () => {
         emptyMessage = 'Aún no hay comentarios aprobados.',
         reactionProps = null,
         className = 'rounded-3xl border border-white/10 bg-black/30 p-6 space-y-5',
+        hideReaction = false,
       } = {}
     ) => {
       if (!showcaseId) return null;
@@ -2283,7 +2325,9 @@ const Transmedia = () => {
               </Button>
             </div>
           </div>
-          {reactionProps && activeShowcase === showcaseId ? <ShowcaseReactionInline {...reactionProps} /> : null}
+          {!hideReaction && reactionProps && activeShowcase === showcaseId ? (
+            <ShowcaseReactionInline {...reactionProps} />
+          ) : null}
         </div>
       );
     },
@@ -2832,132 +2876,172 @@ const rendernotaAutoral = () => {
     }
 
     if (activeDefinition.type === 'tragedia') {
+      const conversationBlock = activeDefinition.conversationStarters?.length ? (
+        <div className="space-y-3 border-t border-white/10 pt-4">
+          <p className="text-xs uppercase tracking-[0.35em] text-pink-200">Preguntas para Silvestre</p>
+          <p className="text-sm text-slate-200/80 leading-relaxed">
+            Usa estas frases como detonador y deja que la IA proponga la siguiente pregunta.
+          </p>
+          <ul className="space-y-2 text-sm text-purple-50/90">
+            {activeDefinition.conversationStarters.map((starter, idx) => (
+              <li
+                key={`tragico-paragraph-${idx}`}
+                className="flex items-start gap-2 rounded-2xl border border-white/10 bg-black/15 px-4 py-2"
+              >
+                <span className="text-purple-200 font-semibold">•</span>
+                <span className="leading-relaxed">{starter}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      ) : null;
+
+      const reactionDetails = {
+        showcaseId: 'miniversos',
+        title: 'Resonancia colectiva',
+        description: 'Haz clic para dejar un pulso que mantenga viva la conversación de Silvestre.',
+        buttonLabel: 'Enviar pulsaciones',
+        className: 'mt-4',
+      };
+
       return (
         <div className="space-y-10">
-          <div className="relative overflow-hidden rounded-[2.5rem] border border-white/10 bg-gradient-to-br from-slate-900/90 via-black/60 to-rose-900/40 shadow-[0_25px_65px_rgba(15,23,42,0.65)]">
-            <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(255,255,255,0.15),_transparent_45%)]" />
-            <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_bottom,_rgba(15,23,42,0.8),_transparent_65%)]" />
-            <div className="relative mx-auto grid w-full max-w-[min(100vw-2rem,1100px)] gap-6 p-4 sm:p-6 lg:p-8 lg:grid-cols-[3fr_2fr]">
-              <div className="lg:col-span-2 flex justify-end">
-                <button
-                  type="button"
-                  onClick={() => setActiveShowcase(null)}
-                  className="text-xs uppercase tracking-[0.3em] text-slate-400 hover:text-white transition"
-                  aria-label="Cerrar escaparate"
-                >
-                  Cerrar ✕
-                </button>
-              </div>
+          
+          <div className="rounded-[2.5rem] border border-white/10 bg-gradient-to-br from-slate-900/85 via-black/60 to-rose-900/35 shadow-[0_25px_65px_rgba(15,23,42,0.65)]">
+            <div className="grid gap-10 p-6 sm:p-8 lg:p-10 lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
               <div className="space-y-6">
-                <div
-                  className={`space-y-5 ${
-                    isMobileViewport
-                      ? 'rounded-none border-0 bg-transparent p-0 shadow-none'
-                      : 'rounded-3xl border border-white/10 bg-black/30 p-6 shadow-[0_20px_40px_rgba(0,0,0,0.45)]'
-                  }`}
-                >
-                  <p className="text-xs uppercase tracking-[0.4em] text-purple-300">Escaparate</p>
-                  <h3 className="font-display text-3xl leading-tight text-white md:text-4xl">{activeDefinition.label}</h3>
-                  <p className="text-lg text-slate-200/80 leading-relaxed font-light">{activeDefinition.intro}</p>
+                <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
                   <div className="space-y-3">
-                    {activeDefinition.narrative?.map((paragraph, index) => (
-                      <p key={`tragico-paragraph-${index}`} className="text-sm text-slate-300/90 leading-relaxed">
-                        {paragraph}
-                      </p>
-                    ))}
+                    <p className="text-xs uppercase tracking-[0.4em] text-purple-300">Escaparate</p>
+                    <h3 className="font-display text-3xl leading-tight text-white md:text-4xl">{activeDefinition.label}</h3>
                   </div>
-                  {rendernotaAutoral()}
+                
                 </div>
-              </div>
-
-              <div
-                className={`space-y-5 ${
-                  isMobileViewport
-                    ? 'rounded-none border-0 bg-transparent p-0 shadow-none'
-                    : 'rounded-3xl border border-white/10 bg-black/40 p-6 shadow-[0_25px_45px_rgba(0,0,0,0.45)]'
-                }`}
-              >
-                <p className="text-xs uppercase tracking-[0.4em] text-slate-400">Conciencia... viva</p>
-                <p className="text-sm text-slate-300/90 leading-relaxed">{activeDefinition.ctaDescription}</p>
-                <div className="rounded-2xl border border-amber-200/40 bg-amber-500/10 px-4 py-3 flex items-center justify-between gap-3">
-                  <div className="flex items-center gap-2 text-amber-100 font-semibold">
-                    <Coins size={16} />
-                    <span>~300 gatokens</span>
-                  </div>
-                  <span className="text-[11px] uppercase tracking-[0.3em] text-amber-100/80"></span>
-                </div>
-
-                <Button
-                  type="button"
-                  variant="outline"
-                  className="w-full border border-purple-400/40 text-purple-100 hover:bg-purple-500/10 silvestre-cta relative overflow-visible"
-                  onClick={handleOpenSilvestreChat}
-                >
-                  <span className="relative z-10">{isListening ? 'Detener y enviar' : activeDefinition.ctaLabel}</span>
-                  {showSilvestreCoins ? (
-                    <span className="pointer-events-none absolute inset-0 overflow-visible">
-                      {Array.from({ length: 6 }).map((_, index) => {
-                        const endX = 220 + index * 16;
-                        const endY = -240 - index * 14;
-                        return (
-                          <motion.span
-                            key={`silvestre-coin-${index}`}
-                            className="absolute left-1/2 top-1/2 h-5 w-5 -translate-x-1/2 -translate-y-1/2 rounded-full bg-gradient-to-br from-amber-200 to-yellow-500 shadow-[0_0_12px_rgba(250,204,21,0.5)]"
-                            initial={{ opacity: 0.95, scale: 0.8, x: 0, y: 0 }}
-                            animate={{ opacity: 0, scale: 1.05, x: endX, y: endY, rotate: 110 + index * 22 }}
-                            transition={{ duration: 1.15, ease: 'easeOut', delay: 0.05 }}
-                          />
-                        );
-                      })}
-                    </span>
-                  ) : null}
-                </Button>
-                <p className="text-[11px] text-slate-500">
-                  La conversación se abre dentro del universo transmedia (pronto con GPT de Silvestre).
-                </p>
-                {micPromptVisible && !micError ? (
-                  <div className="mt-3 rounded-2xl border border-white/10 bg-black/40 p-4 text-sm text-slate-200">
-                    <p className="text-xs uppercase tracking-[0.35em] text-purple-300">Silvestre quiere escucharte</p>
-                    <p>Dale acceso a tu micrófono para comenzar.</p>
-                  </div>
-                ) : null}
-                {micError && !isListening && !transcript ? (
-                  <div className="mt-3 rounded-2xl border border-red-500/30 bg-red-500/10 p-4 text-sm text-red-100">
-                    <p className="text-xs uppercase tracking-[0.35em] text-red-300">Sin micrófono</p>
-                    <p>Tu navegador no permite activar el micrófono. Puedes escribirle a Silvestre si prefieres.</p>
-                  </div>
-                ) : null}
-                {transcript ? (
-                  <div className="mt-3 rounded-2xl border border-purple-500/40 bg-white/5 p-4 text-sm text-slate-100">
-                    <p className="text-xs uppercase tracking-[0.35em] text-purple-300">
-                      Tu voz{isListening ? ' (escuchando...)' : ''}
+                <div className="space-y-4 text-lg text-slate-200/85 leading-relaxed font-light">
+                  <p>{activeDefinition.intro}</p>
+                  {activeDefinition.narrative?.map((paragraph, index) => (
+                    <p key={`tragico-paragraph-${index}`} className="text-sm text-slate-300/90 leading-relaxed">
+                      {paragraph}
                     </p>
-                    <p className="break-words">{transcript}</p>
-                  </div>
+                  ))}
+                </div>
+               
+                {activeDefinition.iaProfile ? (
+                  <IAInsightCard {...activeDefinition.iaProfile} compact />
                 ) : null}
               </div>
+              <div className="flex flex-col gap-6">
+                {rendernotaAutoral()}
+              </div>
+              
             </div>
           </div>
 
-          <div className="grid gap-6 lg:grid-cols-[2fr_1fr]">
-            <div>
+          {activeDefinition.collaborators?.length ? (
+            <div className="rounded-3xl border border-white/10 bg-black/30 shadow-[0_15px_35px_rgba(0,0,0,0.35)]">
+              <div className="flex items-center justify-between gap-3 px-6 py-4">
+                <p className="text-xs uppercase tracking-[0.35em] text-purple-300">Colaboradores</p>
+                <button
+                  type="button"
+                  onClick={() => setIsCinemaCreditsOpen((prev) => !prev)}
+                  className="text-xs uppercase tracking-[0.3em] text-slate-300 hover:text-white transition"
+                >
+                  {isCinemaCreditsOpen ? 'Ocultar' : 'Ver'}
+                </button>
+              </div>
+
+              {isCinemaCreditsOpen ? (
+                <div className="space-y-3 px-6 pb-6">
+                  {activeDefinition.collaborators.map((collab, index) => {
+                    const isOpen = openCollaboratorId === collab.id;
+                    const imageSrc = collab.image || '/images/placeholder-colaboradores.jpg';
+                    return (
+                      <div
+                        key={collab.id || `taza-collab-${index}`}
+                        className="rounded-2xl border border-white/10 bg-black/20"
+                      >
+                        <button
+                          type="button"
+                          onClick={() => setOpenCollaboratorId((prev) => (prev === collab.id ? null : collab.id))}
+                          className="w-full flex items-center justify-between gap-3 px-4 py-3 text-left hover:bg-white/5 transition"
+                        >
+                          <div className="flex items-center gap-3">
+                            <img
+                              src={imageSrc}
+                              alt={`Retrato de ${collab.name}`}
+                              className="h-12 w-12 rounded-full object-cover border border-white/10"
+                              loading="lazy"
+                            />
+                            <div>
+                              <p className="text-slate-100 font-semibold">{collab.name}</p>
+                              {collab.role ? (
+                                <p className="text-[11px] uppercase tracking-[0.3em] text-purple-300">{collab.role}</p>
+                              ) : null}
+                            </div>
+                          </div>
+                          <span className="text-slate-400 text-lg">{isOpen ? '−' : '+'}</span>
+                        </button>
+                        {isOpen ? (
+                          <div className="px-4 pb-4 text-sm text-slate-200/90 leading-relaxed">
+                            {collab.bio ? <p>{collab.bio}</p> : null}
+                          </div>
+                        ) : null}
+                      </div>
+                    );
+                  })}
+                </div>
+              ) : null}
+            </div>
+          ) : null}
+
+          <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
+            <div className="rounded-3xl border border-white/10 bg-black/35 p-6 shadow-[0_20px_45px_rgba(0,0,0,0.45)] space-y-4">
+              <div className="space-y-2">
+            
+              </div>
+              <Button
+                type="button"
+                variant="outline"
+                className="w-full border border-purple-400/40 text-purple-100 hover:bg-purple-500/10 silvestre-cta relative overflow-visible"
+                onClick={handleOpenSilvestreChat}
+              >
+                <span className="relative z-10">{isListening ? 'Detener y enviar' : activeDefinition.ctaLabel}</span>
+              </Button>
+              {micPromptVisible && !micError ? (
+                <div className="rounded-2xl border border-white/10 bg-black/40 p-4 text-sm text-slate-200">
+                  <p className="text-xs uppercase tracking-[0.35em] text-purple-300">Silvestre quiere escucharte</p>
+                  <p>Dale acceso a tu micrófono para comenzar.</p>
+                </div>
+              ) : null}
+              {micError && !isListening && !transcript ? (
+                <div className="rounded-2xl border border-red-500/30 bg-red-500/10 p-4 text-sm text-red-100">
+                  <p className="text-xs uppercase tracking-[0.35em] text-red-300">Sin micrófono</p>
+                  <p>Tu navegador no permite activar el micrófono. Puedes escribirle a Silvestre si prefieres.</p>
+                </div>
+              ) : null}
+              {transcript ? (
+                <div className="rounded-2xl border border-purple-500/40 bg-white/5 p-4 text-sm text-slate-100">
+                  
+                  <p className="break-words">{transcript}</p>
+                </div>
+              ) : null}
+              {conversationBlock}
+            </div>
+            <div className="space-y-6">
               {renderCommunityBlock('miniversos', {
                 ctaLabel: 'suma tu voz',
-                reactionProps: {
-                  showcaseId: 'miniversos',
-                  title: 'Resonancia colectiva',
-                  description: 'Haz clic para dejar un pulso que mantenga viva la conversación de Silvestre.',
-                  buttonLabel: 'Enviar pulsaciones',
-                  className: 'mt-4',
-                },
+                emptyMessage: 'Todavía no hay voces en este miniverso.',
+                className: 'rounded-3xl border border-white/10 bg-black/30 p-6',
+                hideReaction: true,
               })}
+              <div className="rounded-3xl border border-white/10 bg-black/30 p-6">
+                <ShowcaseReactionInline {...reactionDetails} />
+              </div>
             </div>
-            <div />
           </div>
         </div>
       );
     }
-
     if (activeDefinition.type === 'graphic-lab') {
       const swipeShowcases = activeDefinition.swipeShowcases ?? [];
       const swipeMeta = activeDefinition.swipe ?? {};
@@ -4611,6 +4695,41 @@ const rendernotaAutoral = () => {
                     : null}
                 </Document>
               )}
+            </div>
+          </div>
+        </div>
+      ) : null}
+
+      {MINIVERSO_EDITORIAL_INTERCEPTION_ENABLED && isMiniversoEditorialModalOpen ? (
+        <div className="fixed inset-0 z-50 flex items-center justify-center px-4 py-10">
+          <div className="absolute inset-0 bg-black/80 backdrop-blur-sm" onClick={handleCloseMiniversoEditorialModal} />
+          <div className="relative z-10 w-full max-w-xl">
+            <div className="glass-effect rounded-3xl border border-white/10 bg-slate-950/95 shadow-2xl p-8 md:p-10 text-center space-y-6">
+              <h3 className="font-display text-3xl md:text-4xl text-slate-50">
+                “Este espacio se activará después de la función.”
+              </h3>
+              <p className="text-base md:text-lg text-slate-200/90 leading-relaxed">
+                “Las expansiones narrativas ya están en marcha,<br />
+                pero hoy el foco está en la obra en escena.<br />
+                <br />
+                Nos vemos en el teatro.”
+              </p>
+              <div className="flex flex-col gap-3 sm:flex-row sm:justify-center sm:items-center">
+                <button
+                  type="button"
+                  onClick={handleCloseMiniversoEditorialModal}
+                  className="px-6 py-2 rounded-full border border-white/20 text-sm font-semibold uppercase tracking-[0.3em] text-slate-200 hover:text-white hover:border-white/40 transition"
+                >
+                  Cerrar
+                </button>
+                <button
+                  type="button"
+                  onClick={handleEditorialCtaClick}
+                  className="px-6 py-2 rounded-full bg-white/10 text-sm font-semibold uppercase tracking-[0.3em] text-purple-100 hover:bg-white/20 transition"
+                >
+                  Conoce nuestra causa social
+                </button>
+              </div>
             </div>
           </div>
         </div>

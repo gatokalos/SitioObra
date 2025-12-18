@@ -103,11 +103,10 @@ const BlogContributionPrompt = () => {
   </h3>
 
   <p className="text-slate-300/80 leading-relaxed mb-8 max-w-2xl mx-auto font-light whitespace-pre-line text-center">
-    {`Quizá aún no sepas si esto es una obra, un sueño o un laberinto.
-No pasa nada: en Es un gato encerrado, la confusión también forma parte del viaje.`}
+    {`No, siempre hay que entender dónde estamos: obra, sueño, laberinto. A veces comprender llega después de perderse un poco.`}
 
     <span className="block mt-4 text-sm text-slate-400/70 italic">
-      (A veces, basta con dejar que la mente vuelva a su estado silvestre.)
+      (Basta con dejar que la mente vuelva a su estado silvestre.)
     </span>
   </p>
 

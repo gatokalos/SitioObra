@@ -28,7 +28,18 @@ const PayButton = ({ priceId }) => {
       }
 
       const { data, error } = await supabase.functions.invoke('create-checkout-session', {
-        body: { userId: user.id, priceId },
+        body: {
+          mode: 'payment',
+          line_items: [
+            {
+              price: priceId,
+              quantity: 1,
+            },
+          ],
+          metadata: {
+            user_id: user.id,
+          },
+        },
       });
 
       if (error) {
