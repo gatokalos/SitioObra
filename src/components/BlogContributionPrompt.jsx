@@ -103,9 +103,8 @@ const BlogContributionPrompt = () => {
   </h3>
 
   <p className="text-slate-300/80 leading-relaxed mb-8 max-w-2xl mx-auto font-light whitespace-pre-line text-center">
-    {`Las luces bajan y el escenario respira.
-Quizá aún no sepas si esto es una obra, un sueño o un laberinto.
-No pasa nada: en #GatoEncerrado, la confusión también forma parte del viaje.`}
+    {`Quizá aún no sepas si esto es una obra, un sueño o un laberinto.
+No pasa nada: en Es un gato encerrado, la confusión también forma parte del viaje.`}
 
     <span className="block mt-4 text-sm text-slate-400/70 italic">
       (A veces, basta con dejar que la mente vuelva a su estado silvestre.)

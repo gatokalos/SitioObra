@@ -127,7 +127,7 @@ const CallToAction = () => {
   transition={{ duration: 0.5, delay: 0.2 }}
 >
   <p>
-    Cuando la causa florece, su pulso regresa al universo: nuevos juegos, nuevas escenas, nuevas historias por nacer.
+    Cuando la causa florece, su pulso regresa al universo: nuevos juegos, nuevas escenas, nuevas historias por contar.
   </p>
 
   <p className="text-xs text-slate-400/70 mt-3">

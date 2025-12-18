@@ -19,7 +19,18 @@ const IAInsightCard = ({
   const [status, setStatus] = useState('idle'); // idle | loading | success | error | auth
   const [isOpen, setIsOpen] = useState(!compact);
   const hasBody = type || interaction || tokensRange || coverage;
+  const apiBase = useMemo(() => import.meta.env.VITE_API_URL?.replace(/\/+$/, ''), []);
   const apiPaths = useMemo(() => ['/tokens/me', '/api/tokens/me'], []);
+  const canFetchBackendBalance = useMemo(() => {
+    if (!apiBase) return false;
+    if (import.meta.env.VITE_ALLOW_CROSS_ORIGIN_API === 'true') return true;
+    if (typeof window === 'undefined') return false;
+    try {
+      return new URL(apiBase).origin === window.location.origin;
+    } catch {
+      return false;
+    }
+  }, [apiBase]);
 
   const getLocalBalance = () => {
     if (typeof window === 'undefined') return 0;
@@ -40,7 +51,10 @@ const IAInsightCard = ({
   };
 
   const fetchBackendBalance = async () => {
-    if (!session?.access_token || !import.meta.env.VITE_API_URL) {
+    if (!session?.access_token || !apiBase || !canFetchBackendBalance) {
+      if (import.meta.env.DEV && apiBase && !canFetchBackendBalance) {
+        console.debug('[IAInsightCard] skipping backend balance fetch (cross-origin)', { apiBase });
+      }
       return null;
     }
     for (const path of apiPaths) {
@@ -114,7 +128,7 @@ const IAInsightCard = ({
         Promise.resolve(getLocalBalance()),
       ]);
 
-      await invokeMigrateTokens({
+      const data = await invokeMigrateTokens({
         user_id: user.id,
         source: 'sitio-obra',
         local_balance: localBalance,

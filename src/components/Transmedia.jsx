@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { motion } from 'framer-motion';
+import { AnimatePresence, motion } from 'framer-motion';
 import { createPortal } from 'react-dom';
 import {
   ArrowRight,
@@ -43,6 +43,8 @@ import { recordShowcaseLike } from '@/services/showcaseLikeService';
 import { useMobileVideoPresentation } from '@/hooks/useMobileVideoPresentation';
 import IAInsightCard from '@/components/IAInsightCard';
 import LoginOverlay from '@/components/ContributionModal/LoginOverlay';
+import DiosasCarousel from '@/components/DiosasCarousel';
+import { fetchApprovedContributions } from '@/services/contributionService';
 
 pdfjs.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`;
 const GAT_COSTS = {
@@ -61,8 +63,8 @@ const SHOWCASE_BADGE_IDS = [
   'copycats',
   'miniversoSonoro',
   'miniversoMovimiento',
-  'detodxs',
   'oraculo',
+  'apps',
 ];
 const EXPLORER_BADGE_STORAGE_KEY = 'gatoencerrado:explorer-badge';
 const EXPLORER_BADGE_REWARD = 1000;
@@ -82,6 +84,7 @@ const MINIVERSO_TILE_GRADIENTS = {
   miniversoSonoro: 'linear-gradient(135deg, rgba(18,29,62,0.95), rgba(32,65,103,0.85), rgba(70,91,146,0.65))',
   lataza: 'linear-gradient(135deg, rgba(44,20,30,0.95), rgba(101,45,66,0.85), rgba(196,111,86,0.6))',
   miniversoMovimiento: 'linear-gradient(135deg, rgba(24,30,45,0.95), rgba(40,64,65,0.85), rgba(74,123,102,0.65))',
+  apps: 'linear-gradient(135deg, rgba(30,41,59,0.95), rgba(22,163,74,0.75), rgba(34,211,238,0.65))',
   oraculo: 'linear-gradient(135deg, rgba(38,18,56,0.95), rgba(86,33,115,0.85), rgba(168,68,139,0.65))',
   default: 'linear-gradient(135deg, rgba(20,14,35,0.95), rgba(47,28,71,0.85), rgba(90,42,100,0.65))',
 };
@@ -128,6 +131,12 @@ const MINIVERSO_TILE_COLORS = {
     text: '#d1fae5',
     accent: '#a7f3d0',
   },
+  apps: {
+    background: 'rgba(16,185,129,0.18)',
+    border: 'rgba(110,231,183,0.45)',
+    text: '#d1fae5',
+    accent: '#99f6e4',
+  },
   oraculo: {
     background: 'rgba(38,18,56,0.75)',
     border: 'rgba(225,160,235,0.35)',
@@ -140,6 +149,28 @@ const MINIVERSO_TILE_COLORS = {
     text: '#f3e8ff',
     accent: '#e9d8fd',
   },
+};
+const TOPIC_BY_SHOWCASE = {
+  miniversos: 'obra_escenica',
+  copycats: 'cine',
+  miniversoGrafico: 'graficos',
+  miniversoNovela: 'novela',
+  miniversoSonoro: 'sonoro',
+  miniversoMovimiento: 'movimiento',
+  lataza: 'artesanias',
+  apps: 'apps',
+  oraculo: 'oraculo',
+};
+const CONTRIBUTION_CATEGORY_BY_SHOWCASE = {
+  miniversos: 'obra_escenica',
+  copycats: 'cine',
+  miniversoGrafico: 'grafico',
+  miniversoNovela: 'miniverso_novela',
+  miniversoSonoro: 'sonoro',
+  miniversoMovimiento: 'movimiento',
+  lataza: 'taza',
+  apps: 'apps',
+  oraculo: 'oraculo',
 };
 const MiniVersoCard = ({
   title,
@@ -336,6 +367,13 @@ const showcaseDefinitions = {
     ctaLabel: 'Hablar con Silvestre',
     ctaDescription:
       'Chatea con Silvestre sobre la obra y el guion que lo vio nacer.',
+    conversationStarters: [
+      '¿Qué escena te acompaña hoy y por qué?',
+      'Si Silvestre te viera ahora, ¿qué pregunta te haría?',
+      '¿Qué línea quisieras reescribir para ti mismo?',
+      '¿Qué gesto pequeño podría abrir un portal en tu día?',
+      '¿Qué parte de la obra te pidió volver a mirarla?',
+    ],
     iaProfile: {
       type: 'GPT-4o afinada para voz literaria y contención emocional.',
       interaction: '1 a 3 mensajes con Silvestre (texto o voz).',
@@ -755,7 +793,7 @@ const showcaseDefinitions = {
      intro:'En este miniverso, el cuerpo se convierte en meta-. La danza, en escritura. Y la ciudad… en altar vivo.',
          type: 'movement-ritual',
     pendingName: 'La Ruta de las Diosas',
-    tagline: 'Meta-corporeidad: Ciudades como escenario • Tecnología como portal.',
+    tagline: 'Meta-corporeidad',
     overview: [
       'La Ruta de las Diosas es una experiencia coreográfica transmedial que recorre plazas, parques y espacios públicos para activar un ritual contemporáneo con avatares, realidad aumentada y movimiento colectivo.',
     ],
@@ -805,6 +843,68 @@ const showcaseDefinitions = {
         icon: RadioTower,
       },
     ],
+    diosasGallery: [
+      {
+        id: 'coatlicue-360',
+        title: 'Coatlicue — giro 360°',
+        description: 'Avatar ritual en rotación completa.',
+        badge: 'Portal AR',
+        location: 'CDMX',
+        meta: '9:16 / video 360°',
+        videoUrl: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/diosas/coatlicue.mp4',
+        gradient: 'linear-gradient(165deg, rgba(16,185,129,0.65), rgba(59,130,246,0.55), rgba(168,85,247,0.55))',
+      },
+      {
+        id: 'chanico-360',
+        title: 'Chanico — giro 360°',
+        description: 'Diosa cuenta-cuentos en giro completo.',
+        badge: 'Portal AR',
+        location: 'Ruta norte',
+        meta: '9:16 / video 360°',
+        videoUrl: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/diosas/chanico.mp4',
+        gradient: 'linear-gradient(175deg, rgba(14,165,233,0.55), rgba(52,211,153,0.45), rgba(8,47,73,0.75))',
+      },
+      {
+        id: 'chicomecoatl-360',
+        title: 'Chicomecóatl — giro 360°',
+        description: 'Giro completo para el marcador AR.',
+        badge: 'Portal AR',
+        location: 'Ruta sur',
+        meta: '9:16 / video 360°',
+        videoUrl: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/diosas/chicomecoatl.mp4',
+        gradient: 'linear-gradient(175deg, rgba(99,102,241,0.52), rgba(20,184,166,0.45), rgba(109,40,217,0.55))',
+      },
+      {
+        id: 'xochiquetzal-360',
+        title: 'Xochiquetzal — giro 360°',
+        description: 'Flor y arte en giro completo.',
+        badge: 'Portal AR',
+        location: 'Ruta centro',
+        meta: '9:16 / video 360°',
+        videoUrl: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/diosas/Xochiquetzal.mp4',
+        gradient: 'linear-gradient(170deg, rgba(244,114,182,0.55), rgba(59,130,246,0.45), rgba(16,185,129,0.5))',
+      },
+      {
+        id: 'tzitzimime-360',
+        title: 'Tzitzimime — giro 360°',
+        description: 'Presencia estelar con giro completo.',
+        badge: 'Portal AR',
+        location: 'Ruta cosmos',
+        meta: '9:16 / video 360°',
+        videoUrl: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/diosas/tzitzimime.mp4',
+        gradient: 'linear-gradient(180deg, rgba(99,102,241,0.6), rgba(168,85,247,0.5), rgba(14,165,233,0.45))',
+      },
+      {
+        id: 'ixchel-360',
+        title: 'Ixchel — giro 360°',
+        description: 'Luz y agua en giro completo.',
+        badge: 'Portal AR',
+        location: 'Ruta maya',
+        meta: '9:16 / video 360°',
+        videoUrl: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/diosas/Ixchel.mp4',
+        gradient: 'linear-gradient(170deg, rgba(56,189,248,0.55), rgba(34,211,238,0.5), rgba(59,130,246,0.45))',
+      },
+    ],
     collaborators: [],
   
     cartaTitle: '#RutaCoreográfica',
@@ -815,6 +915,60 @@ const showcaseDefinitions = {
       tokensRange: '180–320 tokens por usuario.',
       coverage: 'Incluido en la suscripción transmedia.',
       footnote: 'La IA guía; el rito sucede cuando alguien baila.',
+    },
+  },
+  apps: {
+    id: 'apps',
+    label: 'Miniverso Juegos',
+    type: 'apps',
+    tagline: 'Juegos como portales • Apps como rituales felinos.',
+    intro:
+      'Demos jugables del Tablero de Todxs: eliges avatar (Maestra, Saturnina, Don Polo…) y el gato anfitrión te abre el telón en 3 taps.',
+    cartaTitle: '#GatologíaEnJuego',
+    notaAutoral:
+      'El gato anfitrión guarda prefijos en sus bolsillos.\nTres taps y se abre el telón.\nCada casilla es un mito menor que resiste al olvido.',
+    tapDemo: {
+      title: 'Tap-to-advance demo',
+      steps: [
+        {
+          id: 'step-1',
+          title: 'Elige tu avatar',
+          description:
+            'La Maestra afila tiza, Saturnina trae glitch, Don Polo cobra peaje. Cada uno cambia el tono y las casillas.',
+        },
+        {
+          id: 'step-2',
+          title: 'Desbloquea el portal',
+          description: 'Toca para abrir la escena: el gato suelta prefijos, el telón sube y aparece la siguiente casilla.',
+        },
+        {
+          id: 'step-3',
+          title: 'Recompensa',
+          description: 'Guardas la gatología, desbloqueas la siguiente ronda y sumas +20 GAT para seguir improvisando.',
+        },
+      ],
+      ctaLabel: 'Jugar demo',
+    },
+    actions: [
+      {
+        id: 'download',
+        label: 'Descargar app',
+        description: 'APK / TestFlight / PWA con tablero, camerino y gatologías offline.',
+        buttonLabel: 'Descargar',
+      },
+      {
+        id: 'watch',
+        label: 'Ver walkthrough',
+        description: 'Video corto: splash → selector de personaje → telón → gatología guardada.',
+        buttonLabel: 'Ver video',
+      },
+    ],
+    iaProfile: {
+      type: 'IA para misiones y ritmo de juego felino.',
+      interaction: 'Tap / swipe progresivo; sugiere palabras en la voz del personaje.',
+      tokensRange: '90–180 tokens por sesión.',
+      coverage: 'Incluido en suscripción (no gasta tus GAT).',
+      footnote: 'La IA propone el siguiente giro; tú das el tap y decides cuándo cerrar el telón.',
     },
   },
   oraculo: {
@@ -977,12 +1131,12 @@ const formats = [
     iaTokensNote: '~280 por mapa.',
   },
   {
-    id: 'detodxs',
-    title: 'Juegos',
+    id: 'apps',
+    title: 'Juegos / Apps',
     icon: Smartphone,
     iconClass: 'text-lime-300',
-    instruccion: 'Descarga la app y continúa la historia donde estés.',
-    iaTokensNote: 'Requiere ~220 GAT de acceso.',
+    instruccion: 'Tap-to-advance con el Tablero: 3 taps y se abre el telón.',
+    iaTokensNote: 'IA marca el ritmo felino (90–180 tokens; no gasta tus GAT).',
   },
   {
     id: 'oraculo',
@@ -1136,6 +1290,7 @@ const Transmedia = () => {
   const [isTazaActivating, setIsTazaActivating] = useState(false);
   const [showGraphicCoins, setShowGraphicCoins] = useState(false);
   const [isGraphicUnlocking, setIsGraphicUnlocking] = useState(false);
+  const [tapIndex, setTapIndex] = useState(0);
   const [isContributionOpen, setIsContributionOpen] = useState(false);
   const [contributionCategoryId, setContributionCategoryId] = useState(null);
   const [explorerBadge, setExplorerBadge] = useState(DEFAULT_BADGE_STATE);
@@ -1146,6 +1301,10 @@ const Transmedia = () => {
   const [celebratedShowcaseId, setCelebratedShowcaseId] = useState(null);
   const celebrationTimeoutRef = useRef(null);
   const badgeCoinsTimeoutRef = useRef(null);
+  const [publicContributions, setPublicContributions] = useState({});
+  const [publicContributionsLoading, setPublicContributionsLoading] = useState({});
+  const [publicContributionsError, setPublicContributionsError] = useState({});
+  const [commentCarouselIndex, setCommentCarouselIndex] = useState(0);
   const isAuthenticated = Boolean(user);
   const isSubscriber = Boolean(
     user?.user_metadata?.isSubscriber ||
@@ -1783,6 +1942,13 @@ const Transmedia = () => {
   }, [activeShowcase]);
 
   useEffect(() => {
+    if (activeShowcase !== 'apps') {
+      return;
+    }
+    setTapIndex(0);
+  }, [activeShowcase]);
+
+  useEffect(() => {
     if (activeShowcase !== 'copycats') {
       setIsCinemaCreditsOpen(false);
       setOpenCollaboratorId(null);
@@ -2012,6 +2178,145 @@ const Transmedia = () => {
     },
     [baseEnergyByShowcase, showcaseBoosts]
   );
+
+  const getTopicForShowcase = useCallback(
+    (showcaseId) => TOPIC_BY_SHOWCASE[showcaseId] ?? showcaseId,
+    []
+  );
+
+  const getContributionCategoryForShowcase = useCallback(
+    (showcaseId) => CONTRIBUTION_CATEGORY_BY_SHOWCASE[showcaseId] ?? showcaseId,
+    []
+  );
+
+  const fetchPublicComments = useCallback(
+    async (showcaseId) => {
+      if (!showcaseId) return;
+      const topic = getTopicForShowcase(showcaseId);
+      setPublicContributionsLoading((prev) => ({ ...prev, [showcaseId]: true }));
+      setPublicContributionsError((prev) => ({ ...prev, [showcaseId]: null }));
+      const { data, error } = await fetchApprovedContributions(topic);
+      if (error) {
+        console.error('Error fetching contributions', { showcaseId, error });
+        setPublicContributionsError((prev) => ({
+          ...prev,
+          [showcaseId]: 'No pudimos cargar comentarios.',
+        }));
+      } else {
+        setPublicContributions((prev) => ({ ...prev, [showcaseId]: data || [] }));
+      }
+      setPublicContributionsLoading((prev) => ({ ...prev, [showcaseId]: false }));
+    },
+    [getTopicForShowcase]
+  );
+
+  const renderCommunityBlock = useCallback(
+    (
+      showcaseId,
+      {
+        heading = 'Comentarios de la comunidad',
+        ctaLabel = 'Agrega tu comentario',
+        emptyMessage = 'Aún no hay comentarios aprobados.',
+        reactionProps = null,
+        className = 'rounded-3xl border border-white/10 bg-black/30 p-6 space-y-5',
+      } = {}
+    ) => {
+      if (!showcaseId) return null;
+      const comments = publicContributions[showcaseId] ?? [];
+      const isLoading = publicContributionsLoading[showcaseId];
+      const error = publicContributionsError[showcaseId];
+      const categoryId = getContributionCategoryForShowcase(showcaseId);
+
+      return (
+        <div className={className}>
+          <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">{heading}</p>
+          {isLoading ? (
+            <p className="text-sm text-slate-400">Cargando comentarios…</p>
+          ) : error ? (
+            <p className="text-sm text-red-300">{error}</p>
+          ) : comments.length ? (
+            <div className="space-y-4">
+              <AnimatePresence mode="wait">
+                {(() => {
+                  const visibleCount = comments.length >= 3 ? 2 : 1;
+                  const start = commentCarouselIndex % comments.length;
+                  const visible = [];
+                  for (let i = 0; i < visibleCount; i += 1) {
+                    visible.push(comments[(start + i) % comments.length]);
+                  }
+                  return (
+                    <motion.div
+                      key={`${showcaseId}-${commentCarouselIndex}`}
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -10 }}
+                      transition={{ duration: 0.4, ease: 'easeOut' }}
+                      className="space-y-4"
+                    >
+                      {visible.map((comment) => (
+                        <div
+                          key={`${showcaseId}-${comment.id}`}
+                          className="rounded-2xl border border-white/5 bg-black/20 p-4"
+                        >
+                          <p className="text-slate-100 font-light leading-relaxed mb-2">{comment.proposal}</p>
+                          <p className="text-xs uppercase tracking-[0.3em] text-slate-500">
+                            {comment.name || 'Anónimo'}
+                          </p>
+                        </div>
+                      ))}
+                    </motion.div>
+                  );
+                })()}
+              </AnimatePresence>
+            </div>
+          ) : (
+            <p className="text-sm text-slate-400">{emptyMessage}</p>
+          )}
+          <div className="pt-4 mt-1 border-t border-white/10">
+            <div className="mx-auto w-full max-w-md">
+              <Button
+                variant="outline"
+                className="w-full rounded-full border border-purple-500/70 text-purple-100 shadow-[0_15px_45px_rgba(67,56,202,0.45)] hover:bg-purple-500/20 tracking-[0.25em] text-xs uppercase"
+                onClick={() => handleOpenContribution(categoryId)}
+              >
+                {ctaLabel}
+              </Button>
+            </div>
+          </div>
+          {reactionProps && activeShowcase === showcaseId ? <ShowcaseReactionInline {...reactionProps} /> : null}
+        </div>
+      );
+    },
+    [
+      activeShowcase,
+      getContributionCategoryForShowcase,
+      getTopicForShowcase,
+      handleOpenContribution,
+      publicContributions,
+      publicContributionsError,
+      publicContributionsLoading,
+    ]
+  );
+
+  useEffect(() => {
+    if (!activeShowcase) return;
+    if (publicContributions[activeShowcase]) return;
+    fetchPublicComments(activeShowcase);
+  }, [activeShowcase, fetchPublicComments, publicContributions]);
+
+  useEffect(() => {
+    setCommentCarouselIndex(0);
+  }, [activeShowcase]);
+
+  useEffect(() => {
+    if (!activeShowcase) return;
+    const comments = publicContributions[activeShowcase];
+    if (!comments || comments.length === 0) return;
+    const interval = setInterval(() => {
+      setCommentCarouselIndex((prev) => prev + 1);
+    }, 2600);
+    return () => clearInterval(interval);
+  }, [activeShowcase, publicContributions]);
 
   useEffect(() => {
     if (!allShowcasesUnlocked || !isSubscriber || explorerBadge.rewardClaimed) {
@@ -2292,7 +2597,7 @@ const rendernotaAutoral = () => {
 
         <button
           type="button"
-          onClick={handleOpenContribution}
+          onClick={() => handleOpenContribution(getContributionCategoryForShowcase('lataza'))}
           className="mt-2 text-xs uppercase tracking-[0.3em] text-purple-300 hover:text-purple-200 self-start"
         >
           Quiero saber dónde se activa
@@ -2315,26 +2620,14 @@ const rendernotaAutoral = () => {
           </div>
 
           <div className="space-y-6">
-                {activeDefinition.comments ? (
-                  <div className="rounded-2xl border border-white/10 p-6 bg-black/30 space-y-6">
-                    <p className="text-xs uppercase tracking-[0.4em] text-slate-400/70 mb-0">Comentarios de la comunidad</p>
-                    <div className="space-y-4">
-                      {activeDefinition.comments.map((comment) => (
-                        <div key={comment.id} className="rounded-xl border border-white/5 p-4 bg-black/20">
-                          <p className="text-slate-100 font-light mb-2">{comment.quote}</p>
-                          <p className="text-xs text-slate-500">{comment.author}</p>
-                        </div>
-                      ))}
-                    </div>
-                    {activeShowcase === 'lataza' ? (
-                      <ShowcaseReactionInline
-                        showcaseId="lataza"
-                        description="Haz clic para guardar un like que conecta a la comunidad alrededor de la taza."
-                        buttonLabel="Resonar con la taza"
-                      />
-                    ) : null}
-                  </div>
-                ) : null}
+            {renderCommunityBlock('lataza', {
+              ctaLabel: 'Agrega tu comentario',
+              reactionProps: {
+                showcaseId: 'lataza',
+                description: 'Haz clic para guardar un like que conecta a la comunidad alrededor de la taza.',
+                buttonLabel: 'Resonar con la taza',
+              },
+            })}
           </div>
         </div>
         </div>
@@ -2434,42 +2727,16 @@ const rendernotaAutoral = () => {
             </div>
 
             <div className="space-y-6">
-              {(activeDefinition.comments?.length || activeShowcase === 'miniversoSonoro') ? (
-                <div className="rounded-3xl border border-white/10 bg-black/30 p-6 space-y-5">
-                  <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Comentarios de la comunidad</p>
-                  <div className="mx-auto w-full max-w-md">
-                    <Button
-                      variant="outline"
-                      className="w-full rounded-full border border-purple-500/70 text-purple-100 shadow-[0_15px_45px_rgba(67,56,202,0.45)] hover:bg-purple-500/20 tracking-[0.25em] text-xs uppercase"
-                      onClick={handleOpenContribution}
-                    >
-                      Agrega tu comentario
-                    </Button>
-                  </div>
-                  {activeDefinition.comments?.length ? (
-                    <div className="space-y-4">
-                      {activeDefinition.comments.map((comment) => (
-                        <div
-                          key={comment.id}
-                          className="rounded-2xl border border-white/5 bg-black/20 p-4"
-                        >
-                          <p className="text-slate-100 font-light leading-relaxed mb-2">{comment.quote}</p>
-                          <p className="text-xs uppercase tracking-[0.3em] text-slate-500">{comment.author}</p>
-                        </div>
-                      ))}
-                    </div>
-                  ) : null}
-                  {activeShowcase === 'miniversoSonoro' ? (
-                    <ShowcaseReactionInline
-                      showcaseId="miniversoSonoro"
-                      title="La voz de quienes escuchan"
-                      description="Comparte tu vibración y deja un like que resuene en este miniverso."
-                      buttonLabel="Hacer latir la resonancia"
-                      className="mt-0"
-                    />
-                  ) : null}
-                </div>
-              ) : null}
+              {renderCommunityBlock('miniversoSonoro', {
+                ctaLabel: 'suma tu voz',
+                reactionProps: {
+                  showcaseId: 'miniversoSonoro',
+                  title: 'La voz de quienes escuchan',
+                  description: 'Comparte tu vibración y deja un like que resuene en este miniverso.',
+                  buttonLabel: 'Hacer latir la resonancia',
+                  className: 'mt-0',
+                },
+              })}
             </div>
           </div>
         </div>
@@ -2571,6 +2838,16 @@ const rendernotaAutoral = () => {
             <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(255,255,255,0.15),_transparent_45%)]" />
             <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_bottom,_rgba(15,23,42,0.8),_transparent_65%)]" />
             <div className="relative mx-auto grid w-full max-w-[min(100vw-2rem,1100px)] gap-6 p-4 sm:p-6 lg:p-8 lg:grid-cols-[3fr_2fr]">
+              <div className="lg:col-span-2 flex justify-end">
+                <button
+                  type="button"
+                  onClick={() => setActiveShowcase(null)}
+                  className="text-xs uppercase tracking-[0.3em] text-slate-400 hover:text-white transition"
+                  aria-label="Cerrar escaparate"
+                >
+                  Cerrar ✕
+                </button>
+              </div>
               <div className="space-y-6">
                 <div
                   className={`space-y-5 ${
@@ -2600,7 +2877,7 @@ const rendernotaAutoral = () => {
                     : 'rounded-3xl border border-white/10 bg-black/40 p-6 shadow-[0_25px_45px_rgba(0,0,0,0.45)]'
                 }`}
               >
-                <p className="text-xs uppercase tracking-[0.4em] text-slate-400">Conciencia abierta</p>
+                <p className="text-xs uppercase tracking-[0.4em] text-slate-400">Conciencia... viva</p>
                 <p className="text-sm text-slate-300/90 leading-relaxed">{activeDefinition.ctaDescription}</p>
                 <div className="rounded-2xl border border-amber-200/40 bg-amber-500/10 px-4 py-3 flex items-center justify-between gap-3">
                   <div className="flex items-center gap-2 text-amber-100 font-semibold">
@@ -2658,14 +2935,24 @@ const rendernotaAutoral = () => {
                     <p className="break-words">{transcript}</p>
                   </div>
                 ) : null}
-                <ShowcaseReactionInline
-                  showcaseId="miniversos"
-                  title="Resonancia colectiva"
-                  description="Haz clic para dejar un pulso que mantenga viva la conversación de Silvestre."
-                  buttonLabel="Enviar pulsaciones"
-                />
               </div>
             </div>
+          </div>
+
+          <div className="grid gap-6 lg:grid-cols-[2fr_1fr]">
+            <div>
+              {renderCommunityBlock('miniversos', {
+                ctaLabel: 'suma tu voz',
+                reactionProps: {
+                  showcaseId: 'miniversos',
+                  title: 'Resonancia colectiva',
+                  description: 'Haz clic para dejar un pulso que mantenga viva la conversación de Silvestre.',
+                  buttonLabel: 'Enviar pulsaciones',
+                  className: 'mt-4',
+                },
+              })}
+            </div>
+            <div />
           </div>
         </div>
       );
@@ -2921,42 +3208,16 @@ const rendernotaAutoral = () => {
                 </Button>
               </div>
             </div>
-            {(activeDefinition.comments?.length || activeShowcase === 'miniversoGrafico') ? (
-              <div className="rounded-3xl border border-white/10 bg-black/30 p-6 space-y-5">
-                <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Comentarios de la comunidad</p>
-                <div className="mx-auto w-full max-w-md">
-                  <Button
-                    variant="outline"
-                    className="w-full rounded-full border border-purple-500/70 text-purple-100 shadow-[0_15px_45px_rgba(67,56,202,0.45)] hover:bg-purple-500/20 tracking-[0.25em] text-xs uppercase"
-                    onClick={handleOpenContribution}
-                  >
-                    Agrega tu comentario
-                  </Button>
-                </div>
-                {activeDefinition.comments?.length ? (
-                  <div className="space-y-4">
-                    {activeDefinition.comments.map((comment) => (
-                      <div
-                        key={comment.id}
-                        className="rounded-2xl border border-white/5 bg-black/20 p-4"
-                      >
-                        <p className="text-slate-100 font-light leading-relaxed mb-2">{comment.quote}</p>
-                        <p className="text-xs uppercase tracking-[0.3em] text-slate-500">{comment.author}</p>
-                      </div>
-                    ))}
-                  </div>
-                ) : null}
-                {activeShowcase === 'miniversoGrafico' ? (
-                  <ShowcaseReactionInline
-                    showcaseId="miniversoGrafico"
-                    title="Validación gráfica"
-                    description="Haz clic para dejar un like y seguir curando esta colección."
-                    buttonLabel="Resonar con el trazo"
-                    className="mt-0 bg-gradient-to-r from-fuchsia-900/20 to-black/40"
-                  />
-                ) : null}
-              </div>
-            ) : null}
+            {renderCommunityBlock('miniversoGrafico', {
+              ctaLabel: 'suma tu voz',
+              reactionProps: {
+                showcaseId: 'miniversoGrafico',
+                title: 'Validación gráfica',
+                description: 'Haz clic para dejar un like y seguir curando esta colección.',
+                buttonLabel: 'Resonar con el trazo',
+                className: 'mt-0 bg-gradient-to-r from-fuchsia-900/20 to-black/40',
+              },
+            })}
           </div>
         </div>
         </div>
@@ -2966,6 +3227,8 @@ const rendernotaAutoral = () => {
     if (activeDefinition.type === 'movement-ritual') {
       const hasMovementCollaborators =
         Array.isArray(activeDefinition.collaborators) && activeDefinition.collaborators.length > 0;
+      const hasDiosasGallery =
+        Array.isArray(activeDefinition.diosasGallery) && activeDefinition.diosasGallery.length > 0;
 
       return (
         <div className="space-y-10">
@@ -3026,7 +3289,7 @@ const rendernotaAutoral = () => {
                 <p className="text-sm text-slate-300/85 leading-relaxed">Aún no hay colaboradores confirmados para esta ruta.</p>
                 <Button
                   type="button"
-                  onClick={() => handleOpenContribution('movimiento')}
+                  onClick={() => handleOpenContribution(getContributionCategoryForShowcase('miniversoMovimiento'))}
                   className="w-full sm:w-auto justify-center bg-gradient-to-r from-emerald-500/90 to-emerald-600/90 hover:from-emerald-400/90 hover:to-emerald-500/90 text-white"
                 >
                   Proponer colaboración
@@ -3037,8 +3300,15 @@ const rendernotaAutoral = () => {
 
           <div className="grid gap-6 lg:gap-10 lg:grid-cols-[2fr_1fr]">
             <div className="space-y-5 rounded-3xl border border-white/10 bg-gradient-to-br from-slate-950/80 via-black/60 to-purple-900/30 p-6 lg:p-8">
-             
               <h3 className="font-display text-3xl text-slate-100">{activeDefinition.tagline}</h3>
+              <p className="text-2 text-slate-100/80 italic">Cuando el cuerpo deja de ser solo uno.</p>
+              {hasDiosasGallery ? (
+                <DiosasCarousel
+                  items={activeDefinition.diosasGallery}
+                  label="Swipe-horizontal"
+                  caption="Cada clip muestra un giro 360° de las diosas cuenta-cuentos."
+                />
+              ) : null}
               <div className="space-y-4 text-slate-300/85 leading-relaxed text-sm md:text-base">
                 {activeDefinition.overview?.map((paragraph, index) => (
                   <p key={`movement-overview-${index}`}>{paragraph}</p>
@@ -3149,6 +3419,107 @@ const rendernotaAutoral = () => {
               ))}
             </div>
           ) : null}
+        </div>
+      );
+    }
+
+    if (activeDefinition.type === 'apps') {
+      const steps = activeDefinition.tapDemo?.steps ?? [];
+      const tapCount = steps.length || 1;
+      const currentStep = steps[tapIndex % tapCount] ?? {};
+      const handleTapAdvance = () => setTapIndex((prev) => (tapCount ? (prev + 1) % tapCount : 0));
+      const isRead = Boolean(showcaseBoosts?.[activeShowcase]);
+      const publicComments = publicContributions[activeShowcase] ?? [];
+      const isLoadingComments = publicContributionsLoading[activeShowcase];
+      const commentsError = publicContributionsError[activeShowcase];
+
+      return (
+        <div className="space-y-8">
+          
+
+          <div className="grid gap-6 lg:grid-cols-[1.6fr_1fr]">
+            <div className="rounded-3xl border border-white/10 bg-black/30 p-6 space-y-5">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Tap-to-advance demo</p>
+                  <h4 className="font-display text-xl text-slate-100">{activeDefinition.tapDemo?.title}</h4>
+                </div>
+                <span className="rounded-full border border-emerald-200/40 bg-emerald-500/10 px-3 py-1 text-[0.7rem] uppercase tracking-[0.25em] text-emerald-100">
+                  {tapIndex + 1}/{tapCount}
+                </span>
+              </div>
+
+              <div className="relative overflow-hidden rounded-2xl border border-emerald-200/30 bg-gradient-to-br from-slate-900/60 via-black/40 to-purple-900/30 p-5 space-y-3 shadow-[0_15px_45px_rgba(0,0,0,0.45)]">
+                <p className="text-[0.7rem] uppercase tracking-[0.35em] text-emerald-100/80">Paso {tapIndex + 1}</p>
+                <h5 className="text-lg font-semibold text-slate-100">{currentStep.title}</h5>
+                <p className="text-sm text-slate-200/85 leading-relaxed">{currentStep.description}</p>
+                <div className="pt-2">
+                  <Button
+                    type="button"
+                    onClick={() => {
+                      handleTapAdvance();
+                      if (!showcaseBoosts?.apps && tapIndex + 1 >= tapCount - 1) {
+                        handleShowcaseRevealBoost('apps');
+                      }
+                    }}
+                    className="w-full justify-center bg-gradient-to-r from-emerald-500/80 to-emerald-600/80 hover:from-emerald-400/80 hover:to-emerald-500/80 text-white"
+                  >
+                    Tap siguiente
+                  </Button>
+                </div>
+                <div className="flex items-center justify-center gap-2 pt-1">
+                  {steps.map((step, idx) => (
+                    <span
+                      key={step.id || `apps-step-${idx}`}
+                      className={`h-2 w-2 rounded-full transition ${
+                        idx === tapIndex ? 'bg-emerald-300 shadow-[0_0_12px_rgba(16,185,129,0.5)]' : 'bg-emerald-300/30'
+                      }`}
+                    />
+                  ))}
+                </div>
+              </div>
+
+             
+            </div>
+
+            <div className="space-y-5">
+              <div className="rounded-3xl border border-white/10 bg-black/30 p-5 space-y-4">
+                <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Acciones</p>
+                <div className="space-y-3">
+                  {activeDefinition.actions?.map((action) => (
+                    <div
+                      key={action.id}
+                      className="rounded-2xl border border-white/10 bg-white/5 p-4 flex flex-col gap-3"
+                    >
+                      <div>
+                        <p className="text-[0.7rem] uppercase tracking-[0.3em] text-slate-400/70">{action.label}</p>
+                        <p className="text-sm text-slate-200/85 leading-relaxed">{action.description}</p>
+                      </div>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        className="w-full justify-center border-emerald-300/40 text-emerald-100 hover:bg-emerald-500/10"
+                        onClick={() => toast({ description: 'Muy pronto liberaremos esta acción.' })}
+                      >
+                        {action.buttonLabel || 'Abrir'}
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {renderCommunityBlock('apps', {
+                reactionProps: {
+                  showcaseId: 'apps',
+                  title: 'Resonancia lúdica',
+                  description: 'Deja un pulso para que el gato anfitrión abra más telones.',
+                  buttonLabel: 'Hacer vibrar este miniverso',
+                  className: 'mt-0',
+                },
+              })}
+
+            </div>
+          </div>
         </div>
       );
     }
@@ -3442,40 +3813,17 @@ const rendernotaAutoral = () => {
                 ) : null}
               </div>
 
-              {(activeDefinition.comments?.length || activeShowcase === 'copycats') ? (
-                <div className="rounded-3xl border border-white/10 bg-black/25 p-6 space-y-5">
-                  <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Comentarios de la comunidad</p>
-                  <div className="mx-auto w-full max-w-md">
-                    <Button
-                      variant="outline"
-                      className="w-full rounded-full border border-purple-500/70 text-purple-100 shadow-[0_15px_45px_rgba(67,56,202,0.45)] hover:bg-purple-500/20 tracking-[0.25em] text-xs uppercase"
-                      onClick={handleOpenContribution}
-                    >
-                      Agrega tu comentario
-                    </Button>
-                  </div>
-                  {activeDefinition.comments?.length ? (
-                    <div className="space-y-4">
-                      {activeDefinition.comments.map((comment) => (
-                        <div
-                          key={comment.id}
-                          className="rounded-2xl border border-white/5 bg-black/30 p-4"
-                        >
-                          <p className="text-slate-100 font-light leading-relaxed mb-2">{comment.quote}</p>
-                          <p className="text-xs uppercase tracking-[0.3em] text-slate-500">{comment.author}</p>
-                        </div>
-                      ))}
-                    </div>
-                  ) : null}
-                  <ShowcaseReactionInline
-                    showcaseId="copycats"
-                    title="Validación cinematográfica"
-                    description="Haz clic para dejar un like y amplificar el screening de CopyCats + Quirón."
-                    buttonLabel="Sumar mi aplauso"
-                    className="mt-2 bg-gradient-to-r from-slate-900/40 to-purple-900/20"
-                  />
-                </div>
-              ) : null}
+              {renderCommunityBlock('copycats', {
+                ctaLabel: 'suma tu voz',
+                className: 'rounded-3xl border border-white/10 bg-black/25 p-6 space-y-5',
+                reactionProps: {
+                  showcaseId: 'copycats',
+                  title: 'Validación cinematográfica',
+                  description: 'Haz clic para dejar un like y amplificar el screening de CopyCats + Quirón.',
+                  buttonLabel: 'Sumar mi aplauso',
+                  className: 'mt-2 bg-gradient-to-r from-slate-900/40 to-purple-900/20',
+                },
+              })}
             </div>
           </div>
         </div>
@@ -3682,21 +4030,13 @@ const rendernotaAutoral = () => {
 
                 if (entry.type === 'quotes') {
                   return (
-                    <div
-                      key={entry.id}
-                      className="rounded-2xl border border-white/10 p-6 bg-black/30 space-y-6"
-                    >
-                      <h5 className="font-display text-xl text-slate-100">{entry.title}</h5>
-                      <div className="mx-auto w-full max-w-md">
-                        <Button
-                          variant="outline"
-                          className="w-full rounded-full border border-purple-500/70 text-purple-100 shadow-[0_15px_45px_rgba(67,56,202,0.45)] hover:bg-purple-500/20 tracking-[0.25em] text-xs uppercase"
-                          onClick={handleOpenContribution}
-                        >
-                          Agrega tu comentario
-                        </Button>
-                      </div>
-                      <div className="space-y-4">
+                <div
+                  key={entry.id}
+                  className="rounded-2xl border border-white/10 p-6 bg-black/30 space-y-6"
+                >
+                  <h5 className="font-display text-xl text-slate-100">{entry.title}</h5>
+                 
+                  <div className="space-y-4">
                         {entry.quotes?.map((quote, index) => (
                           <blockquote
                             key={`${entry.id}-quote-${index}`}
@@ -3942,7 +4282,7 @@ const rendernotaAutoral = () => {
               Escaparate de Miniversos
             </h2>
             <p className="text-lg text-slate-300/80 max-w-3xl mx-auto leading-relaxed font-light">
-              El universo de #GatoEncerrado se expande en miniversos. Cada uno late por su cuenta —ya estaba ahí antes de que llegaras— y forma parte del mismo organismo narrativo. Al explorarlos, activas <span className="font-semibold text-purple-200">GATokens</span>: una energía simbólica que impulsa la experiencia artística y contribuye al sostenimiento de la causa social de {' '}
+              El universo de #GatoEncerrado se expande en <strong>nueve miniversos</strong>. Cada uno late por su cuenta —ya estaba ahí antes de que llegaras— y forma parte del mismo organismo narrativo. Al explorarlos, activas <span className="font-semibold text-purple-200">GATokens</span>: una energía simbólica que impulsa la experiencia artística y contribuye al sostenimiento de la causa social de {' '}
               <button
                 type="button"
                 onClick={handleScrollToSupport}
@@ -3963,10 +4303,9 @@ const rendernotaAutoral = () => {
               return (
                 <motion.div
                   key={format.id}
-                  initial={{ opacity: 0, y: 30 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.6, delay: index * 0.1, ease: 'easeOut' }}
-                  viewport={{ once: true }}
+                  initial={false}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.4, delay: index * 0.05, ease: 'easeOut' }}
                   className="group glass-effect rounded-xl p-8 hover-glow cursor-pointer flex flex-col transition-all duration-300 hover:border-purple-400/50 relative overflow-hidden"
                   onClick={() => handleFormatClick(format.id)}
                 >
@@ -4011,17 +4350,9 @@ const rendernotaAutoral = () => {
   </h3>
 
   {/* SUBTEXTO — instrucción breve por miniverso */}
-{(() => {
-  const boostApplied = Boolean(showcaseBoosts?.[format.id]);
-  if (!boostApplied) {
-    return (
-<p className="font-display italic text-sm text-slate-200/90 tracking-wide mb-4 leading-snug">
-  {format.instruccion}
-</p>
-    );
-  }
-  return null;
-})()}
+  <p className="font-display italic text-sm text-slate-200/90 tracking-wide mb-4 leading-snug">
+    {format.instruccion}
+  </p>
 
   <p className="text-slate-200/80 text-base leading-relaxed mb-4 flex-grow font-light">
     {format.description}
@@ -4065,13 +4396,17 @@ const rendernotaAutoral = () => {
               transition={{ duration: 0.6, ease: 'easeOut' }}
               className="relative mt-12 glass-effect rounded-2xl p-8 md:p-12 border border-white/10"
             >
-              <button
-                onClick={() => setActiveShowcase(null)}
-                className="absolute top-4 right-4 text-sm text-slate-400 hover:text-white transition"
-                aria-label="Cerrar escaparate"
-              >
-                Cerrar escaparate ✕
-              </button>
+              {activeDefinition.type !== 'tragedia' ? (
+                <div className="flex justify-end">
+                  <button
+                    onClick={() => setActiveShowcase(null)}
+                    className="text-sm text-slate-400 hover:text-white transition"
+                    aria-label="Cerrar escaparate"
+                  >
+                    Cerrar escaparate ✕
+                  </button>
+                </div>
+              ) : null}
               {activeDefinition.type !== 'tragedia' ? (
                 <div className="flex flex-col gap-6 md:flex-row md:items-start md:gap-10 pr-0">
                   <div className="flex-1 space-y-6">

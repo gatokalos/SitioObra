@@ -1,10 +1,7 @@
-import { supabasePublic } from '@/lib/supabaseClient';
-
+const API_URL = import.meta.env.VITE_API_URL;
 const TABLE_NAME = 'blog_posts';
 
-const SAMPLE_POSTS = [
-
-];
+const SAMPLE_POSTS = [];
 
 const generateFallbackId = () => `post-${Math.random().toString(36).slice(2, 10)}`;
 
@@ -24,37 +21,28 @@ const mapDatabasePost = (post) => ({
 
 export async function fetchPublishedBlogPosts() {
   try {
-    const { data, error } = await supabasePublic
-      .from(TABLE_NAME)
-      .select(
-        `
-        id,
-        slug,
-        title,
-        excerpt,
-        author,
-        author_role,
-        content,
-        published_at,
-        read_time_minutes,
-        tags,
-        featured_image_url
-      `
-      )
-      .eq('is_published', true)
-      .order('published_at', { ascending: false })
-      .limit(20);
-
-    if (error) {
-      console.error('[blogService] Error al obtener posts:', error.message);
+    if (!API_URL) {
+      console.warn('[blogService] VITE_API_URL no está definido, se devuelven muestras.');
       return SAMPLE_POSTS;
     }
 
-    if (!Array.isArray(data) || data.length === 0) {
+    const res = await fetch(`${API_URL}/blog-posts`, {
+      method: 'GET',
+      headers: { 'Content-Type': 'application/json' },
+      cache: 'no-store',
+    });
+
+    if (!res.ok) {
+      console.error('[blogService] Error HTTP al obtener posts:', res.status);
       return SAMPLE_POSTS;
     }
 
-    const publishedPosts = data.map(mapDatabasePost);
+    const payload = await res.json().catch(() => []);
+    if (!Array.isArray(payload) || payload.length === 0) {
+      return SAMPLE_POSTS;
+    }
+
+    const publishedPosts = payload.map(mapDatabasePost);
 
     const supplementalSamples = SAMPLE_POSTS
       .filter((sample) => !publishedPosts.some((post) => post.slug === sample.slug))
@@ -73,37 +61,28 @@ export async function fetchBlogPostBySlug(slug) {
   }
 
   try {
-    const { data, error } = await supabasePublic
-      .from(TABLE_NAME)
-      .select(
-        `
-        id,
-        slug,
-        title,
-        excerpt,
-        author,
-        author_role,
-        content,
-        published_at,
-        read_time_minutes,
-        tags,
-        featured_image_url
-      `
-      )
-      .eq('slug', slug)
-      .eq('is_published', true)
-      .maybeSingle();
-
-    if (error) {
-      console.error('[blogService] Error al obtener post por slug:', error.message);
+    if (!API_URL) {
+      console.warn('[blogService] VITE_API_URL no está definido, no se puede obtener el post.');
       return null;
     }
 
-    if (!data) {
+    const res = await fetch(`${API_URL}/blog-posts/${encodeURIComponent(slug)}`, {
+      method: 'GET',
+      headers: { 'Content-Type': 'application/json' },
+      cache: 'no-store',
+    });
+
+    if (!res.ok) {
+      console.error('[blogService] Error HTTP al obtener post:', res.status);
       return null;
     }
 
-    return mapDatabasePost(data);
+    const payload = await res.json().catch(() => null);
+    if (!payload) {
+      return null;
+    }
+
+    return mapDatabasePost(payload);
   } catch (err) {
     console.error('[blogService] Excepción al buscar post por slug:', err);
     return null;

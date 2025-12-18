@@ -337,7 +337,7 @@ const ContributionModal = ({ open, onClose, initialCategoryId = null }) => {
       handleNotifyAnimation();
       handleNotifySound();
       setTimeout(handleNotifySound, 140);
-      if (!isAuthenticated) {
+      if (!isAuthenticated && event.target.checked) {
         triggerLoginOverlay();
         return;
       }
@@ -401,13 +401,8 @@ const ContributionModal = ({ open, onClose, initialCategoryId = null }) => {
       }
 
       if (notifyOnPublish && !isAuthenticated) {
-        toast({ description: 'Inicia sesión para recibir la notificación personalizada.' });
-        return;
-      }
-
-      if (!isAuthenticated) {
-        toast({ description: 'Inicia sesión para enviar tu propuesta.' });
         triggerLoginOverlay();
+        toast({ description: 'Inicia sesión para recibir la notificación personalizada.' });
         return;
       }
 
@@ -680,7 +675,7 @@ const ContributionModal = ({ open, onClose, initialCategoryId = null }) => {
           disabled={status === 'loading'}
           className="w-full bg-gradient-to-r from-purple-600/80 to-indigo-600/80 hover:from-purple-600 hover:to-indigo-600 text-white py-3 rounded-lg font-semibold flex items-center justify-center gap-2 hover-glow"
         >
-          {status === 'loading' ? 'Enviando…' : 'Enviar propuesta'}
+          {status === 'loading' ? 'Enviando…' : 'Enviar comentario'}
       </Button>
       </form>
       {isDesktopLayout && BETA_UNIVERSES.has(selectedCategory.id) ? (

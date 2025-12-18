@@ -111,7 +111,10 @@ const markdownComponents = {
   ol: ({ node: _node, ...props }) => (
     <ol className="ml-6 list-decimal space-y-2 text-slate-200" {...props} />
   ),
-  li: ({ node: _node, ...props }) => <li className="leading-relaxed" {...props} />,
+  li: ({ node: _node, ordered: _ordered, ...props }) => (
+    // ReactMarkdown envía `ordered` como boolean; lo omitimos para evitar warnings en el DOM.
+    <li className="leading-relaxed" {...props} />
+  ),
   a: ({ node: _node, ...props }) => (
     <a
       className="text-purple-300 underline decoration-dotted hover:text-purple-200 transition-colors"
