@@ -1142,7 +1142,7 @@ const formats = [
     title: 'Juegos / Apps',
     icon: Smartphone,
     iconClass: 'text-lime-300',
-    instruccion: 'Tap-to-advance con el Tablero: 3 taps y se abre el telón.',
+    instruccion: 'Aquí reinventamos el clásico gato.',
     iaTokensNote: 'IA marca el ritmo felino (90–180 tokens; no gasta tus GAT).',
   },
   {
@@ -1150,7 +1150,7 @@ const formats = [
     title: 'Oráculo',
     icon: Brain,
     iconClass: 'text-indigo-300',
-    instruccion: '¡Ponete a minar para generar GATokens!',
+    instruccion: '¡Ponte a minar para generar GATokens!',
     iaTokensNote: 'Aquí el Gato te regala GAT.',
   },
 ];
@@ -4709,25 +4709,19 @@ const rendernotaAutoral = () => {
                 “Este espacio se activará después de la función.”
               </h3>
               <p className="text-base md:text-lg text-slate-200/90 leading-relaxed">
-                “Las expansiones narrativas ya están en marcha,<br />
+                Las expansiones narrativas ya están en marcha,<br />
                 pero hoy el foco está en la obra en escena.<br />
                 <br />
-                Nos vemos en el teatro.”
+                Nos vemos en el teatro.
               </p>
               <div className="flex flex-col gap-3 sm:flex-row sm:justify-center sm:items-center">
-                <button
-                  type="button"
-                  onClick={handleCloseMiniversoEditorialModal}
-                  className="px-6 py-2 rounded-full border border-white/20 text-sm font-semibold uppercase tracking-[0.3em] text-slate-200 hover:text-white hover:border-white/40 transition"
-                >
-                  Cerrar
-                </button>
+          
                 <button
                   type="button"
                   onClick={handleEditorialCtaClick}
-                  className="px-6 py-2 rounded-full bg-white/10 text-sm font-semibold uppercase tracking-[0.3em] text-purple-100 hover:bg-white/20 transition"
+                  className="px-4 py-2 rounded-full bg-white/10 text-sm font-semibold uppercase tracking-[0.3em] text-purple-100 hover:bg-white/20 transition"
                 >
-                  Conoce nuestra causa social
+                  ¿Conoces nuestra causa social?
                 </button>
               </div>
             </div>
