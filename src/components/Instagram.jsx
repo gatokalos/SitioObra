@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Instagram as InstagramIcon, ExternalLink, AlertCircle, ChevronLeft, ChevronRight, X, Heart } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { getInstagramPostsFromBucket } from '@/services/instagramService';
-import { recordGalleryLike } from '@/services/galleryLikeService';
+import { recordGalleryLike, getGalleryLikeCount } from '@/services/galleryLikeService';
 import { safeGetItem, safeSetItem } from '@/lib/safeStorage';
 
 const collagePattern = [
@@ -129,6 +129,8 @@ const Instagram = () => {
   const VISIBLE_COUNT = 15;
   const [selectedIndex, setSelectedIndex] = useState(null);
   const [likeStatusById, setLikeStatusById] = useState({});
+  const [likeCountById, setLikeCountById] = useState({});
+  const [likeRevealById, setLikeRevealById] = useState({});
   const [likedPosts, setLikedPosts] = useState(() => {
     const stored = safeGetItem('gatoencerrado:gallery-likes');
     if (!stored) return [];
@@ -141,6 +143,7 @@ const Instagram = () => {
   });
   const lastFocusedRef = useRef(null);
   const closeButtonRef = useRef(null);
+  const likeRevealTimeoutRef = useRef(null);
   const [slots, setSlots] = useState([]);
   const nextIndexRef = useRef(0);
   const orderedSequenceRef = useRef([]);
@@ -294,6 +297,7 @@ const Instagram = () => {
   const activeLikeId = activePost?.id || activePost?.filename || activePost?.imgSrc;
   const likeStatus = activeLikeId ? likeStatusById[activeLikeId] : 'idle';
   const isLiked = activeLikeId ? likedPosts.includes(activeLikeId) : false;
+  const likeCount = activeLikeId ? likeCountById[activeLikeId] : null;
   const totalPosts = posts.length;
   const currentPosition = selectedIndex !== null ? selectedIndex : 0;
   const progressPercent = totalPosts > 0 ? ((currentPosition + 1) / totalPosts) * 100 : 0;
@@ -303,6 +307,21 @@ const Instagram = () => {
       closeButtonRef.current.focus();
     }
   }, [isModalOpen]);
+
+  useEffect(() => {
+    if (!activePost || !activeLikeId) return;
+    if (likeCountById[activeLikeId] !== undefined) return;
+
+    let isActive = true;
+    getGalleryLikeCount(activePost).then(({ success, count }) => {
+      if (!isActive || !success) return;
+      setLikeCountById((prev) => ({ ...prev, [activeLikeId]: count ?? 0 }));
+    });
+
+    return () => {
+      isActive = false;
+    };
+  }, [activePost, activeLikeId, likeCountById]);
 
   const cardVariants = {
     hidden: { opacity: 0, y: 40, scale: 0.95 },
@@ -385,6 +404,17 @@ const Instagram = () => {
     safeSetItem('gatoencerrado:gallery-likes', JSON.stringify(nextLiked));
   }, []);
 
+  const revealLikeCount = useCallback((id) => {
+    if (!id) return;
+    setLikeRevealById((prev) => ({ ...prev, [id]: true }));
+    if (likeRevealTimeoutRef.current) {
+      clearTimeout(likeRevealTimeoutRef.current);
+    }
+    likeRevealTimeoutRef.current = setTimeout(() => {
+      setLikeRevealById((prev) => ({ ...prev, [id]: false }));
+    }, 1500);
+  }, []);
+
   const handleLike = useCallback(async () => {
     if (!activePost || !activeLikeId || likeStatus === 'loading' || isLiked) return;
 
@@ -400,12 +430,25 @@ const Instagram = () => {
         persistLikedPosts(next);
         return next;
       });
+      setLikeCountById((prev) => {
+        const current = typeof prev[activeLikeId] === 'number' ? prev[activeLikeId] : 0;
+        return { ...prev, [activeLikeId]: current + 1 };
+      });
       setLikeStatusById((prev) => ({ ...prev, [activeLikeId]: 'success' }));
+      revealLikeCount(activeLikeId);
       return;
     }
 
     setLikeStatusById((prev) => ({ ...prev, [activeLikeId]: 'error' }));
-  }, [activePost, activeLikeId, isLiked, likeStatus, persistLikedPosts, selectedIndex]);
+  }, [activePost, activeLikeId, isLiked, likeStatus, persistLikedPosts, revealLikeCount, selectedIndex]);
+
+  useEffect(() => (
+    () => {
+      if (likeRevealTimeoutRef.current) {
+        clearTimeout(likeRevealTimeoutRef.current);
+      }
+    }
+  ), []);
 
   return (
     <section id="instagram" className="py-20 relative">
@@ -578,18 +621,20 @@ const Instagram = () => {
                     </div>
                   </div>
                   <div className="flex items-center gap-3 self-start md:self-center">
-                    <button
-                      aria-label="Me gusta"
-                      onClick={handleLike}
-                      className={`flex h-11 w-11 items-center justify-center rounded-full border border-white/20 text-white transition ${
-                        isLiked
-                          ? 'bg-gradient-to-r from-pink-500 via-rose-500 to-purple-500 border-transparent shadow-[0_0_18px_rgba(244,114,182,0.45)]'
-                          : 'hover:bg-white/10'
-                      }`}
-                      disabled={likeStatus === 'loading' || isLiked}
-                    >
-                      <Heart size={18} className={isLiked ? 'fill-current' : undefined} />
-                    </button>
+                    <div className="relative">
+                      <button
+                        aria-label="Me gusta"
+                        onClick={handleLike}
+                        className={`flex h-11 w-11 items-center justify-center rounded-full border border-white/20 text-white transition ${
+                          isLiked
+                            ? 'bg-gradient-to-r from-pink-500 via-rose-500 to-purple-500 border-transparent shadow-[0_0_18px_rgba(244,114,182,0.45)]'
+                            : 'hover:bg-white/10'
+                        }`}
+                        disabled={likeStatus === 'loading' || isLiked}
+                      >
+                        <Heart size={18} className={isLiked ? 'fill-current' : undefined} />
+                      </button>
+                    </div>
                     <button
                       aria-label="Anterior"
                       onClick={showPrev}
@@ -621,6 +666,14 @@ const Instagram = () => {
                     alt={activePost.alt || 'Recuerdo #GatoEncerrado'}
                     className="h-full w-full object-contain"
                   />
+                  {likeRevealById[activeLikeId] ? (
+                    <span
+                      className="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full bg-black/70 px-4 py-2 text-base font-medium uppercase tracking-[0.3em] text-pink-200 shadow-[0_0_24px_rgba(244,114,182,0.45)]"
+                      aria-hidden="true"
+                    >
+                      ❤ {typeof likeCount === 'number' ? likeCount : 0}
+                    </span>
+                  ) : null}
                 </div>
               </motion.div>
             </motion.div>
