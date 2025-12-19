@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Gracias por apoyar · #GatoEncerrado</title>
+    <link rel="icon" href="/assets/favicon.ico" />
+    <style>
+      :root {
+        color-scheme: dark;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 2rem 1.5rem;
+        font-family: "Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        background: radial-gradient(circle at top, #1f1035, #05010c);
+        color: #f8fafc;
+      }
+      main {
+        width: min(640px, 100%);
+        padding: 2.5rem;
+        border-radius: 32px;
+        border: 1px solid rgba(148, 163, 184, 0.25);
+        background: rgba(8, 6, 19, 0.85);
+        box-shadow: 0 40px 80px rgba(0, 0, 0, 0.55);
+        text-align: center;
+      }
+      h1 {
+        margin: 0 0 1rem;
+        font-size: clamp(2rem, 5vw, 2.8rem);
+        letter-spacing: 0.2em;
+        text-transform: uppercase;
+      }
+      p {
+        margin: 0 0 1rem;
+        color: #cbd5f5;
+        line-height: 1.6;
+      }
+      .session {
+        margin-top: 1rem;
+        padding: 1rem 1.25rem;
+        border-radius: 1rem;
+        background: rgba(148, 163, 184, 0.15);
+        font-family: "JetBrains Mono", "SFMono-Regular", ui-monospace, "Roboto Mono", monospace;
+        font-size: 0.85rem;
+        color: #94a3b8;
+        word-break: break-all;
+      }
+      a {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        margin-top: 1.5rem;
+        padding: 0.95rem 1.75rem;
+        border-radius: 999px;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        text-decoration: none;
+        color: #f8fafc;
+        font-weight: 600;
+        background: linear-gradient(135deg, #a855f7, #f472b6);
+      }
+      @media (max-width: 640px) {
+        main {
+          padding: 2rem 1.5rem;
+        }
+        h1 {
+          letter-spacing: 0.12em;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <p style="letter-spacing:0.4em;text-transform:uppercase;font-size:0.85rem;color:#a5b4fc;margin-bottom:1.5rem;">
+        #GatoEncerrado · residencias vivas
+      </p>
+      <h1>Pago confirmado</h1>
+      <p>
+        Gracias por tu aportación. Stripe enviará un correo de confirmación con los detalles y pronto recibirás
+        la línea de reservaciones desde nuestro equipo.
+      </p>
+      <p>Si necesitas ayuda, responde al correo o escríbenos a hola@gatoencerrado.ai.</p>
+      <div id="session" class="session" hidden></div>
+      <a href="/">Volver al universo</a>
+    </main>
+    <script>
+      const el = document.getElementById('session');
+      try {
+        const params = new URLSearchParams(window.location.search);
+        const id = params.get('session_id');
+        if (id) {
+          el.textContent = `ID de sesión: ${id}`;
+          el.hidden = false;
+        }
+      } catch (err) {
+        console.error('No se pudo leer el session_id', err);
+      }
+    </script>
+  </body>
+</html>

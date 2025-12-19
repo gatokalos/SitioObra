@@ -465,7 +465,7 @@ const ReserveModal = ({ open, onClose }) => {
                 {/* Success */}
                 {status === 'success' && (
                   <div className="rounded-lg border border-emerald-500/60 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-200">
-                    ¡Listo! Revisa tu correo para completar tu apartado.
+                    Te enviamos un correo para que tengas listo tu pago antes del evento.
                   </div>
                 )}
 

@@ -1,8 +1,10 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Instagram as InstagramIcon, ExternalLink, AlertCircle, ChevronLeft, ChevronRight, X } from 'lucide-react';
+import { Instagram as InstagramIcon, ExternalLink, AlertCircle, ChevronLeft, ChevronRight, X, Heart } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { getInstagramPostsFromBucket } from '@/services/instagramService';
+import { recordGalleryLike } from '@/services/galleryLikeService';
+import { safeGetItem, safeSetItem } from '@/lib/safeStorage';
 
 const collagePattern = [
   { grid: 'col-span-2 row-span-3 sm:col-span-3 sm:row-span-4 md:col-span-3 md:row-span-3 lg:col-span-3 lg:row-span-4',
@@ -126,6 +128,17 @@ const Instagram = () => {
   const instagramProfileUrl = 'https://www.instagram.com/esungatoencerrado/?hl=en';
   const VISIBLE_COUNT = 15;
   const [selectedIndex, setSelectedIndex] = useState(null);
+  const [likeStatusById, setLikeStatusById] = useState({});
+  const [likedPosts, setLikedPosts] = useState(() => {
+    const stored = safeGetItem('gatoencerrado:gallery-likes');
+    if (!stored) return [];
+    try {
+      const parsed = JSON.parse(stored);
+      return Array.isArray(parsed) ? parsed : [];
+    } catch (error) {
+      return [];
+    }
+  });
   const lastFocusedRef = useRef(null);
   const closeButtonRef = useRef(null);
   const [slots, setSlots] = useState([]);
@@ -278,6 +291,9 @@ const Instagram = () => {
 
   const isModalOpen = selectedIndex !== null;
   const activePost = isModalOpen && posts[selectedIndex] ? posts[selectedIndex] : null;
+  const activeLikeId = activePost?.id || activePost?.filename || activePost?.imgSrc;
+  const likeStatus = activeLikeId ? likeStatusById[activeLikeId] : 'idle';
+  const isLiked = activeLikeId ? likedPosts.includes(activeLikeId) : false;
   const totalPosts = posts.length;
   const currentPosition = selectedIndex !== null ? selectedIndex : 0;
   const progressPercent = totalPosts > 0 ? ((currentPosition + 1) / totalPosts) * 100 : 0;
@@ -364,6 +380,32 @@ const Instagram = () => {
       return candidateSlots;
     });
   }, [posts.length, VISIBLE_COUNT]);
+
+  const persistLikedPosts = useCallback((nextLiked) => {
+    safeSetItem('gatoencerrado:gallery-likes', JSON.stringify(nextLiked));
+  }, []);
+
+  const handleLike = useCallback(async () => {
+    if (!activePost || !activeLikeId || likeStatus === 'loading' || isLiked) return;
+
+    setLikeStatusById((prev) => ({ ...prev, [activeLikeId]: 'loading' }));
+    const { success } = await recordGalleryLike({
+      post: activePost,
+      index: selectedIndex,
+    });
+
+    if (success) {
+      setLikedPosts((prev) => {
+        const next = prev.includes(activeLikeId) ? prev : [...prev, activeLikeId];
+        persistLikedPosts(next);
+        return next;
+      });
+      setLikeStatusById((prev) => ({ ...prev, [activeLikeId]: 'success' }));
+      return;
+    }
+
+    setLikeStatusById((prev) => ({ ...prev, [activeLikeId]: 'error' }));
+  }, [activePost, activeLikeId, isLiked, likeStatus, persistLikedPosts, selectedIndex]);
 
   return (
     <section id="instagram" className="py-20 relative">
@@ -536,6 +578,18 @@ const Instagram = () => {
                     </div>
                   </div>
                   <div className="flex items-center gap-3 self-start md:self-center">
+                    <button
+                      aria-label="Me gusta"
+                      onClick={handleLike}
+                      className={`flex h-11 w-11 items-center justify-center rounded-full border border-white/20 text-white transition ${
+                        isLiked
+                          ? 'bg-gradient-to-r from-pink-500 via-rose-500 to-purple-500 border-transparent shadow-[0_0_18px_rgba(244,114,182,0.45)]'
+                          : 'hover:bg-white/10'
+                      }`}
+                      disabled={likeStatus === 'loading' || isLiked}
+                    >
+                      <Heart size={18} className={isLiked ? 'fill-current' : undefined} />
+                    </button>
                     <button
                       aria-label="Anterior"
                       onClick={showPrev}

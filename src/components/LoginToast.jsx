@@ -32,7 +32,7 @@ const LoginToast = ({ emailHash, onLoginClick, onDismiss }) => {
           onClick={handleLoginClick}
           className="flex-1 rounded-full bg-gradient-to-r from-purple-500 to-fuchsia-500 px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-[#0c031c] shadow-[0_20px_40px_rgba(131,64,255,0.5)] transition hover:-translate-y-0.5"
         >
-          Iniciar sesión
+          ¡Claro!
         </button>
         <button
           type="button"
