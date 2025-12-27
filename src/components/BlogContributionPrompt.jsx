@@ -103,10 +103,17 @@ const BlogContributionPrompt = () => {
   </h3>
 
   <p className="text-slate-300/80 leading-relaxed mb-8 max-w-2xl mx-auto font-light whitespace-pre-line text-center">
-    {`Tal vez ya conocìas lo que es la transmedialidad. O tal vez no. En #GatoEncerrado, la confusión también es parte del viaje.`}
+    {`No todo se entiende a la primera. 
+    Y no pasa nada. 
+    
+    Este universo no se recorre en línea recta. Se avanza, se duda, se vuelve atrás. 
+    
+    En #GatoEncerrado la confusión no es un error: es parte del viaje.
+    
+    `}
 
     <span className="block mt-4 text-sm text-slate-400/70 italic">
-      (A veces basta con dejar que la mente vuelva a su estado silvestre.)
+      (Y a veces basta con dejar que la mente vuelva a su estado silvestre.)
     </span>
   </p>
 

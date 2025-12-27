@@ -450,6 +450,9 @@ const Instagram = () => {
     }
   ), []);
 
+  const isGalleryLoading = !isGalleryDisabled && !error && posts.length === 0;
+  const placeholderSlots = collagePattern.slice(0, Math.min(VISIBLE_COUNT, collagePattern.length));
+
   return (
     <section id="instagram" className="py-20 relative">
       <div className="section-divider mb-20" />
@@ -570,9 +573,18 @@ const Instagram = () => {
               })}
             </AnimatePresence>
           </div>
-        ) : !error && !isGalleryDisabled ? (
-            <div className="text-center text-slate-400 animate-pulse italic">
-              <p>Cargando recuerdos...</p>
+        ) : isGalleryLoading ? (
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 lg:grid-cols-8 auto-rows-[95px] sm:auto-rows-[110px] md:auto-rows-[130px] lg:auto-rows-[150px] gap-2 md:gap-3 lg:gap-3.5">
+              {placeholderSlots.map((pattern, index) => (
+                <div
+                  key={`placeholder-${index}`}
+                  className={`relative h-full w-full ${pattern.grid}`}
+                >
+                  <div
+                    className={`h-full w-full rounded-[20px] bg-white/5 animate-pulse ${pattern.frame}`}
+                  />
+                </div>
+              ))}
             </div>
         ) : null}
 

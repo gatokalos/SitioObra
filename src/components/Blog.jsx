@@ -162,7 +162,17 @@ const ArticleCard = ({ post, onSelect }) => {
 
       <h3 className="font-display text-2xl md:text-3xl font-medium text-slate-100 mb-4">{post.title}</h3>
 
-      <p className="text-slate-300/80 leading-relaxed font-light mb-6">{post.excerpt}</p>
+      <p
+        className="text-slate-300/80 leading-relaxed font-light mb-6"
+        style={{
+          display: '-webkit-box',
+          WebkitLineClamp: 4,
+          WebkitBoxOrient: 'vertical',
+          overflow: 'hidden',
+        }}
+      >
+        {post.excerpt}
+      </p>
 
       {Array.isArray(post.tags) && post.tags.length > 0 ? (
         <div className="flex flex-wrap gap-2 mb-8">
@@ -191,7 +201,7 @@ const ArticleCard = ({ post, onSelect }) => {
 const ArticleCardSkeleton = () => (
   <motion.div
     variants={containerVariants}
-    className="glass-effect rounded-2xl p-8 md:p-10 flex flex-col gap-4 animate-pulse min-h-[520px]"
+    className="glass-effect rounded-2xl p-8 md:p-10 flex flex-col gap-4 animate-pulse min-h-[420px]"
   >
     <div className="h-4 bg-white/10 rounded w-1/3" />
     <div className="h-8 bg-white/10 rounded w-3/4" />
@@ -545,10 +555,10 @@ const Blog = ({ posts = [], isLoading = false, error = null }) => {
               whileInView="visible"
               viewport={{ once: true }}
               variants={{ visible: { transition: { staggerChildren: 0.12 } } }}
-              className="grid md:grid-cols-2 gap-8 min-h-[900px]"
+              className="grid md:grid-cols-2 gap-8 min-h-[1400px]"
             >
               {isLoading ? (
-                Array.from({ length: 4 }).map((_, index) => <ArticleCardSkeleton key={`skeleton-${index}`} />)
+                Array.from({ length: 6 }).map((_, index) => <ArticleCardSkeleton key={`skeleton-${index}`} />)
               ) : filteredPosts.length === 0 ? (
                 <motion.div variants={containerVariants} className="md:col-span-2 text-center text-slate-400 py-12">
                   No encontramos textos con ese criterio. Ajusta el filtro o comparte un nuevo testimonio.

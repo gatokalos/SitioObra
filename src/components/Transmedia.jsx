@@ -150,6 +150,13 @@ const MINIVERSO_TILE_COLORS = {
     accent: '#e9d8fd',
   },
 };
+const ORACULO_URL = (() => {
+  const raw =
+    import.meta.env?.VITE_ORACULO_URL ??
+    import.meta.env?.VITE_BIENVENIDA_URL ??
+    '';
+  return raw ? raw.replace(/\/+$/, '') : '';
+})();
 const TOPIC_BY_SHOWCASE = {
   miniversos: 'obra_escenica',
   copycats: 'cine',
@@ -161,7 +168,8 @@ const TOPIC_BY_SHOWCASE = {
   apps: 'apps',
   oraculo: 'oraculo',
 };
-const MINIVERSO_EDITORIAL_INTERCEPTION_ENABLED = import.meta.env?.VITE_MINIVERSO_INTERCEPTION !== 'false';
+const MINIVERSO_EDITORIAL_INTERCEPTION_ENABLED =
+  import.meta.env?.VITE_MINIVERSO_INTERCEPTION !== 'false';
 const CONTRIBUTION_CATEGORY_BY_SHOWCASE = {
   miniversos: 'obra_escenica',
   copycats: 'cine',
@@ -172,6 +180,31 @@ const CONTRIBUTION_CATEGORY_BY_SHOWCASE = {
   lataza: 'taza',
   apps: 'apps',
   oraculo: 'oraculo',
+};
+const readStoredJson = (key, fallback) => {
+  if (typeof window === 'undefined') return fallback;
+  const raw = window.localStorage?.getItem(key);
+  if (!raw) return fallback;
+  try {
+    return JSON.parse(raw);
+  } catch (error) {
+    return fallback;
+  }
+};
+
+const readStoredInt = (key, fallback) => {
+  if (typeof window === 'undefined') return fallback;
+  const raw = window.localStorage?.getItem(key);
+  if (!raw) return fallback;
+  const parsed = Number.parseInt(raw, 10);
+  return Number.isNaN(parsed) ? fallback : parsed;
+};
+
+const readStoredBool = (key, fallback = false) => {
+  if (typeof window === 'undefined') return fallback;
+  const raw = window.localStorage?.getItem(key);
+  if (raw === null || raw === undefined) return fallback;
+  return raw === 'true';
 };
 const MiniVersoCard = ({
   title,
@@ -405,15 +438,17 @@ const showcaseDefinitions = {
       assets: [
         {
           id: 'copycats-carta',
-          label: 'Carta audiovisual (4:02)',
+          label: 'Ensayo abierto (4:02)',
           url: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Cine%20-%20teasers/ensayos/La%20Cadena%20del%20Gesto.mp4',
         },
       ],
-      tags: ['Cine-ensayo', 'Identidad Digital', 'Archivo autoficcional'],
+      tags: ['teaser', 'Identidad Digital', 'Archivo autoficcional'],
     },
     quiron: {
       title: 'Quirón',
       description: 'Mira el teaser de un cortometraje que busca la vulnerabilidad donde casi nunca se nombra.',
+            tags: ['Cine-ensayo', 'Identidad Digital', 'Archivo autoficcional'],
+
      
       fullVideo: {
         id: 'quiron-full',
@@ -488,7 +523,7 @@ const showcaseDefinitions = {
         'Dos películas, dos vulnerabilidades distintas, un mismo impulso: usar el arte para tocar aquello que no queremos decir en voz alta y encontrar otra manera de contarlo.',
     },
     screening: {
-      title: 'Marzo 2026 · Cineteca CECUT',
+      title: 'Mayo 2026 · Cineteca CECUT',
       description:
         'Únete al universo transmedia y asegura tu acceso al primer screening doble de CopyCats + Quirón, con conservatorio del equipo.',
       cta: 'Quiero ser parte del screening',
@@ -1163,6 +1198,13 @@ const CAUSE_ACCORDION = [
       'Tu suscripción asigna hasta 6 sesiones a un joven sin costo para su familia. Isabel Ayuda para la Vida, A.C. activa las sesiones cuando se detecta riesgo emocional.',
     icon: HeartHandshake,
     metric: '6 sesiones promedio por suscriptor',
+    imageAlt: 'Foto de archivo de acompañamiento emocional.',
+    imageLabel: 'Foto de archivo',
+    imageUrls: [
+  'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/causa%20social/seguimiento1.jpg',
+  'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/causa%20social/seguimiento2.jpeg',
+],
+
   },
   {
     id: 'residencias',
@@ -1171,6 +1213,11 @@ const CAUSE_ACCORDION = [
       'Laboratorios de 2 meses donde arte y acompañamiento reparan memoria y cuerpo. Cada 17 suscripciones financian una residencia completa.',
     icon: Palette,
     metric: '3 residencias activas por temporada',
+    imageAlt: 'Foto de archivo de residencias creativas.',
+    imageLabel: 'Foto de archivo',
+    imageUrls: [
+      'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/causa%20social/residencias_creativas.jpeg',
+    ],
   },
   {
     id: 'app-escolar',
@@ -1179,8 +1226,130 @@ const CAUSE_ACCORDION = [
       'Implementación y seguimiento semestral de la app de detección temprana. 75 suscripciones financian 1 escuela por semestre.',
     icon: Smartphone,
     metric: '5 escuelas atendidas por ciclo escolar',
+    imageAlt: 'Foto de archivo de app en escuelas.',
+    imageLabel: 'Foto de archivo',
+    imageUrls: [
+      'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/causa%20social/aplicacion_instrumento.jpg',
+    ],
   },
 ];
+
+const CauseImpactAccordion = ({ items, onOpenImagePreview }) => {
+  const [openCauseId, setOpenCauseId] = useState(items?.[0]?.id ?? null);
+
+  return (
+    <div className="mt-4 space-y-3">
+      {items.map((item) => {
+        const Icon = item.icon;
+        const isOpen = openCauseId === item.id;
+        const images = Array.isArray(item.imageUrls)
+          ? item.imageUrls.filter(Boolean)
+          : [];
+        const fullImages = Array.isArray(item.imageUrlsFull)
+          ? item.imageUrlsFull.filter(Boolean)
+          : [];
+        const primaryImage = images[0];
+        const getFullImage = (index) => fullImages[index] || images[index];
+        return (
+          <div
+            key={item.id}
+            className="border border-white/10 rounded-2xl bg-black/20 overflow-hidden transition"
+          >
+            <button
+              type="button"
+              onClick={() => setOpenCauseId((prev) => (prev === item.id ? null : item.id))}
+              className="w-full flex items-center justify-between gap-4 px-4 py-3 text-left hover:bg-white/5 transition"
+            >
+              <div className="flex items-center gap-3">
+                <div className="p-2 rounded-full bg-purple-500/15 text-purple-200">
+                  <Icon size={18} />
+                </div>
+                <div>
+                  <p className="font-medium text-slate-100">{item.title}</p>
+                  <p className="text-xs text-slate-400">{item.metric}</p>
+                </div>
+              </div>
+              <span className="text-xs uppercase tracking-[0.35em] text-slate-500">
+                {isOpen ? 'Ocultar' : 'Ver impacto'}
+              </span>
+            </button>
+            {isOpen ? (
+              <div className="px-4 pb-4 text-sm text-slate-300/90">
+                <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
+                  <div className="hidden md:block">
+                    {primaryImage ? (
+                      <button
+                        type="button"
+                        onClick={() =>
+                          onOpenImagePreview({
+                            src: getFullImage(0),
+                            title: item.title,
+                            description: item.description,
+                            label: item.imageLabel,
+                          })
+                        }
+                        className="shrink-0 w-[130px] rounded-xl border border-white/10 bg-black/20 hover:border-purple-300/60 hover:shadow-[0_0_18px_rgba(168,85,247,0.2)]"
+                        aria-label="Abrir foto de archivo"
+                      >
+                        <img
+                          src={primaryImage}
+                          alt={item.imageAlt || `Foto de ${item.title}`}
+                          className="h-[90px] w-[130px] rounded-xl object-cover opacity-80"
+                          loading="lazy"
+                          decoding="async"
+                        />
+                      </button>
+                    ) : (
+                      <div className="shrink-0 w-[130px] rounded-xl border border-white/10 bg-black/20">
+                        <div className="flex h-[90px] w-[130px] items-center justify-center rounded-xl text-[10px] uppercase tracking-[0.3em] text-slate-500/80">
+                          Foto
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                  <div className="md:pr-4">
+                    <p>{item.description}</p>
+                    <div className="mt-3 md:hidden">
+                      {images.length ? (
+                        <button
+                          type="button"
+                          onClick={() =>
+                            onOpenImagePreview({
+                              src: getFullImage(0),
+                              title: item.title,
+                              description: item.description,
+                              label: item.imageLabel,
+                            })
+                          }
+                          className="w-full rounded-xl border border-white/10 bg-black/20 hover:border-purple-300/60 hover:shadow-[0_0_18px_rgba(168,85,247,0.2)]"
+                          aria-label="Abrir foto de archivo"
+                        >
+                          <img
+                            src={images[0]}
+                            alt={item.imageAlt || `Foto de ${item.title}`}
+                            className="w-full aspect-square rounded-xl object-cover opacity-80"
+                            loading="lazy"
+                            decoding="async"
+                          />
+                        </button>
+                      ) : (
+                        <div className="rounded-xl border border-white/10 bg-black/20">
+                          <div className="flex aspect-square items-center justify-center rounded-xl text-[10px] uppercase tracking-[0.3em] text-slate-500/80">
+                            Foto
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ) : null}
+          </div>
+        );
+      })}
+    </div>
+  );
+};
 
 const AutoficcionPreviewOverlay = ({ open, onClose }) => {
   if (!open || typeof document === 'undefined') {
@@ -1248,13 +1417,27 @@ const Transmedia = () => {
     formats.forEach((format) => registerEnergy(format.id, format.iaTokensNote));
     return map;
   }, []);
+  const initialQuironSpent = readStoredBool('gatoencerrado:quiron-spent', false);
+  const initialNovelaQuestions = readStoredInt('gatoencerrado:novela-questions', 0);
+  const initialGraphicSpent = readStoredBool('gatoencerrado:graphic-spent', false);
+  const initialSonoroSpent = readStoredBool('gatoencerrado:sonoro-spent', false);
+  const initialTazaActivations = readStoredInt('gatoencerrado:taza-activations', 0);
+  const initialAvailableGATokens = readStoredInt('gatoencerrado:gatokens-available', 150);
+  const storedEnergy = readStoredJson('gatoencerrado:showcase-energy', null);
+  const initialShowcaseEnergy = storedEnergy
+    ? { ...baseEnergyByShowcase, ...storedEnergy }
+    : baseEnergyByShowcase;
+  const initialShowcaseBoosts = readStoredJson('gatoencerrado:showcase-boosts', {});
+  const storedBadge = readStoredJson(EXPLORER_BADGE_STORAGE_KEY, null);
+  const initialExplorerBadge = storedBadge
+    ? { ...DEFAULT_BADGE_STATE, ...storedBadge }
+    : DEFAULT_BADGE_STATE;
 
   const [isMiniverseOpen, setIsMiniverseOpen] = useState(false);
   const [miniverseContext, setMiniverseContext] = useState(null);
   const [activeShowcase, setActiveShowcase] = useState(null);
   const [showcaseContent, setShowcaseContent] = useState({});
   const showcaseRef = useRef(null);
-  const [openCauseId, setOpenCauseId] = useState(CAUSE_ACCORDION[0].id);
   const [imagePreview, setImagePreview] = useState(null);
   const [pdfPreview, setPdfPreview] = useState(null);
   const [pdfNumPages, setPdfNumPages] = useState(null);
@@ -1281,16 +1464,16 @@ const Transmedia = () => {
   const [openCollaboratorId, setOpenCollaboratorId] = useState(null);
   const { isMobileViewport, canUseInlinePlayback, requestMobileVideoPresentation } = useMobileVideoPresentation();
   const { user } = useAuth();
-  const [quironSpent, setQuironSpent] = useState(false);
-  const [graphicSpent, setGraphicSpent] = useState(false);
-  const [novelaQuestions, setNovelaQuestions] = useState(0);
-  const [sonoroSpent, setSonoroSpent] = useState(false);
-  const [tazaActivations, setTazaActivations] = useState(0);
+  const [quironSpent, setQuironSpent] = useState(initialQuironSpent);
+  const [graphicSpent, setGraphicSpent] = useState(initialGraphicSpent);
+  const [novelaQuestions, setNovelaQuestions] = useState(initialNovelaQuestions);
+  const [sonoroSpent, setSonoroSpent] = useState(initialSonoroSpent);
+  const [tazaActivations, setTazaActivations] = useState(initialTazaActivations);
   const [showQuironCommunityPrompt, setShowQuironCommunityPrompt] = useState(false);
   const [isQuironUnlocking, setIsQuironUnlocking] = useState(false);
   const [showQuironCoins, setShowQuironCoins] = useState(false);
-  const [isQuironFullVisible, setIsQuironFullVisible] = useState(false);
-  const [availableGATokens, setAvailableGATokens] = useState(150);
+  const [isQuironFullVisible, setIsQuironFullVisible] = useState(initialQuironSpent);
+  const [availableGATokens, setAvailableGATokens] = useState(initialAvailableGATokens);
   const [isNovelaSubmitting, setIsNovelaSubmitting] = useState(false);
   const [showNovelaCoins, setShowNovelaCoins] = useState(false);
   const [showSonoroCoins, setShowSonoroCoins] = useState(false);
@@ -1301,11 +1484,11 @@ const Transmedia = () => {
   const [tapIndex, setTapIndex] = useState(0);
   const [isContributionOpen, setIsContributionOpen] = useState(false);
   const [contributionCategoryId, setContributionCategoryId] = useState(null);
-  const [explorerBadge, setExplorerBadge] = useState(DEFAULT_BADGE_STATE);
+  const [explorerBadge, setExplorerBadge] = useState(initialExplorerBadge);
   const [showBadgeCoins, setShowBadgeCoins] = useState(false);
   const [showBadgeLoginOverlay, setShowBadgeLoginOverlay] = useState(false);
-  const [showcaseEnergy, setShowcaseEnergy] = useState({});
-  const [showcaseBoosts, setShowcaseBoosts] = useState({});
+  const [showcaseEnergy, setShowcaseEnergy] = useState(initialShowcaseEnergy);
+  const [showcaseBoosts, setShowcaseBoosts] = useState(initialShowcaseBoosts);
   const [celebratedShowcaseId, setCelebratedShowcaseId] = useState(null);
   const celebrationTimeoutRef = useRef(null);
   const badgeCoinsTimeoutRef = useRef(null);
@@ -1313,6 +1496,7 @@ const Transmedia = () => {
   const [publicContributionsLoading, setPublicContributionsLoading] = useState({});
   const [publicContributionsError, setPublicContributionsError] = useState({});
   const [commentCarouselIndex, setCommentCarouselIndex] = useState(0);
+  const [isOraculoOpen, setIsOraculoOpen] = useState(false);
   const isAuthenticated = Boolean(user);
   const isSubscriber = Boolean(
     user?.user_metadata?.isSubscriber ||
@@ -1327,65 +1511,15 @@ const Transmedia = () => {
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
-    const storedSpent = window.localStorage?.getItem('gatoencerrado:quiron-spent');
-    if (storedSpent === 'true') {
-      setQuironSpent(true);
-      setIsQuironFullVisible(true);
+    const storage = window.localStorage;
+    if (!storage) return;
+    if (!storage.getItem('gatoencerrado:gatokens-available')) {
+      storage.setItem('gatoencerrado:gatokens-available', String(initialAvailableGATokens));
     }
-    const novelaStored = window.localStorage?.getItem('gatoencerrado:novela-questions');
-    if (novelaStored && !Number.isNaN(Number.parseInt(novelaStored, 10))) {
-      setNovelaQuestions(Number.parseInt(novelaStored, 10));
+    if (!storage.getItem('gatoencerrado:showcase-energy')) {
+      storage.setItem('gatoencerrado:showcase-energy', JSON.stringify(baseEnergyByShowcase));
     }
-    const graphicStored = window.localStorage?.getItem('gatoencerrado:graphic-spent');
-    if (graphicStored === 'true') {
-      setGraphicSpent(true);
-    }
-    const sonoroStored = window.localStorage?.getItem('gatoencerrado:sonoro-spent');
-    if (sonoroStored === 'true') {
-      setSonoroSpent(true);
-    }
-    const storedBalance = window.localStorage?.getItem('gatoencerrado:gatokens-available');
-    if (storedBalance && !Number.isNaN(Number.parseInt(storedBalance, 10))) {
-      setAvailableGATokens(Number.parseInt(storedBalance, 10));
-    } else {
-      window.localStorage?.setItem('gatoencerrado:gatokens-available', '150');
-    }
-    const tazaStored = window.localStorage?.getItem('gatoencerrado:taza-activations');
-    if (tazaStored && !Number.isNaN(Number.parseInt(tazaStored, 10))) {
-      setTazaActivations(Number.parseInt(tazaStored, 10));
-    }
-    const energyStored = window.localStorage?.getItem('gatoencerrado:showcase-energy');
-    if (energyStored) {
-      try {
-        const parsed = JSON.parse(energyStored);
-        setShowcaseEnergy({ ...baseEnergyByShowcase, ...parsed });
-      } catch (error) {
-        console.warn('Error parsing showcase energy cache', error);
-        setShowcaseEnergy(baseEnergyByShowcase);
-      }
-    } else {
-      setShowcaseEnergy(baseEnergyByShowcase);
-      window.localStorage?.setItem('gatoencerrado:showcase-energy', JSON.stringify(baseEnergyByShowcase));
-    }
-    const boostsStored = window.localStorage?.getItem('gatoencerrado:showcase-boosts');
-    if (boostsStored) {
-      try {
-        setShowcaseBoosts(JSON.parse(boostsStored));
-      } catch (error) {
-        console.warn('Error parsing showcase boosts cache', error);
-        setShowcaseBoosts({});
-      }
-    }
-    const badgeStored = window.localStorage?.getItem(EXPLORER_BADGE_STORAGE_KEY);
-    if (badgeStored) {
-      try {
-        const parsed = JSON.parse(badgeStored);
-        setExplorerBadge((prev) => ({ ...prev, ...parsed }));
-      } catch (error) {
-        console.warn('Error parsing explorer badge cache', error);
-      }
-    }
-  }, [baseEnergyByShowcase]);
+  }, [baseEnergyByShowcase, initialAvailableGATokens]);
 
   useEffect(() => {
     if (typeof window === 'undefined') return undefined;
@@ -1778,6 +1912,7 @@ const Transmedia = () => {
       src: payload.src,
       title: payload.title ?? '',
       description: payload.description ?? '',
+      label: payload.label ?? '',
     });
   }, []);
 
@@ -1949,8 +2084,23 @@ const Transmedia = () => {
     setPdfNumPages(numPages);
   }, []);
 
+  const handleOpenOraculo = useCallback(() => {
+    if (!ORACULO_URL) {
+      toast({
+        description: 'Falta configurar la URL del Oráculo (VITE_ORACULO_URL).',
+      });
+      return;
+    }
+    setIsOraculoOpen(true);
+  }, []);
+
+  const handleCloseOraculo = useCallback(() => {
+    setIsOraculoOpen(false);
+  }, []);
+
   const activeDefinition = activeShowcase ? showcaseDefinitions[activeShowcase] : null;
   const activeData = activeShowcase ? showcaseContent[activeShowcase] : null;
+  const isCinematicShowcaseOpen = Boolean(activeDefinition);
   const activeParagraphs = useMemo(() => {
     if (!activeData?.post?.content) {
       return [];
@@ -1959,10 +2109,38 @@ const Transmedia = () => {
   }, [activeData]);
 
   useEffect(() => {
-    if (activeShowcase && showcaseRef.current) {
+    if (activeShowcase && showcaseRef.current && !isCinematicShowcaseOpen) {
       showcaseRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
-  }, [activeShowcase]);
+  }, [activeShowcase, isCinematicShowcaseOpen]);
+
+  useEffect(() => {
+    if (!isCinematicShowcaseOpen) {
+      document.body.classList.remove('overflow-hidden');
+      document.documentElement.style.overflow = '';
+      document.body.style.overflow = '';
+      return;
+    }
+    document.body.classList.add('overflow-hidden');
+    document.documentElement.style.overflow = 'hidden';
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.body.classList.remove('overflow-hidden');
+      document.documentElement.style.overflow = '';
+      document.body.style.overflow = '';
+    };
+  }, [isCinematicShowcaseOpen]);
+
+  useEffect(() => {
+    if (!isCinematicShowcaseOpen) return undefined;
+    const handleKeyDown = (event) => {
+      if (event.key === 'Escape') {
+        setActiveShowcase(null);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isCinematicShowcaseOpen]);
 
   useEffect(() => {
     if (activeShowcase !== 'apps') {
@@ -1979,12 +2157,38 @@ const Transmedia = () => {
   }, [activeShowcase]);
 
   useEffect(() => {
+    if (activeShowcase !== 'oraculo') {
+      setIsOraculoOpen(false);
+    }
+  }, [activeShowcase]);
+
+  useEffect(() => {
     if (activeShowcase !== 'lataza') {
       setIsTazaARActive(false);
       setIsMobileARFullscreen(false);
-      document.body.classList.remove('overflow-hidden');
+      if (!isCinematicShowcaseOpen) {
+        document.body.classList.remove('overflow-hidden');
+      }
     }
-  }, [activeShowcase]);
+  }, [activeShowcase, isCinematicShowcaseOpen]);
+
+  useEffect(() => {
+    if (!isOraculoOpen) {
+      return undefined;
+    }
+    const handleKeyDown = (event) => {
+      if (event.key === 'Escape') {
+        event.preventDefault();
+        event.stopPropagation();
+        if (typeof event.stopImmediatePropagation === 'function') {
+          event.stopImmediatePropagation();
+        }
+        setIsOraculoOpen(false);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown, true);
+    return () => window.removeEventListener('keydown', handleKeyDown, true);
+  }, [isOraculoOpen]);
 
   useEffect(() => {
     if (!imagePreview && !pdfPreview) {
@@ -2811,11 +3015,7 @@ const rendernotaAutoral = () => {
                 <Button
                   variant="outline"
                   className="border-purple-400/40 text-purple-200 hover:bg-purple-500/10"
-                  onClick={() =>
-                    toast({
-                      description: 'Muy pronto abriremos el Oráculo interactivo para mintear tus GATokens.',
-                    })
-                  }
+                  onClick={handleOpenOraculo}
                 >
                   {activeDefinition.ctaLabel}
                 </Button>
@@ -3856,11 +4056,20 @@ const rendernotaAutoral = () => {
                 <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Cortometraje</p>
                 <div className="flex flex-wrap items-baseline gap-2">
                   <h4 className="font-display text-xl text-slate-100">{activeDefinition.quiron?.title}</h4>
-                  <span className="text-[11px] uppercase tracking-[0.3em] text-rose-300">Teaser + stills</span>
+                  
                 </div>
+                
               </div>
               <p className="text-sm text-slate-300/80 leading-relaxed">{activeDefinition.quiron?.description}</p>
               <p className="text-sm text-slate-200/90 leading-relaxed">{activeDefinition.quiron?.microcopy}</p>
+              {activeDefinition.copycats.tags.map((tag, index) => (
+                      <span
+                        key={`quiron-tag-${index}`}
+                        className="px-3 py-1 rounded-full border border-purple-400/30 bg-purple-900/20 text-xs text-purple-100"
+                      >
+                        {tag}
+                      </span>
+                    ))}
               {activeDefinition.quiron?.teaser ? (
                 <div>{renderMedia(activeDefinition.quiron.teaser)}</div>
               ) : null}
@@ -4337,6 +4546,178 @@ const rendernotaAutoral = () => {
     );
   };
 
+  const showcaseOverlay = typeof document !== 'undefined'
+    ? createPortal(
+      <AnimatePresence>
+        {activeDefinition ? (
+          <motion.div
+            key="showcase-overlay"
+            className="fixed inset-0 z-[140] flex items-center justify-center px-5 py-10"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+          >
+            <motion.div
+              className="absolute inset-0 bg-gradient-to-b from-black/95 via-slate-950/90 to-black/95"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setActiveShowcase(null)}
+            />
+            <div
+              className="pointer-events-none absolute inset-0 opacity-90 mix-blend-screen"
+              aria-hidden="true"
+              style={{
+                backgroundImage:
+                  'radial-gradient(2px 2px at 6% 8%, rgba(248,250,252,0.7), transparent 65%),' +
+                  'radial-gradient(2px 2px at 12% 18%, rgba(248,250,252,0.75), transparent 65%),' +
+                  'radial-gradient(1.5px 1.5px at 18% 32%, rgba(241,245,249,0.55), transparent 70%),' +
+                  'radial-gradient(2px 2px at 22% 12%, rgba(226,232,240,0.6), transparent 65%),' +
+                  'radial-gradient(1px 1px at 28% 22%, rgba(255,255,255,0.35), transparent 70%),' +
+                  'radial-gradient(1.5px 1.5px at 32% 44%, rgba(241,245,249,0.55), transparent 70%),' +
+                  'radial-gradient(2px 2px at 35% 72%, rgba(241,245,249,0.55), transparent 70%),' +
+                  'radial-gradient(1px 1px at 40% 12%, rgba(255,255,255,0.35), transparent 70%),' +
+                  'radial-gradient(1.5px 1.5px at 44% 62%, rgba(226,232,240,0.55), transparent 70%),' +
+                  'radial-gradient(1px 1px at 48% 28%, rgba(255,255,255,0.35), transparent 70%),' +
+                  'radial-gradient(2px 2px at 50% 40%, rgba(255,255,255,0.4), transparent 70%),' +
+                  'radial-gradient(1px 1px at 54% 18%, rgba(255,255,255,0.35), transparent 70%),' +
+                  'radial-gradient(1.5px 1.5px at 58% 52%, rgba(226,232,240,0.55), transparent 70%),' +
+                  'radial-gradient(1.5px 1.5px at 62% 58%, rgba(226,232,240,0.55), transparent 70%),' +
+                  'radial-gradient(1px 1px at 66% 34%, rgba(255,255,255,0.35), transparent 70%),' +
+                  'radial-gradient(2px 2px at 70% 16%, rgba(226,232,240,0.6), transparent 65%),' +
+                  'radial-gradient(2px 2px at 78% 26%, rgba(226,232,240,0.6), transparent 65%),' +
+                  'radial-gradient(1px 1px at 82% 46%, rgba(255,255,255,0.35), transparent 70%),' +
+                  'radial-gradient(1.5px 1.5px at 86% 62%, rgba(241,245,249,0.55), transparent 70%),' +
+                  'radial-gradient(2px 2px at 88% 78%, rgba(248,250,252,0.7), transparent 65%),' +
+                  'radial-gradient(1.5px 1.5px at 92% 22%, rgba(241,245,249,0.55), transparent 70%),' +
+                  'radial-gradient(1.5px 1.5px at 22% 84%, rgba(226,232,240,0.5), transparent 70%),' +
+                  'radial-gradient(1px 1px at 8% 48%, rgba(255,255,255,0.35), transparent 70%)',
+              }}
+            />
+            <motion.div
+              ref={showcaseRef}
+              className="relative z-10 w-full max-w-6xl max-h-[88vh] overflow-y-auto rounded-[28px] border border-white/15 bg-slate-950/55 backdrop-blur-2xl p-6 md:p-10 shadow-[0_35px_120px_rgba(0,0,0,0.65)]"
+              initial={{ scale: 0.96, opacity: 0, y: 18 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.96, opacity: 0, y: 18 }}
+              transition={{ type: 'spring', stiffness: 220, damping: 24 }}
+            >
+              {activeDefinition.type !== 'tragedia' ? (
+                <div className="flex justify-end">
+                  <button
+                    onClick={() => setActiveShowcase(null)}
+                    className="text-sm text-slate-400 hover:text-white transition"
+                    aria-label="Cerrar escaparate"
+                  >
+                    Cerrar escaparate ✕
+                  </button>
+                </div>
+              ) : null}
+              {activeDefinition.type !== 'tragedia' ? (
+                <div className="flex flex-col gap-6 md:flex-row md:items-start md:gap-10 pr-0">
+                  <div className="flex-1 space-y-6">
+                    <p className="text-xs uppercase tracking-[0.4em] text-slate-400/70 mb-2">Escaparate</p>
+                    <h3 className="font-display text-3xl text-slate-100 mb-3">{activeDefinition.label}</h3>
+                    <p className="text-slate-300/80 leading-relaxed font-light max-w-3xl">{activeDefinition.intro}</p>
+                    {activeDefinition.iaProfile ? (
+                      <div className="max-w-xl">
+                        <IAInsightCard {...activeDefinition.iaProfile} compact />
+                      </div>
+                    ) : null}
+                  </div>
+                  <div className="md:w-[360px] flex-shrink-0">
+                    {rendernotaAutoral()}
+                  </div>
+                </div>
+              ) : null}
+
+              <div className="mt-8">{renderShowcaseContent()}</div>
+            </motion.div>
+          </motion.div>
+        ) : null}
+      </AnimatePresence>,
+      document.body,
+    )
+    : null;
+
+  const oraculoOverlay = typeof document !== 'undefined'
+    ? createPortal(
+      <AnimatePresence>
+        {isOraculoOpen ? (
+          <motion.div
+            key="oraculo-iframe"
+            className="fixed inset-0 z-[170] flex items-center justify-center px-4 py-6"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+          >
+            <motion.div
+              className="absolute inset-0 bg-black/85 backdrop-blur-md"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={handleCloseOraculo}
+            />
+            <motion.div
+              role="dialog"
+              aria-modal="true"
+              aria-label="Oráculo interactivo"
+              className="relative z-10 w-full max-w-5xl overflow-hidden rounded-3xl border border-white/10 bg-slate-950/90 shadow-[0_35px_120px_rgba(0,0,0,0.65)]"
+              initial={{ scale: 0.96, opacity: 0, y: 18 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.96, opacity: 0, y: 18 }}
+              transition={{ type: 'spring', stiffness: 220, damping: 24 }}
+            >
+              <div className="flex flex-col gap-3 border-b border-white/10 px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                  <p className="text-xs uppercase tracking-[0.35em] text-slate-400/80">Oráculo en vivo</p>
+                  <h3 className="font-display text-2xl text-slate-100">Demo completa</h3>
+                </div>
+                <div className="flex items-center gap-3 text-sm">
+                  {ORACULO_URL ? (
+                    <a
+                      href={ORACULO_URL}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="text-purple-200 underline underline-offset-4 hover:text-white"
+                    >
+                      Abrir en nueva pestaña
+                    </a>
+                  ) : null}
+                  <button
+                    type="button"
+                    onClick={handleCloseOraculo}
+                    className="text-slate-300 hover:text-white transition"
+                  >
+                    Cerrar ✕
+                  </button>
+                </div>
+              </div>
+              <div className="h-[72vh] bg-black">
+                {ORACULO_URL ? (
+                  <iframe
+                    title="Oráculo interactivo"
+                    src={ORACULO_URL}
+                    className="h-full w-full"
+                    frameBorder="0"
+                    allow="autoplay; fullscreen; picture-in-picture; clipboard-write"
+                    allowFullScreen
+                    referrerPolicy="strict-origin-when-cross-origin"
+                  />
+                ) : (
+                  <div className="flex h-full items-center justify-center text-sm text-slate-400">
+                    URL del Oráculo no configurada.
+                  </div>
+                )}
+              </div>
+            </motion.div>
+          </motion.div>
+        ) : null}
+      </AnimatePresence>,
+      document.body,
+    )
+    : null;
+
   return (
     <>
       <section id="transmedia" className="py-24 relative min-h-[1200px]">
@@ -4384,13 +4765,26 @@ const rendernotaAutoral = () => {
               const iconClass = format.iconClass ?? 'text-purple-200';
               const tileGradient =
                 MINIVERSO_TILE_GRADIENTS[format.id] ?? MINIVERSO_TILE_GRADIENTS.default;
+              const isActiveTile = activeShowcase === format.id;
+              const isDimmedTile = isCinematicShowcaseOpen && !isActiveTile;
               return (
                 <motion.div
                   key={format.id}
                   initial={false}
-                  animate={{ opacity: 1, y: 0 }}
+                  animate={{
+                    opacity: isDimmedTile ? 0 : 1,
+                    scale: isCinematicShowcaseOpen ? (isActiveTile ? 1.06 : 0.96) : 1,
+                    y: isCinematicShowcaseOpen ? (isActiveTile ? -8 : 10) : 0,
+                    filter: isCinematicShowcaseOpen
+                      ? isActiveTile
+                        ? 'saturate(1.1)'
+                        : 'saturate(0.6) blur(3px)'
+                      : 'saturate(1)',
+                  }}
                   transition={{ duration: 0.4, delay: index * 0.05, ease: 'easeOut' }}
-                  className="group glass-effect rounded-xl p-8 hover-glow cursor-pointer flex flex-col transition-all duration-300 hover:border-purple-400/50 relative overflow-hidden"
+                  className={`group glass-effect rounded-xl p-8 hover-glow cursor-pointer flex flex-col transition-all duration-300 hover:border-purple-400/50 relative overflow-hidden ${
+                    isDimmedTile ? 'pointer-events-none' : ''
+                  }`}
                   onClick={() => handleFormatClick(format.id)}
                 >
                   <div
@@ -4471,47 +4865,8 @@ const rendernotaAutoral = () => {
               );
             })}
           </div>
-
-          {activeDefinition ? (
-            <motion.div
-              ref={showcaseRef}
-              initial={{ opacity: 0, y: 30 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, ease: 'easeOut' }}
-              className="relative mt-12 glass-effect rounded-2xl p-8 md:p-12 border border-white/10"
-            >
-              {activeDefinition.type !== 'tragedia' ? (
-                <div className="flex justify-end">
-                  <button
-                    onClick={() => setActiveShowcase(null)}
-                    className="text-sm text-slate-400 hover:text-white transition"
-                    aria-label="Cerrar escaparate"
-                  >
-                    Cerrar escaparate ✕
-                  </button>
-                </div>
-              ) : null}
-              {activeDefinition.type !== 'tragedia' ? (
-                <div className="flex flex-col gap-6 md:flex-row md:items-start md:gap-10 pr-0">
-                  <div className="flex-1 space-y-6">
-                    <p className="text-xs uppercase tracking-[0.4em] text-slate-400/70 mb-2">Escaparate</p>
-                    <h3 className="font-display text-3xl text-slate-100 mb-3">{activeDefinition.label}</h3>
-                    <p className="text-slate-300/80 leading-relaxed font-light max-w-3xl">{activeDefinition.intro}</p>
-                    {activeDefinition.iaProfile ? (
-                      <div className="max-w-xl">
-                        <IAInsightCard {...activeDefinition.iaProfile} compact />
-                      </div>
-                    ) : null}
-                  </div>
-                  <div className="md:w-[360px] flex-shrink-0">
-                    {rendernotaAutoral()}
-                  </div>
-                </div>
-              ) : null}
-
-              <div className="mt-8">{renderShowcaseContent()}</div>
-            </motion.div>
-          ) : null}
+          {showcaseOverlay}
+          {oraculoOverlay}
 
           {renderExplorerBadge()}
 
@@ -4558,40 +4913,10 @@ const rendernotaAutoral = () => {
           las familias cuando se detecta riesgo, gracias a la combinación de suscripciones, aportes simbólicos y apoyos institucionales.
         </p>
 
-                <div className="mt-4 space-y-3">
-                  {CAUSE_ACCORDION.map((item) => {
-                    const Icon = item.icon;
-                    const isOpen = openCauseId === item.id;
-                    return (
-                      <div
-                        key={item.id}
-                        className="border border-white/10 rounded-2xl bg-black/20 overflow-hidden transition"
-                      >
-                        <button
-                          type="button"
-                          onClick={() => setOpenCauseId((prev) => (prev === item.id ? null : item.id))}
-                          className="w-full flex items-center justify-between gap-4 px-4 py-3 text-left hover:bg-white/5 transition"
-                        >
-                          <div className="flex items-center gap-3">
-                            <div className="p-2 rounded-full bg-purple-500/15 text-purple-200">
-                              <Icon size={18} />
-                            </div>
-                            <div>
-                              <p className="font-medium text-slate-100">{item.title}</p>
-                              <p className="text-xs text-slate-400">{item.metric}</p>
-                            </div>
-                          </div>
-                          <span className="text-xs uppercase tracking-[0.35em] text-slate-500">
-                            {isOpen ? 'Ocultar' : 'Ver impacto'}
-                          </span>
-                        </button>
-                        {isOpen ? (
-                          <div className="px-4 pb-4 text-sm text-slate-300/90">{item.description}</div>
-                        ) : null}
-                      </div>
-                    );
-                  })}
-                </div>
+                <CauseImpactAccordion
+                  items={CAUSE_ACCORDION}
+                  onOpenImagePreview={handleOpenImagePreview}
+                />
               </div>
 
               <div className="mt-8 flex flex-col gap-4 md:flex-row md:items-center">
@@ -4641,11 +4966,12 @@ const rendernotaAutoral = () => {
           setContributionCategoryId(null);
         }}
         initialCategoryId={contributionCategoryId}
+        presentation="sheet"
       />
       {showBadgeLoginOverlay ? <LoginOverlay onClose={handleCloseBadgeLogin} /> : null}
 
       {pdfPreview ? (
-        <div className="fixed inset-0 z-50 flex items-center justify-center px-4 py-10">
+        <div className="fixed inset-0 z-[190] flex items-center justify-center px-4 py-10">
           <div className="absolute inset-0 bg-black/80 backdrop-blur-sm" onClick={handleClosePdfPreview} />
           <div className="relative z-10 w-full max-w-5xl space-y-4">
             <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
@@ -4701,7 +5027,7 @@ const rendernotaAutoral = () => {
       ) : null}
 
       {MINIVERSO_EDITORIAL_INTERCEPTION_ENABLED && isMiniversoEditorialModalOpen ? (
-        <div className="fixed inset-0 z-50 flex items-center justify-center px-4 py-10">
+        <div className="fixed inset-0 z-[190] flex items-center justify-center px-4 py-10">
           <div className="absolute inset-0 bg-black/80 backdrop-blur-sm" onClick={handleCloseMiniversoEditorialModal} />
           <div className="relative z-10 w-full max-w-xl">
             <div className="glass-effect rounded-3xl border border-white/10 bg-slate-950/95 shadow-2xl p-8 md:p-10 text-center space-y-6">
@@ -4730,7 +5056,7 @@ const rendernotaAutoral = () => {
       ) : null}
 
       {imagePreview ? (
-        <div className="fixed inset-0 z-50 flex items-center justify-center px-4 py-10">
+        <div className="fixed inset-0 z-[190] flex items-center justify-center px-4 py-10">
           <div className="absolute inset-0 bg-black/80 backdrop-blur-sm" onClick={handleCloseImagePreview} />
           <div className="relative z-10 w-full max-w-3xl">
             <div className="flex justify-end mb-4">
@@ -4754,7 +5080,9 @@ const rendernotaAutoral = () => {
                   {imagePreview.description ? (
                     <p className="text-sm text-slate-300/80 leading-relaxed">{imagePreview.description}</p>
                   ) : null}
-                  <p className="text-xs uppercase tracking-[0.4em] text-slate-500">Ilustración de la novela</p>
+                  <p className="text-xs uppercase tracking-[0.4em] text-slate-500">
+                    {imagePreview.label || 'Ilustración de la novela'}
+                  </p>
                 </div>
               ) : null}
             </div>

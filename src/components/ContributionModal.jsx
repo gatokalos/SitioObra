@@ -3,6 +3,7 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { toast } from '@/components/ui/use-toast';
 import { safeGetItem, safeRemoveItem, safeSetItem } from '@/lib/safeStorage';
+import logoApp from '/assets/logoapp.png';
 import {
   Drama,
   BookOpen,
@@ -94,6 +95,11 @@ const modalVariants = {
   visible: { opacity: 1, y: 0, scale: 1, transition: { duration: 0.35, ease: 'easeOut' } },
   exit: { opacity: 0, y: 20, scale: 0.97, transition: { duration: 0.2, ease: 'easeIn' } },
 };
+const sheetVariants = {
+  hidden: { opacity: 0, y: 90 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.4, ease: 'easeOut' } },
+  exit: { opacity: 0, y: 50, transition: { duration: 0.25, ease: 'easeIn' } },
+};
 
 const initialFormState = {
   name: '',
@@ -120,8 +126,15 @@ const formTitlesByUniverse = {
   movimiento: 'Cuéntanos qué ruta, coreografía o ritual colectivo quieres activar en la ciudad.',
 };
 
-const ContributionModal = ({ open, onClose, initialCategoryId = null }) => {
+const ContributionModal = ({
+  open,
+  onClose,
+  initialCategoryId = null,
+  presentation = 'modal',
+}) => {
   const { user } = useAuth();
+  const isSheet = presentation === 'sheet';
+  const isDirectCategory = Boolean(initialCategoryId);
   const isAuthenticated = Boolean(user?.email);
   const preferredName = useMemo(
     () => user?.user_metadata?.alias || user?.user_metadata?.full_name || '',
@@ -197,7 +210,7 @@ const ContributionModal = ({ open, onClose, initialCategoryId = null }) => {
       });
       setNotifyOnPublish(isAuthenticated);
       setSelectedCategory(preferredCategory ?? CATEGORIES[0]);
-      setIsFormPanelOpen(false);
+      setIsFormPanelOpen(Boolean(preferredCategory));
     } else {
       const storedState = storedFormRef.current.formState ?? initialFormState;
       setFormState({
@@ -538,17 +551,8 @@ const ContributionModal = ({ open, onClose, initialCategoryId = null }) => {
 
   const renderFormPanelBody = () => (
     <div className="relative">
-      <div className="mb-4">
-        <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Formulario</p>
-        <h3 id="contribution-modal-title" className="font-display text-2xl text-slate-50">
-          {formTitle}
-        </h3>
-        <p className="text-sm text-slate-400/80">
-          Estás escribiendo sobre{' '}
-          <span className="text-purple-200 font-semibold">{selectedCategory.title}</span>
-        </p>
-      </div>
-      {isMobileLayout ? (
+      <div className="mb-4" />
+      {isMobileLayout && !isDirectCategory ? (
         <button
           type="button"
           onClick={handleCloseFormPanel}
@@ -689,13 +693,13 @@ const ContributionModal = ({ open, onClose, initialCategoryId = null }) => {
       <AnimatePresence>
         {open ? (
           <motion.div
-            className="fixed inset-0 z-50 flex items-center justify-center px-4 py-6 sm:py-12"
+            className={`fixed inset-0 ${isSheet ? 'z-[160] items-end px-0 py-0 md:items-center md:px-6 md:py-10' : 'z-50 items-center px-4 py-6 sm:py-12'} flex justify-center`}
             initial="hidden"
             animate="visible"
             exit="hidden"
           >
             <motion.div
-              className="absolute inset-0 bg-black/80 backdrop-blur-sm"
+              className={`absolute inset-0 ${isSheet ? 'bg-black/50 backdrop-blur-[2px]' : 'bg-black/80 backdrop-blur-sm'}`}
               variants={backdropVariants}
               onClick={handleClose}
               aria-hidden="true"
@@ -705,16 +709,32 @@ const ContributionModal = ({ open, onClose, initialCategoryId = null }) => {
               role="dialog"
               aria-modal="true"
               aria-labelledby="contribution-modal-title"
-              variants={modalVariants}
-              className="relative z-10 w-full max-w-5xl h-full max-h-[90vh] rounded-3xl border border-white/10 bg-slate-950 p-4 sm:p-8 shadow-2xl overflow-y-auto md:overflow-hidden flex flex-col gap-6"
+              variants={isSheet ? sheetVariants : modalVariants}
+              className={`relative z-10 w-full max-w-5xl ${
+                isSheet
+                  ? 'h-screen max-h-screen rounded-t-3xl md:h-[70vh] md:max-h-[70vh] md:rounded-3xl bg-slate-950/90 backdrop-blur-xl'
+                  : 'h-full max-h-[90vh] rounded-3xl bg-slate-950'
+              } border border-white/10 p-4 sm:p-8 shadow-2xl overflow-y-auto md:overflow-hidden flex flex-col gap-6`}
             >
               <div className="relative overflow-visible">
                 <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Blog / Diálogo vivo</p>
-                    <h2 className="font-display text-2xl sm:text-3xl text-slate-50">
-                      Contribuye al diálogo crítico
-                    </h2>
+                  <div className="flex items-center gap-3">
+                    <img
+                      src={logoApp}
+                      alt="Logotipo Gato Encerrado"
+                      className="h-20 w-20 rounded-xl border border-white/15 bg-black/40 p-1"
+                    />
+                    <div>
+                      <p className="text-[10px] uppercase tracking-[0.35em] text-slate-400/70">
+                        Formulario
+                      </p>
+                      <h2
+                        id="contribution-modal-title"
+                        className="font-display text-xl sm:text-2xl text-slate-50 leading-snug"
+                      >
+                        {formTitle}
+                      </h2>
+                    </div>
                   </div>
                   <button
                     onClick={handleClose}
@@ -729,69 +749,73 @@ const ContributionModal = ({ open, onClose, initialCategoryId = null }) => {
                 ))}
               </div>
 
-              <div className="mt-6 flex flex-col gap-6 md:flex-row md:items-start md:gap-6">
-                <div className="flex-1 space-y-3 pr-3 md:pr-0 md:overflow-y-auto md:max-h-[72vh]">
-                  {CATEGORIES.map((category) => (
-                    <button
-                      type="button"
-                      key={category.id}
-                      onClick={() => handleSelectCategory(category)}
-                      className={`w-full rounded-2xl border px-4 py-4 text-left transition ${
-                        selectedCategory.id === category.id
-                          ? 'bg-purple-500/15 border-purple-300/40'
-                          : 'bg-black/20 border-white/10 hover:border-purple-300/30'
-                      }`}
-                    >
-                      <div className="flex items-center gap-3 mb-2">
-                        {category.icon}
-                        <h4 className="text-slate-100 font-medium">{category.title}</h4>
-                      </div>
-                      <p className="text-sm text-slate-400/80 leading-relaxed whitespace-pre-line">
-                        {category.description}
-                      </p>
-                    </button>
-                  ))}
-                  <div className="pt-2 text-center text-xs text-purple-200/80">
-                    <button
-                      type="button"
-                      onClick={handleGoToMiniversos}
-                      className="underline-offset-4 hover:underline"
-                    >
-                      ¿No conoces los Miniversos? Clica aquí
-                    </button>
-                  </div>
-                </div>
-
-                {isDesktopLayout ? (
-                  <div className="md:w-[520px] md:shrink-0">
-                    {isFormPanelOpen ? (
-                      <motion.div
-                        initial={{ opacity: 0, x: 16 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        exit={{ opacity: 0, x: 16 }}
-                        transition={{ duration: 0.35, ease: 'easeOut' }}
-                        className="flex h-full max-h-[78vh] flex-col rounded-3xl border border-white/10 bg-slate-950/90 p-6 shadow-2xl overflow-y-auto"
+              {isDirectCategory ? (
+                <div className="mt-1">{renderFormPanelBody()}</div>
+              ) : (
+                <div className="mt-6 flex flex-col gap-6 md:flex-row md:items-start md:gap-6">
+                  <div className="flex-1 space-y-3 pr-3 md:pr-0 md:overflow-y-auto md:max-h-[72vh]">
+                    {CATEGORIES.map((category) => (
+                      <button
+                        type="button"
+                        key={category.id}
+                        onClick={() => handleSelectCategory(category)}
+                        className={`w-full rounded-2xl border px-4 py-4 text-left transition ${
+                          selectedCategory.id === category.id
+                            ? 'bg-purple-500/15 border-purple-300/40'
+                            : 'bg-black/20 border-white/10 hover:border-purple-300/30'
+                        }`}
                       >
-                        {renderFormPanelBody()}
-                      </motion.div>
-                    ) : (
-                      <div className="flex h-full min-h-[320px] items-center justify-center rounded-3xl border border-dashed border-white/10 bg-black/30 px-4 text-center text-sm text-slate-400">
-                        Selecciona una categoría para abrir el formulario.
-                      </div>
-                    )}
+                        <div className="flex items-center gap-3 mb-2">
+                          {category.icon}
+                          <h4 className="text-slate-100 font-medium">{category.title}</h4>
+                        </div>
+                        <p className="text-sm text-slate-400/80 leading-relaxed whitespace-pre-line">
+                          {category.description}
+                        </p>
+                      </button>
+                    ))}
+                    <div className="pt-2 text-center text-xs text-purple-200/80">
+                      <button
+                        type="button"
+                        onClick={handleGoToMiniversos}
+                        className="underline-offset-4 hover:underline"
+                      >
+                        ¿No conoces los Miniversos? Clica aquí
+                      </button>
+                    </div>
                   </div>
-                ) : null}
-              </div>
+
+                  {isDesktopLayout ? (
+                    <div className="md:w-[520px] md:shrink-0">
+                      {isFormPanelOpen ? (
+                        <motion.div
+                          initial={{ opacity: 0, x: 16 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          exit={{ opacity: 0, x: 16 }}
+                          transition={{ duration: 0.35, ease: 'easeOut' }}
+                          className="flex h-full max-h-[78vh] flex-col rounded-3xl border border-white/10 bg-slate-950/90 p-6 shadow-2xl overflow-y-auto"
+                        >
+                          {renderFormPanelBody()}
+                        </motion.div>
+                      ) : (
+                        <div className="flex h-full min-h-[320px] items-center justify-center rounded-3xl border border-dashed border-white/10 bg-black/30 px-4 text-center text-sm text-slate-400">
+                          Selecciona una categoría para abrir el formulario.
+                        </div>
+                      )}
+                    </div>
+                  ) : null}
+                </div>
+              )}
 
               <AnimatePresence>
-                {!isDesktopLayout && isFormPanelOpen ? (
+                {!isDesktopLayout && isFormPanelOpen && !isDirectCategory ? (
                   <>
                     <motion.div
                       initial={{ x: '100%' }}
                       animate={{ x: 0 }}
                       exit={{ x: '100%' }}
                       transition={{ type: 'spring', damping: 24, stiffness: 240 }}
-                      className="fixed inset-0 z-[60] w-full bg-slate-950 border-white/15 shadow-2xl p-6 overflow-y-auto md:hidden"
+                      className={`fixed inset-0 ${isSheet ? 'z-[180]' : 'z-[60]'} w-full bg-slate-950 border-white/15 shadow-2xl p-6 overflow-y-auto md:hidden`}
                     >
                       {renderFormPanelBody()}
                     </motion.div>

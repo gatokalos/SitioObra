@@ -1,15 +1,24 @@
 // SitioObra/src/components/CallToAction.jsx
 import React, { useEffect, useMemo, useState } from 'react';
 import { motion } from 'framer-motion';
+import { Mail, MessageCircle } from 'lucide-react';
 import { IMPACT_COPY as t } from '../copy/impact.es.js';
 import { apiFetch } from '@/lib/apiClient';
 import { supabase } from '@/lib/supabaseClient';
+import { useAuth } from '@/contexts/SupabaseAuthContext';
+import { toast } from '@/components/ui/use-toast';
+import { safeGetItem, safeRemoveItem, safeSetItem } from '@/lib/safeStorage';
 
 const SUBSCRIPTION_PRICE_ID = import.meta.env.VITE_STRIPE_SUBSCRIPTION_PRICE_ID;
 const SESSIONS_PER_SUB = 6;
 const SUBS_PER_RESIDENCY = 17; // ≈ $10,000 / $600
 const SUBS_PER_SCHOOL = 75;    // ≈ $45,000 / $600
 const SUBS_PER_UNIVERSO = 158; // Nueva meta para creación artística
+const LOGIN_RETURN_KEY = 'gatoencerrado:login-return';
+const SUPPORT_EMAIL = 'contacto@gatoencerrado.ai';
+const SUPPORT_WHATSAPP = '+523315327985';
+const SUPPORT_MESSAGE =
+  'Hola,%0Aestuve en la función de Es un Gato Encerrado y quiero destinar mi boleto a la causa social.%0A%0AAdjunto una imagen como comprobante de que estuve ahí.%0ANo busco registrarme ni hacer login, solo sumar desde este gesto.%0A%0AGracias por abrir este espacio.';
 
 function ProgressBar({ value }) {
   return (
@@ -23,11 +32,40 @@ function ProgressBar({ value }) {
 }
 
 const CallToAction = () => {
-  const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(false);
   const [msg, setMsg] = useState('');
+  const [communityOptIn, setCommunityOptIn] = useState(false);
+  const [showTicketSupport, setShowTicketSupport] = useState(false);
   const [subs, setSubs] = useState(0);
   const [canFetchStats, setCanFetchStats] = useState(Boolean(import.meta.env.VITE_API_URL));
+  const { user } = useAuth();
+
+  useEffect(() => {
+    if (!user || typeof window === 'undefined') {
+      return;
+    }
+    const pending = safeGetItem(LOGIN_RETURN_KEY);
+    if (!pending) {
+      return;
+    }
+    try {
+      const parsed = JSON.parse(pending);
+      if (parsed?.anchor === '#apoya') {
+        safeRemoveItem(LOGIN_RETURN_KEY);
+        if (parsed?.action === 'community-opt-in') {
+          setCommunityOptIn(true);
+        }
+        setTimeout(() => {
+          document.querySelector(parsed.anchor)?.scrollIntoView({
+            behavior: 'smooth',
+            block: 'start',
+          });
+        }, 120);
+      }
+    } catch (error) {
+      safeRemoveItem(LOGIN_RETURN_KEY);
+    }
+  }, [user]);
 
   // 1) Cargar suscriptores en tiempo real
   useEffect(() => {
@@ -87,9 +125,6 @@ const CallToAction = () => {
 
   // 3) Checkout
   async function handleCheckout() {
-    const normalizedEmail = email.trim().toLowerCase();
-    if (!normalizedEmail) return;
-
     if (!SUBSCRIPTION_PRICE_ID) {
       setMsg('Configura VITE_STRIPE_SUBSCRIPTION_PRICE_ID antes de continuar.');
       return;
@@ -110,11 +145,12 @@ const CallToAction = () => {
     try {
       setLoading(true);
       setMsg('');
+      const normalizedEmail = user?.email ? user.email.trim().toLowerCase() : '';
       const { data, error } = await supabase.functions.invoke('create-checkout-session', {
         body: {
           mode: 'subscription',
           line_items,
-          customer_email: normalizedEmail,
+          customer_email: normalizedEmail || undefined,
           metadata: {
             channel: 'landing',
             event: 'suscripcion-landing',
@@ -135,6 +171,22 @@ const CallToAction = () => {
       setLoading(false);
     }
   }
+
+  const handleCommunityOptIn = () => {
+    safeSetItem(
+      LOGIN_RETURN_KEY,
+      JSON.stringify({ anchor: '#apoya', action: 'community-opt-in' })
+    );
+    if (!user) {
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new CustomEvent('open-login-modal'));
+      }
+      toast({ description: 'Inicia sesión para recibir actualizaciones.' });
+      return;
+    }
+    setCommunityOptIn((prev) => !prev);
+    toast({ description: 'Te avisaremos sobre nuevas historias.' });
+  };
 
   // 4) Renderizado
   return (
@@ -210,37 +262,66 @@ const CallToAction = () => {
       </div>
 
       <div className="flex flex-col gap-2 rounded-lg border border-white/5 bg-black/20 px-4 py-3 mt-4">
-  <button
-    type="button"
-    className="relative flex items-center gap-3 text-left group focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-purple-400/60"
-  >
-    <div className="h-5 w-5 rounded-full border border-white/20 bg-slate-600/40" />
-    <span className="text-sm text-slate-300/80 leading-relaxed">
-      Quiero estar al tanto de las expansiones e historias comunitarias.
-    </span>
-  </button>
+        <button
+          type="button"
+          onClick={handleCommunityOptIn}
+          className="relative flex items-center gap-3 text-left group focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-purple-400/60"
+        >
+          <div
+            className={`h-5 w-5 rounded-full border border-white/20 ${
+              communityOptIn ? 'bg-emerald-400 shadow-[0_0_12px_rgba(52,211,153,0.6)]' : 'bg-slate-600/40'
+            }`}
+          />
+          <span className="text-sm text-slate-300/80 leading-relaxed">
+            Quiero estar al tanto de las expansiones e historias comunitarias.
+          </span>
+        </button>
+      </div>
 
-</div>
-
-      {/* Email + Checkout */}
-      <div className="grid gap-3">
-        <input
-          type="email"
-          placeholder="tu@email.com"
-          value={email}
-          onChange={e => setEmail(e.target.value)}
-          className="w-full px-3 py-2 rounded text-black"
-        />
+      {/* Checkout + Ticket Support */}
+      <div className="grid gap-3 sm:grid-cols-2">
         <button
           onClick={handleCheckout}
-          disabled={loading || !email}
+          disabled={loading}
           className="bg-white/90 text-black px-4 py-2 rounded disabled:opacity-50"
         >
-          {loading ? 'Creando sesión…' : ' Apóyanos con tu suscripción'}
+          {loading ? 'Creando sesión…' : 'Suscribirme'}
+        </button>
+        <button
+          type="button"
+          onClick={() => setShowTicketSupport((prev) => !prev)}
+          className="border border-white/20 text-white px-4 py-2 rounded hover:border-purple-300/70 hover:text-purple-100"
+        >
+          {showTicketSupport ? 'Ocultar opciones' : 'Destinar mi boleto'}
         </button>
       </div>
 
       {msg && <p className="text-red-300 text-sm">{msg}</p>}
+      {showTicketSupport ? (
+        <div className="rounded-2xl border border-white/10 bg-black/30 p-4 text-left text-slate-100 space-y-3">
+          <p className="text-sm text-slate-300">
+            Si ya compraste boleto, envíanos una foto como gesto de apoyo. No necesitas registrarte.
+          </p>
+          <div className="grid gap-2 sm:grid-cols-2">
+          <a
+            href={`mailto:${SUPPORT_EMAIL}?subject=Destinar%20boleto%20a%20la%20causa&body=${SUPPORT_MESSAGE}`}
+            className="flex items-center justify-center gap-2 text-center border border-white/20 text-white px-4 py-2 rounded hover:border-purple-300/70 hover:text-purple-100"
+          >
+            <Mail size={18} />
+            Enviar por correo
+          </a>
+          <a
+            href={`https://wa.me/${SUPPORT_WHATSAPP.replace(/\D/g, '')}?text=${SUPPORT_MESSAGE}`}
+            target="_blank"
+            rel="noreferrer"
+            className="flex items-center justify-center gap-2 text-center border border-white/20 text-white px-4 py-2 rounded hover:border-purple-300/70 hover:text-purple-100"
+          >
+            <MessageCircle size={18} />
+            Enviar por WhatsApp
+          </a>
+          </div>
+        </div>
+      ) : null}
       {/* Activar notificaciones del universo */}
 
     </div>

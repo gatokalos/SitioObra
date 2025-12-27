@@ -1,11 +1,14 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
+import { createPortal } from 'react-dom';
 import { ChevronLeft, ChevronRight, Play, X } from 'lucide-react';
+import { useMobileVideoPresentation } from '@/hooks/useMobileVideoPresentation';
 
 const DiosasCarousel = ({ items = [], label = 'Swipe horizontal', caption = 'Galería 360°' }) => {
   const [activeIndex, setActiveIndex] = useState(0);
   const [fullscreenItem, setFullscreenItem] = useState(null);
   const [expandedId, setExpandedId] = useState(null);
+  const { isMobileViewport, canUseInlinePlayback, requestMobileVideoPresentation } = useMobileVideoPresentation();
   const [viewportWidth, setViewportWidth] = useState(() =>
     typeof window !== 'undefined' ? window.innerWidth : 1200
   );
@@ -100,6 +103,7 @@ const DiosasCarousel = ({ items = [], label = 'Swipe horizontal', caption = 'Gal
   }
 
   const resolvedLabel = isTouchDevice ? label : 'Galería divina';
+  const fullscreenId = fullscreenItem?.id || fullscreenItem?.videoUrl;
 
   return (
     <div className="space-y-3">
@@ -118,11 +122,20 @@ const DiosasCarousel = ({ items = [], label = 'Swipe horizontal', caption = 'Gal
           dragMomentum={false}
           onDragEnd={handleDragEnd}
         >
-          {windowItems.map(({ item, index: realIndex }, windowIdx) => (
+          {windowItems.map(({ item, index: realIndex }, windowIdx) => {
+            const itemId = item.id || item.videoUrl;
+            return (
             <motion.button
-              key={item.id || `diosa-${realIndex}`}
+              key={itemId || `diosa-${realIndex}`}
               type="button"
-              onClick={() => setExpandedId((prev) => (prev === item.id ? null : item.id))}
+              onClick={() => {
+                if (isMobileViewport) {
+                  setExpandedId(null);
+                  setFullscreenItem(item);
+                  return;
+                }
+                setExpandedId((prev) => (prev === itemId ? null : itemId));
+              }}
               className={`group relative overflow-hidden rounded-2xl border border-emerald-200/40 bg-slate-900/60 shadow-[0_15px_45px_rgba(0,0,0,0.45)] aspect-[9/16] text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400/70 ${
                 visibleCount === 1
                   ? 'w-[90vw] max-w-[200px] sm:max-w-[340px]'
@@ -174,8 +187,12 @@ const DiosasCarousel = ({ items = [], label = 'Swipe horizontal', caption = 'Gal
                     Ver 360°
                   </span>
                 </div>
-                {expandedId === item.id ? (
-                  <div className="absolute inset-0 z-20 flex items-center justify-center bg-black/85 backdrop-blur-sm p-2">
+                {expandedId === itemId ? (
+                  <div
+                    className="absolute inset-0 z-20 flex items-center justify-center bg-black/85 backdrop-blur-sm p-2"
+                    onClick={(event) => event.stopPropagation()}
+                    role="presentation"
+                  >
                     <div className="relative w-full h-full overflow-hidden rounded-xl border border-emerald-200/40 bg-black">
                       <button
                         type="button"
@@ -189,20 +206,22 @@ const DiosasCarousel = ({ items = [], label = 'Swipe horizontal', caption = 'Gal
                         <X size={14} />
                       </button>
                       <video
-                        key={item.id || item.videoUrl}
+                        key={itemId}
                         src={item.videoUrl}
-                        controls
+                        controls={canUseInlinePlayback(itemId)}
                         autoPlay
                         playsInline
                         loop
                         className="h-full w-full object-contain"
+                        onClick={(event) => requestMobileVideoPresentation(event, itemId)}
                       />
                     </div>
                   </div>
                 ) : null}
               </div>
             </motion.button>
-          ))}
+          );
+        })}
         </motion.div>
         {total > 1 ? (
           <>
@@ -228,6 +247,42 @@ const DiosasCarousel = ({ items = [], label = 'Swipe horizontal', caption = 'Gal
         ) : null}
       </div>
       <p className="text-[11px] text-emerald-100/70 text-center">{caption}</p>
+      {fullscreenItem && typeof document !== 'undefined'
+        ? createPortal(
+            <AnimatePresence>
+              <motion.div
+                key="diosa-fullscreen"
+                className="fixed inset-0 z-[160] flex items-center justify-center bg-black/90 backdrop-blur-sm"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                onClick={() => setFullscreenItem(null)}
+              >
+                <div className="relative h-[100svh] w-full overflow-hidden" onClick={(event) => event.stopPropagation()}>
+                  <button
+                    type="button"
+                    onClick={() => setFullscreenItem(null)}
+                    className="absolute right-4 top-4 z-20 rounded-full border border-emerald-200/50 bg-emerald-900/70 p-2 text-emerald-50 hover:bg-emerald-800/70"
+                    aria-label="Cerrar video"
+                  >
+                    <X size={16} />
+                  </button>
+                  <video
+                    key={fullscreenId}
+                    src={fullscreenItem.videoUrl}
+                    controls={canUseInlinePlayback(fullscreenId)}
+                    autoPlay
+                    playsInline
+                    loop
+                    className="h-[100svh] w-auto max-w-none object-cover mx-auto"
+                    onClick={(event) => requestMobileVideoPresentation(event, fullscreenId)}
+                  />
+                </div>
+              </motion.div>
+            </AnimatePresence>,
+            document.body
+          )
+        : null}
     </div>
   );
 };

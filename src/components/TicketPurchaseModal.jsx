@@ -130,7 +130,7 @@ const TicketPurchaseModal = ({ open, onClose }) => {
                   />
 
                   <p className="text-sm text-slate-300 leading-relaxed">
-                    Esta pieza activa WebAR y forma parte del Miniverso Taza, donde se cruza con la causa social del proyecto.
+                    Si ya compraste boleto, puedes activar la causa social en menos de 10 segundos. No pedimos comprobantes obligatorios.
                   </p>
 
                   <div className="flex flex-col gap-3">
@@ -140,7 +140,7 @@ const TicketPurchaseModal = ({ open, onClose }) => {
                       className="w-full border-purple-300/40 text-purple-200 hover:bg-purple-500/10"
                       onClick={() => handleScrollTo('#apoya')}
                     >
-                      Apoya el proyecto
+                      Activa tu apoyo social
                     </Button>
                   </div>
                 </div>

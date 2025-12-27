@@ -1,10 +1,13 @@
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { Download, Send, Instagram, Twitter, Facebook, PenLine } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { toast } from '@/components/ui/use-toast';
 import { supabase } from '@/lib/supabaseClient';
 import { useAuth } from '@/contexts/SupabaseAuthContext';
+import { safeGetItem, safeRemoveItem, safeSetItem } from '@/lib/safeStorage';
+
+const LOGIN_RETURN_KEY = 'gatoencerrado:login-return';
 
 const Contact = () => {
   const [formValues, setFormValues] = useState({ name: '', email: '', message: '' });
@@ -15,6 +18,30 @@ const Contact = () => {
   const facebookUrl = 'https://www.facebook.com/share/16pHNpZjpM/?mibextid=wwXIfr';
   const { user } = useAuth();
   const isLoggedIn = Boolean(user?.email);
+
+  useEffect(() => {
+    if (!isLoggedIn || typeof window === 'undefined') {
+      return;
+    }
+    const pending = safeGetItem(LOGIN_RETURN_KEY);
+    if (!pending) {
+      return;
+    }
+    try {
+      const parsed = JSON.parse(pending);
+      if (parsed?.anchor === '#contact') {
+        safeRemoveItem(LOGIN_RETURN_KEY);
+        setTimeout(() => {
+          document.querySelector(parsed.anchor)?.scrollIntoView({
+            behavior: 'smooth',
+            block: 'start',
+          });
+        }, 120);
+      }
+    } catch (error) {
+      safeRemoveItem(LOGIN_RETURN_KEY);
+    }
+  }, [isLoggedIn]);
 
   const handleSubmit = useCallback(
     async (e) => {
@@ -96,6 +123,10 @@ const Contact = () => {
     if (typeof window === 'undefined' || isLoggedIn) {
       return;
     }
+    safeSetItem(
+      LOGIN_RETURN_KEY,
+      JSON.stringify({ anchor: '#contact', action: 'contact-notify' })
+    );
     window.dispatchEvent(new CustomEvent('open-login-modal'));
   }, [isLoggedIn]);
 
@@ -121,8 +152,8 @@ const Contact = () => {
             ¿Ya sientes la curiosidad gatuna?
           </h2>
           <p className="text-lg text-slate-300/80 max-w-3xl mx-auto leading-relaxed font-light">
-            Si algo de la experiencia te dejó una huella o simplemente te intriga este universo, este es tu espacio para contarlo. No buscamos "opiniones" sino aquello que cambió tu forma de mirar, sentir o recordar. 
-            Aunque también puedes usar este espacio para compartir tus teorías, solicitar entrevistas o para colaboraciones.
+            Si algo de la experiencia te dejó una huella —o una pregunta—, este es tu espacio para contarlo. No buscamos "opiniones" sino aquello que cambió tu forma de mirar, sentir o recordar. 
+            Aunque también puedes usar este espacio para compartir tus teorías, solicitar entrevistas y para colaboraciones.
           </p>
               <p className="text-xs text-slate-400/70 mt-3">
                 Y si algo de la obra te movió más de lo esperado, el equipo de
@@ -176,17 +207,19 @@ const Contact = () => {
                   placeholder="Cuéntanos más..."
                 ></textarea>
               </div>
-              {status === 'error' && (
-                <div className="rounded-lg border border-red-500/60 bg-red-500/10 px-4 py-3 text-sm text-red-200">
-                  {errorMessage}
-                </div>
-              )}
+              <div className="min-h-[60px]">
+                {status === 'error' ? (
+                  <div className="rounded-lg border border-red-500/60 bg-red-500/10 px-4 py-3 text-sm text-red-200">
+                    {errorMessage}
+                  </div>
+                ) : null}
 
-              {status === 'success' && (
-                <div className="rounded-lg border border-emerald-500/60 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-200">
-                  Tu mensaje llegó. Te escribiremos a la brevedad.
-                </div>
-              )}
+                {status === 'success' ? (
+                  <div className="rounded-lg border border-emerald-500/60 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-200">
+                    Tu mensaje llegó. Te escribiremos a la brevedad.
+                  </div>
+                ) : null}
+              </div>
               <div className="mt-4 space-y-3">
                 <p className="text-xs text-slate-400/70 text-center">
                   {isLoggedIn

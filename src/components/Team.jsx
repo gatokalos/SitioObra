@@ -1,6 +1,7 @@
 // src/components/Team.jsx
 import React, { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
+import { ExternalLink, Instagram } from "lucide-react";
 import {
   Accordion,
   AccordionContent,
@@ -110,12 +111,14 @@ const teamData = {
         role: "Escenografía",
         bio: "Arquitecto y escenógrafo con más de 120 obras en teatro, danza y ópera. Miembro del Sistema Nacional de Creadores de Arte, ha sido galardonado con premios internacionales como el World Stage Design Toronto y Calgary. Su trabajo combina estructura y poesía visual.",
         image: "https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/equipo/jorge.jpg",
+        instagram: "https://www.instagram.com/jorgeballina?igsh=eWlvYmZ3dWY5NXU4",
       },
       {
         name: "Daniel Primo",
         role: "Video Escenográfico e Iluminación",
         bio: "Artista visual y diseñador escénico. Explora la relación entre multimedia y espacio escénico. Integrante del Sistema Nacional de Creadores, su trabajo ha sido presentado en Europa, Asia y América. Cofundador de Engranaje Invertebrado.",
         image: "https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/equipo/primo.jpg",
+        instagram: "https://www.instagram.com/danielprimomx?igsh=MnRjY3NmdDBvaGNx",
       },
       {
         name: "Ximena Inurreta",
@@ -134,6 +137,7 @@ const teamData = {
         role: "Diseño Sonoro",
         bio: "Artista sonora con más de doce años de experiencia. Fundadora de Concrete Sounds, ha colaborado en filmes como 'Ya no estoy aquí' y 'Monos'. Su especialidad es la creación de paisajes inmersivos que amplían la dimensión sensorial del teatro.",
         image: "https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/equipo/lia.jpg",
+        linkUrl: "https://linktr.ee/concretesounds?utm_source=ig&utm_medium=social&utm_content=link_in_bio&fbclid=PAdGRleAO8h8lleHRuA2FlbQIxMQBzcnRjBmFwcF9pZA8xMjQwMjQ1NzQyODc0MTQAAaezrvRQDYrdXd9OEoJFd_OmYag-zXSkaDFNIMMnqRuEY12Blqz_C6etDyDPYg_aem_oNnXIHE7KBAQwTTIjf_sQA",
       },
       {
         name: "Diego Madera",
@@ -157,7 +161,7 @@ const teamData = {
         name: "Jonathan Lazcano",
         role: "Pelucas y Caracterización Capilar",
         bio: "Artista de caracterización. Su trabajo artesanal da vida y coherencia visual a los personajes a través del detalle y la textura.",
-        image: "/images/placeholder-diseno.jpg",
+        image: "https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/equipo/JL.jpg",
       },
     ],
   },
@@ -203,6 +207,38 @@ const Team = () => {
   const accordionItemRefs = useRef({});
   const pendingScrollRef = useRef(null);
 
+  const renderMemberLinks = (member, className = "") => {
+    if (!member?.instagram && !member?.linkUrl) {
+      return null;
+    }
+    return (
+      <span className={`inline-flex items-center gap-2 ${className}`}>
+        {member?.instagram ? (
+          <a
+            href={member.instagram}
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label={`Instagram de ${member.name}`}
+            className="inline-flex items-center justify-center rounded-full border border-white/10 bg-black/30 p-1 text-purple-200 hover:text-purple-100 hover:border-purple-300/60 transition"
+          >
+            <Instagram size={14} />
+          </a>
+        ) : null}
+        {member?.linkUrl ? (
+          <a
+            href={member.linkUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label={`Enlace de ${member.name}`}
+            className="inline-flex items-center justify-center rounded-full border border-white/10 bg-black/30 p-1 text-purple-200 hover:text-purple-100 hover:border-purple-300/60 transition"
+          >
+            <ExternalLink size={14} />
+          </a>
+        ) : null}
+      </span>
+    );
+  };
+
   useEffect(() => {
     const updateIsMobile = () => setIsMobile(typeof window !== "undefined" ? window.innerWidth < 768 : false);
     updateIsMobile();
@@ -217,6 +253,10 @@ const Team = () => {
   }, [isMobile, selectedElencoId]);
 
   useLayoutEffect(() => {
+    if (isMobile) {
+      pendingScrollRef.current = null;
+      return;
+    }
     if (!pendingScrollRef.current) return;
 
     const targetNode = accordionItemRefs.current[pendingScrollRef.current];
@@ -325,7 +365,10 @@ const Team = () => {
                       />
                     </div>
                     <div className="space-y-1">
-                      <h4 className="font-display text-xl text-purple-100">{member.name}</h4>
+                      <div className="flex items-center justify-center gap-2">
+                        <h4 className="font-display text-xl text-purple-100">{member.name}</h4>
+                        {renderMemberLinks(member)}
+                      </div>
                       {member.role && (
                         <p className="text-xs uppercase tracking-[0.35em] text-purple-200/70">
                           {member.role}
@@ -355,7 +398,10 @@ const Team = () => {
                     />
                   </div>
                   <div className="space-y-1">
-                    <h4 className="font-display text-xl text-purple-100">{member.name}</h4>
+                    <div className="flex items-center justify-center gap-2">
+                      <h4 className="font-display text-xl text-purple-100">{member.name}</h4>
+                      {renderMemberLinks(member)}
+                    </div>
                     {member.role && (
                       <p className="text-xs uppercase tracking-[0.35em] text-purple-200/70">
                         {member.role}
@@ -392,9 +438,12 @@ const Team = () => {
                         loading="lazy"
                       />
                       <div className="space-y-2 text-center sm:text-left sm:flex-1">
-                        <h4 className="font-display text-lg text-purple-200">
-                          {member.name}
-                        </h4>
+                        <div className="flex items-center justify-center gap-2 sm:justify-start">
+                          <h4 className="font-display text-lg text-purple-200">
+                            {member.name}
+                          </h4>
+                          {renderMemberLinks(member)}
+                        </div>
                         {member.role && (
                           <p className="text-xs uppercase tracking-[0.35em] text-purple-300/70">
                             {member.role}
@@ -455,9 +504,12 @@ const Team = () => {
                       />
                     </div>
                     <div className="space-y-2 flex-1">
-                      <h4 className="font-display text-lg text-purple-200">
-                        {member.name}
-                      </h4>
+                      <div className="flex items-center gap-2">
+                        <h4 className="font-display text-lg text-purple-200">
+                          {member.name}
+                        </h4>
+                        {renderMemberLinks(member)}
+                      </div>
                       {member.role && (
                         <p className="text-xs uppercase tracking-[0.35em] text-purple-300/70">
                           {member.role}
