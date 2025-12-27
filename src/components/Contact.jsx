@@ -221,11 +221,6 @@ const Contact = () => {
                 ) : null}
               </div>
               <div className="mt-4 space-y-3">
-                <p className="text-xs text-slate-400/70 text-center">
-                  {isLoggedIn
-                    ? 'Gracias por iniciar sesión, el equipo te responderá con gusto y cuidado.'
-                    : '¿No quieres escribir ahora? Inicia sesión aquí y recibirás un mensaje cordial de alguien del equipo.'}
-                </p>
                 <div className="flex flex-col gap-3 lg:flex-row lg:items-center">
                   <Button
                     type="submit"
@@ -245,6 +240,12 @@ const Contact = () => {
                     {isLoggedIn ? 'Espera tu respuesta' : 'Recibir notificaciones'}
                   </Button>
                 </div>
+                <p className="text-xs text-slate-400/70 text-center">
+                  {isLoggedIn
+                    ? 'Gracias por iniciar sesión, el equipo te responderá con gusto y cuidado.'
+                    : '¿No quieres escribir ahora? Inicia sesión aquí y recibirás un mensaje cordial de alguien del equipo.'}
+                </p>
+                
               </div>
               
             </form>
