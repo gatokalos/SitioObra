@@ -1235,7 +1235,7 @@ const CAUSE_ACCORDION = [
 ];
 
 const CauseImpactAccordion = ({ items, onOpenImagePreview }) => {
-  const [openCauseId, setOpenCauseId] = useState(items?.[0]?.id ?? null);
+  const [openCauseId, setOpenCauseId] = useState(null);
 
   return (
     <div className="mt-4 space-y-3">
