@@ -105,7 +105,7 @@ const Contact = () => {
 
   const handleActionClick = () => {
     toast({
-      description: "🚧 Esta función no está implementada aún—¡pero no te preocupes! Puedes solicitarla en tu próximo prompt! 🚀"
+      description: "🚧 Esta función no está implementada aún—¡pero no te preocupes! Puedes solicitarla en tu próxima visita! 🚀"
     });
   };
 
@@ -114,7 +114,7 @@ const Contact = () => {
       window.open(url, '_blank', 'noopener,noreferrer');
     } else {
       toast({
-        description: "🚧 Esta función no está implementada aún—¡pero no te preocupes! Puedes solicitarla en tu próximo prompt! 🚀"
+        description: "🚧 Esta función no está implementada aún—¡pero no te preocupes! Puedes solicitarla en tu próxima visita! 🚀"
       });
     }
   };
