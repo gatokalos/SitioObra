@@ -20,11 +20,11 @@ const SUPPORT_WHATSAPP = '+523315327985';
 const SUPPORT_MESSAGE =
   'Hola,%0Aestuve en la función de Es un Gato Encerrado y quiero destinar mi boleto a la causa social.%0A%0AAdjunto una imagen como comprobante de que estuve ahí.%0ANo busco registrarme ni hacer login, solo sumar desde este gesto.%0A%0AGracias por abrir este espacio.';
 
-function ProgressBar({ value }) {
+function ProgressBar({ value, barClassName = 'bg-white/70' }) {
   return (
     <div className="w-full h-2 rounded-full bg-white/10 overflow-hidden">
       <div
-        className="h-full bg-white/70"
+        className={`h-full ${barClassName}`}
         style={{ width: `${Math.min(100, Math.max(0, value))}%` }}
       />
     </div>
@@ -124,33 +124,35 @@ const CallToAction = () => {
 
   // 2) Cálculos de impacto
   const stats = useMemo(() => {
-    const sesiones = subs * SESSIONS_PER_SUB;
+    const totalSupport = subs + ticketUnits;
+    const sesiones = totalSupport * SESSIONS_PER_SUB;
 
     // Residencias
-    const residencias = Math.floor(subs / SUBS_PER_RESIDENCY);
-    const residenciasResto = subs % SUBS_PER_RESIDENCY;
+    const residencias = Math.floor(totalSupport / SUBS_PER_RESIDENCY);
+    const residenciasResto = totalSupport % SUBS_PER_RESIDENCY;
     const residenciasFaltan = residenciasResto === 0 ? SUBS_PER_RESIDENCY : (SUBS_PER_RESIDENCY - residenciasResto);
     const residenciasProg = (residenciasResto / SUBS_PER_RESIDENCY) * 100;
 
     // Escuelas
-    const escuelas = Math.floor(subs / SUBS_PER_SCHOOL);
-    const escuelasResto = subs % SUBS_PER_SCHOOL;
+    const escuelas = Math.floor(totalSupport / SUBS_PER_SCHOOL);
+    const escuelasResto = totalSupport % SUBS_PER_SCHOOL;
     const escuelasFaltan = escuelasResto === 0 ? SUBS_PER_SCHOOL : (SUBS_PER_SCHOOL - escuelasResto);
     const escuelasProg = (escuelasResto / SUBS_PER_SCHOOL) * 100;
 
     // Universos / Creaciones nuevas
-    const universos = Math.floor(subs / SUBS_PER_UNIVERSO);
-    const universosResto = subs % SUBS_PER_UNIVERSO;
+    const universos = Math.floor(totalSupport / SUBS_PER_UNIVERSO);
+    const universosResto = totalSupport % SUBS_PER_UNIVERSO;
     const universosFaltan = universosResto === 0 ? SUBS_PER_UNIVERSO : (SUBS_PER_UNIVERSO - universosResto);
     const universosProg = (universosResto / SUBS_PER_UNIVERSO) * 100;
 
     return {
+      totalSupport,
       sesiones,
       residencias, residenciasFaltan, residenciasProg,
       escuelas, escuelasFaltan, escuelasProg,
       universos, universosFaltan, universosProg
     };
-  }, [subs]);
+  }, [subs, ticketUnits]);
 
   // 3) Checkout
   async function handleCheckout() {
@@ -249,9 +251,10 @@ const CallToAction = () => {
           <p className="text-sm opacity-80">Boletos destinados</p>
           <p className="text-2xl font-semibold">{ticketUnits}</p>
         </div>
+   
 
         <div>
-          <p className="text-sm mb-1 opacity-80">Terapias asignadas</p>
+          <p className="text-sm mb-1 opacity-80">Fondo para terapias</p>
           <p className="text-lg mb-2">
             <strong>{stats.sesiones}</strong> sesiones (1 suscripción = 6 sesiones)
           </p>
@@ -263,9 +266,12 @@ const CallToAction = () => {
             <span>Residencias creativas</span>
             <span>{stats.residencias} activas</span>
           </div>
-          <ProgressBar value={stats.residenciasProg} />
+          <ProgressBar
+            value={stats.residenciasProg}
+            barClassName="bg-gradient-to-r from-amber-200/80 via-amber-300/80 to-amber-400/80"
+          />
           <p className="text-xs opacity-70 mt-1">
-            Faltan <strong>{stats.residenciasFaltan}</strong> suscripciones para abrir la siguiente residencia (≈ 17/sub).
+            Faltan <strong>{stats.residenciasFaltan}</strong> apoyos para abrir la siguiente residencia.
           </p>
         </div>
 
@@ -275,9 +281,12 @@ const CallToAction = () => {
             <span>Escuelas con app activa</span>
             <span>{stats.escuelas} escuelas</span>
           </div>
-          <ProgressBar value={stats.escuelasProg} />
+          <ProgressBar
+            value={stats.escuelasProg}
+            barClassName="bg-gradient-to-r from-sky-200/80 via-cyan-300/80 to-cyan-400/80"
+          />
           <p className="text-xs opacity-70 mt-1">
-            Faltan <strong>{stats.escuelasFaltan}</strong> suscripciones para la próxima escuela (≈ 75/sub).
+            Faltan <strong>{stats.escuelasFaltan}</strong> apoyos para la próxima escuela.
           </p>
         </div>
 
@@ -287,10 +296,17 @@ const CallToAction = () => {
             <span>Expansión creativa del universo</span>
             <span>{stats.universos} activadas</span>
           </div>
-          <ProgressBar value={stats.universosProg} />
+          <ProgressBar
+            value={stats.universosProg}
+            barClassName="bg-gradient-to-r from-violet-300/80 via-purple-300/80 to-fuchsia-300/80"
+          />
           <p className="text-xs opacity-70 mt-1">
-            Faltan <strong>{stats.universosFaltan}</strong> suscripciones para la siguiente creación artística (≈ 158/sub).
+            Faltan <strong>{stats.universosFaltan}</strong> apoyos para la siguiente creación artística.
           </p>
+        </div>
+             <div className="flex items-baseline justify-between">
+          <p className="text-sm opacity-80">Apoyos totales</p>
+          <p className="text-2xl font-semibold">{stats.totalSupport}</p>
         </div>
       </div>
 
