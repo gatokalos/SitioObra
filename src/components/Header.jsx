@@ -99,7 +99,7 @@ const Header = () => {
             ) : null}
           </motion.button>
 
-          <div className="hidden md:flex items-center space-x-1">
+          <div className="hidden xl:flex items-center space-x-1">
             <motion.button
               whileHover={{ scale: 1.05, color: '#e9d5ff' }}
               onClick={() => handleNavClick('#contact')}
@@ -123,7 +123,7 @@ const Header = () => {
             <Button
               variant="ghost"
               size="icon"
-              className="md:hidden text-slate-200"
+            className="xl:hidden text-slate-200"
               onClick={() => setIsMenuOpen(!isMenuOpen)}
             >
               {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
@@ -142,7 +142,7 @@ const Header = () => {
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: 'auto' }}
             exit={{ opacity: 0, height: 0 }}
-            className="md:hidden mt-4 bg-black/80 backdrop-blur-md rounded-lg p-4 border border-slate-100/10"
+            className="xl:hidden mt-4 bg-black/80 backdrop-blur-md rounded-lg p-4 border border-slate-100/10"
           >
             <button
               onClick={() => handleNavClick('#contact')}

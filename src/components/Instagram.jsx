@@ -7,7 +7,7 @@ import { recordGalleryLike, getGalleryLikeCount } from '@/services/galleryLikeSe
 import { safeGetItem, safeSetItem } from '@/lib/safeStorage';
 
 const collagePattern = [
-  { grid: 'col-span-2 row-span-3 sm:col-span-3 sm:row-span-4 md:col-span-3 md:row-span-3 lg:col-span-3 lg:row-span-4',
+  { grid: 'col-span-2 row-span-3 sm:col-span-3 sm:row-span-4 md:col-span-4 md:row-span-3 lg:col-span-3 lg:row-span-4',
     offset: 'lg:-translate-y-3 lg:rotate-[0.8deg]',
     frame: 'shadow-[17px_17px_0_rgba(164,196,248,0.14)]',
     tint: 'from-sky-300/18 via-transparent to-slate-950/0',
@@ -25,7 +25,7 @@ const collagePattern = [
     tint: 'from-indigo-400/15 via-transparent to-slate-950/0',
   },
   {
-    grid: 'col-span-2 row-span-2 sm:col-span-3 sm:row-span-2 md:col-span-3 md:row-span-2 lg:col-span-3 lg:row-span-3',
+    grid: 'col-span-2 row-span-2 sm:col-span-3 sm:row-span-2 md:col-span-4 md:row-span-2 lg:col-span-3 lg:row-span-3',
     offset: 'lg:-translate-y-2',
     frame: 'shadow-[11px_11px_0_rgba(248,113,113,0.15)]',
     tint: 'from-rose-400/14 via-transparent to-slate-950/0',
@@ -37,7 +37,7 @@ const collagePattern = [
     tint: 'from-amber-300/16 via-transparent to-slate-950/0',
   },
   {
-    grid: 'col-span-2 row-span-2 sm:col-span-3 sm:row-span-2 md:col-span-3 md:row-span-2 lg:col-span-3 lg:row-span-2',
+    grid: 'col-span-2 row-span-2 sm:col-span-3 sm:row-span-2 md:col-span-4 md:row-span-2 lg:col-span-3 lg:row-span-2',
     offset: 'lg:-translate-y-4 lg:rotate-[-0.7deg]',
     frame: 'shadow-[13px_13px_0_rgba(45,212,191,0.15)]',
     tint: 'from-teal-300/12 via-transparent to-slate-950/0',
@@ -49,7 +49,7 @@ const collagePattern = [
     tint: 'from-slate-300/12 via-transparent to-slate-950/0',
   },
   {
-    grid: 'col-span-2 row-span-3 sm:col-span-3 sm:row-span-3 md:col-span-3 md:row-span-3 lg:col-span-4 lg:row-span-4',
+    grid: 'col-span-2 row-span-3 sm:col-span-3 sm:row-span-3 md:col-span-4 md:row-span-3 lg:col-span-4 lg:row-span-4',
     offset: 'lg:-translate-y-2 lg:rotate-[0.4deg]',
     frame: 'shadow-[16px_16px_0_rgba(110,231,183,0.12)]',
     tint: 'from-emerald-300/14 via-transparent to-slate-950/0',
@@ -61,7 +61,7 @@ const collagePattern = [
     tint: 'from-orange-300/16 via-transparent to-slate-950/0',
   },
   {
-    grid: 'col-span-2 row-span-3 sm:col-span-3 sm:row-span-4 md:col-span-3 md:row-span-3 lg:col-span-3 lg:row-span-4',
+    grid: 'col-span-2 row-span-3 sm:col-span-3 sm:row-span-4 md:col-span-4 md:row-span-3 lg:col-span-3 lg:row-span-4',
     offset: 'lg:-translate-y-3 lg:rotate-[0.7deg]',
     frame: 'shadow-[17px_17px_0_rgba(164,196,248,0.14)]',
     tint: 'from-sky-300/18 via-transparent to-slate-950/0',
@@ -506,7 +506,7 @@ const Instagram = () => {
         )}
 
         {slots.length > 0 ? (
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 lg:grid-cols-8 auto-rows-[95px] sm:auto-rows-[110px] md:auto-rows-[130px] lg:auto-rows-[150px] gap-2 md:gap-3 lg:gap-3.5">
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 auto-rows-[95px] sm:auto-rows-[110px] md:auto-rows-[120px] lg:auto-rows-[140px] xl:auto-rows-[150px] gap-2 md:gap-3 lg:gap-3.5">
             <AnimatePresence mode="popLayout">
               {slots.map((slot, slotIdx) => {
                 const post = posts[slot.postIndex];

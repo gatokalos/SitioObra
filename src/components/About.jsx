@@ -54,6 +54,11 @@ const About = () => {
   const [isMobile, setIsMobile] = useState(
     () => typeof window !== 'undefined' && window.matchMedia('(max-width: 768px)').matches
   );
+  const [isTabletLandscape, setIsTabletLandscape] = useState(
+    () =>
+      typeof window !== 'undefined' &&
+      window.matchMedia('(min-width: 768px) and (max-width: 1024px) and (orientation: landscape)').matches
+  );
 
   useEffect(() => {
     if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') {
@@ -61,19 +66,27 @@ const About = () => {
     }
 
     const mediaQuery = window.matchMedia('(max-width: 768px)');
+    const tabletLandscapeQuery = window.matchMedia(
+      '(min-width: 768px) and (max-width: 1024px) and (orientation: landscape)'
+    );
     const handleChange = (event) => setIsMobile(event.matches);
+    const handleTabletLandscapeChange = (event) => setIsTabletLandscape(event.matches);
 
     if (typeof mediaQuery.addEventListener === 'function') {
       mediaQuery.addEventListener('change', handleChange);
+      tabletLandscapeQuery.addEventListener('change', handleTabletLandscapeChange);
     } else if (typeof mediaQuery.addListener === 'function') {
       mediaQuery.addListener(handleChange);
+      tabletLandscapeQuery.addListener(handleTabletLandscapeChange);
     }
 
     return () => {
       if (typeof mediaQuery.removeEventListener === 'function') {
         mediaQuery.removeEventListener('change', handleChange);
+        tabletLandscapeQuery.removeEventListener('change', handleTabletLandscapeChange);
       } else if (typeof mediaQuery.removeListener === 'function') {
         mediaQuery.removeListener(handleChange);
+        tabletLandscapeQuery.removeListener(handleTabletLandscapeChange);
       }
     };
   }, []);
@@ -109,7 +122,7 @@ const About = () => {
       return;
     }
 
-    const preferredName = isMobile ? 'trailer_landing_v' : 'trailerlanding';
+    const preferredName = isMobile || isTabletLandscape ? 'trailer_landing_v' : 'trailerlanding';
     const hasMatchingTrailer =
       trailer?.url &&
       (trailer.name?.toLowerCase().includes(preferredName) || trailer.url.toLowerCase().includes(preferredName));
@@ -229,7 +242,7 @@ const About = () => {
           viewport={{ once: true }}
           className="glass-effect rounded-2xl p-8 md:p-12"
         >
-          <div className="grid md:grid-cols-2 gap-12 items-center">
+          <div className="grid lg:grid-cols-2 gap-12 items-center">
             <div className="relative order-2 md:order-1">
               <video
                 className="w-full h-96 object-cover rounded-xl shadow-2xl shadow-black/50"
@@ -250,7 +263,7 @@ const About = () => {
               <p className="text-slate-300/80 leading-relaxed mb-8 font-light">
                 Silvestre <strong>transforma su mente</strong> en escenario. Aquí, lo real y lo imaginario ya no compiten. Y tú —espectador, visitante, cómplice— puedes entrar sin tocar la puerta, porque quizás… tú también tienes <i>un gato encerrado</i> en el pecho.
               </p>
-              <div className="flex flex-col sm:flex-row gap-4">
+              <div className="flex flex-col lg:flex-row gap-4">
                 <Button
                   onClick={handleWatchTrailer}
                   disabled={isTrailerLoading}

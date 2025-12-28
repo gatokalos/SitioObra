@@ -71,7 +71,7 @@ const Hero = () => {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ duration: 1.5, delay: 0.2 }}
-              className="hero-title text-4xl sm:text-5xl md:text-7xl font-medium mb-6 text-center w-full"
+              className="hero-title text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-medium mb-6 text-center w-full break-words"
               style={{ textShadow: '0 0 35px rgba(255, 223, 255, 0.45)' }}
             >
               <span>#GATOENCERRADO</span>
