@@ -1202,7 +1202,9 @@ const CAUSE_ACCORDION = [
     imageLabel: 'Foto de archivo',
     imageUrls: [
   'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/causa%20social/seguimiento1.jpg',
-  'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/causa%20social/seguimiento2.jpeg',
+  'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/causa%20social/seguimiento3.jpg',
+    'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/causa%20social/seguimiento2.jpg',
+    'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/causa%20social/seguimiento4.jpg',  
 ],
 
   },
@@ -1217,19 +1219,27 @@ const CAUSE_ACCORDION = [
     imageLabel: 'Foto de archivo',
     imageUrls: [
       'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/causa%20social/residencias_creativas.jpeg',
+      'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/causa%20social/residencias2.jpg',
+      'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/causa%20social/residencias3.jpg',
+      'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/causa%20social/residencias.jpg',
     ],
   },
   {
     id: 'app-escolar',
-    title: 'App Causa Social en escuelas',
-    description:
-      'Implementación y seguimiento semestral de la app de detección temprana. 75 suscripciones financian 1 escuela por semestre.',
-    icon: Smartphone,
-    metric: '5 escuelas atendidas por ciclo escolar',
-    imageAlt: 'Foto de archivo de app en escuelas.',
-    imageLabel: 'Foto de archivo',
+  title: 'App Causa Social en escuelas',
+  description:
+    'Implementación y seguimiento semestral de la app de detección temprana. 75 suscripciones financian 1 escuela por semestre.',
+  icon: Smartphone,
+  metric: '5 escuelas atendidas por ciclo escolar',
+  imageAlt: 'Captura de la app Causa Social en escuelas (versión beta).',
+  imageLabel: 'Capturas beta de la app',
     imageUrls: [
-      'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/causa%20social/aplicacion_instrumento.jpg',
+      'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/causa%20social/aplicacion_app1.png',
+      'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/causa%20social/aplicacion_estudiante.png',
+       'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/causa%20social/app_estarbien.png',
+      'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/causa%20social/app_estarbien2.png',
+     
+    
     ],
   },
 ];
@@ -1275,40 +1285,52 @@ const CauseImpactAccordion = ({ items, onOpenImagePreview }) => {
             </button>
             {isOpen ? (
               <div className="px-4 pb-4 text-sm text-slate-300/90">
-                <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
-                  <div className="hidden md:block">
-                    {primaryImage ? (
-                      <button
-                        type="button"
-                        onClick={() =>
-                          onOpenImagePreview({
-                            src: getFullImage(0),
-                            title: item.title,
-                            description: item.description,
-                            label: item.imageLabel,
-                          })
-                        }
-                        className="shrink-0 w-[130px] rounded-xl border border-white/10 bg-black/20 hover:border-purple-300/60 hover:shadow-[0_0_18px_rgba(168,85,247,0.2)]"
-                        aria-label="Abrir foto de archivo"
-                      >
-                        <img
-                          src={primaryImage}
-                          alt={item.imageAlt || `Foto de ${item.title}`}
-                          className="h-[90px] w-[130px] rounded-xl object-cover opacity-80"
-                          loading="lazy"
-                          decoding="async"
-                        />
-                      </button>
-                    ) : (
-                      <div className="shrink-0 w-[130px] rounded-xl border border-white/10 bg-black/20">
-                        <div className="flex h-[90px] w-[130px] items-center justify-center rounded-xl text-[10px] uppercase tracking-[0.3em] text-slate-500/80">
-                          Foto
-                        </div>
-                      </div>
-                    )}
-                  </div>
+                <div className="flex flex-col gap-3">
                   <div className="md:pr-4">
                     <p>{item.description}</p>
+                    <div className="mt-4 hidden md:block">
+                      {primaryImage ? (
+                        <div className="grid grid-cols-4 gap-3">
+                          {Array.from({ length: 4 }).map((_, index) => (
+                            <button
+                              key={`${item.id}-desk-img-${index}`}
+                              type="button"
+                              onClick={() =>
+                                onOpenImagePreview({
+                                  src: getFullImage(index) || getFullImage(0),
+                                  title: item.title,
+                                  description: item.description,
+                                  label: item.imageLabel,
+                                })
+                              }
+                              className="rounded-xl border border-white/10 bg-black/20 hover:border-purple-300/60 hover:shadow-[0_0_18px_rgba(168,85,247,0.2)]"
+                              aria-label="Abrir foto de archivo"
+                            >
+                              <img
+                                src={images[index] || images[0]}
+                                alt={item.imageAlt || `Foto de ${item.title}`}
+                                className="h-[90px] w-full rounded-xl object-cover opacity-80"
+                                loading="lazy"
+                                decoding="async"
+                              />
+                            </button>
+                          ))}
+                        </div>
+                      ) : (
+                        <div className="grid grid-cols-4 gap-3">
+                          {Array.from({ length: 4 }).map((_, index) => (
+                            <div
+                              key={`${item.id}-desk-placeholder-${index}`}
+                              className="rounded-xl border border-white/10 bg-black/20"
+                            >
+                              <div className="flex h-[90px] w-full items-center justify-center rounded-xl text-[10px] uppercase tracking-[0.3em] text-slate-500/80">
+                                Foto
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
                     <div className="mt-3 md:hidden">
                       {images.length ? (
                         <button
@@ -4909,7 +4931,7 @@ const rendernotaAutoral = () => {
                   </a>
                 </p>
                      <p className="text-[11px] leading-4 text-slate-300/80 pt-2">
-          * La asociación no cobra al usuario por sesión. Las sesiones se asignan sin costo para
+          * La asociación no cobra al estudiante por sesión. Las sesiones se asignan sin costo para
           las familias cuando se detecta riesgo, gracias a la combinación de suscripciones, aportes simbólicos y apoyos institucionales.
         </p>
 
