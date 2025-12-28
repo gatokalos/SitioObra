@@ -64,26 +64,34 @@
 				pointer-events: none;
 			}
 
-			#app-splash img {
-				width: 84px;
-				height: 84px;
-				border-radius: 18px;
-				border: 1px solid rgba(255, 255, 255, 0.12);
-				background: rgba(0, 0, 0, 0.35);
-				padding: 8px;
-			}
-
 			#app-splash p {
 				font-size: 0.9rem;
 				text-transform: uppercase;
 				color: rgba(226, 232, 240, 0.7);
+			}
+
+			.splash-spinner {
+				width: 84px;
+				height: 84px;
+				border-radius: 9999px;
+				border: 2px solid rgba(255, 255, 255, 0.12);
+				border-top-color: rgba(192, 132, 252, 0.8);
+				border-right-color: rgba(248, 113, 113, 0.6);
+				box-shadow: 0 0 28px rgba(168, 85, 247, 0.35);
+				animation: splash-spin 1.6s linear infinite;
+			}
+
+			@keyframes splash-spin {
+				to {
+					transform: rotate(360deg);
+				}
 			}
 		</style>
 	</head>
 
 	<body>
 		<div id="app-splash">
-			<img src="/assets/logoapp.png" alt="Gato Encerrado" />
+			<div class="splash-spinner" aria-hidden="true"></div>
 			<p>El portal despierta. Un instante.</p>
 		</div>
 		<div id="root"></div>

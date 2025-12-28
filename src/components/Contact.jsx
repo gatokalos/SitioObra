@@ -221,7 +221,7 @@ const Contact = () => {
                   value={formValues.role}
                   onChange={(event) => setFormValues((prev) => ({ ...prev, role: event.target.value }))}
                   className="w-full px-4 py-3 bg-black/30 border border-slate-100/20 rounded-lg text-slate-100 placeholder-slate-400 focus:outline-none focus:border-purple-400 focus:ring-1 focus:ring-purple-400"
-                  placeholder="Artista, investigador, espectador..."
+                  placeholder="Espectador, artista, investigador..."
                 />
               </div>
               <div>
