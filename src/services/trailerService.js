@@ -26,11 +26,14 @@ const guessMimeType = (filename = '') => {
 
 const FALLBACK_FILE_NAME = 'trailerlanding.mp4';
 const FALLBACK_FILE_NAME_MOBILE = 'trailer_landing.mp4';
+const FALLBACK_FILE_NAME_SQUARE = 'preview_cuadrado.mp4';
 
 export const TRAILER_FALLBACK_URL =
   'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/trailers/trailer_landing.mp4';
 export const TRAILER_FALLBACK_URL_MOBILE =
   'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/trailers/trailer_landing_v.mp4';
+export const TRAILER_FALLBACK_URL_SQUARE =
+  'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/trailers/preview_cuadrado.mp4';
 
 const FALLBACKS = {
   trailerlanding: {
@@ -42,6 +45,11 @@ const FALLBACKS = {
     url: TRAILER_FALLBACK_URL_MOBILE,
     name: FALLBACK_FILE_NAME_MOBILE,
     mimeType: guessMimeType(FALLBACK_FILE_NAME_MOBILE),
+  },
+  preview_cuadrado: {
+    url: TRAILER_FALLBACK_URL_SQUARE,
+    name: FALLBACK_FILE_NAME_SQUARE,
+    mimeType: guessMimeType(FALLBACK_FILE_NAME_SQUARE),
   },
 };
 

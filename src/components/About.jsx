@@ -7,6 +7,7 @@ import {
   getTrailerPublicUrl,
   TRAILER_FALLBACK_URL,
   TRAILER_FALLBACK_URL_MOBILE,
+  TRAILER_FALLBACK_URL_SQUARE,
 } from '@/services/trailerService';
 import ReserveModal from '@/components/ReserveModal';
 
@@ -57,7 +58,12 @@ const About = () => {
   const [isTabletLandscape, setIsTabletLandscape] = useState(
     () =>
       typeof window !== 'undefined' &&
-      window.matchMedia('(min-width: 768px) and (max-width: 1024px) and (orientation: landscape)').matches
+      window.matchMedia('(min-width: 768px) and (max-width: 1180px) and (orientation: landscape)').matches
+  );
+  const [isTabletPortrait, setIsTabletPortrait] = useState(
+    () =>
+      typeof window !== 'undefined' &&
+      window.matchMedia('(min-width: 768px) and (max-width: 1024px) and (orientation: portrait)').matches
   );
 
   useEffect(() => {
@@ -67,31 +73,43 @@ const About = () => {
 
     const mediaQuery = window.matchMedia('(max-width: 768px)');
     const tabletLandscapeQuery = window.matchMedia(
-      '(min-width: 768px) and (max-width: 1024px) and (orientation: landscape)'
+      '(min-width: 768px) and (max-width: 1180px) and (orientation: landscape)'
+    );
+    const tabletPortraitQuery = window.matchMedia(
+      '(min-width: 768px) and (max-width: 1024px) and (orientation: portrait)'
     );
     const handleChange = (event) => setIsMobile(event.matches);
     const handleTabletLandscapeChange = (event) => setIsTabletLandscape(event.matches);
+    const handleTabletPortraitChange = (event) => setIsTabletPortrait(event.matches);
 
     if (typeof mediaQuery.addEventListener === 'function') {
       mediaQuery.addEventListener('change', handleChange);
       tabletLandscapeQuery.addEventListener('change', handleTabletLandscapeChange);
+      tabletPortraitQuery.addEventListener('change', handleTabletPortraitChange);
     } else if (typeof mediaQuery.addListener === 'function') {
       mediaQuery.addListener(handleChange);
       tabletLandscapeQuery.addListener(handleTabletLandscapeChange);
+      tabletPortraitQuery.addListener(handleTabletPortraitChange);
     }
 
     return () => {
       if (typeof mediaQuery.removeEventListener === 'function') {
         mediaQuery.removeEventListener('change', handleChange);
         tabletLandscapeQuery.removeEventListener('change', handleTabletLandscapeChange);
+        tabletPortraitQuery.removeEventListener('change', handleTabletPortraitChange);
       } else if (typeof mediaQuery.removeListener === 'function') {
         mediaQuery.removeListener(handleChange);
         tabletLandscapeQuery.removeListener(handleTabletLandscapeChange);
+        tabletPortraitQuery.removeListener(handleTabletPortraitChange);
       }
     };
   }, []);
 
-  const trailerPreviewSrc = isMobile ? TRAILER_FALLBACK_URL_MOBILE : TRAILER_FALLBACK_URL;
+  const trailerPreviewSrc = isTabletPortrait || isTabletLandscape
+    ? TRAILER_FALLBACK_URL_SQUARE
+    : isMobile
+      ? TRAILER_FALLBACK_URL_MOBILE
+      : TRAILER_FALLBACK_URL;
 
   const handleOpenReserve = useCallback((intent) => {
     setReserveIntent(intent);
