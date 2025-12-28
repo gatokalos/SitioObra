@@ -27,7 +27,7 @@ const aboutParagraphs = [
 const testimonials = [
   {
     quote:
-      '“Salí de la función y fue como si despertara con nuevos recuerdos. Es un gato encerrado me obligó a conversar con mis propias ausencias.”',
+      '“Salí de la función y fue como si despertara con nuevos recuerdos. Es un gato encerrado me obligó a conversar con mis propios vacíos.”',
     author: 'Maru Navarro',
     role: 'Espectadora / Tijuana',
   },
