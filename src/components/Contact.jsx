@@ -10,7 +10,7 @@ import { safeGetItem, safeRemoveItem, safeSetItem } from '@/lib/safeStorage';
 const LOGIN_RETURN_KEY = 'gatoencerrado:login-return';
 
 const Contact = () => {
-  const [formValues, setFormValues] = useState({ name: '', email: '', message: '' });
+  const [formValues, setFormValues] = useState({ name: '', email: '', city: '', message: '' });
   const [status, setStatus] = useState('idle');
   const [errorMessage, setErrorMessage] = useState('');
   const instagramUrl = 'https://www.instagram.com/esungatoencerrado/?hl=en';
@@ -52,6 +52,7 @@ const Contact = () => {
 
       const trimmedName = formValues.name.trim();
       const trimmedEmail = formValues.email.trim();
+      const trimmedCity = formValues.city.trim();
       const trimmedMessage = formValues.message.trim();
 
       if (!trimmedName || !trimmedEmail || !trimmedMessage) {
@@ -67,6 +68,7 @@ const Contact = () => {
           body: {
             name: trimmedName,
             email: trimmedEmail.toLowerCase(),
+            city: trimmedCity || null,
             message: trimmedMessage,
           },
         });
@@ -81,7 +83,7 @@ const Contact = () => {
             email: trimmedEmail.toLowerCase(),
             subject: 'Contacto público',
             message: trimmedMessage,
-            meta: { route: 'contact' },
+            meta: { route: 'contact', city: trimmedCity || null },
           });
           if (backstageError) {
             console.error('[Contact] No se pudo duplicar en blog_contributions:', backstageError);
@@ -91,7 +93,7 @@ const Contact = () => {
         }
 
         setStatus('success');
-        setFormValues({ name: '', email: '', message: '' });
+        setFormValues({ name: '', email: '', city: '', message: '' });
         toast({ description: 'Recibimos tu mensaje y te escribiremos pronto.' });
       } catch (err) {
         console.error('[Contact] Error enviando mensaje:', err);
@@ -197,6 +199,17 @@ const Contact = () => {
                 />
               </div>
               <div>
+                <label className="block text-slate-300/80 text-sm font-medium mb-2">Ciudad (opcional)</label>
+                <input
+                  name="city"
+                  type="text"
+                  value={formValues.city}
+                  onChange={(event) => setFormValues((prev) => ({ ...prev, city: event.target.value }))}
+                  className="w-full px-4 py-3 bg-black/30 border border-slate-100/20 rounded-lg text-slate-100 placeholder-slate-400 focus:outline-none focus:border-purple-400 focus:ring-1 focus:ring-purple-400"
+                  placeholder="¿Desde dónde nos visitas?"
+                />
+              </div>
+              <div>
                 <label className="block text-slate-300/80 text-sm font-medium mb-2">Mensaje</label>
                 <textarea
                   name="message"
@@ -207,19 +220,17 @@ const Contact = () => {
                   placeholder="Cuéntanos más..."
                 ></textarea>
               </div>
-              <div className="min-h-[60px]">
-                {status === 'error' ? (
-                  <div className="rounded-lg border border-red-500/60 bg-red-500/10 px-4 py-3 text-sm text-red-200">
-                    {errorMessage}
-                  </div>
-                ) : null}
+              {status === 'error' ? (
+                <div className="rounded-lg border border-red-500/60 bg-red-500/10 px-4 py-3 text-sm text-red-200">
+                  {errorMessage}
+                </div>
+              ) : null}
 
-                {status === 'success' ? (
-                  <div className="rounded-lg border border-emerald-500/60 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-200">
-                    Tu mensaje llegó. Te escribiremos a la brevedad.
-                  </div>
-                ) : null}
-              </div>
+              {status === 'success' ? (
+                <div className="rounded-lg border border-emerald-500/60 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-200">
+                  Tu mensaje llegó. Te escribiremos a la brevedad.
+                </div>
+              ) : null}
               <div className="mt-4 space-y-3">
                 <div className="flex flex-col gap-3 lg:flex-row lg:items-center">
                   <Button
@@ -281,10 +292,32 @@ const Contact = () => {
               <p className="text-slate-300/70 text-sm leading-relaxed font-light">
                 Una producción de <span className="text-slate-200">#GatoEncerrado</span>.
                 <br />
+                Compañía asociada: <span className="text-slate-200">Incendio Producciones</span>.
+                <br />
                 Con el apoyo de <span className="text-slate-200">Isabel Ayuda para la Vida, A.C.</span>.
                 <br />
-                Agradecimientos especiales a todos los que creyeron en esta locura.
+                Agradecimientos a todas las personas que hicieron posible esta locura.
               </p>
+              <div className="mt-4 flex flex-wrap items-center gap-3">
+                <img
+                  src="/assets/logoapp.png"
+                  alt="Logo #GatoEncerrado"
+                  className="h-10 w-10 rounded-lg border border-white/10 bg-black/30 p-1"
+                  loading="lazy"
+                />
+                <img
+                  src="/assets/incendiologo.png"
+                  alt="Logo Incendio Producciones"
+                  className="h-10 w-10 rounded-lg border border-white/10 bg-black/30 p-1"
+                  loading="lazy"
+                />
+                <img
+                  src="/assets/isabel_banner.png"
+                  alt="Banner Isabel Ayuda para la Vida, A.C."
+                  className="h-10 w-auto max-w-[140px] rounded-lg border border-white/10 bg-black/30 px-2 object-contain"
+                  loading="lazy"
+                />
+              </div>
             </div>
           </motion.div>
         </div>
