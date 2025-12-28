@@ -142,7 +142,7 @@ const teamData = {
       {
         name: "Diego Madera",
         role: "Composición Musical",
-        bio: "Músico y compositor cuyo trabajo explora la tensión entre sonido y silencio. Su pieza original acompaña los pasajes emocionales de la obra.",
+        bio: "Músico y compositor cuyo trabajo explora la tensión entre sonido y silencio. Su pieza original acompaña al tráiler y algunos pasajes emocionales de la obra.",
         image: "https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/equipo/diego.png",
       },
     ],

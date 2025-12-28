@@ -6,12 +6,14 @@ import { toast } from '@/components/ui/use-toast';
 import { supabase } from '@/lib/supabaseClient';
 import { useAuth } from '@/contexts/SupabaseAuthContext';
 import { safeGetItem, safeRemoveItem, safeSetItem } from '@/lib/safeStorage';
+import { ConfettiBurst, useConfettiBursts } from '@/components/Confetti';
 
 const LOGIN_RETURN_KEY = 'gatoencerrado:login-return';
 
 const Contact = () => {
   const [formValues, setFormValues] = useState({
     name: '',
+    role: '',
     email: '',
     city: '',
     attachmentUrl: '',
@@ -24,6 +26,7 @@ const Contact = () => {
   const facebookUrl = 'https://www.facebook.com/share/16pHNpZjpM/?mibextid=wwXIfr';
   const { user } = useAuth();
   const isLoggedIn = Boolean(user?.email);
+  const { bursts: confettiBursts, fireConfetti } = useConfettiBursts();
 
   useEffect(() => {
     if (!isLoggedIn || typeof window === 'undefined') {
@@ -57,6 +60,7 @@ const Contact = () => {
       }
 
       const trimmedName = formValues.name.trim();
+      const trimmedRole = formValues.role.trim();
       const trimmedEmail = formValues.email.trim();
       const trimmedCity = formValues.city.trim();
       const trimmedAttachmentUrl = formValues.attachmentUrl.trim();
@@ -74,6 +78,7 @@ const Contact = () => {
         const { error } = await supabase.functions.invoke('send-contact-message', {
           body: {
             name: trimmedName,
+            role: trimmedRole || null,
             email: trimmedEmail.toLowerCase(),
             city: trimmedCity || null,
             attachment_url: trimmedAttachmentUrl || null,
@@ -89,12 +94,14 @@ const Contact = () => {
           const { error: backstageError } = await supabase.from('blog_contributions').insert({
             name: trimmedName,
             email: trimmedEmail.toLowerCase(),
-            subject: 'Contacto público',
-            message: trimmedMessage,
+            proposal: trimmedMessage,
+            topic: 'contacto',
+            link: trimmedAttachmentUrl || null,
             meta: {
               route: 'contact',
               city: trimmedCity || null,
               attachment_url: trimmedAttachmentUrl || null,
+              role: trimmedRole || null,
             },
           });
           if (backstageError) {
@@ -105,8 +112,8 @@ const Contact = () => {
         }
 
         setStatus('success');
-        setFormValues({ name: '', email: '', city: '', attachmentUrl: '', message: '' });
-        toast({ description: 'Recibimos tu mensaje y te escribiremos pronto.' });
+        setFormValues({ name: '', role: '', email: '', city: '', attachmentUrl: '', message: '' });
+        fireConfetti();
       } catch (err) {
         console.error('[Contact] Error enviando mensaje:', err);
         setStatus('error');
@@ -162,6 +169,10 @@ const Contact = () => {
           viewport={{ once: true }}
           className="text-center mb-16"
         >
+          <p className="text-xs uppercase tracking-[0.4em] text-slate-400/70 mb-4">
+            Contacto, Prensa & Créditos
+          </p>
+          
           <h2 className="font-display text-4xl md:text-5xl font-medium mb-6 text-gradient italic">
             ¿Ya sientes la curiosidad gatuna?
           </h2>
@@ -181,15 +192,18 @@ const Contact = () => {
             whileInView={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.8, ease: "easeOut" }}
             viewport={{ once: true }}
-            className="glass-effect rounded-2xl p-8"
+            className="glass-effect rounded-2xl p-8 relative overflow-hidden"
           >
+            {confettiBursts.map((burst) => (
+              <ConfettiBurst key={burst} seed={burst} />
+            ))}
             <h3 className="font-display text-2xl font-medium text-slate-100 mb-8">
               Envíanos un Mensaje
             </h3>
             
             <form onSubmit={handleSubmit} className="space-y-6">
               <div>
-                <label className="block text-slate-300/80 text-sm font-medium mb-2">Nombre</label>
+                <label className="block text-slate-300/80 text-sm font-medium mb-2">Nombre *</label>
                 <input
                   name="name"
                   type="text"
@@ -200,7 +214,18 @@ const Contact = () => {
                 />
               </div>
               <div>
-                <label className="block text-slate-300/80 text-sm font-medium mb-2">Email</label>
+                <label className="block text-slate-300/80 text-sm font-medium mb-2">Perfil</label>
+                <input
+                  name="role"
+                  type="text"
+                  value={formValues.role}
+                  onChange={(event) => setFormValues((prev) => ({ ...prev, role: event.target.value }))}
+                  className="w-full px-4 py-3 bg-black/30 border border-slate-100/20 rounded-lg text-slate-100 placeholder-slate-400 focus:outline-none focus:border-purple-400 focus:ring-1 focus:ring-purple-400"
+                  placeholder="Artista, investigador, espectador..."
+                />
+              </div>
+              <div>
+                <label className="block text-slate-300/80 text-sm font-medium mb-2">Email *</label>
                 <input
                   name="email"
                   type="email"
@@ -211,7 +236,7 @@ const Contact = () => {
                 />
               </div>
               <div>
-                <label className="block text-slate-300/80 text-sm font-medium mb-2">Ciudad (opcional)</label>
+                <label className="block text-slate-300/80 text-sm font-medium mb-2">Ciudad</label>
                 <input
                   name="city"
                   type="text"
@@ -223,18 +248,18 @@ const Contact = () => {
               </div>
         
               <div>
-                <label className="block text-slate-300/80 text-sm font-medium mb-2">Mensaje</label>
+                <label className="block text-slate-300/80 text-sm font-medium mb-2">Mensaje *</label>
                 <textarea
                   name="message"
                   rows={5}
                   value={formValues.message}
                   onChange={(event) => setFormValues((prev) => ({ ...prev, message: event.target.value }))}
                   className="w-full px-4 py-3 bg-black/30 border border-slate-100/20 rounded-lg text-slate-100 placeholder-slate-400 focus:outline-none focus:border-purple-400 focus:ring-1 focus:ring-purple-400 resize-none"
-                  placeholder="Cuéntanos más..."
+                  placeholder="Cuéntanos todo..."
                 ></textarea>
               </div>
               <div>
-                <label className="block text-slate-300/80 text-sm font-medium mb-2">Material (opcional)</label>
+                <label className="block text-slate-300/80 text-sm font-medium mb-2">Material</label>
                 <input
                   name="attachmentUrl"
                   type="url"
