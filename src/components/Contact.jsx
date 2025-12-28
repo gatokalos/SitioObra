@@ -76,7 +76,7 @@ const Contact = () => {
             name: trimmedName,
             email: trimmedEmail.toLowerCase(),
             city: trimmedCity || null,
-            link: trimmedAttachmentUrl || null,
+            attachment_url: trimmedAttachmentUrl || null,
             message: trimmedMessage,
           },
         });
@@ -94,7 +94,7 @@ const Contact = () => {
             meta: {
               route: 'contact',
               city: trimmedCity || null,
-              link: trimmedAttachmentUrl || null,
+              attachment_url: trimmedAttachmentUrl || null,
             },
           });
           if (backstageError) {
