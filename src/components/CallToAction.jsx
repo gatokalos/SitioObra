@@ -37,6 +37,7 @@ const CallToAction = () => {
   const [communityOptIn, setCommunityOptIn] = useState(false);
   const [showTicketSupport, setShowTicketSupport] = useState(false);
   const [subs, setSubs] = useState(0);
+  const [ticketUnits, setTicketUnits] = useState(0);
   const [canFetchStats, setCanFetchStats] = useState(Boolean(import.meta.env.VITE_API_URL));
   const { user } = useAuth();
 
@@ -90,8 +91,36 @@ const CallToAction = () => {
     }
     fetchSubs();
     const id = setInterval(fetchSubs, 15000); // refresco cada 15s
-    return () => { active = false; clearInterval(id); };
+    return () => {
+      active = false;
+      clearInterval(id);
+    };
   }, [canFetchStats]);
+
+  useEffect(() => {
+    let active = true;
+    async function fetchTicketUnits() {
+      try {
+        const { data, error } = await supabase.functions.invoke('stats-boletos-destinados');
+        if (error) {
+          throw error;
+        }
+        if (!active) return;
+        setTicketUnits(Number(data?.total || 0));
+      } catch (e) {
+        console.error('Error stats/boletos_destinados', e);
+        if (active) {
+          setTicketUnits(0);
+        }
+      }
+    }
+    fetchTicketUnits();
+    const ticketId = setInterval(fetchTicketUnits, 20000);
+    return () => {
+      active = false;
+      clearInterval(ticketId);
+    };
+  }, []);
 
   // 2) Cálculos de impacto
   const stats = useMemo(() => {
@@ -215,6 +244,10 @@ const CallToAction = () => {
         <div className="flex items-baseline justify-between">
           <p className="text-sm opacity-80">Suscriptores activos</p>
           <p className="text-2xl font-semibold">{subs}</p>
+        </div>
+        <div className="flex items-baseline justify-between">
+          <p className="text-sm opacity-80">Boletos destinados</p>
+          <p className="text-2xl font-semibold">{ticketUnits}</p>
         </div>
 
         <div>
