@@ -1195,7 +1195,7 @@ const CAUSE_ACCORDION = [
     id: 'tratamientos',
     title: 'Tratamientos emocionales',
     description:
-      'Tu suscripción asigna hasta 6 sesiones a un joven sin costo para su familia. Isabel Ayuda para la Vida, A.C. activa las sesiones cuando se detecta riesgo emocional.',
+      'Tu apoyo asigna hasta 6 sesiones a un joven sin costo para su familia. Isabel Ayuda para la Vida, A.C. activa las sesiones cuando se detecta riesgo emocional.',
     icon: HeartHandshake,
     metric: '6 sesiones promedio por suscriptor',
     imageAlt: 'Foto de archivo de acompañamiento emocional.',

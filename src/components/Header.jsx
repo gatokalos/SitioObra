@@ -61,6 +61,7 @@ const Header = () => {
     { name: 'Galería', href: '#instagram' },
     { name: 'Textos', href: '#dialogo-critico' },
     { name: 'Miniversos', href: '#transmedia' },
+    { name: 'Causa', href: '#apoya' },
   ];
 
   const handleNavClick = (href) => {
