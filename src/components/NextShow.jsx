@@ -27,7 +27,7 @@ const NextShow = () => {
 
   return (
     <>
-      <section id="next-show" className="py-24 relative">
+      <section id="next-show" className="py-24 relative min-h-[760px] md:min-h-[820px]">
         <div className="section-divider mb-24"></div>
         
         <div className="container mx-auto px-6">
@@ -36,7 +36,7 @@ const NextShow = () => {
             whileInView={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, ease: "easeOut" }}
             viewport={{ once: true }}
-            className="glass-effect rounded-2xl p-8 md:p-12 text-center overflow-hidden"
+            className="glass-effect rounded-2xl p-8 md:p-12 text-center overflow-hidden min-h-[520px] md:min-h-[560px]"
           >
             <div className="relative z-10">
               <h2 className="font-display text-4xl md:text-5xl font-medium mb-4 text-gradient italic">

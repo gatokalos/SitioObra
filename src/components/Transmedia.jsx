@@ -1246,6 +1246,21 @@ const CAUSE_ACCORDION = [
 
 const CauseImpactAccordion = ({ items, onOpenImagePreview }) => {
   const [openCauseId, setOpenCauseId] = useState(null);
+  const [activeSlideById, setActiveSlideById] = useState({});
+
+  const handleCarouselScroll = (itemId, event, total) => {
+    const target = event.currentTarget;
+    if (!target || !total) {
+      return;
+    }
+    const nextIndex = Math.round(target.scrollLeft / target.offsetWidth);
+    setActiveSlideById((prev) => {
+      if (prev[itemId] === nextIndex) {
+        return prev;
+      }
+      return { ...prev, [itemId]: nextIndex };
+    });
+  };
 
   return (
     <div className="mt-4 space-y-3">
@@ -1333,27 +1348,55 @@ const CauseImpactAccordion = ({ items, onOpenImagePreview }) => {
                     </div>
                     <div className="mt-3 md:hidden">
                       {images.length ? (
-                        <button
-                          type="button"
-                          onClick={() =>
-                            onOpenImagePreview({
-                              src: getFullImage(0),
-                              title: item.title,
-                              description: item.description,
-                              label: item.imageLabel,
-                            })
-                          }
-                          className="w-full rounded-xl border border-white/10 bg-black/20 hover:border-purple-300/60 hover:shadow-[0_0_18px_rgba(168,85,247,0.2)]"
-                          aria-label="Abrir foto de archivo"
-                        >
-                          <img
-                            src={images[0]}
-                            alt={item.imageAlt || `Foto de ${item.title}`}
-                            className="w-full aspect-square rounded-xl object-cover opacity-80"
-                            loading="lazy"
-                            decoding="async"
-                          />
-                        </button>
+                        <>
+                          <div
+                            className="flex gap-3 overflow-x-auto snap-x snap-mandatory pb-3"
+                            onScroll={(event) =>
+                              handleCarouselScroll(item.id, event, images.length)
+                            }
+                            style={{ minHeight: '256px' }}
+                          >
+                            {images.map((imageUrl, index) => (
+                              <button
+                                key={`${item.id}-mobile-img-${index}`}
+                                type="button"
+                                onClick={() =>
+                                  onOpenImagePreview({
+                                    src: getFullImage(index),
+                                    title: item.title,
+                                    description: item.description,
+                                    label: item.imageLabel,
+                                  })
+                                }
+                                className="w-full shrink-0 snap-start rounded-xl border border-white/10 bg-black/20 hover:border-purple-300/60 hover:shadow-[0_0_18px_rgba(168,85,247,0.2)]"
+                                aria-label="Abrir foto de archivo"
+                                style={{ minWidth: '100%', aspectRatio: '1 / 1' }}
+                              >
+                                <img
+                                  src={imageUrl}
+                                  alt={item.imageAlt || `Foto de ${item.title}`}
+                                  className="w-full h-full rounded-xl object-cover opacity-80"
+                                  loading="lazy"
+                                  decoding="async"
+                                />
+                              </button>
+                            ))}
+                          </div>
+                          {images.length > 1 ? (
+                            <div className="mt-2 flex items-center justify-center gap-2">
+                              {images.map((_, index) => (
+                                <span
+                                  key={`${item.id}-dot-${index}`}
+                                  className={`h-1.5 w-1.5 rounded-full ${
+                                    (activeSlideById[item.id] ?? 0) === index
+                                      ? 'bg-purple-200'
+                                      : 'bg-white/20'
+                                  }`}
+                                />
+                              ))}
+                            </div>
+                          ) : null}
+                        </>
                       ) : (
                         <div className="rounded-xl border border-white/10 bg-black/20">
                           <div className="flex aspect-square items-center justify-center rounded-xl text-[10px] uppercase tracking-[0.3em] text-slate-500/80">
@@ -4742,7 +4785,10 @@ const rendernotaAutoral = () => {
 
   return (
     <>
-      <section id="transmedia" className="py-24 relative min-h-[1200px]">
+      <section
+        id="transmedia"
+        className="py-24 relative min-h-[1800px] md:min-h-[1600px] lg:min-h-[1500px]"
+      >
         {import.meta.env?.DEV ? (
           <div className="fixed bottom-4 right-4 z-50">
             <button
@@ -4762,7 +4808,7 @@ const rendernotaAutoral = () => {
             whileInView={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, ease: 'easeOut' }}
             viewport={{ once: true }}
-            className="text-center mb-16 space-y-6"
+            className="text-center mb-16 space-y-6 min-h-[240px] md:min-h-[260px]"
           >
             <p className="text-xs uppercase tracking-[0.4em] text-slate-400/70">Universo Transmedia</p>
             <h2 className="font-display text-4xl md:text-5xl font-medium text-gradient italic">
@@ -5091,8 +5137,14 @@ const rendernotaAutoral = () => {
               </button>
             </div>
             <div className="rounded-3xl border border-white/10 bg-slate-950/95 shadow-2xl overflow-hidden">
-              <div className="bg-black/60">
-                <img src={imagePreview.src} alt={imagePreview.title || 'Vista previa'} className="w-full h-auto" />
+              <div className="relative w-full aspect-[4/3] bg-black/60">
+                <img
+                  src={imagePreview.src}
+                  alt={imagePreview.title || 'Vista previa'}
+                  className="absolute inset-0 w-full h-full object-contain"
+                  loading="lazy"
+                  decoding="async"
+                />
               </div>
               {(imagePreview.title || imagePreview.description) ? (
                 <div className="p-6 space-y-2">
