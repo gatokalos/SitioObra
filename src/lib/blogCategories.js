@@ -14,7 +14,7 @@ export const BLOG_CATEGORY_CONFIG = {
     id: 'expansiones',
     label: 'Expansiones Narrativas',
     summary:
-      'Microficciones, comunidad y relatos que acompañan los miniversos transmedia: cartas, diarios, audios y relatos colectivos.',
+      'Microficciones, comunidad y relatos que acompañan lo que la obra despierta en cada quien: cartas, diarios, audios y relatos colectivos que expanden este espacio transmedia.',
     keywords: ['miniverso', 'transmedia', 'ficcion', 'comunidad', 'microficcion', 'expansion'],
   },
   backstage: {

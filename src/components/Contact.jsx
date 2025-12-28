@@ -10,7 +10,13 @@ import { safeGetItem, safeRemoveItem, safeSetItem } from '@/lib/safeStorage';
 const LOGIN_RETURN_KEY = 'gatoencerrado:login-return';
 
 const Contact = () => {
-  const [formValues, setFormValues] = useState({ name: '', email: '', city: '', message: '' });
+  const [formValues, setFormValues] = useState({
+    name: '',
+    email: '',
+    city: '',
+    attachmentUrl: '',
+    message: '',
+  });
   const [status, setStatus] = useState('idle');
   const [errorMessage, setErrorMessage] = useState('');
   const instagramUrl = 'https://www.instagram.com/esungatoencerrado/?hl=en';
@@ -53,6 +59,7 @@ const Contact = () => {
       const trimmedName = formValues.name.trim();
       const trimmedEmail = formValues.email.trim();
       const trimmedCity = formValues.city.trim();
+      const trimmedAttachmentUrl = formValues.attachmentUrl.trim();
       const trimmedMessage = formValues.message.trim();
 
       if (!trimmedName || !trimmedEmail || !trimmedMessage) {
@@ -69,6 +76,7 @@ const Contact = () => {
             name: trimmedName,
             email: trimmedEmail.toLowerCase(),
             city: trimmedCity || null,
+            link: trimmedAttachmentUrl || null,
             message: trimmedMessage,
           },
         });
@@ -83,7 +91,11 @@ const Contact = () => {
             email: trimmedEmail.toLowerCase(),
             subject: 'Contacto público',
             message: trimmedMessage,
-            meta: { route: 'contact', city: trimmedCity || null },
+            meta: {
+              route: 'contact',
+              city: trimmedCity || null,
+              link: trimmedAttachmentUrl || null,
+            },
           });
           if (backstageError) {
             console.error('[Contact] No se pudo duplicar en blog_contributions:', backstageError);
@@ -93,7 +105,7 @@ const Contact = () => {
         }
 
         setStatus('success');
-        setFormValues({ name: '', email: '', city: '', message: '' });
+        setFormValues({ name: '', email: '', city: '', attachmentUrl: '', message: '' });
         toast({ description: 'Recibimos tu mensaje y te escribiremos pronto.' });
       } catch (err) {
         console.error('[Contact] Error enviando mensaje:', err);
@@ -209,6 +221,7 @@ const Contact = () => {
                   placeholder="¿Desde dónde nos visitas?"
                 />
               </div>
+        
               <div>
                 <label className="block text-slate-300/80 text-sm font-medium mb-2">Mensaje</label>
                 <textarea
@@ -219,6 +232,17 @@ const Contact = () => {
                   className="w-full px-4 py-3 bg-black/30 border border-slate-100/20 rounded-lg text-slate-100 placeholder-slate-400 focus:outline-none focus:border-purple-400 focus:ring-1 focus:ring-purple-400 resize-none"
                   placeholder="Cuéntanos más..."
                 ></textarea>
+              </div>
+              <div>
+                <label className="block text-slate-300/80 text-sm font-medium mb-2">Material (opcional)</label>
+                <input
+                  name="attachmentUrl"
+                  type="url"
+                  value={formValues.attachmentUrl}
+                  onChange={(event) => setFormValues((prev) => ({ ...prev, attachmentUrl: event.target.value }))}
+                  className="w-full px-4 py-3 bg-black/30 border border-slate-100/20 rounded-lg text-slate-100 placeholder-slate-400 focus:outline-none focus:border-purple-400 focus:ring-1 focus:ring-purple-400"
+                  placeholder="Drive, portfolio, video..."
+                />
               </div>
               {status === 'error' ? (
                 <div className="rounded-lg border border-red-500/60 bg-red-500/10 px-4 py-3 text-sm text-red-200">
