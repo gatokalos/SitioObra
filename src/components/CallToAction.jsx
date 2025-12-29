@@ -322,7 +322,7 @@ const CallToAction = () => {
             }`}
           />
           <span className="text-sm text-slate-300/80 leading-relaxed">
-            Quiero estar al tanto de las expansiones e historias comunitarias.
+            Quiero estar al tanto de las historias comunitarias.
           </span>
         </button>
       </div>
