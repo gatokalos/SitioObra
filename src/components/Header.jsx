@@ -82,7 +82,7 @@ const Header = () => {
           isScrolled ? 'bg-black/60 backdrop-blur-lg border-b border-slate-100/10' : 'bg-transparent'
         }`}
       >
-      <nav className="container mx-auto px-6 py-3">
+      <nav className="container mx-auto px-6 py-3 max-[375px]:px-4">
         <div className="flex items-center justify-between">
           <motion.button
             type="button"
@@ -90,7 +90,9 @@ const Header = () => {
             className="flex items-center gap-3 cursor-pointer text-white"
             onClick={() => handleNavClick('#hero')}
           >
-            <span className="font-display text-2xl font-bold text-gradient">#GatoEncerrado</span>
+            <span className="font-display text-2xl font-bold text-gradient max-[375px]:text-lg whitespace-nowrap">
+              Es un gato encerrado
+            </span>
             <span className={`h-2.5 w-2.5 rounded-full ${statusDotClass}`} />
             {user ? (
               <span className="text-sm md:text-base font-semibold tracking-tight text-white">

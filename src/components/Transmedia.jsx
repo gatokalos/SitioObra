@@ -168,8 +168,9 @@ const TOPIC_BY_SHOWCASE = {
   apps: 'apps',
   oraculo: 'oraculo',
 };
+// Dev: skip the editorial shield to allow local tile interactions.
 const MINIVERSO_EDITORIAL_INTERCEPTION_ENABLED =
-  import.meta.env?.VITE_MINIVERSO_INTERCEPTION !== 'false';
+  import.meta.env?.VITE_MINIVERSO_INTERCEPTION !== 'false' && !import.meta.env?.DEV;
 const CONTRIBUTION_CATEGORY_BY_SHOWCASE = {
   miniversos: 'obra_escenica',
   copycats: 'cine',
