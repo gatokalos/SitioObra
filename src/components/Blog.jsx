@@ -105,10 +105,10 @@ const markdownComponents = {
       {...props}
     />
   ),
-  ul: ({ node: _node, ...props }) => (
+  ul: ({ node: _node, ordered: _ordered, ...props }) => (
     <ul className="ml-6 list-disc space-y-2 text-slate-200" {...props} />
   ),
-  ol: ({ node: _node, ...props }) => (
+  ol: ({ node: _node, ordered: _ordered, ...props }) => (
     <ol className="ml-6 list-decimal space-y-2 text-slate-200" {...props} />
   ),
   li: ({ node: _node, ordered: _ordered, ...props }) => (
@@ -127,6 +127,8 @@ const markdownComponents = {
 
 const ArticleCard = ({ post, onSelect }) => {
   const publishedDate = post.published_at ? new Date(post.published_at) : null;
+  const previewImage = post.featured_image_url;
+  const hasPreview = Boolean(previewImage);
 
   return (
     <motion.article
@@ -134,7 +136,7 @@ const ArticleCard = ({ post, onSelect }) => {
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, amount: 0.2 }}
       transition={{ duration: 0.5, ease: 'easeOut' }}
-      className="glass-effect rounded-2xl p-8 md:p-10 flex flex-col hover-glow transition-shadow min-h-[420px]"
+      className="glass-effect rounded-2xl p-8 md:p-10 flex flex-col hover-glow transition-shadow"
     >
       <div className="flex flex-wrap items-center gap-4 mb-6 text-sm text-slate-400">
         {publishedDate && (
@@ -160,19 +162,22 @@ const ArticleCard = ({ post, onSelect }) => {
         </span>
       </div>
 
-      <h3 className="font-display text-2xl md:text-3xl font-medium text-slate-100 mb-4">{post.title}</h3>
-
-      <p
-        className="text-slate-300/80 leading-relaxed font-light mb-6"
-        style={{
-          display: '-webkit-box',
-          WebkitLineClamp: 4,
-          WebkitBoxOrient: 'vertical',
-          overflow: 'hidden',
-        }}
-      >
-        {post.excerpt}
-      </p>
+      <div className="mb-6">
+        <div className="flex items-center gap-3">
+          <h3 className="font-display text-2xl md:text-3xl font-medium text-slate-100">{post.title}</h3>
+        </div>
+        <p
+          className="text-slate-300/80 leading-relaxed font-light mt-4"
+          style={{
+            display: '-webkit-box',
+            WebkitLineClamp: 4,
+            WebkitBoxOrient: 'vertical',
+            overflow: 'hidden',
+          }}
+        >
+          {post.excerpt}
+        </p>
+      </div>
 
       {Array.isArray(post.tags) && post.tags.length > 0 ? (
         <div className="flex flex-wrap gap-2 mb-8">
@@ -184,6 +189,33 @@ const ArticleCard = ({ post, onSelect }) => {
               {tag}
             </span>
           ))}
+        </div>
+      ) : null}
+
+      {hasPreview ? (
+        <div className="hidden md:block mb-6">
+          <div className="relative h-44 lg:h-64 rounded-2xl overflow-hidden border border-white/10 bg-white/5">
+            <img
+              src={previewImage}
+              alt={post.title}
+              className="h-full w-full object-cover"
+              loading="lazy"
+            />
+            <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-transparent to-black/60 backdrop-blur-sm" />
+          </div>
+        </div>
+      ) : null}
+      {hasPreview ? (
+        <div className="md:hidden mb-6">
+          <div className="relative h-44 rounded-2xl overflow-hidden border border-white/10 bg-white/5">
+            <img
+              src={previewImage}
+              alt={post.title}
+              className="h-full w-full object-cover"
+              loading="lazy"
+            />
+            <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-transparent to-black/60 backdrop-blur-sm" />
+          </div>
         </div>
       ) : null}
 
@@ -201,7 +233,7 @@ const ArticleCard = ({ post, onSelect }) => {
 const ArticleCardSkeleton = () => (
   <motion.div
     variants={containerVariants}
-    className="glass-effect rounded-2xl p-8 md:p-10 flex flex-col gap-4 animate-pulse min-h-[420px]"
+    className="glass-effect rounded-2xl p-8 md:p-10 flex flex-col gap-4 animate-pulse"
   >
     <div className="h-4 bg-white/10 rounded w-1/3" />
     <div className="h-8 bg-white/10 rounded w-3/4" />
@@ -216,6 +248,8 @@ const ArticleCardSkeleton = () => (
 const FullArticle = ({ post, onClose }) => {
   const articleContent = useMemo(() => post?.content?.trim() ?? '', [post]);
   const articleImage = post?.featured_image_url ?? null;
+  const articleCaption = post?.image_caption?.trim?.() ?? '';
+  const [showMobileCaption, setShowMobileCaption] = useState(false);
 
   const publishedDate = post.published_at ? new Date(post.published_at) : null;
 
@@ -260,8 +294,11 @@ const FullArticle = ({ post, onClose }) => {
       <h3 className="font-display text-3xl md:text-4xl font-semibold text-slate-50 mb-8">{post.title}</h3>
 
       {articleImage ? (
-        <div
-          className="mb-10 overflow-hidden rounded-3xl border border-white/10 bg-white/5 aspect-[16/9]"
+        <button
+          type="button"
+          onClick={() => setShowMobileCaption((prev) => !prev)}
+          className="md:hidden my-10 overflow-hidden rounded-3xl border border-white/10 bg-white/5 aspect-[16/9] relative text-left"
+          aria-pressed={showMobileCaption}
         >
           <img
             src={articleImage}
@@ -269,9 +306,17 @@ const FullArticle = ({ post, onClose }) => {
             className="w-full h-full object-cover"
             loading="lazy"
           />
-        </div>
+          {articleCaption ? (
+            <div
+              className={`absolute inset-x-0 bottom-0 px-4 py-3 text-xs text-slate-100 bg-black/60 backdrop-blur-sm transition-opacity ${
+                showMobileCaption ? 'opacity-100' : 'opacity-0'
+              }`}
+            >
+              {articleCaption}
+            </div>
+          ) : null}
+        </button>
       ) : null}
-
       {articleContent ? (
         <div className="flex flex-col gap-6 text-slate-200 leading-relaxed font-light">
           <ReactMarkdown components={markdownComponents} skipHtml={false} linkTarget="_blank">
@@ -286,6 +331,21 @@ const FullArticle = ({ post, onClose }) => {
           </p>
         </div>
       )}
+      {articleImage ? (
+        <div className="hidden md:block my-10 overflow-hidden rounded-3xl border border-white/10 bg-white/5 aspect-[16/9] relative group">
+          <img
+            src={articleImage}
+            alt={post.title}
+            className="w-full h-full object-cover"
+            loading="lazy"
+          />
+          {articleCaption ? (
+            <div className="absolute inset-x-0 bottom-0 px-4 py-3 text-xs text-slate-100 bg-black/60 backdrop-blur-sm opacity-0 transition-opacity group-hover:opacity-100">
+              {articleCaption}
+            </div>
+          ) : null}
+        </div>
+      ) : null}
       <ArticleInteractionPanel post={post} />
     </motion.div>
   );
@@ -302,6 +362,7 @@ const ArticleInteractionPanel = ({ post }) => {
   const [liked, setLiked] = useState(false);
   const [wantsNotification, setWantsNotification] = useState(false);
   const [status, setStatus] = useState({ like: 'idle', notify: 'idle' });
+  const authorAvatar = post?.author_avatar_url;
 
   const pushInteraction = async (action) => {
     const nextLiked = action === 'like' ? !liked : liked;
@@ -369,9 +430,21 @@ const ArticleInteractionPanel = ({ post }) => {
             size="lg"
             onClick={() => pushInteraction('notify')}
             disabled={status.notify === 'loading'}
-            className="border-slate-400/40 text-purple-200 hover:bg-purple-500/20 w-full sm:w-auto whitespace-normal break-words text-center leading-snug"
+            className="border-slate-400/40 text-purple-200 hover:bg-purple-500/20 w-full sm:w-auto whitespace-normal break-words text-center leading-snug inline-flex items-center gap-3 pl-4"
           >
-            {wantsNotification ? 'Te avisaremos de novedades' : 'Quiero leer más de este autor'}
+            <span className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-fuchsia-200/40 bg-purple-500/20 shadow-[0_0_16px_rgba(168,85,247,0.45)] overflow-hidden flex-shrink-0">
+              {authorAvatar ? (
+                <img
+                  src={authorAvatar}
+                  alt={post.author ? `Retrato de ${post.author}` : 'Autor'}
+                  className="h-full w-full object-cover"
+                  loading="lazy"
+                />
+              ) : (
+                <span className="h-2.5 w-2.5 rounded-full bg-fuchsia-200/90" />
+              )}
+            </span>
+            <span>{wantsNotification ? 'Te avisaremos de novedades' : 'Quiero leer más de este autor'}</span>
           </Button>
         </div>
       </div>
@@ -555,7 +628,7 @@ const Blog = ({ posts = [], isLoading = false, error = null }) => {
               whileInView="visible"
               viewport={{ once: true }}
               variants={{ visible: { transition: { staggerChildren: 0.12 } } }}
-              className="grid md:grid-cols-2 gap-8 min-h-[1400px]"
+              className="grid md:grid-cols-2 gap-8"
             >
               {isLoading ? (
                 Array.from({ length: 6 }).map((_, index) => <ArticleCardSkeleton key={`skeleton-${index}`} />)

@@ -9,6 +9,8 @@ import React, {
 import loadMindAR from '@/lib/loadMindAR';
 import loadThree from '@/lib/loadThree';
 
+const MODEL_URL = '/assets/aro.glb';
+
 const buildFallbackPortal = (THREE) => {
   const group = new THREE.Group();
 
@@ -57,6 +59,9 @@ const MindARScene = forwardRef(
       isCameraReady = false,
       className = '',
       message = 'La taza te escucha.', // ya no se usa, pero lo dejamos por compatibilidad
+      showScanGuide = false,
+      guideImageSrc = '',
+      guideLabel = 'Alinea el marcador con el contorno para activar la escena.',
       overlay = null,
     },
     ref,
@@ -81,9 +86,13 @@ const MindARScene = forwardRef(
 
     const containerRef = useRef(null);
     const videoRef = useRef(null);
+    const rendererRef = useRef(null);
+    const sceneRef = useRef(null);
+    const cameraRef = useRef(null);
 
     const [status, setStatus] = useState('idle');
     const [error, setError] = useState('');
+    const [hasTarget, setHasTarget] = useState(false);
 
     useEffect(() => {
       if (!isCameraReady || !containerRef.current || !resolvedTargetSrc) {
@@ -95,10 +104,12 @@ const MindARScene = forwardRef(
       let animationLoop = null;
       let attachedVideo = null;
       let catModel = null;
+      let isActive = true;
 
       const start = async () => {
         setStatus('loading');
         setError('');
+        setHasTarget(false);
         try {
           const THREE = await loadThree();
           const MINDAR_IMAGE = await loadMindAR();
@@ -113,6 +124,20 @@ const MindARScene = forwardRef(
 
           const { renderer: r, scene, camera } = mindarThree;
           renderer = r;
+          sceneRef.current = scene;
+          cameraRef.current = camera;
+          if (renderer?.domElement) {
+            rendererRef.current = renderer.domElement;
+            renderer.domElement.style.position = 'absolute';
+            renderer.domElement.style.inset = '0';
+            renderer.domElement.style.width = '100%';
+            renderer.domElement.style.height = '100%';
+            renderer.domElement.style.zIndex = '1';
+            renderer.domElement.style.pointerEvents = 'none';
+          }
+          if (renderer) {
+            renderer.preserveDrawingBuffer = true;
+          }
 
           // Luces simples y limpias
           const hemi = new THREE.HemisphereLight('#ffffff', '#333344', 1.0);
@@ -124,6 +149,12 @@ const MindARScene = forwardRef(
 
           // Anchor principal (marcador 0)
           const anchor = mindarThree.addAnchor(0);
+          anchor.onTargetFound = () => {
+            if (isActive) setHasTarget(true);
+          };
+          anchor.onTargetLost = () => {
+            if (isActive) setHasTarget(false);
+          };
 
           // Loader para el modelo 3D
           const { GLTFLoader } = await import(
@@ -134,11 +165,11 @@ const MindARScene = forwardRef(
           let modelScene = null;
           try {
             // Preferimos el modelo glb, pero si no está disponible hacemos fallback a una geometría procedimental.
-            const gltf = await loader.loadAsync('/webar/taza/gato-abstracto.glb');
+            const gltf = await loader.loadAsync(MODEL_URL);
             modelScene = gltf.scene;
           } catch (modelError) {
             console.warn(
-              '[MindARScene] No se pudo cargar /webar/taza/gato-abstracto.glb, usando modelo fallback.',
+              `[MindARScene] No se pudo cargar ${MODEL_URL}, usando modelo fallback.`,
               modelError,
             );
             modelScene = buildFallbackPortal(THREE);
@@ -156,7 +187,7 @@ const MindARScene = forwardRef(
 
           // Video de cámara para poder capturar frames
           const video = mindarThree.video;
-          if (video && !containerRef.current.contains(video)) {
+          if (video) {
             video.setAttribute('playsinline', 'true');
             video.muted = true;
             video.style.position = 'absolute';
@@ -167,12 +198,16 @@ const MindARScene = forwardRef(
             video.style.objectFit = 'cover';
             video.style.zIndex = '0';
             video.style.display = 'block';
-            containerRef.current.appendChild(video);
-            attachedVideo = video;
+            if (!containerRef.current.contains(video)) {
+              containerRef.current.appendChild(video);
+              attachedVideo = video;
+            }
             videoRef.current = video;
           }
 
-          setStatus('running');
+          if (isActive) {
+            setStatus('running');
+          }
 
           const clock = new THREE.Clock();
           animationLoop = () => {
@@ -190,14 +225,17 @@ const MindARScene = forwardRef(
           renderer.setAnimationLoop(animationLoop);
         } catch (err) {
           console.error('[MindARScene] Error al iniciar AR:', err);
-          setError(err?.message ?? 'No pudimos iniciar la experiencia AR.');
-          setStatus('error');
+          if (isActive) {
+            setError(err?.message ?? 'No pudimos iniciar la experiencia AR.');
+            setStatus('error');
+          }
         }
       };
 
       start();
 
       return () => {
+        isActive = false;
         if (renderer && animationLoop) {
           renderer.setAnimationLoop(null);
         }
@@ -206,6 +244,9 @@ const MindARScene = forwardRef(
           mindarThree.renderer?.dispose();
         }
         videoRef.current = null;
+        rendererRef.current = null;
+        sceneRef.current = null;
+        cameraRef.current = null;
         if (attachedVideo && attachedVideo.parentElement === containerRef.current) {
           containerRef.current.removeChild(attachedVideo);
         }
@@ -229,6 +270,54 @@ const MindARScene = forwardRef(
         captureCanvas.height = video.videoHeight;
         const ctx = captureCanvas.getContext('2d');
         ctx.drawImage(video, 0, 0, captureCanvas.width, captureCanvas.height);
+        const rendererCanvas = rendererRef.current;
+        const scene = sceneRef.current;
+        const camera = cameraRef.current;
+        if (rendererCanvas && scene && camera) {
+          try {
+            const rendererElement = rendererCanvas;
+            const rendererInstance = renderer;
+            if (rendererInstance) {
+              rendererInstance.render(scene, camera);
+            }
+            ctx.drawImage(rendererElement, 0, 0, captureCanvas.width, captureCanvas.height);
+          } catch (captureError) {
+            console.warn('[MindARScene] No pudimos capturar el render 3D:', captureError);
+          }
+        }
+        if (message) {
+          const padding = 18;
+          const maxWidth = captureCanvas.width - padding * 2;
+          const lineHeight = 28;
+          ctx.font = '600 20px system-ui, -apple-system, BlinkMacSystemFont, sans-serif';
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          ctx.fillStyle = 'rgba(0, 0, 0, 0.6)';
+          const words = message.split(' ');
+          const lines = [];
+          let current = '';
+          words.forEach((word) => {
+            const next = current ? `${current} ${word}` : word;
+            if (ctx.measureText(next).width > maxWidth && current) {
+              lines.push(current);
+              current = word;
+            } else {
+              current = next;
+            }
+          });
+          if (current) lines.push(current);
+          const boxHeight = lines.length * lineHeight + 20;
+          const boxY = captureCanvas.height - boxHeight - 28;
+          ctx.fillRect(padding, boxY, captureCanvas.width - padding * 2, boxHeight);
+          ctx.fillStyle = '#f8fafc';
+          lines.forEach((line, index) => {
+            ctx.fillText(
+              line,
+              captureCanvas.width / 2,
+              boxY + 10 + lineHeight / 2 + index * lineHeight,
+            );
+          });
+        }
         return await new Promise((resolve) => {
           captureCanvas.toBlob((blob) => resolve(blob), 'image/jpeg', 0.95);
         });
@@ -260,6 +349,38 @@ const MindARScene = forwardRef(
             {error}
           </div>
         )}
+
+        {status === 'running' && !hasTarget && (
+          <div className="absolute inset-0 flex items-center justify-center text-center px-6 text-sm text-slate-200/90 bg-black/30 pointer-events-none">
+            {showScanGuide ? (
+              <div className="flex flex-col items-center gap-3">
+                <div className="relative w-[98%] max-w-[620px] aspect-[4/3] rounded-[28px] border border-white/15 bg-black/15 overflow-hidden shadow-[0_0_40px_rgba(196,181,253,0.12)]">
+                  {guideImageSrc ? (
+                    <img
+                      src={guideImageSrc}
+                      alt="Marcador de la experiencia"
+                      className="absolute inset-0 h-full w-full object-contain opacity-35"
+                      loading="eager"
+                      decoding="async"
+                    />
+                  ) : null}
+                  <div className="ar-scan-line" />
+                </div>
+                <p className="text-xs text-slate-200/80 max-w-[260px]">{guideLabel}</p>
+              </div>
+            ) : (
+              <p>Busca el marcador y mantén la taza completa en el encuadre.</p>
+            )}
+          </div>
+        )}
+
+        {status === 'running' && hasTarget && message ? (
+          <div className="absolute inset-x-0 bottom-20 z-30 flex justify-center pointer-events-none">
+            <div className="rounded-full bg-black/60 px-4 py-2 text-xs text-slate-200 border border-white/10 backdrop-blur">
+              {message}
+            </div>
+          </div>
+        ) : null}
 
         {overlay && (
           <div className="absolute inset-0">

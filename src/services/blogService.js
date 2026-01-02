@@ -17,6 +17,8 @@ const mapDatabasePost = (post) => ({
   read_time_minutes: post.read_time_minutes ?? post.read_time ?? null,
   tags: post.tags ?? [],
   featured_image_url: post.featured_image_url ?? post.cover_image ?? null,
+  image_caption: post.image_caption ?? post.caption ?? '',
+  author_avatar_url: post.author_avatar_url ?? post.author_avatar ?? null,
 });
 
 export async function fetchPublishedBlogPosts() {

@@ -32,7 +32,6 @@ import ContributionModal from '@/components/ContributionModal';
 import { fetchBlogPostBySlug } from '@/services/blogService';
 import { toast } from '@/components/ui/use-toast';
 import { useAuth } from '@/contexts/SupabaseAuthContext';
-import { apiFetch } from '@/lib/apiClient';
 import { Document, Page, pdfjs } from 'react-pdf';
 import 'react-pdf/dist/Page/AnnotationLayer.css';
 import 'react-pdf/dist/Page/TextLayer.css';
@@ -1119,7 +1118,7 @@ const ShowcaseReactionInline = ({ showcaseId, title, description, buttonLabel, c
 const formats = [
   {
     id: 'miniversos',
-    title: 'Dramaturgia',
+    title: 'Drama',
     icon: Drama,
     iconClass: 'text-purple-300',
     instruccion: 'Habla con Silvestre sobre la obra.',
@@ -1855,20 +1854,44 @@ const Transmedia = () => {
       return false;
     }
     try {
-      await apiFetch('/api/silvestre-voice', {
+      const apiBase = import.meta.env.VITE_API_URL || 'https://api.gatoencerrado.ai';
+      const response = await fetch(`${apiBase}/api/silvestre-voice`, {
         method: 'POST',
         headers: {
+          'Content-Type': 'application/json',
           'X-User-Id': user?.id ?? 'anonymous',
         },
         body: JSON.stringify({ mensaje: message }),
       });
+      if (!response.ok) {
+        throw new Error(`Silvestre Voice responded ${response.status}`);
+      }
+      const audioBlob = await response.blob();
+      if (!audioBlob || audioBlob.type !== 'audio/mpeg') {
+        throw new Error('Silvestre Voice returned non-audio payload');
+      }
+      const audioUrl = URL.createObjectURL(audioBlob);
+      const audio = new Audio(audioUrl);
+      audio.addEventListener(
+        'ended',
+        () => {
+          URL.revokeObjectURL(audioUrl);
+        },
+        { once: true }
+      );
+      try {
+        await audio.play();
+      } catch (playError) {
+        URL.revokeObjectURL(audioUrl);
+        throw playError;
+      }
       setMicError('');
       setShowSilvestreCoins(true);
       setTimeout(() => setShowSilvestreCoins(false), 1200);
       return true;
     } catch (error) {
       console.error('[Silvestre Voice] Error sending transcript:', error);
-      setMicError('No pudimos enviar tu mensaje de voz. Intenta nuevamente más tarde.');
+      setMicError('No pudimos enviar tu mensaje a Silvestre. Intenta nuevamente más tarde.');
       setShowSilvestreCoins(true);
       setTimeout(() => setShowSilvestreCoins(false), 1200);
       return false;
@@ -1961,6 +1984,30 @@ const Transmedia = () => {
 
     window.dispatchEvent(new CustomEvent('gatoencerrado:open-silvestre'));
   }, [hasShownMicPrompt, isListening, micPromptVisible, sendTranscript, stopSilvestreListening]);
+
+  const handleSendSilvestrePreset = useCallback(
+    async (starter) => {
+      if (!starter) {
+        return;
+      }
+
+      if (isListening) {
+        stopSilvestreListening();
+      }
+
+      setTranscript(starter);
+      await sendTranscript(starter);
+
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(
+          new CustomEvent('gatoencerrado:open-silvestre', {
+            detail: { source: 'preset', mensaje: starter },
+          })
+        );
+      }
+    },
+    [isListening, sendTranscript, stopSilvestreListening]
+  );
 
   useEffect(() => {
     return () => {
@@ -2826,11 +2873,14 @@ const rendernotaAutoral = () => {
 
   {activeShowcase === 'lataza' && isTazaARActive && !isMobileARFullscreen ? (
     <div className="p-0 sm:p-4">
-      <ARExperience
-        targetSrc="/webar/taza/taza.mind"
-        phrases={activeDefinition.phrases}
-        onExit={handleCloseARExperience}
-      />
+        <ARExperience
+          targetSrc="/webar/taza/taza.mind"
+          phrases={activeDefinition.phrases}
+          showScanGuide
+        guideImageSrc="/assets/taza_transp.png"
+        guideLabel="Alinea la ilustración de la taza con el contorno. No necesita ser exacto."
+          onExit={handleCloseARExperience}
+        />
     </div>
   ) : (
     <div className="p-6 grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
@@ -3152,10 +3202,16 @@ const rendernotaAutoral = () => {
             {activeDefinition.conversationStarters.map((starter, idx) => (
               <li
                 key={`tragico-paragraph-${idx}`}
-                className="flex items-start gap-2 rounded-2xl border border-white/10 bg-black/15 px-4 py-2"
+                className="rounded-2xl border border-white/10 bg-black/15"
               >
-                <span className="text-purple-200 font-semibold">•</span>
-                <span className="leading-relaxed">{starter}</span>
+                <button
+                  type="button"
+                  onClick={() => handleSendSilvestrePreset(starter)}
+                  className="flex w-full items-start gap-2 px-4 py-2 text-left transition hover:bg-white/5"
+                >
+                  <span className="text-purple-200 font-semibold">•</span>
+                  <span className="leading-relaxed">{starter}</span>
+                </button>
               </li>
             ))}
           </ul>
@@ -5170,6 +5226,9 @@ const rendernotaAutoral = () => {
           <ARExperience
             targetSrc="/webar/taza/taza.mind"
             phrases={showcaseDefinitions.lataza.phrases}
+            showScanGuide
+            guideImageSrc="/assets/taza_transp.png"
+            guideLabel="Alinea la ilustración de la taza con el contorno. No necesita ser exacto."
             onExit={handleCloseARExperience}
           />
         </div>

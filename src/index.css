@@ -12,6 +12,31 @@
 @tailwind components;
 @tailwind utilities;
 
+.ar-scan-line {
+  position: absolute;
+  left: 12%;
+  right: 12%;
+  height: 2px;
+  top: 10%;
+  background: linear-gradient(90deg, transparent, rgba(129, 140, 248, 0.9), transparent);
+  box-shadow: 0 0 18px rgba(129, 140, 248, 0.8);
+  animation: ar-scan 2.6s ease-in-out infinite;
+}
+
+@keyframes ar-scan {
+  0% {
+    transform: translateY(0);
+    opacity: 0.2;
+  }
+  50% {
+    opacity: 0.9;
+  }
+  100% {
+    transform: translateY(260%);
+    opacity: 0.2;
+  }
+}
+
 
 
 @layer base {

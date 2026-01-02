@@ -6,7 +6,14 @@ import { RotateCcw, Share2, X } from 'lucide-react';
 
 const DEFAULT_PHRASES = ['La taza te escucha.'];
 
-const ARExperience = ({ targetSrc = '/assets/targets.mind', phrases = DEFAULT_PHRASES, onExit }) => {
+const ARExperience = ({
+  targetSrc = '/assets/targets.mind',
+  phrases = DEFAULT_PHRASES,
+  onExit,
+  showScanGuide = false,
+  guideImageSrc = '',
+  guideLabel,
+}) => {
   const [isCameraReady, setIsCameraReady] = useState(false);
   const [phraseIndex, setPhraseIndex] = useState(0);
   const sceneRef = useRef(null);
@@ -104,6 +111,9 @@ const ARExperience = ({ targetSrc = '/assets/targets.mind', phrases = DEFAULT_PH
         targetSrc={targetSrc}
         isCameraReady={isCameraReady}
         message={phraseList[phraseIndex]}
+        showScanGuide={showScanGuide}
+        guideImageSrc={guideImageSrc}
+        guideLabel={guideLabel}
         className="w-full min-h-[75vh] sm:min-h-[80vh]"
         overlay={overlayControls}
       />

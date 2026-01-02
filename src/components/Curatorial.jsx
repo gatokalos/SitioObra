@@ -43,7 +43,7 @@ const CURATORIAL_SOURCES = [
     fallback: {
       title: 'Narrativas Transmedia en el Teatro',
       author: 'Prof. Carlos Mendoza',
-      role: 'Investigador en Artes Escénicas',
+      role: 'Investigador',
       date: 'Febrero 2024',
       excerpt:
         'La integración de múltiples plataformas narrativas en #GatoEncerrado representa un paradigma emergente en las artes escénicas. Esta obra no solo utiliza el teatro como medio principal, sino que expande su universo narrativo...',
