@@ -1854,7 +1854,7 @@ const Transmedia = () => {
       return false;
     }
     try {
-      const apiBase = import.meta.env.VITE_API_URL || 'https://api.gatoencerrado.ai';
+      const apiBase = import.meta.env.VITE_SILVESTRE_API_URL;
       const response = await fetch(`${apiBase}/api/silvestre-voice`, {
         method: 'POST',
         headers: {

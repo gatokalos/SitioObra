@@ -198,10 +198,12 @@ const ArticleCard = ({ post, onSelect }) => {
             <img
               src={previewImage}
               alt={post.title}
-              className="h-full w-full object-cover"
+              className="h-full w-full object-cover saturate-50 contrast-125 opacity-[0.15]"
               loading="lazy"
             />
-            <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-transparent to-black/60 backdrop-blur-sm" />
+            <div className="absolute inset-0 bg-gradient-to-br from-fuchsia-500/12 via-purple-500/18 to-indigo-500/14 mix-blend-screen" />
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_30%,rgba(255,255,255,0.08),transparent_45%),radial-gradient(circle_at_80%_70%,rgba(0,0,0,0.65),transparent_55%)] opacity-50" />
+            <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-black/30 to-black/75 backdrop-blur-sm" />
           </div>
         </div>
       ) : null}
@@ -211,10 +213,12 @@ const ArticleCard = ({ post, onSelect }) => {
             <img
               src={previewImage}
               alt={post.title}
-              className="h-full w-full object-cover"
+              className="h-full w-full object-cover saturate-50 contrast-125 opacity-[0.15]"
               loading="lazy"
             />
-            <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-transparent to-black/60 backdrop-blur-sm" />
+            <div className="absolute inset-0 bg-gradient-to-br from-fuchsia-500/12 via-purple-500/18 to-indigo-500/14 mix-blend-screen" />
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_30%,rgba(255,255,255,0.08),transparent_45%),radial-gradient(circle_at_80%_70%,rgba(0,0,0,0.65),transparent_55%)] opacity-50" />
+            <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-black/30 to-black/75 backdrop-blur-sm" />
           </div>
         </div>
       ) : null}
@@ -318,7 +322,7 @@ const FullArticle = ({ post, onClose }) => {
         </button>
       ) : null}
       {articleContent ? (
-        <div className="flex flex-col gap-6 text-slate-200 leading-relaxed font-light">
+        <div className="flex flex-col gap-6 text-slate-200 leading-relaxed font-light lg:columns-2 lg:gap-10 lg:[&>p]:break-inside-avoid lg:[&>ul]:break-inside-avoid lg:[&>ol]:break-inside-avoid">
           <ReactMarkdown components={markdownComponents} skipHtml={false} linkTarget="_blank">
             {articleContent}
           </ReactMarkdown>
