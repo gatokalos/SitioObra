@@ -20,7 +20,7 @@ export const PACKAGE_OPTIONS = [
     id: 'taza-250',
     title: 'Taza AR',
     price: '$250',
-    helper: 'Taza especial con activación AR. Disponible el día del evento.',
+    helper: 'Taza especial con activación AR.',
     priceId: import.meta.env.VITE_PRICE_TAZA,
   },
   {
@@ -87,9 +87,36 @@ const modalVariants = {
 };
 
 // -------------------------------------------------------------
+const RESERVE_COPY = {
+  season: {
+    eyebrow: '28 de diciembre · CECUT',
+    title: 'Aparta tus artículos de #GatoEncerrado',
+    subtitle:
+      'Estos productos son edición especial y se entregan únicamente en la mesa de merch el día del evento.',
+    notice: (
+      <>
+        Este formulario <strong>no es para comprar boletos</strong>. Aquí solo apartas artículos de
+        merch (taza, novela o combo). Los boletos se adquieren directamente en taquilla CECUT.
+      </>
+    ),
+    footerNote: null,
+    intro: null,
+  },
+  offseason: {
+    eyebrow: 'Para encontrarnos fuera del teatro',
+    title: 'Reserva objetos de #GatoEncerrado',
+    intro:
+      'La idea es simple: cuando varias personas se interesan, buscamos la manera de encontrarnos, compartir café, conversación y entregar los objetos en mano.',
+    notice:
+      'También es posible coordinar envíos dentro de México. Después de tu reserva nos pondremos en contacto contigo para definir la mejor opción.',
+    footerNote:
+      'A largo plazo, soñamos con un espacio físico donde arte, café y salud mental puedan convivir.',
+  },
+};
+
 // COMPONENT
 // -------------------------------------------------------------
-const ReserveModal = ({ open, onClose }) => {
+const ReserveModal = ({ open, onClose, mode = 'offseason' }) => {
   const [formState, setFormState] = useState(initialFormState);
   const [status, setStatus] = useState('idle');
   const [errorMessage, setErrorMessage] = useState('');
@@ -258,6 +285,8 @@ const ReserveModal = ({ open, onClose }) => {
   // -------------------------------------------------------------
   // RENDER
   // -------------------------------------------------------------
+  const copy = RESERVE_COPY[mode] ?? RESERVE_COPY.offseason;
+
   return (
     <AnimatePresence>
       {open && (
@@ -294,15 +323,17 @@ const ReserveModal = ({ open, onClose }) => {
                   className="h-12 w-auto object-contain rounded-full border border-white/20 bg-white/5 p-1 shadow-lg"
                 />
                 <div>
-                  <p className="text-sm uppercase tracking-[0.35em] text-slate-400/80 mb-2">
-                    28 de diciembre · CECUT
-                  </p>
+                  {copy.eyebrow ? (
+                    <p className="text-sm uppercase tracking-[0.35em] text-slate-400/80 mb-2">
+                      {copy.eyebrow}
+                    </p>
+                  ) : null}
                   <h2 className="font-display text-3xl text-slate-50">
-                    Aparta tus artículos de #GatoEncerrado
+                    {copy.title}
                   </h2>
-                  <p className="text-xs text-slate-400/80 mt-1">
-                    Estos productos son edición especial y se entregan únicamente en la mesa de merch el día del evento.
-                  </p>
+                  {copy.subtitle ? (
+                    <p className="text-xs text-slate-400/80 mt-1">{copy.subtitle}</p>
+                  ) : null}
                 </div>
               </div>
 
@@ -314,12 +345,15 @@ const ReserveModal = ({ open, onClose }) => {
               </button>
             </div>
 
-            {/* Aviso anti confusión */}
-            <div className="mb-6 rounded-xl border border-yellow-400/20 bg-yellow-400/10 p-4 text-xs text-yellow-200">
-              Este formulario <strong>no es para comprar boletos</strong>.  
-              Aquí solo apartas artículos de merch (taza, novela o combo).  
-              Los boletos se adquieren directamente en taquilla CECUT.
-            </div>
+            {copy.intro ? (
+              <p className="mb-6 text-sm text-slate-300/90 leading-relaxed">{copy.intro}</p>
+            ) : null}
+
+            {copy.notice ? (
+              <div className="mb-6 rounded-xl border border-yellow-400/20 bg-yellow-400/10 p-4 text-xs text-yellow-200">
+                {copy.notice}
+              </div>
+            ) : null}
 
             {/* GRID */}
             <div className="grid md:grid-cols-2 gap-8">
@@ -327,12 +361,8 @@ const ReserveModal = ({ open, onClose }) => {
               {/* LEFT COLUMN */}
               <div className="space-y-5">
                 <div>
-                  <h3 className="font-display text-lg text-slate-100 mb-1">
-                    Paquetes disponibles
-                  </h3>
-                  <p className="text-xs text-slate-400/80">
-                    Marca lo que quieras apartar. Te enviaremos tu línea de reservaciones y un enlace de pago seguro (Stripe).
-                  </p>
+          
+                
                 </div>
 
                 <div className="grid sm:grid-cols-2 gap-3">
@@ -497,12 +527,14 @@ const ReserveModal = ({ open, onClose }) => {
                   >
                     {isCheckoutLoading ? 'Redirigiendo…' : 'Comprar ahora (Stripe)'}
                   </Button>
-                  <p className="text-[11px] text-slate-500 text-center">
-                    Pagarás en Stripe. También enviaremos la liga a tu correo por si la necesitas más tarde.
-                  </p>
+             
                 </div>
               </form>
             </div>
+
+            {copy.footerNote ? (
+              <p className="mt-8 text-sm text-slate-300/80">{copy.footerNote}</p>
+            ) : null}
           </motion.div>
         </motion.div>
       )}

@@ -13,7 +13,7 @@ import ReserveModal from '@/components/ReserveModal';
 
 const aboutParagraphs = [
   {
-    text: `Es un gato encerrado existe como obra escénica y como estado emocional del dolor humano. 
+    text: `Es un gato encerrado existe como una obra escénica y como un estado emocional del dolor humano. 
     
     Nuestra obra se desdobla: lo que sucede en el escenario también ocurre en la mente de quien la mira. En ella, Silvestre y su terapeuta exploran los sueños lúcidos para confrontar el miedo, la desconexión y la fragilidad de la mente. 
     

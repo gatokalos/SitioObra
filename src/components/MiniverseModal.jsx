@@ -1,43 +1,60 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
+import { BookOpen, Coffee, Film, Music } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { toast } from '@/components/ui/use-toast';
 import { supabase } from '@/lib/supabaseClient';
 
 const TABS = [
-  { id: 'waitlist', label: 'Próximamente' },
   { id: 'experiences', label: 'Miniversos activos' },
+  { id: 'waitlist', label: 'Próximamente' },
 ];
 
 const MINIVERSE_CARDS = [
   {
     id: 'literatura',
+    formatId: 'miniversoNovela',
+    icon: BookOpen,
+    thumbLabel: 'L',
+    thumbGradient: 'from-emerald-400/80 via-teal-500/70 to-cyan-500/60',
     title: 'Miniverso Literatura',
     description:
-      'Fragmentos de la novela Listen recaen en lectores que ya activaron narratives extendidas. Lecturas guiadas y comunidad de ensayo están al 90% del plan.',
+        'Fragmentos de la novela se activan en lectores que quieren leer más allá del texto.',
     action: 'Disponible hoy · lecturas y ritos de página.',
     cost: 25,
   },
   {
     id: 'taza',
+    formatId: 'lataza',
+    icon: Coffee,
+    thumbLabel: 'A',
+    thumbGradient: 'from-amber-400/80 via-orange-500/70 to-rose-500/60',
     title: 'Miniverso Artesanías',
     description:
-      'WebAR y rituales cotidianos listos para tomarse: la activación de la taza está en producción al 90% y acompaña cada sorbo con pistas sonoras.',
+        'Ritual cotidiano: una taza que activa experiencias más allá del café.',
     action: 'Actívala con tu taza · experiencia viva.',
   },
   {
     id: 'cine',
+    formatId: 'copycats',
+    icon: Film,
+    thumbLabel: 'C',
+    thumbGradient: 'from-rose-500/80 via-red-500/70 to-fuchsia-500/60',
     title: 'Miniverso Cine',
     description:
-      'CopyCats y Quirón se proyectan con conservatorio doble. El plan de sala y análisis crítico sobrevive con guardias de IA que ya operan en sala.',
+      'Cine expandido: proyecciones, análisis y capas que no terminan en la pantalla.',
     action: 'Screening activo · boletos limitados.',
     cost: 200,
   },
   {
     id: 'sonoro',
+    formatId: 'miniversoSonoro',
+    icon: Music,
+    thumbLabel: 'S',
+    thumbGradient: 'from-sky-400/80 via-cyan-500/70 to-indigo-500/60',
     title: 'Miniverso Sonoro',
     description:
-      'Sueños sonoros en tres capas se mezclan en la plataforma. La curaduría y los poemas interactivos están listos para tu escucha.',
+        'Paisajes sonoros y poemas para escuchar con atención.',
     action: 'Explora la mezcla · disponible ahora.',
   },
 ];
@@ -60,7 +77,7 @@ const modalVariants = {
   exit: { opacity: 0, y: 20, scale: 0.97, transition: { duration: 0.2, ease: 'easeIn' } },
 };
 
-const MiniverseModal = ({ open, onClose, contextLabel }) => {
+const MiniverseModal = ({ open, onClose, contextLabel, onSelectMiniverse }) => {
   const [activeTab, setActiveTab] = useState(TABS[0].id);
   const [formState, setFormState] = useState(initialFormState);
   const [status, setStatus] = useState('idle');
@@ -247,9 +264,9 @@ const MiniverseModal = ({ open, onClose, contextLabel }) => {
                 <h2 id="miniverse-modal-title" className="font-display text-3xl text-slate-50">
                   Explora los miniversos
                 </h2>
-                <p className="text-sm text-slate-400/80">
-                  Lo que empieza en el escenario continúa en otros formatos. Aquí reunimos las experiencias emergentes.
-                </p>
+                <div className="mt-3 rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-slate-200/90">
+                  Cuando la obra no está en cartelera, estos miniversos la mantienen viva.
+                </div>
               </div>
               <button
                 onClick={handleClose}
@@ -384,8 +401,20 @@ const MiniverseModal = ({ open, onClose, contextLabel }) => {
                         : 'text-amber-200';
 
                     return (
-                      <div key={card.title} className="glass-effect rounded-2xl border border-white/10 p-6">
-                        <h3 className="font-display text-xl text-slate-100 mb-3">{card.title}</h3>
+                      <button
+                        key={card.title}
+                        type="button"
+                        onClick={() => onSelectMiniverse?.(card.formatId)}
+                        className="text-left glass-effect rounded-2xl border border-white/10 p-6 transition hover:border-purple-300/40 hover:shadow-[0_10px_30px_rgba(124,58,237,0.18)]"
+                      >
+                        <div className="flex items-center gap-3 mb-3">
+                        <div
+                          className={`h-12 w-12 rounded-full bg-gradient-to-br ${card.thumbGradient} flex items-center justify-center text-sm font-semibold text-white shadow-[0_10px_25px_rgba(0,0,0,0.35)]`}
+                        >
+                          {card.icon ? <card.icon size={22} className="text-white drop-shadow-sm" /> : card.thumbLabel}
+                        </div>
+                          <h3 className="font-display text-xl text-slate-100">{card.title}</h3>
+                        </div>
                         <p className="text-sm text-slate-300/80 leading-relaxed mb-4">{card.description}</p>
                         {costLabel ? (
                           <p className={`text-sm font-semibold ${costTone} mb-2`}>⚯ {costLabel}</p>
@@ -393,7 +422,7 @@ const MiniverseModal = ({ open, onClose, contextLabel }) => {
                         <span className="text-xs uppercase tracking-[0.25em] text-purple-200/80">
                           {card.action}
                         </span>
-                      </div>
+                      </button>
                     );
                   })}
                 </div>

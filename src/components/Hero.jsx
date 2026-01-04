@@ -1,6 +1,6 @@
 import React, { useCallback, useState } from 'react';
 import { motion } from 'framer-motion';
-import { ArrowDown, Package, Ticket } from 'lucide-react';
+import { Globe, ShoppingBag } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import ReserveModal from '@/components/ReserveModal';
 import TicketPurchaseModal from '@/components/TicketPurchaseModal';
@@ -24,8 +24,10 @@ const Hero = () => {
     setIsReserveOpen(false);
   }, []);
 
-  const handleOpenTicket = useCallback(() => {
-    setIsTicketModalOpen(true);
+  const handleOpenMiniverseList = useCallback(() => {
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent('gatoencerrado:open-miniverse-list'));
+    }
   }, []);
 
   const handleCloseTicket = useCallback(() => {
@@ -83,7 +85,7 @@ const Hero = () => {
   transition={{ duration: 1.5, delay: 0.5 }}
   className="text-xl md:text-2xl text-slate-300/80 mb-12 leading-relaxed font-light flex flex-col items-center gap-1"
 >
-  El espacio transmedia donde
+  El universo transmedial de la obra
   <button
     onClick={() =>
       document.querySelector('#about')?.scrollIntoView({
@@ -92,13 +94,13 @@ const Hero = () => {
       })
     }
     className="
-      text-slate-200 underline underline-offset-4 decoration-slate-400/50
+      text-slate-200 underline underline-offset-4 decoration-slate-400/30
       hover:text-white hover:decoration-purple-400 transition
       font-normal flex items-center gap-1
     "
   >
     
-    pulsa la escena
+    Es un gato encerrado
     <svg
   xmlns="http://www.w3.org/2000/svg"
   className="h-4 w-4 opacity-80 animate-[pulse-soft_2.4s_ease-in-out_infinite]"
@@ -124,7 +126,7 @@ const Hero = () => {
 
   {/* CTA PRINCIPAL */}
   <Button
-    onClick={handleOpenTicket}
+    onClick={handleOpenMiniverseList}
     className="
       px-8 py-4 rounded-full font-semibold
       flex items-center gap-2 text-white
@@ -136,11 +138,11 @@ const Hero = () => {
       text-base tracking-wide
     "
   >
-    <Ticket size={22} className="drop-shadow-md" />
-    Comprar boletos
+    <Globe size={22} className="drop-shadow-md" />
+    Abre un miniverso
   </Button>
 
-  {/* CTA SECUNDARIO — APARTAR MERCH */}
+  {/* CTA SECUNDARIO — CAFÉ */}
   <Button
     variant="outline"
     onClick={() => handleOpenReserve('preventa')}
@@ -159,14 +161,13 @@ const Hero = () => {
       text-base tracking-wide
     "
   >
-    <Package size={20} className="text-purple-200/90 drop-shadow-sm" />
-    Apartar merch
+    <ShoppingBag size={20} className="text-purple-200/90 drop-shadow-sm" />
+    Café Gato
   </Button>
    {/* Microtexto */}
     <p className="text-xs text-slate-400/70 leading-tight">
-      Paquetes disponibles solo el día del evento.
+      Cuando nos juntamos, pasan cosas.
     </p>
-
 </div>
 
 

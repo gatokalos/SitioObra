@@ -1815,6 +1815,40 @@ const Transmedia = () => {
     }
   }, []);
 
+  const openMiniverseById = useCallback(
+    (formatId) => {
+      if (!formatId || !showcaseDefinitions[formatId]) return;
+      setActiveShowcase(formatId);
+      const definition = showcaseDefinitions[formatId];
+      if (definition.slug && definition.type !== 'blog-series') {
+        const entry = showcaseContent[formatId];
+        if (!entry || entry.status === 'error') {
+          loadShowcaseContent(formatId);
+        }
+      }
+    },
+    [loadShowcaseContent, showcaseContent]
+  );
+
+  const handleSelectMiniverse = useCallback(
+    (formatId) => {
+      if (!formatId) return;
+      if (MINIVERSO_EDITORIAL_INTERCEPTION_ENABLED) {
+        setIsMiniversoEditorialModalOpen(true);
+        return;
+      }
+      if (showcaseDefinitions[formatId]) {
+        if (typeof document !== 'undefined') {
+          document.querySelector('#transmedia')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+        openMiniverseById(formatId);
+      }
+      setIsMiniverseOpen(false);
+      setMiniverseContext(null);
+    },
+    [openMiniverseById, setIsMiniversoEditorialModalOpen]
+  );
+
   const handleFormatClick = useCallback(
     (formatId) => {
       if (MINIVERSO_EDITORIAL_INTERCEPTION_ENABLED) {
@@ -1836,6 +1870,16 @@ const Transmedia = () => {
     },
     [handleOpenMiniverses, loadShowcaseContent, showcaseContent]
   );
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return undefined;
+    const handleOpenMiniverseList = () => {
+      handleOpenMiniverses('Explora los miniversos');
+    };
+    window.addEventListener('gatoencerrado:open-miniverse-list', handleOpenMiniverseList);
+    return () =>
+      window.removeEventListener('gatoencerrado:open-miniverse-list', handleOpenMiniverseList);
+  }, [handleOpenMiniverses]);
 
   const handleOpenBlogEntry = useCallback((slug) => {
     if (!slug) {
@@ -4687,33 +4731,22 @@ const rendernotaAutoral = () => {
               onClick={() => setActiveShowcase(null)}
             />
             <div
-              className="pointer-events-none absolute inset-0 opacity-90 mix-blend-screen"
+              className="pointer-events-none absolute inset-0 opacity-60 sm:opacity-75 mix-blend-screen"
               aria-hidden="true"
               style={{
                 backgroundImage:
-                  'radial-gradient(2px 2px at 6% 8%, rgba(248,250,252,0.7), transparent 65%),' +
-                  'radial-gradient(2px 2px at 12% 18%, rgba(248,250,252,0.75), transparent 65%),' +
-                  'radial-gradient(1.5px 1.5px at 18% 32%, rgba(241,245,249,0.55), transparent 70%),' +
-                  'radial-gradient(2px 2px at 22% 12%, rgba(226,232,240,0.6), transparent 65%),' +
-                  'radial-gradient(1px 1px at 28% 22%, rgba(255,255,255,0.35), transparent 70%),' +
-                  'radial-gradient(1.5px 1.5px at 32% 44%, rgba(241,245,249,0.55), transparent 70%),' +
-                  'radial-gradient(2px 2px at 35% 72%, rgba(241,245,249,0.55), transparent 70%),' +
-                  'radial-gradient(1px 1px at 40% 12%, rgba(255,255,255,0.35), transparent 70%),' +
-                  'radial-gradient(1.5px 1.5px at 44% 62%, rgba(226,232,240,0.55), transparent 70%),' +
-                  'radial-gradient(1px 1px at 48% 28%, rgba(255,255,255,0.35), transparent 70%),' +
-                  'radial-gradient(2px 2px at 50% 40%, rgba(255,255,255,0.4), transparent 70%),' +
-                  'radial-gradient(1px 1px at 54% 18%, rgba(255,255,255,0.35), transparent 70%),' +
-                  'radial-gradient(1.5px 1.5px at 58% 52%, rgba(226,232,240,0.55), transparent 70%),' +
-                  'radial-gradient(1.5px 1.5px at 62% 58%, rgba(226,232,240,0.55), transparent 70%),' +
-                  'radial-gradient(1px 1px at 66% 34%, rgba(255,255,255,0.35), transparent 70%),' +
-                  'radial-gradient(2px 2px at 70% 16%, rgba(226,232,240,0.6), transparent 65%),' +
-                  'radial-gradient(2px 2px at 78% 26%, rgba(226,232,240,0.6), transparent 65%),' +
-                  'radial-gradient(1px 1px at 82% 46%, rgba(255,255,255,0.35), transparent 70%),' +
-                  'radial-gradient(1.5px 1.5px at 86% 62%, rgba(241,245,249,0.55), transparent 70%),' +
-                  'radial-gradient(2px 2px at 88% 78%, rgba(248,250,252,0.7), transparent 65%),' +
-                  'radial-gradient(1.5px 1.5px at 92% 22%, rgba(241,245,249,0.55), transparent 70%),' +
-                  'radial-gradient(1.5px 1.5px at 22% 84%, rgba(226,232,240,0.5), transparent 70%),' +
-                  'radial-gradient(1px 1px at 8% 48%, rgba(255,255,255,0.35), transparent 70%)',
+                  'radial-gradient(1px 1px at 8% 12%, rgba(248,250,252,0.8), transparent 65%),' +
+                  'radial-gradient(2px 2px at 14% 28%, rgba(241,245,249,0.65), transparent 70%),' +
+                  'radial-gradient(1px 1px at 22% 44%, rgba(255,255,255,0.45), transparent 70%),' +
+                  'radial-gradient(1.5px 1.5px at 30% 18%, rgba(226,232,240,0.6), transparent 70%),' +
+                  'radial-gradient(2px 2px at 38% 62%, rgba(241,245,249,0.6), transparent 70%),' +
+                  'radial-gradient(1px 1px at 46% 30%, rgba(255,255,255,0.4), transparent 70%),' +
+                  'radial-gradient(1.5px 1.5px at 54% 16%, rgba(241,245,249,0.55), transparent 70%),' +
+                  'radial-gradient(2px 2px at 62% 48%, rgba(226,232,240,0.6), transparent 70%),' +
+                  'radial-gradient(1px 1px at 70% 22%, rgba(255,255,255,0.35), transparent 70%),' +
+                  'radial-gradient(1.5px 1.5px at 78% 66%, rgba(241,245,249,0.55), transparent 70%),' +
+                  'radial-gradient(2px 2px at 86% 38%, rgba(226,232,240,0.6), transparent 70%),' +
+                  'radial-gradient(1px 1px at 92% 80%, rgba(255,255,255,0.35), transparent 70%)',
               }}
             />
             <motion.div
@@ -4869,7 +4902,7 @@ const rendernotaAutoral = () => {
           >
             <p className="text-xs uppercase tracking-[0.4em] text-slate-400/70">Universo Transmedia</p>
             <h2 className="font-display text-4xl md:text-5xl font-medium text-gradient italic">
-              Escaparate de Miniversos
+              Escaparate de #Miniversos
             </h2>
             <p className="text-lg text-slate-300/80 max-w-3xl mx-auto leading-relaxed font-light">
               El universo de #GatoEncerrado se expande en <strong>nueve miniversos</strong>. Cada uno late por su cuenta —ya estaba ahí antes de que llegaras— y forma parte del mismo organismo narrativo. Al explorarlos, activas <span className="font-semibold text-purple-200">GATokens</span>: una energía simbólica que impulsa la experiencia artística y contribuye al sostenimiento de la causa social de {' '}
@@ -4924,6 +4957,25 @@ const rendernotaAutoral = () => {
                       willChange: 'background-position, transform',
                     }}
                   />
+                  <div
+                    aria-hidden="true"
+                    className="absolute inset-0 opacity-35 mix-blend-screen pointer-events-none"
+                    style={{
+                      backgroundImage:
+                        'radial-gradient(1px 1px at 12% 18%, rgba(248,250,252,0.8), transparent 65%),' +
+                        'radial-gradient(1.5px 1.5px at 24% 42%, rgba(241,245,249,0.65), transparent 70%),' +
+                        'radial-gradient(2px 2px at 36% 28%, rgba(226,232,240,0.6), transparent 70%),' +
+                        'radial-gradient(1px 1px at 44% 62%, rgba(255,255,255,0.45), transparent 70%),' +
+                        'radial-gradient(1.5px 1.5px at 52% 18%, rgba(241,245,249,0.55), transparent 70%),' +
+                        'radial-gradient(2px 2px at 64% 48%, rgba(226,232,240,0.6), transparent 70%),' +
+                        'radial-gradient(1px 1px at 72% 30%, rgba(255,255,255,0.4), transparent 70%),' +
+                        'radial-gradient(1.5px 1.5px at 80% 66%, rgba(241,245,249,0.55), transparent 70%),' +
+                        'radial-gradient(2px 2px at 88% 22%, rgba(226,232,240,0.6), transparent 70%),' +
+                        'radial-gradient(1px 1px at 18% 78%, rgba(255,255,255,0.35), transparent 70%),' +
+                        'radial-gradient(1.5px 1.5px at 58% 78%, rgba(241,245,249,0.55), transparent 70%),' +
+                        'radial-gradient(1px 1px at 90% 82%, rgba(255,255,255,0.35), transparent 70%)',
+                    }}
+                  />
                   <div className="absolute inset-0 opacity-30 mix-blend-screen pointer-events-none bg-[radial-gradient(circle_at_top,_rgba(255,255,255,0.25),_transparent_55%)]" />
                   <div className="relative z-10 flex flex-col h-full">
 
@@ -4933,7 +4985,7 @@ const rendernotaAutoral = () => {
     if (boostApplied) {
       return (
         <div className="absolute top-4 right-4 bg-emerald-900/40 text-emerald-200 text-[0.65rem] uppercase tracking-[0.25em] px-3 py-1 rounded-full border border-emerald-300/40 shadow-[0_0_10px_rgba(16,185,129,0.3)] backdrop-blur-sm">
-          Miniverso leído
+          Miniverso expandido
         </div>
       );
     }
@@ -5083,7 +5135,12 @@ const rendernotaAutoral = () => {
         </div>
       </section>
 
-      <MiniverseModal open={isMiniverseOpen} onClose={handleCloseMiniverses} contextLabel={miniverseContext} />
+      <MiniverseModal
+        open={isMiniverseOpen}
+        onClose={handleCloseMiniverses}
+        contextLabel={miniverseContext}
+        onSelectMiniverse={handleSelectMiniverse}
+      />
       <ContributionModal
         open={isContributionOpen}
         onClose={() => {
