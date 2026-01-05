@@ -1,6 +1,6 @@
 import React, { useCallback, useState } from 'react';
 import { motion } from 'framer-motion';
-import { Globe, ShoppingBag } from 'lucide-react';
+import { Globe, MapPin, MapPinIcon, ShoppingBag, Users, Users2, Users2Icon, UsersIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import ReserveModal from '@/components/ReserveModal';
 import TicketPurchaseModal from '@/components/TicketPurchaseModal';
@@ -161,7 +161,7 @@ const Hero = () => {
       text-base tracking-wide
     "
   >
-    <ShoppingBag size={20} className="text-purple-200/90 drop-shadow-sm" />
+    <Users2 size={20} className="text-purple-200/90 drop-shadow-sm" />
     Café Gato
   </Button>
    {/* Microtexto */}

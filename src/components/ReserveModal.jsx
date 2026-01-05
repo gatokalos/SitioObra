@@ -480,7 +480,7 @@ const ReserveModal = ({ open, onClose, mode = 'offseason' }) => {
                     value={formState.notes}
                     onChange={handleInputChange}
                     className="w-full rounded-lg border border-white/10 bg-black/30 px-4 py-3 text-slate-100 placeholder-slate-500 focus:border-purple-400 focus:ring-1 focus:ring-purple-400 resize-none"
-                    placeholder="¿Necesitas facilidades especiales o tienes un código de preventa?"
+                    placeholder="¿Necesitas facilidades especiales o quires solicitar tu suscripción?"
                   />
                 </div>
 
