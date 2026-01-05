@@ -30,7 +30,7 @@ const MINIVERSE_CARDS = [
     title: 'Miniverso Literatura',
     description:
       'La obra reescrita como novela: el texto se transforma en autoficción.',
-    action: 'Reflexiona',
+    action: 'Lee',
   },
   {
     id: 'taza',
@@ -51,7 +51,7 @@ const MINIVERSE_CARDS = [
     thumbGradient: 'from-fuchsia-400/80 via-purple-500/70 to-indigo-500/60',
     title: 'Miniverso Gráficos',
     description: 'Imágenes y trazos nacidos del proceso creativo de la obra.',
-    action: 'Observa',
+    action: 'Imagina',
   },
   {
     id: 'cine',
@@ -61,7 +61,7 @@ const MINIVERSE_CARDS = [
     title: 'Miniverso Cine',
     description:
       'Películas y miradas que dialogan con el universo de la obra.',
-    action: 'Contempla',
+    action: 'Observa',
   },
   {
     id: 'sonoro',
