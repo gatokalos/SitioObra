@@ -100,7 +100,7 @@ const collagePattern = [
 
 const curatedLayout = [
   { match: 'Copia de Foto 1 (1)', patternIndex: 0, story: 'El futuro ha arribado' },
-  { match: 'PoloyEstela', patternIndex: 1, story: 'Entre micro-climas' },
+  { match: 'PoloyEstela', patternIndex: 8, story: 'Entre micro-climas' },
   { match: 'Copia de Foto 4', patternIndex: 2, story: 'El Ensayo Final' },
   { match: 'Copia de Foto 3 (1)', patternIndex: 3, story: 'No habrá un nosotros' },
   { match: 'Pausa entre actos', patternIndex: 4, story: 'Coreografía del desamor' },
@@ -148,15 +148,16 @@ const PHOTOGRAPHERS = [
   {
     id: 'gabriel',
     label: 'Gabriel Monroy',
-    creditPrefix: 'Fotografía: Gabriel Monroy. Su semblanza está disponible en ',
-    creditLinkText: 'Producción',
+    creditPrefix: 'Semblanza visual en Instagram: ',
+    creditLinkText: '@gabs1_797',
+    creditLinkHref: 'https://www.instagram.com/gabs1_797/',
     layout: curatedLayout,
     allowRemaining: true,
   },
   {
     id: 'alejandro',
     label: 'Alejandro Chiu',
-    creditPrefix: 'Fotografía: Alejandro Chiu. Instagram: ',
+    creditPrefix: 'Semblanza visual en Instagram: ',
     creditLinkText: '@alexchiu',
     creditLinkHref: 'https://www.instagram.com/alexchiu/',
     layout: curatedLayoutAlejandro,
