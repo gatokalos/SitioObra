@@ -165,9 +165,9 @@ const Hero = () => {
     Café Gato
   </Button>
    {/* Microtexto */}
-    <p className="text-xs text-slate-400/70 leading-tight">
-      Cuando nos juntamos, pasan cosas.
-    </p>
+    <p className="text-xs italic text-slate-400/70 leading-tight">
+  Cuando nos juntemos, pasarán cosas.
+</p>
 </div>
 
 
