@@ -107,8 +107,11 @@ const RESERVE_COPY = {
     title: 'Objetos del universo #GatoEncerrado',
     intro:
       'La idea es simple: cuando varias personas se interesan, buscamos la manera de encontrarnos, compartir café, conversación y entregar los objetos en mano.',
-    notice:
-      'También es posible coordinar envíos dentro de México. Después de tu reserva nos pondremos en contacto contigo para definir la mejor opción.',
+    notice: (
+  <>
+    También podemos hacer envíos y coordinar encuentros virtuales. Después de elegir lo que más te guste, nos pondremos en contacto contigo. <strong>Cada reserva abre una conversación.</strong>
+  </>
+),
     footerNote:
       'A largo plazo, soñamos con un espacio físico donde arte, café y salud mental puedan convivir.',
   },
@@ -468,7 +471,7 @@ const ReserveModal = ({ open, onClose, mode = 'offseason' }) => {
                     value={formState.city}
                     onChange={handleInputChange}
                     className="w-full rounded-lg border border-white/10 bg-black/30 px-4 py-3 text-slate-100 placeholder-slate-500 focus:border-purple-400 focus:ring-1 focus:ring-purple-400"
-                    placeholder="¿Desde dónde nos visitas?"
+                    placeholder="¿Desde dónde nos escribes?"
                   />
                 </div>
 
@@ -525,7 +528,7 @@ const ReserveModal = ({ open, onClose, mode = 'offseason' }) => {
                     onClick={handleCheckout}
                     className="w-full border-purple-400/40 text-purple-200 hover:bg-purple-500/10"
                   >
-                    {isCheckoutLoading ? 'Redirigiendo…' : 'Comprar ahora (Stripe)'}
+                    {isCheckoutLoading ? 'Redirigiendo…' : 'Comprar ahora'}
                   </Button>
              
                 </div>

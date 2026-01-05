@@ -15,7 +15,7 @@ const aboutParagraphs = [
   {
     text: `Es un gato encerrado existe como una obra escénica y como un estado emocional del dolor humano. 
     
-    Nuestra obra se desdobla: lo que sucede en el escenario también ocurre en la mente de quien la mira. En ella, Silvestre y su terapeuta exploran los sueños lúcidos para confrontar el miedo, la desconexión y la fragilidad de la mente. 
+    Nuestra obra se desdobla: lo que sucede en el escenario también ocurre en la mente de quien la mira. En ella, Silvestre y su doctora exploran los sueños lúcidos para confrontar el miedo, la desconexión y la fragilidad de la mente. 
     
     Pero la experiencia no termina en el teatro: también es una narrativa expandida con otros lenguajes artísticos —cine, cómic, experiencias interactivas y poesía— que laten dentro del universo #GatoEncerrado.`,
     
