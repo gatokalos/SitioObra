@@ -1,6 +1,6 @@
 import React, { useCallback, useState } from 'react';
 import { motion } from 'framer-motion';
-import { Globe, MapPin, MapPinIcon, ShoppingBag, Users, Users2, Users2Icon, UsersIcon } from 'lucide-react';
+import { Globe, Globe2, MapPin, MapPinIcon, ShoppingBag, SparkleIcon, Users, Users2, Users2Icon, UsersIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import ReserveModal from '@/components/ReserveModal';
 import TicketPurchaseModal from '@/components/TicketPurchaseModal';
@@ -138,7 +138,7 @@ const Hero = () => {
       text-base tracking-wide
     "
   >
-    <Globe size={22} className="drop-shadow-md" />
+    <SparkleIcon size={22} className="drop-shadow-md" />
     Abre un miniverso
   </Button>
 
