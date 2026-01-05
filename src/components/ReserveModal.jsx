@@ -103,8 +103,8 @@ const RESERVE_COPY = {
     intro: null,
   },
   offseason: {
-    eyebrow: 'Para encontrarnos fuera del teatro',
-    title: 'Reserva objetos de #GatoEncerrado',
+    eyebrow: 'Encontrémonos fuera del teatro',
+    title: 'Objetos del universo #GatoEncerrado',
     intro:
       'La idea es simple: cuando varias personas se interesan, buscamos la manera de encontrarnos, compartir café, conversación y entregar los objetos en mano.',
     notice:
@@ -315,7 +315,7 @@ const ReserveModal = ({ open, onClose, mode = 'offseason' }) => {
             ))}
 
             {/* HEADER */}
-            <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-8">
+            <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-6 sm:mb-8">
               <div className="flex items-center gap-4">
                 <img
                   src={LOGO_SRC}
@@ -336,14 +336,15 @@ const ReserveModal = ({ open, onClose, mode = 'offseason' }) => {
                   ) : null}
                 </div>
               </div>
-
-              <button
-                onClick={handleClose}
-                className="self-end text-slate-400 hover:text-white transition"
-              >
-                ✕
-              </button>
             </div>
+            <button
+              type="button"
+              onClick={handleClose}
+              aria-label="Cerrar modal"
+              className="absolute right-5 top-5 text-slate-400 hover:text-white transition"
+            >
+              ✕
+            </button>
 
             {copy.intro ? (
               <p className="mb-6 text-sm text-slate-300/90 leading-relaxed">{copy.intro}</p>
@@ -512,7 +513,7 @@ const ReserveModal = ({ open, onClose, mode = 'offseason' }) => {
                     disabled={status === 'loading'}
                     className="w-full bg-gradient-to-r from-purple-600/80 to-indigo-600/80 hover:from-purple-600 hover:to-indigo-600 text-white py-3 rounded-lg font-semibold flex items-center justify-center gap-2 hover-glow"
                   >
-                    {isSubmitting ? 'Enviando…' : 'Apartar mis artículos'}
+                    {isSubmitting ? 'Enviando…' : 'Enviar reserva'}
                   </Button>
 
        

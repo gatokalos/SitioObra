@@ -252,7 +252,7 @@ const MiniverseModal = ({ open, onClose, onSelectMiniverse }) => {
                   Explora los miniversos
                 </h2>
                 <div className="mt-3 rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-slate-200/90">
-                  Cuando la obra no está en cartelera, estos miniversos la mantienen viva.
+                  Cuando la obra no está en cartelera, su narrativa pulsa en otros lenguajes.
                 </div>
               </div>
               <button
