@@ -34,7 +34,7 @@ export const PACKAGE_OPTIONS = [
     id: 'combo-900',
     title: 'Combo: novela + 2 tazas',
     price: '$900',
-    helper: 'Paquete completo disponible solo el día del evento (incluye suscripción al Universo Transmedia si lo solicitas en "Notas").',
+    helper: 'Paquete completo disponible solo el día del evento (incluye suscripción al Universo Transmedial si lo solicitas).',
     priceId: import.meta.env.VITE_PRICE_COMBO,
   },
 ];
