@@ -2930,24 +2930,28 @@ const rendernotaAutoral = () => {
     <div className="p-6 grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
       {/* ───────── Columna izquierda: taza ───────── */}
       <div className="flex flex-col gap-4">
-        {/\.mp4($|\?)/i.test(activeDefinition.image) ? (
-          <video
-            src={activeDefinition.image}
-            className="w-full max-h-[220px] object-contain bg-black/50"
-            autoPlay
-            playsInline
-            muted
-            loop
-            controls={canUseInlinePlayback(objectWebArVideoId)}
-            poster={activeDefinition.imagePoster}
-          />
-        ) : (
-          <img
-            src={activeDefinition.image}
-            alt="Ilustración de La Taza"
-            className="w-full max-h-[220px] object-contain bg-black/50"
-          />
-        )}
+        <div className="relative w-full aspect-[4/3] max-h-[260px] overflow-hidden rounded-2xl bg-black/50">
+          {/\.mp4($|\?)/i.test(activeDefinition.image) ? (
+            <video
+              src={activeDefinition.image}
+              className="absolute inset-0 h-full w-full object-contain"
+              autoPlay
+              playsInline
+              muted
+              loop
+              controls={canUseInlinePlayback(objectWebArVideoId)}
+              poster={activeDefinition.imagePoster}
+            />
+          ) : (
+            <img
+              src={activeDefinition.image}
+              alt="Ilustración de La Taza"
+              className="absolute inset-0 h-full w-full object-contain"
+              loading="lazy"
+              decoding="async"
+            />
+          )}
+        </div>
 
         <p className="text-sm text-slate-400 uppercase tracking-[0.3em]">
           {activeDefinition.note}

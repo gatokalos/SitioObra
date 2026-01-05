@@ -10,6 +10,7 @@ const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const [showLoginOverlay, setShowLoginOverlay] = useState(false);
+  const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
   const { user, signOut } = useAuth();
   const { toast: showToast } = useToast();
   const profileName =
@@ -48,6 +49,17 @@ const Header = () => {
   }, []);
 
   useEffect(() => {
+    if (!isProfileMenuOpen) return undefined;
+    const handleClickAway = (event) => {
+      if (!event.target.closest('[data-profile-menu]')) {
+        setIsProfileMenuOpen(false);
+      }
+    };
+    window.addEventListener('click', handleClickAway);
+    return () => window.removeEventListener('click', handleClickAway);
+  }, [isProfileMenuOpen]);
+
+  useEffect(() => {
     if (typeof window === "undefined") return;
     const handleOpenFromToast = () => setShowLoginOverlay(true);
     window.addEventListener('open-login-modal', handleOpenFromToast);
@@ -84,22 +96,48 @@ const Header = () => {
       >
       <nav className="container mx-auto px-6 py-3 max-[375px]:px-4">
         <div className="flex items-center justify-between">
-          <motion.button
-            type="button"
-            whileHover={{ scale: 1.05, textShadow: "0 0 8px rgba(233, 213, 255, 0.5)" }}
-            className="flex items-center gap-3 cursor-pointer text-white"
-            onClick={() => handleNavClick('#hero')}
-          >
-            <span className="font-display text-2xl font-bold text-gradient max-[375px]:text-lg whitespace-nowrap">
-              Es un gato encerrado
-            </span>
-            <span className={`h-2.5 w-2.5 rounded-full ${statusDotClass}`} />
-            {user ? (
-              <span className="text-sm md:text-base font-semibold tracking-tight text-white">
-                {greetingLabel}
+          <div className="flex items-center gap-3 text-white">
+            <motion.button
+              type="button"
+              whileHover={{ scale: 1.05, textShadow: "0 0 8px rgba(233, 213, 255, 0.5)" }}
+              className="flex items-center gap-3 cursor-pointer"
+              onClick={() => handleNavClick('#hero')}
+            >
+              <span className="font-display text-2xl font-bold text-gradient max-[375px]:text-lg whitespace-nowrap">
+                Es un gato encerrado
               </span>
-            ) : null}
-          </motion.button>
+              <span className={`h-2.5 w-2.5 rounded-full ${statusDotClass}`} />
+            </motion.button>
+            {user ? (
+              <div className="relative" data-profile-menu>
+                <button
+                  type="button"
+                  onClick={() => setIsProfileMenuOpen((prev) => !prev)}
+                  className="inline-flex items-center text-xs font-semibold text-slate-100 transition sm:text-sm underline underline-offset-4 decoration-slate-400/40 hover:text-white hover:decoration-emerald-300/60"
+                >
+                  {greetingLabel}
+                </button>
+                {isProfileMenuOpen ? (
+                  <div className="absolute left-0 mt-2 w-40 rounded-xl border border-white/10 bg-black/90 py-2 text-sm text-slate-100 shadow-xl">
+                    <button
+                      type="button"
+                      onClick={handleLogout}
+                      className="block w-full px-4 py-2 text-left hover:bg-white/5"
+                    >
+                      Cerrar sesión
+                    </button>
+                  </div>
+                ) : null}
+              </div>
+            ) : (
+              <button
+                onClick={handleOpenOverlay}
+                className="inline text-xs font-semibold text-slate-100 sm:text-sm"
+              >
+                Iniciar sesión
+              </button>
+            )}
+          </div>
 
           <div className="hidden xl:flex items-center space-x-1">
             <motion.button
@@ -130,12 +168,6 @@ const Header = () => {
             >
               {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
             </Button>
-            <button
-              onClick={user ? handleLogout : handleOpenOverlay}
-              className="hidden md:inline text-sm font-semibold text-slate-100"
-            >
-              {authActionLabel}
-            </button>
           </div>
         </div>
 
@@ -161,12 +193,6 @@ const Header = () => {
                 {item.name}
               </button>
             ))}
-            <button
-              onClick={user ? handleLogout : handleOpenOverlay}
-              className="block w-full text-left py-3 text-slate-200 hover:text-white transition-colors mt-2"
-            >
-              {authActionLabel}
-            </button>
           </motion.div>
         )}
       </nav>

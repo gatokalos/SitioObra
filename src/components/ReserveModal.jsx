@@ -361,7 +361,6 @@ const ReserveModal = ({ open, onClose, mode = 'offseason' }) => {
               {/* LEFT COLUMN */}
               <div className="space-y-5">
                 <div>
-          
                 
                 </div>
 

@@ -17,28 +17,34 @@ export async function getInstagramPostsFromBucket() {
   }
 
   try {
-    const { data, error } = await supabasePublic.storage.from(BUCKET_NAME).list('', {
-      limit: 200,
-      offset: 0,
-      sortBy: { column: 'name', order: 'desc' },
-    });
+    const listFolder = async (folder) => {
+      const { data, error } = await supabasePublic.storage.from(BUCKET_NAME).list(folder, {
+        limit: 200,
+        offset: 0,
+        sortBy: { column: 'name', order: 'desc' },
+      });
+      if (error) {
+        console.error('[Instagram] Error al listar imágenes:', error.message);
+        return [];
+      }
+      return Array.isArray(data) ? data.map((file) => ({ ...file, folder })) : [];
+    };
 
-    if (error) {
-      console.error('[Instagram] Error al listar imágenes:', error.message);
+    const [rootFiles, chiuFiles] = await Promise.all([listFolder(''), listFolder('A_Chiu')]);
+    const allFiles = [...rootFiles, ...chiuFiles];
+
+    if (allFiles.length === 0) {
       return [];
     }
 
-    if (!Array.isArray(data) || data.length === 0) {
-      return [];
-    }
-
-    const imageFiles = data.filter((file) => IMAGE_FILE_REGEX.test(file.name));
+    const imageFiles = allFiles.filter((file) => IMAGE_FILE_REGEX.test(file.name));
 
     const posts = imageFiles
       .map((file) => {
+        const filePath = file.folder ? `${file.folder}/${file.name}` : file.name;
         const { data: publicData } = supabasePublic.storage
           .from(BUCKET_NAME)
-          .getPublicUrl(file.name);
+          .getPublicUrl(filePath);
 
         if (!publicData?.publicUrl) {
           return null;
@@ -51,7 +57,7 @@ export async function getInstagramPostsFromBucket() {
           formatAltText(file.name);
 
         return {
-          id: file.id ?? file.name,
+          id: file.id ?? filePath,
           imgSrc: publicData.publicUrl,
           alt,
           filename: file.name,

@@ -352,18 +352,24 @@ const Contact = () => {
                   src="/assets/logoapp.png"
                   alt="Logo #GatoEncerrado"
                   className="h-10 w-10 rounded-lg border border-white/10 bg-black/30 p-1"
+                  width={40}
+                  height={40}
                   loading="lazy"
                 />
                 <img
                   src="/assets/incendiologo.png"
                   alt="Logo Incendio Producciones"
                   className="h-10 w-10 rounded-lg border border-white/10 bg-black/30 p-1"
+                  width={40}
+                  height={40}
                   loading="lazy"
                 />
                 <img
                   src="/assets/isabel_banner.png"
                   alt="Banner Isabel Ayuda para la Vida, A.C."
                   className="h-10 w-auto max-w-[140px] rounded-lg border border-white/10 bg-black/30 px-2 object-contain"
+                  width={140}
+                  height={40}
                   loading="lazy"
                 />
               </div>

@@ -117,8 +117,51 @@ const curatedLayout = [
   
 ];
 
+const curatedLayoutAlejandro = [
+  { match: 'chiu_01', patternIndex: 13, story: 'Mariana, foco absoluto' },
+  { match: 'chiu_16', patternIndex: 0, story: 'Cyndi: después del salto' },
+  { match: 'chiu_02', patternIndex: 1, story: 'Harold, piso y escena' },
+  { match: 'chiu_03', patternIndex: 2, story: 'Ritual previo' },
+  { match: 'chiu_06', patternIndex: 3, story: 'Silvestre Felis, en fuga' },
+  { match: 'chiu_05', patternIndex: 4, story: 'Carlos y Cyndi' },
+  { match: 'chiu_04', patternIndex: 5, story: 'Sueño profundo' },
+  { match: 'chiu_07', patternIndex: 6, story: 'Aparece el Paysito Tiste' },
+  { match: 'chiu_08', patternIndex: 7, story: 'Chivis: el incomprendido' },
+  { match: 'chiu_09', patternIndex: 8, story: 'Llamadas intrusivas' },
+  { match: 'chiu_10', patternIndex: 9, story: 'Despierta' },
+  { match: 'chiu_11', patternIndex: 10, story: '¿Privación sensorial?' },
+  { match: 'chiu_12', patternIndex: 11, story: 'Transición a la Reina' },
+  { match: 'chiu_13', patternIndex: 12, story: 'Dulce desencuentro' },
+  { match: 'chiu_14', patternIndex: 13, story: 'No fue culpa de nadie' },
+  { match: 'chiu_17', patternIndex: 14, story: 'Gil: abrazo de cierre' },
+  { match: 'chiu_15', patternIndex: 1, story: 'Agradecimiento total' },
+];
+
 const storyFragments = [
   'El gatillo emocional',
+];
+
+const CHIU_SHUFFLE_SEED = 'chiu-2025';
+const CHIU_PATTERN_ORDER = null;
+
+const PHOTOGRAPHERS = [
+  {
+    id: 'gabriel',
+    label: 'Gabriel Monroy',
+    creditPrefix: 'Fotografía: Gabriel Monroy. Su semblanza está disponible en ',
+    creditLinkText: 'Producción',
+    layout: curatedLayout,
+    allowRemaining: true,
+  },
+  {
+    id: 'alejandro',
+    label: 'Alejandro Chiu',
+    creditPrefix: 'Fotografía: Alejandro Chiu. Instagram: ',
+    creditLinkText: '@alexchiu',
+    creditLinkHref: 'https://www.instagram.com/alexchiu/',
+    layout: curatedLayoutAlejandro,
+    allowRemaining: false,
+  },
 ];
 
 const Instagram = () => {
@@ -126,8 +169,9 @@ const Instagram = () => {
   const [error, setError] = useState(null);
   const [isGalleryDisabled, setIsGalleryDisabled] = useState(false);
   const instagramProfileUrl = 'https://www.instagram.com/esungatoencerrado/?hl=en';
-  const VISIBLE_COUNT = 15;
+  const BASE_VISIBLE_COUNT = 15;
   const [selectedIndex, setSelectedIndex] = useState(null);
+  const [activePhotographer, setActivePhotographer] = useState('gabriel');
   const [likeStatusById, setLikeStatusById] = useState({});
   const [likeCountById, setLikeCountById] = useState({});
   const [likeRevealById, setLikeRevealById] = useState({});
@@ -147,6 +191,14 @@ const Instagram = () => {
   const [slots, setSlots] = useState([]);
   const nextIndexRef = useRef(0);
   const orderedSequenceRef = useRef([]);
+  const patternOrderRef = useRef([]);
+  const patternSeedRef = useRef(null);
+  const activePhotographerData =
+    PHOTOGRAPHERS.find((photographer) => photographer.id === activePhotographer) ?? PHOTOGRAPHERS[0];
+  const visibleCount =
+    activePhotographerData?.allowRemaining === false
+      ? Math.max(activePhotographerData.layout.length, BASE_VISIBLE_COUNT)
+      : BASE_VISIBLE_COUNT;
 
   const matchesDescriptor = useCallback((post, descriptor) => {
     if (!descriptor) return false;
@@ -194,6 +246,35 @@ const Instagram = () => {
       return;
     }
 
+    const seedToInt = (seed) => {
+      let hash = 2166136261;
+      for (let i = 0; i < seed.length; i += 1) {
+        hash ^= seed.charCodeAt(i);
+        hash = Math.imul(hash, 16777619);
+      }
+      return hash >>> 0;
+    };
+
+    const mulberry32 = (seed) => {
+      let t = seed;
+      return () => {
+        t += 0x6d2b79f5;
+        let r = Math.imul(t ^ (t >>> 15), 1 | t);
+        r ^= r + Math.imul(r ^ (r >>> 7), 61 | r);
+        return ((r ^ (r >>> 14)) >>> 0) / 4294967296;
+      };
+    };
+
+    const shufflePatternOrder = (seed) => {
+      const order = Array.from({ length: collagePattern.length }, (_, idx) => idx);
+      const random = seed ? mulberry32(seedToInt(seed)) : Math.random;
+      for (let i = order.length - 1; i > 0; i -= 1) {
+        const j = Math.floor(random() * (i + 1));
+        [order[i], order[j]] = [order[j], order[i]];
+      }
+      return order;
+    };
+
     const availablePosts = posts
       .map((post, idx) => ({ post, originalIndex: idx }))
       .filter(({ post }) => !shouldExclude(post));
@@ -207,28 +288,61 @@ const Instagram = () => {
 
     const usedIndices = new Set();
     const prioritized = [];
+    const activeLayout = activePhotographerData?.layout ?? curatedLayout;
+    const allowRemaining = activePhotographerData?.allowRemaining !== false;
+    const useShuffledPattern = activePhotographerData?.id === 'alejandro';
+    if (useShuffledPattern) {
+      if (Array.isArray(CHIU_PATTERN_ORDER) && CHIU_PATTERN_ORDER.length === collagePattern.length) {
+        patternOrderRef.current = CHIU_PATTERN_ORDER.slice();
+        patternSeedRef.current = CHIU_SHUFFLE_SEED;
+      } else if (
+        patternOrderRef.current.length === collagePattern.length &&
+        patternSeedRef.current === CHIU_SHUFFLE_SEED
+      ) {
+        patternOrderRef.current = patternOrderRef.current.slice();
+      } else {
+        patternOrderRef.current = shufflePatternOrder(CHIU_SHUFFLE_SEED);
+        patternSeedRef.current = CHIU_SHUFFLE_SEED;
+      }
+    } else {
+      patternOrderRef.current = [];
+      patternSeedRef.current = null;
+    }
+    const isRelevantPost = (post) =>
+      activeLayout.some((entry) => matchesDescriptor(post, entry.match));
+    const matchingPosts = allowRemaining
+      ? availablePosts
+      : availablePosts.filter(({ post }) => isRelevantPost(post));
 
-    curatedLayout.forEach((entry) => {
-      const indexInAvailable = availablePosts.findIndex((candidate, idx) => !usedIndices.has(idx) && matchesDescriptor(candidate.post, entry.match));
+    activeLayout.forEach((entry) => {
+      const indexInAvailable = matchingPosts.findIndex((candidate, idx) => !usedIndices.has(idx) && matchesDescriptor(candidate.post, entry.match));
       if (indexInAvailable !== -1) {
-        const foundEntry = availablePosts[indexInAvailable];
+        const foundEntry = matchingPosts[indexInAvailable];
         usedIndices.add(indexInAvailable);
+        const fallbackPatternIndex = prioritized.length % collagePattern.length;
+        const shuffledPatternIndex =
+          patternOrderRef.current[prioritized.length % patternOrderRef.current.length] ??
+          fallbackPatternIndex;
         prioritized.push({
           postIndex: foundEntry.originalIndex,
-          patternIndex: entry.patternIndex ?? (prioritized.length % collagePattern.length),
+          patternIndex: useShuffledPattern
+            ? shuffledPatternIndex
+            : entry.patternIndex ?? fallbackPatternIndex,
           story: entry.story ?? storyFragments[prioritized.length % storyFragments.length],
         });
       }
     });
 
-    const remaining = availablePosts
-      .map((entry, idx) => ({ ...entry, idx }))
-      .filter(({ idx }) => !usedIndices.has(idx))
-      .map((entry, offset) => ({
-        postIndex: entry.originalIndex,
-        patternIndex: (prioritized.length + offset) % collagePattern.length,
-        story: storyFragments[(prioritized.length + offset) % storyFragments.length],
-      }));
+    const remaining = allowRemaining
+      ? matchingPosts
+          .map((entry, idx) => ({ ...entry, idx }))
+          .filter(({ idx }) => !usedIndices.has(idx))
+          .map((entry, offset) => ({
+            postIndex: entry.originalIndex,
+            patternIndex: (prioritized.length + offset) % collagePattern.length,
+            story: storyFragments[(prioritized.length + offset) % storyFragments.length],
+          }))
+      : [];
 
     const fullSequence = [...prioritized, ...remaining];
     orderedSequenceRef.current = fullSequence;
@@ -239,7 +353,7 @@ const Instagram = () => {
       return;
     }
 
-    const visible = Math.min(VISIBLE_COUNT, fullSequence.length);
+    const visible = Math.min(visibleCount, fullSequence.length);
     const initialSlots = fullSequence.slice(0, visible).map((item, index) => ({
       slotId: `${Date.now()}-${index}-${item.postIndex}-${Math.random()}`,
       postIndex: item.postIndex,
@@ -249,7 +363,7 @@ const Instagram = () => {
 
     setSlots(initialSlots);
     nextIndexRef.current = fullSequence.length > 0 ? (visible % fullSequence.length) : 0;
-  }, [posts, VISIBLE_COUNT, matchesDescriptor, shouldExclude]);
+  }, [posts, visibleCount, matchesDescriptor, shouldExclude, activePhotographerData]);
 
   const handleInstagramClick = (url) => {
     window.open(url, '_blank', 'noopener,noreferrer');
@@ -348,58 +462,6 @@ const Instagram = () => {
     },
   };
 
-  const handleViewportLeave = useCallback((slotIdx, entry) => {
-    if (!entry || posts.length <= VISIBLE_COUNT) return;
-
-    const viewportHeight = typeof window !== 'undefined' ? window.innerHeight : 0;
-    const isLeavingTop = entry.boundingClientRect.bottom <= 0;
-    const isLeavingBottom = viewportHeight ? entry.boundingClientRect.top >= viewportHeight : false;
-
-    if (!isLeavingTop && !isLeavingBottom) return;
-
-    setSlots((prevSlots) => {
-      if (!Array.isArray(prevSlots) || prevSlots.length === 0) {
-        return prevSlots;
-      }
-
-      const candidateSlots = [...prevSlots];
-      const usedIndices = new Set(
-        candidateSlots
-          .filter((_, idx) => idx !== slotIdx)
-          .map((slot) => slot.postIndex),
-      );
-
-      const pool = orderedSequenceRef.current;
-      if (!pool || pool.length === 0) {
-        return prevSlots;
-      }
-
-      let pointer = nextIndexRef.current ?? 0;
-      let guard = 0;
-
-      while (guard < pool.length && usedIndices.has(pool[pointer].postIndex)) {
-        pointer = (pointer + 1) % pool.length;
-        guard += 1;
-      }
-
-      if (guard >= pool.length) {
-        return prevSlots;
-      }
-
-      const chosen = pool[pointer];
-      nextIndexRef.current = (pointer + 1) % pool.length;
-
-      candidateSlots[slotIdx] = {
-        slotId: `${Date.now()}-${slotIdx}-${chosen.postIndex}-${Math.random()}`,
-        postIndex: chosen.postIndex,
-        patternIndex: chosen.patternIndex,
-        story: chosen.story,
-      };
-
-      return candidateSlots;
-    });
-  }, [posts.length, VISIBLE_COUNT]);
-
   const persistLikedPosts = useCallback((nextLiked) => {
     safeSetItem('gatoencerrado:gallery-likes', JSON.stringify(nextLiked));
   }, []);
@@ -451,7 +513,7 @@ const Instagram = () => {
   ), []);
 
   const isGalleryLoading = !isGalleryDisabled && !error && posts.length === 0;
-  const placeholderSlots = collagePattern.slice(0, Math.min(VISIBLE_COUNT, collagePattern.length));
+  const placeholderSlots = collagePattern.slice(0, Math.min(visibleCount, collagePattern.length));
 
   return (
     <section id="instagram" className="py-20 relative">
@@ -472,10 +534,35 @@ const Instagram = () => {
             Un homenaje visual a los destellos de Es un gato encerrado... Esto es lo que existe solo cuando alguien se atreve a mirar.
           </p>
 
+          <div className="flex flex-wrap justify-center gap-2 mb-6">
+            {PHOTOGRAPHERS.map((photographer) => (
+              <button
+                key={photographer.id}
+                type="button"
+                onClick={() => setActivePhotographer(photographer.id)}
+                className={`rounded-full border px-4 py-2 text-sm transition ${
+                  activePhotographer === photographer.id
+                    ? 'border-purple-400/60 bg-purple-500/20 text-purple-100'
+                    : 'border-white/10 text-slate-300 hover:border-purple-300/40 hover:text-purple-100'
+                }`}
+              >
+                {photographer.label}
+              </button>
+            ))}
+          </div>
+
               {/* Crédito fotográfico: tipografía pequeña y gris tenue; enlace al Team */}
               <p className="text-xs text-slate-400/70 mt-3">
-                Fotografía: Gabriel Monroy. Su semblanza está disponible en {' '}
-                <a href="#team" className="underline text-slate-300">Producción</a>.
+                {activePhotographerData.creditPrefix}
+                <a
+                  href={activePhotographerData.creditLinkHref || '#team'}
+                  className="underline text-slate-300"
+                  target={activePhotographerData.creditLinkHref ? '_blank' : undefined}
+                  rel={activePhotographerData.creditLinkHref ? 'noreferrer' : undefined}
+                >
+                  {activePhotographerData.creditLinkText}
+                </a>
+                .
               </p>
 
               
@@ -506,58 +593,57 @@ const Instagram = () => {
         )}
 
         {slots.length > 0 ? (
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 auto-rows-[95px] sm:auto-rows-[110px] md:auto-rows-[120px] lg:auto-rows-[140px] xl:auto-rows-[150px] gap-2 md:gap-3 lg:gap-3.5">
-            <AnimatePresence mode="popLayout">
-              {slots.map((slot, slotIdx) => {
-                const post = posts[slot.postIndex];
-                if (!post) {
-                  return null;
-                }
+          <div className="grid w-full grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 auto-rows-[95px] sm:auto-rows-[110px] md:auto-rows-[120px] lg:auto-rows-[140px] xl:auto-rows-[150px] gap-2 md:gap-3 lg:gap-3.5">
+              <AnimatePresence mode="popLayout">
+                {slots.map((slot, slotIdx) => {
+                  const post = posts[slot.postIndex];
+                  if (!post) {
+                    return null;
+                  }
 
-                const pattern = collagePattern[slot.patternIndex % collagePattern.length];
-                const story = slot.story ?? storyFragments[(slotIdx + slot.postIndex) % storyFragments.length];
+                  const pattern = collagePattern[slot.patternIndex % collagePattern.length];
+                  const story = slot.story ?? storyFragments[(slotIdx + slot.postIndex) % storyFragments.length];
 
-                return (
-                  <motion.button
-                    key={slot.slotId}
-                    type="button"
-                    layout
-                    variants={cardVariants}
-                    initial="hidden"
-                    animate="visible"
-                    exit="exit"
-                    viewport={{ amount: 0.5, once: false }}
-                    onViewportLeave={(entry) => handleViewportLeave(slotIdx, entry)}
-                    onClick={() => openModalAt(slot.postIndex)}
-                    onKeyDown={(e) => { if (e.key === 'Enter') openModalAt(slot.postIndex); }}
-                    className={`group relative isolate flex h-full w-full cursor-pointer items-stretch focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pink-400/60 ${pattern.grid}`}
-                  >
-                    <div className={`relative h-full w-full transition-transform duration-300 ease-out ${pattern.offset}`}>
-                      <motion.div
-                        layout
-                        variants={cardVariants}
-                        initial="hidden"
-                        whileInView="visible"
-                        viewport={{ amount: 0.6, once: false }}
-                        whileHover={{ translateY: -6 }}
-                        transition={{ duration: 0.35, ease: 'easeOut' }}
-                        className={`relative flex h-full w-full overflow-hidden rounded-[20px] bg-slate-950/70 backdrop-blur-sm ${pattern.frame}`}
-                      >
-                        <span className={`pointer-events-none absolute inset-0 bg-gradient-to-br ${pattern.tint}`} aria-hidden="true" />
-                        <motion.img
-                        src={post.imgSrc}
-                        alt={post.alt || 'Recuerdo #GatoEncerrado'}
-                        className="absolute inset-0 h-full w-full object-cover"
-                        loading="lazy"
-                        initial={{ scale: 1.02, y: 0, opacity: 1 }}   // Estado inicial ya visible
-                        whileHover={{ scale: 1.06 }}                  // Solo efecto en hover
-                        transition={{ duration: 0.35, ease: 'easeOut' }}
-                      />
+                  return (
+                    <motion.button
+                      key={slot.slotId}
+                      type="button"
+                      layout
+                      variants={cardVariants}
+                      initial="hidden"
+                      animate="visible"
+                      exit="exit"
+                      viewport={{ amount: 0.5, once: false }}
+                      onClick={() => openModalAt(slot.postIndex)}
+                      onKeyDown={(e) => { if (e.key === 'Enter') openModalAt(slot.postIndex); }}
+                      className={`group relative isolate flex h-full w-full cursor-pointer items-stretch focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pink-400/60 ${pattern.grid}`}
+                    >
+                      <div className={`relative h-full w-full transition-transform duration-300 ease-out ${pattern.offset}`}>
+                        <motion.div
+                          layout
+                          variants={cardVariants}
+                          initial="hidden"
+                          whileInView="visible"
+                          viewport={{ amount: 0.6, once: false }}
+                          whileHover={{ translateY: -6 }}
+                          transition={{ duration: 0.35, ease: 'easeOut' }}
+                          className={`relative flex h-full w-full overflow-hidden rounded-[20px] bg-slate-950/70 backdrop-blur-sm ${pattern.frame}`}
+                        >
+                          <span className={`pointer-events-none absolute inset-0 bg-gradient-to-br ${pattern.tint}`} aria-hidden="true" />
+                          <motion.img
+                          src={post.imgSrc}
+                          alt={post.alt || 'Recuerdo #GatoEncerrado'}
+                          className="absolute inset-0 h-full w-full object-cover"
+                          loading="lazy"
+                          initial={{ scale: 1.02, y: 0, opacity: 1 }}   // Estado inicial ya visible
+                          whileHover={{ scale: 1.06 }}                  // Solo efecto en hover
+                          transition={{ duration: 0.35, ease: 'easeOut' }}
+                        />
 
-                        <div className="relative flex h-full flex-col justify-between p-3 md:p-4">
-                          <div className="text-[0.58rem] uppercase tracking-[0.3em] text-slate-200/75 mix-blend-screen">
-                            #GatoEncerrado
-                          </div>
+                          <div className="relative flex h-full flex-col justify-between p-3 md:p-4">
+                            <div className="text-[0.58rem] uppercase tracking-[0.3em] text-slate-200/75 mix-blend-screen">
+                              #GatoEncerrado
+                            </div>
                           <div className="flex flex-col gap-2">
                             <div className="w-8 md:w-10 border-t border-slate-200/30" />
                             <p className="text-[0.8rem] md:text-sm font-light text-slate-50/90 max-w-[10rem] md:max-w-[10.5rem] leading-relaxed drop-shadow-[0_10px_22px_rgba(15,23,42,0.6)]">
@@ -571,7 +657,7 @@ const Instagram = () => {
                   </motion.button>
                 );
               })}
-            </AnimatePresence>
+              </AnimatePresence>
           </div>
         ) : isGalleryLoading ? (
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 lg:grid-cols-8 auto-rows-[95px] sm:auto-rows-[110px] md:auto-rows-[130px] lg:auto-rows-[150px] gap-2 md:gap-3 lg:gap-3.5">

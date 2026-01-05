@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
-import { BookOpen, Coffee, Film, Music } from 'lucide-react';
+import { ArrowRight, BookOpen, Brain, Coffee, Drama, Film, MapIcon, Music, Palette, Smartphone } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { toast } from '@/components/ui/use-toast';
 import { supabase } from '@/lib/supabaseClient';
@@ -12,6 +12,16 @@ const TABS = [
 
 const MINIVERSE_CARDS = [
   {
+    id: 'drama',
+    formatId: 'miniversos',
+    icon: Drama,
+    thumbLabel: 'D',
+    thumbGradient: 'from-purple-400/80 via-fuchsia-500/70 to-rose-500/60',
+    title: 'Miniverso Drama',
+    description: 'Dialoga con Silvestre a partir de los parlamentos de la obra.',
+    action: 'Chatea',
+  },
+  {
     id: 'literatura',
     formatId: 'miniversoNovela',
     icon: BookOpen,
@@ -19,9 +29,8 @@ const MINIVERSE_CARDS = [
     thumbGradient: 'from-emerald-400/80 via-teal-500/70 to-cyan-500/60',
     title: 'Miniverso Literatura',
     description:
-        'Fragmentos de la novela se activan en lectores que quieren leer más allá del texto.',
-    action: 'Disponible hoy · lecturas y ritos de página.',
-    cost: 25,
+      'La obra reescrita como novela: el texto se transforma en autoficción.',
+    action: 'Reflexiona',
   },
   {
     id: 'taza',
@@ -31,20 +40,28 @@ const MINIVERSE_CARDS = [
     thumbGradient: 'from-amber-400/80 via-orange-500/70 to-rose-500/60',
     title: 'Miniverso Artesanías',
     description:
-        'Ritual cotidiano: una taza que activa experiencias más allá del café.',
-    action: 'Actívala con tu taza · experiencia viva.',
+      'Objeto ritual de que activa la experiencia fuera del escenario.',
+    action: 'Comparte',
+  },
+  {
+    id: 'graficos',
+    formatId: 'miniversoGrafico',
+    icon: Palette,
+    thumbLabel: 'G',
+    thumbGradient: 'from-fuchsia-400/80 via-purple-500/70 to-indigo-500/60',
+    title: 'Miniverso Gráficos',
+    description: 'Imágenes y trazos nacidos del proceso creativo de la obra.',
+    action: 'Observa',
   },
   {
     id: 'cine',
     formatId: 'copycats',
     icon: Film,
-    thumbLabel: 'C',
     thumbGradient: 'from-rose-500/80 via-red-500/70 to-fuchsia-500/60',
     title: 'Miniverso Cine',
     description:
-      'Cine expandido: proyecciones, análisis y capas que no terminan en la pantalla.',
-    action: 'Screening activo · boletos limitados.',
-    cost: 200,
+      'Películas y miradas que dialogan con el universo de la obra.',
+    action: 'Contempla',
   },
   {
     id: 'sonoro',
@@ -52,11 +69,42 @@ const MINIVERSE_CARDS = [
     icon: Music,
     thumbLabel: 'S',
     thumbGradient: 'from-sky-400/80 via-cyan-500/70 to-indigo-500/60',
-    title: 'Miniverso Sonoro',
+    title: 'Miniverso Sonoridades',
     description:
-        'Paisajes sonoros y poemas para escuchar con atención.',
-    action: 'Explora la mezcla · disponible ahora.',
+      'Música, poemas y registros sonoros surgidos de la obra.',
+    action: 'Escucha',
   },
+    {
+    id: 'movimiento',
+    formatId: 'miniversoMovimiento',
+    icon: MapIcon,
+    thumbLabel: 'M',
+    thumbGradient: 'from-sky-400/80 via-emerald-500/70 to-cyan-500/60',
+    title: 'Miniverso Movimiento',
+    description: 'Cuerpos, recorridos y figuras rituales que expanden la obra en el espacio.',
+    action: 'Baila',
+  },
+  {
+    id: 'apps',
+    formatId: 'apps',
+    icon: Smartphone,
+    thumbLabel: 'J',
+    thumbGradient: 'from-lime-400/80 via-emerald-500/70 to-teal-500/60',
+    title: 'Miniverso Apps',
+    description: 'Experimentos lúdicos que reescriben la obra en formato interactivo.',
+    action: 'Juega',
+  },
+  {
+    id: 'oraculo',
+    formatId: 'oraculo',
+    icon: Brain,
+    thumbLabel: 'O',
+    thumbGradient: 'from-indigo-400/80 via-violet-500/70 to-purple-500/60',
+    title: 'Miniverso Oráculo',
+    description: 'Preguntas, azar y respuestas que la obra deja abiertas.',
+    action: 'Consulta',
+  },
+
 ];
 
 const initialFormState = {
@@ -77,16 +125,11 @@ const modalVariants = {
   exit: { opacity: 0, y: 20, scale: 0.97, transition: { duration: 0.2, ease: 'easeIn' } },
 };
 
-const MiniverseModal = ({ open, onClose, contextLabel, onSelectMiniverse }) => {
+const MiniverseModal = ({ open, onClose, onSelectMiniverse }) => {
   const [activeTab, setActiveTab] = useState(TABS[0].id);
   const [formState, setFormState] = useState(initialFormState);
   const [status, setStatus] = useState('idle');
   const [errorMessage, setErrorMessage] = useState('');
-  const [cineSpent, setCineSpent] = useState(false);
-  const [novelaQuestions, setNovelaQuestions] = useState(0);
-  const [tazaActivations, setTazaActivations] = useState(0);
-  const pendingMiniverseLabel =
-    (typeof contextLabel === 'string' ? contextLabel.trim() : '') || 'Este miniverso';
 
   useEffect(() => {
     if (open) {
@@ -96,62 +139,6 @@ const MiniverseModal = ({ open, onClose, contextLabel, onSelectMiniverse }) => {
       setErrorMessage('');
     }
   }, [open]);
-
-  useEffect(() => {
-    if (typeof window === 'undefined') return;
-    const stored = window.localStorage?.getItem('gatoencerrado:quiron-spent');
-    if (stored === 'true') {
-      setCineSpent(true);
-    }
-    const novelaStored = window.localStorage?.getItem('gatoencerrado:novela-questions');
-    if (novelaStored && !Number.isNaN(Number.parseInt(novelaStored, 10))) {
-      setNovelaQuestions(Number.parseInt(novelaStored, 10));
-    }
-    const tazaStored = window.localStorage?.getItem('gatoencerrado:taza-activations');
-    if (tazaStored && !Number.isNaN(Number.parseInt(tazaStored, 10))) {
-      setTazaActivations(Number.parseInt(tazaStored, 10));
-    }
-    const handleStorage = (event) => {
-      if (event.key === 'gatoencerrado:quiron-spent' && event.newValue === 'true') {
-        setCineSpent(true);
-      }
-      if (event.key === 'gatoencerrado:quiron-spent' && event.newValue === null) {
-        setCineSpent(false);
-      }
-      if (event.key === 'gatoencerrado:novela-questions') {
-        const value = event.newValue ? Number.parseInt(event.newValue, 10) : 0;
-        if (!Number.isNaN(value)) {
-          setNovelaQuestions(value);
-        }
-      }
-      if (event.key === 'gatoencerrado:taza-activations') {
-        const value = event.newValue ? Number.parseInt(event.newValue, 10) : 0;
-        if (!Number.isNaN(value)) {
-          setTazaActivations(value);
-        }
-      }
-    };
-    const handleCustomSpent = (event) => {
-      if (event?.detail?.id === 'cine' && typeof event.detail.spent === 'boolean') {
-        setCineSpent(event.detail.spent);
-      }
-      if (event?.detail?.id === 'novela' && event.detail?.count) {
-        setNovelaQuestions(event.detail.count);
-      }
-      if (event?.detail?.id === 'novela' && event.detail?.count === 0) {
-        setNovelaQuestions(0);
-      }
-      if (event?.detail?.id === 'taza' && typeof event.detail.count === 'number') {
-        setTazaActivations(event.detail.count);
-      }
-    };
-    window.addEventListener('storage', handleStorage);
-    window.addEventListener('gatoencerrado:miniverse-spent', handleCustomSpent);
-    return () => {
-      window.removeEventListener('storage', handleStorage);
-      window.removeEventListener('gatoencerrado:miniverse-spent', handleCustomSpent);
-    };
-  }, []);
 
   useEffect(() => {
     if (!open) {
@@ -377,35 +364,12 @@ const MiniverseModal = ({ open, onClose, contextLabel, onSelectMiniverse }) => {
               ) : (
                 <div className="md:col-span-2 grid md:grid-cols-3 gap-6">
                   {MINIVERSE_CARDS.map((card) => {
-                    const isCine = card.id === 'cine';
-                    const isNovela = card.id === 'literatura';
-                    const isTaza = card.id === 'taza';
-                    const novelaSpentAmount = novelaQuestions * 25;
-                    const tazaSpentAmount = tazaActivations * 30;
-                    const costLabel = isCine
-                      ? cineSpent
-                        ? '0 gatokens · 200 aplicadas'
-                        : `~${card.cost ?? 200} gatokens por espectador`
-                      : isNovela
-                        ? novelaQuestions > 0
-                          ? `${novelaSpentAmount} gatokens usadas (${novelaQuestions} pregunta${novelaQuestions === 1 ? '' : 's'})`
-                          : `~${card.cost ?? 25} gatokens por pregunta`
-                        : isTaza
-                          ? tazaActivations > 0
-                            ? `${tazaSpentAmount} gatokens usadas (${tazaActivations} activación${tazaActivations === 1 ? '' : 'es'})`
-                            : '90 gatokens disponibles'
-                          : null;
-                    const costTone =
-                      (isCine && cineSpent) || (isNovela && novelaQuestions > 0) || (isTaza && tazaActivations > 0)
-                        ? 'text-emerald-200'
-                        : 'text-amber-200';
-
                     return (
                       <button
                         key={card.title}
                         type="button"
                         onClick={() => onSelectMiniverse?.(card.formatId)}
-                        className="text-left glass-effect rounded-2xl border border-white/10 p-6 transition hover:border-purple-300/40 hover:shadow-[0_10px_30px_rgba(124,58,237,0.18)]"
+                        className="text-left glass-effect rounded-2xl border border-white/10 p-6 transition hover:border-purple-300/40 hover:shadow-[0_10px_30px_rgba(124,58,237,0.18)] flex flex-col h-full"
                       >
                         <div className="flex items-center gap-3 mb-3">
                         <div
@@ -415,12 +379,10 @@ const MiniverseModal = ({ open, onClose, contextLabel, onSelectMiniverse }) => {
                         </div>
                           <h3 className="font-display text-xl text-slate-100">{card.title}</h3>
                         </div>
-                        <p className="text-sm text-slate-300/80 leading-relaxed mb-4">{card.description}</p>
-                        {costLabel ? (
-                          <p className={`text-sm font-semibold ${costTone} mb-2`}>⚯ {costLabel}</p>
-                        ) : null}
-                        <span className="text-xs uppercase tracking-[0.25em] text-purple-200/80">
+                        <p className="text-sm text-slate-300/80 leading-relaxed mb-4 flex-1">{card.description}</p>
+                        <span className="text-xs uppercase tracking-[0.25em] text-purple-200/80 inline-flex items-center gap-2 mt-auto">
                           {card.action}
+                          <ArrowRight size={14} className="text-purple-200/80" />
                         </span>
                       </button>
                     );
