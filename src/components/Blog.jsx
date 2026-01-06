@@ -460,7 +460,7 @@ const ArticleInteractionPanel = ({ post }) => {
 const Blog = ({ posts = [], isLoading = false, error = null }) => {
   const [activePost, setActivePost] = useState(null);
   const [pendingSlug, setPendingSlug] = useState(null);
-  const [activeCategory, setActiveCategory] = useState('all');
+  const [activeCategory, setActiveCategory] = useState(BLOG_CATEGORY_ORDER[0]);
   const [searchQuery, setSearchQuery] = useState('');
   const articlesRef = useRef(null);
 
@@ -486,7 +486,7 @@ const Blog = ({ posts = [], isLoading = false, error = null }) => {
   const filteredPosts = useMemo(() => {
     const query = searchQuery.trim().toLowerCase();
     return sortedPosts.filter((post) => {
-      const matchesCategory = activeCategory === 'all' ? true : post.category === activeCategory;
+      const matchesCategory = post.category === activeCategory;
       if (!matchesCategory) {
         return false;
       }
@@ -587,17 +587,6 @@ const Blog = ({ posts = [], isLoading = false, error = null }) => {
           <div className="space-y-16">
             <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
               <div className="flex flex-wrap gap-2">
-                <button
-                  type="button"
-                  onClick={() => setActiveCategory('all')}
-                  className={`rounded-full border px-4 py-2 text-sm transition ${
-                    activeCategory === 'all'
-                      ? 'border-purple-400/60 bg-purple-500/20 text-purple-100'
-                      : 'border-white/10 text-slate-300 hover:border-purple-300/40 hover:text-purple-100'
-                  }`}
-                >
-                  Todas
-                </button>
                 {BLOG_CATEGORY_ORDER.map((category) => (
                   <button
                     type="button"
