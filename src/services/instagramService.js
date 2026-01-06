@@ -30,8 +30,12 @@ export async function getInstagramPostsFromBucket() {
       return Array.isArray(data) ? data.map((file) => ({ ...file, folder })) : [];
     };
 
-    const [rootFiles, chiuFiles] = await Promise.all([listFolder(''), listFolder('A_Chiu')]);
-    const allFiles = [...rootFiles, ...chiuFiles];
+    const [rootFiles, chiuFiles, brownFiles] = await Promise.all([
+      listFolder(''),
+      listFolder('A_Chiu'),
+      listFolder('Sergio Brown'),
+    ]);
+    const allFiles = [...rootFiles, ...chiuFiles, ...brownFiles];
 
     if (allFiles.length === 0) {
       return [];

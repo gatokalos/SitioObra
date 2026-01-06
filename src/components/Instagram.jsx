@@ -137,12 +137,32 @@ const curatedLayoutAlejandro = [
   { match: 'chiu_15', patternIndex: 1, story: 'Agradecimiento total' },
 ];
 
+const curatedLayoutSergio = [
+  { match: 'Ungato12', patternIndex: 0, story: 'Pulso inmóvil' },
+  { match: 'Ungato02', patternIndex: 1, story: 'Después del gesto' },
+  { match: 'Ungato03', patternIndex: 1, lockPattern: true, story: 'Antes de abrir' },
+  { match: 'Ungato06', patternIndex: 10, story: 'Foco interno' },
+  { match: 'Ungato10', patternIndex: 5, story: 'Entre colegas' },
+  { match: 'Ungato01', patternIndex: 10, lockPattern: true, story: 'Entrega sostenida' },
+  { match: 'Ungato09', patternIndex: 7, story: 'Ajuste compartido' },
+  { match: 'Ungato25', patternIndex: 10, story: 'Develación heredada' },
+  { match: 'Ungato19', patternIndex: 9, story: 'Cuerpo común' },
+  { match: 'Ungato17', patternIndex: 10, story: 'Ráfaga azul' },
+  { match: 'Ungato15', patternIndex: 11, story: 'Mirada en pausa' },
+  { match: 'Ungato20', patternIndex: 12, story: 'Gesto suspendido' },
+  { match: 'Ungato22', patternIndex: 13, story: 'Cuerpo dispuesto' },
+  { match: 'Ungato23', patternIndex: 14, story: 'Espalda mortal' },
+  { match: 'Ungato24', patternIndex: 15, story: 'Última pregunta' },
+];
+
 const storyFragments = [
   'El gatillo emocional',
 ];
 
 const CHIU_SHUFFLE_SEED = 'chiu-2025';
 const CHIU_PATTERN_ORDER = null;
+const BROWN_SHUFFLE_SEED = 'brown-2025';
+const BROWN_PATTERN_ORDER = null;
 
 const PHOTOGRAPHERS = [
   {
@@ -162,6 +182,17 @@ const PHOTOGRAPHERS = [
     creditLinkHref: 'https://www.instagram.com/alexchiu/',
     layout: curatedLayoutAlejandro,
     allowRemaining: false,
+  },
+  {
+    id: 'sergio',
+    label: 'Sergio Brown',
+    creditPrefix: 'Semblanza visual y canal: ',
+    creditLinks: [
+      { text: 'Instagram', href: 'https://www.instagram.com/brownchecho/' },
+      { text: 'YouTube', href: 'https://www.youtube.com/@brownchecho' },
+    ],
+    layout: curatedLayoutSergio,
+    allowRemaining: true,
   },
 ];
 
@@ -291,19 +322,22 @@ const Instagram = () => {
     const prioritized = [];
     const activeLayout = activePhotographerData?.layout ?? curatedLayout;
     const allowRemaining = activePhotographerData?.allowRemaining !== false;
-    const useShuffledPattern = activePhotographerData?.id === 'alejandro';
+    const useShuffledPattern = ['alejandro', 'sergio'].includes(activePhotographerData?.id);
     if (useShuffledPattern) {
-      if (Array.isArray(CHIU_PATTERN_ORDER) && CHIU_PATTERN_ORDER.length === collagePattern.length) {
-        patternOrderRef.current = CHIU_PATTERN_ORDER.slice();
-        patternSeedRef.current = CHIU_SHUFFLE_SEED;
+      const isSergio = activePhotographerData?.id === 'sergio';
+      const patternOrder = isSergio ? BROWN_PATTERN_ORDER : CHIU_PATTERN_ORDER;
+      const patternSeed = isSergio ? BROWN_SHUFFLE_SEED : CHIU_SHUFFLE_SEED;
+      if (Array.isArray(patternOrder) && patternOrder.length === collagePattern.length) {
+        patternOrderRef.current = patternOrder.slice();
+        patternSeedRef.current = patternSeed;
       } else if (
         patternOrderRef.current.length === collagePattern.length &&
-        patternSeedRef.current === CHIU_SHUFFLE_SEED
+        patternSeedRef.current === patternSeed
       ) {
         patternOrderRef.current = patternOrderRef.current.slice();
       } else {
-        patternOrderRef.current = shufflePatternOrder(CHIU_SHUFFLE_SEED);
-        patternSeedRef.current = CHIU_SHUFFLE_SEED;
+        patternOrderRef.current = shufflePatternOrder(patternSeed);
+        patternSeedRef.current = patternSeed;
       }
     } else {
       patternOrderRef.current = [];
@@ -324,11 +358,13 @@ const Instagram = () => {
         const shuffledPatternIndex =
           patternOrderRef.current[prioritized.length % patternOrderRef.current.length] ??
           fallbackPatternIndex;
+        const useLockedPattern = Boolean(entry.lockPattern);
         prioritized.push({
           postIndex: foundEntry.originalIndex,
-          patternIndex: useShuffledPattern
-            ? shuffledPatternIndex
-            : entry.patternIndex ?? fallbackPatternIndex,
+          patternIndex:
+            useShuffledPattern && !useLockedPattern
+              ? shuffledPatternIndex
+              : entry.patternIndex ?? fallbackPatternIndex,
           story: entry.story ?? storyFragments[prioritized.length % storyFragments.length],
         });
       }
@@ -555,14 +591,36 @@ const Instagram = () => {
               {/* Crédito fotográfico: tipografía pequeña y gris tenue; enlace al Team */}
               <p className="text-xs text-slate-400/70 mt-3">
                 {activePhotographerData.creditPrefix}
-                <a
-                  href={activePhotographerData.creditLinkHref || '#team'}
-                  className="underline text-slate-300"
-                  target={activePhotographerData.creditLinkHref ? '_blank' : undefined}
-                  rel={activePhotographerData.creditLinkHref ? 'noreferrer' : undefined}
-                >
-                  {activePhotographerData.creditLinkText}
-                </a>
+                {activePhotographerData.creditLinks ? (
+                  <>
+                    <a
+                      href={activePhotographerData.creditLinks[0]?.href}
+                      className="underline text-slate-300"
+                      target="_blank"
+                      rel="noreferrer"
+                    >
+                      {activePhotographerData.creditLinks[0]?.text}
+                    </a>
+                    {' · '}
+                    <a
+                      href={activePhotographerData.creditLinks[1]?.href}
+                      className="underline text-slate-300"
+                      target="_blank"
+                      rel="noreferrer"
+                    >
+                      {activePhotographerData.creditLinks[1]?.text}
+                    </a>
+                  </>
+                ) : (
+                  <a
+                    href={activePhotographerData.creditLinkHref || '#team'}
+                    className="underline text-slate-300"
+                    target={activePhotographerData.creditLinkHref ? '_blank' : undefined}
+                    rel={activePhotographerData.creditLinkHref ? 'noreferrer' : undefined}
+                  >
+                    {activePhotographerData.creditLinkText}
+                  </a>
+                )}
                 .
               </p>
 
