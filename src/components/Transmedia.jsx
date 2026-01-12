@@ -395,7 +395,7 @@ function ensureMiniversoBreathStyle() {
 }
 const showcaseDefinitions = {
   miniversos: {
-    label: 'Miniverso La Obra',
+    label: 'Miniverso Obra',
     type: 'tragedia',
     intro:
       'Aquí nace la obra dentro de la obra. El gato encerrado de Es un gato encerrado.',
