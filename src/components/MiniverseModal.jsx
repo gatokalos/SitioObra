@@ -17,7 +17,7 @@ const MINIVERSE_CARDS = [
     icon: Drama,
     thumbLabel: 'D',
     thumbGradient: 'from-purple-400/80 via-fuchsia-500/70 to-rose-500/60',
-    title: 'Miniverso Drama',
+    title: 'Miniverso La Obra',
     description: 'Dialoga con Silvestre a partir de los parlamentos de la obra.',
     action: 'Chatea',
   },

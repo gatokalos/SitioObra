@@ -3,6 +3,8 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { toast } from '@/components/ui/use-toast';
 import { safeGetItem, safeRemoveItem, safeSetItem } from '@/lib/safeStorage';
+import { supabase } from '@/lib/supabaseClient';
+import { ensureAnonId } from '@/lib/identity';
 import logoApp from '/assets/logoapp.png';
 import {
   Drama,
@@ -478,6 +480,23 @@ const ContributionModal = ({
           return;
         }
 
+        if (topicId === 'obra_escenica') {
+          try {
+            const anonId = ensureAnonId();
+            const { error } = await supabase.from('miniverso_obra_interactions').insert({
+              interaction_type: 'voice_note',
+              voice_text: payload.content,
+              user_id: user?.id ?? null,
+              anon_id: anonId ?? null,
+            });
+            if (error) {
+              console.error('[Suma tu voz] Supabase insert error:', error);
+            }
+          } catch (error) {
+            console.error('[Suma tu voz] Supabase insert failed:', error);
+          }
+        }
+
         setStatus('success');
         triggerConfetti();
         toast({ description: '¡Gracias! Revisaremos tu propuesta y te contactaremos pronto.' });
@@ -505,6 +524,7 @@ const ContributionModal = ({
       triggerConfetti,
       preferredName,
       user?.email,
+      user?.id,
     ]
   );
 

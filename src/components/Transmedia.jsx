@@ -23,6 +23,7 @@ import {
   MapIcon,
   Coins,
   CheckCheckIcon,
+  Mic,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import MiniverseModal from '@/components/MiniverseModal';
@@ -32,6 +33,8 @@ import ContributionModal from '@/components/ContributionModal';
 import { fetchBlogPostBySlug } from '@/services/blogService';
 import { toast } from '@/components/ui/use-toast';
 import { useAuth } from '@/contexts/SupabaseAuthContext';
+import { supabase } from '@/lib/supabaseClient';
+import { ensureAnonId } from '@/lib/identity';
 import { Document, Page, pdfjs } from 'react-pdf';
 import 'react-pdf/dist/Page/AnnotationLayer.css';
 import 'react-pdf/dist/Page/TextLayer.css';
@@ -68,6 +71,7 @@ const SHOWCASE_BADGE_IDS = [
 const EXPLORER_BADGE_STORAGE_KEY = 'gatoencerrado:explorer-badge';
 const EXPLORER_BADGE_REWARD = 1000;
 const EXPLORER_BADGE_NAME = 'Errante Consagrado';
+const SILVESTRE_QUESTIONS_STORAGE_KEY = 'gatoencerrado:silvestre-questions-spent';
 const DEFAULT_BADGE_STATE = {
   unlocked: false,
   unlockedAt: null,
@@ -327,7 +331,7 @@ const MiniVersoCard = ({
             >
               {title}
             </span>
-            <span className="text-xs tracking-[0.35em] text-white/70">Toca para girar</span>
+            <span className="text-xs tracking-[0.35em] text-white/70">Toca para leer</span>
           </div>
           <div
             className={`absolute inset-0 rounded-2xl border px-6 py-5 [backface-visibility:hidden] flex items-center justify-center ${textClass}`}
@@ -391,20 +395,23 @@ function ensureMiniversoBreathStyle() {
 }
 const showcaseDefinitions = {
   miniversos: {
-    label: 'Miniverso Drama',
+    label: 'Miniverso La Obra',
     type: 'tragedia',
     intro:
       'Aquí nace la obra dentro de la obra. El gato encerrado de Es un gato encerrado.',
     cartaTitle: '#VibraciónEscénica',
     notaAutoral: 'De la escena brotó el universo:\nvoz, trance y cuerpo\nabriendo portales.',
 
-    ctaLabel: 'Hablar con Silvestre',
+    ctaLabel: 'Hablar con La Obra',
     conversationStarters: [
-      '¿Qué escena te acompaña hoy y por qué?',
-      'Si Silvestre te viera ahora, ¿qué pregunta te haría?',
-      '¿Qué línea quisieras reescribir para ti mismo?',
-      '¿Qué gesto pequeño podría abrir un portal en tu día?',
-      '¿Qué parte de la obra te pidió volver a mirarla?',
+      '¿Qué te deja más confundido: lo que sueñas o lo que despiertas sintiendo?',
+      'Si te dieran una entrada directa a la ventanilla de tu sueño, ¿qué preguntarías primero?',
+      '¿Qué hace más ruido en tu cabeza últimamente?',
+      '¿En qué momento te sentiste más tú últimamente?',
+      'Si pudieras congelar una emoción y estudiarla desde fuera, ¿cuál sería?',
+      '¿Sientes que tu historia se repite o solo se disfraza de novedades?',
+      '¿Te gustaría que la Doctora soñara lo mismo que tú?',
+      '¿Qué sientes cuando alguien intenta “explicarte” lo que sientes?',
     ],
     iaProfile: {
       type: 'GPT-4o afinada para voz literaria y contención emocional.',
@@ -775,7 +782,7 @@ const showcaseDefinitions = {
       },
     ],
     collection: [
-      'Cómics en curso y por venir',
+      'Cómic impreso por venir',
       'Viñetas interactivas',
       'Posters simbólicos',
       'Caricaturas conceptuales',
@@ -1118,10 +1125,10 @@ const ShowcaseReactionInline = ({ showcaseId, title, description, buttonLabel, c
 const formats = [
   {
     id: 'miniversos',
-    title: 'Drama',
+    title: 'La Obra',
     icon: Drama,
     iconClass: 'text-purple-300',
-    instruccion: 'Habla con Silvestre sobre la obra.',
+    instruccion: 'Habla con la obra sobre la obra.',
     iaTokensNote: 'Energía requerida: ~300 GAT',
   },
   {
@@ -1493,6 +1500,7 @@ const Transmedia = () => {
     ? { ...baseEnergyByShowcase, ...storedEnergy }
     : baseEnergyByShowcase;
   const initialShowcaseBoosts = readStoredJson('gatoencerrado:showcase-boosts', {});
+  const initialSpentSilvestreQuestions = readStoredJson(SILVESTRE_QUESTIONS_STORAGE_KEY, []);
   const storedBadge = readStoredJson(EXPLORER_BADGE_STORAGE_KEY, null);
   const initialExplorerBadge = storedBadge
     ? { ...DEFAULT_BADGE_STATE, ...storedBadge }
@@ -1521,9 +1529,20 @@ const Transmedia = () => {
   const [micError, setMicError] = useState('');
   const [isListening, setIsListening] = useState(false);
   const [showSilvestreCoins, setShowSilvestreCoins] = useState(false);
+  const [isSilvestreResponding, setIsSilvestreResponding] = useState(false);
+  const [isSilvestreFetching, setIsSilvestreFetching] = useState(false);
+  const [isSilvestrePlaying, setIsSilvestrePlaying] = useState(false);
+  const [spentSilvestreQuestions, setSpentSilvestreQuestions] = useState(
+    Array.isArray(initialSpentSilvestreQuestions) ? initialSpentSilvestreQuestions : []
+  );
   const recognitionRef = useRef(null);
   const transcriptRef = useRef('');
   const micTimeoutRef = useRef(null);
+  const silvestreAudioRef = useRef(null);
+  const silvestreAudioUrlRef = useRef(null);
+  const silvestreRequestIdRef = useRef(0);
+  const silvestreAbortRef = useRef(null);
+  const ignoreNextTranscriptRef = useRef(false);
   const [isCinemaCreditsOpen, setIsCinemaCreditsOpen] = useState(false);
   const [isMovementCreditsOpen, setIsMovementCreditsOpen] = useState(false);
   const [openCollaboratorId, setOpenCollaboratorId] = useState(null);
@@ -1562,6 +1581,10 @@ const Transmedia = () => {
   const [publicContributionsError, setPublicContributionsError] = useState({});
   const [commentCarouselIndex, setCommentCarouselIndex] = useState(0);
   const [isOraculoOpen, setIsOraculoOpen] = useState(false);
+  const spentSilvestreSet = useMemo(
+    () => new Set(spentSilvestreQuestions),
+    [spentSilvestreQuestions]
+  );
   const isAuthenticated = Boolean(user);
   const isSubscriber = Boolean(
     user?.user_metadata?.isSubscriber ||
@@ -1585,6 +1608,22 @@ const Transmedia = () => {
       storage.setItem('gatoencerrado:showcase-energy', JSON.stringify(baseEnergyByShowcase));
     }
   }, [baseEnergyByShowcase, initialAvailableGATokens]);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    window.localStorage?.setItem(
+      SILVESTRE_QUESTIONS_STORAGE_KEY,
+      JSON.stringify(spentSilvestreQuestions)
+    );
+  }, [spentSilvestreQuestions]);
+
+  const markSilvestreQuestionSpent = useCallback((question) => {
+    if (!question) return;
+    setSpentSilvestreQuestions((prev) => {
+      if (prev.includes(question)) return prev;
+      return [...prev, question];
+    });
+  }, []);
 
   useEffect(() => {
     if (typeof window === 'undefined') return undefined;
@@ -1893,11 +1932,69 @@ const Transmedia = () => {
     document.getElementById('dialogo-critico')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }, []);
 
-  const sendTranscript = useCallback(async (message) => {
+  const stopSilvestreAudio = useCallback(() => {
+    if (silvestreAudioRef.current) {
+      silvestreAudioRef.current.pause();
+      silvestreAudioRef.current.src = '';
+      silvestreAudioRef.current = null;
+    }
+    if (silvestreAudioUrlRef.current) {
+      URL.revokeObjectURL(silvestreAudioUrlRef.current);
+      silvestreAudioUrlRef.current = null;
+    }
+    setIsSilvestrePlaying(false);
+  }, []);
+
+  const stopSilvestreResponse = useCallback(() => {
+    if (silvestreAbortRef.current) {
+      silvestreAbortRef.current.abort();
+      silvestreAbortRef.current = null;
+    }
+    silvestreRequestIdRef.current += 1;
+    stopSilvestreAudio();
+    setIsSilvestreFetching(false);
+    setIsSilvestreResponding(false);
+  }, [stopSilvestreAudio]);
+
+  const recordObraChat = useCallback(
+    async ({ question, answer, source }) => {
+      if (!question) return;
+      try {
+        const anonId = ensureAnonId();
+        const { error } = await supabase.from('miniverso_obra_interactions').insert({
+          interaction_type: 'chat',
+          question,
+          answer: answer || null,
+          source: source || null,
+          user_id: user?.id ?? null,
+          anon_id: anonId ?? null,
+        });
+        if (error) {
+          console.error('[La Obra Chat] Supabase insert error:', error);
+        }
+      } catch (error) {
+        console.error('[La Obra Chat] Supabase insert failed:', error);
+      }
+    },
+    [user]
+  );
+
+  const sendTranscript = useCallback(async (message, options = {}) => {
     if (!message) {
       return false;
     }
+    const source = options.source || null;
+    let requestId = 0;
     try {
+      if (silvestreAbortRef.current) {
+        silvestreAbortRef.current.abort();
+      }
+      stopSilvestreAudio();
+      const controller = new AbortController();
+      silvestreAbortRef.current = controller;
+      requestId = (silvestreRequestIdRef.current += 1);
+      setIsSilvestreFetching(true);
+      setIsSilvestreResponding(true);
       const apiBase = import.meta.env.VITE_SILVESTRE_API_URL;
       const response = await fetch(`${apiBase}/api/silvestre-voice`, {
         method: 'POST',
@@ -1906,27 +2003,63 @@ const Transmedia = () => {
           'X-User-Id': user?.id ?? 'anonymous',
         },
         body: JSON.stringify({ mensaje: message }),
+        signal: controller.signal,
       });
+      if (requestId !== silvestreRequestIdRef.current) {
+        return false;
+      }
       if (!response.ok) {
         throw new Error(`Silvestre Voice responded ${response.status}`);
       }
+      const responseText =
+        response.headers.get('x-silvestre-text') ||
+        response.headers.get('x-silvestre-answer') ||
+        null;
       const audioBlob = await response.blob();
+      if (requestId !== silvestreRequestIdRef.current) {
+        return false;
+      }
       if (!audioBlob || audioBlob.type !== 'audio/mpeg') {
         throw new Error('Silvestre Voice returned non-audio payload');
       }
+      if (requestId === silvestreRequestIdRef.current) {
+        setIsSilvestreFetching(false);
+      }
+      await recordObraChat({ question: message, answer: responseText, source });
       const audioUrl = URL.createObjectURL(audioBlob);
       const audio = new Audio(audioUrl);
+      silvestreAudioRef.current = audio;
+      silvestreAudioUrlRef.current = audioUrl;
+      audio.addEventListener(
+        'play',
+        () => {
+          setIsSilvestrePlaying(true);
+        },
+        { once: true }
+      );
       audio.addEventListener(
         'ended',
         () => {
-          URL.revokeObjectURL(audioUrl);
+          if (silvestreAudioUrlRef.current === audioUrl) {
+            URL.revokeObjectURL(audioUrl);
+            silvestreAudioUrlRef.current = null;
+            silvestreAudioRef.current = null;
+            setIsSilvestreResponding(false);
+            setIsSilvestrePlaying(false);
+          }
         },
         { once: true }
       );
       try {
         await audio.play();
       } catch (playError) {
-        URL.revokeObjectURL(audioUrl);
+        if (silvestreAudioUrlRef.current === audioUrl) {
+          URL.revokeObjectURL(audioUrl);
+          silvestreAudioUrlRef.current = null;
+          silvestreAudioRef.current = null;
+          setIsSilvestreResponding(false);
+          setIsSilvestrePlaying(false);
+        }
         throw playError;
       }
       setMicError('');
@@ -1934,15 +2067,32 @@ const Transmedia = () => {
       setTimeout(() => setShowSilvestreCoins(false), 1200);
       return true;
     } catch (error) {
+      if (error?.name === 'AbortError') {
+        if (requestId === silvestreRequestIdRef.current) {
+          setIsSilvestreFetching(false);
+          setIsSilvestreResponding(false);
+        }
+        return false;
+      }
       console.error('[Silvestre Voice] Error sending transcript:', error);
       setMicError('No pudimos enviar tu mensaje a Silvestre. Intenta nuevamente más tarde.');
       setShowSilvestreCoins(true);
       setTimeout(() => setShowSilvestreCoins(false), 1200);
+      if (requestId === silvestreRequestIdRef.current) {
+        setIsSilvestreFetching(false);
+        setIsSilvestreResponding(false);
+      }
       return false;
     }
-  }, [user]);
+  }, [recordObraChat, stopSilvestreAudio, user]);
 
-  const stopSilvestreListening = useCallback(() => {
+  const stopSilvestreListening = useCallback((options = {}) => {
+    const { discardTranscript = false } = options;
+    if (discardTranscript) {
+      ignoreNextTranscriptRef.current = true;
+      transcriptRef.current = '';
+      setTranscript('');
+    }
     if (micTimeoutRef.current) {
       clearTimeout(micTimeoutRef.current);
       micTimeoutRef.current = null;
@@ -1959,6 +2109,9 @@ const Transmedia = () => {
 
   const handleOpenSilvestreChat = useCallback(() => {
     if (typeof window === 'undefined') {
+      return;
+    }
+    if (isSilvestreFetching) {
       return;
     }
 
@@ -1997,9 +2150,13 @@ const Transmedia = () => {
       };
       recognition.onend = () => {
         setIsListening(false);
+        if (ignoreNextTranscriptRef.current) {
+          ignoreNextTranscriptRef.current = false;
+          return;
+        }
         const finalText = transcriptRef.current.trim();
         if (finalText) {
-          sendTranscript(finalText);
+          sendTranscript(finalText, { source: 'mic' });
           transcriptRef.current = '';
         }
       };
@@ -2027,7 +2184,14 @@ const Transmedia = () => {
     }
 
     window.dispatchEvent(new CustomEvent('gatoencerrado:open-silvestre'));
-  }, [hasShownMicPrompt, isListening, micPromptVisible, sendTranscript, stopSilvestreListening]);
+  }, [
+    hasShownMicPrompt,
+    isListening,
+    isSilvestreFetching,
+    micPromptVisible,
+    sendTranscript,
+    stopSilvestreListening,
+  ]);
 
   const handleSendSilvestrePreset = useCallback(
     async (starter) => {
@@ -2036,11 +2200,11 @@ const Transmedia = () => {
       }
 
       if (isListening) {
-        stopSilvestreListening();
+        stopSilvestreListening({ discardTranscript: true });
       }
 
       setTranscript(starter);
-      await sendTranscript(starter);
+      await sendTranscript(starter, { source: 'preset' });
 
       if (typeof window !== 'undefined') {
         window.dispatchEvent(
@@ -2058,8 +2222,12 @@ const Transmedia = () => {
       if (micTimeoutRef.current) {
         clearTimeout(micTimeoutRef.current);
       }
+      if (silvestreAbortRef.current) {
+        silvestreAbortRef.current.abort();
+      }
+      stopSilvestreAudio();
     };
-  }, []);
+  }, [stopSilvestreAudio]);
 
   const handleOpenImagePreview = useCallback((payload) => {
     if (!payload?.src) {
@@ -3242,9 +3410,9 @@ const rendernotaAutoral = () => {
     if (activeDefinition.type === 'tragedia') {
       const conversationBlock = activeDefinition.conversationStarters?.length ? (
         <div className="space-y-3 border-t border-white/10 pt-4">
-          <p className="text-xs uppercase tracking-[0.35em] text-pink-200">Preguntas para Silvestre</p>
+          <p className="text-xs uppercase tracking-[0.35em] text-pink-200">Preguntas Predeterminadas</p>
           <p className="text-sm text-slate-200/80 leading-relaxed">
-            Usa estas frases como detonador y deja que la IA proponga la siguiente pregunta.
+            Elige una pregunta y envíala tal cual.
           </p>
           <ul className="space-y-2 text-sm text-purple-50/90">
             {activeDefinition.conversationStarters.map((starter, idx) => (
@@ -3254,11 +3422,21 @@ const rendernotaAutoral = () => {
               >
                 <button
                   type="button"
-                  onClick={() => handleSendSilvestrePreset(starter)}
-                  className="flex w-full items-start gap-2 px-4 py-2 text-left transition hover:bg-white/5"
+                  onClick={() => {
+                    if (spentSilvestreSet.has(starter)) return;
+                    markSilvestreQuestionSpent(starter);
+                    handleSendSilvestrePreset(starter);
+                  }}
+                  className="flex w-full items-start gap-2 px-4 py-2 text-left transition hover:bg-white/5 disabled:cursor-not-allowed disabled:opacity-60"
+                  disabled={spentSilvestreSet.has(starter)}
                 >
                   <span className="text-purple-200 font-semibold">•</span>
                   <span className="leading-relaxed">{starter}</span>
+                  {spentSilvestreSet.has(starter) ? (
+                    <span className="ml-auto text-[10px] uppercase tracking-[0.3em] text-slate-400">
+                      Gastada
+                    </span>
+                  ) : null}
                 </button>
               </li>
             ))}
@@ -3369,19 +3547,52 @@ const rendernotaAutoral = () => {
               <div className="space-y-2">
             
               </div>
-              <Button
-                type="button"
-                variant="outline"
-                className="w-full border border-purple-400/40 text-purple-100 hover:bg-purple-500/10 silvestre-cta relative overflow-visible"
-                onClick={handleOpenSilvestreChat}
-              >
-                <span className="relative z-10">{isListening ? 'Detener y enviar' : activeDefinition.ctaLabel}</span>
-              </Button>
-              {micPromptVisible && !micError ? (
-                <div className="rounded-2xl border border-white/10 bg-black/40 p-4 text-sm text-slate-200">
-                  <p className="text-xs uppercase tracking-[0.35em] text-purple-300">Silvestre quiere escucharte</p>
-                  <p>Dale acceso a tu micrófono para comenzar.</p>
-                </div>
+              <div className="flex flex-col items-center gap-3">
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="silvestre-cta relative flex h-20 w-20 items-center justify-center rounded-full border border-purple-300/60 bg-purple-500/10 text-purple-50 shadow-[0_0_45px_rgba(197,108,255,0.75)] transition hover:bg-purple-500/20 disabled:cursor-not-allowed disabled:opacity-60"
+                  onClick={handleOpenSilvestreChat}
+                  aria-label={
+                    isSilvestrePlaying
+                      ? 'Escuchando la respuesta'
+                      : isSilvestreFetching || isSilvestreResponding
+                        ? 'La Obra está pensando'
+                      : isListening
+                        ? 'Detener y enviar'
+                        : activeDefinition.ctaLabel
+                  }
+                  disabled={isSilvestreFetching || isSilvestreResponding}
+                >
+                  {isSilvestrePlaying ? (
+                    <span className="silvestre-mic-wave" aria-hidden="true">
+                      <span />
+                      <span />
+                      <span />
+                    </span>
+                  ) : null}
+                  {!isSilvestrePlaying ? <Mic className="h-8 w-8 relative z-10" /> : null}
+                </Button>
+                <span className="text-xs uppercase tracking-[0.35em] text-purple-200 text-center">
+                  {isSilvestrePlaying
+                    ? 'Escuchando la respuesta'
+                    : isSilvestreFetching || isSilvestreResponding
+                      ? 'La Obra está pensando'
+                    : isListening
+                      ? 'Detener y enviar'
+                      : micPromptVisible
+                        ? 'Activa tu micrófono'
+                        : activeDefinition.ctaLabel}
+                </span>
+              </div>
+              {isSilvestreResponding || isSilvestreFetching ? (
+                <button
+                  type="button"
+                  onClick={stopSilvestreResponse}
+                  className="mx-auto text-xs uppercase tracking-[0.3em] text-slate-300 hover:text-white transition"
+                >
+                  Detener respuesta
+                </button>
               ) : null}
               {micError && !isListening && !transcript ? (
                 <div className="rounded-2xl border border-red-500/30 bg-red-500/10 p-4 text-sm text-red-100">
@@ -5038,7 +5249,7 @@ const rendernotaAutoral = () => {
 
   {/* CTA */}
   <div className="text-purple-300 flex items-center gap-2 font-semibold transition-all duration-300 group-hover:gap-3">
-    Gastar
+    Gastar Gatokens
     <ArrowRight size={18} />
   </div>
 </div>

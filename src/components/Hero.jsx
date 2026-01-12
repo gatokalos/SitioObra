@@ -139,7 +139,7 @@ const Hero = () => {
     "
   >
     <SparkleIcon size={22} className="drop-shadow-md" />
-    Abre un miniverso
+    Expandir universo
   </Button>
 
   {/* CTA SECUNDARIO — CAFÉ */}
