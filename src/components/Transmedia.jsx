@@ -160,6 +160,7 @@ const ORACULO_URL = (() => {
     '';
   return raw ? raw.replace(/\/+$/, '') : '';
 })();
+const CAUSE_SITE_URL = 'https://www.ayudaparalavida.com/index.html';
 const TOPIC_BY_SHOWCASE = {
   miniversos: 'obra_escenica',
   copycats: 'cine',
@@ -1581,6 +1582,7 @@ const Transmedia = () => {
   const [publicContributionsError, setPublicContributionsError] = useState({});
   const [commentCarouselIndex, setCommentCarouselIndex] = useState(0);
   const [isOraculoOpen, setIsOraculoOpen] = useState(false);
+  const [isCauseSiteOpen, setIsCauseSiteOpen] = useState(false);
   const spentSilvestreSet = useMemo(
     () => new Set(spentSilvestreQuestions),
     [spentSilvestreQuestions]
@@ -2423,6 +2425,20 @@ const Transmedia = () => {
     setIsOraculoOpen(false);
   }, []);
 
+  const handleOpenCauseSite = useCallback(() => {
+    if (!CAUSE_SITE_URL) {
+      toast({
+        description: 'Falta configurar la URL de la causa social.',
+      });
+      return;
+    }
+    setIsCauseSiteOpen(true);
+  }, []);
+
+  const handleCloseCauseSite = useCallback(() => {
+    setIsCauseSiteOpen(false);
+  }, []);
+
   const activeDefinition = activeShowcase ? showcaseDefinitions[activeShowcase] : null;
   const activeData = activeShowcase ? showcaseContent[activeShowcase] : null;
   const isCinematicShowcaseOpen = Boolean(activeDefinition);
@@ -2514,6 +2530,24 @@ const Transmedia = () => {
     window.addEventListener('keydown', handleKeyDown, true);
     return () => window.removeEventListener('keydown', handleKeyDown, true);
   }, [isOraculoOpen]);
+
+  useEffect(() => {
+    if (!isCauseSiteOpen) {
+      return undefined;
+    }
+    const handleKeyDown = (event) => {
+      if (event.key === 'Escape') {
+        event.preventDefault();
+        event.stopPropagation();
+        if (typeof event.stopImmediatePropagation === 'function') {
+          event.stopImmediatePropagation();
+        }
+        setIsCauseSiteOpen(false);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown, true);
+    return () => window.removeEventListener('keydown', handleKeyDown, true);
+  }, [isCauseSiteOpen]);
 
   useEffect(() => {
     if (!imagePreview && !pdfPreview) {
@@ -5088,6 +5122,81 @@ const rendernotaAutoral = () => {
     )
     : null;
 
+  const causeSiteOverlay = typeof document !== 'undefined'
+    ? createPortal(
+      <AnimatePresence>
+        {isCauseSiteOpen ? (
+          <motion.div
+            key="cause-site-iframe"
+            className="fixed inset-0 z-[175] flex items-center justify-center px-4 py-6"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+          >
+            <motion.div
+              className="absolute inset-0 bg-black/85 backdrop-blur-md"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={handleCloseCauseSite}
+            />
+            <motion.div
+              role="dialog"
+              aria-modal="true"
+              aria-label="Isabel Ayuda para la Vida"
+              className="relative z-10 w-full max-w-5xl overflow-hidden rounded-3xl border border-white/10 bg-slate-950/90 shadow-[0_35px_120px_rgba(0,0,0,0.65)]"
+              initial={{ scale: 0.96, opacity: 0, y: 18 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.96, opacity: 0, y: 18 }}
+              transition={{ type: 'spring', stiffness: 220, damping: 24 }}
+            >
+              <div className="flex flex-col gap-3 border-b border-white/10 px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                  <p className="text-xs uppercase tracking-[0.35em] text-slate-400/80">Causa social</p>
+                  <h3 className="font-display text-2xl text-slate-100">Isabel Ayuda para la Vida</h3>
+                </div>
+                <div className="flex items-center gap-3 text-sm">
+                  {CAUSE_SITE_URL ? (
+                    <a
+                      href={CAUSE_SITE_URL}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="text-purple-200 underline underline-offset-4 hover:text-white"
+                    >
+                      Abrir en nueva pestaña
+                    </a>
+                  ) : null}
+                  <button
+                    type="button"
+                    onClick={handleCloseCauseSite}
+                    className="text-slate-300 hover:text-white transition"
+                  >
+                    Cerrar ✕
+                  </button>
+                </div>
+              </div>
+              <div className="relative w-full aspect-[16/10] bg-black">
+                {CAUSE_SITE_URL ? (
+                  <iframe
+                    src={CAUSE_SITE_URL}
+                    title="Isabel Ayuda para la Vida"
+                    className="h-full w-full"
+                    loading="lazy"
+                  />
+                ) : (
+                  <div className="flex h-full w-full items-center justify-center text-sm text-slate-300">
+                    No se pudo cargar el sitio.
+                  </div>
+                )}
+              </div>
+            </motion.div>
+          </motion.div>
+        ) : null}
+      </AnimatePresence>,
+      document.body,
+    )
+    : null;
+
   return (
     <>
       <section
@@ -5259,6 +5368,7 @@ const rendernotaAutoral = () => {
           </div>
           {showcaseOverlay}
           {oraculoOverlay}
+          {causeSiteOverlay}
 
           {renderExplorerBadge()}
 
@@ -5291,14 +5401,13 @@ const rendernotaAutoral = () => {
                 <p className="text-slate-300/80 leading-relaxed font-light">
                   La taquilla mantiene la obra en escena; el universo transmedia financia acompañamiento emocional real.
                   Cada cuota se distribuye en tres frentes que opera Isabel Ayuda para la Vida, A.C.{' '}
-                  <a
-                    href="https://www.ayudaparalavida.com/index.html"
-                    target="_blank"
-                    rel="noreferrer"
+                  <button
+                    type="button"
+                    onClick={handleOpenCauseSite}
                     className="text-purple-200 underline underline-offset-4 hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-400 rounded-sm"
                   >
                     Visita su sitio
-                  </a>
+                  </button>
                 </p>
                      <p className="text-[11px] leading-4 text-slate-300/80 pt-2">
           * La asociación no cobra al estudiante por sesión. Las sesiones se asignan sin costo para
