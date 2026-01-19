@@ -10,6 +10,20 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 
+const BLOCKED_IFRAME_HOSTS = ["instagram.com", "linktr.ee"];
+
+const shouldConfirmExternalLink = (url) => {
+  if (!url) return false;
+  try {
+    const { hostname } = new URL(url);
+    return BLOCKED_IFRAME_HOSTS.some(
+      (host) => hostname === host || hostname.endsWith(`.${host}`)
+    );
+  } catch (error) {
+    return false;
+  }
+};
+
 const teamData = {
   "Alianza de Impacto Social": {
     name: "Isabel Ayuda para la Vida A.C.",
@@ -206,15 +220,29 @@ const Team = () => {
   const [isMobile, setIsMobile] = useState(false);
   const [openSection, setOpenSection] = useState(null);
   const [activeMemberLink, setActiveMemberLink] = useState(null);
+  const [confirmExternalLink, setConfirmExternalLink] = useState(null);
   const accordionItemRefs = useRef({});
   const pendingScrollRef = useRef(null);
 
   const isMemberLinkOpen = Boolean(activeMemberLink?.url);
+  const isConfirmLinkOpen = Boolean(confirmExternalLink?.url);
   const handleOpenMemberLink = (url, label) => {
     if (!url) return;
+    if (shouldConfirmExternalLink(url)) {
+      setActiveMemberLink(null);
+      setConfirmExternalLink({ url, label });
+      return;
+    }
+    setConfirmExternalLink(null);
     setActiveMemberLink({ url, label });
   };
   const handleCloseMemberLink = () => setActiveMemberLink(null);
+  const handleCloseConfirmLink = () => setConfirmExternalLink(null);
+  const handleConfirmExternalLink = () => {
+    if (!confirmExternalLink?.url) return;
+    window.open(confirmExternalLink.url, "_blank", "noopener,noreferrer");
+    setConfirmExternalLink(null);
+  };
   const handleMemberLinkClick = (event, url, label) => {
     event.preventDefault();
     event.stopPropagation();
@@ -305,6 +333,24 @@ const Team = () => {
     window.addEventListener("keydown", handleKeyDown, true);
     return () => window.removeEventListener("keydown", handleKeyDown, true);
   }, [isMemberLinkOpen]);
+
+  useEffect(() => {
+    if (!isConfirmLinkOpen) {
+      return undefined;
+    }
+    const handleKeyDown = (event) => {
+      if (event.key === "Escape") {
+        event.preventDefault();
+        event.stopPropagation();
+        if (typeof event.stopImmediatePropagation === "function") {
+          event.stopImmediatePropagation();
+        }
+        handleCloseConfirmLink();
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown, true);
+    return () => window.removeEventListener("keydown", handleKeyDown, true);
+  }, [isConfirmLinkOpen]);
 
   const renderRole = (data, roleKey) => {
     const isElenco = roleKey === "Elenco";
@@ -691,6 +737,72 @@ const Team = () => {
     )
     : null;
 
+  const confirmLinkOverlay = typeof document !== "undefined"
+    ? createPortal(
+      <AnimatePresence>
+        {isConfirmLinkOpen ? (
+          <motion.div
+            key="team-link-confirm"
+            className="fixed inset-0 z-[180] flex items-center justify-center px-4 py-6"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+          >
+            <motion.div
+              className="absolute inset-0 bg-black/80 backdrop-blur-sm"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={handleCloseConfirmLink}
+            />
+            <motion.div
+              role="dialog"
+              aria-modal="true"
+              aria-label="Confirmar salida"
+              className="relative z-10 w-full max-w-md overflow-hidden rounded-3xl border border-white/10 bg-slate-950/95 shadow-[0_35px_120px_rgba(0,0,0,0.65)]"
+              initial={{ scale: 0.96, opacity: 0, y: 14 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.96, opacity: 0, y: 14 }}
+              transition={{ type: "spring", stiffness: 220, damping: 24 }}
+            >
+              <div className="border-b border-white/10 px-5 py-4">
+                <p className="text-xs uppercase tracking-[0.35em] text-slate-400/80">
+                  Salida externa
+                </p>
+                <h3 className="font-display text-xl text-slate-100">
+                  {confirmExternalLink?.label || "Abrir enlace"}
+                </h3>
+              </div>
+              <div className="p-5 space-y-4">
+                <p className="text-sm text-slate-300/80 leading-relaxed">
+                  Este sitio no permite vista interna. Se abrirá en otra pestaña para que
+                  puedas regresar fácilmente.
+                </p>
+                <div className="flex flex-col sm:flex-row gap-3 sm:justify-end">
+                  <button
+                    type="button"
+                    onClick={handleCloseConfirmLink}
+                    className="rounded-full border border-white/15 px-4 py-2 text-sm text-slate-200 hover:bg-white/5 transition"
+                  >
+                    Quedarme aquí
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleConfirmExternalLink}
+                    className="rounded-full bg-purple-500/80 px-4 py-2 text-sm text-white hover:bg-purple-500 transition"
+                  >
+                    Abrir enlace
+                  </button>
+                </div>
+              </div>
+            </motion.div>
+          </motion.div>
+        ) : null}
+      </AnimatePresence>,
+      document.body,
+    )
+    : null;
+
   return (
     <section id="team" className="py-24 relative">
       <div className="section-divider mb-24"></div>
@@ -755,6 +867,7 @@ Cada colaboración forma parte activa del universo que la obra pone en escena.
         </motion.div>
       </div>
       {memberLinkOverlay}
+      {confirmLinkOverlay}
     </section>
   );
 };

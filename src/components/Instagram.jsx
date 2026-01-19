@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { AnimatePresence, motion } from 'framer-motion';
+import { createPortal } from 'react-dom';
 import { Instagram as InstagramIcon, ExternalLink, AlertCircle, ChevronLeft, ChevronRight, X, Heart } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { getInstagramPostsFromBucket } from '@/services/instagramService';
@@ -97,6 +98,20 @@ const collagePattern = [
     tint: 'from-sky-300/18 via-transparent to-slate-950/0',
   },
 ];
+
+const BLOCKED_IFRAME_HOSTS = ['instagram.com', 'linktr.ee'];
+
+const shouldConfirmExternalLink = (url) => {
+  if (!url) return false;
+  try {
+    const { hostname } = new URL(url);
+    return BLOCKED_IFRAME_HOSTS.some(
+      (host) => hostname === host || hostname.endsWith(`.${host}`)
+    );
+  } catch (error) {
+    return false;
+  }
+};
 
 const curatedLayout = [
   { match: 'Copia de Foto 1 (1)', patternIndex: 0, story: 'El futuro ha arribado' },
@@ -276,6 +291,8 @@ const Instagram = () => {
   const orderedSequenceRef = useRef([]);
   const patternOrderRef = useRef([]);
   const patternSeedRef = useRef(null);
+  const [activePhotographerLink, setActivePhotographerLink] = useState(null);
+  const [confirmPhotographerLink, setConfirmPhotographerLink] = useState(null);
   const activePhotographerData =
     PHOTOGRAPHERS.find((photographer) => photographer.id === activePhotographer) ?? PHOTOGRAPHERS[0];
   const visibleCount =
@@ -293,6 +310,38 @@ const Instagram = () => {
     }
     return target.includes(String(descriptor).toLowerCase());
   }, []);
+
+  const isPhotographerLinkOpen = Boolean(activePhotographerLink?.url);
+  const isConfirmPhotographerLinkOpen = Boolean(confirmPhotographerLink?.url);
+  const handleOpenPhotographerLink = useCallback((url, label) => {
+    if (!url) return;
+    if (shouldConfirmExternalLink(url)) {
+      setActivePhotographerLink(null);
+      setConfirmPhotographerLink({ url, label });
+      return;
+    }
+    setConfirmPhotographerLink(null);
+    setActivePhotographerLink({ url, label });
+  }, []);
+  const handleClosePhotographerLink = useCallback(() => {
+    setActivePhotographerLink(null);
+  }, []);
+  const handleCloseConfirmPhotographerLink = useCallback(() => {
+    setConfirmPhotographerLink(null);
+  }, []);
+  const handleConfirmPhotographerLink = useCallback(() => {
+    if (!confirmPhotographerLink?.url) return;
+    window.open(confirmPhotographerLink.url, '_blank', 'noopener,noreferrer');
+    setConfirmPhotographerLink(null);
+  }, [confirmPhotographerLink]);
+  const handlePhotographerLinkClick = useCallback((event, url, label) => {
+    if (!url || !/^https?:\/\//i.test(url)) {
+      return;
+    }
+    event.preventDefault();
+    event.stopPropagation();
+    handleOpenPhotographerLink(url, label);
+  }, [handleOpenPhotographerLink]);
 
   const shouldExclude = useCallback((post) => {
     const exclusions = ['susurro de vestuario', 'foto 2'];
@@ -529,6 +578,42 @@ const Instagram = () => {
     return () => window.removeEventListener('keydown', onKey);
   }, [selectedIndex, closeModal, showPrev, showNext]);
 
+  useEffect(() => {
+    if (!isPhotographerLinkOpen) {
+      return undefined;
+    }
+    const handleKeyDown = (event) => {
+      if (event.key === 'Escape') {
+        event.preventDefault();
+        event.stopPropagation();
+        if (typeof event.stopImmediatePropagation === 'function') {
+          event.stopImmediatePropagation();
+        }
+        handleClosePhotographerLink();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown, true);
+    return () => window.removeEventListener('keydown', handleKeyDown, true);
+  }, [isPhotographerLinkOpen, handleClosePhotographerLink]);
+
+  useEffect(() => {
+    if (!isConfirmPhotographerLinkOpen) {
+      return undefined;
+    }
+    const handleKeyDown = (event) => {
+      if (event.key === 'Escape') {
+        event.preventDefault();
+        event.stopPropagation();
+        if (typeof event.stopImmediatePropagation === 'function') {
+          event.stopImmediatePropagation();
+        }
+        handleCloseConfirmPhotographerLink();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown, true);
+    return () => window.removeEventListener('keydown', handleKeyDown, true);
+  }, [isConfirmPhotographerLinkOpen, handleCloseConfirmPhotographerLink]);
+
   const isModalOpen = selectedIndex !== null;
   const activePost = isModalOpen && posts[selectedIndex] ? posts[selectedIndex] : null;
   const activeLikeId = activePost?.id || activePost?.filename || activePost?.imgSrc;
@@ -637,6 +722,147 @@ const Instagram = () => {
 
   const isGalleryLoading = !isGalleryDisabled && !error && posts.length === 0;
   const placeholderSlots = collagePattern.slice(0, Math.min(visibleCount, collagePattern.length));
+  const photographerLinkOverlay = typeof document !== 'undefined'
+    ? createPortal(
+      <AnimatePresence>
+        {isPhotographerLinkOpen ? (
+          <motion.div
+            key="photographer-link-iframe"
+            className="fixed inset-0 z-[170] flex items-center justify-center px-4 py-6"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+          >
+            <motion.div
+              className="absolute inset-0 bg-black/85 backdrop-blur-md"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={handleClosePhotographerLink}
+            />
+            <motion.div
+              role="dialog"
+              aria-modal="true"
+              aria-label={activePhotographerLink?.label || 'Perfil externo'}
+              className="relative z-10 w-full max-w-5xl overflow-hidden rounded-3xl border border-white/10 bg-slate-950/90 shadow-[0_35px_120px_rgba(0,0,0,0.65)]"
+              initial={{ scale: 0.96, opacity: 0, y: 18 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.96, opacity: 0, y: 18 }}
+              transition={{ type: 'spring', stiffness: 220, damping: 24 }}
+            >
+              <div className="flex flex-col gap-3 border-b border-white/10 px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                  <p className="text-xs uppercase tracking-[0.35em] text-slate-400/80">Perfil</p>
+                  <h3 className="font-display text-2xl text-slate-100">
+                    {activePhotographerLink?.label || 'Enlace externo'}
+                  </h3>
+                </div>
+                <div className="flex items-center gap-3 text-sm">
+                  {activePhotographerLink?.url ? (
+                    <a
+                      href={activePhotographerLink.url}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="text-purple-200 underline underline-offset-4 hover:text-white"
+                    >
+                      Abrir en nueva pestaña
+                    </a>
+                  ) : null}
+                  <button
+                    type="button"
+                    onClick={handleClosePhotographerLink}
+                    className="text-slate-300 hover:text-white transition"
+                  >
+                    Cerrar ✕
+                  </button>
+                </div>
+              </div>
+              <div className="relative w-full aspect-[16/10] bg-black">
+                {activePhotographerLink?.url ? (
+                  <iframe
+                    src={activePhotographerLink.url}
+                    title={activePhotographerLink?.label || 'Perfil externo'}
+                    className="h-full w-full"
+                    loading="lazy"
+                  />
+                ) : (
+                  <div className="flex h-full w-full items-center justify-center text-sm text-slate-300">
+                    No se pudo cargar el sitio.
+                  </div>
+                )}
+              </div>
+            </motion.div>
+          </motion.div>
+        ) : null}
+      </AnimatePresence>,
+      document.body,
+    )
+    : null;
+  const confirmPhotographerLinkOverlay = typeof document !== 'undefined'
+    ? createPortal(
+      <AnimatePresence>
+        {isConfirmPhotographerLinkOpen ? (
+          <motion.div
+            key="photographer-link-confirm"
+            className="fixed inset-0 z-[180] flex items-center justify-center px-4 py-6"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+          >
+            <motion.div
+              className="absolute inset-0 bg-black/80 backdrop-blur-sm"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={handleCloseConfirmPhotographerLink}
+            />
+            <motion.div
+              role="dialog"
+              aria-modal="true"
+              aria-label="Confirmar salida"
+              className="relative z-10 w-full max-w-md overflow-hidden rounded-3xl border border-white/10 bg-slate-950/95 shadow-[0_35px_120px_rgba(0,0,0,0.65)]"
+              initial={{ scale: 0.96, opacity: 0, y: 14 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.96, opacity: 0, y: 14 }}
+              transition={{ type: 'spring', stiffness: 220, damping: 24 }}
+            >
+              <div className="border-b border-white/10 px-5 py-4">
+                <p className="text-xs uppercase tracking-[0.35em] text-slate-400/80">
+                  Salida externa
+                </p>
+                <h3 className="font-display text-xl text-slate-100">
+                  {confirmPhotographerLink?.label || 'Abrir enlace'}
+                </h3>
+              </div>
+              <div className="p-5 space-y-4">
+                <p className="text-sm text-slate-300/80 leading-relaxed">
+                  Este sitio no permite vista interna. Se abrirá en otra pestaña para que
+                  puedas regresar fácilmente.
+                </p>
+                <div className="flex flex-col sm:flex-row gap-3 sm:justify-end">
+                  <button
+                    type="button"
+                    onClick={handleCloseConfirmPhotographerLink}
+                    className="rounded-full border border-white/15 px-4 py-2 text-sm text-slate-200 hover:bg-white/5 transition"
+                  >
+                    Quedarme aquí
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleConfirmPhotographerLink}
+                    className="rounded-full bg-purple-500/80 px-4 py-2 text-sm text-white hover:bg-purple-500 transition"
+                  >
+                    Abrir enlace
+                  </button>
+                </div>
+              </div>
+            </motion.div>
+          </motion.div>
+        ) : null}
+      </AnimatePresence>,
+      document.body,
+    )
+    : null;
 
   return (
     <section id="instagram" className="py-20 relative">
@@ -683,6 +909,13 @@ const Instagram = () => {
                   <>
                     <a
                       href={activePhotographerData.creditLinks[0]?.href}
+                      onClick={(event) =>
+                        handlePhotographerLinkClick(
+                          event,
+                          activePhotographerData.creditLinks[0]?.href,
+                          `${activePhotographerData.creditLinks[0]?.text} de ${activePhotographerData.label}`
+                        )
+                      }
                       className="underline text-slate-300"
                       target="_blank"
                       rel="noreferrer"
@@ -692,6 +925,13 @@ const Instagram = () => {
                     {' · '}
                     <a
                       href={activePhotographerData.creditLinks[1]?.href}
+                      onClick={(event) =>
+                        handlePhotographerLinkClick(
+                          event,
+                          activePhotographerData.creditLinks[1]?.href,
+                          `${activePhotographerData.creditLinks[1]?.text} de ${activePhotographerData.label}`
+                        )
+                      }
                       className="underline text-slate-300"
                       target="_blank"
                       rel="noreferrer"
@@ -702,6 +942,13 @@ const Instagram = () => {
                 ) : (
                   <a
                     href={activePhotographerData.creditLinkHref || '#team'}
+                    onClick={(event) =>
+                      handlePhotographerLinkClick(
+                        event,
+                        activePhotographerData.creditLinkHref,
+                        `Perfil de ${activePhotographerData.label}`
+                      )
+                    }
                     className="underline text-slate-300"
                     target={activePhotographerData.creditLinkHref ? '_blank' : undefined}
                     rel={activePhotographerData.creditLinkHref ? 'noreferrer' : undefined}
@@ -925,6 +1172,8 @@ const Instagram = () => {
           )}
         </AnimatePresence>
       </div>
+      {photographerLinkOverlay}
+      {confirmPhotographerLinkOverlay}
     </section>
   );
 };
