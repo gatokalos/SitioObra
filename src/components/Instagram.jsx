@@ -654,7 +654,7 @@ const Instagram = () => {
             Fractales Escénicos
           </h2>
           <p className="text-base md:text-lg text-slate-300/75 max-w-3xl mx-auto leading-relaxed mb-7 font-light">
-            Un homenaje visual a los destellos de Es un gato encerrado... Esto es lo que existe solo cuando alguien se atreve a mirar.
+            Un homenaje visual a los destellos de Es un gato encerrado... Esto es lo que existe solo cuando alguien se atreve a mirar. Mira la obra a través de los ojos de nuestros fotógrafos:
           </p>
 
           <div className="flex flex-wrap justify-center gap-2 mb-6">
