@@ -99,7 +99,7 @@ const collagePattern = [
   },
 ];
 
-const BLOCKED_IFRAME_HOSTS = ['instagram.com', 'linktr.ee'];
+const BLOCKED_IFRAME_HOSTS = ['instagram.com', 'linktr.ee', 'youtube.com', 'youtu.be', 'cargo.site'];
 
 const shouldConfirmExternalLink = (url) => {
   if (!url) return false;
