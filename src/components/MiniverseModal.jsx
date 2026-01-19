@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
-import { ArrowRight, BookOpen, Brain, Coffee, Drama, Film, MapIcon, Music, Palette, Smartphone } from 'lucide-react';
+import { BookOpen, Brain, Coffee, Drama, Film, MapIcon, Music, Palette, Smartphone } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { toast } from '@/components/ui/use-toast';
 import { supabase } from '@/lib/supabaseClient';
@@ -130,6 +130,8 @@ const MiniverseModal = ({ open, onClose, onSelectMiniverse }) => {
   const [formState, setFormState] = useState(initialFormState);
   const [status, setStatus] = useState('idle');
   const [errorMessage, setErrorMessage] = useState('');
+  const [selectedMiniverseId, setSelectedMiniverseId] = useState(null);
+  const [visitedMiniverses, setVisitedMiniverses] = useState({});
 
   useEffect(() => {
     if (open) {
@@ -137,6 +139,7 @@ const MiniverseModal = ({ open, onClose, onSelectMiniverse }) => {
       setFormState(initialFormState);
       setStatus('idle');
       setErrorMessage('');
+      setSelectedMiniverseId(null);
     }
   }, [open]);
 
@@ -159,6 +162,47 @@ const MiniverseModal = ({ open, onClose, onSelectMiniverse }) => {
   }, []);
 
   const activeTabLabel = useMemo(() => TABS.find((tab) => tab.id === activeTab)?.label ?? TABS[0].label, [activeTab]);
+  const selectedMiniverse = useMemo(
+    () => MINIVERSE_CARDS.find((card) => card.id === selectedMiniverseId) ?? null,
+    [selectedMiniverseId]
+  );
+
+  const markMiniverseVisited = useCallback((miniverseId) => {
+    if (!miniverseId) return;
+    setVisitedMiniverses((prev) => (prev[miniverseId] ? prev : { ...prev, [miniverseId]: true }));
+  }, []);
+
+  const handleTabChange = useCallback(
+    (tabId) => {
+      if (selectedMiniverseId) {
+        markMiniverseVisited(selectedMiniverseId);
+      }
+      setActiveTab(tabId);
+      setSelectedMiniverseId(null);
+    },
+    [markMiniverseVisited, selectedMiniverseId]
+  );
+
+  const handleSelectCard = useCallback(
+    (card) => {
+      markMiniverseVisited(card.id);
+      setSelectedMiniverseId(card.id);
+    },
+    [markMiniverseVisited]
+  );
+
+  const handleReturnToList = useCallback(() => {
+    if (selectedMiniverseId) {
+      markMiniverseVisited(selectedMiniverseId);
+    }
+    setSelectedMiniverseId(null);
+  }, [markMiniverseVisited, selectedMiniverseId]);
+
+  const handleEnterMiniverse = useCallback(() => {
+    if (!selectedMiniverse) return;
+    markMiniverseVisited(selectedMiniverse.id);
+    onSelectMiniverse?.(selectedMiniverse.formatId);
+  }, [markMiniverseVisited, onSelectMiniverse, selectedMiniverse]);
 
   const handleSubmit = useCallback(
     async (event) => {
@@ -217,8 +261,11 @@ const MiniverseModal = ({ open, onClose, onSelectMiniverse }) => {
     if (status === 'loading') {
       return;
     }
+    if (selectedMiniverseId) {
+      markMiniverseVisited(selectedMiniverseId);
+    }
     onClose?.();
-  }, [onClose, status]);
+  }, [markMiniverseVisited, onClose, selectedMiniverseId, status]);
 
   return (
     <AnimatePresence>
@@ -243,42 +290,32 @@ const MiniverseModal = ({ open, onClose, onSelectMiniverse }) => {
             variants={modalVariants}
             className="relative z-10 w-full max-w-4xl rounded-3xl border border-white/10 bg-slate-950/95 p-5 sm:p-10 shadow-2xl max-h-[90vh] overflow-y-auto"
           >
-            <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-6">
-              <div>
-                <p className="text-sm uppercase tracking-[0.35em] text-slate-400/80 mb-2">
-                  Universos expandidos #GatoEncerrado
-                </p>
-                <h2 id="miniverse-modal-title" className="font-display text-3xl text-slate-50">
-                  Explora los miniversos
-                </h2>
-                <div className="mt-3 rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-slate-200/90">
-                  Cuando la obra no está en cartelera, su narrativa pulsa en otros lenguajes.
-                </div>
-              </div>
-              <button
-                onClick={handleClose}
-                className="self-end text-slate-400 hover:text-white transition"
-                aria-label="Cerrar explorador de miniversos"
-              >
-                ✕
-              </button>
-            </div>
+      <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-6">
+        <div>
+          <p className="text-sm uppercase tracking-[0.35em] text-slate-400/80 mb-2">
+            Universos expandidos #GatoEncerrado
+          </p>
 
-            <div className="flex flex-wrap gap-2 mb-6">
-              {TABS.map((tab) => (
-                <button
-                  key={tab.id}
-                  onClick={() => setActiveTab(tab.id)}
-                  className={`rounded-full border px-4 py-2 text-sm transition ${
-                    activeTab === tab.id
-                      ? 'border-purple-400/60 bg-purple-500/20 text-purple-100'
-                      : 'border-white/10 text-slate-300 hover:border-purple-300/40 hover:text-purple-100'
-                  }`}
-                >
-                  {tab.label}
-                </button>
-              ))}
-            </div>
+          <h2 id="miniverse-modal-title" className="font-display text-3xl text-slate-50">
+            Explora los miniversos
+          </h2>
+
+          <div className="mt-3 rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-slate-200/90">
+            Cuando la obra no está en cartelera, su narrativa pulsa en otros lenguajes.{" "}
+            <strong className="font-semibold text-slate-50">
+              Explora a tu ritmo. Cada miniverso es una puerta.
+            </strong>
+          </div>
+        </div>
+
+        <button
+          onClick={handleClose}
+          className="self-end text-slate-400 hover:text-white transition"
+          aria-label="Cerrar explorador de miniversos"
+        >
+          ✕
+        </button>
+      </div>
 
             <div className="grid md:grid-cols-2 gap-8">
               {activeTab === 'waitlist' ? (
@@ -361,29 +398,74 @@ const MiniverseModal = ({ open, onClose, onSelectMiniverse }) => {
                     </Button>
                   </form>
                 </>
+              ) : selectedMiniverse ? (
+                <div className="md:col-span-2">
+                  <div className="glass-effect rounded-2xl border border-white/10 bg-white/5 p-6 sm:p-8 space-y-6">
+                    <p className="text-xs uppercase tracking-[0.35em] text-slate-400">
+                      Antesala curatorial
+                    </p>
+                    <div className="flex items-center gap-3">
+                      <div
+                        className={`h-12 w-12 rounded-full bg-gradient-to-br ${selectedMiniverse.thumbGradient} flex items-center justify-center text-sm font-semibold text-white shadow-[0_10px_25px_rgba(0,0,0,0.35)]`}
+                      >
+                        {selectedMiniverse.icon ? (
+                          <selectedMiniverse.icon size={22} className="text-white drop-shadow-sm" />
+                        ) : (
+                          selectedMiniverse.thumbLabel
+                        )}
+                      </div>
+                      <h3 className="font-display text-2xl text-slate-100">{selectedMiniverse.title}</h3>
+                    </div>
+
+                    <p className="text-sm text-slate-300/90 leading-relaxed">
+                      {selectedMiniverse.description}
+                    </p>
+
+                    <div className="flex flex-col sm:flex-row gap-3">
+                      <Button
+                        type="button"
+                        onClick={handleEnterMiniverse}
+                        className="bg-gradient-to-r from-purple-600/80 to-indigo-600/80 hover:from-purple-600 hover:to-indigo-600 text-white py-3 rounded-lg font-semibold flex items-center justify-center gap-2 hover-glow"
+                      >
+                        {selectedMiniverse.action}
+                      </Button>
+                      <button
+                        type="button"
+                        onClick={handleReturnToList}
+                        className="rounded-lg border border-white/10 px-4 py-3 text-xs uppercase tracking-[0.25em] text-slate-300 hover:text-white hover:border-purple-300/40 transition"
+                      >
+                        Tocar otra puerta
+                      </button>
+                    </div>
+                  </div>
+                </div>
               ) : (
                 <div className="md:col-span-2 grid md:grid-cols-3 gap-6">
                   {MINIVERSE_CARDS.map((card) => {
+                    const isVisited = Boolean(visitedMiniverses[card.id]);
                     return (
                       <button
                         key={card.title}
                         type="button"
-                        onClick={() => onSelectMiniverse?.(card.formatId)}
-                        className="text-left glass-effect rounded-2xl border border-white/10 p-6 transition hover:border-purple-300/40 hover:shadow-[0_10px_30px_rgba(124,58,237,0.18)] flex flex-col h-full"
+                        onClick={() => handleSelectCard(card)}
+                        className={`relative text-left glass-effect rounded-2xl border p-5 transition flex items-center gap-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-400/60 ${
+                          isVisited
+                            ? 'border-emerald-300/20 bg-emerald-500/5 hover:border-emerald-300/30'
+                            : 'border-white/10 bg-white/5 hover:border-purple-300/40 hover:shadow-[0_10px_30px_rgba(124,58,237,0.18)]'
+                        }`}
                       >
-                        <div className="flex items-center gap-3 mb-3">
+                        {isVisited ? (
+                          <span
+                            aria-hidden="true"
+                            className="absolute right-3 top-3 h-2 w-2 rounded-full bg-emerald-300/60"
+                          />
+                        ) : null}
                         <div
                           className={`h-12 w-12 rounded-full bg-gradient-to-br ${card.thumbGradient} flex items-center justify-center text-sm font-semibold text-white shadow-[0_10px_25px_rgba(0,0,0,0.35)]`}
                         >
                           {card.icon ? <card.icon size={22} className="text-white drop-shadow-sm" /> : card.thumbLabel}
                         </div>
-                          <h3 className="font-display text-xl text-slate-100">{card.title}</h3>
-                        </div>
-                        <p className="text-sm text-slate-300/80 leading-relaxed mb-4 flex-1">{card.description}</p>
-                        <span className="text-xs uppercase tracking-[0.25em] text-purple-200/80 inline-flex items-center gap-2 mt-auto">
-                          {card.action}
-                          <ArrowRight size={14} className="text-purple-200/80" />
-                        </span>
+                        <h3 className="font-display text-lg text-slate-100">{card.title}</h3>
                       </button>
                     );
                   })}
@@ -391,7 +473,23 @@ const MiniverseModal = ({ open, onClose, onSelectMiniverse }) => {
               )}
             </div>
 
-            <div className="mt-8 flex items-center justify-between text-xs text-slate-500">
+            <div className="mt-8 flex flex-wrap gap-2">
+              {TABS.map((tab) => (
+                <button
+                  key={tab.id}
+                  onClick={() => handleTabChange(tab.id)}
+                  className={`rounded-full border px-4 py-2 text-sm transition ${
+                    activeTab === tab.id
+                      ? 'border-purple-400/60 bg-purple-500/20 text-purple-100'
+                      : 'border-white/10 text-slate-300 hover:border-purple-300/40 hover:text-purple-100'
+                  }`}
+                >
+                  {tab.label}
+                </button>
+              ))}
+            </div>
+
+            <div className="mt-6 flex items-center justify-between text-xs text-slate-500">
               <span>{activeTabLabel}</span>
               <button onClick={handleClose} className="text-slate-400 hover:text-white transition">
                 Cerrar
