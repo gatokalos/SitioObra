@@ -6,6 +6,7 @@ export async function recordArticleInteraction({
   action,
   liked,
   notify,
+  shared,
   miniverse,
   mostViewedMiniverse,
   mostViewedMiniverseCount,
@@ -35,12 +36,18 @@ export async function recordArticleInteraction({
     published_at: post.published_at,
     liked: Boolean(liked),
     notify: Boolean(notify),
+    shared: Boolean(shared),
     miniverse,
     most_viewed_miniverse: mostViewedMiniverse,
     most_viewed_miniverse_count: mostViewedMiniverseCount ?? null,
   };
 
-  const actionType = action === 'like' ? 'article_like' : 'article_notify';
+  const actionType =
+    action === 'like'
+      ? 'article_like'
+      : action === 'notify'
+        ? 'article_notify'
+        : 'article_share';
 
   return trackInteraction({
     action_type: actionType,

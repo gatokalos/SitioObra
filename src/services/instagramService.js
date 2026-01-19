@@ -30,12 +30,13 @@ export async function getInstagramPostsFromBucket() {
       return Array.isArray(data) ? data.map((file) => ({ ...file, folder })) : [];
     };
 
-    const [rootFiles, chiuFiles, brownFiles] = await Promise.all([
+    const [rootFiles, chiuFiles, brownFiles, diegoFiles] = await Promise.all([
       listFolder(''),
       listFolder('A_Chiu'),
       listFolder('Sergio Brown'),
+      listFolder('diego_hdz'),
     ]);
-    const allFiles = [...rootFiles, ...chiuFiles, ...brownFiles];
+    const allFiles = [...rootFiles, ...chiuFiles, ...brownFiles, ...diegoFiles];
 
     if (allFiles.length === 0) {
       return [];
@@ -65,6 +66,7 @@ export async function getInstagramPostsFromBucket() {
           imgSrc: publicData.publicUrl,
           alt,
           filename: file.name,
+          folder: file.folder || '',
         };
       })
       .filter(Boolean);

@@ -155,6 +155,41 @@ const curatedLayoutSergio = [
   { match: 'Ungato24', patternIndex: 15, story: 'Última pregunta' },
 ];
 
+const curatedLayoutDiego = [
+
+  
+  { match: 'diegohdz571', patternIndex: 10, lockPattern: true, story: 'Carnicería, cuchillos' }, 
+  { match: 'diegohdz587', story: 'Un sueño recurrente' },
+  { match: 'diegohdz591', story: 'Un número irracional' },
+  { match: 'diegohdz593', story: '¿Me extrañaste?' },
+  { match: 'diegohdz602', story: '¡Bájate de ahí!' },
+  { match: 'diegohdz604', story: 'Una voz, una sola' },
+  { match: 'diegohdz607', story: 'Te cargó el payaso' },
+  { match: 'diegohdz664', story: 'Una semana de gracia' },
+  { match: 'diegohdz648', story: 'Migraña insoportable' },
+  { match: 'diegohdz686', patternIndex: 10, lockPattern: true, story: '¿Confías en mí?' },
+  { match: 'diegohdz700', story: 'Solo no te duermas' },
+  { match: 'diegohdz721', story: 'Pase lo que pase' },
+  { match: 'diegohdz721', story: 'Serán testigos' },    
+  { match: 'diegohdz728', story: 'Serán testigos' },
+  { match: 'diegohdz738', story: 'Gemir de placer' },
+  { match: 'diegohdz772', story: 'Las patentes' },
+  { match: 'diegohdz779', story: 'Venerable Don Polo' },
+  { match: 'diegohdz796', story: 'La Salvadora' },
+  { match: 'diegohdz805', story: 'Espacio sideral' },
+  { match: 'diegohdz813', story: 'Huele a gato encerrado' },
+  { match: 'diegohdz807', story: 'Incompatibiles' },
+  { match: 'diegohdz844', story: '¿Soñando otra vez?' },
+  { match: 'diegohdz829', story: 'Todo va estar bien' },
+  { match: 'diegohdz847', story: 'Despertó la curiosidad' },
+  { match: 'diegohdz848', story: 'Más que felicidad' },
+  { match: 'diegohdz850', story: 'Melina Mandelbaum' },
+  { match: 'diegohdz854', story: 'Una última vez' },
+  { match: 'diegohdz855', story: 'Aquí se acaba, campeón' },
+  { match: 'diegohdz007', story: 'Grandes logros' },
+  { match: 'diegohdz857', story: 'Muchas gracias' },
+];
+
 const storyFragments = [
   'El gatillo emocional',
 ];
@@ -163,6 +198,10 @@ const CHIU_SHUFFLE_SEED = 'chiu-2025';
 const CHIU_PATTERN_ORDER = null;
 const BROWN_SHUFFLE_SEED = 'brown-2025';
 const BROWN_PATTERN_ORDER = null;
+const DIEGO_SHUFFLE_SEED = 'diego-hdz-2025';
+const DIEGO_PATTERN_ORDER = null;
+const DIEGO_LAYOUT_LIMIT = 30;
+const DIEGO_VISIBLE_COUNT = DIEGO_LAYOUT_LIMIT;
 
 const PHOTOGRAPHERS = [
   {
@@ -193,6 +232,18 @@ const PHOTOGRAPHERS = [
     ],
     layout: curatedLayoutSergio,
     allowRemaining: true,
+  },
+  {
+    id: 'diego',
+    label: 'Diego Hernández',
+    creditPrefix: 'Semblanza visual en Instagram: ',
+    creditLinkText: '@diego_hdz',
+    creditLinkHref: 'https://www.instagram.com/dhrdzr/',
+    layout: curatedLayoutDiego,
+    allowRemaining: false,
+    layoutLimit: DIEGO_LAYOUT_LIMIT,
+    folder: 'diego_hdz',
+    visibleCount: DIEGO_VISIBLE_COUNT,
   },
 ];
 
@@ -228,7 +279,9 @@ const Instagram = () => {
   const activePhotographerData =
     PHOTOGRAPHERS.find((photographer) => photographer.id === activePhotographer) ?? PHOTOGRAPHERS[0];
   const visibleCount =
-    activePhotographerData?.allowRemaining === false
+    typeof activePhotographerData?.visibleCount === 'number'
+      ? activePhotographerData.visibleCount
+      : activePhotographerData?.allowRemaining === false
       ? Math.max(activePhotographerData.layout.length, BASE_VISIBLE_COUNT)
       : BASE_VISIBLE_COUNT;
 
@@ -306,6 +359,16 @@ const Instagram = () => {
       }
       return order;
     };
+    const shufflePosts = (items, seed) => {
+      if (!seed) return items;
+      const shuffled = items.slice();
+      const random = mulberry32(seedToInt(seed));
+      for (let i = shuffled.length - 1; i > 0; i -= 1) {
+        const j = Math.floor(random() * (i + 1));
+        [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+      }
+      return shuffled;
+    };
 
     const availablePosts = posts
       .map((post, idx) => ({ post, originalIndex: idx }))
@@ -322,11 +385,27 @@ const Instagram = () => {
     const prioritized = [];
     const activeLayout = activePhotographerData?.layout ?? curatedLayout;
     const allowRemaining = activePhotographerData?.allowRemaining !== false;
-    const useShuffledPattern = ['alejandro', 'sergio'].includes(activePhotographerData?.id);
+    const layoutLimit = activePhotographerData?.layoutLimit;
+    const postShuffleSeed = activePhotographerData?.postShuffleSeed;
+    const postShuffleLimit = activePhotographerData?.postShuffleLimit;
+    const limitedLayout = Number.isFinite(layoutLimit)
+      ? activeLayout.slice(0, layoutLimit)
+      : activeLayout;
+    const layoutSequence = postShuffleSeed ? shufflePosts(limitedLayout, postShuffleSeed) : limitedLayout;
+    const useShuffledPattern = ['alejandro', 'sergio', 'diego'].includes(activePhotographerData?.id);
     if (useShuffledPattern) {
       const isSergio = activePhotographerData?.id === 'sergio';
-      const patternOrder = isSergio ? BROWN_PATTERN_ORDER : CHIU_PATTERN_ORDER;
-      const patternSeed = isSergio ? BROWN_SHUFFLE_SEED : CHIU_SHUFFLE_SEED;
+      const isDiego = activePhotographerData?.id === 'diego';
+      const patternOrder = isSergio
+        ? BROWN_PATTERN_ORDER
+        : isDiego
+        ? DIEGO_PATTERN_ORDER
+        : CHIU_PATTERN_ORDER;
+      const patternSeed = isSergio
+        ? BROWN_SHUFFLE_SEED
+        : isDiego
+        ? DIEGO_SHUFFLE_SEED
+        : CHIU_SHUFFLE_SEED;
       if (Array.isArray(patternOrder) && patternOrder.length === collagePattern.length) {
         patternOrderRef.current = patternOrder.slice();
         patternSeedRef.current = patternSeed;
@@ -344,15 +423,22 @@ const Instagram = () => {
       patternSeedRef.current = null;
     }
     const isRelevantPost = (post) =>
-      activeLayout.some((entry) => matchesDescriptor(post, entry.match));
+      layoutSequence.some((entry) => matchesDescriptor(post, entry.match));
+    const scopedPosts = activePhotographerData?.folder
+      ? availablePosts.filter(({ post }) => post.folder === activePhotographerData.folder)
+      : availablePosts;
     const matchingPosts = allowRemaining
-      ? availablePosts
-      : availablePosts.filter(({ post }) => isRelevantPost(post));
+      ? scopedPosts
+      : scopedPosts.filter(({ post }) => isRelevantPost(post));
+    const orderedMatchingPosts = shufflePosts(matchingPosts, postShuffleSeed);
+    const trimmedMatchingPosts = Number.isFinite(postShuffleLimit)
+      ? orderedMatchingPosts.slice(0, postShuffleLimit)
+      : orderedMatchingPosts;
 
-    activeLayout.forEach((entry) => {
-      const indexInAvailable = matchingPosts.findIndex((candidate, idx) => !usedIndices.has(idx) && matchesDescriptor(candidate.post, entry.match));
+    layoutSequence.forEach((entry) => {
+      const indexInAvailable = trimmedMatchingPosts.findIndex((candidate, idx) => !usedIndices.has(idx) && matchesDescriptor(candidate.post, entry.match));
       if (indexInAvailable !== -1) {
-        const foundEntry = matchingPosts[indexInAvailable];
+        const foundEntry = trimmedMatchingPosts[indexInAvailable];
         usedIndices.add(indexInAvailable);
         const fallbackPatternIndex = prioritized.length % collagePattern.length;
         const shuffledPatternIndex =
@@ -371,7 +457,7 @@ const Instagram = () => {
     });
 
     const remaining = allowRemaining
-      ? matchingPosts
+      ? trimmedMatchingPosts
           .map((entry, idx) => ({ ...entry, idx }))
           .filter(({ idx }) => !usedIndices.has(idx))
           .map((entry, offset) => ({

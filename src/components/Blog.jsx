@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Calendar, Clock, Feather, Search } from 'lucide-react';
+import { Calendar, Clock, Feather, Search, Send } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { toast } from '@/components/ui/use-toast';
 import ReactMarkdown from 'react-markdown';
@@ -363,16 +363,24 @@ const ArticleInteractionPanel = ({ post }) => {
 
   const inferredMiniverseKey = useMemo(() => inferMiniverseFromPost(post), [post]);
   const miniverseInfo = MINIVERSE_HIERARCHY[inferredMiniverseKey] ?? MINIVERSE_HIERARCHY.curaduria;
-  const [liked, setLiked] = useState(false);
   const [wantsNotification, setWantsNotification] = useState(false);
-  const [status, setStatus] = useState({ like: 'idle', notify: 'idle' });
+  const [status, setStatus] = useState({ share: 'idle', notify: 'idle' });
   const authorAvatar = post?.author_avatar_url;
+  const shareUrl = useMemo(() => {
+    if (typeof window === 'undefined') {
+      return '';
+    }
+    const { origin, pathname } = window.location;
+    if (!post?.slug) {
+      return `${origin}${pathname}#dialogo-critico`;
+    }
+    return `${origin}${pathname}#blog/${encodeURIComponent(post.slug)}`;
+  }, [post?.slug]);
 
-  const pushInteraction = async (action) => {
-    const nextLiked = action === 'like' ? !liked : liked;
-    const nextNotify = action === 'notify' ? !wantsNotification : wantsNotification;
+  const handleNotify = async () => {
+    const nextNotify = !wantsNotification;
 
-    if (action === 'notify' && !user) {
+    if (!user) {
       toast({
         description: 'Inicia sesión para recibir notificaciones y continuar en el Backstage.',
       });
@@ -380,12 +388,11 @@ const ArticleInteractionPanel = ({ post }) => {
       return;
     }
 
-    setStatus((prev) => ({ ...prev, [action]: 'loading' }));
+    setStatus((prev) => ({ ...prev, notify: 'loading' }));
 
     const { success, error } = await recordArticleInteraction({
       post,
-      action,
-      liked: nextLiked,
+      action: 'notify',
       notify: nextNotify,
       miniverse: inferredMiniverseKey,
       mostViewedMiniverse: miniverseInfo.label,
@@ -396,20 +403,82 @@ const ArticleInteractionPanel = ({ post }) => {
       console.error('[ArticleInteraction] Error guardando interacción:', error);
       toast({ description: 'No pudimos guardar tu interacción. Intenta nuevamente.' });
     } else {
-      if (action === 'like') {
-        setLiked(nextLiked);
-        toast({ description: nextLiked ? 'Gracias por tu apoyo.' : 'Quitaste el Me gusta.' });
-      } else {
-        setWantsNotification(nextNotify);
-        toast({
-          description: nextNotify
-            ? 'Te avisaremos cuando haya novedades sobre este texto.'
-            : 'Ya no recibes notificaciones de este artículo.',
-        });
+      setWantsNotification(nextNotify);
+      toast({
+        description: nextNotify
+          ? 'Te avisaremos cuando haya novedades sobre este texto.'
+          : 'Ya no recibes notificaciones de este artículo.',
+      });
+    }
+
+    setStatus((prev) => ({ ...prev, notify: 'idle' }));
+  };
+
+  const handleShare = async () => {
+    if (status.share === 'loading') {
+      return;
+    }
+
+    setStatus((prev) => ({ ...prev, share: 'loading' }));
+
+    const shareData = {
+      title: post?.title || 'Es un gato encerrado',
+      text: post?.title
+        ? `Lee "${post.title}" en Es un gato encerrado.`
+        : 'Lee este artículo en Es un gato encerrado.',
+      url: shareUrl,
+    };
+
+    let didShare = false;
+    let usedFallback = false;
+
+    if (typeof navigator !== 'undefined' && typeof navigator.share === 'function') {
+      try {
+        await navigator.share(shareData);
+        didShare = true;
+      } catch (error) {
+        if (error?.name !== 'AbortError') {
+          console.error('[ArticleInteraction] Error al compartir:', error);
+        }
       }
     }
 
-    setStatus((prev) => ({ ...prev, [action]: 'idle' }));
+    if (!didShare) {
+      try {
+        if (navigator?.clipboard?.writeText && shareData.url) {
+          await navigator.clipboard.writeText(shareData.url);
+          didShare = true;
+          usedFallback = true;
+          toast({ description: 'Enlace copiado. Compártelo donde quieras.' });
+        }
+      } catch (error) {
+        console.error('[ArticleInteraction] Error al copiar enlace:', error);
+      }
+    }
+
+    if (!didShare) {
+      toast({ description: 'No pudimos compartir el artículo. Intenta de nuevo.' });
+      setStatus((prev) => ({ ...prev, share: 'idle' }));
+      return;
+    }
+
+    const { success, error } = await recordArticleInteraction({
+      post,
+      action: 'share',
+      shared: true,
+      miniverse: inferredMiniverseKey,
+      mostViewedMiniverse: miniverseInfo.label,
+      mostViewedMiniverseCount: miniverseInfo.views ?? null,
+    });
+
+    if (!success) {
+      console.error('[ArticleInteraction] Error guardando interacción:', error);
+      toast({ description: 'No pudimos registrar tu interacción. Intenta nuevamente.' });
+    } else if (!usedFallback) {
+      toast({ description: 'Gracias por compartir este texto.' });
+    }
+
+    setStatus((prev) => ({ ...prev, share: 'idle' }));
   };
 
   return (
@@ -417,22 +486,23 @@ const ArticleInteractionPanel = ({ post }) => {
       <div className="mt-10 rounded-3xl border border-white/10 bg-black/40 p-6 shadow-[0_30px_80px_rgba(0,0,0,0.35)]">
         <p className="text-base text-slate-200">¿La lectura te movió?</p>
       <p className="text-sm text-slate-400 mt-1">
-        Clic en los botones y registramos la interacción para alimentar al gato del Backstage.
+        Clic en los botones para compartir este texto o seguir a su autor en el Backstage.
       </p>
         <div className="mt-6 flex flex-col gap-3 md:flex-row">
           <Button
-            variant={liked ? 'secondary' : 'default'}
+            variant="default"
             size="lg"
-            onClick={() => pushInteraction('like')}
-            disabled={status.like === 'loading'}
-            className="border-purple-400/40 text-purple-200 hover:bg-purple-500/20 w-full sm:w-auto whitespace-normal break-words text-center leading-snug"
+            onClick={handleShare}
+            disabled={status.share === 'loading'}
+            className="border-purple-400/40 text-purple-200 hover:bg-purple-500/20 w-full sm:w-auto whitespace-normal break-words text-center leading-snug inline-flex items-center justify-center gap-2"
           >
-            {liked ? 'Gracias por el Me gusta' : 'Me gustó este artículo'}
+            <Send size={18} />
+            Compartir este artículo
           </Button>
           <Button
             variant="outline"
             size="lg"
-            onClick={() => pushInteraction('notify')}
+            onClick={handleNotify}
             disabled={status.notify === 'loading'}
             className="border-slate-400/40 text-purple-200 hover:bg-purple-500/20 w-full sm:w-auto whitespace-normal break-words text-center leading-snug inline-flex items-center gap-3 pl-4"
           >
@@ -541,7 +611,7 @@ const Blog = ({ posts = [], isLoading = false, error = null }) => {
   }, [error]);
 
   useEffect(() => {
-  const handleNavigate = (event) => {
+    const handleNavigate = (event) => {
       const { slug } = event.detail || {};
       if (!slug) {
         return;
@@ -559,6 +629,46 @@ const Blog = ({ posts = [], isLoading = false, error = null }) => {
 
     window.addEventListener('gatoencerrado:open-blog', handleNavigate);
     return () => window.removeEventListener('gatoencerrado:open-blog', handleNavigate);
+  }, [handleSelectPost, categorizedPosts]);
+
+  useEffect(() => {
+    const extractSharedSlug = () => {
+      if (typeof window === 'undefined') {
+        return null;
+      }
+
+      const rawHash = window.location.hash || '';
+      const match = rawHash.match(/^#?(?:blog|dialogo-critico)\/(.+)$/);
+      if (!match) {
+        return null;
+      }
+
+      try {
+        return decodeURIComponent(match[1]);
+      } catch (error) {
+        return match[1];
+      }
+    };
+
+    const openFromHash = () => {
+      const slug = extractSharedSlug();
+      if (!slug) {
+        return;
+      }
+
+      const target = categorizedPosts.find((item) => item.slug === slug);
+      if (target) {
+        handleSelectPost(target);
+      } else {
+        setPendingSlug(slug);
+      }
+
+      document.getElementById('dialogo-critico')?.scrollIntoView({ behavior: 'smooth' });
+    };
+
+    openFromHash();
+    window.addEventListener('hashchange', openFromHash);
+    return () => window.removeEventListener('hashchange', openFromHash);
   }, [handleSelectPost, categorizedPosts]);
 
   return (
