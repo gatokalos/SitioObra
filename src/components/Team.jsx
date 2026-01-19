@@ -1,6 +1,7 @@
 // src/components/Team.jsx
 import React, { useEffect, useLayoutEffect, useRef, useState } from "react";
-import { motion } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
+import { createPortal } from "react-dom";
 import { ExternalLink, Instagram } from "lucide-react";
 import {
   Accordion,
@@ -204,8 +205,21 @@ const Team = () => {
   const [selectedElencoId, setSelectedElencoId] = useState(null);
   const [isMobile, setIsMobile] = useState(false);
   const [openSection, setOpenSection] = useState(null);
+  const [activeMemberLink, setActiveMemberLink] = useState(null);
   const accordionItemRefs = useRef({});
   const pendingScrollRef = useRef(null);
+
+  const isMemberLinkOpen = Boolean(activeMemberLink?.url);
+  const handleOpenMemberLink = (url, label) => {
+    if (!url) return;
+    setActiveMemberLink({ url, label });
+  };
+  const handleCloseMemberLink = () => setActiveMemberLink(null);
+  const handleMemberLinkClick = (event, url, label) => {
+    event.preventDefault();
+    event.stopPropagation();
+    handleOpenMemberLink(url, label);
+  };
 
   const renderMemberLinks = (member, className = "") => {
     if (!member?.instagram && !member?.linkUrl) {
@@ -216,8 +230,9 @@ const Team = () => {
         {member?.instagram ? (
           <a
             href={member.instagram}
-            target="_blank"
-            rel="noopener noreferrer"
+            onClick={(event) =>
+              handleMemberLinkClick(event, member.instagram, `Instagram de ${member.name}`)
+            }
             aria-label={`Instagram de ${member.name}`}
             className="inline-flex items-center justify-center rounded-full border border-white/10 bg-black/30 p-1 text-purple-200 hover:text-purple-100 hover:border-purple-300/60 transition"
           >
@@ -227,8 +242,9 @@ const Team = () => {
         {member?.linkUrl ? (
           <a
             href={member.linkUrl}
-            target="_blank"
-            rel="noopener noreferrer"
+            onClick={(event) =>
+              handleMemberLinkClick(event, member.linkUrl, `Enlace de ${member.name}`)
+            }
             aria-label={`Enlace de ${member.name}`}
             className="inline-flex items-center justify-center rounded-full border border-white/10 bg-black/30 p-1 text-purple-200 hover:text-purple-100 hover:border-purple-300/60 transition"
           >
@@ -271,6 +287,24 @@ const Team = () => {
     // Ajuste inmediato antes del siguiente repintado; sin animar para evitar rebotes.
     window.scrollTo({ top: desiredY, behavior: "auto" });
   }, [openSection]);
+
+  useEffect(() => {
+    if (!isMemberLinkOpen) {
+      return undefined;
+    }
+    const handleKeyDown = (event) => {
+      if (event.key === "Escape") {
+        event.preventDefault();
+        event.stopPropagation();
+        if (typeof event.stopImmediatePropagation === "function") {
+          event.stopImmediatePropagation();
+        }
+        handleCloseMemberLink();
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown, true);
+    return () => window.removeEventListener("keydown", handleKeyDown, true);
+  }, [isMemberLinkOpen]);
 
   const renderRole = (data, roleKey) => {
     const isElenco = roleKey === "Elenco";
@@ -580,6 +614,83 @@ const Team = () => {
     pendingScrollRef.current = value;
   };
 
+  const memberLinkOverlay = typeof document !== "undefined"
+    ? createPortal(
+      <AnimatePresence>
+        {isMemberLinkOpen ? (
+          <motion.div
+            key="team-link-iframe"
+            className="fixed inset-0 z-[170] flex items-center justify-center px-4 py-6"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+          >
+            <motion.div
+              className="absolute inset-0 bg-black/85 backdrop-blur-md"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={handleCloseMemberLink}
+            />
+            <motion.div
+              role="dialog"
+              aria-modal="true"
+              aria-label={activeMemberLink?.label || "Perfil externo"}
+              className="relative z-10 w-full max-w-5xl overflow-hidden rounded-3xl border border-white/10 bg-slate-950/90 shadow-[0_35px_120px_rgba(0,0,0,0.65)]"
+              initial={{ scale: 0.96, opacity: 0, y: 18 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.96, opacity: 0, y: 18 }}
+              transition={{ type: "spring", stiffness: 220, damping: 24 }}
+            >
+              <div className="flex flex-col gap-3 border-b border-white/10 px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                  <p className="text-xs uppercase tracking-[0.35em] text-slate-400/80">Perfil</p>
+                  <h3 className="font-display text-2xl text-slate-100">
+                    {activeMemberLink?.label || "Enlace externo"}
+                  </h3>
+                </div>
+                <div className="flex items-center gap-3 text-sm">
+                  {activeMemberLink?.url ? (
+                    <a
+                      href={activeMemberLink.url}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="text-purple-200 underline underline-offset-4 hover:text-white"
+                    >
+                      Abrir en nueva pestaña
+                    </a>
+                  ) : null}
+                  <button
+                    type="button"
+                    onClick={handleCloseMemberLink}
+                    className="text-slate-300 hover:text-white transition"
+                  >
+                    Cerrar ✕
+                  </button>
+                </div>
+              </div>
+              <div className="relative w-full aspect-[16/10] bg-black">
+                {activeMemberLink?.url ? (
+                  <iframe
+                    src={activeMemberLink.url}
+                    title={activeMemberLink?.label || "Perfil externo"}
+                    className="h-full w-full"
+                    loading="lazy"
+                  />
+                ) : (
+                  <div className="flex h-full w-full items-center justify-center text-sm text-slate-300">
+                    No se pudo cargar el sitio.
+                  </div>
+                )}
+              </div>
+            </motion.div>
+          </motion.div>
+        ) : null}
+      </AnimatePresence>,
+      document.body,
+    )
+    : null;
+
   return (
     <section id="team" className="py-24 relative">
       <div className="section-divider mb-24"></div>
@@ -643,6 +754,7 @@ Cada colaboración forma parte activa del universo que la obra pone en escena.
           </Accordion>
         </motion.div>
       </div>
+      {memberLinkOverlay}
     </section>
   );
 };
