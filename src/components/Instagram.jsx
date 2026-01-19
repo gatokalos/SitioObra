@@ -187,7 +187,7 @@ const curatedLayoutDiego = [
   { match: 'diegohdz854', story: 'Una última vez' },
   { match: 'diegohdz855', story: 'Aquí se acaba, campeón' },
   { match: 'diegohdz007', story: 'Grandes logros' },
-  { match: 'diegohdz857', story: 'Muchas gracias' },
+  { match: 'diegohdz857', patternIndex: 4, lockPattern: true, story: 'Muchas gracias' },
 ];
 
 const storyFragments = [
@@ -653,9 +653,11 @@ const Instagram = () => {
           <h2 className="font-display text-4xl md:text-5xl font-medium mb-5 text-gradient italic">
             Fractales Escénicos
           </h2>
-          <p className="text-base md:text-lg text-slate-300/75 max-w-3xl mx-auto leading-relaxed mb-7 font-light">
-            Un homenaje visual a los destellos de Es un gato encerrado... Esto es lo que existe solo cuando alguien se atreve a mirar. Mira la obra a través de los ojos de nuestros fotógrafos:
-          </p>
+         <p className="text-base md:text-lg text-slate-300/75 max-w-3xl mx-auto leading-relaxed mb-7 font-light">
+  Un homenaje visual a los destellos de <em>Es un gato encerrado</em>.  
+  Esto es lo que existe solo cuando alguien decide observar de verdad.  
+  Mira la obra a través de los ojos de nuestros fotógrafos.
+</p>
 
           <div className="flex flex-wrap justify-center gap-2 mb-6">
             {PHOTOGRAPHERS.map((photographer) => (
