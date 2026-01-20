@@ -5400,7 +5400,7 @@ const rendernotaAutoral = () => {
                 </h3>
                 <p className="text-slate-300/80 leading-relaxed font-light">
                   La taquilla mantiene la obra en escena; el universo transmedia financia acompañamiento emocional real.
-                  Cada cuota se distribuye en tres frentes que opera Isabel Ayuda para la Vida, A.C.{' '}
+                  Cada suscripción se distribuye en tres frentes que opera Isabel Ayuda para la Vida, A.C.{' '}
                   <button
                     type="button"
                     onClick={handleOpenCauseSite}

@@ -276,7 +276,7 @@ const About = () => {
             </div>
             <div className="order-1 md:order-2">
               <h3 className="font-display text-3xl font-medium text-slate-100 mb-6">
-                La Mente de Silvestre
+                Silvestre no está solo
               </h3>
               <p className="text-slate-300/80 leading-relaxed mb-8 font-light">
                 Silvestre <strong>transforma su mente</strong> en escenario. Aquí, lo real y lo imaginario ya no compiten. Y tú —espectador, visitante, cómplice— puedes entrar sin tocar la puerta, porque quizás… tú también tienes <i>un gato encerrado</i> en el pecho.

@@ -133,6 +133,39 @@ const MiniverseModal = ({ open, onClose, onSelectMiniverse }) => {
   const [selectedMiniverseId, setSelectedMiniverseId] = useState(null);
   const [visitedMiniverses, setVisitedMiniverses] = useState({});
 
+  const playKnockSound = useCallback(() => {
+    if (typeof window === 'undefined') {
+      return;
+    }
+    const AudioContext = window.AudioContext || window.webkitAudioContext;
+    if (!AudioContext) {
+      return;
+    }
+    const context = new AudioContext();
+    const now = context.currentTime;
+
+    const scheduleKnock = (time, frequency) => {
+      const oscillator = context.createOscillator();
+      const gain = context.createGain();
+      oscillator.type = 'triangle';
+      oscillator.frequency.setValueAtTime(frequency, time);
+      gain.gain.setValueAtTime(0.0001, time);
+      gain.gain.exponentialRampToValueAtTime(0.06, time + 0.015);
+      gain.gain.exponentialRampToValueAtTime(0.0001, time + 0.12);
+      oscillator.connect(gain);
+      gain.connect(context.destination);
+      oscillator.start(time);
+      oscillator.stop(time + 0.14);
+    };
+
+    scheduleKnock(now + 0.02, 180);
+    scheduleKnock(now + 0.18, 150);
+
+    setTimeout(() => {
+      context.close();
+    }, 500);
+  }, []);
+
   useEffect(() => {
     if (open) {
       setActiveTab(TABS[0].id);
@@ -185,10 +218,13 @@ const MiniverseModal = ({ open, onClose, onSelectMiniverse }) => {
 
   const handleSelectCard = useCallback(
     (card) => {
+      if (!visitedMiniverses[card.id]) {
+        playKnockSound();
+      }
       markMiniverseVisited(card.id);
       setSelectedMiniverseId(card.id);
     },
-    [markMiniverseVisited]
+    [markMiniverseVisited, playKnockSound, visitedMiniverses]
   );
 
   const handleReturnToList = useCallback(() => {

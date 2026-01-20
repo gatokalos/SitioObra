@@ -12,7 +12,7 @@ const once = (fn) => {
 
 const InstallPWACTA = () => {
   const [promptEvent, setPromptEvent] = useState(null);
-  const [statusMsg, setStatusMsg] = useState('');
+  const [statusMsg, setStatusMsg] = useState(null);
   const [isStandalone, setIsStandalone] = useState(false);
 
   const userAgent = typeof navigator !== 'undefined' ? navigator.userAgent : '';
@@ -20,7 +20,20 @@ const InstallPWACTA = () => {
   const isiOS = /iphone|ipad|ipod/i.test(userAgent);
 
   const handleInstallAttempt = async () => {
-    if (!promptEvent) return;
+    if (!promptEvent) {
+      setStatusMsg(
+        isiOS ? (
+          <>
+            <span>En Safari toca el ícono de compartir y elige “Añadir a pantalla de inicio”.</span>
+            <br />
+            <span>Allí mismo verás la opción "Guardar como App Web".</span>
+          </>
+        ) : (
+          'Si el botón no responde, abre el menú de tu navegador y busca “Instalar app” o “Agregar a pantalla de inicio”.'
+        )
+      );
+      return;
+    }
     promptEvent.prompt();
     const choice = await promptEvent.userChoice;
     setStatusMsg(
@@ -90,8 +103,8 @@ const InstallPWACTA = () => {
   }, []);
 
   const showIosHint = isiOS && !isStandalone;
-  const showInstallButton = Boolean(promptEvent);
-  const shouldRender = isMobile && !isStandalone && (showInstallButton || showIosHint);
+  const showInstallButton = isMobile && !isStandalone;
+  const shouldRender = isMobile && !isStandalone;
 
   if (!shouldRender) {
     return null;
@@ -100,26 +113,23 @@ const InstallPWACTA = () => {
   return (
     <div className="rounded-2xl border border-white/10 bg-slate-950/60 p-6 text-left text-slate-100 space-y-4">
       <p className="text-sm leading-relaxed">
-        Para vivir #GatoEncerrado como una app nativa y ocultar las barras del navegador, instálala en tu pantalla de inicio.
+        Para vivir #GatoEncerrado como una app nativa y ocultar las barras del navegador, instálala en tu móvil.
       </p>
 
       {showInstallButton && (
         <div className="flex flex-col gap-2">
           <Button onClick={handleInstallAttempt} variant="outline">
-            Instalar app en pantalla de inicio
+            Instalar App Web
           </Button>
-          <p className="text-xs text-slate-400">
-            Si el botón no responde, abre el menú de tu navegador y busca “Instalar app” o “Agregar a pantalla de inicio”.
-          </p>
+          {!promptEvent && !isiOS && !statusMsg && (
+            <p className="text-xs text-slate-400">
+              Si el botón no responde, abre el menú de tu navegador y busca “Instalar app” o “Agregar a pantalla de inicio”.
+            </p>
+          )}
         </div>
       )}
 
-      {showIosHint && !showInstallButton && (
-        <div className="space-y-1 text-xs text-slate-300">
-          <p>En Safari toca el ícono de compartir y elige “Añadir a pantalla de inicio”.</p>
-          <p>Desde allí la experiencia se abre sin barras y se siente como una app completa.</p>
-        </div>
-      )}
+      
 
       {statusMsg && (
         <p className="text-xs text-emerald-300" aria-live="polite">
