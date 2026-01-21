@@ -223,23 +223,68 @@ const CallToAction = () => {
   return (
     <div className="max-w-xl mx-auto text-center space-y-6">
       <motion.div
-  className="text-md text-white"
-  initial={{ opacity: 0 }}
-  animate={{ opacity: 1 }}
-  transition={{ duration: 0.5, delay: 0.2 }}
->
-  <p>
-    Cuando la causa florece, su pulso regresa al universo: nuevos juegos, nuevas escenas, nuevas historias por contar.
-  </p>
+        className="text-md text-white"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.5, delay: 0.2 }}
+      >
+        <p>
+          Cuando la causa florece, su pulso regresa al universo: nuevos juegos, nuevas escenas, nuevas historias por contar.
+        </p>
 
-  <p className="text-xs text-slate-400/70 mt-3">
-    Además, recibirás{' '}
-    <a href="#transmedia" className="underline text-slate-300">
-      12,000 GATokens
-    </a>{' '}
-    como una cortesía por tu suscripción.
-  </p>
-</motion.div>
+        <p className="text-xs text-slate-400/70 mt-3">
+          Además, recibirás{' '}
+          <a href="#transmedia" className="underline text-slate-300">
+            12,000 GATokens
+          </a>{' '}
+          como una cortesía por tu suscripción.
+        </p>
+      </motion.div>
+
+      {/* Checkout + Ticket Support */}
+      <div className="grid gap-3 sm:grid-cols-2">
+        <button
+          onClick={handleCheckout}
+          disabled={loading}
+          className="bg-white/90 text-black px-4 py-2 rounded disabled:opacity-50"
+        >
+          {loading ? 'Creando sesión…' : 'Suscribirme'}
+        </button>
+        <button
+          type="button"
+          onClick={() => setShowTicketSupport((prev) => !prev)}
+          className="border border-white/20 text-white px-4 py-2 rounded hover:border-purple-300/70 hover:text-purple-100"
+        >
+          {showTicketSupport ? 'Ocultar opciones' : 'Destinar mi boleto'}
+        </button>
+      </div>
+
+      {msg && <p className="text-red-300 text-sm">{msg}</p>}
+      {showTicketSupport ? (
+        <div className="rounded-2xl border border-white/10 bg-black/30 p-4 text-left text-slate-100 space-y-3">
+          <p className="text-sm text-slate-300">
+            Si ya compraste boleto, envíanos una foto como gesto de apoyo. No necesitas registrarte.
+          </p>
+          <div className="grid gap-2 sm:grid-cols-2">
+            <a
+              href={`mailto:${SUPPORT_EMAIL}?subject=Destinar%20boleto%20a%20la%20causa&body=${SUPPORT_MESSAGE}`}
+              className="flex items-center justify-center gap-2 text-center border border-white/20 text-white px-4 py-2 rounded hover:border-purple-300/70 hover:text-purple-100"
+            >
+              <Mail size={18} />
+              Enviar por correo
+            </a>
+            <a
+              href={`https://wa.me/${SUPPORT_WHATSAPP.replace(/\D/g, '')}?text=${SUPPORT_MESSAGE}`}
+              target="_blank"
+              rel="noreferrer"
+              className="flex items-center justify-center gap-2 text-center border border-white/20 text-white px-4 py-2 rounded hover:border-purple-300/70 hover:text-purple-100"
+            >
+              <MessageCircle size={18} />
+              Enviar por WhatsApp
+            </a>
+          </div>
+        </div>
+      ) : null}
 
       {/* Panel de impacto */}
       <div className="rounded-2xl border border-white/10 bg-white/5 p-5 text-left text-slate-100 space-y-4">
@@ -326,51 +371,6 @@ const CallToAction = () => {
           </span>
         </button>
       </div>
-
-      {/* Checkout + Ticket Support */}
-      <div className="grid gap-3 sm:grid-cols-2">
-        <button
-          onClick={handleCheckout}
-          disabled={loading}
-          className="bg-white/90 text-black px-4 py-2 rounded disabled:opacity-50"
-        >
-          {loading ? 'Creando sesión…' : 'Suscribirme'}
-        </button>
-        <button
-          type="button"
-          onClick={() => setShowTicketSupport((prev) => !prev)}
-          className="border border-white/20 text-white px-4 py-2 rounded hover:border-purple-300/70 hover:text-purple-100"
-        >
-          {showTicketSupport ? 'Ocultar opciones' : 'Destinar mi boleto'}
-        </button>
-      </div>
-
-      {msg && <p className="text-red-300 text-sm">{msg}</p>}
-      {showTicketSupport ? (
-        <div className="rounded-2xl border border-white/10 bg-black/30 p-4 text-left text-slate-100 space-y-3">
-          <p className="text-sm text-slate-300">
-            Si ya compraste boleto, envíanos una foto como gesto de apoyo. No necesitas registrarte.
-          </p>
-          <div className="grid gap-2 sm:grid-cols-2">
-          <a
-            href={`mailto:${SUPPORT_EMAIL}?subject=Destinar%20boleto%20a%20la%20causa&body=${SUPPORT_MESSAGE}`}
-            className="flex items-center justify-center gap-2 text-center border border-white/20 text-white px-4 py-2 rounded hover:border-purple-300/70 hover:text-purple-100"
-          >
-            <Mail size={18} />
-            Enviar por correo
-          </a>
-          <a
-            href={`https://wa.me/${SUPPORT_WHATSAPP.replace(/\D/g, '')}?text=${SUPPORT_MESSAGE}`}
-            target="_blank"
-            rel="noreferrer"
-            className="flex items-center justify-center gap-2 text-center border border-white/20 text-white px-4 py-2 rounded hover:border-purple-300/70 hover:text-purple-100"
-          >
-            <MessageCircle size={18} />
-            Enviar por WhatsApp
-          </a>
-          </div>
-        </div>
-      ) : null}
       {/* Activar notificaciones del universo */}
 
     </div>

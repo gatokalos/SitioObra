@@ -281,7 +281,7 @@ const Contact = () => {
           </p>
           
           <h2 className="font-display text-4xl md:text-5xl font-medium mb-6 text-gradient italic">
-            ¿Ya sientes la curiosidad gatuna?
+            ¿Tienes la curiosidad gatuna?
           </h2>
           <p className="text-lg text-slate-300/80 max-w-3xl mx-auto leading-relaxed font-light">
             Si algo de la experiencia te dejó una huella —o una pregunta—, este es tu espacio para contarlo. No buscamos "opiniones" sino aquello que cambió tu forma de mirar, sentir o recordar. 
