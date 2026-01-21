@@ -1583,6 +1583,7 @@ const Transmedia = () => {
   const [commentCarouselIndex, setCommentCarouselIndex] = useState(0);
   const [isOraculoOpen, setIsOraculoOpen] = useState(false);
   const [isCauseSiteOpen, setIsCauseSiteOpen] = useState(false);
+  const [showInstallPwaCTA, setShowInstallPwaCTA] = useState(false);
   const spentSilvestreSet = useMemo(
     () => new Set(spentSilvestreQuestions),
     [spentSilvestreQuestions]
@@ -1598,6 +1599,42 @@ const Transmedia = () => {
     () => SHOWCASE_BADGE_IDS.every((id) => showcaseBoosts?.[id]),
     [showcaseBoosts]
   );
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return undefined;
+    const userAgent = typeof navigator !== 'undefined' ? navigator.userAgent : '';
+    const isMobile = /iphone|ipad|ipod|android/i.test(userAgent);
+    const mediaQuery = window.matchMedia
+      ? window.matchMedia('(display-mode: standalone)')
+      : null;
+
+    const updateVisibility = () => {
+      const isStandalone =
+        Boolean(mediaQuery?.matches) ||
+        Boolean(typeof navigator !== 'undefined' && navigator.standalone === true);
+      setShowInstallPwaCTA(isMobile && !isStandalone);
+    };
+
+    updateVisibility();
+
+    const mediaListener = () => updateVisibility();
+    if (mediaQuery?.addEventListener) {
+      mediaQuery.addEventListener('change', mediaListener);
+    } else if (mediaQuery?.addListener) {
+      mediaQuery.addListener(mediaListener);
+    }
+
+    window.addEventListener('appinstalled', updateVisibility);
+
+    return () => {
+      if (mediaQuery?.removeEventListener) {
+        mediaQuery.removeEventListener('change', mediaListener);
+      } else if (mediaQuery?.removeListener) {
+        mediaQuery.removeListener(mediaListener);
+      }
+      window.removeEventListener('appinstalled', updateVisibility);
+    };
+  }, []);
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
@@ -5226,7 +5263,7 @@ const rendernotaAutoral = () => {
           >
             <p className="text-xs uppercase tracking-[0.4em] text-slate-400/70">Universo Transmedia</p>
             <h2 className="font-display text-4xl md:text-5xl font-medium text-gradient italic">
-              Escaparate de #Miniversos
+              Escaparate de Miniversos
             </h2>
             <p className="text-lg text-slate-300/80 max-w-3xl mx-auto leading-relaxed font-light">
               El universo de #GatoEncerrado se expande en <strong>nueve miniversos</strong>. Cada uno late por su cuenta —ya estaba ahí antes de que llegaras— y forma parte del mismo organismo narrativo. Al explorarlos, activas <span className="font-semibold text-purple-200">GATokens</span>: una energía simbólica que impulsa la experiencia artística y contribuye al sostenimiento de la causa social de {' '}
@@ -5446,15 +5483,17 @@ const rendernotaAutoral = () => {
             >
               <CallToAction />
             </motion.div>
-            <motion.div
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, delay: 0.4, ease: 'easeOut' }}
-              viewport={{ once: true }}
-              className="glass-effect rounded-2xl p-6 border border-white/10 bg-slate-950/50 shadow-2xl"
-            >
-              <InstallPWACTA />
-            </motion.div>
+            {showInstallPwaCTA ? (
+              <motion.div
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.8, delay: 0.4, ease: 'easeOut' }}
+                viewport={{ once: true }}
+                className="glass-effect rounded-2xl p-6 border border-white/10 bg-slate-950/50 shadow-2xl"
+              >
+                <InstallPWACTA />
+              </motion.div>
+            ) : null}
           </div>
         </div>
       </section>

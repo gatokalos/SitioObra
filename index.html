@@ -43,6 +43,18 @@
 			}
 		</script>
 		<style>
+			html,
+			body {
+				height: 100%;
+				margin: 0;
+				background-color: #050507;
+			}
+
+			#root {
+				min-height: 100%;
+				background-color: #050507;
+			}
+
 			#app-splash {
 				position: fixed;
 				inset: 0;
@@ -51,7 +63,8 @@
 				align-items: center;
 				justify-content: center;
 				gap: 16px;
-				background: radial-gradient(circle at top, rgba(76, 29, 149, 0.28), rgba(8, 8, 12, 0.95));
+				background-color: #050507;
+				background-image: radial-gradient(circle at top, rgba(76, 29, 149, 0.28), rgba(8, 8, 12, 0.95));
 				color: #e2e8f0;
 				font-family: "Georgia", "Times New Roman", serif;
 				letter-spacing: 0.06em;
@@ -68,6 +81,10 @@
 				font-size: 0.9rem;
 				text-transform: uppercase;
 				color: rgba(226, 232, 240, 0.7);
+			}
+
+			.splash-spinner-wrap {
+				transform: translateY(-12vh);
 			}
 
 			.splash-spinner {
@@ -91,7 +108,9 @@
 
 	<body>
 		<div id="app-splash">
-			<div class="splash-spinner" aria-hidden="true"></div>
+			<div class="splash-spinner-wrap">
+				<div class="splash-spinner" aria-hidden="true"></div>
+			</div>
 		</div>
 		<div id="root"></div>
 		<script>

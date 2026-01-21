@@ -344,13 +344,7 @@ const MiniverseModal = ({ open, onClose, onSelectMiniverse }) => {
           </div>
         </div>
 
-        <button
-          onClick={handleClose}
-          className="self-end text-slate-400 hover:text-white transition"
-          aria-label="Cerrar explorador de miniversos"
-        >
-          ✕
-        </button>
+      
       </div>
 
             <div className="grid md:grid-cols-2 gap-8">
@@ -436,10 +430,49 @@ const MiniverseModal = ({ open, onClose, onSelectMiniverse }) => {
                 </>
               ) : selectedMiniverse ? (
                 <div className="md:col-span-2">
-                  <div className="glass-effect rounded-2xl border border-white/10 bg-white/5 p-6 sm:p-8 space-y-6">
-                    <p className="text-xs uppercase tracking-[0.35em] text-slate-400">
-                      Antesala curatorial
-                    </p>
+                  <div className="glass-effect relative overflow-hidden rounded-2xl border border-white/10 bg-white/5 p-6 sm:p-8 space-y-6">
+                    <div
+                      aria-hidden="true"
+                      className="pointer-events-none absolute inset-0 opacity-65 mix-blend-screen"
+                      style={{
+                        backgroundImage:
+                          'radial-gradient(1px 1px at 6% 10%, rgba(248,250,252,0.9), transparent 65%),' +
+                          'radial-gradient(1.5px 1.5px at 10% 28%, rgba(241,245,249,0.75), transparent 70%),' +
+                          'radial-gradient(2px 2px at 14% 46%, rgba(226,232,240,0.7), transparent 70%),' +
+                          'radial-gradient(1px 1px at 18% 72%, rgba(255,255,255,0.55), transparent 70%),' +
+                          'radial-gradient(1.5px 1.5px at 22% 18%, rgba(241,245,249,0.7), transparent 70%),' +
+                          'radial-gradient(2px 2px at 28% 36%, rgba(226,232,240,0.7), transparent 70%),' +
+                          'radial-gradient(1px 1px at 32% 60%, rgba(255,255,255,0.55), transparent 70%),' +
+                          'radial-gradient(1.5px 1.5px at 36% 82%, rgba(241,245,249,0.65), transparent 70%),' +
+                          'radial-gradient(2px 2px at 40% 22%, rgba(226,232,240,0.7), transparent 70%),' +
+                          'radial-gradient(1px 1px at 44% 44%, rgba(255,255,255,0.55), transparent 70%),' +
+                          'radial-gradient(1.5px 1.5px at 48% 68%, rgba(241,245,249,0.7), transparent 70%),' +
+                          'radial-gradient(2px 2px at 52% 30%, rgba(226,232,240,0.7), transparent 70%),' +
+                          'radial-gradient(1px 1px at 56% 54%, rgba(255,255,255,0.5), transparent 70%),' +
+                          'radial-gradient(1.5px 1.5px at 60% 12%, rgba(241,245,249,0.7), transparent 70%),' +
+                          'radial-gradient(2px 2px at 64% 40%, rgba(226,232,240,0.7), transparent 100%),' +
+                          'radial-gradient(1px 1px at 68% 76%, rgba(255,255,255,0.5), transparent 70%),' +
+                          'radial-gradient(1.5px 1.5px at 72% 24%, rgba(241,245,249,0.7), transparent 70%),' +
+                          'radial-gradient(2px 2px at 76% 58%, rgba(226,232,240,0.7), transparent 50%),' +
+                          'radial-gradient(1px 1px at 80% 14%, rgba(255,255,255,0.5), transparent 70%),' +
+                          'radial-gradient(1.5px 1.5px at 84% 38%, rgba(241,245,249,0.65), transparent 70%),' +
+                          'radial-gradient(2px 2px at 88% 66%, rgba(226,232,240,0.7), transparent 70%),' +
+                          'radial-gradient(1px 1px at 92% 22%, rgba(255,255,255,0.5), transparent 70%),' +
+                          'radial-gradient(1.5px 1.5px at 94% 48%, rgba(241,245,249,0.65), transparent 70%),' +
+                          'radial-gradient(2px 2px at 96% 80%, rgba(226,232,240,0.7), transparent 70%)',
+                        filter: 'brightness(1.15)',
+                      }}
+                    />
+                    <div
+                      aria-hidden="true"
+                      className="pointer-events-none absolute inset-0 opacity-80 mix-blend-multiply"
+                      style={{
+                        backgroundImage:
+                          'radial-gradient(circle at 82% 18%, rgba(226,232,240,0.45), transparent 60%)',
+                      }}
+                    />
+                    <div className="relative z-10 space-y-6">
+             
                     <div className="flex items-center gap-3">
                       <div
                         className={`h-12 w-12 rounded-full bg-gradient-to-br ${selectedMiniverse.thumbGradient} flex items-center justify-center text-sm font-semibold text-white shadow-[0_10px_25px_rgba(0,0,0,0.35)]`}
@@ -472,6 +505,7 @@ const MiniverseModal = ({ open, onClose, onSelectMiniverse }) => {
                       >
                         Tocar otra puerta
                       </button>
+                    </div>
                     </div>
                   </div>
                 </div>
