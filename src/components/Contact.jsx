@@ -444,7 +444,7 @@ const Contact = () => {
             </div>
 
             <div className="glass-effect rounded-xl p-6">
-              <h3 className="font-display text-xl font-medium text-slate-100 mb-4">Prensa / Media</h3>
+              <h3 className="font-display text-xl font-medium text-slate-100 mb-4">Prensa</h3>
               <p className="text-slate-300/70 mb-4 font-light">Material oficial, dossier e información para medios y difusión cultural.</p>
               <Button onClick={handleActionClick} variant="outline" className="border-purple-400/50 text-purple-300 hover:bg-purple-500/20 hover:border-purple-400">
                 <Download size={18} className="mr-2" />
