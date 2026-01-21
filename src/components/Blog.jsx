@@ -686,7 +686,7 @@ const Blog = ({ posts = [], isLoading = false, error = null }) => {
           >
             <p className="text-xs uppercase tracking-[0.4em] text-slate-400/70 mb-4">Diálogo / Contribución</p>
             <h2 className="font-display text-4xl md:text-5xl font-medium mb-6 text-gradient italic">
-              Pensamiento crítico, comunidad y resonancia
+              Curaduría, comunidad y resonancia
             </h2>
             <p className="text-lg text-slate-300/80 max-w-3xl mx-auto leading-relaxed font-light">
               Un espacio de pensamiento crítico, creatividad y poética donde convergen curaduría, ficción expandida y
