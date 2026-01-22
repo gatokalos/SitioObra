@@ -264,6 +264,11 @@ const MiniverseModal = ({ open, onClose, onSelectMiniverse }) => {
     onSelectMiniverse?.(selectedMiniverse.formatId);
   }, [markMiniverseVisited, onSelectMiniverse, selectedMiniverse]);
 
+  const handleEnterUpcoming = useCallback(() => {
+    if (!selectedUpcoming) return;
+    onSelectMiniverse?.(selectedUpcoming.formatId);
+  }, [onSelectMiniverse, selectedUpcoming]);
+
   const handleSubmit = useCallback(
     async (event) => {
       event.preventDefault();
@@ -327,6 +332,17 @@ const MiniverseModal = ({ open, onClose, onSelectMiniverse }) => {
     onClose?.();
   }, [markMiniverseVisited, onClose, selectedMiniverseId, status]);
 
+  const handleScrollToSupport = useCallback(() => {
+    if (typeof document === 'undefined') {
+      onClose?.();
+      return;
+    }
+    onClose?.();
+    setTimeout(() => {
+      document.querySelector('#apoya')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 140);
+  }, [onClose]);
+
   return (
     <AnimatePresence>
       {open ? (
@@ -353,7 +369,7 @@ const MiniverseModal = ({ open, onClose, onSelectMiniverse }) => {
       <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-6">
         <div>
           <p className="text-sm uppercase tracking-[0.35em] text-slate-400/80 mb-2">
-            Universos expandidos #GatoEncerrado
+            Universo expandido #GatoEncerrado
           </p>
 
           <h2 id="miniverse-modal-title" className="font-display text-3xl text-slate-50">
@@ -375,10 +391,21 @@ const MiniverseModal = ({ open, onClose, onSelectMiniverse }) => {
                 <>
                   <div className="space-y-4 text-slate-300/90 text-sm leading-relaxed">
                     <div className="glass-effect rounded-2xl border border-white/10 p-5 space-y-4">
-                      <p className="text-base uppercase tracking-[0.3em] text-slate-400">Próximamente</p>
+                  
                       <h3 className="font-display text-2xl text-slate-100">
                         Este miniverso aún no existe… pero puede existir contigo.
                       </h3>
+                      <p className="font-semibold text-purple-100">
+                        👉{' '}
+                        <button
+                          type="button"
+                          onClick={handleScrollToSupport}
+                          className="underline underline-offset-4 text-purple-100 hover:text-white transition"
+                        >
+                          Suscríbete
+                        </button>
+                        , comparte o participa.
+                      </p>
 
                       {selectedUpcoming ? (
                         <div className="relative overflow-hidden rounded-2xl border border-white/10 bg-black/20 p-5 min-h-[220px]">
@@ -417,13 +444,22 @@ const MiniverseModal = ({ open, onClose, onSelectMiniverse }) => {
                             <p className="text-sm text-slate-300/90 leading-relaxed">
                               {selectedUpcoming.description}
                             </p>
-                            <button
-                              type="button"
-                              onClick={handleReturnToUpcomingList}
-                              className="rounded-lg border border-white/10 px-4 py-3 text-xs uppercase tracking-[0.25em] text-slate-300 hover:text-white hover:border-purple-300/40 transition"
-                            >
-                              Tocar otra puerta
-                            </button>
+                            <div className="flex flex-col sm:flex-row gap-3">
+                              <Button
+                                type="button"
+                                onClick={handleEnterUpcoming}
+                                className="bg-gradient-to-r from-purple-600/80 to-indigo-600/80 hover:from-purple-600 hover:to-indigo-600 text-white py-3 rounded-lg font-semibold flex items-center justify-center gap-2 hover-glow"
+                              >
+                                {selectedUpcoming.action}
+                              </Button>
+                              <button
+                                type="button"
+                                onClick={handleReturnToUpcomingList}
+                                className="rounded-lg border border-white/10 px-4 py-3 text-xs uppercase tracking-[0.25em] text-slate-300 hover:text-white hover:border-purple-300/40 transition"
+                              >
+                                Cerrar puerta
+                              </button>
+                            </div>
                           </div>
                         </div>
                       ) : (
@@ -450,9 +486,6 @@ const MiniverseModal = ({ open, onClose, onSelectMiniverse }) => {
                         </div>
                       )}
 
-                      <p className="font-semibold text-purple-100">
-                        👉 Suscríbete, comparte o participa. Aquí, cada gesto cuenta.
-                      </p>
                     </div>
                   </div>
 
@@ -549,9 +582,7 @@ const MiniverseModal = ({ open, onClose, onSelectMiniverse }) => {
                       }}
                     />
                     <div className="relative z-10 space-y-6">
-                      <p className="text-xs uppercase tracking-[0.35em] text-slate-400">
-                        Antesala curatorial
-                      </p>
+             
                       <div className="flex items-center gap-3">
                       <div
                         className={`h-12 w-12 rounded-full bg-gradient-to-br ${selectedMiniverse.thumbGradient} flex items-center justify-center text-sm font-semibold text-white shadow-[0_10px_25px_rgba(0,0,0,0.35)]`}

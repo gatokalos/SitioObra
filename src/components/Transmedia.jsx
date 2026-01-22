@@ -2410,12 +2410,14 @@ const Transmedia = () => {
     setIsGraphicUnlocking(false);
     setTazaActivations(0);
     setShowTazaCoins(false);
+    setSpentSilvestreQuestions([]);
     if (typeof window !== 'undefined') {
       window.localStorage?.removeItem('gatoencerrado:quiron-spent');
       window.localStorage?.removeItem('gatoencerrado:novela-questions');
       window.localStorage?.removeItem('gatoencerrado:sonoro-spent');
       window.localStorage?.removeItem('gatoencerrado:graphic-spent');
       window.localStorage?.removeItem('gatoencerrado:taza-activations');
+      window.localStorage?.removeItem(SILVESTRE_QUESTIONS_STORAGE_KEY);
       window.dispatchEvent(
         new CustomEvent('gatoencerrado:miniverse-spent', {
           detail: { id: 'novela', spent: false, amount: 0, count: 0 },
