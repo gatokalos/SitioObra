@@ -52,6 +52,7 @@ const MINIVERSE_CARDS = [
     title: 'Miniverso Gráficos',
     description: 'Imágenes y trazos nacidos del proceso creativo de la obra.',
     action: 'Imagina',
+    isUpcoming: true,
   },
   {
     id: 'cine',
@@ -83,6 +84,7 @@ const MINIVERSE_CARDS = [
     title: 'Miniverso Movimiento',
     description: 'Cuerpos, recorridos y figuras rituales que expanden la obra en el espacio.',
     action: 'Baila',
+    isUpcoming: true,
   },
   {
     id: 'apps',
@@ -131,6 +133,7 @@ const MiniverseModal = ({ open, onClose, onSelectMiniverse }) => {
   const [status, setStatus] = useState('idle');
   const [errorMessage, setErrorMessage] = useState('');
   const [selectedMiniverseId, setSelectedMiniverseId] = useState(null);
+  const [selectedUpcomingId, setSelectedUpcomingId] = useState(null);
   const [visitedMiniverses, setVisitedMiniverses] = useState({});
 
   const playKnockSound = useCallback(() => {
@@ -173,6 +176,7 @@ const MiniverseModal = ({ open, onClose, onSelectMiniverse }) => {
       setStatus('idle');
       setErrorMessage('');
       setSelectedMiniverseId(null);
+      setSelectedUpcomingId(null);
     }
   }, [open]);
 
@@ -195,9 +199,17 @@ const MiniverseModal = ({ open, onClose, onSelectMiniverse }) => {
   }, []);
 
   const activeTabLabel = useMemo(() => TABS.find((tab) => tab.id === activeTab)?.label ?? TABS[0].label, [activeTab]);
+  const upcomingMiniverses = useMemo(
+    () => MINIVERSE_CARDS.filter((card) => card.isUpcoming),
+    []
+  );
   const selectedMiniverse = useMemo(
     () => MINIVERSE_CARDS.find((card) => card.id === selectedMiniverseId) ?? null,
     [selectedMiniverseId]
+  );
+  const selectedUpcoming = useMemo(
+    () => upcomingMiniverses.find((card) => card.id === selectedUpcomingId) ?? null,
+    [selectedUpcomingId, upcomingMiniverses]
   );
 
   const markMiniverseVisited = useCallback((miniverseId) => {
@@ -212,12 +224,16 @@ const MiniverseModal = ({ open, onClose, onSelectMiniverse }) => {
       }
       setActiveTab(tabId);
       setSelectedMiniverseId(null);
+      setSelectedUpcomingId(null);
     },
     [markMiniverseVisited, selectedMiniverseId]
   );
 
   const handleSelectCard = useCallback(
     (card) => {
+      if (card.isUpcoming) {
+        return;
+      }
       if (!visitedMiniverses[card.id]) {
         playKnockSound();
       }
@@ -226,6 +242,14 @@ const MiniverseModal = ({ open, onClose, onSelectMiniverse }) => {
     },
     [markMiniverseVisited, playKnockSound, visitedMiniverses]
   );
+
+  const handleSelectUpcoming = useCallback((card) => {
+    setSelectedUpcomingId(card.id);
+  }, []);
+
+  const handleReturnToUpcomingList = useCallback(() => {
+    setSelectedUpcomingId(null);
+  }, []);
 
   const handleReturnToList = useCallback(() => {
     if (selectedMiniverseId) {
@@ -344,7 +368,6 @@ const MiniverseModal = ({ open, onClose, onSelectMiniverse }) => {
           </div>
         </div>
 
-      
       </div>
 
             <div className="grid md:grid-cols-2 gap-8">
@@ -356,15 +379,77 @@ const MiniverseModal = ({ open, onClose, onSelectMiniverse }) => {
                       <h3 className="font-display text-2xl text-slate-100">
                         Este miniverso aún no existe… pero puede existir contigo.
                       </h3>
-                      
-                      <ul className="space-y-2 text-sm leading-relaxed">
-                        <li>🪙 Cada suscripción a la plataforma apoya directamente los proyectos activos de la asociación.</li>
-                        <li>
-                          💡 Una vez cubiertas las metas básicas, todo lo recaudado se usará para dar vida a miniversos como este.
-                        </li>
-                        <li>🌐 Conectando arte, tecnología y territorio en experiencias reales e inmersivas.</li>
-                      </ul>
-                      <p>¿Lo imaginaste? Ahora ayúdanos a realizarlo.</p>
+
+                      {selectedUpcoming ? (
+                        <div className="relative overflow-hidden rounded-2xl border border-white/10 bg-black/20 p-5 min-h-[220px]">
+                          <div
+                            aria-hidden="true"
+                            className="pointer-events-none absolute inset-0 opacity-45 mix-blend-screen"
+                            style={{
+                              backgroundImage:
+                                'radial-gradient(1px 1px at 12% 18%, rgba(248,250,252,0.8), transparent 65%),' +
+                                'radial-gradient(1.5px 1.5px at 24% 42%, rgba(241,245,249,0.65), transparent 70%),' +
+                                'radial-gradient(2px 2px at 36% 28%, rgba(226,232,240,0.6), transparent 70%),' +
+                                'radial-gradient(1px 1px at 44% 62%, rgba(255,255,255,0.45), transparent 70%),' +
+                                'radial-gradient(1.5px 1.5px at 52% 18%, rgba(241,245,249,0.55), transparent 70%),' +
+                                'radial-gradient(2px 2px at 64% 48%, rgba(226,232,240,0.6), transparent 70%),' +
+                                'radial-gradient(1px 1px at 72% 30%, rgba(255,255,255,0.4), transparent 70%),' +
+                                'radial-gradient(1.5px 1.5px at 80% 66%, rgba(241,245,249,0.55), transparent 70%),' +
+                                'radial-gradient(2px 2px at 88% 22%, rgba(226,232,240,0.6), transparent 70%),' +
+                                'radial-gradient(1px 1px at 18% 78%, rgba(255,255,255,0.35), transparent 70%),' +
+                                'radial-gradient(1.5px 1.5px at 58% 78%, rgba(241,245,249,0.55), transparent 70%),' +
+                                'radial-gradient(1px 1px at 90% 82%, rgba(255,255,255,0.35), transparent 70%)',
+                            }}
+                          />
+                          <div className="relative z-10 space-y-4">
+                            <div className="flex items-center gap-3">
+                              <div
+                                className={`h-12 w-12 rounded-full bg-gradient-to-br ${selectedUpcoming.thumbGradient} flex items-center justify-center text-sm font-semibold text-white shadow-[0_10px_25px_rgba(0,0,0,0.35)]`}
+                              >
+                                {selectedUpcoming.icon ? (
+                                  <selectedUpcoming.icon size={22} className="text-white drop-shadow-sm" />
+                                ) : (
+                                  selectedUpcoming.thumbLabel
+                                )}
+                              </div>
+                              <h4 className="font-display text-xl text-slate-100">{selectedUpcoming.title}</h4>
+                            </div>
+                            <p className="text-sm text-slate-300/90 leading-relaxed">
+                              {selectedUpcoming.description}
+                            </p>
+                            <button
+                              type="button"
+                              onClick={handleReturnToUpcomingList}
+                              className="rounded-lg border border-white/10 px-4 py-3 text-xs uppercase tracking-[0.25em] text-slate-300 hover:text-white hover:border-purple-300/40 transition"
+                            >
+                              Tocar otra puerta
+                            </button>
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="space-y-3">
+                          {upcomingMiniverses.map((card) => (
+                            <button
+                              key={card.id}
+                              type="button"
+                              onClick={() => handleSelectUpcoming(card)}
+                              className="w-full rounded-2xl border border-white/10 bg-black/20 px-4 py-4 text-left flex items-center gap-4 transition hover:border-purple-300/40 hover:bg-white/5"
+                            >
+                              <div
+                                className={`h-12 w-12 rounded-full bg-gradient-to-br ${card.thumbGradient} flex items-center justify-center text-sm font-semibold text-white shadow-[0_10px_25px_rgba(0,0,0,0.35)]`}
+                              >
+                                {card.icon ? (
+                                  <card.icon size={22} className="text-white drop-shadow-sm" />
+                                ) : (
+                                  card.thumbLabel
+                                )}
+                              </div>
+                              <h4 className="font-display text-lg text-slate-100">{card.title}</h4>
+                            </button>
+                          ))}
+                        </div>
+                      )}
+
                       <p className="font-semibold text-purple-100">
                         👉 Suscríbete, comparte o participa. Aquí, cada gesto cuenta.
                       </p>
@@ -463,17 +548,11 @@ const MiniverseModal = ({ open, onClose, onSelectMiniverse }) => {
                         filter: 'brightness(1.15)',
                       }}
                     />
-                    <div
-                      aria-hidden="true"
-                      className="pointer-events-none absolute inset-0 opacity-80 mix-blend-multiply"
-                      style={{
-                        backgroundImage:
-                          'radial-gradient(circle at 82% 18%, rgba(226,232,240,0.45), transparent 60%)',
-                      }}
-                    />
                     <div className="relative z-10 space-y-6">
-             
-                    <div className="flex items-center gap-3">
+                      <p className="text-xs uppercase tracking-[0.35em] text-slate-400">
+                        Antesala curatorial
+                      </p>
+                      <div className="flex items-center gap-3">
                       <div
                         className={`h-12 w-12 rounded-full bg-gradient-to-br ${selectedMiniverse.thumbGradient} flex items-center justify-center text-sm font-semibold text-white shadow-[0_10px_25px_rgba(0,0,0,0.35)]`}
                       >
@@ -483,8 +562,8 @@ const MiniverseModal = ({ open, onClose, onSelectMiniverse }) => {
                           selectedMiniverse.thumbLabel
                         )}
                       </div>
-                      <h3 className="font-display text-2xl text-slate-100">{selectedMiniverse.title}</h3>
-                    </div>
+                        <h3 className="font-display text-2xl text-slate-100">{selectedMiniverse.title}</h3>
+                      </div>
 
                     <p className="text-sm text-slate-300/90 leading-relaxed">
                       {selectedMiniverse.description}
@@ -512,30 +591,48 @@ const MiniverseModal = ({ open, onClose, onSelectMiniverse }) => {
               ) : (
                 <div className="md:col-span-2 grid md:grid-cols-3 gap-6">
                   {MINIVERSE_CARDS.map((card) => {
-                    const isVisited = Boolean(visitedMiniverses[card.id]);
+                    const isUpcoming = Boolean(card.isUpcoming);
+                    const isVisited = !isUpcoming && Boolean(visitedMiniverses[card.id]);
                     return (
                       <button
                         key={card.title}
                         type="button"
                         onClick={() => handleSelectCard(card)}
-                        className={`relative text-left glass-effect rounded-2xl border p-5 transition flex items-center gap-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-400/60 ${
-                          isVisited
-                            ? 'border-emerald-300/20 bg-emerald-500/5 hover:border-emerald-300/30'
-                            : 'border-white/10 bg-white/5 hover:border-purple-300/40 hover:shadow-[0_10px_30px_rgba(124,58,237,0.18)]'
+                        disabled={isUpcoming}
+                        className={`relative text-left glass-effect rounded-2xl border p-5 transition flex items-center gap-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-400/60 disabled:cursor-not-allowed disabled:opacity-60 ${
+                          isUpcoming
+                            ? 'border-white/10 bg-white/5'
+                            : isVisited
+                              ? 'border-emerald-300/20 bg-emerald-500/5 hover:border-emerald-300/30'
+                              : 'border-white/10 bg-white/5 hover:border-purple-300/40 hover:shadow-[0_10px_30px_rgba(124,58,237,0.18)]'
                         }`}
                       >
+                        {isUpcoming ? (
+                          <>
+                            <div className="h-12 w-12 rounded-full border border-white/10 bg-slate-800/60 flex items-center justify-center text-slate-200 shadow-[0_10px_25px_rgba(0,0,0,0.35)]">
+                              {card.icon ? <card.icon size={22} className="text-slate-200/80" /> : card.thumbLabel}
+                            </div>
+                            <span className="rounded-full border border-white/20 bg-black/40 px-3 py-1 text-[0.6rem] uppercase tracking-[0.3em] text-slate-300">
+                              Próximamente
+                            </span>
+                          </>
+                        ) : null}
                         {isVisited ? (
                           <span
                             aria-hidden="true"
                             className="absolute right-3 top-3 h-2 w-2 rounded-full bg-emerald-300/60"
                           />
                         ) : null}
-                        <div
-                          className={`h-12 w-12 rounded-full bg-gradient-to-br ${card.thumbGradient} flex items-center justify-center text-sm font-semibold text-white shadow-[0_10px_25px_rgba(0,0,0,0.35)]`}
-                        >
-                          {card.icon ? <card.icon size={22} className="text-white drop-shadow-sm" /> : card.thumbLabel}
-                        </div>
-                        <h3 className="font-display text-lg text-slate-100">{card.title}</h3>
+                        {!isUpcoming ? (
+                          <>
+                            <div
+                              className={`h-12 w-12 rounded-full bg-gradient-to-br ${card.thumbGradient} flex items-center justify-center text-sm font-semibold text-white shadow-[0_10px_25px_rgba(0,0,0,0.35)]`}
+                            >
+                              {card.icon ? <card.icon size={22} className="text-white drop-shadow-sm" /> : card.thumbLabel}
+                            </div>
+                            <h3 className="font-display text-lg text-slate-100">{card.title}</h3>
+                          </>
+                        ) : null}
                       </button>
                     );
                   })}
