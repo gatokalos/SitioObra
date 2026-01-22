@@ -30,6 +30,7 @@ import MiniverseModal from '@/components/MiniverseModal';
 import CallToAction from '@/components/CallToAction';
 import InstallPWACTA from '@/components/InstallPWACTA';
 import ContributionModal from '@/components/ContributionModal';
+import ReserveModal from '@/components/ReserveModal';
 import { fetchBlogPostBySlug } from '@/services/blogService';
 import { toast } from '@/components/ui/use-toast';
 import { useAuth } from '@/contexts/SupabaseAuthContext';
@@ -553,7 +554,7 @@ const showcaseDefinitions = {
     subtitle: 'Esta no es una taza. Es un portal.',
     intro:
       'Un objeto cotidiano convertido en símbolo de comunión. Cada taza está vinculada a un sentimiento. Cada sentimiento, a una historia personal.',
-    note: 'Apunta tu cámara... La clave aparecerá.',
+    note: 'Apunta tu cámara y aparecerá tu frase',
     ctaLabel: 'Probar activación WebAR',
     ctaLink: '/webar/taza/index.html',
     ctaMessage: 'Cuando liberes la activación WebAR, descubrirás la pista que le corresponde a tu taza.',
@@ -562,7 +563,7 @@ const showcaseDefinitions = {
     instructions: [
       'Permite el acceso a tu cámara para iniciar.',
       'Coloca la taza completa en cuadro, con buena iluminación.',
-      'Mantén el marcador visible hasta que aparezca la orbe.',
+      'Mantén el marcador visible hasta que aparezca una orbe.',
     ],
     collaborators: [
        {
@@ -973,10 +974,10 @@ const showcaseDefinitions = {
     type: 'apps',
     tagline: 'Juegos como portales • Apps como rituales felinos.',
     intro:
-      'Demos jugables del Tablero de Todxs: eliges avatar (Maestra, Saturnina, Don Polo…) y el gato anfitrión te abre el telón en 3 taps.',
+      'Demos jugables del tablero TRAZO: eliges avatar (Maestra, Saturnina, Don Polo…) y el gato anfitrión te abre el telón en 3 taps.',
     cartaTitle: '#GatologíaEnJuego',
     notaAutoral:
-      'El gato anfitrión guarda prefijos en sus bolsillos.\nTres taps y se abre el telón.\nCada casilla es un mito menor que resiste al olvido.',
+      'Nadie vence.\nEnsayamos.\nAl llegar juntxs,\nel Gato habla.',
     tapDemo: {
       title: 'Tap-to-advance demo',
       steps: [
@@ -1552,6 +1553,7 @@ const Transmedia = () => {
   const [quironSpent, setQuironSpent] = useState(initialQuironSpent);
   const [graphicSpent, setGraphicSpent] = useState(initialGraphicSpent);
   const [novelaQuestions, setNovelaQuestions] = useState(initialNovelaQuestions);
+  const [isNovelaReserveOpen, setIsNovelaReserveOpen] = useState(false);
   const [sonoroSpent, setSonoroSpent] = useState(initialSonoroSpent);
   const [tazaActivations, setTazaActivations] = useState(initialTazaActivations);
   const [showQuironCommunityPrompt, setShowQuironCommunityPrompt] = useState(false);
@@ -2035,13 +2037,17 @@ const Transmedia = () => {
       setIsSilvestreFetching(true);
       setIsSilvestreResponding(true);
       const apiBase = import.meta.env.VITE_SILVESTRE_API_URL;
-      const response = await fetch(`${apiBase}/api/silvestre-voice`, {
+      const useObraConciencia =
+        (import.meta.env.VITE_SILVESTRE_OBRA_CONCIENCIA ?? 'true') === 'true';
+      const endpoint = useObraConciencia ? '/obra-conciencia' : '/api/silvestre-voice';
+      const payload = useObraConciencia ? { pregunta: message } : { mensaje: message };
+      const response = await fetch(`${apiBase}${endpoint}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'X-User-Id': user?.id ?? 'anonymous',
         },
-        body: JSON.stringify({ mensaje: message }),
+        body: JSON.stringify(payload),
         signal: controller.signal,
       });
       if (requestId !== silvestreRequestIdRef.current) {
@@ -3253,7 +3259,7 @@ const rendernotaAutoral = () => {
           onClick={() => handleOpenContribution(getContributionCategoryForShowcase('lataza'))}
           className="mt-2 text-xs uppercase tracking-[0.3em] text-purple-300 hover:text-purple-200 self-start"
         >
-          Quiero saber dónde se activa
+          Quiero saber dónde juntarnos
         </button>
       </div>
     </div>
@@ -3481,6 +3487,7 @@ const rendernotaAutoral = () => {
     }
 
     if (activeDefinition.type === 'tragedia') {
+      const onClose = () => setActiveShowcase(null);
       const conversationBlock = activeDefinition.conversationStarters?.length ? (
         <div className="space-y-3 border-t border-white/10 pt-4">
           <p className="text-xs uppercase tracking-[0.35em] text-pink-200">Preguntas Predeterminadas</p>
@@ -3526,11 +3533,20 @@ const rendernotaAutoral = () => {
       };
 
       return (
-        <div className="space-y-10">
-          
+        <div className="space-y-2">
+          <div className="flex justify-end">
+            <button
+              onClick={() => setActiveShowcase(null)}
+              className="text-sm text-slate-400 hover:text-white transition"
+              aria-label="Cerrar escaparate"
+            >
+              Cerrar ✕
+            </button>
+          </div>
           <div className="rounded-[2.5rem] border border-white/10 bg-gradient-to-br from-slate-900/85 via-black/60 to-rose-900/35 shadow-[0_25px_65px_rgba(15,23,42,0.65)]">
             <div className="grid gap-10 p-6 sm:p-8 lg:p-10 lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
               <div className="space-y-6">
+     
                 <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
                   <div className="space-y-3">
                     <p className="text-xs uppercase tracking-[0.4em] text-purple-300">Escaparate</p>
@@ -4632,21 +4648,16 @@ const rendernotaAutoral = () => {
               </>
             ) : null;
           case 'purchase-link':
-            if (!entry.url) {
-              return null;
-            }
-
             if (entry.app) {
               return (
                 <div className="flex flex-col gap-3 sm:flex-row">
-                  <a
-                    href={entry.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
+                  <button
+                    type="button"
+                    onClick={() => setIsNovelaReserveOpen(true)}
                     className="inline-flex w-full sm:w-auto items-center justify-center rounded-full border border-purple-400/40 text-purple-200 hover:bg-purple-500/10 px-6 py-2 font-semibold transition"
                   >
                     Comprar edición física
-                  </a>
+                  </button>
                   <Button
                     onClick={() => handleNovelAppCTA(entry.app)}
                     className="w-full sm:w-auto justify-center bg-purple-600/80 hover:bg-purple-600 text-white rounded-full"
@@ -4658,14 +4669,13 @@ const rendernotaAutoral = () => {
             }
 
             return (
-              <a
-                href={entry.url}
-                target="_blank"
-                rel="noopener noreferrer"
+              <button
+                type="button"
+                onClick={() => setIsNovelaReserveOpen(true)}
                 className="inline-flex w-full sm:w-auto items-center justify-center rounded-full border border-purple-400/40 text-purple-200 hover:bg-purple-500/10 px-6 py-2 font-semibold transition"
               >
                 Comprar edición
-              </a>
+              </button>
             );
           case 'qr-scan':
             return (
@@ -5052,7 +5062,7 @@ const rendernotaAutoral = () => {
                     className="text-sm text-slate-400 hover:text-white transition"
                     aria-label="Cerrar escaparate"
                   >
-                    Cerrar escaparate ✕
+                    Cerrar ✕
                   </button>
                 </div>
               ) : null}
@@ -5514,6 +5524,13 @@ const rendernotaAutoral = () => {
         }}
         initialCategoryId={contributionCategoryId}
         presentation="sheet"
+      />
+      <ReserveModal
+        open={isNovelaReserveOpen}
+        onClose={() => setIsNovelaReserveOpen(false)}
+        mode="offseason"
+        initialPackages={['novela-400']}
+        overlayZClass="z-[210]"
       />
       {showBadgeLoginOverlay ? <LoginOverlay onClose={handleCloseBadgeLogin} /> : null}
 

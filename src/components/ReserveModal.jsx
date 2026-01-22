@@ -119,7 +119,13 @@ const RESERVE_COPY = {
 
 // COMPONENT
 // -------------------------------------------------------------
-const ReserveModal = ({ open, onClose, mode = 'offseason' }) => {
+const ReserveModal = ({
+  open,
+  onClose,
+  mode = 'offseason',
+  initialPackages = [],
+  overlayZClass = 'z-50',
+}) => {
   const [formState, setFormState] = useState(initialFormState);
   const [status, setStatus] = useState('idle');
   const [errorMessage, setErrorMessage] = useState('');
@@ -133,13 +139,16 @@ const ReserveModal = ({ open, onClose, mode = 'offseason' }) => {
   // -------------------------------------------------------------
   useEffect(() => {
     if (open) {
-      setFormState(initialFormState);
+      const sanitizedPackages = Array.isArray(initialPackages)
+        ? initialPackages.filter((pkgId) => PACKAGE_PRICE_MAP[pkgId])
+        : [];
+      setFormState({ ...initialFormState, packages: sanitizedPackages });
       setStatus('idle');
       setErrorMessage('');
       setCheckoutError('');
       setIsCheckoutLoading(false);
     }
-  }, [open]);
+  }, [open, initialPackages]);
 
   // -------------------------------------------------------------
   // Permitir cerrar con ESC
@@ -294,7 +303,7 @@ const ReserveModal = ({ open, onClose, mode = 'offseason' }) => {
     <AnimatePresence>
       {open && (
         <motion.div
-          className="fixed inset-0 z-50 flex items-start justify-center px-4 py-6 sm:py-10 overflow-y-auto"
+          className={`fixed inset-0 ${overlayZClass} flex items-start justify-center px-4 py-6 sm:py-10 overflow-y-auto`}
           initial="hidden"
           animate="visible"
           exit="hidden"
@@ -516,7 +525,7 @@ const ReserveModal = ({ open, onClose, mode = 'offseason' }) => {
                     disabled={status === 'loading'}
                     className="w-full bg-gradient-to-r from-purple-600/80 to-indigo-600/80 hover:from-purple-600 hover:to-indigo-600 text-white py-3 rounded-lg font-semibold flex items-center justify-center gap-2 hover-glow"
                   >
-                    {isSubmitting ? 'Enviando…' : 'Enviar reserva'}
+                    {isSubmitting ? 'Enviando…' : 'Apartar'}
                   </Button>
 
        
