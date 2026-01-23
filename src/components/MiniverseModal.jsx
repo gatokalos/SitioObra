@@ -41,7 +41,7 @@ const MINIVERSE_CARDS = [
     title: 'Miniverso Artesanías',
     description:
       'Objeto ritual de que activa la experiencia fuera del escenario.',
-    action: 'Comparte',
+    action: 'Actívala',
   },
   {
     id: 'graficos',

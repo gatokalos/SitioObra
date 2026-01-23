@@ -2385,6 +2385,7 @@ const Transmedia = () => {
     if (isTazaActivating) {
       return;
     }
+
     const next = tazaActivations + 1;
     setTazaActivations(next);
     setShowTazaCoins(true);
