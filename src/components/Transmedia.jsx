@@ -565,7 +565,6 @@ const showcaseDefinitions = {
       'Un objeto cotidiano convertido en símbolo de comunión. Cada taza está vinculada a un sentimiento. Cada sentimiento, a una historia personal.',
     note: 'Apunta tu cámara y aparecerá tu frase',
     ctaLabel: 'Probar activación WebAR',
-    ctaLink: '/webar/taza/index.html',
     ctaMessage: 'Cuando liberes la activación WebAR, descubrirás la pista que le corresponde a tu taza.',
     image: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Merch/taza_h.png',
     phrases: ['La taza te habla.'],
