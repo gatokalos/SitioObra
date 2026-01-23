@@ -373,6 +373,16 @@ body {
   animation-play-state: paused;
 }
 
+@media (max-width: 640px) {
+  .starter-marquee {
+    max-height: 180px;
+  }
+
+  .starter-marquee__list {
+    animation-duration: 39s;
+  }
+}
+
 @keyframes starter-scroll {
   0% {
     transform: translateY(0);

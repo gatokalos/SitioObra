@@ -406,23 +406,23 @@ const showcaseDefinitions = {
 
     ctaLabel: 'Hablar con La Obra',
     conversationStarters: [
-      '¿Por qué Es un gato encerrado vuelve a pasar por las mismas escenas?',
+      '¿Qué hace que la obra siga “presente” después de haber terminado?',
       '¿Por qué la obra no explica del todo lo que le pasa a Silvestre?',
       '¿Qué es más importante aquí: lo que ocurre o lo que se siente?',
       '¿Desde dónde habla la obra cuando Silvestre se queda solo con su mente?',
       '¿Qué cambia si vuelvo a mirar la obra con más calma?',
-      '¿Qué espera la obra de quien se queda pensando en Silvestre?',
+      '¿Por qué todo en la obra parece girar alrededor de Silvestre, incluso cuando no habla?',
       '¿Silvestre está recordando… o pensando cosas que no puede detener?',
       '¿Qué lugar ocupa el humor cuando la obra habla de cosas difíciles?',
-      '¿Por qué la obra se mueve entre momentos de claridad y confusión?',
+      '¿Por qué algunas preguntas de la obra regresan sin resolverse?',
       '¿La rabia que aparece en escena pertenece solo a Silvestre?',
       '¿Qué decide la obra mostrar y qué prefiere dejar fuera?',
-      '¿Qué hace la obra con todo lo que Silvestre no dice?',
-      '¿La obra busca entender la mente o simplemente escucharla?',
+      '¿Qué se siente estar atrapado en un sistema que solo repite?',
+      '¿Por qué los espacios de la obra no se sienten como refugio?',
       '¿Por qué ciertos números, palabras o gestos se repiten?',
       'Después de verla, ¿la obra se cierra… o sigue acompañando?',
-      '¿Por qué a veces no queda claro si algo es un recuerdo o un pensamiento?',
-      '¿La obra cree que fingir estar bien es una forma de sobrevivir?',
+      '¿Qué significa que Silvestre sea un eje y no un protagonista clásico?',
+      '¿Por qué la obra deja cosas abiertas incluso después de salir del teatro?',
     ],
     iaProfile: {
       type: 'GPT-4o afinada para voz literaria y contención emocional.',
@@ -3505,9 +3505,9 @@ const rendernotaAutoral = () => {
 
     if (activeDefinition.type === 'tragedia') {
       const onClose = () => setActiveShowcase(null);
-      const visibleStarters = (activeDefinition.conversationStarters ?? [])
-        .filter((starter) => !spentSilvestreSet.has(starter))
-        .slice(0, 5);
+      const visibleStarters = (activeDefinition.conversationStarters ?? []).filter(
+        (starter) => !spentSilvestreSet.has(starter)
+      );
       const marqueeStarters = [...visibleStarters, ...visibleStarters];
       const conversationBlock = visibleStarters.length ? (
         <div className="space-y-3 border-t border-white/10 pt-4">
