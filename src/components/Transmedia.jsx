@@ -2382,11 +2382,6 @@ const Transmedia = () => {
   );
 
   const handleActivateAR = useCallback(() => {
-    const remaining = Math.max(90 - tazaActivations * 30, 0);
-    if (remaining <= 0) {
-      toast({ description: 'Sin gatokens para esta activación.' });
-      return;
-    }
     if (isTazaActivating) {
       return;
     }
@@ -3087,8 +3082,9 @@ const rendernotaAutoral = () => {
     }
 
   if (activeDefinition.type === 'object-webar') {
-      const objectWebArVideoId = `${activeShowcase ?? 'object-webar'}-video`;
-      const remainingTazaGatokens = Math.max(90 - tazaActivations * 30, 0);
+    const objectWebArVideoId = `${activeShowcase ?? 'object-webar'}-video`;
+    const isTazaUnlimited = true;
+    const remainingTazaGatokens = isTazaUnlimited ? Number.POSITIVE_INFINITY : Math.max(90 - tazaActivations * 30, 0);
 
       return (
         <div className="space-y-8">
@@ -3238,13 +3234,9 @@ const rendernotaAutoral = () => {
               className="relative border-purple-400/40 text-purple-200 hover:bg-purple-500/10 overflow-visible"
               variant="outline"
               onClick={handleActivateAR}
-              disabled={remainingTazaGatokens <= 0 || isTazaActivating}
+              disabled={isTazaActivating}
             >
-              {remainingTazaGatokens <= 0
-                ? 'Sin gatokens'
-                : isTazaActivating
-                ? 'Procesando...'
-                : activeDefinition.ctaLabel}
+              {isTazaActivating ? 'Procesando...' : activeDefinition.ctaLabel}
             </Button>
           </div>
         ) : null}
@@ -3252,7 +3244,7 @@ const rendernotaAutoral = () => {
         <div className="mt-2 flex flex-wrap items-center gap-2 text-[11px] uppercase tracking-[0.25em] text-amber-100">
           <span className="inline-flex items-center gap-2 rounded-full border border-amber-200/60 bg-amber-500/15 px-3 py-1">
             <Coins size={14} />
-            {remainingTazaGatokens} gatokens
+            {Number.isFinite(remainingTazaGatokens) ? remainingTazaGatokens : '∞'} gatokens
           </span>
           <span className="text-slate-400">
             Energía por activación: 30 gatokens

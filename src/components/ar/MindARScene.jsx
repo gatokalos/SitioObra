@@ -84,11 +84,12 @@ const MindARScene = forwardRef(
       return `${normalizedBase}${trimmed}`;
     }, [targetSrc]);
 
-    const containerRef = useRef(null);
-    const videoRef = useRef(null);
-    const rendererRef = useRef(null);
-    const sceneRef = useRef(null);
-    const cameraRef = useRef(null);
+  const containerRef = useRef(null);
+  const videoRef = useRef(null);
+  const rendererRef = useRef(null);
+  const rendererInstanceRef = useRef(null);
+  const sceneRef = useRef(null);
+  const cameraRef = useRef(null);
 
     const [status, setStatus] = useState('idle');
     const [error, setError] = useState('');
@@ -124,6 +125,7 @@ const MindARScene = forwardRef(
 
           const { renderer: r, scene, camera } = mindarThree;
           renderer = r;
+          rendererInstanceRef.current = r;
           sceneRef.current = scene;
           cameraRef.current = camera;
           if (renderer?.domElement) {
@@ -245,6 +247,7 @@ const MindARScene = forwardRef(
         }
         videoRef.current = null;
         rendererRef.current = null;
+        rendererInstanceRef.current = null;
         sceneRef.current = null;
         cameraRef.current = null;
         if (attachedVideo && attachedVideo.parentElement === containerRef.current) {
@@ -273,14 +276,11 @@ const MindARScene = forwardRef(
         const rendererCanvas = rendererRef.current;
         const scene = sceneRef.current;
         const camera = cameraRef.current;
-        if (rendererCanvas && scene && camera) {
+        const rendererInstance = rendererInstanceRef.current;
+        if (rendererCanvas && scene && camera && rendererInstance) {
           try {
-            const rendererElement = rendererCanvas;
-            const rendererInstance = renderer;
-            if (rendererInstance) {
-              rendererInstance.render(scene, camera);
-            }
-            ctx.drawImage(rendererElement, 0, 0, captureCanvas.width, captureCanvas.height);
+            rendererInstance.render(scene, camera);
+            ctx.drawImage(rendererCanvas, 0, 0, captureCanvas.width, captureCanvas.height);
           } catch (captureError) {
             console.warn('[MindARScene] No pudimos capturar el render 3D:', captureError);
           }
