@@ -3246,9 +3246,7 @@ const rendernotaAutoral = () => {
             <Coins size={14} />
             {Number.isFinite(remainingTazaGatokens) ? remainingTazaGatokens : '∞'} gatokens
           </span>
-          <span className="text-slate-400">
-            Energía por activación: 30 gatokens
-          </span>
+          <span className="text-slate-400">Energía ilimitada</span>
         </div>
       </div>
 
@@ -5421,6 +5419,17 @@ const rendernotaAutoral = () => {
     const boostApplied = Boolean(showcaseBoosts?.[format.id]);
     const toneClass = 'text-amber-200';
     const label = boostApplied ? 'Energía acumulada:' : 'Energía inicial:';
+    if (format.id === 'lataza') {
+      return (
+        <div className="mb-4 text-xs text-slate-200/80 flex flex-wrap items-center gap-2">
+          <Coins size={14} className={toneClass} />
+          <span className="uppercase tracking-[0.25em] text-slate-100/70">
+            Energía:
+          </span>
+          <span className={`font-semibold ${toneClass}`}>∞</span>
+        </div>
+      );
+    }
     return (
       <div className="mb-4 text-xs text-slate-200/80 flex flex-wrap items-center gap-2">
         <Coins size={14} className={toneClass} />

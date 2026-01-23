@@ -72,7 +72,7 @@ const Header = () => {
     { name: 'Función', href: '#next-show' },
     { name: 'Galería', href: '#instagram' },
     { name: 'Textos', href: '#dialogo-critico' },
-    { name: 'Expansiones', href: '#transmedia' },
+    { name: 'Miniversos', href: '#transmedia' },
     { name: 'Causa', href: '#apoya' },
   ];
 
