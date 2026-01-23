@@ -2390,17 +2390,18 @@ const Transmedia = () => {
     setTazaActivations(next);
     setShowTazaCoins(true);
     setIsTazaActivating(true);
+    // Activa la experiencia inmediatamente para que el prompt de cámara aparezca en móviles.
+    setIsTazaARActive(true);
+    if (typeof window !== 'undefined' && window.matchMedia('(max-width: 768px)').matches) {
+      setIsMobileARFullscreen(true);
+      document.body.classList.add('overflow-hidden');
+    } else {
+      setIsMobileARFullscreen(false);
+    }
     setTimeout(() => {
       setShowTazaCoins(false);
       setIsTazaActivating(false);
-      setIsTazaARActive(true);
-      if (typeof window !== 'undefined' && window.matchMedia('(max-width: 768px)').matches) {
-        setIsMobileARFullscreen(true);
-        document.body.classList.add('overflow-hidden');
-      } else {
-        setIsMobileARFullscreen(false);
-      }
-    }, 950);
+    }, 700);
     if (typeof window !== 'undefined') {
       window.localStorage?.setItem('gatoencerrado:taza-activations', String(next));
       window.dispatchEvent(
