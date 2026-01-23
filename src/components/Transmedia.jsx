@@ -406,14 +406,23 @@ const showcaseDefinitions = {
 
     ctaLabel: 'Hablar con La Obra',
     conversationStarters: [
-      '¿Qué te deja más confundido: lo que sueñas o lo que despiertas sintiendo?',
-      'Si te dieran una entrada directa a la ventanilla de tu sueño, ¿qué preguntarías primero?',
-      '¿Qué hace más ruido en tu cabeza últimamente?',
-      '¿En qué momento te sentiste más tú últimamente?',
-      'Si pudieras congelar una emoción y estudiarla desde fuera, ¿cuál sería?',
-      '¿Sientes que tu historia se repite o solo se disfraza de novedades?',
-      '¿Te gustaría que la Doctora soñara lo mismo que tú?',
-      '¿Qué sientes cuando alguien intenta “explicarte” lo que sientes?',
+      '¿Por qué Es un gato encerrado vuelve a pasar por las mismas escenas?',
+      '¿Por qué la obra no explica del todo lo que le pasa a Silvestre?',
+      '¿Qué es más importante aquí: lo que ocurre o lo que se siente?',
+      '¿Desde dónde habla la obra cuando Silvestre se queda solo con su mente?',
+      '¿Qué cambia si vuelvo a mirar la obra con más calma?',
+      '¿Qué espera la obra de quien se queda pensando en Silvestre?',
+      '¿Silvestre está recordando… o pensando cosas que no puede detener?',
+      '¿Qué lugar ocupa el humor cuando la obra habla de cosas difíciles?',
+      '¿Por qué la obra se mueve entre momentos de claridad y confusión?',
+      '¿La rabia que aparece en escena pertenece solo a Silvestre?',
+      '¿Qué decide la obra mostrar y qué prefiere dejar fuera?',
+      '¿Qué hace la obra con todo lo que Silvestre no dice?',
+      '¿La obra busca entender la mente o simplemente escucharla?',
+      '¿Por qué ciertos números, palabras o gestos se repiten?',
+      'Después de verla, ¿la obra se cierra… o sigue acompañando?',
+      '¿Por qué a veces no queda claro si algo es un recuerdo o un pensamiento?',
+      '¿La obra cree que fingir estar bien es una forma de sobrevivir?',
     ],
     iaProfile: {
       type: 'GPT-4o afinada para voz literaria y contención emocional.',
@@ -2101,6 +2110,8 @@ const Transmedia = () => {
             silvestreAudioRef.current = null;
             setIsSilvestreResponding(false);
             setIsSilvestrePlaying(false);
+            setShowSilvestreCoins(true);
+            setTimeout(() => setShowSilvestreCoins(false), 1200);
           }
         },
         { once: true }
@@ -2118,8 +2129,6 @@ const Transmedia = () => {
         throw playError;
       }
       setMicError('');
-      setShowSilvestreCoins(true);
-      setTimeout(() => setShowSilvestreCoins(false), 1200);
       return true;
     } catch (error) {
       if (error?.name === 'AbortError') {
@@ -2131,8 +2140,6 @@ const Transmedia = () => {
       }
       console.error('[Silvestre Voice] Error sending transcript:', error);
       setMicError('No pudimos enviar tu mensaje a Silvestre. Intenta nuevamente más tarde.');
-      setShowSilvestreCoins(true);
-      setTimeout(() => setShowSilvestreCoins(false), 1200);
       if (requestId === silvestreRequestIdRef.current) {
         setIsSilvestreFetching(false);
         setIsSilvestreResponding(false);
@@ -3498,39 +3505,45 @@ const rendernotaAutoral = () => {
 
     if (activeDefinition.type === 'tragedia') {
       const onClose = () => setActiveShowcase(null);
-      const conversationBlock = activeDefinition.conversationStarters?.length ? (
+      const visibleStarters = (activeDefinition.conversationStarters ?? [])
+        .filter((starter) => !spentSilvestreSet.has(starter))
+        .slice(0, 5);
+      const marqueeStarters = [...visibleStarters, ...visibleStarters];
+      const conversationBlock = visibleStarters.length ? (
         <div className="space-y-3 border-t border-white/10 pt-4">
-          <p className="text-xs uppercase tracking-[0.35em] text-pink-200">Preguntas Predeterminadas</p>
+          <p className="text-xs uppercase tracking-[0.35em] text-pink-200">¿Ya sabes qué decir?</p>
           <p className="text-sm text-slate-200/80 leading-relaxed">
             Elige una pregunta y envíala tal cual.
           </p>
-          <ul className="space-y-2 text-sm text-purple-50/90">
-            {activeDefinition.conversationStarters.map((starter, idx) => (
-              <li
-                key={`tragico-paragraph-${idx}`}
-                className="rounded-2xl border border-white/10 bg-black/15"
-              >
-                <button
-                  type="button"
-                  onClick={() => {
-                    if (spentSilvestreSet.has(starter)) return;
-                    markSilvestreQuestionSpent(starter);
-                    handleSendSilvestrePreset(starter);
-                  }}
-                  className="flex w-full items-start gap-2 px-4 py-2 text-left transition hover:bg-white/5 disabled:cursor-not-allowed disabled:opacity-60"
-                  disabled={spentSilvestreSet.has(starter)}
+          <div className="starter-marquee">
+            <ul className="starter-marquee__list text-sm text-purple-50/90">
+              {marqueeStarters.map((starter, idx) => (
+                <li
+                  key={`tragico-paragraph-${starter}-${idx}`}
+                  className="rounded-2xl border border-white/10 bg-black/15"
                 >
-                  <span className="text-purple-200 font-semibold">•</span>
-                  <span className="leading-relaxed">{starter}</span>
-                  {spentSilvestreSet.has(starter) ? (
-                    <span className="ml-auto text-[10px] uppercase tracking-[0.3em] text-slate-400">
-                      Gastada
-                    </span>
-                  ) : null}
-                </button>
-              </li>
-            ))}
-          </ul>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (spentSilvestreSet.has(starter)) return;
+                      markSilvestreQuestionSpent(starter);
+                      handleSendSilvestrePreset(starter);
+                    }}
+                    className="flex w-full items-start gap-2 px-4 py-2 text-left transition hover:bg-white/5 disabled:cursor-not-allowed disabled:opacity-60"
+                    disabled={spentSilvestreSet.has(starter)}
+                  >
+                    <span className="text-purple-200 font-semibold">•</span>
+                    <span className="leading-relaxed">{starter}</span>
+                    {spentSilvestreSet.has(starter) ? (
+                      <span className="ml-auto text-[10px] uppercase tracking-[0.3em] text-slate-400">
+                        Gastada
+                      </span>
+                    ) : null}
+                  </button>
+                </li>
+              ))}
+            </ul>
+          </div>
         </div>
       ) : null;
 
@@ -3652,52 +3665,64 @@ const rendernotaAutoral = () => {
                   variant="outline"
                   className="silvestre-cta relative flex h-20 w-20 items-center justify-center rounded-full border border-purple-300/60 bg-purple-500/10 text-purple-50 shadow-[0_0_45px_rgba(197,108,255,0.75)] transition hover:bg-purple-500/20 disabled:cursor-not-allowed disabled:opacity-60"
                   onClick={handleOpenSilvestreChat}
-                  aria-label={
-                    isSilvestrePlaying
-                      ? 'Escuchando la respuesta'
-                      : isSilvestreFetching || isSilvestreResponding
-                        ? 'La Obra está pensando'
-                      : isListening
-                        ? 'Detener y enviar'
-                        : activeDefinition.ctaLabel
-                  }
-                  disabled={isSilvestreFetching || isSilvestreResponding}
-                >
-                  {isSilvestrePlaying ? (
-                    <span className="silvestre-mic-wave" aria-hidden="true">
-                      <span />
-                      <span />
-                      <span />
+              aria-label={
+                isSilvestrePlaying
+                  ? 'Escuchando la respuesta'
+                  : isSilvestreFetching || isSilvestreResponding
+                    ? 'La Obra está pensando'
+                  : isListening
+                    ? 'Grabando'
+                    : activeDefinition.ctaLabel
+              }
+              disabled={isSilvestreFetching || isSilvestreResponding}
+            >
+              {showSilvestreCoins ? (
+                <div className="pointer-events-none absolute inset-0 z-10">
+                  {Array.from({ length: 7 }).map((_, index) => {
+                    const offsetX = (index - 3) * 12;
+                    const offsetY = -20 - index * 6;
+                    return (
+                      <motion.span
+                        key={`silvestre-coin-${index}`}
+                        className="absolute left-1/2 top-1/2 h-3 w-3 -translate-x-1/2 -translate-y-1/2 rounded-full bg-gradient-to-br from-amber-200 to-yellow-500 shadow-[0_0_15px_rgba(250,204,21,0.55)]"
+                        initial={{ opacity: 0.95, scale: 0.7, x: 0, y: 0 }}
+                        animate={{ opacity: 0, scale: 1.1, x: offsetX, y: offsetY, rotate: 90 + index * 30 }}
+                        transition={{ duration: 1, ease: 'easeOut', delay: index * 0.03 }}
+                      />
+                    );
+                  })}
+                </div>
+              ) : null}
+              {isSilvestrePlaying ? (
+                <span className="silvestre-mic-wave" aria-hidden="true">
+                  <span />
+                  <span />
+                  <span />
                     </span>
                   ) : null}
                   {!isSilvestrePlaying ? <Mic className="h-8 w-8 relative z-10" /> : null}
-                </Button>
-                <span className="text-xs uppercase tracking-[0.35em] text-purple-200 text-center">
-                  {isSilvestrePlaying
-                    ? 'Escuchando la respuesta'
-                    : isSilvestreFetching || isSilvestreResponding
-                      ? 'La Obra está pensando'
-                    : isListening
-                      ? 'Detener y enviar'
-                      : micPromptVisible
-                        ? 'Activa tu micrófono'
-                        : activeDefinition.ctaLabel}
-                </span>
+              </Button>
+              <span
+                className={`text-xs uppercase tracking-[0.35em] text-purple-200 text-center ${
+                  isSilvestreFetching || isSilvestreResponding ? 'thinking-blink' : ''
+                }`}
+              >
+                {isSilvestrePlaying
+                  ? 'Escuchando la respuesta'
+                  : isSilvestreFetching || isSilvestreResponding
+                    ? 'La Obra está pensando'
+                  : isListening
+                    ? 'Grabando'
+                    : micPromptVisible
+                      ? 'Habla con la obra'
+                      : activeDefinition.ctaLabel}
+              </span>
+            </div>
+            {micError && !isListening && !transcript ? (
+              <div className="rounded-2xl border border-red-500/30 bg-red-500/10 p-4 text-sm text-red-100">
+                <p className="text-xs uppercase tracking-[0.35em] text-red-300">Sin micrófono</p>
+                <p>Tu navegador no permite activar el micrófono. Puedes escribirle a Silvestre si prefieres.</p>
               </div>
-              {isSilvestreResponding || isSilvestreFetching ? (
-                <button
-                  type="button"
-                  onClick={stopSilvestreResponse}
-                  className="mx-auto text-xs uppercase tracking-[0.3em] text-slate-300 hover:text-white transition"
-                >
-                  Detener respuesta
-                </button>
-              ) : null}
-              {micError && !isListening && !transcript ? (
-                <div className="rounded-2xl border border-red-500/30 bg-red-500/10 p-4 text-sm text-red-100">
-                  <p className="text-xs uppercase tracking-[0.35em] text-red-300">Sin micrófono</p>
-                  <p>Tu navegador no permite activar el micrófono. Puedes escribirle a Silvestre si prefieres.</p>
-                </div>
               ) : null}
               {transcript ? (
                 <div className="rounded-2xl border border-purple-500/40 bg-white/5 p-4 text-sm text-slate-100">

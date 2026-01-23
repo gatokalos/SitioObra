@@ -341,6 +341,47 @@ body {
   }
 }
 
+.thinking-blink {
+  animation: thinking-blink 1s ease-in-out infinite;
+}
+
+@keyframes thinking-blink {
+  0%,
+  100% {
+    opacity: 0.65;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+/* Starter marquee: scroll lento con pausa al hover */
+.starter-marquee {
+  position: relative;
+  max-height: 240px;
+  overflow: hidden;
+}
+
+.starter-marquee__list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  animation: starter-scroll 24s linear infinite;
+}
+
+.starter-marquee:hover .starter-marquee__list {
+  animation-play-state: paused;
+}
+
+@keyframes starter-scroll {
+  0% {
+    transform: translateY(0);
+  }
+  100% {
+    transform: translateY(-50%);
+  }
+}
+
 .tran-accordion-trigger {
   position: relative;
 }
