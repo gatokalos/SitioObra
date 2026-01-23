@@ -34,7 +34,7 @@ import ReserveModal from '@/components/ReserveModal';
 import { fetchBlogPostBySlug } from '@/services/blogService';
 import { toast } from '@/components/ui/use-toast';
 import { useAuth } from '@/contexts/SupabaseAuthContext';
-import { supabase } from '@/lib/supabaseClient';
+import { supabase, supabasePublic } from '@/lib/supabaseClient';
 import { ensureAnonId } from '@/lib/identity';
 import { Document, Page, pdfjs } from 'react-pdf';
 import 'react-pdf/dist/Page/AnnotationLayer.css';
@@ -2000,9 +2000,14 @@ const Transmedia = () => {
   const recordObraChat = useCallback(
     async ({ question, answer, source }) => {
       if (!question) return;
+      const shouldRecordObraChat = false;
+      if (!shouldRecordObraChat) {
+        return;
+      }
       try {
         const anonId = ensureAnonId();
-        const { error } = await supabase.from('miniverso_obra_interactions').insert({
+        // Use anon client to avoid session roles like admin blocking PostgREST.
+        const { error } = await supabasePublic.from('miniverso_obra_interactions').insert({
           interaction_type: 'chat',
           question,
           answer: answer || null,
@@ -2036,16 +2041,21 @@ const Transmedia = () => {
       requestId = (silvestreRequestIdRef.current += 1);
       setIsSilvestreFetching(true);
       setIsSilvestreResponding(true);
-      const apiBase = import.meta.env.VITE_SILVESTRE_API_URL;
+      const apiBase = import.meta.env.VITE_OBRA_API_URL;
       const useObraConciencia =
-        (import.meta.env.VITE_SILVESTRE_OBRA_CONCIENCIA ?? 'true') === 'true';
-      const endpoint = useObraConciencia ? '/obra-conciencia' : '/api/silvestre-voice';
-      const payload = useObraConciencia ? { pregunta: message } : { mensaje: message };
+        (import.meta.env.VITE_OBRA_USE_CONCIENCIA ?? 'true') === 'true';
+      const isPreset = source === 'preset';
+      const useConcienciaForThisRequest = useObraConciencia && isPreset;
+      const endpoint = useConcienciaForThisRequest ? '/api/obra-conciencia' : '/api/obra-voz';
+      const userId = user?.id ?? 'anonymous';
+      const payload = useConcienciaForThisRequest
+        ? { pregunta: message, user_id: userId }
+        : { mensaje: message };
       const response = await fetch(`${apiBase}${endpoint}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'X-User-Id': user?.id ?? 'anonymous',
+          'x-user-id': userId,
         },
         body: JSON.stringify(payload),
         signal: controller.signal,
