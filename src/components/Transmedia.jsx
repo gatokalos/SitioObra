@@ -1550,6 +1550,7 @@ const Transmedia = () => {
   const [isSilvestreResponding, setIsSilvestreResponding] = useState(false);
   const [isSilvestreFetching, setIsSilvestreFetching] = useState(false);
   const [isSilvestrePlaying, setIsSilvestrePlaying] = useState(false);
+  const [pendingSilvestreAudioUrl, setPendingSilvestreAudioUrl] = useState(null);
   const [spentSilvestreQuestions, setSpentSilvestreQuestions] = useState(
     Array.isArray(initialSpentSilvestreQuestions) ? initialSpentSilvestreQuestions : []
   );
@@ -2001,6 +2002,7 @@ const Transmedia = () => {
       silvestreAudioUrlRef.current = null;
     }
     setIsSilvestrePlaying(false);
+    setPendingSilvestreAudioUrl(null);
   }, []);
 
   const stopSilvestreResponse = useCallback(() => {
@@ -2065,36 +2067,70 @@ const Transmedia = () => {
         (import.meta.env.VITE_OBRA_USE_CONCIENCIA ?? 'true') === 'true';
       const isPreset = source === 'preset';
       const useConcienciaForThisRequest = forceConciencia || (useObraConciencia && isPreset);
-      const endpoint = useConcienciaForThisRequest ? '/api/obra-conciencia' : '/api/obra-voz';
       const userId = user?.id ?? 'anonymous';
-      const payload = useConcienciaForThisRequest
-        ? { pregunta: message, user_id: userId }
-        : { mensaje: message };
-      const response = await fetch(`${apiBase}${endpoint}`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'x-user-id': userId,
-        },
-        body: JSON.stringify(payload),
-        signal: controller.signal,
-      });
-      if (requestId !== silvestreRequestIdRef.current) {
-        return false;
+      const candidates = useConcienciaForThisRequest
+        ? [
+            {
+              endpoint: '/api/obra-conciencia',
+              payload: { pregunta: message, user_id: userId },
+              label: 'conciencia',
+            },
+          ]
+        : [
+            {
+              endpoint: '/api/obra-voz',
+              payload: { mensaje: message },
+              label: 'voz',
+            },
+            {
+              endpoint: '/api/obra-conciencia',
+              payload: { pregunta: message, user_id: userId },
+              label: 'conciencia (fallback)',
+            },
+          ];
+
+      let audioBlob = null;
+      let responseText = null;
+      let lastError = null;
+
+      for (const candidate of candidates) {
+        try {
+          const response = await fetch(`${apiBase}${candidate.endpoint}`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'x-user-id': userId,
+            },
+            body: JSON.stringify(candidate.payload),
+            signal: controller.signal,
+          });
+          if (requestId !== silvestreRequestIdRef.current) {
+            return false;
+          }
+          if (!response.ok) {
+            throw new Error(`${candidate.label} responded ${response.status}`);
+          }
+          responseText =
+            response.headers.get('x-silvestre-text') ||
+            response.headers.get('x-silvestre-answer') ||
+            null;
+          const blob = await response.blob();
+          if (requestId !== silvestreRequestIdRef.current) {
+            return false;
+          }
+          if (!blob || !(blob.type || '').startsWith('audio/')) {
+            throw new Error(`${candidate.label} returned non-audio payload (${blob?.type || 'unknown'})`);
+          }
+          audioBlob = blob;
+          break;
+        } catch (error) {
+          console.error('[Silvestre Voice] candidate error:', error);
+          lastError = error;
+        }
       }
-      if (!response.ok) {
-        throw new Error(`Silvestre Voice responded ${response.status}`);
-      }
-      const responseText =
-        response.headers.get('x-silvestre-text') ||
-        response.headers.get('x-silvestre-answer') ||
-        null;
-      const audioBlob = await response.blob();
-      if (requestId !== silvestreRequestIdRef.current) {
-        return false;
-      }
-      if (!audioBlob || audioBlob.type !== 'audio/mpeg') {
-        throw new Error('Silvestre Voice returned non-audio payload');
+
+      if (!audioBlob) {
+        throw lastError || new Error('No se pudo obtener audio de La Obra');
       }
       if (requestId === silvestreRequestIdRef.current) {
         setIsSilvestreFetching(false);
@@ -2102,6 +2138,7 @@ const Transmedia = () => {
       await recordObraChat({ question: message, answer: responseText, source });
       const audioUrl = URL.createObjectURL(audioBlob);
       const audio = new Audio(audioUrl);
+      audio.playsInline = true;
       silvestreAudioRef.current = audio;
       silvestreAudioUrlRef.current = audioUrl;
       audio.addEventListener(
@@ -2122,6 +2159,7 @@ const Transmedia = () => {
             setIsSilvestrePlaying(false);
             setShowSilvestreCoins(true);
             setTimeout(() => setShowSilvestreCoins(false), 1200);
+            setPendingSilvestreAudioUrl(null);
           }
         },
         { once: true }
@@ -2129,6 +2167,13 @@ const Transmedia = () => {
       try {
         await audio.play();
       } catch (playError) {
+        if (playError?.name === 'NotAllowedError') {
+          setPendingSilvestreAudioUrl(audioUrl);
+          setIsSilvestreResponding(false);
+          setIsSilvestrePlaying(false);
+          setMicError('Toca “Reproducir” para escuchar la respuesta.');
+          return true;
+        }
         if (silvestreAudioUrlRef.current === audioUrl) {
           URL.revokeObjectURL(audioUrl);
           silvestreAudioUrlRef.current = null;
@@ -2178,6 +2223,41 @@ const Transmedia = () => {
     }
     setIsListening(false);
   }, [isListening]);
+
+  const handlePlayPendingAudio = useCallback(async () => {
+    if (!pendingSilvestreAudioUrl) return;
+    let audio = silvestreAudioRef.current;
+    if (!audio || silvestreAudioUrlRef.current !== pendingSilvestreAudioUrl) {
+      audio = new Audio(pendingSilvestreAudioUrl);
+      audio.playsInline = true;
+      silvestreAudioRef.current = audio;
+      silvestreAudioUrlRef.current = pendingSilvestreAudioUrl;
+      audio.addEventListener(
+        'ended',
+        () => {
+          if (silvestreAudioUrlRef.current === pendingSilvestreAudioUrl) {
+            URL.revokeObjectURL(pendingSilvestreAudioUrl);
+            silvestreAudioUrlRef.current = null;
+            silvestreAudioRef.current = null;
+            setIsSilvestreResponding(false);
+            setIsSilvestrePlaying(false);
+            setPendingSilvestreAudioUrl(null);
+          }
+        },
+        { once: true }
+      );
+    }
+    try {
+      await audio.play();
+      setIsSilvestrePlaying(true);
+      setIsSilvestreResponding(false);
+      setPendingSilvestreAudioUrl(null);
+      setMicError('');
+    } catch (err) {
+      console.error('[Silvestre Voice] play pending error:', err);
+      setMicError('No pudimos reproducir el audio. Intenta tocar de nuevo.');
+    }
+  }, [pendingSilvestreAudioUrl]);
 
   const handleOpenSilvestreChat = useCallback(() => {
     if (typeof window === 'undefined') {
@@ -3744,6 +3824,23 @@ const rendernotaAutoral = () => {
                 <div className="rounded-2xl border border-purple-500/40 bg-white/5 p-4 text-sm text-slate-100">
                   
                   <p className="break-words">{transcript}</p>
+                </div>
+              ) : null}
+              {pendingSilvestreAudioUrl ? (
+                <div className="rounded-2xl border border-purple-400/40 bg-white/5 p-4 text-sm text-slate-100 flex items-center justify-between gap-4">
+                  <div>
+                    <p className="text-[11px] uppercase tracking-[0.3em] text-purple-200">Audio listo</p>
+                    <p>Toca reproducir para escuchar la respuesta.</p>
+                  </div>
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="outline"
+                    onClick={handlePlayPendingAudio}
+                    className="shrink-0"
+                  >
+                    Reproducir
+                  </Button>
                 </div>
               ) : null}
               {conversationBlock}
