@@ -2,204 +2,43 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
-  <title>Miniverso Taza · Portal</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-
-  <!-- A-Frame -->
-  <script src="https://cdn.jsdelivr.net/npm/aframe@1.5.0/dist/aframe.min.js"></script>
-  <!-- MindAR + A-Frame -->
-  <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.1.7/dist/mindar-image-aframe.prod.js"></script>
-
-  <style>
-    * { box-sizing: border-box; }
-    html, body {
-      margin: 0;
-      padding: 0;
-      width: 100%;
-      height: 100%;
-      overflow: hidden;
-      background: #000;
-      font-family: system-ui, -apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif;
-    }
-
-    /* Pantalla de inicio */
-    #startScreen {
-      position: fixed;
-      inset: 0;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      text-align: center;
-      padding: 2rem;
-      background: radial-gradient(circle at top, #1b1030 0, #050509 60%);
-      color: #fff;
-      z-index: 20;
-    }
-
-    #startScreen h1 {
-      margin: 0 0 0.5rem 0;
-      font-size: 1.3rem;
-    }
-
-    #startScreen p {
-      margin: 0;
-      max-width: 260px;
-      font-size: 0.9rem;
-      opacity: 0.85;
-    }
-
-    #startButton {
-      margin-top: 1.5rem;
-      padding: 11px 22px;
-      border-radius: 999px;
-      border: none;
-      background: #f9a825;
-      color: #111;
-      font-weight: 600;
-      font-size: 0.95rem;
-      cursor: pointer;
-    }
-
-    /* Texto CTA en pantalla */
-    #ctaLabel {
-      position: fixed;
-      left: 50%;
-      bottom: 16px;
-      transform: translateX(-50%);
-      padding: 8px 14px;
-      border-radius: 999px;
-      background: rgba(0, 0, 0, 0.7);
-      color: #f9f9ff;
-      font-size: 0.85rem;
-      letter-spacing: 0.04em;
-      text-transform: uppercase;
-      opacity: 0;
-      transition: opacity 0.4s ease;
-      z-index: 10;
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      backdrop-filter: blur(10px);
-      pointer-events: none;
-    }
-
-    a-scene {
-      width: 100vw;
-      height: 100vh;
-    }
-  </style>
+  <title>Miniverso Taza · Redirección</title>
 </head>
-
-<body>
-
-  <!-- Pantalla inicial -->
-  <div id="startScreen">
-    <h1>Miniverso Taza</h1>
-    <p>
-      Apunta la cámara hacia el arte de tu taza.<br />
-      Cuando el portal aparezca, tócala para hablar con tu Gato Encerrado.
+<body style="display:flex;align-items:center;justify-content:center;min-height:100vh;background:#050509;color:#e9e9ff;font-family:system-ui,-apple-system,BlinkMacSystemFont,sans-serif;margin:0;padding:0;">
+  <div style="max-width:440px;text-align:center;padding:24px;">
+    <p style="letter-spacing:0.22em;font-size:11px;text-transform:uppercase;color:#c084fc;margin:0 0 6px;">Redirección</p>
+    <h1 style="margin:0 0 12px;font-size:22px;line-height:1.25;">Miniverso Artesanías vive ahora en la app principal.</h1>
+    <p style="margin:0 0 18px;font-size:15px;line-height:1.6;color:#cbd5e1;">
+      Te llevamos al escaparate oficial para activar tu taza en WebAR.
     </p>
-    <button id="startButton">Iniciar portal</button>
+    <a id="fallback-link" href="/?webar=taza#transmedia" style="display:inline-flex;align-items:center;justify-content:center;padding:11px 18px;border-radius:999px;background:#c084fc;color:#0b0b10;text-decoration:none;font-weight:700;letter-spacing:0.06em;box-shadow:0 14px 35px rgba(192,132,252,0.25);">
+      Ir a la activación
+    </a>
   </div>
 
-  <!-- Texto CTA en overlay -->
-  <div id="ctaLabel">Habla con tu Gato Encerrado</div>
-
-  <!-- ESCENA AR -->
-  <a-scene
-    mindar-image="imageTargetSrc: ./taza.mind; autoStart: false"
-    embedded
-    color-space="sRGB"
-    renderer="physicallyCorrectLights: true; colorManagement: true"
-    vr-mode-ui="enabled: false"
-  >
-    <!-- Cámara con cursor para detectar taps -->
-    <a-camera
-      position="0 0 0"
-      look-controls="enabled: false"
-      cursor="fuse: false; rayOrigin: mouse"
-      raycaster="objects: .clickable"
-    ></a-camera>
-
-    <!-- Target de la taza (marcador) -->
-    <a-entity id="taza-target" mindar-image-target="targetIndex: 0">
-
-      <!-- Esfera-portal translúcida envolviendo la taza -->
-      <a-sphere
-        id="portal-sphere"
-        class="clickable"
-        position="0 0 0"
-        radius="0.7"
-        color="#D1BFFB"
-        opacity="0.18"
-        segments-width="32"
-        segments-height="32"
-        material="shader: standard; metalness: 0.0; roughness: 0.7; transparent: true;"
-        animation__pulse="property: scale; from: 1 1 1; to: 1.06 1.06 1.06; dir: alternate; dur: 1400; loop: true; easing: easeInOutSine"
-      ></a-sphere>
-
-      <!-- Un sutil anillo interno, solo para dar lectura de “portal” -->
-      <a-torus
-        position="0 0 0.02"
-        rotation="90 0 0"
-        radius="0.42"
-        radius-tubular="0.01"
-        color="#E0D4FF"
-        opacity="0.6"
-        material="shader: flat; transparent: true;"
-      ></a-torus>
-
-    </a-entity>
-  </a-scene>
-
   <script>
-    const startScreen = document.getElementById("startScreen");
-    const startButton = document.getElementById("startButton");
-    const ctaLabel = document.getElementById("ctaLabel");
+    (function redirectToApp() {
+      var origin = window.location.origin || '';
+      var path = window.location.pathname || '';
+      var base = '';
 
-    const sceneEl = document.querySelector("a-scene");
-    const targetEl = document.getElementById("taza-target");
-    const portalSphere = document.getElementById("portal-sphere");
-
-    // Arrancamos MindAR solo después del gesto del usuario
-    startButton.addEventListener("click", () => {
-      startScreen.style.display = "none";
-
-      const startMindAR = () => {
-        const mindarComp = sceneEl.components["mindar-image"];
-        if (!mindarComp) {
-          console.error("[Taza/Portal] No se encontró el componente mindar-image.");
-          return;
-        }
-        try {
-          mindarComp.start();
-        } catch (e) {
-          console.error("[Taza/Portal] Error al iniciar MindAR:", e);
-        }
-      };
-
-      if (sceneEl.hasLoaded) {
-        startMindAR();
-      } else {
-        sceneEl.addEventListener("loaded", startMindAR, { once: true });
+      if (path.includes('/webar')) {
+        base = path.split('/webar')[0] || '';
       }
-    });
 
-    // Cuando el marcador se detecta, mostramos el texto CTA
-    targetEl.addEventListener("targetFound", () => {
-      console.log("[Taza/Portal] Marcador encontrado.");
-      ctaLabel.style.opacity = 1;
-    });
+      var target = origin + base + '/?webar=taza#transmedia';
+      var link = document.getElementById('fallback-link');
+      if (link) {
+        link.href = target;
+      }
 
-    targetEl.addEventListener("targetLost", () => {
-      console.log("[Taza/Portal] Marcador perdido.");
-      ctaLabel.style.opacity = 0;
-    });
-
-    // Click en la esfera-portal → llevar al chat
-    portalSphere.addEventListener("click", () => {
-      console.log("[Taza/Portal] Esfera tocada. Abriendo chat…");
-      window.location.href = "https://gatoencerrado.ai/chat";
-    });
+      try {
+        window.location.replace(target);
+      } catch (error) {
+        window.location.href = target;
+      }
+    })();
   </script>
 </body>
 </html>

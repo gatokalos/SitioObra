@@ -535,7 +535,7 @@ const showcaseDefinitions = {
         name: 'Lía Pérez, MPSE',
         role: 'Diseño Sonoro & Pulso emocional',
         bio: 'Lía se sumó a Cine de #GatoEncerrado con una entrega luminosa: sin pedir nada a cambio y afinando cada capa de sonido en Quirón y CopyCats. Su oído construye atmósferas que no se escuchan: se sienten. Entre risas, ruidos, silencios y tormentas interiores, su trabajo sostuvo el timbre emocional de las piezas y dejó una huella discreta, pero imprescindible.',
-        image: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/equipo/lia.png',
+        image: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/equipo/lia.jpg',
       },
       {
         id: 'maria-diana-laura-rodriguez',
@@ -1628,6 +1628,7 @@ const Transmedia = () => {
   const [isOraculoOpen, setIsOraculoOpen] = useState(false);
   const [isCauseSiteOpen, setIsCauseSiteOpen] = useState(false);
   const [showInstallPwaCTA, setShowInstallPwaCTA] = useState(false);
+  const autoTazaParamHandledRef = useRef(false);
   const spentSilvestreSet = useMemo(
     () => new Set(spentSilvestreQuestions),
     [spentSilvestreQuestions]
@@ -2020,6 +2021,33 @@ const Transmedia = () => {
     return () =>
       window.removeEventListener('gatoencerrado:open-miniverse-list', handleOpenMiniverseList);
   }, [handleOpenMiniverses]);
+
+  useEffect(() => {
+    if (typeof window === 'undefined' || autoTazaParamHandledRef.current) return;
+
+    const params = new URLSearchParams(window.location.search);
+    const rawTarget =
+      params.get('webar') ||
+      params.get('ar') ||
+      params.get('miniverso') ||
+      params.get('miniverse');
+    const target = (rawTarget || '').toLowerCase();
+
+    if (['taza', 'lataza', 'artesanias'].includes(target)) {
+      autoTazaParamHandledRef.current = true;
+      openMiniverseById('lataza');
+      setIsTazaARActive(true);
+      const isMobile = window.matchMedia('(max-width: 768px)').matches;
+      setIsMobileARFullscreen(isMobile);
+      if (isMobile) {
+        document.body.classList.add('overflow-hidden');
+      }
+      setTimeout(() => {
+        const anchor = document.getElementById('transmedia') || showcaseRef.current;
+        anchor?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }, 200);
+    }
+  }, [openMiniverseById]);
 
   const handleOpenBlogEntry = useCallback((slug) => {
     if (!slug) {
