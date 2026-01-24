@@ -63,6 +63,7 @@ const MindARScene = forwardRef(
       guideImageSrc = '',
       guideLabel = 'Alinea el marcador con el contorno para activar la escena.',
       overlay = null,
+      onError = null,
     },
     ref,
   ) => {
@@ -230,6 +231,7 @@ const MindARScene = forwardRef(
           if (isActive) {
             setError(err?.message ?? 'No pudimos iniciar la experiencia AR.');
             setStatus('error');
+            onError?.(err);
           }
         }
       };

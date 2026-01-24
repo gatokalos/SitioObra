@@ -14,6 +14,7 @@ const ARExperience = ({
   guideImageSrc = '',
   guideLabel,
   initialCameraReady = false,
+  onError,
 }) => {
   const [isCameraReady, setIsCameraReady] = useState(initialCameraReady);
   const [phraseIndex, setPhraseIndex] = useState(0);
@@ -123,6 +124,7 @@ const ARExperience = ({
         guideLabel={guideLabel}
         className="w-full min-h-[75vh] sm:min-h-[80vh]"
         overlay={overlayControls}
+        onError={onError}
       />
       <p className="text-sm text-slate-400/80 px-4 sm:px-0">
         Si el marcador no se detecta de inmediato, ajusta la iluminación y mantén la taza completa dentro del encuadre.

@@ -92,9 +92,23 @@ const requestCameraAccess = async () => {
   if (typeof navigator === 'undefined' || !navigator.mediaDevices?.getUserMedia) {
     throw new Error('getUserMedia no disponible en este navegador');
   }
-  const stream = await navigator.mediaDevices.getUserMedia({ video: true });
-  stream.getTracks().forEach((track) => track.stop());
-  return true;
+  const attempts = [
+    { video: { facingMode: { ideal: 'environment' } } },
+    { video: true },
+  ];
+  let lastError = null;
+  for (const constraints of attempts) {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia(constraints);
+      stream.getTracks().forEach((track) => track.stop());
+      return true;
+    } catch (error) {
+      lastError = error;
+      // Si falló por restricciones o permisos, probamos el siguiente intento.
+      continue;
+    }
+  }
+  throw lastError ?? new Error('No pudimos usar la cámara en este dispositivo.');
 };
 const MINIVERSO_TILE_GRADIENTS = {
   miniversos: 'linear-gradient(135deg, rgba(31,21,52,0.95), rgba(64,36,93,0.85), rgba(122,54,127,0.65))',
@@ -1628,7 +1642,6 @@ const Transmedia = () => {
   const [isOraculoOpen, setIsOraculoOpen] = useState(false);
   const [isCauseSiteOpen, setIsCauseSiteOpen] = useState(false);
   const [showInstallPwaCTA, setShowInstallPwaCTA] = useState(false);
-  const autoTazaParamHandledRef = useRef(false);
   const spentSilvestreSet = useMemo(
     () => new Set(spentSilvestreQuestions),
     [spentSilvestreQuestions]
@@ -2021,33 +2034,6 @@ const Transmedia = () => {
     return () =>
       window.removeEventListener('gatoencerrado:open-miniverse-list', handleOpenMiniverseList);
   }, [handleOpenMiniverses]);
-
-  useEffect(() => {
-    if (typeof window === 'undefined' || autoTazaParamHandledRef.current) return;
-
-    const params = new URLSearchParams(window.location.search);
-    const rawTarget =
-      params.get('webar') ||
-      params.get('ar') ||
-      params.get('miniverso') ||
-      params.get('miniverse');
-    const target = (rawTarget || '').toLowerCase();
-
-    if (['taza', 'lataza', 'artesanias'].includes(target)) {
-      autoTazaParamHandledRef.current = true;
-      openMiniverseById('lataza');
-      setIsTazaARActive(true);
-      const isMobile = window.matchMedia('(max-width: 768px)').matches;
-      setIsMobileARFullscreen(isMobile);
-      if (isMobile) {
-        document.body.classList.add('overflow-hidden');
-      }
-      setTimeout(() => {
-        const anchor = document.getElementById('transmedia') || showcaseRef.current;
-        anchor?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      }, 200);
-    }
-  }, [openMiniverseById]);
 
   const handleOpenBlogEntry = useCallback((slug) => {
     if (!slug) {
@@ -2569,7 +2555,13 @@ const Transmedia = () => {
       console.error('[Taza AR] Cámara bloqueada:', err);
       toast({
         description:
-          'No pudimos abrir la cámara. Revisa permisos del navegador (Safari/Chrome) y vuelve a intentarlo.',
+          err?.name === 'NotAllowedError'
+            ? 'Permiso denegado. Revisa los permisos del navegador y vuelve a intentar.'
+            : err?.name === 'NotFoundError' || err?.message === 'Requested device not found'
+              ? 'No encontramos una cámara disponible. Conecta una cámara o usa un dispositivo con cámara.'
+              : err?.name === 'OverconstrainedError'
+                ? 'La cámara no soporta esta configuración. Cambia de cámara/dispositivo o recarga e inténtalo de nuevo.'
+                : 'No pudimos abrir la cámara. Revisa permisos del navegador (Safari/Chrome) y vuelve a intentarlo.',
       });
       setShowTazaCoins(false);
       setIsTazaActivating(false);
@@ -2606,6 +2598,20 @@ const Transmedia = () => {
     setIsTazaActivating(false);
     setTazaCameraReady(false);
   }, []);
+
+  const handleARError = useCallback(
+    (err) => {
+      const description =
+        err?.message ||
+        'No pudimos iniciar la activación WebAR. Revisa permisos de cámara, luz y conexión.';
+      toast({ description });
+      setIsTazaARActive(false);
+      setIsMobileARFullscreen(false);
+      setTazaCameraReady(false);
+      document.body.classList.remove('overflow-hidden');
+    },
+    [toast]
+  );
 
   const handleResetCredits = useCallback(() => {
     setQuironSpent(false);
@@ -2689,6 +2695,20 @@ const Transmedia = () => {
   const activeDefinition = activeShowcase ? showcaseDefinitions[activeShowcase] : null;
   const activeData = activeShowcase ? showcaseContent[activeShowcase] : null;
   const isCinematicShowcaseOpen = Boolean(activeDefinition);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return undefined;
+    const isMobile = window.matchMedia('(max-width: 768px)').matches;
+    if (isTazaARActive && isMobile && !isMobileARFullscreen) {
+      setIsMobileARFullscreen(true);
+    }
+    if (isTazaARActive && isMobile) {
+      document.body.classList.add('overflow-hidden');
+    } else if (!isCinematicShowcaseOpen) {
+      document.body.classList.remove('overflow-hidden');
+    }
+    return undefined;
+  }, [isTazaARActive, isMobileARFullscreen, isCinematicShowcaseOpen]);
   const scrollLockYRef = useRef(0);
   const wasCinematicOpenRef = useRef(false);
   const tragicoStarters = useMemo(() => {
@@ -3427,6 +3447,8 @@ const rendernotaAutoral = () => {
         guideImageSrc="/assets/taza_transp.png"
         guideLabel="Alinea la ilustración de la taza con el contorno. No necesita ser exacto."
           onExit={handleCloseARExperience}
+          initialCameraReady={tazaCameraReady}
+          onError={handleARError}
         />
     </div>
   ) : (
@@ -5716,6 +5738,8 @@ const rendernotaAutoral = () => {
             guideImageSrc="/assets/taza_transp.png"
             guideLabel="Alinea la ilustración de la taza con el contorno. No necesita ser exacto."
             onExit={handleCloseARExperience}
+            initialCameraReady={tazaCameraReady}
+            onError={handleARError}
           />
         </div>
       ) : null}

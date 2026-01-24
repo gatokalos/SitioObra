@@ -62,7 +62,7 @@ const MINIVERSE_CARDS = [
     title: 'Miniverso Cine',
     description:
       'Películas y miradas que dialogan con el universo de la obra.',
-    action: 'Observa',
+    action: 'Explora',
   },
   {
     id: 'sonoro',
@@ -73,7 +73,7 @@ const MINIVERSE_CARDS = [
     title: 'Miniverso Sonoridades',
     description:
       'Música, poemas y registros sonoros surgidos de la obra.',
-    action: 'Escucha',
+    action: 'Explora',
   },
     {
     id: 'movimiento',
@@ -83,7 +83,7 @@ const MINIVERSE_CARDS = [
     thumbGradient: 'from-sky-400/80 via-emerald-500/70 to-cyan-500/60',
     title: 'Miniverso Movimiento',
     description: 'Cuerpos, recorridos y figuras rituales que expanden la obra en el espacio.',
-    action: 'Baila',
+    action: 'Explora',
     isUpcoming: true,
   },
   {
@@ -94,7 +94,7 @@ const MINIVERSE_CARDS = [
     thumbGradient: 'from-lime-400/80 via-emerald-500/70 to-teal-500/60',
     title: 'Miniverso Apps',
     description: 'Experimentos lúdicos que reescriben la obra en formato interactivo.',
-    action: 'Juega',
+    action: 'Explora',
   },
   {
     id: 'oraculo',
@@ -104,7 +104,7 @@ const MINIVERSE_CARDS = [
     thumbGradient: 'from-indigo-400/80 via-violet-500/70 to-purple-500/60',
     title: 'Miniverso Oráculo',
     description: 'Preguntas, azar y respuestas que la obra deja abiertas.',
-    action: 'Consulta',
+    action: 'Explora',
   },
 
 ];
