@@ -6,7 +6,7 @@ import { useToast } from '@/components/ui/use-toast';
 import { apiFetch } from '@/lib/apiClient';
 
 const IAInsightCard = ({
-  title = 'Lleva la experiencia completa a miniversos.ai',
+  title = 'Información de IA',
   type,
   interaction,
   tokensRange,

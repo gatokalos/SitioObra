@@ -451,7 +451,7 @@ const showcaseDefinitions = {
     ],
     iaProfile: {
       type: 'GPT-4o afinada para voz literaria y contención emocional.',
-      interaction: '1 a 3 mensajes con Silvestre (texto o voz).',
+      interaction: '1 a 3 mensajes con la obra (texto o voz).',
       tokensRange: '250–600 tokens.',
       coverage: 'Cubierto por suscriptores; entra en el plan de soporte colectivo.',
       footnote: 'Cada conversación tiene un costo real. Gracias por mantenerla viva.',
@@ -461,7 +461,14 @@ const showcaseDefinitions = {
         id: 'carlos-perez',
         name: 'Carlos Pérez',
         role: 'Coordinador de diálogo',
-        bio: 'Coordino la conversación entre el público y Silvestre, repartiendo preguntas y abriendo espacios para que cada voz encuentre su microforo.',
+        bio: 'Mi trabajo se enfocó en pensar cómo la experiencia escénica podía continuar más allá de la función, no desde la explicación, sino desde preguntas cuidadas y abiertas. Diseñé este espacio que respeta la ambigüedad de la obra y acompaña al espectador sin imponer interpretaciones.',
+      },
+      {
+        id: 'incendio-producciones',
+        name: 'Incendio Producciones',
+        role: 'Producción ejecutiva asociada',
+        bio: 'Esta versión del chat fue adaptada para acompañar la puesta en escena de Gilberto Corrales. El trabajo de dirección y producción transformó la obra, y este espacio fue ajustado para dialogar con esa nueva forma.',
+        image: '/assets/incendiologo.png',
       },
     ],
   },
@@ -1579,7 +1586,6 @@ const Transmedia = () => {
   const silvestreRequestIdRef = useRef(0);
   const silvestreAbortRef = useRef(null);
   const ignoreNextTranscriptRef = useRef(false);
-  const [isCinemaCreditsOpen, setIsCinemaCreditsOpen] = useState(false);
   const [isMovementCreditsOpen, setIsMovementCreditsOpen] = useState(false);
   const [openCollaboratorId, setOpenCollaboratorId] = useState(null);
   const { isMobileViewport, canUseInlinePlayback, requestMobileVideoPresentation } = useMobileVideoPresentation();
@@ -1954,9 +1960,27 @@ const Transmedia = () => {
       }
       if (showcaseDefinitions[formatId]) {
         if (typeof document !== 'undefined') {
-          document.querySelector('#transmedia')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          const anchor = document.querySelector('#transmedia');
+          if (anchor) {
+            const target = anchor.getBoundingClientRect().top + window.scrollY;
+            window.scrollTo({ top: target, behavior: 'smooth' });
+            const startTs = performance.now();
+            const maxWait = 1200;
+            const waitForScroll = () => {
+              const currentY = window.scrollY;
+              if (Math.abs(currentY - target) < 12 || performance.now() - startTs > maxWait) {
+                openMiniverseById(formatId);
+                return;
+              }
+              requestAnimationFrame(waitForScroll);
+            };
+            requestAnimationFrame(waitForScroll);
+          } else {
+            openMiniverseById(formatId);
+          }
+        } else {
+          openMiniverseById(formatId);
         }
-        openMiniverseById(formatId);
       }
       setIsMiniverseOpen(false);
       setMiniverseContext(null);
@@ -2636,6 +2660,7 @@ const Transmedia = () => {
   const activeDefinition = activeShowcase ? showcaseDefinitions[activeShowcase] : null;
   const activeData = activeShowcase ? showcaseContent[activeShowcase] : null;
   const isCinematicShowcaseOpen = Boolean(activeDefinition);
+  const scrollLockYRef = useRef(0);
   const wasCinematicOpenRef = useRef(false);
   const tragicoStarters = useMemo(() => {
     if (!activeDefinition || activeDefinition.type !== 'tragedia') {
@@ -2652,40 +2677,122 @@ const Transmedia = () => {
   }, [activeData]);
 
   useEffect(() => {
-    const target = document.getElementById('transmedia');
-    const scrollToTransmedia = () => {
-      if (target && typeof target.scrollIntoView === 'function') {
-        target.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      }
-    };
+    setOpenCollaboratorId(null);
+  }, [activeDefinition]);
 
-    if (isCinematicShowcaseOpen) {
-      scrollToTransmedia();
-      wasCinematicOpenRef.current = true;
-      return;
-    }
-
-    if (wasCinematicOpenRef.current) {
-      scrollToTransmedia();
-      wasCinematicOpenRef.current = false;
-    }
-  }, [isCinematicShowcaseOpen]);
+  const renderCollaboratorsSection = useCallback(
+    (collaborators, prefix = 'collab') => {
+      if (!Array.isArray(collaborators) || !collaborators.length) return null;
+      const normalized = collaborators.map((collab, idx) => ({
+        ...collab,
+        _avatarId: collab.id ?? `${prefix}-${idx}`,
+        _image: collab.image || '/images/placeholder-colaboradores.jpg',
+      }));
+      const selected = normalized.find((collab) => collab._avatarId === openCollaboratorId);
+      const avatarsToShow = normalized.filter((collab) => collab._avatarId !== selected?._avatarId);
+      return (
+        <div className="rounded-3xl border border-white/10 bg-black/30 p-6 space-y-4">
+          <div className="flex items-center justify-between gap-3 flex-wrap">
+            <p className="text-xs uppercase tracking-[0.35em] text-purple-300 text-center md:text-left">
+              Colaboradores
+            </p>
+            <div className="flex items-center gap-3 flex-wrap justify-center md:justify-start w-full">
+              {avatarsToShow.map((collab) => {
+                const isActive = selected?._avatarId === collab._avatarId;
+                return (
+                  <motion.button
+                    key={collab._avatarId}
+                    type="button"
+                    layout
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.96 }}
+                    transition={{ duration: 0.15, ease: 'easeOut' }}
+                    onClick={() => setOpenCollaboratorId(collab._avatarId)}
+                    className={`h-14 w-14 md:h-11 md:w-11 rounded-full border ${
+                      isActive ? 'border-purple-300/80 ring-2 ring-purple-400/50' : 'border-white/15'
+                    } bg-white/5 overflow-hidden transition hover:border-purple-300/60 shadow-lg shadow-black/30`}
+                    title={collab.name}
+                  >
+                    <img
+                      src={collab._image}
+                      alt={`Retrato de ${collab.name}`}
+                      className="h-full w-full object-cover"
+                      loading="lazy"
+                    />
+                  </motion.button>
+                );
+              })}
+            </div>
+          </div>
+          {selected ? (
+            <div className="border border-white/10 rounded-2xl bg-black/20 p-4 flex flex-col md:flex-row gap-4 items-center md:items-start text-center md:text-left">
+              <img
+                src={selected._image}
+                alt={`Retrato de ${selected.name}`}
+                className="h-20 w-20 md:h-14 md:w-14 rounded-full object-cover border border-white/10 flex-shrink-0 shadow-lg shadow-black/30"
+                loading="lazy"
+              />
+              <div className="space-y-2 flex-1 min-w-0 text-center md:text-left">
+                <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-2 md:gap-3">
+                  <div className="space-y-1">
+                    <p className="text-slate-100 font-semibold">{selected.name}</p>
+                    {selected.role ? (
+                      <p className="text-[11px] uppercase tracking-[0.3em] text-purple-300">
+                        {selected.role}
+                      </p>
+                    ) : null}
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setOpenCollaboratorId(null)}
+                    className="text-xs uppercase tracking-[0.3em] text-slate-400 hover:text-white transition self-center md:self-start"
+                    aria-label="Cerrar ficha de colaborador"
+                  >
+                    Cerrar ✕
+                  </button>
+                </div>
+                {selected.bio ? (
+                  <p className="text-sm text-slate-200/90 leading-relaxed">{selected.bio}</p>
+                ) : null}
+              </div>
+            </div>
+          ) : null}
+        </div>
+      );
+    },
+    [openCollaboratorId]
+  );
 
   useEffect(() => {
-    if (!isCinematicShowcaseOpen) {
-      document.body.classList.remove('overflow-hidden');
-      document.documentElement.style.overflow = '';
-      document.body.style.overflow = '';
+    const html = document.documentElement;
+    const body = document.body;
+
+    if (isCinematicShowcaseOpen) {
+      wasCinematicOpenRef.current = true;
+      scrollLockYRef.current = window.scrollY;
+      body.style.position = 'fixed';
+      body.style.top = `-${scrollLockYRef.current}px`;
+      body.style.left = '0';
+      body.style.right = '0';
+      body.style.width = '100%';
+      body.style.overflow = 'hidden';
+      html.style.overflow = 'hidden';
       return;
     }
-    document.body.classList.add('overflow-hidden');
-    document.documentElement.style.overflow = 'hidden';
-    document.body.style.overflow = 'hidden';
-    return () => {
-      document.body.classList.remove('overflow-hidden');
-      document.documentElement.style.overflow = '';
-      document.body.style.overflow = '';
-    };
+
+    body.style.position = '';
+    body.style.top = '';
+    body.style.left = '';
+    body.style.right = '';
+    body.style.width = '';
+    body.style.overflow = '';
+    document.documentElement.style.overflow = '';
+
+    if (wasCinematicOpenRef.current) {
+      window.scrollTo(0, scrollLockYRef.current || 0);
+    }
+    wasCinematicOpenRef.current = false;
+    scrollLockYRef.current = 0;
   }, [isCinematicShowcaseOpen]);
 
   useEffect(() => {
@@ -2708,7 +2815,6 @@ const Transmedia = () => {
 
   useEffect(() => {
     if (activeShowcase !== 'copycats') {
-      setIsCinemaCreditsOpen(false);
       setOpenCollaboratorId(null);
     }
   }, [activeShowcase]);
@@ -3272,58 +3378,7 @@ const rendernotaAutoral = () => {
               </div>
             </div>
           ) : null}
-          {activeDefinition.collaborators?.length ? (
-            <div className="rounded-3xl border border-white/10 bg-black/30 p-6 space-y-4">
-              <div className="flex items-center justify-between gap-3">
-                <p className="text-xs uppercase tracking-[0.35em] text-purple-300">Colaboradores</p>
-                <button
-                  type="button"
-                  onClick={() => setIsCinemaCreditsOpen((prev) => !prev)}
-                  className="text-xs uppercase tracking-[0.3em] text-slate-300 hover:text-white transition"
-                >
-                  {isCinemaCreditsOpen ? 'Ocultar' : 'Ver'}
-                </button>
-              </div>
-              {isCinemaCreditsOpen ? (
-                <div className="space-y-3">
-                  {activeDefinition.collaborators.map((collab, index) => {
-                    const isOpen = openCollaboratorId === collab.id;
-                    const imageSrc = collab.image || '/images/placeholder-colaboradores.jpg';
-                    return (
-                      <div key={collab.id || `taza-collab-${index}`} className="border border-white/10 rounded-2xl bg-black/20">
-                        <button
-                          type="button"
-                          onClick={() => setOpenCollaboratorId((prev) => (prev === collab.id ? null : collab.id))}
-                          className="w-full flex items-center justify-between gap-3 px-4 py-3 text-left hover:bg-white/5 transition"
-                        >
-                          <div className="flex items-center gap-3">
-                            <img
-                              src={imageSrc}
-                              alt={`Retrato de ${collab.name}`}
-                              className="h-12 w-12 rounded-full object-cover border border-white/10"
-                              loading="lazy"
-                            />
-                            <div>
-                              <p className="text-slate-100 font-semibold">{collab.name}</p>
-                              {collab.role ? (
-                                <p className="text-[11px] uppercase tracking-[0.3em] text-purple-300">{collab.role}</p>
-                              ) : null}
-                            </div>
-                          </div>
-                          <span className="text-slate-400 text-lg">{isOpen ? '−' : '+'}</span>
-                        </button>
-                        {isOpen ? (
-                          <div className="px-4 pb-4 text-sm text-slate-200/90 leading-relaxed space-y-3">
-                            {collab.bio ? <p>{collab.bio}</p> : null}
-                          </div>
-                        ) : null}
-                      </div>
-                    );
-                  })}
-                </div>
-              ) : null}
-            </div>
-          ) : null}
+          {renderCollaboratorsSection(activeDefinition.collaborators, 'object-webar')}
 
           <div className="grid gap-10 lg:grid-cols-[2fr_1fr]">
             <div className="space-y-6">
@@ -3462,58 +3517,7 @@ const rendernotaAutoral = () => {
     if (activeDefinition.type === 'audio-dream') {
     return (
       <div className="space-y-8">
-        {activeDefinition.collaborators?.length ? (
-          <div className="rounded-3xl border border-white/10 bg-black/30 p-6 space-y-4">
-            <div className="flex items-center justify-between gap-3">
-              <p className="text-xs uppercase tracking-[0.35em] text-purple-300">Colaboradores</p>
-              <button
-                type="button"
-                onClick={() => setIsCinemaCreditsOpen((prev) => !prev)}
-                className="text-xs uppercase tracking-[0.3em] text-slate-300 hover:text-white transition"
-              >
-                {isCinemaCreditsOpen ? 'Ocultar' : 'Ver'}
-              </button>
-            </div>
-            {isCinemaCreditsOpen ? (
-              <div className="space-y-3">
-                {activeDefinition.collaborators.map((collab, index) => {
-                  const isOpen = openCollaboratorId === collab.id;
-                  const imageSrc = collab.image || '/images/placeholder-colaboradores.jpg';
-                  return (
-                    <div key={collab.id || `sonoro-collab-${index}`} className="border border-white/10 rounded-2xl bg-black/20">
-                      <button
-                        type="button"
-                        onClick={() => setOpenCollaboratorId((prev) => (prev === collab.id ? null : collab.id))}
-                        className="w-full flex items-center justify-between gap-3 px-4 py-3 text-left hover:bg-white/5 transition"
-                      >
-                        <div className="flex items-center gap-3">
-                          <img
-                            src={imageSrc}
-                            alt={`Retrato de ${collab.name}`}
-                            className="h-12 w-12 rounded-full object-cover border border-white/10"
-                            loading="lazy"
-                          />
-                          <div>
-                            <p className="text-slate-100 font-semibold">{collab.name}</p>
-                            {collab.role ? (
-                              <p className="text-[11px] uppercase tracking-[0.3em] text-purple-300">{collab.role}</p>
-                            ) : null}
-                          </div>
-                        </div>
-                        <span className="text-slate-400 text-lg">{isOpen ? '−' : '+'}</span>
-                      </button>
-                      {isOpen ? (
-                        <div className="px-4 pb-4 text-sm text-slate-200/90 leading-relaxed space-y-3">
-                          {collab.bio ? <p>{collab.bio}</p> : null}
-                        </div>
-                      ) : null}
-                    </div>
-                  );
-                })}
-              </div>
-            ) : null}
-          </div>
-        ) : null}
+        {renderCollaboratorsSection(activeDefinition.collaborators, 'sonoro')}
 
         <div className="space-y-8">
           <div className="rounded-3xl border border-white/10 bg-black/30 p-0 lg:p-6">
@@ -3744,62 +3748,7 @@ const rendernotaAutoral = () => {
             </div>
           </div>
 
-          {activeDefinition.collaborators?.length ? (
-            <div className="rounded-3xl border border-white/10 bg-black/30 shadow-[0_15px_35px_rgba(0,0,0,0.35)]">
-              <div className="flex items-center justify-between gap-3 px-6 py-4">
-                <p className="text-xs uppercase tracking-[0.35em] text-purple-300">Colaboradores</p>
-                <button
-                  type="button"
-                  onClick={() => setIsCinemaCreditsOpen((prev) => !prev)}
-                  className="text-xs uppercase tracking-[0.3em] text-slate-300 hover:text-white transition"
-                >
-                  {isCinemaCreditsOpen ? 'Ocultar' : 'Ver'}
-                </button>
-              </div>
-
-              {isCinemaCreditsOpen ? (
-                <div className="space-y-3 px-6 pb-6">
-                  {activeDefinition.collaborators.map((collab, index) => {
-                    const isOpen = openCollaboratorId === collab.id;
-                    const imageSrc = collab.image || '/images/placeholder-colaboradores.jpg';
-                    return (
-                      <div
-                        key={collab.id || `taza-collab-${index}`}
-                        className="rounded-2xl border border-white/10 bg-black/20"
-                      >
-                        <button
-                          type="button"
-                          onClick={() => setOpenCollaboratorId((prev) => (prev === collab.id ? null : collab.id))}
-                          className="w-full flex items-center justify-between gap-3 px-4 py-3 text-left hover:bg-white/5 transition"
-                        >
-                          <div className="flex items-center gap-3">
-                            <img
-                              src={imageSrc}
-                              alt={`Retrato de ${collab.name}`}
-                              className="h-12 w-12 rounded-full object-cover border border-white/10"
-                              loading="lazy"
-                            />
-                            <div>
-                              <p className="text-slate-100 font-semibold">{collab.name}</p>
-                              {collab.role ? (
-                                <p className="text-[11px] uppercase tracking-[0.3em] text-purple-300">{collab.role}</p>
-                              ) : null}
-                            </div>
-                          </div>
-                          <span className="text-slate-400 text-lg">{isOpen ? '−' : '+'}</span>
-                        </button>
-                        {isOpen ? (
-                          <div className="px-4 pb-4 text-sm text-slate-200/90 leading-relaxed">
-                            {collab.bio ? <p>{collab.bio}</p> : null}
-                          </div>
-                        ) : null}
-                      </div>
-                    );
-                  })}
-                </div>
-              ) : null}
-            </div>
-          ) : null}
+          {renderCollaboratorsSection(activeDefinition.collaborators, 'tragedia')}
 
           <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
             <div className="rounded-3xl border border-white/10 bg-black/35 p-6 shadow-[0_20px_45px_rgba(0,0,0,0.45)] space-y-4">
@@ -3929,58 +3878,7 @@ const rendernotaAutoral = () => {
 
       return (
         <div className="space-y-8">
-          {activeDefinition.collaborators?.length ? (
-            <div className="rounded-3xl border border-white/10 bg-black/30 p-6 space-y-4">
-              <div className="flex items-center justify-between gap-3">
-                <p className="text-xs uppercase tracking-[0.35em] text-purple-300">Colaboradores</p>
-                <button
-                  type="button"
-                  onClick={() => setIsCinemaCreditsOpen((prev) => !prev)}
-                  className="text-xs uppercase tracking-[0.3em] text-slate-300 hover:text-white transition"
-                >
-                  {isCinemaCreditsOpen ? 'Ocultar' : 'Ver'}
-                </button>
-              </div>
-              {isCinemaCreditsOpen ? (
-                <div className="space-y-3">
-                  {activeDefinition.collaborators.map((collab, index) => {
-                    const isOpen = openCollaboratorId === collab.id;
-                    const imageSrc = collab.image || '/images/placeholder-colaboradores.jpg';
-                    return (
-                      <div key={collab.id || `grafico-collab-${index}`} className="border border-white/10 rounded-2xl bg-black/20">
-                        <button
-                          type="button"
-                          onClick={() => setOpenCollaboratorId((prev) => (prev === collab.id ? null : collab.id))}
-                          className="w-full flex items-center justify-between gap-3 px-4 py-3 text-left hover:bg-white/5 transition"
-                        >
-                          <div className="flex items-center gap-3">
-                            <img
-                              src={imageSrc}
-                              alt={`Retrato de ${collab.name}`}
-                              className="h-12 w-12 rounded-full object-cover border border-white/10"
-                              loading="lazy"
-                            />
-                            <div>
-                              <p className="text-slate-100 font-semibold">{collab.name}</p>
-                              {collab.role ? (
-                                <p className="text-[11px] uppercase tracking-[0.3em] text-purple-300">{collab.role}</p>
-                              ) : null}
-                            </div>
-                          </div>
-                          <span className="text-slate-400 text-lg">{isOpen ? '−' : '+'}</span>
-                        </button>
-                        {isOpen ? (
-                          <div className="px-4 pb-4 text-sm text-slate-200/90 leading-relaxed space-y-3">
-                            {collab.bio ? <p>{collab.bio}</p> : null}
-                          </div>
-                        ) : null}
-                      </div>
-                    );
-                  })}
-                </div>
-              ) : null}
-            </div>
-          ) : null}
+          {renderCollaboratorsSection(activeDefinition.collaborators, 'grafico')}
 
         <div className="grid gap-6 lg:gap-8 lg:grid-cols-[3fr_2fr]">
         <div className="space-y-6">
@@ -4565,58 +4463,7 @@ const rendernotaAutoral = () => {
 
       return (
         <div className="space-y-8">
-          {activeDefinition.collaborators?.length ? (
-            <div className="rounded-3xl border border-white/10 bg-black/30 p-6 space-y-4">
-              <div className="flex items-center justify-between gap-3">
-                <p className="text-xs uppercase tracking-[0.35em] text-purple-300">Colaboradores</p>
-                <button
-                  type="button"
-                  onClick={() => setIsCinemaCreditsOpen((prev) => !prev)}
-                  className="text-xs uppercase tracking-[0.3em] text-slate-300 hover:text-white transition"
-                >
-                  {isCinemaCreditsOpen ? 'Ocultar' : 'Ver'}
-                </button>
-              </div>
-              {isCinemaCreditsOpen ? (
-                <div className="space-y-3">
-                  {activeDefinition.collaborators.map((collab, index) => {
-                    const isOpen = openCollaboratorId === collab.id;
-                    const imageSrc = collab.image || '/images/placeholder-colaboradores.jpg';
-                    return (
-                      <div key={collab.id || `cinema-collab-${index}`} className="border border-white/10 rounded-2xl bg-black/20">
-                        <button
-                          type="button"
-                          onClick={() => setOpenCollaboratorId((prev) => (prev === collab.id ? null : collab.id))}
-                          className="w-full flex items-center justify-between gap-3 px-4 py-3 text-left hover:bg-white/5 transition"
-                        >
-                          <div className="flex items-center gap-3">
-                            <img
-                              src={imageSrc}
-                              alt={`Retrato de ${collab.name}`}
-                              className="h-12 w-12 rounded-full object-cover border border-white/10"
-                              loading="lazy"
-                            />
-                            <div>
-                              <p className="text-slate-100 font-semibold">{collab.name}</p>
-                              {collab.role ? (
-                                <p className="text-[11px] uppercase tracking-[0.3em] text-purple-300">{collab.role}</p>
-                              ) : null}
-                            </div>
-                          </div>
-                          <span className="text-slate-400 text-lg">{isOpen ? '−' : '+'}</span>
-                        </button>
-                        {isOpen ? (
-                          <div className="px-4 pb-4 text-sm text-slate-200/90 leading-relaxed space-y-3">
-                            {collab.bio ? <p>{collab.bio}</p> : null}
-                          </div>
-                        ) : null}
-                      </div>
-                    );
-                  })}
-                </div>
-              ) : null}
-            </div>
-          ) : null}
+          {renderCollaboratorsSection(activeDefinition.collaborators, 'cine')}
 
           <div className="grid gap-6 lg:grid-cols-2">
             <div className="space-y-6">
@@ -4910,58 +4757,7 @@ const rendernotaAutoral = () => {
 
       return (
         <div className="space-y-10">
-          {activeDefinition.collaborators?.length ? (
-            <div className="rounded-3xl border border-white/10 bg-black/30 p-6 space-y-4">
-              <div className="flex items-center justify-between gap-3">
-                <p className="text-xs uppercase tracking-[0.35em] text-purple-300">Colaboradores</p>
-                <button
-                  type="button"
-                  onClick={() => setIsCinemaCreditsOpen((prev) => !prev)}
-                  className="text-xs uppercase tracking-[0.3em] text-slate-300 hover:text-white transition"
-                >
-                  {isCinemaCreditsOpen ? 'Ocultar' : 'Ver'}
-                </button>
-              </div>
-              {isCinemaCreditsOpen ? (
-                <div className="space-y-3">
-                  {activeDefinition.collaborators.map((collab, index) => {
-                    const isOpen = openCollaboratorId === collab.id;
-                    const imageSrc = collab.image || '/images/placeholder-colaboradores.jpg';
-                    return (
-                      <div key={collab.id || `novela-collab-${index}`} className="border border-white/10 rounded-2xl bg-black/20">
-                        <button
-                          type="button"
-                          onClick={() => setOpenCollaboratorId((prev) => (prev === collab.id ? null : collab.id))}
-                          className="w-full flex items-center justify-between gap-3 px-4 py-3 text-left hover:bg-white/5 transition"
-                        >
-                          <div className="flex items-center gap-3">
-                            <img
-                              src={imageSrc}
-                              alt={`Retrato de ${collab.name}`}
-                              className="h-12 w-12 rounded-full object-cover border border-white/10"
-                              loading="lazy"
-                            />
-                            <div>
-                              <p className="text-slate-100 font-semibold">{collab.name}</p>
-                              {collab.role ? (
-                                <p className="text-[11px] uppercase tracking-[0.3em] text-purple-300">{collab.role}</p>
-                              ) : null}
-                            </div>
-                          </div>
-                          <span className="text-slate-400 text-lg">{isOpen ? '−' : '+'}</span>
-                        </button>
-                        {isOpen ? (
-                          <div className="px-4 pb-4 text-sm text-slate-200/90 leading-relaxed space-y-3">
-                            {collab.bio ? <p>{collab.bio}</p> : null}
-                          </div>
-                        ) : null}
-                      </div>
-                    );
-                  })}
-                </div>
-              ) : null}
-            </div>
-          ) : null}
+          {renderCollaboratorsSection(activeDefinition.collaborators, 'novela')}
           <div>{renderPostDetails()}</div>
           {entries.length > 0 ? (
             <div className="grid gap-6 md:grid-cols-[3fr_2fr]">
