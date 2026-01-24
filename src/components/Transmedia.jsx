@@ -93,10 +93,11 @@ const requestCameraAccess = async () => {
     throw new Error('getUserMedia no disponible en este navegador');
   }
   const attempts = [
-    { video: { facingMode: { ideal: 'environment' } } },
-    { video: { facingMode: 'environment' } },
     { video: true },
     { video: {} },
+    { video: { facingMode: 'environment' } },
+    { video: { facingMode: { ideal: 'environment' } } },
+    { video: { facingMode: { ideal: 'user' } } },
     { video: { width: { ideal: 640 }, height: { ideal: 480 } } },
   ];
   let lastError = null;
@@ -111,6 +112,26 @@ const requestCameraAccess = async () => {
       continue;
     }
   }
+
+  try {
+    const devices = await navigator.mediaDevices.enumerateDevices();
+    const videoInputs = devices.filter((d) => d.kind === 'videoinput');
+    for (const device of videoInputs) {
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({
+          video: { deviceId: { exact: device.deviceId } },
+        });
+        stream.getTracks().forEach((track) => track.stop());
+        return true;
+      } catch (error) {
+        lastError = error;
+        continue;
+      }
+    }
+  } catch (error) {
+    lastError = error;
+  }
+
   throw lastError ?? new Error('No pudimos usar la cámara en este dispositivo.');
 };
 const MINIVERSO_TILE_GRADIENTS = {
@@ -627,8 +648,8 @@ const showcaseDefinitions = {
        {
         id: 'miroslava-wilson',
         name: 'Miroslava Wilson',
-        role: 'Productora ejecutiva',
-        bio: 'Miroslava fue pieza clave en la estrategia que convirtió la Taza en un gesto vivo: un puente entre la obra y su comunidad. Coordinó su uso como incentivo de preventa, cuidó los tiempos, los envíos y el pulso organizativo que permitió que cada taza llegara a manos que ya estaban esperando la historia. Su trabajo tejió logística con cariño y abrió el camino para que el universo creciera desde un objeto que también es símbolo.',
+        role: 'Vinculación y gestión institucional',
+        bio: 'Miroslava acompañó el proceso que permitió integrar la taza al circuito institucional del CECUT, facilitando su presencia como parte de la preventa de la obra. Su gestión ayudó a tender el puente entre el objeto y el espacio escénico.',
         image: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/equipo/Miroslava%20.jpg',
       },
       {
@@ -645,6 +666,13 @@ const showcaseDefinitions = {
         role: 'Diseño gráfico, fotografía y enlace local',
         bio: 'Desde su experiencia en diseño gráfico, afinó la estética de la taza. Fue la primera en tenerla en sus manos y fotografiarla. En su trabajo continuo con Isabel Ayuda para la Vida y en este miniverso, se encargó de registrar marcas que hacen de #GatoEncerrado un universo.',
         image: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/equipo/yeraldin.png',
+      },
+         {
+        id: 'rocio-morgan',
+        name: 'Rocío Morgan',
+        role: 'Coordinación de entregas',
+        bio: 'Rocío coordinó la entrega de las primeras tazas como un gesto de agradecimiento dentro del proceso de Es un gato encerrado, cuidando que llegaran tanto al equipo como a personas cercanas al proyecto. Marcando así las primeras activaciones de nuestro primer objeto artesanal.',
+        image: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/equipo/rocio.jpg',
       },
     ],
     comments: [
@@ -2544,32 +2572,14 @@ const Transmedia = () => {
     [graphicSpent, handleOpenPdfPreview, isGraphicUnlocking]
   );
 
-  const handleActivateAR = useCallback(async () => {
+  const handleActivateAR = useCallback(() => {
     if (isTazaActivating) {
       return;
     }
 
     setIsTazaActivating(true);
     setShowTazaCoins(true);
-    try {
-      await requestCameraAccess();
-      setTazaCameraReady(true);
-    } catch (err) {
-      console.error('[Taza AR] Cámara bloqueada:', err);
-      toast({
-        description:
-          err?.name === 'NotAllowedError'
-            ? 'Permiso denegado. Revisa los permisos del navegador y vuelve a intentar.'
-          : err?.name === 'NotFoundError' || err?.message === 'Requested device not found'
-            ? 'No encontramos una cámara disponible. Conecta una cámara o usa un dispositivo con cámara.'
-            : err?.name === 'OverconstrainedError'
-                ? 'La cámara no soporta esta configuración. Intenta recargar, cambiar de cámara o dispositivo.'
-            : 'No pudimos abrir la cámara. Revisa permisos del navegador (Safari/Chrome) y vuelve a intentarlo.',
-      });
-      setShowTazaCoins(false);
-      setIsTazaActivating(false);
-      return;
-    }
+    setTazaCameraReady(false);
 
     const next = tazaActivations + 1;
     setTazaActivations(next);
@@ -3442,9 +3452,9 @@ const rendernotaAutoral = () => {
   </div>
 
   {activeShowcase === 'lataza' && isTazaARActive && !isMobileARFullscreen ? (
-    <div className="p-0 sm:p-4">
+        <div className="p-0 sm:p-4">
         <ARExperience
-          targetSrc="/webar/taza/taza.mind"
+          targetSrc="/assets/taza.mind"
           phrases={activeDefinition.phrases}
           showScanGuide
         guideImageSrc="/assets/taza_transp.png"
@@ -5735,7 +5745,7 @@ const rendernotaAutoral = () => {
       {isTazaARActive && isMobileARFullscreen ? (
         <div className="fixed inset-0 z-40 bg-black">
           <ARExperience
-            targetSrc="/webar/taza/taza.mind"
+            targetSrc="/assets/taza.mind"
             phrases={showcaseDefinitions.lataza.phrases}
             showScanGuide
             guideImageSrc="/assets/taza_transp.png"

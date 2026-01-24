@@ -116,6 +116,14 @@ const MindARScene = forwardRef(
           const THREE = await loadThree();
           const MINDAR_IMAGE = await loadMindAR();
 
+          if (navigator?.mediaDevices?.enumerateDevices) {
+            const devices = await navigator.mediaDevices.enumerateDevices();
+            const hasVideoInput = devices.some((d) => d.kind === 'videoinput');
+            if (!hasVideoInput) {
+              throw new Error('No encontramos una cámara disponible en este dispositivo.');
+            }
+          }
+
           mindarThree = new MINDAR_IMAGE.MindARThree({
             container: containerRef.current,
             imageTargetSrc: resolvedTargetSrc,
@@ -240,12 +248,21 @@ const MindARScene = forwardRef(
 
       return () => {
         isActive = false;
-        if (renderer && animationLoop) {
-          renderer.setAnimationLoop(null);
-        }
-        if (mindarThree) {
-          mindarThree.stop();
-          mindarThree.renderer?.dispose();
+        try {
+          if (renderer && animationLoop) {
+            renderer.setAnimationLoop(null);
+          }
+          if (mindarThree) {
+            try {
+              mindarThree.stop?.();
+              mindarThree.controller?.stopProcessVideo?.();
+            } catch (stopErr) {
+              console.warn('[MindARScene] Error al detener MindAR:', stopErr);
+            }
+            mindarThree.renderer?.dispose?.();
+          }
+        } catch (cleanupErr) {
+          console.warn('[MindARScene] Error al limpiar escena AR:', cleanupErr);
         }
         videoRef.current = null;
         rendererRef.current = null;

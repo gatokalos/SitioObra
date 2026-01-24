@@ -23,34 +23,9 @@ const CameraPermissionPrompt = ({
       setStatus('insecure');
       return;
     }
-    if (!navigator.mediaDevices?.getUserMedia) {
-      setErrorMessage('Tu navegador no soporta acceso a cámara.');
-      setStatus('error');
-      return;
-    }
-    setStatus('requesting');
-    setErrorMessage('');
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({ video: true });
-      stream.getTracks().forEach((track) => track.stop());
-      setStatus('granted');
-      onGranted?.();
-    } catch (error) {
-      console.error('[CameraPermissionPrompt] Error al iniciar cámara:', error);
-      if (error?.name === 'NotAllowedError') {
-        setErrorMessage('Permiso denegado. Revisa los permisos del navegador.');
-      } else if (error?.name === 'NotFoundError') {
-        setErrorMessage('No encontramos cámara disponible en este dispositivo.');
-      } else if (error?.name === 'OverconstrainedError') {
-        const constraint = error?.constraint ? ` (${error.constraint})` : '';
-        setErrorMessage(`Restricción no soportada por la cámara${constraint}.`);
-      } else if (error?.name === 'NotReadableError') {
-        setErrorMessage('La cámara está en uso por otra app.');
-      } else {
-        setErrorMessage(error?.message || 'Fallo inesperado al abrir cámara.');
-      }
-      setStatus('error');
-    }
+    // Saltamos el precheck y dejamos que el motor AR pida la cámara con sus propios constraints.
+    setStatus('granted');
+    onGranted?.();
   };
 
   const baseClasses =
