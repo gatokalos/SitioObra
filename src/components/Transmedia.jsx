@@ -462,6 +462,7 @@ const showcaseDefinitions = {
         name: 'Carlos Pérez',
         role: 'Coordinador de diálogo',
         bio: 'Mi trabajo se enfocó en pensar cómo la experiencia escénica podía continuar más allá de la función, no desde la explicación, sino desde preguntas cuidadas y abiertas. Diseñé este espacio que respeta la ambigüedad de la obra y acompaña al espectador sin imponer interpretaciones.',
+        image: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/autores/carlos_perez_avatar.png',
       },
       {
         id: 'incendio-producciones',
@@ -618,14 +619,14 @@ const showcaseDefinitions = {
         name: 'Taller Paco Padilla',
         role: 'Cerámica artesanal de Tlaquepaque',
         bio: 'Referente de la cerámica artesanal de Tlaquepaque.El Taller Paco Padilla puso sus manos y su fuego en la primera serie de tazas del universo. Cada pieza salió de su horno con una vibración artesanal única, sosteniendo en barro el pulso íntimo de Gato Encerrado y regalándole un hogar físico a lo que antes era solo símbolo.',
-        image: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/equipo/pacopadilla.webp',
+        image: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/equipo/pacopadilla.jpeg',
       },
       
       {
         id: 'yeraldin-roman',
         name: 'Yeraldín Román',
         role: 'Diseño gráfico, fotografía y enlace local',
-        bio: 'Yeraldín fue la primera en mirar la Taza en sus manos: tomó la iniciativa de fotografiarla y capturar su espíritu antes de que viajara al público. Desde su experiencia en diseño gráfico, afinó la estética del proyecto, puso en pantalla el logotipo y cuidó la coherencia visual del universo. En su trabajo continuo con Isabel Ayuda para la Vida y en este miniverso, su sensibilidad conectó imagen, artesanos y propósito.',
+        bio: 'Desde su experiencia en diseño gráfico, afinó la estética de la taza. Fue la primera en tenerla en sus manos y fotografiarla. En su trabajo continuo con Isabel Ayuda para la Vida y en este miniverso, se encargó de registrar marcas que hacen de #GatoEncerrado un universo.',
         image: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/equipo/yeraldin.png',
       },
     ],
@@ -2691,12 +2692,9 @@ const Transmedia = () => {
       const selected = normalized.find((collab) => collab._avatarId === openCollaboratorId);
       const avatarsToShow = normalized.filter((collab) => collab._avatarId !== selected?._avatarId);
       return (
-        <div className="rounded-3xl border border-white/10 bg-black/30 p-6 space-y-4">
-          <div className="flex items-center justify-between gap-3 flex-wrap">
-            <p className="text-xs uppercase tracking-[0.35em] text-purple-300 text-center md:text-left">
-              Colaboradores
-            </p>
-            <div className="flex items-center gap-3 flex-wrap justify-center md:justify-start w-full">
+        <div className="rounded-3xl border border-white/10 bg-black/30 p-6 space-y-4 md:space-y-3">
+          <div className="flex flex-col md:grid md:grid-cols-[1fr_auto] md:items-center gap-3">
+            <motion.div layout className="flex items-center gap-3 flex-wrap justify-center md:justify-start">
               {avatarsToShow.map((collab) => {
                 const isActive = selected?._avatarId === collab._avatarId;
                 return (
@@ -2708,7 +2706,7 @@ const Transmedia = () => {
                     whileTap={{ scale: 0.96 }}
                     transition={{ duration: 0.15, ease: 'easeOut' }}
                     onClick={() => setOpenCollaboratorId(collab._avatarId)}
-                    className={`h-14 w-14 md:h-11 md:w-11 rounded-full border ${
+                    className={`h-16 w-16 md:h-12 md:w-12 rounded-full border ${
                       isActive ? 'border-purple-300/80 ring-2 ring-purple-400/50' : 'border-white/15'
                     } bg-white/5 overflow-hidden transition hover:border-purple-300/60 shadow-lg shadow-black/30`}
                     title={collab.name}
@@ -2722,14 +2720,17 @@ const Transmedia = () => {
                   </motion.button>
                 );
               })}
-            </div>
+            </motion.div>
+            <p className="text-xs uppercase tracking-[0.35em] text-purple-300 text-center md:text-right">
+              Colaboradores
+            </p>
           </div>
           {selected ? (
             <div className="border border-white/10 rounded-2xl bg-black/20 p-4 flex flex-col md:flex-row gap-4 items-center md:items-start text-center md:text-left">
               <img
                 src={selected._image}
                 alt={`Retrato de ${selected.name}`}
-                className="h-20 w-20 md:h-14 md:w-14 rounded-full object-cover border border-white/10 flex-shrink-0 shadow-lg shadow-black/30"
+                className="h-24 w-24 md:h-18 md:w-18 rounded-full object-cover border border-white/10 flex-shrink-0 shadow-lg shadow-black/30"
                 loading="lazy"
               />
               <div className="space-y-2 flex-1 min-w-0 text-center md:text-left">

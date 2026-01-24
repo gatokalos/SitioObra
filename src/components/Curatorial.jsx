@@ -25,34 +25,6 @@ const CURATORIAL_PLACEHOLDER_IMAGE = `data:image/svg+xml,${encodeURIComponent(`
   </svg>
 `)}`;
 
-const CURATORIAL_SOURCES = [
-  {
-    slug: 'cartografia-emocional-gato-encerrado',
-    fallback: {
-      title: 'El Encierro Como Metáfora',
-      author: 'Dr. María Elena Rodríguez',
-      role: 'Crítica Teatral',
-      date: 'Marzo 2024',
-      excerpt:
-        'En #GatoEncerrado encontramos una reflexión profunda sobre los múltiples encierros que caracterizan la experiencia humana contemporánea. La obra trasciende la literalidad del espacio físico para explorar las prisiones mentales, sociales y emocionales que habitamos...',
-      imageUrl: CURATORIAL_PLACEHOLDER_IMAGE,
-    },
-  },
-  {
-    slug: 'practicas-transmedia-teatro',
-    fallback: {
-      title: 'Narrativas Transmedia en el Teatro',
-      author: 'Prof. Carlos Mendoza',
-      role: 'Investigador',
-      date: 'Febrero 2024',
-      excerpt:
-        'La integración de múltiples plataformas narrativas en #GatoEncerrado representa un paradigma emergente en las artes escénicas. Esta obra no solo utiliza el teatro como medio principal, sino que expande su universo narrativo...',
-    },
-  },
-  {
-    slug: 'narrativas-transmedia-teatro',
-  },
-];
 
 const Curatorial = ({ posts = [], isLoading = false }) => {
   const [isContributionOpen, setIsContributionOpen] = useState(false);
