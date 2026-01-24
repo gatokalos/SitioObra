@@ -94,7 +94,10 @@ const requestCameraAccess = async () => {
   }
   const attempts = [
     { video: { facingMode: { ideal: 'environment' } } },
+    { video: { facingMode: 'environment' } },
     { video: true },
+    { video: {} },
+    { video: { width: { ideal: 640 }, height: { ideal: 480 } } },
   ];
   let lastError = null;
   for (const constraints of attempts) {
@@ -2557,11 +2560,11 @@ const Transmedia = () => {
         description:
           err?.name === 'NotAllowedError'
             ? 'Permiso denegado. Revisa los permisos del navegador y vuelve a intentar.'
-            : err?.name === 'NotFoundError' || err?.message === 'Requested device not found'
-              ? 'No encontramos una cámara disponible. Conecta una cámara o usa un dispositivo con cámara.'
-              : err?.name === 'OverconstrainedError'
-                ? 'La cámara no soporta esta configuración. Cambia de cámara/dispositivo o recarga e inténtalo de nuevo.'
-                : 'No pudimos abrir la cámara. Revisa permisos del navegador (Safari/Chrome) y vuelve a intentarlo.',
+          : err?.name === 'NotFoundError' || err?.message === 'Requested device not found'
+            ? 'No encontramos una cámara disponible. Conecta una cámara o usa un dispositivo con cámara.'
+            : err?.name === 'OverconstrainedError'
+                ? 'La cámara no soporta esta configuración. Intenta recargar, cambiar de cámara o dispositivo.'
+            : 'No pudimos abrir la cámara. Revisa permisos del navegador (Safari/Chrome) y vuelve a intentarlo.',
       });
       setShowTazaCoins(false);
       setIsTazaActivating(false);
