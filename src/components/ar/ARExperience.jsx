@@ -13,8 +13,9 @@ const ARExperience = ({
   showScanGuide = false,
   guideImageSrc = '',
   guideLabel,
+  initialCameraReady = false,
 }) => {
-  const [isCameraReady, setIsCameraReady] = useState(false);
+  const [isCameraReady, setIsCameraReady] = useState(initialCameraReady);
   const [phraseIndex, setPhraseIndex] = useState(0);
   const sceneRef = useRef(null);
 
@@ -28,6 +29,12 @@ const ARExperience = ({
   useEffect(() => {
     setPhraseIndex(0);
   }, [targetSrc]);
+
+  useEffect(() => {
+    if (initialCameraReady) {
+      setIsCameraReady(true);
+    }
+  }, [initialCameraReady]);
 
   const handleNextPhrase = () => {
     setPhraseIndex((prev) => (prev + 1) % phraseList.length);

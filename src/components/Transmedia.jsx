@@ -80,6 +80,14 @@ const DEFAULT_BADGE_STATE = {
   claimedAt: null,
   claimedType: null,
 };
+const requestCameraAccess = async () => {
+  if (typeof navigator === 'undefined' || !navigator.mediaDevices?.getUserMedia) {
+    throw new Error('getUserMedia no disponible en este navegador');
+  }
+  const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+  stream.getTracks().forEach((track) => track.stop());
+  return true;
+};
 const MINIVERSO_TILE_GRADIENTS = {
   miniversos: 'linear-gradient(135deg, rgba(31,21,52,0.95), rgba(64,36,93,0.85), rgba(122,54,127,0.65))',
   copycats: 'linear-gradient(135deg, rgba(16,27,54,0.95), rgba(38,63,109,0.85), rgba(92,47,95,0.7))',
@@ -564,7 +572,7 @@ const showcaseDefinitions = {
     intro:
       'Un objeto cotidiano convertido en símbolo de comunión. Cada taza está vinculada a un sentimiento. Cada sentimiento, a una historia personal.',
     note: 'Apunta tu cámara y aparecerá tu frase',
-    ctaLabel: 'Probar activación WebAR',
+    ctaLabel: 'Activa tu taza',
     ctaMessage: 'Cuando liberes la activación WebAR, descubrirás la pista que le corresponde a tu taza.',
     image: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Merch/taza_h.png',
     phrases: ['La taza te habla.'],
@@ -577,7 +585,7 @@ const showcaseDefinitions = {
        {
         id: 'miroslava-wilson',
         name: 'Miroslava Wilson',
-        role: 'Produtora ejecutiva',
+        role: 'Productora ejecutiva',
         bio: 'Miroslava fue pieza clave en la estrategia que convirtió la Taza en un gesto vivo: un puente entre la obra y su comunidad. Coordinó su uso como incentivo de preventa, cuidó los tiempos, los envíos y el pulso organizativo que permitió que cada taza llegara a manos que ya estaban esperando la historia. Su trabajo tejió logística con cariño y abrió el camino para que el universo creciera desde un objeto que también es símbolo.',
         image: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/equipo/Miroslava%20.jpg',
       },
@@ -1574,6 +1582,7 @@ const Transmedia = () => {
   const [showSonoroCoins, setShowSonoroCoins] = useState(false);
   const [showTazaCoins, setShowTazaCoins] = useState(false);
   const [isTazaActivating, setIsTazaActivating] = useState(false);
+  const [tazaCameraReady, setTazaCameraReady] = useState(false);
   const [showGraphicCoins, setShowGraphicCoins] = useState(false);
   const [isGraphicUnlocking, setIsGraphicUnlocking] = useState(false);
   const [tapIndex, setTapIndex] = useState(0);
@@ -2380,16 +2389,29 @@ const Transmedia = () => {
     [graphicSpent, handleOpenPdfPreview, isGraphicUnlocking]
   );
 
-  const handleActivateAR = useCallback(() => {
+  const handleActivateAR = useCallback(async () => {
     if (isTazaActivating) {
+      return;
+    }
+
+    setIsTazaActivating(true);
+    setShowTazaCoins(true);
+    try {
+      await requestCameraAccess();
+      setTazaCameraReady(true);
+    } catch (err) {
+      console.error('[Taza AR] Cámara bloqueada:', err);
+      toast({
+        description:
+          'No pudimos abrir la cámara. Revisa permisos del navegador (Safari/Chrome) y vuelve a intentarlo.',
+      });
+      setShowTazaCoins(false);
+      setIsTazaActivating(false);
       return;
     }
 
     const next = tazaActivations + 1;
     setTazaActivations(next);
-    setShowTazaCoins(true);
-    setIsTazaActivating(true);
-    // Activa la experiencia inmediatamente para que el prompt de cámara aparezca en móviles.
     setIsTazaARActive(true);
     if (typeof window !== 'undefined' && window.matchMedia('(max-width: 768px)').matches) {
       setIsMobileARFullscreen(true);
@@ -2416,6 +2438,7 @@ const Transmedia = () => {
     setIsMobileARFullscreen(false);
     document.body.classList.remove('overflow-hidden');
     setIsTazaActivating(false);
+    setTazaCameraReady(false);
   }, []);
 
   const handleResetCredits = useCallback(() => {
