@@ -19,7 +19,7 @@ const MINIVERSE_CARDS = [
     thumbGradient: 'from-purple-400/80 via-fuchsia-500/70 to-rose-500/60',
     title: 'Miniverso Obra',
     description: 'Dialoga con la obra sobre tus impresiones de la obra.',
-    action: 'Chatea',
+    action: 'Explora',
   },
   {
     id: 'literatura',
