@@ -362,11 +362,32 @@ body {
   overflow: hidden;
 }
 
+.starter-marquee::before,
+.starter-marquee::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 48px;
+  pointer-events: none;
+  z-index: 2;
+}
+
+.starter-marquee::before {
+  top: 0;
+  background: linear-gradient(180deg, rgba(9, 7, 14, 0.9), rgba(9, 7, 14, 0));
+}
+
+.starter-marquee::after {
+  bottom: 0;
+  background: linear-gradient(0deg, rgba(9, 7, 14, 0.9), rgba(9, 7, 14, 0));
+}
+
 .starter-marquee__list {
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
-  animation: starter-scroll 24s linear infinite;
+  animation: starter-scroll 40s linear infinite;
 }
 
 .starter-marquee:hover .starter-marquee__list {
@@ -379,7 +400,7 @@ body {
   }
 
   .starter-marquee__list {
-    animation-duration: 39s;
+    animation-duration: 69s;
   }
 }
 

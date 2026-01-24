@@ -75,6 +75,12 @@ const EXPLORER_BADGE_STORAGE_KEY = 'gatoencerrado:explorer-badge';
 const EXPLORER_BADGE_REWARD = 1000;
 const EXPLORER_BADGE_NAME = 'Errante Consagrado';
 const SILVESTRE_QUESTIONS_STORAGE_KEY = 'gatoencerrado:silvestre-questions-spent';
+const SILVESTRE_TRIGGER_QUESTIONS = [
+  '¿Don Polo viene de este mundo… o de otro?',
+  '¿Lo de las marcianas es literal o se me fue algo?',
+  '¿La Doctora realmente entiende a Silvestre?',
+  '¿Y si Silvestre no está angustiado por sí mismo, sino por el mundo?',
+];
 const DEFAULT_BADGE_STATE = {
   unlocked: false,
   unlockedAt: null,
@@ -405,6 +411,15 @@ function ensureMiniversoBreathStyle() {
   document.head.appendChild(style);
   hasInjectedMiniversoBreathStyle = true;
 }
+
+function shuffleArray(list) {
+  const arr = [...list];
+  for (let i = arr.length - 1; i > 0; i -= 1) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
 const showcaseDefinitions = {
   miniversos: {
     label: 'Miniverso Obra',
@@ -418,7 +433,7 @@ const showcaseDefinitions = {
     conversationStarters: [
       '¿Qué hace que la obra siga “presente” después de haber terminado?',
       '¿Por qué la obra no explica del todo lo que le pasa a Silvestre?',
-      '¿Qué es más importante aquí: lo que ocurre o lo que se siente?',
+      '¿Qué es más importante en la obra: lo que ocurre o lo que se siente?',
       '¿Desde dónde habla la obra cuando Silvestre se queda solo con su mente?',
       '¿Qué cambia si vuelvo a mirar la obra con más calma?',
       '¿Por qué todo en la obra parece girar alrededor de Silvestre, incluso cuando no habla?',
@@ -426,7 +441,7 @@ const showcaseDefinitions = {
       '¿Qué lugar ocupa el humor cuando la obra habla de cosas difíciles?',
       '¿Por qué algunas preguntas de la obra regresan sin resolverse?',
       '¿La rabia que aparece en escena pertenece solo a Silvestre?',
-      '¿Qué decide la obra mostrar y qué prefiere dejar fuera?',
+      '¿Qué decide mostrar la obra y qué prefiere dejar fuera?',
       '¿Qué se siente estar atrapado en un sistema que solo repite?',
       '¿Por qué los espacios de la obra no se sienten como refugio?',
       '¿Por qué ciertos números, palabras o gestos se repiten?',
@@ -2621,6 +2636,14 @@ const Transmedia = () => {
   const activeDefinition = activeShowcase ? showcaseDefinitions[activeShowcase] : null;
   const activeData = activeShowcase ? showcaseContent[activeShowcase] : null;
   const isCinematicShowcaseOpen = Boolean(activeDefinition);
+  const wasCinematicOpenRef = useRef(false);
+  const tragicoStarters = useMemo(() => {
+    if (!activeDefinition || activeDefinition.type !== 'tragedia') {
+      return [];
+    }
+    const base = activeDefinition.conversationStarters ?? [];
+    return shuffleArray([...base, ...SILVESTRE_TRIGGER_QUESTIONS]);
+  }, [activeDefinition]);
   const activeParagraphs = useMemo(() => {
     if (!activeData?.post?.content) {
       return [];
@@ -2629,10 +2652,24 @@ const Transmedia = () => {
   }, [activeData]);
 
   useEffect(() => {
-    if (activeShowcase && showcaseRef.current && !isCinematicShowcaseOpen) {
-      showcaseRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    const target = document.getElementById('transmedia');
+    const scrollToTransmedia = () => {
+      if (target && typeof target.scrollIntoView === 'function') {
+        target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    };
+
+    if (isCinematicShowcaseOpen) {
+      scrollToTransmedia();
+      wasCinematicOpenRef.current = true;
+      return;
     }
-  }, [activeShowcase, isCinematicShowcaseOpen]);
+
+    if (wasCinematicOpenRef.current) {
+      scrollToTransmedia();
+      wasCinematicOpenRef.current = false;
+    }
+  }, [isCinematicShowcaseOpen]);
 
   useEffect(() => {
     if (!isCinematicShowcaseOpen) {
@@ -3617,9 +3654,7 @@ const rendernotaAutoral = () => {
 
     if (activeDefinition.type === 'tragedia') {
       const onClose = () => setActiveShowcase(null);
-      const visibleStarters = (activeDefinition.conversationStarters ?? []).filter(
-        (starter) => !spentSilvestreSet.has(starter)
-      );
+      const visibleStarters = tragicoStarters.filter((starter) => !spentSilvestreSet.has(starter));
       const marqueeStarters = [...visibleStarters, ...visibleStarters];
       const conversationBlock = visibleStarters.length ? (
         <div className="space-y-3 border-t border-white/10 pt-4">
