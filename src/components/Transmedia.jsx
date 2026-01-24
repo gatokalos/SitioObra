@@ -2059,10 +2059,12 @@ const Transmedia = () => {
       setIsSilvestreFetching(true);
       setIsSilvestreResponding(true);
       const apiBase = import.meta.env.VITE_OBRA_API_URL;
+      const forceConciencia =
+        (import.meta.env.VITE_OBRA_FORCE_CONCIENCIA ?? 'false') === 'true';
       const useObraConciencia =
         (import.meta.env.VITE_OBRA_USE_CONCIENCIA ?? 'true') === 'true';
       const isPreset = source === 'preset';
-      const useConcienciaForThisRequest = useObraConciencia && isPreset;
+      const useConcienciaForThisRequest = forceConciencia || (useObraConciencia && isPreset);
       const endpoint = useConcienciaForThisRequest ? '/api/obra-conciencia' : '/api/obra-voz';
       const userId = user?.id ?? 'anonymous';
       const payload = useConcienciaForThisRequest
