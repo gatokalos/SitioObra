@@ -1556,6 +1556,7 @@ const Transmedia = () => {
   const recognitionRef = useRef(null);
   const transcriptRef = useRef('');
   const micTimeoutRef = useRef(null);
+  const micSilenceTimeoutRef = useRef(null);
   const silvestreAudioRef = useRef(null);
   const silvestreAudioUrlRef = useRef(null);
   const silvestreRequestIdRef = useRef(0);
@@ -2167,6 +2168,10 @@ const Transmedia = () => {
       clearTimeout(micTimeoutRef.current);
       micTimeoutRef.current = null;
     }
+    if (micSilenceTimeoutRef.current) {
+      clearTimeout(micSilenceTimeoutRef.current);
+      micSilenceTimeoutRef.current = null;
+    }
     if (recognitionRef.current && isListening) {
       try {
         recognitionRef.current.stop();
@@ -2178,6 +2183,15 @@ const Transmedia = () => {
   }, [isListening]);
 
   const handleOpenSilvestreChat = useCallback(() => {
+    const resetMicSilenceTimer = () => {
+      if (micSilenceTimeoutRef.current) {
+        clearTimeout(micSilenceTimeoutRef.current);
+      }
+      micSilenceTimeoutRef.current = setTimeout(() => {
+        stopSilvestreListening();
+      }, 3500);
+    };
+
     if (typeof window === 'undefined') {
       return;
     }
@@ -2212,6 +2226,7 @@ const Transmedia = () => {
         const text = results.map((result) => result[0]?.transcript ?? '').join(' ');
         transcriptRef.current = text;
         setTranscript(text);
+        resetMicSilenceTimer();
       };
       recognition.onerror = (event) => {
         console.error('[Silvestre Voice] recognition error:', event);
@@ -2235,23 +2250,24 @@ const Transmedia = () => {
 
     if (isListening) {
       stopSilvestreListening();
-      return;
-    }
-
-    try {
-      recognitionRef.current.start();
-      setIsListening(true);
-      setMicError('');
-      if (micTimeoutRef.current) {
-        clearTimeout(micTimeoutRef.current);
+        return;
       }
-      micTimeoutRef.current = setTimeout(() => {
-        stopSilvestreListening();
-      }, 45000);
-    } catch (error) {
-      console.error('[Silvestre Voice] start error:', error);
-      setMicError('No pudimos abrir el micrófono. Intenta nuevamente.');
-    }
+
+      try {
+        recognitionRef.current.start();
+        setIsListening(true);
+        setMicError('');
+        if (micTimeoutRef.current) {
+          clearTimeout(micTimeoutRef.current);
+        }
+        micTimeoutRef.current = setTimeout(() => {
+          stopSilvestreListening();
+        }, 45000);
+        resetMicSilenceTimer();
+      } catch (error) {
+        console.error('[Silvestre Voice] start error:', error);
+        setMicError('No pudimos abrir el micrófono. Intenta nuevamente.');
+      }
 
     window.dispatchEvent(new CustomEvent('gatoencerrado:open-silvestre'));
   }, [
@@ -2291,6 +2307,9 @@ const Transmedia = () => {
     return () => {
       if (micTimeoutRef.current) {
         clearTimeout(micTimeoutRef.current);
+      }
+      if (micSilenceTimeoutRef.current) {
+        clearTimeout(micSilenceTimeoutRef.current);
       }
       if (silvestreAbortRef.current) {
         silvestreAbortRef.current.abort();
