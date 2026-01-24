@@ -24,6 +24,8 @@ import {
   Coins,
   CheckCheckIcon,
   Mic,
+  Play,
+  Square,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import MiniverseModal from '@/components/MiniverseModal';
@@ -2263,6 +2265,16 @@ const Transmedia = () => {
     if (typeof window === 'undefined') {
       return;
     }
+    if (
+      pendingSilvestreAudioUrl &&
+      !isListening &&
+      !isSilvestrePlaying &&
+      !isSilvestreResponding &&
+      !isSilvestreFetching
+    ) {
+      handlePlayPendingAudio();
+      return;
+    }
     if (isSilvestreFetching) {
       return;
     }
@@ -2337,9 +2349,13 @@ const Transmedia = () => {
 
     window.dispatchEvent(new CustomEvent('gatoencerrado:open-silvestre'));
   }, [
+    handlePlayPendingAudio,
     hasShownMicPrompt,
-    isListening,
+    isSilvestrePlaying,
+    isSilvestreResponding,
     isSilvestreFetching,
+    pendingSilvestreAudioUrl,
+    isListening,
     micPromptVisible,
     sendTranscript,
     stopSilvestreListening,
@@ -3764,6 +3780,8 @@ const rendernotaAutoral = () => {
               aria-label={
                 isSilvestrePlaying
                   ? 'Escuchando la respuesta'
+                  : pendingSilvestreAudioUrl
+                    ? 'Reproducir respuesta'
                   : isSilvestreFetching || isSilvestreResponding
                     ? 'La Obra está pensando'
                   : isListening
@@ -3796,7 +3814,15 @@ const rendernotaAutoral = () => {
                   <span />
                     </span>
                   ) : null}
-                  {!isSilvestrePlaying ? <Mic className="h-8 w-8 relative z-10" /> : null}
+                  {!isSilvestrePlaying ? (
+                    pendingSilvestreAudioUrl ? (
+                      <Play className="h-8 w-8 relative z-10" />
+                    ) : isListening ? (
+                      <Square className="h-8 w-8 relative z-10" />
+                    ) : (
+                      <Mic className="h-8 w-8 relative z-10" />
+                    )
+                  ) : null}
               </Button>
               <span
                 className={`text-xs uppercase tracking-[0.35em] text-purple-200 text-center ${
@@ -3805,6 +3831,8 @@ const rendernotaAutoral = () => {
               >
                 {isSilvestrePlaying
                   ? 'Escuchando la respuesta'
+                  : pendingSilvestreAudioUrl
+                    ? 'Reproducir respuesta'
                   : isSilvestreFetching || isSilvestreResponding
                     ? 'La Obra está pensando'
                   : isListening
