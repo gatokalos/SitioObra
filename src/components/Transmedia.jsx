@@ -869,14 +869,7 @@ const showcaseDefinitions = {
         image: '/images/placeholder-colaboradores.jpg',
       },
     ],
-    collection: [
-      'Cómic impreso por venir',
-      'Viñetas interactivas',
-      'Posters simbólicos',
-      'Caricaturas conceptuales',
-      'Murales colaborativos',
-      'Avances con IA y técnicas mixtas',
-    ],
+
     swipe: {
       title: 'Swipe narrativo (modo viñeta)',
       description: 'Haz scroll hacia arriba para navegar por tarjetas verticales.',
@@ -1673,6 +1666,7 @@ const Transmedia = () => {
   const [isOraculoOpen, setIsOraculoOpen] = useState(false);
   const [isCauseSiteOpen, setIsCauseSiteOpen] = useState(false);
   const [showInstallPwaCTA, setShowInstallPwaCTA] = useState(false);
+  const [useLegacyTazaViewer, setUseLegacyTazaViewer] = useState(true);
   const spentSilvestreSet = useMemo(
     () => new Set(spentSilvestreQuestions),
     [spentSilvestreQuestions]
@@ -3452,17 +3446,28 @@ const rendernotaAutoral = () => {
   </div>
 
   {activeShowcase === 'lataza' && isTazaARActive && !isMobileARFullscreen ? (
-        <div className="p-0 sm:p-4">
+    <div className="p-0 sm:p-4">
+      {useLegacyTazaViewer ? (
+        <div className="relative w-full min-h-[75vh] rounded-3xl overflow-hidden border border-white/10 bg-black/50">
+          <iframe
+            title="Visor AR Taza (estable)"
+            src="/webar/taza/"
+            className="absolute inset-0 w-full h-full"
+            allow="camera; microphone; fullscreen; xr-spatial-tracking"
+          />
+        </div>
+      ) : (
         <ARExperience
-          targetSrc="/assets/taza.mind"
+          targetSrc="/webar/taza/taza.mind"
           phrases={activeDefinition.phrases}
           showScanGuide
-        guideImageSrc="/assets/taza_transp.png"
-        guideLabel="Alinea la ilustración de la taza con el contorno. No necesita ser exacto."
+          guideImageSrc="/webar/taza/taza-marker.jpg"
+          guideLabel="Alinea la ilustración de la taza con el contorno. No necesita ser exacto."
           onExit={handleCloseARExperience}
-          initialCameraReady={tazaCameraReady}
+          initialCameraReady
           onError={handleARError}
         />
+      )}
     </div>
   ) : (
     <div className="p-6 grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
@@ -3507,7 +3512,7 @@ const rendernotaAutoral = () => {
         ) : null}
 
         {activeShowcase === 'lataza' ? (
-          <div className="relative inline-flex overflow-visible">
+          <div className="relative inline-flex overflow-visible flex-col gap-2">
             <Button
               className="relative border-purple-400/40 text-purple-200 hover:bg-purple-500/10 overflow-visible"
               variant="outline"
@@ -3516,6 +3521,15 @@ const rendernotaAutoral = () => {
             >
               {isTazaActivating ? 'Procesando...' : activeDefinition.ctaLabel}
             </Button>
+            <label className="flex items-center gap-2 text-xs uppercase tracking-[0.25em] text-slate-400">
+              <input
+                type="checkbox"
+                className="accent-purple-400"
+                checked={useLegacyTazaViewer}
+                onChange={(e) => setUseLegacyTazaViewer(e.target.checked)}
+              />
+              Usar visor estable (A‑Frame)
+            </label>
           </div>
         ) : null}
 
@@ -3946,39 +3960,9 @@ const rendernotaAutoral = () => {
 
         <div className="grid gap-6 lg:gap-8 lg:grid-cols-[3fr_2fr]">
         <div className="space-y-6">
-          <div className="rounded-3xl border border-white/10 bg-black/20 p-6 space-y-4">
-            <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Colección viva</p>
-            <div className="flex flex-wrap gap-2">
-              {activeDefinition.collection?.map((item, index) => (
-                <span
-                  key={`collection-pill-${index}`}
-                  className="px-3 py-1 rounded-full border border-white/10 bg-white/5 text-xs text-slate-100"
-                >
-                  {item}
-                </span>
-              ))}
-            </div>
-          </div>
+   
 
-          {(swipeMeta.title || swipeMeta.description || (swipeMeta.steps?.length ?? 0) > 0) ? (
-            <div className="rounded-3xl border border-white/10 bg-black/25 p-6 space-y-3">
-              <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Cómo funciona</p>
-              <h4 className="font-display text-2xl text-slate-100">{swipeMeta.title ?? 'Swipe narrativo activo'}</h4>
-              {swipeMeta.description ? (
-                <p className="text-sm text-slate-300/85 leading-relaxed">{swipeMeta.description}</p>
-              ) : null}
-              {swipeMeta.steps?.length ? (
-                <ul className="space-y-2 text-sm text-slate-200/90 leading-relaxed">
-                  {swipeMeta.steps.map((step, index) => (
-                    <li key={`swipe-meta-step-${index}`} className="flex items-start gap-2">
-                      <span className="text-fuchsia-200 mt-1">●</span>
-                      <span>{step}</span>
-                    </li>
-                  ))}
-                </ul>
-              ) : null}
-            </div>
-          ) : null}
+      
 
             {swipeShowcases.length ? (
               <div className="space-y-4">
@@ -4059,7 +4043,7 @@ const rendernotaAutoral = () => {
                                 className="w-full sm:w-auto justify-center border-fuchsia-300/40 text-fuchsia-200 hover:bg-fuchsia-500/10 relative overflow-visible"
                               >
                                 <span className="relative z-10">
-                                  {graphicSpent ? 'Abrir swipe en PDF' : isGraphicUnlocking ? 'Aplicando...' : 'Aplicar y abrir'}
+                                  {graphicSpent ? 'Abrir swipe en PDF' : isGraphicUnlocking ? 'Aplicando...' : 'Abrir swipe en PDF'}
                                 </span>
                                 {showGraphicCoins ? (
                                   <span className="pointer-events-none absolute inset-0">
@@ -4100,41 +4084,7 @@ const rendernotaAutoral = () => {
           </div>
 
           <div className="space-y-6">
-            <div className="rounded-3xl border border-white/10 bg-black/30 p-6 space-y-4">
-              <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Acciones</p>
-              <p className="text-sm text-slate-300/80 leading-relaxed">
-                Activa el lector visual o súmate a la residencia gráfica.
-              </p>
-              <div className="rounded-2xl border border-amber-200/40 bg-amber-500/10 px-4 py-3 flex items-center justify-between gap-3">
-                <div className="flex items-center gap-2 text-amber-100 font-semibold">
-                  <Coins size={16} />
-                  <span>{graphicSpent ? '0 gatokens' : `~${GAT_COSTS.graficoSwipe} gatokens`}</span>
-                </div>
-                <span className="text-[11px] uppercase tracking-[0.3em] text-amber-100/80">
-                  {graphicSpent ? 'Aplicado' : ''}
-                </span>
-              </div>
-              <p className="text-[11px] text-amber-100/70">
-                {graphicSpent
-                  ? 'Ya aplicaste tus gatokens.'
-                  : 'Al abrir el swipe en PDF se descontarán todas las gatokens disponibles.'}
-              </p>
-              <div className="flex flex-col gap-3">
-                <Button
-                  onClick={() => handleOpenMiniverses('Miniverso Gráfico')}
-                  className="w-full justify-center bg-gradient-to-r from-purple-600/80 to-fuchsia-500/80 hover:from-purple-500 hover:to-fuchsia-400 text-white"
-                >
-                  {activeDefinition.ctas?.primary}
-                </Button>
-                <Button
-                  variant="outline"
-                  onClick={() => handleOpenMiniverses('Miniverso Gráfico')}
-                  className="w-full justify-center border-purple-400/40 text-purple-200 hover:bg-purple-500/10"
-                >
-                  {activeDefinition.ctas?.secondary}
-                </Button>
-              </div>
-            </div>
+            
             {renderCommunityBlock('miniversoGrafico', {
               ctaLabel: 'suma tu voz',
               reactionProps: {
@@ -5745,13 +5695,13 @@ const rendernotaAutoral = () => {
       {isTazaARActive && isMobileARFullscreen ? (
         <div className="fixed inset-0 z-40 bg-black">
           <ARExperience
-            targetSrc="/assets/taza.mind"
+            targetSrc="/webar/taza/taza.mind"
             phrases={showcaseDefinitions.lataza.phrases}
             showScanGuide
-            guideImageSrc="/assets/taza_transp.png"
+            guideImageSrc="/webar/taza/taza-marker.jpg"
             guideLabel="Alinea la ilustración de la taza con el contorno. No necesita ser exacto."
             onExit={handleCloseARExperience}
-            initialCameraReady={tazaCameraReady}
+            initialCameraReady
             onError={handleARError}
           />
         </div>

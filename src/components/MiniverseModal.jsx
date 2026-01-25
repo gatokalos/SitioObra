@@ -542,7 +542,7 @@ const MiniverseModal = ({ open, onClose, onSelectMiniverse }) => {
                       disabled={status === 'loading'}
                       className="w-full bg-gradient-to-r from-purple-600/80 to-indigo-600/80 hover:from-purple-600 hover:to-indigo-600 text-white py-3 rounded-lg font-semibold flex items-center justify-center gap-2 hover-glow"
                     >
-                      {status === 'loading' ? 'Guardando…' : 'Quiero recibir las activaciones'}
+                      {status === 'loading' ? 'Guardando…' : 'Quiero apoyar este miniverso'}
                     </Button>
                   </form>
                 </>

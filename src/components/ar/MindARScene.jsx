@@ -76,13 +76,19 @@ const MindARScene = forwardRef(
       }
 
       const baseUrl = import.meta.env.BASE_URL ?? '/';
-      if (targetSrc.startsWith(baseUrl)) {
-        return targetSrc;
-      }
-
       const normalizedBase = baseUrl.endsWith('/') ? baseUrl : `${baseUrl}/`;
       const trimmed = targetSrc.replace(/^\/+/, '');
-      return `${normalizedBase}${trimmed}`;
+
+      if (typeof window === 'undefined') {
+        return `${normalizedBase}${trimmed}`;
+      }
+
+      try {
+        const resolved = new URL(trimmed, `${window.location.origin}${normalizedBase}`);
+        return resolved.toString();
+      } catch (e) {
+        return `${normalizedBase}${trimmed}`;
+      }
     }, [targetSrc]);
 
   const containerRef = useRef(null);
