@@ -126,6 +126,14 @@ const ReserveModal = ({
   initialPackages = [],
   overlayZClass = 'z-50',
 }) => {
+  const initialPackagesKey = useMemo(
+    () => (Array.isArray(initialPackages) ? initialPackages.join('|') : ''),
+    [initialPackages]
+  );
+  const normalizedInitialPackages = useMemo(
+    () => (Array.isArray(initialPackages) ? initialPackages : []),
+    [initialPackagesKey]
+  );
   const [formState, setFormState] = useState(initialFormState);
   const [status, setStatus] = useState('idle');
   const [errorMessage, setErrorMessage] = useState('');
@@ -139,16 +147,14 @@ const ReserveModal = ({
   // -------------------------------------------------------------
   useEffect(() => {
     if (open) {
-      const sanitizedPackages = Array.isArray(initialPackages)
-        ? initialPackages.filter((pkgId) => PACKAGE_PRICE_MAP[pkgId])
-        : [];
+      const sanitizedPackages = normalizedInitialPackages.filter((pkgId) => PACKAGE_PRICE_MAP[pkgId]);
       setFormState({ ...initialFormState, packages: sanitizedPackages });
       setStatus('idle');
       setErrorMessage('');
       setCheckoutError('');
       setIsCheckoutLoading(false);
     }
-  }, [open, initialPackages]);
+  }, [open, normalizedInitialPackages]);
 
   // -------------------------------------------------------------
   // Permitir cerrar con ESC

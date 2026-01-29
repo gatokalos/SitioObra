@@ -162,7 +162,7 @@ const Hero = () => {
     "
   >
     <Users2 size={20} className="text-purple-200/90 drop-shadow-sm" />
-    Café Gato
+    ¿Un Café Gato?
   </Button>
    {/* Microtexto */}
     <p className="text-xs italic text-slate-400/70 leading-tight">
