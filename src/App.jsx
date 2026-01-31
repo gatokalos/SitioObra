@@ -1,4 +1,5 @@
 import React, { useEffect } from 'react';
+import { Route, Routes } from 'react-router-dom';
 import { Toaster } from '@/components/ui/toaster';
 import Header from '@/components/Header';
 import Hero from '@/components/Hero';
@@ -14,6 +15,7 @@ import Footer from '@/components/Footer';
 import { useBlogPosts } from '@/hooks/useBlogPosts';
 import { useEmailRedirect } from '@/hooks/useEmailRedirect';
 import LoginToast from '@/components/LoginToast';
+import PortalLectura from '@/pages/PortalLectura';
 
 const pageTitle = '#GatoEncerrado - Obra de Teatro transmedia';
 const pageDescription =
@@ -36,27 +38,35 @@ function App() {
   }, []);
 
   return (
-    <div className="min-h-screen overflow-x-hidden">
-      <Header />
+    <Routes>
+      <Route
+        path="/"
+        element={(
+          <div className="min-h-screen overflow-x-hidden">
+            <Header />
 
-      <main className="pt-20 lg:pt-24">
-        <Hero />
-        <About />
-        <Team />
-        <Instagram />
-        <BlogContributionPrompt />
-        <Blog posts={blogData.posts} isLoading={blogData.isLoading} error={blogData.error} />
-        <Transmedia />
-        <NextShow />
-        <Contact />
-      </main>
+            <main className="pt-20 lg:pt-24">
+              <Hero />
+              <About />
+              <Team />
+              <Instagram />
+              <BlogContributionPrompt />
+              <Blog posts={blogData.posts} isLoading={blogData.isLoading} error={blogData.error} />
+              <Transmedia />
+              <NextShow />
+              <Contact />
+            </main>
 
-      <Footer />
-      {shouldShowToast && (
-        <LoginToast emailHash={emailHash} onDismiss={dismissToast} />
-      )}
-      <Toaster />
-    </div>
+            <Footer />
+            {shouldShowToast && (
+              <LoginToast emailHash={emailHash} onDismiss={dismissToast} />
+            )}
+            <Toaster />
+          </div>
+        )}
+      />
+      <Route path="/portal-lectura" element={<PortalLectura />} />
+    </Routes>
   );
 }
 

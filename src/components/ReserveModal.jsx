@@ -25,7 +25,7 @@ export const PACKAGE_OPTIONS = [
   },
   {
     id: 'novela-400',
-    title: 'Novela “Mi Gato Encerrado”',
+    title: '“Mi Gato Encerrado”',
     price: '$400',
     helper: 'Primera edición con QR secreto.',
     priceId: import.meta.env.VITE_PRICE_NOVELA,
@@ -104,7 +104,7 @@ const RESERVE_COPY = {
   },
   offseason: {
     eyebrow: 'Encontrémonos fuera del teatro',
-    title: 'Objetos del universo #GatoEncerrado',
+    title: 'Objetos del universo',
     intro:
       'La idea es simple: cuando varias personas se interesan, buscamos la manera de encontrarnos, compartir café, conversación y entregar los objetos en mano.',
     notice: (
@@ -112,8 +112,18 @@ const RESERVE_COPY = {
     También podemos hacer envíos y coordinar encuentros virtuales. Después de elegir lo que más te guste, nos pondremos en contacto contigo. <strong>Cada reserva abre una conversación.</strong>
   </>
 ),
-    footerNote:
-      'A largo plazo, soñamos con un espacio físico donde arte, café y salud mental puedan convivir.',
+    footerNote: (
+      <div className="rounded-2xl border border-white/10 bg-black/30 p-5 shadow-[0_20px_45px_rgba(0,0,0,0.35)]">
+        <div className="text-2xl text-purple-200">“</div>
+        <p className="text-sm text-slate-100/90 leading-relaxed italic">
+          A largo plazo, soñamos con un espacio físico donde arte, café y salud mental puedan convivir.
+        </p>
+        <div className="mt-4">
+          <p className="text-sm text-slate-100 font-semibold">Carlos A. Pérez H.</p>
+          <p className="text-xs text-slate-400">Creador de #GatoEncerrado</p>
+        </div>
+      </div>
+    ),
   },
 };
 
@@ -365,13 +375,11 @@ const ReserveModal = ({
             </button>
 
             {copy.intro ? (
-              <p className="mb-6 text-sm text-slate-300/90 leading-relaxed">{copy.intro}</p>
+              <p className="mb-4 text-sm text-slate-300/90 leading-relaxed">{copy.intro}</p>
             ) : null}
 
-            {copy.notice ? (
-              <div className="mb-6 rounded-xl border border-yellow-400/20 bg-yellow-400/10 p-4 text-xs text-yellow-200">
-                {copy.notice}
-              </div>
+            {copy.footerNote ? (
+              <div className="mb-6">{copy.footerNote}</div>
             ) : null}
 
             {/* GRID */}
@@ -550,8 +558,10 @@ const ReserveModal = ({
               </form>
             </div>
 
-            {copy.footerNote ? (
-              <p className="mt-8 text-sm text-slate-300/80">{copy.footerNote}</p>
+            {copy.notice ? (
+              <div className="mt-8 rounded-xl border border-yellow-400/20 bg-yellow-400/10 p-4 text-xs text-yellow-200">
+                {copy.notice}
+              </div>
             ) : null}
           </motion.div>
         </motion.div>

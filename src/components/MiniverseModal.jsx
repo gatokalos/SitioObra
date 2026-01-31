@@ -18,6 +18,7 @@ const MINIVERSE_CARDS = [
     thumbLabel: 'D',
     thumbGradient: 'from-purple-400/80 via-fuchsia-500/70 to-rose-500/60',
     title: 'Miniverso Obra',
+    titleShort: 'Obra',
     description: 'Dialoga con la obra sobre tus impresiones de la obra.',
     action: 'Explora',
   },
@@ -28,6 +29,7 @@ const MINIVERSE_CARDS = [
     thumbLabel: 'L',
     thumbGradient: 'from-emerald-400/80 via-teal-500/70 to-cyan-500/60',
     title: 'Miniverso Literatura',
+    titleShort: 'Literatura',
     description:
       'La obra reescrita como novela: el texto se transforma en autoficción.',
     action: 'Explora',
@@ -39,6 +41,7 @@ const MINIVERSE_CARDS = [
     thumbLabel: 'A',
     thumbGradient: 'from-amber-400/80 via-orange-500/70 to-rose-500/60',
     title: 'Miniverso Artesanías',
+    titleShort: 'Artesanías',
     description:
       'Objeto ritual de que activa la experiencia fuera del escenario.',
     action: 'Explora',
@@ -50,6 +53,7 @@ const MINIVERSE_CARDS = [
     thumbLabel: 'G',
     thumbGradient: 'from-fuchsia-400/80 via-purple-500/70 to-indigo-500/60',
     title: 'Miniverso Gráficos',
+    titleShort: 'Gráficos',
     description: 'Imágenes y trazos nacidos del proceso creativo de la obra.',
     action: 'Explora',
     isUpcoming: true,
@@ -60,6 +64,7 @@ const MINIVERSE_CARDS = [
     icon: Film,
     thumbGradient: 'from-rose-500/80 via-red-500/70 to-fuchsia-500/60',
     title: 'Miniverso Cine',
+    titleShort: 'Cine',
     description:
       'Películas y miradas que dialogan con el universo de la obra.',
     action: 'Explora',
@@ -71,6 +76,7 @@ const MINIVERSE_CARDS = [
     thumbLabel: 'S',
     thumbGradient: 'from-sky-400/80 via-cyan-500/70 to-indigo-500/60',
     title: 'Miniverso Sonoridades',
+    titleShort: 'Sonoridades',
     description:
       'Música, poemas y registros sonoros surgidos de la obra.',
     action: 'Explora',
@@ -82,6 +88,7 @@ const MINIVERSE_CARDS = [
     thumbLabel: 'M',
     thumbGradient: 'from-sky-400/80 via-emerald-500/70 to-cyan-500/60',
     title: 'Miniverso Movimiento',
+    titleShort: 'Movimiento',
     description: 'Cuerpos, recorridos y figuras rituales que expanden la obra en el espacio.',
     action: 'Explora',
     isUpcoming: true,
@@ -93,6 +100,7 @@ const MINIVERSE_CARDS = [
     thumbLabel: 'J',
     thumbGradient: 'from-lime-400/80 via-emerald-500/70 to-teal-500/60',
     title: 'Miniverso Apps',
+    titleShort: 'Apps',
     description: 'Experimentos lúdicos que reescriben la obra en formato interactivo.',
     action: 'Explora',
   },
@@ -103,6 +111,7 @@ const MINIVERSE_CARDS = [
     thumbLabel: 'O',
     thumbGradient: 'from-indigo-400/80 via-violet-500/70 to-purple-500/60',
     title: 'Miniverso Oráculo',
+    titleShort: 'Oráculo',
     description: 'Preguntas, azar y respuestas que la obra deja abiertas.',
     action: 'Explora',
   },
@@ -369,11 +378,11 @@ const MiniverseModal = ({ open, onClose, onSelectMiniverse }) => {
       <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-6">
         <div>
           <p className="text-sm uppercase tracking-[0.35em] text-slate-400/80 mb-2">
-            Universo expandido #GatoEncerrado
+            Narrativa expandida
           </p>
 
           <h2 id="miniverse-modal-title" className="font-display text-3xl text-slate-50">
-            Explora los miniversos
+            Explora el universo de #GatoEncerrado
           </h2>
 
           <div className="mt-3 rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-slate-200/90">
@@ -381,6 +390,22 @@ const MiniverseModal = ({ open, onClose, onSelectMiniverse }) => {
             <strong className="font-semibold text-slate-50">
               Explora a tu ritmo. Cada miniverso es una puerta.
             </strong>
+          </div>
+
+          <div className="mt-6 flex flex-wrap gap-2">
+            {TABS.map((tab) => (
+              <button
+                key={tab.id}
+                onClick={() => handleTabChange(tab.id)}
+                className={`rounded-full border px-4 py-2 text-sm transition ${
+                  activeTab === tab.id
+                    ? 'border-purple-400/60 bg-purple-500/20 text-purple-100'
+                    : 'border-white/10 text-slate-300 hover:border-purple-300/40 hover:text-purple-100'
+                }`}
+              >
+                {tab.label}
+              </button>
+            ))}
           </div>
         </div>
 
@@ -393,7 +418,7 @@ const MiniverseModal = ({ open, onClose, onSelectMiniverse }) => {
                     <div className="glass-effect rounded-2xl border border-white/10 p-5 space-y-4">
                   
                       <h3 className="font-display text-2xl text-slate-100">
-                        Este miniverso aún no existe… pero puede existir contigo.
+                        Estos miniversos necesitan tu apoyo para cobrar vida.
                       </h3>
                       <p className="font-semibold text-purple-100">
                         👉{' '}
@@ -661,7 +686,7 @@ const MiniverseModal = ({ open, onClose, onSelectMiniverse }) => {
                             >
                               {card.icon ? <card.icon size={22} className="text-white drop-shadow-sm" /> : card.thumbLabel}
                             </div>
-                            <h3 className="font-display text-lg text-slate-100">{card.title}</h3>
+                        <h3 className="font-display text-lg text-slate-100">{card.titleShort ?? card.title}</h3>
                           </>
                         ) : null}
                       </button>
@@ -669,22 +694,6 @@ const MiniverseModal = ({ open, onClose, onSelectMiniverse }) => {
                   })}
                 </div>
               )}
-            </div>
-
-            <div className="mt-8 flex flex-wrap gap-2">
-              {TABS.map((tab) => (
-                <button
-                  key={tab.id}
-                  onClick={() => handleTabChange(tab.id)}
-                  className={`rounded-full border px-4 py-2 text-sm transition ${
-                    activeTab === tab.id
-                      ? 'border-purple-400/60 bg-purple-500/20 text-purple-100'
-                      : 'border-white/10 text-slate-300 hover:border-purple-300/40 hover:text-purple-100'
-                  }`}
-                >
-                  {tab.label}
-                </button>
-              ))}
             </div>
 
             <div className="mt-6 flex items-center justify-between text-xs text-slate-500">
