@@ -25,7 +25,7 @@ export const PACKAGE_OPTIONS = [
   },
   {
     id: 'novela-400',
-    title: '“Mi Gato Encerrado”',
+    title: 'Novela de autoficción',
     price: '$400',
     helper: 'Primera edición con QR secreto.',
     priceId: import.meta.env.VITE_PRICE_NOVELA,

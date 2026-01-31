@@ -775,7 +775,7 @@ const Team = () => {
               </div>
               <div className="p-5 space-y-4">
                 <p className="text-sm text-slate-300/80 leading-relaxed">
-                  Este sitio no permite vista interna. Se abrirá en otra pestaña para que
+                  Se abrirá en otra pestaña para que
                   puedas regresar fácilmente.
                 </p>
                 <div className="flex flex-col sm:flex-row gap-3 sm:justify-end">
