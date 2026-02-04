@@ -111,7 +111,7 @@ const MINIVERSE_CARDS = [
     thumbLabel: 'O',
     thumbGradient: 'from-indigo-400/80 via-violet-500/70 to-purple-500/60',
     title: 'Miniverso Oráculo',
-    titleShort: 'Consulta al Oráculo',
+    titleShort: 'Consulta el Oráculo',
     description: 'Preguntas, azar y respuestas que la obra deja abiertas.',
     action: 'Explora',
   },

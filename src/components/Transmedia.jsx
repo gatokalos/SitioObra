@@ -60,6 +60,7 @@ const GAT_COSTS = {
   tazaActivation: 90,
   movimientoRuta: 280,
 };
+const LEGACY_TAZA_VIEWER_ENABLED = false;
 const SHOWCASE_BADGE_IDS = [
   'miniversos',
   'lataza',
@@ -1629,7 +1630,7 @@ const Transmedia = () => {
   const [isOraculoOpen, setIsOraculoOpen] = useState(false);
   const [isCauseSiteOpen, setIsCauseSiteOpen] = useState(false);
   const [showInstallPwaCTA, setShowInstallPwaCTA] = useState(false);
-  const [useLegacyTazaViewer, setUseLegacyTazaViewer] = useState(true);
+  const [useLegacyTazaViewer, setUseLegacyTazaViewer] = useState(LEGACY_TAZA_VIEWER_ENABLED);
   const spentSilvestreSet = useMemo(
     () => new Set(spentSilvestreQuestions),
     [spentSilvestreQuestions]
@@ -3484,15 +3485,17 @@ const rendernotaAutoral = () => {
             >
               {isTazaActivating ? 'Procesando...' : activeDefinition.ctaLabel}
             </Button>
-            <label className="flex items-center gap-2 text-xs uppercase tracking-[0.25em] text-slate-400">
-              <input
-                type="checkbox"
-                className="accent-purple-400"
-                checked={useLegacyTazaViewer}
-                onChange={(e) => setUseLegacyTazaViewer(e.target.checked)}
-              />
-              Usar visor estable (A‑Frame)
-            </label>
+            {LEGACY_TAZA_VIEWER_ENABLED ? (
+              <label className="flex items-center gap-2 text-xs uppercase tracking-[0.25em] text-slate-400">
+                <input
+                  type="checkbox"
+                  className="accent-purple-400"
+                  checked={useLegacyTazaViewer}
+                  onChange={(e) => setUseLegacyTazaViewer(e.target.checked)}
+                />
+                Usar visor estable (A‑Frame)
+              </label>
+            ) : null}
           </div>
         ) : null}
 
