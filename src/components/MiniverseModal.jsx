@@ -18,7 +18,7 @@ const MINIVERSE_CARDS = [
     thumbLabel: 'D',
     thumbGradient: 'from-purple-400/80 via-fuchsia-500/70 to-rose-500/60',
     title: 'Miniverso Obra',
-    titleShort: 'Obra',
+    titleShort: 'Habla con la obra',
     description: 'Dialoga con la obra sobre tus impresiones de la obra.',
     action: 'Explora',
   },
@@ -29,7 +29,7 @@ const MINIVERSE_CARDS = [
     thumbLabel: 'L',
     thumbGradient: 'from-emerald-400/80 via-teal-500/70 to-cyan-500/60',
     title: 'Miniverso Literatura',
-    titleShort: 'Literatura',
+    titleShort: 'Lee la novela',
     description:
       'La obra reescrita como novela: el texto se transforma en autoficción.',
     action: 'Explora',
@@ -41,7 +41,7 @@ const MINIVERSE_CARDS = [
     thumbLabel: 'A',
     thumbGradient: 'from-amber-400/80 via-orange-500/70 to-rose-500/60',
     title: 'Miniverso Artesanías',
-    titleShort: 'Artesanías',
+    titleShort: 'Usa la taza',
     description:
       'Objeto ritual de que activa la experiencia fuera del escenario.',
     action: 'Explora',
@@ -53,8 +53,8 @@ const MINIVERSE_CARDS = [
     thumbLabel: 'G',
     thumbGradient: 'from-fuchsia-400/80 via-purple-500/70 to-indigo-500/60',
     title: 'Miniverso Gráficos',
-    titleShort: 'Gráficos',
-    description: 'Imágenes y trazos nacidos del proceso creativo de la obra.',
+    titleShort: 'Imagina el diálogo',
+    description: 'Imágenes y trazos nacidos del proceso creativo del universo.',
     action: 'Explora',
     isUpcoming: true,
   },
@@ -64,7 +64,7 @@ const MINIVERSE_CARDS = [
     icon: Film,
     thumbGradient: 'from-rose-500/80 via-red-500/70 to-fuchsia-500/60',
     title: 'Miniverso Cine',
-    titleShort: 'Cine',
+    titleShort: 'Ve la película',
     description:
       'Películas y miradas que dialogan con el universo de la obra.',
     action: 'Explora',
@@ -76,7 +76,7 @@ const MINIVERSE_CARDS = [
     thumbLabel: 'S',
     thumbGradient: 'from-sky-400/80 via-cyan-500/70 to-indigo-500/60',
     title: 'Miniverso Sonoridades',
-    titleShort: 'Sonoridades',
+    titleShort: 'Escucha la música',
     description:
       'Música, poemas y registros sonoros surgidos de la obra.',
     action: 'Explora',
@@ -88,7 +88,7 @@ const MINIVERSE_CARDS = [
     thumbLabel: 'M',
     thumbGradient: 'from-sky-400/80 via-emerald-500/70 to-cyan-500/60',
     title: 'Miniverso Movimiento',
-    titleShort: 'Movimiento',
+    titleShort: 'Siente el movimiento',
     description: 'Cuerpos, recorridos y figuras rituales que expanden la obra en el espacio.',
     action: 'Explora',
     isUpcoming: true,
@@ -100,7 +100,7 @@ const MINIVERSE_CARDS = [
     thumbLabel: 'J',
     thumbGradient: 'from-lime-400/80 via-emerald-500/70 to-teal-500/60',
     title: 'Miniverso Apps',
-    titleShort: 'Apps',
+    titleShort: 'Juega la app',
     description: 'Experimentos lúdicos que reescriben la obra en formato interactivo.',
     action: 'Explora',
   },
@@ -111,7 +111,7 @@ const MINIVERSE_CARDS = [
     thumbLabel: 'O',
     thumbGradient: 'from-indigo-400/80 via-violet-500/70 to-purple-500/60',
     title: 'Miniverso Oráculo',
-    titleShort: 'Oráculo',
+    titleShort: 'Consulta al Oráculo',
     description: 'Preguntas, azar y respuestas que la obra deja abiertas.',
     action: 'Explora',
   },
@@ -669,7 +669,7 @@ const MiniverseModal = ({ open, onClose, onSelectMiniverse }) => {
                               {card.icon ? <card.icon size={22} className="text-slate-200/80" /> : card.thumbLabel}
                             </div>
                             <span className="rounded-full border border-white/20 bg-black/40 px-3 py-1 text-[0.6rem] uppercase tracking-[0.3em] text-slate-300">
-                              Próximamente
+                              {card.titleShort ?? card.title}
                             </span>
                           </>
                         ) : null}
