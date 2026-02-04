@@ -18,23 +18,23 @@ const LOGO_SRC = '/assets/logoapp.png';
 export const PACKAGE_OPTIONS = [
   {
     id: 'taza-250',
-    title: 'Taza AR',
+    title: 'Taza artesanal',
     price: '$250',
-    helper: 'Taza especial con activación AR.',
+    helper: 'Taza ritual con portal AR y frase activable.',
     priceId: import.meta.env.VITE_PRICE_TAZA,
   },
   {
     id: 'novela-400',
     title: 'Novela de autoficción',
     price: '$400',
-    helper: 'Primera edición con QR secreto.',
+    helper: 'Primera edición con acceso al Club de Lectura.',
     priceId: import.meta.env.VITE_PRICE_NOVELA,
   },
   {
     id: 'combo-900',
     title: 'Combo: novela + 2 tazas',
     price: '$900',
-    helper: 'Paquete completo disponible solo el día del evento (incluye suscripción al Universo Transmedial si lo solicitas).',
+    helper: 'Novela + 2 tazas. Incluye 12,000 GATokens.',
     priceId: import.meta.env.VITE_PRICE_COMBO,
   },
 ];
@@ -507,7 +507,7 @@ const ReserveModal = ({
                     value={formState.notes}
                     onChange={handleInputChange}
                     className="w-full rounded-lg border border-white/10 bg-black/30 px-4 py-3 text-slate-100 placeholder-slate-500 focus:border-purple-400 focus:ring-1 focus:ring-purple-400 resize-none"
-                    placeholder="¿Necesitas facilidades especiales o quires solicitar tu suscripción?"
+                    placeholder="¿Necesitas facilidades especiales o quires solicitar una suscripción?"
                   />
                 </div>
 
