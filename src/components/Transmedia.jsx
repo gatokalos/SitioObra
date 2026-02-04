@@ -419,37 +419,6 @@ const MINIVERSO_VERSE_EFFECTS = {
   default: 'flip',
 };
 
-let hasInjectedMiniversoBreathStyle = false;
-function ensureMiniversoBreathStyle() {
-  if (hasInjectedMiniversoBreathStyle || typeof document === 'undefined') {
-    return;
-  }
-
-  const style = document.createElement('style');
-  style.id = 'miniverso-breath-style';
-  style.textContent = `
-    @keyframes miniverso-breath {
-      0% {
-        background-position: 0% 0%;
-        transform: scale(1);
-        filter: brightness(1);
-      }
-      50% {
-        background-position: 50% 50%;
-        transform: scale(1.03);
-        filter: brightness(1.08);
-      }
-      100% {
-        background-position: 100% 100%;
-        transform: scale(1);
-        filter: brightness(1);
-      }
-    }
-  `;
-  document.head.appendChild(style);
-  hasInjectedMiniversoBreathStyle = true;
-}
-
 function shuffleArray(list) {
   const arr = [...list];
   for (let i = arr.length - 1; i > 0; i -= 1) {
@@ -1145,7 +1114,6 @@ const ShowcaseReactionInline = ({ showcaseId, title, description, buttonLabel, c
   );
 
   useEffect(() => {
-    ensureMiniversoBreathStyle();
   }, []);
   const [status, setStatus] = useState('idle');
 
@@ -5342,8 +5310,6 @@ const rendernotaAutoral = () => {
                       filter: 'saturate(1.1)',
                       backgroundSize: '160% 160%',
                       backgroundPosition: '0% 0%',
-                      animation: 'miniverso-breath 14s ease-in-out infinite alternate',
-                      willChange: 'background-position, transform',
                     }}
                   />
                   <div
