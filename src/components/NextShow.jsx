@@ -157,7 +157,7 @@ const NextShow = () => {
                     <ShoppingBag size={20} />
                     Café Gato
                   </Button>
-                  <p className="text-xs text-slate-400/80">"Cuando nos juntamos, pasan cosas"</p>
+                  <p className="text-xs text-slate-400/80">"Aquí empieza la conversación"</p>
                 </div>
               </div>
             </div>

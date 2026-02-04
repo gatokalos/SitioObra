@@ -1,6 +1,6 @@
-import React, { useCallback, useState } from 'react';
-import { motion } from 'framer-motion';
-import { Globe, Globe2, MapPin, MapPinIcon, ShoppingBag, SparkleIcon, Users, Users2, Users2Icon, UsersIcon } from 'lucide-react';
+import React, { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { AnimatePresence, motion } from 'framer-motion';
+import { BookOpen, Coffee, CoffeeIcon, Globe, Globe2, MapPin, MapPinIcon, ShoppingBag, SparkleIcon, Users, Users2, Users2Icon, UsersIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import ReserveModal from '@/components/ReserveModal';
 import TicketPurchaseModal from '@/components/TicketPurchaseModal';
@@ -10,6 +10,18 @@ import isotipoGato from '@/assets/isotipo-gato.png';
 const Hero = () => {
   const [isReserveOpen, setIsReserveOpen] = useState(false);
   const [isTicketModalOpen, setIsTicketModalOpen] = useState(false);
+  const [ctaIndex, setCtaIndex] = useState(0);
+  const [isCtaHovered, setIsCtaHovered] = useState(false);
+  const [primaryCtaWidth, setPrimaryCtaWidth] = useState(null);
+  const primaryCtaRef = useRef(null);
+
+  const rotatingCtas = [
+    { label: 'Café', Icon: CoffeeIcon },
+    { label: 'Club', Icon: BookOpen },
+    { label: 'Merch', Icon: ShoppingBag },
+  ];
+  const currentCta = rotatingCtas[ctaIndex];
+  const targetWidth = primaryCtaWidth ?? undefined;
 
   const handleScrollToAbout = useCallback(() => {
     const aboutSection = document.querySelector('#about');
@@ -32,6 +44,37 @@ const Hero = () => {
 
   const handleCloseTicket = useCallback(() => {
     setIsTicketModalOpen(false);
+  }, []);
+
+  useEffect(() => {
+    const ROTATION_MS = 4000;
+    if (isCtaHovered) return undefined;
+
+    const intervalId = window.setInterval(() => {
+      setCtaIndex((prev) => (prev + 1) % rotatingCtas.length);
+    }, ROTATION_MS);
+
+    return () => window.clearInterval(intervalId);
+  }, [isCtaHovered, rotatingCtas.length]);
+
+  useLayoutEffect(() => {
+    const el = primaryCtaRef.current;
+    if (!el) return undefined;
+
+    const updateWidth = () => {
+      setPrimaryCtaWidth(Math.ceil(el.getBoundingClientRect().width));
+    };
+
+    updateWidth();
+
+    if (typeof ResizeObserver !== 'undefined') {
+      const observer = new ResizeObserver(updateWidth);
+      observer.observe(el);
+      return () => observer.disconnect();
+    }
+
+    window.addEventListener('resize', updateWidth);
+    return () => window.removeEventListener('resize', updateWidth);
   }, []);
 
   return (
@@ -126,6 +169,7 @@ const Hero = () => {
 
   {/* CTA PRINCIPAL */}
   <Button
+    ref={primaryCtaRef}
     onClick={handleOpenMiniverseList}
     className="
       px-8 py-4 rounded-full font-semibold
@@ -139,13 +183,16 @@ const Hero = () => {
     "
   >
     <SparkleIcon size={22} className="drop-shadow-md" />
-    Expandir universo
+    Miniversos
   </Button>
 
   {/* CTA SECUNDARIO — CAFÉ */}
   <Button
+    asChild
     variant="outline"
     onClick={() => handleOpenReserve('preventa')}
+    onMouseEnter={() => setIsCtaHovered(true)}
+    onMouseLeave={() => setIsCtaHovered(false)}
     className="
       px-8 py-4 rounded-full font-semibold
       flex items-center gap-2
@@ -161,12 +208,36 @@ const Hero = () => {
       text-base tracking-wide
     "
   >
-    <Users2 size={20} className="text-purple-200/90 drop-shadow-sm" />
-    ¿Un Café Gato?
+    <motion.button
+      type="button"
+      animate={targetWidth ? { width: targetWidth } : undefined}
+      transition={{ width: { duration: 3, ease: [0.2, 1, 0.2, 1] } }}
+      className="inline-flex items-center justify-center"
+    >
+      <span className="relative inline-flex items-center">
+        <span className="invisible inline-flex items-center gap-2" aria-hidden="true">
+          <currentCta.Icon size={20} className="text-purple-200/90 drop-shadow-sm" />
+          {currentCta.label}
+        </span>
+        <AnimatePresence mode="sync" initial={false}>
+          <motion.span
+            key={currentCta.label}
+            initial={{ opacity: 0, filter: 'blur(14px)' }}
+            animate={{ opacity: 1, filter: 'blur(0px)' }}
+            exit={{ opacity: 0, filter: 'blur(14px)' }}
+            transition={{ duration: 3, ease: [0.2, 1, 0.2, 1] }}
+            className="absolute inset-0 inline-flex items-center gap-2"
+          >
+            <currentCta.Icon size={20} className="text-purple-200/90 drop-shadow-sm" />
+            {currentCta.label}
+          </motion.span>
+        </AnimatePresence>
+      </span>
+    </motion.button>
   </Button>
    {/* Microtexto */}
     <p className="text-xs italic text-slate-400/70 leading-tight">
-  Cuando nos juntemos, pasarán cosas.
+  Aquí empieza la conversación
 </p>
 </div>
 
