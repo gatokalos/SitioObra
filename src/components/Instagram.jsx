@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { createPortal } from 'react-dom';
 import { Instagram as InstagramIcon, ExternalLink, AlertCircle, ChevronLeft, ChevronRight, X, Heart } from 'lucide-react';
@@ -115,14 +115,14 @@ const shouldConfirmExternalLink = (url) => {
 
 const curatedLayout = [
   { match: 'Copia de Foto 1 (1)', patternIndex: 0, story: 'El futuro ha arribado' },
-  { match: 'PoloyEstela', patternIndex: 8, story: 'Entre micro-climas' },
-  { match: 'Copia de Foto 4', patternIndex: 2, story: 'El Ensayo Final' },
+  { match: 'Copia de Foto 4', patternIndex: 4, story: 'El Ensayo Final' },
+  { match: 'PoloyEstela', patternIndex: 2, story: 'Entre micro-climas' },
   { match: 'Copia de Foto 3 (1)', patternIndex: 3, story: 'No habrá un nosotros' },
-  { match: 'Pausa entre actos', patternIndex: 4, story: 'Coreografía del desamor' },
+  { match: 'Pausa entre actos', patternIndex: 8, story: 'Coreografía del desamor' },
   { match: 'Copia de Foto 4 (1)', patternIndex: 5, story: 'Señor de Paja' },
   { match: '_V7M6314', patternIndex: 6, story: 'Encierro post-pandemia' },
   { match: '_V7M6296', patternIndex: 7, story: 'No es un Ted-Talk' },
-  { match: '_V7M6348', patternIndex: 8, story: 'Odisea inter-estelar' },
+  { match: '_V7M6348', patternIndex: 11, story: 'Odisea inter-estelar' },
   { match: 'Xanadu', patternIndex: 9, story: 'Salvando el Xánadu' },
   { match: '_V7M6281', patternIndex: 10, story: 'La intervención' },
   { match: '_V7M6324', patternIndex: 11, story: 'Un arma de doble filo' },
@@ -202,7 +202,7 @@ const curatedLayoutDiego = [
   { match: 'diegohdz854', story: 'Una última vez' },
   { match: 'diegohdz855', story: 'Aquí se acaba, campeón' },
   { match: 'diegohdz007', story: 'Grandes logros' },
-  { match: 'diegohdz857', patternIndex: 4, lockPattern: true, story: 'Muchas gracias' },
+  { match: 'diegohdz857', patternIndex: 2, lockPattern: true, story: 'Muchas gracias' },
 ];
 
 const storyFragments = [
@@ -270,6 +270,7 @@ const Instagram = () => {
   const BASE_VISIBLE_COUNT = 15;
   const [selectedIndex, setSelectedIndex] = useState(null);
   const [activePhotographer, setActivePhotographer] = useState('gabriel');
+  const sectionRef = useRef(null);
   const [likeStatusById, setLikeStatusById] = useState({});
   const [likeCountById, setLikeCountById] = useState({});
   const [likeRevealById, setLikeRevealById] = useState({});
@@ -295,6 +296,10 @@ const Instagram = () => {
   const [confirmPhotographerLink, setConfirmPhotographerLink] = useState(null);
   const activePhotographerData =
     PHOTOGRAPHERS.find((photographer) => photographer.id === activePhotographer) ?? PHOTOGRAPHERS[0];
+  const remainingPhotographers = useMemo(
+    () => PHOTOGRAPHERS.filter((photographer) => photographer.id !== activePhotographer),
+    [activePhotographer],
+  );
   const visibleCount =
     typeof activePhotographerData?.visibleCount === 'number'
       ? activePhotographerData.visibleCount
@@ -322,13 +327,13 @@ const Instagram = () => {
     }
     setConfirmPhotographerLink(null);
     setActivePhotographerLink({ url, label });
-  }, []);
+  }, [setActivePhotographer]);
   const handleClosePhotographerLink = useCallback(() => {
     setActivePhotographerLink(null);
-  }, []);
+  }, [setActivePhotographer]);
   const handleCloseConfirmPhotographerLink = useCallback(() => {
     setConfirmPhotographerLink(null);
-  }, []);
+  }, [setActivePhotographer]);
   const handleConfirmPhotographerLink = useCallback(() => {
     if (!confirmPhotographerLink?.url) return;
     window.open(confirmPhotographerLink.url, '_blank', 'noopener,noreferrer');
@@ -342,6 +347,15 @@ const Instagram = () => {
     event.stopPropagation();
     handleOpenPhotographerLink(url, label);
   }, [handleOpenPhotographerLink]);
+
+  const handleRemainingPhotographerSelect = useCallback((photographerId) => {
+    setActivePhotographer(photographerId);
+    if (sectionRef.current) {
+      sectionRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    } else if (typeof window !== 'undefined') {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  }, [setActivePhotographer]);
 
   const shouldExclude = useCallback((post) => {
     const exclusions = ['susurro de vestuario', 'foto 2'];
@@ -865,7 +879,7 @@ const Instagram = () => {
     : null;
 
   return (
-    <section id="instagram" className="py-20 relative">
+    <section id="instagram" ref={sectionRef} className="py-20 relative">
       <div className="section-divider mb-20" />
 
       <div className="container mx-auto px-5 sm:px-6">
@@ -1067,6 +1081,19 @@ const Instagram = () => {
               ))}
             </div>
         ) : null}
+
+        <div className="mt-8 flex flex-wrap justify-center gap-2">
+          {remainingPhotographers.map((photographer) => (
+            <button
+              key={`remaining-${photographer.id}`}
+              type="button"
+              onClick={() => handleRemainingPhotographerSelect(photographer.id)}
+              className="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-xs uppercase tracking-[0.2em] text-slate-200 transition hover:border-purple-300/40 hover:text-purple-100"
+            >
+              {photographer.label}
+            </button>
+          ))}
+        </div>
 
         <AnimatePresence>
           {isModalOpen && activePost && (
