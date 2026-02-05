@@ -1,16 +1,28 @@
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowLeft, MessageCircle, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/SupabaseAuthContext';
 import LoginOverlay from '@/components/ContributionModal/LoginOverlay';
 import PortalAuthButton from '@/components/PortalAuthButton';
+import ARExperience from '@/components/ar/ARExperience';
 
 const PortalArtesanias = () => {
   const { user } = useAuth();
   const [showLoginOverlay, setShowLoginOverlay] = useState(false);
   const [showLoginHint, setShowLoginHint] = useState(false);
+  const [isTazaARActive, setIsTazaARActive] = useState(false);
+  const [isTazaActivating, setIsTazaActivating] = useState(false);
+  const [tazaActivations, setTazaActivations] = useState(() => {
+    if (typeof window === 'undefined') return 0;
+    const stored = window.localStorage?.getItem('gatoencerrado:taza-activations');
+    const parsed = stored ? Number.parseInt(stored, 10) : 0;
+    return Number.isNaN(parsed) ? 0 : parsed;
+  });
+  const [arError, setArError] = useState('');
   const isAuthenticated = Boolean(user);
+
+  const tazaPhrases = useMemo(() => ['La taza te habla.'], []);
 
   const handleOpenLogin = useCallback(() => {
     if (!isAuthenticated) {
@@ -28,6 +40,51 @@ const PortalArtesanias = () => {
     window.setTimeout(() => setShowLoginHint(false), 2200);
     return false;
   }, [isAuthenticated]);
+
+  const handleActivateAR = useCallback(() => {
+    if (isTazaActivating) return;
+    setIsTazaActivating(true);
+    setArError('');
+
+    const next = tazaActivations + 1;
+    setTazaActivations(next);
+    setIsTazaARActive(true);
+
+    if (typeof window !== 'undefined') {
+      window.localStorage?.setItem('gatoencerrado:taza-activations', String(next));
+      window.dispatchEvent(
+        new CustomEvent('gatoencerrado:miniverse-spent', {
+          detail: { id: 'taza', spent: true, amount: 30, count: next },
+        })
+      );
+    }
+
+    window.setTimeout(() => {
+      setIsTazaActivating(false);
+    }, 700);
+  }, [isTazaActivating, tazaActivations]);
+
+  const handleCloseARExperience = useCallback(() => {
+    setIsTazaARActive(false);
+    setIsTazaActivating(false);
+  }, []);
+
+  const handleARError = useCallback((err) => {
+    setArError(
+      err?.message ||
+        'No pudimos iniciar la activación. Revisa permisos de cámara, luz y conexión.'
+    );
+    setIsTazaARActive(false);
+    setIsTazaActivating(false);
+  }, []);
+
+  useEffect(() => {
+    if (!isTazaARActive) return;
+    document.body.classList.add('overflow-hidden');
+    return () => {
+      document.body.classList.remove('overflow-hidden');
+    };
+  }, [isTazaARActive]);
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-950 via-black to-slate-900 text-slate-100">
@@ -78,10 +135,15 @@ const PortalArtesanias = () => {
             className="w-full justify-center"
             onClick={() => {
               if (!requireAuth()) return;
+              handleActivateAR();
             }}
+            disabled={isTazaActivating}
           >
-            Revelar mi frase
+            {isTazaActivating ? 'Activando…' : 'Revelar mi frase'}
           </Button>
+          {arError ? (
+            <p className="text-xs text-amber-200/90">{arError}</p>
+          ) : null}
           <p className="text-[11px] uppercase tracking-[0.3em] text-slate-400">
             Solo una acción. No guardamos imágenes.
           </p>
@@ -152,6 +214,20 @@ const PortalArtesanias = () => {
       </div>
       {showLoginOverlay ? <LoginOverlay onClose={handleCloseLogin} /> : null}
     </div>
+    {isTazaARActive ? (
+      <div className="fixed inset-0 z-[220] bg-black">
+        <ARExperience
+          targetSrc="/webar/taza/taza.mind"
+          phrases={tazaPhrases}
+          showScanGuide
+          guideImageSrc="/webar/taza/taza-marker.jpg"
+          guideLabel="Alinea la ilustración de la taza con el contorno. No necesita ser exacto."
+          onExit={handleCloseARExperience}
+          initialCameraReady
+          onError={handleARError}
+        />
+      </div>
+    ) : null}
   </div>
   );
 };
