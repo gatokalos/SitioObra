@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { BookOpen, Brain, Coffee, Drama, Film, MapIcon, Music, Palette, Smartphone } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { toast } from '@/components/ui/use-toast';
 import { supabase } from '@/lib/supabaseClient';
@@ -9,6 +10,12 @@ const TABS = [
   { id: 'experiences', label: 'Miniversos activos' },
   { id: 'waitlist', label: 'Próximamente' },
 ];
+
+const MINIVERSE_PORTAL_ROUTES = {
+  drama: '/portal-voz',
+  literatura: '/portal-lectura',
+  taza: '/portal-artesanias',
+};
 
 const MINIVERSE_CARDS = [
   {
@@ -137,6 +144,7 @@ const modalVariants = {
 };
 
 const MiniverseModal = ({ open, onClose, onSelectMiniverse }) => {
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState(TABS[0].id);
   const [formState, setFormState] = useState(initialFormState);
   const [status, setStatus] = useState('idle');
@@ -260,6 +268,16 @@ const MiniverseModal = ({ open, onClose, onSelectMiniverse }) => {
     setSelectedUpcomingId(null);
   }, []);
 
+  const handleClose = useCallback(() => {
+    if (status === 'loading') {
+      return;
+    }
+    if (selectedMiniverseId) {
+      markMiniverseVisited(selectedMiniverseId);
+    }
+    onClose?.();
+  }, [markMiniverseVisited, onClose, selectedMiniverseId, status]);
+
   const handleReturnToList = useCallback(() => {
     if (selectedMiniverseId) {
       markMiniverseVisited(selectedMiniverseId);
@@ -267,11 +285,22 @@ const MiniverseModal = ({ open, onClose, onSelectMiniverse }) => {
     setSelectedMiniverseId(null);
   }, [markMiniverseVisited, selectedMiniverseId]);
 
+  const legacyScrollToSection = useCallback(() => {
+    if (!selectedMiniverse) return;
+    // legacy: scroll to section
+    onSelectMiniverse?.(selectedMiniverse.formatId);
+  }, [onSelectMiniverse, selectedMiniverse]);
+
   const handleEnterMiniverse = useCallback(() => {
     if (!selectedMiniverse) return;
     markMiniverseVisited(selectedMiniverse.id);
-    onSelectMiniverse?.(selectedMiniverse.formatId);
-  }, [markMiniverseVisited, onSelectMiniverse, selectedMiniverse]);
+    const portalRoute = MINIVERSE_PORTAL_ROUTES[selectedMiniverse.id];
+    if (portalRoute) {
+      navigate(portalRoute);
+      handleClose();
+      return;
+    }
+  }, [handleClose, markMiniverseVisited, navigate, selectedMiniverse]);
 
   const handleEnterUpcoming = useCallback(() => {
     if (!selectedUpcoming) return;
@@ -330,16 +359,6 @@ const MiniverseModal = ({ open, onClose, onSelectMiniverse }) => {
     },
     [formState, status]
   );
-
-  const handleClose = useCallback(() => {
-    if (status === 'loading') {
-      return;
-    }
-    if (selectedMiniverseId) {
-      markMiniverseVisited(selectedMiniverseId);
-    }
-    onClose?.();
-  }, [markMiniverseVisited, onClose, selectedMiniverseId, status]);
 
   const handleScrollToSupport = useCallback(() => {
     if (typeof document === 'undefined') {
@@ -629,10 +648,16 @@ const MiniverseModal = ({ open, onClose, onSelectMiniverse }) => {
                       <Button
                         type="button"
                         onClick={handleEnterMiniverse}
+                        disabled={!MINIVERSE_PORTAL_ROUTES[selectedMiniverse.id]}
                         className="bg-gradient-to-r from-purple-600/80 to-indigo-600/80 hover:from-purple-600 hover:to-indigo-600 text-white py-3 rounded-lg font-semibold flex items-center justify-center gap-2 hover-glow"
                       >
-                        {selectedMiniverse.action}
+                        Abrir portal
                       </Button>
+                      {!MINIVERSE_PORTAL_ROUTES[selectedMiniverse.id] ? (
+                        <span className="text-xs uppercase tracking-[0.22em] text-slate-400 self-center">
+                          Portal próximamente.
+                        </span>
+                      ) : null}
                       <button
                         type="button"
                         onClick={handleReturnToList}

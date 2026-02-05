@@ -43,7 +43,7 @@ import 'react-pdf/dist/Page/AnnotationLayer.css';
 import 'react-pdf/dist/Page/TextLayer.css';
 import ARExperience from '@/components/ar/ARExperience';
 import MiniversoSonoroPreview from '@/components/miniversos/sonoro/MiniversoSonoroPreview';
-import AutoficcionPreview from '@/components/novela/AutoficcionPreview';
+import AutoficcionPreviewOverlay from '@/components/novela/AutoficcionPreviewOverlay';
 import { recordShowcaseLike } from '@/services/showcaseLikeService';
 import { useMobileVideoPresentation } from '@/hooks/useMobileVideoPresentation';
 import IAInsightCard from '@/components/IAInsightCard';
@@ -1465,29 +1465,6 @@ const CauseImpactAccordion = ({ items, onOpenImagePreview }) => {
         );
       })}
     </div>
-  );
-};
-
-const AutoficcionPreviewOverlay = ({ open, onClose }) => {
-  if (!open || typeof document === 'undefined') {
-    return null;
-  }
-
-  return createPortal(
-    <div className="fixed inset-0 z-[200] overflow-auto bg-black/80 backdrop-blur-xl p-6">
-      <div className="max-w-3xl mx-auto">
-        <button
-          type="button"
-          onClick={onClose}
-          className="text-slate-300 hover:text-white mb-6"
-        >
-          Cerrar ✕
-        </button>
-
-        <AutoficcionPreview />
-      </div>
-    </div>,
-    document.body,
   );
 };
 
@@ -3601,7 +3578,7 @@ const rendernotaAutoral = () => {
 
             <div className="space-y-6">
               {renderCommunityBlock('miniversoSonoro', {
-                ctaLabel: 'suma tu voz',
+                ctaLabel: 'comenta',
                 reactionProps: {
                   showcaseId: 'miniversoSonoro',
                   title: 'La voz de quienes escuchan',
@@ -3903,7 +3880,7 @@ const rendernotaAutoral = () => {
             </div>
             <div className="space-y-6">
               {renderCommunityBlock('miniversos', {
-                ctaLabel: 'suma tu voz',
+                ctaLabel: 'comenta',
                 emptyMessage: 'Todavía no hay voces en este miniverso.',
                 className: 'rounded-3xl border border-white/10 bg-black/30 p-6',
                 hideReaction: true,
@@ -4052,7 +4029,7 @@ const rendernotaAutoral = () => {
           <div className="space-y-6">
             
             {renderCommunityBlock('miniversoGrafico', {
-              ctaLabel: 'suma tu voz',
+              ctaLabel: 'comenta',
               reactionProps: {
                 showcaseId: 'miniversoGrafico',
                 title: 'Validación gráfica',
@@ -4615,7 +4592,7 @@ const rendernotaAutoral = () => {
               </div>
 
               {renderCommunityBlock('copycats', {
-                ctaLabel: 'suma tu voz',
+                ctaLabel: 'comenta',
                 className: 'rounded-3xl border border-white/10 bg-black/25 p-6 space-y-5',
                 reactionProps: {
                   showcaseId: 'copycats',

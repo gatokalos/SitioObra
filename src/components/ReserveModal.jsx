@@ -551,7 +551,7 @@ const ReserveModal = ({
                     onClick={handleCheckout}
                     className="w-full border-purple-400/40 text-purple-200 hover:bg-purple-500/10"
                   >
-                    {isCheckoutLoading ? 'Redirigiendo…' : 'Comprar ahora'}
+                    {isCheckoutLoading ? 'Redirigiendo…' : 'Ir a Tienda'}
                   </Button>
              
                 </div>

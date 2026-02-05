@@ -16,6 +16,8 @@ import { useBlogPosts } from '@/hooks/useBlogPosts';
 import { useEmailRedirect } from '@/hooks/useEmailRedirect';
 import LoginToast from '@/components/LoginToast';
 import PortalLectura from '@/pages/PortalLectura';
+import PortalArtesanias from '@/pages/PortalArtesanias';
+import PortalVoz from '@/pages/PortalVoz';
 
 const pageTitle = '#GatoEncerrado - Obra de Teatro transmedia';
 const pageDescription =
@@ -66,6 +68,8 @@ function App() {
         )}
       />
       <Route path="/portal-lectura" element={<PortalLectura />} />
+      <Route path="/portal-artesanias" element={<PortalArtesanias />} />
+      <Route path="/portal-voz" element={<PortalVoz />} />
     </Routes>
   );
 }
