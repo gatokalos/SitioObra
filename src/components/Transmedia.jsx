@@ -23,9 +23,6 @@ import {
   MapIcon,
   Coins,
   CheckCheckIcon,
-  Mic,
-  Play,
-  Square,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import MiniverseModal from '@/components/MiniverseModal';
@@ -35,9 +32,8 @@ import ContributionModal from '@/components/ContributionModal';
 import ReserveModal from '@/components/ReserveModal';
 import { fetchBlogPostBySlug } from '@/services/blogService';
 import { toast } from '@/components/ui/use-toast';
+import { OBRA_CONVERSATION_STARTERS, SILVESTRE_TRIGGER_QUESTIONS } from '@/lib/obraConversation';
 import { useAuth } from '@/contexts/SupabaseAuthContext';
-import { supabase, supabasePublic } from '@/lib/supabaseClient';
-import { ensureAnonId } from '@/lib/identity';
 import { Document, Page, pdfjs } from 'react-pdf';
 import 'react-pdf/dist/Page/AnnotationLayer.css';
 import 'react-pdf/dist/Page/TextLayer.css';
@@ -50,6 +46,9 @@ import IAInsightCard from '@/components/IAInsightCard';
 import LoginOverlay from '@/components/ContributionModal/LoginOverlay';
 import DiosasCarousel from '@/components/DiosasCarousel';
 import { fetchApprovedContributions } from '@/services/contributionService';
+import { useSilvestreVoice } from '@/hooks/useSilvestreVoice';
+import ObraConversationControls from '@/components/miniversos/obra/ObraConversationControls';
+import ObraQuestionList from '@/components/miniversos/obra/ObraQuestionList';
 
 pdfjs.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`;
 const GAT_COSTS = {
@@ -75,13 +74,6 @@ const SHOWCASE_BADGE_IDS = [
 const EXPLORER_BADGE_STORAGE_KEY = 'gatoencerrado:explorer-badge';
 const EXPLORER_BADGE_REWARD = 1000;
 const EXPLORER_BADGE_NAME = 'Errante Consagrado';
-const SILVESTRE_QUESTIONS_STORAGE_KEY = 'gatoencerrado:silvestre-questions-spent';
-const SILVESTRE_TRIGGER_QUESTIONS = [
-  '¿Don Polo viene de este mundo… o de otro?',
-  '¿Lo de las marcianas es literal o se me fue algo?',
-  '¿La Doctora realmente entiende a Silvestre?',
-  '¿Y si Silvestre no está angustiado por sí mismo, sino por el mundo?',
-];
 const DEFAULT_BADGE_STATE = {
   unlocked: false,
   unlockedAt: null,
@@ -438,20 +430,7 @@ const showcaseDefinitions = {
     notaAutoral: 'De la escena brotó el universo:\nvoz, trance y cuerpo\nabriendo portales.',
 
     ctaLabel: 'Hablar con La Obra',
-    conversationStarters: [
-      '¿Qué hace que la obra siga “presente” después de haber terminado?',
-      '¿Por qué la obra no explica del todo lo que le pasa a Silvestre?',
-      '¿Qué es más importante en la obra: lo que ocurre o lo que se siente?',
-      '¿Qué cambia si vuelvo a mirar la obra con más calma?',
-      '¿Por qué algunas preguntas de la obra regresan sin resolverse?',
-      'Después de verla, ¿la obra se cierra… o sigue acompañando?',
-      '¿Por qué la obra deja cosas abiertas incluso después de salir del teatro?',
-      '¿Por qué Silvestre no puede dejar de pensar, aunque quiera descansar?',
-      "¿Por qué le cuesta tanto a Silvestre relajarse en la obra?",
-      "¿Por qué hay tantas voces dentro de Silvestre?",
-      "¿Qué significa que el título de la obra?",
-      "¿La obra es un sueño o una historia real?",
-    ],
+    conversationStarters: OBRA_CONVERSATION_STARTERS,
 iaProfile: {
   type: 'Una voz que no es personaje ni herramienta: una conciencia en proceso.',
   interaction: 'Breves encuentros donde la obra escucha y responde sin cerrarse.',
@@ -1115,7 +1094,7 @@ const ShowcaseReactionInline = ({ showcaseId, title, description, buttonLabel, c
   );
 
   useEffect(() => {
-  }, []);
+  }, [resetSilvestreQuestions]);
   const [status, setStatus] = useState('idle');
 
   const handleReaction = useCallback(async () => {
@@ -1522,7 +1501,6 @@ const Transmedia = () => {
     ? { ...baseEnergyByShowcase, ...storedEnergy }
     : baseEnergyByShowcase;
   const initialShowcaseBoosts = readStoredJson('gatoencerrado:showcase-boosts', {});
-  const initialSpentSilvestreQuestions = readStoredJson(SILVESTRE_QUESTIONS_STORAGE_KEY, []);
   const storedBadge = readStoredJson(EXPLORER_BADGE_STORAGE_KEY, null);
   const initialExplorerBadge = storedBadge
     ? { ...DEFAULT_BADGE_STATE, ...storedBadge }
@@ -1545,27 +1523,23 @@ const Transmedia = () => {
   const [isTazaARActive, setIsTazaARActive] = useState(false);
   const [isMobileARFullscreen, setIsMobileARFullscreen] = useState(false);
   const [showAutoficcionPreview, setShowAutoficcionPreview] = useState(false);
-  const [micPromptVisible, setMicPromptVisible] = useState(false);
-  const [hasShownMicPrompt, setHasShownMicPrompt] = useState(false);
-  const [transcript, setTranscript] = useState('');
-  const [micError, setMicError] = useState('');
-  const [isListening, setIsListening] = useState(false);
-  const [showSilvestreCoins, setShowSilvestreCoins] = useState(false);
-  const [isSilvestreResponding, setIsSilvestreResponding] = useState(false);
-  const [isSilvestreFetching, setIsSilvestreFetching] = useState(false);
-  const [isSilvestrePlaying, setIsSilvestrePlaying] = useState(false);
-  const [pendingSilvestreAudioUrl, setPendingSilvestreAudioUrl] = useState(null);
-  const [spentSilvestreQuestions, setSpentSilvestreQuestions] = useState(
-    Array.isArray(initialSpentSilvestreQuestions) ? initialSpentSilvestreQuestions : []
-  );
-  const recognitionRef = useRef(null);
-  const transcriptRef = useRef('');
-  const micTimeoutRef = useRef(null);
-  const silvestreAudioRef = useRef(null);
-  const silvestreAudioUrlRef = useRef(null);
-  const silvestreRequestIdRef = useRef(0);
-  const silvestreAbortRef = useRef(null);
-  const ignoreNextTranscriptRef = useRef(false);
+  const {
+    micPromptVisible,
+    transcript,
+    micError,
+    isListening,
+    showSilvestreCoins,
+    isSilvestreResponding,
+    isSilvestreFetching,
+    isSilvestrePlaying,
+    pendingSilvestreAudioUrl,
+    spentSilvestreSet,
+    markSilvestreQuestionSpent,
+    handleOpenSilvestreChat,
+    handleSendSilvestrePreset,
+    handlePlayPendingAudio,
+    resetSilvestreQuestions,
+  } = useSilvestreVoice();
   const [isMovementCreditsOpen, setIsMovementCreditsOpen] = useState(false);
   const [openCollaboratorId, setOpenCollaboratorId] = useState(null);
   const { isMobileViewport, canUseInlinePlayback, requestMobileVideoPresentation } = useMobileVideoPresentation();
@@ -1608,10 +1582,6 @@ const Transmedia = () => {
   const [isCauseSiteOpen, setIsCauseSiteOpen] = useState(false);
   const [showInstallPwaCTA, setShowInstallPwaCTA] = useState(false);
   const [useLegacyTazaViewer, setUseLegacyTazaViewer] = useState(LEGACY_TAZA_VIEWER_ENABLED);
-  const spentSilvestreSet = useMemo(
-    () => new Set(spentSilvestreQuestions),
-    [spentSilvestreQuestions]
-  );
   const isAuthenticated = Boolean(user);
   const isSubscriber = Boolean(
     user?.user_metadata?.isSubscriber ||
@@ -1672,21 +1642,7 @@ const Transmedia = () => {
     }
   }, [baseEnergyByShowcase, initialAvailableGATokens]);
 
-  useEffect(() => {
-    if (typeof window === 'undefined') return;
-    window.localStorage?.setItem(
-      SILVESTRE_QUESTIONS_STORAGE_KEY,
-      JSON.stringify(spentSilvestreQuestions)
-    );
-  }, [spentSilvestreQuestions]);
-
-  const markSilvestreQuestionSpent = useCallback((question) => {
-    if (!question) return;
-    setSpentSilvestreQuestions((prev) => {
-      if (prev.includes(question)) return prev;
-      return [...prev, question];
-    });
-  }, []);
+  // silvestre storage handled in useSilvestreVoice
 
   useEffect(() => {
     if (typeof window === 'undefined') return undefined;
@@ -2013,410 +1969,6 @@ const Transmedia = () => {
     document.getElementById('dialogo-critico')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }, []);
 
-  const stopSilvestreAudio = useCallback(() => {
-    if (silvestreAudioRef.current) {
-      silvestreAudioRef.current.pause();
-      silvestreAudioRef.current.src = '';
-      silvestreAudioRef.current = null;
-    }
-    if (silvestreAudioUrlRef.current) {
-      URL.revokeObjectURL(silvestreAudioUrlRef.current);
-      silvestreAudioUrlRef.current = null;
-    }
-    setIsSilvestrePlaying(false);
-    setPendingSilvestreAudioUrl(null);
-  }, []);
-
-  const stopSilvestreResponse = useCallback(() => {
-    if (silvestreAbortRef.current) {
-      silvestreAbortRef.current.abort();
-      silvestreAbortRef.current = null;
-    }
-    silvestreRequestIdRef.current += 1;
-    stopSilvestreAudio();
-    setIsSilvestreFetching(false);
-    setIsSilvestreResponding(false);
-  }, [stopSilvestreAudio]);
-
-  const recordObraChat = useCallback(
-    async ({ question, answer, source }) => {
-      if (!question) return;
-      const shouldRecordObraChat = false;
-      if (!shouldRecordObraChat) {
-        return;
-      }
-      try {
-        const anonId = ensureAnonId();
-        // Use anon client to avoid session roles like admin blocking PostgREST.
-        const { error } = await supabasePublic.from('miniverso_obra_interactions').insert({
-          interaction_type: 'chat',
-          question,
-          answer: answer || null,
-          source: source || null,
-          user_id: user?.id ?? null,
-          anon_id: anonId ?? null,
-        });
-        if (error) {
-          console.error('[La Obra Chat] Supabase insert error:', error);
-        }
-      } catch (error) {
-        console.error('[La Obra Chat] Supabase insert failed:', error);
-      }
-    },
-    [user]
-  );
-
-  const sendTranscript = useCallback(async (message, options = {}) => {
-    if (!message) {
-      return false;
-    }
-    const source = options.source || null;
-    let requestId = 0;
-    try {
-      if (silvestreAbortRef.current) {
-        silvestreAbortRef.current.abort();
-      }
-      stopSilvestreAudio();
-      const controller = new AbortController();
-      silvestreAbortRef.current = controller;
-      requestId = (silvestreRequestIdRef.current += 1);
-      setIsSilvestreFetching(true);
-      setIsSilvestreResponding(true);
-      const apiBase = import.meta.env.VITE_OBRA_API_URL;
-      const forceConciencia =
-        (import.meta.env.VITE_OBRA_FORCE_CONCIENCIA ?? 'false') === 'true';
-      const useObraConciencia =
-        (import.meta.env.VITE_OBRA_USE_CONCIENCIA ?? 'true') === 'true';
-      const isPreset = source === 'preset';
-      const useConcienciaForThisRequest = forceConciencia || (useObraConciencia && isPreset);
-      const userId = user?.id ?? 'anonymous';
-      const candidates = useConcienciaForThisRequest
-        ? [
-            {
-              endpoint: '/api/obra-conciencia',
-              payload: { pregunta: message, user_id: userId },
-              label: 'conciencia',
-            },
-          ]
-        : [
-            {
-              endpoint: '/api/obra-voz',
-              payload: { mensaje: message },
-              label: 'voz',
-            },
-            {
-              endpoint: '/api/obra-conciencia',
-              payload: { pregunta: message, user_id: userId },
-              label: 'conciencia (fallback)',
-            },
-          ];
-
-      let audioBlob = null;
-      let responseText = null;
-      let lastError = null;
-
-      for (const candidate of candidates) {
-        try {
-          const response = await fetch(`${apiBase}${candidate.endpoint}`, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'x-user-id': userId,
-            },
-            body: JSON.stringify(candidate.payload),
-            signal: controller.signal,
-          });
-          if (requestId !== silvestreRequestIdRef.current) {
-            return false;
-          }
-          if (!response.ok) {
-            throw new Error(`${candidate.label} responded ${response.status}`);
-          }
-          responseText =
-            response.headers.get('x-silvestre-text') ||
-            response.headers.get('x-silvestre-answer') ||
-            null;
-          const blob = await response.blob();
-          if (requestId !== silvestreRequestIdRef.current) {
-            return false;
-          }
-          if (!blob || !(blob.type || '').startsWith('audio/')) {
-            throw new Error(`${candidate.label} returned non-audio payload (${blob?.type || 'unknown'})`);
-          }
-          audioBlob = blob;
-          break;
-        } catch (error) {
-          console.error('[Silvestre Voice] candidate error:', error);
-          lastError = error;
-        }
-      }
-
-      if (!audioBlob) {
-        throw lastError || new Error('No se pudo obtener audio de La Obra');
-      }
-      if (requestId === silvestreRequestIdRef.current) {
-        setIsSilvestreFetching(false);
-      }
-      await recordObraChat({ question: message, answer: responseText, source });
-      const audioUrl = URL.createObjectURL(audioBlob);
-      const audio = new Audio(audioUrl);
-      audio.playsInline = true;
-      silvestreAudioRef.current = audio;
-      silvestreAudioUrlRef.current = audioUrl;
-      audio.addEventListener(
-        'play',
-        () => {
-          setIsSilvestrePlaying(true);
-        },
-        { once: true }
-      );
-      audio.addEventListener(
-        'ended',
-        () => {
-          if (silvestreAudioUrlRef.current === audioUrl) {
-            URL.revokeObjectURL(audioUrl);
-            silvestreAudioUrlRef.current = null;
-            silvestreAudioRef.current = null;
-            setIsSilvestreResponding(false);
-            setIsSilvestrePlaying(false);
-            setShowSilvestreCoins(true);
-            setTimeout(() => setShowSilvestreCoins(false), 1200);
-            setPendingSilvestreAudioUrl(null);
-          }
-        },
-        { once: true }
-      );
-      try {
-        await audio.play();
-      } catch (playError) {
-        if (playError?.name === 'NotAllowedError') {
-          setPendingSilvestreAudioUrl(audioUrl);
-          setIsSilvestreResponding(false);
-          setIsSilvestrePlaying(false);
-          setMicError('Toca “Reproducir” para escuchar la respuesta.');
-          return true;
-        }
-        if (silvestreAudioUrlRef.current === audioUrl) {
-          URL.revokeObjectURL(audioUrl);
-          silvestreAudioUrlRef.current = null;
-          silvestreAudioRef.current = null;
-          setIsSilvestreResponding(false);
-          setIsSilvestrePlaying(false);
-        }
-        throw playError;
-      }
-      setMicError('');
-      return true;
-    } catch (error) {
-      if (error?.name === 'AbortError') {
-        if (requestId === silvestreRequestIdRef.current) {
-          setIsSilvestreFetching(false);
-          setIsSilvestreResponding(false);
-        }
-        return false;
-      }
-      console.error('[Silvestre Voice] Error sending transcript:', error);
-      setMicError('No pudimos enviar tu mensaje a Silvestre. Intenta nuevamente más tarde.');
-      if (requestId === silvestreRequestIdRef.current) {
-        setIsSilvestreFetching(false);
-        setIsSilvestreResponding(false);
-      }
-      return false;
-    }
-  }, [recordObraChat, stopSilvestreAudio, user]);
-
-  const stopSilvestreListening = useCallback((options = {}) => {
-    const { discardTranscript = false } = options;
-    if (discardTranscript) {
-      ignoreNextTranscriptRef.current = true;
-      transcriptRef.current = '';
-      setTranscript('');
-    }
-    if (micTimeoutRef.current) {
-      clearTimeout(micTimeoutRef.current);
-      micTimeoutRef.current = null;
-    }
-    if (recognitionRef.current && isListening) {
-      try {
-        recognitionRef.current.stop();
-      } catch (err) {
-        console.error('[Silvestre Voice] stop error:', err);
-      }
-    }
-    setIsListening(false);
-  }, [isListening]);
-
-  const handlePlayPendingAudio = useCallback(async () => {
-    if (!pendingSilvestreAudioUrl) return;
-    let audio = silvestreAudioRef.current;
-    if (!audio || silvestreAudioUrlRef.current !== pendingSilvestreAudioUrl) {
-      audio = new Audio(pendingSilvestreAudioUrl);
-      audio.playsInline = true;
-      silvestreAudioRef.current = audio;
-      silvestreAudioUrlRef.current = pendingSilvestreAudioUrl;
-      audio.addEventListener(
-        'ended',
-        () => {
-          if (silvestreAudioUrlRef.current === pendingSilvestreAudioUrl) {
-            URL.revokeObjectURL(pendingSilvestreAudioUrl);
-            silvestreAudioUrlRef.current = null;
-            silvestreAudioRef.current = null;
-            setIsSilvestreResponding(false);
-            setIsSilvestrePlaying(false);
-            setPendingSilvestreAudioUrl(null);
-          }
-        },
-        { once: true }
-      );
-    }
-    try {
-      await audio.play();
-      setIsSilvestrePlaying(true);
-      setIsSilvestreResponding(false);
-      setPendingSilvestreAudioUrl(null);
-      setMicError('');
-    } catch (err) {
-      console.error('[Silvestre Voice] play pending error:', err);
-      setMicError('No pudimos reproducir el audio. Intenta tocar de nuevo.');
-    }
-  }, [pendingSilvestreAudioUrl]);
-
-  const handleOpenSilvestreChat = useCallback(() => {
-    if (typeof window === 'undefined') {
-      return;
-    }
-    if (
-      pendingSilvestreAudioUrl &&
-      !isListening &&
-      !isSilvestrePlaying &&
-      !isSilvestreResponding &&
-      !isSilvestreFetching
-    ) {
-      handlePlayPendingAudio();
-      return;
-    }
-    if (isSilvestreFetching) {
-      return;
-    }
-
-    if (!hasShownMicPrompt) {
-      setMicPromptVisible(true);
-      setHasShownMicPrompt(true);
-    } else if (!micPromptVisible) {
-      setMicPromptVisible(true);
-    }
-
-    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-    if (!SpeechRecognition) {
-      setMicError(
-        'Tu navegador no permite activar el micrófono. Puedes escribirle a Silvestre si prefieres.'
-      );
-      window.dispatchEvent(new CustomEvent('gatoencerrado:open-silvestre'));
-      return;
-    }
-
-    if (!recognitionRef.current) {
-      const recognition = new SpeechRecognition();
-      recognition.continuous = true;
-      recognition.interimResults = true;
-      recognition.lang = 'es-MX';
-      recognition.maxAlternatives = 1;
-      recognition.onresult = (event) => {
-        const results = Array.from(event.results);
-        const text = results.map((result) => result[0]?.transcript ?? '').join(' ');
-        transcriptRef.current = text;
-        setTranscript(text);
-      };
-      recognition.onerror = (event) => {
-        console.error('[Silvestre Voice] recognition error:', event);
-        setMicError('No pudimos acceder al micrófono. Intenta nuevamente.');
-        setIsListening(false);
-      };
-      recognition.onend = () => {
-        setIsListening(false);
-        if (ignoreNextTranscriptRef.current) {
-          ignoreNextTranscriptRef.current = false;
-          return;
-        }
-        const finalText = transcriptRef.current.trim();
-        if (finalText) {
-          sendTranscript(finalText, { source: 'mic' });
-          transcriptRef.current = '';
-        }
-      };
-      recognitionRef.current = recognition;
-    }
-
-    if (isListening) {
-      stopSilvestreListening();
-        return;
-      }
-
-      try {
-        recognitionRef.current.start();
-        setIsListening(true);
-        setMicError('');
-        if (micTimeoutRef.current) {
-          clearTimeout(micTimeoutRef.current);
-        }
-        micTimeoutRef.current = setTimeout(() => {
-          stopSilvestreListening();
-        }, 45000);
-      } catch (error) {
-        console.error('[Silvestre Voice] start error:', error);
-        setMicError('No pudimos abrir el micrófono. Intenta nuevamente.');
-      }
-
-    window.dispatchEvent(new CustomEvent('gatoencerrado:open-silvestre'));
-  }, [
-    handlePlayPendingAudio,
-    hasShownMicPrompt,
-    isSilvestrePlaying,
-    isSilvestreResponding,
-    isSilvestreFetching,
-    pendingSilvestreAudioUrl,
-    isListening,
-    micPromptVisible,
-    sendTranscript,
-    stopSilvestreListening,
-  ]);
-
-  const handleSendSilvestrePreset = useCallback(
-    async (starter) => {
-      if (!starter) {
-        return;
-      }
-
-      if (isListening) {
-        stopSilvestreListening({ discardTranscript: true });
-      }
-
-      setTranscript(starter);
-      await sendTranscript(starter, { source: 'preset' });
-
-      if (typeof window !== 'undefined') {
-        window.dispatchEvent(
-          new CustomEvent('gatoencerrado:open-silvestre', {
-            detail: { source: 'preset', mensaje: starter },
-          })
-        );
-      }
-    },
-    [isListening, sendTranscript, stopSilvestreListening]
-  );
-
-  useEffect(() => {
-    return () => {
-      if (micTimeoutRef.current) {
-        clearTimeout(micTimeoutRef.current);
-      }
-      if (silvestreAbortRef.current) {
-        silvestreAbortRef.current.abort();
-      }
-      stopSilvestreAudio();
-    };
-  }, [stopSilvestreAudio]);
-
   const handleOpenImagePreview = useCallback((payload) => {
     if (!payload?.src) {
       return;
@@ -2572,14 +2124,13 @@ const Transmedia = () => {
     setIsGraphicUnlocking(false);
     setTazaActivations(0);
     setShowTazaCoins(false);
-    setSpentSilvestreQuestions([]);
+    resetSilvestreQuestions();
     if (typeof window !== 'undefined') {
       window.localStorage?.removeItem('gatoencerrado:quiron-spent');
       window.localStorage?.removeItem('gatoencerrado:novela-questions');
       window.localStorage?.removeItem('gatoencerrado:sonoro-spent');
       window.localStorage?.removeItem('gatoencerrado:graphic-spent');
       window.localStorage?.removeItem('gatoencerrado:taza-activations');
-      window.localStorage?.removeItem(SILVESTRE_QUESTIONS_STORAGE_KEY);
       window.dispatchEvent(
         new CustomEvent('gatoencerrado:miniverse-spent', {
           detail: { id: 'novela', spent: false, amount: 0, count: 0 },
@@ -2916,13 +2467,6 @@ const Transmedia = () => {
   useEffect(() => {
     return () => {
       document.body.classList.remove('overflow-hidden');
-    };
-  }, []);
-
-  useEffect(() => {
-    return () => {
-      recognitionRef.current?.abort?.();
-      recognitionRef.current = null;
     };
   }, []);
 
@@ -3680,43 +3224,18 @@ const rendernotaAutoral = () => {
     if (activeDefinition.type === 'tragedia') {
       const onClose = () => setActiveShowcase(null);
       const visibleStarters = tragicoStarters.filter((starter) => !spentSilvestreSet.has(starter));
-      const marqueeStarters = [...visibleStarters, ...visibleStarters];
       const conversationBlock = visibleStarters.length ? (
-        <div className="space-y-3 border-t border-white/10 pt-4">
-          <p className="text-xs uppercase tracking-[0.35em] text-pink-200">¿Ya sabes qué decir?</p>
-          <p className="text-sm text-slate-200/80 leading-relaxed">
-            Elige una pregunta y envíala tal cual.
-          </p>
-          <div className="starter-marquee">
-            <ul className="starter-marquee__list text-sm text-purple-50/90">
-              {marqueeStarters.map((starter, idx) => (
-                <li
-                  key={`tragico-paragraph-${starter}-${idx}`}
-                  className="rounded-2xl border border-white/10 bg-black/15"
-                >
-                  <button
-                    type="button"
-                    onClick={() => {
-                      if (spentSilvestreSet.has(starter)) return;
-                      markSilvestreQuestionSpent(starter);
-                      handleSendSilvestrePreset(starter);
-                    }}
-                    className="flex w-full items-start gap-2 px-4 py-2 text-left transition hover:bg-white/5 disabled:cursor-not-allowed disabled:opacity-60"
-                    disabled={spentSilvestreSet.has(starter)}
-                  >
-                    <span className="text-purple-200 font-semibold">•</span>
-                    <span className="leading-relaxed">{starter}</span>
-                    {spentSilvestreSet.has(starter) ? (
-                      <span className="ml-auto text-[10px] uppercase tracking-[0.3em] text-slate-400">
-                        Gastada
-                      </span>
-                    ) : null}
-                  </button>
-                </li>
-              ))}
-            </ul>
-          </div>
-        </div>
+        <ObraQuestionList
+          starters={visibleStarters}
+          spentSet={spentSilvestreSet}
+          onSelect={(starter) => {
+            if (spentSilvestreSet.has(starter)) return;
+            markSilvestreQuestionSpent(starter);
+            handleSendSilvestrePreset(starter);
+          }}
+          variant="marquee"
+          className="border-t border-white/10 pt-4 space-y-3"
+        />
       ) : null;
 
       const reactionDetails = {
@@ -3776,106 +3295,20 @@ const rendernotaAutoral = () => {
               <div className="space-y-2">
             
               </div>
-              <div className="flex flex-col items-center gap-3">
-                <Button
-                  type="button"
-                  variant="outline"
-                  className="silvestre-cta relative flex h-20 w-20 items-center justify-center rounded-full border border-purple-300/60 bg-purple-500/10 text-purple-50 shadow-[0_0_45px_rgba(197,108,255,0.75)] transition hover:bg-purple-500/20 disabled:cursor-not-allowed disabled:opacity-60"
-                  onClick={handleOpenSilvestreChat}
-              aria-label={
-                isSilvestrePlaying
-                  ? 'Escuchando la respuesta'
-                  : pendingSilvestreAudioUrl
-                    ? 'Reproducir respuesta'
-                  : isSilvestreFetching || isSilvestreResponding
-                    ? 'La Obra está pensando'
-                  : isListening
-                    ? 'Detén la grabación'
-                    : activeDefinition.ctaLabel
-              }
-              disabled={isSilvestreFetching || isSilvestreResponding}
-            >
-              {showSilvestreCoins ? (
-                <div className="pointer-events-none absolute inset-0 z-10">
-                  {Array.from({ length: 7 }).map((_, index) => {
-                    const offsetX = (index - 3) * 12;
-                    const offsetY = -20 - index * 6;
-                    return (
-                      <motion.span
-                        key={`silvestre-coin-${index}`}
-                        className="absolute left-1/2 top-1/2 h-3 w-3 -translate-x-1/2 -translate-y-1/2 rounded-full bg-gradient-to-br from-amber-200 to-yellow-500 shadow-[0_0_15px_rgba(250,204,21,0.55)]"
-                        initial={{ opacity: 0.95, scale: 0.7, x: 0, y: 0 }}
-                        animate={{ opacity: 0, scale: 1.1, x: offsetX, y: offsetY, rotate: 90 + index * 30 }}
-                        transition={{ duration: 1, ease: 'easeOut', delay: index * 0.03 }}
-                      />
-                    );
-                  })}
-                </div>
-              ) : null}
-              {isSilvestrePlaying ? (
-                <span className="silvestre-mic-wave" aria-hidden="true">
-                  <span />
-                  <span />
-                  <span />
-                    </span>
-                  ) : null}
-                  {!isSilvestrePlaying ? (
-                    pendingSilvestreAudioUrl ? (
-                      <Play className="h-8 w-8 relative z-10" />
-                    ) : isListening ? (
-                      <Square className="h-8 w-8 relative z-10" />
-                    ) : (
-                      <Mic className="h-8 w-8 relative z-10" />
-                    )
-                  ) : null}
-              </Button>
-              <span
-                className={`text-xs uppercase tracking-[0.35em] text-purple-200 text-center ${
-                  isSilvestreFetching || isSilvestreResponding ? 'thinking-blink' : ''
-                }`}
-              >
-                {isSilvestrePlaying
-                  ? 'Escuchando la respuesta'
-                  : pendingSilvestreAudioUrl
-                    ? 'Reproducir respuesta'
-                  : isSilvestreFetching || isSilvestreResponding
-                    ? 'La Obra está pensando'
-                  : isListening
-                    ? 'Detén la grabación'
-                    : micPromptVisible
-                      ? 'Habla con la obra'
-                      : activeDefinition.ctaLabel}
-              </span>
-            </div>
-            {micError && !isListening && !transcript ? (
-              <div className="rounded-2xl border border-red-500/30 bg-red-500/10 p-4 text-sm text-red-100">
-                <p className="text-xs uppercase tracking-[0.35em] text-red-300">Sin micrófono</p>
-                <p>Tu navegador no permite activar el micrófono. Puedes escribirle a Silvestre si prefieres.</p>
-              </div>
-              ) : null}
-              {transcript ? (
-                <div className="rounded-2xl border border-purple-500/40 bg-white/5 p-4 text-sm text-slate-100">
-                  
-                  <p className="break-words">{transcript}</p>
-                </div>
-              ) : null}
-              {pendingSilvestreAudioUrl ? (
-                <div className="rounded-2xl border border-purple-400/40 bg-white/5 p-4 text-sm text-slate-100 flex items-center justify-between gap-4">
-                  <div>
-                    <p className="text-[11px] uppercase tracking-[0.3em] text-purple-200">Audio listo</p>
-                    <p>Toca reproducir para escuchar la respuesta.</p>
-                  </div>
-                  <Button
-                    type="button"
-                    size="sm"
-                    variant="outline"
-                    onClick={handlePlayPendingAudio}
-                    className="shrink-0"
-                  >
-                    Reproducir
-                  </Button>
-                </div>
-              ) : null}
+              <ObraConversationControls
+                ctaLabel={activeDefinition.ctaLabel}
+                isSilvestrePlaying={isSilvestrePlaying}
+                pendingSilvestreAudioUrl={pendingSilvestreAudioUrl}
+                isSilvestreFetching={isSilvestreFetching}
+                isSilvestreResponding={isSilvestreResponding}
+                isListening={isListening}
+                micPromptVisible={micPromptVisible}
+                showSilvestreCoins={showSilvestreCoins}
+                micError={micError}
+                transcript={transcript}
+                onMicClick={handleOpenSilvestreChat}
+                onPlayPending={handlePlayPendingAudio}
+              />
               {conversationBlock}
             </div>
             <div className="space-y-6">

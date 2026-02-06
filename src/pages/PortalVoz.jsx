@@ -1,16 +1,46 @@
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowLeft, Mic, MessageCircle, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/SupabaseAuthContext';
 import LoginOverlay from '@/components/ContributionModal/LoginOverlay';
 import PortalAuthButton from '@/components/PortalAuthButton';
+import { OBRA_CONVERSATION_STARTERS, SILVESTRE_TRIGGER_QUESTIONS } from '@/lib/obraConversation';
+import { useSilvestreVoice } from '@/hooks/useSilvestreVoice';
+import ObraConversationControls from '@/components/miniversos/obra/ObraConversationControls';
+import ObraQuestionList from '@/components/miniversos/obra/ObraQuestionList';
 
 const PortalVoz = () => {
   const { user } = useAuth();
   const [showLoginOverlay, setShowLoginOverlay] = useState(false);
   const [showLoginHint, setShowLoginHint] = useState(false);
+  const [activePanel, setActivePanel] = useState(null);
   const isAuthenticated = Boolean(user);
+  const {
+    micPromptVisible,
+    transcript,
+    micError,
+    isListening,
+    showSilvestreCoins,
+    isSilvestreResponding,
+    isSilvestreFetching,
+    isSilvestrePlaying,
+    pendingSilvestreAudioUrl,
+    spentSilvestreSet,
+    markSilvestreQuestionSpent,
+    handleOpenSilvestreChat,
+    handleSendSilvestrePreset,
+    handlePlayPendingAudio,
+  } = useSilvestreVoice();
+
+  const starterPool = useMemo(() => {
+    const all = [...OBRA_CONVERSATION_STARTERS, ...SILVESTRE_TRIGGER_QUESTIONS];
+    for (let i = all.length - 1; i > 0; i -= 1) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [all[i], all[j]] = [all[j], all[i]];
+    }
+    return all;
+  }, []);
 
   const handleOpenLogin = useCallback(() => {
     if (!isAuthenticated) {
@@ -28,6 +58,76 @@ const PortalVoz = () => {
     window.setTimeout(() => setShowLoginHint(false), 2200);
     return false;
   }, [isAuthenticated]);
+
+  const handleStartConversation = useCallback(() => {
+    if (!requireAuth()) return;
+    setActivePanel('conversation');
+  }, [requireAuth]);
+
+  const handleOpenQuestions = useCallback(() => {
+    if (!requireAuth()) return;
+    setActivePanel('questions');
+  }, [requireAuth]);
+
+  const handleClosePanel = useCallback(() => {
+    setActivePanel(null);
+  }, []);
+
+  const renderPanel = () => {
+    if (!activePanel) return null;
+    const panelTitle = activePanel === 'questions' ? 'Elegir una pregunta' : 'Hablar con la obra';
+    const panelClass =
+      'fixed inset-0 z-40 bg-slate-950 px-6 py-8 overflow-y-auto md:static md:inset-auto md:z-auto md:bg-transparent md:px-0 md:py-0 md:overflow-visible';
+    return (
+      <div className={panelClass}>
+        <div className="mx-auto w-full max-w-3xl space-y-6">
+          <div className="flex items-center justify-between">
+            <button
+              type="button"
+              onClick={handleClosePanel}
+              className="text-xs uppercase tracking-[0.3em] text-slate-300 hover:text-white transition"
+            >
+              Volver
+            </button>
+            <p className="text-xs uppercase tracking-[0.35em] text-purple-200">{panelTitle}</p>
+          </div>
+
+          <div className="rounded-3xl border border-white/10 bg-black/40 p-6 shadow-[0_25px_80px_rgba(0,0,0,0.55)]">
+            <ObraConversationControls
+              ctaLabel="Habla con la obra"
+              isSilvestrePlaying={isSilvestrePlaying}
+              pendingSilvestreAudioUrl={pendingSilvestreAudioUrl}
+              isSilvestreFetching={isSilvestreFetching}
+              isSilvestreResponding={isSilvestreResponding}
+              isListening={isListening}
+              micPromptVisible={micPromptVisible}
+              showSilvestreCoins={showSilvestreCoins}
+              micError={micError}
+              transcript={transcript}
+              onMicClick={handleOpenSilvestreChat}
+              onPlayPending={handlePlayPendingAudio}
+              className="py-4"
+            />
+          </div>
+
+          {activePanel === 'questions' ? (
+            <div className="rounded-3xl border border-white/10 bg-black/30 p-6">
+              <ObraQuestionList
+                starters={starterPool}
+                spentSet={spentSilvestreSet}
+                onSelect={(starter) => {
+                  if (spentSilvestreSet.has(starter)) return;
+                  markSilvestreQuestionSpent(starter);
+                  handleSendSilvestrePreset(starter);
+                }}
+                variant="stack"
+              />
+            </div>
+          ) : null}
+        </div>
+      </div>
+    );
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-950 via-black to-slate-900 text-slate-100">
@@ -77,7 +177,7 @@ const PortalVoz = () => {
             <Button
               className="w-full justify-center"
               onClick={() => {
-                if (!requireAuth()) return;
+                handleStartConversation();
               }}
             >
               Iniciar conversación
@@ -104,7 +204,7 @@ const PortalVoz = () => {
               variant="outline"
               className="w-full justify-center"
               onClick={() => {
-                if (!requireAuth()) return;
+                handleOpenQuestions();
               }}
             >
               Ver preguntas
@@ -143,6 +243,7 @@ const PortalVoz = () => {
         </div>
       </div>
       {showLoginOverlay ? <LoginOverlay onClose={handleCloseLogin} /> : null}
+      {renderPanel()}
     </div>
   </div>
   );

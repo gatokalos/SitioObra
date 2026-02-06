@@ -155,7 +155,7 @@ const NextShow = () => {
                     className="border-slate-100/30 text-slate-200 hover:bg-white/5 px-6 py-3 rounded-full font-semibold flex items-center gap-2"
                   >
                     <ShoppingBag size={20} />
-                    Café Gato
+                    Merch
                   </Button>
                   <p className="text-xs text-slate-400/80">"Aquí empieza la conversación"</p>
                 </div>
