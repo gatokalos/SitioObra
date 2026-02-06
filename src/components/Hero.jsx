@@ -4,7 +4,6 @@ import { BookOpen, Coffee, CoffeeIcon, Globe, Globe2, MapPin, MapPinIcon, Shoppi
 import { Button } from '@/components/ui/button';
 import ReserveModal from '@/components/ReserveModal';
 import TicketPurchaseModal from '@/components/TicketPurchaseModal';
-import bgLogo from '@/assets/bg-logo.png';
 import isotipoGato from '@/assets/isotipo-gato.png';
 
 const Hero = () => {
@@ -81,21 +80,6 @@ const Hero = () => {
     <>
       <section id="hero" className="min-h-screen flex items-center justify-center relative overflow-hidden">
         
-        {/* Fondo */}
-        <div className="absolute inset-0 bg-black">
-          <div className="absolute inset-0 opacity-30">
-            <div className="absolute top-0 left-0 w-1/2 h-1/2 bg-gradient-to-br from-pink-900/50 via-transparent to-transparent blur-4xl"></div>
-            <div className="absolute bottom-0 right-0 w-1/2 h-1/2 bg-gradient-to-tl from-purple-700/60 via-transparent to-transparent blur-3xl"></div>
-          </div>
-          <img
-            className="absolute inset-0 w-full h-full object-cover opacity-15 mix-blend-pin-light pointer-events-none"
-            style={{ filter: 'contrast(15%) brightness(75%)' }}
-            alt="Textura de telón de teatro de terciopelo oscuro"
-            src={bgLogo}
-          />
-        </div>
-        
-
         {/* Contenido */}
         <div className="container mx-auto px-6 text-center relative z-10">
           <motion.div

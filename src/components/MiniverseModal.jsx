@@ -197,13 +197,16 @@ const MiniverseModal = ({ open, onClose, onSelectMiniverse }) => {
 
   useEffect(() => {
     if (open) {
+      document.documentElement.dataset.miniverseOpen = 'true';
       setActiveTab(TABS[0].id);
       setFormState(initialFormState);
       setStatus('idle');
       setErrorMessage('');
       setSelectedMiniverseId(null);
       setSelectedUpcomingId(null);
+      return;
     }
+    delete document.documentElement.dataset.miniverseOpen;
   }, [open]);
 
   useEffect(() => {
@@ -401,15 +404,13 @@ const MiniverseModal = ({ open, onClose, onSelectMiniverse }) => {
             aria-modal="true"
             aria-labelledby="miniverse-modal-title"
             variants={modalVariants}
-            className="relative z-10 w-full max-w-4xl rounded-3xl border border-white/10 bg-slate-950/95 p-5 sm:p-10 shadow-2xl max-h-[90vh] overflow-y-auto"
+            className="relative z-10 w-full max-w-4xl rounded-3xl border border-white/10 bg-slate-950/70 p-5 sm:p-10 shadow-2xl max-h-[90vh] overflow-y-auto"
           >
             <div
               aria-hidden="true"
-              className="pointer-events-none absolute inset-0 opacity-10 bg-no-repeat bg-center bg-[length:auto_100%] md:bg-[length:200%]"
+              className="pointer-events-none absolute inset-0 opacity-10"
               style={{
-                backgroundImage:
-                  'linear-gradient(rgba(5,5,10,0.85), rgba(5,5,10,0.85)), url(/assets/bg-logo.png)',
-                backgroundBlendMode: 'screen',
+                backgroundImage: 'linear-gradient(rgba(5,5,10,0.35), rgba(5,5,10,0.35))',
                 filter: 'grayscale(0.25)',
               }}
             />
@@ -669,14 +670,19 @@ const MiniverseModal = ({ open, onClose, onSelectMiniverse }) => {
                         <div className="lg:hidden w-full">
                           <div className="relative w-full aspect-[4/5] rounded-3xl border border-white/10 bg-slate-900/60 overflow-hidden shadow-[0_18px_45px_rgba(0,0,0,0.45)]">
                             {selectedMiniverse.videoUrl ? (
-                              <video
-                                src={selectedMiniverse.videoUrl}
-                                className="absolute inset-0 h-full w-full object-cover"
-                                playsInline
-                                muted
-                                loop
-                                controls
-                              />
+                              <>
+                                <video
+                                  src={selectedMiniverse.videoUrl}
+                                  className="absolute inset-0 h-full w-full object-cover"
+                                  playsInline
+                                  muted
+                                  loop
+                                  controls
+                                />
+                                <div className="pointer-events-none absolute left-4 top-4 rounded-full border border-white/20 bg-black/50 px-3 py-1 text-[0.6rem] uppercase tracking-[0.3em] text-slate-200">
+                                  Video provisional
+                                </div>
+                              </>
                             ) : (
                               <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 text-slate-300/70">
                                 <div className="h-12 w-12 rounded-full border border-white/20 bg-white/5 flex items-center justify-center text-sm uppercase tracking-[0.3em]">
@@ -716,14 +722,19 @@ const MiniverseModal = ({ open, onClose, onSelectMiniverse }) => {
                       <div className="w-full">
                         <div className="hidden lg:block relative w-full aspect-[4/5] rounded-3xl border border-white/10 bg-slate-900/60 overflow-hidden shadow-[0_18px_45px_rgba(0,0,0,0.45)]">
                           {selectedMiniverse.videoUrl ? (
-                            <video
-                              src={selectedMiniverse.videoUrl}
-                              className="absolute inset-0 h-full w-full object-cover"
-                              playsInline
-                              muted
-                              loop
-                              controls
-                            />
+                            <>
+                              <video
+                                src={selectedMiniverse.videoUrl}
+                                className="absolute inset-0 h-full w-full object-cover"
+                                playsInline
+                                muted
+                                loop
+                                controls
+                              />
+                              <div className="pointer-events-none absolute left-4 top-4 rounded-full border border-white/20 bg-black/50 px-3 py-1 text-[0.6rem] uppercase tracking-[0.3em] text-slate-200">
+                                Video provisional
+                              </div>
+                            </>
                           ) : (
                             <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 text-slate-300/70">
                               <div className="h-12 w-12 rounded-full border border-white/20 bg-white/5 flex items-center justify-center text-sm uppercase tracking-[0.3em]">
