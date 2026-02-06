@@ -27,6 +27,7 @@ const MINIVERSE_CARDS = [
     title: 'Miniverso Obra',
     titleShort: 'Habla con la obra',
     description: 'Dialoga con la obra sobre tus impresiones de la obra.',
+    videoUrl: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/trailers/miniversos/chat_obra.mov',
     action: 'Explora',
   },
   {
@@ -39,6 +40,7 @@ const MINIVERSE_CARDS = [
     titleShort: 'Lee la novela',
     description:
       'La obra reescrita como novela: el texto se transforma en autoficción.',
+    videoUrl: null,
     action: 'Explora',
   },
   {
@@ -51,6 +53,7 @@ const MINIVERSE_CARDS = [
     titleShort: 'Usa la taza',
     description:
       'Objeto ritual de que activa la experiencia fuera del escenario.',
+    videoUrl: null,
     action: 'Explora',
   },
   {
@@ -62,6 +65,7 @@ const MINIVERSE_CARDS = [
     title: 'Miniverso Gráficos',
     titleShort: 'Imagina el diálogo',
     description: 'Imágenes y trazos nacidos del proceso creativo del universo.',
+    videoUrl: null,
     action: 'Explora',
     isUpcoming: true,
   },
@@ -71,9 +75,10 @@ const MINIVERSE_CARDS = [
     icon: Film,
     thumbGradient: 'from-rose-500/80 via-red-500/70 to-fuchsia-500/60',
     title: 'Miniverso Cine',
-    titleShort: 'Ve la película',
+    titleShort: 'Ve el documental',
     description:
       'Películas y miradas que dialogan con el universo de la obra.',
+    videoUrl: null,
     action: 'Explora',
   },
   {
@@ -86,6 +91,7 @@ const MINIVERSE_CARDS = [
     titleShort: 'Escucha la música',
     description:
       'Música, poemas y registros sonoros surgidos de la obra.',
+    videoUrl: null,
     action: 'Explora',
   },
     {
@@ -97,6 +103,7 @@ const MINIVERSE_CARDS = [
     title: 'Miniverso Movimiento',
     titleShort: 'Siente el movimiento',
     description: 'Cuerpos, recorridos y figuras rituales que expanden la obra en el espacio.',
+    videoUrl: null,
     action: 'Explora',
     isUpcoming: true,
   },
@@ -109,6 +116,7 @@ const MINIVERSE_CARDS = [
     title: 'Miniverso Apps',
     titleShort: 'Juega la app',
     description: 'Experimentos lúdicos que reescriben la obra en formato interactivo.',
+    videoUrl: null,
     action: 'Explora',
   },
   {
@@ -120,6 +128,7 @@ const MINIVERSE_CARDS = [
     title: 'Miniverso Oráculo',
     titleShort: 'Consulta el Oráculo',
     description: 'Preguntas, azar y respuestas que la obra deja abiertas.',
+    videoUrl: null,
     action: 'Explora',
   },
 
@@ -394,41 +403,53 @@ const MiniverseModal = ({ open, onClose, onSelectMiniverse }) => {
             variants={modalVariants}
             className="relative z-10 w-full max-w-4xl rounded-3xl border border-white/10 bg-slate-950/95 p-5 sm:p-10 shadow-2xl max-h-[90vh] overflow-y-auto"
           >
-      <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-6">
-        <div>
-          <p className="text-sm uppercase tracking-[0.35em] text-slate-400/80 mb-2">
-            Narrativa expandida
-          </p>
+            <div
+              aria-hidden="true"
+              className="pointer-events-none absolute inset-0 opacity-10 bg-no-repeat bg-center bg-[length:auto_100%] md:bg-[length:200%]"
+              style={{
+                backgroundImage:
+                  'linear-gradient(rgba(5,5,10,0.85), rgba(5,5,10,0.85)), url(/assets/bg-logo.png)',
+                backgroundBlendMode: 'screen',
+                filter: 'grayscale(0.25)',
+              }}
+            />
+            <div className="relative z-10">
+      {!selectedMiniverse ? (
+        <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-6">
+          <div>
+            <p className="text-sm uppercase tracking-[0.35em] text-slate-400/80 mb-2">
+              Narrativa expandida
+            </p>
 
-          <h2 id="miniverse-modal-title" className="font-display text-3xl text-slate-50">
-            Explora el universo de #GatoEncerrado
-          </h2>
+            <h2 id="miniverse-modal-title" className="font-display text-3xl text-slate-50">
+              Explora el universo de #GatoEncerrado
+            </h2>
 
-          <div className="mt-3 rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-slate-200/90">
-            Cuando la obra no está en cartelera, su narrativa pulsa en otros lenguajes.{" "}
-            <strong className="font-semibold text-slate-50">
-              Explora a tu ritmo. Cada miniverso es una puerta.
-            </strong>
-          </div>
+            <div className="mt-3 rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-slate-200/90">
+              Cuando la obra no está en cartelera, su narrativa pulsa en otros lenguajes.{" "}
+              <strong className="font-semibold text-slate-50">
+                Explora a tu ritmo. Cada portal abre un miniverso distinto.
+              </strong>
+            </div>
 
-          <div className="mt-6 flex flex-wrap gap-2">
-            {TABS.map((tab) => (
-              <button
-                key={tab.id}
-                onClick={() => handleTabChange(tab.id)}
-                className={`rounded-full border px-4 py-2 text-sm transition ${
-                  activeTab === tab.id
-                    ? 'border-purple-400/60 bg-purple-500/20 text-purple-100'
-                    : 'border-white/10 text-slate-300 hover:border-purple-300/40 hover:text-purple-100'
-                }`}
-              >
-                {tab.label}
-              </button>
-            ))}
+            <div className="mt-6 flex flex-wrap gap-2">
+              {TABS.map((tab) => (
+                <button
+                  key={tab.id}
+                  onClick={() => handleTabChange(tab.id)}
+                  className={`rounded-full border px-4 py-2 text-sm transition ${
+                    activeTab === tab.id
+                      ? 'border-purple-400/60 bg-purple-500/20 text-purple-100'
+                      : 'border-white/10 text-slate-300 hover:border-purple-300/40 hover:text-purple-100'
+                  }`}
+                >
+                  {tab.label}
+                </button>
+              ))}
+            </div>
           </div>
         </div>
-
-      </div>
+      ) : null}
 
             <div className="grid md:grid-cols-2 gap-8">
               {activeTab === 'waitlist' ? (
@@ -625,47 +646,94 @@ const MiniverseModal = ({ open, onClose, onSelectMiniverse }) => {
                         filter: 'brightness(1.15)',
                       }}
                     />
-                    <div className="relative z-10 space-y-6">
-             
-                      <div className="flex items-center gap-3">
-                      <div
-                        className={`h-12 w-12 rounded-full bg-gradient-to-br ${selectedMiniverse.thumbGradient} flex items-center justify-center text-sm font-semibold text-white shadow-[0_10px_25px_rgba(0,0,0,0.35)]`}
-                      >
-                        {selectedMiniverse.icon ? (
-                          <selectedMiniverse.icon size={22} className="text-white drop-shadow-sm" />
-                        ) : (
-                          selectedMiniverse.thumbLabel
-                        )}
+                    <div className="relative z-10 grid gap-6 lg:grid-cols-[1.15fr_0.85fr] items-center">
+                      <div className="flex flex-col gap-4">
+                        <div className="flex items-center gap-3">
+                          <div
+                            className={`h-12 w-12 rounded-full bg-gradient-to-br ${selectedMiniverse.thumbGradient} flex items-center justify-center text-sm font-semibold text-white shadow-[0_10px_25px_rgba(0,0,0,0.35)]`}
+                          >
+                            {selectedMiniverse.icon ? (
+                              <selectedMiniverse.icon size={22} className="text-white drop-shadow-sm" />
+                            ) : (
+                              selectedMiniverse.thumbLabel
+                            )}
+                          </div>
+                          <div>
+                            <p className="text-xs uppercase tracking-[0.35em] text-slate-400/80">Narrativa expandida</p>
+                            <h3 className="font-display text-3xl text-slate-50">{selectedMiniverse.title}</h3>
+                          </div>
+                        </div>
+                        <p className="text-sm text-slate-300/90 leading-relaxed">
+                          {selectedMiniverse.description}
+                        </p>
+                        <div className="lg:hidden w-full">
+                          <div className="relative w-full aspect-[4/5] rounded-3xl border border-white/10 bg-slate-900/60 overflow-hidden shadow-[0_18px_45px_rgba(0,0,0,0.45)]">
+                            {selectedMiniverse.videoUrl ? (
+                              <video
+                                src={selectedMiniverse.videoUrl}
+                                className="absolute inset-0 h-full w-full object-cover"
+                                playsInline
+                                muted
+                                loop
+                                controls
+                              />
+                            ) : (
+                              <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 text-slate-300/70">
+                                <div className="h-12 w-12 rounded-full border border-white/20 bg-white/5 flex items-center justify-center text-sm uppercase tracking-[0.3em]">
+                                  ▶︎
+                                </div>
+                                <p className="text-xs uppercase tracking-[0.4em]">Video próximamente</p>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                        <div className="flex flex-col sm:flex-row gap-3">
+                          <Button
+                            type="button"
+                            onClick={handleEnterMiniverse}
+                            disabled={!MINIVERSE_PORTAL_ROUTES[selectedMiniverse.id]}
+                            className="bg-gradient-to-r from-purple-600/80 to-indigo-600/80 hover:from-purple-600 hover:to-indigo-600 text-white py-3 rounded-lg font-semibold flex items-center justify-center gap-2 hover-glow"
+                          >
+                            Abrir portal
+                          </Button>
+                          {!MINIVERSE_PORTAL_ROUTES[selectedMiniverse.id] ? (
+                            <span className="text-xs uppercase tracking-[0.22em] text-slate-400 self-center">
+                              Portal próximamente.
+                            </span>
+                          ) : null}
+                          <button
+                            type="button"
+                            onClick={handleReturnToList}
+                            className="rounded-lg border border-white/10 px-4 py-3 text-xs uppercase tracking-[0.25em] text-slate-300 hover:text-white hover:border-purple-300/40 transition"
+                          >
+                            Tocar otra puerta
+                          </button>
+                        </div>
+                        <p className="text-xs uppercase tracking-[0.35em] text-slate-400">
+                          Testimonio en video
+                        </p>
                       </div>
-                        <h3 className="font-display text-2xl text-slate-100">{selectedMiniverse.title}</h3>
+                      <div className="w-full">
+                        <div className="hidden lg:block relative w-full aspect-[4/5] rounded-3xl border border-white/10 bg-slate-900/60 overflow-hidden shadow-[0_18px_45px_rgba(0,0,0,0.45)]">
+                          {selectedMiniverse.videoUrl ? (
+                            <video
+                              src={selectedMiniverse.videoUrl}
+                              className="absolute inset-0 h-full w-full object-cover"
+                              playsInline
+                              muted
+                              loop
+                              controls
+                            />
+                          ) : (
+                            <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 text-slate-300/70">
+                              <div className="h-12 w-12 rounded-full border border-white/20 bg-white/5 flex items-center justify-center text-sm uppercase tracking-[0.3em]">
+                                ▶︎
+                              </div>
+                              <p className="text-xs uppercase tracking-[0.4em]">Video próximamente</p>
+                            </div>
+                          )}
+                        </div>
                       </div>
-
-                    <p className="text-sm text-slate-300/90 leading-relaxed">
-                      {selectedMiniverse.description}
-                    </p>
-
-                    <div className="flex flex-col sm:flex-row gap-3">
-                      <Button
-                        type="button"
-                        onClick={handleEnterMiniverse}
-                        disabled={!MINIVERSE_PORTAL_ROUTES[selectedMiniverse.id]}
-                        className="bg-gradient-to-r from-purple-600/80 to-indigo-600/80 hover:from-purple-600 hover:to-indigo-600 text-white py-3 rounded-lg font-semibold flex items-center justify-center gap-2 hover-glow"
-                      >
-                        Abrir portal
-                      </Button>
-                      {!MINIVERSE_PORTAL_ROUTES[selectedMiniverse.id] ? (
-                        <span className="text-xs uppercase tracking-[0.22em] text-slate-400 self-center">
-                          Portal próximamente.
-                        </span>
-                      ) : null}
-                      <button
-                        type="button"
-                        onClick={handleReturnToList}
-                        className="rounded-lg border border-white/10 px-4 py-3 text-xs uppercase tracking-[0.25em] text-slate-300 hover:text-white hover:border-purple-300/40 transition"
-                      >
-                        Tocar otra puerta
-                      </button>
-                    </div>
                     </div>
                   </div>
                 </div>
@@ -721,11 +789,14 @@ const MiniverseModal = ({ open, onClose, onSelectMiniverse }) => {
               )}
             </div>
 
-            <div className="mt-6 flex items-center justify-between text-xs text-slate-500">
-              <span>{activeTabLabel}</span>
-              <button onClick={handleClose} className="text-slate-400 hover:text-white transition">
-                Cerrar
-              </button>
+            {!selectedMiniverse ? (
+              <div className="mt-6 flex items-center justify-between text-xs text-slate-500">
+                <span>{activeTabLabel}</span>
+                <button onClick={handleClose} className="text-slate-400 hover:text-white transition">
+                  Cerrar
+                </button>
+              </div>
+            ) : null}
             </div>
           </motion.div>
         </motion.div>

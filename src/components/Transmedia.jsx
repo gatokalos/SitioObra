@@ -1093,8 +1093,6 @@ const ShowcaseReactionInline = ({ showcaseId, title, description, buttonLabel, c
       user?.app_metadata?.roles?.includes?.('subscriber')
   );
 
-  useEffect(() => {
-  }, [resetSilvestreQuestions]);
   const [status, setStatus] = useState('idle');
 
   const handleReaction = useCallback(async () => {
