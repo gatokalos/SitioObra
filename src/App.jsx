@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from 'react';
-import { Route, Routes } from 'react-router-dom';
+import React, { useEffect, useMemo, useState } from 'react';
+import { Route, Routes, useLocation, useNavigate } from 'react-router-dom';
 import { Toaster } from '@/components/ui/toaster';
 import Header from '@/components/Header';
 import Hero from '@/components/Hero';
@@ -19,6 +19,14 @@ import PortalLectura from '@/pages/PortalLectura';
 import PortalArtesanias from '@/pages/PortalArtesanias';
 import PortalVoz from '@/pages/PortalVoz';
 import bgLogo from '@/assets/bg-logo.png';
+import Bienvenida from '@/pages/Bienvenida';
+import { useAuth } from '@/contexts/SupabaseAuthContext';
+import {
+  hasSeenBienvenida,
+  isBienvenidaPending,
+  setBienvenidaPending,
+  setBienvenidaReturnPath,
+} from '@/lib/bienvenida';
 
 const pageTitle = '#GatoEncerrado - Obra de Teatro transmedia';
 const pageDescription =
@@ -71,6 +79,33 @@ const HeroBackground = () => {
   );
 };
 
+const BienvenidaGate = () => {
+  const navigate = useNavigate();
+  const location = useLocation();
+  const { user, loading } = useAuth();
+  const bienvenidaUrl = import.meta.env.VITE_BIENVENIDA_URL;
+
+  const currentPath = useMemo(() => {
+    const search = location.search || '';
+    const hash = location.hash || '';
+    return `${location.pathname}${search}${hash}`;
+  }, [location.hash, location.pathname, location.search]);
+
+  useEffect(() => {
+    if (loading || !user) return;
+    if (!bienvenidaUrl) return;
+    if (location.pathname === '/bienvenida') return;
+    if (isBienvenidaPending()) return;
+    if (hasSeenBienvenida(user.id)) return;
+
+    setBienvenidaPending();
+    setBienvenidaReturnPath(currentPath);
+    navigate('/bienvenida', { replace: true });
+  }, [currentPath, loading, location.pathname, navigate, user]);
+
+  return null;
+};
+
   
 function App() {
   const blogData = useBlogPosts();
@@ -88,7 +123,9 @@ function App() {
   }, []);
 
   return (
-    <Routes>
+    <>
+      <BienvenidaGate />
+      <Routes>
       <Route
         path="/"
         element={(
@@ -118,10 +155,12 @@ function App() {
           </div>
         )}
       />
+      <Route path="/bienvenida" element={<Bienvenida />} />
       <Route path="/portal-lectura" element={<PortalLectura />} />
       <Route path="/portal-artesanias" element={<PortalArtesanias />} />
       <Route path="/portal-voz" element={<PortalVoz />} />
-    </Routes>
+      </Routes>
+    </>
   );
 }
 

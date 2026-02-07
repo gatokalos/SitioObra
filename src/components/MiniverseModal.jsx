@@ -17,6 +17,62 @@ const MINIVERSE_PORTAL_ROUTES = {
   taza: '/portal-artesanias',
 };
 
+const MINIVERSE_TILE_GRADIENTS = {
+  miniversos: 'linear-gradient(135deg, rgba(31,21,52,0.95), rgba(64,36,93,0.85), rgba(122,54,127,0.65))',
+  copycats: 'linear-gradient(135deg, rgba(16,27,54,0.95), rgba(38,63,109,0.85), rgba(92,47,95,0.7))',
+  miniversoGrafico: 'linear-gradient(135deg, rgba(37,19,52,0.95), rgba(70,32,86,0.85), rgba(141,58,121,0.65))',
+  miniversoNovela: 'linear-gradient(135deg, rgba(26,24,60,0.95), rgba(59,43,95,0.85), rgba(108,56,118,0.7))',
+  miniversoSonoro: 'linear-gradient(135deg, rgba(18,29,62,0.95), rgba(32,65,103,0.85), rgba(70,91,146,0.65))',
+  lataza: 'linear-gradient(135deg, rgba(44,20,30,0.95), rgba(101,45,66,0.85), rgba(196,111,86,0.6))',
+  miniversoMovimiento: 'linear-gradient(135deg, rgba(24,30,45,0.95), rgba(40,64,65,0.85), rgba(74,123,102,0.65))',
+  apps: 'linear-gradient(135deg, rgba(30,41,59,0.95), rgba(22,163,74,0.75), rgba(34,211,238,0.65))',
+  oraculo: 'linear-gradient(135deg, rgba(38,18,56,0.95), rgba(86,33,115,0.85), rgba(168,68,139,0.65))',
+  default: 'linear-gradient(135deg, rgba(20,14,35,0.95), rgba(47,28,71,0.85), rgba(90,42,100,0.65))',
+};
+
+const MINIVERSE_TILE_COLORS = {
+  miniversos: {
+    border: 'rgba(186,131,255,0.35)',
+    text: '#e9d8ff',
+  },
+  copycats: {
+    border: 'rgba(132,176,255,0.35)',
+    text: '#dbeafe',
+  },
+  miniversoGrafico: {
+    border: 'rgba(214,146,255,0.35)',
+    text: '#fce7f3',
+  },
+  miniversoNovela: {
+    border: 'rgba(163,148,255,0.35)',
+    text: '#e0e7ff',
+  },
+  miniversoSonoro: {
+    border: 'rgba(122,179,255,0.35)',
+    text: '#e0f2fe',
+  },
+  lataza: {
+    border: 'rgba(255,173,145,0.35)',
+    text: '#ffedd5',
+  },
+  miniversoMovimiento: {
+    border: 'rgba(163,233,208,0.35)',
+    text: '#d1fae5',
+  },
+  apps: {
+    border: 'rgba(110,231,183,0.45)',
+    text: '#d1fae5',
+  },
+  oraculo: {
+    border: 'rgba(225,160,235,0.35)',
+    text: '#fbe7ff',
+  },
+  default: {
+    border: 'rgba(186,131,255,0.3)',
+    text: '#f3e8ff',
+  },
+};
+
 const MINIVERSE_CARDS = [
   {
     id: 'drama',
@@ -28,6 +84,7 @@ const MINIVERSE_CARDS = [
     titleShort: 'Habla con la obra',
     description: 'Dialoga con la obra sobre tus impresiones de la obra.',
     videoUrl: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/trailers/miniversos/chat_obra.mov',
+    ctaVerb: 'Háblale',
     action: 'Explora',
   },
   {
@@ -41,6 +98,7 @@ const MINIVERSE_CARDS = [
     description:
       'La obra reescrita como novela: el texto se transforma en autoficción.',
     videoUrl: null,
+    ctaVerb: 'Léelo',
     action: 'Explora',
   },
   {
@@ -54,6 +112,7 @@ const MINIVERSE_CARDS = [
     description:
       'Objeto ritual de que activa la experiencia fuera del escenario.',
     videoUrl: null,
+    ctaVerb: 'Úsala',
     action: 'Explora',
   },
   {
@@ -66,6 +125,7 @@ const MINIVERSE_CARDS = [
     titleShort: 'Imagina el diálogo',
     description: 'Imágenes y trazos nacidos del proceso creativo del universo.',
     videoUrl: null,
+    ctaVerb: 'Imagínalo',
     action: 'Explora',
     isUpcoming: true,
   },
@@ -79,6 +139,7 @@ const MINIVERSE_CARDS = [
     description:
       'Películas y miradas que dialogan con el universo de la obra.',
     videoUrl: null,
+    ctaVerb: 'Velo',
     action: 'Explora',
   },
   {
@@ -92,6 +153,7 @@ const MINIVERSE_CARDS = [
     description:
       'Música, poemas y registros sonoros surgidos de la obra.',
     videoUrl: null,
+    ctaVerb: 'Escúchala',
     action: 'Explora',
   },
     {
@@ -104,6 +166,7 @@ const MINIVERSE_CARDS = [
     titleShort: 'Siente el movimiento',
     description: 'Cuerpos, recorridos y figuras rituales que expanden la obra en el espacio.',
     videoUrl: null,
+    ctaVerb: 'Siéntelo',
     action: 'Explora',
     isUpcoming: true,
   },
@@ -117,6 +180,7 @@ const MINIVERSE_CARDS = [
     titleShort: 'Juega la app',
     description: 'Experimentos lúdicos que reescriben la obra en formato interactivo.',
     videoUrl: null,
+    ctaVerb: 'Juega',
     action: 'Explora',
   },
   {
@@ -129,6 +193,7 @@ const MINIVERSE_CARDS = [
     titleShort: 'Consulta el Oráculo',
     description: 'Preguntas, azar y respuestas que la obra deja abiertas.',
     videoUrl: null,
+    ctaVerb: 'Consúltalo',
     action: 'Explora',
   },
 
@@ -312,7 +377,9 @@ const MiniverseModal = ({ open, onClose, onSelectMiniverse }) => {
       handleClose();
       return;
     }
-  }, [handleClose, markMiniverseVisited, navigate, selectedMiniverse]);
+    legacyScrollToSection();
+    handleClose();
+  }, [handleClose, legacyScrollToSection, markMiniverseVisited, navigate, selectedMiniverse]);
 
   const handleEnterUpcoming = useCallback(() => {
     if (!selectedUpcoming) return;
@@ -415,7 +482,6 @@ const MiniverseModal = ({ open, onClose, onSelectMiniverse }) => {
               }}
             />
             <div className="relative z-10">
-      {!selectedMiniverse ? (
         <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-6">
           <div>
             <p className="text-sm uppercase tracking-[0.35em] text-slate-400/80 mb-2">
@@ -450,7 +516,6 @@ const MiniverseModal = ({ open, onClose, onSelectMiniverse }) => {
             </div>
           </div>
         </div>
-      ) : null}
 
             <div className="grid md:grid-cols-2 gap-8">
               {activeTab === 'waitlist' ? (
@@ -614,39 +679,46 @@ const MiniverseModal = ({ open, onClose, onSelectMiniverse }) => {
                 </>
               ) : selectedMiniverse ? (
                 <div className="md:col-span-2">
-                  <div className="glass-effect relative overflow-hidden rounded-2xl border border-white/10 bg-white/5 p-6 sm:p-8 space-y-6">
+                  <div
+                    className="glass-effect relative overflow-hidden rounded-2xl border bg-white/5 p-6 sm:p-8 space-y-0"
+                    style={{
+                      borderColor:
+                        MINIVERSE_TILE_COLORS[selectedMiniverse.formatId]?.border ??
+                        MINIVERSE_TILE_COLORS.default.border,
+                    }}
+                  >
                     <div
                       aria-hidden="true"
-                      className="pointer-events-none absolute inset-0 opacity-65 mix-blend-screen"
+                      className="pointer-events-none absolute inset-0 opacity-90"
                       style={{
                         backgroundImage:
-                          'radial-gradient(1px 1px at 6% 10%, rgba(248,250,252,0.9), transparent 65%),' +
-                          'radial-gradient(1.5px 1.5px at 10% 28%, rgba(241,245,249,0.75), transparent 70%),' +
-                          'radial-gradient(2px 2px at 14% 46%, rgba(226,232,240,0.7), transparent 70%),' +
-                          'radial-gradient(1px 1px at 18% 72%, rgba(255,255,255,0.55), transparent 70%),' +
-                          'radial-gradient(1.5px 1.5px at 22% 18%, rgba(241,245,249,0.7), transparent 70%),' +
-                          'radial-gradient(2px 2px at 28% 36%, rgba(226,232,240,0.7), transparent 70%),' +
-                          'radial-gradient(1px 1px at 32% 60%, rgba(255,255,255,0.55), transparent 70%),' +
-                          'radial-gradient(1.5px 1.5px at 36% 82%, rgba(241,245,249,0.65), transparent 70%),' +
-                          'radial-gradient(2px 2px at 40% 22%, rgba(226,232,240,0.7), transparent 70%),' +
-                          'radial-gradient(1px 1px at 44% 44%, rgba(255,255,255,0.55), transparent 70%),' +
-                          'radial-gradient(1.5px 1.5px at 48% 68%, rgba(241,245,249,0.7), transparent 70%),' +
-                          'radial-gradient(2px 2px at 52% 30%, rgba(226,232,240,0.7), transparent 70%),' +
-                          'radial-gradient(1px 1px at 56% 54%, rgba(255,255,255,0.5), transparent 70%),' +
-                          'radial-gradient(1.5px 1.5px at 60% 12%, rgba(241,245,249,0.7), transparent 70%),' +
-                          'radial-gradient(2px 2px at 64% 40%, rgba(226,232,240,0.7), transparent 100%),' +
-                          'radial-gradient(1px 1px at 68% 76%, rgba(255,255,255,0.5), transparent 70%),' +
-                          'radial-gradient(1.5px 1.5px at 72% 24%, rgba(241,245,249,0.7), transparent 70%),' +
-                          'radial-gradient(2px 2px at 76% 58%, rgba(226,232,240,0.7), transparent 50%),' +
-                          'radial-gradient(1px 1px at 80% 14%, rgba(255,255,255,0.5), transparent 70%),' +
-                          'radial-gradient(1.5px 1.5px at 84% 38%, rgba(241,245,249,0.65), transparent 70%),' +
-                          'radial-gradient(2px 2px at 88% 66%, rgba(226,232,240,0.7), transparent 70%),' +
-                          'radial-gradient(1px 1px at 92% 22%, rgba(255,255,255,0.5), transparent 70%),' +
-                          'radial-gradient(1.5px 1.5px at 94% 48%, rgba(241,245,249,0.65), transparent 70%),' +
-                          'radial-gradient(2px 2px at 96% 80%, rgba(226,232,240,0.7), transparent 70%)',
-                        filter: 'brightness(1.15)',
+                          MINIVERSE_TILE_GRADIENTS[selectedMiniverse.formatId] ??
+                          MINIVERSE_TILE_GRADIENTS.default,
+                        filter: 'saturate(1.1)',
+                        backgroundSize: '160% 160%',
+                        backgroundPosition: '0% 0%',
                       }}
                     />
+                    <div
+                      aria-hidden="true"
+                      className="pointer-events-none absolute inset-0 opacity-35 mix-blend-screen"
+                      style={{
+                        backgroundImage:
+                          'radial-gradient(1px 1px at 12% 18%, rgba(248,250,252,0.8), transparent 65%),' +
+                          'radial-gradient(1.5px 1.5px at 24% 42%, rgba(241,245,249,0.65), transparent 70%),' +
+                          'radial-gradient(2px 2px at 36% 28%, rgba(226,232,240,0.6), transparent 70%),' +
+                          'radial-gradient(1px 1px at 44% 62%, rgba(255,255,255,0.45), transparent 70%),' +
+                          'radial-gradient(1.5px 1.5px at 52% 18%, rgba(241,245,249,0.55), transparent 70%),' +
+                          'radial-gradient(2px 2px at 64% 48%, rgba(226,232,240,0.6), transparent 70%),' +
+                          'radial-gradient(1px 1px at 72% 30%, rgba(255,255,255,0.4), transparent 70%),' +
+                          'radial-gradient(1.5px 1.5px at 80% 66%, rgba(241,245,249,0.55), transparent 70%),' +
+                          'radial-gradient(2px 2px at 88% 22%, rgba(226,232,240,0.6), transparent 70%),' +
+                          'radial-gradient(1px 1px at 18% 78%, rgba(255,255,255,0.35), transparent 70%),' +
+                          'radial-gradient(1.5px 1.5px at 58% 78%, rgba(241,245,249,0.55), transparent 70%),' +
+                          'radial-gradient(1px 1px at 90% 82%, rgba(255,255,255,0.35), transparent 70%)',
+                      }}
+                    />
+                    <div className="absolute inset-0 opacity-30 mix-blend-screen pointer-events-none bg-[radial-gradient(circle_at_top,_rgba(255,255,255,0.25),_transparent_55%)]" />
                     <div className="relative z-10 grid gap-6 lg:grid-cols-[1.15fr_0.85fr] items-center">
                       <div className="flex flex-col gap-4">
                         <div className="flex items-center gap-3">
@@ -697,16 +769,10 @@ const MiniverseModal = ({ open, onClose, onSelectMiniverse }) => {
                           <Button
                             type="button"
                             onClick={handleEnterMiniverse}
-                            disabled={!MINIVERSE_PORTAL_ROUTES[selectedMiniverse.id]}
                             className="bg-gradient-to-r from-purple-600/80 to-indigo-600/80 hover:from-purple-600 hover:to-indigo-600 text-white py-3 rounded-lg font-semibold flex items-center justify-center gap-2 hover-glow"
                           >
-                            Abrir portal
+                            {selectedMiniverse.ctaVerb ?? 'Abrir portal'}
                           </Button>
-                          {!MINIVERSE_PORTAL_ROUTES[selectedMiniverse.id] ? (
-                            <span className="text-xs uppercase tracking-[0.22em] text-slate-400 self-center">
-                              Portal próximamente.
-                            </span>
-                          ) : null}
                           <button
                             type="button"
                             onClick={handleReturnToList}

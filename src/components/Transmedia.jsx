@@ -203,9 +203,9 @@ const MINIVERSO_TILE_COLORS = {
 };
 const ORACULO_URL = (() => {
   const raw =
-    import.meta.env?.VITE_ORACULO_URL ??
     import.meta.env?.VITE_BIENVENIDA_URL ??
-    '';
+    import.meta.env?.VITE_ORACULO_URL ??
+    (import.meta.env?.DEV ? 'http://localhost:5174' : '');
   return raw ? raw.replace(/\/+$/, '') : '';
 })();
 const CAUSE_SITE_URL = 'https://www.ayudaparalavida.com/index.html';
@@ -2164,7 +2164,7 @@ const Transmedia = () => {
   const handleOpenOraculo = useCallback(() => {
     if (!ORACULO_URL) {
       toast({
-        description: 'Falta configurar la URL del Oráculo (VITE_ORACULO_URL).',
+        description: 'Falta configurar la URL del Oráculo (VITE_BIENVENIDA_URL o VITE_ORACULO_URL).',
       });
       return;
     }
@@ -4548,7 +4548,7 @@ const rendernotaAutoral = () => {
                     src={ORACULO_URL}
                     className="h-full w-full"
                     frameBorder="0"
-                    allow="autoplay; fullscreen; picture-in-picture; clipboard-write"
+                    allow="autoplay; fullscreen; picture-in-picture; clipboard-write; accelerometer; gyroscope; magnetometer; microphone; camera"
                     allowFullScreen
                     referrerPolicy="strict-origin-when-cross-origin"
                   />

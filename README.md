@@ -17,6 +17,7 @@ Landing page para la obra transmedia *Es un gato encerrado*. El proyecto está c
 VITE_SUPABASE_URL=https://<tu-ref>.supabase.co
 VITE_SUPABASE_ANON_KEY=<tu-public-anon-key>
 VITE_API_URL=https://tu-backend.com # opcional
+VITE_BIENVENIDA_URL=http://localhost:5174 # app bienvenida (iframe)
 ```
 
 > Estas variables se inyectan en `src/lib/supabaseClient.js`. La aplicación no iniciará si faltan.
@@ -29,6 +30,31 @@ npm run dev      # entorno local
 npm run build    # build de producción
 npm run preview  # previsualizar build
 ```
+
+## Bienvenida (integración rápida)
+
+- Ruta: `/bienvenida`
+- Se muestra una sola vez por usuario autenticado.
+- Configura `VITE_BIENVENIDA_URL` con la URL de la app externa (si no existe, no se activa).
+- Persistencia: se guarda en storage local por usuario (`bienvenida:seen:<user_id>`).
+- Comunicación opcional desde la app bienvenida:
+  - `window.parent.postMessage({ type: 'bienvenida:done' }, '*')`
+  - `window.parent.postMessage({ type: 'bienvenida:close' }, '*')`
+
+### Dev local
+
+- SitioObra: `npm run dev` (por defecto `http://localhost:5173`)
+- Bienvenida: `npm run dev -- --port 5174` (o el puerto que elijas)
+
+### Plan de migración (Fase 2, sin implementar)
+
+1. Crear monorepo:
+   - `apps/sitio-obra`
+   - `apps/bienvenida`
+   - `packages/shared` (tokens, UI, helpers)
+2. Extraer piezas comunes (botones, tipografías, colores).
+3. Unificar auth en `packages/shared-auth`.
+4. Cambiar iframe por import dinámico del módulo en `sitio-obra`.
 
 ## Notas
 
