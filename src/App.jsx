@@ -24,6 +24,8 @@ import { useAuth } from '@/contexts/SupabaseAuthContext';
 import {
   hasSeenBienvenida,
   isBienvenidaPending,
+  isBienvenidaSkip,
+  clearBienvenidaSkip,
   setBienvenidaPending,
   setBienvenidaReturnPath,
 } from '@/lib/bienvenida';
@@ -92,16 +94,25 @@ const BienvenidaGate = () => {
   }, [location.hash, location.pathname, location.search]);
 
   useEffect(() => {
-    if (loading || !user) return;
     if (!bienvenidaUrl) return;
     if (location.pathname === '/bienvenida') return;
     if (isBienvenidaPending()) return;
+    if (loading) return;
+    if (!user) {
+      if (isBienvenidaSkip()) return;
+      setBienvenidaReturnPath(currentPath);
+      navigate('/bienvenida', { replace: true });
+      return;
+    }
+    if (isBienvenidaSkip()) {
+      clearBienvenidaSkip();
+    }
     if (hasSeenBienvenida(user.id)) return;
 
     setBienvenidaPending();
     setBienvenidaReturnPath(currentPath);
     navigate('/bienvenida', { replace: true });
-  }, [currentPath, loading, location.pathname, navigate, user]);
+  }, [currentPath, loading, location.pathname, navigate, user, bienvenidaUrl]);
 
   return null;
 };

@@ -3,6 +3,7 @@ import { safeGetItem, safeRemoveItem, safeSetItem } from '@/lib/safeStorage';
 const SEEN_PREFIX = 'bienvenida:seen:';
 const RETURN_PATH_KEY = 'bienvenida:return-path';
 const PENDING_KEY = 'bienvenida:pending';
+const SKIP_KEY = 'bienvenida:skip';
 
 export const hasSeenBienvenida = (userId) => {
   if (!userId) return false;
@@ -23,6 +24,16 @@ export const clearBienvenidaPending = () => {
 };
 
 export const isBienvenidaPending = () => safeGetItem(PENDING_KEY) === 'true';
+
+export const setBienvenidaSkip = () => {
+  safeSetItem(SKIP_KEY, 'true');
+};
+
+export const clearBienvenidaSkip = () => {
+  safeRemoveItem(SKIP_KEY);
+};
+
+export const isBienvenidaSkip = () => safeGetItem(SKIP_KEY) === 'true';
 
 export const setBienvenidaReturnPath = (path) => {
   if (!path) return;

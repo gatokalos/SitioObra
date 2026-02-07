@@ -54,6 +54,7 @@ const PortalVoz = () => {
 
   const requireAuth = useCallback(() => {
     if (isAuthenticated) return true;
+    setShowLoginOverlay(true);
     setShowLoginHint(true);
     window.setTimeout(() => setShowLoginHint(false), 2200);
     return false;

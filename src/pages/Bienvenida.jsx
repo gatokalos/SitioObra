@@ -1,16 +1,20 @@
-import React, { useCallback, useEffect, useMemo } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/SupabaseAuthContext';
+import LoginOverlay from '@/components/ContributionModal/LoginOverlay';
+import PortalAuthButton from '@/components/PortalAuthButton';
 import {
   clearBienvenidaPending,
   clearBienvenidaReturnPath,
   getBienvenidaReturnPath,
   markBienvenidaSeen,
+  setBienvenidaSkip,
 } from '@/lib/bienvenida';
 
 const Bienvenida = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
+  const [showLoginOverlay, setShowLoginOverlay] = useState(false);
   const baseUrl = import.meta.env.VITE_BIENVENIDA_URL;
 
   const iframeSrc = useMemo(() => {
@@ -26,12 +30,26 @@ const Bienvenida = () => {
   }, [baseUrl, user?.email, user?.id]);
 
   const handleFinish = useCallback(() => {
-    markBienvenidaSeen(user?.id);
+    if (!user) {
+      setBienvenidaSkip();
+    } else {
+      markBienvenidaSeen(user.id);
+    }
     clearBienvenidaPending();
     const returnPath = getBienvenidaReturnPath() || '/';
     clearBienvenidaReturnPath();
     navigate(returnPath, { replace: true });
-  }, [navigate, user?.id]);
+  }, [navigate, user]);
+
+  const handleOpenLogin = useCallback(() => {
+    if (!user) {
+      setShowLoginOverlay(true);
+    }
+  }, [user]);
+
+  const handleCloseLogin = useCallback(() => {
+    setShowLoginOverlay(false);
+  }, []);
 
   useEffect(() => {
     const handleMessage = (event) => {
@@ -61,6 +79,9 @@ const Bienvenida = () => {
           </div>
         )}
       </div>
+      <div className="absolute left-6 top-6 z-10">
+        <PortalAuthButton onOpenLogin={handleOpenLogin} />
+      </div>
       <button
         type="button"
         onClick={handleFinish}
@@ -68,6 +89,7 @@ const Bienvenida = () => {
       >
         Cerrar
       </button>
+      {showLoginOverlay ? <LoginOverlay onClose={handleCloseLogin} /> : null}
     </div>
   );
 };
