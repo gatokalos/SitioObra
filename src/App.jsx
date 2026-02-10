@@ -42,6 +42,11 @@ const HeroBackground = () => {
     let ticking = false;
 
     const updateOpacity = () => {
+      if (document.documentElement.dataset.bienvenidaFade === 'true') {
+        setOpacity(0);
+        ticking = false;
+        return;
+      }
       if (document.documentElement.dataset.miniverseOpen === 'true') {
         setOpacity(1);
       } else {
@@ -64,7 +69,7 @@ const HeroBackground = () => {
   }, []);
 
   return (
-    <div className="fixed inset-0 z-0 pointer-events-none" style={{ opacity }}>
+    <div className="fixed inset-0 z-0 pointer-events-none" style={{ opacity, transition: 'opacity 0.45s ease' }}>
       <div className="absolute inset-0 bg-black">
         <div className="absolute inset-0 opacity-30">
           <div className="absolute top-0 left-0 w-1/2 h-1/2 bg-gradient-to-br from-pink-900/50 via-transparent to-transparent blur-4xl"></div>
@@ -97,13 +102,7 @@ const BienvenidaGate = () => {
     if (!bienvenidaUrl) return;
     if (location.pathname === '/bienvenida') return;
     if (isBienvenidaPending()) return;
-    if (loading) return;
-    if (!user) {
-      if (isBienvenidaSkip()) return;
-      setBienvenidaReturnPath(currentPath);
-      navigate('/bienvenida', { replace: true });
-      return;
-    }
+    if (loading || !user) return;
     if (isBienvenidaSkip()) {
       clearBienvenidaSkip();
     }

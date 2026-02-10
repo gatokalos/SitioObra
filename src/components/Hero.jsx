@@ -5,6 +5,9 @@ import { Button } from '@/components/ui/button';
 import ReserveModal from '@/components/ReserveModal';
 import TicketPurchaseModal from '@/components/TicketPurchaseModal';
 import isotipoGato from '@/assets/isotipo-gato.png';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { useAuth } from '@/contexts/SupabaseAuthContext';
+import { setBienvenidaReturnPath } from '@/lib/bienvenida';
 
 const Hero = () => {
   const [isReserveOpen, setIsReserveOpen] = useState(false);
@@ -21,6 +24,9 @@ const Hero = () => {
   ];
   const currentCta = rotatingCtas[ctaIndex];
   const targetWidth = primaryCtaWidth ?? undefined;
+  const navigate = useNavigate();
+  const location = useLocation();
+  const { user } = useAuth();
 
   const handleScrollToAbout = useCallback(() => {
     const aboutSection = document.querySelector('#about');
@@ -37,9 +43,17 @@ const Hero = () => {
 
   const handleOpenMiniverseList = useCallback(() => {
     if (typeof window !== 'undefined') {
+      if (!user) {
+        document.documentElement.dataset.bienvenidaFade = 'true';
+        setBienvenidaReturnPath(`${location.pathname}${location.search}${location.hash}`);
+        window.setTimeout(() => {
+          navigate('/bienvenida', { replace: true });
+        }, 450);
+        return;
+      }
       window.dispatchEvent(new CustomEvent('gatoencerrado:open-miniverse-list'));
     }
-  }, []);
+  }, [location.hash, location.pathname, location.search, navigate, user]);
 
   const handleCloseTicket = useCallback(() => {
     setIsTicketModalOpen(false);

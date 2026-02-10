@@ -29,6 +29,11 @@ const Bienvenida = () => {
     return url.toString();
   }, [baseUrl, user?.email, user?.id]);
 
+  useEffect(() => {
+    if (typeof document === 'undefined') return;
+    delete document.documentElement.dataset.bienvenidaFade;
+  }, []);
+
   const handleFinish = useCallback(() => {
     if (!user) {
       setBienvenidaSkip();

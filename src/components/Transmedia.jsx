@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
 import { createPortal } from 'react-dom';
 import {
@@ -34,6 +35,7 @@ import { fetchBlogPostBySlug } from '@/services/blogService';
 import { toast } from '@/components/ui/use-toast';
 import { OBRA_CONVERSATION_STARTERS, SILVESTRE_TRIGGER_QUESTIONS } from '@/lib/obraConversation';
 import { useAuth } from '@/contexts/SupabaseAuthContext';
+import { setBienvenidaReturnPath } from '@/lib/bienvenida';
 import { Document, Page, pdfjs } from 'react-pdf';
 import 'react-pdf/dist/Page/AnnotationLayer.css';
 import 'react-pdf/dist/Page/TextLayer.css';
@@ -1542,6 +1544,8 @@ const Transmedia = () => {
   const [openCollaboratorId, setOpenCollaboratorId] = useState(null);
   const { isMobileViewport, canUseInlinePlayback, requestMobileVideoPresentation } = useMobileVideoPresentation();
   const { user } = useAuth();
+  const navigate = useNavigate();
+  const location = useLocation();
   const [quironSpent, setQuironSpent] = useState(initialQuironSpent);
   const [graphicSpent, setGraphicSpent] = useState(initialGraphicSpent);
   const [novelaQuestions, setNovelaQuestions] = useState(initialNovelaQuestions);
@@ -1828,10 +1832,22 @@ const Transmedia = () => {
     ) : null;
 
   const handleOpenMiniverses = useCallback((contextLabel = null) => {
+    if (!user) {
+      if (typeof document !== 'undefined') {
+        document.documentElement.dataset.bienvenidaFade = 'true';
+      }
+      setBienvenidaReturnPath(`${location.pathname}${location.search}${location.hash}`);
+      if (typeof window !== 'undefined') {
+        window.setTimeout(() => {
+          navigate('/bienvenida', { replace: true });
+        }, 450);
+      }
+      return;
+    }
     const normalizedLabel = typeof contextLabel === 'string' ? contextLabel : null;
     setMiniverseContext(normalizedLabel);
     setIsMiniverseOpen(true);
-  }, []);
+  }, [location.hash, location.pathname, location.search, navigate, user]);
 
   const handleCloseMiniverses = useCallback(() => {
     setIsMiniverseOpen(false);

@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Mic, Play, Square } from 'lucide-react';
+import { Mic, MoreHorizontal, Play, Square } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 const ObraConversationControls = ({
@@ -25,9 +25,9 @@ const ObraConversationControls = ({
       : isSilvestreFetching || isSilvestreResponding
         ? 'La Obra está pensando'
         : isListening
-          ? 'Detén la grabación'
+          ? 'Pulsa otra vez para enviar'
           : micPromptVisible
-            ? 'Habla con la obra'
+            ? 'Pulsa para hablar'
             : ctaLabel;
 
   return (
@@ -68,6 +68,8 @@ const ObraConversationControls = ({
           {!isSilvestrePlaying ? (
             pendingSilvestreAudioUrl ? (
               <Play className="h-8 w-8 relative z-10" />
+            ) : isSilvestreFetching || isSilvestreResponding ? (
+              <MoreHorizontal className="h-8 w-8 relative z-10" />
             ) : isListening ? (
               <Square className="h-8 w-8 relative z-10" />
             ) : (
