@@ -309,6 +309,12 @@ const MiniverseModal = ({ open, onClose, onSelectMiniverse }) => {
     readStoredJson('gatoencerrado:showcase-boosts', {})
   );
   const [communityOptIn, setCommunityOptIn] = useState(false);
+  const isSubscriber = Boolean(
+    user?.user_metadata?.isSubscriber ||
+      user?.user_metadata?.is_subscriber ||
+      user?.user_metadata?.subscription_status === 'active' ||
+      user?.app_metadata?.roles?.includes?.('subscriber')
+  );
   const showcaseRef = useRef(null);
 
   const playKnockSound = useCallback(() => {
@@ -526,6 +532,11 @@ const MiniverseModal = ({ open, onClose, onSelectMiniverse }) => {
   const handleEnterShowcase = useCallback(
     (card) => {
       if (!card) return;
+      if (!isSubscriber) {
+        setActiveTab('waitlist');
+        toast({ description: 'Necesitas suscripción activa para abrir este portal.' });
+        return;
+      }
       markMiniverseVisited(card.id);
       const portalRoute = MINIVERSE_PORTAL_ROUTES[card.id];
       if (portalRoute) {
@@ -536,7 +547,7 @@ const MiniverseModal = ({ open, onClose, onSelectMiniverse }) => {
       onSelectMiniverse?.(card.formatId);
       handleClose();
     },
-    [handleClose, markMiniverseVisited, navigate, onSelectMiniverse]
+    [handleClose, isSubscriber, markMiniverseVisited, navigate, onSelectMiniverse]
   );
 
   const handleEnterUpcoming = useCallback(() => {
