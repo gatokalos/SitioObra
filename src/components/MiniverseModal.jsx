@@ -1,14 +1,17 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
-import { BookOpen, Brain, Coffee, Drama, Film, MapIcon, Music, Palette, Smartphone } from 'lucide-react';
+import { BookOpen, Brain, Coffee, Coins, Drama, Film, Gamepad2, HeartHandshake, HeartPulse, MapIcon, Music, Palette, School, Smartphone, Sparkles } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { toast } from '@/components/ui/use-toast';
 import { supabase } from '@/lib/supabaseClient';
+import { useAuth } from '@/contexts/SupabaseAuthContext';
+import { safeSetItem } from '@/lib/safeStorage';
 
 const TABS = [
-  { id: 'experiences', label: 'Miniversos activos' },
-  { id: 'waitlist', label: 'Próximamente' },
+  { id: 'escaparate', label: 'Explorar', icon: Sparkles },
+  { id: 'experiences', label: 'Probar', icon: Gamepad2 },
+  { id: 'waitlist', label: 'Apoyar', icon: HeartHandshake },
 ];
 
 const MINIVERSE_PORTAL_ROUTES = {
@@ -73,6 +76,61 @@ const MINIVERSE_TILE_COLORS = {
   },
 };
 
+const MINIVERSE_STARFIELDS = {
+  drama:
+    'radial-gradient(1px 1px at 10% 18%, rgba(255,255,255,1), transparent 50%),' +
+    'radial-gradient(1.5px 1.5px at 26% 36%, rgba(255,255,255,1), transparent 55%),' +
+    'radial-gradient(2px 2px at 38% 22%, rgba(255,255,255,1), transparent 55%),' +
+    'radial-gradient(1px 1px at 48% 64%, rgba(255,255,255,1), transparent 55%),' +
+    'radial-gradient(2px 2px at 62% 46%, rgba(255,255,255,1), transparent 55%),' +
+    'radial-gradient(1px 1px at 72% 26%, rgba(255,255,255,1), transparent 55%),' +
+    'radial-gradient(1.5px 1.5px at 82% 62%, rgba(255,255,255,1), transparent 55%),' +
+    'radial-gradient(2px 2px at 88% 18%, rgba(255,255,255,1), transparent 55%),' +
+    'radial-gradient(3px 3px at 22% 30%, rgba(255,255,255,1), transparent 62%),' +
+    'radial-gradient(2.5px 2.5px at 78% 42%, rgba(255,255,255,1), transparent 62%),' +
+    'radial-gradient(3.5px 3.5px at 58% 74%, rgba(255,255,255,1), transparent 62%)',
+  literatura:
+    'radial-gradient(1px 1px at 14% 22%, rgba(255,255,255,1), transparent 50%),' +
+    'radial-gradient(1.5px 1.5px at 22% 58%, rgba(255,255,255,1), transparent 55%),' +
+    'radial-gradient(2px 2px at 34% 30%, rgba(255,255,255,1), transparent 55%),' +
+    'radial-gradient(1px 1px at 46% 70%, rgba(255,255,255,1), transparent 55%),' +
+    'radial-gradient(2px 2px at 56% 42%, rgba(255,255,255,1), transparent 55%),' +
+    'radial-gradient(1px 1px at 66% 18%, rgba(255,255,255,1), transparent 55%),' +
+    'radial-gradient(1.5px 1.5px at 78% 54%, rgba(255,255,255,1), transparent 55%),' +
+    'radial-gradient(2px 2px at 90% 26%, rgba(255,255,255,1), transparent 55%),' +
+    'radial-gradient(3px 3px at 28% 32%, rgba(255,255,255,1), transparent 62%),' +
+    'radial-gradient(2.5px 2.5px at 72% 38%, rgba(255,255,255,1), transparent 62%),' +
+    'radial-gradient(3.5px 3.5px at 60% 72%, rgba(255,255,255,1), transparent 62%)',
+  taza:
+    'radial-gradient(1px 1px at 12% 24%, rgba(255,255,255,1), transparent 50%),' +
+    'radial-gradient(1.5px 1.5px at 24% 44%, rgba(255,255,255,1), transparent 55%),' +
+    'radial-gradient(2px 2px at 36% 60%, rgba(255,255,255,1), transparent 55%),' +
+    'radial-gradient(1px 1px at 44% 28%, rgba(255,255,255,1), transparent 55%),' +
+    'radial-gradient(2px 2px at 58% 52%, rgba(255,255,255,1), transparent 55%),' +
+    'radial-gradient(1px 1px at 70% 20%, rgba(255,255,255,1), transparent 55%),' +
+    'radial-gradient(1.5px 1.5px at 82% 46%, rgba(255,255,255,1), transparent 55%),' +
+    'radial-gradient(2px 2px at 90% 68%, rgba(255,255,255,1), transparent 55%),' +
+    'radial-gradient(3px 3px at 26% 34%, rgba(255,255,255,1), transparent 62%),' +
+    'radial-gradient(2.5px 2.5px at 76% 40%, rgba(255,255,255,1), transparent 62%),' +
+    'radial-gradient(3.5px 3.5px at 62% 76%, rgba(255,255,255,1), transparent 62%)',
+  default:
+    'radial-gradient(1px 1px at 12% 18%, rgba(255,255,255,1), transparent 50%),' +
+    'radial-gradient(1.5px 1.5px at 24% 42%, rgba(255,255,255,1), transparent 55%),' +
+    'radial-gradient(2px 2px at 36% 28%, rgba(255,255,255,1), transparent 55%),' +
+    'radial-gradient(1px 1px at 44% 62%, rgba(255,255,255,1), transparent 55%),' +
+    'radial-gradient(1.5px 1.5px at 52% 18%, rgba(255,255,255,1), transparent 55%),' +
+    'radial-gradient(2px 2px at 64% 48%, rgba(255,255,255,1), transparent 55%),' +
+    'radial-gradient(1px 1px at 72% 30%, rgba(255,255,255,1), transparent 55%),' +
+    'radial-gradient(1.5px 1.5px at 80% 66%, rgba(255,255,255,1), transparent 55%),' +
+    'radial-gradient(2px 2px at 88% 22%, rgba(255,255,255,1), transparent 55%),' +
+    'radial-gradient(1px 1px at 18% 78%, rgba(255,255,255,1), transparent 55%),' +
+    'radial-gradient(1.5px 1.5px at 58% 78%, rgba(255,255,255,1), transparent 55%),' +
+    'radial-gradient(1px 1px at 90% 82%, rgba(255,255,255,1), transparent 55%),' +
+    'radial-gradient(3px 3px at 20% 30%, rgba(255,255,255,1), transparent 62%),' +
+    'radial-gradient(2.5px 2.5px at 78% 42%, rgba(255,255,255,1), transparent 62%),' +
+    'radial-gradient(3.5px 3.5px at 62% 74%, rgba(255,255,255,1), transparent 62%)',
+};
+
 const MINIVERSE_CARDS = [
   {
     id: 'drama',
@@ -83,7 +141,7 @@ const MINIVERSE_CARDS = [
     title: 'Miniverso Obra',
     titleShort: 'Habla con la obra',
     description: 'Dialoga con la obra sobre tus impresiones de la obra.',
-    videoUrl: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/trailers/miniversos/chat_obra.mov',
+    videoUrl: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/trailers/miniversos/chat_obra.mp4',
     ctaVerb: 'Háblale',
     action: 'Explora',
   },
@@ -127,7 +185,6 @@ const MINIVERSE_CARDS = [
     videoUrl: null,
     ctaVerb: 'Imagínalo',
     action: 'Explora',
-    isUpcoming: true,
   },
   {
     id: 'cine',
@@ -156,7 +213,7 @@ const MINIVERSE_CARDS = [
     ctaVerb: 'Escúchala',
     action: 'Explora',
   },
-    {
+  {
     id: 'movimiento',
     formatId: 'miniversoMovimiento',
     icon: MapIcon,
@@ -168,7 +225,6 @@ const MINIVERSE_CARDS = [
     videoUrl: null,
     ctaVerb: 'Siéntelo',
     action: 'Explora',
-    isUpcoming: true,
   },
   {
     id: 'apps',
@@ -180,7 +236,7 @@ const MINIVERSE_CARDS = [
     titleShort: 'Juega la app',
     description: 'Experimentos lúdicos que reescriben la obra en formato interactivo.',
     videoUrl: null,
-    ctaVerb: 'Juega',
+    ctaVerb: 'Juégalo',
     action: 'Explora',
   },
   {
@@ -217,8 +273,24 @@ const modalVariants = {
   exit: { opacity: 0, y: 20, scale: 0.97, transition: { duration: 0.2, ease: 'easeIn' } },
 };
 
+const LOGIN_RETURN_KEY = 'gatoencerrado:login-return';
+
+const readStoredJson = (key, fallback) => {
+  if (typeof window === 'undefined') {
+    return fallback;
+  }
+  try {
+    const raw = window.localStorage?.getItem(key);
+    return raw ? JSON.parse(raw) : fallback;
+  } catch (error) {
+    console.warn(`[MiniverseModal] No se pudo leer ${key}`, error);
+    return fallback;
+  }
+};
+
 const MiniverseModal = ({ open, onClose, onSelectMiniverse }) => {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [activeTab, setActiveTab] = useState(TABS[0].id);
   const [formState, setFormState] = useState(initialFormState);
   const [status, setStatus] = useState('idle');
@@ -226,6 +298,18 @@ const MiniverseModal = ({ open, onClose, onSelectMiniverse }) => {
   const [selectedMiniverseId, setSelectedMiniverseId] = useState(null);
   const [selectedUpcomingId, setSelectedUpcomingId] = useState(null);
   const [visitedMiniverses, setVisitedMiniverses] = useState({});
+  const [activeShowcaseIndex, setActiveShowcaseIndex] = useState(0);
+  const [isShowcaseAutoPlay, setIsShowcaseAutoPlay] = useState(true);
+  const [showcaseCountdown, setShowcaseCountdown] = useState(9);
+  const [isMobileViewport, setIsMobileViewport] = useState(false);
+  const [showcaseEnergy, setShowcaseEnergy] = useState(() =>
+    readStoredJson('gatoencerrado:showcase-energy', {})
+  );
+  const [showcaseBoosts, setShowcaseBoosts] = useState(() =>
+    readStoredJson('gatoencerrado:showcase-boosts', {})
+  );
+  const [communityOptIn, setCommunityOptIn] = useState(false);
+  const showcaseRef = useRef(null);
 
   const playKnockSound = useCallback(() => {
     if (typeof window === 'undefined') {
@@ -263,16 +347,60 @@ const MiniverseModal = ({ open, onClose, onSelectMiniverse }) => {
   useEffect(() => {
     if (open) {
       document.documentElement.dataset.miniverseOpen = 'true';
+      if (typeof window !== 'undefined') {
+        const mediaQuery = window.matchMedia('(max-width: 639px)');
+        setIsMobileViewport(mediaQuery.matches);
+        if (mediaQuery.matches) {
+          setActiveTab('experiences');
+        }
+      }
       setActiveTab(TABS[0].id);
       setFormState(initialFormState);
       setStatus('idle');
       setErrorMessage('');
       setSelectedMiniverseId(null);
       setSelectedUpcomingId(null);
+      setActiveShowcaseIndex(0);
+      setIsShowcaseAutoPlay(true);
+      setShowcaseCountdown(9);
+      setShowcaseEnergy(readStoredJson('gatoencerrado:showcase-energy', {}));
+      setShowcaseBoosts(readStoredJson('gatoencerrado:showcase-boosts', {}));
       return;
     }
     delete document.documentElement.dataset.miniverseOpen;
   }, [open]);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') {
+      return undefined;
+    }
+    const handleStorage = (event) => {
+      if (event.key === 'gatoencerrado:showcase-energy') {
+        setShowcaseEnergy(readStoredJson('gatoencerrado:showcase-energy', {}));
+      }
+      if (event.key === 'gatoencerrado:showcase-boosts') {
+        setShowcaseBoosts(readStoredJson('gatoencerrado:showcase-boosts', {}));
+      }
+    };
+    window.addEventListener('storage', handleStorage);
+    return () => window.removeEventListener('storage', handleStorage);
+  }, []);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') {
+      return undefined;
+    }
+    const mediaQuery = window.matchMedia('(max-width: 639px)');
+    const handleMediaChange = (event) => {
+      setIsMobileViewport(event.matches);
+      if (event.matches) {
+        setActiveTab('experiences');
+      }
+    };
+    setIsMobileViewport(mediaQuery.matches);
+    mediaQuery.addEventListener('change', handleMediaChange);
+    return () => mediaQuery.removeEventListener('change', handleMediaChange);
+  }, []);
 
   useEffect(() => {
     if (!open) {
@@ -293,6 +421,10 @@ const MiniverseModal = ({ open, onClose, onSelectMiniverse }) => {
   }, []);
 
   const activeTabLabel = useMemo(() => TABS.find((tab) => tab.id === activeTab)?.label ?? TABS[0].label, [activeTab]);
+  const showcaseMiniverses = useMemo(
+    () => MINIVERSE_CARDS.filter((card) => !card.isUpcoming),
+    []
+  );
   const upcomingMiniverses = useMemo(
     () => MINIVERSE_CARDS.filter((card) => card.isUpcoming),
     []
@@ -319,31 +451,18 @@ const MiniverseModal = ({ open, onClose, onSelectMiniverse }) => {
       setActiveTab(tabId);
       setSelectedMiniverseId(null);
       setSelectedUpcomingId(null);
+      setActiveShowcaseIndex(0);
+      requestAnimationFrame(() => {
+        if (tabId === 'escaparate') {
+          const node = showcaseRef.current;
+          if (node) {
+            node.scrollTo({ left: 0, behavior: 'auto' });
+          }
+        }
+      });
     },
     [markMiniverseVisited, selectedMiniverseId]
   );
-
-  const handleSelectCard = useCallback(
-    (card) => {
-      if (card.isUpcoming) {
-        return;
-      }
-      if (!visitedMiniverses[card.id]) {
-        playKnockSound();
-      }
-      markMiniverseVisited(card.id);
-      setSelectedMiniverseId(card.id);
-    },
-    [markMiniverseVisited, playKnockSound, visitedMiniverses]
-  );
-
-  const handleSelectUpcoming = useCallback((card) => {
-    setSelectedUpcomingId(card.id);
-  }, []);
-
-  const handleReturnToUpcomingList = useCallback(() => {
-    setSelectedUpcomingId(null);
-  }, []);
 
   const handleClose = useCallback(() => {
     if (status === 'loading') {
@@ -354,6 +473,29 @@ const MiniverseModal = ({ open, onClose, onSelectMiniverse }) => {
     }
     onClose?.();
   }, [markMiniverseVisited, onClose, selectedMiniverseId, status]);
+
+  const handleSelectCard = useCallback(
+    (card) => {
+      if (card.isUpcoming) {
+        return;
+      }
+      if (!visitedMiniverses[card.id]) {
+        playKnockSound();
+      }
+      markMiniverseVisited(card.id);
+      onSelectMiniverse?.(card.formatId);
+      handleClose();
+    },
+    [handleClose, markMiniverseVisited, onSelectMiniverse, playKnockSound, visitedMiniverses]
+  );
+
+  const handleSelectUpcoming = useCallback((card) => {
+    setSelectedUpcomingId(card.id);
+  }, []);
+
+  const handleReturnToUpcomingList = useCallback(() => {
+    setSelectedUpcomingId(null);
+  }, []);
 
   const handleReturnToList = useCallback(() => {
     if (selectedMiniverseId) {
@@ -381,10 +523,42 @@ const MiniverseModal = ({ open, onClose, onSelectMiniverse }) => {
     handleClose();
   }, [handleClose, legacyScrollToSection, markMiniverseVisited, navigate, selectedMiniverse]);
 
+  const handleEnterShowcase = useCallback(
+    (card) => {
+      if (!card) return;
+      markMiniverseVisited(card.id);
+      const portalRoute = MINIVERSE_PORTAL_ROUTES[card.id];
+      if (portalRoute) {
+        navigate(portalRoute);
+        handleClose();
+        return;
+      }
+      onSelectMiniverse?.(card.formatId);
+      handleClose();
+    },
+    [handleClose, markMiniverseVisited, navigate, onSelectMiniverse]
+  );
+
   const handleEnterUpcoming = useCallback(() => {
     if (!selectedUpcoming) return;
     onSelectMiniverse?.(selectedUpcoming.formatId);
   }, [onSelectMiniverse, selectedUpcoming]);
+
+  const handleCommunityOptIn = useCallback(() => {
+    safeSetItem(
+      LOGIN_RETURN_KEY,
+      JSON.stringify({ anchor: '#apoya', action: 'community-opt-in' })
+    );
+    if (!user) {
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new CustomEvent('open-login-modal'));
+      }
+      toast({ description: 'Inicia sesión para recibir actualizaciones.' });
+      return;
+    }
+    setCommunityOptIn((prev) => !prev);
+    toast({ description: 'Te avisaremos sobre nuevas historias.' });
+  }, [user]);
 
   const handleSubmit = useCallback(
     async (event) => {
@@ -450,6 +624,67 @@ const MiniverseModal = ({ open, onClose, onSelectMiniverse }) => {
     }, 140);
   }, [onClose]);
 
+  const scrollShowcaseTo = useCallback((index, behavior = 'smooth') => {
+    const node = showcaseRef.current;
+    if (!node) return;
+    node.scrollTo({ left: node.clientWidth * index, behavior });
+  }, []);
+
+  const handleShowcaseScroll = useCallback((event) => {
+    const target = event.currentTarget;
+    if (!target) {
+      return;
+    }
+    const nextIndex = Math.round(target.scrollLeft / target.clientWidth);
+    setActiveShowcaseIndex((prev) => (prev === nextIndex ? prev : nextIndex));
+    setShowcaseCountdown(9);
+  }, []);
+
+  const pauseShowcaseAutoPlay = useCallback(() => {
+    setIsShowcaseAutoPlay(false);
+    setShowcaseCountdown(9);
+  }, []);
+
+  const resumeShowcaseAutoPlay = useCallback(() => {
+    setIsShowcaseAutoPlay(true);
+    setShowcaseCountdown(9);
+  }, []);
+
+  const handleShowcaseNext = useCallback(() => {
+    if (!showcaseMiniverses.length) return;
+    const nextIndex = (activeShowcaseIndex + 1) % showcaseMiniverses.length;
+    setActiveShowcaseIndex(nextIndex);
+    scrollShowcaseTo(nextIndex);
+    setShowcaseCountdown(9);
+  }, [activeShowcaseIndex, scrollShowcaseTo, showcaseMiniverses.length]);
+
+  const handleShowcasePrev = useCallback(() => {
+    if (!showcaseMiniverses.length) return;
+    const prevIndex =
+      (activeShowcaseIndex - 1 + showcaseMiniverses.length) % showcaseMiniverses.length;
+    setActiveShowcaseIndex(prevIndex);
+    scrollShowcaseTo(prevIndex);
+    setShowcaseCountdown(9);
+  }, [activeShowcaseIndex, scrollShowcaseTo, showcaseMiniverses.length]);
+
+  useEffect(() => {
+    if (!open || activeTab !== 'escaparate' || showcaseMiniverses.length < 2 || !isShowcaseAutoPlay) {
+      return undefined;
+    }
+    const tick = window.setInterval(() => {
+      setShowcaseCountdown((prev) => {
+        if (prev <= 1) {
+          const nextIndex = (activeShowcaseIndex + 1) % showcaseMiniverses.length;
+          setActiveShowcaseIndex(nextIndex);
+          scrollShowcaseTo(nextIndex);
+          return 9;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+    return () => window.clearInterval(tick);
+  }, [activeShowcaseIndex, activeTab, isShowcaseAutoPlay, open, scrollShowcaseTo, showcaseMiniverses.length]);
+
   return (
     <AnimatePresence>
       {open ? (
@@ -471,7 +706,7 @@ const MiniverseModal = ({ open, onClose, onSelectMiniverse }) => {
             aria-modal="true"
             aria-labelledby="miniverse-modal-title"
             variants={modalVariants}
-            className="relative z-10 w-full max-w-4xl rounded-3xl border border-white/10 bg-slate-950/70 p-5 sm:p-10 shadow-2xl max-h-[90vh] overflow-y-auto"
+            className="relative z-10 w-full max-w-4xl rounded-3xl border border-white/10 bg-slate-950/70 p-5 sm:p-10 shadow-2xl max-h-[90vh] min-h-[70vh] overflow-y-auto"
           >
             <div
               aria-hidden="true"
@@ -505,12 +740,17 @@ const MiniverseModal = ({ open, onClose, onSelectMiniverse }) => {
                   key={tab.id}
                   onClick={() => handleTabChange(tab.id)}
                   className={`rounded-full border px-4 py-2 text-sm transition ${
+                    tab.id === 'escaparate' ? 'hidden sm:inline-flex' : ''
+                  } ${
                     activeTab === tab.id
                       ? 'border-purple-400/60 bg-purple-500/20 text-purple-100'
                       : 'border-white/10 text-slate-300 hover:border-purple-300/40 hover:text-purple-100'
                   }`}
                 >
-                  {tab.label}
+                  <span className="inline-flex items-center gap-2">
+                    {tab.icon ? <tab.icon size={18} className="text-purple-300" /> : null}
+                    {tab.label}
+                  </span>
                 </button>
               ))}
             </div>
@@ -520,163 +760,452 @@ const MiniverseModal = ({ open, onClose, onSelectMiniverse }) => {
             <div className="grid md:grid-cols-2 gap-8">
               {activeTab === 'waitlist' ? (
                 <>
-                  <div className="space-y-4 text-slate-300/90 text-sm leading-relaxed">
-                    <div className="glass-effect rounded-2xl border border-white/10 p-5 space-y-4">
-                  
-                      <h3 className="font-display text-2xl text-slate-100">
-                        Estos miniversos necesitan tu apoyo para cobrar vida.
-                      </h3>
-                      <p className="font-semibold text-purple-100">
-                        👉{' '}
+                  <div className="glass-effect relative overflow-hidden rounded-2xl border border-white/10 p-6 sm:p-7 text-slate-200/90">
+                    <div className="relative z-10 space-y-5">
+                      <div className="flex items-center gap-3">
+                        <span className="text-[0.65rem] uppercase tracking-[0.35em] text-slate-400/80">
+                          Apoya el proyecto
+                        </span>
+                        <span className="h-px flex-1 bg-white/10" />
+                      </div>
+                      <div className="space-y-3">
+                        <h3 className="font-display text-3xl text-slate-50">
+                          Tu suscripción mantiene vivo el universo y su impacto social
+                        </h3>
+                        <p className="text-sm text-slate-300/90 leading-relaxed">
+                          Activa acompañamiento emocional real y mantiene viva la experiencia artística más allá del escenario.
+                        </p>
+                      </div>
+                      <div className="flex flex-wrap gap-3">
+                        <Button className="bg-white text-slate-900 hover:bg-white/90 font-semibold px-6">
+                          Suscribirme
+                        </Button>
+                        <div className="rounded-full border border-white/15 bg-white/5 px-4 py-2 text-xs uppercase tracking-[0.35em] text-slate-200/80">
+                          Desde $50/mes
+                        </div>
+                      </div>
+                      <p className="text-sm text-slate-300/90">
+                        Cuando la causa crece, el universo se expande.
+                      </p>
+                      <div className="flex flex-wrap gap-3">
+                        <div className="rounded-xl border border-white/10 bg-white/5 px-4 py-3">
+                          <p className="text-[0.65rem] uppercase tracking-[0.35em] text-slate-400">Acceso total</p>
+                          <p className="font-semibold text-slate-100">Miniversos</p>
+                        </div>
+                        <div className="rounded-xl border border-white/10 bg-white/5 px-4 py-3">
+                          <p className="text-[0.65rem] uppercase tracking-[0.35em] text-slate-400">Bienvenida</p>
+                          <p className="font-semibold text-slate-100">12,000 GAT</p>
+                        </div>
+                      </div>
+                      <div className="flex flex-col gap-2 rounded-lg border border-white/5 bg-black/20 px-4 py-3">
                         <button
                           type="button"
-                          onClick={handleScrollToSupport}
-                          className="underline underline-offset-4 text-purple-100 hover:text-white transition"
+                          onClick={handleCommunityOptIn}
+                          className="relative flex items-center gap-3 text-left group focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-purple-400/60"
                         >
-                          Suscríbete
-                        </button>
-                        , comparte o participa.
-                      </p>
-
-                      {selectedUpcoming ? (
-                        <div className="relative overflow-hidden rounded-2xl border border-white/10 bg-black/20 p-5 min-h-[220px]">
                           <div
-                            aria-hidden="true"
-                            className="pointer-events-none absolute inset-0 opacity-45 mix-blend-screen"
-                            style={{
-                              backgroundImage:
-                                'radial-gradient(1px 1px at 12% 18%, rgba(248,250,252,0.8), transparent 65%),' +
-                                'radial-gradient(1.5px 1.5px at 24% 42%, rgba(241,245,249,0.65), transparent 70%),' +
-                                'radial-gradient(2px 2px at 36% 28%, rgba(226,232,240,0.6), transparent 70%),' +
-                                'radial-gradient(1px 1px at 44% 62%, rgba(255,255,255,0.45), transparent 70%),' +
-                                'radial-gradient(1.5px 1.5px at 52% 18%, rgba(241,245,249,0.55), transparent 70%),' +
-                                'radial-gradient(2px 2px at 64% 48%, rgba(226,232,240,0.6), transparent 70%),' +
-                                'radial-gradient(1px 1px at 72% 30%, rgba(255,255,255,0.4), transparent 70%),' +
-                                'radial-gradient(1.5px 1.5px at 80% 66%, rgba(241,245,249,0.55), transparent 70%),' +
-                                'radial-gradient(2px 2px at 88% 22%, rgba(226,232,240,0.6), transparent 70%),' +
-                                'radial-gradient(1px 1px at 18% 78%, rgba(255,255,255,0.35), transparent 70%),' +
-                                'radial-gradient(1.5px 1.5px at 58% 78%, rgba(241,245,249,0.55), transparent 70%),' +
-                                'radial-gradient(1px 1px at 90% 82%, rgba(255,255,255,0.35), transparent 70%)',
-                            }}
+                            className={`h-5 w-5 rounded-full border border-white/20 ${
+                              communityOptIn ? 'bg-emerald-400 shadow-[0_0_12px_rgba(52,211,153,0.6)]' : 'bg-slate-600/40'
+                            }`}
                           />
-                          <div className="relative z-10 space-y-4">
-                            <div className="flex items-center gap-3">
-                              <div
-                                className={`h-12 w-12 rounded-full bg-gradient-to-br ${selectedUpcoming.thumbGradient} flex items-center justify-center text-sm font-semibold text-white shadow-[0_10px_25px_rgba(0,0,0,0.35)]`}
-                              >
-                                {selectedUpcoming.icon ? (
-                                  <selectedUpcoming.icon size={22} className="text-white drop-shadow-sm" />
-                                ) : (
-                                  selectedUpcoming.thumbLabel
-                                )}
-                              </div>
-                              <h4 className="font-display text-xl text-slate-100">{selectedUpcoming.title}</h4>
-                            </div>
-                            <p className="text-sm text-slate-300/90 leading-relaxed">
-                              {selectedUpcoming.description}
-                            </p>
-                            <div className="flex flex-col sm:flex-row gap-3">
-                              <Button
-                                type="button"
-                                onClick={handleEnterUpcoming}
-                                className="bg-gradient-to-r from-purple-600/80 to-indigo-600/80 hover:from-purple-600 hover:to-indigo-600 text-white py-3 rounded-lg font-semibold flex items-center justify-center gap-2 hover-glow"
-                              >
-                                {selectedUpcoming.action}
-                              </Button>
-                              <button
-                                type="button"
-                                onClick={handleReturnToUpcomingList}
-                                className="rounded-lg border border-white/10 px-4 py-3 text-xs uppercase tracking-[0.25em] text-slate-300 hover:text-white hover:border-purple-300/40 transition"
-                              >
-                                Cerrar puerta
-                              </button>
-                            </div>
-                          </div>
-                        </div>
-                      ) : (
-                        <div className="space-y-3">
-                          {upcomingMiniverses.map((card) => (
-                            <button
-                              key={card.id}
-                              type="button"
-                              onClick={() => handleSelectUpcoming(card)}
-                              className="w-full rounded-2xl border border-white/10 bg-black/20 px-4 py-4 text-left flex items-center gap-4 transition hover:border-purple-300/40 hover:bg-white/5"
-                            >
-                              <div
-                                className={`h-12 w-12 rounded-full bg-gradient-to-br ${card.thumbGradient} flex items-center justify-center text-sm font-semibold text-white shadow-[0_10px_25px_rgba(0,0,0,0.35)]`}
-                              >
-                                {card.icon ? (
-                                  <card.icon size={22} className="text-white drop-shadow-sm" />
-                                ) : (
-                                  card.thumbLabel
-                                )}
-                              </div>
-                              <h4 className="font-display text-lg text-slate-100">{card.title}</h4>
-                            </button>
-                          ))}
-                        </div>
-                      )}
-
+                          <span className="text-sm text-slate-300/80 leading-relaxed">
+                            Quiero estar al tanto de su progreso.
+                          </span>
+                        </button>
+                      </div>
                     </div>
                   </div>
 
-                  <form className="space-y-5" onSubmit={handleSubmit}>
-                    <div className="space-y-2">
-                      <label className="text-sm font-medium text-slate-200">Nombre completo *</label>
-                      <input
-                        name="fullName"
-                        type="text"
-                        required
-                        value={formState.fullName}
-                        onChange={handleInputChange}
-                        className="w-full rounded-lg border border-white/10 bg-black/30 px-4 py-3 text-slate-100 placeholder-slate-500 focus:border-purple-400 focus:outline-none focus:ring-1 focus:ring-purple-400"
-                        placeholder="Tu nombre"
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <label className="text-sm font-medium text-slate-200">Correo electrónico *</label>
-                      <input
-                        name="email"
-                        type="email"
-                        required
-                        value={formState.email}
-                        onChange={handleInputChange}
-                        className="w-full rounded-lg border border-white/10 bg-black/30 px-4 py-3 text-slate-100 placeholder-slate-500 focus:border-purple-400 focus:outline-none focus:ring-1 focus:ring-purple-400"
-                        placeholder="nombre@correo.com"
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <label className="text-sm font-medium text-slate-200">Mensaje opcional</label>
-                      <textarea
-                        name="message"
-                        rows={3}
-                        value={formState.message}
-                        onChange={handleInputChange}
-                        className="w-full rounded-lg border border-white/10 bg-black/30 px-4 py-3 text-slate-100 placeholder-slate-500 focus:border-purple-400 focus:outline-none focus:ring-1 focus:ring-purple-400 resize-none"
-                        placeholder="Comparte qué miniverso te emociona más o si traes alguna propuesta."
-                      />
-                    </div>
-
-                    {status === 'error' ? (
-                      <div className="rounded-lg border border-red-500/60 bg-red-500/10 px-4 py-3 text-sm text-red-200">
-                        {errorMessage}
+                  <div className="glass-effect relative overflow-hidden rounded-2xl border border-white/10 p-6 sm:p-7 text-slate-200/90">
+                    <div className="relative z-10 space-y-5">
+                      <div className="flex items-center gap-3">
+                        <span className="text-[0.65rem] uppercase tracking-[0.35em] text-slate-400/80">
+                          Impacto en cadena
+                        </span>
+                        <span className="h-px flex-1 bg-white/10" />
                       </div>
-                    ) : null}
-                    {status === 'success' ? (
-                      <div className="rounded-lg border border-emerald-500/60 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-200">
-                        Quedas en lista para las próximas experiencias. Llegará un correo con la primera pista.
+                      <div className="space-y-3">
+                        <div className="flex items-center gap-3 rounded-xl border border-white/10 bg-white/5 px-4 py-3">
+                          <div className="h-10 w-10 rounded-full border border-white/10 bg-white/5 flex items-center justify-center">
+                            <HeartPulse size={18} className="text-rose-200" />
+                          </div>
+                          <div>
+                            <p className="font-semibold text-slate-100">Tratamientos emocionales</p>
+                            <p className="text-xs text-slate-300/80">6 sesiones promedio por suscriptor</p>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-3 rounded-xl border border-white/10 bg-white/5 px-4 py-3">
+                          <div className="h-10 w-10 rounded-full border border-white/10 bg-white/5 flex items-center justify-center">
+                            <Sparkles size={18} className="text-purple-200" />
+                          </div>
+                          <div>
+                            <p className="font-semibold text-slate-100">Residencias creativas</p>
+                            <p className="text-xs text-slate-300/80">3 residencias activas por temporada</p>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-3 rounded-xl border border-white/10 bg-white/5 px-4 py-3">
+                          <div className="h-10 w-10 rounded-full border border-white/10 bg-white/5 flex items-center justify-center">
+                            <School size={18} className="text-sky-200" />
+                          </div>
+                          <div>
+                            <p className="font-semibold text-slate-100">App Causa Social en escuelas</p>
+                            <p className="text-xs text-slate-300/80">5 escuelas atendidas por ciclo escolar</p>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-3 rounded-xl border border-white/10 bg-white/5 px-4 py-3">
+                          <div className="h-10 w-10 rounded-full border border-white/10 bg-white/5 flex items-center justify-center">
+                            <Coins size={18} className="text-amber-200" />
+                          </div>
+                          <div>
+                            <p className="font-semibold text-slate-100">Expansión creativa del universo</p>
+                            <p className="text-xs text-slate-300/80">Nuevas escenas, juegos e historias</p>
+                          </div>
+                        </div>
                       </div>
-                    ) : null}
-
-                    <Button
-                      type="submit"
-                      disabled={status === 'loading'}
-                      className="w-full bg-gradient-to-r from-purple-600/80 to-indigo-600/80 hover:from-purple-600 hover:to-indigo-600 text-white py-3 rounded-lg font-semibold flex items-center justify-center gap-2 hover-glow"
-                    >
-                      {status === 'loading' ? 'Guardando…' : 'Quiero apoyar este miniverso'}
-                    </Button>
-                  </form>
+                      <p className="text-xs text-slate-400/80 leading-relaxed">
+                        Alianza social con Isabel Ayuda para la Vida, A.C.{' '}
+                        <button
+                          type="button"
+                          onClick={handleScrollToSupport}
+                          className="text-slate-200 underline underline-offset-4 hover:text-white transition"
+                        >
+                          Conoce más
+                        </button>
+                      </p>
+                    </div>
+                  </div>
                 </>
+              ) : activeTab === 'escaparate' && !isMobileViewport ? (
+                <div className="md:col-span-2 space-y-4">
+                  <div className="flex items-center justify-between text-xs text-slate-400/80">
+                    <button
+                      type="button"
+                      onClick={handleShowcasePrev}
+                      className="inline-flex items-center gap-2 rounded-full border border-white/10 px-3 py-1 text-[0.6rem] uppercase tracking-[0.35em] text-slate-300 hover:text-white hover:border-purple-300/40 transition"
+                      aria-label="Portal anterior"
+                    >
+                      <span aria-hidden="true">←</span>
+                      Anterior
+                    </button>
+                    <span>
+                      Siguiente portal:{' '}
+                      <strong className="text-slate-100">
+                        {showcaseMiniverses[(activeShowcaseIndex + 1) % Math.max(showcaseMiniverses.length, 1)]
+                          ?.titleShort ?? 'Próximo'}
+                      </strong>{' '}
+                      · {showcaseCountdown}s
+                    </span>
+                  </div>
+
+                  <div
+                    ref={showcaseRef}
+                    onScroll={handleShowcaseScroll}
+                    className="flex gap-6 overflow-x-auto snap-x snap-mandatory pb-4 scroll-smooth scroll-px-4"
+                  >
+                    {showcaseMiniverses.map((card) => (
+                      <article
+                        key={`escaparate-${card.id}`}
+                        className="w-full min-w-full shrink-0 snap-center px-1"
+                      >
+                        <div
+                          className="glass-effect relative overflow-hidden rounded-2xl border bg-white/5 p-5 sm:p-8 mx-auto w-[88vw] max-w-[24rem] sm:max-w-none sm:w-auto"
+                          style={{
+                            borderColor:
+                              MINIVERSE_TILE_COLORS[card.formatId]?.border ??
+                              MINIVERSE_TILE_COLORS.default.border,
+                          }}
+                        >
+                          <div
+                            aria-hidden="true"
+                            className="pointer-events-none absolute inset-0 opacity-90"
+                            style={{
+                              backgroundImage:
+                                MINIVERSE_TILE_GRADIENTS[card.formatId] ??
+                                MINIVERSE_TILE_GRADIENTS.default,
+                              filter: 'saturate(1.1)',
+                              backgroundSize: '160% 160%',
+                              backgroundPosition: '0% 0%',
+                            }}
+                          />
+                          <div
+                            aria-hidden="true"
+                            className="pointer-events-none absolute inset-0 opacity-95 mix-blend-screen"
+                            style={{
+                              backgroundImage:
+                                MINIVERSE_STARFIELDS[card.id] ?? MINIVERSE_STARFIELDS.default,
+                            }}
+                          />
+                          <div
+                            aria-hidden="true"
+                            className="pointer-events-none absolute inset-0 opacity-70 mix-blend-screen star-pulse"
+                            style={{
+                              backgroundImage:
+                                'radial-gradient(6px 6px at 18% 26%, rgba(255,255,255,0.9), transparent 70%),' +
+                                'radial-gradient(5px 5px at 72% 38%, rgba(255,255,255,0.85), transparent 70%),' +
+                                'radial-gradient(7px 7px at 60% 68%, rgba(255,255,255,0.85), transparent 72%),' +
+                                'radial-gradient(4px 4px at 38% 58%, rgba(255,255,255,0.8), transparent 70%)',
+                            }}
+                          />
+                          <div className="absolute inset-0 opacity-30 mix-blend-screen pointer-events-none bg-[radial-gradient(circle_at_top,_rgba(255,255,255,0.25),_transparent_55%)]" />
+                          <div className="relative z-10 grid gap-6 lg:grid-cols-[1.15fr_0.85fr] items-center">
+                            <div className="flex flex-col gap-4">
+                              <div className="flex items-center gap-3">
+                                <div
+                                  className={`h-12 w-12 rounded-full bg-gradient-to-br ${card.thumbGradient} flex items-center justify-center text-sm font-semibold text-white shadow-[0_10px_25px_rgba(0,0,0,0.35)]`}
+                                >
+                                  {card.icon ? (
+                                    <card.icon size={22} className="text-white drop-shadow-sm" />
+                                  ) : (
+                                    card.thumbLabel
+                                  )}
+                                </div>
+                                <div>
+                                  <p className="text-xs uppercase tracking-[0.35em] text-slate-300/80">Narrativa expandida</p>
+                                  <h3 className="font-display text-3xl text-slate-50">{card.title}</h3>
+                                </div>
+                              </div>
+                              <p className="text-sm text-slate-200/90 leading-relaxed">
+                                {card.description}
+                              </p>
+                              <div className="lg:hidden w-full">
+                                <div className="relative w-full aspect-[5/4] sm:aspect-[4/5] rounded-3xl border border-white/10 bg-slate-900/60 overflow-hidden shadow-[0_18px_45px_rgba(0,0,0,0.45)]">
+                                  {card.videoUrl ? (
+                                    <>
+                                      <video
+                                        src={card.videoUrl}
+                                        className="absolute inset-0 h-full w-full object-cover"
+                                        playsInline
+                                        muted
+                                        loop
+                                        controls
+                                        onPlay={pauseShowcaseAutoPlay}
+                                        onPause={resumeShowcaseAutoPlay}
+                                      />
+                                      <div className="pointer-events-none absolute left-4 top-4 rounded-full border border-white/20 bg-black/50 px-3 py-1 text-[0.6rem] uppercase tracking-[0.3em] text-slate-200">
+                                        Video provisional
+                                      </div>
+                                    </>
+                                  ) : (
+                                    <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 text-slate-300/70">
+                                      <div className="h-12 w-12 rounded-full border border-white/20 bg-white/5 flex items-center justify-center text-sm uppercase tracking-[0.3em]">
+                                        ▶︎
+                                      </div>
+                                      <p className="text-xs uppercase tracking-[0.4em]">Video próximamente</p>
+                                    </div>
+                                  )}
+                                </div>
+                              </div>
+                              <div className="flex flex-col sm:flex-row gap-3">
+                                <Button
+                                  type="button"
+                                  onClick={() => handleEnterShowcase(card)}
+                                  className="bg-gradient-to-r from-purple-600/80 to-indigo-600/80 hover:from-purple-600 hover:to-indigo-600 text-white py-3 rounded-lg font-semibold flex items-center justify-center gap-2 hover-glow"
+                                >
+                                  {card.titleShort ?? card.title}
+                                </Button>
+                              </div>
+                              <p className="text-xs uppercase tracking-[0.35em] text-slate-300/70">
+                                Testimonio en video
+                              </p>
+                            </div>
+                            <div className="w-full">
+                              <div className="hidden lg:block relative w-full aspect-[4/5] rounded-3xl border border-white/10 bg-slate-900/60 overflow-hidden shadow-[0_18px_45px_rgba(0,0,0,0.45)]">
+                                {card.videoUrl ? (
+                                  <>
+                                    <video
+                                      src={card.videoUrl}
+                                      className="absolute inset-0 h-full w-full object-cover"
+                                      playsInline
+                                      muted
+                                      loop
+                                      controls
+                                      onPlay={pauseShowcaseAutoPlay}
+                                      onPause={resumeShowcaseAutoPlay}
+                                    />
+                                    <div className="pointer-events-none absolute left-4 top-4 rounded-full border border-white/20 bg-black/50 px-3 py-1 text-[0.6rem] uppercase tracking-[0.3em] text-slate-200">
+                                      Video provisional
+                                    </div>
+                                  </>
+                                ) : (
+                                  <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 text-slate-300/70">
+                                    <div className="h-12 w-12 rounded-full border border-white/20 bg-white/5 flex items-center justify-center text-sm uppercase tracking-[0.3em]">
+                                      ▶︎
+                                    </div>
+                                    <p className="text-xs uppercase tracking-[0.4em]">Video próximamente</p>
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </article>
+                    ))}
+                  </div>
+                </div>
+              ) : activeTab === 'escaparate' && isMobileViewport ? (
+                selectedMiniverse ? (
+                  <div className="md:col-span-2">
+                    <div
+                      className="glass-effect relative overflow-hidden rounded-2xl border bg-white/5 p-6 sm:p-8 space-y-0"
+                      style={{
+                        borderColor:
+                          MINIVERSE_TILE_COLORS[selectedMiniverse.formatId]?.border ??
+                          MINIVERSE_TILE_COLORS.default.border,
+                      }}
+                    >
+                      <div
+                        aria-hidden="true"
+                        className="pointer-events-none absolute inset-0 opacity-90"
+                        style={{
+                          backgroundImage:
+                            MINIVERSE_TILE_GRADIENTS[selectedMiniverse.formatId] ??
+                            MINIVERSE_TILE_GRADIENTS.default,
+                          filter: 'saturate(1.1)',
+                          backgroundSize: '160% 160%',
+                          backgroundPosition: '0% 0%',
+                        }}
+                      />
+                      <div
+                        aria-hidden="true"
+                        className="pointer-events-none absolute inset-0 opacity-35 mix-blend-screen"
+                        style={{
+                          backgroundImage:
+                            'radial-gradient(1px 1px at 12% 18%, rgba(248,250,252,0.8), transparent 65%),' +
+                            'radial-gradient(1.5px 1.5px at 24% 42%, rgba(241,245,249,0.65), transparent 70%),' +
+                            'radial-gradient(2px 2px at 36% 28%, rgba(226,232,240,0.6), transparent 70%),' +
+                            'radial-gradient(1px 1px at 44% 62%, rgba(255,255,255,0.45), transparent 70%),' +
+                            'radial-gradient(1.5px 1.5px at 52% 18%, rgba(241,245,249,0.55), transparent 70%),' +
+                            'radial-gradient(2px 2px at 64% 48%, rgba(226,232,240,0.6), transparent 70%),' +
+                            'radial-gradient(1px 1px at 72% 30%, rgba(255,255,255,0.4), transparent 70%),' +
+                            'radial-gradient(1.5px 1.5px at 80% 66%, rgba(241,245,249,0.55), transparent 70%),' +
+                            'radial-gradient(2px 2px at 88% 22%, rgba(226,232,240,0.6), transparent 70%),' +
+                            'radial-gradient(1px 1px at 18% 78%, rgba(255,255,255,0.35), transparent 70%),' +
+                            'radial-gradient(1.5px 1.5px at 58% 78%, rgba(241,245,249,0.55), transparent 70%),' +
+                            'radial-gradient(1px 1px at 90% 82%, rgba(255,255,255,0.35), transparent 70%)',
+                        }}
+                      />
+                      <div className="absolute inset-0 opacity-30 mix-blend-screen pointer-events-none bg-[radial-gradient(circle_at_top,_rgba(255,255,255,0.25),_transparent_55%)]" />
+                      <div className="relative z-10 grid gap-6 lg:grid-cols-[1.15fr_0.85fr] items-center">
+                        <div className="flex flex-col gap-4">
+                          <div className="flex items-center gap-3">
+                            <div
+                              className={`h-12 w-12 rounded-full bg-gradient-to-br ${selectedMiniverse.thumbGradient} flex items-center justify-center text-sm font-semibold text-white shadow-[0_10px_25px_rgba(0,0,0,0.35)]`}
+                            >
+                              {selectedMiniverse.icon ? (
+                                <selectedMiniverse.icon size={22} className="text-white drop-shadow-sm" />
+                              ) : (
+                                selectedMiniverse.thumbLabel
+                              )}
+                            </div>
+                            <div>
+                              <p className="text-xs uppercase tracking-[0.35em] text-slate-400/80">Narrativa expandida</p>
+                              <h3 className="font-display text-3xl text-slate-50">{selectedMiniverse.title}</h3>
+                            </div>
+                          </div>
+                          <p className="text-sm text-slate-300/90 leading-relaxed">
+                            {selectedMiniverse.description}
+                          </p>
+                          <div className="lg:hidden w-full">
+                            <div className="relative w-full aspect-[4/5] rounded-3xl border border-white/10 bg-slate-900/60 overflow-hidden shadow-[0_18px_45px_rgba(0,0,0,0.45)]">
+                              {selectedMiniverse.videoUrl ? (
+                                <>
+                                  <video
+                                    src={selectedMiniverse.videoUrl}
+                                    className="absolute inset-0 h-full w-full object-cover"
+                                    playsInline
+                                    muted
+                                    loop
+                                    controls
+                                  />
+                                  <div className="pointer-events-none absolute left-4 top-4 rounded-full border border-white/20 bg-black/50 px-3 py-1 text-[0.6rem] uppercase tracking-[0.3em] text-slate-200">
+                                    Video provisional
+                                  </div>
+                                </>
+                              ) : (
+                                <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 text-slate-300/70">
+                                  <div className="h-12 w-12 rounded-full border border-white/20 bg-white/5 flex items-center justify-center text-sm uppercase tracking-[0.3em]">
+                                    ▶︎
+                                  </div>
+                                  <p className="text-xs uppercase tracking-[0.4em]">Video próximamente</p>
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                          <div className="flex flex-col sm:flex-row gap-3">
+                            <Button
+                              type="button"
+                              onClick={handleEnterMiniverse}
+                              className="bg-gradient-to-r from-purple-600/80 to-indigo-600/80 hover:from-purple-600 hover:to-indigo-600 text-white py-3 rounded-lg font-semibold flex items-center justify-center gap-2 hover-glow"
+                            >
+                              {selectedMiniverse.ctaVerb ?? 'Abrir portal'}
+                            </Button>
+                            <button
+                              type="button"
+                              onClick={handleReturnToList}
+                              className="rounded-lg border border-white/10 px-4 py-3 text-xs uppercase tracking-[0.25em] text-slate-300 hover:text-white hover:border-purple-300/40 transition"
+                            >
+                              Tocar otra puerta
+                            </button>
+                          </div>
+                          <p className="text-xs uppercase tracking-[0.35em] text-slate-400">
+                            Testimonio en video
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="md:col-span-2 grid md:grid-cols-3 gap-6">
+                    {MINIVERSE_CARDS.map((card) => {
+                      const isUpcoming = Boolean(card.isUpcoming);
+                      const isVisited = !isUpcoming && Boolean(visitedMiniverses[card.id]);
+                      return (
+                        <button
+                          key={card.title}
+                          type="button"
+                          onClick={() => handleSelectCard(card)}
+                          disabled={isUpcoming}
+                          className={`relative text-left glass-effect rounded-2xl border p-5 transition flex items-center gap-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-400/60 disabled:cursor-not-allowed disabled:opacity-60 ${
+                            isUpcoming
+                              ? 'border-white/10 bg-white/5'
+                              : isVisited
+                                ? 'border-emerald-300/20 bg-emerald-500/5 hover:border-emerald-300/30'
+                                : 'border-white/10 bg-white/5 hover:border-purple-300/40 hover:shadow-[0_10px_30px_rgba(124,58,237,0.18)]'
+                          }`}
+                        >
+                          {isUpcoming ? (
+                            <>
+                              <div className="h-12 w-12 rounded-full border border-white/10 bg-slate-800/60 flex items-center justify-center text-slate-200 shadow-[0_10px_25px_rgba(0,0,0,0.35)]">
+                                {card.icon ? <card.icon size={22} className="text-slate-200/80" /> : card.thumbLabel}
+                              </div>
+                              <span className="rounded-full border border-white/20 bg-black/40 px-3 py-1 text-[0.6rem] uppercase tracking-[0.3em] text-slate-300">
+                                {card.titleShort ?? card.title}
+                              </span>
+                            </>
+                          ) : null}
+                          {isVisited ? (
+                            <span
+                              aria-hidden="true"
+                              className="absolute right-3 top-3 h-2 w-2 rounded-full bg-emerald-300/60"
+                            />
+                          ) : null}
+                          {!isUpcoming ? (
+                            <>
+                              <div className="flex items-center gap-3">
+                                <div
+                                  className={`h-12 w-12 rounded-full bg-gradient-to-br ${card.thumbGradient} flex items-center justify-center text-sm font-semibold text-white shadow-[0_10px_25px_rgba(0,0,0,0.35)]`}
+                                >
+                                  {card.icon ? <card.icon size={22} className="text-white drop-shadow-sm" /> : card.thumbLabel}
+                                </div>
+                                <h3 className="font-display text-lg text-slate-100">{card.ctaVerb ?? card.title}</h3>
+                              </div>
+                            </>
+                          ) : null}
+                        </button>
+                      );
+                    })}
+                  </div>
+                )
               ) : selectedMiniverse ? (
                 <div className="md:col-span-2">
                   <div
@@ -740,7 +1269,7 @@ const MiniverseModal = ({ open, onClose, onSelectMiniverse }) => {
                           {selectedMiniverse.description}
                         </p>
                         <div className="lg:hidden w-full">
-                          <div className="relative w-full aspect-[4/5] rounded-3xl border border-white/10 bg-slate-900/60 overflow-hidden shadow-[0_18px_45px_rgba(0,0,0,0.45)]">
+                          <div className="relative w-full aspect-[5/4] sm:aspect-[4/5] rounded-3xl border border-white/10 bg-slate-900/60 overflow-hidden shadow-[0_18px_45px_rgba(0,0,0,0.45)]">
                             {selectedMiniverse.videoUrl ? (
                               <>
                                 <video
@@ -819,13 +1348,20 @@ const MiniverseModal = ({ open, onClose, onSelectMiniverse }) => {
                   {MINIVERSE_CARDS.map((card) => {
                     const isUpcoming = Boolean(card.isUpcoming);
                     const isVisited = !isUpcoming && Boolean(visitedMiniverses[card.id]);
+                    const energyValue = showcaseEnergy?.[card.formatId];
+                    const boostApplied = Boolean(showcaseBoosts?.[card.formatId]);
+                    const energyLabel = 'Energía confiada:';
+                    const energyDisplay =
+                      card.formatId === 'lataza'
+                        ? '∞'
+                        : `${Number.isFinite(energyValue) ? energyValue : 0} GAT`;
                     return (
                       <button
                         key={card.title}
                         type="button"
                         onClick={() => handleSelectCard(card)}
                         disabled={isUpcoming}
-                        className={`relative text-left glass-effect rounded-2xl border p-5 transition flex items-center gap-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-400/60 disabled:cursor-not-allowed disabled:opacity-60 ${
+                        className={`relative text-left glass-effect-card rounded-2xl border p-5 transition flex flex-col items-start gap-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-400/60 disabled:cursor-not-allowed disabled:opacity-60 ${
                           isUpcoming
                             ? 'border-white/10 bg-white/5'
                             : isVisited
@@ -851,17 +1387,28 @@ const MiniverseModal = ({ open, onClose, onSelectMiniverse }) => {
                         ) : null}
                         {!isUpcoming ? (
                           <>
-                            <div
-                              className={`h-12 w-12 rounded-full bg-gradient-to-br ${card.thumbGradient} flex items-center justify-center text-sm font-semibold text-white shadow-[0_10px_25px_rgba(0,0,0,0.35)]`}
-                            >
-                              {card.icon ? <card.icon size={22} className="text-white drop-shadow-sm" /> : card.thumbLabel}
+                            <div className="flex items-center gap-3">
+                              <div
+                                className={`h-12 w-12 rounded-full bg-gradient-to-br ${card.thumbGradient} flex items-center justify-center text-sm font-semibold text-white shadow-[0_10px_25px_rgba(0,0,0,0.35)]`}
+                              >
+                                {card.icon ? <card.icon size={22} className="text-white drop-shadow-sm" /> : card.thumbLabel}
+                              </div>
+                              <h3 className="font-display text-lg text-slate-100">{card.ctaVerb ?? card.title}</h3>
                             </div>
-                        <h3 className="font-display text-lg text-slate-100">{card.titleShort ?? card.title}</h3>
+                            <div className="flex flex-col gap-1">
+                              <div className="flex flex-wrap items-center gap-2 text-[0.6rem] uppercase tracking-[0.3em] text-slate-300/90">
+                                <Coins size={12} className="text-amber-200" />
+                                <span className="text-slate-100/70">{energyLabel}</span>
+                              </div>
+                              <span className="font-semibold text-amber-200 tracking-[0.35em] text-sm">
+                                {energyDisplay}
+                              </span>
+                            </div>
                           </>
                         ) : null}
-                      </button>
-                    );
-                  })}
+                        </button>
+                      );
+                    })}
                 </div>
               )}
             </div>

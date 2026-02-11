@@ -3850,7 +3850,6 @@ const rendernotaAutoral = () => {
                   className="w-full h-full"
                   frameBorder="0"
                   allow="autoplay; fullscreen; picture-in-picture; clipboard-write; encrypted-media; web-share"
-                  allowFullScreen
                   loading="lazy"
                   referrerPolicy="strict-origin-when-cross-origin"
                 ></iframe>
@@ -4311,7 +4310,6 @@ const rendernotaAutoral = () => {
                           className="w-full h-full"
                           frameBorder="0"
                           allow="autoplay; fullscreen; picture-in-picture"
-                          allowFullScreen
                         ></iframe>
                       )}
                     </div>
@@ -4565,7 +4563,6 @@ const rendernotaAutoral = () => {
                     className="h-full w-full"
                     frameBorder="0"
                     allow="autoplay; fullscreen; picture-in-picture; clipboard-write; accelerometer; gyroscope; magnetometer; microphone; camera"
-                    allowFullScreen
                     referrerPolicy="strict-origin-when-cross-origin"
                   />
                 ) : (

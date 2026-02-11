@@ -51,7 +51,7 @@ export const PORTAL_VOZ_MODE_QUESTIONS = {
   '¿Por qué el cansancio parece parte del lenguaje de la obra?',
   '¿La repetición en la obra es un recurso o una dificultad?',
   '¿Qué pasa cuando una escena no “funciona”, pero insiste?',
-  'Después de verla, ¿la obra se cierra… o sigue acompañando?',
+  'El sueño recurrente de Silvestre... ¿guarda una clave?',
 
 ],
   poeta: [
@@ -60,6 +60,7 @@ export const PORTAL_VOZ_MODE_QUESTIONS = {
     '¿Qué pasa contigo cuando nadie te mira?',
     '¿También te cansas de repetirte?',
     '¿Me estás hablando a mí o solo estás pasando?',
+    '¿Qué haces con lo que no entendí de ti?',
   ],
   tiktoker: [
     '¿Esta obra te deja pensando o te deja raro?',
