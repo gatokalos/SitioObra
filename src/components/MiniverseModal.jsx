@@ -4,6 +4,7 @@ import { BookOpen, Brain, Coffee, Coins, Drama, Film, Gamepad2, HeartHandshake, 
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { toast } from '@/components/ui/use-toast';
+import { ToastAction } from '@/components/ui/toast';
 import { supabase } from '@/lib/supabaseClient';
 import { useAuth } from '@/contexts/SupabaseAuthContext';
 import { safeSetItem } from '@/lib/safeStorage';
@@ -274,6 +275,9 @@ const modalVariants = {
 };
 
 const LOGIN_RETURN_KEY = 'gatoencerrado:login-return';
+const SUPPORT_WHATSAPP = '+523315327985';
+const SUPPORT_MESSAGE =
+  'Hola,%0Ami suscripción está activa pero no aparece ligada a mi cuenta.%0A¿Me ayudan a vincularla?%0A%0AGracias.';
 
 const readStoredJson = (key, fallback) => {
   if (typeof window === 'undefined') {
@@ -310,9 +314,20 @@ const MiniverseModal = ({ open, onClose, onSelectMiniverse }) => {
   );
   const [communityOptIn, setCommunityOptIn] = useState(false);
   const isSubscriber = Boolean(
-    user?.user_metadata?.isSubscriber ||
-      user?.user_metadata?.is_subscriber ||
+    user?.user_metadata?.isSubscriber === true ||
+      user?.user_metadata?.isSubscriber === 'true' ||
+      user?.user_metadata?.is_subscriber === true ||
+      user?.user_metadata?.is_subscriber === 'true' ||
       user?.user_metadata?.subscription_status === 'active' ||
+      user?.user_metadata?.subscription_status === 'trialing' ||
+      user?.user_metadata?.stripe_subscription_status === 'active' ||
+      user?.user_metadata?.stripe_subscription_status === 'trialing' ||
+      user?.user_metadata?.plan === 'subscriber' ||
+      user?.user_metadata?.tier === 'subscriber' ||
+      user?.app_metadata?.subscription_status === 'active' ||
+      user?.app_metadata?.subscription_status === 'trialing' ||
+      user?.app_metadata?.stripe_subscription_status === 'active' ||
+      user?.app_metadata?.stripe_subscription_status === 'trialing' ||
       user?.app_metadata?.roles?.includes?.('subscriber')
   );
   const showcaseRef = useRef(null);
@@ -534,7 +549,22 @@ const MiniverseModal = ({ open, onClose, onSelectMiniverse }) => {
       if (!card) return;
       if (!isSubscriber) {
         setActiveTab('waitlist');
-        toast({ description: 'Necesitas suscripción activa para abrir este portal.' });
+        toast({
+          description: user
+            ? 'Tu suscripción podría no estar ligada a esta cuenta. Si ya pagaste, contáctanos para vincularla.'
+            : 'Necesitas iniciar sesión y una suscripción activa para abrir este portal.',
+          action: user ? (
+            <ToastAction
+              altText="Contactar soporte"
+              onClick={() => {
+                const url = `https://wa.me/${SUPPORT_WHATSAPP.replace(/\D/g, '')}?text=${SUPPORT_MESSAGE}`;
+                window.open(url, '_blank', 'noopener,noreferrer');
+              }}
+            >
+              Contactar
+            </ToastAction>
+          ) : undefined,
+        });
         return;
       }
       markMiniverseVisited(card.id);
