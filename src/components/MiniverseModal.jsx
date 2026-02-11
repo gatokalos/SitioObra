@@ -313,7 +313,9 @@ const MiniverseModal = ({ open, onClose, onSelectMiniverse }) => {
     readStoredJson('gatoencerrado:showcase-boosts', {})
   );
   const [communityOptIn, setCommunityOptIn] = useState(false);
-  const isSubscriber = Boolean(
+  const [hasActiveSubscription, setHasActiveSubscription] = useState(false);
+  const [isCheckingSubscription, setIsCheckingSubscription] = useState(false);
+  const metadataSubscriber = Boolean(
     user?.user_metadata?.isSubscriber === true ||
       user?.user_metadata?.isSubscriber === 'true' ||
       user?.user_metadata?.is_subscriber === true ||
@@ -330,7 +332,43 @@ const MiniverseModal = ({ open, onClose, onSelectMiniverse }) => {
       user?.app_metadata?.stripe_subscription_status === 'trialing' ||
       user?.app_metadata?.roles?.includes?.('subscriber')
   );
+  const isSubscriber = metadataSubscriber || hasActiveSubscription;
   const showcaseRef = useRef(null);
+
+  useEffect(() => {
+    if (!user?.id) {
+      setHasActiveSubscription(false);
+      setIsCheckingSubscription(false);
+      return undefined;
+    }
+
+    let isMounted = true;
+    setIsCheckingSubscription(true);
+
+    supabase
+      .from('suscriptores')
+      .select('id', { count: 'exact', head: true })
+      .eq('user_id', user.id)
+      .in('status', ['active', 'trialing'])
+      .then(({ count, error }) => {
+        if (!isMounted) return;
+        if (error) {
+          console.warn('[MiniverseModal] No se pudo validar suscripción:', error);
+          setHasActiveSubscription(false);
+          return;
+        }
+        setHasActiveSubscription((count ?? 0) > 0);
+      })
+      .finally(() => {
+        if (isMounted) {
+          setIsCheckingSubscription(false);
+        }
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, [user?.id]);
 
   const playKnockSound = useCallback(() => {
     if (typeof window === 'undefined') {
@@ -548,6 +586,12 @@ const MiniverseModal = ({ open, onClose, onSelectMiniverse }) => {
     (card) => {
       if (!card) return;
       if (!isSubscriber) {
+        if (user && isCheckingSubscription) {
+          toast({
+            description: 'Estamos verificando tu suscripción. Intenta de nuevo en unos segundos.',
+          });
+          return;
+        }
         setActiveTab('waitlist');
         toast({
           description: user

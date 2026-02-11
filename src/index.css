@@ -160,12 +160,42 @@ body {
   line-height: 1.05;
 }
 
+/* Hero logo halo: stable across Safari + mobile */
+.hero-logo {
+  position: relative;
+  display: inline-block;
+}
+
+.hero-logo::before {
+  content: '';
+  position: absolute;
+  inset: -22%;
+  background: radial-gradient(circle, rgba(233, 213, 255, 0.55) 0%, rgba(233, 213, 255, 0.18) 38%, transparent 70%);
+  filter: blur(14px);
+  opacity: 0.9;
+  transform: translateZ(0);
+  pointer-events: none;
+}
+
+.hero-logo-img {
+  display: block;
+  width: 100%;
+  height: auto;
+  -webkit-filter: drop-shadow(0 12px 45px rgba(233, 213, 255, 0.35));
+  filter: drop-shadow(0 12px 45px rgba(233, 213, 255, 0.35));
+  transform: translateZ(0);
+  will-change: filter, transform;
+}
+
 /* iOS Safari hardening: prevent font synthesis/fallback on mobile */
 @supports (-webkit-touch-callout: none) {
   .hero-title {
     font-synthesis: none;
     font-weight: 600;
     font-style: normal;
+  }
+  .hero-logo::before {
+    filter: blur(16px);
   }
 }
 

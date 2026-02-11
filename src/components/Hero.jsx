@@ -102,14 +102,18 @@ const Hero = () => {
             transition={{ duration: 1, ease: "easeOut" }}
             className="max-w-4xl mx-auto"
           >
-            <motion.img
-              src={isotipoGato}
-              alt="Isotipo de Gato Encerrado"
+            <motion.div
               initial={{ opacity: 0, scale: 0.8 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 1.2, ease: 'easeOut' }}
-              className="mx-auto mb-6 w-24 sm:w-28 md:w-32 drop-shadow-[0_12px_45px_rgba(233,213,255,0.35)]"
-            />
+              className="hero-logo mx-auto mb-6 w-24 sm:w-28 md:w-32"
+            >
+              <img
+                src={isotipoGato}
+                alt="Isotipo de Gato Encerrado"
+                className="hero-logo-img"
+              />
+            </motion.div>
             <motion.h1
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
