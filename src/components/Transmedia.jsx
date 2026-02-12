@@ -1052,7 +1052,7 @@ iaProfile: {
     label: 'Miniverso Oráculo',
     type: 'oracle',
     intro:
-      'Preguntas que no buscan respuestas, sino resonancia. Alimenta la mente del Gato y gana GATokens por compartir tu pensamiento. El Oráculo no da respuestas, pero sí te recompensa por cada huella que dejas en la red del misterio. Tu pensamiento también construye este universo.',
+      'Alimenta la mente del Gato y gana GATokens por compartir tu pensamiento. El Oráculo no da respuestas, pero sí te recompensa por mantener tu curiosidad.',
     loops: [
       'Responde preguntas simbólicas, filosóficas, existenciales, absurdas o personales.',
       'Cada respuesta se guarda como semilla de conocimiento simbólico para IA, literatura y obra interactiva.',
@@ -1072,8 +1072,8 @@ iaProfile: {
     ],
     ctaLabel: 'Pregunta, responde y mintea',
     ctaDescription:
-      'El Oráculo no da respuestas, pero sí te recompensa con GATokens por cada huella que dejas en la red del misterio. Tu pensamiento también construye este universo.',
-    tagline: '🧠 Interacción que deja huella. 🪙 Reflexión que te recompensa.',
+      'Tu pensamiento también construye este universo.',
+    tagline: 'Interacción que deja huella. Reflexión que te recompensa.',
     cartaTitle: '#MinadoSimbólico',
     notaAutoral: 'Juega con el misterio.\nPiensa con el corazón.\nMintea con el alma.',
     iaProfile: {
@@ -4535,7 +4535,7 @@ const rendernotaAutoral = () => {
                 </div>
               ) : null}
 
-              <div className="mt-8">{renderShowcaseContent()}</div>
+              <div className="mt-2">{renderShowcaseContent()}</div>
             </motion.div>
           </motion.div>
         ) : null}

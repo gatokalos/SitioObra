@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
-import { BookOpen, Brain, Coffee, Coins, Drama, Film, Gamepad2, HeartHandshake, HeartPulse, MapIcon, Music, Palette, School, Smartphone, Sparkles } from 'lucide-react';
+import { BookOpen, Brain, Check, Coffee, Coins, Drama, Film, Gamepad2, HeartHandshake, HeartPulse, MapIcon, Music, Palette, School, Smartphone, Sparkles } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { toast } from '@/components/ui/use-toast';
@@ -419,7 +419,7 @@ const MiniverseModal = ({ open, onClose, onSelectMiniverse }) => {
         const mediaQuery = window.matchMedia('(max-width: 639px)');
         const isMobile = mediaQuery.matches;
         setIsMobileViewport(isMobile);
-        setActiveTab(isMobile ? 'experiences' : TABS[0].id);
+        setActiveTab(TABS[0].id);
       }
       setFormState(initialFormState);
       setStatus('idle');
@@ -459,11 +459,7 @@ const MiniverseModal = ({ open, onClose, onSelectMiniverse }) => {
     const mediaQuery = window.matchMedia('(max-width: 639px)');
     const handleMediaChange = (event) => {
       setIsMobileViewport(event.matches);
-      if (event.matches) {
-        setActiveTab('experiences');
-      } else {
-        setActiveTab(TABS[0].id);
-      }
+      setActiveTab(TABS[0].id);
     };
     setIsMobileViewport(mediaQuery.matches);
     mediaQuery.addEventListener('change', handleMediaChange);
@@ -594,6 +590,9 @@ const MiniverseModal = ({ open, onClose, onSelectMiniverse }) => {
   const handleEnterShowcase = useCallback(
     (card) => {
       if (!card) return;
+      if (!visitedMiniverses[card.id]) {
+        playKnockSound();
+      }
       if (!isSubscriber) {
         if (user && isCheckingSubscription) {
           toast({
@@ -630,7 +629,7 @@ const MiniverseModal = ({ open, onClose, onSelectMiniverse }) => {
       onSelectMiniverse?.(card.formatId);
       handleClose();
     },
-    [handleClose, isSubscriber, markMiniverseVisited, navigate, onSelectMiniverse]
+    [handleClose, isSubscriber, markMiniverseVisited, navigate, onSelectMiniverse, playKnockSound, visitedMiniverses]
   );
 
   const handleEnterUpcoming = useCallback(() => {
@@ -651,7 +650,7 @@ const MiniverseModal = ({ open, onClose, onSelectMiniverse }) => {
       return;
     }
     setCommunityOptIn((prev) => !prev);
-    toast({ description: 'Te avisaremos sobre nuevas historias.' });
+    toast({ description: 'Cuando la causa crece, el universo se expande. Te mantendremos al tanto.' });
   }, [user]);
 
   const handleSubmit = useCallback(
@@ -828,19 +827,28 @@ const MiniverseModal = ({ open, onClose, onSelectMiniverse }) => {
               </strong>
             </div>
 
-            <div className="mt-6 flex flex-wrap gap-2">
+            <div className="mt-6 flex flex-nowrap gap-1.5 overflow-x-auto pb-1 sm:flex-wrap sm:overflow-visible">
               {TABS.map((tab) => (
                 <button
                   key={tab.id}
                   onClick={() => handleTabChange(tab.id)}
-                  className={`rounded-full border px-4 py-2 text-sm transition ${
+                  className={`rounded-full border px-3 py-2 text-xs sm:px-4 sm:text-sm transition ${
                     activeTab === tab.id
                       ? 'border-purple-400/60 bg-purple-500/20 text-purple-100'
                       : 'border-white/10 text-slate-300 hover:border-purple-300/40 hover:text-purple-100'
                   }`}
                 >
                   <span className="inline-flex items-center gap-2">
-                    {tab.icon ? <tab.icon size={18} className="text-purple-300" /> : null}
+                    {tab.icon ? (
+                      <>
+                        <span className="sm:hidden">
+                          <tab.icon size={16} className="text-purple-300" />
+                        </span>
+                        <span className="hidden sm:inline">
+                          <tab.icon size={18} className="text-purple-300" />
+                        </span>
+                      </>
+                    ) : null}
                     {tab.label}
                   </span>
                 </button>
@@ -876,9 +884,7 @@ const MiniverseModal = ({ open, onClose, onSelectMiniverse }) => {
                           Desde $50/mes
                         </div>
                       </div>
-                      <p className="text-sm text-slate-300/90">
-                        Cuando la causa crece, el universo se expande.
-                      </p>
+                      
                       <div className="flex flex-wrap gap-3">
                         <div className="rounded-xl border border-white/10 bg-white/5 px-4 py-3">
                           <p className="text-[0.65rem] uppercase tracking-[0.35em] text-slate-400">Acceso total</p>
@@ -901,7 +907,7 @@ const MiniverseModal = ({ open, onClose, onSelectMiniverse }) => {
                             }`}
                           />
                           <span className="text-sm text-slate-300/80 leading-relaxed">
-                            Quiero estar al tanto de su progreso.
+                            Quiero más información.
                           </span>
                         </button>
                       </div>
@@ -1435,6 +1441,18 @@ const MiniverseModal = ({ open, onClose, onSelectMiniverse }) => {
                               : 'border-white/10 bg-white/5 hover:border-purple-300/40 hover:shadow-[0_10px_30px_rgba(124,58,237,0.18)]'
                         }`}
                       >
+                        {!isUpcoming ? (
+                          <div className="absolute right-3 top-3 flex items-center gap-2">
+                            <span className="rounded-full border border-white/15 bg-white/10 px-3 py-1 text-[0.6rem] uppercase tracking-[0.25em] text-slate-100/90 backdrop-blur-sm">
+                              Demo
+                            </span>
+                            {isVisited ? (
+                              <span className="inline-flex items-center justify-center h-6 w-6 rounded-full bg-emerald-500/80 text-slate-950 shadow-[0_0_12px_rgba(16,185,129,0.6)]">
+                                <Check size={14} strokeWidth={2.4} />
+                              </span>
+                            ) : null}
+                          </div>
+                        ) : null}
                         {isUpcoming ? (
                           <>
                             <div className="h-12 w-12 rounded-full border border-white/10 bg-slate-800/60 flex items-center justify-center text-slate-200 shadow-[0_10px_25px_rgba(0,0,0,0.35)]">
@@ -1444,12 +1462,6 @@ const MiniverseModal = ({ open, onClose, onSelectMiniverse }) => {
                               {card.titleShort ?? card.title}
                             </span>
                           </>
-                        ) : null}
-                        {isVisited ? (
-                          <span
-                            aria-hidden="true"
-                            className="absolute right-3 top-3 h-2 w-2 rounded-full bg-emerald-300/60"
-                          />
                         ) : null}
                         {!isUpcoming ? (
                           <>
