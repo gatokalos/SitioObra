@@ -133,6 +133,7 @@ const ContributionModal = ({
   onClose,
   initialCategoryId = null,
   presentation = 'modal',
+  onReturnToShowcase = null,
 }) => {
   const { user } = useAuth();
   const isSheet = presentation === 'sheet';
@@ -673,7 +674,7 @@ const ContributionModal = ({
               }`}
             />
             <span className="text-sm text-slate-300/80 leading-relaxed">
-              Quiero recibir notificación cuando se publique mi propuesta
+              Quiero ser parte de este hilo.
             </span>
           </motion.button>
 
@@ -756,13 +757,24 @@ const ContributionModal = ({
                       </h2>
                     </div>
                   </div>
-                  <button
-                    onClick={handleClose}
-                    className="text-slate-400 hover:text-white transition text-xl leading-none"
-                    aria-label="Cerrar formulario de propuestas"
-                  >
-                    ✕
-                  </button>
+                  <div className="flex items-center gap-3">
+                    {onReturnToShowcase ? (
+                      <button
+                        type="button"
+                        onClick={onReturnToShowcase}
+                        className="text-xs uppercase tracking-[0.3em] text-purple-200/80 hover:text-white transition"
+                      >
+                        Regresar
+                      </button>
+                    ) : null}
+                    <button
+                      onClick={handleClose}
+                      className="text-slate-400 hover:text-white transition text-xl leading-none"
+                      aria-label="Cerrar formulario de propuestas"
+                    >
+                      ✕
+                    </button>
+                  </div>
                 </div>
                 {confettiBursts.map((burst) => (
                   <ConfettiBurst key={burst} seed={burst} />

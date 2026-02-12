@@ -24,6 +24,8 @@ import {
   MapIcon,
   Coins,
   CheckCheckIcon,
+  Send,
+  X,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import MiniverseModal from '@/components/MiniverseModal';
@@ -1221,7 +1223,7 @@ const formats = [
     icon: Smartphone,
     iconClass: 'text-lime-300',
     instruccion: 'Aquí reinventamos el clásico gato.',
-    iaTokensNote: 'IA marca el ritmo felino (90–180 tokens; no gasta tus GAT).',
+    iaTokensNote: 'IA marca el ritmo felino.',
   },
   {
     id: 'oraculo',
@@ -1521,6 +1523,8 @@ const Transmedia = () => {
   const [isMiniverseOpen, setIsMiniverseOpen] = useState(false);
   const [miniverseContext, setMiniverseContext] = useState(null);
   const [activeShowcase, setActiveShowcase] = useState(null);
+  const hasHandledDeepLinkRef = useRef(false);
+  const [returnShowcaseId, setReturnShowcaseId] = useState(null);
   const [showcaseContent, setShowcaseContent] = useState({});
   const showcaseRef = useRef(null);
   const [imagePreview, setImagePreview] = useState(null);
@@ -1552,6 +1556,8 @@ const Transmedia = () => {
     handlePlayPendingAudio,
     resetSilvestreQuestions,
   } = useSilvestreVoice();
+  const [showcaseCarouselIndex, setShowcaseCarouselIndex] = useState(0);
+  const [isShowcaseCarouselPaused, setIsShowcaseCarouselPaused] = useState(false);
   const [isMovementCreditsOpen, setIsMovementCreditsOpen] = useState(false);
   const [openCollaboratorId, setOpenCollaboratorId] = useState(null);
   const { isMobileViewport, canUseInlinePlayback, requestMobileVideoPresentation } = useMobileVideoPresentation();
@@ -2251,6 +2257,82 @@ const Transmedia = () => {
   const activeData = activeShowcase ? showcaseContent[activeShowcase] : null;
   const isCinematicShowcaseOpen = Boolean(activeDefinition);
 
+  const buildMiniverseShareUrl = useCallback((formatId) => {
+    if (typeof window === 'undefined') return '';
+    const url = new URL(window.location.href);
+    url.searchParams.set('miniverso', formatId);
+    url.hash = 'transmedia';
+    return url.toString();
+  }, []);
+
+  const handleShareMiniverse = useCallback(async () => {
+    if (!activeShowcase || !activeDefinition) return;
+    const url = buildMiniverseShareUrl(activeShowcase);
+    if (!url) return;
+
+    const label = activeDefinition.label ?? 'la obra';
+    const sharePayload = {
+      title: activeDefinition.label ?? 'Miniverso',
+      text: `Descubre el ${label} de #GatoEncerrado.`,
+      url,
+    };
+
+    try {
+      if (navigator.share) {
+        await navigator.share(sharePayload);
+        return;
+      }
+      if (navigator.clipboard?.writeText) {
+        await navigator.clipboard.writeText(url);
+        toast({ description: 'Enlace copiado. Compártelo con quien quieras.' });
+        return;
+      }
+      toast({ description: 'No pudimos abrir el menú de compartir en este navegador.' });
+    } catch (err) {
+      if (err?.name !== 'AbortError') {
+        toast({ description: 'No pudimos compartir el enlace. Intenta de nuevo.' });
+      }
+    }
+  }, [activeDefinition, activeShowcase, buildMiniverseShareUrl]);
+
+  useEffect(() => {
+    if (hasHandledDeepLinkRef.current) return;
+    const params = new URLSearchParams(location.search);
+    const miniverse = params.get('miniverso');
+    if (!miniverse || !showcaseDefinitions[miniverse]) return;
+    hasHandledDeepLinkRef.current = true;
+
+    if (typeof document !== 'undefined') {
+      const anchor = document.querySelector('#transmedia');
+      if (anchor) {
+        const target = anchor.getBoundingClientRect().top + window.scrollY;
+        window.scrollTo({ top: target, behavior: 'smooth' });
+        window.setTimeout(() => openMiniverseById(miniverse), 350);
+        return;
+      }
+    }
+    openMiniverseById(miniverse);
+  }, [location.search, openMiniverseById]);
+
+  const handleShowcaseNext = useCallback(() => {
+    setShowcaseCarouselIndex((prev) => (prev + 1) % formats.length);
+  }, []);
+
+  const handleShowcasePrev = useCallback(() => {
+    setShowcaseCarouselIndex((prev) => (prev - 1 + formats.length) % formats.length);
+  }, []);
+
+  const visibleShowcases = useMemo(() => {
+    if (formats.length <= 3) return formats;
+    return Array.from({ length: 3 }, (_, idx) => formats[(showcaseCarouselIndex + idx) % formats.length]);
+  }, [showcaseCarouselIndex]);
+
+  useEffect(() => {
+    if (isMobileViewport || isShowcaseCarouselPaused) return undefined;
+    const intervalId = window.setInterval(handleShowcaseNext, 12000);
+    return () => window.clearInterval(intervalId);
+  }, [handleShowcaseNext, isMobileViewport, isShowcaseCarouselPaused]);
+
   useEffect(() => {
     if (typeof window === 'undefined') return undefined;
     const isMobile = window.matchMedia('(max-width: 768px)').matches;
@@ -2592,10 +2674,28 @@ const Transmedia = () => {
     window.open('https://gatoencerrado.ai', '_blank', 'noopener,noreferrer');
   }, []);
 
-  const handleOpenContribution = useCallback((categoryId = null) => {
-    setContributionCategoryId(categoryId);
-    setIsContributionOpen(true);
-  }, []);
+  const handleOpenContribution = useCallback(
+    (categoryId = null) => {
+      if (activeShowcase) {
+        setReturnShowcaseId(activeShowcase);
+        setActiveShowcase(null);
+      } else {
+        setReturnShowcaseId(null);
+      }
+      setContributionCategoryId(categoryId);
+      setIsContributionOpen(true);
+    },
+    [activeShowcase]
+  );
+
+  const handleReturnToShowcase = useCallback(() => {
+    if (!returnShowcaseId) return;
+    setIsContributionOpen(false);
+    setContributionCategoryId(null);
+    const targetId = returnShowcaseId;
+    setReturnShowcaseId(null);
+    requestAnimationFrame(() => openMiniverseById(targetId));
+  }, [openMiniverseById, returnShowcaseId]);
 
   const handleBadgeLogin = useCallback(() => {
     setShowBadgeLoginOverlay(true);
@@ -3304,13 +3404,20 @@ const rendernotaAutoral = () => {
 
       return (
         <div className="space-y-2">
-          <div className="flex justify-end">
+          <div className="flex justify-end gap-3">
+            <button
+              onClick={handleShareMiniverse}
+              className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/5 px-4 py-2 text-xs uppercase tracking-[0.25em] text-slate-200/90 hover:border-purple-300/40 hover:text-white transition"
+              aria-label="Compartir miniverso"
+            >
+              <Send size={14} className="text-purple-200" />
+            </button>
             <button
               onClick={() => setActiveShowcase(null)}
-              className="text-sm text-slate-400 hover:text-white transition"
-              aria-label="Cerrar escaparate"
+              className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-white/15 bg-white/5 text-slate-200/90 hover:border-purple-300/40 hover:text-white transition"
+              aria-label="Cerrar vitrina"
             >
-              Cerrar ✕
+              <X size={14} />
             </button>
           </div>
           <div className="rounded-[2.5rem] border border-white/10 bg-gradient-to-br from-slate-900/85 via-black/60 to-rose-900/35 shadow-[0_25px_65px_rgba(15,23,42,0.65)]">
@@ -3319,7 +3426,7 @@ const rendernotaAutoral = () => {
      
                 <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
                   <div className="space-y-3">
-                    <p className="text-xs uppercase tracking-[0.4em] text-purple-300">Escaparate</p>
+                    <p className="text-xs uppercase tracking-[0.4em] text-purple-300">Vitrina</p>
                     <h3 className="font-display text-3xl leading-tight text-white md:text-4xl">{activeDefinition.label}</h3>
                   </div>
                 
@@ -4205,100 +4312,159 @@ const rendernotaAutoral = () => {
           {renderCollaboratorsSection(activeDefinition.collaborators, 'novela')}
           <div>{renderPostDetails()}</div>
           {entries.length > 0 ? (
-            <div className="grid gap-6 md:grid-cols-[3fr_2fr]">
-              {entries.map((entry) => {
-                if (entry.type === 'horizontal-gallery') {
+            activeShowcase === 'miniversoNovela' ? (
+              <div className="grid gap-6 md:grid-cols-[3fr_2fr]">
+                <div className="space-y-6">
+                  {entries.map((entry) => {
+                    if (entry.id === 'comentarios-lectores') {
+                      return null;
+                    }
+                    if (entry.type === 'horizontal-gallery') {
+                      return (
+                        <div
+                          key={entry.id}
+                          className="md:col-span-2 rounded-2xl border border-white/10 p-6 bg-black/30 space-y-4"
+                        >
+                          <div className="space-y-2">
+                            <h5 className="font-display text-xl text-slate-100">{entry.title}</h5>
+                            {entry.description ? (
+                              <p className="text-sm text-slate-300/80 leading-relaxed">{entry.description}</p>
+                            ) : null}
+                          </div>
+                          <div className="flex gap-4 overflow-x-auto pb-2">
+                            {entry.images?.map((image, index) => (
+                              <div
+                                key={`${entry.id}-${index}`}
+                                className="w-48 h-32 flex-shrink-0 rounded-xl overflow-hidden border border-white/5 bg-black/40"
+                              >
+                                <img
+                                  src={image}
+                                  alt={`${entry.title} ${index + 1}`}
+                                  className="w-full h-full object-cover"
+                                />
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      );
+                    }
+
+                    const imageSrc = entry.previewImage || entry.image;
+                    const action = renderEntryAction(entry);
+
+                    return (
+                      <div key={entry.id} className="rounded-2xl border border-white/10 p-6 bg-black/30 space-y-4">
+                        {imageSrc ? (
+                          <div className="rounded-xl overflow-hidden border border-white/5 bg-black/40 h-52 sm:h-64">
+                            <img
+                              src={imageSrc}
+                              alt={entry.title}
+                              className="w-full h-full object-cover"
+                              loading="lazy"
+                            />
+                          </div>
+                        ) : null}
+                        <div className="space-y-2">
+                          <h5 className="font-display text-xl text-slate-100">{entry.title}</h5>
+                          {entry.description ? (
+                            <p className="text-sm text-slate-300/80 leading-relaxed">{entry.description}</p>
+                          ) : null}
+                        </div>
+                        {entry.snippet ? (
+                          <div className="rounded-2xl border border-white/10 bg-slate-900/60 p-4 space-y-2">
+                            <p className="text-xs uppercase tracking-[0.3em] text-purple-300">{entry.snippet.tagline}</p>
+                            {entry.snippet.text ? (
+                              <p className="text-sm text-slate-200/90 leading-relaxed">{entry.snippet.text}</p>
+                            ) : null}
+                          </div>
+                        ) : null}
+                        {action}
+                      </div>
+                    );
+                  })}
+                </div>
+                <div className="space-y-6">
+                  {renderCommunityBlock('miniversoNovela', {
+                    ctaLabel: 'comenta',
+                    emptyMessage: 'Todavía no hay voces en este miniverso.',
+                    className: 'rounded-3xl border border-white/10 bg-black/30 p-6',
+                  })}
+                  <div className="rounded-3xl border border-white/10 bg-black/30 p-6">
+                    <ShowcaseReactionInline
+                      showcaseId="miniversoNovela"
+                      description="Haz clic para guardar un like y amplificar las conversaciones que la novela susurra."
+                      buttonLabel="Apoyar la novela"
+                      className="bg-gradient-to-br from-purple-900/20 to-black/40"
+                    />
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <div className="grid gap-6 md:grid-cols-[3fr_2fr]">
+                {entries.map((entry) => {
+                  if (entry.id === 'comentarios-lectores') {
+                    return null;
+                  }
+                  if (entry.type === 'horizontal-gallery') {
+                    return (
+                      <div
+                        key={entry.id}
+                        className="md:col-span-2 rounded-2xl border border-white/10 p-6 bg-black/30 space-y-4"
+                      >
+                        <div className="space-y-2">
+                          <h5 className="font-display text-xl text-slate-100">{entry.title}</h5>
+                          {entry.description ? (
+                            <p className="text-sm text-slate-300/80 leading-relaxed">{entry.description}</p>
+                          ) : null}
+                        </div>
+                        <div className="flex gap-4 overflow-x-auto pb-2">
+                          {entry.images?.map((image, index) => (
+                            <div
+                              key={`${entry.id}-${index}`}
+                              className="w-48 h-32 flex-shrink-0 rounded-xl overflow-hidden border border-white/5 bg-black/40"
+                            >
+                              <img
+                                src={image}
+                                alt={`${entry.title} ${index + 1}`}
+                                className="w-full h-full object-cover"
+                              />
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    );
+                  }
+
+                  const imageSrc = entry.previewImage || entry.image;
+                  const action = renderEntryAction(entry);
+
                   return (
-                    <div
-                      key={entry.id}
-                      className="md:col-span-2 rounded-2xl border border-white/10 p-6 bg-black/30 space-y-4"
-                    >
+                    <div key={entry.id} className="rounded-2xl border border-white/10 p-6 bg-black/30 space-y-4">
+                      {imageSrc ? (
+                        <div className="rounded-xl overflow-hidden border border-white/5 bg-black/40 h-52 sm:h-64">
+                          <img src={imageSrc} alt={entry.title} className="w-full h-full object-cover" loading="lazy" />
+                        </div>
+                      ) : null}
                       <div className="space-y-2">
                         <h5 className="font-display text-xl text-slate-100">{entry.title}</h5>
                         {entry.description ? (
                           <p className="text-sm text-slate-300/80 leading-relaxed">{entry.description}</p>
                         ) : null}
                       </div>
-                      <div className="flex gap-4 overflow-x-auto pb-2">
-                        {entry.images?.map((image, index) => (
-                          <div
-                            key={`${entry.id}-${index}`}
-                            className="w-48 h-32 flex-shrink-0 rounded-xl overflow-hidden border border-white/5 bg-black/40"
-                          >
-                            <img
-                              src={image}
-                              alt={`${entry.title} ${index + 1}`}
-                              className="w-full h-full object-cover"
-                            />
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  );
-                }
-
-                if (entry.type === 'quotes') {
-                  return (
-                <div
-                  key={entry.id}
-                  className="rounded-2xl border border-white/10 p-6 bg-black/30 space-y-6"
-                >
-                  <h5 className="font-display text-xl text-slate-100">{entry.title}</h5>
-                 
-                  <div className="space-y-4">
-                        {entry.quotes?.map((quote, index) => (
-                          <blockquote
-                            key={`${entry.id}-quote-${index}`}
-                            className="rounded-2xl border border-white/5 bg-black/20 p-4 text-slate-100 font-light leading-relaxed"
-                          >
-                            <p>{quote.quote}</p>
-                            {quote.author ? (
-                              <p className="text-xs text-slate-500 mt-2">{quote.author}</p>
-                            ) : null}
-                          </blockquote>
-                        ))}
-                      </div>
-                      <div className="mt-2 space-y-2">
-                        <ShowcaseReactionInline
-                          showcaseId="miniversoNovela"
-                          description="Haz clic para guardar un like y amplificar las conversaciones que la novela susurra."
-                          buttonLabel="Apoyar la novela"
-                          className="bg-gradient-to-br from-purple-900/20 to-black/40"
-                        />
-                      </div>
-                    </div>
-                  );
-                }
-
-                const imageSrc = entry.previewImage || entry.image;
-                const action = renderEntryAction(entry);
-
-                return (
-                  <div key={entry.id} className="rounded-2xl border border-white/10 p-6 bg-black/30 space-y-4">
-                    {imageSrc ? (
-                      <div className="rounded-xl overflow-hidden border border-white/5 bg-black/40 h-52 sm:h-64">
-                        <img src={imageSrc} alt={entry.title} className="w-full h-full object-cover" loading="lazy" />
-                      </div>
-                    ) : null}
-                    <div className="space-y-2">
-                      <h5 className="font-display text-xl text-slate-100">{entry.title}</h5>
-                      {entry.description ? (
-                        <p className="text-sm text-slate-300/80 leading-relaxed">{entry.description}</p>
+                      {entry.snippet ? (
+                        <div className="rounded-2xl border border-white/10 bg-slate-900/60 p-4 space-y-2">
+                          <p className="text-xs uppercase tracking-[0.3em] text-purple-300">{entry.snippet.tagline}</p>
+                          {entry.snippet.text ? (
+                            <p className="text-sm text-slate-200/90 leading-relaxed">{entry.snippet.text}</p>
+                          ) : null}
+                        </div>
                       ) : null}
+                      {action}
                     </div>
-                    {entry.snippet ? (
-                      <div className="rounded-2xl border border-white/10 bg-slate-900/60 p-4 space-y-2">
-                        <p className="text-xs uppercase tracking-[0.3em] text-purple-300">{entry.snippet.tagline}</p>
-                        {entry.snippet.text ? (
-                          <p className="text-sm text-slate-200/90 leading-relaxed">{entry.snippet.text}</p>
-                        ) : null}
-                      </div>
-                    ) : null}
-                    {action}
-                  </div>
-                );
-              })}
-            </div>
+                  );
+                })}
+              </div>
+            )
           ) : (
             <p className="text-sm text-slate-400">Muy pronto liberaremos el resto de la serie.</p>
           )}
@@ -4507,20 +4673,27 @@ const rendernotaAutoral = () => {
               transition={{ type: 'spring', stiffness: 220, damping: 24 }}
             >
               {activeDefinition.type !== 'tragedia' ? (
-                <div className="flex justify-end">
+                <div className="flex justify-end gap-3">
+                  <button
+                    onClick={handleShareMiniverse}
+                    className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/5 px-4 py-2 text-xs uppercase tracking-[0.25em] text-slate-200/90 hover:border-purple-300/40 hover:text-white transition"
+                    aria-label="Compartir miniverso"
+                  >
+                    <Send size={14} className="text-purple-200" />
+                  </button>
                   <button
                     onClick={() => setActiveShowcase(null)}
-                    className="text-sm text-slate-400 hover:text-white transition"
-                    aria-label="Cerrar escaparate"
+                    className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-white/15 bg-white/5 text-slate-200/90 hover:border-purple-300/40 hover:text-white transition"
+                    aria-label="Cerrar vitrina"
                   >
-                    Cerrar ✕
+                    <X size={14} />
                   </button>
                 </div>
               ) : null}
               {activeDefinition.type !== 'tragedia' ? (
                 <div className="flex flex-col gap-6 md:flex-row md:items-start md:gap-10 pr-0">
                   <div className="flex-1 space-y-6">
-                    <p className="text-xs uppercase tracking-[0.4em] text-slate-400/70 mb-2">Escaparate</p>
+                    <p className="text-xs uppercase tracking-[0.4em] text-slate-400/70 mb-2">Vitrina</p>
                     <h3 className="font-display text-3xl text-slate-100 mb-3">{activeDefinition.label}</h3>
                     <p className="text-slate-300/80 leading-relaxed font-light max-w-3xl">{activeDefinition.intro}</p>
                     {activeDefinition.iaProfile ? (
@@ -4725,7 +4898,7 @@ const rendernotaAutoral = () => {
           >
             <p className="text-xs uppercase tracking-[0.4em] text-slate-400/70">Universo Transmedia</p>
             <h2 className="font-display text-4xl md:text-5xl font-medium text-gradient italic">
-              Escaparate de Miniversos
+              Los Miniversos de #GatoEncerrado
             </h2>
             <p className="text-lg text-slate-300/80 max-w-3xl mx-auto leading-relaxed font-light">
               El universo de #GatoEncerrado se expande en <strong>nueve miniversos</strong>. Cada uno late por su cuenta —ya estaba ahí antes de que llegaras— y forma parte del mismo organismo narrativo. Al explorarlos, activas <span className="font-semibold text-purple-200">GATokens</span>: una energía simbólica que impulsa la experiencia artística y contribuye al sostenimiento de la causa social de {' '}
@@ -4740,7 +4913,7 @@ const rendernotaAutoral = () => {
 
           </motion.div>
 
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 min-h-[720px]">
+          <div className="lg:hidden md:grid md:grid-cols-2 md:gap-8 md:min-h-[720px] space-y-6 md:space-y-0">
             {formats.map((format, index) => {
               const Icon = format.icon;
               const iconClass = format.iconClass ?? 'text-purple-200';
@@ -4763,9 +4936,10 @@ const rendernotaAutoral = () => {
                       : 'saturate(1)',
                   }}
                   transition={{ duration: 0.4, delay: index * 0.05, ease: 'easeOut' }}
-                  className={`group glass-effect rounded-xl p-8 hover-glow cursor-pointer flex flex-col transition-all duration-300 hover:border-purple-400/50 relative overflow-hidden ${
+                  className={`group glass-effect rounded-xl p-8 hover-glow cursor-pointer flex flex-col transition-all duration-300 hover:border-purple-400/50 relative overflow-hidden sticky top-24 md:static md:top-auto ${
                     isDimmedTile ? 'pointer-events-none' : ''
                   }`}
+                  style={{ zIndex: formats.length - index }}
                   onClick={() => handleFormatClick(format.id)}
                 >
                   <div
@@ -4874,6 +5048,106 @@ const rendernotaAutoral = () => {
               );
             })}
           </div>
+          <div
+            className="hidden lg:block"
+            onMouseEnter={() => setIsShowcaseCarouselPaused(true)}
+            onMouseLeave={() => setIsShowcaseCarouselPaused(false)}
+          >
+            <div className="grid grid-cols-3 gap-8 min-h-[720px]">
+              {visibleShowcases.map((format, index) => {
+                const Icon = format.icon;
+                const iconClass = format.iconClass ?? 'text-purple-200';
+                const tileGradient =
+                  MINIVERSO_TILE_GRADIENTS[format.id] ?? MINIVERSO_TILE_GRADIENTS.default;
+                return (
+                  <motion.button
+                    key={`${format.id}-${showcaseCarouselIndex}`}
+                    type="button"
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.5, delay: index * 0.08, ease: 'easeOut' }}
+                    className="group glass-effect rounded-2xl border border-white/10 bg-black/30 hover:border-purple-400/50 overflow-hidden text-left shadow-[0_20px_60px_rgba(0,0,0,0.55)] flex flex-col min-h-[620px] hover-glow"
+                    onClick={() => handleFormatClick(format.id)}
+                  >
+                    <div className="relative flex-1 min-h-[320px] bg-slate-500/20">
+                      <div className="absolute inset-0 bg-gradient-to-br from-white/5 via-transparent to-black/20" />
+                      <div className="absolute inset-x-0 bottom-0 h-px bg-white/10" />
+                    </div>
+                    <div className="relative p-6 overflow-hidden min-h-[240px]">
+                      <div
+                        aria-hidden="true"
+                        className="absolute inset-0 opacity-80 pointer-events-none"
+                        style={{
+                          backgroundImage: tileGradient,
+                          filter: 'saturate(1.1)',
+                          backgroundSize: '160% 160%',
+                          backgroundPosition: '0% 0%',
+                        }}
+                      />
+                      <div
+                        aria-hidden="true"
+                        className="absolute inset-0 opacity-35 mix-blend-screen pointer-events-none"
+                        style={{
+                          backgroundImage:
+                            'radial-gradient(1px 1px at 12% 18%, rgba(248,250,252,0.8), transparent 65%),' +
+                            'radial-gradient(1.5px 1.5px at 24% 42%, rgba(241,245,249,0.65), transparent 70%),' +
+                            'radial-gradient(2px 2px at 36% 28%, rgba(226,232,240,0.6), transparent 70%),' +
+                            'radial-gradient(1px 1px at 44% 62%, rgba(255,255,255,0.45), transparent 70%),' +
+                            'radial-gradient(1.5px 1.5px at 52% 18%, rgba(241,245,249,0.55), transparent 70%),' +
+                            'radial-gradient(2px 2px at 64% 48%, rgba(226,232,240,0.6), transparent 70%),' +
+                            'radial-gradient(1px 1px at 72% 30%, rgba(255,255,255,0.4), transparent 70%),' +
+                            'radial-gradient(1.5px 1.5px at 80% 66%, rgba(241,245,249,0.55), transparent 70%),' +
+                            'radial-gradient(2px 2px at 88% 22%, rgba(226,232,240,0.6), transparent 70%),' +
+                            'radial-gradient(1px 1px at 18% 78%, rgba(255,255,255,0.35), transparent 70%),' +
+                            'radial-gradient(1.5px 1.5px at 58% 78%, rgba(241,245,249,0.55), transparent 70%),' +
+                            'radial-gradient(1px 1px at 90% 82%, rgba(255,255,255,0.35), transparent 70%)',
+                        }}
+                      />
+                      <div className="absolute inset-0 opacity-30 mix-blend-screen pointer-events-none bg-[radial-gradient(circle_at_top,_rgba(255,255,255,0.25),_transparent_55%)]" />
+                      <div className="relative z-10 space-y-4">
+                      <div className="flex items-center gap-3">
+                        <Icon size={24} className={`${iconClass} drop-shadow-[0_0_12px_rgba(168,85,247,0.35)] transition-transform duration-300 group-hover:-translate-y-1`} />
+                        <div>
+                          <p className="text-xs uppercase tracking-[0.35em] text-slate-400/80">Vitrina</p>
+                          <h3 className="font-display text-2xl text-slate-100">{format.title}</h3>
+                        </div>
+                      </div>
+                      <p className="text-sm text-slate-300/85 leading-relaxed min-h-[3.5rem]">
+                        {format.instruccion}
+                      </p>
+                      <div className="flex items-center gap-2 text-xs text-amber-200/90 uppercase tracking-[0.25em]">
+                        <Coins size={12} className="text-amber-200" />
+                        {format.iaTokensNote}
+                      </div>
+                      <div className="text-purple-300 flex items-center gap-2 font-semibold">
+                        Abrir vitrina
+                        <ArrowRight size={18} />
+                      </div>
+                      </div>
+                    </div>
+                  </motion.button>
+                );
+              })}
+            </div>
+            <div className="flex items-center justify-center gap-3 mt-6">
+              <button
+                type="button"
+                onClick={handleShowcasePrev}
+                className="h-10 w-10 rounded-full border border-white/15 bg-white/5 text-slate-200 hover:text-white hover:border-purple-300/40 transition"
+                aria-label="Vitrina anterior"
+              >
+                ←
+              </button>
+              <button
+                type="button"
+                onClick={handleShowcaseNext}
+                className="h-10 w-10 rounded-full border border-white/15 bg-white/5 text-slate-200 hover:text-white hover:border-purple-300/40 transition"
+                aria-label="Siguiente vitrina"
+              >
+                →
+              </button>
+            </div>
+          </div>
           {showcaseOverlay}
           {oraculoOverlay}
           {causeSiteOverlay}
@@ -4980,9 +5254,11 @@ const rendernotaAutoral = () => {
         onClose={() => {
           setIsContributionOpen(false);
           setContributionCategoryId(null);
+          setReturnShowcaseId(null);
         }}
         initialCategoryId={contributionCategoryId}
         presentation="sheet"
+        onReturnToShowcase={returnShowcaseId ? handleReturnToShowcase : null}
       />
       <ReserveModal
         open={isNovelaReserveOpen}

@@ -19,22 +19,22 @@ export const PACKAGE_OPTIONS = [
   {
     id: 'taza-250',
     title: 'Taza artesanal',
-    price: '$250',
+    price: '$250 MXN',
     helper: 'Taza ritual con portal AR y frase activable.',
     priceId: import.meta.env.VITE_PRICE_TAZA,
   },
   {
     id: 'novela-400',
     title: 'Novela de autoficción',
-    price: '$400',
-    helper: 'Primera edición con acceso al Club de Lectura.',
+    price: '$400 MXN',
+    helper: 'Primera edición con acceso al app de Club de Lectura.',
     priceId: import.meta.env.VITE_PRICE_NOVELA,
   },
   {
     id: 'combo-900',
-    title: 'Combo: novela + 2 tazas',
-    price: '$900',
-    helper: 'Novela + 2 tazas. Incluye 12,000 GATokens.',
+    title: 'Novela + 2 tazas',
+    price: '$900 MXN',
+    helper: 'Incluye acceso al app de Club de Lectura con GATokens para explorar los miniversos.',
     priceId: import.meta.env.VITE_PRICE_COMBO,
   },
 ];
@@ -106,7 +106,7 @@ const RESERVE_COPY = {
     eyebrow: 'Encontrémonos fuera del teatro',
     title: 'Puntos de encuentro',
     intro:
-      'Estos objetos no son sólo piezas: son puntos de encuentro. Cuando alguien se interesa, buscamos la manera de activar una conversación en su ciudad.',
+      'Estos objetos no circulan solos. Cuando alguien se interesa, buscamos la manera de activar una conversación en tu ciudad.',
     notice: (
   <>
     También coordinamos envíos y encuentros virtuales cuando el diálogo lo requiere. <strong>Cada activación abre una conversación.</strong>
@@ -212,22 +212,32 @@ const ReserveModal = ({
     });
   }, []);
 
-  const validateForm = useCallback(() => {
+  const validateReserve = useCallback(() => {
     if (!formState.fullName.trim() || !formState.email.trim()) {
       return 'Por favor completa tu nombre y correo electrónico.';
     }
+    if (!formState.notes.trim()) {
+      return 'Por favor comparte tu intención o propuesta.';
+    }
     if (formState.packages.length === 0) {
-      return 'Selecciona al menos un artículo para apartar.';
+      return 'Selecciona al menos un objeto que te guste.';
     }
     return null;
   }, [formState]);
+
+  const validateCheckout = useCallback(() => {
+    if (formState.packages.length === 0) {
+      return 'Selecciona al menos un objeto que te guste.';
+    }
+    return null;
+  }, [formState.packages.length]);
 
   const handleSubmit = useCallback(
     async (event) => {
       event.preventDefault();
       if (status === 'loading') return;
 
-      const validationError = validateForm();
+      const validationError = validateReserve();
       if (validationError) {
         toast({ description: validationError });
         return;
@@ -265,7 +275,7 @@ const ReserveModal = ({
         setIsSubmitting(false);
       }
     },
-    [formState, status, fireConfetti, validateForm]
+    [formState, status, fireConfetti, validateReserve]
   );
 
   const handleCheckout = useCallback(
@@ -273,7 +283,7 @@ const ReserveModal = ({
       event.preventDefault?.();
       if (isCheckoutLoading || status === 'loading') return;
 
-      const validationError = validateForm();
+      const validationError = validateCheckout();
       if (validationError) {
         toast({ description: validationError });
         return;
@@ -295,13 +305,16 @@ const ReserveModal = ({
         const payload = {
           mode: 'payment',
           line_items,
-          customer_email: formState.email.trim().toLowerCase(),
           metadata: {
             channel: 'landing',
             event: 'funcion-2025-12-28',
             packages: formState.packages.join(','),
           },
         };
+        const normalizedEmail = formState.email.trim().toLowerCase();
+        if (normalizedEmail) {
+          payload.customer_email = normalizedEmail;
+        }
 
         const { data, error } = await supabase.functions.invoke('create-checkout-session', {
           body: payload,
@@ -319,7 +332,7 @@ const ReserveModal = ({
         setIsCheckoutLoading(false);
       }
     },
-    [formState, isCheckoutLoading, status, validateForm]
+    [formState, isCheckoutLoading, status, validateCheckout]
   );
 
   const handleClose = useCallback(() => {
@@ -475,7 +488,7 @@ const ReserveModal = ({
 
                 {/* Nombre */}
                 <div className="space-y-2">
-                  <label className="text-sm font-medium text-slate-200">Nombre completo *</label>
+                  <label className="text-sm font-medium text-slate-200">Tu nombre</label>
                   <input
                     name="fullName"
                     type="text"
@@ -489,7 +502,7 @@ const ReserveModal = ({
 
                 {/* Email */}
                 <div className="space-y-2">
-                  <label className="text-sm font-medium text-slate-200">Correo electrónico *</label>
+                  <label className="text-sm font-medium text-slate-200">Correo electrónico</label>
                   <input
                     name="email"
                     type="email"
@@ -520,6 +533,7 @@ const ReserveModal = ({
                   <textarea
                     name="notes"
                     rows={3}
+                    required
                     value={formState.notes}
                     onChange={handleInputChange}
                     className="w-full rounded-lg border border-white/10 bg-black/30 px-4 py-3 text-slate-100 placeholder-slate-500 focus:border-purple-400 focus:ring-1 focus:ring-purple-400 resize-none"
@@ -567,7 +581,7 @@ const ReserveModal = ({
                     onClick={handleCheckout}
                     className="w-full border-purple-400/40 text-purple-200 hover:bg-purple-500/10"
                   >
-                    {isCheckoutLoading ? 'Redirigiendo…' : 'Ir a Tienda'}
+                    {isCheckoutLoading ? 'Redirigiendo…' : 'Comprar ahora'}
                   </Button>
              
                 </div>
