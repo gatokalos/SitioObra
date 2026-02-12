@@ -139,6 +139,7 @@ const MINIVERSE_CARDS = [
     icon: Drama,
     thumbLabel: 'D',
     thumbGradient: 'from-purple-400/80 via-fuchsia-500/70 to-rose-500/60',
+    glassTint: '284 70% 62%',
     title: 'Miniverso Obra',
     titleShort: 'Habla con la obra',
     description: 'Dialoga con la obra sobre tus impresiones de la obra.',
@@ -152,6 +153,7 @@ const MINIVERSE_CARDS = [
     icon: BookOpen,
     thumbLabel: 'L',
     thumbGradient: 'from-emerald-400/80 via-teal-500/70 to-cyan-500/60',
+    glassTint: '168 70% 52%',
     title: 'Miniverso Literatura',
     titleShort: 'Lee la novela',
     description:
@@ -166,6 +168,7 @@ const MINIVERSE_CARDS = [
     icon: Coffee,
     thumbLabel: 'A',
     thumbGradient: 'from-amber-400/80 via-orange-500/70 to-rose-500/60',
+    glassTint: '28 78% 58%',
     title: 'Miniverso Artesanías',
     titleShort: 'Usa la taza',
     description:
@@ -180,6 +183,7 @@ const MINIVERSE_CARDS = [
     icon: Palette,
     thumbLabel: 'G',
     thumbGradient: 'from-fuchsia-400/80 via-purple-500/70 to-indigo-500/60',
+    glassTint: '304 65% 60%',
     title: 'Miniverso Gráficos',
     titleShort: 'Imagina el diálogo',
     description: 'Imágenes y trazos nacidos del proceso creativo del universo.',
@@ -192,6 +196,7 @@ const MINIVERSE_CARDS = [
     formatId: 'copycats',
     icon: Film,
     thumbGradient: 'from-rose-500/80 via-red-500/70 to-fuchsia-500/60',
+    glassTint: '352 70% 60%',
     title: 'Miniverso Cine',
     titleShort: 'Ve el documental',
     description:
@@ -206,6 +211,7 @@ const MINIVERSE_CARDS = [
     icon: Music,
     thumbLabel: 'S',
     thumbGradient: 'from-sky-400/80 via-cyan-500/70 to-indigo-500/60',
+    glassTint: '206 80% 58%',
     title: 'Miniverso Sonoridades',
     titleShort: 'Escucha la música',
     description:
@@ -220,6 +226,7 @@ const MINIVERSE_CARDS = [
     icon: MapIcon,
     thumbLabel: 'M',
     thumbGradient: 'from-sky-400/80 via-emerald-500/70 to-cyan-500/60',
+    glassTint: '176 62% 52%',
     title: 'Miniverso Movimiento',
     titleShort: 'Siente el movimiento',
     description: 'Cuerpos, recorridos y figuras rituales que expanden la obra en el espacio.',
@@ -233,6 +240,7 @@ const MINIVERSE_CARDS = [
     icon: Smartphone,
     thumbLabel: 'J',
     thumbGradient: 'from-lime-400/80 via-emerald-500/70 to-teal-500/60',
+    glassTint: '138 60% 48%',
     title: 'Miniverso Apps',
     titleShort: 'Juega la app',
     description: 'Experimentos lúdicos que reescriben la obra en formato interactivo.',
@@ -246,6 +254,7 @@ const MINIVERSE_CARDS = [
     icon: Brain,
     thumbLabel: 'O',
     thumbGradient: 'from-indigo-400/80 via-violet-500/70 to-purple-500/60',
+    glassTint: '266 62% 60%',
     title: 'Miniverso Oráculo',
     titleShort: 'Consulta el Oráculo',
     description: 'Preguntas, azar y respuestas que la obra deja abiertas.',
@@ -408,12 +417,10 @@ const MiniverseModal = ({ open, onClose, onSelectMiniverse }) => {
       document.documentElement.dataset.miniverseOpen = 'true';
       if (typeof window !== 'undefined') {
         const mediaQuery = window.matchMedia('(max-width: 639px)');
-        setIsMobileViewport(mediaQuery.matches);
-        if (mediaQuery.matches) {
-          setActiveTab('experiences');
-        }
+        const isMobile = mediaQuery.matches;
+        setIsMobileViewport(isMobile);
+        setActiveTab(isMobile ? 'experiences' : TABS[0].id);
       }
-      setActiveTab(TABS[0].id);
       setFormState(initialFormState);
       setStatus('idle');
       setErrorMessage('');
@@ -454,6 +461,8 @@ const MiniverseModal = ({ open, onClose, onSelectMiniverse }) => {
       setIsMobileViewport(event.matches);
       if (event.matches) {
         setActiveTab('experiences');
+      } else {
+        setActiveTab(TABS[0].id);
       }
     };
     setIsMobileViewport(mediaQuery.matches);
@@ -825,8 +834,6 @@ const MiniverseModal = ({ open, onClose, onSelectMiniverse }) => {
                   key={tab.id}
                   onClick={() => handleTabChange(tab.id)}
                   className={`rounded-full border px-4 py-2 text-sm transition ${
-                    tab.id === 'escaparate' ? 'hidden sm:inline-flex' : ''
-                  } ${
                     activeTab === tab.id
                       ? 'border-purple-400/60 bg-purple-500/20 text-purple-100'
                       : 'border-white/10 text-slate-300 hover:border-purple-300/40 hover:text-purple-100'
@@ -1128,13 +1135,14 @@ const MiniverseModal = ({ open, onClose, onSelectMiniverse }) => {
                   </div>
                 </div>
               ) : activeTab === 'escaparate' && isMobileViewport ? (
-                selectedMiniverse ? (
-                  <div className="md:col-span-2">
-                    <div
-                      className="glass-effect relative overflow-hidden rounded-2xl border bg-white/5 p-6 sm:p-8 space-y-0"
+                <div className="md:col-span-2 space-y-4">
+                  {showcaseMiniverses.map((card) => (
+                    <article
+                      key={`escaparate-mobile-${card.id}`}
+                      className="glass-effect relative overflow-hidden rounded-2xl border bg-white/5 p-5 sm:p-8"
                       style={{
                         borderColor:
-                          MINIVERSE_TILE_COLORS[selectedMiniverse.formatId]?.border ??
+                          MINIVERSE_TILE_COLORS[card.formatId]?.border ??
                           MINIVERSE_TILE_COLORS.default.border,
                       }}
                     >
@@ -1143,7 +1151,7 @@ const MiniverseModal = ({ open, onClose, onSelectMiniverse }) => {
                         className="pointer-events-none absolute inset-0 opacity-90"
                         style={{
                           backgroundImage:
-                            MINIVERSE_TILE_GRADIENTS[selectedMiniverse.formatId] ??
+                            MINIVERSE_TILE_GRADIENTS[card.formatId] ??
                             MINIVERSE_TILE_GRADIENTS.default,
                           filter: 'saturate(1.1)',
                           backgroundSize: '160% 160%',
@@ -1152,21 +1160,21 @@ const MiniverseModal = ({ open, onClose, onSelectMiniverse }) => {
                       />
                       <div
                         aria-hidden="true"
-                        className="pointer-events-none absolute inset-0 opacity-35 mix-blend-screen"
+                        className="pointer-events-none absolute inset-0 opacity-95 mix-blend-screen"
                         style={{
                           backgroundImage:
-                            'radial-gradient(1px 1px at 12% 18%, rgba(248,250,252,0.8), transparent 65%),' +
-                            'radial-gradient(1.5px 1.5px at 24% 42%, rgba(241,245,249,0.65), transparent 70%),' +
-                            'radial-gradient(2px 2px at 36% 28%, rgba(226,232,240,0.6), transparent 70%),' +
-                            'radial-gradient(1px 1px at 44% 62%, rgba(255,255,255,0.45), transparent 70%),' +
-                            'radial-gradient(1.5px 1.5px at 52% 18%, rgba(241,245,249,0.55), transparent 70%),' +
-                            'radial-gradient(2px 2px at 64% 48%, rgba(226,232,240,0.6), transparent 70%),' +
-                            'radial-gradient(1px 1px at 72% 30%, rgba(255,255,255,0.4), transparent 70%),' +
-                            'radial-gradient(1.5px 1.5px at 80% 66%, rgba(241,245,249,0.55), transparent 70%),' +
-                            'radial-gradient(2px 2px at 88% 22%, rgba(226,232,240,0.6), transparent 70%),' +
-                            'radial-gradient(1px 1px at 18% 78%, rgba(255,255,255,0.35), transparent 70%),' +
-                            'radial-gradient(1.5px 1.5px at 58% 78%, rgba(241,245,249,0.55), transparent 70%),' +
-                            'radial-gradient(1px 1px at 90% 82%, rgba(255,255,255,0.35), transparent 70%)',
+                            MINIVERSE_STARFIELDS[card.id] ?? MINIVERSE_STARFIELDS.default,
+                        }}
+                      />
+                      <div
+                        aria-hidden="true"
+                        className="pointer-events-none absolute inset-0 opacity-70 mix-blend-screen star-pulse"
+                        style={{
+                          backgroundImage:
+                            'radial-gradient(6px 6px at 18% 26%, rgba(255,255,255,0.9), transparent 70%),' +
+                            'radial-gradient(5px 5px at 72% 38%, rgba(255,255,255,0.85), transparent 70%),' +
+                            'radial-gradient(7px 7px at 60% 68%, rgba(255,255,255,0.85), transparent 72%),' +
+                            'radial-gradient(4px 4px at 38% 58%, rgba(255,255,255,0.8), transparent 70%)',
                         }}
                       />
                       <div className="absolute inset-0 opacity-30 mix-blend-screen pointer-events-none bg-[radial-gradient(circle_at_top,_rgba(255,255,255,0.25),_transparent_55%)]" />
@@ -1174,33 +1182,35 @@ const MiniverseModal = ({ open, onClose, onSelectMiniverse }) => {
                         <div className="flex flex-col gap-4">
                           <div className="flex items-center gap-3">
                             <div
-                              className={`h-12 w-12 rounded-full bg-gradient-to-br ${selectedMiniverse.thumbGradient} flex items-center justify-center text-sm font-semibold text-white shadow-[0_10px_25px_rgba(0,0,0,0.35)]`}
+                              className={`h-12 w-12 rounded-full bg-gradient-to-br ${card.thumbGradient} flex items-center justify-center text-sm font-semibold text-white shadow-[0_10px_25px_rgba(0,0,0,0.35)]`}
                             >
-                              {selectedMiniverse.icon ? (
-                                <selectedMiniverse.icon size={22} className="text-white drop-shadow-sm" />
+                              {card.icon ? (
+                                <card.icon size={22} className="text-white drop-shadow-sm" />
                               ) : (
-                                selectedMiniverse.thumbLabel
+                                card.thumbLabel
                               )}
                             </div>
                             <div>
-                              <p className="text-xs uppercase tracking-[0.35em] text-slate-400/80">Narrativa expandida</p>
-                              <h3 className="font-display text-3xl text-slate-50">{selectedMiniverse.title}</h3>
+                              <p className="text-xs uppercase tracking-[0.35em] text-slate-300/80">Narrativa expandida</p>
+                              <h3 className="font-display text-3xl text-slate-50">{card.title}</h3>
                             </div>
                           </div>
-                          <p className="text-sm text-slate-300/90 leading-relaxed">
-                            {selectedMiniverse.description}
+                          <p className="text-sm text-slate-200/90 leading-relaxed">
+                            {card.description}
                           </p>
                           <div className="lg:hidden w-full">
-                            <div className="relative w-full aspect-[4/5] rounded-3xl border border-white/10 bg-slate-900/60 overflow-hidden shadow-[0_18px_45px_rgba(0,0,0,0.45)]">
-                              {selectedMiniverse.videoUrl ? (
+                            <div className="relative w-full aspect-[5/4] sm:aspect-[4/5] rounded-3xl border border-white/10 bg-slate-900/60 overflow-hidden shadow-[0_18px_45px_rgba(0,0,0,0.45)]">
+                              {card.videoUrl ? (
                                 <>
                                   <video
-                                    src={selectedMiniverse.videoUrl}
+                                    src={card.videoUrl}
                                     className="absolute inset-0 h-full w-full object-cover"
                                     playsInline
                                     muted
                                     loop
                                     controls
+                                    onPlay={pauseShowcaseAutoPlay}
+                                    onPause={resumeShowcaseAutoPlay}
                                   />
                                   <div className="pointer-events-none absolute left-4 top-4 rounded-full border border-white/20 bg-black/50 px-3 py-1 text-[0.6rem] uppercase tracking-[0.3em] text-slate-200">
                                     Video provisional
@@ -1219,78 +1229,48 @@ const MiniverseModal = ({ open, onClose, onSelectMiniverse }) => {
                           <div className="flex flex-col sm:flex-row gap-3">
                             <Button
                               type="button"
-                              onClick={handleEnterMiniverse}
+                              onClick={() => handleEnterShowcase(card)}
                               className="bg-gradient-to-r from-purple-600/80 to-indigo-600/80 hover:from-purple-600 hover:to-indigo-600 text-white py-3 rounded-lg font-semibold flex items-center justify-center gap-2 hover-glow"
                             >
-                              {selectedMiniverse.ctaVerb ?? 'Abrir portal'}
+                              {card.titleShort ?? card.title}
                             </Button>
-                            <button
-                              type="button"
-                              onClick={handleReturnToList}
-                              className="rounded-lg border border-white/10 px-4 py-3 text-xs uppercase tracking-[0.25em] text-slate-300 hover:text-white hover:border-purple-300/40 transition"
-                            >
-                              Tocar otra puerta
-                            </button>
                           </div>
-                          <p className="text-xs uppercase tracking-[0.35em] text-slate-400">
+                          <p className="text-xs uppercase tracking-[0.35em] text-slate-300/70">
                             Testimonio en video
                           </p>
                         </div>
-                      </div>
-                    </div>
-                  </div>
-                ) : (
-                  <div className="md:col-span-2 grid md:grid-cols-3 gap-6">
-                    {MINIVERSE_CARDS.map((card) => {
-                      const isUpcoming = Boolean(card.isUpcoming);
-                      const isVisited = !isUpcoming && Boolean(visitedMiniverses[card.id]);
-                      return (
-                        <button
-                          key={card.title}
-                          type="button"
-                          onClick={() => handleSelectCard(card)}
-                          disabled={isUpcoming}
-                          className={`relative text-left glass-effect rounded-2xl border p-5 transition flex items-center gap-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-400/60 disabled:cursor-not-allowed disabled:opacity-60 ${
-                            isUpcoming
-                              ? 'border-white/10 bg-white/5'
-                              : isVisited
-                                ? 'border-emerald-300/20 bg-emerald-500/5 hover:border-emerald-300/30'
-                                : 'border-white/10 bg-white/5 hover:border-purple-300/40 hover:shadow-[0_10px_30px_rgba(124,58,237,0.18)]'
-                          }`}
-                        >
-                          {isUpcoming ? (
-                            <>
-                              <div className="h-12 w-12 rounded-full border border-white/10 bg-slate-800/60 flex items-center justify-center text-slate-200 shadow-[0_10px_25px_rgba(0,0,0,0.35)]">
-                                {card.icon ? <card.icon size={22} className="text-slate-200/80" /> : card.thumbLabel}
-                              </div>
-                              <span className="rounded-full border border-white/20 bg-black/40 px-3 py-1 text-[0.6rem] uppercase tracking-[0.3em] text-slate-300">
-                                {card.titleShort ?? card.title}
-                              </span>
-                            </>
-                          ) : null}
-                          {isVisited ? (
-                            <span
-                              aria-hidden="true"
-                              className="absolute right-3 top-3 h-2 w-2 rounded-full bg-emerald-300/60"
-                            />
-                          ) : null}
-                          {!isUpcoming ? (
-                            <>
-                              <div className="flex items-center gap-3">
-                                <div
-                                  className={`h-12 w-12 rounded-full bg-gradient-to-br ${card.thumbGradient} flex items-center justify-center text-sm font-semibold text-white shadow-[0_10px_25px_rgba(0,0,0,0.35)]`}
-                                >
-                                  {card.icon ? <card.icon size={22} className="text-white drop-shadow-sm" /> : card.thumbLabel}
+                        <div className="w-full">
+                          <div className="hidden lg:block relative w-full aspect-[4/5] rounded-3xl border border-white/10 bg-slate-900/60 overflow-hidden shadow-[0_18px_45px_rgba(0,0,0,0.45)]">
+                            {card.videoUrl ? (
+                              <>
+                                <video
+                                  src={card.videoUrl}
+                                  className="absolute inset-0 h-full w-full object-cover"
+                                  playsInline
+                                  muted
+                                  loop
+                                  controls
+                                  onPlay={pauseShowcaseAutoPlay}
+                                  onPause={resumeShowcaseAutoPlay}
+                                />
+                                <div className="pointer-events-none absolute left-4 top-4 rounded-full border border-white/20 bg-black/50 px-3 py-1 text-[0.6rem] uppercase tracking-[0.3em] text-slate-200">
+                                  Video provisional
                                 </div>
-                                <h3 className="font-display text-lg text-slate-100">{card.ctaVerb ?? card.title}</h3>
+                              </>
+                            ) : (
+                              <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 text-slate-300/70">
+                                <div className="h-12 w-12 rounded-full border border-white/20 bg-white/5 flex items-center justify-center text-sm uppercase tracking-[0.3em]">
+                                  ▶︎
+                                </div>
+                                <p className="text-xs uppercase tracking-[0.4em]">Video próximamente</p>
                               </div>
-                            </>
-                          ) : null}
-                        </button>
-                      );
-                    })}
-                  </div>
-                )
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    </article>
+                  ))}
+                </div>
               ) : selectedMiniverse ? (
                 <div className="md:col-span-2">
                   <div
@@ -1446,6 +1426,7 @@ const MiniverseModal = ({ open, onClose, onSelectMiniverse }) => {
                         type="button"
                         onClick={() => handleSelectCard(card)}
                         disabled={isUpcoming}
+                        style={{ '--glass-tint': card.glassTint }}
                         className={`relative text-left glass-effect-card rounded-2xl border p-5 transition flex flex-col items-start gap-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-400/60 disabled:cursor-not-allowed disabled:opacity-60 ${
                           isUpcoming
                             ? 'border-white/10 bg-white/5'

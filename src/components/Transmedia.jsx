@@ -51,6 +51,7 @@ import { fetchApprovedContributions } from '@/services/contributionService';
 import { useSilvestreVoice } from '@/hooks/useSilvestreVoice';
 import ObraConversationControls from '@/components/miniversos/obra/ObraConversationControls';
 import ObraQuestionList from '@/components/miniversos/obra/ObraQuestionList';
+import { supabase } from '@/lib/supabaseClient';
 
 pdfjs.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`;
 const GAT_COSTS = {
@@ -1087,13 +1088,24 @@ iaProfile: {
 
 const ShowcaseReactionInline = ({ showcaseId, title, description, buttonLabel, className = '' }) => {
   const { user } = useAuth();
+  const [hasActiveSubscription, setHasActiveSubscription] = useState(false);
   const isAuthenticated = Boolean(user);
-  const isSubscriber = Boolean(
+  const metadataSubscriber = Boolean(
     user?.user_metadata?.isSubscriber ||
       user?.user_metadata?.is_subscriber ||
       user?.user_metadata?.subscription_status === 'active' ||
+      user?.user_metadata?.subscription_status === 'trialing' ||
+      user?.user_metadata?.stripe_subscription_status === 'active' ||
+      user?.user_metadata?.stripe_subscription_status === 'trialing' ||
+      user?.user_metadata?.plan === 'subscriber' ||
+      user?.user_metadata?.tier === 'subscriber' ||
+      user?.app_metadata?.subscription_status === 'active' ||
+      user?.app_metadata?.subscription_status === 'trialing' ||
+      user?.app_metadata?.stripe_subscription_status === 'active' ||
+      user?.app_metadata?.stripe_subscription_status === 'trialing' ||
       user?.app_metadata?.roles?.includes?.('subscriber')
   );
+  const isSubscriber = metadataSubscriber || hasActiveSubscription;
 
   const [status, setStatus] = useState('idle');
 
@@ -1584,17 +1596,47 @@ const Transmedia = () => {
   const [isCauseSiteOpen, setIsCauseSiteOpen] = useState(false);
   const [showInstallPwaCTA, setShowInstallPwaCTA] = useState(false);
   const [useLegacyTazaViewer, setUseLegacyTazaViewer] = useState(LEGACY_TAZA_VIEWER_ENABLED);
+  const [hasActiveSubscription, setHasActiveSubscription] = useState(false);
   const isAuthenticated = Boolean(user);
   const isSubscriber = Boolean(
     user?.user_metadata?.isSubscriber ||
       user?.user_metadata?.is_subscriber ||
       user?.user_metadata?.subscription_status === 'active' ||
-      user?.app_metadata?.roles?.includes?.('subscriber')
+      user?.app_metadata?.roles?.includes?.('subscriber') ||
+      hasActiveSubscription
   );
   const allShowcasesUnlocked = useMemo(
     () => SHOWCASE_BADGE_IDS.every((id) => showcaseBoosts?.[id]),
     [showcaseBoosts]
   );
+
+  useEffect(() => {
+    if (!user?.id) {
+      setHasActiveSubscription(false);
+      return undefined;
+    }
+
+    let isMounted = true;
+
+    supabase
+      .from('suscriptores')
+      .select('id', { count: 'exact', head: true })
+      .eq('user_id', user.id)
+      .in('status', ['active', 'trialing'])
+      .then(({ count, error }) => {
+        if (!isMounted) return;
+        if (error) {
+          console.warn('[Transmedia] No se pudo validar suscripción:', error);
+          setHasActiveSubscription(false);
+          return;
+        }
+        setHasActiveSubscription((count ?? 0) > 0);
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, [user?.id]);
 
   useEffect(() => {
     if (typeof window === 'undefined') return undefined;
