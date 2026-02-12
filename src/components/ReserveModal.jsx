@@ -104,31 +104,39 @@ const RESERVE_COPY = {
   },
   offseason: {
     eyebrow: 'Encontrémonos fuera del teatro',
-    title: 'Objetos del universo',
+    title: 'Puntos de encuentro',
     intro:
-      'La idea es simple: cuando varias personas se interesan, buscamos la manera de encontrarnos, compartir café, conversación y entregar los objetos en mano.',
+      'Estos objetos no son sólo piezas: son puntos de encuentro. Cuando alguien se interesa, buscamos la manera de activar una conversación en su ciudad.',
     notice: (
   <>
-    También podemos hacer envíos y coordinar encuentros virtuales. Después de elegir lo que más te guste, nos pondremos en contacto contigo. <strong>Cada reserva abre una conversación.</strong>
+    También coordinamos envíos y encuentros virtuales cuando el diálogo lo requiere. <strong>Cada activación abre una conversación.</strong>
   </>
 ),
     footerNote: (
       <div className="rounded-2xl border border-white/10 bg-black/30 p-5 shadow-[0_20px_45px_rgba(0,0,0,0.35)]">
-        <div className="text-2xl text-purple-200">“</div>
-        <p className="text-sm text-slate-100/90 leading-relaxed italic">
-          A largo plazo, soñamos con un espacio físico donde arte, café y salud mental puedan convivir.
-        </p>
-        <div className="mt-4 flex items-center gap-3">
-          <img
-            src="https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/autores/carlos_perez_avatar.png"
-            alt="Carlos A. Pérez H."
-            className="h-11 w-11 rounded-full border border-white/20 object-cover shadow-[0_6px_18px_rgba(0,0,0,0.35)]"
-            loading="lazy"
-          />
-          <div>
-            <p className="text-sm text-slate-100 font-semibold">Carlos A. Pérez H.</p>
-            <p className="text-xs text-slate-400">Creador de #GatoEncerrado</p>
+        
+        <div className="flex flex-col gap-4 sm:gap-3 sm:grid sm:grid-cols-[96px_26px_1fr] sm:items-start">
+          <div className="order-3 sm:order-1 sm:pt-1 sm:justify-self-start self-start">
+            <div className="h-[64px] w-[64px] sm:h-[84px] sm:w-[84px] overflow-hidden rounded-full border border-white/25 shadow-[0_10px_26px_rgba(0,0,0,0.45)] ring-2 ring-purple-300/30">
+              <img
+                src="https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/autores/avatar_carlosph.jpg"
+                alt="Carlos A. Pérez H."
+                className="h-full w-full object-cover"
+                loading="lazy"
+              />
+            </div>
           </div>
+          <div className="order-1 sm:order-2 text-[4.25rem] sm:text-4xl text-purple-200/90 leading-[0.65] sm:justify-self-end sm:text-right self-start">“</div>
+          <div className="order-2 sm:order-3">
+            <p className="text-sm text-slate-100/90 leading-relaxed italic">
+              A largo plazo, imaginamos un centro donde crear también sea investigar, y cuidar la salud mental sea una forma de arte compartido.
+            </p>
+            <div className="mt-4">
+              <p className="text-base text-white font-semibold tracking-wide">Carlos A. Pérez H.</p>
+              <p className="text-xs uppercase tracking-[0.25em] text-purple-200/80">Creador de #GatoEncerrado</p>
+            </div>
+          </div>
+      
         </div>
       </div>
     ),
@@ -508,14 +516,14 @@ const ReserveModal = ({
 
                 {/* Notes */}
                 <div className="space-y-2">
-                  <label className="text-sm font-medium text-slate-200">Notas</label>
+                  <label className="text-sm font-medium text-slate-200">Intención o propuesta</label>
                   <textarea
                     name="notes"
                     rows={3}
                     value={formState.notes}
                     onChange={handleInputChange}
                     className="w-full rounded-lg border border-white/10 bg-black/30 px-4 py-3 text-slate-100 placeholder-slate-500 focus:border-purple-400 focus:ring-1 focus:ring-purple-400 resize-none"
-                    placeholder="¿Necesitas facilidades especiales o quires solicitar una suscripción?"
+                    placeholder="¿Te interesa un punto de venta, una presentación, un conversatorio o una colaboración?"
                   />
                 </div>
 
@@ -547,7 +555,7 @@ const ReserveModal = ({
                     disabled={status === 'loading'}
                     className="w-full bg-gradient-to-r from-purple-600/80 to-indigo-600/80 hover:from-purple-600 hover:to-indigo-600 text-white py-3 rounded-lg font-semibold flex items-center justify-center gap-2 hover-glow"
                   >
-                    {isSubmitting ? 'Enviando…' : 'Apartar'}
+                    {isSubmitting ? 'Enviando…' : 'Enviar'}
                   </Button>
 
        
