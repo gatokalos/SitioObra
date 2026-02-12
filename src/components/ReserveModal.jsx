@@ -118,9 +118,17 @@ const RESERVE_COPY = {
         <p className="text-sm text-slate-100/90 leading-relaxed italic">
           A largo plazo, soñamos con un espacio físico donde arte, café y salud mental puedan convivir.
         </p>
-        <div className="mt-4">
-          <p className="text-sm text-slate-100 font-semibold">Carlos A. Pérez H.</p>
-          <p className="text-xs text-slate-400">Creador de #GatoEncerrado</p>
+        <div className="mt-4 flex items-center gap-3">
+          <img
+            src="https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/autores/carlos_perez_avatar.png"
+            alt="Carlos A. Pérez H."
+            className="h-11 w-11 rounded-full border border-white/20 object-cover shadow-[0_6px_18px_rgba(0,0,0,0.35)]"
+            loading="lazy"
+          />
+          <div>
+            <p className="text-sm text-slate-100 font-semibold">Carlos A. Pérez H.</p>
+            <p className="text-xs text-slate-400">Creador de #GatoEncerrado</p>
+          </div>
         </div>
       </div>
     ),

@@ -10,10 +10,11 @@ import { useAuth } from '@/contexts/SupabaseAuthContext';
 import { safeSetItem } from '@/lib/safeStorage';
 
 const TABS = [
-  { id: 'escaparate', label: 'Explorar', icon: Sparkles },
+  { id: 'escaparate', label: 'Descubrir', icon: Sparkles },
   { id: 'experiences', label: 'Probar', icon: Gamepad2 },
   { id: 'waitlist', label: 'Apoyar', icon: HeartHandshake },
 ];
+const DEFAULT_TAB_ID = 'escaparate';
 
 const MINIVERSE_PORTAL_ROUTES = {
   drama: '/portal-voz',
@@ -304,7 +305,7 @@ const readStoredJson = (key, fallback) => {
 const MiniverseModal = ({ open, onClose, onSelectMiniverse }) => {
   const navigate = useNavigate();
   const { user } = useAuth();
-  const [activeTab, setActiveTab] = useState(TABS[0].id);
+  const [activeTab, setActiveTab] = useState(DEFAULT_TAB_ID);
   const [formState, setFormState] = useState(initialFormState);
   const [status, setStatus] = useState('idle');
   const [errorMessage, setErrorMessage] = useState('');
@@ -419,7 +420,7 @@ const MiniverseModal = ({ open, onClose, onSelectMiniverse }) => {
         const mediaQuery = window.matchMedia('(max-width: 639px)');
         const isMobile = mediaQuery.matches;
         setIsMobileViewport(isMobile);
-        setActiveTab(TABS[0].id);
+        setActiveTab(DEFAULT_TAB_ID);
       }
       setFormState(initialFormState);
       setStatus('idle');
@@ -459,7 +460,7 @@ const MiniverseModal = ({ open, onClose, onSelectMiniverse }) => {
     const mediaQuery = window.matchMedia('(max-width: 639px)');
     const handleMediaChange = (event) => {
       setIsMobileViewport(event.matches);
-      setActiveTab(TABS[0].id);
+      setActiveTab(DEFAULT_TAB_ID);
     };
     setIsMobileViewport(mediaQuery.matches);
     mediaQuery.addEventListener('change', handleMediaChange);
@@ -484,7 +485,10 @@ const MiniverseModal = ({ open, onClose, onSelectMiniverse }) => {
     setFormState((prev) => ({ ...prev, [name]: value }));
   }, []);
 
-  const activeTabLabel = useMemo(() => TABS.find((tab) => tab.id === activeTab)?.label ?? TABS[0].label, [activeTab]);
+  const activeTabLabel = useMemo(
+    () => TABS.find((tab) => tab.id === activeTab)?.label ?? TABS[0].label,
+    [activeTab]
+  );
   const showcaseMiniverses = useMemo(
     () => MINIVERSE_CARDS.filter((card) => !card.isUpcoming),
     []
