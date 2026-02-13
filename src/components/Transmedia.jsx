@@ -1557,7 +1557,7 @@ const Transmedia = () => {
     resetSilvestreQuestions,
   } = useSilvestreVoice();
   const [showcaseCarouselIndex, setShowcaseCarouselIndex] = useState(0);
-  const [isShowcaseCarouselPaused, setIsShowcaseCarouselPaused] = useState(false);
+  const [mobileShowcaseIndex, setMobileShowcaseIndex] = useState(0);
   const [isMovementCreditsOpen, setIsMovementCreditsOpen] = useState(false);
   const [openCollaboratorId, setOpenCollaboratorId] = useState(null);
   const { isMobileViewport, canUseInlinePlayback, requestMobileVideoPresentation } = useMobileVideoPresentation();
@@ -2322,16 +2322,24 @@ const Transmedia = () => {
     setShowcaseCarouselIndex((prev) => (prev - 1 + formats.length) % formats.length);
   }, []);
 
+  const handleMobileShowcaseNext = useCallback(() => {
+    setMobileShowcaseIndex((prev) => (prev + 1) % formats.length);
+  }, []);
+
+  const handleMobileShowcasePrev = useCallback(() => {
+    setMobileShowcaseIndex((prev) => (prev - 1 + formats.length) % formats.length);
+  }, []);
+
   const visibleShowcases = useMemo(() => {
     if (formats.length <= 3) return formats;
     return Array.from({ length: 3 }, (_, idx) => formats[(showcaseCarouselIndex + idx) % formats.length]);
   }, [showcaseCarouselIndex]);
 
   useEffect(() => {
-    if (isMobileViewport || isShowcaseCarouselPaused) return undefined;
+    if (isMobileViewport) return undefined;
     const intervalId = window.setInterval(handleShowcaseNext, 12000);
     return () => window.clearInterval(intervalId);
-  }, [handleShowcaseNext, isMobileViewport, isShowcaseCarouselPaused]);
+  }, [handleShowcaseNext, isMobileViewport]);
 
   useEffect(() => {
     if (typeof window === 'undefined') return undefined;
@@ -4913,8 +4921,9 @@ const rendernotaAutoral = () => {
 
           </motion.div>
 
-          <div className="lg:hidden md:grid md:grid-cols-2 md:gap-8 md:min-h-[720px] space-y-6 md:space-y-0">
-            {formats.map((format, index) => {
+          <div className="lg:hidden space-y-6">
+            {(() => {
+              const format = formats[mobileShowcaseIndex % formats.length];
               const Icon = format.icon;
               const iconClass = format.iconClass ?? 'text-purple-200';
               const tileGradient =
@@ -4924,129 +4933,95 @@ const rendernotaAutoral = () => {
               return (
                 <motion.div
                   key={format.id}
-                  initial={false}
-                  animate={{
-                    opacity: isDimmedTile ? 0 : 1,
-                    scale: isCinematicShowcaseOpen ? (isActiveTile ? 1.06 : 0.96) : 1,
-                    y: isCinematicShowcaseOpen ? (isActiveTile ? -8 : 10) : 0,
-                    filter: isCinematicShowcaseOpen
-                      ? isActiveTile
-                        ? 'saturate(1.1)'
-                        : 'saturate(0.6) blur(3px)'
-                      : 'saturate(1)',
-                  }}
-                  transition={{ duration: 0.4, delay: index * 0.05, ease: 'easeOut' }}
-                  className={`group glass-effect rounded-xl p-8 hover-glow cursor-pointer flex flex-col transition-all duration-300 hover:border-purple-400/50 relative overflow-hidden sticky top-24 md:static md:top-auto ${
-                    isDimmedTile ? 'pointer-events-none' : ''
+                  initial={{ opacity: 0, y: 18 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.4, ease: 'easeOut' }}
+                  className={`group glass-effect rounded-2xl border border-white/10 bg-black/30 overflow-hidden text-left shadow-[0_20px_60px_rgba(0,0,0,0.55)] ${
+                    isDimmedTile ? 'pointer-events-none opacity-70' : ''
                   }`}
-                  style={{ zIndex: formats.length - index }}
                   onClick={() => handleFormatClick(format.id)}
                 >
-                  <div
-                    aria-hidden="true"
-                    className="absolute inset-0 opacity-80 group-hover:opacity-100 transition duration-500 pointer-events-none"
-                    style={{
-                      backgroundImage: tileGradient,
-                      filter: 'saturate(1.1)',
-                      backgroundSize: '160% 160%',
-                      backgroundPosition: '0% 0%',
-                    }}
-                  />
-                  <div
-                    aria-hidden="true"
-                    className="absolute inset-0 opacity-35 mix-blend-screen pointer-events-none"
-                    style={{
-                      backgroundImage:
-                        'radial-gradient(1px 1px at 12% 18%, rgba(248,250,252,0.8), transparent 65%),' +
-                        'radial-gradient(1.5px 1.5px at 24% 42%, rgba(241,245,249,0.65), transparent 70%),' +
-                        'radial-gradient(2px 2px at 36% 28%, rgba(226,232,240,0.6), transparent 70%),' +
-                        'radial-gradient(1px 1px at 44% 62%, rgba(255,255,255,0.45), transparent 70%),' +
-                        'radial-gradient(1.5px 1.5px at 52% 18%, rgba(241,245,249,0.55), transparent 70%),' +
-                        'radial-gradient(2px 2px at 64% 48%, rgba(226,232,240,0.6), transparent 70%),' +
-                        'radial-gradient(1px 1px at 72% 30%, rgba(255,255,255,0.4), transparent 70%),' +
-                        'radial-gradient(1.5px 1.5px at 80% 66%, rgba(241,245,249,0.55), transparent 70%),' +
-                        'radial-gradient(2px 2px at 88% 22%, rgba(226,232,240,0.6), transparent 70%),' +
-                        'radial-gradient(1px 1px at 18% 78%, rgba(255,255,255,0.35), transparent 70%),' +
-                        'radial-gradient(1.5px 1.5px at 58% 78%, rgba(241,245,249,0.55), transparent 70%),' +
-                        'radial-gradient(1px 1px at 90% 82%, rgba(255,255,255,0.35), transparent 70%)',
-                    }}
-                  />
-                  <div className="absolute inset-0 opacity-30 mix-blend-screen pointer-events-none bg-[radial-gradient(circle_at_top,_rgba(255,255,255,0.25),_transparent_55%)]" />
-                  <div className="relative z-10 flex flex-col h-full">
-
-  {/* BADGE SUPERIOR DERECHO (miniverso leído) */}
-  {(() => {
-    const boostApplied = Boolean(showcaseBoosts?.[format.id]);
-    if (boostApplied) {
-      return (
-        <div className="absolute top-4 right-4 bg-emerald-900/40 text-emerald-200 text-[0.65rem] uppercase tracking-[0.25em] px-3 py-1 rounded-full border border-emerald-300/40 shadow-[0_0_10px_rgba(16,185,129,0.3)] backdrop-blur-sm">
-          Miniverso expandido
-        </div>
-      );
-    }
-    return null;
-  })()}
-
-  {/* Ícono y título */}
-  <div className="flex items-center justify-start mb-6 transition-all duration-300 group-hover:scale-110">
-    <Icon
-      size={32}
-      className={`${iconClass} drop-shadow-[0_0_12px_rgba(168,85,247,0.4)]`}
-    />
-  </div>
-
-  <h3 className="font-display text-2xl font-medium text-slate-100 mb-1">
-    {format.title}
-  </h3>
-
-  {/* SUBTEXTO — instrucción breve por miniverso */}
-  <p className="font-display italic text-sm text-slate-200/90 tracking-wide mb-4 leading-snug">
-    {format.instruccion}
-  </p>
-
-  <p className="text-slate-200/80 text-base leading-relaxed mb-4 flex-grow font-light">
-    {format.description}
-  </p>
-
-  {/* BLOQUE DE ENERGÍA */}
-  {(() => {
-    const baseValue = baseEnergyByShowcase[format.id] ?? 0;
-    const currentValue =
-      showcaseEnergy?.[format.id] ?? (baseValue > 0 ? baseValue : 0);
-    const boostApplied = Boolean(showcaseBoosts?.[format.id]);
-    const toneClass = 'text-amber-200';
-    const label = boostApplied ? 'Energía acumulada:' : 'Energía inicial:';
-    if (format.id === 'lataza') {
-      return (
-        <div className="mb-4 text-xs text-slate-200/80 flex flex-wrap items-center gap-2">
-          <Coins size={14} className={toneClass} />
-          <span className="uppercase tracking-[0.25em] text-slate-100/70">
-            Energía:
-          </span>
-          <span className={`font-semibold ${toneClass}`}>∞</span>
-        </div>
-      );
-    }
-    return (
-      <div className="mb-4 text-xs text-slate-200/80 flex flex-wrap items-center gap-2">
-        <Coins size={14} className={toneClass} />
-        <span className="uppercase tracking-[0.25em] text-slate-100/70">
-          {label}
-        </span>
-        <span className={`font-semibold ${toneClass}`}>{currentValue} GAT</span>
-      </div>
-    );
-  })()}
-
-  {/* CTA */}
-  <div className="text-purple-300 flex items-center gap-2 font-semibold transition-all duration-300 group-hover:gap-3">
-    Gastar Gatokens
-    <ArrowRight size={18} />
-  </div>
-</div>
+                  <div className="relative h-[280px] bg-slate-500/20">
+                    <div className="absolute inset-0 bg-gradient-to-br from-white/5 via-transparent to-black/25" />
+                  </div>
+                  <div className="relative overflow-hidden">
+                    <div className="absolute inset-0 pointer-events-none">
+                      <div
+                        aria-hidden="true"
+                        className="absolute inset-0 opacity-80"
+                        style={{
+                          backgroundImage: tileGradient,
+                          filter: 'saturate(1.1)',
+                          backgroundSize: '160% 160%',
+                          backgroundPosition: '0% 0%',
+                        }}
+                      />
+                      <div
+                        aria-hidden="true"
+                        className="absolute inset-0 opacity-35 mix-blend-screen"
+                        style={{
+                          backgroundImage:
+                            'radial-gradient(1px 1px at 12% 18%, rgba(248,250,252,0.8), transparent 65%),' +
+                            'radial-gradient(1.5px 1.5px at 24% 42%, rgba(241,245,249,0.65), transparent 70%),' +
+                            'radial-gradient(2px 2px at 36% 28%, rgba(226,232,240,0.6), transparent 70%),' +
+                            'radial-gradient(1px 1px at 44% 62%, rgba(255,255,255,0.45), transparent 70%),' +
+                            'radial-gradient(1.5px 1.5px at 52% 18%, rgba(241,245,249,0.55), transparent 70%),' +
+                            'radial-gradient(2px 2px at 64% 48%, rgba(226,232,240,0.6), transparent 70%),' +
+                            'radial-gradient(1px 1px at 72% 30%, rgba(255,255,255,0.4), transparent 70%),' +
+                            'radial-gradient(1.5px 1.5px at 80% 66%, rgba(241,245,249,0.55), transparent 70%),' +
+                            'radial-gradient(2px 2px at 88% 22%, rgba(226,232,240,0.6), transparent 70%),' +
+                            'radial-gradient(1px 1px at 18% 78%, rgba(255,255,255,0.35), transparent 70%),' +
+                            'radial-gradient(1.5px 1.5px at 58% 78%, rgba(241,245,249,0.55), transparent 70%),' +
+                            'radial-gradient(1px 1px at 90% 82%, rgba(255,255,255,0.35), transparent 70%)',
+                        }}
+                      />
+                      <div className="absolute inset-0 opacity-30 mix-blend-screen bg-[radial-gradient(circle_at_top,_rgba(255,255,255,0.25),_transparent_55%)]" />
+                    </div>
+                    <div className="relative z-10 px-6 pb-6 pt-4 space-y-4">
+                      <div className="flex items-center gap-3">
+                        <Icon
+                          size={24}
+                          className={`${iconClass} drop-shadow-[0_0_12px_rgba(168,85,247,0.35)] transition-transform duration-300 group-hover:-translate-y-1`}
+                        />
+                        <div>
+                          <p className="text-xs uppercase tracking-[0.35em] text-slate-400/80">Vitrina</p>
+                          <h3 className="font-display text-2xl text-slate-100">{format.title}</h3>
+                        </div>
+                      </div>
+                      <p className="text-sm text-slate-300/85 leading-relaxed min-h-[3.5rem]">
+                        {format.instruccion}
+                      </p>
+                      <div className="flex items-center gap-2 text-xs text-amber-200/90 uppercase tracking-[0.25em]">
+                        <Coins size={12} className="text-amber-200" />
+                        {format.iaTokensNote}
+                      </div>
+                      <div className="text-purple-300 flex items-center gap-2 font-semibold transition-all duration-300 group-hover:gap-3">
+                        Abrir vitrina
+                        <ArrowRight size={18} />
+                      </div>
+                    </div>
+                  </div>
                 </motion.div>
               );
-            })}
+            })()}
+            <div className="flex items-center justify-center gap-4">
+              <button
+                type="button"
+                onClick={handleMobileShowcasePrev}
+                className="h-10 w-10 rounded-full border border-white/15 bg-white/5 text-slate-200 hover:text-white hover:border-purple-300/40 transition"
+                aria-label="Vitrina anterior"
+              >
+                ←
+              </button>
+              <button
+                type="button"
+                onClick={handleMobileShowcaseNext}
+                className="h-10 w-10 rounded-full border border-white/15 bg-white/5 text-slate-200 hover:text-white hover:border-purple-300/40 transition"
+                aria-label="Siguiente vitrina"
+              >
+                →
+              </button>
+            </div>
           </div>
           <div
             className="hidden lg:block"
