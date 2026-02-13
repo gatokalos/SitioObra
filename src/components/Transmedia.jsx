@@ -86,6 +86,47 @@ const DEFAULT_BADGE_STATE = {
   claimedAt: null,
   claimedType: null,
 };
+const useActiveSubscription = (userId) => {
+  const [hasActiveSubscription, setHasActiveSubscription] = useState(false);
+  const [isCheckingSubscription, setIsCheckingSubscription] = useState(false);
+
+  useEffect(() => {
+    if (!userId) {
+      setHasActiveSubscription(false);
+      setIsCheckingSubscription(false);
+      return undefined;
+    }
+
+    let isMounted = true;
+    setIsCheckingSubscription(true);
+
+    supabase
+      .from('suscriptores')
+      .select('id', { count: 'exact', head: true })
+      .eq('user_id', userId)
+      .in('status', ['active', 'trialing'])
+      .then(({ count, error }) => {
+        if (!isMounted) return;
+        if (error) {
+          console.warn('[Transmedia] No se pudo validar suscripción:', error);
+          setHasActiveSubscription(false);
+          return;
+        }
+        setHasActiveSubscription((count ?? 0) > 0);
+      })
+      .finally(() => {
+        if (isMounted) {
+          setIsCheckingSubscription(false);
+        }
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, [userId]);
+
+  return { hasActiveSubscription, isCheckingSubscription };
+};
 const requestCameraAccess = async () => {
   if (typeof navigator === 'undefined' || !navigator.mediaDevices?.getUserMedia) {
     throw new Error('getUserMedia no disponible en este navegador');
@@ -432,7 +473,7 @@ const showcaseDefinitions = {
     intro:
       'Aquí nace la obra dentro de la obra. El gato encerrado de Es un gato encerrado.',
     cartaTitle: '#VibraciónEscénica',
-    notaAutoral: 'De la escena brotó el universo:\nvoz, trance y cuerpo\nabriendo portales.',
+    notaAutoral: 'De la escena brotó el universo:\nvoz, trance y cuerpo\nabriendo un portal.',
 
     ctaLabel: 'Hablar con La Obra',
     conversationStarters: OBRA_CONVERSATION_STARTERS,
@@ -1090,7 +1131,7 @@ iaProfile: {
 
 const ShowcaseReactionInline = ({ showcaseId, title, description, buttonLabel, className = '' }) => {
   const { user } = useAuth();
-  const [hasActiveSubscription, setHasActiveSubscription] = useState(false);
+  const { hasActiveSubscription } = useActiveSubscription(user?.id);
   const isAuthenticated = Boolean(user);
   const metadataSubscriber = Boolean(
     user?.user_metadata?.isSubscriber ||
@@ -1168,6 +1209,7 @@ const formats = [
     iconClass: 'text-purple-300',
     instruccion: 'Habla con la obra sobre la obra.',
     iaTokensNote: 'Energía requerida: ~300 GAT',
+    image: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Merch/posters/obra.png',
   },
   {
     id: 'lataza',
@@ -1200,6 +1242,7 @@ const formats = [
     iconClass: 'text-rose-300',
     instruccion: 'Acumula para entradas a la cineteca.',
     iaTokensNote: 'Requiere ~250 de atención.',
+    image: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Merch/posters/cine.png',
   },
   {
     id: 'miniversoSonoro',
@@ -1521,6 +1564,7 @@ const Transmedia = () => {
     : DEFAULT_BADGE_STATE;
 
   const [isMiniverseOpen, setIsMiniverseOpen] = useState(false);
+  const [isMiniverseShelved, setIsMiniverseShelved] = useState(false);
   const [miniverseContext, setMiniverseContext] = useState(null);
   const [activeShowcase, setActiveShowcase] = useState(null);
   const hasHandledDeepLinkRef = useRef(false);
@@ -1894,10 +1938,12 @@ const Transmedia = () => {
     }
     const normalizedLabel = typeof contextLabel === 'string' ? contextLabel : null;
     setMiniverseContext(normalizedLabel);
+    setIsMiniverseShelved(false);
     setIsMiniverseOpen(true);
   }, [location.hash, location.pathname, location.search, navigate, user]);
 
   const handleCloseMiniverses = useCallback(() => {
+    setIsMiniverseShelved(false);
     setIsMiniverseOpen(false);
     setMiniverseContext(null);
   }, []);
@@ -1950,6 +1996,11 @@ const Transmedia = () => {
     [loadShowcaseContent, showcaseContent]
   );
 
+  const handleCloseShowcase = useCallback(() => {
+    setActiveShowcase(null);
+    setIsMiniverseShelved(false);
+  }, []);
+
   const handleSelectMiniverse = useCallback(
     (formatId) => {
       if (!formatId) return;
@@ -1958,34 +2009,18 @@ const Transmedia = () => {
         return;
       }
       if (showcaseDefinitions[formatId]) {
-        if (typeof document !== 'undefined') {
-          const anchor = document.querySelector('#transmedia');
-          if (anchor) {
-            const target = anchor.getBoundingClientRect().top + window.scrollY;
-            window.scrollTo({ top: target, behavior: 'smooth' });
-            const startTs = performance.now();
-            const maxWait = 1200;
-            const waitForScroll = () => {
-              const currentY = window.scrollY;
-              if (Math.abs(currentY - target) < 12 || performance.now() - startTs > maxWait) {
-                openMiniverseById(formatId);
-                return;
-              }
-              requestAnimationFrame(waitForScroll);
-            };
-            requestAnimationFrame(waitForScroll);
-          } else {
-            openMiniverseById(formatId);
-          }
-        } else {
-          openMiniverseById(formatId);
-        }
+        openMiniverseById(formatId);
       }
-      setIsMiniverseOpen(false);
-      setMiniverseContext(null);
+      setIsMiniverseShelved(true);
     },
     [openMiniverseById, setIsMiniversoEditorialModalOpen]
   );
+
+  useEffect(() => {
+    if (!activeShowcase && isMiniverseShelved) {
+      setIsMiniverseShelved(false);
+    }
+  }, [activeShowcase, isMiniverseShelved]);
 
   const handleFormatClick = useCallback(
     (formatId) => {
@@ -2493,12 +2528,12 @@ const Transmedia = () => {
     if (!isCinematicShowcaseOpen) return undefined;
     const handleKeyDown = (event) => {
       if (event.key === 'Escape') {
-        setActiveShowcase(null);
+        handleCloseShowcase();
       }
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isCinematicShowcaseOpen]);
+  }, [handleCloseShowcase, isCinematicShowcaseOpen]);
 
   useEffect(() => {
     if (activeShowcase !== 'apps') {
@@ -3386,7 +3421,7 @@ const rendernotaAutoral = () => {
     }
 
     if (activeDefinition.type === 'tragedia') {
-      const onClose = () => setActiveShowcase(null);
+      const onClose = handleCloseShowcase;
       const visibleStarters = tragicoStarters.filter((starter) => !spentSilvestreSet.has(starter));
       const conversationBlock = visibleStarters.length ? (
         <ObraQuestionList
@@ -3405,7 +3440,7 @@ const rendernotaAutoral = () => {
       const reactionDetails = {
         showcaseId: 'miniversos',
         title: 'Resonancia colectiva',
-        description: 'Haz clic para dejar un pulso que mantenga viva la conversación de Silvestre.',
+        description: 'Haz clic para dejar un pulso que mantenga viva la conversación.',
         buttonLabel: 'Enviar pulsaciones',
         className: 'mt-4',
       };
@@ -3421,7 +3456,7 @@ const rendernotaAutoral = () => {
               <Send size={14} className="text-purple-200" />
             </button>
             <button
-              onClick={() => setActiveShowcase(null)}
+              onClick={handleCloseShowcase}
               className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-white/15 bg-white/5 text-slate-200/90 hover:border-purple-300/40 hover:text-white transition"
               aria-label="Cerrar vitrina"
             >
@@ -4651,7 +4686,7 @@ const rendernotaAutoral = () => {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              onClick={() => setActiveShowcase(null)}
+              onClick={handleCloseShowcase}
             />
             <div
               className="pointer-events-none absolute inset-0 opacity-60 sm:opacity-75 mix-blend-screen"
@@ -4690,7 +4725,7 @@ const rendernotaAutoral = () => {
                     <Send size={14} className="text-purple-200" />
                   </button>
                   <button
-                    onClick={() => setActiveShowcase(null)}
+                    onClick={handleCloseShowcase}
                     className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-white/15 bg-white/5 text-slate-200/90 hover:border-purple-300/40 hover:text-white transition"
                     aria-label="Cerrar vitrina"
                   >
@@ -4904,26 +4939,29 @@ const rendernotaAutoral = () => {
             viewport={{ once: true }}
             className="text-center mb-16 space-y-6 min-h-[240px] md:min-h-[260px]"
           >
-            <p className="text-xs uppercase tracking-[0.4em] text-slate-400/70">Universo Transmedia</p>
+            <p className="text-xs uppercase tracking-[0.4em] text-slate-400/70">Narrativa Expandida</p>
             <h2 className="font-display text-4xl md:text-5xl font-medium text-gradient italic">
-              Los Miniversos de #GatoEncerrado
+              Vitrinas del universo
             </h2>
             <p className="text-lg text-slate-300/80 max-w-3xl mx-auto leading-relaxed font-light">
-              El universo de #GatoEncerrado se expande en <strong>nueve miniversos</strong>. Cada uno late por su cuenta —ya estaba ahí antes de que llegaras— y forma parte del mismo organismo narrativo. Al explorarlos, activas <span className="font-semibold text-purple-200">GATokens</span>: una energía simbólica que impulsa la experiencia artística y contribuye al sostenimiento de la causa social de {' '}
-              <button
-                type="button"
-                onClick={handleScrollToSupport}
-                className="text-purple-200 underline underline-offset-4 hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-400 rounded-sm"
-              >
-                Isabel Ayuda para la Vida, A.C.
-              </button>
-             {' '} </p>
+  Aquí no está todo.<br />
+  Aquí está lo suficiente para comenzar.<br /><br />
+
+  Estas vitrinas reúnen fragmentos activos de los <strong>nueve miniversos</strong> de #GatoEncerrado. 
+  Cada uno forma parte de un organismo narrativo mayor que sigue expandiéndose.<br /><br />
+
+  Te confiamos <span className="font-semibold text-purple-200">GATokens</span> para explorar y activar la experiencia. <br />Lo demás espera del otro lado.
+</p>
 
           </motion.div>
 
           <div className="lg:hidden space-y-6">
             {(() => {
               const format = formats[mobileShowcaseIndex % formats.length];
+              const prevIndex = (mobileShowcaseIndex - 1 + formats.length) % formats.length;
+              const nextIndex = (mobileShowcaseIndex + 1) % formats.length;
+              const prevLabel = formats[prevIndex]?.title ?? '';
+              const nextLabel = formats[nextIndex]?.title ?? '';
               const Icon = format.icon;
               const iconClass = format.iconClass ?? 'text-purple-200';
               const tileGradient =
@@ -4931,24 +4969,33 @@ const rendernotaAutoral = () => {
               const isActiveTile = activeShowcase === format.id;
               const isDimmedTile = isCinematicShowcaseOpen && !isActiveTile;
               return (
-                <motion.div
-                  key={format.id}
-                  initial={{ opacity: 0, y: 18 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.4, ease: 'easeOut' }}
-                  className={`group glass-effect rounded-2xl border border-white/10 bg-black/30 overflow-hidden text-left shadow-[0_20px_60px_rgba(0,0,0,0.55)] ${
-                    isDimmedTile ? 'pointer-events-none opacity-70' : ''
-                  }`}
-                  onClick={() => handleFormatClick(format.id)}
-                >
-                  <div className="relative h-[280px] bg-slate-500/20">
-                    <div className="absolute inset-0 bg-gradient-to-br from-white/5 via-transparent to-black/25" />
-                  </div>
-                  <div className="relative overflow-hidden">
-                    <div className="absolute inset-0 pointer-events-none">
-                      <div
-                        aria-hidden="true"
-                        className="absolute inset-0 opacity-80"
+                <>
+                  <motion.div
+                    key={format.id}
+                    initial={{ opacity: 0, y: 18 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.4, ease: 'easeOut', delay: 0.08 }}
+                    className={`group glass-effect hover-glow rounded-2xl border border-white/10 bg-black/30 overflow-hidden text-left shadow-[0_20px_60px_rgba(0,0,0,0.55)] ${
+                      isDimmedTile ? 'pointer-events-none opacity-70' : ''
+                    }`}
+                    onClick={() => handleFormatClick(format.id)}
+                  >
+                    <div className="relative h-[280px] bg-slate-500/20">
+                      {format.image ? (
+                        <img
+                          src={format.image}
+                          alt={`Imagen de ${format.title}`}
+                          className="absolute inset-0 h-full w-full object-cover"
+                          loading="lazy"
+                        />
+                      ) : null}
+                      <div className="absolute inset-0 bg-gradient-to-br from-white/5 via-transparent to-black/25" />
+                    </div>
+                    <div className="relative overflow-hidden">
+                      <div className="absolute inset-0 pointer-events-none">
+                        <div
+                          aria-hidden="true"
+                          className="absolute inset-0 opacity-80"
                         style={{
                           backgroundImage: tileGradient,
                           filter: 'saturate(1.1)',
@@ -4981,7 +5028,7 @@ const rendernotaAutoral = () => {
                       <div className="flex items-center gap-3">
                         <Icon
                           size={24}
-                          className={`${iconClass} drop-shadow-[0_0_12px_rgba(168,85,247,0.35)] transition-transform duration-300 group-hover:-translate-y-1`}
+                          className={`${iconClass} drop-shadow-[0_0_12px_rgba(168,85,247,0.35)] transition-transform duration-300 group-hover:-translate-y-1 group-active:-translate-y-1`}
                         />
                         <div>
                           <p className="text-xs uppercase tracking-[0.35em] text-slate-400/80">Vitrina</p>
@@ -5001,27 +5048,32 @@ const rendernotaAutoral = () => {
                       </div>
                     </div>
                   </div>
-                </motion.div>
+                  </motion.div>
+                  <div className="flex items-center justify-center gap-6">
+                    <span className="text-sm text-slate-300">{prevLabel}</span>
+                    <div className="flex items-center gap-3">
+                      <button
+                        type="button"
+                        onClick={handleMobileShowcasePrev}
+                        className="h-10 w-10 rounded-full border border-white/15 bg-white/5 text-slate-200 hover:text-white hover:border-purple-300/40 transition active:scale-95"
+                        aria-label="Vitrina anterior"
+                      >
+                        ←
+                      </button>
+                      <button
+                        type="button"
+                        onClick={handleMobileShowcaseNext}
+                        className="h-10 w-10 rounded-full border border-white/15 bg-white/5 text-slate-200 hover:text-white hover:border-purple-300/40 transition active:scale-95"
+                        aria-label="Siguiente vitrina"
+                      >
+                        →
+                      </button>
+                    </div>
+                    <span className="text-sm text-slate-300">{nextLabel}</span>
+                  </div>
+                </>
               );
             })()}
-            <div className="flex items-center justify-center gap-4">
-              <button
-                type="button"
-                onClick={handleMobileShowcasePrev}
-                className="h-10 w-10 rounded-full border border-white/15 bg-white/5 text-slate-200 hover:text-white hover:border-purple-300/40 transition"
-                aria-label="Vitrina anterior"
-              >
-                ←
-              </button>
-              <button
-                type="button"
-                onClick={handleMobileShowcaseNext}
-                className="h-10 w-10 rounded-full border border-white/15 bg-white/5 text-slate-200 hover:text-white hover:border-purple-300/40 transition"
-                aria-label="Siguiente vitrina"
-              >
-                →
-              </button>
-            </div>
           </div>
           <div
             className="hidden lg:block"
@@ -5045,6 +5097,14 @@ const rendernotaAutoral = () => {
                     onClick={() => handleFormatClick(format.id)}
                   >
                     <div className="relative flex-1 min-h-[320px] bg-slate-500/20">
+                      {format.image ? (
+                        <img
+                          src={format.image}
+                          alt={`Imagen de ${format.title}`}
+                          className="absolute inset-0 h-full w-full object-cover"
+                          loading="lazy"
+                        />
+                      ) : null}
                       <div className="absolute inset-0 bg-gradient-to-br from-white/5 via-transparent to-black/20" />
                       <div className="absolute inset-x-0 bottom-0 h-px bg-white/10" />
                     </div>
@@ -5083,7 +5143,7 @@ const rendernotaAutoral = () => {
                       <div className="flex items-center gap-3">
                         <Icon size={24} className={`${iconClass} drop-shadow-[0_0_12px_rgba(168,85,247,0.35)] transition-transform duration-300 group-hover:-translate-y-1`} />
                         <div>
-                          <p className="text-xs uppercase tracking-[0.35em] text-slate-400/80">Vitrina</p>
+                          <p className="text-xs uppercase tracking-[0.35em] text-slate-400/80">Miniverso</p>
                           <h3 className="font-display text-2xl text-slate-100">{format.title}</h3>
                         </div>
                       </div>
@@ -5223,6 +5283,8 @@ const rendernotaAutoral = () => {
         onClose={handleCloseMiniverses}
         contextLabel={miniverseContext}
         onSelectMiniverse={handleSelectMiniverse}
+        shelved={isMiniverseShelved}
+        stayOpenOnSelect
       />
       <ContributionModal
         open={isContributionOpen}

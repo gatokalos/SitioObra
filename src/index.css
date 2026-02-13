@@ -277,6 +277,11 @@ body {
   transform: translateY(-2px);
 }
 
+.hover-glow:active {
+  box-shadow: 0 0 35px hsl(290 60% 45% / 0.3), 0 0 70px hsl(290 60% 40% / 0.18);
+  transform: translateY(-1px);
+}
+
 .hover-glow::before {
   content: '';
   position: absolute;
@@ -311,6 +316,10 @@ body {
 
 .hover-glow:hover::before {
   transform: translate(-50%, -50%) scale(1);
+}
+
+.hover-glow:active::before {
+  transform: translate(-50%, -50%) scale(1.08);
 }
 
 /* Masonry helpers: used by the Instagram gallery for organic reordering */

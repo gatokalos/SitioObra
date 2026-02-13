@@ -147,6 +147,7 @@ const MINIVERSE_CARDS = [
     videoUrl: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/trailers/miniversos/chat_obra.mp4',
     ctaVerb: 'Háblale',
     action: 'Explora',
+    isPremium: true,
   },
   {
     id: 'literatura',
@@ -162,6 +163,7 @@ const MINIVERSE_CARDS = [
     videoUrl: null,
     ctaVerb: 'Léelo',
     action: 'Explora',
+    isPremium: true,
   },
   {
     id: 'taza',
@@ -205,6 +207,7 @@ const MINIVERSE_CARDS = [
     videoUrl: null,
     ctaVerb: 'Velo',
     action: 'Explora',
+    isPremium: true,
   },
   {
     id: 'sonoro',
@@ -266,6 +269,16 @@ const MINIVERSE_CARDS = [
 
 ];
 
+const MINIVERSE_ICON_IMAGES = {
+  miniversos: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Merch/la_obra.png',
+  lataza: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Merch/la_taza.png',
+  copycats: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Merch/cortos.png',
+  miniversoMovimiento: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Merch/lasdiosas.png',
+  miniversoNovela: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Merch/el_oraculo.png',
+  miniversoGrafico: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Merch/los_graficos.png',
+};
+const MINIVERSE_ICON_PLACEHOLDER = '/images/placeholder-colaboradores.jpg';
+
 const initialFormState = {
   fullName: '',
   email: '',
@@ -288,6 +301,7 @@ const LOGIN_RETURN_KEY = 'gatoencerrado:login-return';
 const SUPPORT_WHATSAPP = '+523315327985';
 const SUPPORT_MESSAGE =
   'Hola,%0Ami suscripción está activa pero no aparece ligada a mi cuenta.%0A¿Me ayudan a vincularla?%0A%0AGracias.';
+const SUBSCRIPTION_PRICE_ID = import.meta.env.VITE_STRIPE_SUBSCRIPTION_PRICE_ID;
 
 const readStoredJson = (key, fallback) => {
   if (typeof window === 'undefined') {
@@ -302,7 +316,13 @@ const readStoredJson = (key, fallback) => {
   }
 };
 
-const MiniverseModal = ({ open, onClose, onSelectMiniverse }) => {
+const MiniverseModal = ({
+  open,
+  onClose,
+  onSelectMiniverse,
+  shelved = false,
+  stayOpenOnSelect = false,
+}) => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const [activeTab, setActiveTab] = useState(DEFAULT_TAB_ID);
@@ -316,6 +336,7 @@ const MiniverseModal = ({ open, onClose, onSelectMiniverse }) => {
   const [isShowcaseAutoPlay, setIsShowcaseAutoPlay] = useState(true);
   const [showcaseCountdown, setShowcaseCountdown] = useState(9);
   const [isMobileViewport, setIsMobileViewport] = useState(false);
+  const [isCheckoutLoading, setIsCheckoutLoading] = useState(false);
   const [showcaseEnergy, setShowcaseEnergy] = useState(() =>
     readStoredJson('gatoencerrado:showcase-energy', {})
   );
@@ -415,7 +436,6 @@ const MiniverseModal = ({ open, onClose, onSelectMiniverse }) => {
 
   useEffect(() => {
     if (open) {
-      document.documentElement.dataset.miniverseOpen = 'true';
       if (typeof window !== 'undefined') {
         const mediaQuery = window.matchMedia('(max-width: 639px)');
         const isMobile = mediaQuery.matches;
@@ -434,8 +454,15 @@ const MiniverseModal = ({ open, onClose, onSelectMiniverse }) => {
       setShowcaseBoosts(readStoredJson('gatoencerrado:showcase-boosts', {}));
       return;
     }
-    delete document.documentElement.dataset.miniverseOpen;
   }, [open]);
+
+  useEffect(() => {
+    if (open && !shelved) {
+      document.documentElement.dataset.miniverseOpen = 'true';
+      return;
+    }
+    delete document.documentElement.dataset.miniverseOpen;
+  }, [open, shelved]);
 
   useEffect(() => {
     if (typeof window === 'undefined') {
@@ -468,7 +495,7 @@ const MiniverseModal = ({ open, onClose, onSelectMiniverse }) => {
   }, []);
 
   useEffect(() => {
-    if (!open) {
+    if (!open || shelved) {
       return undefined;
     }
     const handleKeyDown = (event) => {
@@ -478,7 +505,7 @@ const MiniverseModal = ({ open, onClose, onSelectMiniverse }) => {
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [open, onClose]);
+  }, [onClose, open, shelved]);
 
   const handleInputChange = useCallback((event) => {
     const { name, value } = event.target;
@@ -552,9 +579,11 @@ const MiniverseModal = ({ open, onClose, onSelectMiniverse }) => {
       }
       markMiniverseVisited(card.id);
       onSelectMiniverse?.(card.formatId);
-      handleClose();
+      if (!stayOpenOnSelect) {
+        handleClose();
+      }
     },
-    [handleClose, markMiniverseVisited, onSelectMiniverse, playKnockSound, visitedMiniverses]
+    [handleClose, markMiniverseVisited, onSelectMiniverse, playKnockSound, stayOpenOnSelect, visitedMiniverses]
   );
 
   const handleSelectUpcoming = useCallback((card) => {
@@ -588,40 +617,16 @@ const MiniverseModal = ({ open, onClose, onSelectMiniverse }) => {
       return;
     }
     legacyScrollToSection();
-    handleClose();
-  }, [handleClose, legacyScrollToSection, markMiniverseVisited, navigate, selectedMiniverse]);
+    if (!stayOpenOnSelect) {
+      handleClose();
+    }
+  }, [handleClose, legacyScrollToSection, markMiniverseVisited, navigate, selectedMiniverse, stayOpenOnSelect]);
 
   const handleEnterShowcase = useCallback(
     (card) => {
       if (!card) return;
       if (!visitedMiniverses[card.id]) {
         playKnockSound();
-      }
-      if (!isSubscriber) {
-        if (user && isCheckingSubscription) {
-          toast({
-            description: 'Estamos verificando tu suscripción. Intenta de nuevo en unos segundos.',
-          });
-          return;
-        }
-        setActiveTab('waitlist');
-        toast({
-          description: user
-            ? 'Tu suscripción podría no estar ligada a esta cuenta. Si ya pagaste, contáctanos para vincularla.'
-            : 'Necesitas iniciar sesión y una suscripción activa para abrir este portal.',
-          action: user ? (
-            <ToastAction
-              altText="Contactar soporte"
-              onClick={() => {
-                const url = `https://wa.me/${SUPPORT_WHATSAPP.replace(/\D/g, '')}?text=${SUPPORT_MESSAGE}`;
-                window.open(url, '_blank', 'noopener,noreferrer');
-              }}
-            >
-              Contactar
-            </ToastAction>
-          ) : undefined,
-        });
-        return;
       }
       markMiniverseVisited(card.id);
       const portalRoute = MINIVERSE_PORTAL_ROUTES[card.id];
@@ -631,9 +636,20 @@ const MiniverseModal = ({ open, onClose, onSelectMiniverse }) => {
         return;
       }
       onSelectMiniverse?.(card.formatId);
-      handleClose();
+      if (!stayOpenOnSelect) {
+        handleClose();
+      }
     },
-    [handleClose, isSubscriber, markMiniverseVisited, navigate, onSelectMiniverse, playKnockSound, visitedMiniverses]
+    [
+      handleClose,
+      isSubscriber,
+      markMiniverseVisited,
+      navigate,
+      onSelectMiniverse,
+      playKnockSound,
+      stayOpenOnSelect,
+      visitedMiniverses,
+    ]
   );
 
   const handleEnterUpcoming = useCallback(() => {
@@ -721,6 +737,86 @@ const MiniverseModal = ({ open, onClose, onSelectMiniverse }) => {
     }, 140);
   }, [onClose]);
 
+  const handleSubscriptionCheckout = useCallback(async () => {
+    if (!SUBSCRIPTION_PRICE_ID) {
+      toast({ description: 'Configura VITE_STRIPE_SUBSCRIPTION_PRICE_ID antes de continuar.' });
+      return;
+    }
+
+    if (isCheckoutLoading) {
+      return;
+    }
+
+    try {
+      setIsCheckoutLoading(true);
+      const normalizedEmail = user?.email ? user.email.trim().toLowerCase() : '';
+      const { data, error } = await supabase.functions.invoke('create-checkout-session', {
+        body: {
+          mode: 'subscription',
+          line_items: [
+            {
+              price: SUBSCRIPTION_PRICE_ID,
+              quantity: 1,
+            },
+          ],
+          customer_email: normalizedEmail || undefined,
+          metadata: {
+            channel: 'landing',
+            event: 'suscripcion-landing',
+            packages: 'subscription',
+          },
+        },
+      });
+
+      if (error || !data?.url) {
+        throw error || new Error('No se pudo crear la sesión');
+      }
+
+      window.location.href = data.url;
+    } catch (err) {
+      console.error('[MiniverseModal] Checkout error:', err);
+      toast({ description: err?.message || 'No se pudo abrir la suscripción.' });
+    } finally {
+      setIsCheckoutLoading(false);
+    }
+  }, [isCheckoutLoading, user?.email]);
+
+  const handlePlayShowcaseVideo = useCallback((cardId) => {
+    if (typeof document === 'undefined') return false;
+    const videos = Array.from(
+      document.querySelectorAll(`[data-showcase-video="${cardId}"]`)
+    );
+    if (!videos.length) {
+      return false;
+    }
+    const target = videos.find((video) => video.offsetParent !== null) || videos[0];
+    if (!target) {
+      return false;
+    }
+    try {
+      target.play?.();
+      target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      return true;
+    } catch (error) {
+      console.warn('[MiniverseModal] No se pudo reproducir el video', error);
+      return false;
+    }
+  }, []);
+
+  const handleShowcaseCta = useCallback(
+    (card) => {
+      if (!card) return;
+      if (card.videoUrl) {
+        const played = handlePlayShowcaseVideo(card.id);
+        if (played) {
+          return;
+        }
+      }
+      handleEnterShowcase(card);
+    },
+    [handleEnterShowcase, handlePlayShowcaseVideo]
+  );
+
   const scrollShowcaseTo = useCallback((index, behavior = 'smooth') => {
     const node = showcaseRef.current;
     if (!node) return;
@@ -786,13 +882,16 @@ const MiniverseModal = ({ open, onClose, onSelectMiniverse }) => {
     <AnimatePresence>
       {open ? (
         <motion.div
-          className="fixed inset-0 z-50 flex items-start sm:items-center justify-center px-3 py-6 sm:px-4 sm:py-10 overflow-y-auto"
+          className={`fixed inset-0 z-50 flex items-start sm:items-center justify-center px-3 py-6 sm:px-4 sm:py-10 overflow-y-auto ${
+            shelved ? 'pointer-events-none' : ''
+          }`}
           initial="hidden"
           animate="visible"
           exit="hidden"
+          aria-hidden={shelved ? 'true' : undefined}
         >
           <motion.div
-            className="absolute inset-0 bg-black/80 backdrop-blur-sm"
+            className={`absolute inset-0 bg-black/80 backdrop-blur-sm ${shelved ? 'pointer-events-none' : ''}`}
             variants={backdropVariants}
             onClick={handleClose}
             aria-hidden="true"
@@ -800,10 +899,12 @@ const MiniverseModal = ({ open, onClose, onSelectMiniverse }) => {
 
           <motion.div
             role="dialog"
-            aria-modal="true"
+            aria-modal={shelved ? 'false' : 'true'}
             aria-labelledby="miniverse-modal-title"
             variants={modalVariants}
-            className="relative z-10 w-full max-w-4xl rounded-3xl border border-white/10 bg-slate-950/70 p-5 sm:p-10 shadow-2xl max-h-[90vh] min-h-[70vh] overflow-y-auto"
+            className={`relative z-10 w-full max-w-4xl rounded-3xl border border-white/10 bg-slate-950/70 p-5 sm:p-10 shadow-2xl max-h-[90vh] min-h-[70vh] overflow-y-auto transition-[opacity,filter,transform] duration-500 ${
+              shelved ? 'pointer-events-none opacity-0 blur-sm scale-[0.98]' : 'opacity-100 blur-0 scale-100'
+            }`}
           >
             <div
               aria-hidden="true"
@@ -881,7 +982,12 @@ const MiniverseModal = ({ open, onClose, onSelectMiniverse }) => {
                         </p>
                       </div>
                       <div className="flex flex-wrap gap-3">
-                        <Button className="bg-white text-slate-900 hover:bg-white/90 font-semibold px-6">
+                        <Button
+                          type="button"
+                          onClick={handleSubscriptionCheckout}
+                          disabled={isCheckoutLoading}
+                          className="bg-white text-slate-900 hover:bg-white/90 font-semibold px-6"
+                        >
                           Suscribirme
                         </Button>
                         <div className="rounded-full border border-white/15 bg-white/5 px-4 py-2 text-xs uppercase tracking-[0.35em] text-slate-200/80">
@@ -1082,6 +1188,7 @@ const MiniverseModal = ({ open, onClose, onSelectMiniverse }) => {
                                         controls
                                         onPlay={pauseShowcaseAutoPlay}
                                         onPause={resumeShowcaseAutoPlay}
+                                        data-showcase-video={card.id}
                                       />
                                       <div className="pointer-events-none absolute left-4 top-4 rounded-full border border-white/20 bg-black/50 px-3 py-1 text-[0.6rem] uppercase tracking-[0.3em] text-slate-200">
                                         Video provisional
@@ -1100,11 +1207,21 @@ const MiniverseModal = ({ open, onClose, onSelectMiniverse }) => {
                               <div className="flex flex-col sm:flex-row gap-3">
                                 <Button
                                   type="button"
-                                  onClick={() => handleEnterShowcase(card)}
+                                  onClick={() => handleShowcaseCta(card)}
                                   className="bg-gradient-to-r from-purple-600/80 to-indigo-600/80 hover:from-purple-600 hover:to-indigo-600 text-white py-3 rounded-lg font-semibold flex items-center justify-center gap-2 hover-glow"
                                 >
                                   {card.titleShort ?? card.title}
                                 </Button>
+                                {card.isPremium ? (
+                                  <Button
+                                    type="button"
+                                    onClick={handleSubscriptionCheckout}
+                                    disabled={isCheckoutLoading}
+                                    className="bg-white text-slate-900 hover:bg-white/90 py-3 rounded-lg font-semibold flex items-center justify-center gap-2"
+                                  >
+                                    {isCheckoutLoading ? 'Abriendo…' : 'Suscribirme'}
+                                  </Button>
+                                ) : null}
                               </div>
                               <p className="text-xs uppercase tracking-[0.35em] text-slate-300/70">
                                 Testimonio en video
@@ -1123,6 +1240,7 @@ const MiniverseModal = ({ open, onClose, onSelectMiniverse }) => {
                                       controls
                                       onPlay={pauseShowcaseAutoPlay}
                                       onPause={resumeShowcaseAutoPlay}
+                                      data-showcase-video={card.id}
                                     />
                                     <div className="pointer-events-none absolute left-4 top-4 rounded-full border border-white/20 bg-black/50 px-3 py-1 text-[0.6rem] uppercase tracking-[0.3em] text-slate-200">
                                       Video provisional
@@ -1221,6 +1339,7 @@ const MiniverseModal = ({ open, onClose, onSelectMiniverse }) => {
                                     controls
                                     onPlay={pauseShowcaseAutoPlay}
                                     onPause={resumeShowcaseAutoPlay}
+                                    data-showcase-video={card.id}
                                   />
                                   <div className="pointer-events-none absolute left-4 top-4 rounded-full border border-white/20 bg-black/50 px-3 py-1 text-[0.6rem] uppercase tracking-[0.3em] text-slate-200">
                                     Video provisional
@@ -1239,11 +1358,21 @@ const MiniverseModal = ({ open, onClose, onSelectMiniverse }) => {
                           <div className="flex flex-col sm:flex-row gap-3">
                             <Button
                               type="button"
-                              onClick={() => handleEnterShowcase(card)}
+                              onClick={() => handleShowcaseCta(card)}
                               className="bg-gradient-to-r from-purple-600/80 to-indigo-600/80 hover:from-purple-600 hover:to-indigo-600 text-white py-3 rounded-lg font-semibold flex items-center justify-center gap-2 hover-glow"
                             >
                               {card.titleShort ?? card.title}
                             </Button>
+                            {card.isPremium ? (
+                              <Button
+                                type="button"
+                                onClick={handleSubscriptionCheckout}
+                                disabled={isCheckoutLoading}
+                                className="bg-white text-slate-900 hover:bg-white/90 py-3 rounded-lg font-semibold flex items-center justify-center gap-2"
+                              >
+                                {isCheckoutLoading ? 'Abriendo…' : 'Suscribirme'}
+                              </Button>
+                            ) : null}
                           </div>
                           <p className="text-xs uppercase tracking-[0.35em] text-slate-300/70">
                             Testimonio en video
@@ -1262,6 +1391,7 @@ const MiniverseModal = ({ open, onClose, onSelectMiniverse }) => {
                                   controls
                                   onPlay={pauseShowcaseAutoPlay}
                                   onPause={resumeShowcaseAutoPlay}
+                                  data-showcase-video={card.id}
                                 />
                                 <div className="pointer-events-none absolute left-4 top-4 rounded-full border border-white/20 bg-black/50 px-3 py-1 text-[0.6rem] uppercase tracking-[0.3em] text-slate-200">
                                   Video provisional
@@ -1447,9 +1577,6 @@ const MiniverseModal = ({ open, onClose, onSelectMiniverse }) => {
                       >
                         {!isUpcoming ? (
                           <div className="absolute right-3 top-3 flex items-center gap-2">
-                            <span className="rounded-full border border-white/15 bg-white/10 px-3 py-1 text-[0.6rem] uppercase tracking-[0.25em] text-slate-100/90 backdrop-blur-sm">
-                              Demo
-                            </span>
                             {isVisited ? (
                               <span className="inline-flex items-center justify-center h-6 w-6 rounded-full bg-emerald-500/80 text-slate-950 shadow-[0_0_12px_rgba(16,185,129,0.6)]">
                                 <Check size={14} strokeWidth={2.4} />
@@ -1470,10 +1597,13 @@ const MiniverseModal = ({ open, onClose, onSelectMiniverse }) => {
                         {!isUpcoming ? (
                           <>
                             <div className="flex items-center gap-3">
-                              <div
-                                className={`h-12 w-12 rounded-full bg-gradient-to-br ${card.thumbGradient} flex items-center justify-center text-sm font-semibold text-white shadow-[0_10px_25px_rgba(0,0,0,0.35)]`}
-                              >
-                                {card.icon ? <card.icon size={22} className="text-white drop-shadow-sm" /> : card.thumbLabel}
+                              <div className="h-12 w-12 rounded-lg overflow-hidden border border-white/10 bg-black/40 shadow-[0_10px_25px_rgba(0,0,0,0.35)]">
+                                <img
+                                  src={MINIVERSE_ICON_IMAGES[card.formatId] ?? MINIVERSE_ICON_PLACEHOLDER}
+                                  alt={card.title}
+                                  className="h-full w-full object-cover"
+                                  loading="lazy"
+                                />
                               </div>
                               <h3 className="font-display text-lg text-slate-100">{card.ctaVerb ?? card.title}</h3>
                             </div>
