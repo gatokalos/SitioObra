@@ -512,7 +512,7 @@ iaProfile: {
   copycats: {
     label: 'Miniverso Cine',
     type: 'cinema',
-    intro: 'El cine dentro de #GatoEncerrado es un laboratorio donde la realidad se revela por roce, no por imitación. Obra, proceso y mirada se mezclan hasta volver indistinguibles sus fronteras.',
+    intro: 'El cine dentro de #GatoEncerrado es otro modo de entrar al encierro. La obra, el proceso y la mirada se mezclan hasta volver indistinguibles sus fronteras.',
     promise: 'Aquí no solo ves cine: te invitamos a entrar a su laboratorio.',
     theme:
       'La doble vida de una imagen: aquello que se ve y aquello que tiembla detrás. CopyCats (farsa lúcida) y Quirón (herida íntima) responden a la misma pregunta en dos lenguajes.',
@@ -616,7 +616,7 @@ iaProfile: {
       description:
         'Únete al universo transmedia y asegura tu acceso al primer screening doble de CopyCats + Quirón, con conservatorio del equipo.',
       cta: 'Quiero ser parte del screening',
-      footnote: 'El cine es otro modo de entrar al encierro. Acompáñanos en marzo para ver ambas películas antes que nadie.',
+      
     },
     notaAutoral: 'Cuando la escena no basta,\nla cámara sostiene la memoria\nQuirón, CopyCats:\nel mismo espacio, expuesto de otra forma.',
     iaProfile: {
@@ -1230,7 +1230,7 @@ const formats = [
     iconClass: 'text-purple-300',
     instruccion: 'Habla con la obra sobre la obra.',
     iaTokensNote: 'Energía requerida: ~300 GAT',
-    image: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Merch/posters/obra.png',
+    image: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Merch/posters/poster_obra.png',
   },
   {
     id: 'lataza',
@@ -1239,6 +1239,7 @@ const formats = [
     iconClass: 'text-amber-300',
     instruccion: 'Escanea tu taza. Descubre tu frase.',
     iaTokensNote: 'Mantener ritual: ~90 GAT.',
+    image: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Merch/posters/poster_artesanias.png',
   },
   {
     id: 'miniversoNovela',
@@ -1247,6 +1248,7 @@ const formats = [
     iconClass: 'text-emerald-300',
     instruccion: 'Forma parte del club de lectura.',
     iaTokensNote: 'Energía viva: ~150 GAT.',
+    image: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Merch/posters/poster_literatura.png',
   },
   {
     id: 'miniversoGrafico',
@@ -1255,6 +1257,7 @@ const formats = [
     iconClass: 'text-fuchsia-300',
     instruccion: 'Refúgiate en nuestros garabatos. ¡Dibuja el tuyo!',
     iaTokensNote: 'Requiere ~110 GAT.',
+    image: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Merch/posters/poster_graficos.png',
   },
   {
     id: 'copycats',
@@ -1272,6 +1275,7 @@ const formats = [
     iconClass: 'text-cyan-300',
     instruccion: 'Para compositortes de sueños y poesía.',
     iaTokensNote: 'Requiere ~130 GAT de mezcla.',
+    image: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Merch/posters/poster_sonoridades.png',
   },
   {
     id: 'miniversoMovimiento',
@@ -1280,6 +1284,7 @@ const formats = [
     iconClass: 'text-sky-300',
     instruccion: 'Queremos que todo México conozca este proyecto.',
     iaTokensNote: '~280 por mapa.',
+    image: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Merch/posters/poster_movimiento.png',
   },
   {
     id: 'apps',
@@ -1288,6 +1293,7 @@ const formats = [
     iconClass: 'text-lime-300',
     instruccion: 'Aquí reinventamos el clásico gato.',
     iaTokensNote: 'IA marca el ritmo felino.',
+    image: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Merch/posters/poster_juegos.png',
   },
   {
     id: 'oraculo',
@@ -1296,6 +1302,7 @@ const formats = [
     iconClass: 'text-indigo-300',
     instruccion: '¡Ponte a minar para generar GATokens!',
     iaTokensNote: 'Aquí el Gato te regala GAT.',
+    image: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Merch/posters/poster_oraculo.png',
   },
 ];
 
@@ -1624,6 +1631,7 @@ const Transmedia = () => {
     resetSilvestreQuestions,
   } = useSilvestreVoice();
   const [showcaseCarouselIndex, setShowcaseCarouselIndex] = useState(0);
+  const [isShowcaseCarouselPaused, setIsShowcaseCarouselPaused] = useState(false);
   const [mobileShowcaseIndex, setMobileShowcaseIndex] = useState(0);
   const [isMovementCreditsOpen, setIsMovementCreditsOpen] = useState(false);
   const [openCollaboratorId, setOpenCollaboratorId] = useState(null);
@@ -2615,6 +2623,14 @@ const Transmedia = () => {
     setShowcaseCarouselIndex((prev) => (prev - 1 + formats.length) % formats.length);
   }, []);
 
+  const handleShowcaseNextBatch = useCallback(() => {
+    setShowcaseCarouselIndex((prev) => (prev + 3) % formats.length);
+  }, []);
+
+  const handleShowcasePrevBatch = useCallback(() => {
+    setShowcaseCarouselIndex((prev) => (prev - 3 + formats.length) % formats.length);
+  }, []);
+
   const handleMobileShowcaseNext = useCallback(() => {
     setMobileShowcaseIndex((prev) => (prev + 1) % formats.length);
   }, []);
@@ -2629,10 +2645,10 @@ const Transmedia = () => {
   }, [showcaseCarouselIndex]);
 
   useEffect(() => {
-    if (isMobileViewport) return undefined;
+    if (isMobileViewport || isShowcaseCarouselPaused) return undefined;
     const intervalId = window.setInterval(handleShowcaseNext, 12000);
     return () => window.clearInterval(intervalId);
-  }, [handleShowcaseNext, isMobileViewport]);
+  }, [handleShowcaseNext, isMobileViewport, isShowcaseCarouselPaused]);
 
   useEffect(() => {
     if (typeof window === 'undefined') return undefined;
@@ -4381,7 +4397,7 @@ const rendernotaAutoral = () => {
               <div className="rounded-3xl border border-white/10 bg-black/30 p-6 space-y-4">
                 <div className="flex items-start justify-between gap-3">
                   <div>
-                    <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Meta-documental</p>
+                    <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Documental</p>
                     <h4 className="font-display text-xl text-slate-100">{activeDefinition.copycats?.title}</h4>
                   </div>
                 
@@ -4480,7 +4496,7 @@ const rendernotaAutoral = () => {
                   </motion.div>
                 ) : null}
                 <p className="text-xs text-slate-400 leading-relaxed">
-                  Al desbloquear, el cortometraje se abre en vista completa fuera de esta tarjeta.
+                  Una vez desbloqueado, el cortometraje se habilita una vez; con una suscripción solidaria puedes volver cuando quieras.
                 </p>
                 {activeDefinition.screening?.footnote ? (
                   <p className="text-xs text-slate-400 leading-relaxed">{activeDefinition.screening.footnote}</p>
@@ -4491,14 +4507,10 @@ const rendernotaAutoral = () => {
 
             <div className="space-y-6">
               <div className="relative rounded-3xl border border-white/10 bg-black/30 p-6 space-y-4">
-                <div className="space-y-2">
-                <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Cortometraje</p>
-                <div className="flex flex-wrap items-baseline gap-2">
+                <div>
+                  <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Cortometraje</p>
                   <h4 className="font-display text-xl text-slate-100">{activeDefinition.quiron?.title}</h4>
-                  
                 </div>
-                
-              </div>
               <p className="text-sm text-slate-300/80 leading-relaxed">{activeDefinition.quiron?.description}</p>
               <p className="text-sm text-slate-200/90 leading-relaxed">{activeDefinition.quiron?.microcopy}</p>
               {activeDefinition.copycats.tags.map((tag, index) => (
@@ -5705,7 +5717,7 @@ const rendernotaAutoral = () => {
             <div className="flex items-center justify-center gap-3 mt-6">
               <button
                 type="button"
-                onClick={handleShowcasePrev}
+                onClick={handleShowcasePrevBatch}
                 className="h-10 w-10 rounded-full border border-white/15 bg-white/5 text-slate-200 hover:text-white hover:border-purple-300/40 transition"
                 aria-label="Vitrina anterior"
               >
@@ -5713,7 +5725,7 @@ const rendernotaAutoral = () => {
               </button>
               <button
                 type="button"
-                onClick={handleShowcaseNext}
+                onClick={handleShowcaseNextBatch}
                 className="h-10 w-10 rounded-full border border-white/15 bg-white/5 text-slate-200 hover:text-white hover:border-purple-300/40 transition"
                 aria-label="Siguiente vitrina"
               >

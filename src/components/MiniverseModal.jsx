@@ -1574,7 +1574,7 @@ const MiniverseModal = ({
                   </div>
                 </div>
               ) : (
-                <div className="md:col-span-2 grid md:grid-cols-3 gap-6">
+                <div className="md:col-span-2 grid grid-cols-2 md:grid-cols-3 gap-4 sm:gap-6">
                   {MINIVERSE_CARDS.map((card) => {
                     const isUpcoming = Boolean(card.isUpcoming);
                     const isVisited = !isUpcoming && Boolean(visitedMiniverses[card.id]);
@@ -1592,7 +1592,7 @@ const MiniverseModal = ({
                         onClick={() => handleSelectCard(card)}
                         disabled={isUpcoming}
                         style={{ '--glass-tint': card.glassTint }}
-                        className={`relative text-left glass-effect-card rounded-2xl border p-5 transition flex flex-col items-start gap-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-400/60 disabled:cursor-not-allowed disabled:opacity-60 ${
+                        className={`relative text-left glass-effect-card rounded-2xl border p-4 sm:p-5 transition flex flex-col items-start gap-3 sm:gap-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-400/60 disabled:cursor-not-allowed disabled:opacity-60 ${
                           isUpcoming
                             ? 'border-white/10 bg-white/5'
                             : isVisited
@@ -1611,10 +1611,10 @@ const MiniverseModal = ({
                         ) : null}
                         {isUpcoming ? (
                           <>
-                            <div className="h-12 w-12 rounded-full border border-white/10 bg-slate-800/60 flex items-center justify-center text-slate-200 shadow-[0_10px_25px_rgba(0,0,0,0.35)]">
+                            <div className="h-10 w-10 sm:h-12 sm:w-12 rounded-full border border-white/10 bg-slate-800/60 flex items-center justify-center text-slate-200 shadow-[0_10px_25px_rgba(0,0,0,0.35)]">
                               {card.icon ? <card.icon size={22} className="text-slate-200/80" /> : card.thumbLabel}
                             </div>
-                            <span className="rounded-full border border-white/20 bg-black/40 px-3 py-1 text-[0.6rem] uppercase tracking-[0.3em] text-slate-300">
+                            <span className="rounded-full border border-white/20 bg-black/40 px-2.5 sm:px-3 py-1 text-[0.55rem] sm:text-[0.6rem] uppercase tracking-[0.28em] sm:tracking-[0.3em] text-slate-300">
                               {card.titleShort ?? card.title}
                             </span>
                           </>
@@ -1622,7 +1622,7 @@ const MiniverseModal = ({
                         {!isUpcoming ? (
                           <>
                             <div className="flex items-center gap-3">
-                              <div className="h-12 w-12 rounded-lg overflow-hidden border border-white/10 bg-black/40 shadow-[0_10px_25px_rgba(0,0,0,0.35)]">
+                              <div className="h-10 w-10 sm:h-12 sm:w-12 rounded-lg overflow-hidden border border-white/10 bg-black/40 shadow-[0_10px_25px_rgba(0,0,0,0.35)]">
                                 <img
                                   src={MINIVERSE_ICON_IMAGES[card.formatId] ?? MINIVERSE_ICON_PLACEHOLDER}
                                   alt={card.title}
@@ -1630,14 +1630,14 @@ const MiniverseModal = ({
                                   loading="lazy"
                                 />
                               </div>
-                              <h3 className="font-display text-lg text-slate-100">{card.ctaVerb ?? card.title}</h3>
+                              <h3 className="font-display text-base sm:text-lg text-slate-100">{card.ctaVerb ?? card.title}</h3>
                             </div>
-                            <div className="flex flex-col gap-1">
-                              <div className="flex flex-wrap items-center gap-2 text-[0.6rem] uppercase tracking-[0.3em] text-slate-300/90">
+                            <div className="hidden sm:flex flex-col gap-1">
+                              <div className="flex flex-wrap items-center gap-2 text-[0.55rem] sm:text-[0.6rem] uppercase tracking-[0.25em] sm:tracking-[0.3em] text-slate-300/90">
                                 <Coins size={12} className="text-amber-200" />
                                 <span className="text-slate-100/70">{energyLabel}</span>
                               </div>
-                              <span className="font-semibold text-amber-200 tracking-[0.35em] text-sm">
+                              <span className="font-semibold text-amber-200 tracking-[0.3em] sm:tracking-[0.35em] text-xs sm:text-sm">
                                 {energyDisplay}
                               </span>
                             </div>
