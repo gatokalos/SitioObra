@@ -83,10 +83,12 @@ const BIENVENIDA_APP_TO_SHOWCASE = {
   'miniverso-literatura': 'miniversoNovela',
   'miniverso-novela': 'miniversoNovela',
   grafico: 'miniversoGrafico',
+  graficos: 'miniversoGrafico',
   grafica: 'miniversoGrafico',
   visual: 'miniversoGrafico',
   'app-grafico': 'miniversoGrafico',
   'miniverso-grafico': 'miniversoGrafico',
+  'miniverso-graficos': 'miniversoGrafico',
   sonoro: 'miniversoSonoro',
   audio: 'miniversoSonoro',
   musica: 'miniversoSonoro',
@@ -2147,10 +2149,22 @@ const Transmedia = () => {
     const pendingIntent = consumeBienvenidaTransmediaIntent();
     if (!pendingIntent) return;
     const showcaseId = resolveShowcaseFromBienvenida(pendingIntent);
-    if (!showcaseId) return;
+    console.info('[bienvenida-bridge] intent consumed', {
+      payload: pendingIntent,
+      showcaseId,
+    });
     const section = document.getElementById('transmedia');
     if (section) {
+      if (!section.hasAttribute('tabindex')) {
+        section.setAttribute('tabindex', '-1');
+      }
+      section.focus({ preventScroll: true });
       section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+    if (!showcaseId) {
+      setActiveShowcase(null);
+      setIsMiniverseShelved(false);
+      return;
     }
     openMiniverseById(showcaseId);
   }, [openMiniverseById, resolveShowcaseFromBienvenida]);

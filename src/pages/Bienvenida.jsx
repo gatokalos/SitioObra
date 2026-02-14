@@ -9,6 +9,7 @@ import {
   clearBienvenidaReturnPath,
   getBienvenidaReturnPath,
   markBienvenidaSeen,
+  setBienvenidaReturnPath,
   setBienvenidaSkip,
 } from '@/lib/bienvenida';
 
@@ -72,6 +73,10 @@ const Bienvenida = () => {
       if (!event?.data) return;
       if (typeof event.data !== 'object') return;
       if (bienvenidaOrigin && event.origin !== bienvenidaOrigin) return;
+      console.info('[bienvenida-bridge] message received', {
+        type: event.data?.type,
+        origin: event.origin,
+      });
       const { type } = event.data;
       if (type === 'bienvenida:close' || type === 'bienvenida:done') {
         handleFinish();
@@ -82,6 +87,9 @@ const Bienvenida = () => {
         if (payload && typeof payload === 'object') {
           setBienvenidaTransmediaIntent(payload);
         }
+        const returnPath = getBienvenidaReturnPath() || '/';
+        const returnPathWithoutHash = String(returnPath).split('#')[0] || '/';
+        setBienvenidaReturnPath(`${returnPathWithoutHash}#transmedia`);
         handleFinish();
       }
     };
