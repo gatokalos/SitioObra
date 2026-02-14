@@ -1579,9 +1579,11 @@ const MiniverseModal = ({
               ) : (
                 <div className="md:col-span-2 w-full max-w-3xl mx-auto space-y-4">
                   <p className="text-sm text-slate-300/85 leading-relaxed">
-                    Estás viendo una muestra interactiva de los miniversos.
+                     <br />
+                     Estás viendo una muestra interactiva de los miniversos.
                     <br />
                     Prueba cada puerta a tu ritmo antes de cruzar al universo completo.
+                     <br />
                   </p>
                   <div className="w-full grid grid-cols-2 md:grid-cols-3 gap-4 sm:gap-6">
                     {MINIVERSE_CARDS.map((card) => {

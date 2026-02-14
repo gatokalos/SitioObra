@@ -85,6 +85,15 @@ const SHOWCASE_BADGE_IDS = [
 ];
 const EXPLORER_BADGE_STORAGE_KEY = 'gatoencerrado:explorer-badge';
 const LOGIN_RETURN_KEY = 'gatoencerrado:login-return';
+const getInitialInstallPwaCTAVisibility = () => {
+  if (typeof window === 'undefined') return false;
+  const userAgent = typeof navigator !== 'undefined' ? navigator.userAgent : '';
+  const isMobile = /iphone|ipad|ipod|android/i.test(userAgent);
+  const isStandalone =
+    Boolean(window.matchMedia?.('(display-mode: standalone)')?.matches) ||
+    Boolean(typeof navigator !== 'undefined' && navigator.standalone === true);
+  return isMobile && !isStandalone;
+};
 const EXPLORER_BADGE_REWARD = 1000;
 const EXPLORER_BADGE_NAME = 'Errante Consagrado';
 const DEFAULT_BADGE_STATE = {
@@ -1596,6 +1605,14 @@ const Transmedia = () => {
   const [miniverseContext, setMiniverseContext] = useState(null);
   const [activeShowcase, setActiveShowcase] = useState(null);
   const hasHandledDeepLinkRef = useRef(false);
+  const mobileSwipeStateRef = useRef({
+    startX: 0,
+    startY: 0,
+    deltaX: 0,
+    deltaY: 0,
+    tracking: false,
+  });
+  const mobileSwipeBlockTapRef = useRef(false);
   const [returnShowcaseId, setReturnShowcaseId] = useState(null);
   const [showcaseContent, setShowcaseContent] = useState({});
   const showcaseRef = useRef(null);
@@ -1681,7 +1698,7 @@ const Transmedia = () => {
   const [commentCarouselIndex, setCommentCarouselIndex] = useState(0);
   const [isOraculoOpen, setIsOraculoOpen] = useState(false);
   const [isCauseSiteOpen, setIsCauseSiteOpen] = useState(false);
-  const [showInstallPwaCTA, setShowInstallPwaCTA] = useState(false);
+  const [showInstallPwaCTA, setShowInstallPwaCTA] = useState(() => getInitialInstallPwaCTAVisibility());
   const [useLegacyTazaViewer, setUseLegacyTazaViewer] = useState(LEGACY_TAZA_VIEWER_ENABLED);
   const [hasActiveSubscription, setHasActiveSubscription] = useState(false);
   const isAuthenticated = Boolean(user);
@@ -2638,6 +2655,47 @@ const Transmedia = () => {
   const handleMobileShowcasePrev = useCallback(() => {
     setMobileShowcaseIndex((prev) => (prev - 1 + formats.length) % formats.length);
   }, []);
+
+  const handleMobileShowcaseTouchStart = useCallback((event) => {
+    const touch = event.touches?.[0];
+    if (!touch) return;
+    mobileSwipeStateRef.current = {
+      startX: touch.clientX,
+      startY: touch.clientY,
+      deltaX: 0,
+      deltaY: 0,
+      tracking: true,
+    };
+  }, []);
+
+  const handleMobileShowcaseTouchMove = useCallback((event) => {
+    const touch = event.touches?.[0];
+    if (!touch || !mobileSwipeStateRef.current.tracking) return;
+    mobileSwipeStateRef.current.deltaX = touch.clientX - mobileSwipeStateRef.current.startX;
+    mobileSwipeStateRef.current.deltaY = touch.clientY - mobileSwipeStateRef.current.startY;
+  }, []);
+
+  const handleMobileShowcaseTouchEnd = useCallback(() => {
+    const { deltaX, deltaY, tracking } = mobileSwipeStateRef.current;
+    mobileSwipeStateRef.current.tracking = false;
+    if (!tracking) return;
+
+    const absX = Math.abs(deltaX);
+    const absY = Math.abs(deltaY);
+    const isHorizontalSwipe = absX > 56 && absX > absY + 10;
+    if (!isHorizontalSwipe) return;
+
+    mobileSwipeBlockTapRef.current = true;
+    window.setTimeout(() => {
+      mobileSwipeBlockTapRef.current = false;
+    }, 240);
+
+    if (deltaX < 0) {
+      handleMobileShowcaseNext();
+    } else {
+      handleMobileShowcasePrev();
+    }
+  }, [handleMobileShowcaseNext, handleMobileShowcasePrev]);
 
   const visibleShowcases = useMemo(() => {
     if (formats.length <= 3) return formats;
@@ -5508,6 +5566,7 @@ const rendernotaAutoral = () => {
           <div className="lg:hidden space-y-6">
             {(() => {
               const format = formats[mobileShowcaseIndex % formats.length];
+              const currentIndex = mobileShowcaseIndex % formats.length;
               const prevIndex = (mobileShowcaseIndex - 1 + formats.length) % formats.length;
               const nextIndex = (mobileShowcaseIndex + 1) % formats.length;
               const prevLabel = formats[prevIndex]?.title ?? '';
@@ -5524,13 +5583,21 @@ const rendernotaAutoral = () => {
                     key={format.id}
                     initial={{ opacity: 0, y: 18 }}
                     animate={{ opacity: 1, y: 0 }}
+                    whileTap={{ scale: 0.985, y: -2 }}
                     transition={{ duration: 0.4, ease: 'easeOut', delay: 0.08 }}
-                    className={`group glass-effect hover-glow rounded-2xl border border-white/10 bg-black/30 overflow-hidden text-left shadow-[0_20px_60px_rgba(0,0,0,0.55)] ${
+                    className={`group glass-effect hover-glow rounded-2xl border border-white/10 bg-black/30 overflow-hidden text-left shadow-[0_20px_60px_rgba(0,0,0,0.55)] active:border-purple-300/40 active:shadow-[0_24px_70px_rgba(88,28,135,0.45)] ${
                       isDimmedTile ? 'pointer-events-none opacity-70' : ''
                     }`}
-                    onClick={() => handleFormatClick(format.id)}
+                    onClick={() => {
+                      if (mobileSwipeBlockTapRef.current) return;
+                      handleFormatClick(format.id);
+                    }}
+                    onTouchStart={handleMobileShowcaseTouchStart}
+                    onTouchMove={handleMobileShowcaseTouchMove}
+                    onTouchEnd={handleMobileShowcaseTouchEnd}
+                    onTouchCancel={handleMobileShowcaseTouchEnd}
                   >
-                    <div className="relative h-[280px] bg-slate-500/20 overflow-hidden">
+                    <div className="relative h-[500px] max-[375px]:h-[280px] bg-slate-500/20 overflow-hidden">
                       {format.image ? (
                         <img
                           src={format.image}
@@ -5592,34 +5659,35 @@ const rendernotaAutoral = () => {
                         <Coins size={12} className="text-amber-200" />
                         {format.iaTokensNote}
                       </div>
-                      <div className="text-purple-300 flex items-center gap-2 font-semibold transition-all duration-300 group-hover:gap-3">
+                      <div className="text-purple-300 flex items-center gap-2 font-semibold transition-all duration-300 group-hover:gap-3 group-active:gap-3">
                         Abrir vitrina
                         <ArrowRight size={18} />
                       </div>
                     </div>
                   </div>
                   </motion.div>
-                  <div className="flex items-center justify-center gap-6">
-                    <span className="text-sm text-slate-300">{prevLabel}</span>
-                    <div className="flex items-center gap-3">
-                      <button
-                        type="button"
-                        onClick={handleMobileShowcasePrev}
-                        className="h-10 w-10 rounded-full border border-white/15 bg-white/5 text-slate-200 hover:text-white hover:border-purple-300/40 transition active:scale-95"
-                        aria-label="Vitrina anterior"
-                      >
-                        ←
-                      </button>
-                      <button
-                        type="button"
-                        onClick={handleMobileShowcaseNext}
-                        className="h-10 w-10 rounded-full border border-white/15 bg-white/5 text-slate-200 hover:text-white hover:border-purple-300/40 transition active:scale-95"
-                        aria-label="Siguiente vitrina"
-                      >
-                        →
-                      </button>
+                  <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-3">
+                    <span className="text-sm text-slate-300 text-left truncate">{prevLabel}</span>
+                    <div className="flex items-center justify-center gap-2 min-w-[88px]">
+                      {formats.map((item, idx) => {
+                        const isActiveDot = idx === currentIndex;
+                        return (
+                          <button
+                            key={`mobile-dot-${item.id}`}
+                            type="button"
+                            onClick={() => setMobileShowcaseIndex(idx)}
+                            className={`h-2 w-2 rounded-full transition ${
+                              isActiveDot
+                                ? 'bg-slate-100 shadow-[0_0_8px_rgba(255,255,255,0.55)]'
+                                : 'bg-slate-500/70 hover:bg-slate-300/80'
+                            }`}
+                            aria-label={`Ir a vitrina ${item.title}`}
+                            aria-current={isActiveDot ? 'true' : undefined}
+                          />
+                        );
+                      })}
                     </div>
-                    <span className="text-sm text-slate-300">{nextLabel}</span>
+                    <span className="text-sm text-slate-300 text-right truncate">{nextLabel}</span>
                   </div>
                 </>
               );
