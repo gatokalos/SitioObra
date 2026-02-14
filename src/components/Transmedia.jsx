@@ -38,6 +38,12 @@ import { toast } from '@/components/ui/use-toast';
 import { OBRA_CONVERSATION_STARTERS, SILVESTRE_TRIGGER_QUESTIONS } from '@/lib/obraConversation';
 import { useAuth } from '@/contexts/SupabaseAuthContext';
 import { consumeBienvenidaTransmediaIntent, setBienvenidaReturnPath } from '@/lib/bienvenida';
+import {
+  extractRecommendedAppId,
+  normalizeBridgeKey,
+  resolveShowcaseFromAppId,
+  resolveShowcaseFromHash,
+} from '@/lib/bienvenidaBridge';
 import { Document, Page, pdfjs } from 'react-pdf';
 import 'react-pdf/dist/Page/AnnotationLayer.css';
 import 'react-pdf/dist/Page/TextLayer.css';
@@ -63,60 +69,6 @@ const GAT_COSTS = {
   sonoroMix: 130,
   tazaActivation: 90,
   movimientoRuta: 280,
-};
-const BIENVENIDA_APP_TO_SHOWCASE = {
-  apps: 'apps',
-  juegos: 'apps',
-  juego: 'apps',
-  app: 'apps',
-  'app-juegos': 'apps',
-  'miniverso-juegos': 'apps',
-  'miniverso-apps': 'apps',
-  oraculo: 'oraculo',
-  oracle: 'oraculo',
-  'app-oraculo': 'oraculo',
-  'miniverso-oraculo': 'oraculo',
-  novela: 'miniversoNovela',
-  literatura: 'miniversoNovela',
-  letras: 'miniversoNovela',
-  'app-literatura': 'miniversoNovela',
-  'miniverso-literatura': 'miniversoNovela',
-  'miniverso-novela': 'miniversoNovela',
-  grafico: 'miniversoGrafico',
-  graficos: 'miniversoGrafico',
-  grafica: 'miniversoGrafico',
-  visual: 'miniversoGrafico',
-  'app-grafico': 'miniversoGrafico',
-  'miniverso-grafico': 'miniversoGrafico',
-  'miniverso-graficos': 'miniversoGrafico',
-  sonoro: 'miniversoSonoro',
-  audio: 'miniversoSonoro',
-  musica: 'miniversoSonoro',
-  'app-sonoro': 'miniversoSonoro',
-  'miniverso-sonoro': 'miniversoSonoro',
-  movimiento: 'miniversoMovimiento',
-  danza: 'miniversoMovimiento',
-  ruta: 'miniversoMovimiento',
-  'app-movimiento': 'miniversoMovimiento',
-  'miniverso-movimiento': 'miniversoMovimiento',
-  artesanias: 'lataza',
-  artesania: 'lataza',
-  taza: 'lataza',
-  merch: 'lataza',
-  'la-taza': 'lataza',
-  'miniverso-artesanias': 'lataza',
-  cine: 'copycats',
-  video: 'copycats',
-  copycats: 'copycats',
-  quiron: 'copycats',
-  'app-cine': 'copycats',
-  'miniverso-cine': 'copycats',
-  obra: 'miniversos',
-  teatro: 'miniversos',
-  tragedia: 'miniversos',
-  escenario: 'miniversos',
-  'app-obra': 'miniversos',
-  'miniverso-obra': 'miniversos',
 };
 const LEGACY_TAZA_VIEWER_ENABLED = false;
 const SHOWCASE_BADGE_IDS = [
@@ -2051,39 +2003,8 @@ const Transmedia = () => {
   );
 
   const resolveShowcaseFromBienvenida = useCallback((payload) => {
-    if (!payload || typeof payload !== 'object') return null;
-    const rawRecommended =
-      payload.appId ?? payload.app_id ?? payload.recommended_app ?? payload.recommendedApp ?? payload.id;
-    if (!rawRecommended) return null;
-
-    const rawAppId =
-      typeof rawRecommended === 'string'
-        ? rawRecommended
-        : rawRecommended?.id ??
-          rawRecommended?.app_id ??
-          rawRecommended?.recommended_app ??
-          rawRecommended?.slug ??
-          null;
-
-    if (!rawAppId || typeof rawAppId !== 'string') return null;
-
-    const normalized = rawAppId
-      .trim()
-      .toLowerCase()
-      .replace(/[\s_]+/g, '-')
-      .replace(/[^a-z0-9-]/g, '')
-      .replace(/-+/g, '-')
-      .replace(/^-|-$/g, '');
-
-    if (!normalized) return null;
-    if (showcaseDefinitions[normalized]) return normalized;
-    if (BIENVENIDA_APP_TO_SHOWCASE[normalized]) return BIENVENIDA_APP_TO_SHOWCASE[normalized];
-
-    const strippedPrefix = normalized.replace(/^(app|miniverso|vitrina)-/, '');
-    if (showcaseDefinitions[strippedPrefix]) return strippedPrefix;
-    if (BIENVENIDA_APP_TO_SHOWCASE[strippedPrefix]) return BIENVENIDA_APP_TO_SHOWCASE[strippedPrefix];
-
-    return null;
+    const rawAppId = extractRecommendedAppId(payload);
+    return resolveShowcaseFromAppId(rawAppId, showcaseDefinitions);
   }, []);
 
   const handleCloseShowcase = useCallback(() => {
@@ -2168,6 +2089,23 @@ const Transmedia = () => {
     }
     openMiniverseById(showcaseId);
   }, [openMiniverseById, resolveShowcaseFromBienvenida]);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const showcaseId = resolveShowcaseFromHash(location.hash, showcaseDefinitions);
+    if (showcaseId === null) {
+      if (normalizeBridgeKey(location.hash) === 'transmedia') {
+        document.getElementById('transmedia')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+      return;
+    }
+    if (!showcaseId) return;
+    const section = document.getElementById('transmedia');
+    if (section) {
+      section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+    openMiniverseById(showcaseId);
+  }, [location.hash, openMiniverseById]);
 
   const handleOpenBlogEntry = useCallback((slug) => {
     if (!slug) {

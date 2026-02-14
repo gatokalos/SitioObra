@@ -12,6 +12,7 @@ import {
   setBienvenidaReturnPath,
   setBienvenidaSkip,
 } from '@/lib/bienvenida';
+import { extractRecommendedAppId, normalizeBridgeKey } from '@/lib/bienvenidaBridge';
 
 const Bienvenida = () => {
   const navigate = useNavigate();
@@ -84,12 +85,14 @@ const Bienvenida = () => {
       }
       if (type === OPEN_TRANSMEDIA_EVENT) {
         const payload = event.data?.payload;
+        const payloadAppId = extractRecommendedAppId(payload);
+        const payloadHashTarget = normalizeBridgeKey(payloadAppId) || 'transmedia';
         if (payload && typeof payload === 'object') {
           setBienvenidaTransmediaIntent(payload);
         }
         const returnPath = getBienvenidaReturnPath() || '/';
         const returnPathWithoutHash = String(returnPath).split('#')[0] || '/';
-        setBienvenidaReturnPath(`${returnPathWithoutHash}#transmedia`);
+        setBienvenidaReturnPath(`${returnPathWithoutHash}#${payloadHashTarget}`);
         handleFinish();
       }
     };
