@@ -4,6 +4,7 @@ import { useAuth } from '@/contexts/SupabaseAuthContext';
 import LoginOverlay from '@/components/ContributionModal/LoginOverlay';
 import PortalAuthButton from '@/components/PortalAuthButton';
 import {
+  setBienvenidaTransmediaIntent,
   clearBienvenidaPending,
   clearBienvenidaReturnPath,
   getBienvenidaReturnPath,
@@ -16,6 +17,16 @@ const Bienvenida = () => {
   const { user } = useAuth();
   const [showLoginOverlay, setShowLoginOverlay] = useState(false);
   const baseUrl = import.meta.env.VITE_BIENVENIDA_URL;
+  const OPEN_TRANSMEDIA_EVENT = 'bienvenida:open-transmedia';
+
+  const bienvenidaOrigin = useMemo(() => {
+    if (!baseUrl) return '';
+    try {
+      return new URL(baseUrl).origin;
+    } catch {
+      return '';
+    }
+  }, [baseUrl]);
 
   const iframeSrc = useMemo(() => {
     if (!baseUrl) return '';
@@ -59,14 +70,24 @@ const Bienvenida = () => {
   useEffect(() => {
     const handleMessage = (event) => {
       if (!event?.data) return;
+      if (typeof event.data !== 'object') return;
+      if (bienvenidaOrigin && event.origin !== bienvenidaOrigin) return;
       const { type } = event.data;
       if (type === 'bienvenida:close' || type === 'bienvenida:done') {
+        handleFinish();
+        return;
+      }
+      if (type === OPEN_TRANSMEDIA_EVENT) {
+        const payload = event.data?.payload;
+        if (payload && typeof payload === 'object') {
+          setBienvenidaTransmediaIntent(payload);
+        }
         handleFinish();
       }
     };
     window.addEventListener('message', handleMessage);
     return () => window.removeEventListener('message', handleMessage);
-  }, [handleFinish]);
+  }, [bienvenidaOrigin, handleFinish]);
 
   return (
     <div className="fixed inset-0 z-50 bg-black">

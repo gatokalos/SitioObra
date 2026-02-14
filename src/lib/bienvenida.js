@@ -4,6 +4,7 @@ const SEEN_PREFIX = 'bienvenida:seen:';
 const RETURN_PATH_KEY = 'bienvenida:return-path';
 const PENDING_KEY = 'bienvenida:pending';
 const SKIP_KEY = 'bienvenida:skip';
+const TRANSMEDIA_INTENT_KEY = 'bienvenida:transmedia-intent';
 
 export const hasSeenBienvenida = (userId) => {
   if (!userId) return false;
@@ -43,3 +44,25 @@ export const setBienvenidaReturnPath = (path) => {
 export const getBienvenidaReturnPath = () => safeGetItem(RETURN_PATH_KEY);
 
 export const clearBienvenidaReturnPath = () => safeRemoveItem(RETURN_PATH_KEY);
+
+export const setBienvenidaTransmediaIntent = (intent) => {
+  if (!intent || typeof intent !== 'object') return;
+  try {
+    safeSetItem(TRANSMEDIA_INTENT_KEY, JSON.stringify(intent));
+  } catch {
+    // Ignore malformed payloads; this key is only a best-effort handoff.
+  }
+};
+
+export const consumeBienvenidaTransmediaIntent = () => {
+  const raw = safeGetItem(TRANSMEDIA_INTENT_KEY);
+  if (!raw) return null;
+  safeRemoveItem(TRANSMEDIA_INTENT_KEY);
+  try {
+    const parsed = JSON.parse(raw);
+    if (!parsed || typeof parsed !== 'object') return null;
+    return parsed;
+  } catch {
+    return null;
+  }
+};
