@@ -74,18 +74,19 @@ const Bienvenida = () => {
       if (!event?.data) return;
       if (typeof event.data !== 'object') return;
       if (bienvenidaOrigin && event.origin !== bienvenidaOrigin) return;
-      console.info('[bienvenida-bridge] message received', {
-        type: event.data?.type,
-        origin: event.origin,
-      });
       const { type } = event.data;
+      const payload = event.data?.payload;
+      const payloadAppId = extractRecommendedAppId(payload);
+      console.info('[sitioobra-bridge] received', {
+        type,
+        origin: event.origin,
+        appId: payloadAppId || null,
+      });
       if (type === 'bienvenida:close' || type === 'bienvenida:done') {
         handleFinish();
         return;
       }
       if (type === OPEN_TRANSMEDIA_EVENT) {
-        const payload = event.data?.payload;
-        const payloadAppId = extractRecommendedAppId(payload);
         const payloadHashTarget = normalizeBridgeKey(payloadAppId) || 'transmedia';
         if (payload && typeof payload === 'object') {
           setBienvenidaTransmediaIntent(payload);

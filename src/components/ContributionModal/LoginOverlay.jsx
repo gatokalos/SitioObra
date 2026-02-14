@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { motion } from 'framer-motion';
+import { createPortal } from 'react-dom';
 import { supabase } from '@/lib/supabaseClient';
 import { safeSetItem, safeStorageType } from '@/lib/safeStorage';
 
@@ -181,9 +182,9 @@ const LoginOverlay = ({ onClose }) => {
     return () => window.removeEventListener('keydown', handleEsc);
   }, [onClose]);
 
-  return (
+  const overlay = (
     <motion.div
-      className="fixed inset-0 z-[110] flex items-center justify-center px-4 py-6"
+      className="fixed inset-0 z-[260] flex items-center justify-center px-4 py-6"
       initial="hidden"
       animate="visible"
       exit="hidden"
@@ -295,6 +296,12 @@ const LoginOverlay = ({ onClose }) => {
       </motion.div>
     </motion.div>
   );
+
+  if (typeof document === 'undefined') {
+    return overlay;
+  }
+
+  return createPortal(overlay, document.body);
 };
 
 export default LoginOverlay;

@@ -657,6 +657,28 @@ const MiniverseModal = ({
     onSelectMiniverse?.(selectedUpcoming.formatId);
   }, [onSelectMiniverse, selectedUpcoming]);
 
+  const requireShowcaseLogin = useCallback(
+    (card) => {
+      if (user) {
+        return true;
+      }
+      safeSetItem(
+        LOGIN_RETURN_KEY,
+        JSON.stringify({
+          anchor: '#transmedia',
+          action: 'showcase-cta',
+          miniverseId: card?.id ?? null,
+        })
+      );
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new CustomEvent('open-login-modal'));
+      }
+      toast({ description: 'Inicia sesión para activar esta vitrina.' });
+      return false;
+    },
+    [user]
+  );
+
   const handleCommunityOptIn = useCallback(() => {
     safeSetItem(
       LOGIN_RETURN_KEY,
@@ -806,6 +828,9 @@ const MiniverseModal = ({
   const handleShowcaseCta = useCallback(
     (card) => {
       if (!card) return;
+      if (!requireShowcaseLogin(card)) {
+        return;
+      }
       if (card.videoUrl) {
         const played = handlePlayShowcaseVideo(card.id);
         if (played) {
@@ -814,7 +839,7 @@ const MiniverseModal = ({
       }
       handleEnterShowcase(card);
     },
-    [handleEnterShowcase, handlePlayShowcaseVideo]
+    [handleEnterShowcase, handlePlayShowcaseVideo, requireShowcaseLogin]
   );
 
   const scrollShowcaseTo = useCallback((index, behavior = 'smooth') => {

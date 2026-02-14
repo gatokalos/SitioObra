@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useEffect, useState, useCallback, useMemo } from 'react';
+import React, { createContext, useContext, useEffect, useState, useCallback, useMemo, useRef } from 'react';
 
 import { supabase } from '@/lib/supabaseClient';
 import { safeGetItem, safeRemoveItem } from '@/lib/safeStorage';
@@ -8,6 +8,7 @@ const AuthContext = createContext(undefined);
 
 export const AuthProvider = ({ children }) => {
   const { toast } = useToast();
+  const redirectLockRef = useRef(false);
 
   const [user, setUser] = useState(null);
   const [session, setSession] = useState(null);
@@ -39,50 +40,93 @@ export const AuthProvider = ({ children }) => {
         window.history.replaceState({}, document.title, cleanUrl);
       };
 
-      if (errorDescription) {
-        toast({
-          variant: 'destructive',
-          title: 'No pudimos iniciar sesión',
-          description: errorDescription || 'El enlace no es válido. Intenta abrirlo en el navegador nativo.',
-        });
+      // In React StrictMode (dev), effects can run twice and consume PKCE code twice.
+      // Lock by code/token fingerprint so we only exchange once per redirect payload.
+      const fingerprint = code
+        ? `code:${code}`
+        : accessToken && refreshToken
+          ? `token:${accessToken.slice(0, 24)}`
+          : null;
+      if (!errorDescription && !fingerprint) {
+        return;
+      }
+      if (redirectLockRef.current) {
+        return;
+      }
+      if (fingerprint) {
+        const seen = window.sessionStorage?.getItem('gatoencerrado:auth-redirect-fingerprint');
+        if (seen === fingerprint) {
+          cleanup();
+          return;
+        }
+        window.sessionStorage?.setItem('gatoencerrado:auth-redirect-fingerprint', fingerprint);
+      }
+      redirectLockRef.current = true;
+
+      try {
+        if (errorDescription) {
+          toast({
+            variant: 'destructive',
+            title: 'No pudimos iniciar sesión',
+            description: errorDescription || 'El enlace no es válido. Intenta abrirlo en el navegador nativo.',
+          });
+          return;
+        }
+
+        if (code) {
+          const { data, error } = await supabase.auth.exchangeCodeForSession(code);
+          if (cancelled) return;
+
+          if (error) {
+            // PKCE flow can be consumed by another tab/attempt; fallback to current session.
+            const { data: current } = await supabase.auth.getSession();
+            if (current?.session) {
+              handleSession(current.session);
+              return;
+            }
+            toast({
+              variant: 'destructive',
+              title: 'No pudimos completar el login',
+              description: error.message || 'Intenta abrir el enlace en el navegador por defecto.',
+            });
+            return;
+          }
+
+          handleSession(data.session);
+          return;
+        }
+
+        if (accessToken && refreshToken) {
+          const { data, error } = await supabase.auth.setSession({
+            access_token: accessToken,
+            refresh_token: refreshToken,
+          });
+          if (cancelled) return;
+
+          if (error) {
+            toast({
+              variant: 'destructive',
+              title: 'No pudimos completar el login',
+              description: error.message || 'Intenta abrir el enlace en el navegador por defecto.',
+            });
+            return;
+          }
+
+          handleSession(data.session);
+        }
+      } catch (error) {
+        if (!cancelled) {
+          const message =
+            error?.message || 'No pudimos completar el login. Intenta abrir el enlace nuevamente.';
+          toast({
+            variant: 'destructive',
+            title: 'No pudimos completar el login',
+            description: message,
+          });
+        }
+      } finally {
+        redirectLockRef.current = false;
         cleanup();
-        return;
-      }
-
-      if (code) {
-        const { data, error } = await supabase.auth.exchangeCodeForSession(code);
-        if (!cancelled) {
-          if (error) {
-            toast({
-              variant: 'destructive',
-              title: 'No pudimos completar el login',
-              description: error.message || 'Intenta abrir el enlace en el navegador por defecto.',
-            });
-          } else {
-            handleSession(data.session);
-          }
-          cleanup();
-        }
-        return;
-      }
-
-      if (accessToken && refreshToken) {
-        const { data, error } = await supabase.auth.setSession({
-          access_token: accessToken,
-          refresh_token: refreshToken,
-        });
-        if (!cancelled) {
-          if (error) {
-            toast({
-              variant: 'destructive',
-              title: 'No pudimos completar el login',
-              description: error.message || 'Intenta abrir el enlace en el navegador por defecto.',
-            });
-          } else {
-            handleSession(data.session);
-          }
-          cleanup();
-        }
       }
     };
 

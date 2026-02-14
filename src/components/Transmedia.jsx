@@ -60,6 +60,7 @@ import { useSilvestreVoice } from '@/hooks/useSilvestreVoice';
 import ObraConversationControls from '@/components/miniversos/obra/ObraConversationControls';
 import ObraQuestionList from '@/components/miniversos/obra/ObraQuestionList';
 import { supabase } from '@/lib/supabaseClient';
+import { safeGetItem, safeRemoveItem, safeSetItem } from '@/lib/safeStorage';
 
 pdfjs.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`;
 const GAT_COSTS = {
@@ -83,6 +84,7 @@ const SHOWCASE_BADGE_IDS = [
   'apps',
 ];
 const EXPLORER_BADGE_STORAGE_KEY = 'gatoencerrado:explorer-badge';
+const LOGIN_RETURN_KEY = 'gatoencerrado:login-return';
 const EXPLORER_BADGE_REWARD = 1000;
 const EXPLORER_BADGE_NAME = 'Errante Consagrado';
 const DEFAULT_BADGE_STATE = {
@@ -539,6 +541,8 @@ iaProfile: {
         id: 'quiron-full',
         label: 'Cortometraje completo',
         url: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Cine%20-%20teasers/Quiron_10min.mp4',
+        bucket: 'Cine - teasers',
+        path: 'Quiron_10min.mp4',
       },
       teaser: {
         id: 'quiron-teaser',
@@ -1162,6 +1166,17 @@ const ShowcaseReactionInline = ({ showcaseId, title, description, buttonLabel, c
     if (status === 'loading') {
       return;
     }
+    if (!isAuthenticated) {
+      safeSetItem(
+        LOGIN_RETURN_KEY,
+        JSON.stringify({ anchor: '#transmedia', action: 'showcase-reaction', showcaseId })
+      );
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new CustomEvent('open-login-modal'));
+      }
+      toast({ description: 'Inicia sesión para reaccionar en esta vitrina.' });
+      return;
+    }
 
     setStatus('loading');
     const { success, error } = await recordShowcaseLike({ showcaseId, user });
@@ -1174,7 +1189,7 @@ const ShowcaseReactionInline = ({ showcaseId, title, description, buttonLabel, c
 
     setStatus('success');
     toast({ description: 'Gracias por tu apoyo en este escaparate.' });
-  }, [showcaseId, status, user]);
+  }, [isAuthenticated, showcaseId, status, user]);
 
   return (
     <div
@@ -1553,7 +1568,7 @@ const Transmedia = () => {
     formats.forEach((format) => registerEnergy(format.id, format.iaTokensNote));
     return map;
   }, []);
-  const initialQuironSpent = readStoredBool('gatoencerrado:quiron-spent', false);
+  const initialQuironSpent = false;
   const initialNovelaQuestions = readStoredInt('gatoencerrado:novela-questions', 0);
   const initialGraphicSpent = readStoredBool('gatoencerrado:graphic-spent', false);
   const initialSonoroSpent = readStoredBool('gatoencerrado:sonoro-spent', false);
@@ -1582,6 +1597,8 @@ const Transmedia = () => {
   const [pdfNumPages, setPdfNumPages] = useState(null);
   const [pdfLoadError, setPdfLoadError] = useState(null);
   const pdfContainerRef = useRef(null);
+  const pdfEndSentinelRef = useRef(null);
+  const hasShownPdfEndNoticeRef = useRef(false);
   const supportSectionRef = useRef(null);
   const [isMiniversoEditorialModalOpen, setIsMiniversoEditorialModalOpen] = useState(false);
   const [pdfContainerWidth, setPdfContainerWidth] = useState(0);
@@ -1624,6 +1641,12 @@ const Transmedia = () => {
   const [isQuironUnlocking, setIsQuironUnlocking] = useState(false);
   const [showQuironCoins, setShowQuironCoins] = useState(false);
   const [isQuironFullVisible, setIsQuironFullVisible] = useState(initialQuironSpent);
+  const [quironSignedUrl, setQuironSignedUrl] = useState('');
+  const [isQuironPlaybackUnlocked, setIsQuironPlaybackUnlocked] = useState(false);
+  const [shouldResumeQuironPlay, setShouldResumeQuironPlay] = useState(false);
+  const quironVideoRef = useRef(null);
+  const [hasQuironPlaybackStarted, setHasQuironPlaybackStarted] = useState(false);
+  const [isQuironAftercareVisible, setIsQuironAftercareVisible] = useState(false);
   const [availableGATokens, setAvailableGATokens] = useState(initialAvailableGATokens);
   const [isNovelaSubmitting, setIsNovelaSubmitting] = useState(false);
   const [showNovelaCoins, setShowNovelaCoins] = useState(false);
@@ -1666,6 +1689,32 @@ const Transmedia = () => {
     [showcaseBoosts]
   );
 
+  const openLoginForShowcase = useCallback(
+    ({ action = 'showcase-cta', extras = null } = {}) => {
+      safeSetItem(
+        LOGIN_RETURN_KEY,
+        JSON.stringify({
+          anchor: '#transmedia',
+          action,
+          showcaseId: activeShowcase ?? null,
+          ...(extras || {}),
+        })
+      );
+      setShowBadgeLoginOverlay(true);
+    },
+    [activeShowcase]
+  );
+
+  const requireShowcaseAuth = useCallback(
+    (message = 'Inicia sesión para activar esta vitrina.', loginPayload = undefined) => {
+      if (isAuthenticated) return true;
+      openLoginForShowcase(loginPayload);
+      toast({ description: message });
+      return false;
+    },
+    [isAuthenticated, openLoginForShowcase]
+  );
+
   useEffect(() => {
     if (!user?.id) {
       setHasActiveSubscription(false);
@@ -1693,6 +1742,19 @@ const Transmedia = () => {
       isMounted = false;
     };
   }, [user?.id]);
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      return;
+    }
+    setQuironSpent(false);
+    setIsQuironFullVisible(false);
+    setQuironSignedUrl('');
+    setIsQuironPlaybackUnlocked(false);
+    setShouldResumeQuironPlay(false);
+    setHasQuironPlaybackStarted(false);
+    setIsQuironAftercareVisible(false);
+  }, [isAuthenticated]);
 
   useEffect(() => {
     if (typeof window === 'undefined') return undefined;
@@ -1874,50 +1936,154 @@ const Transmedia = () => {
   }, [sonoroSpent]);
 
   const handleToggleQuironPrompt = useCallback(() => {
-    if (!user) {
-      setShowQuironCommunityPrompt((prev) => !prev);
+    const currentDefinition = activeShowcase ? showcaseDefinitions[activeShowcase] : null;
+    if (!currentDefinition?.quiron?.fullVideo) {
+      toast({ description: 'No encontramos el cortometraje completo en este momento.' });
       return;
     }
-
-    if (isQuironUnlocking) {
-      return;
-    }
-
-    if (availableGATokens < GAT_COSTS.quironFull) {
-      setShowQuironCommunityPrompt(false);
-      toast({
-        description: `Necesitas ${GAT_COSTS.quironFull} GATokens para ver el cortometraje completo. Tu saldo actual es ${availableGATokens}.`,
-      });
-      return;
-    }
-
+    setQuironSignedUrl('');
+    setIsQuironPlaybackUnlocked(false);
     setShowQuironCommunityPrompt(false);
-    setIsQuironUnlocking(true);
-    setShowQuironCoins(true);
+    setIsQuironFullVisible(true);
+  }, [activeShowcase]);
 
-    const delayPromise = new Promise((resolve) => setTimeout(resolve, 1100));
-    delayPromise.then(() => {
-      setIsQuironFullVisible(true);
-      setShowQuironCoins(false);
-      setIsQuironUnlocking(false);
-      setQuironSpent(true);
-      const nextBalance = Math.max(availableGATokens - GAT_COSTS.quironFull, 0);
-      setAvailableGATokens(nextBalance);
-      if (typeof window !== 'undefined') {
-        window.localStorage?.setItem('gatoencerrado:quiron-spent', 'true');
-        window.localStorage?.setItem('gatoencerrado:gatokens-available', String(nextBalance));
-        window.dispatchEvent(
-          new CustomEvent('gatoencerrado:miniverse-spent', {
-            detail: { id: 'cine', spent: true, amount: GAT_COSTS.quironFull },
+  const handleQuironPlayRequest = useCallback(
+    async (autoPlay = true) => {
+      const currentDefinition = activeShowcase ? showcaseDefinitions[activeShowcase] : null;
+      const fullVideo = currentDefinition?.quiron?.fullVideo;
+      if (!fullVideo) {
+        toast({ description: 'No encontramos el cortometraje completo en este momento.' });
+        return;
+      }
+
+      if (!isAuthenticated) {
+        safeSetItem(
+          LOGIN_RETURN_KEY,
+          JSON.stringify({
+            anchor: '#transmedia',
+            action: 'quiron-play',
+            showcaseId: activeShowcase || 'copycats',
           })
         );
+        setShouldResumeQuironPlay(true);
+        setShowBadgeLoginOverlay(true);
+        toast({ description: 'Inicia sesión para reproducir el cortometraje completo.' });
+        return;
       }
-    });
-  }, [availableGATokens, isQuironUnlocking, user]);
+
+      if (isQuironUnlocking) return;
+      setIsQuironUnlocking(true);
+      setShowQuironCoins(true);
+
+      try {
+        let url = quironSignedUrl || '';
+        if (!url) {
+          const bucket = fullVideo.bucket;
+          const path = fullVideo.path;
+          if (!bucket || !path) {
+            throw new Error('Falta configuración segura del cortometraje.');
+          }
+          const { data, error } = await supabase.storage.from(bucket).createSignedUrl(path, 60 * 5);
+          if (error || !data?.signedUrl) {
+            throw error || new Error('No se pudo autorizar el cortometraje.');
+          }
+          url = data.signedUrl;
+          setQuironSignedUrl(url);
+        }
+
+        setIsQuironPlaybackUnlocked(true);
+        setQuironSpent(true);
+        if (typeof window !== 'undefined') {
+          window.dispatchEvent(
+            new CustomEvent('gatoencerrado:miniverse-spent', {
+              detail: { id: 'cine', spent: true, amount: 0 },
+            })
+          );
+        }
+
+        if (autoPlay) {
+          window.setTimeout(() => {
+            quironVideoRef.current?.play?.().catch(() => {});
+          }, 40);
+        }
+      } catch (error) {
+        console.error('[Transmedia] No se pudo reproducir Quirón completo:', error);
+        toast({
+          description: 'No pudimos abrir el cortometraje completo. Verifica tu sesión e inténtalo de nuevo.',
+        });
+      } finally {
+        setShowQuironCoins(false);
+        setIsQuironUnlocking(false);
+      }
+    },
+    [activeShowcase, isAuthenticated, isQuironUnlocking, quironSignedUrl]
+  );
+
+  useEffect(() => {
+    if (!isQuironFullVisible || !isQuironPlaybackUnlocked || typeof window === 'undefined') {
+      return undefined;
+    }
+    const preventShortcuts = (event) => {
+      const key = String(event.key || '').toLowerCase();
+      if (
+        event.key === 'F12' ||
+        ((event.ctrlKey || event.metaKey) && ['s', 'u', 'p'].includes(key))
+      ) {
+        event.preventDefault();
+        event.stopPropagation();
+      }
+    };
+    window.addEventListener('keydown', preventShortcuts);
+    return () => window.removeEventListener('keydown', preventShortcuts);
+  }, [isQuironFullVisible, isQuironPlaybackUnlocked]);
 
   const handleCloseQuironFull = useCallback(() => {
     setIsQuironFullVisible(false);
+    setQuironSignedUrl('');
+    setIsQuironPlaybackUnlocked(false);
+    setShouldResumeQuironPlay(false);
+    if (hasQuironPlaybackStarted) {
+      setIsQuironAftercareVisible(true);
+    }
+  }, [hasQuironPlaybackStarted]);
+
+  const handleQuironPlaybackEnded = useCallback(() => {
+    setIsQuironFullVisible(false);
+    setIsQuironAftercareVisible(true);
   }, []);
+
+  const handleCloseQuironAftercare = useCallback(() => {
+    setIsQuironAftercareVisible(false);
+    setHasQuironPlaybackStarted(false);
+    setIsQuironPlaybackUnlocked(false);
+    setQuironSignedUrl('');
+  }, []);
+
+  useEffect(() => {
+    if (!isAuthenticated || typeof window === 'undefined') return;
+    const pending = safeGetItem(LOGIN_RETURN_KEY);
+    if (!pending) return;
+    try {
+      const parsed = JSON.parse(pending);
+      if (parsed?.action !== 'quiron-play') return;
+      safeRemoveItem(LOGIN_RETURN_KEY);
+      const targetShowcase = parsed?.showcaseId || 'copycats';
+      setActiveShowcase(targetShowcase);
+      setIsQuironFullVisible(true);
+      setShouldResumeQuironPlay(true);
+      window.setTimeout(() => {
+        document.getElementById('transmedia')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }, 80);
+    } catch {
+      safeRemoveItem(LOGIN_RETURN_KEY);
+    }
+  }, [isAuthenticated]);
+
+  useEffect(() => {
+    if (!shouldResumeQuironPlay || !isAuthenticated || !isQuironFullVisible) return;
+    setShouldResumeQuironPlay(false);
+    void handleQuironPlayRequest(true);
+  }, [handleQuironPlayRequest, isAuthenticated, isQuironFullVisible, shouldResumeQuironPlay]);
 
   const renderMobileVideoBadge = () =>
     isMobileViewport ? (
@@ -2069,10 +2235,11 @@ const Transmedia = () => {
     if (typeof window === 'undefined') return;
     const pendingIntent = consumeBienvenidaTransmediaIntent();
     if (!pendingIntent) return;
+    const rawAppId = extractRecommendedAppId(pendingIntent);
     const showcaseId = resolveShowcaseFromBienvenida(pendingIntent);
-    console.info('[bienvenida-bridge] intent consumed', {
-      payload: pendingIntent,
-      showcaseId,
+    console.info('[sitioobra-bridge] resolved appId -> showcaseId', {
+      appId: rawAppId ?? null,
+      showcaseId: showcaseId ?? null,
     });
     const section = document.getElementById('transmedia');
     if (section) {
@@ -2083,6 +2250,9 @@ const Transmedia = () => {
       section.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
     if (!showcaseId) {
+      console.info('[sitioobra-bridge] fallback generic', {
+        appId: rawAppId ?? null,
+      });
       setActiveShowcase(null);
       setIsMiniverseShelved(false);
       return;
@@ -2111,25 +2281,39 @@ const Transmedia = () => {
     if (!slug) {
       return;
     }
+    if (!requireShowcaseAuth('Inicia sesión para leer este fragmento.', { action: 'read-fragment', extras: { slug } })) {
+      return;
+    }
     window.dispatchEvent(
       new CustomEvent('gatoencerrado:open-blog', {
         detail: { slug },
       })
     );
     document.getElementById('dialogo-critico')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-  }, []);
+  }, [requireShowcaseAuth]);
 
-  const handleOpenImagePreview = useCallback((payload) => {
-    if (!payload?.src) {
-      return;
-    }
-    setImagePreview({
-      src: payload.src,
-      title: payload.title ?? '',
-      description: payload.description ?? '',
-      label: payload.label ?? '',
-    });
-  }, []);
+  const handleOpenImagePreview = useCallback(
+    (payload, options = {}) => {
+      if (!payload?.src) {
+        return;
+      }
+      const {
+        requiresAuth = true,
+        loginMessage = 'Inicia sesión para abrir este fragmento.',
+        loginPayload = { action: 'preview-image' },
+      } = options;
+      if (requiresAuth && !requireShowcaseAuth(loginMessage, loginPayload)) {
+        return;
+      }
+      setImagePreview({
+        src: payload.src,
+        title: payload.title ?? '',
+        description: payload.description ?? '',
+        label: payload.label ?? '',
+      });
+    },
+    [requireShowcaseAuth]
+  );
 
   const handleCloseImagePreview = useCallback(() => {
     setImagePreview(null);
@@ -2154,24 +2338,39 @@ const Transmedia = () => {
     if (!payload?.src) {
       return;
     }
+    const parsedNextCost = Number(payload.nextChapterCost);
+    const nextChapterCost =
+      Number.isFinite(parsedNextCost) && parsedNextCost > 0 ? parsedNextCost : GAT_COSTS.novelaChapter;
     setPdfPreview({
       src: payload.src,
       title: payload.title ?? '',
       description: payload.description ?? '',
+      nextChapterCost,
+      nextChapterLabel: payload.nextChapterLabel ?? 'siguiente capítulo',
     });
     setPdfNumPages(null);
     setPdfLoadError(null);
+    hasShownPdfEndNoticeRef.current = false;
   }, []);
 
   const handleClosePdfPreview = useCallback(() => {
     setPdfPreview(null);
     setPdfNumPages(null);
     setPdfLoadError(null);
+    hasShownPdfEndNoticeRef.current = false;
   }, []);
 
   const handleOpenGraphicSwipe = useCallback(
     (entry) => {
       if (!entry?.previewPdfUrl || isGraphicUnlocking) {
+        return;
+      }
+      if (
+        !requireShowcaseAuth('Inicia sesión para desbloquear este recorrido gráfico.', {
+          action: 'graphic-swipe',
+          extras: { entryId: entry.id ?? null },
+        })
+      ) {
         return;
       }
 
@@ -2206,11 +2405,14 @@ const Transmedia = () => {
 
       openPdf();
     },
-    [graphicSpent, handleOpenPdfPreview, isGraphicUnlocking]
+    [graphicSpent, handleOpenPdfPreview, isGraphicUnlocking, requireShowcaseAuth]
   );
 
   const handleActivateAR = useCallback(() => {
     if (isTazaActivating) {
+      return;
+    }
+    if (!requireShowcaseAuth('Inicia sesión para activar la experiencia AR.', { action: 'activate-ar' })) {
       return;
     }
 
@@ -2239,7 +2441,7 @@ const Transmedia = () => {
         })
       );
     }
-  }, [isTazaActivating, tazaActivations]);
+  }, [isTazaActivating, requireShowcaseAuth, tazaActivations]);
 
   const handleCloseARExperience = useCallback(() => {
     setIsTazaARActive(false);
@@ -2314,6 +2516,9 @@ const Transmedia = () => {
   }, []);
 
   const handleOpenOraculo = useCallback(() => {
+    if (!requireShowcaseAuth('Inicia sesión para abrir el Oráculo.', { action: 'open-oraculo' })) {
+      return;
+    }
     if (!ORACULO_URL) {
       toast({
         description: 'Falta configurar la URL del Oráculo (VITE_BIENVENIDA_URL o VITE_ORACULO_URL).',
@@ -2321,7 +2526,7 @@ const Transmedia = () => {
       return;
     }
     setIsOraculoOpen(true);
-  }, []);
+  }, [requireShowcaseAuth]);
 
   const handleCloseOraculo = useCallback(() => {
     setIsOraculoOpen(false);
@@ -2699,6 +2904,47 @@ const Transmedia = () => {
   }, [pdfPreview]);
 
   useEffect(() => {
+    if (!pdfPreview || pdfLoadError || !pdfNumPages) return undefined;
+    if (typeof window === 'undefined') return undefined;
+    if (typeof window.IntersectionObserver !== 'function') return undefined;
+
+    const root = pdfContainerRef.current;
+    const target = pdfEndSentinelRef.current;
+    if (!root || !target) return undefined;
+
+    const observer = new window.IntersectionObserver(
+      (entries) => {
+        const reachedEnd = entries.some((entry) => entry.isIntersecting);
+        if (!reachedEnd || hasShownPdfEndNoticeRef.current) {
+          return;
+        }
+        hasShownPdfEndNoticeRef.current = true;
+
+        const required = Number.isFinite(pdfPreview.nextChapterCost)
+          ? Number(pdfPreview.nextChapterCost)
+          : GAT_COSTS.novelaChapter;
+        const label = pdfPreview.nextChapterLabel || 'siguiente capítulo';
+        const missing = Math.max(required - availableGATokens, 0);
+
+        if (missing > 0) {
+          toast({
+            description: `Llegaste al final. El ${label} requiere ${required} GATokens. Te faltan ${missing}.`,
+          });
+          return;
+        }
+
+        toast({
+          description: `Llegaste al final. El ${label} requiere ${required} GATokens. Ya tienes saldo suficiente.`,
+        });
+      },
+      { root, threshold: 0.9 },
+    );
+
+    observer.observe(target);
+    return () => observer.disconnect();
+  }, [availableGATokens, pdfLoadError, pdfNumPages, pdfPreview]);
+
+  useEffect(() => {
     return () => {
       document.body.classList.remove('overflow-hidden');
     };
@@ -2711,6 +2957,9 @@ const Transmedia = () => {
   };
 
   const handleOpenCameraForQR = useCallback(async () => {
+    if (!requireShowcaseAuth('Inicia sesión para usar esta activación.', { action: 'open-camera-qr' })) {
+      return;
+    }
     if (typeof navigator === 'undefined' || !navigator.mediaDevices?.getUserMedia) {
       toast({ description: 'Tu dispositivo no permite abrir la cámara desde el navegador.' });
       return;
@@ -2727,11 +2976,19 @@ const Transmedia = () => {
       console.error('Error al acceder a la cámara:', error);
       toast({ description: 'No pudimos acceder a la cámara. Revisa los permisos e inténtalo de nuevo.' });
     }
-  }, []);
+  }, [requireShowcaseAuth]);
 
   const handleNovelAppCTA = useCallback(
     (app) => {
       if (!app) return;
+      if (
+        !requireShowcaseAuth('Inicia sesión para usar esta experiencia de novela.', {
+          action: 'novela-app-cta',
+          extras: { ctaAction: app.ctaAction ?? null },
+        })
+      ) {
+        return;
+      }
 
       if (app.ctaUrl) {
         window.open(app.ctaUrl, '_blank', 'noopener,noreferrer');
@@ -2752,7 +3009,7 @@ const Transmedia = () => {
         description: app.ctaMessage || 'Muy pronto liberaremos esta app interactiva.',
       });
     },
-    [handleOpenCameraForQR]
+    [handleOpenCameraForQR, requireShowcaseAuth]
   );
 
   const handleMovementAction = useCallback(
@@ -2760,9 +3017,17 @@ const Transmedia = () => {
       if (!action) {
         return;
       }
+      if (
+        !requireShowcaseAuth('Inicia sesión para activar esta acción de la vitrina.', {
+          action: 'movement-action',
+          extras: { actionId: action.id ?? null },
+        })
+      ) {
+        return;
+      }
       handleOpenMiniverses(contextLabel);
     },
-    [handleOpenMiniverses]
+    [handleOpenMiniverses, requireShowcaseAuth]
   );
 
   const handleOpenExperienceSite = useCallback(() => {
@@ -2772,6 +3037,14 @@ const Transmedia = () => {
 
   const handleOpenContribution = useCallback(
     (categoryId = null) => {
+      if (
+        !requireShowcaseAuth('Inicia sesión para comentar o aportar en esta vitrina.', {
+          action: 'open-contribution',
+          extras: { categoryId: categoryId ?? null },
+        })
+      ) {
+        return;
+      }
       if (activeShowcase) {
         setReturnShowcaseId(activeShowcase);
         setActiveShowcase(null);
@@ -2781,8 +3054,23 @@ const Transmedia = () => {
       setContributionCategoryId(categoryId);
       setIsContributionOpen(true);
     },
-    [activeShowcase]
+    [activeShowcase, requireShowcaseAuth]
   );
+
+  const handleOpenSilvestreChatCta = useCallback(() => {
+    if (
+      !requireShowcaseAuth('Inicia sesión para hablar con La Obra desde el micrófono.', {
+        action: 'open-mic-chat',
+      })
+    ) {
+      return;
+    }
+    handleOpenSilvestreChat();
+  }, [handleOpenSilvestreChat, requireShowcaseAuth]);
+
+  const handleOpenNovelaReserve = useCallback(() => {
+    setIsNovelaReserveOpen(true);
+  }, []);
 
   const handleReturnToShowcase = useCallback(() => {
     if (!returnShowcaseId) return;
@@ -3146,31 +3434,6 @@ const rendernotaAutoral = () => {
 
       return (
         <div className="space-y-8">
-          {isQuironFullVisible && activeDefinition.quiron?.fullVideo ? (
-            <div className="fixed inset-0 z-[120] bg-black/85 backdrop-blur-sm p-4 sm:p-6 overflow-auto">
-              <div className="max-w-5xl mx-auto space-y-4">
-                <div className="flex items-center justify-between gap-3">
-                  <p className="text-xs uppercase tracking-[0.35em] text-amber-200">
-                    Cortometraje completo desbloqueado
-                  </p>
-                  <Button
-                    variant="outline"
-                    className="border-white/30 text-slate-100 hover:bg-white/10"
-                    onClick={handleCloseQuironFull}
-                  >
-                    Cerrar
-                  </Button>
-                </div>
-                <div className="rounded-2xl border border-white/15 bg-black/40 overflow-hidden shadow-2xl">
-                  {renderMedia({
-                    id: activeDefinition.quiron.fullVideo.id || 'quiron-full',
-                    label: activeDefinition.quiron.fullVideo.label || 'Cortometraje completo',
-                    url: activeDefinition.quiron.fullVideo.url,
-                  })}
-                </div>
-              </div>
-            </div>
-          ) : null}
           {renderCollaboratorsSection(activeDefinition.collaborators, 'object-webar')}
 
           <div className="grid gap-10 lg:grid-cols-[2fr_1fr]">
@@ -3565,7 +3828,7 @@ const rendernotaAutoral = () => {
                 showSilvestreCoins={showSilvestreCoins}
                 micError={micError}
                 transcript={transcript}
-                onMicClick={handleOpenSilvestreChat}
+                onMicClick={handleOpenSilvestreChatCta}
                 onPlayPending={handlePlayPendingAudio}
               />
               {conversationBlock}
@@ -3653,7 +3916,7 @@ const rendernotaAutoral = () => {
                                   src: entry.previewImage,
                                   title: entry.title,
                                   description: entry.description,
-                                })
+                                }, { requiresAuth: false })
                               }
                             >
                               Ver portada
@@ -4150,8 +4413,8 @@ const rendernotaAutoral = () => {
 
               <div className="relative overflow-hidden rounded-3xl border border-white/10 bg-gradient-to-r from-slate-900/80 via-black/60 to-purple-900/40 p-6 space-y-4">
                 <span className="absolute top-4 right-4 inline-flex items-center gap-2 rounded-full border border-amber-300/50 bg-amber-500/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.35em] text-amber-100 shadow-[0_0_25px_rgba(251,191,36,0.25)]">
-                  <Coins size={14} />
-                  {quironSpent ? 'Liberado' : `${GAT_COSTS.quironFull} GATokens`}
+                  <CheckCheckIcon size={14} />
+                  {quironSpent ? 'Liberado' : 'Login requerido'}
                 </span>
                 <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Screening privado</p>
                 <h4 className="font-display text-2xl text-slate-100">{activeDefinition.screening?.title}</h4>
@@ -4170,7 +4433,7 @@ const rendernotaAutoral = () => {
                   </Button>
                   {quironSpent ? (
                     <span className="inline-flex w-full items-center justify-center gap-2 rounded-full border border-emerald-200/60 bg-emerald-500/10 px-4 py-3 text-[11px] font-semibold uppercase tracking-[0.3em] text-emerald-100 sm:w-auto">
-                      <Coins size={14} />
+                      <CheckCheckIcon size={14} />
                       Cortometraje desbloqueado
                     </span>
                   ) : (
@@ -4213,7 +4476,7 @@ const rendernotaAutoral = () => {
                     animate={{ opacity: 1, height: 'auto' }}
                     className="rounded-2xl border border-amber-200/40 bg-amber-500/10 p-4 text-sm text-amber-100"
                   >
-                    Únete a la comunidad para usar tus gatokens y desbloquear experiencias completas. Muy pronto podrás conectar tu saldo y suscripción aquí mismo.
+                    Inicia sesión para desbloquear experiencias completas y mantener tu progreso vinculado a tu cuenta.
                   </motion.div>
                 ) : null}
                 <p className="text-xs text-slate-400 leading-relaxed">
@@ -4359,7 +4622,7 @@ const rendernotaAutoral = () => {
                 <div className="flex flex-col gap-3 sm:flex-row">
                   <button
                     type="button"
-                    onClick={() => setIsNovelaReserveOpen(true)}
+                    onClick={handleOpenNovelaReserve}
                     className="inline-flex w-full sm:w-auto items-center justify-center rounded-full border border-purple-400/40 text-purple-200 hover:bg-purple-500/10 px-6 py-2 font-semibold transition"
                   >
                     Comprar edición física
@@ -4377,7 +4640,7 @@ const rendernotaAutoral = () => {
             return (
               <button
                 type="button"
-                onClick={() => setIsNovelaReserveOpen(true)}
+                onClick={handleOpenNovelaReserve}
                 className="inline-flex w-full sm:w-auto items-center justify-center rounded-full border border-purple-400/40 text-purple-200 hover:bg-purple-500/10 px-6 py-2 font-semibold transition"
               >
                 Comprar edición
@@ -4965,6 +5228,228 @@ const rendernotaAutoral = () => {
     )
     : null;
 
+  const quironFullOverlay = typeof document !== 'undefined' && isQuironFullVisible && activeDefinition?.quiron?.fullVideo
+    ? createPortal(
+      <div className="fixed inset-0 z-[245] bg-black/85 backdrop-blur-sm p-4 sm:p-6 overflow-auto">
+        <div className="max-w-5xl mx-auto space-y-4">
+          <div className="flex items-center justify-between gap-3">
+            <p className="text-xs uppercase tracking-[0.35em] text-amber-200">
+              Cortometraje completo desbloqueado
+            </p>
+            <Button
+              variant="outline"
+              className="border-white/30 text-slate-100 hover:bg-white/10"
+              onClick={handleCloseQuironFull}
+            >
+              Cerrar
+            </Button>
+          </div>
+          <div className="rounded-2xl border border-white/15 bg-black/40 overflow-hidden shadow-2xl">
+            {isQuironPlaybackUnlocked ? (
+              (() => {
+                const url = quironSignedUrl || activeDefinition.quiron.fullVideo.url;
+                if (!url) return null;
+                const videoId = activeDefinition.quiron.fullVideo.id || url;
+                const isVideoFile = /\.mp4($|\?)/i.test(url);
+                if (isVideoFile) {
+                  return (
+                    <video
+                      ref={quironVideoRef}
+                      src={quironSignedUrl}
+                      title={activeDefinition.quiron.fullVideo.label || 'Cortometraje completo'}
+                      className="w-full h-full object-contain bg-black"
+                      controls={canUseInlinePlayback(videoId)}
+                      onClick={(event) => requestMobileVideoPresentation(event, videoId)}
+                      onContextMenu={(event) => event.preventDefault()}
+                      onPlay={() => setHasQuironPlaybackStarted(true)}
+                      onEnded={handleQuironPlaybackEnded}
+                      controlsList="nodownload noplaybackrate noremoteplayback"
+                      disablePictureInPicture
+                      disableRemotePlayback
+                      playsInline
+                      preload="metadata"
+                    />
+                  );
+                }
+                return (
+                  <iframe
+                    src={url}
+                    title={activeDefinition.quiron.fullVideo.label || 'Cortometraje completo'}
+                    className="w-full h-[70vh]"
+                    frameBorder="0"
+                    allow="autoplay; fullscreen; picture-in-picture; clipboard-write; encrypted-media; web-share"
+                    loading="lazy"
+                    referrerPolicy="strict-origin-when-cross-origin"
+                  />
+                );
+              })()
+            ) : (
+              <div className="flex min-h-[52vh] flex-col items-center justify-center gap-5 px-6 py-10 text-center">
+                <p className="text-sm uppercase tracking-[0.3em] text-slate-300/70">Quirón · Cortometraje completo</p>
+                <p className="max-w-2xl text-sm text-slate-300/90 leading-relaxed">
+                  La vista previa está lista. Reproduce para continuar.
+                </p>
+                <Button
+                  onClick={() => handleQuironPlayRequest(true)}
+                  disabled={isQuironUnlocking}
+                  className="bg-gradient-to-r from-purple-600/80 to-indigo-500/80 hover:from-purple-500 hover:to-indigo-400 text-white"
+                >
+                  {isQuironUnlocking ? 'Preparando...' : 'Play'}
+                </Button>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>,
+      document.body,
+    )
+    : null;
+
+  const quironAftercareOverlay = typeof document !== 'undefined' && isQuironAftercareVisible
+    ? createPortal(
+      <div className="fixed inset-0 z-[246] flex items-center justify-center px-4 py-8">
+        <div className="absolute inset-0 bg-black/92 backdrop-blur-md" onClick={handleCloseQuironAftercare} />
+        <div className="relative z-10 w-full max-w-2xl rounded-3xl border border-white/10 bg-slate-950/90 p-8 text-center shadow-[0_35px_120px_rgba(0,0,0,0.7)]">
+          <p className="text-xs uppercase tracking-[0.35em] text-slate-400/80">Después de Quirón</p>
+          <h4 className="mt-3 font-display text-3xl text-slate-100">
+            ¿Quisieras compartir esta experiencia con alguien querido?
+          </h4>
+          <p className="mt-3 text-sm text-slate-300/85 leading-relaxed">
+            A veces ver una historia así se siente mejor cuando se conversa.
+          </p>
+          <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:justify-center">
+            <a
+              href={`https://wa.me/?text=${encodeURIComponent(`Quiero compartirte este cortometraje de #GatoEncerrado:\n${buildMiniverseShareUrl('copycats')}`)}`}
+              target="_blank"
+              rel="noreferrer"
+              className="inline-flex items-center justify-center rounded-full border border-white/20 bg-white/5 px-5 py-3 text-sm font-semibold text-slate-100 hover:bg-white/10"
+            >
+              Enviar por mensaje
+            </a>
+            <a
+              href={`mailto:?subject=${encodeURIComponent('Quiero compartirte este cortometraje')}&body=${encodeURIComponent(`Te comparto la vitrina de cine de #GatoEncerrado:\n${buildMiniverseShareUrl('copycats')}`)}`}
+              className="inline-flex items-center justify-center rounded-full border border-white/20 bg-white/5 px-5 py-3 text-sm font-semibold text-slate-100 hover:bg-white/10"
+            >
+              Enviar por correo
+            </a>
+          </div>
+          <button
+            type="button"
+            onClick={handleCloseQuironAftercare}
+            className="mt-6 text-xs uppercase tracking-[0.3em] text-slate-400 hover:text-slate-200"
+          >
+            Cerrar
+          </button>
+        </div>
+      </div>,
+      document.body,
+    )
+    : null;
+
+  const imagePreviewOverlay = typeof document !== 'undefined' && imagePreview
+    ? createPortal(
+      <div className="fixed inset-0 z-[240] flex items-center justify-center px-4 py-10">
+        <div className="absolute inset-0 bg-black/80 backdrop-blur-sm" onClick={handleCloseImagePreview} />
+        <div className="relative z-10 w-full max-w-3xl">
+          <div className="flex justify-end mb-4">
+            <button
+              type="button"
+              onClick={handleCloseImagePreview}
+              className="rounded-full border border-white/10 px-4 py-2 text-sm text-slate-300 hover:text-white hover:border-white/30 transition"
+            >
+              Cerrar ✕
+            </button>
+          </div>
+          <div className="rounded-3xl border border-white/10 bg-slate-950/95 shadow-2xl overflow-hidden">
+            <div className="relative w-full aspect-[4/3] bg-black/60">
+              <img
+                src={imagePreview.src}
+                alt={imagePreview.title || 'Vista previa'}
+                className="absolute inset-0 w-full h-full object-contain"
+                loading="lazy"
+                decoding="async"
+              />
+            </div>
+            {(imagePreview.title || imagePreview.description) ? (
+              <div className="p-6 space-y-2">
+                {imagePreview.title ? (
+                  <h4 className="font-display text-2xl text-slate-100">{imagePreview.title}</h4>
+                ) : null}
+                {imagePreview.description ? (
+                  <p className="text-sm text-slate-300/80 leading-relaxed">{imagePreview.description}</p>
+                ) : null}
+                <p className="text-xs uppercase tracking-[0.4em] text-slate-500">
+                  {imagePreview.label || 'Ilustración de la novela'}
+                </p>
+              </div>
+            ) : null}
+          </div>
+        </div>
+      </div>,
+      document.body,
+    )
+    : null;
+
+  const pdfPreviewOverlay = typeof document !== 'undefined' && pdfPreview
+    ? createPortal(
+      <div className="fixed inset-0 z-[230] flex items-center justify-center px-4 py-10">
+        <div className="absolute inset-0 bg-black/80 backdrop-blur-sm" onClick={handleClosePdfPreview} />
+        <div className="relative z-10 w-full max-w-5xl space-y-4">
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+            <div>
+              <p className="text-xs uppercase tracking-[0.4em] text-slate-400/70">Lectura en progreso</p>
+              <h4 className="font-display text-2xl text-slate-100">{pdfPreview.title || 'Fragmento en PDF'}</h4>
+              {pdfPreview.description ? (
+                <p className="text-sm text-slate-300/80 leading-relaxed max-w-2xl">{pdfPreview.description}</p>
+              ) : null}
+            </div>
+            <button
+              type="button"
+              onClick={handleClosePdfPreview}
+              className="self-start rounded-full border border-white/10 px-4 py-2 text-sm text-slate-300 hover:text-white hover:border-white/30 transition"
+            >
+              Cerrar ✕
+            </button>
+          </div>
+
+          <div
+            ref={pdfContainerRef}
+            className="rounded-3xl border border-white/10 bg-slate-950/95 shadow-2xl p-4 max-h-[75vh] overflow-auto"
+          >
+            {pdfLoadError ? (
+              <p className="text-sm text-red-300 text-center py-8">{pdfLoadError}</p>
+            ) : (
+              <Document
+                file={pdfPreview.src}
+                onLoadSuccess={handlePdfLoadSuccess}
+                onLoadError={(error) => {
+                  console.error('Error al cargar PDF del miniverso:', error);
+                  setPdfLoadError('No pudimos cargar el fragmento en PDF. Intenta de nuevo más tarde.');
+                }}
+                loading={<p className="text-sm text-slate-400 text-center py-8">Preparando páginas…</p>}
+              >
+                {pdfNumPages
+                  ? Array.from(new Array(pdfNumPages), (_, index) => (
+                      <div key={`pdf-page-${index + 1}`} className="mb-6 last:mb-0">
+                        <Page
+                          pageNumber={index + 1}
+                          width={pdfPageWidth}
+                          renderTextLayer={false}
+                          renderAnnotationLayer={false}
+                        />
+                      </div>
+                    ))
+                  : null}
+              </Document>
+            )}
+            <div ref={pdfEndSentinelRef} className="h-px w-full" aria-hidden="true" />
+          </div>
+        </div>
+      </div>,
+      document.body,
+    )
+    : null;
+
   return (
     <>
       <section
@@ -5239,6 +5724,10 @@ const rendernotaAutoral = () => {
           {showcaseOverlay}
           {oraculoOverlay}
           {causeSiteOverlay}
+          {quironFullOverlay}
+          {quironAftercareOverlay}
+          {imagePreviewOverlay}
+          {pdfPreviewOverlay}
 
           {renderExplorerBadge()}
 
@@ -5355,65 +5844,9 @@ const rendernotaAutoral = () => {
         onClose={() => setIsNovelaReserveOpen(false)}
         mode="offseason"
         initialPackages={['novela-400']}
-        overlayZClass="z-[210]"
+        overlayZClass="z-[250]"
       />
       {showBadgeLoginOverlay ? <LoginOverlay onClose={handleCloseBadgeLogin} /> : null}
-
-      {pdfPreview ? (
-        <div className="fixed inset-0 z-[190] flex items-center justify-center px-4 py-10">
-          <div className="absolute inset-0 bg-black/80 backdrop-blur-sm" onClick={handleClosePdfPreview} />
-          <div className="relative z-10 w-full max-w-5xl space-y-4">
-            <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
-              <div>
-                <p className="text-xs uppercase tracking-[0.4em] text-slate-400/70">Lectura en progreso</p>
-                <h4 className="font-display text-2xl text-slate-100">{pdfPreview.title || 'Fragmento en PDF'}</h4>
-                {pdfPreview.description ? (
-                  <p className="text-sm text-slate-300/80 leading-relaxed max-w-2xl">{pdfPreview.description}</p>
-                ) : null}
-              </div>
-              <button
-                type="button"
-                onClick={handleClosePdfPreview}
-                className="self-start rounded-full border border-white/10 px-4 py-2 text-sm text-slate-300 hover:text-white hover:border-white/30 transition"
-              >
-                Cerrar ✕
-              </button>
-            </div>
-
-            <div
-              ref={pdfContainerRef}
-              className="rounded-3xl border border-white/10 bg-slate-950/95 shadow-2xl p-4 max-h-[75vh] overflow-auto"
-            >
-              {pdfLoadError ? (
-                <p className="text-sm text-red-300 text-center py-8">{pdfLoadError}</p>
-              ) : (
-                <Document
-                  file={pdfPreview.src}
-                  onLoadSuccess={handlePdfLoadSuccess}
-                  onLoadError={(error) => {
-                    console.error('Error al cargar PDF del miniverso:', error);
-                    setPdfLoadError('No pudimos cargar el fragmento en PDF. Intenta de nuevo más tarde.');
-                  }}
-                  loading={<p className="text-sm text-slate-400 text-center py-8">Preparando páginas…</p>}
-                >
-                  {pdfNumPages
-                    ? Array.from(new Array(pdfNumPages), (_, index) => (
-                        <div key={`pdf-page-${index + 1}`} className="mb-6 last:mb-0">
-                          <Page
-                            pageNumber={index + 1}
-                            width={pdfPageWidth}
-                            renderTextLayer={false}
-                            renderAnnotationLayer={false}
-                          />
-                        </div>
-                      ))
-                    : null}
-                </Document>
-              )}
-            </div>
-          </div>
-        </div>
-      ) : null}
 
       {MINIVERSO_EDITORIAL_INTERCEPTION_ENABLED && isMiniversoEditorialModalOpen ? (
         <div className="fixed inset-0 z-[190] flex items-center justify-center px-4 py-10">
@@ -5439,47 +5872,6 @@ const rendernotaAutoral = () => {
                   ¿Conoces nuestra causa social?
                 </button>
               </div>
-            </div>
-          </div>
-        </div>
-      ) : null}
-
-      {imagePreview ? (
-        <div className="fixed inset-0 z-[190] flex items-center justify-center px-4 py-10">
-          <div className="absolute inset-0 bg-black/80 backdrop-blur-sm" onClick={handleCloseImagePreview} />
-          <div className="relative z-10 w-full max-w-3xl">
-            <div className="flex justify-end mb-4">
-              <button
-                type="button"
-                onClick={handleCloseImagePreview}
-                className="rounded-full border border-white/10 px-4 py-2 text-sm text-slate-300 hover:text-white hover:border-white/30 transition"
-              >
-                Cerrar ✕
-              </button>
-            </div>
-            <div className="rounded-3xl border border-white/10 bg-slate-950/95 shadow-2xl overflow-hidden">
-              <div className="relative w-full aspect-[4/3] bg-black/60">
-                <img
-                  src={imagePreview.src}
-                  alt={imagePreview.title || 'Vista previa'}
-                  className="absolute inset-0 w-full h-full object-contain"
-                  loading="lazy"
-                  decoding="async"
-                />
-              </div>
-              {(imagePreview.title || imagePreview.description) ? (
-                <div className="p-6 space-y-2">
-                  {imagePreview.title ? (
-                    <h4 className="font-display text-2xl text-slate-100">{imagePreview.title}</h4>
-                  ) : null}
-                  {imagePreview.description ? (
-                    <p className="text-sm text-slate-300/80 leading-relaxed">{imagePreview.description}</p>
-                  ) : null}
-                  <p className="text-xs uppercase tracking-[0.4em] text-slate-500">
-                    {imagePreview.label || 'Ilustración de la novela'}
-                  </p>
-                </div>
-              ) : null}
             </div>
           </div>
         </div>

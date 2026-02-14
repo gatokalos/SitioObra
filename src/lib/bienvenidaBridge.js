@@ -1,4 +1,16 @@
 export const BIENVENIDA_APP_TO_SHOWCASE = {
+  // Canonical appIds from Bienvenida
+  'miniverso-obra': 'miniversos',
+  'miniverso-artesanias': 'lataza',
+  'miniverso-cine': 'copycats',
+  'miniverso-graficos': 'miniversoGrafico',
+  'miniverso-novela': 'miniversoNovela',
+  'miniverso-sonoro': 'miniversoSonoro',
+  'miniverso-movimiento': 'miniversoMovimiento',
+  'miniverso-oraculo': 'oraculo',
+  'miniverso-juegos': 'apps',
+
+  // Historical aliases
   apps: 'apps',
   juegos: 'apps',
   juego: 'apps',
@@ -28,6 +40,7 @@ export const BIENVENIDA_APP_TO_SHOWCASE = {
   musica: 'miniversoSonoro',
   'app-sonoro': 'miniversoSonoro',
   'miniverso-sonoro': 'miniversoSonoro',
+  'miniverso-sonoridades': 'miniversoSonoro',
   movimiento: 'miniversoMovimiento',
   danza: 'miniversoMovimiento',
   ruta: 'miniversoMovimiento',
@@ -44,7 +57,7 @@ export const BIENVENIDA_APP_TO_SHOWCASE = {
   copycats: 'copycats',
   quiron: 'copycats',
   'app-cine': 'copycats',
-  'miniverso-cine': 'copycats',
+  miniversos: 'miniversos',
   obra: 'miniversos',
   teatro: 'miniversos',
   tragedia: 'miniversos',

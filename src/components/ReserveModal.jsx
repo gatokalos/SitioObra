@@ -4,6 +4,7 @@
 
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
+import { createPortal } from 'react-dom';
 import { Button } from '@/components/ui/button';
 import { toast } from '@/components/ui/use-toast';
 import { supabase } from '@/lib/supabaseClient';
@@ -344,7 +345,7 @@ const ReserveModal = ({
   // -------------------------------------------------------------
   const copy = RESERVE_COPY[mode] ?? RESERVE_COPY.offseason;
 
-  return (
+  const modalTree = (
     <AnimatePresence>
       {open && (
         <motion.div
@@ -598,6 +599,12 @@ const ReserveModal = ({
       )}
     </AnimatePresence>
   );
+
+  if (typeof document === 'undefined') {
+    return modalTree;
+  }
+
+  return createPortal(modalTree, document.body);
 };
 
 export default ReserveModal;

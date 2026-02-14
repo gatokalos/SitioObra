@@ -1113,7 +1113,7 @@ const Instagram = () => {
               />
 
               <motion.div
-                className="relative z-10 w-full max-w-5xl overflow-hidden rounded-[28px] bg-slate-900/90 backdrop-blur-xl shadow-2xl"
+                className="relative z-10 w-full max-w-[97rem] overflow-hidden rounded-[28px] bg-slate-900/90 backdrop-blur-xl shadow-2xl"
                 role="dialog"
                 aria-modal="true"
                 aria-label="Recuerdo ampliado"
