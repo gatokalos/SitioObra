@@ -274,10 +274,13 @@ const MINIVERSE_ICON_IMAGES = {
   lataza: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Merch/la_taza.png',
   copycats: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Merch/cortos.png',
   miniversoMovimiento: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Merch/lasdiosas.png',
-  miniversoNovela: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Merch/el_oraculo.png',
+  miniversoNovela: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Merch/literatura.png',
   miniversoGrafico: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Merch/los_graficos.png',
+  miniversoSonoro: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Merch/sonoridades.png',
+  miniversoApps: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Merch/juegos.png',
+  oraculo: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Merch/el_oraculo.png',
 };
-const MINIVERSE_ICON_PLACEHOLDER = '/images/placeholder-colaboradores.jpg';
+const MINIVERSE_ICON_PLACEHOLDER = 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Merch/juegos.png';
 
 const initialFormState = {
   fullName: '',
@@ -1578,72 +1581,48 @@ const MiniverseModal = ({
                   {MINIVERSE_CARDS.map((card) => {
                     const isUpcoming = Boolean(card.isUpcoming);
                     const isVisited = !isUpcoming && Boolean(visitedMiniverses[card.id]);
-                    const energyValue = showcaseEnergy?.[card.formatId];
-                    const boostApplied = Boolean(showcaseBoosts?.[card.formatId]);
-                    const energyLabel = 'Energía confiada:';
-                    const energyDisplay =
-                      card.formatId === 'lataza'
-                        ? '∞'
-                        : `${Number.isFinite(energyValue) ? energyValue : 0} GAT`;
                     return (
                       <button
                         key={card.title}
                         type="button"
                         onClick={() => handleSelectCard(card)}
                         disabled={isUpcoming}
-                        style={{ '--glass-tint': card.glassTint }}
-                        className={`relative text-left glass-effect-card rounded-2xl border p-4 sm:p-5 transition flex flex-col items-start gap-3 sm:gap-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-400/60 disabled:cursor-not-allowed disabled:opacity-60 ${
-                          isUpcoming
-                            ? 'border-white/10 bg-white/5'
-                            : isVisited
-                              ? 'border-emerald-300/20 bg-emerald-500/5 hover:border-emerald-300/30'
-                              : 'border-white/10 bg-white/5 hover:border-purple-300/40 hover:shadow-[0_10px_30px_rgba(124,58,237,0.18)]'
+                        aria-label={card.ctaVerb ?? card.title}
+                        className={`group relative mx-auto flex h-24 w-24 sm:h-28 sm:w-28 items-center justify-center transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-400/60 disabled:cursor-not-allowed ${
+                          isUpcoming ? 'opacity-70' : 'hover:scale-[1.03] active:scale-[0.98]'
                         }`}
                       >
                         {!isUpcoming ? (
-                          <div className="absolute right-3 top-3 flex items-center gap-2">
+                          <div className="absolute -right-1 -top-1 flex items-center gap-2">
                             {isVisited ? (
-                              <span className="inline-flex items-center justify-center h-6 w-6 rounded-full bg-emerald-500/80 text-slate-950 shadow-[0_0_12px_rgba(16,185,129,0.6)]">
-                                <Check size={14} strokeWidth={2.4} />
+                              <span className="inline-flex items-center justify-center h-5 w-5 rounded-full bg-emerald-500/80 text-slate-950 shadow-[0_0_10px_rgba(16,185,129,0.55)]">
+                                <Check size={12} strokeWidth={2.4} />
                               </span>
                             ) : null}
                           </div>
                         ) : null}
                         {isUpcoming ? (
-                          <>
-                            <div className="h-10 w-10 sm:h-12 sm:w-12 rounded-full border border-white/10 bg-slate-800/60 flex items-center justify-center text-slate-200 shadow-[0_10px_25px_rgba(0,0,0,0.35)]">
-                              {card.icon ? <card.icon size={22} className="text-slate-200/80" /> : card.thumbLabel}
-                            </div>
-                            <span className="rounded-full border border-white/20 bg-black/40 px-2.5 sm:px-3 py-1 text-[0.55rem] sm:text-[0.6rem] uppercase tracking-[0.28em] sm:tracking-[0.3em] text-slate-300">
-                              {card.titleShort ?? card.title}
-                            </span>
-                          </>
+                          <div className="h-16 w-16 sm:h-20 sm:w-20 rounded-2xl border border-white/10 bg-slate-800/50 flex items-center justify-center text-slate-200 shadow-[0_10px_24px_rgba(0,0,0,0.35)]">
+                            {card.icon ? <card.icon size={28} className="text-slate-200/80" /> : card.thumbLabel}
+                          </div>
                         ) : null}
                         {!isUpcoming ? (
-                          <>
-                            <div className="flex items-center gap-3">
-                              <div className="h-10 w-10 sm:h-12 sm:w-12 rounded-lg overflow-hidden border border-white/10 bg-black/40 shadow-[0_10px_25px_rgba(0,0,0,0.35)]">
-                                <img
-                                  src={MINIVERSE_ICON_IMAGES[card.formatId] ?? MINIVERSE_ICON_PLACEHOLDER}
-                                  alt={card.title}
-                                  className="h-full w-full object-cover"
-                                  loading="lazy"
-                                />
-                              </div>
-                              <h3 className="font-display text-base sm:text-lg text-slate-100">{card.ctaVerb ?? card.title}</h3>
-                            </div>
-                            <div className="hidden sm:flex flex-col gap-1">
-                              <div className="flex flex-wrap items-center gap-2 text-[0.55rem] sm:text-[0.6rem] uppercase tracking-[0.25em] sm:tracking-[0.3em] text-slate-300/90">
-                                <Coins size={12} className="text-amber-200" />
-                                <span className="text-slate-100/70">{energyLabel}</span>
-                              </div>
-                              <span className="font-semibold text-amber-200 tracking-[0.3em] sm:tracking-[0.35em] text-xs sm:text-sm">
-                                {energyDisplay}
-                              </span>
-                            </div>
-                          </>
+                          <div
+                            className={`h-16 w-16 sm:h-20 sm:w-20 rounded-2xl overflow-hidden border bg-black/35 shadow-[0_12px_28px_rgba(0,0,0,0.45)] transition duration-300 ${
+                              isVisited
+                                ? 'border-emerald-300/50 shadow-[0_0_22px_rgba(16,185,129,0.25)]'
+                                : 'border-white/10 group-hover:-translate-y-1 group-hover:shadow-[0_14px_30px_rgba(80,40,160,0.35)]'
+                            }`}
+                          >
+                            <img
+                              src={MINIVERSE_ICON_IMAGES[card.formatId] ?? MINIVERSE_ICON_PLACEHOLDER}
+                              alt={card.title}
+                              className="h-full w-full object-cover"
+                              loading="lazy"
+                            />
+                          </div>
                         ) : null}
-                        </button>
+                      </button>
                       );
                     })}
                 </div>

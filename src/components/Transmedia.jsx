@@ -5530,12 +5530,12 @@ const rendernotaAutoral = () => {
                     }`}
                     onClick={() => handleFormatClick(format.id)}
                   >
-                    <div className="relative h-[280px] bg-slate-500/20">
+                    <div className="relative h-[280px] bg-slate-500/20 overflow-hidden">
                       {format.image ? (
                         <img
                           src={format.image}
                           alt={`Imagen de ${format.title}`}
-                          className="absolute inset-0 h-full w-full object-cover"
+                          className="showcase-parallax-media absolute inset-0 h-full w-full object-cover"
                           loading="lazy"
                         />
                       ) : null}
@@ -5646,12 +5646,12 @@ const rendernotaAutoral = () => {
                     className="group glass-effect rounded-2xl border border-white/10 bg-black/30 hover:border-purple-400/50 overflow-hidden text-left shadow-[0_20px_60px_rgba(0,0,0,0.55)] flex flex-col min-h-[620px] hover-glow"
                     onClick={() => handleFormatClick(format.id)}
                   >
-                    <div className="relative flex-1 min-h-[320px] bg-slate-500/20">
+                    <div className="relative flex-1 min-h-[320px] bg-slate-500/20 overflow-hidden">
                       {format.image ? (
                         <img
                           src={format.image}
                           alt={`Imagen de ${format.title}`}
-                          className="absolute inset-0 h-full w-full object-cover"
+                          className="showcase-parallax-media absolute inset-0 h-full w-full object-cover"
                           loading="lazy"
                         />
                       ) : null}

@@ -527,3 +527,33 @@ body {
     opacity: 1;
   }
 }
+
+.showcase-parallax-media {
+  --showcase-start-y: 44%;
+  --showcase-end-y: 56%;
+  object-position: 50% var(--showcase-start-y);
+  transform: scale(1.01);
+  transition: transform 700ms ease, object-position 900ms ease;
+  will-change: transform, object-position;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .group:hover .showcase-parallax-media {
+    object-position: 50% var(--showcase-end-y);
+    transform: scale(1.03);
+  }
+
+  .group:active .showcase-parallax-media {
+    object-position: 50% 52%;
+    transform: scale(1.02);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .showcase-parallax-media {
+    animation: none !important;
+    transition: none;
+    transform: none;
+    object-position: 50% 50%;
+  }
+}
