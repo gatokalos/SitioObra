@@ -11,8 +11,8 @@ import { safeSetItem } from '@/lib/safeStorage';
 
 const TABS = [
   { id: 'escaparate', label: 'Descubrir', icon: Sparkles },
-  { id: 'experiences', label: 'Probar', icon: Gamepad2 },
-  { id: 'waitlist', label: 'Apoyar', icon: HeartHandshake },
+  { id: 'experiences', label: 'Decidir', icon: Gamepad2 },
+  { id: 'waitlist', label: 'Sostener', icon: HeartHandshake },
 ];
 const DEFAULT_TAB_ID = 'escaparate';
 

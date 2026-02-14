@@ -45,6 +45,67 @@ Quiero invitarte a ver *Es un gato encerrado*.
 Mira el tráiler aquí: https://esungatoencerrado.com/trailer
 Si te late, vamos. 💜`;
 
+export const ProvocaSection = () => {
+  const handleScrollToContacts = useCallback(() => {
+    if (typeof window === 'undefined' || typeof document === 'undefined') {
+      return;
+    }
+
+    const contactSection = document.getElementById('contact');
+    if (contactSection) {
+      contactSection.scrollIntoView({
+        behavior: 'smooth',
+        block: 'start',
+      });
+    }
+  }, []);
+
+  return (
+    <section id="provoca" className="py-24 relative">
+      <div className="container mx-auto px-6">
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, delay: 0.3, ease: 'easeOut' }}
+          viewport={{ once: true }}
+          className="glass-effect rounded-2xl p-8 md:p-12"
+        >
+          <div className="grid md:grid-cols-[3fr_2fr] gap-8 items-center">
+            <div>
+              <p className="uppercase tracking-[0.35em] text-xs text-slate-400/80 mb-4">Perspectivas del público</p>
+              <h3 className="font-display text-3xl text-slate-100 mb-6 italic">
+                ¿Qué nos provoca esta obra?
+              </h3>
+              <p className="text-slate-300/80 leading-relaxed mb-6 font-light">
+                Reunimos testimonios, críticas y preguntas abiertas que siguen vibrando después de la función. Puedes leer las voces que ya habitan este espacio o abrir una nueva compartiendo tu experiencia.
+              </p>
+              <Button
+                variant="outline"
+                onClick={handleScrollToContacts}
+                className="border-purple-400/40 text-purple-200 hover:bg-purple-500/20 w-full sm:w-auto whitespace-normal break-words text-center leading-snug"
+              >
+                Sumar mi voz
+              </Button>
+            </div>
+            <div className="space-y-6">
+              {testimonials.map((item) => (
+                <div key={item.author} className="rounded-2xl border border-white/10 bg-black/30 p-6">
+                  <Quote className="text-purple-300 mb-4" size={28} />
+                  <p className="text-slate-200 italic leading-relaxed mb-4">{item.quote}</p>
+                  <div className="text-sm text-slate-400">
+                    <p className="text-slate-200 font-semibold">{item.author}</p>
+                    <p>{item.role}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </motion.div>
+      </div>
+    </section>
+  );
+};
+
 const About = () => {
   const [trailer, setTrailer] = useState(null);
   const [isTrailerOpen, setIsTrailerOpen] = useState(false);
@@ -119,20 +180,6 @@ const About = () => {
 
     const handleCloseReserve = useCallback(() => {
     setIsReserveOpen(false);
-  }, []);
-
-  const handleScrollToContacts = useCallback(() => {
-    if (typeof window === 'undefined' || typeof document === 'undefined') {
-      return;
-    }
-
-    const contactSection = document.getElementById('contact');
-    if (contactSection) {
-      contactSection.scrollIntoView({
-        behavior: 'smooth',
-        block: 'start',
-      });
-    }
   }, []);
 
   const handleWatchTrailer = useCallback(async () => {
@@ -304,44 +351,6 @@ const About = () => {
           </div>
         </motion.div>
 
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.3, ease: 'easeOut' }}
-          viewport={{ once: true }}
-          className="mt-16 glass-effect rounded-2xl p-8 md:p-12"
-        >
-          <div className="grid md:grid-cols-[3fr_2fr] gap-8 items-center">
-            <div>
-              <p className="uppercase tracking-[0.35em] text-xs text-slate-400/80 mb-4">Perspectivas del público</p>
-              <h3 className="font-display text-3xl text-slate-100 mb-6 italic">
-                ¿Qué nos provoca esta obra?
-              </h3>
-              <p className="text-slate-300/80 leading-relaxed mb-6 font-light">
-                Reunimos testimonios, críticas y preguntas abiertas que siguen vibrando después de la función. Puedes leer las voces que ya habitan este espacio o abrir una nueva compartiendo tu experiencia.
-              </p>
-              <Button
-                variant="outline"
-                onClick={handleScrollToContacts}
-                className="border-purple-400/40 text-purple-200 hover:bg-purple-500/20 w-full sm:w-auto whitespace-normal break-words text-center leading-snug"
-              >
-                Sumar mi voz
-              </Button>
-            </div>
-            <div className="space-y-6">
-              {testimonials.map((item) => (
-                <div key={item.author} className="rounded-2xl border border-white/10 bg-black/30 p-6">
-                  <Quote className="text-purple-300 mb-4" size={28} />
-                  <p className="text-slate-200 italic leading-relaxed mb-4">{item.quote}</p>
-                  <div className="text-sm text-slate-400">
-                    <p className="text-slate-200 font-semibold">{item.author}</p>
-                    <p>{item.role}</p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </motion.div>
       </div>
 
       <AnimatePresence>

@@ -3,7 +3,7 @@ import { Route, Routes, useLocation, useNavigate } from 'react-router-dom';
 import { Toaster } from '@/components/ui/toaster';
 import Header from '@/components/Header';
 import Hero from '@/components/Hero';
-import About from '@/components/About';
+import About, { ProvocaSection } from '@/components/About';
 import Transmedia from '@/components/Transmedia';
 import Blog from '@/components/Blog';
 import Team from '@/components/Team';
@@ -146,12 +146,13 @@ function App() {
 
               <main className="pt-20 lg:pt-24">
                 <Hero />
+                <Transmedia />
                 <About />
                 <Team />
                 <Instagram />
                 <BlogContributionPrompt />
+                <ProvocaSection />
                 <Blog posts={blogData.posts} isLoading={blogData.isLoading} error={blogData.error} />
-                <Transmedia />
                 <NextShow />
                 <Contact />
               </main>
