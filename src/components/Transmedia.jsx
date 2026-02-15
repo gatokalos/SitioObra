@@ -568,7 +568,7 @@ iaProfile: {
     cartaTitle: '#LuzQueHiere',
     copycats: {
       title: 'CopyCats',
-      description: 'Un juego serio sobre cómo nos repetimos sin notarlo. Mira su bitácora creativa y descubre cómo surgió esta pieza.',
+      description: 'Un ensayo documental sobre identidad y repetición en la era digital. Explora su bitácora creativa y el proceso que dio forma a la pieza.',
 
       assets: [
         {
@@ -581,7 +581,7 @@ iaProfile: {
     },
     quiron: {
       title: 'Quirón',
-      description: 'Mira el teaser de un cortometraje que busca la vulnerabilidad donde casi nunca se nombra.',
+      description: 'Mira el teaser de un cortometraje que explora la vulnerabilidad donde casi nunca se nombra.',
             tags: ['Cine-ensayo', 'Identidad Digital', 'Archivo autoficcional'],
 
      
@@ -662,7 +662,7 @@ iaProfile: {
     screening: {
       title: 'Mayo 2026 · Cineteca CECUT',
       description:
-        'Únete al universo transmedia y asegura tu acceso al primer screening doble de CopyCats + Quirón, con conservatorio del equipo.',
+        'Forma parte del primer screening doble de CopyCats + Quirón, con conversatorio del equipo.',
       cta: 'Quiero ser parte del screening',
       
     },
@@ -4620,7 +4620,8 @@ const rendernotaAutoral = () => {
                     animate={{ opacity: 1, height: 'auto' }}
                     className="rounded-2xl border border-amber-200/40 bg-amber-500/10 p-4 text-sm text-amber-100"
                   >
-                    Inicia sesión para desbloquear experiencias completas y mantener tu progreso vinculado a tu cuenta.
+                    El acceso inicial habilita una visualización.
+                    Con suscripción solidaria, puedes volver cuando quieras.
                   </motion.div>
                 ) : null}
                 <p className="text-xs text-slate-400 leading-relaxed">
@@ -4691,7 +4692,7 @@ const rendernotaAutoral = () => {
                 reactionProps: {
                   showcaseId: 'copycats',
                   title: 'Validación cinematográfica',
-                  description: 'Haz clic para dejar un like y amplificar el screening de CopyCats + Quirón.',
+                  description: 'Deja tu aplauso y amplifica el screening de CopyCats + Quirón.',
                   buttonLabel: 'Sumar mi aplauso',
                   className: 'mt-2 bg-gradient-to-r from-slate-900/40 to-purple-900/20',
                 },

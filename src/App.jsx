@@ -30,10 +30,12 @@ import {
   setBienvenidaPending,
   setBienvenidaReturnPath,
 } from '@/lib/bienvenida';
+import { safeGetItem } from '@/lib/safeStorage';
 
 const pageTitle = '#GatoEncerrado - Obra de Teatro transmedia';
 const pageDescription =
   'La historia de alguien que desaparece… y deja una huella emocional. Una experiencia teatral única que explora múltiples formatos transmediaes.';
+const LOGIN_RETURN_KEY = 'gatoencerrado:login-return';
 
 const HeroBackground = () => {
   const [opacity, setOpacity] = useState(1);
@@ -104,6 +106,7 @@ const BienvenidaGate = () => {
     if (location.pathname === '/bienvenida') return;
     if (isBienvenidaPending()) return;
     if (loading || !user) return;
+    if (safeGetItem(LOGIN_RETURN_KEY)) return;
     if (isBienvenidaSkip()) {
       clearBienvenidaSkip();
     }

@@ -930,7 +930,7 @@ const MiniverseModal = ({
             aria-modal={shelved ? 'false' : 'true'}
             aria-labelledby="miniverse-modal-title"
             variants={modalVariants}
-            className={`relative z-10 w-full max-w-4xl rounded-3xl border border-white/10 bg-slate-950/70 p-5 sm:p-10 shadow-2xl max-h-[90vh] min-h-[70vh] overflow-y-auto transition-[opacity,filter,transform] duration-500 ${
+            className={`relative z-10 w-full max-w-4xl rounded-3xl border border-white/10 bg-slate-950/70 p-5 sm:p-10 shadow-2xl max-h-[95vh] min-h-[95vh] md:max-h-[69vh] md:min-h-[69vh] overflow-y-auto transition-[opacity,filter,transform] duration-500 ${
               shelved ? 'pointer-events-none opacity-0 blur-sm scale-[0.98]' : 'opacity-100 blur-0 scale-100'
             }`}
           >
