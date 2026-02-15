@@ -340,8 +340,7 @@ const CONTRIBUTION_CATEGORY_BY_SHOWCASE = {
   oraculo: 'oraculo',
 };
 const readStoredJson = (key, fallback) => {
-  if (typeof window === 'undefined') return fallback;
-  const raw = window.localStorage?.getItem(key);
+  const raw = safeGetItem(key);
   if (!raw) return fallback;
   try {
     return JSON.parse(raw);
@@ -351,16 +350,14 @@ const readStoredJson = (key, fallback) => {
 };
 
 const readStoredInt = (key, fallback) => {
-  if (typeof window === 'undefined') return fallback;
-  const raw = window.localStorage?.getItem(key);
+  const raw = safeGetItem(key);
   if (!raw) return fallback;
   const parsed = Number.parseInt(raw, 10);
   return Number.isNaN(parsed) ? fallback : parsed;
 };
 
 const readStoredBool = (key, fallback = false) => {
-  if (typeof window === 'undefined') return fallback;
-  const raw = window.localStorage?.getItem(key);
+  const raw = safeGetItem(key);
   if (raw === null || raw === undefined) return fallback;
   return raw === 'true';
 };
@@ -1412,8 +1409,46 @@ const CAUSE_ACCORDION = [
 ];
 
 const CauseImpactAccordion = ({ items, onOpenImagePreview }) => {
-  const [openCauseId, setOpenCauseId] = useState(null);
+  const [isDesktopViewport, setIsDesktopViewport] = useState(
+    () => typeof window !== 'undefined' && window.matchMedia('(min-width: 1024px)').matches
+  );
+  const [openCauseId, setOpenCauseId] = useState(() =>
+    (typeof window !== 'undefined' && window.matchMedia('(min-width: 1024px)').matches && items?.[0]?.id)
+      ? items[0].id
+      : null
+  );
   const [activeSlideById, setActiveSlideById] = useState({});
+
+  useEffect(() => {
+    if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') {
+      return undefined;
+    }
+    const mediaQuery = window.matchMedia('(min-width: 1024px)');
+    const handleChange = (event) => setIsDesktopViewport(event.matches);
+
+    if (typeof mediaQuery.addEventListener === 'function') {
+      mediaQuery.addEventListener('change', handleChange);
+    } else if (typeof mediaQuery.addListener === 'function') {
+      mediaQuery.addListener(handleChange);
+    }
+
+    return () => {
+      if (typeof mediaQuery.removeEventListener === 'function') {
+        mediaQuery.removeEventListener('change', handleChange);
+      } else if (typeof mediaQuery.removeListener === 'function') {
+        mediaQuery.removeListener(handleChange);
+      }
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!isDesktopViewport) return;
+    const firstId = items?.[0]?.id;
+    if (!firstId) return;
+    if (!openCauseId) {
+      setOpenCauseId(firstId);
+    }
+  }, [isDesktopViewport, items, openCauseId]);
 
   const handleCarouselScroll = (itemId, event, total) => {
     const target = event.currentTarget;
@@ -1449,7 +1484,14 @@ const CauseImpactAccordion = ({ items, onOpenImagePreview }) => {
           >
             <button
               type="button"
-              onClick={() => setOpenCauseId((prev) => (prev === item.id ? null : item.id))}
+              onClick={() =>
+                setOpenCauseId((prev) => {
+                  if (prev === item.id) {
+                    return isDesktopViewport ? item.id : null;
+                  }
+                  return item.id;
+                })
+              }
               className="w-full flex items-center justify-between gap-4 px-4 py-3 text-left hover:bg-white/5 transition"
             >
               <div className="flex items-center gap-3">
@@ -1483,7 +1525,7 @@ const CauseImpactAccordion = ({ items, onOpenImagePreview }) => {
                                   title: item.title,
                                   description: item.description,
                                   label: item.imageLabel,
-                                })
+                                }, { requiresAuth: false })
                               }
                               className="rounded-xl border border-white/10 bg-black/20 hover:border-purple-300/60 hover:shadow-[0_0_18px_rgba(168,85,247,0.2)]"
                               aria-label="Abrir foto de archivo"
@@ -1533,7 +1575,7 @@ const CauseImpactAccordion = ({ items, onOpenImagePreview }) => {
                                     title: item.title,
                                     description: item.description,
                                     label: item.imageLabel,
-                                  })
+                                  }, { requiresAuth: false })
                                 }
                                 className="w-full shrink-0 snap-start rounded-xl border border-white/10 bg-black/20 hover:border-purple-300/60 hover:shadow-[0_0_18px_rgba(168,85,247,0.2)]"
                                 aria-label="Abrir foto de archivo"
@@ -1860,14 +1902,11 @@ const Transmedia = () => {
   }, []);
 
   useEffect(() => {
-    if (typeof window === 'undefined') return;
-    const storage = window.localStorage;
-    if (!storage) return;
-    if (!storage.getItem('gatoencerrado:gatokens-available')) {
-      storage.setItem('gatoencerrado:gatokens-available', String(initialAvailableGATokens));
+    if (!safeGetItem('gatoencerrado:gatokens-available')) {
+      safeSetItem('gatoencerrado:gatokens-available', String(initialAvailableGATokens));
     }
-    if (!storage.getItem('gatoencerrado:showcase-energy')) {
-      storage.setItem('gatoencerrado:showcase-energy', JSON.stringify(baseEnergyByShowcase));
+    if (!safeGetItem('gatoencerrado:showcase-energy')) {
+      safeSetItem('gatoencerrado:showcase-energy', JSON.stringify(baseEnergyByShowcase));
     }
   }, [baseEnergyByShowcase, initialAvailableGATokens]);
 
@@ -1881,10 +1920,7 @@ const Transmedia = () => {
   }, []);
 
   useEffect(() => {
-    if (typeof window === 'undefined') {
-      return undefined;
-    }
-    window.localStorage?.setItem(EXPLORER_BADGE_STORAGE_KEY, JSON.stringify(explorerBadge));
+    safeSetItem(EXPLORER_BADGE_STORAGE_KEY, JSON.stringify(explorerBadge));
     return undefined;
   }, [explorerBadge]);
 
@@ -1973,7 +2009,7 @@ const Transmedia = () => {
       setNovelaQuestions((prev) => {
         const next = prev + 1;
         if (typeof window !== 'undefined') {
-          window.localStorage?.setItem('gatoencerrado:novela-questions', String(next));
+          safeSetItem('gatoencerrado:novela-questions', String(next));
           window.dispatchEvent(
             new CustomEvent('gatoencerrado:miniverse-spent', {
               detail: { id: 'novela', spent: true, amount: 25, count: next },
@@ -1993,7 +2029,7 @@ const Transmedia = () => {
     setTimeout(() => setShowSonoroCoins(false), 1100);
     setSonoroSpent(true);
     if (typeof window !== 'undefined') {
-      window.localStorage?.setItem('gatoencerrado:sonoro-spent', 'true');
+      safeSetItem('gatoencerrado:sonoro-spent', 'true');
       window.dispatchEvent(
         new CustomEvent('gatoencerrado:miniverse-spent', {
           detail: { id: 'sonoro', spent: true, amount: 130 },
@@ -2459,7 +2495,7 @@ const Transmedia = () => {
         setShowGraphicCoins(true);
         setTimeout(() => setShowGraphicCoins(false), 1100);
         if (typeof window !== 'undefined') {
-          window.localStorage?.setItem('gatoencerrado:graphic-spent', 'true');
+          safeSetItem('gatoencerrado:graphic-spent', 'true');
           window.dispatchEvent(
             new CustomEvent('gatoencerrado:miniverse-spent', {
               detail: { id: 'grafico', spent: true, amount: GAT_COSTS.graficoSwipe },
@@ -2501,7 +2537,7 @@ const Transmedia = () => {
       setIsTazaActivating(false);
     }, 700);
     if (typeof window !== 'undefined') {
-      window.localStorage?.setItem('gatoencerrado:taza-activations', String(next));
+      safeSetItem('gatoencerrado:taza-activations', String(next));
       window.dispatchEvent(
         new CustomEvent('gatoencerrado:miniverse-spent', {
           detail: { id: 'taza', spent: true, amount: 30, count: next },
@@ -2545,11 +2581,11 @@ const Transmedia = () => {
     setShowTazaCoins(false);
     resetSilvestreQuestions();
     if (typeof window !== 'undefined') {
-      window.localStorage?.removeItem('gatoencerrado:quiron-spent');
-      window.localStorage?.removeItem('gatoencerrado:novela-questions');
-      window.localStorage?.removeItem('gatoencerrado:sonoro-spent');
-      window.localStorage?.removeItem('gatoencerrado:graphic-spent');
-      window.localStorage?.removeItem('gatoencerrado:taza-activations');
+      safeRemoveItem('gatoencerrado:quiron-spent');
+      safeRemoveItem('gatoencerrado:novela-questions');
+      safeRemoveItem('gatoencerrado:sonoro-spent');
+      safeRemoveItem('gatoencerrado:graphic-spent');
+      safeRemoveItem('gatoencerrado:taza-activations');
       window.dispatchEvent(
         new CustomEvent('gatoencerrado:miniverse-spent', {
           detail: { id: 'novela', spent: false, amount: 0, count: 0 },
@@ -3226,9 +3262,7 @@ const Transmedia = () => {
       setShowBadgeCoins(true);
       setAvailableGATokens((prev) => {
         const next = prev + rewardAmount;
-        if (typeof window !== 'undefined') {
-          window.localStorage?.setItem('gatoencerrado:gatokens-available', String(next));
-        }
+        safeSetItem('gatoencerrado:gatokens-available', String(next));
         return next;
       });
       if (typeof window !== 'undefined') {
@@ -3263,25 +3297,19 @@ const Transmedia = () => {
       }
       setShowcaseBoosts((prev = {}) => {
         const next = { ...prev, [showcaseId]: true };
-        if (typeof window !== 'undefined') {
-          window.localStorage?.setItem('gatoencerrado:showcase-boosts', JSON.stringify(next));
-        }
+        safeSetItem('gatoencerrado:showcase-boosts', JSON.stringify(next));
         return next;
       });
       setShowcaseEnergy((prev = {}) => {
         const currentValue = prev?.[showcaseId] ?? baseEnergyByShowcase[showcaseId];
         const updatedValue = currentValue + boostAmount;
         const next = { ...prev, [showcaseId]: updatedValue };
-        if (typeof window !== 'undefined') {
-          window.localStorage?.setItem('gatoencerrado:showcase-energy', JSON.stringify(next));
-        }
+        safeSetItem('gatoencerrado:showcase-energy', JSON.stringify(next));
         return next;
       });
       setAvailableGATokens((prev) => {
         const next = prev + boostAmount;
-        if (typeof window !== 'undefined') {
-          window.localStorage?.setItem('gatoencerrado:gatokens-available', String(next));
-        }
+        safeSetItem('gatoencerrado:gatokens-available', String(next));
         return next;
       });
       if (typeof window !== 'undefined') {

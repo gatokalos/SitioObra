@@ -12,6 +12,7 @@ import Instagram from '@/components/Instagram';
 import NextShow from '@/components/NextShow';
 import Contact from '@/components/Contact';
 import Footer from '@/components/Footer';
+import SectionErrorBoundary from '@/components/SectionErrorBoundary';
 import { useBlogPosts } from '@/hooks/useBlogPosts';
 import { useEmailRedirect } from '@/hooks/useEmailRedirect';
 import LoginToast from '@/components/LoginToast';
@@ -146,7 +147,23 @@ function App() {
 
               <main className="pt-20 lg:pt-24">
                 <Hero />
-                <Transmedia />
+                <SectionErrorBoundary
+                  fallback={(
+                    <section id="transmedia" className="py-24 relative">
+                      <div className="container mx-auto px-6">
+                        <div className="glass-effect rounded-2xl p-8 text-center">
+                          <p className="text-xs uppercase tracking-[0.35em] text-slate-400/80">Narrativa Expandida</p>
+                          <h3 className="font-display text-3xl text-slate-100 mt-3">Vitrinas temporalmente no disponibles</h3>
+                          <p className="text-slate-300/80 mt-4">
+                            Recarga la página para intentar nuevamente.
+                          </p>
+                        </div>
+                      </div>
+                    </section>
+                  )}
+                >
+                  <Transmedia />
+                </SectionErrorBoundary>
                 <About />
                 <Team />
                 <Instagram />
