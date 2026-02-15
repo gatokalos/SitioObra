@@ -549,11 +549,81 @@ body {
   }
 }
 
+.vitrina-image-overlay {
+  --mirror-tint-rgb: 215, 190, 255;
+  --mirror-speed: 7.8s;
+  --mirror-angle: 22deg;
+  --mirror-width: 46%;
+  --mirror-blur: 0.6px;
+  --mirror-opacity: 0.34;
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 2;
+  overflow: hidden;
+  background:
+    linear-gradient(180deg, rgba(var(--mirror-tint-rgb), 0.06) 0%, rgba(255, 255, 255, 0) 34%),
+    linear-gradient(180deg, rgba(0, 0, 0, 0.08) 65%, rgba(0, 0, 0, 0.2) 100%);
+}
+
+.vitrina-image-overlay::before {
+  content: '';
+  position: absolute;
+  top: -28%;
+  left: -78%;
+  width: calc(var(--mirror-width) * 2);
+  height: 168%;
+  pointer-events: none;
+  opacity: var(--mirror-opacity);
+  transform: rotate(var(--mirror-angle));
+  background: linear-gradient(
+    90deg,
+    rgba(var(--mirror-tint-rgb), 0) 0%,
+    rgba(var(--mirror-tint-rgb), 0.12) 38%,
+    rgba(var(--mirror-tint-rgb), 0.34) 50%,
+    rgba(var(--mirror-tint-rgb), 0.12) 62%,
+    rgba(var(--mirror-tint-rgb), 0) 100%
+  );
+  filter: blur(var(--mirror-blur));
+  animation: reflejoBrillo var(--mirror-speed) ease-in-out infinite;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .group:hover .vitrina-image-overlay::before {
+    opacity: calc(var(--mirror-opacity) + 0.14);
+  }
+}
+
+.group:active .vitrina-image-overlay::before {
+  opacity: calc(var(--mirror-opacity) + 0.1);
+}
+
+@keyframes reflejoBrillo {
+  0% {
+    transform: translateX(-120%) rotate(var(--mirror-angle));
+    opacity: 0;
+  }
+  18% {
+    opacity: calc(var(--mirror-opacity) + 0.12);
+  }
+  48% {
+    opacity: var(--mirror-opacity);
+  }
+  100% {
+    transform: translateX(240%) rotate(var(--mirror-angle));
+    opacity: 0;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .showcase-parallax-media {
     animation: none !important;
     transition: none;
     transform: none;
     object-position: 50% 50%;
+  }
+
+  .vitrina-image-overlay::before {
+    animation: none !important;
   }
 }

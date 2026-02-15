@@ -264,6 +264,48 @@ const MINIVERSO_TILE_COLORS = {
     accent: '#e9d8fd',
   },
 };
+const VITRINA_MIRROR_EFFECTS = {
+  copycats: {
+    '--mirror-tint-rgb': '255, 196, 120',
+    '--mirror-speed': '6.4s',
+    '--mirror-angle': '18deg',
+    '--mirror-width': '44%',
+    '--mirror-blur': '0.55px',
+    '--mirror-opacity': '0.44',
+  },
+  miniversoSonoro: {
+    '--mirror-tint-rgb': '165, 219, 255',
+    '--mirror-speed': '7.2s',
+    '--mirror-angle': '14deg',
+    '--mirror-width': '52%',
+    '--mirror-blur': '0.9px',
+    '--mirror-opacity': '0.34',
+  },
+  oraculo: {
+    '--mirror-tint-rgb': '226, 184, 255',
+    '--mirror-speed': '8.4s',
+    '--mirror-angle': '24deg',
+    '--mirror-width': '40%',
+    '--mirror-blur': '0.75px',
+    '--mirror-opacity': '0.32',
+  },
+  lataza: {
+    '--mirror-tint-rgb': '255, 214, 168',
+    '--mirror-speed': '7.6s',
+    '--mirror-angle': '16deg',
+    '--mirror-width': '46%',
+    '--mirror-blur': '0.65px',
+    '--mirror-opacity': '0.35',
+  },
+  default: {
+    '--mirror-tint-rgb': '215, 190, 255',
+    '--mirror-speed': '7.8s',
+    '--mirror-angle': '22deg',
+    '--mirror-width': '46%',
+    '--mirror-blur': '0.6px',
+    '--mirror-opacity': '0.34',
+  },
+};
 const ORACULO_URL = (() => {
   const raw =
     import.meta.env?.VITE_BIENVENIDA_URL ??
@@ -2704,7 +2746,7 @@ const Transmedia = () => {
 
   useEffect(() => {
     if (isMobileViewport || isShowcaseCarouselPaused) return undefined;
-    const intervalId = window.setInterval(handleShowcaseNext, 12000);
+    const intervalId = window.setInterval(handleShowcaseNext, 9000);
     return () => window.clearInterval(intervalId);
   }, [handleShowcaseNext, isMobileViewport, isShowcaseCarouselPaused]);
 
@@ -5075,22 +5117,54 @@ const rendernotaAutoral = () => {
               onClick={handleCloseShowcase}
             />
             <div
-              className="pointer-events-none absolute inset-0 opacity-60 sm:opacity-75 mix-blend-screen"
+              className="pointer-events-none absolute inset-0 opacity-95 mix-blend-screen"
               aria-hidden="true"
               style={{
                 backgroundImage:
-                  'radial-gradient(1px 1px at 8% 12%, rgba(248,250,252,0.8), transparent 65%),' +
-                  'radial-gradient(2px 2px at 14% 28%, rgba(241,245,249,0.65), transparent 70%),' +
-                  'radial-gradient(1px 1px at 22% 44%, rgba(255,255,255,0.45), transparent 70%),' +
-                  'radial-gradient(1.5px 1.5px at 30% 18%, rgba(226,232,240,0.6), transparent 70%),' +
-                  'radial-gradient(2px 2px at 38% 62%, rgba(241,245,249,0.6), transparent 70%),' +
-                  'radial-gradient(1px 1px at 46% 30%, rgba(255,255,255,0.4), transparent 70%),' +
-                  'radial-gradient(1.5px 1.5px at 54% 16%, rgba(241,245,249,0.55), transparent 70%),' +
-                  'radial-gradient(2px 2px at 62% 48%, rgba(226,232,240,0.6), transparent 70%),' +
-                  'radial-gradient(1px 1px at 70% 22%, rgba(255,255,255,0.35), transparent 70%),' +
-                  'radial-gradient(1.5px 1.5px at 78% 66%, rgba(241,245,249,0.55), transparent 70%),' +
-                  'radial-gradient(2px 2px at 86% 38%, rgba(226,232,240,0.6), transparent 70%),' +
-                  'radial-gradient(1px 1px at 92% 80%, rgba(255,255,255,0.35), transparent 70%)',
+                  'radial-gradient(7px 7px at 7% 10%, rgba(248,250,252,0.82), transparent 75%),' +
+                  'radial-gradient(7px 7px at 13% 24%, rgba(241,245,249,0.68), transparent 78%),' +
+                  'radial-gradient(17px 17px at 21% 42%, rgba(255,255,255,0.52), transparent 76%),' +
+                  'radial-gradient(7px 7px at 30% 17%, rgba(226,232,240,0.66), transparent 77%),' +
+                  'radial-gradient(7px 7px at 39% 60%, rgba(241,245,249,0.62), transparent 78%),' +
+                  'radial-gradient(17px 17px at 47% 31%, rgba(255,255,255,0.5), transparent 76%),' +
+                  'radial-gradient(7px 7px at 54% 14%, rgba(241,245,249,0.62), transparent 77%),' +
+                  'radial-gradient(7px 7px at 62% 46%, rgba(226,232,240,0.66), transparent 78%),' +
+                  'radial-gradient(7px 7px at 70% 20%, rgba(255,255,255,0.46), transparent 76%),' +
+                  'radial-gradient(7px 7px at 79% 64%, rgba(241,245,249,0.62), transparent 77%),' +
+                  'radial-gradient(13px 13px at 87% 36%, rgba(226,232,240,0.66), transparent 78%),' +
+                  'radial-gradient(7px 7px at 93% 78%, rgba(255,255,255,0.45), transparent 76%),' +
+                  'radial-gradient(7px 7px at 17% 76%, rgba(248,250,252,0.55), transparent 76%),' +
+                  'radial-gradient(15px 15px at 44% 84%, rgba(241,245,249,0.5), transparent 77%),' +
+                  'radial-gradient(9px 9px at 74% 86%, rgba(226,232,240,0.54), transparent 78%)',
+              }}
+            />
+            <div
+              className="pointer-events-none absolute inset-0 opacity-78 mix-blend-screen star-pulse"
+              aria-hidden="true"
+              style={{
+                backgroundImage:
+                  'radial-gradient(7px 7px at 9% 20%, rgba(255,255,255,0.82), transparent 78%),' +
+                  'radial-gradient(7px 7px at 25% 67%, rgba(241,245,249,0.68), transparent 78%),' +
+                  'radial-gradient(7px 7px at 57% 16%, rgba(226,232,240,0.72), transparent 78%),' +
+                  'radial-gradient(7px 7px at 73% 70%, rgba(255,255,255,0.62), transparent 78%),' +
+                  'radial-gradient(7px 7px at 90% 29%, rgba(241,245,249,0.68), transparent 78%),' +
+                  'radial-gradient(7px 7px at 49% 82%, rgba(248,250,252,0.58), transparent 78%)',
+              }}
+            />
+            <div
+              className="pointer-events-none absolute inset-0 opacity-48"
+              aria-hidden="true"
+              style={{
+                background:
+                  'radial-gradient(circle at center, rgba(0,0,0,0.52) 0%, rgba(0,0,0,0.2) 36%, rgba(0,0,0,0.78) 100%)',
+              }}
+            />
+            <div
+              className="pointer-events-none absolute inset-0 opacity-28 mix-blend-screen"
+              aria-hidden="true"
+              style={{
+                background:
+                  'radial-gradient(circle at 50% 50%, rgba(190,170,255,0.22) 0%, rgba(190,170,255,0.06) 34%, rgba(0,0,0,0) 58%)',
               }}
             />
             <motion.div
@@ -5575,6 +5649,8 @@ const rendernotaAutoral = () => {
               const iconClass = format.iconClass ?? 'text-purple-200';
               const tileGradient =
                 MINIVERSO_TILE_GRADIENTS[format.id] ?? MINIVERSO_TILE_GRADIENTS.default;
+              const mirrorEffect =
+                VITRINA_MIRROR_EFFECTS[format.id] ?? VITRINA_MIRROR_EFFECTS.default;
               const isActiveTile = activeShowcase === format.id;
               const isDimmedTile = isCinematicShowcaseOpen && !isActiveTile;
               return (
@@ -5607,6 +5683,7 @@ const rendernotaAutoral = () => {
                         />
                       ) : null}
                       <div className="absolute inset-0 bg-gradient-to-br from-white/5 via-transparent to-black/25" />
+                      <div className="vitrina-image-overlay" style={mirrorEffect} />
                     </div>
                     <div className="relative overflow-hidden">
                       <div className="absolute inset-0 pointer-events-none">
@@ -5704,6 +5781,8 @@ const rendernotaAutoral = () => {
                 const iconClass = format.iconClass ?? 'text-purple-200';
                 const tileGradient =
                   MINIVERSO_TILE_GRADIENTS[format.id] ?? MINIVERSO_TILE_GRADIENTS.default;
+                const mirrorEffect =
+                  VITRINA_MIRROR_EFFECTS[format.id] ?? VITRINA_MIRROR_EFFECTS.default;
                 return (
                   <motion.button
                     key={`${format.id}-${showcaseCarouselIndex}`}
@@ -5724,6 +5803,7 @@ const rendernotaAutoral = () => {
                         />
                       ) : null}
                       <div className="absolute inset-0 bg-gradient-to-br from-white/5 via-transparent to-black/20" />
+                      <div className="vitrina-image-overlay" style={mirrorEffect} />
                       <div className="absolute inset-x-0 bottom-0 h-px bg-white/10" />
                     </div>
                     <div className="relative p-6 overflow-hidden min-h-[240px]">

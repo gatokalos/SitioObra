@@ -1045,7 +1045,7 @@ const MiniverseModal = ({
                             }`}
                           />
                           <span className="text-sm text-slate-300/80 leading-relaxed">
-                            Quiero más información.
+                            Necesito más información.
                           </span>
                         </button>
                       </div>
