@@ -641,7 +641,7 @@ iaProfile: {
         id: 'tania-fraire',
         name: 'Tania Fraire Vázques',
         role: 'Autoficción (Quirón) · Intérprete natural en pantalla',
-        bio: 'Tania llegó a este proyecto transmedia desde la autoficción, pero pronto reveló algo más: una actriz natural, sin artificio, capaz de sostener la cámara como si respirara con ella. En el screening privado de Quirón, el maestro Gilberto Corrales lo señaló con asombro: su actuación encendía la escena desde un lugar genuino, vulnerable y preciso. Su participación abrió una grieta luminosa por donde la historia pudo volverse más humana. Tania colabora en una non-profit, es diseñadora gráfica y transfronteriza de corazón.',
+        bio: 'Tania llegó a este proyecto transmedia desde la autoficción, pero pronto reveló algo más: una actriz natural, sin artificio, capaz de sostener la cámara como si respirara con ella. En la proyección privada de Quirón, el maestro Gilberto Corrales lo señaló con asombro: su actuación encendía la escena desde un lugar genuino, vulnerable y preciso. Su participación abrió una grieta luminosa por donde la historia pudo volverse más humana. Tania colabora en una non-profit, es diseñadora gráfica y transfronteriza de corazón.',
         image: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/equipo/tania.jpg',
         anchor: '#team',
       },
@@ -657,7 +657,7 @@ iaProfile: {
     comments: [
       {
         id: 'copycats-comment-1',
-        quote: '“En el screening sentí que CopyCats nos dejó ver la forma en que nos copiamos para sobrevivir.”',
+        quote: '“En la proyección sentí que CopyCats nos dejó ver la forma en que nos copiamos para sobrevivir.”',
         author: 'Invitada al laboratorio',
       },
       {
@@ -673,12 +673,12 @@ iaProfile: {
       note:
         'Dos películas, dos vulnerabilidades distintas, un mismo impulso: usar el arte para tocar aquello que no queremos decir en voz alta y encontrar otra manera de contarlo.',
     },
-    screening: {
+    proyeccion: {
       title: 'Mayo 2026 · Cineteca CECUT',
       description:
-        'Forma parte del primer screening doble de CopyCats + Quirón, con conversatorio del equipo.',
-      cta: 'Quiero ser parte del screening',
-      
+        'Forma parte de la primera proyección doble de CopyCats + Quirón, con conversatorio del equipo y sonido Dolby Atmos diseñado por Concrete Sounds.',
+      cta: 'Quiero ser parte de la proyección',
+      footnote: 'Registro de interés activo. Espera noticias.',
     },
     notaAutoral: 'Memoria encendida.\nCámara despierta.\nY el tiempo la vuelve a montar.',
     iaProfile: {
@@ -1759,6 +1759,8 @@ const Transmedia = () => {
   const [showQuironCommunityPrompt, setShowQuironCommunityPrompt] = useState(false);
   const [isQuironUnlocking, setIsQuironUnlocking] = useState(false);
   const [showQuironCoins, setShowQuironCoins] = useState(false);
+  const [isProjectionInterestSubmitting, setIsProjectionInterestSubmitting] = useState(false);
+  const [isProjectionInterestSent, setIsProjectionInterestSent] = useState(false);
   const [isQuironFullVisible, setIsQuironFullVisible] = useState(initialQuironSpent);
   const [quironSignedUrl, setQuironSignedUrl] = useState('');
   const [isQuironPlaybackUnlocked, setIsQuironPlaybackUnlocked] = useState(false);
@@ -2055,6 +2057,34 @@ const Transmedia = () => {
     }
   }, [sonoroSpent]);
 
+  const handleProjectionInterest = useCallback(async () => {
+    if (isProjectionInterestSubmitting || isProjectionInterestSent) return;
+
+    setIsProjectionInterestSubmitting(true);
+    try {
+      const { error } = await supabase.rpc('register_cine_projection_interest', {
+        p_showcase_id: 'copycats',
+        p_source: 'transmedia_cine',
+        p_metadata: {
+          section: 'proyeccion',
+          path: typeof window !== 'undefined' ? window.location.pathname : null,
+          is_authenticated: isAuthenticated,
+          is_subscriber: isSubscriber,
+        },
+      });
+
+      if (error) {
+        throw error;
+      }
+    } catch (error) {
+      console.warn('[Transmedia] No se pudo registrar interés de proyección:', error);
+    } finally {
+      setIsProjectionInterestSubmitting(false);
+      setIsProjectionInterestSent(true);
+      toast({ description: 'Interés registrado. Espera noticias de la proyección.' });
+    }
+  }, [isAuthenticated, isProjectionInterestSent, isProjectionInterestSubmitting, isSubscriber]);
+
   const handleToggleQuironPrompt = useCallback(() => {
     const currentDefinition = activeShowcase ? showcaseDefinitions[activeShowcase] : null;
     if (!currentDefinition?.quiron?.fullVideo) {
@@ -2178,6 +2208,12 @@ const Transmedia = () => {
     setIsQuironPlaybackUnlocked(false);
     setQuironSignedUrl('');
   }, []);
+
+  useEffect(() => {
+    if (activeShowcase === 'copycats') return;
+    setIsProjectionInterestSubmitting(false);
+    setIsProjectionInterestSent(false);
+  }, [activeShowcase]);
 
   useEffect(() => {
     if (!isAuthenticated || typeof window === 'undefined') return;
@@ -4577,20 +4613,24 @@ const rendernotaAutoral = () => {
                   <CheckCheckIcon size={14} />
                   {quironSpent ? 'Liberado' : 'Login requerido'}
                 </span>
-                <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Screening privado</p>
-                <h4 className="font-display text-2xl text-slate-100">{activeDefinition.screening?.title}</h4>
-                <p className="text-sm text-slate-200/90 leading-relaxed">{activeDefinition.screening?.description}</p>
+                <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Proyección privada</p>
+                <h4 className="font-display text-2xl text-slate-100">{activeDefinition.proyeccion?.title}</h4>
+                <p className="text-sm text-slate-200/90 leading-relaxed">{activeDefinition.proyeccion?.description}</p>
                 <div className="flex flex-col gap-3 sm:flex-row">
                   <Button
-                    onClick={() =>
-                      toast({
-                        description:
-                          'Guardaremos tu interés; pronto abriremos la lista de suscriptores para el screening doble en CECUT.',
-                      })
-                    }
-                    className="w-full justify-center bg-gradient-to-r from-purple-600/80 to-indigo-500/80 hover:from-purple-500 hover:to-indigo-400 text-white sm:w-auto"
+                    onClick={handleProjectionInterest}
+                    disabled={isProjectionInterestSubmitting || isProjectionInterestSent}
+                    className={`w-full justify-center text-white sm:w-auto ${
+                      isProjectionInterestSent
+                        ? 'bg-emerald-500/80 hover:bg-emerald-500/80'
+                        : 'bg-gradient-to-r from-amber-500/90 to-orange-500/90 hover:from-amber-400 hover:to-orange-400'
+                    }`}
                   >
-                    {activeDefinition.screening?.cta}
+                    {isProjectionInterestSubmitting
+                      ? 'Registrando...'
+                      : isProjectionInterestSent
+                        ? 'Espera noticias'
+                        : activeDefinition.proyeccion?.cta}
                   </Button>
                   {quironSpent ? (
                     <span className="inline-flex w-full items-center justify-center gap-2 rounded-full border border-emerald-200/60 bg-emerald-500/10 px-4 py-3 text-[11px] font-semibold uppercase tracking-[0.3em] text-emerald-100 sm:w-auto">
@@ -4630,6 +4670,9 @@ const rendernotaAutoral = () => {
                     </div>
                   )}
                 </div>
+                {isProjectionInterestSent ? (
+                  <p className="text-xs text-emerald-200/90">Recibirás un correo para confirmar tu lugar al acercarse la fecha.</p>
+                ) : null}
                 
                 {showQuironCommunityPrompt ? (
                   <motion.div
@@ -4644,8 +4687,8 @@ const rendernotaAutoral = () => {
                 <p className="text-xs text-slate-400 leading-relaxed">
                   Una vez desbloqueado, el cortometraje se habilita una vez; con una suscripción solidaria puedes volver cuando quieras.
                 </p>
-                {activeDefinition.screening?.footnote ? (
-                  <p className="text-xs text-slate-400 leading-relaxed">{activeDefinition.screening.footnote}</p>
+                {activeDefinition.proyeccion?.footnote ? (
+                  <p className="text-xs text-slate-400 leading-relaxed">{activeDefinition.proyeccion.footnote}</p>
                 ) : null}
               </div>
 
