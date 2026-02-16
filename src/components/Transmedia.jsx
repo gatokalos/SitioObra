@@ -579,7 +579,7 @@ iaProfile: {
       assets: [
         {
           id: 'copycats-carta',
-          label: 'Ensayo abierto (4:02)',
+          label: 'Ensayo abierto (4:27)',
           url: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Cine%20-%20teasers/ensayos/La%20Cadena%20del%20Gesto.mp4',
         },
       ],
@@ -609,9 +609,9 @@ iaProfile: {
       {
         id: 'viviana-gonzalez',
         name: 'Viviana González',
-        role: 'Dirección de foto y registro creativo',
+        role: 'Dirección y fotografía · CopyCats / Quirón',
         bio: 'Viviana acompaña al Miniverso Cine con una mirada que piensa. Comunicóloga y docente en la Ibero, su experiencia ilumina procesos más que superficies. Fue quien sostuvo el pulso visual de Quirón y CopyCats: cámara, escucha y diálogo creativo continuo. Su presencia abrió rutas nuevas para traducir lo íntimo, lo incierto y lo que apenas empieza a nacer en pantalla',
-        image: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/equipo/placeholder-colaboradores.jpg',
+        image: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/equipo/viviana_gg.jpeg',
         anchor: '#team',
       },
       {
@@ -640,9 +640,17 @@ iaProfile: {
       {
         id: 'tania-fraire',
         name: 'Tania Fraire Vázques',
-        role: 'Autoficción & Presenica natural en pantalla',
+        role: 'Autoficción (Quirón) · Intérprete natural en pantalla',
         bio: 'Tania llegó a este proyecto transmedia desde la autoficción, pero pronto reveló algo más: una actriz natural, sin artificio, capaz de sostener la cámara como si respirara con ella. En el screening privado de Quirón, el maestro Gilberto Corrales lo señaló con asombro: su actuación encendía la escena desde un lugar genuino, vulnerable y preciso. Su participación abrió una grieta luminosa por donde la historia pudo volverse más humana. Tania colabora en una non-profit, es diseñadora gráfica y transfronteriza de corazón.',
         image: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/equipo/tania.jpg',
+        anchor: '#team',
+      },
+      {
+        id: 'briseida-lopez-inzunza',
+        name: 'Briseida López Inzunza',
+        role: 'Artista escénica · Voz en off (Copycats)',
+        bio: 'Artista escénica mexicana con trayectoria en danza, actuación, coreografía y pedagogía. Su labor une la destreza emocional del cuerpo con la claridad dramática, explorando el movimiento como lenguaje narrativo. En Copycats, su voz en off aporta una presencia sensible y profunda que acompaña y amplifica la experiencia de la obra.',
+        image: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/equipo/BriseidaLopez.jpg',
         anchor: '#team',
       },
     ],
@@ -4701,7 +4709,7 @@ const rendernotaAutoral = () => {
                 reactionProps: {
                   showcaseId: 'copycats',
                   title: 'Validación cinematográfica',
-                  description: 'Deja tu aplauso y amplifica el screening de CopyCats + Quirón.',
+                  description: 'Deja tu aplauso y amplifica la comunidad de CopyCats + Quirón.',
                   buttonLabel: 'Sumar mi aplauso',
                   className: 'mt-2 bg-gradient-to-r from-slate-900/40 to-purple-900/20',
                 },
