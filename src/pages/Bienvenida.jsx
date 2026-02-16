@@ -73,7 +73,7 @@ const Bienvenida = () => {
     const handleMessage = (event) => {
       if (!event?.data) return;
       if (typeof event.data !== 'object') return;
-      if (bienvenidaOrigin && event.origin !== bienvenidaOrigin) return;
+      if (!bienvenidaOrigin || event.origin !== bienvenidaOrigin) return;
       const { type } = event.data;
       const payload = event.data?.payload;
       const payloadAppId = extractRecommendedAppId(payload);

@@ -1579,64 +1579,82 @@ const MiniverseModal = ({
               ) : (
                 <div className="md:col-span-2 w-full max-w-3xl mx-auto space-y-4">
                   <p className="text-sm text-slate-300/85 leading-relaxed">
-                     <br />
-                     Estás viendo una muestra interactiva de los miniversos.
+                    Te presentamos <strong className="font-semibold text-slate-50">
+                los nueve miniversos</strong> como una pantalla de inicio: 
+                    <br />Un formato familiar para explorar por intuición.
                     <br />
-                    Prueba cada puerta a tu ritmo antes de cruzar al universo completo.
-                     <br />
-                  </p>
-                  <div className="w-full grid grid-cols-2 md:grid-cols-3 gap-4 sm:gap-6">
-                    {MINIVERSE_CARDS.map((card) => {
-                      const isUpcoming = Boolean(card.isUpcoming);
-                      const isVisited = !isUpcoming && Boolean(visitedMiniverses[card.id]);
-                      const appLabel = (card.title ?? '').replace(/^Miniverso\s+/i, '');
-                      return (
-                        <button
-                          key={card.title}
-                          type="button"
-                          onClick={() => handleSelectCard(card)}
-                          disabled={isUpcoming}
-                          aria-label={card.ctaVerb ?? card.title}
-                          className={`group relative mx-auto flex w-24 sm:w-28 flex-col items-center justify-start gap-2 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-400/60 disabled:cursor-not-allowed ${
-                            isUpcoming ? 'opacity-70' : 'hover:scale-[1.03] active:scale-[0.98]'
-                          }`}
-                        >
-                          {!isUpcoming ? (
-                            <div className="absolute -right-1 -top-1 flex items-center gap-2">
-                              {isVisited ? (
-                                <span className="inline-flex items-center justify-center h-5 w-5 rounded-full bg-emerald-500/80 text-slate-950 shadow-[0_0_10px_rgba(16,185,129,0.55)]">
-                                  <Check size={12} strokeWidth={2.4} />
-                                </span>
-                              ) : null}
-                            </div>
-                          ) : null}
-                          {isUpcoming ? (
-                            <div className="h-16 w-16 sm:h-20 sm:w-20 rounded-2xl border border-white/10 bg-slate-800/50 flex items-center justify-center text-slate-200 shadow-[0_10px_24px_rgba(0,0,0,0.35)]">
-                              {card.icon ? <card.icon size={28} className="text-slate-200/80" /> : card.thumbLabel}
-                            </div>
-                          ) : null}
-                          {!isUpcoming ? (
-                            <div
-                              className={`h-16 w-16 sm:h-20 sm:w-20 rounded-2xl overflow-hidden border bg-black/35 shadow-[0_12px_28px_rgba(0,0,0,0.45)] transition duration-300 ${
-                                isVisited
-                                  ? 'border-emerald-300/50 shadow-[0_0_22px_rgba(16,185,129,0.25)]'
-                                  : 'border-white/10 group-hover:-translate-y-1 group-hover:shadow-[0_14px_30px_rgba(80,40,160,0.35)]'
-                              }`}
-                            >
-                              <img
-                                src={MINIVERSE_ICON_IMAGES[card.formatId] ?? MINIVERSE_ICON_PLACEHOLDER}
-                                alt={card.title}
-                                className="h-full w-full object-cover"
-                                loading="lazy"
-                              />
-                            </div>
-                          ) : null}
-                          <span className="text-center text-[0.65rem] sm:text-xs text-slate-300/90 leading-tight">
-                            {appLabel}
-                          </span>
-                        </button>
-                      );
-                    })}
+                    <br />
+                              </p>
+                  <div className="relative overflow-hidden rounded-[2rem] border border-white/15 bg-gradient-to-b from-slate-900/80 via-[#0b1431]/85 to-[#050917]/90 p-5 sm:p-6 shadow-[inset_0_1px_0_rgba(255,255,255,0.08),0_30px_80px_rgba(0,0,0,0.55)]">
+                    <div
+                      aria-hidden="true"
+                      className="pointer-events-none absolute inset-0 opacity-35"
+                      style={{
+                        backgroundImage:
+                          'radial-gradient(circle at 20% 12%, rgba(129,140,248,0.22) 0%, transparent 45%), radial-gradient(circle at 82% 24%, rgba(167,139,250,0.18) 0%, transparent 38%), radial-gradient(circle at 50% 120%, rgba(14,165,233,0.12) 0%, transparent 50%)',
+                      }}
+                    />
+                    <div
+                      aria-hidden="true"
+                      className="pointer-events-none absolute inset-0 opacity-[0.18]"
+                      style={{
+                        backgroundImage:
+                          'radial-gradient(1px 1px at 10% 18%, rgba(255,255,255,0.75), transparent 60%), radial-gradient(1px 1px at 26% 42%, rgba(255,255,255,0.55), transparent 60%), radial-gradient(1.5px 1.5px at 42% 30%, rgba(226,232,240,0.55), transparent 65%), radial-gradient(1px 1px at 58% 64%, rgba(255,255,255,0.5), transparent 60%), radial-gradient(1.5px 1.5px at 76% 36%, rgba(226,232,240,0.5), transparent 65%), radial-gradient(1px 1px at 88% 74%, rgba(255,255,255,0.4), transparent 60%)',
+                      }}
+                    />
+                    <div className="relative w-full grid grid-cols-2 md:grid-cols-3 gap-4 sm:gap-6">
+                      {MINIVERSE_CARDS.map((card) => {
+                        const isUpcoming = Boolean(card.isUpcoming);
+                        const isVisited = !isUpcoming && Boolean(visitedMiniverses[card.id]);
+                        const appLabel = (card.title ?? '').replace(/^Miniverso\s+/i, '');
+                        return (
+                          <button
+                            key={card.title}
+                            type="button"
+                            onClick={() => handleSelectCard(card)}
+                            disabled={isUpcoming}
+                            aria-label={card.ctaVerb ?? card.title}
+                            className={`group relative mx-auto flex w-24 sm:w-28 flex-col items-center justify-start gap-2 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-400/60 disabled:cursor-not-allowed ${
+                              isUpcoming ? 'opacity-70' : 'hover:scale-[1.03] active:scale-[0.98]'
+                            }`}
+                          >
+                            {!isUpcoming ? (
+                              <div className="absolute -right-1 -top-1 flex items-center gap-2">
+                                {isVisited ? (
+                                  <span className="inline-flex items-center justify-center h-5 w-5 rounded-full bg-emerald-500/80 text-slate-950 shadow-[0_0_10px_rgba(16,185,129,0.55)]">
+                                    <Check size={12} strokeWidth={2.4} />
+                                  </span>
+                                ) : null}
+                              </div>
+                            ) : null}
+                            {isUpcoming ? (
+                              <div className="h-16 w-16 sm:h-20 sm:w-20 rounded-2xl border border-white/10 bg-slate-800/50 flex items-center justify-center text-slate-200 shadow-[0_10px_24px_rgba(0,0,0,0.35)]">
+                                {card.icon ? <card.icon size={28} className="text-slate-200/80" /> : card.thumbLabel}
+                              </div>
+                            ) : null}
+                            {!isUpcoming ? (
+                              <div
+                                className={`h-16 w-16 sm:h-20 sm:w-20 rounded-2xl overflow-hidden border bg-black/35 shadow-[0_12px_28px_rgba(0,0,0,0.45)] transition duration-300 ${
+                                  isVisited
+                                    ? 'border-emerald-300/50 shadow-[0_0_22px_rgba(16,185,129,0.25)]'
+                                    : 'border-white/10 group-hover:-translate-y-1 group-hover:shadow-[0_14px_30px_rgba(80,40,160,0.35)]'
+                                }`}
+                              >
+                                <img
+                                  src={MINIVERSE_ICON_IMAGES[card.formatId] ?? MINIVERSE_ICON_PLACEHOLDER}
+                                  alt={card.title}
+                                  className="h-full w-full object-cover"
+                                  loading="lazy"
+                                />
+                              </div>
+                            ) : null}
+                            <span className="text-center text-[0.65rem] sm:text-xs text-slate-300/90 leading-tight">
+                              {appLabel}
+                            </span>
+                          </button>
+                        );
+                      })}
+                    </div>
                   </div>
                 </div>
               )}

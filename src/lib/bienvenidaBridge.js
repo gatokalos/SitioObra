@@ -97,11 +97,31 @@ export const normalizeBridgeKey = (value) =>
 export const extractRecommendedAppId = (payload) => {
   if (!payload || typeof payload !== 'object') return null;
   const raw =
-    payload.appId ?? payload.app_id ?? payload.recommended_app ?? payload.recommendedApp ?? payload.id;
+    payload.appId ??
+    payload.app_id ??
+    payload.recommended_app_id ??
+    payload.recommendedAppId ??
+    payload.recommended_app ??
+    payload.recommendedApp ??
+    payload.id ??
+    payload.app_recomendacion?.id ??
+    payload.app_recomendacion?.slug ??
+    payload.app_recomendacion?.app_id ??
+    payload.app_recommendation?.id ??
+    payload.app_recommendation?.slug ??
+    payload.app_recommendation?.app_id;
   if (!raw) return null;
   if (typeof raw === 'string') return raw;
   if (typeof raw !== 'object') return null;
-  return raw.id ?? raw.app_id ?? raw.recommended_app ?? raw.slug ?? null;
+  return (
+    raw.id ??
+    raw.slug ??
+    raw.app_id ??
+    raw.recommended_app_id ??
+    raw.recommendedAppId ??
+    raw.recommended_app ??
+    null
+  );
 };
 
 export const resolveShowcaseFromAppId = (appId, showcaseDefinitions = null) => {
