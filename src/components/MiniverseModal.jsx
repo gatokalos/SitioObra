@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
-import { BookOpen, Brain, Check, Coffee, Coins, Drama, Film, Gamepad2, HeartHandshake, HeartPulse, MapIcon, Music, Palette, School, Smartphone, Sparkles } from 'lucide-react';
+import { BookOpen, Brain, Check, Compass, Coffee, Coins, Drama, Film, Gamepad2, Heart, HeartHandshake, HeartPulse, MapIcon, Music, Palette, School, Share2, Smartphone, Sparkles } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { toast } from '@/components/ui/use-toast';
@@ -8,6 +8,11 @@ import { ToastAction } from '@/components/ui/toast';
 import { supabase } from '@/lib/supabaseClient';
 import { useAuth } from '@/contexts/SupabaseAuthContext';
 import { safeSetItem } from '@/lib/safeStorage';
+import { getTopShowcaseLikes } from '@/services/showcaseLikeService';
+import {
+  MINIVERSE_HOME_EVENT_TYPES,
+  trackMiniverseHomeEvent,
+} from '@/services/miniverseHomeAnalyticsService';
 
 const TABS = [
   { id: 'escaparate', label: 'Descubrir', icon: Sparkles },
@@ -349,6 +354,9 @@ const MiniverseModal = ({
   const [communityOptIn, setCommunityOptIn] = useState(false);
   const [hasActiveSubscription, setHasActiveSubscription] = useState(false);
   const [isCheckingSubscription, setIsCheckingSubscription] = useState(false);
+  const [showFavoritesOnly, setShowFavoritesOnly] = useState(false);
+  const [communityTopLikes, setCommunityTopLikes] = useState([]);
+  const [isLoadingCommunityLikes, setIsLoadingCommunityLikes] = useState(false);
   const metadataSubscriber = Boolean(
     user?.user_metadata?.isSubscriber === true ||
       user?.user_metadata?.isSubscriber === 'true' ||
@@ -519,6 +527,26 @@ const MiniverseModal = ({
     () => TABS.find((tab) => tab.id === activeTab)?.label ?? TABS[0].label,
     [activeTab]
   );
+  const activeTabIntro = useMemo(() => {
+    if (activeTab === 'experiences') {
+      return {
+        lead: 'Te presentamos los nueve miniversos como una pantalla de inicio.',
+        highlight:
+          'Un formato familiar para explorar por intuición, abrir cada portal y volver cuando quieras.',
+      };
+    }
+    if (activeTab === 'escaparate') {
+      return {
+        lead: 'La obra no termina cuando baja el telón.',
+        highlight: 'Se despliega en nueve territorios que puedes recorrer a tu manera.',
+        continuation: 'Explóralos en el orden que quieras y descubre qué se transforma cuando decides entrar.',
+      };
+    }
+    return {
+      lead: 'Cuando la obra no está en cartelera, su narrativa pulsa en otros lenguajes.',
+      highlight: 'Explora a tu ritmo. Cada portal abre un miniverso distinto.',
+    };
+  }, [activeTab]);
   const showcaseMiniverses = useMemo(
     () => MINIVERSE_CARDS.filter((card) => !card.isUpcoming),
     []
@@ -535,10 +563,43 @@ const MiniverseModal = ({
     () => upcomingMiniverses.find((card) => card.id === selectedUpcomingId) ?? null,
     [selectedUpcomingId, upcomingMiniverses]
   );
+  const communityLikeMap = useMemo(
+    () => new Map((communityTopLikes ?? []).map((entry) => [entry.showcaseId, entry.count])),
+    [communityTopLikes]
+  );
+  const communityHeartTotal = useMemo(
+    () => (communityTopLikes ?? []).reduce((acc, entry) => acc + (entry?.count ?? 0), 0),
+    [communityTopLikes]
+  );
+  const visibleMiniverseCards = useMemo(
+    () => {
+      if (!showFavoritesOnly) return MINIVERSE_CARDS;
+      const ranking = (communityTopLikes ?? [])
+        .map((entry) =>
+          MINIVERSE_CARDS.find((card) => !card.isUpcoming && card.formatId === entry.showcaseId) ?? null
+        )
+        .filter(Boolean);
+      return ranking;
+    },
+    [communityTopLikes, showFavoritesOnly]
+  );
 
   const markMiniverseVisited = useCallback((miniverseId) => {
     if (!miniverseId) return;
     setVisitedMiniverses((prev) => (prev[miniverseId] ? prev : { ...prev, [miniverseId]: true }));
+  }, []);
+
+  const trackAppClick = useCallback((card, source = 'grid') => {
+    if (!card?.id) return;
+    void trackMiniverseHomeEvent({
+      eventType: MINIVERSE_HOME_EVENT_TYPES.APP_CLICK,
+      appId: card.id,
+      source,
+      metadata: {
+        formatId: card.formatId ?? null,
+        title: card.title ?? null,
+      },
+    });
   }, []);
 
   const handleTabChange = useCallback(
@@ -573,7 +634,7 @@ const MiniverseModal = ({
   }, [markMiniverseVisited, onClose, selectedMiniverseId, status]);
 
   const handleSelectCard = useCallback(
-    (card) => {
+    (card, source = 'grid') => {
       if (card.isUpcoming) {
         return;
       }
@@ -581,12 +642,21 @@ const MiniverseModal = ({
         playKnockSound();
       }
       markMiniverseVisited(card.id);
+      trackAppClick(card, source);
       onSelectMiniverse?.(card.formatId);
       if (!stayOpenOnSelect) {
         handleClose();
       }
     },
-    [handleClose, markMiniverseVisited, onSelectMiniverse, playKnockSound, stayOpenOnSelect, visitedMiniverses]
+    [
+      handleClose,
+      markMiniverseVisited,
+      onSelectMiniverse,
+      playKnockSound,
+      stayOpenOnSelect,
+      trackAppClick,
+      visitedMiniverses,
+    ]
   );
 
   const handleSelectUpcoming = useCallback((card) => {
@@ -613,6 +683,7 @@ const MiniverseModal = ({
   const handleEnterMiniverse = useCallback(() => {
     if (!selectedMiniverse) return;
     markMiniverseVisited(selectedMiniverse.id);
+    trackAppClick(selectedMiniverse, 'detail-enter');
     const portalRoute = MINIVERSE_PORTAL_ROUTES[selectedMiniverse.id];
     if (portalRoute) {
       navigate(portalRoute);
@@ -623,7 +694,15 @@ const MiniverseModal = ({
     if (!stayOpenOnSelect) {
       handleClose();
     }
-  }, [handleClose, legacyScrollToSection, markMiniverseVisited, navigate, selectedMiniverse, stayOpenOnSelect]);
+  }, [
+    handleClose,
+    legacyScrollToSection,
+    markMiniverseVisited,
+    navigate,
+    selectedMiniverse,
+    stayOpenOnSelect,
+    trackAppClick,
+  ]);
 
   const handleEnterShowcase = useCallback(
     (card) => {
@@ -632,6 +711,7 @@ const MiniverseModal = ({
         playKnockSound();
       }
       markMiniverseVisited(card.id);
+      trackAppClick(card, 'showcase-card');
       const portalRoute = MINIVERSE_PORTAL_ROUTES[card.id];
       if (portalRoute) {
         navigate(portalRoute);
@@ -651,9 +731,91 @@ const MiniverseModal = ({
       onSelectMiniverse,
       playKnockSound,
       stayOpenOnSelect,
+      trackAppClick,
       visitedMiniverses,
     ]
   );
+
+  const handleDockShare = useCallback(async () => {
+    if (typeof window === 'undefined') return;
+
+    const shareUrl = `${window.location.origin}${window.location.pathname}${window.location.search}#transmedia`;
+    const sharePayload = {
+      title: '#GatoEncerrado · Miniversos',
+      text: 'Te comparto la pantalla de inicio de los miniversos de #GatoEncerrado.',
+      url: shareUrl,
+    };
+
+    try {
+      if (navigator.share) {
+        await navigator.share(sharePayload);
+        void trackMiniverseHomeEvent({
+          eventType: MINIVERSE_HOME_EVENT_TYPES.HOME_SHARE,
+          source: 'dock-share:web-share',
+          metadata: { target: 'home_screen' },
+        });
+        return;
+      }
+
+      if (navigator.clipboard?.writeText) {
+        await navigator.clipboard.writeText(shareUrl);
+        toast({ description: 'Enlace copiado para compartir la pantalla de inicio.' });
+        void trackMiniverseHomeEvent({
+          eventType: MINIVERSE_HOME_EVENT_TYPES.HOME_SHARE,
+          source: 'dock-share:clipboard',
+          metadata: { target: 'home_screen' },
+        });
+        return;
+      }
+
+      window.prompt('Copia este enlace para compartir:', shareUrl);
+      void trackMiniverseHomeEvent({
+        eventType: MINIVERSE_HOME_EVENT_TYPES.HOME_SHARE,
+        source: 'dock-share:prompt',
+        metadata: { target: 'home_screen' },
+      });
+    } catch (error) {
+      if (error?.name === 'AbortError') return;
+      toast({ description: 'No pudimos compartir en este momento. Intenta de nuevo.' });
+    }
+  }, []);
+
+  const handleDockOpenTransmedia = useCallback(() => {
+    void trackMiniverseHomeEvent({
+      eventType: MINIVERSE_HOME_EVENT_TYPES.OPEN_TRANSMEDIA,
+      source: 'dock-transmedia',
+    });
+    handleClose();
+    if (typeof document !== 'undefined') {
+      const section = document.getElementById('transmedia');
+      if (section) {
+        window.setTimeout(() => {
+          section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }, 120);
+        return;
+      }
+    }
+    navigate('/#transmedia');
+  }, [handleClose, navigate]);
+
+  useEffect(() => {
+    if (!open || selectedMiniverse || activeTab !== 'experiences') return;
+    let isMounted = true;
+    setIsLoadingCommunityLikes(true);
+    getTopShowcaseLikes(3)
+      .then(({ data }) => {
+        if (!isMounted) return;
+        setCommunityTopLikes(Array.isArray(data) ? data : []);
+      })
+      .finally(() => {
+        if (isMounted) {
+          setIsLoadingCommunityLikes(false);
+        }
+      });
+    return () => {
+      isMounted = false;
+    };
+  }, [activeTab, open, selectedMiniverse]);
 
   const handleEnterUpcoming = useCallback(() => {
     if (!selectedUpcoming) return;
@@ -930,7 +1092,7 @@ const MiniverseModal = ({
             aria-modal={shelved ? 'false' : 'true'}
             aria-labelledby="miniverse-modal-title"
             variants={modalVariants}
-            className={`relative z-10 w-full max-w-4xl rounded-3xl border border-white/10 bg-slate-950/70 p-5 sm:p-10 shadow-2xl max-h-[95vh] min-h-[95vh] md:max-h-[69vh] md:min-h-[69vh] overflow-y-auto transition-[opacity,filter,transform] duration-500 ${
+            className={`relative z-10 w-full max-w-4xl rounded-3xl border border-white/10 bg-slate-950/70 p-5 sm:p-10 shadow-2xl max-h-[95vh] min-h-[95vh] md:max-h-[71vh] md:min-h-[71vh] overflow-y-auto transition-[opacity,filter,transform] duration-500 ${
               shelved ? 'pointer-events-none opacity-0 blur-sm scale-[0.98]' : 'opacity-100 blur-0 scale-100'
             }`}
           >
@@ -954,10 +1116,11 @@ const MiniverseModal = ({
             </h2>
 
             <div className="mt-3 rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-slate-200/90">
-              Cuando la obra no está en cartelera, su narrativa pulsa en otros lenguajes.{" "}
+              {activeTabIntro.lead}{' '}
               <strong className="font-semibold text-slate-50">
-                Explora a tu ritmo. Cada portal abre un miniverso distinto.
+                {activeTabIntro.highlight}
               </strong>
+              {activeTabIntro.continuation ? ` ${activeTabIntro.continuation}` : ''}
             </div>
 
             <div className="mt-6 flex flex-nowrap gap-1.5 overflow-x-auto pb-1 sm:flex-wrap sm:overflow-visible">
@@ -1578,13 +1741,7 @@ const MiniverseModal = ({
                 </div>
               ) : (
                 <div className="md:col-span-2 w-full max-w-3xl mx-auto space-y-4">
-                  <p className="text-sm text-slate-300/85 leading-relaxed">
-                    Te presentamos <strong className="font-semibold text-slate-50">
-                los nueve miniversos</strong> como una pantalla de inicio: 
-                    <br />Un formato familiar para explorar por intuición.
-                    <br />
-                    <br />
-                              </p>
+     
                   <div className="relative overflow-hidden rounded-[2rem] border border-white/15 bg-gradient-to-b from-slate-900/80 via-[#0b1431]/85 to-[#050917]/90 p-5 sm:p-6 shadow-[inset_0_1px_0_rgba(255,255,255,0.08),0_30px_80px_rgba(0,0,0,0.55)]">
                     <div
                       aria-hidden="true"
@@ -1603,57 +1760,117 @@ const MiniverseModal = ({
                       }}
                     />
                     <div className="relative w-full grid grid-cols-2 md:grid-cols-3 gap-4 sm:gap-6">
-                      {MINIVERSE_CARDS.map((card) => {
+                      {visibleMiniverseCards.map((card) => {
                         const isUpcoming = Boolean(card.isUpcoming);
                         const isVisited = !isUpcoming && Boolean(visitedMiniverses[card.id]);
+                        const communityHearts = communityLikeMap.get(card.formatId) ?? 0;
                         const appLabel = (card.title ?? '').replace(/^Miniverso\s+/i, '');
                         return (
-                          <button
-                            key={card.title}
-                            type="button"
-                            onClick={() => handleSelectCard(card)}
-                            disabled={isUpcoming}
-                            aria-label={card.ctaVerb ?? card.title}
-                            className={`group relative mx-auto flex w-24 sm:w-28 flex-col items-center justify-start gap-2 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-400/60 disabled:cursor-not-allowed ${
-                              isUpcoming ? 'opacity-70' : 'hover:scale-[1.03] active:scale-[0.98]'
-                            }`}
-                          >
-                            {!isUpcoming ? (
-                              <div className="absolute -right-1 -top-1 flex items-center gap-2">
-                                {isVisited ? (
-                                  <span className="inline-flex items-center justify-center h-5 w-5 rounded-full bg-emerald-500/80 text-slate-950 shadow-[0_0_10px_rgba(16,185,129,0.55)]">
-                                    <Check size={12} strokeWidth={2.4} />
-                                  </span>
-                                ) : null}
-                              </div>
+                          <div key={card.title} className="relative mx-auto w-24 sm:w-28">
+                            {!isUpcoming && isVisited ? (
+                              <span className="absolute -right-1 -top-1 inline-flex items-center justify-center h-5 w-5 rounded-full bg-emerald-500/80 text-slate-950 shadow-[0_0_10px_rgba(16,185,129,0.55)]">
+                                <Check size={12} strokeWidth={2.4} />
+                              </span>
                             ) : null}
-                            {isUpcoming ? (
-                              <div className="h-16 w-16 sm:h-20 sm:w-20 rounded-2xl border border-white/10 bg-slate-800/50 flex items-center justify-center text-slate-200 shadow-[0_10px_24px_rgba(0,0,0,0.35)]">
-                                {card.icon ? <card.icon size={28} className="text-slate-200/80" /> : card.thumbLabel}
-                              </div>
+                            {showFavoritesOnly ? (
+                              <span className="absolute -left-2 -top-2 z-10 inline-flex items-center gap-1 rounded-full border border-rose-300/60 bg-rose-500/15 px-2 py-1 text-[0.55rem] uppercase tracking-[0.15em] text-rose-100 shadow-[0_0_10px_rgba(244,63,94,0.35)]">
+                                <Heart size={10} fill="currentColor" />
+                                {communityHearts}
+                              </span>
                             ) : null}
-                            {!isUpcoming ? (
-                              <div
-                                className={`h-16 w-16 sm:h-20 sm:w-20 rounded-2xl overflow-hidden border bg-black/35 shadow-[0_12px_28px_rgba(0,0,0,0.45)] transition duration-300 ${
-                                  isVisited
-                                    ? 'border-emerald-300/50 shadow-[0_0_22px_rgba(16,185,129,0.25)]'
-                                    : 'border-white/10 group-hover:-translate-y-1 group-hover:shadow-[0_14px_30px_rgba(80,40,160,0.35)]'
-                                }`}
-                              >
-                                <img
-                                  src={MINIVERSE_ICON_IMAGES[card.formatId] ?? MINIVERSE_ICON_PLACEHOLDER}
-                                  alt={card.title}
-                                  className="h-full w-full object-cover"
-                                  loading="lazy"
-                                />
-                              </div>
-                            ) : null}
-                            <span className="text-center text-[0.65rem] sm:text-xs text-slate-300/90 leading-tight">
-                              {appLabel}
-                            </span>
-                          </button>
+                            <button
+                              type="button"
+                              onClick={() => handleSelectCard(card, 'grid')}
+                              disabled={isUpcoming}
+                              aria-label={card.ctaVerb ?? card.title}
+                              className={`group relative mx-auto flex w-24 sm:w-28 flex-col items-center justify-start gap-2 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-400/60 disabled:cursor-not-allowed ${
+                                isUpcoming ? 'opacity-70' : 'hover:scale-[1.03] active:scale-[0.98]'
+                              }`}
+                            >
+                              {isUpcoming ? (
+                                <div className="h-16 w-16 sm:h-20 sm:w-20 rounded-2xl border border-white/10 bg-slate-800/50 flex items-center justify-center text-slate-200 shadow-[0_10px_24px_rgba(0,0,0,0.35)]">
+                                  {card.icon ? <card.icon size={28} className="text-slate-200/80" /> : card.thumbLabel}
+                                </div>
+                              ) : null}
+                              {!isUpcoming ? (
+                                <div
+                                  className={`h-16 w-16 sm:h-20 sm:w-20 rounded-2xl overflow-hidden border bg-black/35 shadow-[0_12px_28px_rgba(0,0,0,0.45)] transition duration-300 ${
+                                    isVisited
+                                      ? 'border-emerald-300/50 shadow-[0_0_22px_rgba(16,185,129,0.25)]'
+                                      : 'border-white/10 group-hover:-translate-y-1 group-hover:shadow-[0_14px_30px_rgba(80,40,160,0.35)]'
+                                  }`}
+                                >
+                                  <img
+                                    src={MINIVERSE_ICON_IMAGES[card.formatId] ?? MINIVERSE_ICON_PLACEHOLDER}
+                                    alt={card.title}
+                                    className="h-full w-full object-cover"
+                                    loading="lazy"
+                                  />
+                                </div>
+                              ) : null}
+                              <span className="text-center text-[0.65rem] sm:text-xs text-slate-300/90 leading-tight">
+                                {appLabel}
+                              </span>
+                            </button>
+                          </div>
                         );
                       })}
+                      {showFavoritesOnly && visibleMiniverseCards.length === 0 ? (
+                        <div className="col-span-2 md:col-span-3 rounded-2xl border border-white/15 bg-black/30 p-4 text-center">
+                          <p className="text-xs sm:text-sm text-slate-300/90">
+                            Aún no hay suficientes likes para construir favoritas de comunidad.
+                          </p>
+                          <button
+                            type="button"
+                            onClick={() => setShowFavoritesOnly(false)}
+                            className="mt-3 text-xs uppercase tracking-[0.25em] text-purple-200 hover:text-white transition"
+                          >
+                            Ver todas
+                          </button>
+                        </div>
+                      ) : null}
+                    </div>
+                    <div className="relative mt-6 pt-5">
+                      <div className="absolute left-0 right-0 top-0 h-px bg-white/10" />
+                      <div className="flex items-center justify-between gap-3 rounded-2xl border border-white/20 bg-white/10 px-3 py-2 backdrop-blur-xl shadow-[0_12px_30px_rgba(0,0,0,0.35)]">
+                        <button
+                          type="button"
+                          onClick={() => setShowFavoritesOnly((prev) => !prev)}
+                          className={`inline-flex items-center gap-2 rounded-xl border px-3 py-2 text-xs uppercase tracking-[0.2em] transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-400/60 ${
+                            showFavoritesOnly
+                              ? 'border-rose-300/60 bg-rose-500/15 text-rose-100'
+                              : 'border-white/20 bg-black/25 text-slate-100 hover:bg-white/15'
+                          }`}
+                          aria-pressed={showFavoritesOnly}
+                          aria-label="Mostrar favoritas de la comunidad"
+                        >
+                          <Heart size={14} fill={showFavoritesOnly ? 'currentColor' : 'none'} />
+                          {showFavoritesOnly
+                            ? `Pulso Comunitario ${communityHeartTotal}`
+                            : isLoadingCommunityLikes
+                              ? 'Comunidad...'
+                              : 'Favoritas comunidad'}
+                        </button>
+                        <div className="h-8 w-px bg-white/15" />
+                        <div className="flex items-center gap-2">
+                          <button
+                            type="button"
+                            onClick={handleDockShare}
+                            className="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-white/20 bg-black/25 text-slate-100 transition hover:bg-white/15 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-400/60"
+                            aria-label="Compartir pantalla de inicio"
+                          >
+                            <Share2 size={16} />
+                          </button>
+                          <button
+                            type="button"
+                            onClick={handleDockOpenTransmedia}
+                            className="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-white/20 bg-black/25 text-slate-100 transition hover:bg-white/15 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-400/60"
+                            aria-label="Ir a sección transmedia"
+                          >
+                            <Compass size={16} />
+                          </button>
+                        </div>
+                      </div>
                     </div>
                   </div>
                 </div>

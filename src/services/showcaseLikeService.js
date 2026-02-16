@@ -1,5 +1,5 @@
 import { ensureAnonId } from '@/lib/identity';
-import { supabase } from '@/lib/supabaseClient';
+import { supabase, supabasePublic } from '@/lib/supabaseClient';
 import { trackInteraction } from '@/services/trackService';
 
 const MINIVERSO_LIKE_TARGETS = {
@@ -84,6 +84,18 @@ const MINIVERSO_LIKE_TARGETS = {
   },
 };
 
+const SHOWCASE_LIKE_IDS = [
+  'miniversos',
+  'lataza',
+  'miniversoNovela',
+  'miniversoGrafico',
+  'copycats',
+  'miniversoSonoro',
+  'miniversoMovimiento',
+  'apps',
+  'oraculo',
+];
+
 export async function recordShowcaseLike({ showcaseId, user }) {
   if (!showcaseId) {
     return { success: false, error: new Error('Falta el identificador del showcase') };
@@ -138,4 +150,38 @@ export async function recordShowcaseLike({ showcaseId, user }) {
     success: interactionResult.success || miniversoResult.success,
     error: interactionResult.error || miniversoResult.error,
   };
+}
+
+export async function getShowcaseLikeCount(showcaseId) {
+  if (!showcaseId) {
+    return { success: false, error: new Error('Falta el identificador del showcase'), count: 0 };
+  }
+
+  const { count, error } = await supabasePublic
+    .from('interactions')
+    .select('id', { count: 'exact', head: true })
+    .eq('action_type', 'showcase_like')
+    .eq('metadata->>showcase_id', showcaseId);
+
+  if (error) {
+    return { success: false, error, count: 0 };
+  }
+
+  return { success: true, error: null, count: count ?? 0 };
+}
+
+export async function getTopShowcaseLikes(limit = 3) {
+  const safeLimit = Number.isFinite(limit) ? Math.max(1, Math.min(9, Number(limit))) : 3;
+  const settled = await Promise.all(
+    SHOWCASE_LIKE_IDS.map(async (showcaseId) => {
+      const { count } = await getShowcaseLikeCount(showcaseId);
+      return { showcaseId, count: count ?? 0 };
+    })
+  );
+
+  const top = settled
+    .sort((a, b) => (b.count - a.count) || a.showcaseId.localeCompare(b.showcaseId))
+    .slice(0, safeLimit);
+
+  return { success: true, error: null, data: top };
 }
