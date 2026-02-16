@@ -24,6 +24,7 @@ import {
   MapIcon,
   Coins,
   CheckCheckIcon,
+  Hand,
   Send,
   X,
 } from 'lucide-react';
@@ -61,6 +62,7 @@ import ObraConversationControls from '@/components/miniversos/obra/ObraConversat
 import ObraQuestionList from '@/components/miniversos/obra/ObraQuestionList';
 import { supabase } from '@/lib/supabaseClient';
 import { safeGetItem, safeRemoveItem, safeSetItem } from '@/lib/safeStorage';
+import { isSafariBrowser } from '@/lib/browser';
 
 pdfjs.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`;
 const GAT_COSTS = {
@@ -448,7 +450,9 @@ const MiniVersoCard = ({
             isActive ? 'opacity-0 scale-95' : 'opacity-100 scale-100'
           }`}
         >
-          Toca para revelar
+          <span className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-white/30 bg-black/15 text-white/85 shadow-[0_0_16px_rgba(255,255,255,0.18)]">
+            <Hand size={16} className="animate-pulse" />
+          </span>
         </div>
       </div>
     </motion.div>
@@ -482,7 +486,9 @@ const MiniVersoCard = ({
             >
               {title}
             </span>
-            <span className="text-xs tracking-[0.35em] text-white/70">Toca para leer</span>
+            <span className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-white/30 bg-black/15 text-white/85 shadow-[0_0_16px_rgba(255,255,255,0.18)]">
+              <Hand size={16} className="animate-pulse" />
+            </span>
           </div>
           <div
             className={`absolute inset-0 rounded-2xl border px-6 py-5 [backface-visibility:hidden] flex items-center justify-center ${textClass}`}
@@ -528,8 +534,8 @@ const showcaseDefinitions = {
     type: 'tragedia',
     intro:
       'Aquí nace la obra dentro de la obra. El gato encerrado de Es un gato encerrado.',
-    cartaTitle: '#VibraciónEscénica',
-    notaAutoral: 'De la escena brotó el universo:\nvoz, trance y cuerpo\nabriendo un portal.',
+    cartaTitle: '#LaPuertaInvisible',
+    notaAutoral: 'Entré sin saber.\nAlgo dijo mi nombre.\nY ya no hubo salida.',
 
     ctaLabel: 'Hablar con La Obra',
     conversationStarters: OBRA_CONVERSATION_STARTERS,
@@ -565,7 +571,7 @@ iaProfile: {
     theme:
       'La doble vida de una imagen: aquello que se ve y aquello que tiembla detrás. CopyCats (farsa lúcida) y Quirón (herida íntima) responden a la misma pregunta en dos lenguajes.',
     tone: ['Premiere íntima', 'Laboratorio abierto', 'Cine con memoria'],
-    cartaTitle: '#LuzQueHiere',
+    cartaTitle: '#LuzQueEditas',
     copycats: {
       title: 'CopyCats',
       description: 'Un ensayo documental sobre identidad y repetición en la era digital. Explora su bitácora creativa y el proceso que dio forma a la pieza.',
@@ -666,7 +672,7 @@ iaProfile: {
       cta: 'Quiero ser parte del screening',
       
     },
-    notaAutoral: 'Cuando la escena no basta,\nla cámara sostiene la memoria\nQuirón, CopyCats:\nel mismo espacio, expuesto de otra forma.',
+    notaAutoral: 'Memoria encendida.\nCámara despierta.\nY el tiempo la vuelve a montar.',
     iaProfile: {
       type: 'GPT-4o mini + subtítulos vivos y notas críticas asistidas.',
       interaction: 'Notas críticas y captions contextuales por espectador.',
@@ -735,8 +741,8 @@ iaProfile: {
         author: 'Sofía B.',
       },
     ],
-    cartaTitle: '#EstoNoEsUnaTaza',
-    notaAutoral: 'Una taza que escucha.\nUn marcador que mira.\nLo cotidiano también es ritual.',
+    cartaTitle: '#ElSentidoEnLasManos',
+    notaAutoral: 'Tomé un objeto.\nSu forma me sostuvo.\nEl sentido calentó mis manos.',
     iaProfile: {
       type: 'IA ligera para pistas contextuales + WebAR.',
       interaction: '1 activación guiada por objeto (escaneo breve).',
@@ -751,9 +757,9 @@ iaProfile: {
     slug: null,
     intro:
       'Aquí la escritura no es un registro, sino un territorio que respira: fragmentos, voces, monólogos, poemas y apuntes que expanden la mente de Silvestre y la memoria de quienes lo rodean. Este es el espacio donde la literatura se vuelve espejo de lo escénico, preludio de lo cinematográfico y eco de lo humano.',
-    cartaTitle: '#PáginaViva',
+    cartaTitle: '#LaPreguntaInsiste',
     notaAutoral:
-      'La palabra devolvió lo que el gato se tragó:\nMi Gato Encerrado\nhuyó de sí misma y se encontró.',
+      'Escribí para entender\ny la página me abrió otra pregunta.',
     collaborators: [
       {
         id: 'pepe-rojo',
@@ -862,8 +868,8 @@ iaProfile: {
         text: 'Lo que cae del sueño también cae del cuerpo.',
       },
     ],
-    cartaTitle: '#SueñoEnCapas',
-    notaAutoral: 'Sueña una imagen.\nAjusta el pulso.\nPermite que el poema respire sin ti.',
+    cartaTitle: '#LoQueSuenaAdentro',
+    notaAutoral: 'Abrí los ojos.\nLa resonancia era antigua.\nComo el silencio.',
     iaProfile: {
       type: 'GPT-4o mini para poemas móviles + curaduría sonora.',
       interaction: 'Selección de poema y mezcla guiada.',
@@ -905,9 +911,9 @@ iaProfile: {
     type: 'graphic-lab',
     intro:
       'Colección viva de exploraciones visuales: cómics en curso, viñetas interactivas, posters simbólicos, caricaturas conceptuales, murales colaborativos y avances con IA/técnicas mixtas.',
-    cartaTitle: '#FronteraAbierta',
+    cartaTitle: '#MirarmeLoQueSoy',
     notaAutoral:
-      'Garabatea tu límite, dibuja tu refugio.\nLo gráfico como portal emocional.\nCada trazo se siente antes de entenderse.',
+      'Me quedé dibujando,\ncomo si el papel supiera quién soy\nmejor que yo.',
     collaborators: [
       {
         id: 'manuel-sarabia',
@@ -1085,8 +1091,8 @@ iaProfile: {
     ],
     collaborators: [],
   
-    cartaTitle: '#RutaCoreográfica',
-    notaAutoral: 'El cuerpo es conjuro.\nLa ciudad tiembla y abre un portal.\nLa ruta solo existe si alguien baila.',
+    cartaTitle: '#CaerEsDanzar',
+    notaAutoral: 'Mi cuerpo colapsará;\nno sin danza\nni dolor bonito.',
     iaProfile: {
       type: 'IA de ruta + prompts de movimiento guiados en app.',
       interaction: 'Selección de estación y avatar ritual en AR.',
@@ -1102,9 +1108,9 @@ iaProfile: {
     tagline: 'Juegos como portales • Apps como rituales felinos.',
     intro:
       'Demos jugables del tablero TRAZO: eliges avatar (Maestra, Saturnina, Don Polo…) y el gato anfitrión te abre el telón en 3 taps.',
-    cartaTitle: '#GatologíaEnJuego',
+    cartaTitle: '#NoHayDesandar',
     notaAutoral:
-      'Nadie vence.\nEnsayamos.\nAl llegar juntxs,\nel Gato habla.',
+      'Elegí un camino pequeño.\nAhora no lo puedo desandar.\nEl juego me jugó.',
     tapDemo: {
       title: 'Tap-to-advance demo',
       steps: [
@@ -1175,8 +1181,8 @@ iaProfile: {
     ctaDescription:
       'Tu pensamiento también construye este universo.',
     tagline: 'Interacción que deja huella. Reflexión que te recompensa.',
-    cartaTitle: '#MinadoSimbólico',
-    notaAutoral: 'Juega con el misterio.\nPiensa con el corazón.\nMintea con el alma.',
+    cartaTitle: '#CambiarSinCambiar',
+    notaAutoral: 'Miré el espejo.\nNo dijo nada.\nÉramos dos... y no.',
     iaProfile: {
       type: 'GPT-4o + embeddings simbólicos curados por la comunidad.',
       interaction: '1–3 reflexiones cortas por sesión; foro breve guiado.',
@@ -1336,7 +1342,7 @@ const formats = [
   },
   {
     id: 'apps',
-    title: 'Juegos / Apps',
+    title: 'Juegos',
     icon: Smartphone,
     iconClass: 'text-lime-300',
     instruccion: 'Aquí reinventamos el clásico gato.',
@@ -1412,11 +1418,7 @@ const CauseImpactAccordion = ({ items, onOpenImagePreview }) => {
   const [isDesktopViewport, setIsDesktopViewport] = useState(
     () => typeof window !== 'undefined' && window.matchMedia('(min-width: 1024px)').matches
   );
-  const [openCauseId, setOpenCauseId] = useState(() =>
-    (typeof window !== 'undefined' && window.matchMedia('(min-width: 1024px)').matches && items?.[0]?.id)
-      ? items[0].id
-      : null
-  );
+  const [openCauseId, setOpenCauseId] = useState(() => items?.[0]?.id ?? null);
   const [activeSlideById, setActiveSlideById] = useState({});
 
   useEffect(() => {
@@ -1442,13 +1444,12 @@ const CauseImpactAccordion = ({ items, onOpenImagePreview }) => {
   }, []);
 
   useEffect(() => {
-    if (!isDesktopViewport) return;
     const firstId = items?.[0]?.id;
     if (!firstId) return;
     if (!openCauseId) {
       setOpenCauseId(firstId);
     }
-  }, [isDesktopViewport, items, openCauseId]);
+  }, [items, openCauseId]);
 
   const handleCarouselScroll = (itemId, event, total) => {
     const target = event.currentTarget;
@@ -1740,6 +1741,7 @@ const Transmedia = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
+  const isSafari = isSafariBrowser();
   const [quironSpent, setQuironSpent] = useState(initialQuironSpent);
   const [graphicSpent, setGraphicSpent] = useState(initialGraphicSpent);
   const [novelaQuestions, setNovelaQuestions] = useState(initialNovelaQuestions);
@@ -1785,6 +1787,13 @@ const Transmedia = () => {
   const [showInstallPwaCTA, setShowInstallPwaCTA] = useState(() => getInitialInstallPwaCTAVisibility());
   const [useLegacyTazaViewer, setUseLegacyTazaViewer] = useState(LEGACY_TAZA_VIEWER_ENABLED);
   const [hasActiveSubscription, setHasActiveSubscription] = useState(false);
+
+  useEffect(() => {
+    if (typeof document === 'undefined') return;
+    if (isSafari) {
+      document.documentElement.classList.add('is-safari');
+    }
+  }, [isSafari]);
   const isAuthenticated = Boolean(user);
   const isSubscriber = Boolean(
     user?.user_metadata?.isSubscriber ||
@@ -5674,6 +5683,18 @@ const rendernotaAutoral = () => {
               const nextIndex = (mobileShowcaseIndex + 1) % formats.length;
               const prevLabel = formats[prevIndex]?.title ?? '';
               const nextLabel = formats[nextIndex]?.title ?? '';
+              const maxVisibleDots = 7;
+              const visibleDotCount = Math.min(maxVisibleDots, formats.length);
+              const maxStart = Math.max(formats.length - visibleDotCount, 0);
+              const dotWindowStart = Math.min(
+                Math.max(currentIndex - Math.floor(visibleDotCount / 2), 0),
+                maxStart
+              );
+              const dotWindowEnd = dotWindowStart + visibleDotCount;
+              const visibleDotIndices = Array.from(
+                { length: visibleDotCount },
+                (_, offset) => dotWindowStart + offset
+              );
               const Icon = format.icon;
               const iconClass = format.iconClass ?? 'text-purple-200';
               const tileGradient =
@@ -5686,11 +5707,11 @@ const rendernotaAutoral = () => {
                 <>
                   <motion.div
                     key={format.id}
-                    initial={{ opacity: 0, y: 18 }}
-                    animate={{ opacity: 1, y: 0 }}
+                    initial={isSafari ? false : { opacity: 0, y: 18 }}
+                    animate={isSafari ? { opacity: 1, y: 0 } : { opacity: 1, y: 0 }}
                     whileTap={{ scale: 0.985, y: -2 }}
-                    transition={{ duration: 0.4, ease: 'easeOut', delay: 0.08 }}
-                    className={`group glass-effect hover-glow rounded-2xl border border-white/10 bg-black/30 overflow-hidden text-left shadow-[0_20px_60px_rgba(0,0,0,0.55)] active:border-purple-300/40 active:shadow-[0_24px_70px_rgba(88,28,135,0.45)] ${
+                    transition={isSafari ? { duration: 0.12, ease: 'linear' } : { duration: 0.4, ease: 'easeOut', delay: 0.08 }}
+                    className={`safari-stable-layer group glass-effect hover-glow rounded-2xl border border-white/10 bg-black/30 overflow-hidden text-left shadow-[0_20px_60px_rgba(0,0,0,0.55)] active:border-purple-300/40 active:shadow-[0_24px_70px_rgba(88,28,135,0.45)] ${
                       isDimmedTile ? 'pointer-events-none opacity-70' : ''
                     }`}
                     onClick={() => {
@@ -5707,7 +5728,7 @@ const rendernotaAutoral = () => {
                         <img
                           src={format.image}
                           alt={`Imagen de ${format.title}`}
-                          className="showcase-parallax-media absolute inset-0 h-full w-full object-cover"
+                          className="showcase-parallax-media safari-stable-media absolute inset-0 h-full w-full object-cover"
                           loading="lazy"
                         />
                       ) : null}
@@ -5773,10 +5794,22 @@ const rendernotaAutoral = () => {
                   </div>
                   </motion.div>
                   <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-3">
-                    <span className="text-sm text-slate-300 text-left truncate">{prevLabel}</span>
+                    <button
+                      type="button"
+                      onClick={() => setMobileShowcaseIndex(prevIndex)}
+                      className="justify-self-start inline-flex max-w-full items-center gap-1 rounded-full border border-white/15 bg-white/5 px-3 py-1.5 text-xs text-slate-200/90 transition hover:border-purple-300/40 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-400/60"
+                      aria-label={`Ir a vitrina anterior: ${prevLabel}`}
+                    >
+                      <span aria-hidden="true">←</span>
+                      <span className="truncate">{prevLabel}</span>
+                    </button>
                     <div className="flex items-center justify-center gap-2 min-w-[88px]">
-                      {formats.map((item, idx) => {
+                      {visibleDotIndices.map((idx, offset) => {
+                        const item = formats[idx];
                         const isActiveDot = idx === currentIndex;
+                        const isLeftEdgeDot = offset === 0 && dotWindowStart > 0;
+                        const isRightEdgeDot =
+                          offset === visibleDotIndices.length - 1 && dotWindowEnd < formats.length;
                         return (
                           <button
                             key={`mobile-dot-${item.id}`}
@@ -5785,7 +5818,9 @@ const rendernotaAutoral = () => {
                             className={`h-2 w-2 rounded-full transition ${
                               isActiveDot
                                 ? 'bg-slate-100 shadow-[0_0_8px_rgba(255,255,255,0.55)]'
-                                : 'bg-slate-500/70 hover:bg-slate-300/80'
+                                : isLeftEdgeDot || isRightEdgeDot
+                                  ? 'bg-slate-500/40 hover:bg-slate-300/65'
+                                  : 'bg-slate-500/70 hover:bg-slate-300/80'
                             }`}
                             aria-label={`Ir a vitrina ${item.title}`}
                             aria-current={isActiveDot ? 'true' : undefined}
@@ -5793,7 +5828,15 @@ const rendernotaAutoral = () => {
                         );
                       })}
                     </div>
-                    <span className="text-sm text-slate-300 text-right truncate">{nextLabel}</span>
+                    <button
+                      type="button"
+                      onClick={() => setMobileShowcaseIndex(nextIndex)}
+                      className="justify-self-end inline-flex max-w-full items-center gap-1 rounded-full border border-white/15 bg-white/5 px-3 py-1.5 text-xs text-slate-200/90 transition hover:border-purple-300/40 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-400/60"
+                      aria-label={`Ir a vitrina siguiente: ${nextLabel}`}
+                    >
+                      <span className="truncate">{nextLabel}</span>
+                      <span aria-hidden="true">→</span>
+                    </button>
                   </div>
                 </>
               );
@@ -5814,12 +5857,12 @@ const rendernotaAutoral = () => {
                   VITRINA_MIRROR_EFFECTS[format.id] ?? VITRINA_MIRROR_EFFECTS.default;
                 return (
                   <motion.button
-                    key={`${format.id}-${showcaseCarouselIndex}`}
+                    key={format.id}
                     type="button"
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.5, delay: index * 0.08, ease: 'easeOut' }}
-                    className="group glass-effect rounded-2xl border border-white/10 bg-black/30 hover:border-purple-400/50 overflow-hidden text-left shadow-[0_20px_60px_rgba(0,0,0,0.55)] flex flex-col min-h-[620px] hover-glow"
+                    initial={isSafari ? false : { opacity: 0, y: 20 }}
+                    animate={isSafari ? { opacity: 1, y: 0 } : { opacity: 1, y: 0 }}
+                    transition={isSafari ? { duration: 0.12, ease: 'linear' } : { duration: 0.5, delay: index * 0.08, ease: 'easeOut' }}
+                    className="safari-stable-layer group glass-effect rounded-2xl border border-white/10 bg-black/30 hover:border-purple-400/50 overflow-hidden text-left shadow-[0_20px_60px_rgba(0,0,0,0.55)] flex flex-col min-h-[620px] hover-glow"
                     onClick={() => handleFormatClick(format.id)}
                   >
                     <div className="relative flex-1 min-h-[320px] bg-slate-500/20 overflow-hidden">
@@ -5827,7 +5870,7 @@ const rendernotaAutoral = () => {
                         <img
                           src={format.image}
                           alt={`Imagen de ${format.title}`}
-                          className="showcase-parallax-media absolute inset-0 h-full w-full object-cover"
+                          className="showcase-parallax-media safari-stable-media absolute inset-0 h-full w-full object-cover"
                           loading="lazy"
                         />
                       ) : null}

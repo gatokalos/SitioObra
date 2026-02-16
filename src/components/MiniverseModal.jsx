@@ -9,6 +9,7 @@ import { supabase } from '@/lib/supabaseClient';
 import { useAuth } from '@/contexts/SupabaseAuthContext';
 import { safeSetItem } from '@/lib/safeStorage';
 import { getTopShowcaseLikes } from '@/services/showcaseLikeService';
+import { isSafariBrowser } from '@/lib/browser';
 import {
   MINIVERSE_HOME_EVENT_TYPES,
   trackMiniverseHomeEvent,
@@ -250,7 +251,7 @@ const MINIVERSE_CARDS = [
     thumbLabel: 'J',
     thumbGradient: 'from-lime-400/80 via-emerald-500/70 to-teal-500/60',
     glassTint: '138 60% 48%',
-    title: 'Miniverso Apps',
+    title: 'Miniverso Juegos',
     titleShort: 'Juega la app',
     description: 'Experimentos lúdicos que reescriben la obra en formato interactivo.',
     videoUrl: null,
@@ -300,9 +301,9 @@ const backdropVariants = {
 };
 
 const modalVariants = {
-  hidden: { opacity: 0, y: 40, scale: 0.96 },
-  visible: { opacity: 1, y: 0, scale: 1, transition: { duration: 0.35, ease: 'easeOut' } },
-  exit: { opacity: 0, y: 20, scale: 0.97, transition: { duration: 0.2, ease: 'easeIn' } },
+  hidden: { opacity: 0, y: 28 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.35, ease: 'easeOut' } },
+  exit: { opacity: 0, y: 18, transition: { duration: 0.2, ease: 'easeIn' } },
 };
 
 const LOGIN_RETURN_KEY = 'gatoencerrado:login-return';
@@ -333,6 +334,7 @@ const MiniverseModal = ({
 }) => {
   const navigate = useNavigate();
   const { user } = useAuth();
+  const isSafari = isSafariBrowser();
   const [activeTab, setActiveTab] = useState(DEFAULT_TAB_ID);
   const [formState, setFormState] = useState(initialFormState);
   const [status, setStatus] = useState('idle');
@@ -376,6 +378,13 @@ const MiniverseModal = ({
   );
   const isSubscriber = metadataSubscriber || hasActiveSubscription;
   const showcaseRef = useRef(null);
+
+  useEffect(() => {
+    if (typeof document === 'undefined') return;
+    if (isSafari) {
+      document.documentElement.classList.add('is-safari');
+    }
+  }, [isSafari]);
 
   useEffect(() => {
     if (!user?.id) {
@@ -538,8 +547,8 @@ const MiniverseModal = ({
     if (activeTab === 'escaparate') {
       return {
         lead: 'La obra no termina cuando baja el telón.',
-        highlight: 'Se despliega en nueve territorios que puedes recorrer a tu manera.',
-        continuation: 'Explóralos en el orden que quieras y descubre qué se transforma cuando decides entrar.',
+        highlight: 'Se despliega en nueve rutas que puedes recorrer.',
+        continuation: 'Explóralos y descubre qué se transforma en ti.',
       };
     }
     return {
@@ -1068,20 +1077,20 @@ const MiniverseModal = ({
     return () => window.clearInterval(tick);
   }, [activeShowcaseIndex, activeTab, isShowcaseAutoPlay, open, scrollShowcaseTo, showcaseMiniverses.length]);
 
-  return (
-    <AnimatePresence>
-      {open ? (
-        <motion.div
-          className={`fixed inset-0 z-50 flex items-start sm:items-center justify-center px-3 py-6 sm:px-4 sm:py-10 overflow-y-auto ${
+  const shouldAnimatePresence = !isSafari;
+
+  const modalLayer = open ? (
+    <motion.div
+          className={`safari-stable-layer fixed inset-0 z-50 flex items-start sm:items-center justify-center px-3 py-6 sm:px-4 sm:py-10 overflow-y-auto ${
             shelved ? 'pointer-events-none' : ''
           }`}
-          initial="hidden"
+          initial={shouldAnimatePresence ? 'hidden' : false}
           animate="visible"
-          exit="hidden"
+          exit={shouldAnimatePresence ? 'hidden' : undefined}
           aria-hidden={shelved ? 'true' : undefined}
         >
           <motion.div
-            className={`absolute inset-0 bg-black/80 backdrop-blur-sm ${shelved ? 'pointer-events-none' : ''}`}
+            className={`safari-stable-layer safari-backdrop-lite absolute inset-0 bg-black/80 ${isSafari ? '' : 'backdrop-blur-sm'} ${shelved ? 'pointer-events-none' : ''}`}
             variants={backdropVariants}
             onClick={handleClose}
             aria-hidden="true"
@@ -1092,7 +1101,9 @@ const MiniverseModal = ({
             aria-modal={shelved ? 'false' : 'true'}
             aria-labelledby="miniverse-modal-title"
             variants={modalVariants}
-            className={`relative z-10 w-full max-w-4xl rounded-3xl border border-white/10 bg-slate-950/70 p-5 sm:p-10 shadow-2xl max-h-[95vh] min-h-[95vh] md:max-h-[71vh] md:min-h-[71vh] overflow-y-auto transition-[opacity,filter,transform] duration-500 ${
+            className={`safari-stable-layer relative z-10 flex w-full max-w-4xl flex-col rounded-3xl border border-white/10 bg-slate-950/70 p-5 sm:p-10 shadow-2xl max-h-[95vh] min-h-[95vh] md:max-h-[73vh] md:min-h-[73vh] overflow-hidden ${
+              isSafari ? '' : 'transition-[opacity,filter,transform] duration-500'
+            } ${
               shelved ? 'pointer-events-none opacity-0 blur-sm scale-[0.98]' : 'opacity-100 blur-0 scale-100'
             }`}
           >
@@ -1104,7 +1115,8 @@ const MiniverseModal = ({
                 filter: 'grayscale(0.25)',
               }}
             />
-            <div className="relative z-10">
+            <div className="relative z-10 flex-1 overflow-y-auto overscroll-contain [-webkit-overflow-scrolling:touch] pr-1">
+            <div>
         <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-6">
           <div>
             <p className="text-sm uppercase tracking-[0.35em] text-slate-400/80 mb-2">
@@ -1157,60 +1169,55 @@ const MiniverseModal = ({
               {activeTab === 'waitlist' ? (
                 <>
                   <div className="glass-effect relative overflow-hidden rounded-2xl border border-white/10 p-6 sm:p-7 text-slate-200/90">
-                    <div className="relative z-10 space-y-5">
+                    <div className="relative z-10 flex h-full flex-col">
                       <div className="flex items-center gap-3">
                         <span className="text-[0.65rem] uppercase tracking-[0.35em] text-slate-400/80">
                           Apoya el proyecto
                         </span>
                         <span className="h-px flex-1 bg-white/10" />
                       </div>
-                      <div className="space-y-3">
+                      <div className="mt-5 space-y-3">
                         <h3 className="font-display text-3xl text-slate-50">
-                          Tu suscripción mantiene vivo el universo y su impacto social
+                          Tu suscripción importa
                         </h3>
                         <p className="text-sm text-slate-300/90 leading-relaxed">
                           Activa acompañamiento emocional real y mantiene viva la experiencia artística más allá del escenario.
                         </p>
                       </div>
-                      <div className="flex flex-wrap gap-3">
-                        <Button
-                          type="button"
-                          onClick={handleSubscriptionCheckout}
-                          disabled={isCheckoutLoading}
-                          className="bg-white text-slate-900 hover:bg-white/90 font-semibold px-6"
-                        >
-                          Suscribirme
-                        </Button>
-                        <div className="rounded-full border border-white/15 bg-white/5 px-4 py-2 text-xs uppercase tracking-[0.35em] text-slate-200/80">
-                          Desde $50/mes
-                        </div>
-                      </div>
-                      
-                      <div className="flex flex-wrap gap-3">
-                        <div className="rounded-xl border border-white/10 bg-white/5 px-4 py-3">
-                          <p className="text-[0.65rem] uppercase tracking-[0.35em] text-slate-400">Acceso total</p>
-                          <p className="font-semibold text-slate-100">Miniversos</p>
-                        </div>
-                        <div className="rounded-xl border border-white/10 bg-white/5 px-4 py-3">
-                          <p className="text-[0.65rem] uppercase tracking-[0.35em] text-slate-400">Bienvenida</p>
-                          <p className="font-semibold text-slate-100">12,000 GAT</p>
-                        </div>
-                      </div>
-                      <div className="flex flex-col gap-2 rounded-lg border border-white/5 bg-black/20 px-4 py-3">
-                        <button
-                          type="button"
-                          onClick={handleCommunityOptIn}
-                          className="relative flex items-center gap-3 text-left group focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-purple-400/60"
-                        >
-                          <div
-                            className={`h-5 w-5 rounded-full border border-white/20 ${
-                              communityOptIn ? 'bg-emerald-400 shadow-[0_0_12px_rgba(52,211,153,0.6)]' : 'bg-slate-600/40'
-                            }`}
-                          />
-                          <span className="text-sm text-slate-300/80 leading-relaxed">
-                            Necesito más información.
+
+                      <div className="mt-7 rounded-2xl border border-white/10 bg-white/5 px-5 py-5">
+                        <div className="flex flex-col items-center gap-4">
+                          <span className="h-36 w-36 overflow-hidden rounded-[1.35rem] bg-transparent">
+                            <img
+                              src="https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/causa%20social/causa_social.png"
+                              alt="Causa social Isabel Ayuda para la Vida"
+                              loading="lazy"
+                              className="h-full w-full object-cover drop-shadow-[0_10px_24px_rgba(0,0,0,0.4)]"
+                            />
                           </span>
-                        </button>
+                          <Button
+                            type="button"
+                            onClick={handleSubscriptionCheckout}
+                            disabled={isCheckoutLoading}
+                            className="h-11 min-w-[10.5rem] bg-white px-6 text-base font-semibold text-slate-900 hover:bg-white/90"
+                          >
+                            Suscribirme
+                          </Button>
+                          <button
+                            type="button"
+                            onClick={handleCommunityOptIn}
+                            className="relative flex w-full items-center gap-3 rounded-lg border border-white/10 bg-black/20 px-3 py-2 text-left group focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-purple-400/60"
+                          >
+                            <div
+                              className={`h-5 w-5 rounded-full border border-white/20 ${
+                                communityOptIn ? 'bg-emerald-400 shadow-[0_0_12px_rgba(52,211,153,0.6)]' : 'bg-slate-600/40'
+                              }`}
+                            />
+                            <span className="text-sm text-slate-300/80 leading-relaxed">
+                              Me interesa, queiro más información.
+                            </span>
+                          </button>
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -1221,13 +1228,25 @@ const MiniverseModal = ({
                         <span className="text-[0.65rem] uppercase tracking-[0.35em] text-slate-400/80">
                           Impacto en cadena
                         </span>
+                        
                         <span className="h-px flex-1 bg-white/10" />
                       </div>
+                      <p className="text-xs text-slate-400/80 leading-relaxed">
+                        En alianza con Isabel Ayuda para la Vida, A.C.{' '}
+                        <button
+                          type="button"
+                          onClick={handleScrollToSupport}
+                          className="text-slate-200 underline underline-offset-4 hover:text-white transition"
+                        >
+                          Conoce más
+                        </button>
+                      </p>
                       <div className="space-y-3">
                         <div className="flex items-center gap-3 rounded-xl border border-white/10 bg-white/5 px-4 py-3">
                           <div className="h-10 w-10 rounded-full border border-white/10 bg-white/5 flex items-center justify-center">
                             <HeartPulse size={18} className="text-rose-200" />
                           </div>
+                          
                           <div>
                             <p className="font-semibold text-slate-100">Tratamientos emocionales</p>
                             <p className="text-xs text-slate-300/80">6 sesiones promedio por suscriptor</p>
@@ -1261,16 +1280,17 @@ const MiniverseModal = ({
                           </div>
                         </div>
                       </div>
-                      <p className="text-xs text-slate-400/80 leading-relaxed">
-                        Alianza social con Isabel Ayuda para la Vida, A.C.{' '}
-                        <button
-                          type="button"
-                          onClick={handleScrollToSupport}
-                          className="text-slate-200 underline underline-offset-4 hover:text-white transition"
-                        >
-                          Conoce más
-                        </button>
-                      </p>
+                      
+                      <div className="flex justify-end">
+                        <div className="rounded-xl border border-white/10 bg-white/5 px-3 py-2 shadow-[0_8px_24px_rgba(0,0,0,0.35)]">
+                          <img
+                            src="/assets/isabel_banner.png"
+                            alt="Isabel Ayuda para la Vida"
+                            loading="lazy"
+                            className="h-10 w-auto object-contain sm:h-12"
+                          />
+                        </div>
+                      </div>
                     </div>
                   </div>
                 </>
@@ -1886,11 +1906,12 @@ const MiniverseModal = ({
               </div>
             ) : null}
             </div>
+            </div>
           </motion.div>
         </motion.div>
-      ) : null}
-    </AnimatePresence>
-  );
+  ) : null;
+
+  return shouldAnimatePresence ? <AnimatePresence>{modalLayer}</AnimatePresence> : modalLayer;
 };
 
 export default MiniverseModal;

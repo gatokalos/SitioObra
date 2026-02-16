@@ -58,7 +58,7 @@ const CATEGORIES = [
   {
     id: 'apps',
     icon: <Smartphone size={20} className="text-lime-300" />,
-    title: 'Apps',
+    title: 'Juegos',
     description: 'Pantallas que acompañan.\nTecnologías que cuidan.\nAquí sigues el universo,\nsin salir del tuyo.',
   },
   {
