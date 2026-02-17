@@ -16,7 +16,7 @@ import {
 } from '@/services/miniverseHomeAnalyticsService';
 
 const TABS = [
-  { id: 'escaparate', label: 'Descubrir', icon: Sparkles },
+  { id: 'escaparate', label: 'Entender', icon: Sparkles },
   { id: 'experiences', label: 'Decidir', icon: Gamepad2 },
   { id: 'waitlist', label: 'Sostener', icon: HeartHandshake },
 ];
@@ -1124,7 +1124,7 @@ const MiniverseModal = ({
             </p>
 
             <h2 id="miniverse-modal-title" className="font-display text-3xl text-slate-50">
-              Explora el universo de #GatoEncerrado
+              Habita el universo de #GatoEncerrado
             </h2>
 
             <div className="mt-3 rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-slate-200/90">
@@ -1201,7 +1201,7 @@ const MiniverseModal = ({
                             disabled={isCheckoutLoading}
                             className="h-11 min-w-[10.5rem] bg-white px-6 text-base font-semibold text-slate-900 hover:bg-white/90"
                           >
-                            Suscribirme
+                            Activar huella
                           </Button>
                           <button
                             type="button"
@@ -1430,7 +1430,7 @@ const MiniverseModal = ({
                                     disabled={isCheckoutLoading}
                                     className="bg-white text-slate-900 hover:bg-white/90 py-3 rounded-lg font-semibold flex items-center justify-center gap-2"
                                   >
-                                    {isCheckoutLoading ? 'Abriendo…' : 'Suscribirme'}
+                                    {isCheckoutLoading ? 'Abriendo…' : 'Activar huella'}
                                   </Button>
                                 ) : null}
                               </div>
@@ -1581,7 +1581,7 @@ const MiniverseModal = ({
                                 disabled={isCheckoutLoading}
                                 className="bg-white text-slate-900 hover:bg-white/90 py-3 rounded-lg font-semibold flex items-center justify-center gap-2"
                               >
-                                {isCheckoutLoading ? 'Abriendo…' : 'Suscribirme'}
+                                {isCheckoutLoading ? 'Abriendo…' : 'Deja tu huella'}
                               </Button>
                             ) : null}
                           </div>

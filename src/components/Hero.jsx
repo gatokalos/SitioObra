@@ -27,6 +27,7 @@ const Hero = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { user } = useAuth();
+  const primaryCtaLabel = user ? 'Dejar mi huella' : 'Abrir Portales';
 
   const handleScrollToAbout = useCallback(() => {
     const aboutSection = document.querySelector('#about');
@@ -169,7 +170,7 @@ const Hero = () => {
     "
   >
     <SparkleIcon size={22} className="drop-shadow-md" />
-    Abrir Portales
+    {primaryCtaLabel}
   </Button>
 
   {/* CTA SECUNDARIO — CAFÉ */}

@@ -4706,7 +4706,7 @@ const rendernotaAutoral = () => {
                   disabled={isQuironUnlocking}
                   className="relative w-full justify-center border-purple-400/40 text-purple-200 hover:bg-purple-500/10 overflow-hidden"
                 >
-                  {isQuironUnlocking ? 'Procesando…' : 'Ver cortometraje completo'}
+                  {isQuironUnlocking ? 'Procesando…' : 'Ver cortometraje ahora'}
                 </Button>
                 {showQuironCoins ? (
                   <div className="pointer-events-none absolute inset-0 overflow-visible">
