@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
-import { BookOpen, Coffee, CoffeeIcon, Globe, Globe2, MapPin, MapPinIcon, ShoppingBag, SparkleIcon, Users, Users2, Users2Icon, UsersIcon } from 'lucide-react';
+import { BookOpen, CoffeeIcon, ShoppingBag, SparkleIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import ReserveModal from '@/components/ReserveModal';
 import TicketPurchaseModal from '@/components/TicketPurchaseModal';
@@ -30,7 +30,7 @@ const Hero = () => {
 
   const handleScrollToAbout = useCallback(() => {
     const aboutSection = document.querySelector('#about');
-    aboutSection?.scrollIntoView({ behavior: 'smooth' });
+    aboutSection?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }, []);
 
   const handleOpenReserve = useCallback(() => {
@@ -132,30 +132,14 @@ const Hero = () => {
 >
   El universo transmedial de la obra
   <button
-    onClick={() =>
-      document.querySelector('#about')?.scrollIntoView({
-        behavior: 'smooth',
-        block: 'start',
-      })
-    }
+    onClick={handleScrollToAbout}
     className="
       text-slate-200 underline underline-offset-4 decoration-slate-400/30
       hover:text-white hover:decoration-purple-400 transition
-      font-normal flex items-center gap-1
+      font-normal
     "
   >
-    
     Es un gato encerrado
-    <svg
-  xmlns="http://www.w3.org/2000/svg"
-  className="h-4 w-4 opacity-80 animate-[pulse-soft_2.4s_ease-in-out_infinite]"
-  fill="none"
-  viewBox="0 0 24 24"
-  stroke="currentColor"
-  strokeWidth={2}
->
-      <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
-    </svg>
   </button>
 </motion.p>
 
@@ -248,7 +232,61 @@ const Hero = () => {
             </motion.div>
           </motion.div>
 
-     
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.7, delay: 1.2 }}
+            className="mt-8 inline-flex h-9 w-9 items-center justify-center self-center sm:mt-14 sm:h-12 sm:w-12"
+            aria-hidden="true"
+          >
+            <motion.svg
+              width="28"
+              height="28"
+              viewBox="0 0 34 34"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+              animate={{ y: [0, 3, 0], opacity: [0.66, 0.25, 0.66] }}
+              transition={{ duration: 2.1, repeat: Infinity, ease: 'easeInOut' }}
+              className="sm:h-[54px] sm:w-[54px]"
+              style={{
+                filter:
+                  'drop-shadow(0 0 3px rgba(59,130,246,0.28)) drop-shadow(0 0 7px rgba(168,85,247,0.22))',
+              }}
+            >
+              <defs>
+                <linearGradient id="heroScrollChevronGradient" x1="3" y1="4" x2="30" y2="30" gradientUnits="userSpaceOnUse">
+                  <stop stopColor="hsl(227.67deg 51.68% 17.68%)" />
+                  <stop offset="0.55" stopColor="hsl(290 60% 30%)" />
+                  <stop offset="1" stopColor="hsl(339.21deg 100% 50.2%)" />
+                </linearGradient>
+              </defs>
+              <path
+                d="M7 9.5L17 15.5L27 9.5"
+                stroke="url(#heroScrollChevronGradient)"
+                strokeWidth="2.4"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                opacity="0.46"
+              />
+              <path
+                d="M7 16L17 22L27 16"
+                stroke="url(#heroScrollChevronGradient)"
+                strokeWidth="2.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                opacity="0.62"
+              />
+              <path
+                d="M7 22.5L17 28.5L27 22.5"
+                stroke="url(#heroScrollChevronGradient)"
+                strokeWidth="2.4"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                opacity="0.52"
+              />
+            </motion.svg>
+          </motion.div>
+
         </div>
       </section>
 

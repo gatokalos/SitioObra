@@ -1765,6 +1765,7 @@ const Transmedia = () => {
   const [quironSignedUrl, setQuironSignedUrl] = useState('');
   const [isQuironPlaybackUnlocked, setIsQuironPlaybackUnlocked] = useState(false);
   const [shouldResumeQuironPlay, setShouldResumeQuironPlay] = useState(false);
+  const [isQuironPrecareVisible, setIsQuironPrecareVisible] = useState(false);
   const quironVideoRef = useRef(null);
   const [hasQuironPlaybackStarted, setHasQuironPlaybackStarted] = useState(false);
   const [isQuironAftercareVisible, setIsQuironAftercareVisible] = useState(false);
@@ -2091,11 +2092,21 @@ const Transmedia = () => {
       toast({ description: 'No encontramos el cortometraje completo en este momento.' });
       return;
     }
+    setIsQuironPrecareVisible(true);
+  }, [activeShowcase]);
+
+  const handleCloseQuironPrecare = useCallback(() => {
+    setIsQuironPrecareVisible(false);
+  }, []);
+
+  const handleConfirmQuironPrecare = useCallback(() => {
+    setIsQuironPrecareVisible(false);
     setQuironSignedUrl('');
     setIsQuironPlaybackUnlocked(false);
     setShowQuironCommunityPrompt(false);
     setIsQuironFullVisible(true);
-  }, [activeShowcase]);
+    setShouldResumeQuironPlay(true);
+  }, []);
 
   const handleQuironPlayRequest = useCallback(
     async (autoPlay = true) => {
@@ -2211,6 +2222,7 @@ const Transmedia = () => {
 
   useEffect(() => {
     if (activeShowcase === 'copycats') return;
+    setIsQuironPrecareVisible(false);
     setIsProjectionInterestSubmitting(false);
     setIsProjectionInterestSent(false);
   }, [activeShowcase]);
@@ -4569,196 +4581,212 @@ const rendernotaAutoral = () => {
         );
       };
 
-      return (
-        <div className="space-y-8">
-          {renderCollaboratorsSection(activeDefinition.collaborators, 'cine')}
-
-          <div className="grid gap-6 lg:grid-cols-2">
-            <div className="space-y-6">
-              <div className="rounded-3xl border border-white/10 bg-black/30 p-6 space-y-4">
-                <div className="flex items-start justify-between gap-3">
-                  <div>
-                    <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Documental</p>
-                    <h4 className="font-display text-xl text-slate-100">{activeDefinition.copycats?.title}</h4>
-                  </div>
-                
-                </div>
-                <p className="text-sm text-slate-300/80 leading-relaxed">
-                  {activeDefinition.copycats?.description}
-                </p>
-                <p className="text-sm text-slate-200/90 leading-relaxed">{activeDefinition.copycats?.microcopy}</p>
-                {activeDefinition.copycats?.tags?.length ? (
-                  <div className="flex flex-wrap gap-2">
-                    {activeDefinition.copycats.tags.map((tag, index) => (
-                      <span
-                        key={`copycats-tag-${index}`}
-                        className="px-3 py-1 rounded-full border border-purple-400/30 bg-purple-900/20 text-xs text-purple-100"
-                      >
-                        {tag}
-                      </span>
-                    ))}
-                  </div>
-                ) : null}
-                {copycatsAssets.length ? (
-                  <div className="space-y-4">
-                    {copycatsAssets.map((asset) => (
-                      <div key={asset.id}>{renderMedia(asset)}</div>
-                    ))}
-                  </div>
-                ) : null}
-              </div>
-
-              <div className="relative overflow-hidden rounded-3xl border border-white/10 bg-gradient-to-r from-slate-900/80 via-black/60 to-purple-900/40 p-6 space-y-4">
-                <span className="absolute top-4 right-4 inline-flex items-center gap-2 rounded-full border border-amber-300/50 bg-amber-500/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.35em] text-amber-100 shadow-[0_0_25px_rgba(251,191,36,0.25)]">
-                  <CheckCheckIcon size={14} />
-                  {quironSpent ? 'Liberado' : 'Login requerido'}
-                </span>
-                <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Proyección privada</p>
-                <h4 className="font-display text-2xl text-slate-100">{activeDefinition.proyeccion?.title}</h4>
-                <p className="text-sm text-slate-200/90 leading-relaxed">{activeDefinition.proyeccion?.description}</p>
-                <div className="flex flex-col gap-3 sm:flex-row">
-                  <Button
-                    onClick={handleProjectionInterest}
-                    disabled={isProjectionInterestSubmitting || isProjectionInterestSent}
-                    className={`w-full justify-center text-white sm:w-auto ${
-                      isProjectionInterestSent
-                        ? 'bg-emerald-500/80 hover:bg-emerald-500/80'
-                        : 'bg-gradient-to-r from-amber-500/90 to-orange-500/90 hover:from-amber-400 hover:to-orange-400'
-                    }`}
-                  >
-                    {isProjectionInterestSubmitting
-                      ? 'Registrando...'
-                      : isProjectionInterestSent
-                        ? 'Espera noticias'
-                        : activeDefinition.proyeccion?.cta}
-                  </Button>
-                  {quironSpent ? (
-                    <span className="inline-flex w-full items-center justify-center gap-2 rounded-full border border-emerald-200/60 bg-emerald-500/10 px-4 py-3 text-[11px] font-semibold uppercase tracking-[0.3em] text-emerald-100 sm:w-auto">
-                      <CheckCheckIcon size={14} />
-                      Cortometraje desbloqueado
-                    </span>
-                  ) : (
-                    <div className="relative flex-1 sm:flex-none">
-                      <Button
-                        variant="outline"
-                        onClick={handleToggleQuironPrompt}
-                        disabled={isQuironUnlocking}
-                        className="relative w-full justify-center border-purple-400/40 text-purple-200 hover:bg-purple-500/10 overflow-hidden"
-                      >
-                        {isQuironUnlocking ? 'Procesando…' : 'Ver cortometraje completo'}
-                      </Button>
-                      {showQuironCoins ? (
-                        <div className="pointer-events-none absolute inset-0 overflow-visible">
-                          {Array.from({ length: 6 }).map((_, index) => {
-                            const startLeft = 0.35 + index * 0.04;
-                            const startTop = 0.7;
-                            const x = 220 + index * 8;
-                            const y = -240 - index * 18;
-                            return (
-                              <motion.span
-                                key={`quiron-coin-flight-${index}`}
-                                className="absolute h-6 w-6 rounded-full bg-gradient-to-br from-amber-200 to-yellow-500 shadow-[0_0_18px_rgba(250,204,21,0.55)]"
-                                style={{ left: `${startLeft * 100}%`, top: `${startTop * 100}%` }}
-                                initial={{ opacity: 0.95, scale: 0.8, rotate: 0, x: 0, y: 0 }}
-                                animate={{ opacity: 0, scale: 1, rotate: 140 + index * 18, x, y }}
-                                transition={{ duration: 1.15, ease: 'easeOut' }}
-                              />
-                            );
-                          })}
-                        </div>
-                      ) : null}
-                    </div>
-                  )}
-                </div>
-                {isProjectionInterestSent ? (
-                  <p className="text-xs text-emerald-200/90">Recibirás un correo para confirmar tu lugar al acercarse la fecha.</p>
-                ) : null}
-                
-                {showQuironCommunityPrompt ? (
-                  <motion.div
-                    initial={{ opacity: 0, height: 0 }}
-                    animate={{ opacity: 1, height: 'auto' }}
-                    className="rounded-2xl border border-amber-200/40 bg-amber-500/10 p-4 text-sm text-amber-100"
-                  >
-                    El acceso inicial habilita una visualización.
-                    Con suscripción solidaria, puedes volver cuando quieras.
-                  </motion.div>
-                ) : null}
-                <p className="text-xs text-slate-400 leading-relaxed">
-                  Una vez desbloqueado, el cortometraje se habilita una vez; con una suscripción solidaria puedes volver cuando quieras.
-                </p>
-                {activeDefinition.proyeccion?.footnote ? (
-                  <p className="text-xs text-slate-400 leading-relaxed">{activeDefinition.proyeccion.footnote}</p>
-                ) : null}
-              </div>
-
+      const copycatsBlock = (
+        <div className="rounded-3xl border border-white/10 bg-black/30 p-6 space-y-4">
+          <div className="flex items-start justify-between gap-3">
+            <div>
+              <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Documental</p>
+              <h4 className="font-display text-xl text-slate-100">{activeDefinition.copycats?.title}</h4>
             </div>
-
-            <div className="space-y-6">
-              <div className="relative rounded-3xl border border-white/10 bg-black/30 p-6 space-y-4">
-                <div>
-                  <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Cortometraje</p>
-                  <h4 className="font-display text-xl text-slate-100">{activeDefinition.quiron?.title}</h4>
-                </div>
-              <p className="text-sm text-slate-300/80 leading-relaxed">{activeDefinition.quiron?.description}</p>
-              <p className="text-sm text-slate-200/90 leading-relaxed">{activeDefinition.quiron?.microcopy}</p>
+          </div>
+          <p className="text-sm text-slate-300/80 leading-relaxed">
+            {activeDefinition.copycats?.description}
+          </p>
+          <p className="text-sm text-slate-200/90 leading-relaxed">{activeDefinition.copycats?.microcopy}</p>
+          {activeDefinition.copycats?.tags?.length ? (
+            <div className="flex flex-wrap gap-2">
               {activeDefinition.copycats.tags.map((tag, index) => (
-                      <span
-                        key={`quiron-tag-${index}`}
-                        className="px-3 py-1 rounded-full border border-purple-400/30 bg-purple-900/20 text-xs text-purple-100"
-                      >
-                        {tag}
-                      </span>
-                    ))}
-              {activeDefinition.quiron?.teaser ? (
-                <div>{renderMedia(activeDefinition.quiron.teaser)}</div>
-              ) : null}
-                {quironStills.length ? (
-                  <div className="grid gap-3 sm:grid-cols-2">
-                    {quironStills.map((still, index) => {
-                      const label = typeof still === 'string' ? still : still.label || `Still ${index + 1}`;
-                      const url = typeof still === 'string' ? null : still.url;
-                      return url ? (
-                        <div
-                          key={still.id || `quiron-still-${index}`}
-                          className="overflow-hidden rounded-2xl border border-white/10 bg-black/20"
-                        >
-                          <div className="aspect-[4/3] bg-black/40">
-                            <img
-                              src={url}
-                              alt={label}
-                              className="h-full w-full object-cover"
-                              loading="lazy"
-                            />
-                          </div>
-                          <p className="px-4 py-3 text-xs uppercase tracking-[0.25em] text-slate-200">{label}</p>
-                        </div>
-                      ) : (
-                        <span
-                          key={`quiron-still-pill-${index}`}
-                          className="px-3 py-1 rounded-full border border-white/10 bg-white/5 text-xs text-slate-100"
-                        >
-                          {label}
-                        </span>
+                <span
+                  key={`copycats-tag-${index}`}
+                  className="px-3 py-1 rounded-full border border-purple-400/30 bg-purple-900/20 text-xs text-purple-100"
+                >
+                  {tag}
+                </span>
+              ))}
+            </div>
+          ) : null}
+          {copycatsAssets.length ? (
+            <div className="space-y-4">
+              {copycatsAssets.map((asset) => (
+                <div key={asset.id}>{renderMedia(asset)}</div>
+              ))}
+            </div>
+          ) : null}
+        </div>
+      );
+
+      const quironBlock = (
+        <div className="relative rounded-3xl border border-white/10 bg-black/30 p-6 space-y-4">
+          <div>
+            <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Cortometraje</p>
+            <h4 className="font-display text-xl text-slate-100">{activeDefinition.quiron?.title}</h4>
+          </div>
+          <p className="text-sm text-slate-300/80 leading-relaxed">{activeDefinition.quiron?.description}</p>
+          <p className="text-sm text-slate-200/90 leading-relaxed">{activeDefinition.quiron?.microcopy}</p>
+          {activeDefinition.copycats.tags.map((tag, index) => (
+            <span
+              key={`quiron-tag-${index}`}
+              className="px-3 py-1 rounded-full border border-purple-400/30 bg-purple-900/20 text-xs text-purple-100"
+            >
+              {tag}
+            </span>
+          ))}
+          {activeDefinition.quiron?.teaser ? (
+            <div>{renderMedia(activeDefinition.quiron.teaser)}</div>
+          ) : null}
+          {quironStills.length ? (
+            <div className="grid gap-3 sm:grid-cols-2">
+              {quironStills.map((still, index) => {
+                const label = typeof still === 'string' ? still : still.label || `Still ${index + 1}`;
+                const url = typeof still === 'string' ? null : still.url;
+                return url ? (
+                  <div
+                    key={still.id || `quiron-still-${index}`}
+                    className="overflow-hidden rounded-2xl border border-white/10 bg-black/20"
+                  >
+                    <div className="aspect-[4/3] bg-black/40">
+                      <img
+                        src={url}
+                        alt={label}
+                        className="h-full w-full object-cover"
+                        loading="lazy"
+                      />
+                    </div>
+                    <p className="px-4 py-3 text-xs uppercase tracking-[0.25em] text-slate-200">{label}</p>
+                  </div>
+                ) : (
+                  <span
+                    key={`quiron-still-pill-${index}`}
+                    className="px-3 py-1 rounded-full border border-white/10 bg-white/5 text-xs text-slate-100"
+                  >
+                    {label}
+                  </span>
+                );
+              })}
+            </div>
+          ) : null}
+        </div>
+      );
+
+      const proyeccionBlock = (
+        <div className="relative overflow-hidden rounded-3xl border border-white/10 bg-gradient-to-r from-slate-900/80 via-black/60 to-purple-900/40 p-6 space-y-4">
+          <span className="absolute top-4 right-4 inline-flex items-center gap-2 rounded-full border border-amber-300/50 bg-amber-500/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.35em] text-amber-100 shadow-[0_0_25px_rgba(251,191,36,0.25)]">
+            <CheckCheckIcon size={14} />
+            {quironSpent ? 'Liberado' : 'Login requerido'}
+          </span>
+          <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Proyección privada</p>
+          <h4 className="font-display text-2xl text-slate-100">{activeDefinition.proyeccion?.title}</h4>
+          <p className="text-sm text-slate-200/90 leading-relaxed">{activeDefinition.proyeccion?.description}</p>
+          <div className="flex flex-col gap-3 sm:flex-row">
+            <Button
+              onClick={handleProjectionInterest}
+              disabled={isProjectionInterestSubmitting || isProjectionInterestSent}
+              className={`w-full justify-center text-white sm:w-auto ${
+                isProjectionInterestSent
+                  ? 'bg-emerald-500/80 hover:bg-emerald-500/80'
+                  : 'bg-gradient-to-r from-amber-500/90 to-orange-500/90 hover:from-amber-400 hover:to-orange-400'
+              }`}
+            >
+              {isProjectionInterestSubmitting
+                ? 'Registrando...'
+                : isProjectionInterestSent
+                  ? 'Espera noticias'
+                  : activeDefinition.proyeccion?.cta}
+            </Button>
+            {quironSpent ? (
+              <span className="inline-flex w-full items-center justify-center gap-2 rounded-full border border-emerald-200/60 bg-emerald-500/10 px-4 py-3 text-[11px] font-semibold uppercase tracking-[0.3em] text-emerald-100 sm:w-auto">
+                <CheckCheckIcon size={14} />
+                Cortometraje desbloqueado
+              </span>
+            ) : (
+              <div className="relative flex-1 sm:flex-none">
+                <Button
+                  variant="outline"
+                  onClick={handleToggleQuironPrompt}
+                  disabled={isQuironUnlocking}
+                  className="relative w-full justify-center border-purple-400/40 text-purple-200 hover:bg-purple-500/10 overflow-hidden"
+                >
+                  {isQuironUnlocking ? 'Procesando…' : 'Ver cortometraje completo'}
+                </Button>
+                {showQuironCoins ? (
+                  <div className="pointer-events-none absolute inset-0 overflow-visible">
+                    {Array.from({ length: 6 }).map((_, index) => {
+                      const startLeft = 0.35 + index * 0.04;
+                      const startTop = 0.7;
+                      const x = 220 + index * 8;
+                      const y = -240 - index * 18;
+                      return (
+                        <motion.span
+                          key={`quiron-coin-flight-${index}`}
+                          className="absolute h-6 w-6 rounded-full bg-gradient-to-br from-amber-200 to-yellow-500 shadow-[0_0_18px_rgba(250,204,21,0.55)]"
+                          style={{ left: `${startLeft * 100}%`, top: `${startTop * 100}%` }}
+                          initial={{ opacity: 0.95, scale: 0.8, rotate: 0, x: 0, y: 0 }}
+                          animate={{ opacity: 0, scale: 1, rotate: 140 + index * 18, x, y }}
+                          transition={{ duration: 1.15, ease: 'easeOut' }}
+                        />
                       );
                     })}
                   </div>
                 ) : null}
               </div>
-
-              {renderCommunityBlock('copycats', {
-                ctaLabel: 'comenta',
-                className: 'rounded-3xl border border-white/10 bg-black/25 p-6 space-y-5',
-                reactionProps: {
-                  showcaseId: 'copycats',
-                  title: 'Validación cinematográfica',
-                  description: 'Deja tu aplauso y amplifica la comunidad de CopyCats + Quirón.',
-                  buttonLabel: 'Sumar mi aplauso',
-                  className: 'mt-2 bg-gradient-to-r from-slate-900/40 to-purple-900/20',
-                },
-              })}
-            </div>
+            )}
           </div>
+          {isProjectionInterestSent ? (
+            <p className="text-xs text-emerald-200/90">Recibirás un correo para confirmar tu lugar al acercarse la fecha.</p>
+          ) : null}
+
+          {showQuironCommunityPrompt ? (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: 'auto' }}
+              className="rounded-2xl border border-amber-200/40 bg-amber-500/10 p-4 text-sm text-amber-100"
+            >
+              El acceso inicial habilita una visualización.
+              Con suscripción solidaria, puedes volver cuando quieras.
+            </motion.div>
+          ) : null}
+      
+          {activeDefinition.proyeccion?.footnote ? (
+            <p className="text-xs text-slate-400 leading-relaxed">{activeDefinition.proyeccion.footnote}</p>
+          ) : null}
+        </div>
+      );
+
+      const comentariosBlock = renderCommunityBlock('copycats', {
+        ctaLabel: 'comenta',
+        className: 'rounded-3xl border border-white/10 bg-black/25 p-6 space-y-5',
+        reactionProps: {
+          showcaseId: 'copycats',
+          title: 'Validación cinematográfica',
+          description: 'Deja tu aplauso y amplifica la comunidad de CopyCats + Quirón.',
+          buttonLabel: 'Sumar mi aplauso',
+          className: 'mt-2 bg-gradient-to-r from-slate-900/40 to-purple-900/20',
+        },
+      });
+
+      return (
+        <div className="space-y-8">
+          {renderCollaboratorsSection(activeDefinition.collaborators, 'cine')}
+
+          {isMobileViewport ? (
+            <div className="space-y-6">
+              {copycatsBlock}
+              {quironBlock}
+              {proyeccionBlock}
+              {comentariosBlock}
+            </div>
+          ) : (
+            <div className="grid gap-6 lg:grid-cols-2">
+              <div className="space-y-6">
+                {copycatsBlock}
+                {proyeccionBlock}
+              </div>
+              <div className="space-y-6">
+                {quironBlock}
+                {comentariosBlock}
+              </div>
+            </div>
+          )}
         </div>
       );
     }
@@ -5579,6 +5607,36 @@ const rendernotaAutoral = () => {
     )
     : null;
 
+  const quironPrecareOverlay = typeof document !== 'undefined' && isQuironPrecareVisible
+    ? createPortal(
+      <div className="fixed inset-0 z-[246] flex items-center justify-center px-4 py-8">
+        <div className="absolute inset-0 bg-black/92 backdrop-blur-md" onClick={handleCloseQuironPrecare} />
+        <div className="relative z-10 w-full max-w-2xl rounded-3xl border border-white/10 bg-slate-950/90 p-8 text-center shadow-[0_35px_120px_rgba(0,0,0,0.7)]">
+          <p className="text-xs uppercase tracking-[0.35em] text-slate-400/80">Antes de continuar</p>
+          <p className="mt-3 text-sm text-slate-300/85 leading-relaxed">
+            Una vez desbloqueado, el cortometraje se habilita una vez; con una suscripción solidaria puedes volver cuando quieras. ¿Quieres continuar?
+          </p>
+          <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:justify-center">
+            <Button
+              onClick={handleConfirmQuironPrecare}
+              className="inline-flex items-center justify-center rounded-full bg-gradient-to-r from-purple-600/80 to-indigo-500/80 px-6 py-3 text-sm font-semibold text-white hover:from-purple-500 hover:to-indigo-400"
+            >
+              Continuar
+            </Button>
+            <Button
+              variant="outline"
+              onClick={handleCloseQuironPrecare}
+              className="inline-flex items-center justify-center rounded-full border-white/20 bg-white/5 px-6 py-3 text-sm font-semibold text-slate-100 hover:bg-white/10"
+            >
+              Cancelar
+            </Button>
+          </div>
+        </div>
+      </div>,
+      document.body,
+    )
+    : null;
+
   const imagePreviewOverlay = typeof document !== 'undefined' && imagePreview
     ? createPortal(
       <div className="fixed inset-0 z-[240] flex items-center justify-center px-4 py-10">
@@ -6008,6 +6066,7 @@ const rendernotaAutoral = () => {
           {oraculoOverlay}
           {causeSiteOverlay}
           {quironFullOverlay}
+          {quironPrecareOverlay}
           {quironAftercareOverlay}
           {imagePreviewOverlay}
           {pdfPreviewOverlay}
