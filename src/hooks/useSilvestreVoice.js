@@ -158,7 +158,7 @@ export const useSilvestreVoice = () => {
           },
           {
             endpoint: '/api/obra-voz',
-            payload: { mensaje: message, mode_id },
+            payload: { mensaje: message, mode_id, user_id: userId },
             label: 'voz (fallback)',
           },
         ];
@@ -173,7 +173,6 @@ export const useSilvestreVoice = () => {
               method: 'POST',
               headers: {
                 'Content-Type': 'application/json',
-                'x-user-id': userId,
               },
               body: JSON.stringify(candidate.payload),
               signal: controller.signal,
