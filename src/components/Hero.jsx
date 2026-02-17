@@ -237,21 +237,21 @@ const Hero = () => {
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.7, delay: 1.2 }}
-            className="mt-8 inline-flex h-9 w-9 items-center justify-center self-center sm:mt-14 sm:h-12 sm:w-12"
+            className="relative mt-8 inline-flex h-12 w-12 items-center justify-center self-center sm:mt-14 sm:h-12 sm:w-12"
             aria-hidden="true"
           >
             <motion.svg
-              width="28"
-              height="28"
+              width="36"
+              height="36"
               viewBox="0 0 34 34"
               fill="none"
               xmlns="http://www.w3.org/2000/svg"
               animate={{ y: [0, 3, 0], opacity: [0.66, 0.25, 0.66] }}
               transition={{ duration: 2.1, repeat: Infinity, ease: 'easeInOut' }}
-              className="sm:h-[54px] sm:w-[54px]"
+              className="h-10 w-10 sm:h-[54px] sm:w-[54px]"
               style={{
                 filter:
-                  'drop-shadow(0 0 3px rgba(59,130,246,0.28)) drop-shadow(0 0 7px rgba(168,85,247,0.22))',
+                  'drop-shadow(0 0 6px rgba(59,130,246,0.5)) drop-shadow(0 0 12px rgba(236,72,153,0.34))',
               }}
             >
               <defs>
@@ -264,26 +264,26 @@ const Hero = () => {
               <path
                 d="M7 9.5L17 15.5L27 9.5"
                 stroke="url(#heroScrollChevronGradient)"
-                strokeWidth="2.4"
+                strokeWidth="2.8"
                 strokeLinecap="round"
                 strokeLinejoin="round"
-                opacity="0.46"
+                opacity="0.58"
               />
               <path
                 d="M7 16L17 22L27 16"
                 stroke="url(#heroScrollChevronGradient)"
-                strokeWidth="2.5"
+                strokeWidth="2.9"
                 strokeLinecap="round"
                 strokeLinejoin="round"
-                opacity="0.62"
+                opacity="0.74"
               />
               <path
                 d="M7 22.5L17 28.5L27 22.5"
                 stroke="url(#heroScrollChevronGradient)"
-                strokeWidth="2.4"
+                strokeWidth="2.8"
                 strokeLinecap="round"
                 strokeLinejoin="round"
-                opacity="0.52"
+                opacity="0.66"
               />
             </motion.svg>
           </motion.div>

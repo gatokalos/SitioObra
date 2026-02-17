@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
+import { createPortal } from 'react-dom';
 import { BookOpen, Brain, Check, Compass, Coffee, Coins, Drama, Film, Gamepad2, Heart, HeartHandshake, HeartPulse, MapIcon, Music, Palette, School, Share2, Smartphone, Sparkles } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -143,12 +144,13 @@ const MINIVERSE_CARDS = [
   {
     id: 'drama',
     formatId: 'miniversos',
+    appName: 'Obra',
     icon: Drama,
     thumbLabel: 'D',
     thumbGradient: 'from-purple-400/80 via-fuchsia-500/70 to-rose-500/60',
     glassTint: '284 70% 62%',
-    title: '01 — La escena',
-    titleShort: 'La puerta',
+    title: '01 - La escena',
+    titleShort: 'Abre la puerta',
     description: 'Todo empezó ahí. El escenario no cerró cuando bajó el telón.',
     videoUrl: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/trailers/miniversos/chat_obra.mp4',
     ctaVerb: 'Entra',
@@ -158,12 +160,13 @@ const MINIVERSE_CARDS = [
   {
     id: 'literatura',
     formatId: 'miniversoNovela',
+    appName: 'Literatura',
     icon: BookOpen,
     thumbLabel: 'L',
     thumbGradient: 'from-emerald-400/80 via-teal-500/70 to-cyan-500/60',
     glassTint: '168 70% 52%',
-    title: '02 — La escritura',
-    titleShort: 'La grieta',
+    title: '02 - La escritura',
+    titleShort: 'Lee entre grietas',
     description: 'Lo que no cabía en escena necesitó otro lenguaje.',
     videoUrl: null,
     ctaVerb: 'Lee',
@@ -173,11 +176,12 @@ const MINIVERSE_CARDS = [
   {
     id: 'taza',
     formatId: 'lataza',
+    appName: 'Artesanías',
     icon: Coffee,
     thumbLabel: 'A',
     thumbGradient: 'from-amber-400/80 via-orange-500/70 to-rose-500/60',
     glassTint: '28 78% 58%',
-    title: '03 — El objeto',
+    title: '03 - El objeto',
     titleShort: 'Lo que se sostiene',
     description:
       'Cuando todo se vuelve abstracto, algo pequeño puede anclarte.',
@@ -188,11 +192,12 @@ const MINIVERSE_CARDS = [
   {
     id: 'graficos',
     formatId: 'miniversoGrafico',
+    appName: 'Gráficos',
     icon: Palette,
     thumbLabel: 'G',
     thumbGradient: 'from-fuchsia-400/80 via-purple-500/70 to-indigo-500/60',
     glassTint: '304 65% 60%',
-    title: '04 — El trazo',
+    title: '04 - El trazo',
     titleShort: 'La imagen de sí',
     description: 'Mirarse desde afuera también es una forma de verdad.',
     videoUrl: null,
@@ -202,10 +207,11 @@ const MINIVERSE_CARDS = [
   {
     id: 'cine',
     formatId: 'copycats',
+    appName: 'Cine',
     icon: Film,
     thumbGradient: 'from-rose-500/80 via-red-500/70 to-fuchsia-500/60',
     glassTint: '352 70% 60%',
-    title: '05 — La cámara',
+    title: '05 - La cámara',
     titleShort: 'El quiebre',
     description: 'La cámara no protege. Solo muestra.',
     videoUrl: null,
@@ -216,11 +222,12 @@ const MINIVERSE_CARDS = [
   {
     id: 'sonoro',
     formatId: 'miniversoSonoro',
+    appName: 'Sonoridades',
     icon: Music,
     thumbLabel: 'S',
     thumbGradient: 'from-sky-400/80 via-cyan-500/70 to-indigo-500/60',
     glassTint: '206 80% 58%',
-    title: '06 — El eco',
+    title: '06 - El eco',
     titleShort: 'La memoria',
     description: 'Algunas cosas no se inventan. Se recuerdan.',
     videoUrl: null,
@@ -230,11 +237,12 @@ const MINIVERSE_CARDS = [
   {
     id: 'movimiento',
     formatId: 'miniversoMovimiento',
+    appName: 'Movimiento',
     icon: MapIcon,
     thumbLabel: 'M',
     thumbGradient: 'from-sky-400/80 via-emerald-500/70 to-cyan-500/60',
     glassTint: '176 62% 52%',
-    title: '07 — El cuerpo',
+    title: '07 - El cuerpo',
     titleShort: 'El límite',
     description: 'Somos finitos. Y aun así nos movemos.',
     videoUrl: null,
@@ -244,11 +252,12 @@ const MINIVERSE_CARDS = [
   {
     id: 'apps',
     formatId: 'apps',
+    appName: 'Apps',
     icon: Smartphone,
     thumbLabel: 'J',
     thumbGradient: 'from-lime-400/80 via-emerald-500/70 to-teal-500/60',
     glassTint: '138 60% 48%',
-    title: '08 — El juego',
+    title: '08 - El juego',
     titleShort: 'La elección',
     description: 'No hay un solo recorrido. Tú decides cómo entrar.',
     videoUrl: null,
@@ -258,11 +267,12 @@ const MINIVERSE_CARDS = [
   {
     id: 'oraculo',
     formatId: 'oraculo',
+    appName: 'Oráculo',
     icon: Brain,
     thumbLabel: 'O',
     thumbGradient: 'from-indigo-400/80 via-violet-500/70 to-purple-500/60',
     glassTint: '266 62% 60%',
-    title: '09 — El espejo',
+    title: '09 - El espejo',
     titleShort: 'La revelación',
     description: 'No responde. Devuelve.',
     videoUrl: null,
@@ -308,6 +318,7 @@ const SUPPORT_WHATSAPP = '+523315327985';
 const SUPPORT_MESSAGE =
   'Hola,%0Ami suscripción está activa pero no aparece ligada a mi cuenta.%0A¿Me ayudan a vincularla?%0A%0AGracias.';
 const SUBSCRIPTION_PRICE_ID = import.meta.env.VITE_STRIPE_SUBSCRIPTION_PRICE_ID;
+const CAUSE_SITE_URL = 'https://www.ayudaparalavida.com/index.html';
 
 const readStoredJson = (key, fallback) => {
   if (typeof window === 'undefined') {
@@ -356,6 +367,7 @@ const MiniverseModal = ({
   const [showFavoritesOnly, setShowFavoritesOnly] = useState(false);
   const [communityTopLikes, setCommunityTopLikes] = useState([]);
   const [isLoadingCommunityLikes, setIsLoadingCommunityLikes] = useState(false);
+  const [isCauseSiteOpen, setIsCauseSiteOpen] = useState(false);
   const metadataSubscriber = Boolean(
     user?.user_metadata?.isSubscriber === true ||
       user?.user_metadata?.isSubscriber === 'true' ||
@@ -467,10 +479,12 @@ const MiniverseModal = ({
       setActiveShowcaseIndex(0);
       setIsShowcaseAutoPlay(true);
       setShowcaseCountdown(9);
+      setIsCauseSiteOpen(false);
       setShowcaseEnergy(readStoredJson('gatoencerrado:showcase-energy', {}));
       setShowcaseBoosts(readStoredJson('gatoencerrado:showcase-boosts', {}));
       return;
     }
+    setIsCauseSiteOpen(false);
   }, [open]);
 
   useEffect(() => {
@@ -536,21 +550,23 @@ const MiniverseModal = ({
   const activeTabIntro = useMemo(() => {
     if (activeTab === 'experiences') {
       return {
-        lead: 'Te presentamos los nueve miniversos como una pantalla de inicio.',
+        lead: 'Te presentamos los nueve miniversos como una pantalla de inicio:',
         highlight:
-          'Un formato familiar para explorar por intuición, abrir cada portal y volver cuando quieras.',
+          'Un formato familiar para explorar y volver cuando quieras.',
+          continuation: 'Con tu huella activa, accedes a la versión completa en miniversos.ai.'
       };
     }
     if (activeTab === 'escaparate') {
       return {
-        lead: 'La obra no termina cuando baja el telón.',
-        highlight: 'Se despliega en nueve rutas que puedes recorrer.',
-        continuation: 'Explóralos y descubre qué se transforma en ti.',
+      lead: 'Esta galería despliega una microficción en nueve actos.',
+      highlight: 'Cada acto dialoga con un miniverso',
+      continuation: 'y abre la misma pregunta: ¿qué ocurre cuando la obra se expande y exige otro lenguaje?'
       };
     }
     return {
-      lead: 'Cuando la obra no está en cartelera, su narrativa pulsa en otros lenguajes.',
-      highlight: 'Explora a tu ritmo. Cada portal abre un miniverso distinto.',
+      lead: 'Activa el acceso completo a los miniversos,',
+      highlight: 'impulsa acompañamiento emocional real y mantiene viva la experiencia artística más allá del escenario.',
+      continuation: 'Tu participación deja impacto tangible.'
     };
   }, [activeTab]);
   const showcaseMiniverses = useMemo(
@@ -850,7 +866,7 @@ const MiniverseModal = ({
     [user]
   );
 
-  const handleCommunityOptIn = useCallback(() => {
+  const handleCommunityOptIn = useCallback(async () => {
     safeSetItem(
       LOGIN_RETURN_KEY,
       JSON.stringify({ anchor: '#apoya', action: 'community-opt-in' })
@@ -862,9 +878,29 @@ const MiniverseModal = ({
       toast({ description: 'Inicia sesión para recibir actualizaciones.' });
       return;
     }
-    setCommunityOptIn((prev) => !prev);
-    toast({ description: 'Cuando la causa crece, el universo se expande. Te mantendremos al tanto.' });
-  }, [user]);
+    if (communityOptIn) {
+      setCommunityOptIn(false);
+      toast({ description: 'Ya no enviaremos este tipo de actualizaciones por ahora.' });
+      return;
+    }
+
+    setCommunityOptIn(true);
+    try {
+      const { error } = await supabase.functions.invoke('community-optin-email', {
+        body: {
+          source: 'miniverse_modal',
+          context: 'sostener_tab',
+        },
+      });
+      if (error) {
+        throw error;
+      }
+      toast({ description: 'Te enviamos un correo con los próximos pasos para entender cómo funciona.' });
+    } catch (error) {
+      console.error('[MiniverseModal] No se pudo enviar correo de opt-in:', error);
+      toast({ description: 'Recibimos tu interés, pero no pudimos enviar el correo en este momento.' });
+    }
+  }, [communityOptIn, user]);
 
   const handleSubmit = useCallback(
     async (event) => {
@@ -929,6 +965,14 @@ const MiniverseModal = ({
       document.querySelector('#apoya')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }, 140);
   }, [onClose]);
+
+  const handleOpenCauseSite = useCallback(() => {
+    setIsCauseSiteOpen(true);
+  }, []);
+
+  const handleCloseCauseSite = useCallback(() => {
+    setIsCauseSiteOpen(false);
+  }, []);
 
   const handleSubscriptionCheckout = useCallback(async () => {
     if (!SUBSCRIPTION_PRICE_ID) {
@@ -1078,7 +1122,7 @@ const MiniverseModal = ({
 
   const modalLayer = open ? (
     <motion.div
-          className={`safari-stable-layer fixed inset-0 z-50 flex items-start sm:items-center justify-center px-3 py-6 sm:px-4 sm:py-10 overflow-y-auto ${
+          className={`safari-stable-layer fixed inset-0 z-50 flex items-start sm:items-center justify-center px-4 py-6 sm:px-4 sm:py-10 overflow-y-auto overflow-x-hidden ${
             shelved ? 'pointer-events-none' : ''
           }`}
           initial={shouldAnimatePresence ? 'hidden' : false}
@@ -1098,7 +1142,7 @@ const MiniverseModal = ({
             aria-modal={shelved ? 'false' : 'true'}
             aria-labelledby="miniverse-modal-title"
             variants={modalVariants}
-            className={`safari-stable-layer relative z-10 flex w-full max-w-4xl flex-col rounded-3xl border border-white/10 bg-slate-950/70 p-5 sm:p-10 shadow-2xl max-h-[95vh] min-h-[95vh] md:max-h-[73vh] md:min-h-[73vh] overflow-hidden ${
+            className={`safari-stable-layer relative z-10 flex w-[calc(100vw-2rem)] max-w-4xl flex-col rounded-3xl border border-white/10 bg-slate-950/70 p-5 sm:p-10 shadow-2xl max-h-[95vh] min-h-[95vh] md:max-h-[73vh] md:min-h-[73vh] overflow-hidden ${
               isSafari ? '' : 'transition-[opacity,filter,transform] duration-500'
             } ${
               shelved ? 'pointer-events-none opacity-0 blur-sm scale-[0.98]' : 'opacity-100 blur-0 scale-100'
@@ -1112,7 +1156,7 @@ const MiniverseModal = ({
                 filter: 'grayscale(0.25)',
               }}
             />
-            <div className="relative z-10 flex-1 overflow-y-auto overscroll-contain [-webkit-overflow-scrolling:touch] pr-1">
+            <div className="relative z-10 flex-1 overflow-y-auto overflow-x-hidden overscroll-contain [-webkit-overflow-scrolling:touch] pr-0 sm:pr-1">
             <div>
         <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-6">
           <div>
@@ -1175,10 +1219,10 @@ const MiniverseModal = ({
                       </div>
                       <div className="mt-5 space-y-3">
                         <h3 className="font-display text-3xl text-slate-50">
-                          Tu suscripción importa
+                          Tu huella importa
                         </h3>
                         <p className="text-sm text-slate-300/90 leading-relaxed">
-                          Activa acompañamiento emocional real y mantiene viva la experiencia artística más allá del escenario.
+                          Deja tu huella y accede a tu versión personal de la App Causa Social que se implementa en escuelas. 
                         </p>
                       </div>
 
@@ -1211,7 +1255,7 @@ const MiniverseModal = ({
                               }`}
                             />
                             <span className="text-sm text-slate-300/80 leading-relaxed">
-                              Me interesa, queiro más información.
+                              Quiero entender cómo funciona.
                             </span>
                           </button>
                         </div>
@@ -1278,8 +1322,16 @@ const MiniverseModal = ({
                         </div>
                       </div>
                       
-                      <div className="flex justify-end">
-                        <div className="rounded-xl border border-white/10 bg-white/5 px-3 py-2 shadow-[0_8px_24px_rgba(0,0,0,0.35)]">
+                      <div className="flex items-center justify-between gap-3">
+                        <button
+                          type="button"
+                          onClick={handleOpenCauseSite}
+                          className="inline-flex items-center gap-2 rounded-xl border border-white/15 bg-white/5 px-3 py-2 text-sm font-medium text-slate-200 transition hover:border-white/30 hover:bg-white/10 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-400/60"
+                        >
+                          <span className="h-1.5 w-1.5 rounded-full bg-emerald-300/80" />
+                          Visitar sitio
+                        </button>
+                        <div className="rounded-xl border border-white/10 bg-white/5 px-3 py-2 shadow-[0_10px_28px_rgba(0,0,0,0.35)]">
                           <img
                             src="/assets/isabel_banner.png"
                             alt="Isabel Ayuda para la Vida"
@@ -1399,7 +1451,7 @@ const MiniverseModal = ({
                                         data-showcase-video={card.id}
                                       />
                                       <div className="pointer-events-none absolute left-4 top-4 rounded-full border border-white/20 bg-black/50 px-3 py-1 text-[0.6rem] uppercase tracking-[0.3em] text-slate-200">
-                                        Video provisional
+                                        Escena en proceso
                                       </div>
                                     </>
                                   ) : (
@@ -1427,7 +1479,7 @@ const MiniverseModal = ({
                                     disabled={isCheckoutLoading}
                                     className="bg-white text-slate-900 hover:bg-white/90 py-3 rounded-lg font-semibold flex items-center justify-center gap-2"
                                   >
-                                    {isCheckoutLoading ? 'Abriendo…' : 'Activar huella'}
+                                    {isCheckoutLoading ? 'Abriendo…' : 'Dejar huella'}
                                   </Button>
                                 ) : null}
                               </div>
@@ -1451,7 +1503,7 @@ const MiniverseModal = ({
                                       data-showcase-video={card.id}
                                     />
                                     <div className="pointer-events-none absolute left-4 top-4 rounded-full border border-white/20 bg-black/50 px-3 py-1 text-[0.6rem] uppercase tracking-[0.3em] text-slate-200">
-                                      Video provisional
+                                      Escena en proceso
                                     </div>
                                   </>
                                 ) : (
@@ -1550,7 +1602,7 @@ const MiniverseModal = ({
                                     data-showcase-video={card.id}
                                   />
                                   <div className="pointer-events-none absolute left-4 top-4 rounded-full border border-white/20 bg-black/50 px-3 py-1 text-[0.6rem] uppercase tracking-[0.3em] text-slate-200">
-                                    Video provisional
+                                    Escena en proceso
                                   </div>
                                 </>
                               ) : (
@@ -1602,7 +1654,7 @@ const MiniverseModal = ({
                                   data-showcase-video={card.id}
                                 />
                                 <div className="pointer-events-none absolute left-4 top-4 rounded-full border border-white/20 bg-black/50 px-3 py-1 text-[0.6rem] uppercase tracking-[0.3em] text-slate-200">
-                                  Video provisional
+                                  Escena en proceso
                                 </div>
                               </>
                             ) : (
@@ -1694,7 +1746,7 @@ const MiniverseModal = ({
                                   controls
                                 />
                                 <div className="pointer-events-none absolute left-4 top-4 rounded-full border border-white/20 bg-black/50 px-3 py-1 text-[0.6rem] uppercase tracking-[0.3em] text-slate-200">
-                                  Video provisional
+                                  Escena en proceso
                                 </div>
                               </>
                             ) : (
@@ -1740,7 +1792,7 @@ const MiniverseModal = ({
                                 controls
                               />
                               <div className="pointer-events-none absolute left-4 top-4 rounded-full border border-white/20 bg-black/50 px-3 py-1 text-[0.6rem] uppercase tracking-[0.3em] text-slate-200">
-                                Video provisional
+                                Escena en proceso
                               </div>
                             </>
                           ) : (
@@ -1759,7 +1811,7 @@ const MiniverseModal = ({
               ) : (
                 <div className="md:col-span-2 w-full max-w-3xl mx-auto space-y-4">
      
-                  <div className="relative overflow-hidden rounded-[2rem] border border-white/15 bg-gradient-to-b from-slate-900/80 via-[#0b1431]/85 to-[#050917]/90 p-5 sm:p-6 shadow-[inset_0_1px_0_rgba(255,255,255,0.08),0_30px_80px_rgba(0,0,0,0.55)]">
+                  <div className="relative mx-auto w-[calc(100%-0.5rem)] max-w-[19rem] overflow-hidden rounded-[2rem] border border-white/15 bg-gradient-to-b from-slate-900/80 via-[#0b1431]/85 to-[#050917]/90 p-4 sm:w-full sm:max-w-none sm:p-6 shadow-[inset_0_1px_0_rgba(255,255,255,0.08),0_30px_80px_rgba(0,0,0,0.55)]">
                     <div
                       aria-hidden="true"
                       className="pointer-events-none absolute inset-0 opacity-35"
@@ -1781,7 +1833,7 @@ const MiniverseModal = ({
                         const isUpcoming = Boolean(card.isUpcoming);
                         const isVisited = !isUpcoming && Boolean(visitedMiniverses[card.id]);
                         const communityHearts = communityLikeMap.get(card.formatId) ?? 0;
-                        const appLabel = (card.title ?? '').replace(/^Miniverso\s+/i, '');
+                        const appLabel = card.appName ?? (card.title ?? '').replace(/^Miniverso\s+/i, '');
                         return (
                           <div key={card.title} className="relative mx-auto w-24 sm:w-28">
                             {!isUpcoming && isVisited ? (
@@ -1799,7 +1851,7 @@ const MiniverseModal = ({
                               type="button"
                               onClick={() => handleSelectCard(card, 'grid')}
                               disabled={isUpcoming}
-                              aria-label={card.ctaVerb ?? card.title}
+                              aria-label={card.ctaVerb ?? card.appName ?? card.title}
                               className={`group relative mx-auto flex w-24 sm:w-28 flex-col items-center justify-start gap-2 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-400/60 disabled:cursor-not-allowed ${
                                 isUpcoming ? 'opacity-70' : 'hover:scale-[1.03] active:scale-[0.98]'
                               }`}
@@ -1819,7 +1871,7 @@ const MiniverseModal = ({
                                 >
                                   <img
                                     src={MINIVERSE_ICON_IMAGES[card.formatId] ?? MINIVERSE_ICON_PLACEHOLDER}
-                                    alt={card.title}
+                                    alt={card.appName ?? card.title}
                                     className="h-full w-full object-cover"
                                     loading="lazy"
                                   />
@@ -1863,7 +1915,7 @@ const MiniverseModal = ({
                         >
                           <Heart size={14} fill={showFavoritesOnly ? 'currentColor' : 'none'} />
                           {showFavoritesOnly
-                            ? `Pulso Comunitario ${communityHeartTotal}`
+                            ? `Pulsos ${communityHeartTotal}`
                             : isLoadingCommunityLikes
                               ? 'Comunidad...'
                               : 'Favoritas comunidad'}
@@ -1908,7 +1960,87 @@ const MiniverseModal = ({
         </motion.div>
   ) : null;
 
-  return shouldAnimatePresence ? <AnimatePresence>{modalLayer}</AnimatePresence> : modalLayer;
+  const causeSiteOverlay = typeof document !== 'undefined'
+    ? createPortal(
+      <AnimatePresence>
+        {isCauseSiteOpen ? (
+          <motion.div
+            key="miniverse-cause-site-iframe"
+            className="fixed inset-0 z-[175] flex items-center justify-center px-4 py-6"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+          >
+            <motion.div
+              className="absolute inset-0 bg-black/85 backdrop-blur-md"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={handleCloseCauseSite}
+            />
+            <motion.div
+              role="dialog"
+              aria-modal="true"
+              aria-label="Isabel Ayuda para la Vida"
+              className="relative z-10 w-full max-w-5xl overflow-hidden rounded-3xl border border-white/10 bg-slate-950/90 shadow-[0_35px_120px_rgba(0,0,0,0.65)]"
+              initial={{ scale: 0.96, opacity: 0, y: 18 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.96, opacity: 0, y: 18 }}
+              transition={{ type: 'spring', stiffness: 220, damping: 24 }}
+            >
+              <div className="flex flex-col gap-3 border-b border-white/10 px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                  <p className="text-xs uppercase tracking-[0.35em] text-slate-400/80">Causa social</p>
+                  <h3 className="font-display text-2xl text-slate-100">Isabel Ayuda para la Vida</h3>
+                </div>
+                <div className="flex items-center gap-3 text-sm">
+                  {CAUSE_SITE_URL ? (
+                    <a
+                      href={CAUSE_SITE_URL}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="text-purple-200 underline underline-offset-4 hover:text-white"
+                    >
+                      Abrir en nueva pestaña
+                    </a>
+                  ) : null}
+                  <button
+                    type="button"
+                    onClick={handleCloseCauseSite}
+                    className="text-slate-300 hover:text-white transition"
+                  >
+                    Cerrar ✕
+                  </button>
+                </div>
+              </div>
+              <div className="relative w-full aspect-[16/10] bg-black">
+                {CAUSE_SITE_URL ? (
+                  <iframe
+                    src={CAUSE_SITE_URL}
+                    title="Isabel Ayuda para la Vida"
+                    className="h-full w-full"
+                    loading="lazy"
+                  />
+                ) : (
+                  <div className="flex h-full w-full items-center justify-center text-sm text-slate-300">
+                    No se pudo cargar el sitio.
+                  </div>
+                )}
+              </div>
+            </motion.div>
+          </motion.div>
+        ) : null}
+      </AnimatePresence>,
+      document.body,
+    )
+    : null;
+
+  return (
+    <>
+      {shouldAnimatePresence ? <AnimatePresence>{modalLayer}</AnimatePresence> : modalLayer}
+      {causeSiteOverlay}
+    </>
+  );
 };
 
 export default MiniverseModal;
