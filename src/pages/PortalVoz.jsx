@@ -118,6 +118,8 @@ const PortalVoz = () => {
     isSilvestreFetching,
     isSilvestrePlaying,
     pendingSilvestreAudioUrl,
+    silvestreThinkingMessage,
+    isSilvestreThinkingPulse,
     spentSilvestreSet,
     markSilvestreQuestionSpent,
     handleOpenSilvestreChat,
@@ -237,6 +239,8 @@ const PortalVoz = () => {
               pendingSilvestreAudioUrl={pendingSilvestreAudioUrl}
               isSilvestreFetching={isSilvestreFetching}
               isSilvestreResponding={isSilvestreResponding}
+              silvestreThinkingMessage={silvestreThinkingMessage}
+              isSilvestreThinkingPulse={isSilvestreThinkingPulse}
               isListening={isListening}
               micPromptVisible={micPromptVisible}
               showSilvestreCoins={showSilvestreCoins}

@@ -537,7 +537,7 @@ const showcaseDefinitions = {
     cartaTitle: '#LaPuertaInvisible',
     notaAutoral: 'Entré sin saber.\nAlgo dijo mi nombre.\nY ya no hubo salida.',
 
-    ctaLabel: 'Hablar con La Obra',
+    ctaLabel: 'Habla conmigo',
     conversationStarters: OBRA_CONVERSATION_STARTERS,
 iaProfile: {
   type: 'Una voz que no es personaje ni herramienta: una conciencia en proceso.',
@@ -1733,6 +1733,8 @@ const Transmedia = () => {
     isSilvestreFetching,
     isSilvestrePlaying,
     pendingSilvestreAudioUrl,
+    silvestreThinkingMessage,
+    isSilvestreThinkingPulse,
     spentSilvestreSet,
     markSilvestreQuestionSpent,
     handleOpenSilvestreChat,
@@ -4032,6 +4034,8 @@ const rendernotaAutoral = () => {
                 pendingSilvestreAudioUrl={pendingSilvestreAudioUrl}
                 isSilvestreFetching={isSilvestreFetching}
                 isSilvestreResponding={isSilvestreResponding}
+                silvestreThinkingMessage={silvestreThinkingMessage}
+                isSilvestreThinkingPulse={isSilvestreThinkingPulse}
                 isListening={isListening}
                 micPromptVisible={micPromptVisible}
                 showSilvestreCoins={showSilvestreCoins}

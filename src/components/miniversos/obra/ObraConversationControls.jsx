@@ -9,6 +9,8 @@ const ObraConversationControls = ({
   pendingSilvestreAudioUrl = null,
   isSilvestreFetching = false,
   isSilvestreResponding = false,
+  silvestreThinkingMessage = 'La Obra esta pensando...',
+  isSilvestreThinkingPulse = false,
   isListening = false,
   micPromptVisible = false,
   showSilvestreCoins = false,
@@ -18,16 +20,17 @@ const ObraConversationControls = ({
   onPlayPending,
   className = '',
 }) => {
+  const isSilvestreThinking = isSilvestreFetching || isSilvestreResponding;
   const statusLabel = isSilvestrePlaying
-    ? 'Escuchando la respuesta'
+    ? 'Te estoy respondiendo...'
     : pendingSilvestreAudioUrl
       ? 'Reproducir respuesta'
-      : isSilvestreFetching || isSilvestreResponding
-        ? 'La Obra está pensando'
+      : isSilvestreThinking
+        ? silvestreThinkingMessage
         : isListening
           ? 'Pulsa otra vez para enviar'
           : micPromptVisible
-            ? 'Pulsa para hablar'
+            ? 'Pulsa para hablar o escoge otra pregunta'
             : ctaLabel;
 
   return (
@@ -39,7 +42,7 @@ const ObraConversationControls = ({
           className="silvestre-cta relative flex h-20 w-20 items-center justify-center rounded-full border border-purple-300/60 bg-purple-500/10 text-purple-50 shadow-[0_0_45px_rgba(197,108,255,0.75)] transition hover:bg-purple-500/20 disabled:cursor-not-allowed disabled:opacity-60"
           onClick={onMicClick}
           aria-label={statusLabel}
-          disabled={isSilvestreFetching || isSilvestreResponding}
+          disabled={isSilvestreThinking}
         >
           {showSilvestreCoins ? (
             <div className="pointer-events-none absolute inset-0 z-10">
@@ -68,8 +71,12 @@ const ObraConversationControls = ({
           {!isSilvestrePlaying ? (
             pendingSilvestreAudioUrl ? (
               <Play className="h-8 w-8 relative z-10" />
-            ) : isSilvestreFetching || isSilvestreResponding ? (
-              <MoreHorizontal className="h-8 w-8 relative z-10" />
+            ) : isSilvestreThinking ? (
+              <MoreHorizontal
+                className={`h-8 w-8 relative z-10 transition-all duration-500 ${
+                  isSilvestreThinkingPulse ? 'opacity-100 scale-100' : 'opacity-70 scale-95'
+                }`}
+              />
             ) : isListening ? (
               <Square className="h-8 w-8 relative z-10" />
             ) : (
@@ -78,8 +85,9 @@ const ObraConversationControls = ({
           ) : null}
         </Button>
         <span
+          aria-live="polite"
           className={`text-xs uppercase tracking-[0.35em] text-purple-200 text-center ${
-            isSilvestreFetching || isSilvestreResponding ? 'thinking-blink' : ''
+            isSilvestreThinking ? 'thinking-blink' : ''
           }`}
         >
           {statusLabel}

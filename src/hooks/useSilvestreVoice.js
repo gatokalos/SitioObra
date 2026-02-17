@@ -29,6 +29,24 @@ const readStoredJson = (key, fallback) => {
   }
 };
 
+const DEFAULT_THINKING_MESSAGE = 'La Obra esta pensando...';
+const THINKING_MESSAGE_PHASES = [
+  { afterMs: 0, text: 'Gracias por preguntar...' },
+  { afterMs: 6500, text: 'Sigo pensando...' },
+];
+
+const resolveThinkingMessage = (elapsedMs) => {
+  let next = DEFAULT_THINKING_MESSAGE;
+  for (const phase of THINKING_MESSAGE_PHASES) {
+    if (elapsedMs >= phase.afterMs) {
+      next = phase.text;
+    } else {
+      break;
+    }
+  }
+  return next;
+};
+
 export const useSilvestreVoice = () => {
   const { user } = useAuth();
   const initialSpentSilvestreQuestions = readStoredJson(SILVESTRE_QUESTIONS_STORAGE_KEY, []);
@@ -43,6 +61,8 @@ export const useSilvestreVoice = () => {
   const [isSilvestreFetching, setIsSilvestreFetching] = useState(false);
   const [isSilvestrePlaying, setIsSilvestrePlaying] = useState(false);
   const [pendingSilvestreAudioUrl, setPendingSilvestreAudioUrl] = useState(null);
+  const [silvestreThinkingMessage, setSilvestreThinkingMessage] = useState(DEFAULT_THINKING_MESSAGE);
+  const [isSilvestreThinkingPulse, setIsSilvestreThinkingPulse] = useState(false);
   const [spentSilvestreQuestions, setSpentSilvestreQuestions] = useState(
     Array.isArray(initialSpentSilvestreQuestions) ? initialSpentSilvestreQuestions : []
   );
@@ -56,6 +76,10 @@ export const useSilvestreVoice = () => {
   const silvestreAbortRef = useRef(null);
   const ignoreNextTranscriptRef = useRef(false);
   const modeRef = useRef(null);
+  const thinkingMessageTimerRef = useRef(null);
+  const thinkingPulseTimerRef = useRef(null);
+  const thinkingSoundTimerRef = useRef(null);
+  const thinkingAudioContextRef = useRef(null);
 
   const spentSilvestreSet = useMemo(
     () => new Set(spentSilvestreQuestions),
@@ -129,6 +153,99 @@ export const useSilvestreVoice = () => {
     },
     [user]
   );
+
+  const playThinkingTone = useCallback(({ frequency = 360, gain = 0.014, duration = 0.12 } = {}) => {
+    if (typeof window === 'undefined') return;
+    const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+    if (!AudioContextClass) return;
+    try {
+      if (!thinkingAudioContextRef.current) {
+        thinkingAudioContextRef.current = new AudioContextClass();
+      }
+      const context = thinkingAudioContextRef.current;
+      if (context.state === 'suspended') {
+        void context.resume();
+      }
+      const oscillator = context.createOscillator();
+      const gainNode = context.createGain();
+      const now = context.currentTime;
+      oscillator.type = 'sine';
+      oscillator.frequency.setValueAtTime(frequency, now);
+      gainNode.gain.setValueAtTime(0.0001, now);
+      gainNode.gain.exponentialRampToValueAtTime(gain, now + 0.02);
+      gainNode.gain.exponentialRampToValueAtTime(0.0001, now + duration);
+      oscillator.connect(gainNode);
+      gainNode.connect(context.destination);
+      oscillator.start(now);
+      oscillator.stop(now + duration + 0.03);
+    } catch (error) {
+      // Silent fail: this feedback should never block voice flow.
+    }
+  }, []);
+
+  useEffect(() => {
+    const isSilvestreThinking =
+      (isSilvestreFetching || isSilvestreResponding) &&
+      !isSilvestrePlaying &&
+      !pendingSilvestreAudioUrl;
+
+    if (!isSilvestreThinking) {
+      setSilvestreThinkingMessage(DEFAULT_THINKING_MESSAGE);
+      setIsSilvestreThinkingPulse(false);
+      if (thinkingMessageTimerRef.current) {
+        clearInterval(thinkingMessageTimerRef.current);
+        thinkingMessageTimerRef.current = null;
+      }
+      if (thinkingPulseTimerRef.current) {
+        clearInterval(thinkingPulseTimerRef.current);
+        thinkingPulseTimerRef.current = null;
+      }
+      if (thinkingSoundTimerRef.current) {
+        clearInterval(thinkingSoundTimerRef.current);
+        thinkingSoundTimerRef.current = null;
+      }
+      return undefined;
+    }
+
+    const startedAt = Date.now();
+    const updateThinkingMessage = () => {
+      const elapsedMs = Date.now() - startedAt;
+      setSilvestreThinkingMessage(resolveThinkingMessage(elapsedMs));
+    };
+
+    updateThinkingMessage();
+    setIsSilvestreThinkingPulse(true);
+    playThinkingTone({ frequency: 420, gain: 0.02, duration: 0.16 });
+
+    thinkingMessageTimerRef.current = setInterval(updateThinkingMessage, 900);
+    thinkingPulseTimerRef.current = setInterval(() => {
+      setIsSilvestreThinkingPulse((prev) => !prev);
+    }, 700);
+    thinkingSoundTimerRef.current = setInterval(() => {
+      playThinkingTone();
+    }, 4800);
+
+    return () => {
+      if (thinkingMessageTimerRef.current) {
+        clearInterval(thinkingMessageTimerRef.current);
+        thinkingMessageTimerRef.current = null;
+      }
+      if (thinkingPulseTimerRef.current) {
+        clearInterval(thinkingPulseTimerRef.current);
+        thinkingPulseTimerRef.current = null;
+      }
+      if (thinkingSoundTimerRef.current) {
+        clearInterval(thinkingSoundTimerRef.current);
+        thinkingSoundTimerRef.current = null;
+      }
+    };
+  }, [
+    isSilvestreFetching,
+    isSilvestreResponding,
+    isSilvestrePlaying,
+    pendingSilvestreAudioUrl,
+    playThinkingTone,
+  ]);
 
   const sendTranscript = useCallback(
     async (message, options = {}) => {
@@ -478,8 +595,20 @@ export const useSilvestreVoice = () => {
       if (micTimeoutRef.current) {
         clearTimeout(micTimeoutRef.current);
       }
+      if (thinkingMessageTimerRef.current) {
+        clearInterval(thinkingMessageTimerRef.current);
+      }
+      if (thinkingPulseTimerRef.current) {
+        clearInterval(thinkingPulseTimerRef.current);
+      }
+      if (thinkingSoundTimerRef.current) {
+        clearInterval(thinkingSoundTimerRef.current);
+      }
       if (silvestreAbortRef.current) {
         silvestreAbortRef.current.abort();
+      }
+      if (thinkingAudioContextRef.current) {
+        void thinkingAudioContextRef.current.close?.();
       }
       stopSilvestreAudio();
     };
@@ -502,6 +631,8 @@ export const useSilvestreVoice = () => {
     isSilvestreFetching,
     isSilvestrePlaying,
     pendingSilvestreAudioUrl,
+    silvestreThinkingMessage,
+    isSilvestreThinkingPulse,
     spentSilvestreQuestions,
     spentSilvestreSet,
     markSilvestreQuestionSpent,

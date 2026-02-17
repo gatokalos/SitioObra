@@ -15,7 +15,7 @@ export const OBRA_CONVERSATION_STARTERS = [
 
 export const SILVESTRE_TRIGGER_QUESTIONS = [
   '¿Don Polo quería reinventar el mundo con sus patentes?',
-  '¿Lo de las marcianas es literal o se me fue algo?',
+  '¿Lo de las marcianas era literal o se me fue algo?',
   '¿La Doctora realmente entiende a Silvestre?',
   '¿Y si Silvestre no está angustiado por sí mismo, sino por el mundo?',
 ];
@@ -33,7 +33,7 @@ export const PORTAL_VOZ_MODE_QUESTIONS = {
   'claro-directo': [
     '¿La Doctora realmente entiende a Silvestre?',
     '¿Porqué se menciona al Xanadú en la escena de Don Polo?',
-    '¿Lo de las marcianas es literal o se me fue algo?',
+    '¿Lo de las marcianas era literal o se me fue algo?',
     '¿Silvestre está buscando respuestas o descanso?',
     '¿Qué significa el título de la obra?',
     '¿La obra cuenta una historia o un estado emocional?',
