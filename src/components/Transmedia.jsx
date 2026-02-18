@@ -1806,7 +1806,8 @@ const Transmedia = () => {
   const [publicContributionsError, setPublicContributionsError] = useState({});
   const [latestBlogPostByShowcase, setLatestBlogPostByShowcase] = useState({});
   const [readingTooltipForShowcase, setReadingTooltipForShowcase] = useState(null);
-  const [commentCarouselIndex, setCommentCarouselIndex] = useState(0);
+  const [readingTapArmedByShowcase, setReadingTapArmedByShowcase] = useState({});
+  const [readingGlowDismissedByShowcase, setReadingGlowDismissedByShowcase] = useState({});
   const [isOraculoOpen, setIsOraculoOpen] = useState(false);
   const [isCauseSiteOpen, setIsCauseSiteOpen] = useState(false);
   const [showInstallPwaCTA, setShowInstallPwaCTA] = useState(() => getInitialInstallPwaCTAVisibility());
@@ -2499,7 +2500,7 @@ const Transmedia = () => {
 
       const { data, error } = await supabase
         .from('blog_posts')
-        .select('slug,title,miniverso,published_at,is_published')
+        .select('slug,title,author,miniverso,published_at,is_published')
         .eq('is_published', true)
         .not('slug', 'is', null)
         .not('miniverso', 'is', null)
@@ -2548,7 +2549,6 @@ const Transmedia = () => {
     if (!post?.slug) {
       return;
     }
-    setReadingTooltipForShowcase(showcaseId);
     if (activeShowcase) {
       handleCloseShowcase();
     }
@@ -2560,10 +2560,40 @@ const Transmedia = () => {
       );
       document.getElementById('dialogo-critico')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }, 140);
+  }, [activeShowcase, handleCloseShowcase, latestBlogPostByShowcase]);
+
+  const handleReadingBadgeClick = useCallback((showcaseId) => {
+    const post = latestBlogPostByShowcase[showcaseId];
+    if (!post?.slug) {
+      return;
+    }
+
+    if (!isMobileViewport) {
+      handleOpenLatestBlogForShowcase(showcaseId);
+      return;
+    }
+
+    const isAlreadyArmed = Boolean(readingTapArmedByShowcase[showcaseId]);
+    if (!isAlreadyArmed) {
+      setReadingGlowDismissedByShowcase((prev) => ({ ...prev, [showcaseId]: true }));
+      setReadingTapArmedByShowcase((prev) => ({ ...prev, [showcaseId]: true }));
+      setReadingTooltipForShowcase(showcaseId);
+      window.setTimeout(() => {
+        setReadingTooltipForShowcase((prev) => (prev === showcaseId ? null : prev));
+      }, 2200);
+      return;
+    }
+
+    handleOpenLatestBlogForShowcase(showcaseId);
     window.setTimeout(() => {
       setReadingTooltipForShowcase((prev) => (prev === showcaseId ? null : prev));
     }, 2200);
-  }, [activeShowcase, handleCloseShowcase, latestBlogPostByShowcase]);
+  }, [
+    handleOpenLatestBlogForShowcase,
+    isMobileViewport,
+    latestBlogPostByShowcase,
+    readingTapArmedByShowcase,
+  ]);
 
   const handleOpenImagePreview = useCallback(
     (payload, options = {}) => {
@@ -3548,11 +3578,20 @@ const Transmedia = () => {
             <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">{heading}</p>
             {latestBlogPost?.slug ? (
               <div className="group relative inline-flex">
+                {(() => {
+                  const authorLabel = latestBlogPost.author?.trim() || 'autor invitado';
+                  const mobileMessage = `Toca de nuevo para abrir un texto de ${authorLabel}`;
+                  const desktopMessage = `Lectura de ${authorLabel} disponible`;
+                  return (
+                    <>
                 <button
                   type="button"
-                  onClick={() => handleOpenLatestBlogForShowcase(showcaseId)}
-                  className="group inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-cyan-200/40 bg-cyan-300/10 text-cyan-100 hover:bg-cyan-300/20 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-300/50"
-                  title="Lectura disponible en Textos"
+                  onClick={() => handleReadingBadgeClick(showcaseId)}
+                  className={`inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-cyan-200/40 bg-cyan-300/10 text-cyan-100 hover:bg-cyan-300/20 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-300/50 ${
+                    isMobileViewport && !readingGlowDismissedByShowcase[showcaseId]
+                      ? 'animate-pulse shadow-[0_0_18px_rgba(34,211,238,0.45)]'
+                      : ''
+                  }`}
                   aria-label="Abrir lectura disponible en Textos"
                 >
                   <BookOpen size={16} />
@@ -3562,8 +3601,11 @@ const Transmedia = () => {
                     readingTooltipForShowcase === showcaseId ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'
                   }`}
                 >
-                  Lectura disponible en Textos
+                  {isMobileViewport ? mobileMessage : desktopMessage}
                 </span>
+                    </>
+                  );
+                })()}
               </div>
             ) : null}
           </div>
@@ -3572,39 +3614,18 @@ const Transmedia = () => {
           ) : error ? (
             <p className="text-sm text-red-300">{error}</p>
           ) : comments.length ? (
-            <div className="space-y-4">
-              <AnimatePresence mode="wait">
-                {(() => {
-                  const visibleCount = comments.length >= 3 ? 2 : 1;
-                  const start = commentCarouselIndex % comments.length;
-                  const visible = [];
-                  for (let i = 0; i < visibleCount; i += 1) {
-                    visible.push(comments[(start + i) % comments.length]);
-                  }
-                  return (
-                    <motion.div
-                      key={`${showcaseId}-${commentCarouselIndex}`}
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: -10 }}
-                      transition={{ duration: 0.4, ease: 'easeOut' }}
-                      className="space-y-4"
-                    >
-                      {visible.map((comment) => (
-                        <div
-                          key={`${showcaseId}-${comment.id}`}
-                          className="rounded-2xl border border-white/5 bg-black/20 p-4"
-                        >
-                          <p className="text-slate-100 font-light leading-relaxed mb-2">{comment.proposal}</p>
-                          <p className="text-xs uppercase tracking-[0.3em] text-slate-500">
-                            {comment.name || 'Anónimo'}
-                          </p>
-                        </div>
-                      ))}
-                    </motion.div>
-                  );
-                })()}
-              </AnimatePresence>
+            <div className="max-h-[330px] space-y-4 overflow-y-auto pr-1">
+              {comments.map((comment) => (
+                <div
+                  key={`${showcaseId}-${comment.id}`}
+                  className="rounded-2xl border border-white/5 bg-black/20 p-4"
+                >
+                  <p className="text-slate-100 font-light leading-relaxed mb-2">{comment.proposal}</p>
+                  <p className="text-xs uppercase tracking-[0.3em] text-slate-500">
+                    {comment.name || 'Anónimo'}
+                  </p>
+                </div>
+              ))}
             </div>
           ) : (
             <p className="text-sm text-slate-400">{emptyMessage}</p>
@@ -3630,9 +3651,11 @@ const Transmedia = () => {
       activeShowcase,
       getContributionCategoryForShowcase,
       getTopicForShowcase,
-      handleOpenLatestBlogForShowcase,
+      handleReadingBadgeClick,
       handleOpenContribution,
+      isMobileViewport,
       latestBlogPostByShowcase,
+      readingGlowDismissedByShowcase,
       readingTooltipForShowcase,
       publicContributions,
       publicContributionsError,
@@ -3645,20 +3668,6 @@ const Transmedia = () => {
     if (publicContributions[activeShowcase]) return;
     fetchPublicComments(activeShowcase);
   }, [activeShowcase, fetchPublicComments, publicContributions]);
-
-  useEffect(() => {
-    setCommentCarouselIndex(0);
-  }, [activeShowcase]);
-
-  useEffect(() => {
-    if (!activeShowcase) return;
-    const comments = publicContributions[activeShowcase];
-    if (!comments || comments.length === 0) return;
-    const interval = setInterval(() => {
-      setCommentCarouselIndex((prev) => prev + 1);
-    }, 2600);
-    return () => clearInterval(interval);
-  }, [activeShowcase, publicContributions]);
 
   useEffect(() => {
     if (!allShowcasesUnlocked || !isSubscriber || explorerBadge.rewardClaimed) {
@@ -3876,23 +3885,44 @@ const rendernotaAutoral = () => {
         </div>
       </div>
 
-      {/* ───────── Columna derecha: Próximos encuentros ───────── */}
-      <div className="rounded-2xl border border-white/10 bg-white/5 p-5 flex flex-col gap-3">
-        <h4 className="text-xs uppercase tracking-[0.35em] text-slate-300">
-          Próximos encuentros
-        </h4>
+      {/* ───────── Columna derecha: Mapa comunitario (UI mock) ───────── */}
+      <div className="rounded-2xl border border-white/10 bg-white/5 p-5 flex flex-col gap-4">
+        <div className="flex items-center justify-between gap-3">
+          <h4 className="text-xs uppercase tracking-[0.35em] text-slate-300">
+            Mapa comunitario
+          </h4>
+          <span className="inline-flex items-center gap-1 rounded-full border border-cyan-300/30 bg-cyan-400/10 px-2 py-1 text-[10px] uppercase tracking-[0.25em] text-cyan-200">
+            <MapIcon size={12} />
+            Beta
+          </span>
+        </div>
 
-        <p className="text-sm text-slate-400 leading-relaxed">
-          Aquí aparecerán los espacios donde la taza se activa en comunidad:
-          cafés, librerías y colaboraciones futuras.
-        </p>
+        <div className="relative h-44 overflow-hidden rounded-xl border border-white/10 bg-slate-950/70">
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_25%,rgba(34,211,238,0.14),transparent_35%),radial-gradient(circle_at_70%_70%,rgba(192,132,252,0.16),transparent_40%),linear-gradient(120deg,rgba(15,23,42,0.9),rgba(2,6,23,0.95))]" />
+          <div className="absolute inset-0 opacity-25 [background-size:22px_22px] [background-image:linear-gradient(to_right,rgba(148,163,184,0.22)_1px,transparent_1px),linear-gradient(to_bottom,rgba(148,163,184,0.22)_1px,transparent_1px)]" />
+          <span className="absolute left-[18%] top-[34%] h-3 w-3 rounded-full bg-cyan-300 shadow-[0_0_12px_rgba(34,211,238,0.75)]" />
+          <span className="absolute left-[57%] top-[48%] h-3 w-3 rounded-full bg-fuchsia-300 shadow-[0_0_12px_rgba(217,70,239,0.75)]" />
+          <span className="absolute left-[74%] top-[26%] h-3 w-3 rounded-full bg-emerald-300 shadow-[0_0_12px_rgba(16,185,129,0.75)]" />
+          <p className="absolute bottom-2 left-3 text-[10px] uppercase tracking-[0.25em] text-slate-300/80">
+            Próximamente: cafeterías sugeridas por la comunidad
+          </p>
+        </div>
+
+        <div className="space-y-2 text-xs text-slate-300/90">
+          <p className="uppercase tracking-[0.25em] text-slate-400">Sugerencias destacadas</p>
+          <ul className="space-y-1.5">
+            <li>• Tijuana Centro · Cafetería de la esquina</li>
+            <li>• Zona Río · Punto de lectura nocturna</li>
+            <li>• Playas · Charla con taza y libreta</li>
+          </ul>
+        </div>
 
         <button
           type="button"
           onClick={() => handleOpenContribution(getContributionCategoryForShowcase('lataza'))}
-          className="mt-2 text-xs uppercase tracking-[0.3em] text-purple-300 hover:text-purple-200 self-start"
+          className="mt-1 text-xs uppercase tracking-[0.3em] text-purple-300 hover:text-purple-200 self-start"
         >
-          Quiero saber dónde juntarnos
+          Sugerir cafetería
         </button>
       </div>
     </div>
@@ -3916,7 +3946,7 @@ const rendernotaAutoral = () => {
               ctaLabel: '¿Dudas o comentarios?',
               reactionProps: {
                 showcaseId: 'lataza',
-                description: 'Haz clic para guardar un like que conecta a la comunidad alrededor de la taza.',
+                description: 'Haz clic para guardar tu like.',
                 buttonLabel: 'Resonar con la taza',
               },
             })}
@@ -5330,7 +5360,7 @@ const rendernotaAutoral = () => {
                   'radial-gradient(17px 17px at 21% 42%, rgba(255,255,255,0.52), transparent 76%),' +
                   'radial-gradient(7px 7px at 30% 17%, rgba(226,232,240,0.66), transparent 77%),' +
                   'radial-gradient(7px 7px at 39% 60%, rgba(241,245,249,0.62), transparent 78%),' +
-                  'radial-gradient(17px 17px at 47% 31%, rgba(255,255,255,0.5), transparent 76%),' +
+                  'radial-gradient(17px 17px at 47% 31%, rgba(255,255,255,0.5), transparent 99%),' +
                   'radial-gradient(7px 7px at 54% 14%, rgba(241,245,249,0.62), transparent 77%),' +
                   'radial-gradient(7px 7px at 62% 46%, rgba(226,232,240,0.66), transparent 78%),' +
                   'radial-gradient(7px 7px at 70% 20%, rgba(255,255,255,0.46), transparent 76%),' +

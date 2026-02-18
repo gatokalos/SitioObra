@@ -170,11 +170,41 @@ const Hero = () => {
     if (!audio || !user) return undefined;
 
     let rafId = 0;
+    let fadeRafId = 0;
     let mounted = true;
     let shouldResumeAfterVisibility = false;
 
+    const fadeOutAndPause = ({ duration = 650, resetTime = false } = {}) => {
+      cancelAnimationFrame(fadeRafId);
+      const startVolume = Math.max(0, Math.min(1, audio.volume ?? HERO_LOGGED_IN_AUDIO_VOLUME));
+      if (audio.paused || startVolume <= 0.001) {
+        audio.pause();
+        if (resetTime) {
+          audio.currentTime = 0;
+        }
+        audio.volume = HERO_LOGGED_IN_AUDIO_VOLUME;
+        return;
+      }
+      const startedAt = performance.now();
+      const tick = (now) => {
+        const progress = Math.min((now - startedAt) / duration, 1);
+        audio.volume = startVolume * (1 - progress);
+        if (progress < 1) {
+          fadeRafId = window.requestAnimationFrame(tick);
+          return;
+        }
+        audio.pause();
+        if (resetTime) {
+          audio.currentTime = 0;
+        }
+        audio.volume = HERO_LOGGED_IN_AUDIO_VOLUME;
+      };
+      fadeRafId = window.requestAnimationFrame(tick);
+    };
+
     const attemptPlay = async () => {
       if (!mounted) return;
+      cancelAnimationFrame(fadeRafId);
       try {
         await audio.play();
         audioGestureUnlockRef.current = true;
@@ -217,9 +247,7 @@ const Hero = () => {
     const onVisibilityChange = () => {
       if (document.visibilityState === 'hidden') {
         shouldResumeAfterVisibility = !audio.paused && audio.volume > 0.01;
-        if (!audio.paused) {
-          audio.pause();
-        }
+        fadeOutAndPause({ duration: 280, resetTime: false });
         return;
       }
 
@@ -246,14 +274,13 @@ const Hero = () => {
     return () => {
       mounted = false;
       cancelAnimationFrame(rafId);
+      cancelAnimationFrame(fadeRafId);
       window.removeEventListener('scroll', onScroll);
       window.removeEventListener('resize', onScroll);
       window.removeEventListener('pointerdown', onFirstInteraction);
       window.removeEventListener('keydown', onFirstInteraction);
       document.removeEventListener('visibilitychange', onVisibilityChange);
-      audio.pause();
-      audio.currentTime = 0;
-      audio.volume = HERO_LOGGED_IN_AUDIO_VOLUME;
+      fadeOutAndPause({ duration: 520, resetTime: true });
     };
   }, [user]);
 

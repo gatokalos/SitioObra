@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { createPortal } from 'react-dom';
-import { Instagram as InstagramIcon, ExternalLink, AlertCircle, ChevronLeft, ChevronRight, X, Heart } from 'lucide-react';
+import { Instagram as InstagramIcon, ExternalLink, AlertCircle, ChevronLeft, ChevronRight, X, Heart, Camera } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { getInstagramPostsFromBucket } from '@/services/instagramService';
 import { recordGalleryLike, getGalleryLikeCount } from '@/services/galleryLikeService';
@@ -905,7 +905,7 @@ const Instagram = () => {
                 key={photographer.id}
                 type="button"
                 onClick={() => setActivePhotographer(photographer.id)}
-                className={`rounded-full border px-4 py-2 text-sm transition ${
+                className={`inline-flex items-center gap-2 rounded-full border px-4 py-2 text-sm transition ${
                   activePhotographer === photographer.id
                     ? 'border-purple-400/60 bg-purple-500/20 text-purple-100'
                     : 'border-white/10 text-slate-300 hover:border-purple-300/40 hover:text-purple-100'
@@ -1088,8 +1088,9 @@ const Instagram = () => {
               key={`remaining-${photographer.id}`}
               type="button"
               onClick={() => handleRemainingPhotographerSelect(photographer.id)}
-              className="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-xs uppercase tracking-[0.2em] text-slate-200 transition hover:border-purple-300/40 hover:text-purple-100"
+              className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-2 text-xs uppercase tracking-[0.2em] text-slate-200 transition hover:border-purple-300/40 hover:text-purple-100"
             >
+              <Camera size={12} className="opacity-75" aria-hidden="true" />
               {photographer.label}
             </button>
           ))}
