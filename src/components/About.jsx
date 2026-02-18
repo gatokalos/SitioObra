@@ -40,23 +40,35 @@ const testimonials = [
   },
 ];
 
+const PROVOCA_SHARE_URL = 'https://esungatoencerrado.com/#provoca';
 const inviteMessage = `Hola 🐾
-Quiero invitarte a ver *Es un gato encerrado*.
-Mira el tráiler aquí: https://esungatoencerrado.com/trailer
-Si te late, vamos. 💜`;
+Quiero invitarte a compartir tu mirada en *Perspectivas del público* de *Es un gato encerrado*.
+Entra aquí: ${PROVOCA_SHARE_URL}
+Me encantará leer tu opinión. 💜`;
 
 export const ProvocaSection = () => {
-  const handleScrollToContacts = useCallback(() => {
-    if (typeof window === 'undefined' || typeof document === 'undefined') {
-      return;
+  const [isVoiceInputOpen, setIsVoiceInputOpen] = useState(false);
+  const [voiceDraft, setVoiceDraft] = useState('');
+  const handleInviteFromProvoca = useCallback(async () => {
+    const shareData = {
+      title: 'Es un gato encerrado',
+      url: PROVOCA_SHARE_URL,
+      text: inviteMessage,
+    };
+
+    if (typeof navigator !== 'undefined' && typeof navigator.share === 'function') {
+      try {
+        await navigator.share(shareData);
+        return;
+      } catch (error) {
+        if (error?.name === 'AbortError') return;
+      }
     }
 
-    const contactSection = document.getElementById('contact');
-    if (contactSection) {
-      contactSection.scrollIntoView({
-        behavior: 'smooth',
-        block: 'start',
-      });
+    const encodedMessage = encodeURIComponent(inviteMessage);
+    const whatsappUrl = `https://wa.me/?text=${encodedMessage}`;
+    if (typeof window !== 'undefined') {
+      window.open(whatsappUrl, '_blank', 'noopener,noreferrer');
     }
   }, []);
 
@@ -79,13 +91,44 @@ export const ProvocaSection = () => {
               <p className="text-slate-300/80 leading-relaxed mb-6 font-light">
                 Reunimos testimonios, críticas y preguntas abiertas que siguen vibrando después de la función. Puedes leer las voces que ya habitan este espacio o abrir una nueva compartiendo tu experiencia.
               </p>
-              <Button
-                variant="outline"
-                onClick={handleScrollToContacts}
-                className="border-purple-400/40 text-purple-200 hover:bg-purple-500/20 w-full sm:w-auto whitespace-normal break-words text-center leading-snug"
-              >
-                Sumar mi voz
-              </Button>
+              <div className="flex flex-col sm:flex-row gap-3">
+                <Button
+                  variant="outline"
+                  onClick={() => setIsVoiceInputOpen((prev) => !prev)}
+                  className="border-purple-400/40 text-purple-200 hover:bg-purple-500/20 w-full sm:w-auto whitespace-normal break-words text-center leading-snug"
+                >
+                  ¿Ya la viste?
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={handleInviteFromProvoca}
+                  className="border-slate-100/20 text-slate-200 hover:bg-slate-100/10 px-6 py-3 rounded-full font-semibold flex items-center justify-center gap-2 w-full sm:w-auto"
+                >
+                  <Send size={18} />
+                  Invitar otra mirada
+                </Button>
+              </div>
+              <AnimatePresence initial={false}>
+                {isVoiceInputOpen ? (
+                  <motion.div
+                    initial={{ opacity: 0, y: 8 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: 6 }}
+                    transition={{ duration: 0.22, ease: 'easeOut' }}
+                    className="mt-4"
+                  >
+                    <textarea
+                      aria-label="Comparte cómo cambió tu forma de mirar, sentir o recordar"
+                      value={voiceDraft}
+                      onChange={(event) => setVoiceDraft(event.target.value)}
+                      rows={3}
+                      autoFocus
+                      className="w-full rounded-lg border border-white/10 bg-black/30 px-4 py-3 text-slate-100 placeholder-slate-500 focus:border-purple-400 focus:ring-1 focus:ring-purple-400 resize-none"
+                      placeholder="Cuéntanos si cambió tu forma de mirar, sentir o recordar algo..."
+                    />
+                  </motion.div>
+                ) : null}
+              </AnimatePresence>
             </div>
             <div className="space-y-6">
               {testimonials.map((item) => (
@@ -236,7 +279,7 @@ const About = () => {
   const handleInvite = useCallback(async () => {
     const shareData = {
       title: 'Es un gato encerrado',
-      url: 'https://esungatoencerrado.com/trailer',
+      url: PROVOCA_SHARE_URL,
       text: inviteMessage,
     };
 
