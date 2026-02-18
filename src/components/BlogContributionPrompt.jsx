@@ -123,7 +123,7 @@ const BlogContributionPrompt = () => {
       {/* Mitad izquierda: continuar */}
       <button
         onClick={() => {
-          document.querySelector('#dialogo-critico')?.scrollIntoView({
+          document.querySelector('#provoca')?.scrollIntoView({
             behavior: 'smooth',
             block: 'start',
           });

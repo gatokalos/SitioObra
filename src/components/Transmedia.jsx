@@ -775,7 +775,7 @@ iaProfile: {
     type: 'blog-series',
     slug: null,
     intro:
-      'Aquí la escritura no es un registro, sino un territorio que respira: fragmentos, voces, monólogos, poemas y apuntes que expanden la mente de Silvestre y la memoria de quienes lo rodean. Este es el espacio donde la literatura se vuelve espejo de lo escénico, preludio de lo cinematográfico y eco de lo humano.',
+      'Este Miniverso entiende la escritura como una forma de expansión. No es un complemento de la obra escénica o de la novela, sino un espacio propio donde fragmentos, voces, poemas y apuntes dialogan entre sí y amplían el universo de Gato Encerrado.',
     cartaTitle: '#LaPreguntaInsiste',
     notaAutoral:
       'Escribí para entender\ny la página me abrió otra pregunta.',
@@ -783,7 +783,7 @@ iaProfile: {
       {
         id: 'pepe-rojo',
         name: 'Pepe Rojo',
-        role: 'Escritor y prólogo de Mi Gato Encerrado',
+        role: 'Escritor y crítico cultural',
         bio: 'Pepe Rojo acompañó el Miniverso Literatura con una lectura precisa y generosa. Autor emblemático de la narrativa fronteriza, ofreció el prólogo de Mi Gato Encerrado, abriendo el libro desde una mirada que entiende el artificio, la herida y la imaginación como un mismo territorio. Su intervención dio claridad y ruta al futuro de la obra.',
         image: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/equipo/peperojo.jpeg',
       },
@@ -845,7 +845,7 @@ iaProfile: {
     label: 'Miniverso Sonoridades',
     type: 'audio-dream',
     intro:
-      'Este miniverso mezcla imágenes errantes, pistas sonoras y palabras móviles para que crees tu propia atmósfera. Solo entra, prende un video, ponle la música que quieras, elige un poema… y deja que la combinación te sorprenda.',
+      'Miniverso Sonoridades reúne la música original compuesta para la obra y la película, junto con poemas creados dentro del universo GatoEncerrado. Aquí puedes recorrer piezas sonoras, textos y combinaciones audiovisuales que amplían la experiencia narrativa.',
     highlights: [
       'Video que fluye solo.',
       'Música que tú eliges.',

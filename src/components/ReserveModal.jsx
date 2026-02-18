@@ -230,8 +230,13 @@ const ReserveModal = ({
     if (formState.packages.length === 0) {
       return 'Selecciona al menos un objeto que te guste.';
     }
+    const normalizedEmail = formState.email.trim().toLowerCase();
+    const isValidEmail = /\S+@\S+\.\S+/.test(normalizedEmail);
+    if (!isValidEmail) {
+      return 'Para abrir la tienda necesitamos un correo electrónico válido.';
+    }
     return null;
-  }, [formState.packages.length]);
+  }, [formState.email, formState.packages.length]);
 
   const handleSubmit = useCallback(
     async (event) => {
@@ -286,7 +291,7 @@ const ReserveModal = ({
 
       const validationError = validateCheckout();
       if (validationError) {
-        toast({ description: validationError });
+        setCheckoutError(validationError);
         return;
       }
 
@@ -313,9 +318,7 @@ const ReserveModal = ({
           },
         };
         const normalizedEmail = formState.email.trim().toLowerCase();
-        if (normalizedEmail) {
-          payload.customer_email = normalizedEmail;
-        }
+        payload.customer_email = normalizedEmail;
 
         const { data, error } = await supabase.functions.invoke('create-checkout-session', {
           body: payload,

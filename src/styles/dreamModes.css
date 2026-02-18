@@ -1,95 +1,167 @@
 .dream-overlay {
+  --dream-opacity: 0.24;
+  --dream-blur: 2px;
+  --dream-brightness: 1.02;
+  --dream-contrast: 1.05;
+  --dream-saturation: 1.08;
+  --dream-blend: soft-light;
+  --dream-rim-opacity: 0.08;
+  --dream-scan-opacity: 0.04;
+
   position: absolute;
   inset: 0;
   z-index: 3;
   pointer-events: none;
-  transition: opacity 0.3s ease, filter 0.3s ease, transform 0.3s ease, background 0.3s ease;
+  transform-origin: 50% 50%;
+  opacity: var(--dream-opacity);
+  mix-blend-mode: var(--dream-blend);
+  filter: blur(var(--dream-blur)) brightness(var(--dream-brightness)) contrast(var(--dream-contrast))
+    saturate(var(--dream-saturation));
+  transition:
+    opacity 0.4s ease,
+    filter 0.4s ease,
+    transform 0.4s ease,
+    background 0.4s ease;
+  will-change: transform, opacity, filter;
 }
 
-.dream-overlay.dream-neblina {
-  opacity: 0.85;
-  filter: blur(10px) brightness(1.15) contrast(0.92);
-  mix-blend-mode: screen;
-  background: radial-gradient(circle at 48% 34%, rgba(255, 255, 255, 0.28), rgba(0, 0, 0, 0.35));
-  backdrop-filter: blur(14px);
-}
-
-.dream-overlay.dream-lucid {
-  opacity: 0.06;
-  filter: none;
-  mix-blend-mode: screen;
-  background: radial-gradient(
-    circle at var(--x, 60%) var(--y, 36%),
-    rgba(255, 255, 255, 0.14),
-    transparent 55%
-  );
-  animation: lucidGlint 14s ease-in-out infinite;
-}
-
-@keyframes lucidGlint {
-  0% {
-    opacity: 0;
-    transform: scale(1);
-  }
-  20% {
-    opacity: 0.24;
-    transform: scale(1.02);
-  }
-  40% {
-    opacity: 0.05;
-    transform: scale(1);
-  }
-  65% {
-    opacity: 0.18;
-    transform: scale(1.04);
-  }
-  100% {
-    opacity: 0;
-    transform: scale(1);
-  }
-}
-
-.dream-overlay.dream-umbral {
-  opacity: 0.78;
-  filter: blur(6px) contrast(1.28) brightness(0.82) saturate(0.8);
-  transform: scale(1.03);
-  mix-blend-mode: multiply;
+/* Anillo periférico: deja el centro más limpio para no tapar el video */
+.dream-overlay::before {
+  content: '';
+  position: absolute;
+  inset: -6%;
+  pointer-events: none;
+  opacity: var(--dream-rim-opacity);
   background:
-    radial-gradient(
-      circle at 50% 52%,
-      rgba(0, 0, 0, 0.1) 32%,
-      rgba(0, 0, 0, 0.45) 72%,
-      rgba(0, 0, 0, 0.8) 100%
+    radial-gradient(120% 90% at 50% 55%, rgba(0, 0, 0, 0) 0 38%, rgba(120, 180, 255, 0.38) 60%, rgba(0, 0, 0, 0) 78%),
+    radial-gradient(100% 80% at 50% 55%, rgba(0, 0, 0, 0) 0 54%, rgba(0, 0, 0, 0.45) 100%);
+}
+
+/* Textura electrónica */
+.dream-overlay::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: var(--dream-scan-opacity);
+  mix-blend-mode: screen;
+  background:
+    repeating-linear-gradient(
+      180deg,
+      rgba(255, 255, 255, 0.12) 0px,
+      rgba(255, 255, 255, 0.12) 1px,
+      rgba(0, 0, 0, 0) 2px,
+      rgba(0, 0, 0, 0) 4px
     );
-  animation: abyssDrift 14s ease-in-out infinite;
+  animation: dreamScan 2.6s linear infinite;
 }
 
-@keyframes komorebiPulse {
+/* Neblina: suave, translúcido, casi atmosférico */
+.dream-overlay.dream-neblina {
+  --dream-opacity: 0.3;
+  --dream-blur: 6px;
+  --dream-brightness: 1.04;
+  --dream-contrast: 0.96;
+  --dream-saturation: 1.02;
+  --dream-blend: soft-light;
+  --dream-rim-opacity: 0.06;
+  --dream-scan-opacity: 0.02;
+
+  background:
+    radial-gradient(circle at 18% 30%, rgba(122, 171, 255, 0.16), rgba(0, 0, 0, 0) 42%),
+    radial-gradient(circle at 80% 70%, rgba(91, 133, 232, 0.14), rgba(0, 0, 0, 0) 44%),
+    linear-gradient(160deg, rgba(8, 14, 28, 0.1), rgba(2, 6, 14, 0.26));
+  animation: hypnopompicDrift 13s ease-in-out infinite;
+}
+
+/* Lúcido: nitidez + pulso electrónico */
+.dream-overlay.dream-lucid {
+  --dream-opacity: 0.22;
+  --dream-blur: 0.8px;
+  --dream-brightness: 1.06;
+  --dream-contrast: 1.16;
+  --dream-saturation: 1.22;
+  --dream-blend: screen;
+  --dream-rim-opacity: 0.1;
+  --dream-scan-opacity: 0.1;
+
+  background:
+    linear-gradient(112deg, rgba(0, 238, 255, 0.09), rgba(0, 0, 0, 0) 38%),
+    linear-gradient(292deg, rgba(80, 150, 255, 0.08), rgba(0, 0, 0, 0) 42%),
+    radial-gradient(circle at 50% 50%, rgba(255, 255, 255, 0.08), rgba(0, 0, 0, 0) 56%);
+  animation: remFocus 7.8s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
+
+/* Umbral: oscuro pero sin cegar el centro */
+.dream-overlay.dream-umbral {
+  --dream-opacity: 0.4;
+  --dream-blur: 3.5px;
+  --dream-brightness: 0.82;
+  --dream-contrast: 1.28;
+  --dream-saturation: 0.84;
+  --dream-blend: multiply;
+  --dream-rim-opacity: 0.12;
+  --dream-scan-opacity: 0.03;
+
+  background:
+    radial-gradient(circle at 50% 52%, rgba(0, 0, 0, 0) 0 34%, rgba(0, 0, 0, 0.55) 74%, rgba(0, 0, 0, 0.76) 100%),
+    linear-gradient(145deg, rgba(18, 10, 34, 0.08), rgba(3, 3, 10, 0.4));
+  transform: scale(1.02);
+  animation: thresholdMemory 10.8s ease-in-out infinite;
+}
+
+@keyframes hypnopompicDrift {
   0% {
-    opacity: 0.32;
-    transform: scale(1);
-    filter: brightness(1.05) saturate(1.05);
+    transform: scale(1.01) translate3d(0, 0, 0);
   }
   50% {
-    opacity: 0.58;
-    transform: scale(1.04) translate3d(-1%, -1%, 0);
-    filter: brightness(1.2) saturate(1.15);
+    transform: scale(1.03) translate3d(-0.8%, 1%, 0);
   }
   100% {
-    opacity: 0.32;
-    transform: scale(1);
-    filter: brightness(1.05) saturate(1.05);
+    transform: scale(1.01) translate3d(0, 0, 0);
   }
 }
 
-@keyframes abyssDrift {
+@keyframes remFocus {
   0% {
-    transform: scale(1.03) translate3d(0, 0, 0);
+    opacity: 0.18;
+    transform: scale(1);
   }
-  50% {
-    transform: scale(1.06) translate3d(2%, -2%, 0);
+  45% {
+    opacity: 0.28;
+    transform: scale(1.01);
   }
   100% {
-    transform: scale(1.03) translate3d(0, 0, 0);
+    opacity: 0.18;
+    transform: scale(1);
+  }
+}
+
+@keyframes thresholdMemory {
+  0% {
+    transform: scale(1.015) translate3d(0, 0, 0);
+  }
+  50% {
+    transform: scale(1.03) translate3d(1.1%, -1.1%, 0);
+  }
+  100% {
+    transform: scale(1.015) translate3d(0, 0, 0);
+  }
+}
+
+@keyframes dreamScan {
+  0% {
+    transform: translateY(0);
+  }
+  100% {
+    transform: translateY(4px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dream-overlay,
+  .dream-overlay::after {
+    animation: none !important;
+    transition: none !important;
   }
 }

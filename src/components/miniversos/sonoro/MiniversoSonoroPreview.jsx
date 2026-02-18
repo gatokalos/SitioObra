@@ -6,24 +6,29 @@ import { useSonoroPreview } from '@/hooks/useSonoroPreview';
 import '@/components/miniversos/sonoro/MiniversoSonoroPreview.css';
 import '@/styles/dreamModes.css';
 
+import { CloudFog, Sparkles, DoorOpen } from 'lucide-react';
+
 const DREAM_MODES = [
   {
     id: 'neblina',
-    label: 'Modo',
-    short: 'Neblina-Suave',
-    copy: 'Neblina suave que difumina los bordes del sueño.',
+    icon: CloudFog,
+    label: 'Difuso',
+    short: 'Neblina suave',
+    copy: 'Onirismo hipnopómpico de baja definición',
   },
   {
     id: 'lucid',
-    label: 'Modo',
-    short: 'Lucid-Dream',
-    copy: 'Contrastes profundos y luz que late con la escena, como si el sueño respirara.',
+    icon: Sparkles,
+    label: 'Lúcido',
+    short: 'Cristalino',
+    copy: 'Metaconciencia durante el estado REM.',
   },
   {
     id: 'umbral',
-    label: 'Modo',
-    short: 'Umbral-Deep',
-    copy: 'Un túnel suave y profundo que suspende la temporalidad.',
+    icon: DoorOpen,
+    label: 'Profundo',
+    short: 'El Umbral',
+    copy: 'Amnesia onírica post-despertar.',
   },
 ];
 
@@ -483,7 +488,9 @@ function MiniversoSonoroPreview({
     <div className="sonoro-preview-control-group sonoro-preview-control-group--modes">
       <p className="sonoro-preview-control-label">Modos de sueño</p>
       <div className="sonoro-preview-mode-pills">
-        {DREAM_MODES.map((mode) => (
+        {DREAM_MODES.map((mode) => {
+          const ModeIcon = mode.icon;
+          return (
           <button
             key={mode.id}
             type="button"
@@ -492,12 +499,16 @@ function MiniversoSonoroPreview({
             aria-pressed={dreamMode === mode.id}
           >
             <div className="sonoro-preview-mode-pill__header">
-              <span>{mode.label}</span>
+              <span className="inline-flex items-center gap-2">
+                {ModeIcon ? <ModeIcon size={14} aria-hidden="true" /> : null}
+                {mode.label}
+              </span>
               <small>{mode.short}</small>
             </div>
             <p>{mode.copy}</p>
           </button>
-        ))}
+          );
+        })}
       </div>
     </div>
   );
