@@ -6115,18 +6115,37 @@ const rendernotaAutoral = () => {
                 <p className="text-slate-300/80 leading-relaxed font-light">
                   La taquilla mantiene la obra en escena; el universo transmedia financia acompañamiento emocional real.
                   Cada suscripción se distribuye en tres frentes que opera Isabel Ayuda para la Vida, A.C.{' '}
-                  <button
-                    type="button"
-                    onClick={handleOpenCauseSite}
-                    className="text-purple-200 underline underline-offset-4 hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-400 rounded-sm"
-                  >
-                    Visita su sitio
-                  </button>
+           
                 </p>
-                     <p className="text-[11px] leading-4 text-slate-300/80 pt-2">
-          * La asociación no cobra al estudiante por sesión. Las sesiones se asignan sin costo para
-          las familias cuando se detecta riesgo, gracias a la combinación de suscripciones, aportes simbólicos y apoyos institucionales.
-        </p>
+                <details className="group rounded-2xl border border-emerald-300/25 bg-emerald-500/10 px-5 py-4">
+                  <summary className="flex cursor-pointer list-none items-center justify-between gap-3">
+                    <span className="flex items-center gap-3">
+                      <HeartHandshake size={18} className="text-emerald-200" />
+                      <span className="text-[0.7rem] uppercase tracking-[0.26em] text-emerald-200/85">
+                        Sin costo para familias en riesgo
+                      </span>
+                    </span>
+                    <span className="text-[0.65rem] uppercase tracking-[0.18em] text-emerald-200/80 group-open:text-white">
+                      <span className="group-open:hidden">Contacto</span>
+                      <span className="hidden group-open:inline">Cerrar</span>
+                    </span>
+                  </summary>
+                  <div className="mt-3 space-y-2 pl-8">
+                    <p className="text-sm leading-relaxed text-slate-200/95">
+                      La asociación no cobra al estudiante por sesión. Las sesiones se asignan sin costo para las
+                      familias cuando se detecta riesgo, gracias a la combinación de suscripciones, aportes simbólicos
+                      y apoyos institucionales.
+                    </p>
+                    <a
+                      href="https://www.ayudaparalavida.com/contacto.html"
+                      target="_blank"
+                      rel="noreferrer"
+                      className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.18em] text-emerald-200 hover:text-white transition"
+                    >
+                      ¿Cómo contactarles?
+                    </a>
+                  </div>
+                </details>
 
                 <CauseImpactAccordion
                   items={CAUSE_ACCORDION}
