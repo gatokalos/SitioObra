@@ -22,6 +22,7 @@ const TABS = [
   { id: 'waitlist', label: 'Sostener', icon: HeartHandshake },
 ];
 const DEFAULT_TAB_ID = 'escaparate';
+const VALID_TAB_IDS = new Set(TABS.map((tab) => tab.id));
 
 const MINIVERSE_PORTAL_ROUTES = {
   drama: '/portal-voz',
@@ -337,6 +338,7 @@ const MiniverseModal = ({
   open,
   onClose,
   onSelectMiniverse,
+  initialTabId = null,
   shelved = false,
   stayOpenOnSelect = false,
 }) => {
@@ -465,12 +467,13 @@ const MiniverseModal = ({
 
   useEffect(() => {
     if (open) {
+      const resolvedInitialTab = VALID_TAB_IDS.has(initialTabId) ? initialTabId : DEFAULT_TAB_ID;
       if (typeof window !== 'undefined') {
         const mediaQuery = window.matchMedia('(max-width: 639px)');
         const isMobile = mediaQuery.matches;
         setIsMobileViewport(isMobile);
-        setActiveTab(DEFAULT_TAB_ID);
       }
+      setActiveTab(resolvedInitialTab);
       setFormState(initialFormState);
       setStatus('idle');
       setErrorMessage('');
@@ -485,7 +488,7 @@ const MiniverseModal = ({
       return;
     }
     setIsCauseSiteOpen(false);
-  }, [open]);
+  }, [initialTabId, open]);
 
   useEffect(() => {
     if (open && !shelved) {

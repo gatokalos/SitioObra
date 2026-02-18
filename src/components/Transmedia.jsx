@@ -1696,6 +1696,7 @@ const Transmedia = () => {
   const [isMiniverseOpen, setIsMiniverseOpen] = useState(false);
   const [isMiniverseShelved, setIsMiniverseShelved] = useState(false);
   const [miniverseContext, setMiniverseContext] = useState(null);
+  const [miniverseInitialTabId, setMiniverseInitialTabId] = useState(null);
   const [activeShowcase, setActiveShowcase] = useState(null);
   const hasHandledDeepLinkRef = useRef(false);
   const mobileSwipeStateRef = useRef({
@@ -2265,7 +2266,7 @@ const Transmedia = () => {
       </div>
     ) : null;
 
-  const handleOpenMiniverses = useCallback((contextLabel = null) => {
+  const handleOpenMiniverses = useCallback((contextLabel = null, initialTabId = null) => {
     if (!user) {
       if (typeof document !== 'undefined') {
         document.documentElement.dataset.bienvenidaFade = 'true';
@@ -2279,7 +2280,12 @@ const Transmedia = () => {
       return;
     }
     const normalizedLabel = typeof contextLabel === 'string' ? contextLabel : null;
+    const normalizedTabId =
+      initialTabId === 'escaparate' || initialTabId === 'experiences' || initialTabId === 'waitlist'
+        ? initialTabId
+        : null;
     setMiniverseContext(normalizedLabel);
+    setMiniverseInitialTabId(normalizedTabId);
     setIsMiniverseShelved(false);
     setIsMiniverseOpen(true);
   }, [location.hash, location.pathname, location.search, navigate, user]);
@@ -2288,6 +2294,7 @@ const Transmedia = () => {
     setIsMiniverseShelved(false);
     setIsMiniverseOpen(false);
     setMiniverseContext(null);
+    setMiniverseInitialTabId(null);
   }, []);
 
   const loadShowcaseContent = useCallback(async (showcaseId) => {
@@ -2393,8 +2400,10 @@ const Transmedia = () => {
 
   useEffect(() => {
     if (typeof window === 'undefined') return undefined;
-    const handleOpenMiniverseList = () => {
-      handleOpenMiniverses('Explora los miniversos');
+    const handleOpenMiniverseList = (event) => {
+      const tabId = event?.detail?.tabId ?? null;
+      const contextLabel = event?.detail?.contextLabel ?? 'Explora los miniversos';
+      handleOpenMiniverses(contextLabel, tabId);
     };
     window.addEventListener('gatoencerrado:open-miniverse-list', handleOpenMiniverseList);
     return () =>
@@ -6170,6 +6179,7 @@ const rendernotaAutoral = () => {
         open={isMiniverseOpen}
         onClose={handleCloseMiniverses}
         contextLabel={miniverseContext}
+        initialTabId={miniverseInitialTabId}
         onSelectMiniverse={handleSelectMiniverse}
         shelved={isMiniverseShelved}
         stayOpenOnSelect
