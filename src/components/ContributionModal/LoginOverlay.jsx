@@ -111,7 +111,7 @@ const LoginOverlay = ({ onClose }) => {
       } else {
         setFeedback({
           type: 'success',
-          text: 'Te enviamos un link mágico. Revisa tu correo para continuar.',
+          text: 'Te enviamos un link con "Supabase Auth". Revisa tu correo para continuar.',
         });
         setEmail('');
       }

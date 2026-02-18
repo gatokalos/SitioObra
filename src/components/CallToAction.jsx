@@ -1,6 +1,6 @@
 // SitioObra/src/components/CallToAction.jsx
-import React, { useEffect, useMemo, useState } from 'react';
-import { motion } from 'framer-motion';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { motion, useInView, useReducedMotion } from 'framer-motion';
 import { Mail, MessageCircle } from 'lucide-react';
 import { IMPACT_COPY as t } from '../copy/impact.es.js';
 import { apiFetch } from '@/lib/apiClient';
@@ -21,12 +21,20 @@ const SUPPORT_MESSAGE =
   'Hola,%0Aestuve en la función de Es un Gato Encerrado y quiero destinar mi boleto a la causa social.%0A%0AAdjunto una imagen como comprobante de que estuve ahí.%0ANo busco registrarme ni hacer login, solo sumar desde este gesto.%0A%0AGracias por abrir este espacio.';
 
 function ProgressBar({ value, barClassName = 'bg-white/70' }) {
+  const safeValue = Math.min(100, Math.max(0, value));
   return (
-    <div className="w-full h-2 rounded-full bg-white/10 overflow-hidden">
+    <div className="relative w-full h-5 rounded-[4px] border border-white/15 bg-slate-900/80 overflow-hidden shadow-[inset_0_1px_0_rgba(255,255,255,0.12),inset_0_-10px_18px_rgba(0,0,0,0.35)]">
+      <div className="absolute inset-0 bg-gradient-to-b from-white/10 via-transparent to-black/30 pointer-events-none" />
       <div
-        className={`h-full ${barClassName}`}
-        style={{ width: `${Math.min(100, Math.max(0, value))}%` }}
+        className={`relative h-full rounded-[2px] transition-[width] duration-700 ease-out shadow-[0_0_18px_rgba(255,255,255,0.24)] ${barClassName}`}
+        style={{ width: `${safeValue}%` }}
       />
+      {safeValue > 3 ? (
+        <div
+          className="absolute top-1/2 h-3.5 w-1.5 -translate-y-1/2 rounded-[2px] bg-white/80 shadow-[0_0_12px_rgba(255,255,255,0.9)]"
+          style={{ left: `calc(${safeValue}% - 4px)` }}
+        />
+      ) : null}
     </div>
   );
 }
@@ -39,6 +47,15 @@ const CallToAction = () => {
   const [subs, setSubs] = useState(0);
   const [ticketUnits, setTicketUnits] = useState(0);
   const [canFetchStats, setCanFetchStats] = useState(Boolean(import.meta.env.VITE_API_URL));
+  const [barValues, setBarValues] = useState({
+    residencias: 0,
+    escuelas: 0,
+    universos: 0,
+  });
+  const hasRunBarSequenceRef = useRef(false);
+  const impactPanelRef = useRef(null);
+  const isImpactPanelInView = useInView(impactPanelRef, { once: true, amount: 0.35 });
+  const prefersReducedMotion = useReducedMotion();
   const { user } = useAuth();
 
   useEffect(() => {
@@ -154,6 +171,60 @@ const CallToAction = () => {
     };
   }, [subs, ticketUnits]);
 
+  useEffect(() => {
+    const realValues = {
+      residencias: stats.residenciasProg,
+      escuelas: stats.escuelasProg,
+      universos: stats.universosProg,
+    };
+
+    if (!isImpactPanelInView) return undefined;
+
+    if (prefersReducedMotion) {
+      setBarValues(realValues);
+      hasRunBarSequenceRef.current = true;
+      return undefined;
+    }
+
+    if (hasRunBarSequenceRef.current) {
+      setBarValues(realValues);
+      return undefined;
+    }
+
+    hasRunBarSequenceRef.current = true;
+    const timeouts = [];
+    const peakValues = {
+      residencias: 85,
+      escuelas: 80,
+      universos: 75,
+    };
+    const keys = ['residencias', 'escuelas', 'universos'];
+
+    keys.forEach((key, index) => {
+      const id = window.setTimeout(() => {
+        setBarValues((prev) => ({ ...prev, [key]: peakValues[key] }));
+      }, 120 * index);
+      timeouts.push(id);
+    });
+
+    keys.forEach((key, index) => {
+      const id = window.setTimeout(() => {
+        setBarValues((prev) => ({ ...prev, [key]: realValues[key] }));
+      }, 620 + 120 * index);
+      timeouts.push(id);
+    });
+
+    return () => {
+      timeouts.forEach((id) => window.clearTimeout(id));
+    };
+  }, [
+    isImpactPanelInView,
+    prefersReducedMotion,
+    stats.escuelasProg,
+    stats.residenciasProg,
+    stats.universosProg,
+  ]);
+
   // 3) Checkout
   async function handleCheckout() {
     if (!SUBSCRIPTION_PRICE_ID) {
@@ -248,7 +319,7 @@ const CallToAction = () => {
           disabled={loading}
           className="bg-white/90 text-black px-4 py-2 rounded disabled:opacity-50"
         >
-          {loading ? 'Creando sesión…' : 'Suscribirme'}
+          {loading ? 'Creando sesión…' : 'Dejar mi huella'}
         </button>
         <button
           type="button"
@@ -287,9 +358,12 @@ const CallToAction = () => {
       ) : null}
 
       {/* Panel de impacto */}
-      <div className="rounded-2xl border border-white/10 bg-white/5 p-5 text-left text-slate-100 space-y-4">
+      <div
+        ref={impactPanelRef}
+        className="rounded-2xl border border-white/10 bg-white/5 p-5 text-left text-slate-100 space-y-4"
+      >
         <div className="flex items-baseline justify-between">
-          <p className="text-sm opacity-80">Suscriptores activos</p>
+          <p className="text-sm opacity-80">Huellas activadas</p>
           <p className="text-2xl font-semibold">{subs}</p>
         </div>
         <div className="flex items-baseline justify-between">
@@ -301,7 +375,7 @@ const CallToAction = () => {
         <div>
           <p className="text-sm mb-1 opacity-80">Fondo para terapias</p>
           <p className="text-lg mb-2">
-            <strong>{stats.sesiones}</strong> sesiones (1 huella = 6 sesiones)
+            <strong>{stats.sesiones}</strong> sesiones
           </p>
         </div>
 
@@ -312,11 +386,11 @@ const CallToAction = () => {
             <span>{stats.residencias} activas</span>
           </div>
           <ProgressBar
-            value={stats.residenciasProg}
-            barClassName="bg-gradient-to-r from-amber-200/80 via-amber-300/80 to-amber-400/80"
+            value={barValues.residencias}
+            barClassName="bg-gradient-to-r from-amber-300 via-yellow-300 to-orange-400"
           />
           <p className="text-xs opacity-70 mt-1">
-            Faltan <strong>{stats.residenciasFaltan}</strong> apoyos para abrir la siguiente residencia.
+            Faltan <strong>{stats.residenciasFaltan}</strong> huellas para abrir la siguiente residencia.
           </p>
         </div>
 
@@ -327,11 +401,11 @@ const CallToAction = () => {
             <span>{stats.escuelas} escuelas</span>
           </div>
           <ProgressBar
-            value={stats.escuelasProg}
-            barClassName="bg-gradient-to-r from-sky-200/80 via-cyan-300/80 to-cyan-400/80"
+            value={barValues.escuelas}
+            barClassName="bg-gradient-to-r from-cyan-300 via-sky-300 to-blue-400"
           />
           <p className="text-xs opacity-70 mt-1">
-            Faltan <strong>{stats.escuelasFaltan}</strong> apoyos para la próxima escuela.
+            Faltan <strong>{stats.escuelasFaltan}</strong> huellas para la próxima escuela.
           </p>
         </div>
 
@@ -342,15 +416,15 @@ const CallToAction = () => {
             <span>{stats.universos} activadas</span>
           </div>
           <ProgressBar
-            value={stats.universosProg}
-            barClassName="bg-gradient-to-r from-violet-300/80 via-purple-300/80 to-fuchsia-300/80"
+            value={barValues.universos}
+            barClassName="bg-gradient-to-r from-violet-300 via-fuchsia-300 to-pink-400"
           />
           <p className="text-xs opacity-70 mt-1">
-            Faltan <strong>{stats.universosFaltan}</strong> apoyos para la siguiente creación artística.
+            Faltan <strong>{stats.universosFaltan}</strong> huellas para la siguiente creación artística.
           </p>
         </div>
              <div className="flex items-baseline justify-between">
-          <p className="text-sm opacity-80">Apoyos totales</p>
+          <p className="text-sm opacity-80">Huellas totales</p>
           <p className="text-2xl font-semibold">{stats.totalSupport}</p>
         </div>
       </div>
@@ -359,7 +433,7 @@ const CallToAction = () => {
         <button
           type="button"
           onClick={handleCommunityOptIn}
-          className="relative flex items-center gap-3 text-left group focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-purple-400/60"
+          className="relative flex w-full items-center gap-3 rounded-lg border border-white/10 bg-black/20 px-3 py-2 text-left group focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-purple-400/60"
         >
           <div
             className={`h-5 w-5 rounded-full border border-white/20 ${
@@ -367,7 +441,7 @@ const CallToAction = () => {
             }`}
           />
           <span className="text-sm text-slate-300/80 leading-relaxed">
-            Quiero estar al tanto de las historias comunitarias.
+            Quiero entender cómo funciona.
           </span>
         </button>
       </div>

@@ -5368,7 +5368,7 @@ const rendernotaAutoral = () => {
           variant="outline"
           className="border-amber-300/60 text-amber-200 hover:bg-amber-200/10"
         >
-          Suscribirme
+          Dejar huella
         </Button>
       ) : null;
 
@@ -6325,10 +6325,10 @@ const rendernotaAutoral = () => {
             <motion.div
               id="apoya"
               ref={supportSectionRef}
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, delay: 0.2, ease: 'easeOut' }}
-              viewport={{ once: true }}
+              initial={{ opacity: 0, x: -50 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.8, ease: 'easeOut' }}
+              viewport={{ once: true, amount: 0.25 }}
               className="glass-effect rounded-2xl p-8 md:p-10 flex flex-col justify-between relative overflow-hidden opacity-100"
               style={{ opacity: 1 }}
             >
@@ -6404,10 +6404,10 @@ const rendernotaAutoral = () => {
 
             <motion.div
               id="cta"
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, delay: 0.3, ease: 'easeOut' }}
-              viewport={{ once: true }}
+              initial={{ opacity: 0, x: 50 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.8, ease: 'easeOut' }}
+              viewport={{ once: true, amount: 0.25 }}
               className="glass-effect rounded-2xl p-6 border border-white/10 bg-slate-950/50 shadow-2xl"
             >
               <CallToAction />
