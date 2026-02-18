@@ -982,12 +982,12 @@ iaProfile: {
   },
   miniversoMovimiento: {
     label: 'Miniverso Movimiento',
-     intro:'En este miniverso, el cuerpo se convierte en meta-. La danza, en escritura. Y la ciudad… en altar vivo.',
+     intro:'Proyecto coreográfico en desarrollo que se activa junto a cada temporada de la obra en una ciudad. Incluye talleres abiertos, intervención urbana y función final con realidad aumentada. Buscamos colaboradores y comunidades que quieran impulsarla.',
          type: 'movement-ritual',
     pendingName: 'La Ruta de las Diosas',
-    tagline: 'Meta-corporeidad',
+    tagline: 'Talleres de Cuerpo Colectivo',
     overview: [
-      'La Ruta de las Diosas es una experiencia coreográfica transmedial que recorre plazas, parques y espacios públicos para activar un ritual contemporáneo con avatares, realidad aumentada y movimiento colectivo.',
+      'La Ruta de las Diosas es una experiencia coreográfica transmedial que recorre plazas, parques y espacios públicos. Activa un ritual contemporáneo con avatares, realidad aumentada y movimiento colectivo.',
     ],
     diosaHighlights: [
       'Una presencia digital inspirada en mitologías mesoamericanas.',
@@ -995,10 +995,7 @@ iaProfile: {
       'Acompañada de música original.',
       'Proyectada con videomapping láser durante las noches.',
     ],
-    dayNight: [
-      'Durante el día, los talleres coreográficos en comunidad trazan mapas sensibles sobre el territorio.',
-      'Durante la noche, los cuerpos físicos y virtuales se funden en un mismo acto escénico.',
-    ],
+
     invitation: '¿Y tú? ¿Bailarás con nosotrxs o solo mirarás pasar a las diosas?',
     actions: [
       {
@@ -1021,7 +1018,7 @@ iaProfile: {
       {
         id: 'talleres',
         label: 'Inscríbete a los talleres coreográficos',
-        description: 'Conecta con la comunidad y reserva tu lugar en los talleres diurnos que trazan la ruta.',
+        description: 'Convocatorias abiertas por temporada. Reserva tu lugar en los talleres que trazan la ruta.',
         buttonLabel: 'Inscribirme',
         toastMessage: 'Abriremos el formulario conectado a Supabase para registrar tu participación.',
         icon: Users,
@@ -1772,6 +1769,7 @@ const Transmedia = () => {
   const quironVideoRef = useRef(null);
   const [hasQuironPlaybackStarted, setHasQuironPlaybackStarted] = useState(false);
   const [isQuironAftercareVisible, setIsQuironAftercareVisible] = useState(false);
+  const [movementPendingAction, setMovementPendingAction] = useState(null);
   const [availableGATokens, setAvailableGATokens] = useState(initialAvailableGATokens);
   const [isNovelaSubmitting, setIsNovelaSubmitting] = useState(false);
   const [showNovelaCoins, setShowNovelaCoins] = useState(false);
@@ -3240,23 +3238,15 @@ const Transmedia = () => {
     [handleOpenCameraForQR, requireShowcaseAuth]
   );
 
-  const handleMovementAction = useCallback(
-    (action, contextLabel = null) => {
-      if (!action) {
-        return;
-      }
-      if (
-        !requireShowcaseAuth('Inicia sesión para activar esta acción de la vitrina.', {
-          action: 'movement-action',
-          extras: { actionId: action.id ?? null },
-        })
-      ) {
-        return;
-      }
-      handleOpenMiniverses(contextLabel);
-    },
-    [handleOpenMiniverses, requireShowcaseAuth]
-  );
+  const handleMovementAction = useCallback((action) => {
+    if (!action) {
+      return;
+    }
+    setMovementPendingAction(action);
+  }, []);
+  const handleCloseMovementActionOverlay = useCallback(() => {
+    setMovementPendingAction(null);
+  }, []);
 
   const handleOpenExperienceSite = useCallback(() => {
     if (typeof window === 'undefined') return;
@@ -3441,8 +3431,8 @@ const Transmedia = () => {
     (
       showcaseId,
       {
-        heading = 'Comentarios de la comunidad',
-        ctaLabel = 'Agrega tu comentario',
+        heading = 'Voces de la comunidad',
+        ctaLabel = 'Pon tu duda o comentario',
         emptyMessage = 'Aún no hay comentarios aprobados.',
         reactionProps = null,
         className = 'rounded-3xl border border-white/10 bg-black/30 p-6 space-y-5',
@@ -3801,7 +3791,7 @@ const rendernotaAutoral = () => {
 
           <div className="space-y-6">
             {renderCommunityBlock('lataza', {
-              ctaLabel: 'Agrega tu comentario',
+              ctaLabel: '¿Dudas o comentarios?',
               reactionProps: {
                 showcaseId: 'lataza',
                 description: 'Haz clic para guardar un like que conecta a la comunidad alrededor de la taza.',
@@ -3857,7 +3847,7 @@ const rendernotaAutoral = () => {
 
             <div className="space-y-6">
               {renderCommunityBlock('miniversoSonoro', {
-                ctaLabel: 'comenta',
+                ctaLabel: '¿Dudas o comentarios?',
                 reactionProps: {
                   showcaseId: 'miniversoSonoro',
                   title: 'La voz de quienes escuchan',
@@ -4057,7 +4047,7 @@ const rendernotaAutoral = () => {
             </div>
             <div className="space-y-6">
               {renderCommunityBlock('miniversos', {
-                ctaLabel: 'comenta',
+                ctaLabel: 'coméntanos algo aquí',
                 emptyMessage: 'Todavía no hay voces en este miniverso.',
                 className: 'rounded-3xl border border-white/10 bg-black/30 p-6',
                 hideReaction: true,
@@ -4206,7 +4196,7 @@ const rendernotaAutoral = () => {
           <div className="space-y-6">
             
             {renderCommunityBlock('miniversoGrafico', {
-              ctaLabel: 'comenta',
+              ctaLabel: '¿Dudas o comentarios?',
               reactionProps: {
                 showcaseId: 'miniversoGrafico',
                 title: 'Validación gráfica',
@@ -4283,22 +4273,22 @@ const rendernotaAutoral = () => {
               ) : null
             ) : (
               <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                <p className="text-sm text-slate-300/85 leading-relaxed">Aún no hay colaboradores confirmados para esta ruta.</p>
+                <p className="text-sm text-slate-300/85 leading-relaxed">Aún no hay colaboradores confirmados para este miniverso.</p>
                 <Button
                   type="button"
                   onClick={() => handleOpenContribution(getContributionCategoryForShowcase('miniversoMovimiento'))}
                   className="w-full sm:w-auto justify-center bg-gradient-to-r from-emerald-500/90 to-emerald-600/90 hover:from-emerald-400/90 hover:to-emerald-500/90 text-white"
                 >
-                  Proponer colaboración
+                  Convocatoria abierta
                 </Button>
               </div>
             )}
           </div>
 
-          <div className="grid gap-6 lg:gap-10 lg:grid-cols-[2fr_1fr]">
+          <div className="space-y-6">
             <div className="space-y-5 rounded-3xl border border-white/10 bg-gradient-to-br from-slate-950/80 via-black/60 to-purple-900/30 p-6 lg:p-8">
               <h3 className="font-display text-3xl text-slate-100">{activeDefinition.tagline}</h3>
-              <p className="text-2 text-slate-100/80 italic">Cuando el cuerpo deja de ser solo uno.</p>
+              <p className="text-2 text-slate-100/80">Cuando la obra visita una ciudad, se activa una semana de talleres abiertos que expanden la experiencia hacia un cuerpo colectivo. Las diosas funcionan como arquetipo de esa expansión. Por la noche, el proceso culmina en un acto escénico compartido.</p>
               {hasDiosasGallery ? (
                 <DiosasCarousel
                   items={activeDefinition.diosasGallery}
@@ -4306,31 +4296,42 @@ const rendernotaAutoral = () => {
                   caption="Cada clip muestra un giro 360° de las diosas cuenta-cuentos."
                 />
               ) : null}
-              <div className="space-y-4 text-slate-300/85 leading-relaxed text-sm md:text-base">
-                {activeDefinition.overview?.map((paragraph, index) => (
-                  <p key={`movement-overview-${index}`}>{paragraph}</p>
-                ))}
-                {activeDefinition.diosaHighlights?.length ? (
-                  <div>
-                    <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">
-                      Cada estación revela una diosa distinta
-                    </p>
-                    <ul className="mt-3 space-y-2">
-                      {activeDefinition.diosaHighlights.map((item, index) => (
-                        <li key={`movement-highlight-${index}`} className="flex items-start gap-2">
-                          <span className="text-purple-300 mt-1">●</span>
-                          <span>{item}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                ) : null}
-                {activeDefinition.dayNight?.map((sentence, index) => (
-                  <p key={`movement-daynight-${index}`}>{sentence}</p>
-                ))}
-                {activeDefinition.invitation ? (
-                  <p className="text-lg text-slate-100 italic">{activeDefinition.invitation}</p>
-                ) : null}
+
+              <div className="grid gap-4 md:grid-cols-2">
+                {activeDefinition.actions?.map((action) => {
+                  const ActionIcon = action.icon || ArrowRight;
+                  return (
+                    <div
+                      key={action.id}
+                      className="rounded-2xl border border-white/10 bg-black/30 p-5 space-y-3 hover:border-purple-400/40 transition"
+                    >
+                      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                        <div className="flex items-center gap-3">
+                          <div className="rounded-full border border-white/10 bg-white/5 p-3">
+                            <ActionIcon size={20} className="text-purple-200" />
+                          </div>
+                          <div>
+                            {action.badge ? (
+                              <p className="text-[0.6rem] uppercase tracking-[0.35em] text-slate-500">{action.badge}</p>
+                            ) : null}
+                            <p className="font-semibold text-slate-100">{action.label}</p>
+                          </div>
+                        </div>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          className="border-purple-400/40 text-purple-200 hover:bg-purple-500/10 w-full sm:w-auto justify-center"
+                          onClick={() => handleMovementAction(action)}
+                        >
+                          {action.buttonLabel ? `${action.buttonLabel} (próximamente)` : 'Próximamente'}
+                        </Button>
+                      </div>
+                      {action.description ? (
+                        <p className="text-sm text-slate-300/80 leading-relaxed">{action.description}</p>
+                      ) : null}
+                    </div>
+                  );
+                })}
               </div>
               <div className="mt-6">
                 <ShowcaseReactionInline
@@ -4341,55 +4342,6 @@ const rendernotaAutoral = () => {
                   className="mt-0"
                 />
               </div>
-            </div>
-
-            <div className="space-y-4">
-              <div className="rounded-2xl border border-amber-200/40 bg-amber-500/10 px-4 py-3 flex items-center justify-between gap-3">
-                <div className="flex items-center gap-2 text-amber-100 font-semibold">
-                  <Coins size={16} />
-                  <span>~280 gatokens</span>
-                </div>
-                <span className="text-[11px] uppercase tracking-[0.3em] text-amber-100/80">Mapa + estación</span>
-              </div>
-              <p className="text-[11px] text-amber-100/70">
-                Se aplican al liberar la ruta, los talleres o el marcador AR; las suscripciones cubren el saldo.
-              </p>
-              {activeDefinition.actions?.map((action) => {
-                const ActionIcon = action.icon || ArrowRight;
-                return (
-                  <div
-                    key={action.id}
-                    className="rounded-2xl border border-white/10 bg-black/30 p-5 space-y-3 hover:border-purple-400/40 transition"
-                  >
-                    <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                      <div className="flex items-center gap-3">
-                        <div className="rounded-full border border-white/10 bg-white/5 p-3">
-                          <ActionIcon size={20} className="text-purple-200" />
-                        </div>
-                        <div>
-                          {action.badge ? (
-                            <p className="text-[0.6rem] uppercase tracking-[0.35em] text-slate-500">{action.badge}</p>
-                          ) : null}
-                          <p className="font-semibold text-slate-100">{action.label}</p>
-                        </div>
-                      </div>
-                      <Button
-                        type="button"
-                        variant="outline"
-                        className="border-purple-400/40 text-purple-200 hover:bg-purple-500/10 w-full sm:w-auto justify-center"
-                        onClick={() =>
-                          handleMovementAction(action, activeDefinition.pendingName || activeDefinition.label)
-                        }
-                      >
-                        {action.buttonLabel ?? 'Activar'}
-                      </Button>
-                    </div>
-                    {action.description ? (
-                      <p className="text-sm text-slate-300/80 leading-relaxed">{action.description}</p>
-                    ) : null}
-                  </div>
-                );
-              })}
             </div>
           </div>
 
@@ -4766,12 +4718,12 @@ const rendernotaAutoral = () => {
       );
 
       const comentariosBlock = renderCommunityBlock('copycats', {
-        ctaLabel: 'comenta',
+        ctaLabel: '¿Dudas o comentarios?',
         className: 'rounded-3xl border border-white/10 bg-black/25 p-6 space-y-5',
         reactionProps: {
           showcaseId: 'copycats',
-          title: 'Validación cinematográfica',
-          description: 'Deja tu aplauso y amplifica la comunidad de CopyCats + Quirón.',
+          title: 'Mi favorito',
+          description: 'Deja tu aplauso y amplifica la audiencia.',
           buttonLabel: 'Sumar mi aplauso',
           className: 'mt-2 bg-gradient-to-r from-slate-900/40 to-purple-900/20',
         },
@@ -4986,7 +4938,7 @@ const rendernotaAutoral = () => {
                 </div>
                 <div className="space-y-6">
                   {renderCommunityBlock('miniversoNovela', {
-                    ctaLabel: 'comenta',
+                    ctaLabel: 'coméntanos algo aquí',
                     emptyMessage: 'Todavía no hay voces en este miniverso.',
                     className: 'rounded-3xl border border-white/10 bg-black/30 p-6',
                   })}
@@ -5650,6 +5602,47 @@ const rendernotaAutoral = () => {
     )
     : null;
 
+  const movementActionOverlay = typeof document !== 'undefined' && movementPendingAction
+    ? createPortal(
+      <div className="fixed inset-0 z-[246] flex items-center justify-center px-4 py-8">
+        <div className="absolute inset-0 bg-black/92 backdrop-blur-md" onClick={handleCloseMovementActionOverlay} />
+        <div className="relative z-10 w-full max-w-2xl rounded-3xl border border-white/10 bg-slate-950/90 p-8 text-center shadow-[0_35px_120px_rgba(0,0,0,0.7)]">
+          <p className="text-xs uppercase tracking-[0.35em] text-slate-400/80">Ruta en construcción</p>
+          <h4 className="mt-3 font-display text-3xl text-slate-100">
+            Gracias por tu entusiasmo
+          </h4>
+          <p className="mt-3 text-sm text-slate-300/85 leading-relaxed">
+            Esta activación ({movementPendingAction.label}) aún está en desarrollo.
+            Nos alegra que te interese.
+          </p>
+          <p className="mt-3 text-sm text-slate-300/85 leading-relaxed">
+            Con tu interés y participación, {activeDefinition?.pendingName || 'este miniverso'} puede
+            hacerse realidad: talleres abiertos, activaciones urbanas y función final con realidad aumentada.
+          </p>
+          <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:justify-center">
+            <Button
+              onClick={() => {
+                handleCloseMovementActionOverlay();
+                handleOpenContribution(getContributionCategoryForShowcase('miniversoMovimiento'));
+              }}
+              className="inline-flex items-center justify-center rounded-full bg-gradient-to-r from-emerald-600/80 to-cyan-500/70 px-6 py-3 text-sm font-semibold text-white hover:from-emerald-500 hover:to-cyan-400"
+            >
+              Sumarme a la convocatoria
+            </Button>
+            <Button
+              variant="outline"
+              onClick={handleCloseMovementActionOverlay}
+              className="inline-flex items-center justify-center rounded-full border-white/20 bg-white/5 px-6 py-3 text-sm font-semibold text-slate-100 hover:bg-white/10"
+            >
+              Cerrar
+            </Button>
+          </div>
+        </div>
+      </div>,
+      document.body,
+    )
+    : null;
+
   const imagePreviewOverlay = typeof document !== 'undefined' && imagePreview
     ? createPortal(
       <div className="fixed inset-0 z-[240] flex items-center justify-center px-4 py-10">
@@ -6081,6 +6074,7 @@ const rendernotaAutoral = () => {
           {quironFullOverlay}
           {quironPrecareOverlay}
           {quironAftercareOverlay}
+          {movementActionOverlay}
           {imagePreviewOverlay}
           {pdfPreviewOverlay}
 

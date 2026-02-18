@@ -125,7 +125,49 @@ const formTitlesByUniverse = {
   oraculo: 'Pregunta, responde y mintea: cada reflexión deja una huella y gana GATokens.',
   otro: 'Si no cabe en un miniverso… es porque aún no lo hemos nombrado.',
   sonoro: 'Comparte qué mezcla soñaste: qué viste, qué escuchaste, qué palabras eligieron.',
-  movimiento: 'Cuéntanos qué ruta, coreografía o ritual colectivo quieres activar en la ciudad.',
+  movimiento: 'Cuéntanos qué ruta, coreografía o ritual colectivo quieres activar en tu ciudad.',
+};
+const NARRATIVE_GALLERY_POSTER_BY_CATEGORY = {
+  obra_escenica: {
+    src: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Merch/posters/poster_obra.png',
+    alt: 'Poster del miniverso La Obra',
+  },
+  taza: {
+    src: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Merch/posters/poster_artesanias.png',
+    alt: 'Poster del miniverso Artesanías',
+  },
+  miniverso_novela: {
+    src: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Merch/posters/poster_literatura.png',
+    alt: 'Poster del miniverso Literatura',
+  },
+  grafico: {
+    src: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Merch/posters/poster_graficos.png',
+    alt: 'Poster del miniverso Gráficos',
+  },
+  cine: {
+    src: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Merch/posters/cine.png',
+    alt: 'Poster del miniverso Cine',
+  },
+  sonoro: {
+    src: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Merch/posters/poster_sonoridades.png',
+    alt: 'Poster del miniverso Sonoridades',
+  },
+  movimiento: {
+    src: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Merch/posters/poster_movimiento.png',
+    alt: 'Poster del miniverso Movimiento',
+  },
+  apps: {
+    src: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Merch/posters/poster_juegos.png',
+    alt: 'Poster del miniverso Juegos',
+  },
+  oraculo: {
+    src: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Merch/posters/poster_oraculo.png',
+    alt: 'Poster del miniverso Oráculo',
+  },
+  otro: {
+    src: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Merch/posters/poster_obra.png',
+    alt: 'Poster narrativo del universo Gato Encerrado',
+  },
 };
 
 const ContributionModal = ({
@@ -547,6 +589,13 @@ const ContributionModal = ({
       'Contribuye al diálogo crítico'
     );
   }, [selectedCategory]);
+  const isMovementCategory = selectedCategory?.id === 'movimiento';
+  const selectedNarrativePoster = useMemo(
+    () =>
+      NARRATIVE_GALLERY_POSTER_BY_CATEGORY[selectedCategory?.id] ??
+      NARRATIVE_GALLERY_POSTER_BY_CATEGORY.otro,
+    [selectedCategory]
+  );
 
   const handleCloseFormPanel = useCallback(() => {
     if (status === 'loading') {
@@ -570,6 +619,44 @@ const ContributionModal = ({
     </div>
   );
 
+  const renderNotifyPreference = () => (
+    <div className="flex flex-col gap-2 rounded-lg border border-white/5 bg-black/20 px-4 py-3">
+      <motion.button
+        type="button"
+        onClick={handleNotifyCheckboxChange}
+        aria-label="Activar notificación de publicación"
+        className="relative flex items-center gap-3 text-left group focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-purple-400/60"
+      >
+        <motion.div
+          animate={
+            indicatorActive
+              ? {
+                  scale: [1, 1.05, 1],
+                  boxShadow: notifyOnPublish
+                    ? '0 0 18px rgba(74,222,128,0.65)'
+                    : '0 0 12px rgba(74,222,128,0.45)',
+                  filter: 'drop-shadow(0 0 10px rgba(74,222,128,0.45))',
+                }
+              : { scale: 1, boxShadow: '0 0 0 rgba(0,0,0,0)' }
+          }
+          transition={{ duration: 0.45, ease: 'easeOut' }}
+          className={`h-5 w-5 rounded-full border border-white/20 ${
+            indicatorActive
+              ? 'bg-emerald-400 shadow-[0_0_12px_4px_rgba(52,211,153,0.65)] ring-2 ring-emerald-300/70'
+              : 'bg-slate-600/40'
+          }`}
+        />
+        <span className="text-sm text-slate-300/80 leading-relaxed">
+          Quiero ser parte de este hilo.
+        </span>
+      </motion.button>
+
+      {!isAuthenticated ? (
+        <span className="pl-8 text-xs text-slate-500">Inicia sesión para activar el seguimiento</span>
+      ) : null}
+    </div>
+  );
+
   const renderFormPanelBody = () => (
     <div className="relative">
       <div className="mb-4" />
@@ -585,124 +672,141 @@ const ContributionModal = ({
       {isMobileLayout && BETA_UNIVERSES.has(selectedCategory.id) ? (
         <div className="mb-4">{renderBetaCard()}</div>
       ) : null}
-      <form className="space-y-4" onSubmit={handleSubmit}>
-        <div>
+      <div className="grid gap-6 lg:grid-cols-[1.1fr_0.9fr] lg:items-start">
+        <form
+          className="space-y-4 rounded-2xl border border-white/10 bg-black/20 p-4 sm:p-5"
+          onSubmit={handleSubmit}
+        >
+          <div>
+            <input
+              name="name"
+              type="text"
+              required
+              value={formState.name}
+              onChange={handleInputChange}
+              className="w-full rounded-lg border border-white/10 bg-black/30 px-4 py-3 text-slate-100 placeholder-slate-500 focus:border-purple-400 focus:ring-1 focus:ring-purple-400"
+              placeholder="¿Cómo quieres que te nombremos?"
+            />
+            <p className="mt-1 text-xs text-slate-500">
+              ¿Así quieres que te llamemos? Dinos cómo te gusta que te nombren.
+            </p>
+          </div>
+
+          <div>
+            <input
+              name="email"
+              type="email"
+              required
+              value={formState.email}
+              onChange={handleInputChange}
+              readOnly={isAuthenticated}
+              className={`w-full rounded-lg border border-white/10 bg-black/30 px-4 py-3 text-slate-100 placeholder-slate-500 focus:border-purple-400 focus:ring-1 focus:ring-purple-400 ${
+                isAuthenticated ? 'cursor-not-allowed opacity-80' : ''
+              }`}
+              placeholder="nombre@correo.com"
+            />
+            {isAuthenticated ? (
+              <p className="mt-1 text-xs text-slate-500">El correo se toma de tu sesión actual.</p>
+            ) : null}
+          </div>
+
           <input
-            name="name"
+            name="role"
             type="text"
-            required
-            value={formState.name}
+            value={formState.role}
             onChange={handleInputChange}
             className="w-full rounded-lg border border-white/10 bg-black/30 px-4 py-3 text-slate-100 placeholder-slate-500 focus:border-purple-400 focus:ring-1 focus:ring-purple-400"
-            placeholder="¿Cómo quieres que te nombremos?"
+            placeholder="Crítica teatral, artista, investigador, espectador..."
           />
-          <p className="mt-1 text-xs text-slate-500">
-            ¿Así quieres que te llamemos? Dinos cómo te gusta que te nombren.
-          </p>
-        </div>
 
-        <div>
-          <input
-            name="email"
-            type="email"
+          <textarea
+            name="proposal"
+            rows={5}
             required
-            value={formState.email}
+            value={formState.proposal}
             onChange={handleInputChange}
-            readOnly={isAuthenticated}
-            className={`w-full rounded-lg border border-white/10 bg-black/30 px-4 py-3 text-slate-100 placeholder-slate-500 focus:border-purple-400 focus:ring-1 focus:ring-purple-400 ${
-              isAuthenticated ? 'cursor-not-allowed opacity-80' : ''
-            }`}
-            placeholder="nombre@correo.com"
+            className="w-full rounded-lg border border-white/10 bg-black/30 px-4 py-3 text-slate-100 placeholder-slate-500 focus:border-purple-400 focus:ring-1 focus:ring-purple-400 resize-none"
+            placeholder="Resume tu texto, crónica o propuesta curatorial..."
           />
-          {isAuthenticated ? (
-            <p className="mt-1 text-xs text-slate-500">El correo se toma de tu sesión actual.</p>
+
+          <input
+            name="attachmentUrl"
+            type="url"
+            value={formState.attachmentUrl}
+            onChange={handleInputChange}
+            className="w-full rounded-lg border border-white/10 bg-black/30 px-4 py-3 text-slate-100 placeholder-slate-500 focus:border-purple-400 focus:ring-1 focus:ring-purple-400"
+            placeholder="Enlace a material adicional (Drive, portfolio, video...)"
+          />
+
+          {status === 'error' ? (
+            <div className="rounded-lg border border-red-500/60 bg-red-500/10 px-4 py-3 text-sm text-red-200">
+              {errorMessage}
+            </div>
           ) : null}
-        </div>
 
-        <input
-          name="role"
-          type="text"
-          value={formState.role}
-          onChange={handleInputChange}
-          className="w-full rounded-lg border border-white/10 bg-black/30 px-4 py-3 text-slate-100 placeholder-slate-500 focus:border-purple-400 focus:ring-1 focus:ring-purple-400"
-          placeholder="Crítica teatral, artista, investigador, espectador..."
-        />
+          {status === 'success' ? (
+            <div className="rounded-lg border border-emerald-500/60 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-200">
+              Recibimos tu propuesta. Te contactaremos si necesitamos más detalles.
+            </div>
+          ) : null}
 
-        <textarea
-          name="proposal"
-          rows={5}
-          required
-          value={formState.proposal}
-          onChange={handleInputChange}
-          className="w-full rounded-lg border border-white/10 bg-black/30 px-4 py-3 text-slate-100 placeholder-slate-500 focus:border-purple-400 focus:ring-1 focus:ring-purple-400 resize-none"
-          placeholder="Resume tu texto, crónica o propuesta curatorial..."
-        />
-
-        <input
-          name="attachmentUrl"
-          type="url"
-          value={formState.attachmentUrl}
-          onChange={handleInputChange}
-          className="w-full rounded-lg border border-white/10 bg-black/30 px-4 py-3 text-slate-100 placeholder-slate-500 focus:border-purple-400 focus:ring-1 focus:ring-purple-400"
-          placeholder="Enlace a material adicional (Drive, portfolio, video...)"
-        />
-
-        <div className="flex flex-col gap-2 rounded-lg border border-white/5 bg-black/20 px-4 py-3">
-          <motion.button
-            type="button"
-            onClick={handleNotifyCheckboxChange}
-            aria-label="Activar notificación de publicación"
-            className="relative flex items-center gap-3 text-left group focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-purple-400/60"
+          <Button
+            type="submit"
+            disabled={status === 'loading'}
+            className="w-full bg-gradient-to-r from-purple-600/80 to-indigo-600/80 hover:from-purple-600 hover:to-indigo-600 text-white py-3 rounded-lg font-semibold flex items-center justify-center gap-2 hover-glow"
           >
-            <motion.div
-              animate={
-                indicatorActive
-                  ? {
-                      scale: [1, 1.05, 1],
-                      boxShadow: notifyOnPublish
-                        ? '0 0 18px rgba(74,222,128,0.65)'
-                        : '0 0 12px rgba(74,222,128,0.45)',
-                      filter: 'drop-shadow(0 0 10px rgba(74,222,128,0.45))',
-                    }
-                  : { scale: 1, boxShadow: '0 0 0 rgba(0,0,0,0)' }
-              }
-              transition={{ duration: 0.45, ease: 'easeOut' }}
-              className={`h-5 w-5 rounded-full border border-white/20 ${
-                indicatorActive
-                  ? 'bg-emerald-400 shadow-[0_0_12px_4px_rgba(52,211,153,0.65)] ring-2 ring-emerald-300/70'
-                  : 'bg-slate-600/40'
-              }`}
-            />
-            <span className="text-sm text-slate-300/80 leading-relaxed">
-              Quiero ser parte de este hilo.
-            </span>
-          </motion.button>
+            {status === 'loading' ? 'Enviando…' : 'Enviar comentario'}
+        </Button>
+        </form>
 
-          {!isAuthenticated ? (
-            <span className="pl-8 text-xs text-slate-500">Inicia sesión para activar el seguimiento</span>
-          ) : null}
-        </div>
-
-        {status === 'error' ? (
-          <div className="rounded-lg border border-red-500/60 bg-red-500/10 px-4 py-3 text-sm text-red-200">
-            {errorMessage}
+        {isMovementCategory ? (
+          <div className="space-y-4 lg:sticky lg:top-1">
+            <section className="rounded-2xl border border-purple-300/25 bg-gradient-to-b from-purple-500/12 via-indigo-500/5 to-black/20 px-4 py-4 text-slate-200 sm:px-5">
+              <p className="text-xs uppercase tracking-[0.35em] text-purple-200/75">Convocatoria abierta</p>
+              <p className="mt-3 text-[1.05rem] font-medium leading-snug text-slate-100">
+                La Ruta de las Diosas es una iniciativa coreográfica transmedial que se desarrolla en
+                plazas, parques y espacios públicos.
+              </p>
+              <p className="mt-2 text-sm text-slate-300/95 leading-relaxed">
+                El proyecto articula una experiencia contemporánea con avatares, realidad aumentada y
+                activación de movimiento colectivo.
+              </p>
+              <div className="mt-4 h-px w-full bg-gradient-to-r from-transparent via-purple-300/35 to-transparent" />
+              <p className="mt-4 text-[11px] uppercase tracking-[0.35em] text-purple-200/70">
+                Cada estación integra presencia física y extensión digital
+              </p>
+              <ul className="mt-3 space-y-2 text-sm leading-relaxed text-slate-300">
+                <li className="flex gap-2"><span className="mt-[7px] h-1.5 w-1.5 shrink-0 rounded-full bg-purple-300/90" /><span>Presencia digital inspirada en mitologías mesoamericanas.</span></li>
+                <li className="flex gap-2"><span className="mt-[7px] h-1.5 w-1.5 shrink-0 rounded-full bg-purple-300/90" /><span>Desarrollo escénico basado en motion capture.</span></li>
+                <li className="flex gap-2"><span className="mt-[7px] h-1.5 w-1.5 shrink-0 rounded-full bg-purple-300/90" /><span>Dirección sonora con música original.</span></li>
+                <li className="flex gap-2"><span className="mt-[7px] h-1.5 w-1.5 shrink-0 rounded-full bg-purple-300/90" /><span>Proyección nocturna mediante videomapping láser.</span></li>
+              </ul>
+              <p className="mt-5 text-base italic leading-relaxed text-white">
+                Te invitamos a participar en este proceso de activación territorial y creación colectiva.
+              </p>
+            </section>
+            {renderNotifyPreference()}
           </div>
-        ) : null}
-
-        {status === 'success' ? (
-          <div className="rounded-lg border border-emerald-500/60 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-200">
-            Recibimos tu propuesta. Te contactaremos si necesitamos más detalles.
+        ) : (
+          <div className="space-y-4 lg:sticky lg:top-1">
+            <section className="rounded-2xl border border-white/10 bg-black/20 p-3 sm:p-4">
+              <div className="relative mx-auto w-full max-w-[340px]">
+                <div className="pointer-events-none absolute -inset-3 rounded-[1.6rem] bg-sky-400/20 blur-2xl" />
+                <div className="relative overflow-hidden rounded-2xl border border-white/10 bg-slate-900/80">
+                  <img
+                    src={selectedNarrativePoster.src}
+                    alt={selectedNarrativePoster.alt}
+                    className="h-auto max-h-[500px] w-full object-cover"
+                    loading="lazy"
+                  />
+                  <div className="pointer-events-none absolute inset-0 shadow-[inset_0_0_60px_15px_rgba(8,15,38,0.75)]" />
+                </div>
+              </div>
+            </section>
+            {renderNotifyPreference()}
           </div>
-        ) : null}
-
-        <Button
-          type="submit"
-          disabled={status === 'loading'}
-          className="w-full bg-gradient-to-r from-purple-600/80 to-indigo-600/80 hover:from-purple-600 hover:to-indigo-600 text-white py-3 rounded-lg font-semibold flex items-center justify-center gap-2 hover-glow"
-        >
-          {status === 'loading' ? 'Enviando…' : 'Enviar comentario'}
-      </Button>
-      </form>
+        )}
+      </div>
       {isDesktopLayout && BETA_UNIVERSES.has(selectedCategory.id) ? (
         <div className="mt-6 space-y-3">{renderBetaCard()}</div>
       ) : null}
@@ -757,7 +861,7 @@ const ContributionModal = ({
                       </h2>
                     </div>
                   </div>
-                  <div className="flex items-center gap-3">
+                  <div className={`flex items-center gap-3 ${!isDesktopLayout && isDirectCategory ? 'hidden' : ''}`}>
                     {onReturnToShowcase ? (
                       <button
                         type="button"
@@ -854,6 +958,27 @@ const ContributionModal = ({
                   </>
                 ) : null}
               </AnimatePresence>
+
+              {!isDesktopLayout && isDirectCategory ? (
+                <div className="mt-auto flex items-center justify-end gap-4 border-t border-white/10 pt-4">
+                  {onReturnToShowcase ? (
+                    <button
+                      type="button"
+                      onClick={onReturnToShowcase}
+                      className="text-xs uppercase tracking-[0.3em] text-purple-200/80 hover:text-white transition"
+                    >
+                      Regresar
+                    </button>
+                  ) : null}
+                  <button
+                    onClick={handleClose}
+                    className="text-sm uppercase tracking-[0.2em] text-slate-300 hover:text-white transition"
+                    aria-label="Cerrar formulario de propuestas"
+                  >
+                    Cerrar
+                  </button>
+                </div>
+              ) : null}
             </motion.div>
           </motion.div>
         ) : null}
