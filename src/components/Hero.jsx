@@ -10,7 +10,7 @@ import { useAuth } from '@/contexts/SupabaseAuthContext';
 import { setBienvenidaReturnPath } from '@/lib/bienvenida';
 
 const HERO_LOGGED_IN_AUDIO_URL =
-  'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Sonoridades/audio/A2_Melody_MSTR.wav';
+  'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Sonoridades/audio/A2_Melody_MSTR.m4a';
 const HERO_LOGGED_IN_AUDIO_VOLUME = 0.35;
 
 const Hero = () => {

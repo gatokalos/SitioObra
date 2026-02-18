@@ -127,7 +127,7 @@ const useActiveSubscription = (userId) => {
       .then(({ count, error }) => {
         if (!isMounted) return;
         if (error) {
-          console.warn('[Transmedia] No se pudo validar suscripción:', error);
+          console.warn('[Transmedia] No se pudo validar huella:', error);
           setHasActiveSubscription(false);
           return;
         }
@@ -696,7 +696,7 @@ iaProfile: {
       type: 'GPT-4o mini + subtítulos vivos y notas críticas asistidas.',
       interaction: 'Notas críticas y captions contextuales por espectador.',
       tokensRange: '200–450 tokens por visita.',
-      coverage: 'Incluido en las suscripciones transmedia.',
+      coverage: 'Incluido en la activación de huellas.',
       footnote: 'La IA acompaña la mirada; la decisión sigue siendo humana.',
     },
   },
@@ -893,7 +893,7 @@ iaProfile: {
       type: 'GPT-4o mini para poemas móviles + curaduría sonora.',
       interaction: 'Selección de poema y mezcla guiada.',
       tokensRange: '130–280 tokens por mezcla.',
-      coverage: 'Incluido en la suscripción transmedia.',
+      coverage: 'Incluido en la huella transmedia.',
       footnote: 'La IA elige la forma; tú eliges el ánimo.',
     },
     collaborators: [
@@ -1113,7 +1113,7 @@ iaProfile: {
       type: 'IA de ruta + prompts de movimiento guiados en app.',
       interaction: 'Selección de estación y avatar ritual en AR.',
       tokensRange: '180–320 tokens por usuario.',
-      coverage: 'Incluido en la suscripción transmedia.',
+      coverage: 'Incluido en la huella transmedia.',
       footnote: 'La IA guía; el rito sucede cuando alguien baila.',
     },
   },
@@ -1167,7 +1167,7 @@ iaProfile: {
       type: 'IA para misiones y ritmo de juego felino.',
       interaction: 'Tap / swipe progresivo; sugiere palabras en la voz del personaje.',
       tokensRange: '90–180 tokens por sesión.',
-      coverage: 'Incluido en suscripción (no gasta tus GAT).',
+      coverage: 'Incluido en la huella transmedia (no gasta tus GAT).',
       footnote: 'La IA propone el siguiente giro; tú das el tap y decides cuándo cerrar el telón.',
     },
   },
@@ -1398,7 +1398,7 @@ const CAUSE_ACCORDION = [
     id: 'residencias',
     title: 'Residencias creativas',
     description:
-      'Laboratorios de 2 meses donde arte y acompañamiento reparan memoria y cuerpo. Cada 17 suscripciones financian una residencia completa.',
+      'Laboratorios de 2 meses donde arte y acompañamiento reparan memoria y cuerpo. Cada 17 huellas transmedia financian una residencia completa.',
     icon: Palette,
     metric: '3 residencias activas por temporada',
     imageAlt: 'Foto de archivo de residencias creativas.',
@@ -1414,7 +1414,7 @@ const CAUSE_ACCORDION = [
     id: 'app-escolar',
   title: 'App Causa Social en escuelas',
   description:
-    'Implementación y seguimiento semestral de la app de detección temprana. 75 suscripciones financian 1 escuela por semestre.',
+    'Implementación y seguimiento semestral de la app de detección temprana. 75 huellas financian 1 escuela por semestre.',
   icon: Smartphone,
   metric: '5 escuelas atendidas por ciclo escolar',
   imageAlt: 'Captura de la app Causa Social en escuelas (versión beta).',
@@ -1875,7 +1875,7 @@ const Transmedia = () => {
       .then(({ count, error }) => {
         if (!isMounted) return;
         if (error) {
-          console.warn('[Transmedia] No se pudo validar suscripción:', error);
+          console.warn('[Transmedia] No se pudo validar huella:', error);
           setHasActiveSubscription(false);
           return;
         }
@@ -4859,7 +4859,7 @@ const rendernotaAutoral = () => {
               className="rounded-2xl border border-amber-200/40 bg-amber-500/10 p-4 text-sm text-amber-100"
             >
               El acceso inicial habilita una visualización.
-              Con suscripción solidaria, puedes volver cuando quieras.
+              Con huella solidaria, puedes volver cuando quieras.
             </motion.div>
           ) : null}
       
@@ -5731,7 +5731,7 @@ const rendernotaAutoral = () => {
         <div className="relative z-10 w-full max-w-2xl rounded-3xl border border-white/10 bg-slate-950/90 p-8 text-center shadow-[0_35px_120px_rgba(0,0,0,0.7)]">
           <p className="text-xs uppercase tracking-[0.35em] text-slate-400/80">Antes de continuar</p>
           <p className="mt-3 text-sm text-slate-300/85 leading-relaxed">
-            Una vez desbloqueado, el cortometraje se habilita una vez; con una suscripción solidaria puedes volver cuando quieras. ¿Quieres continuar?
+            Una vez desbloqueado, el cortometraje se habilita una vez; con una huella activada puedes volver cuando quieras. ¿Quieres continuar?
           </p>
           <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:justify-center">
             <Button
@@ -6257,7 +6257,7 @@ const rendernotaAutoral = () => {
                 </h3>
                 <p className="text-slate-300/80 leading-relaxed font-light">
                   La taquilla mantiene la obra en escena; el universo transmedia financia acompañamiento emocional real.
-                  Cada suscripción se distribuye en tres frentes que opera Isabel Ayuda para la Vida, A.C.{' '}
+                  Cada huella se distribuye en tres frentes que opera Isabel Ayuda para la Vida, A.C.{' '}
            
                 </p>
                 <details className="group rounded-2xl border border-emerald-300/25 bg-emerald-500/10 px-5 py-4">
@@ -6275,9 +6275,7 @@ const rendernotaAutoral = () => {
                   </summary>
                   <div className="mt-3 space-y-2 pl-8">
                     <p className="text-sm leading-relaxed text-slate-200/95">
-                      La asociación no cobra al estudiante por sesión. Las sesiones se asignan sin costo para las
-                      familias cuando se detecta riesgo, gracias a la combinación de suscripciones, aportes simbólicos
-                      y apoyos institucionales.
+                      La asociación no cobra para atender. Las sesiones se asignan sin costo para las familias cuando se detecta riesgo, gracias a la combinación de huellas transmedia, aportes simbólicos y apoyos institucionales.
                     </p>
                     <a
                       href="https://www.ayudaparalavida.com/contacto.html"
@@ -6306,7 +6304,7 @@ const rendernotaAutoral = () => {
                 </Button>
                 <div className="flex items-center gap-3 text-slate-400 text-sm">
                   <HeartHandshake size={20} className="text-purple-300" />
-                  <span>Tu suscripción = Apoyo directo</span>
+                  <span>Tu huella = Apoyo directo</span>
                 </div>
               </div>
             </motion.div>

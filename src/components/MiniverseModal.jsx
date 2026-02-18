@@ -317,7 +317,7 @@ const modalVariants = {
 const LOGIN_RETURN_KEY = 'gatoencerrado:login-return';
 const SUPPORT_WHATSAPP = '+523315327985';
 const SUPPORT_MESSAGE =
-  'Hola,%0Ami suscripción está activa pero no aparece ligada a mi cuenta.%0A¿Me ayudan a vincularla?%0A%0AGracias.';
+  'Hola,%0Ami huella está activa pero no aparece ligada a mi cuenta.%0A¿Me ayudan a vincularla?%0A%0AGracias.';
 const SUBSCRIPTION_PRICE_ID = import.meta.env.VITE_STRIPE_SUBSCRIPTION_PRICE_ID;
 const CAUSE_SITE_URL = 'https://www.ayudaparalavida.com/index.html';
 
@@ -415,7 +415,7 @@ const MiniverseModal = ({
       .then(({ count, error }) => {
         if (!isMounted) return;
         if (error) {
-          console.warn('[MiniverseModal] No se pudo validar suscripción:', error);
+          console.warn('[MiniverseModal] No se pudo validar huella:', error);
           setHasActiveSubscription(false);
           return;
         }
@@ -567,7 +567,7 @@ const MiniverseModal = ({
       };
     }
     return {
-      lead: 'Activa el acceso completo a los miniversos,',
+      lead: 'Activar una huella',
       highlight: 'impulsa acompañamiento emocional real y mantiene viva la experiencia artística más allá del escenario.',
       continuation: 'Tu participación deja impacto tangible.'
     };
@@ -1015,7 +1015,7 @@ const MiniverseModal = ({
       window.location.href = data.url;
     } catch (err) {
       console.error('[MiniverseModal] Checkout error:', err);
-      toast({ description: err?.message || 'No se pudo abrir la suscripción.' });
+      toast({ description: err?.message || 'No se pudo reconocer la huella.' });
     } finally {
       setIsCheckoutLoading(false);
     }

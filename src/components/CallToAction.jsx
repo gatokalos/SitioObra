@@ -169,7 +169,7 @@ const CallToAction = () => {
     ];
 
     if (line_items.some((item) => !item.price || !item.quantity)) {
-      setMsg('Faltan datos de la suscripción.');
+      setMsg('Faltan datos de la activación.');
       return;
     }
 
@@ -237,7 +237,7 @@ const CallToAction = () => {
           <a href="#transmedia" className="underline text-slate-300">
             12,000 GATokens
           </a>{' '}
-          como una cortesía por tu suscripción.
+          como una cortesía por tu activación.
         </p>
       </motion.div>
 
@@ -301,7 +301,7 @@ const CallToAction = () => {
         <div>
           <p className="text-sm mb-1 opacity-80">Fondo para terapias</p>
           <p className="text-lg mb-2">
-            <strong>{stats.sesiones}</strong> sesiones (1 suscripción = 6 sesiones)
+            <strong>{stats.sesiones}</strong> sesiones (1 huella = 6 sesiones)
           </p>
         </div>
 

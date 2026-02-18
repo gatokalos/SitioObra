@@ -232,7 +232,7 @@ const LoginOverlay = ({ onClose }) => {
             Queremos asegurarnos de que puedas retomar tu experiencia justo donde la dejaste.
             
 
-          Esto no genera ningún cargo ni suscripción.
+          Esto no genera ningún cargo ni activación.
           </p>
 
           <button
