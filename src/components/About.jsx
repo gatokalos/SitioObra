@@ -105,7 +105,7 @@ export const ProvocaSection = () => {
                   className="border-slate-100/20 text-slate-200 hover:bg-slate-100/10 px-6 py-3 rounded-full font-semibold flex items-center justify-center gap-2 w-full sm:w-auto"
                 >
                   <Send size={18} />
-                  Invitar otra mirada
+                  Avísar a un cómplice
                 </Button>
               </div>
               <AnimatePresence initial={false}>
