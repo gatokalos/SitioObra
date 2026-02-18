@@ -341,6 +341,17 @@ const CONTRIBUTION_CATEGORY_BY_SHOWCASE = {
   apps: 'apps',
   oraculo: 'oraculo',
 };
+const BLOG_MINIVERSO_KEYS_BY_SHOWCASE = {
+  miniversos: ['obra_escenica', 'miniversos', 'obra'],
+  copycats: ['cine', 'copycats'],
+  miniversoGrafico: ['graficos', 'grafico', 'miniversografico'],
+  miniversoNovela: ['novela', 'miniversonovela', 'literatura'],
+  miniversoSonoro: ['sonoro', 'miniversosonoro', 'sonoridades'],
+  miniversoMovimiento: ['movimiento', 'miniversomovimiento'],
+  lataza: ['artesanias', 'taza', 'lataza'],
+  apps: ['apps', 'juegos'],
+  oraculo: ['oraculo'],
+};
 const readStoredJson = (key, fallback) => {
   const raw = safeGetItem(key);
   if (!raw) return fallback;
@@ -1793,6 +1804,8 @@ const Transmedia = () => {
   const [publicContributions, setPublicContributions] = useState({});
   const [publicContributionsLoading, setPublicContributionsLoading] = useState({});
   const [publicContributionsError, setPublicContributionsError] = useState({});
+  const [latestBlogPostByShowcase, setLatestBlogPostByShowcase] = useState({});
+  const [readingTooltipForShowcase, setReadingTooltipForShowcase] = useState(null);
   const [commentCarouselIndex, setCommentCarouselIndex] = useState(0);
   const [isOraculoOpen, setIsOraculoOpen] = useState(false);
   const [isCauseSiteOpen, setIsCauseSiteOpen] = useState(false);
@@ -2468,6 +2481,89 @@ const Transmedia = () => {
     );
     document.getElementById('dialogo-critico')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }, [requireShowcaseAuth]);
+
+  useEffect(() => {
+    let cancelled = false;
+    const loadLatestBlogPostsByMiniverso = async () => {
+      const allMiniversoKeys = Array.from(
+        new Set(
+          Object.values(BLOG_MINIVERSO_KEYS_BY_SHOWCASE)
+            .flat()
+            .map((item) => item?.trim?.().toLowerCase())
+            .filter(Boolean)
+        )
+      );
+      if (!allMiniversoKeys.length) {
+        return;
+      }
+
+      const { data, error } = await supabase
+        .from('blog_posts')
+        .select('slug,title,miniverso,published_at,is_published')
+        .eq('is_published', true)
+        .not('slug', 'is', null)
+        .not('miniverso', 'is', null)
+        .in('miniverso', allMiniversoKeys)
+        .order('published_at', { ascending: false });
+
+      if (cancelled || error) {
+        if (error) {
+          console.warn('[Transmedia] No se pudo cargar la disponibilidad de lecturas:', error);
+        }
+        return;
+      }
+
+      const latestByMiniverso = {};
+      (data ?? []).forEach((post) => {
+        const key = post?.miniverso?.trim?.().toLowerCase();
+        if (!key || latestByMiniverso[key]) {
+          return;
+        }
+        latestByMiniverso[key] = post;
+      });
+
+      const latestByShowcase = {};
+      Object.entries(BLOG_MINIVERSO_KEYS_BY_SHOWCASE).forEach(([showcaseId, keys]) => {
+        const match = keys
+          .map((key) => latestByMiniverso[key?.trim?.().toLowerCase()])
+          .find(Boolean);
+        if (match) {
+          latestByShowcase[showcaseId] = match;
+        }
+      });
+
+      if (!cancelled) {
+        setLatestBlogPostByShowcase(latestByShowcase);
+      }
+    };
+
+    loadLatestBlogPostsByMiniverso();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const handleOpenLatestBlogForShowcase = useCallback((showcaseId) => {
+    const post = latestBlogPostByShowcase[showcaseId];
+    if (!post?.slug) {
+      return;
+    }
+    setReadingTooltipForShowcase(showcaseId);
+    if (activeShowcase) {
+      handleCloseShowcase();
+    }
+    window.setTimeout(() => {
+      window.dispatchEvent(
+        new CustomEvent('gatoencerrado:open-blog', {
+          detail: { slug: post.slug },
+        })
+      );
+      document.getElementById('dialogo-critico')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 140);
+    window.setTimeout(() => {
+      setReadingTooltipForShowcase((prev) => (prev === showcaseId ? null : prev));
+    }, 2200);
+  }, [activeShowcase, handleCloseShowcase, latestBlogPostByShowcase]);
 
   const handleOpenImagePreview = useCallback(
     (payload, options = {}) => {
@@ -3444,10 +3540,33 @@ const Transmedia = () => {
       const isLoading = publicContributionsLoading[showcaseId];
       const error = publicContributionsError[showcaseId];
       const categoryId = getContributionCategoryForShowcase(showcaseId);
+      const latestBlogPost = latestBlogPostByShowcase[showcaseId];
 
       return (
         <div className={className}>
-          <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">{heading}</p>
+          <div className="mb-1 flex items-start justify-between gap-3">
+            <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">{heading}</p>
+            {latestBlogPost?.slug ? (
+              <div className="group relative inline-flex">
+                <button
+                  type="button"
+                  onClick={() => handleOpenLatestBlogForShowcase(showcaseId)}
+                  className="group inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-cyan-200/40 bg-cyan-300/10 text-cyan-100 hover:bg-cyan-300/20 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-300/50"
+                  title="Lectura disponible en Textos"
+                  aria-label="Abrir lectura disponible en Textos"
+                >
+                  <BookOpen size={16} />
+                </button>
+                <span
+                  className={`pointer-events-none absolute right-0 top-full z-10 mt-2 whitespace-nowrap rounded-md border border-cyan-200/30 bg-slate-950/95 px-2 py-1 text-[11px] text-cyan-100 shadow-[0_10px_30px_rgba(0,0,0,0.45)] transition-opacity ${
+                    readingTooltipForShowcase === showcaseId ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'
+                  }`}
+                >
+                  Lectura disponible en Textos
+                </span>
+              </div>
+            ) : null}
+          </div>
           {isLoading ? (
             <p className="text-sm text-slate-400">Cargando comentarios…</p>
           ) : error ? (
@@ -3511,7 +3630,10 @@ const Transmedia = () => {
       activeShowcase,
       getContributionCategoryForShowcase,
       getTopicForShowcase,
+      handleOpenLatestBlogForShowcase,
       handleOpenContribution,
+      latestBlogPostByShowcase,
+      readingTooltipForShowcase,
       publicContributions,
       publicContributionsError,
       publicContributionsLoading,
@@ -5612,12 +5734,9 @@ const rendernotaAutoral = () => {
             Gracias por tu entusiasmo
           </h4>
           <p className="mt-3 text-sm text-slate-300/85 leading-relaxed">
-            Esta activación ({movementPendingAction.label}) aún está en desarrollo.
-            Nos alegra que te interese.
-          </p>
-          <p className="mt-3 text-sm text-slate-300/85 leading-relaxed">
-            Con tu interés y participación, {activeDefinition?.pendingName || 'este miniverso'} puede
-            hacerse realidad: talleres abiertos, activaciones urbanas y función final con realidad aumentada.
+            Este módulo está en fase de preparación. Si te interesa participar, tu registro nos ayuda
+            a priorizar las siguientes activaciones del miniverso: mapa de ruta, talleres
+            coreográficos, marcador AR y transmisión de función final.
           </p>
           <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:justify-center">
             <Button
@@ -5774,7 +5893,7 @@ const rendernotaAutoral = () => {
             viewport={{ once: true }}
             className="text-center mb-16 space-y-6 min-h-[240px] md:min-h-[260px]"
           >
-            <p className="text-xs uppercase tracking-[0.4em] text-slate-400/70">Narrativa Expandida</p>
+            <p className="text-xs uppercase tracking-[0.4em] text-slate-400/70">Narrativa Transmedia</p>
             <h2 className="font-display text-4xl md:text-5xl font-medium text-gradient italic">
               Vitrinas del universo
             </h2>

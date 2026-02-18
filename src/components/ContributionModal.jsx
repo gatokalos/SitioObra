@@ -113,8 +113,6 @@ const initialFormState = {
 
 const FORM_STORAGE_KEY = 'gatoencerrado-contrib-form';
 
-const BETA_UNIVERSES = new Set(['apps', 'oraculo', 'sonoro']);
-
 const formTitlesByUniverse = {
   obra_escenica: 'Si la Obra te tocó, este espacio es tuyo.',
   miniverso_novela: 'Si encontraste algo tuyo entre estas páginas, déjalo dicho.',
@@ -604,21 +602,6 @@ const ContributionModal = ({
     setIsFormPanelOpen(false);
   }, [status]);
 
-  const renderBetaCard = () => (
-    <div className="rounded-2xl border border-white/10 bg-black/20 px-4 py-3 text-[0.8rem] text-slate-300 leading-relaxed">
-      <p className="text-xs uppercase tracking-[0.35em] text-slate-500">¿Qué necesitas saber?</p>
-      <p>• Algunos miniversos aún están bajo construcción.</p>
-      <p>• Puedes ser parte de las pruebas tempranas o versiones beta.</p>
-      <p>• Si te unes a esta lista, recibirás avances exclusivos antes de que se abran al público.</p>
-      <div className="border-t border-white/10 pt-3 text-xs uppercase tracking-[0.35em] text-slate-500">
-        ✨ ¿Qué recibirás?
-      </div>
-      <p className="text-sm">
-        Invitaciones a exploraciones internas, accesos temporales, adelantos curatoriales y ventanas de activación anticipada en los miniversos en desarrollo.
-      </p>
-    </div>
-  );
-
   const renderNotifyPreference = () => (
     <div className="flex flex-col gap-2 rounded-lg border border-white/5 bg-black/20 px-4 py-3">
       <motion.button
@@ -668,9 +651,6 @@ const ContributionModal = ({
         >
           ← Ver Más
         </button>
-      ) : null}
-      {isMobileLayout && BETA_UNIVERSES.has(selectedCategory.id) ? (
-        <div className="mb-4">{renderBetaCard()}</div>
       ) : null}
       <div className="grid gap-6 lg:grid-cols-[1.1fr_0.9fr] lg:items-start">
         <form
@@ -807,9 +787,6 @@ const ContributionModal = ({
           </div>
         )}
       </div>
-      {isDesktopLayout && BETA_UNIVERSES.has(selectedCategory.id) ? (
-        <div className="mt-6 space-y-3">{renderBetaCard()}</div>
-      ) : null}
     </div>
   );
 
