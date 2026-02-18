@@ -11,7 +11,12 @@ import { setBienvenidaReturnPath } from '@/lib/bienvenida';
 
 const HERO_LOGGED_IN_AUDIO_URL =
   'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Sonoridades/audio/A2_Melody_MSTR.m4a';
+const HERO_LOGGED_IN_AUDIO_FALLBACK_URL =
+  'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Sonoridades/audio/A2_Melody_MSTR.wav';
 const HERO_LOGGED_IN_AUDIO_VOLUME = 0.35;
+const HERO_AUDIO_MIN_AUDIBLE_VOLUME = 0.015;
+const HERO_AUDIO_PLAY_RETRY_MS = 2500;
+const HERO_AUDIO_IDLE_RETRY_MS = 6000;
 
 const Hero = () => {
   const [isReserveOpen, setIsReserveOpen] = useState(false);
@@ -28,6 +33,7 @@ const Hero = () => {
   const heroSectionRef = useRef(null);
   const heroAudioRef = useRef(null);
   const audioGestureUnlockRef = useRef(false);
+  const lastHeroAudioPlayAttemptRef = useRef(0);
 
   const rotatingCtas = [
     { label: 'Café', Icon: CoffeeIcon },
@@ -170,41 +176,31 @@ const Hero = () => {
     if (!audio || !user) return undefined;
 
     let rafId = 0;
-    let fadeRafId = 0;
+    let idleRetryId = 0;
     let mounted = true;
     let shouldResumeAfterVisibility = false;
+    let fallbackApplied = false;
+    let requiresInteractionAfterBackground = false;
 
-    const fadeOutAndPause = ({ duration = 650, resetTime = false } = {}) => {
-      cancelAnimationFrame(fadeRafId);
-      const startVolume = Math.max(0, Math.min(1, audio.volume ?? HERO_LOGGED_IN_AUDIO_VOLUME));
-      if (audio.paused || startVolume <= 0.001) {
-        audio.pause();
-        if (resetTime) {
-          audio.currentTime = 0;
-        }
-        audio.volume = HERO_LOGGED_IN_AUDIO_VOLUME;
-        return;
-      }
-      const startedAt = performance.now();
-      const tick = (now) => {
-        const progress = Math.min((now - startedAt) / duration, 1);
-        audio.volume = startVolume * (1 - progress);
-        if (progress < 1) {
-          fadeRafId = window.requestAnimationFrame(tick);
-          return;
-        }
-        audio.pause();
-        if (resetTime) {
-          audio.currentTime = 0;
-        }
-        audio.volume = HERO_LOGGED_IN_AUDIO_VOLUME;
-      };
-      fadeRafId = window.requestAnimationFrame(tick);
+    audioGestureUnlockRef.current = false;
+    lastHeroAudioPlayAttemptRef.current = 0;
+
+    const getTargetVolumeByHeroPosition = () => {
+      const hero = heroSectionRef.current;
+      if (!hero) return 0;
+      const rect = hero.getBoundingClientRect();
+      const travel = Math.max(rect.height * 0.9, 1);
+      const progress = Math.min(Math.max((-rect.top) / travel, 0), 1);
+      return HERO_LOGGED_IN_AUDIO_VOLUME * (1 - progress);
     };
 
-    const attemptPlay = async () => {
+    const attemptPlay = async ({ fromUserGesture = false } = {}) => {
       if (!mounted) return;
-      cancelAnimationFrame(fadeRafId);
+      if (!fromUserGesture && requiresInteractionAfterBackground) return;
+      const now = performance.now();
+      if (!fromUserGesture && now - lastHeroAudioPlayAttemptRef.current < HERO_AUDIO_PLAY_RETRY_MS) return;
+
+      lastHeroAudioPlayAttemptRef.current = now;
       try {
         await audio.play();
         audioGestureUnlockRef.current = true;
@@ -214,15 +210,11 @@ const Hero = () => {
     };
 
     const updateAudioByScroll = () => {
-      const hero = heroSectionRef.current;
-      if (!hero || !audio) return;
-      const rect = hero.getBoundingClientRect();
-      const travel = Math.max(rect.height * 0.9, 1);
-      const progress = Math.min(Math.max((-rect.top) / travel, 0), 1);
-      const targetVolume = HERO_LOGGED_IN_AUDIO_VOLUME * (1 - progress);
+      if (!audio) return;
+      const targetVolume = getTargetVolumeByHeroPosition();
       audio.volume = targetVolume;
 
-      if (targetVolume <= 0.01) {
+      if (targetVolume <= HERO_AUDIO_MIN_AUDIBLE_VOLUME) {
         if (!audio.paused) {
           audio.pause();
         }
@@ -240,47 +232,122 @@ const Hero = () => {
     };
 
     const onFirstInteraction = () => {
+      requiresInteractionAfterBackground = false;
       if (audioGestureUnlockRef.current) return;
-      void attemptPlay();
+      const targetVolume = getTargetVolumeByHeroPosition();
+      audio.volume = targetVolume;
+      if (targetVolume <= HERO_AUDIO_MIN_AUDIBLE_VOLUME) return;
+      void attemptPlay({ fromUserGesture: true });
+    };
+
+    const pauseForBackground = ({ forceInteractionToResume = false } = {}) => {
+      shouldResumeAfterVisibility = !audio.paused && audio.volume > HERO_AUDIO_MIN_AUDIBLE_VOLUME;
+      if (forceInteractionToResume) {
+        requiresInteractionAfterBackground = true;
+      }
+      audio.pause();
+      audio.volume = HERO_LOGGED_IN_AUDIO_VOLUME;
     };
 
     const onVisibilityChange = () => {
       if (document.visibilityState === 'hidden') {
-        shouldResumeAfterVisibility = !audio.paused && audio.volume > 0.01;
-        fadeOutAndPause({ duration: 280, resetTime: false });
+        pauseForBackground({ forceInteractionToResume: true });
         return;
       }
 
       updateAudioByScroll();
-      if (shouldResumeAfterVisibility) {
+      if (shouldResumeAfterVisibility && !requiresInteractionAfterBackground) {
         void attemptPlay();
       }
       shouldResumeAfterVisibility = false;
     };
 
+    const onWindowBlur = () => {
+      // Desktop tab switch and mobile app switch can both trigger blur.
+      pauseForBackground({ forceInteractionToResume: true });
+    };
+
+    const onWindowFocus = () => {
+      if (document.visibilityState !== 'visible') return;
+      updateAudioByScroll();
+      if (shouldResumeAfterVisibility && !requiresInteractionAfterBackground) {
+        void attemptPlay();
+      }
+      shouldResumeAfterVisibility = false;
+    };
+
+    const onPageHide = () => {
+      pauseForBackground({ forceInteractionToResume: true });
+    };
+
+    const onPageFreeze = () => {
+      pauseForBackground({ forceInteractionToResume: true });
+    };
+
+    const onAudioError = () => {
+      if (fallbackApplied) return;
+      fallbackApplied = true;
+      audio.src = HERO_LOGGED_IN_AUDIO_FALLBACK_URL;
+      audio.load();
+      void attemptPlay();
+    };
+
+    const supportsM4a = Boolean(audio.canPlayType('audio/mp4') || audio.canPlayType('audio/x-m4a'));
+    audio.src = supportsM4a ? HERO_LOGGED_IN_AUDIO_URL : HERO_LOGGED_IN_AUDIO_FALLBACK_URL;
+    audio.load();
+
     audio.loop = true;
-    audio.preload = 'auto';
+    audio.preload = 'metadata';
     audio.volume = HERO_LOGGED_IN_AUDIO_VOLUME;
 
     void attemptPlay();
     updateAudioByScroll();
+    idleRetryId = window.setInterval(() => {
+      if (document.visibilityState !== 'visible') return;
+      if (requiresInteractionAfterBackground) return;
+      if (!audio.paused) return;
+      const targetVolume = getTargetVolumeByHeroPosition();
+      if (targetVolume <= HERO_AUDIO_MIN_AUDIBLE_VOLUME) return;
+      audio.volume = targetVolume;
+      void attemptPlay();
+    }, HERO_AUDIO_IDLE_RETRY_MS);
 
     window.addEventListener('scroll', onScroll, { passive: true });
     window.addEventListener('resize', onScroll);
     window.addEventListener('pointerdown', onFirstInteraction, { passive: true });
+    window.addEventListener('click', onFirstInteraction, { passive: true });
+    window.addEventListener('mousedown', onFirstInteraction, { passive: true });
+    window.addEventListener('touchstart', onFirstInteraction, { passive: true });
+    window.addEventListener('wheel', onFirstInteraction, { passive: true });
     window.addEventListener('keydown', onFirstInteraction);
+    window.addEventListener('blur', onWindowBlur);
+    window.addEventListener('focus', onWindowFocus);
+    window.addEventListener('pagehide', onPageHide);
+    document.addEventListener('freeze', onPageFreeze);
+    audio.addEventListener('error', onAudioError);
     document.addEventListener('visibilitychange', onVisibilityChange);
 
     return () => {
       mounted = false;
       cancelAnimationFrame(rafId);
-      cancelAnimationFrame(fadeRafId);
+      window.clearInterval(idleRetryId);
       window.removeEventListener('scroll', onScroll);
       window.removeEventListener('resize', onScroll);
       window.removeEventListener('pointerdown', onFirstInteraction);
+      window.removeEventListener('click', onFirstInteraction);
+      window.removeEventListener('mousedown', onFirstInteraction);
+      window.removeEventListener('touchstart', onFirstInteraction);
+      window.removeEventListener('wheel', onFirstInteraction);
       window.removeEventListener('keydown', onFirstInteraction);
+      window.removeEventListener('blur', onWindowBlur);
+      window.removeEventListener('focus', onWindowFocus);
+      window.removeEventListener('pagehide', onPageHide);
+      document.removeEventListener('freeze', onPageFreeze);
+      audio.removeEventListener('error', onAudioError);
       document.removeEventListener('visibilitychange', onVisibilityChange);
-      fadeOutAndPause({ duration: 520, resetTime: true });
+      audio.pause();
+      audio.currentTime = 0;
+      audio.volume = HERO_LOGGED_IN_AUDIO_VOLUME;
     };
   }, [user]);
 
@@ -615,7 +682,7 @@ const Hero = () => {
       {user ? (
         <audio
           ref={heroAudioRef}
-          src={HERO_LOGGED_IN_AUDIO_URL}
+          preload="metadata"
           playsInline
           aria-hidden="true"
           className="hidden"

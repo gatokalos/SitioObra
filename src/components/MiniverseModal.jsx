@@ -889,7 +889,7 @@ const MiniverseModal = ({
 
     setCommunityOptIn(true);
     try {
-      const { error } = await supabase.functions.invoke('community-optin-email', {
+      const { error } = await supabase.functions.invoke('send-subscription-nudge', {
         body: {
           source: 'miniverse_modal',
           context: 'sostener_tab',

@@ -57,6 +57,11 @@ import IAInsightCard from '@/components/IAInsightCard';
 import LoginOverlay from '@/components/ContributionModal/LoginOverlay';
 import DiosasCarousel from '@/components/DiosasCarousel';
 import { fetchApprovedContributions } from '@/services/contributionService';
+import {
+  createTransmediaIdempotencyKey,
+  fetchTransmediaCreditState,
+  registerTransmediaCreditEvent,
+} from '@/services/transmediaCreditsService';
 import { useSilvestreVoice } from '@/hooks/useSilvestreVoice';
 import ObraConversationControls from '@/components/miniversos/obra/ObraConversationControls';
 import ObraQuestionList from '@/components/miniversos/obra/ObraQuestionList';
@@ -373,6 +378,15 @@ const readStoredBool = (key, fallback = false) => {
   const raw = safeGetItem(key);
   if (raw === null || raw === undefined) return fallback;
   return raw === 'true';
+};
+
+const buildShowcaseEnergyFromBoosts = (baseEnergyByShowcase = {}, boosts = {}) => {
+  const next = {};
+  Object.entries(baseEnergyByShowcase).forEach(([showcaseId, baseAmount]) => {
+    const amount = Number.isFinite(baseAmount) ? Number(baseAmount) : 0;
+    next[showcaseId] = boosts?.[showcaseId] ? amount + amount : amount;
+  });
+  return next;
 };
 const MiniVersoCard = ({
   title,
@@ -1814,6 +1828,69 @@ const Transmedia = () => {
   const [useLegacyTazaViewer, setUseLegacyTazaViewer] = useState(LEGACY_TAZA_VIEWER_ENABLED);
   const [hasActiveSubscription, setHasActiveSubscription] = useState(false);
 
+  const applyTransmediaCreditState = useCallback(
+    (state) => {
+      if (!state || typeof state !== 'object') return;
+      const boosts = state.showcase_boosts && typeof state.showcase_boosts === 'object'
+        ? state.showcase_boosts
+        : {};
+      const safeAvailable = Number.isFinite(state.available_tokens)
+        ? Number(state.available_tokens)
+        : initialAvailableGATokens;
+      const safeNovelaQuestions = Number.isFinite(state.novela_questions) ? Number(state.novela_questions) : 0;
+      const safeTazaActivations = Number.isFinite(state.taza_activations) ? Number(state.taza_activations) : 0;
+
+      setSonoroSpent(Boolean(state.sonoro_spent));
+      setGraphicSpent(Boolean(state.graphic_spent));
+      setNovelaQuestions(safeNovelaQuestions);
+      setTazaActivations(safeTazaActivations);
+      setShowcaseBoosts(boosts);
+      setShowcaseEnergy(buildShowcaseEnergyFromBoosts(baseEnergyByShowcase, boosts));
+      setAvailableGATokens(safeAvailable);
+
+      safeSetItem('gatoencerrado:sonoro-spent', String(Boolean(state.sonoro_spent)));
+      safeSetItem('gatoencerrado:graphic-spent', String(Boolean(state.graphic_spent)));
+      safeSetItem('gatoencerrado:novela-questions', String(safeNovelaQuestions));
+      safeSetItem('gatoencerrado:taza-activations', String(safeTazaActivations));
+      safeSetItem('gatoencerrado:showcase-boosts', JSON.stringify(boosts));
+      safeSetItem(
+        'gatoencerrado:showcase-energy',
+        JSON.stringify(buildShowcaseEnergyFromBoosts(baseEnergyByShowcase, boosts))
+      );
+      safeSetItem('gatoencerrado:gatokens-available', String(safeAvailable));
+    },
+    [baseEnergyByShowcase, initialAvailableGATokens]
+  );
+
+  const syncTransmediaCredits = useCallback(async () => {
+    const { state, error } = await fetchTransmediaCreditState();
+    if (error) {
+      console.warn('[Transmedia] No se pudo sincronizar estado de créditos:', error);
+      return null;
+    }
+    applyTransmediaCreditState(state);
+    return state;
+  }, [applyTransmediaCreditState]);
+
+  const trackTransmediaCreditEvent = useCallback(
+    async ({ eventKey, amount = 0, oncePerIdentity = false, metadata = {} } = {}) => {
+      const { state, error } = await registerTransmediaCreditEvent({
+        eventKey,
+        amount,
+        oncePerIdentity,
+        metadata,
+        idempotencyKey: createTransmediaIdempotencyKey(eventKey),
+      });
+      if (error) {
+        console.warn('[Transmedia] No se pudo registrar evento de créditos:', { eventKey, error });
+        return { ok: false, state: null, duplicate: false };
+      }
+      applyTransmediaCreditState(state);
+      return { ok: true, state, duplicate: false };
+    },
+    [applyTransmediaCreditState]
+  );
+
   useEffect(() => {
     if (typeof document === 'undefined') return;
     if (isSafari) {
@@ -1886,6 +1963,10 @@ const Transmedia = () => {
       isMounted = false;
     };
   }, [user?.id]);
+
+  useEffect(() => {
+    void syncTransmediaCredits();
+  }, [syncTransmediaCredits, user?.id]);
 
   useEffect(() => {
     if (isAuthenticated) {
@@ -2031,47 +2112,51 @@ const Transmedia = () => {
     }));
   }, [allShowcasesUnlocked, explorerBadge.unlocked]);
 
-  const handleNovelaQuestionSend = useCallback(() => {
+  const handleNovelaQuestionSend = useCallback(async () => {
     if (isNovelaSubmitting) {
       return;
     }
     setIsNovelaSubmitting(true);
     setShowNovelaCoins(true);
-    const delayPromise = new Promise((resolve) => setTimeout(resolve, 1100));
-    delayPromise.then(() => {
-      setShowNovelaCoins(false);
-      setIsNovelaSubmitting(false);
-      setNovelaQuestions((prev) => {
-        const next = prev + 1;
-        if (typeof window !== 'undefined') {
-          safeSetItem('gatoencerrado:novela-questions', String(next));
-          window.dispatchEvent(
-            new CustomEvent('gatoencerrado:miniverse-spent', {
-              detail: { id: 'novela', spent: true, amount: 25, count: next },
-            })
-          );
-        }
-        return next;
-      });
+    await new Promise((resolve) => setTimeout(resolve, 900));
+    const result = await trackTransmediaCreditEvent({
+      eventKey: 'novela_question',
+      amount: -25,
+      metadata: { source: 'transmedia_novela' },
     });
-  }, [isNovelaSubmitting]);
 
-  const handleSonoroEnter = useCallback(() => {
+    if (result.ok && typeof result.state?.novela_questions === 'number') {
+      window.dispatchEvent(
+        new CustomEvent('gatoencerrado:miniverse-spent', {
+          detail: { id: 'novela', spent: true, amount: 25, count: result.state.novela_questions },
+        })
+      );
+    }
+    setShowNovelaCoins(false);
+    setIsNovelaSubmitting(false);
+  }, [isNovelaSubmitting, trackTransmediaCreditEvent]);
+
+  const handleSonoroEnter = useCallback(async () => {
     if (sonoroSpent) {
       return;
     }
     setShowSonoroCoins(true);
-    setTimeout(() => setShowSonoroCoins(false), 1100);
-    setSonoroSpent(true);
-    if (typeof window !== 'undefined') {
-      safeSetItem('gatoencerrado:sonoro-spent', 'true');
+    await new Promise((resolve) => setTimeout(resolve, 900));
+    const result = await trackTransmediaCreditEvent({
+      eventKey: 'sonoro_unlock',
+      amount: -GAT_COSTS.sonoroMix,
+      oncePerIdentity: true,
+      metadata: { source: 'transmedia_sonoro' },
+    });
+    if (result.ok) {
       window.dispatchEvent(
         new CustomEvent('gatoencerrado:miniverse-spent', {
-          detail: { id: 'sonoro', spent: true, amount: 130 },
+          detail: { id: 'sonoro', spent: true, amount: GAT_COSTS.sonoroMix },
         })
       );
     }
-  }, [sonoroSpent]);
+    setShowSonoroCoins(false);
+  }, [sonoroSpent, trackTransmediaCreditEvent]);
 
   const handleProjectionInterest = useCallback(async () => {
     if (isProjectionInterestSubmitting || isProjectionInterestSent) return;
@@ -2664,7 +2749,7 @@ const Transmedia = () => {
   }, []);
 
   const handleOpenGraphicSwipe = useCallback(
-    (entry) => {
+    async (entry) => {
       if (!entry?.previewPdfUrl || isGraphicUnlocking) {
         return;
       }
@@ -2691,27 +2776,31 @@ const Transmedia = () => {
       };
 
       if (!graphicSpent) {
-        setGraphicSpent(true);
         setShowGraphicCoins(true);
-        setTimeout(() => setShowGraphicCoins(false), 1100);
-        if (typeof window !== 'undefined') {
-          safeSetItem('gatoencerrado:graphic-spent', 'true');
+        const result = await trackTransmediaCreditEvent({
+          eventKey: 'graphic_unlock',
+          amount: -GAT_COSTS.graficoSwipe,
+          oncePerIdentity: true,
+          metadata: { source: 'transmedia_grafico', entryId: entry.id ?? null },
+        });
+        if (result.ok) {
           window.dispatchEvent(
             new CustomEvent('gatoencerrado:miniverse-spent', {
               detail: { id: 'grafico', spent: true, amount: GAT_COSTS.graficoSwipe },
             })
           );
         }
+        setTimeout(() => setShowGraphicCoins(false), 1100);
         setTimeout(openPdf, 900);
         return;
       }
 
       openPdf();
     },
-    [graphicSpent, handleOpenPdfPreview, isGraphicUnlocking, requireShowcaseAuth]
+    [graphicSpent, handleOpenPdfPreview, isGraphicUnlocking, requireShowcaseAuth, trackTransmediaCreditEvent]
   );
 
-  const handleActivateAR = useCallback(() => {
+  const handleActivateAR = useCallback(async () => {
     if (isTazaActivating) {
       return;
     }
@@ -2723,8 +2812,6 @@ const Transmedia = () => {
     setShowTazaCoins(true);
     setTazaCameraReady(false);
 
-    const next = tazaActivations + 1;
-    setTazaActivations(next);
     setIsTazaARActive(true);
     if (typeof window !== 'undefined' && window.matchMedia('(max-width: 768px)').matches) {
       setIsMobileARFullscreen(true);
@@ -2736,15 +2823,19 @@ const Transmedia = () => {
       setShowTazaCoins(false);
       setIsTazaActivating(false);
     }, 700);
-    if (typeof window !== 'undefined') {
-      safeSetItem('gatoencerrado:taza-activations', String(next));
+    const result = await trackTransmediaCreditEvent({
+      eventKey: 'taza_activation',
+      amount: -30,
+      metadata: { source: 'transmedia_taza' },
+    });
+    if (result.ok && typeof result.state?.taza_activations === 'number') {
       window.dispatchEvent(
         new CustomEvent('gatoencerrado:miniverse-spent', {
-          detail: { id: 'taza', spent: true, amount: 30, count: next },
+          detail: { id: 'taza', spent: true, amount: 30, count: result.state.taza_activations },
         })
       );
     }
-  }, [isTazaActivating, requireShowcaseAuth, tazaActivations]);
+  }, [isTazaActivating, requireShowcaseAuth, trackTransmediaCreditEvent]);
 
   const handleCloseARExperience = useCallback(() => {
     setIsTazaARActive(false);
@@ -2812,7 +2903,8 @@ const Transmedia = () => {
         })
       );
     }
-  }, []);
+    void syncTransmediaCredits();
+  }, [syncTransmediaCredits]);
 
   const handlePdfLoadSuccess = useCallback(({ numPages }) => {
     setPdfNumPages(numPages);
@@ -3443,7 +3535,7 @@ const Transmedia = () => {
   }, []);
 
   const handleExplorerReward = useCallback(
-    (rewardType = 'subscriber') => {
+    async (rewardType = 'subscriber') => {
       if (!allShowcasesUnlocked || explorerBadge.rewardClaimed) {
         return;
       }
@@ -3451,12 +3543,20 @@ const Transmedia = () => {
       if (rewardAmount <= 0) {
         return;
       }
-      setShowBadgeCoins(true);
-      setAvailableGATokens((prev) => {
-        const next = prev + rewardAmount;
-        safeSetItem('gatoencerrado:gatokens-available', String(next));
-        return next;
+      const eventKey =
+        rewardType === 'subscriber'
+          ? 'explorer_badge_reward_subscriber'
+          : 'explorer_badge_reward_guest';
+      const result = await trackTransmediaCreditEvent({
+        eventKey,
+        amount: rewardAmount,
+        oncePerIdentity: true,
+        metadata: { source: 'transmedia_explorer_badge' },
       });
+      if (!result.ok) {
+        return;
+      }
+      setShowBadgeCoins(true);
       if (typeof window !== 'undefined') {
         window.dispatchEvent(
           new CustomEvent('gatoencerrado:miniverse-spent', {
@@ -3475,11 +3575,11 @@ const Transmedia = () => {
       }
       badgeCoinsTimeoutRef.current = setTimeout(() => setShowBadgeCoins(false), 1300);
     },
-    [allShowcasesUnlocked, explorerBadge.rewardClaimed]
+    [allShowcasesUnlocked, explorerBadge.rewardClaimed, trackTransmediaCreditEvent]
   );
 
   const handleShowcaseRevealBoost = useCallback(
-    (showcaseId) => {
+    async (showcaseId) => {
       if (!showcaseId || showcaseBoosts?.[showcaseId]) {
         return;
       }
@@ -3487,23 +3587,15 @@ const Transmedia = () => {
       if (!boostAmount) {
         return;
       }
-      setShowcaseBoosts((prev = {}) => {
-        const next = { ...prev, [showcaseId]: true };
-        safeSetItem('gatoencerrado:showcase-boosts', JSON.stringify(next));
-        return next;
+      const result = await trackTransmediaCreditEvent({
+        eventKey: `showcase_boost:${showcaseId}`,
+        amount: boostAmount,
+        oncePerIdentity: true,
+        metadata: { source: 'transmedia_showcase_reveal', showcaseId },
       });
-      setShowcaseEnergy((prev = {}) => {
-        const currentValue = prev?.[showcaseId] ?? baseEnergyByShowcase[showcaseId];
-        const updatedValue = currentValue + boostAmount;
-        const next = { ...prev, [showcaseId]: updatedValue };
-        safeSetItem('gatoencerrado:showcase-energy', JSON.stringify(next));
-        return next;
-      });
-      setAvailableGATokens((prev) => {
-        const next = prev + boostAmount;
-        safeSetItem('gatoencerrado:gatokens-available', String(next));
-        return next;
-      });
+      if (!result.ok) {
+        return;
+      }
       if (typeof window !== 'undefined') {
         window.dispatchEvent(
           new CustomEvent('gatoencerrado:miniverse-spent', {
@@ -3519,7 +3611,7 @@ const Transmedia = () => {
         setCelebratedShowcaseId((current) => (current === showcaseId ? null : current));
       }, 1400);
     },
-    [baseEnergyByShowcase, showcaseBoosts]
+    [baseEnergyByShowcase, showcaseBoosts, trackTransmediaCreditEvent]
   );
 
   const getTopicForShowcase = useCallback(
