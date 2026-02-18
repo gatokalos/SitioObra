@@ -171,6 +171,7 @@ const Hero = () => {
 
     let rafId = 0;
     let mounted = true;
+    let shouldResumeAfterVisibility = false;
 
     const attemptPlay = async () => {
       if (!mounted) return;
@@ -213,6 +214,22 @@ const Hero = () => {
       void attemptPlay();
     };
 
+    const onVisibilityChange = () => {
+      if (document.visibilityState === 'hidden') {
+        shouldResumeAfterVisibility = !audio.paused && audio.volume > 0.01;
+        if (!audio.paused) {
+          audio.pause();
+        }
+        return;
+      }
+
+      updateAudioByScroll();
+      if (shouldResumeAfterVisibility) {
+        void attemptPlay();
+      }
+      shouldResumeAfterVisibility = false;
+    };
+
     audio.loop = true;
     audio.preload = 'auto';
     audio.volume = HERO_LOGGED_IN_AUDIO_VOLUME;
@@ -224,6 +241,7 @@ const Hero = () => {
     window.addEventListener('resize', onScroll);
     window.addEventListener('pointerdown', onFirstInteraction, { passive: true });
     window.addEventListener('keydown', onFirstInteraction);
+    document.addEventListener('visibilitychange', onVisibilityChange);
 
     return () => {
       mounted = false;
@@ -232,6 +250,7 @@ const Hero = () => {
       window.removeEventListener('resize', onScroll);
       window.removeEventListener('pointerdown', onFirstInteraction);
       window.removeEventListener('keydown', onFirstInteraction);
+      document.removeEventListener('visibilitychange', onVisibilityChange);
       audio.pause();
       audio.currentTime = 0;
       audio.volume = HERO_LOGGED_IN_AUDIO_VOLUME;
