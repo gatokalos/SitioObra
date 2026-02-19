@@ -81,14 +81,15 @@ const Header = () => {
   }, [setShowLoginOverlay]);
 
   const menuItems = [
-    { name: 'Obra', href: '#about' },
-    { name: 'Equipo', href: '#team' },
-    { name: 'Funciones', href: '#next-show' },
-    { name: 'Galería', href: '#instagram' },
-    { name: 'Textos', href: '#dialogo-critico' },
-    { name: 'Voces', href: '#provoca' },
     { name: 'Transmedia', href: '#transmedia' },
     { name: 'Causa', href: '#apoya' },
+    { name: 'Obra', href: '#about' },
+    { name: 'Equipo', href: '#team' },
+    { name: 'Galería', href: '#instagram' },
+    { name: 'Voces', href: '#provoca' },
+    { name: 'Curaduría', href: '#dialogo-critico' },
+    { name: 'Funciones', href: '#next-show' },
+    { name: 'Contacto', href: '#contact' },
   ];
 
   const handleNavClick = (href) => {
@@ -153,19 +154,16 @@ const Header = () => {
           </div>
 
           <div className="hidden xl:flex items-center space-x-1">
-            <motion.button
-              whileHover={{ scale: 1.05, color: '#e9d5ff' }}
-              onClick={() => handleNavClick('#contact')}
-              className="text-slate-300 hover:text-white transition-colors font-medium px-4 py-2 rounded-md border border-purple-300/30 hover:bg-purple-500/20"
-            >
-              Contacto
-            </motion.button>
             {menuItems.map((item) => (
               <motion.button
                 key={item.name}
                 whileHover={{ scale: 1.05, color: '#e9d5ff' }}
                 onClick={() => handleNavClick(item.href)}
-                className="text-slate-300 hover:text-white transition-colors font-medium px-4 py-2 rounded-md"
+                className={`text-slate-300 hover:text-white transition-colors font-medium px-4 py-2 rounded-md ${
+                  item.name === 'Contacto'
+                    ? 'border border-purple-300/30 hover:bg-purple-500/20'
+                    : ''
+                }`}
               >
                 {item.name}
               </motion.button>
@@ -191,17 +189,11 @@ const Header = () => {
             exit={{ opacity: 0, height: 0 }}
             className="xl:hidden mt-4 bg-black/80 backdrop-blur-md rounded-lg p-4 border border-slate-100/10"
           >
-            <button
-              onClick={() => handleNavClick('#contact')}
-              className="block w-full text-left py-3 text-slate-200 hover:text-white transition-colors border-b border-slate-100/10"
-            >
-              Contacto
-            </button>
             {menuItems.map((item) => (
               <button
                 key={item.name}
                 onClick={() => handleNavClick(item.href)}
-                className="block w-full text-left py-3 text-slate-200 hover:text-white transition-colors mt-2"
+                className="block w-full text-left py-3 text-slate-200 hover:text-white transition-colors"
               >
                 {item.name}
               </button>
