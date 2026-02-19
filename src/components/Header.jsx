@@ -8,7 +8,7 @@ import LoginOverlay from '@/components/ContributionModal/LoginOverlay';
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [isScrolled, setIsScrolled] = useState(false);
+  const [scrollTier, setScrollTier] = useState(0);
   const [showLoginOverlay, setShowLoginOverlay] = useState(false);
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
   const { user, signOut } = useAuth();
@@ -42,11 +42,25 @@ const Header = () => {
 
   useEffect(() => {
     const handleScroll = () => {
-      setIsScrolled(window.scrollY > 20);
+      const y = window.scrollY;
+      if (y > 180) {
+        setScrollTier(2);
+      } else if (y > 20) {
+        setScrollTier(1);
+      } else {
+        setScrollTier(0);
+      }
     };
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
+
+  const headerToneClass =
+    scrollTier === 2
+      ? 'bg-emerald-950/45 backdrop-blur-lg border-b border-emerald-300/25 shadow-[0_12px_34px_rgba(16,185,129,0.14)]'
+      : scrollTier === 1
+        ? 'bg-emerald-950/25 backdrop-blur-lg border-b border-emerald-300/15 shadow-[0_8px_26px_rgba(16,185,129,0.08)]'
+        : 'bg-transparent';
 
   useEffect(() => {
     if (!isProfileMenuOpen) return undefined;
@@ -72,6 +86,7 @@ const Header = () => {
     { name: 'Funciones', href: '#next-show' },
     { name: 'Galería', href: '#instagram' },
     { name: 'Textos', href: '#dialogo-critico' },
+    { name: 'Voces', href: '#provoca' },
     { name: 'Transmedia', href: '#transmedia' },
     { name: 'Causa', href: '#apoya' },
   ];
@@ -90,9 +105,7 @@ const Header = () => {
         initial={{ y: -100 }}
         animate={{ y: 0 }}
         transition={{ duration: 0.5, ease: 'easeOut' }}
-        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-          isScrolled ? 'bg-black/60 backdrop-blur-lg border-b border-slate-100/10' : 'bg-transparent'
-        }`}
+        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${headerToneClass}`}
       >
       <nav className="container mx-auto px-6 py-3 max-[375px]:px-4">
         <div className="flex items-center justify-between">

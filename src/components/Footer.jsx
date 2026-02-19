@@ -64,7 +64,7 @@ const Footer = () => {
             >
               <span className="font-semibold text-slate-200 mb-4 block">Navegación</span>
               <ul className="space-y-3">
-                {[{name: 'Obra', href: '#about'}, {name: 'Equipo', href: '#team'}, {name: 'Galería', href: '#instagram'}, {name: 'Funciones', href: '#next-show'}, { name: 'Textos', href: '#dialogo-critico' }, {name: 'Transmedia', href: '#transmedia'}, { name: 'Causa', href: '#apoya' }].map((item) => (
+                {[{name: 'Obra', href: '#about'}, {name: 'Equipo', href: '#team'}, {name: 'Galería', href: '#instagram'}, {name: 'Funciones', href: '#next-show'}, { name: 'Textos', href: '#dialogo-critico' }, { name: 'Voces', href: '#provoca' }, {name: 'Transmedia', href: '#transmedia'}, { name: 'Causa', href: '#apoya' }].map((item) => (
                   <li key={item.name}>
                     <button
                       onClick={() => handleLinkClick(item.href)}
