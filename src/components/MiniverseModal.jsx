@@ -1582,7 +1582,7 @@ const MiniverseModal = ({
                               )}
                             </div>
                             <div>
-                              <p className="text-xs uppercase tracking-[0.35em] text-slate-300/80">Narrativa expandida</p>
+                              <p className="text-xs uppercase tracking-[0.35em] text-slate-300/80">Microficción</p>
                               <h3 className="font-display text-3xl text-slate-50">{card.title}</h3>
                             </div>
                           </div>

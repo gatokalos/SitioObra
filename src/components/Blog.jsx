@@ -95,7 +95,7 @@ const inferMiniverseFromPost = (post) => {
 
 const markdownComponents = {
   p: ({ node: _node, ...props }) => (
-    <p className="leading-relaxed font-light text-slate-200" {...props} />
+    <p className="text-[1.02rem] md:text-[1.08rem] leading-8 font-light text-slate-200" {...props} />
   ),
   strong: ({ node: _node, ...props }) => <strong className="font-semibold text-white" {...props} />,
   em: ({ node: _node, ...props }) => <em className="italic text-slate-100" {...props} />,
@@ -106,10 +106,10 @@ const markdownComponents = {
     />
   ),
   ul: ({ node: _node, ordered: _ordered, ...props }) => (
-    <ul className="ml-6 list-disc space-y-2 text-slate-200" {...props} />
+    <ul className="ml-6 list-disc space-y-2 text-[1rem] md:text-[1.04rem] text-slate-200" {...props} />
   ),
   ol: ({ node: _node, ordered: _ordered, ...props }) => (
-    <ol className="ml-6 list-decimal space-y-2 text-slate-200" {...props} />
+    <ol className="ml-6 list-decimal space-y-2 text-[1rem] md:text-[1.04rem] text-slate-200" {...props} />
   ),
   li: ({ node: _node, ordered: _ordered, ...props }) => (
     // ReactMarkdown envía `ordered` como boolean; lo omitimos para evitar warnings en el DOM.
@@ -263,9 +263,9 @@ const FullArticle = ({ post, onClose }) => {
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: 20 }}
       transition={{ duration: 0.4, ease: 'easeOut' }}
-      className="min-h-[600px] glass-effect rounded-3xl p-8 md:p-12 border border-white/10 shadow-2xl backdrop-blur-xl"
+      className="min-h-[560px] glass-effect rounded-3xl border border-white/10 p-5 sm:p-7 md:p-10 shadow-2xl backdrop-blur-xl"
     >
-      <div className="flex flex-wrap items-center justify-between gap-4 mb-8">
+      <div className="mb-6 flex flex-wrap items-center justify-between gap-4 md:mb-8">
         <div className="flex flex-col gap-2 text-sm text-slate-400">
           {publishedDate ? (
             <span className="inline-flex items-center gap-2">
@@ -290,12 +290,18 @@ const FullArticle = ({ post, onClose }) => {
           ) : null}
         </div>
 
-        <Button onClick={onClose} variant="ghost" className="text-slate-400 hover:text-white hover:bg-white/10">
+        <Button
+          onClick={onClose}
+          variant="ghost"
+          className="text-slate-300 hover:text-white hover:bg-white/10 border border-white/10"
+        >
           Cerrar artículo
         </Button>
       </div>
 
-      <h3 className="font-display text-3xl md:text-4xl font-semibold text-slate-50 mb-8">{post.title}</h3>
+      <h3 className="mb-6 font-display text-2xl font-semibold text-slate-50 sm:text-3xl md:mb-8 md:text-4xl">
+        {post.title}
+      </h3>
 
       {articleImage ? (
         <button
@@ -321,8 +327,26 @@ const FullArticle = ({ post, onClose }) => {
           ) : null}
         </button>
       ) : null}
+      {articleImage ? (
+        <div className="mb-10 hidden md:block">
+          <div className="relative mx-auto max-w-3xl overflow-hidden rounded-3xl border border-white/10 bg-white/5 aspect-[16/9]">
+            <img
+              src={articleImage}
+              alt={post.title}
+              className="h-full w-full object-cover"
+              loading="lazy"
+            />
+            <div className="absolute inset-0 bg-gradient-to-b from-transparent via-black/10 to-black/35 pointer-events-none" />
+            {articleCaption ? (
+              <div className="absolute inset-x-0 bottom-0 px-4 py-3 text-xs text-slate-100 bg-black/55 backdrop-blur-sm">
+                {articleCaption}
+              </div>
+            ) : null}
+          </div>
+        </div>
+      ) : null}
       {articleContent ? (
-        <div className="flex flex-col gap-6 text-slate-200 leading-relaxed font-light lg:columns-2 lg:gap-10 lg:[&>p]:break-inside-avoid lg:[&>ul]:break-inside-avoid lg:[&>ol]:break-inside-avoid">
+        <div className="mx-auto flex max-w-3xl flex-col gap-6 text-slate-200 font-light">
           <ReactMarkdown components={markdownComponents} skipHtml={false} linkTarget="_blank">
             {articleContent}
           </ReactMarkdown>
@@ -335,22 +359,16 @@ const FullArticle = ({ post, onClose }) => {
           </p>
         </div>
       )}
-      {articleImage ? (
-        <div className="hidden md:block my-10 overflow-hidden rounded-3xl border border-white/10 bg-white/5 aspect-[16/9] relative group">
-          <img
-            src={articleImage}
-            alt={post.title}
-            className="w-full h-full object-cover"
-            loading="lazy"
-          />
-          {articleCaption ? (
-            <div className="absolute inset-x-0 bottom-0 px-4 py-3 text-xs text-slate-100 bg-black/60 backdrop-blur-sm opacity-0 transition-opacity group-hover:opacity-100">
-              {articleCaption}
-            </div>
-          ) : null}
-        </div>
-      ) : null}
       <ArticleInteractionPanel post={post} />
+      <div className="mt-8 flex justify-center">
+        <Button
+          onClick={onClose}
+          variant="outline"
+          className="border-white/20 text-slate-200 hover:bg-white/10 hover:text-white"
+        >
+          Volver al listado
+        </Button>
+      </div>
     </motion.div>
   );
 };

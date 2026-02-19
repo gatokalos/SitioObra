@@ -23,6 +23,7 @@ import {
   Sparkles,
   MapIcon,
   Coins,
+  Quote,
   CheckCheckIcon,
   Hand,
   Send,
@@ -699,7 +700,7 @@ iaProfile: {
         'Dos películas, dos vulnerabilidades distintas, un mismo impulso: usar el arte para tocar aquello que no queremos decir en voz alta y encontrar otra manera de contarlo.',
     },
     proyeccion: {
-      title: 'Mayo 2026 · Cineteca CECUT',
+      title: '🗓️ Mayo 2026 · Cineteca CECUT',
       description:
         'Forma parte de la primera proyección doble de CopyCats + Quirón, con conversatorio del equipo y sonido Dolby Atmos diseñado por Concrete Sounds.',
       cta: 'Quiero ser parte de la proyección',
@@ -1313,7 +1314,7 @@ const formats = [
     icon: Drama,
     iconClass: 'text-purple-300',
     instruccion: 'Habla con la obra sobre la obra.',
-    iaTokensNote: 'Energía requerida: ~300 GAT',
+    iaTokensNote: 'Energía confiada: 300 GAT',
     image: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Merch/posters/poster_obra.png',
   },
   {
@@ -1349,7 +1350,7 @@ const formats = [
     icon: Film,
     iconClass: 'text-rose-300',
     instruccion: 'Acumula para entradas a la cineteca.',
-    iaTokensNote: 'Requiere ~250 de atención.',
+    iaTokensNote: 'Requiere ~250 confiados.',
     image: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Merch/posters/cine.png',
   },
   {
@@ -1358,7 +1359,7 @@ const formats = [
     icon: Music,
     iconClass: 'text-cyan-300',
     instruccion: 'Para compositortes de sueños y poesía.',
-    iaTokensNote: 'Requiere ~130 GAT de mezcla.',
+    iaTokensNote: 'Requiere ~130 GAT',
     image: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Merch/posters/poster_sonoridades.png',
   },
   {
@@ -1385,7 +1386,7 @@ const formats = [
     icon: Brain,
     iconClass: 'text-indigo-300',
     instruccion: '¡Ponte a minar para generar GATokens!',
-    iaTokensNote: 'Aquí el Gato te regala GAT.',
+    iaTokensNote: 'Aquí se minan GATokes',
     image: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Merch/posters/poster_oraculo.png',
   },
 ];
@@ -1395,7 +1396,7 @@ const CAUSE_ACCORDION = [
     id: 'tratamientos',
     title: 'Tratamientos emocionales',
     description:
-      'Tu huella transmedia asigna hasta 6 sesiones a un joven sin costo para su familia. Isabel Ayuda para la Vida, A.C. activa las sesiones cuando se detecta riesgo emocional.',
+      'Tan solo una huella transmedia asigna hasta 6 sesiones a un joven sin costo para su familia. Isabel Ayuda para la Vida, A.C. activa las sesiones cuando se detecta riesgo emocional.',
     icon: HeartHandshake,
     metric: '6 sesiones promedio por suscriptor',
     imageAlt: 'Foto de archivo de acompañamiento emocional.',
@@ -1450,6 +1451,7 @@ const CauseImpactAccordion = ({ items, onOpenImagePreview }) => {
   );
   const [openCauseId, setOpenCauseId] = useState(() => items?.[0]?.id ?? null);
   const [activeSlideById, setActiveSlideById] = useState({});
+  const hasAutoOpenedOnceRef = useRef(false);
 
   useEffect(() => {
     if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') {
@@ -1476,10 +1478,10 @@ const CauseImpactAccordion = ({ items, onOpenImagePreview }) => {
   useEffect(() => {
     const firstId = items?.[0]?.id;
     if (!firstId) return;
-    if (!openCauseId) {
-      setOpenCauseId(firstId);
-    }
-  }, [items, openCauseId]);
+    if (hasAutoOpenedOnceRef.current) return;
+    setOpenCauseId(firstId);
+    hasAutoOpenedOnceRef.current = true;
+  }, [items]);
 
   const handleCarouselScroll = (itemId, event, total) => {
     const target = event.currentTarget;
@@ -1535,7 +1537,7 @@ const CauseImpactAccordion = ({ items, onOpenImagePreview }) => {
                 </div>
               </div>
               <span className="text-xs uppercase tracking-[0.35em] text-slate-500">
-                {isOpen ? 'Ocultar' : 'Ver impacto'}
+                {isOpen ? (isDesktopViewport ? '...' : 'x') : 'Ver impacto'}
               </span>
             </button>
             {isOpen ? (
@@ -2585,7 +2587,7 @@ const Transmedia = () => {
 
       const { data, error } = await supabase
         .from('blog_posts')
-        .select('slug,title,author,miniverso,published_at,is_published')
+        .select('*')
         .eq('is_published', true)
         .not('slug', 'is', null)
         .not('miniverso', 'is', null)
@@ -3673,7 +3675,13 @@ const Transmedia = () => {
                 {(() => {
                   const authorLabel = latestBlogPost.author?.trim() || 'autor invitado';
                   const mobileMessage = `Toca de nuevo para abrir un texto de ${authorLabel}`;
-                  const desktopMessage = `Lectura de ${authorLabel} disponible`;
+                  const desktopMessage = `Curaduría de ${authorLabel} disponible`;
+                  const thumbnailUrl =
+                    latestBlogPost.featured_image_url ||
+                    latestBlogPost.cover_image ||
+                    latestBlogPost.image_url ||
+                    latestBlogPost.author_avatar_url ||
+                    null;
                   return (
                     <>
                 <button
@@ -3689,11 +3697,29 @@ const Transmedia = () => {
                   <BookOpen size={16} />
                 </button>
                 <span
-                  className={`pointer-events-none absolute right-0 top-full z-10 mt-2 whitespace-nowrap rounded-md border border-cyan-200/30 bg-slate-950/95 px-2 py-1 text-[11px] text-cyan-100 shadow-[0_10px_30px_rgba(0,0,0,0.45)] transition-opacity ${
-                    readingTooltipForShowcase === showcaseId ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'
+                  className={`pointer-events-none absolute right-0 top-full z-10 mt-2 w-[min(86vw,17rem)] rounded-md border border-cyan-200/30 bg-slate-950/95 px-2 py-2 text-left text-[11px] leading-snug text-cyan-100 shadow-[0_10px_30px_rgba(0,0,0,0.45)] transform-gpu transition-[opacity,transform] duration-180 ease-out ${
+                    readingTooltipForShowcase === showcaseId
+                      ? 'opacity-100 translate-y-0 scale-100'
+                      : 'opacity-0 translate-y-1 scale-[0.985] group-hover:opacity-100 group-hover:translate-y-0 group-hover:scale-100'
                   }`}
                 >
-                  {isMobileViewport ? mobileMessage : desktopMessage}
+                  <span className="flex flex-col gap-2">
+                    {thumbnailUrl ? (
+                      <img
+                        src={thumbnailUrl}
+                        alt={`Miniatura de lectura de ${authorLabel}`}
+                        className="h-26 w-full shrink-0 rounded-md border border-cyan-200/30 object-cover"
+                        loading="lazy"
+                      />
+                    ) : (
+                      <span className="inline-flex h-16 w-full shrink-0 items-center justify-center rounded-md border border-cyan-200/30 bg-cyan-300/10 text-cyan-100">
+                        <BookOpen size={14} />
+                      </span>
+                    )}
+                    <span className="min-w-0 whitespace-normal break-words">
+                      {isMobileViewport ? mobileMessage : desktopMessage}
+                    </span>
+                  </span>
                 </span>
                     </>
                   );
@@ -6079,7 +6105,7 @@ const rendernotaAutoral = () => {
                     onTouchEnd={handleMobileShowcaseTouchEnd}
                     onTouchCancel={handleMobileShowcaseTouchEnd}
                   >
-                    <div className="relative h-[500px] max-[375px]:h-[280px] bg-slate-500/20 overflow-hidden">
+                    <div className="relative h-[500px] max-[375px]:h-[300px] bg-slate-500/20 overflow-hidden">
                       {format.image ? (
                         <img
                           src={format.image}
@@ -6321,7 +6347,7 @@ const rendernotaAutoral = () => {
 
           {renderExplorerBadge()}
 
-          <div className="mt-16 grid items-stretch lg:grid-cols-[3fr_2fr] gap-10">
+          <div className="mt-16 grid items-start lg:grid-cols-[3fr_2fr] gap-10">
             <motion.div
               id="apoya"
               ref={supportSectionRef}
@@ -6329,7 +6355,7 @@ const rendernotaAutoral = () => {
               whileInView={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.8, ease: 'easeOut' }}
               viewport={{ once: true, amount: 0.25 }}
-              className="glass-effect rounded-2xl p-8 md:p-10 h-full flex flex-col justify-between relative overflow-hidden opacity-100"
+              className="glass-effect rounded-2xl p-8 md:p-10 flex flex-col justify-between relative overflow-hidden opacity-100"
               style={{ opacity: 1 }}
             >
             <div
@@ -6367,7 +6393,8 @@ const rendernotaAutoral = () => {
                   </summary>
                   <div className="mt-3 space-y-2 pl-8">
                     <p className="text-sm leading-relaxed text-slate-200/95">
-                      La asociación no cobra para atender. Las sesiones se asignan sin costo para las familias cuando se detecta riesgo, gracias a la combinación de huellas transmedia, aportes simbólicos y apoyos institucionales.
+                      La asociación no cobra por atender a jóvenes en escuelas.
+                      Las sesiones se asignan sin costo cuando se detecta riesgo, gracias a apoyos institucionales, donaciones y huellas transmedia que fortalecen esta red de cuidado.
                     </p>
                     <a
                       href="https://www.ayudaparalavida.com/contacto.html"
@@ -6375,7 +6402,7 @@ const rendernotaAutoral = () => {
                       rel="noreferrer"
                       className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.18em] text-emerald-200 hover:text-white transition"
                     >
-                      ¿Cómo contactarles?
+                      ¿Necesitas su contacto?
                     </a>
                   </div>
                 </details>
@@ -6387,32 +6414,18 @@ const rendernotaAutoral = () => {
               </div>
 
               <div className="mt-8 space-y-5">
-                <div className="text-center">
-                  <p className="text-2xl leading-tight md:text-3xl md:leading-tight text-white">
-                    Cuando la causa florece, su pulso regresa al universo: nuevos juegos, nuevas escenas, nuevas historias por contar.
-                  </p>
-                  <p className="mt-3 text-xs text-slate-400/70">
-                    Además, recibirás un{' '}
-                    <a href="/boletines-causa" className="underline text-slate-300">
-                      boletín semestral
-                    </a>{' '}
-                    con los avances de la asociación como cortesía por tu activación.
-                  </p>
-                </div>
+                <div className="mx-auto max-w-3xl rounded-2xl border border-white/10 bg-black/30 p-6 text-center shadow-[0_12px_36px_rgba(0,0,0,0.35)] md:p-7">
+              
+                 
+                  <p className="text-base italic leading-relaxed text-slate-200 md:text-lg">
 
-                <div className="flex flex-col gap-4 md:flex-row md:items-center">
-                <Button
-                  onClick={handleOpenMiniverses}
-                  variant="ghost"
-                  className="text-purple-200 hover:text-white hover:bg-white/10 justify-start md:justify-center"
-                >
-                  🧪 Ver miniversos activos
-                </Button>
-                <div className="flex items-center gap-3 text-slate-400 text-sm">
-                  <HeartHandshake size={20} className="text-purple-300" />
-                  <span>Tu huella = Apoyo directo</span>
+                    Cuando la causa florezca, su pulso regresará al universo: nuevos juegos, nuevas escenas, nuevas historias por contar.
+                  </p>
+                  <div className="mt-4 text-sm text-slate-400">
+                    <p className="font-semibold text-slate-200">Equipo #GatoEncerrado</p>
+                    
+                  </div>
                 </div>
-              </div>
               </div>
             </motion.div>
             
@@ -6423,7 +6436,7 @@ const rendernotaAutoral = () => {
               whileInView={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.8, ease: 'easeOut' }}
               viewport={{ once: true, amount: 0.25 }}
-              className="glass-effect rounded-2xl p-6 h-full border border-white/10 bg-slate-950/50 shadow-2xl"
+              className="glass-effect rounded-2xl p-6 border border-white/10 bg-slate-950/50 shadow-2xl"
             >
               <CallToAction />
             </motion.div>
