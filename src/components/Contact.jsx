@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { createPortal } from 'react-dom';
-import { Download, Send, Instagram, Twitter, Facebook, PenLine, HeartHandshake } from 'lucide-react';
+import { Download, Send, Instagram, Twitter, Facebook, PenLine } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { toast } from '@/components/ui/use-toast';
 import { supabase } from '@/lib/supabaseClient';
@@ -284,37 +284,9 @@ const Contact = () => {
             ¿Tienes la curiosidad gatuna?
           </h2>
           <p className="text-lg text-slate-300/80 max-w-3xl mx-auto leading-relaxed font-light">
-            Si algo de la experiencia te dejó una huella —o una pregunta—, este es tu espacio para contarlo. No buscamos "opiniones" sino aquello que cambió tu forma de mirar, sentir o recordar. 
+            Si algo de este sitio te dejó una una pregunta, este es tu espacio para contarlo. No buscamos "opiniones" sino aquello que cambió tu forma de mirar, sentir o recordar. 
             Aunque también puedes usar este espacio para compartir tus teorías, solicitar entrevistas y para colaboraciones.
           </p>
-          <details className="group mx-auto mt-5 max-w-3xl rounded-2xl border border-emerald-300/20 bg-emerald-500/10 px-5 py-4 text-left">
-            <summary className="flex cursor-pointer list-none items-center justify-between gap-3">
-              <span className="flex items-center gap-3">
-                <HeartHandshake size={18} className="text-emerald-200" />
-                <span className="text-[0.7rem] uppercase tracking-[0.26em] text-emerald-200/85">
-                  Acompañamiento confidencial
-                </span>
-              </span>
-              <span className="text-[0.65rem] uppercase tracking-[0.18em] text-emerald-200/80 group-open:text-white">
-                <span className="group-open:hidden">Contacto</span>
-                <span className="hidden group-open:inline">Cerrar</span>
-              </span>
-            </summary>
-            <div className="mt-3 space-y-2 pl-8">
-              <p className="text-sm text-slate-200/95 leading-relaxed">
-                Y si algo de la obra te movió más de lo esperado, el equipo de Ayuda para la Vida puede orientarte de
-                manera confidencial.
-              </p>
-              <a
-                href="https://www.ayudaparalavida.com/contacto.html"
-                target="_blank"
-                rel="noreferrer"
-                className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.18em] text-emerald-200 hover:text-white transition"
-              >
-                ¿Cómo contactarles?
-              </a>
-            </div>
-          </details>
         </motion.div>
 
         <div className="grid lg:grid-cols-2 gap-12">

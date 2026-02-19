@@ -5,13 +5,28 @@ import { supabase } from '@/lib/supabaseClient';
 import { safeSetItem, safeStorageType } from '@/lib/safeStorage';
 
 const overlayBackdropVariants = {
-  hidden: { opacity: 0 },
-  visible: { opacity: 1 },
+  hidden: { opacity: 0, transition: { duration: 0.18, ease: 'easeInOut' } },
+  visible: { opacity: 1, transition: { duration: 0.3, ease: 'easeOut' } },
 };
 
 const overlayCardVariants = {
-  hidden: { opacity: 0, scale: 0.95 },
-  visible: { opacity: 1, scale: 1 },
+  hidden: { opacity: 0, y: 12, scale: 0.985 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    scale: 1,
+    transition: {
+      duration: 0.34,
+      delay: 0.05,
+      ease: [0.22, 1, 0.36, 1],
+    },
+  },
+  exit: {
+    opacity: 0,
+    y: 8,
+    scale: 0.99,
+    transition: { duration: 0.2, ease: 'easeInOut' },
+  },
 };
 
 const GoogleIcon = ({ className }) => (
