@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useEffect, useState, useCallback, useMemo, useRef } from 'react';
 
 import { supabase } from '@/lib/supabaseClient';
-import { safeGetItem, safeRemoveItem } from '@/lib/safeStorage';
+import { safeGetItem, safeRemoveItem, safeStorage } from '@/lib/safeStorage';
 import { useToast } from '@/components/ui/use-toast';
 
 const AuthContext = createContext(undefined);
@@ -13,6 +13,23 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [session, setSession] = useState(null);
   const [loading, setLoading] = useState(true);
+
+  const clearSupabaseAuthStorage = useCallback(() => {
+    try {
+      const keysToRemove = [];
+      const total = Number(safeStorage?.length || 0);
+      for (let i = 0; i < total; i += 1) {
+        const key = safeStorage?.key?.(i);
+        if (typeof key !== 'string') continue;
+        if (/^sb-.*-auth-token$/.test(key) || /^sb-.*-code-verifier$/.test(key)) {
+          keysToRemove.push(key);
+        }
+      }
+      keysToRemove.forEach((key) => safeRemoveItem(key));
+    } catch {
+      // ignore storage cleanup failures
+    }
+  }, []);
 
   const handleSession = useCallback(async (session) => {
     setSession(session);
@@ -78,10 +95,19 @@ export const AuthProvider = ({ children }) => {
           if (cancelled) return;
 
           if (error) {
+            const msg = String(error?.message || '').toLowerCase();
             // PKCE flow can be consumed by another tab/attempt; fallback to current session.
             const { data: current } = await supabase.auth.getSession();
             if (current?.session) {
               handleSession(current.session);
+              return;
+            }
+            if (msg.includes('invalid flow state') || msg.includes('no valid flow state')) {
+              toast({
+                variant: 'destructive',
+                title: 'Sesión expirada durante el acceso',
+                description: 'Vuelve a tocar "Iniciar sesión". El enlace anterior ya no es válido.',
+              });
               return;
             }
             toast({
@@ -190,7 +216,29 @@ export const AuthProvider = ({ children }) => {
   }, [toast]);
 
   const signOut = useCallback(async () => {
-    const { error } = await supabase.auth.signOut();
+    const {
+      data: { session: currentSession },
+    } = await supabase.auth.getSession();
+    if (!currentSession) {
+      clearSupabaseAuthStorage();
+      await handleSession(null);
+      return { error: null };
+    }
+
+    const { error } = await supabase.auth.signOut({ scope: 'local' });
+
+    const errorCode = String(error?.code || error?.error_code || '').toLowerCase();
+    const errorMessage = String(error?.message || '').toLowerCase();
+    const isSessionNotFound =
+      errorCode === 'session_not_found' ||
+      errorMessage.includes('session_not_found') ||
+      errorMessage.includes('session from session_id claim in jwt does not exist');
+
+    if (isSessionNotFound) {
+      clearSupabaseAuthStorage();
+      await handleSession(null);
+      return { error: null };
+    }
 
     if (error) {
       toast({
@@ -201,7 +249,7 @@ export const AuthProvider = ({ children }) => {
     }
 
     return { error };
-  }, [toast]);
+  }, [clearSupabaseAuthStorage, handleSession, toast]);
 
   const value = useMemo(() => ({
     user,

@@ -1,9 +1,10 @@
 import { supabase } from '@/lib/supabaseClient';
+import { safeGetItem, safeSetItem } from '@/lib/safeStorage';
 
 const STORAGE_KEY = 'gx_anon_id';
 
 function canUseLocalStorage() {
-  return typeof window !== 'undefined' && typeof window.localStorage !== 'undefined';
+  return typeof window !== 'undefined';
 }
 
 function createAnonId() {
@@ -20,7 +21,7 @@ export function getAnonId() {
   }
 
   try {
-    return window.localStorage.getItem(STORAGE_KEY);
+    return safeGetItem(STORAGE_KEY);
   } catch (error) {
     console.warn('gx_anon_id read failed', error);
     return null;
@@ -33,13 +34,13 @@ export function ensureAnonId() {
   }
 
   try {
-    const existing = window.localStorage.getItem(STORAGE_KEY);
+    const existing = safeGetItem(STORAGE_KEY);
     if (existing) {
       return existing;
     }
 
     const nextId = createAnonId();
-    window.localStorage.setItem(STORAGE_KEY, nextId);
+    safeSetItem(STORAGE_KEY, nextId);
     return nextId;
   } catch (error) {
     console.warn('gx_anon_id storage unavailable', error);

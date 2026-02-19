@@ -1706,7 +1706,7 @@ const Transmedia = () => {
   const initialGraphicSpent = readStoredBool('gatoencerrado:graphic-spent', false);
   const initialSonoroSpent = readStoredBool('gatoencerrado:sonoro-spent', false);
   const initialTazaActivations = readStoredInt('gatoencerrado:taza-activations', 0);
-  const initialAvailableGATokens = readStoredInt('gatoencerrado:gatokens-available', 150);
+  const initialAvailableGATokens = readStoredInt('gatoencerrado:gatokens-available', 0);
   const storedEnergy = readStoredJson('gatoencerrado:showcase-energy', null);
   const initialShowcaseEnergy = storedEnergy
     ? { ...baseEnergyByShowcase, ...storedEnergy }
@@ -1796,6 +1796,7 @@ const Transmedia = () => {
   const quironVideoRef = useRef(null);
   const [hasQuironPlaybackStarted, setHasQuironPlaybackStarted] = useState(false);
   const [isQuironAftercareVisible, setIsQuironAftercareVisible] = useState(false);
+  const [tokenPrecareContext, setTokenPrecareContext] = useState(null);
   const [movementPendingAction, setMovementPendingAction] = useState(null);
   const [availableGATokens, setAvailableGATokens] = useState(initialAvailableGATokens);
   const [isNovelaSubmitting, setIsNovelaSubmitting] = useState(false);
@@ -1829,6 +1830,14 @@ const Transmedia = () => {
   const [showInstallPwaCTA, setShowInstallPwaCTA] = useState(() => getInitialInstallPwaCTAVisibility());
   const [useLegacyTazaViewer, setUseLegacyTazaViewer] = useState(LEGACY_TAZA_VIEWER_ENABLED);
   const [hasActiveSubscription, setHasActiveSubscription] = useState(false);
+  const isAuthenticated = Boolean(user);
+  const isSubscriber = Boolean(
+    user?.user_metadata?.isSubscriber ||
+      user?.user_metadata?.is_subscriber ||
+      user?.user_metadata?.subscription_status === 'active' ||
+      user?.app_metadata?.roles?.includes?.('subscriber') ||
+      hasActiveSubscription
+  );
 
   const applyTransmediaCreditState = useCallback(
     (state) => {
@@ -1875,8 +1884,36 @@ const Transmedia = () => {
   }, [applyTransmediaCreditState]);
 
   const trackTransmediaCreditEvent = useCallback(
-    async ({ eventKey, amount = 0, oncePerIdentity = false, metadata = {} } = {}) => {
-      const { state, error } = await registerTransmediaCreditEvent({
+    async ({
+      eventKey,
+      amount = 0,
+      oncePerIdentity = false,
+      metadata = {},
+      requiredTokens = null,
+      actionLabel = 'esta activación',
+    } = {}) => {
+      const expectedCost = Number.isFinite(requiredTokens)
+        ? Number(requiredTokens)
+        : amount < 0
+          ? Math.abs(Number(amount))
+          : 0;
+      const missing = Math.max(expectedCost - availableGATokens, 0);
+      if (expectedCost > 0 && missing > 0) {
+        if (!isAuthenticated) {
+          setTokenPrecareContext({
+            required: expectedCost,
+            missing,
+            actionLabel,
+          });
+          return { ok: false, state: null, duplicate: false, reason: 'insufficient' };
+        }
+        toast({
+          description: `${actionLabel} requiere ${expectedCost} GATokens. Te faltan ${missing}.`,
+        });
+        return { ok: false, state: null, duplicate: false, reason: 'insufficient' };
+      }
+
+      const { state, error, duplicate } = await registerTransmediaCreditEvent({
         eventKey,
         amount,
         oncePerIdentity,
@@ -1884,13 +1921,34 @@ const Transmedia = () => {
         idempotencyKey: createTransmediaIdempotencyKey(eventKey),
       });
       if (error) {
+        const errorText = String(error?.message ?? '').toLowerCase();
+        if (errorText.includes('insufficient_tokens') || errorText.includes('insufficient tokens')) {
+          const refreshed = await syncTransmediaCredits();
+          const available = Number.isFinite(refreshed?.available_tokens)
+            ? Number(refreshed.available_tokens)
+            : availableGATokens;
+          const expected = expectedCost > 0 ? expectedCost : Math.max(Math.abs(Number(amount)), 0);
+          const nextMissing = Math.max(expected - available, 0);
+          if (!isAuthenticated) {
+            setTokenPrecareContext({
+              required: expected,
+              missing: nextMissing,
+              actionLabel,
+            });
+            return { ok: false, state: refreshed, duplicate: false, reason: 'insufficient' };
+          }
+          toast({
+            description: `${actionLabel} requiere ${expected} GATokens. Te faltan ${nextMissing}.`,
+          });
+          return { ok: false, state: refreshed, duplicate: false, reason: 'insufficient' };
+        }
         console.warn('[Transmedia] No se pudo registrar evento de créditos:', { eventKey, error });
         return { ok: false, state: null, duplicate: false };
       }
       applyTransmediaCreditState(state);
-      return { ok: true, state, duplicate: false };
+      return { ok: true, state, duplicate: Boolean(duplicate) };
     },
-    [applyTransmediaCreditState]
+    [applyTransmediaCreditState, availableGATokens, isAuthenticated, syncTransmediaCredits]
   );
 
   useEffect(() => {
@@ -1899,14 +1957,6 @@ const Transmedia = () => {
       document.documentElement.classList.add('is-safari');
     }
   }, [isSafari]);
-  const isAuthenticated = Boolean(user);
-  const isSubscriber = Boolean(
-    user?.user_metadata?.isSubscriber ||
-      user?.user_metadata?.is_subscriber ||
-      user?.user_metadata?.subscription_status === 'active' ||
-      user?.app_metadata?.roles?.includes?.('subscriber') ||
-      hasActiveSubscription
-  );
   const allShowcasesUnlocked = useMemo(
     () => SHOWCASE_BADGE_IDS.every((id) => showcaseBoosts?.[id]),
     [showcaseBoosts]
@@ -1927,6 +1977,24 @@ const Transmedia = () => {
     },
     [activeShowcase]
   );
+
+  const handleCloseTokenPrecare = useCallback(() => {
+    setTokenPrecareContext(null);
+  }, []);
+
+  const handleTokenPrecareLogin = useCallback(() => {
+    const required = Number.isFinite(tokenPrecareContext?.required)
+      ? Number(tokenPrecareContext.required)
+      : null;
+    setTokenPrecareContext(null);
+    openLoginForShowcase({
+      action: 'token-precare',
+      extras: {
+        required_tokens: required,
+        source: 'transmedia_guardrail',
+      },
+    });
+  }, [openLoginForShowcase, tokenPrecareContext]);
 
   const requireShowcaseAuth = useCallback(
     (message = 'Inicia sesión para activar esta vitrina.', loginPayload = undefined) => {
@@ -2020,13 +2088,10 @@ const Transmedia = () => {
   }, []);
 
   useEffect(() => {
-    if (!safeGetItem('gatoencerrado:gatokens-available')) {
-      safeSetItem('gatoencerrado:gatokens-available', String(initialAvailableGATokens));
-    }
     if (!safeGetItem('gatoencerrado:showcase-energy')) {
       safeSetItem('gatoencerrado:showcase-energy', JSON.stringify(baseEnergyByShowcase));
     }
-  }, [baseEnergyByShowcase, initialAvailableGATokens]);
+  }, [baseEnergyByShowcase]);
 
   // silvestre storage handled in useSilvestreVoice
 
@@ -2124,6 +2189,8 @@ const Transmedia = () => {
     const result = await trackTransmediaCreditEvent({
       eventKey: 'novela_question',
       amount: -25,
+      requiredTokens: 25,
+      actionLabel: 'Esta pregunta de novela',
       metadata: { source: 'transmedia_novela' },
     });
 
@@ -2147,6 +2214,8 @@ const Transmedia = () => {
     const result = await trackTransmediaCreditEvent({
       eventKey: 'sonoro_unlock',
       amount: -GAT_COSTS.sonoroMix,
+      requiredTokens: GAT_COSTS.sonoroMix,
+      actionLabel: 'Esta mezcla sonoro-poética',
       oncePerIdentity: true,
       metadata: { source: 'transmedia_sonoro' },
     });
@@ -2755,15 +2824,6 @@ const Transmedia = () => {
       if (!entry?.previewPdfUrl || isGraphicUnlocking) {
         return;
       }
-      if (
-        !requireShowcaseAuth('Inicia sesión para desbloquear este recorrido gráfico.', {
-          action: 'graphic-swipe',
-          extras: { entryId: entry.id ?? null },
-        })
-      ) {
-        return;
-      }
-
       setIsGraphicUnlocking(true);
 
       const openPdf = () => {
@@ -2782,6 +2842,8 @@ const Transmedia = () => {
         const result = await trackTransmediaCreditEvent({
           eventKey: 'graphic_unlock',
           amount: -GAT_COSTS.graficoSwipe,
+          requiredTokens: GAT_COSTS.graficoSwipe,
+          actionLabel: 'Este recorrido gráfico',
           oncePerIdentity: true,
           metadata: { source: 'transmedia_grafico', entryId: entry.id ?? null },
         });
@@ -2791,28 +2853,40 @@ const Transmedia = () => {
               detail: { id: 'grafico', spent: true, amount: GAT_COSTS.graficoSwipe },
             })
           );
+          setTimeout(openPdf, 900);
+        } else {
+          setTimeout(() => setIsGraphicUnlocking(false), 150);
         }
         setTimeout(() => setShowGraphicCoins(false), 1100);
-        setTimeout(openPdf, 900);
         return;
       }
 
       openPdf();
     },
-    [graphicSpent, handleOpenPdfPreview, isGraphicUnlocking, requireShowcaseAuth, trackTransmediaCreditEvent]
+    [graphicSpent, handleOpenPdfPreview, isGraphicUnlocking, trackTransmediaCreditEvent]
   );
 
   const handleActivateAR = useCallback(async () => {
     if (isTazaActivating) {
       return;
     }
-    if (!requireShowcaseAuth('Inicia sesión para activar la experiencia AR.', { action: 'activate-ar' })) {
-      return;
-    }
 
     setIsTazaActivating(true);
     setShowTazaCoins(true);
     setTazaCameraReady(false);
+
+    const result = await trackTransmediaCreditEvent({
+      eventKey: 'taza_activation',
+      amount: -30,
+      requiredTokens: 30,
+      actionLabel: 'Esta activación AR',
+      metadata: { source: 'transmedia_taza' },
+    });
+    if (!result.ok) {
+      setShowTazaCoins(false);
+      setIsTazaActivating(false);
+      return;
+    }
 
     setIsTazaARActive(true);
     if (typeof window !== 'undefined' && window.matchMedia('(max-width: 768px)').matches) {
@@ -2821,15 +2895,12 @@ const Transmedia = () => {
     } else {
       setIsMobileARFullscreen(false);
     }
+
     setTimeout(() => {
       setShowTazaCoins(false);
       setIsTazaActivating(false);
     }, 700);
-    const result = await trackTransmediaCreditEvent({
-      eventKey: 'taza_activation',
-      amount: -30,
-      metadata: { source: 'transmedia_taza' },
-    });
+
     if (result.ok && typeof result.state?.taza_activations === 'number') {
       window.dispatchEvent(
         new CustomEvent('gatoencerrado:miniverse-spent', {
@@ -2837,7 +2908,7 @@ const Transmedia = () => {
         })
       );
     }
-  }, [isTazaActivating, requireShowcaseAuth, trackTransmediaCreditEvent]);
+  }, [isTazaActivating, trackTransmediaCreditEvent]);
 
   const handleCloseARExperience = useCallback(() => {
     setIsTazaARActive(false);
@@ -3373,6 +3444,14 @@ const Transmedia = () => {
         const missing = Math.max(required - availableGATokens, 0);
 
         if (missing > 0) {
+          if (!isAuthenticated) {
+            setTokenPrecareContext({
+              required,
+              missing,
+              actionLabel: `El ${label}`,
+            });
+            return;
+          }
           toast({
             description: `Llegaste al final. El ${label} requiere ${required} GATokens. Te faltan ${missing}.`,
           });
@@ -3388,7 +3467,7 @@ const Transmedia = () => {
 
     observer.observe(target);
     return () => observer.disconnect();
-  }, [availableGATokens, pdfLoadError, pdfNumPages, pdfPreview]);
+  }, [availableGATokens, isAuthenticated, pdfLoadError, pdfNumPages, pdfPreview]);
 
   useEffect(() => {
     return () => {
@@ -3425,16 +3504,8 @@ const Transmedia = () => {
   }, [requireShowcaseAuth]);
 
   const handleNovelAppCTA = useCallback(
-    (app) => {
+    async (app) => {
       if (!app) return;
-      if (
-        !requireShowcaseAuth('Inicia sesión para usar esta experiencia de novela.', {
-          action: 'novela-app-cta',
-          extras: { ctaAction: app.ctaAction ?? null },
-        })
-      ) {
-        return;
-      }
 
       if (app.ctaUrl) {
         window.open(app.ctaUrl, '_blank', 'noopener,noreferrer');
@@ -3447,6 +3518,17 @@ const Transmedia = () => {
       }
 
       if (app.ctaAction === 'openAutoficcionPreview') {
+        const result = await trackTransmediaCreditEvent({
+          eventKey: 'showcase_boost:novela_fragment_unlock',
+          amount: -GAT_COSTS.novelaChapter,
+          requiredTokens: GAT_COSTS.novelaChapter,
+          actionLabel: 'Esta lectura de fragmentos',
+          oncePerIdentity: true,
+          metadata: { source: 'transmedia_novela_fragmentos' },
+        });
+        if (!result.ok) {
+          return;
+        }
         setShowAutoficcionPreview(true);
         return;
       }
@@ -3455,7 +3537,7 @@ const Transmedia = () => {
         description: app.ctaMessage || 'Muy pronto liberaremos esta app interactiva.',
       });
     },
-    [handleOpenCameraForQR, requireShowcaseAuth]
+    [handleOpenCameraForQR, trackTransmediaCreditEvent]
   );
 
   const handleMovementAction = useCallback((action) => {
@@ -5872,6 +5954,47 @@ const rendernotaAutoral = () => {
     )
     : null;
 
+  const tokenPrecareOverlay = typeof document !== 'undefined' && tokenPrecareContext
+    ? createPortal(
+      <div className="fixed inset-0 z-[246] flex items-center justify-center px-4 py-8">
+        <div className="absolute inset-0 bg-black/92 backdrop-blur-md" onClick={handleCloseTokenPrecare} />
+        <div className="relative z-10 w-full max-w-2xl rounded-3xl border border-white/10 bg-slate-950/90 p-8 text-center shadow-[0_35px_120px_rgba(0,0,0,0.7)]">
+          <p className="text-xs uppercase tracking-[0.35em] text-slate-400/80">¿Quieres continuar?</p>
+          <h4 className="mt-3 font-display text-3xl text-slate-100">
+            Tus GATokens disponibles se han agotado.
+          </h4>
+          <p className="mt-3 text-sm text-slate-300/85 leading-relaxed">
+            {tokenPrecareContext.actionLabel || 'Esta activación'} requiere{' '}
+            <span className="font-semibold text-amber-200">
+              {Number.isFinite(tokenPrecareContext.required) ? tokenPrecareContext.required : 0} GAT
+            </span>
+            . Te faltan{' '}
+            <span className="font-semibold text-rose-200">
+              {Number.isFinite(tokenPrecareContext.missing) ? tokenPrecareContext.missing : 0}
+            </span>
+            . Inicia sesión para guardar tu avance y seguir explorando.
+          </p>
+          <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:justify-center">
+            <Button
+              onClick={handleTokenPrecareLogin}
+              className="inline-flex items-center justify-center rounded-full bg-gradient-to-r from-purple-600/80 to-indigo-500/80 px-6 py-3 text-sm font-semibold text-white hover:from-purple-500 hover:to-indigo-400"
+            >
+              Iniciar sesión y continuar
+            </Button>
+            <Button
+              variant="outline"
+              onClick={handleCloseTokenPrecare}
+              className="inline-flex items-center justify-center rounded-full border-white/20 bg-white/5 px-6 py-3 text-sm font-semibold text-slate-100 hover:bg-white/10"
+            >
+              Cerrar
+            </Button>
+          </div>
+        </div>
+      </div>,
+      document.body,
+    )
+    : null;
+
   const movementActionOverlay = typeof document !== 'undefined' && movementPendingAction
     ? createPortal(
       <div className="fixed inset-0 z-[246] flex items-center justify-center px-4 py-8">
@@ -6341,6 +6464,7 @@ const rendernotaAutoral = () => {
           {quironFullOverlay}
           {quironPrecareOverlay}
           {quironAftercareOverlay}
+          {tokenPrecareOverlay}
           {movementActionOverlay}
           {imagePreviewOverlay}
           {pdfPreviewOverlay}
@@ -6381,7 +6505,7 @@ const rendernotaAutoral = () => {
                 <details className="group rounded-2xl border border-emerald-300/25 bg-emerald-500/10 px-5 py-4">
                   <summary className="flex cursor-pointer list-none items-center justify-between gap-3">
                     <span className="flex items-center gap-3">
-                      <HeartHandshake size={18} className="text-emerald-200" />
+                      <Users size={18} className="text-emerald-200" />
                       <span className="text-[0.7rem] uppercase tracking-[0.26em] text-emerald-200/85">
                         Sin costo para familias en riesgo
                       </span>
@@ -6393,8 +6517,8 @@ const rendernotaAutoral = () => {
                   </summary>
                   <div className="mt-3 space-y-2 pl-8">
                     <p className="text-sm leading-relaxed text-slate-200/95">
-                      La asociación no cobra por atender a jóvenes en escuelas.
-                      Las sesiones se asignan sin costo cuando se detecta riesgo, gracias a apoyos institucionales, donaciones y huellas transmedia que fortalecen esta red de cuidado.
+                      La asociación atiende a jóvenes en escuelas donde se detecta riesgo.
+                      Las sesiones no implican costo obligatorio para las familias y pueden incluir aportaciones voluntarias. El modelo se sostiene con apoyos institucionales, donaciones y huellas transmedia.
                     </p>
                     <a
                       href="https://www.ayudaparalavida.com/contacto.html"

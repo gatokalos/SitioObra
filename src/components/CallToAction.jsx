@@ -288,7 +288,7 @@ const CallToAction = () => {
         ref={impactPanelRef}
         className="rounded-2xl border border-white/10 bg-white/5 p-5 text-left text-slate-100 space-y-4 flex-1"
       >
-        <p className="text-[0.65rem] uppercase tracking-[0.18em] text-slate-400/80">
+        <p className="text-[0.85rem] uppercase tracking-[0.18em] text-slate-400/80">
           Modelo anual por tramos · Q{currentQuarter} {currentYear}
         </p>
         <div className="flex items-baseline justify-between">
@@ -439,7 +439,7 @@ const CallToAction = () => {
           Faltan <strong>{stats.annualFaltan}</strong> huellas para completar todos los tramos.
         </p>
         <p className="text-xs opacity-65">
-          Todo lo que supere esta meta se reinvierte en nuevas obras, miniversos y publicaciones.
+          Todo lo que supere esta meta se reinvierte en nuevas obras, miniversos y publicaciones ✨
         </p>
       </div>
 

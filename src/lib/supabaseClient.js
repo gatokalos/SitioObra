@@ -27,6 +27,8 @@ export const supabasePublic = createClient(supabaseUrl, supabaseAnonKey, {
     persistSession: false,
     autoRefreshToken: false,
     detectSessionInUrl: false,
+    // Isolate public client auth state to avoid PKCE flow-state collisions.
+    storageKey: 'gatoencerrado-public-auth',
   },
   global: {
     headers: {
