@@ -2404,8 +2404,14 @@ const Transmedia = () => {
     if (!pending) return;
     try {
       const parsed = JSON.parse(pending);
-      if (parsed?.action !== 'quiron-play') return;
+      if (parsed?.anchor !== '#transmedia') return;
       safeRemoveItem(LOGIN_RETURN_KEY);
+      if (parsed?.action !== 'quiron-play') {
+        window.setTimeout(() => {
+          document.getElementById('transmedia')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }, 80);
+        return;
+      }
       const targetShowcase = parsed?.showcaseId || 'copycats';
       setActiveShowcase(targetShowcase);
       setIsQuironFullVisible(true);
