@@ -90,7 +90,7 @@ export const AuthProvider = ({ children }) => {
           return;
         }
 
-        if (code) {
+        if (!accessToken && !refreshToken && code) {
           const { data, error } = await supabase.auth.exchangeCodeForSession(code);
           if (cancelled) return;
 

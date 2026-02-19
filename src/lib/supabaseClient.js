@@ -17,7 +17,6 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
     persistSession: true,
     // We handle OAuth redirect/code exchange explicitly in SupabaseAuthContext.
     detectSessionInUrl: false,
-    flowType: 'pkce',
   },
 });
 
