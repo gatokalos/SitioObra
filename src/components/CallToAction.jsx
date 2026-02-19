@@ -1,7 +1,7 @@
 // SitioObra/src/components/CallToAction.jsx
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useInView, useReducedMotion } from 'framer-motion';
-import { Mail, MessageCircle, PawPrint, Ticket } from 'lucide-react';
+import { Drama, HeartHandshake, Mail, MessageCircle, Palette, PawPrint, Smartphone, Ticket } from 'lucide-react';
 import { apiFetch } from '@/lib/apiClient';
 import { supabase } from '@/lib/supabaseClient';
 import { useAuth } from '@/contexts/SupabaseAuthContext';
@@ -10,13 +10,11 @@ const SUBSCRIPTION_PRICE_ID = import.meta.env.VITE_STRIPE_SUBSCRIPTION_PRICE_ID;
 const SESSIONS_PER_SUB = 6;
 const THERAPY_TRAMO_HUELLAS = 17; // 1-17
 const RESIDENCY_TRAMO_HUELLAS = 18; // 18-35
-const SCHOOL_APP_TRAMO_HUELLAS = 35; // 36-70
-const SCHOOL_IMPLEMENTATION_TRAMO_HUELLAS = 75; // 71-145
-const CREATIVE_EXPANSION_TRAMO_HUELLAS = 12; // 146-157
+const SCHOOL_IMPLEMENTATION_TRAMO_HUELLAS = 75; // 36-110
+const CREATIVE_EXPANSION_TRAMO_HUELLAS = 12; // 111-122
 const ANNUAL_TOTAL_HUELLAS =
   THERAPY_TRAMO_HUELLAS +
   RESIDENCY_TRAMO_HUELLAS +
-  SCHOOL_APP_TRAMO_HUELLAS +
   SCHOOL_IMPLEMENTATION_TRAMO_HUELLAS +
   CREATIVE_EXPANSION_TRAMO_HUELLAS;
 const SUPPORT_EMAIL = 'contacto@gatoencerrado.ai';
@@ -54,7 +52,6 @@ const CallToAction = () => {
   const [barValues, setBarValues] = useState({
     terapias: 0,
     residencias: 0,
-    appEscuelas: 0,
     implementacionEscuelas: 0,
     universos: 0,
   });
@@ -128,13 +125,9 @@ const CallToAction = () => {
       Math.max(totalSupport - THERAPY_TRAMO_HUELLAS, 0),
       RESIDENCY_TRAMO_HUELLAS
     );
-    const tramoAppEscuelas = Math.min(
-      Math.max(totalSupport - (THERAPY_TRAMO_HUELLAS + RESIDENCY_TRAMO_HUELLAS), 0),
-      SCHOOL_APP_TRAMO_HUELLAS
-    );
     const tramoImplementacionEscuelas = Math.min(
       Math.max(
-        totalSupport - (THERAPY_TRAMO_HUELLAS + RESIDENCY_TRAMO_HUELLAS + SCHOOL_APP_TRAMO_HUELLAS),
+        totalSupport - (THERAPY_TRAMO_HUELLAS + RESIDENCY_TRAMO_HUELLAS),
         0
       ),
       SCHOOL_IMPLEMENTATION_TRAMO_HUELLAS
@@ -144,7 +137,6 @@ const CallToAction = () => {
         totalSupport -
           (THERAPY_TRAMO_HUELLAS +
             RESIDENCY_TRAMO_HUELLAS +
-            SCHOOL_APP_TRAMO_HUELLAS +
             SCHOOL_IMPLEMENTATION_TRAMO_HUELLAS),
         0
       ),
@@ -167,10 +159,6 @@ const CallToAction = () => {
       residenciasMeta: RESIDENCY_TRAMO_HUELLAS,
       residenciasFaltan: Math.max(RESIDENCY_TRAMO_HUELLAS - tramoResidencias, 0),
       residenciasProg: (tramoResidencias / RESIDENCY_TRAMO_HUELLAS) * 100,
-      appEscuelasActual: tramoAppEscuelas,
-      appEscuelasMeta: SCHOOL_APP_TRAMO_HUELLAS,
-      appEscuelasFaltan: Math.max(SCHOOL_APP_TRAMO_HUELLAS - tramoAppEscuelas, 0),
-      appEscuelasProg: (tramoAppEscuelas / SCHOOL_APP_TRAMO_HUELLAS) * 100,
       implementacionEscuelasActual: tramoImplementacionEscuelas,
       implementacionEscuelasMeta: SCHOOL_IMPLEMENTATION_TRAMO_HUELLAS,
       implementacionEscuelasFaltan: Math.max(
@@ -190,7 +178,6 @@ const CallToAction = () => {
     const realValues = {
       terapias: stats.terapiasProg,
       residencias: stats.residenciasProg,
-      appEscuelas: stats.appEscuelasProg,
       implementacionEscuelas: stats.implementacionEscuelasProg,
       universos: stats.universosProg,
     };
@@ -213,11 +200,10 @@ const CallToAction = () => {
     const peakValues = {
       terapias: 88,
       residencias: 85,
-      appEscuelas: 82,
       implementacionEscuelas: 79,
       universos: 76,
     };
-    const keys = ['terapias', 'residencias', 'appEscuelas', 'implementacionEscuelas', 'universos'];
+    const keys = ['terapias', 'residencias', 'implementacionEscuelas', 'universos'];
 
     keys.forEach((key, index) => {
       const id = window.setTimeout(() => {
@@ -239,7 +225,6 @@ const CallToAction = () => {
   }, [
     isImpactPanelInView,
     prefersReducedMotion,
-    stats.appEscuelasProg,
     stats.implementacionEscuelasProg,
     stats.terapiasProg,
     stats.residenciasProg,
@@ -369,7 +354,10 @@ const CallToAction = () => {
         {/* Terapias */}
         <div className="space-y-1">
           <div className="flex items-center justify-between text-sm opacity-80">
-            <span>Fondo para terapias</span>
+            <span className="inline-flex items-center gap-2">
+              <HeartHandshake size={14} className="text-emerald-300/90" />
+              Fondo para terapias
+            </span>
             <span>
               {stats.terapiasActual}/{stats.terapiasMeta}
             </span>
@@ -387,7 +375,10 @@ const CallToAction = () => {
         {/* Residencias */}
         <div className="space-y-1">
           <div className="flex items-center justify-between text-sm opacity-80">
-            <span>Fondo para residencias creativas</span>
+            <span className="inline-flex items-center gap-2">
+              <Palette size={14} className="text-amber-300/90" />
+              Fondo para residencias creativas
+            </span>
             <span>
               {stats.residenciasActual}/{stats.residenciasMeta}
             </span>
@@ -399,25 +390,13 @@ const CallToAction = () => {
 
         </div>
 
-        {/* App en escuelas */}
+        {/* Implementación de apps en escuelas */}
         <div className="space-y-1">
           <div className="flex items-center justify-between text-sm opacity-80">
-            <span>Fondo para apps en escuelas</span>
-            <span>
-              {stats.appEscuelasActual}/{stats.appEscuelasMeta}
+            <span className="inline-flex items-center gap-2">
+              <Smartphone size={14} className="text-cyan-300/90" />
+              Fondo para implementar apps en escuelas
             </span>
-          </div>
-          <ProgressBar
-            value={barValues.appEscuelas}
-            barClassName="bg-gradient-to-r from-cyan-300 via-sky-300 to-blue-400"
-          />
-
-        </div>
-
-        {/* Implementación en escuelas */}
-        <div className="space-y-1">
-          <div className="flex items-center justify-between text-sm opacity-80">
-            <span>Fondo para implementación en escuelas</span>
             <span>
               {stats.implementacionEscuelasActual}/{stats.implementacionEscuelasMeta}
             </span>
@@ -432,7 +411,10 @@ const CallToAction = () => {
         {/* Expansión creativa */}
         <div className="space-y-1">
           <div className="flex items-center justify-between text-sm opacity-80">
-            <span>Fondo para expansión creativa</span>
+            <span className="inline-flex items-center gap-2">
+              <Drama size={14} className="text-violet-300/90" />
+              Fondo para expansión creativa
+            </span>
             <span>
               {stats.universosActual}/{stats.universosMeta}
             </span>
