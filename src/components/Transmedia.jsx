@@ -6388,7 +6388,7 @@ const rendernotaAutoral = () => {
 
               <div className="mt-8 space-y-5">
                 <div className="text-center">
-                  <p className="text-3xl text-white">
+                  <p className="text-2xl leading-tight md:text-3xl md:leading-tight text-white">
                     Cuando la causa florece, su pulso regresa al universo: nuevos juegos, nuevas escenas, nuevas historias por contar.
                   </p>
                   <p className="mt-3 text-xs text-slate-400/70">
