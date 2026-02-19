@@ -378,9 +378,7 @@ const CallToAction = () => {
             value={barValues.terapias}
             barClassName="bg-gradient-to-r from-emerald-300 via-teal-300 to-cyan-300"
           />
-          <p className="text-xs opacity-70 mt-1">
-            Faltan <strong>{stats.terapiasFaltan}</strong> huellas para completar este fondo.
-          </p>
+      
           <p className="text-xs opacity-65">
             <strong>{stats.sesiones}</strong> sesiones financiadas en este tramo.
           </p>
@@ -398,9 +396,7 @@ const CallToAction = () => {
             value={barValues.residencias}
             barClassName="bg-gradient-to-r from-amber-300 via-yellow-300 to-orange-400"
           />
-          <p className="text-xs opacity-70 mt-1">
-            Faltan <strong>{stats.residenciasFaltan}</strong> huellas para completar este fondo.
-          </p>
+
         </div>
 
         {/* App en escuelas */}
@@ -415,9 +411,7 @@ const CallToAction = () => {
             value={barValues.appEscuelas}
             barClassName="bg-gradient-to-r from-cyan-300 via-sky-300 to-blue-400"
           />
-          <p className="text-xs opacity-70 mt-1">
-            Faltan <strong>{stats.appEscuelasFaltan}</strong> huellas para completar este fondo.
-          </p>
+
         </div>
 
         {/* Implementación en escuelas */}
@@ -432,9 +426,7 @@ const CallToAction = () => {
             value={barValues.implementacionEscuelas}
             barClassName="bg-gradient-to-r from-indigo-300 via-blue-300 to-cyan-300"
           />
-          <p className="text-xs opacity-70 mt-1">
-            Faltan <strong>{stats.implementacionEscuelasFaltan}</strong> huellas para completar este fondo.
-          </p>
+
         </div>
 
         {/* Expansión creativa */}
@@ -449,9 +441,7 @@ const CallToAction = () => {
             value={barValues.universos}
             barClassName="bg-gradient-to-r from-violet-300 via-fuchsia-300 to-pink-400"
           />
-          <p className="text-xs opacity-70 mt-1">
-            Faltan <strong>{stats.universosFaltan}</strong> huellas para completar este fondo.
-          </p>
+
         </div>
              <div className="flex items-baseline justify-between">
           <p className="text-sm opacity-80">Huellas totales</p>
@@ -463,7 +453,7 @@ const CallToAction = () => {
             {stats.totalSupportClamped}/{ANNUAL_TOTAL_HUELLAS}
           </p>
         </div>
-        <p className="text-xs opacity-70">
+        <p className="text-md opacity-90">
           Faltan <strong>{stats.annualFaltan}</strong> huellas para completar todos los tramos.
         </p>
         <p className="text-xs opacity-65">
