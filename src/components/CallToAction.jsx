@@ -1,7 +1,7 @@
 // SitioObra/src/components/CallToAction.jsx
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { motion, useInView, useReducedMotion } from 'framer-motion';
-import { Mail, MessageCircle } from 'lucide-react';
+import { useInView, useReducedMotion } from 'framer-motion';
+import { Mail, MessageCircle, PawPrint, Ticket } from 'lucide-react';
 import { IMPACT_COPY as t } from '../copy/impact.es.js';
 import { apiFetch } from '@/lib/apiClient';
 import { supabase } from '@/lib/supabaseClient';
@@ -11,9 +11,17 @@ import { safeGetItem, safeRemoveItem, safeSetItem } from '@/lib/safeStorage';
 
 const SUBSCRIPTION_PRICE_ID = import.meta.env.VITE_STRIPE_SUBSCRIPTION_PRICE_ID;
 const SESSIONS_PER_SUB = 6;
-const SUBS_PER_RESIDENCY = 17; // ≈ $10,000 / $600
-const SUBS_PER_SCHOOL = 75;    // ≈ $45,000 / $600
-const SUBS_PER_UNIVERSO = 158; // Nueva meta para creación artística
+const THERAPY_TRAMO_HUELLAS = 17; // 1-17
+const RESIDENCY_TRAMO_HUELLAS = 18; // 18-35
+const SCHOOL_APP_TRAMO_HUELLAS = 35; // 36-70
+const SCHOOL_IMPLEMENTATION_TRAMO_HUELLAS = 75; // 71-145
+const CREATIVE_EXPANSION_TRAMO_HUELLAS = 12; // 146-157
+const ANNUAL_TOTAL_HUELLAS =
+  THERAPY_TRAMO_HUELLAS +
+  RESIDENCY_TRAMO_HUELLAS +
+  SCHOOL_APP_TRAMO_HUELLAS +
+  SCHOOL_IMPLEMENTATION_TRAMO_HUELLAS +
+  CREATIVE_EXPANSION_TRAMO_HUELLAS;
 const LOGIN_RETURN_KEY = 'gatoencerrado:login-return';
 const SUPPORT_EMAIL = 'contacto@gatoencerrado.ai';
 const SUPPORT_WHATSAPP = '+523315327985';
@@ -48,8 +56,10 @@ const CallToAction = () => {
   const [ticketUnits, setTicketUnits] = useState(0);
   const [canFetchStats, setCanFetchStats] = useState(Boolean(import.meta.env.VITE_API_URL));
   const [barValues, setBarValues] = useState({
+    terapias: 0,
     residencias: 0,
-    escuelas: 0,
+    appEscuelas: 0,
+    implementacionEscuelas: 0,
     universos: 0,
   });
   const hasRunBarSequenceRef = useRef(false);
@@ -57,6 +67,9 @@ const CallToAction = () => {
   const isImpactPanelInView = useInView(impactPanelRef, { once: true, amount: 0.35 });
   const prefersReducedMotion = useReducedMotion();
   const { user } = useAuth();
+  const now = new Date();
+  const currentQuarter = Math.floor(now.getMonth() / 3) + 1;
+  const currentYear = now.getFullYear();
 
   useEffect(() => {
     if (!user || typeof window === 'undefined') {
@@ -142,39 +155,75 @@ const CallToAction = () => {
   // 2) Cálculos de impacto
   const stats = useMemo(() => {
     const totalSupport = subs + ticketUnits;
-    const sesiones = totalSupport * SESSIONS_PER_SUB;
+    const tramoTerapias = Math.min(Math.max(totalSupport, 0), THERAPY_TRAMO_HUELLAS);
+    const tramoResidencias = Math.min(
+      Math.max(totalSupport - THERAPY_TRAMO_HUELLAS, 0),
+      RESIDENCY_TRAMO_HUELLAS
+    );
+    const tramoAppEscuelas = Math.min(
+      Math.max(totalSupport - (THERAPY_TRAMO_HUELLAS + RESIDENCY_TRAMO_HUELLAS), 0),
+      SCHOOL_APP_TRAMO_HUELLAS
+    );
+    const tramoImplementacionEscuelas = Math.min(
+      Math.max(
+        totalSupport - (THERAPY_TRAMO_HUELLAS + RESIDENCY_TRAMO_HUELLAS + SCHOOL_APP_TRAMO_HUELLAS),
+        0
+      ),
+      SCHOOL_IMPLEMENTATION_TRAMO_HUELLAS
+    );
+    const tramoExpansion = Math.min(
+      Math.max(
+        totalSupport -
+          (THERAPY_TRAMO_HUELLAS +
+            RESIDENCY_TRAMO_HUELLAS +
+            SCHOOL_APP_TRAMO_HUELLAS +
+            SCHOOL_IMPLEMENTATION_TRAMO_HUELLAS),
+        0
+      ),
+      CREATIVE_EXPANSION_TRAMO_HUELLAS
+    );
 
-    // Residencias
-    const residencias = Math.floor(totalSupport / SUBS_PER_RESIDENCY);
-    const residenciasResto = totalSupport % SUBS_PER_RESIDENCY;
-    const residenciasFaltan = residenciasResto === 0 ? SUBS_PER_RESIDENCY : (SUBS_PER_RESIDENCY - residenciasResto);
-    const residenciasProg = (residenciasResto / SUBS_PER_RESIDENCY) * 100;
-
-    // Escuelas
-    const escuelas = Math.floor(totalSupport / SUBS_PER_SCHOOL);
-    const escuelasResto = totalSupport % SUBS_PER_SCHOOL;
-    const escuelasFaltan = escuelasResto === 0 ? SUBS_PER_SCHOOL : (SUBS_PER_SCHOOL - escuelasResto);
-    const escuelasProg = (escuelasResto / SUBS_PER_SCHOOL) * 100;
-
-    // Universos / Creaciones nuevas
-    const universos = Math.floor(totalSupport / SUBS_PER_UNIVERSO);
-    const universosResto = totalSupport % SUBS_PER_UNIVERSO;
-    const universosFaltan = universosResto === 0 ? SUBS_PER_UNIVERSO : (SUBS_PER_UNIVERSO - universosResto);
-    const universosProg = (universosResto / SUBS_PER_UNIVERSO) * 100;
+    const sesiones = tramoTerapias * SESSIONS_PER_SUB;
 
     return {
       totalSupport,
+      totalSupportClamped: Math.min(totalSupport, ANNUAL_TOTAL_HUELLAS),
+      annualFaltan: Math.max(ANNUAL_TOTAL_HUELLAS - totalSupport, 0),
+      annualProg: (Math.min(totalSupport, ANNUAL_TOTAL_HUELLAS) / ANNUAL_TOTAL_HUELLAS) * 100,
       sesiones,
-      residencias, residenciasFaltan, residenciasProg,
-      escuelas, escuelasFaltan, escuelasProg,
-      universos, universosFaltan, universosProg
+      terapiasActual: tramoTerapias,
+      terapiasMeta: THERAPY_TRAMO_HUELLAS,
+      terapiasFaltan: Math.max(THERAPY_TRAMO_HUELLAS - tramoTerapias, 0),
+      terapiasProg: (tramoTerapias / THERAPY_TRAMO_HUELLAS) * 100,
+      residenciasActual: tramoResidencias,
+      residenciasMeta: RESIDENCY_TRAMO_HUELLAS,
+      residenciasFaltan: Math.max(RESIDENCY_TRAMO_HUELLAS - tramoResidencias, 0),
+      residenciasProg: (tramoResidencias / RESIDENCY_TRAMO_HUELLAS) * 100,
+      appEscuelasActual: tramoAppEscuelas,
+      appEscuelasMeta: SCHOOL_APP_TRAMO_HUELLAS,
+      appEscuelasFaltan: Math.max(SCHOOL_APP_TRAMO_HUELLAS - tramoAppEscuelas, 0),
+      appEscuelasProg: (tramoAppEscuelas / SCHOOL_APP_TRAMO_HUELLAS) * 100,
+      implementacionEscuelasActual: tramoImplementacionEscuelas,
+      implementacionEscuelasMeta: SCHOOL_IMPLEMENTATION_TRAMO_HUELLAS,
+      implementacionEscuelasFaltan: Math.max(
+        SCHOOL_IMPLEMENTATION_TRAMO_HUELLAS - tramoImplementacionEscuelas,
+        0
+      ),
+      implementacionEscuelasProg:
+        (tramoImplementacionEscuelas / SCHOOL_IMPLEMENTATION_TRAMO_HUELLAS) * 100,
+      universosActual: tramoExpansion,
+      universosMeta: CREATIVE_EXPANSION_TRAMO_HUELLAS,
+      universosFaltan: Math.max(CREATIVE_EXPANSION_TRAMO_HUELLAS - tramoExpansion, 0),
+      universosProg: (tramoExpansion / CREATIVE_EXPANSION_TRAMO_HUELLAS) * 100,
     };
   }, [subs, ticketUnits]);
 
   useEffect(() => {
     const realValues = {
+      terapias: stats.terapiasProg,
       residencias: stats.residenciasProg,
-      escuelas: stats.escuelasProg,
+      appEscuelas: stats.appEscuelasProg,
+      implementacionEscuelas: stats.implementacionEscuelasProg,
       universos: stats.universosProg,
     };
 
@@ -194,11 +243,13 @@ const CallToAction = () => {
     hasRunBarSequenceRef.current = true;
     const timeouts = [];
     const peakValues = {
+      terapias: 88,
       residencias: 85,
-      escuelas: 80,
-      universos: 75,
+      appEscuelas: 82,
+      implementacionEscuelas: 79,
+      universos: 76,
     };
-    const keys = ['residencias', 'escuelas', 'universos'];
+    const keys = ['terapias', 'residencias', 'appEscuelas', 'implementacionEscuelas', 'universos'];
 
     keys.forEach((key, index) => {
       const id = window.setTimeout(() => {
@@ -220,7 +271,9 @@ const CallToAction = () => {
   }, [
     isImpactPanelInView,
     prefersReducedMotion,
-    stats.escuelasProg,
+    stats.appEscuelasProg,
+    stats.implementacionEscuelasProg,
+    stats.terapiasProg,
     stats.residenciasProg,
     stats.universosProg,
   ]);
@@ -292,26 +345,7 @@ const CallToAction = () => {
 
   // 4) Renderizado
   return (
-    <div className="max-w-xl mx-auto text-center space-y-6">
-      <motion.div
-        className="text-md text-white"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ duration: 0.5, delay: 0.2 }}
-      >
-        <p>
-          Cuando la causa florece, su pulso regresa al universo: nuevos juegos, nuevas escenas, nuevas historias por contar.
-        </p>
-
-        <p className="text-xs text-slate-400/70 mt-3">
-          Además, recibirás{' '}
-          <a href="#transmedia" className="underline text-slate-300">
-            12,000 GATokens
-          </a>{' '}
-          como una cortesía por tu activación.
-        </p>
-      </motion.div>
-
+    <div className="mx-auto h-full max-w-xl text-center flex flex-col gap-6">
       {/* Checkout + Ticket Support */}
       <div className="grid gap-3 sm:grid-cols-2">
         <button
@@ -360,73 +394,130 @@ const CallToAction = () => {
       {/* Panel de impacto */}
       <div
         ref={impactPanelRef}
-        className="rounded-2xl border border-white/10 bg-white/5 p-5 text-left text-slate-100 space-y-4"
+        className="rounded-2xl border border-white/10 bg-white/5 p-5 text-left text-slate-100 space-y-4 flex-1"
       >
+        <p className="text-[0.65rem] uppercase tracking-[0.18em] text-slate-400/80">
+          Modelo anual por tramos · Q{currentQuarter} {currentYear}
+        </p>
         <div className="flex items-baseline justify-between">
-          <p className="text-sm opacity-80">Huellas activadas</p>
+          <p className="text-sm opacity-80 inline-flex items-center gap-2">
+            <PawPrint size={14} className="text-violet-300/90" />
+            Huellas activadas
+          </p>
           <p className="text-2xl font-semibold">{subs}</p>
         </div>
         <div className="flex items-baseline justify-between">
-          <p className="text-sm opacity-80">Boletos destinados</p>
+          <p className="text-sm opacity-80 inline-flex items-center gap-2">
+            <Ticket size={14} className="text-cyan-300/90" />
+            Boletos destinados
+          </p>
           <p className="text-2xl font-semibold">{ticketUnits}</p>
         </div>
    
 
-        <div>
-          <p className="text-sm mb-1 opacity-80">Fondo para terapias</p>
-          <p className="text-lg mb-2">
-            <strong>{stats.sesiones}</strong> sesiones
+        {/* Terapias */}
+        <div className="space-y-1">
+          <div className="flex items-center justify-between text-sm opacity-80">
+            <span>Fondo para terapias</span>
+            <span>
+              {stats.terapiasActual}/{stats.terapiasMeta}
+            </span>
+          </div>
+          <ProgressBar
+            value={barValues.terapias}
+            barClassName="bg-gradient-to-r from-emerald-300 via-teal-300 to-cyan-300"
+          />
+          <p className="text-xs opacity-70 mt-1">
+            Faltan <strong>{stats.terapiasFaltan}</strong> huellas para completar este fondo.
+          </p>
+          <p className="text-xs opacity-65">
+            <strong>{stats.sesiones}</strong> sesiones financiadas en este tramo.
           </p>
         </div>
 
         {/* Residencias */}
         <div className="space-y-1">
           <div className="flex items-center justify-between text-sm opacity-80">
-            <span>Residencias creativas</span>
-            <span>{stats.residencias} activas</span>
+            <span>Fondo para residencias creativas</span>
+            <span>
+              {stats.residenciasActual}/{stats.residenciasMeta}
+            </span>
           </div>
           <ProgressBar
             value={barValues.residencias}
             barClassName="bg-gradient-to-r from-amber-300 via-yellow-300 to-orange-400"
           />
           <p className="text-xs opacity-70 mt-1">
-            Faltan <strong>{stats.residenciasFaltan}</strong> huellas para abrir la siguiente residencia.
+            Faltan <strong>{stats.residenciasFaltan}</strong> huellas para completar este fondo.
           </p>
         </div>
 
-        {/* Escuelas */}
+        {/* App en escuelas */}
         <div className="space-y-1">
           <div className="flex items-center justify-between text-sm opacity-80">
-            <span>Escuelas con app activa</span>
-            <span>{stats.escuelas} escuelas</span>
+            <span>Fondo para apps en escuelas</span>
+            <span>
+              {stats.appEscuelasActual}/{stats.appEscuelasMeta}
+            </span>
           </div>
           <ProgressBar
-            value={barValues.escuelas}
+            value={barValues.appEscuelas}
             barClassName="bg-gradient-to-r from-cyan-300 via-sky-300 to-blue-400"
           />
           <p className="text-xs opacity-70 mt-1">
-            Faltan <strong>{stats.escuelasFaltan}</strong> huellas para la próxima escuela.
+            Faltan <strong>{stats.appEscuelasFaltan}</strong> huellas para completar este fondo.
           </p>
         </div>
 
-        {/* 🌌 Nuevo medidor: Expansión creativa */}
+        {/* Implementación en escuelas */}
         <div className="space-y-1">
           <div className="flex items-center justify-between text-sm opacity-80">
-            <span>Expansión creativa del universo</span>
-            <span>{stats.universos} activadas</span>
+            <span>Fondo para implementación en escuelas</span>
+            <span>
+              {stats.implementacionEscuelasActual}/{stats.implementacionEscuelasMeta}
+            </span>
+          </div>
+          <ProgressBar
+            value={barValues.implementacionEscuelas}
+            barClassName="bg-gradient-to-r from-indigo-300 via-blue-300 to-cyan-300"
+          />
+          <p className="text-xs opacity-70 mt-1">
+            Faltan <strong>{stats.implementacionEscuelasFaltan}</strong> huellas para completar este fondo.
+          </p>
+        </div>
+
+        {/* Expansión creativa */}
+        <div className="space-y-1">
+          <div className="flex items-center justify-between text-sm opacity-80">
+            <span>Fondo para expansión creativa</span>
+            <span>
+              {stats.universosActual}/{stats.universosMeta}
+            </span>
           </div>
           <ProgressBar
             value={barValues.universos}
             barClassName="bg-gradient-to-r from-violet-300 via-fuchsia-300 to-pink-400"
           />
           <p className="text-xs opacity-70 mt-1">
-            Faltan <strong>{stats.universosFaltan}</strong> huellas para la siguiente creación artística.
+            Faltan <strong>{stats.universosFaltan}</strong> huellas para completar este fondo.
           </p>
         </div>
              <div className="flex items-baseline justify-between">
           <p className="text-sm opacity-80">Huellas totales</p>
           <p className="text-2xl font-semibold">{stats.totalSupport}</p>
         </div>
+        <div className="flex items-baseline justify-between">
+          <p className="text-sm opacity-80">Meta mínima anual</p>
+          <p className="text-lg font-semibold">
+            {stats.totalSupportClamped}/{ANNUAL_TOTAL_HUELLAS}
+          </p>
+        </div>
+        <p className="text-xs opacity-70">
+          Faltan <strong>{stats.annualFaltan}</strong> huellas para completar todos los tramos.
+        </p>
+        <p className="text-xs opacity-65">
+          Todo lo que supere esta meta se reinvierte en nuevas obras, miniversos y publicaciones.
+        </p>
       </div>
 
       <div className="flex flex-col gap-2 rounded-lg border border-white/5 bg-black/20 px-4 py-3 mt-4">

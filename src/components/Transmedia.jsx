@@ -1395,7 +1395,7 @@ const CAUSE_ACCORDION = [
     id: 'tratamientos',
     title: 'Tratamientos emocionales',
     description:
-      'Tu apoyo asigna hasta 6 sesiones a un joven sin costo para su familia. Isabel Ayuda para la Vida, A.C. activa las sesiones cuando se detecta riesgo emocional.',
+      'Tu huella transmedia asigna hasta 6 sesiones a un joven sin costo para su familia. Isabel Ayuda para la Vida, A.C. activa las sesiones cuando se detecta riesgo emocional.',
     icon: HeartHandshake,
     metric: '6 sesiones promedio por suscriptor',
     imageAlt: 'Foto de archivo de acompañamiento emocional.',
@@ -6321,7 +6321,7 @@ const rendernotaAutoral = () => {
 
           {renderExplorerBadge()}
 
-          <div className="mt-16 grid lg:grid-cols-[3fr_2fr] gap-10">
+          <div className="mt-16 grid items-stretch lg:grid-cols-[3fr_2fr] gap-10">
             <motion.div
               id="apoya"
               ref={supportSectionRef}
@@ -6329,7 +6329,7 @@ const rendernotaAutoral = () => {
               whileInView={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.8, ease: 'easeOut' }}
               viewport={{ once: true, amount: 0.25 }}
-              className="glass-effect rounded-2xl p-8 md:p-10 flex flex-col justify-between relative overflow-hidden opacity-100"
+              className="glass-effect rounded-2xl p-8 md:p-10 h-full flex flex-col justify-between relative overflow-hidden opacity-100"
               style={{ opacity: 1 }}
             >
             <div
@@ -6386,7 +6386,21 @@ const rendernotaAutoral = () => {
                 />
               </div>
 
-              <div className="mt-8 flex flex-col gap-4 md:flex-row md:items-center">
+              <div className="mt-8 space-y-5">
+                <div className="text-center">
+                  <p className="text-3xl text-white">
+                    Cuando la causa florece, su pulso regresa al universo: nuevos juegos, nuevas escenas, nuevas historias por contar.
+                  </p>
+                  <p className="mt-3 text-xs text-slate-400/70">
+                    Además, recibirás un{' '}
+                    <a href="/boletines-causa" className="underline text-slate-300">
+                      boletín semestral
+                    </a>{' '}
+                    con los avances de la asociación como cortesía por tu activación.
+                  </p>
+                </div>
+
+                <div className="flex flex-col gap-4 md:flex-row md:items-center">
                 <Button
                   onClick={handleOpenMiniverses}
                   variant="ghost"
@@ -6399,6 +6413,7 @@ const rendernotaAutoral = () => {
                   <span>Tu huella = Apoyo directo</span>
                 </div>
               </div>
+              </div>
             </motion.div>
             
 
@@ -6408,7 +6423,7 @@ const rendernotaAutoral = () => {
               whileInView={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.8, ease: 'easeOut' }}
               viewport={{ once: true, amount: 0.25 }}
-              className="glass-effect rounded-2xl p-6 border border-white/10 bg-slate-950/50 shadow-2xl"
+              className="glass-effect rounded-2xl p-6 h-full border border-white/10 bg-slate-950/50 shadow-2xl"
             >
               <CallToAction />
             </motion.div>
