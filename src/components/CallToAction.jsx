@@ -118,7 +118,7 @@ function ProgressBar({
       ref={barRef}
       role={onPreviewChange ? 'slider' : undefined}
       tabIndex={onPreviewChange ? 0 : -1}
-      className={`relative w-full h-8 sm:h-5 rounded-[4px] border border-white/15 bg-slate-900/80 overflow-hidden shadow-[inset_0_1px_0_rgba(255,255,255,0.12),inset_0_-10px_18px_rgba(0,0,0,0.35)] select-none ${onPreviewChange ? 'cursor-pointer' : 'cursor-default'}`}
+      className={`relative w-full h-8 rounded-[4px] border border-white/15 bg-slate-900/80 overflow-hidden shadow-[inset_0_1px_0_rgba(255,255,255,0.12),inset_0_-10px_18px_rgba(0,0,0,0.35)] select-none ${onPreviewChange ? 'cursor-pointer' : 'cursor-default'}`}
       onMouseDown={(event) => {
         if (event.button !== 0) return;
         setIsDragging(true);
@@ -192,7 +192,7 @@ function ProgressBar({
       />
       {safeValue > 3 ? (
         <div
-          className="absolute top-1/2 h-5 sm:h-3.5 w-2 sm:w-1.5 -translate-y-1/2 rounded-[2px] bg-white/80 shadow-[0_0_12px_rgba(255,255,255,0.9)]"
+          className="absolute top-1/2 h-5 w-2 -translate-y-1/2 rounded-[2px] bg-white/80 shadow-[0_0_12px_rgba(255,255,255,0.9)]"
           style={{ left: `calc(${safeValue}% - 4px)` }}
         />
       ) : null}
@@ -479,7 +479,7 @@ const CallToAction = ({ barsIntroDelayMs = 0 }) => {
       {/* Panel de impacto */}
       <div
         ref={impactPanelRef}
-        className="rounded-2xl border border-white/10 bg-white/5 p-5 text-left text-slate-100 space-y-4 flex-1"
+        className="rounded-2xl border border-white/10 bg-white/5 p-5 text-left text-slate-100 flex flex-col gap-4 flex-1"
       >
         <p className="text-[0.85rem] uppercase tracking-[0.18em] text-slate-400/80">
           Modelo anual por tramos · Q{currentQuarter} {currentYear}
@@ -499,53 +499,9 @@ const CallToAction = ({ barsIntroDelayMs = 0 }) => {
           <p className="text-2xl font-semibold">{ticketUnits}</p>
         </div>
 
-        {/* Checkout + Ticket Support */}
-        <div className="grid gap-3 sm:grid-cols-2">
-          <button
-            onClick={handleCheckout}
-            disabled={loading}
-            className="bg-white/90 text-black px-4 py-2 rounded disabled:opacity-50"
-          >
-            {loading ? 'Creando sesión…' : 'Dejar mi huella'}
-          </button>
-          <button
-            type="button"
-            onClick={() => setShowTicketSupport((prev) => !prev)}
-            className="border border-white/20 text-white px-4 py-2 rounded hover:border-purple-300/70 hover:text-purple-100"
-          >
-            {showTicketSupport ? 'Ocultar opciones' : 'Convertir mi boleto'}
-          </button>
-        </div>
-
-        {msg && <p className="text-red-300 text-sm">{msg}</p>}
-        {showTicketSupport ? (
-          <div className="rounded-2xl border border-white/10 bg-black/30 p-4 text-left text-slate-100 space-y-3">
-            <p className="text-sm text-slate-300">
-              Si asististe a la obra y deseas convertir ese momento en huella, puedes hacerlo aquí.
-            </p>
-            <div className="grid gap-2 sm:grid-cols-2">
-              <a
-                href={`mailto:${SUPPORT_EMAIL}?subject=Destinar%20boleto%20a%20la%20causa&body=${SUPPORT_MESSAGE}`}
-                className="flex items-center justify-center gap-2 text-center border border-white/20 text-white px-4 py-2 rounded hover:border-purple-300/70 hover:text-purple-100"
-              >
-                <Mail size={18} />
-                Enviar por correo
-              </a>
-              <a
-                href={`https://wa.me/${SUPPORT_WHATSAPP.replace(/\D/g, '')}?text=${SUPPORT_MESSAGE}`}
-                target="_blank"
-                rel="noreferrer"
-                className="flex items-center justify-center gap-2 text-center border border-white/20 text-white px-4 py-2 rounded hover:border-purple-300/70 hover:text-purple-100"
-              >
-                <MessageCircle size={18} />
-                Enviar por WhatsApp
-              </a>
-            </div>
-          </div>
-        ) : null}
-
-        {/* Terapias */}
-        <div className="space-y-1">
+        <div className="order-2 space-y-4">
+          {/* Terapias */}
+          <div className="space-y-1">
           <div className="flex items-center text-sm opacity-80">
             <span className="inline-flex items-center gap-2">
               <HeartHandshake size={14} className="text-emerald-300/90" />
@@ -565,10 +521,10 @@ const CallToAction = ({ barsIntroDelayMs = 0 }) => {
             <PawPrint size={12} className="text-violet-300/90" />
             {displayStats.terapiasActual}/{displayStats.terapiasMeta}
           </p>
-        </div>
+          </div>
 
-        {/* Residencias */}
-        <div className="space-y-1">
+          {/* Residencias */}
+          <div className="space-y-1">
           <div className="flex items-center text-sm opacity-80">
             <span className="inline-flex items-center gap-2">
               <Palette size={14} className="text-amber-300/90" />
@@ -589,10 +545,10 @@ const CallToAction = ({ barsIntroDelayMs = 0 }) => {
             <PawPrint size={12} className="text-violet-300/90" />
             {displayStats.residenciasActual}/{displayStats.residenciasMeta}
           </p>
-        </div>
+          </div>
 
-        {/* Implementación de apps en escuelas */}
-        <div className="space-y-1">
+          {/* Implementación de apps en escuelas */}
+          <div className="space-y-1">
           <div className="flex items-center text-sm opacity-80">
             <span className="inline-flex items-center gap-2">
               <Smartphone size={14} className="text-cyan-300/90" />
@@ -613,10 +569,10 @@ const CallToAction = ({ barsIntroDelayMs = 0 }) => {
             <PawPrint size={12} className="text-violet-300/90" />
             {displayStats.implementacionEscuelasActual}/{displayStats.implementacionEscuelasMeta}
           </p>
-        </div>
+          </div>
 
-        {/* Expansión creativa */}
-        <div className="space-y-1">
+          {/* Expansión creativa */}
+          <div className="space-y-1">
           <div className="flex items-center text-sm opacity-80">
             <span className="inline-flex items-center gap-2">
               <Drama size={14} className="text-violet-300/90" />
@@ -636,26 +592,80 @@ const CallToAction = ({ barsIntroDelayMs = 0 }) => {
           <p className="text-xs opacity-65">
             A partir de la huella {EXPANSION_START_COPY}, cada huella se reinvierte en nuevas obras, miniversos y publicaciones.
           </p>
+          </div>
         </div>
-             <div className="flex items-baseline justify-between">
+
+        <div className="order-1 space-y-2">
+          <div className="flex items-baseline justify-between">
           <p className="text-sm opacity-80">Huellas + boletos con causa</p>
           <p className="text-2xl font-semibold">{displayStats.totalSupport}</p>
-        </div>
-        <div className="flex items-baseline justify-between">
+          </div>
+          <div className="flex items-baseline justify-between">
           <p className="text-sm opacity-80">Meta mínima anual</p>
           <p className="text-lg font-semibold">
             {displayStats.totalSupportClamped}/{ANNUAL_TOTAL_HUELLAS}
           </p>
+          </div>
         </div>
-        <p className="text-md opacity-90">
-          Faltan <strong>{displayStats.annualFaltan}</strong> huellas para completar todos los tramos.
-        </p>
-        <p className="text-sm opacity-80">
-          Reinversión (excedente): <strong>+{displayStats.reinversion}</strong>
-        </p>
-        <p className="text-xs opacity-65">
-          Todo lo que supere esta meta se reinvierte en nuevas obras, miniversos y publicaciones ✨
-        </p>
+
+        <div className="order-3 space-y-3">
+          {/* Checkout + Ticket Support */}
+          <div className="grid gap-3">
+            <button
+              onClick={handleCheckout}
+              disabled={loading}
+              className="bg-white/90 text-black px-4 py-2 rounded disabled:opacity-50"
+            >
+              {loading ? 'Creando sesión…' : 'Dejar mi huella'}
+            </button>
+            <button
+              type="button"
+              onClick={() => setShowTicketSupport((prev) => !prev)}
+              className="border border-white/20 text-white px-4 py-2 rounded hover:border-purple-300/70 hover:text-purple-100"
+            >
+              {showTicketSupport ? 'Ocultar opciones' : 'Convertir mi boleto'}
+            </button>
+          </div>
+
+          {msg && <p className="text-red-300 text-sm">{msg}</p>}
+          {showTicketSupport ? (
+            <div className="rounded-2xl border border-white/10 bg-black/30 p-4 text-left text-slate-100 space-y-3">
+              <p className="text-sm text-slate-300">
+                Si asististe a la obra y deseas convertir ese momento en huella, puedes hacerlo aquí.
+              </p>
+              <div className="grid gap-2">
+                <a
+                  href={`mailto:${SUPPORT_EMAIL}?subject=Destinar%20boleto%20a%20la%20causa&body=${SUPPORT_MESSAGE}`}
+                  className="flex items-center justify-center gap-2 text-center border border-white/20 text-white px-4 py-2 rounded hover:border-purple-300/70 hover:text-purple-100"
+                >
+                  <Mail size={18} />
+                  Enviar por correo
+                </a>
+                <a
+                  href={`https://wa.me/${SUPPORT_WHATSAPP.replace(/\D/g, '')}?text=${SUPPORT_MESSAGE}`}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="flex items-center justify-center gap-2 text-center border border-white/20 text-white px-4 py-2 rounded hover:border-purple-300/70 hover:text-purple-100"
+                >
+                  <MessageCircle size={18} />
+                  Enviar por WhatsApp
+                </a>
+              </div>
+            </div>
+          ) : null}
+        </div>
+
+        <div className="order-4 space-y-2">
+          <p className="text-md opacity-90">
+            Faltan <strong>{displayStats.annualFaltan}</strong> huellas para completar todos los tramos.
+          </p>
+          <p className="text-sm opacity-80">
+            Reinversión (excedente): <strong>+{displayStats.reinversion}</strong>
+          </p>
+          <p className="text-xs opacity-65">
+            Todo lo que supere esta meta se reinvierte en nuevas obras, miniversos y publicaciones ✨
+          </p>
+        </div>
       </div>
       {showAftercareOverlay ? (
         <div

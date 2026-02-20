@@ -7,6 +7,8 @@ import { Button } from '@/components/ui/button';
 import { toast } from '@/components/ui/use-toast';
 import { ToastAction } from '@/components/ui/toast';
 import { supabase } from '@/lib/supabaseClient';
+import HuellaEmbeddedCheckout from '@/components/HuellaEmbeddedCheckout';
+import { createEmbeddedSubscription, startCheckoutFallback } from '@/lib/huellaCheckout';
 import { useAuth } from '@/contexts/SupabaseAuthContext';
 import { safeSetItem } from '@/lib/safeStorage';
 import { getTopShowcaseLikes } from '@/services/showcaseLikeService';
@@ -357,6 +359,8 @@ const MiniverseModal = ({
   const [showcaseCountdown, setShowcaseCountdown] = useState(9);
   const [isMobileViewport, setIsMobileViewport] = useState(false);
   const [isCheckoutLoading, setIsCheckoutLoading] = useState(false);
+  const [embeddedClientSecret, setEmbeddedClientSecret] = useState('');
+  const [embeddedCheckoutStatus, setEmbeddedCheckoutStatus] = useState('');
   const [showcaseEnergy, setShowcaseEnergy] = useState(() =>
     readStoredJson('gatoencerrado:showcase-energy', {})
   );
@@ -483,6 +487,8 @@ const MiniverseModal = ({
       setIsShowcaseAutoPlay(true);
       setShowcaseCountdown(9);
       setIsCauseSiteOpen(false);
+      setEmbeddedClientSecret('');
+      setEmbeddedCheckoutStatus('');
       setShowcaseEnergy(readStoredJson('gatoencerrado:showcase-energy', {}));
       setShowcaseBoosts(readStoredJson('gatoencerrado:showcase-boosts', {}));
       return;
@@ -987,39 +993,80 @@ const MiniverseModal = ({
       return;
     }
 
+    if (isSubscriber) {
+      toast({ description: 'Tu huella ya está activa en esta cuenta.' });
+      return;
+    }
+
+    const normalizedEmail = user?.email ? user.email.trim().toLowerCase() : '';
     try {
       setIsCheckoutLoading(true);
-      const normalizedEmail = user?.email ? user.email.trim().toLowerCase() : '';
-      const { data, error } = await supabase.functions.invoke('create-checkout-session', {
-        body: {
-          mode: 'subscription',
-          line_items: [
-            {
-              price: SUBSCRIPTION_PRICE_ID,
-              quantity: 1,
-            },
-          ],
-          customer_email: normalizedEmail || undefined,
+      setEmbeddedCheckoutStatus('');
+      const metadata = {
+        channel: 'landing',
+        event: 'suscripcion-landing',
+        packages: 'subscription',
+        source: 'miniverse_modal',
+      };
+
+      const data = await createEmbeddedSubscription({
+        priceId: SUBSCRIPTION_PRICE_ID,
+        metadata,
+      });
+
+      if (!data?.ok) {
+        if (data?.error === 'already_subscribed') {
+          toast({ description: 'Tu huella ya está activa en esta cuenta.' });
+          return;
+        }
+        throw new Error(data?.error || 'embedded_unknown_error');
+      }
+
+      if (!data.client_secret) {
+        throw new Error('missing_client_secret');
+      }
+
+      setEmbeddedClientSecret(data.client_secret);
+      setActiveTab('waitlist');
+      setEmbeddedCheckoutStatus('Formulario de pago listo. Completa tu huella aquí.');
+    } catch (err) {
+      console.warn('[MiniverseModal] Embedded checkout error. Activando fallback.', err);
+      setEmbeddedCheckoutStatus('No se pudo abrir el formulario embebido. Redirigiendo al checkout...');
+      try {
+        await startCheckoutFallback({
+          priceId: SUBSCRIPTION_PRICE_ID,
+          customerEmail: normalizedEmail || undefined,
           metadata: {
             channel: 'landing',
             event: 'suscripcion-landing',
             packages: 'subscription',
+            source: 'miniverse_modal_fallback',
           },
-        },
-      });
-
-      if (error || !data?.url) {
-        throw error || new Error('No se pudo crear la sesión');
+        });
+      } catch (fallbackError) {
+        console.error('[MiniverseModal] Fallback checkout error:', fallbackError);
+        toast({ description: fallbackError?.message || 'No se pudo reconocer la huella.' });
       }
-
-      window.location.href = data.url;
-    } catch (err) {
-      console.error('[MiniverseModal] Checkout error:', err);
-      toast({ description: err?.message || 'No se pudo reconocer la huella.' });
     } finally {
       setIsCheckoutLoading(false);
     }
-  }, [isCheckoutLoading, user?.email]);
+  }, [isCheckoutLoading, isSubscriber, user?.email]);
+
+  const handleEmbeddedCheckoutDone = useCallback(({ ok, message }) => {
+    if (!ok) {
+      return;
+    }
+    const normalizedStatus = (message || '').toLowerCase();
+    const isSuccessful = normalizedStatus === 'succeeded' || normalizedStatus === 'processing';
+    if (isSuccessful) {
+      setHasActiveSubscription(true);
+      setEmbeddedCheckoutStatus('Pago confirmado. Tu huella se activará en esta cuenta.');
+      setEmbeddedClientSecret('');
+      toast({ description: 'Pago confirmado. Gracias por dejar tu huella.' });
+      return;
+    }
+    setEmbeddedCheckoutStatus(`Estado actual del pago: ${message || 'unknown'}.`);
+  }, []);
 
   const handlePlayShowcaseVideo = useCallback((cardId) => {
     if (typeof document === 'undefined') return false;
@@ -1245,12 +1292,23 @@ const MiniverseModal = ({
                             disabled={isCheckoutLoading}
                             className="h-11 min-w-[10.5rem] bg-white px-6 text-base font-semibold text-slate-900 hover:bg-white/90"
                           >
-                            Activar huella
+                            {isCheckoutLoading ? 'Abriendo…' : 'Activar huella'}
                           </Button>
+                          {embeddedCheckoutStatus ? (
+                            <p className="text-center text-xs leading-relaxed text-slate-300/80">
+                              {embeddedCheckoutStatus}
+                            </p>
+                          ) : null}
+                          {embeddedClientSecret ? (
+                            <HuellaEmbeddedCheckout
+                              clientSecret={embeddedClientSecret}
+                              onDone={handleEmbeddedCheckoutDone}
+                            />
+                          ) : null}
                           <button
                             type="button"
                             onClick={handleCommunityOptIn}
-                            className="relative flex w-full items-center gap-3 rounded-lg border border-white/10 bg-black/20 px-3 py-2 text-left group focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-purple-400/60"
+                            className="relative flex w-full items-center justify-center gap-3 text-left group focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-purple-400/60"
                           >
                             <div
                               className={`h-5 w-5 rounded-full border border-white/20 ${

@@ -1871,6 +1871,7 @@ const Transmedia = () => {
   const [graphicSpent, setGraphicSpent] = useState(initialGraphicSpent);
   const [novelaQuestions, setNovelaQuestions] = useState(initialNovelaQuestions);
   const [isNovelaReserveOpen, setIsNovelaReserveOpen] = useState(false);
+  const [reserveInitialPackages, setReserveInitialPackages] = useState(['novela-400']);
   const [sonoroSpent, setSonoroSpent] = useState(initialSonoroSpent);
   const [tazaActivations, setTazaActivations] = useState(initialTazaActivations);
   const [showQuironCommunityPrompt, setShowQuironCommunityPrompt] = useState(false);
@@ -3749,7 +3750,11 @@ const Transmedia = () => {
     handleOpenSilvestreChat();
   }, [handleOpenSilvestreChat, requireShowcaseAuth]);
 
-  const handleOpenNovelaReserve = useCallback(() => {
+  const handleOpenNovelaReserve = useCallback((initialPackages = ['novela-400']) => {
+    const normalized = Array.isArray(initialPackages) && initialPackages.length
+      ? initialPackages
+      : ['novela-400'];
+    setReserveInitialPackages(normalized);
     setIsNovelaReserveOpen(true);
   }, []);
 
@@ -4234,6 +4239,13 @@ const rendernotaAutoral = () => {
                 Usar visor estable (A‑Frame)
               </label>
             ) : null}
+            <button
+              type="button"
+              onClick={() => handleOpenNovelaReserve(['taza-250'])}
+              className="inline-flex w-full sm:w-auto items-center justify-center rounded-full border border-purple-400/40 text-purple-200 hover:bg-purple-500/10 px-6 py-2 font-semibold transition"
+            >
+              Comprar tu taza
+            </button>
           </div>
         ) : null}
 
@@ -6812,7 +6824,7 @@ const rendernotaAutoral = () => {
         open={isNovelaReserveOpen}
         onClose={() => setIsNovelaReserveOpen(false)}
         mode="offseason"
-        initialPackages={['novela-400']}
+        initialPackages={reserveInitialPackages}
         overlayZClass="z-[250]"
       />
       {showBadgeLoginOverlay ? <LoginOverlay onClose={handleCloseBadgeLogin} /> : null}
