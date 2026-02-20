@@ -1393,6 +1393,68 @@ const formats = [
 
 const getHashAnchor = (hashValue) => String(hashValue || '').split('?')[0];
 
+const parseNumericValue = (value) => {
+  if (typeof value === 'number' && Number.isFinite(value)) return value;
+  if (typeof value !== 'string') return null;
+  const match = value.match(/-?\d+(?:\.\d+)?/);
+  if (!match) return null;
+  const parsed = Number(match[0]);
+  return Number.isFinite(parsed) ? parsed : null;
+};
+
+const extractFocusIncomingGAT = (intent) => {
+  if (!intent || typeof intent !== 'object') return null;
+
+  const pick = (...paths) => {
+    for (const path of paths) {
+      let cursor = intent;
+      let validPath = true;
+      for (const segment of path) {
+        if (!cursor || typeof cursor !== 'object' || !(segment in cursor)) {
+          validPath = false;
+          break;
+        }
+        cursor = cursor[segment];
+      }
+      if (!validPath) continue;
+      const parsed = parseNumericValue(cursor);
+      if (parsed !== null) return parsed;
+    }
+    return null;
+  };
+
+  const prioritized =
+    pick(
+      ['gat_delta'],
+      ['gatDelta'],
+      ['gat_added'],
+      ['gatAdded'],
+      ['gat_earned'],
+      ['gatEarned'],
+      ['gatos_traidos'],
+      ['gatosTraidos'],
+      ['tokens_earned'],
+      ['tokensEarned'],
+      ['token_bonus'],
+      ['tokenBonus'],
+      ['reward_gatokens'],
+      ['reward', 'gatokens'],
+      ['reward', 'tokens'],
+      ['credits', 'delta'],
+      ['wallet', 'delta']
+    ) ??
+    pick(
+      ['gatokens'],
+      ['gat_tokens'],
+      ['gatos'],
+      ['tokens'],
+      ['available_tokens'],
+      ['wallet', 'available_tokens']
+    );
+
+  return prioritized === null ? null : Math.trunc(prioritized);
+};
+
 const getFocusParamFromLocation = (locationLike) => {
   if (!locationLike) return null;
 
@@ -1796,6 +1858,8 @@ const Transmedia = () => {
   const [isShowcaseCarouselPaused, setIsShowcaseCarouselPaused] = useState(false);
   const [mobileShowcaseIndex, setMobileShowcaseIndex] = useState(0);
   const [recommendedShowcaseId, setRecommendedShowcaseId] = useState(null);
+  const [focusLockShowcaseId, setFocusLockShowcaseId] = useState(null);
+  const [focusIncomingGAT, setFocusIncomingGAT] = useState(null);
   const [isMovementCreditsOpen, setIsMovementCreditsOpen] = useState(false);
   const [openCollaboratorId, setOpenCollaboratorId] = useState(null);
   const { isMobileViewport, canUseInlinePlayback, requestMobileVideoPresentation } = useMobileVideoPresentation();
@@ -1857,6 +1921,7 @@ const Transmedia = () => {
   const [useLegacyTazaViewer, setUseLegacyTazaViewer] = useState(LEGACY_TAZA_VIEWER_ENABLED);
   const [hasActiveSubscription, setHasActiveSubscription] = useState(false);
   const isAuthenticated = Boolean(user);
+  const isDesktopFocusLockActive = Boolean(focusLockShowcaseId) && !isMobileViewport;
   const isSubscriber = Boolean(
     user?.user_metadata?.isSubscriber ||
       user?.user_metadata?.is_subscriber ||
@@ -2566,6 +2631,11 @@ const Transmedia = () => {
     }
   }, []);
 
+  const releaseDesktopFocusLock = useCallback(() => {
+    setFocusLockShowcaseId(null);
+    setFocusIncomingGAT(null);
+  }, []);
+
   const handleCloseShowcase = useCallback(() => {
     setActiveShowcase(null);
     setIsMiniverseShelved(false);
@@ -2594,6 +2664,9 @@ const Transmedia = () => {
 
   const handleFormatClick = useCallback(
     (formatId) => {
+      if (focusLockShowcaseId) {
+        releaseDesktopFocusLock();
+      }
       if (MINIVERSO_EDITORIAL_INTERCEPTION_ENABLED) {
         setIsMiniversoEditorialModalOpen(true);
         return;
@@ -2611,7 +2684,7 @@ const Transmedia = () => {
       }
       handleOpenMiniverses();
     },
-    [handleOpenMiniverses, loadShowcaseContent, showcaseContent]
+    [focusLockShowcaseId, handleOpenMiniverses, loadShowcaseContent, releaseDesktopFocusLock, showcaseContent]
   );
 
   useEffect(() => {
@@ -2652,6 +2725,8 @@ const Transmedia = () => {
       setIsMiniverseShelved(false);
       return;
     }
+    setFocusLockShowcaseId(showcaseId);
+    setFocusIncomingGAT(extractFocusIncomingGAT(pendingIntent));
     focusShowcaseCard(showcaseId);
   }, [focusShowcaseCard, resolveShowcaseFromBienvenida]);
 
@@ -2671,6 +2746,8 @@ const Transmedia = () => {
       section.focus({ preventScroll: true });
       section.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
+    setFocusLockShowcaseId(focusId);
+    setFocusIncomingGAT(null);
     focusShowcaseCard(focusId);
   }, [focusShowcaseCard, location, showcaseDefinitions]);
 
@@ -2686,12 +2763,15 @@ const Transmedia = () => {
       return;
     }
     if (!showcaseId) return;
+    if (focusLockShowcaseId) {
+      releaseDesktopFocusLock();
+    }
     const section = document.getElementById('transmedia');
     if (section) {
       section.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
     openMiniverseById(showcaseId);
-  }, [location, openMiniverseById]);
+  }, [focusLockShowcaseId, location, openMiniverseById, releaseDesktopFocusLock]);
 
   const handleOpenBlogEntry = useCallback((slug) => {
     if (!slug) {
@@ -3145,20 +3225,32 @@ const Transmedia = () => {
   }, [location.search, openMiniverseById]);
 
   const handleShowcaseNext = useCallback(() => {
+    if (focusLockShowcaseId) {
+      releaseDesktopFocusLock();
+    }
     setShowcaseCarouselIndex((prev) => (prev + 1) % formats.length);
-  }, []);
+  }, [focusLockShowcaseId, releaseDesktopFocusLock]);
 
   const handleShowcasePrev = useCallback(() => {
+    if (focusLockShowcaseId) {
+      releaseDesktopFocusLock();
+    }
     setShowcaseCarouselIndex((prev) => (prev - 1 + formats.length) % formats.length);
-  }, []);
+  }, [focusLockShowcaseId, releaseDesktopFocusLock]);
 
   const handleShowcaseNextBatch = useCallback(() => {
+    if (focusLockShowcaseId) {
+      releaseDesktopFocusLock();
+    }
     setShowcaseCarouselIndex((prev) => (prev + 3) % formats.length);
-  }, []);
+  }, [focusLockShowcaseId, releaseDesktopFocusLock]);
 
   const handleShowcasePrevBatch = useCallback(() => {
+    if (focusLockShowcaseId) {
+      releaseDesktopFocusLock();
+    }
     setShowcaseCarouselIndex((prev) => (prev - 3 + formats.length) % formats.length);
-  }, []);
+  }, [focusLockShowcaseId, releaseDesktopFocusLock]);
 
   const handleMobileShowcaseNext = useCallback(() => {
     setMobileShowcaseIndex((prev) => (prev + 1) % formats.length);
@@ -3215,10 +3307,10 @@ const Transmedia = () => {
   }, [showcaseCarouselIndex]);
 
   useEffect(() => {
-    if (isMobileViewport || isShowcaseCarouselPaused) return undefined;
+    if (isMobileViewport || isShowcaseCarouselPaused || isDesktopFocusLockActive) return undefined;
     const intervalId = window.setInterval(handleShowcaseNext, 9000);
     return () => window.clearInterval(intervalId);
-  }, [handleShowcaseNext, isMobileViewport, isShowcaseCarouselPaused]);
+  }, [handleShowcaseNext, isDesktopFocusLockActive, isMobileViewport, isShowcaseCarouselPaused]);
 
   useEffect(() => {
     if (typeof window === 'undefined') return undefined;
@@ -6428,9 +6520,38 @@ const rendernotaAutoral = () => {
           </div>
           <div
             className="hidden lg:block"
-            onMouseEnter={() => setIsShowcaseCarouselPaused(true)}
-            onMouseLeave={() => setIsShowcaseCarouselPaused(false)}
+            onMouseEnter={() => {
+              if (!isDesktopFocusLockActive) {
+                setIsShowcaseCarouselPaused(true);
+              }
+            }}
+            onMouseLeave={() => {
+              if (!isDesktopFocusLockActive) {
+                setIsShowcaseCarouselPaused(false);
+              }
+            }}
           >
+            {isDesktopFocusLockActive ? (
+              <div className="mb-5 flex items-center justify-between gap-4 rounded-2xl border border-fuchsia-300/40 bg-fuchsia-500/10 px-4 py-3">
+                <div className="text-left">
+                  <p className="text-[0.62rem] uppercase tracking-[0.3em] text-fuchsia-100/90">Enfoque activo</p>
+                  <p className="text-sm text-slate-100">
+                    Llegaste a esta vitrina con{' '}
+                    <span className="font-semibold text-amber-200">
+                      {Number.isFinite(focusIncomingGAT) ? `${focusIncomingGAT} GAT` : 'tus GAT'}
+                    </span>
+                    .
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={releaseDesktopFocusLock}
+                  className="shrink-0 rounded-full border border-fuchsia-200/40 bg-fuchsia-400/15 px-3 py-1.5 text-[0.65rem] uppercase tracking-[0.24em] text-fuchsia-50 transition hover:bg-fuchsia-400/25"
+                >
+                  Explorar libremente
+                </button>
+              </div>
+            ) : null}
             <div className="grid grid-cols-3 gap-8 min-h-[720px]">
               {visibleShowcases.map((format, index) => {
                 const Icon = format.icon;
@@ -6440,6 +6561,8 @@ const rendernotaAutoral = () => {
                 const mirrorEffect =
                   VITRINA_MIRROR_EFFECTS[format.id] ?? VITRINA_MIRROR_EFFECTS.default;
                 const isRecommendedTile = recommendedShowcaseId === format.id;
+                const isFocusCenterTile = index === 1;
+                const isFocusSideTile = isDesktopFocusLockActive && !isFocusCenterTile;
                 return (
                   <motion.button
                     key={format.id}
@@ -6447,9 +6570,13 @@ const rendernotaAutoral = () => {
                     initial={isSafari ? false : { opacity: 0, y: 20 }}
                     animate={isSafari ? { opacity: 1, y: 0 } : { opacity: 1, y: 0 }}
                     transition={isSafari ? { duration: 0.12, ease: 'linear' } : { duration: 0.5, delay: index * 0.08, ease: 'easeOut' }}
-                    className={`safari-stable-layer group glass-effect rounded-2xl border border-white/10 bg-black/30 hover:border-purple-400/50 overflow-hidden text-left shadow-[0_20px_60px_rgba(0,0,0,0.55)] flex flex-col min-h-[620px] hover-glow ${
+                    className={`safari-stable-layer group glass-effect rounded-2xl border border-white/10 bg-black/30 hover:border-purple-400/50 overflow-hidden text-left shadow-[0_20px_60px_rgba(0,0,0,0.55)] flex flex-col min-h-[620px] hover-glow transition ${
                       isRecommendedTile
                         ? 'border-fuchsia-300/60 shadow-[0_0_0_1px_rgba(244,114,182,0.35),0_24px_80px_rgba(168,85,247,0.3)]'
+                        : ''
+                    } ${
+                      isFocusSideTile
+                        ? 'opacity-45 saturate-50 brightness-75 scale-[0.985]'
                         : ''
                     }`}
                     onClick={() => handleFormatClick(format.id)}
@@ -6464,6 +6591,9 @@ const rendernotaAutoral = () => {
                         />
                       ) : null}
                       <div className="absolute inset-0 bg-gradient-to-br from-white/5 via-transparent to-black/20" />
+                      {isFocusSideTile ? (
+                        <div className="absolute inset-0 bg-black/45 backdrop-blur-[1px]" />
+                      ) : null}
                       <div className="vitrina-image-overlay" style={mirrorEffect} />
                       <div className="absolute inset-x-0 bottom-0 h-px bg-white/10" />
                     </div>

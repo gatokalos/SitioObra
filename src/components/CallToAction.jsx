@@ -20,7 +20,7 @@ const AFTERCARE_AUDIO_URL =
 const SUPPORT_EMAIL = 'contacto@gatoencerrado.ai';
 const SUPPORT_WHATSAPP = '+523315327985';
 const SUPPORT_MESSAGE =
-  'Hola,%0Aestuve en la función de Es un Gato Encerrado y quiero destinar mi boleto a la causa social.%0A%0AAdjunto una imagen como comprobante de que estuve ahí.%0ANo busco registrarme ni hacer login, solo sumar desde este gesto.%0A%0AGracias por abrir este espacio.';
+  'Hola:%0A%0AWstuve en la función de Es un Gato Encerrado y quiero convertir mi boleto en una huella para la causa social.%0A%0AAdjunto una imagen como comprobante de que estuve ahí.%0ANo busco registrarme ni hacer login, solo sumar desde este gesto.%0A%0AGracias por abrir este espacio.';
 
 function clamp(value, min, max) {
   return Math.max(min, Math.min(max, value));
@@ -118,7 +118,7 @@ function ProgressBar({
       ref={barRef}
       role={onPreviewChange ? 'slider' : undefined}
       tabIndex={onPreviewChange ? 0 : -1}
-      className={`relative w-full h-5 rounded-[4px] border border-white/15 bg-slate-900/80 overflow-hidden shadow-[inset_0_1px_0_rgba(255,255,255,0.12),inset_0_-10px_18px_rgba(0,0,0,0.35)] ${onPreviewChange ? 'cursor-pointer' : 'cursor-default'}`}
+      className={`relative w-full h-8 sm:h-5 rounded-[4px] border border-white/15 bg-slate-900/80 overflow-hidden shadow-[inset_0_1px_0_rgba(255,255,255,0.12),inset_0_-10px_18px_rgba(0,0,0,0.35)] select-none ${onPreviewChange ? 'cursor-pointer' : 'cursor-default'}`}
       onMouseDown={(event) => {
         if (event.button !== 0) return;
         setIsDragging(true);
@@ -192,7 +192,7 @@ function ProgressBar({
       />
       {safeValue > 3 ? (
         <div
-          className="absolute top-1/2 h-3.5 w-1.5 -translate-y-1/2 rounded-[2px] bg-white/80 shadow-[0_0_12px_rgba(255,255,255,0.9)]"
+          className="absolute top-1/2 h-5 sm:h-3.5 w-2 sm:w-1.5 -translate-y-1/2 rounded-[2px] bg-white/80 shadow-[0_0_12px_rgba(255,255,255,0.9)]"
           style={{ left: `calc(${safeValue}% - 4px)` }}
         />
       ) : null}
@@ -494,7 +494,7 @@ const CallToAction = ({ barsIntroDelayMs = 0 }) => {
         <div className="flex items-baseline justify-between">
           <p className="text-sm opacity-80 inline-flex items-center gap-2">
             <Ticket size={14} className="text-cyan-300/90" />
-            Boletos destinados
+            Boletos con causa
           </p>
           <p className="text-2xl font-semibold">{ticketUnits}</p>
         </div>
@@ -513,7 +513,7 @@ const CallToAction = ({ barsIntroDelayMs = 0 }) => {
             onClick={() => setShowTicketSupport((prev) => !prev)}
             className="border border-white/20 text-white px-4 py-2 rounded hover:border-purple-300/70 hover:text-purple-100"
           >
-            {showTicketSupport ? 'Ocultar opciones' : 'Destinar mi boleto'}
+            {showTicketSupport ? 'Ocultar opciones' : 'Convertir mi boleto'}
           </button>
         </div>
 
@@ -521,7 +521,7 @@ const CallToAction = ({ barsIntroDelayMs = 0 }) => {
         {showTicketSupport ? (
           <div className="rounded-2xl border border-white/10 bg-black/30 p-4 text-left text-slate-100 space-y-3">
             <p className="text-sm text-slate-300">
-              Si ya compraste boleto, envíanos una foto como gesto de apoyo. No necesitas registrarte.
+              Si asististe a la obra y deseas convertir ese momento en huella, puedes hacerlo aquí.
             </p>
             <div className="grid gap-2 sm:grid-cols-2">
               <a
@@ -546,13 +546,10 @@ const CallToAction = ({ barsIntroDelayMs = 0 }) => {
 
         {/* Terapias */}
         <div className="space-y-1">
-          <div className="flex items-center justify-between text-sm opacity-80">
+          <div className="flex items-center text-sm opacity-80">
             <span className="inline-flex items-center gap-2">
               <HeartHandshake size={14} className="text-emerald-300/90" />
-              Fondo para terapias
-            </span>
-            <span>
-              {displayStats.terapiasActual}/{displayStats.terapiasMeta}
+              {displayStats.sesiones} sesiones financiadas en este tramo.
             </span>
           </div>
           <ProgressBar
@@ -564,20 +561,18 @@ const CallToAction = ({ barsIntroDelayMs = 0 }) => {
             onRelease={() => setInteractiveSupport(null)}
             isPreviewing={interactiveSupport !== null}
           />
-          <p className="text-xs opacity-65">
-            <strong>{displayStats.sesiones}</strong> sesiones financiadas en este tramo.
+          <p className="text-xs opacity-70 inline-flex items-center gap-1 justify-end w-full">
+            <PawPrint size={12} className="text-violet-300/90" />
+            {displayStats.terapiasActual}/{displayStats.terapiasMeta}
           </p>
         </div>
 
         {/* Residencias */}
         <div className="space-y-1">
-          <div className="flex items-center justify-between text-sm opacity-80">
+          <div className="flex items-center text-sm opacity-80">
             <span className="inline-flex items-center gap-2">
               <Palette size={14} className="text-amber-300/90" />
-              Fondo para residencias creativas
-            </span>
-            <span>
-              {displayStats.residenciasActual}/{displayStats.residenciasMeta}
+              {displayStats.residenciasHitosActivos}/3 residencias activas por ciclo escolar.
             </span>
           </div>
           <ProgressBar
@@ -590,20 +585,18 @@ const CallToAction = ({ barsIntroDelayMs = 0 }) => {
             onRelease={() => setInteractiveSupport(null)}
             isPreviewing={interactiveSupport !== null}
           />
-          <p className="text-xs opacity-65">
-            {displayStats.residenciasHitosActivos}/3 residencias activas por ciclo escolar.
+          <p className="text-xs opacity-70 inline-flex items-center gap-1 justify-end w-full">
+            <PawPrint size={12} className="text-violet-300/90" />
+            {displayStats.residenciasActual}/{displayStats.residenciasMeta}
           </p>
         </div>
 
         {/* Implementación de apps en escuelas */}
         <div className="space-y-1">
-          <div className="flex items-center justify-between text-sm opacity-80">
+          <div className="flex items-center text-sm opacity-80">
             <span className="inline-flex items-center gap-2">
               <Smartphone size={14} className="text-cyan-300/90" />
-              Fondo para implementar apps en escuelas
-            </span>
-            <span>
-              {displayStats.implementacionEscuelasActual}/{displayStats.implementacionEscuelasMeta}
+              {displayStats.appsHitosActivos}/5 escuelas atendidas por ciclo escolar.
             </span>
           </div>
           <ProgressBar
@@ -616,19 +609,19 @@ const CallToAction = ({ barsIntroDelayMs = 0 }) => {
             onRelease={() => setInteractiveSupport(null)}
             isPreviewing={interactiveSupport !== null}
           />
-          <p className="text-xs opacity-65">
-            {displayStats.appsHitosActivos}/5 escuelas atendidas por ciclo escolar.
+          <p className="text-xs opacity-70 inline-flex items-center gap-1 justify-end w-full">
+            <PawPrint size={12} className="text-violet-300/90" />
+            {displayStats.implementacionEscuelasActual}/{displayStats.implementacionEscuelasMeta}
           </p>
         </div>
 
         {/* Expansión creativa */}
         <div className="space-y-1">
-          <div className="flex items-center justify-between text-sm opacity-80">
+          <div className="flex items-center text-sm opacity-80">
             <span className="inline-flex items-center gap-2">
               <Drama size={14} className="text-violet-300/90" />
               Fondo para expansión creativa
             </span>
-            <span>+{displayStats.universosActual}</span>
           </div>
           <ProgressBar
             value={displayBarValues.universos}
@@ -645,7 +638,7 @@ const CallToAction = ({ barsIntroDelayMs = 0 }) => {
           </p>
         </div>
              <div className="flex items-baseline justify-between">
-          <p className="text-sm opacity-80">Huellas totales</p>
+          <p className="text-sm opacity-80">Huellas + boletos con causa</p>
           <p className="text-2xl font-semibold">{displayStats.totalSupport}</p>
         </div>
         <div className="flex items-baseline justify-between">
