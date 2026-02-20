@@ -17,6 +17,9 @@ const EXPANSION_START_COPY = EXPANSION_START + 1; // 427
 const ANNUAL_TOTAL_HUELLAS = EXPANSION_START;
 const AFTERCARE_AUDIO_URL =
   'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Sonoridades/FX_folleys/wah_Payasito_HITS.cm-St.m4a';
+const IMPACT_SYNC_MEDIA_QUERY =
+  '(min-width: 1024px), ((min-width: 768px) and (orientation: landscape))';
+const SYNCABLE_BAR_KEYS = new Set(['terapias', 'residencias', 'implementacionEscuelas']);
 const SUPPORT_EMAIL = 'contacto@gatoencerrado.ai';
 const SUPPORT_WHATSAPP = '+523315327985';
 const SUPPORT_MESSAGE =
@@ -227,6 +230,7 @@ const CallToAction = ({ barsIntroDelayMs = 0 }) => {
   const aftercareTimeoutRef = useRef(null);
   const reachedExpansionRef = useRef(false);
   const aftercareAudioRef = useRef(null);
+  const accordionPushTimeoutRef = useRef(null);
   const impactPanelRef = useRef(null);
   const isImpactPanelInView = useInView(impactPanelRef, { once: true, amount: 0.35 });
   const prefersReducedMotion = useReducedMotion();
@@ -420,6 +424,55 @@ const CallToAction = ({ barsIntroDelayMs = 0 }) => {
     audio.currentTime = 0;
     audio.play().catch(() => {});
   }, [showAftercareOverlay]);
+
+  useEffect(() => {
+    if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') {
+      return undefined;
+    }
+    const mediaQuery = window.matchMedia(IMPACT_SYNC_MEDIA_QUERY);
+    const handleAccordionToggle = (event) => {
+      if (!mediaQuery.matches) return;
+      if (interactiveSupport !== null) return;
+
+      const barKey = event?.detail?.barKey;
+      if (!SYNCABLE_BAR_KEYS.has(barKey)) return;
+
+      const realValues = {
+        terapias: stats.terapiasProg,
+        residencias: stats.residenciasProg,
+        implementacionEscuelas: stats.implementacionEscuelasProg,
+        universos: stats.universosProg,
+      };
+      const baseValue = realValues[barKey] ?? 0;
+      const peakValue = Math.min(100, Math.max(baseValue + 16, baseValue < 70 ? 74 : baseValue + 9));
+
+      if (accordionPushTimeoutRef.current) {
+        window.clearTimeout(accordionPushTimeoutRef.current);
+        accordionPushTimeoutRef.current = null;
+      }
+
+      setBarValues((prev) => ({ ...prev, [barKey]: peakValue }));
+      accordionPushTimeoutRef.current = window.setTimeout(() => {
+        setBarValues((prev) => ({ ...prev, [barKey]: realValues[barKey] ?? baseValue }));
+        accordionPushTimeoutRef.current = null;
+      }, 460);
+    };
+
+    window.addEventListener('gatoencerrado:impact-accordion-toggle', handleAccordionToggle);
+    return () => {
+      window.removeEventListener('gatoencerrado:impact-accordion-toggle', handleAccordionToggle);
+      if (accordionPushTimeoutRef.current) {
+        window.clearTimeout(accordionPushTimeoutRef.current);
+        accordionPushTimeoutRef.current = null;
+      }
+    };
+  }, [
+    interactiveSupport,
+    stats.implementacionEscuelasProg,
+    stats.residenciasProg,
+    stats.terapiasProg,
+    stats.universosProg,
+  ]);
 
   // 3) Checkout
   async function handleCheckout() {

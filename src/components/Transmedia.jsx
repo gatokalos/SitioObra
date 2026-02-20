@@ -1531,10 +1531,23 @@ const CAUSE_ACCORDION = [
     ],
   },
 ];
+const CAUSE_TO_BAR_KEY = {
+  tratamientos: 'terapias',
+  residencias: 'residencias',
+  'app-escolar': 'implementacionEscuelas',
+};
+const IMPACT_SYNC_MEDIA_QUERY =
+  '(min-width: 1024px), ((min-width: 768px) and (orientation: landscape))';
 
 const CauseImpactAccordion = ({ items, onOpenImagePreview }) => {
   const [isDesktopViewport, setIsDesktopViewport] = useState(
     () => typeof window !== 'undefined' && window.matchMedia('(min-width: 1024px)').matches
+  );
+  const [isImpactSyncViewport, setIsImpactSyncViewport] = useState(
+    () =>
+      typeof window !== 'undefined' &&
+      typeof window.matchMedia === 'function' &&
+      window.matchMedia(IMPACT_SYNC_MEDIA_QUERY).matches
   );
   const [openCauseId, setOpenCauseId] = useState(() => items?.[0]?.id ?? null);
   const [activeSlideById, setActiveSlideById] = useState({});
@@ -1546,6 +1559,30 @@ const CauseImpactAccordion = ({ items, onOpenImagePreview }) => {
     }
     const mediaQuery = window.matchMedia('(min-width: 1024px)');
     const handleChange = (event) => setIsDesktopViewport(event.matches);
+
+    if (typeof mediaQuery.addEventListener === 'function') {
+      mediaQuery.addEventListener('change', handleChange);
+    } else if (typeof mediaQuery.addListener === 'function') {
+      mediaQuery.addListener(handleChange);
+    }
+
+    return () => {
+      if (typeof mediaQuery.removeEventListener === 'function') {
+        mediaQuery.removeEventListener('change', handleChange);
+      } else if (typeof mediaQuery.removeListener === 'function') {
+        mediaQuery.removeListener(handleChange);
+      }
+    };
+  }, []);
+
+  useEffect(() => {
+    if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') {
+      return undefined;
+    }
+    const mediaQuery = window.matchMedia(IMPACT_SYNC_MEDIA_QUERY);
+    const handleChange = (event) => setIsImpactSyncViewport(event.matches);
+
+    setIsImpactSyncViewport(mediaQuery.matches);
 
     if (typeof mediaQuery.addEventListener === 'function') {
       mediaQuery.addEventListener('change', handleChange);
@@ -1584,6 +1621,27 @@ const CauseImpactAccordion = ({ items, onOpenImagePreview }) => {
     });
   };
 
+  const handleCauseToggle = useCallback(
+    (itemId) => {
+      const nextOpenCauseId = openCauseId === itemId ? (isDesktopViewport ? itemId : null) : itemId;
+      setOpenCauseId(nextOpenCauseId);
+
+      if (!isImpactSyncViewport || nextOpenCauseId !== itemId || typeof window === 'undefined') {
+        return;
+      }
+
+      const barKey = CAUSE_TO_BAR_KEY[itemId];
+      if (!barKey) return;
+
+      window.dispatchEvent(
+        new CustomEvent('gatoencerrado:impact-accordion-toggle', {
+          detail: { causeId: itemId, barKey },
+        })
+      );
+    },
+    [isDesktopViewport, isImpactSyncViewport, openCauseId]
+  );
+
   return (
     <div className="mt-4 space-y-3">
       {items.map((item) => {
@@ -1604,14 +1662,7 @@ const CauseImpactAccordion = ({ items, onOpenImagePreview }) => {
           >
             <button
               type="button"
-              onClick={() =>
-                setOpenCauseId((prev) => {
-                  if (prev === item.id) {
-                    return isDesktopViewport ? item.id : null;
-                  }
-                  return item.id;
-                })
-              }
+              onClick={() => handleCauseToggle(item.id)}
               className="w-full flex items-center justify-between gap-4 px-4 py-3 text-left hover:bg-white/5 transition"
             >
               <div className="flex items-center gap-3">
