@@ -110,6 +110,14 @@ export const AuthProvider = ({ children }) => {
               });
               return;
             }
+            if (msg.includes('grant_type=pkce') || msg.includes('404') || msg.includes('not found')) {
+              toast({
+                variant: 'destructive',
+                title: 'No pudimos completar el acceso',
+                description: 'Reintenta el login. Estamos usando retorno directo del proveedor.',
+              });
+              return;
+            }
             toast({
               variant: 'destructive',
               title: 'No pudimos completar el login',
