@@ -3206,6 +3206,36 @@ const Transmedia = () => {
     }
   }, [activeDefinition, activeShowcase, buildMiniverseShareUrl]);
 
+  const handleShareImpactModel = useCallback(async () => {
+    if (typeof window === 'undefined') return;
+    const url = new URL(window.location.href);
+    url.searchParams.delete('miniverso');
+    url.hash = 'cta';
+    const shareUrl = url.toString();
+    const sharePayload = {
+      title: 'Modelo anual por tramos',
+      text: 'Mira cómo crece el impacto social de #GatoEncerrado.',
+      url: shareUrl,
+    };
+
+    try {
+      if (navigator.share) {
+        await navigator.share(sharePayload);
+        return;
+      }
+      if (navigator.clipboard?.writeText) {
+        await navigator.clipboard.writeText(shareUrl);
+        toast({ description: 'Enlace del modelo copiado. Ya puedes compartirlo.' });
+        return;
+      }
+      toast({ description: 'No pudimos abrir el menú de compartir en este navegador.' });
+    } catch (err) {
+      if (err?.name !== 'AbortError') {
+        toast({ description: 'No pudimos compartir el modelo. Intenta de nuevo.' });
+      }
+    }
+  }, [toast]);
+
   useEffect(() => {
     if (hasHandledDeepLinkRef.current) return;
     const params = new URLSearchParams(location.search);
@@ -6791,8 +6821,16 @@ const rendernotaAutoral = () => {
               whileInView={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.8, ease: 'easeOut' }}
               viewport={{ once: true, amount: 0.25 }}
-              className="glass-effect rounded-2xl p-6 border border-white/10 bg-slate-950/50 shadow-2xl"
+              className="relative glass-effect rounded-2xl p-6 border border-white/10 bg-slate-950/50 shadow-2xl"
             >
+              <button
+                type="button"
+                onClick={handleShareImpactModel}
+                className="absolute right-4 top-4 inline-flex h-9 w-9 items-center justify-center rounded-full border border-white/15 bg-white/5 text-slate-200/90 hover:border-purple-300/40 hover:text-white transition z-20"
+                aria-label="Compartir modelo anual por tramos"
+              >
+                <Send size={14} className="text-purple-200" />
+              </button>
               <CallToAction barsIntroDelayMs={900} />
             </motion.div>
   
