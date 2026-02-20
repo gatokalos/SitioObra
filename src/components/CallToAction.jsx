@@ -15,6 +15,8 @@ const SCHOOL_IMPLEMENTATION_TRAMO_HUELLAS = 375; // 5 escuelas x 75 huellas
 const EXPANSION_START = RESIDENCY_TRAMO_HUELLAS + SCHOOL_IMPLEMENTATION_TRAMO_HUELLAS; // 426
 const EXPANSION_START_COPY = EXPANSION_START + 1; // 427
 const ANNUAL_TOTAL_HUELLAS = EXPANSION_START;
+const AFTERCARE_AUDIO_URL =
+  'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Sonoridades/FX_folleys/wah_Payasito_HITS.cm-St.m4a';
 const SUPPORT_EMAIL = 'contacto@gatoencerrado.ai';
 const SUPPORT_WHATSAPP = '+523315327985';
 const SUPPORT_MESSAGE =
@@ -224,6 +226,7 @@ const CallToAction = ({ barsIntroDelayMs = 0 }) => {
   const hasRunBarSequenceRef = useRef(false);
   const aftercareTimeoutRef = useRef(null);
   const reachedExpansionRef = useRef(false);
+  const aftercareAudioRef = useRef(null);
   const impactPanelRef = useRef(null);
   const isImpactPanelInView = useInView(impactPanelRef, { once: true, amount: 0.35 });
   const prefersReducedMotion = useReducedMotion();
@@ -389,14 +392,6 @@ const CallToAction = ({ barsIntroDelayMs = 0 }) => {
         setShowAftercareOverlay(true);
         aftercareTimeoutRef.current = null;
       }, 950);
-      return;
-    }
-    if (!reachedExpansion) {
-      reachedExpansionRef.current = false;
-      if (aftercareTimeoutRef.current) {
-        window.clearTimeout(aftercareTimeoutRef.current);
-        aftercareTimeoutRef.current = null;
-      }
     }
   }, [displayStats.totalSupport, fireConfetti]);
 
@@ -405,8 +400,26 @@ const CallToAction = ({ barsIntroDelayMs = 0 }) => {
       if (aftercareTimeoutRef.current) {
         window.clearTimeout(aftercareTimeoutRef.current);
       }
+      if (aftercareAudioRef.current) {
+        aftercareAudioRef.current.pause();
+        aftercareAudioRef.current.src = '';
+        aftercareAudioRef.current = null;
+      }
     };
   }, []);
+
+  useEffect(() => {
+    if (!showAftercareOverlay || typeof window === 'undefined') return;
+    let audio = aftercareAudioRef.current;
+    if (!audio) {
+      audio = new Audio(AFTERCARE_AUDIO_URL);
+      audio.preload = 'auto';
+      audio.volume = 0.82;
+      aftercareAudioRef.current = audio;
+    }
+    audio.currentTime = 0;
+    audio.play().catch(() => {});
+  }, [showAftercareOverlay]);
 
   // 3) Checkout
   async function handleCheckout() {
@@ -675,6 +688,11 @@ const CallToAction = ({ barsIntroDelayMs = 0 }) => {
               className="mt-6 w-full rounded-xl bg-white/95 px-4 py-2 font-semibold text-black hover:bg-white"
               onClick={() => {
                 setShowAftercareOverlay(false);
+                reachedExpansionRef.current = false;
+                if (aftercareAudioRef.current) {
+                  aftercareAudioRef.current.pause();
+                  aftercareAudioRef.current.currentTime = 0;
+                }
               }}
             >
               Continuar
