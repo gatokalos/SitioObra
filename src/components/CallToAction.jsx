@@ -5,6 +5,7 @@ import { Drama, HeartHandshake, Mail, MessageCircle, Palette, PawPrint, Smartpho
 import { apiFetch } from '@/lib/apiClient';
 import { supabase } from '@/lib/supabaseClient';
 import { useAuth } from '@/contexts/SupabaseAuthContext';
+import { ConfettiBurst, useConfettiBursts } from '@/components/Confetti';
 
 const SUBSCRIPTION_PRICE_ID = import.meta.env.VITE_STRIPE_SUBSCRIPTION_PRICE_ID;
 const SESSIONS_PER_SUB = 6;
@@ -81,13 +82,21 @@ function ProgressBar({
   const [isDragging, setIsDragging] = useState(false);
   const [hoverX, setHoverX] = useState(0);
   const [isHovering, setIsHovering] = useState(false);
+  const activePointerIdRef = useRef(null);
+  const DESKTOP_EDGE_SNAP_PX = 14;
 
-  function emitValueFromClientX(clientX) {
+  function emitValueFromClientX(clientX, options = {}) {
+    const { desktopEdgeSnap = false } = options;
     if (!barRef.current || !onPreviewChange) return;
     const rect = barRef.current.getBoundingClientRect();
     if (rect.width <= 0) return;
-    const ratio = clamp((clientX - rect.left) / rect.width, 0, 1);
-    setHoverX(ratio * rect.width);
+    const relativeX = clamp(clientX - rect.left, 0, rect.width);
+    let ratio = relativeX / rect.width;
+    if (desktopEdgeSnap && rect.width - relativeX <= DESKTOP_EDGE_SNAP_PX) {
+      ratio = 1;
+    }
+    const normalizedX = ratio * rect.width;
+    setHoverX(normalizedX);
     onPreviewChange(Math.round(ratio * maxValue));
   }
 
@@ -95,6 +104,7 @@ function ProgressBar({
     if (!isDragging) return undefined;
     function handleMouseUp() {
       setIsDragging(false);
+      activePointerIdRef.current = null;
       onRelease?.();
     }
     window.addEventListener('mouseup', handleMouseUp);
@@ -108,14 +118,15 @@ function ProgressBar({
       tabIndex={onPreviewChange ? 0 : -1}
       className={`relative w-full h-5 rounded-[4px] border border-white/15 bg-slate-900/80 overflow-hidden shadow-[inset_0_1px_0_rgba(255,255,255,0.12),inset_0_-10px_18px_rgba(0,0,0,0.35)] ${onPreviewChange ? 'cursor-pointer' : 'cursor-default'}`}
       onMouseDown={(event) => {
+        if (event.button !== 0) return;
         setIsDragging(true);
-        emitValueFromClientX(event.clientX);
+        emitValueFromClientX(event.clientX, { desktopEdgeSnap: true });
       }}
       onMouseMove={(event) => {
         if (!barRef.current) return;
         const rect = barRef.current.getBoundingClientRect();
         setHoverX(clamp(event.clientX - rect.left, 0, rect.width));
-        if (isDragging) emitValueFromClientX(event.clientX);
+        if (isDragging) emitValueFromClientX(event.clientX, { desktopEdgeSnap: true });
       }}
       onMouseEnter={(event) => {
         if (!barRef.current) return;
@@ -126,11 +137,40 @@ function ProgressBar({
       onMouseLeave={() => {
         setIsHovering(false);
         if (isDragging) {
+          if (barRef.current && hoverX >= barRef.current.getBoundingClientRect().width - DESKTOP_EDGE_SNAP_PX) {
+            onPreviewChange?.(maxValue);
+          }
           setIsDragging(false);
           onRelease?.();
         }
       }}
       onBlur={() => onRelease?.()}
+      onPointerDown={(event) => {
+        if (!onPreviewChange) return;
+        if (event.pointerType === 'mouse') return;
+        activePointerIdRef.current = event.pointerId;
+        setIsDragging(true);
+        event.currentTarget.setPointerCapture?.(event.pointerId);
+        emitValueFromClientX(event.clientX);
+      }}
+      onPointerMove={(event) => {
+        if (!isDragging) return;
+        if (activePointerIdRef.current !== null && event.pointerId !== activePointerIdRef.current) return;
+        emitValueFromClientX(event.clientX);
+      }}
+      onPointerUp={(event) => {
+        if (activePointerIdRef.current !== null && event.pointerId !== activePointerIdRef.current) return;
+        activePointerIdRef.current = null;
+        setIsDragging(false);
+        onRelease?.();
+      }}
+      onPointerCancel={(event) => {
+        if (activePointerIdRef.current !== null && event.pointerId !== activePointerIdRef.current) return;
+        activePointerIdRef.current = null;
+        setIsDragging(false);
+        onRelease?.();
+      }}
+      style={{ touchAction: onPreviewChange ? 'none' : 'auto' }}
     >
       <div className="absolute inset-0 bg-gradient-to-b from-white/10 via-transparent to-black/30 pointer-events-none" />
       {milestones.map((milestone) => {
@@ -180,10 +220,14 @@ const CallToAction = ({ barsIntroDelayMs = 0 }) => {
     universos: 0,
   });
   const [interactiveSupport, setInteractiveSupport] = useState(null);
+  const [showAftercareOverlay, setShowAftercareOverlay] = useState(false);
   const hasRunBarSequenceRef = useRef(false);
+  const aftercareTimeoutRef = useRef(null);
+  const reachedExpansionRef = useRef(false);
   const impactPanelRef = useRef(null);
   const isImpactPanelInView = useInView(impactPanelRef, { once: true, amount: 0.35 });
   const prefersReducedMotion = useReducedMotion();
+  const { bursts: confettiBursts, fireConfetti } = useConfettiBursts();
   const now = new Date();
   const currentQuarter = Math.floor(now.getMonth() / 3) + 1;
   const currentYear = now.getFullYear();
@@ -263,7 +307,7 @@ const CallToAction = ({ barsIntroDelayMs = 0 }) => {
     if (tramo === 'implementacionEscuelas') {
       return RESIDENCY_TRAMO_HUELLAS + clamp(value, 0, SCHOOL_IMPLEMENTATION_TRAMO_HUELLAS);
     }
-    return EXPANSION_START + clamp(value, 0, Math.max(1, stats.reinversion || 1));
+    return clamp(value, 0, EXPANSION_START);
   }
 
   function handleSliderInput(tramo, value) {
@@ -332,6 +376,38 @@ const CallToAction = ({ barsIntroDelayMs = 0 }) => {
     stats.universosProg,
   ]);
 
+  useEffect(() => {
+    const reachedExpansion = displayStats.totalSupport >= EXPANSION_START;
+    if (reachedExpansion && !reachedExpansionRef.current) {
+      reachedExpansionRef.current = true;
+      fireConfetti();
+      window.setTimeout(() => fireConfetti(), 260);
+      if (aftercareTimeoutRef.current) {
+        window.clearTimeout(aftercareTimeoutRef.current);
+      }
+      aftercareTimeoutRef.current = window.setTimeout(() => {
+        setShowAftercareOverlay(true);
+        aftercareTimeoutRef.current = null;
+      }, 950);
+      return;
+    }
+    if (!reachedExpansion) {
+      reachedExpansionRef.current = false;
+      if (aftercareTimeoutRef.current) {
+        window.clearTimeout(aftercareTimeoutRef.current);
+        aftercareTimeoutRef.current = null;
+      }
+    }
+  }, [displayStats.totalSupport, fireConfetti]);
+
+  useEffect(() => {
+    return () => {
+      if (aftercareTimeoutRef.current) {
+        window.clearTimeout(aftercareTimeoutRef.current);
+      }
+    };
+  }, []);
+
   // 3) Checkout
   async function handleCheckout() {
     if (!SUBSCRIPTION_PRICE_ID) {
@@ -384,6 +460,9 @@ const CallToAction = ({ barsIntroDelayMs = 0 }) => {
   // 4) Renderizado
   return (
     <div className="mx-auto h-full max-w-xl text-center flex flex-col gap-6">
+      {confettiBursts.map((burst) => (
+        <ConfettiBurst key={burst} seed={burst} />
+      ))}
       {/* Panel de impacto */}
       <div
         ref={impactPanelRef}
@@ -543,6 +622,9 @@ const CallToAction = ({ barsIntroDelayMs = 0 }) => {
             barClassName="bg-gradient-to-r from-violet-300 via-fuchsia-300 to-pink-400"
             maxValue={EXPANSION_START}
             currentValue={Math.min(displayStats.totalSupport, EXPANSION_START)}
+            milestones={[Math.round(EXPANSION_START / 2), EXPANSION_START]}
+            onPreviewChange={(value) => handleSliderInput('universos', value)}
+            onRelease={() => setInteractiveSupport(null)}
             isPreviewing={interactiveSupport !== null}
           />
           <p className="text-xs opacity-65">
@@ -569,6 +651,37 @@ const CallToAction = ({ barsIntroDelayMs = 0 }) => {
           Todo lo que supere esta meta se reinvierte en nuevas obras, miniversos y publicaciones ✨
         </p>
       </div>
+      {showAftercareOverlay ? (
+        <div
+          className="fixed inset-0 z-[220] flex items-center justify-center px-4 bg-black/80 backdrop-blur-sm"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="aftercare-title"
+        >
+          <div className="w-full max-w-md rounded-3xl border border-white/20 bg-slate-950/95 p-6 text-center shadow-2xl">
+            <p className="text-xs uppercase tracking-[0.22em] text-slate-400">Fin de temporada.</p>
+            <p className="mt-3 text-lg font-semibold text-white">17 · 51 · 375.</p>
+            <h3 id="aftercare-title" className="mt-4 text-2xl font-semibold text-white">
+              Meta mínima anual cumplida.
+            </h3>
+            <p className="mt-5 text-slate-200 leading-relaxed">
+              La obra respira.
+              <br />
+              Sola.
+              <br />Y en comunidad.
+            </p>
+            <button
+              type="button"
+              className="mt-6 w-full rounded-xl bg-white/95 px-4 py-2 font-semibold text-black hover:bg-white"
+              onClick={() => {
+                setShowAftercareOverlay(false);
+              }}
+            >
+              Continuar
+            </button>
+          </div>
+        </div>
+      ) : null}
 
     </div>
     
