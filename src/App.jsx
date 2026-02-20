@@ -26,6 +26,8 @@ import {
   hasSeenBienvenida,
   isBienvenidaPending,
   isBienvenidaSkip,
+  isBienvenidaForceOnLogin,
+  clearBienvenidaForceOnLogin,
   clearBienvenidaSkip,
   setBienvenidaPending,
   setBienvenidaReturnPath,
@@ -107,12 +109,14 @@ const BienvenidaGate = () => {
     if (isBienvenidaPending()) return;
     if (loading || !user) return;
     if (safeGetItem(LOGIN_RETURN_KEY)) return;
+    const forceOnLogin = isBienvenidaForceOnLogin();
     if (isBienvenidaSkip()) {
       clearBienvenidaSkip();
     }
-    if (hasSeenBienvenida(user.id)) return;
+    if (!forceOnLogin && hasSeenBienvenida(user.id)) return;
 
     setBienvenidaPending();
+    clearBienvenidaForceOnLogin();
     setBienvenidaReturnPath(currentPath);
     navigate('/bienvenida', { replace: true });
   }, [currentPath, loading, location.pathname, navigate, user, bienvenidaUrl]);

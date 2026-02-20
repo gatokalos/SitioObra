@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { useToast } from '@/components/ui/use-toast';
 import { useAuth } from '@/contexts/SupabaseAuthContext';
 import LoginOverlay from '@/components/ContributionModal/LoginOverlay';
+import { setBienvenidaForceOnLogin } from '@/lib/bienvenida';
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -22,7 +23,10 @@ const Header = () => {
   const authActionLabel = user ? 'Cerrar sesión' : 'Iniciar sesión';
   const statusDotClass = user ? 'bg-emerald-400' : 'bg-slate-600';
   const handleCloseOverlay = useCallback(() => setShowLoginOverlay(false), []);
-  const handleOpenOverlay = useCallback(() => setShowLoginOverlay(true), []);
+  const handleOpenOverlay = useCallback(() => {
+    setBienvenidaForceOnLogin();
+    setShowLoginOverlay(true);
+  }, []);
   const handleLogout = useCallback(async () => {
     if (!user) {
       setShowLoginOverlay(true);

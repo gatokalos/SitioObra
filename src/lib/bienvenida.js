@@ -4,6 +4,7 @@ const SEEN_PREFIX = 'bienvenida:seen:';
 const RETURN_PATH_KEY = 'bienvenida:return-path';
 const PENDING_KEY = 'bienvenida:pending';
 const SKIP_KEY = 'bienvenida:skip';
+const FORCE_ON_LOGIN_KEY = 'bienvenida:force-on-login';
 const TRANSMEDIA_INTENT_KEY = 'bienvenida:transmedia-intent';
 
 export const hasSeenBienvenida = (userId) => {
@@ -35,6 +36,16 @@ export const clearBienvenidaSkip = () => {
 };
 
 export const isBienvenidaSkip = () => safeGetItem(SKIP_KEY) === 'true';
+
+export const setBienvenidaForceOnLogin = () => {
+  safeSetItem(FORCE_ON_LOGIN_KEY, 'true');
+};
+
+export const clearBienvenidaForceOnLogin = () => {
+  safeRemoveItem(FORCE_ON_LOGIN_KEY);
+};
+
+export const isBienvenidaForceOnLogin = () => safeGetItem(FORCE_ON_LOGIN_KEY) === 'true';
 
 export const setBienvenidaReturnPath = (path) => {
   if (!path) return;
