@@ -33,6 +33,7 @@ const DEFAULT_THINKING_MESSAGE = 'La Obra esta pensando...';
 const THINKING_MESSAGE_PHASES = [
   { afterMs: 0, text: 'Gracias por preguntar...' },
   { afterMs: 6500, text: 'Sigo pensando...' },
+  { afterMs: 9999, text: 'Ya lo tengo...' },
 ];
 
 const resolveThinkingMessage = (elapsedMs) => {

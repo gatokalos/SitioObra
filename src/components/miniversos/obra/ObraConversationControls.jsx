@@ -21,6 +21,7 @@ const ObraConversationControls = ({
   className = '',
 }) => {
   const isSilvestreThinking = isSilvestreFetching || isSilvestreResponding;
+  const handlePrimaryClick = pendingSilvestreAudioUrl ? onPlayPending : onMicClick;
   const statusLabel = isSilvestrePlaying
     ? 'Te estoy respondiendo...'
     : pendingSilvestreAudioUrl
@@ -40,7 +41,7 @@ const ObraConversationControls = ({
           type="button"
           variant="outline"
           className="silvestre-cta relative flex h-20 w-20 items-center justify-center rounded-full border border-purple-300/60 bg-purple-500/10 text-purple-50 shadow-[0_0_45px_rgba(197,108,255,0.75)] transition hover:bg-purple-500/20 disabled:cursor-not-allowed disabled:opacity-60"
-          onClick={onMicClick}
+          onClick={handlePrimaryClick}
           aria-label={statusLabel}
           disabled={isSilvestreThinking}
         >

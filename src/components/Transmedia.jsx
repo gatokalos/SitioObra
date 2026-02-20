@@ -1391,6 +1391,31 @@ const formats = [
   },
 ];
 
+const getHashAnchor = (hashValue) => String(hashValue || '').split('?')[0];
+
+const getFocusParamFromLocation = (locationLike) => {
+  if (!locationLike) return null;
+
+  const searchParams = new URLSearchParams(locationLike.search || '');
+  const fromSearch =
+    searchParams.get('focus') ||
+    searchParams.get('appId') ||
+    searchParams.get('app_id') ||
+    searchParams.get('recommended_app_id');
+  if (fromSearch) return fromSearch;
+
+  const hashRaw = String(locationLike.hash || '');
+  const [hashAnchor, hashQuery = ''] = hashRaw.split('?');
+  if (normalizeBridgeKey(hashAnchor) !== 'transmedia' || !hashQuery) return null;
+  const hashParams = new URLSearchParams(hashQuery);
+  return (
+    hashParams.get('focus') ||
+    hashParams.get('appId') ||
+    hashParams.get('app_id') ||
+    hashParams.get('recommended_app_id')
+  );
+};
+
 const CAUSE_ACCORDION = [
   {
     id: 'tratamientos',
@@ -1770,6 +1795,7 @@ const Transmedia = () => {
   const [showcaseCarouselIndex, setShowcaseCarouselIndex] = useState(0);
   const [isShowcaseCarouselPaused, setIsShowcaseCarouselPaused] = useState(false);
   const [mobileShowcaseIndex, setMobileShowcaseIndex] = useState(0);
+  const [recommendedShowcaseId, setRecommendedShowcaseId] = useState(null);
   const [isMovementCreditsOpen, setIsMovementCreditsOpen] = useState(false);
   const [openCollaboratorId, setOpenCollaboratorId] = useState(null);
   const { isMobileViewport, canUseInlinePlayback, requestMobileVideoPresentation } = useMobileVideoPresentation();
@@ -2524,6 +2550,22 @@ const Transmedia = () => {
     return resolveShowcaseFromAppId(rawAppId, showcaseDefinitions);
   }, []);
 
+  const focusShowcaseCard = useCallback((showcaseId) => {
+    if (!showcaseId) return;
+    const targetIndex = formats.findIndex((item) => item.id === showcaseId);
+    if (targetIndex < 0) return;
+
+    setRecommendedShowcaseId(showcaseId);
+    setActiveShowcase(null);
+    setIsMiniverseShelved(false);
+    setMobileShowcaseIndex(targetIndex);
+
+    if (formats.length > 3) {
+      const desktopStart = (targetIndex - 1 + formats.length) % formats.length;
+      setShowcaseCarouselIndex(desktopStart);
+    }
+  }, []);
+
   const handleCloseShowcase = useCallback(() => {
     setActiveShowcase(null);
     setIsMiniverseShelved(false);
@@ -2610,14 +2652,35 @@ const Transmedia = () => {
       setIsMiniverseShelved(false);
       return;
     }
-    openMiniverseById(showcaseId);
-  }, [openMiniverseById, resolveShowcaseFromBienvenida]);
+    focusShowcaseCard(showcaseId);
+  }, [focusShowcaseCard, resolveShowcaseFromBienvenida]);
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
-    const showcaseId = resolveShowcaseFromHash(location.hash, showcaseDefinitions);
+    const focusRaw = getFocusParamFromLocation(location);
+    if (!focusRaw) return;
+    const focusId =
+      resolveShowcaseFromAppId(focusRaw, showcaseDefinitions) ||
+      resolveShowcaseFromHash(focusRaw, showcaseDefinitions);
+    if (!focusId) return;
+    const section = document.getElementById('transmedia');
+    if (section) {
+      if (!section.hasAttribute('tabindex')) {
+        section.setAttribute('tabindex', '-1');
+      }
+      section.focus({ preventScroll: true });
+      section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+    focusShowcaseCard(focusId);
+  }, [focusShowcaseCard, location, showcaseDefinitions]);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    if (getFocusParamFromLocation(location)) return;
+    const hashAnchor = getHashAnchor(location.hash);
+    const showcaseId = resolveShowcaseFromHash(hashAnchor, showcaseDefinitions);
     if (showcaseId === null) {
-      if (normalizeBridgeKey(location.hash) === 'transmedia') {
+      if (normalizeBridgeKey(hashAnchor) === 'transmedia') {
         document.getElementById('transmedia')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
       }
       return;
@@ -2628,7 +2691,7 @@ const Transmedia = () => {
       section.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
     openMiniverseById(showcaseId);
-  }, [location.hash, openMiniverseById]);
+  }, [location, openMiniverseById]);
 
   const handleOpenBlogEntry = useCallback((slug) => {
     if (!slug) {
@@ -6214,6 +6277,7 @@ const rendernotaAutoral = () => {
                 VITRINA_MIRROR_EFFECTS[format.id] ?? VITRINA_MIRROR_EFFECTS.default;
               const isActiveTile = activeShowcase === format.id;
               const isDimmedTile = isCinematicShowcaseOpen && !isActiveTile;
+              const isRecommendedTile = recommendedShowcaseId === format.id;
               return (
                 <>
                   <motion.div
@@ -6224,6 +6288,10 @@ const rendernotaAutoral = () => {
                     transition={isSafari ? { duration: 0.12, ease: 'linear' } : { duration: 0.4, ease: 'easeOut', delay: 0.08 }}
                     className={`safari-stable-layer group glass-effect hover-glow rounded-2xl border border-white/10 bg-black/30 overflow-hidden text-left shadow-[0_20px_60px_rgba(0,0,0,0.55)] active:border-purple-300/40 active:shadow-[0_24px_70px_rgba(88,28,135,0.45)] ${
                       isDimmedTile ? 'pointer-events-none opacity-70' : ''
+                    } ${
+                      isRecommendedTile
+                        ? 'border-fuchsia-300/60 shadow-[0_0_0_1px_rgba(244,114,182,0.35),0_24px_80px_rgba(168,85,247,0.3)]'
+                        : ''
                     }`}
                     onClick={() => {
                       if (mobileSwipeBlockTapRef.current) return;
@@ -6247,6 +6315,11 @@ const rendernotaAutoral = () => {
                       <div className="vitrina-image-overlay" style={mirrorEffect} />
                     </div>
                     <div className="relative overflow-hidden">
+                      {isRecommendedTile ? (
+                        <div className="absolute right-4 top-4 z-20 rounded-full border border-fuchsia-300/50 bg-fuchsia-500/20 px-3 py-1 text-[0.58rem] font-semibold uppercase tracking-[0.24em] text-fuchsia-100">
+                          Recomendada
+                        </div>
+                      ) : null}
                       <div className="absolute inset-0 pointer-events-none">
                         <div
                           aria-hidden="true"
@@ -6366,6 +6439,7 @@ const rendernotaAutoral = () => {
                   MINIVERSO_TILE_GRADIENTS[format.id] ?? MINIVERSO_TILE_GRADIENTS.default;
                 const mirrorEffect =
                   VITRINA_MIRROR_EFFECTS[format.id] ?? VITRINA_MIRROR_EFFECTS.default;
+                const isRecommendedTile = recommendedShowcaseId === format.id;
                 return (
                   <motion.button
                     key={format.id}
@@ -6373,7 +6447,11 @@ const rendernotaAutoral = () => {
                     initial={isSafari ? false : { opacity: 0, y: 20 }}
                     animate={isSafari ? { opacity: 1, y: 0 } : { opacity: 1, y: 0 }}
                     transition={isSafari ? { duration: 0.12, ease: 'linear' } : { duration: 0.5, delay: index * 0.08, ease: 'easeOut' }}
-                    className="safari-stable-layer group glass-effect rounded-2xl border border-white/10 bg-black/30 hover:border-purple-400/50 overflow-hidden text-left shadow-[0_20px_60px_rgba(0,0,0,0.55)] flex flex-col min-h-[620px] hover-glow"
+                    className={`safari-stable-layer group glass-effect rounded-2xl border border-white/10 bg-black/30 hover:border-purple-400/50 overflow-hidden text-left shadow-[0_20px_60px_rgba(0,0,0,0.55)] flex flex-col min-h-[620px] hover-glow ${
+                      isRecommendedTile
+                        ? 'border-fuchsia-300/60 shadow-[0_0_0_1px_rgba(244,114,182,0.35),0_24px_80px_rgba(168,85,247,0.3)]'
+                        : ''
+                    }`}
                     onClick={() => handleFormatClick(format.id)}
                   >
                     <div className="relative flex-1 min-h-[320px] bg-slate-500/20 overflow-hidden">
@@ -6390,6 +6468,11 @@ const rendernotaAutoral = () => {
                       <div className="absolute inset-x-0 bottom-0 h-px bg-white/10" />
                     </div>
                     <div className="relative p-6 overflow-hidden min-h-[240px]">
+                      {isRecommendedTile ? (
+                        <div className="absolute right-4 top-4 z-20 rounded-full border border-fuchsia-300/50 bg-fuchsia-500/20 px-3 py-1 text-[0.58rem] font-semibold uppercase tracking-[0.24em] text-fuchsia-100">
+                          Recomendada
+                        </div>
+                      ) : null}
                       <div
                         aria-hidden="true"
                         className="absolute inset-0 opacity-80 pointer-events-none"
@@ -6568,19 +6651,9 @@ const rendernotaAutoral = () => {
               viewport={{ once: true, amount: 0.25 }}
               className="glass-effect rounded-2xl p-6 border border-white/10 bg-slate-950/50 shadow-2xl"
             >
-              <CallToAction />
+              <CallToAction barsIntroDelayMs={900} />
             </motion.div>
-            {showInstallPwaCTA ? (
-              <motion.div
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.8, delay: 0.4, ease: 'easeOut' }}
-                viewport={{ once: true }}
-                className="glass-effect rounded-2xl p-6 border border-white/10 bg-slate-950/50 shadow-2xl"
-              >
-                <InstallPWACTA />
-              </motion.div>
-            ) : null}
+  
           </div>
         </div>
       </section>
