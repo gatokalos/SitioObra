@@ -505,6 +505,27 @@ const MiniverseModal = ({
   }, [open, shelved]);
 
   useEffect(() => {
+    if (typeof document === 'undefined' || !open || shelved) {
+      return undefined;
+    }
+
+    const { documentElement, body } = document;
+    const prevHtmlOverflow = documentElement.style.overflow;
+    const prevBodyOverflow = body.style.overflow;
+    const prevOverscrollBehavior = documentElement.style.overscrollBehavior;
+
+    documentElement.style.overflow = 'hidden';
+    body.style.overflow = 'hidden';
+    documentElement.style.overscrollBehavior = 'none';
+
+    return () => {
+      documentElement.style.overflow = prevHtmlOverflow;
+      body.style.overflow = prevBodyOverflow;
+      documentElement.style.overscrollBehavior = prevOverscrollBehavior;
+    };
+  }, [open, shelved]);
+
+  useEffect(() => {
     if (typeof window === 'undefined') {
       return undefined;
     }
@@ -1183,7 +1204,6 @@ const MiniverseModal = ({
           <motion.div
             className={`safari-stable-layer safari-backdrop-lite absolute inset-0 bg-black/80 ${isSafari ? '' : 'backdrop-blur-sm'} ${shelved ? 'pointer-events-none' : ''}`}
             variants={backdropVariants}
-            onClick={handleClose}
             aria-hidden="true"
           />
 
