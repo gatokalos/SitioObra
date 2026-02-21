@@ -27,6 +27,10 @@ const SUPPORT_EMAIL = 'contacto@gatoencerrado.ai';
 const SUPPORT_WHATSAPP = '+523315327985';
 const SUPPORT_MESSAGE =
   'Hola:%0A%0AEstuve en la función de Es un Gato Encerrado y quiero convertir mi boleto en una huella para la causa social.%0A%0AAdjunto una imagen como comprobante de que estuve ahí.%0ANo busco registrarme ni hacer login, solo sumar desde este gesto.%0A%0AGracias por abrir este espacio.';
+const SUPPORT_CTA_VIDEO_URL =
+  'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/trailers/CTAs/CTA_boleto_pingpong_blur.mp4';
+const SUPPORT_CTA_POSTER_URL =
+  'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/trailers/CTAs/cta-boleto-poster.jpg';
 const SHOULD_PREVIEW_AFTERCARE =
   import.meta.env.DEV &&
   typeof window !== 'undefined' &&
@@ -258,6 +262,7 @@ const CallToAction = ({ barsIntroDelayMs = 0 }) => {
   const [interactiveSupport, setInteractiveSupport] = useState(null);
   const [showAftercareOverlay, setShowAftercareOverlay] = useState(false);
   const [aftercareVariant, setAftercareVariant] = useState('expansion');
+  const [isTicketSupportVideoAvailable, setIsTicketSupportVideoAvailable] = useState(true);
   const hasRunBarSequenceRef = useRef(false);
   const aftercareTimeoutRef = useRef(null);
   const reachedExpansionRef = useRef(false);
@@ -870,14 +875,31 @@ const CallToAction = ({ barsIntroDelayMs = 0 }) => {
 
           {msg && <p className="text-red-300 text-sm">{msg}</p>}
           {showTicketSupport ? (
-            <div className="rounded-2xl border border-white/10 bg-black/30 p-4 text-left text-slate-100 space-y-3">
-              <p className="text-sm text-slate-300">
+            <div className="relative overflow-hidden rounded-2xl border border-white/15 bg-black/35 px-4 py-3 text-left text-slate-100">
+              {isTicketSupportVideoAvailable ? (
+                <video
+                  className="pointer-events-none absolute inset-0 h-full w-full scale-[1.03] object-cover opacity-70 saturate-125 contrast-125 brightness-110"
+                  autoPlay
+                  loop
+                  muted
+                  playsInline
+                  preload="auto"
+                  poster={SUPPORT_CTA_POSTER_URL}
+                  onError={() => setIsTicketSupportVideoAvailable(false)}
+                  aria-hidden="true"
+                >
+                  <source src={SUPPORT_CTA_VIDEO_URL} type="video/mp4" />
+                </video>
+              ) : null}
+              <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-slate-950/35 via-slate-950/30 to-slate-950/45" />
+              <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_22%_24%,rgba(125,211,252,0.28),transparent_45%),radial-gradient(circle_at_80%_72%,rgba(147,197,253,0.22),transparent_18%)]" />
+              <p className="relative z-10 mb-2 text-sm leading-relaxed text-slate-100">
                 Si asististe a la obra y deseas convertir ese momento en huella, puedes hacerlo aquí.
               </p>
-              <div className="grid gap-2">
+              <div className="relative z-10 grid gap-2">
                 <a
                   href={`mailto:${SUPPORT_EMAIL}?subject=Destinar%20boleto%20a%20la%20causa&body=${SUPPORT_MESSAGE}`}
-                  className="flex items-center justify-center gap-2 text-center border border-white/20 text-white px-4 py-2 rounded hover:border-purple-300/70 hover:text-purple-100"
+                  className="flex items-center justify-center gap-2 text-center rounded-lg border border-sky-200/30 bg-white/10 px-4 py-2 text-white backdrop-blur-md transition hover:border-sky-200/60 hover:bg-white/15"
                 >
                   <Mail size={18} />
                   Enviar por correo
@@ -886,7 +908,7 @@ const CallToAction = ({ barsIntroDelayMs = 0 }) => {
                   href={`https://wa.me/${SUPPORT_WHATSAPP.replace(/\D/g, '')}?text=${SUPPORT_MESSAGE}`}
                   target="_blank"
                   rel="noreferrer"
-                  className="flex items-center justify-center gap-2 text-center border border-white/20 text-white px-4 py-2 rounded hover:border-purple-300/70 hover:text-purple-100"
+                  className="flex items-center justify-center gap-2 text-center rounded-lg border border-sky-200/30 bg-white/10 px-4 py-2 text-white backdrop-blur-md transition hover:border-sky-200/60 hover:bg-white/15"
                 >
                   <MessageCircle size={18} />
                   Enviar por WhatsApp

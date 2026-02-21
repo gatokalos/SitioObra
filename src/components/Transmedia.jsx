@@ -6637,7 +6637,7 @@ const rendernotaAutoral = () => {
                 <div className="text-center">
                   <p className="text-[0.62rem] uppercase tracking-[0.3em] text-fuchsia-100/90">Vitrina recomendada por el gato de la cabina</p>
                   <p className="mt-1 text-[1.05rem] font-semibold leading-snug text-slate-100">
-                    Llegaste a esta vitrina con{' '}
+                    Cuentas con{' '} extras de energía
                     <span className="font-semibold text-amber-200">
                       {Number.isFinite(focusIncomingGAT) ? `${focusIncomingGAT} GAT` : 'tus GAT'}
                     </span>
