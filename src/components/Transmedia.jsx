@@ -6627,7 +6627,7 @@ const rendernotaAutoral = () => {
             {isDesktopFocusLockActive ? (
               <div className="mb-5 flex items-center justify-between gap-4 rounded-2xl border border-fuchsia-300/40 bg-fuchsia-500/10 px-4 py-3">
                 <div className="text-left">
-                  <p className="text-[0.62rem] uppercase tracking-[0.3em] text-fuchsia-100/90">Enfoque activo</p>
+                  <p className="text-[0.62rem] uppercase tracking-[0.3em] text-fuchsia-100/90">Vitrina recomendada por el gato de la cabina</p>
                   <p className="text-sm text-slate-100">
                     Llegaste a esta vitrina con{' '}
                     <span className="font-semibold text-amber-200">

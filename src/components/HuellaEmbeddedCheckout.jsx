@@ -5,8 +5,7 @@ import { stripePromise } from '@/lib/huellaCheckout';
 const STRIPE_BRAND_COLOR = '#a78bfa';
 const STRIPE_ACCENT_COLOR = '#fda4af';
 const EMBEDDED_HEADER_COPY = 'Formulario de pago listo. Completa tu huella aquí.';
-const EMBEDDED_LOGO_SRC =
-  'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/causa%20social/causa_social.png';
+const EMBEDDED_LOGO_SRC = '/assets/logoapp.png';
 
 const PaymentForm = ({ onDone }) => {
   const stripe = useStripe();
@@ -151,9 +150,9 @@ const HuellaEmbeddedCheckout = ({ clientSecret, onDone }) => {
           <span className="h-9 w-9 shrink-0 overflow-hidden rounded-full border border-white/20 bg-slate-900/80">
             <img
               src={EMBEDDED_LOGO_SRC}
-              alt="Logo de la causa social"
+              alt="Logo de Es un Gato Encerrado"
               loading="lazy"
-              className="h-full w-full object-cover"
+              className="h-full w-full object-contain"
             />
           </span>
           <p className="text-sm font-medium leading-relaxed text-slate-100">{EMBEDDED_HEADER_COPY}</p>
