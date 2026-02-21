@@ -214,6 +214,7 @@ function ProgressBar({
 
 const CallToAction = ({ barsIntroDelayMs = 0 }) => {
   const { user } = useAuth();
+  const embeddedCheckoutRef = useRef(null);
   const [loading, setLoading] = useState(false);
   const [msg, setMsg] = useState('');
   const [embeddedClientSecret, setEmbeddedClientSecret] = useState('');
@@ -561,6 +562,11 @@ const CallToAction = ({ barsIntroDelayMs = 0 }) => {
     setCheckoutStatus(`Estado actual del pago: ${message || 'unknown'}.`);
   }
 
+  useEffect(() => {
+    if (!embeddedClientSecret || !embeddedCheckoutRef.current) return;
+    embeddedCheckoutRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }, [embeddedClientSecret]);
+
   // 4) Renderizado
   return (
     <div className="mx-auto h-full max-w-xl text-center flex flex-col gap-6">
@@ -718,13 +724,6 @@ const CallToAction = ({ barsIntroDelayMs = 0 }) => {
             </button>
           </div>
 
-          {checkoutStatus ? <p className="text-slate-200 text-sm">{checkoutStatus}</p> : null}
-          {embeddedClientSecret ? (
-            <HuellaEmbeddedCheckout
-              clientSecret={embeddedClientSecret}
-              onDone={handleEmbeddedCheckoutDone}
-            />
-          ) : null}
           {msg && <p className="text-red-300 text-sm">{msg}</p>}
           {showTicketSupport ? (
             <div className="rounded-2xl border border-white/10 bg-black/30 p-4 text-left text-slate-100 space-y-3">
@@ -751,6 +750,16 @@ const CallToAction = ({ barsIntroDelayMs = 0 }) => {
               </div>
             </div>
           ) : null}
+
+          <div ref={embeddedCheckoutRef} className="pt-2">
+            {checkoutStatus ? <p className="text-slate-200 text-sm">{checkoutStatus}</p> : null}
+            {embeddedClientSecret ? (
+              <HuellaEmbeddedCheckout
+                clientSecret={embeddedClientSecret}
+                onDone={handleEmbeddedCheckoutDone}
+              />
+            ) : null}
+          </div>
         </div>
 
         <div className="order-4 space-y-2">
