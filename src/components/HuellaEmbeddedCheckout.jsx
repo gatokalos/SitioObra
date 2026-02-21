@@ -2,6 +2,9 @@ import React, { useMemo, useState } from 'react';
 import { Elements, PaymentElement, useElements, useStripe } from '@stripe/react-stripe-js';
 import { stripePromise } from '@/lib/huellaCheckout';
 
+const STRIPE_BRAND_COLOR = '#2b193e';
+const STRIPE_ACCENT_COLOR = '#fda4af';
+
 const PaymentForm = ({ onDone }) => {
   const stripe = useStripe();
   const elements = useElements();
@@ -65,9 +68,55 @@ const HuellaEmbeddedCheckout = ({ clientSecret, onDone }) => {
     return null;
   }
 
+  const stripeElementsOptions = {
+    clientSecret,
+    appearance: {
+      theme: 'night',
+      variables: {
+        colorPrimary: STRIPE_BRAND_COLOR,
+        colorDanger: STRIPE_ACCENT_COLOR,
+        colorBackground: '#0b1020',
+        colorText: '#f8fafc',
+        colorTextSecondary: '#94a3b8',
+        borderRadius: '10px',
+        spacingUnit: '4px',
+      },
+      rules: {
+        '.Input': {
+          backgroundColor: '#0f172a',
+          border: '1px solid #233152',
+          boxShadow: 'none',
+        },
+        '.Input:focus': {
+          border: `1px solid ${STRIPE_ACCENT_COLOR}`,
+          boxShadow: `0 0 0 1px ${STRIPE_ACCENT_COLOR}`,
+        },
+        '.Tab': {
+          backgroundColor: '#0b1225',
+          border: '1px solid #233152',
+          color: '#cbd5e1',
+        },
+        '.Tab:hover': {
+          color: '#ffffff',
+        },
+        '.Tab--selected': {
+          border: `1px solid ${STRIPE_ACCENT_COLOR}`,
+          boxShadow: `0 0 0 1px ${STRIPE_ACCENT_COLOR}`,
+          color: '#ffffff',
+        },
+        '.Label': {
+          color: '#94a3b8',
+        },
+        '.Error': {
+          color: STRIPE_ACCENT_COLOR,
+        },
+      },
+    },
+  };
+
   return (
     <div className="w-full rounded-xl border border-white/10 bg-slate-900/40 p-3 sm:p-4">
-      <Elements stripe={stripePromise} options={{ clientSecret }}>
+      <Elements stripe={stripePromise} options={stripeElementsOptions}>
         <PaymentForm onDone={onDone} />
       </Elements>
     </div>

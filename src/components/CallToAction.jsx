@@ -486,6 +486,14 @@ const CallToAction = ({ barsIntroDelayMs = 0 }) => {
       return;
     }
 
+    if (!user) {
+      setCheckoutStatus('Inicia sesión para activar tu huella aquí mismo.');
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new CustomEvent('open-login-modal'));
+      }
+      return;
+    }
+
     const line_items = [
       {
         price: SUBSCRIPTION_PRICE_ID,
