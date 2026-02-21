@@ -6,6 +6,7 @@ const PENDING_KEY = 'bienvenida:pending';
 const SKIP_KEY = 'bienvenida:skip';
 const FORCE_ON_LOGIN_KEY = 'bienvenida:force-on-login';
 const TRANSMEDIA_INTENT_KEY = 'bienvenida:transmedia-intent';
+const FLOW_GOAL_KEY = 'bienvenida:flow-goal';
 
 export const hasSeenBienvenida = (userId) => {
   if (!userId) return false;
@@ -55,6 +56,15 @@ export const setBienvenidaReturnPath = (path) => {
 export const getBienvenidaReturnPath = () => safeGetItem(RETURN_PATH_KEY);
 
 export const clearBienvenidaReturnPath = () => safeRemoveItem(RETURN_PATH_KEY);
+
+export const setBienvenidaFlowGoal = (goal) => {
+  if (!goal || typeof goal !== 'string') return;
+  safeSetItem(FLOW_GOAL_KEY, goal);
+};
+
+export const getBienvenidaFlowGoal = () => safeGetItem(FLOW_GOAL_KEY);
+
+export const clearBienvenidaFlowGoal = () => safeRemoveItem(FLOW_GOAL_KEY);
 
 export const setBienvenidaTransmediaIntent = (intent) => {
   if (!intent || typeof intent !== 'object') return;

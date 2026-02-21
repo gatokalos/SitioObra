@@ -8,6 +8,7 @@ import { useAuth } from '@/contexts/SupabaseAuthContext';
 import { ConfettiBurst, useConfettiBursts } from '@/components/Confetti';
 import HuellaEmbeddedCheckout from '@/components/HuellaEmbeddedCheckout';
 import { createEmbeddedSubscription, startCheckoutFallback } from '@/lib/huellaCheckout';
+import { setBienvenidaFlowGoal, setBienvenidaForceOnLogin } from '@/lib/bienvenida';
 
 const SUBSCRIPTION_PRICE_ID = import.meta.env.VITE_STRIPE_SUBSCRIPTION_PRICE_ID;
 const SESSIONS_PER_SUB = 6;
@@ -489,6 +490,8 @@ const CallToAction = ({ barsIntroDelayMs = 0 }) => {
     }
 
     if (!user) {
+      setBienvenidaFlowGoal('subscription');
+      setBienvenidaForceOnLogin();
       setCheckoutStatus('Inicia sesión para activar tu huella aquí mismo.');
       if (typeof window !== 'undefined') {
         window.dispatchEvent(new CustomEvent('open-login-modal'));

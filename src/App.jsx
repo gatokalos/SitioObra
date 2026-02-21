@@ -27,6 +27,7 @@ import {
   isBienvenidaPending,
   isBienvenidaSkip,
   isBienvenidaForceOnLogin,
+  getBienvenidaFlowGoal,
   clearBienvenidaForceOnLogin,
   clearBienvenidaSkip,
   setBienvenidaPending,
@@ -108,17 +109,19 @@ const BienvenidaGate = () => {
     if (location.pathname === '/bienvenida') return;
     if (isBienvenidaPending()) return;
     if (loading || !user) return;
-    if (safeGetItem(LOGIN_RETURN_KEY)) return;
+    const flowGoal = getBienvenidaFlowGoal();
+    const isSubscriptionGoal = flowGoal === 'subscription';
+    if (safeGetItem(LOGIN_RETURN_KEY) && !isSubscriptionGoal) return;
     const forceOnLogin = isBienvenidaForceOnLogin();
     if (isBienvenidaSkip()) {
       clearBienvenidaSkip();
     }
-    if (!forceOnLogin && hasSeenBienvenida(user.id)) return;
+    if (!forceOnLogin && !isSubscriptionGoal && hasSeenBienvenida(user.id)) return;
 
     setBienvenidaPending();
     clearBienvenidaForceOnLogin();
-    setBienvenidaReturnPath(currentPath);
-    navigate('/bienvenida', { replace: true });
+    setBienvenidaReturnPath(isSubscriptionGoal ? '/#cta' : currentPath);
+    navigate(isSubscriptionGoal ? '/bienvenida?goal=subscription' : '/bienvenida', { replace: true });
   }, [currentPath, loading, location.pathname, navigate, user, bienvenidaUrl]);
 
   return null;

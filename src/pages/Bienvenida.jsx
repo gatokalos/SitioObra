@@ -1,10 +1,12 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/SupabaseAuthContext';
 import LoginOverlay from '@/components/ContributionModal/LoginOverlay';
 import PortalAuthButton from '@/components/PortalAuthButton';
 import {
   setBienvenidaTransmediaIntent,
+  getBienvenidaFlowGoal,
+  clearBienvenidaFlowGoal,
   clearBienvenidaPending,
   clearBienvenidaReturnPath,
   getBienvenidaReturnPath,
@@ -15,11 +17,16 @@ import {
 import { extractRecommendedAppId, normalizeBridgeKey } from '@/lib/bienvenidaBridge';
 
 const Bienvenida = () => {
+  const location = useLocation();
   const navigate = useNavigate();
   const { user } = useAuth();
   const [showLoginOverlay, setShowLoginOverlay] = useState(false);
   const baseUrl = import.meta.env.VITE_BIENVENIDA_URL;
   const OPEN_TRANSMEDIA_EVENT = 'bienvenida:open-transmedia';
+  const flowGoal = useMemo(() => {
+    const params = new URLSearchParams(location.search || '');
+    return params.get('goal') || getBienvenidaFlowGoal() || '';
+  }, [location.search]);
 
   const bienvenidaOrigin = useMemo(() => {
     if (!baseUrl) return '';
@@ -39,8 +46,11 @@ const Bienvenida = () => {
     if (user?.email) {
       url.searchParams.set('email', user.email);
     }
+    if (flowGoal) {
+      url.searchParams.set('goal', flowGoal);
+    }
     return url.toString();
-  }, [baseUrl, user?.email, user?.id]);
+  }, [baseUrl, flowGoal, user?.email, user?.id]);
 
   useEffect(() => {
     if (typeof document === 'undefined') return;
@@ -56,6 +66,7 @@ const Bienvenida = () => {
     clearBienvenidaPending();
     const returnPath = getBienvenidaReturnPath() || '/';
     clearBienvenidaReturnPath();
+    clearBienvenidaFlowGoal();
     navigate(returnPath, { replace: true });
   }, [navigate, user]);
 
@@ -87,6 +98,10 @@ const Bienvenida = () => {
         return;
       }
       if (type === OPEN_TRANSMEDIA_EVENT) {
+        if (flowGoal === 'subscription') {
+          handleFinish();
+          return;
+        }
         const payloadHashTarget = normalizeBridgeKey(payloadAppId) || 'transmedia';
         if (payload && typeof payload === 'object') {
           setBienvenidaTransmediaIntent(payload);
@@ -99,7 +114,7 @@ const Bienvenida = () => {
     };
     window.addEventListener('message', handleMessage);
     return () => window.removeEventListener('message', handleMessage);
-  }, [bienvenidaOrigin, handleFinish]);
+  }, [bienvenidaOrigin, flowGoal, handleFinish]);
 
   return (
     <div className="fixed inset-0 z-50 bg-black">
