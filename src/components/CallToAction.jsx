@@ -535,7 +535,7 @@ const CallToAction = ({ barsIntroDelayMs = 0 }) => {
       }
 
       setEmbeddedClientSecret(data.client_secret);
-      setCheckoutStatus('Formulario de pago listo. Completa tu huella aquí.');
+      setCheckoutStatus('');
     } catch (e) {
       console.warn('[CallToAction] Embedded checkout error. Activando fallback.', e);
       setCheckoutStatus('No se pudo abrir el formulario embebido. Redirigiendo al checkout...');

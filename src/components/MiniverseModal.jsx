@@ -1028,7 +1028,7 @@ const MiniverseModal = ({
 
       setEmbeddedClientSecret(data.client_secret);
       setActiveTab('waitlist');
-      setEmbeddedCheckoutStatus('Formulario de pago listo. Completa tu huella aquí.');
+      setEmbeddedCheckoutStatus('');
     } catch (err) {
       console.warn('[MiniverseModal] Embedded checkout error. Activando fallback.', err);
       setEmbeddedCheckoutStatus('No se pudo abrir el formulario embebido. Redirigiendo al checkout...');
