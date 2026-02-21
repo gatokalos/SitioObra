@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { createPortal } from 'react-dom';
-import { BookOpen, Brain, Check, Compass, Coffee, Coins, Drama, Film, Gamepad2, Heart, HeartHandshake, HeartPulse, MapIcon, Music, Palette, School, Share2, Smartphone, Sparkles } from 'lucide-react';
+import { BookOpen, Brain, Check, Compass, Coffee, Coins, Drama, Film, Filter, Heart, HeartHandshake, HeartPulse, MapIcon, Music, Palette, School, Share2, Smartphone, Sparkles, GitBranchIcon } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { toast } from '@/components/ui/use-toast';
@@ -20,7 +20,7 @@ import {
 
 const TABS = [
   { id: 'escaparate', label: 'Entender', icon: Sparkles },
-  { id: 'experiences', label: 'Decidir', icon: Gamepad2 },
+  { id: 'experiences', label: 'Decidir', icon:  Compass},
   { id: 'waitlist', label: 'Sostener', icon: HeartHandshake },
 ];
 const DEFAULT_TAB_ID = 'escaparate';
@@ -1288,11 +1288,10 @@ const MiniverseModal = ({
                           </span>
                           <Button
                             type="button"
-                            onClick={handleSubscriptionCheckout}
-                            disabled={isCheckoutLoading}
+                            onClick={handleScrollToSupport}
                             className="h-11 min-w-[10.5rem] bg-white px-6 text-base font-semibold text-slate-900 hover:bg-white/90"
                           >
-                            {isCheckoutLoading ? 'Abriendo…' : 'Activar huella'}
+                            Activar huella
                           </Button>
                           {embeddedCheckoutStatus ? (
                             <p className="text-center text-xs leading-relaxed text-slate-300/80">
@@ -1536,11 +1535,10 @@ const MiniverseModal = ({
                                 {card.isPremium ? (
                                   <Button
                                     type="button"
-                                    onClick={handleSubscriptionCheckout}
-                                    disabled={isCheckoutLoading}
+                                    onClick={handleScrollToSupport}
                                     className="bg-white text-slate-900 hover:bg-white/90 py-3 rounded-lg font-semibold flex items-center justify-center gap-2"
                                   >
-                                    {isCheckoutLoading ? 'Abriendo…' : 'Dejar huella'}
+                                    Dejar huella
                                   </Button>
                                 ) : null}
                               </div>
@@ -1687,11 +1685,10 @@ const MiniverseModal = ({
                             {card.isPremium ? (
                               <Button
                                 type="button"
-                                onClick={handleSubscriptionCheckout}
-                                disabled={isCheckoutLoading}
+                                onClick={handleScrollToSupport}
                                 className="bg-white text-slate-900 hover:bg-white/90 py-3 rounded-lg font-semibold flex items-center justify-center gap-2"
                               >
-                                {isCheckoutLoading ? 'Abriendo…' : 'Deja tu huella'}
+                                Deja tu huella
                               </Button>
                             ) : null}
                           </div>

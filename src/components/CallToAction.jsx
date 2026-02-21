@@ -722,6 +722,13 @@ const CallToAction = ({ barsIntroDelayMs = 0 }) => {
         <div className="order-3 space-y-3">
           {/* Checkout + Ticket Support */}
           <div className="grid gap-3">
+               <button
+              type="button"
+              onClick={() => setShowTicketSupport((prev) => !prev)}
+              className="border border-white/20 text-white px-4 py-2 rounded hover:border-purple-300/70 hover:text-purple-100"
+            >
+              {showTicketSupport ? 'Ocultar opciones' : 'Convertir mi boleto'}
+            </button>
             <button
               onClick={handleCheckout}
               disabled={loading}
@@ -729,13 +736,7 @@ const CallToAction = ({ barsIntroDelayMs = 0 }) => {
             >
               {loading ? 'Abriendo…' : 'Dejar mi huella'}
             </button>
-            <button
-              type="button"
-              onClick={() => setShowTicketSupport((prev) => !prev)}
-              className="border border-white/20 text-white px-4 py-2 rounded hover:border-purple-300/70 hover:text-purple-100"
-            >
-              {showTicketSupport ? 'Ocultar opciones' : 'Convertir mi boleto'}
-            </button>
+         
           </div>
 
           {msg && <p className="text-red-300 text-sm">{msg}</p>}
