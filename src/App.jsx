@@ -127,6 +127,42 @@ const BienvenidaGate = () => {
   return null;
 };
 
+const HashAnchorScroller = () => {
+  const location = useLocation();
+
+  useEffect(() => {
+    if (typeof document === 'undefined') return undefined;
+    const rawHash = location.hash || '';
+    if (!rawHash.startsWith('#') || rawHash.length < 2) return undefined;
+
+    const anchorId = decodeURIComponent(rawHash.slice(1));
+    let retries = 0;
+    let timerId = null;
+
+    const scrollToAnchor = () => {
+      const target = document.getElementById(anchorId);
+      if (!target) return false;
+      target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      return true;
+    };
+
+    if (scrollToAnchor()) return undefined;
+
+    timerId = window.setInterval(() => {
+      retries += 1;
+      if (scrollToAnchor() || retries >= 20) {
+        window.clearInterval(timerId);
+      }
+    }, 100);
+
+    return () => {
+      if (timerId) window.clearInterval(timerId);
+    };
+  }, [location.hash, location.pathname]);
+
+  return null;
+};
+
   
 function App() {
   const blogData = useBlogPosts();
@@ -146,6 +182,7 @@ function App() {
   return (
     <>
       <BienvenidaGate />
+      <HashAnchorScroller />
       <Routes>
       <Route
         path="/"

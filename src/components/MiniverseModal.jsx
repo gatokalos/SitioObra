@@ -510,18 +510,40 @@ const MiniverseModal = ({
     }
 
     const { documentElement, body } = document;
-    const prevHtmlOverflow = documentElement.style.overflow;
-    const prevBodyOverflow = body.style.overflow;
-    const prevOverscrollBehavior = documentElement.style.overscrollBehavior;
+    const lockCountKey = 'gatoScrollLockCount';
+    const prevHtmlOverflowKey = 'gatoPrevHtmlOverflow';
+    const prevBodyOverflowKey = 'gatoPrevBodyOverflow';
+    const prevOverscrollBehaviorKey = 'gatoPrevOverscrollBehavior';
+
+    const currentCount = Number(documentElement.dataset[lockCountKey] || '0');
+    if (currentCount === 0) {
+      documentElement.dataset[prevHtmlOverflowKey] = documentElement.style.overflow || '';
+      documentElement.dataset[prevBodyOverflowKey] = body.style.overflow || '';
+      documentElement.dataset[prevOverscrollBehaviorKey] = documentElement.style.overscrollBehavior || '';
+    }
+    documentElement.dataset[lockCountKey] = String(currentCount + 1);
 
     documentElement.style.overflow = 'hidden';
     body.style.overflow = 'hidden';
     documentElement.style.overscrollBehavior = 'none';
 
     return () => {
-      documentElement.style.overflow = prevHtmlOverflow;
-      body.style.overflow = prevBodyOverflow;
-      documentElement.style.overscrollBehavior = prevOverscrollBehavior;
+      const nextCount = Math.max(Number(documentElement.dataset[lockCountKey] || '1') - 1, 0);
+      documentElement.dataset[lockCountKey] = String(nextCount);
+
+      if (nextCount > 0) {
+        return;
+      }
+
+      documentElement.style.overflow = documentElement.dataset[prevHtmlOverflowKey] || '';
+      body.style.overflow = documentElement.dataset[prevBodyOverflowKey] || '';
+      documentElement.style.overscrollBehavior =
+        documentElement.dataset[prevOverscrollBehaviorKey] || '';
+
+      delete documentElement.dataset[lockCountKey];
+      delete documentElement.dataset[prevHtmlOverflowKey];
+      delete documentElement.dataset[prevBodyOverflowKey];
+      delete documentElement.dataset[prevOverscrollBehaviorKey];
     };
   }, [open, shelved]);
 
