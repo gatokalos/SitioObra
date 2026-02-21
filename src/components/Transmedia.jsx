@@ -6805,7 +6805,7 @@ const rendernotaAutoral = () => {
               }}
             />
             <div className="space-y-5">
-                <p className="text-xs uppercase tracking-[0.4em] text-slate-400/80">Apoya el proyecto</p>
+                <p className="text-xs uppercase tracking-[0.4em] text-slate-400/80">Crecimiento compartido</p>
                 <h3 className="font-display text-3xl text-slate-100">
                   Nuestro impacto social crece contigo
                 </h3>
@@ -6823,7 +6823,7 @@ const rendernotaAutoral = () => {
                       </span>
                     </span>
                     <span className="text-[0.65rem] uppercase tracking-[0.18em] text-emerald-200/80 group-open:text-white">
-                      <span className="group-open:hidden">Contacto</span>
+                      <span className="group-open:hidden">Abrir</span>
                       <span className="hidden group-open:inline">Cerrar</span>
                     </span>
                   </summary>
@@ -6850,16 +6850,27 @@ const rendernotaAutoral = () => {
               </div>
 
               <div className="mt-8 space-y-5">
-                <div className="mx-auto max-w-3xl rounded-2xl border border-white/10 bg-black/30 p-6 text-center shadow-[0_12px_36px_rgba(0,0,0,0.35)] md:p-7">
-              
-                 
-                  <p className="text-base italic leading-relaxed text-slate-200 md:text-lg">
+                <div className="relative mx-auto max-w-3xl overflow-hidden rounded-2xl border border-white/10 bg-black/30 p-6 text-center shadow-[0_12px_36px_rgba(0,0,0,0.35)] md:p-7">
+                  <div
+                    aria-hidden="true"
+                    className="pointer-events-none absolute inset-0 z-0 flex items-center justify-center"
+                  >
+                    <motion.div
+                      initial={{ opacity: 0.35, scale: 0.9 }}
+                      animate={{ opacity: [0.25, 0.45, 0.25], scale: [0.95, 1.05, 0.95] }}
+                      transition={{ duration: 8, repeat: Infinity, ease: 'easeInOut' }}
+                      className="h-[88%] w-[88%] rounded-full bg-purple-600/25 blur-[90px] md:h-[72%] md:w-[72%]"
+                    />
+                  </div>
+
+                  <div className="relative z-10">
+                    <p className="text-base italic leading-relaxed text-slate-200 md:text-lg">
 
                     Cuando la causa florezca, su pulso regresará al universo: nuevos juegos, nuevas escenas, nuevas historias por contar.
-                  </p>
-                  <div className="mt-4 text-sm text-slate-400">
-                    <p className="font-semibold text-slate-200">Equipo #GatoEncerrado</p>
-                    
+                    </p>
+                    <div className="mt-4 text-sm text-slate-400">
+                      <p className="font-semibold text-slate-200">Equipo #GatoEncerrado</p>
+                    </div>
                   </div>
                 </div>
               </div>

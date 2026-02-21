@@ -6,6 +6,8 @@ import { apiFetch } from '@/lib/apiClient';
 import { supabase } from '@/lib/supabaseClient';
 import { useAuth } from '@/contexts/SupabaseAuthContext';
 import { ConfettiBurst, useConfettiBursts } from '@/components/Confetti';
+import HuellaEmbeddedCheckout from '@/components/HuellaEmbeddedCheckout';
+import { createEmbeddedSubscription, startCheckoutFallback } from '@/lib/huellaCheckout';
 
 const SUBSCRIPTION_PRICE_ID = import.meta.env.VITE_STRIPE_SUBSCRIPTION_PRICE_ID;
 const SESSIONS_PER_SUB = 6;
@@ -23,7 +25,7 @@ const SYNCABLE_BAR_KEYS = new Set(['terapias', 'residencias', 'implementacionEsc
 const SUPPORT_EMAIL = 'contacto@gatoencerrado.ai';
 const SUPPORT_WHATSAPP = '+523315327985';
 const SUPPORT_MESSAGE =
-  'Hola:%0A%0AWstuve en la función de Es un Gato Encerrado y quiero convertir mi boleto en una huella para la causa social.%0A%0AAdjunto una imagen como comprobante de que estuve ahí.%0ANo busco registrarme ni hacer login, solo sumar desde este gesto.%0A%0AGracias por abrir este espacio.';
+  'Hola:%0A%0AEstuve en la función de Es un Gato Encerrado y quiero convertir mi boleto en una huella para la causa social.%0A%0AAdjunto una imagen como comprobante de que estuve ahí.%0ANo busco registrarme ni hacer login, solo sumar desde este gesto.%0A%0AGracias por abrir este espacio.';
 
 function clamp(value, min, max) {
   return Math.max(min, Math.min(max, value));
@@ -214,6 +216,8 @@ const CallToAction = ({ barsIntroDelayMs = 0 }) => {
   const { user } = useAuth();
   const [loading, setLoading] = useState(false);
   const [msg, setMsg] = useState('');
+  const [embeddedClientSecret, setEmbeddedClientSecret] = useState('');
+  const [checkoutStatus, setCheckoutStatus] = useState('');
   const [showTicketSupport, setShowTicketSupport] = useState(false);
   const [subs, setSubs] = useState(0);
   const [ticketUnits, setTicketUnits] = useState(0);
@@ -477,7 +481,7 @@ const CallToAction = ({ barsIntroDelayMs = 0 }) => {
   // 3) Checkout
   async function handleCheckout() {
     if (!SUBSCRIPTION_PRICE_ID) {
-      setMsg('Configura VITE_STRIPE_SUBSCRIPTION_PRICE_ID antes de continuar.');
+      setCheckoutStatus('Configura VITE_STRIPE_SUBSCRIPTION_PRICE_ID antes de continuar.');
       return;
     }
 
@@ -489,38 +493,72 @@ const CallToAction = ({ barsIntroDelayMs = 0 }) => {
     ];
 
     if (line_items.some((item) => !item.price || !item.quantity)) {
-      setMsg('Faltan datos de la activación.');
+      setCheckoutStatus('Faltan datos de la activación.');
       return;
     }
 
+    const normalizedEmail = user?.email ? user.email.trim().toLowerCase() : '';
     try {
       setLoading(true);
       setMsg('');
-      const normalizedEmail = user?.email ? user.email.trim().toLowerCase() : '';
-      const { data, error } = await supabase.functions.invoke('create-checkout-session', {
-        body: {
-          mode: 'subscription',
-          line_items,
-          customer_email: normalizedEmail || undefined,
+      setCheckoutStatus('');
+      const metadata = {
+        channel: 'landing',
+        event: 'suscripcion-landing',
+        packages: 'subscription',
+        source: 'miniverse_modal',
+      };
+      const data = await createEmbeddedSubscription({
+        priceId: SUBSCRIPTION_PRICE_ID,
+        metadata,
+      });
+
+      if (!data?.ok) {
+        if (data?.error === 'already_subscribed') {
+          setCheckoutStatus('Tu huella ya está activa en esta cuenta.');
+          return;
+        }
+        throw new Error(data?.error || 'embedded_unknown_error');
+      }
+
+      if (!data.client_secret) {
+        throw new Error('missing_client_secret');
+      }
+
+      setEmbeddedClientSecret(data.client_secret);
+      setCheckoutStatus('Formulario de pago listo. Completa tu huella aquí.');
+    } catch (e) {
+      console.warn('[CallToAction] Embedded checkout error. Activando fallback.', e);
+      setCheckoutStatus('No se pudo abrir el formulario embebido. Redirigiendo al checkout...');
+      try {
+        await startCheckoutFallback({
+          priceId: SUBSCRIPTION_PRICE_ID,
+          customerEmail: normalizedEmail || undefined,
           metadata: {
             channel: 'landing',
             event: 'suscripcion-landing',
             packages: 'subscription',
+            source: 'miniverse_modal_fallback',
           },
-        },
-      });
-
-      if (error || !data?.url) {
-        throw error || new Error('No se pudo crear la sesión');
+        });
+      } catch (fallbackError) {
+        console.error('[CallToAction] Fallback checkout error:', fallbackError);
+        setMsg(fallbackError?.message || 'No se pudo iniciar el pago.');
       }
-
-      window.location.href = data.url;
-    } catch (e) {
-      console.error('[CallToAction] Checkout error:', e);
-      setMsg(e.message || 'No se pudo crear la sesión');
     } finally {
       setLoading(false);
     }
+  }
+
+  function handleEmbeddedCheckoutDone({ ok, message }) {
+    if (!ok) return;
+    const normalizedStatus = (message || '').toLowerCase();
+    if (normalizedStatus === 'succeeded' || normalizedStatus === 'processing') {
+      setCheckoutStatus('Pago confirmado. Tu huella se activará en esta cuenta.');
+      setEmbeddedClientSecret('');
+      return;
+    }
+    setCheckoutStatus(`Estado actual del pago: ${message || 'unknown'}.`);
   }
 
   // 4) Renderizado
@@ -669,7 +707,7 @@ const CallToAction = ({ barsIntroDelayMs = 0 }) => {
               disabled={loading}
               className="bg-white/90 text-black px-4 py-2 rounded disabled:opacity-50"
             >
-              {loading ? 'Creando sesión…' : 'Dejar mi huella'}
+              {loading ? 'Abriendo…' : 'Dejar mi huella'}
             </button>
             <button
               type="button"
@@ -680,6 +718,13 @@ const CallToAction = ({ barsIntroDelayMs = 0 }) => {
             </button>
           </div>
 
+          {checkoutStatus ? <p className="text-slate-200 text-sm">{checkoutStatus}</p> : null}
+          {embeddedClientSecret ? (
+            <HuellaEmbeddedCheckout
+              clientSecret={embeddedClientSecret}
+              onDone={handleEmbeddedCheckoutDone}
+            />
+          ) : null}
           {msg && <p className="text-red-300 text-sm">{msg}</p>}
           {showTicketSupport ? (
             <div className="rounded-2xl border border-white/10 bg-black/30 p-4 text-left text-slate-100 space-y-3">
