@@ -730,7 +730,7 @@ const CallToAction = ({ barsIntroDelayMs = 0 }) => {
               onClick={() => setShowTicketSupport((prev) => !prev)}
               className="border border-white/20 text-white px-4 py-2 rounded hover:border-purple-300/70 hover:text-purple-100"
             >
-              {showTicketSupport ? 'Ocultar opciones' : 'Convertir mi boleto'}
+              {showTicketSupport ? 'Ocultar opciones' : 'Sumar mi boleto'}
             </button>
             <button
               onClick={handleCheckout}

@@ -6869,7 +6869,8 @@ const rendernotaAutoral = () => {
                     Cuando la causa florezca, su pulso regresará al universo: nuevos juegos, nuevas escenas, nuevas historias por contar.
                     </p>
                     <div className="mt-4 text-sm text-slate-400">
-                      <p className="font-semibold text-slate-200">Equipo #GatoEncerrado</p>
+                      <p className="font-semibold text-slate-200">Equipo 💜 #GatoEncerrado</p>
+                      
                     </div>
                   </div>
                 </div>
