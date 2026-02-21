@@ -240,6 +240,7 @@ const CallToAction = ({ barsIntroDelayMs = 0 }) => {
   const [msg, setMsg] = useState('');
   const [embeddedClientSecret, setEmbeddedClientSecret] = useState('');
   const [checkoutStatus, setCheckoutStatus] = useState('');
+  const [pendingFallbackPayload, setPendingFallbackPayload] = useState(null);
   const [hasActiveSubscription, setHasActiveSubscription] = useState(false);
   const [isCheckingSubscription, setIsCheckingSubscription] = useState(false);
   const [localCheckoutLock, setLocalCheckoutLock] = useState(false);
@@ -618,10 +619,21 @@ const CallToAction = ({ barsIntroDelayMs = 0 }) => {
     }
 
     const normalizedEmail = user?.email ? user.email.trim().toLowerCase() : '';
+    const fallbackPayload = {
+      priceId: SUBSCRIPTION_PRICE_ID,
+      customerEmail: normalizedEmail || undefined,
+      metadata: {
+        channel: 'landing',
+        event: 'suscripcion-landing',
+        packages: 'subscription',
+        source: 'miniverse_modal_fallback',
+      },
+    };
     try {
       setLoading(true);
       setMsg('');
       setCheckoutStatus('');
+      setPendingFallbackPayload(null);
       const metadata = {
         channel: 'landing',
         event: 'suscripcion-landing',
@@ -651,22 +663,21 @@ const CallToAction = ({ barsIntroDelayMs = 0 }) => {
       setCheckoutStatus('');
     } catch (e) {
       console.warn('[CallToAction] Embedded checkout error. Activando fallback.', e);
-      setCheckoutStatus('No se pudo abrir el formulario embebido. Redirigiendo al checkout...');
-      try {
-        await startCheckoutFallback({
-          priceId: SUBSCRIPTION_PRICE_ID,
-          customerEmail: normalizedEmail || undefined,
-          metadata: {
-            channel: 'landing',
-            event: 'suscripcion-landing',
-            packages: 'subscription',
-            source: 'miniverse_modal_fallback',
-          },
-        });
-      } catch (fallbackError) {
-        console.error('[CallToAction] Fallback checkout error:', fallbackError);
-        setMsg(fallbackError?.message || 'No se pudo iniciar el pago.');
-      }
+      setCheckoutStatus('No se pudo abrir el formulario embebido. Puedes intentar nuevamente o usar checkout externo.');
+      setPendingFallbackPayload(fallbackPayload);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function handleManualFallbackCheckout() {
+    if (!pendingFallbackPayload) return;
+    try {
+      setLoading(true);
+      await startCheckoutFallback(pendingFallbackPayload);
+    } catch (fallbackError) {
+      console.error('[CallToAction] Fallback checkout error:', fallbackError);
+      setMsg(fallbackError?.message || 'No se pudo iniciar el checkout externo.');
     } finally {
       setLoading(false);
     }
@@ -886,6 +897,16 @@ const CallToAction = ({ barsIntroDelayMs = 0 }) => {
 
           <div ref={embeddedCheckoutRef} className="pt-2">
             {checkoutStatus ? <p className="text-slate-200 text-sm">{checkoutStatus}</p> : null}
+            {pendingFallbackPayload ? (
+              <button
+                type="button"
+                onClick={handleManualFallbackCheckout}
+                disabled={loading}
+                className="mt-2 w-full rounded-lg border border-white/25 px-4 py-2 text-sm text-white hover:border-white/40 disabled:opacity-50"
+              >
+                {loading ? 'Abriendo checkout externo…' : 'Abrir checkout externo'}
+              </button>
+            ) : null}
             {isSubscriber ? (
               <div className="mt-3 rounded-xl border border-emerald-300/30 bg-emerald-500/10 p-3 text-left text-emerald-100">
                 <p className="text-sm font-semibold"> Primera huella: {firstHuellaDateLabel ?? 'fecha en sincronización'}.
