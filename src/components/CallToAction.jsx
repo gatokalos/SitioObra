@@ -231,6 +231,7 @@ const CallToAction = ({ barsIntroDelayMs = 0 }) => {
   });
   const [interactiveSupport, setInteractiveSupport] = useState(null);
   const [showAftercareOverlay, setShowAftercareOverlay] = useState(false);
+  const [aftercareVariant, setAftercareVariant] = useState('expansion');
   const hasRunBarSequenceRef = useRef(false);
   const aftercareTimeoutRef = useRef(null);
   const reachedExpansionRef = useRef(false);
@@ -392,6 +393,7 @@ const CallToAction = ({ barsIntroDelayMs = 0 }) => {
     const reachedExpansion = displayStats.totalSupport >= EXPANSION_START;
     if (reachedExpansion && !reachedExpansionRef.current) {
       reachedExpansionRef.current = true;
+      setAftercareVariant('expansion');
       fireConfetti();
       window.setTimeout(() => fireConfetti(), 260);
       if (aftercareTimeoutRef.current) {
@@ -418,7 +420,7 @@ const CallToAction = ({ barsIntroDelayMs = 0 }) => {
   }, []);
 
   useEffect(() => {
-    if (!showAftercareOverlay || typeof window === 'undefined') return;
+    if (!showAftercareOverlay || aftercareVariant !== 'expansion' || typeof window === 'undefined') return;
     let audio = aftercareAudioRef.current;
     if (!audio) {
       audio = new Audio(AFTERCARE_AUDIO_URL);
@@ -428,7 +430,7 @@ const CallToAction = ({ barsIntroDelayMs = 0 }) => {
     }
     audio.currentTime = 0;
     audio.play().catch(() => {});
-  }, [showAftercareOverlay]);
+  }, [aftercareVariant, showAftercareOverlay]);
 
   useEffect(() => {
     if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') {
@@ -563,21 +565,25 @@ const CallToAction = ({ barsIntroDelayMs = 0 }) => {
     if (!ok) return;
     const normalizedStatus = (message || '').toLowerCase();
     if (normalizedStatus === 'succeeded' || normalizedStatus === 'processing') {
-      setCheckoutStatus('Pago confirmado. Tu huella se activará en esta cuenta.');
+      const isProcessing = normalizedStatus === 'processing';
+      setCheckoutStatus(
+        isProcessing
+          ? 'Pago recibido. Estamos verificando tu huella (1-3 minutos).'
+          : 'Pago confirmado. Tu huella se activará en esta cuenta.'
+      );
       setEmbeddedClientSecret('');
+      setAftercareVariant(isProcessing ? 'payment_processing' : 'payment_success');
+      fireConfetti();
+      window.setTimeout(() => fireConfetti(), 220);
+      setShowAftercareOverlay(true);
       return;
     }
     setCheckoutStatus(`Estado actual del pago: ${message || 'unknown'}.`);
   }
 
-  useEffect(() => {
-    if (!embeddedClientSecret || !embeddedCheckoutRef.current) return;
-    embeddedCheckoutRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
-  }, [embeddedClientSecret]);
-
   // 4) Renderizado
   return (
-    <div className="mx-auto h-full max-w-xl text-center flex flex-col gap-6">
+    <div className="relative mx-auto h-full max-w-xl text-center flex flex-col gap-6">
       {confettiBursts.map((burst) => (
         <ConfettiBurst key={burst} seed={burst} />
       ))}
@@ -784,36 +790,47 @@ const CallToAction = ({ barsIntroDelayMs = 0 }) => {
       </div>
       {showAftercareOverlay ? (
         <div
-          className="fixed inset-0 z-[220] flex items-center justify-center px-4 bg-black/80 backdrop-blur-sm"
+          className="absolute inset-0 z-20 flex items-center justify-center rounded-2xl bg-black/82 px-4 backdrop-blur-sm"
           role="dialog"
           aria-modal="true"
           aria-labelledby="aftercare-title"
         >
           <div className="w-full max-w-md rounded-3xl border border-white/20 bg-slate-950/95 p-6 text-center shadow-2xl">
-            <p className="text-xs uppercase tracking-[0.22em] text-slate-400">Fin de temporada.</p>
-            <p className="mt-3 text-lg font-semibold text-white">17 · 51 · 375.</p>
+            <p className="text-xs uppercase tracking-[0.22em] text-slate-400">
+              {aftercareVariant === 'expansion' ? 'Fin de temporada.' : 'Estado de tu huella'}
+            </p>
+            {aftercareVariant === 'expansion' ? (
+              <p className="mt-3 text-lg font-semibold text-white">17 · 51 · 375.</p>
+            ) : null}
             <h3 id="aftercare-title" className="mt-4 text-2xl font-semibold text-white">
-              Meta mínima anual cumplida.
+              {aftercareVariant === 'payment_success'
+                ? 'Pago confirmado por Stripe.'
+                : aftercareVariant === 'payment_processing'
+                  ? 'Pago recibido. En verificación.'
+                  : 'Meta mínima anual cumplida.'}
             </h3>
             <p className="mt-5 text-slate-200 leading-relaxed">
-              La obra respira.
-              <br />
-              Sola.
-              <br />Y en comunidad.
+              {aftercareVariant === 'payment_success'
+                ? 'Tu huella quedó registrada. Si no se refleja al instante, se sincroniza en 1-3 minutos.'
+                : aftercareVariant === 'payment_processing'
+                  ? 'No necesitas pagar de nuevo. Estamos validando tu aportación y aparecerá en breve.'
+                  : 'La obra respira.\nSola.\nY en comunidad.'}
             </p>
             <button
               type="button"
               className="mt-6 w-full rounded-xl bg-white/95 px-4 py-2 font-semibold text-black hover:bg-white"
               onClick={() => {
                 setShowAftercareOverlay(false);
-                reachedExpansionRef.current = false;
+                if (aftercareVariant === 'expansion') {
+                  reachedExpansionRef.current = false;
+                }
                 if (aftercareAudioRef.current) {
                   aftercareAudioRef.current.pause();
                   aftercareAudioRef.current.currentTime = 0;
                 }
               }}
             >
-              Continuar
+              Entendido
             </button>
           </div>
         </div>
