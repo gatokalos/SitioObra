@@ -71,7 +71,7 @@ const HuellaEmbeddedCheckout = ({ clientSecret, onDone }) => {
   const stripeElementsOptions = {
     clientSecret,
     appearance: {
-      theme: 'night',
+      theme: 'day',
       variables: {
         colorPrimary: STRIPE_BRAND_COLOR,
         colorDanger: STRIPE_ACCENT_COLOR,
