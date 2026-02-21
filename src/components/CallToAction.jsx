@@ -27,9 +27,29 @@ const SUPPORT_EMAIL = 'contacto@gatoencerrado.ai';
 const SUPPORT_WHATSAPP = '+523315327985';
 const SUPPORT_MESSAGE =
   'Hola:%0A%0AEstuve en la función de Es un Gato Encerrado y quiero convertir mi boleto en una huella para la causa social.%0A%0AAdjunto una imagen como comprobante de que estuve ahí.%0ANo busco registrarme ni hacer login, solo sumar desde este gesto.%0A%0AGracias por abrir este espacio.';
+const SHOULD_PREVIEW_AFTERCARE =
+  import.meta.env.DEV &&
+  typeof window !== 'undefined' &&
+  new URLSearchParams(window.location.search).get('aftercare') === '1';
 
 function clamp(value, min, max) {
   return Math.max(min, Math.min(max, value));
+}
+
+function formatFirstHuellaDate(value) {
+  if (!value) return null;
+  try {
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) return null;
+    return new Intl.DateTimeFormat('es-MX', {
+      day: '2-digit',
+      month: 'short',
+      year: 'numeric',
+      timeZone: 'UTC',
+    }).format(date);
+  } catch {
+    return null;
+  }
 }
 
 function deriveImpactStats(totalSupport) {
@@ -220,6 +240,10 @@ const CallToAction = ({ barsIntroDelayMs = 0 }) => {
   const [msg, setMsg] = useState('');
   const [embeddedClientSecret, setEmbeddedClientSecret] = useState('');
   const [checkoutStatus, setCheckoutStatus] = useState('');
+  const [hasActiveSubscription, setHasActiveSubscription] = useState(false);
+  const [isCheckingSubscription, setIsCheckingSubscription] = useState(false);
+  const [localCheckoutLock, setLocalCheckoutLock] = useState(false);
+  const [firstHuellaAt, setFirstHuellaAt] = useState(null);
   const [showTicketSupport, setShowTicketSupport] = useState(false);
   const [subs, setSubs] = useState(0);
   const [ticketUnits, setTicketUnits] = useState(0);
@@ -245,6 +269,33 @@ const CallToAction = ({ barsIntroDelayMs = 0 }) => {
   const now = new Date();
   const currentQuarter = Math.floor(now.getMonth() / 3) + 1;
   const currentYear = now.getFullYear();
+  const metadataSubscriber = Boolean(
+    user?.user_metadata?.isSubscriber === true ||
+      user?.user_metadata?.isSubscriber === 'true' ||
+      user?.user_metadata?.is_subscriber === true ||
+      user?.user_metadata?.is_subscriber === 'true' ||
+      user?.user_metadata?.subscription_status === 'active' ||
+      user?.user_metadata?.subscription_status === 'trialing' ||
+      user?.user_metadata?.stripe_subscription_status === 'active' ||
+      user?.user_metadata?.stripe_subscription_status === 'trialing' ||
+      user?.user_metadata?.plan === 'subscriber' ||
+      user?.user_metadata?.tier === 'subscriber' ||
+      user?.app_metadata?.subscription_status === 'active' ||
+      user?.app_metadata?.subscription_status === 'trialing' ||
+      user?.app_metadata?.stripe_subscription_status === 'active' ||
+      user?.app_metadata?.stripe_subscription_status === 'trialing' ||
+      user?.app_metadata?.roles?.includes?.('subscriber')
+  );
+  const metadataFirstHuellaAt =
+    user?.user_metadata?.first_huella_at ??
+    user?.user_metadata?.subscription_started_at ??
+    user?.user_metadata?.stripe_subscription_created_at ??
+    user?.app_metadata?.first_huella_at ??
+    user?.app_metadata?.subscription_started_at ??
+    user?.app_metadata?.stripe_subscription_created_at ??
+    null;
+  const firstHuellaDateLabel = formatFirstHuellaDate(firstHuellaAt ?? metadataFirstHuellaAt);
+  const isSubscriber = metadataSubscriber || hasActiveSubscription || localCheckoutLock;
 
   // 1) Cargar suscriptores en tiempo real
   useEffect(() => {
@@ -299,6 +350,49 @@ const CallToAction = ({ barsIntroDelayMs = 0 }) => {
       clearInterval(ticketId);
     };
   }, []);
+
+  useEffect(() => {
+    if (!user?.id) {
+      setHasActiveSubscription(false);
+      setIsCheckingSubscription(false);
+      setLocalCheckoutLock(false);
+      setFirstHuellaAt(null);
+      return undefined;
+    }
+
+    let isMounted = true;
+    setIsCheckingSubscription(true);
+
+    supabase
+      .from('suscriptores')
+      .select('id,status,created_at')
+      .eq('user_id', user.id)
+      .in('status', ['active', 'trialing'])
+      .order('created_at', { ascending: true })
+      .limit(1)
+      .then(({ data, error }) => {
+        if (!isMounted) return;
+        if (error) {
+          console.warn('[CallToAction] No se pudo validar huella:', error);
+          setHasActiveSubscription(false);
+          return;
+        }
+        const hasSubscription = Array.isArray(data) && data.length > 0;
+        setHasActiveSubscription(hasSubscription);
+        if (hasSubscription) {
+          setFirstHuellaAt(data[0]?.created_at ?? null);
+        }
+      })
+      .finally(() => {
+        if (isMounted) {
+          setIsCheckingSubscription(false);
+        }
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, [user?.id]);
 
   // 2) Cálculos de impacto
   const stats = useMemo(() => deriveImpactStats(subs + ticketUnits), [subs, ticketUnits]);
@@ -421,6 +515,12 @@ const CallToAction = ({ barsIntroDelayMs = 0 }) => {
   }, []);
 
   useEffect(() => {
+    if (!SHOULD_PREVIEW_AFTERCARE) return;
+    setAftercareVariant('payment_success');
+    setShowAftercareOverlay(true);
+  }, []);
+
+  useEffect(() => {
     if (!showAftercareOverlay || aftercareVariant !== 'expansion' || typeof window === 'undefined') return;
     let audio = aftercareAudioRef.current;
     if (!audio) {
@@ -499,6 +599,12 @@ const CallToAction = ({ barsIntroDelayMs = 0 }) => {
       return;
     }
 
+    if (isSubscriber) {
+      setCheckoutStatus('Tu huella ya está activa en esta cuenta. Gracias por sostener la causa.');
+      setEmbeddedClientSecret('');
+      return;
+    }
+
     const line_items = [
       {
         price: SUBSCRIPTION_PRICE_ID,
@@ -530,6 +636,8 @@ const CallToAction = ({ barsIntroDelayMs = 0 }) => {
       if (!data?.ok) {
         if (data?.error === 'already_subscribed') {
           setCheckoutStatus('Tu huella ya está activa en esta cuenta.');
+          setHasActiveSubscription(true);
+          setEmbeddedClientSecret('');
           return;
         }
         throw new Error(data?.error || 'embedded_unknown_error');
@@ -569,6 +677,7 @@ const CallToAction = ({ barsIntroDelayMs = 0 }) => {
     const normalizedStatus = (message || '').toLowerCase();
     if (normalizedStatus === 'succeeded' || normalizedStatus === 'processing') {
       const isProcessing = normalizedStatus === 'processing';
+      setLocalCheckoutLock(true);
       setCheckoutStatus(
         isProcessing
           ? 'Pago recibido. Estamos verificando tu huella (1-3 minutos).'
@@ -734,10 +843,16 @@ const CallToAction = ({ barsIntroDelayMs = 0 }) => {
             </button>
             <button
               onClick={handleCheckout}
-              disabled={loading}
+              disabled={loading || isSubscriber || isCheckingSubscription}
               className="bg-white/90 text-black px-4 py-2 rounded disabled:opacity-50"
             >
-              {loading ? 'Abriendo…' : 'Dejar mi huella'}
+              {isCheckingSubscription
+                ? 'Validando huella...'
+                : isSubscriber
+                  ? 'Tu huella ya está activa'
+                  : loading
+                    ? 'Abriendo…'
+                    : 'Dejar mi huella'}
             </button>
          
           </div>
@@ -771,6 +886,18 @@ const CallToAction = ({ barsIntroDelayMs = 0 }) => {
 
           <div ref={embeddedCheckoutRef} className="pt-2">
             {checkoutStatus ? <p className="text-slate-200 text-sm">{checkoutStatus}</p> : null}
+            {isSubscriber ? (
+              <div className="mt-3 rounded-xl border border-emerald-300/30 bg-emerald-500/10 p-3 text-left text-emerald-100">
+                <p className="text-sm font-semibold"> Primera huella: {firstHuellaDateLabel ?? 'fecha en sincronización'}.
+                </p>
+                <p className="mt-1 text-xs text-emerald-100/90">
+                  Tu gesto forma parte del tramo vigente.
+                </p>
+                <p className="mt-1 text-xs text-emerald-100/90">
+                  Recibirás actualización trimestral del crecimiento.
+                </p>
+              </div>
+            ) : null}
             {embeddedClientSecret ? (
               <HuellaEmbeddedCheckout
                 clientSecret={embeddedClientSecret}
@@ -815,9 +942,9 @@ const CallToAction = ({ barsIntroDelayMs = 0 }) => {
             </h3>
             <p className="mt-5 text-slate-200 leading-relaxed">
               {aftercareVariant === 'payment_success'
-                ? 'Tu huella quedó registrada. Si no se refleja al instante, se sincroniza en 1-3 minutos.'
+                ? 'Tu huella quedó registrada. Recibirás tu factura en el correo de esta cuenta. Si no se refleja al instante, se sincroniza en 1-3 minutos 🐾'
                 : aftercareVariant === 'payment_processing'
-                  ? 'No necesitas pagar de nuevo. Estamos validando tu aportación y aparecerá en breve.'
+                  ? 'No necesitas pagar de nuevo. Estamos validando tu aportación y, al confirmarse, recibirás tu factura en tu correo.'
                   : 'La obra respira.\nSola.\nY en comunidad.'}
             </p>
             <button
