@@ -26,7 +26,7 @@ const SYNCABLE_BAR_KEYS = new Set(['terapias', 'residencias', 'implementacionEsc
 const SUPPORT_EMAIL = 'contacto@gatoencerrado.ai';
 const SUPPORT_WHATSAPP = '+523315327985';
 const SUPPORT_MESSAGE =
-  'Hola:%0A%0AEstuve en la función de Es un Gato Encerrado y quiero convertir mi boleto en una huella para la causa social.%0A%0AAdjunto una imagen como comprobante de que estuve ahí.%0ANo busco registrarme ni hacer login, solo sumar desde este gesto.%0A%0AGracias por abrir este espacio.';
+  'Hola:%0A%0AAsistí a la función de Es un Gato Encerrado y quiero convertir mi boleto en una huella como gesto de apoyo a la causa de #GatoEncerrado.%0A%0AAdjunto una imagen como comprobante.%0A%0AGracias por abrir este espacio.';
 const SUPPORT_CTA_VIDEO_URL =
   'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/trailers/CTAs/CTA_boleto_pingpong_blur.mp4';
 const SUPPORT_CTA_POSTER_URL =

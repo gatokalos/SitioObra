@@ -6820,7 +6820,7 @@ const rendernotaAutoral = () => {
                     <span className="flex items-center gap-3">
                       <Users size={18} className="text-emerald-200" />
                       <span className="text-[0.7rem] uppercase tracking-[0.26em] text-emerald-200/85">
-                        Sin costo para familias en riesgo
+                        Sin costo para familias
                       </span>
                     </span>
                     <span className="text-[0.65rem] uppercase tracking-[0.18em] text-emerald-200/80 group-open:text-white">
@@ -6830,8 +6830,9 @@ const rendernotaAutoral = () => {
                   </summary>
                   <div className="mt-3 space-y-2 pl-8">
                     <p className="text-sm leading-relaxed text-slate-200/95">
-                      La asociación atiende a jóvenes en escuelas donde se detecta riesgo.
-                      Las sesiones no implican costo obligatorio para las familias y pueden incluir aportaciones voluntarias. El modelo se sostiene con apoyos institucionales, donaciones y huellas transmedia.
+                      La asociación atiende a jóvenes cuando se detecta riesgo.<br />
+                      No hay costo obligatorio para las familias.<br />
+                      Su causa se sostiene con apoyos institucionales, donaciones y huellas transmedia.
                     </p>
                     <a
                       href="https://www.ayudaparalavida.com/contacto.html"
@@ -6839,7 +6840,7 @@ const rendernotaAutoral = () => {
                       rel="noreferrer"
                       className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.18em] text-emerald-200 hover:text-white transition"
                     >
-                      ¿Necesitas su contacto?
+                      Contacto directo
                     </a>
                   </div>
                 </details>
