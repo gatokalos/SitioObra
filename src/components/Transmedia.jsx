@@ -6625,10 +6625,18 @@ const rendernotaAutoral = () => {
             }}
           >
             {isDesktopFocusLockActive ? (
-              <div className="mb-5 flex items-center justify-between gap-4 rounded-2xl border border-fuchsia-300/40 bg-fuchsia-500/10 px-4 py-3">
-                <div className="text-left">
+              <div className="relative mx-auto mb-5 w-full max-w-[31rem] rounded-2xl border border-fuchsia-300/40 bg-fuchsia-500/10 px-5 py-4 text-center shadow-[0_10px_30px_rgba(120,39,173,0.25)]">
+                <button
+                  type="button"
+                  onClick={releaseDesktopFocusLock}
+                  className="absolute -right-2 -top-2 inline-flex h-7 w-7 items-center justify-center rounded-full border border-fuchsia-200/45 bg-fuchsia-400/20 text-sm font-semibold text-fuchsia-50 transition hover:bg-fuchsia-400/35"
+                  aria-label="Cerrar enfoque recomendado"
+                >
+                  ×
+                </button>
+                <div className="text-center">
                   <p className="text-[0.62rem] uppercase tracking-[0.3em] text-fuchsia-100/90">Vitrina recomendada por el gato de la cabina</p>
-                  <p className="text-sm text-slate-100">
+                  <p className="mt-1 text-[1.05rem] font-semibold leading-snug text-slate-100">
                     Llegaste a esta vitrina con{' '}
                     <span className="font-semibold text-amber-200">
                       {Number.isFinite(focusIncomingGAT) ? `${focusIncomingGAT} GAT` : 'tus GAT'}
@@ -6636,13 +6644,6 @@ const rendernotaAutoral = () => {
                     .
                   </p>
                 </div>
-                <button
-                  type="button"
-                  onClick={releaseDesktopFocusLock}
-                  className="shrink-0 rounded-full border border-fuchsia-200/40 bg-fuchsia-400/15 px-3 py-1.5 text-[0.65rem] uppercase tracking-[0.24em] text-fuchsia-50 transition hover:bg-fuchsia-400/25"
-                >
-                  Explorar libremente
-                </button>
               </div>
             ) : null}
             <div className="grid grid-cols-3 gap-8 min-h-[720px]">

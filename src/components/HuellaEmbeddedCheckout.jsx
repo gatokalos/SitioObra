@@ -63,7 +63,7 @@ const PaymentForm = ({ onDone }) => {
           aria-hidden="true"
           className="pointer-events-none absolute inset-0 opacity-70 [background:radial-gradient(90%_70%_at_50%_20%,rgba(167,139,250,0.35),transparent_60%)]"
         />
-        <span className="relative">{isSubmitting ? 'Procesando...' : 'Confirmar huella'}</span>
+        <span className="relative">{isSubmitting ? 'Procesando...' : 'Confirmar huella con Stripe'}</span>
       </button>
     </form>
   );
