@@ -13,6 +13,7 @@ import {
   markBienvenidaSeen,
   setBienvenidaReturnPath,
   setBienvenidaSkip,
+  isBienvenidaQaAlwaysFreshUser,
 } from '@/lib/bienvenida';
 import { extractRecommendedAppId, normalizeBridgeKey } from '@/lib/bienvenidaBridge';
 
@@ -40,6 +41,7 @@ const Bienvenida = () => {
   const iframeSrc = useMemo(() => {
     if (!baseUrl) return '';
     const url = new URL(baseUrl);
+    const isQaAlwaysFreshUser = isBienvenidaQaAlwaysFreshUser(user?.id);
     if (user?.id) {
       url.searchParams.set('user_id', user.id);
     }
@@ -48,6 +50,9 @@ const Bienvenida = () => {
     }
     if (flowGoal) {
       url.searchParams.set('goal', flowGoal);
+    }
+    if (isQaAlwaysFreshUser) {
+      url.searchParams.set('qa_fresh', '1');
     }
     return url.toString();
   }, [baseUrl, flowGoal, user?.email, user?.id]);

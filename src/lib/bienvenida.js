@@ -7,14 +7,24 @@ const SKIP_KEY = 'bienvenida:skip';
 const FORCE_ON_LOGIN_KEY = 'bienvenida:force-on-login';
 const TRANSMEDIA_INTENT_KEY = 'bienvenida:transmedia-intent';
 const FLOW_GOAL_KEY = 'bienvenida:flow-goal';
+const QA_ALWAYS_FRESH_USER_IDS = new Set([
+  '33556201-8564-4e05-8e66-aae149348872',
+]);
+
+export const isBienvenidaQaAlwaysFreshUser = (userId) => {
+  if (!userId) return false;
+  return QA_ALWAYS_FRESH_USER_IDS.has(String(userId).trim());
+};
 
 export const hasSeenBienvenida = (userId) => {
   if (!userId) return false;
+  if (isBienvenidaQaAlwaysFreshUser(userId)) return false;
   return safeGetItem(`${SEEN_PREFIX}${userId}`) === 'true';
 };
 
 export const markBienvenidaSeen = (userId) => {
   if (!userId) return;
+  if (isBienvenidaQaAlwaysFreshUser(userId)) return;
   safeSetItem(`${SEEN_PREFIX}${userId}`, 'true');
 };
 
