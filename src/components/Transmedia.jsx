@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import React, { Suspense, lazy, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
 import { createPortal } from 'react-dom';
@@ -31,11 +31,8 @@ import {
   PawPrint,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import MiniverseModal from '@/components/MiniverseModal';
 import CallToAction from '@/components/CallToAction';
 import InstallPWACTA from '@/components/InstallPWACTA';
-import ContributionModal from '@/components/ContributionModal';
-import ReserveModal from '@/components/ReserveModal';
 import { fetchBlogPostBySlug } from '@/services/blogService';
 import { toast } from '@/components/ui/use-toast';
 import { OBRA_CONVERSATION_STARTERS, SILVESTRE_TRIGGER_QUESTIONS } from '@/lib/obraConversation';
@@ -47,16 +44,10 @@ import {
   resolveShowcaseFromAppId,
   resolveShowcaseFromHash,
 } from '@/lib/bienvenidaBridge';
-import { Document, Page, pdfjs } from 'react-pdf';
-import 'react-pdf/dist/Page/AnnotationLayer.css';
-import 'react-pdf/dist/Page/TextLayer.css';
-import ARExperience from '@/components/ar/ARExperience';
 import MiniversoSonoroPreview from '@/components/miniversos/sonoro/MiniversoSonoroPreview';
-import AutoficcionPreviewOverlay from '@/components/novela/AutoficcionPreviewOverlay';
 import { recordShowcaseLike } from '@/services/showcaseLikeService';
 import { useMobileVideoPresentation } from '@/hooks/useMobileVideoPresentation';
 import IAInsightCard from '@/components/IAInsightCard';
-import LoginOverlay from '@/components/ContributionModal/LoginOverlay';
 import DiosasCarousel from '@/components/DiosasCarousel';
 import { fetchApprovedContributions } from '@/services/contributionService';
 import {
@@ -71,7 +62,13 @@ import { supabase } from '@/lib/supabaseClient';
 import { safeGetItem, safeRemoveItem, safeSetItem } from '@/lib/safeStorage';
 import { isSafariBrowser } from '@/lib/browser';
 
-pdfjs.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`;
+const MiniverseModal = lazy(() => import('@/components/MiniverseModal'));
+const ContributionModal = lazy(() => import('@/components/ContributionModal'));
+const ReserveModal = lazy(() => import('@/components/ReserveModal'));
+const ARExperience = lazy(() => import('@/components/ar/ARExperience'));
+const AutoficcionPreviewOverlay = lazy(() => import('@/components/novela/AutoficcionPreviewOverlay'));
+const LoginOverlay = lazy(() => import('@/components/ContributionModal/LoginOverlay'));
+const PdfPreviewDocument = lazy(() => import('@/components/transmedia/PdfPreviewDocument'));
 const GAT_COSTS = {
   quironFull: 300,
   graficoSwipe: 110,
@@ -1857,6 +1854,7 @@ const Transmedia = () => {
     : DEFAULT_BADGE_STATE;
 
   const [isMiniverseOpen, setIsMiniverseOpen] = useState(false);
+  const [hasLoadedMiniverseModal, setHasLoadedMiniverseModal] = useState(false);
   const [isMiniverseShelved, setIsMiniverseShelved] = useState(false);
   const [miniverseContext, setMiniverseContext] = useState(null);
   const [miniverseInitialTabId, setMiniverseInitialTabId] = useState(null);
@@ -1887,6 +1885,7 @@ const Transmedia = () => {
   const [isTazaARActive, setIsTazaARActive] = useState(false);
   const [isMobileARFullscreen, setIsMobileARFullscreen] = useState(false);
   const [showAutoficcionPreview, setShowAutoficcionPreview] = useState(false);
+  const [hasLoadedAutoficcionPreview, setHasLoadedAutoficcionPreview] = useState(false);
   const {
     micPromptVisible,
     transcript,
@@ -1923,6 +1922,7 @@ const Transmedia = () => {
   const [graphicSpent, setGraphicSpent] = useState(initialGraphicSpent);
   const [novelaQuestions, setNovelaQuestions] = useState(initialNovelaQuestions);
   const [isNovelaReserveOpen, setIsNovelaReserveOpen] = useState(false);
+  const [hasLoadedReserveModal, setHasLoadedReserveModal] = useState(false);
   const [reserveInitialPackages, setReserveInitialPackages] = useState(['novela-400']);
   const [sonoroSpent, setSonoroSpent] = useState(initialSonoroSpent);
   const [tazaActivations, setTazaActivations] = useState(initialTazaActivations);
@@ -1952,10 +1952,12 @@ const Transmedia = () => {
   const [isGraphicUnlocking, setIsGraphicUnlocking] = useState(false);
   const [tapIndex, setTapIndex] = useState(0);
   const [isContributionOpen, setIsContributionOpen] = useState(false);
+  const [hasLoadedContributionModal, setHasLoadedContributionModal] = useState(false);
   const [contributionCategoryId, setContributionCategoryId] = useState(null);
   const [explorerBadge, setExplorerBadge] = useState(initialExplorerBadge);
   const [showBadgeCoins, setShowBadgeCoins] = useState(false);
   const [showBadgeLoginOverlay, setShowBadgeLoginOverlay] = useState(false);
+  const [hasLoadedBadgeLoginOverlay, setHasLoadedBadgeLoginOverlay] = useState(false);
   const [showcaseEnergy, setShowcaseEnergy] = useState(initialShowcaseEnergy);
   const [showcaseBoosts, setShowcaseBoosts] = useState(initialShowcaseBoosts);
   const [celebratedShowcaseId, setCelebratedShowcaseId] = useState(null);
@@ -1982,6 +1984,26 @@ const Transmedia = () => {
       user?.app_metadata?.roles?.includes?.('subscriber') ||
       hasActiveSubscription
   );
+
+  useEffect(() => {
+    if (isMiniverseOpen) setHasLoadedMiniverseModal(true);
+  }, [isMiniverseOpen]);
+
+  useEffect(() => {
+    if (isContributionOpen) setHasLoadedContributionModal(true);
+  }, [isContributionOpen]);
+
+  useEffect(() => {
+    if (isNovelaReserveOpen) setHasLoadedReserveModal(true);
+  }, [isNovelaReserveOpen]);
+
+  useEffect(() => {
+    if (showBadgeLoginOverlay) setHasLoadedBadgeLoginOverlay(true);
+  }, [showBadgeLoginOverlay]);
+
+  useEffect(() => {
+    if (showAutoficcionPreview) setHasLoadedAutoficcionPreview(true);
+  }, [showAutoficcionPreview]);
 
   const applyTransmediaCreditState = useCallback(
     (state) => {
@@ -4217,16 +4239,18 @@ const rendernotaAutoral = () => {
           />
         </div>
       ) : (
-        <ARExperience
-          targetSrc="/webar/taza/taza.mind"
-          phrases={activeDefinition.phrases}
-          showScanGuide
-          guideImageSrc="/webar/taza/taza-marker.jpg"
-          guideLabel="Alinea la ilustración de la taza con el contorno. No necesita ser exacto."
-          onExit={handleCloseARExperience}
-          initialCameraReady
-          onError={handleARError}
-        />
+        <Suspense fallback={<div className="w-full min-h-[75vh] sm:min-h-[80vh] rounded-3xl border border-white/10 bg-black/50" />}>
+          <ARExperience
+            targetSrc="/webar/taza/taza.mind"
+            phrases={activeDefinition.phrases}
+            showScanGuide
+            guideImageSrc="/webar/taza/taza-marker.jpg"
+            guideLabel="Alinea la ilustración de la taza con el contorno. No necesita ser exacto."
+            onExit={handleCloseARExperience}
+            initialCameraReady
+            onError={handleARError}
+          />
+        </Suspense>
       )}
     </div>
   ) : (
@@ -6344,28 +6368,18 @@ const rendernotaAutoral = () => {
             {pdfLoadError ? (
               <p className="text-sm text-red-300 text-center py-8">{pdfLoadError}</p>
             ) : (
-              <Document
-                file={pdfPreview.src}
-                onLoadSuccess={handlePdfLoadSuccess}
-                onLoadError={(error) => {
-                  console.error('Error al cargar PDF del miniverso:', error);
-                  setPdfLoadError('No pudimos cargar el fragmento en PDF. Intenta de nuevo más tarde.');
-                }}
-                loading={<p className="text-sm text-slate-400 text-center py-8">Preparando páginas…</p>}
-              >
-                {pdfNumPages
-                  ? Array.from(new Array(pdfNumPages), (_, index) => (
-                      <div key={`pdf-page-${index + 1}`} className="mb-6 last:mb-0">
-                        <Page
-                          pageNumber={index + 1}
-                          width={pdfPageWidth}
-                          renderTextLayer={false}
-                          renderAnnotationLayer={false}
-                        />
-                      </div>
-                    ))
-                  : null}
-              </Document>
+              <Suspense fallback={<p className="text-sm text-slate-400 text-center py-8">Preparando visor PDF…</p>}>
+                <PdfPreviewDocument
+                  file={pdfPreview.src}
+                  numPages={pdfNumPages}
+                  pageWidth={pdfPageWidth}
+                  onLoadSuccess={handlePdfLoadSuccess}
+                  onLoadError={(error) => {
+                    console.error('Error al cargar PDF del miniverso:', error);
+                    setPdfLoadError('No pudimos cargar el fragmento en PDF. Intenta de nuevo más tarde.');
+                  }}
+                />
+              </Suspense>
             )}
             <div ref={pdfEndSentinelRef} className="h-px w-full" aria-hidden="true" />
           </div>
@@ -6909,34 +6923,50 @@ const rendernotaAutoral = () => {
         </div>
       </section>
 
-      <MiniverseModal
-        open={isMiniverseOpen}
-        onClose={handleCloseMiniverses}
-        contextLabel={miniverseContext}
-        initialTabId={miniverseInitialTabId}
-        onSelectMiniverse={handleSelectMiniverse}
-        shelved={isMiniverseShelved}
-        stayOpenOnSelect
-      />
-      <ContributionModal
-        open={isContributionOpen}
-        onClose={() => {
-          setIsContributionOpen(false);
-          setContributionCategoryId(null);
-          setReturnShowcaseId(null);
-        }}
-        initialCategoryId={contributionCategoryId}
-        presentation="sheet"
-        onReturnToShowcase={returnShowcaseId ? handleReturnToShowcase : null}
-      />
-      <ReserveModal
-        open={isNovelaReserveOpen}
-        onClose={() => setIsNovelaReserveOpen(false)}
-        mode="offseason"
-        initialPackages={reserveInitialPackages}
-        overlayZClass="z-[250]"
-      />
-      {showBadgeLoginOverlay ? <LoginOverlay onClose={handleCloseBadgeLogin} /> : null}
+      {hasLoadedMiniverseModal ? (
+        <Suspense fallback={null}>
+          <MiniverseModal
+            open={isMiniverseOpen}
+            onClose={handleCloseMiniverses}
+            contextLabel={miniverseContext}
+            initialTabId={miniverseInitialTabId}
+            onSelectMiniverse={handleSelectMiniverse}
+            shelved={isMiniverseShelved}
+            stayOpenOnSelect
+          />
+        </Suspense>
+      ) : null}
+      {hasLoadedContributionModal ? (
+        <Suspense fallback={null}>
+          <ContributionModal
+            open={isContributionOpen}
+            onClose={() => {
+              setIsContributionOpen(false);
+              setContributionCategoryId(null);
+              setReturnShowcaseId(null);
+            }}
+            initialCategoryId={contributionCategoryId}
+            presentation="sheet"
+            onReturnToShowcase={returnShowcaseId ? handleReturnToShowcase : null}
+          />
+        </Suspense>
+      ) : null}
+      {hasLoadedReserveModal ? (
+        <Suspense fallback={null}>
+          <ReserveModal
+            open={isNovelaReserveOpen}
+            onClose={() => setIsNovelaReserveOpen(false)}
+            mode="offseason"
+            initialPackages={reserveInitialPackages}
+            overlayZClass="z-[250]"
+          />
+        </Suspense>
+      ) : null}
+      {showBadgeLoginOverlay && hasLoadedBadgeLoginOverlay ? (
+        <Suspense fallback={null}>
+          <LoginOverlay onClose={handleCloseBadgeLogin} />
+        </Suspense>
+      ) : null}
 
       {MINIVERSO_EDITORIAL_INTERCEPTION_ENABLED && isMiniversoEditorialModalOpen ? (
         <div className="fixed inset-0 z-[190] flex items-center justify-center px-4 py-10">
@@ -6969,22 +6999,28 @@ const rendernotaAutoral = () => {
 
       {isTazaARActive && isMobileARFullscreen ? (
         <div className="fixed inset-0 z-40 bg-black">
-          <ARExperience
-            targetSrc="/webar/taza/taza.mind"
-            phrases={showcaseDefinitions.lataza.phrases}
-            showScanGuide
-            guideImageSrc="/webar/taza/taza-marker.jpg"
-            guideLabel="Alinea la ilustración de la taza con el contorno. No necesita ser exacto."
-            onExit={handleCloseARExperience}
-            initialCameraReady
-            onError={handleARError}
-          />
+          <Suspense fallback={<div className="h-full w-full bg-black" />}>
+            <ARExperience
+              targetSrc="/webar/taza/taza.mind"
+              phrases={showcaseDefinitions.lataza.phrases}
+              showScanGuide
+              guideImageSrc="/webar/taza/taza-marker.jpg"
+              guideLabel="Alinea la ilustración de la taza con el contorno. No necesita ser exacto."
+              onExit={handleCloseARExperience}
+              initialCameraReady
+              onError={handleARError}
+            />
+          </Suspense>
         </div>
       ) : null}
-      <AutoficcionPreviewOverlay
-        open={showAutoficcionPreview}
-        onClose={() => setShowAutoficcionPreview(false)}
-      />
+      {hasLoadedAutoficcionPreview ? (
+        <Suspense fallback={null}>
+          <AutoficcionPreviewOverlay
+            open={showAutoficcionPreview}
+            onClose={() => setShowAutoficcionPreview(false)}
+          />
+        </Suspense>
+      ) : null}
     </>
   );
 };

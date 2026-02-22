@@ -1,27 +1,13 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { Suspense, lazy, useEffect, useMemo, useRef, useState } from 'react';
 import { Route, Routes, useLocation, useNavigate } from 'react-router-dom';
 import { Toaster } from '@/components/ui/toaster';
 import Header from '@/components/Header';
 import Hero from '@/components/Hero';
 import About, { ProvocaSection } from '@/components/About';
-import Transmedia from '@/components/Transmedia';
-import Blog from '@/components/Blog';
-import Team from '@/components/Team';
-import BlogContributionPrompt from '@/components/BlogContributionPrompt';
-import Instagram from '@/components/Instagram';
-import NextShow from '@/components/NextShow';
-import Contact from '@/components/Contact';
-import Footer from '@/components/Footer';
 import SectionErrorBoundary from '@/components/SectionErrorBoundary';
 import { useBlogPosts } from '@/hooks/useBlogPosts';
 import { useEmailRedirect } from '@/hooks/useEmailRedirect';
 import LoginToast from '@/components/LoginToast';
-import PortalLectura from '@/pages/PortalLectura';
-import PortalArtesanias from '@/pages/PortalArtesanias';
-import PortalVoz from '@/pages/PortalVoz';
-import bgLogo from '@/assets/bg-logo.png';
-import Bienvenida from '@/pages/Bienvenida';
-import LabHuella from '@/pages/LabHuella';
 import { useAuth } from '@/contexts/SupabaseAuthContext';
 import {
   hasSeenBienvenida,
@@ -45,6 +31,94 @@ const IS_UI_LAB_ENABLED =
   ['1', 'true', 'yes', 'on'].includes(String(import.meta.env.VITE_UI_LAB || '').toLowerCase());
 // Hot toggle: pause auto-launch of Bienvenida after login without deleting the flow.
 const ENABLE_BIENVENIDA_AUTO_LAUNCH = false;
+const Transmedia = lazy(() => import('@/components/Transmedia'));
+const Team = lazy(() => import('@/components/Team'));
+const Instagram = lazy(() => import('@/components/Instagram'));
+const BlogContributionPrompt = lazy(() => import('@/components/BlogContributionPrompt'));
+const Blog = lazy(() => import('@/components/Blog'));
+const NextShow = lazy(() => import('@/components/NextShow'));
+const Contact = lazy(() => import('@/components/Contact'));
+const Footer = lazy(() => import('@/components/Footer'));
+const Bienvenida = lazy(() => import('@/pages/Bienvenida'));
+const PortalLectura = lazy(() => import('@/pages/PortalLectura'));
+const PortalArtesanias = lazy(() => import('@/pages/PortalArtesanias'));
+const PortalVoz = lazy(() => import('@/pages/PortalVoz'));
+const LabHuella = lazy(() => import('@/pages/LabHuella'));
+
+const SectionFallback = ({ id, minHeight = 320 }) => (
+  <section id={id} className="relative" style={{ minHeight }}>
+    <div className="container mx-auto px-6 py-12">
+      <div className="h-28 rounded-2xl border border-white/10 bg-black/20" />
+    </div>
+  </section>
+);
+
+const RouteFallback = () => (
+  <div className="min-h-screen bg-[#050507]" />
+);
+
+const DeferredSection = ({
+  children,
+  fallback,
+  rootMargin = '600px 0px',
+  idleDelayMs = 3000,
+}) => {
+  const mountRef = useRef(null);
+  const [isReady, setIsReady] = useState(false);
+
+  useEffect(() => {
+    if (isReady) return undefined;
+    if (typeof window === 'undefined') {
+      setIsReady(true);
+      return undefined;
+    }
+
+    let observer = null;
+    let timeoutId = null;
+    let idleId = null;
+    let isMounted = true;
+
+    const reveal = () => {
+      if (!isMounted) return;
+      setIsReady(true);
+    };
+
+    if (typeof window.requestIdleCallback === 'function') {
+      idleId = window.requestIdleCallback(reveal, { timeout: idleDelayMs });
+    } else {
+      timeoutId = window.setTimeout(reveal, idleDelayMs);
+    }
+
+    if (typeof window.IntersectionObserver === 'function' && mountRef.current) {
+      observer = new window.IntersectionObserver(
+        (entries) => {
+          if (!entries.some((entry) => entry.isIntersecting)) return;
+          reveal();
+          observer.disconnect();
+        },
+        { rootMargin, threshold: 0.01 },
+      );
+      observer.observe(mountRef.current);
+    }
+
+    return () => {
+      isMounted = false;
+      if (observer) observer.disconnect();
+      if (timeoutId) window.clearTimeout(timeoutId);
+      if (idleId && typeof window.cancelIdleCallback === 'function') {
+        window.cancelIdleCallback(idleId);
+      }
+    };
+  }, [idleDelayMs, isReady, rootMargin]);
+
+  return <div ref={mountRef}>{isReady ? children : fallback}</div>;
+};
+
+const BlogSection = () => {
+  const blogData = useBlogPosts();
+
+  return <Blog posts={blogData.posts} isLoading={blogData.isLoading} error={blogData.error} />;
+};
 
 const HeroBackground = () => {
   const [opacity, setOpacity] = useState(1);
@@ -91,7 +165,9 @@ const HeroBackground = () => {
           className="absolute inset-0 w-full h-full object-cover opacity-15 mix-blend-pin-light"
           style={{ filter: 'contrast(15%) brightness(75%)' }}
           alt="Textura de telón de teatro de terciopelo oscuro"
-          src={bgLogo}
+          src="/assets/bg-logo.png"
+          decoding="async"
+          fetchPriority="low"
         />
       </div>
     </div>
@@ -173,7 +249,6 @@ const HashAnchorScroller = () => {
 
   
 function App() {
-  const blogData = useBlogPosts();
   const { shouldShowToast, dismissToast, emailHash } = useEmailRedirect();
 
   useEffect(() => {
@@ -217,19 +292,54 @@ function App() {
                     </section>
                   )}
                 >
-                  <Transmedia />
+                  <DeferredSection
+                    rootMargin="750px 0px"
+                    fallback={<SectionFallback id="transmedia" minHeight={900} />}
+                  >
+                    <Suspense fallback={<SectionFallback id="transmedia" minHeight={900} />}>
+                      <Transmedia />
+                    </Suspense>
+                  </DeferredSection>
                 </SectionErrorBoundary>
                 <About />
-                <Team />
-                <Instagram />
-                <BlogContributionPrompt />
+                <DeferredSection fallback={<SectionFallback minHeight={380} />}>
+                  <Suspense fallback={<SectionFallback minHeight={380} />}>
+                    <Team />
+                  </Suspense>
+                </DeferredSection>
+                <DeferredSection fallback={<SectionFallback minHeight={380} />}>
+                  <Suspense fallback={<SectionFallback minHeight={380} />}>
+                    <Instagram />
+                  </Suspense>
+                </DeferredSection>
+                <DeferredSection fallback={<SectionFallback minHeight={340} />}>
+                  <Suspense fallback={<SectionFallback minHeight={340} />}>
+                    <BlogContributionPrompt />
+                  </Suspense>
+                </DeferredSection>
                 <ProvocaSection />
-                <Blog posts={blogData.posts} isLoading={blogData.isLoading} error={blogData.error} />
-                <NextShow />
-                <Contact />
+                <DeferredSection fallback={<SectionFallback minHeight={520} />}>
+                  <Suspense fallback={<SectionFallback minHeight={520} />}>
+                    <BlogSection />
+                  </Suspense>
+                </DeferredSection>
+                <DeferredSection fallback={<SectionFallback minHeight={340} />}>
+                  <Suspense fallback={<SectionFallback minHeight={340} />}>
+                    <NextShow />
+                  </Suspense>
+                </DeferredSection>
+                <DeferredSection fallback={<SectionFallback minHeight={300} />}>
+                  <Suspense fallback={<SectionFallback minHeight={300} />}>
+                    <Contact />
+                  </Suspense>
+                </DeferredSection>
               </main>
 
-              <Footer />
+              <DeferredSection fallback={<SectionFallback minHeight={220} />}>
+                <Suspense fallback={<SectionFallback minHeight={220} />}>
+                  <Footer />
+                </Suspense>
+              </DeferredSection>
               {shouldShowToast && (
                 <LoginToast emailHash={emailHash} onDismiss={dismissToast} />
               )}
@@ -238,11 +348,13 @@ function App() {
           </div>
         )}
       />
-      <Route path="/bienvenida" element={<Bienvenida />} />
-      <Route path="/portal-lectura" element={<PortalLectura />} />
-      <Route path="/portal-artesanias" element={<PortalArtesanias />} />
-      <Route path="/portal-voz" element={<PortalVoz />} />
-      {IS_UI_LAB_ENABLED ? <Route path="/lab/huella" element={<LabHuella />} /> : null}
+      <Route path="/bienvenida" element={<Suspense fallback={<RouteFallback />}><Bienvenida /></Suspense>} />
+      <Route path="/portal-lectura" element={<Suspense fallback={<RouteFallback />}><PortalLectura /></Suspense>} />
+      <Route path="/portal-artesanias" element={<Suspense fallback={<RouteFallback />}><PortalArtesanias /></Suspense>} />
+      <Route path="/portal-voz" element={<Suspense fallback={<RouteFallback />}><PortalVoz /></Suspense>} />
+      {IS_UI_LAB_ENABLED ? (
+        <Route path="/lab/huella" element={<Suspense fallback={<RouteFallback />}><LabHuella /></Suspense>} />
+      ) : null}
       </Routes>
     </>
   );
