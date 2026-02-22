@@ -1501,9 +1501,9 @@ const CAUSE_ACCORDION = [
     id: 'residencias',
     title: 'Residencias creativas',
     description:
-      'Laboratorios de 2 meses donde arte y acompañamiento reparan memoria y cuerpo. Cada 17 huellas transmedia financian una residencia completa.',
+      'Laboratorios de 2 meses en alianza con la asociación, donde artistas ponen su práctica al servicio de programas escolares de acompañamiento emocional. Cada 17 huellas financian una residencia completa.',
     icon: Palette,
-    metric: '3 residencias activas por temporada',
+    metric: 'Hasta 3 residencias activas por temporada',
     imageAlt: 'Foto de archivo de residencias creativas.',
     imageLabel: 'Foto de archivo',
     imageUrls: [

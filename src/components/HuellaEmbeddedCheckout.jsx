@@ -173,6 +173,7 @@ const PaymentForm = ({ onDone, defaultEmail = '' }) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isPaymentElementReady, setIsPaymentElementReady] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
+  const [showLinkAuth, setShowLinkAuth] = useState(false);
   const [linkEmail, setLinkEmail] = useState(defaultEmail);
   const returnUrl = useMemo(() => window.location.href, []);
   const linkElementOptions = useMemo(
@@ -239,14 +240,24 @@ const PaymentForm = ({ onDone, defaultEmail = '' }) => {
 
   return (
     <form onSubmit={handleSubmit} className="mt-4 space-y-3">
-      <LinkAuthenticationElement
-        options={linkElementOptions}
-        onChange={(event) => {
-          if (event?.value?.email) {
-            setLinkEmail(event.value.email);
-          }
-        }}
-      />
+      <button
+        type="button"
+        onClick={() => setShowLinkAuth((prev) => !prev)}
+        className="inline-flex items-center rounded-lg border border-fuchsia-300/35 bg-fuchsia-500/10 px-3 py-1.5 text-xs font-semibold tracking-[0.06em] text-fuchsia-100 transition hover:border-fuchsia-200/55 hover:text-white"
+      >
+        {showLinkAuth ? 'Link guarda tus datos para pagos rápidos y seguros.' : 'Pago rápido con Link (opcional)'}
+      </button>
+
+      {showLinkAuth ? (
+        <LinkAuthenticationElement
+          options={linkElementOptions}
+          onChange={(event) => {
+            if (event?.value?.email) {
+              setLinkEmail(event.value.email);
+            }
+          }}
+        />
+      ) : null}
       <PaymentElement
         options={paymentElementOptions}
         onReady={() => {
@@ -276,7 +287,7 @@ const PaymentForm = ({ onDone, defaultEmail = '' }) => {
               : 'Confirmar huella con Stripe'}
         </span>
       </button>
-      {linkEmail ? (
+      {showLinkAuth && linkEmail ? (
         <p className="text-[11px] leading-relaxed text-slate-300/90">
           Link activo para: <span className="text-white">{linkEmail}</span>
         </p>

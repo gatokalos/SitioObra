@@ -9,7 +9,7 @@ import { ConfettiBurst, useConfettiBursts } from '@/components/Confetti';
 import HuellaEmbeddedCheckout from '@/components/HuellaEmbeddedCheckout';
 import { createEmbeddedSubscription, startCheckoutFallback } from '@/lib/huellaCheckout';
 import { clearBienvenidaFlowGoal, clearBienvenidaForceOnLogin } from '@/lib/bienvenida';
-import { safeSetItem } from '@/lib/safeStorage';
+import { safeGetItem, safeRemoveItem, safeSetItem } from '@/lib/safeStorage';
 
 const SUBSCRIPTION_PRICE_ID = import.meta.env.VITE_STRIPE_SUBSCRIPTION_PRICE_ID;
 const SESSIONS_PER_SUB = 6;
@@ -408,6 +408,34 @@ const CallToAction = ({ barsIntroDelayMs = 0 }) => {
       isMounted = false;
     };
   }, [user?.id]);
+
+  useEffect(() => {
+    if (!user || typeof window === 'undefined') return;
+    const pending = safeGetItem(LOGIN_RETURN_KEY);
+    if (!pending) return;
+
+    try {
+      const parsed = JSON.parse(pending);
+      const isHuellaLoginFlow =
+        parsed?.anchor === '#cta' &&
+        (parsed?.action === 'cta-huella-login' || parsed?.action === 'cta-huella-login-status');
+      if (!isHuellaLoginFlow) return;
+
+      safeRemoveItem(LOGIN_RETURN_KEY);
+      setIsLoginPulseActive(false);
+
+      window.setTimeout(() => {
+        const target = document.getElementById('cta') || embeddedCheckoutRef.current;
+        target?.scrollIntoView?.({ behavior: 'smooth', block: 'start' });
+      }, 80);
+
+      if (!isSubscriber) {
+        setCheckoutStatus('Sesión iniciada. Estás listo para activar tu huella aquí mismo.');
+      }
+    } catch {
+      safeRemoveItem(LOGIN_RETURN_KEY);
+    }
+  }, [isSubscriber, user]);
 
   // 2) Cálculos de impacto
   const stats = useMemo(() => deriveImpactStats(subs + ticketUnits), [subs, ticketUnits]);
