@@ -8,6 +8,7 @@ import { useAuth } from '@/contexts/SupabaseAuthContext';
 import { ConfettiBurst, useConfettiBursts } from '@/components/Confetti';
 import HuellaEmbeddedCheckout from '@/components/HuellaEmbeddedCheckout';
 import { createEmbeddedSubscription, startCheckoutFallback } from '@/lib/huellaCheckout';
+import { clearBienvenidaFlowGoal, clearBienvenidaForceOnLogin } from '@/lib/bienvenida';
 
 const SUBSCRIPTION_PRICE_ID = import.meta.env.VITE_STRIPE_SUBSCRIPTION_PRICE_ID;
 const SESSIONS_PER_SUB = 6;
@@ -751,6 +752,8 @@ const CallToAction = ({ barsIntroDelayMs = 0 }) => {
       // setBienvenidaFlowGoal('subscription');
       // setBienvenidaForceOnLogin();
       setCheckoutStatus('Inicia sesión para activar tu huella aquí mismo.');
+      clearBienvenidaFlowGoal();
+      clearBienvenidaForceOnLogin();
       setIsLoginPulseActive(true);
       if (loginPulseTimeoutRef.current) {
         window.clearTimeout(loginPulseTimeoutRef.current);
@@ -868,6 +871,8 @@ const CallToAction = ({ barsIntroDelayMs = 0 }) => {
 
   const handleOpenLoginFromStatus = useCallback(() => {
     setIsLoginPulseActive(false);
+    clearBienvenidaFlowGoal();
+    clearBienvenidaForceOnLogin();
     if (typeof window !== 'undefined') {
       window.dispatchEvent(new CustomEvent('open-login-modal'));
     }
@@ -893,12 +898,12 @@ const CallToAction = ({ barsIntroDelayMs = 0 }) => {
       {/* Panel de impacto */}
       <div
         ref={impactPanelRef}
-        className="relative rounded-2xl border border-white/10 bg-white/5 p-5 pr-16 text-left text-slate-100 flex flex-col gap-4 flex-1"
+        className="relative rounded-2xl border border-white/10 bg-white/5 p-5 text-left text-slate-100 flex flex-col gap-4 flex-1"
       >
         <button
           type="button"
           onClick={handleToggleCounterSound}
-          className="absolute right-4 top-4 inline-flex h-9 w-9 items-center justify-center rounded-full border border-white/15 bg-white/5 text-slate-200/90 hover:border-purple-300/40 hover:text-white transition"
+          className="absolute right-3 top-3 z-20 inline-flex h-8 w-8 items-center justify-center rounded-full border border-white/15 bg-white/5 text-slate-200/90 hover:border-purple-300/40 hover:text-white transition"
           aria-label={isCounterSoundEnabled ? 'Silenciar sonidos del simulador' : 'Activar sonidos del simulador'}
           title={isCounterSoundEnabled ? 'Silenciar simulador' : 'Activar simulador sonoro'}
         >
@@ -931,7 +936,7 @@ const CallToAction = ({ barsIntroDelayMs = 0 }) => {
             <p className="text-[1.05rem] opacity-90 leading-tight">
               {interactiveSupport !== null
                 ? 'Modo simulador'
-                : 'Huellas + boletos con causa'}
+                : 'Huellas + boletos • actualmente'}
             </p>
             <p className="text-[2.2rem] font-semibold leading-none">{displayStats.totalSupport}</p>
           </div>
