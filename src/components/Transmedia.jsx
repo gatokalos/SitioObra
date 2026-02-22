@@ -2105,48 +2105,33 @@ const Transmedia = () => {
     [showcaseBoosts]
   );
 
-  const openLoginForShowcase = useCallback(
-    ({ action = 'showcase-cta', extras = null } = {}) => {
-      safeSetItem(
-        LOGIN_RETURN_KEY,
-        JSON.stringify({
-          anchor: '#transmedia',
-          action,
-          showcaseId: activeShowcase ?? null,
-          ...(extras || {}),
-        })
-      );
-      setShowBadgeLoginOverlay(true);
-    },
-    [activeShowcase]
-  );
-
   const handleCloseTokenPrecare = useCallback(() => {
     setTokenPrecareContext(null);
   }, []);
 
-  const handleTokenPrecareLogin = useCallback(() => {
-    const required = Number.isFinite(tokenPrecareContext?.required)
-      ? Number(tokenPrecareContext.required)
-      : null;
+  const handleTokenPrecareActivateHuella = useCallback(() => {
     setTokenPrecareContext(null);
-    openLoginForShowcase({
-      action: 'token-precare',
-      extras: {
-        required_tokens: required,
-        source: 'transmedia_guardrail',
-      },
-    });
-  }, [openLoginForShowcase, tokenPrecareContext]);
+    if (supportSectionRef.current) {
+      supportSectionRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      return;
+    }
+    document.getElementById('cta')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }, []);
 
   const requireShowcaseAuth = useCallback(
-    (message = 'Inicia sesión para activar esta vitrina.', loginPayload = undefined) => {
+    (message = 'Activa tu huella para ampliar tu energía en esta vitrina.', loginPayload = undefined) => {
       if (isAuthenticated) return true;
-      openLoginForShowcase(loginPayload);
-      toast({ description: message });
-      return false;
+      const remaining = Number.isFinite(availableGATokens) ? Math.max(Number(availableGATokens), 0) : 0;
+      setTokenPrecareContext({
+        mode: 'guardrail',
+        message,
+        actionLabel: loginPayload?.action || 'esta vitrina',
+        remaining,
+      });
+      toast({ description: 'Puedes seguir explorando. Si te quedas sin GAT, activa tu huella por $50/mes.' });
+      return true;
     },
-    [isAuthenticated, openLoginForShowcase]
+    [availableGATokens, isAuthenticated]
   );
 
   useEffect(() => {
@@ -2432,18 +2417,12 @@ const Transmedia = () => {
       }
 
       if (!isAuthenticated) {
-        safeSetItem(
-          LOGIN_RETURN_KEY,
-          JSON.stringify({
-            anchor: '#transmedia',
-            action: 'quiron-play',
-            showcaseId: activeShowcase || 'copycats',
-          })
-        );
-        setShouldResumeQuironPlay(true);
-        setShowBadgeLoginOverlay(true);
-        toast({ description: 'Inicia sesión para reproducir el cortometraje completo.' });
-        return;
+        setTokenPrecareContext({
+          mode: 'guardrail',
+          actionLabel: 'este cortometraje',
+          message: 'Puedes verlo ahora y, si agotas tus GAT, activar huella para seguir sin fricción.',
+          remaining: Number.isFinite(availableGATokens) ? Math.max(Number(availableGATokens), 0) : 0,
+        });
       }
 
       if (isQuironUnlocking) return;
@@ -2491,7 +2470,7 @@ const Transmedia = () => {
         setIsQuironUnlocking(false);
       }
     },
-    [activeShowcase, isAuthenticated, isQuironUnlocking, quironSignedUrl]
+    [activeShowcase, availableGATokens, isAuthenticated, isQuironUnlocking, quironSignedUrl]
   );
 
   useEffect(() => {
@@ -6215,32 +6194,44 @@ const rendernotaAutoral = () => {
         <div className="relative z-10 w-full max-w-2xl rounded-3xl border border-white/10 bg-slate-950/90 p-8 text-center shadow-[0_35px_120px_rgba(0,0,0,0.7)]">
           <p className="text-xs uppercase tracking-[0.35em] text-slate-400/80">¿Quieres continuar?</p>
           <h4 className="mt-3 font-display text-3xl text-slate-100">
-            Tus GATokens disponibles se han agotado.
+            {tokenPrecareContext.mode === 'guardrail'
+              ? 'Estás por gastar la energía de tus últimos GAT.'
+              : 'Tus GATokens disponibles se han agotado.'}
           </h4>
           <p className="mt-3 text-sm text-slate-300/85 leading-relaxed">
-            {tokenPrecareContext.actionLabel || 'Esta activación'} requiere{' '}
-            <span className="font-semibold text-amber-200">
-              {Number.isFinite(tokenPrecareContext.required) ? tokenPrecareContext.required : 0} GAT
-            </span>
-            . Te faltan{' '}
-            <span className="font-semibold text-rose-200">
-              {Number.isFinite(tokenPrecareContext.missing) ? tokenPrecareContext.missing : 0}
-            </span>
-            . Inicia sesión para guardar tu avance y seguir explorando.
+            {tokenPrecareContext.mode === 'guardrail' ? (
+              <>
+                {tokenPrecareContext.message || 'Puedes seguir explorando por ahora.'}{' '}
+                Cuando gastes tu último GAT, tendrás la opción de activar tu huella por{' '}
+                <span className="font-semibold text-emerald-200">$50 MXN al mes</span> para continuar.
+              </>
+            ) : (
+              <>
+                {tokenPrecareContext.actionLabel || 'Esta activación'} requiere{' '}
+                <span className="font-semibold text-amber-200">
+                  {Number.isFinite(tokenPrecareContext.required) ? tokenPrecareContext.required : 0} GAT
+                </span>
+                . Te faltan{' '}
+                <span className="font-semibold text-rose-200">
+                  {Number.isFinite(tokenPrecareContext.missing) ? tokenPrecareContext.missing : 0}
+                </span>
+                . Activa tu huella para ampliar tu energía y seguir explorando sin fricción.
+              </>
+            )}
           </p>
           <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:justify-center">
             <Button
-              onClick={handleTokenPrecareLogin}
+              onClick={handleTokenPrecareActivateHuella}
               className="inline-flex items-center justify-center rounded-full bg-gradient-to-r from-purple-600/80 to-indigo-500/80 px-6 py-3 text-sm font-semibold text-white hover:from-purple-500 hover:to-indigo-400"
             >
-              Iniciar sesión y continuar
+              Activar huella por $50/mes
             </Button>
             <Button
               variant="outline"
               onClick={handleCloseTokenPrecare}
               className="inline-flex items-center justify-center rounded-full border-white/20 bg-white/5 px-6 py-3 text-sm font-semibold text-slate-100 hover:bg-white/10"
             >
-              Cerrar
+              Seguir explorando
             </Button>
           </div>
         </div>
