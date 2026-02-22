@@ -1,5 +1,5 @@
 // MiniversoSonoroPreview.jsx
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { motion } from 'framer-motion';
 import { createPortal } from 'react-dom';
 import { useSonoroPreview } from '@/hooks/useSonoroPreview';
@@ -120,6 +120,42 @@ function MiniversoSonoroPreview({
   const audioRef = useRef(null);
   const previousScrollYRef = useRef(0);
   const isLoading = hookLoading || externalLoading;
+
+  const stopExperienceMediaPlayback = useCallback(({ reset = false } = {}) => {
+    const video = videoRef.current;
+    const audio = audioRef.current;
+
+    if (video) {
+      try {
+        video.pause();
+        if (reset) {
+          video.currentTime = 0;
+        }
+      } catch {
+        // noop
+      }
+    }
+
+    if (audio) {
+      try {
+        audio.pause();
+        if (reset) {
+          audio.currentTime = 0;
+        }
+      } catch {
+        // noop
+      }
+    }
+
+    if (typeof document === 'undefined') return;
+    const pipNode = document.pictureInPictureElement;
+    if (video && pipNode === video && typeof document.exitPictureInPicture === 'function') {
+      document.exitPictureInPicture().catch(() => {});
+    }
+    if (document.fullscreenElement && video && document.fullscreenElement.contains(video) && typeof document.exitFullscreen === 'function') {
+      document.exitFullscreen().catch(() => {});
+    }
+  }, []);
 
   const selectedAudio = useMemo(
     () => audioOptions.find((track) => track.id === selectedAudioId),
@@ -292,11 +328,34 @@ function MiniversoSonoroPreview({
   };
 
   const handleExitExperience = () => {
+    stopExperienceMediaPlayback();
     setIsFullExperience(false);
     if (typeof window !== 'undefined') {
       window.scrollTo({ top: previousScrollYRef.current || 0, behavior: 'auto' });
     }
   };
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return undefined;
+    const handleShowcaseVisibility = (event) => {
+      if (event?.detail?.open) return;
+      stopExperienceMediaPlayback({ reset: true });
+      setIsFullExperience(false);
+    };
+    window.addEventListener('gatoencerrado:showcase-visibility', handleShowcaseVisibility);
+    return () => window.removeEventListener('gatoencerrado:showcase-visibility', handleShowcaseVisibility);
+  }, [stopExperienceMediaPlayback]);
+
+  useEffect(() => {
+    if (typeof document === 'undefined') return undefined;
+    const handleVisibilityChange = () => {
+      if (document.visibilityState !== 'visible') {
+        stopExperienceMediaPlayback();
+      }
+    };
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
+  }, [stopExperienceMediaPlayback]);
 
   // Al cambiar a full experience, reiniciar/reproducir medios; al salir, pausar y ocultar poema
   useEffect(() => {
@@ -331,6 +390,13 @@ function MiniversoSonoroPreview({
       setCurrentLineIndex(poemLines.length > 0 ? 0 : null);
     }
   }, [isFullExperience, isMobile, poemLines.length, selectedAudio?.url_audio]);
+
+  useEffect(
+    () => () => {
+      stopExperienceMediaPlayback({ reset: true });
+    },
+    [stopExperienceMediaPlayback]
+  );
 
   const overlayVisible = !isMobile && !isFullExperience && !isEnteringExperience;
 

@@ -393,6 +393,41 @@ const MiniverseModal = ({
   );
   const isSubscriber = metadataSubscriber || hasActiveSubscription;
   const showcaseRef = useRef(null);
+  const modalContentRef = useRef(null);
+
+  const stopModalMediaPlayback = useCallback(({ reset = false } = {}) => {
+    const root = modalContentRef.current;
+    if (!root || typeof document === 'undefined') return;
+
+    root.querySelectorAll('video, audio').forEach((mediaNode) => {
+      if (!(mediaNode instanceof HTMLMediaElement)) return;
+      try {
+        mediaNode.pause?.();
+        if (reset) {
+          mediaNode.currentTime = 0;
+        }
+      } catch {
+        // noop
+      }
+    });
+
+    const pipNode = document.pictureInPictureElement;
+    if (pipNode instanceof HTMLVideoElement && root.contains(pipNode)) {
+      try {
+        pipNode.pause?.();
+      } catch {
+        // noop
+      }
+      if (typeof document.exitPictureInPicture === 'function') {
+        document.exitPictureInPicture().catch(() => {});
+      }
+    }
+
+    const fullscreenNode = document.fullscreenElement;
+    if (fullscreenNode && root.contains(fullscreenNode) && typeof document.exitFullscreen === 'function') {
+      document.exitFullscreen().catch(() => {});
+    }
+  }, []);
 
   useEffect(() => {
     if (typeof document === 'undefined') return;
@@ -493,8 +528,15 @@ const MiniverseModal = ({
       setShowcaseBoosts(readStoredJson('gatoencerrado:showcase-boosts', {}));
       return;
     }
+    stopModalMediaPlayback({ reset: true });
     setIsCauseSiteOpen(false);
-  }, [initialTabId, open]);
+  }, [initialTabId, open, stopModalMediaPlayback]);
+
+  useEffect(() => {
+    if (!open || !shelved) return undefined;
+    stopModalMediaPlayback();
+    return undefined;
+  }, [open, shelved, stopModalMediaPlayback]);
 
   useEffect(() => {
     if (open && !shelved) {
@@ -583,12 +625,13 @@ const MiniverseModal = ({
     }
     const handleKeyDown = (event) => {
       if (event.key === 'Escape') {
+        stopModalMediaPlayback({ reset: true });
         onClose?.();
       }
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [onClose, open, shelved]);
+  }, [onClose, open, shelved, stopModalMediaPlayback]);
 
   const handleInputChange = useCallback((event) => {
     const { name, value } = event.target;
@@ -678,6 +721,7 @@ const MiniverseModal = ({
 
   const handleTabChange = useCallback(
     (tabId) => {
+      stopModalMediaPlayback();
       if (selectedMiniverseId) {
         markMiniverseVisited(selectedMiniverseId);
       }
@@ -694,18 +738,19 @@ const MiniverseModal = ({
         }
       });
     },
-    [markMiniverseVisited, selectedMiniverseId]
+    [markMiniverseVisited, selectedMiniverseId, stopModalMediaPlayback]
   );
 
   const handleClose = useCallback(() => {
     if (status === 'loading') {
       return;
     }
+    stopModalMediaPlayback({ reset: true });
     if (selectedMiniverseId) {
       markMiniverseVisited(selectedMiniverseId);
     }
     onClose?.();
-  }, [markMiniverseVisited, onClose, selectedMiniverseId, status]);
+  }, [markMiniverseVisited, onClose, selectedMiniverseId, status, stopModalMediaPlayback]);
 
   const handleSelectCard = useCallback(
     (card, source = 'grid') => {
@@ -742,11 +787,12 @@ const MiniverseModal = ({
   }, []);
 
   const handleReturnToList = useCallback(() => {
+    stopModalMediaPlayback();
     if (selectedMiniverseId) {
       markMiniverseVisited(selectedMiniverseId);
     }
     setSelectedMiniverseId(null);
-  }, [markMiniverseVisited, selectedMiniverseId]);
+  }, [markMiniverseVisited, selectedMiniverseId, stopModalMediaPlayback]);
 
   const legacyScrollToSection = useCallback(() => {
     if (!selectedMiniverse) return;
@@ -1008,6 +1054,7 @@ const MiniverseModal = ({
   );
 
   const handleScrollToSupport = useCallback(() => {
+    stopModalMediaPlayback({ reset: true });
     if (typeof document === 'undefined') {
       onClose?.();
       return;
@@ -1016,7 +1063,7 @@ const MiniverseModal = ({
     setTimeout(() => {
       document.querySelector('#apoya')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }, 140);
-  }, [onClose]);
+  }, [onClose, stopModalMediaPlayback]);
 
   const handleOpenCauseSite = useCallback(() => {
     setIsCauseSiteOpen(true);
@@ -1211,6 +1258,13 @@ const MiniverseModal = ({
     return () => window.clearInterval(tick);
   }, [activeShowcaseIndex, activeTab, isShowcaseAutoPlay, open, scrollShowcaseTo, showcaseMiniverses.length]);
 
+  useEffect(
+    () => () => {
+      stopModalMediaPlayback({ reset: true });
+    },
+    [stopModalMediaPlayback]
+  );
+
   const shouldAnimatePresence = !isSafari;
 
   const modalLayer = open ? (
@@ -1230,6 +1284,7 @@ const MiniverseModal = ({
           />
 
           <motion.div
+            ref={modalContentRef}
             role="dialog"
             aria-modal={shelved ? 'false' : 'true'}
             aria-labelledby="miniverse-modal-title"
@@ -1730,7 +1785,7 @@ const MiniverseModal = ({
                                 onClick={handleScrollToSupport}
                                 className="bg-white text-slate-900 hover:bg-white/90 py-3 rounded-lg font-semibold flex items-center justify-center gap-2"
                               >
-                                Deja tu huella
+                                Escuchar a la obra
                               </Button>
                             ) : null}
                           </div>

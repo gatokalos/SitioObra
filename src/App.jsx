@@ -3,7 +3,6 @@ import { Route, Routes, useLocation, useNavigate } from 'react-router-dom';
 import { Toaster } from '@/components/ui/toaster';
 import Header from '@/components/Header';
 import Hero from '@/components/Hero';
-import About, { ProvocaSection } from '@/components/About';
 import SectionErrorBoundary from '@/components/SectionErrorBoundary';
 import { useBlogPosts } from '@/hooks/useBlogPosts';
 import { useEmailRedirect } from '@/hooks/useEmailRedirect';
@@ -31,6 +30,10 @@ const IS_UI_LAB_ENABLED =
   ['1', 'true', 'yes', 'on'].includes(String(import.meta.env.VITE_UI_LAB || '').toLowerCase());
 // Hot toggle: pause auto-launch of Bienvenida after login without deleting the flow.
 const ENABLE_BIENVENIDA_AUTO_LAUNCH = false;
+const About = lazy(() => import('@/components/About'));
+const ProvocaSection = lazy(() =>
+  import('@/components/About').then((module) => ({ default: module.ProvocaSection }))
+);
 const Transmedia = lazy(() => import('@/components/Transmedia'));
 const Team = lazy(() => import('@/components/Team'));
 const Instagram = lazy(() => import('@/components/Instagram'));
@@ -301,7 +304,11 @@ function App() {
                     </Suspense>
                   </DeferredSection>
                 </SectionErrorBoundary>
-                <About />
+                <DeferredSection fallback={<SectionFallback id="about" minHeight={620} />}>
+                  <Suspense fallback={<SectionFallback id="about" minHeight={620} />}>
+                    <About />
+                  </Suspense>
+                </DeferredSection>
                 <DeferredSection fallback={<SectionFallback minHeight={380} />}>
                   <Suspense fallback={<SectionFallback minHeight={380} />}>
                     <Team />
@@ -317,7 +324,11 @@ function App() {
                     <BlogContributionPrompt />
                   </Suspense>
                 </DeferredSection>
-                <ProvocaSection />
+                <DeferredSection fallback={<SectionFallback id="provoca" minHeight={520} />}>
+                  <Suspense fallback={<SectionFallback id="provoca" minHeight={520} />}>
+                    <ProvocaSection />
+                  </Suspense>
+                </DeferredSection>
                 <DeferredSection fallback={<SectionFallback minHeight={520} />}>
                   <Suspense fallback={<SectionFallback minHeight={520} />}>
                     <BlogSection />

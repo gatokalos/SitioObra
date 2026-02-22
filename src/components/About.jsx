@@ -334,6 +334,33 @@ export const ProvocaSection = () => {
           ))}
           <div className="grid md:grid-cols-[3fr_2fr] gap-8 items-center">
             <div>
+              <details className="group mb-5 rounded-2xl border border-emerald-300/20 bg-emerald-500/10 px-4 py-3 text-left">
+                <summary className="flex cursor-pointer list-none items-center justify-between gap-3">
+                  <span className="flex items-center gap-3">
+                    <HeartHandshake size={16} className="text-emerald-200" />
+                    <span className="text-[0.66rem] uppercase tracking-[0.23em] text-emerald-200/85">
+                      Y si te movió más de lo esperado...
+                    </span>
+                  </span>
+                  <span className="text-[0.62rem] uppercase tracking-[0.16em] text-emerald-200/80 group-open:text-white">
+                    <span className="group-open:hidden">Pulsar</span>
+                    <span className="hidden group-open:inline">Cerrar</span>
+                  </span>
+                </summary>
+                <div className="mt-3 space-y-2 pl-7">
+                  <p className="text-sm text-slate-200/95 leading-relaxed">
+                    El equipo de Isabel Ayuda para la Vida, A.C. te ofrece acompañamiento confidencial y puede orientarte.
+                  </p>
+                  <a
+                    href="https://www.ayudaparalavida.com/contacto.html"
+                    target="_blank"
+                    rel="noreferrer"
+                    className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.18em] text-emerald-200 hover:text-white transition"
+                  >
+                    Contacto directo
+                  </a>
+                </div>
+              </details>
               <p className="uppercase tracking-[0.35em] text-xs text-slate-400/80 mb-4">Perspectivas del público</p>
               <h3 className="font-display text-3xl text-slate-100 mb-6 italic">
                 ¿Qué nos provoca esta obra?
@@ -392,7 +419,7 @@ export const ProvocaSection = () => {
                         placeholder="Rol, ciudad o vínculo (opcional)"
                       />
                     </div>
-                    <div className="mt-3">
+                    <div className="mt-3 flex flex-wrap items-center gap-3">
                       <input
                         tabIndex={-1}
                         autoComplete="off"
@@ -408,6 +435,13 @@ export const ProvocaSection = () => {
                         className="bg-gradient-to-r from-purple-600/90 to-indigo-600/90 hover:from-purple-500 hover:to-indigo-500 text-white"
                       >
                         {isSubmittingVoice ? 'Enviando…' : 'Enviar perspectiva'}
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        className="border-slate-100/30 bg-slate-50 text-slate-950 hover:bg-slate-200"
+                      >
+                        Escuchar a la obra
                       </Button>
                     </div>
                   </motion.div>
@@ -425,33 +459,6 @@ export const ProvocaSection = () => {
                   </div>
                 </div>
               ))}
-              <details className="group rounded-2xl border border-emerald-300/20 bg-emerald-500/10 px-4 py-3 text-left">
-                <summary className="flex cursor-pointer list-none items-center justify-between gap-3">
-                  <span className="flex items-center gap-3">
-                    <HeartHandshake size={16} className="text-emerald-200" />
-                    <span className="text-[0.66rem] uppercase tracking-[0.23em] text-emerald-200/85">
-                      Y si la obra te movió más de lo esperado...
-                    </span>
-                  </span>
-                  <span className="text-[0.62rem] uppercase tracking-[0.16em] text-emerald-200/80 group-open:text-white">
-                    <span className="group-open:hidden">Contacto</span>
-                    <span className="hidden group-open:inline">Cerrar</span>
-                  </span>
-                </summary>
-                <div className="mt-3 space-y-2 pl-7">
-                  <p className="text-sm text-slate-200/95 leading-relaxed">
-                    El equipo de Isabel Ayuda para la Vida, A.C. te ofrece acompañamiento confidencial y puede orientarte.
-                  </p>
-                  <a
-                    href="https://www.ayudaparalavida.com/contacto.html"
-                    target="_blank"
-                    rel="noreferrer"
-                    className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.18em] text-emerald-200 hover:text-white transition"
-                  >
-                    ¿Quieres contactarles?
-                  </a>
-                </div>
-              </details>
             </div>
           </div>
           </motion.div>
@@ -482,6 +489,7 @@ const About = () => {
       typeof window !== 'undefined' &&
       window.matchMedia('(min-width: 768px) and (max-width: 1024px) and (orientation: portrait)').matches
   );
+  const trailerVideoRef = useRef(null);
 
   useEffect(() => {
     if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') {
@@ -581,13 +589,52 @@ const About = () => {
     }
   }, [isTrailerLoading, isMobile, trailer]);
 
-  const handleCloseTrailer = useCallback(() => {
-    setIsTrailerOpen(false);
-    const video = document.getElementById('gato-encerrado-trailer');
-    if (video && typeof video.pause === 'function') {
+  const stopTrailerPlayback = useCallback(({ reset = false } = {}) => {
+    const video = trailerVideoRef.current;
+    if (!video) return;
+    try {
       video.pause();
+      if (reset) {
+        video.currentTime = 0;
+      }
+    } catch {
+      // noop
     }
   }, []);
+
+  const handleCloseTrailer = useCallback(() => {
+    stopTrailerPlayback({ reset: true });
+    setIsTrailerOpen(false);
+  }, [stopTrailerPlayback]);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return undefined;
+    const handleShowcaseVisibility = (event) => {
+      if (!event?.detail?.open) return;
+      stopTrailerPlayback({ reset: true });
+      setIsTrailerOpen(false);
+    };
+    window.addEventListener('gatoencerrado:showcase-visibility', handleShowcaseVisibility);
+    return () => window.removeEventListener('gatoencerrado:showcase-visibility', handleShowcaseVisibility);
+  }, [stopTrailerPlayback]);
+
+  useEffect(() => {
+    if (typeof document === 'undefined') return undefined;
+    const handleVisibilityChange = () => {
+      if (document.visibilityState !== 'visible') {
+        stopTrailerPlayback();
+      }
+    };
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
+  }, [stopTrailerPlayback]);
+
+  useEffect(
+    () => () => {
+      stopTrailerPlayback({ reset: true });
+    },
+    [stopTrailerPlayback]
+  );
 
   const handleInvite = useCallback(async () => {
     const shareData = {
@@ -759,11 +806,13 @@ const About = () => {
                       className={`relative w-full ${aspectClass} bg-black rounded-2xl overflow-hidden mx-auto flex items-center justify-center shadow-[0_18px_60px_rgba(0,0,0,0.55)]`}
                     >
                       <video
+                        ref={trailerVideoRef}
                         id="gato-encerrado-trailer"
                         key={trailer.url}
                         src={trailer.url}
                         controls
                         autoPlay
+                        playsInline
                         className="h-full w-full object-contain"
                       />
                     </div>
