@@ -264,11 +264,13 @@ const CallToAction = ({ barsIntroDelayMs = 0 }) => {
   const [aftercareVariant, setAftercareVariant] = useState('expansion');
   const [isTicketSupportVideoAvailable, setIsTicketSupportVideoAvailable] = useState(true);
   const [isCounterSoundEnabled, setIsCounterSoundEnabled] = useState(false);
+  const [isLoginPulseActive, setIsLoginPulseActive] = useState(false);
   const hasRunBarSequenceRef = useRef(false);
   const aftercareTimeoutRef = useRef(null);
   const reachedExpansionRef = useRef(false);
   const aftercareAudioRef = useRef(null);
   const accordionPushTimeoutRef = useRef(null);
+  const loginPulseTimeoutRef = useRef(null);
   const audioContextRef = useRef(null);
   const masterGainRef = useRef(null);
   const lastSupportForSoundRef = useRef(null);
@@ -653,6 +655,9 @@ const CallToAction = ({ barsIntroDelayMs = 0 }) => {
       if (aftercareTimeoutRef.current) {
         window.clearTimeout(aftercareTimeoutRef.current);
       }
+      if (loginPulseTimeoutRef.current) {
+        window.clearTimeout(loginPulseTimeoutRef.current);
+      }
       if (aftercareAudioRef.current) {
         aftercareAudioRef.current.pause();
         aftercareAudioRef.current.src = '';
@@ -738,6 +743,22 @@ const CallToAction = ({ barsIntroDelayMs = 0 }) => {
   async function handleCheckout() {
     if (!SUBSCRIPTION_PRICE_ID) {
       setCheckoutStatus('Configura VITE_STRIPE_SUBSCRIPTION_PRICE_ID antes de continuar.');
+      return;
+    }
+
+    if (!user) {
+      // Paso umbral preservado para uso futuro desde otro punto del sitio:
+      // setBienvenidaFlowGoal('subscription');
+      // setBienvenidaForceOnLogin();
+      setCheckoutStatus('Inicia sesión para activar tu huella aquí mismo.');
+      setIsLoginPulseActive(true);
+      if (loginPulseTimeoutRef.current) {
+        window.clearTimeout(loginPulseTimeoutRef.current);
+      }
+      loginPulseTimeoutRef.current = window.setTimeout(() => {
+        setIsLoginPulseActive(false);
+        loginPulseTimeoutRef.current = null;
+      }, 3200);
       return;
     }
 
@@ -844,6 +865,13 @@ const CallToAction = ({ barsIntroDelayMs = 0 }) => {
     }
     setCheckoutStatus(`Estado actual del pago: ${message || 'unknown'}.`);
   }
+
+  const handleOpenLoginFromStatus = useCallback(() => {
+    setIsLoginPulseActive(false);
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent('open-login-modal'));
+    }
+  }, []);
 
   const handleToggleCounterSound = useCallback(() => {
     const nextValue = !isCounterSoundEnabled;
@@ -967,7 +995,11 @@ const CallToAction = ({ barsIntroDelayMs = 0 }) => {
             <button
               onClick={handleCheckout}
               disabled={loading || isSubscriber || isCheckingSubscription}
-              className="block w-full bg-white/90 text-black px-4 py-2 rounded disabled:opacity-50"
+              className={`block w-full px-4 py-2 rounded disabled:opacity-50 transition ${
+                !user
+                  ? `bg-slate-300/80 text-slate-900 ${isLoginPulseActive ? 'animate-pulse ring-1 ring-white/45 shadow-[0_0_20px_rgba(255,255,255,0.22)]' : ''}`
+                  : 'bg-white/90 text-black'
+              }`}
             >
               {isCheckingSubscription
                 ? 'Validando huella...'
@@ -982,7 +1014,22 @@ const CallToAction = ({ barsIntroDelayMs = 0 }) => {
           {msg ? <p className="text-red-300 text-sm">{msg}</p> : null}
 
           <div ref={embeddedCheckoutRef} className="pt-1">
-            {checkoutStatus ? <p className="text-slate-200 text-sm">{checkoutStatus}</p> : null}
+            {checkoutStatus ? (
+              !user && checkoutStatus === 'Inicia sesión para activar tu huella aquí mismo.' ? (
+                <p className="text-slate-200 text-sm">
+                  <button
+                    type="button"
+                    onClick={handleOpenLoginFromStatus}
+                    className="underline underline-offset-2 hover:text-white transition"
+                  >
+                    Inicia sesión
+                  </button>{' '}
+                  para activar tu huella aquí mismo.
+                </p>
+              ) : (
+                <p className="text-slate-200 text-sm">{checkoutStatus}</p>
+              )
+            ) : null}
             {pendingFallbackPayload ? (
               <button
                 type="button"
