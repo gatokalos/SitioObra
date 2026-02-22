@@ -913,7 +913,7 @@ const CallToAction = ({ barsIntroDelayMs = 0 }) => {
           <div className="flex items-baseline justify-between">
             <p className="text-[1.05rem] opacity-90 leading-tight">
               {interactiveSupport !== null
-                ? 'Modo simulador · Huellas + boletos con causa'
+                ? 'Modo simulador'
                 : 'Huellas + boletos con causa'}
             </p>
             <p className="text-[2.2rem] font-semibold leading-none">{displayStats.totalSupport}</p>
@@ -948,9 +948,13 @@ const CallToAction = ({ barsIntroDelayMs = 0 }) => {
                 ) : null}
                 <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-slate-950/35 via-slate-950/30 to-slate-950/45" />
                 <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_22%_24%,rgba(125,211,252,0.28),transparent_45%),radial-gradient(circle_at_80%_72%,rgba(147,197,253,0.22),transparent_18%)]" />
-                <p className="relative z-10 mb-2 text-sm leading-relaxed text-slate-100">
-                  Si asististe a la obra, puedes convertir ese momento en huella. Si no tienes boleto, también cuenta: selfie o tu palabra con cuántas personas asistieron contigo.
-                </p>
+                <p className="relative z-10 mb-2 text-m leading-relaxed text-slate-400">
+  <br />
+  Si asististe a la obra, puedes convertir ese momento en huella. 
+  Si no tienes comprobante, tu palabra es suficiente. 
+  Alguien del equipo te contestará.
+  <br /><br />
+</p>
                 <div className="relative z-10 grid gap-2">
                   <a
                     href={`mailto:${SUPPORT_EMAIL}?subject=Destinar%20boleto%20a%20la%20causa&body=${SUPPORT_MESSAGE}`}
