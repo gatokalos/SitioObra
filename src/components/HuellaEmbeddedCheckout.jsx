@@ -11,12 +11,16 @@ const PaymentForm = ({ onDone }) => {
   const stripe = useStripe();
   const elements = useElements();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isPaymentElementReady, setIsPaymentElementReady] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
   const returnUrl = useMemo(() => window.location.href, []);
 
   const handleSubmit = async (event) => {
     event.preventDefault();
-    if (!stripe || !elements || isSubmitting) {
+    if (!stripe || !elements || isSubmitting || !isPaymentElementReady) {
+      if (!isPaymentElementReady) {
+        setErrorMessage('Espera un momento: el formulario de pago aún se está cargando.');
+      }
       return;
     }
 
@@ -48,7 +52,12 @@ const PaymentForm = ({ onDone }) => {
 
   return (
     <form onSubmit={handleSubmit} className="mt-4 space-y-3">
-      <PaymentElement />
+      <PaymentElement
+        onReady={() => {
+          setIsPaymentElementReady(true);
+          setErrorMessage('');
+        }}
+      />
       {errorMessage ? (
         <p className="rounded-lg border border-rose-300/30 bg-rose-500/10 px-3 py-2 text-xs text-rose-200">
           {errorMessage}
@@ -56,14 +65,16 @@ const PaymentForm = ({ onDone }) => {
       ) : null}
       <button
         type="submit"
-        disabled={isSubmitting || !stripe || !elements}
+        disabled={isSubmitting || !stripe || !elements || !isPaymentElementReady}
         className="relative h-11 w-full overflow-hidden rounded-xl bg-white px-6 text-sm font-semibold text-slate-900 transition hover:bg-white/90 disabled:cursor-not-allowed disabled:opacity-60"
       >
         <span
           aria-hidden="true"
           className="pointer-events-none absolute inset-0 opacity-70 [background:radial-gradient(90%_70%_at_50%_20%,rgba(167,139,250,0.35),transparent_60%)]"
         />
-        <span className="relative">{isSubmitting ? 'Procesando...' : 'Confirmar huella con Stripe'}</span>
+        <span className="relative">
+          {isSubmitting ? 'Procesando...' : !isPaymentElementReady ? 'Cargando formulario...' : 'Confirmar huella con Stripe'}
+        </span>
       </button>
     </form>
   );

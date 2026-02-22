@@ -136,7 +136,12 @@ const Header = () => {
                   {greetingLabel}
                 </button>
                 {isProfileMenuOpen ? (
-                  <div className="absolute left-0 mt-2 w-40 rounded-xl border border-white/10 bg-black/90 py-2 text-sm text-slate-100 shadow-xl">
+                  <div className="absolute left-0 mt-2 w-64 rounded-xl border border-white/10 bg-black/90 py-2 text-sm text-slate-100 shadow-xl">
+                    <div className="px-4 pb-2 pt-1">
+                      <p className="text-[11px] uppercase tracking-[0.18em] text-slate-400">Sesión activa</p>
+                      <p className="mt-1 break-all text-xs text-slate-200/90">{user?.email || 'correo no disponible'}</p>
+                    </div>
+                    <div className="mx-3 mb-1 h-px bg-white/10" />
                     <button
                       type="button"
                       onClick={handleLogout}

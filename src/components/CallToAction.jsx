@@ -9,6 +9,7 @@ import { ConfettiBurst, useConfettiBursts } from '@/components/Confetti';
 import HuellaEmbeddedCheckout from '@/components/HuellaEmbeddedCheckout';
 import { createEmbeddedSubscription, startCheckoutFallback } from '@/lib/huellaCheckout';
 import { clearBienvenidaFlowGoal, clearBienvenidaForceOnLogin } from '@/lib/bienvenida';
+import { safeSetItem } from '@/lib/safeStorage';
 
 const SUBSCRIPTION_PRICE_ID = import.meta.env.VITE_STRIPE_SUBSCRIPTION_PRICE_ID;
 const SESSIONS_PER_SUB = 6;
@@ -36,6 +37,7 @@ const SHOULD_PREVIEW_AFTERCARE =
   typeof window !== 'undefined' &&
   new URLSearchParams(window.location.search).get('aftercare') === '1';
 const COUNTER_SOUND_MILESTONES = new Set([17, 51, EXPANSION_START]);
+const LOGIN_RETURN_KEY = 'gatoencerrado:login-return';
 
 function clamp(value, min, max) {
   return Math.max(min, Math.min(max, value));
@@ -754,6 +756,14 @@ const CallToAction = ({ barsIntroDelayMs = 0 }) => {
       setCheckoutStatus('Inicia sesión para activar tu huella aquí mismo.');
       clearBienvenidaFlowGoal();
       clearBienvenidaForceOnLogin();
+      safeSetItem(
+        LOGIN_RETURN_KEY,
+        JSON.stringify({
+          anchor: '#cta',
+          action: 'cta-huella-login',
+          source: 'call-to-action',
+        })
+      );
       setIsLoginPulseActive(true);
       if (loginPulseTimeoutRef.current) {
         window.clearTimeout(loginPulseTimeoutRef.current);
@@ -873,6 +883,14 @@ const CallToAction = ({ barsIntroDelayMs = 0 }) => {
     setIsLoginPulseActive(false);
     clearBienvenidaFlowGoal();
     clearBienvenidaForceOnLogin();
+    safeSetItem(
+      LOGIN_RETURN_KEY,
+      JSON.stringify({
+        anchor: '#cta',
+        action: 'cta-huella-login',
+        source: 'call-to-action-status',
+      })
+    );
     if (typeof window !== 'undefined') {
       window.dispatchEvent(new CustomEvent('open-login-modal'));
     }
