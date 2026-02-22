@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from 'react';
-import { Elements, PaymentElement, useElements, useStripe } from '@stripe/react-stripe-js';
+import { Elements, LinkAuthenticationElement, PaymentElement, useElements, useStripe } from '@stripe/react-stripe-js';
 import { stripePromise } from '@/lib/huellaCheckout';
 import { useAuth } from '@/contexts/SupabaseAuthContext';
 
@@ -173,7 +173,16 @@ const PaymentForm = ({ onDone, defaultEmail = '' }) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isPaymentElementReady, setIsPaymentElementReady] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
+  const [linkEmail, setLinkEmail] = useState(defaultEmail);
   const returnUrl = useMemo(() => window.location.href, []);
+  const linkElementOptions = useMemo(
+    () => ({
+      defaultValues: {
+        email: defaultEmail,
+      },
+    }),
+    [defaultEmail]
+  );
   const paymentElementOptions = useMemo(
     () => ({
       layout: {
@@ -230,6 +239,14 @@ const PaymentForm = ({ onDone, defaultEmail = '' }) => {
 
   return (
     <form onSubmit={handleSubmit} className="mt-4 space-y-3">
+      <LinkAuthenticationElement
+        options={linkElementOptions}
+        onChange={(event) => {
+          if (event?.value?.email) {
+            setLinkEmail(event.value.email);
+          }
+        }}
+      />
       <PaymentElement
         options={paymentElementOptions}
         onReady={() => {
@@ -259,6 +276,11 @@ const PaymentForm = ({ onDone, defaultEmail = '' }) => {
               : 'Confirmar huella con Stripe'}
         </span>
       </button>
+      {linkEmail ? (
+        <p className="text-[11px] leading-relaxed text-slate-300/90">
+          Link activo para: <span className="text-white">{linkEmail}</span>
+        </p>
+      ) : null}
     </form>
   );
 };
