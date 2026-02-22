@@ -6,7 +6,7 @@ import { useAuth } from '@/contexts/SupabaseAuthContext';
 const STRIPE_BRAND_COLOR = '#ff8a3d';
 const STRIPE_ACCENT_COLOR = '#ec4899';
 const EMBEDDED_HEADER_COPY = 'Deja un impacto tangible.';
-const EMBEDDED_LOGO_SRC = '/assets/logoapp.png';
+const EMBEDDED_LOGO_SRC = '/assets/logoapp.webp';
 
 function cx(...parts) {
   return parts.filter(Boolean).join(' ');

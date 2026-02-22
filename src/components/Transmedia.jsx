@@ -2690,10 +2690,48 @@ const Transmedia = () => {
     setFocusIncomingGAT(null);
   }, []);
 
+  const stopScopedMediaPlayback = useCallback((preserveHeroAmbient = true) => {
+    if (typeof document === 'undefined') {
+      return;
+    }
+
+    const mediaNodes = Array.from(document.querySelectorAll('video, audio'));
+    mediaNodes.forEach((mediaNode) => {
+      if (!(mediaNode instanceof HTMLMediaElement)) {
+        return;
+      }
+      if (preserveHeroAmbient && mediaNode.dataset?.ambientRole === 'hero') {
+        return;
+      }
+      try {
+        mediaNode.pause?.();
+      } catch (error) {
+        // noop
+      }
+    });
+
+    const pipNode = document.pictureInPictureElement;
+    if (pipNode instanceof HTMLVideoElement) {
+      try {
+        pipNode.pause?.();
+      } catch (error) {
+        // noop
+      }
+      if (typeof document.exitPictureInPicture === 'function') {
+        document.exitPictureInPicture().catch(() => {});
+      }
+    }
+
+    if (document.fullscreenElement && typeof document.exitFullscreen === 'function') {
+      document.exitFullscreen().catch(() => {});
+    }
+  }, []);
+
   const handleCloseShowcase = useCallback(() => {
+    stopScopedMediaPlayback(true);
     setActiveShowcase(null);
     setIsMiniverseShelved(false);
-  }, []);
+  }, [stopScopedMediaPlayback]);
 
   const handleSelectMiniverse = useCallback(
     (formatId) => {
@@ -3411,6 +3449,7 @@ const Transmedia = () => {
   }, [isTazaARActive, isMobileARFullscreen, isCinematicShowcaseOpen]);
   const scrollLockYRef = useRef(0);
   const wasCinematicOpenRef = useRef(false);
+  const previousActiveShowcaseRef = useRef(null);
   const tragicoStarters = useMemo(() => {
     if (!activeDefinition || activeDefinition.type !== 'tragedia') {
       return [];
@@ -3428,6 +3467,40 @@ const Transmedia = () => {
   useEffect(() => {
     setOpenCollaboratorId(null);
   }, [activeDefinition]);
+
+  useEffect(() => {
+    const previous = previousActiveShowcaseRef.current;
+    if (previous && previous !== activeShowcase) {
+      stopScopedMediaPlayback(true);
+    }
+    previousActiveShowcaseRef.current = activeShowcase;
+  }, [activeShowcase, stopScopedMediaPlayback]);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return undefined;
+    window.dispatchEvent(
+      new CustomEvent('gatoencerrado:showcase-visibility', {
+        detail: {
+          open: Boolean(activeShowcase),
+          showcaseId: activeShowcase ?? null,
+        },
+      }),
+    );
+    return undefined;
+  }, [activeShowcase]);
+
+  useEffect(
+    () => () => {
+      stopScopedMediaPlayback(true);
+      if (typeof window === 'undefined') return;
+      window.dispatchEvent(
+        new CustomEvent('gatoencerrado:showcase-visibility', {
+          detail: { open: false, showcaseId: null },
+        }),
+      );
+    },
+    [stopScopedMediaPlayback],
+  );
 
   const renderCollaboratorsSection = useCallback(
     (collaborators, prefix = 'collab') => {

@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { createPortal } from 'react-dom';
 import { ChevronLeft, ChevronRight, Play, X } from 'lucide-react';
@@ -8,6 +8,8 @@ const DiosasCarousel = ({ items = [], label = 'Swipe horizontal', caption = 'Gal
   const [activeIndex, setActiveIndex] = useState(0);
   const [fullscreenItem, setFullscreenItem] = useState(null);
   const [expandedId, setExpandedId] = useState(null);
+  const carouselRootRef = useRef(null);
+  const fullscreenVideoRef = useRef(null);
   const { isMobileViewport, canUseInlinePlayback, requestMobileVideoPresentation } = useMobileVideoPresentation();
   const [viewportWidth, setViewportWidth] = useState(() =>
     typeof window !== 'undefined' ? window.innerWidth : 1200
@@ -98,6 +100,46 @@ const DiosasCarousel = ({ items = [], label = 'Swipe horizontal', caption = 'Gal
     return () => document.body.classList.remove('overflow-hidden');
   }, [fullscreenItem]);
 
+  const stopCarouselMediaPlayback = useCallback(() => {
+    const root = carouselRootRef.current;
+    if (root) {
+      root.querySelectorAll('video').forEach((videoNode) => {
+        try {
+          videoNode.pause?.();
+        } catch (error) {
+          // noop
+        }
+      });
+    }
+
+    if (fullscreenVideoRef.current) {
+      try {
+        fullscreenVideoRef.current.pause?.();
+      } catch (error) {
+        // noop
+      }
+    }
+
+    if (typeof document === 'undefined') return;
+    const pipNode = document.pictureInPictureElement;
+    if (pipNode instanceof HTMLVideoElement && typeof document.exitPictureInPicture === 'function') {
+      document.exitPictureInPicture().catch(() => {});
+    }
+    if (document.fullscreenElement && typeof document.exitFullscreen === 'function') {
+      document.exitFullscreen().catch(() => {});
+    }
+  }, []);
+
+  const handleCloseDiosasVideo = useCallback(() => {
+    stopCarouselMediaPlayback();
+    setExpandedId(null);
+    setFullscreenItem(null);
+  }, [stopCarouselMediaPlayback]);
+
+  useEffect(() => () => {
+    stopCarouselMediaPlayback();
+  }, [stopCarouselMediaPlayback]);
+
   if (total === 0) {
     return null;
   }
@@ -106,7 +148,7 @@ const DiosasCarousel = ({ items = [], label = 'Swipe horizontal', caption = 'Gal
   const fullscreenId = fullscreenItem?.id || fullscreenItem?.videoUrl;
 
   return (
-    <div className="space-y-3">
+    <div ref={carouselRootRef} className="space-y-3">
       <div className="flex items-center justify-between text-[0.65rem] uppercase tracking-[0.35em] text-emerald-100/80">
         <span>{resolvedLabel}</span>
         <span className="text-emerald-50">
@@ -129,11 +171,11 @@ const DiosasCarousel = ({ items = [], label = 'Swipe horizontal', caption = 'Gal
               key={itemId || `diosa-${realIndex}`}
               type="button"
               onClick={() => {
-                if (isMobileViewport) {
-                  setExpandedId(null);
-                  setFullscreenItem(item);
-                  return;
-                }
+                    if (isMobileViewport) {
+                      setExpandedId(null);
+                      setFullscreenItem(item);
+                      return;
+                    }
                 setExpandedId((prev) => (prev === itemId ? null : itemId));
               }}
               className={`group relative overflow-hidden rounded-2xl border border-emerald-200/40 bg-slate-900/60 shadow-[0_15px_45px_rgba(0,0,0,0.45)] aspect-[9/16] text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400/70 ${
@@ -198,7 +240,7 @@ const DiosasCarousel = ({ items = [], label = 'Swipe horizontal', caption = 'Gal
                         type="button"
                         onClick={(event) => {
                           event.stopPropagation();
-                          setExpandedId(null);
+                          handleCloseDiosasVideo();
                         }}
                         className="absolute right-2 top-2 z-30 rounded-full border border-emerald-200/50 bg-emerald-900/70 p-1.5 text-emerald-50 hover:bg-emerald-800/70"
                         aria-label="Cerrar video"
@@ -256,18 +298,19 @@ const DiosasCarousel = ({ items = [], label = 'Swipe horizontal', caption = 'Gal
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
-                onClick={() => setFullscreenItem(null)}
+                onClick={handleCloseDiosasVideo}
               >
                 <div className="relative h-[100svh] w-full overflow-hidden" onClick={(event) => event.stopPropagation()}>
                   <button
                     type="button"
-                    onClick={() => setFullscreenItem(null)}
+                    onClick={handleCloseDiosasVideo}
                     className="absolute right-4 top-4 z-20 rounded-full border border-emerald-200/50 bg-emerald-900/70 p-2 text-emerald-50 hover:bg-emerald-800/70"
                     aria-label="Cerrar video"
                   >
                     <X size={16} />
                   </button>
                   <video
+                    ref={fullscreenVideoRef}
                     key={fullscreenId}
                     src={fullscreenItem.videoUrl}
                     controls={canUseInlinePlayback(fullscreenId)}

@@ -11,7 +11,7 @@ import { supabase } from '@/lib/supabaseClient';
 import { ConfettiBurst, useConfettiBursts } from '@/components/Confetti';
 import { Heart } from 'lucide-react';
 
-const LOGO_SRC = '/assets/logoapp.png';
+const LOGO_SRC = '/assets/logoapp.webp';
 
 // -------------------------------------------------------------
 // PRODUCTOS A APARTAR

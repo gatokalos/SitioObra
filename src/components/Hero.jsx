@@ -4,7 +4,7 @@ import { BookOpen, CoffeeIcon, CompassIcon, Gamepad2, HeartHandshake, ShoppingBa
 import { Button } from '@/components/ui/button';
 import ReserveModal from '@/components/ReserveModal';
 import TicketPurchaseModal from '@/components/TicketPurchaseModal';
-import isotipoGato from '@/assets/isotipo-gato.png';
+import isotipoGatoWebp from '@/assets/isotipo-gato.webp';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/SupabaseAuthContext';
 import { setBienvenidaReturnPath } from '@/lib/bienvenida';
@@ -34,6 +34,10 @@ const Hero = () => {
   const heroAudioRef = useRef(null);
   const audioGestureUnlockRef = useRef(false);
   const lastHeroAudioPlayAttemptRef = useRef(0);
+  const [isMobileViewport, setIsMobileViewport] = useState(() => {
+    if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') return false;
+    return window.matchMedia('(max-width: 768px)').matches;
+  });
 
   const rotatingCtas = [
     { label: 'Café', Icon: CoffeeIcon },
@@ -172,8 +176,32 @@ const Hero = () => {
   }, []);
 
   useEffect(() => {
+    if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') {
+      return undefined;
+    }
+
+    const mediaQuery = window.matchMedia('(max-width: 768px)');
+    const handleChange = (event) => setIsMobileViewport(event.matches);
+    setIsMobileViewport(mediaQuery.matches);
+
+    if (typeof mediaQuery.addEventListener === 'function') {
+      mediaQuery.addEventListener('change', handleChange);
+      return () => mediaQuery.removeEventListener('change', handleChange);
+    }
+
+    mediaQuery.addListener(handleChange);
+    return () => mediaQuery.removeListener(handleChange);
+  }, []);
+
+  useEffect(() => {
     const audio = heroAudioRef.current;
-    if (!audio || !user) return undefined;
+    if (!audio || !user || isMobileViewport) {
+      if (audio) {
+        audio.pause();
+        audio.currentTime = 0;
+      }
+      return undefined;
+    }
 
     let rafId = 0;
     let idleRetryId = 0;
@@ -181,6 +209,7 @@ const Hero = () => {
     let shouldResumeAfterVisibility = false;
     let fallbackApplied = false;
     let requiresInteractionAfterBackground = false;
+    let isShowcaseForeground = false;
 
     audioGestureUnlockRef.current = false;
     lastHeroAudioPlayAttemptRef.current = 0;
@@ -196,6 +225,7 @@ const Hero = () => {
 
     const attemptPlay = async ({ fromUserGesture = false } = {}) => {
       if (!mounted) return;
+      if (isShowcaseForeground) return;
       if (!fromUserGesture && requiresInteractionAfterBackground) return;
       const now = performance.now();
       if (!fromUserGesture && now - lastHeroAudioPlayAttemptRef.current < HERO_AUDIO_PLAY_RETRY_MS) return;
@@ -211,6 +241,12 @@ const Hero = () => {
 
     const updateAudioByScroll = () => {
       if (!audio) return;
+      if (isShowcaseForeground) {
+        if (!audio.paused) {
+          audio.pause();
+        }
+        return;
+      }
       const targetVolume = getTargetVolumeByHeroPosition();
       audio.volume = targetVolume;
 
@@ -292,6 +328,20 @@ const Hero = () => {
       void attemptPlay();
     };
 
+    const onShowcaseVisibility = (event) => {
+      const open = Boolean(event?.detail?.open);
+      isShowcaseForeground = open;
+      if (open) {
+        shouldResumeAfterVisibility = !audio.paused && audio.volume > HERO_AUDIO_MIN_AUDIBLE_VOLUME;
+        audio.pause();
+        return;
+      }
+      updateAudioByScroll();
+      if (!requiresInteractionAfterBackground) {
+        void attemptPlay();
+      }
+    };
+
     const supportsM4a = Boolean(audio.canPlayType('audio/mp4') || audio.canPlayType('audio/x-m4a'));
     audio.src = supportsM4a ? HERO_LOGGED_IN_AUDIO_URL : HERO_LOGGED_IN_AUDIO_FALLBACK_URL;
     audio.load();
@@ -326,6 +376,7 @@ const Hero = () => {
     document.addEventListener('freeze', onPageFreeze);
     audio.addEventListener('error', onAudioError);
     document.addEventListener('visibilitychange', onVisibilityChange);
+    window.addEventListener('gatoencerrado:showcase-visibility', onShowcaseVisibility);
 
     return () => {
       mounted = false;
@@ -345,11 +396,12 @@ const Hero = () => {
       document.removeEventListener('freeze', onPageFreeze);
       audio.removeEventListener('error', onAudioError);
       document.removeEventListener('visibilitychange', onVisibilityChange);
+      window.removeEventListener('gatoencerrado:showcase-visibility', onShowcaseVisibility);
       audio.pause();
       audio.currentTime = 0;
       audio.volume = HERO_LOGGED_IN_AUDIO_VOLUME;
     };
-  }, [user]);
+  }, [isMobileViewport, user]);
 
   return (
     <>
@@ -374,7 +426,7 @@ const Hero = () => {
               className="hero-logo mx-auto mb-6 w-24 sm:w-28 md:w-32"
             >
               <img
-                src={isotipoGato}
+                src={isotipoGatoWebp}
                 alt="Isotipo de Gato Encerrado"
                 className="hero-logo-img"
               />
@@ -679,9 +731,10 @@ const Hero = () => {
 
         </div>
       </section>
-      {user ? (
+      {user && !isMobileViewport ? (
         <audio
           ref={heroAudioRef}
+          data-ambient-role="hero"
           preload="metadata"
           playsInline
           aria-hidden="true"

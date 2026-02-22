@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { safeGetItem, safeRemoveItem, safeSetItem } from '@/lib/safeStorage';
 import { supabase } from '@/lib/supabaseClient';
 import { ensureAnonId } from '@/lib/identity';
-import logoApp from '/assets/logoapp.png';
+import logoApp from '/assets/logoapp.webp';
 import {
   Drama,
   BookOpen,
