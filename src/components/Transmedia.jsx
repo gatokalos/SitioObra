@@ -3779,14 +3779,6 @@ const Transmedia = () => {
 
   const handleOpenContribution = useCallback(
     (categoryId = null) => {
-      if (
-        !requireShowcaseAuth('Inicia sesión para comentar o aportar en esta vitrina.', {
-          action: 'open-contribution',
-          extras: { categoryId: categoryId ?? null },
-        })
-      ) {
-        return;
-      }
       if (activeShowcase) {
         setReturnShowcaseId(activeShowcase);
         setActiveShowcase(null);
@@ -3796,7 +3788,7 @@ const Transmedia = () => {
       setContributionCategoryId(categoryId);
       setIsContributionOpen(true);
     },
-    [activeShowcase, requireShowcaseAuth]
+    [activeShowcase]
   );
 
   const handleOpenSilvestreChatCta = useCallback(() => {

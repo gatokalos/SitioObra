@@ -1,7 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
-import { toast } from '@/components/ui/use-toast';
 import { safeGetItem, safeRemoveItem, safeSetItem } from '@/lib/safeStorage';
 import { supabase } from '@/lib/supabaseClient';
 import { ensureAnonId } from '@/lib/identity';
@@ -166,6 +165,12 @@ const NARRATIVE_GALLERY_POSTER_BY_CATEGORY = {
     src: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Merch/posters/poster_obra.png',
     alt: 'Poster narrativo del universo Gato Encerrado',
   },
+};
+
+const SUBMIT_TOPIC_BY_CATEGORY = {
+  miniverso_novela: 'novela',
+  taza: 'artesanias',
+  grafico: 'graficos',
 };
 
 const ContributionModal = ({
@@ -452,13 +457,11 @@ const ContributionModal = ({
       }
 
       if (!formState.name.trim() || !formState.email.trim() || !formState.proposal.trim()) {
-        toast({ description: 'Completa tu nombre, correo y una breve propuesta.' });
         return;
       }
 
       if (notifyOnPublish && !isAuthenticated) {
         triggerLoginOverlay();
-        toast({ description: 'Inicia sesión para recibir la notificación personalizada.' });
         return;
       }
 
@@ -466,7 +469,8 @@ const ContributionModal = ({
       setErrorMessage('');
 
       try {
-        const topicId = selectedCategory?.id ?? 'obra_escenica';
+        const categoryId = selectedCategory?.id ?? 'obra_escenica';
+        const topicId = SUBMIT_TOPIC_BY_CATEGORY[categoryId] ?? categoryId;
         const payload = {
           name: formState.name.trim(),
           email: formState.email.trim().toLowerCase(),
@@ -540,7 +544,6 @@ const ContributionModal = ({
 
         setStatus('success');
         triggerConfetti();
-        toast({ description: '¡Gracias! Revisaremos tu propuesta y te contactaremos pronto.' });
         setFormState({
           ...initialFormState,
           name: preferredName || '',
@@ -726,7 +729,7 @@ const ContributionModal = ({
 
           {status === 'success' ? (
             <div className="rounded-lg border border-emerald-500/60 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-200">
-              Recibimos tu propuesta. Te contactaremos si necesitamos más detalles.
+              ¡Listo! Tu aporte se publicará automáticamente en unos segundos.
             </div>
           ) : null}
 

@@ -25,7 +25,7 @@ export async function fetchApprovedContributions(topic) {
   const { data, error } = await supabasePublic
     .from('blog_contributions')
     .select(PUBLIC_COLUMNS)
-    .eq('status', 'aprobado')
+    .in('status', ['aprobado', 'approved'])
     .in('topic', topicList)
     .order('created_at', { ascending: false });
 
