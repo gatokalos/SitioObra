@@ -43,6 +43,8 @@ const LOGIN_RETURN_KEY = 'gatoencerrado:login-return';
 const IS_UI_LAB_ENABLED =
   import.meta.env.DEV ||
   ['1', 'true', 'yes', 'on'].includes(String(import.meta.env.VITE_UI_LAB || '').toLowerCase());
+// Hot toggle: pause auto-launch of Bienvenida after login without deleting the flow.
+const ENABLE_BIENVENIDA_AUTO_LAUNCH = false;
 
 const HeroBackground = () => {
   const [opacity, setOpacity] = useState(1);
@@ -109,6 +111,7 @@ const BienvenidaGate = () => {
   }, [location.hash, location.pathname, location.search]);
 
   useEffect(() => {
+    if (!ENABLE_BIENVENIDA_AUTO_LAUNCH) return;
     if (!bienvenidaUrl) return;
     if (location.pathname === '/bienvenida') return;
     if (location.pathname.startsWith('/lab/')) return;
