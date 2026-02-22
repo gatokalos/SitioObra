@@ -6814,11 +6814,11 @@ const rendernotaAutoral = () => {
                     <span className="flex items-center gap-3">
                       <PawPrint size={18} className="text-emerald-200" />
                       <span className="text-[0.7rem] uppercase tracking-[0.26em] text-emerald-200/85">
-                        Tu huella: $50 MXN al mes.
+                        Tu huella: $50 MXN al mes
                       </span>
                     </span>
                     <span className="text-[0.65rem] uppercase tracking-[0.18em] text-emerald-200/80 group-open:text-white">
-                      <span className="group-open:hidden">Abrir</span>
+                      <span className="group-open:hidden">Pulsar</span>
                       <span className="hidden group-open:inline">Cerrar</span>
                     </span>
                   </summary>
@@ -6880,9 +6880,9 @@ const rendernotaAutoral = () => {
                   </div>
 
                   <div className="relative z-10">
-                    <p className="text-base italic leading-relaxed text-slate-200 md:text-lg">
+                    <p className="text-base italic leading-relaxed text-slate-400 md:text-lg">
 
-                    Cuando la huella florezca, su pulso regresará a nuestro universo: nuevos juegos, nuevas escenas, nuevas historias por contar.
+                    "Cuando la huella florezca, su pulso regresará a nuestro universo: nuevos juegos, nuevas escenas, nuevas historias por contar.""
                     </p>
                     <div className="mt-4 text-sm text-slate-400">
                       <p className="font-semibold text-slate-200">Equipo 💜 #GatoEncerrado</p>
