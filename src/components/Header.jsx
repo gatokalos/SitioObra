@@ -86,7 +86,7 @@ const Header = () => {
 
   const menuItems = [
     { name: 'Transmedia', href: '#transmedia' },
-    { name: 'Alianza Social', href: '#apoya' },
+    { name: 'Alianza', href: '#apoya' },
     { name: 'Obra', href: '#about' },
     { name: 'Equipo', href: '#team' },
     { name: 'Galería', href: '#instagram' },

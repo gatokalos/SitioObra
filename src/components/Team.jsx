@@ -25,7 +25,7 @@ const shouldConfirmExternalLink = (url) => {
 };
 
 const teamData = {
-  "Alianza Social": {
+  "Alianza": {
     name: "Isabel Ayuda para la Vida A.C.",
     bio: "Isabel Ayuda para la Vida A.C. es una asociación civil fundada en 2018, dedicada a la prevención de la violencia autoinfligida y a la promoción del pedir ayuda como estrategia de vida. Su colaboración con #GatoEncerrado articula el cuidado emocional y la empatía como parte activa del proceso creativo, en contextos artísticos y educativos.",
     image: "https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/equipo/IsabelAC.jpg",
