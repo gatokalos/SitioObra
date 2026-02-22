@@ -28,6 +28,7 @@ import {
   Hand,
   Send,
   X,
+  PawPrint,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import MiniverseModal from '@/components/MiniverseModal';
@@ -1483,7 +1484,7 @@ const CAUSE_ACCORDION = [
     id: 'tratamientos',
     title: 'Tratamientos emocionales',
     description:
-      'Tan solo una huella transmedia asigna hasta 6 sesiones a un joven sin costo para su familia. Isabel Ayuda para la Vida, A.C. activa las sesiones cuando se detecta riesgo emocional.',
+      'Tan solo una huella asigna hasta 6 sesiones a un joven sin costo para su familia. Isabel Ayuda para la Vida, A.C. activa las sesiones cuando se detecta riesgo emocional.',
     icon: HeartHandshake,
     metric: '6 sesiones promedio por suscriptor',
     imageAlt: 'Foto de archivo de acompañamiento emocional.',
@@ -6789,21 +6790,31 @@ const rendernotaAutoral = () => {
               }}
             />
             <div className="space-y-5">
-                <p className="text-xs uppercase tracking-[0.4em] text-slate-400/80">Crecimiento compartido</p>
+                <div className="flex items-center justify-between gap-3">
+                  <p className="text-xs uppercase tracking-[0.4em] text-slate-400/80">Crecimiento compartido</p>
+                  <button
+                    type="button"
+                    onClick={handleShareImpactModel}
+                    className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-white/15 bg-white/5 text-slate-200/90 hover:border-purple-300/40 hover:text-white transition"
+                    aria-label="Compartir crecimiento compartido"
+                  >
+                    <Send size={14} className="text-purple-200" />
+                  </button>
+                </div>
                 <h3 className="font-display text-3xl text-slate-100">
                   Nuestro impacto social crece contigo
                 </h3>
                 <p className="text-slate-300/80 leading-relaxed font-light">
-                  La taquilla mantiene la obra en escena; el universo transmedia financia acompañamiento emocional real.
-                  Cada huella se distribuye en tres frentes que opera Isabel Ayuda para la Vida, A.C.{' '}
+                  La taquilla mantiene la obra en escena; el universo de #GatoEncerrado financia acompañamiento emocional real.
+                  <span className="font-semibold text-purple-200"> Cada huella activada se distribuye en tres frentes que opera Isabel Ayuda para la Vida, A.C.</span> {' '}
            
                 </p>
                 <details className="group rounded-2xl border border-emerald-300/25 bg-emerald-500/10 px-5 py-4">
                   <summary className="flex cursor-pointer list-none items-center justify-between gap-3">
                     <span className="flex items-center gap-3">
-                      <Users size={18} className="text-emerald-200" />
+                      <PawPrint size={18} className="text-emerald-200" />
                       <span className="text-[0.7rem] uppercase tracking-[0.26em] text-emerald-200/85">
-                        Sin costo para familias
+                        Tu huella: $50 MXN al mes.
                       </span>
                     </span>
                     <span className="text-[0.65rem] uppercase tracking-[0.18em] text-emerald-200/80 group-open:text-white">
@@ -6813,18 +6824,10 @@ const rendernotaAutoral = () => {
                   </summary>
                   <div className="mt-3 space-y-2 pl-8">
                     <p className="text-sm leading-relaxed text-slate-200/95">
-                      La asociación atiende a jóvenes cuando se detecta riesgo.<br />
-                      No hay costo obligatorio para las familias.<br />
-                      Su causa se sostiene con apoyos institucionales, donaciones y huellas transmedia.
+                      17 huellas completan 102 sesiones individuales al año.<br />
+                      Desde la huella 18 inicia el siguiente tramo.<br />
+                      Tu huella nos pone en marcha.
                     </p>
-                    <a
-                      href="https://www.ayudaparalavida.com/contacto.html"
-                      target="_blank"
-                      rel="noreferrer"
-                      className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.18em] text-emerald-200 hover:text-white transition"
-                    >
-                      Contacto directo
-                    </a>
                   </div>
                 </details>
 
@@ -6832,6 +6835,34 @@ const rendernotaAutoral = () => {
                   items={CAUSE_ACCORDION}
                   onOpenImagePreview={handleOpenImagePreview}
                 />
+                <div className="rounded-xl border border-white/10 bg-black/20 px-4 py-3 text-xs leading-relaxed text-slate-300/85">
+                  <div className="flex flex-col gap-3 md:flex-row md:items-center md:gap-4">
+                    <div className="w-full md:w-auto md:flex-shrink-0">
+                      <img
+                        src="/assets/isabel_banner.png"
+                        alt="Isabel Ayuda para la Vida"
+                        loading="lazy"
+                        className="mx-auto h-14 w-auto object-contain md:mx-0 md:h-16"
+                      />
+                    </div>
+                    <div>
+                      <p className="font-medium text-slate-200">Sin costo para familias</p>
+                      <p className="mt-1">
+                        La asociación atiende a jóvenes cuando se detecta riesgo.
+                        No hay costo obligatorio para las familias.
+                        Su causa se sostiene con apoyos institucionales, donaciones y activación de huellas.
+                      </p>
+                      <a
+                        href="https://www.ayudaparalavida.com/contacto.html"
+                        target="_blank"
+                        rel="noreferrer"
+                        className="mt-2 inline-flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-emerald-200 hover:text-white transition"
+                      >
+                        Contacto directo
+                      </a>
+                    </div>
+                  </div>
+                </div>
               </div>
 
               <div className="mt-8 space-y-5">
@@ -6851,7 +6882,7 @@ const rendernotaAutoral = () => {
                   <div className="relative z-10">
                     <p className="text-base italic leading-relaxed text-slate-200 md:text-lg">
 
-                    Cuando la causa florezca, su pulso regresará al universo: nuevos juegos, nuevas escenas, nuevas historias por contar.
+                    Cuando la huella florezca, su pulso regresará a nuestro universo: nuevos juegos, nuevas escenas, nuevas historias por contar.
                     </p>
                     <div className="mt-4 text-sm text-slate-400">
                       <p className="font-semibold text-slate-200">Equipo 💜 #GatoEncerrado</p>
@@ -6871,14 +6902,6 @@ const rendernotaAutoral = () => {
               viewport={{ once: true, amount: 0.25 }}
               className="relative"
             >
-              <button
-                type="button"
-                onClick={handleShareImpactModel}
-                className="absolute right-4 top-4 inline-flex h-9 w-9 items-center justify-center rounded-full border border-white/15 bg-white/5 text-slate-200/90 hover:border-purple-300/40 hover:text-white transition z-20"
-                aria-label="Compartir modelo anual por tramos"
-              >
-                <Send size={14} className="text-purple-200" />
-              </button>
               <CallToAction barsIntroDelayMs={900} />
             </motion.div>
   

@@ -1,7 +1,7 @@
 // SitioObra/src/components/CallToAction.jsx
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useInView, useReducedMotion } from 'framer-motion';
-import { Drama, HeartHandshake, Mail, MessageCircle, Palette, PawPrint, Smartphone, Ticket } from 'lucide-react';
+import { Drama, HeartHandshake, Mail, MessageCircle, Palette, PawPrint, Smartphone, Ticket, Volume2, VolumeX } from 'lucide-react';
 import { apiFetch } from '@/lib/apiClient';
 import { supabase } from '@/lib/supabaseClient';
 import { useAuth } from '@/contexts/SupabaseAuthContext';
@@ -26,7 +26,7 @@ const SYNCABLE_BAR_KEYS = new Set(['terapias', 'residencias', 'implementacionEsc
 const SUPPORT_EMAIL = 'contacto@gatoencerrado.ai';
 const SUPPORT_WHATSAPP = '+523315327985';
 const SUPPORT_MESSAGE =
-  'Hola:%0A%0AAsistí a la función de Es un Gato Encerrado y quiero convertir mi boleto en una huella como gesto de apoyo a la causa de #GatoEncerrado.%0A%0AAdjunto una imagen como comprobante.%0A%0AGracias por abrir este espacio.';
+  'Hola,%20asistí%20a%20la%20obra%20y%20quiero%20sumar%20mi%20boleto%20como%20huella.%20Adjunto%20comprobante%20(o%20selfie)%20y%20cuántas%20personas%20fuimos.%20Gracias.';
 const SUPPORT_CTA_VIDEO_URL =
   'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/trailers/CTAs/CTA_boleto_pingpong_blur.mp4';
 const SUPPORT_CTA_POSTER_URL =
@@ -35,6 +35,7 @@ const SHOULD_PREVIEW_AFTERCARE =
   import.meta.env.DEV &&
   typeof window !== 'undefined' &&
   new URLSearchParams(window.location.search).get('aftercare') === '1';
+const COUNTER_SOUND_MILESTONES = new Set([17, 51, EXPANSION_START]);
 
 function clamp(value, min, max) {
   return Math.max(min, Math.min(max, value));
@@ -263,11 +264,15 @@ const CallToAction = ({ barsIntroDelayMs = 0 }) => {
   const [showAftercareOverlay, setShowAftercareOverlay] = useState(false);
   const [aftercareVariant, setAftercareVariant] = useState('expansion');
   const [isTicketSupportVideoAvailable, setIsTicketSupportVideoAvailable] = useState(true);
+  const [isCounterSoundEnabled, setIsCounterSoundEnabled] = useState(false);
   const hasRunBarSequenceRef = useRef(false);
   const aftercareTimeoutRef = useRef(null);
   const reachedExpansionRef = useRef(false);
   const aftercareAudioRef = useRef(null);
   const accordionPushTimeoutRef = useRef(null);
+  const audioContextRef = useRef(null);
+  const masterGainRef = useRef(null);
+  const lastSupportForSoundRef = useRef(null);
   const impactPanelRef = useRef(null);
   const isImpactPanelInView = useInView(impactPanelRef, { once: true, amount: 0.35 });
   const prefersReducedMotion = useReducedMotion();
@@ -413,6 +418,100 @@ const CallToAction = ({ barsIntroDelayMs = 0 }) => {
           universos: displayStats.universosProg,
         };
 
+  const ensureCounterAudio = useCallback(async () => {
+    if (typeof window === 'undefined') return null;
+    const AudioCtx = window.AudioContext || window.webkitAudioContext;
+    if (!AudioCtx) return null;
+
+    if (!audioContextRef.current) {
+      const context = new AudioCtx();
+      const masterGain = context.createGain();
+      masterGain.gain.value = 0.11;
+      masterGain.connect(context.destination);
+      audioContextRef.current = context;
+      masterGainRef.current = masterGain;
+    }
+
+    const context = audioContextRef.current;
+    if (context?.state === 'suspended') {
+      try {
+        await context.resume();
+      } catch {
+        return null;
+      }
+    }
+    return context;
+  }, []);
+
+  const playCounterTick = useCallback(async (direction = 1) => {
+    const context = await ensureCounterAudio();
+    const masterGain = masterGainRef.current;
+    if (!context || !masterGain) return;
+
+    const nowTick = context.currentTime;
+    const baseFreq = direction >= 0 ? 642 : 598;
+
+    const bodyOsc = context.createOscillator();
+    const bodyGain = context.createGain();
+    bodyOsc.type = 'triangle';
+    bodyOsc.frequency.setValueAtTime(baseFreq, nowTick);
+    bodyGain.gain.setValueAtTime(0.0001, nowTick);
+    bodyGain.gain.exponentialRampToValueAtTime(0.058, nowTick + 0.012);
+    bodyGain.gain.exponentialRampToValueAtTime(0.0001, nowTick + 0.16);
+
+    const shimmerOsc = context.createOscillator();
+    const shimmerGain = context.createGain();
+    shimmerOsc.type = 'sine';
+    shimmerOsc.frequency.setValueAtTime(baseFreq * 1.92, nowTick);
+    shimmerGain.gain.setValueAtTime(0.0001, nowTick);
+    shimmerGain.gain.exponentialRampToValueAtTime(0.018, nowTick + 0.01);
+    shimmerGain.gain.exponentialRampToValueAtTime(0.0001, nowTick + 0.14);
+
+    bodyOsc.connect(bodyGain);
+    shimmerOsc.connect(shimmerGain);
+    bodyGain.connect(masterGain);
+    shimmerGain.connect(masterGain);
+
+    bodyOsc.start(nowTick);
+    shimmerOsc.start(nowTick);
+    bodyOsc.stop(nowTick + 0.18);
+    shimmerOsc.stop(nowTick + 0.16);
+  }, [ensureCounterAudio]);
+
+  const playMilestoneChime = useCallback(async () => {
+    const context = await ensureCounterAudio();
+    const masterGain = masterGainRef.current;
+    if (!context || !masterGain) return;
+
+    const nowChime = context.currentTime;
+    const leadOsc = context.createOscillator();
+    const leadGain = context.createGain();
+    leadOsc.type = 'sine';
+    leadOsc.frequency.setValueAtTime(986, nowChime);
+    leadOsc.frequency.exponentialRampToValueAtTime(1320, nowChime + 0.12);
+    leadGain.gain.setValueAtTime(0.0001, nowChime);
+    leadGain.gain.exponentialRampToValueAtTime(0.07, nowChime + 0.016);
+    leadGain.gain.exponentialRampToValueAtTime(0.0001, nowChime + 0.34);
+
+    const tailOsc = context.createOscillator();
+    const tailGain = context.createGain();
+    tailOsc.type = 'triangle';
+    tailOsc.frequency.setValueAtTime(740, nowChime);
+    tailGain.gain.setValueAtTime(0.0001, nowChime);
+    tailGain.gain.exponentialRampToValueAtTime(0.03, nowChime + 0.02);
+    tailGain.gain.exponentialRampToValueAtTime(0.0001, nowChime + 0.42);
+
+    leadOsc.connect(leadGain);
+    tailOsc.connect(tailGain);
+    leadGain.connect(masterGain);
+    tailGain.connect(masterGain);
+
+    leadOsc.start(nowChime);
+    tailOsc.start(nowChime + 0.02);
+    leadOsc.stop(nowChime + 0.38);
+    tailOsc.stop(nowChime + 0.48);
+  }, [ensureCounterAudio]);
+
   function supportFromSlider(tramo, rawValue) {
     const value = Number(rawValue);
     if (Number.isNaN(value)) return 0;
@@ -491,6 +590,49 @@ const CallToAction = ({ barsIntroDelayMs = 0 }) => {
   ]);
 
   useEffect(() => {
+    if (!isCounterSoundEnabled) {
+      lastSupportForSoundRef.current = displayStats.totalSupport;
+      return;
+    }
+    if (interactiveSupport === null) {
+      lastSupportForSoundRef.current = displayStats.totalSupport;
+      return;
+    }
+
+    const previous = lastSupportForSoundRef.current;
+    if (previous === null) {
+      lastSupportForSoundRef.current = displayStats.totalSupport;
+      return;
+    }
+
+    const current = displayStats.totalSupport;
+    if (current === previous) return;
+
+    const direction = current > previous ? 1 : -1;
+    const distance = Math.abs(current - previous);
+    const burstCount = Math.min(distance, 3);
+
+    for (let step = 1; step <= burstCount; step += 1) {
+      const virtualValue = previous + Math.round((distance * step) / burstCount) * direction;
+      const delayMs = (step - 1) * 44;
+      window.setTimeout(() => {
+        playCounterTick(direction);
+        if (COUNTER_SOUND_MILESTONES.has(virtualValue)) {
+          playMilestoneChime();
+        }
+      }, delayMs);
+    }
+
+    lastSupportForSoundRef.current = current;
+  }, [
+    displayStats.totalSupport,
+    interactiveSupport,
+    isCounterSoundEnabled,
+    playCounterTick,
+    playMilestoneChime,
+  ]);
+
+  useEffect(() => {
     const reachedExpansion = displayStats.totalSupport >= EXPANSION_START;
     if (reachedExpansion && !reachedExpansionRef.current) {
       reachedExpansionRef.current = true;
@@ -517,6 +659,11 @@ const CallToAction = ({ barsIntroDelayMs = 0 }) => {
         aftercareAudioRef.current.src = '';
         aftercareAudioRef.current = null;
       }
+      if (audioContextRef.current) {
+        audioContextRef.current.close().catch(() => {});
+        audioContextRef.current = null;
+      }
+      masterGainRef.current = null;
     };
   }, []);
 
@@ -709,6 +856,17 @@ const CallToAction = ({ barsIntroDelayMs = 0 }) => {
     setCheckoutStatus(`Estado actual del pago: ${message || 'unknown'}.`);
   }
 
+  const handleToggleCounterSound = useCallback(() => {
+    const nextValue = !isCounterSoundEnabled;
+    setIsCounterSoundEnabled(nextValue);
+    if (nextValue) {
+      ensureCounterAudio().then((context) => {
+        if (!context) return;
+        playCounterTick(1);
+      });
+    }
+  }, [ensureCounterAudio, isCounterSoundEnabled, playCounterTick]);
+
   // 4) Renderizado
   return (
     <div className="relative mx-auto h-full max-w-xl text-center flex flex-col gap-6">
@@ -718,206 +876,119 @@ const CallToAction = ({ barsIntroDelayMs = 0 }) => {
       {/* Panel de impacto */}
       <div
         ref={impactPanelRef}
-        className="rounded-2xl border border-white/10 bg-white/5 p-5 text-left text-slate-100 flex flex-col gap-4 flex-1"
+        className="relative rounded-2xl border border-white/10 bg-white/5 p-5 pr-16 text-left text-slate-100 flex flex-col gap-4 flex-1"
       >
+        <button
+          type="button"
+          onClick={handleToggleCounterSound}
+          className="absolute right-4 top-4 inline-flex h-9 w-9 items-center justify-center rounded-full border border-white/15 bg-white/5 text-slate-200/90 hover:border-purple-300/40 hover:text-white transition"
+          aria-label={isCounterSoundEnabled ? 'Silenciar sonidos del simulador' : 'Activar sonidos del simulador'}
+          title={isCounterSoundEnabled ? 'Silenciar simulador' : 'Activar simulador sonoro'}
+        >
+          {isCounterSoundEnabled ? (
+            <Volume2 size={14} className="text-purple-200" />
+          ) : (
+            <VolumeX size={14} className="text-slate-300" />
+          )}
+        </button>
         <p className="text-[0.85rem] uppercase tracking-[0.18em] text-slate-400/80">
           Modelo anual por tramos · Q{currentQuarter} {currentYear}
         </p>
         <div className="flex items-baseline justify-between">
-          <p className="text-sm opacity-80 inline-flex items-center gap-2">
+          <p className="text-[1.05rem] opacity-90 inline-flex items-center gap-2 leading-tight">
             <PawPrint size={14} className="text-violet-300/90" />
             Huellas activadas
           </p>
-          <p className="text-2xl font-semibold">{subs}</p>
+          <p className="text-[2.2rem] font-semibold leading-none">{subs}</p>
         </div>
         <div className="flex items-baseline justify-between">
-          <p className="text-sm opacity-80 inline-flex items-center gap-2">
+          <p className="text-[1.05rem] opacity-90 inline-flex items-center gap-2 leading-tight">
             <Ticket size={14} className="text-cyan-300/90" />
             Boletos con causa
           </p>
-          <p className="text-2xl font-semibold">{ticketUnits}</p>
+          <p className="text-[2.2rem] font-semibold leading-none">{ticketUnits}</p>
         </div>
 
-        <div className="order-2 space-y-4">
-          {/* Terapias */}
-          <div className="space-y-1">
-          <div className="flex items-center text-sm opacity-80">
-            <span className="inline-flex items-center gap-2">
-              <HeartHandshake size={14} className="text-emerald-300/90" />
-              {displayStats.sesiones} sesiones financiadas en este tramo.
-            </span>
-          </div>
-          <ProgressBar
-            value={displayBarValues.terapias}
-            barClassName="bg-gradient-to-r from-emerald-300 via-teal-300 to-cyan-300"
-            maxValue={THERAPY_TRAMO_HUELLAS}
-            currentValue={displayStats.terapiasActual}
-            onPreviewChange={(value) => handleSliderInput('terapias', value)}
-            onRelease={() => setInteractiveSupport(null)}
-            isPreviewing={interactiveSupport !== null}
-          />
-          <p className="text-xs opacity-70 inline-flex items-center gap-1 justify-end w-full">
-            <PawPrint size={12} className="text-violet-300/90" />
-            {displayStats.terapiasActual}/{displayStats.terapiasMeta}
-          </p>
-          </div>
-
-          {/* Residencias */}
-          <div className="space-y-1">
-          <div className="flex items-center text-sm opacity-80">
-            <span className="inline-flex items-center gap-2">
-              <Palette size={14} className="text-amber-300/90" />
-              {displayStats.residenciasHitosActivos}/3 residencias activas por ciclo escolar.
-            </span>
-          </div>
-          <ProgressBar
-            value={displayBarValues.residencias}
-            barClassName="bg-gradient-to-r from-amber-300 via-yellow-300 to-orange-400"
-            maxValue={RESIDENCY_TRAMO_HUELLAS}
-            currentValue={displayStats.residenciasActual}
-            milestones={[17, 34, 51]}
-            onPreviewChange={(value) => handleSliderInput('residencias', value)}
-            onRelease={() => setInteractiveSupport(null)}
-            isPreviewing={interactiveSupport !== null}
-          />
-          <p className="text-xs opacity-70 inline-flex items-center gap-1 justify-end w-full">
-            <PawPrint size={12} className="text-violet-300/90" />
-            {displayStats.residenciasActual}/{displayStats.residenciasMeta}
-          </p>
-          </div>
-
-          {/* Implementación de apps en escuelas */}
-          <div className="space-y-1">
-          <div className="flex items-center text-sm opacity-80">
-            <span className="inline-flex items-center gap-2">
-              <Smartphone size={14} className="text-cyan-300/90" />
-              {displayStats.appsHitosActivos}/5 escuelas atendidas por ciclo escolar.
-            </span>
-          </div>
-          <ProgressBar
-            value={displayBarValues.implementacionEscuelas}
-            barClassName="bg-gradient-to-r from-indigo-300 via-blue-300 to-cyan-300"
-            maxValue={SCHOOL_IMPLEMENTATION_TRAMO_HUELLAS}
-            currentValue={displayStats.implementacionEscuelasActual}
-            milestones={[75, 150, 225, 300, 375]}
-            onPreviewChange={(value) => handleSliderInput('implementacionEscuelas', value)}
-            onRelease={() => setInteractiveSupport(null)}
-            isPreviewing={interactiveSupport !== null}
-          />
-          <p className="text-xs opacity-70 inline-flex items-center gap-1 justify-end w-full">
-            <PawPrint size={12} className="text-violet-300/90" />
-            {displayStats.implementacionEscuelasActual}/{displayStats.implementacionEscuelasMeta}
-          </p>
-          </div>
-
-          {/* Expansión creativa */}
-          <div className="space-y-1">
-          <div className="flex items-center text-sm opacity-80">
-            <span className="inline-flex items-center gap-2">
-              <Drama size={14} className="text-violet-300/90" />
-              Fondo para expansión creativa
-            </span>
-          </div>
-          <ProgressBar
-            value={displayBarValues.universos}
-            barClassName="bg-gradient-to-r from-violet-300 via-fuchsia-300 to-pink-400"
-            maxValue={EXPANSION_START}
-            currentValue={Math.min(displayStats.totalSupport, EXPANSION_START)}
-            milestones={[Math.round(EXPANSION_START / 2), EXPANSION_START]}
-            onPreviewChange={(value) => handleSliderInput('universos', value)}
-            onRelease={() => setInteractiveSupport(null)}
-            isPreviewing={interactiveSupport !== null}
-          />
-          <p className="text-xs opacity-65">
-            A partir de la huella {EXPANSION_START_COPY}, cada huella se reinvierte en nuevas obras, miniversos y publicaciones.
-          </p>
-          </div>
-        </div>
-
-        <div className="order-1 space-y-2">
+        <div className="space-y-2">
           <div className="flex items-baseline justify-between">
-          <p className="text-sm opacity-80">Huellas + boletos con causa</p>
-          <p className="text-2xl font-semibold">{displayStats.totalSupport}</p>
-          </div>
-          <div className="flex items-baseline justify-between">
-          <p className="text-sm opacity-80">Meta mínima anual</p>
-          <p className="text-lg font-semibold">
-            {displayStats.totalSupportClamped}/{ANNUAL_TOTAL_HUELLAS}
-          </p>
+            <p className="text-[1.05rem] opacity-90 leading-tight">
+              {interactiveSupport !== null
+                ? 'Modo simulador · Huellas + boletos con causa'
+                : 'Huellas + boletos con causa'}
+            </p>
+            <p className="text-[2.2rem] font-semibold leading-none">{displayStats.totalSupport}</p>
           </div>
         </div>
 
-        <div className="order-3 space-y-3">
-          {/* Checkout + Ticket Support */}
-          <div className="grid gap-3">
-               <button
+        <div className="mt-1 space-y-3">
+          <div className="space-y-3">
+            <button
               type="button"
               onClick={() => setShowTicketSupport((prev) => !prev)}
-              className="border border-white/20 text-white px-4 py-2 rounded hover:border-purple-300/70 hover:text-purple-100"
+              className="block w-full border border-white/20 text-white px-4 py-2 rounded hover:border-purple-300/70 hover:text-purple-100"
             >
               {showTicketSupport ? 'Ocultar opciones' : 'Sumar mi boleto'}
             </button>
+            {showTicketSupport ? (
+              <div className="relative overflow-hidden rounded-2xl border border-white/15 bg-black/35 px-4 py-3 text-left text-slate-100">
+                {isTicketSupportVideoAvailable ? (
+                  <video
+                    className="pointer-events-none absolute inset-0 h-full w-full scale-[1.03] object-cover opacity-70 saturate-125 contrast-125 brightness-110"
+                    autoPlay
+                    loop
+                    muted
+                    playsInline
+                    preload="auto"
+                    poster={SUPPORT_CTA_POSTER_URL}
+                    onError={() => setIsTicketSupportVideoAvailable(false)}
+                    aria-hidden="true"
+                  >
+                    <source src={SUPPORT_CTA_VIDEO_URL} type="video/mp4" />
+                  </video>
+                ) : null}
+                <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-slate-950/35 via-slate-950/30 to-slate-950/45" />
+                <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_22%_24%,rgba(125,211,252,0.28),transparent_45%),radial-gradient(circle_at_80%_72%,rgba(147,197,253,0.22),transparent_18%)]" />
+                <p className="relative z-10 mb-2 text-sm leading-relaxed text-slate-100">
+                  Si asististe a la obra, puedes convertir ese momento en huella. Si no tienes boleto, también cuenta: selfie o tu palabra con cuántas personas asistieron contigo.
+                </p>
+                <div className="relative z-10 grid gap-2">
+                  <a
+                    href={`mailto:${SUPPORT_EMAIL}?subject=Destinar%20boleto%20a%20la%20causa&body=${SUPPORT_MESSAGE}`}
+                    className="flex items-center justify-center gap-2 text-center rounded-lg border border-sky-200/30 bg-white/10 px-4 py-2 text-white backdrop-blur-md transition hover:border-sky-200/60 hover:bg-white/15"
+                  >
+                    <Mail size={18} />
+                    Enviar por correo
+                  </a>
+                  <a
+                    href={`https://wa.me/${SUPPORT_WHATSAPP.replace(/\D/g, '')}?text=${SUPPORT_MESSAGE}`}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="flex items-center justify-center gap-2 text-center rounded-lg border border-sky-200/30 bg-white/10 px-4 py-2 text-white backdrop-blur-md transition hover:border-sky-200/60 hover:bg-white/15"
+                  >
+                    <MessageCircle size={18} />
+                    Enviar por WhatsApp
+                  </a>
+                </div>
+              </div>
+            ) : null}
             <button
               onClick={handleCheckout}
               disabled={loading || isSubscriber || isCheckingSubscription}
-              className="bg-white/90 text-black px-4 py-2 rounded disabled:opacity-50"
+              className="block w-full bg-white/90 text-black px-4 py-2 rounded disabled:opacity-50"
             >
               {isCheckingSubscription
                 ? 'Validando huella...'
                 : isSubscriber
                   ? 'Tu huella ya está activa'
                   : loading
-                    ? 'Abriendo…'
-                    : 'Dejar mi huella'}
+                    ? 'Abriendo confirmación…'
+                    : 'Activar huella mensual'}
             </button>
-         
           </div>
 
-          {msg && <p className="text-red-300 text-sm">{msg}</p>}
-          {showTicketSupport ? (
-            <div className="relative overflow-hidden rounded-2xl border border-white/15 bg-black/35 px-4 py-3 text-left text-slate-100">
-              {isTicketSupportVideoAvailable ? (
-                <video
-                  className="pointer-events-none absolute inset-0 h-full w-full scale-[1.03] object-cover opacity-70 saturate-125 contrast-125 brightness-110"
-                  autoPlay
-                  loop
-                  muted
-                  playsInline
-                  preload="auto"
-                  poster={SUPPORT_CTA_POSTER_URL}
-                  onError={() => setIsTicketSupportVideoAvailable(false)}
-                  aria-hidden="true"
-                >
-                  <source src={SUPPORT_CTA_VIDEO_URL} type="video/mp4" />
-                </video>
-              ) : null}
-              <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-slate-950/35 via-slate-950/30 to-slate-950/45" />
-              <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_22%_24%,rgba(125,211,252,0.28),transparent_45%),radial-gradient(circle_at_80%_72%,rgba(147,197,253,0.22),transparent_18%)]" />
-              <p className="relative z-10 mb-2 text-sm leading-relaxed text-slate-100">
-                Si asististe a la obra y deseas convertir ese momento en huella, puedes hacerlo aquí.
-              </p>
-              <div className="relative z-10 grid gap-2">
-                <a
-                  href={`mailto:${SUPPORT_EMAIL}?subject=Destinar%20boleto%20a%20la%20causa&body=${SUPPORT_MESSAGE}`}
-                  className="flex items-center justify-center gap-2 text-center rounded-lg border border-sky-200/30 bg-white/10 px-4 py-2 text-white backdrop-blur-md transition hover:border-sky-200/60 hover:bg-white/15"
-                >
-                  <Mail size={18} />
-                  Enviar por correo
-                </a>
-                <a
-                  href={`https://wa.me/${SUPPORT_WHATSAPP.replace(/\D/g, '')}?text=${SUPPORT_MESSAGE}`}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="flex items-center justify-center gap-2 text-center rounded-lg border border-sky-200/30 bg-white/10 px-4 py-2 text-white backdrop-blur-md transition hover:border-sky-200/60 hover:bg-white/15"
-                >
-                  <MessageCircle size={18} />
-                  Enviar por WhatsApp
-                </a>
-              </div>
-            </div>
-          ) : null}
+          {msg ? <p className="text-red-300 text-sm">{msg}</p> : null}
 
-          <div ref={embeddedCheckoutRef} className="pt-2">
+          <div ref={embeddedCheckoutRef} className="pt-1">
             {checkoutStatus ? <p className="text-slate-200 text-sm">{checkoutStatus}</p> : null}
             {pendingFallbackPayload ? (
               <button
@@ -950,7 +1021,109 @@ const CallToAction = ({ barsIntroDelayMs = 0 }) => {
           </div>
         </div>
 
-        <div className="order-4 space-y-2">
+        <div className="mt-1 space-y-4">
+          <div className="flex items-baseline justify-between">
+            <p className="text-[1.02rem] opacity-90">Meta mínima anual</p>
+            <p className="text-[1.45rem] font-semibold leading-none">
+              {displayStats.totalSupportClamped}/{ANNUAL_TOTAL_HUELLAS}
+            </p>
+          </div>
+          {/* Terapias */}
+          <div className="space-y-1">
+          <div className="flex items-center text-[0.92rem] opacity-85">
+            <span className="inline-flex items-center gap-2">
+              <HeartHandshake size={14} className="text-emerald-300/90" />
+              Primer tramo: {displayStats.sesiones}/102 sesiones individuales al año.
+            </span>
+          </div>
+          <ProgressBar
+            value={displayBarValues.terapias}
+            barClassName="bg-gradient-to-r from-emerald-300 via-teal-300 to-cyan-300"
+            maxValue={THERAPY_TRAMO_HUELLAS}
+            currentValue={displayStats.terapiasActual}
+            onPreviewChange={(value) => handleSliderInput('terapias', value)}
+            onRelease={() => setInteractiveSupport(null)}
+            isPreviewing={interactiveSupport !== null}
+          />
+          <p className="text-[13px] opacity-75 inline-flex items-center gap-1 justify-end w-full">
+            <PawPrint size={13} className="text-violet-300/90" />
+            {displayStats.terapiasActual}/{displayStats.terapiasMeta}
+          </p>
+          </div>
+
+          {/* Residencias */}
+          <div className="space-y-1">
+          <div className="flex items-center text-[0.92rem] opacity-85">
+            <span className="inline-flex items-center gap-2">
+              <Palette size={14} className="text-amber-300/90" />
+              {displayStats.residenciasHitosActivos}/3 residencias activas por ciclo escolar.
+            </span>
+          </div>
+          <ProgressBar
+            value={displayBarValues.residencias}
+            barClassName="bg-gradient-to-r from-amber-300 via-yellow-300 to-orange-400"
+            maxValue={RESIDENCY_TRAMO_HUELLAS}
+            currentValue={displayStats.residenciasActual}
+            milestones={[17, 34, 51]}
+            onPreviewChange={(value) => handleSliderInput('residencias', value)}
+            onRelease={() => setInteractiveSupport(null)}
+            isPreviewing={interactiveSupport !== null}
+          />
+          <p className="text-[13px] opacity-75 inline-flex items-center gap-1 justify-end w-full">
+            <PawPrint size={13} className="text-violet-300/90" />
+            {displayStats.residenciasActual}/{displayStats.residenciasMeta}
+          </p>
+          </div>
+
+          {/* Implementación de apps en escuelas */}
+          <div className="space-y-1">
+          <div className="flex items-center text-[0.92rem] opacity-85">
+            <span className="inline-flex items-center gap-2">
+              <Smartphone size={14} className="text-cyan-300/90" />
+              {displayStats.appsHitosActivos}/5 escuelas atendidas por ciclo escolar.
+            </span>
+          </div>
+          <ProgressBar
+            value={displayBarValues.implementacionEscuelas}
+            barClassName="bg-gradient-to-r from-indigo-300 via-blue-300 to-cyan-300"
+            maxValue={SCHOOL_IMPLEMENTATION_TRAMO_HUELLAS}
+            currentValue={displayStats.implementacionEscuelasActual}
+            milestones={[75, 150, 225, 300, 375]}
+            onPreviewChange={(value) => handleSliderInput('implementacionEscuelas', value)}
+            onRelease={() => setInteractiveSupport(null)}
+            isPreviewing={interactiveSupport !== null}
+          />
+          <p className="text-[13px] opacity-75 inline-flex items-center gap-1 justify-end w-full">
+            <PawPrint size={13} className="text-violet-300/90" />
+            {displayStats.implementacionEscuelasActual}/{displayStats.implementacionEscuelasMeta}
+          </p>
+          </div>
+
+          {/* Expansión creativa */}
+          <div className="space-y-1">
+          <div className="flex items-center text-[0.92rem] opacity-85">
+            <span className="inline-flex items-center gap-2">
+              <Drama size={14} className="text-violet-300/90" />
+              Fondo para expansión creativa
+            </span>
+          </div>
+          <ProgressBar
+            value={displayBarValues.universos}
+            barClassName="bg-gradient-to-r from-violet-300 via-fuchsia-300 to-pink-400"
+            maxValue={EXPANSION_START}
+            currentValue={Math.min(displayStats.totalSupport, EXPANSION_START)}
+            milestones={[Math.round(EXPANSION_START / 2), EXPANSION_START]}
+            onPreviewChange={(value) => handleSliderInput('universos', value)}
+            onRelease={() => setInteractiveSupport(null)}
+            isPreviewing={interactiveSupport !== null}
+          />
+          <p className="text-xs opacity-65">
+            A partir de la huella {EXPANSION_START_COPY}, cada huella se reinvierte en nuevas obras, miniversos y publicaciones.
+          </p>
+          </div>
+        </div>
+
+        <div className="space-y-2">
           <p className="text-md opacity-90">
             Faltan <strong>{displayStats.annualFaltan}</strong> huellas para completar todos los tramos.
           </p>
