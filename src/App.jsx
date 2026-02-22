@@ -21,6 +21,7 @@ import PortalArtesanias from '@/pages/PortalArtesanias';
 import PortalVoz from '@/pages/PortalVoz';
 import bgLogo from '@/assets/bg-logo.png';
 import Bienvenida from '@/pages/Bienvenida';
+import LabHuella from '@/pages/LabHuella';
 import { useAuth } from '@/contexts/SupabaseAuthContext';
 import {
   hasSeenBienvenida,
@@ -39,6 +40,9 @@ const pageTitle = '#GatoEncerrado - Obra de Teatro transmedia';
 const pageDescription =
   'La historia de alguien que desaparece… y deja una huella emocional. Una experiencia teatral única que explora múltiples formatos transmediaes.';
 const LOGIN_RETURN_KEY = 'gatoencerrado:login-return';
+const IS_UI_LAB_ENABLED =
+  import.meta.env.DEV ||
+  ['1', 'true', 'yes', 'on'].includes(String(import.meta.env.VITE_UI_LAB || '').toLowerCase());
 
 const HeroBackground = () => {
   const [opacity, setOpacity] = useState(1);
@@ -107,6 +111,7 @@ const BienvenidaGate = () => {
   useEffect(() => {
     if (!bienvenidaUrl) return;
     if (location.pathname === '/bienvenida') return;
+    if (location.pathname.startsWith('/lab/')) return;
     if (isBienvenidaPending()) return;
     if (loading || !user) return;
     const flowGoal = getBienvenidaFlowGoal();
@@ -234,6 +239,7 @@ function App() {
       <Route path="/portal-lectura" element={<PortalLectura />} />
       <Route path="/portal-artesanias" element={<PortalArtesanias />} />
       <Route path="/portal-voz" element={<PortalVoz />} />
+      {IS_UI_LAB_ENABLED ? <Route path="/lab/huella" element={<LabHuella />} /> : null}
       </Routes>
     </>
   );
