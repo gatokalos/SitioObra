@@ -3588,8 +3588,9 @@ const Transmedia = () => {
   useEffect(() => {
     const html = document.documentElement;
     const body = document.body;
+    const shouldLockBackgroundScroll = isCinematicShowcaseOpen && !isMiniverseShelved;
 
-    if (isCinematicShowcaseOpen) {
+    if (shouldLockBackgroundScroll) {
       wasCinematicOpenRef.current = true;
       scrollLockYRef.current = window.scrollY;
       body.style.position = 'fixed';
@@ -3615,7 +3616,7 @@ const Transmedia = () => {
     }
     wasCinematicOpenRef.current = false;
     scrollLockYRef.current = 0;
-  }, [isCinematicShowcaseOpen]);
+  }, [isCinematicShowcaseOpen, isMiniverseShelved]);
 
   useEffect(() => {
     if (!isCinematicShowcaseOpen) return undefined;
