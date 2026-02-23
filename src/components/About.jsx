@@ -372,9 +372,11 @@ export const ProvocaSection = () => {
                 <Button
                   variant="outline"
                   onClick={() => setIsVoiceInputOpen((prev) => !prev)}
-                  className="border-purple-400/40 text-purple-200 hover:bg-purple-500/20 w-full sm:w-auto whitespace-normal break-words text-center leading-snug"
+                  className={`provoca-soft-glass-btn w-full sm:w-auto whitespace-normal break-words text-center leading-snug ${
+                    isVoiceInputOpen ? 'provoca-soft-glass-btn--active' : ''
+                  }`}
                 >
-                  ¿Ya la viste?
+                  Comenta algo aquí
                 </Button>
                 <Button
                   variant="outline"
@@ -429,20 +431,23 @@ export const ProvocaSection = () => {
                         className="hidden"
                         name="website"
                       />
-                      <Button
-                        onClick={handleSubmitVoice}
-                        disabled={isSubmittingVoice}
-                        className="bg-gradient-to-r from-purple-600/90 to-indigo-600/90 hover:from-purple-500 hover:to-indigo-500 text-white"
-                      >
-                        {isSubmittingVoice ? 'Enviando…' : 'Enviar perspectiva'}
-                      </Button>
-                      <Button
-                        type="button"
-                        variant="outline"
-                        className="border-slate-100/30 bg-slate-50 text-slate-950 hover:bg-slate-200"
-                      >
-                        Escuchar a la obra
-                      </Button>
+                      <div className="ui-segmented ui-segmented--rect w-full sm:w-auto">
+                        <Button
+                          type="button"
+                          onClick={handleSubmitVoice}
+                          disabled={isSubmittingVoice}
+                          className="ui-segmented__btn ui-segmented__btn--primary flex-1 sm:flex-none"
+                        >
+                          {isSubmittingVoice ? 'Enviando…' : 'Enviar perspectiva'}
+                        </Button>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          className="ui-segmented__btn ui-segmented__btn--secondary flex-1 sm:flex-none"
+                        >
+                          Escuchar a la obra
+                        </Button>
+                      </div>
                     </div>
                   </motion.div>
                 ) : null}
