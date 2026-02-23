@@ -78,7 +78,13 @@ const LoginOverlay = ({ onClose }) => {
   const [pendingMagic, setPendingMagic] = useState(false);
   const [feedback, setFeedback] = useState(null);
   const storageBlocked = safeStorageType === 'memory';
+  const isLocalPreviewPort =
+    typeof window !== 'undefined' &&
+    (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') &&
+    window.location.port === '4173';
   const redirectTo = useMemo(() => {
+    const explicitRedirect = import.meta.env.VITE_SUPABASE_AUTH_REDIRECT_TO;
+    if (explicitRedirect) return explicitRedirect;
     if (typeof window === 'undefined') return undefined;
     const { origin, pathname, hash } = window.location;
     // Conservamos el hash si no contiene tokens de Supabase.
@@ -269,6 +275,15 @@ const LoginOverlay = ({ onClose }) => {
           {storageBlocked ? (
             <p className="text-xs text-amber-300">
               Tu navegador está bloqueando almacenamiento; abre el sitio en Safari/Chrome (fuera de modo privado) para completar el login.
+            </p>
+          ) : null}
+          {isLocalPreviewPort ? (
+            <p className="text-xs text-amber-300/95">
+              Estás en `localhost:4173` (preview). Si OAuth falla, usa{' '}
+              <a href="http://localhost:5173" className="underline underline-offset-2 hover:text-white">
+                localhost:5173
+              </a>{' '}
+              o agrega `http://localhost:4173` a los redirects permitidos en Supabase.
             </p>
           ) : null}
 

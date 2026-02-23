@@ -281,10 +281,10 @@ const Contact = () => {
           </p>
           
           <h2 className="font-display text-4xl md:text-5xl font-medium mb-6 text-gradient italic">
-            ¿Tienes la curiosidad gatuna?
+            ¿Tienes curiosidad gatuna?
           </h2>
           <p className="text-lg text-slate-300/80 max-w-3xl mx-auto leading-relaxed font-light">
-            Si algo de este sitio te dejó una una pregunta, este es tu espacio para contarlo. No buscamos "opiniones" sino aquello que cambió tu forma de mirar, sentir o recordar. 
+            Si algo de este sitio te dejó una una pregunta, este es tu espacio para contarlo. No buscamos "opiniones" sino aquello que cambió tu forma de mirar, sentir o recordar una obra. 
             Aunque también puedes usar este espacio para compartir tus teorías, solicitar entrevistas y para colaboraciones.
           </p>
         </motion.div>
@@ -452,7 +452,7 @@ const Contact = () => {
               </p>
               <div className="mt-4 flex flex-wrap items-center gap-3">
                 <img
-                  src="/assets/logoapp.png"
+                  src="/assets/logoapp.webp"
                   alt="Logo #GatoEncerrado"
                   className="h-10 w-10 rounded-lg border border-white/10 bg-black/30 p-1"
                   width={40}

@@ -85,8 +85,8 @@ const Header = () => {
   }, [setShowLoginOverlay]);
 
   const menuItems = [
-    { name: 'Transmedia', href: '#transmedia' },
     { name: 'Alianza', href: '#apoya' },
+    { name: 'Transmedia', href: '#transmedia' },
     { name: 'Obra', href: '#about' },
     { name: 'Equipo', href: '#team' },
     { name: 'Galería', href: '#instagram' },
