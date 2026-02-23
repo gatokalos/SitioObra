@@ -193,9 +193,9 @@ const RESERVE_COPY = {
 ),
     footerNote: (
       <div className="rounded-2xl border border-white/10 bg-black/30 p-5 shadow-[0_20px_45px_rgba(0,0,0,0.35)]">
-        
-        <div className="flex flex-col gap-4 sm:gap-3 sm:grid sm:grid-cols-[96px_26px_1fr] sm:items-start">
-          <div className="order-3 sm:order-1 sm:pt-1 sm:justify-self-start self-start">
+        <div className="flex items-start justify-between">
+          <div className="text-[3.5rem] text-purple-200/90 leading-none">“</div>
+          <div className="ml-4">
             <div className="h-[64px] w-[64px] sm:h-[84px] sm:w-[84px] overflow-hidden rounded-full border border-white/25 shadow-[0_10px_26px_rgba(0,0,0,0.45)] ring-2 ring-purple-300/30">
               <img
                 src="https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/autores/avatar_carlosph.jpg"
@@ -205,17 +205,16 @@ const RESERVE_COPY = {
               />
             </div>
           </div>
-          <div className="order-1 sm:order-2 text-[4.25rem] sm:text-4xl text-purple-200/90 leading-[0.65] sm:justify-self-end sm:text-right self-start">“</div>
-          <div className="order-2 sm:order-3">
-            <p className="text-sm text-slate-100/90 leading-relaxed italic">
-              A largo plazo, imaginamos un centro donde crear también sea investigar, y cuidar la salud mental sea una forma de arte compartido.
-            </p>
-            <div className="mt-4">
-              <p className="text-base text-white font-semibold tracking-wide">Carlos A. Pérez H.</p>
-              <p className="text-xs uppercase tracking-[0.25em] text-purple-200/80">Creador de #GatoEncerrado</p>
-            </div>
+          {/* Do not modify the text block that follows */}
+        </div>
+        <div className="order-2 sm:order-3">
+          <p className="text-sm text-slate-100/90 leading-relaxed italic">
+            "A largo plazo, imaginamos un centro donde crear también sea investigar, <br />y cuidar la salud mental sea una forma de arte compartido."
+          </p>
+          <div className="mt-4">
+            <p className="text-base text-white font-semibold tracking-wide">Carlos A. Pérez H.</p>
+            <p className="text-xs uppercase tracking-[0.25em] text-purple-200/80">Creador de #GatoEncerrado</p>
           </div>
-      
         </div>
       </div>
     ),
@@ -539,7 +538,7 @@ payload.customer_email = normalizedEmail;
             Elige lo que quieres activar
           </h3>
           <p className="mt-1 text-sm text-slate-300/80 leading-relaxed">
-            Selecciona uno o varios. Enviar es para coordinar; “Comprar ahora” abre checkout si ya estás listx.
+            Elige uno o varios. Podrás revisar los detalles antes de finalizar.
           </p>
         </div>
 
@@ -791,7 +790,7 @@ payload.customer_email = normalizedEmail;
   className="reserve-btn reserve-btn--primary mt-3 disabled:opacity-60 disabled:cursor-not-allowed"
 >
   <span>
-    {isCheckoutLoading ? 'Abriendo tienda…' : 'Comprar ahora'}
+    {isCheckoutLoading ? 'Abriendo tienda…' : 'Comprar Merech'}
   </span>
 </button>
 </div>
