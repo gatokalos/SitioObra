@@ -655,8 +655,8 @@ payload.customer_email = normalizedEmail;
 {!showProposalForm ? (
   <div className="rounded-2xl border border-white/10 bg-black/20 p-4 text-sm text-slate-300/90">
     <p className="leading-relaxed">
-      Si quieres proponer un punto de encuentro o colaboración, toca <strong>“Sugerir cafetería”</strong>.
-      Si ya estás listx, puedes ir directo a <strong>“Comprar ahora”</strong>.
+      Si quieres proponer un punto de encuentro o colaboración, toca <strong>"Sugerir Cafetería"</strong>. <br/>
+      Si ya estás listx, puedes ir directo a tu compra, solo pulsa en <strong>"Comprar mi Merch"</strong>.
     </p>
   </div>
 ) : null}
@@ -790,7 +790,7 @@ payload.customer_email = normalizedEmail;
   className="reserve-btn reserve-btn--primary mt-3 disabled:opacity-60 disabled:cursor-not-allowed"
 >
   <span>
-    {isCheckoutLoading ? 'Abriendo tienda…' : 'Comprar Merech'}
+    {isCheckoutLoading ? 'Abriendo tienda…' : 'Comprar mi Merch'}
   </span>
 </button>
 </div>
