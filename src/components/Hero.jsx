@@ -209,7 +209,9 @@ const Hero = () => {
     let shouldResumeAfterVisibility = false;
     let fallbackApplied = false;
     let requiresInteractionAfterBackground = false;
-    let isShowcaseForeground = false;
+    let isShowcaseForeground =
+      typeof document !== 'undefined' &&
+      document.documentElement.dataset.gatoShowcaseOpen === 'true';
 
     audioGestureUnlockRef.current = false;
     lastHeroAudioPlayAttemptRef.current = 0;
@@ -223,9 +225,19 @@ const Hero = () => {
       return HERO_LOGGED_IN_AUDIO_VOLUME * (1 - progress);
     };
 
+    const isShowcaseForegroundActive = () => {
+      if (typeof document === 'undefined') {
+        return isShowcaseForeground;
+      }
+      return (
+        isShowcaseForeground ||
+        document.documentElement.dataset.gatoShowcaseOpen === 'true'
+      );
+    };
+
     const attemptPlay = async ({ fromUserGesture = false } = {}) => {
       if (!mounted) return;
-      if (isShowcaseForeground) return;
+      if (isShowcaseForegroundActive()) return;
       if (!fromUserGesture && requiresInteractionAfterBackground) return;
       const now = performance.now();
       if (!fromUserGesture && now - lastHeroAudioPlayAttemptRef.current < HERO_AUDIO_PLAY_RETRY_MS) return;
@@ -241,7 +253,7 @@ const Hero = () => {
 
     const updateAudioByScroll = () => {
       if (!audio) return;
-      if (isShowcaseForeground) {
+      if (isShowcaseForegroundActive()) {
         if (!audio.paused) {
           audio.pause();
         }

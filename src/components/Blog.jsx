@@ -550,6 +550,7 @@ const Blog = ({ posts = [], isLoading = false, error = null }) => {
   const [pendingSlug, setPendingSlug] = useState(null);
   const [activeCategory, setActiveCategory] = useState(BLOG_CATEGORY_ORDER[0]);
   const [searchQuery, setSearchQuery] = useState('');
+  const [showAllPosts, setShowAllPosts] = useState(false);
   const articlesRef = useRef(null);
 
   const categorizedPosts = useMemo(
@@ -596,6 +597,11 @@ const Blog = ({ posts = [], isLoading = false, error = null }) => {
       return haystack.includes(query);
     });
   }, [sortedPosts, activeCategory, searchQuery]);
+  const visiblePosts = useMemo(
+    () => (showAllPosts ? filteredPosts : filteredPosts.slice(0, 2)),
+    [filteredPosts, showAllPosts]
+  );
+  const canShowAllPosts = !isLoading && !showAllPosts && filteredPosts.length > 2;
 
   const handleSelectPost = useCallback((post) => {
     setActivePost(post);
@@ -627,6 +633,10 @@ const Blog = ({ posts = [], isLoading = false, error = null }) => {
       toast({ description: 'No se pudieron cargar los artículos del blog.' });
     }
   }, [error]);
+
+  useEffect(() => {
+    setShowAllPosts(false);
+  }, [activeCategory, searchQuery]);
 
   useEffect(() => {
     const handleNavigate = (event) => {
@@ -713,6 +723,70 @@ const Blog = ({ posts = [], isLoading = false, error = null }) => {
           </motion.div>
 
           <div className="space-y-16">
+            <motion.div
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8, delay: 0.1, ease: 'easeOut' }}
+              viewport={{ once: true }}
+              className="grid md:grid-cols-3 gap-6"
+            >
+              {BLOG_CATEGORY_ORDER.map((category) => (
+                <div key={category} className="glass-effect rounded-2xl p-6 border border-white/10 flex flex-col gap-3">
+                  <p className="text-xs uppercase tracking-[0.35em] text-slate-400/80">
+                    {BLOG_CATEGORY_CONFIG[category].label}
+                  </p>
+                  <p className="text-slate-300/80 text-sm leading-relaxed flex-1">
+                    {BLOG_CATEGORY_CONFIG[category].summary}
+                  </p>
+                  <Button
+                    variant="link"
+                    onClick={() => handleExploreCategory(category)}
+                    className="text-purple-300 hover:text-white self-start px-0"
+                  >
+                    Leer esta línea editorial
+                  </Button>
+                </div>
+              ))}
+            </motion.div>
+
+            <motion.div
+              ref={articlesRef}
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true }}
+              variants={{ visible: { transition: { staggerChildren: 0.12 } } }}
+              className="grid md:grid-cols-2 gap-8"
+            >
+              {isLoading ? (
+                Array.from({ length: 6 }).map((_, index) => <ArticleCardSkeleton key={`skeleton-${index}`} />)
+              ) : filteredPosts.length === 0 ? (
+                <motion.div variants={containerVariants} className="md:col-span-2 text-center text-slate-400 py-12">
+                  No encontramos textos con ese criterio. Ajusta el filtro o comparte un nuevo testimonio.
+                </motion.div>
+              ) : (
+                visiblePosts.map((post) => <ArticleCard key={post.id} post={post} onSelect={handleSelectPost} />)
+              )}
+            </motion.div>
+
+            {canShowAllPosts ? (
+              <div className="flex justify-center">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setShowAllPosts(true)}
+                  className="border-white/20 text-slate-200 hover:bg-white/10"
+                >
+                  Mostrar todos
+                </Button>
+              </div>
+            ) : null}
+
+            <div id="blog-article">
+              <AnimatePresence mode="wait">
+                {activePost ? <FullArticle key={activePost.id} post={activePost} onClose={() => setActivePost(null)} /> : null}
+              </AnimatePresence>
+            </div>
+
             <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
               <div className="flex flex-wrap gap-2">
                 {BLOG_CATEGORY_ORDER.map((category) => (
@@ -742,57 +816,6 @@ const Blog = ({ posts = [], isLoading = false, error = null }) => {
                 />
               </div>
             </div>
-
-            <motion.div
-              ref={articlesRef}
-              initial="hidden"
-              whileInView="visible"
-              viewport={{ once: true }}
-              variants={{ visible: { transition: { staggerChildren: 0.12 } } }}
-              className="grid md:grid-cols-2 gap-8"
-            >
-              {isLoading ? (
-                Array.from({ length: 6 }).map((_, index) => <ArticleCardSkeleton key={`skeleton-${index}`} />)
-              ) : filteredPosts.length === 0 ? (
-                <motion.div variants={containerVariants} className="md:col-span-2 text-center text-slate-400 py-12">
-                  No encontramos textos con ese criterio. Ajusta el filtro o comparte un nuevo testimonio.
-                </motion.div>
-              ) : (
-                filteredPosts.map((post) => <ArticleCard key={post.id} post={post} onSelect={handleSelectPost} />)
-              )}
-            </motion.div>
-
-            <div id="blog-article">
-              <AnimatePresence mode="wait">
-                {activePost ? <FullArticle key={activePost.id} post={activePost} onClose={() => setActivePost(null)} /> : null}
-              </AnimatePresence>
-            </div>
-
-            <motion.div
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, delay: 0.1, ease: 'easeOut' }}
-              viewport={{ once: true }}
-              className="grid md:grid-cols-3 gap-6"
-            >
-              {BLOG_CATEGORY_ORDER.map((category) => (
-                <div key={category} className="glass-effect rounded-2xl p-6 border border-white/10 flex flex-col gap-3">
-                  <p className="text-xs uppercase tracking-[0.35em] text-slate-400/80">
-                    {BLOG_CATEGORY_CONFIG[category].label}
-                  </p>
-                  <p className="text-slate-300/80 text-sm leading-relaxed flex-1">
-                    {BLOG_CATEGORY_CONFIG[category].summary}
-                  </p>
-                  <Button
-                    variant="link"
-                    onClick={() => handleExploreCategory(category)}
-                    className="text-purple-300 hover:text-white self-start px-0"
-                  >
-                    Leer esta línea editorial
-                  </Button>
-                </div>
-              ))}
-            </motion.div>
           </div>
 
         </div>

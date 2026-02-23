@@ -627,6 +627,10 @@ body {
   .vitrina-image-overlay::before {
     animation: none !important;
   }
+
+  .huella-confirm-btn__aura {
+    animation: none !important;
+  }
 }
 
 /* Safari compositor hardening for modal/vitrina flicker */
@@ -671,6 +675,242 @@ body {
   object-position: 50% 50% !important;
 }
 
+.white-glass-btn {
+  position: relative;
+  isolation: isolate;
+  overflow: visible;
+  border-radius: 1.15rem !important;
+  border: 1px solid rgba(255, 255, 255, 0.58) !important;
+  color: #252c3c !important;
+  background:
+    radial-gradient(130% 120% at 10% 0%, rgba(255, 255, 255, 0.95) 0%, rgba(255, 255, 255, 0) 48%),
+    linear-gradient(
+      180deg,
+      rgba(255, 255, 255, 0.97) 0%,
+      rgba(238, 243, 252, 0.93) 62%,
+      rgba(229, 235, 248, 0.9) 100%
+    ) !important;
+  -webkit-backdrop-filter: blur(16px) saturate(1.12);
+  backdrop-filter: blur(16px) saturate(1.12);
+  box-shadow:
+    0 20px 45px rgba(124, 143, 196, 0.32),
+    0 10px 24px rgba(0, 0, 0, 0.34),
+    inset 0 1px 0 rgba(255, 255, 255, 0.92),
+    inset 0 -2px 0 rgba(235, 242, 255, 0.78);
+  transition: transform 0.17s ease, box-shadow 0.24s ease, filter 0.24s ease;
+}
+
+.white-glass-btn::before {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  padding: 1px;
+  background: linear-gradient(
+    112deg,
+    rgba(174, 255, 249, 0.68) 0%,
+    rgba(255, 255, 255, 0.82) 25%,
+    rgba(255, 210, 245, 0.56) 52%,
+    rgba(255, 255, 255, 0.82) 72%,
+    rgba(188, 227, 255, 0.66) 100%
+  );
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  mask-composite: exclude;
+  pointer-events: none;
+}
+
+.white-glass-btn::after {
+  content: '';
+  position: absolute;
+  left: 7%;
+  right: 7%;
+  bottom: -10px;
+  height: 20px;
+  border-radius: 999px;
+  background: radial-gradient(
+    60% 110% at 50% 50%,
+    rgba(191, 220, 255, 0.52) 0%,
+    rgba(221, 204, 255, 0.32) 38%,
+    rgba(255, 255, 255, 0) 100%
+  );
+  filter: blur(7px);
+  opacity: 0.95;
+  pointer-events: none;
+}
+
+.white-glass-btn:hover {
+  transform: translateY(-1px) scale(1.01);
+  box-shadow:
+    0 26px 54px rgba(155, 179, 237, 0.42),
+    0 14px 30px rgba(0, 0, 0, 0.38),
+    inset 0 1px 0 rgba(255, 255, 255, 0.96),
+    inset 0 -2px 0 rgba(238, 244, 255, 0.9);
+  filter: brightness(1.03);
+}
+
+.white-glass-btn:active {
+  transform: translateY(0) scale(0.985);
+}
+
+.white-glass-btn:focus-visible {
+  outline: none;
+  box-shadow:
+    0 0 0 3px rgba(164, 194, 255, 0.55),
+    0 20px 42px rgba(121, 150, 220, 0.4),
+    0 10px 24px rgba(0, 0, 0, 0.34);
+}
+
+.white-glass-btn--active {
+  filter: saturate(1) brightness(1);
+}
+
+.white-glass-btn--idle {
+  filter: saturate(0.72) brightness(0.94);
+  box-shadow:
+    0 10px 24px rgba(104, 116, 154, 0.22),
+    0 8px 16px rgba(0, 0, 0, 0.24),
+    inset 0 1px 0 rgba(255, 255, 255, 0.78),
+    inset 0 -2px 0 rgba(227, 234, 247, 0.58);
+}
+
+.white-glass-btn--pulse {
+  border-color: rgba(255, 255, 255, 0.78) !important;
+  box-shadow:
+    0 0 0 1px rgba(255, 255, 255, 0.32),
+    0 0 20px rgba(220, 233, 255, 0.42),
+    0 14px 32px rgba(122, 146, 205, 0.38),
+    0 10px 24px rgba(0, 0, 0, 0.34),
+    inset 0 1px 0 rgba(255, 255, 255, 0.95),
+    inset 0 -2px 0 rgba(237, 243, 255, 0.9);
+}
+.huella-confirm-btn {
+  position: relative;
+  border-radius: 14px;
+
+  /* borde base (sutil) */
+  border: 1px solid rgba(255, 160, 120, 0.28);
+
+  /* magma: núcleo + flujo */
+  background:
+    radial-gradient(140% 180% at 18% 20%,
+      rgba(255, 170, 110, 0.95) 0%,
+      rgba(255, 128, 66, 0.55) 22%,
+      rgba(236, 72, 153, 0.38) 50%,
+      rgba(26, 18, 38, 0.0) 72%),
+    radial-gradient(130% 160% at 82% 18%,
+      rgba(255, 90, 160, 0.70) 0%,
+      rgba(236, 72, 153, 0.28) 35%,
+      rgba(26, 18, 38, 0.0) 70%),
+    linear-gradient(90deg,
+      rgba(255, 138, 61, 0.55) 0%,
+      rgba(255, 102, 163, 0.55) 55%,
+      rgba(236, 72, 153, 0.60) 100%),
+    linear-gradient(180deg,
+      rgba(20, 16, 28, 0.70) 0%,
+      rgba(12, 10, 18, 0.78) 100%);
+
+  /* esto es CLAVE para que no se vea “cenizo” */
+  filter: saturate(1.25) contrast(1.08);
+
+  box-shadow:
+    0 18px 48px rgba(0, 0, 0, 0.35),
+    0 10px 22px rgba(236, 72, 153, 0.20),
+    0 8px 18px rgba(255, 138, 61, 0.20),
+    inset 0 1px 0 rgba(255, 255, 255, 0.10),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.35);
+
+  transition:
+    transform 0.18s cubic-bezier(.2,.8,.2,1),
+    box-shadow 0.25s ease,
+    filter 0.25s ease,
+    background 0.25s ease;
+}
+
+/* brillo superior “incandescente” */
+.huella-confirm-btn::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background:
+    linear-gradient(to bottom,
+      rgba(255, 230, 210, 0.18),
+      rgba(255, 140, 90, 0.06) 35%,
+      transparent 70%);
+  mix-blend-mode: screen;
+  pointer-events: none;
+}
+
+/* BORDE VIVO: esto le da presencia inmediata */
+.huella-confirm-btn::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1px;
+  background: linear-gradient(90deg,
+    rgba(255, 178, 120, 0.85),
+    rgba(255, 110, 170, 0.85),
+    rgba(236, 72, 153, 0.90));
+  -webkit-mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  opacity: 0.55;
+  filter: drop-shadow(0 0 12px rgba(236, 72, 153, 0.18));
+  pointer-events: none;
+}
+
+/* texto: si lo dejas negro, el CTA se “apaga” */
+.huella-confirm-btn,
+.huella-confirm-btn * {
+  color: rgba(255, 255, 255, 0.92);
+  text-shadow: 0 1px 0 rgba(0,0,0,0.35);
+}
+
+.huella-confirm-btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  filter: saturate(1.35) contrast(1.12) brightness(1.03);
+  box-shadow:
+    0 26px 70px rgba(0, 0, 0, 0.40),
+    0 18px 36px rgba(236, 72, 153, 0.28),
+    0 14px 30px rgba(255, 138, 61, 0.26),
+    inset 0 1px 0 rgba(255, 255, 255, 0.14),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.35);
+}
+
+.huella-confirm-btn:hover:not(:disabled)::after {
+  opacity: 0.82;
+  filter: drop-shadow(0 0 16px rgba(255, 138, 61, 0.20))
+          drop-shadow(0 0 18px rgba(236, 72, 153, 0.22));
+}
+
+.huella-confirm-btn:active:not(:disabled) {
+  transform: translateY(0) scale(0.985);
+}
+
+.huella-confirm-btn:focus-visible {
+  outline: none;
+  box-shadow:
+    0 0 0 3px rgba(255, 138, 61, 0.24),
+    0 0 0 5px rgba(236, 72, 153, 0.20),
+    0 26px 70px rgba(0, 0, 0, 0.40);
+}
+
+/* opcional: “magma vivo” (movimiento MUY sutil) */
+@media (prefers-reduced-motion: no-preference) {
+  .huella-confirm-btn {
+    background-size: 180% 180%, 180% 180%, 160% 160%, 100% 100%;
+    animation: huella-magma-flow 6.5s ease-in-out infinite alternate;
+  }
+  @keyframes huella-magma-flow {
+    0%   { background-position: 0% 20%, 100% 10%, 0% 50%, 0% 0%; }
+    100% { background-position: 18% 0%, 82% 24%, 100% 50%, 0% 0%; }
+  }
+}
 @supports (-webkit-touch-callout: none) {
   .safari-backdrop-lite {
     backdrop-filter: blur(2px);

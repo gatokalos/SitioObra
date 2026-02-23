@@ -122,7 +122,7 @@ const Header = () => {
               onClick={() => handleNavClick('#hero')}
             >
               <span className="font-display text-2xl font-bold text-gradient max-[375px]:text-lg whitespace-nowrap">
-                Es un gato encerrado
+                #GatoEncerrado
               </span>
               <span className={`h-2.5 w-2.5 rounded-full ${statusDotClass}`} />
             </motion.button>

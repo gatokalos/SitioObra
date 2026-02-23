@@ -1046,11 +1046,9 @@ const CallToAction = ({ barsIntroDelayMs = 0 }) => {
             <button
               onClick={handleCheckout}
               disabled={loading || isSubscriber || isCheckingSubscription}
-              className={`block w-full px-4 py-2 rounded disabled:opacity-50 transition ${
-                !user
-                  ? `bg-slate-300/80 text-slate-900 ${isLoginPulseActive ? 'animate-pulse ring-1 ring-white/45 shadow-[0_0_20px_rgba(255,255,255,0.22)]' : ''}`
-                  : 'bg-white/90 text-black'
-              }`}
+              className={`white-glass-btn block w-full px-4 py-2 text-slate-900 disabled:cursor-not-allowed disabled:opacity-50 ${
+                !user ? 'white-glass-btn--idle' : 'white-glass-btn--active'
+              } ${isLoginPulseActive ? 'white-glass-btn--pulse animate-pulse' : ''}`}
             >
               {isCheckingSubscription
                 ? 'Validando huella...'

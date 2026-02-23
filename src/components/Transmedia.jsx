@@ -2866,6 +2866,35 @@ const Transmedia = () => {
     openMiniverseById(showcaseId);
   }, [focusLockShowcaseId, location, openMiniverseById, releaseDesktopFocusLock]);
 
+  const navigateToCuratorial = useCallback(
+    (slug = null) => {
+      if (activeShowcase) {
+        handleCloseShowcase();
+      }
+      if (isMiniverseOpen || isMiniverseShelved) {
+        handleCloseMiniverses();
+      }
+
+      window.setTimeout(() => {
+        if (slug) {
+          window.dispatchEvent(
+            new CustomEvent('gatoencerrado:open-blog', {
+              detail: { slug },
+            })
+          );
+        }
+        document.getElementById('dialogo-critico')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }, 140);
+    },
+    [
+      activeShowcase,
+      handleCloseMiniverses,
+      handleCloseShowcase,
+      isMiniverseOpen,
+      isMiniverseShelved,
+    ]
+  );
+
   const handleOpenBlogEntry = useCallback((slug) => {
     if (!slug) {
       return;
@@ -2873,13 +2902,8 @@ const Transmedia = () => {
     if (!requireShowcaseAuth('Inicia sesión para leer este fragmento.', { action: 'read-fragment', extras: { slug } })) {
       return;
     }
-    window.dispatchEvent(
-      new CustomEvent('gatoencerrado:open-blog', {
-        detail: { slug },
-      })
-    );
-    document.getElementById('dialogo-critico')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-  }, [requireShowcaseAuth]);
+    navigateToCuratorial(slug);
+  }, [navigateToCuratorial, requireShowcaseAuth]);
 
   useEffect(() => {
     let cancelled = false;
@@ -2947,18 +2971,8 @@ const Transmedia = () => {
     if (!post?.slug) {
       return;
     }
-    if (activeShowcase) {
-      handleCloseShowcase();
-    }
-    window.setTimeout(() => {
-      window.dispatchEvent(
-        new CustomEvent('gatoencerrado:open-blog', {
-          detail: { slug: post.slug },
-        })
-      );
-      document.getElementById('dialogo-critico')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }, 140);
-  }, [activeShowcase, handleCloseShowcase, latestBlogPostByShowcase]);
+    navigateToCuratorial(post.slug);
+  }, [latestBlogPostByShowcase, navigateToCuratorial]);
 
   const handleReadingBadgeClick = useCallback((showcaseId) => {
     const post = latestBlogPostByShowcase[showcaseId];
@@ -3479,6 +3493,9 @@ const Transmedia = () => {
 
   useEffect(() => {
     if (typeof window === 'undefined') return undefined;
+    if (typeof document !== 'undefined') {
+      document.documentElement.dataset.gatoShowcaseOpen = activeShowcase ? 'true' : 'false';
+    }
     window.dispatchEvent(
       new CustomEvent('gatoencerrado:showcase-visibility', {
         detail: {
@@ -3493,6 +3510,9 @@ const Transmedia = () => {
   useEffect(
     () => () => {
       stopScopedMediaPlayback(true);
+      if (typeof document !== 'undefined') {
+        delete document.documentElement.dataset.gatoShowcaseOpen;
+      }
       if (typeof window === 'undefined') return;
       window.dispatchEvent(
         new CustomEvent('gatoencerrado:showcase-visibility', {

@@ -648,7 +648,7 @@ const MiniverseModal = ({
         lead: 'Te presentamos los nueve miniversos como una pantalla de inicio:',
         highlight:
           'Un formato familiar para explorar y volver cuando quieras.',
-          continuation: 'Con tu huella activa, accedes a la versión completa en miniversos.ai.'
+          continuation: 'Con tu huella activa, accedes a la versión completa.'
       };
     }
     if (activeTab === 'escaparate') {
@@ -660,8 +660,8 @@ const MiniverseModal = ({
     }
     return {
       lead: 'Activar una huella',
-      highlight: 'impulsa acompañamiento emocional real y mantiene viva la experiencia artística más allá del escenario.',
-      continuation: 'Tu participación deja impacto tangible.'
+      highlight: 'impulsa acompañamiento emocional real en jóvenes',
+      continuation: 'de escuelas públicas y mantiene viva la experiencia artística más allá del escenario.'
     };
   }, [activeTab]);
   const showcaseMiniverses = useMemo(
@@ -1280,6 +1280,7 @@ const MiniverseModal = ({
           <motion.div
             className={`safari-stable-layer safari-backdrop-lite absolute inset-0 bg-black/80 ${isSafari ? '' : 'backdrop-blur-sm'} ${shelved ? 'pointer-events-none' : ''}`}
             variants={backdropVariants}
+            onClick={handleClose}
             aria-hidden="true"
           />
 
@@ -1315,9 +1316,9 @@ const MiniverseModal = ({
               Habita el universo de #GatoEncerrado
             </h2>
 
-            <div className="mt-3 rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-slate-200/90">
+            <div className="mt-3 rounded-xl border border-purple-400/60 bg-purple-500/20 px-4 py-3 text-sm text-purple-100/95 shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]">
               {activeTabIntro.lead}{' '}
-              <strong className="font-semibold text-slate-50">
+              <strong className="font-semibold text-white">
                 {activeTabIntro.highlight}
               </strong>
               {activeTabIntro.continuation ? ` ${activeTabIntro.continuation}` : ''}
@@ -1386,9 +1387,9 @@ const MiniverseModal = ({
                           <Button
                             type="button"
                             onClick={handleScrollToSupport}
-                            className="h-11 min-w-[10.5rem] bg-white px-6 text-base font-semibold text-slate-900 hover:bg-white/90"
+                            className="white-glass-btn h-11 min-w-[10.5rem] px-6 text-base font-semibold tracking-[0.2px]"
                           >
-                            Activar huella
+                            Activar huella mensual
                           </Button>
                           {embeddedCheckoutStatus ? (
                             <p className="text-center text-xs leading-relaxed text-slate-300/80">
@@ -2102,10 +2103,15 @@ const MiniverseModal = ({
             </div>
 
             {!selectedMiniverse ? (
-              <div className="mt-6 w-full max-w-3xl mx-auto flex items-center justify-between text-xs text-slate-500">
+              <div className="sticky bottom-2 z-30 mt-6 w-full max-w-3xl mx-auto flex items-center justify-between rounded-2xl border border-white/10 bg-slate-950/75 px-3 py-2 text-xs text-slate-400 backdrop-blur-sm">
                 <span>{activeTabLabel}</span>
-                <button onClick={handleClose} className="text-slate-400 hover:text-white transition">
-                  Cerrar
+                <button
+                  type="button"
+                  onClick={handleClose}
+                  className="relative z-40 inline-flex items-center gap-2 rounded-full border border-white/20 bg-black/50 px-4 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-slate-100 transition hover:border-purple-300/50 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-400/60"
+                >
+                  <span>Cerrar</span>
+                  <span aria-hidden="true" className="text-[0.7rem]">✕</span>
                 </button>
               </div>
             ) : null}

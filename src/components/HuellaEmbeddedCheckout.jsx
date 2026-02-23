@@ -273,18 +273,18 @@ const PaymentForm = ({ onDone, defaultEmail = '' }) => {
       <button
         type="submit"
         disabled={isSubmitting || !stripe || !elements || !isPaymentElementReady}
-        className="relative h-11 w-full overflow-hidden rounded-xl bg-white px-6 text-sm font-semibold text-slate-900 transition hover:bg-white/90 disabled:cursor-not-allowed disabled:opacity-60"
+        className="huella-confirm-btn relative h-11 w-full overflow-hidden rounded-xl px-6 text-sm font-semibold text-slate-900 disabled:cursor-not-allowed disabled:opacity-60"
       >
         <span
           aria-hidden="true"
-          className="pointer-events-none absolute inset-0 opacity-70 [background:radial-gradient(90%_70%_at_50%_20%,rgba(255,138,61,0.28),transparent_60%),radial-gradient(70%_60%_at_75%_55%,rgba(236,72,153,0.2),transparent_62%)]"
+          className="huella-confirm-btn__aura pointer-events-none absolute inset-0"
         />
         <span className="relative">
           {isSubmitting
             ? 'Procesando...'
             : !isPaymentElementReady
               ? 'Cargando formulario...'
-              : 'Confirmar huella con Stripe'}
+              : 'Confirmar mi huella'}
         </span>
       </button>
       {showLinkAuth && linkEmail ? (
