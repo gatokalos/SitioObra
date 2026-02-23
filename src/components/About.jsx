@@ -402,7 +402,7 @@ export const ProvocaSection = () => {
                       onChange={(event) => setVoiceDraft(event.target.value)}
                       rows={3}
                       autoFocus
-                      className="w-full rounded-lg border border-white/10 bg-black/30 px-4 py-3 text-slate-100 placeholder-slate-500 focus:border-purple-400 focus:ring-1 focus:ring-purple-400 resize-none"
+                      className="provoca-field-focus w-full rounded-lg border border-white/10 bg-black/30 px-4 py-3 text-slate-100 placeholder-slate-500 resize-none"
                       placeholder="Cuéntanos cómo cambió tu forma de mirar, sentir o recordar algo..."
                     />
                     <div className="mt-3 grid gap-3 sm:grid-cols-2">
@@ -410,14 +410,14 @@ export const ProvocaSection = () => {
                         aria-label="Tu nombre"
                         value={voiceName}
                         onChange={(event) => setVoiceName(event.target.value)}
-                        className="w-full rounded-lg border border-white/10 bg-black/30 px-4 py-2 text-slate-100 placeholder-slate-500 focus:border-purple-400 focus:ring-1 focus:ring-purple-400"
+                        className="provoca-field-focus w-full rounded-lg border border-white/10 bg-black/30 px-4 py-2 text-slate-100 placeholder-slate-500"
                         placeholder="Tu nombre"
                       />
                       <input
                         aria-label="Tu rol o ciudad"
                         value={voiceRole}
                         onChange={(event) => setVoiceRole(event.target.value)}
-                        className="w-full rounded-lg border border-white/10 bg-black/30 px-4 py-2 text-slate-100 placeholder-slate-500 focus:border-purple-400 focus:ring-1 focus:ring-purple-400"
+                        className="provoca-field-focus w-full rounded-lg border border-white/10 bg-black/30 px-4 py-2 text-slate-100 placeholder-slate-500"
                         placeholder="Rol, ciudad o vínculo (opcional)"
                       />
                     </div>
@@ -438,7 +438,7 @@ export const ProvocaSection = () => {
                           disabled={isSubmittingVoice}
                           className="ui-segmented__btn ui-segmented__btn--primary flex-1 sm:flex-none"
                         >
-                          {isSubmittingVoice ? 'Enviando…' : 'Enviar perspectiva'}
+                          {isSubmittingVoice ? 'Enviando…' : 'Enviar tu voz'}
                         </Button>
                         <Button
                           type="button"

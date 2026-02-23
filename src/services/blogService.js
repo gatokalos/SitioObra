@@ -1,4 +1,6 @@
-const API_URL = import.meta.env.VITE_API_URL;
+import { sanitizeExternalHttpUrl } from '@/lib/urlSafety';
+const RAW_API_URL = import.meta.env.VITE_API_URL?.replace(/\/+$/, '') || '';
+const API_URL = sanitizeExternalHttpUrl(RAW_API_URL);
 const TABLE_NAME = 'blog_posts';
 
 const SAMPLE_POSTS = [];
@@ -16,9 +18,9 @@ const mapDatabasePost = (post) => ({
   published_at: post.published_at ?? post.publish_date ?? null,
   read_time_minutes: post.read_time_minutes ?? post.read_time ?? null,
   tags: post.tags ?? [],
-  featured_image_url: post.featured_image_url ?? post.cover_image ?? null,
+  featured_image_url: sanitizeExternalHttpUrl(post.featured_image_url ?? post.cover_image ?? null),
   image_caption: post.image_caption ?? post.caption ?? '',
-  author_avatar_url: post.author_avatar_url ?? post.author_avatar ?? null,
+  author_avatar_url: sanitizeExternalHttpUrl(post.author_avatar_url ?? post.author_avatar ?? null),
 });
 
 export async function fetchPublishedBlogPosts() {

@@ -9,10 +9,89 @@ import { Button } from '@/components/ui/button';
 import { toast } from '@/components/ui/use-toast';
 import { supabase } from '@/lib/supabaseClient';
 import { ConfettiBurst, useConfettiBursts } from '@/components/Confetti';
-import { Heart } from 'lucide-react';
+import { Heart, MapIcon } from 'lucide-react';
 
 const LOGO_SRC = '/assets/logoapp.webp';
+// Banner (placeholder). Reemplaza por tu póster horizontal cuando lo tengas.
+const BANNER_SRC = '/assets/placeholder-banner.webp';
 
+
+const RESERVE_BUTTON_STYLES = `
+/* ReserveModal: glossy CTA button */
+.reserve-btn{
+  --r: 999px;
+  position: relative;
+  width: 100%;
+  padding: 12px 16px;
+  border: 0;
+  border-radius: var(--r);
+  cursor: pointer;
+  color: rgba(255,255,255,.92);
+  font-weight: 650;
+  background: rgba(16,18,24,.62);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  box-shadow: 0 12px 30px rgba(0,0,0,.55), inset 0 1px 0 rgba(255,255,255,.06);
+  transition: transform .15s ease, box-shadow .2s ease, filter .2s ease;
+  overflow: hidden;
+}
+
+.reserve-btn::before{
+  content:"";
+  position:absolute;
+  inset:-40%;
+  background:
+    linear-gradient(135deg,
+      rgba(120,255,233,.55) 0%,
+      rgba(120,160,255,.25) 35%,
+      rgba(206,120,255,.55) 60%,
+      rgba(255,210,120,.35) 100%);
+  transform: rotate(8deg);
+  opacity: .65;
+  filter: blur(0px);
+  pointer-events:none;
+}
+
+.reserve-btn::after{
+  content:"";
+  position:absolute; inset:0;
+  background:
+    linear-gradient(90deg, transparent 0 35%, rgba(0,0,0,.22) 35% 36%, transparent 36% 100%);
+  mix-blend-mode: multiply;
+  opacity: .9;
+  pointer-events:none;
+}
+
+.reserve-btn:hover{
+  transform: translateY(-1px);
+  filter: saturate(1.10);
+  box-shadow: 0 16px 36px rgba(0,0,0,.62), inset 0 1px 0 rgba(255,255,255,.08);
+}
+
+.reserve-btn:active{ transform: translateY(0px) scale(.99); }
+
+.reserve-btn:focus-visible{
+  outline: 0;
+  box-shadow:
+    0 0 0 3px rgba(120,255,233,.16),
+    0 16px 36px rgba(0,0,0,.62),
+    inset 0 1px 0 rgba(255,255,255,.08);
+}
+
+.reserve-btn--secondary::after{
+  opacity: .55;
+}
+
+.reserve-btn--primary{
+  background: rgba(16,18,24,.52);
+}
+
+/* Texto arriba de los overlays */
+.reserve-btn > span{
+  position: relative;
+  z-index: 1;
+}
+`;
 // -------------------------------------------------------------
 // PRODUCTOS A APARTAR
 // -------------------------------------------------------------
@@ -21,21 +100,20 @@ export const PACKAGE_OPTIONS = [
     id: 'taza-250',
     title: 'Taza artesanal',
     price: '$250 MXN',
-    helper: 'Taza ritual con portal AR y frase activable.',
+    
     priceId: import.meta.env.VITE_PRICE_TAZA,
   },
   {
     id: 'novela-400',
-    title: 'Novela de autoficción',
+    title: 'Novela Ensayo',
     price: '$400 MXN',
-    helper: 'Primera edición con acceso al app de Club de Lectura.',
+    
     priceId: import.meta.env.VITE_PRICE_NOVELA,
   },
   {
     id: 'combo-900',
     title: 'Novela + 2 tazas',
     price: '$900 MXN',
-    helper: 'Incluye acceso al app de Club de Lectura con GATokens para explorar los miniversos.',
     priceId: import.meta.env.VITE_PRICE_COMBO,
   },
 ];
@@ -168,6 +246,7 @@ const ReserveModal = ({
   const [isCheckoutLoading, setIsCheckoutLoading] = useState(false);
   const { bursts: confettiBursts, fireConfetti } = useConfettiBursts();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showProposalForm, setShowProposalForm] = useState(false);
 
   // -------------------------------------------------------------
   // Resetea cuando se abre
@@ -180,6 +259,9 @@ const ReserveModal = ({
       setErrorMessage('');
       setCheckoutError('');
       setIsCheckoutLoading(false);
+      setShowProposalForm(false);
+      // Prefill email/fullName from Supabase session if available and fields empty
+    
     }
   }, [open, normalizedInitialPackages]);
 
@@ -226,15 +308,17 @@ const ReserveModal = ({
     return null;
   }, [formState]);
 
-  const validateCheckout = useCallback(() => {
+    const validateCheckout = useCallback(() => {
     if (formState.packages.length === 0) {
       return 'Selecciona al menos un objeto que te guste.';
     }
+
     const normalizedEmail = formState.email.trim().toLowerCase();
     const isValidEmail = /\S+@\S+\.\S+/.test(normalizedEmail);
     if (!isValidEmail) {
       return 'Para abrir la tienda necesitamos un correo electrónico válido.';
     }
+
     return null;
   }, [formState.email, formState.packages.length]);
 
@@ -318,8 +402,8 @@ const ReserveModal = ({
           },
         };
         const normalizedEmail = formState.email.trim().toLowerCase();
-        payload.customer_email = normalizedEmail;
-
+payload.customer_email = normalizedEmail;
+      
         const { data, error } = await supabase.functions.invoke('create-checkout-session', {
           body: payload,
         });
@@ -371,6 +455,7 @@ const ReserveModal = ({
             variants={modalVariants}
             className="relative z-10 w-full max-w-3xl rounded-3xl border border-white/10 bg-slate-950/95 p-6 sm:p-10 shadow-2xl max-h-[92vh] overflow-y-auto"
           >
+            <style>{RESERVE_BUTTON_STYLES}</style>
             {confettiBursts.map((burst) => (
               <ConfettiBurst key={burst} seed={burst} />
             ))}
@@ -407,6 +492,32 @@ const ReserveModal = ({
               ✕
             </button>
 
+            {/* BANNER */}
+            <motion.div
+              initial={{ opacity: 0, y: 10, scale: 0.99 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              transition={{ duration: 0.45, ease: 'easeOut' }}
+              className="mb-6 sm:mb-8"
+            >
+              <div className="relative overflow-hidden rounded-2xl border border-white/10 bg-black/30">
+                <motion.img
+                  src="https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Merch/banner_cafegato.jpg"
+                  alt="Banner Café Gato"
+                  className="h-[140px] sm:h-[190px] w-full object-cover"
+                  initial={{ scale: 1.03 }}
+                  animate={{ scale: 1 }}
+                  transition={{ duration: 0.9, ease: 'easeOut' }}
+                  loading="lazy"
+                />
+
+                <div className="absolute inset-0 bg-gradient-to-t from-slate-950/85 via-slate-950/20 to-transparent" />
+
+                <div className="absolute bottom-0 left-0 right-0 p-4 sm:p-5">
+                 
+                </div>
+              </div>
+            </motion.div>
+
             {copy.intro ? (
               <p className="mb-4 text-sm text-slate-300/90 leading-relaxed">{copy.intro}</p>
             ) : null}
@@ -416,13 +527,21 @@ const ReserveModal = ({
             ) : null}
 
             {/* GRID */}
-            <div className="grid md:grid-cols-2 gap-8">
+            <div className="grid md:grid-cols-[1.12fr_0.88fr] gap-8">
 
               {/* LEFT COLUMN */}
-              <div className="space-y-5">
-                <div>
-                
-                </div>
+              <div className="space-y-5 order-2 md:order-1">
+               <div className="mb-2">
+          <p className="text-xs uppercase tracking-[0.28em] text-slate-400/80">
+            Objetos disponibles
+          </p>
+          <h3 className="mt-2 text-lg text-slate-100 font-semibold">
+            Elige lo que quieres activar
+          </h3>
+          <p className="mt-1 text-sm text-slate-300/80 leading-relaxed">
+            Selecciona uno o varios. Enviar es para coordinar; “Comprar ahora” abre checkout si ya estás listx.
+          </p>
+        </div>
 
                 <div className="grid sm:grid-cols-2 gap-3">
   {PACKAGE_OPTIONS.map((option) => {
@@ -441,11 +560,11 @@ const ReserveModal = ({
     return (
       <label
         key={option.id}
-        className={`relative block rounded-2xl border ${
-          isSelected
-            ? 'border-purple-400/70 shadow-[0_12px_35px_rgba(126,34,206,0.35)]'
-            : 'border-white/10'
-        } bg-gradient-to-br from-slate-900/80 to-black/60 p-4 hover:border-purple-400/40 transition ${isCombo ? 'sm:col-span-2' : ''}`}
+        className={`group relative block rounded-2xl border ${
+  isSelected
+    ? 'border-purple-400/70 shadow-[0_12px_35px_rgba(126,34,206,0.35)]'
+    : 'border-white/10'
+} bg-gradient-to-br from-slate-900/80 to-black/60 p-4 hover:border-purple-400/40 transition hover:-translate-y-[1px] ${isCombo ? 'sm:col-span-2' : ''}`}
       >
         <input
           type="checkbox"
@@ -455,21 +574,21 @@ const ReserveModal = ({
           aria-hidden="true"
         />
         <div
-          aria-hidden="true"
-          className={`absolute inset-0 flex items-center justify-center pointer-events-none transition duration-300 ${
-            isSelected ? 'scale-100 opacity-100' : 'scale-0 opacity-0'
-          }`}
-        >
+  aria-hidden="true"
+  className={`absolute inset-0 z-20 flex items-center justify-center pointer-events-none transition duration-300 ${
+    isSelected ? 'scale-100 opacity-100' : 'scale-0 opacity-0'
+  }`}
+>
           <div className="flex h-20 w-20 items-center justify-center rounded-full bg-white/80 backdrop-blur-2xl shadow-[0_15px_35px_rgba(0,0,0,0.45)]">
             <Heart size={48} className="text-purple-500" />
           </div>
         </div>
 
-        <div className={`mb-3 w-full ${imageHeightClass} rounded-xl overflow-hidden border border-white/5`}>
+        <div className={`relative z-0 mb-3 w-full ${imageHeightClass} rounded-xl overflow-hidden border border-white/5`}>
           <img
             src={imageMap[option.id]}
             alt={option.title}
-            className="w-full h-full object-cover"
+            className="w-full h-full object-cover transition duration-500 group-hover:scale-[1.03]"
             loading="lazy"
           />
         </div>
@@ -488,63 +607,150 @@ const ReserveModal = ({
               </div>
 
               {/* RIGHT COLUMN — FORM */}
-              <form className="space-y-5" onSubmit={handleSubmit}>
+            <form
+  className="relative space-y-5 md:sticky md:top-6 self-start order-1 md:order-2"
+  onSubmit={handleSubmit}
+>
+<div className="relative min-h-[520px]">
+              {/* ───────── Mapa comunitario (UI mock) ───────── */}
+<div className="rounded-2xl border border-white/10 bg-white/5 p-5 flex flex-col gap-4">
+  <div className="flex items-center justify-between gap-3">
+    <h4 className="text-xs uppercase tracking-[0.35em] text-slate-300">
+      Mapa comunitario
+    </h4>
+    <span className="inline-flex items-center gap-1 rounded-full border border-cyan-300/30 bg-cyan-400/10 px-2 py-1 text-[10px] uppercase tracking-[0.25em] text-cyan-200">
+      <MapIcon size={12} />
+      Beta
+    </span>
+  </div>
 
-                {/* Nombre */}
-                <div className="space-y-2">
-                  <label className="text-sm font-medium text-slate-200">Tu nombre</label>
-                  <input
-                    name="fullName"
-                    type="text"
-                    required
-                    value={formState.fullName}
-                    onChange={handleInputChange}
-                    className="w-full rounded-lg border border-white/10 bg-black/30 px-4 py-3 text-slate-100 placeholder-slate-500 focus:border-purple-400 focus:ring-1 focus:ring-purple-400"
-                    placeholder="¿Cómo te llamas?"
-                  />
-                </div>
+  <div className="relative h-44 overflow-hidden rounded-xl border border-white/10 bg-slate-950/70">
+    <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_25%,rgba(34,211,238,0.14),transparent_35%),radial-gradient(circle_at_70%_70%,rgba(192,132,252,0.16),transparent_40%),linear-gradient(120deg,rgba(15,23,42,0.9),rgba(2,6,23,0.95))]" />
+    <div className="absolute inset-0 opacity-25 [background-size:22px_22px] [background-image:linear-gradient(to_right,rgba(148,163,184,0.22)_1px,transparent_1px),linear-gradient(to_bottom,rgba(148,163,184,0.22)_1px,transparent_1px)]" />
+    <span className="absolute left-[18%] top-[34%] h-3 w-3 rounded-full bg-cyan-300 shadow-[0_0_12px_rgba(34,211,238,0.75)]" />
+    <span className="absolute left-[57%] top-[48%] h-3 w-3 rounded-full bg-fuchsia-300 shadow-[0_0_12px_rgba(217,70,239,0.75)]" />
+    <span className="absolute left-[74%] top-[26%] h-3 w-3 rounded-full bg-emerald-300 shadow-[0_0_12px_rgba(16,185,129,0.75)]" />
+    <p className="absolute bottom-2 left-3 text-[10px] uppercase tracking-[0.25em] text-slate-300/80">
+      Próximamente: cafeterías sugeridas por la comunidad
+    </p>
+  </div>
 
-                {/* Email */}
-                <div className="space-y-2">
-                  <label className="text-sm font-medium text-slate-200">Correo electrónico</label>
-                  <input
-                    name="email"
-                    type="email"
-                    required
-                    value={formState.email}
-                    onChange={handleInputChange}
-                    className="w-full rounded-lg border border-white/10 bg-black/30 px-4 py-3 text-slate-100 placeholder-slate-500 focus:border-purple-400 focus:ring-1 focus:ring-purple-400"
-                    placeholder="nombre@correo.com"
-                  />
-                </div>
+  <div className="space-y-2 text-xs text-slate-300/90">
+    <p className="uppercase tracking-[0.25em] text-slate-400">Sugerencias destacadas</p>
+    <ul className="space-y-1.5">
+      <li>• Tijuana Centro · Cafetería de la esquina</li>
+      <li>• Zona Río · Punto de lectura nocturna</li>
+      <li>• Playas · Charla con taza y libreta</li>
+    </ul>
+  </div>
 
-                {/* Ciudad */}
-                <div className="space-y-2">
-                  <label className="text-sm font-medium text-slate-200">Ciudad</label>
-                  <input
-                    name="city"
-                    type="text"
-                    value={formState.city}
-                    onChange={handleInputChange}
-                    className="w-full rounded-lg border border-white/10 bg-black/30 px-4 py-3 text-slate-100 placeholder-slate-500 focus:border-purple-400 focus:ring-1 focus:ring-purple-400"
-                    placeholder="¿Desde dónde nos escribes?"
-                  />
-                </div>
+  <button
+    type="button"
+    onClick={() => setShowProposalForm(true)}
+    className="mt-1 text-xs uppercase tracking-[0.3em] text-purple-300 hover:text-purple-200 self-start"
+  >
+    📍Sugerir cafetería
+  </button>
+</div>
 
-                {/* Notes */}
-                <div className="space-y-2">
-                  <label className="text-sm font-medium text-slate-200">Intención o propuesta</label>
-                  <textarea
-                    name="notes"
-                    rows={3}
-                    required
-                    value={formState.notes}
-                    onChange={handleInputChange}
-                    className="w-full rounded-lg border border-white/10 bg-black/30 px-4 py-3 text-slate-100 placeholder-slate-500 focus:border-purple-400 focus:ring-1 focus:ring-purple-400 resize-none"
-                    placeholder="¿Te interesa un punto de venta, una presentación, un conversatorio o una colaboración?"
-                  />
-                </div>
+{!showProposalForm ? (
+  <div className="rounded-2xl border border-white/10 bg-black/20 p-4 text-sm text-slate-300/90">
+    <p className="leading-relaxed">
+      Si quieres proponer un punto de encuentro o colaboración, toca <strong>“Sugerir cafetería”</strong>.
+      Si ya estás listx, puedes ir directo a <strong>“Comprar ahora”</strong>.
+    </p>
+  </div>
+) : null}
 
+
+{showProposalForm ? (
+  <div className="absolute inset-0 z-20">
+    {/* scrim suave */}
+    <div
+      className="absolute inset-0 rounded-2xl bg-slate-950/70 backdrop-blur-sm border border-white/10"
+      aria-hidden="true"
+    />
+
+    {/* panel scrolleable dentro de la columna */}
+    <div className="relative h-full rounded-2xl p-5 overflow-y-auto">
+      <div className="flex items-center justify-between gap-3 mb-4">
+        <div>
+          <p className="text-[10px] uppercase tracking-[0.35em] text-slate-400/90">
+            Propuesta
+          </p>
+          <h4 className="text-base font-semibold text-slate-100">
+            Sugerir cafetería
+          </h4>
+        </div>
+
+        <button
+          type="button"
+          onClick={() => setShowProposalForm(false)}
+          className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-white/10 bg-white/5 text-slate-200 hover:bg-white/10 hover:text-white transition"
+          aria-label="Cerrar formulario"
+        >
+          ✕
+        </button>
+      </div>
+
+      {/* Nombre */}
+      <div className="space-y-2">
+        <label className="text-sm font-medium text-slate-200">Tu nombre</label>
+        <input
+          name="fullName"
+          type="text"
+          required
+          value={formState.fullName}
+          onChange={handleInputChange}
+          className="w-full rounded-lg border border-white/10 bg-black/30 px-4 py-3 text-slate-100 placeholder-slate-500 focus:border-purple-400 focus:ring-1 focus:ring-purple-400"
+          placeholder="¿Cómo te llamas?"
+        />
+      </div>
+
+      {/* Email */}
+      <div className="space-y-2 mt-4">
+        <label className="text-sm font-medium text-slate-200">Correo electrónico</label>
+        <input
+          name="email"
+          type="email"
+          required
+          value={formState.email}
+          onChange={handleInputChange}
+          className="w-full rounded-lg border border-white/10 bg-black/30 px-4 py-3 text-slate-100 placeholder-slate-500 focus:border-purple-400 focus:ring-1 focus:ring-purple-400"
+          placeholder="nombre@correo.com"
+        />
+      </div>
+
+      {/* Ciudad */}
+      <div className="space-y-2 mt-4">
+        <label className="text-sm font-medium text-slate-200">Ciudad</label>
+        <input
+          name="city"
+          type="text"
+          value={formState.city}
+          onChange={handleInputChange}
+          className="w-full rounded-lg border border-white/10 bg-black/30 px-4 py-3 text-slate-100 placeholder-slate-500 focus:border-purple-400 focus:ring-1 focus:ring-purple-400"
+          placeholder="¿Desde dónde nos escribes?"
+        />
+      </div>
+
+      {/* Notes */}
+      <div className="space-y-2 mt-4">
+        <label className="text-sm font-medium text-slate-200">Intención o propuesta</label>
+        <textarea
+          name="notes"
+          rows={3}
+          required
+          value={formState.notes}
+          onChange={handleInputChange}
+          className="w-full rounded-lg border border-white/10 bg-black/30 px-4 py-3 text-slate-100 placeholder-slate-500 focus:border-purple-400 focus:ring-1 focus:ring-purple-400 resize-none"
+          placeholder="¿Te interesa un punto de venta, una presentación, un conversatorio o una colaboración?"
+        />
+      </div>
+    </div>
+  </div>
+) : null}
+</div>
                 {/* Errors */}
                 {status === 'error' && (
                   <div className="rounded-lg border border-red-500/60 bg-red-500/10 px-4 py-3 text-sm text-red-200">
@@ -566,29 +772,29 @@ const ReserveModal = ({
                   </div>
                 )}
 
-                {/* Buttons */}
-                <div className="flex flex-col gap-3">
-                  <Button
-                    type="submit"
-                    disabled={status === 'loading'}
-                    className="w-full bg-gradient-to-r from-purple-600/80 to-indigo-600/80 hover:from-purple-600 hover:to-indigo-600 text-white py-3 rounded-lg font-semibold flex items-center justify-center gap-2 hover-glow"
-                  >
-                    {isSubmitting ? 'Enviando…' : 'Enviar'}
-                  </Button>
+               {/* Buttons */}
+<div className="flex flex-col gap-3">
+  {showProposalForm ? (
+    <Button
+      type="submit"
+      disabled={status === 'loading'}
+      className="w-full bg-gradient-to-r from-purple-600/80 to-indigo-600/80 hover:from-purple-600 hover:to-indigo-600 text-white py-3 rounded-lg font-semibold flex items-center justify-center gap-2 hover-glow"
+    >
+      {isSubmitting ? 'Enviando…' : 'Enviar'}
+    </Button>
+  ) : null}
 
-       
-
-                  <Button
-                    type="button"
-                    variant="outline"
-                    disabled={isCheckoutLoading || status === 'loading'}
-                    onClick={handleCheckout}
-                    className="w-full border-purple-400/40 text-purple-200 hover:bg-purple-500/10"
-                  >
-                    {isCheckoutLoading ? 'Redirigiendo…' : 'Comprar ahora'}
-                  </Button>
-             
-                </div>
+  <button
+  type="button"
+  onClick={handleCheckout}
+  disabled={isCheckoutLoading}
+  className="reserve-btn reserve-btn--primary mt-3 disabled:opacity-60 disabled:cursor-not-allowed"
+>
+  <span>
+    {isCheckoutLoading ? 'Abriendo tienda…' : 'Comprar ahora'}
+  </span>
+</button>
+</div>
               </form>
             </div>
 

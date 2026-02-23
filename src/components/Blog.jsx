@@ -12,6 +12,7 @@ import {
   deriveBlogCategory,
 } from '@/lib/blogCategories';
 import { recordArticleInteraction } from '@/services/articleInteractionService';
+import { sanitizeExternalHttpUrl } from '@/lib/urlSafety';
 
 const containerVariants = {
   hidden: { opacity: 0, y: 40 },
@@ -123,11 +124,24 @@ const markdownComponents = {
       {...props}
     />
   ),
+  img: ({ node: _node, src, alt, ...props }) => {
+    const safeSrc = sanitizeExternalHttpUrl(src);
+    if (!safeSrc) return null;
+    return (
+      <img
+        src={safeSrc}
+        alt={alt || ''}
+        loading="lazy"
+        className="my-4 w-full rounded-2xl border border-white/10 object-cover"
+        {...props}
+      />
+    );
+  },
 };
 
 const ArticleCard = ({ post, onSelect }) => {
   const publishedDate = post.published_at ? new Date(post.published_at) : null;
-  const previewImage = post.featured_image_url;
+  const previewImage = sanitizeExternalHttpUrl(post.featured_image_url);
   const hasPreview = Boolean(previewImage);
 
   return (
@@ -251,7 +265,7 @@ const ArticleCardSkeleton = () => (
 
 const FullArticle = ({ post, onClose }) => {
   const articleContent = useMemo(() => post?.content?.trim() ?? '', [post]);
-  const articleImage = post?.featured_image_url ?? null;
+  const articleImage = sanitizeExternalHttpUrl(post?.featured_image_url ?? null);
   const articleCaption = post?.image_caption?.trim?.() ?? '';
   const [showMobileCaption, setShowMobileCaption] = useState(false);
 
@@ -383,7 +397,7 @@ const ArticleInteractionPanel = ({ post }) => {
   const miniverseInfo = MINIVERSE_HIERARCHY[inferredMiniverseKey] ?? MINIVERSE_HIERARCHY.curaduria;
   const [wantsNotification, setWantsNotification] = useState(false);
   const [status, setStatus] = useState({ share: 'idle', notify: 'idle' });
-  const authorAvatar = post?.author_avatar_url;
+  const authorAvatar = sanitizeExternalHttpUrl(post?.author_avatar_url);
   const shareUrl = useMemo(() => {
     if (typeof window === 'undefined') {
       return '';

@@ -61,6 +61,7 @@ import ObraQuestionList from '@/components/miniversos/obra/ObraQuestionList';
 import { supabase } from '@/lib/supabaseClient';
 import { safeGetItem, safeRemoveItem, safeSetItem } from '@/lib/safeStorage';
 import { isSafariBrowser } from '@/lib/browser';
+import { sanitizeExternalHttpUrl } from '@/lib/urlSafety';
 
 const MiniverseModal = lazy(() => import('@/components/MiniverseModal'));
 const ContributionModal = lazy(() => import('@/components/ContributionModal'));
@@ -4109,10 +4110,10 @@ const Transmedia = () => {
                   const mobileMessage = `Toca de nuevo para abrir un texto de ${authorLabel}`;
                   const desktopMessage = `Curaduría de ${authorLabel} disponible`;
                   const thumbnailUrl =
-                    latestBlogPost.featured_image_url ||
-                    latestBlogPost.cover_image ||
-                    latestBlogPost.image_url ||
-                    latestBlogPost.author_avatar_url ||
+                    sanitizeExternalHttpUrl(latestBlogPost.featured_image_url) ||
+                    sanitizeExternalHttpUrl(latestBlogPost.cover_image) ||
+                    sanitizeExternalHttpUrl(latestBlogPost.image_url) ||
+                    sanitizeExternalHttpUrl(latestBlogPost.author_avatar_url) ||
                     null;
                   return (
                     <>
@@ -4477,12 +4478,13 @@ const rendernotaAutoral = () => {
         </div>
 
         <button
-          type="button"
-          onClick={() => handleOpenContribution(getContributionCategoryForShowcase('lataza'))}
-          className="mt-1 text-xs uppercase tracking-[0.3em] text-purple-300 hover:text-purple-200 self-start"
-        >
-          Sugerir cafetería
-        </button>
+  type="button"
+  onClick={() => handleOpenContribution(getContributionCategoryForShowcase('lataza'))}
+  className="mt-2 inline-flex items-center gap-2 rounded-full border border-purple-400/40 bg-purple-500/10 px-4 py-2 text-xs font-semibold uppercase tracking-[0.28em] text-purple-100 transition hover:border-purple-300/70 hover:bg-purple-500/15 hover:shadow-[0_12px_30px_rgba(126,34,206,0.28)] focus:outline-none focus:ring-2 focus:ring-purple-400/60 self-start"
+>
+  <MapIcon size={14} className="text-purple-200" />
+  Sugerir cafetería
+</button>
       </div>
     </div>
   )}
@@ -6578,7 +6580,7 @@ const rendernotaAutoral = () => {
                     animate={isSafari ? { opacity: 1, y: 0 } : { opacity: 1, y: 0 }}
                     whileTap={{ scale: 0.985, y: -2 }}
                     transition={isSafari ? { duration: 0.12, ease: 'linear' } : { duration: 0.4, ease: 'easeOut', delay: 0.08 }}
-                    className={`safari-stable-layer group glass-effect hover-glow rounded-2xl border border-white/10 bg-black/30 overflow-hidden text-left shadow-[0_20px_60px_rgba(0,0,0,0.55)] active:border-purple-300/40 active:shadow-[0_24px_70px_rgba(88,28,135,0.45)] ${
+                    className={`safari-stable-layer group vitrina-pozo-glass vitrina-pozo--${format.id} glass-effect hover-glow rounded-2xl border border-white/10 bg-black/30 overflow-hidden text-left shadow-[0_20px_60px_rgba(0,0,0,0.55)] active:border-purple-300/40 active:shadow-[0_24px_70px_rgba(88,28,135,0.45)] ${
                       isDimmedTile ? 'pointer-events-none opacity-70' : ''
                     } ${
                       isRecommendedTile
@@ -6594,7 +6596,7 @@ const rendernotaAutoral = () => {
                     onTouchEnd={handleMobileShowcaseTouchEnd}
                     onTouchCancel={handleMobileShowcaseTouchEnd}
                   >
-                    <div className="relative h-[500px] max-[375px]:h-[300px] bg-slate-500/20 overflow-hidden">
+                    <div className="relative vitrina-pozo-glass__media h-[500px] max-[375px]:h-[300px] bg-slate-500/20 overflow-hidden">
                       {format.image ? (
                         <img
                           src={format.image}
@@ -6606,7 +6608,7 @@ const rendernotaAutoral = () => {
                       <div className="absolute inset-0 bg-gradient-to-br from-white/5 via-transparent to-black/25" />
                       <div className="vitrina-image-overlay" style={mirrorEffect} />
                     </div>
-                    <div className="relative overflow-hidden">
+                    <div className="relative vitrina-pozo-glass__meta overflow-hidden">
                       {isRecommendedTile ? (
                         <div className="absolute right-4 top-4 z-20 rounded-full border border-fuchsia-300/50 bg-fuchsia-500/20 px-3 py-1 text-[0.58rem] font-semibold uppercase tracking-[0.24em] text-fuchsia-100">
                           Recomendada
@@ -6771,7 +6773,7 @@ const rendernotaAutoral = () => {
                     initial={isSafari ? false : { opacity: 0, y: 20 }}
                     animate={isSafari ? { opacity: 1, y: 0 } : { opacity: 1, y: 0 }}
                     transition={isSafari ? { duration: 0.12, ease: 'linear' } : { duration: 0.5, delay: index * 0.08, ease: 'easeOut' }}
-                    className={`safari-stable-layer group glass-effect rounded-2xl border border-white/10 bg-black/30 hover:border-purple-400/50 overflow-hidden text-left shadow-[0_20px_60px_rgba(0,0,0,0.55)] flex flex-col min-h-[620px] hover-glow transition ${
+                    className={`safari-stable-layer group vitrina-pozo-glass vitrina-pozo--${format.id} glass-effect rounded-2xl border border-white/10 bg-black/30 hover:border-purple-400/50 overflow-hidden text-left shadow-[0_20px_60px_rgba(0,0,0,0.55)] flex flex-col min-h-[620px] hover-glow transition ${
                       isRecommendedTile
                         ? 'border-fuchsia-300/60 shadow-[0_0_0_1px_rgba(244,114,182,0.35),0_24px_80px_rgba(168,85,247,0.3)]'
                         : ''
@@ -6782,7 +6784,7 @@ const rendernotaAutoral = () => {
                     }`}
                     onClick={() => handleFormatClick(format.id)}
                   >
-                    <div className="relative flex-1 min-h-[320px] bg-slate-500/20 overflow-hidden">
+                    <div className="relative vitrina-pozo-glass__media flex-1 min-h-[320px] bg-slate-500/20 overflow-hidden">
                       {format.image ? (
                         <img
                           src={format.image}
@@ -6798,7 +6800,7 @@ const rendernotaAutoral = () => {
                       <div className="vitrina-image-overlay" style={mirrorEffect} />
                       <div className="absolute inset-x-0 bottom-0 h-px bg-white/10" />
                     </div>
-                    <div className="relative p-6 overflow-hidden min-h-[240px]">
+                    <div className="relative vitrina-pozo-glass__meta p-6 overflow-hidden min-h-[240px]">
                       {isRecommendedTile ? (
                         <div className="absolute right-4 top-4 z-20 rounded-full border border-fuchsia-300/50 bg-fuchsia-500/20 px-3 py-1 text-[0.58rem] font-semibold uppercase tracking-[0.24em] text-fuchsia-100">
                           Recomendada

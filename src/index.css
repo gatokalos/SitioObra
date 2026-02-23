@@ -1046,6 +1046,20 @@ body {
   cursor: not-allowed !important;
 }
 
+.provoca-field-focus {
+  transition: border-color 0.2s ease, box-shadow 0.22s ease, background-color 0.2s ease;
+}
+
+.provoca-field-focus:focus {
+  outline: none;
+  border-color: rgba(216, 180, 254, 0.74) !important;
+  background-color: rgba(2, 6, 23, 0.58) !important;
+  box-shadow:
+    0 0 0 1px rgba(196, 181, 253, 0.52),
+    0 0 0 3px rgba(139, 92, 246, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
 @supports (-webkit-touch-callout: none) {
   .safari-backdrop-lite {
     backdrop-filter: blur(2px);
@@ -1059,4 +1073,210 @@ body {
   .safari-stable-layer .star-pulse {
     animation: none !important;
   }
+}
+
+/* Pozo glass variant for Transmedia vitrinas */
+.vitrina-pozo-glass {
+  position: relative;
+  isolation: isolate;
+}
+
+.vitrina-pozo-glass::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  background:
+    radial-gradient(120% 90% at 8% 0%, rgba(90, 205, 255, 0.16), transparent 58%),
+    radial-gradient(120% 90% at 92% 100%, rgba(255, 166, 88, 0.14), transparent 56%);
+  mix-blend-mode: screen;
+}
+
+.vitrina-pozo-glass::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  z-index: 2;
+  box-shadow:
+    inset 0 0 0 1px rgba(171, 214, 255, 0.2),
+    inset 0 0 0 2px rgba(255, 161, 97, 0.07);
+}
+
+.vitrina-pozo-glass__media {
+  position: relative;
+  z-index: 1;
+}
+
+.vitrina-pozo-glass__media::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0) 36%),
+    radial-gradient(130% 70% at 50% 120%, rgba(106, 170, 255, 0.14), rgba(106, 170, 255, 0) 62%);
+}
+
+.vitrina-pozo-glass__meta {
+  position: relative;
+  z-index: 1;
+}
+
+.vitrina-pozo-glass__meta::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(140% 100% at 10% -20%, rgba(86, 198, 255, 0.15), transparent 62%),
+    radial-gradient(140% 100% at 90% 140%, rgba(255, 146, 86, 0.11), transparent 58%);
+  mix-blend-mode: screen;
+}
+
+.vitrina-pozo-glass__meta::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.035;
+  background-image:
+    radial-gradient(rgba(255, 255, 255, 0.24) 0.6px, transparent 0.6px),
+    radial-gradient(rgba(255, 255, 255, 0.14) 0.6px, transparent 0.6px);
+  background-size: 3px 3px, 4px 4px;
+  background-position: 0 0, 1px 1px;
+  mix-blend-mode: overlay;
+}
+
+.vitrina-pozo-glass__meta > * {
+  position: relative;
+  z-index: 1;
+}
+
+/* Pozo glass tuning: preserve original tile tint, keep only bevel accents */
+.vitrina-pozo-glass::before {
+  display: none;
+}
+
+.vitrina-pozo-glass::after {
+  box-shadow:
+    inset 0 0 0 1px rgba(173, 216, 255, 0.22),
+    inset 0 0 0 2px rgba(255, 164, 102, 0.08),
+    0 0 0 1px rgba(255, 255, 255, 0.06);
+}
+
+.vitrina-pozo-glass__meta::before {
+  display: none;
+}
+
+.vitrina-pozo-glass__media::after {
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0) 34%),
+    radial-gradient(130% 70% at 50% 120%, rgba(106, 170, 255, 0.08), rgba(106, 170, 255, 0) 62%);
+}
+
+.vitrina-pozo-glass__meta::after {
+  opacity: 0.018;
+}
+
+/* Pozo glass color identity by vitrina */
+.vitrina-pozo-glass {
+  --pozo-accent-rgb: 186, 131, 255;
+  --pozo-ember-rgb: 255, 161, 97;
+  --pozo-bg-a-rgb: 20, 14, 35;
+  --pozo-bg-b-rgb: 47, 28, 71;
+  --pozo-bg-c-rgb: 90, 42, 100;
+}
+
+.vitrina-pozo-glass__meta {
+  background:
+    radial-gradient(140% 120% at 8% -18%, rgba(var(--pozo-accent-rgb), 0.16), transparent 58%),
+    radial-gradient(130% 120% at 92% 125%, rgba(var(--pozo-ember-rgb), 0.14), transparent 54%),
+    linear-gradient(135deg, rgba(var(--pozo-bg-a-rgb), 0.95), rgba(var(--pozo-bg-b-rgb), 0.9), rgba(var(--pozo-bg-c-rgb), 0.78));
+}
+
+.vitrina-pozo-glass::after {
+  box-shadow:
+    inset 0 0 0 1px rgba(var(--pozo-accent-rgb), 0.24),
+    inset 0 0 0 2px rgba(var(--pozo-ember-rgb), 0.09),
+    0 0 0 1px rgba(255, 255, 255, 0.05);
+}
+
+.vitrina-pozo--miniversos {
+  --pozo-accent-rgb: 186, 131, 255;
+  --pozo-bg-a-rgb: 31, 21, 52;
+  --pozo-bg-b-rgb: 64, 36, 93;
+  --pozo-bg-c-rgb: 122, 54, 127;
+}
+
+.vitrina-pozo--copycats {
+  --pozo-accent-rgb: 132, 176, 255;
+  --pozo-bg-a-rgb: 16, 27, 54;
+  --pozo-bg-b-rgb: 38, 63, 109;
+  --pozo-bg-c-rgb: 92, 47, 95;
+}
+
+.vitrina-pozo--miniversoGrafico {
+  --pozo-accent-rgb: 214, 146, 255;
+  --pozo-bg-a-rgb: 37, 19, 52;
+  --pozo-bg-b-rgb: 70, 32, 86;
+  --pozo-bg-c-rgb: 141, 58, 121;
+}
+
+.vitrina-pozo--miniversoNovela {
+  --pozo-accent-rgb: 163, 148, 255;
+  --pozo-bg-a-rgb: 26, 24, 60;
+  --pozo-bg-b-rgb: 59, 43, 95;
+  --pozo-bg-c-rgb: 108, 56, 118;
+}
+
+.vitrina-pozo--miniversoSonoro {
+  --pozo-accent-rgb: 122, 179, 255;
+  --pozo-bg-a-rgb: 18, 29, 62;
+  --pozo-bg-b-rgb: 32, 65, 103;
+  --pozo-bg-c-rgb: 70, 91, 146;
+}
+
+.vitrina-pozo--lataza {
+  --pozo-accent-rgb: 255, 173, 145;
+  --pozo-ember-rgb: 255, 189, 120;
+  --pozo-bg-a-rgb: 44, 20, 30;
+  --pozo-bg-b-rgb: 101, 45, 66;
+  --pozo-bg-c-rgb: 196, 111, 86;
+}
+
+.vitrina-pozo--miniversoMovimiento {
+  --pozo-accent-rgb: 163, 233, 208;
+  --pozo-bg-a-rgb: 24, 30, 45;
+  --pozo-bg-b-rgb: 40, 64, 65;
+  --pozo-bg-c-rgb: 74, 123, 102;
+}
+
+.vitrina-pozo--apps {
+  --pozo-accent-rgb: 110, 231, 183;
+  --pozo-bg-a-rgb: 30, 41, 59;
+  --pozo-bg-b-rgb: 22, 163, 74;
+  --pozo-bg-c-rgb: 34, 211, 238;
+}
+
+.vitrina-pozo--oraculo {
+  --pozo-accent-rgb: 225, 160, 235;
+  --pozo-bg-a-rgb: 38, 18, 56;
+  --pozo-bg-b-rgb: 86, 33, 115;
+  --pozo-bg-c-rgb: 168, 68, 139;
+}
+
+/* Pozo glass color calibration */
+.vitrina-pozo--apps .vitrina-pozo-glass__meta {
+  filter: saturate(1.1);
+}
+
+.vitrina-pozo--miniversoMovimiento .vitrina-pozo-glass__meta {
+  filter: saturate(1.1);
+}
+
+.vitrina-pozo--oraculo .vitrina-pozo-glass__meta {
+  filter: brightness(0.92) saturate(0.98);
 }
