@@ -1520,7 +1520,7 @@ const CAUSE_ACCORDION = [
   imageAlt: 'Captura de la app Causa Social en escuelas (versión beta).',
   imageLabel: 'Capturas beta de la app',
     imageUrls: [
-      'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/causa%20social/aplicacion_app1.png',
+      'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/causa%20social/causa_social.png',
       'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/causa%20social/aplicacion_estudiante.png',
        'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/causa%20social/app_estarbien.png',
       'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/causa%20social/app_estarbien2.png',
@@ -2729,6 +2729,7 @@ const Transmedia = () => {
 
   const handleCloseShowcase = useCallback(() => {
     stopScopedMediaPlayback(true);
+    document.body.classList.remove('overflow-hidden');
     setActiveShowcase(null);
     setIsMiniverseShelved(false);
   }, [stopScopedMediaPlayback]);
@@ -3442,11 +3443,11 @@ const Transmedia = () => {
     }
     if (isTazaARActive && isMobile) {
       document.body.classList.add('overflow-hidden');
-    } else if (!isCinematicShowcaseOpen) {
+    } else {
       document.body.classList.remove('overflow-hidden');
     }
     return undefined;
-  }, [isTazaARActive, isMobileARFullscreen, isCinematicShowcaseOpen]);
+  }, [isTazaARActive, isMobileARFullscreen]);
   const scrollLockYRef = useRef(0);
   const wasCinematicOpenRef = useRef(false);
   const previousActiveShowcaseRef = useRef(null);
@@ -3618,6 +3619,22 @@ const Transmedia = () => {
     scrollLockYRef.current = 0;
   }, [isCinematicShowcaseOpen, isMiniverseShelved]);
 
+  useEffect(
+    () => () => {
+      const html = document.documentElement;
+      const body = document.body;
+      body.style.position = '';
+      body.style.top = '';
+      body.style.left = '';
+      body.style.right = '';
+      body.style.width = '';
+      body.style.overflow = '';
+      body.classList.remove('overflow-hidden');
+      html.style.overflow = '';
+    },
+    [],
+  );
+
   useEffect(() => {
     if (!isCinematicShowcaseOpen) return undefined;
     const handleKeyDown = (event) => {
@@ -3652,11 +3669,9 @@ const Transmedia = () => {
     if (activeShowcase !== 'lataza') {
       setIsTazaARActive(false);
       setIsMobileARFullscreen(false);
-      if (!isCinematicShowcaseOpen) {
-        document.body.classList.remove('overflow-hidden');
-      }
+      document.body.classList.remove('overflow-hidden');
     }
-  }, [activeShowcase, isCinematicShowcaseOpen]);
+  }, [activeShowcase]);
 
   useEffect(() => {
     if (!isOraculoOpen) {
