@@ -24,6 +24,7 @@ import {
   Users,
   RadioTower,
   Sparkles,
+  Layers,
   MapIcon,
   Coins,
   Quote,
@@ -632,10 +633,10 @@ const OBRA_VOICE_MODES = [
   },
   {
     id: 'poeta',
-    title: 'Poeta',
-    description: 'Lenguaje simbólico y eco breve.',
+    title: 'Filósofo y poeta',
+    description: 'Preguntas que desarman la realidad de la obra.',
     accent: 'from-violet-200/20 via-indigo-300/10 to-transparent',
-    icon: Feather,
+    icon: Layers,
     tint: {
       border: 'rgba(165,180,252,0.45)',
       glow: '0 18px 55px rgba(129,140,248,0.2)',
@@ -6898,7 +6899,7 @@ const rendernotaAutoral = () => {
     <>
       <section
         id="transmedia"
-        className="py-24 relative min-h-[1800px] md:min-h-[1600px] lg:min-h-[1500px]"
+        className="relative pb-24 pt-[clamp(3.5rem,8vh,6rem)] min-h-[1800px] md:min-h-[1600px] lg:min-h-[1500px]"
       >
         {import.meta.env?.DEV ? (
           <div className="fixed bottom-4 right-4 z-50">
@@ -6911,7 +6912,7 @@ const rendernotaAutoral = () => {
             </button>
           </div>
         ) : null}
-        <div className="section-divider mb-24"></div>
+        <div className="section-divider mb-[clamp(2.5rem,6vh,5.25rem)]"></div>
 
         <div className="container mx-auto px-6">
           <motion.div
@@ -6919,7 +6920,7 @@ const rendernotaAutoral = () => {
             whileInView={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, ease: 'easeOut' }}
             viewport={{ once: true }}
-            className="text-center mb-16 space-y-6 min-h-[240px] md:min-h-[260px]"
+            className="text-center mb-[clamp(2.5rem,5.5vh,4rem)] space-y-[clamp(1.25rem,2.2vh,1.75rem)] min-h-[clamp(210px,27vh,260px)]"
           >
             <p className="text-xs uppercase tracking-[0.4em] text-slate-400/70">Narrativa Transmedia</p>
             <h2 className="font-display text-4xl md:text-5xl font-medium text-gradient italic">

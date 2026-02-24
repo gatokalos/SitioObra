@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowLeft, BookOpen, CheckCircle2, Feather, Palette, Wrench, Zap } from 'lucide-react';
+import { ArrowLeft, BookOpen, CheckCircle2, Feather, Layers, Palette, Wrench, Zap } from 'lucide-react';
 import { useAuth } from '@/contexts/SupabaseAuthContext';
 import LoginOverlay from '@/components/ContributionModal/LoginOverlay';
 import PortalAuthButton from '@/components/PortalAuthButton';
@@ -73,9 +73,9 @@ const VOICE_MODES = [
   {
     id: 'poeta',
     title: 'Poeta',
-    description: 'Lenguaje simbólico y eco breve.',
+    description: 'Preguntas que desarman la realidad de la obra.',
     accent: 'from-violet-200/20 via-indigo-300/10 to-transparent',
-    icon: Feather,
+    icon: Layers,
     tint: {
       border: 'rgba(165,180,252,0.45)',
       glow: '0 18px 55px rgba(129,140,248,0.2)',

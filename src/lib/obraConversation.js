@@ -8,6 +8,17 @@ export const SILVESTRE_TRIGGER_QUESTIONS = [
   '¿Y si Silvestre no está angustiado por sí mismo, sino por el mundo?',
 ];
 
+const PHILOSOPHICAL_MODE_QUESTIONS = [
+  '¿Qué implica existir como obra y no como persona?',
+  '¿Desde cuándo existes… y cuándo dejas de existir?',
+  'Dime... ¿eres el texto, los cuerpos en el escenario… o algo que ocurre entre ambos?',
+  '¿Y si tú no eres conciente de la obra sino un personaje más?',
+  '¿Qué significa que existas tanto en el escenario como en nuestra mente?',
+  '¿Una obra necesita ser entendida… o solo necesita ser vista?',
+  '¿Qué parte de ti fue escrita sin que te dieras cuenta?',
+  'Si la obra se repite en mi cabeza, ¿quién está insistiendo, tú o yo?',
+];
+
 export const PORTAL_VOZ_MODE_QUESTIONS = {
   'lectura-profunda': [
     '¿Los otros personajes son personas reales… o son partes de Silvestre?',
@@ -18,8 +29,7 @@ export const PORTAL_VOZ_MODE_QUESTIONS = {
   
   ],
   'claro-directo': [
-    '¿Esto es ansiedad y depresión… o estoy leyendo mal la obra?',
-     '¿La obra habla de ansiedad y depresión o va por otro lado?',
+     '¿La obra habla de ansiedad y depresión?',
     '¿La Doctora sí entiende a Silvestre… o solo parece que sí?',
     'La escena de las marcianas me sacó de onda.',
     '¿Silvestre quiere entender lo que le pasa… o solo quiere dejar de sentirse así?',
@@ -33,7 +43,7 @@ export const PORTAL_VOZ_MODE_QUESTIONS = {
   'Hay escenas que me regresan sin que yo las busque.',
 ],
   artista: [
-  '¿Qué ?',
+  
   '¿Por qué Silvestre no puede dejar de pensar, aunque esté dormido?',
   'Siente que el cansancio es parte de la obra misma',
   '¿La obra está avanzando… o está dando vueltas a propósito?',
@@ -41,21 +51,16 @@ export const PORTAL_VOZ_MODE_QUESTIONS = {
   'Ese sueño que se repite… ¿está tratando de decir algo?',
 
 ],
-  poeta: [
-    '¿Qué se siente ser una obra?',
-    '¿Desde cuando existes?',
-    'Dime... ¿eres el texto, los actores, el escenario?',
-    '¿Tú eres un personaje de la obra?',
-    '¿Qué parte de ti solo vive en el escenario?',
-    '¿Te incomoda que el público te juzque?',
-  ],
+  poeta: PHILOSOPHICAL_MODE_QUESTIONS,
+  filósofo: PHILOSOPHICAL_MODE_QUESTIONS,
+  filosofo: PHILOSOPHICAL_MODE_QUESTIONS,
   tiktoker: [
-    '¿Esta obra te deja pensando o te deja raro?',
-    '¿Es una obra para volverse a ver o con una basta?',
-    '¿Es una obra triste o solo honesta?',
-    '¿A alguien más le dio ansiedad esta obra o solo a mí?',
+    '¿Te dejó pensando… o solo confundido?',
+    '¿Es para verla otra vez… o con una fue suficiente?',
+    '¿Es triste… o solo brutalmente honesta?',
+    '¿A alguien más le dio ansiedad esta obra… o solo a mí?',
     '¿Está bien no entenderla?',
-    '¿Es normal no saber qué sentí hasta después?',
-    '¿La obra explica algo o solo te lo avienta?',
+    '¿Les pasó que no supieron qué sintieron… hasta después?',
+    '¿La obra te explica algo… o solo te lo suelta y ya?',
   ],
 };
