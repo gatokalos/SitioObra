@@ -103,6 +103,11 @@ const getInitialInstallPwaCTAVisibility = () => {
 };
 const EXPLORER_BADGE_REWARD = 1000;
 const EXPLORER_BADGE_NAME = 'Errante Consagrado';
+const SHOWCASE_OPEN_TRANSITION = {
+  dimMs: 240,
+  blackoutMs: 280,
+  revealMs: 360,
+};
 const DEFAULT_BADGE_STATE = {
   unlocked: false,
   unlockedAt: null,
@@ -1860,7 +1865,9 @@ const Transmedia = () => {
   const [miniverseContext, setMiniverseContext] = useState(null);
   const [miniverseInitialTabId, setMiniverseInitialTabId] = useState(null);
   const [activeShowcase, setActiveShowcase] = useState(null);
+  const [showcaseOpenTransition, setShowcaseOpenTransition] = useState({ phase: 'idle', targetId: null });
   const hasHandledDeepLinkRef = useRef(false);
+  const showcaseOpenTransitionTimersRef = useRef([]);
   const mobileSwipeStateRef = useRef({
     startX: 0,
     startY: 0,
@@ -2664,6 +2671,57 @@ const Transmedia = () => {
     },
     [loadShowcaseContent, showcaseContent]
   );
+  const clearShowcaseOpenTransitionTimers = useCallback(() => {
+    if (typeof window === 'undefined') return;
+    showcaseOpenTransitionTimersRef.current.forEach((timerId) => {
+      window.clearTimeout(timerId);
+    });
+    showcaseOpenTransitionTimersRef.current = [];
+  }, []);
+
+  const resetShowcaseOpenTransition = useCallback(() => {
+    clearShowcaseOpenTransitionTimers();
+    setShowcaseOpenTransition({ phase: 'idle', targetId: null });
+  }, [clearShowcaseOpenTransitionTimers]);
+
+  const runShowcaseOpenTransition = useCallback(
+    (formatId) => {
+      if (!formatId || !showcaseDefinitions[formatId]) return;
+      if (showcaseOpenTransition.phase !== 'idle') return;
+
+      const prefersReducedMotion =
+        typeof window !== 'undefined' && window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches;
+      if (prefersReducedMotion) {
+        openMiniverseById(formatId);
+        return;
+      }
+
+      clearShowcaseOpenTransitionTimers();
+      setShowcaseOpenTransition({ phase: 'dimming', targetId: formatId });
+
+      const dimTimerId = window.setTimeout(() => {
+        setShowcaseOpenTransition((prev) =>
+          prev.targetId === formatId ? { phase: 'blackout', targetId: formatId } : prev
+        );
+      }, SHOWCASE_OPEN_TRANSITION.dimMs);
+
+      const openTimerId = window.setTimeout(() => {
+        openMiniverseById(formatId);
+        setShowcaseOpenTransition((prev) =>
+          prev.targetId === formatId ? { phase: 'revealing', targetId: formatId } : prev
+        );
+      }, SHOWCASE_OPEN_TRANSITION.dimMs + SHOWCASE_OPEN_TRANSITION.blackoutMs);
+
+      const resetTimerId = window.setTimeout(() => {
+        setShowcaseOpenTransition((prev) =>
+          prev.targetId === formatId ? { phase: 'idle', targetId: null } : prev
+        );
+      }, SHOWCASE_OPEN_TRANSITION.dimMs + SHOWCASE_OPEN_TRANSITION.blackoutMs + SHOWCASE_OPEN_TRANSITION.revealMs);
+
+      showcaseOpenTransitionTimersRef.current = [dimTimerId, openTimerId, resetTimerId];
+    },
+    [clearShowcaseOpenTransitionTimers, openMiniverseById, showcaseOpenTransition.phase]
+  );
 
   const resolveShowcaseFromBienvenida = useCallback((payload) => {
     const rawAppId = extractRecommendedAppId(payload);
@@ -2731,9 +2789,10 @@ const Transmedia = () => {
   const handleCloseShowcase = useCallback(() => {
     stopScopedMediaPlayback(true);
     document.body.classList.remove('overflow-hidden');
+    resetShowcaseOpenTransition();
     setActiveShowcase(null);
     setIsMiniverseShelved(false);
-  }, [stopScopedMediaPlayback]);
+  }, [resetShowcaseOpenTransition, stopScopedMediaPlayback]);
 
   const handleSelectMiniverse = useCallback(
     (formatId) => {
@@ -2758,6 +2817,9 @@ const Transmedia = () => {
 
   const handleFormatClick = useCallback(
     (formatId) => {
+      if (showcaseOpenTransition.phase !== 'idle') {
+        return;
+      }
       if (focusLockShowcaseId) {
         releaseDesktopFocusLock();
       }
@@ -2766,7 +2828,6 @@ const Transmedia = () => {
         return;
       }
       if (showcaseDefinitions[formatId]) {
-        setActiveShowcase((prev) => (prev === formatId ? null : formatId));
         const definition = showcaseDefinitions[formatId];
         if (definition.slug && definition.type !== 'blog-series') {
           const entry = showcaseContent[formatId];
@@ -2774,11 +2835,27 @@ const Transmedia = () => {
             loadShowcaseContent(formatId);
           }
         }
+        runShowcaseOpenTransition(formatId);
         return;
       }
       handleOpenMiniverses();
     },
-    [focusLockShowcaseId, handleOpenMiniverses, loadShowcaseContent, releaseDesktopFocusLock, showcaseContent]
+    [
+      focusLockShowcaseId,
+      handleOpenMiniverses,
+      loadShowcaseContent,
+      releaseDesktopFocusLock,
+      runShowcaseOpenTransition,
+      showcaseContent,
+      showcaseOpenTransition.phase,
+    ]
+  );
+
+  useEffect(
+    () => () => {
+      clearShowcaseOpenTransitionTimers();
+    },
+    [clearShowcaseOpenTransitionTimers]
   );
 
   useEffect(() => {
@@ -3274,6 +3351,8 @@ const Transmedia = () => {
   const activeDefinition = activeShowcase ? showcaseDefinitions[activeShowcase] : null;
   const activeData = activeShowcase ? showcaseContent[activeShowcase] : null;
   const isCinematicShowcaseOpen = Boolean(activeDefinition);
+  const isShowcaseOpenTransitionActive = showcaseOpenTransition.phase !== 'idle';
+  const showcaseTransitionTargetId = showcaseOpenTransition.targetId;
 
   const buildMiniverseShareUrl = useCallback((formatId) => {
     if (typeof window === 'undefined') return '';
@@ -5893,6 +5972,27 @@ const rendernotaAutoral = () => {
     );
   };
 
+  const showcaseDipToBlackOverlay = typeof document !== 'undefined' && isShowcaseOpenTransitionActive
+    ? createPortal(
+      <motion.div
+        key="showcase-dip-to-black"
+        className="fixed inset-0 z-[145] bg-black pointer-events-auto"
+        initial={{ opacity: 0 }}
+        animate={{
+          opacity: showcaseOpenTransition.phase === 'blackout' ? 1 : 0,
+        }}
+        transition={{
+          duration:
+            showcaseOpenTransition.phase === 'revealing'
+              ? SHOWCASE_OPEN_TRANSITION.revealMs / 1000
+              : SHOWCASE_OPEN_TRANSITION.blackoutMs / 1000,
+          ease: 'easeInOut',
+        }}
+      />,
+      document.body,
+    )
+    : null;
+
   const showcaseOverlay = typeof document !== 'undefined'
     ? createPortal(
       <AnimatePresence>
@@ -6570,31 +6670,40 @@ const rendernotaAutoral = () => {
               const mirrorEffect =
                 VITRINA_MIRROR_EFFECTS[format.id] ?? VITRINA_MIRROR_EFFECTS.default;
               const isActiveTile = activeShowcase === format.id;
-              const isDimmedTile = isCinematicShowcaseOpen && !isActiveTile;
+              const isTransitionTargetTile = isShowcaseOpenTransitionActive && showcaseTransitionTargetId === format.id;
+              const isTransitionDimTile = isShowcaseOpenTransitionActive && !isTransitionTargetTile;
+              const isDimmedTile = (isCinematicShowcaseOpen && !isActiveTile) || isTransitionDimTile;
               const isRecommendedTile = recommendedShowcaseId === format.id;
               return (
                 <>
                   <motion.div
                     key={format.id}
                     initial={isSafari ? false : { opacity: 0, y: 18 }}
-                    animate={isSafari ? { opacity: 1, y: 0 } : { opacity: 1, y: 0 }}
-                    whileTap={{ scale: 0.985, y: -2 }}
+                    animate={
+                      isSafari
+                        ? { opacity: 1, y: 0 }
+                        : { opacity: 1, y: 0, scale: isTransitionTargetTile ? 1.01 : 1 }
+                    }
+                    whileTap={isShowcaseOpenTransitionActive ? undefined : { scale: 0.985, y: -2 }}
                     transition={isSafari ? { duration: 0.12, ease: 'linear' } : { duration: 0.4, ease: 'easeOut', delay: 0.08 }}
                     className={`safari-stable-layer group vitrina-pozo-glass vitrina-pozo--${format.id} glass-effect hover-glow rounded-2xl border border-white/10 bg-black/30 overflow-hidden text-left shadow-[0_20px_60px_rgba(0,0,0,0.55)] active:border-purple-300/40 active:shadow-[0_24px_70px_rgba(88,28,135,0.45)] ${
-                      isDimmedTile ? 'pointer-events-none opacity-70' : ''
+                      isDimmedTile ? 'opacity-70' : ''
                     } ${
                       isRecommendedTile
                         ? 'border-fuchsia-300/60 shadow-[0_0_0_1px_rgba(244,114,182,0.35),0_24px_80px_rgba(168,85,247,0.3)]'
                         : ''
+                    } ${
+                      isShowcaseOpenTransitionActive ? 'pointer-events-none' : ''
                     }`}
                     onClick={() => {
+                      if (isShowcaseOpenTransitionActive) return;
                       if (mobileSwipeBlockTapRef.current) return;
                       handleFormatClick(format.id);
                     }}
-                    onTouchStart={handleMobileShowcaseTouchStart}
-                    onTouchMove={handleMobileShowcaseTouchMove}
-                    onTouchEnd={handleMobileShowcaseTouchEnd}
-                    onTouchCancel={handleMobileShowcaseTouchEnd}
+                    onTouchStart={isShowcaseOpenTransitionActive ? undefined : handleMobileShowcaseTouchStart}
+                    onTouchMove={isShowcaseOpenTransitionActive ? undefined : handleMobileShowcaseTouchMove}
+                    onTouchEnd={isShowcaseOpenTransitionActive ? undefined : handleMobileShowcaseTouchEnd}
+                    onTouchCancel={isShowcaseOpenTransitionActive ? undefined : handleMobileShowcaseTouchEnd}
                   >
                     <div className="relative vitrina-pozo-glass__media h-[500px] max-[375px]:h-[300px] bg-slate-500/20 overflow-hidden">
                       {format.image ? (
@@ -6668,14 +6777,21 @@ const rendernotaAutoral = () => {
                         Abrir vitrina
                         <ArrowRight size={18} />
                       </div>
+                      </div>
                     </div>
-                  </div>
+                    <div
+                      aria-hidden="true"
+                      className={`pointer-events-none absolute inset-0 z-30 bg-black transition-opacity duration-300 ease-in-out ${
+                        isTransitionDimTile ? 'opacity-95' : 'opacity-0'
+                      }`}
+                    />
                   </motion.div>
                   <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-3">
                     <button
                       type="button"
+                      disabled={isShowcaseOpenTransitionActive}
                       onClick={() => setMobileShowcaseIndex(prevIndex)}
-                      className="justify-self-start inline-flex max-w-full items-center gap-1 rounded-full border border-white/15 bg-white/5 px-3 py-1.5 text-xs text-slate-200/90 transition hover:border-purple-300/40 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-400/60"
+                      className="justify-self-start inline-flex max-w-full items-center gap-1 rounded-full border border-white/15 bg-white/5 px-3 py-1.5 text-xs text-slate-200/90 transition hover:border-purple-300/40 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-400/60 disabled:opacity-45 disabled:pointer-events-none"
                       aria-label={`Ir a vitrina anterior: ${prevLabel}`}
                     >
                       <span aria-hidden="true">←</span>
@@ -6692,6 +6808,7 @@ const rendernotaAutoral = () => {
                           <button
                             key={`mobile-dot-${item.id}`}
                             type="button"
+                            disabled={isShowcaseOpenTransitionActive}
                             onClick={() => setMobileShowcaseIndex(idx)}
                             className={`h-2 w-2 rounded-full transition ${
                               isActiveDot
@@ -6699,7 +6816,7 @@ const rendernotaAutoral = () => {
                                 : isLeftEdgeDot || isRightEdgeDot
                                   ? 'bg-slate-500/40 hover:bg-slate-300/65'
                                   : 'bg-slate-500/70 hover:bg-slate-300/80'
-                            }`}
+                            } disabled:opacity-45 disabled:pointer-events-none`}
                             aria-label={`Ir a vitrina ${item.title}`}
                             aria-current={isActiveDot ? 'true' : undefined}
                           />
@@ -6708,8 +6825,9 @@ const rendernotaAutoral = () => {
                     </div>
                     <button
                       type="button"
+                      disabled={isShowcaseOpenTransitionActive}
                       onClick={() => setMobileShowcaseIndex(nextIndex)}
-                      className="justify-self-end inline-flex max-w-full items-center gap-1 rounded-full border border-white/15 bg-white/5 px-3 py-1.5 text-xs text-slate-200/90 transition hover:border-purple-300/40 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-400/60"
+                      className="justify-self-end inline-flex max-w-full items-center gap-1 rounded-full border border-white/15 bg-white/5 px-3 py-1.5 text-xs text-slate-200/90 transition hover:border-purple-300/40 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-400/60 disabled:opacity-45 disabled:pointer-events-none"
                       aria-label={`Ir a vitrina siguiente: ${nextLabel}`}
                     >
                       <span className="truncate">{nextLabel}</span>
@@ -6766,23 +6884,39 @@ const rendernotaAutoral = () => {
                 const isRecommendedTile = recommendedShowcaseId === format.id;
                 const isFocusCenterTile = index === 1;
                 const isFocusSideTile = isDesktopFocusLockActive && !isFocusCenterTile;
+                const isTransitionTargetTile =
+                  isShowcaseOpenTransitionActive && showcaseTransitionTargetId === format.id;
+                const isTransitionDimTile =
+                  isShowcaseOpenTransitionActive &&
+                  showcaseTransitionTargetId !== format.id;
                 return (
                   <motion.button
                     key={format.id}
                     type="button"
                     initial={isSafari ? false : { opacity: 0, y: 20 }}
-                    animate={isSafari ? { opacity: 1, y: 0 } : { opacity: 1, y: 0 }}
+                    animate={
+                      isSafari
+                        ? { opacity: 1, y: 0 }
+                        : { opacity: 1, y: 0, scale: isTransitionTargetTile ? 1.012 : 1 }
+                    }
                     transition={isSafari ? { duration: 0.12, ease: 'linear' } : { duration: 0.5, delay: index * 0.08, ease: 'easeOut' }}
                     className={`safari-stable-layer group vitrina-pozo-glass vitrina-pozo--${format.id} glass-effect rounded-2xl border border-white/10 bg-black/30 hover:border-purple-400/50 overflow-hidden text-left shadow-[0_20px_60px_rgba(0,0,0,0.55)] flex flex-col min-h-[620px] hover-glow transition ${
                       isRecommendedTile
                         ? 'border-fuchsia-300/60 shadow-[0_0_0_1px_rgba(244,114,182,0.35),0_24px_80px_rgba(168,85,247,0.3)]'
                         : ''
                     } ${
-                      isFocusSideTile
+                      isFocusSideTile || isTransitionDimTile
                         ? 'opacity-45 saturate-50 brightness-75 scale-[0.985]'
                         : ''
+                    } ${
+                      isTransitionTargetTile ? 'border-purple-300/55 shadow-[0_24px_90px_rgba(88,28,135,0.45)]' : ''
+                    } ${
+                      isShowcaseOpenTransitionActive ? 'pointer-events-none' : ''
                     }`}
-                    onClick={() => handleFormatClick(format.id)}
+                    onClick={() => {
+                      if (isShowcaseOpenTransitionActive) return;
+                      handleFormatClick(format.id);
+                    }}
                   >
                     <div className="relative vitrina-pozo-glass__media flex-1 min-h-[320px] bg-slate-500/20 overflow-hidden">
                       {format.image ? (
@@ -6857,6 +6991,12 @@ const rendernotaAutoral = () => {
                       </div>
                       </div>
                     </div>
+                    <div
+                      aria-hidden="true"
+                      className={`pointer-events-none absolute inset-0 z-30 bg-black transition-opacity duration-300 ease-in-out ${
+                        isTransitionDimTile ? 'opacity-95' : 'opacity-0'
+                      }`}
+                    />
                   </motion.button>
                 );
               })}
@@ -6864,16 +7004,18 @@ const rendernotaAutoral = () => {
             <div className="flex items-center justify-center gap-3 mt-6">
               <button
                 type="button"
+                disabled={isShowcaseOpenTransitionActive}
                 onClick={handleShowcasePrevBatch}
-                className="h-10 w-10 rounded-full border border-white/15 bg-white/5 text-slate-200 hover:text-white hover:border-purple-300/40 transition"
+                className="h-10 w-10 rounded-full border border-white/15 bg-white/5 text-slate-200 hover:text-white hover:border-purple-300/40 transition disabled:opacity-45 disabled:pointer-events-none"
                 aria-label="Vitrina anterior"
               >
                 ←
               </button>
               <button
                 type="button"
+                disabled={isShowcaseOpenTransitionActive}
                 onClick={handleShowcaseNextBatch}
-                className="h-10 w-10 rounded-full border border-white/15 bg-white/5 text-slate-200 hover:text-white hover:border-purple-300/40 transition"
+                className="h-10 w-10 rounded-full border border-white/15 bg-white/5 text-slate-200 hover:text-white hover:border-purple-300/40 transition disabled:opacity-45 disabled:pointer-events-none"
                 aria-label="Siguiente vitrina"
               >
                 →
@@ -6881,6 +7023,7 @@ const rendernotaAutoral = () => {
             </div>
           </div>
           {showcaseOverlay}
+          {showcaseDipToBlackOverlay}
           {oraculoOverlay}
           {causeSiteOverlay}
           {quironFullOverlay}
