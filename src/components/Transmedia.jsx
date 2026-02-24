@@ -8,6 +8,9 @@ import {
   HeartHandshake,
   Feather,
   Palette,
+  CheckCircle2,
+  Wrench,
+  Zap,
   Smartphone,
   Coffee,
   Drama,
@@ -35,7 +38,11 @@ import CallToAction from '@/components/CallToAction';
 import InstallPWACTA from '@/components/InstallPWACTA';
 import { fetchBlogPostBySlug } from '@/services/blogService';
 import { toast } from '@/components/ui/use-toast';
-import { OBRA_CONVERSATION_STARTERS, SILVESTRE_TRIGGER_QUESTIONS } from '@/lib/obraConversation';
+import {
+  OBRA_CONVERSATION_STARTERS,
+  PORTAL_VOZ_MODE_QUESTIONS,
+  SILVESTRE_TRIGGER_QUESTIONS,
+} from '@/lib/obraConversation';
 import { useAuth } from '@/contexts/SupabaseAuthContext';
 import { consumeBienvenidaTransmediaIntent, setBienvenidaReturnPath } from '@/lib/bienvenida';
 import {
@@ -79,6 +86,7 @@ const GAT_COSTS = {
   tazaActivation: 90,
   movimientoRuta: 280,
 };
+const OBRA_VOICE_MIN_GAT = 1;
 const LEGACY_TAZA_VIEWER_ENABLED = false;
 const SHOWCASE_BADGE_IDS = [
   'miniversos',
@@ -104,10 +112,12 @@ const getInitialInstallPwaCTAVisibility = () => {
 };
 const EXPLORER_BADGE_REWARD = 1000;
 const EXPLORER_BADGE_NAME = 'Errante Consagrado';
+const ENABLE_SHOWCASE_AUTO_CYCLE = false;
+const SHOWCASE_AUTO_CYCLE_INTERVAL_MS = 9000;
 const SHOWCASE_OPEN_TRANSITION = {
-  dimMs: 240,
-  blackoutMs: 280,
-  revealMs: 360,
+  dimMs: 120,
+  blackoutMs: 90,
+  revealMs: 220,
 };
 const DEFAULT_BADGE_STATE = {
   unlocked: false,
@@ -559,6 +569,81 @@ function shuffleArray(list) {
   }
   return arr;
 }
+const OBRA_VOICE_MODES = [
+  {
+    id: 'lectura-profunda',
+    title: 'Lectura profunda',
+    description: 'Lectura que descubre capas y motivos.',
+    accent: 'from-violet-200/20 via-purple-300/10 to-transparent',
+    icon: BookOpen,
+    tint: {
+      border: 'rgba(196,181,253,0.5)',
+      glow: '0 20px 60px rgba(139,92,246,0.25)',
+      dot: 'rgba(196,181,253,0.9)',
+    },
+  },
+  {
+    id: 'artista',
+    title: 'Artista',
+    description: 'Intuición, imagen y pulso creativo.',
+    accent: 'from-rose-200/20 via-pink-300/10 to-transparent',
+    icon: Palette,
+    tint: {
+      border: 'rgba(251,113,133,0.45)',
+      glow: '0 18px 55px rgba(244,114,182,0.2)',
+      dot: 'rgba(251,113,133,0.9)',
+    },
+  },
+  {
+    id: 'claro-directo',
+    title: 'Claro y directo',
+    description: 'Lo esencial, sin rodeos.',
+    accent: 'from-amber-200/20 via-orange-300/10 to-transparent',
+    icon: CheckCircle2,
+    tint: {
+      border: 'rgba(251,191,36,0.45)',
+      glow: '0 18px 55px rgba(251,191,36,0.2)',
+      dot: 'rgba(251,191,36,0.9)',
+    },
+  },
+  {
+    id: 'tiktoker',
+    title: 'TikToker',
+    description: 'Ritmo, gancho y síntesis.',
+    accent: 'from-sky-200/20 via-indigo-300/10 to-transparent',
+    icon: Zap,
+    tint: {
+      border: 'rgba(125,211,252,0.45)',
+      glow: '0 18px 55px rgba(56,189,248,0.2)',
+      dot: 'rgba(125,211,252,0.9)',
+    },
+  },
+  {
+    id: 'util-hoy',
+    title: 'Útil hoy',
+    description: 'Una idea que sí puedes usar hoy.',
+    accent: 'from-emerald-200/20 via-teal-300/10 to-transparent',
+    icon: Wrench,
+    tint: {
+      border: 'rgba(110,231,183,0.45)',
+      glow: '0 18px 55px rgba(16,185,129,0.2)',
+      dot: 'rgba(110,231,183,0.9)',
+    },
+  },
+  {
+    id: 'poeta',
+    title: 'Poeta',
+    description: 'Lenguaje simbólico y eco breve.',
+    accent: 'from-violet-200/20 via-indigo-300/10 to-transparent',
+    icon: Feather,
+    tint: {
+      border: 'rgba(165,180,252,0.45)',
+      glow: '0 18px 55px rgba(129,140,248,0.2)',
+      dot: 'rgba(165,180,252,0.9)',
+    },
+  },
+];
+const DEFAULT_OBRA_VOICE_MODE_ID = OBRA_VOICE_MODES[0].id;
 const showcaseDefinitions = {
   miniversos: {
     label: 'Miniverso Obra',
@@ -1914,8 +1999,8 @@ const Transmedia = () => {
     handlePlayPendingAudio,
     resetSilvestreQuestions,
   } = useSilvestreVoice();
+  const [activeObraModeId, setActiveObraModeId] = useState(DEFAULT_OBRA_VOICE_MODE_ID);
   const [showcaseCarouselIndex, setShowcaseCarouselIndex] = useState(0);
-  const [isShowcaseCarouselPaused, setIsShowcaseCarouselPaused] = useState(false);
   const [mobileShowcaseIndex, setMobileShowcaseIndex] = useState(0);
   const [recommendedShowcaseId, setRecommendedShowcaseId] = useState(null);
   const [focusLockShowcaseId, setFocusLockShowcaseId] = useState(null);
@@ -2165,6 +2250,26 @@ const Transmedia = () => {
       return true;
     },
     [availableGATokens, isAuthenticated]
+  );
+
+  const consumeObraVoiceGAT = useCallback(
+    async ({ actionLabel = 'Hablar con La Obra por micrófono', source = 'mic', modeId = null } = {}) => {
+      const normalizedMode = typeof modeId === 'string' && modeId.trim() ? modeId.trim() : 'default';
+      const result = await trackTransmediaCreditEvent({
+        // RPC whitelist only allows fixed keys and showcase_boost:*.
+        eventKey: 'showcase_boost:obra_voice_turn',
+        amount: -OBRA_VOICE_MIN_GAT,
+        requiredTokens: OBRA_VOICE_MIN_GAT,
+        metadata: {
+          source: 'transmedia_obra_voice',
+          interaction_source: source,
+          mode_id: normalizedMode,
+        },
+        actionLabel,
+      });
+      return Boolean(result.ok);
+    },
+    [trackTransmediaCreditEvent]
   );
 
   useEffect(() => {
@@ -2693,7 +2798,10 @@ const Transmedia = () => {
 
       const prefersReducedMotion =
         typeof window !== 'undefined' && window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches;
-      if (prefersReducedMotion) {
+      const connection =
+        typeof navigator !== 'undefined' && navigator.connection ? navigator.connection : null;
+      const isSlowConnection = Boolean(connection?.saveData) || /(^|-)2g/.test(connection?.effectiveType || '');
+      if (prefersReducedMotion || isSlowConnection) {
         openMiniverseById(formatId);
         return;
       }
@@ -3499,20 +3607,6 @@ const Transmedia = () => {
     openMiniverseById(miniverse);
   }, [location.search, openMiniverseById]);
 
-  const handleShowcaseNext = useCallback(() => {
-    if (focusLockShowcaseId) {
-      releaseDesktopFocusLock();
-    }
-    setShowcaseCarouselIndex((prev) => (prev + 1) % formats.length);
-  }, [focusLockShowcaseId, releaseDesktopFocusLock]);
-
-  const handleShowcasePrev = useCallback(() => {
-    if (focusLockShowcaseId) {
-      releaseDesktopFocusLock();
-    }
-    setShowcaseCarouselIndex((prev) => (prev - 1 + formats.length) % formats.length);
-  }, [focusLockShowcaseId, releaseDesktopFocusLock]);
-
   const handleShowcaseNextBatch = useCallback(() => {
     if (focusLockShowcaseId) {
       releaseDesktopFocusLock();
@@ -3582,10 +3676,12 @@ const Transmedia = () => {
   }, [showcaseCarouselIndex]);
 
   useEffect(() => {
-    if (isMobileViewport || isShowcaseCarouselPaused || isDesktopFocusLockActive) return undefined;
-    const intervalId = window.setInterval(handleShowcaseNext, 9000);
+    if (!ENABLE_SHOWCASE_AUTO_CYCLE || isMobileViewport || isDesktopFocusLockActive) return undefined;
+    const intervalId = window.setInterval(() => {
+      setShowcaseCarouselIndex((prev) => (prev + 1) % formats.length);
+    }, SHOWCASE_AUTO_CYCLE_INTERVAL_MS);
     return () => window.clearInterval(intervalId);
-  }, [handleShowcaseNext, isDesktopFocusLockActive, isMobileViewport, isShowcaseCarouselPaused]);
+  }, [isDesktopFocusLockActive, isMobileViewport]);
 
   useEffect(() => {
     if (typeof window === 'undefined') return undefined;
@@ -3607,9 +3703,13 @@ const Transmedia = () => {
     if (!activeDefinition || activeDefinition.type !== 'tragedia') {
       return [];
     }
-    const base = activeDefinition.conversationStarters ?? [];
+    const modeQuestions = PORTAL_VOZ_MODE_QUESTIONS[activeObraModeId];
+    const base =
+      Array.isArray(modeQuestions) && modeQuestions.length
+        ? modeQuestions
+        : activeDefinition.conversationStarters ?? [];
     return shuffleArray([...base, ...SILVESTRE_TRIGGER_QUESTIONS]);
-  }, [activeDefinition]);
+  }, [activeDefinition, activeObraModeId]);
   const activeParagraphs = useMemo(() => {
     if (!activeData?.post?.content) {
       return [];
@@ -4061,16 +4161,32 @@ const Transmedia = () => {
     [activeShowcase]
   );
 
-  const handleOpenSilvestreChatCta = useCallback(() => {
-    if (
-      !requireShowcaseAuth('Inicia sesión para hablar con La Obra desde el micrófono.', {
-        action: 'open-mic-chat',
-      })
-    ) {
-      return;
+  const handleOpenSilvestreChatCta = useCallback(async (modeId = null) => {
+    const shouldChargeVoiceTurn =
+      !isListening &&
+      !isSilvestrePlaying &&
+      !pendingSilvestreAudioUrl &&
+      !isSilvestreFetching &&
+      !isSilvestreResponding;
+
+    if (shouldChargeVoiceTurn) {
+      const canProceed = await consumeObraVoiceGAT({
+        actionLabel: 'Hablar con La Obra por micrófono',
+        source: 'mic',
+        modeId,
+      });
+      if (!canProceed) return;
     }
-    handleOpenSilvestreChat();
-  }, [handleOpenSilvestreChat, requireShowcaseAuth]);
+    handleOpenSilvestreChat({ modeId });
+  }, [
+    consumeObraVoiceGAT,
+    handleOpenSilvestreChat,
+    isListening,
+    isSilvestreFetching,
+    isSilvestrePlaying,
+    isSilvestreResponding,
+    pendingSilvestreAudioUrl,
+  ]);
 
   const handleOpenNovelaReserve = useCallback((initialPackages = ['novela-400']) => {
     const normalized = Array.isArray(initialPackages) && initialPackages.length
@@ -4799,19 +4915,9 @@ const rendernotaAutoral = () => {
     if (activeDefinition.type === 'tragedia') {
       const onClose = handleCloseShowcase;
       const visibleStarters = tragicoStarters.filter((starter) => !spentSilvestreSet.has(starter));
-      const conversationBlock = visibleStarters.length ? (
-        <ObraQuestionList
-          starters={visibleStarters}
-          spentSet={spentSilvestreSet}
-          onSelect={(starter) => {
-            if (spentSilvestreSet.has(starter)) return;
-            markSilvestreQuestionSpent(starter);
-            handleSendSilvestrePreset(starter);
-          }}
-          variant="marquee"
-          className="border-t border-white/10 pt-4 space-y-3"
-        />
-      ) : null;
+      const activeObraMode =
+        OBRA_VOICE_MODES.find((mode) => mode.id === activeObraModeId) ?? OBRA_VOICE_MODES[0];
+      const activeObraTint = activeObraMode?.tint ?? OBRA_VOICE_MODES[0].tint;
 
       const reactionDetails = {
         showcaseId: 'miniversos',
@@ -4872,30 +4978,160 @@ const rendernotaAutoral = () => {
 
           {renderCollaboratorsSection(activeDefinition.collaborators, 'tragedia')}
 
-          <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
+          <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.2fr)]">
             <div className="rounded-3xl border border-white/10 bg-black/35 p-6 shadow-[0_20px_45px_rgba(0,0,0,0.45)] space-y-4">
               <div className="space-y-2">
-            
+                <p className="text-xs uppercase tracking-[0.35em] text-slate-400">Perfiles</p>
+                <h2 className="font-display text-2xl text-white">¿Con qué perfil entras hoy?</h2>
+                <p className="text-sm text-slate-300/80">
+                  No es quién eres, es cómo quieres escuchar ahora.
+                </p>
               </div>
-              <ObraConversationControls
-                ctaLabel={activeDefinition.ctaLabel}
-                isSilvestrePlaying={isSilvestrePlaying}
-                pendingSilvestreAudioUrl={pendingSilvestreAudioUrl}
-                isSilvestreFetching={isSilvestreFetching}
-                isSilvestreResponding={isSilvestreResponding}
-                silvestreThinkingMessage={silvestreThinkingMessage}
-                isSilvestreThinkingPulse={isSilvestreThinkingPulse}
-                isListening={isListening}
-                micPromptVisible={micPromptVisible}
-                showSilvestreCoins={showSilvestreCoins}
-                micError={micError}
-                transcript={transcript}
-                onMicClick={handleOpenSilvestreChatCta}
-                onPlayPending={handlePlayPendingAudio}
-              />
-              {conversationBlock}
+
+              <div className="space-y-3">
+                {OBRA_VOICE_MODES.map((mode) => {
+                  const isActiveMode = activeObraModeId === mode.id;
+
+                  if (isActiveMode) {
+                    return (
+                      <div
+                        key={mode.id}
+                        className="group relative overflow-hidden rounded-2xl border bg-gradient-to-br from-white/5 to-black/30 p-4 text-left transition border-white/40 shadow-[0_18px_55px_rgba(124,58,237,0.2)]"
+                        style={{ borderColor: mode.tint?.border, boxShadow: mode.tint?.glow }}
+                      >
+                        <div
+                          aria-hidden="true"
+                          className={`pointer-events-none absolute inset-0 opacity-70 bg-gradient-to-br ${mode.accent}`}
+                        />
+                        <div className="relative z-10 space-y-3">
+                          <div className="flex items-center justify-between gap-3">
+                            <div className="flex items-center gap-2">
+                              <span
+                                className="inline-flex h-9 w-9 items-center justify-center rounded-xl border bg-black/40"
+                                style={{ borderColor: mode.tint?.border }}
+                              >
+                                {mode.icon ? <mode.icon size={18} style={{ color: mode.tint?.dot }} /> : null}
+                              </span>
+                              <p className="text-lg font-semibold text-white">{mode.title}</p>
+                            </div>
+                            <span className="rounded-full border border-white/10 bg-black/40 px-2 py-1 text-[10px] uppercase tracking-[0.25em] text-slate-200">
+                              Hot mic
+                            </span>
+                          </div>
+
+                          <ObraConversationControls
+                            ctaLabel="Pulsa para hablar"
+                            isSilvestrePlaying={isSilvestrePlaying}
+                            pendingSilvestreAudioUrl={pendingSilvestreAudioUrl}
+                            isSilvestreFetching={isSilvestreFetching}
+                            isSilvestreResponding={isSilvestreResponding}
+                            silvestreThinkingMessage={silvestreThinkingMessage}
+                            isSilvestreThinkingPulse={isSilvestreThinkingPulse}
+                            isListening={isListening}
+                            micPromptVisible={micPromptVisible}
+                            showSilvestreCoins={showSilvestreCoins}
+                            micError={micError}
+                            transcript={transcript}
+                            onMicClick={() => handleOpenSilvestreChatCta(activeObraModeId)}
+                            onPlayPending={handlePlayPendingAudio}
+                            className="pt-1"
+                          />
+                        </div>
+                      </div>
+                    );
+                  }
+
+                  return (
+                    <button
+                      key={mode.id}
+                      type="button"
+                      onClick={() => setActiveObraModeId(mode.id)}
+                      aria-pressed={false}
+                      className="group relative overflow-hidden rounded-2xl border border-white/10 bg-gradient-to-br from-white/5 to-black/30 p-4 text-left transition hover:border-purple-300/50 hover:shadow-[0_12px_40px_rgba(124,58,237,0.18)]"
+                    >
+                      <div
+                        aria-hidden="true"
+                        className={`pointer-events-none absolute inset-0 opacity-60 bg-gradient-to-br ${mode.accent}`}
+                      />
+                      <div className="relative z-10 space-y-2">
+                        <div className="flex items-center justify-between gap-3">
+                          <div className="flex items-center gap-2">
+                            <span
+                              className="inline-flex h-9 w-9 items-center justify-center rounded-xl border bg-black/40"
+                              style={{ borderColor: mode.tint?.border }}
+                            >
+                              {mode.icon ? <mode.icon size={18} style={{ color: mode.tint?.dot }} /> : null}
+                            </span>
+                            <p className="text-lg font-semibold text-white">{mode.title}</p>
+                          </div>
+                          <span className="rounded-full border border-white/10 bg-black/40 px-2 py-1 text-[10px] uppercase tracking-[0.25em] text-slate-300">
+                            Demo
+                          </span>
+                        </div>
+                        <p className="text-sm text-slate-300/85">{mode.description}</p>
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
             </div>
+
             <div className="space-y-6">
+              <div
+                className="relative overflow-hidden rounded-3xl border border-white/10 bg-black/30 p-6"
+                style={{ borderColor: activeObraTint?.border, boxShadow: activeObraTint?.glow }}
+              >
+                <div
+                  aria-hidden="true"
+                  className={`pointer-events-none absolute inset-0 opacity-35 bg-gradient-to-br ${activeObraMode.accent}`}
+                />
+                <div
+                  aria-hidden="true"
+                  className="pointer-events-none absolute inset-0 opacity-35"
+                  style={{
+                    backgroundImage: `radial-gradient(circle at top, ${activeObraTint?.dot || 'rgba(196,181,253,0.6)'}, transparent 65%)`,
+                  }}
+                />
+                <div className="relative z-10">
+                {visibleStarters.length ? (
+                  <ObraQuestionList
+                    starters={visibleStarters}
+                    spentSet={spentSilvestreSet}
+                    onSelect={async (starter) => {
+                      if (spentSilvestreSet.has(starter)) return;
+                      const canProceed = await consumeObraVoiceGAT({
+                        actionLabel: 'Enviar una pregunta a La Obra',
+                        source: 'preset',
+                        modeId: activeObraModeId,
+                      });
+                      if (!canProceed) return;
+                      markSilvestreQuestionSpent(starter);
+                      handleSendSilvestrePreset(starter, { modeId: activeObraModeId });
+                    }}
+                    variant="stack"
+                    tone={{
+                      borderColor: activeObraTint?.border,
+                      dotColor: activeObraTint?.dot,
+                      headingColor: activeObraTint?.dot,
+                    }}
+                    eyebrowChip={activeObraMode?.description || ''}
+                  />
+                ) : (
+                  <div className="space-y-2">
+                    <p
+                      className="text-xs uppercase tracking-[0.35em] text-pink-200"
+                      style={{ color: activeObraTint?.dot }}
+                    >
+                      ¿No sabes qué decir?
+                    </p>
+                    <p className="text-sm text-slate-300/85 leading-relaxed">
+                      Ya agotaste las preguntas sugeridas por ahora. Prueba otro perfil o pulsa para hablar.
+                    </p>
+                  </div>
+                )}
+                </div>
+              </div>
+
               {renderCommunityBlock('miniversos', {
                 ctaLabel: 'coméntanos algo aquí',
                 emptyMessage: 'Todavía no hay voces en este miniverso.',
@@ -6743,7 +6979,7 @@ const rendernotaAutoral = () => {
                         : { opacity: 1, y: 0, scale: isTransitionTargetTile ? 1.01 : 1 }
                     }
                     whileTap={isShowcaseOpenTransitionActive ? undefined : { scale: 0.985, y: -2 }}
-                    transition={isSafari ? { duration: 0.12, ease: 'linear' } : { duration: 0.4, ease: 'easeOut', delay: 0.08 }}
+                    transition={isSafari ? { duration: 0.12, ease: 'linear' } : { duration: 0.28, ease: 'easeOut' }}
                     className={`safari-stable-layer group vitrina-pozo-glass vitrina-pozo--${format.id} glass-effect hover-glow rounded-2xl border border-white/10 bg-black/30 overflow-hidden text-left shadow-[0_20px_60px_rgba(0,0,0,0.55)] active:border-purple-300/40 active:shadow-[0_24px_70px_rgba(88,28,135,0.45)] ${
                       isDimmedTile ? 'opacity-70' : ''
                     } ${
@@ -6770,6 +7006,7 @@ const rendernotaAutoral = () => {
                           alt={`Imagen de ${format.title}`}
                           className="showcase-parallax-media safari-stable-media absolute inset-0 h-full w-full object-cover"
                           loading="lazy"
+                          decoding="async"
                         />
                       ) : null}
                       <div className="absolute inset-0 bg-gradient-to-br from-white/5 via-transparent to-black/25" />
@@ -6896,19 +7133,7 @@ const rendernotaAutoral = () => {
               );
             })()}
           </div>
-          <div
-            className="hidden lg:block"
-            onMouseEnter={() => {
-              if (!isDesktopFocusLockActive) {
-                setIsShowcaseCarouselPaused(true);
-              }
-            }}
-            onMouseLeave={() => {
-              if (!isDesktopFocusLockActive) {
-                setIsShowcaseCarouselPaused(false);
-              }
-            }}
-          >
+          <div className="hidden lg:block">
             {isDesktopFocusLockActive ? (
               <div className="relative mx-auto mb-5 w-full max-w-[31rem] rounded-2xl border border-fuchsia-300/40 bg-fuchsia-500/10 px-5 py-4 text-center shadow-[0_10px_30px_rgba(120,39,173,0.25)]">
                 <button
@@ -6968,7 +7193,7 @@ const rendernotaAutoral = () => {
                         ? { opacity: 1, y: 0 }
                         : { opacity: 1, y: 0, scale: isTransitionTargetTile ? 1.012 : 1 }
                     }
-                    transition={isSafari ? { duration: 0.12, ease: 'linear' } : { duration: 0.5, delay: index * 0.08, ease: 'easeOut' }}
+                    transition={isSafari ? { duration: 0.12, ease: 'linear' } : { duration: 0.32, delay: index * 0.03, ease: 'easeOut' }}
                     className={`safari-stable-layer group vitrina-pozo-glass vitrina-pozo--${format.id} glass-effect rounded-2xl border border-white/10 bg-black/30 hover:border-purple-400/50 overflow-hidden text-left shadow-[0_20px_60px_rgba(0,0,0,0.55)] flex flex-col min-h-[620px] hover-glow transition ${
                       isRecommendedTile
                         ? 'border-fuchsia-300/60 shadow-[0_0_0_1px_rgba(244,114,182,0.35),0_24px_80px_rgba(168,85,247,0.3)]'
@@ -6994,6 +7219,7 @@ const rendernotaAutoral = () => {
                           alt={`Imagen de ${format.title}`}
                           className="showcase-parallax-media safari-stable-media absolute inset-0 h-full w-full object-cover"
                           loading="lazy"
+                          decoding="async"
                         />
                       ) : null}
                       <div className="absolute inset-0 bg-gradient-to-br from-white/5 via-transparent to-black/20" />

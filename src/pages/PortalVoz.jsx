@@ -275,6 +275,11 @@ const PortalVoz = () => {
                 handleSendSilvestrePreset(starter, { modeId: activeModeId });
               }}
               variant="stack"
+              tone={{
+                borderColor: activeTint?.border,
+                dotColor: activeTint?.dot,
+                headingColor: activeTint?.dot,
+              }}
             />
           </div>
         </div>

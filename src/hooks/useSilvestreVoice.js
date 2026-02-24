@@ -13,6 +13,8 @@ const MODES = [
   'poeta',
 ];
 const DEFAULT_MODE = 'lectura-profunda';
+const ENABLE_OBRA_VOICE_FALLBACK =
+  String(import.meta.env.VITE_OBRA_ENABLE_VOICE_FALLBACK || '').toLowerCase() === 'true';
 const normalizeMode = (value) => {
   const key = (value || '').toString().toLowerCase().trim();
   return MODES.includes(key) ? key : DEFAULT_MODE;
@@ -274,12 +276,14 @@ export const useSilvestreVoice = () => {
             payload: { pregunta: message, user_id: userId, mode_id },
             label: 'conciencia',
           },
-          {
+        ];
+        if (ENABLE_OBRA_VOICE_FALLBACK) {
+          candidates.push({
             endpoint: '/api/obra-voz',
             payload: { mensaje: message, mode_id, user_id: userId },
             label: 'voz (fallback)',
-          },
-        ];
+          });
+        }
 
         let audioBlob = null;
         let responseText = null;
@@ -299,7 +303,13 @@ export const useSilvestreVoice = () => {
               return false;
             }
             if (!response.ok) {
-              throw new Error(`${candidate.label} responded ${response.status}`);
+              const candidateError = new Error(`${candidate.label} responded ${response.status}`);
+              candidateError.status = response.status;
+              candidateError.endpoint = candidate.endpoint;
+              // If the backend answered with an HTTP error, don't fan-out to another
+              // model endpoint for the same user turn.
+              candidateError.noFallback = true;
+              throw candidateError;
             }
             responseText =
               response.headers.get('x-silvestre-text') ||
@@ -317,6 +327,9 @@ export const useSilvestreVoice = () => {
           } catch (error) {
             console.error('[Silvestre Voice] candidate error:', error);
             lastError = error;
+            if (error?.noFallback) {
+              break;
+            }
           }
         }
 
@@ -385,7 +398,13 @@ export const useSilvestreVoice = () => {
           return false;
         }
         console.error('[Silvestre Voice] Error sending transcript:', error);
-        setMicError('No pudimos enviar tu mensaje a Silvestre. Intenta nuevamente más tarde.');
+        if (error?.status === 429) {
+          setMicError('La IA alcanzó su límite de cuota. Intenta más tarde mientras se restablece el servicio.');
+        } else if (error?.status >= 500) {
+          setMicError('La IA de La Obra no está disponible en este momento. Intenta nuevamente más tarde.');
+        } else {
+          setMicError('No pudimos enviar tu mensaje a Silvestre. Intenta nuevamente más tarde.');
+        }
         if (requestId === silvestreRequestIdRef.current) {
           setIsSilvestreFetching(false);
           setIsSilvestreResponding(false);

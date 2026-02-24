@@ -34,7 +34,8 @@ const About = lazy(() => import('@/components/About'));
 const ProvocaSection = lazy(() =>
   import('@/components/About').then((module) => ({ default: module.ProvocaSection }))
 );
-const Transmedia = lazy(() => import('@/components/Transmedia'));
+const loadTransmedia = () => import('@/components/Transmedia');
+const Transmedia = lazy(loadTransmedia);
 const Team = lazy(() => import('@/components/Team'));
 const Instagram = lazy(() => import('@/components/Instagram'));
 const BlogContributionPrompt = lazy(() => import('@/components/BlogContributionPrompt'));
@@ -170,7 +171,7 @@ const HeroBackground = () => {
           alt="Textura de telón de teatro de terciopelo oscuro"
           src="/assets/bg-logo.png"
           decoding="async"
-          fetchPriority="low"
+          fetchpriority="low"
         />
       </div>
     </div>
@@ -265,6 +266,32 @@ function App() {
     meta.setAttribute('content', pageDescription);
   }, []);
 
+  useEffect(() => {
+    if (typeof window === 'undefined') return undefined;
+    let timeoutId = null;
+    let idleId = null;
+    let cancelled = false;
+
+    const warmTransmedia = () => {
+      if (cancelled) return;
+      void loadTransmedia();
+    };
+
+    if (typeof window.requestIdleCallback === 'function') {
+      idleId = window.requestIdleCallback(warmTransmedia, { timeout: 1200 });
+    } else {
+      timeoutId = window.setTimeout(warmTransmedia, 700);
+    }
+
+    return () => {
+      cancelled = true;
+      if (timeoutId) window.clearTimeout(timeoutId);
+      if (idleId && typeof window.cancelIdleCallback === 'function') {
+        window.cancelIdleCallback(idleId);
+      }
+    };
+  }, []);
+
   return (
     <>
       <BienvenidaGate />
@@ -296,7 +323,8 @@ function App() {
                   )}
                 >
                   <DeferredSection
-                    rootMargin="750px 0px"
+                    rootMargin="1000px 0px"
+                    idleDelayMs={700}
                     fallback={<SectionFallback id="transmedia" minHeight={900} />}
                   >
                     <Suspense fallback={<SectionFallback id="transmedia" minHeight={900} />}>
