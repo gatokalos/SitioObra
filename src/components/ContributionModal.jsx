@@ -108,6 +108,7 @@ const initialFormState = {
   role: '',
   proposal: '',
   attachmentUrl: '',
+  website: '',
 };
 
 const FORM_STORAGE_KEY = 'gatoencerrado-contrib-form';
@@ -456,6 +457,23 @@ const ContributionModal = ({
         return;
       }
 
+      // Honeypot anti-spam: bots suelen completar campos ocultos.
+      if (formState.website?.trim()) {
+        setStatus('success');
+        setErrorMessage('');
+        setFormState({
+          ...initialFormState,
+          name: preferredName || '',
+          email: user?.email ?? '',
+        });
+        setNotifyOnPublish(false);
+        setSelectedCategory(CATEGORIES[0]);
+        setIsFormPanelOpen(false);
+        safeRemoveItem(FORM_STORAGE_KEY);
+        storedFormRef.current = null;
+        return;
+      }
+
       if (!formState.name.trim() || !formState.email.trim() || !formState.proposal.trim()) {
         return;
       }
@@ -719,6 +737,15 @@ const ContributionModal = ({
             onChange={handleInputChange}
             className="form-surface w-full px-4 py-3"
             placeholder="Enlace a material adicional (Drive, portfolio, video...)"
+          />
+          <input
+            tabIndex={-1}
+            autoComplete="off"
+            aria-hidden="true"
+            name="website"
+            value={formState.website}
+            onChange={handleInputChange}
+            className="hidden"
           />
 
           {status === 'error' ? (

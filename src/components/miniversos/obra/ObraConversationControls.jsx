@@ -18,6 +18,7 @@ const ObraConversationControls = ({
   transcript = '',
   onMicClick,
   onPlayPending,
+  tone = null,
   className = '',
 }) => {
   const isSilvestreThinking = isSilvestreFetching || isSilvestreResponding;
@@ -33,6 +34,28 @@ const ObraConversationControls = ({
           : micPromptVisible
             ? 'Pulsa para hablar o escoge otra pregunta'
             : ctaLabel;
+  const hasErrorState = Boolean(micError) && !isListening && !isSilvestreThinking;
+  const baseBorder = tone?.border || 'rgba(196,181,253,0.6)';
+  const baseDot = tone?.dot || 'rgba(196,181,253,0.95)';
+  const baseGlow = tone?.glow || '0 0 45px rgba(197,108,255,0.75)';
+  const primaryStyle = hasErrorState
+    ? {
+        borderColor: 'rgba(248,113,113,0.72)',
+        backgroundColor: 'rgba(127,29,29,0.22)',
+        color: 'rgba(254,202,202,0.95)',
+        '--silvestre-cta-glow-strong': '0 0 40px rgba(248,113,113,0.52)',
+        '--silvestre-cta-glow-soft': '0 0 18px rgba(248,113,113,0.28)',
+        '--silvestre-wave-color': 'rgba(254,202,202,0.9)',
+      }
+    : {
+        borderColor: baseBorder,
+        backgroundColor: 'rgba(15,23,42,0.35)',
+        color: baseDot,
+        '--silvestre-cta-glow-strong': baseGlow,
+        '--silvestre-cta-glow-soft': baseGlow,
+        '--silvestre-wave-color': baseDot,
+      };
+  const statusStyle = hasErrorState ? { color: 'rgba(252,165,165,0.95)' } : { color: baseDot };
 
   return (
     <div className={className}>
@@ -41,6 +64,7 @@ const ObraConversationControls = ({
           type="button"
           variant="outline"
           className="silvestre-cta relative flex h-20 w-20 items-center justify-center rounded-full border border-purple-300/60 bg-purple-500/10 text-purple-50 shadow-[0_0_45px_rgba(197,108,255,0.75)] transition hover:bg-purple-500/20 disabled:cursor-not-allowed disabled:opacity-60"
+          style={primaryStyle}
           onClick={handlePrimaryClick}
           aria-label={statusLabel}
           disabled={isSilvestreThinking}
@@ -90,6 +114,7 @@ const ObraConversationControls = ({
           className={`text-xs uppercase tracking-[0.35em] text-purple-200 text-center ${
             isSilvestreThinking ? 'thinking-blink' : ''
           }`}
+          style={statusStyle}
         >
           {statusLabel}
         </span>

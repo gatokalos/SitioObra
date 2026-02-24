@@ -645,6 +645,50 @@ const OBRA_VOICE_MODES = [
   },
 ];
 const DEFAULT_OBRA_VOICE_MODE_ID = OBRA_VOICE_MODES[0].id;
+const OBRA_EMOTION_LOG_STORAGE_KEY = 'gatoencerrado:obra-emotion-log';
+const OBRA_EMOTION_ORBS_STORAGE_KEY = 'gatoencerrado:obra-emotion-orbs';
+const OBRA_EMOTION_MAX_ORBS = 36;
+const OBRA_EMOTION_ORB_VERSION = 2;
+const OBRA_EMOTION_MODE_REGIONS = {
+  'lectura-profunda': { left: 50, top: 24, spreadX: 7, spreadY: 7, size: 14 },
+  artista: { left: 42, top: 46, spreadX: 12, spreadY: 10, size: 16 },
+  'claro-directo': { left: 52, top: 52, spreadX: 10, spreadY: 9, size: 16 },
+  tiktoker: { left: 62, top: 38, spreadX: 10, spreadY: 8, size: 15 },
+  'util-hoy': { left: 40, top: 64, spreadX: 11, spreadY: 10, size: 17 },
+  poeta: { left: 58, top: 70, spreadX: 9, spreadY: 9, size: 16 },
+  default: { left: 50, top: 50, spreadX: 11, spreadY: 11, size: 15 },
+};
+const clampEmotionValue = (value, min, max) => Math.max(min, Math.min(max, value));
+const resolveEmotionRegion = (modeId) => OBRA_EMOTION_MODE_REGIONS[modeId] ?? OBRA_EMOTION_MODE_REGIONS.default;
+const createEmotionOrb = (modeId, seed, index = 0) => {
+  const region = resolveEmotionRegion(modeId);
+  const seedA = (Math.sin(seed * 0.73) + 1) / 2;
+  const seedB = (Math.sin(seed * 1.17) + 1) / 2;
+  const seedC = (Math.sin(seed * 1.91) + 1) / 2;
+  const seedD = (Math.sin(seed * 2.37) + 1) / 2;
+  return {
+    id: `${modeId}-${seed}`,
+    modeId,
+    version: OBRA_EMOTION_ORB_VERSION,
+    left: clampEmotionValue(region.left + (seedA - 0.5) * 2 * region.spreadX, 30, 70),
+    top: clampEmotionValue(region.top + (seedB - 0.5) * 2 * region.spreadY, 14, 84),
+    size: region.size + seedC * 12 + (index % 3),
+    opacity: 0.3 + seedD * 0.28,
+  };
+};
+const normalizeStoredEmotionOrbs = (raw) => {
+  if (!Array.isArray(raw)) return [];
+  return raw
+    .map((entry, index) => {
+      if (!entry || typeof entry !== 'object' || typeof entry.modeId !== 'string') return null;
+      if (entry.version === OBRA_EMOTION_ORB_VERSION) return entry;
+      const parsedSeed = Number.parseInt(String(entry.id ?? '').split('-').pop() || '', 10);
+      const seed = Number.isFinite(parsedSeed) ? parsedSeed : Date.now() + index * 53;
+      return createEmotionOrb(entry.modeId, seed, index);
+    })
+    .filter(Boolean)
+    .slice(-OBRA_EMOTION_MAX_ORBS);
+};
 const showcaseDefinitions = {
   miniversos: {
     label: 'Miniverso Obra',
@@ -2001,6 +2045,18 @@ const Transmedia = () => {
     resetSilvestreQuestions,
   } = useSilvestreVoice();
   const [activeObraModeId, setActiveObraModeId] = useState(DEFAULT_OBRA_VOICE_MODE_ID);
+  const [obraModeUsage, setObraModeUsage] = useState(() => {
+    const raw = readStoredJson(OBRA_EMOTION_LOG_STORAGE_KEY, {});
+    return OBRA_VOICE_MODES.reduce((acc, mode) => {
+      const value = Number(raw?.[mode.id] ?? 0);
+      acc[mode.id] = Number.isFinite(value) && value > 0 ? Math.trunc(value) : 0;
+      return acc;
+    }, {});
+  });
+  const [obraEmotionOrbs, setObraEmotionOrbs] = useState(() => {
+    const raw = readStoredJson(OBRA_EMOTION_ORBS_STORAGE_KEY, []);
+    return normalizeStoredEmotionOrbs(raw);
+  });
   const [showcaseCarouselIndex, setShowcaseCarouselIndex] = useState(0);
   const [mobileShowcaseIndex, setMobileShowcaseIndex] = useState(0);
   const [recommendedShowcaseId, setRecommendedShowcaseId] = useState(null);
@@ -2100,6 +2156,14 @@ const Transmedia = () => {
   useEffect(() => {
     if (showAutoficcionPreview) setHasLoadedAutoficcionPreview(true);
   }, [showAutoficcionPreview]);
+
+  useEffect(() => {
+    safeSetItem(OBRA_EMOTION_LOG_STORAGE_KEY, JSON.stringify(obraModeUsage));
+  }, [obraModeUsage]);
+
+  useEffect(() => {
+    safeSetItem(OBRA_EMOTION_ORBS_STORAGE_KEY, JSON.stringify(obraEmotionOrbs));
+  }, [obraEmotionOrbs]);
 
   const applyTransmediaCreditState = useCallback(
     (state) => {
@@ -2272,6 +2336,21 @@ const Transmedia = () => {
     },
     [trackTransmediaCreditEvent]
   );
+
+  const incrementObraModeUsage = useCallback((modeId) => {
+    const normalized = OBRA_VOICE_MODES.some((mode) => mode.id === modeId)
+      ? modeId
+      : DEFAULT_OBRA_VOICE_MODE_ID;
+    setObraModeUsage((prev) => ({
+      ...prev,
+      [normalized]: (Number(prev?.[normalized] ?? 0) || 0) + 1,
+    }));
+    setObraEmotionOrbs((prev) => {
+      const nextSeed = Date.now() + prev.length * 37;
+      const next = [...prev, createEmotionOrb(normalized, nextSeed, prev.length)];
+      return next.slice(-OBRA_EMOTION_MAX_ORBS);
+    });
+  }, []);
 
   useEffect(() => {
     if (!user?.id) {
@@ -4163,6 +4242,8 @@ const Transmedia = () => {
   );
 
   const handleOpenSilvestreChatCta = useCallback(async (modeId = null) => {
+    const resolvedModeId =
+      typeof modeId === 'string' && modeId.trim() ? modeId.trim() : activeObraModeId;
     const shouldChargeVoiceTurn =
       !isListening &&
       !isSilvestrePlaying &&
@@ -4174,14 +4255,17 @@ const Transmedia = () => {
       const canProceed = await consumeObraVoiceGAT({
         actionLabel: 'Hablar con La Obra por micrófono',
         source: 'mic',
-        modeId,
+        modeId: resolvedModeId,
       });
       if (!canProceed) return;
+      incrementObraModeUsage(resolvedModeId);
     }
-    handleOpenSilvestreChat({ modeId });
+    handleOpenSilvestreChat({ modeId: resolvedModeId });
   }, [
+    activeObraModeId,
     consumeObraVoiceGAT,
     handleOpenSilvestreChat,
+    incrementObraModeUsage,
     isListening,
     isSilvestreFetching,
     isSilvestrePlaying,
@@ -4343,6 +4427,7 @@ const Transmedia = () => {
         emptyMessage = 'Aún no hay comentarios aprobados.',
         reactionProps = null,
         className = 'rounded-3xl border border-white/10 bg-black/30 p-6 space-y-5',
+        commentsViewportClassName = 'max-h-[330px]',
         hideReaction = false,
       } = {}
     ) => {
@@ -4419,7 +4504,7 @@ const Transmedia = () => {
           ) : error ? (
             <p className="text-sm text-red-300">{error}</p>
           ) : comments.length ? (
-            <div className="max-h-[330px] space-y-4 overflow-y-auto pr-1">
+            <div className={`${commentsViewportClassName} space-y-4 overflow-y-auto pr-1`}>
               {comments.map((comment) => (
                 <div
                   key={`${showcaseId}-${comment.id}`}
@@ -4927,6 +5012,19 @@ const rendernotaAutoral = () => {
         buttonLabel: 'Enviar pulsaciones',
         className: 'mt-4',
       };
+      const emotionUsageEntries = OBRA_VOICE_MODES
+        .map((mode) => ({
+          ...mode,
+          count: Number(obraModeUsage?.[mode.id] ?? 0),
+        }))
+        .sort((a, b) => b.count - a.count);
+      const emotionModesById = OBRA_VOICE_MODES.reduce((acc, mode) => {
+        acc[mode.id] = mode;
+        return acc;
+      }, {});
+      const emotionLegendEntries = emotionUsageEntries
+        .filter((mode) => mode.count > 0)
+        .slice(0, 3);
 
       return (
         <div className="space-y-2">
@@ -4980,31 +5078,83 @@ const rendernotaAutoral = () => {
           {renderCollaboratorsSection(activeDefinition.collaborators, 'tragedia')}
 
           <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.2fr)]">
-            <div className="rounded-3xl border border-white/10 bg-black/35 p-6 shadow-[0_20px_45px_rgba(0,0,0,0.45)] space-y-4">
-              <div className="space-y-2">
-                <p className="text-xs uppercase tracking-[0.35em] text-slate-400">Perfiles</p>
-                <h2 className="font-display text-2xl text-white">¿Con qué perfil entras hoy?</h2>
-                <p className="text-sm text-slate-300/80">
-                  No es quién eres, es cómo quieres escuchar ahora.
-                </p>
-              </div>
+            <div className="space-y-6 order-1">
+              <div className="rounded-3xl border border-white/10 bg-black/35 p-6 shadow-[0_20px_45px_rgba(0,0,0,0.45)] space-y-4">
+                <div className="space-y-2">
+                  <p className="text-xs uppercase tracking-[0.35em] text-slate-400">Perfiles</p>
+                  <h2 className="font-display text-2xl text-white">¿Con qué perfil entras hoy?</h2>
+                  <p className="text-sm text-slate-300/80">
+                    No es quién eres, es cómo quieres escuchar ahora.
+                  </p>
+                </div>
 
-              <div className="space-y-3">
-                {OBRA_VOICE_MODES.map((mode) => {
-                  const isActiveMode = activeObraModeId === mode.id;
+                <div className="space-y-3">
+                  {OBRA_VOICE_MODES.map((mode) => {
+                    const isActiveMode = activeObraModeId === mode.id;
 
-                  if (isActiveMode) {
+                    if (isActiveMode) {
+                      return (
+                        <div
+                          key={mode.id}
+                          className="group relative overflow-hidden rounded-2xl border bg-gradient-to-br from-white/5 to-black/30 p-4 text-left transition border-white/40 shadow-[0_18px_55px_rgba(124,58,237,0.2)]"
+                          style={{ borderColor: mode.tint?.border, boxShadow: mode.tint?.glow }}
+                        >
+                          <div
+                            aria-hidden="true"
+                            className={`pointer-events-none absolute inset-0 opacity-70 bg-gradient-to-br ${mode.accent}`}
+                          />
+                          <div className="relative z-10 space-y-3">
+                            <div className="flex items-center justify-between gap-3">
+                              <div className="flex items-center gap-2">
+                                <span
+                                  className="inline-flex h-9 w-9 items-center justify-center rounded-xl border bg-black/40"
+                                  style={{ borderColor: mode.tint?.border }}
+                                >
+                                  {mode.icon ? <mode.icon size={18} style={{ color: mode.tint?.dot }} /> : null}
+                                </span>
+                                <p className="text-lg font-semibold text-white">{mode.title}</p>
+                              </div>
+                              <span className="rounded-full border border-white/10 bg-black/40 px-2 py-1 text-[10px] uppercase tracking-[0.25em] text-slate-200">
+                                Hot mic
+                              </span>
+                            </div>
+
+                            <ObraConversationControls
+                              ctaLabel="Pulsa para hablar"
+                              isSilvestrePlaying={isSilvestrePlaying}
+                              pendingSilvestreAudioUrl={pendingSilvestreAudioUrl}
+                              isSilvestreFetching={isSilvestreFetching}
+                              isSilvestreResponding={isSilvestreResponding}
+                              silvestreThinkingMessage={silvestreThinkingMessage}
+                              isSilvestreThinkingPulse={isSilvestreThinkingPulse}
+                              isListening={isListening}
+                              micPromptVisible={micPromptVisible}
+                              showSilvestreCoins={showSilvestreCoins}
+                              micError={micError}
+                              transcript={transcript}
+                              onMicClick={() => handleOpenSilvestreChatCta(activeObraModeId)}
+                              onPlayPending={handlePlayPendingAudio}
+                              tone={activeObraTint}
+                              className="pt-1"
+                            />
+                          </div>
+                        </div>
+                      );
+                    }
+
                     return (
-                      <div
+                      <button
                         key={mode.id}
-                        className="group relative overflow-hidden rounded-2xl border bg-gradient-to-br from-white/5 to-black/30 p-4 text-left transition border-white/40 shadow-[0_18px_55px_rgba(124,58,237,0.2)]"
-                        style={{ borderColor: mode.tint?.border, boxShadow: mode.tint?.glow }}
+                        type="button"
+                        onClick={() => setActiveObraModeId(mode.id)}
+                        aria-pressed={false}
+                        className="group relative overflow-hidden rounded-2xl border border-white/10 bg-gradient-to-br from-white/5 to-black/30 p-4 text-left transition hover:border-purple-300/50 hover:shadow-[0_12px_40px_rgba(124,58,237,0.18)]"
                       >
                         <div
                           aria-hidden="true"
-                          className={`pointer-events-none absolute inset-0 opacity-70 bg-gradient-to-br ${mode.accent}`}
+                          className={`pointer-events-none absolute inset-0 opacity-60 bg-gradient-to-br ${mode.accent}`}
                         />
-                        <div className="relative z-10 space-y-3">
+                        <div className="relative z-10 space-y-2">
                           <div className="flex items-center justify-between gap-3">
                             <div className="flex items-center gap-2">
                               <span
@@ -5015,69 +5165,21 @@ const rendernotaAutoral = () => {
                               </span>
                               <p className="text-lg font-semibold text-white">{mode.title}</p>
                             </div>
-                            <span className="rounded-full border border-white/10 bg-black/40 px-2 py-1 text-[10px] uppercase tracking-[0.25em] text-slate-200">
-                              Hot mic
+                            <span className="rounded-full border border-white/10 bg-black/40 px-2 py-1 text-[10px] uppercase tracking-[0.25em] text-slate-300">
+                              Demo
                             </span>
                           </div>
-
-                          <ObraConversationControls
-                            ctaLabel="Pulsa para hablar"
-                            isSilvestrePlaying={isSilvestrePlaying}
-                            pendingSilvestreAudioUrl={pendingSilvestreAudioUrl}
-                            isSilvestreFetching={isSilvestreFetching}
-                            isSilvestreResponding={isSilvestreResponding}
-                            silvestreThinkingMessage={silvestreThinkingMessage}
-                            isSilvestreThinkingPulse={isSilvestreThinkingPulse}
-                            isListening={isListening}
-                            micPromptVisible={micPromptVisible}
-                            showSilvestreCoins={showSilvestreCoins}
-                            micError={micError}
-                            transcript={transcript}
-                            onMicClick={() => handleOpenSilvestreChatCta(activeObraModeId)}
-                            onPlayPending={handlePlayPendingAudio}
-                            className="pt-1"
-                          />
+                          <p className="text-sm text-slate-300/85">{mode.description}</p>
                         </div>
-                      </div>
+                      </button>
                     );
-                  }
-
-                  return (
-                    <button
-                      key={mode.id}
-                      type="button"
-                      onClick={() => setActiveObraModeId(mode.id)}
-                      aria-pressed={false}
-                      className="group relative overflow-hidden rounded-2xl border border-white/10 bg-gradient-to-br from-white/5 to-black/30 p-4 text-left transition hover:border-purple-300/50 hover:shadow-[0_12px_40px_rgba(124,58,237,0.18)]"
-                    >
-                      <div
-                        aria-hidden="true"
-                        className={`pointer-events-none absolute inset-0 opacity-60 bg-gradient-to-br ${mode.accent}`}
-                      />
-                      <div className="relative z-10 space-y-2">
-                        <div className="flex items-center justify-between gap-3">
-                          <div className="flex items-center gap-2">
-                            <span
-                              className="inline-flex h-9 w-9 items-center justify-center rounded-xl border bg-black/40"
-                              style={{ borderColor: mode.tint?.border }}
-                            >
-                              {mode.icon ? <mode.icon size={18} style={{ color: mode.tint?.dot }} /> : null}
-                            </span>
-                            <p className="text-lg font-semibold text-white">{mode.title}</p>
-                          </div>
-                          <span className="rounded-full border border-white/10 bg-black/40 px-2 py-1 text-[10px] uppercase tracking-[0.25em] text-slate-300">
-                            Demo
-                          </span>
-                        </div>
-                        <p className="text-sm text-slate-300/85">{mode.description}</p>
-                      </div>
-                    </button>
-                  );
-                })}
+                  })}
+                </div>
               </div>
+
             </div>
 
-            <div className="space-y-6">
+            <div className="space-y-6 order-2">
               <div
                 className="relative overflow-hidden rounded-3xl border border-white/10 bg-black/30 p-6"
                 style={{ borderColor: activeObraTint?.border, boxShadow: activeObraTint?.glow }}
@@ -5106,6 +5208,7 @@ const rendernotaAutoral = () => {
                         modeId: activeObraModeId,
                       });
                       if (!canProceed) return;
+                      incrementObraModeUsage(activeObraModeId);
                       markSilvestreQuestionSpent(starter);
                       handleSendSilvestrePreset(starter, { modeId: activeObraModeId });
                     }}
@@ -5133,15 +5236,101 @@ const rendernotaAutoral = () => {
                 </div>
               </div>
 
+              <div className="relative overflow-hidden rounded-3xl border border-white/10 bg-black/30 p-5">
+                <div
+                  aria-hidden="true"
+                  className="pointer-events-none absolute inset-0 opacity-35"
+                  style={{
+                    backgroundImage:
+                      'radial-gradient(circle at 20% 10%, rgba(148,163,184,0.22), transparent 42%), radial-gradient(circle at 80% 90%, rgba(59,130,246,0.16), transparent 48%)',
+                  }}
+                />
+                <div className="relative z-10 space-y-4">
+                  <p className="text-xs uppercase tracking-[0.35em] text-slate-400/80">Bitácora emocional</p>
+                  <div className="relative mx-auto h-[260px] w-full max-w-[300px]" aria-hidden="true">
+                    <div className="absolute left-1/2 top-2 h-12 w-12 -translate-x-1/2 rounded-full border border-slate-300/30 bg-gradient-to-b from-slate-700/55 to-slate-900/50" />
+                    <div className="absolute left-1/2 top-[3.35rem] h-[92px] w-[92px] -translate-x-1/2 rounded-[46%_46%_38%_38%/32%_32%_56%_56%] border border-slate-200/16 bg-gradient-to-b from-slate-700/45 via-slate-900/35 to-transparent" />
+                    <div className="absolute left-1/2 top-[7.9rem] h-9 w-[168px] -translate-x-1/2 rounded-full border border-slate-300/12 bg-slate-900/24 blur-[0.2px]" />
+                    <div className="absolute left-1/2 top-[9.05rem] h-[86px] w-[148px] -translate-x-1/2 rounded-[52%_52%_42%_42%/35%_35%_62%_62%] border border-slate-300/12 bg-gradient-to-b from-slate-800/30 to-transparent" />
+                    <div className="absolute left-1/2 top-[12.3rem] h-[80px] w-[220px] -translate-x-1/2 rounded-[56%_56%_46%_46%/60%_60%_40%_40%] border border-slate-300/12 bg-gradient-to-b from-slate-700/25 via-slate-900/20 to-transparent" />
+                    <div className="absolute left-1/2 top-[13.4rem] h-[52px] w-[130px] -translate-x-1/2 rounded-[42%_42%_48%_48%/40%_40%_60%_60%] border border-slate-300/10 bg-slate-900/22" />
+                    {obraEmotionOrbs.length ? (
+                      obraEmotionOrbs.map((orb, index) => {
+                        const mode = emotionModesById[orb.modeId];
+                        const tint = mode?.tint?.dot || 'rgba(196,181,253,0.85)';
+                        const glow = Math.round(8 + orb.size * 0.22);
+                        return (
+                          <motion.span
+                            key={orb.id}
+                            className="absolute -translate-x-1/2 -translate-y-1/2 rounded-full mix-blend-screen"
+                            style={{
+                              left: `${orb.left}%`,
+                              top: `${orb.top}%`,
+                              width: `${orb.size}px`,
+                              height: `${orb.size}px`,
+                              opacity: orb.opacity,
+                              background: `radial-gradient(circle at 32% 28%, ${tint}, rgba(7,10,18,0.02) 68%)`,
+                              boxShadow: `0 0 ${glow}px ${tint}`,
+                              filter: 'saturate(1.15)',
+                            }}
+                            animate={{ opacity: [orb.opacity * 0.75, orb.opacity, orb.opacity * 0.8] }}
+                            transition={{
+                              duration: 4.8 + (index % 6) * 0.35,
+                              repeat: Infinity,
+                              repeatType: 'mirror',
+                              ease: 'easeInOut',
+                            }}
+                          />
+                        );
+                      })
+                    ) : (
+                      <span
+                        className="absolute left-1/2 top-[46%] h-10 w-10 -translate-x-1/2 -translate-y-1/2 rounded-full"
+                        style={{
+                          background:
+                            'radial-gradient(circle at 34% 26%, rgba(148,163,184,0.52), rgba(15,23,42,0.04) 68%)',
+                          boxShadow: '0 0 20px rgba(148,163,184,0.22)',
+                        }}
+                      />
+                    )}
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    {emotionLegendEntries.length ? (
+                      emotionLegendEntries.map((mode) => (
+                        <span
+                          key={`emotion-chip-${mode.id}`}
+                          className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-black/35 px-3 py-1 text-[10px] uppercase tracking-[0.24em] text-slate-300"
+                        >
+                          <span
+                            className="h-2 w-2 rounded-full"
+                            style={{
+                              backgroundColor: mode?.tint?.dot || 'rgba(196,181,253,0.9)',
+                              boxShadow: `0 0 8px ${mode?.tint?.dot || 'rgba(196,181,253,0.7)'}`,
+                            }}
+                          />
+                          {mode.title} x{mode.count}
+                        </span>
+                      ))
+                    ) : (
+                      <span className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-black/35 px-3 py-1 text-[10px] uppercase tracking-[0.24em] text-slate-400/80">
+                        <span className="h-2 w-2 rounded-full bg-slate-400/70 shadow-[0_0_8px_rgba(148,163,184,0.45)]" />
+                        Aún sin dudas
+                      </span>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+            </div>
+
+            <div className="order-3">
               {renderCommunityBlock('miniversos', {
                 ctaLabel: 'coméntanos algo aquí',
                 emptyMessage: 'Todavía no hay voces en este miniverso.',
-                className: 'rounded-3xl border border-white/10 bg-black/30 p-6',
-                hideReaction: true,
+                reactionProps: reactionDetails,
+                className: 'rounded-3xl border border-white/10 bg-black/30 p-6 space-y-5',
+                commentsViewportClassName: 'max-h-[240px]',
               })}
-              <div className="rounded-3xl border border-white/10 bg-black/30 p-6">
-                <ShowcaseReactionInline {...reactionDetails} />
-              </div>
             </div>
           </div>
         </div>

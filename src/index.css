@@ -359,18 +359,21 @@ body {
 @keyframes silvestre-blink {
   0%,
   100% {
-    box-shadow: 0 0 35px hsl(290 70% 60% / 0.8);
+    box-shadow: var(--silvestre-cta-glow-strong, 0 0 35px hsl(290 70% 60% / 0.8));
     opacity: 1;
   }
   50% {
-    box-shadow: 0 0 12px hsl(290 80% 60% / 0.4);
+    box-shadow: var(--silvestre-cta-glow-soft, 0 0 12px hsl(290 80% 60% / 0.4));
     opacity: 0.85;
   }
 }
 
 .silvestre-cta {
+  --silvestre-cta-glow-strong: 0 0 35px hsl(290 70% 60% / 0.8);
+  --silvestre-cta-glow-soft: 0 0 12px hsl(290 80% 60% / 0.4);
+  --silvestre-wave-color: hsl(292 90% 70% / 0.85);
   animation: silvestre-blink 6s ease-in-out infinite;
-  box-shadow: 0 0 35px hsl(290 70% 60% / 0.8);
+  box-shadow: var(--silvestre-cta-glow-strong);
 }
 
 .silvestre-mic-wave {
@@ -387,8 +390,8 @@ body {
   width: 4px;
   height: 14px;
   border-radius: 999px;
-  background: hsl(292 90% 70% / 0.85);
-  box-shadow: 0 0 10px hsl(292 90% 70% / 0.5);
+  background: var(--silvestre-wave-color);
+  box-shadow: 0 0 10px var(--silvestre-wave-color);
   animation: silvestre-wave 900ms ease-in-out infinite;
 }
 
