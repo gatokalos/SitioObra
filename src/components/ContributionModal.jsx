@@ -667,7 +667,7 @@ const ContributionModal = ({
               required
               value={formState.name}
               onChange={handleInputChange}
-              className="w-full rounded-lg border border-white/10 bg-black/30 px-4 py-3 text-slate-100 placeholder-slate-500 focus:border-purple-400 focus:ring-1 focus:ring-purple-400"
+              className="form-surface w-full px-4 py-3"
               placeholder="¿Cómo quieres que te nombremos?"
             />
             <p className="mt-1 text-xs text-slate-500">
@@ -683,7 +683,7 @@ const ContributionModal = ({
               value={formState.email}
               onChange={handleInputChange}
               readOnly={isAuthenticated}
-              className={`w-full rounded-lg border border-white/10 bg-black/30 px-4 py-3 text-slate-100 placeholder-slate-500 focus:border-purple-400 focus:ring-1 focus:ring-purple-400 ${
+              className={`form-surface w-full px-4 py-3 ${
                 isAuthenticated ? 'cursor-not-allowed opacity-80' : ''
               }`}
               placeholder="nombre@correo.com"
@@ -698,7 +698,7 @@ const ContributionModal = ({
             type="text"
             value={formState.role}
             onChange={handleInputChange}
-            className="w-full rounded-lg border border-white/10 bg-black/30 px-4 py-3 text-slate-100 placeholder-slate-500 focus:border-purple-400 focus:ring-1 focus:ring-purple-400"
+            className="form-surface w-full px-4 py-3"
             placeholder="Crítica teatral, artista, investigador, espectador..."
           />
 
@@ -708,7 +708,7 @@ const ContributionModal = ({
             required
             value={formState.proposal}
             onChange={handleInputChange}
-            className="w-full rounded-lg border border-white/10 bg-black/30 px-4 py-3 text-slate-100 placeholder-slate-500 focus:border-purple-400 focus:ring-1 focus:ring-purple-400 resize-none"
+            className="form-surface w-full px-4 py-3 resize-none"
             placeholder="Resume tu texto, crónica o propuesta curatorial..."
           />
 
@@ -717,7 +717,7 @@ const ContributionModal = ({
             type="url"
             value={formState.attachmentUrl}
             onChange={handleInputChange}
-            className="w-full rounded-lg border border-white/10 bg-black/30 px-4 py-3 text-slate-100 placeholder-slate-500 focus:border-purple-400 focus:ring-1 focus:ring-purple-400"
+            className="form-surface w-full px-4 py-3"
             placeholder="Enlace a material adicional (Drive, portfolio, video...)"
           />
 

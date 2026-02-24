@@ -297,7 +297,7 @@ const LoginOverlay = ({ onClose }) => {
               value={email}
               onChange={(event) => setEmail(event.target.value)}
               placeholder="nombre@correo.com"
-              className="w-full rounded-2xl border border-white/20 bg-black/30 px-4 py-3 text-sm text-slate-100 placeholder:text-slate-400 focus:border-purple-400 focus:outline-none focus:ring-1 focus:ring-purple-400"
+              className="form-surface w-full px-4 py-3 text-sm"
               required
             />
             <button

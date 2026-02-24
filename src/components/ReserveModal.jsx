@@ -655,8 +655,8 @@ payload.customer_email = normalizedEmail;
 {!showProposalForm ? (
   <div className="rounded-2xl border border-white/10 bg-black/20 p-4 text-sm text-slate-300/90">
     <p className="leading-relaxed">
-      Si quieres proponer un punto de encuentro o colaboración, toca <strong>"Sugerir Cafetería"</strong>. <br/>
-      Si ya estás listx, puedes ir directo a tu compra, solo pulsa en <strong>"Comprar mi Merch"</strong>.
+      Si quieres proponer un punto de encuentro, pulsa <strong>"Sugerir Cafetería"</strong>. <br/>
+      Si ya estás listx para comprar, paga d emanera rápida y segura en <strong>"Compra tu Merch"</strong>.
     </p>
   </div>
 ) : null}
@@ -701,7 +701,7 @@ payload.customer_email = normalizedEmail;
           required
           value={formState.fullName}
           onChange={handleInputChange}
-          className="w-full rounded-lg border border-white/10 bg-black/30 px-4 py-3 text-slate-100 placeholder-slate-500 focus:border-purple-400 focus:ring-1 focus:ring-purple-400"
+          className="form-surface w-full px-4 py-3"
           placeholder="¿Cómo te llamas?"
         />
       </div>
@@ -715,7 +715,7 @@ payload.customer_email = normalizedEmail;
           required
           value={formState.email}
           onChange={handleInputChange}
-          className="w-full rounded-lg border border-white/10 bg-black/30 px-4 py-3 text-slate-100 placeholder-slate-500 focus:border-purple-400 focus:ring-1 focus:ring-purple-400"
+          className="form-surface w-full px-4 py-3"
           placeholder="nombre@correo.com"
         />
       </div>
@@ -728,7 +728,7 @@ payload.customer_email = normalizedEmail;
           type="text"
           value={formState.city}
           onChange={handleInputChange}
-          className="w-full rounded-lg border border-white/10 bg-black/30 px-4 py-3 text-slate-100 placeholder-slate-500 focus:border-purple-400 focus:ring-1 focus:ring-purple-400"
+          className="form-surface w-full px-4 py-3"
           placeholder="¿Desde dónde nos escribes?"
         />
       </div>
@@ -742,7 +742,7 @@ payload.customer_email = normalizedEmail;
           required
           value={formState.notes}
           onChange={handleInputChange}
-          className="w-full rounded-lg border border-white/10 bg-black/30 px-4 py-3 text-slate-100 placeholder-slate-500 focus:border-purple-400 focus:ring-1 focus:ring-purple-400 resize-none"
+          className="form-surface w-full px-4 py-3 resize-none"
           placeholder="¿Te interesa un punto de venta, una presentación, un conversatorio o una colaboración?"
         />
       </div>
@@ -790,7 +790,7 @@ payload.customer_email = normalizedEmail;
   className="reserve-btn reserve-btn--primary mt-3 disabled:opacity-60 disabled:cursor-not-allowed"
 >
   <span>
-    {isCheckoutLoading ? 'Abriendo tienda…' : 'Comprar mi Merch'}
+    {isCheckoutLoading ? 'Abriendo tienda…' : 'Compra tu Merch'}
   </span>
 </button>
 </div>

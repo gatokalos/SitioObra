@@ -46,7 +46,7 @@ const MockPaymentElement = ({ tab, onTabChange }) => (
               readOnly
               value=""
               placeholder="4242 4242 4242 4242"
-              className="mt-1 w-full rounded-xl border border-fuchsia-200/25 bg-slate-900/55 px-3 py-2.5 text-sm text-slate-100 placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-fuchsia-300/30 focus:border-orange-300/60"
+              className="form-surface mt-1 w-full px-3 py-2.5 text-sm"
             />
           </label>
           <div className="grid grid-cols-2 gap-3">
@@ -56,7 +56,7 @@ const MockPaymentElement = ({ tab, onTabChange }) => (
                 readOnly
                 value=""
                 placeholder="MM / AA"
-                className="mt-1 w-full rounded-xl border border-fuchsia-200/25 bg-slate-900/55 px-3 py-2.5 text-sm text-slate-100 placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-fuchsia-300/30 focus:border-orange-300/60"
+                className="form-surface mt-1 w-full px-3 py-2.5 text-sm"
               />
             </label>
             <label className="block">
@@ -65,7 +65,7 @@ const MockPaymentElement = ({ tab, onTabChange }) => (
                 readOnly
                 value=""
                 placeholder="123"
-                className="mt-1 w-full rounded-xl border border-fuchsia-200/25 bg-slate-900/55 px-3 py-2.5 text-sm text-slate-100 placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-fuchsia-300/30 focus:border-orange-300/60"
+                className="form-surface mt-1 w-full px-3 py-2.5 text-sm"
               />
             </label>
           </div>
@@ -81,7 +81,7 @@ const MockPaymentElement = ({ tab, onTabChange }) => (
               readOnly
               value=""
               placeholder="tu@email.com"
-              className="mt-1 w-full rounded-xl border border-fuchsia-200/25 bg-slate-900/55 px-3 py-2.5 text-sm text-slate-100 placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-fuchsia-300/30 focus:border-orange-300/60"
+              className="form-surface mt-1 w-full px-3 py-2.5 text-sm"
             />
           </label>
           <p className="text-xs text-slate-400/80">

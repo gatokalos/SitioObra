@@ -402,7 +402,7 @@ export const ProvocaSection = () => {
                       onChange={(event) => setVoiceDraft(event.target.value)}
                       rows={3}
                       autoFocus
-                      className="provoca-field-focus w-full rounded-lg border border-white/10 bg-black/30 px-4 py-3 text-slate-100 placeholder-slate-500 resize-none"
+                      className="form-surface w-full px-4 py-3 resize-none"
                       placeholder="Cuéntanos cómo cambió tu forma de mirar, sentir o recordar algo..."
                     />
                     <div className="mt-3 grid gap-3 sm:grid-cols-2">
@@ -410,14 +410,14 @@ export const ProvocaSection = () => {
                         aria-label="Tu nombre"
                         value={voiceName}
                         onChange={(event) => setVoiceName(event.target.value)}
-                        className="provoca-field-focus w-full rounded-lg border border-white/10 bg-black/30 px-4 py-2 text-slate-100 placeholder-slate-500"
+                        className="form-surface w-full px-4 py-2"
                         placeholder="Tu nombre"
                       />
                       <input
                         aria-label="Tu rol o ciudad"
                         value={voiceRole}
                         onChange={(event) => setVoiceRole(event.target.value)}
-                        className="provoca-field-focus w-full rounded-lg border border-white/10 bg-black/30 px-4 py-2 text-slate-100 placeholder-slate-500"
+                        className="form-surface w-full px-4 py-2"
                         placeholder="Rol, ciudad o vínculo (opcional)"
                       />
                     </div>

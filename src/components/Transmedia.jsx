@@ -62,6 +62,7 @@ import { supabase } from '@/lib/supabaseClient';
 import { safeGetItem, safeRemoveItem, safeSetItem } from '@/lib/safeStorage';
 import { isSafariBrowser } from '@/lib/browser';
 import { sanitizeExternalHttpUrl } from '@/lib/urlSafety';
+import { fetchFocusAppMetadata } from '@/services/focusAppMetadataService';
 
 const MiniverseModal = lazy(() => import('@/components/MiniverseModal'));
 const ContributionModal = lazy(() => import('@/components/ContributionModal'));
@@ -1919,6 +1920,7 @@ const Transmedia = () => {
   const [recommendedShowcaseId, setRecommendedShowcaseId] = useState(null);
   const [focusLockShowcaseId, setFocusLockShowcaseId] = useState(null);
   const [focusIncomingGAT, setFocusIncomingGAT] = useState(null);
+  const [focusAppMetadata, setFocusAppMetadata] = useState(null);
   const [isMovementCreditsOpen, setIsMovementCreditsOpen] = useState(false);
   const [openCollaboratorId, setOpenCollaboratorId] = useState(null);
   const { isMobileViewport, canUseInlinePlayback, requestMobileVideoPresentation } = useMobileVideoPresentation();
@@ -2747,6 +2749,7 @@ const Transmedia = () => {
   const releaseDesktopFocusLock = useCallback(() => {
     setFocusLockShowcaseId(null);
     setFocusIncomingGAT(null);
+    setFocusAppMetadata(null);
   }, []);
 
   const stopScopedMediaPlayback = useCallback((preserveHeroAmbient = true) => {
@@ -2898,28 +2901,82 @@ const Transmedia = () => {
     }
     setFocusLockShowcaseId(showcaseId);
     setFocusIncomingGAT(extractFocusIncomingGAT(pendingIntent));
+    setFocusAppMetadata(null);
     focusShowcaseCard(showcaseId);
   }, [focusShowcaseCard, resolveShowcaseFromBienvenida]);
 
   useEffect(() => {
-    if (typeof window === 'undefined') return;
+    if (typeof window === 'undefined') return undefined;
     const focusRaw = getFocusParamFromLocation(location);
-    if (!focusRaw) return;
-    const focusId =
+    if (!focusRaw) return undefined;
+
+    let isCancelled = false;
+
+    const fallbackFocusId =
       resolveShowcaseFromAppId(focusRaw, showcaseDefinitions) ||
       resolveShowcaseFromHash(focusRaw, showcaseDefinitions);
-    if (!focusId) return;
-    const section = document.getElementById('transmedia');
-    if (section) {
-      if (!section.hasAttribute('tabindex')) {
-        section.setAttribute('tabindex', '-1');
+
+    const clearFocus = () => {
+      setFocusLockShowcaseId(null);
+      setFocusIncomingGAT(null);
+      setFocusAppMetadata(null);
+      setRecommendedShowcaseId(null);
+    };
+
+    const applyFocus = (showcaseId, metadata = null, options = {}) => {
+      const { shouldScroll = true } = options;
+      if (!showcaseId) return;
+      const section = document.getElementById('transmedia');
+      if (shouldScroll && section) {
+        if (!section.hasAttribute('tabindex')) {
+          section.setAttribute('tabindex', '-1');
+        }
+        section.focus({ preventScroll: true });
+        section.scrollIntoView({ behavior: 'smooth', block: 'start' });
       }
-      section.focus({ preventScroll: true });
-      section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      setFocusLockShowcaseId(showcaseId);
+      setFocusIncomingGAT(null);
+      setFocusAppMetadata(metadata);
+      focusShowcaseCard(showcaseId);
+    };
+
+    // Fallback inmediato para evitar latencia perceptible en deep-link.
+    if (fallbackFocusId) {
+      applyFocus(fallbackFocusId, null);
+    } else {
+      clearFocus();
     }
-    setFocusLockShowcaseId(focusId);
-    setFocusIncomingGAT(null);
-    focusShowcaseCard(focusId);
+
+    const resolveFocusFromRpc = async () => {
+      const { metadata, error } = await fetchFocusAppMetadata(focusRaw);
+      if (isCancelled) return;
+
+      if (error) {
+        console.warn('[Transmedia] No se pudo resolver metadata de focus:', error);
+      }
+
+      const rpcShowcaseId = metadata
+        ? (showcaseDefinitions[metadata.showcaseId] ? metadata.showcaseId : null) ||
+          resolveShowcaseFromAppId(metadata.appId, showcaseDefinitions) ||
+          resolveShowcaseFromHash(metadata.appSlug, showcaseDefinitions)
+        : null;
+
+      if (rpcShowcaseId) {
+        const shouldScroll = rpcShowcaseId !== fallbackFocusId;
+        applyFocus(rpcShowcaseId, metadata, { shouldScroll });
+        return;
+      }
+
+      if (!fallbackFocusId) {
+        clearFocus();
+      }
+    };
+
+    resolveFocusFromRpc();
+
+    return () => {
+      isCancelled = true;
+    };
   }, [focusShowcaseCard, location, showcaseDefinitions]);
 
   useEffect(() => {
@@ -3350,6 +3407,7 @@ const Transmedia = () => {
 
   const activeDefinition = activeShowcase ? showcaseDefinitions[activeShowcase] : null;
   const activeData = activeShowcase ? showcaseContent[activeShowcase] : null;
+  const focusMetadataImageUrl = sanitizeExternalHttpUrl(focusAppMetadata?.imageUrl ?? null);
   const isCinematicShowcaseOpen = Boolean(activeDefinition);
   const isShowcaseOpenTransitionActive = showcaseOpenTransition.phase !== 'idle';
   const showcaseTransitionTargetId = showcaseOpenTransition.targetId;
@@ -6862,6 +6920,17 @@ const rendernotaAutoral = () => {
                   ×
                 </button>
                 <div className="text-center">
+                  {focusMetadataImageUrl ? (
+                    <div className="mx-auto mb-3 h-16 w-16 overflow-hidden rounded-xl border border-fuchsia-200/35 bg-black/25">
+                      <img
+                        src={focusMetadataImageUrl}
+                        alt={focusAppMetadata?.title ? `Imagen recomendada de ${focusAppMetadata.title}` : 'Imagen recomendada'}
+                        className="h-full w-full object-cover"
+                        loading="lazy"
+                        decoding="async"
+                      />
+                    </div>
+                  ) : null}
                   <p className="text-[0.62rem] uppercase tracking-[0.3em] text-fuchsia-100/90">Vitrina recomendada por el gato de la cabina</p>
                   <p className="mt-1 text-[1.05rem] font-semibold leading-snug text-slate-100">
                     Cuentas con{' '} extras de energía

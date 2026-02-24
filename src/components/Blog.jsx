@@ -826,7 +826,7 @@ const Blog = ({ posts = [], isLoading = false, error = null }) => {
                   value={searchQuery}
                   onChange={(event) => setSearchQuery(event.target.value)}
                   placeholder="Buscar por título o autor"
-                  className="w-full rounded-full border border-white/10 bg-black/30 pl-10 pr-4 py-2 text-sm text-slate-100 placeholder:text-slate-500 focus:border-purple-400 focus:outline-none focus:ring-1 focus:ring-purple-400"
+                  className="form-surface form-surface--pill w-full py-2 pl-10 pr-4 text-sm"
                 />
               </div>
             </div>

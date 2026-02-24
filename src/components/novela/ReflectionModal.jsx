@@ -53,7 +53,7 @@ export default function ReflectionModal({
         </p>
 
         <textarea
-          className="w-full min-h-[160px] rounded-2xl border border-white/10 bg-black/40 p-4 text-sm text-slate-100 outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500/40 transition"
+          className="form-surface w-full min-h-[160px] p-4 transition"
           placeholder="Escribe tu reflexión aquí…"
           value={reflection}
           onChange={(e) => setReflection(e.target.value)}

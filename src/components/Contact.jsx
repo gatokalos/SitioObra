@@ -312,7 +312,7 @@ const Contact = () => {
                   type="text"
                   value={formValues.name}
                   onChange={(event) => setFormValues((prev) => ({ ...prev, name: event.target.value }))}
-                  className="w-full px-4 py-3 bg-black/30 border border-slate-100/20 rounded-lg text-slate-100 placeholder-slate-400 focus:outline-none focus:border-purple-400 focus:ring-1 focus:ring-purple-400"
+                  className="form-surface w-full px-4 py-3"
                   placeholder="Tu nombre"
                 />
               </div>
@@ -323,7 +323,7 @@ const Contact = () => {
                   type="text"
                   value={formValues.role}
                   onChange={(event) => setFormValues((prev) => ({ ...prev, role: event.target.value }))}
-                  className="w-full px-4 py-3 bg-black/30 border border-slate-100/20 rounded-lg text-slate-100 placeholder-slate-400 focus:outline-none focus:border-purple-400 focus:ring-1 focus:ring-purple-400"
+                  className="form-surface w-full px-4 py-3"
                   placeholder="Espectador, artista, investigador..."
                 />
               </div>
@@ -334,7 +334,7 @@ const Contact = () => {
                   type="email"
                   value={formValues.email}
                   onChange={(event) => setFormValues((prev) => ({ ...prev, email: event.target.value }))}
-                  className="w-full px-4 py-3 bg-black/30 border border-slate-100/20 rounded-lg text-slate-100 placeholder-slate-400 focus:outline-none focus:border-purple-400 focus:ring-1 focus:ring-purple-400"
+                  className="form-surface w-full px-4 py-3"
                   placeholder="tu@email.com"
                 />
               </div>
@@ -345,7 +345,7 @@ const Contact = () => {
                   type="text"
                   value={formValues.city}
                   onChange={(event) => setFormValues((prev) => ({ ...prev, city: event.target.value }))}
-                  className="w-full px-4 py-3 bg-black/30 border border-slate-100/20 rounded-lg text-slate-100 placeholder-slate-400 focus:outline-none focus:border-purple-400 focus:ring-1 focus:ring-purple-400"
+                  className="form-surface w-full px-4 py-3"
                   placeholder="¿Desde dónde nos visitas?"
                 />
               </div>
@@ -357,7 +357,7 @@ const Contact = () => {
                   rows={5}
                   value={formValues.message}
                   onChange={(event) => setFormValues((prev) => ({ ...prev, message: event.target.value }))}
-                  className="w-full px-4 py-3 bg-black/30 border border-slate-100/20 rounded-lg text-slate-100 placeholder-slate-400 focus:outline-none focus:border-purple-400 focus:ring-1 focus:ring-purple-400 resize-none"
+                  className="form-surface w-full px-4 py-3 resize-none"
                   placeholder="Cuéntanos todo..."
                 ></textarea>
               </div>
@@ -368,7 +368,7 @@ const Contact = () => {
                   type="url"
                   value={formValues.attachmentUrl}
                   onChange={(event) => setFormValues((prev) => ({ ...prev, attachmentUrl: event.target.value }))}
-                  className="w-full px-4 py-3 bg-black/30 border border-slate-100/20 rounded-lg text-slate-100 placeholder-slate-400 focus:outline-none focus:border-purple-400 focus:ring-1 focus:ring-purple-400"
+                  className="form-surface w-full px-4 py-3"
                   placeholder="Drive, portfolio, video..."
                 />
               </div>
