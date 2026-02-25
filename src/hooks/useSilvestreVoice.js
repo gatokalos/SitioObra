@@ -15,10 +15,22 @@ const MODES = [
 const DEFAULT_MODE = 'lectura-profunda';
 const ENABLE_OBRA_VOICE_FALLBACK =
   String(import.meta.env.VITE_OBRA_ENABLE_VOICE_FALLBACK || '').toLowerCase() === 'true';
+const ENABLE_SILVESTRE_TIMING_DEBUG =
+  String(import.meta.env.VITE_DEBUG_SILVESTRE_TIMING || '').toLowerCase() === 'true';
 const SERVICE_UNAVAILABLE_COOLDOWN_MS = 15000;
 const normalizeMode = (value) => {
   const key = (value || '').toString().toLowerCase().trim();
   return MODES.includes(key) ? key : DEFAULT_MODE;
+};
+const getNowMs = () =>
+  typeof performance !== 'undefined' && typeof performance.now === 'function'
+    ? performance.now()
+    : Date.now();
+const roundMs = (value) => Math.max(0, Math.round(value));
+const isSilvestreTimingDebugEnabled = () => {
+  if (ENABLE_SILVESTRE_TIMING_DEBUG) return true;
+  if (typeof window === 'undefined') return false;
+  return window.localStorage?.getItem('gatoencerrado:debug-silvestre-timing') === '1';
 };
 
 const parseApiErrorResponse = async (response) => {
@@ -278,6 +290,10 @@ export const useSilvestreVoice = () => {
         return false;
       }
       const source = options.source || null;
+      const mode_id = normalizeMode(options.modeId || options.selectedMode);
+      const debugTimingEnabled = isSilvestreTimingDebugEnabled();
+      const requestStartedAt = getNowMs();
+      const timingCandidates = [];
       let requestId = 0;
       try {
         if (silvestreAbortRef.current) {
@@ -291,7 +307,6 @@ export const useSilvestreVoice = () => {
         setIsSilvestreResponding(true);
         const apiBase = import.meta.env.VITE_OBRA_API_URL;
         const userId = user?.id ?? 'anonymous';
-        const mode_id = normalizeMode(options.modeId || options.selectedMode);
         const candidates = [
           {
             endpoint: '/api/obra-conciencia',
@@ -312,6 +327,7 @@ export const useSilvestreVoice = () => {
         let lastError = null;
 
         for (const candidate of candidates) {
+          const candidateStartedAt = getNowMs();
           try {
             const response = await fetch(`${apiBase}${candidate.endpoint}`, {
               method: 'POST',
@@ -321,6 +337,7 @@ export const useSilvestreVoice = () => {
               body: JSON.stringify(candidate.payload),
               signal: controller.signal,
             });
+            const responseHeadersAt = getNowMs();
             if (requestId !== silvestreRequestIdRef.current) {
               return false;
             }
@@ -345,15 +362,34 @@ export const useSilvestreVoice = () => {
               response.headers.get('x-silvestre-answer') ||
               null;
             const blob = await response.blob();
+            const blobReadyAt = getNowMs();
             if (requestId !== silvestreRequestIdRef.current) {
               return false;
             }
             if (!blob || !(blob.type || '').startsWith('audio/')) {
               throw new Error(`${candidate.label} returned non-audio payload (${blob?.type || 'unknown'})`);
             }
+            if (debugTimingEnabled) {
+              timingCandidates.push({
+                endpoint: candidate.endpoint,
+                status: response.status,
+                headersMs: roundMs(responseHeadersAt - candidateStartedAt),
+                blobMs: roundMs(blobReadyAt - responseHeadersAt),
+                totalMs: roundMs(blobReadyAt - candidateStartedAt),
+                bytes: blob.size ?? null,
+              });
+            }
             audioBlob = blob;
             break;
           } catch (error) {
+            if (debugTimingEnabled) {
+              timingCandidates.push({
+                endpoint: candidate.endpoint,
+                status: error?.status ?? null,
+                totalMs: roundMs(getNowMs() - candidateStartedAt),
+                error: error?.message || 'unknown',
+              });
+            }
             console.error('[Silvestre Voice] candidate error:', {
               message: error?.message,
               status: error?.status,
@@ -368,6 +404,16 @@ export const useSilvestreVoice = () => {
         }
 
         if (!audioBlob) {
+          if (debugTimingEnabled) {
+            console.info('[Silvestre Timing]', {
+              source,
+              mode_id,
+              ok: false,
+              phase: 'no-audio-blob',
+              totalMs: roundMs(getNowMs() - requestStartedAt),
+              candidates: timingCandidates,
+            });
+          }
           throw lastError || new Error('No se pudo obtener audio de La Obra');
         }
         serviceUnavailableUntilRef.current = 0;
@@ -403,10 +449,36 @@ export const useSilvestreVoice = () => {
           },
           { once: true }
         );
+        const beforePlayAt = getNowMs();
         try {
           await audio.play();
+          if (debugTimingEnabled) {
+            const playResolvedAt = getNowMs();
+            console.info('[Silvestre Timing]', {
+              source,
+              mode_id,
+              ok: true,
+              autoplayBlocked: false,
+              requestToPlayableMs: roundMs(playResolvedAt - requestStartedAt),
+              prePlayMs: roundMs(beforePlayAt - requestStartedAt),
+              playStartMs: roundMs(playResolvedAt - beforePlayAt),
+              audioBytes: audioBlob.size ?? null,
+              candidates: timingCandidates,
+            });
+          }
         } catch (playError) {
           if (playError?.name === 'NotAllowedError') {
+            if (debugTimingEnabled) {
+              console.info('[Silvestre Timing]', {
+                source,
+                mode_id,
+                ok: true,
+                autoplayBlocked: true,
+                requestToAudioReadyMs: roundMs(getNowMs() - requestStartedAt),
+                audioBytes: audioBlob.size ?? null,
+                candidates: timingCandidates,
+              });
+            }
             setPendingSilvestreAudioUrl(audioUrl);
             setIsSilvestreResponding(false);
             setIsSilvestrePlaying(false);
@@ -425,6 +497,17 @@ export const useSilvestreVoice = () => {
         setMicError('');
         return true;
       } catch (error) {
+        if (debugTimingEnabled && error?.name !== 'AbortError') {
+          console.info('[Silvestre Timing]', {
+            source,
+            mode_id,
+            ok: false,
+            totalMs: roundMs(getNowMs() - requestStartedAt),
+            status: error?.status ?? null,
+            error: error?.message || 'unknown',
+            candidates: timingCandidates,
+          });
+        }
         if (error?.name === 'AbortError') {
           if (requestId === silvestreRequestIdRef.current) {
             setIsSilvestreFetching(false);

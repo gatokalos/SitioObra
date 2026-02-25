@@ -585,8 +585,8 @@ const OBRA_VOICE_MODES = [
   },
   {
     id: 'artista',
-    title: 'Artista',
-    description: 'Intuición, imagen y pulso creativo.',
+    title: 'La artista',
+    description: 'Intuición y pulso creativo.',
     accent: 'from-rose-200/20 via-pink-300/10 to-transparent',
     icon: Palette,
     tint: {
@@ -597,7 +597,7 @@ const OBRA_VOICE_MODES = [
   },
   {
     id: 'claro-directo',
-    title: 'Claro y directo',
+    title: 'El práctico',
     description: 'Lo esencial, sin rodeos.',
     accent: 'from-amber-200/20 via-orange-300/10 to-transparent',
     icon: CheckCircle2,
@@ -621,8 +621,8 @@ const OBRA_VOICE_MODES = [
   },
   {
     id: 'util-hoy',
-    title: 'Útil hoy',
-    description: 'Una idea que sí puedes usar hoy.',
+    title: 'Ejecutivo',
+    description: 'Idea, acción, pregunta.',
     accent: 'from-emerald-200/20 via-teal-300/10 to-transparent',
     icon: Wrench,
     tint: {

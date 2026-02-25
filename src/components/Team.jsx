@@ -212,7 +212,6 @@ const teamData = {
 };
 
 const teamEntries = Object.entries(teamData);
-const teamRoleKeys = teamEntries.map(([role]) => role);
 const mobileSingleButtonRoles = new Set([
   "Dramaturgia",
   "Colaboradores y Agradecimientos",
@@ -223,6 +222,14 @@ const mobileRoleLabelOverrides = {
 
 // === COMPONENT ===
 const Team = () => {
+  const orderedRoleEntries = [
+    ...["Dirección", "Elenco"]
+      .map((role) => [role, teamData[role]])
+      .filter(([, data]) => Boolean(data)),
+    ...teamEntries.filter(([role]) => role !== "Dirección" && role !== "Elenco"),
+  ];
+  const orderedRoleKeys = orderedRoleEntries.map(([role]) => role);
+  const defaultDesktopRole = teamData.Elenco ? "Elenco" : orderedRoleKeys[0] ?? null;
   const [selectedElencoId, setSelectedElencoId] = useState(null);
   const [isMobile, setIsMobile] = useState(
     typeof window !== "undefined" ? window.innerWidth < 768 : false
@@ -230,25 +237,19 @@ const Team = () => {
   const [activeMobileRole, setActiveMobileRole] = useState(null);
   const [openMobileRoles, setOpenMobileRoles] = useState([]);
   const [activeMobileMemberByRole, setActiveMobileMemberByRole] = useState({});
-  const [activeDesktopRole, setActiveDesktopRole] = useState(teamRoleKeys[0] ?? null);
+  const [activeDesktopRole, setActiveDesktopRole] = useState(defaultDesktopRole);
   const [activeMemberLink, setActiveMemberLink] = useState(null);
   const [confirmExternalLink, setConfirmExternalLink] = useState(null);
   const activeDesktopData = activeDesktopRole ? teamData[activeDesktopRole] : null;
-  const mobileRoleEntries = [
-    ...["Dirección", "Elenco"]
-      .map((role) => [role, teamData[role]])
-      .filter(([, data]) => Boolean(data)),
-    ...teamEntries.filter(([role]) => role !== "Dirección" && role !== "Elenco"),
-  ];
   const mobileRoleRows = [];
-  for (let index = 0; index < mobileRoleEntries.length; ) {
-    const role = mobileRoleEntries[index][0];
+  for (let index = 0; index < orderedRoleEntries.length; ) {
+    const role = orderedRoleEntries[index][0];
     if (mobileSingleButtonRoles.has(role)) {
       mobileRoleRows.push([role]);
       index += 1;
       continue;
     }
-    const nextRole = mobileRoleEntries[index + 1]?.[0];
+    const nextRole = orderedRoleEntries[index + 1]?.[0];
     if (nextRole && !mobileSingleButtonRoles.has(nextRole)) {
       mobileRoleRows.push([role, nextRole]);
       index += 2;
@@ -332,9 +333,9 @@ const Team = () => {
 
   useEffect(() => {
     if (!activeDesktopRole || !(activeDesktopRole in teamData)) {
-      setActiveDesktopRole(teamRoleKeys[0] ?? null);
+      setActiveDesktopRole(defaultDesktopRole);
     }
-  }, [activeDesktopRole]);
+  }, [activeDesktopRole, defaultDesktopRole]);
 
   useEffect(() => {
     if (!activeMobileRole) return;
@@ -942,21 +943,21 @@ const Team = () => {
   };
 
   const handleDesktopRoleKeyDown = (event, index) => {
-    if (teamRoleKeys.length === 0) return;
+    if (orderedRoleKeys.length === 0) return;
     let targetIndex = index;
     if (event.key === "ArrowRight") {
-      targetIndex = (index + 1) % teamRoleKeys.length;
+      targetIndex = (index + 1) % orderedRoleKeys.length;
     } else if (event.key === "ArrowLeft") {
-      targetIndex = (index - 1 + teamRoleKeys.length) % teamRoleKeys.length;
+      targetIndex = (index - 1 + orderedRoleKeys.length) % orderedRoleKeys.length;
     } else if (event.key === "Home") {
       targetIndex = 0;
     } else if (event.key === "End") {
-      targetIndex = teamRoleKeys.length - 1;
+      targetIndex = orderedRoleKeys.length - 1;
     } else {
       return;
     }
     event.preventDefault();
-    setActiveDesktopRole(teamRoleKeys[targetIndex]);
+    setActiveDesktopRole(orderedRoleKeys[targetIndex]);
   };
 
   const renderMobileRoleSplitButton = (role, rowRoles) => {
@@ -1211,7 +1212,7 @@ Cada colaboración forma parte activa del universo que la obra pone en escena.
               aria-label="Áreas del equipo creativo"
               className="flex flex-wrap items-stretch justify-center gap-2"
             >
-              {teamEntries.map(([role], index) => {
+              {orderedRoleEntries.map(([role], index) => {
                 const isActive = role === activeDesktopRole;
                 return (
                   <button
@@ -1243,7 +1244,7 @@ Cada colaboración forma parte activa del universo que la obra pone en escena.
                   id="team-desktop-panel"
                   role="tabpanel"
                   aria-labelledby={
-                    activeDesktopRole ? `team-tab-${teamRoleKeys.indexOf(activeDesktopRole)}` : undefined
+                    activeDesktopRole ? `team-tab-${orderedRoleKeys.indexOf(activeDesktopRole)}` : undefined
                   }
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}

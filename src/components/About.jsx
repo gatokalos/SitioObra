@@ -18,6 +18,7 @@ import {
   TRAILER_FALLBACK_URL_SQUARE,
 } from '@/services/trailerService';
 import ReserveModal from '@/components/ReserveModal';
+import { useSilvestreVoice } from '@/hooks/useSilvestreVoice';
 
 const aboutParagraphs = [
   {
@@ -52,6 +53,8 @@ const PROVOCA_SHARE_URL = 'https://esungatoencerrado.com/#provoca';
 const PROVOCA_DRAFT_KEY = 'gatoencerrado:provoca-draft';
 const PROVOCA_AFTERCARE_DELAY_MS = 3200;
 const PROVOCA_CONFETTI_VISIBLE_MS = 2400;
+const PROVOCA_SILVESTRE_MODE_ID = 'lectura-profunda';
+const PROVOCA_RESPONSE_ESTIMATE_SECONDS = 60;
 const inviteMessage = `Hola 🐾
 Quiero invitarte a compartir tu mirada en *Perspectivas del público* de *Es un gato encerrado*.
 Entra aquí: ${PROVOCA_SHARE_URL}
@@ -68,8 +71,41 @@ export const ProvocaSection = () => {
   const [isSubmittingVoice, setIsSubmittingVoice] = useState(false);
   const [showAfterCareOverlay, setShowAfterCareOverlay] = useState(false);
   const [testimonials, setTestimonials] = useState(fallbackTestimonials);
+  const [responseCountdownSeconds, setResponseCountdownSeconds] = useState(
+    PROVOCA_RESPONSE_ESTIMATE_SECONDS
+  );
   const afterCareTimeoutRef = useRef(null);
   const confettiTimeoutRef = useRef(null);
+  const responseCountdownRef = useRef(null);
+  const {
+    micPromptVisible,
+    micError,
+    isListening,
+    isSilvestreResponding,
+    isSilvestreFetching,
+    isSilvestrePlaying,
+    pendingSilvestreAudioUrl,
+    silvestreThinkingMessage,
+    handleSendSilvestrePreset,
+    handlePlayPendingAudio,
+  } = useSilvestreVoice();
+  const isSilvestreThinking = isSilvestreFetching || isSilvestreResponding;
+  const isEscucharButtonActive =
+    isSilvestreThinking || isSilvestrePlaying || isListening || Boolean(pendingSilvestreAudioUrl);
+  const formattedResponseCountdown = `${String(Math.floor(responseCountdownSeconds / 60)).padStart(2, '0')}:${String(
+    responseCountdownSeconds % 60
+  ).padStart(2, '0')}`;
+  const escucharStatusLabel = isSilvestrePlaying
+    ? `Te estoy respondiendo · ${formattedResponseCountdown}`
+    : pendingSilvestreAudioUrl
+      ? 'Reproducir respuesta'
+      : isSilvestreThinking
+        ? silvestreThinkingMessage
+        : isListening
+          ? 'Pulsa otra vez para enviar'
+          : micPromptVisible
+            ? 'Pulsa para hablar o escoge otra pregunta'
+            : 'Escuchar a la obra';
 
   useEffect(() => {
     return () => {
@@ -79,8 +115,47 @@ export const ProvocaSection = () => {
       if (confettiTimeoutRef.current) {
         clearTimeout(confettiTimeoutRef.current);
       }
+      if (responseCountdownRef.current) {
+        clearInterval(responseCountdownRef.current);
+      }
     };
   }, []);
+
+  useEffect(() => {
+    if (!isSilvestrePlaying) {
+      if (responseCountdownRef.current) {
+        clearInterval(responseCountdownRef.current);
+        responseCountdownRef.current = null;
+      }
+      setResponseCountdownSeconds(PROVOCA_RESPONSE_ESTIMATE_SECONDS);
+      return;
+    }
+
+    setResponseCountdownSeconds(PROVOCA_RESPONSE_ESTIMATE_SECONDS);
+    if (responseCountdownRef.current) {
+      clearInterval(responseCountdownRef.current);
+    }
+
+    responseCountdownRef.current = setInterval(() => {
+      setResponseCountdownSeconds((previous) => {
+        if (previous <= 1) {
+          if (responseCountdownRef.current) {
+            clearInterval(responseCountdownRef.current);
+            responseCountdownRef.current = null;
+          }
+          return 0;
+        }
+        return previous - 1;
+      });
+    }, 1000);
+
+    return () => {
+      if (responseCountdownRef.current) {
+        clearInterval(responseCountdownRef.current);
+        responseCountdownRef.current = null;
+      }
+    };
+  }, [isSilvestrePlaying]);
 
   const fireProvocaConfetti = useCallback(() => {
     const id = Date.now();
@@ -258,6 +333,28 @@ export const ProvocaSection = () => {
     }
   }, []);
 
+  const handleListenToObra = useCallback(async () => {
+    if (pendingSilvestreAudioUrl) {
+      await handlePlayPendingAudio();
+      return;
+    }
+    if (isSilvestreThinking) {
+      return;
+    }
+    const message = voiceDraft.trim();
+    if (!message) {
+      toast({ description: 'Escribe tu texto y luego pulsa “Escuchar a la obra”.' });
+      return;
+    }
+    await handleSendSilvestrePreset(message, { modeId: PROVOCA_SILVESTRE_MODE_ID });
+  }, [
+    pendingSilvestreAudioUrl,
+    handlePlayPendingAudio,
+    isSilvestreThinking,
+    voiceDraft,
+    handleSendSilvestrePreset,
+  ]);
+
   const afterCareOverlay = typeof document !== 'undefined'
     ? createPortal(
       <AnimatePresence>
@@ -419,12 +516,26 @@ export const ProvocaSection = () => {
                         <Button
                           type="button"
                           variant="outline"
-                          className="ui-segmented__btn ui-segmented__btn--secondary flex-1 sm:flex-none"
+                          onClick={handleListenToObra}
+                          disabled={isSilvestreThinking}
+                          className={`ui-segmented__btn ui-segmented__btn--secondary flex-1 sm:flex-none text-center whitespace-normal ${
+                            isEscucharButtonActive ? 'ui-segmented__btn--active' : ''
+                          } ${
+                            isSilvestreThinking ? 'thinking-blink' : ''
+                          }`}
+                          aria-pressed={isEscucharButtonActive}
+                          aria-live="polite"
                         >
-                          Escuchar a la obra
+                          {escucharStatusLabel}
                         </Button>
                         
                       </div>
+                      {micError && !isListening && !isSilvestreThinking ? (
+                        <p className="w-full text-xs text-red-200/90">{micError}</p>
+                      ) : null}
+                      <p className="w-full text-[11px] text-slate-300/70">
+                        Respuesta de voz estimada: aproximadamente 1 minuto.
+                      </p>
                     </div>
                        <details className="group mt-4 md:mt-5 mb-5 rounded-2xl border border-emerald-300/20 bg-emerald-500/10 px-4 py-3 text-left">
                 <summary className="flex cursor-pointer list-none items-center justify-between gap-3">

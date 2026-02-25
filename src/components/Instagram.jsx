@@ -891,7 +891,7 @@ const Instagram = () => {
           className="text-center mb-14"
         >
           <h2 className="font-display text-4xl md:text-5xl font-medium mb-5 text-gradient italic">
-            Fractales Efímeros
+            Memoria Fractal
           </h2>
          <p className="text-base md:text-lg text-slate-300/75 max-w-3xl mx-auto leading-relaxed mb-7 font-light">
   Un homenaje visual a los destellos de <em>Es un gato encerrado</em>.  
