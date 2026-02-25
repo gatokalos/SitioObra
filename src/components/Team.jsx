@@ -1,14 +1,8 @@
 // src/components/Team.jsx
-import React, { useEffect, useLayoutEffect, useRef, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { createPortal } from "react-dom";
 import { ExternalLink, Instagram } from "lucide-react";
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "@/components/ui/accordion";
 
 const BLOCKED_IFRAME_HOSTS = ["instagram.com", "linktr.ee"];
 
@@ -25,65 +19,7 @@ const shouldConfirmExternalLink = (url) => {
 };
 
 const teamData = {
-  "Alianza": {
-    name: "Isabel Ayuda para la Vida A.C.",
-    bio: "Isabel Ayuda para la Vida A.C. es una asociación civil fundada en 2018, dedicada a la prevención de la violencia autoinfligida y a la promoción del pedir ayuda como estrategia de vida. Su colaboración con #GatoEncerrado articula el cuidado emocional y la empatía como parte activa del proceso creativo, en contextos artísticos y educativos.",
-    image: "https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/equipo/IsabelAC.jpg",
-  },
-  Dirección: {
-    name: "Gilberto Corrales",
-    bio: "Director, dramaturgo y actor. Licenciado en Teatro por la Facultad de Artes de la UABC, ha dirigido más de cuarenta obras, la mayoría de su autoría. Su trabajo explora la transdisciplina y la investigación del lenguaje escénico. Fundador de Incendio Producciones, sus obras han estado presentes en la Muestra Nacional de Teatro y en festivales de Colombia, Argentina y EE.UU. Ganador del Premio Juventud 2016 y del FITU UNAM. Dirige el Contagio Tijuana y colabora con artistas como Jorge Ballina y Daniel Primo.",
-    image: "https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/equipo/gil-corrales.gif",
-  },
-    Dramaturgia: {
-    name: "Carlos A. Pérez H.",
-    bio: "Comunicólogo, autor, y artista transmedia. Su obra habita entre teatro, escritura y tecnología, proponiendo una poética crítica y humana. Formado en el ITESO, la Universidad de Salamanca y LABASAD Barcelona, integra astrología psicológica, cuerpo y arte digital en una mirada simbólica. Creador del universo transmedia #GatoEncerrado, concibe el acto creativo como una forma de acompañamiento y transformación.",
-    image: "https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/equipo/carlos_perez.gif",
-  },
-  "Producción": {
-    description:
-      "Un equipo que coordina, articula y acompaña cada engranaje de la producción escénica con mirada sensible, técnica y humana.",
-    members: [
-  
-      {
-        name: "Miroslava Wilson",
-        role: "Producción Ejecutiva",
-        bio: "Productora ejecutiva, directora y asesora de movimiento. Originaria de Hermosillo y radicada en Tijuana, es fundadora de Péndulo Cero A.C. y educadora de movimiento somático certificada por Body Mind Movement. Su trabajo interdisciplinario vincula arte, medio ambiente y humanismo. Ha presentado su obra en Asia, América y Europa, y actualmente impulsa proyectos como Casa Viva y SomasSomos.",
-        image: "https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/equipo/Miroslava%20.jpg",
-      },
-          {
-        name: "Rosalía Hernández Millán",
-        role: "Producción General y Vinculación Social",
-        bio: "Presidenta de Isabel A.C. Ayuda para la Vida, Maestra en Psicobiología y Neurociencia Cognitiva (UAB). Su labor impulsa la integración entre arte y bienestar emocional, fortaleciendo el puente entre el proyecto escénico y la comunidad.",
-        image: "https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/equipo/rosslee.png",
-      },
-      {
-        name: "Marcela Durán Mulia",
-        role: "Producción Administrativa",
-        bio: "Actriz, gestora y representante legal de Incendio Producciones. Licenciada en Comunicación (UABC) y Maestra en Alta Dirección Corporativa (Humanitas). Ha participado en la Muestra Nacional de Teatro, ENARTES y otros festivales internacionales. Su mirada estratégica une la gestión cultural con la sensibilidad artística.",
-        image: "https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/equipo/marcela.png",
-      },
-      {
-        name: "Gabriel Monroy",
-        role: "Asistencia de Dirección y Gestión",
-        bio: "Actor, fotógrafo escénico y gestor. Licenciado en Artes Escénicas por la Universidad de Sonora. Creador de la serie fotográfica 'Reflejos de la escena', exhibida internacionalmente. Su mirada visual y su acompañamiento escénico fortalecen el proceso de dirección.",
-        image: "https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/equipo/gabriel.jpg",
-      },
-      {
-        name: "Rocío Morgan",
-        role: "Asistencia Ejecutiva",
-        bio: "Gestora cultural y apoyo logístico de producción. Su labor sostiene los procesos administrativos y humanos que hacen posible la operación cotidiana de la obra.",
-        image: "https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/equipo/rocio.jpg",
-      },
-      {
-        name: "María Diana Laura Rodriguez",
-        role: "Enlace de Producción",
-        bio: "Maquillista y traspunte en el Teatro Camafeo. Fue un apoyo operativo clave en la etapa temprana de #GatoEncerrado y facilitó el enlace con el director Gilberto Corrales, gesto que definió la continuidad del proyecto. Su iniciativa y acompañamiento hicieron posible que el montaje avanzara en el momento más decisivo.",
-        image: "https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/equipo/mariadianalaura.jpg",
-      },
-    ],
-  },
-  Elenco: {
+   Elenco: {
     description:
       "Actores y actrices que encarnan el pulso emocional de la obra desde la fisicalidad, la voz y la presencia simbólica.",
     members: [
@@ -117,6 +53,18 @@ const teamData = {
       },
     ],
   },
+   Dirección: {
+    name: "Gilberto Corrales",
+    bio: "Director, dramaturgo y actor. Licenciado en Teatro por la Facultad de Artes de la UABC, ha dirigido más de cuarenta obras, la mayoría de su autoría. Su trabajo explora la transdisciplina y la investigación del lenguaje escénico. Fundador de Incendio Producciones, sus obras han estado presentes en la Muestra Nacional de Teatro y en festivales de Colombia, Argentina y EE.UU. Ganador del Premio Juventud 2016 y del FITU UNAM. Dirige el Contagio Tijuana y colabora con artistas como Jorge Ballina y Daniel Primo.",
+    image: "https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/equipo/gil-corrales_web.mp4",
+  },
+    Dramaturgia: {
+    name: "Carlos A. Pérez H.",
+    bio: "Comunicólogo, autor, y artista transmedia. Su obra habita entre teatro, escritura y tecnología, proponiendo una poética crítica y humana. Formado en el ITESO, la Universidad de Salamanca y LABASAD Barcelona, integra astrología psicológica, cuerpo y arte digital en una mirada simbólica. Creador del universo transmedia #GatoEncerrado, concibe el acto creativo como una forma de acompañamiento y transformación.",
+    image: "https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/equipo/carlos_perez_web.mp4",
+  },
+ 
+ 
   "Diseño Escénico": {
     description:
       "Diseñadoras y diseñadores que construyen atmósferas visuales y espaciales para expandir la poética de la obra.",
@@ -143,7 +91,7 @@ const teamData = {
       },
     ],
   },
-  "Música y Sonido": {
+  "Sonido y Tema Musical": {
     description:
       "Artistas que modelan la experiencia auditiva, desde la composición musical hasta la espacialización del sonido.",
     members: [
@@ -162,7 +110,7 @@ const teamData = {
       },
     ],
   },
-  "Vestuario y Caracterización": {
+  "Vestuario y Pelucas": {
     description:
       "Diseño textil y caracterización que traducen la psicología de los personajes en textura, color y forma.",
     members: [
@@ -198,7 +146,55 @@ const teamData = {
       },
     ],
   },
+   "Producción y asistencia": {
+    description:
+      "Un equipo que coordina, articula y acompaña cada engranaje de la producción escénica con mirada sensible, técnica y humana.",
+    members: [
+  
 
+          {
+        name: "Rosalía Hernández Millán",
+        role: "Producción General y Vinculación Social",
+        bio: "Presidenta de Isabel A.C. Ayuda para la Vida, Maestra en Psicobiología y Neurociencia Cognitiva (UAB). Su labor impulsa la integración entre arte y bienestar emocional, fortaleciendo el puente entre el proyecto escénico y la comunidad.",
+        image: "https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/equipo/rosslee.png",
+      },
+            {
+        name: "Miroslava Wilson",
+        role: "Producción Ejecutiva",
+        bio: "Productora ejecutiva, directora y asesora de movimiento. Originaria de Hermosillo y radicada en Tijuana, es fundadora de Péndulo Cero A.C. y educadora de movimiento somático certificada por Body Mind Movement. Su trabajo interdisciplinario vincula arte, medio ambiente y humanismo. Ha presentado su obra en Asia, América y Europa, y actualmente impulsa proyectos como Casa Viva y SomasSomos.",
+        image: "https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/equipo/Miroslava%20.jpg",
+      },
+      {
+        name: "Marcela Durán Mulia",
+        role: "Producción Administrativa",
+        bio: "Actriz, gestora y representante legal de Incendio Producciones. Licenciada en Comunicación (UABC) y Maestra en Alta Dirección Corporativa (Humanitas). Ha participado en la Muestra Nacional de Teatro, ENARTES y otros festivales internacionales. Su mirada estratégica une la gestión cultural con la sensibilidad artística.",
+        image: "https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/equipo/marcela.png",
+      },
+      {
+        name: "Gabriel Monroy",
+        role: "Asistencia de Dirección y Gestión",
+        bio: "Actor, fotógrafo escénico y gestor. Licenciado en Artes Escénicas por la Universidad de Sonora. Creador de la serie fotográfica 'Reflejos de la escena', exhibida internacionalmente. Su mirada visual y su acompañamiento escénico fortalecen el proceso de dirección.",
+        image: "https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/equipo/gabriel.jpg",
+      },
+      {
+        name: "Rocío Morgan",
+        role: "Asistencia Ejecutiva",
+        bio: "Gestora cultural y apoyo logístico de producción. Su labor sostiene los procesos administrativos y humanos que hacen posible la operación cotidiana de la obra.",
+        image: "https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/equipo/rocio.jpg",
+      },
+      {
+        name: "María Diana Laura Rodriguez",
+        role: "Enlace de Producción",
+        bio: "Maquillista y traspunte en el Teatro Camafeo. Fue un apoyo operativo clave en la etapa temprana de #GatoEncerrado y facilitó el enlace con el director Gilberto Corrales, gesto que definió la continuidad del proyecto. Su iniciativa y acompañamiento hicieron posible que el montaje avanzara en el momento más decisivo.",
+        image: "https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/equipo/mariadianalaura.jpg",
+      },
+    ],
+  },
+   "Alianza Social": {
+    name: "Isabel Ayuda para la Vida A.C.",
+    bio: "Isabel Ayuda para la Vida A.C. es una asociación civil fundada en 2018, dedicada a la prevención de la violencia autoinfligida y a la promoción del pedir ayuda como estrategia de vida. Su colaboración con #GatoEncerrado articula el cuidado emocional y la empatía como parte activa del proceso creativo, en contextos artísticos y educativos.",
+    image: "https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/equipo/IsabelAC.jpg",
+  },
   "Colaboradores y Agradecimientos": {
     description:
       "Detrás de cada función existe una constelación de manos, miradas y corazones que hacen posible la obra de Es un Gato Encerrado. Este bloque celebra su labor silenciosa y luminosa.",
@@ -212,17 +208,55 @@ const teamData = {
         "Apoyos institucionales: Agradecimiento a Teatro CAMAFEO y sus productoras Margarita Martínez de Camarena y Elsa Pérez de Vargas; CEART Tijuana, IMAC, Casa Viva y Adagio Studio por su apoyo en ensayos y espacios.",
     },
   },
+
+};
+
+const teamEntries = Object.entries(teamData);
+const teamRoleKeys = teamEntries.map(([role]) => role);
+const mobileSingleButtonRoles = new Set([
+  "Dramaturgia",
+  "Colaboradores y Agradecimientos",
+]);
+const mobileRoleLabelOverrides = {
+  "Sonido y Tema Musical": "Sonido y Música",
 };
 
 // === COMPONENT ===
 const Team = () => {
   const [selectedElencoId, setSelectedElencoId] = useState(null);
-  const [isMobile, setIsMobile] = useState(false);
-  const [openSection, setOpenSection] = useState(null);
+  const [isMobile, setIsMobile] = useState(
+    typeof window !== "undefined" ? window.innerWidth < 768 : false
+  );
+  const [activeMobileRole, setActiveMobileRole] = useState(null);
+  const [openMobileRoles, setOpenMobileRoles] = useState([]);
+  const [activeMobileMemberByRole, setActiveMobileMemberByRole] = useState({});
+  const [activeDesktopRole, setActiveDesktopRole] = useState(teamRoleKeys[0] ?? null);
   const [activeMemberLink, setActiveMemberLink] = useState(null);
   const [confirmExternalLink, setConfirmExternalLink] = useState(null);
-  const accordionItemRefs = useRef({});
-  const pendingScrollRef = useRef(null);
+  const activeDesktopData = activeDesktopRole ? teamData[activeDesktopRole] : null;
+  const mobileRoleEntries = [
+    ...["Dirección", "Elenco"]
+      .map((role) => [role, teamData[role]])
+      .filter(([, data]) => Boolean(data)),
+    ...teamEntries.filter(([role]) => role !== "Dirección" && role !== "Elenco"),
+  ];
+  const mobileRoleRows = [];
+  for (let index = 0; index < mobileRoleEntries.length; ) {
+    const role = mobileRoleEntries[index][0];
+    if (mobileSingleButtonRoles.has(role)) {
+      mobileRoleRows.push([role]);
+      index += 1;
+      continue;
+    }
+    const nextRole = mobileRoleEntries[index + 1]?.[0];
+    if (nextRole && !mobileSingleButtonRoles.has(nextRole)) {
+      mobileRoleRows.push([role, nextRole]);
+      index += 2;
+      continue;
+    }
+    mobileRoleRows.push([role]);
+    index += 1;
+  }
 
   const isMemberLinkOpen = Boolean(activeMemberLink?.url);
   const isConfirmLinkOpen = Boolean(confirmExternalLink?.url);
@@ -296,25 +330,17 @@ const Team = () => {
     }
   }, [isMobile, selectedElencoId]);
 
-  useLayoutEffect(() => {
-    if (isMobile) {
-      pendingScrollRef.current = null;
-      return;
+  useEffect(() => {
+    if (!activeDesktopRole || !(activeDesktopRole in teamData)) {
+      setActiveDesktopRole(teamRoleKeys[0] ?? null);
     }
-    if (!pendingScrollRef.current) return;
+  }, [activeDesktopRole]);
 
-    const targetNode = accordionItemRefs.current[pendingScrollRef.current];
-    pendingScrollRef.current = null;
-    if (!targetNode) return;
-
-    const scrollMargin =
-      parseFloat(getComputedStyle(targetNode).scrollMarginTop) || 0;
-    const rect = targetNode.getBoundingClientRect();
-    const desiredY = window.scrollY + rect.top - scrollMargin;
-
-    // Ajuste inmediato antes del siguiente repintado; sin animar para evitar rebotes.
-    window.scrollTo({ top: desiredY, behavior: "auto" });
-  }, [openSection]);
+  useEffect(() => {
+    if (!activeMobileRole) return;
+    if (activeMobileRole in teamData) return;
+    setActiveMobileRole(null);
+  }, [activeMobileRole]);
 
   useEffect(() => {
     if (!isMemberLinkOpen) {
@@ -352,22 +378,55 @@ const Team = () => {
     return () => window.removeEventListener("keydown", handleKeyDown, true);
   }, [isConfirmLinkOpen]);
 
-  const renderRole = (data, roleKey) => {
+  const setActiveMobileMember = (roleKey, memberId) => {
+    if (!roleKey || !memberId) return;
+    setActiveMobileMemberByRole((prev) => {
+      if (prev[roleKey] === memberId) return prev;
+      return { ...prev, [roleKey]: memberId };
+    });
+  };
+
+  const renderProfileMedia = ({ src, alt, className }) => {
+    if (!src) {
+      return (
+        <span className={`flex items-center justify-center bg-black/40 text-lg font-semibold text-slate-100 ${className}`}>
+          {(alt || "?").charAt(0)}
+        </span>
+      );
+    }
+
+    const isVideo = /\.(mp4|webm|ogg)(\?.*)?$/i.test(src);
+    if (!isVideo) {
+      return <img className={className} src={src} alt={alt} loading="lazy" />;
+    }
+
+    return (
+      <video
+        className={className}
+        src={src}
+        autoPlay
+        loop
+        muted
+        playsInline
+        preload="metadata"
+      />
+    );
+  };
+
+  const renderRole = (data, roleKey, options = {}) => {
+    const showDescription = options.showDescription !== false;
     const isElenco = roleKey === "Elenco";
-    const useRoundAvatars =
-      isMobile &&
-      [
-        "Diseño Escénico",
-        "Música y Sonido",
-        "Vestuario y Caracterización",
-        "Realización Técnica",
-        "Producción",
-      ].includes(roleKey);
+    const isAllianceSocial = roleKey === "Alianza Social";
+    const isSingleCreativeLeadRole =
+      roleKey === "Dirección" || roleKey === "Dramaturgia" || isAllianceSocial;
+    const useRoundAvatars = isMobile;
     const desktopCircleGroups = [
       "Diseño Escénico",
+      "Sonido y Tema Musical",
       "Música y Sonido",
-      "Producción",
+      "Producción y asistencia",
       "Realización Técnica",
+      "Vestuario y Pelucas",
       "Vestuario y Caracterización",
     ];
     const useDesktopCircleGrid = !isMobile && desktopCircleGroups.includes(roleKey);
@@ -383,10 +442,130 @@ const Team = () => {
         isElencoClickable && selectedElencoId
           ? membersWithId.find(({ id }) => id === selectedElencoId)?.member
           : null;
+      const activeMobileMemberId =
+        activeMobileMemberByRole[roleKey] ?? membersWithId[0]?.id ?? null;
+      const activeMobileMember =
+        membersWithId.find(({ id }) => id === activeMobileMemberId)?.member ??
+        membersWithId[0]?.member ??
+        null;
+
+      if (isMobile) {
+        return (
+          <div className="space-y-5">
+            {showDescription && data.description ? (
+              <div className="rounded-2xl border border-purple-300/35 bg-purple-500/10 px-4 py-3">
+                <p className="text-slate-200/90 leading-relaxed font-light text-sm">
+                  {data.description}
+                </p>
+              </div>
+            ) : null}
+
+            {membersWithId.length > 0 ? (
+              <>
+                <div className="rounded-2xl border border-white/10 bg-black/25 p-4">
+                  <div className="flex flex-wrap items-center justify-center gap-3">
+                    {membersWithId.map(({ member, id: memberId }) => {
+                      const isActive = memberId === activeMobileMemberId;
+                      return (
+                        <button
+                          key={memberId}
+                          type="button"
+                          onClick={() => setActiveMobileMember(roleKey, memberId)}
+                          className={`h-16 w-16 overflow-hidden rounded-full border transition ${
+                            isActive
+                              ? "border-purple-300/80 ring-2 ring-purple-300/35"
+                              : "border-white/15 hover:border-purple-300/55"
+                          }`}
+                          aria-label={`Ver ficha de ${member.name}`}
+                        >
+                          {member.image ? (
+                            <img
+                              src={member.image}
+                              alt={`Retrato de ${member.name}`}
+                              className="h-full w-full object-cover"
+                              loading="lazy"
+                            />
+                          ) : (
+                            <span className="flex h-full w-full items-center justify-center bg-black/40 text-lg font-semibold text-slate-100">
+                              {(member.name || roleKey || "?").charAt(0)}
+                            </span>
+                          )}
+                        </button>
+                      );
+                    })}
+                  </div>
+                  <p className="mt-4 text-center text-[11px] uppercase tracking-[0.32em] text-purple-200/85">
+                    {roleKey}
+                  </p>
+                </div>
+
+                {activeMobileMember ? (
+                  <motion.div
+                    key={`${roleKey}-${activeMobileMemberId}`}
+                    initial={{ opacity: 0, y: 6 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.2, ease: "easeOut" }}
+                    className="glass-effect rounded-xl border border-white/10 bg-black/20 p-5 text-center"
+                  >
+                    <div className="mx-auto aspect-[16/10] w-full max-w-[340px] overflow-hidden rounded-md border border-white/15 bg-black/35 shadow-lg shadow-black/40">
+                      <img
+                        className="h-full w-full object-cover object-top"
+                        src={activeMobileMember.image}
+                        alt={`Retrato de ${activeMobileMember.name}`}
+                        loading="lazy"
+                      />
+                    </div>
+                    <div className="mt-5 flex items-center justify-center gap-2">
+                      <h4 className="font-display text-xl text-purple-100">
+                        {activeMobileMember.name}
+                      </h4>
+                      {renderMemberLinks(activeMobileMember)}
+                    </div>
+                    {activeMobileMember.role ? (
+                      <p className="mt-1 text-xs uppercase tracking-[0.3em] text-purple-200/75">
+                        {activeMobileMember.role}
+                      </p>
+                    ) : null}
+                    {activeMobileMember.bio ? (
+                      <p className="mt-4 text-sm leading-relaxed text-slate-200/90">
+                        {activeMobileMember.bio}
+                      </p>
+                    ) : null}
+                    {activeMobileMember.url ? (
+                      <a
+                        href={activeMobileMember.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="mt-3 inline-flex text-sm font-semibold text-purple-200 transition hover:text-purple-100 underline-offset-4"
+                      >
+                        {activeMobileMember.urlLabel ?? "Ver perfil"}
+                      </a>
+                    ) : null}
+                  </motion.div>
+                ) : null}
+              </>
+            ) : null}
+
+            {data.details ? (
+              <div className="text-slate-400 text-sm leading-relaxed space-y-4">
+                <div className="border-t border-white/10 pt-4">
+                  {data.details.tecnicos}
+                </div>
+                <div className="border-t border-white/10 pt-4">
+                  {data.details.registro}
+                </div>
+                <div className="border-t border-white/10 pt-4">
+                  {data.details.institucionales}
+                </div>
+              </div>
+            ) : null}
+          </div>
+        );
+      }
 
       return (
         <div className="space-y-6">
-          {data.description && (
+          {showDescription && data.description && (
             <p className="text-slate-300/80 leading-relaxed font-light mb-2 md:text-base sm:text-sm">
               {data.description}
             </p>
@@ -417,7 +596,7 @@ const Team = () => {
             </motion.div>
           )}
           {useElencoDesktopGrid ? (
-            <motion.div layout className="grid gap-6 md:grid-cols-3">
+            <motion.div layout className="mx-auto grid max-w-5xl gap-6 md:grid-cols-2">
               {membersWithId.map(({ member, id: memberId }) => {
                 const isActive = selectedElencoId === memberId;
                 const handleToggle = () =>
@@ -430,12 +609,16 @@ const Team = () => {
                     layout
                     transition={{ layout: { duration: 0.35, ease: [0.22, 1, 0.36, 1] } }}
                     onClick={handleToggle}
-                    className={`flex flex-col items-center gap-3 text-center rounded-3xl p-6 border transition shadow-lg shadow-black/40 backdrop-blur-sm ${
+                    aria-pressed={isActive}
+                    className={`group relative overflow-hidden flex flex-col items-center gap-3 text-center rounded-3xl p-6 border transition shadow-lg shadow-black/40 backdrop-blur-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-300/45 ${
                       isActive
                         ? "border-purple-400/60 bg-white/10 ring-2 ring-purple-200/50"
-                        : "border-white/10 bg-white/5"
+                        : "border-white/10 bg-white/5 hover:border-purple-300/35"
                     }`}
                   >
+                    <span className="pointer-events-none absolute left-4 top-4 text-[10px] font-semibold uppercase tracking-[0.22em] text-slate-200/65 transition-opacity duration-200 group-hover:text-purple-100/90">
+                      Ver perfil
+                    </span>
                     <div className="w-40 h-40 md:w-48 md:h-48 rounded-full overflow-hidden border border-white/10 shadow-xl shadow-black/50 bg-black/30 flex items-center justify-center">
                       <img
                         className="w-full h-full object-cover"
@@ -458,16 +641,25 @@ const Team = () => {
                         <p className="text-sm text-slate-200 leading-relaxed">{member.bio}</p>
                       )}
                     </div>
+                    <span className="pointer-events-none absolute bottom-4 right-4 text-sm text-slate-300/60 transition-all duration-200 group-hover:translate-x-[1px] group-hover:-translate-y-[1px] group-hover:text-purple-200/95">
+                      ↗
+                    </span>
                   </motion.button>
                 );
               })}
             </motion.div>
           ) : useDesktopCircleGrid ? (
-            <div className="grid gap-6 md:grid-cols-3">
+            <div
+              className={`grid gap-6 ${
+                membersWithId.length <= 2 ? "mx-auto max-w-5xl md:grid-cols-2" : "md:grid-cols-3"
+              }`}
+            >
               {membersWithId.map(({ member, id: memberId }) => (
                 <div
                   key={memberId}
-                  className="flex flex-col items-center gap-3 text-center bg-white/5 border border-white/5 rounded-3xl p-6 backdrop-blur-sm shadow-lg shadow-black/40"
+                  className={`flex flex-col items-center gap-3 text-center bg-white/5 border border-white/5 rounded-3xl p-6 backdrop-blur-sm shadow-lg shadow-black/40 ${
+                    membersWithId.length <= 2 ? "w-full md:max-w-[520px] md:mx-auto" : ""
+                  }`}
                 >
                   <div className="w-40 h-40 md:w-48 md:h-48 rounded-full overflow-hidden border border-white/10 shadow-xl shadow-black/50 bg-black/30 flex items-center justify-center">
                     <img
@@ -633,6 +825,101 @@ const Team = () => {
       );
     }
 
+    if (isSingleCreativeLeadRole) {
+      const singleLeadAlt = `${isAllianceSocial ? "Imagen" : "Retrato"} de ${data.name}`;
+      if (isMobile) {
+        return (
+          <motion.div
+            layout
+            transition={{ layout: { duration: 0.35, ease: [0.22, 1, 0.36, 1] } }}
+            className="glass-effect rounded-xl border border-white/10 bg-black/20 p-5 text-center"
+          >
+            {isAllianceSocial ? (
+              <div className="mx-auto aspect-[16/10] w-full max-w-[360px] overflow-hidden rounded-md border border-white/15 bg-black/35 shadow-lg shadow-black/40">
+                {renderProfileMedia({
+                  src: data.image,
+                  alt: singleLeadAlt,
+                  className: "h-full w-full object-cover object-center",
+                })}
+              </div>
+            ) : (
+              renderProfileMedia({
+                src: data.image,
+                alt: singleLeadAlt,
+                className: "mx-auto h-24 w-24 rounded-full object-cover shadow-lg shadow-black/40",
+              })
+            )}
+            <div className="mt-4 flex items-center justify-center gap-2">
+              <h4 className="font-display text-xl text-purple-100">{data.name}</h4>
+              {renderMemberLinks(data)}
+            </div>
+            <p className="mt-1 text-xs uppercase tracking-[0.3em] text-purple-200/75">
+              {roleKey}
+            </p>
+            <p className="mt-4 text-sm leading-relaxed text-slate-200/90">
+              {data.bio}
+            </p>
+          </motion.div>
+        );
+      }
+
+      return (
+        <div className={`mx-auto ${isAllianceSocial ? "max-w-3xl" : "max-w-2xl"}`}>
+          <div className="flex flex-col items-center gap-3 text-center bg-white/5 border border-white/5 rounded-3xl p-6 backdrop-blur-sm shadow-lg shadow-black/40">
+            {isAllianceSocial ? (
+              <div className="w-full max-w-[560px] overflow-hidden rounded-md border border-white/15 bg-black/35 shadow-xl shadow-black/45">
+                <div className="aspect-[16/10] w-full">
+                  {renderProfileMedia({
+                    src: data.image,
+                    alt: singleLeadAlt,
+                    className: "h-full w-full object-cover object-center",
+                  })}
+                </div>
+              </div>
+            ) : (
+              <div className="w-40 h-40 md:w-48 md:h-48 rounded-full overflow-hidden border border-white/10 shadow-xl shadow-black/50 bg-black/30 flex items-center justify-center">
+                {renderProfileMedia({
+                  src: data.image,
+                  alt: singleLeadAlt,
+                  className: "w-full h-full object-cover",
+                })}
+              </div>
+            )}
+            <div className="space-y-1">
+              <div className="flex items-center justify-center gap-2">
+                <h4 className="font-display text-xl text-purple-100">{data.name}</h4>
+                {renderMemberLinks(data)}
+              </div>
+              <p className="text-xs uppercase tracking-[0.35em] text-purple-200/70">
+                {roleKey}
+              </p>
+              <p className="text-sm text-slate-200 leading-relaxed">{data.bio}</p>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    if (isMobile) {
+      return (
+        <div className="glass-effect rounded-xl p-5 flex flex-col items-center gap-4 border border-white/5 text-center">
+          <img
+            className="h-24 w-24 rounded-full object-cover shadow-lg shadow-black/30"
+            alt={`Retrato de ${data.name}`}
+            src={data.image}
+          />
+          <div>
+            <h3 className="font-display text-xl font-bold text-purple-300 mb-2">
+              {data.name}
+            </h3>
+            <p className="text-slate-300/80 leading-relaxed font-light md:text-base sm:text-sm">
+              {data.bio}
+            </p>
+          </div>
+        </div>
+      );
+    }
+
     return (
       <div className="grid md:grid-cols-3 gap-6 items-center">
         <div className="md:col-span-1">
@@ -654,10 +941,53 @@ const Team = () => {
     );
   };
 
-  const handleAccordionChange = (nextValue) => {
-    const value = nextValue ?? null;
-    setOpenSection(value);
-    pendingScrollRef.current = value;
+  const handleDesktopRoleKeyDown = (event, index) => {
+    if (teamRoleKeys.length === 0) return;
+    let targetIndex = index;
+    if (event.key === "ArrowRight") {
+      targetIndex = (index + 1) % teamRoleKeys.length;
+    } else if (event.key === "ArrowLeft") {
+      targetIndex = (index - 1 + teamRoleKeys.length) % teamRoleKeys.length;
+    } else if (event.key === "Home") {
+      targetIndex = 0;
+    } else if (event.key === "End") {
+      targetIndex = teamRoleKeys.length - 1;
+    } else {
+      return;
+    }
+    event.preventDefault();
+    setActiveDesktopRole(teamRoleKeys[targetIndex]);
+  };
+
+  const renderMobileRoleSplitButton = (role, rowRoles) => {
+    const isOpen = openMobileRoles.includes(role);
+    const label = mobileRoleLabelOverrides[role] ?? role;
+    return (
+      <button
+        key={role}
+        type="button"
+        aria-expanded={isOpen}
+        onClick={() => {
+          setActiveMobileRole(role);
+          setOpenMobileRoles((prev) => {
+            if (prev.includes(role)) {
+              return prev.filter((entry) => entry !== role);
+            }
+            const next = rowRoles.length > 1
+              ? prev.filter((entry) => !rowRoles.includes(entry))
+              : prev;
+            return [...next, role];
+          });
+        }}
+        className={`ui-segmented__btn !min-h-[44px] !w-full !justify-center !px-3 !py-2 !text-center !text-[11px] !font-semibold !uppercase !tracking-[0.18em] !leading-[1.2] ${
+          isOpen
+            ? "ui-segmented__btn--primary provoca-soft-glass-btn--active"
+            : "ui-segmented__btn--secondary"
+        }`}
+      >
+        {label}
+      </button>
+    );
   };
 
   const memberLinkOverlay = typeof document !== "undefined"
@@ -825,46 +1155,109 @@ Cada colaboración forma parte activa del universo que la obra pone en escena.
           </p>
         </motion.div>
 
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.2, ease: "easeOut" }}
-          viewport={{ once: true }}
-          className="max-w-4xl mx-auto"
-        >
-          <Accordion
-            type="single"
-            collapsible
-            className="w-full space-y-4"
-            value={openSection ?? undefined}
-            onValueChange={handleAccordionChange}
+        {isMobile ? (
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.2, ease: "easeOut" }}
+            viewport={{ once: true }}
+            className="max-w-4xl mx-auto space-y-4"
           >
-            {Object.entries(teamData).map(([role, data], index) => {
-              const itemValue = `item-${index}`;
-              return (
-                <AccordionItem
-                  value={itemValue}
-                  key={role}
-                  className="glass-effect rounded-lg border-none overflow-hidden scroll-mt-24"
-                  ref={(node) => {
-                    if (node) {
-                      accordionItemRefs.current[itemValue] = node;
-                    } else {
-                      delete accordionItemRefs.current[itemValue];
-                    }
-                  }}
-                >
-                  <AccordionTrigger className="font-display text-xl md:text-2xl text-slate-100 p-6 hover:no-underline hover:bg-white/5 transition-colors duration-300">
+            <div aria-label="Áreas del equipo en móvil" className="space-y-2">
+              {mobileRoleRows.map((rowRoles) => (
+                <div key={`mobile-role-row-${rowRoles.join("-")}`} className="space-y-2">
+                  <div
+                    className={`ui-segmented ui-segmented--rect !w-full !overflow-hidden ${
+                      rowRoles.length > 1
+                        ? "![grid-template-columns:1fr_1fr]"
+                        : "![grid-template-columns:1fr]"
+                    }`}
+                  >
+                    {rowRoles.map((role) => renderMobileRoleSplitButton(role, rowRoles))}
+                  </div>
+
+                  <AnimatePresence initial={false}>
+                    {rowRoles.map((role) =>
+                      openMobileRoles.includes(role) ? (
+                        <motion.div
+                          key={`mobile-role-panel-${role}`}
+                          initial={{ opacity: 0, height: 0, y: -6 }}
+                          animate={{ opacity: 1, height: "auto", y: 0 }}
+                          exit={{ opacity: 0, height: 0, y: -6 }}
+                          transition={{ duration: 0.2, ease: "easeOut" }}
+                          className="overflow-hidden"
+                        >
+                          <div className="glass-effect rounded-2xl border border-white/10 bg-black/20 p-4">
+                            {renderRole(teamData[role], role, { showDescription: false })}
+                          </div>
+                        </motion.div>
+                      ) : null
+                    )}
+                  </AnimatePresence>
+                </div>
+              ))}
+            </div>
+          </motion.div>
+        ) : (
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.2, ease: "easeOut" }}
+            viewport={{ once: true }}
+            className="max-w-6xl mx-auto space-y-5"
+          >
+            <div
+              role="tablist"
+              aria-label="Áreas del equipo creativo"
+              className="flex flex-wrap items-stretch justify-center gap-2"
+            >
+              {teamEntries.map(([role], index) => {
+                const isActive = role === activeDesktopRole;
+                return (
+                  <button
+                    key={role}
+                    id={`team-tab-${index}`}
+                    type="button"
+                    role="tab"
+                    aria-selected={isActive}
+                    aria-controls="team-desktop-panel"
+                    tabIndex={isActive ? 0 : -1}
+                    onClick={() => setActiveDesktopRole(role)}
+                    onKeyDown={(event) => handleDesktopRoleKeyDown(event, index)}
+                    className={`whitespace-nowrap rounded-full border px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.24em] transition ${
+                      isActive
+                        ? "border-purple-400/60 bg-purple-500/20 text-purple-100 shadow-[0_0_20px_rgba(168,85,247,0.2)]"
+                        : "border-white/15 bg-slate-950/75 text-slate-100/95 shadow-[inset_0_1px_0_rgba(255,255,255,0.08),0_8px_22px_rgba(0,0,0,0.35)] hover:border-purple-300/45 hover:bg-slate-900/85 hover:text-purple-100"
+                    }`}
+                  >
                     {role}
-                  </AccordionTrigger>
-                  <AccordionContent className="p-6 pt-0 bg-black/20">
-                    {renderRole(data, role)}
-                  </AccordionContent>
-                </AccordionItem>
-              );
-            })}
-          </Accordion>
-        </motion.div>
+                  </button>
+                );
+              })}
+            </div>
+
+            <div className="glass-effect rounded-2xl border border-white/10 bg-black/20 p-6">
+              <AnimatePresence mode="wait" initial={false}>
+                <motion.div
+                  key={activeDesktopRole || "team-panel-empty"}
+                  id="team-desktop-panel"
+                  role="tabpanel"
+                  aria-labelledby={
+                    activeDesktopRole ? `team-tab-${teamRoleKeys.indexOf(activeDesktopRole)}` : undefined
+                  }
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -8 }}
+                  transition={{ duration: 0.25, ease: "easeOut" }}
+                >
+                  {activeDesktopData && activeDesktopRole
+                    ? renderRole(activeDesktopData, activeDesktopRole)
+                    : null}
+                </motion.div>
+              </AnimatePresence>
+            </div>
+          </motion.div>
+        )}
       </div>
       {memberLinkOverlay}
       {confirmLinkOverlay}

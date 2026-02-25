@@ -21,14 +21,14 @@ import ReserveModal from '@/components/ReserveModal';
 
 const aboutParagraphs = [
   {
-    text: `Es un gato encerrado: una experiencia escénica que ocurre en el teatro y, al mismo tiempo, dentro de quien la mira.
+    text: `A través de una terapia no convencional, un paciente y su doctora exploran el poder de los sueños lúcidos para confrontar el miedo, la desconexión y el silencio emocional.
 
-    Es el corazón de #GatoEncerrado. Desde aquí, la obra se desdobla y nos abre un espacio donde Silvestre Felis y su doctora enfrentan el miedo, la desconexión y el peligro de sufrir en silencio.
+    Silvestre, un hombre en sus treintas, comienza a perder la frontera entre lo que imagina y lo que vive. En ese desdoblamiento, la mente se convierte en escenario y la escena en conciencia.
 
-    Y aunque la función termine, su pulso continúa: se expande hacia otros lenguajes —cine, cómic, experiencias interactivas y diálogo— que prolongan ese latido en nuestro universo transmedia.`,
+    La obra no ofrece respuestas cerradas: abre preguntas sobre salud mental, existencia y acompañamiento, recordándonos que comprender no siempre es sanar, pero sí puede ser el inicio de un vínculo.`,
   
   className:
-      'text-lg leading-relaxed font-light whitespace-pre-line bg-gradient-to-b from-violet-300/95 via-slate-200/80 to-slate-100/100 text-transparent bg-clip-text',
+      'text-lg leading-relaxed font-light whitespace-pre-line bg-gradient-to-b from-slate-300/75 via-slate-200/80 to-slate-100/100 text-transparent bg-clip-text',
   },
 
 ];
@@ -337,33 +337,7 @@ export const ProvocaSection = () => {
           ))}
           <div className="grid md:grid-cols-[3fr_2fr] gap-8 items-center">
             <div>
-              <details className="group mb-5 rounded-2xl border border-emerald-300/20 bg-emerald-500/10 px-4 py-3 text-left">
-                <summary className="flex cursor-pointer list-none items-center justify-between gap-3">
-                  <span className="flex items-center gap-3">
-                    <HeartHandshake size={16} className="text-emerald-200" />
-                    <span className="text-[0.66rem] uppercase tracking-[0.23em] text-emerald-200/85">
-                      Y si te movió más de lo esperado...
-                    </span>
-                  </span>
-                  <span className="text-[0.62rem] uppercase tracking-[0.16em] text-emerald-200/80 group-open:text-white">
-                    <span className="group-open:hidden">Pulsar</span>
-                    <span className="hidden group-open:inline">Cerrar</span>
-                  </span>
-                </summary>
-                <div className="mt-3 space-y-2 pl-7">
-                  <p className="text-sm text-slate-200/95 leading-relaxed">
-                    El equipo de Isabel Ayuda para la Vida, A.C. te ofrece acompañamiento confidencial y puede orientarte.
-                  </p>
-                  <a
-                    href="https://www.ayudaparalavida.com/contacto.html"
-                    target="_blank"
-                    rel="noreferrer"
-                    className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.18em] text-emerald-200 hover:text-white transition"
-                  >
-                    Contacto directo
-                  </a>
-                </div>
-              </details>
+           
               <p className="uppercase tracking-[0.35em] text-xs text-slate-400/80 mb-4">Perspectivas del público</p>
               <h3 className="font-display text-3xl text-slate-100 mb-6 italic">
                 ¿Qué nos provoca esta obra?
@@ -405,7 +379,7 @@ export const ProvocaSection = () => {
                       onChange={(event) => setVoiceDraft(event.target.value)}
                       rows={3}
                       className="form-surface w-full px-4 py-3 resize-none"
-                      placeholder="Cuéntanos cómo cambió tu forma de mirar, sentir o recordar algo..."
+                      placeholder="Cuéntanos cómo cambió tu forma de mirar, sentir o recordar una obra..."
                     />
                     <div className="mt-3 grid gap-3 sm:grid-cols-2">
                       <input
@@ -449,8 +423,36 @@ export const ProvocaSection = () => {
                         >
                           Escuchar a la obra
                         </Button>
+                        
                       </div>
                     </div>
+                       <details className="group mt-4 md:mt-5 mb-5 rounded-2xl border border-emerald-300/20 bg-emerald-500/10 px-4 py-3 text-left">
+                <summary className="flex cursor-pointer list-none items-center justify-between gap-3">
+                  <span className="flex items-center gap-3">
+                    <HeartHandshake size={16} className="text-emerald-200" />
+                    <span className="text-[0.66rem] uppercase tracking-[0.23em] text-emerald-200/85">
+                      Y si te movió más de lo esperado...
+                    </span>
+                  </span>
+                  <span className="text-[0.62rem] uppercase tracking-[0.16em] text-emerald-200/80 group-open:text-white">
+                    <span className="group-open:hidden">Pulsar Aquí</span>
+                    <span className="hidden group-open:inline">Cerrar</span>
+                  </span>
+                </summary>
+                <div className="mt-3 space-y-2 pl-7">
+                  <p className="text-sm text-slate-200/95 leading-relaxed">
+                    El equipo de Isabel Ayuda para la Vida, A.C. te ofrece acompañamiento confidencial y puede orientarte.
+                  </p>
+                  <a
+                    href="https://www.ayudaparalavida.com/contacto.html"
+                    target="_blank"
+                    rel="noreferrer"
+                    className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.18em] text-emerald-200 hover:text-white transition"
+                  >
+                    Contacto directo
+                  </a>
+                </div>
+              </details>
                   </motion.div>
                 ) : null}
               </AnimatePresence>

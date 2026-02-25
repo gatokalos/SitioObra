@@ -61,9 +61,9 @@ const Header = () => {
 
   const headerToneClass =
     scrollTier === 2
-      ? 'bg-emerald-950/45 backdrop-blur-lg border-b border-emerald-300/25 shadow-[0_12px_34px_rgba(16,185,129,0.14)]'
+      ? 'bg-gradient-to-b from-slate-900/90 to-slate-950/88 backdrop-blur-xl border-b border-white/15 shadow-[0_14px_36px_rgba(2,6,23,0.5),inset_0_1px_0_rgba(255,255,255,0.08)]'
       : scrollTier === 1
-        ? 'bg-emerald-950/25 backdrop-blur-lg border-b border-emerald-300/15 shadow-[0_8px_26px_rgba(16,185,129,0.08)]'
+        ? 'bg-gradient-to-b from-slate-900/72 to-slate-950/68 backdrop-blur-lg border-b border-white/10 shadow-[0_10px_26px_rgba(2,6,23,0.38),inset_0_1px_0_rgba(255,255,255,0.06)]'
         : 'bg-transparent';
 
   useEffect(() => {
@@ -85,13 +85,13 @@ const Header = () => {
   }, [setShowLoginOverlay]);
 
   const menuItems = [
-    { name: 'Alianza', href: '#apoya' },
-    { name: 'Transmedia', href: '#transmedia' },
     { name: 'Obra', href: '#about' },
     { name: 'Equipo', href: '#team' },
     { name: 'Galería', href: '#instagram' },
     { name: 'Voces', href: '#provoca' },
     { name: 'Curaduría', href: '#dialogo-critico' },
+    { name: 'Alianza', href: '#apoya' },
+    { name: 'Transmedia', href: '#transmedia' },
     { name: 'Funciones', href: '#next-show' },
     { name: 'Contacto', href: '#contact' },
   ];

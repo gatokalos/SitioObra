@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
-import { BookOpen, CoffeeIcon, CompassIcon, Gamepad2, HeartHandshake, ShoppingBag, SparkleIcon } from 'lucide-react';
+import { BookOpen, CoffeeIcon, CompassIcon, Gamepad2, HeartHandshake, ShoppingBag, SparkleIcon, Volume2, VolumeX } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import ReserveModal from '@/components/ReserveModal';
 import TicketPurchaseModal from '@/components/TicketPurchaseModal';
@@ -32,8 +32,13 @@ const Hero = () => {
   const sweepDirectionRef = useRef(1);
   const heroSectionRef = useRef(null);
   const heroAudioRef = useRef(null);
+  const heroAudioMutedRef = useRef(false);
   const audioGestureUnlockRef = useRef(false);
   const lastHeroAudioPlayAttemptRef = useRef(0);
+  const [isHeroAudioReady, setIsHeroAudioReady] = useState(false);
+  const [isHeroAudioMuted, setIsHeroAudioMuted] = useState(false);
+  const [isHeroAudioPlaying, setIsHeroAudioPlaying] = useState(false);
+  const [isHeroInViewport, setIsHeroInViewport] = useState(true);
   const [isMobileViewport, setIsMobileViewport] = useState(() => {
     if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') return false;
     return window.matchMedia('(max-width: 768px)').matches;
@@ -50,6 +55,21 @@ const Hero = () => {
   const location = useLocation();
   const { user } = useAuth();
   const primaryCtaLabel = user ? 'Dejar mi huella' : 'Abrir Portales';
+  const canShowHeroAudioToggle = Boolean(
+    user &&
+    !isMobileViewport &&
+    isHeroInViewport &&
+    (isHeroAudioPlaying || isHeroAudioMuted)
+  );
+
+  const getTargetVolumeByHeroPosition = useCallback(() => {
+    const hero = heroSectionRef.current;
+    if (!hero) return 0;
+    const rect = hero.getBoundingClientRect();
+    const travel = Math.max(rect.height * 0.9, 1);
+    const progress = Math.min(Math.max((-rect.top) / travel, 0), 1);
+    return HERO_LOGGED_IN_AUDIO_VOLUME * (1 - progress);
+  }, []);
 
   const scrollToSection = useCallback((sectionId) => {
     const section = document.querySelector(sectionId);
@@ -194,8 +214,56 @@ const Hero = () => {
   }, []);
 
   useEffect(() => {
+    if (typeof window === 'undefined' || typeof window.IntersectionObserver !== 'function') {
+      setIsHeroInViewport(true);
+      return undefined;
+    }
+    const section = heroSectionRef.current;
+    if (!section) return undefined;
+    const observer = new window.IntersectionObserver(
+      (entries) => {
+        const entry = entries[0];
+        setIsHeroInViewport(Boolean(entry?.isIntersecting));
+      },
+      { threshold: 0.2 },
+    );
+    observer.observe(section);
+    return () => observer.disconnect();
+  }, []);
+
+  useEffect(() => {
+    heroAudioMutedRef.current = isHeroAudioMuted;
+  }, [isHeroAudioMuted]);
+
+  useEffect(() => {
+    if (user && !isMobileViewport) return undefined;
+    setIsHeroAudioReady(false);
+    setIsHeroAudioPlaying(false);
+    return undefined;
+  }, [isMobileViewport, user]);
+
+  const handleToggleHeroAudio = useCallback(() => {
+    const nextMuted = !heroAudioMutedRef.current;
+    heroAudioMutedRef.current = nextMuted;
+    setIsHeroAudioMuted(nextMuted);
+    const audio = heroAudioRef.current;
+    if (!audio) return;
+    if (nextMuted) {
+      audio.pause();
+      audio.volume = 0;
+      return;
+    }
+    const targetVolume = getTargetVolumeByHeroPosition();
+    audio.volume = targetVolume;
+    if (targetVolume > HERO_AUDIO_MIN_AUDIBLE_VOLUME && audio.paused) {
+      void audio.play().catch(() => {});
+    }
+  }, [getTargetVolumeByHeroPosition]);
+
+  useEffect(() => {
     const audio = heroAudioRef.current;
     if (!audio || !user || isMobileViewport) {
+      setIsHeroAudioPlaying(false);
       if (audio) {
         audio.pause();
         audio.currentTime = 0;
@@ -219,15 +287,6 @@ const Hero = () => {
     audioGestureUnlockRef.current = false;
     lastHeroAudioPlayAttemptRef.current = 0;
 
-    const getTargetVolumeByHeroPosition = () => {
-      const hero = heroSectionRef.current;
-      if (!hero) return 0;
-      const rect = hero.getBoundingClientRect();
-      const travel = Math.max(rect.height * 0.9, 1);
-      const progress = Math.min(Math.max((-rect.top) / travel, 0), 1);
-      return HERO_LOGGED_IN_AUDIO_VOLUME * (1 - progress);
-    };
-
     const isShowcaseForegroundActive = () => {
       const showcaseOpen =
         isShowcaseForeground ||
@@ -245,6 +304,7 @@ const Hero = () => {
     const attemptPlay = async ({ fromUserGesture = false } = {}) => {
       if (!mounted) return;
       if (isShowcaseForegroundActive()) return;
+      if (heroAudioMutedRef.current) return;
       if (!fromUserGesture && requiresInteractionAfterBackground) return;
       const now = performance.now();
       if (!fromUserGesture && now - lastHeroAudioPlayAttemptRef.current < HERO_AUDIO_PLAY_RETRY_MS) return;
@@ -264,6 +324,13 @@ const Hero = () => {
         if (!audio.paused) {
           audio.pause();
         }
+        return;
+      }
+      if (heroAudioMutedRef.current) {
+        if (!audio.paused) {
+          audio.pause();
+        }
+        audio.volume = 0;
         return;
       }
       const targetVolume = getTargetVolumeByHeroPosition();
@@ -287,6 +354,7 @@ const Hero = () => {
     };
 
     const onFirstInteraction = () => {
+      if (heroAudioMutedRef.current) return;
       requiresInteractionAfterBackground = false;
       if (audioGestureUnlockRef.current) return;
       const targetVolume = getTargetVolumeByHeroPosition();
@@ -342,9 +410,20 @@ const Hero = () => {
     const onAudioError = () => {
       if (fallbackApplied) return;
       fallbackApplied = true;
+      setIsHeroAudioReady(false);
       audio.src = HERO_LOGGED_IN_AUDIO_FALLBACK_URL;
       audio.load();
       void attemptPlay();
+    };
+
+    const onCanPlay = () => {
+      setIsHeroAudioReady(true);
+    };
+    const onAudioPlay = () => {
+      setIsHeroAudioPlaying(true);
+    };
+    const onAudioPause = () => {
+      setIsHeroAudioPlaying(false);
     };
 
     const onShowcaseVisibility = (event) => {
@@ -383,12 +462,17 @@ const Hero = () => {
     };
 
     const supportsM4a = Boolean(audio.canPlayType('audio/mp4') || audio.canPlayType('audio/x-m4a'));
+    setIsHeroAudioReady(false);
     audio.src = supportsM4a ? HERO_LOGGED_IN_AUDIO_URL : HERO_LOGGED_IN_AUDIO_FALLBACK_URL;
     audio.load();
+    if (audio.readyState >= 2) {
+      setIsHeroAudioReady(true);
+    }
 
     audio.loop = true;
     audio.preload = 'metadata';
-    audio.volume = HERO_LOGGED_IN_AUDIO_VOLUME;
+    audio.volume = heroAudioMutedRef.current ? 0 : HERO_LOGGED_IN_AUDIO_VOLUME;
+    setIsHeroAudioPlaying(!audio.paused && !heroAudioMutedRef.current);
 
     void attemptPlay();
     updateAudioByScroll();
@@ -414,6 +498,10 @@ const Hero = () => {
     window.addEventListener('focus', onWindowFocus);
     window.addEventListener('pagehide', onPageHide);
     document.addEventListener('freeze', onPageFreeze);
+    audio.addEventListener('canplay', onCanPlay);
+    audio.addEventListener('play', onAudioPlay);
+    audio.addEventListener('pause', onAudioPause);
+    audio.addEventListener('ended', onAudioPause);
     audio.addEventListener('error', onAudioError);
     document.addEventListener('visibilitychange', onVisibilityChange);
     window.addEventListener('gatoencerrado:showcase-visibility', onShowcaseVisibility);
@@ -435,6 +523,10 @@ const Hero = () => {
       window.removeEventListener('focus', onWindowFocus);
       window.removeEventListener('pagehide', onPageHide);
       document.removeEventListener('freeze', onPageFreeze);
+      audio.removeEventListener('canplay', onCanPlay);
+      audio.removeEventListener('play', onAudioPlay);
+      audio.removeEventListener('pause', onAudioPause);
+      audio.removeEventListener('ended', onAudioPause);
       audio.removeEventListener('error', onAudioError);
       document.removeEventListener('visibilitychange', onVisibilityChange);
       window.removeEventListener('gatoencerrado:showcase-visibility', onShowcaseVisibility);
@@ -442,11 +534,13 @@ const Hero = () => {
       if (typeof document !== 'undefined') {
         delete document.documentElement.dataset.gatoHeroAmbientHold;
       }
+      setIsHeroAudioReady(false);
+      setIsHeroAudioPlaying(false);
       audio.pause();
       audio.currentTime = 0;
       audio.volume = HERO_LOGGED_IN_AUDIO_VOLUME;
     };
-  }, [isMobileViewport, user]);
+  }, [getTargetVolumeByHeroPosition, isMobileViewport, user]);
 
   return (
     <>
@@ -455,6 +549,26 @@ const Hero = () => {
         ref={heroSectionRef}
         className="min-h-screen flex items-center justify-center relative overflow-hidden"
       >
+        <AnimatePresence initial={false}>
+          {canShowHeroAudioToggle ? (
+            <motion.button
+              type="button"
+              aria-label={isHeroAudioMuted ? 'Activar sonido del Hero' : 'Silenciar sonido del Hero'}
+              onClick={handleToggleHeroAudio}
+              initial={{ opacity: 0, y: -8, scale: 0.95 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: -8, scale: 0.95 }}
+              transition={{ duration: 0.2, ease: 'easeOut' }}
+              className={`fixed right-6 top-24 z-[260] inline-flex h-11 w-11 items-center justify-center rounded-full border backdrop-blur-md transition ${
+                isHeroAudioMuted
+                  ? 'border-white/20 bg-black/45 text-slate-200 hover:bg-black/60'
+                  : 'border-emerald-300/35 bg-emerald-500/15 text-emerald-100 hover:bg-emerald-500/25'
+              }`}
+            >
+              {isHeroAudioMuted ? <VolumeX size={18} /> : <Volume2 size={18} />}
+            </motion.button>
+          ) : null}
+        </AnimatePresence>
         
         {/* Contenido */}
         <div className="container mx-auto px-6 text-center relative z-10">

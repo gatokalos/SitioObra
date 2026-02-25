@@ -307,6 +307,36 @@ function App() {
 
               <main className="pt-20 lg:pt-24">
                 <Hero />
+                <DeferredSection fallback={<SectionFallback id="provoca" minHeight={900} />}>
+                  <Suspense fallback={<SectionFallback id="provoca" minHeight={900} />}>
+                    <ProvocaSection />
+                  </Suspense>
+                </DeferredSection>
+                <DeferredSection fallback={<SectionFallback id="team" minHeight={980} />}>
+                  <Suspense fallback={<SectionFallback id="team" minHeight={980} />}>
+                    <Team />
+                  </Suspense>
+                </DeferredSection>
+                <DeferredSection fallback={<SectionFallback id="about" minHeight={620} />}>
+                  <Suspense fallback={<SectionFallback id="about" minHeight={620} />}>
+                    <About />
+                  </Suspense>
+                </DeferredSection>
+                <DeferredSection fallback={<SectionFallback id="instagram" minHeight={1600} />}>
+                  <Suspense fallback={<SectionFallback id="instagram" minHeight={1600} />}>
+                    <Instagram />
+                  </Suspense>
+                </DeferredSection>
+                <DeferredSection fallback={<SectionFallback id="dialogo-critico" minHeight={900} />}>
+                  <Suspense fallback={<SectionFallback id="dialogo-critico" minHeight={900} />}>
+                    <BlogSection />
+                  </Suspense>
+                </DeferredSection>
+                <DeferredSection fallback={<SectionFallback id="blog-contribuye" minHeight={700} />}>
+                  <Suspense fallback={<SectionFallback id="blog-contribuye" minHeight={700} />}>
+                    <BlogContributionPrompt />
+                  </Suspense>
+                </DeferredSection>
                 <SectionErrorBoundary
                   fallback={(
                     <section id="transmedia" className="py-24 relative">
@@ -332,50 +362,20 @@ function App() {
                     </Suspense>
                   </DeferredSection>
                 </SectionErrorBoundary>
-                <DeferredSection fallback={<SectionFallback id="about" minHeight={620} />}>
-                  <Suspense fallback={<SectionFallback id="about" minHeight={620} />}>
-                    <About />
-                  </Suspense>
-                </DeferredSection>
-                <DeferredSection fallback={<SectionFallback minHeight={380} />}>
-                  <Suspense fallback={<SectionFallback minHeight={380} />}>
-                    <Team />
-                  </Suspense>
-                </DeferredSection>
-                <DeferredSection fallback={<SectionFallback minHeight={380} />}>
-                  <Suspense fallback={<SectionFallback minHeight={380} />}>
-                    <Instagram />
-                  </Suspense>
-                </DeferredSection>
-                <DeferredSection fallback={<SectionFallback minHeight={340} />}>
-                  <Suspense fallback={<SectionFallback minHeight={340} />}>
-                    <BlogContributionPrompt />
-                  </Suspense>
-                </DeferredSection>
-                <DeferredSection fallback={<SectionFallback id="provoca" minHeight={520} />}>
-                  <Suspense fallback={<SectionFallback id="provoca" minHeight={520} />}>
-                    <ProvocaSection />
-                  </Suspense>
-                </DeferredSection>
-                <DeferredSection fallback={<SectionFallback minHeight={520} />}>
-                  <Suspense fallback={<SectionFallback minHeight={520} />}>
-                    <BlogSection />
-                  </Suspense>
-                </DeferredSection>
-                <DeferredSection fallback={<SectionFallback minHeight={340} />}>
-                  <Suspense fallback={<SectionFallback minHeight={340} />}>
+                <DeferredSection fallback={<SectionFallback id="next-show" minHeight={820} />}>
+                  <Suspense fallback={<SectionFallback id="next-show" minHeight={820} />}>
                     <NextShow />
                   </Suspense>
                 </DeferredSection>
-                <DeferredSection fallback={<SectionFallback minHeight={300} />}>
-                  <Suspense fallback={<SectionFallback minHeight={300} />}>
+                <DeferredSection fallback={<SectionFallback id="contact" minHeight={880} />}>
+                  <Suspense fallback={<SectionFallback id="contact" minHeight={880} />}>
                     <Contact />
                   </Suspense>
                 </DeferredSection>
               </main>
 
-              <DeferredSection fallback={<SectionFallback minHeight={220} />}>
-                <Suspense fallback={<SectionFallback minHeight={220} />}>
+              <DeferredSection fallback={<SectionFallback minHeight={560} />}>
+                <Suspense fallback={<SectionFallback minHeight={560} />}>
                   <Footer />
                 </Suspense>
               </DeferredSection>

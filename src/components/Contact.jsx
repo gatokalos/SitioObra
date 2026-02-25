@@ -277,16 +277,18 @@ const Contact = () => {
           className="text-center mb-16"
         >
           <p className="text-xs uppercase tracking-[0.4em] text-slate-400/70 mb-4">
-            Contacto, Prensa & Créditos
-          </p>
-          
-          <h2 className="font-display text-4xl md:text-5xl font-medium mb-6 text-gradient italic">
-            ¿Tienes curiosidad gatuna?
-          </h2>
-          <p className="text-lg text-slate-300/80 max-w-3xl mx-auto leading-relaxed font-light">
-            Si algo de este sitio te dejó una una pregunta, este es tu espacio para contarlo. No buscamos "opiniones" sino aquello que cambió tu forma de mirar, sentir o recordar una obra. 
-            Aunque también puedes usar este espacio para compartir tus teorías, solicitar entrevistas y para colaboraciones.
-          </p>
+  Contacto, Prensa & Créditos
+</p>
+
+<h2 className="font-display text-4xl md:text-5xl font-medium mb-6 text-gradient italic">
+  ¿Tienes curiosidad gatuna?
+</h2>
+
+<p className="text-lg text-slate-300/80 max-w-3xl mx-auto leading-relaxed font-light">
+  Si algo de este sitio te dejó una pregunta, este es tu espacio para compartirla. 
+  No buscamos “opiniones” sino aquello que transformó tu forma de mirar, sentir o recordar la experiencia. 
+  También puedes escribirnos para entrevistas, prensa o colaboraciones.
+</p>
         </motion.div>
 
         <div className="grid lg:grid-cols-2 gap-12">
