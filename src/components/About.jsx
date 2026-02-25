@@ -104,7 +104,10 @@ export const ProvocaSection = () => {
       if (parsed?.quote) setVoiceDraft(parsed.quote);
       if (parsed?.name) setVoiceName(parsed.name);
       if (parsed?.role) setVoiceRole(parsed.role);
-      if (parsed?.quote || parsed?.name || parsed?.role) {
+      const hasDraft = parsed?.quote || parsed?.name || parsed?.role;
+      const shouldAutoOpen =
+        typeof window !== 'undefined' && decodeURIComponent(window.location.hash || '') === '#provoca';
+      if (hasDraft && shouldAutoOpen) {
         setIsVoiceInputOpen(true);
       }
     } catch {
@@ -401,7 +404,6 @@ export const ProvocaSection = () => {
                       value={voiceDraft}
                       onChange={(event) => setVoiceDraft(event.target.value)}
                       rows={3}
-                      autoFocus
                       className="form-surface w-full px-4 py-3 resize-none"
                       placeholder="Cuéntanos cómo cambió tu forma de mirar, sentir o recordar algo..."
                     />

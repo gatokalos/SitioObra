@@ -1145,10 +1145,10 @@ iaProfile: {
     label: 'Miniverso Movimiento',
      intro:'Proyecto coreográfico en desarrollo que se activa junto a cada temporada de la obra en una ciudad. Incluye talleres abiertos, intervención urbana y función final con realidad aumentada. Buscamos colaboradores y comunidades que quieran impulsarla.',
          type: 'movement-ritual',
-    pendingName: 'La Ruta de las Diosas',
+    pendingName: 'La Ruta de las Encarnaciones',
     tagline: 'Talleres de Cuerpo Colectivo',
     overview: [
-      'La Ruta de las Diosas es una experiencia coreográfica transmedial que recorre plazas, parques y espacios públicos. Activa un ritual contemporáneo con avatares, realidad aumentada y movimiento colectivo.',
+      'La Ruta de las Encarnaciones es una experiencia coreográfica transmedial que recorre plazas, parques y espacios públicos. Activa un ritual contemporáneo con avatares, realidad aumentada y movimiento colectivo.',
     ],
     diosaHighlights: [
       'Una presencia digital inspirada en mitologías mesoamericanas.',
@@ -1157,7 +1157,7 @@ iaProfile: {
       'Proyectada con videomapping láser durante las noches.',
     ],
 
-    invitation: '¿Y tú? ¿Bailarás con nosotrxs o solo mirarás pasar a las diosas?',
+    invitation: '¿Y tú? ¿Bailarás con nosotrxs o solo mirarás pasar a las presencias?',
     actions: [
       {
         id: 'ruta',
@@ -1201,17 +1201,19 @@ iaProfile: {
         badge: 'Portal AR',
         location: 'CDMX',
         meta: '9:16 / video 360°',
-        videoUrl: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/diosas/coatlicue.mp4',
+        videoUrl: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Presencias/web/Coatlicue/coatlicue_web.mp4',
+        poster: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Presencias/posters/Coatlicue/coatlicue_web.jpg',
         gradient: 'linear-gradient(165deg, rgba(16,185,129,0.65), rgba(59,130,246,0.55), rgba(168,85,247,0.55))',
       },
       {
         id: 'chanico-360',
         title: 'Chanico — giro 360°',
-        description: 'Diosa cuenta-cuentos en giro completo.',
+        description: 'Presencia cuenta-cuentos en giro completo.',
         badge: 'Portal AR',
         location: 'Ruta norte',
         meta: '9:16 / video 360°',
-        videoUrl: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/diosas/chanico.mp4',
+        videoUrl: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Presencias/web/Chantico/chanico_web.mp4',
+        poster: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Presencias/posters/Chantico/chanico_web.jpg',
         gradient: 'linear-gradient(175deg, rgba(14,165,233,0.55), rgba(52,211,153,0.45), rgba(8,47,73,0.75))',
       },
       {
@@ -1221,8 +1223,53 @@ iaProfile: {
         badge: 'Portal AR',
         location: 'Ruta sur',
         meta: '9:16 / video 360°',
-        videoUrl: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/diosas/chicomecoatl.mp4',
+        videoUrl: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Presencias/web/Chicomecoatl/chicomecoatl_web.mp4',
+        poster: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Presencias/posters/Chicomecoatl/chicomecoatl_web.jpg',
         gradient: 'linear-gradient(175deg, rgba(99,102,241,0.52), rgba(20,184,166,0.45), rgba(109,40,217,0.55))',
+      },
+      {
+        id: 'cihuacoatl-360',
+        title: 'Cihuacóatl — giro 360°',
+        description: 'Presencia de guía y resguardo en giro completo.',
+        badge: 'Portal AR',
+        location: 'Ruta lunar',
+        meta: '9:16 / video 360°',
+        videoUrl: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Presencias/web/Cihuacoatl/Chuhuacoatl_web.mp4',
+        poster: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Presencias/posters/Cihuacoatl/Chuhuacoatl_web.jpg',
+        gradient: 'linear-gradient(178deg, rgba(71,85,105,0.62), rgba(59,130,246,0.45), rgba(99,102,241,0.5))',
+      },
+      {
+        id: 'coyolxauhqui-360',
+        title: 'Coyolxauhqui — giro 360°',
+        description: 'Fragmentos de luna en movimiento continuo.',
+        badge: 'Portal AR',
+        location: 'Ruta de noche',
+        meta: '9:16 / video 360°',
+        videoUrl: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Presencias/web/Coyolxauhqui/Coyolxauhqui_web.mp4',
+        poster: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Presencias/posters/Coyolxauhqui/Coyolxauhqui_web.jpg',
+        gradient: 'linear-gradient(180deg, rgba(129,140,248,0.58), rgba(14,165,233,0.45), rgba(30,41,59,0.7))',
+      },
+      {
+        id: 'itztli-360',
+        title: 'Itztli — giro 360°',
+        description: 'Reflejo afilado y rito en rotación completa.',
+        badge: 'Portal AR',
+        location: 'Ruta obsidiana',
+        meta: '9:16 / video 360°',
+        videoUrl: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Presencias/web/Itztli/Itztli_web.mp4',
+        poster: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Presencias/posters/Itztli/Itztli_web.jpg',
+        gradient: 'linear-gradient(175deg, rgba(2,6,23,0.75), rgba(29,78,216,0.48), rgba(148,163,184,0.42))',
+      },
+      {
+        id: 'tlazohteotl-360',
+        title: 'Tlazohteotl — giro 360°',
+        description: 'Purga y deseo en un giro ritual.',
+        badge: 'Portal AR',
+        location: 'Ruta purificación',
+        meta: '9:16 / video 360°',
+        videoUrl: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Presencias/web/Tlazohteotl/Tlazohteotl_web.mp4',
+        poster: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Presencias/posters/Tlazohteotl/Tlazohteotl_web.jpg',
+        gradient: 'linear-gradient(172deg, rgba(244,114,182,0.5), rgba(251,191,36,0.45), rgba(109,40,217,0.52))',
       },
       {
         id: 'xochiquetzal-360',
@@ -1231,7 +1278,8 @@ iaProfile: {
         badge: 'Portal AR',
         location: 'Ruta centro',
         meta: '9:16 / video 360°',
-        videoUrl: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/diosas/Xochiquetzal.mp4',
+        videoUrl: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Presencias/web/Xochiquetzal/Xochiquetzal_web.mp4',
+        poster: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Presencias/posters/Xochiquetzal/Xochiquetzal_web.jpg',
         gradient: 'linear-gradient(170deg, rgba(244,114,182,0.55), rgba(59,130,246,0.45), rgba(16,185,129,0.5))',
       },
       {
@@ -1241,7 +1289,8 @@ iaProfile: {
         badge: 'Portal AR',
         location: 'Ruta cosmos',
         meta: '9:16 / video 360°',
-        videoUrl: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/diosas/tzitzimime.mp4',
+        videoUrl: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Presencias/web/Tzitzimime/tzitzime_web.mp4',
+        poster: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Presencias/posters/Tzitzimime/tzitzime_web.jpg',
         gradient: 'linear-gradient(180deg, rgba(99,102,241,0.6), rgba(168,85,247,0.5), rgba(14,165,233,0.45))',
       },
       {
@@ -1251,7 +1300,8 @@ iaProfile: {
         badge: 'Portal AR',
         location: 'Ruta maya',
         meta: '9:16 / video 360°',
-        videoUrl: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/diosas/Ixchel.mp4',
+        videoUrl: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Presencias/web/Ixchel/Ixchel_web.mp4',
+        poster: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Presencias/posters/Ixchel/Ixchel_web.jpg',
         gradient: 'linear-gradient(170deg, rgba(56,189,248,0.55), rgba(34,211,238,0.5), rgba(59,130,246,0.45))',
       },
     ],
@@ -5104,19 +5154,14 @@ const rendernotaAutoral = () => {
                             className={`pointer-events-none absolute inset-0 opacity-70 bg-gradient-to-br ${mode.accent}`}
                           />
                           <div className="relative z-10 space-y-3">
-                            <div className="flex items-center justify-between gap-3">
-                              <div className="flex items-center gap-2">
-                                <span
-                                  className="inline-flex h-9 w-9 items-center justify-center rounded-xl border bg-black/40"
-                                  style={{ borderColor: mode.tint?.border }}
-                                >
-                                  {mode.icon ? <mode.icon size={18} style={{ color: mode.tint?.dot }} /> : null}
-                                </span>
-                                <p className="text-lg font-semibold text-white">{mode.title}</p>
-                              </div>
-                              <span className="rounded-full border border-white/10 bg-black/40 px-2 py-1 text-[10px] uppercase tracking-[0.25em] text-slate-200">
-                                Hot mic
+                            <div className="flex items-center gap-2">
+                              <span
+                                className="inline-flex h-9 w-9 items-center justify-center rounded-xl border bg-black/40"
+                                style={{ borderColor: mode.tint?.border }}
+                              >
+                                {mode.icon ? <mode.icon size={18} style={{ color: mode.tint?.dot }} /> : null}
                               </span>
+                              <p className="text-lg font-semibold text-white">{mode.title}</p>
                             </div>
 
                             <ObraConversationControls
@@ -5155,19 +5200,14 @@ const rendernotaAutoral = () => {
                           className={`pointer-events-none absolute inset-0 opacity-60 bg-gradient-to-br ${mode.accent}`}
                         />
                         <div className="relative z-10 space-y-2">
-                          <div className="flex items-center justify-between gap-3">
-                            <div className="flex items-center gap-2">
-                              <span
-                                className="inline-flex h-9 w-9 items-center justify-center rounded-xl border bg-black/40"
-                                style={{ borderColor: mode.tint?.border }}
-                              >
-                                {mode.icon ? <mode.icon size={18} style={{ color: mode.tint?.dot }} /> : null}
-                              </span>
-                              <p className="text-lg font-semibold text-white">{mode.title}</p>
-                            </div>
-                            <span className="rounded-full border border-white/10 bg-black/40 px-2 py-1 text-[10px] uppercase tracking-[0.25em] text-slate-300">
-                              Demo
+                          <div className="flex items-center gap-2">
+                            <span
+                              className="inline-flex h-9 w-9 items-center justify-center rounded-xl border bg-black/40"
+                              style={{ borderColor: mode.tint?.border }}
+                            >
+                              {mode.icon ? <mode.icon size={18} style={{ color: mode.tint?.dot }} /> : null}
                             </span>
+                            <p className="text-lg font-semibold text-white">{mode.title}</p>
                           </div>
                           <p className="text-sm text-slate-300/85">{mode.description}</p>
                         </div>
@@ -5219,6 +5259,8 @@ const rendernotaAutoral = () => {
                       headingColor: activeObraTint?.dot,
                     }}
                     eyebrowChip={activeObraMode?.description || ''}
+                    cornerIcon={activeObraMode?.icon || null}
+                    cornerIconLabel={`Perfil activo: ${activeObraMode?.title || ''}`}
                   />
                 ) : (
                   <div className="space-y-2">
@@ -5564,12 +5606,12 @@ const rendernotaAutoral = () => {
           <div className="space-y-6">
             <div className="space-y-5 rounded-3xl border border-white/10 bg-gradient-to-br from-slate-950/80 via-black/60 to-purple-900/30 p-6 lg:p-8">
               <h3 className="font-display text-3xl text-slate-100">{activeDefinition.tagline}</h3>
-              <p className="text-2 text-slate-100/80">Cuando la obra visita una ciudad, se activa una semana de talleres abiertos que expanden la experiencia hacia un cuerpo colectivo. Las diosas funcionan como arquetipo de esa expansión. Por la noche, el proceso culmina en un acto escénico compartido.</p>
+              <p className="text-2 text-slate-100/80">Cuando la obra visita una ciudad, se activa una semana de talleres abiertos que expanden la experiencia hacia un cuerpo colectivo. Las presencias funcionan como arquetipo de esa expansión. Por la noche, el proceso culmina en un acto escénico compartido.</p>
               {hasDiosasGallery ? (
                 <DiosasCarousel
                   items={activeDefinition.diosasGallery}
                   label="Swipe-horizontal"
-                  caption="Cada clip muestra un giro 360° de las diosas cuenta-cuentos."
+                  caption="Cada clip muestra un giro 360° de las presencias cuenta-cuentos."
                 />
               ) : null}
 
@@ -5613,7 +5655,7 @@ const rendernotaAutoral = () => {
                 <ShowcaseReactionInline
                   showcaseId="miniversoMovimiento"
                   title="Resonancia colectiva"
-                  description="Haz clic y deja un pulso para que la Ruta de las Diosas siga viva."
+                  description="Haz clic y deja un pulso para que la Ruta de las Encarnaciones siga viva."
                   buttonLabel="Hacer vibrar la ruta"
                   className="mt-0"
                 />

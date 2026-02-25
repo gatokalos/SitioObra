@@ -21,7 +21,7 @@ import {
 const TABS = [
   { id: 'escaparate', label: 'Entender', icon: Sparkles },
   { id: 'experiences', label: 'Decidir', icon:  Compass},
-  { id: 'waitlist', label: 'Sostener', icon: HeartHandshake },
+  { id: 'waitlist', label: 'Impulsar', icon: HeartHandshake },
 ];
 const DEFAULT_TAB_ID = 'escaparate';
 const VALID_TAB_IDS = new Set(TABS.map((tab) => tab.id));
@@ -142,6 +142,58 @@ const MINIVERSE_STARFIELDS = {
     'radial-gradient(2.5px 2.5px at 78% 42%, rgba(255,255,255,1), transparent 62%),' +
     'radial-gradient(3.5px 3.5px at 62% 74%, rgba(255,255,255,1), transparent 62%)',
 };
+
+const MINIVERSE_NARRATIVE_CTA_STYLES = `
+.narrative-cta-btn{
+  position: relative;
+  overflow: hidden;
+  border-radius: 0.75rem;
+  border: 1px solid rgba(196,181,253,0.36);
+  background: rgba(37,28,69,0.62);
+  color: rgba(255,255,255,0.95);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  box-shadow: 0 12px 30px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.08);
+  transition: transform .15s ease, box-shadow .2s ease, filter .2s ease;
+}
+
+.narrative-cta-btn::before{
+  content: "";
+  position: absolute;
+  inset: -38%;
+  background: linear-gradient(130deg,
+    rgba(192,132,252,0.62) 0%,
+    rgba(129,140,248,0.38) 38%,
+    rgba(167,139,250,0.55) 64%,
+    rgba(99,102,241,0.34) 100%);
+  transform: rotate(7deg);
+  opacity: .72;
+  pointer-events: none;
+}
+
+.narrative-cta-btn::after{
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, transparent 0 32%, rgba(0,0,0,.2) 32% 33%, transparent 33% 100%);
+  mix-blend-mode: multiply;
+  opacity: .8;
+  pointer-events: none;
+}
+
+.narrative-cta-btn:hover{
+  transform: translateY(-1px);
+  filter: saturate(1.08);
+  box-shadow: 0 16px 36px rgba(0,0,0,0.56), inset 0 1px 0 rgba(255,255,255,0.1);
+}
+
+.narrative-cta-btn:active{ transform: translateY(0) scale(.99); }
+
+.narrative-cta-btn > span{
+  position: relative;
+  z-index: 1;
+}
+`;
 
 const MINIVERSE_CARDS = [
   {
@@ -394,6 +446,33 @@ const MiniverseModal = ({
   const isSubscriber = metadataSubscriber || hasActiveSubscription;
   const showcaseRef = useRef(null);
   const modalContentRef = useRef(null);
+  const setHeroAmbientHold = useCallback((hold) => {
+    if (typeof window === 'undefined') return;
+    window.dispatchEvent(
+      new CustomEvent('gatoencerrado:hero-ambient-hold', {
+        detail: {
+          hold: Boolean(hold),
+          source: 'miniverse-modal-video',
+        },
+      }),
+    );
+  }, []);
+
+  const syncHeroAmbientWithModalVideo = useCallback(() => {
+    const root = modalContentRef.current;
+    if (!root) {
+      setHeroAmbientHold(false);
+      return;
+    }
+    const hasPlayingVideo = Array.from(root.querySelectorAll('[data-showcase-video]')).some(
+      (mediaNode) =>
+        mediaNode instanceof HTMLVideoElement &&
+        !mediaNode.paused &&
+        !mediaNode.ended &&
+        mediaNode.readyState >= 2,
+    );
+    setHeroAmbientHold(hasPlayingVideo);
+  }, [setHeroAmbientHold]);
 
   const stopModalMediaPlayback = useCallback(({ reset = false } = {}) => {
     const root = modalContentRef.current;
@@ -427,7 +506,8 @@ const MiniverseModal = ({
     if (fullscreenNode && root.contains(fullscreenNode) && typeof document.exitFullscreen === 'function') {
       document.exitFullscreen().catch(() => {});
     }
-  }, []);
+    setHeroAmbientHold(false);
+  }, [setHeroAmbientHold]);
 
   useEffect(() => {
     if (typeof document === 'undefined') return;
@@ -655,7 +735,7 @@ const MiniverseModal = ({
       return {
       lead: 'Esta galería despliega una microficción en nueve actos.',
       highlight: 'Cada acto dialoga con un miniverso',
-      continuation: 'y abre la misma pregunta: ¿qué ocurre cuando la obra se expande y exige otro lenguaje?'
+      continuation: 'y abre la misma pregunta: ¿qué ocurre cuando la obra se expande y necesita otro lenguaje?'
       };
     }
     return {
@@ -1171,30 +1251,30 @@ const MiniverseModal = ({
       return false;
     }
     try {
+      setHeroAmbientHold(true);
       target.play?.();
       target.scrollIntoView({ behavior: 'smooth', block: 'center' });
       return true;
     } catch (error) {
       console.warn('[MiniverseModal] No se pudo reproducir el video', error);
+      setHeroAmbientHold(false);
       return false;
     }
-  }, []);
+  }, [setHeroAmbientHold]);
 
-  const handleShowcaseCta = useCallback(
+  const handleShowcasePlayOnly = useCallback(
     (card) => {
       if (!card) return;
-      if (!requireShowcaseLogin(card)) {
+      if (!card.videoUrl) {
+        toast({ description: 'Video próximamente.' });
         return;
       }
-      if (card.videoUrl) {
-        const played = handlePlayShowcaseVideo(card.id);
-        if (played) {
-          return;
-        }
+      const played = handlePlayShowcaseVideo(card.id);
+      if (!played) {
+        toast({ description: 'No se pudo iniciar el video en esta tarjeta.' });
       }
-      handleEnterShowcase(card);
     },
-    [handleEnterShowcase, handlePlayShowcaseVideo, requireShowcaseLogin]
+    [handlePlayShowcaseVideo]
   );
 
   const scrollShowcaseTo = useCallback((index, behavior = 'smooth') => {
@@ -1222,6 +1302,21 @@ const MiniverseModal = ({
     setIsShowcaseAutoPlay(true);
     setShowcaseCountdown(9);
   }, []);
+
+  const handleShowcaseVideoPlay = useCallback(() => {
+    pauseShowcaseAutoPlay();
+    setHeroAmbientHold(true);
+  }, [pauseShowcaseAutoPlay, setHeroAmbientHold]);
+
+  const handleShowcaseVideoPause = useCallback(() => {
+    resumeShowcaseAutoPlay();
+    window.setTimeout(syncHeroAmbientWithModalVideo, 0);
+  }, [resumeShowcaseAutoPlay, syncHeroAmbientWithModalVideo]);
+
+  const handleShowcaseVideoEnded = useCallback(() => {
+    resumeShowcaseAutoPlay();
+    syncHeroAmbientWithModalVideo();
+  }, [resumeShowcaseAutoPlay, syncHeroAmbientWithModalVideo]);
 
   const handleShowcaseNext = useCallback(() => {
     if (!showcaseMiniverses.length) return;
@@ -1265,6 +1360,13 @@ const MiniverseModal = ({
     [stopModalMediaPlayback]
   );
 
+  useEffect(
+    () => () => {
+      setHeroAmbientHold(false);
+    },
+    [setHeroAmbientHold]
+  );
+
   const shouldAnimatePresence = !isSafari;
 
   const modalLayer = open ? (
@@ -1296,6 +1398,7 @@ const MiniverseModal = ({
               shelved ? 'pointer-events-none opacity-0 blur-sm scale-[0.98]' : 'opacity-100 blur-0 scale-100'
             }`}
           >
+            <style>{MINIVERSE_NARRATIVE_CTA_STYLES}</style>
             <div
               aria-hidden="true"
               className="pointer-events-none absolute inset-0 opacity-10"
@@ -1586,7 +1689,7 @@ const MiniverseModal = ({
                                   )}
                                 </div>
                                 <div>
-                                  <p className="text-xs uppercase tracking-[0.35em] text-slate-300/80">Narrativa expandida</p>
+                                  <p className="text-xs uppercase tracking-[0.35em] text-slate-300/80">Microficción</p>
                                   <h3 className="font-display text-3xl text-slate-50">{card.title}</h3>
                                 </div>
                               </div>
@@ -1602,10 +1705,10 @@ const MiniverseModal = ({
                                         className="absolute inset-0 h-full w-full object-cover"
                                         playsInline
                                         muted
-                                        loop
                                         controls
-                                        onPlay={pauseShowcaseAutoPlay}
-                                        onPause={resumeShowcaseAutoPlay}
+                                        onPlay={handleShowcaseVideoPlay}
+                                        onPause={handleShowcaseVideoPause}
+                                        onEnded={handleShowcaseVideoEnded}
                                         data-showcase-video={card.id}
                                       />
                                       <div className="pointer-events-none absolute left-4 top-4 rounded-full border border-white/20 bg-black/50 px-3 py-1 text-[0.6rem] uppercase tracking-[0.3em] text-slate-200">
@@ -1625,20 +1728,12 @@ const MiniverseModal = ({
                               <div className="flex flex-col sm:flex-row gap-3">
                                 <Button
                                   type="button"
-                                  onClick={() => handleShowcaseCta(card)}
-                                  className="bg-gradient-to-r from-purple-600/80 to-indigo-600/80 hover:from-purple-600 hover:to-indigo-600 text-white py-3 rounded-lg font-semibold flex items-center justify-center gap-2 hover-glow"
+                                  onClick={() => handleShowcasePlayOnly(card)}
+                                  className="narrative-cta-btn py-3 rounded-lg font-semibold flex items-center justify-center gap-2"
                                 >
-                                  {card.titleShort ?? card.title}
+                                  <span>{card.titleShort ?? card.title}</span>
                                 </Button>
-                                {card.isPremium ? (
-                                  <Button
-                                    type="button"
-                                    onClick={handleScrollToSupport}
-                                    className="bg-white text-slate-900 hover:bg-white/90 py-3 rounded-lg font-semibold flex items-center justify-center gap-2"
-                                  >
-                                    Dejar huella
-                                  </Button>
-                                ) : null}
+                            
                               </div>
                               <p className="text-xs uppercase tracking-[0.35em] text-slate-300/70">
                                 Testimonio en video
@@ -1653,10 +1748,10 @@ const MiniverseModal = ({
                                       className="absolute inset-0 h-full w-full object-cover"
                                       playsInline
                                       muted
-                                      loop
                                       controls
-                                      onPlay={pauseShowcaseAutoPlay}
-                                      onPause={resumeShowcaseAutoPlay}
+                                      onPlay={handleShowcaseVideoPlay}
+                                      onPause={handleShowcaseVideoPause}
+                                      onEnded={handleShowcaseVideoEnded}
                                       data-showcase-video={card.id}
                                     />
                                     <div className="pointer-events-none absolute left-4 top-4 rounded-full border border-white/20 bg-black/50 px-3 py-1 text-[0.6rem] uppercase tracking-[0.3em] text-slate-200">
@@ -1752,10 +1847,10 @@ const MiniverseModal = ({
                                     className="absolute inset-0 h-full w-full object-cover"
                                     playsInline
                                     muted
-                                    loop
                                     controls
-                                    onPlay={pauseShowcaseAutoPlay}
-                                    onPause={resumeShowcaseAutoPlay}
+                                    onPlay={handleShowcaseVideoPlay}
+                                    onPause={handleShowcaseVideoPause}
+                                    onEnded={handleShowcaseVideoEnded}
                                     data-showcase-video={card.id}
                                   />
                                   <div className="pointer-events-none absolute left-4 top-4 rounded-full border border-white/20 bg-black/50 px-3 py-1 text-[0.6rem] uppercase tracking-[0.3em] text-slate-200">
@@ -1775,10 +1870,10 @@ const MiniverseModal = ({
                           <div className="flex flex-col sm:flex-row gap-3">
                             <Button
                               type="button"
-                              onClick={() => handleShowcaseCta(card)}
-                              className="bg-gradient-to-r from-purple-600/80 to-indigo-600/80 hover:from-purple-600 hover:to-indigo-600 text-white py-3 rounded-lg font-semibold flex items-center justify-center gap-2 hover-glow"
+                              onClick={() => handleShowcasePlayOnly(card)}
+                              className="narrative-cta-btn py-3 rounded-lg font-semibold flex items-center justify-center gap-2"
                             >
-                              {card.titleShort ?? card.title}
+                              <span>{card.titleShort ?? card.title}</span>
                             </Button>
                             {card.isPremium ? (
                               <Button
@@ -1803,10 +1898,10 @@ const MiniverseModal = ({
                                   className="absolute inset-0 h-full w-full object-cover"
                                   playsInline
                                   muted
-                                  loop
                                   controls
-                                  onPlay={pauseShowcaseAutoPlay}
-                                  onPause={resumeShowcaseAutoPlay}
+                                  onPlay={handleShowcaseVideoPlay}
+                                  onPause={handleShowcaseVideoPause}
+                                  onEnded={handleShowcaseVideoEnded}
                                   data-showcase-video={card.id}
                                 />
                                 <div className="pointer-events-none absolute left-4 top-4 rounded-full border border-white/20 bg-black/50 px-3 py-1 text-[0.6rem] uppercase tracking-[0.3em] text-slate-200">

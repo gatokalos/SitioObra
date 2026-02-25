@@ -774,7 +774,7 @@ const ContributionModal = ({
             <section className="rounded-2xl border border-purple-300/25 bg-gradient-to-b from-purple-500/12 via-indigo-500/5 to-black/20 px-4 py-4 text-slate-200 sm:px-5">
               <p className="text-xs uppercase tracking-[0.35em] text-purple-200/75">Convocatoria abierta</p>
               <p className="mt-3 text-[1.05rem] font-medium leading-snug text-slate-100">
-                La Ruta de las Diosas es una iniciativa coreográfica transmedial que se desarrolla en
+                La Ruta de las Encarnaciones es una iniciativa coreográfica transmedial que se desarrolla en
                 plazas, parques y espacios públicos.
               </p>
               <p className="mt-2 text-sm text-slate-300/95 leading-relaxed">

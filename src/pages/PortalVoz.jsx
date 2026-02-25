@@ -280,6 +280,8 @@ const PortalVoz = () => {
                 dotColor: activeTint?.dot,
                 headingColor: activeTint?.dot,
               }}
+              cornerIcon={activeMode?.icon || null}
+              cornerIconLabel={`Perfil activo: ${activeMode?.title || ''}`}
             />
           </div>
         </div>

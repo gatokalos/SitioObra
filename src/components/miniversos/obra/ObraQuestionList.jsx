@@ -8,24 +8,40 @@ const ObraQuestionList = ({
   className = '',
   tone = null,
   eyebrowChip = '',
+  cornerIcon: CornerIcon = null,
+  cornerIconLabel = 'Perfil activo',
 }) => {
   if (!starters.length) return null;
   const headingStyle = tone?.headingColor || tone?.dotColor ? { color: tone?.headingColor || tone?.dotColor } : undefined;
   const itemStyle = tone?.itemBorderColor ? { borderColor: tone.itemBorderColor } : undefined;
   const bulletStyle = tone?.dotColor ? { color: tone.dotColor } : undefined;
   const eyebrowStyle = tone?.dotColor ? { color: tone.dotColor } : undefined;
+  const iconBorderStyle = tone?.borderColor ? { borderColor: tone.borderColor } : undefined;
+  const iconColorStyle = tone?.dotColor ? { color: tone.dotColor } : undefined;
 
   if (variant === 'stack') {
     return (
       <div className={`space-y-3 ${className}`}>
-        <div className="space-y-1">
-          <p className="text-xs uppercase tracking-[0.35em] text-pink-200" style={headingStyle}>
-            ¿No sabes qué decir?
-          </p>
-          {eyebrowChip ? (
-            <p className="text-xs text-slate-300/75 font-medium" style={eyebrowStyle}>
-              {eyebrowChip}
+        <div className="flex items-start justify-between gap-3">
+          <div className="space-y-1">
+            <p className="text-xs uppercase tracking-[0.35em] text-pink-200" style={headingStyle}>
+              ¿No sabes qué decir?
             </p>
+            {eyebrowChip ? (
+              <p className="text-xs text-slate-300/75 font-medium" style={eyebrowStyle}>
+                {eyebrowChip}
+              </p>
+            ) : null}
+          </div>
+          {CornerIcon ? (
+            <span
+              className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-white/15 bg-black/40 shadow-[0_8px_20px_rgba(0,0,0,0.3)]"
+              style={iconBorderStyle}
+              aria-label={cornerIconLabel}
+              title={cornerIconLabel}
+            >
+              <CornerIcon size={16} style={iconColorStyle} />
+            </span>
           ) : null}
         </div>
         <p className="text-sm text-slate-200/80 leading-relaxed">Elige una pregunta y envíala tal cual.</p>
@@ -56,14 +72,26 @@ const ObraQuestionList = ({
   const marqueeStarters = [...starters, ...starters];
   return (
     <div className={className}>
-      <div className="space-y-1">
-        <p className="text-xs uppercase tracking-[0.35em] text-pink-200" style={headingStyle}>
-          ¿No sabes qué decir?
-        </p>
-        {eyebrowChip ? (
-          <p className="text-xs text-slate-300/75 font-medium" style={eyebrowStyle}>
-            {eyebrowChip}
+      <div className="flex items-start justify-between gap-3">
+        <div className="space-y-1">
+          <p className="text-xs uppercase tracking-[0.35em] text-pink-200" style={headingStyle}>
+            ¿No sabes qué decir?
           </p>
+          {eyebrowChip ? (
+            <p className="text-xs text-slate-300/75 font-medium" style={eyebrowStyle}>
+              {eyebrowChip}
+            </p>
+          ) : null}
+        </div>
+        {CornerIcon ? (
+          <span
+            className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-white/15 bg-black/40 shadow-[0_8px_20px_rgba(0,0,0,0.3)]"
+            style={iconBorderStyle}
+            aria-label={cornerIconLabel}
+            title={cornerIconLabel}
+          >
+            <CornerIcon size={16} style={iconColorStyle} />
+          </span>
         ) : null}
       </div>
       <p className="text-sm text-slate-200/80 leading-relaxed">Elige una pregunta y envíala tal cual.</p>

@@ -804,7 +804,7 @@ const CallToAction = ({ barsIntroDelayMs = 0 }) => {
     }
 
     if (isSubscriber) {
-      setCheckoutStatus('Tu huella ya está activa en esta cuenta. Gracias por sostener la causa.');
+      setCheckoutStatus('Tu huella ya está activa en esta cuenta. Gracias por impulsar la causa.');
       setEmbeddedClientSecret('');
       return;
     }

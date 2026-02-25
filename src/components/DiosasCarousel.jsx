@@ -7,9 +7,10 @@ import { useMobileVideoPresentation } from '@/hooks/useMobileVideoPresentation';
 const DiosasCarousel = ({ items = [], label = 'Swipe horizontal', caption = 'Galería 360°' }) => {
   const [activeIndex, setActiveIndex] = useState(0);
   const [fullscreenItem, setFullscreenItem] = useState(null);
-  const [expandedId, setExpandedId] = useState(null);
+  const [activeVideoCardId, setActiveVideoCardId] = useState(null);
   const carouselRootRef = useRef(null);
   const fullscreenVideoRef = useRef(null);
+  const previewVideoRefs = useRef(new Map());
   const { isMobileViewport, canUseInlinePlayback, requestMobileVideoPresentation } = useMobileVideoPresentation();
   const [viewportWidth, setViewportWidth] = useState(() =>
     typeof window !== 'undefined' ? window.innerWidth : 1200
@@ -132,13 +133,69 @@ const DiosasCarousel = ({ items = [], label = 'Swipe horizontal', caption = 'Gal
 
   const handleCloseDiosasVideo = useCallback(() => {
     stopCarouselMediaPlayback();
-    setExpandedId(null);
     setFullscreenItem(null);
   }, [stopCarouselMediaPlayback]);
+
+  const registerPreviewVideo = useCallback((itemId, node) => {
+    if (!itemId) return;
+    if (!node) {
+      previewVideoRefs.current.delete(itemId);
+      return;
+    }
+    previewVideoRefs.current.set(itemId, node);
+  }, []);
+
+  const stopPreviewVideo = useCallback((video) => {
+    if (!(video instanceof HTMLVideoElement)) return;
+    try {
+      video.pause();
+      video.currentTime = 0;
+      video.muted = true;
+    } catch {
+      // noop
+    }
+  }, []);
+
+  const handleCardHoverStart = useCallback((itemId) => {
+    if (isMobileViewport) return;
+    const target = previewVideoRefs.current.get(itemId);
+    if (!(target instanceof HTMLVideoElement)) return;
+    setActiveVideoCardId(itemId);
+    previewVideoRefs.current.forEach((video, key) => {
+      if (key === itemId) return;
+      stopPreviewVideo(video);
+    });
+    try {
+      target.currentTime = 0;
+      target.muted = false;
+      const playAttempt = target.play();
+      if (playAttempt && typeof playAttempt.catch === 'function') {
+        playAttempt.catch(() => {
+          target.muted = true;
+          target.play().catch(() => {});
+        });
+      }
+    } catch {
+      // noop
+    }
+  }, [isMobileViewport, stopPreviewVideo]);
+
+  const handleCardHoverEnd = useCallback((itemId) => {
+    if (isMobileViewport) return;
+    const target = previewVideoRefs.current.get(itemId);
+    setActiveVideoCardId((prev) => (prev === itemId ? null : prev));
+    stopPreviewVideo(target);
+  }, [isMobileViewport, stopPreviewVideo]);
 
   useEffect(() => () => {
     stopCarouselMediaPlayback();
   }, [stopCarouselMediaPlayback]);
+
+  useEffect(() => {
+    if (isMobileViewport) return;
+    previewVideoRefs.current.forEach((video) => stopPreviewVideo(video));
+    setActiveVideoCardId(null);
+  }, [activeIndex, isMobileViewport, stopPreviewVideo]);
 
   if (total === 0) {
     return null;
@@ -166,18 +223,18 @@ const DiosasCarousel = ({ items = [], label = 'Swipe horizontal', caption = 'Gal
         >
           {windowItems.map(({ item, index: realIndex }, windowIdx) => {
             const itemId = item.id || item.videoUrl;
+            const isDesktopVideoMode = !isMobileViewport && activeVideoCardId === itemId;
             return (
             <motion.button
               key={itemId || `diosa-${realIndex}`}
               type="button"
               onClick={() => {
-                    if (isMobileViewport) {
-                      setExpandedId(null);
-                      setFullscreenItem(item);
-                      return;
-                    }
-                setExpandedId((prev) => (prev === itemId ? null : itemId));
+                if (isMobileViewport) {
+                  setFullscreenItem(item);
+                }
               }}
+              onMouseEnter={() => handleCardHoverStart(itemId)}
+              onMouseLeave={() => handleCardHoverEnd(itemId)}
               className={`group relative overflow-hidden rounded-2xl border border-emerald-200/40 bg-slate-900/60 shadow-[0_15px_45px_rgba(0,0,0,0.45)] aspect-[9/16] text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400/70 ${
                 visibleCount === 1
                   ? 'w-[90vw] max-w-[200px] sm:max-w-[340px]'
@@ -199,17 +256,27 @@ const DiosasCarousel = ({ items = [], label = 'Swipe horizontal', caption = 'Gal
                 }}
               >
                 <video
+                  ref={(node) => registerPreviewVideo(itemId, node)}
                   src={item.videoUrl}
-                  muted
-                  loop
+                  poster={item.poster}
+                  muted={isMobileViewport}
+                  loop={false}
                   playsInline
                   preload="metadata"
                   className="h-full w-full object-cover"
                 />
               </div>
               <div className="pointer-events-none absolute inset-0 rounded-2xl border-2 border-dashed border-emerald-100/35" />
-              <div className="absolute inset-0 bg-gradient-to-b from-emerald-500/10 via-black/25 to-black/70" />
-              <div className="relative z-10 flex h-full flex-col justify-between p-4 text-emerald-50">
+              <div
+                className={`absolute inset-0 bg-gradient-to-b from-emerald-500/10 via-black/25 to-black/70 transition-opacity duration-200 ${
+                  isDesktopVideoMode ? 'opacity-0' : 'opacity-100'
+                }`}
+              />
+              <div
+                className={`relative z-10 flex h-full flex-col justify-between p-4 text-emerald-50 transition-opacity duration-200 ${
+                  isDesktopVideoMode ? 'pointer-events-none opacity-0' : 'opacity-100'
+                }`}
+              >
                 <div className="flex items-center justify-between text-[0.65rem] uppercase tracking-[0.35em] text-emerald-100/85">
                   <span>{item.badge || 'Portal AR'}</span>
                   {item.meta ? <span className="text-emerald-100/70">{item.meta}</span> : null}
@@ -226,40 +293,9 @@ const DiosasCarousel = ({ items = [], label = 'Swipe horizontal', caption = 'Gal
                 <div className="flex items-center justify-center">
                   <span className="inline-flex items-center gap-2 rounded-full border border-emerald-200/40 bg-emerald-900/50 px-3 py-1 text-[0.7rem] font-semibold uppercase tracking-[0.2em] text-emerald-50 shadow-[0_0_20px_rgba(16,185,129,0.25)] group-hover:bg-emerald-800/60">
                     <Play size={14} className="text-emerald-100" />
-                    Ver 360°
+                    {isMobileViewport ? 'Ver 360°' : 'Hover para escuchar'}
                   </span>
                 </div>
-                {expandedId === itemId ? (
-                  <div
-                    className="absolute inset-0 z-20 flex items-center justify-center bg-black/85 backdrop-blur-sm p-2"
-                    onClick={(event) => event.stopPropagation()}
-                    role="presentation"
-                  >
-                    <div className="relative w-full h-full overflow-hidden rounded-xl border border-emerald-200/40 bg-black">
-                      <button
-                        type="button"
-                        onClick={(event) => {
-                          event.stopPropagation();
-                          handleCloseDiosasVideo();
-                        }}
-                        className="absolute right-2 top-2 z-30 rounded-full border border-emerald-200/50 bg-emerald-900/70 p-1.5 text-emerald-50 hover:bg-emerald-800/70"
-                        aria-label="Cerrar video"
-                      >
-                        <X size={14} />
-                      </button>
-                      <video
-                        key={itemId}
-                        src={item.videoUrl}
-                        controls={canUseInlinePlayback(itemId)}
-                        autoPlay
-                        playsInline
-                        loop
-                        className="h-full w-full object-contain"
-                        onClick={(event) => requestMobileVideoPresentation(event, itemId)}
-                      />
-                    </div>
-                  </div>
-                ) : null}
               </div>
             </motion.button>
           );
@@ -313,6 +349,7 @@ const DiosasCarousel = ({ items = [], label = 'Swipe horizontal', caption = 'Gal
                     ref={fullscreenVideoRef}
                     key={fullscreenId}
                     src={fullscreenItem.videoUrl}
+                    poster={fullscreenItem.poster}
                     controls={canUseInlinePlayback(fullscreenId)}
                     autoPlay
                     playsInline

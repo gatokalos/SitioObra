@@ -212,6 +212,9 @@ const Hero = () => {
     let isShowcaseForeground =
       typeof document !== 'undefined' &&
       document.documentElement.dataset.gatoShowcaseOpen === 'true';
+    let isExternalAmbientHold =
+      typeof document !== 'undefined' &&
+      document.documentElement.dataset.gatoHeroAmbientHold === 'true';
 
     audioGestureUnlockRef.current = false;
     lastHeroAudioPlayAttemptRef.current = 0;
@@ -226,12 +229,16 @@ const Hero = () => {
     };
 
     const isShowcaseForegroundActive = () => {
+      const showcaseOpen =
+        isShowcaseForeground ||
+        (typeof document !== 'undefined' &&
+          document.documentElement.dataset.gatoShowcaseOpen === 'true');
       if (typeof document === 'undefined') {
-        return isShowcaseForeground;
+        return showcaseOpen || isExternalAmbientHold;
       }
       return (
-        isShowcaseForeground ||
-        document.documentElement.dataset.gatoShowcaseOpen === 'true'
+        showcaseOpen ||
+        document.documentElement.dataset.gatoHeroAmbientHold === 'true'
       );
     };
 
@@ -354,6 +361,27 @@ const Hero = () => {
       }
     };
 
+    const onExternalAmbientHold = (event) => {
+      const hold = Boolean(event?.detail?.hold);
+      isExternalAmbientHold = hold;
+      if (typeof document !== 'undefined') {
+        if (hold) {
+          document.documentElement.dataset.gatoHeroAmbientHold = 'true';
+        } else {
+          delete document.documentElement.dataset.gatoHeroAmbientHold;
+        }
+      }
+      if (hold) {
+        shouldResumeAfterVisibility = !audio.paused && audio.volume > HERO_AUDIO_MIN_AUDIBLE_VOLUME;
+        audio.pause();
+        return;
+      }
+      updateAudioByScroll();
+      if (!requiresInteractionAfterBackground) {
+        void attemptPlay();
+      }
+    };
+
     const supportsM4a = Boolean(audio.canPlayType('audio/mp4') || audio.canPlayType('audio/x-m4a'));
     audio.src = supportsM4a ? HERO_LOGGED_IN_AUDIO_URL : HERO_LOGGED_IN_AUDIO_FALLBACK_URL;
     audio.load();
@@ -389,6 +417,7 @@ const Hero = () => {
     audio.addEventListener('error', onAudioError);
     document.addEventListener('visibilitychange', onVisibilityChange);
     window.addEventListener('gatoencerrado:showcase-visibility', onShowcaseVisibility);
+    window.addEventListener('gatoencerrado:hero-ambient-hold', onExternalAmbientHold);
 
     return () => {
       mounted = false;
@@ -409,6 +438,10 @@ const Hero = () => {
       audio.removeEventListener('error', onAudioError);
       document.removeEventListener('visibilitychange', onVisibilityChange);
       window.removeEventListener('gatoencerrado:showcase-visibility', onShowcaseVisibility);
+      window.removeEventListener('gatoencerrado:hero-ambient-hold', onExternalAmbientHold);
+      if (typeof document !== 'undefined') {
+        delete document.documentElement.dataset.gatoHeroAmbientHold;
+      }
       audio.pause();
       audio.currentTime = 0;
       audio.volume = HERO_LOGGED_IN_AUDIO_VOLUME;
@@ -652,7 +685,7 @@ const Hero = () => {
                       loggedInCtaRefs.current[2] = node;
                     }}
                     type="button"
-                    onClick={() => handleOpenMiniverseList('waitlist', 'Sostener')}
+                    onClick={() => handleOpenMiniverseList('waitlist', 'Impulsar')}
                     className={loggedInCtaClass()}
                   >
                     <span
@@ -676,7 +709,7 @@ const Hero = () => {
                         size={18}
                         className={`transition-colors duration-1000 ${activeLoggedInCtaIndex === 2 ? 'text-white' : 'text-violet-300/90'}`}
                       />
-                      Sostener
+                      Impulsar
                     </span>
                   </Button>
                 </div>
