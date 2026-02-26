@@ -87,7 +87,24 @@ const GAT_COSTS = {
   tazaActivation: 90,
   movimientoRuta: 280,
 };
-const OBRA_VOICE_MIN_GAT = 1;
+const OBRA_VOICE_MIN_GAT = 25;
+const OBRA_VOICE_PRECARE_TURN_THRESHOLD = 2;
+const OBRA_VOICE_PRECARE_THRESHOLD_GAT = OBRA_VOICE_MIN_GAT * OBRA_VOICE_PRECARE_TURN_THRESHOLD;
+const SHOWCASE_REVEAL_REWARD_GAT = {
+  apps: 20,
+  oraculo: 20,
+};
+const SHOWCASE_REQUIRED_GAT = {
+  miniversos: OBRA_VOICE_MIN_GAT,
+  copycats: GAT_COSTS.quironFull,
+  miniversoGrafico: GAT_COSTS.graficoSwipe,
+  miniversoNovela: GAT_COSTS.novelaChapter,
+  miniversoSonoro: GAT_COSTS.sonoroMix,
+  lataza: GAT_COSTS.tazaActivation,
+  miniversoMovimiento: GAT_COSTS.movimientoRuta,
+  apps: 0,
+  oraculo: 0,
+};
 const LEGACY_TAZA_VIEWER_ENABLED = false;
 const SHOWCASE_BADGE_IDS = [
   'miniversos',
@@ -404,6 +421,26 @@ const buildShowcaseEnergyFromBoosts = (baseEnergyByShowcase = {}, boosts = {}) =
     next[showcaseId] = boosts?.[showcaseId] ? amount + amount : amount;
   });
   return next;
+};
+
+const buildShowcaseRewardLabel = (entry) => {
+  if (!entry) return null;
+  const reward = Number.isFinite(entry.reward) ? Math.max(entry.reward, 0) : 0;
+  return entry.claimed
+    ? `MINI-VERSO LEÍDO · +${reward} GAT`
+    : null;
+};
+
+const buildShowcaseEnergyLabel = (entry, showcaseBalance = 0) => {
+  const balance = Number.isFinite(showcaseBalance) ? Math.max(Math.trunc(showcaseBalance), 0) : 0;
+  if (!entry) return `ENERGÍA DISPONIBLE ${balance} GAT · REQUERIDA 0 GAT`;
+  const required = Number.isFinite(entry.required) ? Math.max(entry.required, 0) : 0;
+  if (entry.required <= 0) {
+    return `ENERGÍA DISPONIBLE ${balance} GAT · REQUERIDA 0 GAT`;
+  }
+  return entry.canActivate
+    ? `ENERGÍA DISPONIBLE ${balance} GAT · REQUERIDA ${required} GAT`
+    : `ENERGÍA AGOTADA ${balance} GAT · REQUERIDA ${required} GAT`;
 };
 const MiniVersoCard = ({
   title,
@@ -2013,6 +2050,12 @@ const Transmedia = () => {
         case 'miniversoMovimiento':
           baseAmount = GAT_COSTS.movimientoRuta;
           break;
+        case 'apps':
+          baseAmount = SHOWCASE_REVEAL_REWARD_GAT.apps;
+          break;
+        case 'oraculo':
+          baseAmount = SHOWCASE_REVEAL_REWARD_GAT.oraculo;
+          break;
         default:
           baseAmount = 0;
       }
@@ -2177,6 +2220,10 @@ const Transmedia = () => {
   const [showInstallPwaCTA, setShowInstallPwaCTA] = useState(() => getInitialInstallPwaCTAVisibility());
   const [useLegacyTazaViewer, setUseLegacyTazaViewer] = useState(LEGACY_TAZA_VIEWER_ENABLED);
   const [hasActiveSubscription, setHasActiveSubscription] = useState(false);
+  const [gatBalanceToast, setGatBalanceToast] = useState(null);
+  const gatBalanceToastTimeoutRef = useRef(null);
+  const hasHydratedGatBalanceRef = useRef(false);
+  const previousGatBalanceRef = useRef(null);
   const isAuthenticated = Boolean(user);
   const isDesktopFocusLockActive = Boolean(focusLockShowcaseId) && !isMobileViewport;
   const isSubscriber = Boolean(
@@ -2370,6 +2417,25 @@ const Transmedia = () => {
   const consumeObraVoiceGAT = useCallback(
     async ({ actionLabel = 'Hablar con La Obra por micrófono', source = 'mic', modeId = null } = {}) => {
       const normalizedMode = typeof modeId === 'string' && modeId.trim() ? modeId.trim() : 'default';
+      const remainingBeforeSpend = Number.isFinite(availableGATokens)
+        ? Math.max(Number(availableGATokens), 0)
+        : 0;
+      const shouldShowGuardrailPrecare =
+        !isAuthenticated &&
+        remainingBeforeSpend > 0 &&
+        remainingBeforeSpend <= OBRA_VOICE_PRECARE_THRESHOLD_GAT;
+      if (shouldShowGuardrailPrecare) {
+        const turnsLeft = Math.max(1, Math.ceil(remainingBeforeSpend / OBRA_VOICE_MIN_GAT));
+        setTokenPrecareContext({
+          mode: 'guardrail',
+          message:
+            turnsLeft === 1
+              ? 'Te queda 1 pregunta de cortesía en esta vitrina antes de agotar tus GAT.'
+              : `Te quedan ${turnsLeft} preguntas de cortesía en esta vitrina antes de agotar tus GAT.`,
+          actionLabel,
+          remaining: remainingBeforeSpend,
+        });
+      }
       const result = await trackTransmediaCreditEvent({
         // RPC whitelist only allows fixed keys and showcase_boost:*.
         eventKey: 'showcase_boost:obra_voice_turn',
@@ -2384,7 +2450,7 @@ const Transmedia = () => {
       });
       return Boolean(result.ok);
     },
-    [trackTransmediaCreditEvent]
+    [availableGATokens, isAuthenticated, trackTransmediaCreditEvent]
   );
 
   const incrementObraModeUsage = useCallback((modeId) => {
@@ -3572,6 +3638,11 @@ const Transmedia = () => {
     setIsGraphicUnlocking(false);
     setTazaActivations(0);
     setShowTazaCoins(false);
+    setShowcaseBoosts({});
+    setShowcaseEnergy(baseEnergyByShowcase);
+    setExplorerBadge(DEFAULT_BADGE_STATE);
+    setShowBadgeCoins(false);
+    setCelebratedShowcaseId(null);
     resetSilvestreQuestions();
     if (typeof window !== 'undefined') {
       safeRemoveItem('gatoencerrado:quiron-spent');
@@ -3579,6 +3650,11 @@ const Transmedia = () => {
       safeRemoveItem('gatoencerrado:sonoro-spent');
       safeRemoveItem('gatoencerrado:graphic-spent');
       safeRemoveItem('gatoencerrado:taza-activations');
+      safeRemoveItem('gatoencerrado:showcase-boosts');
+      safeRemoveItem('gatoencerrado:showcase-energy');
+      safeRemoveItem('gatoencerrado:gatokens-available');
+      safeRemoveItem(EXPLORER_BADGE_STORAGE_KEY);
+      safeRemoveItem('gx_anon_id');
       window.dispatchEvent(
         new CustomEvent('gatoencerrado:miniverse-spent', {
           detail: { id: 'novela', spent: false, amount: 0, count: 0 },
@@ -3606,7 +3682,7 @@ const Transmedia = () => {
       );
     }
     void syncTransmediaCredits();
-  }, [syncTransmediaCredits]);
+  }, [baseEnergyByShowcase, resetSilvestreQuestions, syncTransmediaCredits]);
 
   const handlePdfLoadSuccess = useCallback(({ numPages }) => {
     setPdfNumPages(numPages);
@@ -3649,6 +3725,72 @@ const Transmedia = () => {
   const isCinematicShowcaseOpen = Boolean(activeDefinition);
   const isShowcaseOpenTransitionActive = showcaseOpenTransition.phase !== 'idle';
   const showcaseTransitionTargetId = showcaseOpenTransition.targetId;
+  const safeAvailableGATokens = Number.isFinite(availableGATokens)
+    ? Math.max(Math.trunc(Number(availableGATokens)), 0)
+    : 0;
+  const showcaseTokenLedger = useMemo(
+    () =>
+      formats.map((format) => {
+        const reward = Number(baseEnergyByShowcase[format.id] ?? 0);
+        const required = Number(SHOWCASE_REQUIRED_GAT[format.id] ?? 0);
+        const claimed = Boolean(showcaseBoosts?.[format.id]);
+        const canActivate = required <= 0 || safeAvailableGATokens >= required;
+        return {
+          id: format.id,
+          title: format.title,
+          reward,
+          required,
+          claimed,
+          canActivate,
+          statusLabel: required <= 0 ? 'Sin consumo directo' : canActivate ? 'Disponible' : 'Agotada',
+        };
+      }),
+    [baseEnergyByShowcase, safeAvailableGATokens, showcaseBoosts]
+  );
+  const showcaseTokenLedgerById = useMemo(() => {
+    const index = {};
+    showcaseTokenLedger.forEach((entry) => {
+      index[entry.id] = entry;
+    });
+    return index;
+  }, [showcaseTokenLedger]);
+
+  useEffect(() => {
+    if (!hasHydratedGatBalanceRef.current) {
+      hasHydratedGatBalanceRef.current = true;
+      previousGatBalanceRef.current = safeAvailableGATokens;
+      return;
+    }
+    const previousBalance = Number.isFinite(previousGatBalanceRef.current)
+      ? Number(previousGatBalanceRef.current)
+      : safeAvailableGATokens;
+    if (previousBalance === safeAvailableGATokens) {
+      return;
+    }
+    const delta = safeAvailableGATokens - previousBalance;
+    previousGatBalanceRef.current = safeAvailableGATokens;
+    if (!delta) return;
+
+    setGatBalanceToast({
+      id: Date.now(),
+      delta,
+      balance: safeAvailableGATokens,
+    });
+    if (gatBalanceToastTimeoutRef.current) {
+      clearTimeout(gatBalanceToastTimeoutRef.current);
+    }
+    gatBalanceToastTimeoutRef.current = setTimeout(() => {
+      setGatBalanceToast(null);
+    }, 1600);
+  }, [safeAvailableGATokens]);
+
+  useEffect(() => {
+    return () => {
+      if (gatBalanceToastTimeoutRef.current) {
+        clearTimeout(gatBalanceToastTimeoutRef.current);
+      }
+    };
+  }, []);
 
   const buildMiniverseShareUrl = useCallback((formatId) => {
     if (typeof window === 'undefined') return '';
@@ -7143,6 +7285,30 @@ const rendernotaAutoral = () => {
             </button>
           </div>
         ) : null}
+        <AnimatePresence>
+          {gatBalanceToast ? (
+            <motion.div
+              key={`gat-balance-toast-${gatBalanceToast.id}`}
+              initial={{ opacity: 0, y: -8, scale: 0.92 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: -8, scale: 0.96 }}
+              transition={{ duration: 0.24, ease: 'easeOut' }}
+              className="pointer-events-none fixed right-4 top-4 sm:top-5 z-[280]"
+            >
+              <div
+                className={`inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.22em] shadow-[0_8px_22px_rgba(0,0,0,0.4)] backdrop-blur-md ${
+                  gatBalanceToast.delta > 0
+                    ? 'border-emerald-300/45 bg-emerald-500/12 text-emerald-100'
+                    : 'border-amber-300/45 bg-amber-500/12 text-amber-100'
+                }`}
+              >
+                <Coins size={12} />
+                <span>{gatBalanceToast.delta > 0 ? `+${gatBalanceToast.delta}` : gatBalanceToast.delta} GAT</span>
+                <span className="text-slate-200/80">· {gatBalanceToast.balance} GAT</span>
+              </div>
+            </motion.div>
+          ) : null}
+        </AnimatePresence>
         <div className="section-divider mb-[clamp(2.5rem,6vh,5.25rem)]"></div>
 
         <div className="container mx-auto px-6">
@@ -7166,7 +7332,6 @@ const rendernotaAutoral = () => {
 
   Te confiamos <span className="font-semibold text-purple-200">GATokens</span> para explorar y activar la experiencia. <br />Lo demás espera del otro lado.
 </p>
-
           </motion.div>
 
           <div className="lg:hidden space-y-6">
@@ -7200,6 +7365,9 @@ const rendernotaAutoral = () => {
               const isTransitionDimTile = isShowcaseOpenTransitionActive && !isTransitionTargetTile;
               const isDimmedTile = (isCinematicShowcaseOpen && !isActiveTile) || isTransitionDimTile;
               const isRecommendedTile = recommendedShowcaseId === format.id;
+              const tokenEntry = showcaseTokenLedgerById[format.id];
+              const tokenBalance = Number(showcaseEnergy?.[format.id] ?? 0);
+              const rewardLabel = buildShowcaseRewardLabel(tokenEntry);
               return (
                 <>
                   <motion.div
@@ -7296,9 +7464,16 @@ const rendernotaAutoral = () => {
                       <p className="text-sm text-slate-300/85 leading-relaxed min-h-[3.5rem]">
                         {format.instruccion}
                       </p>
-                      <div className="flex items-center gap-2 text-xs text-amber-200/90 uppercase tracking-[0.25em]">
-                        <Coins size={12} className="text-amber-200" />
-                        {format.iaTokensNote}
+                      <div className="space-y-1">
+                        {rewardLabel ? (
+                          <p className="text-xs text-purple-200/90 uppercase tracking-[0.25em]">
+                            {rewardLabel}
+                          </p>
+                        ) : null}
+                        <div className="flex items-center gap-2 text-xs text-amber-200/90 uppercase tracking-[0.25em]">
+                          <Coins size={12} className="text-amber-200" />
+                          {buildShowcaseEnergyLabel(tokenEntry, tokenBalance)}
+                        </div>
                       </div>
                       <div className="text-purple-300 flex items-center gap-2 font-semibold transition-all duration-300 group-hover:gap-3 group-active:gap-3">
                         Abrir vitrina
@@ -7415,6 +7590,9 @@ const rendernotaAutoral = () => {
                 const isTransitionDimTile =
                   isShowcaseOpenTransitionActive &&
                   showcaseTransitionTargetId !== format.id;
+                const tokenEntry = showcaseTokenLedgerById[format.id];
+                const tokenBalance = Number(showcaseEnergy?.[format.id] ?? 0);
+                const rewardLabel = buildShowcaseRewardLabel(tokenEntry);
                 return (
                   <motion.button
                     key={format.id}
@@ -7508,9 +7686,16 @@ const rendernotaAutoral = () => {
                       <p className="text-sm text-slate-300/85 leading-relaxed min-h-[3.5rem]">
                         {format.instruccion}
                       </p>
-                      <div className="flex items-center gap-2 text-xs text-amber-200/90 uppercase tracking-[0.25em]">
-                        <Coins size={12} className="text-amber-200" />
-                        {format.iaTokensNote}
+                      <div className="space-y-1">
+                        {rewardLabel ? (
+                          <p className="text-xs text-purple-200/90 uppercase tracking-[0.25em]">
+                            {rewardLabel}
+                          </p>
+                        ) : null}
+                        <div className="flex items-center gap-2 text-xs text-amber-200/90 uppercase tracking-[0.25em]">
+                          <Coins size={12} className="text-amber-200" />
+                          {buildShowcaseEnergyLabel(tokenEntry, tokenBalance)}
+                        </div>
                       </div>
                       <div className="text-purple-300 flex items-center gap-2 font-semibold">
                         Abrir vitrina

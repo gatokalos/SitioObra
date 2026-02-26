@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { createPortal } from 'react-dom';
-import { BookOpen, Brain, Check, Compass, Coffee, Coins, Drama, Film, Filter, Heart, HeartHandshake, HeartPulse, MapIcon, Music, Palette, School, Share2, Smartphone, Sparkles, GitBranchIcon } from 'lucide-react';
+import { BookOpen, Brain, Check, Compass, Coffee, Coins, Drama, Film, Filter, Heart, HeartHandshake, HeartPulse, MapIcon, Music, Palette, School, Share2, Smartphone, Sparkles, DoorOpen } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { toast } from '@/components/ui/use-toast';
@@ -20,7 +20,7 @@ import {
 
 const TABS = [
   { id: 'escaparate', label: 'Entender', icon: Sparkles },
-  { id: 'experiences', label: 'Decidir', icon:  Compass},
+  { id: 'experiences', label: 'Habitar', icon:  DoorOpen},
   { id: 'waitlist', label: 'Impulsar', icon: HeartHandshake },
 ];
 const DEFAULT_TAB_ID = 'escaparate';

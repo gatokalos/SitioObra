@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
-import { BookOpen, CoffeeIcon, CompassIcon, Gamepad2, HeartHandshake, ShoppingBag, SparkleIcon, Volume2, VolumeX } from 'lucide-react';
+import { BookOpen, CoffeeIcon, CompassIcon, Gamepad2, HeartHandshake, ShoppingBag, SparkleIcon, DoorOpen, Volume2, VolumeX } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import ReserveModal from '@/components/ReserveModal';
 import TicketPurchaseModal from '@/components/TicketPurchaseModal';
@@ -767,7 +767,7 @@ const Hero = () => {
                       loggedInCtaRefs.current[1] = node;
                     }}
                     type="button"
-                    onClick={() => handleOpenMiniverseList('experiences', 'Decidir')}
+                    onClick={() => handleOpenMiniverseList('experiences', 'Habitar')}
                     className={loggedInCtaClass()}
                   >
                     <span
@@ -787,11 +787,11 @@ const Hero = () => {
                       }}
                     />
                     <span className={`relative z-10 inline-flex items-center gap-2 transition-transform duration-1000 ${activeLoggedInCtaIndex === 1 ? 'scale-[1.01]' : 'scale-100'}`}>
-                      <CompassIcon
+                      <DoorOpen
                         size={18}
                         className={`transition-colors duration-1000 ${activeLoggedInCtaIndex === 1 ? 'text-white' : 'text-violet-300/90'}`}
                       />
-                      Decidir
+                      Habitar
                     </span>
                   </Button>
                   <Button

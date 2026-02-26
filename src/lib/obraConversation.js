@@ -1,11 +1,9 @@
 export const OBRA_CONVERSATION_STARTERS = [
-  '¿Qué hace que la obra siga “presente” después de haber terminado?',
   '¿Qué parte de la obra te gusta más?',
 ];
 
 export const SILVESTRE_TRIGGER_QUESTIONS = [
-  '¿Lo de las marcianas era literal o se me fue algo?',
-  '¿Y si Silvestre no está angustiado por sí mismo, sino por el mundo?',
+  '¿Y si Silvestre está angustiado por el mundo?',
 ];
 
 const PHILOSOPHICAL_MODE_QUESTIONS = [

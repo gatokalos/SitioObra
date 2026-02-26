@@ -113,7 +113,7 @@ const BlogContributionPrompt = () => {
     `}
 
     <span className="block mt-4 text-sm text-slate-150/0 italic">
-      (Y a veces basta con dejar que la mente vuelva a su estado silvestre.)
+      (Y a veces basta con dejar que la mente vuelva a un estado silvestre.)
     </span>
   </p>
 
