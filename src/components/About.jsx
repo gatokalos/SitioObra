@@ -2,11 +2,13 @@ import React, { useState, useCallback, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Film, Headphones, Quote, Send, HeartHandshake } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { toast } from '@/components/ui/use-toast';
 import { useAuth } from '@/contexts/SupabaseAuthContext';
 import { ConfettiBurst } from '@/components/Confetti';
 import { safeGetItem, safeRemoveItem, safeSetItem } from '@/lib/safeStorage';
+import { ensureAnonId } from '@/lib/identity';
 import {
   fetchApprovedAudiencePerspectives,
   submitAudiencePerspective,
@@ -55,10 +57,16 @@ const PROVOCA_AFTERCARE_DELAY_MS = 3200;
 const PROVOCA_CONFETTI_VISIBLE_MS = 2400;
 const PROVOCA_SILVESTRE_MODE_ID = 'lectura-profunda';
 const PROVOCA_RESPONSE_ESTIMATE_SECONDS = 60;
+const PROVOCA_LISTEN_USED_STORAGE_PREFIX = 'gatoencerrado:provoca-listen-used:v1';
 const inviteMessage = `Hola 🐾
 Quiero invitarte a compartir tu mirada en *Perspectivas del público* de *Es un gato encerrado*.
 Entra aquí: ${PROVOCA_SHARE_URL}
 Me encantará leer tu opinión. 💜`;
+const getProvocaListenUsageKey = (userId) => {
+  if (userId) return `${PROVOCA_LISTEN_USED_STORAGE_PREFIX}:user:${userId}`;
+  const anonId = ensureAnonId();
+  return `${PROVOCA_LISTEN_USED_STORAGE_PREFIX}:anon:${anonId || 'guest'}`;
+};
 
 export const ProvocaSection = () => {
   const { user } = useAuth();
@@ -74,6 +82,8 @@ export const ProvocaSection = () => {
   const [responseCountdownSeconds, setResponseCountdownSeconds] = useState(
     PROVOCA_RESPONSE_ESTIMATE_SECONDS
   );
+  const [listenUsageKey, setListenUsageKey] = useState(null);
+  const [hasConsumedListenTurn, setHasConsumedListenTurn] = useState(false);
   const afterCareTimeoutRef = useRef(null);
   const confettiTimeoutRef = useRef(null);
   const responseCountdownRef = useRef(null);
@@ -90,8 +100,10 @@ export const ProvocaSection = () => {
     handlePlayPendingAudio,
   } = useSilvestreVoice();
   const isSilvestreThinking = isSilvestreFetching || isSilvestreResponding;
+  const isEscucharButtonDisabled = isSilvestreThinking || hasConsumedListenTurn;
   const isEscucharButtonActive =
-    isSilvestreThinking || isSilvestrePlaying || isListening || Boolean(pendingSilvestreAudioUrl);
+    !hasConsumedListenTurn &&
+    (isSilvestreThinking || isSilvestrePlaying || isListening || Boolean(pendingSilvestreAudioUrl));
   const formattedResponseCountdown = `${String(Math.floor(responseCountdownSeconds / 60)).padStart(2, '0')}:${String(
     responseCountdownSeconds % 60
   ).padStart(2, '0')}`;
@@ -101,11 +113,19 @@ export const ProvocaSection = () => {
       ? 'Reproducir respuesta'
       : isSilvestreThinking
         ? silvestreThinkingMessage
+        : hasConsumedListenTurn
+          ? 'Escuchar a la obra'
         : isListening
           ? 'Pulsa otra vez para enviar'
           : micPromptVisible
             ? 'Pulsa para hablar o escoge otra pregunta'
             : 'Escuchar a la obra';
+
+  const markListenTurnConsumed = useCallback(() => {
+    if (!listenUsageKey) return;
+    safeSetItem(listenUsageKey, '1');
+    setHasConsumedListenTurn(true);
+  }, [listenUsageKey]);
 
   useEffect(() => {
     return () => {
@@ -120,6 +140,19 @@ export const ProvocaSection = () => {
       }
     };
   }, []);
+
+  useEffect(() => {
+    const key = getProvocaListenUsageKey(user?.id ?? null);
+    setListenUsageKey(key);
+    setHasConsumedListenTurn(safeGetItem(key) === '1');
+  }, [user?.id]);
+
+  useEffect(() => {
+    if (hasConsumedListenTurn) return;
+    if (isSilvestrePlaying || pendingSilvestreAudioUrl) {
+      markListenTurnConsumed();
+    }
+  }, [hasConsumedListenTurn, isSilvestrePlaying, pendingSilvestreAudioUrl, markListenTurnConsumed]);
 
   useEffect(() => {
     if (!isSilvestrePlaying) {
@@ -334,6 +367,9 @@ export const ProvocaSection = () => {
   }, []);
 
   const handleListenToObra = useCallback(async () => {
+    if (hasConsumedListenTurn) {
+      return;
+    }
     if (pendingSilvestreAudioUrl) {
       await handlePlayPendingAudio();
       return;
@@ -351,6 +387,7 @@ export const ProvocaSection = () => {
     pendingSilvestreAudioUrl,
     handlePlayPendingAudio,
     isSilvestreThinking,
+    hasConsumedListenTurn,
     voiceDraft,
     handleSendSilvestrePreset,
   ]);
@@ -517,7 +554,7 @@ export const ProvocaSection = () => {
                           type="button"
                           variant="outline"
                           onClick={handleListenToObra}
-                          disabled={isSilvestreThinking}
+                          disabled={isEscucharButtonDisabled}
                           className={`ui-segmented__btn ui-segmented__btn--secondary flex-1 sm:flex-none text-center whitespace-normal ${
                             isEscucharButtonActive ? 'ui-segmented__btn--active' : ''
                           } ${
@@ -530,6 +567,18 @@ export const ProvocaSection = () => {
                         </Button>
                         
                       </div>
+                      {hasConsumedListenTurn ? (
+                        <p className="w-full text-[11px] text-slate-300/80">
+                          Haz{' '}
+                          <Link
+                            to="/?miniverso=miniversos#transmedia"
+                            className="font-semibold text-violet-200 underline decoration-violet-300/70 underline-offset-2 hover:text-white"
+                          >
+                            clic aquí
+                          </Link>{' '}
+                          si quieres hablar con la obra.
+                        </p>
+                      ) : null}
                       {micError && !isListening && !isSilvestreThinking ? (
                         <p className="w-full text-xs text-red-200/90">{micError}</p>
                       ) : null}
