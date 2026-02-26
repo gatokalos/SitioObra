@@ -609,9 +609,9 @@ function shuffleArray(list) {
 }
 const OBRA_VOICE_MODES = [
   {
-    id: 'lectura-profunda',
-    title: 'Lectura profunda',
-    description: 'Lectura que descubre capas y motivos.',
+    id: 'confusion-lucida',
+    title: 'Confusión lúcida',
+    description: 'Sueño y realidad mezclados; claridad sin cierre.',
     accent: 'from-violet-200/20 via-purple-300/10 to-transparent',
     icon: BookOpen,
     tint: {
@@ -621,21 +621,21 @@ const OBRA_VOICE_MODES = [
     },
   },
   {
-    id: 'artista',
-    title: 'La artista',
-    description: 'Intuición y pulso creativo.',
-    accent: 'from-rose-200/20 via-pink-300/10 to-transparent',
-    icon: Palette,
+    id: 'sospecha-doctora',
+    title: 'Sospecha Doctora',
+    description: 'Duda directa: ¿acompaña o controla?',
+    accent: 'from-cyan-200/20 via-sky-300/10 to-transparent',
+    icon: Feather,
     tint: {
-      border: 'rgba(251,113,133,0.45)',
-      glow: '0 18px 55px rgba(244,114,182,0.2)',
-      dot: 'rgba(251,113,133,0.9)',
+      border: 'rgba(125,211,252,0.45)',
+      glow: '0 18px 55px rgba(14,165,233,0.2)',
+      dot: 'rgba(125,211,252,0.9)',
     },
   },
   {
-    id: 'claro-directo',
-    title: 'El práctico',
-    description: 'Lo esencial, sin rodeos.',
+    id: 'necesidad-orden',
+    title: 'Necesidad de orden',
+    description: 'Una versión clara y breve, sin adornos.',
     accent: 'from-amber-200/20 via-orange-300/10 to-transparent',
     icon: CheckCircle2,
     tint: {
@@ -645,21 +645,21 @@ const OBRA_VOICE_MODES = [
     },
   },
   {
-    id: 'tiktoker',
-    title: 'TikToker',
-    description: 'Ritmo, gancho y síntesis.',
-    accent: 'from-sky-200/20 via-indigo-300/10 to-transparent',
+    id: 'humor-negro',
+    title: 'Humor negro',
+    description: 'Ironía filosa, corta y sin explicación.',
+    accent: 'from-fuchsia-200/20 via-pink-300/10 to-transparent',
     icon: Zap,
     tint: {
-      border: 'rgba(125,211,252,0.45)',
-      glow: '0 18px 55px rgba(56,189,248,0.2)',
-      dot: 'rgba(125,211,252,0.9)',
+      border: 'rgba(244,114,182,0.45)',
+      glow: '0 18px 55px rgba(236,72,153,0.2)',
+      dot: 'rgba(244,114,182,0.9)',
     },
   },
   {
-    id: 'util-hoy',
-    title: 'Ejecutivo',
-    description: 'Idea, acción, pregunta.',
+    id: 'cansancio-mental',
+    title: 'Cansancio mental',
+    description: 'Aterrizar hoy: idea, acción y pregunta.',
     accent: 'from-emerald-200/20 via-teal-300/10 to-transparent',
     icon: Wrench,
     tint: {
@@ -669,9 +669,21 @@ const OBRA_VOICE_MODES = [
     },
   },
   {
-    id: 'poeta',
-    title: 'Filósofo y poeta',
-    description: 'Preguntas que desarman la realidad de la obra.',
+    id: 'atraccion-incomoda',
+    title: 'Atracción incómoda',
+    description: 'Enganche y molestia en la misma frase.',
+    accent: 'from-rose-200/20 via-pink-300/10 to-transparent',
+    icon: Palette,
+    tint: {
+      border: 'rgba(251,113,133,0.45)',
+      glow: '0 18px 55px rgba(244,114,182,0.2)',
+      dot: 'rgba(251,113,133,0.9)',
+    },
+  },
+  {
+    id: 'vertigo',
+    title: 'Vértigo',
+    description: 'No hay cierre: la caída sigue abierta.',
     accent: 'from-violet-200/20 via-indigo-300/10 to-transparent',
     icon: Layers,
     tint: {
@@ -687,12 +699,13 @@ const OBRA_EMOTION_ORBS_STORAGE_KEY = 'gatoencerrado:obra-emotion-orbs';
 const OBRA_EMOTION_MAX_ORBS = 36;
 const OBRA_EMOTION_ORB_VERSION = 2;
 const OBRA_EMOTION_MODE_REGIONS = {
-  'lectura-profunda': { left: 50, top: 24, spreadX: 7, spreadY: 7, size: 14 },
-  artista: { left: 42, top: 46, spreadX: 12, spreadY: 10, size: 16 },
-  'claro-directo': { left: 52, top: 52, spreadX: 10, spreadY: 9, size: 16 },
-  tiktoker: { left: 62, top: 38, spreadX: 10, spreadY: 8, size: 15 },
-  'util-hoy': { left: 40, top: 64, spreadX: 11, spreadY: 10, size: 17 },
-  poeta: { left: 58, top: 70, spreadX: 9, spreadY: 9, size: 16 },
+  'confusion-lucida': { left: 50, top: 24, spreadX: 7, spreadY: 7, size: 14 },
+  'sospecha-doctora': { left: 38, top: 38, spreadX: 10, spreadY: 8, size: 15 },
+  'necesidad-orden': { left: 52, top: 52, spreadX: 10, spreadY: 9, size: 16 },
+  'humor-negro': { left: 62, top: 40, spreadX: 10, spreadY: 8, size: 15 },
+  'cansancio-mental': { left: 40, top: 64, spreadX: 11, spreadY: 10, size: 17 },
+  'atraccion-incomoda': { left: 46, top: 48, spreadX: 12, spreadY: 10, size: 16 },
+  vertigo: { left: 58, top: 70, spreadX: 9, spreadY: 9, size: 16 },
   default: { left: 50, top: 50, spreadX: 11, spreadY: 11, size: 15 },
 };
 const clampEmotionValue = (value, min, max) => Math.max(min, Math.min(max, value));
@@ -2224,6 +2237,7 @@ const Transmedia = () => {
   const gatBalanceToastTimeoutRef = useRef(null);
   const hasHydratedGatBalanceRef = useRef(false);
   const previousGatBalanceRef = useRef(null);
+  const guardrailNoticeShownRef = useRef(false);
   const isAuthenticated = Boolean(user);
   const isDesktopFocusLockActive = Boolean(focusLockShowcaseId) && !isMobileViewport;
   const isSubscriber = Boolean(
@@ -2389,6 +2403,21 @@ const Transmedia = () => {
     setTokenPrecareContext(null);
   }, []);
 
+  const showGuardrailPrecareOnce = useCallback(
+    ({ message, actionLabel = 'esta vitrina', remaining = 0 } = {}) => {
+      if (isAuthenticated) return;
+      if (guardrailNoticeShownRef.current) return;
+      guardrailNoticeShownRef.current = true;
+      setTokenPrecareContext({
+        mode: 'guardrail',
+        message,
+        actionLabel,
+        remaining,
+      });
+    },
+    [isAuthenticated]
+  );
+
   const handleTokenPrecareActivateHuella = useCallback(() => {
     setTokenPrecareContext(null);
     if (supportSectionRef.current) {
@@ -2402,8 +2431,7 @@ const Transmedia = () => {
     (message = 'Activa tu huella para ampliar tu energía en esta vitrina.', loginPayload = undefined) => {
       if (isAuthenticated) return true;
       const remaining = Number.isFinite(availableGATokens) ? Math.max(Number(availableGATokens), 0) : 0;
-      setTokenPrecareContext({
-        mode: 'guardrail',
+      showGuardrailPrecareOnce({
         message,
         actionLabel: loginPayload?.action || 'esta vitrina',
         remaining,
@@ -2411,7 +2439,7 @@ const Transmedia = () => {
       toast({ description: 'Puedes seguir explorando. Si te quedas sin GAT, activa tu huella por $50/mes.' });
       return true;
     },
-    [availableGATokens, isAuthenticated]
+    [availableGATokens, isAuthenticated, showGuardrailPrecareOnce]
   );
 
   const consumeObraVoiceGAT = useCallback(
@@ -2426,8 +2454,7 @@ const Transmedia = () => {
         remainingBeforeSpend <= OBRA_VOICE_PRECARE_THRESHOLD_GAT;
       if (shouldShowGuardrailPrecare) {
         const turnsLeft = Math.max(1, Math.ceil(remainingBeforeSpend / OBRA_VOICE_MIN_GAT));
-        setTokenPrecareContext({
-          mode: 'guardrail',
+        showGuardrailPrecareOnce({
           message:
             turnsLeft === 1
               ? 'Te queda 1 pregunta de cortesía en esta vitrina antes de agotar tus GAT.'
@@ -2450,7 +2477,7 @@ const Transmedia = () => {
       });
       return Boolean(result.ok);
     },
-    [availableGATokens, isAuthenticated, trackTransmediaCreditEvent]
+    [availableGATokens, isAuthenticated, showGuardrailPrecareOnce, trackTransmediaCreditEvent]
   );
 
   const incrementObraModeUsage = useCallback((modeId) => {
@@ -2751,8 +2778,7 @@ const Transmedia = () => {
       }
 
       if (!isAuthenticated) {
-        setTokenPrecareContext({
-          mode: 'guardrail',
+        showGuardrailPrecareOnce({
           actionLabel: 'este cortometraje',
           message: 'Puedes verlo ahora y, si agotas tus GAT, activar huella para seguir sin fricción.',
           remaining: Number.isFinite(availableGATokens) ? Math.max(Number(availableGATokens), 0) : 0,
@@ -2804,7 +2830,7 @@ const Transmedia = () => {
         setIsQuironUnlocking(false);
       }
     },
-    [activeShowcase, availableGATokens, isAuthenticated, isQuironUnlocking, quironSignedUrl]
+    [activeShowcase, availableGATokens, isAuthenticated, isQuironUnlocking, quironSignedUrl, showGuardrailPrecareOnce]
   );
 
   useEffect(() => {
@@ -3643,6 +3669,7 @@ const Transmedia = () => {
     setExplorerBadge(DEFAULT_BADGE_STATE);
     setShowBadgeCoins(false);
     setCelebratedShowcaseId(null);
+    guardrailNoticeShownRef.current = false;
     resetSilvestreQuestions();
     if (typeof window !== 'undefined') {
       safeRemoveItem('gatoencerrado:quiron-spent');
@@ -3781,7 +3808,7 @@ const Transmedia = () => {
     }
     gatBalanceToastTimeoutRef.current = setTimeout(() => {
       setGatBalanceToast(null);
-    }, 1600);
+    }, 2200);
   }, [safeAvailableGATokens]);
 
   useEffect(() => {
@@ -3791,6 +3818,12 @@ const Transmedia = () => {
       }
     };
   }, []);
+
+  useEffect(() => {
+    if (safeAvailableGATokens > OBRA_VOICE_PRECARE_THRESHOLD_GAT) {
+      guardrailNoticeShownRef.current = false;
+    }
+  }, [safeAvailableGATokens]);
 
   const buildMiniverseShareUrl = useCallback((formatId) => {
     if (typeof window === 'undefined') return '';
@@ -5430,7 +5463,7 @@ const rendernotaAutoral = () => {
                   }}
                 />
                 <div className="relative z-10 space-y-4">
-                  <p className="text-xs uppercase tracking-[0.35em] text-slate-400/80">Bitácora emocional</p>
+                  <p className="text-xs uppercase tracking-[0.35em] text-slate-400/80">Bitácura de dudas</p>
                   <div className="relative mx-auto h-[260px] w-full max-w-[300px]" aria-hidden="true">
                     <div className="absolute left-1/2 top-2 h-12 w-12 -translate-x-1/2 rounded-full border border-slate-300/30 bg-gradient-to-b from-slate-700/55 to-slate-900/50" />
                     <div className="absolute left-1/2 top-[3.35rem] h-[92px] w-[92px] -translate-x-1/2 rounded-[46%_46%_38%_38%/32%_32%_56%_56%] border border-slate-200/16 bg-gradient-to-b from-slate-700/45 via-slate-900/35 to-transparent" />
@@ -7174,6 +7207,36 @@ const rendernotaAutoral = () => {
     )
     : null;
 
+  const gatBalanceToastOverlay = typeof document !== 'undefined'
+    ? createPortal(
+      <AnimatePresence>
+        {gatBalanceToast ? (
+          <motion.div
+            key={`gat-balance-toast-${gatBalanceToast.id}`}
+            initial={{ opacity: 0, y: -12, scale: 0.92 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -10, scale: 0.96 }}
+            transition={{ duration: 0.24, ease: 'easeOut' }}
+            className="pointer-events-none fixed right-4 top-4 sm:top-5 z-[400]"
+          >
+            <div
+              className={`inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.22em] shadow-[0_8px_22px_rgba(0,0,0,0.4)] backdrop-blur-md ${
+                gatBalanceToast.delta > 0
+                  ? 'border-emerald-300/45 bg-emerald-500/12 text-emerald-100'
+                  : 'border-amber-300/45 bg-amber-500/12 text-amber-100'
+              }`}
+            >
+              <Coins size={12} />
+              <span>{gatBalanceToast.delta > 0 ? `+${gatBalanceToast.delta}` : gatBalanceToast.delta} GAT</span>
+              <span className="text-slate-200/80">· {gatBalanceToast.balance} GAT</span>
+            </div>
+          </motion.div>
+        ) : null}
+      </AnimatePresence>,
+      document.body,
+    )
+    : null;
+
   const imagePreviewOverlay = typeof document !== 'undefined' && imagePreview
     ? createPortal(
       <div className="fixed inset-0 z-[240] flex items-center justify-center px-4 py-10">
@@ -7285,30 +7348,6 @@ const rendernotaAutoral = () => {
             </button>
           </div>
         ) : null}
-        <AnimatePresence>
-          {gatBalanceToast ? (
-            <motion.div
-              key={`gat-balance-toast-${gatBalanceToast.id}`}
-              initial={{ opacity: 0, y: -8, scale: 0.92 }}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
-              exit={{ opacity: 0, y: -8, scale: 0.96 }}
-              transition={{ duration: 0.24, ease: 'easeOut' }}
-              className="pointer-events-none fixed right-4 top-4 sm:top-5 z-[280]"
-            >
-              <div
-                className={`inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.22em] shadow-[0_8px_22px_rgba(0,0,0,0.4)] backdrop-blur-md ${
-                  gatBalanceToast.delta > 0
-                    ? 'border-emerald-300/45 bg-emerald-500/12 text-emerald-100'
-                    : 'border-amber-300/45 bg-amber-500/12 text-amber-100'
-                }`}
-              >
-                <Coins size={12} />
-                <span>{gatBalanceToast.delta > 0 ? `+${gatBalanceToast.delta}` : gatBalanceToast.delta} GAT</span>
-                <span className="text-slate-200/80">· {gatBalanceToast.balance} GAT</span>
-              </div>
-            </motion.div>
-          ) : null}
-        </AnimatePresence>
         <div className="section-divider mb-[clamp(2.5rem,6vh,5.25rem)]"></div>
 
         <div className="container mx-auto px-6">
@@ -7738,6 +7777,7 @@ const rendernotaAutoral = () => {
           {showcaseDipToBlackOverlay}
           {oraculoOverlay}
           {causeSiteOverlay}
+          {gatBalanceToastOverlay}
           {quironFullOverlay}
           {quironPrecareOverlay}
           {quironAftercareOverlay}

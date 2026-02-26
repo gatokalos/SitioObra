@@ -5,14 +5,26 @@ import { ensureAnonId } from '@/lib/identity';
 
 const SILVESTRE_QUESTIONS_STORAGE_KEY = 'gatoencerrado:silvestre-questions-spent';
 const MODES = [
-  'lectura-profunda',
-  'artista',
-  'claro-directo',
-  'tiktoker',
-  'util-hoy',
-  'poeta',
+  'confusion-lucida',
+  'sospecha-doctora',
+  'necesidad-orden',
+  'humor-negro',
+  'cansancio-mental',
+  'atraccion-incomoda',
+  'vertigo',
 ];
-const DEFAULT_MODE = 'lectura-profunda';
+const DEFAULT_MODE = 'confusion-lucida';
+const LEGACY_MODE_ALIASES = {
+  'lectura-profunda': 'confusion-lucida',
+  artista: 'atraccion-incomoda',
+  rabia: 'atraccion-incomoda',
+  'claro-directo': 'necesidad-orden',
+  tiktoker: 'humor-negro',
+  'util-hoy': 'cansancio-mental',
+  poeta: 'vertigo',
+  filósofo: 'vertigo',
+  filosofo: 'vertigo',
+};
 const ENABLE_OBRA_VOICE_FALLBACK =
   String(import.meta.env.VITE_OBRA_ENABLE_VOICE_FALLBACK || '').toLowerCase() === 'true';
 const ENABLE_SILVESTRE_TIMING_DEBUG =
@@ -20,7 +32,8 @@ const ENABLE_SILVESTRE_TIMING_DEBUG =
 const SERVICE_UNAVAILABLE_COOLDOWN_MS = 15000;
 const normalizeMode = (value) => {
   const key = (value || '').toString().toLowerCase().trim();
-  return MODES.includes(key) ? key : DEFAULT_MODE;
+  const resolved = LEGACY_MODE_ALIASES[key] || key;
+  return MODES.includes(resolved) ? resolved : DEFAULT_MODE;
 };
 const getNowMs = () =>
   typeof performance !== 'undefined' && typeof performance.now === 'function'

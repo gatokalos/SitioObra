@@ -11,9 +11,9 @@ import ObraQuestionList from '@/components/miniversos/obra/ObraQuestionList';
 
 const VOICE_MODES = [
   {
-    id: 'lectura-profunda',
-    title: 'Lectura profunda',
-    description: 'Lectura que descubre capas y motivos.',
+    id: 'confusion-lucida',
+    title: 'Confusión lúcida',
+    description: 'Sueño y realidad mezclados; claridad sin cierre.',
     accent: 'from-violet-200/20 via-purple-300/10 to-transparent',
     icon: BookOpen,
     tint: {
@@ -23,21 +23,21 @@ const VOICE_MODES = [
     },
   },
   {
-    id: 'artista',
-    title: 'Artista',
-    description: 'Intuición, imagen y pulso creativo.',
-    accent: 'from-rose-200/20 via-pink-300/10 to-transparent',
-    icon: Palette,
+    id: 'sospecha-doctora',
+    title: 'Sospecha Doctora',
+    description: 'Duda directa: ¿acompaña o controla?',
+    accent: 'from-cyan-200/20 via-sky-300/10 to-transparent',
+    icon: Feather,
     tint: {
-      border: 'rgba(251,113,133,0.45)',
-      glow: '0 18px 55px rgba(244,114,182,0.2)',
-      dot: 'rgba(251,113,133,0.9)',
+      border: 'rgba(125,211,252,0.45)',
+      glow: '0 18px 55px rgba(14,165,233,0.2)',
+      dot: 'rgba(125,211,252,0.9)',
     },
   },
   {
-    id: 'claro-directo',
-    title: 'Claro y directo',
-    description: 'Lo esencial, sin rodeos.',
+    id: 'necesidad-orden',
+    title: 'Necesidad de orden',
+    description: 'Una versión clara y breve, sin adornos.',
     accent: 'from-amber-200/20 via-orange-300/10 to-transparent',
     icon: CheckCircle2,
     tint: {
@@ -47,21 +47,21 @@ const VOICE_MODES = [
     },
   },
   {
-    id: 'tiktoker',
-    title: 'TikToker',
-    description: 'Ritmo, gancho y síntesis.',
-    accent: 'from-sky-200/20 via-indigo-300/10 to-transparent',
+    id: 'humor-negro',
+    title: 'Humor negro',
+    description: 'Ironía filosa, corta y sin explicación.',
+    accent: 'from-fuchsia-200/20 via-pink-300/10 to-transparent',
     icon: Zap,
     tint: {
-      border: 'rgba(125,211,252,0.45)',
-      glow: '0 18px 55px rgba(56,189,248,0.2)',
-      dot: 'rgba(125,211,252,0.9)',
+      border: 'rgba(244,114,182,0.45)',
+      glow: '0 18px 55px rgba(236,72,153,0.2)',
+      dot: 'rgba(244,114,182,0.9)',
     },
   },
   {
-    id: 'util-hoy',
-    title: 'Útil hoy',
-    description: 'Una idea que sí puedes usar hoy.',
+    id: 'cansancio-mental',
+    title: 'Cansancio mental',
+    description: 'Aterrizar hoy: idea, acción y pregunta.',
     accent: 'from-emerald-200/20 via-teal-300/10 to-transparent',
     icon: Wrench,
     tint: {
@@ -71,9 +71,21 @@ const VOICE_MODES = [
     },
   },
   {
-    id: 'poeta',
-    title: 'Poeta',
-    description: 'Preguntas que desarman la realidad de la obra.',
+    id: 'atraccion-incomoda',
+    title: 'Atracción incómoda',
+    description: 'Enganche y molestia en la misma frase.',
+    accent: 'from-rose-200/20 via-pink-300/10 to-transparent',
+    icon: Palette,
+    tint: {
+      border: 'rgba(251,113,133,0.45)',
+      glow: '0 18px 55px rgba(244,114,182,0.2)',
+      dot: 'rgba(251,113,133,0.9)',
+    },
+  },
+  {
+    id: 'vertigo',
+    title: 'Vértigo',
+    description: 'No hay cierre: la caída sigue abierta.',
     accent: 'from-violet-200/20 via-indigo-300/10 to-transparent',
     icon: Layers,
     tint: {
