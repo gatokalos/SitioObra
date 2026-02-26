@@ -622,7 +622,7 @@ const OBRA_VOICE_MODES = [
   },
   {
     id: 'sospecha-doctora',
-    title: 'Sospecha Doctora',
+    title: 'Sospecha',
     description: 'Duda directa: ¿acompaña o controla?',
     accent: 'from-cyan-200/20 via-sky-300/10 to-transparent',
     icon: Feather,
@@ -744,7 +744,7 @@ const showcaseDefinitions = {
     label: 'Miniverso Obra',
     type: 'tragedia',
     intro:
-      'Aquí nace la obra dentro de la obra. El gato encerrado de Es un gato encerrado.',
+      'Aquí nace la obra dentro de la obra. Lo que viste en escena sigue ocurriendo.',
     cartaTitle: '#LaPuertaInvisible',
     notaAutoral: 'Entré sin saber.\nAlgo dijo mi nombre.\nY ya no hubo salida.',
 
@@ -5306,10 +5306,10 @@ const rendernotaAutoral = () => {
             <div className="space-y-6 order-1">
               <div className="rounded-3xl border border-white/10 bg-black/35 p-6 shadow-[0_20px_45px_rgba(0,0,0,0.45)] space-y-4">
                 <div className="space-y-2">
-                  <p className="text-xs uppercase tracking-[0.35em] text-slate-400">Perfiles</p>
-                  <h2 className="font-display text-2xl text-white">¿Con qué perfil entras hoy?</h2>
+                  <p className="text-xs uppercase tracking-[0.35em] text-slate-400">Habla con la obra</p>
+                  <h2 className="font-display text-2xl text-white">Habita las emociones de Silvestre</h2>
                   <p className="text-sm text-slate-300/80">
-                    No es quién eres, es cómo quieres escuchar ahora.
+                    No es quién pregunta, es cómo quieres sentirte ahora.
                   </p>
                 </div>
 

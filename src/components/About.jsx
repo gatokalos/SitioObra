@@ -100,7 +100,10 @@ export const ProvocaSection = () => {
     handlePlayPendingAudio,
   } = useSilvestreVoice();
   const isSilvestreThinking = isSilvestreFetching || isSilvestreResponding;
-  const isEscucharButtonDisabled = isSilvestreThinking || hasConsumedListenTurn;
+  const trimmedVoiceName = voiceName.trim();
+  const isVoiceNameMissing = !trimmedVoiceName;
+  const isEscucharButtonDisabled = isSilvestreThinking || hasConsumedListenTurn || isVoiceNameMissing;
+  const isSendVoiceDisabled = isSubmittingVoice || isVoiceNameMissing;
   const isEscucharButtonActive =
     !hasConsumedListenTurn &&
     (isSilvestreThinking || isSilvestrePlaying || isListening || Boolean(pendingSilvestreAudioUrl));
@@ -261,20 +264,19 @@ export const ProvocaSection = () => {
 
   const handleSubmitVoice = useCallback(async () => {
     const quote = voiceDraft.trim();
+    const authorName = voiceName.trim();
 
     if (!quote || quote.length < 10) {
       toast({ description: 'Comparte una perspectiva un poco más completa.' });
       return;
     }
+    if (!authorName) {
+      toast({ description: 'Escribe tu nombre para enviar tu voz.' });
+      return;
+    }
     if (isSubmittingVoice) {
       return;
     }
-    const authorName =
-      voiceName.trim() ||
-      user?.user_metadata?.alias ||
-      user?.user_metadata?.full_name ||
-      user?.email?.split('@')?.[0] ||
-      'Voz del público';
     const authorRole = voiceRole.trim();
 
     setIsSubmittingVoice(true);
@@ -382,13 +384,22 @@ export const ProvocaSection = () => {
       toast({ description: 'Escribe tu texto y luego pulsa “Escuchar a la obra”.' });
       return;
     }
-    await handleSendSilvestrePreset(message, { modeId: PROVOCA_SILVESTRE_MODE_ID });
+    const authorName = voiceName.trim();
+    if (!authorName) {
+      toast({ description: 'Escribe tu nombre antes de escuchar a la obra.' });
+      return;
+    }
+    await handleSendSilvestrePreset(message, {
+      modeId: PROVOCA_SILVESTRE_MODE_ID,
+      userName: authorName,
+    });
   }, [
     pendingSilvestreAudioUrl,
     handlePlayPendingAudio,
     isSilvestreThinking,
     hasConsumedListenTurn,
     voiceDraft,
+    voiceName,
     handleSendSilvestrePreset,
   ]);
 
@@ -521,7 +532,8 @@ export const ProvocaSection = () => {
                         value={voiceName}
                         onChange={(event) => setVoiceName(event.target.value)}
                         className="form-surface w-full px-4 py-2"
-                        placeholder="Tu nombre"
+                        placeholder="Tu nombre (obligatorio)"
+                        required
                       />
                       <input
                         aria-label="Tu rol o ciudad"
@@ -545,7 +557,7 @@ export const ProvocaSection = () => {
                         <Button
                           type="button"
                           onClick={handleSubmitVoice}
-                          disabled={isSubmittingVoice}
+                          disabled={isSendVoiceDisabled}
                           className="ui-segmented__btn ui-segmented__btn--primary flex-1 sm:flex-none"
                         >
                           {isSubmittingVoice ? 'Enviando…' : 'Enviar tu voz'}
@@ -581,6 +593,11 @@ export const ProvocaSection = () => {
                       ) : null}
                       {micError && !isListening && !isSilvestreThinking ? (
                         <p className="w-full text-xs text-red-200/90">{micError}</p>
+                      ) : null}
+                      {isVoiceNameMissing ? (
+                        <p className="w-full text-xs text-amber-200/90">
+                          Para enviar, primero escribe tu nombre.
+                        </p>
                       ) : null}
                       <p className="w-full text-[11px] text-slate-300/70">
                         Respuesta de voz estimada: aproximadamente 1 minuto.

@@ -1,51 +1,50 @@
 export const OBRA_CONVERSATION_STARTERS = [
-  '¿Qué parte de la obra te gusta más?',
+  '¿Qué parte de mi te gusta más?',
 ];
 
 export const SILVESTRE_TRIGGER_QUESTIONS = [
-  '¿Y si Silvestre está angustiado por el mundo?',
+  '¿Y si estoy angustiado por el mundo?',
 ];
 
 const VERTIGO_MODE_QUESTIONS = [
-  '¿Qué implica existir como obra y no como persona?',
-  '¿Desde cuándo existes… y cuándo dejas de existir?',
-  'Dime... ¿eres el texto, los cuerpos en el escenario… o algo que ocurre entre ambos?',
-  '¿Y si tú no eres conciente de la obra sino un personaje más?',
-  '¿Qué significa que existas tanto en el escenario como en nuestra mente?',
-  '¿Una obra necesita ser entendida… o solo necesita ser vista?',
-  '¿Qué parte de ti fue escrita sin que te dieras cuenta?',
-  'Si la obra se repite en mi cabeza, ¿quién está insistiendo, tú o yo?',
+  'Si nadie te ve… ¿sigues ahí?',
+  '¿Naciste cuando te escribieron… o cuando te vimos?',
+  'Dime... ¿Eres lo que está escrito… o lo que pasa?',
+  'Tú no estás aqui, solo existes en el escenario.',
+  'Mirar una obra es más que suficiente',
+  '¿Quién no suelta a quién?',
 ];
 
 const CONFUSION_LUCIDA_QUESTIONS = [
-  '¿Los otros personajes son personas reales… o son partes de Silvestre?',
-  '¿Por qué nunca queda claro qué le pasa realmente a Silvestre?',
-  '¿Por qué la obra se me queda dando vueltas incluso después de que termina?',
-  '¿Por qué la obra no cierra todo como uno esperaría?',
-  'Hubo una parte que me incomodó… pero no sé explicar por qué.',
-  '¿Está bien no entenderla?',
+  'Siento que todos viven dentro de mi cabeza.',
+  'Algo en mí se fragmenta.',
+  'No sé exactamente qué me pasa… pero lo veo en todo.',
+  'No sé dónde tengo la cabeza.',
+  'Necesitaba compañía.',
+  'No entendí… pero algo se me movió.',
 ];
 
 const SOSPECHA_DOCTORA_QUESTIONS = [
-  '¿La Doctora sí entiende a Silvestre… o solo parece que sí?',
-  '¿La Doctora lo está ayudando… o lo está administrando?',
-  '¿Ayuda de verdad o quiere mantener todo bajo control?',
-  '¿Por qué siento que la Doctora cuida algo más que al paciente?',
-  '¿Qué oculta la calma de la Doctora?',
+  'No sé si me estás escuchando… o evaluando.',
+  'Cuando me miras así, siento que ya decidiste.',
+  '¿Me estás escuchando… o ya estás escribiendo lo que soy?',
+  'No me creo del todo la calma de la gente.',
+  '¿De quién me estoy protegiendo realmente?',
 ];
 
 const NECESIDAD_ORDEN_QUESTIONS = [
-  '¿La obra habla de ansiedad y depresión?',
-  'La escena de las marcianas me sacó de onda.',
-  '¿Silvestre quiere entender lo que le pasa… o solo quiere dejar de sentirse así?',
-  '¿Qué significa el título de la obra?',
-  'Explícame en simple: ¿qué quiso dejar abierto la obra?',
+  'Me desespera no saber qué me pasa',
+  'Quisiera ponerle nombre a lo que me pasa.',
+  'No saber me desarma.',
+  'Si soy un gato encerrado… ¿dónde está la ventana?',
+  'Si no me entiendo, ¿sigo siendo yo?',
+  'Si le pongo nombre a lo que siento… ¿se queda quieto?',
 ];
 
 const HUMOR_NEGRO_QUESTIONS = [
-  '¿La obra te abraza… o te cobra peaje emocional?',
-  '¿Silvestre está mal… o solo es el único sincero del cuarto?',
-  '¿La Doctora receta calma… o entrenamiento para sobrevivir al caos?',
+  '¿Me estás cuidando… o me estás cobrando?',
+  '¿Estoy mal… o soy el único que lo está diciendo como es?',
+  'No estoy calmado… me estoy entrenando para aguantar.',
   '¿Esto era terapia o un simulacro elegante de derrumbe?',
   '¿Es triste… o brutalmente honesta?',
 ];

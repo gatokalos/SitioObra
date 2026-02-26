@@ -75,9 +75,9 @@ const readStoredJson = (key, fallback) => {
 
 const DEFAULT_THINKING_MESSAGE = 'La Obra esta pensando...';
 const THINKING_MESSAGE_PHASES = [
-  { afterMs: 0, text: 'Gracias por preguntar...' },
+  { afterMs: 0, text: 'Estoy contigo.' },
   { afterMs: 6500, text: 'Sigo pensando...' },
-  { afterMs: 9999, text: 'Ya lo tengo...' },
+  { afterMs: 9999, text: 'Ya voy.' },
 ];
 
 const resolveThinkingMessage = (elapsedMs) => {
@@ -304,6 +304,10 @@ export const useSilvestreVoice = () => {
       }
       const source = options.source || null;
       const mode_id = normalizeMode(options.modeId || options.selectedMode);
+      const userName =
+        typeof options.userName === 'string' && options.userName.trim()
+          ? options.userName.trim()
+          : null;
       const debugTimingEnabled = isSilvestreTimingDebugEnabled();
       const requestStartedAt = getNowMs();
       const timingCandidates = [];
@@ -320,17 +324,20 @@ export const useSilvestreVoice = () => {
         setIsSilvestreResponding(true);
         const apiBase = import.meta.env.VITE_OBRA_API_URL;
         const userId = user?.id ?? 'anonymous';
+        const userNamePayload = userName
+          ? { user_name: userName, nombre: userName, author_name: userName }
+          : {};
         const candidates = [
           {
             endpoint: '/api/obra-conciencia',
-            payload: { pregunta: message, user_id: userId, mode_id },
+            payload: { pregunta: message, user_id: userId, mode_id, ...userNamePayload },
             label: 'conciencia',
           },
         ];
         if (ENABLE_OBRA_VOICE_FALLBACK) {
           candidates.push({
             endpoint: '/api/obra-voz',
-            payload: { mensaje: message, mode_id, user_id: userId },
+            payload: { mensaje: message, mode_id, user_id: userId, ...userNamePayload },
             label: 'voz (fallback)',
           });
         }
@@ -731,13 +738,22 @@ export const useSilvestreVoice = () => {
       }
 
       const modeId = options.modeId || options.selectedMode || null;
+      const userName =
+        typeof options.userName === 'string' && options.userName.trim()
+          ? options.userName.trim()
+          : null;
       setTranscript(starter);
-      await sendTranscript(starter, { source: 'preset', modeId });
+      await sendTranscript(starter, { source: 'preset', modeId, userName });
 
       if (typeof window !== 'undefined') {
         window.dispatchEvent(
           new CustomEvent('gatoencerrado:open-silvestre', {
-            detail: { source: 'preset', mensaje: starter, mode_id: normalizeMode(modeId) },
+            detail: {
+              source: 'preset',
+              mensaje: starter,
+              mode_id: normalizeMode(modeId),
+              user_name: userName,
+            },
           })
         );
       }
