@@ -6,15 +6,22 @@ const supabaseAnonKey =
   import.meta.env.VITE_SUPABASE_ANON_KEY ?? import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
 
 const isSupabaseConfigured = Boolean(supabaseUrl && supabaseAnonKey);
+const missingConfigMessage =
+  '[supabaseClient] Missing Supabase configuration. Define VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY (or VITE_SUPABASE_PUBLISHABLE_KEY) in your environment.';
 
 if (!isSupabaseConfigured) {
-  console.error(
-    '[supabaseClient] Missing Supabase configuration. Define VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY (or VITE_SUPABASE_PUBLISHABLE_KEY) in your environment.'
-  );
+  console.error(missingConfigMessage);
 }
 
 const resolvedSupabaseUrl = supabaseUrl || 'https://invalid.supabase.local';
 const resolvedSupabaseAnonKey = supabaseAnonKey || 'invalid-anon-key';
+
+const blockedSupabaseFetch = async (input) => {
+  const targetUrl = typeof input === 'string' ? input : input?.url;
+  throw new Error(
+    `${missingConfigMessage}${targetUrl ? ` Blocked request to ${targetUrl}.` : ' Blocked request.'}`
+  );
+};
 
 export const supabase = createClient(resolvedSupabaseUrl, resolvedSupabaseAnonKey, {
   auth: {
@@ -25,7 +32,15 @@ export const supabase = createClient(resolvedSupabaseUrl, resolvedSupabaseAnonKe
     detectSessionInUrl: false,
     // Force browser OAuth implicit flow to avoid PKCE exchange issues in this project.
     flowType: 'implicit',
+    storageKey: 'gatoencerrado-auth',
   },
+  ...(isSupabaseConfigured
+    ? {}
+    : {
+        global: {
+          fetch: blockedSupabaseFetch,
+        },
+      }),
 });
 
 // Public-only client to avoid using any persisted session (which may carry restricted roles).
@@ -38,6 +53,11 @@ export const supabasePublic = createClient(resolvedSupabaseUrl, resolvedSupabase
     storageKey: 'gatoencerrado-public-auth',
   },
   global: {
+    ...(isSupabaseConfigured
+      ? {}
+      : {
+          fetch: blockedSupabaseFetch,
+        }),
     headers: {
       apikey: resolvedSupabaseAnonKey,
       Authorization: `Bearer ${resolvedSupabaseAnonKey}`,

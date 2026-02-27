@@ -20,7 +20,44 @@ jobs:
       - name: Install dependencies
         run: npm install
 
+      - name: Validate required frontend env
+        env:
+          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+          VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
+          VITE_API_URL: ${{ secrets.VITE_API_URL }}
+        run: |
+          missing=0
+          for key in VITE_SUPABASE_URL VITE_SUPABASE_ANON_KEY VITE_API_URL; do
+            if [ -z "${!key}" ]; then
+              echo "::error::Missing GitHub secret: ${key}"
+              missing=1
+            fi
+          done
+          if [ "$missing" -ne 0 ]; then
+            exit 1
+          fi
+
       - name: Build project
+        env:
+          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+          VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
+          VITE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.VITE_SUPABASE_PUBLISHABLE_KEY }}
+          VITE_SUPABASE_AUTH_REDIRECT_TO: ${{ secrets.VITE_SUPABASE_AUTH_REDIRECT_TO }}
+          VITE_SUPABASE_FUNCTIONS_URL: ${{ secrets.VITE_SUPABASE_FUNCTIONS_URL }}
+          VITE_API_URL: ${{ secrets.VITE_API_URL }}
+          VITE_OBRA_API_URL: ${{ secrets.VITE_OBRA_API_URL }}
+          VITE_OBRA_USE_CONCIENCIA: ${{ secrets.VITE_OBRA_USE_CONCIENCIA }}
+          VITE_OBRA_FORCE_CONCIENCIA: ${{ secrets.VITE_OBRA_FORCE_CONCIENCIA }}
+          VITE_BIENVENIDA_URL: ${{ secrets.VITE_BIENVENIDA_URL }}
+          VITE_ORACULO_URL: ${{ secrets.VITE_ORACULO_URL }}
+          VITE_STRIPE_PUBLISHABLE_KEY: ${{ secrets.VITE_STRIPE_PUBLISHABLE_KEY }}
+          VITE_STRIPE_SUBSCRIPTION_PRICE_ID: ${{ secrets.VITE_STRIPE_SUBSCRIPTION_PRICE_ID }}
+          VITE_PRICE_TAZA: ${{ secrets.VITE_PRICE_TAZA }}
+          VITE_PRICE_NOVELA: ${{ secrets.VITE_PRICE_NOVELA }}
+          VITE_PRICE_COMBO: ${{ secrets.VITE_PRICE_COMBO }}
+          VITE_INSTAGRAM_BUCKET: ${{ secrets.VITE_INSTAGRAM_BUCKET }}
+          VITE_INSTAGRAM_TABLE: ${{ secrets.VITE_INSTAGRAM_TABLE }}
+          VITE_MINIVERSO_INTERCEPTION: ${{ secrets.VITE_MINIVERSO_INTERCEPTION }}
         run: npm run build
 
       - name: Show contents of dist/
