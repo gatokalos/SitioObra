@@ -182,7 +182,10 @@ const BienvenidaGate = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { user, loading } = useAuth();
-  const bienvenidaUrl = import.meta.env.VITE_BIENVENIDA_URL;
+  const bienvenidaUrl = useMemo(() => {
+    const raw = import.meta.env.VITE_BIENVENIDA_URL ?? import.meta.env.VITE_ORACULO_URL ?? '';
+    return raw ? raw.replace(/\/+$/, '') : '';
+  }, []);
 
   const currentPath = useMemo(() => {
     const search = location.search || '';

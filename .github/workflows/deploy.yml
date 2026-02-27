@@ -25,6 +25,8 @@ jobs:
           VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
           VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
           VITE_API_URL: ${{ secrets.VITE_API_URL }}
+          VITE_BIENVENIDA_URL: ${{ secrets.VITE_BIENVENIDA_URL }}
+          VITE_ORACULO_URL: ${{ secrets.VITE_ORACULO_URL }}
         run: |
           missing=0
           for key in VITE_SUPABASE_URL VITE_SUPABASE_ANON_KEY VITE_API_URL; do
@@ -33,6 +35,10 @@ jobs:
               missing=1
             fi
           done
+          if [ -z "$VITE_BIENVENIDA_URL" ] && [ -z "$VITE_ORACULO_URL" ]; then
+            echo "::error::Missing GitHub secret: set VITE_BIENVENIDA_URL or VITE_ORACULO_URL"
+            missing=1
+          fi
           if [ "$missing" -ne 0 ]; then
             exit 1
           fi

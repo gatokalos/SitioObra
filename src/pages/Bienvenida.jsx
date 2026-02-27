@@ -22,7 +22,10 @@ const Bienvenida = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const [showLoginOverlay, setShowLoginOverlay] = useState(false);
-  const baseUrl = import.meta.env.VITE_BIENVENIDA_URL;
+  const baseUrl = useMemo(() => {
+    const raw = import.meta.env.VITE_BIENVENIDA_URL ?? import.meta.env.VITE_ORACULO_URL ?? '';
+    return raw ? raw.replace(/\/+$/, '') : '';
+  }, []);
   const OPEN_TRANSMEDIA_EVENT = 'bienvenida:open-transmedia';
   const flowGoal = useMemo(() => {
     const params = new URLSearchParams(location.search || '');
@@ -133,7 +136,7 @@ const Bienvenida = () => {
           />
         ) : (
           <div className="h-full w-full flex items-center justify-center text-slate-200">
-            Falta configurar `VITE_BIENVENIDA_URL`.
+            Falta configurar `VITE_BIENVENIDA_URL` o `VITE_ORACULO_URL`.
           </div>
         )}
       </div>

@@ -759,7 +759,7 @@ const Hero = () => {
                         size={18}
                         className={`transition-colors duration-1000 ${activeLoggedInCtaIndex === 0 ? 'text-white' : 'text-violet-300/90'}`}
                       />
-                      Entender
+                      Descubrir
                     </span>
                   </Button>
                   <Button
