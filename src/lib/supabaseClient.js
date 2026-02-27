@@ -5,13 +5,18 @@ const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
 const supabaseAnonKey =
   import.meta.env.VITE_SUPABASE_ANON_KEY ?? import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
 
-if (!supabaseUrl || !supabaseAnonKey) {
-  throw new Error(
-    'Missing Supabase configuration. Define VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY (or VITE_SUPABASE_PUBLISHABLE_KEY) in your environment.'
+const isSupabaseConfigured = Boolean(supabaseUrl && supabaseAnonKey);
+
+if (!isSupabaseConfigured) {
+  console.error(
+    '[supabaseClient] Missing Supabase configuration. Define VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY (or VITE_SUPABASE_PUBLISHABLE_KEY) in your environment.'
   );
 }
 
-export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+const resolvedSupabaseUrl = supabaseUrl || 'https://invalid.supabase.local';
+const resolvedSupabaseAnonKey = supabaseAnonKey || 'invalid-anon-key';
+
+export const supabase = createClient(resolvedSupabaseUrl, resolvedSupabaseAnonKey, {
   auth: {
     storage: safeStorage,
     autoRefreshToken: true,
@@ -24,7 +29,7 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
 });
 
 // Public-only client to avoid using any persisted session (which may carry restricted roles).
-export const supabasePublic = createClient(supabaseUrl, supabaseAnonKey, {
+export const supabasePublic = createClient(resolvedSupabaseUrl, resolvedSupabaseAnonKey, {
   auth: {
     persistSession: false,
     autoRefreshToken: false,
@@ -34,8 +39,10 @@ export const supabasePublic = createClient(supabaseUrl, supabaseAnonKey, {
   },
   global: {
     headers: {
-      apikey: supabaseAnonKey,
-      Authorization: `Bearer ${supabaseAnonKey}`,
+      apikey: resolvedSupabaseAnonKey,
+      Authorization: `Bearer ${resolvedSupabaseAnonKey}`,
     },
   },
 });
+
+export { isSupabaseConfigured };
