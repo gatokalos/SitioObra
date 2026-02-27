@@ -13,9 +13,12 @@ import { Heart, MapIcon } from 'lucide-react';
 
 const LOGO_SRC = '/assets/logoapp.webp';
 const RESERVE_BANNER_SRC =
-  'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Merch/banner_cafegato.jpg';
+  'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Merch/banner_cafegato_small.mp4';
 const OFFSEASON_QUOTE = {
-  text: 'A largo plazo, imaginamos un centro donde crear también sea investigar, y cuidar la salud mental sea una forma de arte compartido.',
+  text: `A largo plazo, imaginamos un centro
+donde crear también sea investigar,
+y cuidar la salud mental
+sea una forma de arte compartido.`,
   author: 'Carlos A. Pérez H.',
   role: 'Creador de #GatoEncerrado',
   avatar:
@@ -179,24 +182,11 @@ const RESERVE_COPY = {
     title: 'Aparta tus artículos de #GatoEncerrado',
     subtitle:
       'Estos productos son edición especial y se entregan únicamente en la mesa de merch el día del evento.',
-    notice: (
-      <>
-        Este formulario <strong>no es para comprar boletos</strong>. Aquí solo apartas artículos de
-        merch (taza, novela o combo). Los boletos se adquieren directamente en taquilla CECUT.
-      </>
-    ),
-    intro: null,
   },
   offseason: {
     eyebrow: 'Encontrémonos fuera del teatro',
     title: 'Puntos de encuentro',
-    intro:
-      'Estos objetos no circulan solos. Cuando alguien se interesa, buscamos la manera de activar una conversación en tu ciudad.',
-    notice: (
-  <>
-    También coordinamos envíos y encuentros virtuales cuando el diálogo lo requiere. <strong>Cada activación abre una conversación.</strong>
-  </>
-),
+
   },
 };
 
@@ -493,14 +483,18 @@ payload.customer_email = normalizedEmail;
               className="mb-6 sm:mb-8"
             >
               <div className="relative overflow-hidden rounded-2xl border border-white/10 bg-black/30 shadow-[0_20px_45px_rgba(0,0,0,0.35)]">
-                <motion.img
+                <motion.video
                   src={RESERVE_BANNER_SRC}
-                  alt="Banner Café Gato"
                   className={`w-full object-cover ${isOffseason ? 'h-[168px] sm:h-[208px]' : 'h-[140px] sm:h-[190px]'}`}
                   initial={{ scale: 1.03 }}
                   animate={{ scale: 1 }}
                   transition={{ duration: 0.9, ease: 'easeOut' }}
-                  loading="lazy"
+                  autoPlay
+                  loop
+                  muted
+                  playsInline
+                  preload="metadata"
+                  aria-label="Banner Café Gato"
                 />
 
                 {isOffseason ? (
@@ -517,7 +511,7 @@ payload.customer_email = normalizedEmail;
                       />
                     </div>
                     <div className="absolute bottom-0 left-0 right-0 p-4 sm:p-5">
-                      <p className="max-w-[82%] text-xs sm:text-sm text-slate-100/95 leading-relaxed italic">
+                      <p className="max-w-[82%] whitespace-pre-line text-xs sm:text-sm text-slate-100/95 leading-relaxed italic">
                         "{OFFSEASON_QUOTE.text}"
                       </p>
                       <div className="mt-2">
@@ -562,12 +556,24 @@ payload.customer_email = normalizedEmail;
     const isSelected = formState.packages.includes(option.id);
     const isCombo = option.id === 'combo-900';
 
-    // Mapeo de imágenes por paquete
-    const imageMap = {
-      'taza-250': 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Merch/TazaPreventa.jpg',
-      'novela-400': 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Merch/novela_mesa.jpg',
-      'combo-900': 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Merch/NovelaTazaCombo.jpg',
+    // Mapeo de media por paquete
+    const mediaMap = {
+      'taza-250': {
+        kind: 'video',
+        src: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Merch/tazas_pingpong.mp4',
+        poster:
+          'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Merch/TazaPreventa.jpg',
+      },
+      'novela-400': {
+        kind: 'video',
+        src: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Merch/novela_small.mp4',
+      },
+      'combo-900': {
+        kind: 'image',
+        src: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Merch/NovelaTazaCombo.jpg',
+      },
     };
+    const media = mediaMap[option.id];
 
     const imageHeightClass = isCombo ? 'h-48' : 'h-32';
 
@@ -599,12 +605,25 @@ payload.customer_email = normalizedEmail;
         </div>
 
         <div className={`relative z-0 mb-3 w-full ${imageHeightClass} rounded-xl overflow-hidden border border-white/5`}>
-          <img
-            src={imageMap[option.id]}
-            alt={option.title}
-            className="w-full h-full object-cover transition duration-500 group-hover:scale-[1.03]"
-            loading="lazy"
-          />
+          {media.kind === 'video' ? (
+            <video
+              src={media.src}
+              poster={media.poster}
+              className="w-full h-full object-cover transition duration-500 group-hover:scale-[1.03]"
+              autoPlay
+              loop
+              muted
+              playsInline
+              preload="metadata"
+            />
+          ) : (
+            <img
+              src={media.src}
+              alt={option.title}
+              className="w-full h-full object-cover transition duration-500 group-hover:scale-[1.03]"
+              loading="lazy"
+            />
+          )}
         </div>
 
         <div className="space-y-1">
@@ -669,23 +688,15 @@ payload.customer_email = normalizedEmail;
     onClick={() => setShowProposalForm(true)}
     className="mt-1 text-xs uppercase tracking-[0.3em] text-purple-300 hover:text-purple-200 self-start"
   >
-    📍Sugerir cafetería
+    Sugerir cafetería o librería
   </button>
 </div>
 
-{!showProposalForm ? (
-  <div className="rounded-2xl border border-white/10 bg-black/20 p-4 text-sm text-slate-300/90">
-    <p className="leading-relaxed">
-      Si quieres proponer un punto de encuentro, pulsa <strong>"Sugerir Cafetería"</strong>. <br/>
-      Si ya estás listx para comprar, paga de manera rápida y segura en <strong>"Compra tu Merch"</strong>.
-    </p>
-  </div>
-) : null}
 
 {!showProposalForm ? (
   <div className="rounded-2xl border border-white/10 bg-black/25 p-4 space-y-2">
     <label htmlFor="reserve-checkout-email" className="text-sm font-medium text-slate-200">
-      Correo para tu compra
+      Si estás listx para hacer una compra, ingresa tu correo electrónico antes de abrir la tienda.
     </label>
     <input
       id="reserve-checkout-email"
@@ -698,9 +709,7 @@ payload.customer_email = normalizedEmail;
       autoComplete="email"
       inputMode="email"
     />
-    <p className="text-xs text-slate-400">
-      Usaremos este correo para abrir Stripe de manera rápida y segura.
-    </p>
+    
   </div>
 ) : null}
 
