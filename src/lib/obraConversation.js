@@ -1,18 +1,18 @@
 export const OBRA_CONVERSATION_STARTERS = [
-  '¿Qué parte de mi te gusta más?',
+  '¿Qué parte de mi no te gusta?',
 ];
 
 export const SILVESTRE_TRIGGER_QUESTIONS = [
-  '¿Y si estoy angustiado por el mundo?',
+  'Ya no quiero resolver nada. Solo ayúdame a quedarme un momento.',
 ];
 
 const VERTIGO_MODE_QUESTIONS = [
-  'Si nadie te ve… ¿sigues ahí?',
-  '¿Naciste cuando te escribieron… o cuando te vimos?',
-  'Dime... ¿Eres lo que está escrito… o lo que pasa?',
-  'Tú no estás aqui, solo existes en el escenario.',
-  'Mirar una obra es más que suficiente',
-  '¿Quién no suelta a quién?',
+  'Si nadie te ve… ¿sigo ahí?',
+  '¿Empecé cuando me escribieron… o cuando alguien me miró?',
+  'A veces siento que ya sabían lo que iba a decir.',
+  'Me siento como el recuerdo de algo que todavía no ocurre?',
+  'No todo lo que eres empezó contigo.',
+  'Hay momentos en que no sé si estoy viviendo… o siendo vivido.',
 ];
 
 const CONFUSION_LUCIDA_QUESTIONS = [
@@ -27,7 +27,7 @@ const CONFUSION_LUCIDA_QUESTIONS = [
 const SOSPECHA_DOCTORA_QUESTIONS = [
   'No sé si me estás escuchando… o evaluando.',
   'Cuando me miras así, siento que ya decidiste.',
-  '¿Me estás escuchando… o ya estás escribiendo lo que soy?',
+  'Estás pensando qué decirme mientras me escuchas, ¿verdad?',
   'No me creo del todo la calma de la gente.',
   '¿De quién me estoy protegiendo realmente?',
 ];
@@ -36,30 +36,30 @@ const NECESIDAD_ORDEN_QUESTIONS = [
   'Me desespera no saber qué me pasa',
   'Quisiera ponerle nombre a lo que me pasa.',
   'No saber me desarma.',
-  'Si soy un gato encerrado… ¿dónde está la ventana?',
+  'Soy un gato encerrado y quiero abrir las ventanas.',
   'Si no me entiendo, ¿sigo siendo yo?',
-  'Si le pongo nombre a lo que siento… ¿se queda quieto?',
+  'Si le pongo nombre a lo que siento… ¿se quedará quieto?',
 ];
 
 const HUMOR_NEGRO_QUESTIONS = [
-  '¿Me estás cuidando… o me estás cobrando?',
-  '¿Estoy mal… o soy el único que lo está diciendo como es?',
+  '¿Me estás acompañando… o me estás cobrando?',
+  '¿Estoy mal… o soy el único que no se queda callado?',
   'No estoy calmado… me estoy entrenando para aguantar.',
-  '¿Esto era terapia o un simulacro elegante de derrumbe?',
-  '¿Es triste… o brutalmente honesta?',
+  '¿Esto era terapia o un simulacro elegante de colapso?',
+  '¿Mi naturalez es triste… o brutalmente honesta?',
 ];
 
 const CANSANCIO_MENTAL_QUESTIONS = [
-  'Idea: no me cabe nada más hoy. Acción: dame un paso pequeño. Pregunta: ¿qué sí puedo sostener?',
-  'Idea: me quedé atorado después de verla. Acción: aterrízame en una frase útil. Pregunta: ¿qué hago primero?',
-  'Idea: sigo con ruido mental. Acción: ordéname esto en algo simple. Pregunta: ¿qué suelto hoy?',
-  'Idea: me pegó fuerte la historia. Acción: una forma breve de cuidarme. Pregunta: ¿cómo cierro el día?',
-  'Idea: no quiero analizar todo. Acción: algo mínimo para hoy. Pregunta: ¿qué me toca ahora?',
+  'No me cabe nada más hoy. Dime algo qué sí pueda sostener',
+  'Me quedé atorado. Dímelo simple. ¿Qué hago primero?',
+  'Sigo con ruido mental. Ordéname esto en algo simple. ¿Qué suelto hoy?',
+  'Me pegó fuerte. Dame una forma breve de cuidarme. ¿Cómo cierro el día?',
+  'No quiero analizar todo. Dame algo mínimo para hoy. ¿Qué me toca ahora?',
 ];
 
 const ATRACCION_INCOMODA_QUESTIONS = [
   'No te entendí… pero aquí estoy, pensando en ti.',
-  'Hay algo de la Doctora que me irrita.',
+  'Hay algo de tí que me irrita.',
   '¿Se puede vivir sin estar explicándolo todo?',
   'Me empujaste a algo que no quería mirar.',
   'Salí enojado. Y no sé con quién.',

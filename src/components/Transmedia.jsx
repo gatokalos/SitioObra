@@ -87,6 +87,7 @@ const GAT_COSTS = {
   tazaActivation: 90,
   movimientoRuta: 280,
 };
+const INITIAL_GAT_BALANCE = 150;
 const OBRA_VOICE_MIN_GAT = 25;
 const OBRA_VOICE_PRECARE_TURN_THRESHOLD = 2;
 const OBRA_VOICE_PRECARE_THRESHOLD_GAT = OBRA_VOICE_MIN_GAT * OBRA_VOICE_PRECARE_TURN_THRESHOLD;
@@ -96,13 +97,13 @@ const SHOWCASE_REVEAL_REWARD_GAT = {
 };
 const SHOWCASE_REQUIRED_GAT = {
   miniversos: OBRA_VOICE_MIN_GAT,
-  copycats: GAT_COSTS.quironFull,
+  copycats: 150,
   miniversoGrafico: GAT_COSTS.graficoSwipe,
-  miniversoNovela: GAT_COSTS.novelaChapter,
+  miniversoNovela: 25,
   miniversoSonoro: GAT_COSTS.sonoroMix,
-  lataza: GAT_COSTS.tazaActivation,
-  miniversoMovimiento: GAT_COSTS.movimientoRuta,
-  apps: 0,
+  lataza: 30,
+  miniversoMovimiento: 0,
+  apps: 150,
   oraculo: 0,
 };
 const LEGACY_TAZA_VIEWER_ENABLED = false;
@@ -431,16 +432,35 @@ const buildShowcaseRewardLabel = (entry) => {
     : null;
 };
 
-const buildShowcaseEnergyLabel = (entry, showcaseBalance = 0) => {
-  const balance = Number.isFinite(showcaseBalance) ? Math.max(Math.trunc(showcaseBalance), 0) : 0;
-  if (!entry) return `ENERGÍA DISPONIBLE ${balance} GAT · REQUERIDA 0 GAT`;
-  const required = Number.isFinite(entry.required) ? Math.max(entry.required, 0) : 0;
-  if (entry.required <= 0) {
-    return `ENERGÍA DISPONIBLE ${balance} GAT · REQUERIDA 0 GAT`;
+const buildShowcaseEnergyState = (availableGAT) => {
+  const safeAvailable = Number.isFinite(availableGAT) ? Math.max(Math.trunc(availableGAT), 0) : 0;
+  if (safeAvailable <= 0) {
+    return {
+      label: 'Energía agotada',
+      amount: '0 GAT',
+      className: 'text-rose-300/95',
+    };
   }
-  return entry.canActivate
-    ? `ENERGÍA DISPONIBLE ${balance} GAT · REQUERIDA ${required} GAT`
-    : `ENERGÍA AGOTADA ${balance} GAT · REQUERIDA ${required} GAT`;
+  if (safeAvailable === INITIAL_GAT_BALANCE) {
+    return {
+      label: 'Energía inicial',
+      amount: `${safeAvailable} GAT`,
+      className: 'text-amber-200/90',
+    };
+  }
+  return {
+    label: 'Energía disponible',
+    amount: `${safeAvailable} GAT`,
+    className: 'text-emerald-200/95',
+  };
+};
+
+const buildShowcaseMinRequiredCopy = (showcaseId) => {
+  const required = Number(SHOWCASE_REQUIRED_GAT[showcaseId] ?? 0);
+  if (!Number.isFinite(required) || required <= 0) {
+    return 'mínima requerida 0 GAT';
+  }
+  return `mínima requerida ${Math.max(Math.trunc(required), 0)} GAT`;
 };
 const MiniVersoCard = ({
   title,
@@ -613,7 +633,7 @@ const OBRA_VOICE_MODES = [
     title: 'Confusión lúcida',
     description: 'Sueño y realidad mezclados; claridad sin cierre.',
     accent: 'from-violet-200/20 via-purple-300/10 to-transparent',
-    icon: BookOpen,
+    icon: Feather,
     tint: {
       border: 'rgba(196,181,253,0.5)',
       glow: '0 20px 60px rgba(139,92,246,0.25)',
@@ -623,9 +643,9 @@ const OBRA_VOICE_MODES = [
   {
     id: 'sospecha-doctora',
     title: 'Sospecha',
-    description: 'Duda directa: ¿acompaña o controla?',
+    description: 'Duda directa: ¿acompañamiento o control?',
     accent: 'from-cyan-200/20 via-sky-300/10 to-transparent',
-    icon: Feather,
+    icon: Scan,
     tint: {
       border: 'rgba(125,211,252,0.45)',
       glow: '0 18px 55px rgba(14,165,233,0.2)',
@@ -673,7 +693,7 @@ const OBRA_VOICE_MODES = [
     title: 'Atracción incómoda',
     description: 'Enganche y molestia en la misma frase.',
     accent: 'from-rose-200/20 via-pink-300/10 to-transparent',
-    icon: Palette,
+    icon: Heart,
     tint: {
       border: 'rgba(251,113,133,0.45)',
       glow: '0 18px 55px rgba(244,114,182,0.2)',
@@ -2085,7 +2105,7 @@ const Transmedia = () => {
   const initialGraphicSpent = readStoredBool('gatoencerrado:graphic-spent', false);
   const initialSonoroSpent = readStoredBool('gatoencerrado:sonoro-spent', false);
   const initialTazaActivations = readStoredInt('gatoencerrado:taza-activations', 0);
-  const initialAvailableGATokens = readStoredInt('gatoencerrado:gatokens-available', 0);
+  const initialAvailableGATokens = readStoredInt('gatoencerrado:gatokens-available', INITIAL_GAT_BALANCE);
   const storedEnergy = readStoredJson('gatoencerrado:showcase-energy', null);
   const initialShowcaseEnergy = storedEnergy
     ? { ...baseEnergyByShowcase, ...storedEnergy }
@@ -2205,6 +2225,7 @@ const Transmedia = () => {
   const [showSonoroCoins, setShowSonoroCoins] = useState(false);
   const [showTazaCoins, setShowTazaCoins] = useState(false);
   const [isTazaActivating, setIsTazaActivating] = useState(false);
+  const [isAppsDemoUnlocking, setIsAppsDemoUnlocking] = useState(false);
   const [tazaCameraReady, setTazaCameraReady] = useState(false);
   const [showGraphicCoins, setShowGraphicCoins] = useState(false);
   const [isGraphicUnlocking, setIsGraphicUnlocking] = useState(false);
@@ -2668,6 +2689,10 @@ const Transmedia = () => {
     }));
   }, [allShowcasesUnlocked, explorerBadge.unlocked]);
 
+  useEffect(() => {
+    setQuironSpent(Boolean(showcaseBoosts?.copycats_full_unlock));
+  }, [showcaseBoosts]);
+
   const handleNovelaQuestionSend = useCallback(async () => {
     if (isNovelaSubmitting) {
       return;
@@ -2790,6 +2815,21 @@ const Transmedia = () => {
       setShowQuironCoins(true);
 
       try {
+        const isCopycatsFullUnlocked = Boolean(showcaseBoosts?.copycats_full_unlock);
+        if (!isCopycatsFullUnlocked) {
+          const unlockResult = await trackTransmediaCreditEvent({
+            eventKey: 'showcase_boost:copycats_full_unlock',
+            amount: -SHOWCASE_REQUIRED_GAT.copycats,
+            requiredTokens: SHOWCASE_REQUIRED_GAT.copycats,
+            actionLabel: 'Este cortometraje completo',
+            oncePerIdentity: true,
+            metadata: { source: 'transmedia_cine_full_unlock' },
+          });
+          if (!unlockResult.ok) {
+            return;
+          }
+        }
+
         let url = quironSignedUrl || '';
         if (!url) {
           const bucket = fullVideo.bucket;
@@ -2810,7 +2850,7 @@ const Transmedia = () => {
         if (typeof window !== 'undefined') {
           window.dispatchEvent(
             new CustomEvent('gatoencerrado:miniverse-spent', {
-              detail: { id: 'cine', spent: true, amount: 0 },
+              detail: { id: 'cine', spent: true, amount: SHOWCASE_REQUIRED_GAT.copycats },
             })
           );
         }
@@ -2830,7 +2870,16 @@ const Transmedia = () => {
         setIsQuironUnlocking(false);
       }
     },
-    [activeShowcase, availableGATokens, isAuthenticated, isQuironUnlocking, quironSignedUrl, showGuardrailPrecareOnce]
+    [
+      activeShowcase,
+      availableGATokens,
+      isAuthenticated,
+      isQuironUnlocking,
+      quironSignedUrl,
+      showcaseBoosts,
+      showGuardrailPrecareOnce,
+      trackTransmediaCreditEvent,
+    ]
   );
 
   useEffect(() => {
@@ -3662,6 +3711,7 @@ const Transmedia = () => {
     setGraphicSpent(false);
     setShowGraphicCoins(false);
     setIsGraphicUnlocking(false);
+    setIsAppsDemoUnlocking(false);
     setTazaActivations(0);
     setShowTazaCoins(false);
     setShowcaseBoosts({});
@@ -5871,6 +5921,7 @@ const rendernotaAutoral = () => {
       const currentStep = steps[tapIndex % tapCount] ?? {};
       const handleTapAdvance = () => setTapIndex((prev) => (tapCount ? (prev + 1) % tapCount : 0));
       const isRead = Boolean(showcaseBoosts?.[activeShowcase]);
+      const isAppsDemoUnlocked = Boolean(showcaseBoosts?.apps_demo_unlock);
       const publicComments = publicContributions[activeShowcase] ?? [];
       const isLoadingComments = publicContributionsLoading[activeShowcase];
       const commentsError = publicContributionsError[activeShowcase];
@@ -5898,7 +5949,22 @@ const rendernotaAutoral = () => {
                 <div className="pt-2">
                   <Button
                     type="button"
-                    onClick={() => {
+                    disabled={isAppsDemoUnlocking}
+                    onClick={async () => {
+                      if (isAppsDemoUnlocking) return;
+                      if (!isAppsDemoUnlocked) {
+                        setIsAppsDemoUnlocking(true);
+                        const unlockResult = await trackTransmediaCreditEvent({
+                          eventKey: 'showcase_boost:apps_demo_unlock',
+                          amount: -SHOWCASE_REQUIRED_GAT.apps,
+                          requiredTokens: SHOWCASE_REQUIRED_GAT.apps,
+                          actionLabel: 'Este demo de Juegos',
+                          oncePerIdentity: true,
+                          metadata: { source: 'transmedia_apps_demo_unlock' },
+                        });
+                        setIsAppsDemoUnlocking(false);
+                        if (!unlockResult.ok) return;
+                      }
                       handleTapAdvance();
                       if (!showcaseBoosts?.apps && tapIndex + 1 >= tapCount - 1) {
                         handleShowcaseRevealBoost('apps');
@@ -5906,7 +5972,7 @@ const rendernotaAutoral = () => {
                     }}
                     className="w-full justify-center bg-gradient-to-r from-emerald-500/80 to-emerald-600/80 hover:from-emerald-400/80 hover:to-emerald-500/80 text-white"
                   >
-                    Tap siguiente
+                    {isAppsDemoUnlocking ? 'Descontando energía...' : 'Tap siguiente'}
                   </Button>
                 </div>
                 <div className="flex items-center justify-center gap-2 pt-1">
@@ -5994,6 +6060,7 @@ const rendernotaAutoral = () => {
         });
       })();
       const toneTags = activeDefinition.tone ?? [];
+      const isQuironUnlocked = Boolean(showcaseBoosts?.copycats_full_unlock || quironSpent);
 
       const renderMedia = (asset) => {
         if (!asset?.url) return null;
@@ -6130,7 +6197,7 @@ const rendernotaAutoral = () => {
         <div className="relative overflow-hidden rounded-3xl border border-white/10 bg-gradient-to-r from-slate-900/80 via-black/60 to-purple-900/40 p-6 space-y-4">
           <span className="absolute top-4 right-4 inline-flex items-center gap-2 rounded-full border border-amber-300/50 bg-amber-500/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.35em] text-amber-100 shadow-[0_0_25px_rgba(251,191,36,0.25)]">
             <CheckCheckIcon size={14} />
-            {quironSpent ? 'Liberado' : 'Login requerido'}
+            {isQuironUnlocked ? 'Liberado' : `${SHOWCASE_REQUIRED_GAT.copycats} GAT requeridos`}
           </span>
           <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Proyección privada</p>
           <h4 className="font-display text-2xl text-slate-100">{activeDefinition.proyeccion?.title}</h4>
@@ -6151,7 +6218,7 @@ const rendernotaAutoral = () => {
                   ? 'Espera noticias'
                   : activeDefinition.proyeccion?.cta}
             </Button>
-            {quironSpent ? (
+            {isQuironUnlocked ? (
               <span className="inline-flex w-full items-center justify-center gap-2 rounded-full border border-emerald-200/60 bg-emerald-500/10 px-4 py-3 text-[11px] font-semibold uppercase tracking-[0.3em] text-emerald-100 sm:w-auto">
                 <CheckCheckIcon size={14} />
                 Cortometraje desbloqueado
@@ -7360,16 +7427,19 @@ const rendernotaAutoral = () => {
           >
             <p className="text-xs uppercase tracking-[0.4em] text-slate-400/70">Narrativa Transmedia</p>
             <h2 className="font-display text-4xl md:text-5xl font-medium text-gradient italic">
-              Vitrinas del universo
+              Expansión simultánea
             </h2>
             <p className="text-lg text-slate-300/80 max-w-3xl mx-auto leading-relaxed font-light">
-  Aquí no está todo.<br />
-  Aquí está lo suficiente para comenzar.<br /><br />
+  La obra no terminó en el teatro.<br />
+  Desde ahí comenzó un universo.<br /><br />
 
-  Estas vitrinas reúnen fragmentos activos de los <strong>nueve miniversos</strong> de #GatoEncerrado. 
-  Cada uno forma parte de un organismo narrativo mayor que sigue expandiéndose.<br /><br />
+  #GatoEncerrado existe <strong>en nueve dimensiones activas al mismo tiempo</strong>. 
+  Cada uno desarrolla una dimensión distinta de la obra —con su propio lenguaje, su propio ritmo y su propia forma de participación.<br /><br />
 
-  Te confiamos <span className="font-semibold text-purple-200">GATokens</span> para explorar y activar la experiencia. <br />Lo demás espera del otro lado.
+  No repiten la historia: la continúan.<br /><br />
+
+
+  Te confiamos <span className="font-semibold text-purple-200">1350 GATokens</span> para explorar, intervenir y activar la experiencia.  <br />Lo demás espera del otro lado.
 </p>
           </motion.div>
 
@@ -7405,8 +7475,9 @@ const rendernotaAutoral = () => {
               const isDimmedTile = (isCinematicShowcaseOpen && !isActiveTile) || isTransitionDimTile;
               const isRecommendedTile = recommendedShowcaseId === format.id;
               const tokenEntry = showcaseTokenLedgerById[format.id];
-              const tokenBalance = Number(showcaseEnergy?.[format.id] ?? 0);
               const rewardLabel = buildShowcaseRewardLabel(tokenEntry);
+              const energyState = buildShowcaseEnergyState(safeAvailableGATokens);
+              const minRequiredCopy = buildShowcaseMinRequiredCopy(format.id);
               return (
                 <>
                   <motion.div
@@ -7509,9 +7580,12 @@ const rendernotaAutoral = () => {
                             {rewardLabel}
                           </p>
                         ) : null}
-                        <div className="flex items-center gap-2 text-xs text-amber-200/90 uppercase tracking-[0.25em]">
-                          <Coins size={12} className="text-amber-200" />
-                          {buildShowcaseEnergyLabel(tokenEntry, tokenBalance)}
+                        <div className="flex flex-wrap items-center gap-2 text-xs uppercase tracking-[0.25em]">
+                          <Coins size={12} className={energyState.className} />
+                          <span className={energyState.className}>
+                            {energyState.label} {energyState.amount}
+                          </span>
+                          <span className="text-amber-200/90">· {minRequiredCopy}</span>
                         </div>
                       </div>
                       <div className="text-purple-300 flex items-center gap-2 font-semibold transition-all duration-300 group-hover:gap-3 group-active:gap-3">
@@ -7630,8 +7704,9 @@ const rendernotaAutoral = () => {
                   isShowcaseOpenTransitionActive &&
                   showcaseTransitionTargetId !== format.id;
                 const tokenEntry = showcaseTokenLedgerById[format.id];
-                const tokenBalance = Number(showcaseEnergy?.[format.id] ?? 0);
                 const rewardLabel = buildShowcaseRewardLabel(tokenEntry);
+                const energyState = buildShowcaseEnergyState(safeAvailableGATokens);
+                const minRequiredCopy = buildShowcaseMinRequiredCopy(format.id);
                 return (
                   <motion.button
                     key={format.id}
@@ -7731,9 +7806,12 @@ const rendernotaAutoral = () => {
                             {rewardLabel}
                           </p>
                         ) : null}
-                        <div className="flex items-center gap-2 text-xs text-amber-200/90 uppercase tracking-[0.25em]">
-                          <Coins size={12} className="text-amber-200" />
-                          {buildShowcaseEnergyLabel(tokenEntry, tokenBalance)}
+                        <div className="flex flex-wrap items-center gap-2 text-xs uppercase tracking-[0.25em]">
+                          <Coins size={12} className={energyState.className} />
+                          <span className={energyState.className}>
+                            {energyState.label} {energyState.amount}
+                          </span>
+                          <span className="text-amber-200/90">· {minRequiredCopy}</span>
                         </div>
                       </div>
                       <div className="text-purple-300 flex items-center gap-2 font-semibold">

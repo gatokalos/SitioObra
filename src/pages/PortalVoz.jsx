@@ -1,6 +1,15 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowLeft, BookOpen, CheckCircle2, Feather, Layers, Palette, Wrench, Zap } from 'lucide-react';
+import {
+  ArrowLeft,
+  Brain,
+  Scan,
+  CheckCheck,
+  Drama,
+  HeartHandshake,
+  Heart,
+  RadioTower,
+} from 'lucide-react';
 import { useAuth } from '@/contexts/SupabaseAuthContext';
 import LoginOverlay from '@/components/ContributionModal/LoginOverlay';
 import PortalAuthButton from '@/components/PortalAuthButton';
@@ -15,7 +24,7 @@ const VOICE_MODES = [
     title: 'Confusión lúcida',
     description: 'Sueño y realidad mezclados; claridad sin cierre.',
     accent: 'from-violet-200/20 via-purple-300/10 to-transparent',
-    icon: BookOpen,
+    icon: Brain,
     tint: {
       border: 'rgba(196,181,253,0.5)',
       glow: '0 20px 60px rgba(139,92,246,0.25)',
@@ -27,7 +36,7 @@ const VOICE_MODES = [
     title: 'Sospecha Doctora',
     description: 'Duda directa: ¿acompaña o controla?',
     accent: 'from-cyan-200/20 via-sky-300/10 to-transparent',
-    icon: Feather,
+    icon: Scan,
     tint: {
       border: 'rgba(125,211,252,0.45)',
       glow: '0 18px 55px rgba(14,165,233,0.2)',
@@ -39,7 +48,7 @@ const VOICE_MODES = [
     title: 'Necesidad de orden',
     description: 'Una versión clara y breve, sin adornos.',
     accent: 'from-amber-200/20 via-orange-300/10 to-transparent',
-    icon: CheckCircle2,
+    icon: CheckCheck,
     tint: {
       border: 'rgba(251,191,36,0.45)',
       glow: '0 18px 55px rgba(251,191,36,0.2)',
@@ -51,7 +60,7 @@ const VOICE_MODES = [
     title: 'Humor negro',
     description: 'Ironía filosa, corta y sin explicación.',
     accent: 'from-fuchsia-200/20 via-pink-300/10 to-transparent',
-    icon: Zap,
+    icon: Drama,
     tint: {
       border: 'rgba(244,114,182,0.45)',
       glow: '0 18px 55px rgba(236,72,153,0.2)',
@@ -63,7 +72,7 @@ const VOICE_MODES = [
     title: 'Cansancio mental',
     description: 'Aterrizar hoy: idea, acción y pregunta.',
     accent: 'from-emerald-200/20 via-teal-300/10 to-transparent',
-    icon: Wrench,
+    icon: HeartHandshake,
     tint: {
       border: 'rgba(110,231,183,0.45)',
       glow: '0 18px 55px rgba(16,185,129,0.2)',
@@ -75,7 +84,7 @@ const VOICE_MODES = [
     title: 'Atracción incómoda',
     description: 'Enganche y molestia en la misma frase.',
     accent: 'from-rose-200/20 via-pink-300/10 to-transparent',
-    icon: Palette,
+    icon: Heart,
     tint: {
       border: 'rgba(251,113,133,0.45)',
       glow: '0 18px 55px rgba(244,114,182,0.2)',
@@ -87,7 +96,7 @@ const VOICE_MODES = [
     title: 'Vértigo',
     description: 'No hay cierre: la caída sigue abierta.',
     accent: 'from-violet-200/20 via-indigo-300/10 to-transparent',
-    icon: Layers,
+    icon: RadioTower,
     tint: {
       border: 'rgba(165,180,252,0.45)',
       glow: '0 18px 55px rgba(129,140,248,0.2)',

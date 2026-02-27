@@ -14,7 +14,7 @@ export async function apiFetch(path, opts = {}) {
     throw new Error('API_BASE_UNREACHABLE');
   }
 
-  const anon = import.meta.env.VITE_SUPABASE_ANON_KEY;
+  const anon = import.meta.env.VITE_SUPABASE_ANON_KEY ?? import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
 
   return fetch(`${API_BASE}${path}`, {
     ...opts,
