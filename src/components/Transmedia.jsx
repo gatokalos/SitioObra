@@ -714,6 +714,12 @@ const OBRA_VOICE_MODES = [
   },
 ];
 const DEFAULT_OBRA_VOICE_MODE_ID = OBRA_VOICE_MODES[0].id;
+const MOBILE_OBRA_SECONDARY_CTA_STATES = {
+  READ_SCRIPT: 'read-script',
+  TRY_OTHER_EMOTION: 'try-other-emotion',
+  LAUNCH_PHRASE: 'launch-phrase',
+};
+const normalizeSilvestrePrompt = (value) => (typeof value === 'string' ? value.trim() : '');
 const OBRA_EMOTION_LOG_STORAGE_KEY = 'gatoencerrado:obra-emotion-log';
 const OBRA_EMOTION_ORBS_STORAGE_KEY = 'gatoencerrado:obra-emotion-orbs';
 const OBRA_EMOTION_MAX_ORBS = 36;
@@ -2174,6 +2180,16 @@ const Transmedia = () => {
   } = useSilvestreVoice();
   const [activeObraModeId, setActiveObraModeId] = useState(DEFAULT_OBRA_VOICE_MODE_ID);
   const [elevatedSilvestreStarter, setElevatedSilvestreStarter] = useState(null);
+  const [mobileObraSecondaryCtaState, setMobileObraSecondaryCtaState] = useState(
+    MOBILE_OBRA_SECONDARY_CTA_STATES.READ_SCRIPT
+  );
+  const [mobileObraReplayPrompt, setMobileObraReplayPrompt] = useState('');
+  const [mobileAwaitingEmotionSwitch, setMobileAwaitingEmotionSwitch] = useState(false);
+  const obraConversationControlsRef = useRef(null);
+  const obraModesRef = useRef(null);
+  const obraDetonadoresRef = useRef(null);
+  const wasSilvestrePlayingRef = useRef(false);
+  const previousObraModeIdRef = useRef(DEFAULT_OBRA_VOICE_MODE_ID);
   const [obraModeUsage, setObraModeUsage] = useState(() => {
     const raw = readStoredJson(OBRA_EMOTION_LOG_STORAGE_KEY, {});
     return OBRA_VOICE_MODES.reduce((acc, mode) => {
@@ -4084,13 +4100,88 @@ const Transmedia = () => {
     }
     return activeData.post.content.split(/\n{2,}/).map((chunk) => chunk.trim()).filter(Boolean);
   }, [activeData]);
+  const tragicoStarterSet = useMemo(
+    () => new Set(tragicoStarters.map((starter) => normalizeSilvestrePrompt(starter)).filter(Boolean)),
+    [tragicoStarters]
+  );
 
   useEffect(() => {
     setOpenCollaboratorId(null);
     if (!activeDefinition || activeDefinition.type !== 'tragedia') {
       setElevatedSilvestreStarter(null);
+      setMobileObraSecondaryCtaState(MOBILE_OBRA_SECONDARY_CTA_STATES.READ_SCRIPT);
+      setMobileObraReplayPrompt('');
+      setMobileAwaitingEmotionSwitch(false);
+      wasSilvestrePlayingRef.current = false;
     }
   }, [activeDefinition]);
+
+  useEffect(() => {
+    const previousModeId = previousObraModeIdRef.current;
+    if (previousModeId === activeObraModeId) return;
+
+    if (!isMobileViewport || activeDefinition?.type !== 'tragedia') {
+      previousObraModeIdRef.current = activeObraModeId;
+      return;
+    }
+
+    if (
+      mobileObraSecondaryCtaState === MOBILE_OBRA_SECONDARY_CTA_STATES.TRY_OTHER_EMOTION &&
+      mobileAwaitingEmotionSwitch
+    ) {
+      setMobileObraSecondaryCtaState(MOBILE_OBRA_SECONDARY_CTA_STATES.LAUNCH_PHRASE);
+      setMobileAwaitingEmotionSwitch(false);
+      previousObraModeIdRef.current = activeObraModeId;
+      return;
+    }
+
+    if (mobileObraSecondaryCtaState === MOBILE_OBRA_SECONDARY_CTA_STATES.LAUNCH_PHRASE) {
+      setMobileObraSecondaryCtaState(MOBILE_OBRA_SECONDARY_CTA_STATES.READ_SCRIPT);
+      setMobileObraReplayPrompt('');
+      setMobileAwaitingEmotionSwitch(false);
+    }
+
+    previousObraModeIdRef.current = activeObraModeId;
+  }, [
+    activeDefinition,
+    activeObraModeId,
+    isMobileViewport,
+    mobileAwaitingEmotionSwitch,
+    mobileObraSecondaryCtaState,
+  ]);
+
+  useEffect(() => {
+    const wasPlaying = wasSilvestrePlayingRef.current;
+    const isPlaybackIdle =
+      !isSilvestrePlaying &&
+      !isSilvestreResponding &&
+      !isSilvestreFetching &&
+      !pendingSilvestreAudioUrl;
+    if (
+      wasPlaying &&
+      isPlaybackIdle &&
+      activeDefinition?.type === 'tragedia' &&
+      isMobileViewport
+    ) {
+      const replayCandidate =
+        normalizeSilvestrePrompt(transcript) || normalizeSilvestrePrompt(elevatedSilvestreStarter);
+      if (replayCandidate) {
+        setMobileObraReplayPrompt(replayCandidate);
+        setMobileObraSecondaryCtaState(MOBILE_OBRA_SECONDARY_CTA_STATES.TRY_OTHER_EMOTION);
+        setMobileAwaitingEmotionSwitch(true);
+      }
+    }
+    wasSilvestrePlayingRef.current = isSilvestrePlaying;
+  }, [
+    activeDefinition,
+    elevatedSilvestreStarter,
+    isSilvestreFetching,
+    isMobileViewport,
+    isSilvestrePlaying,
+    isSilvestreResponding,
+    pendingSilvestreAudioUrl,
+    transcript,
+  ]);
 
   useEffect(() => {
     const previous = previousActiveShowcaseRef.current;
@@ -4532,6 +4623,121 @@ const Transmedia = () => {
     [activeShowcase]
   );
 
+  const isObraVoiceBusy =
+    isListening ||
+    isSilvestreFetching ||
+    isSilvestreResponding ||
+    isSilvestrePlaying ||
+    Boolean(pendingSilvestreAudioUrl);
+
+  const scrollToObraConversationControls = useCallback(() => {
+    if (typeof window === 'undefined' || !isMobileViewport) return;
+    window.requestAnimationFrame(() => {
+      obraConversationControlsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    });
+  }, [isMobileViewport]);
+
+  const scrollToObraModes = useCallback(() => {
+    if (typeof window === 'undefined' || !isMobileViewport) return;
+    window.requestAnimationFrame(() => {
+      obraModesRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+  }, [isMobileViewport]);
+
+  const scrollToObraDetonadores = useCallback(() => {
+    if (typeof window === 'undefined' || !isMobileViewport) return;
+    window.requestAnimationFrame(() => {
+      obraDetonadoresRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    });
+  }, [isMobileViewport]);
+
+  const sendSilvestrePromptToObra = useCallback(
+    async (prompt, { modeId = null } = {}) => {
+      const normalizedPrompt = normalizeSilvestrePrompt(prompt);
+      if (!normalizedPrompt) return false;
+      const resolvedModeId =
+        typeof modeId === 'string' && modeId.trim() ? modeId.trim() : activeObraModeId;
+      const isStarterPrompt = tragicoStarterSet.has(normalizedPrompt);
+      const spentSet = getSpentSilvestreSetForMode(resolvedModeId);
+      if (isStarterPrompt && spentSet.has(normalizedPrompt)) return false;
+      const canProceed = await consumeObraVoiceGAT({
+        actionLabel: 'Enviar una pregunta a La Obra',
+        source: 'preset',
+        modeId: resolvedModeId,
+      });
+      if (!canProceed) return false;
+      incrementObraModeUsage(resolvedModeId);
+      if (isStarterPrompt) {
+        markSilvestreQuestionSpent(normalizedPrompt, { modeId: resolvedModeId });
+      }
+      setElevatedSilvestreStarter(normalizedPrompt);
+      setMobileObraReplayPrompt(normalizedPrompt);
+      setMobileObraSecondaryCtaState(MOBILE_OBRA_SECONDARY_CTA_STATES.READ_SCRIPT);
+      setMobileAwaitingEmotionSwitch(false);
+      scrollToObraConversationControls();
+      void handleSendSilvestrePreset(normalizedPrompt, { modeId: resolvedModeId });
+      return true;
+    },
+    [
+      activeObraModeId,
+      consumeObraVoiceGAT,
+      getSpentSilvestreSetForMode,
+      handleSendSilvestrePreset,
+      incrementObraModeUsage,
+      markSilvestreQuestionSpent,
+      tragicoStarterSet,
+      scrollToObraConversationControls,
+    ]
+  );
+
+  const handleUseSilvestreStarter = useCallback(
+    async (starter, modeId = null) => {
+      await sendSilvestrePromptToObra(starter, { modeId });
+    },
+    [sendSilvestrePromptToObra]
+  );
+
+  const handleMobileObraSecondaryCta = useCallback(async () => {
+    if (!isMobileViewport || activeDefinition?.type !== 'tragedia') return;
+    if (isObraVoiceBusy) return;
+
+    if (mobileObraSecondaryCtaState === MOBILE_OBRA_SECONDARY_CTA_STATES.READ_SCRIPT) {
+      scrollToObraDetonadores();
+      return;
+    }
+
+    if (mobileObraSecondaryCtaState === MOBILE_OBRA_SECONDARY_CTA_STATES.TRY_OTHER_EMOTION) {
+      setMobileAwaitingEmotionSwitch(true);
+      scrollToObraModes();
+      return;
+    }
+
+    if (mobileObraSecondaryCtaState === MOBILE_OBRA_SECONDARY_CTA_STATES.LAUNCH_PHRASE) {
+      const promptToReplay =
+        normalizeSilvestrePrompt(mobileObraReplayPrompt) ||
+        normalizeSilvestrePrompt(transcript) ||
+        normalizeSilvestrePrompt(elevatedSilvestreStarter);
+      if (!promptToReplay) {
+        setMobileObraSecondaryCtaState(MOBILE_OBRA_SECONDARY_CTA_STATES.READ_SCRIPT);
+        setMobileAwaitingEmotionSwitch(false);
+        return;
+      }
+      await sendSilvestrePromptToObra(promptToReplay, { modeId: activeObraModeId });
+    }
+  }, [
+    activeDefinition,
+    activeObraModeId,
+    elevatedSilvestreStarter,
+    isMobileViewport,
+    isObraVoiceBusy,
+    mobileObraReplayPrompt,
+    mobileObraSecondaryCtaState,
+    scrollToObraDetonadores,
+    scrollToObraModes,
+    sendSilvestrePromptToObra,
+    transcript,
+  ]);
+
   const handleOpenSilvestreChatCta = useCallback(async (modeId = null) => {
     const resolvedModeId =
       typeof modeId === 'string' && modeId.trim() ? modeId.trim() : activeObraModeId;
@@ -4551,7 +4757,10 @@ const Transmedia = () => {
       if (!canProceed) return;
       incrementObraModeUsage(resolvedModeId);
     }
+    setMobileObraSecondaryCtaState(MOBILE_OBRA_SECONDARY_CTA_STATES.READ_SCRIPT);
+    setMobileAwaitingEmotionSwitch(false);
     handleOpenSilvestreChat({ modeId: resolvedModeId });
+    scrollToObraConversationControls();
   }, [
     activeObraModeId,
     consumeObraVoiceGAT,
@@ -4562,6 +4771,7 @@ const Transmedia = () => {
     isSilvestrePlaying,
     isSilvestreResponding,
     pendingSilvestreAudioUrl,
+    scrollToObraConversationControls,
   ]);
 
   const handleOpenNovelaReserve = useCallback((initialPackages = ['novela-400']) => {
@@ -5309,6 +5519,23 @@ const rendernotaAutoral = () => {
       const activeObraMode =
         OBRA_VOICE_MODES.find((mode) => mode.id === activeObraModeId) ?? OBRA_VOICE_MODES[0];
       const activeObraTint = activeObraMode?.tint ?? OBRA_VOICE_MODES[0].tint;
+      const hasReplayPrompt = Boolean(normalizeSilvestrePrompt(mobileObraReplayPrompt));
+      const mobileSecondaryCtaCopy =
+        mobileObraSecondaryCtaState === MOBILE_OBRA_SECONDARY_CTA_STATES.TRY_OTHER_EMOTION
+          ? 'Prueba con otra emoción'
+          : mobileObraSecondaryCtaState === MOBILE_OBRA_SECONDARY_CTA_STATES.LAUNCH_PHRASE
+            ? 'Lanza la frase'
+            : 'Leer del guion';
+      const mobileSecondaryCtaEmphasis =
+        mobileObraSecondaryCtaState === MOBILE_OBRA_SECONDARY_CTA_STATES.TRY_OTHER_EMOTION
+          ? 'glow'
+          : mobileObraSecondaryCtaState === MOBILE_OBRA_SECONDARY_CTA_STATES.LAUNCH_PHRASE
+            ? 'action'
+            : 'soft';
+      const mobileSecondaryCtaDisabled =
+        isObraVoiceBusy ||
+        (mobileObraSecondaryCtaState === MOBILE_OBRA_SECONDARY_CTA_STATES.LAUNCH_PHRASE &&
+          !hasReplayPrompt);
 
       const reactionDetails = {
         showcaseId: 'miniversos',
@@ -5429,11 +5656,11 @@ const rendernotaAutoral = () => {
                     Habita las emociones de Silvestre
                   </h2>
                   <p className="text-sm text-slate-300/80 break-words">
-                   Cada frase que envíes —dicha por ti o desde un guion— afina la voz de Silvestre y expande las posibilidades de la conversación colectiva.
+                   Cada frase que envíes —dicha por ti o sacada de un guion— afina la voz de obra y expande las posibilidades de la conversación colectiva.
                   </p>
                 </div>
 
-                <div className="space-y-3">
+                <div ref={obraModesRef} className="space-y-3">
                   {OBRA_VOICE_MODES.map((mode) => {
                     const isActiveMode = activeObraModeId === mode.id;
 
@@ -5459,24 +5686,31 @@ const rendernotaAutoral = () => {
                               <p className="text-lg font-semibold text-white">{mode.title}</p>
                             </div>
 
-                            <ObraConversationControls
-                              ctaLabel="Pulsa para hablar"
-                              isSilvestrePlaying={isSilvestrePlaying}
-                              pendingSilvestreAudioUrl={pendingSilvestreAudioUrl}
-                              isSilvestreFetching={isSilvestreFetching}
-                              isSilvestreResponding={isSilvestreResponding}
-                              silvestreThinkingMessage={silvestreThinkingMessage}
-                              isSilvestreThinkingPulse={isSilvestreThinkingPulse}
-                              isListening={isListening}
-                              micPromptVisible={micPromptVisible}
-                              showSilvestreCoins={showSilvestreCoins}
-                              micError={micError}
-                              transcript={transcript}
-                              onMicClick={() => handleOpenSilvestreChatCta(activeObraModeId)}
-                              onPlayPending={handlePlayPendingAudio}
-                              tone={activeObraTint}
-                              className="pt-1"
-                            />
+                            <div ref={obraConversationControlsRef}>
+                              <ObraConversationControls
+                                ctaLabel="Pulsa para hablar"
+                                isSilvestrePlaying={isSilvestrePlaying}
+                                pendingSilvestreAudioUrl={pendingSilvestreAudioUrl}
+                                isSilvestreFetching={isSilvestreFetching}
+                                isSilvestreResponding={isSilvestreResponding}
+                                silvestreThinkingMessage={silvestreThinkingMessage}
+                                isSilvestreThinkingPulse={isSilvestreThinkingPulse}
+                                isListening={isListening}
+                                micPromptVisible={micPromptVisible}
+                                showSilvestreCoins={showSilvestreCoins}
+                                micError={micError}
+                                transcript={transcript}
+                                secondaryCtaVisible={isMobileViewport}
+                                secondaryCtaCopy={mobileSecondaryCtaCopy}
+                                secondaryCtaDisabled={mobileSecondaryCtaDisabled}
+                                secondaryCtaEmphasis={mobileSecondaryCtaEmphasis}
+                                onMicClick={() => handleOpenSilvestreChatCta(activeObraModeId)}
+                                onPlayPending={handlePlayPendingAudio}
+                                onSecondaryCtaClick={handleMobileObraSecondaryCta}
+                                tone={activeObraTint}
+                                className="pt-1"
+                              />
+                            </div>
                           </div>
                         </div>
                       );
@@ -5525,6 +5759,7 @@ const rendernotaAutoral = () => {
 
             <div className="order-2 min-w-0 space-y-6 lg:order-none">
               <div
+                ref={obraDetonadoresRef}
                 className="relative overflow-hidden rounded-3xl border border-white/10 bg-black/30 p-6"
                 style={{ borderColor: activeObraTint?.border, boxShadow: activeObraTint?.glow }}
               >
@@ -5546,19 +5781,7 @@ const rendernotaAutoral = () => {
                     spentSet={activeModeSpentSet}
                     questionProgressMap={questionProgressMap}
                     questionProgressTotal={OBRA_VOICE_MODES.length}
-                    onSelect={async (starter) => {
-                      if (activeModeSpentSet.has(starter)) return;
-                      const canProceed = await consumeObraVoiceGAT({
-                        actionLabel: 'Enviar una pregunta a La Obra',
-                        source: 'preset',
-                        modeId: activeObraModeId,
-                      });
-                      if (!canProceed) return;
-                      incrementObraModeUsage(activeObraModeId);
-                      markSilvestreQuestionSpent(starter, { modeId: activeObraModeId });
-                      handleSendSilvestrePreset(starter, { modeId: activeObraModeId });
-                      setElevatedSilvestreStarter(starter);
-                    }}
+                    onSelect={handleUseSilvestreStarter}
                     variant="stack"
                     elevatedStarter={elevatedSilvestreStarter}
                     elevatedCopy="Pruébala con otra emoción"
@@ -5597,7 +5820,7 @@ const rendernotaAutoral = () => {
                   }}
                 />
                 <div className="relative z-10 space-y-4">
-                  <p className="text-xs uppercase tracking-[0.35em] text-slate-400/80">Bitácora de emociones</p>
+                  <p className="text-xs uppercase tracking-[0.35em] text-slate-400/80">Mi bitácora de emociones</p>
                   <div className="relative mx-auto h-[260px] w-full max-w-[300px]" aria-hidden="true">
                     <div className="absolute left-1/2 top-2 h-12 w-12 -translate-x-1/2 rounded-full border border-slate-300/30 bg-gradient-to-b from-slate-700/55 to-slate-900/50" />
                     <div className="absolute left-1/2 top-[3.35rem] h-[92px] w-[92px] -translate-x-1/2 rounded-[46%_46%_38%_38%/32%_32%_56%_56%] border border-slate-200/16 bg-gradient-to-b from-slate-700/45 via-slate-900/35 to-transparent" />
@@ -5697,7 +5920,7 @@ const rendernotaAutoral = () => {
                   </div>
 
                   <p className="text-xs text-slate-200/88 leading-relaxed">
-                    Aún no hay suficientes usuarios para crear una inteligencia artificial de Silvestre con estabilidad.
+                    Aún no hay suficientes usuarios para crear una inteligencia artificial de #GatoEncerrado con estabilidad.
                     Este beta muestra cómo podría leerse el pulso colectivo cuando la conversación escale.
                   </p>
 
@@ -7797,9 +8020,7 @@ const rendernotaAutoral = () => {
                           <h3 className="font-display text-2xl text-slate-100">{format.title}</h3>
                         </div>
                       </div>
-                      <p className="text-sm text-slate-300/85 leading-relaxed min-h-[3.5rem]">
-                        {format.instruccion}
-                      </p>
+                  
                       <div className="space-y-1">
                         {rewardLabel ? (
                           <p className="text-xs text-purple-200/90 uppercase tracking-[0.25em]">

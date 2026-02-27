@@ -16,8 +16,13 @@ const ObraConversationControls = ({
   showSilvestreCoins = false,
   micError = '',
   transcript = '',
+  secondaryCtaVisible = false,
+  secondaryCtaCopy = 'Leer del guion',
+  secondaryCtaDisabled = false,
+  secondaryCtaEmphasis = 'soft',
   onMicClick,
   onPlayPending,
+  onSecondaryCtaClick,
   tone = null,
   className = '',
 }) => {
@@ -32,7 +37,7 @@ const ObraConversationControls = ({
         : isListening
           ? 'Pulsa otra vez para enviar'
           : micPromptVisible
-            ? 'Pulsa para hablar o escoge otra pregunta'
+            ? 'Pulsa para hablar o escoge una frase'
             : ctaLabel;
   const hasErrorState = Boolean(micError) && !isListening && !isSilvestreThinking;
   const baseBorder = tone?.border || 'rgba(196,181,253,0.6)';
@@ -56,6 +61,12 @@ const ObraConversationControls = ({
         '--silvestre-wave-color': baseDot,
       };
   const statusStyle = hasErrorState ? { color: 'rgba(252,165,165,0.95)' } : { color: baseDot };
+  const secondaryCtaClassName =
+    secondaryCtaEmphasis === 'glow'
+      ? 'border-amber-200/70 bg-gradient-to-r from-amber-300/20 via-fuchsia-300/20 to-violet-300/20 text-amber-100 shadow-[0_0_18px_rgba(251,191,36,0.32)] animate-pulse'
+      : secondaryCtaEmphasis === 'action'
+        ? 'border-cyan-200/60 bg-cyan-400/12 text-cyan-100 shadow-[0_0_12px_rgba(34,211,238,0.22)]'
+        : 'border-white/20 bg-black/35 text-slate-100';
 
   return (
     <div className={className}>
@@ -118,6 +129,16 @@ const ObraConversationControls = ({
         >
           {statusLabel}
         </span>
+        {secondaryCtaVisible ? (
+          <button
+            type="button"
+            onClick={onSecondaryCtaClick}
+            disabled={secondaryCtaDisabled}
+            className={`inline-flex items-center rounded-full border px-3 py-1.5 text-[10px] font-semibold uppercase tracking-[0.16em] transition hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-45 ${secondaryCtaClassName}`}
+          >
+            {secondaryCtaCopy}
+          </button>
+        ) : null}
       </div>
 
       {micError && !isListening && !transcript ? (

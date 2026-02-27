@@ -677,7 +677,7 @@ payload.customer_email = normalizedEmail;
   <div className="rounded-2xl border border-white/10 bg-black/20 p-4 text-sm text-slate-300/90">
     <p className="leading-relaxed">
       Si quieres proponer un punto de encuentro, pulsa <strong>"Sugerir Cafetería"</strong>. <br/>
-      Si ya estás listx para comprar, paga d emanera rápida y segura en <strong>"Compra tu Merch"</strong>.
+      Si ya estás listx para comprar, paga de manera rápida y segura en <strong>"Compra tu Merch"</strong>.
     </p>
   </div>
 ) : null}

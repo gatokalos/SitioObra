@@ -82,19 +82,24 @@ const ObraQuestionList = ({
               onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
               disabled={currentPage <= 1}
               className="rounded-lg border border-white/15 px-3 py-1 text-xs uppercase tracking-[0.2em] text-slate-200 transition hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-45"
+              aria-label="Página anterior"
             >
-              Anterior
+              <span className="sm:hidden">←</span>
+              <span className="hidden sm:inline">Anterior</span>
             </button>
             <p className="text-[11px] uppercase tracking-[0.22em] text-slate-300/85">
-              Página {currentPage} de {totalPages}
+              <span className="sm:hidden normal-case tracking-[0.12em]">Pág. {currentPage}/{totalPages}</span>
+              <span className="hidden sm:inline">Página {currentPage} de {totalPages}</span>
             </p>
             <button
               type="button"
               onClick={() => setCurrentPage((prev) => Math.min(totalPages, prev + 1))}
               disabled={currentPage >= totalPages}
               className="rounded-lg border border-white/15 px-3 py-1 text-xs uppercase tracking-[0.2em] text-slate-200 transition hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-45"
+              aria-label="Página siguiente"
             >
-              Siguiente
+              <span className="sm:hidden">→</span>
+              <span className="hidden sm:inline">Siguiente</span>
             </button>
           </div>
         ) : null}
@@ -105,11 +110,8 @@ const ObraQuestionList = ({
             const isSpent = spentSet.has(starter);
             const isElevated = Boolean(elevatedStarterKey) && starterKey === elevatedStarterKey;
             return (
-              <button
+              <div
                 key={`stack-starter-${starter}-${idx}`}
-                type="button"
-                onClick={() => onSelect?.(starter)}
-                disabled={isSpent}
                 className={`w-full rounded-2xl border border-white/10 bg-black/15 px-4 py-3 text-left text-sm text-purple-50/90 transition hover:bg-white/5 disabled:cursor-not-allowed disabled:opacity-60 ${
                   isElevated
                     ? 'border-amber-200/55 bg-gradient-to-br from-amber-300/12 via-fuchsia-400/10 to-violet-400/12 shadow-[0_0_0_1px_rgba(251,191,36,0.22),0_0_28px_rgba(196,181,253,0.24)]'
@@ -117,29 +119,43 @@ const ObraQuestionList = ({
                 }`}
                 style={itemStyle}
               >
-                <span className="flex items-start gap-2">
-                  <span className="text-purple-200 font-semibold" style={bulletStyle}>
-                    •
-                  </span>
-                  <span className="flex-1 leading-relaxed">{starter}</span>
-                  <span className="ml-2 flex shrink-0 flex-col items-end gap-1">
-                    {isElevated ? (
-                      <span className="rounded-full border border-amber-200/65 bg-gradient-to-r from-amber-300/25 via-fuchsia-300/25 to-violet-300/25 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.22em] text-amber-100 shadow-[0_0_16px_rgba(251,191,36,0.32)] animate-pulse">
-                        {elevatedCopy}
+                <button
+                  type="button"
+                  onClick={() => onSelect?.(starter)}
+                  disabled={isSpent}
+                  className="w-full text-left"
+                >
+                  <span className="flex items-start gap-2">
+                    <span className="text-purple-200 font-semibold" style={bulletStyle}>
+                      •
+                    </span>
+                    <span className="min-w-0 flex-1 leading-relaxed">
+                      <span className="inline-flex max-w-full flex-wrap items-center gap-2 align-top">
+                        <span>{starter}</span>
+                        {isElevated ? (
+                          <span className="rounded-full border border-amber-200/65 bg-gradient-to-r from-amber-300/25 via-fuchsia-300/25 to-violet-300/25 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.16em] text-amber-100 shadow-[0_0_16px_rgba(251,191,36,0.32)] animate-pulse">
+                            {elevatedCopy}
+                          </span>
+                        ) : null}
                       </span>
-                    ) : progressLabel ? (
-                      <span className="text-[10px] uppercase tracking-[0.22em] text-slate-400/85">
+                    </span>
+                  </span>
+                </button>
+                {!isElevated || isSpent ? (
+                  <div className="mt-2 pl-6 flex flex-wrap items-center gap-2">
+                    {!isElevated && progressLabel ? (
+                      <span className="text-[10px] uppercase tracking-[0.16em] text-slate-400/85">
                         {progressLabel}
                       </span>
                     ) : null}
                     {isSpent ? (
-                      <span className="text-[10px] uppercase tracking-[0.3em] text-slate-400">
+                      <span className="text-[10px] uppercase tracking-[0.22em] text-slate-400">
                         Gastada
                       </span>
                     ) : null}
-                  </span>
-                </span>
-              </button>
+                  </div>
+                ) : null}
+              </div>
             );
           })}
         </div>
@@ -197,24 +213,31 @@ const ObraQuestionList = ({
                   disabled={isSpent}
                 >
                   <span className="text-purple-200 font-semibold" style={bulletStyle}>•</span>
-                  <span className="flex-1 leading-relaxed">{starter}</span>
-                  <span className="ml-2 flex shrink-0 flex-col items-end gap-1">
-                    {isElevated ? (
-                      <span className="rounded-full border border-amber-200/65 bg-gradient-to-r from-amber-300/25 via-fuchsia-300/25 to-violet-300/25 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.22em] text-amber-100 shadow-[0_0_16px_rgba(251,191,36,0.32)] animate-pulse">
-                        {elevatedCopy}
-                      </span>
-                    ) : progressLabel ? (
-                      <span className="text-[10px] uppercase tracking-[0.22em] text-slate-400/85">
+                  <span className="min-w-0 flex-1 leading-relaxed">
+                    <span className="inline-flex max-w-full flex-wrap items-center gap-2 align-top">
+                      <span>{starter}</span>
+                      {isElevated ? (
+                        <span className="rounded-full border border-amber-200/65 bg-gradient-to-r from-amber-300/25 via-fuchsia-300/25 to-violet-300/25 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.16em] text-amber-100 shadow-[0_0_16px_rgba(251,191,36,0.32)] animate-pulse">
+                          {elevatedCopy}
+                        </span>
+                      ) : null}
+                    </span>
+                  </span>
+                </button>
+                {!isElevated || isSpent ? (
+                  <div className="px-4 pb-2 pl-10 flex flex-wrap items-center gap-2">
+                    {!isElevated && progressLabel ? (
+                      <span className="text-[10px] uppercase tracking-[0.16em] text-slate-400/85">
                         {progressLabel}
                       </span>
                     ) : null}
                     {isSpent ? (
-                      <span className="text-[10px] uppercase tracking-[0.3em] text-slate-400">
+                      <span className="text-[10px] uppercase tracking-[0.22em] text-slate-400">
                         Gastada
                       </span>
                     ) : null}
-                  </span>
-                </button>
+                  </div>
+                ) : null}
               </li>
             );
           })}

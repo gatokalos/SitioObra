@@ -121,7 +121,7 @@ export const ProvocaSection = () => {
         : isListening
           ? 'Pulsa otra vez para enviar'
           : micPromptVisible
-            ? 'Pulsa para hablar o escoge otra pregunta'
+            ? 'Pulsa para hablar o escoge una frase'
             : 'Escuchar a la obra';
 
   const markListenTurnConsumed = useCallback(() => {
