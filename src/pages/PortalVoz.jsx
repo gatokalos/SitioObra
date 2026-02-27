@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useMemo, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import {
   ArrowLeft,
@@ -141,7 +141,9 @@ const PortalVoz = () => {
     pendingSilvestreAudioUrl,
     silvestreThinkingMessage,
     isSilvestreThinkingPulse,
-    spentSilvestreSet,
+    getSpentSilvestreSetForMode,
+    isSilvestreQuestionFullySpent,
+    getSilvestreQuestionProgress,
     markSilvestreQuestionSpent,
     handleOpenSilvestreChat,
     handleSendSilvestrePreset,
@@ -149,20 +151,38 @@ const PortalVoz = () => {
   } = useSilvestreVoice();
 
   const [activeModeId, setActiveModeId] = useState(DEFAULT_VOICE_MODE_ID);
-  const [starterPool, setStarterPool] = useState(() => {
-    const base = PORTAL_VOZ_MODE_QUESTIONS[DEFAULT_VOICE_MODE_ID] ?? [];
-    return shuffleArray(base);
-  });
+  const starterPool = useMemo(() => {
+    const base = VOICE_MODES.flatMap((mode) => PORTAL_VOZ_MODE_QUESTIONS[mode.id] ?? []);
+    const unique = Array.from(
+      new Set(
+        base
+          .map((question) => (typeof question === 'string' ? question.trim() : ''))
+          .filter(Boolean)
+      )
+    );
+    return shuffleArray(unique);
+  }, []);
   const activeMode = useMemo(
     () => VOICE_MODES.find((mode) => mode.id === activeModeId) ?? VOICE_MODES[0],
     [activeModeId]
   );
   const activeTint = activeMode?.tint ?? VOICE_MODES[0].tint;
-
-  useEffect(() => {
-    const base = PORTAL_VOZ_MODE_QUESTIONS[activeModeId] ?? [];
-    setStarterPool(shuffleArray(base));
-  }, [activeModeId]);
+  const activeModeSpentSet = useMemo(
+    () => getSpentSilvestreSetForMode(activeModeId),
+    [activeModeId, getSpentSilvestreSetForMode]
+  );
+  const visibleStarters = useMemo(
+    () => starterPool.filter((starter) => !isSilvestreQuestionFullySpent(starter)),
+    [isSilvestreQuestionFullySpent, starterPool]
+  );
+  const questionProgressMap = useMemo(
+    () =>
+      visibleStarters.reduce((acc, starter) => {
+        acc[starter] = getSilvestreQuestionProgress(starter).count;
+        return acc;
+      }, {}),
+    [getSilvestreQuestionProgress, visibleStarters]
+  );
 
   const handleOpenLogin = useCallback(() => {
     if (!isAuthenticated) {
@@ -287,12 +307,14 @@ const PortalVoz = () => {
           />
           <div className="relative z-10">
             <ObraQuestionList
-              starters={starterPool}
-              spentSet={spentSilvestreSet}
+              starters={visibleStarters}
+              spentSet={activeModeSpentSet}
+              questionProgressMap={questionProgressMap}
+              questionProgressTotal={VOICE_MODES.length}
               onSelect={(starter) => {
                 if (!requireAuth()) return;
-                if (spentSilvestreSet.has(starter)) return;
-                markSilvestreQuestionSpent(starter);
+                if (activeModeSpentSet.has(starter)) return;
+                markSilvestreQuestionSpent(starter, { modeId: activeModeId });
                 handleSendSilvestrePreset(starter, { modeId: activeModeId });
               }}
               variant="stack"
@@ -310,7 +332,7 @@ const PortalVoz = () => {
         <div className="rounded-2xl border border-white/10 bg-black/30 p-5 md:p-6 space-y-4">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div className="space-y-2">
-              <p className="text-xs uppercase tracking-[0.35em] text-slate-400">Perfiles</p>
+              <p className="text-xs uppercase tracking-[0.35em] text-slate-400">Emociones</p>
               <h2 className="font-display text-2xl text-white">¿Con qué perfil entras hoy?</h2>
               <p className="text-sm text-slate-300/80">
                 No es quién eres, es cómo quieres escuchar ahora.

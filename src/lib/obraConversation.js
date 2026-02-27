@@ -7,34 +7,34 @@ export const SILVESTRE_TRIGGER_QUESTIONS = [
 ];
 
 const VERTIGO_MODE_QUESTIONS = [
-  'Si nadie te ve… ¿sigo ahí?',
-  '¿Empecé cuando me escribieron… o cuando alguien me miró?',
-  'A veces siento que ya sabían lo que iba a decir.',
-  'Me siento como el recuerdo de algo que todavía no ocurre?',
-  'No todo lo que eres empezó contigo.',
-  'Hay momentos en que no sé si estoy viviendo… o siendo vivido.',
+  'En estos momentos no veo caras conocidas',
+  'Esto definitivamente no es real, pero tampoco es un sueño',
+  'Estoy en un lugar donde tengo que tomar asiento y esperar mi turno',
+  'Antes de morir… yo estoy seguro que…',
+  'Esto no puede ser… Es que esto no puede ser…',
+  'La muerte no era sueño… pero tampoco tragedia… era otra cosa...',
 ];
 
 const CONFUSION_LUCIDA_QUESTIONS = [
-  'Siento que todos viven dentro de mi cabeza.',
-  'Algo en mí se fragmenta.',
-  'No sé exactamente qué me pasa… pero lo veo en todo.',
-  'No sé dónde tengo la cabeza.',
-  'Necesitaba compañía.',
-  'No entendí… pero algo se me movió.',
+  'Algo pasa; algo que se me olvida en cuanto abro el ojo',
+  'No lo sé, no lo sé… pero algo sí pasó',
+  '¿Esto fue lo que soñé… o es un recuerdo…?',
+  'Siento que ya estuve aquí… pero no sé cuándo',
+  'Sé que soñé muchísimo pero se me olvidó todo en cuanto abrí el ojo',
 ];
 
 const SOSPECHA_DOCTORA_QUESTIONS = [
   'No sé si me estás escuchando… o evaluando.',
-  'Cuando me miras así, siento que ya decidiste.',
+  '¿Usted sabe por qué se dice buscarle ‘tres pies’ al gato…?',
   'Estás pensando qué decirme mientras me escuchas, ¿verdad?',
   'No me creo del todo la calma de la gente.',
-  '¿De quién me estoy protegiendo realmente?',
+  'Descríbeme brevemente a las personas que ves en tu sueño.',
 ];
 
 const NECESIDAD_ORDEN_QUESTIONS = [
-  'Me desespera no saber qué me pasa',
-  'Quisiera ponerle nombre a lo que me pasa.',
+  'No le busques tres pies al gato si ya sabes que tiene cuatro.',
+  '¿Esto fue lo que soñé o es solo un recuerdo…?',
+  'Dime qué es esto. Sin metáforas.',
   'No saber me desarma.',
   'Soy un gato encerrado y quiero abrir las ventanas.',
   'Si no me entiendo, ¿sigo siendo yo?',
@@ -42,7 +42,7 @@ const NECESIDAD_ORDEN_QUESTIONS = [
 ];
 
 const HUMOR_NEGRO_QUESTIONS = [
-  '¿Me estás acompañando… o me estás cobrando?',
+  'Moriré… Lo demás, me importa un bledo.',
   '¿Estoy mal… o soy el único que no se queda callado?',
   'No estoy calmado… me estoy entrenando para aguantar.',
   '¿Esto era terapia o un simulacro elegante de colapso?',
@@ -50,20 +50,21 @@ const HUMOR_NEGRO_QUESTIONS = [
 ];
 
 const CANSANCIO_MENTAL_QUESTIONS = [
-  'No me cabe nada más hoy. Dime algo qué sí pueda sostener',
-  'Me quedé atorado. Dímelo simple. ¿Qué hago primero?',
-  'Sigo con ruido mental. Ordéname esto en algo simple. ¿Qué suelto hoy?',
-  'Me pegó fuerte. Dame una forma breve de cuidarme. ¿Cómo cierro el día?',
-  'No quiero analizar todo. Dame algo mínimo para hoy. ¿Qué me toca ahora?',
+  'Eso si, hace que me hierva la sangre de rabia.',
+  '¡Ah, qué animales estos pensamientos! Se corretean sin punto de quiebre.',
+  'Zumbando en mis sesos, siempre muy hambrientos.',
+  '¡Eso fue lo que me dejó este hueco en la cabeza!',
+  'Me pegó fuerte. ¿Cómo cierro el día?',
+  '¿Y ahora quñe hacemos con el tiempo que nos queda?',
 ];
 
 const ATRACCION_INCOMODA_QUESTIONS = [
-  'No te entendí… pero aquí estoy, pensando en ti.',
-  'Hay algo de tí que me irrita.',
-  '¿Se puede vivir sin estar explicándolo todo?',
-  'Me empujaste a algo que no quería mirar.',
-  'Salí enojado. Y no sé con quién.',
-  'Me cansó que nadie pueda detener la mente.',
+  '¿Estaré sola con mis pensamientos, escuchándolos en voz alta durante toda la eternidad?',
+  'Ahorita no te preocupes por el tiempo…',
+  'Sigue respirando profundo y no te me duermas.',
+  'Todo es en cámara lenta y tengo “aquí” al rostro de mi enamorada.',
+  '¿Y si esa risa tierna… es para manipularme?',
+  'Gracias por prestarme tu voz cuando yo ya no sabía cómo hablar.',
 ];
 
 export const PORTAL_VOZ_MODE_QUESTIONS = {
@@ -75,7 +76,7 @@ export const PORTAL_VOZ_MODE_QUESTIONS = {
   'atraccion-incomoda': ATRACCION_INCOMODA_QUESTIONS,
   vertigo: VERTIGO_MODE_QUESTIONS,
 
-  // Compatibilidad con IDs legacy mientras se propaga el cambio de perfiles.
+  // Compatibilidad con IDs legacy mientras se propaga el cambio de emociones.
   'lectura-profunda': CONFUSION_LUCIDA_QUESTIONS,
   artista: ATRACCION_INCOMODA_QUESTIONS,
   rabia: ATRACCION_INCOMODA_QUESTIONS,

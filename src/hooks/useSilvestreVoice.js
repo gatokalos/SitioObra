@@ -73,6 +73,48 @@ const readStoredJson = (key, fallback) => {
   }
 };
 
+const normalizeQuestionKey = (value) =>
+  typeof value === 'string' ? value.trim() : '';
+
+const normalizeStoredSpentSilvestreQuestions = (raw) => {
+  if (!raw) return {};
+
+  // Legacy format: array of spent questions (global spend).
+  if (Array.isArray(raw)) {
+    return raw.reduce((acc, question) => {
+      const key = normalizeQuestionKey(question);
+      if (!key) return acc;
+      acc[key] = [...MODES];
+      return acc;
+    }, {});
+  }
+
+  if (typeof raw !== 'object') return {};
+
+  return Object.entries(raw).reduce((acc, [question, modesRaw]) => {
+    const key = normalizeQuestionKey(question);
+    if (!key) return acc;
+
+    let nextModes = [];
+    if (Array.isArray(modesRaw)) {
+      nextModes = modesRaw.map((mode) => normalizeMode(mode)).filter(Boolean);
+    } else if (modesRaw === true) {
+      nextModes = [...MODES];
+    } else if (modesRaw && typeof modesRaw === 'object') {
+      nextModes = Object.entries(modesRaw)
+        .filter(([, isEnabled]) => Boolean(isEnabled))
+        .map(([mode]) => normalizeMode(mode))
+        .filter(Boolean);
+    }
+
+    const uniqueModes = Array.from(new Set(nextModes)).filter((mode) => MODES.includes(mode));
+    if (!uniqueModes.length) return acc;
+
+    acc[key] = uniqueModes.length >= MODES.length ? [...MODES] : uniqueModes;
+    return acc;
+  }, {});
+};
+
 const DEFAULT_THINKING_MESSAGE = 'La Obra esta pensando...';
 const THINKING_MESSAGE_PHASES = [
   { afterMs: 0, text: 'Estoy contigo.' },
@@ -94,7 +136,9 @@ const resolveThinkingMessage = (elapsedMs) => {
 
 export const useSilvestreVoice = () => {
   const { user } = useAuth();
-  const initialSpentSilvestreQuestions = readStoredJson(SILVESTRE_QUESTIONS_STORAGE_KEY, []);
+  const initialSpentSilvestreQuestions = normalizeStoredSpentSilvestreQuestions(
+    readStoredJson(SILVESTRE_QUESTIONS_STORAGE_KEY, {})
+  );
 
   const [micPromptVisible, setMicPromptVisible] = useState(false);
   const [hasShownMicPrompt, setHasShownMicPrompt] = useState(false);
@@ -108,8 +152,8 @@ export const useSilvestreVoice = () => {
   const [pendingSilvestreAudioUrl, setPendingSilvestreAudioUrl] = useState(null);
   const [silvestreThinkingMessage, setSilvestreThinkingMessage] = useState(DEFAULT_THINKING_MESSAGE);
   const [isSilvestreThinkingPulse, setIsSilvestreThinkingPulse] = useState(false);
-  const [spentSilvestreQuestions, setSpentSilvestreQuestions] = useState(
-    Array.isArray(initialSpentSilvestreQuestions) ? initialSpentSilvestreQuestions : []
+  const [spentSilvestreQuestionsByMode, setSpentSilvestreQuestionsByMode] = useState(
+    initialSpentSilvestreQuestions
   );
 
   const recognitionRef = useRef(null);
@@ -127,24 +171,107 @@ export const useSilvestreVoice = () => {
   const thinkingSoundTimerRef = useRef(null);
   const thinkingAudioContextRef = useRef(null);
 
-  const spentSilvestreSet = useMemo(
-    () => new Set(spentSilvestreQuestions),
-    [spentSilvestreQuestions]
+  const spentSilvestreSetsByMode = useMemo(() => {
+    const initialSets = MODES.reduce((acc, mode) => {
+      acc[mode] = new Set();
+      return acc;
+    }, {});
+
+    Object.entries(spentSilvestreQuestionsByMode).forEach(([question, modes]) => {
+      const questionKey = normalizeQuestionKey(question);
+      if (!questionKey || !Array.isArray(modes)) return;
+      modes.forEach((mode) => {
+        const normalized = normalizeMode(mode);
+        if (!initialSets[normalized]) {
+          initialSets[normalized] = new Set();
+        }
+        initialSets[normalized].add(questionKey);
+      });
+    });
+
+    return initialSets;
+  }, [spentSilvestreQuestionsByMode]);
+
+  const spentSilvestreSet = useMemo(() => {
+    const fullySpent = Object.entries(spentSilvestreQuestionsByMode).reduce((acc, [question, modes]) => {
+      if (!Array.isArray(modes)) return acc;
+      const uniqueModes = Array.from(new Set(modes.map((mode) => normalizeMode(mode))));
+      if (uniqueModes.length >= MODES.length) {
+        acc.add(question);
+      }
+      return acc;
+    }, new Set());
+    return fullySpent;
+  }, [spentSilvestreQuestionsByMode]);
+
+  const spentSilvestreQuestions = useMemo(
+    () => Array.from(spentSilvestreSet),
+    [spentSilvestreSet]
   );
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
     window.localStorage?.setItem(
       SILVESTRE_QUESTIONS_STORAGE_KEY,
-      JSON.stringify(spentSilvestreQuestions)
+      JSON.stringify(spentSilvestreQuestionsByMode)
     );
-  }, [spentSilvestreQuestions]);
+  }, [spentSilvestreQuestionsByMode]);
 
-  const markSilvestreQuestionSpent = useCallback((question) => {
-    if (!question) return;
-    setSpentSilvestreQuestions((prev) => {
-      if (prev.includes(question)) return prev;
-      return [...prev, question];
+  const getSpentSilvestreSetForMode = useCallback(
+    (modeId) => {
+      const normalizedMode = normalizeMode(modeId);
+      return spentSilvestreSetsByMode[normalizedMode] ?? new Set();
+    },
+    [spentSilvestreSetsByMode]
+  );
+
+  const isSilvestreQuestionFullySpent = useCallback(
+    (question) => {
+      const questionKey = normalizeQuestionKey(question);
+      if (!questionKey) return false;
+      return spentSilvestreSet.has(questionKey);
+    },
+    [spentSilvestreSet]
+  );
+
+  const getSilvestreQuestionProgress = useCallback(
+    (question) => {
+      const questionKey = normalizeQuestionKey(question);
+      if (!questionKey) {
+        return { count: 0, total: MODES.length, isComplete: false };
+      }
+      const usedModes = Array.isArray(spentSilvestreQuestionsByMode[questionKey])
+        ? spentSilvestreQuestionsByMode[questionKey]
+        : [];
+      const count = Math.min(
+        Array.from(new Set(usedModes.map((mode) => normalizeMode(mode)))).filter((mode) =>
+          MODES.includes(mode)
+        ).length,
+        MODES.length
+      );
+      return { count, total: MODES.length, isComplete: count >= MODES.length };
+    },
+    [spentSilvestreQuestionsByMode]
+  );
+
+  const markSilvestreQuestionSpent = useCallback((question, options = {}) => {
+    const questionKey = normalizeQuestionKey(question);
+    if (!questionKey) return;
+
+    const modeCandidate =
+      typeof options === 'string'
+        ? options
+        : options?.modeId || options?.selectedMode || DEFAULT_MODE;
+    const normalizedMode = normalizeMode(modeCandidate);
+
+    setSpentSilvestreQuestionsByMode((prev) => {
+      const prevModes = Array.isArray(prev[questionKey]) ? prev[questionKey] : [];
+      if (prevModes.includes(normalizedMode)) return prev;
+      const nextModes = Array.from(new Set([...prevModes, normalizedMode]));
+      return {
+        ...prev,
+        [questionKey]: nextModes.length >= MODES.length ? [...MODES] : nextModes,
+      };
     });
   }, []);
 
@@ -762,7 +889,7 @@ export const useSilvestreVoice = () => {
   );
 
   const resetSilvestreQuestions = useCallback(() => {
-    setSpentSilvestreQuestions([]);
+    setSpentSilvestreQuestionsByMode({});
     if (typeof window !== 'undefined') {
       window.localStorage?.removeItem(SILVESTRE_QUESTIONS_STORAGE_KEY);
     }
@@ -813,6 +940,9 @@ export const useSilvestreVoice = () => {
     isSilvestreThinkingPulse,
     spentSilvestreQuestions,
     spentSilvestreSet,
+    getSpentSilvestreSetForMode,
+    isSilvestreQuestionFullySpent,
+    getSilvestreQuestionProgress,
     markSilvestreQuestionSpent,
     handleOpenSilvestreChat,
     handleSendSilvestrePreset,

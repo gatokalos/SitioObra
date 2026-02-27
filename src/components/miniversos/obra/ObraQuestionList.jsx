@@ -1,8 +1,13 @@
-import React from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 
 const ObraQuestionList = ({
   starters = [],
   spentSet = new Set(),
+  questionProgressMap = null,
+  questionProgressTotal = 0,
+  pageSize = 8,
+  elevatedStarter = null,
+  elevatedCopy = 'Pruébala con otra emoción',
   onSelect,
   variant = 'marquee',
   className = '',
@@ -18,6 +23,31 @@ const ObraQuestionList = ({
   const eyebrowStyle = tone?.dotColor ? { color: tone.dotColor } : undefined;
   const iconBorderStyle = tone?.borderColor ? { borderColor: tone.borderColor } : undefined;
   const iconColorStyle = tone?.dotColor ? { color: tone.dotColor } : undefined;
+  const safePageSize = Number.isFinite(pageSize) && pageSize > 0 ? Math.trunc(pageSize) : 6;
+  const normalizeStarterKey = (value) => (typeof value === 'string' ? value.trim() : '');
+  const elevatedStarterKey = normalizeStarterKey(elevatedStarter);
+  const [currentPage, setCurrentPage] = useState(1);
+  const totalPages = Math.max(1, Math.ceil(starters.length / safePageSize));
+  const visibleStarters = useMemo(() => {
+    if (variant !== 'stack') return starters;
+    const start = (currentPage - 1) * safePageSize;
+    return starters.slice(start, start + safePageSize);
+  }, [currentPage, safePageSize, starters, variant]);
+
+  useEffect(() => {
+    setCurrentPage((prev) => Math.min(prev, totalPages));
+  }, [totalPages]);
+
+  const resolveProgressLabel = (starter) => {
+    if (!questionProgressMap || !Number.isFinite(questionProgressTotal) || questionProgressTotal <= 0) {
+      return null;
+    }
+    const raw = Number(questionProgressMap[starter]);
+    if (!Number.isFinite(raw) || raw <= 0) return null;
+    const count = Math.max(0, Math.min(Math.trunc(raw), Math.trunc(questionProgressTotal)));
+    if (count <= 0) return null;
+    return `${count}/${Math.trunc(questionProgressTotal)} emociones`;
+  };
 
   if (variant === 'stack') {
     return (
@@ -25,7 +55,7 @@ const ObraQuestionList = ({
         <div className="flex items-start justify-between gap-3">
           <div className="space-y-1">
             <p className="text-xs uppercase tracking-[0.35em] text-pink-200" style={headingStyle}>
-              ¿No sabes qué decir?
+              Detonadores escénicos
             </p>
             {eyebrowChip ? (
               <p className="text-xs text-slate-300/75 font-medium" style={eyebrowStyle}>
@@ -44,26 +74,74 @@ const ObraQuestionList = ({
             </span>
           ) : null}
         </div>
-        <p className="text-sm text-slate-200/80 leading-relaxed">Elige una pregunta y envíala tal cual.</p>
-        <div className="space-y-2">
-          {starters.map((starter, idx) => (
+        <p className="text-sm text-slate-200/80 leading-relaxed">Toma una frase y luego habítala desde una emoción.</p>
+        {totalPages > 1 ? (
+          <div className="mt-1 flex items-center justify-between gap-3 rounded-xl border border-white/10 bg-black/25 px-3 py-2">
             <button
-              key={`stack-starter-${starter}-${idx}`}
               type="button"
-              onClick={() => onSelect?.(starter)}
-              disabled={spentSet.has(starter)}
-              className="w-full rounded-2xl border border-white/10 bg-black/15 px-4 py-3 text-left text-sm text-purple-50/90 transition hover:bg-white/5 disabled:cursor-not-allowed disabled:opacity-60"
-              style={itemStyle}
+              onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
+              disabled={currentPage <= 1}
+              className="rounded-lg border border-white/15 px-3 py-1 text-xs uppercase tracking-[0.2em] text-slate-200 transition hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-45"
             >
-              <span className="text-purple-200 font-semibold" style={bulletStyle}>•</span>{' '}
-              <span className="leading-relaxed">{starter}</span>
-              {spentSet.has(starter) ? (
-                <span className="ml-2 text-[10px] uppercase tracking-[0.3em] text-slate-400">
-                  Gastada
-                </span>
-              ) : null}
+              Anterior
             </button>
-          ))}
+            <p className="text-[11px] uppercase tracking-[0.22em] text-slate-300/85">
+              Página {currentPage} de {totalPages}
+            </p>
+            <button
+              type="button"
+              onClick={() => setCurrentPage((prev) => Math.min(totalPages, prev + 1))}
+              disabled={currentPage >= totalPages}
+              className="rounded-lg border border-white/15 px-3 py-1 text-xs uppercase tracking-[0.2em] text-slate-200 transition hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-45"
+            >
+              Siguiente
+            </button>
+          </div>
+        ) : null}
+        <div className="space-y-2">
+          {visibleStarters.map((starter, idx) => {
+            const starterKey = normalizeStarterKey(starter);
+            const progressLabel = resolveProgressLabel(starter);
+            const isSpent = spentSet.has(starter);
+            const isElevated = Boolean(elevatedStarterKey) && starterKey === elevatedStarterKey;
+            return (
+              <button
+                key={`stack-starter-${starter}-${idx}`}
+                type="button"
+                onClick={() => onSelect?.(starter)}
+                disabled={isSpent}
+                className={`w-full rounded-2xl border border-white/10 bg-black/15 px-4 py-3 text-left text-sm text-purple-50/90 transition hover:bg-white/5 disabled:cursor-not-allowed disabled:opacity-60 ${
+                  isElevated
+                    ? 'border-amber-200/55 bg-gradient-to-br from-amber-300/12 via-fuchsia-400/10 to-violet-400/12 shadow-[0_0_0_1px_rgba(251,191,36,0.22),0_0_28px_rgba(196,181,253,0.24)]'
+                    : ''
+                }`}
+                style={itemStyle}
+              >
+                <span className="flex items-start gap-2">
+                  <span className="text-purple-200 font-semibold" style={bulletStyle}>
+                    •
+                  </span>
+                  <span className="flex-1 leading-relaxed">{starter}</span>
+                  <span className="ml-2 flex shrink-0 flex-col items-end gap-1">
+                    {isElevated ? (
+                      <span className="rounded-full border border-amber-200/65 bg-gradient-to-r from-amber-300/25 via-fuchsia-300/25 to-violet-300/25 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.22em] text-amber-100 shadow-[0_0_16px_rgba(251,191,36,0.32)] animate-pulse">
+                        {elevatedCopy}
+                      </span>
+                    ) : progressLabel ? (
+                      <span className="text-[10px] uppercase tracking-[0.22em] text-slate-400/85">
+                        {progressLabel}
+                      </span>
+                    ) : null}
+                    {isSpent ? (
+                      <span className="text-[10px] uppercase tracking-[0.3em] text-slate-400">
+                        Gastada
+                      </span>
+                    ) : null}
+                  </span>
+                </span>
+              </button>
+            );
+          })}
         </div>
       </div>
     );
@@ -94,31 +172,52 @@ const ObraQuestionList = ({
           </span>
         ) : null}
       </div>
-      <p className="text-sm text-slate-200/80 leading-relaxed">Elige una pregunta y envíala tal cual.</p>
+      <p className="text-sm text-slate-200/80 leading-relaxed">Toma una frase y habítala desde una emoción.</p>
       <div className="starter-marquee">
         <ul className="starter-marquee__list text-sm text-purple-50/90">
-          {marqueeStarters.map((starter, idx) => (
-            <li
-              key={`marquee-starter-${starter}-${idx}`}
-              className="rounded-2xl border border-white/10 bg-black/15"
-              style={itemStyle}
-            >
-              <button
-                type="button"
-                onClick={() => onSelect?.(starter)}
-                className="flex w-full items-start gap-2 px-4 py-2 text-left transition hover:bg-white/5 disabled:cursor-not-allowed disabled:opacity-60"
-                disabled={spentSet.has(starter)}
+          {marqueeStarters.map((starter, idx) => {
+            const starterKey = normalizeStarterKey(starter);
+            const progressLabel = resolveProgressLabel(starter);
+            const isSpent = spentSet.has(starter);
+            const isElevated = Boolean(elevatedStarterKey) && starterKey === elevatedStarterKey;
+            return (
+              <li
+                key={`marquee-starter-${starter}-${idx}`}
+                className={`rounded-2xl border border-white/10 bg-black/15 ${
+                  isElevated
+                    ? 'border-amber-200/55 bg-gradient-to-br from-amber-300/12 via-fuchsia-400/10 to-violet-400/12 shadow-[0_0_0_1px_rgba(251,191,36,0.22),0_0_28px_rgba(196,181,253,0.24)]'
+                    : ''
+                }`}
+                style={itemStyle}
               >
-                <span className="text-purple-200 font-semibold" style={bulletStyle}>•</span>
-                <span className="leading-relaxed">{starter}</span>
-                {spentSet.has(starter) ? (
-                  <span className="ml-auto text-[10px] uppercase tracking-[0.3em] text-slate-400">
-                    Gastada
+                <button
+                  type="button"
+                  onClick={() => onSelect?.(starter)}
+                  className="flex w-full items-start gap-2 px-4 py-2 text-left transition hover:bg-white/5 disabled:cursor-not-allowed disabled:opacity-60"
+                  disabled={isSpent}
+                >
+                  <span className="text-purple-200 font-semibold" style={bulletStyle}>•</span>
+                  <span className="flex-1 leading-relaxed">{starter}</span>
+                  <span className="ml-2 flex shrink-0 flex-col items-end gap-1">
+                    {isElevated ? (
+                      <span className="rounded-full border border-amber-200/65 bg-gradient-to-r from-amber-300/25 via-fuchsia-300/25 to-violet-300/25 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.22em] text-amber-100 shadow-[0_0_16px_rgba(251,191,36,0.32)] animate-pulse">
+                        {elevatedCopy}
+                      </span>
+                    ) : progressLabel ? (
+                      <span className="text-[10px] uppercase tracking-[0.22em] text-slate-400/85">
+                        {progressLabel}
+                      </span>
+                    ) : null}
+                    {isSpent ? (
+                      <span className="text-[10px] uppercase tracking-[0.3em] text-slate-400">
+                        Gastada
+                      </span>
+                    ) : null}
                   </span>
-                ) : null}
-              </button>
-            </li>
-          ))}
+                </button>
+              </li>
+            );
+          })}
         </ul>
       </div>
     </div>

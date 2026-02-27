@@ -631,7 +631,7 @@ const OBRA_VOICE_MODES = [
   {
     id: 'confusion-lucida',
     title: 'Confusión lúcida',
-    description: 'Sueño y realidad mezclados; claridad sin cierre.',
+    description: 'Sueño y realidad mezclados.',
     accent: 'from-violet-200/20 via-purple-300/10 to-transparent',
     icon: Feather,
     tint: {
@@ -643,7 +643,7 @@ const OBRA_VOICE_MODES = [
   {
     id: 'sospecha-doctora',
     title: 'Sospecha',
-    description: 'Duda directa: ¿acompañamiento o control?',
+    description: 'Duda empedernida',
     accent: 'from-cyan-200/20 via-sky-300/10 to-transparent',
     icon: Scan,
     tint: {
@@ -666,8 +666,8 @@ const OBRA_VOICE_MODES = [
   },
   {
     id: 'humor-negro',
-    title: 'Humor negro',
-    description: 'Ironía filosa, corta y sin explicación.',
+    title: 'Ironía',
+    description: 'Filosa y sin explicación.',
     accent: 'from-fuchsia-200/20 via-pink-300/10 to-transparent',
     icon: Zap,
     tint: {
@@ -679,7 +679,7 @@ const OBRA_VOICE_MODES = [
   {
     id: 'cansancio-mental',
     title: 'Cansancio mental',
-    description: 'Aterrizar hoy: idea, acción y pregunta.',
+    description: 'Aterrizaje forzoso.',
     accent: 'from-emerald-200/20 via-teal-300/10 to-transparent',
     icon: Wrench,
     tint: {
@@ -691,7 +691,7 @@ const OBRA_VOICE_MODES = [
   {
     id: 'atraccion-incomoda',
     title: 'Atracción incómoda',
-    description: 'Enganche y molestia en la misma frase.',
+    description: 'Enganche y molestia, a la vez.',
     accent: 'from-rose-200/20 via-pink-300/10 to-transparent',
     icon: Heart,
     tint: {
@@ -703,7 +703,7 @@ const OBRA_VOICE_MODES = [
   {
     id: 'vertigo',
     title: 'Vértigo',
-    description: 'No hay cierre: la caída sigue abierta.',
+    description: 'No hay punto final.',
     accent: 'from-violet-200/20 via-indigo-300/10 to-transparent',
     icon: Layers,
     tint: {
@@ -761,18 +761,18 @@ const normalizeStoredEmotionOrbs = (raw) => {
 };
 const showcaseDefinitions = {
   miniversos: {
-    label: 'Miniverso Obra',
+    label: 'Miniverso Escena',
     type: 'tragedia',
     intro:
-      'Aquí nace la obra dentro de la obra. Lo que viste en escena sigue ocurriendo.',
+      'La escena no terminó. Lo que viste sigue ocurriendo. Aquí puedes habitar el conflicto, escuchar la conciencia en proceso y hablar como si estuvieras en escena.',
     cartaTitle: '#LaPuertaInvisible',
     notaAutoral: 'Entré sin saber.\nAlgo dijo mi nombre.\nY ya no hubo salida.',
 
     ctaLabel: 'Habla conmigo',
     conversationStarters: OBRA_CONVERSATION_STARTERS,
 iaProfile: {
-  type: 'Una voz que no es personaje ni herramienta: una conciencia en proceso.',
-  interaction: 'Breves encuentros donde la obra escucha y responde sin cerrarse.',
+  type: 'Una voz que no es personaje ni herramienta: es la conciencia de la obra en proceso.',
+  interaction: 'Elige una emoción de Silvestre. Habla desde ahí. La obra responderá una vez.',
   tokensRange: 'Lo suficiente para decir algo sin agotarlo.',
   coverage: 'Existe mientras haya quienes la convoquen.',
   footnote: 'No todas las voces quieren durar. Gracias por dejarlas pasar.',
@@ -1565,10 +1565,10 @@ const ShowcaseReactionInline = ({ showcaseId, title, description, buttonLabel, c
 const formats = [
   {
     id: 'miniversos',
-    title: 'La Obra',
+    title: 'Escena',
     icon: Drama,
     iconClass: 'text-purple-300',
-    instruccion: 'Habla con la obra sobre la obra.',
+    
     iaTokensNote: 'Energía confiada: 300 GAT',
     image: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Merch/posters/poster_obra.png',
   },
@@ -1577,7 +1577,7 @@ const formats = [
     title: 'Artesanías',
     icon: Coffee,
     iconClass: 'text-amber-300',
-    instruccion: 'Escanea tu taza. Descubre tu frase.',
+    
     iaTokensNote: 'Mantener ritual: ~90 GAT.',
     image: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Merch/posters/poster_artesanias.png',
   },
@@ -1586,7 +1586,7 @@ const formats = [
     title: 'Literatura',
     icon: BookOpen,
     iconClass: 'text-emerald-300',
-    instruccion: 'Forma parte del club de lectura.',
+    
     iaTokensNote: 'Energía viva: ~150 GAT.',
     image: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Merch/posters/poster_literatura.png',
   },
@@ -1595,7 +1595,7 @@ const formats = [
     title: 'Gráficos',
     icon: Palette,
     iconClass: 'text-fuchsia-300',
-    instruccion: 'Refúgiate en nuestros garabatos. ¡Dibuja el tuyo!',
+    
     iaTokensNote: 'Requiere ~110 GAT.',
     image: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Merch/posters/poster_graficos.png',
   },
@@ -1604,7 +1604,7 @@ const formats = [
     title: 'Cine',
     icon: Film,
     iconClass: 'text-rose-300',
-    instruccion: 'Acumula para entradas a la cineteca.',
+    
     iaTokensNote: 'Requiere ~250 confiados.',
     image: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Merch/posters/cine.png',
   },
@@ -1613,7 +1613,7 @@ const formats = [
     title: 'Sonoridades',
     icon: Music,
     iconClass: 'text-cyan-300',
-    instruccion: 'Para compositortes de sueños y poesía.',
+    
     iaTokensNote: 'Requiere ~130 GAT',
     image: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Merch/posters/poster_sonoridades.png',
   },
@@ -1622,7 +1622,7 @@ const formats = [
     title: 'Movimiento',
     icon: MapIcon,
     iconClass: 'text-sky-300',
-    instruccion: 'Queremos que todo México conozca este proyecto.',
+    
     iaTokensNote: '~280 por mapa.',
     image: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Merch/posters/poster_movimiento.png',
   },
@@ -1631,7 +1631,7 @@ const formats = [
     title: 'Juegos',
     icon: Smartphone,
     iconClass: 'text-lime-300',
-    instruccion: 'Aquí reinventamos el clásico gato.',
+    
     iaTokensNote: 'IA marca el ritmo felino.',
     image: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Merch/posters/poster_juegos.png',
   },
@@ -1640,7 +1640,7 @@ const formats = [
     title: 'Oráculo',
     icon: Brain,
     iconClass: 'text-indigo-300',
-    instruccion: '¡Ponte a minar para generar GATokens!',
+    
     iaTokensNote: 'Aquí se minan GATokes',
     image: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Merch/posters/poster_oraculo.png',
   },
@@ -2163,7 +2163,9 @@ const Transmedia = () => {
     pendingSilvestreAudioUrl,
     silvestreThinkingMessage,
     isSilvestreThinkingPulse,
-    spentSilvestreSet,
+    getSpentSilvestreSetForMode,
+    isSilvestreQuestionFullySpent,
+    getSilvestreQuestionProgress,
     markSilvestreQuestionSpent,
     handleOpenSilvestreChat,
     handleSendSilvestrePreset,
@@ -2171,6 +2173,7 @@ const Transmedia = () => {
     resetSilvestreQuestions,
   } = useSilvestreVoice();
   const [activeObraModeId, setActiveObraModeId] = useState(DEFAULT_OBRA_VOICE_MODE_ID);
+  const [elevatedSilvestreStarter, setElevatedSilvestreStarter] = useState(null);
   const [obraModeUsage, setObraModeUsage] = useState(() => {
     const raw = readStoredJson(OBRA_EMOTION_LOG_STORAGE_KEY, {});
     return OBRA_VOICE_MODES.reduce((acc, mode) => {
@@ -4058,13 +4061,23 @@ const Transmedia = () => {
     if (!activeDefinition || activeDefinition.type !== 'tragedia') {
       return [];
     }
-    const modeQuestions = PORTAL_VOZ_MODE_QUESTIONS[activeObraModeId];
-    const base =
-      Array.isArray(modeQuestions) && modeQuestions.length
-        ? modeQuestions
-        : activeDefinition.conversationStarters ?? [];
-    return shuffleArray([...base, ...SILVESTRE_TRIGGER_QUESTIONS]);
-  }, [activeDefinition, activeObraModeId]);
+    const allModeQuestions = OBRA_VOICE_MODES.flatMap(
+      (mode) => PORTAL_VOZ_MODE_QUESTIONS[mode.id] ?? []
+    );
+    const base = [
+      ...allModeQuestions,
+      ...(activeDefinition.conversationStarters ?? []),
+      ...SILVESTRE_TRIGGER_QUESTIONS,
+    ];
+    const uniqueQuestions = Array.from(
+      new Set(
+        base
+          .map((question) => (typeof question === 'string' ? question.trim() : ''))
+          .filter(Boolean)
+      )
+    );
+    return shuffleArray(uniqueQuestions);
+  }, [activeDefinition]);
   const activeParagraphs = useMemo(() => {
     if (!activeData?.post?.content) {
       return [];
@@ -4074,6 +4087,9 @@ const Transmedia = () => {
 
   useEffect(() => {
     setOpenCollaboratorId(null);
+    if (!activeDefinition || activeDefinition.type !== 'tragedia') {
+      setElevatedSilvestreStarter(null);
+    }
   }, [activeDefinition]);
 
   useEffect(() => {
@@ -4699,7 +4715,7 @@ const Transmedia = () => {
       {
         heading = 'Voces de la comunidad',
         ctaLabel = 'Pon tu duda o comentario',
-        emptyMessage = 'Aún no hay comentarios aprobados.',
+        emptyMessage = 'Aún no hay comentarios de la comunidad.',
         reactionProps = null,
         className = 'rounded-3xl border border-white/10 bg-black/30 p-6 space-y-5',
         commentsViewportClassName = 'max-h-[330px]',
@@ -4774,27 +4790,34 @@ const Transmedia = () => {
               </div>
             ) : null}
           </div>
-          {isLoading ? (
-            <p className="text-sm text-slate-400">Cargando comentarios…</p>
-          ) : error ? (
-            <p className="text-sm text-red-300">{error}</p>
-          ) : comments.length ? (
-            <div className={`${commentsViewportClassName} space-y-4 overflow-y-auto pr-1`}>
-              {comments.map((comment) => (
-                <div
-                  key={`${showcaseId}-${comment.id}`}
-                  className="rounded-2xl border border-white/5 bg-black/20 p-4"
-                >
-                  <p className="text-slate-100 font-light leading-relaxed mb-2">{comment.proposal}</p>
-                  <p className="text-xs uppercase tracking-[0.3em] text-slate-500">
-                    {comment.name || 'Anónimo'}
-                  </p>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <p className="text-sm text-slate-400">{emptyMessage}</p>
-          )}
+          <div className={`${commentsViewportClassName} form-surface relative overflow-y-auto px-3 py-3 pr-2`}>
+            {isLoading ? (
+              <p className="px-1 py-2 text-sm text-slate-600/85">Cargando comentarios…</p>
+            ) : error ? (
+              <p className="px-1 py-2 text-sm text-rose-700/85">{error}</p>
+            ) : comments.length ? (
+              <div className="space-y-2.5">
+                {comments.map((comment) => (
+                  <div
+                    key={`${showcaseId}-${comment.id}`}
+                    className="rounded-xl border border-indigo-200/70 bg-white/72 p-3 shadow-[0_6px_18px_rgba(80,120,255,0.08)]"
+                  >
+                    <p className="mb-1.5 text-[0.96rem] font-light leading-relaxed text-slate-800">
+                      {comment.proposal}
+                    </p>
+                    <p className="text-[10px] uppercase tracking-[0.28em] text-slate-500/85">
+                      {comment.name || 'Anónimo'}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="px-1 py-2 text-sm text-slate-600/85">{emptyMessage}</p>
+            )}
+          </div>
+          <p className="mt-2 px-1 text-[10px] uppercase tracking-[0.24em] text-slate-500/85">
+            Desliza para leer más voces
+          </p>
           <div className="pt-4 mt-1 border-t border-white/10">
             <div className="mx-auto w-full max-w-md">
               <Button
@@ -5275,7 +5298,14 @@ const rendernotaAutoral = () => {
 
     if (activeDefinition.type === 'tragedia') {
       const onClose = handleCloseShowcase;
-      const visibleStarters = tragicoStarters.filter((starter) => !spentSilvestreSet.has(starter));
+      const activeModeSpentSet = getSpentSilvestreSetForMode(activeObraModeId);
+      const visibleStarters = tragicoStarters.filter(
+        (starter) => !isSilvestreQuestionFullySpent(starter)
+      );
+      const questionProgressMap = visibleStarters.reduce((acc, starter) => {
+        acc[starter] = getSilvestreQuestionProgress(starter).count;
+        return acc;
+      }, {});
       const activeObraMode =
         OBRA_VOICE_MODES.find((mode) => mode.id === activeObraModeId) ?? OBRA_VOICE_MODES[0];
       const activeObraTint = activeObraMode?.tint ?? OBRA_VOICE_MODES[0].tint;
@@ -5300,6 +5330,41 @@ const rendernotaAutoral = () => {
       const emotionLegendEntries = emotionUsageEntries
         .filter((mode) => mode.count > 0)
         .slice(0, 3);
+      const collectiveEmotionBaseline = {
+        'confusion-lucida': 19,
+        'sospecha-doctora': 14,
+        'necesidad-orden': 16,
+        'humor-negro': 12,
+        'cansancio-mental': 18,
+        'atraccion-incomoda': 13,
+        vertigo: 10,
+      };
+      const collectiveEmotionRows = OBRA_VOICE_MODES.map((mode) => {
+        const localCount = Number(obraModeUsage?.[mode.id] ?? 0);
+        const baseline = Number(collectiveEmotionBaseline?.[mode.id] ?? 10);
+        const collective = baseline + Math.min(localCount * 2, 14);
+        return {
+          ...mode,
+          collective,
+        };
+      }).sort((a, b) => b.collective - a.collective);
+      const collectiveEmotionNodes = collectiveEmotionRows.slice(0, 4);
+      const collectiveNodeLayout = [
+        { x: 17, y: 27 },
+        { x: 82, y: 22 },
+        { x: 73, y: 76 },
+        { x: 24, y: 80 },
+      ];
+      const collectiveSyntheticSessions = collectiveEmotionRows.reduce(
+        (sum, row) => sum + Number(row.collective || 0),
+        0
+      ) + 26;
+      const collectivePhraseMetric = {
+        phrase: '¿La Doctora sí entiende a Silvestre… o solo parece que sí?',
+        reused: 63,
+        original: 37,
+      };
+      const collectiveTopEmotion = collectiveEmotionRows[0] ?? null;
 
       return (
         <div className="space-y-2">
@@ -5353,13 +5418,18 @@ const rendernotaAutoral = () => {
           {renderCollaboratorsSection(activeDefinition.collaborators, 'tragedia')}
 
           <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.2fr)]">
-            <div className="space-y-6 order-1">
-              <div className="rounded-3xl border border-white/10 bg-black/35 p-6 shadow-[0_20px_45px_rgba(0,0,0,0.45)] space-y-4">
-                <div className="space-y-2">
-                  <p className="text-xs uppercase tracking-[0.35em] text-slate-400">Habla con la obra</p>
-                  <h2 className="font-display text-2xl text-white">Habita las emociones de Silvestre</h2>
-                  <p className="text-sm text-slate-300/80">
-                    No es quién pregunta, es cómo quieres sentirte ahora.
+            <div className="contents lg:block lg:min-w-0 lg:space-y-6">
+              <div className="min-w-0 overflow-hidden rounded-3xl border border-white/10 bg-black/35 p-6 shadow-[0_20px_45px_rgba(0,0,0,0.45)] space-y-4">
+                <div className="min-w-0 space-y-2">
+                  <p className="text-xs uppercase tracking-[0.35em] text-slate-400">Entra a la obra</p>
+                  <h2
+                    className="font-display text-[clamp(1.3rem,5.6vw,1.55rem)] leading-tight text-white sm:text-2xl break-words"
+                    style={{ textWrap: 'balance' }}
+                  >
+                    Habita las emociones de Silvestre
+                  </h2>
+                  <p className="text-sm text-slate-300/80 break-words">
+                   Cada frase que envíes —dicha por ti o desde un guion— afina la voz de Silvestre y expande las posibilidades de la conversación colectiva.
                   </p>
                 </div>
 
@@ -5442,9 +5512,18 @@ const rendernotaAutoral = () => {
                 </div>
               </div>
 
+              <div className="order-5 min-w-0 lg:order-none">
+                {renderCommunityBlock('miniversos', {
+                  ctaLabel: 'coméntanos algo aquí',
+                  emptyMessage: 'Todavía no hay voces en este miniverso.',
+                  reactionProps: reactionDetails,
+                  className: 'rounded-3xl border border-white/10 bg-black/30 p-6 space-y-5',
+                  commentsViewportClassName: 'max-h-[240px]',
+                })}
+              </div>
             </div>
 
-            <div className="space-y-6 order-2">
+            <div className="order-2 min-w-0 space-y-6 lg:order-none">
               <div
                 className="relative overflow-hidden rounded-3xl border border-white/10 bg-black/30 p-6"
                 style={{ borderColor: activeObraTint?.border, boxShadow: activeObraTint?.glow }}
@@ -5464,9 +5543,11 @@ const rendernotaAutoral = () => {
                 {visibleStarters.length ? (
                   <ObraQuestionList
                     starters={visibleStarters}
-                    spentSet={spentSilvestreSet}
+                    spentSet={activeModeSpentSet}
+                    questionProgressMap={questionProgressMap}
+                    questionProgressTotal={OBRA_VOICE_MODES.length}
                     onSelect={async (starter) => {
-                      if (spentSilvestreSet.has(starter)) return;
+                      if (activeModeSpentSet.has(starter)) return;
                       const canProceed = await consumeObraVoiceGAT({
                         actionLabel: 'Enviar una pregunta a La Obra',
                         source: 'preset',
@@ -5474,10 +5555,13 @@ const rendernotaAutoral = () => {
                       });
                       if (!canProceed) return;
                       incrementObraModeUsage(activeObraModeId);
-                      markSilvestreQuestionSpent(starter);
+                      markSilvestreQuestionSpent(starter, { modeId: activeObraModeId });
                       handleSendSilvestrePreset(starter, { modeId: activeObraModeId });
+                      setElevatedSilvestreStarter(starter);
                     }}
                     variant="stack"
+                    elevatedStarter={elevatedSilvestreStarter}
+                    elevatedCopy="Pruébala con otra emoción"
                     tone={{
                       borderColor: activeObraTint?.border,
                       dotColor: activeObraTint?.dot,
@@ -5493,10 +5577,10 @@ const rendernotaAutoral = () => {
                       className="text-xs uppercase tracking-[0.35em] text-pink-200"
                       style={{ color: activeObraTint?.dot }}
                     >
-                      ¿No sabes qué decir?
+                      Detonadores escénicos
                     </p>
                     <p className="text-sm text-slate-300/85 leading-relaxed">
-                      Ya agotaste las preguntas sugeridas por ahora. Prueba otro perfil o pulsa para hablar.
+                      Ya completaste estas preguntas en todas emociones de Silvestre.
                     </p>
                   </div>
                 )}
@@ -5513,7 +5597,7 @@ const rendernotaAutoral = () => {
                   }}
                 />
                 <div className="relative z-10 space-y-4">
-                  <p className="text-xs uppercase tracking-[0.35em] text-slate-400/80">Bitácura de dudas</p>
+                  <p className="text-xs uppercase tracking-[0.35em] text-slate-400/80">Bitácora de emociones</p>
                   <div className="relative mx-auto h-[260px] w-full max-w-[300px]" aria-hidden="true">
                     <div className="absolute left-1/2 top-2 h-12 w-12 -translate-x-1/2 rounded-full border border-slate-300/30 bg-gradient-to-b from-slate-700/55 to-slate-900/50" />
                     <div className="absolute left-1/2 top-[3.35rem] h-[92px] w-[92px] -translate-x-1/2 rounded-[46%_46%_38%_38%/32%_32%_56%_56%] border border-slate-200/16 bg-gradient-to-b from-slate-700/45 via-slate-900/35 to-transparent" />
@@ -5588,16 +5672,150 @@ const rendernotaAutoral = () => {
                 </div>
               </div>
 
-            </div>
+              <div className="relative overflow-hidden rounded-3xl border border-cyan-300/30 bg-gradient-to-br from-cyan-500/12 via-violet-500/10 to-fuchsia-500/12 p-5 shadow-[0_18px_45px_rgba(56,189,248,0.14)]">
+                <div
+                  aria-hidden="true"
+                  className="pointer-events-none absolute inset-0 opacity-55"
+                  style={{
+                    backgroundImage:
+                      'radial-gradient(circle at 18% 12%, rgba(103,232,249,0.3), transparent 46%), radial-gradient(circle at 82% 88%, rgba(196,181,253,0.2), transparent 52%)',
+                  }}
+                />
+                <div className="relative z-10 space-y-4">
+                  <div className="flex flex-wrap items-start justify-between gap-3">
+                    <div className="space-y-1">
+                      <p className="text-[10px] uppercase tracking-[0.34em] text-cyan-200/95">
+                        Beta · Afinación colectiva
+                      </p>
+                      <p className="text-sm font-semibold text-slate-100">
+                        Mockup del registro emocional de Silvestre
+                      </p>
+                    </div>
+                    <span className="inline-flex items-center gap-2 rounded-full border border-cyan-200/50 bg-cyan-400/15 px-3 py-1 text-[10px] uppercase tracking-[0.22em] text-cyan-100">
+                      Datos simulados
+                    </span>
+                  </div>
 
-            <div className="order-3">
-              {renderCommunityBlock('miniversos', {
-                ctaLabel: 'coméntanos algo aquí',
-                emptyMessage: 'Todavía no hay voces en este miniverso.',
-                reactionProps: reactionDetails,
-                className: 'rounded-3xl border border-white/10 bg-black/30 p-6 space-y-5',
-                commentsViewportClassName: 'max-h-[240px]',
-              })}
+                  <p className="text-xs text-slate-200/88 leading-relaxed">
+                    Aún no hay suficientes usuarios para crear una inteligencia artificial de Silvestre con estabilidad.
+                    Este beta muestra cómo podría leerse el pulso colectivo cuando la conversación escale.
+                  </p>
+
+                  <div className="rounded-2xl border border-white/10 bg-black/30 p-4">
+                    <div className="relative mx-auto h-48 w-full max-w-[360px] overflow-hidden rounded-2xl border border-white/10 bg-black/30">
+                      <svg
+                        aria-hidden="true"
+                        viewBox="0 0 100 100"
+                        className="pointer-events-none absolute inset-0 h-full w-full"
+                        preserveAspectRatio="none"
+                      >
+                        {collectiveEmotionNodes.map((mode, index) => {
+                          const point = collectiveNodeLayout[index % collectiveNodeLayout.length];
+                          return (
+                            <line
+                              key={`collective-link-${mode.id}`}
+                              x1="50"
+                              y1="52"
+                              x2={point.x}
+                              y2={point.y}
+                              stroke={mode?.tint?.dot || 'rgba(196,181,253,0.55)'}
+                              strokeOpacity="0.55"
+                              strokeWidth="1.4"
+                              strokeLinecap="round"
+                            />
+                          );
+                        })}
+                      </svg>
+
+                      <div className="absolute left-1/2 top-1/2 flex h-24 w-24 -translate-x-1/2 -translate-y-1/2 animate-pulse items-center justify-center rounded-full border border-cyan-200/55 bg-gradient-to-br from-cyan-200/30 via-violet-200/20 to-fuchsia-200/20 text-center shadow-[0_0_28px_rgba(56,189,248,0.38)]">
+                        <span className="px-2 text-[10px] font-semibold uppercase tracking-[0.18em] text-cyan-100">
+                          Silvestre
+                          colectivo
+                        </span>
+                      </div>
+
+                      {collectiveEmotionNodes.map((mode, index) => {
+                        const point = collectiveNodeLayout[index % collectiveNodeLayout.length];
+                        const size = 36 + Math.min(mode.collective, 44) * 0.35;
+                        return (
+                          <div
+                            key={`collective-node-${mode.id}`}
+                            className="absolute -translate-x-1/2 -translate-y-1/2 rounded-full border bg-black/55 text-center shadow-[0_0_22px_rgba(148,163,184,0.2)]"
+                            style={{
+                              left: `${point.x}%`,
+                              top: `${point.y}%`,
+                              width: `${size}px`,
+                              height: `${size}px`,
+                              borderColor: mode?.tint?.dot || 'rgba(196,181,253,0.65)',
+                              boxShadow: `0 0 18px ${mode?.tint?.dot || 'rgba(196,181,253,0.28)'}`,
+                            }}
+                          >
+                            <div className="flex h-full w-full flex-col items-center justify-center px-1">
+                              <span className="text-[9px] font-semibold uppercase tracking-[0.16em] text-slate-100">
+                                {mode.title}
+                              </span>
+                              <span className="text-[10px] font-semibold text-cyan-100">{mode.collective}%</span>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  <div className="rounded-2xl border border-white/10 bg-black/30 p-4 space-y-3">
+                    <div className="flex flex-wrap items-center justify-between gap-2">
+                      <p className="text-[10px] uppercase tracking-[0.28em] text-cyan-200/90">
+                        Métrica ficticia
+                      </p>
+                      <span className="text-[11px] text-slate-300/80">
+                        {collectiveSyntheticSessions} sesiones simuladas
+                      </span>
+                    </div>
+                    <p className="text-xs text-slate-200/90 leading-relaxed">
+                      Frase más usada vs uso de frases originales en el chat colectivo.
+                    </p>
+                    <p className="text-xs italic text-slate-200/90">“{collectivePhraseMetric.phrase}”</p>
+
+                    <div className="space-y-2">
+                      <div className="space-y-1">
+                        <div className="flex items-center justify-between text-[11px] uppercase tracking-[0.18em] text-slate-300/90">
+                          <span>Frase más usada</span>
+                          <span>{collectivePhraseMetric.reused}%</span>
+                        </div>
+                        <div className="h-2 overflow-hidden rounded-full bg-slate-800/70">
+                          <div
+                            className="h-full rounded-full bg-gradient-to-r from-cyan-300/85 to-fuchsia-300/85 shadow-[0_0_14px_rgba(56,189,248,0.35)]"
+                            style={{ width: `${collectivePhraseMetric.reused}%` }}
+                          />
+                        </div>
+                      </div>
+                      <div className="space-y-1">
+                        <div className="flex items-center justify-between text-[11px] uppercase tracking-[0.18em] text-slate-300/90">
+                          <span>Frases originales</span>
+                          <span>{collectivePhraseMetric.original}%</span>
+                        </div>
+                        <div className="h-2 overflow-hidden rounded-full bg-slate-800/70">
+                          <div
+                            className="h-full rounded-full bg-gradient-to-r from-emerald-300/85 to-cyan-300/80 shadow-[0_0_14px_rgba(52,211,153,0.35)]"
+                            style={{ width: `${collectivePhraseMetric.original}%` }}
+                          />
+                        </div>
+                      </div>
+                    </div>
+
+                    {collectiveTopEmotion ? (
+                      <p className="text-[11px] text-slate-300/80">
+                        Pulso dominante del mockup:{' '}
+                        <span style={{ color: collectiveTopEmotion?.tint?.dot || 'rgba(196,181,253,0.9)' }}>
+                          {collectiveTopEmotion.title}
+                        </span>
+                        . Así se vería el afinado de la voz colectiva de Silvestre.
+                      </p>
+                    ) : null}
+                  </div>
+                </div>
+              </div>
+
             </div>
           </div>
         </div>
@@ -7216,12 +7434,21 @@ const rendernotaAutoral = () => {
             )}
           </p>
           <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:justify-center">
-            <Button
-              onClick={handleTokenPrecareActivateHuella}
-              className="inline-flex items-center justify-center rounded-full bg-gradient-to-r from-purple-600/80 to-indigo-500/80 px-6 py-3 text-sm font-semibold text-white hover:from-purple-500 hover:to-indigo-400"
-            >
-              Activar huella por $50/mes
-            </Button>
+            {tokenPrecareContext.mode === 'guardrail' ? (
+              <Button
+                onClick={handleCloseTokenPrecare}
+                className="inline-flex items-center justify-center rounded-full bg-gradient-to-r from-purple-600/80 to-indigo-500/80 px-6 py-3 text-sm font-semibold text-white hover:from-purple-500 hover:to-indigo-400"
+              >
+                gastar mis GAT
+              </Button>
+            ) : (
+              <Button
+                onClick={handleTokenPrecareActivateHuella}
+                className="inline-flex items-center justify-center rounded-full bg-gradient-to-r from-purple-600/80 to-indigo-500/80 px-6 py-3 text-sm font-semibold text-white hover:from-purple-500 hover:to-indigo-400"
+              >
+                Activar huella por $50/mes
+              </Button>
+            )}
             <Button
               variant="outline"
               onClick={handleCloseTokenPrecare}
@@ -7427,14 +7654,13 @@ const rendernotaAutoral = () => {
           >
             <p className="text-xs uppercase tracking-[0.4em] text-slate-400/70">Narrativa Transmedia</p>
             <h2 className="font-display text-4xl md:text-5xl font-medium text-gradient italic">
-              Expansión simultánea
+              La obra en otras formas
             </h2>
             <p className="text-lg text-slate-300/80 max-w-3xl mx-auto leading-relaxed font-light">
   La obra no terminó en el teatro.<br />
-  Desde ahí comenzó un universo.<br /><br />
+  Desde ahí se abrió en <strong>nueve miniversos creativos</strong>.<br />
 
-  #GatoEncerrado existe <strong>en nueve dimensiones activas al mismo tiempo</strong>. 
-  Cada uno desarrolla una dimensión distinta de la obra —con su propio lenguaje, su propio ritmo y su propia forma de participación.<br /><br />
+    Cada uno con su propio lenguaje y forma de participación.<br /><br />
 
   No repiten la historia: la continúan.<br /><br />
 
@@ -7797,7 +8023,7 @@ const rendernotaAutoral = () => {
                           <h3 className="font-display text-2xl text-slate-100">{format.title}</h3>
                         </div>
                       </div>
-                      <p className="text-sm text-slate-300/85 leading-relaxed min-h-[3.5rem]">
+                      <p className="text-sm text-slate-300/85 leading-relaxed min-h-[1.5rem]">
                         {format.instruccion}
                       </p>
                       <div className="space-y-1">
@@ -7814,10 +8040,7 @@ const rendernotaAutoral = () => {
                           <span className="text-amber-200/90">· {minRequiredCopy}</span>
                         </div>
                       </div>
-                      <div className="text-purple-300 flex items-center gap-2 font-semibold">
-                        Abrir vitrina
-                        <ArrowRight size={18} />
-                      </div>
+             
                       </div>
                     </div>
                     <div

@@ -111,6 +111,7 @@ function ProgressBar({
   currentValue = 0,
   milestones = [],
   isPreviewing = false,
+  showUnlockMarker = false,
 }) {
   const safeValue = Math.min(100, Math.max(0, value));
   const barRef = useRef(null);
@@ -223,6 +224,12 @@ function ProgressBar({
         className={`relative h-full rounded-[2px] transition-[width] ${isPreviewing ? 'duration-150' : 'duration-700'} ease-out shadow-[0_0_18px_rgba(255,255,255,0.24)] ${barClassName}`}
         style={{ width: `${safeValue}%` }}
       />
+      {showUnlockMarker && safeValue <= 3 ? (
+        <div
+          className="absolute left-[4px] top-1/2 h-5 w-2 -translate-y-1/2 rounded-[2px] bg-white/85 shadow-[0_0_12px_rgba(255,255,255,0.95)]"
+          aria-hidden="true"
+        />
+      ) : null}
       {safeValue > 3 ? (
         <div
           className="absolute top-1/2 h-5 w-2 -translate-y-1/2 rounded-[2px] bg-white/80 shadow-[0_0_12px_rgba(255,255,255,0.9)]"
@@ -1178,6 +1185,7 @@ const CallToAction = ({ barsIntroDelayMs = 0 }) => {
             maxValue={SCHOOL_IMPLEMENTATION_TRAMO_HUELLAS}
             currentValue={displayStats.implementacionEscuelasActual}
             milestones={[75, 150, 225, 300, 375]}
+            showUnlockMarker={displayStats.residenciasActual >= displayStats.residenciasMeta}
             onPreviewChange={(value) => handleSliderInput('implementacionEscuelas', value)}
             onRelease={() => setInteractiveSupport(null)}
             isPreviewing={interactiveSupport !== null}
