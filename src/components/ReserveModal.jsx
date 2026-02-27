@@ -12,8 +12,15 @@ import { ConfettiBurst, useConfettiBursts } from '@/components/Confetti';
 import { Heart, MapIcon } from 'lucide-react';
 
 const LOGO_SRC = '/assets/logoapp.webp';
-// Banner (placeholder). Reemplaza por tu póster horizontal cuando lo tengas.
-const BANNER_SRC = '/assets/placeholder-banner.webp';
+const RESERVE_BANNER_SRC =
+  'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Merch/banner_cafegato.jpg';
+const OFFSEASON_QUOTE = {
+  text: 'A largo plazo, imaginamos un centro donde crear también sea investigar, y cuidar la salud mental sea una forma de arte compartido.',
+  author: 'Carlos A. Pérez H.',
+  role: 'Creador de #GatoEncerrado',
+  avatar:
+    'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/autores/carlos_perez_avatar.png',
+};
 
 
 const RESERVE_BUTTON_STYLES = `
@@ -178,7 +185,6 @@ const RESERVE_COPY = {
         merch (taza, novela o combo). Los boletos se adquieren directamente en taquilla CECUT.
       </>
     ),
-    footerNote: null,
     intro: null,
   },
   offseason: {
@@ -191,33 +197,6 @@ const RESERVE_COPY = {
     También coordinamos envíos y encuentros virtuales cuando el diálogo lo requiere. <strong>Cada activación abre una conversación.</strong>
   </>
 ),
-    footerNote: (
-      <div className="rounded-2xl border border-white/10 bg-black/30 p-5 shadow-[0_20px_45px_rgba(0,0,0,0.35)]">
-        <div className="flex items-start justify-between">
-          <div className="text-[3.5rem] text-purple-200/90 leading-none">“</div>
-          <div className="ml-4">
-            <div className="h-[64px] w-[64px] sm:h-[84px] sm:w-[84px] overflow-hidden rounded-full border border-white/25 shadow-[0_10px_26px_rgba(0,0,0,0.45)] ring-2 ring-purple-300/30">
-              <img
-                src="https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/autores/avatar_carlosph.jpg"
-                alt="Carlos A. Pérez H."
-                className="h-full w-full object-cover"
-                loading="lazy"
-              />
-            </div>
-          </div>
-          {/* Do not modify the text block that follows */}
-        </div>
-        <div className="order-2 sm:order-3">
-          <p className="text-sm text-slate-100/90 leading-relaxed italic">
-            "A largo plazo, imaginamos un centro donde crear también sea investigar, <br />y cuidar la salud mental sea una forma de arte compartido."
-          </p>
-          <div className="mt-4">
-            <p className="text-base text-white font-semibold tracking-wide">Carlos A. Pérez H.</p>
-            <p className="text-xs uppercase tracking-[0.25em] text-purple-200/80">Creador de #GatoEncerrado</p>
-          </div>
-        </div>
-      </div>
-    ),
   },
 };
 
@@ -280,6 +259,9 @@ const ReserveModal = ({
   const handleInputChange = useCallback((event) => {
     const { name, value } = event.target;
     setFormState((prev) => ({ ...prev, [name]: value }));
+    if (name === 'email') {
+      setCheckoutError('');
+    }
   }, []);
 
   const handleTogglePackage = useCallback((pkg) => {
@@ -422,6 +404,17 @@ payload.customer_email = normalizedEmail;
     [formState, isCheckoutLoading, status, validateCheckout]
   );
 
+  const handleFormSubmit = useCallback(
+    (event) => {
+      if (showProposalForm) {
+        handleSubmit(event);
+        return;
+      }
+      handleCheckout(event);
+    },
+    [handleCheckout, handleSubmit, showProposalForm]
+  );
+
   const handleClose = useCallback(() => {
     if (status !== 'loading') onClose?.();
   }, [status, onClose]);
@@ -430,6 +423,7 @@ payload.customer_email = normalizedEmail;
   // RENDER
   // -------------------------------------------------------------
   const copy = RESERVE_COPY[mode] ?? RESERVE_COPY.offseason;
+  const isOffseason = mode === 'offseason';
 
   const modalTree = (
     <AnimatePresence>
@@ -498,31 +492,52 @@ payload.customer_email = normalizedEmail;
               transition={{ duration: 0.45, ease: 'easeOut' }}
               className="mb-6 sm:mb-8"
             >
-              <div className="relative overflow-hidden rounded-2xl border border-white/10 bg-black/30">
+              <div className="relative overflow-hidden rounded-2xl border border-white/10 bg-black/30 shadow-[0_20px_45px_rgba(0,0,0,0.35)]">
                 <motion.img
-                  src="https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Merch/banner_cafegato.jpg"
+                  src={RESERVE_BANNER_SRC}
                   alt="Banner Café Gato"
-                  className="h-[140px] sm:h-[190px] w-full object-cover"
+                  className={`w-full object-cover ${isOffseason ? 'h-[168px] sm:h-[208px]' : 'h-[140px] sm:h-[190px]'}`}
                   initial={{ scale: 1.03 }}
                   animate={{ scale: 1 }}
                   transition={{ duration: 0.9, ease: 'easeOut' }}
                   loading="lazy"
                 />
 
-                <div className="absolute inset-0 bg-gradient-to-t from-slate-950/85 via-slate-950/20 to-transparent" />
-
-                <div className="absolute bottom-0 left-0 right-0 p-4 sm:p-5">
-                 
-                </div>
+                {isOffseason ? (
+                  <>
+                    <div className="absolute inset-0 bg-gradient-to-br from-slate-950/65 via-slate-900/35 to-slate-950/70" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-slate-950/95 via-slate-950/50 to-transparent" />
+                    <div className="absolute inset-0 opacity-35 [background:radial-gradient(circle_at_25%_20%,rgba(56,189,248,0.35),transparent_38%),radial-gradient(circle_at_75%_25%,rgba(244,114,182,0.26),transparent_42%),radial-gradient(circle_at_55%_75%,rgba(192,132,252,0.22),transparent_40%)]" />
+                    <div className="absolute right-3 top-3 h-14 w-14 sm:right-5 sm:top-5 sm:h-[74px] sm:w-[74px] overflow-hidden rounded-full border border-white/30 shadow-[0_12px_28px_rgba(0,0,0,0.45)] ring-2 ring-purple-300/35">
+                      <img
+                        src={OFFSEASON_QUOTE.avatar}
+                        alt={OFFSEASON_QUOTE.author}
+                        className="h-full w-full object-cover"
+                        loading="lazy"
+                      />
+                    </div>
+                    <div className="absolute bottom-0 left-0 right-0 p-4 sm:p-5">
+                      <p className="max-w-[82%] text-xs sm:text-sm text-slate-100/95 leading-relaxed italic">
+                        "{OFFSEASON_QUOTE.text}"
+                      </p>
+                      <div className="mt-2">
+                        <p className="text-sm sm:text-base text-white font-semibold tracking-wide">
+                          {OFFSEASON_QUOTE.author}
+                        </p>
+                        <p className="text-[10px] sm:text-xs uppercase tracking-[0.28em] text-purple-200/85">
+                          {OFFSEASON_QUOTE.role}
+                        </p>
+                      </div>
+                    </div>
+                  </>
+                ) : (
+                  <div className="absolute inset-0 bg-gradient-to-t from-slate-950/85 via-slate-950/20 to-transparent" />
+                )}
               </div>
             </motion.div>
 
             {copy.intro ? (
               <p className="mb-4 text-sm text-slate-300/90 leading-relaxed">{copy.intro}</p>
-            ) : null}
-
-            {copy.footerNote ? (
-              <div className="mb-6">{copy.footerNote}</div>
             ) : null}
 
             {/* GRID */}
@@ -603,12 +618,18 @@ payload.customer_email = normalizedEmail;
     );
   })}
 </div>
+
+                {copy.notice ? (
+                  <div className="hidden md:block rounded-xl border border-yellow-400/20 bg-yellow-400/10 p-4 text-xs text-yellow-200">
+                    {copy.notice}
+                  </div>
+                ) : null}
               </div>
 
               {/* RIGHT COLUMN — FORM */}
             <form
   className="relative space-y-5 md:sticky md:top-6 self-start order-1 md:order-2"
-  onSubmit={handleSubmit}
+  onSubmit={handleFormSubmit}
 >
 <div className="relative min-h-[520px]">
               {/* ───────── Mapa comunitario (UI mock) ───────── */}
@@ -657,6 +678,28 @@ payload.customer_email = normalizedEmail;
     <p className="leading-relaxed">
       Si quieres proponer un punto de encuentro, pulsa <strong>"Sugerir Cafetería"</strong>. <br/>
       Si ya estás listx para comprar, paga d emanera rápida y segura en <strong>"Compra tu Merch"</strong>.
+    </p>
+  </div>
+) : null}
+
+{!showProposalForm ? (
+  <div className="rounded-2xl border border-white/10 bg-black/25 p-4 space-y-2">
+    <label htmlFor="reserve-checkout-email" className="text-sm font-medium text-slate-200">
+      Correo para tu compra
+    </label>
+    <input
+      id="reserve-checkout-email"
+      name="email"
+      type="email"
+      value={formState.email}
+      onChange={handleInputChange}
+      className="form-surface w-full px-4 py-3"
+      placeholder="nombre@correo.com"
+      autoComplete="email"
+      inputMode="email"
+    />
+    <p className="text-xs text-slate-400">
+      Usaremos este correo para abrir Stripe de manera rápida y segura.
     </p>
   </div>
 ) : null}
@@ -798,7 +841,7 @@ payload.customer_email = normalizedEmail;
             </div>
 
             {copy.notice ? (
-              <div className="mt-8 rounded-xl border border-yellow-400/20 bg-yellow-400/10 p-4 text-xs text-yellow-200">
+              <div className="mt-8 md:hidden rounded-xl border border-yellow-400/20 bg-yellow-400/10 p-4 text-xs text-yellow-200">
                 {copy.notice}
               </div>
             ) : null}
