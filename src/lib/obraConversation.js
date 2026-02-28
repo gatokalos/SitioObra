@@ -1,9 +1,9 @@
 export const OBRA_CONVERSATION_STARTERS = [
-  '¿Qué parte de mi no te gusta?',
+  'Que en el primer momento del sollozo no sea yo.',
 ];
 
 export const SILVESTRE_TRIGGER_QUESTIONS = [
-  'Ya no quiero resolver nada. Solo ayúdame a quedarme un momento.',
+  '…hay una regla con la que aún me enojo: Moriré… Lo demás, me importa un bledo.',
 ];
 
 const VERTIGO_MODE_QUESTIONS = [
@@ -43,11 +43,11 @@ const NECESIDAD_ORDEN_QUESTIONS = [
 ];
 
 const HUMOR_NEGRO_QUESTIONS = [
-  'Moriré… Lo demás, me importa un bledo.',
+  '¡Pronto serán testigos de la falsedad detrás de nuestra conciencia humana y sabrán cuán artificial es!',
+  'La escritura ha sido un fracaso rotundo, a menos que sepas estructurar códigos genéticos y cuánticos…',
   '¿Estoy mal… o soy el único que no se queda callado?',
-  'No estoy calmado… me estoy entrenando para aguantar.',
-  '¿Esto era terapia o un simulacro elegante de colapso?',
-  '¿Mi naturalez es triste… o brutalmente honesta?',
+  'Competimos contra filas interminables de información pura, ¡unos alambres preciosos que tiran la hebra que deshilacha el manto de nuestro entendimiento humano para dejarlo desnudo hasta los huesos!',
+  'Ustedes no lo saben pero el 94% de la población mundial arruina la experiencia directa con la naturaleza porque desea “ponerle palabras”.',
 ];
 
 const CANSANCIO_MENTAL_QUESTIONS = [

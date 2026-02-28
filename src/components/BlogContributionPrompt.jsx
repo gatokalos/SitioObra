@@ -123,7 +123,7 @@ const BlogContributionPrompt = () => {
       {/* Mitad izquierda: continuar */}
       <button
         onClick={() => {
-          document.querySelector('#provoca')?.scrollIntoView({
+          document.querySelector('#transmedia')?.scrollIntoView({
             behavior: 'smooth',
             block: 'start',
           });

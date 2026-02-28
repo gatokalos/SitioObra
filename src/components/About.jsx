@@ -600,7 +600,7 @@ export const ProvocaSection = () => {
                         </p>
                       ) : null}
                       <p className="w-full text-[11px] text-slate-300/70">
-                        Respuesta de voz estimada: aproximadamente 1 minuto.
+                        Longitud de respuesta: aproximadamente 1 minuto.
                       </p>
                     </div>
                        <details className="group mt-4 md:mt-5 mb-5 rounded-2xl border border-emerald-300/20 bg-emerald-500/10 px-4 py-3 text-left">

@@ -5283,13 +5283,6 @@ const rendernotaAutoral = () => {
           </div>
         ) : null}
 
-        <div className="mt-2 flex flex-wrap items-center gap-2 text-[11px] uppercase tracking-[0.25em] text-amber-100">
-          <span className="inline-flex items-center gap-2 rounded-full border border-amber-200/60 bg-amber-500/15 px-3 py-1">
-            <Coins size={14} />
-            {Number.isFinite(remainingTazaGatokens) ? remainingTazaGatokens : '∞'} gatokens
-          </span>
-          <span className="text-slate-400">Energía ilimitada</span>
-        </div>
       </div>
 
       {/* ───────── Columna derecha: Mapa comunitario (UI mock) ───────── */}
@@ -5522,10 +5515,10 @@ const rendernotaAutoral = () => {
       const hasReplayPrompt = Boolean(normalizeSilvestrePrompt(mobileObraReplayPrompt));
       const mobileSecondaryCtaCopy =
         mobileObraSecondaryCtaState === MOBILE_OBRA_SECONDARY_CTA_STATES.TRY_OTHER_EMOTION
-          ? 'Prueba con otra emoción'
+          ? 'Escúchala con otra emoción'
           : mobileObraSecondaryCtaState === MOBILE_OBRA_SECONDARY_CTA_STATES.LAUNCH_PHRASE
             ? 'Lanza la frase'
-            : 'Leer del guion';
+            : 'O leer del guion';
       const mobileSecondaryCtaEmphasis =
         mobileObraSecondaryCtaState === MOBILE_OBRA_SECONDARY_CTA_STATES.TRY_OTHER_EMOTION
           ? 'glow'
@@ -5656,7 +5649,17 @@ const rendernotaAutoral = () => {
                     Habita las emociones de Silvestre
                   </h2>
                   <p className="text-sm text-slate-300/80 break-words">
-                   Cada frase que envíes —dicha por ti o sacada de un guion— afina la voz de la obra y expande las posibilidades de la conversación colectiva.
+                   Di una frase.<br />
+                   La obra te la devuelve distinta.<br />
+                  <br />
+                   No es un chat.<br />
+                   Es un ensayo en vivo.<br />
+                   <br />
+                   Habla como Silvestre —o como tú—<br />
+                   Y escucha como la escena responde desde dentro.<br />
+                    <br />
+                   A veces juega contigo.<br />
+                   A veces resuena.
                   </p>
                 </div>
 
@@ -5688,7 +5691,7 @@ const rendernotaAutoral = () => {
 
                             <div ref={obraConversationControlsRef}>
                               <ObraConversationControls
-                                ctaLabel="Pulsa para hablar"
+                                ctaLabel="Pulsa para cambiar la escena"
                                 isSilvestrePlaying={isSilvestrePlaying}
                                 pendingSilvestreAudioUrl={pendingSilvestreAudioUrl}
                                 isSilvestreFetching={isSilvestreFetching}
@@ -8360,7 +8363,7 @@ const rendernotaAutoral = () => {
                       </span>
                     </span>
                     <span className="text-[0.65rem] uppercase tracking-[0.18em] text-emerald-200/80 group-open:text-white">
-                      <span className="group-open:hidden">Pulsar</span>
+                      <span className="group-open:hidden">¿Cómo funciona?</span>
                       <span className="hidden group-open:inline">Cerrar</span>
                     </span>
                   </summary>

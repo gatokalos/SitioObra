@@ -790,7 +790,7 @@ const Blog = ({ posts = [], isLoading = false, error = null }) => {
                   onClick={() => setShowAllPosts(true)}
                   className="border-white/20 text-slate-200 hover:bg-white/10"
                 >
-                  Mostrar todos
+                  Mostrar siguientes textos
                 </Button>
               </div>
             ) : null}
