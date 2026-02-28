@@ -5656,7 +5656,7 @@ const rendernotaAutoral = () => {
                     Habita las emociones de Silvestre
                   </h2>
                   <p className="text-sm text-slate-300/80 break-words">
-                   Cada frase que envíes —dicha por ti o sacada de un guion— afina la voz de obra y expande las posibilidades de la conversación colectiva.
+                   Cada frase que envíes —dicha por ti o sacada de un guion— afina la voz de la obra y expande las posibilidades de la conversación colectiva.
                   </p>
                 </div>
 
@@ -7958,7 +7958,7 @@ const rendernotaAutoral = () => {
                     onTouchEnd={isShowcaseOpenTransitionActive ? undefined : handleMobileShowcaseTouchEnd}
                     onTouchCancel={isShowcaseOpenTransitionActive ? undefined : handleMobileShowcaseTouchEnd}
                   >
-                    <div className="relative vitrina-pozo-glass__media h-[500px] max-[375px]:h-[300px] bg-slate-500/20 overflow-hidden">
+                    <div className="relative vitrina-pozo-glass__media h-[500px] max-[375px]:h-[360px] bg-slate-500/20 overflow-hidden">
                       {format.image ? (
                         <img
                           src={format.image}
@@ -8016,7 +8016,7 @@ const rendernotaAutoral = () => {
                           className={`${iconClass} drop-shadow-[0_0_12px_rgba(168,85,247,0.35)] transition-transform duration-300 group-hover:-translate-y-1 group-active:-translate-y-1`}
                         />
                         <div>
-                          <p className="text-xs uppercase tracking-[0.35em] text-slate-400/80">Vitrina</p>
+                          <p className="text-xs uppercase tracking-[0.35em] text-slate-400/80">Miniverso</p>
                           <h3 className="font-display text-2xl text-slate-100">{format.title}</h3>
                         </div>
                       </div>

@@ -7,38 +7,39 @@ export const SILVESTRE_TRIGGER_QUESTIONS = [
 ];
 
 const VERTIGO_MODE_QUESTIONS = [
-  'En estos momentos no veo caras conocidas',
+  'Ya no veo caras conocidas.',
   'Esto definitivamente no es real, pero tampoco es un sueño',
-  'Estoy en un lugar donde tengo que tomar asiento y esperar mi turno',
-  'Antes de morir… yo estoy seguro que…',
-  'Esto no puede ser… Es que esto no puede ser…',
-  'La muerte no era sueño… pero tampoco tragedia… era otra cosa...',
+  '…cada vez que alguien me ve a los ojos empiezo a sentir un vacío insoportable…',
+  '…ya no sé si tratar de llenarlo o dejarlo tal y como está…',
+  '…estoy en el mundo como relleno. ¡Qué patético!',
+  '…aunque me tenga solo a mí, necesito pensar en algo para entretenerme ¡Y ya me exasperé!',
+  'Estoy harto, ¡me urge descansar de mí mismo!',
 ];
 
 const CONFUSION_LUCIDA_QUESTIONS = [
-  'Algo pasa; algo que se me olvida en cuanto abro el ojo',
-  'No lo sé, no lo sé… pero algo sí pasó',
-  '¿Esto fue lo que soñé… o es un recuerdo…?',
-  'Siento que ya estuve aquí… pero no sé cuándo',
-  'Sé que soñé muchísimo pero se me olvidó todo en cuanto abrí el ojo',
+  '[Me siento] con un dolor muy fuerte detrás de mis clavículas… como si las tuviera encajadas a mis pulmones.',
+  'Te percibo algo molesta. ¿Por qué no decirlo así?',
+  'Vamos [dilo]: “me siento molesta”, “estoy enojada”',
+  '…sí estoy molesta, pero no enojada, estoy desesperada.',
+  'Resulta que… mi ex no me deja visitar a Lucky',
 ];
 
 const SOSPECHA_DOCTORA_QUESTIONS = [
-  'No sé si me estás escuchando… o evaluando.',
-  '¿Usted sabe por qué se dice buscarle ‘tres pies’ al gato…?',
-  'Estás pensando qué decirme mientras me escuchas, ¿verdad?',
-  'No me creo del todo la calma de la gente.',
-  'Descríbeme brevemente a las personas que ves en tu sueño.',
+  'Estoy en un lugar donde tengo que tomar asiento y esperar mi turno.',
+  'En la mano tengo un papelito, un boleto —acaba con 37, aunque no siempre—',
+  'Solo sé que tengo que esperar… esperar a que me llamen o algo así.',
+  '[El "37"] sueña algo muy distinto en contraste a la noche anterior. ¡Sueña a lo bestia!',
+  '…en el fondo, su historia es siempre la misma. Aunque diferente, no sé si me explico.',
 ];
 
 const NECESIDAD_ORDEN_QUESTIONS = [
-  'No le busques tres pies al gato si ya sabes que tiene cuatro.',
-  '¿Esto fue lo que soñé o es solo un recuerdo…?',
-  'Dime qué es esto. Sin metáforas.',
-  'No saber me desarma.',
-  'Soy un gato encerrado y quiero abrir las ventanas.',
-  'Si no me entiendo, ¿sigo siendo yo?',
-  'Si le pongo nombre a lo que siento… ¿se quedará quieto?',
+  'Falta explayarme… Estoy como en un banco y están llamando a uno por uno por altavoz.',
+  'Después de ahí no sé qué tanto sucede, pero cuando es mi turno de pasar a ventanilla, algo pasa…',
+  '…se me olvida en cuanto abro el ojo. Eso sí, hace que me hierva la sangre de rabia.',
+  '…hay veces que [esa rabia] me dura todo el día.',
+  'De hecho, ella, que no soy yo pero sí soy, también está esperando, o sea… Está encinta.',
+  'Háblame de esa joven, ¿te recuerda a alguien en particular?',
+  'Número once mil ciento treinta y siete, pase a ventanilla por favor.',
 ];
 
 const HUMOR_NEGRO_QUESTIONS = [
@@ -50,22 +51,21 @@ const HUMOR_NEGRO_QUESTIONS = [
 ];
 
 const CANSANCIO_MENTAL_QUESTIONS = [
-  'Eso si, hace que me hierva la sangre de rabia.',
-  '¡Ah, qué animales estos pensamientos! Se corretean sin punto de quiebre.',
-  'Zumbando en mis sesos, siempre muy hambrientos.',
-  '¡Eso fue lo que me dejó este hueco en la cabeza!',
-  'Me pegó fuerte. ¿Cómo cierro el día?',
-  '¿Y ahora quñe hacemos con el tiempo que nos queda?',
+  '¿Estás segura de que quieres meter a alguien más a la conversación?',
+  'Tú, que eres siempre bueno y todo lo ve, dinos: ¿De qué lado masca la iguana?',
+  'Me han contagiando de su locura ¡par de dos! Mejor me voy, ¡a mi nube, adiós!',
+  '[Te lo advertí], ¡por eso no me gusta meter amigos imaginarios a nuestras charlas!',
+  'Mejor invoquemos a aquella quien nunca tuvo favoritismos…',
+  '¿Abuelita…? Soy yo… tu nieto, ¿estás ahí?',
 ];
 
 const ATRACCION_INCOMODA_QUESTIONS = [
-  '¿Estaré sola con mis pensamientos, escuchándolos en voz alta durante toda la eternidad?',
-  'Ahorita no te preocupes por el tiempo…',
-  'Sigue respirando profundo y no te me duermas.',
-  'Todo es en cámara lenta y tengo “aquí” al rostro de mi enamorada.',
-  '¿Y si esa risa tierna… es para manipularme?',
-  'Gracias por prestarme tu voz cuando yo ya no sabía cómo hablar.',
-];
+  'No hay un tú ni un yo; a menudo no se sabrá quién le habla a quién y eso está muy bien…',
+  'Yo no quiero hablar solo para mí (…) ¡yo sí quiero que la gente me escuche!',
+  '…si [realmente] quieres observar al observador (…) primero hay que borrar la división imaginaria entre ser y no ser…',
+  '¡Argh, lo hiciste de nuevo, mi reina! (…) acabé hablando para quién sabe quién… otra vez. ',
+  'Es hora de que te tomes más en serio, cabrón.',
+  ];
 
 export const PORTAL_VOZ_MODE_QUESTIONS = {
   'confusion-lucida': CONFUSION_LUCIDA_QUESTIONS,

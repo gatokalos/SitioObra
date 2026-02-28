@@ -696,7 +696,7 @@ payload.customer_email = normalizedEmail;
 {!showProposalForm ? (
   <div className="rounded-2xl border border-white/10 bg-black/25 p-4 space-y-2">
     <label htmlFor="reserve-checkout-email" className="text-sm font-medium text-slate-200">
-      Si estás listx para hacer una compra, ingresa tu correo electrónico antes de abrir la tienda.
+      Cuando estás listx para hacer una compra, ingresa tu correo electrónico antes de abrir la tienda.
     </label>
     <input
       id="reserve-checkout-email"
