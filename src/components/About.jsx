@@ -58,6 +58,13 @@ const PROVOCA_CONFETTI_VISIBLE_MS = 2400;
 const PROVOCA_SILVESTRE_MODE_ID = 'confusion-lucida';
 const PROVOCA_RESPONSE_ESTIMATE_SECONDS = 60;
 const PROVOCA_LISTEN_USED_STORAGE_PREFIX = 'gatoencerrado:provoca-listen-used:v1';
+const PROVOCA_SUBMIT_COOLDOWN_MS = 45 * 1000;
+const PROVOCA_SUBMIT_COOLDOWN_PREFIX = 'gatoencerrado:provoca-submit-cooldown:v1';
+const PROVOCA_LISTEN_COOLDOWN_MS = 25 * 1000;
+const PROVOCA_LISTEN_COOLDOWN_PREFIX = 'gatoencerrado:provoca-listen-cooldown:v1';
+const PROVOCA_QUOTE_MAX_CHARS = 700;
+const PROVOCA_NAME_MAX_CHARS = 60;
+const PROVOCA_ROLE_MAX_CHARS = 80;
 const inviteMessage = `Hola 🐾
 Quiero invitarte a compartir tu mirada en *Perspectivas del público* de *Es un gato encerrado*.
 Entra aquí: ${PROVOCA_SHARE_URL}
@@ -66,6 +73,18 @@ const getProvocaListenUsageKey = (userId) => {
   if (userId) return `${PROVOCA_LISTEN_USED_STORAGE_PREFIX}:user:${userId}`;
   const anonId = ensureAnonId();
   return `${PROVOCA_LISTEN_USED_STORAGE_PREFIX}:anon:${anonId || 'guest'}`;
+};
+
+const getProvocaSubmitCooldownKey = (userId) => {
+  if (userId) return `${PROVOCA_SUBMIT_COOLDOWN_PREFIX}:user:${userId}`;
+  const anonId = ensureAnonId();
+  return `${PROVOCA_SUBMIT_COOLDOWN_PREFIX}:anon:${anonId || 'guest'}`;
+};
+
+const getProvocaListenCooldownKey = (userId) => {
+  if (userId) return `${PROVOCA_LISTEN_COOLDOWN_PREFIX}:user:${userId}`;
+  const anonId = ensureAnonId();
+  return `${PROVOCA_LISTEN_COOLDOWN_PREFIX}:anon:${anonId || 'guest'}`;
 };
 
 export const ProvocaSection = () => {
@@ -86,6 +105,8 @@ export const ProvocaSection = () => {
   );
   const [listenUsageKey, setListenUsageKey] = useState(null);
   const [hasConsumedListenTurn, setHasConsumedListenTurn] = useState(false);
+  const [submitCooldownKey, setSubmitCooldownKey] = useState(null);
+  const [listenCooldownKey, setListenCooldownKey] = useState(null);
   const afterCareTimeoutRef = useRef(null);
   const confettiTimeoutRef = useRef(null);
   const responseCountdownRef = useRef(null);
@@ -146,9 +167,12 @@ export const ProvocaSection = () => {
   }, []);
 
   useEffect(() => {
-    const key = getProvocaListenUsageKey(user?.id ?? null);
+    const userId = user?.id ?? null;
+    const key = getProvocaListenUsageKey(userId);
     setListenUsageKey(key);
     setHasConsumedListenTurn(safeGetItem(key) === '1');
+    setSubmitCooldownKey(getProvocaSubmitCooldownKey(userId));
+    setListenCooldownKey(getProvocaListenCooldownKey(userId));
   }, [user?.id]);
 
   useEffect(() => {
@@ -264,18 +288,45 @@ export const ProvocaSection = () => {
   }, []);
 
   const handleSubmitVoice = useCallback(async () => {
-    const quote = voiceDraft.trim();
-    const authorName = voiceName.trim() || 'Voz del público';
+    const rawQuote = voiceDraft.trim();
+    const rawName = voiceName.trim();
+    const rawRole = voiceRole.trim();
+
+    const quote = rawQuote.replace(/[\u0000-\u001F\u007F]/g, '');
+    const authorName = (rawName || 'Voz del público').replace(/[\u0000-\u001F\u007F]/g, '');
+    const authorRole = rawRole ? rawRole.replace(/[\u0000-\u001F\u007F]/g, '') : '';
 
     if (!quote || quote.length < 10) {
       toast({ description: 'Comparte una perspectiva un poco más completa.' });
       return;
     }
 
-    if (isSubmittingVoice) {
+    if (quote.length > PROVOCA_QUOTE_MAX_CHARS) {
+      toast({ description: `Tu texto es muy largo. Máximo ${PROVOCA_QUOTE_MAX_CHARS} caracteres.` });
       return;
     }
-    const authorRole = voiceRole.trim();
+
+    if (authorName.length > PROVOCA_NAME_MAX_CHARS) {
+      toast({ description: `Tu nombre es muy largo. Máximo ${PROVOCA_NAME_MAX_CHARS} caracteres.` });
+      return;
+    }
+
+    if (authorRole && authorRole.length > PROVOCA_ROLE_MAX_CHARS) {
+      toast({ description: `Tu rol/ciudad es muy largo. Máximo ${PROVOCA_ROLE_MAX_CHARS} caracteres.` });
+      return;
+    }
+
+    if (isSubmittingVoice) return;
+
+    if (submitCooldownKey) {
+      const last = Number(safeGetItem(submitCooldownKey) || '0');
+      const now = Date.now();
+      if (last && now - last < PROVOCA_SUBMIT_COOLDOWN_MS) {
+        const waitSeconds = Math.ceil((PROVOCA_SUBMIT_COOLDOWN_MS - (now - last)) / 1000);
+        toast({ description: `Espera ${waitSeconds}s antes de enviar otra vez.` });
+        return;
+      }
+    }
 
     setIsSubmittingVoice(true);
     const { error } = await submitAudiencePerspective({
@@ -285,6 +336,8 @@ export const ProvocaSection = () => {
       honeypot: voiceTrap,
       metadata: {
         source: 'provoca_section',
+        user_id: user?.id ?? null,
+        anon_id: ensureAnonId() ?? null,
       },
     });
     setIsSubmittingVoice(false);
@@ -292,6 +345,10 @@ export const ProvocaSection = () => {
     if (error) {
       toast({ description: 'No pudimos guardar tu perspectiva. Intenta de nuevo.' });
       return;
+    }
+
+    if (submitCooldownKey) {
+      safeSetItem(submitCooldownKey, String(Date.now()));
     }
 
     const shouldPromptLogin = !user?.email;
@@ -314,7 +371,7 @@ export const ProvocaSection = () => {
     }
     safeRemoveItem(PROVOCA_DRAFT_KEY);
     setIsVoiceInputOpen(false);
-  }, [fireProvocaConfetti, isSubmittingVoice, user, voiceDraft, voiceName, voiceRole, voiceTrap]);
+  }, [fireProvocaConfetti, isSubmittingVoice, user, voiceDraft, voiceName, voiceRole, voiceTrap, submitCooldownKey]);
 
   useEffect(() => {
     if (!isVoiceInputOpen) {
@@ -368,47 +425,67 @@ export const ProvocaSection = () => {
   }, []);
 
   const handleListenToObra = useCallback(async () => {
-  if (hasConsumedListenTurn) return;
+    if (hasConsumedListenTurn) return;
 
-  if (pendingSilvestreAudioUrl) {
-    await handlePlayPendingAudio();
-    return;
-  }
+    if (pendingSilvestreAudioUrl) {
+      await handlePlayPendingAudio();
+      return;
+    }
 
-  if (isSilvestreThinking) return;
+    if (isSilvestreThinking) return;
 
-  // ✅ Usa lo ya enviado como prioridad (premio Ruta A)
-  const message = (lastSubmittedQuote || voiceDraft).trim();
+    if (listenCooldownKey) {
+      const last = Number(safeGetItem(listenCooldownKey) || '0');
+      const now = Date.now();
+      if (last && now - last < PROVOCA_LISTEN_COOLDOWN_MS) {
+        const waitSeconds = Math.ceil((PROVOCA_LISTEN_COOLDOWN_MS - (now - last)) / 1000);
+        toast({ description: `Espera ${waitSeconds}s antes de intentar de nuevo.` });
+        return;
+      }
+    }
 
-  if (!message) {
-    toast({ description: 'Escribe tu texto y luego pulsa “Escuchar a la obra”.' });
-    return;
-  }
+    // ✅ Usa lo ya enviado como prioridad (premio Ruta A)
+    const message = (lastSubmittedQuote || voiceDraft).trim();
 
-  // ✅ Si ya enviaste, NO bloquees por nombre; usa fallback
-  // (si no ha enviado aún, puedes seguir pidiendo nombre)
-  const authorName = voiceName.trim() || (hasSubmittedQuote ? 'Voz del público' : '');
+    if (!message) {
+      toast({ description: 'Escribe tu texto y luego pulsa “Escuchar a la obra”.' });
+      return;
+    }
 
-  if (!authorName) {
-    toast({ description: 'Escribe tu nombre antes de escuchar a la obra.' });
-    return;
-  }
+    if (message.length > PROVOCA_QUOTE_MAX_CHARS) {
+      toast({ description: `Tu texto es muy largo. Máximo ${PROVOCA_QUOTE_MAX_CHARS} caracteres.` });
+      return;
+    }
 
-  await handleSendSilvestrePreset(message, {
-    modeId: PROVOCA_SILVESTRE_MODE_ID,
-    userName: authorName,
-  });
-}, [
-  hasConsumedListenTurn,
-  pendingSilvestreAudioUrl,
-  handlePlayPendingAudio,
-  isSilvestreThinking,
-  lastSubmittedQuote,
-  voiceDraft,
-  voiceName,
-  hasSubmittedQuote,
-  handleSendSilvestrePreset,
-]);
+    // ✅ Si ya enviaste, NO bloquees por nombre; usa fallback
+    // (si no ha enviado aún, puedes seguir pidiendo nombre)
+    const authorName = voiceName.trim() || (hasSubmittedQuote ? 'Voz del público' : '');
+
+    if (!authorName) {
+      toast({ description: 'Escribe tu nombre antes de escuchar a la obra.' });
+      return;
+    }
+
+    if (listenCooldownKey) {
+      safeSetItem(listenCooldownKey, String(Date.now()));
+    }
+
+    await handleSendSilvestrePreset(message, {
+      modeId: PROVOCA_SILVESTRE_MODE_ID,
+      userName: authorName,
+    });
+  }, [
+    hasConsumedListenTurn,
+    pendingSilvestreAudioUrl,
+    handlePlayPendingAudio,
+    isSilvestreThinking,
+    lastSubmittedQuote,
+    voiceDraft,
+    voiceName,
+    hasSubmittedQuote,
+    handleSendSilvestrePreset,
+    listenCooldownKey,
+  ]);
 
   const afterCareOverlay = typeof document !== 'undefined'
     ? createPortal(
@@ -462,7 +539,7 @@ export const ProvocaSection = () => {
                   onClick={handleOpenLoginFromAfterCare}
                   className="inline-flex items-center justify-center rounded-full bg-gradient-to-r from-emerald-500/95 to-teal-500/95 px-5 py-2.5 text-sm font-semibold text-white shadow-[0_0_26px_rgba(16,185,129,0.35)] transition hover:from-emerald-400 hover:to-teal-400"
                 >
-                  Suscribirme gratis
+                  Iniciar sesión
                 </button>
               </div>
             </motion.div>
@@ -539,7 +616,7 @@ export const ProvocaSection = () => {
                         value={voiceName}
                         onChange={(event) => setVoiceName(event.target.value)}
                         className="form-surface w-full px-4 py-2"
-                        placeholder="Tu nombre (obligatorio)"
+                        placeholder="Tu nombre (recomendado)"
                         required
                       />
                       <input
@@ -555,20 +632,13 @@ export const ProvocaSection = () => {
                         tabIndex={-1}
                         autoComplete="off"
                         aria-hidden="true"
+                        inputMode="none"
                         value={voiceTrap}
                         onChange={(event) => setVoiceTrap(event.target.value)}
                         className="hidden"
                         name="website"
                       />
                       <div className="ui-segmented ui-segmented--rect w-full sm:w-auto">
-                        <Button
-                          type="button"
-                          onClick={handleSubmitVoice}
-                          disabled={isSendVoiceDisabled}
-                          className="ui-segmented__btn ui-segmented__btn--primary flex-1 sm:flex-none"
-                        >
-                          {isSubmittingVoice ? 'Enviando…' : 'Enviar tu voz'}
-                        </Button>
                         <Button
                           type="button"
                           variant="outline"
@@ -584,7 +654,14 @@ export const ProvocaSection = () => {
                         >
                           {escucharStatusLabel}
                         </Button>
-                        
+                        <Button
+                          type="button"
+                          onClick={handleSubmitVoice}
+                          disabled={isSendVoiceDisabled}
+                          className="ui-segmented__btn ui-segmented__btn--primary flex-1 sm:flex-none"
+                        >
+                          {isSubmittingVoice ? 'Enviando…' : 'Enviar tu voz'}
+                        </Button>
                       </div>
                       {hasConsumedListenTurn ? (
                         <p className="w-full text-[11px] text-slate-300/80">
@@ -603,7 +680,7 @@ export const ProvocaSection = () => {
                       ) : null}
                 
                       <p className="w-full text-[11px] text-slate-300/70">
-                        Longitud de respuesta: aproximadamente 1 minuto.
+                        Antes de enviar, escucha una respuesta inspirada en lo que compartiste.
                       </p>
                     </div>
                        <details className="group mt-4 md:mt-5 mb-5 rounded-2xl border border-emerald-300/20 bg-emerald-500/10 px-4 py-3 text-left">

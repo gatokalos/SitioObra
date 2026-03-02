@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
-import { BookOpen, CoffeeIcon, DramaIcon, Gamepad2, HeartHandshake, ShoppingBag, SparkleIcon, DoorOpen, Volume2, VolumeX } from 'lucide-react';
+import { BookOpen, CoffeeIcon, DramaIcon, TicketIcon, HeartHandshake, ShoppingBag, SparkleIcon, DoorOpen, Volume2, VolumeX } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import ReserveModal from '@/components/ReserveModal';
 import TicketPurchaseModal from '@/components/TicketPurchaseModal';
@@ -54,7 +54,7 @@ const Hero = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { user } = useAuth();
-  const primaryCtaLabel = user ? 'Dejar mi huella' : 'Tomar un lugar';
+  const primaryCtaLabel = user ? 'Dejar mi huella' : 'Toma un boleto';
   const canShowHeroAudioToggle = Boolean(
     user &&
     !isMobileViewport &&
@@ -604,9 +604,9 @@ const Hero = () => {
   initial={{ opacity: 0, y: 6 }}
   animate={{ opacity: 1, y: 0 }}
   transition={{ duration: 0.9, delay: 0.45, ease: 'easeOut' }}
-  className="text-xs italic text-slate-400/70 leading-tight mb-6"
+  className="text-sm italic text-slate-400/70 leading-tight mb-6"
 >
-  Un universo que ocurre en escena… y en quien lo habita.
+  Una obra que ocurre en tu mente.
 </motion.p>
        
 
@@ -635,7 +635,7 @@ const Hero = () => {
                       text-base tracking-wide
                     "
                   >
-                    <DramaIcon size={22} className="drop-shadow-md" />
+                    <TicketIcon size={22} className="drop-shadow-md" />
                     {primaryCtaLabel}
                   </Button>
               
