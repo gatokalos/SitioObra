@@ -77,6 +77,8 @@ export const ProvocaSection = () => {
   const [voiceDraft, setVoiceDraft] = useState('');
   const [voiceTrap, setVoiceTrap] = useState('');
   const [isSubmittingVoice, setIsSubmittingVoice] = useState(false);
+  const [lastSubmittedQuote, setLastSubmittedQuote] = useState('');
+  const [hasSubmittedQuote, setHasSubmittedQuote] = useState(false);
   const [showAfterCareOverlay, setShowAfterCareOverlay] = useState(false);
   const [testimonials, setTestimonials] = useState(fallbackTestimonials);
   const [responseCountdownSeconds, setResponseCountdownSeconds] = useState(
@@ -100,10 +102,9 @@ export const ProvocaSection = () => {
     handlePlayPendingAudio,
   } = useSilvestreVoice();
   const isSilvestreThinking = isSilvestreFetching || isSilvestreResponding;
-  const trimmedVoiceName = voiceName.trim();
-  const isVoiceNameMissing = !trimmedVoiceName;
-  const isEscucharButtonDisabled = isSilvestreThinking || hasConsumedListenTurn || isVoiceNameMissing;
-  const isSendVoiceDisabled = isSubmittingVoice || isVoiceNameMissing;
+  const isSendVoiceDisabled = isSubmittingVoice;
+  const isEscucharButtonDisabled =
+  isSilvestreThinking || hasConsumedListenTurn;
   const isEscucharButtonActive =
     !hasConsumedListenTurn &&
     (isSilvestreThinking || isSilvestrePlaying || isListening || Boolean(pendingSilvestreAudioUrl));
@@ -264,16 +265,13 @@ export const ProvocaSection = () => {
 
   const handleSubmitVoice = useCallback(async () => {
     const quote = voiceDraft.trim();
-    const authorName = voiceName.trim();
+    const authorName = voiceName.trim() || 'Voz del público';
 
     if (!quote || quote.length < 10) {
       toast({ description: 'Comparte una perspectiva un poco más completa.' });
       return;
     }
-    if (!authorName) {
-      toast({ description: 'Escribe tu nombre para enviar tu voz.' });
-      return;
-    }
+
     if (isSubmittingVoice) {
       return;
     }
@@ -298,7 +296,8 @@ export const ProvocaSection = () => {
 
     const shouldPromptLogin = !user?.email;
     fireProvocaConfetti();
-    setVoiceDraft('');
+    setLastSubmittedQuote(quote);
+    setHasSubmittedQuote(true);
     setVoiceRole('');
     setVoiceTrap('');
     if (shouldPromptLogin) {
@@ -369,39 +368,47 @@ export const ProvocaSection = () => {
   }, []);
 
   const handleListenToObra = useCallback(async () => {
-    if (hasConsumedListenTurn) {
-      return;
-    }
-    if (pendingSilvestreAudioUrl) {
-      await handlePlayPendingAudio();
-      return;
-    }
-    if (isSilvestreThinking) {
-      return;
-    }
-    const message = voiceDraft.trim();
-    if (!message) {
-      toast({ description: 'Escribe tu texto y luego pulsa “Escuchar a la obra”.' });
-      return;
-    }
-    const authorName = voiceName.trim();
-    if (!authorName) {
-      toast({ description: 'Escribe tu nombre antes de escuchar a la obra.' });
-      return;
-    }
-    await handleSendSilvestrePreset(message, {
-      modeId: PROVOCA_SILVESTRE_MODE_ID,
-      userName: authorName,
-    });
-  }, [
-    pendingSilvestreAudioUrl,
-    handlePlayPendingAudio,
-    isSilvestreThinking,
-    hasConsumedListenTurn,
-    voiceDraft,
-    voiceName,
-    handleSendSilvestrePreset,
-  ]);
+  if (hasConsumedListenTurn) return;
+
+  if (pendingSilvestreAudioUrl) {
+    await handlePlayPendingAudio();
+    return;
+  }
+
+  if (isSilvestreThinking) return;
+
+  // ✅ Usa lo ya enviado como prioridad (premio Ruta A)
+  const message = (lastSubmittedQuote || voiceDraft).trim();
+
+  if (!message) {
+    toast({ description: 'Escribe tu texto y luego pulsa “Escuchar a la obra”.' });
+    return;
+  }
+
+  // ✅ Si ya enviaste, NO bloquees por nombre; usa fallback
+  // (si no ha enviado aún, puedes seguir pidiendo nombre)
+  const authorName = voiceName.trim() || (hasSubmittedQuote ? 'Voz del público' : '');
+
+  if (!authorName) {
+    toast({ description: 'Escribe tu nombre antes de escuchar a la obra.' });
+    return;
+  }
+
+  await handleSendSilvestrePreset(message, {
+    modeId: PROVOCA_SILVESTRE_MODE_ID,
+    userName: authorName,
+  });
+}, [
+  hasConsumedListenTurn,
+  pendingSilvestreAudioUrl,
+  handlePlayPendingAudio,
+  isSilvestreThinking,
+  lastSubmittedQuote,
+  voiceDraft,
+  voiceName,
+  hasSubmittedQuote,
+  handleSendSilvestrePreset,
+]);
 
   const afterCareOverlay = typeof document !== 'undefined'
     ? createPortal(
@@ -436,10 +443,10 @@ export const ProvocaSection = () => {
           
               <div className="mt-5 space-y-3">
                 <h3 id="provoca-aftercare-title" className="font-display text-2xl text-slate-50">
-                  ¿Te gustaría suscribirte gratis al sitio?
+                  ¿Te gustaría iniciar sesión en el sitio?
                 </h3>
                 <p className="text-sm leading-relaxed text-slate-200/90">
-                  Tu perspectiva ya fue enviada. Si te suscribes, podrás seguir el diálogo y recibir avisos cuando publiquemos nuevas respuestas y funciones.
+                  Tu voz ya forma parte del espacio. Con tu sesión iniciada, podrás seguir el diálogo y recibir avisos cuando publiquemos nuevas respuestas y funciones.
                 </p>
               </div>
               <div className="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
@@ -588,17 +595,13 @@ export const ProvocaSection = () => {
                           >
                             clic aquí
                           </Link>{' '}
-                          si quieres hablar con la obra.
+                          si quieres hablar más con la obra.
                         </p>
                       ) : null}
                       {micError && !isListening && !isSilvestreThinking ? (
                         <p className="w-full text-xs text-red-200/90">{micError}</p>
                       ) : null}
-                      {isVoiceNameMissing ? (
-                        <p className="w-full text-xs text-amber-200/90">
-                          Para enviar, primero escribe tu nombre.
-                        </p>
-                      ) : null}
+                
                       <p className="w-full text-[11px] text-slate-300/70">
                         Longitud de respuesta: aproximadamente 1 minuto.
                       </p>

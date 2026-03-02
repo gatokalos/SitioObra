@@ -46,7 +46,7 @@ const Hero = () => {
 
   const rotatingCtas = [
     { label: 'Café', Icon: CoffeeIcon },
-    { label: 'Club', Icon: BookOpen },
+    { label: 'Charla', Icon: BookOpen },
     { label: 'Merch', Icon: ShoppingBag },
   ];
   const currentCta = rotatingCtas[ctaIndex];
@@ -600,27 +600,7 @@ const Hero = () => {
               <span>#GATOENCERRADO</span>
             </motion.h1>
 
-            {!user && (
-              <motion.p
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ duration: 1.5, delay: 0.5 }}
-                className="text-xl md:text-2xl text-slate-300/80 mb-12 leading-relaxed font-light flex flex-col items-center gap-1"
-              >
-                El universo transmedial de la obra
-                <button
-                  onClick={handleScrollToAbout}
-                  className="
-                    text-slate-200 underline underline-offset-4 decoration-slate-400/30
-                    hover:text-white hover:decoration-purple-400 transition
-                    font-normal
-                  "
-                >
-                  Es un gato encerrado
-                </button>
-              </motion.p>
-            )}
-
+       
 
             {/* Botones */}
             <motion.div
@@ -650,6 +630,8 @@ const Hero = () => {
                     <SparkleIcon size={22} className="drop-shadow-md" />
                     {primaryCtaLabel}
                   </Button>
+                        {/* Microtexto */}
+                 
 
                   {/* CTA SECUNDARIO — CAFÉ */}
                   <Button
@@ -701,8 +683,8 @@ const Hero = () => {
                     </motion.button>
                   </Button>
                   {/* Microtexto */}
-                  <p className="text-xs italic text-slate-400/70 leading-tight">
-                    Aquí empieza la conversación
+                   <p className="text-xs italic text-slate-400/70 leading-tight">
+                    Un universo por explorar. Un espacio para encontrarnos.
                   </p>
                 </div>
               ) : (
