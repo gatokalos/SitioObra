@@ -19,7 +19,7 @@ import {
 } from '@/services/miniverseHomeAnalyticsService';
 
 const TABS = [
-  { id: 'escaparate', label: 'Entender', icon: Sparkles },
+  { id: 'escaparate', label: 'Descubrir', icon: Sparkles },
   { id: 'experiences', label: 'Habitar', icon:  DoorOpen},
   { id: 'waitlist', label: 'Impulsar', icon: HeartHandshake },
 ];

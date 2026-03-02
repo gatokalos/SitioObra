@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
-import { BookOpen, CoffeeIcon, CompassIcon, Gamepad2, HeartHandshake, ShoppingBag, SparkleIcon, DoorOpen, Volume2, VolumeX } from 'lucide-react';
+import { BookOpen, CoffeeIcon, DramaIcon, Gamepad2, HeartHandshake, ShoppingBag, SparkleIcon, DoorOpen, Volume2, VolumeX } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import ReserveModal from '@/components/ReserveModal';
 import TicketPurchaseModal from '@/components/TicketPurchaseModal';
@@ -54,7 +54,7 @@ const Hero = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { user } = useAuth();
-  const primaryCtaLabel = user ? 'Dejar mi huella' : 'Abrir Portales';
+  const primaryCtaLabel = user ? 'Dejar mi huella' : 'Tomar mi lugar';
   const canShowHeroAudioToggle = Boolean(
     user &&
     !isMobileViewport &&
@@ -591,15 +591,23 @@ const Hero = () => {
               />
             </motion.div>
             <motion.h1
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ duration: 1.5, delay: 0.2 }}
-              className="hero-title text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-medium mb-6 text-center w-full break-words"
-              style={{ textShadow: '0 0 35px rgba(255, 223, 255, 0.45)' }}
-            >
-              <span>#GATOENCERRADO</span>
-            </motion.h1>
+  initial={{ opacity: 0 }}
+  animate={{ opacity: 1 }}
+  transition={{ duration: 1.5, delay: 0.2 }}
+  className="hero-title text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-medium mb-3 text-center w-full break-words"
+  style={{ textShadow: '0 0 35px rgba(255, 223, 255, 0.45)' }}
+>
+  #GATOENCERRADO
+</motion.h1>
 
+<motion.p
+  initial={{ opacity: 0, y: 6 }}
+  animate={{ opacity: 1, y: 0 }}
+  transition={{ duration: 0.9, delay: 0.45, ease: 'easeOut' }}
+  className="text-xs italic text-slate-400/70 leading-tight mb-6"
+>
+  Un universo que ocurre en escena… y en quien lo habita.
+</motion.p>
        
 
             {/* Botones */}
@@ -611,7 +619,7 @@ const Hero = () => {
             >
               {!user ? (
                 <div className="flex flex-col gap-4 justify-center items-center">
-
+ 
                   {/* CTA PRINCIPAL */}
                   <Button
                     ref={primaryCtaRef}
@@ -627,11 +635,10 @@ const Hero = () => {
                       text-base tracking-wide
                     "
                   >
-                    <SparkleIcon size={22} className="drop-shadow-md" />
+                    <DramaIcon size={22} className="drop-shadow-md" />
                     {primaryCtaLabel}
                   </Button>
-                        {/* Microtexto */}
-                 
+              
 
                   {/* CTA SECUNDARIO — CAFÉ */}
                   <Button
@@ -682,10 +689,7 @@ const Hero = () => {
                       </span>
                     </motion.button>
                   </Button>
-                  {/* Microtexto */}
-                   <p className="text-xs italic text-slate-400/70 leading-tight">
-                    Un universo por explorar. Un espacio para encontrarnos.
-                  </p>
+            
                 </div>
               ) : (
                 <div
