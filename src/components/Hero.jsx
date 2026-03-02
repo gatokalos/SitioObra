@@ -54,7 +54,7 @@ const Hero = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { user } = useAuth();
-  const primaryCtaLabel = user ? 'Dejar mi huella' : 'Tomar mi lugar';
+  const primaryCtaLabel = user ? 'Dejar mi huella' : 'Tomar un lugar';
   const canShowHeroAudioToggle = Boolean(
     user &&
     !isMobileViewport &&
