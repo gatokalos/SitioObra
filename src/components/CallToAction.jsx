@@ -779,6 +779,10 @@ const CallToAction = ({ barsIntroDelayMs = 0 }) => {
 
   // 3) Checkout
   async function handleCheckout() {
+    if (loading) {
+      return;
+    }
+
     if (!SUBSCRIPTION_PRICE_ID) {
       setCheckoutStatus('Configura VITE_STRIPE_SUBSCRIPTION_PRICE_ID antes de continuar.');
       return;
@@ -836,7 +840,7 @@ const CallToAction = ({ barsIntroDelayMs = 0 }) => {
         channel: 'landing',
         event: 'suscripcion-landing',
         packages: 'subscription',
-        source: 'miniverse_modal_fallback',
+        source: 'call_to_action_fallback',
       },
     };
     try {
@@ -848,7 +852,7 @@ const CallToAction = ({ barsIntroDelayMs = 0 }) => {
         channel: 'landing',
         event: 'suscripcion-landing',
         packages: 'subscription',
-        source: 'miniverse_modal',
+        source: 'call_to_action',
       };
       const data = await createEmbeddedSubscription({
         priceId: SUBSCRIPTION_PRICE_ID,
@@ -873,8 +877,18 @@ const CallToAction = ({ barsIntroDelayMs = 0 }) => {
       setCheckoutStatus('');
     } catch (e) {
       console.warn('[CallToAction] Embedded checkout error. Activando fallback.', e);
-      setCheckoutStatus('No se pudo abrir el formulario embebido. Puedes intentar nuevamente o usar checkout externo.');
-      setPendingFallbackPayload(fallbackPayload);
+      setEmbeddedClientSecret('');
+      setPendingFallbackPayload(null);
+      setCheckoutStatus('No se pudo abrir el formulario embebido. Redirigiendo a checkout externo…');
+      try {
+        await startCheckoutFallback(fallbackPayload);
+        return;
+      } catch (fallbackError) {
+        console.error('[CallToAction] Fallback checkout error:', fallbackError);
+        setMsg(fallbackError?.message || 'No se pudo iniciar el checkout externo.');
+        setCheckoutStatus('No se pudo abrir el formulario embebido. Puedes intentar nuevamente o usar checkout externo.');
+        setPendingFallbackPayload(fallbackPayload);
+      }
     } finally {
       setLoading(false);
     }

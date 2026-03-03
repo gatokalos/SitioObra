@@ -1398,9 +1398,9 @@ Este espacio permite recorrer esas composiciones, explorar sus capas y descubrir
     cartaTitle: '#CaerEsDanzar',
     notaAutoral: 'Mi cuerpo colapsará;\nno sin danza\nni dolor bonito.',
     iaProfile: {
-      type: 'Actualmente este mini-verso no usa IA en producción.',
+      type: 'Actualmente no usa IA en producción.',
       interaction:
-        'Registro en motion capture, traducción a avatar digital y activación en sitio mediante realidad aumentada.',
+        'Registro en motion capture (mocap), traducción a avatar digital y activación en sitio mediante realidad aumentada.',
       tokensRange: 'Sin consumo de IA por visitante en esta etapa.',
       coverage: 'Producción técnica y activación territorial gestionadas por el equipo de Movimiento.',
       footnote: 'Cuando integremos módulos de IA reales, esta ficha se actualizará con métricas verificables.',
@@ -6295,7 +6295,7 @@ const rendernotaAutoral = () => {
               través de entrenamiento somático y creación coreográfica.
               <br />
               <br />
-              Al final, las coreografías se registran mediante captura de movimiento y se traducen en presencias digitales que
+              Estas coreografías se registran mediante captura de movimiento (o mocap) y se traducen en presencias digitales que
               habitan ese territorio. Al finalizar el proceso, la acción escénica no desaparece: queda sembrada en el
               espacio público como una presencia en realidad aumentada.
                   </p>
@@ -7890,6 +7890,15 @@ const rendernotaAutoral = () => {
       document.body,
     )
     : null;
+  const SupportBlockContainer = isMobileViewport ? 'div' : motion.div;
+  const supportBlockMotionProps = isMobileViewport
+    ? {}
+    : {
+        initial: { opacity: 0, x: -50 },
+        whileInView: { opacity: 1, x: 0 },
+        transition: { duration: 0.8, ease: 'easeOut' },
+        viewport: { once: true, amount: 0.25 },
+      };
 
   return (
     <>
@@ -8354,13 +8363,10 @@ const rendernotaAutoral = () => {
           {renderExplorerBadge()}
 
           <div className="mt-16 grid items-start lg:grid-cols-[3fr_2fr] gap-10">
-            <motion.div
+            <SupportBlockContainer
               id="apoya"
               ref={supportSectionRef}
-              initial={{ opacity: 0, x: -50 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.8, ease: 'easeOut' }}
-              viewport={{ once: true, amount: 0.25 }}
+              {...supportBlockMotionProps}
               className="glass-effect rounded-2xl p-8 md:p-10 flex flex-col justify-between relative overflow-hidden opacity-100"
               style={{ opacity: 1 }}
             >
@@ -8476,7 +8482,7 @@ const rendernotaAutoral = () => {
                   </div>
                 </div>
               </div>
-            </motion.div>
+            </SupportBlockContainer>
             
 
             <motion.div
