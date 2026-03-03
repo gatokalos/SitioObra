@@ -725,9 +725,9 @@ const MiniverseModal = ({
   const activeTabIntro = useMemo(() => {
     if (activeTab === 'experiences') {
       return {
-        lead: 'Te presentamos sus nueve formas:',
+        lead: 'Te presentamos las nueve expansiones de nuestra obra:',
         highlight:
-          'un mapa para explorar, intervenir y volver cuando quieras.',
+          'un ecosistema para explorar, intervenir y volver cuando quieras.',
           continuation: 'Con tu huella activa, accedes a la versión completa.'
       };
     }

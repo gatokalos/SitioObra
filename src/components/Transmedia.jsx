@@ -147,6 +147,7 @@ const SHOWCASE_OPEN_TRANSITION = {
   blackoutMs: 90,
   revealMs: 220,
 };
+const INTERACTIVE_EXPERIENCE_GOAL = 'interactive_experience_placeholder';
 const DEFAULT_BADGE_STATE = {
   unlocked: false,
   unlockedAt: null,
@@ -3855,6 +3856,18 @@ const Transmedia = () => {
   const handleCloseCauseSite = useCallback(() => {
     setIsCauseSiteOpen(false);
   }, []);
+
+  const handleOpenInteractiveExperience = useCallback(() => {
+    if (typeof document !== 'undefined') {
+      document.documentElement.dataset.bienvenidaFade = 'true';
+    }
+    setBienvenidaReturnPath(`${location.pathname}${location.search}#apoya`);
+    if (typeof window !== 'undefined') {
+      window.setTimeout(() => {
+        navigate(`/bienvenida?goal=${INTERACTIVE_EXPERIENCE_GOAL}`, { replace: true });
+      }, 450);
+    }
+  }, [location.pathname, location.search, navigate]);
 
   const activeDefinition = activeShowcase ? showcaseDefinitions[activeShowcase] : null;
   const activeData = activeShowcase ? showcaseContent[activeShowcase] : null;
@@ -8426,6 +8439,29 @@ const rendernotaAutoral = () => {
                   items={CAUSE_ACCORDION}
                   onOpenImagePreview={handleOpenImagePreview}
                 />
+                <div className="relative overflow-hidden rounded-xl border border-emerald-200/35 bg-black/35 px-4 py-3.5 text-left">
+                  <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_20%_10%,rgba(52,211,153,0.22),transparent_48%),radial-gradient(circle_at_82%_65%,rgba(45,212,191,0.16),transparent_35%)]" />
+                  <div className="pointer-events-none absolute inset-0 bg-gradient-to-r from-emerald-400/12 via-transparent to-cyan-300/10" />
+                  <div className="relative z-10 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                    <div className="min-w-0">
+                      <p className="text-base font-semibold text-slate-100">
+                        Experiencia interactiva <span className="text-slate-400">|</span> ¿Cómo estás hoy?
+                      </p>
+                      <p className="mt-1 text-sm text-slate-300/90">Un recorrido guiado por la App Causa Social.</p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={handleOpenInteractiveExperience}
+                      className="inline-flex items-center justify-center gap-2 rounded-xl border border-emerald-300/40 bg-emerald-400/10 px-4 py-2 text-sm font-semibold text-emerald-100 transition hover:border-emerald-200/60 hover:bg-emerald-300/15 hover:text-white whitespace-nowrap"
+                    >
+                      <Smartphone size={15} />
+                      Probar experiencia
+                    </button>
+                  </div>
+                  <p className="relative z-10 mt-2 text-[11px] uppercase tracking-[0.2em] text-emerald-200/75">
+                    Placeholder conectado a flujo Bienvenida
+                  </p>
+                </div>
                 <div className="rounded-xl border border-white/10 bg-black/20 px-4 py-3 text-xs leading-relaxed text-slate-300/85">
                   <div className="flex flex-col gap-3 md:flex-row md:items-center md:gap-4">
                     <div className="w-full md:w-auto md:flex-shrink-0">
@@ -8456,45 +8492,43 @@ const rendernotaAutoral = () => {
                 </div>
               </div>
 
-              <div className="mt-8 space-y-5">
-                <div className="relative mx-auto max-w-3xl overflow-hidden rounded-2xl border border-white/10 bg-black/30 p-6 text-center shadow-[0_12px_36px_rgba(0,0,0,0.35)] md:p-7">
-                  <div
-                    aria-hidden="true"
-                    className="pointer-events-none absolute inset-0 z-0 flex items-center justify-center"
-                  >
-                    <motion.div
-                      initial={{ opacity: 0.35, scale: 0.9 }}
-                      animate={{ opacity: [0.25, 0.45, 0.25], scale: [0.95, 1.05, 0.95] }}
-                      transition={{ duration: 8, repeat: Infinity, ease: 'easeInOut' }}
-                      className="h-[88%] w-[88%] rounded-full bg-purple-600/25 blur-[90px] md:h-[72%] md:w-[72%]"
-                    />
-                  </div>
-
-                  <div className="relative z-10">
-                    <p className="text-base italic leading-relaxed text-slate-400 md:text-lg">
-
-                    "Cuando la huella florezca, su pulso regresará a nuestro universo: nuevos juegos, nuevas escenas, nuevas historias por contar.""
-                    </p>
-                    <div className="mt-4 text-sm text-slate-400">
-                      <p className="font-semibold text-slate-200">Equipo 💜 #GatoEncerrado</p>
-                      
-                    </div>
-                  </div>
-                </div>
-              </div>
             </SupportBlockContainer>
             
 
-            <motion.div
-              id="cta"
-              initial={{ opacity: 0, x: 50 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.8, ease: 'easeOut' }}
-              viewport={{ once: true, amount: 0.25 }}
-              className="relative"
-            >
-              <CallToAction barsIntroDelayMs={900} />
-            </motion.div>
+            <div className="space-y-5">
+              <motion.div
+                id="cta"
+                initial={{ opacity: 0, x: 50 }}
+                whileInView={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.8, ease: 'easeOut' }}
+                viewport={{ once: true, amount: 0.25 }}
+                className="relative"
+              >
+                <CallToAction barsIntroDelayMs={900} />
+              </motion.div>
+              <div className="relative overflow-hidden rounded-2xl border border-white/10 bg-black/30 p-6 text-center shadow-[0_12px_36px_rgba(0,0,0,0.35)] md:p-7">
+                <div
+                  aria-hidden="true"
+                  className="pointer-events-none absolute inset-0 z-0 flex items-center justify-center"
+                >
+                  <motion.div
+                    initial={{ opacity: 0.35, scale: 0.9 }}
+                    animate={{ opacity: [0.25, 0.45, 0.25], scale: [0.95, 1.05, 0.95] }}
+                    transition={{ duration: 8, repeat: Infinity, ease: 'easeInOut' }}
+                    className="h-[88%] w-[88%] rounded-full bg-purple-600/25 blur-[90px] md:h-[72%] md:w-[72%]"
+                  />
+                </div>
+
+                <div className="relative z-10">
+                  <p className="text-base italic leading-relaxed text-slate-400 md:text-medium">
+                    "Cuando florezcan estas huellas, su pulso regresará al universo: nuevos juegos, nuevas escenas, nuevas historias por contar."
+                  </p>
+                  <div className="mt-4 text-sm text-slate-400">
+                    <p className="font-semibold text-slate-200">Equipo 💜 #GatoEncerrado</p>
+                  </div>
+                </div>
+              </div>
+            </div>
   
           </div>
         </div>

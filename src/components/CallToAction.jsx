@@ -1038,9 +1038,7 @@ const CallToAction = ({ barsIntroDelayMs = 0 }) => {
                 <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-slate-950/35 via-slate-950/30 to-slate-950/45" />
                 <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_22%_24%,rgba(125,211,252,0.28),transparent_45%),radial-gradient(circle_at_80%_72%,rgba(147,197,253,0.22),transparent_18%)]" />
                 <p className="relative z-10 mb-2 text-m leading-relaxed text-slate-400">
-Un universo por explorar. Un espacio para encontrarnos.
-
-  Si asististe a la obra, puedes convertir ese momento en huella. 
+Si asististe a la obra, puedes convertir ese momento en huella. 
   Si no tienes comprobante, tu palabra es suficiente. 
   Alguien del equipo te contestará.
   <br /><br />
@@ -1230,7 +1228,7 @@ Un universo por explorar. Un espacio para encontrarnos.
             isPreviewing={interactiveSupport !== null}
           />
           <p className="text-xs opacity-65">
-            A partir de la huella {EXPANSION_START_COPY}, cada huella se reinvierte en nuevas obras, miniversos y publicaciones.
+            A partir de la huella {EXPANSION_START_COPY}, cada huella se reinvierte en nuevas obras, miniversos y publicaciones ✨
           </p>
           </div>
         </div>
@@ -1241,9 +1239,6 @@ Un universo por explorar. Un espacio para encontrarnos.
           </p>
           <p className="text-sm opacity-80">
             Reinversión (excedente): <strong>+{displayStats.reinversion}</strong>
-          </p>
-          <p className="text-xs opacity-65">
-            Todo lo que supere esta meta se reinvierte en nuevas obras, miniversos y publicaciones ✨
           </p>
         </div>
       </div>

@@ -42,7 +42,7 @@ const teamData = {
         name: "Ricardo Márquez Salgado",
         role: "Intérprete",
         bio: "Comunicólogo, modelo y actor. Ha participado en teatro, cine y publicidad. Destacan sus coprotagónicos en 'Ideas para no morir en el anonimato' y 'Entre Dos'. Su presencia combina energía escénica y precisión estética.",
-        image: "https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/equipo/ricardo.jpg",
+        image: "https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/equipo/ricardo_1.jpg",
       },
       {
         id: "elenco-carlos-valdez",
