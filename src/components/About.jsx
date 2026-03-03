@@ -1,9 +1,10 @@
 import React, { useState, useCallback, useEffect, useRef, useMemo } from 'react';
 import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Film, Headphones, Quote, Send, HeartHandshake, RefreshCw } from 'lucide-react';
+import { Film, Headphones, Quote, Send, HeartHandshake, RefreshCw, Heart } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
+import { ToastAction } from '@/components/ui/toast';
 import { toast } from '@/components/ui/use-toast';
 import { useAuth } from '@/contexts/SupabaseAuthContext';
 import { ConfettiBurst } from '@/components/Confetti';
@@ -12,6 +13,8 @@ import { ensureAnonId } from '@/lib/identity';
 import {
   fetchApprovedAudiencePerspectives,
   submitAudiencePerspective,
+  recordAudiencePerspectiveLike,
+  getAudiencePerspectiveLikeCounts,
 } from '@/services/audiencePerspectiveService';
 import {
   getTrailerPublicUrl,
@@ -39,6 +42,7 @@ const aboutParagraphs = [
 const fallbackTestimonials = [
   {
     id: 'fallback-1',
+    sourceId: 'fallback-1',
     quote:
       '“Salí de la función y fue como si despertara con nuevos recuerdos. Es un gato encerrado me obligó a conversar con mis propios vacíos.”',
     author: 'Maru Navarro',
@@ -46,6 +50,7 @@ const fallbackTestimonials = [
   },
   {
     id: 'fallback-2',
+    sourceId: 'fallback-2',
     quote:
       '“Es un Gato Encerrado nos recuerda que el teatro puede ser también archivo emocional y dispositivo de memoria.”',
     author: 'Dr. Luis Miguel Sánchez',
@@ -71,6 +76,7 @@ const PROVOCA_APPROVED_FETCH_LIMIT = 20;
 const PROVOCA_MAX_SMALL_VOICE_CARDS = 2;
 const PROVOCA_LARGE_VOICE_MIN_CHARS = 210;
 const PROVOCA_SCROLLABLE_QUOTE_MIN_CHARS = 610;
+const PROVOCA_LIKED_VOICES_STORAGE_PREFIX = 'gatoencerrado:provoca-liked-voices:v1';
 const inviteMessage = `Hola 🐾
 Quiero invitarte a compartir tu mirada en *Perspectivas del público* de *Es un gato encerrado*.
 Entra aquí: ${PROVOCA_SHARE_URL}
@@ -91,6 +97,11 @@ const getProvocaListenCooldownKey = (userId) => {
   if (userId) return `${PROVOCA_LISTEN_COOLDOWN_PREFIX}:user:${userId}`;
   const anonId = ensureAnonId();
   return `${PROVOCA_LISTEN_COOLDOWN_PREFIX}:anon:${anonId || 'guest'}`;
+};
+
+const getProvocaLikedVoicesKey = (userId) => {
+  if (!userId) return null;
+  return `${PROVOCA_LIKED_VOICES_STORAGE_PREFIX}:user:${userId}`;
 };
 
 const getProvocaSubmitErrorMessage = (error) => {
@@ -141,9 +152,15 @@ export const ProvocaSection = () => {
   const [hasConsumedListenTurn, setHasConsumedListenTurn] = useState(false);
   const [submitCooldownKey, setSubmitCooldownKey] = useState(null);
   const [listenCooldownKey, setListenCooldownKey] = useState(null);
+  const [voiceLikeCountsById, setVoiceLikeCountsById] = useState({});
+  const [voiceLikeStatusById, setVoiceLikeStatusById] = useState({});
+  const [likedVoiceIds, setLikedVoiceIds] = useState([]);
+  const [likedVoicesStorageKey, setLikedVoicesStorageKey] = useState(null);
+  const [pulseDeltaById, setPulseDeltaById] = useState({});
   const afterCareTimeoutRef = useRef(null);
   const confettiTimeoutRef = useRef(null);
   const responseCountdownRef = useRef(null);
+  const pulseDeltaTimeoutsRef = useRef({});
   const {
     micPromptVisible,
     micError,
@@ -161,20 +178,31 @@ export const ProvocaSection = () => {
   const isEscucharButtonDisabled =
   isSilvestreThinking || hasConsumedListenTurn;
   const voicesPool = approvedTestimonials.length > 0 ? approvedTestimonials : fallbackTestimonials;
-  const canRefreshVoices = voicesPool.length > 1;
-  const visibleTestimonials = useMemo(() => {
+  const rankedVoicesPool = useMemo(() => {
     if (!voicesPool.length) return [];
+    return [...voicesPool]
+      .map((voice, index) => ({
+        voice,
+        index,
+        pulseCount: Number(voiceLikeCountsById[String(voice?.sourceId || '')] ?? 0),
+      }))
+      .sort((a, b) => (b.pulseCount - a.pulseCount) || (a.index - b.index))
+      .map((entry) => entry.voice);
+  }, [voiceLikeCountsById, voicesPool]);
+  const canRefreshVoices = rankedVoicesPool.length > 1;
+  const visibleTestimonials = useMemo(() => {
+    if (!rankedVoicesPool.length) return [];
 
-    const total = voicesPool.length;
+    const total = rankedVoicesPool.length;
     const startIndex = ((visibleVoiceCursor % total) + total) % total;
-    const first = voicesPool[startIndex];
+    const first = rankedVoicesPool[startIndex];
     const firstIsLarge = isLargeVoiceCard(first);
 
     if (firstIsLarge || total === 1) {
       return [{ ...first, displayVariant: 'large' }];
     }
 
-    const second = voicesPool[(startIndex + 1) % total];
+    const second = rankedVoicesPool[(startIndex + 1) % total];
     if (!second || isLargeVoiceCard(second)) {
       return [{ ...first, displayVariant: 'small' }];
     }
@@ -183,7 +211,7 @@ export const ProvocaSection = () => {
       { ...first, displayVariant: 'small' },
       { ...second, displayVariant: 'small' },
     ].slice(0, PROVOCA_MAX_SMALL_VOICE_CARDS);
-  }, [voicesPool, visibleVoiceCursor]);
+  }, [rankedVoicesPool, visibleVoiceCursor]);
 
   const isEscucharButtonActive =
     !hasConsumedListenTurn &&
@@ -222,6 +250,10 @@ export const ProvocaSection = () => {
       if (responseCountdownRef.current) {
         clearInterval(responseCountdownRef.current);
       }
+      Object.values(pulseDeltaTimeoutsRef.current).forEach((timeoutId) => {
+        clearTimeout(timeoutId);
+      });
+      pulseDeltaTimeoutsRef.current = {};
     };
   }, []);
 
@@ -232,6 +264,18 @@ export const ProvocaSection = () => {
     setHasConsumedListenTurn(safeGetItem(key) === '1');
     setSubmitCooldownKey(getProvocaSubmitCooldownKey(userId));
     setListenCooldownKey(getProvocaListenCooldownKey(userId));
+    const likedKey = getProvocaLikedVoicesKey(userId);
+    setLikedVoicesStorageKey(likedKey);
+    if (!likedKey) {
+      setLikedVoiceIds([]);
+      return;
+    }
+    try {
+      const parsed = JSON.parse(safeGetItem(likedKey) || '[]');
+      setLikedVoiceIds(Array.isArray(parsed) ? parsed.map((id) => String(id || '')).filter(Boolean) : []);
+    } catch {
+      setLikedVoiceIds([]);
+    }
   }, [user?.id]);
 
   useEffect(() => {
@@ -289,6 +333,34 @@ export const ProvocaSection = () => {
     }, PROVOCA_CONFETTI_VISIBLE_MS);
   }, []);
 
+  const persistLikedVoiceIds = useCallback((nextIds) => {
+    const normalized = Array.from(
+      new Set((Array.isArray(nextIds) ? nextIds : []).map((id) => String(id || '')).filter(Boolean))
+    );
+    setLikedVoiceIds(normalized);
+    if (likedVoicesStorageKey) {
+      safeSetItem(likedVoicesStorageKey, JSON.stringify(normalized));
+    }
+  }, [likedVoicesStorageKey]);
+
+  const showPulseDelta = useCallback((perspectiveId) => {
+    if (!perspectiveId) return;
+    setPulseDeltaById((previous) => ({ ...previous, [perspectiveId]: '+1' }));
+    const currentTimeout = pulseDeltaTimeoutsRef.current[perspectiveId];
+    if (currentTimeout) {
+      clearTimeout(currentTimeout);
+    }
+    pulseDeltaTimeoutsRef.current[perspectiveId] = setTimeout(() => {
+      setPulseDeltaById((previous) => {
+        if (!previous[perspectiveId]) return previous;
+        const next = { ...previous };
+        delete next[perspectiveId];
+        return next;
+      });
+      delete pulseDeltaTimeoutsRef.current[perspectiveId];
+    }, 1300);
+  }, []);
+
   useEffect(() => {
     const stored = safeGetItem(PROVOCA_DRAFT_KEY);
     if (!stored) {
@@ -339,6 +411,7 @@ export const ProvocaSection = () => {
             if (!normalizedQuote) return null;
             return {
               id: item?.id ? `approved-${item.id}` : `approved-fallback-${index}`,
+              sourceId: item?.id ? String(item.id) : null,
               quote: normalizedQuote.startsWith('“') ? normalizedQuote : `“${normalizedQuote}”`,
               author: item?.author_name || 'Voz del público',
               role: item?.author_role || 'Perspectiva compartida',
@@ -360,10 +433,89 @@ export const ProvocaSection = () => {
     };
   }, []);
 
+  useEffect(() => {
+    let cancelled = false;
+    const perspectiveIds = voicesPool
+      .map((voice) => String(voice?.sourceId || '').trim())
+      .filter(Boolean);
+
+    if (!perspectiveIds.length) {
+      setVoiceLikeCountsById({});
+      return () => {
+        cancelled = true;
+      };
+    }
+
+    const loadPulseCounts = async () => {
+      const { countsById, error } = await getAudiencePerspectiveLikeCounts(perspectiveIds);
+      if (cancelled) return;
+      if (error) {
+        console.error('[Provoca] No se pudieron cargar los pulsos por voz:', error);
+      }
+      setVoiceLikeCountsById((previous) => ({ ...previous, ...countsById }));
+    };
+
+    loadPulseCounts();
+    return () => {
+      cancelled = true;
+    };
+  }, [voicesPool]);
+
+  const triggerLoginModal = useCallback(() => {
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent('open-login-modal'));
+    }
+  }, []);
+
   const handleRefreshVoices = useCallback(() => {
     if (!canRefreshVoices) return;
-    setVisibleVoiceCursor((previous) => (previous + 1) % voicesPool.length);
-  }, [canRefreshVoices, voicesPool.length]);
+    setVisibleVoiceCursor((previous) => (previous + 1) % rankedVoicesPool.length);
+  }, [canRefreshVoices, rankedVoicesPool.length]);
+
+  const handleVoicePulse = useCallback(async (voice) => {
+    const perspectiveId = String(voice?.sourceId || '').trim();
+    if (!perspectiveId) {
+      toast({ description: 'Este testimonio aún no admite pulso.' });
+      return;
+    }
+
+    if (!user?.id) {
+      toast({
+        description: 'Inicia sesión para dejar un pulso.',
+        action: (
+          <ToastAction
+            altText="Abrir login"
+            onClick={triggerLoginModal}
+            className="h-auto border-none bg-transparent p-0 text-xs underline underline-offset-2 text-slate-100 hover:bg-transparent hover:text-white"
+          >
+            Iniciar sesión
+          </ToastAction>
+        ),
+      });
+      return;
+    }
+
+    const alreadyLiked = likedVoiceIds.includes(perspectiveId);
+    const status = voiceLikeStatusById[perspectiveId];
+    if (alreadyLiked || status === 'loading') return;
+
+    setVoiceLikeStatusById((previous) => ({ ...previous, [perspectiveId]: 'loading' }));
+    const { success, error } = await recordAudiencePerspectiveLike({ perspectiveId, user });
+    if (!success) {
+      console.error('[Provoca] No se pudo registrar el pulso:', error);
+      toast({ description: 'No pudimos registrar el pulso. Intenta de nuevo más tarde.' });
+      setVoiceLikeStatusById((previous) => ({ ...previous, [perspectiveId]: 'idle' }));
+      return;
+    }
+
+    setVoiceLikeCountsById((previous) => ({
+      ...previous,
+      [perspectiveId]: Number(previous[perspectiveId] ?? 0) + 1,
+    }));
+    persistLikedVoiceIds([...likedVoiceIds, perspectiveId]);
+    showPulseDelta(perspectiveId);
+    setVoiceLikeStatusById((previous) => ({ ...previous, [perspectiveId]: 'success' }));
+  }, [likedVoiceIds, persistLikedVoiceIds, showPulseDelta, triggerLoginModal, user, voiceLikeStatusById]);
 
   const handleSubmitVoice = useCallback(async () => {
     const rawQuote = voiceDraft.trim();
@@ -481,10 +633,8 @@ export const ProvocaSection = () => {
 
   const handleOpenLoginFromAfterCare = useCallback(() => {
     setShowAfterCareOverlay(false);
-    if (typeof window !== 'undefined') {
-      window.dispatchEvent(new CustomEvent('open-login-modal'));
-    }
-  }, []);
+    triggerLoginModal();
+  }, [triggerLoginModal]);
 
   const handleInviteFromProvoca = useCallback(async () => {
     const shareData = {
@@ -675,7 +825,7 @@ export const ProvocaSection = () => {
                   className="border-slate-100/20 text-slate-200 hover:bg-slate-100/10 px-6 py-3 rounded-full font-semibold flex items-center justify-center gap-2 w-full sm:w-auto"
                 >
                   <Send size={18} />
-                  Invitar al diálogo
+                  Invita otras voces
                 </Button>
               </div>
               <AnimatePresence initial={false}>
@@ -820,9 +970,52 @@ export const ProvocaSection = () => {
                       {item.quote}
                     </p>
                   </div>
-                  <div className="text-sm text-slate-400">
-                    <p className="text-slate-200 font-semibold">{item.author}</p>
-                    <p>{item.role}</p>
+                  <div className="flex items-end justify-between gap-4">
+                    <div className="text-sm text-slate-400">
+                      <p className="text-slate-200 font-semibold">{item.author}</p>
+                      <p>{item.role}</p>
+                    </div>
+                    {(() => {
+                      const perspectiveId = String(item?.sourceId || '').trim();
+                      const hasLiked = likedVoiceIds.includes(perspectiveId);
+                      const pulseStatus = voiceLikeStatusById[perspectiveId] || 'idle';
+                      const pulseDisabled = !perspectiveId || pulseStatus === 'loading' || hasLiked;
+                      const pulseDelta = pulseDeltaById[perspectiveId] || null;
+
+                      return (
+                        <div className="flex shrink-0 flex-col items-end gap-1">
+                          <button
+                            type="button"
+                            onClick={() => handleVoicePulse(item)}
+                            disabled={pulseDisabled}
+                            aria-label={
+                              hasLiked
+                                ? 'Ya dejaste pulso en esta voz'
+                                : pulseStatus === 'loading'
+                                  ? 'Registrando pulso'
+                                  : 'Dejar pulso a esta voz'
+                            }
+                            className={`inline-flex items-center justify-center p-1 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-300/70 focus-visible:ring-offset-2 focus-visible:ring-offset-black/40 ${
+                              hasLiked
+                                ? 'text-fuchsia-300'
+                                : 'text-slate-400 hover:text-violet-200'
+                            } disabled:cursor-not-allowed disabled:opacity-60`}
+                          >
+                            <Heart
+                              size={22}
+                              className={`mx-auto ${hasLiked ? 'fill-current' : 'fill-transparent'} ${
+                                pulseStatus === 'loading' ? 'animate-pulse' : ''
+                              }`}
+                            />
+                          </button>
+                          {pulseDelta ? (
+                            <span className="text-[10px] uppercase tracking-[0.14em] text-fuchsia-300/90 animate-pulse">
+                              {pulseDelta} pulso
+                            </span>
+                          ) : null}
+                        </div>
+                      );
+                    })()}
                   </div>
                 </div>
               ))}
@@ -834,7 +1027,7 @@ export const ProvocaSection = () => {
                   className="h-9 rounded-full border-white/20 bg-black/20 px-4 text-xs uppercase tracking-[0.18em] text-slate-200 hover:bg-white/10 disabled:opacity-45"
                 >
                   <RefreshCw size={14} className="mr-2" />
-                  Refrescar voces
+                  Refrescar perspectivas
                 </Button>
             </div>
           </div>

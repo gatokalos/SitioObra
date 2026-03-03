@@ -9,7 +9,7 @@ import { safeGetItem, safeSetItem } from '@/lib/safeStorage';
 
 const BLOG_ONBOARDING_KEY = 'gatoencerrado-blog-onboarding';
 
-const BlogContributionPrompt = () => {
+const BlogContributionPrompt = ({ onRevealTransmedia = null }) => {
   const [isContributionOpen, setIsContributionOpen] = useState(false);
   const [showOnboardingHint, setShowOnboardingHint] = useState(false);
   const onboardingStoredRef = useRef(false);
@@ -59,6 +59,21 @@ const BlogContributionPrompt = () => {
       window.removeEventListener('gatoencerrado:resume-contribution', handleResumeContribution);
     };
   }, []);
+
+  const handleContinue = useCallback(() => {
+    if (typeof onRevealTransmedia === 'function') {
+      onRevealTransmedia({
+        trigger: 'intermedio-continuar',
+        targetId: 'transmedia',
+        eventKey: 'showcase_boost:landing_intermedio',
+      });
+      return;
+    }
+    document.querySelector('#transmedia')?.scrollIntoView({
+      behavior: 'smooth',
+      block: 'start',
+    });
+  }, [onRevealTransmedia]);
 
   return (
     <>
@@ -122,12 +137,7 @@ const BlogContributionPrompt = () => {
     <div className="inline-flex rounded-full overflow-hidden shadow-lg border border-slate-600/50 backdrop-blur-sm">
       {/* Mitad izquierda: continuar */}
       <button
-        onClick={() => {
-          document.querySelector('#transmedia')?.scrollIntoView({
-            behavior: 'smooth',
-            block: 'start',
-          });
-        }}
+        onClick={handleContinue}
         className="px-6 py-3 text-sm sm:text-base font-medium text-slate-100 bg-gradient-to-r from-fuchsia-600 to-pink-500 hover:opacity-90 transition-all duration-300"
       >
         Continuar

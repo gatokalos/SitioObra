@@ -30,11 +30,13 @@ import {
   Quote,
   CheckCheckIcon,
   Hand,
+  User,
   Send,
   X,
   PawPrint,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { ToastAction } from '@/components/ui/toast';
 import CallToAction from '@/components/CallToAction';
 import InstallPWACTA from '@/components/InstallPWACTA';
 import { fetchBlogPostBySlug } from '@/services/blogService';
@@ -106,6 +108,13 @@ const SHOWCASE_REQUIRED_GAT = {
   apps: 150,
   oraculo: 0,
 };
+const MOVEMENT_COLLABORATOR_CALL_ITEMS = [
+  'Intérpretes y bailarines por ciudad',
+  'Diseño y desarrollo de skins digitales',
+  'Asistencia en captura de movimiento',
+  'Espacios para activación urbana',
+  'Comunidad interesada en exploración corporal',
+];
 const LEGACY_TAZA_VIEWER_ENABLED = false;
 const SHOWCASE_BADGE_IDS = [
   'miniversos',
@@ -767,7 +776,7 @@ const normalizeStoredEmotionOrbs = (raw) => {
 };
 const showcaseDefinitions = {
   miniversos: {
-    label: 'Miniverso Escena',
+    label: 'Escena',
     type: 'tragedia',
     intro:
       'La escena no terminó. Lo que viste sigue ocurriendo. Aquí puedes habitar el conflicto, escuchar la conciencia en proceso y hablar como si estuvieras en escena.',
@@ -801,7 +810,7 @@ iaProfile: {
     ],
   },
   copycats: {
-    label: 'Miniverso Cine',
+    label: 'Mini-verso cine',
     type: 'cinema',
     intro: 'El cine dentro de #GatoEncerrado es otro modo de entrar al encierro. La obra, el proceso y la mirada se mezclan hasta volver indistinguibles sus fronteras.',
     promise: 'Aquí no solo ves cine: te invitamos a entrar a su laboratorio.',
@@ -847,7 +856,7 @@ iaProfile: {
         id: 'viviana-gonzalez',
         name: 'Viviana González',
         role: 'Dirección y fotografía · CopyCats / Quirón',
-        bio: 'Viviana acompaña al Miniverso Cine con una mirada que piensa. Comunicóloga y docente en la Ibero, su experiencia ilumina procesos más que superficies. Fue quien sostuvo el pulso visual de Quirón y CopyCats: cámara, escucha y diálogo creativo continuo. Su presencia abrió rutas nuevas para traducir lo íntimo, lo incierto y lo que apenas empieza a nacer en pantalla',
+        bio: 'Viviana acompaña al Cine de #GatoEncerrado con una mirada que piensa. Comunicóloga y docente en la Ibero, su experiencia ilumina procesos más que superficies. Fue quien sostuvo el pulso visual de Quirón y CopyCats: cámara, escucha y diálogo creativo continuo. Su presencia abrió rutas nuevas para traducir lo íntimo, lo incierto y lo que apenas empieza a nacer en pantalla',
         image: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/equipo/viviana_gg.jpeg',
         anchor: '#team',
       },
@@ -855,7 +864,7 @@ iaProfile: {
         id: 'diego-madera',
         name: 'Diego Madera',
         role: 'Compositor · Tema musical',
-        bio: 'Diego tiende puentes entre emoción y estructura. Compositor de formación precisa y sensibilidad abierta, su música respira junto al material filmado: acompaña, sostiene y revela. En el Miniverso Cine, sus partituras funcionan como una línea de vida, un lugar donde el caos ordena su ritmo. Es también maestro de piano, y esa pedagogía silenciosa terminó resonando en la obra.',
+        bio: 'Diego tiende puentes entre emoción y estructura. Compositor de formación precisa y sensibilidad abierta, su música respira junto al material filmado: acompaña, sostiene y revela. En el Cine de #GatoEncerrado, sus partituras funcionan como una línea de vida, un lugar donde el caos ordena su ritmo. Es también maestro de piano, y esa pedagogía silenciosa terminó resonando en la obra.',
         image: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/equipo/diego.png',
         anchor: '#team',
       },
@@ -870,7 +879,7 @@ iaProfile: {
         id: 'maria-diana-laura-rodriguez',
         name: 'María Diana Laura Rodriguez',
         role: 'Producción en línea & Cuerpo en escena',
-        bio: 'María Diana Laura cruzó el Miniverso Cine desde dos frentes: coordinó la producción en línea del cortometraje y encarnó a Cirila en el oráculo, llevando esa figura entre lo ritual y lo doméstico a la pantalla. Su energía organizativa y su presencia performática sostuvieron momentos clave del proceso, dejando constancia de que producir también es un acto de imaginación.',
+        bio: 'María Diana Laura llegó a este miniverso cinematográfico desde dos frentes: coordinó la producción en línea del cortometraje y encarnó a Cirila en el oráculo, llevando esa figura entre lo ritual y lo doméstico a la pantalla. Su energía organizativa y su presencia performática sostuvieron momentos clave del proceso, dejando constancia de que producir también es un acto de imaginación.',
         image: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/equipo/mariadianalaura.jpg',
         anchor: '#team',
       },
@@ -927,7 +936,7 @@ iaProfile: {
     },
   },
   lataza: {
-    label: 'Miniverso Artesanías',
+    label: 'Artesanías',
     type: 'object-webar',
     slug: 'taza-que-habla',
     subtitle: 'Esta no es una taza. Es un portal.',
@@ -997,11 +1006,11 @@ iaProfile: {
     },
   },
   miniversoNovela: {
-    label: 'Miniverso Literatura',
+    label: 'Literatura',
     type: 'blog-series',
     slug: null,
     intro:
-      'Este Miniverso entiende la escritura como una forma de expansión. No es un complemento de la obra escénica o de la novela, sino un espacio propio donde fragmentos, voces, poemas y apuntes dialogan entre sí y amplían el universo de Gato Encerrado.',
+      'En este miniverso literario se entiende la escritura como una forma de expansión. No es un complemento de la obra escénica o de la novela, sino un espacio propio donde fragmentos, voces, poemas y apuntes dialogan entre sí y amplían el universo de Gato Encerrado.',
     cartaTitle: '#LaPreguntaInsiste',
     notaAutoral:
       'Escribí para entender\ny la página me abrió otra pregunta.',
@@ -1010,7 +1019,7 @@ iaProfile: {
         id: 'pepe-rojo',
         name: 'Pepe Rojo',
         role: 'Escritor y crítico cultural',
-        bio: 'Pepe Rojo acompañó el Miniverso Literatura con una lectura precisa y generosa. Autor emblemático de la narrativa fronteriza, ofreció el prólogo de Mi Gato Encerrado, abriendo el libro desde una mirada que entiende el artificio, la herida y la imaginación como un mismo territorio. Su intervención dio claridad y ruta al futuro de la obra.',
+        bio: 'Pepe Rojo acompañó la literatura de este miniverso con una lectura precisa y generosa. Autor emblemático de la narrativa fronteriza, ofreció el prólogo de Mi Gato Encerrado, abriendo el libro desde una mirada que entiende el artificio, la herida y la imaginación como un mismo territorio. Su intervención dio claridad y ruta al futuro de la obra.',
         image: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/equipo/peperojo.jpeg',
       },
       {
@@ -1068,10 +1077,12 @@ iaProfile: {
     },
   },
   miniversoSonoro: {
-    label: 'Miniverso Sonoridades',
+    label: 'Sonoridades',
     type: 'audio-dream',
     intro:
-      'Miniverso Sonoridades reúne la música original compuesta para la obra y la película, junto con poemas creados dentro del universo GatoEncerrado. Aquí puedes recorrer piezas sonoras, textos y combinaciones audiovisuales que amplían la experiencia narrativa.',
+      <p>Sonoridades reúne la música original y el diseño sonoro creados para la obra, junto con piezas que expanden su universo más allá del escenario. <br/><br/>En la puesta, el sonido no acompañó la historia: la transformó.
+Abrió una experiencia inmersiva donde la resonancia modifica la percepción del tiempo, del cuerpo y del espacio. <br/><br/>
+Este espacio permite recorrer esas composiciones, explorar sus capas y descubrir cómo lo audible deja huella incluso cuando la escena ya terminó. <br/><br/> Aquí, cada visita es una mezcla nueva, un sueño que se reinventa con cada escucha.</p>,
     highlights: [
       'Video que fluye solo.',
       'Música que tú eliges.',
@@ -1152,10 +1163,10 @@ iaProfile: {
     ],
   },
   miniversoGrafico: {
-    label: 'Miniverso Gráfico',
+    label: 'Gráficos',
     type: 'graphic-lab',
     intro:
-      'Colección viva de exploraciones visuales: cómics en curso, viñetas interactivas, posters simbólicos, caricaturas conceptuales, murales colaborativos y avances con IA/técnicas mixtas.',
+      <p>Este mini-verso gráfico explora el universo de #GatoEncerrado desde la imagen. <br/><br/> Aquí las escenas se quedan en otro momento: lo que en la obra aparece como pensamiento o diálogo, en el cómic puede convertirse en ensayo, en silencio, en otra voz.<br/><br/> No solo el de Silvestre, sino el de cualquiera que se haya sentido como él. <br/>Dibujar permite mirar lo que no siempre se dice en escena.</p>,
     cartaTitle: '#MirarmeLoQueSoy',
     notaAutoral:
       'Me quedé dibujando,\ncomo si el papel supiera quién soy\nmejor que yo.',
@@ -1170,7 +1181,7 @@ iaProfile: {
     ],
 
     swipe: {
-      title: 'Swipe narrativo (modo viñeta)',
+      title: 'Swipe narrativo',
       description: 'Haz scroll hacia arriba para navegar por tarjetas verticales.',
       steps: [
         'Cada tarjeta revela una escena, una decisión o una herida.',
@@ -1218,14 +1229,14 @@ iaProfile: {
     },
   },
   miniversoMovimiento: {
-    label: 'Miniverso Movimiento',
-     intro:'Esta forma de la obra traslada al cuerpo los conflictos mentales del universo #GatoEncerrado. Si en la obra la mente se fragmenta, aquí el cuerpo busca arraigo. Es un espacio donde las emociones no se explican: se atraviesan.',
+    label: 'Movimiento',
+     intro:'Movimiento traslada al cuerpo los conflictos mentales del universo #GatoEncerrado. Si en la obra la mente se fragmenta, aquí el cuerpo busca arraigo. Es un laboratorio coreográfico y somático que se activa por ciudad.No se interpretan emociones: se atraviesan.',
      
          type: 'movement-ritual',
-    pendingName: 'La Ruta de las Encarnaciones',
+    pendingName: 'La Ruta de la Corporeidad',
     tagline: 'Talleres de Cuerpo Colectivo',
     overview: [
-      'La Ruta de las Encarnaciones es una experiencia coreográfica transmedial que recorre plazas, parques y espacios públicos. Activa un ritual contemporáneo con avatares, realidad aumentada y movimiento colectivo.',
+      'La Ruta de la Corporeidad es una experiencia coreográfica transmedial que recorre plazas, parques y espacios públicos. Activa un ritual contemporáneo con avatares, realidad aumentada y movimiento colectivo.',
     ],
     diosaHighlights: [
       'Una presencia digital inspirada en mitologías mesoamericanas.',
@@ -1387,16 +1398,17 @@ iaProfile: {
     cartaTitle: '#CaerEsDanzar',
     notaAutoral: 'Mi cuerpo colapsará;\nno sin danza\nni dolor bonito.',
     iaProfile: {
-      type: 'IA de ruta + prompts de movimiento guiados en app.',
-      interaction: 'Selección de estación y avatar ritual en AR.',
-      tokensRange: '180–320 tokens por usuario.',
-      coverage: 'Incluido en la huella transmedia.',
-      footnote: 'La IA guía; el rito sucede cuando alguien baila.',
+      type: 'Actualmente este mini-verso no usa IA en producción.',
+      interaction:
+        'Registro en motion capture, traducción a avatar digital y activación en sitio mediante realidad aumentada.',
+      tokensRange: 'Sin consumo de IA por visitante en esta etapa.',
+      coverage: 'Producción técnica y activación territorial gestionadas por el equipo de Movimiento.',
+      footnote: 'Cuando integremos módulos de IA reales, esta ficha se actualizará con métricas verificables.',
     },
   },
   apps: {
     id: 'apps',
-    label: 'Miniverso Juegos',
+    label: 'Juegos',
     type: 'apps',
     tagline: 'Juegos como portales • Apps como rituales felinos.',
     intro:
@@ -1449,7 +1461,7 @@ iaProfile: {
     },
   },
   oraculo: {
-    label: 'Miniverso Oráculo',
+    label: 'Oráculo',
     type: 'oracle',
     intro:
       'Alimenta la mente del Gato y gana GATokens por compartir tu pensamiento. El Oráculo no da respuestas, pero sí te recompensa por mantener tu curiosidad.',
@@ -1508,6 +1520,11 @@ const ShowcaseReactionInline = ({ showcaseId, title, description, buttonLabel, c
   const isSubscriber = metadataSubscriber || hasActiveSubscription;
 
   const [status, setStatus] = useState('idle');
+  const triggerLoginModal = useCallback(() => {
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent('open-login-modal'));
+    }
+  }, []);
 
   const handleReaction = useCallback(async () => {
     if (status === 'loading') {
@@ -1518,10 +1535,18 @@ const ShowcaseReactionInline = ({ showcaseId, title, description, buttonLabel, c
         LOGIN_RETURN_KEY,
         JSON.stringify({ anchor: '#transmedia', action: 'showcase-reaction', showcaseId })
       );
-      if (typeof window !== 'undefined') {
-        window.dispatchEvent(new CustomEvent('open-login-modal'));
-      }
-      toast({ description: 'Inicia sesión para reaccionar en esta vitrina.' });
+      toast({
+        description: 'Inicia sesión para reaccionar en esta vitrina.',
+        action: (
+          <ToastAction
+            altText="Abrir login"
+            onClick={triggerLoginModal}
+            className="h-auto border-none bg-transparent p-0 text-xs underline underline-offset-2 text-slate-100 hover:bg-transparent hover:text-white"
+          >
+            Iniciar sesión
+          </ToastAction>
+        ),
+      });
       return;
     }
 
@@ -1536,7 +1561,7 @@ const ShowcaseReactionInline = ({ showcaseId, title, description, buttonLabel, c
 
     setStatus('success');
     toast({ description: 'Gracias por tu apoyo en este escaparate.' });
-  }, [isAuthenticated, showcaseId, status, user]);
+  }, [isAuthenticated, showcaseId, status, triggerLoginModal, user]);
 
   return (
     <div
@@ -2359,6 +2384,21 @@ const Transmedia = () => {
     }
     applyTransmediaCreditState(state);
     return state;
+  }, [applyTransmediaCreditState]);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return undefined;
+
+    const handleExternalCreditEvent = (event) => {
+      const nextState = event?.detail?.state;
+      if (!nextState || typeof nextState !== 'object') return;
+      applyTransmediaCreditState(nextState);
+    };
+
+    window.addEventListener('gatoencerrado:external-credit-event', handleExternalCreditEvent);
+    return () => {
+      window.removeEventListener('gatoencerrado:external-credit-event', handleExternalCreditEvent);
+    };
   }, [applyTransmediaCreditState]);
 
   const trackTransmediaCreditEvent = useCallback(
@@ -6200,162 +6240,161 @@ const rendernotaAutoral = () => {
     }
 
     if (activeDefinition.type === 'movement-ritual') {
-      const hasMovementCollaborators =
-        Array.isArray(activeDefinition.collaborators) && activeDefinition.collaborators.length > 0;
       const hasDiosasGallery =
         Array.isArray(activeDefinition.diosasGallery) && activeDefinition.diosasGallery.length > 0;
+      const hasMovementMicrointeractions =
+        Array.isArray(activeDefinition.microinteractions) && activeDefinition.microinteractions.length > 0;
 
       return (
-        <div className="space-y-10">
-          <div className="rounded-3xl border border-white/10 bg-black/30 p-6 space-y-4">
+        <div className="space-y-8">
+          <div className="rounded-2xl border border-white/10 bg-black/30 px-5 py-4">
             <div className="flex items-center justify-between gap-3">
-              <p className="text-xs uppercase tracking-[0.35em] text-purple-300">Colaboradores</p>
-              {hasMovementCollaborators ? (
-                <button
-                  type="button"
-                  onClick={() => setIsMovementCreditsOpen((prev) => !prev)}
-                  className="text-xs uppercase tracking-[0.3em] text-slate-300 hover:text-white transition"
-                >
-                  {isMovementCreditsOpen ? 'Ocultar' : 'Ver'}
-                </button>
-              ) : null}
+              <div className="inline-flex items-center gap-3">
+                <span className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-white/20 bg-white/5 text-slate-200 shadow-[0_0_18px_rgba(148,163,184,0.22)]">
+                  <User size={16} />
+                </span>
+                <p className="text-[11px] uppercase tracking-[0.32em] text-slate-300/85">Colaboradores</p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsMovementCreditsOpen((prev) => !prev)}
+                className="text-xs uppercase tracking-[0.3em] text-slate-300 hover:text-white transition"
+              >
+                {isMovementCreditsOpen ? 'Ocultar' : 'Abrir'}
+              </button>
             </div>
-            {hasMovementCollaborators ? (
-              isMovementCreditsOpen ? (
+            {isMovementCreditsOpen ? (
+              <div className="mt-4 space-y-4">
+                <p className="text-sm font-semibold text-slate-100">Colaboradores que buscamos</p>
+                <ul className="mt-3 space-y-2 text-sm text-slate-300/90">
+                  {MOVEMENT_COLLABORATOR_CALL_ITEMS.map((item) => (
+                    <li key={`movement-collab-call-${item}`} className="flex items-start gap-2">
+                      <span className="mt-1 text-purple-300">•</span>
+                      <span>{item}</span>
+                    </li>
+                  ))}
+                </ul>
+                <div className="flex justify-end">
+                  <Button
+                    type="button"
+                    onClick={() => handleOpenContribution(getContributionCategoryForShowcase('miniversoMovimiento'))}
+                    className="w-full justify-center bg-gradient-to-r from-emerald-500/90 to-emerald-600/90 text-white hover:from-emerald-400/90 hover:to-emerald-500/90 sm:w-auto"
+                  >
+                    Convocatoria abierta
+                  </Button>
+                </div>
+              </div>
+            ) : null}
+          </div>
+
+          <div className="space-y-5 rounded-3xl border border-white/10 bg-gradient-to-br from-slate-950/80 via-black/60 to-purple-900/30 p-6 lg:p-8">
+            <h3 className="font-display text-3xl text-slate-100">{activeDefinition.tagline}</h3>
+            <p className="text-sm leading-relaxed text-slate-100/80 md:text-base">
+              Cuando la obra visita una ciudad, Movimiento activa una semana de exploración corporal abierta a la
+              comunidad. Cada jornada trabaja una fuerza corporal específica, desde arraigo hasta fragmentación, a
+              través de entrenamiento somático y creación coreográfica.
+              <br />
+              <br />
+              Al final, las coreografías se registran mediante captura de movimiento y se traducen en presencias digitales que
+              habitan ese territorio. Al finalizar el proceso, la acción escénica no desaparece: queda sembrada en el
+              espacio público como una presencia en realidad aumentada.
+                  </p>
+            {hasDiosasGallery ? (
+              <DiosasCarousel
+                items={activeDefinition.diosasGallery}
+                label="Swipe-horizontal"
+                caption="Cada clip muestra un giro 360° de las presencias cuenta-cuentos."
+              />
+            ) : null}
+          </div>
+
+          <div className="grid gap-6 xl:grid-cols-[1.25fr_1fr] xl:items-start">
+            <div className="space-y-6">
+              <div className="rounded-3xl border border-white/10 bg-black/30 p-5 space-y-4">
+                <p className="text-xs uppercase tracking-[0.35em] text-slate-400/80">Activaciones de ruta</p>
                 <div className="space-y-3">
-                  {activeDefinition.collaborators.map((collab, index) => {
-                    const isOpen = openCollaboratorId === collab.id;
-                    const imageSrc = collab.image || '/images/placeholder-colaboradores.jpg';
+                  {activeDefinition.actions?.map((action) => {
+                    const ActionIcon = action.icon || ArrowRight;
                     return (
-                      <div key={collab.id || `movement-collab-${index}`} className="border border-white/10 rounded-2xl bg-black/20">
-                        <button
-                          type="button"
-                          onClick={() => setOpenCollaboratorId((prev) => (prev === collab.id ? null : collab.id))}
-                          className="w-full flex items-center justify-between gap-3 px-4 py-3 text-left hover:bg-white/5 transition"
-                        >
+                      <div
+                        key={action.id}
+                        className="rounded-2xl border border-white/10 bg-black/35 p-4 space-y-3 hover:border-purple-400/40 transition"
+                      >
+                        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                           <div className="flex items-center gap-3">
-                            <img
-                              src={imageSrc}
-                              alt={`Retrato de ${collab.name}`}
-                              className="h-12 w-12 rounded-full object-cover border border-white/10"
-                              loading="lazy"
-                            />
+                            <div className="rounded-full border border-white/10 bg-white/5 p-3">
+                              <ActionIcon size={20} className="text-purple-200" />
+                            </div>
                             <div>
-                              <p className="text-slate-100 font-semibold">{collab.name}</p>
-                              {collab.role ? (
-                                <p className="text-[11px] uppercase tracking-[0.3em] text-purple-300">{collab.role}</p>
+                              {action.badge ? (
+                                <p className="text-[0.6rem] uppercase tracking-[0.35em] text-slate-500">{action.badge}</p>
                               ) : null}
+                              <p className="font-semibold text-slate-100">{action.label}</p>
                             </div>
                           </div>
-                          <span className="text-slate-400 text-lg">{isOpen ? '−' : '+'}</span>
-                        </button>
-                        {isOpen ? (
-                          <div className="px-4 pb-4 text-sm text-slate-200/90 leading-relaxed space-y-3">
-                            {collab.bio ? <p>{collab.bio}</p> : null}
-                          </div>
+                          <Button
+                            type="button"
+                            variant="outline"
+                            className="w-full justify-center border-purple-400/40 text-purple-200 hover:bg-purple-500/10 sm:w-auto"
+                            onClick={() => handleMovementAction(action)}
+                          >
+                            {action.buttonLabel ? `${action.buttonLabel} (próximamente)` : 'Próximamente'}
+                          </Button>
+                        </div>
+                        {action.description ? (
+                          <p className="text-sm text-slate-300/80 leading-relaxed">{action.description}</p>
                         ) : null}
                       </div>
                     );
                   })}
                 </div>
-              ) : null
-            ) : (
-              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                <p className="text-sm text-slate-300/85 leading-relaxed">Aún no hay colaboradores confirmados para este miniverso.</p>
-                <Button
-                  type="button"
-                  onClick={() => handleOpenContribution(getContributionCategoryForShowcase('miniversoMovimiento'))}
-                  className="w-full sm:w-auto justify-center bg-gradient-to-r from-emerald-500/90 to-emerald-600/90 hover:from-emerald-400/90 hover:to-emerald-500/90 text-white"
-                >
-                  Convocatoria abierta
-                </Button>
               </div>
-            )}
-          </div>
 
-          <div className="space-y-6">
-            <div className="space-y-5 rounded-3xl border border-white/10 bg-gradient-to-br from-slate-950/80 via-black/60 to-purple-900/30 p-6 lg:p-8">
-              <h3 className="font-display text-3xl text-slate-100">{activeDefinition.tagline}</h3>
-              <p className="text-2 text-slate-100/80">Cuando la obra visita una ciudad, se activa una semana de talleres abiertos que expanden la experiencia hacia un cuerpo colectivo. Las presencias funcionan como arquetipo de esa expansión. Por la noche, el proceso culmina en un acto escénico compartido.</p>
-              {hasDiosasGallery ? (
-                <DiosasCarousel
-                  items={activeDefinition.diosasGallery}
-                  label="Swipe-horizontal"
-                  caption="Cada clip muestra un giro 360° de las presencias cuenta-cuentos."
-                />
-              ) : null}
-
-              <div className="grid gap-4 md:grid-cols-2">
-                {activeDefinition.actions?.map((action) => {
-                  const ActionIcon = action.icon || ArrowRight;
-                  return (
+              {hasMovementMicrointeractions ? (
+                <div className="grid gap-4 md:grid-cols-2">
+                  {activeDefinition.microinteractions.map((micro, index) => (
                     <div
-                      key={action.id}
-                      className="rounded-2xl border border-white/10 bg-black/30 p-5 space-y-3 hover:border-purple-400/40 transition"
+                      key={`movement-micro-${index}`}
+                      className="rounded-3xl border border-white/10 bg-black/30 p-6 space-y-3 text-sm leading-relaxed"
                     >
-                      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                        <div className="flex items-center gap-3">
-                          <div className="rounded-full border border-white/10 bg-white/5 p-3">
-                            <ActionIcon size={20} className="text-purple-200" />
-                          </div>
-                          <div>
-                            {action.badge ? (
-                              <p className="text-[0.6rem] uppercase tracking-[0.35em] text-slate-500">{action.badge}</p>
-                            ) : null}
-                            <p className="font-semibold text-slate-100">{action.label}</p>
-                          </div>
-                        </div>
-                        <Button
-                          type="button"
-                          variant="outline"
-                          className="border-purple-400/40 text-purple-200 hover:bg-purple-500/10 w-full sm:w-auto justify-center"
-                          onClick={() => handleMovementAction(action)}
-                        >
-                          {action.buttonLabel ? `${action.buttonLabel} (próximamente)` : 'Próximamente'}
-                        </Button>
-                      </div>
-                      {action.description ? (
-                        <p className="text-sm text-slate-300/80 leading-relaxed">{action.description}</p>
+                      <p className="text-xs uppercase tracking-[0.35em] text-slate-400/80">{micro.title}</p>
+                      {micro.description ? <p className="text-slate-300/85">{micro.description}</p> : null}
+                      {micro.items?.length ? (
+                        <ul className="space-y-2 text-slate-200/85">
+                          {micro.items.map((item, bulletIndex) => (
+                            <li key={`movement-micro-item-${index}-${bulletIndex}`} className="flex items-start gap-2">
+                              <span className="text-purple-300 mt-1">●</span>
+                              <span>{item}</span>
+                            </li>
+                          ))}
+                        </ul>
                       ) : null}
                     </div>
-                  );
-                })}
-              </div>
-              <div className="mt-6">
-                <ShowcaseReactionInline
-                  showcaseId="miniversoMovimiento"
-                  title="Resonancia colectiva"
-                  description="Haz clic y deja un pulso para que la Ruta de las Encarnaciones siga viva."
-                  buttonLabel="Hacer vibrar la ruta"
-                  className="mt-0"
-                />
-              </div>
+                  ))}
+                </div>
+              ) : null}
+
+            </div>
+
+            <div className="space-y-5">
+              {renderCommunityBlock('miniversoMovimiento', {
+                heading: 'Voces de la comunidad',
+                ctaLabel: '¿Dudas o comentarios?',
+                emptyMessage: 'Todavía no hay voces en este miniverso.',
+                className: 'rounded-3xl border border-white/10 bg-black/30 p-6 space-y-5',
+                commentsViewportClassName: 'max-h-[240px]',
+                hideReaction: true,
+              })}
+
+              <ShowcaseReactionInline
+                showcaseId="miniversoMovimiento"
+                title="Resonancia colectiva"
+                description="Haz clic y deja un pulso para que la Ruta de la Corporeidad siga viva."
+                buttonLabel="Hacer vibrar la ruta"
+                className="mt-0 rounded-3xl border-white/10 bg-black/30"
+              />
             </div>
           </div>
-
-          {activeDefinition.microinteractions?.length ? (
-            <div className="grid gap-6 md:grid-cols-2">
-              {activeDefinition.microinteractions.map((micro, index) => (
-                <div
-                  key={`movement-micro-${index}`}
-                  className="rounded-3xl border border-white/10 bg-black/30 p-6 space-y-3 text-sm leading-relaxed"
-                >
-                  <p className="text-xs uppercase tracking-[0.35em] text-slate-400/80">{micro.title}</p>
-                  {micro.description ? <p className="text-slate-300/85">{micro.description}</p> : null}
-                  {micro.items?.length ? (
-                    <ul className="space-y-2 text-slate-200/85">
-                      {micro.items.map((item, bulletIndex) => (
-                        <li key={`movement-micro-item-${index}-${bulletIndex}`} className="flex items-start gap-2">
-                          <span className="text-purple-300 mt-1">●</span>
-                          <span>{item}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  ) : null}
-                </div>
-              ))}
-            </div>
-          ) : null}
         </div>
       );
     }
@@ -7887,12 +7926,12 @@ const rendernotaAutoral = () => {
   La obra no terminó en el teatro.<br />
   Desde ahí se abrió en <strong>nueve formas creativas</strong>.<br />
 
-    Cada uno con su propio lenguaje y forma de participación.<br /><br />
+    Cada una con su propio lenguaje y forma de participación.<br /><br />
 
   No repiten la historia: la continúan.<br /><br />
 
 
-  Te confiamos <span className="font-semibold text-purple-200">1350 GATokens.</span> Úsalos para abrir formas, intervenir relatos y activar el pulso del universo.  <br />Lo demás espera del otro lado.
+  Te confiamos <span className="font-semibold text-purple-200">1350 GATokens.</span> <br /> Úsalos para conocer, intervenir y expandir el pulso del universo.  <br />Aquí tienes lo suficiente para comenzar.
 </p>
           </motion.div>
 
@@ -8020,7 +8059,7 @@ const rendernotaAutoral = () => {
                           className={`${iconClass} drop-shadow-[0_0_12px_rgba(168,85,247,0.35)] transition-transform duration-300 group-hover:-translate-y-1 group-active:-translate-y-1`}
                         />
                         <div>
-                          <p className="text-xs uppercase tracking-[0.35em] text-slate-400/80">Miniverso</p>
+                          <p className="text-xs uppercase tracking-[0.35em] text-slate-400/80">Mini-versos</p>
                           <h3 className="font-display text-2xl text-slate-100">{format.title}</h3>
                         </div>
                       </div>

@@ -1,4 +1,4 @@
-import React, { Suspense, lazy, useEffect, useMemo, useRef, useState } from 'react';
+import React, { Suspense, lazy, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Route, Routes, useLocation, useNavigate } from 'react-router-dom';
 import { Toaster } from '@/components/ui/toaster';
 import Header from '@/components/Header';
@@ -22,12 +22,20 @@ import {
   setBienvenidaPending,
   setBienvenidaReturnPath,
 } from '@/lib/bienvenida';
-import { safeGetItem } from '@/lib/safeStorage';
+import { safeGetItem, safeSetItem } from '@/lib/safeStorage';
+import {
+  createTransmediaIdempotencyKey,
+  registerTransmediaCreditEvent,
+} from '@/services/transmediaCreditsService';
 
 const pageTitle = '#GatoEncerrado - Obra de Teatro transmedia';
 const pageDescription =
   'La historia de alguien que desaparece… y deja una huella emocional. Una experiencia teatral única que explora múltiples formatos transmediaes.';
 const LOGIN_RETURN_KEY = 'gatoencerrado:login-return';
+const TRANSMEDIA_UNLOCK_STORAGE_KEY = 'gatoencerrado:transmedia-unlocked:v1';
+const TRANSMEDIA_UNLOCK_REWARD_AMOUNT = 7;
+const TRANSMEDIA_FOCUS_KEYS = ['focus', 'appId', 'app_id', 'recommended_app_id'];
+const TRANSMEDIA_DEEPLINK_REWARD_EVENT_KEY = 'showcase_boost:landing_deeplink';
 const IS_UI_LAB_ENABLED =
   import.meta.env.DEV ||
   ['1', 'true', 'yes', 'on'].includes(String(import.meta.env.VITE_UI_LAB || '').toLowerCase());
@@ -226,7 +234,8 @@ const HashAnchorScroller = () => {
     const rawHash = location.hash || '';
     if (!rawHash.startsWith('#') || rawHash.length < 2) return undefined;
 
-    const anchorId = decodeURIComponent(rawHash.slice(1));
+    const [hashAnchor] = rawHash.split('?');
+    const anchorId = decodeURIComponent(hashAnchor.slice(1));
     let retries = 0;
     let timerId = null;
 
@@ -254,9 +263,47 @@ const HashAnchorScroller = () => {
   return null;
 };
 
-  
+const getLocationHashAnchor = (locationLike) => {
+  const rawHash = String(locationLike?.hash || '');
+  if (!rawHash.startsWith('#')) return '';
+  const [hashAnchor] = rawHash.split('?');
+  return decodeURIComponent(hashAnchor.slice(1)).trim().toLowerCase();
+};
+
+const hasFocusParams = (params) =>
+  TRANSMEDIA_FOCUS_KEYS.some((key) => {
+    const value = params.get(key);
+    return typeof value === 'string' && value.trim().length > 0;
+  });
+
+const hasTransmediaDeepLinkIntent = (locationLike) => {
+  const hashAnchor = getLocationHashAnchor(locationLike);
+  if (hashAnchor === 'transmedia' || hashAnchor === 'apoya') {
+    return true;
+  }
+
+  const hashRaw = String(locationLike?.hash || '');
+  const [, hashQuery = ''] = hashRaw.split('?');
+  if (hashAnchor === 'transmedia' && hashQuery) {
+    const hashParams = new URLSearchParams(hashQuery);
+    if (hasFocusParams(hashParams)) {
+      return true;
+    }
+  }
+
+  const searchParams = new URLSearchParams(locationLike?.search || '');
+  return hasFocusParams(searchParams) || Boolean(searchParams.get('miniverso'));
+};
+
 function App() {
+  const location = useLocation();
+  const { user } = useAuth();
   const { shouldShowToast, dismissToast, emailHash } = useEmailRedirect();
+  const [hasGuestUnlockedTransmedia, setHasGuestUnlockedTransmedia] = useState(() => {
+    return safeGetItem(TRANSMEDIA_UNLOCK_STORAGE_KEY) === '1';
+  });
+  const isAuthenticated = Boolean(user);
+  const canAccessTransmedia = isAuthenticated || hasGuestUnlockedTransmedia;
 
   useEffect(() => {
     document.title = pageTitle;
@@ -269,7 +316,93 @@ function App() {
     meta.setAttribute('content', pageDescription);
   }, []);
 
+  const scrollToSection = useCallback((sectionId) => {
+    if (!sectionId || typeof document === 'undefined') return;
+    let retries = 0;
+    const maxRetries = 28;
+    const tryScroll = () => {
+      const element = document.getElementById(sectionId);
+      if (!element) return false;
+      element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      return true;
+    };
+
+    if (tryScroll()) return;
+    const timerId = window.setInterval(() => {
+      retries += 1;
+      if (tryScroll() || retries >= maxRetries) {
+        window.clearInterval(timerId);
+      }
+    }, 100);
+  }, []);
+
+  const rewardTransmediaReveal = useCallback(async (eventKey, metadata = {}) => {
+    if (!eventKey) return;
+    const { error, state, duplicate } = await registerTransmediaCreditEvent({
+      eventKey,
+      amount: TRANSMEDIA_UNLOCK_REWARD_AMOUNT,
+      oncePerIdentity: true,
+      idempotencyKey: createTransmediaIdempotencyKey(eventKey),
+      metadata: {
+        source: 'landing_transmedia_reveal',
+        ...metadata,
+      },
+    });
+    if (error) {
+      console.warn('[TransmediaReveal] No se pudo registrar premio por detonador:', { eventKey, error });
+      return;
+    }
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(
+        new CustomEvent('gatoencerrado:external-credit-event', {
+          detail: {
+            eventKey,
+            duplicate: Boolean(duplicate),
+            state: state && typeof state === 'object' ? state : null,
+          },
+        })
+      );
+    }
+  }, []);
+
+  const handleRevealTransmedia = useCallback(
+    ({ trigger = 'unknown', targetId = 'transmedia', eventKey = null } = {}) => {
+      if (!isAuthenticated && !hasGuestUnlockedTransmedia) {
+        safeSetItem(TRANSMEDIA_UNLOCK_STORAGE_KEY, '1');
+        setHasGuestUnlockedTransmedia(true);
+      }
+      if (eventKey) {
+        void rewardTransmediaReveal(eventKey, {
+          trigger,
+          target_id: targetId,
+          is_authenticated: isAuthenticated,
+        });
+      }
+      if (targetId) {
+        window.setTimeout(() => {
+          scrollToSection(targetId);
+        }, 90);
+      }
+      return true;
+    },
+    [hasGuestUnlockedTransmedia, isAuthenticated, rewardTransmediaReveal, scrollToSection]
+  );
+
   useEffect(() => {
+    if (location.pathname !== '/') return;
+    if (isAuthenticated || hasGuestUnlockedTransmedia) return;
+    if (!hasTransmediaDeepLinkIntent(location)) return;
+    const hashAnchor = getLocationHashAnchor(location);
+    const targetId = hashAnchor === 'apoya' ? 'apoya' : 'transmedia';
+    handleRevealTransmedia({
+      trigger: 'deep-link',
+      targetId,
+      eventKey: TRANSMEDIA_DEEPLINK_REWARD_EVENT_KEY,
+    });
+  }, [handleRevealTransmedia, hasGuestUnlockedTransmedia, isAuthenticated, location]);
+
+  useEffect(() => {
+    if (!canAccessTransmedia) return undefined;
     if (typeof window === 'undefined') return undefined;
     let timeoutId = null;
     let idleId = null;
@@ -293,7 +426,7 @@ function App() {
         window.cancelIdleCallback(idleId);
       }
     };
-  }, []);
+  }, [canAccessTransmedia]);
 
   return (
     <>
@@ -306,7 +439,7 @@ function App() {
           <div className="min-h-screen overflow-x-hidden relative">
             <HeroBackground />
             <div className="relative z-10">
-              <Header />
+              <Header showTransmediaNav={canAccessTransmedia} />
 
               <main className="pt-20 lg:pt-24">
                 <Hero />
@@ -337,43 +470,44 @@ function App() {
                 </DeferredSection>
                 <DeferredSection fallback={<SectionFallback id="blog-contribuye" minHeight={700} />}>
                   <Suspense fallback={<SectionFallback id="blog-contribuye" minHeight={700} />}>
-                    <BlogContributionPrompt />
+                    <BlogContributionPrompt onRevealTransmedia={handleRevealTransmedia} />
                   </Suspense>
                 </DeferredSection>
-                <SectionErrorBoundary
-                  fallback={(
-                    <section id="transmedia" className="py-24 relative">
-                      <div className="container mx-auto px-6">
-                        <div className="glass-effect rounded-2xl p-8 text-center">
-                          <p className="text-xs uppercase tracking-[0.35em] text-slate-400/80">Narrativa Expandida</p>
-                          <h3 className="font-display text-3xl text-slate-100 mt-3">Vitrinas temporalmente no disponibles</h3>
-                          <p className="text-slate-300/80 mt-4">
-                            Recarga la página para intentar nuevamente.
-                          </p>
+                {canAccessTransmedia ? (
+                  <SectionErrorBoundary
+                    fallback={(
+                      <section id="transmedia" className="py-24 relative">
+                        <div className="container mx-auto px-6">
+                          <div className="glass-effect rounded-2xl p-8 text-center">
+                            <p className="text-xs uppercase tracking-[0.35em] text-slate-400/80">Narrativa Expandida</p>
+                            <h3 className="font-display text-3xl text-slate-100 mt-3">Vitrinas temporalmente no disponibles</h3>
+                            <p className="text-slate-300/80 mt-4">
+                              Recarga la página para intentar nuevamente.
+                            </p>
+                          </div>
                         </div>
-                      </div>
-                    </section>
-                  )}
-                >
-                  <DeferredSection
-                    rootMargin="1000px 0px"
-                    idleDelayMs={700}
-                    fallback={<SectionFallback id="transmedia" minHeight={900} />}
+                      </section>
+                    )}
                   >
-                    <Suspense fallback={<SectionFallback id="transmedia" minHeight={900} />}>
-                      <Transmedia />
-                    </Suspense>
-                  </DeferredSection>
-                </SectionErrorBoundary>
-                <NextShow />
+                    <DeferredSection
+                      rootMargin="1000px 0px"
+                      idleDelayMs={700}
+                      fallback={<SectionFallback id="transmedia" minHeight={900} />}
+                    >
+                      <Suspense fallback={<SectionFallback id="transmedia" minHeight={900} />}>
+                        <Transmedia />
+                      </Suspense>
+                    </DeferredSection>
+                  </SectionErrorBoundary>
+                ) : null}
+                <NextShow onRevealTransmedia={handleRevealTransmedia} />
                 <Contact />
               </main>
 
-              <Footer />
+              <Footer showTransmediaNav={canAccessTransmedia} />
               {shouldShowToast && (
                 <LoginToast emailHash={emailHash} onDismiss={dismissToast} />
               )}
-              <Toaster />
             </div>
           </div>
         )}
@@ -386,6 +520,7 @@ function App() {
         <Route path="/lab/huella" element={<Suspense fallback={<RouteFallback />}><LabHuella /></Suspense>} />
       ) : null}
       </Routes>
+      <Toaster />
     </>
   );
 }

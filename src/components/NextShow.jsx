@@ -31,7 +31,7 @@ const SHOW_HISTORY = [
   },
 ];
 
-const NextShow = () => {
+const NextShow = ({ onRevealTransmedia = null }) => {
   const [isReserveOpen, setIsReserveOpen] = useState(false);
   const [activeShowId, setActiveShowId] = useState('cecut');
   const activeShow = useMemo(
@@ -48,9 +48,17 @@ const NextShow = () => {
   }, []);
 
   const handleScrollToCause = useCallback(() => {
+    if (typeof onRevealTransmedia === 'function') {
+      onRevealTransmedia({
+        trigger: 'memoria-conocer-causa',
+        targetId: 'apoya',
+        eventKey: 'showcase_boost:landing_memoria_causa',
+      });
+      return;
+    }
     const supportSection = document.querySelector('#apoya');
     supportSection?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-  }, []);
+  }, [onRevealTransmedia]);
 
   return (
     <>

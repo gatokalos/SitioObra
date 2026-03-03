@@ -7,7 +7,7 @@ import { useAuth } from '@/contexts/SupabaseAuthContext';
 import LoginOverlay from '@/components/ContributionModal/LoginOverlay';
 import { setBienvenidaForceOnLogin } from '@/lib/bienvenida';
 
-const Header = () => {
+const Header = ({ showTransmediaNav = true }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [scrollTier, setScrollTier] = useState(0);
   const [showLoginOverlay, setShowLoginOverlay] = useState(false);
@@ -90,8 +90,12 @@ const Header = () => {
     { name: 'Galería', href: '#instagram' },
     { name: 'Voces', href: '#provoca' },
     { name: 'Curaduría', href: '#dialogo-critico' },
-    { name: 'Alianza', href: '#apoya' },
-    { name: 'Transmedia', href: '#transmedia' },
+    ...(showTransmediaNav
+      ? [
+          { name: 'Alianza', href: '#apoya' },
+          { name: 'Transmedia', href: '#transmedia' },
+        ]
+      : []),
     { name: 'Funciones', href: '#next-show' },
     { name: 'Contacto', href: '#contact' },
   ];
