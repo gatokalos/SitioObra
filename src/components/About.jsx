@@ -1,7 +1,7 @@
-import React, { useState, useCallback, useEffect, useRef } from 'react';
+import React, { useState, useCallback, useEffect, useRef, useMemo } from 'react';
 import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Film, Headphones, Quote, Send, HeartHandshake } from 'lucide-react';
+import { Film, Headphones, Quote, Send, HeartHandshake, RefreshCw } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { toast } from '@/components/ui/use-toast';
@@ -38,12 +38,14 @@ const aboutParagraphs = [
 
 const fallbackTestimonials = [
   {
+    id: 'fallback-1',
     quote:
       '“Salí de la función y fue como si despertara con nuevos recuerdos. Es un gato encerrado me obligó a conversar con mis propios vacíos.”',
     author: 'Maru Navarro',
     role: 'Espectadora / Tijuana',
   },
   {
+    id: 'fallback-2',
     quote:
       '“Es un Gato Encerrado nos recuerda que el teatro puede ser también archivo emocional y dispositivo de memoria.”',
     author: 'Dr. Luis Miguel Sánchez',
@@ -65,6 +67,10 @@ const PROVOCA_LISTEN_COOLDOWN_PREFIX = 'gatoencerrado:provoca-listen-cooldown:v1
 const PROVOCA_QUOTE_MAX_CHARS = 700;
 const PROVOCA_NAME_MAX_CHARS = 60;
 const PROVOCA_ROLE_MAX_CHARS = 80;
+const PROVOCA_APPROVED_FETCH_LIMIT = 20;
+const PROVOCA_MAX_SMALL_VOICE_CARDS = 2;
+const PROVOCA_LARGE_VOICE_MIN_CHARS = 210;
+const PROVOCA_SCROLLABLE_QUOTE_MIN_CHARS = 610;
 const inviteMessage = `Hola 🐾
 Quiero invitarte a compartir tu mirada en *Perspectivas del público* de *Es un gato encerrado*.
 Entra aquí: ${PROVOCA_SHARE_URL}
@@ -87,6 +93,33 @@ const getProvocaListenCooldownKey = (userId) => {
   return `${PROVOCA_LISTEN_COOLDOWN_PREFIX}:anon:${anonId || 'guest'}`;
 };
 
+const getProvocaSubmitErrorMessage = (error) => {
+  const code = String(error?.code || '').toLowerCase();
+  const message = String(error?.message || '').toLowerCase();
+
+  if (code === '23505' || message.includes('duplicate perspective')) {
+    return 'Ya recibimos una perspectiva muy similar recientemente. Intenta reformularla.';
+  }
+
+  if (code === '42901' || message.includes('rate limit') || message.includes('please wait')) {
+    return 'Estamos recibiendo muchos envíos. Espera unos segundos e intenta de nuevo.';
+  }
+
+  if (message.includes('links are not allowed')) {
+    return 'Para cuidar este espacio, evita incluir enlaces en tu perspectiva.';
+  }
+
+  return 'No pudimos guardar tu perspectiva. Intenta de nuevo.';
+};
+
+const getNormalizedVoiceLength = (quote) =>
+  String(quote || '')
+    .replace(/[“”"]/g, '')
+    .trim().length;
+
+const isLargeVoiceCard = (item) => getNormalizedVoiceLength(item?.quote) >= PROVOCA_LARGE_VOICE_MIN_CHARS;
+const shouldScrollVoiceQuote = (quote) => String(quote || '').length > PROVOCA_SCROLLABLE_QUOTE_MIN_CHARS;
+
 export const ProvocaSection = () => {
   const { user } = useAuth();
   const [confettiBursts, setConfettiBursts] = useState([]);
@@ -99,7 +132,8 @@ export const ProvocaSection = () => {
   const [lastSubmittedQuote, setLastSubmittedQuote] = useState('');
   const [hasSubmittedQuote, setHasSubmittedQuote] = useState(false);
   const [showAfterCareOverlay, setShowAfterCareOverlay] = useState(false);
-  const [testimonials, setTestimonials] = useState(fallbackTestimonials);
+  const [approvedTestimonials, setApprovedTestimonials] = useState([]);
+  const [visibleVoiceCursor, setVisibleVoiceCursor] = useState(0);
   const [responseCountdownSeconds, setResponseCountdownSeconds] = useState(
     PROVOCA_RESPONSE_ESTIMATE_SECONDS
   );
@@ -126,6 +160,31 @@ export const ProvocaSection = () => {
   const isSendVoiceDisabled = isSubmittingVoice;
   const isEscucharButtonDisabled =
   isSilvestreThinking || hasConsumedListenTurn;
+  const voicesPool = approvedTestimonials.length > 0 ? approvedTestimonials : fallbackTestimonials;
+  const canRefreshVoices = voicesPool.length > 1;
+  const visibleTestimonials = useMemo(() => {
+    if (!voicesPool.length) return [];
+
+    const total = voicesPool.length;
+    const startIndex = ((visibleVoiceCursor % total) + total) % total;
+    const first = voicesPool[startIndex];
+    const firstIsLarge = isLargeVoiceCard(first);
+
+    if (firstIsLarge || total === 1) {
+      return [{ ...first, displayVariant: 'large' }];
+    }
+
+    const second = voicesPool[(startIndex + 1) % total];
+    if (!second || isLargeVoiceCard(second)) {
+      return [{ ...first, displayVariant: 'small' }];
+    }
+
+    return [
+      { ...first, displayVariant: 'small' },
+      { ...second, displayVariant: 'small' },
+    ].slice(0, PROVOCA_MAX_SMALL_VOICE_CARDS);
+  }, [voicesPool, visibleVoiceCursor]);
+
   const isEscucharButtonActive =
     !hasConsumedListenTurn &&
     (isSilvestreThinking || isSilvestrePlaying || isListening || Boolean(pendingSilvestreAudioUrl));
@@ -268,17 +327,31 @@ export const ProvocaSection = () => {
   useEffect(() => {
     let cancelled = false;
     const loadApproved = async () => {
-      const { data, error } = await fetchApprovedAudiencePerspectives(2);
-      if (cancelled || error || !Array.isArray(data) || data.length === 0) {
-        return;
-      }
-      const mapped = data.map((item) => ({
-        quote: item?.quote?.startsWith('“') ? item.quote : `“${item?.quote ?? ''}”`,
-        author: item?.author_name || 'Voz del público',
-        role: item?.author_role || 'Perspectiva compartida',
-      }));
-      if (!cancelled) {
-        setTestimonials(mapped);
+      try {
+        const { data, error } = await fetchApprovedAudiencePerspectives(PROVOCA_APPROVED_FETCH_LIMIT);
+        if (cancelled || error || !Array.isArray(data) || data.length === 0) {
+          return;
+        }
+
+        const mapped = data
+          .map((item, index) => {
+            const normalizedQuote = typeof item?.quote === 'string' ? item.quote.trim() : '';
+            if (!normalizedQuote) return null;
+            return {
+              id: item?.id ? `approved-${item.id}` : `approved-fallback-${index}`,
+              quote: normalizedQuote.startsWith('“') ? normalizedQuote : `“${normalizedQuote}”`,
+              author: item?.author_name || 'Voz del público',
+              role: item?.author_role || 'Perspectiva compartida',
+            };
+          })
+          .filter(Boolean);
+
+        if (!cancelled && mapped.length > 0) {
+          setApprovedTestimonials(mapped);
+          setVisibleVoiceCursor(0);
+        }
+      } catch (error) {
+        console.error('[Provoca] No se pudieron cargar perspectivas aprobadas:', error);
       }
     };
     loadApproved();
@@ -286,6 +359,11 @@ export const ProvocaSection = () => {
       cancelled = true;
     };
   }, []);
+
+  const handleRefreshVoices = useCallback(() => {
+    if (!canRefreshVoices) return;
+    setVisibleVoiceCursor((previous) => (previous + 1) % voicesPool.length);
+  }, [canRefreshVoices, voicesPool.length]);
 
   const handleSubmitVoice = useCallback(async () => {
     const rawQuote = voiceDraft.trim();
@@ -329,21 +407,28 @@ export const ProvocaSection = () => {
     }
 
     setIsSubmittingVoice(true);
-    const { error } = await submitAudiencePerspective({
-      quote,
-      authorName,
-      authorRole: authorRole || null,
-      honeypot: voiceTrap,
-      metadata: {
-        source: 'provoca_section',
-        user_id: user?.id ?? null,
-        anon_id: ensureAnonId() ?? null,
-      },
-    });
-    setIsSubmittingVoice(false);
+    let submitError = null;
+    try {
+      const { error } = await submitAudiencePerspective({
+        quote,
+        authorName,
+        authorRole: authorRole || null,
+        honeypot: voiceTrap,
+        metadata: {
+          source: 'provoca_section',
+          user_id: user?.id ?? null,
+          anon_id: ensureAnonId() ?? null,
+        },
+      });
+      submitError = error;
+    } catch (error) {
+      submitError = error;
+    } finally {
+      setIsSubmittingVoice(false);
+    }
 
-    if (error) {
-      toast({ description: 'No pudimos guardar tu perspectiva. Intenta de nuevo.' });
+    if (submitError) {
+      toast({ description: getProvocaSubmitErrorMessage(submitError) });
       return;
     }
 
@@ -714,17 +799,43 @@ export const ProvocaSection = () => {
                 ) : null}
               </AnimatePresence>
             </div>
-            <div className="space-y-6">
-              {testimonials.map((item) => (
-                <div key={item.author} className="rounded-2xl border border-white/10 bg-black/30 p-6">
-                  <Quote className="text-purple-300 mb-4" size={28} />
-                  <p className="text-slate-200 italic leading-relaxed mb-4">{item.quote}</p>
+            <div className="space-y-4">
+              <div className="flex items-center justify-between gap-3">
+                 
+              </div>
+              {visibleTestimonials.map((item, index) => (
+                <div
+                  key={`${item.id}-${index}-${item.displayVariant}`}
+                  className={`rounded-2xl border border-white/10 bg-black/30 ${
+                    item.displayVariant === 'large' ? 'p-7' : 'p-5'
+                  }`}
+                >
+                  <Quote className="text-purple-300 mb-4" size={item.displayVariant === 'large' ? 30 : 24} />
+                  <div className={shouldScrollVoiceQuote(item.quote) ? 'mb-4 max-h-52 overflow-y-auto pr-2' : 'mb-4'}>
+                    <p
+                      className={`text-slate-200 italic leading-relaxed ${
+                        item.displayVariant === 'large' ? 'text-base md:text-[1.05rem]' : 'text-sm md:text-base'
+                      }`}
+                    >
+                      {item.quote}
+                    </p>
+                  </div>
                   <div className="text-sm text-slate-400">
                     <p className="text-slate-200 font-semibold">{item.author}</p>
                     <p>{item.role}</p>
                   </div>
                 </div>
               ))}
+                      <Button
+                  type="button"
+                  variant="outline"
+                  onClick={handleRefreshVoices}
+                  disabled={!canRefreshVoices}
+                  className="h-9 rounded-full border-white/20 bg-black/20 px-4 text-xs uppercase tracking-[0.18em] text-slate-200 hover:bg-white/10 disabled:opacity-45"
+                >
+                  <RefreshCw size={14} className="mr-2" />
+                  Refrescar voces
+                </Button>
             </div>
           </div>
           </motion.div>

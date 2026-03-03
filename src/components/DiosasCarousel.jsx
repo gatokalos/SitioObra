@@ -201,7 +201,7 @@ const DiosasCarousel = ({ items = [], label = 'Swipe horizontal', caption = 'Gal
     return null;
   }
 
-  const resolvedLabel = isTouchDevice ? label : 'Galería divina';
+  const resolvedLabel = isTouchDevice ? label : 'Avatares (prototipos)';
   const fullscreenId = fullscreenItem?.id || fullscreenItem?.videoUrl;
 
   return (
@@ -284,7 +284,7 @@ const DiosasCarousel = ({ items = [], label = 'Swipe horizontal', caption = 'Gal
                 <div className="space-y-1">
                   <p className="text-lg font-semibold text-slate-100">{item.title}</p>
                   {item.description ? (
-                    <p className="text-xs text-emerald-100/80 leading-relaxed">{item.description}</p>
+                    <p className="text-sm text-emerald-100/80 leading-relaxed">{item.description}</p>
                   ) : null}
                   {item.location ? (
                     <p className="text-[11px] uppercase tracking-[0.3em] text-emerald-100/70">{item.location}</p>

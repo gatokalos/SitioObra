@@ -1219,7 +1219,8 @@ iaProfile: {
   },
   miniversoMovimiento: {
     label: 'Miniverso Movimiento',
-     intro:'Proyecto coreográfico en desarrollo que se activa junto a cada temporada de la obra en una ciudad. Incluye talleres abiertos, intervención urbana y función final con realidad aumentada. Buscamos colaboradores y comunidades que quieran impulsarla.',
+     intro:'Esta forma de la obra traslada al cuerpo los conflictos mentales del universo #GatoEncerrado. Si en la obra la mente se fragmenta, aquí el cuerpo busca arraigo. Es un espacio donde las emociones no se explican: se atraviesan.',
+     
          type: 'movement-ritual',
     pendingName: 'La Ruta de las Encarnaciones',
     tagline: 'Talleres de Cuerpo Colectivo',
@@ -1272,110 +1273,110 @@ iaProfile: {
     diosasGallery: [
       {
         id: 'coatlicue-360',
-        title: 'Coatlicue — giro 360°',
-        description: 'Avatar ritual en rotación completa.',
+        title: 'Coatlicue',
+        description: 'Madre tierra. Peso. Vida y muerte simultánea.',
         badge: 'Portal AR',
-        location: 'CDMX',
-        meta: '9:16 / video 360°',
+        location: 'Hombros / Carga',
+        
         videoUrl: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Presencias/web/Coatlicue/coatlicue_web.mp4',
         poster: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Presencias/posters/Coatlicue/coatlicue_web.jpg',
         gradient: 'linear-gradient(165deg, rgba(16,185,129,0.65), rgba(59,130,246,0.55), rgba(168,85,247,0.55))',
       },
       {
         id: 'chanico-360',
-        title: 'Chanico — giro 360°',
-        description: 'Presencia cuenta-cuentos en giro completo.',
+        title: 'Chanico',
+        description: 'Fuego doméstico. Centro del hogar.',
         badge: 'Portal AR',
-        location: 'Ruta norte',
-        meta: '9:16 / video 360°',
+        location: 'Plexo / Centro de voluntad',
+        
         videoUrl: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Presencias/web/Chantico/chanico_web.mp4',
         poster: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Presencias/posters/Chantico/chanico_web.jpg',
         gradient: 'linear-gradient(175deg, rgba(14,165,233,0.55), rgba(52,211,153,0.45), rgba(8,47,73,0.75))',
       },
       {
         id: 'chicomecoatl-360',
-        title: 'Chicomecóatl — giro 360°',
-        description: 'Giro completo para el marcador AR.',
+        title: 'Chicomecóatl',
+        description: 'Maíz. Fertilidad. Sostén de vida.',
         badge: 'Portal AR',
-        location: 'Ruta sur',
-        meta: '9:16 / video 360°',
+        location: 'Caderas / Raíz',
+        
         videoUrl: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Presencias/web/Chicomecoatl/chicomecoatl_web.mp4',
         poster: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Presencias/posters/Chicomecoatl/chicomecoatl_web.jpg',
         gradient: 'linear-gradient(175deg, rgba(99,102,241,0.52), rgba(20,184,166,0.45), rgba(109,40,217,0.55))',
       },
       {
         id: 'cihuacoatl-360',
-        title: 'Cihuacóatl — giro 360°',
-        description: 'Presencia de guía y resguardo en giro completo.',
+        title: 'Cihuacóatl',
+        description: 'Guía. Resguardo. Lo que sostiene lo vulnerable.',
         badge: 'Portal AR',
-        location: 'Ruta lunar',
-        meta: '9:16 / video 360°',
+        location: 'Cuello / Sostén de identidad',
+        
         videoUrl: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Presencias/web/Cihuacoatl/Chuhuacoatl_web.mp4',
         poster: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Presencias/posters/Cihuacoatl/Chuhuacoatl_web.jpg',
         gradient: 'linear-gradient(178deg, rgba(71,85,105,0.62), rgba(59,130,246,0.45), rgba(99,102,241,0.5))',
       },
       {
         id: 'coyolxauhqui-360',
-        title: 'Coyolxauhqui — giro 360°',
-        description: 'Fragmentos de luna en movimiento continuo.',
+        title: 'Coyolxauhqui',
+        description: 'Luna desmembrada en movimiento continuo.',
         badge: 'Portal AR',
-        location: 'Ruta de noche',
-        meta: '9:16 / video 360°',
+        location: 'Cabeza / Fragmentación',
+        
         videoUrl: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Presencias/web/Coyolxauhqui/Coyolxauhqui_web.mp4',
         poster: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Presencias/posters/Coyolxauhqui/Coyolxauhqui_web.jpg',
         gradient: 'linear-gradient(180deg, rgba(129,140,248,0.58), rgba(14,165,233,0.45), rgba(30,41,59,0.7))',
       },
       {
         id: 'itztli-360',
-        title: 'Itztli — giro 360°',
-        description: 'Reflejo afilado y rito en rotación completa.',
+        title: 'Itztli',
+        description: 'Corte. Filo. Verdad que atraviesa.',
         badge: 'Portal AR',
-        location: 'Ruta obsidiana',
-        meta: '9:16 / video 360°',
+        location: 'Mandíbula / Voz retenida',
+        
         videoUrl: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Presencias/web/Itztli/Itztli_web.mp4',
         poster: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Presencias/posters/Itztli/Itztli_web.jpg',
         gradient: 'linear-gradient(175deg, rgba(2,6,23,0.75), rgba(29,78,216,0.48), rgba(148,163,184,0.42))',
       },
       {
         id: 'tlazohteotl-360',
-        title: 'Tlazohteotl — giro 360°',
-        description: 'Purga y deseo en un giro ritual.',
+        title: 'Tlazohteotl',
+        description: 'Purga, deseo y ambivalencia.',
         badge: 'Portal AR',
-        location: 'Ruta purificación',
-        meta: '9:16 / video 360°',
+        location: 'Vientre / Deseo / Culpa',
+        
         videoUrl: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Presencias/web/Tlazohteotl/Tlazohteotl_web.mp4',
         poster: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Presencias/posters/Tlazohteotl/Tlazohteotl_web.jpg',
         gradient: 'linear-gradient(172deg, rgba(244,114,182,0.5), rgba(251,191,36,0.45), rgba(109,40,217,0.52))',
       },
       {
         id: 'xochiquetzal-360',
-        title: 'Xochiquetzal — giro 360°',
-        description: 'Flor y arte en giro completo.',
+        title: 'Xochiquetzal',
+        description: 'Movimiento, arte, vitalidad.',
         badge: 'Portal AR',
-        location: 'Ruta centro',
-        meta: '9:16 / video 360°',
+        location: 'Piernas / Impulso',
+        
         videoUrl: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Presencias/web/Xochiquetzal/Xochiquetzal_web.mp4',
         poster: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Presencias/posters/Xochiquetzal/Xochiquetzal_web.jpg',
         gradient: 'linear-gradient(170deg, rgba(244,114,182,0.55), rgba(59,130,246,0.45), rgba(16,185,129,0.5))',
       },
       {
         id: 'tzitzimime-360',
-        title: 'Tzitzimime — giro 360°',
-        description: 'Presencia estelar con giro completo.',
+        title: 'Tzitzimime',
+        description: 'Presencias estelares. Observadoras del cosmos.',
         badge: 'Portal AR',
-        location: 'Ruta cosmos',
-        meta: '9:16 / video 360°',
+        location: 'Ojos / Mirada / Percepción',
+        
         videoUrl: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Presencias/web/Tzitzimime/tzitzime_web.mp4',
         poster: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Presencias/posters/Tzitzimime/tzitzime_web.jpg',
         gradient: 'linear-gradient(180deg, rgba(99,102,241,0.6), rgba(168,85,247,0.5), rgba(14,165,233,0.45))',
       },
       {
         id: 'ixchel-360',
-        title: 'Ixchel — giro 360°',
-        description: 'Luz y agua en giro completo.',
+        title: 'Ixchel',
+        description: 'Agua, ciclos, lunaridad.',
         badge: 'Portal AR',
-        location: 'Ruta maya',
-        meta: '9:16 / video 360°',
+        location: 'Tobillos / Suelo',
+        
         videoUrl: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Presencias/web/Ixchel/Ixchel_web.mp4',
         poster: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Presencias/posters/Ixchel/Ixchel_web.jpg',
         gradient: 'linear-gradient(170deg, rgba(56,189,248,0.55), rgba(34,211,238,0.5), rgba(59,130,246,0.45))',
@@ -7880,18 +7881,18 @@ const rendernotaAutoral = () => {
           >
             <p className="text-xs uppercase tracking-[0.4em] text-slate-400/70">Narrativa Transmedia</p>
             <h2 className="font-display text-4xl md:text-5xl font-medium text-gradient italic">
-              La obra en otras formas
+              Las formas de la Obra
             </h2>
             <p className="text-lg text-slate-300/80 max-w-3xl mx-auto leading-relaxed font-light">
   La obra no terminó en el teatro.<br />
-  Desde ahí se abrió en <strong>nueve miniversos creativos</strong>.<br />
+  Desde ahí se abrió en <strong>nueve formas creativas</strong>.<br />
 
     Cada uno con su propio lenguaje y forma de participación.<br /><br />
 
   No repiten la historia: la continúan.<br /><br />
 
 
-  Te confiamos <span className="font-semibold text-purple-200">1350 GATokens</span> para explorar, intervenir y activar la experiencia.  <br />Lo demás espera del otro lado.
+  Te confiamos <span className="font-semibold text-purple-200">1350 GATokens.</span> Úsalos para abrir formas, intervenir relatos y activar el pulso del universo.  <br />Lo demás espera del otro lado.
 </p>
           </motion.div>
 

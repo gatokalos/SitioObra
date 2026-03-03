@@ -4,6 +4,9 @@ import { Toaster } from '@/components/ui/toaster';
 import Header from '@/components/Header';
 import Hero from '@/components/Hero';
 import SectionErrorBoundary from '@/components/SectionErrorBoundary';
+import NextShow from '@/components/NextShow';
+import Contact from '@/components/Contact';
+import Footer from '@/components/Footer';
 import { useBlogPosts } from '@/hooks/useBlogPosts';
 import { useEmailRedirect } from '@/hooks/useEmailRedirect';
 import LoginToast from '@/components/LoginToast';
@@ -40,9 +43,6 @@ const Team = lazy(() => import('@/components/Team'));
 const Instagram = lazy(() => import('@/components/Instagram'));
 const BlogContributionPrompt = lazy(() => import('@/components/BlogContributionPrompt'));
 const Blog = lazy(() => import('@/components/Blog'));
-const NextShow = lazy(() => import('@/components/NextShow'));
-const Contact = lazy(() => import('@/components/Contact'));
-const Footer = lazy(() => import('@/components/Footer'));
 const Bienvenida = lazy(() => import('@/pages/Bienvenida'));
 const PortalLectura = lazy(() => import('@/pages/PortalLectura'));
 const PortalArtesanias = lazy(() => import('@/pages/PortalArtesanias'));
@@ -310,9 +310,9 @@ function App() {
 
               <main className="pt-20 lg:pt-24">
                 <Hero />
-                <DeferredSection fallback={<SectionFallback id="provoca" minHeight={900} />}>
-                  <Suspense fallback={<SectionFallback id="provoca" minHeight={900} />}>
-                    <ProvocaSection />
+                <DeferredSection fallback={<SectionFallback id="about" minHeight={620} />}>
+                  <Suspense fallback={<SectionFallback id="about" minHeight={620} />}>
+                    <About />
                   </Suspense>
                 </DeferredSection>
                 <DeferredSection fallback={<SectionFallback id="team" minHeight={980} />}>
@@ -320,14 +320,14 @@ function App() {
                     <Team />
                   </Suspense>
                 </DeferredSection>
-                <DeferredSection fallback={<SectionFallback id="about" minHeight={620} />}>
-                  <Suspense fallback={<SectionFallback id="about" minHeight={620} />}>
-                    <About />
-                  </Suspense>
-                </DeferredSection>
                 <DeferredSection fallback={<SectionFallback id="instagram" minHeight={1600} />}>
                   <Suspense fallback={<SectionFallback id="instagram" minHeight={1600} />}>
                     <Instagram />
+                  </Suspense>
+                </DeferredSection>
+                <DeferredSection fallback={<SectionFallback id="provoca" minHeight={900} />}>
+                  <Suspense fallback={<SectionFallback id="provoca" minHeight={900} />}>
+                    <ProvocaSection />
                   </Suspense>
                 </DeferredSection>
                 <DeferredSection fallback={<SectionFallback id="dialogo-critico" minHeight={900} />}>
@@ -365,23 +365,11 @@ function App() {
                     </Suspense>
                   </DeferredSection>
                 </SectionErrorBoundary>
-                <DeferredSection fallback={<SectionFallback id="next-show" minHeight={820} />}>
-                  <Suspense fallback={<SectionFallback id="next-show" minHeight={820} />}>
-                    <NextShow />
-                  </Suspense>
-                </DeferredSection>
-                <DeferredSection fallback={<SectionFallback id="contact" minHeight={880} />}>
-                  <Suspense fallback={<SectionFallback id="contact" minHeight={880} />}>
-                    <Contact />
-                  </Suspense>
-                </DeferredSection>
+                <NextShow />
+                <Contact />
               </main>
 
-              <DeferredSection fallback={<SectionFallback minHeight={560} />}>
-                <Suspense fallback={<SectionFallback minHeight={560} />}>
-                  <Footer />
-                </Suspense>
-              </DeferredSection>
+              <Footer />
               {shouldShowToast && (
                 <LoginToast emailHash={emailHash} onDismiss={dismissToast} />
               )}

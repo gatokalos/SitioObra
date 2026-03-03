@@ -725,17 +725,17 @@ const MiniverseModal = ({
   const activeTabIntro = useMemo(() => {
     if (activeTab === 'experiences') {
       return {
-        lead: 'Te presentamos los nueve miniversos como una pantalla de inicio:',
+        lead: 'Te presentamos sus nueve formas:',
         highlight:
-          'Un formato familiar para explorar y volver cuando quieras.',
+          'un mapa para explorar, intervenir y volver cuando quieras.',
           continuation: 'Con tu huella activa, accedes a la versión completa.'
       };
     }
     if (activeTab === 'escaparate') {
       return {
-      lead: 'Esta galería despliega una microficción en nueve actos.',
-      highlight: 'Cada acto dialoga con un miniverso',
-      continuation: 'y abre la misma pregunta: ¿qué ocurre cuando la obra se expande y necesita otro lenguaje?'
+      lead: 'Aquí se despliega una microficción en nueve actos.',
+      highlight: 'Cada acto dialoga con un sentido diferente de la obra',
+      continuation: 'y abre la misma pregunta: ¿qué ocurre cuando un sentido se expande y exige otro lenguaje?'
       };
     }
     return {

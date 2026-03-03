@@ -374,17 +374,19 @@ const Contact = () => {
                   placeholder="Drive, portfolio, video..."
                 />
               </div>
-              {status === 'error' ? (
-                <div className="rounded-lg border border-red-500/60 bg-red-500/10 px-4 py-3 text-sm text-red-200">
-                  {errorMessage}
-                </div>
-              ) : null}
+              <div className="min-h-[52px]">
+                {status === 'error' ? (
+                  <div className="rounded-lg border border-red-500/60 bg-red-500/10 px-4 py-3 text-sm text-red-200">
+                    {errorMessage}
+                  </div>
+                ) : null}
 
-              {status === 'success' ? (
-                <div className="rounded-lg border border-emerald-500/60 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-200">
-                  Tu mensaje llegó. Te escribiremos a la brevedad.
-                </div>
-              ) : null}
+                {status === 'success' ? (
+                  <div className="rounded-lg border border-emerald-500/60 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-200">
+                    Tu mensaje llegó. Te escribiremos a la brevedad.
+                  </div>
+                ) : null}
+              </div>
               <div className="mt-4 space-y-3">
                 <div className="flex flex-col gap-3 lg:flex-row lg:items-center">
                   <Button
