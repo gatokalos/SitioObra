@@ -17,6 +17,16 @@ const HERO_LOGGED_IN_AUDIO_VOLUME = 0.35;
 const HERO_AUDIO_MIN_AUDIBLE_VOLUME = 0.015;
 const HERO_AUDIO_PLAY_RETRY_MS = 2500;
 const HERO_AUDIO_IDLE_RETRY_MS = 6000;
+const HERO_MOBILE_AUDIO_PREF_KEY = 'gatoencerrado:hero-audio-mobile-enabled';
+
+const readMobileHeroAudioPreference = () => {
+  if (typeof window === 'undefined') return false;
+  try {
+    return window.localStorage?.getItem(HERO_MOBILE_AUDIO_PREF_KEY) === 'true';
+  } catch {
+    return false;
+  }
+};
 
 const Hero = () => {
   const [isReserveOpen, setIsReserveOpen] = useState(false);
@@ -57,10 +67,13 @@ const Hero = () => {
   const primaryCtaLabel = user ? 'Dejar mi huella' : 'Toma un boleto';
   const canShowHeroAudioToggle = Boolean(
     user &&
-    !isMobileViewport &&
     isHeroInViewport &&
-    (isHeroAudioPlaying || isHeroAudioMuted)
+    (isHeroAudioPlaying || isHeroAudioMuted || isMobileViewport)
   );
+  const heroAudioTogglePlacementClass = isMobileViewport
+    ? 'right-[calc(env(safe-area-inset-right)+0.5rem)] top-[calc(env(safe-area-inset-top)+3.2rem)] h-9 w-9'
+    : 'right-6 top-24 h-11 w-11';
+  const heroAudioIconSize = isMobileViewport ? 15 : 18;
 
   const getTargetVolumeByHeroPosition = useCallback(() => {
     const hero = heroSectionRef.current;
@@ -236,7 +249,26 @@ const Hero = () => {
   }, [isHeroAudioMuted]);
 
   useEffect(() => {
-    if (user && !isMobileViewport) return undefined;
+    if (!user) {
+      heroAudioMutedRef.current = false;
+      setIsHeroAudioMuted(false);
+      setIsHeroAudioReady(false);
+      setIsHeroAudioPlaying(false);
+      return undefined;
+    }
+
+    if (isMobileViewport) {
+      const isEnabledOnMobile = readMobileHeroAudioPreference();
+      const nextMuted = !isEnabledOnMobile;
+      heroAudioMutedRef.current = nextMuted;
+      setIsHeroAudioMuted(nextMuted);
+      setIsHeroAudioReady(false);
+      setIsHeroAudioPlaying(false);
+      return undefined;
+    }
+
+    heroAudioMutedRef.current = false;
+    setIsHeroAudioMuted(false);
     setIsHeroAudioReady(false);
     setIsHeroAudioPlaying(false);
     return undefined;
@@ -249,20 +281,34 @@ const Hero = () => {
     const audio = heroAudioRef.current;
     if (!audio) return;
     if (nextMuted) {
+      if (isMobileViewport && typeof window !== 'undefined') {
+        try {
+          window.localStorage?.setItem(HERO_MOBILE_AUDIO_PREF_KEY, 'false');
+        } catch {
+          // noop
+        }
+      }
       audio.pause();
       audio.volume = 0;
       return;
+    }
+    if (isMobileViewport && typeof window !== 'undefined') {
+      try {
+        window.localStorage?.setItem(HERO_MOBILE_AUDIO_PREF_KEY, 'true');
+      } catch {
+        // noop
+      }
     }
     const targetVolume = getTargetVolumeByHeroPosition();
     audio.volume = targetVolume;
     if (targetVolume > HERO_AUDIO_MIN_AUDIBLE_VOLUME && audio.paused) {
       void audio.play().catch(() => {});
     }
-  }, [getTargetVolumeByHeroPosition]);
+  }, [getTargetVolumeByHeroPosition, isMobileViewport]);
 
   useEffect(() => {
     const audio = heroAudioRef.current;
-    if (!audio || !user || isMobileViewport) {
+    if (!audio || !user) {
       setIsHeroAudioPlaying(false);
       if (audio) {
         audio.pause();
@@ -279,7 +325,8 @@ const Hero = () => {
     let requiresInteractionAfterBackground = false;
     let isShowcaseForeground =
       typeof document !== 'undefined' &&
-      document.documentElement.dataset.gatoShowcaseOpen === 'true';
+      (document.documentElement.dataset.gatoShowcaseOpen === 'true' ||
+        document.documentElement.dataset.miniverseOpen === 'true');
     let isExternalAmbientHold =
       typeof document !== 'undefined' &&
       document.documentElement.dataset.gatoHeroAmbientHold === 'true';
@@ -291,7 +338,8 @@ const Hero = () => {
       const showcaseOpen =
         isShowcaseForeground ||
         (typeof document !== 'undefined' &&
-          document.documentElement.dataset.gatoShowcaseOpen === 'true');
+          (document.documentElement.dataset.gatoShowcaseOpen === 'true' ||
+            document.documentElement.dataset.miniverseOpen === 'true'));
       if (typeof document === 'undefined') {
         return showcaseOpen || isExternalAmbientHold;
       }
@@ -540,7 +588,7 @@ const Hero = () => {
       audio.currentTime = 0;
       audio.volume = HERO_LOGGED_IN_AUDIO_VOLUME;
     };
-  }, [getTargetVolumeByHeroPosition, isMobileViewport, user]);
+  }, [getTargetVolumeByHeroPosition, user]);
 
   return (
     <>
@@ -559,13 +607,13 @@ const Hero = () => {
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: -8, scale: 0.95 }}
               transition={{ duration: 0.2, ease: 'easeOut' }}
-              className={`fixed right-6 top-24 z-[260] inline-flex h-11 w-11 items-center justify-center rounded-full border backdrop-blur-md transition ${
+              className={`fixed z-[300] inline-flex items-center justify-center rounded-full border backdrop-blur-md shadow-[0_8px_22px_rgba(0,0,0,0.3)] transition ${heroAudioTogglePlacementClass} ${
                 isHeroAudioMuted
                   ? 'border-white/20 bg-black/45 text-slate-200 hover:bg-black/60'
                   : 'border-emerald-300/35 bg-emerald-500/15 text-emerald-100 hover:bg-emerald-500/25'
               }`}
             >
-              {isHeroAudioMuted ? <VolumeX size={18} /> : <Volume2 size={18} />}
+              {isHeroAudioMuted ? <VolumeX size={heroAudioIconSize} /> : <Volume2 size={heroAudioIconSize} />}
             </motion.button>
           ) : null}
         </AnimatePresence>
@@ -606,7 +654,7 @@ const Hero = () => {
   transition={{ duration: 0.9, delay: 0.45, ease: 'easeOut' }}
   className="text-sm italic text-slate-400/70 leading-tight mb-6"
 >
-  Una obra que ocurre en tu mente.
+  La obra que ocurre en tu mente.
 </motion.p>
        
 
@@ -876,7 +924,7 @@ const Hero = () => {
 
         </div>
       </section>
-      {user && !isMobileViewport ? (
+      {user ? (
         <audio
           ref={heroAudioRef}
           data-ambient-role="hero"

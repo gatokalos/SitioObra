@@ -94,6 +94,14 @@ const inferMiniverseFromPost = (post) => {
   return 'curaduria';
 };
 
+const normalizeForSearch = (value) =>
+  (value || '')
+    .toString()
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .trim();
+
 const markdownComponents = {
   p: ({ node: _node, ...props }) => (
     <p className="text-[1.02rem] md:text-[1.08rem] leading-8 font-light text-slate-200" {...props} />
@@ -587,14 +595,14 @@ const Blog = ({ posts = [], isLoading = false, error = null }) => {
   );
 
   const filteredPosts = useMemo(() => {
-    const query = searchQuery.trim().toLowerCase();
+    const tokens = normalizeForSearch(searchQuery).split(/\s+/).filter(Boolean);
     return sortedPosts.filter((post) => {
       const matchesCategory = post.category === activeCategory;
       if (!matchesCategory) {
         return false;
       }
 
-      if (!query) {
+      if (tokens.length === 0) {
         return true;
       }
 
@@ -602,13 +610,15 @@ const Blog = ({ posts = [], isLoading = false, error = null }) => {
         post.title,
         post.author,
         post.excerpt,
+        post.category,
+        BLOG_CATEGORY_CONFIG[post.category]?.label,
         ...(Array.isArray(post.tags) ? post.tags : []),
       ]
         .filter(Boolean)
-        .join(' ')
-        .toLowerCase();
+        .map((field) => normalizeForSearch(field))
+        .join(' ');
 
-      return haystack.includes(query);
+      return tokens.every((token) => haystack.includes(token));
     });
   }, [sortedPosts, activeCategory, searchQuery]);
   const visiblePosts = useMemo(
@@ -825,7 +835,7 @@ const Blog = ({ posts = [], isLoading = false, error = null }) => {
                   type="search"
                   value={searchQuery}
                   onChange={(event) => setSearchQuery(event.target.value)}
-                  placeholder="Buscar por título o autor"
+                  placeholder="Buscar por título, autor o tag"
                   className="form-surface form-surface--pill w-full py-2 pl-10 pr-4 text-sm"
                 />
               </div>

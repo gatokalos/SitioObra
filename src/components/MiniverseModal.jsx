@@ -194,6 +194,18 @@ const MINIVERSE_NARRATIVE_CTA_STYLES = `
   z-index: 1;
 }
 `;
+const MINIVERSE_DISCOVER_INTRO_MESH =
+  'radial-gradient(circle at 12% 16%, rgba(196,181,253,0.34), transparent 36%),' +
+  'radial-gradient(circle at 84% 18%, rgba(125,211,252,0.28), transparent 34%),' +
+  'radial-gradient(circle at 70% 78%, rgba(110,231,183,0.26), transparent 40%),' +
+  'radial-gradient(circle at 28% 80%, rgba(45,212,191,0.24), transparent 38%),' +
+  'radial-gradient(circle at 58% 32%, rgba(163,230,53,0.16), transparent 34%),' +
+  'linear-gradient(135deg, rgba(24,30,45,0.95), rgba(33,68,72,0.88), rgba(20,32,64,0.86))';
+const MINIVERSE_PORTAL_TITLE_PATTERN = /^\d+\s*-\s*/;
+const getPortalLabelFromTitle = (title = '') => {
+  const normalizedTitle = String(title || '').trim();
+  return normalizedTitle.replace(MINIVERSE_PORTAL_TITLE_PATTERN, '').trim() || normalizedTitle;
+};
 
 const MINIVERSE_CARDS = [
   {
@@ -405,10 +417,9 @@ const MiniverseModal = ({
   const [errorMessage, setErrorMessage] = useState('');
   const [selectedMiniverseId, setSelectedMiniverseId] = useState(null);
   const [selectedUpcomingId, setSelectedUpcomingId] = useState(null);
+  const [showcaseFullscreenCard, setShowcaseFullscreenCard] = useState(null);
   const [visitedMiniverses, setVisitedMiniverses] = useState({});
   const [activeShowcaseIndex, setActiveShowcaseIndex] = useState(0);
-  const [isShowcaseAutoPlay, setIsShowcaseAutoPlay] = useState(true);
-  const [showcaseCountdown, setShowcaseCountdown] = useState(9);
   const [isMobileViewport, setIsMobileViewport] = useState(false);
   const [isCheckoutLoading, setIsCheckoutLoading] = useState(false);
   const [embeddedClientSecret, setEmbeddedClientSecret] = useState('');
@@ -444,8 +455,10 @@ const MiniverseModal = ({
       user?.app_metadata?.roles?.includes?.('subscriber')
   );
   const isSubscriber = metadataSubscriber || hasActiveSubscription;
-  const showcaseRef = useRef(null);
+  const desktopShowcaseVideoRef = useRef(null);
+  const mobileShowcaseVideoRef = useRef(null);
   const modalContentRef = useRef(null);
+  const [isMobileShowcaseVideoPlaying, setIsMobileShowcaseVideoPlaying] = useState(false);
   const setHeroAmbientHold = useCallback((hold) => {
     if (typeof window === 'undefined') return;
     window.dispatchEvent(
@@ -457,22 +470,6 @@ const MiniverseModal = ({
       }),
     );
   }, []);
-
-  const syncHeroAmbientWithModalVideo = useCallback(() => {
-    const root = modalContentRef.current;
-    if (!root) {
-      setHeroAmbientHold(false);
-      return;
-    }
-    const hasPlayingVideo = Array.from(root.querySelectorAll('[data-showcase-video]')).some(
-      (mediaNode) =>
-        mediaNode instanceof HTMLVideoElement &&
-        !mediaNode.paused &&
-        !mediaNode.ended &&
-        mediaNode.readyState >= 2,
-    );
-    setHeroAmbientHold(hasPlayingVideo);
-  }, [setHeroAmbientHold]);
 
   const stopModalMediaPlayback = useCallback(({ reset = false } = {}) => {
     const root = modalContentRef.current;
@@ -598,9 +595,9 @@ const MiniverseModal = ({
       setErrorMessage('');
       setSelectedMiniverseId(null);
       setSelectedUpcomingId(null);
+      setShowcaseFullscreenCard(null);
       setActiveShowcaseIndex(0);
-      setIsShowcaseAutoPlay(true);
-      setShowcaseCountdown(9);
+      setIsMobileShowcaseVideoPlaying(false);
       setIsCauseSiteOpen(false);
       setEmbeddedClientSecret('');
       setEmbeddedCheckoutStatus('');
@@ -722,6 +719,11 @@ const MiniverseModal = ({
     () => TABS.find((tab) => tab.id === activeTab)?.label ?? TABS[0].label,
     [activeTab]
   );
+  const activeTabHeadingVerb = useMemo(() => {
+    if (activeTab === 'escaparate') return 'Descubre';
+    if (activeTab === 'waitlist') return 'Impulsa';
+    return 'Habita';
+  }, [activeTab]);
   const activeTabIntro = useMemo(() => {
     if (activeTab === 'experiences') {
       return {
@@ -748,6 +750,69 @@ const MiniverseModal = ({
     () => MINIVERSE_CARDS.filter((card) => !card.isUpcoming),
     []
   );
+  const dramaShowcaseCard = useMemo(
+    () => showcaseMiniverses.find((card) => card.id === 'drama') ?? showcaseMiniverses[0] ?? null,
+    [showcaseMiniverses]
+  );
+  const showcaseNarrativeCards = useMemo(() => {
+    const prologueVideoUrl = dramaShowcaseCard?.videoUrl ?? null;
+    return [
+      {
+        id: 'prologo',
+        formatId: 'miniversos',
+        appName: 'Prólogo',
+        icon: Sparkles,
+        thumbLabel: 'P',
+        thumbGradient: 'from-violet-300/80 via-fuchsia-400/70 to-cyan-400/60',
+        title: 'El arte de no romperse',
+        titleShort: 'Prólogo',
+        ctaLabel: 'Ver video completo',
+        description: 'Fragmentos del universo #GatoEncerrado',
+        videoUrl: prologueVideoUrl,
+        fullscreenVideoUrlDesktop: null,
+        fullscreenVideoUrlMobile: null,
+        eyebrow: 'Prólogo',
+        isPrologue: true,
+        portalLabel: 'Prólogo',
+        customGradient: MINIVERSE_DISCOVER_INTRO_MESH,
+      },
+      ...showcaseMiniverses.map((card) => ({
+        ...card,
+        ctaLabel: card.titleShort ?? card.title,
+        fullscreenVideoUrlDesktop: card.fullscreenVideoUrlDesktop ?? card.fullscreenVideoUrl ?? null,
+        fullscreenVideoUrlMobile: card.fullscreenVideoUrlMobile ?? card.fullscreenVideoUrl ?? null,
+        portalLabel: getPortalLabelFromTitle(card.title),
+      })),
+    ];
+  }, [dramaShowcaseCard, showcaseMiniverses]);
+  const fictionShowcaseCards = useMemo(
+    () => showcaseNarrativeCards.filter((card) => !card.isPrologue),
+    [showcaseNarrativeCards]
+  );
+  const activeShowcaseCard = useMemo(
+    () => showcaseNarrativeCards[activeShowcaseIndex] ?? showcaseNarrativeCards[0] ?? null,
+    [activeShowcaseIndex, showcaseNarrativeCards]
+  );
+  const sharedShowcaseVideoUrl = useMemo(
+    () => dramaShowcaseCard?.videoUrl ?? showcaseNarrativeCards.find((card) => card.videoUrl)?.videoUrl ?? null,
+    [dramaShowcaseCard, showcaseNarrativeCards]
+  );
+  const mobileExploreButtonLabel = useMemo(() => {
+    if (!activeShowcaseCard) return 'Navegar entre actos';
+    if (activeShowcaseCard.isPrologue) return 'Navegar entre actos';
+    if (!fictionShowcaseCards.length) return 'Navegar entre actos';
+    const currentFictionIndex = fictionShowcaseCards.findIndex((card) => card.id === activeShowcaseCard.id);
+    const baseIndex = currentFictionIndex >= 0 ? currentFictionIndex : 0;
+    const nextCard = fictionShowcaseCards[(baseIndex + 1) % fictionShowcaseCards.length] ?? fictionShowcaseCards[0];
+    return `Siguiente acto: ${nextCard?.portalLabel ?? 'La escena'}`;
+  }, [activeShowcaseCard, fictionShowcaseCards]);
+  const activeShowcaseFullscreenVideoUrl = useMemo(() => {
+    if (!showcaseFullscreenCard) return null;
+    const desktopUrl = showcaseFullscreenCard.fullscreenVideoUrlDesktop ?? null;
+    const mobileUrl = showcaseFullscreenCard.fullscreenVideoUrlMobile ?? null;
+    if (isMobileViewport) return mobileUrl ?? desktopUrl;
+    return desktopUrl ?? mobileUrl;
+  }, [isMobileViewport, showcaseFullscreenCard]);
   const upcomingMiniverses = useMemo(
     () => MINIVERSE_CARDS.filter((card) => card.isUpcoming),
     []
@@ -809,14 +874,7 @@ const MiniverseModal = ({
       setSelectedMiniverseId(null);
       setSelectedUpcomingId(null);
       setActiveShowcaseIndex(0);
-      requestAnimationFrame(() => {
-        if (tabId === 'escaparate') {
-          const node = showcaseRef.current;
-          if (node) {
-            node.scrollTo({ left: 0, behavior: 'auto' });
-          }
-        }
-      });
+      setIsMobileShowcaseVideoPlaying(false);
     },
     [markMiniverseVisited, selectedMiniverseId, stopModalMediaPlayback]
   );
@@ -826,6 +884,7 @@ const MiniverseModal = ({
       return;
     }
     stopModalMediaPlayback({ reset: true });
+    setShowcaseFullscreenCard(null);
     if (selectedMiniverseId) {
       markMiniverseVisited(selectedMiniverseId);
     }
@@ -1238,120 +1297,145 @@ const MiniverseModal = ({
     setEmbeddedCheckoutStatus(`Estado actual del pago: ${message || 'unknown'}.`);
   }, []);
 
-  const handlePlayShowcaseVideo = useCallback((cardId) => {
-    if (typeof document === 'undefined') return false;
+  const resolveVisibleShowcasePreviewVideo = useCallback((cardId) => {
+    if (desktopShowcaseVideoRef.current) {
+      return desktopShowcaseVideoRef.current;
+    }
+    if (typeof document === 'undefined') return null;
     const videos = Array.from(
-      document.querySelectorAll(`[data-showcase-video="${cardId}"]`)
+      document.querySelectorAll(`[data-showcase-preview="${cardId}"]`)
     );
-    if (!videos.length) {
-      return false;
-    }
-    const target = videos.find((video) => video.offsetParent !== null) || videos[0];
-    if (!target) {
-      return false;
-    }
-    try {
-      setHeroAmbientHold(true);
-      target.play?.();
-      target.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      return true;
-    } catch (error) {
-      console.warn('[MiniverseModal] No se pudo reproducir el video', error);
-      setHeroAmbientHold(false);
-      return false;
-    }
-  }, [setHeroAmbientHold]);
+    if (!videos.length) return null;
+    return videos.find((video) => video.offsetParent !== null) || videos[0] || null;
+  }, []);
 
-  const handleShowcasePlayOnly = useCallback(
+  const handleShowcasePreviewHoverStart = useCallback(
     (card) => {
       if (!card) return;
-      if (!card.videoUrl) {
-        toast({ description: 'Video próximamente.' });
-        return;
-      }
-      const played = handlePlayShowcaseVideo(card.id);
-      if (!played) {
-        toast({ description: 'No se pudo iniciar el video en esta tarjeta.' });
+      const target = resolveVisibleShowcasePreviewVideo(card.id ?? 'desktop-shared');
+      if (!target) return;
+      try {
+        target.muted = true;
+        target.loop = true;
+        target.playsInline = true;
+        const playPromise = target.play?.();
+        if (typeof playPromise?.catch === 'function') {
+          playPromise.catch(() => {});
+        }
+      } catch (error) {
+        // noop: preview hover must not block interaction.
       }
     },
-    [handlePlayShowcaseVideo]
+    [resolveVisibleShowcasePreviewVideo]
   );
 
-  const scrollShowcaseTo = useCallback((index, behavior = 'smooth') => {
-    const node = showcaseRef.current;
-    if (!node) return;
-    node.scrollTo({ left: node.clientWidth * index, behavior });
-  }, []);
+  const handleShowcasePreviewHoverEnd = useCallback(
+    (card) => {
+      const target = resolveVisibleShowcasePreviewVideo(card?.id ?? 'desktop-shared');
+      if (!target) return;
+      try {
+        target.pause?.();
+        target.currentTime = 0;
+      } catch (error) {
+        // noop
+      }
+    },
+    [resolveVisibleShowcasePreviewVideo]
+  );
 
-  const handleShowcaseScroll = useCallback((event) => {
-    const target = event.currentTarget;
-    if (!target) {
-      return;
+  const handleOpenShowcaseFullscreen = useCallback(
+    (card) => {
+      if (!card) return;
+      if (!card.isPrologue) {
+        markMiniverseVisited(card.id);
+      }
+      trackAppClick(card, 'showcase-fullscreen-cta');
+      stopModalMediaPlayback();
+      setShowcaseFullscreenCard(card);
+    },
+    [markMiniverseVisited, stopModalMediaPlayback, trackAppClick]
+  );
+
+  const handleCloseShowcaseFullscreen = useCallback(() => {
+    setShowcaseFullscreenCard(null);
+    setHeroAmbientHold(false);
+  }, [setHeroAmbientHold]);
+
+  const handleExploreMobileShowcase = useCallback(() => {
+    if (!activeShowcaseCard || !showcaseNarrativeCards.length) return;
+
+    let nextCardId = null;
+    if (activeShowcaseCard.isPrologue) {
+      nextCardId = fictionShowcaseCards[0]?.id ?? showcaseNarrativeCards[0]?.id ?? null;
+    } else if (fictionShowcaseCards.length > 0) {
+      const currentFictionIndex = fictionShowcaseCards.findIndex((item) => item.id === activeShowcaseCard.id);
+      const baseIndex = currentFictionIndex >= 0 ? currentFictionIndex : 0;
+      nextCardId =
+        fictionShowcaseCards[(baseIndex + 1) % fictionShowcaseCards.length]?.id ??
+        fictionShowcaseCards[0]?.id ??
+        null;
     }
-    const nextIndex = Math.round(target.scrollLeft / target.clientWidth);
-    setActiveShowcaseIndex((prev) => (prev === nextIndex ? prev : nextIndex));
-    setShowcaseCountdown(9);
+
+    if (!nextCardId) return;
+    const nextGlobalIndex = showcaseNarrativeCards.findIndex((item) => item.id === nextCardId);
+    if (nextGlobalIndex < 0) return;
+    setActiveShowcaseIndex(nextGlobalIndex);
+  }, [activeShowcaseCard, fictionShowcaseCards, showcaseNarrativeCards]);
+
+  const handleShowcasePrimaryCta = useCallback(
+    (card) => {
+      if (!card) return;
+      handleOpenShowcaseFullscreen(card);
+    },
+    [handleOpenShowcaseFullscreen]
+  );
+
+  const handleShowcaseCardMouseEnter = useCallback(
+    (card) => {
+      handleShowcasePreviewHoverStart(card);
+    },
+    [handleShowcasePreviewHoverStart]
+  );
+
+  const handleShowcaseCardMouseLeave = useCallback(
+    (card) => {
+      handleShowcasePreviewHoverEnd(card);
+    },
+    [handleShowcasePreviewHoverEnd]
+  );
+
+  const handleToggleMobileShowcaseVideo = useCallback(async () => {
+    const target = mobileShowcaseVideoRef.current;
+    if (!target) return;
+    try {
+      if (target.paused || target.ended) {
+        target.muted = true;
+        target.loop = true;
+        target.playsInline = true;
+        await target.play?.();
+        setIsMobileShowcaseVideoPlaying(true);
+        return;
+      }
+      target.pause?.();
+      setIsMobileShowcaseVideoPlaying(false);
+    } catch {
+      toast({ description: 'No se pudo reproducir este video en tu dispositivo.' });
+    }
+  }, [toast]);
+
+  const handleMobileShowcaseVideoPlay = useCallback(() => {
+    setIsMobileShowcaseVideoPlaying(true);
   }, []);
 
-  const pauseShowcaseAutoPlay = useCallback(() => {
-    setIsShowcaseAutoPlay(false);
-    setShowcaseCountdown(9);
+  const handleMobileShowcaseVideoPause = useCallback(() => {
+    setIsMobileShowcaseVideoPlaying(false);
   }, []);
-
-  const resumeShowcaseAutoPlay = useCallback(() => {
-    setIsShowcaseAutoPlay(true);
-    setShowcaseCountdown(9);
-  }, []);
-
-  const handleShowcaseVideoPlay = useCallback(() => {
-    pauseShowcaseAutoPlay();
-    setHeroAmbientHold(true);
-  }, [pauseShowcaseAutoPlay, setHeroAmbientHold]);
-
-  const handleShowcaseVideoPause = useCallback(() => {
-    resumeShowcaseAutoPlay();
-    window.setTimeout(syncHeroAmbientWithModalVideo, 0);
-  }, [resumeShowcaseAutoPlay, syncHeroAmbientWithModalVideo]);
-
-  const handleShowcaseVideoEnded = useCallback(() => {
-    resumeShowcaseAutoPlay();
-    syncHeroAmbientWithModalVideo();
-  }, [resumeShowcaseAutoPlay, syncHeroAmbientWithModalVideo]);
-
-  const handleShowcaseNext = useCallback(() => {
-    if (!showcaseMiniverses.length) return;
-    const nextIndex = (activeShowcaseIndex + 1) % showcaseMiniverses.length;
-    setActiveShowcaseIndex(nextIndex);
-    scrollShowcaseTo(nextIndex);
-    setShowcaseCountdown(9);
-  }, [activeShowcaseIndex, scrollShowcaseTo, showcaseMiniverses.length]);
-
-  const handleShowcasePrev = useCallback(() => {
-    if (!showcaseMiniverses.length) return;
-    const prevIndex =
-      (activeShowcaseIndex - 1 + showcaseMiniverses.length) % showcaseMiniverses.length;
-    setActiveShowcaseIndex(prevIndex);
-    scrollShowcaseTo(prevIndex);
-    setShowcaseCountdown(9);
-  }, [activeShowcaseIndex, scrollShowcaseTo, showcaseMiniverses.length]);
 
   useEffect(() => {
-    if (!open || activeTab !== 'escaparate' || showcaseMiniverses.length < 2 || !isShowcaseAutoPlay) {
-      return undefined;
-    }
-    const tick = window.setInterval(() => {
-      setShowcaseCountdown((prev) => {
-        if (prev <= 1) {
-          const nextIndex = (activeShowcaseIndex + 1) % showcaseMiniverses.length;
-          setActiveShowcaseIndex(nextIndex);
-          scrollShowcaseTo(nextIndex);
-          return 9;
-        }
-        return prev - 1;
-      });
-    }, 1000);
-    return () => window.clearInterval(tick);
-  }, [activeShowcaseIndex, activeTab, isShowcaseAutoPlay, open, scrollShowcaseTo, showcaseMiniverses.length]);
+    // Deshabilitado intencionalmente durante desarrollo:
+    // evita el autoscroll del carrusel para facilitar revisión de UI/UX.
+    return undefined;
+  }, []);
 
   useEffect(
     () => () => {
@@ -1416,18 +1500,10 @@ const MiniverseModal = ({
             </p>
 
             <h2 id="miniverse-modal-title" className="font-display text-3xl text-slate-50">
-              Habita el universo de #GatoEncerrado
+              {activeTabHeadingVerb} el universo de #GatoEncerrado
             </h2>
 
-            <div className="mt-3 rounded-xl border border-purple-400/60 bg-purple-500/20 px-4 py-3 text-sm text-purple-100/95 shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]">
-              {activeTabIntro.lead}{' '}
-              <strong className="font-semibold text-white">
-                {activeTabIntro.highlight}
-              </strong>
-              {activeTabIntro.continuation ? ` ${activeTabIntro.continuation}` : ''}
-            </div>
-
-            <div className="mt-6 flex flex-nowrap gap-1.5 overflow-x-auto pb-1 sm:flex-wrap sm:overflow-visible">
+            <div className="mt-5 flex flex-nowrap gap-1.5 overflow-x-auto pb-1 sm:flex-wrap sm:overflow-visible">
               {TABS.map((tab) => (
                 <button
                   key={tab.id}
@@ -1453,6 +1529,14 @@ const MiniverseModal = ({
                   </span>
                 </button>
               ))}
+            </div>
+
+            <div className="mt-4 rounded-xl border border-purple-400/60 bg-purple-500/20 px-4 py-3 text-sm text-purple-100/95 shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]">
+              {activeTabIntro.lead}{' '}
+              <strong className="font-semibold text-white">
+                {activeTabIntro.highlight}
+              </strong>
+              {activeTabIntro.continuation ? ` ${activeTabIntro.continuation}` : ''}
             </div>
           </div>
         </div>
@@ -1607,182 +1691,153 @@ const MiniverseModal = ({
               ) : activeTab === 'escaparate' && !isMobileViewport ? (
                 <div className="md:col-span-2 space-y-4">
                   <div className="flex items-center justify-between text-xs text-slate-400/80">
-                    <button
-                      type="button"
-                      onClick={handleShowcasePrev}
-                      className="inline-flex items-center gap-2 rounded-full border border-white/10 px-3 py-1 text-[0.6rem] uppercase tracking-[0.35em] text-slate-300 hover:text-white hover:border-purple-300/40 transition"
-                      aria-label="Portal anterior"
-                    >
-                      <span aria-hidden="true">←</span>
-                      Anterior
-                    </button>
+                    <span className="uppercase tracking-[0.3em] text-slate-300/80">
+                      Navega escenas
+                    </span>
                     <span>
-                      Siguiente portal:{' '}
-                      <strong className="text-slate-100">
-                        {showcaseMiniverses[(activeShowcaseIndex + 1) % Math.max(showcaseMiniverses.length, 1)]
-                          ?.titleShort ?? 'Próximo'}
-                      </strong>{' '}
-                      · {showcaseCountdown}s
+                      Tarjeta {Math.min(activeShowcaseIndex + 1, Math.max(showcaseNarrativeCards.length, 1))}/
+                      {Math.max(showcaseNarrativeCards.length, 1)}
                     </span>
                   </div>
 
-                  <div
-                    ref={showcaseRef}
-                    onScroll={handleShowcaseScroll}
-                    className="flex gap-6 overflow-x-auto snap-x snap-mandatory pb-4 scroll-smooth scroll-px-4"
-                  >
-                    {showcaseMiniverses.map((card) => (
-                      <article
-                        key={`escaparate-${card.id}`}
-                        className="w-full min-w-full shrink-0 snap-center px-1"
+                  {activeShowcaseCard ? (
+                    <article
+                      className="px-1"
+                      onMouseEnter={() => handleShowcaseCardMouseEnter(activeShowcaseCard)}
+                      onMouseLeave={() => handleShowcaseCardMouseLeave(activeShowcaseCard)}
+                    >
+                      <div
+                        className="glass-effect relative overflow-hidden rounded-2xl border bg-white/5 p-5 sm:p-8 mx-auto w-[88vw] max-w-[24rem] sm:max-w-none sm:w-auto"
+                        style={{
+                          borderColor:
+                            MINIVERSE_TILE_COLORS[activeShowcaseCard.formatId]?.border ??
+                            MINIVERSE_TILE_COLORS.default.border,
+                        }}
                       >
                         <div
-                          className="glass-effect relative overflow-hidden rounded-2xl border bg-white/5 p-5 sm:p-8 mx-auto w-[88vw] max-w-[24rem] sm:max-w-none sm:w-auto"
+                          aria-hidden="true"
+                          className="pointer-events-none absolute inset-0 opacity-90"
                           style={{
-                            borderColor:
-                              MINIVERSE_TILE_COLORS[card.formatId]?.border ??
-                              MINIVERSE_TILE_COLORS.default.border,
+                            backgroundImage: activeShowcaseCard.customGradient ||
+                              MINIVERSE_TILE_GRADIENTS[activeShowcaseCard.formatId] ||
+                              MINIVERSE_TILE_GRADIENTS.default,
+                            filter: 'saturate(1.1)',
+                            backgroundSize: '160% 160%',
+                            backgroundPosition: '0% 0%',
                           }}
-                        >
-                          <div
-                            aria-hidden="true"
-                            className="pointer-events-none absolute inset-0 opacity-90"
-                            style={{
-                              backgroundImage:
-                                MINIVERSE_TILE_GRADIENTS[card.formatId] ??
-                                MINIVERSE_TILE_GRADIENTS.default,
-                              filter: 'saturate(1.1)',
-                              backgroundSize: '160% 160%',
-                              backgroundPosition: '0% 0%',
-                            }}
-                          />
-                          <div
-                            aria-hidden="true"
-                            className="pointer-events-none absolute inset-0 opacity-95 mix-blend-screen"
-                            style={{
-                              backgroundImage:
-                                MINIVERSE_STARFIELDS[card.id] ?? MINIVERSE_STARFIELDS.default,
-                            }}
-                          />
-                          <div
-                            aria-hidden="true"
-                            className="pointer-events-none absolute inset-0 opacity-70 mix-blend-screen star-pulse"
-                            style={{
-                              backgroundImage:
-                                'radial-gradient(6px 6px at 18% 26%, rgba(255,255,255,0.9), transparent 70%),' +
-                                'radial-gradient(5px 5px at 72% 38%, rgba(255,255,255,0.85), transparent 70%),' +
-                                'radial-gradient(7px 7px at 60% 68%, rgba(255,255,255,0.85), transparent 72%),' +
-                                'radial-gradient(4px 4px at 38% 58%, rgba(255,255,255,0.8), transparent 70%)',
-                            }}
-                          />
-                          <div className="absolute inset-0 opacity-30 mix-blend-screen pointer-events-none bg-[radial-gradient(circle_at_top,_rgba(255,255,255,0.25),_transparent_55%)]" />
-                          <div className="relative z-10 grid gap-6 lg:grid-cols-[1.15fr_0.85fr] items-center">
-                            <div className="flex flex-col gap-4">
-                              <div className="flex items-center gap-3">
-                                <div
-                                  className={`h-12 w-12 rounded-full bg-gradient-to-br ${card.thumbGradient} flex items-center justify-center text-sm font-semibold text-white shadow-[0_10px_25px_rgba(0,0,0,0.35)]`}
-                                >
-                                  {card.icon ? (
-                                    <card.icon size={22} className="text-white drop-shadow-sm" />
-                                  ) : (
-                                    card.thumbLabel
-                                  )}
-                                </div>
-                                <div>
-                                  <p className="text-xs uppercase tracking-[0.35em] text-slate-300/80">Microficción</p>
-                                  <h3 className="font-display text-3xl text-slate-50">{card.title}</h3>
-                                </div>
-                              </div>
-                              <p className="text-sm text-slate-200/90 leading-relaxed">
-                                {card.description}
-                              </p>
-                              <div className="lg:hidden w-full">
-                                <div className="relative w-full aspect-[5/4] sm:aspect-[4/5] rounded-3xl border border-white/10 bg-slate-900/60 overflow-hidden shadow-[0_18px_45px_rgba(0,0,0,0.45)]">
-                                  {card.videoUrl ? (
-                                    <>
-                                      <video
-                                        src={card.videoUrl}
-                                        className="absolute inset-0 h-full w-full object-cover"
-                                        playsInline
-                                        muted
-                                        controls
-                                        onPlay={handleShowcaseVideoPlay}
-                                        onPause={handleShowcaseVideoPause}
-                                        onEnded={handleShowcaseVideoEnded}
-                                        data-showcase-video={card.id}
-                                      />
-                                      <div className="pointer-events-none absolute left-4 top-4 rounded-full border border-white/20 bg-black/50 px-3 py-1 text-[0.6rem] uppercase tracking-[0.3em] text-slate-200">
-                                        Escena en proceso
-                                      </div>
-                                    </>
-                                  ) : (
-                                    <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 text-slate-300/70">
-                                      <div className="h-12 w-12 rounded-full border border-white/20 bg-white/5 flex items-center justify-center text-sm uppercase tracking-[0.3em]">
-                                        ▶︎
-                                      </div>
-                                      <p className="text-xs uppercase tracking-[0.4em]">Video próximamente</p>
-                                    </div>
-                                  )}
-                                </div>
-                              </div>
-                              <div className="flex flex-col sm:flex-row gap-3">
-                                <Button
-                                  type="button"
-                                  onClick={() => handleShowcasePlayOnly(card)}
-                                  className="narrative-cta-btn py-3 rounded-lg font-semibold flex items-center justify-center gap-2"
-                                >
-                                  <span>{card.titleShort ?? card.title}</span>
-                                </Button>
-                            
-                              </div>
-                              <p className="text-xs uppercase tracking-[0.35em] text-slate-300/70">
-                                Testimonio en video
-                              </p>
-                            </div>
-                            <div className="w-full">
-                              <div className="hidden lg:block relative w-full aspect-[4/5] rounded-3xl border border-white/10 bg-slate-900/60 overflow-hidden shadow-[0_18px_45px_rgba(0,0,0,0.45)]">
-                                {card.videoUrl ? (
-                                  <>
-                                    <video
-                                      src={card.videoUrl}
-                                      className="absolute inset-0 h-full w-full object-cover"
-                                      playsInline
-                                      muted
-                                      controls
-                                      onPlay={handleShowcaseVideoPlay}
-                                      onPause={handleShowcaseVideoPause}
-                                      onEnded={handleShowcaseVideoEnded}
-                                      data-showcase-video={card.id}
-                                    />
-                                    <div className="pointer-events-none absolute left-4 top-4 rounded-full border border-white/20 bg-black/50 px-3 py-1 text-[0.6rem] uppercase tracking-[0.3em] text-slate-200">
-                                      Escena en proceso
-                                    </div>
-                                  </>
+                        />
+                        <div
+                          aria-hidden="true"
+                          className="pointer-events-none absolute inset-0 opacity-95 mix-blend-screen"
+                          style={{
+                            backgroundImage:
+                              MINIVERSE_STARFIELDS[activeShowcaseCard.id] ?? MINIVERSE_STARFIELDS.default,
+                          }}
+                        />
+                        <div
+                          aria-hidden="true"
+                          className="pointer-events-none absolute inset-0 opacity-70 mix-blend-screen star-pulse"
+                          style={{
+                            backgroundImage:
+                              'radial-gradient(6px 6px at 18% 26%, rgba(255,255,255,0.9), transparent 70%),' +
+                              'radial-gradient(5px 5px at 72% 38%, rgba(255,255,255,0.85), transparent 70%),' +
+                              'radial-gradient(7px 7px at 60% 68%, rgba(255,255,255,0.85), transparent 72%),' +
+                              'radial-gradient(4px 4px at 38% 58%, rgba(255,255,255,0.8), transparent 70%)',
+                          }}
+                        />
+                        <div className="absolute inset-0 opacity-30 mix-blend-screen pointer-events-none bg-[radial-gradient(circle_at_top,_rgba(255,255,255,0.25),_transparent_55%)]" />
+                        <div className="relative z-10 grid gap-6 lg:grid-cols-[1.15fr_0.85fr] items-center">
+                          <div className="flex flex-col gap-4">
+                            <div className="flex items-center gap-3">
+                              <div
+                                className={`h-12 w-12 rounded-full bg-gradient-to-br ${activeShowcaseCard.thumbGradient} flex items-center justify-center text-sm font-semibold text-white shadow-[0_10px_25px_rgba(0,0,0,0.35)]`}
+                              >
+                                {activeShowcaseCard.icon ? (
+                                  <activeShowcaseCard.icon size={22} className="text-white drop-shadow-sm" />
                                 ) : (
-                                  <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 text-slate-300/70">
-                                    <div className="h-12 w-12 rounded-full border border-white/20 bg-white/5 flex items-center justify-center text-sm uppercase tracking-[0.3em]">
-                                      ▶︎
-                                    </div>
-                                    <p className="text-xs uppercase tracking-[0.4em]">Video próximamente</p>
-                                  </div>
+                                  activeShowcaseCard.thumbLabel
                                 )}
                               </div>
+                              <div>
+                                <p className="text-xs uppercase tracking-[0.35em] text-slate-300/80">
+                                  {activeShowcaseCard.eyebrow || 'Microficción'}
+                                </p>
+                                <h3 className="font-display text-3xl text-slate-50">{activeShowcaseCard.title}</h3>
+                              </div>
+                            </div>
+                            <p className="text-sm text-slate-200/90 leading-relaxed">
+                              {activeShowcaseCard.description}
+                            </p>
+                            <div className="flex flex-col sm:flex-row gap-3">
+                              <Button
+                                type="button"
+                                onClick={() => handleShowcasePrimaryCta(activeShowcaseCard)}
+                                className="narrative-cta-btn py-3 rounded-lg font-semibold flex items-center justify-center gap-2"
+                              >
+                                <span>{activeShowcaseCard.ctaLabel ?? activeShowcaseCard.titleShort ?? activeShowcaseCard.title}</span>
+                              </Button>
+                              <Button
+                                type="button"
+                                onClick={handleExploreMobileShowcase}
+                                className="bg-white text-slate-900 hover:bg-white/90 py-3 rounded-lg font-semibold flex items-center justify-center gap-2"
+                              >
+                                <span className="w-full truncate text-center">{mobileExploreButtonLabel}</span>
+                              </Button>
+                            </div>
+                            <p className="text-xs uppercase tracking-[0.35em] text-slate-300/70">
+                              {activeShowcaseCard.isPrologue ? 'Prólogo en video' : 'Testimonio en video'}
+                            </p>
+                          </div>
+                          <div className="w-full">
+                            <div className="relative w-full aspect-[5/4] sm:aspect-[4/5] rounded-3xl border border-white/10 bg-slate-900/60 overflow-hidden shadow-[0_18px_45px_rgba(0,0,0,0.45)]">
+                              {sharedShowcaseVideoUrl ? (
+                                <>
+                                  <video
+                                    ref={desktopShowcaseVideoRef}
+                                    src={sharedShowcaseVideoUrl}
+                                    className="absolute inset-0 h-full w-full object-cover"
+                                    playsInline
+                                    muted
+                                    loop
+                                    preload="metadata"
+                                    data-showcase-preview="desktop-shared"
+                                  />
+                                  <div className="pointer-events-none absolute left-4 top-4 rounded-full border border-white/20 bg-black/50 px-3 py-1 text-[0.6rem] uppercase tracking-[0.3em] text-slate-200">
+                                    Loop escénico continuo
+                                  </div>
+                                </>
+                              ) : (
+                                <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 text-slate-300/70">
+                                  <div className="h-12 w-12 rounded-full border border-white/20 bg-white/5 flex items-center justify-center text-sm uppercase tracking-[0.3em]">
+                                    ▶︎
+                                  </div>
+                                  <p className="text-xs uppercase tracking-[0.4em]">Video próximamente</p>
+                                </div>
+                              )}
                             </div>
                           </div>
                         </div>
-                      </article>
-                    ))}
-                  </div>
+                      </div>
+                    </article>
+                  ) : null}
                 </div>
               ) : activeTab === 'escaparate' && isMobileViewport ? (
                 <div className="md:col-span-2 space-y-4">
-                  {showcaseMiniverses.map((card) => (
+                  <div className="flex items-center justify-between text-xs text-slate-400/80">
+                    <span className="uppercase tracking-[0.3em] text-slate-300/80">
+                      Navega escenas
+                    </span>
+                    <span>
+                      Tarjeta {Math.min(activeShowcaseIndex + 1, Math.max(showcaseNarrativeCards.length, 1))}/
+                      {Math.max(showcaseNarrativeCards.length, 1)}
+                    </span>
+                  </div>
+                  {activeShowcaseCard ? (
                     <article
-                      key={`escaparate-mobile-${card.id}`}
                       className="glass-effect relative overflow-hidden rounded-2xl border bg-white/5 p-5 sm:p-8"
                       style={{
                         borderColor:
-                          MINIVERSE_TILE_COLORS[card.formatId]?.border ??
+                          MINIVERSE_TILE_COLORS[activeShowcaseCard.formatId]?.border ??
                           MINIVERSE_TILE_COLORS.default.border,
                       }}
                     >
@@ -1790,8 +1845,8 @@ const MiniverseModal = ({
                         aria-hidden="true"
                         className="pointer-events-none absolute inset-0 opacity-90"
                         style={{
-                          backgroundImage:
-                            MINIVERSE_TILE_GRADIENTS[card.formatId] ??
+                          backgroundImage: activeShowcaseCard.customGradient ||
+                            MINIVERSE_TILE_GRADIENTS[activeShowcaseCard.formatId] ||
                             MINIVERSE_TILE_GRADIENTS.default,
                           filter: 'saturate(1.1)',
                           backgroundSize: '160% 160%',
@@ -1803,7 +1858,7 @@ const MiniverseModal = ({
                         className="pointer-events-none absolute inset-0 opacity-95 mix-blend-screen"
                         style={{
                           backgroundImage:
-                            MINIVERSE_STARFIELDS[card.id] ?? MINIVERSE_STARFIELDS.default,
+                            MINIVERSE_STARFIELDS[activeShowcaseCard.id] ?? MINIVERSE_STARFIELDS.default,
                         }}
                       />
                       <div
@@ -1818,94 +1873,52 @@ const MiniverseModal = ({
                         }}
                       />
                       <div className="absolute inset-0 opacity-30 mix-blend-screen pointer-events-none bg-[radial-gradient(circle_at_top,_rgba(255,255,255,0.25),_transparent_55%)]" />
-                      <div className="relative z-10 grid gap-6 lg:grid-cols-[1.15fr_0.85fr] items-center">
+                      <div className="relative z-10 grid gap-6 items-center">
                         <div className="flex flex-col gap-4">
                           <div className="flex items-center gap-3">
                             <div
-                              className={`h-12 w-12 rounded-full bg-gradient-to-br ${card.thumbGradient} flex items-center justify-center text-sm font-semibold text-white shadow-[0_10px_25px_rgba(0,0,0,0.35)]`}
+                              className={`h-12 w-12 rounded-full bg-gradient-to-br ${activeShowcaseCard.thumbGradient} flex items-center justify-center text-sm font-semibold text-white shadow-[0_10px_25px_rgba(0,0,0,0.35)]`}
                             >
-                              {card.icon ? (
-                                <card.icon size={22} className="text-white drop-shadow-sm" />
+                              {activeShowcaseCard.icon ? (
+                                <activeShowcaseCard.icon size={22} className="text-white drop-shadow-sm" />
                               ) : (
-                                card.thumbLabel
+                                activeShowcaseCard.thumbLabel
                               )}
                             </div>
                             <div>
-                              <p className="text-xs uppercase tracking-[0.35em] text-slate-300/80">Microficción</p>
-                              <h3 className="font-display text-3xl text-slate-50">{card.title}</h3>
+                              <p className="text-xs uppercase tracking-[0.35em] text-slate-300/80">
+                                {activeShowcaseCard.eyebrow || 'Microficción'}
+                              </p>
+                              <h3 className="font-display text-3xl text-slate-50">{activeShowcaseCard.title}</h3>
                             </div>
                           </div>
-                          <p className="text-sm text-slate-200/90 leading-relaxed">
-                            {card.description}
-                          </p>
-                          <div className="lg:hidden w-full">
-                            <div className="relative w-full aspect-[5/4] sm:aspect-[4/5] rounded-3xl border border-white/10 bg-slate-900/60 overflow-hidden shadow-[0_18px_45px_rgba(0,0,0,0.45)]">
-                              {card.videoUrl ? (
-                                <>
-                                  <video
-                                    src={card.videoUrl}
-                                    className="absolute inset-0 h-full w-full object-cover"
-                                    playsInline
-                                    muted
-                                    controls
-                                    onPlay={handleShowcaseVideoPlay}
-                                    onPause={handleShowcaseVideoPause}
-                                    onEnded={handleShowcaseVideoEnded}
-                                    data-showcase-video={card.id}
-                                  />
-                                  <div className="pointer-events-none absolute left-4 top-4 rounded-full border border-white/20 bg-black/50 px-3 py-1 text-[0.6rem] uppercase tracking-[0.3em] text-slate-200">
-                                    Escena en proceso
-                                  </div>
-                                </>
-                              ) : (
-                                <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 text-slate-300/70">
-                                  <div className="h-12 w-12 rounded-full border border-white/20 bg-white/5 flex items-center justify-center text-sm uppercase tracking-[0.3em]">
-                                    ▶︎
-                                  </div>
-                                  <p className="text-xs uppercase tracking-[0.4em]">Video próximamente</p>
-                                </div>
-                              )}
-                            </div>
-                          </div>
-                          <div className="flex flex-col sm:flex-row gap-3">
-                            <Button
-                              type="button"
-                              onClick={() => handleShowcasePlayOnly(card)}
-                              className="narrative-cta-btn py-3 rounded-lg font-semibold flex items-center justify-center gap-2"
-                            >
-                              <span>{card.titleShort ?? card.title}</span>
-                            </Button>
-                            {card.isPremium ? (
-                              <Button
-                                type="button"
-                                onClick={handleScrollToSupport}
-                                className="bg-white text-slate-900 hover:bg-white/90 py-3 rounded-lg font-semibold flex items-center justify-center gap-2"
-                              >
-                                Escuchar a la obra
-                              </Button>
-                            ) : null}
-                          </div>
-                          <p className="text-xs uppercase tracking-[0.35em] text-slate-300/70">
-                            Testimonio en video
-                          </p>
-                        </div>
-                        <div className="w-full">
-                          <div className="hidden lg:block relative w-full aspect-[4/5] rounded-3xl border border-white/10 bg-slate-900/60 overflow-hidden shadow-[0_18px_45px_rgba(0,0,0,0.45)]">
-                            {card.videoUrl ? (
+                          <button
+                            type="button"
+                            onClick={handleToggleMobileShowcaseVideo}
+                            className="relative w-full aspect-[5/4] sm:aspect-[4/5] rounded-3xl border border-white/10 bg-slate-900/60 overflow-hidden shadow-[0_18px_45px_rgba(0,0,0,0.45)] text-left"
+                            aria-label={isMobileShowcaseVideoPlaying ? 'Pausar video' : 'Reproducir video'}
+                          >
+                            {sharedShowcaseVideoUrl ? (
                               <>
                                 <video
-                                  src={card.videoUrl}
+                                  ref={mobileShowcaseVideoRef}
+                                  src={sharedShowcaseVideoUrl}
                                   className="absolute inset-0 h-full w-full object-cover"
                                   playsInline
                                   muted
-                                  controls
-                                  onPlay={handleShowcaseVideoPlay}
-                                  onPause={handleShowcaseVideoPause}
-                                  onEnded={handleShowcaseVideoEnded}
-                                  data-showcase-video={card.id}
+                                  loop
+                                  preload="metadata"
+                                  onPlay={handleMobileShowcaseVideoPlay}
+                                  onPause={handleMobileShowcaseVideoPause}
+                                  onEnded={handleMobileShowcaseVideoPause}
+                                  data-showcase-video="mobile-shared"
                                 />
                                 <div className="pointer-events-none absolute left-4 top-4 rounded-full border border-white/20 bg-black/50 px-3 py-1 text-[0.6rem] uppercase tracking-[0.3em] text-slate-200">
-                                  Escena en proceso
+                                  {isMobileShowcaseVideoPlaying ? 'Toca para pausar' : 'Toca para reproducir'}
+                                </div>
+                                <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/45 via-transparent to-transparent" />
+                                <div className="pointer-events-none absolute right-4 bottom-4 rounded-full border border-white/25 bg-black/50 px-3 py-1 text-[0.6rem] uppercase tracking-[0.3em] text-slate-100">
+                                  Loop escénico
                                 </div>
                               </>
                             ) : (
@@ -1916,11 +1929,36 @@ const MiniverseModal = ({
                                 <p className="text-xs uppercase tracking-[0.4em]">Video próximamente</p>
                               </div>
                             )}
+                          </button>
+                          <p className="text-sm text-slate-200/90 leading-relaxed">
+                            <span className="mr-1 text-[0.65rem] font-semibold uppercase tracking-[0.32em] text-slate-300/70">
+                              Sinopsis:
+                            </span>
+                            {activeShowcaseCard.description}
+                          </p>
+                          <div className="flex flex-col gap-3">
+                            <Button
+                              type="button"
+                              onClick={() => handleShowcasePrimaryCta(activeShowcaseCard)}
+                              className="narrative-cta-btn py-3 rounded-lg font-semibold flex items-center justify-center gap-2"
+                            >
+                              <span>{activeShowcaseCard.ctaLabel ?? activeShowcaseCard.titleShort ?? activeShowcaseCard.title}</span>
+                            </Button>
+                            <Button
+                              type="button"
+                              onClick={handleExploreMobileShowcase}
+                              className="bg-white text-slate-900 hover:bg-white/90 py-3 rounded-lg font-semibold flex items-center justify-center gap-2"
+                            >
+                              <span className="w-full truncate text-center">{mobileExploreButtonLabel}</span>
+                            </Button>
                           </div>
+                          <p className="text-xs uppercase tracking-[0.35em] text-slate-300/70">
+                            {activeShowcaseCard.isPrologue ? 'Prólogo en video' : 'Testimonio en video'}
+                          </p>
                         </div>
                       </div>
                     </article>
-                  ))}
+                  ) : null}
                 </div>
               ) : selectedMiniverse ? (
                 <div className="md:col-span-2">
@@ -2291,10 +2329,84 @@ const MiniverseModal = ({
     )
     : null;
 
+  const showcaseNarrativeOverlay = typeof document !== 'undefined'
+    ? createPortal(
+      <AnimatePresence>
+        {showcaseFullscreenCard ? (
+          <motion.div
+            key="miniverse-showcase-narrative-video"
+            className="fixed inset-0 z-[176] flex items-center justify-center px-4 py-6"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+          >
+            <motion.div
+              className="absolute inset-0 bg-black/90 backdrop-blur-md"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={handleCloseShowcaseFullscreen}
+            />
+            <motion.div
+              role="dialog"
+              aria-modal="true"
+              aria-label={`Video narrativo: ${showcaseFullscreenCard.title}`}
+              className={`relative z-10 w-full overflow-hidden rounded-3xl border border-white/10 bg-slate-950/92 shadow-[0_35px_120px_rgba(0,0,0,0.7)] ${
+                isMobileViewport ? 'max-w-sm' : 'max-w-5xl'
+              }`}
+              initial={{ scale: 0.96, opacity: 0, y: 20 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.96, opacity: 0, y: 20 }}
+              transition={{ type: 'spring', stiffness: 220, damping: 24 }}
+            >
+              <div className="flex flex-col gap-3 border-b border-white/10 px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                  <p className="text-xs uppercase tracking-[0.35em] text-slate-400/80">
+                    Video narrativo completo
+                  </p>
+                  <h3 className="font-display text-2xl text-slate-100">{showcaseFullscreenCard.title}</h3>
+                </div>
+                <button
+                  type="button"
+                  onClick={handleCloseShowcaseFullscreen}
+                  className="text-slate-300 hover:text-white transition"
+                >
+                  Cerrar ✕
+                </button>
+              </div>
+              <div className={`relative w-full bg-black ${isMobileViewport ? 'aspect-[9/16]' : 'aspect-[16/9]'}`}>
+                {activeShowcaseFullscreenVideoUrl ? (
+                  <video
+                    src={activeShowcaseFullscreenVideoUrl}
+                    className="h-full w-full object-contain"
+                    controls
+                    playsInline
+                    preload="metadata"
+                  />
+                ) : (
+                  <div className="flex h-full w-full flex-col items-center justify-center gap-3 px-6 text-center">
+                    <p className="text-[11px] uppercase tracking-[0.34em] text-slate-400/85">
+                      Video próximamente
+                    </p>
+                    <p className="text-sm text-slate-300/85 leading-relaxed max-w-xl">
+                      Este video narrativo completo aún no está producido. Cuando esté listo, aparecerá aquí.
+                    </p>
+                  </div>
+                )}
+              </div>
+            </motion.div>
+          </motion.div>
+        ) : null}
+      </AnimatePresence>,
+      document.body,
+    )
+    : null;
+
   return (
     <>
       {shouldAnimatePresence ? <AnimatePresence>{modalLayer}</AnimatePresence> : modalLayer}
       {causeSiteOverlay}
+      {showcaseNarrativeOverlay}
     </>
   );
 };

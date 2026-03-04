@@ -993,7 +993,7 @@ const CallToAction = ({ barsIntroDelayMs = 0 }) => {
         <div className="flex items-baseline justify-between">
           <p className="text-[1.05rem] opacity-90 inline-flex items-center gap-2 leading-tight">
             <Ticket size={14} className="text-cyan-300/90" />
-            Boletos con causa
+            Boletos voluntarios
           </p>
           <p className="text-[2.2rem] font-semibold leading-none">{ticketUnits}</p>
         </div>
@@ -1003,7 +1003,7 @@ const CallToAction = ({ barsIntroDelayMs = 0 }) => {
             <p className="text-[1.05rem] opacity-90 leading-tight">
               {interactiveSupport !== null
                 ? 'Modo simulador'
-                : 'Huellas + boletos • actualmente'}
+                : 'Huellas + boletos ='}
             </p>
             <p className="text-[2.2rem] font-semibold leading-none">{displayStats.totalSupport}</p>
           </div>
