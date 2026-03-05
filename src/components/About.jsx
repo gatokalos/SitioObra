@@ -22,7 +22,6 @@ import {
   TRAILER_FALLBACK_URL_MOBILE,
   TRAILER_FALLBACK_URL_SQUARE,
 } from '@/services/trailerService';
-import ReserveModal from '@/components/ReserveModal';
 import { useSilvestreVoice } from '@/hooks/useSilvestreVoice';
 
 const aboutParagraphs = [
@@ -481,7 +480,7 @@ export const ProvocaSection = () => {
 
     if (!user?.id) {
       toast({
-        description: 'Inicia sesión para dejar un pulso.',
+        description: 'Inicia sesión para detectar tu pulso.',
         action: (
           <ToastAction
             altText="Abrir login"
@@ -728,7 +727,7 @@ export const ProvocaSection = () => {
         {showAfterCareOverlay ? (
           <motion.div
             key="provoca-after-care"
-            className="fixed inset-0 z-[190] flex items-center justify-center px-4 py-6"
+            className="fixed inset-0 z-[190] flex items-center justify-center overflow-y-auto overflow-x-hidden overscroll-none"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
@@ -746,7 +745,7 @@ export const ProvocaSection = () => {
               role="dialog"
               aria-modal="true"
               aria-labelledby="provoca-aftercare-title"
-              className="relative z-10 w-full max-w-2xl overflow-hidden rounded-3xl border border-white/15 bg-[#071514]/95 p-5 sm:p-6 shadow-[0_35px_120px_rgba(0,0,0,0.65)]"
+              className="relative z-10 my-6 w-[calc(100vw-2rem)] max-w-2xl overflow-hidden rounded-3xl border border-white/15 bg-[#071514]/95 p-5 sm:p-6 shadow-[0_35px_120px_rgba(0,0,0,0.65)]"
               initial={{ scale: 0.96, opacity: 0, y: 18 }}
               animate={{ scale: 1, opacity: 1, y: 0 }}
               exit={{ scale: 0.97, opacity: 0, y: 10 }}
@@ -1043,8 +1042,6 @@ const About = () => {
   const [trailer, setTrailer] = useState(null);
   const [isTrailerOpen, setIsTrailerOpen] = useState(false);
   const [isTrailerLoading, setIsTrailerLoading] = useState(false);
-  const [isReserveOpen, setIsReserveOpen] = useState(false);
-  const [reserveIntent, setReserveIntent] = useState('preventa');
   const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(
     () => typeof window !== 'undefined' && window.matchMedia('(max-width: 768px)').matches
@@ -1105,16 +1102,6 @@ const About = () => {
     : isMobile
       ? TRAILER_FALLBACK_URL_MOBILE
       : TRAILER_FALLBACK_URL;
-
-  const handleOpenReserve = useCallback((intent) => {
-    setReserveIntent(intent);
-    setIsReserveOpen(true);
-  }, []);
-
-
-    const handleCloseReserve = useCallback(() => {
-    setIsReserveOpen(false);
-  }, []);
 
   const handleWatchTrailer = useCallback(async () => {
     if (isTrailerLoading) {
@@ -1394,7 +1381,7 @@ const About = () => {
         )}
         {isInviteModalOpen && (
           <motion.div
-            className="fixed inset-0 z-50 flex items-center justify-center p-4"
+            className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto overflow-x-hidden overscroll-none"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
@@ -1408,7 +1395,7 @@ const About = () => {
             />
 
             <motion.div
-              className="relative z-10 w-full max-w-md rounded-3xl border border-white/10 bg-slate-950/90 backdrop-blur-xl p-6 shadow-[0_18px_60px_rgba(0,0,0,0.55)]"
+              className="relative z-10 my-4 w-[calc(100vw-2rem)] max-w-md rounded-3xl border border-white/10 bg-slate-950/90 backdrop-blur-xl p-6 shadow-[0_18px_60px_rgba(0,0,0,0.55)]"
               initial={{ scale: 0.96, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.96, opacity: 0 }}
@@ -1449,12 +1436,6 @@ const About = () => {
         )}
       </AnimatePresence>
     </section>
-
-      <ReserveModal
-        open={isReserveOpen}
-        onClose={handleCloseReserve}
-        initialInterest={reserveIntent}
-      />
     </>
   );
 };

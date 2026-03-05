@@ -1,8 +1,7 @@
-import React, { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
+import React, { Suspense, useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { BookOpen, CoffeeIcon, DramaIcon, TicketIcon, HeartHandshake, ShoppingBag, SparkleIcon, DoorOpen, Volume2, VolumeX } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import ReserveModal from '@/components/ReserveModal';
 import TicketPurchaseModal from '@/components/TicketPurchaseModal';
 import isotipoGatoWebp from '@/assets/isotipo-gato.webp';
 import { useNavigate, useLocation } from 'react-router-dom';
@@ -18,6 +17,7 @@ const HERO_AUDIO_MIN_AUDIBLE_VOLUME = 0.015;
 const HERO_AUDIO_PLAY_RETRY_MS = 2500;
 const HERO_AUDIO_IDLE_RETRY_MS = 6000;
 const HERO_MOBILE_AUDIO_PREF_KEY = 'gatoencerrado:hero-audio-mobile-enabled';
+const MiniverseModal = React.lazy(() => import('@/components/MiniverseModal'));
 
 const readMobileHeroAudioPreference = () => {
   if (typeof window === 'undefined') return false;
@@ -29,7 +29,6 @@ const readMobileHeroAudioPreference = () => {
 };
 
 const Hero = () => {
-  const [isReserveOpen, setIsReserveOpen] = useState(false);
   const [isTicketModalOpen, setIsTicketModalOpen] = useState(false);
   const [ctaIndex, setCtaIndex] = useState(0);
   const [isCtaHovered, setIsCtaHovered] = useState(false);
@@ -93,13 +92,9 @@ const Hero = () => {
     scrollToSection('#about');
   }, [scrollToSection]);
 
-  const handleOpenReserve = useCallback(() => {
-    setIsReserveOpen(true);
-  }, []);
-
-  const handleCloseReserve = useCallback(() => {
-    setIsReserveOpen(false);
-  }, []);
+  const handleOpenSupportHub = useCallback(() => {
+    navigate('/portal-encuentros');
+  }, [navigate]);
 
   const handleOpenMiniverseList = useCallback((tabId = null, contextLabel = null) => {
     if (typeof window !== 'undefined') {
@@ -122,6 +117,31 @@ const Hero = () => {
     }
   }, [location.hash, location.pathname, location.search, navigate, user]);
 
+  const handleLoggedInHeroAction = useCallback(
+    (tabId, contextLabel, index) => {
+      if (Number.isFinite(index)) {
+        setActiveLoggedInCtaIndex(index);
+      }
+      handleOpenMiniverseList(tabId, contextLabel);
+    },
+    [handleOpenMiniverseList]
+  );
+
+  const handleMobileInlineMiniverseSelect = useCallback(
+    (formatId) => {
+      scrollToSection('#transmedia');
+      if (typeof window === 'undefined' || !formatId) return;
+      window.setTimeout(() => {
+        window.dispatchEvent(
+          new CustomEvent('gatoencerrado:select-miniverse-format', {
+            detail: { formatId },
+          }),
+        );
+      }, 420);
+    },
+    [scrollToSection]
+  );
+
   const handleCloseTicket = useCallback(() => {
     setIsTicketModalOpen(false);
   }, []);
@@ -138,7 +158,7 @@ const Hero = () => {
   }, [isCtaHovered, rotatingCtas.length]);
 
   useEffect(() => {
-    if (!user) return undefined;
+    if (!user || isMobileViewport) return undefined;
     sweepDirectionRef.current = 1;
     const intervalId = window.setInterval(() => {
       setActiveLoggedInCtaIndex((prev) => {
@@ -148,7 +168,7 @@ const Hero = () => {
       });
     }, 4400);
     return () => window.clearInterval(intervalId);
-  }, [user]);
+  }, [isMobileViewport, user]);
 
   const updateLoggedInSweepPoint = useCallback((index) => {
     const track = loggedInCtaTrackRef.current;
@@ -595,7 +615,11 @@ const Hero = () => {
       <section
         id="hero"
         ref={heroSectionRef}
-        className="min-h-screen flex items-center justify-center relative overflow-hidden"
+        className={`min-h-screen relative overflow-hidden ${
+          user && isMobileViewport
+            ? 'flex items-start justify-center'
+            : 'flex items-center justify-center'
+        }`}
       >
         <AnimatePresence initial={false}>
           {canShowHeroAudioToggle ? (
@@ -619,54 +643,83 @@ const Hero = () => {
         </AnimatePresence>
         
         {/* Contenido */}
-        <div className="container mx-auto px-6 text-center relative z-10">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 1, ease: "easeOut" }}
-            className="max-w-4xl mx-auto"
-          >
+        {user && isMobileViewport ? (
+          <div className="container mx-auto px-4 pt-0 pb-8 relative z-10">
             <motion.div
-              initial={{ opacity: 0, scale: 0.8 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 1.2, ease: 'easeOut' }}
-              className="hero-logo mx-auto mb-6 w-24 sm:w-28 md:w-32"
+              initial={{ opacity: 0, y: 14 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.36, ease: 'easeOut' }}
+              className="mx-auto w-full max-w-2xl"
             >
-              <img
-                src={isotipoGatoWebp}
-                alt="Isotipo de Gato Encerrado"
-                className="hero-logo-img"
-              />
+              <Suspense
+                fallback={(
+                  <div className="rounded-3xl border border-white/15 bg-slate-950/70 p-5 backdrop-blur-xl shadow-[0_18px_50px_rgba(0,0,0,0.45)]">
+                    <p className="text-xs uppercase tracking-[0.32em] text-slate-300/70">
+                      Cargando narrativa expandida...
+                    </p>
+                  </div>
+                )}
+              >
+                <MiniverseModal
+                  open
+                  onClose={handleScrollToAbout}
+                  initialTabId="escaparate"
+                  onSelectMiniverse={handleMobileInlineMiniverseSelect}
+                  stayOpenOnSelect
+                  displayMode="inline"
+                />
+              </Suspense>
             </motion.div>
-            <motion.h1
-  initial={{ opacity: 0 }}
-  animate={{ opacity: 1 }}
-  transition={{ duration: 1.5, delay: 0.2 }}
-  className="hero-title text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-medium mb-3 text-center w-full break-words"
-  style={{ textShadow: '0 0 35px rgba(255, 223, 255, 0.45)' }}
->
-  #GATOENCERRADO
-</motion.h1>
-
-<motion.p
-  initial={{ opacity: 0, y: 6 }}
-  animate={{ opacity: 1, y: 0 }}
-  transition={{ duration: 0.9, delay: 0.45, ease: 'easeOut' }}
-  className="text-sm italic text-slate-400/70 leading-tight mb-6"
->
-  La obra que ocurre en tu mente.
-</motion.p>
-       
-
-            {/* Botones */}
+          </div>
+        ) : (
+          <div className="container mx-auto px-6 text-center relative z-10">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 1, delay: 0.8 }}
-              className="flex flex-col gap-4 justify-center items-center"
+              transition={{ duration: 1, ease: "easeOut" }}
+              className="max-w-4xl mx-auto"
             >
-              {!user ? (
-                <div className="flex flex-col gap-4 justify-center items-center">
+              <motion.div
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 1.2, ease: 'easeOut' }}
+                className="hero-logo mx-auto mb-6 w-24 sm:w-28 md:w-32"
+              >
+                <img
+                  src={isotipoGatoWebp}
+                  alt="Isotipo de Gato Encerrado"
+                  className="hero-logo-img"
+                />
+              </motion.div>
+              <motion.h1
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ duration: 1.5, delay: 0.2 }}
+                className="hero-title text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-medium mb-3 text-center w-full break-words"
+                style={{ textShadow: '0 0 35px rgba(255, 223, 255, 0.45)' }}
+              >
+                #GATOENCERRADO
+              </motion.h1>
+
+              <motion.p
+                initial={{ opacity: 0, y: 6 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.9, delay: 0.45, ease: 'easeOut' }}
+                className="text-sm italic text-slate-400/70 leading-tight mb-6"
+              >
+                La obra que ocurre en tu mente.
+              </motion.p>
+        
+
+              {/* Botones */}
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 1, delay: 0.8 }}
+                className="flex flex-col gap-4 justify-center items-center"
+              >
+                {!user ? (
+                  <div className="flex flex-col gap-4 justify-center items-center">
  
                   {/* CTA PRINCIPAL */}
                   <Button
@@ -692,7 +745,7 @@ const Hero = () => {
                   <Button
                     asChild
                     variant="outline"
-                    onClick={() => handleOpenReserve('preventa')}
+                    onClick={handleOpenSupportHub}
                     onMouseEnter={() => setIsCtaHovered(true)}
                     onMouseLeave={() => setIsCtaHovered(false)}
                     className="
@@ -769,7 +822,7 @@ const Hero = () => {
                       loggedInCtaRefs.current[0] = node;
                     }}
                     type="button"
-                    onClick={() => handleOpenMiniverseList('escaparate', 'Entender')}
+                    onClick={() => handleLoggedInHeroAction('escaparate', 'Entender', 0)}
                     className={loggedInCtaClass()}
                   >
                     <span
@@ -801,7 +854,7 @@ const Hero = () => {
                       loggedInCtaRefs.current[1] = node;
                     }}
                     type="button"
-                    onClick={() => handleOpenMiniverseList('experiences', 'Habitar')}
+                    onClick={() => handleLoggedInHeroAction('experiences', 'Habitar', 1)}
                     className={loggedInCtaClass()}
                   >
                     <span
@@ -833,7 +886,7 @@ const Hero = () => {
                       loggedInCtaRefs.current[2] = node;
                     }}
                     type="button"
-                    onClick={() => handleOpenMiniverseList('waitlist', 'Impulsar')}
+                    onClick={() => handleLoggedInHeroAction('waitlist', 'Impulsar', 2)}
                     className={loggedInCtaClass()}
                   >
                     <span
@@ -862,67 +915,65 @@ const Hero = () => {
                   </Button>
                 </div>
               )}
-
-
-     
+              </motion.div>
             </motion.div>
-          </motion.div>
 
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.7, delay: 1.2 }}
-            className="relative mt-8 inline-flex h-12 w-12 items-center justify-center self-center sm:mt-14 sm:h-12 sm:w-12"
-            aria-hidden="true"
-          >
-            <motion.svg
-              width="36"
-              height="36"
-              viewBox="0 0 34 34"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
-              animate={{ y: [0, 3, 0], opacity: [0.72, 0.3, 0.72] }}
-              transition={{ duration: 2.1, repeat: Infinity, ease: 'easeInOut' }}
-              className="h-10 w-10 sm:h-[54px] sm:w-[54px]"
-              style={{
-                filter: 'drop-shadow(0 0 5px rgba(255,255,255,0.3)) drop-shadow(0 0 10px rgba(189,189,189,0.26))',
-              }}
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.7, delay: 1.2 }}
+              className="relative mt-8 inline-flex h-12 w-12 items-center justify-center self-center sm:mt-14 sm:h-12 sm:w-12"
+              aria-hidden="true"
             >
-              <defs>
-                <linearGradient id="heroScrollChevronGradient" x1="3" y1="4" x2="30" y2="30" gradientUnits="userSpaceOnUse">
-                  <stop stopColor="#2d2d2d" />
-                  <stop offset="0.55" stopColor="#bdbdbd" />
-                  <stop offset="1" stopColor="#ffffff" />
-                </linearGradient>
-              </defs>
-              <path
-                d="M7 9.5L17 15.5L27 9.5"
-                stroke="url(#heroScrollChevronGradient)"
-                strokeWidth="2.8"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                opacity="0.58"
-              />
-              <path
-                d="M7 16L17 22L27 16"
-                stroke="url(#heroScrollChevronGradient)"
-                strokeWidth="2.9"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                opacity="0.74"
-              />
-              <path
-                d="M7 22.5L17 28.5L27 22.5"
-                stroke="url(#heroScrollChevronGradient)"
-                strokeWidth="2.8"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                opacity="0.66"
-              />
-            </motion.svg>
-          </motion.div>
+              <motion.svg
+                width="36"
+                height="36"
+                viewBox="0 0 34 34"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+                animate={{ y: [0, 3, 0], opacity: [0.72, 0.3, 0.72] }}
+                transition={{ duration: 2.1, repeat: Infinity, ease: 'easeInOut' }}
+                className="h-10 w-10 sm:h-[54px] sm:w-[54px]"
+                style={{
+                  filter: 'drop-shadow(0 0 5px rgba(255,255,255,0.3)) drop-shadow(0 0 10px rgba(189,189,189,0.26))',
+                }}
+              >
+                <defs>
+                  <linearGradient id="heroScrollChevronGradient" x1="3" y1="4" x2="30" y2="30" gradientUnits="userSpaceOnUse">
+                    <stop stopColor="#2d2d2d" />
+                    <stop offset="0.55" stopColor="#bdbdbd" />
+                    <stop offset="1" stopColor="#ffffff" />
+                  </linearGradient>
+                </defs>
+                <path
+                  d="M7 9.5L17 15.5L27 9.5"
+                  stroke="url(#heroScrollChevronGradient)"
+                  strokeWidth="2.8"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  opacity="0.58"
+                />
+                <path
+                  d="M7 16L17 22L27 16"
+                  stroke="url(#heroScrollChevronGradient)"
+                  strokeWidth="2.9"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  opacity="0.74"
+                />
+                <path
+                  d="M7 22.5L17 28.5L27 22.5"
+                  stroke="url(#heroScrollChevronGradient)"
+                  strokeWidth="2.8"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  opacity="0.66"
+                />
+              </motion.svg>
+            </motion.div>
 
-        </div>
+          </div>
+        )}
       </section>
       {user ? (
         <audio
@@ -935,7 +986,6 @@ const Hero = () => {
         />
       ) : null}
 
-      <ReserveModal open={isReserveOpen} onClose={handleCloseReserve} initialInterest="preventa" />
       <TicketPurchaseModal open={isTicketModalOpen} onClose={handleCloseTicket} />
     </>
   );

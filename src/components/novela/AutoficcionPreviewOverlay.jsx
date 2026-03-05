@@ -8,8 +8,8 @@ const AutoficcionPreviewOverlay = ({ open, onClose }) => {
   }
 
   return createPortal(
-    <div className="fixed inset-0 z-[200] overflow-auto bg-black/80 backdrop-blur-xl p-6">
-      <div className="max-w-3xl mx-auto">
+    <div className="fixed inset-0 z-[200] overflow-auto overscroll-none bg-black/80 backdrop-blur-xl">
+      <div className="max-w-3xl mx-auto px-6 py-6">
         <button
           type="button"
           onClick={onClose}

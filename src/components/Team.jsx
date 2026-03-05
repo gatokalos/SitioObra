@@ -963,6 +963,13 @@ const Team = () => {
   const renderMobileRoleSplitButton = (role, rowRoles) => {
     const isOpen = openMobileRoles.includes(role);
     const label = mobileRoleLabelOverrides[role] ?? role;
+    const roleIndex = orderedRoleKeys.indexOf(role);
+    const tintClass =
+      roleIndex >= 0 && roleIndex < 2
+        ? "team-pill-tint tintTop"
+        : roleIndex >= Math.max(orderedRoleKeys.length - 2, 0)
+          ? "team-pill-tint tintBottom"
+          : "";
     return (
       <button
         key={role}
@@ -980,7 +987,7 @@ const Team = () => {
             return [...next, role];
           });
         }}
-        className={`ui-segmented__btn !min-h-[44px] !w-full !justify-center !px-3 !py-2 !text-center !text-[11px] !font-semibold !uppercase !tracking-[0.18em] !leading-[1.2] ${
+        className={`ui-segmented__btn ${tintClass} !min-h-[44px] !w-full !justify-center !px-3 !py-2 !text-center !text-[11px] !font-semibold !uppercase !tracking-[0.18em] !leading-[1.2] ${
           isOpen
             ? "ui-segmented__btn--primary provoca-soft-glass-btn--active"
             : "ui-segmented__btn--secondary"
@@ -997,7 +1004,7 @@ const Team = () => {
         {isMemberLinkOpen ? (
           <motion.div
             key="team-link-iframe"
-            className="fixed inset-0 z-[170] flex items-center justify-center px-4 py-6"
+            className="fixed inset-0 z-[170] flex items-center justify-center overflow-y-auto overflow-x-hidden overscroll-none"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
@@ -1013,7 +1020,7 @@ const Team = () => {
               role="dialog"
               aria-modal="true"
               aria-label={activeMemberLink?.label || "Perfil externo"}
-              className="relative z-10 w-full max-w-5xl overflow-hidden rounded-3xl border border-white/10 bg-slate-950/90 shadow-[0_35px_120px_rgba(0,0,0,0.65)]"
+              className="relative z-10 my-6 w-[calc(100vw-2rem)] max-w-5xl overflow-hidden rounded-3xl border border-white/10 bg-slate-950/90 shadow-[0_35px_120px_rgba(0,0,0,0.65)]"
               initial={{ scale: 0.96, opacity: 0, y: 18 }}
               animate={{ scale: 1, opacity: 1, y: 0 }}
               exit={{ scale: 0.96, opacity: 0, y: 18 }}
@@ -1074,7 +1081,7 @@ const Team = () => {
         {isConfirmLinkOpen ? (
           <motion.div
             key="team-link-confirm"
-            className="fixed inset-0 z-[180] flex items-center justify-center px-4 py-6"
+            className="fixed inset-0 z-[180] flex items-center justify-center overflow-y-auto overflow-x-hidden overscroll-none"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
@@ -1090,7 +1097,7 @@ const Team = () => {
               role="dialog"
               aria-modal="true"
               aria-label="Confirmar salida"
-              className="relative z-10 w-full max-w-md overflow-hidden rounded-3xl border border-white/10 bg-slate-950/95 shadow-[0_35px_120px_rgba(0,0,0,0.65)]"
+              className="relative z-10 my-6 w-[calc(100vw-2rem)] max-w-md overflow-hidden rounded-3xl border border-white/10 bg-slate-950/95 shadow-[0_35px_120px_rgba(0,0,0,0.65)]"
               initial={{ scale: 0.96, opacity: 0, y: 14 }}
               animate={{ scale: 1, opacity: 1, y: 0 }}
               exit={{ scale: 0.96, opacity: 0, y: 14 }}
@@ -1214,6 +1221,12 @@ Cada colaboración forma parte activa del universo que la obra pone en escena.
             >
               {orderedRoleEntries.map(([role], index) => {
                 const isActive = role === activeDesktopRole;
+                const tintClass =
+                  index < 2
+                    ? "team-pill-tint tintTop"
+                    : index >= Math.max(orderedRoleEntries.length - 2, 0)
+                      ? "team-pill-tint tintBottom"
+                      : "";
                 return (
                   <button
                     key={role}
@@ -1225,7 +1238,7 @@ Cada colaboración forma parte activa del universo que la obra pone en escena.
                     tabIndex={isActive ? 0 : -1}
                     onClick={() => setActiveDesktopRole(role)}
                     onKeyDown={(event) => handleDesktopRoleKeyDown(event, index)}
-                    className={`whitespace-nowrap rounded-full border px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.24em] transition ${
+                    className={`${tintClass} whitespace-nowrap rounded-full border px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.24em] transition ${
                       isActive
                         ? "border-purple-400/60 bg-purple-500/20 text-purple-100 shadow-[0_0_20px_rgba(168,85,247,0.2)]"
                         : "border-white/15 bg-slate-950/75 text-slate-100/95 shadow-[inset_0_1px_0_rgba(255,255,255,0.08),0_8px_22px_rgba(0,0,0,0.35)] hover:border-purple-300/45 hover:bg-slate-900/85 hover:text-purple-100"

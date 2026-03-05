@@ -31,8 +31,8 @@ export default function ReflectionModal({
   };
 
   return (
-    <div className="fixed inset-0 z-[999] flex items-center justify-center bg-black/80 backdrop-blur-3xl px-4">
-      <div className="w-full max-w-xl rounded-3xl border border-purple-400/40 bg-black/90 p-6 shadow-[0_30px_80px_rgba(15,23,42,0.75)]">
+    <div className="fixed inset-0 z-[999] flex items-center justify-center overflow-y-auto overflow-x-hidden overscroll-none bg-black/80 backdrop-blur-3xl">
+      <div className="my-6 w-[calc(100vw-2rem)] max-w-xl rounded-3xl border border-purple-400/40 bg-black/90 p-6 shadow-[0_30px_80px_rgba(15,23,42,0.75)]">
         <div className="flex items-center justify-between mb-4">
           <div>
             <p className="text-xs uppercase tracking-[0.4em] text-purple-300/80">Plano</p>

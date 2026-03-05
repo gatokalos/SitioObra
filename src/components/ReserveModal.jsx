@@ -198,6 +198,7 @@ const ReserveModal = ({
   mode = 'offseason',
   initialPackages = [],
   overlayZClass = 'z-50',
+  renderMode = 'modal',
 }) => {
   const initialPackagesKey = useMemo(
     () => (Array.isArray(initialPackages) ? initialPackages.join('|') : ''),
@@ -215,6 +216,7 @@ const ReserveModal = ({
   const { bursts: confettiBursts, fireConfetti } = useConfettiBursts();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showProposalForm, setShowProposalForm] = useState(false);
+  const isPageMode = renderMode === 'page';
 
   // -------------------------------------------------------------
   // Resetea cuando se abre
@@ -237,11 +239,11 @@ const ReserveModal = ({
   // Permitir cerrar con ESC
   // -------------------------------------------------------------
   useEffect(() => {
-    if (!open) return;
+    if (!open || isPageMode) return;
     const handleKeyDown = (event) => event.key === 'Escape' && onClose?.();
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [open, onClose]);
+  }, [isPageMode, open, onClose]);
 
   // -------------------------------------------------------------
   // Handlers
@@ -414,451 +416,476 @@ payload.customer_email = normalizedEmail;
   // -------------------------------------------------------------
   const copy = RESERVE_COPY[mode] ?? RESERVE_COPY.offseason;
   const isOffseason = mode === 'offseason';
+  const titleClassName = `font-display text-3xl text-slate-50 ${isPageMode ? 'max-w-[18ch] leading-tight' : ''}`;
+  const subtitleClassName = `text-xs text-slate-400/80 mt-1 ${isPageMode ? 'max-w-[64ch] leading-relaxed' : ''}`;
+  const introClassName = `mb-4 text-sm text-slate-300/90 leading-relaxed ${isPageMode ? 'max-w-[68ch]' : ''}`;
+  const bannerClassName = `mb-6 sm:mb-8 ${isPageMode ? '-mx-4 sm:-mx-6' : ''}`;
 
-  const modalTree = (
-    <AnimatePresence>
-      {open && (
-        <motion.div
-          className={`fixed inset-0 ${overlayZClass} flex items-start justify-center px-4 py-6 sm:py-10 overflow-y-auto`}
-          initial="hidden"
-          animate="visible"
-          exit="hidden"
-        >
-          {/* Backdrop */}
-          <motion.div
-            className="absolute inset-0 bg-black/80 backdrop-blur-sm"
-            variants={backdropVariants}
-            onClick={handleClose}
+  if (!open) return null;
+
+  const renderPanel = (panelClass, motionProps = {}, role = 'dialog') => (
+    <motion.div
+      role={role}
+      aria-modal={role === 'dialog' ? 'true' : undefined}
+      {...motionProps}
+      className={panelClass}
+    >
+      <style>{RESERVE_BUTTON_STYLES}</style>
+      {confettiBursts.map((burst) => (
+        <ConfettiBurst key={burst} seed={burst} />
+      ))}
+
+      {/* HEADER */}
+      <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-6 sm:mb-8">
+        <div className="flex items-center gap-4">
+          <img
+            src={LOGO_SRC}
+            alt="#GatoEncerrado"
+            className="h-12 w-auto object-contain rounded-full border border-white/20 bg-white/5 p-1 shadow-lg"
           />
-
-          {/* Modal */}
-          <motion.div
-            role="dialog"
-            aria-modal="true"
-            variants={modalVariants}
-            className="relative z-10 w-full max-w-3xl rounded-3xl border border-white/10 bg-slate-950/95 p-6 sm:p-10 shadow-2xl max-h-[92vh] overflow-y-auto"
-          >
-            <style>{RESERVE_BUTTON_STYLES}</style>
-            {confettiBursts.map((burst) => (
-              <ConfettiBurst key={burst} seed={burst} />
-            ))}
-
-            {/* HEADER */}
-            <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-6 sm:mb-8">
-              <div className="flex items-center gap-4">
-                <img
-                  src={LOGO_SRC}
-                  alt="#GatoEncerrado"
-                  className="h-12 w-auto object-contain rounded-full border border-white/20 bg-white/5 p-1 shadow-lg"
-                />
-                <div>
-                  {copy.eyebrow ? (
-                    <p className="text-sm uppercase tracking-[0.35em] text-slate-400/80 mb-2">
-                      {copy.eyebrow}
-                    </p>
-                  ) : null}
-                  <h2 className="font-display text-3xl text-slate-50">
-                    {copy.title}
-                  </h2>
-                  {copy.subtitle ? (
-                    <p className="text-xs text-slate-400/80 mt-1">{copy.subtitle}</p>
-                  ) : null}
-                </div>
-              </div>
-            </div>
-            <button
-              type="button"
-              onClick={handleClose}
-              aria-label="Cerrar modal"
-              className="absolute right-5 top-5 text-slate-400 hover:text-white transition"
-            >
-              ✕
-            </button>
-
-            {/* BANNER */}
-            <motion.div
-              initial={{ opacity: 0, y: 10, scale: 0.99 }}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
-              transition={{ duration: 0.45, ease: 'easeOut' }}
-              className="mb-6 sm:mb-8"
-            >
-              <div className="relative overflow-hidden rounded-2xl border border-white/10 bg-black/30 shadow-[0_20px_45px_rgba(0,0,0,0.35)]">
-                <motion.video
-                  src={RESERVE_BANNER_SRC}
-                  className={`w-full object-cover ${isOffseason ? 'h-[168px] sm:h-[208px]' : 'h-[140px] sm:h-[190px]'}`}
-                  initial={{ scale: 1.03 }}
-                  animate={{ scale: 1 }}
-                  transition={{ duration: 0.9, ease: 'easeOut' }}
-                  autoPlay
-                  loop
-                  muted
-                  playsInline
-                  preload="metadata"
-                  aria-label="Banner Café Gato"
-                />
-
-                {isOffseason ? (
-                  <>
-                    <div className="absolute inset-0 bg-gradient-to-br from-slate-950/65 via-slate-900/35 to-slate-950/70" />
-                    <div className="absolute inset-0 bg-gradient-to-t from-slate-950/95 via-slate-950/50 to-transparent" />
-                    <div className="absolute inset-0 opacity-35 [background:radial-gradient(circle_at_25%_20%,rgba(56,189,248,0.35),transparent_38%),radial-gradient(circle_at_75%_25%,rgba(244,114,182,0.26),transparent_42%),radial-gradient(circle_at_55%_75%,rgba(192,132,252,0.22),transparent_40%)]" />
-                    <div className="absolute right-3 top-3 h-14 w-14 sm:right-5 sm:top-5 sm:h-[74px] sm:w-[74px] overflow-hidden rounded-full border border-white/30 shadow-[0_12px_28px_rgba(0,0,0,0.45)] ring-2 ring-purple-300/35">
-                      <img
-                        src={OFFSEASON_QUOTE.avatar}
-                        alt={OFFSEASON_QUOTE.author}
-                        className="h-full w-full object-cover"
-                        loading="lazy"
-                      />
-                    </div>
-                    <div className="absolute bottom-0 left-0 right-0 p-4 sm:p-5">
-                      <p className="max-w-[82%] whitespace-pre-line text-xs sm:text-sm text-slate-100/95 leading-relaxed italic">
-                        "{OFFSEASON_QUOTE.text}"
-                      </p>
-                      <div className="mt-2">
-                        <p className="text-sm sm:text-base text-white font-semibold tracking-wide">
-                          {OFFSEASON_QUOTE.author}
-                        </p>
-                        <p className="text-[10px] sm:text-xs uppercase tracking-[0.28em] text-purple-200/85">
-                          {OFFSEASON_QUOTE.role}
-                        </p>
-                      </div>
-                    </div>
-                  </>
-                ) : (
-                  <div className="absolute inset-0 bg-gradient-to-t from-slate-950/85 via-slate-950/20 to-transparent" />
-                )}
-              </div>
-            </motion.div>
-
-            {copy.intro ? (
-              <p className="mb-4 text-sm text-slate-300/90 leading-relaxed">{copy.intro}</p>
+          <div>
+            {copy.eyebrow ? (
+              <p className="text-sm uppercase tracking-[0.35em] text-slate-400/80 mb-2">
+                {copy.eyebrow}
+              </p>
             ) : null}
-
-            {/* GRID */}
-            <div className="grid md:grid-cols-[1.12fr_0.88fr] gap-8">
-
-              {/* LEFT COLUMN */}
-              <div className="space-y-5 order-2 md:order-1">
-               <div className="mb-2">
-          <p className="text-xs uppercase tracking-[0.28em] text-slate-400/80">
-            Objetos disponibles
-          </p>
-          <h3 className="mt-2 text-lg text-slate-100 font-semibold">
-            Elige lo que quieres activar
-          </h3>
-          <p className="mt-1 text-sm text-slate-300/80 leading-relaxed">
-            Elige uno o varios. Podrás revisar los detalles antes de finalizar.
-          </p>
-        </div>
-
-                <div className="grid sm:grid-cols-2 gap-3">
-  {PACKAGE_OPTIONS.map((option) => {
-    const isSelected = formState.packages.includes(option.id);
-    const isCombo = option.id === 'combo-900';
-
-    // Mapeo de media por paquete
-    const mediaMap = {
-      'taza-250': {
-        kind: 'video',
-        src: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Merch/tazas_pingpong.mp4',
-        poster:
-          'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Merch/TazaPreventa.jpg',
-      },
-      'novela-400': {
-        kind: 'video',
-        src: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Merch/novela_small.mp4',
-      },
-      'combo-900': {
-        kind: 'image',
-        src: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Merch/NovelaTazaCombo.jpg',
-      },
-    };
-    const media = mediaMap[option.id];
-
-    const imageHeightClass = isCombo ? 'h-48' : 'h-32';
-
-    return (
-      <label
-        key={option.id}
-        className={`group relative block rounded-2xl border ${
-  isSelected
-    ? 'border-purple-400/70 shadow-[0_12px_35px_rgba(126,34,206,0.35)]'
-    : 'border-white/10'
-} bg-gradient-to-br from-slate-900/80 to-black/60 p-4 hover:border-purple-400/40 transition hover:-translate-y-[1px] ${isCombo ? 'sm:col-span-2' : ''}`}
-      >
-        <input
-          type="checkbox"
-          checked={isSelected}
-          onChange={() => handleTogglePackage(option.id)}
-          className="sr-only"
-          aria-hidden="true"
-        />
-        <div
-  aria-hidden="true"
-  className={`absolute inset-0 z-20 flex items-center justify-center pointer-events-none transition duration-300 ${
-    isSelected ? 'scale-100 opacity-100' : 'scale-0 opacity-0'
-  }`}
->
-          <div className="flex h-20 w-20 items-center justify-center rounded-full bg-white/80 backdrop-blur-2xl shadow-[0_15px_35px_rgba(0,0,0,0.45)]">
-            <Heart size={48} className="text-purple-500" />
+            <h2 className={titleClassName}>
+              {copy.title}
+            </h2>
+            {copy.subtitle ? (
+              <p className={subtitleClassName}>{copy.subtitle}</p>
+            ) : null}
           </div>
         </div>
+      </div>
+      {!isPageMode ? (
+        <button
+          type="button"
+          onClick={handleClose}
+          aria-label="Cerrar modal"
+          className="absolute right-5 top-5 text-slate-400 hover:text-white transition"
+        >
+          ✕
+        </button>
+      ) : null}
 
-        <div className={`relative z-0 mb-3 w-full ${imageHeightClass} rounded-xl overflow-hidden border border-white/5`}>
-          {media.kind === 'video' ? (
-            <video
-              src={media.src}
-              poster={media.poster}
-              className="w-full h-full object-cover transition duration-500 group-hover:scale-[1.03]"
-              autoPlay
-              loop
-              muted
-              playsInline
-              preload="metadata"
-            />
+      {/* BANNER */}
+      <motion.div
+        initial={{ opacity: 0, y: 10, scale: 0.99 }}
+        animate={{ opacity: 1, y: 0, scale: 1 }}
+        transition={{ duration: 0.45, ease: 'easeOut' }}
+        className={bannerClassName}
+      >
+        <div className="relative overflow-hidden rounded-2xl border border-white/10 bg-black/30 shadow-[0_20px_45px_rgba(0,0,0,0.35)]">
+          <motion.video
+            src={RESERVE_BANNER_SRC}
+            className={`w-full object-cover ${isOffseason ? 'h-[168px] sm:h-[208px]' : 'h-[140px] sm:h-[190px]'}`}
+            initial={{ scale: 1.03 }}
+            animate={{ scale: 1 }}
+            transition={{ duration: 0.9, ease: 'easeOut' }}
+            autoPlay
+            loop
+            muted
+            playsInline
+            preload="metadata"
+            aria-label="Banner Café Gato"
+          />
+
+          {isOffseason ? (
+            <>
+              <div className="absolute inset-0 bg-gradient-to-br from-slate-950/65 via-slate-900/35 to-slate-950/70" />
+              <div className="absolute inset-0 bg-gradient-to-t from-slate-950/95 via-slate-950/50 to-transparent" />
+              <div className="absolute inset-0 opacity-35 [background:radial-gradient(circle_at_25%_20%,rgba(56,189,248,0.35),transparent_38%),radial-gradient(circle_at_75%_25%,rgba(244,114,182,0.26),transparent_42%),radial-gradient(circle_at_55%_75%,rgba(192,132,252,0.22),transparent_40%)]" />
+              <div className="absolute right-3 top-3 h-14 w-14 sm:right-5 sm:top-5 sm:h-[74px] sm:w-[74px] overflow-hidden rounded-full border border-white/30 shadow-[0_12px_28px_rgba(0,0,0,0.45)] ring-2 ring-purple-300/35">
+                <img
+                  src={OFFSEASON_QUOTE.avatar}
+                  alt={OFFSEASON_QUOTE.author}
+                  className="h-full w-full object-cover"
+                  loading="lazy"
+                />
+              </div>
+              <div className="absolute bottom-0 left-0 right-0 p-4 sm:p-5">
+                <p className="max-w-[82%] whitespace-pre-line text-xs sm:text-sm text-slate-100/95 leading-relaxed italic">
+                  "{OFFSEASON_QUOTE.text}"
+                </p>
+                <div className="mt-2">
+                  <p className="text-sm sm:text-base text-white font-semibold tracking-wide">
+                    {OFFSEASON_QUOTE.author}
+                  </p>
+                  <p className="text-[10px] sm:text-xs uppercase tracking-[0.28em] text-purple-200/85">
+                    {OFFSEASON_QUOTE.role}
+                  </p>
+                </div>
+              </div>
+            </>
           ) : (
-            <img
-              src={media.src}
-              alt={option.title}
-              className="w-full h-full object-cover transition duration-500 group-hover:scale-[1.03]"
-              loading="lazy"
-            />
+            <div className="absolute inset-0 bg-gradient-to-t from-slate-950/85 via-slate-950/20 to-transparent" />
           )}
         </div>
+      </motion.div>
 
-        <div className="space-y-1">
-          <p className="font-semibold text-slate-100">
-            {option.title}{' '}
-            <span className="text-slate-400 font-normal">· {option.price}</span>
-          </p>
-          <p className="text-xs text-slate-400">{option.helper}</p>
-        </div>
-      </label>
-    );
-  })}
-</div>
+      {copy.intro ? (
+        <p className={introClassName}>{copy.intro}</p>
+      ) : null}
 
-                {copy.notice ? (
-                  <div className="hidden md:block rounded-xl border border-yellow-400/20 bg-yellow-400/10 p-4 text-xs text-yellow-200">
-                    {copy.notice}
-                  </div>
-                ) : null}
-              </div>
+      {/* GRID */}
+      <div className="grid md:grid-cols-[1.12fr_0.88fr] gap-8">
 
-              {/* RIGHT COLUMN — FORM */}
-            <form
-  className="relative space-y-5 md:sticky md:top-6 self-start order-1 md:order-2"
-  onSubmit={handleFormSubmit}
->
-<div className="relative min-h-[520px]">
-              {/* ───────── Mapa comunitario (UI mock) ───────── */}
-<div className="rounded-2xl border border-white/10 bg-white/5 p-5 flex flex-col gap-4">
-  <div className="flex items-center justify-between gap-3">
-    <h4 className="text-xs uppercase tracking-[0.35em] text-slate-300">
-      Mapa comunitario
-    </h4>
-    <span className="inline-flex items-center gap-1 rounded-full border border-cyan-300/30 bg-cyan-400/10 px-2 py-1 text-[10px] uppercase tracking-[0.25em] text-cyan-200">
-      <MapIcon size={12} />
-      Beta
-    </span>
-  </div>
-
-  <div className="relative h-44 overflow-hidden rounded-xl border border-white/10 bg-slate-950/70">
-    <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_25%,rgba(34,211,238,0.14),transparent_35%),radial-gradient(circle_at_70%_70%,rgba(192,132,252,0.16),transparent_40%),linear-gradient(120deg,rgba(15,23,42,0.9),rgba(2,6,23,0.95))]" />
-    <div className="absolute inset-0 opacity-25 [background-size:22px_22px] [background-image:linear-gradient(to_right,rgba(148,163,184,0.22)_1px,transparent_1px),linear-gradient(to_bottom,rgba(148,163,184,0.22)_1px,transparent_1px)]" />
-    <span className="absolute left-[18%] top-[34%] h-3 w-3 rounded-full bg-cyan-300 shadow-[0_0_12px_rgba(34,211,238,0.75)]" />
-    <span className="absolute left-[57%] top-[48%] h-3 w-3 rounded-full bg-fuchsia-300 shadow-[0_0_12px_rgba(217,70,239,0.75)]" />
-    <span className="absolute left-[74%] top-[26%] h-3 w-3 rounded-full bg-emerald-300 shadow-[0_0_12px_rgba(16,185,129,0.75)]" />
-    <p className="absolute bottom-2 left-3 text-[10px] uppercase tracking-[0.25em] text-slate-300/80">
-      Próximamente: cafeterías sugeridas por la comunidad
+        {/* LEFT COLUMN */}
+        <div className="space-y-5 order-2 md:order-1">
+         <div className="mb-2">
+    <p className="text-xs uppercase tracking-[0.28em] text-slate-400/80">
+      Objetos disponibles
+    </p>
+    <h3 className="mt-2 text-lg text-slate-100 font-semibold">
+      Elige lo que quieres activar
+    </h3>
+    <p className="mt-1 text-sm text-slate-300/80 leading-relaxed">
+      Elige uno o varios. Podrás revisar los detalles antes de finalizar.
     </p>
   </div>
 
-  <div className="space-y-2 text-xs text-slate-300/90">
-    <p className="uppercase tracking-[0.25em] text-slate-400">Sugerencias destacadas</p>
-    <ul className="space-y-1.5">
-      <li>• Tijuana Centro · Cafetería de la esquina</li>
-      <li>• Zona Río · Punto de lectura nocturna</li>
-      <li>• Playas · Charla con taza y libreta</li>
-    </ul>
-  </div>
+          <div className="grid sm:grid-cols-2 gap-3">
+{PACKAGE_OPTIONS.map((option) => {
+  const isSelected = formState.packages.includes(option.id);
+  const isCombo = option.id === 'combo-900';
 
-  <button
-    type="button"
-    onClick={() => setShowProposalForm(true)}
-    className="mt-1 text-xs uppercase tracking-[0.3em] text-purple-300 hover:text-purple-200 self-start"
-  >
-    Sugerir cafetería o librería
-  </button>
+  // Mapeo de media por paquete
+  const mediaMap = {
+    'taza-250': {
+      kind: 'video',
+      src: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Merch/tazas_pingpong.mp4',
+      poster:
+        'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Merch/TazaPreventa.jpg',
+    },
+    'novela-400': {
+      kind: 'video',
+      src: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Merch/novela_small.mp4',
+    },
+    'combo-900': {
+      kind: 'image',
+      src: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Merch/NovelaTazaCombo.jpg',
+    },
+  };
+  const media = mediaMap[option.id];
+
+  const imageHeightClass = isCombo ? 'h-48' : 'h-32';
+
+  return (
+    <label
+      key={option.id}
+      className={`group relative block rounded-2xl border ${
+isSelected
+  ? 'border-purple-400/70 shadow-[0_12px_35px_rgba(126,34,206,0.35)]'
+  : 'border-white/10'
+} bg-gradient-to-br from-slate-900/80 to-black/60 p-4 hover:border-purple-400/40 transition hover:-translate-y-[1px] ${isCombo ? 'sm:col-span-2' : ''}`}
+    >
+      <input
+        type="checkbox"
+        checked={isSelected}
+        onChange={() => handleTogglePackage(option.id)}
+        className="sr-only"
+        aria-hidden="true"
+      />
+      <div
+aria-hidden="true"
+className={`absolute inset-0 z-20 flex items-center justify-center pointer-events-none transition duration-300 ${
+  isSelected ? 'scale-100 opacity-100' : 'scale-0 opacity-0'
+}`}
+>
+        <div className="flex h-20 w-20 items-center justify-center rounded-full bg-white/80 backdrop-blur-2xl shadow-[0_15px_35px_rgba(0,0,0,0.45)]">
+          <Heart size={48} className="text-purple-500" />
+        </div>
+      </div>
+
+      <div className={`relative z-0 mb-3 w-full ${imageHeightClass} rounded-xl overflow-hidden border border-white/5`}>
+        {media.kind === 'video' ? (
+          <video
+            src={media.src}
+            poster={media.poster}
+            className="w-full h-full object-cover transition duration-500 group-hover:scale-[1.03]"
+            autoPlay
+            loop
+            muted
+            playsInline
+            preload="metadata"
+          />
+        ) : (
+          <img
+            src={media.src}
+            alt={option.title}
+            className="w-full h-full object-cover transition duration-500 group-hover:scale-[1.03]"
+            loading="lazy"
+          />
+        )}
+      </div>
+
+      <div className="space-y-1">
+        <p className="font-semibold text-slate-100">
+          {option.title}{' '}
+          <span className="text-slate-400 font-normal">· {option.price}</span>
+        </p>
+        <p className="text-xs text-slate-400">{option.helper}</p>
+      </div>
+    </label>
+  );
+})}
+</div>
+
+          {copy.notice ? (
+            <div className="hidden md:block rounded-xl border border-yellow-400/20 bg-yellow-400/10 p-4 text-xs text-yellow-200">
+              {copy.notice}
+            </div>
+          ) : null}
+        </div>
+
+        {/* RIGHT COLUMN — FORM */}
+      <form
+className="relative space-y-5 md:sticky md:top-6 self-start order-1 md:order-2"
+onSubmit={handleFormSubmit}
+>
+<div className="relative min-h-[520px]">
+        {/* ───────── Mapa comunitario (UI mock) ───────── */}
+<div className="rounded-2xl border border-white/10 bg-white/5 p-5 flex flex-col gap-4">
+<div className="flex items-center justify-between gap-3">
+<h4 className="text-xs uppercase tracking-[0.35em] text-slate-300">
+Mapa comunitario
+</h4>
+<span className="inline-flex items-center gap-1 rounded-full border border-cyan-300/30 bg-cyan-400/10 px-2 py-1 text-[10px] uppercase tracking-[0.25em] text-cyan-200">
+<MapIcon size={12} />
+Beta
+</span>
+</div>
+
+<div className="relative h-44 overflow-hidden rounded-xl border border-white/10 bg-slate-950/70">
+<div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_25%,rgba(34,211,238,0.14),transparent_35%),radial-gradient(circle_at_70%_70%,rgba(192,132,252,0.16),transparent_40%),linear-gradient(120deg,rgba(15,23,42,0.9),rgba(2,6,23,0.95))]" />
+<div className="absolute inset-0 opacity-25 [background-size:22px_22px] [background-image:linear-gradient(to_right,rgba(148,163,184,0.22)_1px,transparent_1px),linear-gradient(to_bottom,rgba(148,163,184,0.22)_1px,transparent_1px)]" />
+<span className="absolute left-[18%] top-[34%] h-3 w-3 rounded-full bg-cyan-300 shadow-[0_0_12px_rgba(34,211,238,0.75)]" />
+<span className="absolute left-[57%] top-[48%] h-3 w-3 rounded-full bg-fuchsia-300 shadow-[0_0_12px_rgba(217,70,239,0.75)]" />
+<span className="absolute left-[74%] top-[26%] h-3 w-3 rounded-full bg-emerald-300 shadow-[0_0_12px_rgba(16,185,129,0.75)]" />
+<p className="absolute bottom-2 left-3 text-[10px] uppercase tracking-[0.25em] text-slate-300/80">
+Próximamente: cafeterías sugeridas por la comunidad
+</p>
+</div>
+
+<div className="space-y-2 text-xs text-slate-300/90">
+<p className="uppercase tracking-[0.25em] text-slate-400">Sugerencias destacadas</p>
+<ul className="space-y-1.5">
+<li>• Tijuana Centro · Cafetería de la esquina</li>
+<li>• Zona Río · Punto de lectura nocturna</li>
+<li>• Playas · Charla con taza y libreta</li>
+</ul>
+</div>
+
+<button
+type="button"
+onClick={() => setShowProposalForm(true)}
+className="mt-1 text-xs uppercase tracking-[0.3em] text-purple-300 hover:text-purple-200 self-start"
+>
+Sugerir cafetería o librería
+</button>
 </div>
 
 
 {!showProposalForm ? (
-  <div className="rounded-2xl border border-white/10 bg-black/25 p-4 space-y-2">
-    <label htmlFor="reserve-checkout-email" className="text-sm font-medium text-slate-200">
-      Cuando estés listx para hacer tu compra, ingresa una correo electrónico antes de abrir la tienda.
-    </label>
-    <input
-      id="reserve-checkout-email"
-      name="email"
-      type="email"
-      value={formState.email}
-      onChange={handleInputChange}
-      className="form-surface w-full px-4 py-3"
-      placeholder="nombre@correo.com"
-      autoComplete="email"
-      inputMode="email"
-    />
-    
-  </div>
+<div className="rounded-2xl border border-white/10 bg-black/25 p-4 space-y-2">
+<label htmlFor="reserve-checkout-email" className="text-sm font-medium text-slate-200">
+Cuando estés listx para hacer tu compra, ingresa una correo electrónico antes de abrir la tienda.
+</label>
+<input
+id="reserve-checkout-email"
+name="email"
+type="email"
+value={formState.email}
+onChange={handleInputChange}
+className="form-surface w-full px-4 py-3"
+placeholder="nombre@correo.com"
+autoComplete="email"
+inputMode="email"
+/>
+
+</div>
 ) : null}
 
 
 {showProposalForm ? (
-  <div className="absolute inset-0 z-20">
-    {/* scrim suave */}
-    <div
-      className="absolute inset-0 rounded-2xl bg-slate-950/70 backdrop-blur-sm border border-white/10"
-      aria-hidden="true"
-    />
+<div className="absolute inset-0 z-20">
+{/* scrim suave */}
+<div
+className="absolute inset-0 rounded-2xl bg-slate-950/70 backdrop-blur-sm border border-white/10"
+aria-hidden="true"
+/>
 
-    {/* panel scrolleable dentro de la columna */}
-    <div className="relative h-full rounded-2xl p-5 overflow-y-auto">
-      <div className="flex items-center justify-between gap-3 mb-4">
-        <div>
-          <p className="text-[10px] uppercase tracking-[0.35em] text-slate-400/90">
-            Propuesta
-          </p>
-          <h4 className="text-base font-semibold text-slate-100">
-            Sugerir cafetería
-          </h4>
-        </div>
-
-        <button
-          type="button"
-          onClick={() => setShowProposalForm(false)}
-          className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-white/10 bg-white/5 text-slate-200 hover:bg-white/10 hover:text-white transition"
-          aria-label="Cerrar formulario"
-        >
-          ✕
-        </button>
-      </div>
-
-      {/* Nombre */}
-      <div className="space-y-2">
-        <label className="text-sm font-medium text-slate-200">Tu nombre</label>
-        <input
-          name="fullName"
-          type="text"
-          required
-          value={formState.fullName}
-          onChange={handleInputChange}
-          className="form-surface w-full px-4 py-3"
-          placeholder="¿Cómo te llamas?"
-        />
-      </div>
-
-      {/* Email */}
-      <div className="space-y-2 mt-4">
-        <label className="text-sm font-medium text-slate-200">Correo electrónico</label>
-        <input
-          name="email"
-          type="email"
-          required
-          value={formState.email}
-          onChange={handleInputChange}
-          className="form-surface w-full px-4 py-3"
-          placeholder="nombre@correo.com"
-        />
-      </div>
-
-      {/* Ciudad */}
-      <div className="space-y-2 mt-4">
-        <label className="text-sm font-medium text-slate-200">Ciudad</label>
-        <input
-          name="city"
-          type="text"
-          value={formState.city}
-          onChange={handleInputChange}
-          className="form-surface w-full px-4 py-3"
-          placeholder="¿Desde dónde nos escribes?"
-        />
-      </div>
-
-      {/* Notes */}
-      <div className="space-y-2 mt-4">
-        <label className="text-sm font-medium text-slate-200">Intención o propuesta</label>
-        <textarea
-          name="notes"
-          rows={3}
-          required
-          value={formState.notes}
-          onChange={handleInputChange}
-          className="form-surface w-full px-4 py-3 resize-none"
-          placeholder="¿Te interesa un punto de venta, una presentación, un conversatorio o una colaboración?"
-        />
-      </div>
-    </div>
-  </div>
-) : null}
+{/* panel scrolleable dentro de la columna */}
+<div className="relative h-full rounded-2xl p-5 overflow-y-auto">
+<div className="flex items-center justify-between gap-3 mb-4">
+<div>
+<p className="text-[10px] uppercase tracking-[0.35em] text-slate-400/90">
+Propuesta
+</p>
+<h4 className="text-base font-semibold text-slate-100">
+Sugerir cafetería
+</h4>
 </div>
-                {/* Errors */}
-                {status === 'error' && (
-                  <div className="rounded-lg border border-red-500/60 bg-red-500/10 px-4 py-3 text-sm text-red-200">
-                    {errorMessage}
-                  </div>
-                )}
 
-                {/* Success */}
-                {status === 'success' && (
-                  <div className="rounded-lg border border-emerald-500/60 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-200">
-                    Te enviamos un correo para que tengas listo tu pago antes del evento.
-                  </div>
-                )}
-
-                {/* Checkout error */}
-                {checkoutError && (
-                  <div className="rounded-lg border border-red-500/60 bg-red-500/10 px-4 py-3 text-sm text-red-200">
-                    {checkoutError}
-                  </div>
-                )}
-
-               {/* Buttons */}
-<div className="flex flex-col gap-3">
-  {showProposalForm ? (
-    <Button
-      type="submit"
-      disabled={status === 'loading'}
-      className="w-full bg-gradient-to-r from-purple-600/80 to-indigo-600/80 hover:from-purple-600 hover:to-indigo-600 text-white py-3 rounded-lg font-semibold flex items-center justify-center gap-2 hover-glow"
-    >
-      {isSubmitting ? 'Enviando…' : 'Enviar'}
-    </Button>
-  ) : null}
-
-  <button
-  type="button"
-  onClick={handleCheckout}
-  disabled={isCheckoutLoading}
-  className="reserve-btn reserve-btn--primary mt-3 disabled:opacity-60 disabled:cursor-not-allowed"
+<button
+type="button"
+onClick={() => setShowProposalForm(false)}
+className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-white/10 bg-white/5 text-slate-200 hover:bg-white/10 hover:text-white transition"
+aria-label="Cerrar formulario"
 >
-  <span>
-    {isCheckoutLoading ? 'Abriendo tienda…' : 'Compra tu Merch'}
-  </span>
+✕
 </button>
 </div>
-              </form>
-            </div>
 
-            {copy.notice ? (
-              <div className="mt-8 md:hidden rounded-xl border border-yellow-400/20 bg-yellow-400/10 p-4 text-xs text-yellow-200">
-                {copy.notice}
-              </div>
-            ) : null}
-          </motion.div>
-        </motion.div>
-      )}
+{/* Nombre */}
+<div className="space-y-2">
+<label className="text-sm font-medium text-slate-200">Tu nombre</label>
+<input
+name="fullName"
+type="text"
+required
+value={formState.fullName}
+onChange={handleInputChange}
+className="form-surface w-full px-4 py-3"
+placeholder="¿Cómo te llamas?"
+/>
+</div>
+
+{/* Email */}
+<div className="space-y-2 mt-4">
+<label className="text-sm font-medium text-slate-200">Correo electrónico</label>
+<input
+name="email"
+type="email"
+required
+value={formState.email}
+onChange={handleInputChange}
+className="form-surface w-full px-4 py-3"
+placeholder="nombre@correo.com"
+/>
+</div>
+
+{/* Ciudad */}
+<div className="space-y-2 mt-4">
+<label className="text-sm font-medium text-slate-200">Ciudad</label>
+<input
+name="city"
+type="text"
+value={formState.city}
+onChange={handleInputChange}
+className="form-surface w-full px-4 py-3"
+placeholder="¿Desde dónde nos escribes?"
+/>
+</div>
+
+{/* Notes */}
+<div className="space-y-2 mt-4">
+<label className="text-sm font-medium text-slate-200">Intención o propuesta</label>
+<textarea
+name="notes"
+rows={3}
+required
+value={formState.notes}
+onChange={handleInputChange}
+className="form-surface w-full px-4 py-3 resize-none"
+placeholder="¿Te interesa un punto de venta, una presentación, un conversatorio o una colaboración?"
+/>
+</div>
+</div>
+</div>
+) : null}
+</div>
+          {/* Errors */}
+          {status === 'error' && (
+            <div className="rounded-lg border border-red-500/60 bg-red-500/10 px-4 py-3 text-sm text-red-200">
+              {errorMessage}
+            </div>
+          )}
+
+          {/* Success */}
+          {status === 'success' && (
+            <div className="rounded-lg border border-emerald-500/60 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-200">
+              Te enviamos un correo para que tengas listo tu pago antes del evento.
+            </div>
+          )}
+
+          {/* Checkout error */}
+          {checkoutError && (
+            <div className="rounded-lg border border-red-500/60 bg-red-500/10 px-4 py-3 text-sm text-red-200">
+              {checkoutError}
+            </div>
+          )}
+
+         {/* Buttons */}
+<div className="flex flex-col gap-3">
+{showProposalForm ? (
+<Button
+type="submit"
+disabled={status === 'loading'}
+className="w-full bg-gradient-to-r from-purple-600/80 to-indigo-600/80 hover:from-purple-600 hover:to-indigo-600 text-white py-3 rounded-lg font-semibold flex items-center justify-center gap-2 hover-glow"
+>
+{isSubmitting ? 'Enviando…' : 'Enviar'}
+</Button>
+) : null}
+
+<button
+type="button"
+onClick={handleCheckout}
+disabled={isCheckoutLoading}
+className={`reserve-btn reserve-btn--primary mt-3 disabled:opacity-60 disabled:cursor-not-allowed ${
+  isPageMode ? 'self-center' : ''
+}`}
+style={isPageMode ? { width: 'fit-content', maxWidth: '100%' } : undefined}
+>
+<span>
+{isCheckoutLoading ? 'Abriendo tienda…' : 'Compra tu Merch'}
+</span>
+</button>
+</div>
+        </form>
+      </div>
+
+      {copy.notice ? (
+        <div className="mt-8 md:hidden rounded-xl border border-yellow-400/20 bg-yellow-400/10 p-4 text-xs text-yellow-200">
+          {copy.notice}
+        </div>
+      ) : null}
+    </motion.div>
+  );
+
+  const modalTree = (
+    <AnimatePresence>
+      <motion.div
+        className={`fixed inset-0 ${overlayZClass} flex items-start justify-center overflow-y-auto overflow-x-hidden overscroll-none`}
+        initial="hidden"
+        animate="visible"
+        exit="hidden"
+      >
+        <motion.div
+          className="absolute inset-0 bg-black/80 backdrop-blur-sm"
+          variants={backdropVariants}
+          onClick={handleClose}
+        />
+        {renderPanel(
+          'relative z-10 my-6 w-[calc(100vw-2rem)] max-w-3xl rounded-3xl border border-white/10 bg-slate-950/95 p-6 sm:my-10 sm:p-10 shadow-2xl max-h-[92vh] overflow-y-auto',
+          { variants: modalVariants }
+        )}
+      </motion.div>
     </AnimatePresence>
   );
+
+  if (isPageMode) {
+    return renderPanel(
+      'relative mt-4 w-full rounded-none border-0 bg-transparent px-4 pb-3 sm:px-6 shadow-none',
+      {
+        initial: { opacity: 0, y: 16 },
+        animate: { opacity: 1, y: 0 },
+        transition: { duration: 0.3, ease: 'easeOut' },
+      },
+      'region'
+    );
+  }
 
   if (typeof document === 'undefined') {
     return modalTree;

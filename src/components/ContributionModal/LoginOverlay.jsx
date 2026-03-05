@@ -205,7 +205,7 @@ const LoginOverlay = ({ onClose }) => {
 
   const overlay = (
     <motion.div
-      className="fixed inset-0 z-[260] flex items-center justify-center px-4 py-6"
+      className="fixed inset-0 z-[260] flex items-center justify-center overflow-y-auto overflow-x-hidden overscroll-none"
       initial="hidden"
       animate="visible"
       exit="hidden"
@@ -224,7 +224,7 @@ const LoginOverlay = ({ onClose }) => {
         aria-modal="true"
         aria-labelledby="tracking-overlay-title"
         aria-describedby="tracking-overlay-desc"
-        className="relative z-10 w-full max-w-md transform rounded-3xl border border-white/10 bg-[#0a0019]/90 p-6 shadow-2xl backdrop-blur-xl"
+        className="relative z-10 my-6 w-[calc(100vw-2rem)] max-w-md transform rounded-3xl border border-white/10 bg-[#0a0019]/90 p-6 shadow-2xl backdrop-blur-xl"
         initial="hidden"
         animate="visible"
         exit="hidden"

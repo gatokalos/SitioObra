@@ -196,7 +196,7 @@ const Contact = () => {
         {isCauseSiteOpen ? (
           <motion.div
             key="cause-site-iframe"
-            className="fixed inset-0 z-[175] flex items-center justify-center px-4 py-6"
+            className="fixed inset-0 z-[175] flex items-center justify-center overflow-y-auto overflow-x-hidden overscroll-none"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
@@ -212,7 +212,7 @@ const Contact = () => {
               role="dialog"
               aria-modal="true"
               aria-label="Isabel Ayuda para la Vida"
-              className="relative z-10 w-full max-w-5xl overflow-hidden rounded-3xl border border-white/10 bg-slate-950/90 shadow-[0_35px_120px_rgba(0,0,0,0.65)]"
+              className="relative z-10 my-6 w-[calc(100vw-2rem)] max-w-5xl overflow-hidden rounded-3xl border border-white/10 bg-slate-950/90 shadow-[0_35px_120px_rgba(0,0,0,0.65)]"
               initial={{ scale: 0.96, opacity: 0, y: 18 }}
               animate={{ scale: 1, opacity: 1, y: 0 }}
               exit={{ scale: 0.96, opacity: 0, y: 18 }}

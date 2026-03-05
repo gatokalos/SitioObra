@@ -1,0 +1,55 @@
+import React, { useCallback, useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { ArrowLeft } from 'lucide-react';
+import ReserveModal from '@/components/ReserveModal';
+import { useAuth } from '@/contexts/SupabaseAuthContext';
+import LoginOverlay from '@/components/ContributionModal/LoginOverlay';
+import PortalAuthButton from '@/components/PortalAuthButton';
+
+const PortalEncuentros = () => {
+  const { user } = useAuth();
+  const navigate = useNavigate();
+  const [showLoginOverlay, setShowLoginOverlay] = useState(false);
+  const isAuthenticated = Boolean(user);
+
+  const handleOpenLogin = useCallback(() => {
+    if (!isAuthenticated) {
+      setShowLoginOverlay(true);
+    }
+  }, [isAuthenticated]);
+
+  const handleCloseLogin = useCallback(() => {
+    setShowLoginOverlay(false);
+  }, []);
+
+  const handleClose = useCallback(() => {
+    navigate('/#hero', { replace: true });
+  }, [navigate]);
+
+  return (
+    <div className="min-h-screen bg-gradient-to-b from-slate-950 via-black to-slate-900 text-slate-100">
+      <div className="w-full py-8 md:py-12">
+        <div className="flex items-start justify-between gap-4 px-4 sm:px-6">
+          <PortalAuthButton onOpenLogin={handleOpenLogin} />
+          <Link
+            to="/"
+            className="inline-flex items-center gap-2 text-xs uppercase tracking-[0.3em] text-slate-400 hover:text-white transition"
+          >
+            <ArrowLeft size={12} />
+            Volver al sitio
+          </Link>
+        </div>
+
+        <ReserveModal
+          open
+          onClose={handleClose}
+          mode="offseason"
+          renderMode="page"
+        />
+      </div>
+      {showLoginOverlay ? <LoginOverlay onClose={handleCloseLogin} /> : null}
+    </div>
+  );
+};
+
+export default PortalEncuentros;

@@ -1,8 +1,8 @@
 import React, { useCallback, useMemo, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { Calendar, HeartHandshake, ShoppingBag } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import ReserveModal from '@/components/ReserveModal';
 
 const SHOW_HISTORY = [
   {
@@ -32,20 +32,16 @@ const SHOW_HISTORY = [
 ];
 
 const NextShow = ({ onRevealTransmedia = null }) => {
-  const [isReserveOpen, setIsReserveOpen] = useState(false);
   const [activeShowId, setActiveShowId] = useState('cecut');
+  const navigate = useNavigate();
   const activeShow = useMemo(
     () => SHOW_HISTORY.find((show) => show.id === activeShowId) ?? SHOW_HISTORY[0],
     [activeShowId]
   );
 
   const handleOpenReserve = useCallback(() => {
-    setIsReserveOpen(true);
-  }, []);
-
-  const handleCloseReserve = useCallback(() => {
-    setIsReserveOpen(false);
-  }, []);
+    navigate('/portal-encuentros');
+  }, [navigate]);
 
   const handleScrollToCause = useCallback(() => {
     if (typeof onRevealTransmedia === 'function') {
@@ -175,8 +171,6 @@ const NextShow = ({ onRevealTransmedia = null }) => {
           </motion.div>
         </div>
       </section>
-
-      <ReserveModal open={isReserveOpen} onClose={handleCloseReserve} mode="offseason" />
     </>
   );
 };

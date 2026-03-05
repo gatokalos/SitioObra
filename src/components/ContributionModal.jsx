@@ -825,7 +825,7 @@ const ContributionModal = ({
       <AnimatePresence>
         {open ? (
           <motion.div
-            className={`fixed inset-0 ${isSheet ? 'z-[160] items-end px-0 py-0 md:items-center md:px-6 md:py-10' : 'z-50 items-center px-4 py-6 sm:py-12'} flex justify-center`}
+            className={`fixed inset-0 ${isSheet ? 'z-[160] items-end md:items-center' : 'z-50 items-center'} flex justify-center overflow-y-auto overflow-x-hidden overscroll-none`}
             initial="hidden"
             animate="visible"
             exit="hidden"
@@ -842,7 +842,11 @@ const ContributionModal = ({
               aria-modal="true"
               aria-labelledby="contribution-modal-title"
               variants={isSheet ? sheetVariants : modalVariants}
-              className={`relative z-10 w-full max-w-5xl ${
+              className={`relative z-10 ${
+                isSheet
+                  ? 'w-full max-w-5xl md:my-10 md:w-[calc(100vw-3rem)]'
+                  : 'my-6 w-[calc(100vw-2rem)] max-w-5xl sm:my-12'
+              } ${
                 isSheet
                   ? 'h-screen max-h-screen rounded-t-3xl md:h-[70vh] md:max-h-[70vh] md:rounded-3xl bg-slate-950/90 backdrop-blur-xl'
                   : 'h-full max-h-[90vh] rounded-3xl bg-slate-950'
@@ -958,9 +962,11 @@ const ContributionModal = ({
                       animate={{ x: 0 }}
                       exit={{ x: '100%' }}
                       transition={{ type: 'spring', damping: 24, stiffness: 240 }}
-                      className={`fixed inset-0 ${isSheet ? 'z-[180]' : 'z-[60]'} w-full bg-slate-950 border-white/15 shadow-2xl p-6 overflow-y-auto md:hidden`}
+                      className={`fixed inset-0 ${isSheet ? 'z-[180]' : 'z-[60]'} w-full bg-slate-950 border-white/15 shadow-2xl overflow-y-auto md:hidden`}
                     >
-                      {renderFormPanelBody()}
+                      <div className="min-h-full p-6">
+                        {renderFormPanelBody()}
+                      </div>
                     </motion.div>
                   </>
                 ) : null}

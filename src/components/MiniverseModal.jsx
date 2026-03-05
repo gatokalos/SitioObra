@@ -13,6 +13,7 @@ import { useAuth } from '@/contexts/SupabaseAuthContext';
 import { safeSetItem } from '@/lib/safeStorage';
 import { getTopShowcaseLikes } from '@/services/showcaseLikeService';
 import { isSafariBrowser } from '@/lib/browser';
+import { resolvePortalRoute } from '@/lib/miniversePortalRegistry';
 import {
   MINIVERSE_HOME_EVENT_TYPES,
   trackMiniverseHomeEvent,
@@ -25,12 +26,6 @@ const TABS = [
 ];
 const DEFAULT_TAB_ID = 'escaparate';
 const VALID_TAB_IDS = new Set(TABS.map((tab) => tab.id));
-
-const MINIVERSE_PORTAL_ROUTES = {
-  drama: '/portal-voz',
-  literatura: '/portal-lectura',
-  taza: '/portal-artesanias',
-};
 
 const MINIVERSE_TILE_GRADIENTS = {
   miniversos: 'linear-gradient(135deg, rgba(31,21,52,0.95), rgba(64,36,93,0.85), rgba(122,54,127,0.65))',
@@ -407,10 +402,18 @@ const MiniverseModal = ({
   initialTabId = null,
   shelved = false,
   stayOpenOnSelect = false,
+  displayMode = 'modal',
 }) => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const isSafari = isSafariBrowser();
+  const isInlineMode = displayMode === 'inline';
+  const inlineTitleStyle = isInlineMode ? { fontFamily: 'Vox Round, Inter, sans-serif' } : undefined;
+  const inlineCardTitleStyle = isInlineMode ? { fontFamily: 'Inter, sans-serif' } : undefined;
+  const shouldUseSingleLinePortalTitle = (title, { force = false } = {}) =>
+    isInlineMode &&
+    isMobileViewport &&
+    (force || MINIVERSE_PORTAL_TITLE_PATTERN.test(String(title || '')));
   const [activeTab, setActiveTab] = useState(DEFAULT_TAB_ID);
   const [formState, setFormState] = useState(initialFormState);
   const [status, setStatus] = useState('idle');
@@ -458,7 +461,6 @@ const MiniverseModal = ({
   const desktopShowcaseVideoRef = useRef(null);
   const mobileShowcaseVideoRef = useRef(null);
   const modalContentRef = useRef(null);
-  const [isMobileShowcaseVideoPlaying, setIsMobileShowcaseVideoPlaying] = useState(false);
   const setHeroAmbientHold = useCallback((hold) => {
     if (typeof window === 'undefined') return;
     window.dispatchEvent(
@@ -597,7 +599,6 @@ const MiniverseModal = ({
       setSelectedUpcomingId(null);
       setShowcaseFullscreenCard(null);
       setActiveShowcaseIndex(0);
-      setIsMobileShowcaseVideoPlaying(false);
       setIsCauseSiteOpen(false);
       setEmbeddedClientSecret('');
       setEmbeddedCheckoutStatus('');
@@ -616,15 +617,20 @@ const MiniverseModal = ({
   }, [open, shelved, stopModalMediaPlayback]);
 
   useEffect(() => {
+    if (typeof document === 'undefined') {
+      return undefined;
+    }
     if (open && !shelved) {
-      document.documentElement.dataset.miniverseOpen = 'true';
+      if (!isInlineMode) {
+        document.documentElement.dataset.miniverseOpen = 'true';
+      }
       return;
     }
     delete document.documentElement.dataset.miniverseOpen;
-  }, [open, shelved]);
+  }, [isInlineMode, open, shelved]);
 
   useEffect(() => {
-    if (typeof document === 'undefined' || !open || shelved) {
+    if (isInlineMode || typeof document === 'undefined' || !open || shelved) {
       return undefined;
     }
 
@@ -664,7 +670,7 @@ const MiniverseModal = ({
       delete documentElement.dataset[prevBodyOverflowKey];
       delete documentElement.dataset[prevOverscrollBehaviorKey];
     };
-  }, [open, shelved]);
+  }, [isInlineMode, open, shelved]);
 
   useEffect(() => {
     if (typeof window === 'undefined') {
@@ -725,25 +731,25 @@ const MiniverseModal = ({
     return 'Habita';
   }, [activeTab]);
   const activeTabIntro = useMemo(() => {
+      if (activeTab === 'escaparate') {
+      return {
+      lead: 'Una microficción en nueve actos para adentrar en el universo.',
+      highlight: 'Cada acto dialoga con una forma distinta de la obra',
+      continuation: 'y abre la misma pregunta: ¿qué ocurre cuando un relato se expande y exige otro lenguaje?'
+      };
+    }
     if (activeTab === 'experiences') {
       return {
-        lead: 'Te presentamos las nueve expansiones de nuestra obra:',
+        lead: 'Te presentamos las nueve formas expandidas de la obra:',
         highlight:
           'un ecosistema para explorar, intervenir y volver cuando quieras.',
-          continuation: 'Con tu huella activa, accedes a la versión completa.'
+          continuation: 'Con tu huella mensual, accedes a la versión completa de estos "miniversos".'
       };
     }
-    if (activeTab === 'escaparate') {
       return {
-      lead: 'Aquí se despliega una microficción en nueve actos.',
-      highlight: 'Cada acto dialoga con un sentido diferente de la obra',
-      continuation: 'y abre la misma pregunta: ¿qué ocurre cuando un sentido se expande y exige otro lenguaje?'
-      };
-    }
-    return {
-      lead: 'Activar una huella',
-      highlight: 'impulsa acompañamiento emocional real en jóvenes',
-      continuation: 'de escuelas públicas y mantiene viva la experiencia artística más allá del escenario.'
+      lead: 'Tu huella extiende la experiencia de la obra más allá del escenario.',
+      highlight: 'Detecta señales de violencia autoinfligida en escuelas públicas,',
+      continuation: 'trabajando con alumnos, docentes y familias.'
     };
   }, [activeTab]);
   const showcaseMiniverses = useMemo(
@@ -874,7 +880,6 @@ const MiniverseModal = ({
       setSelectedMiniverseId(null);
       setSelectedUpcomingId(null);
       setActiveShowcaseIndex(0);
-      setIsMobileShowcaseVideoPlaying(false);
     },
     [markMiniverseVisited, selectedMiniverseId, stopModalMediaPlayback]
   );
@@ -901,6 +906,26 @@ const MiniverseModal = ({
       }
       markMiniverseVisited(card.id);
       trackAppClick(card, source);
+
+      const portalRoute = resolvePortalRoute({
+        formatId: card.formatId,
+        cardId: card.id,
+        mobileOnly: true,
+        isMobileViewport,
+      });
+      if (portalRoute) {
+        navigate(portalRoute);
+        if (!isInlineMode && !stayOpenOnSelect) {
+          handleClose();
+        }
+        return;
+      }
+
+      if (isInlineMode) {
+        setSelectedMiniverseId(card.id);
+        return;
+      }
+
       onSelectMiniverse?.(card.formatId);
       if (!stayOpenOnSelect) {
         handleClose();
@@ -908,9 +933,13 @@ const MiniverseModal = ({
     },
     [
       handleClose,
+      isInlineMode,
+      isMobileViewport,
       markMiniverseVisited,
+      navigate,
       onSelectMiniverse,
       playKnockSound,
+      setSelectedMiniverseId,
       stayOpenOnSelect,
       trackAppClick,
       visitedMiniverses,
@@ -943,10 +972,17 @@ const MiniverseModal = ({
     if (!selectedMiniverse) return;
     markMiniverseVisited(selectedMiniverse.id);
     trackAppClick(selectedMiniverse, 'detail-enter');
-    const portalRoute = MINIVERSE_PORTAL_ROUTES[selectedMiniverse.id];
+    const portalRoute = resolvePortalRoute({
+      formatId: selectedMiniverse.formatId,
+      cardId: selectedMiniverse.id,
+      mobileOnly: true,
+      isMobileViewport,
+    });
     if (portalRoute) {
       navigate(portalRoute);
-      handleClose();
+      if (!isInlineMode) {
+        handleClose();
+      }
       return;
     }
     legacyScrollToSection();
@@ -958,9 +994,11 @@ const MiniverseModal = ({
     legacyScrollToSection,
     markMiniverseVisited,
     navigate,
+    isMobileViewport,
     selectedMiniverse,
     stayOpenOnSelect,
     trackAppClick,
+    isInlineMode,
   ]);
 
   const handleEnterShowcase = useCallback(
@@ -971,10 +1009,17 @@ const MiniverseModal = ({
       }
       markMiniverseVisited(card.id);
       trackAppClick(card, 'showcase-card');
-      const portalRoute = MINIVERSE_PORTAL_ROUTES[card.id];
+      const portalRoute = resolvePortalRoute({
+        formatId: card.formatId,
+        cardId: card.id,
+        mobileOnly: true,
+        isMobileViewport,
+      });
       if (portalRoute) {
         navigate(portalRoute);
-        handleClose();
+        if (!isInlineMode) {
+          handleClose();
+        }
         return;
       }
       onSelectMiniverse?.(card.formatId);
@@ -984,14 +1029,15 @@ const MiniverseModal = ({
     },
     [
       handleClose,
-      isSubscriber,
       markMiniverseVisited,
       navigate,
+      isMobileViewport,
       onSelectMiniverse,
       playKnockSound,
       stayOpenOnSelect,
       trackAppClick,
       visitedMiniverses,
+      isInlineMode,
     ]
   );
 
@@ -1404,38 +1450,55 @@ const MiniverseModal = ({
     [handleShowcasePreviewHoverEnd]
   );
 
-  const handleToggleMobileShowcaseVideo = useCallback(async () => {
-    const target = mobileShowcaseVideoRef.current;
-    if (!target) return;
-    try {
-      if (target.paused || target.ended) {
-        target.muted = true;
-        target.loop = true;
-        target.playsInline = true;
-        await target.play?.();
-        setIsMobileShowcaseVideoPlaying(true);
-        return;
-      }
-      target.pause?.();
-      setIsMobileShowcaseVideoPlaying(false);
-    } catch {
-      toast({ description: 'No se pudo reproducir este video en tu dispositivo.' });
-    }
-  }, [toast]);
-
-  const handleMobileShowcaseVideoPlay = useCallback(() => {
-    setIsMobileShowcaseVideoPlaying(true);
-  }, []);
-
-  const handleMobileShowcaseVideoPause = useCallback(() => {
-    setIsMobileShowcaseVideoPlaying(false);
-  }, []);
-
   useEffect(() => {
     // Deshabilitado intencionalmente durante desarrollo:
     // evita el autoscroll del carrusel para facilitar revisión de UI/UX.
     return undefined;
   }, []);
+
+  useEffect(() => {
+    if (!open || activeTab !== 'escaparate' || !isMobileViewport) return undefined;
+    const video = mobileShowcaseVideoRef.current;
+    if (!video || !sharedShowcaseVideoUrl) return undefined;
+    let cancelled = false;
+
+    const attemptPlay = () => {
+      if (cancelled) return;
+      try {
+        video.muted = true;
+        video.loop = true;
+        video.playsInline = true;
+        const maybePromise = video.play?.();
+        if (typeof maybePromise?.catch === 'function') {
+          maybePromise.catch(() => {});
+        }
+      } catch {
+        // noop
+      }
+    };
+
+    const handleVisibility = () => {
+      if (typeof document === 'undefined') return;
+      if (document.visibilityState !== 'visible') return;
+      attemptPlay();
+    };
+
+    attemptPlay();
+    video.addEventListener('loadeddata', attemptPlay);
+    video.addEventListener('canplay', attemptPlay);
+    video.addEventListener('stalled', attemptPlay);
+    video.addEventListener('suspend', attemptPlay);
+    document.addEventListener('visibilitychange', handleVisibility);
+
+    return () => {
+      cancelled = true;
+      video.removeEventListener('loadeddata', attemptPlay);
+      video.removeEventListener('canplay', attemptPlay);
+      video.removeEventListener('stalled', attemptPlay);
+      video.removeEventListener('suspend', attemptPlay);
+      document.removeEventListener('visibilitychange', handleVisibility);
+    };
+  }, [activeTab, isMobileViewport, open, sharedShowcaseVideoUrl, activeShowcaseIndex]);
 
   useEffect(
     () => () => {
@@ -1455,20 +1518,24 @@ const MiniverseModal = ({
 
   const modalLayer = open ? (
     <motion.div
-          className={`safari-stable-layer fixed inset-0 z-50 flex items-start sm:items-center justify-center px-4 py-6 sm:px-4 sm:py-10 overflow-y-auto overflow-x-hidden ${
-            shelved ? 'pointer-events-none' : ''
-          }`}
+          className={`safari-stable-layer ${
+            isInlineMode
+              ? 'relative z-10 w-full'
+              : 'fixed inset-0 z-50 flex items-start sm:items-center justify-center overflow-y-auto overflow-x-hidden overscroll-none'
+          } ${shelved ? 'pointer-events-none' : ''}`}
           initial={shouldAnimatePresence ? 'hidden' : false}
           animate="visible"
           exit={shouldAnimatePresence ? 'hidden' : undefined}
           aria-hidden={shelved ? 'true' : undefined}
         >
-          <motion.div
-            className={`safari-stable-layer safari-backdrop-lite absolute inset-0 bg-black/80 ${isSafari ? '' : 'backdrop-blur-sm'} ${shelved ? 'pointer-events-none' : ''}`}
-            variants={backdropVariants}
-            onClick={handleClose}
-            aria-hidden="true"
-          />
+          {!isInlineMode ? (
+            <motion.div
+              className={`safari-stable-layer safari-backdrop-lite absolute inset-0 bg-black/80 ${isSafari ? '' : 'backdrop-blur-sm'} ${shelved ? 'pointer-events-none' : ''}`}
+              variants={backdropVariants}
+              onClick={handleClose}
+              aria-hidden="true"
+            />
+          ) : null}
 
           <motion.div
             ref={modalContentRef}
@@ -1476,7 +1543,11 @@ const MiniverseModal = ({
             aria-modal={shelved ? 'false' : 'true'}
             aria-labelledby="miniverse-modal-title"
             variants={modalVariants}
-            className={`safari-stable-layer relative z-10 flex w-[calc(100vw-2rem)] max-w-4xl flex-col rounded-3xl border border-white/10 bg-slate-950/70 p-5 sm:p-10 shadow-2xl max-h-[95vh] min-h-[95vh] md:max-h-[73vh] md:min-h-[73vh] overflow-hidden ${
+            className={`safari-stable-layer relative z-10 flex ${
+              isInlineMode
+                ? 'w-full max-w-none flex-col overflow-visible rounded-none border-0 bg-transparent p-0 shadow-none'
+                : 'w-[calc(100vw-2rem)] max-w-4xl flex-col rounded-3xl border border-white/10 bg-slate-950/70 p-5 sm:p-10 shadow-2xl max-h-[95vh] min-h-[95vh] md:max-h-[73vh] md:min-h-[73vh] overflow-hidden'
+            } ${
               isSafari ? '' : 'transition-[opacity,filter,transform] duration-500'
             } ${
               shelved ? 'pointer-events-none opacity-0 blur-sm scale-[0.98]' : 'opacity-100 blur-0 scale-100'
@@ -1491,60 +1562,113 @@ const MiniverseModal = ({
                 filter: 'grayscale(0.25)',
               }}
             />
-            <div className="relative z-10 flex-1 overflow-y-auto overflow-x-hidden overscroll-contain [-webkit-overflow-scrolling:touch] pr-0 sm:pr-1">
+            <div
+              className={`relative z-10 flex-1 ${
+                isInlineMode
+                  ? 'overflow-visible pr-0'
+                  : 'overflow-y-auto overflow-x-hidden overscroll-contain [-webkit-overflow-scrolling:touch] pr-0 sm:pr-1'
+              }`}
+            >
             <div>
-        <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-6">
+        <div className={`flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 ${isInlineMode ? 'mb-5' : 'mb-6'}`}>
           <div>
-            <p className="text-sm uppercase tracking-[0.35em] text-slate-400/80 mb-2">
+            <p className={`text-sm uppercase tracking-[0.35em] text-slate-400/80 ${isInlineMode ? 'mb-2.5' : 'mb-2'}`}>
               Narrativa expandida
             </p>
 
-            <h2 id="miniverse-modal-title" className="font-display text-3xl text-slate-50">
-              {activeTabHeadingVerb} el universo de #GatoEncerrado
+            <h2
+              id="miniverse-modal-title"
+              className={`${isInlineMode ? 'hero-inline-title-glow hero-inline-title-tight mb-1.5 font-semibold leading-[1.05] tracking-[-0.01em]' : 'font-display text-3xl'} text-slate-50`}
+              style={inlineTitleStyle}
+            >
+              {isInlineMode ? (
+                <>
+                  <span className="hero-inline-title-line">{activeTabHeadingVerb} el universo</span>
+                  <span className="hero-inline-title-line">de #GatoEncerrado</span>
+                </>
+              ) : (
+                <>
+                  {activeTabHeadingVerb} el universo <br /> de #GatoEncerrado
+                </>
+              )}
             </h2>
 
-            <div className="mt-5 flex flex-nowrap gap-1.5 overflow-x-auto pb-1 sm:flex-wrap sm:overflow-visible">
-              {TABS.map((tab) => (
-                <button
-                  key={tab.id}
-                  onClick={() => handleTabChange(tab.id)}
-                  className={`rounded-full border px-3 py-2 text-xs sm:px-4 sm:text-sm transition ${
-                    activeTab === tab.id
-                      ? 'border-purple-400/60 bg-purple-500/20 text-purple-100'
-                      : 'border-white/10 text-slate-300 hover:border-purple-300/40 hover:text-purple-100'
-                  }`}
-                >
-                  <span className="inline-flex items-center gap-2">
-                    {tab.icon ? (
-                      <>
-                        <span className="sm:hidden">
-                          <tab.icon size={16} className="text-purple-300" />
-                        </span>
-                        <span className="hidden sm:inline">
-                          <tab.icon size={18} className="text-purple-300" />
-                        </span>
-                      </>
-                    ) : null}
-                    {tab.label}
-                  </span>
-                </button>
-              ))}
-            </div>
+            {isInlineMode ? (
+              <div className="mt-1 space-y-5">
+                <div className="hero-inline-intro-plecas px-1 py-3 text-sm">
+                  {activeTabIntro.lead}{' '}
+                  <strong className="hero-inline-intro-strong font-semibold">
+                    {activeTabIntro.highlight}
+                  </strong>
+                  {activeTabIntro.continuation ? ` ${activeTabIntro.continuation}` : ''}
+                </div>
 
-            <div className="mt-4 rounded-xl border border-purple-400/60 bg-purple-500/20 px-4 py-3 text-sm text-purple-100/95 shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]">
-              {activeTabIntro.lead}{' '}
-              <strong className="font-semibold text-white">
-                {activeTabIntro.highlight}
-              </strong>
-              {activeTabIntro.continuation ? ` ${activeTabIntro.continuation}` : ''}
-            </div>
+                <div className="hero-inline-segmented ui-segmented ui-segmented--rect !w-full !overflow-hidden ![grid-template-columns:repeat(3,minmax(0,1fr))]">
+                  {TABS.map((tab) => {
+                    const isActive = activeTab === tab.id;
+                    return (
+                      <button
+                        key={tab.id}
+                        type="button"
+                        onClick={() => handleTabChange(tab.id)}
+                        className={`ui-segmented__btn !min-h-[44px] !w-full !justify-center !px-2.5 !py-2 !text-center !text-[11px] !font-semibold !uppercase !tracking-[0.24em] !leading-[1.2] ${
+                          isActive ? 'ui-segmented__btn--active' : 'ui-segmented__btn--secondary'
+                        }`}
+                      >
+                        <span className="inline-flex w-full items-center justify-center">
+                          {tab.label}
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            ) : (
+              <>
+                <div className="mt-5 grid grid-cols-3 gap-2 sm:flex sm:flex-wrap sm:gap-1.5 sm:overflow-visible">
+                  {TABS.map((tab) => (
+                    <button
+                      key={tab.id}
+                      onClick={() => handleTabChange(tab.id)}
+                      className={`w-full min-w-0 rounded-full border px-2.5 py-2 text-[0.72rem] sm:w-auto sm:px-4 sm:text-sm font-semibold transition ${
+                        activeTab === tab.id
+                          ? 'border-purple-400/60 bg-purple-500/20 text-purple-100 shadow-[0_0_20px_rgba(168,85,247,0.2)]'
+                          : 'border-white/15 bg-slate-950/75 text-slate-100/95 shadow-[inset_0_1px_0_rgba(255,255,255,0.08),0_8px_22px_rgba(0,0,0,0.35)] hover:border-purple-300/45 hover:bg-slate-900/85 hover:text-purple-100'
+                      }`}
+                    >
+                      <span className="inline-flex w-full items-center justify-center gap-1.5 sm:w-auto sm:gap-2">
+                        {tab.icon ? (
+                          <>
+                            <span className="sm:hidden">
+                              <tab.icon size={14} className="text-purple-300" />
+                            </span>
+                            <span className="hidden sm:inline">
+                              <tab.icon size={18} className="text-purple-300" />
+                            </span>
+                          </>
+                        ) : null}
+                        {tab.label}
+                      </span>
+                    </button>
+                  ))}
+                </div>
+
+                <div className="mt-4 rounded-xl border border-purple-400/60 bg-purple-500/20 px-4 py-3 text-sm text-purple-100/95 shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]">
+                  {activeTabIntro.lead}{' '}
+                  <strong className="font-semibold text-white">
+                    {activeTabIntro.highlight}
+                  </strong>
+                  {activeTabIntro.continuation ? ` ${activeTabIntro.continuation}` : ''}
+                </div>
+              </>
+            )}
           </div>
         </div>
 
             <div className="grid md:grid-cols-2 gap-8">
               {activeTab === 'waitlist' ? (
                 <>
-                  <div className="glass-effect relative overflow-hidden rounded-2xl border border-white/10 p-6 sm:p-7 text-slate-200/90">
+                  <div className="order-2 md:order-1 glass-effect relative overflow-hidden rounded-2xl border border-white/10 p-6 sm:p-7 text-slate-200/90">
                     <div className="relative z-10 flex h-full flex-col">
                       <div className="flex items-center gap-3">
                         <span className="text-[0.65rem] uppercase tracking-[0.35em] text-slate-400/80">
@@ -1554,10 +1678,10 @@ const MiniverseModal = ({
                       </div>
                       <div className="mt-5 space-y-3">
                         <h3 className="font-display text-3xl text-slate-50">
-                          Tu huella importa
+                          Tu huella es real
                         </h3>
                         <p className="text-sm text-slate-300/90 leading-relaxed">
-                          Deja tu huella y accede a tu versión personal de la App Causa Social que se implementa en escuelas. 
+                          Cuando la obra despierta preguntas sobre nuestros vínculos y límites, tu huella las transforma en escucha y detección temprana en escuelas.
                         </p>
                       </div>
 
@@ -1608,7 +1732,7 @@ const MiniverseModal = ({
                     </div>
                   </div>
 
-                  <div className="glass-effect relative overflow-hidden rounded-2xl border border-white/10 p-6 sm:p-7 text-slate-200/90">
+                  <div className="order-1 md:order-2 glass-effect relative overflow-hidden rounded-2xl border border-white/10 p-6 sm:p-7 text-slate-200/90">
                     <div className="relative z-10 space-y-5">
                       <div className="flex items-center gap-3">
                         <span className="text-[0.65rem] uppercase tracking-[0.35em] text-slate-400/80">
@@ -1748,7 +1872,7 @@ const MiniverseModal = ({
                         <div className="absolute inset-0 opacity-30 mix-blend-screen pointer-events-none bg-[radial-gradient(circle_at_top,_rgba(255,255,255,0.25),_transparent_55%)]" />
                         <div className="relative z-10 grid gap-6 lg:grid-cols-[1.15fr_0.85fr] items-center">
                           <div className="flex flex-col gap-4">
-                            <div className="flex items-center gap-3">
+                            <div className="flex min-w-0 items-center gap-3">
                               <div
                                 className={`h-12 w-12 rounded-full bg-gradient-to-br ${activeShowcaseCard.thumbGradient} flex items-center justify-center text-sm font-semibold text-white shadow-[0_10px_25px_rgba(0,0,0,0.35)]`}
                               >
@@ -1758,11 +1882,22 @@ const MiniverseModal = ({
                                   activeShowcaseCard.thumbLabel
                                 )}
                               </div>
-                              <div>
+                              <div className="min-w-0 flex-1">
                                 <p className="text-xs uppercase tracking-[0.35em] text-slate-300/80">
                                   {activeShowcaseCard.eyebrow || 'Microficción'}
                                 </p>
-                                <h3 className="font-display text-3xl text-slate-50">{activeShowcaseCard.title}</h3>
+                                <h3
+                                  className={`${isInlineMode
+                                    ? shouldUseSingleLinePortalTitle(activeShowcaseCard.title, { force: activeShowcaseCard.isPrologue })
+                                      ? activeShowcaseCard.isPrologue
+                                        ? 'hero-inline-card-title-prologue'
+                                        : 'hero-inline-card-title-singleline'
+                                      : 'text-4xl font-semibold leading-[1.02] tracking-[-0.01em]'
+                                    : 'font-display text-3xl'} text-slate-50`}
+                                  style={inlineCardTitleStyle}
+                                >
+                                  {activeShowcaseCard.title}
+                                </h3>
                               </div>
                             </div>
                             <p className="text-sm text-slate-200/90 leading-relaxed">
@@ -1875,7 +2010,7 @@ const MiniverseModal = ({
                       <div className="absolute inset-0 opacity-30 mix-blend-screen pointer-events-none bg-[radial-gradient(circle_at_top,_rgba(255,255,255,0.25),_transparent_55%)]" />
                       <div className="relative z-10 grid gap-6 items-center">
                         <div className="flex flex-col gap-4">
-                          <div className="flex items-center gap-3">
+                          <div className="flex min-w-0 items-center gap-3">
                             <div
                               className={`h-12 w-12 rounded-full bg-gradient-to-br ${activeShowcaseCard.thumbGradient} flex items-center justify-center text-sm font-semibold text-white shadow-[0_10px_25px_rgba(0,0,0,0.35)]`}
                             >
@@ -1885,19 +2020,25 @@ const MiniverseModal = ({
                                 activeShowcaseCard.thumbLabel
                               )}
                             </div>
-                            <div>
+                            <div className="min-w-0 flex-1">
                               <p className="text-xs uppercase tracking-[0.35em] text-slate-300/80">
                                 {activeShowcaseCard.eyebrow || 'Microficción'}
                               </p>
-                              <h3 className="font-display text-3xl text-slate-50">{activeShowcaseCard.title}</h3>
+                              <h3
+                                className={`${isInlineMode
+                                  ? shouldUseSingleLinePortalTitle(activeShowcaseCard.title, { force: activeShowcaseCard.isPrologue })
+                                    ? activeShowcaseCard.isPrologue
+                                      ? 'hero-inline-card-title-prologue'
+                                      : 'hero-inline-card-title-singleline'
+                                    : 'text-4xl font-semibold leading-[1.02] tracking-[-0.01em]'
+                                  : 'font-display text-3xl'} text-slate-50`}
+                                style={inlineCardTitleStyle}
+                              >
+                                {activeShowcaseCard.title}
+                              </h3>
                             </div>
                           </div>
-                          <button
-                            type="button"
-                            onClick={handleToggleMobileShowcaseVideo}
-                            className="relative w-full aspect-[5/4] sm:aspect-[4/5] rounded-3xl border border-white/10 bg-slate-900/60 overflow-hidden shadow-[0_18px_45px_rgba(0,0,0,0.45)] text-left"
-                            aria-label={isMobileShowcaseVideoPlaying ? 'Pausar video' : 'Reproducir video'}
-                          >
+                          <div className="relative w-full aspect-[5/4] sm:aspect-[4/5] rounded-3xl border border-white/10 bg-slate-900/60 overflow-hidden shadow-[0_18px_45px_rgba(0,0,0,0.45)] text-left">
                             {sharedShowcaseVideoUrl ? (
                               <>
                                 <video
@@ -1907,19 +2048,26 @@ const MiniverseModal = ({
                                   playsInline
                                   muted
                                   loop
+                                  autoPlay
                                   preload="metadata"
-                                  onPlay={handleMobileShowcaseVideoPlay}
-                                  onPause={handleMobileShowcaseVideoPause}
-                                  onEnded={handleMobileShowcaseVideoPause}
                                   data-showcase-video="mobile-shared"
                                 />
-                                <div className="pointer-events-none absolute left-4 top-4 rounded-full border border-white/20 bg-black/50 px-3 py-1 text-[0.6rem] uppercase tracking-[0.3em] text-slate-200">
-                                  {isMobileShowcaseVideoPlaying ? 'Toca para pausar' : 'Toca para reproducir'}
-                                </div>
                                 <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/45 via-transparent to-transparent" />
-                                <div className="pointer-events-none absolute right-4 bottom-4 rounded-full border border-white/25 bg-black/50 px-3 py-1 text-[0.6rem] uppercase tracking-[0.3em] text-slate-100">
-                                  Loop escénico
-                                </div>
+                                <AnimatePresence mode="wait" initial={false}>
+                                  <motion.div
+                                    key={`mobile-showcase-synopsis-${activeShowcaseCard.id}`}
+                                    initial={{ opacity: 0, y: 10, filter: 'blur(10px)' }}
+                                    animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
+                                    exit={{ opacity: 0, y: -8, filter: 'blur(8px)' }}
+                                    transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+                                    className="pointer-events-none absolute inset-x-0 bottom-14 px-6"
+                                  >
+                                    <p className="mx-auto max-w-[92%] text-center text-[0.94rem] font-medium leading-[1.45] text-[rgb(253_230_138)] [text-shadow:0_2px_14px_rgba(0,0,0,0.95),0_0_34px_rgba(0,0,0,0.75),0_0_22px_rgba(251,191,36,0.22)]">
+                                      {activeShowcaseCard.description}
+                                    </p>
+                                  </motion.div>
+                                </AnimatePresence>
+                       
                               </>
                             ) : (
                               <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 text-slate-300/70">
@@ -1929,13 +2077,7 @@ const MiniverseModal = ({
                                 <p className="text-xs uppercase tracking-[0.4em]">Video próximamente</p>
                               </div>
                             )}
-                          </button>
-                          <p className="text-sm text-slate-200/90 leading-relaxed">
-                            <span className="mr-1 text-[0.65rem] font-semibold uppercase tracking-[0.32em] text-slate-300/70">
-                              Sinopsis:
-                            </span>
-                            {activeShowcaseCard.description}
-                          </p>
+                          </div>
                           <div className="flex flex-col gap-3">
                             <Button
                               type="button"
@@ -2004,7 +2146,7 @@ const MiniverseModal = ({
                     <div className="absolute inset-0 opacity-30 mix-blend-screen pointer-events-none bg-[radial-gradient(circle_at_top,_rgba(255,255,255,0.25),_transparent_55%)]" />
                     <div className="relative z-10 grid gap-6 lg:grid-cols-[1.15fr_0.85fr] items-center">
                       <div className="flex flex-col gap-4">
-                        <div className="flex items-center gap-3">
+                        <div className="flex min-w-0 items-center gap-3">
                           <div
                             className={`h-12 w-12 rounded-full bg-gradient-to-br ${selectedMiniverse.thumbGradient} flex items-center justify-center text-sm font-semibold text-white shadow-[0_10px_25px_rgba(0,0,0,0.35)]`}
                           >
@@ -2014,9 +2156,18 @@ const MiniverseModal = ({
                               selectedMiniverse.thumbLabel
                             )}
                           </div>
-                          <div>
+                          <div className="min-w-0 flex-1">
                             <p className="text-xs uppercase tracking-[0.35em] text-slate-400/80">Narrativa expandida</p>
-                            <h3 className="font-display text-3xl text-slate-50">{selectedMiniverse.title}</h3>
+                            <h3
+                              className={`${isInlineMode
+                                ? shouldUseSingleLinePortalTitle(selectedMiniverse.title)
+                                  ? 'hero-inline-card-title-singleline'
+                                  : 'text-4xl font-semibold leading-[1.02] tracking-[-0.01em]'
+                                : 'font-display text-3xl'} text-slate-50`}
+                              style={inlineCardTitleStyle}
+                            >
+                              {selectedMiniverse.title}
+                            </h3>
                           </div>
                         </div>
                         <p className="text-sm text-slate-300/90 leading-relaxed">
@@ -2100,7 +2251,7 @@ const MiniverseModal = ({
               ) : (
                 <div className="md:col-span-2 w-full max-w-3xl mx-auto space-y-4">
      
-                  <div className="relative mx-auto w-[calc(100%-0.5rem)] max-w-[19rem] overflow-hidden rounded-[2rem] border border-white/15 bg-gradient-to-b from-slate-900/80 via-[#0b1431]/85 to-[#050917]/90 p-4 sm:w-full sm:max-w-none sm:p-6 shadow-[inset_0_1px_0_rgba(255,255,255,0.08),0_30px_80px_rgba(0,0,0,0.55)]">
+                  <div className="relative mx-auto w-full max-w-[22rem] overflow-hidden rounded-[2rem] border border-white/15 bg-gradient-to-b from-slate-900/80 via-[#0b1431]/85 to-[#050917]/90 p-3.5 sm:w-full sm:max-w-none sm:p-6 shadow-[inset_0_1px_0_rgba(255,255,255,0.08),0_30px_80px_rgba(0,0,0,0.55)]">
                     <div
                       aria-hidden="true"
                       className="pointer-events-none absolute inset-0 opacity-35"
@@ -2117,14 +2268,18 @@ const MiniverseModal = ({
                           'radial-gradient(1px 1px at 10% 18%, rgba(255,255,255,0.75), transparent 60%), radial-gradient(1px 1px at 26% 42%, rgba(255,255,255,0.55), transparent 60%), radial-gradient(1.5px 1.5px at 42% 30%, rgba(226,232,240,0.55), transparent 65%), radial-gradient(1px 1px at 58% 64%, rgba(255,255,255,0.5), transparent 60%), radial-gradient(1.5px 1.5px at 76% 36%, rgba(226,232,240,0.5), transparent 65%), radial-gradient(1px 1px at 88% 74%, rgba(255,255,255,0.4), transparent 60%)',
                       }}
                     />
-                    <div className="relative w-full grid grid-cols-2 md:grid-cols-3 gap-4 sm:gap-6">
+                    <div
+                      className={`relative w-full grid ${
+                        isInlineMode ? 'grid-cols-3' : 'grid-cols-2 md:grid-cols-3'
+                      } gap-3 sm:gap-6`}
+                    >
                       {visibleMiniverseCards.map((card) => {
                         const isUpcoming = Boolean(card.isUpcoming);
                         const isVisited = !isUpcoming && Boolean(visitedMiniverses[card.id]);
                         const communityHearts = communityLikeMap.get(card.formatId) ?? 0;
                         const appLabel = card.appName ?? (card.title ?? '').replace(/^Miniverso\s+/i, '');
                         return (
-                          <div key={card.title} className="relative mx-auto w-24 sm:w-28">
+                          <div key={card.title} className="relative mx-auto w-full">
                             {!isUpcoming && isVisited ? (
                               <span className="absolute -right-1 -top-1 inline-flex items-center justify-center h-5 w-5 rounded-full bg-emerald-500/80 text-slate-950 shadow-[0_0_10px_rgba(16,185,129,0.55)]">
                                 <Check size={12} strokeWidth={2.4} />
@@ -2141,7 +2296,7 @@ const MiniverseModal = ({
                               onClick={() => handleSelectCard(card, 'grid')}
                               disabled={isUpcoming}
                               aria-label={card.ctaVerb ?? card.appName ?? card.title}
-                              className={`group relative mx-auto flex w-24 sm:w-28 flex-col items-center justify-start gap-2 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-400/60 disabled:cursor-not-allowed ${
+                              className={`group relative mx-auto flex w-full flex-col items-center justify-start gap-2 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-400/60 disabled:cursor-not-allowed ${
                                 isUpcoming ? 'opacity-70' : 'hover:scale-[1.03] active:scale-[0.98]'
                               }`}
                             >
@@ -2174,7 +2329,11 @@ const MiniverseModal = ({
                         );
                       })}
                       {showFavoritesOnly && visibleMiniverseCards.length === 0 ? (
-                        <div className="col-span-2 md:col-span-3 rounded-2xl border border-white/15 bg-black/30 p-4 text-center">
+                        <div
+                          className={`${
+                            isInlineMode ? 'col-span-3' : 'col-span-2 md:col-span-3'
+                          } rounded-2xl border border-white/15 bg-black/30 p-4 text-center`}
+                        >
                           <p className="text-xs sm:text-sm text-slate-300/90">
                             Aún no hay suficientes likes para construir favoritas de comunidad.
                           </p>
@@ -2235,8 +2394,12 @@ const MiniverseModal = ({
               )}
             </div>
 
-            {!selectedMiniverse ? (
-              <div className="sticky bottom-2 z-30 mt-6 w-full max-w-3xl mx-auto flex items-center justify-between rounded-2xl border border-white/10 bg-slate-950/75 px-3 py-2 text-xs text-slate-400 backdrop-blur-sm">
+            {!selectedMiniverse && !isInlineMode ? (
+              <div
+                className={`z-30 mt-6 w-full max-w-3xl mx-auto flex items-center justify-between rounded-2xl border border-white/10 bg-slate-950/75 px-3 py-2 text-xs text-slate-400 backdrop-blur-sm ${
+                  isInlineMode ? '' : 'sticky bottom-2'
+                }`}
+              >
                 <span>{activeTabLabel}</span>
                 <button
                   type="button"
@@ -2260,7 +2423,7 @@ const MiniverseModal = ({
         {isCauseSiteOpen ? (
           <motion.div
             key="miniverse-cause-site-iframe"
-            className="fixed inset-0 z-[175] flex items-center justify-center px-4 py-6"
+            className="fixed inset-0 z-[175] flex items-center justify-center overflow-y-auto overflow-x-hidden overscroll-none"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
@@ -2276,7 +2439,7 @@ const MiniverseModal = ({
               role="dialog"
               aria-modal="true"
               aria-label="Isabel Ayuda para la Vida"
-              className="relative z-10 w-full max-w-5xl overflow-hidden rounded-3xl border border-white/10 bg-slate-950/90 shadow-[0_35px_120px_rgba(0,0,0,0.65)]"
+              className="relative z-10 my-6 w-[calc(100vw-2rem)] max-w-5xl overflow-hidden rounded-3xl border border-white/10 bg-slate-950/90 shadow-[0_35px_120px_rgba(0,0,0,0.65)]"
               initial={{ scale: 0.96, opacity: 0, y: 18 }}
               animate={{ scale: 1, opacity: 1, y: 0 }}
               exit={{ scale: 0.96, opacity: 0, y: 18 }}
@@ -2335,7 +2498,7 @@ const MiniverseModal = ({
         {showcaseFullscreenCard ? (
           <motion.div
             key="miniverse-showcase-narrative-video"
-            className="fixed inset-0 z-[176] flex items-center justify-center px-4 py-6"
+            className="fixed inset-0 z-[176] flex items-center justify-center overflow-y-auto overflow-x-hidden overscroll-none"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
@@ -2351,7 +2514,7 @@ const MiniverseModal = ({
               role="dialog"
               aria-modal="true"
               aria-label={`Video narrativo: ${showcaseFullscreenCard.title}`}
-              className={`relative z-10 w-full overflow-hidden rounded-3xl border border-white/10 bg-slate-950/92 shadow-[0_35px_120px_rgba(0,0,0,0.7)] ${
+              className={`relative z-10 my-6 w-[calc(100vw-2rem)] overflow-hidden rounded-3xl border border-white/10 bg-slate-950/92 shadow-[0_35px_120px_rgba(0,0,0,0.7)] ${
                 isMobileViewport ? 'max-w-sm' : 'max-w-5xl'
               }`}
               initial={{ scale: 0.96, opacity: 0, y: 20 }}

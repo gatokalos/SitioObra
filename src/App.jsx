@@ -52,9 +52,16 @@ const Instagram = lazy(() => import('@/components/Instagram'));
 const BlogContributionPrompt = lazy(() => import('@/components/BlogContributionPrompt'));
 const Blog = lazy(() => import('@/components/Blog'));
 const Bienvenida = lazy(() => import('@/pages/Bienvenida'));
-const PortalLectura = lazy(() => import('@/pages/PortalLectura'));
+const PortalLiteratura = lazy(() => import('@/pages/PortalLiteratura'));
 const PortalArtesanias = lazy(() => import('@/pages/PortalArtesanias'));
 const PortalVoz = lazy(() => import('@/pages/PortalVoz'));
+const PortalMovimiento = lazy(() => import('@/pages/PortalMovimiento'));
+const PortalGraficos = lazy(() => import('@/pages/PortalGraficos'));
+const PortalCine = lazy(() => import('@/pages/PortalCine'));
+const PortalSonoridades = lazy(() => import('@/pages/PortalSonoridades'));
+const PortalJuegos = lazy(() => import('@/pages/PortalJuegos'));
+const PortalOraculo = lazy(() => import('@/pages/PortalOraculo'));
+const PortalEncuentros = lazy(() => import('./pages/PortalEncuentros.jsx'));
 const LabHuella = lazy(() => import('@/pages/LabHuella'));
 
 const SectionFallback = ({ id, minHeight = 320 }) => (
@@ -299,11 +306,40 @@ function App() {
   const location = useLocation();
   const { user } = useAuth();
   const { shouldShowToast, dismissToast, emailHash } = useEmailRedirect();
+  const [isMobileViewport, setIsMobileViewport] = useState(() => {
+    if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') return false;
+    return window.matchMedia('(max-width: 768px)').matches;
+  });
   const [hasGuestUnlockedTransmedia, setHasGuestUnlockedTransmedia] = useState(() => {
     return safeGetItem(TRANSMEDIA_UNLOCK_STORAGE_KEY) === '1';
   });
   const isAuthenticated = Boolean(user);
   const canAccessTransmedia = isAuthenticated || hasGuestUnlockedTransmedia;
+  const isMobileLoggedInPortalMode = isAuthenticated && isMobileViewport;
+  const isPortalRoute = location.pathname.startsWith('/portal-');
+  const hasForcedHomeTopOnBootRef = useRef(false);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return undefined;
+    if (!('scrollRestoration' in window.history)) return undefined;
+    const previousMode = window.history.scrollRestoration;
+    window.history.scrollRestoration = 'manual';
+    return () => {
+      window.history.scrollRestoration = previousMode;
+    };
+  }, []);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return undefined;
+    if (hasForcedHomeTopOnBootRef.current) return undefined;
+    if (location.pathname !== '/') return undefined;
+    if (location.hash) return undefined;
+    hasForcedHomeTopOnBootRef.current = true;
+    const rafId = window.requestAnimationFrame(() => {
+      window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
+    });
+    return () => window.cancelAnimationFrame(rafId);
+  }, [location.hash, location.pathname]);
 
   useEffect(() => {
     document.title = pageTitle;
@@ -314,6 +350,30 @@ function App() {
       document.head.appendChild(meta);
     }
     meta.setAttribute('content', pageDescription);
+  }, []);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    if (!isPortalRoute) return;
+    const rafId = window.requestAnimationFrame(() => {
+      window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
+    });
+    return () => window.cancelAnimationFrame(rafId);
+  }, [isPortalRoute, location.pathname]);
+
+  useEffect(() => {
+    if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') return undefined;
+    const mediaQuery = window.matchMedia('(max-width: 768px)');
+    const handleChange = (event) => setIsMobileViewport(event.matches);
+    setIsMobileViewport(mediaQuery.matches);
+
+    if (typeof mediaQuery.addEventListener === 'function') {
+      mediaQuery.addEventListener('change', handleChange);
+      return () => mediaQuery.removeEventListener('change', handleChange);
+    }
+
+    mediaQuery.addListener(handleChange);
+    return () => mediaQuery.removeListener(handleChange);
   }, []);
 
   const scrollToSection = useCallback((sectionId) => {
@@ -439,7 +499,10 @@ function App() {
           <div className="min-h-screen overflow-x-hidden relative">
             <HeroBackground />
             <div className="relative z-10">
-              <Header showTransmediaNav={canAccessTransmedia} />
+              <Header
+                showAllianceNav={canAccessTransmedia}
+                showTransmediaNav={canAccessTransmedia && !isMobileLoggedInPortalMode}
+              />
 
               <main className="pt-20 lg:pt-24">
                 <Hero />
@@ -495,7 +558,7 @@ function App() {
                       fallback={<SectionFallback id="transmedia" minHeight={900} />}
                     >
                       <Suspense fallback={<SectionFallback id="transmedia" minHeight={900} />}>
-                        <Transmedia />
+                        <Transmedia allianceOnlyMode={isMobileLoggedInPortalMode} />
                       </Suspense>
                     </DeferredSection>
                   </SectionErrorBoundary>
@@ -504,7 +567,10 @@ function App() {
                 <Contact />
               </main>
 
-              <Footer showTransmediaNav={canAccessTransmedia} />
+              <Footer
+                showAllianceNav={canAccessTransmedia}
+                showTransmediaNav={canAccessTransmedia && !isMobileLoggedInPortalMode}
+              />
               {shouldShowToast && (
                 <LoginToast emailHash={emailHash} onDismiss={dismissToast} />
               )}
@@ -513,9 +579,16 @@ function App() {
         )}
       />
       <Route path="/bienvenida" element={<Suspense fallback={<RouteFallback />}><Bienvenida /></Suspense>} />
-      <Route path="/portal-lectura" element={<Suspense fallback={<RouteFallback />}><PortalLectura /></Suspense>} />
+      <Route path="/portal-literatura" element={<Suspense fallback={<RouteFallback />}><PortalLiteratura /></Suspense>} />
       <Route path="/portal-artesanias" element={<Suspense fallback={<RouteFallback />}><PortalArtesanias /></Suspense>} />
       <Route path="/portal-voz" element={<Suspense fallback={<RouteFallback />}><PortalVoz /></Suspense>} />
+      <Route path="/portal-movimiento" element={<Suspense fallback={<RouteFallback />}><PortalMovimiento /></Suspense>} />
+      <Route path="/portal-graficos" element={<Suspense fallback={<RouteFallback />}><PortalGraficos /></Suspense>} />
+      <Route path="/portal-cine" element={<Suspense fallback={<RouteFallback />}><PortalCine /></Suspense>} />
+      <Route path="/portal-sonoridades" element={<Suspense fallback={<RouteFallback />}><PortalSonoridades /></Suspense>} />
+      <Route path="/portal-juegos" element={<Suspense fallback={<RouteFallback />}><PortalJuegos /></Suspense>} />
+      <Route path="/portal-oraculo" element={<Suspense fallback={<RouteFallback />}><PortalOraculo /></Suspense>} />
+      <Route path="/portal-encuentros" element={<Suspense fallback={<RouteFallback />}><PortalEncuentros /></Suspense>} />
       {IS_UI_LAB_ENABLED ? (
         <Route path="/lab/huella" element={<Suspense fallback={<RouteFallback />}><LabHuella /></Suspense>} />
       ) : null}

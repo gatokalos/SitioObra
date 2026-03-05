@@ -305,8 +305,8 @@ export default function MiniversoSonoro({
             </button>
           )}
           {isRitualOpen && (
-            <div className="fixed inset-0 z-50 flex flex-col bg-black/90 backdrop-blur-xl p-4">
-              <div className="flex items-center justify-between mb-3">
+            <div className="fixed inset-0 z-50 flex flex-col bg-black/90 backdrop-blur-xl overflow-hidden">
+              <div className="flex items-center justify-between mb-3 px-4 pt-4">
                 <p className="text-xs uppercase tracking-[0.4em] text-purple-200">
                   Cámara de resonancia
                 </p>
@@ -318,7 +318,7 @@ export default function MiniversoSonoro({
                   Cerrar
                 </button>
               </div>
-              <div className="flex-1 overflow-auto flex items-center justify-center">
+              <div className="flex-1 overflow-auto flex items-center justify-center px-4 pb-4">
                 <div className="w-full max-w-3xl">
                   <SonoroPlayer isFullscreen />
                 </div>

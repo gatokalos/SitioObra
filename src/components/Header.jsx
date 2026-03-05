@@ -1,17 +1,20 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { motion } from 'framer-motion';
-import { Menu, X } from 'lucide-react';
+import { Coffee, Menu, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/components/ui/use-toast';
 import { useAuth } from '@/contexts/SupabaseAuthContext';
 import LoginOverlay from '@/components/ContributionModal/LoginOverlay';
 import { setBienvenidaForceOnLogin } from '@/lib/bienvenida';
+import isotipoGatoWebp from '@/assets/isotipo-gato.webp';
 
-const Header = ({ showTransmediaNav = true }) => {
+const Header = ({ showTransmediaNav = true, showAllianceNav = showTransmediaNav }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [scrollTier, setScrollTier] = useState(0);
   const [showLoginOverlay, setShowLoginOverlay] = useState(false);
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
+  const navigate = useNavigate();
   const { user, signOut } = useAuth();
   const { toast: showToast } = useToast();
   const profileName =
@@ -90,12 +93,8 @@ const Header = ({ showTransmediaNav = true }) => {
     { name: 'Galería', href: '#instagram' },
     { name: 'Voces', href: '#provoca' },
     { name: 'Curaduría', href: '#dialogo-critico' },
-    ...(showTransmediaNav
-      ? [
-          { name: 'Alianza', href: '#apoya' },
-          { name: 'Transmedia', href: '#transmedia' },
-        ]
-      : []),
+    ...(showAllianceNav ? [{ name: 'Alianza', href: '#apoya' }] : []),
+    ...(showTransmediaNav ? [{ name: 'Transmedia', href: '#transmedia' }] : []),
     { name: 'Funciones', href: '#next-show' },
     { name: 'Contacto', href: '#contact' },
   ];
@@ -107,6 +106,12 @@ const Header = ({ showTransmediaNav = true }) => {
       element.scrollIntoView({ behavior: 'smooth' });
     }
   };
+
+  const handleOpenSupportHub = useCallback(() => {
+    if (!user) return;
+    setIsMenuOpen(false);
+    navigate('/portal-encuentros');
+  }, [navigate, user]);
 
   return (
     <>
@@ -125,7 +130,14 @@ const Header = ({ showTransmediaNav = true }) => {
               className="flex items-center gap-3 cursor-pointer"
               onClick={() => handleNavClick('#hero')}
             >
-              <span className="font-display text-2xl font-bold text-gradient max-[375px]:text-lg whitespace-nowrap">
+              <img
+                src={isotipoGatoWebp}
+                alt="Logo Gato Encerrado"
+                className="h-9 w-9 rounded-full object-contain sm:hidden"
+                loading="eager"
+                decoding="async"
+              />
+              <span className="hidden sm:inline font-display text-2xl font-bold text-gradient max-[375px]:text-lg whitespace-nowrap">
                 #GatoEncerrado
               </span>
               <span className={`h-2.5 w-2.5 rounded-full ${statusDotClass}`} />
@@ -184,6 +196,19 @@ const Header = ({ showTransmediaNav = true }) => {
           </div>
 
           <div className="flex items-center gap-3">
+            {user ? (
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                className="xl:hidden h-auto w-auto rounded-none p-0 text-amber-100 hover:bg-transparent hover:text-amber-50"
+                onClick={handleOpenSupportHub}
+                aria-label="Abrir café, charla y merch"
+                title="Café, charla y merch"
+              >
+                <Coffee size={20} />
+              </Button>
+            ) : null}
             <Button
               variant="ghost"
               size="icon"

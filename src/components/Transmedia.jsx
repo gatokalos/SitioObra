@@ -54,6 +54,7 @@ import {
   resolveShowcaseFromAppId,
   resolveShowcaseFromHash,
 } from '@/lib/bienvenidaBridge';
+import { resolvePortalRoute } from '@/lib/miniversePortalRegistry';
 import MiniversoSonoroPreview from '@/components/miniversos/sonoro/MiniversoSonoroPreview';
 import { recordShowcaseLike } from '@/services/showcaseLikeService';
 import { useMobileVideoPresentation } from '@/hooks/useMobileVideoPresentation';
@@ -73,10 +74,10 @@ import { safeGetItem, safeRemoveItem, safeSetItem } from '@/lib/safeStorage';
 import { isSafariBrowser } from '@/lib/browser';
 import { sanitizeExternalHttpUrl } from '@/lib/urlSafety';
 import { fetchFocusAppMetadata } from '@/services/focusAppMetadataService';
+import { startDirectMerchCheckout } from '@/lib/merchCheckout';
 
 const MiniverseModal = lazy(() => import('@/components/MiniverseModal'));
 const ContributionModal = lazy(() => import('@/components/ContributionModal'));
-const ReserveModal = lazy(() => import('@/components/ReserveModal'));
 const ARExperience = lazy(() => import('@/components/ar/ARExperience'));
 const AutoficcionPreviewOverlay = lazy(() => import('@/components/novela/AutoficcionPreviewOverlay'));
 const LoginOverlay = lazy(() => import('@/components/ContributionModal/LoginOverlay'));
@@ -780,7 +781,7 @@ const showcaseDefinitions = {
     label: 'Escena',
     type: 'tragedia',
     intro:
-      'La escena no terminó. Lo que viste sigue ocurriendo. Aquí puedes habitar el conflicto, escuchar la conciencia en proceso y hablar como si estuvieras en escena.',
+      'La obra no terminó. Lo que viste en escena sigue ocurriendo. Aquí puedes habitar el drama, escuchar la conciencia de la obra en proceso y hablar como si estuvieras en escena.',
     cartaTitle: '#LaPuertaInvisible',
     notaAutoral: 'Entré sin saber.\nAlgo dijo mi nombre.\nY ya no hubo salida.',
 
@@ -2084,7 +2085,7 @@ const CauseImpactAccordion = ({ items, onOpenImagePreview }) => {
   );
 };
 
-const Transmedia = () => {
+const Transmedia = ({ allianceOnlyMode = false }) => {
   const baseEnergyByShowcase = useMemo(() => {
     const map = {};
     const parseFromNote = (note) => {
@@ -2245,9 +2246,7 @@ const Transmedia = () => {
   const [quironSpent, setQuironSpent] = useState(initialQuironSpent);
   const [graphicSpent, setGraphicSpent] = useState(initialGraphicSpent);
   const [novelaQuestions, setNovelaQuestions] = useState(initialNovelaQuestions);
-  const [isNovelaReserveOpen, setIsNovelaReserveOpen] = useState(false);
-  const [hasLoadedReserveModal, setHasLoadedReserveModal] = useState(false);
-  const [reserveInitialPackages, setReserveInitialPackages] = useState(['novela-400']);
+  const [isMerchCheckoutLoading, setIsMerchCheckoutLoading] = useState(false);
   const [sonoroSpent, setSonoroSpent] = useState(initialSonoroSpent);
   const [tazaActivations, setTazaActivations] = useState(initialTazaActivations);
   const [showQuironCommunityPrompt, setShowQuironCommunityPrompt] = useState(false);
@@ -2322,10 +2321,6 @@ const Transmedia = () => {
   useEffect(() => {
     if (isContributionOpen) setHasLoadedContributionModal(true);
   }, [isContributionOpen]);
-
-  useEffect(() => {
-    if (isNovelaReserveOpen) setHasLoadedReserveModal(true);
-  }, [isNovelaReserveOpen]);
 
   useEffect(() => {
     if (showBadgeLoginOverlay) setHasLoadedBadgeLoginOverlay(true);
@@ -3110,6 +3105,24 @@ const Transmedia = () => {
     },
     [loadShowcaseContent, showcaseContent]
   );
+
+  const navigateToMobilePortalIfReady = useCallback(
+    (formatId) => {
+      if (!formatId) return false;
+      const portalRoute = resolvePortalRoute({
+        formatId,
+        mobileOnly: true,
+        isMobileViewport,
+      });
+      if (!portalRoute) {
+        return false;
+      }
+      navigate(portalRoute);
+      return true;
+    },
+    [isMobileViewport, navigate]
+  );
+
   const clearShowcaseOpenTransitionTimers = useCallback(() => {
     if (typeof window === 'undefined') return;
     showcaseOpenTransitionTimersRef.current.forEach((timerId) => {
@@ -3240,6 +3253,10 @@ const Transmedia = () => {
   const handleSelectMiniverse = useCallback(
     (formatId) => {
       if (!formatId) return;
+      if (navigateToMobilePortalIfReady(formatId)) {
+        setIsMiniverseShelved(false);
+        return;
+      }
       if (MINIVERSO_EDITORIAL_INTERCEPTION_ENABLED) {
         setIsMiniversoEditorialModalOpen(true);
         return;
@@ -3249,7 +3266,7 @@ const Transmedia = () => {
       }
       setIsMiniverseShelved(true);
     },
-    [openMiniverseById, setIsMiniversoEditorialModalOpen]
+    [navigateToMobilePortalIfReady, openMiniverseById, setIsMiniversoEditorialModalOpen]
   );
 
   useEffect(() => {
@@ -3261,6 +3278,9 @@ const Transmedia = () => {
   const handleFormatClick = useCallback(
     (formatId) => {
       if (showcaseOpenTransition.phase !== 'idle') {
+        return;
+      }
+      if (navigateToMobilePortalIfReady(formatId)) {
         return;
       }
       if (focusLockShowcaseId) {
@@ -3287,6 +3307,7 @@ const Transmedia = () => {
       focusLockShowcaseId,
       handleOpenMiniverses,
       loadShowcaseContent,
+      navigateToMobilePortalIfReady,
       releaseDesktopFocusLock,
       runShowcaseOpenTransition,
       showcaseContent,
@@ -3312,6 +3333,24 @@ const Transmedia = () => {
     return () =>
       window.removeEventListener('gatoencerrado:open-miniverse-list', handleOpenMiniverseList);
   }, [handleOpenMiniverses]);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return undefined;
+    const handleSelectMiniverseFromHeroInline = (event) => {
+      const formatId = event?.detail?.formatId ?? null;
+      if (!formatId) return;
+      handleSelectMiniverse(formatId);
+    };
+    window.addEventListener(
+      'gatoencerrado:select-miniverse-format',
+      handleSelectMiniverseFromHeroInline,
+    );
+    return () =>
+      window.removeEventListener(
+        'gatoencerrado:select-miniverse-format',
+        handleSelectMiniverseFromHeroInline,
+      );
+  }, [handleSelectMiniverse]);
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
@@ -4828,13 +4867,34 @@ const Transmedia = () => {
     scrollToObraConversationControls,
   ]);
 
-  const handleOpenNovelaReserve = useCallback((initialPackages = ['novela-400']) => {
-    const normalized = Array.isArray(initialPackages) && initialPackages.length
-      ? initialPackages
-      : ['novela-400'];
-    setReserveInitialPackages(normalized);
-    setIsNovelaReserveOpen(true);
-  }, []);
+  const handleOpenNovelaReserve = useCallback(
+    async (initialPackages = ['novela-400']) => {
+      if (isMerchCheckoutLoading) return;
+      const normalized = Array.isArray(initialPackages) && initialPackages.length
+        ? initialPackages
+        : ['novela-400'];
+      const packageId = normalized.includes('taza-250') ? 'taza-250' : 'novela-400';
+
+      setIsMerchCheckoutLoading(true);
+      try {
+        await startDirectMerchCheckout({
+          packageId,
+          customerEmail: user?.email ?? '',
+          metadata: {
+            source: 'transmedia',
+            package: packageId,
+            showcase: activeShowcase ?? '',
+          },
+        });
+      } catch (error) {
+        console.error('[Transmedia] Checkout error:', error);
+        toast({ description: 'No pudimos abrir el checkout. Intenta nuevamente.' });
+      } finally {
+        setIsMerchCheckoutLoading(false);
+      }
+    },
+    [activeShowcase, isMerchCheckoutLoading, user?.email]
+  );
 
   const handleReturnToShowcase = useCallback(() => {
     if (!returnShowcaseId) return;
@@ -5330,9 +5390,10 @@ const rendernotaAutoral = () => {
             <button
               type="button"
               onClick={() => handleOpenNovelaReserve(['taza-250'])}
+              disabled={isMerchCheckoutLoading}
               className="inline-flex w-full sm:w-auto items-center justify-center rounded-full border border-purple-400/40 text-purple-200 hover:bg-purple-500/10 px-6 py-2 font-semibold transition"
             >
-              Comprar tu taza
+              {isMerchCheckoutLoading ? 'Abriendo checkout...' : 'Comprar tu taza'}
             </button>
           </div>
         ) : null}
@@ -6874,9 +6935,10 @@ const rendernotaAutoral = () => {
                   <button
                     type="button"
                     onClick={handleOpenNovelaReserve}
+                    disabled={isMerchCheckoutLoading}
                     className="inline-flex w-full sm:w-auto items-center justify-center rounded-full border border-purple-400/40 text-purple-200 hover:bg-purple-500/10 px-6 py-2 font-semibold transition"
                   >
-                    Comprar edición física
+                    {isMerchCheckoutLoading ? 'Abriendo checkout...' : 'Comprar edición física'}
                   </button>
                   <Button
                     onClick={() => handleNovelAppCTA(entry.app)}
@@ -6892,9 +6954,10 @@ const rendernotaAutoral = () => {
               <button
                 type="button"
                 onClick={handleOpenNovelaReserve}
+                disabled={isMerchCheckoutLoading}
                 className="inline-flex w-full sm:w-auto items-center justify-center rounded-full border border-purple-400/40 text-purple-200 hover:bg-purple-500/10 px-6 py-2 font-semibold transition"
               >
-                Comprar edición
+                {isMerchCheckoutLoading ? 'Abriendo checkout...' : 'Comprar edición'}
               </button>
             );
           case 'qr-scan':
@@ -7264,7 +7327,7 @@ const rendernotaAutoral = () => {
         {activeDefinition ? (
           <motion.div
             key="showcase-overlay"
-            className="fixed inset-0 z-[140] flex items-center justify-center px-5 py-10"
+            className="fixed inset-0 z-[140] flex items-center justify-center overflow-y-auto overflow-x-hidden overscroll-none"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
@@ -7329,7 +7392,7 @@ const rendernotaAutoral = () => {
             />
             <motion.div
               ref={showcaseRef}
-              className="relative z-10 w-full max-w-6xl max-h-[88vh] overflow-y-auto rounded-[28px] border border-white/15 bg-slate-950/55 backdrop-blur-2xl p-6 md:p-10 shadow-[0_35px_120px_rgba(0,0,0,0.65)]"
+              className="relative z-10 my-10 w-[calc(100vw-2.5rem)] max-w-6xl max-h-[88vh] overflow-y-auto rounded-[28px] border border-white/15 bg-slate-950/55 backdrop-blur-2xl p-6 md:p-10 shadow-[0_35px_120px_rgba(0,0,0,0.65)]"
               initial={{ scale: 0.96, opacity: 0, y: 18 }}
               animate={{ scale: 1, opacity: 1, y: 0 }}
               exit={{ scale: 0.96, opacity: 0, y: 18 }}
@@ -7386,7 +7449,7 @@ const rendernotaAutoral = () => {
         {isOraculoOpen ? (
           <motion.div
             key="oraculo-iframe"
-            className="fixed inset-0 z-[170] flex items-center justify-center px-4 py-6"
+            className="fixed inset-0 z-[170] flex items-center justify-center overflow-y-auto overflow-x-hidden overscroll-none"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
@@ -7402,7 +7465,7 @@ const rendernotaAutoral = () => {
               role="dialog"
               aria-modal="true"
               aria-label="Oráculo interactivo"
-              className="relative z-10 w-full max-w-5xl overflow-hidden rounded-3xl border border-white/10 bg-slate-950/90 shadow-[0_35px_120px_rgba(0,0,0,0.65)]"
+              className="relative z-10 my-6 w-[calc(100vw-2rem)] max-w-5xl overflow-hidden rounded-3xl border border-white/10 bg-slate-950/90 shadow-[0_35px_120px_rgba(0,0,0,0.65)]"
               initial={{ scale: 0.96, opacity: 0, y: 18 }}
               animate={{ scale: 1, opacity: 1, y: 0 }}
               exit={{ scale: 0.96, opacity: 0, y: 18 }}
@@ -7463,7 +7526,7 @@ const rendernotaAutoral = () => {
         {isCauseSiteOpen ? (
           <motion.div
             key="cause-site-iframe"
-            className="fixed inset-0 z-[175] flex items-center justify-center px-4 py-6"
+            className="fixed inset-0 z-[175] flex items-center justify-center overflow-y-auto overflow-x-hidden overscroll-none"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
@@ -7479,7 +7542,7 @@ const rendernotaAutoral = () => {
               role="dialog"
               aria-modal="true"
               aria-label="Isabel Ayuda para la Vida"
-              className="relative z-10 w-full max-w-5xl overflow-hidden rounded-3xl border border-white/10 bg-slate-950/90 shadow-[0_35px_120px_rgba(0,0,0,0.65)]"
+              className="relative z-10 my-6 w-[calc(100vw-2rem)] max-w-5xl overflow-hidden rounded-3xl border border-white/10 bg-slate-950/90 shadow-[0_35px_120px_rgba(0,0,0,0.65)]"
               initial={{ scale: 0.96, opacity: 0, y: 18 }}
               animate={{ scale: 1, opacity: 1, y: 0 }}
               exit={{ scale: 0.96, opacity: 0, y: 18 }}
@@ -7534,8 +7597,8 @@ const rendernotaAutoral = () => {
 
   const quironFullOverlay = typeof document !== 'undefined' && isQuironFullVisible && activeDefinition?.quiron?.fullVideo
     ? createPortal(
-      <div className="fixed inset-0 z-[245] bg-black/85 backdrop-blur-sm p-4 sm:p-6 overflow-auto">
-        <div className="max-w-5xl mx-auto space-y-4">
+      <div className="fixed inset-0 z-[245] bg-black/85 backdrop-blur-sm overflow-auto overscroll-none">
+        <div className="max-w-5xl mx-auto space-y-4 px-4 py-4 sm:px-6 sm:py-6">
           <div className="flex items-center justify-between gap-3">
             <p className="text-xs uppercase tracking-[0.35em] text-amber-200">
               Cortometraje completo desbloqueado
@@ -7611,9 +7674,9 @@ const rendernotaAutoral = () => {
 
   const quironAftercareOverlay = typeof document !== 'undefined' && isQuironAftercareVisible
     ? createPortal(
-      <div className="fixed inset-0 z-[246] flex items-center justify-center px-4 py-8">
+      <div className="fixed inset-0 z-[246] flex items-center justify-center overflow-y-auto overflow-x-hidden overscroll-none">
         <div className="absolute inset-0 bg-black/92 backdrop-blur-md" onClick={handleCloseQuironAftercare} />
-        <div className="relative z-10 w-full max-w-2xl rounded-3xl border border-white/10 bg-slate-950/90 p-8 text-center shadow-[0_35px_120px_rgba(0,0,0,0.7)]">
+        <div className="relative z-10 my-8 w-[calc(100vw-2rem)] max-w-2xl rounded-3xl border border-white/10 bg-slate-950/90 p-8 text-center shadow-[0_35px_120px_rgba(0,0,0,0.7)]">
           <p className="text-xs uppercase tracking-[0.35em] text-slate-400/80">Después de Quirón</p>
           <h4 className="mt-3 font-display text-3xl text-slate-100">
             ¿Quisieras compartir esta experiencia con alguien querido?
@@ -7652,9 +7715,9 @@ const rendernotaAutoral = () => {
 
   const quironPrecareOverlay = typeof document !== 'undefined' && isQuironPrecareVisible
     ? createPortal(
-      <div className="fixed inset-0 z-[246] flex items-center justify-center px-4 py-8">
+      <div className="fixed inset-0 z-[246] flex items-center justify-center overflow-y-auto overflow-x-hidden overscroll-none">
         <div className="absolute inset-0 bg-black/92 backdrop-blur-md" onClick={handleCloseQuironPrecare} />
-        <div className="relative z-10 w-full max-w-2xl rounded-3xl border border-white/10 bg-slate-950/90 p-8 text-center shadow-[0_35px_120px_rgba(0,0,0,0.7)]">
+        <div className="relative z-10 my-8 w-[calc(100vw-2rem)] max-w-2xl rounded-3xl border border-white/10 bg-slate-950/90 p-8 text-center shadow-[0_35px_120px_rgba(0,0,0,0.7)]">
           <p className="text-xs uppercase tracking-[0.35em] text-slate-400/80">Antes de continuar</p>
           <p className="mt-3 text-sm text-slate-300/85 leading-relaxed">
             Una vez desbloqueado, el cortometraje se habilita una vez; con una huella activada puedes volver cuando quieras. ¿Quieres continuar?
@@ -7682,9 +7745,9 @@ const rendernotaAutoral = () => {
 
   const tokenPrecareOverlay = typeof document !== 'undefined' && tokenPrecareContext
     ? createPortal(
-      <div className="fixed inset-0 z-[246] flex items-center justify-center px-4 py-8">
+      <div className="fixed inset-0 z-[246] flex items-center justify-center overflow-y-auto overflow-x-hidden overscroll-none">
         <div className="absolute inset-0 bg-black/92 backdrop-blur-md" onClick={handleCloseTokenPrecare} />
-        <div className="relative z-10 w-full max-w-2xl rounded-3xl border border-white/10 bg-slate-950/90 p-8 text-center shadow-[0_35px_120px_rgba(0,0,0,0.7)]">
+        <div className="relative z-10 my-8 w-[calc(100vw-2rem)] max-w-2xl rounded-3xl border border-white/10 bg-slate-950/90 p-8 text-center shadow-[0_35px_120px_rgba(0,0,0,0.7)]">
           <p className="text-xs uppercase tracking-[0.35em] text-slate-400/80">¿Quieres continuar?</p>
           <h4 className="mt-3 font-display text-3xl text-slate-100">
             {tokenPrecareContext.mode === 'guardrail'
@@ -7744,9 +7807,9 @@ const rendernotaAutoral = () => {
 
   const movementActionOverlay = typeof document !== 'undefined' && movementPendingAction
     ? createPortal(
-      <div className="fixed inset-0 z-[246] flex items-center justify-center px-4 py-8">
+      <div className="fixed inset-0 z-[246] flex items-center justify-center overflow-y-auto overflow-x-hidden overscroll-none">
         <div className="absolute inset-0 bg-black/92 backdrop-blur-md" onClick={handleCloseMovementActionOverlay} />
-        <div className="relative z-10 w-full max-w-2xl rounded-3xl border border-white/10 bg-slate-950/90 p-8 text-center shadow-[0_35px_120px_rgba(0,0,0,0.7)]">
+        <div className="relative z-10 my-8 w-[calc(100vw-2rem)] max-w-2xl rounded-3xl border border-white/10 bg-slate-950/90 p-8 text-center shadow-[0_35px_120px_rgba(0,0,0,0.7)]">
           <p className="text-xs uppercase tracking-[0.35em] text-slate-400/80">Ruta en construcción</p>
           <h4 className="mt-3 font-display text-3xl text-slate-100">
             Gracias por tu entusiasmo
@@ -7812,9 +7875,9 @@ const rendernotaAutoral = () => {
 
   const imagePreviewOverlay = typeof document !== 'undefined' && imagePreview
     ? createPortal(
-      <div className="fixed inset-0 z-[240] flex items-center justify-center px-4 py-10">
+      <div className="fixed inset-0 z-[240] flex items-center justify-center overflow-y-auto overflow-x-hidden overscroll-none">
         <div className="absolute inset-0 bg-black/80 backdrop-blur-sm" onClick={handleCloseImagePreview} />
-        <div className="relative z-10 w-full max-w-3xl">
+        <div className="relative z-10 my-10 w-[calc(100vw-2rem)] max-w-3xl">
           <div className="flex justify-end mb-4">
             <button
               type="button"
@@ -7856,9 +7919,9 @@ const rendernotaAutoral = () => {
 
   const pdfPreviewOverlay = typeof document !== 'undefined' && pdfPreview
     ? createPortal(
-      <div className="fixed inset-0 z-[230] flex items-center justify-center px-4 py-10">
+      <div className="fixed inset-0 z-[230] flex items-center justify-center overflow-y-auto overflow-x-hidden overscroll-none">
         <div className="absolute inset-0 bg-black/80 backdrop-blur-sm" onClick={handleClosePdfPreview} />
-        <div className="relative z-10 w-full max-w-5xl space-y-4">
+        <div className="relative z-10 my-10 w-[calc(100vw-2rem)] max-w-5xl space-y-4">
           <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
             <div>
               <p className="text-xs uppercase tracking-[0.4em] text-slate-400/70">Lectura en progreso</p>
@@ -7917,7 +7980,11 @@ const rendernotaAutoral = () => {
     <>
       <section
         id="transmedia"
-        className="relative pb-24 pt-[clamp(3.5rem,8vh,6rem)] min-h-[1800px] md:min-h-[1600px] lg:min-h-[1500px]"
+        className={`relative pb-24 ${
+          allianceOnlyMode
+            ? 'pt-10 min-h-[900px] md:pt-14 md:min-h-[980px]'
+            : 'pt-[clamp(3.5rem,8vh,6rem)] min-h-[1800px] md:min-h-[1600px] lg:min-h-[1500px]'
+        }`}
       >
         {import.meta.env?.DEV ? (
           <div className="fixed bottom-4 right-4 z-50">
@@ -7930,34 +7997,40 @@ const rendernotaAutoral = () => {
             </button>
           </div>
         ) : null}
-        <div className="section-divider mb-[clamp(2.5rem,6vh,5.25rem)]"></div>
+        {!allianceOnlyMode ? (
+          <div className="section-divider mb-[clamp(2.5rem,6vh,5.25rem)]"></div>
+        ) : null}
 
         <div className="container mx-auto px-6">
-          <motion.div
-            initial={{ opacity: 0, y: 50 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, ease: 'easeOut' }}
-            viewport={{ once: true }}
-            className="text-center mb-[clamp(2.5rem,5.5vh,4rem)] space-y-[clamp(1.25rem,2.2vh,1.75rem)] min-h-[clamp(210px,27vh,260px)]"
-          >
-            <p className="text-xs uppercase tracking-[0.4em] text-slate-400/70">Narrativa Transmedia</p>
-            <h2 className="font-display text-4xl md:text-5xl font-medium text-gradient italic">
-              Las formas de la Obra
-            </h2>
-            <p className="text-lg text-slate-300/80 max-w-3xl mx-auto leading-relaxed font-light">
-  La obra no terminó en el teatro.<br />
-  Desde ahí se abrió en <strong>nueve formas creativas</strong>.<br />
+          {!allianceOnlyMode ? (
+            <motion.div
+              initial={{ opacity: 0, y: 50 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8, ease: 'easeOut' }}
+              viewport={{ once: true }}
+              className="text-center mb-[clamp(2.5rem,5.5vh,4rem)] space-y-[clamp(1.25rem,2.2vh,1.75rem)] min-h-[clamp(210px,27vh,260px)]"
+            >
+              <p className="text-xs uppercase tracking-[0.4em] text-slate-400/70">Narrativa Transmedia</p>
+              <h2 className="font-display text-4xl md:text-5xl font-medium text-gradient italic">
+                Las formas de la Obra
+              </h2>
+              <p className="text-lg text-slate-300/80 max-w-3xl mx-auto leading-relaxed font-light">
+    La obra no terminó en el teatro.<br />
+    Desde ahí se abrió en <strong>nueve formas creativas</strong>.<br />
 
-    Cada una con su propio lenguaje y forma de participación.<br /><br />
+      Cada una con su propio lenguaje y forma de participación.<br /><br />
 
-  No repiten la historia: la continúan.<br /><br />
+    No repiten la historia: la continúan.<br /><br />
 
 
-  Te confiamos <span className="font-semibold text-purple-200">1350 GATokens.</span> <br /> Úsalos para conocer, intervenir y expandir el pulso del universo.  <br />Aquí tienes lo suficiente para comenzar.
-</p>
-          </motion.div>
+    Te confiamos <span className="font-semibold text-purple-200">1350 GATokens.</span> <br /> Úsalos para conocer, intervenir y expandir el pulso del universo.  <br />Aquí tienes lo suficiente para comenzar.
+  </p>
+            </motion.div>
+          ) : null}
 
-          <div className="lg:hidden space-y-6">
+          {!allianceOnlyMode ? (
+            <>
+              <div className="lg:hidden space-y-6">
             {(() => {
               const format = formats[mobileShowcaseIndex % formats.length];
               const currentIndex = mobileShowcaseIndex % formats.length;
@@ -8164,8 +8237,8 @@ const rendernotaAutoral = () => {
                 </>
               );
             })()}
-          </div>
-          <div className="hidden lg:block">
+              </div>
+              <div className="hidden lg:block">
             {isDesktopFocusLockActive ? (
               <div className="relative mx-auto mb-5 w-full max-w-[31rem] rounded-2xl border border-fuchsia-300/40 bg-fuchsia-500/10 px-5 py-4 text-center shadow-[0_10px_30px_rgba(120,39,173,0.25)]">
                 <button
@@ -8359,23 +8432,26 @@ const rendernotaAutoral = () => {
                 →
               </button>
             </div>
-          </div>
-          {showcaseOverlay}
-          {showcaseDipToBlackOverlay}
-          {oraculoOverlay}
-          {causeSiteOverlay}
-          {gatBalanceToastOverlay}
-          {quironFullOverlay}
-          {quironPrecareOverlay}
-          {quironAftercareOverlay}
-          {tokenPrecareOverlay}
-          {movementActionOverlay}
-          {imagePreviewOverlay}
-          {pdfPreviewOverlay}
+              </div>
+              {showcaseOverlay}
+              {showcaseDipToBlackOverlay}
+              {oraculoOverlay}
+              {causeSiteOverlay}
+              {gatBalanceToastOverlay}
+              {quironFullOverlay}
+              {quironPrecareOverlay}
+              {quironAftercareOverlay}
+              {tokenPrecareOverlay}
+              {movementActionOverlay}
+              {imagePreviewOverlay}
+              {pdfPreviewOverlay}
 
-          {renderExplorerBadge()}
+              {renderExplorerBadge()}
+            </>
+          ) : null}
+          {allianceOnlyMode ? imagePreviewOverlay : null}
 
-          <div className="mt-16 grid items-start lg:grid-cols-[3fr_2fr] gap-10">
+          <div className={`${allianceOnlyMode ? 'mt-2' : 'mt-16'} grid items-start lg:grid-cols-[3fr_2fr] gap-10`}>
             <SupportBlockContainer
               id="apoya"
               ref={supportSectionRef}
@@ -8562,17 +8638,6 @@ const rendernotaAutoral = () => {
           />
         </Suspense>
       ) : null}
-      {hasLoadedReserveModal ? (
-        <Suspense fallback={null}>
-          <ReserveModal
-            open={isNovelaReserveOpen}
-            onClose={() => setIsNovelaReserveOpen(false)}
-            mode="offseason"
-            initialPackages={reserveInitialPackages}
-            overlayZClass="z-[250]"
-          />
-        </Suspense>
-      ) : null}
       {showBadgeLoginOverlay && hasLoadedBadgeLoginOverlay ? (
         <Suspense fallback={null}>
           <LoginOverlay onClose={handleCloseBadgeLogin} />
@@ -8580,9 +8645,9 @@ const rendernotaAutoral = () => {
       ) : null}
 
       {MINIVERSO_EDITORIAL_INTERCEPTION_ENABLED && isMiniversoEditorialModalOpen ? (
-        <div className="fixed inset-0 z-[190] flex items-center justify-center px-4 py-10">
+        <div className="fixed inset-0 z-[190] flex items-center justify-center overflow-y-auto overflow-x-hidden overscroll-none">
           <div className="absolute inset-0 bg-black/80 backdrop-blur-sm" onClick={handleCloseMiniversoEditorialModal} />
-          <div className="relative z-10 w-full max-w-xl">
+          <div className="relative z-10 my-10 w-[calc(100vw-2rem)] max-w-xl">
             <div className="glass-effect rounded-3xl border border-white/10 bg-slate-950/95 shadow-2xl p-8 md:p-10 text-center space-y-6">
               <h3 className="font-display text-3xl md:text-4xl text-slate-50">
                 “Este espacio se activará después de la función.”

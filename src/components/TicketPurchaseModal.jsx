@@ -38,7 +38,7 @@ const TicketPurchaseModal = ({ open, onClose }) => {
     <AnimatePresence>
       {open ? (
         <motion.div
-          className="fixed inset-0 z-50 flex items-center justify-center px-3 sm:px-6"
+          className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto overflow-x-hidden overscroll-none"
           initial="hidden"
           animate="visible"
           exit="hidden"
@@ -56,7 +56,7 @@ const TicketPurchaseModal = ({ open, onClose }) => {
             aria-labelledby="ticket-modal-title"
             variants={modalVariants}
             className="
-              relative z-10 w-full max-w-lg               /* MOBILE: ideal width */
+              relative z-10 w-[calc(100vw-1.5rem)] sm:w-[calc(100vw-3rem)] max-w-lg
               rounded-3xl border border-white/10 
               bg-slate-950/95 p-5 sm:p-8 
               shadow-[0_20px_70px_rgba(0,0,0,0.5)]
