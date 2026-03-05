@@ -772,7 +772,7 @@ const MiniverseModal = ({
         thumbGradient: 'from-violet-300/80 via-fuchsia-400/70 to-cyan-400/60',
         title: 'El arte de no romperse',
         titleShort: 'Prólogo',
-        ctaLabel: 'Ver video completo',
+        ctaLabel: 'Ver video completo (5 min)',
         description: 'Fragmentos del universo #GatoEncerrado',
         videoUrl: prologueVideoUrl,
         fullscreenVideoUrlDesktop: null,
