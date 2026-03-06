@@ -1,6 +1,5 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { Link } from 'react-router-dom';
-import { ArrowLeft, BookOpen, Brain, Coins, Hand, Heart, Sparkles } from 'lucide-react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { BookOpen, Brain, Coins, Hand, Heart, Sparkles } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { toast } from '@/components/ui/use-toast';
@@ -8,9 +7,13 @@ import { useAuth } from '@/contexts/SupabaseAuthContext';
 import LoginOverlay from '@/components/ContributionModal/LoginOverlay';
 import ContributionModal from '@/components/ContributionModal';
 import PortalAuthButton from '@/components/PortalAuthButton';
+import PortalHeaderActions from '@/components/portal/PortalHeaderActions';
 import IAInsightCard from '@/components/IAInsightCard';
+import RelatedReadingTooltipButton from '@/components/portal/RelatedReadingTooltipButton';
 import { fetchApprovedContributions } from '@/services/contributionService';
 import { recordShowcaseLike } from '@/services/showcaseLikeService';
+import { supabase } from '@/lib/supabaseClient';
+import { sanitizeExternalHttpUrl } from '@/lib/urlSafety';
 
 const ORACULO_TITLE = 'Oraculo';
 const ORACULO_INTRO =
@@ -85,6 +88,14 @@ const ORACULO_FALLBACK_COMMENTS = [
     name: 'Comunidad #GatoEncerrado',
   },
 ];
+const ORACULO_BLOG_KEYS = [
+  'oraculo',
+  'oracle',
+  'miniverso-oraculo',
+  'miniverso_oraculo',
+  'miniversooraculo',
+];
+const ORACULO_BLOG_KEY_SET = new Set(ORACULO_BLOG_KEYS.map((key) => key.trim().toLowerCase()));
 
 const MiniVersoCard = ({ title, verse, palette }) => {
   const [isActive, setIsActive] = useState(false);
@@ -170,8 +181,11 @@ const PortalOraculo = () => {
   const [communityComments, setCommunityComments] = useState([]);
   const [communityLoading, setCommunityLoading] = useState(false);
   const [communityError, setCommunityError] = useState('');
+  const [latestOraculoReading, setLatestOraculoReading] = useState(null);
+  const [isReadingTooltipOpen, setIsReadingTooltipOpen] = useState(false);
   const [reactionStatus, setReactionStatus] = useState('idle');
   const [isContributionOpen, setIsContributionOpen] = useState(false);
+  const readingTooltipRef = useRef(null);
 
   const oraculoUrl = useMemo(() => {
     const raw = import.meta.env.VITE_BIENVENIDA_URL ?? import.meta.env.VITE_ORACULO_URL ?? '';
@@ -232,6 +246,70 @@ const PortalOraculo = () => {
     };
   }, []);
 
+  useEffect(() => {
+    let cancelled = false;
+    const loadLatestOraculoReading = async () => {
+      const { data, error } = await supabase
+        .from('blog_posts')
+        .select('*')
+        .eq('is_published', true)
+        .not('slug', 'is', null)
+        .not('miniverso', 'is', null)
+        .order('published_at', { ascending: false })
+        .limit(60);
+
+      if (cancelled) return;
+      if (error) {
+        console.warn('[PortalOraculo] No se pudo detectar lectura relacionada:', error);
+        setLatestOraculoReading(null);
+        return;
+      }
+
+      const firstMatch =
+        Array.isArray(data) && data.length
+          ? data.find((post) => {
+              const key = String(post?.miniverso || '').trim().toLowerCase();
+              return ORACULO_BLOG_KEY_SET.has(key);
+            }) ?? null
+          : null;
+      setLatestOraculoReading(firstMatch?.slug ? firstMatch : null);
+    };
+
+    loadLatestOraculoReading();
+    return () => {
+      cancelled = true;
+    };
+  }, [user?.id]);
+
+  useEffect(() => {
+    if (latestOraculoReading?.slug) return;
+    setIsReadingTooltipOpen(false);
+  }, [latestOraculoReading?.slug]);
+
+  useEffect(() => {
+    if (!isReadingTooltipOpen) return undefined;
+
+    const handlePointerDown = (event) => {
+      if (!readingTooltipRef.current) return;
+      if (!readingTooltipRef.current.contains(event.target)) {
+        setIsReadingTooltipOpen(false);
+      }
+    };
+
+    const handleEscape = (event) => {
+      if (event.key === 'Escape') {
+        setIsReadingTooltipOpen(false);
+      }
+    };
+
+    document.addEventListener('pointerdown', handlePointerDown);
+    document.addEventListener('keydown', handleEscape);
+    return () => {
+      document.removeEventListener('pointerdown', handlePointerDown);
+      document.removeEventListener('keydown', handleEscape);
+    };
+  }, [isReadingTooltipOpen]);
+
   const handleOpenOraculo = useCallback(() => {
     if (!requireAuth()) return;
     if (!oraculoUrl) {
@@ -263,6 +341,13 @@ const PortalOraculo = () => {
 
   const hasCommunityComments = useMemo(() => communityComments.length > 0, [communityComments]);
   const visibleComments = hasCommunityComments ? communityComments : ORACULO_FALLBACK_COMMENTS;
+  const oraculoReadingAuthorLabel = (latestOraculoReading?.author || '').trim() || 'autor invitado';
+  const oraculoReadingThumbnailUrl =
+    sanitizeExternalHttpUrl(latestOraculoReading?.featured_image_url) ||
+    sanitizeExternalHttpUrl(latestOraculoReading?.cover_image) ||
+    sanitizeExternalHttpUrl(latestOraculoReading?.image_url) ||
+    sanitizeExternalHttpUrl(latestOraculoReading?.author_avatar_url) ||
+    null;
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-950 via-black to-slate-900 text-slate-100">
@@ -276,13 +361,7 @@ const PortalOraculo = () => {
               </div>
             ) : null}
           </div>
-          <Link
-            to="/"
-            className="inline-flex items-center gap-2 text-xs uppercase tracking-[0.3em] text-slate-400 hover:text-white transition"
-          >
-            <ArrowLeft size={12} />
-            Volver al sitio
-          </Link>
+          <PortalHeaderActions />
         </div>
 
         <div className="mt-6 space-y-6">
@@ -391,9 +470,13 @@ const PortalOraculo = () => {
           <div className="rounded-3xl border border-white/10 bg-black/30 p-6 space-y-5">
             <div className="mb-1 flex items-start justify-between gap-3">
               <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Voces de la comunidad</p>
-              <span className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-violet-200/40 bg-violet-300/10 text-violet-100">
-                <BookOpen size={16} />
-              </span>
+              <RelatedReadingTooltipButton
+                slug={latestOraculoReading?.slug}
+                authorLabel={oraculoReadingAuthorLabel}
+                thumbnailUrl={oraculoReadingThumbnailUrl}
+                ariaLabel="Mostrar lectura relacionada de Oráculo"
+                tone="violet"
+              />
             </div>
             <div className="max-h-[240px] form-surface relative overflow-y-auto px-3 py-3 pr-2">
               {communityLoading ? (

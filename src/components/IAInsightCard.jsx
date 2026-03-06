@@ -233,7 +233,7 @@ const IAInsightCard = ({
                   : 'Migrar mis GATokens'}
             </button>
             {status === 'auth' ? (
-              <p className="mt-2 text-xs text-amber-200">Necesitas iniciar sesión para sincronizar tu saldo.</p>
+              <p className="mt-2 text-xs text-amber-200">Necesitas iniciar sesión para sincronizar tus energías.</p>
             ) : null}
           </div>
 

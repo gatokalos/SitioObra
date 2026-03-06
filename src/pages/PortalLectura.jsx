@@ -1,11 +1,11 @@
 import React, { useCallback, useState } from 'react';
-import { Link } from 'react-router-dom';
-import { ArrowLeft, Camera, PenLine, Sparkles } from 'lucide-react';
+import { Camera, PenLine, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import AutoficcionPreviewOverlay from '@/components/novela/AutoficcionPreviewOverlay';
 import { useAuth } from '@/contexts/SupabaseAuthContext';
 import LoginOverlay from '@/components/ContributionModal/LoginOverlay';
 import PortalAuthButton from '@/components/PortalAuthButton';
+import PortalHeaderActions from '@/components/portal/PortalHeaderActions';
 
 const PortalLectura = () => {
   const { user } = useAuth();
@@ -44,13 +44,7 @@ const PortalLectura = () => {
               </div>
             ) : null}
           </div>
-          <Link
-            to="/"
-            className="inline-flex items-center gap-2 text-xs uppercase tracking-[0.3em] text-slate-400 hover:text-white transition"
-          >
-            <ArrowLeft size={12} />
-            Volver al sitio
-          </Link>
+          <PortalHeaderActions />
         </div>
 
       <div className="mt-6 rounded-3xl border border-white/10 bg-black/40 p-6 md:p-10 shadow-[0_35px_120px_rgba(0,0,0,0.65)] space-y-8">

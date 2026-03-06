@@ -1,6 +1,5 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { Link } from 'react-router-dom';
-import { ArrowLeft, BookOpen, Hand, Heart, PenLine } from 'lucide-react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { BookOpen, Hand, Heart, PenLine } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { toast } from '@/components/ui/use-toast';
@@ -8,12 +7,16 @@ import { useAuth } from '@/contexts/SupabaseAuthContext';
 import LoginOverlay from '@/components/ContributionModal/LoginOverlay';
 import ContributionModal from '@/components/ContributionModal';
 import PortalAuthButton from '@/components/PortalAuthButton';
+import PortalHeaderActions from '@/components/portal/PortalHeaderActions';
 import IAInsightCard from '@/components/IAInsightCard';
 import CollaboratorsPanel from '@/components/portal/CollaboratorsPanel';
+import RelatedReadingTooltipButton from '@/components/portal/RelatedReadingTooltipButton';
 import AutoficcionPreviewOverlay from '@/components/novela/AutoficcionPreviewOverlay';
 import { fetchApprovedContributions } from '@/services/contributionService';
 import { recordShowcaseLike } from '@/services/showcaseLikeService';
 import { startDirectMerchCheckout } from '@/lib/merchCheckout';
+import { supabase } from '@/lib/supabaseClient';
+import { sanitizeExternalHttpUrl } from '@/lib/urlSafety';
 
 const LITERATURA_INTRO =
   'En este miniverso literario se entiende la escritura como una forma de expansion. No es un complemento de la obra escenica o de la novela, sino un espacio propio donde fragmentos, voces, poemas y apuntes dialogan entre si y amplian el universo de Gato Encerrado.';
@@ -71,6 +74,14 @@ const LITERATURA_QUOTES = [
     author: 'Club de Lectura Frontera',
   },
 ];
+const LITERATURA_BLOG_KEYS = [
+  'miniversonovela',
+  'novela',
+  'literatura',
+  'miniverso_novela',
+  'miniverso-novela',
+];
+const LITERATURA_BLOG_KEY_SET = new Set(LITERATURA_BLOG_KEYS.map((key) => key.trim().toLowerCase()));
 
 const MiniVersoCard = ({ title, verse, palette }) => {
   const [isActive, setIsActive] = useState(false);
@@ -156,10 +167,13 @@ const PortalLiteratura = () => {
   const [communityComments, setCommunityComments] = useState([]);
   const [communityLoading, setCommunityLoading] = useState(false);
   const [communityError, setCommunityError] = useState('');
+  const [latestLiteraturaReading, setLatestLiteraturaReading] = useState(null);
+  const [isReadingTooltipOpen, setIsReadingTooltipOpen] = useState(false);
   const [reactionStatus, setReactionStatus] = useState('idle');
   const [isContributionOpen, setIsContributionOpen] = useState(false);
   const [showAutoficcionPreview, setShowAutoficcionPreview] = useState(false);
   const [isNovelaCheckoutLoading, setIsNovelaCheckoutLoading] = useState(false);
+  const readingTooltipRef = useRef(null);
 
   const handleOpenLogin = useCallback(() => {
     if (!isAuthenticated) {
@@ -213,6 +227,70 @@ const PortalLiteratura = () => {
       isCancelled = true;
     };
   }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+    const loadLatestLiteraturaReading = async () => {
+      const { data, error } = await supabase
+        .from('blog_posts')
+        .select('*')
+        .eq('is_published', true)
+        .not('slug', 'is', null)
+        .not('miniverso', 'is', null)
+        .order('published_at', { ascending: false })
+        .limit(60);
+
+      if (cancelled) return;
+      if (error) {
+        console.warn('[PortalLiteratura] No se pudo detectar lectura relacionada:', error);
+        setLatestLiteraturaReading(null);
+        return;
+      }
+
+      const firstMatch =
+        Array.isArray(data) && data.length
+          ? data.find((post) => {
+              const key = String(post?.miniverso || '').trim().toLowerCase();
+              return LITERATURA_BLOG_KEY_SET.has(key);
+            }) ?? null
+          : null;
+      setLatestLiteraturaReading(firstMatch?.slug ? firstMatch : null);
+    };
+
+    loadLatestLiteraturaReading();
+    return () => {
+      cancelled = true;
+    };
+  }, [user?.id]);
+
+  useEffect(() => {
+    if (latestLiteraturaReading?.slug) return;
+    setIsReadingTooltipOpen(false);
+  }, [latestLiteraturaReading?.slug]);
+
+  useEffect(() => {
+    if (!isReadingTooltipOpen) return undefined;
+
+    const handlePointerDown = (event) => {
+      if (!readingTooltipRef.current) return;
+      if (!readingTooltipRef.current.contains(event.target)) {
+        setIsReadingTooltipOpen(false);
+      }
+    };
+
+    const handleEscape = (event) => {
+      if (event.key === 'Escape') {
+        setIsReadingTooltipOpen(false);
+      }
+    };
+
+    document.addEventListener('pointerdown', handlePointerDown);
+    document.addEventListener('keydown', handleEscape);
+    return () => {
+      document.removeEventListener('pointerdown', handlePointerDown);
+      document.removeEventListener('keydown', handleEscape);
+    };
+  }, [isReadingTooltipOpen]);
 
   const handleOpenNovelaCheckout = useCallback(async () => {
     if (!requireAuth()) return;
@@ -270,6 +348,13 @@ const PortalLiteratura = () => {
     [],
   );
   const visibleComments = hasCommunityComments ? communityComments : fallbackComments;
+  const literaturaReadingAuthorLabel = (latestLiteraturaReading?.author || '').trim() || 'autor invitado';
+  const literaturaReadingThumbnailUrl =
+    sanitizeExternalHttpUrl(latestLiteraturaReading?.featured_image_url) ||
+    sanitizeExternalHttpUrl(latestLiteraturaReading?.cover_image) ||
+    sanitizeExternalHttpUrl(latestLiteraturaReading?.image_url) ||
+    sanitizeExternalHttpUrl(latestLiteraturaReading?.author_avatar_url) ||
+    null;
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-950 via-black to-slate-900 text-slate-100">
@@ -283,13 +368,7 @@ const PortalLiteratura = () => {
               </div>
             ) : null}
           </div>
-          <Link
-            to="/"
-            className="inline-flex items-center gap-2 text-xs uppercase tracking-[0.3em] text-slate-400 hover:text-white transition"
-          >
-            <ArrowLeft size={12} />
-            Volver al sitio
-          </Link>
+          <PortalHeaderActions />
         </div>
 
         <div className="mt-6 space-y-6">
@@ -376,9 +455,13 @@ const PortalLiteratura = () => {
               <div className="rounded-3xl border border-white/10 bg-black/30 p-6">
                 <div className="mb-1 flex items-start justify-between gap-3">
                   <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Voces de la comunidad</p>
-                  <span className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-cyan-200/40 bg-cyan-300/10 text-cyan-100">
-                    <BookOpen size={16} />
-                  </span>
+                  <RelatedReadingTooltipButton
+                    slug={latestLiteraturaReading?.slug}
+                    authorLabel={literaturaReadingAuthorLabel}
+                    thumbnailUrl={literaturaReadingThumbnailUrl}
+                    ariaLabel="Mostrar lectura relacionada de Literatura"
+                    tone="cyan"
+                  />
                 </div>
                 <div className="max-h-[260px] form-surface relative overflow-y-auto px-3 py-3 pr-2">
                   {communityLoading ? (

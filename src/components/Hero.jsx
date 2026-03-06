@@ -1,4 +1,4 @@
-import React, { Suspense, useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
+import React, { Suspense, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { BookOpen, CoffeeIcon, DramaIcon, TicketIcon, HeartHandshake, ShoppingBag, SparkleIcon, DoorOpen, Volume2, VolumeX } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -7,6 +7,11 @@ import isotipoGatoWebp from '@/assets/isotipo-gato.webp';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/SupabaseAuthContext';
 import { setBienvenidaReturnPath } from '@/lib/bienvenida';
+import {
+  getHeroAmbientAudio,
+  readHeroAudioEnabledPreference,
+  writeHeroAudioEnabledPreference,
+} from '@/lib/heroAmbientAudio';
 
 const HERO_LOGGED_IN_AUDIO_URL =
   'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Sonoridades/audio/A2_Melody_MSTR.m4a';
@@ -16,16 +21,27 @@ const HERO_LOGGED_IN_AUDIO_VOLUME = 0.35;
 const HERO_AUDIO_MIN_AUDIBLE_VOLUME = 0.015;
 const HERO_AUDIO_PLAY_RETRY_MS = 2500;
 const HERO_AUDIO_IDLE_RETRY_MS = 6000;
-const HERO_MOBILE_AUDIO_PREF_KEY = 'gatoencerrado:hero-audio-mobile-enabled';
+const HERO_TAB_QUERY_PARAM = 'heroTab';
 const MiniverseModal = React.lazy(() => import('@/components/MiniverseModal'));
+const HERO_LOGGED_IN_ACTIVE_GRADIENT_CLASS =
+  'bg-gradient-to-r from-[#1f2f63] via-[#6e30ab] to-[#d91f8b]';
+const HERO_LOGGED_IN_ACTIVE_GLOW =
+  'radial-gradient(circle at center, rgba(110,48,171,0.36) 0%, rgba(217,31,139,0.24) 52%, rgba(0,0,0,0) 100%)';
+const HERO_LOGGED_IN_SWEEP_GLOW =
+  'radial-gradient(circle,rgba(31,47,99,0.3)_0%,rgba(110,48,171,0.22)_44%,rgba(217,31,139,0.1)_74%,rgba(0,0,0,0)_100%)';
 
-const readMobileHeroAudioPreference = () => {
-  if (typeof window === 'undefined') return false;
-  try {
-    return window.localStorage?.getItem(HERO_MOBILE_AUDIO_PREF_KEY) === 'true';
-  } catch {
-    return false;
+const resolveHeroInlineTabFromQuery = (search = '') => {
+  if (!search) return 'escaparate';
+  const params = new URLSearchParams(search);
+  const rawTab = (params.get(HERO_TAB_QUERY_PARAM) || '').trim().toLowerCase();
+
+  if (rawTab === 'experiences' || rawTab === 'habitar' || rawTab === 'habita') {
+    return 'experiences';
   }
+  if (rawTab === 'waitlist' || rawTab === 'impulsar' || rawTab === 'activar') {
+    return 'waitlist';
+  }
+  return 'escaparate';
 };
 
 const Hero = () => {
@@ -40,7 +56,6 @@ const Hero = () => {
   const loggedInCtaRefs = useRef([]);
   const sweepDirectionRef = useRef(1);
   const heroSectionRef = useRef(null);
-  const heroAudioRef = useRef(null);
   const heroAudioMutedRef = useRef(false);
   const audioGestureUnlockRef = useRef(false);
   const lastHeroAudioPlayAttemptRef = useRef(0);
@@ -63,12 +78,12 @@ const Hero = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { user } = useAuth();
-  const primaryCtaLabel = user ? 'Dejar mi huella' : 'Toma un boleto';
-  const canShowHeroAudioToggle = Boolean(
-    user &&
-    isHeroInViewport &&
-    (isHeroAudioPlaying || isHeroAudioMuted || isMobileViewport)
+  const mobileInitialTabId = useMemo(
+    () => resolveHeroInlineTabFromQuery(location.search),
+    [location.search]
   );
+  const primaryCtaLabel = user ? 'Dejar mi huella' : 'Toma un boleto';
+  const canShowHeroAudioToggle = Boolean(user && isHeroInViewport);
   const heroAudioTogglePlacementClass = isMobileViewport
     ? 'right-[calc(env(safe-area-inset-right)+0.5rem)] top-[calc(env(safe-area-inset-top)+3.2rem)] h-9 w-9'
     : 'right-6 top-24 h-11 w-11';
@@ -199,9 +214,9 @@ const Hero = () => {
   const loggedInCtaClass = useCallback(
     () =>
       `
-      relative z-10 isolate overflow-hidden w-auto min-w-[10rem] px-7 py-3.5 rounded-full font-semibold
+      relative z-10 isolate overflow-hidden flex-1 min-w-0 h-14 px-7 rounded-full font-semibold
       flex items-center justify-center gap-2 border transition-all duration-300 ease-out
-      text-slate-100 bg-[#04081f]/80 border-violet-400/35
+      text-slate-100 bg-[#04081f]/80 border-violet-400/35 backdrop-blur-md
       shadow-[0_8px_26px_rgba(56,20,110,0.35),inset_0_1px_0_rgba(255,255,255,0.08)]
       hover:border-violet-300/55 hover:shadow-[0_10px_32px_rgba(86,34,168,0.38)]
     `,
@@ -274,60 +289,69 @@ const Hero = () => {
       setIsHeroAudioMuted(false);
       setIsHeroAudioReady(false);
       setIsHeroAudioPlaying(false);
+      const audio = getHeroAmbientAudio();
+      if (audio) {
+        audio.pause();
+        audio.currentTime = 0;
+      }
       return undefined;
     }
 
-    if (isMobileViewport) {
-      const isEnabledOnMobile = readMobileHeroAudioPreference();
-      const nextMuted = !isEnabledOnMobile;
-      heroAudioMutedRef.current = nextMuted;
-      setIsHeroAudioMuted(nextMuted);
-      setIsHeroAudioReady(false);
-      setIsHeroAudioPlaying(false);
-      return undefined;
+    const preferredEnabled = readHeroAudioEnabledPreference();
+    const nextMuted = preferredEnabled == null ? isMobileViewport : !preferredEnabled;
+    if (preferredEnabled == null) {
+      writeHeroAudioEnabledPreference(!nextMuted);
     }
-
-    heroAudioMutedRef.current = false;
-    setIsHeroAudioMuted(false);
+    heroAudioMutedRef.current = nextMuted;
+    setIsHeroAudioMuted(nextMuted);
     setIsHeroAudioReady(false);
     setIsHeroAudioPlaying(false);
+
+    const audio = getHeroAmbientAudio();
+    if (audio) {
+      audio.volume = nextMuted ? 0 : HERO_LOGGED_IN_AUDIO_VOLUME;
+      if (nextMuted && !audio.paused) {
+        audio.pause();
+      } else if (!nextMuted && audio.paused) {
+        void audio.play().catch(() => {});
+      }
+    }
     return undefined;
   }, [isMobileViewport, user]);
 
   const handleToggleHeroAudio = useCallback(() => {
+    const audio = getHeroAmbientAudio();
+    if (!audio) return;
+
+    // Si el autoplay fue bloqueado y está pausado sin estar muteado,
+    // el primer toque debe intentar reanudar en lugar de silenciar.
+    if (!heroAudioMutedRef.current && audio.paused) {
+      const targetVolume = getTargetVolumeByHeroPosition();
+      audio.volume = targetVolume;
+      if (targetVolume > HERO_AUDIO_MIN_AUDIBLE_VOLUME) {
+        void audio.play().catch(() => {});
+      }
+      return;
+    }
+
     const nextMuted = !heroAudioMutedRef.current;
     heroAudioMutedRef.current = nextMuted;
     setIsHeroAudioMuted(nextMuted);
-    const audio = heroAudioRef.current;
-    if (!audio) return;
+    writeHeroAudioEnabledPreference(!nextMuted);
     if (nextMuted) {
-      if (isMobileViewport && typeof window !== 'undefined') {
-        try {
-          window.localStorage?.setItem(HERO_MOBILE_AUDIO_PREF_KEY, 'false');
-        } catch {
-          // noop
-        }
-      }
       audio.pause();
       audio.volume = 0;
       return;
-    }
-    if (isMobileViewport && typeof window !== 'undefined') {
-      try {
-        window.localStorage?.setItem(HERO_MOBILE_AUDIO_PREF_KEY, 'true');
-      } catch {
-        // noop
-      }
     }
     const targetVolume = getTargetVolumeByHeroPosition();
     audio.volume = targetVolume;
     if (targetVolume > HERO_AUDIO_MIN_AUDIBLE_VOLUME && audio.paused) {
       void audio.play().catch(() => {});
     }
-  }, [getTargetVolumeByHeroPosition, isMobileViewport]);
+  }, [getTargetVolumeByHeroPosition]);
 
   useEffect(() => {
-    const audio = heroAudioRef.current;
+    const audio = getHeroAmbientAudio();
     if (!audio || !user) {
       setIsHeroAudioPlaying(false);
       if (audio) {
@@ -355,6 +379,7 @@ const Hero = () => {
     lastHeroAudioPlayAttemptRef.current = 0;
 
     const isShowcaseForegroundActive = () => {
+      if (isHeroInViewport) return false;
       const showcaseOpen =
         isShowcaseForeground ||
         (typeof document !== 'undefined' &&
@@ -498,6 +523,7 @@ const Hero = () => {
       const open = Boolean(event?.detail?.open);
       isShowcaseForeground = open;
       if (open) {
+        if (isHeroInViewport) return;
         shouldResumeAfterVisibility = !audio.paused && audio.volume > HERO_AUDIO_MIN_AUDIBLE_VOLUME;
         audio.pause();
         return;
@@ -519,6 +545,7 @@ const Hero = () => {
         }
       }
       if (hold) {
+        if (isHeroInViewport) return;
         shouldResumeAfterVisibility = !audio.paused && audio.volume > HERO_AUDIO_MIN_AUDIBLE_VOLUME;
         audio.pause();
         return;
@@ -529,16 +556,7 @@ const Hero = () => {
       }
     };
 
-    const supportsM4a = Boolean(audio.canPlayType('audio/mp4') || audio.canPlayType('audio/x-m4a'));
-    setIsHeroAudioReady(false);
-    audio.src = supportsM4a ? HERO_LOGGED_IN_AUDIO_URL : HERO_LOGGED_IN_AUDIO_FALLBACK_URL;
-    audio.load();
-    if (audio.readyState >= 2) {
-      setIsHeroAudioReady(true);
-    }
-
-    audio.loop = true;
-    audio.preload = 'metadata';
+    setIsHeroAudioReady(audio.readyState >= 2);
     audio.volume = heroAudioMutedRef.current ? 0 : HERO_LOGGED_IN_AUDIO_VOLUME;
     setIsHeroAudioPlaying(!audio.paused && !heroAudioMutedRef.current);
 
@@ -602,13 +620,8 @@ const Hero = () => {
       if (typeof document !== 'undefined') {
         delete document.documentElement.dataset.gatoHeroAmbientHold;
       }
-      setIsHeroAudioReady(false);
-      setIsHeroAudioPlaying(false);
-      audio.pause();
-      audio.currentTime = 0;
-      audio.volume = HERO_LOGGED_IN_AUDIO_VOLUME;
     };
-  }, [getTargetVolumeByHeroPosition, user]);
+  }, [getTargetVolumeByHeroPosition, isHeroInViewport, user]);
 
   return (
     <>
@@ -663,7 +676,7 @@ const Hero = () => {
                 <MiniverseModal
                   open
                   onClose={handleScrollToAbout}
-                  initialTabId="escaparate"
+                  initialTabId={mobileInitialTabId}
                   onSelectMiniverse={handleMobileInlineMiniverseSelect}
                   stayOpenOnSelect
                   displayMode="inline"
@@ -795,11 +808,12 @@ const Hero = () => {
               ) : (
                 <div
                   ref={loggedInCtaTrackRef}
-                  className="relative flex w-full max-w-2xl flex-col items-center justify-center gap-4 md:flex-row md:gap-3"
+                  className="relative flex w-full max-w-[52rem] items-center justify-center gap-3"
                 >
                   <motion.span
                     aria-hidden="true"
-                    className="pointer-events-none absolute z-0 h-14 w-44 md:h-16 md:w-56 -translate-x-1/2 -translate-y-1/2 rounded-full bg-[radial-gradient(circle,rgba(251,146,60,0.26)_0%,rgba(244,114,182,0.18)_44%,rgba(168,85,247,0.06)_74%,rgba(0,0,0,0)_100%)] blur-[14px]"
+                    className="pointer-events-none absolute z-0 h-14 w-44 md:h-16 md:w-56 -translate-x-1/2 -translate-y-1/2 rounded-full blur-[14px]"
+                    style={{ background: HERO_LOGGED_IN_SWEEP_GLOW }}
                     animate={{ left: loggedInSweepPoint.x, top: loggedInSweepPoint.y, opacity: [0.5, 0.72, 0.5] }}
                     transition={{
                       left: { type: 'spring', stiffness: 92, damping: 28, mass: 0.95 },
@@ -809,7 +823,7 @@ const Hero = () => {
                   />
                   <motion.span
                     aria-hidden="true"
-                    className="pointer-events-none absolute z-0 h-2.5 w-11 md:h-3 md:w-14 -translate-x-1/2 -translate-y-1/2 rounded-full bg-rose-300/40 blur-[8px]"
+                    className="pointer-events-none absolute z-0 h-2.5 w-11 md:h-3 md:w-14 -translate-x-1/2 -translate-y-1/2 rounded-full bg-fuchsia-300/35 blur-[8px]"
                     animate={{ left: loggedInSweepPoint.x, top: loggedInSweepPoint.y, opacity: [0.35, 0.6, 0.35] }}
                     transition={{
                       left: { type: 'spring', stiffness: 120, damping: 30, mass: 0.8 },
@@ -827,7 +841,7 @@ const Hero = () => {
                   >
                     <span
                       aria-hidden="true"
-                      className={`pointer-events-none absolute inset-0 rounded-full bg-gradient-to-r from-orange-400 via-rose-500 to-pink-500 transition-opacity duration-1000 ease-out ${
+                      className={`pointer-events-none absolute inset-0 rounded-full ${HERO_LOGGED_IN_ACTIVE_GRADIENT_CLASS} transition-opacity duration-1000 ease-out ${
                         activeLoggedInCtaIndex === 0 ? 'opacity-62' : 'opacity-0'
                       }`}
                     />
@@ -836,10 +850,7 @@ const Hero = () => {
                       className={`pointer-events-none absolute inset-0 rounded-full blur-[14px] transition-opacity duration-1000 ease-out ${
                         activeLoggedInCtaIndex === 0 ? 'opacity-36' : 'opacity-0'
                       }`}
-                      style={{
-                        background:
-                          'radial-gradient(circle at center, rgba(255,154,158,0.32) 0%, rgba(244,114,182,0.2) 48%, rgba(0,0,0,0) 100%)',
-                      }}
+                      style={{ background: HERO_LOGGED_IN_ACTIVE_GLOW }}
                     />
                     <span className={`relative z-10 inline-flex items-center gap-2 transition-transform duration-1000 ${activeLoggedInCtaIndex === 0 ? 'scale-[1.01]' : 'scale-100'}`}>
                       <SparkleIcon
@@ -859,7 +870,7 @@ const Hero = () => {
                   >
                     <span
                       aria-hidden="true"
-                      className={`pointer-events-none absolute inset-0 rounded-full bg-gradient-to-r from-orange-400 via-rose-500 to-pink-500 transition-opacity duration-1000 ease-out ${
+                      className={`pointer-events-none absolute inset-0 rounded-full ${HERO_LOGGED_IN_ACTIVE_GRADIENT_CLASS} transition-opacity duration-1000 ease-out ${
                         activeLoggedInCtaIndex === 1 ? 'opacity-62' : 'opacity-0'
                       }`}
                     />
@@ -868,10 +879,7 @@ const Hero = () => {
                       className={`pointer-events-none absolute inset-0 rounded-full blur-[14px] transition-opacity duration-1000 ease-out ${
                         activeLoggedInCtaIndex === 1 ? 'opacity-36' : 'opacity-0'
                       }`}
-                      style={{
-                        background:
-                          'radial-gradient(circle at center, rgba(255,154,158,0.32) 0%, rgba(244,114,182,0.2) 48%, rgba(0,0,0,0) 100%)',
-                      }}
+                      style={{ background: HERO_LOGGED_IN_ACTIVE_GLOW }}
                     />
                     <span className={`relative z-10 inline-flex items-center gap-2 transition-transform duration-1000 ${activeLoggedInCtaIndex === 1 ? 'scale-[1.01]' : 'scale-100'}`}>
                       <DoorOpen
@@ -891,7 +899,7 @@ const Hero = () => {
                   >
                     <span
                       aria-hidden="true"
-                      className={`pointer-events-none absolute inset-0 rounded-full bg-gradient-to-r from-orange-400 via-rose-500 to-pink-500 transition-opacity duration-1000 ease-out ${
+                      className={`pointer-events-none absolute inset-0 rounded-full ${HERO_LOGGED_IN_ACTIVE_GRADIENT_CLASS} transition-opacity duration-1000 ease-out ${
                         activeLoggedInCtaIndex === 2 ? 'opacity-62' : 'opacity-0'
                       }`}
                     />
@@ -900,10 +908,7 @@ const Hero = () => {
                       className={`pointer-events-none absolute inset-0 rounded-full blur-[14px] transition-opacity duration-1000 ease-out ${
                         activeLoggedInCtaIndex === 2 ? 'opacity-36' : 'opacity-0'
                       }`}
-                      style={{
-                        background:
-                          'radial-gradient(circle at center, rgba(255,154,158,0.32) 0%, rgba(244,114,182,0.2) 48%, rgba(0,0,0,0) 100%)',
-                      }}
+                      style={{ background: HERO_LOGGED_IN_ACTIVE_GLOW }}
                     />
                     <span className={`relative z-10 inline-flex items-center gap-2 transition-transform duration-1000 ${activeLoggedInCtaIndex === 2 ? 'scale-[1.01]' : 'scale-100'}`}>
                       <HeartHandshake
@@ -975,17 +980,6 @@ const Hero = () => {
           </div>
         )}
       </section>
-      {user ? (
-        <audio
-          ref={heroAudioRef}
-          data-ambient-role="hero"
-          preload="metadata"
-          playsInline
-          aria-hidden="true"
-          className="hidden"
-        />
-      ) : null}
-
       <TicketPurchaseModal open={isTicketModalOpen} onClose={handleCloseTicket} />
     </>
   );

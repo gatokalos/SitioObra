@@ -1,6 +1,5 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { Link } from 'react-router-dom';
-import { ArrowLeft, BookOpen, Hand, Heart, MapPin, Sparkles } from 'lucide-react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { BookOpen, Hand, Heart, MapPin, Sparkles } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { toast } from '@/components/ui/use-toast';
@@ -8,13 +7,16 @@ import { useAuth } from '@/contexts/SupabaseAuthContext';
 import LoginOverlay from '@/components/ContributionModal/LoginOverlay';
 import ContributionModal from '@/components/ContributionModal';
 import PortalAuthButton from '@/components/PortalAuthButton';
+import PortalHeaderActions from '@/components/portal/PortalHeaderActions';
 import ARExperience from '@/components/ar/ARExperience';
 import IAInsightCard from '@/components/IAInsightCard';
 import CollaboratorsPanel from '@/components/portal/CollaboratorsPanel';
+import RelatedReadingTooltipButton from '@/components/portal/RelatedReadingTooltipButton';
 import { fetchApprovedContributions } from '@/services/contributionService';
 import { recordShowcaseLike } from '@/services/showcaseLikeService';
 import { startDirectMerchCheckout } from '@/lib/merchCheckout';
 import { supabase } from '@/lib/supabaseClient';
+import { sanitizeExternalHttpUrl } from '@/lib/urlSafety';
 
 const ARTESANIAS_INTRO =
   'Un objeto cotidiano convertido en simbolo de comunion. Cada taza esta vinculada a un sentimiento. Cada sentimiento, a una historia personal.';
@@ -88,6 +90,17 @@ const ARTESANIAS_FALLBACK_COMMENTS = [
     name: 'Sofia B.',
   },
 ];
+const ARTESANIAS_BLOG_KEYS = [
+  'lataza',
+  'la_taza',
+  'la-taza',
+  'artesanias',
+  'taza',
+  'miniversotaza',
+  'miniverso_taza',
+  'miniverso-taza',
+];
+const ARTESANIAS_BLOG_KEY_SET = new Set(ARTESANIAS_BLOG_KEYS.map((key) => key.trim().toLowerCase()));
 
 const MiniVersoCard = ({ title, verse, palette }) => {
   const [isActive, setIsActive] = useState(false);
@@ -182,6 +195,8 @@ const PortalArtesanias = () => {
   const [communityComments, setCommunityComments] = useState([]);
   const [communityLoading, setCommunityLoading] = useState(false);
   const [communityError, setCommunityError] = useState('');
+  const [latestArtesaniasReading, setLatestArtesaniasReading] = useState(null);
+  const [isReadingTooltipOpen, setIsReadingTooltipOpen] = useState(false);
   const [reactionStatus, setReactionStatus] = useState('idle');
   const [isContributionOpen, setIsContributionOpen] = useState(false);
   const [isTazaCheckoutLoading, setIsTazaCheckoutLoading] = useState(false);
@@ -194,6 +209,7 @@ const PortalArtesanias = () => {
   });
   const [supportFormStatus, setSupportFormStatus] = useState('idle');
   const [supportFormError, setSupportFormError] = useState('');
+  const readingTooltipRef = useRef(null);
 
   const handleOpenLogin = useCallback(() => {
     if (!isAuthenticated) {
@@ -247,6 +263,70 @@ const PortalArtesanias = () => {
       isCancelled = true;
     };
   }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+    const loadLatestArtesaniasReading = async () => {
+      const { data, error } = await supabase
+        .from('blog_posts')
+        .select('*')
+        .eq('is_published', true)
+        .not('slug', 'is', null)
+        .not('miniverso', 'is', null)
+        .order('published_at', { ascending: false })
+        .limit(60);
+
+      if (cancelled) return;
+      if (error) {
+        console.warn('[PortalArtesanias] No se pudo detectar lectura relacionada:', error);
+        setLatestArtesaniasReading(null);
+        return;
+      }
+
+      const firstMatch =
+        Array.isArray(data) && data.length
+          ? data.find((post) => {
+              const key = String(post?.miniverso || '').trim().toLowerCase();
+              return ARTESANIAS_BLOG_KEY_SET.has(key);
+            }) ?? null
+          : null;
+      setLatestArtesaniasReading(firstMatch?.slug ? firstMatch : null);
+    };
+
+    loadLatestArtesaniasReading();
+    return () => {
+      cancelled = true;
+    };
+  }, [user?.id]);
+
+  useEffect(() => {
+    if (latestArtesaniasReading?.slug) return;
+    setIsReadingTooltipOpen(false);
+  }, [latestArtesaniasReading?.slug]);
+
+  useEffect(() => {
+    if (!isReadingTooltipOpen) return undefined;
+
+    const handlePointerDown = (event) => {
+      if (!readingTooltipRef.current) return;
+      if (!readingTooltipRef.current.contains(event.target)) {
+        setIsReadingTooltipOpen(false);
+      }
+    };
+
+    const handleEscape = (event) => {
+      if (event.key === 'Escape') {
+        setIsReadingTooltipOpen(false);
+      }
+    };
+
+    document.addEventListener('pointerdown', handlePointerDown);
+    document.addEventListener('keydown', handleEscape);
+    return () => {
+      document.removeEventListener('pointerdown', handlePointerDown);
+      document.removeEventListener('keydown', handleEscape);
+    };
+  }, [isReadingTooltipOpen]);
 
   useEffect(() => {
     if (!user) return;
@@ -408,6 +488,13 @@ const PortalArtesanias = () => {
 
   const hasCommunityComments = useMemo(() => communityComments.length > 0, [communityComments]);
   const visibleComments = hasCommunityComments ? communityComments : ARTESANIAS_FALLBACK_COMMENTS;
+  const artesaniasReadingAuthorLabel = (latestArtesaniasReading?.author || '').trim() || 'autor invitado';
+  const artesaniasReadingThumbnailUrl =
+    sanitizeExternalHttpUrl(latestArtesaniasReading?.featured_image_url) ||
+    sanitizeExternalHttpUrl(latestArtesaniasReading?.cover_image) ||
+    sanitizeExternalHttpUrl(latestArtesaniasReading?.image_url) ||
+    sanitizeExternalHttpUrl(latestArtesaniasReading?.author_avatar_url) ||
+    null;
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-950 via-black to-slate-900 text-slate-100">
@@ -421,13 +508,7 @@ const PortalArtesanias = () => {
               </div>
             ) : null}
           </div>
-          <Link
-            to="/"
-            className="inline-flex items-center gap-2 text-xs uppercase tracking-[0.3em] text-slate-400 hover:text-white transition"
-          >
-            <ArrowLeft size={12} />
-            Volver al sitio
-          </Link>
+          <PortalHeaderActions />
         </div>
 
         <div className="mt-6 space-y-6">
@@ -642,9 +723,13 @@ const PortalArtesanias = () => {
               <div className="rounded-3xl border border-white/10 bg-black/30 p-6 space-y-5">
                 <div className="mb-1 flex items-start justify-between gap-3">
                   <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Voces de la comunidad</p>
-                  <span className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-cyan-200/40 bg-cyan-300/10 text-cyan-100">
-                    <BookOpen size={16} />
-                  </span>
+                  <RelatedReadingTooltipButton
+                    slug={latestArtesaniasReading?.slug}
+                    authorLabel={artesaniasReadingAuthorLabel}
+                    thumbnailUrl={artesaniasReadingThumbnailUrl}
+                    ariaLabel="Mostrar lectura relacionada de Artesanías"
+                    tone="cyan"
+                  />
                 </div>
                 <div className="max-h-[240px] form-surface relative overflow-y-auto px-3 py-3 pr-2">
                   {communityLoading ? (

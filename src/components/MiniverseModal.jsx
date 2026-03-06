@@ -197,6 +197,7 @@ const MINIVERSE_DISCOVER_INTRO_MESH =
   'radial-gradient(circle at 58% 32%, rgba(163,230,53,0.16), transparent 34%),' +
   'linear-gradient(135deg, rgba(24,30,45,0.95), rgba(33,68,72,0.88), rgba(20,32,64,0.86))';
 const MINIVERSE_PORTAL_TITLE_PATTERN = /^\d+\s*-\s*/;
+const VISITED_MINIVERSES_STORAGE_KEY = 'gatoencerrado:miniverse-visited';
 const getPortalLabelFromTitle = (title = '') => {
   const normalizedTitle = String(title || '').trim();
   return normalizedTitle.replace(MINIVERSE_PORTAL_TITLE_PATTERN, '').trim() || normalizedTitle;
@@ -213,8 +214,8 @@ const MINIVERSE_CARDS = [
     glassTint: '284 70% 62%',
     title: '01 - La escena',
     titleShort: 'Abre la puerta',
-    description: 'Todo empezó ahí. El escenario no cerró cuando bajó el telón.',
-    videoUrl: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/trailers/miniversos/chat_obra.mp4',
+    description: 'Ahí entendí que esto no era teatro. Era un primer paso.',
+    videoUrl: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Merch/Loop_escenico_small.mp4',
     ctaVerb: 'Entra',
     action: 'Explora',
     isPremium: true,
@@ -229,7 +230,7 @@ const MINIVERSE_CARDS = [
     glassTint: '168 70% 52%',
     title: '02 - La escritura',
     titleShort: 'Lee entre grietas',
-    description: 'Lo que no cabía en escena necesitó otro lenguaje.',
+    description: 'Era más que una historia. Era una grieta que insistía.',
     videoUrl: null,
     ctaVerb: 'Lee',
     action: 'Explora',
@@ -245,8 +246,7 @@ const MINIVERSE_CARDS = [
     glassTint: '28 78% 58%',
     title: '03 - El objeto',
     titleShort: 'Lo que se sostiene',
-    description:
-      'Cuando todo se vuelve abstracto, algo pequeño puede anclarte.',
+    description: 'Y cuando todo se volvió abstracto, algo pequeño quiso anclarse.',
     videoUrl: null,
     ctaVerb: 'Sostén',
     action: 'Explora',
@@ -261,7 +261,7 @@ const MINIVERSE_CARDS = [
     glassTint: '304 65% 60%',
     title: '04 - El trazo',
     titleShort: 'La imagen de sí',
-    description: 'Mirarse desde afuera también es una forma de verdad.',
+    description: 'No supe si estaba creando un universo o si el universo me estaba dibujando a mí.',
     videoUrl: null,
     ctaVerb: 'Mira',
     action: 'Explora',
@@ -275,7 +275,7 @@ const MINIVERSE_CARDS = [
     glassTint: '352 70% 60%',
     title: '05 - La cámara',
     titleShort: 'El quiebre',
-    description: 'La cámara no protege. Solo muestra.',
+    description: 'Y por primera vez… pensé en detenerme.',
     videoUrl: null,
     ctaVerb: 'Observa',
     action: 'Explora',
@@ -291,7 +291,7 @@ const MINIVERSE_CARDS = [
     glassTint: '206 80% 58%',
     title: '06 - El eco',
     titleShort: 'La memoria',
-    description: 'Algunas cosas no se inventan. Se recuerdan.',
+    description: 'Entonces entendí: no estaba inventando. Estaba recordando.',
     videoUrl: null,
     ctaVerb: 'Escucha',
     action: 'Explora',
@@ -306,7 +306,7 @@ const MINIVERSE_CARDS = [
     glassTint: '176 62% 52%',
     title: '07 - El cuerpo',
     titleShort: 'El límite',
-    description: 'Somos finitos. Y aun así nos movemos.',
+    description: 'Ahí toqué el límite. Y no había respuestas. Solo vértigo.',
     videoUrl: null,
     ctaVerb: 'Siente',
     action: 'Explora',
@@ -321,7 +321,7 @@ const MINIVERSE_CARDS = [
     glassTint: '138 60% 48%',
     title: '08 - El juego',
     titleShort: 'La elección',
-    description: 'No hay un solo recorrido. Tú decides cómo entrar.',
+    description: 'Porque si hay nueve rutas… ninguna es la correcta.',
     videoUrl: null,
     ctaVerb: 'Elige',
     action: 'Explora',
@@ -336,7 +336,7 @@ const MINIVERSE_CARDS = [
     glassTint: '266 62% 60%',
     title: '09 - El espejo',
     titleShort: 'La revelación',
-    description: 'No responde. Devuelve.',
+    description: 'Tal vez esto nunca fue una obra. Tal vez fue una vida contada nueve veces.',
     videoUrl: null,
     ctaVerb: 'Consulta',
     action: 'Explora',
@@ -421,7 +421,9 @@ const MiniverseModal = ({
   const [selectedMiniverseId, setSelectedMiniverseId] = useState(null);
   const [selectedUpcomingId, setSelectedUpcomingId] = useState(null);
   const [showcaseFullscreenCard, setShowcaseFullscreenCard] = useState(null);
-  const [visitedMiniverses, setVisitedMiniverses] = useState({});
+  const [visitedMiniverses, setVisitedMiniverses] = useState(() =>
+    readStoredJson(VISITED_MINIVERSES_STORAGE_KEY, {})
+  );
   const [activeShowcaseIndex, setActiveShowcaseIndex] = useState(0);
   const [isMobileViewport, setIsMobileViewport] = useState(false);
   const [isCheckoutLoading, setIsCheckoutLoading] = useState(false);
@@ -772,8 +774,8 @@ const MiniverseModal = ({
         thumbGradient: 'from-violet-300/80 via-fuchsia-400/70 to-cyan-400/60',
         title: 'El arte de no romperse',
         titleShort: 'Prólogo',
-        ctaLabel: 'Ver video completo (5 min)',
-        description: 'Fragmentos del universo #GatoEncerrado',
+        ctaLabel: 'Ver testimoniales (5 min)',
+        description: 'No menos que fragmentos de un universo escondido.',
         videoUrl: prologueVideoUrl,
         fullscreenVideoUrlDesktop: null,
         fullscreenVideoUrlMobile: null,
@@ -854,7 +856,27 @@ const MiniverseModal = ({
 
   const markMiniverseVisited = useCallback((miniverseId) => {
     if (!miniverseId) return;
+    const storedVisited = readStoredJson(VISITED_MINIVERSES_STORAGE_KEY, {});
+    if (!storedVisited[miniverseId]) {
+      safeSetItem(
+        VISITED_MINIVERSES_STORAGE_KEY,
+        JSON.stringify({ ...storedVisited, [miniverseId]: true })
+      );
+    }
     setVisitedMiniverses((prev) => (prev[miniverseId] ? prev : { ...prev, [miniverseId]: true }));
+  }, []);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return undefined;
+    const syncVisitedFromStorage = () => {
+      setVisitedMiniverses(readStoredJson(VISITED_MINIVERSES_STORAGE_KEY, {}));
+    };
+    window.addEventListener('focus', syncVisitedFromStorage);
+    window.addEventListener('pageshow', syncVisitedFromStorage);
+    return () => {
+      window.removeEventListener('focus', syncVisitedFromStorage);
+      window.removeEventListener('pageshow', syncVisitedFromStorage);
+    };
   }, []);
 
   const trackAppClick = useCallback((card, source = 'grid') => {
@@ -1546,7 +1568,7 @@ const MiniverseModal = ({
             className={`safari-stable-layer relative z-10 flex ${
               isInlineMode
                 ? 'w-full max-w-none flex-col overflow-visible rounded-none border-0 bg-transparent p-0 shadow-none'
-                : 'w-[calc(100vw-2rem)] max-w-4xl flex-col rounded-3xl border border-white/10 bg-slate-950/70 p-5 sm:p-10 shadow-2xl max-h-[95vh] min-h-[95vh] md:max-h-[73vh] md:min-h-[73vh] overflow-hidden'
+                : 'w-[calc(100vw-2rem)] max-w-4xl flex-col rounded-3xl border border-white/10 bg-slate-950/70 p-5 sm:p-10 shadow-2xl max-h-[100vh] min-h-[97vh] md:max-h-[73vh] md:min-h-[73vh] overflow-hidden'
             } ${
               isSafari ? '' : 'transition-[opacity,filter,transform] duration-500'
             } ${
@@ -1588,7 +1610,7 @@ const MiniverseModal = ({
                 </>
               ) : (
                 <>
-                  {activeTabHeadingVerb} el universo <br /> de #GatoEncerrado
+                  {activeTabHeadingVerb} el universo de #GatoEncerrado
                 </>
               )}
             </h2>
@@ -1681,7 +1703,7 @@ const MiniverseModal = ({
                           Tu huella es real
                         </h3>
                         <p className="text-sm text-slate-300/90 leading-relaxed">
-                          Cuando la obra despierta preguntas sobre nuestros vínculos y límites, tu huella las transforma en escucha y detección temprana en escuelas.
+                          Cuando la obra despierta preguntas, tu huella las transforma en escucha y detección temprana.
                         </p>
                       </div>
 
@@ -1900,9 +1922,6 @@ const MiniverseModal = ({
                                 </h3>
                               </div>
                             </div>
-                            <p className="text-sm text-slate-200/90 leading-relaxed">
-                              {activeShowcaseCard.description}
-                            </p>
                             <div className="flex flex-col sm:flex-row gap-3">
                               <Button
                                 type="button"
@@ -1937,9 +1956,24 @@ const MiniverseModal = ({
                                     preload="metadata"
                                     data-showcase-preview="desktop-shared"
                                   />
+                                  <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/55 via-black/20 to-transparent" />
                                   <div className="pointer-events-none absolute left-4 top-4 rounded-full border border-white/20 bg-black/50 px-3 py-1 text-[0.6rem] uppercase tracking-[0.3em] text-slate-200">
                                     Loop escénico continuo
                                   </div>
+                                  <AnimatePresence mode="wait" initial={false}>
+                                    <motion.div
+                                      key={`desktop-showcase-synopsis-${activeShowcaseCard.id}`}
+                                      initial={{ opacity: 0, y: 10, filter: 'blur(10px)' }}
+                                      animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
+                                      exit={{ opacity: 0, y: -8, filter: 'blur(8px)' }}
+                                      transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+                                      className="pointer-events-none absolute inset-x-0 bottom-14 px-6"
+                                    >
+                                      <p className="mx-auto max-w-[92%] text-center text-[0.94rem] font-medium leading-[1.45] text-[rgb(253_230_138)] [text-shadow:0_2px_14px_rgba(0,0,0,0.95),0_0_34px_rgba(0,0,0,0.75),0_0_22px_rgba(251,191,36,0.22)]">
+                                        {activeShowcaseCard.description}
+                                      </p>
+                                    </motion.div>
+                                  </AnimatePresence>
                                 </>
                               ) : (
                                 <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 text-slate-300/70">
@@ -2280,11 +2314,6 @@ const MiniverseModal = ({
                         const appLabel = card.appName ?? (card.title ?? '').replace(/^Miniverso\s+/i, '');
                         return (
                           <div key={card.title} className="relative mx-auto w-full">
-                            {!isUpcoming && isVisited ? (
-                              <span className="absolute -right-1 -top-1 inline-flex items-center justify-center h-5 w-5 rounded-full bg-emerald-500/80 text-slate-950 shadow-[0_0_10px_rgba(16,185,129,0.55)]">
-                                <Check size={12} strokeWidth={2.4} />
-                              </span>
-                            ) : null}
                             {showFavoritesOnly ? (
                               <span className="absolute -left-2 -top-2 z-10 inline-flex items-center gap-1 rounded-full border border-rose-300/60 bg-rose-500/15 px-2 py-1 text-[0.55rem] uppercase tracking-[0.15em] text-rose-100 shadow-[0_0_10px_rgba(244,63,94,0.35)]">
                                 <Heart size={10} fill="currentColor" />
@@ -2306,19 +2335,26 @@ const MiniverseModal = ({
                                 </div>
                               ) : null}
                               {!isUpcoming ? (
-                                <div
-                                  className={`h-16 w-16 sm:h-20 sm:w-20 rounded-2xl overflow-hidden border bg-black/35 shadow-[0_12px_28px_rgba(0,0,0,0.45)] transition duration-300 ${
-                                    isVisited
-                                      ? 'border-emerald-300/50 shadow-[0_0_22px_rgba(16,185,129,0.25)]'
-                                      : 'border-white/10 group-hover:-translate-y-1 group-hover:shadow-[0_14px_30px_rgba(80,40,160,0.35)]'
-                                  }`}
-                                >
-                                  <img
-                                    src={MINIVERSE_ICON_IMAGES[card.formatId] ?? MINIVERSE_ICON_PLACEHOLDER}
-                                    alt={card.appName ?? card.title}
-                                    className="h-full w-full object-cover"
-                                    loading="lazy"
-                                  />
+                                <div className="relative h-16 w-16 sm:h-20 sm:w-20">
+                                  <div
+                                    className={`h-full w-full rounded-2xl overflow-hidden border bg-black/35 shadow-[0_12px_28px_rgba(0,0,0,0.45)] transition duration-300 ${
+                                      isVisited
+                                        ? 'border-white/15'
+                                        : 'border-white/10 group-hover:-translate-y-1 group-hover:shadow-[0_14px_30px_rgba(80,40,160,0.35)]'
+                                    }`}
+                                  >
+                                    <img
+                                      src={MINIVERSE_ICON_IMAGES[card.formatId] ?? MINIVERSE_ICON_PLACEHOLDER}
+                                      alt={card.appName ?? card.title}
+                                      className="h-full w-full object-cover"
+                                      loading="lazy"
+                                    />
+                                  </div>
+                                  {isVisited ? (
+                                    <span className="pointer-events-none absolute -right-1.5 -top-1.5 inline-flex h-5 w-5 items-center justify-center rounded-full bg-emerald-500/80 text-slate-950 shadow-[0_0_10px_rgba(16,185,129,0.55)]">
+                                      <Check size={12} strokeWidth={2.4} />
+                                    </span>
+                                  ) : null}
                                 </div>
                               ) : null}
                               <span className="text-center text-[0.65rem] sm:text-xs text-slate-300/90 leading-tight">

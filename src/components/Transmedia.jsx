@@ -60,6 +60,7 @@ import { recordShowcaseLike } from '@/services/showcaseLikeService';
 import { useMobileVideoPresentation } from '@/hooks/useMobileVideoPresentation';
 import IAInsightCard from '@/components/IAInsightCard';
 import DiosasCarousel from '@/components/DiosasCarousel';
+import RelatedReadingTooltipButton from '@/components/portal/RelatedReadingTooltipButton';
 import { fetchApprovedContributions } from '@/services/contributionService';
 import {
   createTransmediaIdempotencyKey,
@@ -5057,62 +5058,70 @@ const Transmedia = ({ allianceOnlyMode = false }) => {
         <div className={className}>
           <div className="mb-1 flex items-start justify-between gap-3">
             <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">{heading}</p>
-            {latestBlogPost?.slug ? (
-              <div className="group relative inline-flex">
-                {(() => {
+            {latestBlogPost?.slug
+              ? (() => {
                   const authorLabel = latestBlogPost.author?.trim() || 'autor invitado';
                   const mobileMessage = `Toca de nuevo para abrir un texto de ${authorLabel}`;
-                  const desktopMessage = `Curaduría de ${authorLabel} disponible`;
                   const thumbnailUrl =
                     sanitizeExternalHttpUrl(latestBlogPost.featured_image_url) ||
                     sanitizeExternalHttpUrl(latestBlogPost.cover_image) ||
                     sanitizeExternalHttpUrl(latestBlogPost.image_url) ||
                     sanitizeExternalHttpUrl(latestBlogPost.author_avatar_url) ||
                     null;
-                  return (
-                    <>
-                <button
-                  type="button"
-                  onClick={() => handleReadingBadgeClick(showcaseId)}
-                  className={`inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-cyan-200/40 bg-cyan-300/10 text-cyan-100 hover:bg-cyan-300/20 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-300/50 ${
-                    isMobileViewport && !readingGlowDismissedByShowcase[showcaseId]
-                      ? 'animate-pulse shadow-[0_0_18px_rgba(34,211,238,0.45)]'
-                      : ''
-                  }`}
-                  aria-label="Abrir lectura disponible en Textos"
-                >
-                  <BookOpen size={16} />
-                </button>
-                <span
-                  className={`pointer-events-none absolute right-0 top-full z-10 mt-2 w-[min(86vw,17rem)] rounded-md border border-cyan-200/30 bg-slate-950/95 px-2 py-2 text-left text-[11px] leading-snug text-cyan-100 shadow-[0_10px_30px_rgba(0,0,0,0.45)] transform-gpu transition-[opacity,transform] duration-180 ease-out ${
-                    readingTooltipForShowcase === showcaseId
-                      ? 'opacity-100 translate-y-0 scale-100'
-                      : 'opacity-0 translate-y-1 scale-[0.985] group-hover:opacity-100 group-hover:translate-y-0 group-hover:scale-100'
-                  }`}
-                >
-                  <span className="flex flex-col gap-2">
-                    {thumbnailUrl ? (
-                      <img
-                        src={thumbnailUrl}
-                        alt={`Miniatura de lectura de ${authorLabel}`}
-                        className="h-26 w-full shrink-0 rounded-md border border-cyan-200/30 object-cover"
-                        loading="lazy"
+
+                  if (!isMobileViewport) {
+                    return (
+                      <RelatedReadingTooltipButton
+                        slug={latestBlogPost.slug}
+                        authorLabel={authorLabel}
+                        thumbnailUrl={thumbnailUrl}
+                        ariaLabel="Mostrar lectura disponible en Textos"
+                        tone="cyan"
                       />
-                    ) : (
-                      <span className="inline-flex h-16 w-full shrink-0 items-center justify-center rounded-md border border-cyan-200/30 bg-cyan-300/10 text-cyan-100">
-                        <BookOpen size={14} />
+                    );
+                  }
+
+                  return (
+                    <div className="group relative inline-flex">
+                      <button
+                        type="button"
+                        onClick={() => handleReadingBadgeClick(showcaseId)}
+                        className={`inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-cyan-200/40 bg-cyan-300/10 text-cyan-100 hover:bg-cyan-300/20 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-300/50 ${
+                          !readingGlowDismissedByShowcase[showcaseId]
+                            ? 'animate-pulse shadow-[0_0_18px_rgba(34,211,238,0.45)]'
+                            : ''
+                        }`}
+                        aria-label="Abrir lectura disponible en Textos"
+                      >
+                        <BookOpen size={16} />
+                      </button>
+                      <span
+                        className={`pointer-events-none absolute right-0 top-full z-10 mt-2 w-[min(86vw,17rem)] rounded-md border border-cyan-200/30 bg-slate-950/95 px-2 py-2 text-left text-[11px] leading-snug text-cyan-100 shadow-[0_10px_30px_rgba(0,0,0,0.45)] transform-gpu transition-[opacity,transform] duration-180 ease-out ${
+                          readingTooltipForShowcase === showcaseId
+                            ? 'opacity-100 translate-y-0 scale-100'
+                            : 'opacity-0 translate-y-1 scale-[0.985] group-hover:opacity-100 group-hover:translate-y-0 group-hover:scale-100'
+                        }`}
+                      >
+                        <span className="flex flex-col gap-2">
+                          {thumbnailUrl ? (
+                            <img
+                              src={thumbnailUrl}
+                              alt={`Miniatura de lectura de ${authorLabel}`}
+                              className="h-26 w-full shrink-0 rounded-md border border-cyan-200/30 object-cover"
+                              loading="lazy"
+                            />
+                          ) : (
+                            <span className="inline-flex h-16 w-full shrink-0 items-center justify-center rounded-md border border-cyan-200/30 bg-cyan-300/10 text-cyan-100">
+                              <BookOpen size={14} />
+                            </span>
+                          )}
+                          <span className="min-w-0 whitespace-normal break-words">{mobileMessage}</span>
+                        </span>
                       </span>
-                    )}
-                    <span className="min-w-0 whitespace-normal break-words">
-                      {isMobileViewport ? mobileMessage : desktopMessage}
-                    </span>
-                  </span>
-                </span>
-                    </>
+                    </div>
                   );
-                })()}
-              </div>
-            ) : null}
+                })()
+              : null}
           </div>
           <div className={`${commentsViewportClassName} form-surface relative overflow-y-auto px-3 py-3 pr-2`}>
             {isLoading ? (

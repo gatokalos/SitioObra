@@ -1,10 +1,10 @@
 import React, { useCallback, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { ArrowLeft } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import ReserveModal from '@/components/ReserveModal';
 import { useAuth } from '@/contexts/SupabaseAuthContext';
 import LoginOverlay from '@/components/ContributionModal/LoginOverlay';
 import PortalAuthButton from '@/components/PortalAuthButton';
+import PortalHeaderActions from '@/components/portal/PortalHeaderActions';
 
 const PortalEncuentros = () => {
   const { user } = useAuth();
@@ -31,13 +31,7 @@ const PortalEncuentros = () => {
       <div className="w-full py-8 md:py-12">
         <div className="flex items-start justify-between gap-4 px-4 sm:px-6">
           <PortalAuthButton onOpenLogin={handleOpenLogin} />
-          <Link
-            to="/"
-            className="inline-flex items-center gap-2 text-xs uppercase tracking-[0.3em] text-slate-400 hover:text-white transition"
-          >
-            <ArrowLeft size={12} />
-            Volver al sitio
-          </Link>
+          <PortalHeaderActions />
         </div>
 
         <ReserveModal

@@ -1,8 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { motion } from 'framer-motion';
-import { Link } from 'react-router-dom';
 import {
-  ArrowLeft,
   Feather,
   Scan,
   CheckCircle2,
@@ -17,13 +15,17 @@ import { useAuth } from '@/contexts/SupabaseAuthContext';
 import LoginOverlay from '@/components/ContributionModal/LoginOverlay';
 import ContributionModal from '@/components/ContributionModal';
 import PortalAuthButton from '@/components/PortalAuthButton';
+import PortalHeaderActions from '@/components/portal/PortalHeaderActions';
 import { PORTAL_VOZ_MODE_QUESTIONS } from '@/lib/obraConversation';
 import { useSilvestreVoice } from '@/hooks/useSilvestreVoice';
 import IAInsightCard from '@/components/IAInsightCard';
 import ObraConversationControls from '@/components/miniversos/obra/ObraConversationControls';
 import ObraQuestionList from '@/components/miniversos/obra/ObraQuestionList';
+import RelatedReadingTooltipButton from '@/components/portal/RelatedReadingTooltipButton';
 import { fetchApprovedContributions } from '@/services/contributionService';
 import { recordShowcaseLike } from '@/services/showcaseLikeService';
+import { supabase } from '@/lib/supabaseClient';
+import { sanitizeExternalHttpUrl } from '@/lib/urlSafety';
 
 const VOICE_MODES = [
   {
@@ -122,6 +124,8 @@ const OBRA_EMOTION_LOG_STORAGE_KEY = 'gatoencerrado:obra-emotion-log';
 const OBRA_EMOTION_ORBS_STORAGE_KEY = 'gatoencerrado:obra-emotion-orbs';
 const OBRA_EMOTION_MAX_ORBS = 36;
 const OBRA_EMOTION_ORB_VERSION = 2;
+const SCENE_BLOG_KEYS = ['obra_escenica', 'miniversos', 'obra'];
+const SCENE_BLOG_KEY_SET = new Set(SCENE_BLOG_KEYS.map((key) => key.trim().toLowerCase()));
 
 const OBRA_EMOTION_MODE_REGIONS = {
   'confusion-lucida': { left: 50, top: 24, spreadX: 7, spreadY: 7, size: 14 },
@@ -406,6 +410,8 @@ const PortalVoz = () => {
   const [communityComments, setCommunityComments] = useState([]);
   const [communityLoading, setCommunityLoading] = useState(false);
   const [communityError, setCommunityError] = useState('');
+  const [latestSceneReading, setLatestSceneReading] = useState(null);
+  const [isReadingTooltipOpen, setIsReadingTooltipOpen] = useState(false);
   const [reactionStatus, setReactionStatus] = useState('idle');
   const [isContributionOpen, setIsContributionOpen] = useState(false);
   const [openCollaboratorId, setOpenCollaboratorId] = useState(null);
@@ -416,6 +422,7 @@ const PortalVoz = () => {
   const obraDetonadoresRef = useRef(null);
   const wasSilvestrePlayingRef = useRef(false);
   const previousObraModeIdRef = useRef(DEFAULT_VOICE_MODE_ID);
+  const readingTooltipRef = useRef(null);
 
   const starterPool = useMemo(() => {
     const base = VOICE_MODES.flatMap((mode) => PORTAL_VOZ_MODE_QUESTIONS[mode.id] ?? []);
@@ -479,6 +486,13 @@ const PortalVoz = () => {
   const mobileSecondaryCtaDisabled =
     isObraVoiceBusy ||
     (mobileObraSecondaryCtaState === MOBILE_OBRA_SECONDARY_CTA_STATES.LAUNCH_PHRASE && !hasReplayPrompt);
+  const sceneReadingAuthorLabel = (latestSceneReading?.author || '').trim() || 'autor invitado';
+  const sceneReadingThumbnailUrl =
+    sanitizeExternalHttpUrl(latestSceneReading?.featured_image_url) ||
+    sanitizeExternalHttpUrl(latestSceneReading?.cover_image) ||
+    sanitizeExternalHttpUrl(latestSceneReading?.image_url) ||
+    sanitizeExternalHttpUrl(latestSceneReading?.author_avatar_url) ||
+    null;
 
   const emotionUsageEntries = useMemo(
     () =>
@@ -583,6 +597,70 @@ const PortalVoz = () => {
       isCancelled = true;
     };
   }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+    const loadLatestSceneReading = async () => {
+      const { data, error } = await supabase
+        .from('blog_posts')
+        .select('*')
+        .eq('is_published', true)
+        .not('slug', 'is', null)
+        .not('miniverso', 'is', null)
+        .order('published_at', { ascending: false })
+        .limit(60);
+
+      if (cancelled) return;
+      if (error) {
+        console.warn('[PortalVoz] No se pudo detectar lectura relacionada:', error);
+        setLatestSceneReading(null);
+        return;
+      }
+
+      const firstMatch =
+        Array.isArray(data) && data.length
+          ? data.find((post) => {
+              const key = String(post?.miniverso || '').trim().toLowerCase();
+              return SCENE_BLOG_KEY_SET.has(key);
+            }) ?? null
+          : null;
+      setLatestSceneReading(firstMatch?.slug ? firstMatch : null);
+    };
+
+    loadLatestSceneReading();
+    return () => {
+      cancelled = true;
+    };
+  }, [user?.id]);
+
+  useEffect(() => {
+    if (latestSceneReading?.slug) return;
+    setIsReadingTooltipOpen(false);
+  }, [latestSceneReading?.slug]);
+
+  useEffect(() => {
+    if (!isReadingTooltipOpen) return undefined;
+
+    const handlePointerDown = (event) => {
+      if (!readingTooltipRef.current) return;
+      if (!readingTooltipRef.current.contains(event.target)) {
+        setIsReadingTooltipOpen(false);
+      }
+    };
+
+    const handleEscape = (event) => {
+      if (event.key === 'Escape') {
+        setIsReadingTooltipOpen(false);
+      }
+    };
+
+    document.addEventListener('pointerdown', handlePointerDown);
+    document.addEventListener('keydown', handleEscape);
+    return () => {
+      document.removeEventListener('pointerdown', handlePointerDown);
+      document.removeEventListener('keydown', handleEscape);
+    };
+  }, [isReadingTooltipOpen]);
 
   useEffect(() => {
     const previousModeId = previousObraModeIdRef.current;
@@ -916,13 +994,7 @@ const PortalVoz = () => {
               </div>
             ) : null}
           </div>
-          <Link
-            to="/"
-            className="inline-flex items-center gap-2 text-xs uppercase tracking-[0.3em] text-slate-400 hover:text-white transition"
-          >
-            <ArrowLeft size={12} />
-            Volver al sitio
-          </Link>
+          <PortalHeaderActions />
         </div>
 
         <div className="mt-6 space-y-6" ref={portalTopRef}>
@@ -1085,9 +1157,13 @@ const PortalVoz = () => {
               <div className="order-5 min-w-0 lg:order-none rounded-3xl border border-white/10 bg-black/30 p-6 space-y-5">
                 <div className="mb-1 flex items-start justify-between gap-3">
                   <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Voces de la comunidad</p>
-                  <span className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-cyan-200/40 bg-cyan-300/10 text-cyan-100">
-                    <BookOpen size={16} />
-                  </span>
+                  <RelatedReadingTooltipButton
+                    slug={latestSceneReading?.slug}
+                    authorLabel={sceneReadingAuthorLabel}
+                    thumbnailUrl={sceneReadingThumbnailUrl}
+                    ariaLabel="Mostrar lectura relacionada de Escena"
+                    tone="cyan"
+                  />
                 </div>
                 <div className="max-h-[240px] form-surface relative overflow-y-auto px-3 py-3 pr-2">
                   {communityLoading ? (
