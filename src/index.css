@@ -211,7 +211,7 @@ body {
   background-clip: text;
   -webkit-text-fill-color: transparent;
   color: transparent;
-  text-shadow: 0 0 20px rgba(139, 92, 246, 0.35);
+  text-shadow: 0 0 20px rgba(110, 77, 188, 0.26);
 }
 
 .hero-inline-title-tight {
@@ -274,7 +274,7 @@ body {
 .hero-inline-intro-plecas {
   position: relative;
   line-height: 1.42;
-  color: rgba(219, 214, 240, 0.96);
+  color: rgba(192, 188, 199);
   text-shadow: 0 0 8px rgba(129, 140, 248, 0.18);
 }
 
@@ -316,6 +316,118 @@ body {
 
 .hero-inline-segmented .ui-segmented__btn--active:hover:not(:disabled) {
   filter: brightness(1.02) saturate(1.03);
+}
+
+.hero-inline-video-synopsis {
+  font-family: Vox Round, Inter, sans-serif;
+  font-size: clamp(1.06rem, 2.45vw, 1.34rem);
+  font-weight: 600;
+  line-height: 1.32;
+  letter-spacing: 0.008em;
+  color: rgb(253 230 138);
+  text-wrap: balance;
+  text-shadow:
+    0 2px 14px rgba(0, 0, 0, 0.95),
+    0 0 34px rgba(0, 0, 0, 0.75),
+    0 0 22px rgba(251, 191, 36, 0.22);
+}
+
+.hero-inline-video-glass-overlay {
+  pointer-events: none;
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(
+      180deg,
+      rgba(8, 10, 24, 0.22) 0%,
+      rgba(8, 10, 24, 0.14) 40%,
+      rgba(8, 10, 24, 0.26) 100%
+    ),
+    radial-gradient(
+      120% 90% at 50% 112%,
+      rgba(6, 10, 20, 0.45) 0%,
+      rgba(6, 10, 20, 0) 62%
+    ),
+    radial-gradient(
+      140% 110% at 8% -8%,
+      rgba(167, 139, 250, 0.12) 0%,
+      rgba(167, 139, 250, 0) 56%
+    );
+  backdrop-filter: blur(1.5px) saturate(0.92);
+  -webkit-backdrop-filter: blur(1.5px) saturate(0.92);
+}
+
+.hero-inline-video-synopsis-layer {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 1.5rem;
+  z-index: 20;
+}
+
+.hero-inline-video-synopsis-layer::before {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: min(88%, 640px);
+  height: clamp(92px, 30%, 156px);
+  transform: translate(-50%, -50%);
+  border-radius: 999px;
+  background: radial-gradient(
+    62% 100% at 50% 52%,
+    rgba(2, 6, 23, 0.55) 0%,
+    rgba(2, 6, 23, 0.3) 48%,
+    rgba(2, 6, 23, 0) 100%
+  );
+  filter: blur(8px);
+  z-index: 0;
+  pointer-events: none;
+}
+
+.hero-inline-video-synopsis-layer .hero-inline-video-synopsis {
+  position: relative;
+  z-index: 1;
+}
+
+@media (max-width: 430px) {
+  .hero-inline-video-synopsis {
+    font-size: clamp(1.1rem, 5.1vw, 1.34rem);
+    line-height: 1.28;
+  }
+
+  .hero-inline-video-synopsis-layer {
+    padding: 0 1.1rem;
+  }
+
+  .hero-inline-video-synopsis-layer::before {
+    width: min(92%, 420px);
+    height: clamp(84px, 34%, 136px);
+  }
+
+  .hero-inline-video-glass-overlay {
+    background:
+      linear-gradient(
+        180deg,
+        rgba(8, 10, 24, 0.18) 0%,
+        rgba(8, 10, 24, 0.11) 40%,
+        rgba(8, 10, 24, 0.2) 100%
+      ),
+      radial-gradient(
+        120% 90% at 50% 112%,
+        rgba(6, 10, 20, 0.36) 0%,
+        rgba(6, 10, 20, 0) 62%
+      ),
+      radial-gradient(
+        140% 110% at 8% -8%,
+        rgba(167, 139, 250, 0.1) 0%,
+        rgba(167, 139, 250, 0) 56%
+      );
+    backdrop-filter: blur(1px) saturate(0.94);
+    -webkit-backdrop-filter: blur(1px) saturate(0.94);
+  }
 }
 
 @media (max-width: 480px) {

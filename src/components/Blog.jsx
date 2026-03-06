@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Calendar, Clock, Feather, Search, Send } from 'lucide-react';
+import { ArrowRight, Calendar, Clock, Compass, Feather, Search, Send } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { toast } from '@/components/ui/use-toast';
 import ReactMarkdown from 'react-markdown';
@@ -73,6 +73,10 @@ const MINIVERSE_KEYWORDS = {
   otro: ['performance', 'híbrido', 'glitch', 'experimental'],
 };
 
+const CURATOR_RECOMMENDED_READINGS = [
+  '#GatoEncerrado: notas desde adentro',
+];
+
 const inferMiniverseFromPost = (post) => {
   const haystack = [
     post.category,
@@ -101,6 +105,14 @@ const normalizeForSearch = (value) =>
     .normalize('NFD')
     .replace(/[\u0300-\u036f]/g, '')
     .trim();
+
+const parseReadMinutes = (value) => {
+  const minutes = Number(value);
+  if (!Number.isFinite(minutes) || minutes <= 0) {
+    return null;
+  }
+  return Math.round(minutes);
+};
 
 const markdownComponents = {
   p: ({ node: _node, ...props }) => (
@@ -388,7 +400,7 @@ const FullArticle = ({ post, onClose }) => {
           variant="outline"
           className="border-white/20 text-slate-200 hover:bg-white/10 hover:text-white"
         >
-          Volver al listado
+          Cerrar línea editorial
         </Button>
       </div>
     </motion.div>
@@ -573,6 +585,11 @@ const Blog = ({ posts = [], isLoading = false, error = null }) => {
   const [activeCategory, setActiveCategory] = useState(BLOG_CATEGORY_ORDER[0]);
   const [searchQuery, setSearchQuery] = useState('');
   const [showAllPosts, setShowAllPosts] = useState(false);
+  const [isMobileViewport, setIsMobileViewport] = useState(() => {
+    if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') return false;
+    return window.matchMedia('(max-width: 768px)').matches;
+  });
+  const [isEditorialLineOpen, setIsEditorialLineOpen] = useState(false);
   const articlesRef = useRef(null);
 
   const categorizedPosts = useMemo(
@@ -626,6 +643,65 @@ const Blog = ({ posts = [], isLoading = false, error = null }) => {
     [filteredPosts, showAllPosts]
   );
   const canShowAllPosts = !isLoading && !showAllPosts && filteredPosts.length > 2;
+  const recommendedCuratorReadings = useMemo(
+    () =>
+      CURATOR_RECOMMENDED_READINGS.map((title) => {
+        const normalizedTarget = normalizeForSearch(title);
+        const matchedPost =
+          sortedPosts.find((post) => normalizeForSearch(post.title) === normalizedTarget) ||
+          sortedPosts.find((post) => normalizeForSearch(post.title).includes(normalizedTarget)) ||
+          null;
+        return { title, post: matchedPost };
+      }),
+    [sortedPosts]
+  );
+  const featuredCuratorReading = recommendedCuratorReadings[0] ?? null;
+  const featuredCuratorReadingMinutes = parseReadMinutes(featuredCuratorReading?.post?.read_time_minutes);
+  const editorialReadMetrics = useMemo(() => {
+    const metrics = BLOG_CATEGORY_ORDER.reduce((accumulator, category) => {
+      accumulator[category] = { totalMinutes: 0, postCount: 0 };
+      return accumulator;
+    }, {});
+
+    for (const post of sortedPosts) {
+      const category = post.category;
+      if (!BLOG_CATEGORY_ORDER.includes(category)) {
+        continue;
+      }
+
+      const minutes = parseReadMinutes(post.read_time_minutes);
+      if (minutes === null) {
+        continue;
+      }
+
+      metrics[category].totalMinutes += minutes;
+      metrics[category].postCount += 1;
+    }
+
+    return metrics;
+  }, [sortedPosts]);
+  const getCategoryReadTimeLabel = useCallback(
+    (category) => {
+      const metrics = editorialReadMetrics[category];
+      if (metrics && metrics.totalMinutes > 0) {
+        return `${metrics.totalMinutes} min total`;
+      }
+      return BLOG_CATEGORY_CONFIG[category]?.readingTime ?? 'Tiempo variable';
+    },
+    [editorialReadMetrics]
+  );
+  const showEditorialContent = !isMobileViewport || isEditorialLineOpen;
+  const editorialCategories = useMemo(
+    () =>
+      BLOG_CATEGORY_ORDER.map((category) => ({
+        key: category,
+        ...BLOG_CATEGORY_CONFIG[category],
+        readingTimeLabel: getCategoryReadTimeLabel(category),
+      })),
+    [getCategoryReadTimeLabel]
+  );
+  const featuredEditorialCategory = editorialCategories[0] ?? null;
+  const secondaryEditorialCategories = editorialCategories.slice(1);
 
   const handleSelectPost = useCallback((post) => {
     setActivePost(post);
@@ -637,10 +713,24 @@ const Blog = ({ posts = [], isLoading = false, error = null }) => {
 
   const handleExploreCategory = useCallback((category) => {
     setActiveCategory(category);
+    if (isMobileViewport) {
+      setIsEditorialLineOpen(true);
+    }
     requestAnimationFrame(() => {
       articlesRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
     });
-  }, []);
+  }, [isMobileViewport]);
+
+  const handleCloseEditorialLine = useCallback(() => {
+    setActivePost(null);
+    setShowAllPosts(false);
+    if (isMobileViewport) {
+      setIsEditorialLineOpen(false);
+      requestAnimationFrame(() => {
+        document.getElementById('dialogo-critico')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      });
+    }
+  }, [isMobileViewport]);
 
   useEffect(() => {
     if (pendingSlug && categorizedPosts.length > 0) {
@@ -657,6 +747,26 @@ const Blog = ({ posts = [], isLoading = false, error = null }) => {
       toast({ description: 'No se pudieron cargar los artículos del blog.' });
     }
   }, [error]);
+
+  useEffect(() => {
+    if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') return undefined;
+    const mediaQuery = window.matchMedia('(max-width: 768px)');
+    const handleChange = (event) => {
+      setIsMobileViewport(event.matches);
+      if (!event.matches) {
+        setIsEditorialLineOpen(false);
+      }
+    };
+    setIsMobileViewport(mediaQuery.matches);
+
+    if (typeof mediaQuery.addEventListener === 'function') {
+      mediaQuery.addEventListener('change', handleChange);
+      return () => mediaQuery.removeEventListener('change', handleChange);
+    }
+
+    mediaQuery.addListener(handleChange);
+    return () => mediaQuery.removeListener(handleChange);
+  }, []);
 
   useEffect(() => {
     setShowAllPosts(false);
@@ -752,94 +862,200 @@ const Blog = ({ posts = [], isLoading = false, error = null }) => {
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8, delay: 0.1, ease: 'easeOut' }}
               viewport={{ once: true }}
-              className="grid md:grid-cols-3 gap-6"
+              className="space-y-5"
             >
-              {BLOG_CATEGORY_ORDER.map((category) => (
-                <div key={category} className="glass-effect rounded-2xl p-6 border border-white/10 flex flex-col gap-3">
-                  <p className="text-xs uppercase tracking-[0.35em] text-slate-400/80">
-                    {BLOG_CATEGORY_CONFIG[category].label}
-                  </p>
-                  <p className="text-slate-300/80 text-sm leading-relaxed flex-1">
-                    {BLOG_CATEGORY_CONFIG[category].summary}
-                  </p>
-                  <Button
-                    variant="link"
-                    onClick={() => handleExploreCategory(category)}
-                    className="text-purple-300 hover:text-white self-start px-0"
-                  >
-                    Leer esta línea editorial
-                  </Button>
-                </div>
-              ))}
-            </motion.div>
-
-            <motion.div
-              ref={articlesRef}
-              initial="hidden"
-              whileInView="visible"
-              viewport={{ once: true }}
-              variants={{ visible: { transition: { staggerChildren: 0.12 } } }}
-              className="grid md:grid-cols-2 gap-8"
-            >
-              {isLoading ? (
-                Array.from({ length: 6 }).map((_, index) => <ArticleCardSkeleton key={`skeleton-${index}`} />)
-              ) : filteredPosts.length === 0 ? (
-                <motion.div variants={containerVariants} className="md:col-span-2 text-center text-slate-400 py-12">
-                  No encontramos textos con ese criterio. Ajusta el filtro o comparte un nuevo testimonio.
-                </motion.div>
-              ) : (
-                visiblePosts.map((post) => <ArticleCard key={post.id} post={post} onSelect={handleSelectPost} />)
-              )}
-            </motion.div>
-
-            {canShowAllPosts ? (
-              <div className="flex justify-center">
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => setShowAllPosts(true)}
-                  className="border-white/20 text-slate-200 hover:bg-white/10"
+              {featuredEditorialCategory && featuredCuratorReading ? (
+                <motion.div
+                  initial={{ opacity: 0, y: 14, scale: 0.99 }}
+                  whileInView={{ opacity: 1, y: 0, scale: 1 }}
+                  transition={{ duration: 0.45, ease: 'easeOut' }}
+                  viewport={{ once: true, amount: 0.6 }}
+                  className="relative overflow-hidden rounded-2xl border border-violet-300/40 bg-gradient-to-r from-violet-500/20 via-fuchsia-500/14 to-indigo-500/18 px-5 py-4 shadow-[0_20px_56px_rgba(76,29,149,0.28)]"
                 >
-                  Mostrar siguientes textos
-                </Button>
-              </div>
-            ) : null}
+                  <div className="pointer-events-none absolute -right-12 -top-16 h-40 w-40 rounded-full bg-violet-300/20 blur-2xl" />
+                  <div className="pointer-events-none absolute -bottom-20 left-12 h-40 w-40 rounded-full bg-cyan-300/10 blur-2xl" />
+                  <div className="pointer-events-none absolute inset-x-6 top-0 h-px bg-gradient-to-r from-transparent via-violet-100/75 to-transparent" />
 
-            <div id="blog-article">
-              <AnimatePresence mode="wait">
-                {activePost ? <FullArticle key={activePost.id} post={activePost} onClose={() => setActivePost(null)} /> : null}
-              </AnimatePresence>
-            </div>
+                  <div className="relative z-10 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+                    <div className="space-y-2">
+                      <div className="inline-flex items-center gap-2 rounded-full border border-violet-200/45 bg-violet-400/12 px-3 py-1">
+                        <Compass size={12} className="text-violet-100/95" aria-hidden="true" />
+                        <p className="text-[10px] uppercase tracking-[0.34em] text-violet-100/90">Empieza aquí</p>
+                      </div>
+                      <p className="text-[1rem] font-semibold leading-snug text-white">
+                        ¿Primera vez en el sitio? Esta lectura te orienta en pocos minutos.
+                      </p>
+               
+                      {featuredCuratorReadingMinutes ? (
+                        <span className="inline-flex rounded-full border border-violet-100/35 bg-black/20 px-3 py-1 text-[10px] uppercase tracking-[0.28em] text-violet-100/90">
+                          {featuredCuratorReadingMinutes} min
+                        </span>
+                      ) : null}
+                    </div>
 
-            <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-              <div className="flex flex-wrap gap-2">
-                {BLOG_CATEGORY_ORDER.map((category) => (
-                  <button
-                    type="button"
-                    key={category}
-                    onClick={() => setActiveCategory(category)}
-                    className={`rounded-full border px-4 py-2 text-sm transition ${
-                      activeCategory === category
-                        ? 'border-purple-400/60 bg-purple-500/20 text-purple-100'
-                        : 'border-white/10 text-slate-300 hover:border-purple-300/40 hover:text-purple-100'
-                    }`}
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => {
+                        handleExploreCategory(featuredEditorialCategory.key);
+                        if (featuredCuratorReading.post) {
+                          handleSelectPost(featuredCuratorReading.post);
+                          return;
+                        }
+                        toast({ description: `Pronto liberaremos: ${featuredCuratorReading.title}` });
+                      }}
+                      className="group h-12 w-full justify-between rounded-xl border-violet-100/55 bg-gradient-to-r from-violet-500/35 to-indigo-500/28 px-4 text-left text-violet-50 shadow-[0_10px_28px_rgba(124,58,237,0.28)] transition-all hover:from-violet-400/45 hover:to-indigo-400/34 hover:text-white lg:w-auto lg:min-w-[360px]"
+                    >
+                      <span className="truncate text-sm font-semibold">{featuredCuratorReading.title}</span>
+                      <ArrowRight size={16} className="shrink-0 opacity-85 transition-transform group-hover:translate-x-1" />
+                    </Button>
+                  </div>
+                </motion.div>
+              ) : null}
+
+              <div className="grid gap-6 md:grid-cols-3">
+                {featuredEditorialCategory ? (
+                  <article className="glass-effect rounded-2xl border border-violet-300/30 bg-gradient-to-br from-[#0a1127]/90 via-[#111735]/85 to-[#1a1340]/72 p-6 md:p-7">
+                    <div className="flex flex-wrap items-center justify-between gap-3">
+                      <p className="text-xs uppercase tracking-[0.35em] text-violet-200/85">
+                        {featuredEditorialCategory.label}
+                      </p>
+                      <div className="flex flex-wrap items-center gap-2">
+                        <span className="rounded-full border border-white/15 bg-white/5 px-3 py-1 text-[10px] uppercase tracking-[0.26em] text-slate-300/85">
+                          {featuredEditorialCategory.readingTimeLabel}
+                        </span>
+                      </div>
+                    </div>
+                    <p className="mt-3 text-[1.02rem] font-medium leading-relaxed text-slate-100">
+                      {featuredEditorialCategory.hook}
+                    </p>
+                    <p className="mt-2 text-sm leading-relaxed text-slate-300/85">
+                      {featuredEditorialCategory.summary}
+                    </p>
+                    <Button
+                      type="button"
+                      variant="link"
+                      onClick={() => handleExploreCategory(featuredEditorialCategory.key)}
+                      className="mt-3 px-0 text-violet-200 hover:text-white"
+                    >
+                      {featuredEditorialCategory.ctaLabel}
+                    </Button>
+                  </article>
+                ) : null}
+
+                {secondaryEditorialCategories.map((category) => (
+                  <article
+                    key={category.key}
+                    className="glass-effect rounded-2xl border border-white/10 bg-black/25 p-6"
                   >
-                    {BLOG_CATEGORY_CONFIG[category].label}
-                  </button>
+                    <div className="flex flex-wrap items-center justify-between gap-2">
+                      <p className="text-xs uppercase tracking-[0.35em] text-slate-300/85">
+                        {category.label}
+                      </p>
+                      <span className="rounded-full border border-white/15 bg-white/5 px-2.5 py-0.5 text-[10px] uppercase tracking-[0.24em] text-slate-400/90">
+                        {category.readingTimeLabel}
+                      </span>
+                    </div>
+                    <p className="mt-3 text-sm font-medium leading-relaxed text-slate-100">
+                      {category.hook}
+                    </p>
+                    <p className="mt-2 text-sm leading-relaxed text-slate-300/80">
+                      {category.summary}
+                    </p>
+                    <Button
+                      type="button"
+                      variant="link"
+                      onClick={() => handleExploreCategory(category.key)}
+                      className="mt-3 self-start px-0 text-purple-300 hover:text-white"
+                    >
+                      {category.ctaLabel}
+                    </Button>
+                  </article>
                 ))}
               </div>
+            </motion.div>
 
-              <div className="relative w-full md:w-72">
-                <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" />
-                <input
-                  type="search"
-                  value={searchQuery}
-                  onChange={(event) => setSearchQuery(event.target.value)}
-                  placeholder="Buscar por título, autor o tag"
-                  className="form-surface form-surface--pill w-full py-2 pl-10 pr-4 text-sm"
-                />
+            {showEditorialContent ? (
+              <>
+                <motion.div
+                  ref={articlesRef}
+                  initial="hidden"
+                  whileInView="visible"
+                  viewport={{ once: true }}
+                  variants={{ visible: { transition: { staggerChildren: 0.12 } } }}
+                  className="grid md:grid-cols-2 gap-8"
+                >
+                  {isLoading ? (
+                    Array.from({ length: 6 }).map((_, index) => <ArticleCardSkeleton key={`skeleton-${index}`} />)
+                  ) : filteredPosts.length === 0 ? (
+                    <motion.div variants={containerVariants} className="md:col-span-2 text-center text-slate-400 py-12">
+                      No encontramos textos con ese criterio. Ajusta el filtro o comparte un nuevo testimonio.
+                    </motion.div>
+                  ) : (
+                    visiblePosts.map((post) => <ArticleCard key={post.id} post={post} onSelect={handleSelectPost} />)
+                  )}
+                </motion.div>
+
+                {canShowAllPosts ? (
+                  <div className="flex justify-center">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => setShowAllPosts(true)}
+                      className="border-white/20 text-slate-200 hover:bg-white/10"
+                    >
+                      Mostrar siguientes textos
+                    </Button>
+                  </div>
+                ) : null}
+
+                <div id="blog-article">
+                  <AnimatePresence mode="wait">
+                    {activePost ? (
+                      <FullArticle
+                        key={activePost.id}
+                        post={activePost}
+                        onClose={handleCloseEditorialLine}
+                      />
+                    ) : null}
+                  </AnimatePresence>
+                </div>
+
+                <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+                  <div className="flex flex-wrap gap-2">
+                    {BLOG_CATEGORY_ORDER.map((category) => (
+                      <button
+                        type="button"
+                        key={category}
+                        onClick={() => setActiveCategory(category)}
+                        className={`rounded-full border px-4 py-2 text-sm transition ${
+                          activeCategory === category
+                            ? 'border-purple-400/60 bg-purple-500/20 text-purple-100'
+                            : 'border-white/10 text-slate-300 hover:border-purple-300/40 hover:text-purple-100'
+                        }`}
+                      >
+                        {BLOG_CATEGORY_CONFIG[category].label}
+                      </button>
+                    ))}
+                  </div>
+
+                  <div className="relative w-full md:w-72">
+                    <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" />
+                    <input
+                      type="search"
+                      value={searchQuery}
+                      onChange={(event) => setSearchQuery(event.target.value)}
+                      placeholder="Buscar por título, autor o tag"
+                      className="form-surface form-surface--pill w-full py-2 pl-10 pr-4 text-sm"
+                    />
+                  </div>
+                </div>
+              </>
+            ) : (
+              <div className="rounded-2xl border border-white/10 bg-black/20 px-4 py-4 text-sm text-slate-300/80">
+                Elige una línea editorial para abrir sus textos.
               </div>
-            </div>
+            )}
           </div>
 
         </div>

@@ -20,9 +20,9 @@ import {
 } from '@/services/miniverseHomeAnalyticsService';
 
 const TABS = [
-  { id: 'escaparate', label: 'Descubrir', icon: Sparkles },
-  { id: 'experiences', label: 'Habitar', icon:  DoorOpen},
-  { id: 'waitlist', label: 'Impulsar', icon: HeartHandshake },
+  { id: 'escaparate', label: 'Descubre', icon: Sparkles },
+  { id: 'experiences', label: 'Habita', icon:  DoorOpen},
+  { id: 'waitlist', label: 'Impulsa', icon: HeartHandshake },
 ];
 const DEFAULT_TAB_ID = 'escaparate';
 const VALID_TAB_IDS = new Set(TABS.map((tab) => tab.id));
@@ -190,12 +190,12 @@ const MINIVERSE_NARRATIVE_CTA_STYLES = `
 }
 `;
 const MINIVERSE_DISCOVER_INTRO_MESH =
-  'radial-gradient(circle at 12% 16%, rgba(196,181,253,0.34), transparent 36%),' +
-  'radial-gradient(circle at 84% 18%, rgba(125,211,252,0.28), transparent 34%),' +
-  'radial-gradient(circle at 70% 78%, rgba(110,231,183,0.26), transparent 40%),' +
-  'radial-gradient(circle at 28% 80%, rgba(45,212,191,0.24), transparent 38%),' +
-  'radial-gradient(circle at 58% 32%, rgba(163,230,53,0.16), transparent 34%),' +
-  'linear-gradient(135deg, rgba(24,30,45,0.95), rgba(33,68,72,0.88), rgba(20,32,64,0.86))';
+  'radial-gradient(circle at 14% 18%, rgba(139,92,246,0.38), transparent 36%),' +
+  'radial-gradient(circle at 86% 20%, rgba(56,189,248,0.30), transparent 34%),' +
+  'radial-gradient(circle at 72% 78%, rgba(20,184,166,0.28), transparent 40%),' +
+  'radial-gradient(circle at 26% 82%, rgba(34,211,238,0.24), transparent 38%),' +
+  'radial-gradient(circle at 56% 32%, rgba(99,102,241,0.20), transparent 34%),' +
+  'linear-gradient(135deg, rgba(10,12,28,0.96), rgba(15,23,42,0.92), rgba(17,24,39,0.90))';
 const MINIVERSE_PORTAL_TITLE_PATTERN = /^\d+\s*-\s*/;
 const VISITED_MINIVERSES_STORAGE_KEY = 'gatoencerrado:miniverse-visited';
 const getPortalLabelFromTitle = (title = '') => {
@@ -213,8 +213,9 @@ const MINIVERSE_CARDS = [
     thumbGradient: 'from-purple-400/80 via-fuchsia-500/70 to-rose-500/60',
     glassTint: '284 70% 62%',
     title: '01 - La escena',
-    titleShort: 'Abre la puerta',
-    description: 'Ahí entendí que esto no era teatro. Era un primer paso.',
+    titleShort: 'Escucha: Abre la puerta',
+    description: 'Yo solo quería entender algo que me estaba pasando.',
+
     videoUrl: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Merch/Loop_escenico_small.mp4',
     ctaVerb: 'Entra',
     action: 'Explora',
@@ -229,8 +230,8 @@ const MINIVERSE_CARDS = [
     thumbGradient: 'from-emerald-400/80 via-teal-500/70 to-cyan-500/60',
     glassTint: '168 70% 52%',
     title: '02 - La escritura',
-    titleShort: 'Lee entre grietas',
-    description: 'Era más que una historia. Era una grieta que insistía.',
+    titleShort: 'Escucha: Entre grietas',
+    description: 'Pensé que si la escribía, lo iba a entender.',
     videoUrl: null,
     ctaVerb: 'Lee',
     action: 'Explora',
@@ -245,8 +246,8 @@ const MINIVERSE_CARDS = [
     thumbGradient: 'from-amber-400/80 via-orange-500/70 to-rose-500/60',
     glassTint: '28 78% 58%',
     title: '03 - El objeto',
-    titleShort: 'Lo que se sostiene',
-    description: 'Y cuando todo se volvió abstracto, algo pequeño quiso anclarse.',
+    titleShort: 'Escucha: Lo que se sostiene',
+    description: 'Entonces necesité tocarla… Quería sostenerla.',
     videoUrl: null,
     ctaVerb: 'Sostén',
     action: 'Explora',
@@ -260,8 +261,8 @@ const MINIVERSE_CARDS = [
     thumbGradient: 'from-fuchsia-400/80 via-purple-500/70 to-indigo-500/60',
     glassTint: '304 65% 60%',
     title: '04 - El trazo',
-    titleShort: 'La imagen de sí',
-    description: 'No supe si estaba creando un universo o si el universo me estaba dibujando a mí.',
+    titleShort: 'Escucha: La imagen de sí',
+    description: 'No supe si estaba creando un universo o si un universo me estaba dibujando a mí.',
     videoUrl: null,
     ctaVerb: 'Mira',
     action: 'Explora',
@@ -273,8 +274,8 @@ const MINIVERSE_CARDS = [
     icon: Film,
     thumbGradient: 'from-rose-500/80 via-red-500/70 to-fuchsia-500/60',
     glassTint: '352 70% 60%',
-    title: '05 - La cámara',
-    titleShort: 'El quiebre',
+    title: '05 - La grabación',
+    titleShort: 'Escucha: El quiebre',
     description: 'Y por primera vez… pensé en detenerme.',
     videoUrl: null,
     ctaVerb: 'Observa',
@@ -290,8 +291,8 @@ const MINIVERSE_CARDS = [
     thumbGradient: 'from-sky-400/80 via-cyan-500/70 to-indigo-500/60',
     glassTint: '206 80% 58%',
     title: '06 - El eco',
-    titleShort: 'La memoria',
-    description: 'Entonces entendí: no estaba inventando. Estaba recordando.',
+      titleShort: 'Escucha: La memoria',
+      description: 'Entonces entendí: todo esto había empezado antes de mí.',
     videoUrl: null,
     ctaVerb: 'Escucha',
     action: 'Explora',
@@ -305,7 +306,7 @@ const MINIVERSE_CARDS = [
     thumbGradient: 'from-sky-400/80 via-emerald-500/70 to-cyan-500/60',
     glassTint: '176 62% 52%',
     title: '07 - El cuerpo',
-    titleShort: 'El límite',
+    titleShort: 'Escucha: El límite',
     description: 'Ahí toqué el límite. Y no había respuestas. Solo vértigo.',
     videoUrl: null,
     ctaVerb: 'Siente',
@@ -320,8 +321,8 @@ const MINIVERSE_CARDS = [
     thumbGradient: 'from-lime-400/80 via-emerald-500/70 to-teal-500/60',
     glassTint: '138 60% 48%',
     title: '08 - El juego',
-    titleShort: 'La elección',
-    description: 'Porque si hay nueve rutas… ninguna es la correcta.',
+    titleShort: 'Escucha: La elección',
+    description: 'Convertí la pregunta en recorrido. Dejé que otros eligieran por mí.',
     videoUrl: null,
     ctaVerb: 'Elige',
     action: 'Explora',
@@ -335,7 +336,7 @@ const MINIVERSE_CARDS = [
     thumbGradient: 'from-indigo-400/80 via-violet-500/70 to-purple-500/60',
     glassTint: '266 62% 60%',
     title: '09 - El espejo',
-    titleShort: 'La revelación',
+    titleShort: 'Escucha: La revelación',
     description: 'Tal vez esto nunca fue una obra. Tal vez fue una vida contada nueve veces.',
     videoUrl: null,
     ctaVerb: 'Consulta',
@@ -735,9 +736,8 @@ const MiniverseModal = ({
   const activeTabIntro = useMemo(() => {
       if (activeTab === 'escaparate') {
       return {
-      lead: 'Una microficción en nueve actos para adentrar en el universo.',
-      highlight: 'Cada acto dialoga con una forma distinta de la obra',
-      continuation: 'y abre la misma pregunta: ¿qué ocurre cuando un relato se expande y exige otro lenguaje?'
+      lead: 'Conecta con el universo a través de una microficción. Cada acto dialoga con una forma distinta de la obra y abre la misma pregunta:',
+      highlight: '¿qué ocurre cuando un relato se expande y exige otros lenguajes?',
       };
     }
     if (activeTab === 'experiences') {
@@ -774,8 +774,8 @@ const MiniverseModal = ({
         thumbGradient: 'from-violet-300/80 via-fuchsia-400/70 to-cyan-400/60',
         title: 'El arte de no romperse',
         titleShort: 'Prólogo',
-        ctaLabel: 'Ver testimoniales (5 min)',
-        description: 'No menos que fragmentos de un universo escondido.',
+        ctaLabel: 'Escucha las nueve formas',
+        description: 'No quería escribir una obra de teatro.',
         videoUrl: prologueVideoUrl,
         fullscreenVideoUrlDesktop: null,
         fullscreenVideoUrlMobile: null,
@@ -806,9 +806,9 @@ const MiniverseModal = ({
     [dramaShowcaseCard, showcaseNarrativeCards]
   );
   const mobileExploreButtonLabel = useMemo(() => {
-    if (!activeShowcaseCard) return 'Navegar entre actos';
-    if (activeShowcaseCard.isPrologue) return 'Navegar entre actos';
-    if (!fictionShowcaseCards.length) return 'Navegar entre actos';
+    if (!activeShowcaseCard) return 'Navega entre actos';
+    if (activeShowcaseCard.isPrologue) return 'Navega entre actos';
+    if (!fictionShowcaseCards.length) return 'Navega entre actos';
     const currentFictionIndex = fictionShowcaseCards.findIndex((card) => card.id === activeShowcaseCard.id);
     const baseIndex = currentFictionIndex >= 0 ? currentFictionIndex : 0;
     const nextCard = fictionShowcaseCards[(baseIndex + 1) % fictionShowcaseCards.length] ?? fictionShowcaseCards[0];
@@ -1593,14 +1593,12 @@ const MiniverseModal = ({
             >
             <div>
         <div className={`flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 ${isInlineMode ? 'mb-5' : 'mb-6'}`}>
-          <div>
-            <p className={`text-sm uppercase tracking-[0.35em] text-slate-400/80 ${isInlineMode ? 'mb-2.5' : 'mb-2'}`}>
-              Narrativa expandida
-            </p>
+          <div className={isInlineMode ? 'w-full' : ''}>
+       
 
             <h2
               id="miniverse-modal-title"
-              className={`${isInlineMode ? 'hero-inline-title-glow hero-inline-title-tight mb-1.5 font-semibold leading-[1.05] tracking-[-0.01em]' : 'font-display text-3xl'} text-slate-50`}
+              className={`${isInlineMode ? 'hero-inline-title-glow hero-inline-title-tight mb-1.5 text-center font-semibold leading-[1.05] tracking-[-0.01em]' : 'font-display text-3xl'} text-slate-50`}
               style={inlineTitleStyle}
             >
               {isInlineMode ? (
@@ -1617,7 +1615,7 @@ const MiniverseModal = ({
 
             {isInlineMode ? (
               <div className="mt-1 space-y-5">
-                <div className="hero-inline-intro-plecas px-1 py-3 text-sm">
+                <div className="hero-inline-intro-plecas mx-auto max-w-4xl px-1 py-3 text-center text-sm">
                   {activeTabIntro.lead}{' '}
                   <strong className="hero-inline-intro-strong font-semibold">
                     {activeTabIntro.highlight}
@@ -1925,17 +1923,17 @@ const MiniverseModal = ({
                             <div className="flex flex-col sm:flex-row gap-3">
                               <Button
                                 type="button"
-                                onClick={() => handleShowcasePrimaryCta(activeShowcaseCard)}
-                                className="narrative-cta-btn py-3 rounded-lg font-semibold flex items-center justify-center gap-2"
-                              >
-                                <span>{activeShowcaseCard.ctaLabel ?? activeShowcaseCard.titleShort ?? activeShowcaseCard.title}</span>
-                              </Button>
-                              <Button
-                                type="button"
                                 onClick={handleExploreMobileShowcase}
                                 className="bg-white text-slate-900 hover:bg-white/90 py-3 rounded-lg font-semibold flex items-center justify-center gap-2"
                               >
                                 <span className="w-full truncate text-center">{mobileExploreButtonLabel}</span>
+                              </Button>
+                              <Button
+                                type="button"
+                                onClick={() => handleShowcasePrimaryCta(activeShowcaseCard)}
+                                className="narrative-cta-btn py-3 rounded-lg font-semibold flex items-center justify-center gap-2"
+                              >
+                                <span>{activeShowcaseCard.ctaLabel ?? activeShowcaseCard.titleShort ?? activeShowcaseCard.title}</span>
                               </Button>
                             </div>
                             <p className="text-xs uppercase tracking-[0.35em] text-slate-300/70">
@@ -1957,9 +1955,8 @@ const MiniverseModal = ({
                                     data-showcase-preview="desktop-shared"
                                   />
                                   <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/55 via-black/20 to-transparent" />
-                                  <div className="pointer-events-none absolute left-4 top-4 rounded-full border border-white/20 bg-black/50 px-3 py-1 text-[0.6rem] uppercase tracking-[0.3em] text-slate-200">
-                                    Loop escénico continuo
-                                  </div>
+                                  <div className="hero-inline-video-glass-overlay" />
+                                
                                   <AnimatePresence mode="wait" initial={false}>
                                     <motion.div
                                       key={`desktop-showcase-synopsis-${activeShowcaseCard.id}`}
@@ -1967,9 +1964,9 @@ const MiniverseModal = ({
                                       animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
                                       exit={{ opacity: 0, y: -8, filter: 'blur(8px)' }}
                                       transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-                                      className="pointer-events-none absolute inset-x-0 bottom-14 px-6"
+                                      className="hero-inline-video-synopsis-layer pointer-events-none"
                                     >
-                                      <p className="mx-auto max-w-[92%] text-center text-[0.94rem] font-medium leading-[1.45] text-[rgb(253_230_138)] [text-shadow:0_2px_14px_rgba(0,0,0,0.95),0_0_34px_rgba(0,0,0,0.75),0_0_22px_rgba(251,191,36,0.22)]">
+                                      <p className="hero-inline-video-synopsis mx-auto max-w-[88%] text-center">
                                         {activeShowcaseCard.description}
                                       </p>
                                     </motion.div>
@@ -1992,15 +1989,7 @@ const MiniverseModal = ({
                 </div>
               ) : activeTab === 'escaparate' && isMobileViewport ? (
                 <div className="md:col-span-2 space-y-4">
-                  <div className="flex items-center justify-between text-xs text-slate-400/80">
-                    <span className="uppercase tracking-[0.3em] text-slate-300/80">
-                      Navega escenas
-                    </span>
-                    <span>
-                      Tarjeta {Math.min(activeShowcaseIndex + 1, Math.max(showcaseNarrativeCards.length, 1))}/
-                      {Math.max(showcaseNarrativeCards.length, 1)}
-                    </span>
-                  </div>
+       
                   {activeShowcaseCard ? (
                     <article
                       className="glass-effect relative overflow-hidden rounded-2xl border bg-white/5 p-5 sm:p-8"
@@ -2087,6 +2076,7 @@ const MiniverseModal = ({
                                   data-showcase-video="mobile-shared"
                                 />
                                 <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/45 via-transparent to-transparent" />
+                                <div className="hero-inline-video-glass-overlay" />
                                 <AnimatePresence mode="wait" initial={false}>
                                   <motion.div
                                     key={`mobile-showcase-synopsis-${activeShowcaseCard.id}`}
@@ -2094,9 +2084,9 @@ const MiniverseModal = ({
                                     animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
                                     exit={{ opacity: 0, y: -8, filter: 'blur(8px)' }}
                                     transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-                                    className="pointer-events-none absolute inset-x-0 bottom-14 px-6"
+                                    className="hero-inline-video-synopsis-layer pointer-events-none"
                                   >
-                                    <p className="mx-auto max-w-[92%] text-center text-[0.94rem] font-medium leading-[1.45] text-[rgb(253_230_138)] [text-shadow:0_2px_14px_rgba(0,0,0,0.95),0_0_34px_rgba(0,0,0,0.75),0_0_22px_rgba(251,191,36,0.22)]">
+                                    <p className="hero-inline-video-synopsis mx-auto max-w-[88%] text-center">
                                       {activeShowcaseCard.description}
                                     </p>
                                   </motion.div>
@@ -2115,22 +2105,20 @@ const MiniverseModal = ({
                           <div className="flex flex-col gap-3">
                             <Button
                               type="button"
-                              onClick={() => handleShowcasePrimaryCta(activeShowcaseCard)}
-                              className="narrative-cta-btn py-3 rounded-lg font-semibold flex items-center justify-center gap-2"
-                            >
-                              <span>{activeShowcaseCard.ctaLabel ?? activeShowcaseCard.titleShort ?? activeShowcaseCard.title}</span>
-                            </Button>
-                            <Button
-                              type="button"
                               onClick={handleExploreMobileShowcase}
                               className="bg-white text-slate-900 hover:bg-white/90 py-3 rounded-lg font-semibold flex items-center justify-center gap-2"
                             >
                               <span className="w-full truncate text-center">{mobileExploreButtonLabel}</span>
                             </Button>
+                            <Button
+                              type="button"
+                              onClick={() => handleShowcasePrimaryCta(activeShowcaseCard)}
+                              className="narrative-cta-btn py-3 rounded-lg font-semibold flex items-center justify-center gap-2"
+                            >
+                              <span>{activeShowcaseCard.ctaLabel ?? activeShowcaseCard.titleShort ?? activeShowcaseCard.title}</span>
+                            </Button>
                           </div>
-                          <p className="text-xs uppercase tracking-[0.35em] text-slate-300/70">
-                            {activeShowcaseCard.isPrologue ? 'Prólogo en video' : 'Testimonio en video'}
-                          </p>
+                
                         </div>
                       </div>
                     </article>

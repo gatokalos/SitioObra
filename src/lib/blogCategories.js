@@ -8,6 +8,9 @@ export const BLOG_CATEGORY_CONFIG = {
     label: 'Curaduría Reflexiva',
     summary:
       'Textos críticos y análisis profundos sobre la obra y su universo, escritos por investigadores, curadoras y voces especializadas.',
+    hook: 'Si no has visto la obra, este es el mejor punto de entrada.',
+    ctaLabel: 'Entrar en Curaduría',
+    readingTime: 'Tiempo variable',
     keywords: ['curaduria', 'curatorial', 'critica', 'ensayo', 'analisis', 'reflexiva'],
   },
   expansiones: {
@@ -15,6 +18,9 @@ export const BLOG_CATEGORY_CONFIG = {
     label: 'Expansiones Narrativas',
     summary:
       'Microficciones, comunidad y relatos que acompañan lo que la obra despierta en cada quien: cartas, diarios, audios y relatos colectivos que expanden este espacio transmedia.',
+    hook: 'Lo que la obra sigue diciendo fuera del escenario.',
+    ctaLabel: 'Explorar relatos',
+    readingTime: 'Tiempo variable',
     keywords: ['miniverso', 'transmedia', 'ficcion', 'comunidad', 'microficcion', 'expansion'],
   },
   backstage: {
@@ -22,6 +28,9 @@ export const BLOG_CATEGORY_CONFIG = {
     label: 'Detrás de Cámaras',
     summary:
       'Noticias, avances y bitácoras del proceso creativo: apps, novela, ensayo técnico, producción y archivos del montaje.',
+    hook: 'Cómo se construyó este universo, paso a paso.',
+    ctaLabel: 'Ver proceso',
+    readingTime: 'Tiempo variable',
     keywords: ['backstage', 'proceso', 'produccion', 'apps', 'novela', 'noticias', 'detras'],
   },
 };
