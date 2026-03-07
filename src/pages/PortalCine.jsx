@@ -16,10 +16,10 @@ import { supabase } from '@/lib/supabaseClient';
 import { sanitizeExternalHttpUrl } from '@/lib/urlSafety';
 
 const CINE_INTRO =
-  'El cine dentro de #GatoEncerrado es otro modo de entrar al encierro. La obra, el proceso y la mirada se mezclan hasta volver indistinguibles sus fronteras.';
-const CINE_PROMISE = 'Aqui no solo ves cine: te invitamos a entrar a su laboratorio.';
+  'El cine dentro de #GatoEncerrado es otro modo de entrar al encierro.';
+const CINE_PROMISE = 'CopyCats (cine de no-ficción) y Quirón (autoficción) dialogan desde extremos distintos del mismo espectro:';
 const CINE_THEME =
-  'La doble vida de una imagen: aquello que se ve y aquello que tiembla detras. CopyCats (farsa lucida) y Quiron (herida intima) responden a la misma pregunta en dos lenguajes.';
+  'Una filma el desgaste creativo y la fractura del proceso; la otra abre una confesión íntima que decide hablar del suicidio sin rodeos.';
 const CINE_TONE = ['Premiere intima', 'Laboratorio abierto', 'Cine con memoria'];
 const CINE_NOTA_AUTORAL = {
   title: '#LuzQueEditas',
@@ -42,7 +42,7 @@ const CINE_IA_PROFILE = {
 const COPYCATS_DATA = {
   title: 'CopyCats',
   description:
-    'Un ensayo documental sobre identidad y repeticion en la era digital. Explora su bitacora creativa y el proceso que dio forma a la pieza.',
+    'CopyCats observa el acto de crear mientras ocurre. Un cine-ensayo sobre repetición, desgaste creativo y el extraño momento en que una obra empieza a copiarse a sí misma.',
   microcopy: 'Ensayo abierto (4:27)',
   url: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Cine%20-%20teasers/ensayos/La%20Cadena%20del%20Gesto.mp4',
   tags: ['teaser', 'Identidad Digital', 'Archivo autoficcional'],
@@ -54,13 +54,6 @@ const QUIRON_DATA = {
   teaserUrl: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Cine%20-%20teasers/Quiron.mp4',
   fullUrl: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Cine%20-%20teasers/Quiron_10min.mp4',
   tags: ['Cine-ensayo', 'Identidad Digital', 'Archivo autoficcional'],
-};
-const CINE_BRIDGE = {
-  title: 'Una linea que vibra entre ambas historias',
-  description:
-    'CopyCats y Quiron dialogan desde extremos distintos del mismo territorio. Una filma el desgaste creativo y la fractura del proceso; la otra abre una confesion intima que decide hablar del suicidio sin rodeos.',
-  note:
-    'Dos peliculas, dos vulnerabilidades distintas, un mismo impulso: usar el arte para tocar aquello que no queremos decir en voz alta y encontrar otra manera de contarlo.',
 };
 const CINE_PROYECCION = {
   title: 'Mayo 2026 · Cineteca CECUT',
@@ -97,6 +90,13 @@ const CINE_COLLABORATORS = [
     role: 'Produccion en linea y cuerpo en escena',
     bio: 'Coordino la produccion en linea del cortometraje y encarna una presencia clave entre lo ritual y lo domestico.',
     image: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/equipo/mariadianalaura.jpg',
+  },
+  {
+    id: 'tania-fraire',
+    name: 'Tania Fraire Vazques',
+    role: 'Autoficcion (Quiron) · Interprete natural en pantalla',
+    bio: 'Tania llego al proyecto desde la autoficcion y revelo una presencia genuina, vulnerable y precisa frente a camara. Su participacion en Quiron abrio una grieta luminosa para volver la historia mas humana.',
+    image: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/equipo/tania.jpg',
   },
 ];
 const CINE_BLOG_KEYS = ['copycats', 'cine', 'miniversocine'];
@@ -476,11 +476,6 @@ const PortalCine = () => {
 
           <div className="grid gap-6 xl:grid-cols-[1.2fr_1fr] xl:items-start">
             <div className="space-y-4 rounded-3xl border border-white/10 bg-black/30 p-5">
-              <div className="rounded-2xl border border-white/10 bg-black/35 p-4 space-y-3">
-                <p className="text-xs uppercase tracking-[0.32em] text-slate-400/80">{CINE_BRIDGE.title}</p>
-                <p className="text-sm text-slate-200/90 leading-relaxed">{CINE_BRIDGE.description}</p>
-                <p className="text-sm text-slate-300/85 leading-relaxed">{CINE_BRIDGE.note}</p>
-              </div>
               <div className="rounded-2xl border border-cyan-200/25 bg-cyan-500/10 p-4 space-y-3">
                 <p className="text-xs uppercase tracking-[0.3em] text-cyan-100">{CINE_PROYECCION.title}</p>
                 <p className="text-sm text-slate-100/95 leading-relaxed">{CINE_PROYECCION.description}</p>

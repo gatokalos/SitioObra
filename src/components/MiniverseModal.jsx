@@ -275,7 +275,7 @@ const MINIVERSE_CARDS = [
     icon: Film,
     thumbGradient: 'from-rose-500/80 via-red-500/70 to-fuchsia-500/60',
     glassTint: '352 70% 60%',
-    title: '05 - La grabación',
+    title: '05 - El lente',
     titleShort: '🎧 "El quiebre" (30 seg)',
     description: 'Y por primera vez… pensé en detenerme.',
     videoUrl: null,
@@ -338,7 +338,7 @@ const MINIVERSE_CARDS = [
     glassTint: '266 62% 60%',
     title: '09 - El espejo',
     titleShort: '🎧 "La revelación" (30 seg)',
-    description: 'Tal vez esto nunca fue una obra. Tal vez fue una vida contada nueve veces.',
+    description: 'Tal vez esto nunca fue una obra. Tal vez fue un sueño vivido nueve veces.',
     videoUrl: null,
     ctaVerb: 'Consulta',
     action: 'Explora',
@@ -739,7 +739,7 @@ const MiniverseModal = ({
       if (activeTab === 'escaparate') {
       return {
       lead: 'Conecta con el universo a través de una microficción. Cada fragmento dialoga con una forma distinta de la obra y abre la misma pregunta:',
-      highlight: '¿qué ocurre cuando una forma se expande y exige otro lenguaje?',
+      highlight: '¿qué ocurre cuando un sueño se expande y exige otro lenguaje?',
       };
     }
     if (activeTab === 'experiences') {

@@ -816,15 +816,15 @@ iaProfile: {
   copycats: {
     label: 'Mini-verso cine',
     type: 'cinema',
-    intro: 'El cine dentro de #GatoEncerrado es otro modo de entrar al encierro. La obra, el proceso y la mirada se mezclan hasta volver indistinguibles sus fronteras.',
-    promise: 'Aquí no solo ves cine: te invitamos a entrar a su laboratorio.',
+    intro: 'El cine dentro de #GatoEncerrado es otro modo de entrar al encierro.',
+    promise: 'CopyCats (no-ficción) y Quirón (autoficción) dialogan desde extremos distintos del mismo espectro: una filma el desgaste creativo y la fractura del proceso; la otra abre una confesión íntima que decide hablar del suicidio sin rodeos.',
     theme:
-      'La doble vida de una imagen: aquello que se ve y aquello que tiembla detrás. CopyCats (farsa lúcida) y Quirón (herida íntima) responden a la misma pregunta en dos lenguajes.',
+      'Dos películas, dos vulnerabilidades distintas, un mismo impulso: usar el arte para tocar aquello que no queremos decir en voz alta y encontrar otra manera de contarlo.',
     tone: ['Premiere íntima', 'Laboratorio abierto', 'Cine con memoria'],
     cartaTitle: '#LuzQueEditas',
     copycats: {
       title: 'CopyCats',
-      description: 'Un ensayo documental sobre identidad y repetición en la era digital. Explora su bitácora creativa y el proceso que dio forma a la pieza.',
+      description: 'CopyCats observa el acto de crear mientras ocurre. Un cine-ensayo sobre repetición, desgaste creativo y el extraño momento en que una obra empieza a copiarse a sí misma.',
 
       assets: [
         {
@@ -904,25 +904,7 @@ iaProfile: {
         anchor: '#team',
       },
     ],
-    comments: [
-      {
-        id: 'copycats-comment-1',
-        quote: '“En la proyección sentí que CopyCats nos dejó ver la forma en que nos copiamos para sobrevivir.”',
-        author: 'Invitada al laboratorio',
-      },
-      {
-        id: 'copycats-comment-2',
-        quote: '“Quirón me dejó en silencio, como si me hablara al oído.”',
-        author: 'Asistente al teaser privado',
-      },
-    ],
-    bridge: {
-      title: 'Una línea que vibra entre ambas historias',
-      description:
-        'CopyCats y Quirón dialogan desde extremos distintos del mismo territorio. Una filma el desgaste creativo y la fractura del proceso;la otra abre una confesión íntima que decide hablar del suicidio sin rodeos.',
-      note:
-        'Dos películas, dos vulnerabilidades distintas, un mismo impulso: usar el arte para tocar aquello que no queremos decir en voz alta y encontrar otra manera de contarlo.',
-    },
+
     proyeccion: {
       title: '🗓️ Mayo 2026 · Cineteca CECUT',
       description:
