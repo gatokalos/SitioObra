@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion';
 import { createPortal } from 'react-dom';
 import { BookOpen, Brain, Check, Compass, Coffee, Coins, Drama, Film, Filter, Heart, HeartHandshake, HeartPulse, MapIcon, Music, Palette, School, Share2, Smartphone, Sparkles, DoorOpen } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { toast } from '@/components/ui/use-toast';
 import { ToastAction } from '@/components/ui/toast';
@@ -14,6 +14,7 @@ import { safeSetItem } from '@/lib/safeStorage';
 import { getTopShowcaseLikes } from '@/services/showcaseLikeService';
 import { isSafariBrowser } from '@/lib/browser';
 import { resolvePortalRoute } from '@/lib/miniversePortalRegistry';
+import { createPortalLaunchState } from '@/lib/portalNavigation';
 import {
   MINIVERSE_HOME_EVENT_TYPES,
   trackMiniverseHomeEvent,
@@ -213,7 +214,7 @@ const MINIVERSE_CARDS = [
     thumbGradient: 'from-purple-400/80 via-fuchsia-500/70 to-rose-500/60',
     glassTint: '284 70% 62%',
     title: '01 - La escena',
-    titleShort: 'Escucha: Abre la puerta',
+    titleShort: '🎧 "Abre la puerta" (30 seg)',
     description: 'Yo solo quería entender algo que me estaba pasando.',
 
     videoUrl: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Merch/Loop_escenico_small.mp4',
@@ -230,7 +231,7 @@ const MINIVERSE_CARDS = [
     thumbGradient: 'from-emerald-400/80 via-teal-500/70 to-cyan-500/60',
     glassTint: '168 70% 52%',
     title: '02 - La escritura',
-    titleShort: 'Escucha: Entre grietas',
+    titleShort: '🎧 "Entre grietas" (30 seg)',
     description: 'Pensé que si la escribía, lo iba a entender.',
     videoUrl: null,
     ctaVerb: 'Lee',
@@ -246,7 +247,7 @@ const MINIVERSE_CARDS = [
     thumbGradient: 'from-amber-400/80 via-orange-500/70 to-rose-500/60',
     glassTint: '28 78% 58%',
     title: '03 - El objeto',
-    titleShort: 'Escucha: Lo que se sostiene',
+    titleShort: '🎧 "Lo que se sostiene" (30 seg)',
     description: 'Entonces necesité tocarla… Quería sostenerla.',
     videoUrl: null,
     ctaVerb: 'Sostén',
@@ -261,7 +262,7 @@ const MINIVERSE_CARDS = [
     thumbGradient: 'from-fuchsia-400/80 via-purple-500/70 to-indigo-500/60',
     glassTint: '304 65% 60%',
     title: '04 - El trazo',
-    titleShort: 'Escucha: La imagen de sí',
+    titleShort: '🎧 "La imagen de sí" (30 seg)',
     description: 'No supe si estaba creando un universo o si un universo me estaba dibujando a mí.',
     videoUrl: null,
     ctaVerb: 'Mira',
@@ -275,7 +276,7 @@ const MINIVERSE_CARDS = [
     thumbGradient: 'from-rose-500/80 via-red-500/70 to-fuchsia-500/60',
     glassTint: '352 70% 60%',
     title: '05 - La grabación',
-    titleShort: 'Escucha: El quiebre',
+    titleShort: '🎧 "El quiebre" (30 seg)',
     description: 'Y por primera vez… pensé en detenerme.',
     videoUrl: null,
     ctaVerb: 'Observa',
@@ -291,7 +292,7 @@ const MINIVERSE_CARDS = [
     thumbGradient: 'from-sky-400/80 via-cyan-500/70 to-indigo-500/60',
     glassTint: '206 80% 58%',
     title: '06 - El eco',
-      titleShort: 'Escucha: La memoria',
+      titleShort: '🎧 "La memoria" (30 seg)',
       description: 'Entonces entendí: todo esto había empezado antes de mí.',
     videoUrl: null,
     ctaVerb: 'Escucha',
@@ -306,7 +307,7 @@ const MINIVERSE_CARDS = [
     thumbGradient: 'from-sky-400/80 via-emerald-500/70 to-cyan-500/60',
     glassTint: '176 62% 52%',
     title: '07 - El cuerpo',
-    titleShort: 'Escucha: El límite',
+    titleShort: '🎧 "El límite" (30 seg)',
     description: 'Ahí toqué el límite. Y no había respuestas. Solo vértigo.',
     videoUrl: null,
     ctaVerb: 'Siente',
@@ -321,7 +322,7 @@ const MINIVERSE_CARDS = [
     thumbGradient: 'from-lime-400/80 via-emerald-500/70 to-teal-500/60',
     glassTint: '138 60% 48%',
     title: '08 - El juego',
-    titleShort: 'Escucha: La elección',
+    titleShort: '🎧 "La elección" (30 seg)',
     description: 'Convertí la pregunta en recorrido. Dejé que otros eligieran por mí.',
     videoUrl: null,
     ctaVerb: 'Elige',
@@ -336,7 +337,7 @@ const MINIVERSE_CARDS = [
     thumbGradient: 'from-indigo-400/80 via-violet-500/70 to-purple-500/60',
     glassTint: '266 62% 60%',
     title: '09 - El espejo',
-    titleShort: 'Escucha: La revelación',
+    titleShort: '🎧 "La revelación" (30 seg)',
     description: 'Tal vez esto nunca fue una obra. Tal vez fue una vida contada nueve veces.',
     videoUrl: null,
     ctaVerb: 'Consulta',
@@ -406,6 +407,7 @@ const MiniverseModal = ({
   displayMode = 'modal',
 }) => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { user } = useAuth();
   const isSafari = isSafariBrowser();
   const isInlineMode = displayMode === 'inline';
@@ -736,15 +738,15 @@ const MiniverseModal = ({
   const activeTabIntro = useMemo(() => {
       if (activeTab === 'escaparate') {
       return {
-      lead: 'Conecta con el universo a través de una microficción. Cada acto dialoga con una forma distinta de la obra y abre la misma pregunta:',
-      highlight: '¿qué ocurre cuando un relato se expande y exige otros lenguajes?',
+      lead: 'Conecta con el universo a través de una microficción. Cada fragmento dialoga con una forma distinta de la obra y abre la misma pregunta:',
+      highlight: '¿qué ocurre cuando una forma se expande y exige otro lenguaje?',
       };
     }
     if (activeTab === 'experiences') {
       return {
         lead: 'Te presentamos las nueve formas expandidas de la obra:',
         highlight:
-          'un ecosistema para explorar, intervenir y volver cuando quieras.',
+          'un ecosistema para tocar, intervenir y volver cuando quieras.',
           continuation: 'Con tu huella mensual, accedes a la versión completa de estos "miniversos".'
       };
     }
@@ -772,10 +774,10 @@ const MiniverseModal = ({
         icon: Sparkles,
         thumbLabel: 'P',
         thumbGradient: 'from-violet-300/80 via-fuchsia-400/70 to-cyan-400/60',
-        title: 'El arte de no romperse',
+        title: 'Microficción fragmentada',
         titleShort: 'Prólogo',
-        ctaLabel: 'Escucha las nueve formas',
-        description: 'No quería escribir una obra de teatro.',
+        ctaLabel: '🎧 "El arte de no romperse" (5 min)',
+        description: '¿Qué pasa cuando una obra se expande sin pausa y empieza a romperse?',
         videoUrl: prologueVideoUrl,
         fullscreenVideoUrlDesktop: null,
         fullscreenVideoUrlMobile: null,
@@ -806,13 +808,13 @@ const MiniverseModal = ({
     [dramaShowcaseCard, showcaseNarrativeCards]
   );
   const mobileExploreButtonLabel = useMemo(() => {
-    if (!activeShowcaseCard) return 'Navega entre actos';
-    if (activeShowcaseCard.isPrologue) return 'Navega entre actos';
-    if (!fictionShowcaseCards.length) return 'Navega entre actos';
+    if (!activeShowcaseCard) return 'Navega entre formas';
+    if (activeShowcaseCard.isPrologue) return 'Primera forma: La escena';
+    if (!fictionShowcaseCards.length) return 'Navega entre formas';
     const currentFictionIndex = fictionShowcaseCards.findIndex((card) => card.id === activeShowcaseCard.id);
     const baseIndex = currentFictionIndex >= 0 ? currentFictionIndex : 0;
     const nextCard = fictionShowcaseCards[(baseIndex + 1) % fictionShowcaseCards.length] ?? fictionShowcaseCards[0];
-    return `Siguiente acto: ${nextCard?.portalLabel ?? 'La escena'}`;
+    return `Siguiente forma: ${nextCard?.portalLabel ?? 'La escena'}`;
   }, [activeShowcaseCard, fictionShowcaseCards]);
   const activeShowcaseFullscreenVideoUrl = useMemo(() => {
     if (!showcaseFullscreenCard) return null;
@@ -936,7 +938,11 @@ const MiniverseModal = ({
         isMobileViewport,
       });
       if (portalRoute) {
-        navigate(portalRoute);
+        navigate(portalRoute, {
+          state: createPortalLaunchState(location, 'miniverse-modal-card', {
+            showcaseId: card.formatId,
+          }),
+        });
         if (!isInlineMode && !stayOpenOnSelect) {
           handleClose();
         }
@@ -957,6 +963,7 @@ const MiniverseModal = ({
       handleClose,
       isInlineMode,
       isMobileViewport,
+      location,
       markMiniverseVisited,
       navigate,
       onSelectMiniverse,
@@ -1001,7 +1008,11 @@ const MiniverseModal = ({
       isMobileViewport,
     });
     if (portalRoute) {
-      navigate(portalRoute);
+      navigate(portalRoute, {
+        state: createPortalLaunchState(location, 'miniverse-modal-enter', {
+          showcaseId: selectedMiniverse.formatId,
+        }),
+      });
       if (!isInlineMode) {
         handleClose();
       }
@@ -1014,6 +1025,7 @@ const MiniverseModal = ({
   }, [
     handleClose,
     legacyScrollToSection,
+    location,
     markMiniverseVisited,
     navigate,
     isMobileViewport,
@@ -1038,7 +1050,11 @@ const MiniverseModal = ({
         isMobileViewport,
       });
       if (portalRoute) {
-        navigate(portalRoute);
+        navigate(portalRoute, {
+          state: createPortalLaunchState(location, 'miniverse-modal-showcase', {
+            showcaseId: card.formatId,
+          }),
+        });
         if (!isInlineMode) {
           handleClose();
         }
@@ -1051,6 +1067,7 @@ const MiniverseModal = ({
     },
     [
       handleClose,
+      location,
       markMiniverseVisited,
       navigate,
       isMobileViewport,
@@ -1603,12 +1620,12 @@ const MiniverseModal = ({
             >
               {isInlineMode ? (
                 <>
-                  <span className="hero-inline-title-line">{activeTabHeadingVerb} el universo</span>
-                  <span className="hero-inline-title-line">de #GatoEncerrado</span>
+                  <span className="hero-inline-title-line">{activeTabHeadingVerb} el Universo</span>
+                  <span className="hero-inline-title-line"> #GatoEncerrado</span>
                 </>
               ) : (
                 <>
-                  {activeTabHeadingVerb} el universo de #GatoEncerrado
+                  {activeTabHeadingVerb} el universo #GatoEncerrado
                 </>
               )}
             </h2>

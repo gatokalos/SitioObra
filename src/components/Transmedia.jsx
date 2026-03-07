@@ -55,6 +55,7 @@ import {
   resolveShowcaseFromHash,
 } from '@/lib/bienvenidaBridge';
 import { resolvePortalRoute } from '@/lib/miniversePortalRegistry';
+import { createPortalLaunchState } from '@/lib/portalNavigation';
 import MiniversoSonoroPreview from '@/components/miniversos/sonoro/MiniversoSonoroPreview';
 import { recordShowcaseLike } from '@/services/showcaseLikeService';
 import { useMobileVideoPresentation } from '@/hooks/useMobileVideoPresentation';
@@ -2233,6 +2234,7 @@ const Transmedia = ({ allianceOnlyMode = false }) => {
   });
   const [showcaseCarouselIndex, setShowcaseCarouselIndex] = useState(0);
   const [mobileShowcaseIndex, setMobileShowcaseIndex] = useState(0);
+  const lastAppliedPortalRestoreTokenRef = useRef('');
   const [recommendedShowcaseId, setRecommendedShowcaseId] = useState(null);
   const [focusLockShowcaseId, setFocusLockShowcaseId] = useState(null);
   const [focusIncomingGAT, setFocusIncomingGAT] = useState(null);
@@ -3118,10 +3120,14 @@ const Transmedia = ({ allianceOnlyMode = false }) => {
       if (!portalRoute) {
         return false;
       }
-      navigate(portalRoute);
+      navigate(portalRoute, {
+        state: createPortalLaunchState(location, 'transmedia-mobile-portal', {
+          showcaseId: formatId,
+        }),
+      });
       return true;
     },
-    [isMobileViewport, navigate]
+    [isMobileViewport, location, navigate]
   );
 
   const clearShowcaseOpenTransitionTimers = useCallback(() => {
@@ -4150,6 +4156,28 @@ const Transmedia = ({ allianceOnlyMode = false }) => {
     }, SHOWCASE_AUTO_CYCLE_INTERVAL_MS);
     return () => window.clearInterval(intervalId);
   }, [isDesktopFocusLockActive, isMobileViewport]);
+
+  useEffect(() => {
+    if (!isMobileViewport) return;
+
+    const restoreShowcaseId =
+      typeof location.state?.portalRestoreShowcaseId === 'string'
+        ? location.state.portalRestoreShowcaseId
+        : '';
+    if (!restoreShowcaseId) return;
+
+    const restoreToken =
+      typeof location.state?.portalRestoreToken === 'string' && location.state.portalRestoreToken.trim()
+        ? location.state.portalRestoreToken
+        : `${location.pathname}${location.search}:${restoreShowcaseId}`;
+    if (lastAppliedPortalRestoreTokenRef.current === restoreToken) return;
+
+    const targetIndex = formats.findIndex((item) => item.id === restoreShowcaseId);
+    if (targetIndex < 0) return;
+
+    lastAppliedPortalRestoreTokenRef.current = restoreToken;
+    setMobileShowcaseIndex(targetIndex);
+  }, [isMobileViewport, location.pathname, location.search, location.state]);
 
   useEffect(() => {
     if (typeof window === 'undefined') return undefined;
@@ -5875,7 +5903,7 @@ const rendernotaAutoral = () => {
 
               <div className="order-5 min-w-0 lg:order-none">
                 {renderCommunityBlock('miniversos', {
-                  ctaLabel: 'coméntanos algo aquí',
+                  ctaLabel: 'coméntanos algo',
                   emptyMessage: 'Todavía no hay voces en este miniverso.',
                   reactionProps: reactionDetails,
                   className: 'rounded-3xl border border-white/10 bg-black/30 p-6 space-y-5',
@@ -7067,7 +7095,7 @@ const rendernotaAutoral = () => {
                 </div>
                 <div className="space-y-6">
                   {renderCommunityBlock('miniversoNovela', {
-                    ctaLabel: 'coméntanos algo aquí',
+                    ctaLabel: 'coméntanos algo',
                     emptyMessage: 'Todavía no hay voces en este miniverso.',
                     className: 'rounded-3xl border border-white/10 bg-black/30 p-6',
                   })}
@@ -8019,7 +8047,7 @@ const rendernotaAutoral = () => {
               viewport={{ once: true }}
               className="text-center mb-[clamp(2.5rem,5.5vh,4rem)] space-y-[clamp(1.25rem,2.2vh,1.75rem)] min-h-[clamp(210px,27vh,260px)]"
             >
-              <p className="text-xs uppercase tracking-[0.4em] text-slate-400/70">Narrativa Transmedia</p>
+              <p className="text-xs uppercase tracking-[0.4em] text-slate-400/70">Vitrinas transmedia</p>
               <h2 className="font-display text-4xl md:text-5xl font-medium text-gradient italic">
                 Las formas de la Obra
               </h2>
@@ -8029,10 +8057,10 @@ const rendernotaAutoral = () => {
 
       Cada una con su propio lenguaje y forma de participación.<br /><br />
 
-    No repiten la historia: la continúan.<br /><br />
+   No repiten la historia: <strong>la continúan.</strong><br /><br />
 
-
-    Te confiamos <span className="font-semibold text-purple-200">1350 GATokens.</span> <br /> Úsalos para conocer, intervenir y expandir el pulso del universo.  <br />Aquí tienes lo suficiente para comenzar.
+Aquí no está todo. Solo lo suficiente para navegar, intervenir y habitar este universo.
+    Te confiamos la energía simbólica de <span className="font-semibold text-purple-200">1350 gatokens</span> para empezar.
   </p>
             </motion.div>
           ) : null}
@@ -8076,6 +8104,54 @@ const rendernotaAutoral = () => {
               const minRequiredCopy = buildShowcaseMinRequiredCopy(format.id);
               return (
                 <>
+                  <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-3">
+                    <button
+                      type="button"
+                      disabled={isShowcaseOpenTransitionActive}
+                      onClick={() => setMobileShowcaseIndex(prevIndex)}
+                      className="justify-self-start inline-flex max-w-full items-center gap-1 rounded-full border border-white/15 bg-white/5 px-3 py-1.5 text-xs text-slate-200/90 transition hover:border-purple-300/40 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-400/60 disabled:opacity-45 disabled:pointer-events-none"
+                      aria-label={`Ir a vitrina anterior: ${prevLabel}`}
+                    >
+                      <span aria-hidden="true">←</span>
+                      <span className="truncate">{prevLabel}</span>
+                    </button>
+                    <div className="flex items-center justify-center gap-2 min-w-[88px]">
+                      {visibleDotIndices.map((idx, offset) => {
+                        const item = formats[idx];
+                        const isActiveDot = idx === currentIndex;
+                        const isLeftEdgeDot = offset === 0 && dotWindowStart > 0;
+                        const isRightEdgeDot =
+                          offset === visibleDotIndices.length - 1 && dotWindowEnd < formats.length;
+                        return (
+                          <button
+                            key={`mobile-dot-${item.id}`}
+                            type="button"
+                            disabled={isShowcaseOpenTransitionActive}
+                            onClick={() => setMobileShowcaseIndex(idx)}
+                            className={`h-2 w-2 rounded-full transition ${
+                              isActiveDot
+                                ? 'bg-slate-100 shadow-[0_0_8px_rgba(255,255,255,0.55)]'
+                                : isLeftEdgeDot || isRightEdgeDot
+                                  ? 'bg-slate-500/40 hover:bg-slate-300/65'
+                                  : 'bg-slate-500/70 hover:bg-slate-300/80'
+                            } disabled:opacity-45 disabled:pointer-events-none`}
+                            aria-label={`Ir a vitrina ${item.title}`}
+                            aria-current={isActiveDot ? 'true' : undefined}
+                          />
+                        );
+                      })}
+                    </div>
+                    <button
+                      type="button"
+                      disabled={isShowcaseOpenTransitionActive}
+                      onClick={() => setMobileShowcaseIndex(nextIndex)}
+                      className="justify-self-end inline-flex max-w-full items-center gap-1 rounded-full border border-white/15 bg-white/5 px-3 py-1.5 text-xs text-slate-200/90 transition hover:border-purple-300/40 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-400/60 disabled:opacity-45 disabled:pointer-events-none"
+                      aria-label={`Ir a vitrina siguiente: ${nextLabel}`}
+                    >
+                      <span className="truncate">{nextLabel}</span>
+                      <span aria-hidden="true">→</span>
+                    </button>
+                  </div>
                   <motion.div
                     key={format.id}
                     initial={isSafari ? false : { opacity: 0, y: 18 }}
@@ -8163,7 +8239,7 @@ const rendernotaAutoral = () => {
                           className={`${iconClass} drop-shadow-[0_0_12px_rgba(168,85,247,0.35)] transition-transform duration-300 group-hover:-translate-y-1 group-active:-translate-y-1`}
                         />
                         <div>
-                          <p className="text-xs uppercase tracking-[0.35em] text-slate-400/80">Mini-versos</p>
+                          <p className="text-xs uppercase tracking-[0.35em] text-slate-400/80">Miniversos</p>
                           <h3 className="font-display text-2xl text-slate-100">{format.title}</h3>
                         </div>
                       </div>
@@ -8195,54 +8271,6 @@ const rendernotaAutoral = () => {
                       }`}
                     />
                   </motion.div>
-                  <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-3">
-                    <button
-                      type="button"
-                      disabled={isShowcaseOpenTransitionActive}
-                      onClick={() => setMobileShowcaseIndex(prevIndex)}
-                      className="justify-self-start inline-flex max-w-full items-center gap-1 rounded-full border border-white/15 bg-white/5 px-3 py-1.5 text-xs text-slate-200/90 transition hover:border-purple-300/40 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-400/60 disabled:opacity-45 disabled:pointer-events-none"
-                      aria-label={`Ir a vitrina anterior: ${prevLabel}`}
-                    >
-                      <span aria-hidden="true">←</span>
-                      <span className="truncate">{prevLabel}</span>
-                    </button>
-                    <div className="flex items-center justify-center gap-2 min-w-[88px]">
-                      {visibleDotIndices.map((idx, offset) => {
-                        const item = formats[idx];
-                        const isActiveDot = idx === currentIndex;
-                        const isLeftEdgeDot = offset === 0 && dotWindowStart > 0;
-                        const isRightEdgeDot =
-                          offset === visibleDotIndices.length - 1 && dotWindowEnd < formats.length;
-                        return (
-                          <button
-                            key={`mobile-dot-${item.id}`}
-                            type="button"
-                            disabled={isShowcaseOpenTransitionActive}
-                            onClick={() => setMobileShowcaseIndex(idx)}
-                            className={`h-2 w-2 rounded-full transition ${
-                              isActiveDot
-                                ? 'bg-slate-100 shadow-[0_0_8px_rgba(255,255,255,0.55)]'
-                                : isLeftEdgeDot || isRightEdgeDot
-                                  ? 'bg-slate-500/40 hover:bg-slate-300/65'
-                                  : 'bg-slate-500/70 hover:bg-slate-300/80'
-                            } disabled:opacity-45 disabled:pointer-events-none`}
-                            aria-label={`Ir a vitrina ${item.title}`}
-                            aria-current={isActiveDot ? 'true' : undefined}
-                          />
-                        );
-                      })}
-                    </div>
-                    <button
-                      type="button"
-                      disabled={isShowcaseOpenTransitionActive}
-                      onClick={() => setMobileShowcaseIndex(nextIndex)}
-                      className="justify-self-end inline-flex max-w-full items-center gap-1 rounded-full border border-white/15 bg-white/5 px-3 py-1.5 text-xs text-slate-200/90 transition hover:border-purple-300/40 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-400/60 disabled:opacity-45 disabled:pointer-events-none"
-                      aria-label={`Ir a vitrina siguiente: ${nextLabel}`}
-                    >
-                      <span className="truncate">{nextLabel}</span>
-                      <span aria-hidden="true">→</span>
-                    </button>
-                  </div>
                 </>
               );
             })()}

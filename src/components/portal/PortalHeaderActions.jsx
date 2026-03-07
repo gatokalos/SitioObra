@@ -1,6 +1,6 @@
-import React, { useCallback, useSyncExternalStore } from 'react';
+import React, { useCallback, useMemo, useSyncExternalStore } from 'react';
 import { Send, Volume2, VolumeX, X } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { toast } from '@/components/ui/use-toast';
 import { useAuth } from '@/contexts/SupabaseAuthContext';
 import {
@@ -11,21 +11,35 @@ import {
   HERO_AMBIENT_DEFAULT_VOLUME,
   HERO_AMBIENT_MIN_AUDIBLE_VOLUME,
 } from '@/lib/heroAmbientAudio';
+import { resolvePortalReturnTarget } from '@/lib/portalNavigation';
 
 const DEFAULT_RETURN_URL = '/?heroTab=experiences#hero';
 
 const PortalHeaderActions = ({ returnUrl = DEFAULT_RETURN_URL }) => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { user } = useAuth();
   const ambientState = useSyncExternalStore(
     subscribeHeroAmbient,
     getHeroAmbientState,
     getHeroAmbientState
   );
+  const { portalReturnUrl, portalReturnScrollY, portalReturnShowcaseId, restoreToken } = useMemo(
+    () => resolvePortalReturnTarget(location.state, returnUrl),
+    [location.state, returnUrl]
+  );
 
   const handleBackToSite = useCallback(() => {
-    navigate(returnUrl, { replace: true });
-  }, [navigate, returnUrl]);
+    const restoreState =
+      portalReturnScrollY == null
+        ? undefined
+        : {
+            portalRestoreScrollY: portalReturnScrollY,
+            portalRestoreShowcaseId: portalReturnShowcaseId,
+            portalRestoreToken: restoreToken,
+          };
+    navigate(portalReturnUrl, { replace: true, state: restoreState });
+  }, [navigate, portalReturnScrollY, portalReturnShowcaseId, portalReturnUrl, restoreToken]);
 
   const handleSharePortal = useCallback(async () => {
     if (typeof window === 'undefined') return;

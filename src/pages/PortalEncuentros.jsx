@@ -1,16 +1,22 @@
 import React, { useCallback, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import ReserveModal from '@/components/ReserveModal';
 import { useAuth } from '@/contexts/SupabaseAuthContext';
 import LoginOverlay from '@/components/ContributionModal/LoginOverlay';
 import PortalAuthButton from '@/components/PortalAuthButton';
 import PortalHeaderActions from '@/components/portal/PortalHeaderActions';
+import { resolvePortalReturnTarget } from '@/lib/portalNavigation';
 
 const PortalEncuentros = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
   const [showLoginOverlay, setShowLoginOverlay] = useState(false);
   const isAuthenticated = Boolean(user);
+  const { portalReturnUrl, portalReturnScrollY, portalReturnShowcaseId, restoreToken } =
+    resolvePortalReturnTarget(
+    location.state
+  );
 
   const handleOpenLogin = useCallback(() => {
     if (!isAuthenticated) {
@@ -23,8 +29,16 @@ const PortalEncuentros = () => {
   }, []);
 
   const handleClose = useCallback(() => {
-    navigate('/#hero', { replace: true });
-  }, [navigate]);
+    const restoreState =
+      portalReturnScrollY == null
+        ? undefined
+        : {
+            portalRestoreScrollY: portalReturnScrollY,
+            portalRestoreShowcaseId: portalReturnShowcaseId,
+            portalRestoreToken: restoreToken,
+          };
+    navigate(portalReturnUrl, { replace: true, state: restoreState });
+  }, [navigate, portalReturnScrollY, portalReturnShowcaseId, portalReturnUrl, restoreToken]);
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-950 via-black to-slate-900 text-slate-100">

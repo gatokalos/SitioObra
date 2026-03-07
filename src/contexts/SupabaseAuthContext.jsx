@@ -44,39 +44,38 @@ export const AuthProvider = ({ children }) => {
 
     const processRedirect = async () => {
       const url = new URL(window.location.href);
-      const hashParams = new URLSearchParams(window.location.hash.replace(/^#/, ''));
+      const hashRaw = String(window.location.hash || '');
+      const hashParams = new URLSearchParams(hashRaw.replace(/^#/, ''));
       const code = url.searchParams.get('code');
-      const accessToken = hashParams.get('access_token');
-      const refreshToken = hashParams.get('refresh_token');
+      // Support tokens even if hash includes an existing anchor before OAuth params (e.g. #hero#access_token=...).
+      const accessTokenFromParams = hashParams.get('access_token');
+      const refreshTokenFromParams = hashParams.get('refresh_token');
+      const accessTokenFromRegex = (() => {
+        const match = hashRaw.match(/(?:^|[?#&])access_token=([^&]+)/i);
+        return match ? decodeURIComponent(match[1]) : null;
+      })();
+      const refreshTokenFromRegex = (() => {
+        const match = hashRaw.match(/(?:^|[?#&])refresh_token=([^&]+)/i);
+        return match ? decodeURIComponent(match[1]) : null;
+      })();
+      const accessToken = accessTokenFromParams || accessTokenFromRegex;
+      const refreshToken = refreshTokenFromParams || refreshTokenFromRegex;
       const errorDescription = url.searchParams.get('error_description');
       const shouldCleanHash =
-        window.location.hash.includes('access_token') || window.location.hash.includes('refresh_token');
+        hashRaw.includes('access_token') || hashRaw.includes('refresh_token');
       const cleanUrl = `${url.origin}${url.pathname}${shouldCleanHash ? '' : url.hash}`;
 
       const cleanup = () => {
         window.history.replaceState({}, document.title, cleanUrl);
       };
 
-      // In React StrictMode (dev), effects can run twice and consume PKCE code twice.
-      // Lock by code/token fingerprint so we only exchange once per redirect payload.
-      const fingerprint = code
-        ? `code:${code}`
-        : accessToken && refreshToken
-          ? `token:${accessToken.slice(0, 24)}`
-          : null;
-      if (!errorDescription && !fingerprint) {
+      // In React StrictMode (dev), effects can run twice.
+      // We guard with an in-memory lock per mount and always process valid redirect payloads.
+      if (!errorDescription && !code && !(accessToken && refreshToken)) {
         return;
       }
       if (redirectLockRef.current) {
         return;
-      }
-      if (fingerprint) {
-        const seen = window.sessionStorage?.getItem('gatoencerrado:auth-redirect-fingerprint');
-        if (seen === fingerprint) {
-          cleanup();
-          return;
-        }
-        window.sessionStorage?.setItem('gatoencerrado:auth-redirect-fingerprint', fingerprint);
       }
       redirectLockRef.current = true;
 

@@ -2,12 +2,16 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import { Coffee, Menu, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { useToast } from '@/components/ui/use-toast';
 import { useAuth } from '@/contexts/SupabaseAuthContext';
 import LoginOverlay from '@/components/ContributionModal/LoginOverlay';
+import MobileMenuOverlay from '@/components/MobileMenuOverlay';
 import { setBienvenidaForceOnLogin } from '@/lib/bienvenida';
+import { createPortalLaunchState } from '@/lib/portalNavigation';
 import isotipoGatoWebp from '@/assets/isotipo-gato.webp';
+
+const MOBILE_FULLSCREEN_MENU_PHASE_A_ENABLED = true;
 
 const Header = ({ showTransmediaNav = true, showAllianceNav = showTransmediaNav }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -15,8 +19,10 @@ const Header = ({ showTransmediaNav = true, showAllianceNav = showTransmediaNav 
   const [showLoginOverlay, setShowLoginOverlay] = useState(false);
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
   const navigate = useNavigate();
+  const location = useLocation();
   const { user, signOut } = useAuth();
   const { toast: showToast } = useToast();
+
   const profileName =
     user?.user_metadata?.alias ||
     user?.user_metadata?.full_name ||
@@ -25,11 +31,13 @@ const Header = ({ showTransmediaNav = true, showAllianceNav = showTransmediaNav 
   const greetingLabel = user ? `Hola ${simplifiedName || 'gato'}` : '';
   const authActionLabel = user ? 'Cerrar sesión' : 'Iniciar sesión';
   const statusDotClass = user ? 'bg-emerald-400' : 'bg-slate-600';
+
   const handleCloseOverlay = useCallback(() => setShowLoginOverlay(false), []);
   const handleOpenOverlay = useCallback(() => {
     setBienvenidaForceOnLogin();
     setShowLoginOverlay(true);
   }, []);
+
   const handleLogout = useCallback(async () => {
     if (!user) {
       setShowLoginOverlay(true);
@@ -40,12 +48,21 @@ const Header = ({ showTransmediaNav = true, showAllianceNav = showTransmediaNav 
       showToast({
         description: error.message || 'No pudimos cerrar sesión. Intenta más tarde.',
       });
-    } else {
-      showToast({
-        description: 'Sesión cerrada correctamente.',
-      });
+      return;
     }
+    showToast({
+      description: 'Sesión cerrada correctamente.',
+    });
   }, [signOut, showToast, user]);
+
+  const handleAuthActionFromMenu = useCallback(() => {
+    setIsMenuOpen(false);
+    if (user) {
+      void handleLogout();
+      return;
+    }
+    handleOpenOverlay();
+  }, [handleLogout, handleOpenOverlay, user]);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -81,11 +98,11 @@ const Header = ({ showTransmediaNav = true, showAllianceNav = showTransmediaNav 
   }, [isProfileMenuOpen]);
 
   useEffect(() => {
-    if (typeof window === "undefined") return;
+    if (typeof window === 'undefined') return undefined;
     const handleOpenFromToast = () => setShowLoginOverlay(true);
     window.addEventListener('open-login-modal', handleOpenFromToast);
     return () => window.removeEventListener('open-login-modal', handleOpenFromToast);
-  }, [setShowLoginOverlay]);
+  }, []);
 
   const menuItems = [
     { name: 'Obra', href: '#about' },
@@ -98,20 +115,77 @@ const Header = ({ showTransmediaNav = true, showAllianceNav = showTransmediaNav 
     { name: 'Funciones', href: '#next-show' },
     { name: 'Contacto', href: '#contact' },
   ];
+  const mobileMenuItems = [
+    { name: 'Obra', href: '#about' },
+    { name: 'Equipo', href: '#team' },
+    { name: 'Galería', href: '#instagram' },
+    { name: 'Voces', href: '#provoca' },
+    {
+      name: 'Curaduría',
+      href: '#dialogo-critico',
+      description: 'Lecturas para orientarte',
+      secondary: [
+        { label: 'Entrar a Curaduría', href: '#dialogo-critico' },
+        { label: 'Aportar al diálogo', href: '#blog-contribuye' },
+      ],
+    },
+    ...(showTransmediaNav
+      ? [
+          {
+            name: 'Transmedia',
+            href: '#transmedia',
+            description: 'Navega los miniversos',
+            secondary: [
+              { label: 'Abrir vitrinas', href: '#transmedia' },
+              ...(showAllianceNav ? [{ label: 'Impacto social', href: '#apoya' }] : []),
+            ],
+          },
+        ]
+      : []),
+    { name: 'Funciones', href: '#next-show' },
+    { name: 'Contacto', href: '#contact' },
+    {
+      name: 'FAQ',
+      href: '#faq',
+      description: 'Preguntas rápidas para no perderte',
+      secondary: [
+        {
+          label: '¿Por dónde empiezo?',
+          href: '#faq-q-start',
+          answer:
+            'Recomendamos: Obra → Curaduría → Habitar (Transmedia). Ese recorrido da contexto sin spoilers.',
+        },
+        {
+          label: '¿Necesito iniciar sesión?',
+          href: '#faq-q-login',
+          answer:
+            'Puedes explorar gran parte del sitio sin login. Iniciar sesión desbloquea registro de huella y experiencias extendidas.',
+        },
+        {
+          label: '¿Qué significa Habitar e Impulsar?',
+          href: '#faq-q-habitar',
+          answer:
+            'Habitar es recorrer los portales narrativos. Impulsar es activar impacto y sostener la expansión social del proyecto.',
+        },
+      ],
+    },
+  ];
 
-  const handleNavClick = (href) => {
+  const handleNavClick = useCallback((href) => {
     setIsMenuOpen(false);
     const element = document.querySelector(href);
     if (element) {
       element.scrollIntoView({ behavior: 'smooth' });
     }
-  };
+  }, []);
 
   const handleOpenSupportHub = useCallback(() => {
     if (!user) return;
     setIsMenuOpen(false);
-    navigate('/portal-encuentros');
-  }, [navigate, user]);
+    navigate('/portal-encuentros', {
+      state: createPortalLaunchState(location, 'header-encuentros'),
+    });
+  }, [location, navigate, user]);
 
   return (
     <>
@@ -121,125 +195,148 @@ const Header = ({ showTransmediaNav = true, showAllianceNav = showTransmediaNav 
         transition={{ duration: 0.5, ease: 'easeOut' }}
         className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${headerToneClass}`}
       >
-      <nav className="container mx-auto px-6 py-3 max-[375px]:px-4">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3 text-white">
-            <motion.button
-              type="button"
-              whileHover={{ scale: 1.05, textShadow: "0 0 8px rgba(233, 213, 255, 0.5)" }}
-              className="flex items-center gap-3 cursor-pointer"
-              onClick={() => handleNavClick('#hero')}
-            >
-              <img
-                src={isotipoGatoWebp}
-                alt="Logo Gato Encerrado"
-                className="h-9 w-9 rounded-full object-contain sm:hidden"
-                loading="eager"
-                decoding="async"
-              />
-              <span className="hidden sm:inline font-display text-2xl font-bold text-gradient max-[375px]:text-lg whitespace-nowrap">
-                #GatoEncerrado
-              </span>
-              <span className={`h-2.5 w-2.5 rounded-full ${statusDotClass}`} />
-            </motion.button>
-            {user ? (
-              <div className="relative" data-profile-menu>
-                <button
-                  type="button"
-                  onClick={() => setIsProfileMenuOpen((prev) => !prev)}
-                  className="inline-flex items-center text-xs font-semibold text-slate-100 transition sm:text-sm underline underline-offset-4 decoration-slate-400/40 hover:text-white hover:decoration-emerald-300/60"
-                >
-                  {greetingLabel}
-                </button>
-                {isProfileMenuOpen ? (
-                  <div className="absolute left-0 mt-2 w-64 rounded-xl border border-white/10 bg-black/90 py-2 text-sm text-slate-100 shadow-xl">
-                    <div className="px-4 pb-2 pt-1">
-                      <p className="text-[11px] uppercase tracking-[0.18em] text-slate-400">Sesión activa</p>
-                      <p className="mt-1 break-all text-xs text-slate-200/90">{user?.email || 'correo no disponible'}</p>
-                    </div>
-                    <div className="mx-3 mb-1 h-px bg-white/10" />
-                    <button
-                      type="button"
-                      onClick={handleLogout}
-                      className="block w-full px-4 py-2 text-left hover:bg-white/5"
-                    >
-                      Cerrar sesión
-                    </button>
-                  </div>
-                ) : null}
-              </div>
-            ) : (
-              <button
-                onClick={handleOpenOverlay}
-                className="inline text-xs font-semibold text-slate-100 sm:text-sm"
-              >
-                Iniciar sesión
-              </button>
-            )}
-          </div>
-
-          <div className="hidden xl:flex items-center space-x-1">
-            {menuItems.map((item) => (
+        <nav className="container mx-auto px-6 py-3 max-[375px]:px-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3 text-white">
               <motion.button
-                key={item.name}
-                whileHover={{ scale: 1.05, color: '#e9d5ff' }}
-                onClick={() => handleNavClick(item.href)}
-                className={`text-slate-300 hover:text-white transition-colors font-medium px-4 py-2 rounded-md ${
-                  item.name === 'Contacto'
-                    ? 'border border-purple-300/30 hover:bg-purple-500/20'
-                    : ''
-                }`}
-              >
-                {item.name}
-              </motion.button>
-            ))}
-          </div>
-
-          <div className="flex items-center gap-3">
-            {user ? (
-              <Button
                 type="button"
+                whileHover={{ scale: 1.05, textShadow: '0 0 8px rgba(233, 213, 255, 0.5)' }}
+                className="flex items-center gap-3 cursor-pointer"
+                onClick={() => handleNavClick('#hero')}
+              >
+                <img
+                  src={isotipoGatoWebp}
+                  alt="Logo Gato Encerrado"
+                  className="h-9 w-9 rounded-full object-contain sm:hidden"
+                  loading="eager"
+                  decoding="async"
+                />
+                <span className="hidden sm:inline font-display text-2xl font-bold text-gradient max-[375px]:text-lg whitespace-nowrap">
+                  #GatoEncerrado
+                </span>
+                <span className={`h-2.5 w-2.5 rounded-full ${statusDotClass}`} />
+              </motion.button>
+              {user ? (
+                <div className="relative" data-profile-menu>
+                  <button
+                    type="button"
+                    onClick={() => setIsProfileMenuOpen((prev) => !prev)}
+                    className="inline-flex items-center text-xs font-semibold text-slate-100 transition sm:text-sm underline underline-offset-4 decoration-slate-400/40 hover:text-white hover:decoration-emerald-300/60"
+                  >
+                    {greetingLabel}
+                  </button>
+                  {isProfileMenuOpen ? (
+                    <div className="absolute left-0 mt-2 w-64 rounded-xl border border-white/10 bg-black/90 py-2 text-sm text-slate-100 shadow-xl">
+                      <div className="px-4 pb-2 pt-1">
+                        <p className="text-[11px] uppercase tracking-[0.18em] text-slate-400">Sesión activa</p>
+                        <p className="mt-1 break-all text-xs text-slate-200/90">
+                          {user?.email || 'correo no disponible'}
+                        </p>
+                      </div>
+                      <div className="mx-3 mb-1 h-px bg-white/10" />
+                      <button
+                        type="button"
+                        onClick={handleLogout}
+                        className="block w-full px-4 py-2 text-left hover:bg-white/5"
+                      >
+                        Cerrar sesión
+                      </button>
+                    </div>
+                  ) : null}
+                </div>
+              ) : (
+                <button
+                  onClick={handleOpenOverlay}
+                  className="inline text-xs font-semibold text-slate-100 sm:text-sm"
+                >
+                  Iniciar sesión
+                </button>
+              )}
+            </div>
+
+            <div className="hidden xl:flex items-center space-x-1">
+              {menuItems.map((item) => (
+                <motion.button
+                  key={item.name}
+                  whileHover={{ scale: 1.05, color: '#e9d5ff' }}
+                  onClick={() => handleNavClick(item.href)}
+                  className={`text-slate-300 hover:text-white transition-colors font-medium px-4 py-2 rounded-md ${
+                    item.name === 'Contacto' ? 'border border-purple-300/30 hover:bg-purple-500/20' : ''
+                  }`}
+                >
+                  {item.name}
+                </motion.button>
+              ))}
+            </div>
+
+            <div className="flex items-center gap-3">
+              {user ? (
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  className="xl:hidden h-auto w-auto rounded-none p-0 text-amber-100 hover:bg-transparent hover:text-amber-50"
+                  onClick={handleOpenSupportHub}
+                  aria-label="Abrir café, charla y merch"
+                  title="Café, charla y merch"
+                >
+                  <Coffee size={20} />
+                </Button>
+              ) : null}
+              <Button
                 variant="ghost"
                 size="icon"
-                className="xl:hidden h-auto w-auto rounded-none p-0 text-amber-100 hover:bg-transparent hover:text-amber-50"
-                onClick={handleOpenSupportHub}
-                aria-label="Abrir café, charla y merch"
-                title="Café, charla y merch"
+                className="xl:hidden text-slate-200"
+                onClick={() => setIsMenuOpen((prev) => !prev)}
+                aria-expanded={isMenuOpen}
+                aria-label={isMenuOpen ? 'Cerrar menú de navegación' : 'Abrir menú de navegación'}
               >
-                <Coffee size={20} />
+                {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
               </Button>
-            ) : null}
-            <Button
-              variant="ghost"
-              size="icon"
-            className="xl:hidden text-slate-200"
-              onClick={() => setIsMenuOpen(!isMenuOpen)}
-            >
-              {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
-            </Button>
+            </div>
           </div>
-        </div>
 
-        {isMenuOpen && (
-          <motion.div
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: 'auto' }}
-            exit={{ opacity: 0, height: 0 }}
-            className="xl:hidden mt-4 bg-black/80 backdrop-blur-md rounded-lg p-4 border border-slate-100/10"
-          >
-            {menuItems.map((item) => (
-              <button
-                key={item.name}
-                onClick={() => handleNavClick(item.href)}
-                className="block w-full text-left py-3 text-slate-200 hover:text-white transition-colors"
-              >
-                {item.name}
-              </button>
-            ))}
-          </motion.div>
-        )}
-      </nav>
+          {isMenuOpen && !MOBILE_FULLSCREEN_MENU_PHASE_A_ENABLED ? (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: 'auto' }}
+              exit={{ opacity: 0, height: 0 }}
+              className="xl:hidden mt-4 bg-black/80 backdrop-blur-md rounded-lg p-4 border border-slate-100/10"
+            >
+              {menuItems.map((item) => (
+                <button
+                  key={item.name}
+                  onClick={() => handleNavClick(item.href)}
+                  className="block w-full text-left py-3 text-slate-200 hover:text-white transition-colors"
+                >
+                  {item.name}
+                </button>
+              ))}
+              <div className="mt-2 border-t border-white/10 pt-3">
+                <button
+                  type="button"
+                  onClick={handleAuthActionFromMenu}
+                  className="block w-full text-left py-2 text-slate-200 hover:text-white transition-colors"
+                >
+                  {authActionLabel}
+                </button>
+              </div>
+            </motion.div>
+          ) : null}
+        </nav>
       </motion.header>
+
+      {isMenuOpen && MOBILE_FULLSCREEN_MENU_PHASE_A_ENABLED ? (
+        <MobileMenuOverlay
+          isOpen={isMenuOpen}
+          menuItems={mobileMenuItems}
+          authActionLabel={authActionLabel}
+          onNavigate={handleNavClick}
+          onClose={() => setIsMenuOpen(false)}
+          onAuthAction={handleAuthActionFromMenu}
+        />
+      ) : null}
+
       {showLoginOverlay ? <LoginOverlay onClose={handleCloseOverlay} /> : null}
     </>
   );

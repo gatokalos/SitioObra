@@ -12,6 +12,7 @@ import {
   readHeroAudioEnabledPreference,
   writeHeroAudioEnabledPreference,
 } from '@/lib/heroAmbientAudio';
+import { createPortalLaunchState } from '@/lib/portalNavigation';
 
 const HERO_LOGGED_IN_AUDIO_URL =
   'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Sonoridades/audio/A2_Melody_MSTR.m4a';
@@ -108,8 +109,10 @@ const Hero = () => {
   }, [scrollToSection]);
 
   const handleOpenSupportHub = useCallback(() => {
-    navigate('/portal-encuentros');
-  }, [navigate]);
+    navigate('/portal-encuentros', {
+      state: createPortalLaunchState(location, 'hero-encuentros'),
+    });
+  }, [location, navigate]);
 
   const handleOpenMiniverseList = useCallback((tabId = null, contextLabel = null) => {
     if (typeof window !== 'undefined') {

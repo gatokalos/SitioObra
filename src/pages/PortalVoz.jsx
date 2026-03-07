@@ -1200,7 +1200,7 @@ const PortalVoz = () => {
                       className="w-full rounded-full border border-purple-500/70 text-purple-100 shadow-[0_15px_45px_rgba(67,56,202,0.45)] hover:bg-purple-500/20 tracking-[0.25em] text-xs uppercase px-4 py-2"
                       onClick={handleOpenCommunityComposer}
                     >
-                      coméntanos algo aquí
+                      coméntanos algo
                     </button>
                   </div>
                 </div>

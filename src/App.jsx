@@ -238,6 +238,8 @@ const HashAnchorScroller = () => {
 
   useEffect(() => {
     if (typeof document === 'undefined') return undefined;
+    const hasPortalScrollRestore = Number.isFinite(Number(location.state?.portalRestoreScrollY));
+    if (hasPortalScrollRestore) return undefined;
     const rawHash = location.hash || '';
     if (!rawHash.startsWith('#') || rawHash.length < 2) return undefined;
 
@@ -265,7 +267,7 @@ const HashAnchorScroller = () => {
     return () => {
       if (timerId) window.clearInterval(timerId);
     };
-  }, [location.hash, location.pathname]);
+  }, [location.hash, location.pathname, location.state]);
 
   return null;
 };
@@ -318,6 +320,7 @@ function App() {
   const isMobileLoggedInPortalMode = isAuthenticated && isMobileViewport;
   const isPortalRoute = location.pathname.startsWith('/portal-');
   const hasForcedHomeTopOnBootRef = useRef(false);
+  const appliedPortalRestoreTokenRef = useRef('');
 
   useEffect(() => {
     if (typeof window === 'undefined') return undefined;
@@ -340,6 +343,61 @@ function App() {
     });
     return () => window.cancelAnimationFrame(rafId);
   }, [location.hash, location.pathname]);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return undefined;
+    if (isPortalRoute) return undefined;
+
+    const restoreY = Number(location.state?.portalRestoreScrollY);
+    if (!Number.isFinite(restoreY)) return undefined;
+
+    const restoreToken =
+      typeof location.state?.portalRestoreToken === 'string' && location.state.portalRestoreToken.trim()
+        ? location.state.portalRestoreToken
+        : `${location.pathname}${location.search}${location.hash}:${restoreY}`;
+
+    if (appliedPortalRestoreTokenRef.current === restoreToken) {
+      return undefined;
+    }
+    appliedPortalRestoreTokenRef.current = restoreToken;
+    let cancelled = false;
+    let userInteracted = false;
+    const timers = [];
+    const safeY = Math.max(0, restoreY);
+
+    const restore = () => {
+      if (cancelled || userInteracted) return;
+      window.scrollTo({
+        top: safeY,
+        left: 0,
+        behavior: 'auto',
+      });
+    };
+
+    const markUserInteracted = () => {
+      userInteracted = true;
+    };
+
+    const kickoffId = window.requestAnimationFrame(restore);
+    const settleDelays = [120, 280, 520, 860, 1200];
+    settleDelays.forEach((delay) => {
+      const id = window.setTimeout(restore, delay);
+      timers.push(id);
+    });
+
+    window.addEventListener('touchstart', markUserInteracted, { passive: true });
+    window.addEventListener('wheel', markUserInteracted, { passive: true });
+    window.addEventListener('keydown', markUserInteracted, { passive: true });
+
+    return () => {
+      cancelled = true;
+      window.cancelAnimationFrame(kickoffId);
+      timers.forEach((id) => window.clearTimeout(id));
+      window.removeEventListener('touchstart', markUserInteracted);
+      window.removeEventListener('wheel', markUserInteracted);
+      window.removeEventListener('keydown', markUserInteracted);
+    };
+  }, [isPortalRoute, location.hash, location.pathname, location.search, location.state]);
 
   useEffect(() => {
     document.title = pageTitle;
