@@ -883,7 +883,7 @@ const Blog = ({ posts = [], isLoading = false, error = null }) => {
                         <p className="text-[10px] uppercase tracking-[0.34em] text-violet-100/90">Empieza aquí</p>
                       </div>
                       <p className="text-[1rem] font-semibold leading-snug text-white">
-                        ¿Primera vez en el sitio? Esta lectura te orienta en pocos minutos.
+                        ¿Primera vez en el sitio? Esta lectura te orientará en pocos minutos.
                       </p>
                
                       {featuredCuratorReadingMinutes ? (
