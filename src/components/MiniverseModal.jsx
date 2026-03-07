@@ -215,7 +215,7 @@ const MINIVERSE_CARDS = [
     glassTint: '284 70% 62%',
     title: '01 - La escena',
     titleShort: '🎧 "Abre la puerta" (30 seg)',
-    description: 'Yo solo quería entender algo que me estaba pasando.',
+    description: 'Yo no quería hacer una obra. Solo quería entender algo que me estaba pasando.',
 
     videoUrl: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Merch/Loop_escenico_small.mp4',
     ctaVerb: 'Entra',
@@ -248,7 +248,7 @@ const MINIVERSE_CARDS = [
     glassTint: '28 78% 58%',
     title: '03 - El objeto',
     titleShort: '🎧 "Lo que se sostiene" (30 seg)',
-    description: 'Entonces necesité tocarla… Quería sostenerla.',
+    description: 'Entonces necesité algo pequeño. La quise sostener con las manos.',
     videoUrl: null,
     ctaVerb: 'Sostén',
     action: 'Explora',
@@ -261,9 +261,9 @@ const MINIVERSE_CARDS = [
     thumbLabel: 'G',
     thumbGradient: 'from-fuchsia-400/80 via-purple-500/70 to-indigo-500/60',
     glassTint: '304 65% 60%',
-    title: '04 - El trazo',
+    title: '04 - El dibujo',
     titleShort: '🎧 "La imagen de sí" (30 seg)',
-    description: 'No supe si estaba creando un universo o si un universo me estaba dibujando a mí.',
+    description: 'Un día me vi desde afuera. No supe si era yo o si me estaba dibujado…',
     videoUrl: null,
     ctaVerb: 'Mira',
     action: 'Explora',
@@ -338,7 +338,7 @@ const MINIVERSE_CARDS = [
     glassTint: '266 62% 60%',
     title: '09 - El espejo',
     titleShort: '🎧 "La revelación" (30 seg)',
-    description: 'Tal vez esto nunca fue una obra. Tal vez fue un sueño vivido nueve veces.',
+    description: 'Tal vez esto nunca fue una obra. Tal vez fue un sueño compartido nueve veces.',
     videoUrl: null,
     ctaVerb: 'Consulta',
     action: 'Explora',
@@ -738,21 +738,21 @@ const MiniverseModal = ({
   const activeTabIntro = useMemo(() => {
       if (activeTab === 'escaparate') {
       return {
-      lead: 'Conecta con el universo a través de una microficción. Cada fragmento dialoga con una forma distinta de la obra y abre la misma pregunta:',
-      highlight: '¿qué ocurre cuando un sueño se expande y exige otro lenguaje?',
+      lead: 'Conecta con esta obra a través de una microficción. Cada fragmento dialoga con una forma distinta y abre la misma pregunta:',
+      highlight: '¿qué ocurre cuando una obra se expande y exige otro lenguaje?',
       };
     }
     if (activeTab === 'experiences') {
       return {
-        lead: 'Te presentamos las nueve formas expandidas de la obra:',
+        lead: 'Aquí las nueve formas de la obra en un formato familiar:',
         highlight:
-          'un ecosistema para tocar, intervenir y volver cuando quieras.',
-          continuation: 'Con tu huella mensual, accedes a la versión completa de estos "miniversos".'
+          'un ecosistema listo para tocar, intervenir y volver cuando quieras.',
+          continuation: 'Con tu huella mensual, accedes a la versión completa.'
       };
     }
       return {
       lead: 'Tu huella extiende la experiencia de la obra más allá del escenario.',
-      highlight: 'Detecta señales de violencia autoinfligida en escuelas públicas,',
+      highlight: 'Ayuda a detectar señales de violencia autoinfligida en escuelas públicas,',
       continuation: 'trabajando con alumnos, docentes y familias.'
     };
   }, [activeTab]);
@@ -777,7 +777,7 @@ const MiniverseModal = ({
         title: 'Microficción fragmentada',
         titleShort: 'Prólogo',
         ctaLabel: '🎧 "El arte de no romperse" (5 min)',
-        description: '¿Qué pasa cuando una obra se expande sin pausa y empieza a romperse?',
+        description: '¿Qué pasa cuando algo se expande sin pausa y empieza a romperse?',
         videoUrl: prologueVideoUrl,
         fullscreenVideoUrlDesktop: null,
         fullscreenVideoUrlMobile: null,
@@ -1769,7 +1769,29 @@ const MiniverseModal = ({
                     </div>
                   </div>
 
-                  <div className="order-1 md:order-2 glass-effect relative overflow-hidden rounded-2xl border border-white/10 p-6 sm:p-7 text-slate-200/90">
+                  <div className="order-1 md:hidden glass-effect relative overflow-hidden rounded-2xl border border-white/10 p-5 text-slate-200/90">
+                    <div className="relative z-10 space-y-3">
+                      <div className="flex items-center gap-3">
+                        <span className="text-[0.65rem] uppercase tracking-[0.35em] text-slate-400/80">
+                          Impacto social
+                        </span>
+                        <span className="h-px flex-1 bg-white/10" />
+                      </div>
+                      <p className="text-sm text-slate-300/90 leading-relaxed">
+                        Tu huella activa acompañamiento emocional real y sostiene la expansión colectiva del proyecto.
+                      </p>
+                      <button
+                        type="button"
+                        onClick={handleScrollToSupport}
+                        className="inline-flex items-center gap-2 rounded-xl border border-white/15 bg-white/5 px-3 py-2 text-sm font-medium text-slate-200 transition hover:border-white/30 hover:bg-white/10 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-400/60"
+                      >
+                        <span className="h-1.5 w-1.5 rounded-full bg-emerald-300/80" />
+                        Ver impacto social
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="order-1 md:order-2 hidden md:block glass-effect relative overflow-hidden rounded-2xl border border-white/10 p-6 sm:p-7 text-slate-200/90">
                     <div className="relative z-10 space-y-5">
                       <div className="flex items-center gap-3">
                         <span className="text-[0.65rem] uppercase tracking-[0.35em] text-slate-400/80">
