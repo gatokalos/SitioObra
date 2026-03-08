@@ -207,11 +207,11 @@ const Header = ({ showTransmediaNav = true, showAllianceNav = showTransmediaNav 
                 <img
                   src={isotipoGatoWebp}
                   alt="Logo Gato Encerrado"
-                  className="h-9 w-9 rounded-full object-contain sm:hidden"
+                  className={`h-9 w-9 rounded-full object-contain ${user ? '' : 'sm:hidden'}`}
                   loading="eager"
                   decoding="async"
                 />
-                <span className="hidden sm:inline font-display text-2xl font-bold text-gradient max-[375px]:text-lg whitespace-nowrap">
+                <span className={`${user ? 'hidden' : 'hidden sm:inline'} font-display text-2xl font-bold text-gradient max-[375px]:text-lg whitespace-nowrap`}>
                   #GatoEncerrado
                 </span>
                 <span className={`h-2.5 w-2.5 rounded-full ${statusDotClass}`} />

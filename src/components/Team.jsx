@@ -229,7 +229,11 @@ const Team = () => {
     ...teamEntries.filter(([role]) => role !== "Dirección" && role !== "Elenco"),
   ];
   const orderedRoleKeys = orderedRoleEntries.map(([role]) => role);
-  const defaultDesktopRole = teamData.Elenco ? "Elenco" : orderedRoleKeys[0] ?? null;
+  const defaultDesktopRole = teamData["Alianza Social"]
+    ? "Alianza Social"
+    : teamData.Elenco
+      ? "Elenco"
+      : orderedRoleKeys[0] ?? null;
   const [selectedElencoId, setSelectedElencoId] = useState(null);
   const [isMobile, setIsMobile] = useState(
     typeof window !== "undefined" ? window.innerWidth < 768 : false

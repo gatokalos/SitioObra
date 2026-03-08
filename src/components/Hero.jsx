@@ -13,6 +13,7 @@ import {
   writeHeroAudioEnabledPreference,
 } from '@/lib/heroAmbientAudio';
 import { createPortalLaunchState } from '@/lib/portalNavigation';
+import { safeSetItem } from '@/lib/safeStorage';
 
 const HERO_LOGGED_IN_AUDIO_URL =
   'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Sonoridades/audio/A2_Melody_MSTR.m4a';
@@ -30,6 +31,8 @@ const HERO_LOGGED_IN_ACTIVE_GLOW =
   'radial-gradient(circle at center, rgba(110,48,171,0.36) 0%, rgba(217,31,139,0.24) 52%, rgba(0,0,0,0) 100%)';
 const HERO_LOGGED_IN_SWEEP_GLOW =
   'radial-gradient(circle,rgba(31,47,99,0.3)_0%,rgba(110,48,171,0.22)_44%,rgba(217,31,139,0.1)_74%,rgba(0,0,0,0)_100%)';
+const ENABLE_LEGACY_LOGGED_IN_HERO_CTAS = false;
+const HERO_PENDING_MINIVERSE_SELECTION_KEY = 'gatoencerrado:hero-inline-miniverse-selection';
 
 const resolveHeroInlineTabFromQuery = (search = '') => {
   if (!search) return 'escaparate';
@@ -147,17 +150,30 @@ const Hero = () => {
 
   const handleMobileInlineMiniverseSelect = useCallback(
     (formatId) => {
-      scrollToSection('#transmedia');
       if (typeof window === 'undefined' || !formatId) return;
-      window.setTimeout(() => {
+      const emitSelection = () => {
         window.dispatchEvent(
           new CustomEvent('gatoencerrado:select-miniverse-format', {
             detail: { formatId },
           }),
         );
-      }, 420);
+      };
+
+      if (isMobileViewport) {
+        scrollToSection('#transmedia');
+        window.setTimeout(emitSelection, 420);
+        return;
+      }
+
+      // Desktop inline: conserva al usuario en Hero y reusa vitrina original.
+      // Persistimos la intención por si Transmedia aún no monta cuando se hace clic.
+      safeSetItem(HERO_PENDING_MINIVERSE_SELECTION_KEY, formatId);
+      emitSelection();
+      [120, 280, 560, 980].forEach((delay) => {
+        window.setTimeout(emitSelection, delay);
+      });
     },
-    [scrollToSection]
+    [isMobileViewport, scrollToSection]
   );
 
   const handleCloseTicket = useCallback(() => {
@@ -176,7 +192,7 @@ const Hero = () => {
   }, [isCtaHovered, rotatingCtas.length]);
 
   useEffect(() => {
-    if (!user || isMobileViewport) return undefined;
+    if (!ENABLE_LEGACY_LOGGED_IN_HERO_CTAS || !user || isMobileViewport) return undefined;
     sweepDirectionRef.current = 1;
     const intervalId = window.setInterval(() => {
       setActiveLoggedInCtaIndex((prev) => {
@@ -201,7 +217,7 @@ const Hero = () => {
   }, []);
 
   useEffect(() => {
-    if (!user) return undefined;
+    if (!ENABLE_LEGACY_LOGGED_IN_HERO_CTAS || !user) return undefined;
     updateLoggedInSweepPoint(activeLoggedInCtaIndex);
     if (typeof ResizeObserver === 'undefined') return undefined;
 
@@ -626,13 +642,15 @@ const Hero = () => {
     };
   }, [getTargetVolumeByHeroPosition, isHeroInViewport, user]);
 
+  const shouldRenderInlineHero = Boolean(user);
+
   return (
     <>
       <section
         id="hero"
         ref={heroSectionRef}
         className={`min-h-screen relative overflow-hidden ${
-          user && isMobileViewport
+          shouldRenderInlineHero
             ? 'flex items-start justify-center'
             : 'flex items-center justify-center'
         }`}
@@ -659,13 +677,17 @@ const Hero = () => {
         </AnimatePresence>
         
         {/* Contenido */}
-        {user && isMobileViewport ? (
-          <div className="container mx-auto px-4 pt-0 pb-8 relative z-10">
+        {shouldRenderInlineHero ? (
+          <div
+            className={`container mx-auto relative z-10 ${
+              isMobileViewport ? 'px-4 pt-0 pb-8' : 'px-6 pt-16 pb-14'
+            }`}
+          >
             <motion.div
               initial={{ opacity: 0, y: 14 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.36, ease: 'easeOut' }}
-              className="mx-auto w-full max-w-2xl"
+              className={`mx-auto w-full ${isMobileViewport ? 'max-w-2xl' : 'max-w-[920px]'}`}
             >
               <Suspense
                 fallback={(

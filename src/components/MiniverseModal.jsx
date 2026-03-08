@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { createPortal } from 'react-dom';
-import { BookOpen, Brain, Check, Compass, Coffee, Coins, Drama, Film, Filter, Heart, HeartHandshake, HeartPulse, MapIcon, Music, Palette, School, Share2, Smartphone, Sparkles, DoorOpen } from 'lucide-react';
+import { BookOpen, Brain, Check, Compass, Coffee, Coins, Dice5, Drama, Film, Filter, Heart, HeartHandshake, HeartPulse, MapIcon, Music, Palette, School, Share2, Sparkles, DoorOpen } from 'lucide-react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { toast } from '@/components/ui/use-toast';
@@ -203,6 +203,23 @@ const getPortalLabelFromTitle = (title = '') => {
   const normalizedTitle = String(title || '').trim();
   return normalizedTitle.replace(MINIVERSE_PORTAL_TITLE_PATTERN, '').trim() || normalizedTitle;
 };
+const extractDurationFromLabel = (label = '') => {
+  const match = String(label).match(/\(([^)]+)\)\s*$/);
+  return match?.[1]?.trim() || null;
+};
+const stripDurationFromLabel = (label = '') =>
+  String(label).replace(/\s*\(([^)]+)\)\s*$/, '').trim();
+const parseActTitle = (title = '') => {
+  const rawTitle = String(title || '').trim();
+  const match = rawTitle.match(/^(\d{1,2})\s*-\s*(.+)$/);
+  if (!match) {
+    return { actNumber: '', displayTitle: rawTitle };
+  }
+  return {
+    actNumber: String(match[1]).padStart(2, '0'),
+    displayTitle: match[2]?.trim() || rawTitle,
+  };
+};
 
 const MINIVERSE_CARDS = [
   {
@@ -248,7 +265,7 @@ const MINIVERSE_CARDS = [
     glassTint: '28 78% 58%',
     title: '03 - El objeto',
     titleShort: '🎧 "Lo que se sostiene" (30 seg)',
-    description: 'Entonces necesité algo pequeño. La quise sostener con las manos.',
+    description: 'Entonces necesité algo pequeño. Quise sostenerla con las manos.',
     videoUrl: null,
     ctaVerb: 'Sostén',
     action: 'Explora',
@@ -261,9 +278,9 @@ const MINIVERSE_CARDS = [
     thumbLabel: 'G',
     thumbGradient: 'from-fuchsia-400/80 via-purple-500/70 to-indigo-500/60',
     glassTint: '304 65% 60%',
-    title: '04 - El dibujo',
+    title: '04 - La imagen',
     titleShort: '🎧 "La imagen de sí" (30 seg)',
-    description: 'Un día me vi desde afuera. No supe si era yo o si me estaba dibujado…',
+    description: 'Y un día me vi desde afuera. Ya no supe si era yo o si me estaba dibujado…',
     videoUrl: null,
     ctaVerb: 'Mira',
     action: 'Explora',
@@ -277,7 +294,7 @@ const MINIVERSE_CARDS = [
     glassTint: '352 70% 60%',
     title: '05 - El lente',
     titleShort: '🎧 "El quiebre" (30 seg)',
-    description: 'Y por primera vez… pensé en detenerme.',
+    description: 'Por primera vez… pensé en detenerme.',
     videoUrl: null,
     ctaVerb: 'Observa',
     action: 'Explora',
@@ -317,7 +334,7 @@ const MINIVERSE_CARDS = [
     id: 'apps',
     formatId: 'apps',
     appName: 'Apps',
-    icon: Smartphone,
+    icon: Dice5,
     thumbLabel: 'J',
     thumbGradient: 'from-lime-400/80 via-emerald-500/70 to-teal-500/60',
     glassTint: '138 60% 48%',
@@ -385,6 +402,10 @@ const SUBSCRIPTION_PRICE_ID = import.meta.env.VITE_STRIPE_SUBSCRIPTION_PRICE_ID;
 const CAUSE_SITE_URL = 'https://www.ayudaparalavida.com/index.html';
 const HERO_VERB_SCRAMBLE_CHARS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
 const HERO_VERB_SCRAMBLE_INTERVAL_MS = 26;
+const HERO_VERB_SPLIT_FLAP_HOLD_MS = 96;
+const ACT_NUMBER_SCRAMBLE_DIGITS = '0123456789';
+const ACT_NUMBER_SCRAMBLE_INTERVAL_MS = 42;
+const ACT_NUMBER_SPLIT_FLAP_HOLD_MS = 72;
 
 const readStoredJson = (key, fallback) => {
   if (typeof window === 'undefined') {
@@ -414,11 +435,10 @@ const MiniverseModal = ({
   const isSafari = isSafariBrowser();
   const isInlineMode = displayMode === 'inline';
   const inlineTitleStyle = isInlineMode ? { fontFamily: 'Vox Round, Inter, sans-serif' } : undefined;
-  const inlineCardTitleStyle = isInlineMode ? { fontFamily: 'Inter, sans-serif' } : undefined;
+  const inlineCardTitleStyle = isInlineMode ? { fontFamily: 'Vox Round, Inter, sans-serif' } : undefined;
   const shouldUseSingleLinePortalTitle = (title, { force = false } = {}) =>
     isInlineMode &&
-    isMobileViewport &&
-    (force || MINIVERSE_PORTAL_TITLE_PATTERN.test(String(title || '')));
+    (force || (isMobileViewport && MINIVERSE_PORTAL_TITLE_PATTERN.test(String(title || ''))));
   const [activeTab, setActiveTab] = useState(DEFAULT_TAB_ID);
   const [formState, setFormState] = useState(initialFormState);
   const [status, setStatus] = useState('idle');
@@ -447,6 +467,7 @@ const MiniverseModal = ({
   const [isLoadingCommunityLikes, setIsLoadingCommunityLikes] = useState(false);
   const [isCauseSiteOpen, setIsCauseSiteOpen] = useState(false);
   const [inlineHeadingVerbDisplay, setInlineHeadingVerbDisplay] = useState('Descubre');
+  const [inlineActNumberDisplay, setInlineActNumberDisplay] = useState('');
   const metadataSubscriber = Boolean(
     user?.user_metadata?.isSubscriber === true ||
       user?.user_metadata?.isSubscriber === 'true' ||
@@ -469,6 +490,9 @@ const MiniverseModal = ({
   const mobileShowcaseVideoRef = useRef(null);
   const modalContentRef = useRef(null);
   const inlineHeadingScrambleTimerRef = useRef(null);
+  const inlineHeadingRevealTimeoutRef = useRef(null);
+  const inlineActNumberScrambleTimerRef = useRef(null);
+  const inlineActNumberRevealTimeoutRef = useRef(null);
   const setHeroAmbientHold = useCallback((hold) => {
     if (typeof window === 'undefined') return;
     window.dispatchEvent(
@@ -739,15 +763,20 @@ const MiniverseModal = ({
     return 'Habita';
   }, [activeTab]);
   const shouldPlaceInlineTabsOnTop = isInlineMode && isMobileViewport;
-  const inlineHeadingVerb = shouldPlaceInlineTabsOnTop ? inlineHeadingVerbDisplay : activeTabHeadingVerb;
+  const shouldAnimateInlineHeading = isInlineMode;
+  const inlineHeadingVerb = shouldAnimateInlineHeading ? inlineHeadingVerbDisplay : activeTabHeadingVerb;
 
   useEffect(() => {
     if (inlineHeadingScrambleTimerRef.current) {
       window.clearInterval(inlineHeadingScrambleTimerRef.current);
       inlineHeadingScrambleTimerRef.current = null;
     }
+    if (inlineHeadingRevealTimeoutRef.current) {
+      window.clearTimeout(inlineHeadingRevealTimeoutRef.current);
+      inlineHeadingRevealTimeoutRef.current = null;
+    }
 
-    if (!shouldPlaceInlineTabsOnTop || typeof window === 'undefined') {
+    if (!shouldAnimateInlineHeading || typeof window === 'undefined') {
       setInlineHeadingVerbDisplay(activeTabHeadingVerb);
       return undefined;
     }
@@ -763,6 +792,10 @@ const MiniverseModal = ({
     const target = activeTabHeadingVerb;
     const totalFrames = Math.max(target.length * 2, 10);
     let frame = 0;
+    const getScrambleChar = () =>
+      HERO_VERB_SCRAMBLE_CHARS[
+        Math.floor(Math.random() * HERO_VERB_SCRAMBLE_CHARS.length)
+      ].toLowerCase();
 
     inlineHeadingScrambleTimerRef.current = window.setInterval(() => {
       frame += 1;
@@ -774,11 +807,7 @@ const MiniverseModal = ({
           nextValue += target[index];
           continue;
         }
-        const randomChar =
-          HERO_VERB_SCRAMBLE_CHARS[
-            Math.floor(Math.random() * HERO_VERB_SCRAMBLE_CHARS.length)
-          ];
-        nextValue += randomChar.toLowerCase();
+        nextValue += getScrambleChar();
       }
 
       setInlineHeadingVerbDisplay(nextValue);
@@ -788,7 +817,16 @@ const MiniverseModal = ({
           window.clearInterval(inlineHeadingScrambleTimerRef.current);
           inlineHeadingScrambleTimerRef.current = null;
         }
-        setInlineHeadingVerbDisplay(target);
+        const lastIndex = Math.max(target.length - 1, 0);
+        const splitFlapLatch =
+          target.length > 0
+            ? `${target.slice(0, lastIndex)}${getScrambleChar()}`
+            : target;
+        setInlineHeadingVerbDisplay(splitFlapLatch);
+        inlineHeadingRevealTimeoutRef.current = window.setTimeout(() => {
+          setInlineHeadingVerbDisplay(target);
+          inlineHeadingRevealTimeoutRef.current = null;
+        }, HERO_VERB_SPLIT_FLAP_HOLD_MS);
       }
     }, HERO_VERB_SCRAMBLE_INTERVAL_MS);
 
@@ -797,21 +835,25 @@ const MiniverseModal = ({
         window.clearInterval(inlineHeadingScrambleTimerRef.current);
         inlineHeadingScrambleTimerRef.current = null;
       }
+      if (inlineHeadingRevealTimeoutRef.current) {
+        window.clearTimeout(inlineHeadingRevealTimeoutRef.current);
+        inlineHeadingRevealTimeoutRef.current = null;
+      }
     };
-  }, [activeTabHeadingVerb, shouldPlaceInlineTabsOnTop]);
+  }, [activeTabHeadingVerb, shouldAnimateInlineHeading]);
   const activeTabIntro = useMemo(() => {
       if (activeTab === 'escaparate') {
       return {
-      lead: 'Conecta con esta obra a través de una microficción. Cada fragmento dialoga con una forma distinta y abre la misma pregunta:',
-      highlight: '¿qué ocurre cuando un relato se expande y exige otro lenguaje?',
+      lead: 'Conecta con la obra a través de una microficción en nueve actos. Cada acto dialoga con una forma de sí y abre la misma pregunta:',
+      highlight: '¿qué ocurre cuando nuestra obra se expande y exige otro lenguaje?',
       };
     }
     if (activeTab === 'experiences') {
       return {
-        lead: 'Aquí las nueve formas de la obra en un formato familiar:',
+        lead: 'Aquí las nueve formas de la obra en un formato más familiar:',
         highlight:
           'un ecosistema listo para tocar, intervenir y volver cuando quieras.',
-          continuation: 'Con tu huella mensual, accedes a la versión completa.'
+          continuation: 'Con $50 MXN al mes, accedes a la versión completa.'
       };
     }
       return {
@@ -840,7 +882,8 @@ const MiniverseModal = ({
         thumbGradient: 'from-violet-300/80 via-fuchsia-400/70 to-cyan-400/60',
         title: 'Microficción fragmentada',
         titleShort: 'Prólogo',
-        ctaLabel: '🎧 "El arte de no romperse" (5 min)',
+        ctaLabel: '🎧 "El arte de no romperse"',
+        ctaDuration: '5 min',
         description: '¿Qué pasa cuando algo se expande sin pausa y empieza a romperse?',
         videoUrl: prologueVideoUrl,
         fullscreenVideoUrlDesktop: null,
@@ -850,13 +893,17 @@ const MiniverseModal = ({
         portalLabel: 'Prólogo',
         customGradient: MINIVERSE_DISCOVER_INTRO_MESH,
       },
-      ...showcaseMiniverses.map((card) => ({
-        ...card,
-        ctaLabel: card.titleShort ?? card.title,
-        fullscreenVideoUrlDesktop: card.fullscreenVideoUrlDesktop ?? card.fullscreenVideoUrl ?? null,
-        fullscreenVideoUrlMobile: card.fullscreenVideoUrlMobile ?? card.fullscreenVideoUrl ?? null,
-        portalLabel: getPortalLabelFromTitle(card.title),
-      })),
+      ...showcaseMiniverses.map((card) => {
+        const rawCtaLabel = card.titleShort ?? card.title;
+        return {
+          ...card,
+          ctaLabel: stripDurationFromLabel(rawCtaLabel),
+          ctaDuration: extractDurationFromLabel(rawCtaLabel),
+          fullscreenVideoUrlDesktop: card.fullscreenVideoUrlDesktop ?? card.fullscreenVideoUrl ?? null,
+          fullscreenVideoUrlMobile: card.fullscreenVideoUrlMobile ?? card.fullscreenVideoUrl ?? null,
+          portalLabel: getPortalLabelFromTitle(card.title),
+        };
+      }),
     ];
   }, [dramaShowcaseCard, showcaseMiniverses]);
   const fictionShowcaseCards = useMemo(
@@ -867,6 +914,12 @@ const MiniverseModal = ({
     () => showcaseNarrativeCards[activeShowcaseIndex] ?? showcaseNarrativeCards[0] ?? null,
     [activeShowcaseIndex, showcaseNarrativeCards]
   );
+  const activeShowcaseTitleMeta = useMemo(
+    () => parseActTitle(activeShowcaseCard?.title ?? ''),
+    [activeShowcaseCard?.title]
+  );
+  const activeShowcaseActNumber = activeShowcaseTitleMeta.actNumber;
+  const activeShowcaseTitleText = activeShowcaseTitleMeta.displayTitle;
   const sharedShowcaseVideoUrl = useMemo(
     () => dramaShowcaseCard?.videoUrl ?? showcaseNarrativeCards.find((card) => card.videoUrl)?.videoUrl ?? null,
     [dramaShowcaseCard, showcaseNarrativeCards]
@@ -880,6 +933,101 @@ const MiniverseModal = ({
     const nextCard = fictionShowcaseCards[(baseIndex + 1) % fictionShowcaseCards.length] ?? fictionShowcaseCards[0];
     return `Siguiente forma: ${nextCard?.portalLabel ?? 'La escena'}`;
   }, [activeShowcaseCard, fictionShowcaseCards]);
+  const activeShowcaseVideoHint = useMemo(() => {
+    if (!activeShowcaseCard) return '';
+    const durationToken = String(activeShowcaseCard.ctaDuration || '').trim();
+    if (!durationToken) {
+      return activeShowcaseCard.isPrologue ? 'Video completo' : 'Testimonio en video';
+    }
+    const videoLabel = activeShowcaseCard.isPrologue ? 'Video completo' : 'Testimonio';
+    return `${videoLabel} · ${durationToken.toUpperCase()}`;
+  }, [activeShowcaseCard]);
+
+  useEffect(() => {
+    if (inlineActNumberScrambleTimerRef.current) {
+      window.clearInterval(inlineActNumberScrambleTimerRef.current);
+      inlineActNumberScrambleTimerRef.current = null;
+    }
+    if (inlineActNumberRevealTimeoutRef.current) {
+      window.clearTimeout(inlineActNumberRevealTimeoutRef.current);
+      inlineActNumberRevealTimeoutRef.current = null;
+    }
+
+    if (!isInlineMode || typeof window === 'undefined') {
+      setInlineActNumberDisplay(activeShowcaseActNumber);
+      return undefined;
+    }
+
+    if (!activeShowcaseActNumber) {
+      setInlineActNumberDisplay('');
+      return undefined;
+    }
+
+    const prefersReducedMotion = Boolean(
+      window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches
+    );
+    if (prefersReducedMotion) {
+      setInlineActNumberDisplay(activeShowcaseActNumber);
+      return undefined;
+    }
+
+    const target = activeShowcaseActNumber;
+    const totalFrames = Math.max(target.length * 2, 6);
+    let frame = 0;
+    const getDigit = () =>
+      ACT_NUMBER_SCRAMBLE_DIGITS[
+        Math.floor(Math.random() * ACT_NUMBER_SCRAMBLE_DIGITS.length)
+      ];
+
+    inlineActNumberScrambleTimerRef.current = window.setInterval(() => {
+      frame += 1;
+      const revealed = Math.min(target.length, Math.floor((frame / totalFrames) * target.length));
+      let nextValue = '';
+
+      for (let index = 0; index < target.length; index += 1) {
+        if (index < revealed) {
+          nextValue += target[index];
+          continue;
+        }
+        if (target[index] === '0') {
+          nextValue += '0';
+          continue;
+        }
+        nextValue += getDigit();
+      }
+
+      setInlineActNumberDisplay(nextValue);
+
+      if (frame >= totalFrames) {
+        if (inlineActNumberScrambleTimerRef.current) {
+          window.clearInterval(inlineActNumberScrambleTimerRef.current);
+          inlineActNumberScrambleTimerRef.current = null;
+        }
+        const lastIndex = Math.max(target.length - 1, 0);
+        const latchDigit = target[lastIndex] === '0' ? '0' : getDigit();
+        const splitFlapLatch =
+          target.length > 0
+            ? `${target.slice(0, lastIndex)}${latchDigit}`
+            : target;
+        setInlineActNumberDisplay(splitFlapLatch);
+        inlineActNumberRevealTimeoutRef.current = window.setTimeout(() => {
+          setInlineActNumberDisplay(target);
+          inlineActNumberRevealTimeoutRef.current = null;
+        }, ACT_NUMBER_SPLIT_FLAP_HOLD_MS);
+      }
+    }, ACT_NUMBER_SCRAMBLE_INTERVAL_MS);
+
+    return () => {
+      if (inlineActNumberScrambleTimerRef.current) {
+        window.clearInterval(inlineActNumberScrambleTimerRef.current);
+        inlineActNumberScrambleTimerRef.current = null;
+      }
+      if (inlineActNumberRevealTimeoutRef.current) {
+        window.clearTimeout(inlineActNumberRevealTimeoutRef.current);
+        inlineActNumberRevealTimeoutRef.current = null;
+      }
+    };
+  }, [activeShowcaseActNumber, isInlineMode]);
   const activeShowcaseFullscreenVideoUrl = useMemo(() => {
     if (!showcaseFullscreenCard) return null;
     const desktopUrl = showcaseFullscreenCard.fullscreenVideoUrlDesktop ?? null;
@@ -1013,6 +1161,11 @@ const MiniverseModal = ({
         return;
       }
 
+      if (isInlineMode && !isMobileViewport && activeTab === 'experiences') {
+        onSelectMiniverse?.(card.formatId);
+        return;
+      }
+
       if (isInlineMode) {
         setSelectedMiniverseId(card.id);
         return;
@@ -1027,6 +1180,7 @@ const MiniverseModal = ({
       handleClose,
       isInlineMode,
       isMobileViewport,
+      activeTab,
       location,
       markMiniverseVisited,
       navigate,
@@ -1664,7 +1818,7 @@ const MiniverseModal = ({
 
             <h2
               id="miniverse-modal-title"
-              className={`${isInlineMode ? `hero-inline-title-glow hero-inline-title-tight mb-1.5 text-center font-semibold leading-[1.05] tracking-[-0.01em] ${shouldPlaceInlineTabsOnTop ? 'mt-0.5' : ''}` : 'font-display text-3xl'} text-slate-50`}
+              className={`${isInlineMode ? `hero-inline-title-glow hero-inline-title-tight mb-1.5 text-center font-semibold leading-[1.05] tracking-[-0.01em] ${shouldPlaceInlineTabsOnTop ? 'mt-0.5' : ''} ${!isMobileViewport ? 'hero-inline-title-desktop' : ''}` : 'font-display text-3xl'} text-slate-50`}
               style={inlineTitleStyle}
             >
               {isInlineMode ? (
@@ -1680,8 +1834,14 @@ const MiniverseModal = ({
             </h2>
 
             {isInlineMode ? (
-              <div className={`mt-1 ${shouldPlaceInlineTabsOnTop ? 'space-y-4' : 'space-y-5'}`}>
-                <div className="hero-inline-intro-plecas mx-auto max-w-4xl px-1 py-3 text-center text-sm">
+              <div className={`mt-1 ${shouldPlaceInlineTabsOnTop ? 'space-y-4' : 'space-y-5 md:space-y-6'}`}>
+                <div
+                  className={`hero-inline-intro-plecas mx-auto px-1 py-3 text-center ${
+                    isMobileViewport
+                      ? 'max-w-4xl text-sm'
+                      : 'hero-inline-intro-plecas-desktop max-w-5xl'
+                  }`}
+                >
                   {activeTabIntro.lead}{' '}
                   <strong className="hero-inline-intro-strong font-semibold">
                     {activeTabIntro.highlight}
@@ -1769,7 +1929,7 @@ const MiniverseModal = ({
                           Tu huella es real
                         </h3>
                         <p className="text-sm text-slate-300/90 leading-relaxed">
-                          Cuando la obra despierta preguntas, tu huella las transforma en escucha y detección temprana.
+                          Las preguntas que la obra despierta en ti, muchos jóvenes las viven cada día. Tu huella ayuda a escucharlas y detectarlas a tiempo.
                         </p>
                       </div>
 
@@ -1899,9 +2059,7 @@ const MiniverseModal = ({
               ) : activeTab === 'escaparate' && !isMobileViewport ? (
                 <div className="md:col-span-2 space-y-4">
                   <div className="flex items-center justify-between text-xs text-slate-400/80">
-                    <span className="uppercase tracking-[0.3em] text-slate-300/80">
-                      Navega escenas
-                    </span>
+             
                     <span>
                       Tarjeta {Math.min(activeShowcaseIndex + 1, Math.max(showcaseNarrativeCards.length, 1))}/
                       {Math.max(showcaseNarrativeCards.length, 1)}
@@ -1968,7 +2126,7 @@ const MiniverseModal = ({
                               </div>
                               <div className="min-w-0 flex-1">
                                 <p className="text-xs uppercase tracking-[0.35em] text-slate-300/80">
-                                  {activeShowcaseCard.eyebrow || 'Microficción'}
+                                  {activeShowcaseCard.eyebrow || 'Microficción Fragmentada'}
                                 </p>
                                 <h3
                                   className={`${isInlineMode
@@ -1980,18 +2138,21 @@ const MiniverseModal = ({
                                     : 'font-display text-3xl'} text-slate-50`}
                                   style={inlineCardTitleStyle}
                                 >
-                                  {activeShowcaseCard.title}
+                                  {activeShowcaseActNumber ? (
+                                    <>
+                                      <span className="hero-inline-act-number">
+                                        {inlineActNumberDisplay || activeShowcaseActNumber}
+                                      </span>
+                                      {' - '}
+                                      <span>{activeShowcaseTitleText}</span>
+                                    </>
+                                  ) : (
+                                    activeShowcaseTitleText
+                                  )}
                                 </h3>
                               </div>
                             </div>
                             <div className="flex flex-col sm:flex-row gap-3">
-                              <Button
-                                type="button"
-                                onClick={handleExploreMobileShowcase}
-                                className="bg-white text-slate-900 hover:bg-white/90 py-3 rounded-lg font-semibold flex items-center justify-center gap-2"
-                              >
-                                <span className="w-full truncate text-center">{mobileExploreButtonLabel}</span>
-                              </Button>
                               <Button
                                 type="button"
                                 onClick={() => handleShowcasePrimaryCta(activeShowcaseCard)}
@@ -1999,9 +2160,16 @@ const MiniverseModal = ({
                               >
                                 <span>{activeShowcaseCard.ctaLabel ?? activeShowcaseCard.titleShort ?? activeShowcaseCard.title}</span>
                               </Button>
+                              <Button
+                                type="button"
+                                onClick={handleExploreMobileShowcase}
+                                className="bg-white text-slate-900 hover:bg-white/90 py-3 rounded-lg font-semibold flex items-center justify-center gap-2"
+                              >
+                                <span className="w-full truncate text-center">{mobileExploreButtonLabel}</span>
+                              </Button>
                             </div>
                             <p className="text-xs uppercase tracking-[0.35em] text-slate-300/70">
-                              {activeShowcaseCard.isPrologue ? 'Prólogo en video' : 'Testimonio en video'}
+                              {activeShowcaseVideoHint}
                             </p>
                           </div>
                           <div className="w-full">
@@ -2121,7 +2289,17 @@ const MiniverseModal = ({
                                   : 'font-display text-3xl'} text-slate-50`}
                                 style={inlineCardTitleStyle}
                               >
-                                {activeShowcaseCard.title}
+                                {activeShowcaseActNumber ? (
+                                  <>
+                                    <span className="hero-inline-act-number">
+                                      {inlineActNumberDisplay || activeShowcaseActNumber}
+                                    </span>
+                                    {' - '}
+                                    <span>{activeShowcaseTitleText}</span>
+                                  </>
+                                ) : (
+                                  activeShowcaseTitleText
+                                )}
                               </h3>
                             </div>
                           </div>
@@ -2181,6 +2359,9 @@ const MiniverseModal = ({
                             >
                               <span>{activeShowcaseCard.ctaLabel ?? activeShowcaseCard.titleShort ?? activeShowcaseCard.title}</span>
                             </Button>
+                            <p className="w-full text-center text-xs uppercase tracking-[0.35em] text-slate-300/70">
+                              {activeShowcaseVideoHint}
+                            </p>
                           </div>
                 
                         </div>

@@ -215,12 +215,20 @@ body {
 }
 
 .hero-inline-title-tight {
-  font-size: 2.5rem;
+  font-size: clamp(2.45rem, 5.8vw, 4.45rem);
+  line-height: 0.98;
+  letter-spacing: -0.015em;
 }
 
 .hero-inline-title-line {
   display: block;
   white-space: nowrap;
+}
+
+.hero-inline-title-desktop {
+  max-width: 18ch;
+  margin-left: auto;
+  margin-right: auto;
 }
 
 @media (max-width: 430px) {
@@ -237,7 +245,7 @@ body {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: clip;
-  font-size: clamp(1.12rem, 5.55vw, 1.58rem);
+  font-size: clamp(1.08rem, 4.9vw, 1.5rem);
   font-weight: 600;
   line-height: 1.04;
   letter-spacing: -0.012em;
@@ -251,23 +259,46 @@ body {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: clip;
-  font-size: clamp(1.12rem, 5.55vw, 1.58rem);
+  font-size: clamp(1.08rem, 4.9vw, 1.5rem);
   font-weight: 600;
   line-height: 1.04;
   letter-spacing: -0.012em;
 }
 
+.hero-inline-act-number {
+  display: inline-block;
+  min-width: 2ch;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
+  text-shadow: 0 0 10px rgba(196, 181, 253, 0.28);
+}
+
 @media (max-width: 360px) {
-  .hero-inline-card-title-singleline,
+  .hero-inline-card-title-singleline {
+    font-size: clamp(1rem, 5vw, 1.2rem);
+  }
+
   .hero-inline-card-title-prologue {
-    font-size: clamp(1.06rem, 5.35vw, 1.26rem);
+    font-size: clamp(1rem, 5vw, 1.2rem);
   }
 }
 
 @media (min-width: 414px) and (max-width: 640px) {
-  .hero-inline-card-title-singleline,
+  .hero-inline-card-title-singleline {
+    font-size: clamp(1.16rem, 4.8vw, 1.52rem);
+  }
+
   .hero-inline-card-title-prologue {
-    font-size: clamp(1.24rem, 5.25vw, 1.66rem);
+    font-size: clamp(1.16rem, 4.8vw, 1.52rem);
+  }
+}
+
+@media (min-width: 1024px) {
+  .hero-inline-card-title-prologue {
+    font-size: clamp(2.1rem, 2.85vw, 1.95rem);
+    letter-spacing: -0.018em;
+    line-height: 1.099;
   }
 }
 
@@ -276,6 +307,15 @@ body {
   line-height: 1.42;
   color: rgba(192, 188, 199);
   text-shadow: 0 0 8px rgba(129, 140, 248, 0.18);
+}
+
+.hero-inline-intro-plecas-desktop {
+  font-size: clamp(1rem, 1.26vw, 1.22rem);
+  line-height: 1.46;
+  color: rgba(206, 200, 223, 0.94);
+  text-shadow:
+    0 0 10px rgba(55, 65, 81, 0.24),
+    0 0 20px rgba(76, 29, 149, 0.14);
 }
 
 .hero-inline-intro-strong {

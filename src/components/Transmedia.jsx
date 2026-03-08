@@ -5,6 +5,7 @@ import { createPortal } from 'react-dom';
 import {
   ArrowRight,
   BookOpen,
+  Dice5,
   HeartHandshake,
   Feather,
   Palette,
@@ -131,6 +132,7 @@ const SHOWCASE_BADGE_IDS = [
   'apps',
 ];
 const EXPLORER_BADGE_STORAGE_KEY = 'gatoencerrado:explorer-badge';
+const HERO_PENDING_MINIVERSE_SELECTION_KEY = 'gatoencerrado:hero-inline-miniverse-selection';
 const LOGIN_RETURN_KEY = 'gatoencerrado:login-return';
 const getInitialInstallPwaCTAVisibility = () => {
   if (typeof window === 'undefined') return false;
@@ -1647,7 +1649,7 @@ const formats = [
   {
     id: 'apps',
     title: 'Juegos',
-    icon: Smartphone,
+    icon: Dice5,
     iconClass: 'text-lime-300',
     
     iaTokensNote: 'IA marca el ritmo felino.',
@@ -3328,6 +3330,7 @@ const Transmedia = ({ allianceOnlyMode = false }) => {
     const handleSelectMiniverseFromHeroInline = (event) => {
       const formatId = event?.detail?.formatId ?? null;
       if (!formatId) return;
+      safeRemoveItem(HERO_PENDING_MINIVERSE_SELECTION_KEY);
       handleSelectMiniverse(formatId);
     };
     window.addEventListener(
@@ -3339,6 +3342,19 @@ const Transmedia = ({ allianceOnlyMode = false }) => {
         'gatoencerrado:select-miniverse-format',
         handleSelectMiniverseFromHeroInline,
       );
+  }, [handleSelectMiniverse]);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return undefined;
+    const pendingFormatId = String(
+      safeGetItem(HERO_PENDING_MINIVERSE_SELECTION_KEY) ?? '',
+    ).trim();
+    if (!pendingFormatId) return undefined;
+    safeRemoveItem(HERO_PENDING_MINIVERSE_SELECTION_KEY);
+    const timeoutId = window.setTimeout(() => {
+      handleSelectMiniverse(pendingFormatId);
+    }, 0);
+    return () => window.clearTimeout(timeoutId);
   }, [handleSelectMiniverse]);
 
   useEffect(() => {
