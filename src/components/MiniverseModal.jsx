@@ -383,6 +383,8 @@ const SUPPORT_MESSAGE =
   'Hola,%0Ami huella está activa pero no aparece ligada a mi cuenta.%0A¿Me ayudan a vincularla?%0A%0AGracias.';
 const SUBSCRIPTION_PRICE_ID = import.meta.env.VITE_STRIPE_SUBSCRIPTION_PRICE_ID;
 const CAUSE_SITE_URL = 'https://www.ayudaparalavida.com/index.html';
+const HERO_VERB_SCRAMBLE_CHARS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+const HERO_VERB_SCRAMBLE_INTERVAL_MS = 26;
 
 const readStoredJson = (key, fallback) => {
   if (typeof window === 'undefined') {
@@ -438,13 +440,13 @@ const MiniverseModal = ({
   const [showcaseBoosts, setShowcaseBoosts] = useState(() =>
     readStoredJson('gatoencerrado:showcase-boosts', {})
   );
-  const [communityOptIn, setCommunityOptIn] = useState(false);
   const [hasActiveSubscription, setHasActiveSubscription] = useState(false);
   const [isCheckingSubscription, setIsCheckingSubscription] = useState(false);
   const [showFavoritesOnly, setShowFavoritesOnly] = useState(false);
   const [communityTopLikes, setCommunityTopLikes] = useState([]);
   const [isLoadingCommunityLikes, setIsLoadingCommunityLikes] = useState(false);
   const [isCauseSiteOpen, setIsCauseSiteOpen] = useState(false);
+  const [inlineHeadingVerbDisplay, setInlineHeadingVerbDisplay] = useState('Descubre');
   const metadataSubscriber = Boolean(
     user?.user_metadata?.isSubscriber === true ||
       user?.user_metadata?.isSubscriber === 'true' ||
@@ -466,6 +468,7 @@ const MiniverseModal = ({
   const desktopShowcaseVideoRef = useRef(null);
   const mobileShowcaseVideoRef = useRef(null);
   const modalContentRef = useRef(null);
+  const inlineHeadingScrambleTimerRef = useRef(null);
   const setHeroAmbientHold = useCallback((hold) => {
     if (typeof window === 'undefined') return;
     window.dispatchEvent(
@@ -735,11 +738,72 @@ const MiniverseModal = ({
     if (activeTab === 'waitlist') return 'Impulsa';
     return 'Habita';
   }, [activeTab]);
+  const shouldPlaceInlineTabsOnTop = isInlineMode && isMobileViewport;
+  const inlineHeadingVerb = shouldPlaceInlineTabsOnTop ? inlineHeadingVerbDisplay : activeTabHeadingVerb;
+
+  useEffect(() => {
+    if (inlineHeadingScrambleTimerRef.current) {
+      window.clearInterval(inlineHeadingScrambleTimerRef.current);
+      inlineHeadingScrambleTimerRef.current = null;
+    }
+
+    if (!shouldPlaceInlineTabsOnTop || typeof window === 'undefined') {
+      setInlineHeadingVerbDisplay(activeTabHeadingVerb);
+      return undefined;
+    }
+
+    const prefersReducedMotion = Boolean(
+      window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches
+    );
+    if (prefersReducedMotion) {
+      setInlineHeadingVerbDisplay(activeTabHeadingVerb);
+      return undefined;
+    }
+
+    const target = activeTabHeadingVerb;
+    const totalFrames = Math.max(target.length * 2, 10);
+    let frame = 0;
+
+    inlineHeadingScrambleTimerRef.current = window.setInterval(() => {
+      frame += 1;
+      const revealed = Math.min(target.length, Math.floor((frame / totalFrames) * target.length));
+      let nextValue = '';
+
+      for (let index = 0; index < target.length; index += 1) {
+        if (index < revealed) {
+          nextValue += target[index];
+          continue;
+        }
+        const randomChar =
+          HERO_VERB_SCRAMBLE_CHARS[
+            Math.floor(Math.random() * HERO_VERB_SCRAMBLE_CHARS.length)
+          ];
+        nextValue += randomChar.toLowerCase();
+      }
+
+      setInlineHeadingVerbDisplay(nextValue);
+
+      if (frame >= totalFrames) {
+        if (inlineHeadingScrambleTimerRef.current) {
+          window.clearInterval(inlineHeadingScrambleTimerRef.current);
+          inlineHeadingScrambleTimerRef.current = null;
+        }
+        setInlineHeadingVerbDisplay(target);
+      }
+    }, HERO_VERB_SCRAMBLE_INTERVAL_MS);
+
+    return () => {
+      if (inlineHeadingScrambleTimerRef.current) {
+        window.clearInterval(inlineHeadingScrambleTimerRef.current);
+        inlineHeadingScrambleTimerRef.current = null;
+      }
+    };
+  }, [activeTabHeadingVerb, shouldPlaceInlineTabsOnTop]);
   const activeTabIntro = useMemo(() => {
       if (activeTab === 'escaparate') {
       return {
       lead: 'Conecta con esta obra a través de una microficción. Cada fragmento dialoga con una forma distinta y abre la misma pregunta:',
-      highlight: '¿qué ocurre cuando una obra se expande y exige otro lenguaje?',
+      highlight: '¿qué ocurre cuando un relato se expande y exige otro lenguaje?',
       };
     }
     if (activeTab === 'experiences') {
@@ -1188,42 +1252,6 @@ const MiniverseModal = ({
     [user]
   );
 
-  const handleCommunityOptIn = useCallback(async () => {
-    safeSetItem(
-      LOGIN_RETURN_KEY,
-      JSON.stringify({ anchor: '#apoya', action: 'community-opt-in' })
-    );
-    if (!user) {
-      if (typeof window !== 'undefined') {
-        window.dispatchEvent(new CustomEvent('open-login-modal'));
-      }
-      toast({ description: 'Inicia sesión para recibir actualizaciones.' });
-      return;
-    }
-    if (communityOptIn) {
-      setCommunityOptIn(false);
-      toast({ description: 'Ya no enviaremos este tipo de actualizaciones por ahora.' });
-      return;
-    }
-
-    setCommunityOptIn(true);
-    try {
-      const { error } = await supabase.functions.invoke('send-subscription-nudge', {
-        body: {
-          source: 'miniverse_modal',
-          context: 'sostener_tab',
-        },
-      });
-      if (error) {
-        throw error;
-      }
-      toast({ description: 'Te enviamos un correo con los próximos pasos para entender cómo funciona.' });
-    } catch (error) {
-      console.error('[MiniverseModal] No se pudo enviar correo de opt-in:', error);
-      toast({ description: 'Recibimos tu interés, pero no pudimos enviar el correo en este momento.' });
-    }
-  }, [communityOptIn, user]);
-
   const handleSubmit = useCallback(
     async (event) => {
       event.preventDefault();
@@ -1611,16 +1639,37 @@ const MiniverseModal = ({
             <div>
         <div className={`flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 ${isInlineMode ? 'mb-5' : 'mb-6'}`}>
           <div className={isInlineMode ? 'w-full' : ''}>
+            {isInlineMode && shouldPlaceInlineTabsOnTop ? (
+              <div className="mb-4 hero-inline-segmented ui-segmented ui-segmented--rect !w-full !overflow-hidden ![grid-template-columns:repeat(3,minmax(0,1fr))]">
+                {TABS.map((tab) => {
+                  const isActive = activeTab === tab.id;
+                  return (
+                    <button
+                      key={tab.id}
+                      type="button"
+                      onClick={() => handleTabChange(tab.id)}
+                      className={`ui-segmented__btn !min-h-[44px] !w-full !justify-center !px-2.5 !py-2 !text-center !text-[11px] !font-semibold !uppercase !tracking-[0.24em] !leading-[1.2] ${
+                        isActive ? 'ui-segmented__btn--active' : 'ui-segmented__btn--secondary'
+                      }`}
+                    >
+                      <span className="inline-flex w-full items-center justify-center">
+                        {tab.label}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+            ) : null}
        
 
             <h2
               id="miniverse-modal-title"
-              className={`${isInlineMode ? 'hero-inline-title-glow hero-inline-title-tight mb-1.5 text-center font-semibold leading-[1.05] tracking-[-0.01em]' : 'font-display text-3xl'} text-slate-50`}
+              className={`${isInlineMode ? `hero-inline-title-glow hero-inline-title-tight mb-1.5 text-center font-semibold leading-[1.05] tracking-[-0.01em] ${shouldPlaceInlineTabsOnTop ? 'mt-0.5' : ''}` : 'font-display text-3xl'} text-slate-50`}
               style={inlineTitleStyle}
             >
               {isInlineMode ? (
                 <>
-                  <span className="hero-inline-title-line">{activeTabHeadingVerb} el Universo</span>
+                  <span className="hero-inline-title-line">{inlineHeadingVerb} el Universo</span>
                   <span className="hero-inline-title-line"> #GatoEncerrado</span>
                 </>
               ) : (
@@ -1631,7 +1680,7 @@ const MiniverseModal = ({
             </h2>
 
             {isInlineMode ? (
-              <div className="mt-1 space-y-5">
+              <div className={`mt-1 ${shouldPlaceInlineTabsOnTop ? 'space-y-4' : 'space-y-5'}`}>
                 <div className="hero-inline-intro-plecas mx-auto max-w-4xl px-1 py-3 text-center text-sm">
                   {activeTabIntro.lead}{' '}
                   <strong className="hero-inline-intro-strong font-semibold">
@@ -1640,25 +1689,27 @@ const MiniverseModal = ({
                   {activeTabIntro.continuation ? ` ${activeTabIntro.continuation}` : ''}
                 </div>
 
-                <div className="hero-inline-segmented ui-segmented ui-segmented--rect !w-full !overflow-hidden ![grid-template-columns:repeat(3,minmax(0,1fr))]">
-                  {TABS.map((tab) => {
-                    const isActive = activeTab === tab.id;
-                    return (
-                      <button
-                        key={tab.id}
-                        type="button"
-                        onClick={() => handleTabChange(tab.id)}
-                        className={`ui-segmented__btn !min-h-[44px] !w-full !justify-center !px-2.5 !py-2 !text-center !text-[11px] !font-semibold !uppercase !tracking-[0.24em] !leading-[1.2] ${
-                          isActive ? 'ui-segmented__btn--active' : 'ui-segmented__btn--secondary'
-                        }`}
-                      >
-                        <span className="inline-flex w-full items-center justify-center">
-                          {tab.label}
-                        </span>
-                      </button>
-                    );
-                  })}
-                </div>
+                {!shouldPlaceInlineTabsOnTop ? (
+                  <div className="hero-inline-segmented ui-segmented ui-segmented--rect !w-full !overflow-hidden ![grid-template-columns:repeat(3,minmax(0,1fr))]">
+                    {TABS.map((tab) => {
+                      const isActive = activeTab === tab.id;
+                      return (
+                        <button
+                          key={tab.id}
+                          type="button"
+                          onClick={() => handleTabChange(tab.id)}
+                          className={`ui-segmented__btn !min-h-[44px] !w-full !justify-center !px-2.5 !py-2 !text-center !text-[11px] !font-semibold !uppercase !tracking-[0.24em] !leading-[1.2] ${
+                            isActive ? 'ui-segmented__btn--active' : 'ui-segmented__btn--secondary'
+                          }`}
+                        >
+                          <span className="inline-flex w-full items-center justify-center">
+                            {tab.label}
+                          </span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                ) : null}
               </div>
             ) : (
               <>
@@ -1734,7 +1785,7 @@ const MiniverseModal = ({
                           </span>
                           <Button
                             type="button"
-                            onClick={handleScrollToSupport}
+                            onClick={handleSubscriptionCheckout}
                             className="white-glass-btn h-11 min-w-[10.5rem] px-6 text-base font-semibold tracking-[0.2px]"
                           >
                             Activar huella mensual
@@ -1752,42 +1803,16 @@ const MiniverseModal = ({
                           ) : null}
                           <button
                             type="button"
-                            onClick={handleCommunityOptIn}
+                            onClick={handleScrollToSupport}
                             className="relative flex w-full items-center justify-center gap-3 text-left group focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-purple-400/60"
                           >
-                            <div
-                              className={`h-5 w-5 rounded-full border border-white/20 ${
-                                communityOptIn ? 'bg-emerald-400 shadow-[0_0_12px_rgba(52,211,153,0.6)]' : 'bg-slate-600/40'
-                              }`}
-                            />
+                            <div className="h-5 w-5 rounded-full border border-emerald-300/40 bg-emerald-300/70 shadow-[0_0_12px_rgba(52,211,153,0.35)]" />
                             <span className="text-sm text-slate-300/80 leading-relaxed">
                               Quiero entender cómo funciona.
                             </span>
                           </button>
                         </div>
                       </div>
-                    </div>
-                  </div>
-
-                  <div className="order-1 md:hidden glass-effect relative overflow-hidden rounded-2xl border border-white/10 p-5 text-slate-200/90">
-                    <div className="relative z-10 space-y-3">
-                      <div className="flex items-center gap-3">
-                        <span className="text-[0.65rem] uppercase tracking-[0.35em] text-slate-400/80">
-                          Impacto social
-                        </span>
-                        <span className="h-px flex-1 bg-white/10" />
-                      </div>
-                      <p className="text-sm text-slate-300/90 leading-relaxed">
-                        Tu huella activa acompañamiento emocional real y sostiene la expansión colectiva del proyecto.
-                      </p>
-                      <button
-                        type="button"
-                        onClick={handleScrollToSupport}
-                        className="inline-flex items-center gap-2 rounded-xl border border-white/15 bg-white/5 px-3 py-2 text-sm font-medium text-slate-200 transition hover:border-white/30 hover:bg-white/10 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-400/60"
-                      >
-                        <span className="h-1.5 w-1.5 rounded-full bg-emerald-300/80" />
-                        Ver impacto social
-                      </button>
                     </div>
                   </div>
 
