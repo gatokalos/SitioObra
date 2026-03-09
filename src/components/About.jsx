@@ -26,9 +26,9 @@ import { useSilvestreVoice } from '@/hooks/useSilvestreVoice';
 
 const aboutParagraphs = [
   {
-    text: `A través de una terapia no convencional, un paciente y su doctora exploran el poder de los sueños lúcidos para confrontar el miedo, la desconexión y el silencio emocional.
+    text: `A través de una terapia no convencional, un paciente y su doctora exploran el poder de los sueños lúcidos para confrontar el miedo, la desconexión y la rabia reprimida.
 
-    Silvestre, un hombre en sus treintas, comienza a perder la frontera entre lo que imagina y lo que vive. En ese desdoblamiento, la mente se convierte en escenario y la escena en conciencia.
+    Silvestre, un hombre en sus treintas, comienza a perder la frontera entre lo que imagina y lo que siente. En ese desdoblamiento, la mente se convierte en escenario y la escena en espejo.
 
     La obra no ofrece respuestas cerradas: abre preguntas sobre salud mental, existencia y acompañamiento, recordándonos que comprender no siempre es sanar, pero sí puede ser el inicio de un vínculo.`,
   

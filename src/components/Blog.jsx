@@ -703,13 +703,26 @@ const Blog = ({ posts = [], isLoading = false, error = null }) => {
   const featuredEditorialCategory = editorialCategories[0] ?? null;
   const secondaryEditorialCategories = editorialCategories.slice(1);
 
-  const handleSelectPost = useCallback((post) => {
-    setActivePost(post);
-    requestAnimationFrame(() => {
-      const articleElement = document.getElementById('blog-article');
-      articleElement?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    });
-  }, []);
+  const handleSelectPost = useCallback(
+    (post) => {
+      if (!post) return;
+      if (post.category && BLOG_CATEGORY_ORDER.includes(post.category)) {
+        setActiveCategory(post.category);
+      }
+      if (isMobileViewport) {
+        setIsEditorialLineOpen(true);
+      }
+      setActivePost(post);
+      // Espera a que el panel/artículo se pinte antes de hacer scroll.
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          const articleElement = document.getElementById('blog-article');
+          articleElement?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        });
+      });
+    },
+    [isMobileViewport]
+  );
 
   const handleExploreCategory = useCallback((category) => {
     setActiveCategory(category);

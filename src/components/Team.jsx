@@ -110,7 +110,7 @@ const teamData = {
       },
     ],
   },
-  "Vestuario y Pelucas": {
+  "Vestuario y Caracterización": {
     description:
       "Diseño textil y caracterización que traducen la psicología de los personajes en textura, color y forma.",
     members: [
@@ -122,7 +122,7 @@ const teamData = {
       },
       {
         name: "Jonathan Lazcano",
-        role: "Pelucas y Caracterización Capilar",
+        role: "Pelucas",
         bio: "Artista de caracterización. Su trabajo artesanal da vida y coherencia visual a los personajes a través del detalle y la textura.",
         image: "https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/equipo/JL.jpg",
       },

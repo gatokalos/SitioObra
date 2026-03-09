@@ -280,7 +280,7 @@ const MINIVERSE_CARDS = [
     glassTint: '304 65% 60%',
     title: '04 - La imagen',
     titleShort: '🎧 "La imagen de sí" (30 seg)',
-    description: 'Y un día me vi desde afuera. Ya no supe si era yo o si me estaba dibujado…',
+    description: 'Un día me vi dibujando y no supe si estaba creando o si algo me estaba dibujando a mí…',
     videoUrl: null,
     ctaVerb: 'Mira',
     action: 'Explora',
@@ -355,7 +355,7 @@ const MINIVERSE_CARDS = [
     glassTint: '266 62% 60%',
     title: '09 - El espejo',
     titleShort: '🎧 "La revelación" (30 seg)',
-    description: 'Tal vez esto nunca fue una obra. Tal vez fue un sueño compartido nueve veces.',
+    description: 'Tal vez esto nunca fue una obra. Tal vez fue un sueño compartido en nueve formas.',
     videoUrl: null,
     ctaVerb: 'Consulta',
     action: 'Explora',
@@ -844,8 +844,8 @@ const MiniverseModal = ({
   const activeTabIntro = useMemo(() => {
       if (activeTab === 'escaparate') {
       return {
-      lead: 'Conecta con la obra a través de una microficción en nueve actos. Cada acto dialoga con una forma de sí y abre la misma pregunta:',
-      highlight: '¿qué ocurre cuando nuestra obra se expande y exige otro lenguaje?',
+      lead: 'Explora la obra a través de una microficción en nueve actos. Cada acto dialoga con una forma distinta de sí y revela algo esencial:',
+      highlight: '¿por qué esta obra necesitó expandirse más allá del teatro?',
       };
     }
     if (activeTab === 'experiences') {
@@ -931,7 +931,7 @@ const MiniverseModal = ({
     const currentFictionIndex = fictionShowcaseCards.findIndex((card) => card.id === activeShowcaseCard.id);
     const baseIndex = currentFictionIndex >= 0 ? currentFictionIndex : 0;
     const nextCard = fictionShowcaseCards[(baseIndex + 1) % fictionShowcaseCards.length] ?? fictionShowcaseCards[0];
-    return `Siguiente forma: ${nextCard?.portalLabel ?? 'La escena'}`;
+    return `Siguiente: ${nextCard?.portalLabel ?? 'La escena'}`;
   }, [activeShowcaseCard, fictionShowcaseCards]);
   const activeShowcaseVideoHint = useMemo(() => {
     if (!activeShowcaseCard) return '';
@@ -939,7 +939,7 @@ const MiniverseModal = ({
     if (!durationToken) {
       return activeShowcaseCard.isPrologue ? 'Video completo' : 'Testimonio en video';
     }
-    const videoLabel = activeShowcaseCard.isPrologue ? 'Video completo' : 'Testimonio';
+    const videoLabel = activeShowcaseCard.isPrologue ? 'Video completo' : 'Fragmento';
     return `${videoLabel} · ${durationToken.toUpperCase()}`;
   }, [activeShowcaseCard]);
 
@@ -2126,7 +2126,7 @@ const MiniverseModal = ({
                               </div>
                               <div className="min-w-0 flex-1">
                                 <p className="text-xs uppercase tracking-[0.35em] text-slate-300/80">
-                                  {activeShowcaseCard.eyebrow || 'Microficción Fragmentada'}
+                                  {activeShowcaseCard.eyebrow || 'Microficción'}
                                 </p>
                                 <h3
                                   className={`${isInlineMode
