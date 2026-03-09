@@ -21,7 +21,7 @@ import {
 } from '@/services/miniverseHomeAnalyticsService';
 
 const TABS = [
-  { id: 'escaparate', label: 'Descubre', icon: Sparkles },
+  { id: 'escaparate', label: 'Expande', icon: Sparkles },
   { id: 'experiences', label: 'Habita', icon:  DoorOpen},
   { id: 'waitlist', label: 'Impulsa', icon: HeartHandshake },
 ];
@@ -758,7 +758,7 @@ const MiniverseModal = ({
     [activeTab]
   );
   const activeTabHeadingVerb = useMemo(() => {
-    if (activeTab === 'escaparate') return 'Descubre';
+    if (activeTab === 'escaparate') return 'Expande';
     if (activeTab === 'waitlist') return 'Impulsa';
     return 'Habita';
   }, [activeTab]);
@@ -844,8 +844,8 @@ const MiniverseModal = ({
   const activeTabIntro = useMemo(() => {
       if (activeTab === 'escaparate') {
       return {
-      lead: 'Explora la obra a través de una microficción en nueve actos. Cada acto dialoga con una forma distinta de sí y revela algo esencial:',
-      highlight: '¿por qué esta obra necesitó expandirse más allá del teatro?',
+      lead: 'Conecta con la obra a través de una microficción en nueve actos. Cada acto dialoga con una forma distinta de sí y abre la misma pregunta:',
+      highlight: '¿por qué esta obra se expande más allá del teatro?',
       };
     }
     if (activeTab === 'experiences') {
@@ -857,9 +857,9 @@ const MiniverseModal = ({
       };
     }
       return {
-      lead: 'Tu huella extiende la experiencia de la obra más allá del escenario.',
-      highlight: 'Ayuda a detectar señales de violencia autoinfligida en escuelas públicas,',
-      continuation: 'trabajando con alumnos, docentes y familias.'
+      lead: 'La soledad, la confusión o el miedo que esta obra pone en escena,',
+      highlight: 'muchos niños y jóvenes tijuanenses las viven cada día en silencio.',
+      continuation: 'Tu huella ayuda a detectarlas y acompañarlas a tiempo.'
     };
   }, [activeTab]);
   const showcaseMiniverses = useMemo(
@@ -1920,7 +1920,7 @@ const MiniverseModal = ({
                     <div className="relative z-10 flex h-full flex-col">
                       <div className="flex items-center gap-3">
                         <span className="text-[0.65rem] uppercase tracking-[0.35em] text-slate-400/80">
-                          Apoya el proyecto
+                          Súmate al proyecto
                         </span>
                         <span className="h-px flex-1 bg-white/10" />
                       </div>
@@ -1929,7 +1929,7 @@ const MiniverseModal = ({
                           Tu huella es real
                         </h3>
                         <p className="text-sm text-slate-300/90 leading-relaxed">
-                          Las preguntas que la obra despierta en ti, muchos jóvenes las viven cada día. Tu huella ayuda a escucharlas y detectarlas a tiempo.
+                          Al dejar tu huella, te integras al ecosistema creativo de Gato Encerrado y lo ayudas a florecer.
                         </p>
                       </div>
 
@@ -1948,7 +1948,7 @@ const MiniverseModal = ({
                             onClick={handleSubscriptionCheckout}
                             className="white-glass-btn h-11 min-w-[10.5rem] px-6 text-base font-semibold tracking-[0.2px]"
                           >
-                            Activar huella mensual
+                            Dejar mi huella
                           </Button>
                           {embeddedCheckoutStatus ? (
                             <p className="text-center text-xs leading-relaxed text-slate-300/80">
@@ -1968,7 +1968,7 @@ const MiniverseModal = ({
                           >
                             <div className="h-5 w-5 rounded-full border border-emerald-300/40 bg-emerald-300/70 shadow-[0_0_12px_rgba(52,211,153,0.35)]" />
                             <span className="text-sm text-slate-300/80 leading-relaxed">
-                              Quiero entender cómo funciona.
+                              Quiero saber cómo funciona.
                             </span>
                           </button>
                         </div>

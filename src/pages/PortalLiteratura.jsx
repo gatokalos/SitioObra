@@ -33,7 +33,7 @@ const LITERATURA_TILE = {
 };
 const LITERATURA_IA_PROFILE = {
   type: 'GPT-4o mini + voz sintetica para fragmentos.',
-  interaction: 'Guia de lectura y acompanamiento breve por capitulo.',
+  interaction: 'Guia de lectura y acompañamiento breve por capitulo.',
   tokensRange: '150-320 tokens por fragmento leido.',
   coverage: 'Cubierto por suscriptores; lectura sin costo adicional.',
   footnote: 'La IA susurra; la historia sigue siendo tuya.',

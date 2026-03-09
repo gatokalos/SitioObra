@@ -8517,10 +8517,10 @@ Aquí no está todo. Solo lo suficiente para navegar, intervenir y habitar este 
                   </button>
                 </div>
                 <h3 className="font-display text-3xl text-slate-100">
-                  Nuestro impacto social crece contigo
+                  Así funciona tu huella
                 </h3>
                 <p className="text-slate-300/80 leading-relaxed font-light">
-                  La taquilla mantiene la obra en escena; el universo de #GatoEncerrado financia acompañamiento emocional real.
+                  La taquilla sostiene la puesta en escena. Las huellas sostienen el impacto social del universo #GatoEncerrado.
                   <span className="font-semibold text-purple-200"> Cada huella activada se distribuye en tres frentes que opera Isabel Ayuda para la Vida, A.C.</span> {' '}
            
                 </p>

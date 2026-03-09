@@ -20,7 +20,7 @@ const JUEGOS_INTRO =
   'Demos jugables del tablero TRAZO: eliges avatar (Maestra, Saturnina, Don Polo...) y el gato anfitrion te abre el telon en 3 taps.';
 const JUEGOS_NOTA_AUTORAL = {
   title: '#NoHayDesandar',
-  verse: 'Elegi un camino pequeno.\nAhora no lo puedo desandar.\nEl juego me jugo.',
+  verse: 'Elegi un camino pequeno.\nAhora no lo puedo desandar.\nEl juego me jugó.',
 };
 const JUEGOS_TILE = {
   gradient: 'linear-gradient(135deg, rgba(30,41,59,0.95), rgba(22,163,74,0.75), rgba(34,211,238,0.65))',
