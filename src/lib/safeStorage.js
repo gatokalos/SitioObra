@@ -16,6 +16,10 @@ const memoryStorage = {
   },
 };
 
+const isSecureContext =
+  typeof window !== 'undefined' && window.location.protocol === 'https:';
+const cookieSecure = isSecureContext ? '; Secure' : '';
+
 const cookieStorage = {
   type: 'cookie',
   getItem: (key) => {
@@ -26,18 +30,18 @@ const cookieStorage = {
   setItem: (key, value) => {
     if (typeof document === 'undefined') return;
     const encoded = encodeURIComponent(value);
-    document.cookie = `${key}=${encoded}; path=/; SameSite=Lax`;
+    document.cookie = `${key}=${encoded}; path=/; SameSite=Lax${cookieSecure}`;
   },
   removeItem: (key) => {
     if (typeof document === 'undefined') return;
-    document.cookie = `${key}=; path=/; max-age=0; SameSite=Lax`;
+    document.cookie = `${key}=; path=/; max-age=0; SameSite=Lax${cookieSecure}`;
   },
   clear: () => {
     if (typeof document === 'undefined') return;
     const cookies = document.cookie.split(';');
     cookies.forEach((cookie) => {
       const [name] = cookie.split('=');
-      document.cookie = `${name.trim()}=; path=/; max-age=0; SameSite=Lax`;
+      document.cookie = `${name.trim()}=; path=/; max-age=0; SameSite=Lax${cookieSecure}`;
     });
   },
   key: () => null,

@@ -21,7 +21,12 @@ export const AuthProvider = ({ children }) => {
       for (let i = 0; i < total; i += 1) {
         const key = safeStorage?.key?.(i);
         if (typeof key !== 'string') continue;
-        if (/^sb-.*-auth-token$/.test(key) || /^sb-.*-code-verifier$/.test(key)) {
+        if (
+          /^sb-.*-auth-token$/.test(key) ||
+          /^sb-.*-code-verifier$/.test(key) ||
+          key === 'gatoencerrado-auth' ||
+          key === 'gatoencerrado-public-auth'
+        ) {
           keysToRemove.push(key);
         }
       }

@@ -21,9 +21,10 @@ const SONORIDADES_INTRO =
 const SONORIDADES_BODY =
   'En la puesta, el sonido no acompano la historia: la transformo. Abre una experiencia inmersiva donde la resonancia modifica la percepcion del tiempo, del cuerpo y del espacio.';
 const SONORIDADES_CLOSE =
-  'Cada visita es una mezcla nueva, un sueno que se reinventa con cada escucha.';
-const SONORIDADES_VIDEO_URL =
-  'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Sonoridades/videos-v/Vacio.mov';
+  'Cada visita es una mezcla nueva, un sueño que se reinventa con cada escucha.';
+const SUPABASE_STORAGE = `${import.meta.env.VITE_SUPABASE_URL || ''}/storage/v1/object/public`;
+
+const SONORIDADES_VIDEO_URL = `${SUPABASE_STORAGE}/Sonoridades/videos-v/Vacio.mov`;
 const SONORIDADES_MUSIC_OPTIONS = [
   {
     id: 'silencio',
@@ -33,7 +34,7 @@ const SONORIDADES_MUSIC_OPTIONS = [
   {
     id: 'ensayo-abierto',
     label: 'Ensayo Abierto (pista)',
-    url: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Sonoridades/audio/cat_theme.m4a',
+    url: `${SUPABASE_STORAGE}/Sonoridades/audio/cat_theme.m4a`,
   },
 ];
 const SONORIDADES_POEMS = [
@@ -45,15 +46,15 @@ const SONORIDADES_POEMS = [
   {
     id: 'cuerpo',
     label: 'Poema 2 - Cuerpo',
-    text: 'Lo que cae del sueno tambien cae del cuerpo.',
+    text: 'Lo que cae del sueño tambien cae del cuerpo.',
   },
 ];
 const SONORIDADES_EXPLORATION = [
   'El video corre por su cuenta y cambia con cada visita.',
-  'Tu eliges la musica para ajustar el animo del sueno.',
+  'Tu eliges la musica para ajustar el animo del sueño.',
   'Escoge un poema y observa como se desliza mientras todo ocurre.',
 ];
-const SONORIDADES_CLOSING = ['Sueno en tres capas', 'Cada combinacion abre un sueno distinto.', 'Entra y crea el tuyo.'];
+const SONORIDADES_CLOSING = ['Sueño en tres capas', 'Cada combinacion abre un sueño distinto.', 'Entra y crea el tuyo.'];
 const SONORIDADES_NOTA_AUTORAL = {
   title: '#LoQueSuenaAdentro',
   verse: 'Abri los ojos.\nLa resonancia era antigua.\nComo el silencio.',
@@ -91,7 +92,7 @@ const SONORIDADES_COLLABORATORS = [
 const SONORIDADES_FALLBACK_COMMENTS = [
   {
     id: 'sonoro-comment-1',
-    proposal: 'La mezcla se sintio como respirar dentro del sueno.',
+    proposal: 'La mezcla se sintio como respirar dentro del sueño.',
     name: 'Escucha anonima',
   },
   {
@@ -112,8 +113,17 @@ const SONORIDADES_BLOG_KEY_SET = new Set(SONORIDADES_BLOG_KEYS.map((key) => key.
 const MiniVersoCard = ({ title, verse, palette }) => {
   const [isActive, setIsActive] = useState(false);
 
+  const toggle = () => setIsActive((prev) => !prev);
+
   return (
-    <div className="relative [perspective:1200px]" onClick={() => setIsActive((prev) => !prev)}>
+    <div
+      role="button"
+      tabIndex={0}
+      aria-pressed={isActive}
+      className="relative [perspective:1200px] cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-white/40 rounded-2xl"
+      onClick={toggle}
+      onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggle(); } }}
+    >
       <motion.div
         animate={{ rotateY: isActive ? 180 : 0 }}
         transition={{ duration: 0.7, ease: 'easeInOut' }}

@@ -1,5 +1,5 @@
-import React, { Suspense, lazy, useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Route, Routes, useLocation, useNavigate } from 'react-router-dom';
+import React, { Suspense, lazy, useCallback, useEffect, useRef, useState } from 'react';
+import { Route, Routes, useLocation } from 'react-router-dom';
 import { Toaster } from '@/components/ui/toaster';
 import Header from '@/components/Header';
 import Hero from '@/components/Hero';
@@ -11,17 +11,6 @@ import { useBlogPosts } from '@/hooks/useBlogPosts';
 import { useEmailRedirect } from '@/hooks/useEmailRedirect';
 import LoginToast from '@/components/LoginToast';
 import { useAuth } from '@/contexts/SupabaseAuthContext';
-import {
-  hasSeenBienvenida,
-  isBienvenidaPending,
-  isBienvenidaSkip,
-  isBienvenidaForceOnLogin,
-  getBienvenidaFlowGoal,
-  clearBienvenidaForceOnLogin,
-  clearBienvenidaSkip,
-  setBienvenidaPending,
-  setBienvenidaReturnPath,
-} from '@/lib/bienvenida';
 import { safeGetItem, safeSetItem } from '@/lib/safeStorage';
 import {
   createTransmediaIdempotencyKey,
@@ -31,7 +20,6 @@ import {
 const pageTitle = '#GatoEncerrado - Obra de Teatro transmedia';
 const pageDescription =
   'La historia de alguien que desaparece… y deja una huella emocional. Una experiencia teatral única que explora múltiples formatos transmediaes.';
-const LOGIN_RETURN_KEY = 'gatoencerrado:login-return';
 const TRANSMEDIA_UNLOCK_STORAGE_KEY = 'gatoencerrado:transmedia-unlocked:v1';
 const TRANSMEDIA_UNLOCK_REWARD_AMOUNT = 7;
 const TRANSMEDIA_FOCUS_KEYS = ['focus', 'appId', 'app_id', 'recommended_app_id'];
@@ -39,8 +27,6 @@ const TRANSMEDIA_DEEPLINK_REWARD_EVENT_KEY = 'showcase_boost:landing_deeplink';
 const IS_UI_LAB_ENABLED =
   import.meta.env.DEV ||
   ['1', 'true', 'yes', 'on'].includes(String(import.meta.env.VITE_UI_LAB || '').toLowerCase());
-// Hot toggle: pause auto-launch of Bienvenida after login without deleting the flow.
-const ENABLE_BIENVENIDA_AUTO_LAUNCH = false;
 const About = lazy(() => import('@/components/About'));
 const ProvocaSection = lazy(() =>
   import('@/components/About').then((module) => ({ default: module.ProvocaSection }))
@@ -74,6 +60,15 @@ const SectionFallback = ({ id, minHeight = 320 }) => (
 
 const RouteFallback = () => (
   <div className="min-h-screen bg-[#050507]" />
+);
+
+const PortalErrorFallback = () => (
+  <div className="min-h-screen bg-[#050507] flex flex-col items-center justify-center gap-6 px-6 text-center">
+    <p className="text-slate-300 text-base">Esta sección no pudo cargar.</p>
+    <a href="/" className="text-slate-400 underline underline-offset-4 text-sm hover:text-white transition-colors">
+      Volver al inicio
+    </a>
+  </div>
 );
 
 const DeferredSection = ({
@@ -193,45 +188,7 @@ const HeroBackground = () => {
   );
 };
 
-const BienvenidaGate = () => {
-  const navigate = useNavigate();
-  const location = useLocation();
-  const { user, loading } = useAuth();
-  const bienvenidaUrl = useMemo(() => {
-    const raw = import.meta.env.VITE_BIENVENIDA_URL ?? import.meta.env.VITE_ORACULO_URL ?? '';
-    return raw ? raw.replace(/\/+$/, '') : '';
-  }, []);
-
-  const currentPath = useMemo(() => {
-    const search = location.search || '';
-    const hash = location.hash || '';
-    return `${location.pathname}${search}${hash}`;
-  }, [location.hash, location.pathname, location.search]);
-
-  useEffect(() => {
-    if (!ENABLE_BIENVENIDA_AUTO_LAUNCH) return;
-    if (!bienvenidaUrl) return;
-    if (location.pathname === '/bienvenida') return;
-    if (location.pathname.startsWith('/lab/')) return;
-    if (isBienvenidaPending()) return;
-    if (loading || !user) return;
-    const flowGoal = getBienvenidaFlowGoal();
-    const isSubscriptionGoal = flowGoal === 'subscription';
-    if (safeGetItem(LOGIN_RETURN_KEY) && !isSubscriptionGoal) return;
-    const forceOnLogin = isBienvenidaForceOnLogin();
-    if (isBienvenidaSkip()) {
-      clearBienvenidaSkip();
-    }
-    if (!forceOnLogin && !isSubscriptionGoal && hasSeenBienvenida(user.id)) return;
-
-    setBienvenidaPending();
-    clearBienvenidaForceOnLogin();
-    setBienvenidaReturnPath(isSubscriptionGoal ? '/#cta' : currentPath);
-    navigate(isSubscriptionGoal ? '/bienvenida?goal=subscription' : '/bienvenida', { replace: true });
-  }, [currentPath, loading, location.pathname, navigate, user, bienvenidaUrl]);
-
-  return null;
-};
+const BienvenidaGate = () => null;
 
 const HashAnchorScroller = () => {
   const location = useLocation();
@@ -637,16 +594,16 @@ function App() {
         )}
       />
       <Route path="/bienvenida" element={<Suspense fallback={<RouteFallback />}><Bienvenida /></Suspense>} />
-      <Route path="/portal-literatura" element={<Suspense fallback={<RouteFallback />}><PortalLiteratura /></Suspense>} />
-      <Route path="/portal-artesanias" element={<Suspense fallback={<RouteFallback />}><PortalArtesanias /></Suspense>} />
-      <Route path="/portal-voz" element={<Suspense fallback={<RouteFallback />}><PortalVoz /></Suspense>} />
-      <Route path="/portal-movimiento" element={<Suspense fallback={<RouteFallback />}><PortalMovimiento /></Suspense>} />
-      <Route path="/portal-graficos" element={<Suspense fallback={<RouteFallback />}><PortalGraficos /></Suspense>} />
-      <Route path="/portal-cine" element={<Suspense fallback={<RouteFallback />}><PortalCine /></Suspense>} />
-      <Route path="/portal-sonoridades" element={<Suspense fallback={<RouteFallback />}><PortalSonoridades /></Suspense>} />
-      <Route path="/portal-juegos" element={<Suspense fallback={<RouteFallback />}><PortalJuegos /></Suspense>} />
-      <Route path="/portal-oraculo" element={<Suspense fallback={<RouteFallback />}><PortalOraculo /></Suspense>} />
-      <Route path="/portal-encuentros" element={<Suspense fallback={<RouteFallback />}><PortalEncuentros /></Suspense>} />
+      <Route path="/portal-literatura" element={<SectionErrorBoundary fallback={<PortalErrorFallback />}><Suspense fallback={<RouteFallback />}><PortalLiteratura /></Suspense></SectionErrorBoundary>} />
+      <Route path="/portal-artesanias" element={<SectionErrorBoundary fallback={<PortalErrorFallback />}><Suspense fallback={<RouteFallback />}><PortalArtesanias /></Suspense></SectionErrorBoundary>} />
+      <Route path="/portal-voz" element={<SectionErrorBoundary fallback={<PortalErrorFallback />}><Suspense fallback={<RouteFallback />}><PortalVoz /></Suspense></SectionErrorBoundary>} />
+      <Route path="/portal-movimiento" element={<SectionErrorBoundary fallback={<PortalErrorFallback />}><Suspense fallback={<RouteFallback />}><PortalMovimiento /></Suspense></SectionErrorBoundary>} />
+      <Route path="/portal-graficos" element={<SectionErrorBoundary fallback={<PortalErrorFallback />}><Suspense fallback={<RouteFallback />}><PortalGraficos /></Suspense></SectionErrorBoundary>} />
+      <Route path="/portal-cine" element={<SectionErrorBoundary fallback={<PortalErrorFallback />}><Suspense fallback={<RouteFallback />}><PortalCine /></Suspense></SectionErrorBoundary>} />
+      <Route path="/portal-sonoridades" element={<SectionErrorBoundary fallback={<PortalErrorFallback />}><Suspense fallback={<RouteFallback />}><PortalSonoridades /></Suspense></SectionErrorBoundary>} />
+      <Route path="/portal-juegos" element={<SectionErrorBoundary fallback={<PortalErrorFallback />}><Suspense fallback={<RouteFallback />}><PortalJuegos /></Suspense></SectionErrorBoundary>} />
+      <Route path="/portal-oraculo" element={<SectionErrorBoundary fallback={<PortalErrorFallback />}><Suspense fallback={<RouteFallback />}><PortalOraculo /></Suspense></SectionErrorBoundary>} />
+      <Route path="/portal-encuentros" element={<SectionErrorBoundary fallback={<PortalErrorFallback />}><Suspense fallback={<RouteFallback />}><PortalEncuentros /></Suspense></SectionErrorBoundary>} />
       {IS_UI_LAB_ENABLED ? (
         <Route path="/lab/huella" element={<Suspense fallback={<RouteFallback />}><LabHuella /></Suspense>} />
       ) : null}

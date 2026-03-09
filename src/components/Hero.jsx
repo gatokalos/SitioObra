@@ -15,10 +15,9 @@ import {
 import { createPortalLaunchState } from '@/lib/portalNavigation';
 import { safeSetItem } from '@/lib/safeStorage';
 
-const HERO_LOGGED_IN_AUDIO_URL =
-  'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Sonoridades/audio/A2_Melody_MSTR.m4a';
-const HERO_LOGGED_IN_AUDIO_FALLBACK_URL =
-  'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Sonoridades/audio/A2_Melody_MSTR.wav';
+const SUPABASE_STORAGE = `${import.meta.env.VITE_SUPABASE_URL || ''}/storage/v1/object/public`;
+const HERO_LOGGED_IN_AUDIO_URL = `${SUPABASE_STORAGE}/Sonoridades/audio/A2_Melody_MSTR.m4a`;
+const HERO_LOGGED_IN_AUDIO_FALLBACK_URL = `${SUPABASE_STORAGE}/Sonoridades/audio/A2_Melody_MSTR.wav`;
 const HERO_LOGGED_IN_AUDIO_VOLUME = 0.35;
 const HERO_AUDIO_MIN_AUDIBLE_VOLUME = 0.015;
 const HERO_AUDIO_PLAY_RETRY_MS = 2500;
@@ -31,7 +30,6 @@ const HERO_LOGGED_IN_ACTIVE_GLOW =
   'radial-gradient(circle at center, rgba(110,48,171,0.36) 0%, rgba(217,31,139,0.24) 52%, rgba(0,0,0,0) 100%)';
 const HERO_LOGGED_IN_SWEEP_GLOW =
   'radial-gradient(circle,rgba(31,47,99,0.3)_0%,rgba(110,48,171,0.22)_44%,rgba(217,31,139,0.1)_74%,rgba(0,0,0,0)_100%)';
-const ENABLE_LEGACY_LOGGED_IN_HERO_CTAS = false;
 const HERO_PENDING_MINIVERSE_SELECTION_KEY = 'gatoencerrado:hero-inline-miniverse-selection';
 
 const resolveHeroInlineTabFromQuery = (search = '') => {
@@ -54,11 +52,10 @@ const Hero = () => {
   const [isCtaHovered, setIsCtaHovered] = useState(false);
   const [primaryCtaWidth, setPrimaryCtaWidth] = useState(null);
   const [activeLoggedInCtaIndex, setActiveLoggedInCtaIndex] = useState(0);
-  const [loggedInSweepPoint, setLoggedInSweepPoint] = useState({ x: 0, y: 0 });
+  const [loggedInSweepPoint] = useState({ x: 0, y: 0 });
   const primaryCtaRef = useRef(null);
   const loggedInCtaTrackRef = useRef(null);
   const loggedInCtaRefs = useRef([]);
-  const sweepDirectionRef = useRef(1);
   const heroSectionRef = useRef(null);
   const heroAudioMutedRef = useRef(false);
   const audioGestureUnlockRef = useRef(false);
@@ -191,44 +188,6 @@ const Hero = () => {
     return () => window.clearInterval(intervalId);
   }, [isCtaHovered, rotatingCtas.length]);
 
-  useEffect(() => {
-    if (!ENABLE_LEGACY_LOGGED_IN_HERO_CTAS || !user || isMobileViewport) return undefined;
-    sweepDirectionRef.current = 1;
-    const intervalId = window.setInterval(() => {
-      setActiveLoggedInCtaIndex((prev) => {
-        if (prev >= 2) sweepDirectionRef.current = -1;
-        if (prev <= 0) sweepDirectionRef.current = 1;
-        return prev + sweepDirectionRef.current;
-      });
-    }, 4400);
-    return () => window.clearInterval(intervalId);
-  }, [isMobileViewport, user]);
-
-  const updateLoggedInSweepPoint = useCallback((index) => {
-    const track = loggedInCtaTrackRef.current;
-    const target = loggedInCtaRefs.current[index];
-    if (!track || !target) return;
-    const trackRect = track.getBoundingClientRect();
-    const targetRect = target.getBoundingClientRect();
-    setLoggedInSweepPoint({
-      x: targetRect.left - trackRect.left + targetRect.width / 2,
-      y: targetRect.top - trackRect.top + targetRect.height / 2,
-    });
-  }, []);
-
-  useEffect(() => {
-    if (!ENABLE_LEGACY_LOGGED_IN_HERO_CTAS || !user) return undefined;
-    updateLoggedInSweepPoint(activeLoggedInCtaIndex);
-    if (typeof ResizeObserver === 'undefined') return undefined;
-
-    const observer = new ResizeObserver(() => updateLoggedInSweepPoint(activeLoggedInCtaIndex));
-    if (loggedInCtaTrackRef.current) observer.observe(loggedInCtaTrackRef.current);
-    loggedInCtaRefs.current.forEach((node) => {
-      if (node) observer.observe(node);
-    });
-
-    return () => observer.disconnect();
-  }, [activeLoggedInCtaIndex, updateLoggedInSweepPoint, user]);
 
   const loggedInCtaClass = useCallback(
     () =>

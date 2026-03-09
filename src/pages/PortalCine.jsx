@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { BookOpen, Clapperboard, Hand, Heart, Ticket, Video } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/SupabaseAuthContext';
 import LoginOverlay from '@/components/ContributionModal/LoginOverlay';
@@ -14,6 +15,8 @@ import { fetchApprovedContributions } from '@/services/contributionService';
 import { recordShowcaseLike } from '@/services/showcaseLikeService';
 import { supabase } from '@/lib/supabaseClient';
 import { sanitizeExternalHttpUrl } from '@/lib/urlSafety';
+
+const SUPABASE_STORAGE = `${import.meta.env.VITE_SUPABASE_URL || ''}/storage/v1/object/public`;
 
 const CINE_INTRO =
   'El cine dentro de #GatoEncerrado es otro modo de entrar al encierro.';
@@ -37,22 +40,22 @@ const CINE_IA_PROFILE = {
   interaction: 'Notas criticas y captions contextuales por espectador.',
   tokensRange: '200-450 tokens por visita.',
   coverage: 'Incluido en la activacion de huellas.',
-  footnote: 'La IA acompana la mirada; la decision sigue siendo humana.',
+  footnote: 'La IA acompaña la mirada; la decision sigue siendo humana.',
 };
 const COPYCATS_DATA = {
   title: 'CopyCats',
   description:
     'CopyCats observa el acto de crear mientras ocurre. Un cine-ensayo sobre repetición, desgaste creativo y el extraño momento en que una obra empieza a copiarse a sí misma.',
   microcopy: 'Ensayo abierto (4:27)',
-  url: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Cine%20-%20teasers/ensayos/La%20Cadena%20del%20Gesto.mp4',
+  url: `${SUPABASE_STORAGE}/Cine%20-%20teasers/ensayos/La%20Cadena%20del%20Gesto.mp4`,
   tags: ['teaser', 'Identidad Digital', 'Archivo autoficcional'],
 };
 const QUIRON_DATA = {
   title: 'Quiron',
   description: 'Mira el teaser de un cortometraje que explora la vulnerabilidad donde casi nunca se nombra.',
   teaserLabel: 'Teaser oficial',
-  teaserUrl: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Cine%20-%20teasers/Quiron.mp4',
-  fullUrl: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Cine%20-%20teasers/Quiron_10min.mp4',
+  teaserUrl: `${SUPABASE_STORAGE}/Cine%20-%20teasers/Quiron.mp4`,
+  fullUrl: `${SUPABASE_STORAGE}/Cine%20-%20teasers/Quiron_10min.mp4`,
   tags: ['Cine-ensayo', 'Identidad Digital', 'Archivo autoficcional'],
 };
 const CINE_PROYECCION = {
@@ -67,7 +70,7 @@ const CINE_COLLABORATORS = [
     id: 'viviana-gonzalez',
     name: 'Viviana Gonzalez',
     role: 'Direccion y fotografia · CopyCats / Quiron',
-    bio: 'Viviana acompana al Cine de #GatoEncerrado con una mirada que piensa. Comunicologa y docente en la Ibero, su experiencia ilumina procesos mas que superficies.',
+    bio: 'Viviana acompaña al Cine de #GatoEncerrado con una mirada que piensa. Comunicologa y docente en la Ibero, su experiencia ilumina procesos mas que superficies.',
     image: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/equipo/viviana_gg.jpeg',
   },
   {
@@ -105,8 +108,17 @@ const CINE_BLOG_KEY_SET = new Set(CINE_BLOG_KEYS.map((key) => key.trim().toLower
 const MiniVersoCard = ({ title, verse, palette }) => {
   const [isActive, setIsActive] = useState(false);
 
+  const toggle = () => setIsActive((prev) => !prev);
+
   return (
-    <div className="relative [perspective:1200px]" onClick={() => setIsActive((prev) => !prev)}>
+    <div
+      role="button"
+      tabIndex={0}
+      aria-pressed={isActive}
+      className="relative [perspective:1200px] cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-white/40 rounded-2xl"
+      onClick={toggle}
+      onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggle(); } }}
+    >
       <motion.div
         animate={{ rotateY: isActive ? 180 : 0 }}
         transition={{ duration: 0.7, ease: 'easeInOut' }}
@@ -179,6 +191,7 @@ const ShowcaseReactionInline = ({ status, onReact }) => (
 );
 
 const PortalCine = () => {
+  const navigate = useNavigate();
   const { user } = useAuth();
   const isAuthenticated = Boolean(user);
   const [showLoginOverlay, setShowLoginOverlay] = useState(false);
@@ -322,9 +335,8 @@ const PortalCine = () => {
 
   const handleProjectionInterest = useCallback(() => {
     if (!requireAuth()) return;
-    if (typeof window === 'undefined') return;
-    window.location.href = '/#next-show';
-  }, [requireAuth]);
+    navigate({ pathname: '/', hash: '#next-show' });
+  }, [requireAuth, navigate]);
 
   const handleSendPulse = useCallback(async () => {
     if (!requireAuth()) return;
