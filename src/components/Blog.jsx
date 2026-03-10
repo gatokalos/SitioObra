@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowRight, Calendar, Clock, Compass, Feather, Search, Send } from 'lucide-react';
+import { Calendar, Clock, Compass, Feather, Search, Send } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { toast } from '@/components/ui/use-toast';
 import ReactMarkdown from 'react-markdown';
@@ -73,8 +73,10 @@ const MINIVERSE_KEYWORDS = {
   otro: ['performance', 'híbrido', 'glitch', 'experimental'],
 };
 
-const CURATOR_RECOMMENDED_READINGS = [
-  '#GatoEncerrado: notas desde adentro',
+const STARTER_FAQ_PROMPTS = [
+  '¿Por dónde empiezo para entender el sitio?',
+  '¿Qué relación tiene la obra con sus miniversos?',
+  '¿Dónde encuentro una guía rápida de personajes y contexto?',
 ];
 
 const inferMiniverseFromPost = (post) => {
@@ -583,7 +585,7 @@ const Blog = ({ posts = [], isLoading = false, error = null }) => {
   const [activePost, setActivePost] = useState(null);
   const [pendingSlug, setPendingSlug] = useState(null);
   const [activeCategory, setActiveCategory] = useState(BLOG_CATEGORY_ORDER[0]);
-  const [searchQuery, setSearchQuery] = useState('');
+  const [faqQuery, setFaqQuery] = useState('');
   const [showAllPosts, setShowAllPosts] = useState(false);
   const [isMobileViewport, setIsMobileViewport] = useState(() => {
     if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') return false;
@@ -591,6 +593,7 @@ const Blog = ({ posts = [], isLoading = false, error = null }) => {
   });
   const [isEditorialLineOpen, setIsEditorialLineOpen] = useState(false);
   const articlesRef = useRef(null);
+  const faqInputRef = useRef(null);
 
   const categorizedPosts = useMemo(
     () =>
@@ -612,51 +615,16 @@ const Blog = ({ posts = [], isLoading = false, error = null }) => {
   );
 
   const filteredPosts = useMemo(() => {
-    const tokens = normalizeForSearch(searchQuery).split(/\s+/).filter(Boolean);
     return sortedPosts.filter((post) => {
       const matchesCategory = post.category === activeCategory;
-      if (!matchesCategory) {
-        return false;
-      }
-
-      if (tokens.length === 0) {
-        return true;
-      }
-
-      const haystack = [
-        post.title,
-        post.author,
-        post.excerpt,
-        post.category,
-        BLOG_CATEGORY_CONFIG[post.category]?.label,
-        ...(Array.isArray(post.tags) ? post.tags : []),
-      ]
-        .filter(Boolean)
-        .map((field) => normalizeForSearch(field))
-        .join(' ');
-
-      return tokens.every((token) => haystack.includes(token));
+      return matchesCategory;
     });
-  }, [sortedPosts, activeCategory, searchQuery]);
+  }, [sortedPosts, activeCategory]);
   const visiblePosts = useMemo(
     () => (showAllPosts ? filteredPosts : filteredPosts.slice(0, 2)),
     [filteredPosts, showAllPosts]
   );
   const canShowAllPosts = !isLoading && !showAllPosts && filteredPosts.length > 2;
-  const recommendedCuratorReadings = useMemo(
-    () =>
-      CURATOR_RECOMMENDED_READINGS.map((title) => {
-        const normalizedTarget = normalizeForSearch(title);
-        const matchedPost =
-          sortedPosts.find((post) => normalizeForSearch(post.title) === normalizedTarget) ||
-          sortedPosts.find((post) => normalizeForSearch(post.title).includes(normalizedTarget)) ||
-          null;
-        return { title, post: matchedPost };
-      }),
-    [sortedPosts]
-  );
-  const featuredCuratorReading = recommendedCuratorReadings[0] ?? null;
-  const featuredCuratorReadingMinutes = parseReadMinutes(featuredCuratorReading?.post?.read_time_minutes);
   const editorialReadMetrics = useMemo(() => {
     const metrics = BLOG_CATEGORY_ORDER.reduce((accumulator, category) => {
       accumulator[category] = { totalMinutes: 0, postCount: 0 };
@@ -745,6 +713,11 @@ const Blog = ({ posts = [], isLoading = false, error = null }) => {
     }
   }, [isMobileViewport]);
 
+  const handleFaqPromptSelect = useCallback((prompt) => {
+    setFaqQuery(prompt);
+    faqInputRef.current?.focus();
+  }, []);
+
   useEffect(() => {
     if (pendingSlug && categorizedPosts.length > 0) {
       const target = categorizedPosts.find((item) => item.slug === pendingSlug);
@@ -783,7 +756,7 @@ const Blog = ({ posts = [], isLoading = false, error = null }) => {
 
   useEffect(() => {
     setShowAllPosts(false);
-  }, [activeCategory, searchQuery]);
+  }, [activeCategory]);
 
   useEffect(() => {
     const handleNavigate = (event) => {
@@ -877,7 +850,7 @@ const Blog = ({ posts = [], isLoading = false, error = null }) => {
               viewport={{ once: true }}
               className="space-y-5"
             >
-              {featuredEditorialCategory && featuredCuratorReading ? (
+              {featuredEditorialCategory ? (
                 <motion.div
                   initial={{ opacity: 0, y: 14, scale: 0.99 }}
                   whileInView={{ opacity: 1, y: 0, scale: 1 }}
@@ -889,39 +862,57 @@ const Blog = ({ posts = [], isLoading = false, error = null }) => {
                   <div className="pointer-events-none absolute -bottom-20 left-12 h-40 w-40 rounded-full bg-cyan-300/10 blur-2xl" />
                   <div className="pointer-events-none absolute inset-x-6 top-0 h-px bg-gradient-to-r from-transparent via-violet-100/75 to-transparent" />
 
-                  <div className="relative z-10 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-                    <div className="space-y-2">
-                      <div className="inline-flex items-center gap-2 rounded-full border border-violet-200/45 bg-violet-400/12 px-3 py-1">
-                        <Compass size={12} className="text-violet-100/95" aria-hidden="true" />
-                        <p className="text-[10px] uppercase tracking-[0.34em] text-violet-100/90">Empieza aquí</p>
+                  <div className="relative z-10 grid gap-5 lg:grid-cols-[minmax(320px,0.9fr)_minmax(0,1.1fr)] lg:items-center">
+                    <div className="flex flex-col gap-3 rounded-[1.4rem] border border-violet-100/18 bg-black/20 p-4 backdrop-blur-sm lg:p-5">
+                      <div className="space-y-3">
+                        <div className="inline-flex items-center gap-2 rounded-full border border-violet-200/45 bg-violet-400/12 px-3 py-1">
+                          <Compass size={12} className="text-violet-100/95" aria-hidden="true" />
+                          <p className="text-[10px] uppercase tracking-[0.34em] text-violet-100/90">Empieza aquí</p>
+                        </div>
+                        <p className="text-[1rem] font-semibold leading-snug text-white">
+                          ¿Primera vez en el sitio? <br /> Usa el Buscador Backstage para resolver dudas.
+                        </p>
                       </div>
-                      <p className="text-[1rem] font-semibold leading-snug text-white">
-                        ¿Primera vez en el sitio? Esta lectura te orientará en pocos minutos.
-                      </p>
-               
-                      {featuredCuratorReadingMinutes ? (
-                        <span className="inline-flex rounded-full border border-violet-100/35 bg-black/20 px-3 py-1 text-[10px] uppercase tracking-[0.28em] text-violet-100/90">
-                          {featuredCuratorReadingMinutes} min
+                      <div className="relative w-full">
+                        <Search size={16} className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-violet-100/55" />
+                        <input
+                          ref={faqInputRef}
+                          type="search"
+                          value={faqQuery}
+                          onChange={(event) => setFaqQuery(event.target.value)}
+                          placeholder="Pregunta por el sitio, la obra o cómo empezar"
+                          className="form-surface form-surface--pill h-12 w-full border border-violet-100/45 bg-white/90 py-2 pl-11 pr-4 text-sm text-slate-900 placeholder:text-slate-500"
+                        />
+                      </div>
+                      <div className="flex flex-wrap gap-2 text-[10px] uppercase tracking-[0.24em] text-violet-100/70">
+                  
+                        <span className="rounded-full border border-violet-100/20 bg-black/20 px-3 py-1">
+                          Sitio + obra
                         </span>
-                      ) : null}
+                      </div>
                     </div>
 
-                    <Button
-                      type="button"
-                      variant="outline"
-                      onClick={() => {
-                        handleExploreCategory(featuredEditorialCategory.key);
-                        if (featuredCuratorReading.post) {
-                          handleSelectPost(featuredCuratorReading.post);
-                          return;
-                        }
-                        toast({ description: `Pronto liberaremos: ${featuredCuratorReading.title}` });
-                      }}
-                      className="group h-12 w-full justify-between rounded-xl border-violet-100/55 bg-gradient-to-r from-violet-500/35 to-indigo-500/28 px-4 text-left text-violet-50 shadow-[0_10px_28px_rgba(124,58,237,0.28)] transition-all hover:from-violet-400/45 hover:to-indigo-400/34 hover:text-white lg:w-auto lg:min-w-[360px]"
-                    >
-                      <span className="truncate text-sm font-semibold">{featuredCuratorReading.title}</span>
-                      <ArrowRight size={16} className="shrink-0 opacity-85 transition-transform group-hover:translate-x-1" />
-                    </Button>
+                    <div className="space-y-3 lg:pl-4">
+                      <div className="inline-flex items-center gap-2 rounded-full border border-violet-200/45 bg-violet-400/12 px-3 py-1">
+                        <Compass size={12} className="text-violet-100/95" aria-hidden="true" />
+                        <p className="text-[10px] uppercase tracking-[0.34em] text-violet-100/90">Preguntas frecuentes</p>
+                      </div>
+                      <p className="max-w-3xl text-sm leading-relaxed text-violet-100/75">
+                        Pregunta por secciones, personajes, contexto, rutas de lectura o                       cualquier punto de entrada al universo.
+                      </p>
+                      <div className="grid gap-2">
+                        {STARTER_FAQ_PROMPTS.map((prompt) => (
+                          <button
+                            type="button"
+                            key={prompt}
+                            onClick={() => handleFaqPromptSelect(prompt)}
+                            className="rounded-2xl border border-violet-100/20 bg-white/8 px-4 py-3 text-left text-sm leading-relaxed text-violet-50 transition hover:border-violet-100/40 hover:bg-white/12"
+                          >
+                            {prompt}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
                   </div>
                 </motion.div>
               ) : null}
@@ -1052,16 +1043,9 @@ const Blog = ({ posts = [], isLoading = false, error = null }) => {
                     ))}
                   </div>
 
-                  <div className="relative w-full md:w-72">
-                    <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" />
-                    <input
-                      type="search"
-                      value={searchQuery}
-                      onChange={(event) => setSearchQuery(event.target.value)}
-                      placeholder="Buscar por título, autor o tag"
-                      className="form-surface form-surface--pill w-full py-2 pl-10 pr-4 text-sm"
-                    />
-                  </div>
+                  <p className="text-xs uppercase tracking-[0.28em] text-slate-500 md:text-right">
+                    Explora por línea editorial
+                  </p>
                 </div>
               </>
             ) : (

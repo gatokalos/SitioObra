@@ -39,14 +39,8 @@ import {
 import { Button } from '@/components/ui/button';
 import { ToastAction } from '@/components/ui/toast';
 import CallToAction from '@/components/CallToAction';
-import InstallPWACTA from '@/components/InstallPWACTA';
 import { fetchBlogPostBySlug } from '@/services/blogService';
 import { toast } from '@/components/ui/use-toast';
-import {
-  OBRA_CONVERSATION_STARTERS,
-  PORTAL_VOZ_MODE_QUESTIONS,
-  SILVESTRE_TRIGGER_QUESTIONS,
-} from '@/lib/obraConversation';
 import { useAuth } from '@/contexts/SupabaseAuthContext';
 import { consumeBienvenidaTransmediaIntent, setBienvenidaReturnPath } from '@/lib/bienvenida';
 import {
@@ -58,17 +52,10 @@ import {
 import { resolvePortalRoute } from '@/lib/miniversePortalRegistry';
 import { createPortalLaunchState } from '@/lib/portalNavigation';
 import MiniversoSonoroPreview from '@/components/miniversos/sonoro/MiniversoSonoroPreview';
-import { recordShowcaseLike } from '@/services/showcaseLikeService';
 import { useMobileVideoPresentation } from '@/hooks/useMobileVideoPresentation';
 import IAInsightCard from '@/components/IAInsightCard';
 import DiosasCarousel from '@/components/DiosasCarousel';
 import RelatedReadingTooltipButton from '@/components/portal/RelatedReadingTooltipButton';
-import { fetchApprovedContributions } from '@/services/contributionService';
-import {
-  createTransmediaIdempotencyKey,
-  fetchTransmediaCreditState,
-  registerTransmediaCreditEvent,
-} from '@/services/transmediaCreditsService';
 import { useSilvestreVoice } from '@/hooks/useSilvestreVoice';
 import ObraConversationControls from '@/components/miniversos/obra/ObraConversationControls';
 import ObraQuestionList from '@/components/miniversos/obra/ObraQuestionList';
@@ -77,8 +64,24 @@ import { safeGetItem, safeRemoveItem, safeSetItem } from '@/lib/safeStorage';
 import { isSafariBrowser } from '@/lib/browser';
 import { sanitizeExternalHttpUrl } from '@/lib/urlSafety';
 import { fetchFocusAppMetadata } from '@/services/focusAppMetadataService';
-import { startDirectMerchCheckout } from '@/lib/merchCheckout';
 import useActiveSubscription from '@/hooks/useActiveSubscription';
+import useObraEmotionTracking from '@/hooks/useObraEmotionTracking';
+import useQuironCinemaFlow from '@/hooks/useQuironCinemaFlow';
+import useShowcaseCarousel from '@/hooks/useShowcaseCarousel';
+import useShowcaseTransition from '@/hooks/useShowcaseTransition';
+import useTransmediaCredits from '@/hooks/useTransmediaCredits';
+import useGatBalanceToast from '@/hooks/useGatBalanceToast';
+import useExplorerBadge from '@/hooks/useExplorerBadge';
+import useMiniversoUnlocks from '@/hooks/useMiniversoUnlocks';
+import useMerchCheckout from '@/hooks/useMerchCheckout';
+import usePdfPreview from '@/hooks/usePdfPreview';
+import useShowcaseData from '@/hooks/useShowcaseData';
+import useMiniversoShare from '@/hooks/useMiniversoShare';
+import useNovelaAppCTA from '@/hooks/useNovelaAppCTA';
+import useExternalPanels from '@/hooks/useExternalPanels';
+import useBodyScrollLock from '@/hooks/useBodyScrollLock';
+import useObraVoiceInteraction from '@/hooks/useObraVoiceInteraction';
+import useShowcaseGuard from '@/hooks/useShowcaseGuard';
 import MiniVersoCard from '@/components/transmedia/MiniVersoCard';
 import ShowcaseReactionInline from '@/components/transmedia/ShowcaseReactionInline';
 import CauseImpactAccordion from '@/components/transmedia/CauseImpactAccordion';
@@ -89,1545 +92,59 @@ const ARExperience = lazy(() => import('@/components/ar/ARExperience'));
 const AutoficcionPreviewOverlay = lazy(() => import('@/components/novela/AutoficcionPreviewOverlay'));
 const LoginOverlay = lazy(() => import('@/components/ContributionModal/LoginOverlay'));
 const PdfPreviewDocument = lazy(() => import('@/components/transmedia/PdfPreviewDocument'));
-const GAT_COSTS = {
-  quironFull: 300,
-  graficoSwipe: 110,
-  novelaChapter: 150,
-  sonoroMix: 130,
-  tazaActivation: 90,
-  movimientoRuta: 280,
-};
-const INITIAL_GAT_BALANCE = 150;
-const OBRA_VOICE_MIN_GAT = 25;
-const OBRA_VOICE_PRECARE_TURN_THRESHOLD = 2;
-const OBRA_VOICE_PRECARE_THRESHOLD_GAT = OBRA_VOICE_MIN_GAT * OBRA_VOICE_PRECARE_TURN_THRESHOLD;
-const SHOWCASE_REVEAL_REWARD_GAT = {
-  apps: 20,
-  oraculo: 20,
-};
-const SHOWCASE_REQUIRED_GAT = {
-  miniversos: OBRA_VOICE_MIN_GAT,
-  copycats: 150,
-  miniversoGrafico: GAT_COSTS.graficoSwipe,
-  miniversoNovela: 25,
-  miniversoSonoro: GAT_COSTS.sonoroMix,
-  lataza: 30,
-  miniversoMovimiento: 0,
-  apps: 150,
-  oraculo: 0,
-};
-const MOVEMENT_COLLABORATOR_CALL_ITEMS = [
-  'Intérpretes y bailarines por ciudad',
-  'Diseño y desarrollo de skins digitales',
-  'Asistencia en captura de movimiento',
-  'Espacios para activación urbana',
-  'Comunidad interesada en exploración corporal',
-];
-const LEGACY_TAZA_VIEWER_ENABLED = false;
-const SHOWCASE_BADGE_IDS = [
-  'miniversos',
-  'lataza',
-  'miniversoNovela',
-  'miniversoGrafico',
-  'copycats',
-  'miniversoSonoro',
-  'miniversoMovimiento',
-  'oraculo',
-  'apps',
-];
-const EXPLORER_BADGE_STORAGE_KEY = 'gatoencerrado:explorer-badge';
-const HERO_PENDING_MINIVERSE_SELECTION_KEY = 'gatoencerrado:hero-inline-miniverse-selection';
-const LOGIN_RETURN_KEY = 'gatoencerrado:login-return';
-const getInitialInstallPwaCTAVisibility = () => {
-  if (typeof window === 'undefined') return false;
-  const userAgent = typeof navigator !== 'undefined' ? navigator.userAgent : '';
-  const isMobile = /iphone|ipad|ipod|android/i.test(userAgent);
-  const isStandalone =
-    Boolean(window.matchMedia?.('(display-mode: standalone)')?.matches) ||
-    Boolean(typeof navigator !== 'undefined' && navigator.standalone === true);
-  return isMobile && !isStandalone;
-};
-const EXPLORER_BADGE_REWARD = 1000;
-const EXPLORER_BADGE_NAME = 'Errante Consagrado';
-const ENABLE_SHOWCASE_AUTO_CYCLE = false;
-const SHOWCASE_AUTO_CYCLE_INTERVAL_MS = 9000;
-const SHOWCASE_OPEN_TRANSITION = {
-  dimMs: 120,
-  blackoutMs: 90,
-  revealMs: 220,
-};
-const INTERACTIVE_EXPERIENCE_GOAL = 'interactive_experience_placeholder';
-const DEFAULT_BADGE_STATE = {
-  unlocked: false,
-  unlockedAt: null,
-  rewardClaimed: false,
-  claimedAt: null,
-  claimedType: null,
-};
-const requestCameraAccess = async () => {
-  if (typeof navigator === 'undefined' || !navigator.mediaDevices?.getUserMedia) {
-    throw new Error('getUserMedia no disponible en este navegador');
-  }
-  const attempts = [
-    { video: true },
-    { video: {} },
-    { video: { facingMode: 'environment' } },
-    { video: { facingMode: { ideal: 'environment' } } },
-    { video: { facingMode: { ideal: 'user' } } },
-    { video: { width: { ideal: 640 }, height: { ideal: 480 } } },
-  ];
-  let lastError = null;
-  for (const constraints of attempts) {
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia(constraints);
-      stream.getTracks().forEach((track) => track.stop());
-      return true;
-    } catch (error) {
-      lastError = error;
-      // Si falló por restricciones o permisos, probamos el siguiente intento.
-      continue;
-    }
-  }
-
-  try {
-    const devices = await navigator.mediaDevices.enumerateDevices();
-    const videoInputs = devices.filter((d) => d.kind === 'videoinput');
-    for (const device of videoInputs) {
-      try {
-        const stream = await navigator.mediaDevices.getUserMedia({
-          video: { deviceId: { exact: device.deviceId } },
-        });
-        stream.getTracks().forEach((track) => track.stop());
-        return true;
-      } catch (error) {
-        lastError = error;
-        continue;
-      }
-    }
-  } catch (error) {
-    lastError = error;
-  }
-
-  throw lastError ?? new Error('No pudimos usar la cámara en este dispositivo.');
-};
-const MINIVERSO_TILE_GRADIENTS = {
-  miniversos: 'linear-gradient(135deg, rgba(31,21,52,0.95), rgba(64,36,93,0.85), rgba(122,54,127,0.65))',
-  copycats: 'linear-gradient(135deg, rgba(16,27,54,0.95), rgba(38,63,109,0.85), rgba(92,47,95,0.7))',
-  miniversoGrafico: 'linear-gradient(135deg, rgba(37,19,52,0.95), rgba(70,32,86,0.85), rgba(141,58,121,0.65))',
-  miniversoNovela: 'linear-gradient(135deg, rgba(26,24,60,0.95), rgba(59,43,95,0.85), rgba(108,56,118,0.7))',
-  miniversoSonoro: 'linear-gradient(135deg, rgba(18,29,62,0.95), rgba(32,65,103,0.85), rgba(70,91,146,0.65))',
-  lataza: 'linear-gradient(135deg, rgba(44,20,30,0.95), rgba(101,45,66,0.85), rgba(196,111,86,0.6))',
-  miniversoMovimiento: 'linear-gradient(135deg, rgba(24,30,45,0.95), rgba(40,64,65,0.85), rgba(74,123,102,0.65))',
-  apps: 'linear-gradient(135deg, rgba(30,41,59,0.95), rgba(22,163,74,0.75), rgba(34,211,238,0.65))',
-  oraculo: 'linear-gradient(135deg, rgba(38,18,56,0.95), rgba(86,33,115,0.85), rgba(168,68,139,0.65))',
-  default: 'linear-gradient(135deg, rgba(20,14,35,0.95), rgba(47,28,71,0.85), rgba(90,42,100,0.65))',
-};
-const MINIVERSO_TILE_COLORS = {
-  miniversos: {
-    background: 'rgba(31,21,52,0.75)',
-    border: 'rgba(186,131,255,0.35)',
-    text: '#e9d8ff',
-    accent: '#f4c8ff',
-  },
-  copycats: {
-    background: 'rgba(16,27,54,0.75)',
-    border: 'rgba(132,176,255,0.35)',
-    text: '#dbeafe',
-    accent: '#c6f6ff',
-  },
-  miniversoGrafico: {
-    background: 'rgba(37,19,52,0.75)',
-    border: 'rgba(214,146,255,0.35)',
-    text: '#fce7f3',
-    accent: '#fed7e2',
-  },
-  miniversoNovela: {
-    background: 'rgba(26,24,60,0.75)',
-    border: 'rgba(163,148,255,0.35)',
-    text: '#e0e7ff',
-    accent: '#c7d2fe',
-  },
-  miniversoSonoro: {
-    background: 'rgba(18,29,62,0.75)',
-    border: 'rgba(122,179,255,0.35)',
-    text: '#e0f2fe',
-    accent: '#bae6fd',
-  },
-  lataza: {
-    background: 'rgba(44,20,30,0.75)',
-    border: 'rgba(255,173,145,0.35)',
-    text: '#ffedd5',
-    accent: '#fed7aa',
-  },
-  miniversoMovimiento: {
-    background: 'rgba(24,30,45,0.75)',
-    border: 'rgba(163,233,208,0.35)',
-    text: '#d1fae5',
-    accent: '#a7f3d0',
-  },
-  apps: {
-    background: 'rgba(16,185,129,0.18)',
-    border: 'rgba(110,231,183,0.45)',
-    text: '#d1fae5',
-    accent: '#99f6e4',
-  },
-  oraculo: {
-    background: 'rgba(38,18,56,0.75)',
-    border: 'rgba(225,160,235,0.35)',
-    text: '#fbe7ff',
-    accent: '#f3d1ff',
-  },
-  default: {
-    background: 'rgba(20,14,35,0.7)',
-    border: 'rgba(186,131,255,0.3)',
-    text: '#f3e8ff',
-    accent: '#e9d8fd',
-  },
-};
-const VITRINA_MIRROR_EFFECTS = {
-  copycats: {
-    '--mirror-tint-rgb': '255, 196, 120',
-    '--mirror-speed': '6.4s',
-    '--mirror-angle': '18deg',
-    '--mirror-width': '44%',
-    '--mirror-blur': '0.55px',
-    '--mirror-opacity': '0.44',
-  },
-  miniversoSonoro: {
-    '--mirror-tint-rgb': '165, 219, 255',
-    '--mirror-speed': '7.2s',
-    '--mirror-angle': '14deg',
-    '--mirror-width': '52%',
-    '--mirror-blur': '0.9px',
-    '--mirror-opacity': '0.34',
-  },
-  oraculo: {
-    '--mirror-tint-rgb': '226, 184, 255',
-    '--mirror-speed': '8.4s',
-    '--mirror-angle': '24deg',
-    '--mirror-width': '40%',
-    '--mirror-blur': '0.75px',
-    '--mirror-opacity': '0.32',
-  },
-  lataza: {
-    '--mirror-tint-rgb': '255, 214, 168',
-    '--mirror-speed': '7.6s',
-    '--mirror-angle': '16deg',
-    '--mirror-width': '46%',
-    '--mirror-blur': '0.65px',
-    '--mirror-opacity': '0.35',
-  },
-  default: {
-    '--mirror-tint-rgb': '215, 190, 255',
-    '--mirror-speed': '7.8s',
-    '--mirror-angle': '22deg',
-    '--mirror-width': '46%',
-    '--mirror-blur': '0.6px',
-    '--mirror-opacity': '0.34',
-  },
-};
-const ORACULO_URL = (() => {
-  const raw =
-    import.meta.env?.VITE_BIENVENIDA_URL ??
-    import.meta.env?.VITE_ORACULO_URL ??
-    (import.meta.env?.DEV ? 'http://localhost:5174' : '');
-  return raw ? raw.replace(/\/+$/, '') : '';
-})();
-const CAUSE_SITE_URL = 'https://www.ayudaparalavida.com/index.html';
-const TOPIC_BY_SHOWCASE = {
-  miniversos: 'obra_escenica',
-  copycats: 'cine',
-  miniversoGrafico: 'graficos',
-  miniversoNovela: 'novela',
-  miniversoSonoro: 'sonoro',
-  miniversoMovimiento: 'movimiento',
-  lataza: 'artesanias',
-  apps: 'apps',
-  oraculo: 'oraculo',
-};
-// Enable the editorial shield only when explicitly requested.
-const MINIVERSO_EDITORIAL_INTERCEPTION_ENABLED =
-  import.meta.env?.VITE_MINIVERSO_INTERCEPTION === 'true';
-const CONTRIBUTION_CATEGORY_BY_SHOWCASE = {
-  miniversos: 'obra_escenica',
-  copycats: 'cine',
-  miniversoGrafico: 'grafico',
-  miniversoNovela: 'miniverso_novela',
-  miniversoSonoro: 'sonoro',
-  miniversoMovimiento: 'movimiento',
-  lataza: 'taza',
-  apps: 'apps',
-  oraculo: 'oraculo',
-};
-const BLOG_MINIVERSO_KEYS_BY_SHOWCASE = {
-  miniversos: ['obra_escenica', 'miniversos', 'obra'],
-  copycats: ['cine', 'copycats'],
-  miniversoGrafico: ['graficos', 'grafico', 'miniversografico'],
-  miniversoNovela: ['novela', 'miniversonovela', 'literatura'],
-  miniversoSonoro: ['sonoro', 'miniversosonoro', 'sonoridades'],
-  miniversoMovimiento: ['movimiento', 'miniversomovimiento'],
-  lataza: ['artesanias', 'taza', 'lataza'],
-  apps: ['apps', 'juegos'],
-  oraculo: ['oraculo'],
-};
-const readStoredJson = (key, fallback) => {
-  const raw = safeGetItem(key);
-  if (!raw) return fallback;
-  try {
-    return JSON.parse(raw);
-  } catch (error) {
-    return fallback;
-  }
-};
-
-const readStoredInt = (key, fallback) => {
-  const raw = safeGetItem(key);
-  if (!raw) return fallback;
-  const parsed = Number.parseInt(raw, 10);
-  return Number.isNaN(parsed) ? fallback : parsed;
-};
-
-const readStoredBool = (key, fallback = false) => {
-  const raw = safeGetItem(key);
-  if (raw === null || raw === undefined) return fallback;
-  return raw === 'true';
-};
-
-const buildShowcaseEnergyFromBoosts = (baseEnergyByShowcase = {}, boosts = {}) => {
-  const next = {};
-  Object.entries(baseEnergyByShowcase).forEach(([showcaseId, baseAmount]) => {
-    const amount = Number.isFinite(baseAmount) ? Number(baseAmount) : 0;
-    next[showcaseId] = boosts?.[showcaseId] ? amount + amount : amount;
-  });
-  return next;
-};
-
-const buildShowcaseRewardLabel = (entry) => {
-  if (!entry) return null;
-  const reward = Number.isFinite(entry.reward) ? Math.max(entry.reward, 0) : 0;
-  return entry.claimed
-    ? `MINI-VERSO LEÍDO · +${reward} GAT`
-    : null;
-};
-
-const buildShowcaseEnergyState = (availableGAT) => {
-  const safeAvailable = Number.isFinite(availableGAT) ? Math.max(Math.trunc(availableGAT), 0) : 0;
-  if (safeAvailable <= 0) {
-    return {
-      label: 'Energía agotada',
-      amount: '0 GAT',
-      className: 'text-rose-300/95',
-    };
-  }
-  if (safeAvailable === INITIAL_GAT_BALANCE) {
-    return {
-      label: 'Energía inicial',
-      amount: `${safeAvailable} GAT`,
-      className: 'text-amber-200/90',
-    };
-  }
-  return {
-    label: 'Energía disponible',
-    amount: `${safeAvailable} GAT`,
-    className: 'text-emerald-200/95',
-  };
-};
-
-const buildShowcaseMinRequiredCopy = (showcaseId) => {
-  const required = Number(SHOWCASE_REQUIRED_GAT[showcaseId] ?? 0);
-  if (!Number.isFinite(required) || required <= 0) {
-    return 'mínima requerida 0 GAT';
-  }
-  return `mínima requerida ${Math.max(Math.trunc(required), 0)} GAT`;
-};
-const MINIVERSO_VERSE_EFFECTS = {
-  miniversoNovela: 'flip',
-  miniversoSonoro: 'flip',
-  lataza: 'flip',
-  copycats: 'flip',
-  miniversos: 'flip',
-  miniversoGrafico: 'flip',
-  miniversoMovimiento: 'flip',
-  oraculo: 'flip',
-  default: 'flip',
-};
-
-function shuffleArray(list) {
-  const arr = [...list];
-  for (let i = arr.length - 1; i > 0; i -= 1) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [arr[i], arr[j]] = [arr[j], arr[i]];
-  }
-  return arr;
-}
-const OBRA_VOICE_MODES = [
-  {
-    id: 'confusion-lucida',
-    title: 'Confusión lúcida',
-    description: 'Sueño y realidad mezclados.',
-    accent: 'from-violet-200/20 via-purple-300/10 to-transparent',
-    icon: Feather,
-    tint: {
-      border: 'rgba(196,181,253,0.5)',
-      glow: '0 20px 60px rgba(139,92,246,0.25)',
-      dot: 'rgba(196,181,253,0.9)',
-    },
-  },
-  {
-    id: 'sospecha-doctora',
-    title: 'Sospecha',
-    description: 'Duda empedernida',
-    accent: 'from-cyan-200/20 via-sky-300/10 to-transparent',
-    icon: Scan,
-    tint: {
-      border: 'rgba(125,211,252,0.45)',
-      glow: '0 18px 55px rgba(14,165,233,0.2)',
-      dot: 'rgba(125,211,252,0.9)',
-    },
-  },
-  {
-    id: 'necesidad-orden',
-    title: 'Necesidad de orden',
-    description: 'Una versión clara y breve, sin adornos.',
-    accent: 'from-amber-200/20 via-orange-300/10 to-transparent',
-    icon: CheckCircle2,
-    tint: {
-      border: 'rgba(251,191,36,0.45)',
-      glow: '0 18px 55px rgba(251,191,36,0.2)',
-      dot: 'rgba(251,191,36,0.9)',
-    },
-  },
-  {
-    id: 'humor-negro',
-    title: 'Ironía',
-    description: 'Filosa y sin explicación.',
-    accent: 'from-fuchsia-200/20 via-pink-300/10 to-transparent',
-    icon: Zap,
-    tint: {
-      border: 'rgba(244,114,182,0.45)',
-      glow: '0 18px 55px rgba(236,72,153,0.2)',
-      dot: 'rgba(244,114,182,0.9)',
-    },
-  },
-  {
-    id: 'cansancio-mental',
-    title: 'Cansancio mental',
-    description: 'Aterrizaje forzoso.',
-    accent: 'from-emerald-200/20 via-teal-300/10 to-transparent',
-    icon: Wrench,
-    tint: {
-      border: 'rgba(110,231,183,0.45)',
-      glow: '0 18px 55px rgba(16,185,129,0.2)',
-      dot: 'rgba(110,231,183,0.9)',
-    },
-  },
-  {
-    id: 'atraccion-incomoda',
-    title: 'Atracción incómoda',
-    description: 'Enganche y molestia, a la vez.',
-    accent: 'from-rose-200/20 via-pink-300/10 to-transparent',
-    icon: Heart,
-    tint: {
-      border: 'rgba(251,113,133,0.45)',
-      glow: '0 18px 55px rgba(244,114,182,0.2)',
-      dot: 'rgba(251,113,133,0.9)',
-    },
-  },
-  {
-    id: 'vertigo',
-    title: 'Vértigo',
-    description: 'No hay punto final.',
-    accent: 'from-violet-200/20 via-indigo-300/10 to-transparent',
-    icon: Layers,
-    tint: {
-      border: 'rgba(165,180,252,0.45)',
-      glow: '0 18px 55px rgba(129,140,248,0.2)',
-      dot: 'rgba(165,180,252,0.9)',
-    },
-  },
-];
-const DEFAULT_OBRA_VOICE_MODE_ID = OBRA_VOICE_MODES[0].id;
-const MOBILE_OBRA_SECONDARY_CTA_STATES = {
-  READ_SCRIPT: 'read-script',
-  TRY_OTHER_EMOTION: 'try-other-emotion',
-  LAUNCH_PHRASE: 'launch-phrase',
-};
-const normalizeSilvestrePrompt = (value) => (typeof value === 'string' ? value.trim() : '');
-const OBRA_EMOTION_LOG_STORAGE_KEY = 'gatoencerrado:obra-emotion-log';
-const OBRA_EMOTION_ORBS_STORAGE_KEY = 'gatoencerrado:obra-emotion-orbs';
-const OBRA_EMOTION_MAX_ORBS = 36;
-const OBRA_EMOTION_ORB_VERSION = 2;
-const OBRA_EMOTION_MODE_REGIONS = {
-  'confusion-lucida': { left: 50, top: 24, spreadX: 7, spreadY: 7, size: 14 },
-  'sospecha-doctora': { left: 38, top: 38, spreadX: 10, spreadY: 8, size: 15 },
-  'necesidad-orden': { left: 52, top: 52, spreadX: 10, spreadY: 9, size: 16 },
-  'humor-negro': { left: 62, top: 40, spreadX: 10, spreadY: 8, size: 15 },
-  'cansancio-mental': { left: 40, top: 64, spreadX: 11, spreadY: 10, size: 17 },
-  'atraccion-incomoda': { left: 46, top: 48, spreadX: 12, spreadY: 10, size: 16 },
-  vertigo: { left: 58, top: 70, spreadX: 9, spreadY: 9, size: 16 },
-  default: { left: 50, top: 50, spreadX: 11, spreadY: 11, size: 15 },
-};
-const clampEmotionValue = (value, min, max) => Math.max(min, Math.min(max, value));
-const resolveEmotionRegion = (modeId) => OBRA_EMOTION_MODE_REGIONS[modeId] ?? OBRA_EMOTION_MODE_REGIONS.default;
-const createEmotionOrb = (modeId, seed, index = 0) => {
-  const region = resolveEmotionRegion(modeId);
-  const seedA = (Math.sin(seed * 0.73) + 1) / 2;
-  const seedB = (Math.sin(seed * 1.17) + 1) / 2;
-  const seedC = (Math.sin(seed * 1.91) + 1) / 2;
-  const seedD = (Math.sin(seed * 2.37) + 1) / 2;
-  return {
-    id: `${modeId}-${seed}`,
-    modeId,
-    version: OBRA_EMOTION_ORB_VERSION,
-    left: clampEmotionValue(region.left + (seedA - 0.5) * 2 * region.spreadX, 30, 70),
-    top: clampEmotionValue(region.top + (seedB - 0.5) * 2 * region.spreadY, 14, 84),
-    size: region.size + seedC * 12 + (index % 3),
-    opacity: 0.3 + seedD * 0.28,
-  };
-};
-const normalizeStoredEmotionOrbs = (raw) => {
-  if (!Array.isArray(raw)) return [];
-  return raw
-    .map((entry, index) => {
-      if (!entry || typeof entry !== 'object' || typeof entry.modeId !== 'string') return null;
-      if (entry.version === OBRA_EMOTION_ORB_VERSION) return entry;
-      const parsedSeed = Number.parseInt(String(entry.id ?? '').split('-').pop() || '', 10);
-      const seed = Number.isFinite(parsedSeed) ? parsedSeed : Date.now() + index * 53;
-      return createEmotionOrb(entry.modeId, seed, index);
-    })
-    .filter(Boolean)
-    .slice(-OBRA_EMOTION_MAX_ORBS);
-};
-const showcaseDefinitions = {
-  miniversos: {
-    label: 'Escena',
-    type: 'tragedia',
-    intro:
-      'La obra no terminó. Lo que viste en escena sigue ocurriendo. Aquí puedes habitar el drama, escuchar la conciencia de la obra en proceso y hablar como si estuvieras en escena.',
-    cartaTitle: '#LaPuertaInvisible',
-    notaAutoral: 'Entré sin saber.\nAlgo dijo mi nombre.\nY ya no hubo salida.',
-
-    ctaLabel: 'Habla conmigo',
-    conversationStarters: OBRA_CONVERSATION_STARTERS,
-iaProfile: {
-  type: 'Una voz que no es personaje ni herramienta: es la conciencia de la obra en proceso.',
-  interaction: 'Elige una emoción de Silvestre. Habla desde ahí. La obra responderá una vez.',
-  tokensRange: 'Lo suficiente para decir algo sin agotarlo.',
-  coverage: 'Existe mientras haya quienes la convoquen.',
-  footnote: 'No todas las voces quieren durar. Gracias por dejarlas pasar.',
-},
-    collaborators: [
-      {
-        id: 'carlos-perez',
-        name: 'Carlos Pérez',
-        role: 'Coordinador de diálogo',
-        bio: 'Mi trabajo se enfocó en pensar cómo la experiencia escénica podía continuar más allá de la función, no desde la explicación, sino desde preguntas cuidadas y abiertas. Diseñé este espacio que respeta la ambigüedad de la obra y acompaña al espectador sin imponer interpretaciones.',
-        image: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/autores/carlos_perez_avatar.png',
-      },
-      {
-        id: 'incendio-producciones',
-        name: 'Incendio Producciones',
-        role: 'Producción ejecutiva asociada',
-        bio: 'Esta versión del chat fue adaptada para acompañar la puesta en escena de Gilberto Corrales. El trabajo de dirección y producción transformó la obra, y este espacio fue ajustado para dialogar con esa nueva forma.',
-        image: '/assets/incendiologo.png',
-      },
-    ],
-  },
-  copycats: {
-    label: 'Mini-verso cine',
-    type: 'cinema',
-    intro: 'El cine dentro de #GatoEncerrado es otro modo de entrar al encierro.',
-    promise: 'CopyCats (no-ficción) y Quirón (autoficción) dialogan desde extremos distintos del mismo espectro: una filma el desgaste creativo y la fractura del proceso; la otra abre una confesión íntima que decide hablar del suicidio sin rodeos.',
-    theme:
-      'Dos películas, dos vulnerabilidades distintas, un mismo impulso: usar el arte para tocar aquello que no queremos decir en voz alta y encontrar otra manera de contarlo.',
-    tone: ['Premiere íntima', 'Laboratorio abierto', 'Cine con memoria'],
-    cartaTitle: '#LuzQueEditas',
-    copycats: {
-      title: 'CopyCats',
-      description: 'CopyCats observa el acto de crear mientras ocurre. Un cine-ensayo sobre repetición, desgaste creativo y el extraño momento en que una obra empieza a copiarse a sí misma.',
-
-      assets: [
-        {
-          id: 'copycats-carta',
-          label: 'Ensayo abierto (4:27)',
-          url: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Cine%20-%20teasers/ensayos/La%20Cadena%20del%20Gesto.mp4',
-        },
-      ],
-      tags: ['teaser', 'Identidad Digital', 'Archivo autoficcional'],
-    },
-    quiron: {
-      title: 'Quirón',
-      description: 'Mira el teaser de un cortometraje que explora la vulnerabilidad donde casi nunca se nombra.',
-            tags: ['Cine-ensayo', 'Identidad Digital', 'Archivo autoficcional'],
-
-     
-      fullVideo: {
-        id: 'quiron-full',
-        label: 'Cortometraje completo',
-        url: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Cine%20-%20teasers/Quiron_10min.mp4',
-        bucket: 'Cine - teasers',
-        path: 'Quiron_10min.mp4',
-      },
-      teaser: {
-        id: 'quiron-teaser',
-        label: 'Teaser oficial',
-        url: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Cine%20-%20teasers/Quiron.mp4',
-      },
-     
-    },
-    collaborators: [
-      {
-        id: 'viviana-gonzalez',
-        name: 'Viviana González',
-        role: 'Dirección y fotografía · CopyCats / Quirón',
-        bio: 'Viviana acompaña al Cine de #GatoEncerrado con una mirada que piensa. Comunicóloga y docente en la Ibero, su experiencia ilumina procesos más que superficies. Fue quien sostuvo el pulso visual de Quirón y CopyCats: cámara, escucha y diálogo creativo continuo. Su presencia abrió rutas nuevas para traducir lo íntimo, lo incierto y lo que apenas empieza a nacer en pantalla',
-        image: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/equipo/viviana_gg.jpeg',
-        anchor: '#team',
-      },
-      {
-        id: 'diego-madera',
-        name: 'Diego Madera',
-        role: 'Compositor · Tema musical',
-        bio: 'Diego tiende puentes entre emoción y estructura. Compositor de formación precisa y sensibilidad abierta, su música respira junto al material filmado: acompaña, sostiene y revela. En el Cine de #GatoEncerrado, sus partituras funcionan como una línea de vida, un lugar donde el caos ordena su ritmo. Es también maestro de piano, y esa pedagogía silenciosa terminó resonando en la obra.',
-        image: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/equipo/diego.png',
-        anchor: '#team',
-      },
-       {
-        id: 'lia-perez',
-        name: 'Lía Pérez, MPSE',
-        role: 'Diseño Sonoro & Pulso emocional',
-        bio: 'Lía se sumó a Cine de #GatoEncerrado con una entrega luminosa: sin pedir nada a cambio y afinando cada capa de sonido en Quirón y CopyCats. Su oído construye atmósferas que no se escuchan: se sienten. Entre risas, ruidos, silencios y tormentas interiores, su trabajo sostuvo el timbre emocional de las piezas y dejó una huella discreta, pero imprescindible.',
-        image: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/equipo/lia.jpg',
-      },
-      {
-        id: 'maria-diana-laura-rodriguez',
-        name: 'María Diana Laura Rodriguez',
-        role: 'Producción en línea & Cuerpo en escena',
-        bio: 'María Diana Laura llegó a este miniverso cinematográfico desde dos frentes: coordinó la producción en línea del cortometraje y encarnó a Cirila en el oráculo, llevando esa figura entre lo ritual y lo doméstico a la pantalla. Su energía organizativa y su presencia performática sostuvieron momentos clave del proceso, dejando constancia de que producir también es un acto de imaginación.',
-        image: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/equipo/mariadianalaura.jpg',
-        anchor: '#team',
-      },
-      {
-        id: 'tania-fraire',
-        name: 'Tania Fraire Vázques',
-        role: 'Autoficción (Quirón) · Intérprete natural en pantalla',
-        bio: 'Tania llegó a este proyecto transmedia desde la autoficción, pero pronto reveló algo más: una actriz natural, sin artificio, capaz de sostener la cámara como si respirara con ella. En la proyección privada de Quirón, el maestro Gilberto Corrales lo señaló con asombro: su actuación encendía la escena desde un lugar genuino, vulnerable y preciso. Su participación abrió una grieta luminosa por donde la historia pudo volverse más humana. Tania colabora en una non-profit, es diseñadora gráfica y transfronteriza de corazón.',
-        image: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/equipo/tania.jpg',
-        anchor: '#team',
-      },
-      {
-        id: 'briseida-lopez-inzunza',
-        name: 'Briseida López Inzunza',
-        role: 'Artista escénica · Voz en off (Copycats)',
-        bio: 'Artista escénica mexicana con trayectoria en danza, actuación, coreografía y pedagogía. Su labor une la destreza emocional del cuerpo con la claridad dramática, explorando el movimiento como lenguaje narrativo. En Copycats, su voz en off aporta una presencia sensible y profunda que acompaña y amplifica la experiencia de la obra.',
-        image: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/equipo/BriseidaLopez.jpg',
-        anchor: '#team',
-      },
-    ],
-
-    proyeccion: {
-      title: '🗓️ Mayo 2026 · Cineteca CECUT',
-      description:
-        'Forma parte de la primera proyección doble de CopyCats + Quirón, con conversatorio del equipo y sonido Dolby Atmos diseñado por Concrete Sounds.',
-      cta: 'Quiero ser parte de la proyección',
-      footnote: 'Registro de interés activo. Espera noticias.',
-    },
-    notaAutoral: 'Memoria encendida.\nCámara despierta.\nY el tiempo la vuelve a montar.',
-    iaProfile: {
-      type: 'GPT-4o mini + subtítulos vivos y notas críticas asistidas.',
-      interaction: 'Notas críticas y captions contextuales por espectador.',
-      tokensRange: '200–450 tokens por visita.',
-      coverage: 'Incluido en la activación de huellas.',
-      footnote: 'La IA acompaña la mirada; la decisión sigue siendo humana.',
-    },
-  },
-  lataza: {
-    label: 'Artesanías',
-    type: 'object-webar',
-    slug: 'taza-que-habla',
-    subtitle: 'Esta no es una taza. Es un portal.',
-    intro:
-      'Un objeto cotidiano convertido en símbolo de comunión. Cada taza está vinculada a un sentimiento. Cada sentimiento, a una historia personal.',
-    note: 'Apunta tu cámara y aparecerá tu frase',
-    ctaLabel: 'Activa tu taza',
-    ctaMessage: 'Cuando liberes la activación WebAR, descubrirás la pista que le corresponde a tu taza.',
-    image: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Merch/taza_h.png',
-    phrases: ['La taza te habla.'],
-    instructions: [
-      'Permite el acceso a tu cámara para iniciar.',
-      'Coloca la taza completa en cuadro, con buena iluminación.',
-      'Mantén el marcador visible hasta que aparezca una orbe.',
-    ],
-    collaborators: [
-       {
-        id: 'miroslava-wilson',
-        name: 'Miroslava Wilson',
-        role: 'Vinculación y gestión institucional',
-        bio: 'Miroslava acompañó el proceso que permitió integrar la taza al circuito institucional del CECUT, facilitando su presencia como parte de la preventa de la obra. Su gestión ayudó a tender el puente entre el objeto y el espacio escénico.',
-        image: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/equipo/Miroslava%20.jpg',
-      },
-      {
-        id: 'taller-paco-padilla',
-        name: 'Taller Paco Padilla',
-        role: 'Cerámica artesanal de Tlaquepaque',
-        bio: 'Referente de la cerámica artesanal de Tlaquepaque.El Taller Paco Padilla puso sus manos y su fuego en la primera serie de tazas del universo. Cada pieza salió de su horno con una vibración artesanal única, sosteniendo en barro el pulso íntimo de Gato Encerrado y regalándole un hogar físico a lo que antes era solo símbolo.',
-        image: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/equipo/pacopadilla.jpeg',
-      },
-      
-      {
-        id: 'yeraldin-roman',
-        name: 'Yeraldín Román',
-        role: 'Diseño gráfico, fotografía y enlace local',
-        bio: 'Desde su experiencia en diseño gráfico, afinó la estética de la taza. Fue la primera en tenerla en sus manos y fotografiarla. En su trabajo continuo con Isabel Ayuda para la Vida y en este miniverso, se encargó de registrar marcas que hacen de #GatoEncerrado un universo.',
-        image: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/equipo/yeraldin.png',
-      },
-         {
-        id: 'rocio-morgan',
-        name: 'Rocío Morgan',
-        role: 'Coordinación de entregas',
-        bio: 'Rocío coordinó la entrega de las primeras tazas como un gesto de agradecimiento dentro del proceso de Es un gato encerrado, cuidando que llegaran tanto al equipo como a personas cercanas al proyecto. Marcando así las primeras activaciones de nuestro primer objeto artesanal.',
-        image: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/equipo/rocio.jpg',
-      },
-    ],
-    comments: [
-      {
-        id: 'la-taza-comment-1',
-        quote: '“La taza me mostró una frase que me persiguió toda la semana.”',
-        author: 'Usuario anónimo',
-      },
-      {
-        id: 'la-taza-comment-2',
-        quote: '“No entendí nada… hasta que le agarré el modo.”',
-        author: 'Sofía B.',
-      },
-    ],
-    cartaTitle: '#ElSentidoEnLasManos',
-    notaAutoral: 'Tomé un objeto.\nSu forma me sostuvo.\nEl sentido calentó mis manos.',
-    iaProfile: {
-      type: 'IA ligera para pistas contextuales + WebAR.',
-      interaction: '1 activación guiada por objeto (escaneo breve).',
-      tokensRange: '90–140 tokens por activación.',
-      coverage: 'Cubierto por suscriptores; no hay costo directo por usuario.',
-      footnote: 'La IA solo guía la pista; el ritual lo completa quien sostiene la taza.',
-    },
-  },
-  miniversoNovela: {
-    label: 'Literatura',
-    type: 'blog-series',
-    slug: null,
-    intro:
-      'En este miniverso literario se entiende la escritura como una forma de expansión. No es un complemento de la obra escénica o de la novela, sino un espacio propio donde fragmentos, voces, poemas y apuntes dialogan entre sí y amplían el universo de Gato Encerrado.',
-    cartaTitle: '#LaPreguntaInsiste',
-    notaAutoral:
-      'Escribí para entender\ny la página me abrió otra pregunta.',
-    collaborators: [
-      {
-        id: 'pepe-rojo',
-        name: 'Pepe Rojo',
-        role: 'Escritor y crítico cultural',
-        bio: 'Pepe Rojo acompañó la literatura de este miniverso con una lectura precisa y generosa. Autor emblemático de la narrativa fronteriza, ofreció el prólogo de Mi Gato Encerrado, abriendo el libro desde una mirada que entiende el artificio, la herida y la imaginación como un mismo territorio. Su intervención dio claridad y ruta al futuro de la obra.',
-        image: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/equipo/peperojo.jpeg',
-      },
-      {
-        id: 'groppe-imprenta',
-        name: 'Groppe Libros',
-        role: 'Edición física',
-        bio: 'Acompañaron la primera edición física de Mi Gato Encerrado con oficio paciente y preciso. Pusieron forma donde antes había solo palabras: papel, tinta y cuidado. Gracias a su trabajo, este universo encontró también su cuerpo de libro.',
-        image: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/equipo/groppelibros.png',
-      },
-    ],
-    entries: [
-      {
-        id: 'compra-libro',
-        title: 'Despierta dentro del libro',
-        description:
-          'Lectura como acto de conciencia: cruzar sus páginas es recorrer la mente misma.',
-        image: '/assets/edicion-fisica.png',
-        type: 'purchase-link',
-        url: '/comprar-novela',
-        snippet: {
-          tagline: 'Tu ejemplar como portal',
-          text:
-            'Escanea el QR de tu libro para acceder a lecturas ocultas y conversaciones con otros lectores del universo #GatoEncerrado.',
-        },
-        app: {
-          id: 'autoficcion-app',
-          ctaLabel: 'Leer fragmentos',
-          ctaAction: 'openAutoficcionPreview',
-        },
-      },
-      {
-        id: 'comentarios-lectores',
-        title: 'Ecos del Club de Lectura',
-        type: 'quotes',
-        quotes: [
-          {
-            quote: '“No sabía que un libro podía hablarme a mitad de la página.”',
-            author: 'Lectora anónima',
-          },
-          {
-            quote:
-              '“Volví a subrayar y entendí que la obra también estaba escribiendo mi propia memoria.”',
-            author: 'Club de Lectura Frontera',
-          },
-        ],
-      },
-    ],
-    ctaLabel: 'Leer los primeros fragmentos',
-    iaProfile: {
-      type: 'GPT-4o mini + voz sintética para fragmentos.',
-      interaction: 'Guía de lectura y acompañamiento breve por capítulo.',
-      tokensRange: '150–320 tokens por fragmento leído.',
-      coverage: 'Cubierto por suscriptores; lectura sin costo adicional.',
-      footnote: 'La IA susurra; la historia sigue siendo tuya.',
-    },
-  },
-  miniversoSonoro: {
-    label: 'Sonoridades',
-    type: 'audio-dream',
-    intro:
-      <p>Sonoridades reúne la música original y el diseño sonoro creados para la obra, junto con piezas que expanden su universo más allá del escenario. <br/><br/>En la puesta, el sonido no acompañó la historia: la transformó.
-Abrió una experiencia inmersiva donde la resonancia modifica la percepción del tiempo, del cuerpo y del espacio. <br/><br/>
-Este espacio permite recorrer esas composiciones, explorar sus capas y descubrir cómo lo audible deja huella incluso cuando la escena ya terminó. <br/><br/> Aquí, cada visita es una mezcla nueva, un sueño que se reinventa con cada escucha.</p>,
-    highlights: [
-      'Video que fluye solo.',
-      'Música que tú eliges.',
-      'Poemas que respiran en pantalla.',
-    ],
-    exploration: [
-      'El video corre por su cuenta — cambia con cada visita.',
-      'Tú eliges la música — ajusta el ánimo del sueño.',
-      'Escoge un poema — y observa cómo se desliza mientras todo ocurre.',
-    ],
-    closing: [
-      'Sueño en tres capas',
-      'Cada combinación abre un sueño distinto.',
-      'Entra y crea el tuyo.',
-    ],
-    videoUrl:
-      'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Sonoridades/videos-v/Vacio.mov',
-    musicOptions: [
-      {
-        id: 'silencio',
-        label: 'Silencio',
-        url: '',
-      },
-      {
-        id: 'ensayo-abierto',
-        label: 'Ensayo Abierto (pista)',
-        url: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Sonoridades/audio/cat_theme.m4a',
-      },
-    ],
-    poems: [
-      {
-        id: 'pulmon',
-        label: 'Poema 1 — “Pulmón”',
-        text: 'La noche se abre como un pulmón cansado.',
-      },
-      {
-        id: 'cuerpo',
-        label: 'Poema 2 — “Cuerpo”',
-        text: 'Lo que cae del sueño también cae del cuerpo.',
-      },
-    ],
-    cartaTitle: '#LoQueSuenaAdentro',
-    notaAutoral: 'Abrí los ojos.\nLa resonancia era antigua.\nComo el silencio.',
-    iaProfile: {
-      type: 'GPT-4o mini para poemas móviles + curaduría sonora.',
-      interaction: 'Selección de poema y mezcla guiada.',
-      tokensRange: '130–280 tokens por mezcla.',
-      coverage: 'Incluido en la huella transmedia.',
-      footnote: 'La IA elige la forma; tú eliges el ánimo.',
-    },
-    collaborators: [
-      {
-        id: 'lia-perez',
-        name: 'Lía Pérez, MPSE',
-        role: 'Diseño Sonoro',
-        bio: 'Artista sonora con más de doce años de experiencia. Fundadora de Concrete Sounds, ha colaborado en filmes como “Ya no estoy aquí” y “Monos”. Su especialidad es la creación de paisajes inmersivos que amplían la dimensión sensorial del teatro.',
-        image: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/equipo/lia.jpg',
-      },
-      {
-        id: 'diego-madera',
-        name: 'Diego Madera',
-        role: 'Compositor',
-        bio: 'Músico y compositor cuyo trabajo explora la tensión entre sonido y silencio. Su pieza original acompaña los pasajes emocionales de la obra.',
-        image: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/equipo/diego.png',
-      },
-    ],
-    comments: [
-      {
-        id: 'sonoro-comment-1',
-        quote: '“La mezcla se sintió como respirar dentro del sueño.”',
-        author: 'Escucha anónima',
-      },
-      {
-        id: 'sonoro-comment-2',
-        quote: '“Elegí la pista incorrecta y terminé llorando. Gracias por eso.”',
-        author: 'Residencia Sonora',
-      },
-    ],
-  },
-  miniversoGrafico: {
-    label: 'Gráficos',
-    type: 'graphic-lab',
-    intro:
-      <p>Este mini-verso gráfico explora el universo de #GatoEncerrado desde la imagen. <br/><br/> Aquí las escenas se quedan en otro momento: lo que en la obra aparece como pensamiento o diálogo, en el cómic puede convertirse en ensayo, en silencio, en otra voz.<br/><br/> No solo el de Silvestre, sino el de cualquiera que se haya sentido como él. <br/>Dibujar permite mirar lo que no siempre se dice en escena.</p>,
-    cartaTitle: '#MirarmeLoQueSoy',
-    notaAutoral:
-      'Me quedé dibujando,\ncomo si el papel supiera quién soy\nmejor que yo.',
-    collaborators: [
-      {
-        id: 'manuel-sarabia',
-        name: 'Manuel Sarabia',
-        role: 'Ilustrador y crítico de cine',
-        bio: 'Desde Sadaka Estudio trazó los primeros storyboards de Tres pies al gato, ayudando a imaginar cómo se ve un mundo cuando aún no existe.',
-        image: '/images/placeholder-colaboradores.jpg',
-      },
-    ],
-
-    swipe: {
-      title: 'Swipe narrativo',
-      description: 'Haz scroll hacia arriba para navegar por tarjetas verticales.',
-      steps: [
-        'Cada tarjeta revela una escena, una decisión o una herida.',
-        'Desliza y elige: ¿quieres ver lo que pasa o lo que duele?',
-      ],
-    },
-    swipeShowcases: [
-      {
-        id: 'tres-pies-galeria',
-        title: 'Tres Pies al Gato',
-        description: 'Exploraciones de la novela gráfica.',
-        previewImage: '/assets/silvestre-comic.jpeg',
-        type: 'internal-reading',
-        previewMode: 'pdf',
-        previewPdfUrl:
-          'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/grafico/Cap%20Aula.pdf',
-        swipeNotes: [
-          'Swipe vertical en PDF; cada página es una viñeta-ritual.',
-          'Optimizado para móvil y tableta.',
-        ],
-      },
-    ],
-    comments: [
-      {
-        id: 'grafico-comment-1',
-        quote: '“Cada viñeta parecía escucharme; terminé subrayando con colores.”',
-        author: 'Residencia gráfica MX',
-      },
-      {
-        id: 'grafico-comment-2',
-        quote: '“El swipe me hizo sentir que estaba dentro del storyboard.”',
-        author: 'Colectivo Tres Pies',
-      },
-    ],
-    ctas: {
-      primary: 'Explora el miniverso gráfico',
-      secondary: 'Súmate a la residencia gráfica',
-    },
-    iaProfile: {
-      type: 'IA asistida para glifos y variaciones gráficas.',
-      interaction: 'Swipe narrativo con prompts curados.',
-      tokensRange: '110–220 tokens por sesión.',
-      coverage: 'Cubierto por suscriptores; sin costo por visitante.',
-      footnote: 'La IA abre caminos; el trazo final sigue siendo humano.',
-    },
-  },
-  miniversoMovimiento: {
-    label: 'Movimiento',
-     intro:'Movimiento traslada al cuerpo los conflictos mentales del universo #GatoEncerrado. Si en la obra la mente se fragmenta, aquí el cuerpo busca arraigo. Es un laboratorio coreográfico y somático que se activa por ciudad.No se interpretan emociones: se atraviesan.',
-     
-         type: 'movement-ritual',
-    pendingName: 'La Ruta de la Corporeidad',
-    tagline: 'Talleres de Cuerpo Colectivo',
-    overview: [
-      'La Ruta de la Corporeidad es una experiencia coreográfica transmedial que recorre plazas, parques y espacios públicos. Activa un ritual contemporáneo con avatares, realidad aumentada y movimiento colectivo.',
-    ],
-    diosaHighlights: [
-      'Una presencia digital inspirada en mitologías mesoamericanas.',
-      'Diseñada con motion capture.',
-      'Acompañada de música original.',
-      'Proyectada con videomapping láser durante las noches.',
-    ],
-
-    invitation: '¿Y tú? ¿Bailarás con nosotrxs o solo mirarás pasar a las presencias?',
-    actions: [
-      {
-        id: 'ruta',
-        label: 'Explora su ruta',
-        description: 'Sigue el mapa interactivo o la línea de tiempo animada de cada estación (Tijuana, La Paz, etc.).',
-        badge: 'CTA principal',
-        buttonLabel: 'Explorar',
-        toastMessage: 'Muy pronto liberaremos el mapa coreográfico y el timeline de estaciones.',
-        icon: Map,
-      },
-      {
-        id: 'marcador-ar',
-        label: 'Activa un marcador AR en tu ciudad',
-        description: 'Activa la cámara (WebAR) o abre la guía para instalar la app y recibir instrucciones.',
-        buttonLabel: 'Activar AR',
-        toastMessage: 'La guía WebAR se está terminando; te avisaremos cuando la cámara pueda abrir el portal.',
-        icon: Scan,
-      },
-      {
-        id: 'talleres',
-        label: 'Inscríbete a los talleres coreográficos',
-        description: 'Convocatorias abiertas por temporada. Reserva tu lugar en los talleres que trazan la ruta.',
-        buttonLabel: 'Inscribirme',
-        toastMessage: 'Abriremos el formulario conectado a Supabase para registrar tu participación.',
-        icon: Users,
-      },
-      {
-        id: 'livestream',
-        label: 'Sigue el livestream de la función final',
-        description: 'Activa un embed o cuenta regresiva para ver la ruta completa cuando llegue la noche.',
-        buttonLabel: 'Ver livestream',
-        toastMessage: 'El livestream y su countdown estarán activos antes de la función final.',
-        icon: RadioTower,
-      },
-    ],
-    diosasGallery: [
-      {
-        id: 'coatlicue-360',
-        title: 'Coatlicue',
-        description: 'Madre tierra. Peso. Vida y muerte simultánea.',
-        badge: 'Portal AR',
-        location: 'Hombros / Carga',
-        
-        videoUrl: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Presencias/web/Coatlicue/coatlicue_web.mp4',
-        poster: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Presencias/posters/Coatlicue/coatlicue_web.jpg',
-        gradient: 'linear-gradient(165deg, rgba(16,185,129,0.65), rgba(59,130,246,0.55), rgba(168,85,247,0.55))',
-      },
-      {
-        id: 'chanico-360',
-        title: 'Chanico',
-        description: 'Fuego doméstico. Centro del hogar.',
-        badge: 'Portal AR',
-        location: 'Plexo / Centro de voluntad',
-        
-        videoUrl: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Presencias/web/Chantico/chanico_web.mp4',
-        poster: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Presencias/posters/Chantico/chanico_web.jpg',
-        gradient: 'linear-gradient(175deg, rgba(14,165,233,0.55), rgba(52,211,153,0.45), rgba(8,47,73,0.75))',
-      },
-      {
-        id: 'chicomecoatl-360',
-        title: 'Chicomecóatl',
-        description: 'Maíz. Fertilidad. Sostén de vida.',
-        badge: 'Portal AR',
-        location: 'Caderas / Raíz',
-        
-        videoUrl: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Presencias/web/Chicomecoatl/chicomecoatl_web.mp4',
-        poster: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Presencias/posters/Chicomecoatl/chicomecoatl_web.jpg',
-        gradient: 'linear-gradient(175deg, rgba(99,102,241,0.52), rgba(20,184,166,0.45), rgba(109,40,217,0.55))',
-      },
-      {
-        id: 'cihuacoatl-360',
-        title: 'Cihuacóatl',
-        description: 'Guía. Resguardo. Lo que sostiene lo vulnerable.',
-        badge: 'Portal AR',
-        location: 'Cuello / Sostén de identidad',
-        
-        videoUrl: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Presencias/web/Cihuacoatl/Chuhuacoatl_web.mp4',
-        poster: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Presencias/posters/Cihuacoatl/Chuhuacoatl_web.jpg',
-        gradient: 'linear-gradient(178deg, rgba(71,85,105,0.62), rgba(59,130,246,0.45), rgba(99,102,241,0.5))',
-      },
-      {
-        id: 'coyolxauhqui-360',
-        title: 'Coyolxauhqui',
-        description: 'Luna desmembrada en movimiento continuo.',
-        badge: 'Portal AR',
-        location: 'Cabeza / Fragmentación',
-        
-        videoUrl: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Presencias/web/Coyolxauhqui/Coyolxauhqui_web.mp4',
-        poster: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Presencias/posters/Coyolxauhqui/Coyolxauhqui_web.jpg',
-        gradient: 'linear-gradient(180deg, rgba(129,140,248,0.58), rgba(14,165,233,0.45), rgba(30,41,59,0.7))',
-      },
-      {
-        id: 'itztli-360',
-        title: 'Itztli',
-        description: 'Corte. Filo. Verdad que atraviesa.',
-        badge: 'Portal AR',
-        location: 'Mandíbula / Voz retenida',
-        
-        videoUrl: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Presencias/web/Itztli/Itztli_web.mp4',
-        poster: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Presencias/posters/Itztli/Itztli_web.jpg',
-        gradient: 'linear-gradient(175deg, rgba(2,6,23,0.75), rgba(29,78,216,0.48), rgba(148,163,184,0.42))',
-      },
-      {
-        id: 'tlazohteotl-360',
-        title: 'Tlazohteotl',
-        description: 'Purga, deseo y ambivalencia.',
-        badge: 'Portal AR',
-        location: 'Vientre / Deseo / Culpa',
-        
-        videoUrl: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Presencias/web/Tlazohteotl/Tlazohteotl_web.mp4',
-        poster: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Presencias/posters/Tlazohteotl/Tlazohteotl_web.jpg',
-        gradient: 'linear-gradient(172deg, rgba(244,114,182,0.5), rgba(251,191,36,0.45), rgba(109,40,217,0.52))',
-      },
-      {
-        id: 'xochiquetzal-360',
-        title: 'Xochiquetzal',
-        description: 'Movimiento, arte, vitalidad.',
-        badge: 'Portal AR',
-        location: 'Piernas / Impulso',
-        
-        videoUrl: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Presencias/web/Xochiquetzal/Xochiquetzal_web.mp4',
-        poster: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Presencias/posters/Xochiquetzal/Xochiquetzal_web.jpg',
-        gradient: 'linear-gradient(170deg, rgba(244,114,182,0.55), rgba(59,130,246,0.45), rgba(16,185,129,0.5))',
-      },
-      {
-        id: 'tzitzimime-360',
-        title: 'Tzitzimime',
-        description: 'Presencias estelares. Observadoras del cosmos.',
-        badge: 'Portal AR',
-        location: 'Ojos / Mirada / Percepción',
-        
-        videoUrl: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Presencias/web/Tzitzimime/tzitzime_web.mp4',
-        poster: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Presencias/posters/Tzitzimime/tzitzime_web.jpg',
-        gradient: 'linear-gradient(180deg, rgba(99,102,241,0.6), rgba(168,85,247,0.5), rgba(14,165,233,0.45))',
-      },
-      {
-        id: 'ixchel-360',
-        title: 'Ixchel',
-        description: 'Agua, ciclos, lunaridad.',
-        badge: 'Portal AR',
-        location: 'Tobillos / Suelo',
-        
-        videoUrl: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Presencias/web/Ixchel/Ixchel_web.mp4',
-        poster: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Presencias/posters/Ixchel/Ixchel_web.jpg',
-        gradient: 'linear-gradient(170deg, rgba(56,189,248,0.55), rgba(34,211,238,0.5), rgba(59,130,246,0.45))',
-      },
-    ],
-    collaborators: [],
-  
-    cartaTitle: '#CaerEsDanzar',
-    notaAutoral: 'Mi cuerpo colapsará;\nno sin danza\nni dolor bonito.',
-    iaProfile: {
-      type: 'Actualmente no usa IA en producción.',
-      interaction:
-        'Registro en motion capture (mocap), traducción a avatar digital y activación en sitio mediante realidad aumentada.',
-      tokensRange: 'Sin consumo de IA por visitante en esta etapa.',
-      coverage: 'Producción técnica y activación territorial gestionadas por el equipo de Movimiento.',
-      footnote: 'Cuando integremos módulos de IA reales, esta ficha se actualizará con métricas verificables.',
-    },
-  },
-  apps: {
-    id: 'apps',
-    label: 'Juegos',
-    type: 'apps',
-    tagline: 'Juegos como portales • Apps como rituales felinos.',
-    intro:
-      'Demos jugables del tablero TRAZO: eliges avatar (Maestra, Saturnina, Don Polo…) y el gato anfitrión te abre el telón en 3 taps.',
-    cartaTitle: '#NoHayDesandar',
-    notaAutoral:
-      'Elegí un camino pequeño.\nAhora no lo puedo desandar.\nEl juego me jugó.',
-    tapDemo: {
-      title: 'Tap-to-advance demo',
-      steps: [
-        {
-          id: 'step-1',
-          title: 'Elige tu avatar',
-          description:
-            'La Maestra afila tiza, Saturnina trae glitch, Don Polo cobra peaje. Cada uno cambia el tono y las casillas.',
-        },
-        {
-          id: 'step-2',
-          title: 'Desbloquea el portal',
-          description: 'Toca para abrir la escena: el gato suelta prefijos, el telón sube y aparece la siguiente casilla.',
-        },
-        {
-          id: 'step-3',
-          title: 'Recompensa',
-          description: 'Guardas la gatología, desbloqueas la siguiente ronda y sumas +20 GAT para seguir improvisando.',
-        },
-      ],
-      ctaLabel: 'Jugar demo',
-    },
-    actions: [
-      {
-        id: 'download',
-        label: 'Descargar app',
-        description: 'APK / TestFlight / PWA con tablero, camerino y gatologías offline.',
-        buttonLabel: 'Descargar',
-      },
-      {
-        id: 'watch',
-        label: 'Ver walkthrough',
-        description: 'Video corto: splash → selector de personaje → telón → gatología guardada.',
-        buttonLabel: 'Ver video',
-      },
-    ],
-    iaProfile: {
-      type: 'IA para misiones y ritmo de juego felino.',
-      interaction: 'Tap / swipe progresivo; sugiere palabras en la voz del personaje.',
-      tokensRange: '90–180 tokens por sesión.',
-      coverage: 'Incluido en la huella transmedia (no gasta tus GAT).',
-      footnote: 'La IA propone el siguiente giro; tú das el tap y decides cuándo cerrar el telón.',
-    },
-  },
-  oraculo: {
-    label: 'Oráculo',
-    type: 'oracle',
-    intro:
-      'Alimenta la mente del Gato y gana GATokens por compartir tu pensamiento. El Oráculo no da respuestas, pero sí te recompensa por mantener tu curiosidad.',
-    loops: [
-      'Responde preguntas simbólicas, filosóficas, existenciales, absurdas o personales.',
-      'Cada respuesta se guarda como semilla de conocimiento simbólico para IA, literatura y obra interactiva.',
-      'Mientras más participas, más GATokens generas (proof-of-resonance con límites diarios anti-spam).',
-    ],
-    rewards: [
-      { title: 'Responder a una pregunta profunda', tokens: '+20 GAT', description: 'Comparte una reflexión que vibre en lo simbólico o emocional.' },
-      { title: 'Elegir y comentar reflexiones de otrxs', tokens: '+30 GAT', description: 'Modo foro: amplifica ideas y suma tu mirada.' },
-      { title: 'Volver tras una semana', tokens: '+30 GAT', description: 'Retorno que sostiene el hilo y da seguimiento a tu huella.' },
-      { title: 'Invitar a alguien con su primera reflexión', tokens: '+50 GAT', description: 'Trae a otra mente al Oráculo. Recompensa única por invitación.' },
-    ],
-    limitsNote: 'Límites por día para evitar spam y mantener el valor simbólico.',
-    seedNotes: [
-      'Las respuestas se almacenan como semillas de conocimiento simbólico.',
-      'Enriquecen una base de datos viviente para literatura, IA personalizada y obra interactiva.',
-      'Cada huella deja señal en la mente del Gato.',
-    ],
-    ctaLabel: 'Pregunta, responde y mintea',
-    ctaDescription:
-      'Tu pensamiento también construye este universo.',
-    tagline: 'Interacción que deja huella. Reflexión que te recompensa.',
-    cartaTitle: '#CambiarSinCambiar',
-    notaAutoral: 'Miré el espejo.\nNo dijo nada.\nÉramos dos... y no.',
-    iaProfile: {
-      type: 'GPT-4o + embeddings simbólicos curados por la comunidad.',
-      interaction: '1–3 reflexiones cortas por sesión; foro breve guiado.',
-      tokensRange: '20–120 tokens por reflexión (promedio ~20 GAT).',
-      coverage: 'Cubierto por suscriptores; las recompensas son GATokens internos.',
-      footnote: 'El minado es simbólico y humano: no es financiero, es resonancia.',
-    },
-  },
-};
-
-
-const formats = [
-  {
-    id: 'miniversos',
-    title: 'Escena',
-    icon: Drama,
-    iconClass: 'text-purple-300',
-    
-    iaTokensNote: 'Energía confiada: 300 GAT',
-    image: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Merch/posters/poster_obra.png',
-  },
-  {
-    id: 'lataza',
-    title: 'Artesanías',
-    icon: Coffee,
-    iconClass: 'text-amber-300',
-    
-    iaTokensNote: 'Mantener ritual: ~90 GAT.',
-    image: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Merch/posters/poster_artesanias.png',
-  },
-  {
-    id: 'miniversoNovela',
-    title: 'Literatura',
-    icon: BookOpen,
-    iconClass: 'text-emerald-300',
-    
-    iaTokensNote: 'Energía viva: ~150 GAT.',
-    image: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Merch/posters/poster_literatura.png',
-  },
-  {
-    id: 'miniversoGrafico',
-    title: 'Gráficos',
-    icon: Palette,
-    iconClass: 'text-fuchsia-300',
-    
-    iaTokensNote: 'Requiere ~110 GAT.',
-    image: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Merch/posters/poster_graficos.png',
-  },
-  {
-    id: 'copycats',
-    title: 'Cine',
-    icon: Film,
-    iconClass: 'text-rose-300',
-    
-    iaTokensNote: 'Requiere ~250 confiados.',
-    image: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Merch/posters/cine.png',
-  },
-  {
-    id: 'miniversoSonoro',
-    title: 'Sonoridades',
-    icon: Music,
-    iconClass: 'text-cyan-300',
-    
-    iaTokensNote: 'Requiere ~130 GAT',
-    image: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Merch/posters/poster_sonoridades.png',
-  },
-  {
-    id: 'miniversoMovimiento',
-    title: 'Movimiento',
-    icon: MapIcon,
-    iconClass: 'text-sky-300',
-    
-    iaTokensNote: '~280 por mapa.',
-    image: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Merch/posters/poster_movimiento.png',
-  },
-  {
-    id: 'apps',
-    title: 'Juegos',
-    icon: Dice5,
-    iconClass: 'text-lime-300',
-    
-    iaTokensNote: 'IA marca el ritmo felino.',
-    image: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Merch/posters/poster_juegos.png',
-  },
-  {
-    id: 'oraculo',
-    title: 'Oráculo',
-    icon: Brain,
-    iconClass: 'text-indigo-300',
-    
-    iaTokensNote: 'Aquí se minan GATokes',
-    image: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Merch/posters/poster_oraculo.png',
-  },
-];
-
-const getHashAnchor = (hashValue) => String(hashValue || '').split('?')[0];
-
-const parseNumericValue = (value) => {
-  if (typeof value === 'number' && Number.isFinite(value)) return value;
-  if (typeof value !== 'string') return null;
-  const match = value.match(/-?\d+(?:\.\d+)?/);
-  if (!match) return null;
-  const parsed = Number(match[0]);
-  return Number.isFinite(parsed) ? parsed : null;
-};
-
-const extractFocusIncomingGAT = (intent) => {
-  if (!intent || typeof intent !== 'object') return null;
-
-  const pick = (...paths) => {
-    for (const path of paths) {
-      let cursor = intent;
-      let validPath = true;
-      for (const segment of path) {
-        if (!cursor || typeof cursor !== 'object' || !(segment in cursor)) {
-          validPath = false;
-          break;
-        }
-        cursor = cursor[segment];
-      }
-      if (!validPath) continue;
-      const parsed = parseNumericValue(cursor);
-      if (parsed !== null) return parsed;
-    }
-    return null;
-  };
-
-  const prioritized =
-    pick(
-      ['gat_delta'],
-      ['gatDelta'],
-      ['gat_added'],
-      ['gatAdded'],
-      ['gat_earned'],
-      ['gatEarned'],
-      ['gatos_traidos'],
-      ['gatosTraidos'],
-      ['tokens_earned'],
-      ['tokensEarned'],
-      ['token_bonus'],
-      ['tokenBonus'],
-      ['reward_gatokens'],
-      ['reward', 'gatokens'],
-      ['reward', 'tokens'],
-      ['credits', 'delta'],
-      ['wallet', 'delta']
-    ) ??
-    pick(
-      ['gatokens'],
-      ['gat_tokens'],
-      ['gatos'],
-      ['tokens'],
-      ['available_tokens'],
-      ['wallet', 'available_tokens']
-    );
-
-  return prioritized === null ? null : Math.trunc(prioritized);
-};
-
-const getFocusParamFromLocation = (locationLike) => {
-  if (!locationLike) return null;
-
-  const searchParams = new URLSearchParams(locationLike.search || '');
-  const fromSearch =
-    searchParams.get('focus') ||
-    searchParams.get('appId') ||
-    searchParams.get('app_id') ||
-    searchParams.get('recommended_app_id');
-  if (fromSearch) return fromSearch;
-
-  const hashRaw = String(locationLike.hash || '');
-  const [hashAnchor, hashQuery = ''] = hashRaw.split('?');
-  if (normalizeBridgeKey(hashAnchor) !== 'transmedia' || !hashQuery) return null;
-  const hashParams = new URLSearchParams(hashQuery);
-  return (
-    hashParams.get('focus') ||
-    hashParams.get('appId') ||
-    hashParams.get('app_id') ||
-    hashParams.get('recommended_app_id')
-  );
-};
-
-const CAUSE_ACCORDION = [
-  {
-    id: 'tratamientos',
-    title: 'Tratamientos emocionales',
-    description:
-      'Tan solo una huella asigna hasta 6 sesiones a un joven sin costo para su familia. Isabel Ayuda para la Vida, A.C. activa las sesiones cuando se detecta riesgo emocional.',
-    icon: HeartHandshake,
-    metric: '6 sesiones promedio por suscriptor',
-    imageAlt: 'Foto de archivo de acompañamiento emocional.',
-    imageLabel: 'Foto de archivo',
-    imageUrls: [
-  'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/causa%20social/seguimiento1.jpg',
-  'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/causa%20social/seguimiento3.jpg',
-    'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/causa%20social/seguimiento2.jpg',
-    'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/causa%20social/seguimiento4.jpg',  
-],
-
-  },
-  {
-    id: 'residencias',
-    title: 'Residencias creativas',
-    description:
-      'Laboratorios de 2 meses en alianza con la asociación, donde artistas ponen su práctica al servicio de programas escolares de acompañamiento emocional. Cada 17 huellas financian una residencia completa.',
-    icon: Palette,
-    metric: 'Hasta 3 residencias activas por temporada',
-    imageAlt: 'Foto de archivo de residencias creativas.',
-    imageLabel: 'Foto de archivo',
-    imageUrls: [
-      'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/causa%20social/residencias_creativas.jpeg',
-      'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/causa%20social/residencias2.jpg',
-      'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/causa%20social/residencias3.jpg',
-      'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/causa%20social/residencias.jpg',
-    ],
-  },
-  {
-    id: 'app-escolar',
-  title: 'App Causa Social en escuelas',
-  description:
-    'Implementación y seguimiento semestral de la app de detección temprana. 75 huellas financian 1 escuela por semestre.',
-  icon: Smartphone,
-  metric: '5 escuelas atendidas por ciclo escolar',
-  imageAlt: 'Captura de la app Causa Social en escuelas (versión beta).',
-  imageLabel: 'Capturas beta de la app',
-    imageUrls: [
-      'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/causa%20social/causa_social.png',
-      'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/causa%20social/aplicacion_estudiante.png',
-       'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/causa%20social/app_estarbien.png',
-      'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/causa%20social/app_estarbien2.png',
-     
-    
-    ],
-  },
-];
+import {
+  GAT_COSTS,
+  SHOWCASE_REQUIRED_GAT,
+  MOVEMENT_COLLABORATOR_CALL_ITEMS,
+  LEGACY_TAZA_VIEWER_ENABLED,
+  SHOWCASE_BADGE_IDS,
+  EXPLORER_BADGE_STORAGE_KEY,
+  HERO_PENDING_MINIVERSE_SELECTION_KEY,
+  LOGIN_RETURN_KEY,
+  EXPLORER_BADGE_REWARD,
+  EXPLORER_BADGE_NAME,
+  SHOWCASE_OPEN_TRANSITION,
+  INTERACTIVE_EXPERIENCE_GOAL,
+  DEFAULT_BADGE_STATE,
+  requestCameraAccess,
+  MINIVERSO_TILE_GRADIENTS,
+  MINIVERSO_TILE_COLORS,
+  VITRINA_MIRROR_EFFECTS,
+  ORACULO_URL,
+  CAUSE_SITE_URL,
+  MINIVERSO_EDITORIAL_INTERCEPTION_ENABLED,
+  readStoredJson,
+  buildShowcaseRewardLabel,
+  buildShowcaseEnergyState,
+  buildShowcaseMinRequiredCopy,
+  MINIVERSO_VERSE_EFFECTS,
+  shuffleArray,
+  OBRA_VOICE_MODES,
+  DEFAULT_OBRA_VOICE_MODE_ID,
+  MOBILE_OBRA_SECONDARY_CTA_STATES,
+  normalizeSilvestrePrompt,
+  showcaseDefinitions,
+  formats,
+  getHashAnchor,
+  parseNumericValue,
+  extractFocusIncomingGAT,
+  getFocusParamFromLocation,
+  CAUSE_ACCORDION,
+} from '@/components/transmedia/transmediaConstants';
 
 const Transmedia = ({ allianceOnlyMode = false }) => {
-  const baseEnergyByShowcase = useMemo(() => {
-    const map = {};
-    const parseFromNote = (note) => {
-      if (typeof note !== 'string') return 0;
-      const match = note.match(/(\d+)/);
-      return match ? Number.parseInt(match[1], 10) : 0;
-    };
-    const registerEnergy = (id, note) => {
-      if (map[id]) {
-        return;
-      }
-      let baseAmount = 0;
-      switch (id) {
-        case 'copycats':
-          baseAmount = GAT_COSTS.quironFull;
-          break;
-        case 'miniversoGrafico':
-          baseAmount = GAT_COSTS.graficoSwipe;
-          break;
-        case 'miniversoNovela':
-          baseAmount = GAT_COSTS.novelaChapter;
-          break;
-        case 'miniversoSonoro':
-          baseAmount = GAT_COSTS.sonoroMix;
-          break;
-        case 'lataza':
-          baseAmount = GAT_COSTS.tazaActivation;
-          break;
-        case 'miniversoMovimiento':
-          baseAmount = GAT_COSTS.movimientoRuta;
-          break;
-        case 'apps':
-          baseAmount = SHOWCASE_REVEAL_REWARD_GAT.apps;
-          break;
-        case 'oraculo':
-          baseAmount = SHOWCASE_REVEAL_REWARD_GAT.oraculo;
-          break;
-        default:
-          baseAmount = 0;
-      }
-      if (!baseAmount) {
-        baseAmount = parseFromNote(note);
-      }
-      map[id] = baseAmount;
-    };
-    formats.forEach((format) => registerEnergy(format.id, format.iaTokensNote));
-    return map;
-  }, []);
-  const initialQuironSpent = false;
-  const initialNovelaQuestions = readStoredInt('gatoencerrado:novela-questions', 0);
-  const initialGraphicSpent = readStoredBool('gatoencerrado:graphic-spent', false);
-  const initialSonoroSpent = readStoredBool('gatoencerrado:sonoro-spent', false);
-  const initialTazaActivations = readStoredInt('gatoencerrado:taza-activations', 0);
-  const initialAvailableGATokens = readStoredInt('gatoencerrado:gatokens-available', INITIAL_GAT_BALANCE);
-  const storedEnergy = readStoredJson('gatoencerrado:showcase-energy', null);
-  const initialShowcaseEnergy = storedEnergy
-    ? { ...baseEnergyByShowcase, ...storedEnergy }
-    : baseEnergyByShowcase;
-  const initialShowcaseBoosts = readStoredJson('gatoencerrado:showcase-boosts', {});
-  const storedBadge = readStoredJson(EXPLORER_BADGE_STORAGE_KEY, null);
-  const initialExplorerBadge = storedBadge
-    ? { ...DEFAULT_BADGE_STATE, ...storedBadge }
-    : DEFAULT_BADGE_STATE;
-
   const [isMiniverseOpen, setIsMiniverseOpen] = useState(false);
   const [hasLoadedMiniverseModal, setHasLoadedMiniverseModal] = useState(false);
   const [isMiniverseShelved, setIsMiniverseShelved] = useState(false);
   const [miniverseContext, setMiniverseContext] = useState(null);
   const [miniverseInitialTabId, setMiniverseInitialTabId] = useState(null);
   const [activeShowcase, setActiveShowcase] = useState(null);
-  const [showcaseOpenTransition, setShowcaseOpenTransition] = useState({ phase: 'idle', targetId: null });
   const hasHandledDeepLinkRef = useRef(false);
-  const showcaseOpenTransitionTimersRef = useRef([]);
-  const mobileSwipeStateRef = useRef({
-    startX: 0,
-    startY: 0,
-    deltaX: 0,
-    deltaY: 0,
-    tracking: false,
-  });
-  const mobileSwipeBlockTapRef = useRef(false);
   const [returnShowcaseId, setReturnShowcaseId] = useState(null);
   const [showcaseContent, setShowcaseContent] = useState({});
   const showcaseRef = useRef(null);
-  const [imagePreview, setImagePreview] = useState(null);
-  const [pdfPreview, setPdfPreview] = useState(null);
-  const [pdfNumPages, setPdfNumPages] = useState(null);
-  const [pdfLoadError, setPdfLoadError] = useState(null);
-  const pdfContainerRef = useRef(null);
-  const pdfEndSentinelRef = useRef(null);
-  const hasShownPdfEndNoticeRef = useRef(false);
   const supportSectionRef = useRef(null);
   const [isMiniversoEditorialModalOpen, setIsMiniversoEditorialModalOpen] = useState(false);
-  const [pdfContainerWidth, setPdfContainerWidth] = useState(0);
-  const pdfPageWidth = Math.max(pdfContainerWidth - 48, 320);
-  const [isTazaARActive, setIsTazaARActive] = useState(false);
-  const [isMobileARFullscreen, setIsMobileARFullscreen] = useState(false);
   const [showAutoficcionPreview, setShowAutoficcionPreview] = useState(false);
   const [hasLoadedAutoficcionPreview, setHasLoadedAutoficcionPreview] = useState(false);
   const {
@@ -1651,33 +168,11 @@ const Transmedia = ({ allianceOnlyMode = false }) => {
     handlePlayPendingAudio,
     resetSilvestreQuestions,
   } = useSilvestreVoice();
-  const [activeObraModeId, setActiveObraModeId] = useState(DEFAULT_OBRA_VOICE_MODE_ID);
-  const [elevatedSilvestreStarter, setElevatedSilvestreStarter] = useState(null);
-  const [mobileObraSecondaryCtaState, setMobileObraSecondaryCtaState] = useState(
-    MOBILE_OBRA_SECONDARY_CTA_STATES.READ_SCRIPT
-  );
-  const [mobileObraReplayPrompt, setMobileObraReplayPrompt] = useState('');
-  const [mobileAwaitingEmotionSwitch, setMobileAwaitingEmotionSwitch] = useState(false);
-  const obraConversationControlsRef = useRef(null);
-  const obraModesRef = useRef(null);
-  const obraDetonadoresRef = useRef(null);
-  const wasSilvestrePlayingRef = useRef(false);
-  const previousObraModeIdRef = useRef(DEFAULT_OBRA_VOICE_MODE_ID);
-  const [obraModeUsage, setObraModeUsage] = useState(() => {
-    const raw = readStoredJson(OBRA_EMOTION_LOG_STORAGE_KEY, {});
-    return OBRA_VOICE_MODES.reduce((acc, mode) => {
-      const value = Number(raw?.[mode.id] ?? 0);
-      acc[mode.id] = Number.isFinite(value) && value > 0 ? Math.trunc(value) : 0;
-      return acc;
-    }, {});
-  });
-  const [obraEmotionOrbs, setObraEmotionOrbs] = useState(() => {
-    const raw = readStoredJson(OBRA_EMOTION_ORBS_STORAGE_KEY, []);
-    return normalizeStoredEmotionOrbs(raw);
-  });
-  const [showcaseCarouselIndex, setShowcaseCarouselIndex] = useState(0);
-  const [mobileShowcaseIndex, setMobileShowcaseIndex] = useState(0);
-  const lastAppliedPortalRestoreTokenRef = useRef('');
+  const {
+    obraModeUsage,
+    obraEmotionOrbs,
+    incrementObraModeUsage,
+  } = useObraEmotionTracking();
   const [recommendedShowcaseId, setRecommendedShowcaseId] = useState(null);
   const [focusLockShowcaseId, setFocusLockShowcaseId] = useState(null);
   const [focusIncomingGAT, setFocusIncomingGAT] = useState(null);
@@ -1686,72 +181,8 @@ const Transmedia = ({ allianceOnlyMode = false }) => {
   const [openCollaboratorId, setOpenCollaboratorId] = useState(null);
   const { isMobileViewport, canUseInlinePlayback, requestMobileVideoPresentation } = useMobileVideoPresentation();
   const { user } = useAuth();
-  const navigate = useNavigate();
-  const location = useLocation();
-  const isSafari = isSafariBrowser();
-  const [quironSpent, setQuironSpent] = useState(initialQuironSpent);
-  const [graphicSpent, setGraphicSpent] = useState(initialGraphicSpent);
-  const [novelaQuestions, setNovelaQuestions] = useState(initialNovelaQuestions);
-  const [isMerchCheckoutLoading, setIsMerchCheckoutLoading] = useState(false);
-  const [sonoroSpent, setSonoroSpent] = useState(initialSonoroSpent);
-  const [tazaActivations, setTazaActivations] = useState(initialTazaActivations);
-  const [showQuironCommunityPrompt, setShowQuironCommunityPrompt] = useState(false);
-  const [isQuironUnlocking, setIsQuironUnlocking] = useState(false);
-  const [showQuironCoins, setShowQuironCoins] = useState(false);
-  const [isProjectionInterestSubmitting, setIsProjectionInterestSubmitting] = useState(false);
-  const [isProjectionInterestSent, setIsProjectionInterestSent] = useState(false);
-  const [isQuironFullVisible, setIsQuironFullVisible] = useState(initialQuironSpent);
-  const [quironSignedUrl, setQuironSignedUrl] = useState('');
-  const [isQuironPlaybackUnlocked, setIsQuironPlaybackUnlocked] = useState(false);
-  const [shouldResumeQuironPlay, setShouldResumeQuironPlay] = useState(false);
-  const [isQuironPrecareVisible, setIsQuironPrecareVisible] = useState(false);
-  const quironVideoRef = useRef(null);
-  const [hasQuironPlaybackStarted, setHasQuironPlaybackStarted] = useState(false);
-  const [isQuironAftercareVisible, setIsQuironAftercareVisible] = useState(false);
-  const [tokenPrecareContext, setTokenPrecareContext] = useState(null);
-  const [movementPendingAction, setMovementPendingAction] = useState(null);
-  const [availableGATokens, setAvailableGATokens] = useState(initialAvailableGATokens);
-  const [isNovelaSubmitting, setIsNovelaSubmitting] = useState(false);
-  const [showNovelaCoins, setShowNovelaCoins] = useState(false);
-  const [showSonoroCoins, setShowSonoroCoins] = useState(false);
-  const [showTazaCoins, setShowTazaCoins] = useState(false);
-  const [isTazaActivating, setIsTazaActivating] = useState(false);
-  const [isAppsDemoUnlocking, setIsAppsDemoUnlocking] = useState(false);
-  const [tazaCameraReady, setTazaCameraReady] = useState(false);
-  const [showGraphicCoins, setShowGraphicCoins] = useState(false);
-  const [isGraphicUnlocking, setIsGraphicUnlocking] = useState(false);
-  const [tapIndex, setTapIndex] = useState(0);
-  const [isContributionOpen, setIsContributionOpen] = useState(false);
-  const [hasLoadedContributionModal, setHasLoadedContributionModal] = useState(false);
-  const [contributionCategoryId, setContributionCategoryId] = useState(null);
-  const [explorerBadge, setExplorerBadge] = useState(initialExplorerBadge);
-  const [showBadgeCoins, setShowBadgeCoins] = useState(false);
-  const [showBadgeLoginOverlay, setShowBadgeLoginOverlay] = useState(false);
-  const [hasLoadedBadgeLoginOverlay, setHasLoadedBadgeLoginOverlay] = useState(false);
-  const [showcaseEnergy, setShowcaseEnergy] = useState(initialShowcaseEnergy);
-  const [showcaseBoosts, setShowcaseBoosts] = useState(initialShowcaseBoosts);
-  const [celebratedShowcaseId, setCelebratedShowcaseId] = useState(null);
-  const celebrationTimeoutRef = useRef(null);
-  const badgeCoinsTimeoutRef = useRef(null);
-  const [publicContributions, setPublicContributions] = useState({});
-  const [publicContributionsLoading, setPublicContributionsLoading] = useState({});
-  const [publicContributionsError, setPublicContributionsError] = useState({});
-  const [latestBlogPostByShowcase, setLatestBlogPostByShowcase] = useState({});
-  const [readingTooltipForShowcase, setReadingTooltipForShowcase] = useState(null);
-  const [readingTapArmedByShowcase, setReadingTapArmedByShowcase] = useState({});
-  const [readingGlowDismissedByShowcase, setReadingGlowDismissedByShowcase] = useState({});
-  const [isOraculoOpen, setIsOraculoOpen] = useState(false);
-  const [isCauseSiteOpen, setIsCauseSiteOpen] = useState(false);
-  const [showInstallPwaCTA, setShowInstallPwaCTA] = useState(() => getInitialInstallPwaCTAVisibility());
-  const [useLegacyTazaViewer, setUseLegacyTazaViewer] = useState(LEGACY_TAZA_VIEWER_ENABLED);
-  const [hasActiveSubscription, setHasActiveSubscription] = useState(false);
-  const [gatBalanceToast, setGatBalanceToast] = useState(null);
-  const gatBalanceToastTimeoutRef = useRef(null);
-  const hasHydratedGatBalanceRef = useRef(false);
-  const previousGatBalanceRef = useRef(null);
-  const guardrailNoticeShownRef = useRef(false);
+  const { hasActiveSubscription } = useActiveSubscription(user?.id);
   const isAuthenticated = Boolean(user);
-  const isDesktopFocusLockActive = Boolean(focusLockShowcaseId) && !isMobileViewport;
   const isSubscriber = Boolean(
     user?.user_metadata?.isSubscriber ||
       user?.user_metadata?.is_subscriber ||
@@ -1759,6 +190,57 @@ const Transmedia = ({ allianceOnlyMode = false }) => {
       user?.app_metadata?.roles?.includes?.('subscriber') ||
       hasActiveSubscription
   );
+  const navigate = useNavigate();
+  const location = useLocation();
+  const releaseDesktopFocusLock = useCallback(() => {
+    setFocusLockShowcaseId(null);
+    setFocusIncomingGAT(null);
+    setFocusAppMetadata(null);
+  }, []);
+  const {
+    showcaseCarouselIndex,
+    setShowcaseCarouselIndex,
+    mobileShowcaseIndex,
+    setMobileShowcaseIndex,
+    mobileSwipeBlockTapRef,
+    visibleShowcases,
+    handleShowcaseNextBatch,
+    handleShowcasePrevBatch,
+    handleMobileShowcaseNext,
+    handleMobileShowcasePrev,
+    handleMobileShowcaseTouchStart,
+    handleMobileShowcaseTouchMove,
+    handleMobileShowcaseTouchEnd,
+  } = useShowcaseCarousel({
+    isMobileViewport,
+    focusLockShowcaseId,
+    releaseDesktopFocusLock,
+    location,
+  });
+  const isSafari = isSafariBrowser();
+  const {
+    baseEnergyByShowcase,
+    availableGATokens,
+    sonoroSpent, setSonoroSpent,
+    graphicSpent, setGraphicSpent,
+    novelaQuestions, setNovelaQuestions,
+    tazaActivations, setTazaActivations,
+    showcaseBoosts, setShowcaseBoosts,
+    showcaseEnergy, setShowcaseEnergy,
+    tokenPrecareContext, setTokenPrecareContext,
+    quironSpent, setQuironSpent,
+    syncTransmediaCredits,
+    trackTransmediaCreditEvent,
+  } = useTransmediaCredits({ isAuthenticated, userId: user?.id, toast });
+  const { isMerchCheckoutLoading, handleOpenNovelaReserve } = useMerchCheckout({ userEmail: user?.email, activeShowcase, toast });
+  const [movementPendingAction, setMovementPendingAction] = useState(null);
+  const [isAppsDemoUnlocking, setIsAppsDemoUnlocking] = useState(false);
+  const [tapIndex, setTapIndex] = useState(0);
+  const [isContributionOpen, setIsContributionOpen] = useState(false);
+  const [hasLoadedContributionModal, setHasLoadedContributionModal] = useState(false);
+  const [contributionCategoryId, setContributionCategoryId] = useState(null);
+  const [useLegacyTazaViewer, setUseLegacyTazaViewer] = useState(LEGACY_TAZA_VIEWER_ENABLED);
+  const isDesktopFocusLockActive = Boolean(focusLockShowcaseId) && !isMobileViewport;
 
   useEffect(() => {
     if (isMiniverseOpen) setHasLoadedMiniverseModal(true);
@@ -1769,147 +251,8 @@ const Transmedia = ({ allianceOnlyMode = false }) => {
   }, [isContributionOpen]);
 
   useEffect(() => {
-    if (showBadgeLoginOverlay) setHasLoadedBadgeLoginOverlay(true);
-  }, [showBadgeLoginOverlay]);
-
-  useEffect(() => {
     if (showAutoficcionPreview) setHasLoadedAutoficcionPreview(true);
   }, [showAutoficcionPreview]);
-
-  useEffect(() => {
-    safeSetItem(OBRA_EMOTION_LOG_STORAGE_KEY, JSON.stringify(obraModeUsage));
-  }, [obraModeUsage]);
-
-  useEffect(() => {
-    safeSetItem(OBRA_EMOTION_ORBS_STORAGE_KEY, JSON.stringify(obraEmotionOrbs));
-  }, [obraEmotionOrbs]);
-
-  const applyTransmediaCreditState = useCallback(
-    (state) => {
-      if (!state || typeof state !== 'object') return;
-      const boosts = state.showcase_boosts && typeof state.showcase_boosts === 'object'
-        ? state.showcase_boosts
-        : {};
-      const safeAvailable = Number.isFinite(state.available_tokens)
-        ? Number(state.available_tokens)
-        : initialAvailableGATokens;
-      const safeNovelaQuestions = Number.isFinite(state.novela_questions) ? Number(state.novela_questions) : 0;
-      const safeTazaActivations = Number.isFinite(state.taza_activations) ? Number(state.taza_activations) : 0;
-
-      setSonoroSpent(Boolean(state.sonoro_spent));
-      setGraphicSpent(Boolean(state.graphic_spent));
-      setNovelaQuestions(safeNovelaQuestions);
-      setTazaActivations(safeTazaActivations);
-      setShowcaseBoosts(boosts);
-      setShowcaseEnergy(buildShowcaseEnergyFromBoosts(baseEnergyByShowcase, boosts));
-      setAvailableGATokens(safeAvailable);
-
-      safeSetItem('gatoencerrado:sonoro-spent', String(Boolean(state.sonoro_spent)));
-      safeSetItem('gatoencerrado:graphic-spent', String(Boolean(state.graphic_spent)));
-      safeSetItem('gatoencerrado:novela-questions', String(safeNovelaQuestions));
-      safeSetItem('gatoencerrado:taza-activations', String(safeTazaActivations));
-      safeSetItem('gatoencerrado:showcase-boosts', JSON.stringify(boosts));
-      safeSetItem(
-        'gatoencerrado:showcase-energy',
-        JSON.stringify(buildShowcaseEnergyFromBoosts(baseEnergyByShowcase, boosts))
-      );
-      safeSetItem('gatoencerrado:gatokens-available', String(safeAvailable));
-    },
-    [baseEnergyByShowcase, initialAvailableGATokens]
-  );
-
-  const syncTransmediaCredits = useCallback(async () => {
-    const { state, error } = await fetchTransmediaCreditState();
-    if (error) {
-      console.warn('[Transmedia] No se pudo sincronizar estado de créditos:', error);
-      return null;
-    }
-    applyTransmediaCreditState(state);
-    return state;
-  }, [applyTransmediaCreditState]);
-
-  useEffect(() => {
-    if (typeof window === 'undefined') return undefined;
-
-    const handleExternalCreditEvent = (event) => {
-      const nextState = event?.detail?.state;
-      if (!nextState || typeof nextState !== 'object') return;
-      applyTransmediaCreditState(nextState);
-    };
-
-    window.addEventListener('gatoencerrado:external-credit-event', handleExternalCreditEvent);
-    return () => {
-      window.removeEventListener('gatoencerrado:external-credit-event', handleExternalCreditEvent);
-    };
-  }, [applyTransmediaCreditState]);
-
-  const trackTransmediaCreditEvent = useCallback(
-    async ({
-      eventKey,
-      amount = 0,
-      oncePerIdentity = false,
-      metadata = {},
-      requiredTokens = null,
-      actionLabel = 'esta activación',
-    } = {}) => {
-      const expectedCost = Number.isFinite(requiredTokens)
-        ? Number(requiredTokens)
-        : amount < 0
-          ? Math.abs(Number(amount))
-          : 0;
-      const missing = Math.max(expectedCost - availableGATokens, 0);
-      if (expectedCost > 0 && missing > 0) {
-        if (!isAuthenticated) {
-          setTokenPrecareContext({
-            required: expectedCost,
-            missing,
-            actionLabel,
-          });
-          return { ok: false, state: null, duplicate: false, reason: 'insufficient' };
-        }
-        toast({
-          description: `${actionLabel} requiere ${expectedCost} GATokens. Te faltan ${missing}.`,
-        });
-        return { ok: false, state: null, duplicate: false, reason: 'insufficient' };
-      }
-
-      const { state, error, duplicate } = await registerTransmediaCreditEvent({
-        eventKey,
-        amount,
-        oncePerIdentity,
-        metadata,
-        idempotencyKey: createTransmediaIdempotencyKey(eventKey),
-      });
-      if (error) {
-        const errorText = String(error?.message ?? '').toLowerCase();
-        if (errorText.includes('insufficient_tokens') || errorText.includes('insufficient tokens')) {
-          const refreshed = await syncTransmediaCredits();
-          const available = Number.isFinite(refreshed?.available_tokens)
-            ? Number(refreshed.available_tokens)
-            : availableGATokens;
-          const expected = expectedCost > 0 ? expectedCost : Math.max(Math.abs(Number(amount)), 0);
-          const nextMissing = Math.max(expected - available, 0);
-          if (!isAuthenticated) {
-            setTokenPrecareContext({
-              required: expected,
-              missing: nextMissing,
-              actionLabel,
-            });
-            return { ok: false, state: refreshed, duplicate: false, reason: 'insufficient' };
-          }
-          toast({
-            description: `${actionLabel} requiere ${expected} GATokens. Te faltan ${nextMissing}.`,
-          });
-          return { ok: false, state: refreshed, duplicate: false, reason: 'insufficient' };
-        }
-        console.warn('[Transmedia] No se pudo registrar evento de créditos:', { eventKey, error });
-        return { ok: false, state: null, duplicate: false };
-      }
-      applyTransmediaCreditState(state);
-      return { ok: true, state, duplicate: Boolean(duplicate) };
-    },
-    [applyTransmediaCreditState, availableGATokens, isAuthenticated, syncTransmediaCredits]
-  );
 
   useEffect(() => {
     if (typeof document === 'undefined') return;
@@ -1922,188 +265,87 @@ const Transmedia = ({ allianceOnlyMode = false }) => {
     [showcaseBoosts]
   );
 
-  const handleCloseTokenPrecare = useCallback(() => {
-    setTokenPrecareContext(null);
-  }, []);
+  const {
+    showGuardrailPrecareOnce,
+    requireShowcaseAuth,
+    consumeObraVoiceGAT,
+    handleCloseTokenPrecare,
+    handleTokenPrecareActivateHuella,
+    resetGuardrailNotice,
+  } = useShowcaseGuard({
+    isAuthenticated,
+    availableGATokens,
+    setTokenPrecareContext,
+    trackTransmediaCreditEvent,
+    toast,
+    supportSectionRef,
+  });
 
-  const showGuardrailPrecareOnce = useCallback(
-    ({ message, actionLabel = 'esta vitrina', remaining = 0 } = {}) => {
-      if (isAuthenticated) return;
-      if (guardrailNoticeShownRef.current) return;
-      guardrailNoticeShownRef.current = true;
-      setTokenPrecareContext({
-        mode: 'guardrail',
-        message,
-        actionLabel,
-        remaining,
-      });
-    },
-    [isAuthenticated]
-  );
+  const {
+    isQuironFullVisible,
+    quironSignedUrl,
+    isQuironPlaybackUnlocked,
+    shouldResumeQuironPlay,
+    isQuironPrecareVisible,
+    hasQuironPlaybackStarted,
+    setHasQuironPlaybackStarted,
+    isQuironAftercareVisible,
+    isQuironUnlocking,
+    showQuironCoins,
+    showQuironCommunityPrompt,
+    quironVideoRef,
+    handleToggleQuironPrompt,
+    handleCloseQuironPrecare,
+    handleConfirmQuironPrecare,
+    handleQuironPlayRequest,
+    handleCloseQuironFull,
+    handleQuironPlaybackEnded,
+    handleCloseQuironAftercare,
+    setIsQuironFullVisible,
+    setShouldResumeQuironPlay,
+    resetOnLogout: resetQuironOnLogout,
+  } = useQuironCinemaFlow({
+    activeShowcase,
+    isAuthenticated,
+    availableGATokens,
+    showcaseBoosts,
+    showGuardrailPrecareOnce,
+    trackTransmediaCreditEvent,
+    toast,
+  });
 
-  const handleTokenPrecareActivateHuella = useCallback(() => {
-    setTokenPrecareContext(null);
-    if (supportSectionRef.current) {
-      supportSectionRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      return;
-    }
-    document.getElementById('cta')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-  }, []);
-
-  const requireShowcaseAuth = useCallback(
-    (message = 'Activa tu huella para ampliar tu energía en esta vitrina.', loginPayload = undefined) => {
-      if (isAuthenticated) return true;
-      const remaining = Number.isFinite(availableGATokens) ? Math.max(Number(availableGATokens), 0) : 0;
-      showGuardrailPrecareOnce({
-        message,
-        actionLabel: loginPayload?.action || 'esta vitrina',
-        remaining,
-      });
-      toast({ description: 'Puedes seguir explorando. Si te quedas sin GAT, activa tu huella por $50/mes.' });
-      return true;
-    },
-    [availableGATokens, isAuthenticated, showGuardrailPrecareOnce]
-  );
-
-  const consumeObraVoiceGAT = useCallback(
-    async ({ actionLabel = 'Hablar con La Obra por micrófono', source = 'mic', modeId = null } = {}) => {
-      const normalizedMode = typeof modeId === 'string' && modeId.trim() ? modeId.trim() : 'default';
-      const remainingBeforeSpend = Number.isFinite(availableGATokens)
-        ? Math.max(Number(availableGATokens), 0)
-        : 0;
-      const shouldShowGuardrailPrecare =
-        !isAuthenticated &&
-        remainingBeforeSpend > 0 &&
-        remainingBeforeSpend <= OBRA_VOICE_PRECARE_THRESHOLD_GAT;
-      if (shouldShowGuardrailPrecare) {
-        const turnsLeft = Math.max(1, Math.ceil(remainingBeforeSpend / OBRA_VOICE_MIN_GAT));
-        showGuardrailPrecareOnce({
-          message:
-            turnsLeft === 1
-              ? 'Te queda 1 pregunta de cortesía en esta vitrina antes de agotar tus GAT.'
-              : `Te quedan ${turnsLeft} preguntas de cortesía en esta vitrina antes de agotar tus GAT.`,
-          actionLabel,
-          remaining: remainingBeforeSpend,
-        });
-      }
-      const result = await trackTransmediaCreditEvent({
-        // RPC whitelist only allows fixed keys and showcase_boost:*.
-        eventKey: 'showcase_boost:obra_voice_turn',
-        amount: -OBRA_VOICE_MIN_GAT,
-        requiredTokens: OBRA_VOICE_MIN_GAT,
-        metadata: {
-          source: 'transmedia_obra_voice',
-          interaction_source: source,
-          mode_id: normalizedMode,
-        },
-        actionLabel,
-      });
-      return Boolean(result.ok);
-    },
-    [availableGATokens, isAuthenticated, showGuardrailPrecareOnce, trackTransmediaCreditEvent]
-  );
-
-  const incrementObraModeUsage = useCallback((modeId) => {
-    const normalized = OBRA_VOICE_MODES.some((mode) => mode.id === modeId)
-      ? modeId
-      : DEFAULT_OBRA_VOICE_MODE_ID;
-    setObraModeUsage((prev) => ({
-      ...prev,
-      [normalized]: (Number(prev?.[normalized] ?? 0) || 0) + 1,
-    }));
-    setObraEmotionOrbs((prev) => {
-      const nextSeed = Date.now() + prev.length * 37;
-      const next = [...prev, createEmotionOrb(normalized, nextSeed, prev.length)];
-      return next.slice(-OBRA_EMOTION_MAX_ORBS);
-    });
-  }, []);
+  const {
+    explorerBadge,
+    setExplorerBadge,
+    showBadgeCoins,
+    setShowBadgeCoins,
+    showBadgeLoginOverlay,
+    hasLoadedBadgeLoginOverlay,
+    celebratedShowcaseId,
+    setCelebratedShowcaseId,
+    handleBadgeLogin,
+    handleCloseBadgeLogin,
+    handleBadgeSubscribe,
+    handleExplorerReward,
+    handleShowcaseRevealBoost,
+  } = useExplorerBadge({
+    allShowcasesUnlocked,
+    isSubscriber,
+    showcaseBoosts,
+    baseEnergyByShowcase,
+    trackTransmediaCreditEvent,
+    setIsContributionOpen,
+  });
 
   useEffect(() => {
-    if (!user?.id) {
-      setHasActiveSubscription(false);
-      return undefined;
-    }
-
-    let isMounted = true;
-
-    supabase
-      .from('suscriptores')
-      .select('id', { count: 'exact', head: true })
-      .eq('user_id', user.id)
-      .in('status', ['active', 'trialing'])
-      .then(({ count, error }) => {
-        if (!isMounted) return;
-        if (error) {
-          console.warn('[Transmedia] No se pudo validar huella:', error);
-          setHasActiveSubscription(false);
-          return;
-        }
-        setHasActiveSubscription((count ?? 0) > 0);
-      });
-
-    return () => {
-      isMounted = false;
-    };
-  }, [user?.id]);
+    if (showBadgeLoginOverlay) setHasLoadedBadgeLoginOverlay(true);
+  }, [showBadgeLoginOverlay]);
 
   useEffect(() => {
-    void syncTransmediaCredits();
-  }, [syncTransmediaCredits, user?.id]);
-
-  useEffect(() => {
-    if (isAuthenticated) {
-      return;
-    }
+    if (isAuthenticated) return;
     setQuironSpent(false);
-    setIsQuironFullVisible(false);
-    setQuironSignedUrl('');
-    setIsQuironPlaybackUnlocked(false);
-    setShouldResumeQuironPlay(false);
-    setHasQuironPlaybackStarted(false);
-    setIsQuironAftercareVisible(false);
-  }, [isAuthenticated]);
-
-  useEffect(() => {
-    if (typeof window === 'undefined') return undefined;
-    const userAgent = typeof navigator !== 'undefined' ? navigator.userAgent : '';
-    const isMobile = /iphone|ipad|ipod|android/i.test(userAgent);
-    const mediaQuery = window.matchMedia
-      ? window.matchMedia('(display-mode: standalone)')
-      : null;
-
-    const updateVisibility = () => {
-      const isStandalone =
-        Boolean(mediaQuery?.matches) ||
-        Boolean(typeof navigator !== 'undefined' && navigator.standalone === true);
-      setShowInstallPwaCTA(isMobile && !isStandalone);
-    };
-
-    updateVisibility();
-
-    const mediaListener = () => updateVisibility();
-    if (mediaQuery?.addEventListener) {
-      mediaQuery.addEventListener('change', mediaListener);
-    } else if (mediaQuery?.addListener) {
-      mediaQuery.addListener(mediaListener);
-    }
-
-    window.addEventListener('appinstalled', updateVisibility);
-
-    return () => {
-      if (mediaQuery?.removeEventListener) {
-        mediaQuery.removeEventListener('change', mediaListener);
-      } else if (mediaQuery?.removeListener) {
-        mediaQuery.removeListener(mediaListener);
-      }
-      window.removeEventListener('appinstalled', updateVisibility);
-    };
-  }, []);
-
-  useEffect(() => {
-    if (!safeGetItem('gatoencerrado:showcase-energy')) {
-      safeSetItem('gatoencerrado:showcase-energy', JSON.stringify(baseEnergyByShowcase));
-    }
-  }, [baseEnergyByShowcase]);
+    resetQuironOnLogout();
+  }, [isAuthenticated, resetQuironOnLogout]);
 
   // silvestre storage handled in useSilvestreVoice
 
@@ -2114,322 +356,9 @@ const Transmedia = ({ allianceOnlyMode = false }) => {
     return () => window.removeEventListener('gatoencerrado:resume-contribution', handleResumeContribution);
   }, []);
 
-  useEffect(() => {
-    safeSetItem(EXPLORER_BADGE_STORAGE_KEY, JSON.stringify(explorerBadge));
-    return undefined;
-  }, [explorerBadge]);
 
-  useEffect(() => {
-    return () => {
-      if (celebrationTimeoutRef.current) {
-        clearTimeout(celebrationTimeoutRef.current);
-      }
-      if (badgeCoinsTimeoutRef.current) {
-        clearTimeout(badgeCoinsTimeoutRef.current);
-      }
-    };
-  }, []);
 
-  useEffect(() => {
-    if (typeof window === 'undefined') return undefined;
 
-    const handleStorage = (event) => {
-      if (event.key === 'gatoencerrado:novela-questions') {
-        const value = event.newValue ? Number.parseInt(event.newValue, 10) : 0;
-        if (!Number.isNaN(value)) {
-          setNovelaQuestions(value);
-        }
-      }
-      if (event.key === 'gatoencerrado:sonoro-spent' && event.newValue === 'true') {
-        setSonoroSpent(true);
-      }
-      if (event.key === 'gatoencerrado:sonoro-spent' && event.newValue === null) {
-        setSonoroSpent(false);
-      }
-      if (event.key === 'gatoencerrado:graphic-spent') {
-        setGraphicSpent(event.newValue === 'true');
-      }
-      if (event.key === 'gatoencerrado:taza-activations') {
-        const value = event.newValue ? Number.parseInt(event.newValue, 10) : 0;
-        if (!Number.isNaN(value)) {
-          setTazaActivations(value);
-        }
-      }
-    };
-
-    const handleCustomSpent = (event) => {
-      if (event?.detail?.id === 'novela' && typeof event.detail.count === 'number') {
-        setNovelaQuestions(event.detail.count);
-      }
-      if (event?.detail?.id === 'sonoro' && typeof event.detail.spent === 'boolean') {
-        setSonoroSpent(event.detail.spent);
-      }
-      if (event?.detail?.id === 'grafico' && typeof event.detail.spent === 'boolean') {
-        setGraphicSpent(event.detail.spent);
-      }
-      if (event?.detail?.id === 'taza' && typeof event.detail.count === 'number') {
-        setTazaActivations(event.detail.count);
-      }
-    };
-
-    window.addEventListener('storage', handleStorage);
-    window.addEventListener('gatoencerrado:miniverse-spent', handleCustomSpent);
-    return () => {
-      window.removeEventListener('storage', handleStorage);
-      window.removeEventListener('gatoencerrado:miniverse-spent', handleCustomSpent);
-    };
-  }, []);
-
-  useEffect(() => {
-    if (!allShowcasesUnlocked || explorerBadge.unlocked) {
-      return;
-    }
-    setExplorerBadge((prev) => ({
-      ...prev,
-      unlocked: true,
-      unlockedAt: Date.now(),
-    }));
-  }, [allShowcasesUnlocked, explorerBadge.unlocked]);
-
-  useEffect(() => {
-    setQuironSpent(Boolean(showcaseBoosts?.copycats_full_unlock));
-  }, [showcaseBoosts]);
-
-  const handleNovelaQuestionSend = useCallback(async () => {
-    if (isNovelaSubmitting) {
-      return;
-    }
-    setIsNovelaSubmitting(true);
-    setShowNovelaCoins(true);
-    await new Promise((resolve) => setTimeout(resolve, 900));
-    const result = await trackTransmediaCreditEvent({
-      eventKey: 'novela_question',
-      amount: -25,
-      requiredTokens: 25,
-      actionLabel: 'Esta pregunta de novela',
-      metadata: { source: 'transmedia_novela' },
-    });
-
-    if (result.ok && typeof result.state?.novela_questions === 'number') {
-      window.dispatchEvent(
-        new CustomEvent('gatoencerrado:miniverse-spent', {
-          detail: { id: 'novela', spent: true, amount: 25, count: result.state.novela_questions },
-        })
-      );
-    }
-    setShowNovelaCoins(false);
-    setIsNovelaSubmitting(false);
-  }, [isNovelaSubmitting, trackTransmediaCreditEvent]);
-
-  const handleSonoroEnter = useCallback(async () => {
-    if (sonoroSpent) {
-      return;
-    }
-    setShowSonoroCoins(true);
-    await new Promise((resolve) => setTimeout(resolve, 900));
-    const result = await trackTransmediaCreditEvent({
-      eventKey: 'sonoro_unlock',
-      amount: -GAT_COSTS.sonoroMix,
-      requiredTokens: GAT_COSTS.sonoroMix,
-      actionLabel: 'Esta mezcla sonoro-poética',
-      oncePerIdentity: true,
-      metadata: { source: 'transmedia_sonoro' },
-    });
-    if (result.ok) {
-      window.dispatchEvent(
-        new CustomEvent('gatoencerrado:miniverse-spent', {
-          detail: { id: 'sonoro', spent: true, amount: GAT_COSTS.sonoroMix },
-        })
-      );
-    }
-    setShowSonoroCoins(false);
-  }, [sonoroSpent, trackTransmediaCreditEvent]);
-
-  const handleProjectionInterest = useCallback(async () => {
-    if (isProjectionInterestSubmitting || isProjectionInterestSent) return;
-
-    setIsProjectionInterestSubmitting(true);
-    try {
-      const { error } = await supabase.rpc('register_cine_projection_interest', {
-        p_showcase_id: 'copycats',
-        p_source: 'transmedia_cine',
-        p_metadata: {
-          section: 'proyeccion',
-          path: typeof window !== 'undefined' ? window.location.pathname : null,
-          is_authenticated: isAuthenticated,
-          is_subscriber: isSubscriber,
-        },
-      });
-
-      if (error) {
-        throw error;
-      }
-    } catch (error) {
-      console.warn('[Transmedia] No se pudo registrar interés de proyección:', error);
-    } finally {
-      setIsProjectionInterestSubmitting(false);
-      setIsProjectionInterestSent(true);
-      toast({ description: 'Interés registrado. Espera noticias de la proyección.' });
-    }
-  }, [isAuthenticated, isProjectionInterestSent, isProjectionInterestSubmitting, isSubscriber]);
-
-  const handleToggleQuironPrompt = useCallback(() => {
-    const currentDefinition = activeShowcase ? showcaseDefinitions[activeShowcase] : null;
-    if (!currentDefinition?.quiron?.fullVideo) {
-      toast({ description: 'No encontramos el cortometraje completo en este momento.' });
-      return;
-    }
-    setIsQuironPrecareVisible(true);
-  }, [activeShowcase]);
-
-  const handleCloseQuironPrecare = useCallback(() => {
-    setIsQuironPrecareVisible(false);
-  }, []);
-
-  const handleConfirmQuironPrecare = useCallback(() => {
-    setIsQuironPrecareVisible(false);
-    setQuironSignedUrl('');
-    setIsQuironPlaybackUnlocked(false);
-    setShowQuironCommunityPrompt(false);
-    setIsQuironFullVisible(true);
-    setShouldResumeQuironPlay(true);
-  }, []);
-
-  const handleQuironPlayRequest = useCallback(
-    async (autoPlay = true) => {
-      const currentDefinition = activeShowcase ? showcaseDefinitions[activeShowcase] : null;
-      const fullVideo = currentDefinition?.quiron?.fullVideo;
-      if (!fullVideo) {
-        toast({ description: 'No encontramos el cortometraje completo en este momento.' });
-        return;
-      }
-
-      if (!isAuthenticated) {
-        showGuardrailPrecareOnce({
-          actionLabel: 'este cortometraje',
-          message: 'Puedes verlo ahora y, si agotas tus GAT, activar huella para seguir sin fricción.',
-          remaining: Number.isFinite(availableGATokens) ? Math.max(Number(availableGATokens), 0) : 0,
-        });
-      }
-
-      if (isQuironUnlocking) return;
-      setIsQuironUnlocking(true);
-      setShowQuironCoins(true);
-
-      try {
-        const isCopycatsFullUnlocked = Boolean(showcaseBoosts?.copycats_full_unlock);
-        if (!isCopycatsFullUnlocked) {
-          const unlockResult = await trackTransmediaCreditEvent({
-            eventKey: 'showcase_boost:copycats_full_unlock',
-            amount: -SHOWCASE_REQUIRED_GAT.copycats,
-            requiredTokens: SHOWCASE_REQUIRED_GAT.copycats,
-            actionLabel: 'Este cortometraje completo',
-            oncePerIdentity: true,
-            metadata: { source: 'transmedia_cine_full_unlock' },
-          });
-          if (!unlockResult.ok) {
-            return;
-          }
-        }
-
-        let url = quironSignedUrl || '';
-        if (!url) {
-          const bucket = fullVideo.bucket;
-          const path = fullVideo.path;
-          if (!bucket || !path) {
-            throw new Error('Falta configuración segura del cortometraje.');
-          }
-          const { data, error } = await supabase.storage.from(bucket).createSignedUrl(path, 60 * 5);
-          if (error || !data?.signedUrl) {
-            throw error || new Error('No se pudo autorizar el cortometraje.');
-          }
-          url = data.signedUrl;
-          setQuironSignedUrl(url);
-        }
-
-        setIsQuironPlaybackUnlocked(true);
-        setQuironSpent(true);
-        if (typeof window !== 'undefined') {
-          window.dispatchEvent(
-            new CustomEvent('gatoencerrado:miniverse-spent', {
-              detail: { id: 'cine', spent: true, amount: SHOWCASE_REQUIRED_GAT.copycats },
-            })
-          );
-        }
-
-        if (autoPlay) {
-          window.setTimeout(() => {
-            quironVideoRef.current?.play?.().catch(() => {});
-          }, 40);
-        }
-      } catch (error) {
-        console.error('[Transmedia] No se pudo reproducir Quirón completo:', error);
-        toast({
-          description: 'No pudimos abrir el cortometraje completo. Verifica tu sesión e inténtalo de nuevo.',
-        });
-      } finally {
-        setShowQuironCoins(false);
-        setIsQuironUnlocking(false);
-      }
-    },
-    [
-      activeShowcase,
-      availableGATokens,
-      isAuthenticated,
-      isQuironUnlocking,
-      quironSignedUrl,
-      showcaseBoosts,
-      showGuardrailPrecareOnce,
-      trackTransmediaCreditEvent,
-    ]
-  );
-
-  useEffect(() => {
-    if (!isQuironFullVisible || !isQuironPlaybackUnlocked || typeof window === 'undefined') {
-      return undefined;
-    }
-    const preventShortcuts = (event) => {
-      const key = String(event.key || '').toLowerCase();
-      if (
-        event.key === 'F12' ||
-        ((event.ctrlKey || event.metaKey) && ['s', 'u', 'p'].includes(key))
-      ) {
-        event.preventDefault();
-        event.stopPropagation();
-      }
-    };
-    window.addEventListener('keydown', preventShortcuts);
-    return () => window.removeEventListener('keydown', preventShortcuts);
-  }, [isQuironFullVisible, isQuironPlaybackUnlocked]);
-
-  const handleCloseQuironFull = useCallback(() => {
-    setIsQuironFullVisible(false);
-    setQuironSignedUrl('');
-    setIsQuironPlaybackUnlocked(false);
-    setShouldResumeQuironPlay(false);
-    if (hasQuironPlaybackStarted) {
-      setIsQuironAftercareVisible(true);
-    }
-  }, [hasQuironPlaybackStarted]);
-
-  const handleQuironPlaybackEnded = useCallback(() => {
-    setIsQuironFullVisible(false);
-    setIsQuironAftercareVisible(true);
-  }, []);
-
-  const handleCloseQuironAftercare = useCallback(() => {
-    setIsQuironAftercareVisible(false);
-    setHasQuironPlaybackStarted(false);
-    setIsQuironPlaybackUnlocked(false);
-    setQuironSignedUrl('');
-  }, []);
-
-  useEffect(() => {
-    if (activeShowcase === 'copycats') return;
-    setIsQuironPrecareVisible(false);
-    setIsProjectionInterestSubmitting(false);
-    setIsProjectionInterestSent(false);
-  }, [activeShowcase]);
 
   useEffect(() => {
     if (!isAuthenticated || typeof window === 'undefined') return;
@@ -2455,13 +384,7 @@ const Transmedia = ({ allianceOnlyMode = false }) => {
     } catch {
       safeRemoveItem(LOGIN_RETURN_KEY);
     }
-  }, [isAuthenticated]);
-
-  useEffect(() => {
-    if (!shouldResumeQuironPlay || !isAuthenticated || !isQuironFullVisible) return;
-    setShouldResumeQuironPlay(false);
-    void handleQuironPlayRequest(true);
-  }, [handleQuironPlayRequest, isAuthenticated, isQuironFullVisible, shouldResumeQuironPlay]);
+  }, [isAuthenticated, setIsQuironFullVisible, setShouldResumeQuironPlay]);
 
   const renderMobileVideoBadge = () =>
     isMobileViewport ? (
@@ -2573,60 +496,12 @@ const Transmedia = ({ allianceOnlyMode = false }) => {
     [isMobileViewport, location, navigate]
   );
 
-  const clearShowcaseOpenTransitionTimers = useCallback(() => {
-    if (typeof window === 'undefined') return;
-    showcaseOpenTransitionTimersRef.current.forEach((timerId) => {
-      window.clearTimeout(timerId);
-    });
-    showcaseOpenTransitionTimersRef.current = [];
-  }, []);
-
-  const resetShowcaseOpenTransition = useCallback(() => {
-    clearShowcaseOpenTransitionTimers();
-    setShowcaseOpenTransition({ phase: 'idle', targetId: null });
-  }, [clearShowcaseOpenTransitionTimers]);
-
-  const runShowcaseOpenTransition = useCallback(
-    (formatId) => {
-      if (!formatId || !showcaseDefinitions[formatId]) return;
-      if (showcaseOpenTransition.phase !== 'idle') return;
-
-      const prefersReducedMotion =
-        typeof window !== 'undefined' && window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches;
-      const connection =
-        typeof navigator !== 'undefined' && navigator.connection ? navigator.connection : null;
-      const isSlowConnection = Boolean(connection?.saveData) || /(^|-)2g/.test(connection?.effectiveType || '');
-      if (prefersReducedMotion || isSlowConnection) {
-        openMiniverseById(formatId);
-        return;
-      }
-
-      clearShowcaseOpenTransitionTimers();
-      setShowcaseOpenTransition({ phase: 'dimming', targetId: formatId });
-
-      const dimTimerId = window.setTimeout(() => {
-        setShowcaseOpenTransition((prev) =>
-          prev.targetId === formatId ? { phase: 'blackout', targetId: formatId } : prev
-        );
-      }, SHOWCASE_OPEN_TRANSITION.dimMs);
-
-      const openTimerId = window.setTimeout(() => {
-        openMiniverseById(formatId);
-        setShowcaseOpenTransition((prev) =>
-          prev.targetId === formatId ? { phase: 'revealing', targetId: formatId } : prev
-        );
-      }, SHOWCASE_OPEN_TRANSITION.dimMs + SHOWCASE_OPEN_TRANSITION.blackoutMs);
-
-      const resetTimerId = window.setTimeout(() => {
-        setShowcaseOpenTransition((prev) =>
-          prev.targetId === formatId ? { phase: 'idle', targetId: null } : prev
-        );
-      }, SHOWCASE_OPEN_TRANSITION.dimMs + SHOWCASE_OPEN_TRANSITION.blackoutMs + SHOWCASE_OPEN_TRANSITION.revealMs);
-
-      showcaseOpenTransitionTimersRef.current = [dimTimerId, openTimerId, resetTimerId];
-    },
-    [clearShowcaseOpenTransitionTimers, openMiniverseById, showcaseOpenTransition.phase]
-  );
+  const {
+    showcaseOpenTransition,
+    clearShowcaseOpenTransitionTimers,
+    resetShowcaseOpenTransition,
+    runShowcaseOpenTransition,
+  } = useShowcaseTransition({ openMiniverseById });
 
   const resolveShowcaseFromBienvenida = useCallback((payload) => {
     const rawAppId = extractRecommendedAppId(payload);
@@ -2647,12 +522,6 @@ const Transmedia = ({ allianceOnlyMode = false }) => {
       const desktopStart = (targetIndex - 1 + formats.length) % formats.length;
       setShowcaseCarouselIndex(desktopStart);
     }
-  }, []);
-
-  const releaseDesktopFocusLock = useCallback(() => {
-    setFocusLockShowcaseId(null);
-    setFocusIncomingGAT(null);
-    setFocusAppMetadata(null);
   }, []);
 
   const stopScopedMediaPlayback = useCallback((preserveHeroAmbient = true) => {
@@ -2763,13 +632,6 @@ const Transmedia = ({ allianceOnlyMode = false }) => {
       showcaseContent,
       showcaseOpenTransition.phase,
     ]
-  );
-
-  useEffect(
-    () => () => {
-      clearShowcaseOpenTransitionTimers();
-    },
-    [clearShowcaseOpenTransitionTimers]
   );
 
   useEffect(() => {
@@ -2983,134 +845,37 @@ const Transmedia = ({ allianceOnlyMode = false }) => {
     navigateToCuratorial(slug);
   }, [navigateToCuratorial, requireShowcaseAuth]);
 
-  useEffect(() => {
-    let cancelled = false;
-    const loadLatestBlogPostsByMiniverso = async () => {
-      const allMiniversoKeys = Array.from(
-        new Set(
-          Object.values(BLOG_MINIVERSO_KEYS_BY_SHOWCASE)
-            .flat()
-            .map((item) => item?.trim?.().toLowerCase())
-            .filter(Boolean)
-        )
-      );
-      if (!allMiniversoKeys.length) {
-        return;
-      }
-
-      const { data, error } = await supabase
-        .from('blog_posts')
-        .select('*')
-        .eq('is_published', true)
-        .not('slug', 'is', null)
-        .not('miniverso', 'is', null)
-        .in('miniverso', allMiniversoKeys)
-        .order('published_at', { ascending: false });
-
-      if (cancelled || error) {
-        if (error) {
-          console.warn('[Transmedia] No se pudo cargar la disponibilidad de lecturas:', error);
-        }
-        return;
-      }
-
-      const latestByMiniverso = {};
-      (data ?? []).forEach((post) => {
-        const key = post?.miniverso?.trim?.().toLowerCase();
-        if (!key || latestByMiniverso[key]) {
-          return;
-        }
-        latestByMiniverso[key] = post;
-      });
-
-      const latestByShowcase = {};
-      Object.entries(BLOG_MINIVERSO_KEYS_BY_SHOWCASE).forEach(([showcaseId, keys]) => {
-        const match = keys
-          .map((key) => latestByMiniverso[key?.trim?.().toLowerCase()])
-          .find(Boolean);
-        if (match) {
-          latestByShowcase[showcaseId] = match;
-        }
-      });
-
-      if (!cancelled) {
-        setLatestBlogPostByShowcase(latestByShowcase);
-      }
-    };
-
-    loadLatestBlogPostsByMiniverso();
-    return () => {
-      cancelled = true;
-    };
-  }, []);
-
-  const handleOpenLatestBlogForShowcase = useCallback((showcaseId) => {
-    const post = latestBlogPostByShowcase[showcaseId];
-    if (!post?.slug) {
-      return;
-    }
-    navigateToCuratorial(post.slug);
-  }, [latestBlogPostByShowcase, navigateToCuratorial]);
-
-  const handleReadingBadgeClick = useCallback((showcaseId) => {
-    const post = latestBlogPostByShowcase[showcaseId];
-    if (!post?.slug) {
-      return;
-    }
-
-    if (!isMobileViewport) {
-      handleOpenLatestBlogForShowcase(showcaseId);
-      return;
-    }
-
-    const isAlreadyArmed = Boolean(readingTapArmedByShowcase[showcaseId]);
-    if (!isAlreadyArmed) {
-      setReadingGlowDismissedByShowcase((prev) => ({ ...prev, [showcaseId]: true }));
-      setReadingTapArmedByShowcase((prev) => ({ ...prev, [showcaseId]: true }));
-      setReadingTooltipForShowcase(showcaseId);
-      window.setTimeout(() => {
-        setReadingTooltipForShowcase((prev) => (prev === showcaseId ? null : prev));
-      }, 2200);
-      return;
-    }
-
-    handleOpenLatestBlogForShowcase(showcaseId);
-    window.setTimeout(() => {
-      setReadingTooltipForShowcase((prev) => (prev === showcaseId ? null : prev));
-    }, 2200);
-  }, [
-    handleOpenLatestBlogForShowcase,
-    isMobileViewport,
+  const {
     latestBlogPostByShowcase,
+    publicContributions,
+    publicContributionsLoading,
+    publicContributionsError,
+    readingTooltipForShowcase,
     readingTapArmedByShowcase,
-  ]);
+    readingGlowDismissedByShowcase,
+    getTopicForShowcase,
+    getContributionCategoryForShowcase,
+    fetchPublicComments,
+    handleOpenLatestBlogForShowcase,
+    handleReadingBadgeClick,
+  } = useShowcaseData({ navigateToCuratorial, isMobileViewport });
 
-  const handleOpenImagePreview = useCallback(
-    (payload, options = {}) => {
-      if (!payload?.src) {
-        return;
-      }
-      const {
-        requiresAuth = true,
-        loginMessage = 'Inicia sesión para abrir este fragmento.',
-        loginPayload = { action: 'preview-image' },
-      } = options;
-      if (requiresAuth && !requireShowcaseAuth(loginMessage, loginPayload)) {
-        return;
-      }
-      setImagePreview({
-        src: payload.src,
-        title: payload.title ?? '',
-        description: payload.description ?? '',
-        label: payload.label ?? '',
-      });
-    },
-    [requireShowcaseAuth]
-  );
-
-  const handleCloseImagePreview = useCallback(() => {
-    setImagePreview(null);
-  }, []);
+  const {
+    imagePreview,
+    pdfPreview,
+    pdfNumPages,
+    setPdfNumPages,
+    pdfLoadError,
+    setPdfLoadError,
+    pdfPageWidth,
+    pdfContainerRef,
+    pdfEndSentinelRef,
+    handleOpenImagePreview,
+    handleCloseImagePreview,
+    handleOpenPdfPreview,
+    handleClosePdfPreview,
+    handlePdfLoadSuccess,
+  } = usePdfPreview({ requireShowcaseAuth, availableGATokens, isAuthenticated, setTokenPrecareContext, toast });
 
   const handleCloseMiniversoEditorialModal = useCallback(() => {
     setIsMiniversoEditorialModalOpen(false);
@@ -3127,163 +892,54 @@ const Transmedia = ({ allianceOnlyMode = false }) => {
     supportSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }, []);
 
-  const handleOpenPdfPreview = useCallback((payload) => {
-    if (!payload?.src) {
-      return;
-    }
-    const parsedNextCost = Number(payload.nextChapterCost);
-    const nextChapterCost =
-      Number.isFinite(parsedNextCost) && parsedNextCost > 0 ? parsedNextCost : GAT_COSTS.novelaChapter;
-    setPdfPreview({
-      src: payload.src,
-      title: payload.title ?? '',
-      description: payload.description ?? '',
-      nextChapterCost,
-      nextChapterLabel: payload.nextChapterLabel ?? 'siguiente capítulo',
-    });
-    setPdfNumPages(null);
-    setPdfLoadError(null);
-    hasShownPdfEndNoticeRef.current = false;
-  }, []);
-
-  const handleClosePdfPreview = useCallback(() => {
-    setPdfPreview(null);
-    setPdfNumPages(null);
-    setPdfLoadError(null);
-    hasShownPdfEndNoticeRef.current = false;
-  }, []);
-
-  const handleOpenGraphicSwipe = useCallback(
-    async (entry) => {
-      if (!entry?.previewPdfUrl || isGraphicUnlocking) {
-        return;
-      }
-      setIsGraphicUnlocking(true);
-
-      const openPdf = () => {
-        handleOpenPdfPreview({
-          src: entry.previewPdfUrl,
-          title: entry.title,
-          description: entry.description
-            ? `${entry.description} · Modo swipe vertical.`
-            : 'Modo swipe vertical del lector visual interactivo.',
-        });
-        setTimeout(() => setIsGraphicUnlocking(false), 150);
-      };
-
-      if (!graphicSpent) {
-        setShowGraphicCoins(true);
-        const result = await trackTransmediaCreditEvent({
-          eventKey: 'graphic_unlock',
-          amount: -GAT_COSTS.graficoSwipe,
-          requiredTokens: GAT_COSTS.graficoSwipe,
-          actionLabel: 'Este recorrido gráfico',
-          oncePerIdentity: true,
-          metadata: { source: 'transmedia_grafico', entryId: entry.id ?? null },
-        });
-        if (result.ok) {
-          window.dispatchEvent(
-            new CustomEvent('gatoencerrado:miniverse-spent', {
-              detail: { id: 'grafico', spent: true, amount: GAT_COSTS.graficoSwipe },
-            })
-          );
-          setTimeout(openPdf, 900);
-        } else {
-          setTimeout(() => setIsGraphicUnlocking(false), 150);
-        }
-        setTimeout(() => setShowGraphicCoins(false), 1100);
-        return;
-      }
-
-      openPdf();
-    },
-    [graphicSpent, handleOpenPdfPreview, isGraphicUnlocking, trackTransmediaCreditEvent]
-  );
-
-  const handleActivateAR = useCallback(async () => {
-    if (isTazaActivating) {
-      return;
-    }
-
-    setIsTazaActivating(true);
-    setShowTazaCoins(true);
-    setTazaCameraReady(false);
-
-    const result = await trackTransmediaCreditEvent({
-      eventKey: 'taza_activation',
-      amount: -30,
-      requiredTokens: 30,
-      actionLabel: 'Esta activación AR',
-      metadata: { source: 'transmedia_taza' },
-    });
-    if (!result.ok) {
-      setShowTazaCoins(false);
-      setIsTazaActivating(false);
-      return;
-    }
-
-    setIsTazaARActive(true);
-    if (typeof window !== 'undefined' && window.matchMedia('(max-width: 768px)').matches) {
-      setIsMobileARFullscreen(true);
-      document.body.classList.add('overflow-hidden');
-    } else {
-      setIsMobileARFullscreen(false);
-    }
-
-    setTimeout(() => {
-      setShowTazaCoins(false);
-      setIsTazaActivating(false);
-    }, 700);
-
-    if (result.ok && typeof result.state?.taza_activations === 'number') {
-      window.dispatchEvent(
-        new CustomEvent('gatoencerrado:miniverse-spent', {
-          detail: { id: 'taza', spent: true, amount: 30, count: result.state.taza_activations },
-        })
-      );
-    }
-  }, [isTazaActivating, trackTransmediaCreditEvent]);
-
-  const handleCloseARExperience = useCallback(() => {
-    setIsTazaARActive(false);
-    setIsMobileARFullscreen(false);
-    document.body.classList.remove('overflow-hidden');
-    setIsTazaActivating(false);
-    setTazaCameraReady(false);
-  }, []);
-
-  const handleARError = useCallback(
-    (err) => {
-      const description =
-        err?.message ||
-        'No pudimos iniciar la activación WebAR. Revisa permisos de cámara, luz y conexión.';
-      toast({ description });
-      setIsTazaARActive(false);
-      setIsMobileARFullscreen(false);
-      setTazaCameraReady(false);
-      document.body.classList.remove('overflow-hidden');
-    },
-    [toast]
-  );
+  const {
+    isNovelaSubmitting,
+    showNovelaCoins,
+    showSonoroCoins,
+    isGraphicUnlocking,
+    showGraphicCoins,
+    isTazaActivating,
+    tazaCameraReady,
+    setTazaCameraReady,
+    showTazaCoins,
+    isTazaARActive,
+    isMobileARFullscreen,
+    isProjectionInterestSubmitting,
+    isProjectionInterestSent,
+    handleNovelaQuestionSend,
+    handleSonoroEnter,
+    handleOpenGraphicSwipe,
+    handleActivateAR,
+    handleCloseARExperience,
+    handleProjectionInterest,
+    handleARError,
+    resetMiniversoUnlockState,
+  } = useMiniversoUnlocks({
+    trackTransmediaCreditEvent,
+    sonoroSpent,
+    graphicSpent,
+    handleOpenPdfPreview,
+    isAuthenticated,
+    isSubscriber,
+    toast,
+    activeShowcase,
+  });
 
   const handleResetCredits = useCallback(() => {
     setQuironSpent(false);
     setIsQuironFullVisible(false);
     setNovelaQuestions(0);
     setSonoroSpent(false);
-    setShowSonoroCoins(false);
     setGraphicSpent(false);
-    setShowGraphicCoins(false);
-    setIsGraphicUnlocking(false);
     setIsAppsDemoUnlocking(false);
     setTazaActivations(0);
-    setShowTazaCoins(false);
+    resetMiniversoUnlockState();
     setShowcaseBoosts({});
     setShowcaseEnergy(baseEnergyByShowcase);
     setExplorerBadge(DEFAULT_BADGE_STATE);
     setShowBadgeCoins(false);
     setCelebratedShowcaseId(null);
-    guardrailNoticeShownRef.current = false;
+    resetGuardrailNotice();
     resetSilvestreQuestions();
     if (typeof window !== 'undefined') {
       safeRemoveItem('gatoencerrado:quiron-spent');
@@ -3323,42 +979,8 @@ const Transmedia = ({ allianceOnlyMode = false }) => {
       );
     }
     void syncTransmediaCredits();
-  }, [baseEnergyByShowcase, resetSilvestreQuestions, syncTransmediaCredits]);
+  }, [baseEnergyByShowcase, resetGuardrailNotice, resetMiniversoUnlockState, resetSilvestreQuestions, syncTransmediaCredits]);
 
-  const handlePdfLoadSuccess = useCallback(({ numPages }) => {
-    setPdfNumPages(numPages);
-  }, []);
-
-  const handleOpenOraculo = useCallback(() => {
-    if (!requireShowcaseAuth('Inicia sesión para abrir el Oráculo.', { action: 'open-oraculo' })) {
-      return;
-    }
-    if (!ORACULO_URL) {
-      toast({
-        description: 'Falta configurar la URL del Oráculo (VITE_BIENVENIDA_URL o VITE_ORACULO_URL).',
-      });
-      return;
-    }
-    setIsOraculoOpen(true);
-  }, [requireShowcaseAuth]);
-
-  const handleCloseOraculo = useCallback(() => {
-    setIsOraculoOpen(false);
-  }, []);
-
-  const handleOpenCauseSite = useCallback(() => {
-    if (!CAUSE_SITE_URL) {
-      toast({
-        description: 'Falta configurar la URL de la causa social.',
-      });
-      return;
-    }
-    setIsCauseSiteOpen(true);
-  }, []);
-
-  const handleCloseCauseSite = useCallback(() => {
-    setIsCauseSiteOpen(false);
-  }, []);
 
   const handleOpenInteractiveExperience = useCallback(() => {
     if (typeof document !== 'undefined') {
@@ -3374,6 +996,68 @@ const Transmedia = ({ allianceOnlyMode = false }) => {
 
   const activeDefinition = activeShowcase ? showcaseDefinitions[activeShowcase] : null;
   const activeData = activeShowcase ? showcaseContent[activeShowcase] : null;
+
+  const { buildMiniverseShareUrl, handleShareMiniverse, handleShareImpactModel } = useMiniversoShare({
+    activeShowcase,
+    activeDefinition,
+    toast,
+  });
+
+  const { handleLaunchWebAR, handleOpenCameraForQR, handleNovelAppCTA } = useNovelaAppCTA({
+    requireShowcaseAuth,
+    trackTransmediaCreditEvent,
+    setShowAutoficcionPreview,
+    toast,
+  });
+
+  const {
+    isOraculoOpen,
+    isCauseSiteOpen,
+    handleOpenOraculo,
+    handleCloseOraculo,
+    handleOpenCauseSite,
+    handleCloseCauseSite,
+  } = useExternalPanels({ requireShowcaseAuth, toast });
+
+  const {
+    activeObraModeId,
+    setActiveObraModeId,
+    elevatedSilvestreStarter,
+    mobileObraSecondaryCtaState,
+    setMobileObraSecondaryCtaState,
+    mobileObraReplayPrompt,
+    mobileAwaitingEmotionSwitch,
+    setMobileAwaitingEmotionSwitch,
+    obraConversationControlsRef,
+    obraModesRef,
+    obraDetonadoresRef,
+    isObraVoiceBusy,
+    tragicoStarters,
+    tragicoStarterSet,
+    sendSilvestrePromptToObra,
+    handleUseSilvestreStarter,
+    handleMobileObraSecondaryCta,
+    handleOpenSilvestreChatCta,
+    scrollToObraConversationControls,
+    scrollToObraModes,
+    scrollToObraDetonadores,
+  } = useObraVoiceInteraction({
+    isMobileViewport,
+    activeDefinition,
+    isListening,
+    isSilvestreFetching,
+    isSilvestreResponding,
+    isSilvestrePlaying,
+    pendingSilvestreAudioUrl,
+    transcript,
+    consumeObraVoiceGAT,
+    incrementObraModeUsage,
+    getSpentSilvestreSetForMode,
+    markSilvestreQuestionSpent,
+    handleSendSilvestrePreset,
+    handleOpenSilvestreChat,
+  });
+
   const focusMetadataImageUrl = sanitizeExternalHttpUrl(focusAppMetadata?.imageUrl ?? null);
   const isCinematicShowcaseOpen = Boolean(activeDefinition);
   const isShowcaseOpenTransitionActive = showcaseOpenTransition.phase !== 'idle';
@@ -3408,116 +1092,7 @@ const Transmedia = ({ allianceOnlyMode = false }) => {
     return index;
   }, [showcaseTokenLedger]);
 
-  useEffect(() => {
-    if (!hasHydratedGatBalanceRef.current) {
-      hasHydratedGatBalanceRef.current = true;
-      previousGatBalanceRef.current = safeAvailableGATokens;
-      return;
-    }
-    const previousBalance = Number.isFinite(previousGatBalanceRef.current)
-      ? Number(previousGatBalanceRef.current)
-      : safeAvailableGATokens;
-    if (previousBalance === safeAvailableGATokens) {
-      return;
-    }
-    const delta = safeAvailableGATokens - previousBalance;
-    previousGatBalanceRef.current = safeAvailableGATokens;
-    if (!delta) return;
-
-    setGatBalanceToast({
-      id: Date.now(),
-      delta,
-      balance: safeAvailableGATokens,
-    });
-    if (gatBalanceToastTimeoutRef.current) {
-      clearTimeout(gatBalanceToastTimeoutRef.current);
-    }
-    gatBalanceToastTimeoutRef.current = setTimeout(() => {
-      setGatBalanceToast(null);
-    }, 2200);
-  }, [safeAvailableGATokens]);
-
-  useEffect(() => {
-    return () => {
-      if (gatBalanceToastTimeoutRef.current) {
-        clearTimeout(gatBalanceToastTimeoutRef.current);
-      }
-    };
-  }, []);
-
-  useEffect(() => {
-    if (safeAvailableGATokens > OBRA_VOICE_PRECARE_THRESHOLD_GAT) {
-      guardrailNoticeShownRef.current = false;
-    }
-  }, [safeAvailableGATokens]);
-
-  const buildMiniverseShareUrl = useCallback((formatId) => {
-    if (typeof window === 'undefined') return '';
-    const url = new URL(window.location.href);
-    url.searchParams.set('miniverso', formatId);
-    url.hash = 'transmedia';
-    return url.toString();
-  }, []);
-
-  const handleShareMiniverse = useCallback(async () => {
-    if (!activeShowcase || !activeDefinition) return;
-    const url = buildMiniverseShareUrl(activeShowcase);
-    if (!url) return;
-
-    const label = activeDefinition.label ?? 'la obra';
-    const sharePayload = {
-      title: activeDefinition.label ?? 'Miniverso',
-      text: `Descubre el ${label} de #GatoEncerrado.`,
-      url,
-    };
-
-    try {
-      if (navigator.share) {
-        await navigator.share(sharePayload);
-        return;
-      }
-      if (navigator.clipboard?.writeText) {
-        await navigator.clipboard.writeText(url);
-        toast({ description: 'Enlace copiado. Compártelo con quien quieras.' });
-        return;
-      }
-      toast({ description: 'No pudimos abrir el menú de compartir en este navegador.' });
-    } catch (err) {
-      if (err?.name !== 'AbortError') {
-        toast({ description: 'No pudimos compartir el enlace. Intenta de nuevo.' });
-      }
-    }
-  }, [activeDefinition, activeShowcase, buildMiniverseShareUrl]);
-
-  const handleShareImpactModel = useCallback(async () => {
-    if (typeof window === 'undefined') return;
-    const url = new URL(window.location.href);
-    url.searchParams.delete('miniverso');
-    url.hash = 'cta';
-    const shareUrl = url.toString();
-    const sharePayload = {
-      title: 'Modelo anual por tramos',
-      text: 'Mira cómo crece el impacto social de #GatoEncerrado.',
-      url: shareUrl,
-    };
-
-    try {
-      if (navigator.share) {
-        await navigator.share(sharePayload);
-        return;
-      }
-      if (navigator.clipboard?.writeText) {
-        await navigator.clipboard.writeText(shareUrl);
-        toast({ description: 'Enlace del modelo copiado. Ya puedes compartirlo.' });
-        return;
-      }
-      toast({ description: 'No pudimos abrir el menú de compartir en este navegador.' });
-    } catch (err) {
-      if (err?.name !== 'AbortError') {
-        toast({ description: 'No pudimos compartir el modelo. Intenta de nuevo.' });
-      }
-    }
-  }, [toast]);
+  const { gatBalanceToast } = useGatBalanceToast(safeAvailableGATokens);
 
   useEffect(() => {
     if (hasHandledDeepLinkRef.current) return;
@@ -3538,229 +1113,21 @@ const Transmedia = ({ allianceOnlyMode = false }) => {
     openMiniverseById(miniverse);
   }, [location.search, openMiniverseById]);
 
-  const handleShowcaseNextBatch = useCallback(() => {
-    if (focusLockShowcaseId) {
-      releaseDesktopFocusLock();
-    }
-    setShowcaseCarouselIndex((prev) => (prev + 3) % formats.length);
-  }, [focusLockShowcaseId, releaseDesktopFocusLock]);
 
-  const handleShowcasePrevBatch = useCallback(() => {
-    if (focusLockShowcaseId) {
-      releaseDesktopFocusLock();
-    }
-    setShowcaseCarouselIndex((prev) => (prev - 3 + formats.length) % formats.length);
-  }, [focusLockShowcaseId, releaseDesktopFocusLock]);
+  useBodyScrollLock({ isCinematicShowcaseOpen, isMiniverseShelved, handleCloseShowcase });
 
-  const handleMobileShowcaseNext = useCallback(() => {
-    setMobileShowcaseIndex((prev) => (prev + 1) % formats.length);
-  }, []);
-
-  const handleMobileShowcasePrev = useCallback(() => {
-    setMobileShowcaseIndex((prev) => (prev - 1 + formats.length) % formats.length);
-  }, []);
-
-  const handleMobileShowcaseTouchStart = useCallback((event) => {
-    const touch = event.touches?.[0];
-    if (!touch) return;
-    mobileSwipeStateRef.current = {
-      startX: touch.clientX,
-      startY: touch.clientY,
-      deltaX: 0,
-      deltaY: 0,
-      tracking: true,
-    };
-  }, []);
-
-  const handleMobileShowcaseTouchMove = useCallback((event) => {
-    const touch = event.touches?.[0];
-    if (!touch || !mobileSwipeStateRef.current.tracking) return;
-    mobileSwipeStateRef.current.deltaX = touch.clientX - mobileSwipeStateRef.current.startX;
-    mobileSwipeStateRef.current.deltaY = touch.clientY - mobileSwipeStateRef.current.startY;
-  }, []);
-
-  const handleMobileShowcaseTouchEnd = useCallback(() => {
-    const { deltaX, deltaY, tracking } = mobileSwipeStateRef.current;
-    mobileSwipeStateRef.current.tracking = false;
-    if (!tracking) return;
-
-    const absX = Math.abs(deltaX);
-    const absY = Math.abs(deltaY);
-    const isHorizontalSwipe = absX > 56 && absX > absY + 10;
-    if (!isHorizontalSwipe) return;
-
-    mobileSwipeBlockTapRef.current = true;
-    window.setTimeout(() => {
-      mobileSwipeBlockTapRef.current = false;
-    }, 240);
-
-    if (deltaX < 0) {
-      handleMobileShowcaseNext();
-    } else {
-      handleMobileShowcasePrev();
-    }
-  }, [handleMobileShowcaseNext, handleMobileShowcasePrev]);
-
-  const visibleShowcases = useMemo(() => {
-    if (formats.length <= 3) return formats;
-    return Array.from({ length: 3 }, (_, idx) => formats[(showcaseCarouselIndex + idx) % formats.length]);
-  }, [showcaseCarouselIndex]);
-
-  useEffect(() => {
-    if (!ENABLE_SHOWCASE_AUTO_CYCLE || isMobileViewport || isDesktopFocusLockActive) return undefined;
-    const intervalId = window.setInterval(() => {
-      setShowcaseCarouselIndex((prev) => (prev + 1) % formats.length);
-    }, SHOWCASE_AUTO_CYCLE_INTERVAL_MS);
-    return () => window.clearInterval(intervalId);
-  }, [isDesktopFocusLockActive, isMobileViewport]);
-
-  useEffect(() => {
-    if (!isMobileViewport) return;
-
-    const restoreShowcaseId =
-      typeof location.state?.portalRestoreShowcaseId === 'string'
-        ? location.state.portalRestoreShowcaseId
-        : '';
-    if (!restoreShowcaseId) return;
-
-    const restoreToken =
-      typeof location.state?.portalRestoreToken === 'string' && location.state.portalRestoreToken.trim()
-        ? location.state.portalRestoreToken
-        : `${location.pathname}${location.search}:${restoreShowcaseId}`;
-    if (lastAppliedPortalRestoreTokenRef.current === restoreToken) return;
-
-    const targetIndex = formats.findIndex((item) => item.id === restoreShowcaseId);
-    if (targetIndex < 0) return;
-
-    lastAppliedPortalRestoreTokenRef.current = restoreToken;
-    setMobileShowcaseIndex(targetIndex);
-  }, [isMobileViewport, location.pathname, location.search, location.state]);
-
-  useEffect(() => {
-    if (typeof window === 'undefined') return undefined;
-    const isMobile = window.matchMedia('(max-width: 768px)').matches;
-    if (isTazaARActive && isMobile && !isMobileARFullscreen) {
-      setIsMobileARFullscreen(true);
-    }
-    if (isTazaARActive && isMobile) {
-      document.body.classList.add('overflow-hidden');
-    } else {
-      document.body.classList.remove('overflow-hidden');
-    }
-    return undefined;
-  }, [isTazaARActive, isMobileARFullscreen]);
-  const scrollLockYRef = useRef(0);
-  const wasCinematicOpenRef = useRef(false);
   const previousActiveShowcaseRef = useRef(null);
-  const tragicoStarters = useMemo(() => {
-    if (!activeDefinition || activeDefinition.type !== 'tragedia') {
-      return [];
-    }
-    const allModeQuestions = OBRA_VOICE_MODES.flatMap(
-      (mode) => PORTAL_VOZ_MODE_QUESTIONS[mode.id] ?? []
-    );
-    const base = [
-      ...allModeQuestions,
-      ...(activeDefinition.conversationStarters ?? []),
-      ...SILVESTRE_TRIGGER_QUESTIONS,
-    ];
-    const uniqueQuestions = Array.from(
-      new Set(
-        base
-          .map((question) => (typeof question === 'string' ? question.trim() : ''))
-          .filter(Boolean)
-      )
-    );
-    return shuffleArray(uniqueQuestions);
-  }, [activeDefinition]);
   const activeParagraphs = useMemo(() => {
     if (!activeData?.post?.content) {
       return [];
     }
     return activeData.post.content.split(/\n{2,}/).map((chunk) => chunk.trim()).filter(Boolean);
   }, [activeData]);
-  const tragicoStarterSet = useMemo(
-    () => new Set(tragicoStarters.map((starter) => normalizeSilvestrePrompt(starter)).filter(Boolean)),
-    [tragicoStarters]
-  );
 
+  // Reset collaborator when activeDefinition changes (ora state reset is handled by useObraVoiceInteraction)
   useEffect(() => {
     setOpenCollaboratorId(null);
-    if (!activeDefinition || activeDefinition.type !== 'tragedia') {
-      setElevatedSilvestreStarter(null);
-      setMobileObraSecondaryCtaState(MOBILE_OBRA_SECONDARY_CTA_STATES.READ_SCRIPT);
-      setMobileObraReplayPrompt('');
-      setMobileAwaitingEmotionSwitch(false);
-      wasSilvestrePlayingRef.current = false;
-    }
   }, [activeDefinition]);
-
-  useEffect(() => {
-    const previousModeId = previousObraModeIdRef.current;
-    if (previousModeId === activeObraModeId) return;
-
-    if (!isMobileViewport || activeDefinition?.type !== 'tragedia') {
-      previousObraModeIdRef.current = activeObraModeId;
-      return;
-    }
-
-    if (
-      mobileObraSecondaryCtaState === MOBILE_OBRA_SECONDARY_CTA_STATES.TRY_OTHER_EMOTION &&
-      mobileAwaitingEmotionSwitch
-    ) {
-      setMobileObraSecondaryCtaState(MOBILE_OBRA_SECONDARY_CTA_STATES.LAUNCH_PHRASE);
-      setMobileAwaitingEmotionSwitch(false);
-      previousObraModeIdRef.current = activeObraModeId;
-      return;
-    }
-
-    if (mobileObraSecondaryCtaState === MOBILE_OBRA_SECONDARY_CTA_STATES.LAUNCH_PHRASE) {
-      setMobileObraSecondaryCtaState(MOBILE_OBRA_SECONDARY_CTA_STATES.READ_SCRIPT);
-      setMobileObraReplayPrompt('');
-      setMobileAwaitingEmotionSwitch(false);
-    }
-
-    previousObraModeIdRef.current = activeObraModeId;
-  }, [
-    activeDefinition,
-    activeObraModeId,
-    isMobileViewport,
-    mobileAwaitingEmotionSwitch,
-    mobileObraSecondaryCtaState,
-  ]);
-
-  useEffect(() => {
-    const wasPlaying = wasSilvestrePlayingRef.current;
-    const isPlaybackIdle =
-      !isSilvestrePlaying &&
-      !isSilvestreResponding &&
-      !isSilvestreFetching &&
-      !pendingSilvestreAudioUrl;
-    if (
-      wasPlaying &&
-      isPlaybackIdle &&
-      activeDefinition?.type === 'tragedia' &&
-      isMobileViewport
-    ) {
-      const replayCandidate =
-        normalizeSilvestrePrompt(transcript) || normalizeSilvestrePrompt(elevatedSilvestreStarter);
-      if (replayCandidate) {
-        setMobileObraReplayPrompt(replayCandidate);
-        setMobileObraSecondaryCtaState(MOBILE_OBRA_SECONDARY_CTA_STATES.TRY_OTHER_EMOTION);
-        setMobileAwaitingEmotionSwitch(true);
-      }
-    }
-    wasSilvestrePlayingRef.current = isSilvestrePlaying;
-  }, [
-    activeDefinition,
-    elevatedSilvestreStarter,
-    isSilvestreFetching,
-    isMobileViewport,
-    isSilvestrePlaying,
-    isSilvestreResponding,
-    pendingSilvestreAudioUrl,
-    transcript,
-  ]);
 
   useEffect(() => {
     const previous = previousActiveShowcaseRef.current;
@@ -3886,66 +1253,6 @@ const Transmedia = ({ allianceOnlyMode = false }) => {
   );
 
   useEffect(() => {
-    const html = document.documentElement;
-    const body = document.body;
-    const shouldLockBackgroundScroll = isCinematicShowcaseOpen && !isMiniverseShelved;
-
-    if (shouldLockBackgroundScroll) {
-      wasCinematicOpenRef.current = true;
-      scrollLockYRef.current = window.scrollY;
-      body.style.position = 'fixed';
-      body.style.top = `-${scrollLockYRef.current}px`;
-      body.style.left = '0';
-      body.style.right = '0';
-      body.style.width = '100%';
-      body.style.overflow = 'hidden';
-      html.style.overflow = 'hidden';
-      return;
-    }
-
-    body.style.position = '';
-    body.style.top = '';
-    body.style.left = '';
-    body.style.right = '';
-    body.style.width = '';
-    body.style.overflow = '';
-    document.documentElement.style.overflow = '';
-
-    if (wasCinematicOpenRef.current) {
-      window.scrollTo(0, scrollLockYRef.current || 0);
-    }
-    wasCinematicOpenRef.current = false;
-    scrollLockYRef.current = 0;
-  }, [isCinematicShowcaseOpen, isMiniverseShelved]);
-
-  useEffect(
-    () => () => {
-      const html = document.documentElement;
-      const body = document.body;
-      body.style.position = '';
-      body.style.top = '';
-      body.style.left = '';
-      body.style.right = '';
-      body.style.width = '';
-      body.style.overflow = '';
-      body.classList.remove('overflow-hidden');
-      html.style.overflow = '';
-    },
-    [],
-  );
-
-  useEffect(() => {
-    if (!isCinematicShowcaseOpen) return undefined;
-    const handleKeyDown = (event) => {
-      if (event.key === 'Escape') {
-        handleCloseShowcase();
-      }
-    };
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [handleCloseShowcase, isCinematicShowcaseOpen]);
-
-  useEffect(() => {
     if (activeShowcase !== 'apps') {
       return;
     }
@@ -3960,71 +1267,15 @@ const Transmedia = ({ allianceOnlyMode = false }) => {
 
   useEffect(() => {
     if (activeShowcase !== 'oraculo') {
-      setIsOraculoOpen(false);
+      handleCloseOraculo();
     }
-  }, [activeShowcase]);
+  }, [activeShowcase, handleCloseOraculo]);
 
   useEffect(() => {
     if (activeShowcase !== 'lataza') {
-      setIsTazaARActive(false);
-      setIsMobileARFullscreen(false);
-      document.body.classList.remove('overflow-hidden');
+      handleCloseARExperience();
     }
-  }, [activeShowcase]);
-
-  useEffect(() => {
-    if (!isOraculoOpen) {
-      return undefined;
-    }
-    const handleKeyDown = (event) => {
-      if (event.key === 'Escape') {
-        event.preventDefault();
-        event.stopPropagation();
-        if (typeof event.stopImmediatePropagation === 'function') {
-          event.stopImmediatePropagation();
-        }
-        setIsOraculoOpen(false);
-      }
-    };
-    window.addEventListener('keydown', handleKeyDown, true);
-    return () => window.removeEventListener('keydown', handleKeyDown, true);
-  }, [isOraculoOpen]);
-
-  useEffect(() => {
-    if (!isCauseSiteOpen) {
-      return undefined;
-    }
-    const handleKeyDown = (event) => {
-      if (event.key === 'Escape') {
-        event.preventDefault();
-        event.stopPropagation();
-        if (typeof event.stopImmediatePropagation === 'function') {
-          event.stopImmediatePropagation();
-        }
-        setIsCauseSiteOpen(false);
-      }
-    };
-    window.addEventListener('keydown', handleKeyDown, true);
-    return () => window.removeEventListener('keydown', handleKeyDown, true);
-  }, [isCauseSiteOpen]);
-
-  useEffect(() => {
-    if (!imagePreview && !pdfPreview) {
-      return undefined;
-    }
-    const handleKeyDown = (event) => {
-      if (event.key === 'Escape') {
-        if (imagePreview) {
-          handleCloseImagePreview();
-        }
-        if (pdfPreview) {
-          handleClosePdfPreview();
-        }
-      }
-    };
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [imagePreview, pdfPreview, handleCloseImagePreview, handleClosePdfPreview]);
+  }, [activeShowcase, handleCloseARExperience]);
 
   useEffect(() => {
     if (!isMiniversoEditorialModalOpen) {
@@ -4040,138 +1291,10 @@ const Transmedia = ({ allianceOnlyMode = false }) => {
   }, [isMiniversoEditorialModalOpen, handleCloseMiniversoEditorialModal]);
 
   useEffect(() => {
-    if (!pdfPreview) {
-      return undefined;
-    }
-    const updateWidth = () => {
-      if (pdfContainerRef.current) {
-        setPdfContainerWidth(pdfContainerRef.current.offsetWidth);
-      }
-    };
-    updateWidth();
-    window.addEventListener('resize', updateWidth);
-    return () => window.removeEventListener('resize', updateWidth);
-  }, [pdfPreview]);
-
-  useEffect(() => {
-    if (!pdfPreview || pdfLoadError || !pdfNumPages) return undefined;
-    if (typeof window === 'undefined') return undefined;
-    if (typeof window.IntersectionObserver !== 'function') return undefined;
-
-    const root = pdfContainerRef.current;
-    const target = pdfEndSentinelRef.current;
-    if (!root || !target) return undefined;
-
-    const observer = new window.IntersectionObserver(
-      (entries) => {
-        const reachedEnd = entries.some((entry) => entry.isIntersecting);
-        if (!reachedEnd || hasShownPdfEndNoticeRef.current) {
-          return;
-        }
-        hasShownPdfEndNoticeRef.current = true;
-
-        const required = Number.isFinite(pdfPreview.nextChapterCost)
-          ? Number(pdfPreview.nextChapterCost)
-          : GAT_COSTS.novelaChapter;
-        const label = pdfPreview.nextChapterLabel || 'siguiente capítulo';
-        const missing = Math.max(required - availableGATokens, 0);
-
-        if (missing > 0) {
-          if (!isAuthenticated) {
-            setTokenPrecareContext({
-              required,
-              missing,
-              actionLabel: `El ${label}`,
-            });
-            return;
-          }
-          toast({
-            description: `Llegaste al final. El ${label} requiere ${required} GATokens. Te faltan ${missing}.`,
-          });
-          return;
-        }
-
-        toast({
-          description: `Llegaste al final. El ${label} requiere ${required} GATokens. Ya tienes saldo suficiente.`,
-        });
-      },
-      { root, threshold: 0.9 },
-    );
-
-    observer.observe(target);
-    return () => observer.disconnect();
-  }, [availableGATokens, isAuthenticated, pdfLoadError, pdfNumPages, pdfPreview]);
-
-  useEffect(() => {
     return () => {
       document.body.classList.remove('overflow-hidden');
     };
   }, []);
-
-  const handleLaunchWebAR = (message) => {
-    toast({
-      description: message || 'Muy pronto liberaremos la activación WebAR de este objeto.',
-    });
-  };
-
-  const handleOpenCameraForQR = useCallback(async () => {
-    if (!requireShowcaseAuth('Inicia sesión para usar esta activación.', { action: 'open-camera-qr' })) {
-      return;
-    }
-    if (typeof navigator === 'undefined' || !navigator.mediaDevices?.getUserMedia) {
-      toast({ description: 'Tu dispositivo no permite abrir la cámara desde el navegador.' });
-      return;
-    }
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode: { ideal: 'environment' } },
-      });
-      stream.getTracks().forEach((track) => track.stop());
-      toast({
-        description: 'Listo. En la versión final validaremos el QR con geolocalización para redimir tu ejemplar.',
-      });
-    } catch (error) {
-      console.error('Error al acceder a la cámara:', error);
-      toast({ description: 'No pudimos acceder a la cámara. Revisa los permisos e inténtalo de nuevo.' });
-    }
-  }, [requireShowcaseAuth]);
-
-  const handleNovelAppCTA = useCallback(
-    async (app) => {
-      if (!app) return;
-
-      if (app.ctaUrl) {
-        window.open(app.ctaUrl, '_blank', 'noopener,noreferrer');
-        return;
-      }
-
-      if (app.ctaAction === 'openCamera') {
-        handleOpenCameraForQR();
-        return;
-      }
-
-      if (app.ctaAction === 'openAutoficcionPreview') {
-        const result = await trackTransmediaCreditEvent({
-          eventKey: 'showcase_boost:novela_fragment_unlock',
-          amount: -GAT_COSTS.novelaChapter,
-          requiredTokens: GAT_COSTS.novelaChapter,
-          actionLabel: 'Esta lectura de fragmentos',
-          oncePerIdentity: true,
-          metadata: { source: 'transmedia_novela_fragmentos' },
-        });
-        if (!result.ok) {
-          return;
-        }
-        setShowAutoficcionPreview(true);
-        return;
-      }
-
-      toast({
-        description: app.ctaMessage || 'Muy pronto liberaremos esta app interactiva.',
-      });
-    },
-    [handleOpenCameraForQR, trackTransmediaCreditEvent]
-  );
 
   const handleMovementAction = useCallback((action) => {
     if (!action) {
@@ -4202,186 +1325,6 @@ const Transmedia = ({ allianceOnlyMode = false }) => {
     [activeShowcase]
   );
 
-  const isObraVoiceBusy =
-    isListening ||
-    isSilvestreFetching ||
-    isSilvestreResponding ||
-    isSilvestrePlaying ||
-    Boolean(pendingSilvestreAudioUrl);
-
-  const scrollToObraConversationControls = useCallback(() => {
-    if (typeof window === 'undefined' || !isMobileViewport) return;
-    window.requestAnimationFrame(() => {
-      obraConversationControlsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    });
-  }, [isMobileViewport]);
-
-  const scrollToObraModes = useCallback(() => {
-    if (typeof window === 'undefined' || !isMobileViewport) return;
-    window.requestAnimationFrame(() => {
-      obraModesRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    });
-  }, [isMobileViewport]);
-
-  const scrollToObraDetonadores = useCallback(() => {
-    if (typeof window === 'undefined' || !isMobileViewport) return;
-    window.requestAnimationFrame(() => {
-      obraDetonadoresRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    });
-  }, [isMobileViewport]);
-
-  const sendSilvestrePromptToObra = useCallback(
-    async (prompt, { modeId = null } = {}) => {
-      const normalizedPrompt = normalizeSilvestrePrompt(prompt);
-      if (!normalizedPrompt) return false;
-      const resolvedModeId =
-        typeof modeId === 'string' && modeId.trim() ? modeId.trim() : activeObraModeId;
-      const isStarterPrompt = tragicoStarterSet.has(normalizedPrompt);
-      const spentSet = getSpentSilvestreSetForMode(resolvedModeId);
-      if (isStarterPrompt && spentSet.has(normalizedPrompt)) return false;
-      const canProceed = await consumeObraVoiceGAT({
-        actionLabel: 'Enviar una pregunta a La Obra',
-        source: 'preset',
-        modeId: resolvedModeId,
-      });
-      if (!canProceed) return false;
-      incrementObraModeUsage(resolvedModeId);
-      if (isStarterPrompt) {
-        markSilvestreQuestionSpent(normalizedPrompt, { modeId: resolvedModeId });
-      }
-      setElevatedSilvestreStarter(normalizedPrompt);
-      setMobileObraReplayPrompt(normalizedPrompt);
-      setMobileObraSecondaryCtaState(MOBILE_OBRA_SECONDARY_CTA_STATES.READ_SCRIPT);
-      setMobileAwaitingEmotionSwitch(false);
-      scrollToObraConversationControls();
-      void handleSendSilvestrePreset(normalizedPrompt, { modeId: resolvedModeId });
-      return true;
-    },
-    [
-      activeObraModeId,
-      consumeObraVoiceGAT,
-      getSpentSilvestreSetForMode,
-      handleSendSilvestrePreset,
-      incrementObraModeUsage,
-      markSilvestreQuestionSpent,
-      tragicoStarterSet,
-      scrollToObraConversationControls,
-    ]
-  );
-
-  const handleUseSilvestreStarter = useCallback(
-    async (starter, modeId = null) => {
-      await sendSilvestrePromptToObra(starter, { modeId });
-    },
-    [sendSilvestrePromptToObra]
-  );
-
-  const handleMobileObraSecondaryCta = useCallback(async () => {
-    if (!isMobileViewport || activeDefinition?.type !== 'tragedia') return;
-    if (isObraVoiceBusy) return;
-
-    if (mobileObraSecondaryCtaState === MOBILE_OBRA_SECONDARY_CTA_STATES.READ_SCRIPT) {
-      scrollToObraDetonadores();
-      return;
-    }
-
-    if (mobileObraSecondaryCtaState === MOBILE_OBRA_SECONDARY_CTA_STATES.TRY_OTHER_EMOTION) {
-      setMobileAwaitingEmotionSwitch(true);
-      scrollToObraModes();
-      return;
-    }
-
-    if (mobileObraSecondaryCtaState === MOBILE_OBRA_SECONDARY_CTA_STATES.LAUNCH_PHRASE) {
-      const promptToReplay =
-        normalizeSilvestrePrompt(mobileObraReplayPrompt) ||
-        normalizeSilvestrePrompt(transcript) ||
-        normalizeSilvestrePrompt(elevatedSilvestreStarter);
-      if (!promptToReplay) {
-        setMobileObraSecondaryCtaState(MOBILE_OBRA_SECONDARY_CTA_STATES.READ_SCRIPT);
-        setMobileAwaitingEmotionSwitch(false);
-        return;
-      }
-      await sendSilvestrePromptToObra(promptToReplay, { modeId: activeObraModeId });
-    }
-  }, [
-    activeDefinition,
-    activeObraModeId,
-    elevatedSilvestreStarter,
-    isMobileViewport,
-    isObraVoiceBusy,
-    mobileObraReplayPrompt,
-    mobileObraSecondaryCtaState,
-    scrollToObraDetonadores,
-    scrollToObraModes,
-    sendSilvestrePromptToObra,
-    transcript,
-  ]);
-
-  const handleOpenSilvestreChatCta = useCallback(async (modeId = null) => {
-    const resolvedModeId =
-      typeof modeId === 'string' && modeId.trim() ? modeId.trim() : activeObraModeId;
-    const shouldChargeVoiceTurn =
-      !isListening &&
-      !isSilvestrePlaying &&
-      !pendingSilvestreAudioUrl &&
-      !isSilvestreFetching &&
-      !isSilvestreResponding;
-
-    if (shouldChargeVoiceTurn) {
-      const canProceed = await consumeObraVoiceGAT({
-        actionLabel: 'Hablar con La Obra por micrófono',
-        source: 'mic',
-        modeId: resolvedModeId,
-      });
-      if (!canProceed) return;
-      incrementObraModeUsage(resolvedModeId);
-    }
-    setMobileObraSecondaryCtaState(MOBILE_OBRA_SECONDARY_CTA_STATES.READ_SCRIPT);
-    setMobileAwaitingEmotionSwitch(false);
-    handleOpenSilvestreChat({ modeId: resolvedModeId });
-    scrollToObraConversationControls();
-  }, [
-    activeObraModeId,
-    consumeObraVoiceGAT,
-    handleOpenSilvestreChat,
-    incrementObraModeUsage,
-    isListening,
-    isSilvestreFetching,
-    isSilvestrePlaying,
-    isSilvestreResponding,
-    pendingSilvestreAudioUrl,
-    scrollToObraConversationControls,
-  ]);
-
-  const handleOpenNovelaReserve = useCallback(
-    async (initialPackages = ['novela-400']) => {
-      if (isMerchCheckoutLoading) return;
-      const normalized = Array.isArray(initialPackages) && initialPackages.length
-        ? initialPackages
-        : ['novela-400'];
-      const packageId = normalized.includes('taza-250') ? 'taza-250' : 'novela-400';
-
-      setIsMerchCheckoutLoading(true);
-      try {
-        await startDirectMerchCheckout({
-          packageId,
-          customerEmail: user?.email ?? '',
-          metadata: {
-            source: 'transmedia',
-            package: packageId,
-            showcase: activeShowcase ?? '',
-          },
-        });
-      } catch (error) {
-        console.error('[Transmedia] Checkout error:', error);
-        toast({ description: 'No pudimos abrir el checkout. Intenta nuevamente.' });
-      } finally {
-        setIsMerchCheckoutLoading(false);
-      }
-    },
-    [activeShowcase, isMerchCheckoutLoading, user?.email]
-  );
-
   const handleReturnToShowcase = useCallback(() => {
     if (!returnShowcaseId) return;
     setIsContributionOpen(false);
@@ -4390,134 +1333,6 @@ const Transmedia = ({ allianceOnlyMode = false }) => {
     setReturnShowcaseId(null);
     requestAnimationFrame(() => openMiniverseById(targetId));
   }, [openMiniverseById, returnShowcaseId]);
-
-  const handleBadgeLogin = useCallback(() => {
-    setShowBadgeLoginOverlay(true);
-  }, []);
-
-  const handleCloseBadgeLogin = useCallback(() => {
-    setShowBadgeLoginOverlay(false);
-  }, []);
-
-  const handleBadgeSubscribe = useCallback(() => {
-    const ctaSection = document.getElementById('cta');
-    if (ctaSection) {
-      ctaSection.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      return;
-    }
-    setIsContributionOpen(true);
-  }, []);
-
-  const handleExplorerReward = useCallback(
-    async (rewardType = 'subscriber') => {
-      if (!allShowcasesUnlocked || explorerBadge.rewardClaimed) {
-        return;
-      }
-      const rewardAmount = rewardType === 'subscriber' ? EXPLORER_BADGE_REWARD : 0;
-      if (rewardAmount <= 0) {
-        return;
-      }
-      const eventKey =
-        rewardType === 'subscriber'
-          ? 'explorer_badge_reward_subscriber'
-          : 'explorer_badge_reward_guest';
-      const result = await trackTransmediaCreditEvent({
-        eventKey,
-        amount: rewardAmount,
-        oncePerIdentity: true,
-        metadata: { source: 'transmedia_explorer_badge' },
-      });
-      if (!result.ok) {
-        return;
-      }
-      setShowBadgeCoins(true);
-      if (typeof window !== 'undefined') {
-        window.dispatchEvent(
-          new CustomEvent('gatoencerrado:miniverse-spent', {
-            detail: { id: 'explorer-badge', boost: true, amount: rewardAmount },
-          })
-        );
-      }
-      setExplorerBadge((prev) => ({
-        ...prev,
-        rewardClaimed: true,
-        claimedType: rewardType,
-        claimedAt: Date.now(),
-      }));
-      if (badgeCoinsTimeoutRef.current) {
-        clearTimeout(badgeCoinsTimeoutRef.current);
-      }
-      badgeCoinsTimeoutRef.current = setTimeout(() => setShowBadgeCoins(false), 1300);
-    },
-    [allShowcasesUnlocked, explorerBadge.rewardClaimed, trackTransmediaCreditEvent]
-  );
-
-  const handleShowcaseRevealBoost = useCallback(
-    async (showcaseId) => {
-      if (!showcaseId || showcaseBoosts?.[showcaseId]) {
-        return;
-      }
-      const boostAmount = baseEnergyByShowcase[showcaseId] ?? 0;
-      if (!boostAmount) {
-        return;
-      }
-      const result = await trackTransmediaCreditEvent({
-        eventKey: `showcase_boost:${showcaseId}`,
-        amount: boostAmount,
-        oncePerIdentity: true,
-        metadata: { source: 'transmedia_showcase_reveal', showcaseId },
-      });
-      if (!result.ok) {
-        return;
-      }
-      if (typeof window !== 'undefined') {
-        window.dispatchEvent(
-          new CustomEvent('gatoencerrado:miniverse-spent', {
-            detail: { id: showcaseId, boost: true, amount: boostAmount },
-          })
-        );
-      }
-      setCelebratedShowcaseId(showcaseId);
-      if (celebrationTimeoutRef.current) {
-        clearTimeout(celebrationTimeoutRef.current);
-      }
-      celebrationTimeoutRef.current = setTimeout(() => {
-        setCelebratedShowcaseId((current) => (current === showcaseId ? null : current));
-      }, 1400);
-    },
-    [baseEnergyByShowcase, showcaseBoosts, trackTransmediaCreditEvent]
-  );
-
-  const getTopicForShowcase = useCallback(
-    (showcaseId) => TOPIC_BY_SHOWCASE[showcaseId] ?? showcaseId,
-    []
-  );
-
-  const getContributionCategoryForShowcase = useCallback(
-    (showcaseId) => CONTRIBUTION_CATEGORY_BY_SHOWCASE[showcaseId] ?? showcaseId,
-    []
-  );
-
-  const fetchPublicComments = useCallback(
-    async (showcaseId) => {
-      if (!showcaseId) return;
-      const topic = getTopicForShowcase(showcaseId);
-      setPublicContributionsLoading((prev) => ({ ...prev, [showcaseId]: true }));
-      setPublicContributionsError((prev) => ({ ...prev, [showcaseId]: null }));
-      const { data, error } = await fetchApprovedContributions(topic);
-      if (error) {
-        console.error('Error fetching contributions', { showcaseId, error });
-        setPublicContributionsError((prev) => ({
-          ...prev,
-          [showcaseId]: 'No pudimos cargar comentarios.',
-        }));
-      } else {
-        setPublicContributions((prev) => ({ ...prev, [showcaseId]: data || [] }));
-      }
-      setPublicContributionsLoading((prev) => ({ ...prev, [showcaseId]: false }));
-    },
-    [getTopicForShowcase]
-  );
 
   const renderCommunityBlock = useCallback(
     (
@@ -4674,13 +1489,6 @@ const Transmedia = ({ allianceOnlyMode = false }) => {
     if (publicContributions[activeShowcase]) return;
     fetchPublicComments(activeShowcase);
   }, [activeShowcase, fetchPublicComments, publicContributions]);
-
-  useEffect(() => {
-    if (!allShowcasesUnlocked || !isSubscriber || explorerBadge.rewardClaimed) {
-      return;
-    }
-    handleExplorerReward('subscriber');
-  }, [allShowcasesUnlocked, explorerBadge.rewardClaimed, handleExplorerReward, isSubscriber]);
 
 const rendernotaAutoral = () => {
   if (!activeDefinition?.notaAutoral) return null;
@@ -5127,7 +1935,7 @@ const rendernotaAutoral = () => {
           ? 'Escúchala con otra emoción'
           : mobileObraSecondaryCtaState === MOBILE_OBRA_SECONDARY_CTA_STATES.LAUNCH_PHRASE
             ? 'Lanza la frase'
-            : 'O leer del guion';
+            : 'Sacar del guion';
       const mobileSecondaryCtaEmphasis =
         mobileObraSecondaryCtaState === MOBILE_OBRA_SECONDARY_CTA_STATES.TRY_OTHER_EMOTION
           ? 'glow'
@@ -5300,7 +2108,7 @@ const rendernotaAutoral = () => {
 
                             <div ref={obraConversationControlsRef}>
                               <ObraConversationControls
-                                ctaLabel="Pulsa para cambiar la escena"
+                                ctaLabel="Pulsa para improvisar"
                                 isSilvestrePlaying={isSilvestrePlaying}
                                 pendingSilvestreAudioUrl={pendingSilvestreAudioUrl}
                                 isSilvestreFetching={isSilvestreFetching}
@@ -7055,7 +3863,7 @@ const rendernotaAutoral = () => {
                       rel="noreferrer"
                       className="text-purple-200 underline underline-offset-4 hover:text-white"
                     >
-                      Abrir en nueva pestaña
+                      Abrir en nueva pesta��a
                     </a>
                   ) : null}
                   <button
@@ -8000,7 +4808,7 @@ Aquí no está todo. Solo lo suficiente para navegar, intervenir y habitar este 
                     <p className="text-sm leading-relaxed text-slate-200/95">
                       17 huellas completan 102 sesiones individuales al año.<br />
                       Desde la huella 18 inicia el siguiente tramo.<br />
-                      Tu huella nos pone en marcha.
+                      Tu huella pone en marcha nuestra meta anual.
                     </p>
                   </div>
                 </details>

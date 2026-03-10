@@ -286,7 +286,7 @@ const Contact = () => {
 
 <p className="text-lg text-slate-300/80 max-w-3xl mx-auto leading-relaxed font-light">
   Si algo de este sitio te dejó una pregunta, este es tu espacio para compartirla. 
-  No buscamos “opiniones” sino aquello que transformó tu forma de mirar, sentir o recordar la experiencia. 
+  No buscamos “solo opiniones” sino aquello que transformó tu forma de mirar, sentir o recordar la experiencia. 
   También puedes escribirnos para entrevistas, prensa o colaboraciones.
 </p>
         </motion.div>

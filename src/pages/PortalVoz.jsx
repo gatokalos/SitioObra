@@ -416,7 +416,6 @@ const PortalVoz = () => {
   const [isContributionOpen, setIsContributionOpen] = useState(false);
   const [openCollaboratorId, setOpenCollaboratorId] = useState(null);
 
-  const portalTopRef = useRef(null);
   const obraConversationControlsRef = useRef(null);
   const obraModesRef = useRef(null);
   const obraDetonadoresRef = useRef(null);
@@ -476,7 +475,7 @@ const PortalVoz = () => {
       ? 'Escúchala con otra emoción'
       : mobileObraSecondaryCtaState === MOBILE_OBRA_SECONDARY_CTA_STATES.LAUNCH_PHRASE
         ? 'Lanza la frase'
-        : 'O leer del guion';
+        : 'Sacar del guion';
   const mobileSecondaryCtaEmphasis =
     mobileObraSecondaryCtaState === MOBILE_OBRA_SECONDARY_CTA_STATES.TRY_OTHER_EMOTION
       ? 'glow'
@@ -876,8 +875,6 @@ const PortalVoz = () => {
 
   const handleSelectMode = useCallback((modeId) => {
     setActiveModeId(modeId);
-    if (typeof window === 'undefined') return;
-    portalTopRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }, []);
 
   const handleOpenCommunityComposer = useCallback(() => {
@@ -997,7 +994,7 @@ const PortalVoz = () => {
           <PortalHeaderActions />
         </div>
 
-        <div className="mt-6 space-y-6" ref={portalTopRef}>
+        <div className="mt-6 space-y-6">
           <div className="rounded-[2.5rem] border border-white/10 bg-gradient-to-br from-slate-900/85 via-black/60 to-rose-900/35 shadow-[0_25px_65px_rgba(15,23,42,0.65)]">
             <div className="grid gap-10 p-6 sm:p-8 lg:p-10 lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
               <div className="space-y-6">
@@ -1096,7 +1093,7 @@ const PortalVoz = () => {
 
                             <div ref={obraConversationControlsRef}>
                               <ObraConversationControls
-                                ctaLabel="Pulsa para cambiar la escena"
+                                ctaLabel="Pulsa para improvisar"
                                 isSilvestrePlaying={isSilvestrePlaying}
                                 pendingSilvestreAudioUrl={pendingSilvestreAudioUrl}
                                 isSilvestreFetching={isSilvestreFetching}

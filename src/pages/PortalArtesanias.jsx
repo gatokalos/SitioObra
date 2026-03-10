@@ -19,50 +19,50 @@ import { supabase } from '@/lib/supabaseClient';
 import { sanitizeExternalHttpUrl } from '@/lib/urlSafety';
 
 const ARTESANIAS_INTRO =
-  'Un objeto cotidiano convertido en simbolo de comunion. Cada taza esta vinculada a un sentimiento. Cada sentimiento, a una historia personal.';
+  'Un objeto cotidiano convertido en simbolo de comunión. Cada taza esta vinculada a un sentimiento. Cada sentimiento, a una historia personal.';
 const ARTESANIAS_SUBTITLE = 'Esta no es una taza. Es un portal.';
-const ARTESANIAS_NOTE = 'Apunta tu camara y aparecera tu frase';
+const ARTESANIAS_NOTE = 'Apunta tu cámara y aparecera tu frase';
 const ARTESANIAS_IMAGE =
   'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Merch/taza_h.png';
 const ARTESANIAS_PHRASES = ['La taza te habla.'];
 const ARTESANIAS_INSTRUCTIONS = [
-  'Permite el acceso a tu camara para iniciar.',
-  'Coloca la taza completa en cuadro, con buena iluminacion.',
-  'Manten el marcador visible hasta que aparezca una orbe.',
+  'Permite el acceso a tu cámara para iniciar.',
+  'Coloca la taza completa en cuadro, con buena iluminación.',
+  'Mantén el marcador visible hasta que aparezca una orbe.',
 ];
 const ARTESANIAS_COLLABORATORS = [
   {
     id: 'miroslava-wilson',
     name: 'Miroslava Wilson',
     role: 'Vinculacion y gestion institucional',
-    bio: 'Acompano el proceso que permitio integrar la taza al circuito institucional del CECUT, facilitando su presencia como parte de la preventa de la obra.',
+    bio: 'Acompañó el proceso que permitio integrar la taza al circuito institucional del CECUT, facilitando su presencia como parte de la preventa de la obra.',
     image: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/equipo/Miroslava%20.jpg',
   },
   {
     id: 'taller-paco-padilla',
     name: 'Taller Paco Padilla',
-    role: 'Ceramica artesanal de Tlaquepaque',
-    bio: 'Puso sus manos y su fuego en la primera serie de tazas del universo. Cada pieza salio de su horno con una vibracion artesanal unica.',
+    role: 'Cerámica artesanal de Tlaquepaque',
+    bio: 'Puso sus manos y su fuego en la primera serie de tazas del universo. Cada pieza salio de su horno con una vibración artesanal unica.',
     image: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/equipo/pacopadilla.jpeg',
   },
   {
     id: 'yeraldin-roman',
-    name: 'Yeraldin Roman',
-    role: 'Diseno grafico, fotografia y enlace local',
-    bio: 'Afino la estetica de la taza y registro marcas que hacen de #GatoEncerrado un universo.',
+    name: 'Yeraldín Roman',
+    role: 'Diseñoo gráfico, fotografía y enlace local',
+    bio: 'Afino la estética de la taza y registro marcas que hacen de #GatoEncerrado un universo.',
     image: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/equipo/yeraldin.png',
   },
   {
     id: 'rocio-morgan',
-    name: 'Rocio Morgan',
-    role: 'Coordinacion de entregas',
+    name: 'Rocío Morgan',
+    role: 'Coordinación de entregas',
     bio: 'Coordino la entrega de las primeras tazas y las primeras activaciones del objeto artesanal.',
     image: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/equipo/rocio.jpg',
   },
 ];
 const ARTESANIAS_NOTA_AUTORAL = {
   title: '#ElSentidoEnLasManos',
-  verse: 'Tome un objeto.\nSu forma me sostuvo.\nEl sentido calento mis manos.',
+  verse: 'Tomé un objeto.\nSu forma me sostuvo.\nEl sentido calentó mis manos.',
 };
 const ARTESANIAS_TILE = {
   gradient: 'linear-gradient(135deg, rgba(44,20,30,0.95), rgba(101,45,66,0.85), rgba(196,111,86,0.6))',
@@ -73,21 +73,21 @@ const ARTESANIAS_TILE = {
 };
 const ARTESANIAS_IA_PROFILE = {
   type: 'IA ligera para pistas contextuales + WebAR.',
-  interaction: '1 activacion guiada por objeto (escaneo breve).',
-  tokensRange: '90-140 tokens por activacion.',
+  interaction: '1 activación guiada por objeto (escaneo breve).',
+  tokensRange: '90-140 tokens por activación.',
   coverage: 'Cubierto por suscriptores; no hay costo directo por usuario.',
   footnote: 'La IA solo guia la pista; el ritual lo completa quien sostiene la taza.',
 };
 const ARTESANIAS_FALLBACK_COMMENTS = [
   {
     id: 'la-taza-comment-1',
-    proposal: 'La taza me mostro una frase que me persiguio toda la semana.',
-    name: 'Usuario anonimo',
+    proposal: 'La taza me mostró una frase que me persiguió toda la semana.',
+    name: 'Usuario anónimo',
   },
   {
     id: 'la-taza-comment-2',
-    proposal: 'No entendi nada... hasta que le agarre el modo.',
-    name: 'Sofia B.',
+    proposal: 'No entendí nada... hasta que la tomé en mis manos.',
+    name: 'Sofía B.',
   },
 ];
 const ARTESANIAS_BLOG_KEYS = [
