@@ -870,7 +870,7 @@ const Blog = ({ posts = [], isLoading = false, error = null }) => {
                           <p className="text-[10px] uppercase tracking-[0.34em] text-violet-100/90">Empieza aquí</p>
                         </div>
                         <p className="text-[1rem] font-semibold leading-snug text-white">
-                          ¿Primera vez en el sitio? <br /> Usa el Buscador Backstage para resolver dudas.
+                          ¿Primera vez en el sitio? Usa el Buscador Backstage para resolver dudas.
                         </p>
                       </div>
                       <div className="relative w-full">
