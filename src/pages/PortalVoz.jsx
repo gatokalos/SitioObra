@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { motion } from 'framer-motion';
 import {
   Feather,
+  Flame,
   Scan,
   CheckCircle2,
   Zap,
@@ -50,6 +51,18 @@ const VOICE_MODES = [
       border: 'rgba(125,211,252,0.45)',
       glow: '0 18px 55px rgba(14,165,233,0.2)',
       dot: 'rgba(125,211,252,0.9)',
+    },
+  },
+  {
+    id: 'rabia',
+    title: 'Rabia',
+    description: 'Cuando el cuerpo habla primero.',
+    accent: 'from-red-200/20 via-orange-300/10 to-transparent',
+    icon: Flame,
+    tint: {
+      border: 'rgba(252,165,165,0.45)',
+      glow: '0 18px 55px rgba(239,68,68,0.2)',
+      dot: 'rgba(252,165,165,0.9)',
     },
   },
   {
@@ -1059,9 +1072,8 @@ const PortalVoz = () => {
                     Habita los sentimeintos de Silvestre
                   </h2>
                   <p className="text-sm text-slate-300/80 break-words">
-                    Así como una misma frase no suena igual con otra emoción, aquí "La Voz de la Obra" cambia cuando la intención cambia.
+                    Así como una misma frase no suena igual con otra emoción, aquí lo conciencia de la obra cambia cuando tu intención cambia.
                     <br />
-                    Las emociones son las que reescriben la historia.
                     </p>
                 </div>
 

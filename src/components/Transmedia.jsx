@@ -2068,10 +2068,9 @@ const rendernotaAutoral = () => {
                     Habita los sentimientos de Silvestre
                   </h2>
                   <p className="text-sm text-slate-300/80 break-words">
-                     Así como una misma frase no suena igual con otra emoción,<br />
-                     aquí La Voz de la Obra cambia cuando la intención cambia.
+                     Así como una misma frase no suena igual con otra emoción, aquí lo conciencia de la obra cambia cuando tu intención cambia.
                     <br />
-                    Las emociones son las que reescriben la historia.
+                  
                     </p>
                 </div>
 

@@ -140,8 +140,8 @@ const HERO_BACKGROUND_VARIANTS = {
     src: '/assets/gato-cabina.webp',
     className: 'absolute inset-0 h-full w-full object-cover',
     style: {
-      opacity: 0.34,
-      filter: 'contrast(78%) brightness(52%) saturate(88%)',
+      opacity: 0.44,
+      filter: 'contrast(78%) brightness(72%) saturate(88%)',
       objectPosition: '50% 28%',
       transform: 'translateY(12%) scale(1.4)',
     },
