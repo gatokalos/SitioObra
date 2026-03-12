@@ -1,6 +1,6 @@
 import React, { Suspense, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
-import { BookOpen, CoffeeIcon, DramaIcon, TicketIcon, HeartHandshake, ShoppingBag, SparkleIcon, DoorOpen, Volume2, VolumeX } from 'lucide-react';
+import { BookOpen, CoffeeIcon, DramaIcon, TicketIcon, HeartHandshake, ShoppingBag, SparkleIcon, DoorOpen } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import TicketPurchaseModal from '@/components/TicketPurchaseModal';
 import MiniverseModal from '@/components/MiniverseModal';
@@ -11,8 +11,10 @@ import { useAuth } from '@/contexts/SupabaseAuthContext';
 import { setBienvenidaReturnPath } from '@/lib/bienvenida';
 import {
   getHeroAmbientAudio,
+  getHeroAmbientState,
+  subscribeHeroAmbient,
   readHeroAudioEnabledPreference,
-  writeHeroAudioEnabledPreference,
+  pauseHeroAmbient,
 } from '@/lib/heroAmbientAudio';
 import { createPortalLaunchState } from '@/lib/portalNavigation';
 import { safeSetItem } from '@/lib/safeStorage';
@@ -34,14 +36,18 @@ const HERO_LOGGED_IN_SWEEP_GLOW =
 const HERO_PENDING_MINIVERSE_SELECTION_KEY = 'gatoencerrado:hero-inline-miniverse-selection';
 const HERO_ROTATING_SUBTITLES = [
   'La obra que ocurre en tu mente',
-  'Un viaje escénico que se queda contigo',
-  'Teatro inmersivo para sentir, pensar y recordar',
-  'Una historia que cambia cuando tú la miras',
-  'Es un gato encerrado',
+  'Un viaje inmersivo para sentir, pensar y recordar',
+  'Una historia que cambia cuando la miras',
+  'Teatro que no termina cuando sales de la sala',
+  'Una experiencia escénica que se queda contigo',
   ' ',
 ];
+const HERO_GHOST_SUBTITLES = [
+  'Tal vez la obra ya empezó en ti',
+  'Y si observas bien… la obra te observa a ti',
+];
 const HERO_ROTATING_SUBTITLE_PLACEHOLDER =
-  'Un viaje escénico que se queda contigo.';
+  'Teatro que no termina cuando sales de la sala';
 
 const resolveHeroInlineTabFromQuery = (search = '') => {
   if (!search) return 'escaparate';
@@ -61,6 +67,7 @@ const Hero = () => {
   const [isTicketModalOpen, setIsTicketModalOpen] = useState(false);
   const [ctaIndex, setCtaIndex] = useState(0);
   const [heroSubtitleIndex, setHeroSubtitleIndex] = useState(0);
+  const [heroGhostSubtitle, setHeroGhostSubtitle] = useState(null);
   const [isHeroHintVisible, setIsHeroHintVisible] = useState(false);
   const [isCtaHovered, setIsCtaHovered] = useState(false);
   const [primaryCtaWidth, setPrimaryCtaWidth] = useState(null);
@@ -88,7 +95,7 @@ const Hero = () => {
     { label: 'Merch', Icon: ShoppingBag },
   ];
   const currentCta = rotatingCtas[ctaIndex];
-  const currentHeroSubtitle = HERO_ROTATING_SUBTITLES[heroSubtitleIndex];
+  const currentHeroSubtitle = heroGhostSubtitle ?? HERO_ROTATING_SUBTITLES[heroSubtitleIndex];
   const targetWidth = primaryCtaWidth ?? undefined;
   const navigate = useNavigate();
   const location = useLocation();
@@ -98,11 +105,7 @@ const Hero = () => {
     [location.search]
   );
   const primaryCtaLabel = user ? 'Dejar mi huella' : 'Toma un boleto';
-  const canShowHeroAudioToggle = Boolean(isHeroInViewport);
-  const heroAudioTogglePlacementClass = isMobileViewport
-    ? 'right-[calc(env(safe-area-inset-right)+0.5rem)] top-[calc(env(safe-area-inset-top)+3.2rem)] h-9 w-9'
-    : 'right-6 top-24 h-11 w-11';
-  const heroAudioIconSize = isMobileViewport ? 15 : 18;
+
 
   const getTargetVolumeByHeroPosition = useCallback(() => {
     const hero = heroSectionRef.current;
@@ -133,6 +136,7 @@ const Hero = () => {
       if (!user) {
         document.documentElement.dataset.bienvenidaFade = 'true';
         setBienvenidaReturnPath(`${location.pathname}${location.search}${location.hash}`);
+        pauseHeroAmbient();
         window.setTimeout(() => {
           navigate('/bienvenida', { replace: true });
         }, 450);
@@ -205,8 +209,15 @@ const Hero = () => {
   useEffect(() => {
     if (user) return undefined;
     const ROTATION_MS = 4400;
+    const GHOST_PROBABILITY = 0.11;
     const intervalId = window.setInterval(() => {
-      setHeroSubtitleIndex((prev) => (prev + 1) % HERO_ROTATING_SUBTITLES.length);
+      if (Math.random() < GHOST_PROBABILITY) {
+        const idx = Math.floor(Math.random() * HERO_GHOST_SUBTITLES.length);
+        setHeroGhostSubtitle(HERO_GHOST_SUBTITLES[idx]);
+      } else {
+        setHeroGhostSubtitle(null);
+        setHeroSubtitleIndex((prev) => (prev + 1) % HERO_ROTATING_SUBTITLES.length);
+      }
     }, ROTATION_MS);
 
     return () => window.clearInterval(intervalId);
@@ -328,36 +339,15 @@ const Hero = () => {
     return undefined;
   }, [isMobileViewport, user]);
 
-  const handleToggleHeroAudio = useCallback(() => {
-    const audio = getHeroAmbientAudio();
-    if (!audio) return;
-
-    // Si el autoplay fue bloqueado y está pausado sin estar muteado,
-    // el primer toque debe intentar reanudar en lugar de silenciar.
-    if (!heroAudioMutedRef.current && audio.paused) {
-      const targetVolume = getTargetVolumeByHeroPosition();
-      audio.volume = targetVolume;
-      if (targetVolume > HERO_AUDIO_MIN_AUDIBLE_VOLUME) {
-        void audio.play().catch(() => {});
-      }
-      return;
-    }
-
-    const nextMuted = !heroAudioMutedRef.current;
-    heroAudioMutedRef.current = nextMuted;
-    setIsHeroAudioMuted(nextMuted);
-    writeHeroAudioEnabledPreference(!nextMuted);
-    if (nextMuted) {
-      audio.pause();
-      audio.volume = 0;
-      return;
-    }
-    const targetVolume = getTargetVolumeByHeroPosition();
-    audio.volume = targetVolume;
-    if (targetVolume > HERO_AUDIO_MIN_AUDIBLE_VOLUME && audio.paused) {
-      void audio.play().catch(() => {});
-    }
-  }, [getTargetVolumeByHeroPosition]);
+  // Sincroniza heroAudioMutedRef con el estado compartido de la lib
+  // para que el idle-retry no intente reproducir audio muteado desde Header
+  useEffect(() => {
+    return subscribeHeroAmbient(() => {
+      const { isMuted } = getHeroAmbientState();
+      heroAudioMutedRef.current = isMuted;
+      setIsHeroAudioMuted(isMuted);
+    });
+  }, []);
 
   useEffect(() => {
     const audio = getHeroAmbientAudio();
@@ -641,27 +631,6 @@ const Hero = () => {
             : 'flex flex-col'
         }`}
       >
-        <AnimatePresence initial={false}>
-          {canShowHeroAudioToggle ? (
-            <motion.button
-              type="button"
-              aria-label={isHeroAudioMuted ? 'Activar sonido del Hero' : 'Silenciar sonido del Hero'}
-              onClick={handleToggleHeroAudio}
-              initial={{ opacity: 0, y: -8, scale: 0.95 }}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
-              exit={{ opacity: 0, y: -8, scale: 0.95 }}
-              transition={{ duration: 0.2, ease: 'easeOut' }}
-              className={`fixed z-[300] inline-flex items-center justify-center rounded-full border backdrop-blur-md shadow-[0_8px_22px_rgba(0,0,0,0.3)] transition ${heroAudioTogglePlacementClass} ${
-                isHeroAudioMuted
-                  ? 'border-white/20 bg-black/45 text-slate-200 hover:bg-black/60'
-                  : 'border-emerald-300/35 bg-emerald-500/15 text-emerald-100 hover:bg-emerald-500/25'
-              }`}
-            >
-              {isHeroAudioMuted ? <VolumeX size={heroAudioIconSize} /> : <Volume2 size={heroAudioIconSize} />}
-            </motion.button>
-          ) : null}
-        </AnimatePresence>
-        
         {/* Contenido */}
         {shouldRenderInlineHero ? (
           <div

@@ -357,6 +357,25 @@ export const useSilvestreVoice = () => {
   }, []);
 
   useEffect(() => {
+    let wasPlaying = false;
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'hidden') {
+        wasPlaying = silvestreAudioRef.current
+          ? !silvestreAudioRef.current.paused
+          : false;
+        if (wasPlaying) silvestreAudioRef.current.pause();
+      } else if (document.visibilityState === 'visible') {
+        if (wasPlaying && silvestreAudioRef.current) {
+          silvestreAudioRef.current.play().catch(() => {});
+        }
+        wasPlaying = false;
+      }
+    };
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
+  }, []);
+
+  useEffect(() => {
     const isSilvestreThinking =
       (isSilvestreFetching || isSilvestreResponding) &&
       !isSilvestrePlaying &&

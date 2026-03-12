@@ -9,7 +9,8 @@ import React, {
 import loadMindAR from '@/lib/loadMindAR';
 import loadThree from '@/lib/loadThree';
 
-const MODEL_URL = '/assets/aro.glb';
+const MODEL_URL = '/models/hashtag_black-draco.glb';
+const BASE_ROT = { x: -0.25, y: 0.6, z: -0.12 };
 
 const buildFallbackPortal = (THREE) => {
   const group = new THREE.Group();
@@ -112,6 +113,7 @@ const MindARScene = forwardRef(
       let animationLoop = null;
       let attachedVideo = null;
       let catModel = null;
+      let mat = null;
       let isActive = true;
 
       const start = async () => {
@@ -173,15 +175,16 @@ const MindARScene = forwardRef(
             if (isActive) setHasTarget(false);
           };
 
-          // Loader para el modelo 3D
-          const { GLTFLoader } = await import(
-            'three/examples/jsm/loaders/GLTFLoader.js'
-          );
+          // Loader con soporte Draco para el modelo comprimido
+          const { GLTFLoader } = await import('three/examples/jsm/loaders/GLTFLoader.js');
+          const { DRACOLoader } = await import('three/examples/jsm/loaders/DRACOLoader.js');
+          const dracoLoader = new DRACOLoader();
+          dracoLoader.setDecoderPath('https://www.gstatic.com/draco/versioned/decoders/1.5.6/');
           const loader = new GLTFLoader();
+          loader.setDRACOLoader(dracoLoader);
 
           let modelScene = null;
           try {
-            // Preferimos el modelo glb, pero si no está disponible hacemos fallback a una geometría procedimental.
             const gltf = await loader.loadAsync(MODEL_URL);
             modelScene = gltf.scene;
           } catch (modelError) {
@@ -192,10 +195,22 @@ const MindARScene = forwardRef(
             modelScene = buildFallbackPortal(THREE);
           }
 
+          // Material oscuro metálico con emissive violeta (igual que en Hero)
+          mat = new THREE.MeshStandardMaterial({
+            color: new THREE.Color('#080808'),
+            metalness: 0.82,
+            roughness: 0.18,
+            emissive: new THREE.Color('#9966ff'),
+            emissiveIntensity: 0.12,
+          });
+          modelScene.traverse((child) => {
+            if (child.isMesh) child.material = mat;
+          });
+
           catModel = modelScene;
-          catModel.scale.set(0.6, 0.6, 0.6);
-          catModel.position.set(0, 0.3, 0); // flotando sobre el marcador
-          catModel.rotation.set(0, Math.PI, 0); // girado hacia la cámara
+          catModel.scale.set(0.9, 0.9, 0.9);
+          catModel.position.set(0, 0.5, 0);
+          catModel.rotation.set(BASE_ROT.x, BASE_ROT.y, BASE_ROT.z);
 
           anchor.group.add(catModel);
 
@@ -227,14 +242,38 @@ const MindARScene = forwardRef(
           }
 
           const clock = new THREE.Clock();
+          let flashStartT = null;
+          let lastFlashT = -999;
+
           animationLoop = () => {
             const elapsed = clock.getElapsedTime();
 
-            // Animación suave del gato abstracto (rotación lenta, respiración ligera)
             if (catModel) {
-              catModel.rotation.y = elapsed * 0.4;
-              const s = 0.6 + Math.sin(elapsed * 0.8) * 0.03;
+              // Oscilación sinusoidal (igual que en Hero)
+              catModel.rotation.x = BASE_ROT.x + Math.sin(elapsed * 0.4) * 0.12;
+              catModel.rotation.y = BASE_ROT.y + Math.sin(elapsed * 0.6) * 0.42;
+              catModel.rotation.z = BASE_ROT.z + Math.sin(elapsed * 0.5) * 0.08;
+
+              // Respiración de escala
+              const s = 0.9 + Math.sin(elapsed * 0.8) * 0.025;
               catModel.scale.set(s, s, s);
+            }
+
+            // Flash periódico en emissiveIntensity (primero a ~2s, luego cada ~9s)
+            if (mat) {
+              if (flashStartT === null && elapsed > 2 && elapsed - lastFlashT > 9) {
+                flashStartT = elapsed;
+                lastFlashT = elapsed;
+              }
+              if (flashStartT !== null) {
+                const p = (elapsed - flashStartT) / 0.55;
+                if (p >= 1) {
+                  flashStartT = null;
+                  mat.emissiveIntensity = 0.12;
+                } else {
+                  mat.emissiveIntensity = 0.12 + Math.sin(p * Math.PI) * 0.55;
+                }
+              }
             }
 
             renderer.render(scene, camera);

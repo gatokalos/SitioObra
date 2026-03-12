@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { motion } from 'framer-motion';
-import { Coffee, Menu, X } from 'lucide-react';
+import { Coffee, Menu, X, Volume2, VolumeX } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useToast } from '@/components/ui/use-toast';
@@ -8,6 +8,12 @@ import { useAuth } from '@/contexts/SupabaseAuthContext';
 import LoginOverlay from '@/components/ContributionModal/LoginOverlay';
 import MobileMenuOverlay from '@/components/MobileMenuOverlay';
 import { setBienvenidaForceOnLogin } from '@/lib/bienvenida';
+import {
+  getHeroAmbientState,
+  subscribeHeroAmbient,
+  toggleHeroAmbientMuted,
+  getHeroAmbientAudio,
+} from '@/lib/heroAmbientAudio';
 import { createPortalLaunchState } from '@/lib/portalNavigation';
 import isotipoGatoWebp from '@/assets/isotipo-gato.webp';
 
@@ -37,6 +43,31 @@ const Header = ({ showTransmediaNav = true, showAllianceNav = showTransmediaNav 
   const headerLogoClassName = user
     ? 'h-9 w-9 rounded-full object-contain'
     : 'h-10 w-10 object-contain drop-shadow-[0_0_10px_rgba(255,255,255,0.08)] sm:h-11 sm:w-11';
+
+  const [audioState, setAudioState] = useState(() => getHeroAmbientState());
+  useEffect(() => subscribeHeroAmbient(() => setAudioState(getHeroAmbientState())), []);
+  const [isHeroVisible, setIsHeroVisible] = useState(true);
+  useEffect(() => {
+    const heroEl = document.getElementById('hero');
+    if (!heroEl) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => setIsHeroVisible(entry.isIntersecting),
+      { threshold: 0.05 }
+    );
+    observer.observe(heroEl);
+    return () => observer.disconnect();
+  }, []);
+
+  const handleAudioToggle = useCallback(() => {
+    const audio = getHeroAmbientAudio();
+    if (!audio) return;
+    // Autoplay bloqueado: primer toque reanuda en vez de mutear
+    if (!audioState.isMuted && audio.paused) {
+      void audio.play().catch(() => {});
+      return;
+    }
+    toggleHeroAmbientMuted();
+  }, [audioState.isMuted]);
 
   const handleCloseOverlay = useCallback(() => setShowLoginOverlay(false), []);
   const handleOpenOverlay = useCallback(() => {
@@ -273,6 +304,20 @@ const Header = ({ showTransmediaNav = true, showAllianceNav = showTransmediaNav 
             </div>
 
             <div className="flex items-center gap-3">
+              {audioState.isReady && isHeroVisible ? (
+                <button
+                  type="button"
+                  onClick={handleAudioToggle}
+                  aria-label={audioState.isPlaying ? 'Silenciar sonido' : 'Activar sonido'}
+                  className={`inline-flex h-8 w-8 items-center justify-center rounded-full border backdrop-blur-md transition ${
+                    audioState.isPlaying
+                      ? 'border-violet-300/40 bg-violet-500/15 text-violet-100 hover:bg-violet-500/25'
+                      : 'border-white/20 bg-black/40 text-slate-300 hover:bg-black/60'
+                  }`}
+                >
+                  {audioState.isPlaying ? <Volume2 size={14} /> : <VolumeX size={14} />}
+                </button>
+              ) : null}
               {user ? (
                 <Button
                   type="button"
