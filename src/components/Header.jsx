@@ -12,6 +12,7 @@ import { createPortalLaunchState } from '@/lib/portalNavigation';
 import isotipoGatoWebp from '@/assets/isotipo-gato.webp';
 
 const MOBILE_FULLSCREEN_MENU_PHASE_A_ENABLED = true;
+const PUBLIC_HEADER_LOGO_SRC = '/assets/header-logo.png';
 
 const Header = ({ showTransmediaNav = true, showAllianceNav = showTransmediaNav }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -31,6 +32,11 @@ const Header = ({ showTransmediaNav = true, showAllianceNav = showTransmediaNav 
   const greetingLabel = user ? `Hola ${simplifiedName || 'gato'}` : '';
   const authActionLabel = user ? 'Cerrar sesión' : 'Iniciar sesión';
   const statusDotClass = user ? 'bg-emerald-400' : 'bg-slate-600';
+  const headerLogoSrc = user ? isotipoGatoWebp : PUBLIC_HEADER_LOGO_SRC;
+  const headerLogoAlt = user ? 'Logo Gato Encerrado' : 'Isotipo Gato Encerrado';
+  const headerLogoClassName = user
+    ? 'h-9 w-9 rounded-full object-contain'
+    : 'h-10 w-10 object-contain drop-shadow-[0_0_10px_rgba(255,255,255,0.08)] sm:h-11 sm:w-11';
 
   const handleCloseOverlay = useCallback(() => setShowLoginOverlay(false), []);
   const handleOpenOverlay = useCallback(() => {
@@ -205,15 +211,12 @@ const Header = ({ showTransmediaNav = true, showAllianceNav = showTransmediaNav 
                 onClick={() => handleNavClick('#hero')}
               >
                 <img
-                  src={isotipoGatoWebp}
-                  alt="Logo Gato Encerrado"
-                  className={`h-9 w-9 rounded-full object-contain ${user ? '' : 'sm:hidden'}`}
+                  src={headerLogoSrc}
+                  alt={headerLogoAlt}
+                  className={headerLogoClassName}
                   loading="eager"
                   decoding="async"
                 />
-                <span className={`${user ? 'hidden' : 'hidden sm:inline'} font-display text-2xl font-bold text-gradient max-[375px]:text-lg whitespace-nowrap`}>
-                  #GatoEncerrado
-                </span>
                 <span className={`h-2.5 w-2.5 rounded-full ${statusDotClass}`} />
               </motion.button>
               {user ? (

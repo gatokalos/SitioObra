@@ -101,8 +101,7 @@ export default function AutoficcionPreview() {
                 />
               </div>
             ))}
-          </div>
-        )}
+        </div>
       </div>
 
       <ReflectionModal

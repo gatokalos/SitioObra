@@ -1,6 +1,8 @@
 import { useState, useRef, useCallback } from 'react';
 
-const RAW_API_URL = import.meta.env.VITE_API_URL?.replace(/\/+$/, '') || '';
+// Variable dedicada para el backend Express (puerto 5050).
+// No usa VITE_API_URL para no interferir con las Supabase Edge Functions.
+const RAW_API_URL = (import.meta.env.VITE_SEARCH_API_URL ?? import.meta.env.VITE_API_URL ?? '').replace(/\/+$/, '');
 
 /**
  * Hook de búsqueda inteligente RAG para GatoEncerrado.
@@ -52,7 +54,7 @@ export function useSearch() {
     setStatus('searching');
 
     try {
-      const res = await fetch(`${RAW_API_URL}/search`, {
+      const res = await fetch(`${RAW_API_URL}/api/search`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ query: q }),

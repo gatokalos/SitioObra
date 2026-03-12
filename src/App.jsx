@@ -134,8 +134,37 @@ const BlogSection = () => {
   return <Blog posts={blogData.posts} isLoading={blogData.isLoading} error={blogData.error} />;
 };
 
-const HeroBackground = () => {
+const HERO_BACKGROUND_VARIANTS = {
+  guest: {
+    alt: 'Cabina teatral con cortinas rojas y un gato al centro',
+    src: '/assets/gato-cabina.webp',
+    className: 'absolute inset-0 h-full w-full object-cover',
+    style: {
+      opacity: 0.34,
+      filter: 'contrast(78%) brightness(52%) saturate(88%)',
+      objectPosition: '50% 28%',
+      transform: 'translateY(12%) scale(1.4)',
+    },
+  },
+  authenticated: {
+    alt: 'Textura de telón de teatro de terciopelo oscuro',
+    src: '/assets/bg-logo.png',
+    className: 'absolute inset-0 h-full w-full object-cover mix-blend-pin-light',
+    style: {
+      opacity: 0.19,
+      filter: 'contrast(25%) brightness(75%)',
+    },
+  },
+};
+
+const HERO_GUEST_SOFT_FOCUS_MASK =
+  'radial-gradient(ellipse 34% 42% at 50% 43%, rgba(0,0,0,0.98) 0%, rgba(0,0,0,0.94) 42%, rgba(0,0,0,0) 76%)';
+
+const HeroBackground = ({ isAuthenticated = false }) => {
   const [opacity, setOpacity] = useState(1);
+  const backgroundVariant = isAuthenticated
+    ? HERO_BACKGROUND_VARIANTS.authenticated
+    : HERO_BACKGROUND_VARIANTS.guest;
 
   useEffect(() => {
     const FADE_DISTANCE = 900;
@@ -176,13 +205,56 @@ const HeroBackground = () => {
           <div className="absolute bottom-0 right-0 w-1/2 h-1/2 bg-gradient-to-tl from-purple-700/60 via-transparent to-transparent blur-3xl"></div>
         </div>
         <img
-          className="absolute inset-0 w-full h-full object-cover opacity-15 mix-blend-pin-light"
-          style={{ filter: 'contrast(15%) brightness(75%)' }}
-          alt="Textura de telón de teatro de terciopelo oscuro"
-          src="/assets/bg-logo.png"
+          className={backgroundVariant.className}
+          style={backgroundVariant.style}
+          alt={backgroundVariant.alt}
+          src={backgroundVariant.src}
           decoding="async"
           fetchpriority="low"
         />
+        {!isAuthenticated ? (
+          <>
+            <div
+              aria-hidden="true"
+              className="absolute inset-x-0 top-0 h-[clamp(9rem,28vh,18rem)]"
+              style={{
+                background:
+                  'linear-gradient(180deg, rgba(2,3,10,0.98) 0%, rgba(2,3,10,0.94) 26%, rgba(2,3,10,0.78) 52%, rgba(2,3,10,0.42) 78%, rgba(2,3,10,0) 100%)',
+              }}
+            />
+            <img
+              className="absolute inset-0 h-full w-full object-cover pointer-events-none"
+              style={{
+                ...backgroundVariant.style,
+                opacity: 0.24,
+                filter: 'blur(18px) brightness(28%) saturate(78%)',
+                WebkitMaskImage: HERO_GUEST_SOFT_FOCUS_MASK,
+                maskImage: HERO_GUEST_SOFT_FOCUS_MASK,
+              }}
+              alt=""
+              aria-hidden="true"
+              src={backgroundVariant.src}
+              decoding="async"
+              fetchpriority="low"
+            />
+            <div
+              aria-hidden="true"
+              className="absolute inset-0"
+              style={{
+                background:
+                  'linear-gradient(90deg, rgba(2,3,10,0.62) 0%, rgba(2,3,10,0.18) 24%, rgba(2,3,10,0.08) 38%, rgba(2,3,10,0.08) 62%, rgba(2,3,10,0.18) 76%, rgba(2,3,10,0.62) 100%)',
+              }}
+            />
+            <div
+              aria-hidden="true"
+              className="absolute inset-0"
+              style={{
+                background:
+                  'radial-gradient(circle at 50% 38%, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.02) 18%, rgba(2,3,10,0) 42%)',
+              }}
+            />
+          </>
+        ) : null}
       </div>
     </div>
   );
@@ -512,7 +584,7 @@ function App() {
         path="/"
         element={(
           <div className="min-h-screen overflow-x-hidden relative">
-            <HeroBackground />
+            <HeroBackground isAuthenticated={isAuthenticated} />
             <div className="relative z-10">
               <Header
                 showAllianceNav={canAccessTransmedia}

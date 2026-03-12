@@ -27,6 +27,10 @@ const TABS = [
 ];
 const DEFAULT_TAB_ID = 'escaparate';
 const VALID_TAB_IDS = new Set(TABS.map((tab) => tab.id));
+const INCENDIO_LOGO_SRC = '/assets/incendiologo.png';
+const INCENDIO_VIDEO_PLACEHOLDER_TITLE = 'VIDEO EN PRODUCCIÓN';
+const INCENDIO_VIDEO_PLACEHOLDER_COPY =
+  'La versión completa de esta microficción está siendo producida por Incendio Producciones. Muy pronto podrás verla aquí.';
 
 const MINIVERSE_TILE_GRADIENTS = {
   miniversos: 'linear-gradient(135deg, rgba(31,21,52,0.95), rgba(64,36,93,0.85), rgba(122,54,127,0.65))',
@@ -419,6 +423,35 @@ const readStoredJson = (key, fallback) => {
     return fallback;
   }
 };
+
+const IncendioVideoPlaceholder = ({ compact = false }) => (
+  <div
+    className={`absolute inset-0 flex flex-col items-center justify-center overflow-hidden px-5 text-center ${
+      compact ? 'gap-3' : 'gap-5'
+    }`}
+  >
+    <div
+      aria-hidden="true"
+      className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(255,255,255,0.08),rgba(7,10,18,0.2)_34%,rgba(0,0,0,0.88)_100%)]"
+    />
+    <img
+      src={INCENDIO_LOGO_SRC}
+      alt="Incendio Producciones"
+      className={`relative h-auto object-contain drop-shadow-[0_0_24px_rgba(255,255,255,0.12)] ${
+        compact ? 'w-24 sm:w-28' : 'w-32 sm:w-40 md:w-44'
+      }`}
+      loading="lazy"
+    />
+    <div className={`relative flex flex-col items-center ${compact ? 'max-w-[17rem] gap-2' : 'max-w-xl gap-3'}`}>
+      <p className={`${compact ? 'text-[0.58rem]' : 'text-[11px]'} uppercase tracking-[0.34em] text-slate-200/82`}>
+        {INCENDIO_VIDEO_PLACEHOLDER_TITLE}
+      </p>
+      <p className={`${compact ? 'text-[0.72rem]' : 'text-sm'} leading-relaxed text-slate-300/85`}>
+        {INCENDIO_VIDEO_PLACEHOLDER_COPY}
+      </p>
+    </div>
+  </div>
+);
 
 const MiniverseModal = ({
   open,
@@ -2205,12 +2238,7 @@ const MiniverseModal = ({
                                   </AnimatePresence>
                                 </>
                               ) : (
-                                <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 text-slate-300/70">
-                                  <div className="h-12 w-12 rounded-full border border-white/20 bg-white/5 flex items-center justify-center text-sm uppercase tracking-[0.3em]">
-                                    ▶︎
-                                  </div>
-                                  <p className="text-xs uppercase tracking-[0.4em]">Video próximamente</p>
-                                </div>
+                                <IncendioVideoPlaceholder compact />
                               )}
                             </div>
                           </div>
@@ -2336,12 +2364,7 @@ const MiniverseModal = ({
                        
                               </>
                             ) : (
-                              <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 text-slate-300/70">
-                                <div className="h-12 w-12 rounded-full border border-white/20 bg-white/5 flex items-center justify-center text-sm uppercase tracking-[0.3em]">
-                                  ▶︎
-                                </div>
-                                <p className="text-xs uppercase tracking-[0.4em]">Video próximamente</p>
-                              </div>
+                              <IncendioVideoPlaceholder compact />
                             )}
                           </div>
                           <div className="flex flex-col gap-3">
@@ -2457,12 +2480,7 @@ const MiniverseModal = ({
                                 </div>
                               </>
                             ) : (
-                              <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 text-slate-300/70">
-                                <div className="h-12 w-12 rounded-full border border-white/20 bg-white/5 flex items-center justify-center text-sm uppercase tracking-[0.3em]">
-                                  ▶︎
-                                </div>
-                                <p className="text-xs uppercase tracking-[0.4em]">Video próximamente</p>
-                              </div>
+                              <IncendioVideoPlaceholder compact />
                             )}
                           </div>
                         </div>
@@ -2503,12 +2521,7 @@ const MiniverseModal = ({
                               </div>
                             </>
                           ) : (
-                            <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 text-slate-300/70">
-                              <div className="h-12 w-12 rounded-full border border-white/20 bg-white/5 flex items-center justify-center text-sm uppercase tracking-[0.3em]">
-                                ▶︎
-                              </div>
-                              <p className="text-xs uppercase tracking-[0.4em]">Video próximamente</p>
-                            </div>
+                            <IncendioVideoPlaceholder compact />
                           )}
                         </div>
                       </div>
@@ -2816,14 +2829,7 @@ const MiniverseModal = ({
                     preload="metadata"
                   />
                 ) : (
-                  <div className="flex h-full w-full flex-col items-center justify-center gap-3 px-6 text-center">
-                    <p className="text-[11px] uppercase tracking-[0.34em] text-slate-400/85">
-                      Video próximamente
-                    </p>
-                    <p className="text-sm text-slate-300/85 leading-relaxed max-w-xl">
-                      Este video narrativo completo aún no está producido. Cuando esté listo, aparecerá aquí.
-                    </p>
-                  </div>
+                  <IncendioVideoPlaceholder />
                 )}
               </div>
             </motion.div>

@@ -3,7 +3,9 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { BookOpen, CoffeeIcon, DramaIcon, TicketIcon, HeartHandshake, ShoppingBag, SparkleIcon, DoorOpen, Volume2, VolumeX } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import TicketPurchaseModal from '@/components/TicketPurchaseModal';
+import MiniverseModal from '@/components/MiniverseModal';
 import isotipoGatoWebp from '@/assets/isotipo-gato.webp';
+const HashtagButton3D = React.lazy(() => import('@/components/HashtagButton3D'));
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/SupabaseAuthContext';
 import { setBienvenidaReturnPath } from '@/lib/bienvenida';
@@ -23,7 +25,6 @@ const HERO_AUDIO_MIN_AUDIBLE_VOLUME = 0.015;
 const HERO_AUDIO_PLAY_RETRY_MS = 2500;
 const HERO_AUDIO_IDLE_RETRY_MS = 6000;
 const HERO_TAB_QUERY_PARAM = 'heroTab';
-const MiniverseModal = React.lazy(() => import('@/components/MiniverseModal'));
 const HERO_LOGGED_IN_ACTIVE_GRADIENT_CLASS =
   'bg-gradient-to-r from-[#1f2f63] via-[#6e30ab] to-[#d91f8b]';
 const HERO_LOGGED_IN_ACTIVE_GLOW =
@@ -31,6 +32,16 @@ const HERO_LOGGED_IN_ACTIVE_GLOW =
 const HERO_LOGGED_IN_SWEEP_GLOW =
   'radial-gradient(circle,rgba(31,47,99,0.3)_0%,rgba(110,48,171,0.22)_44%,rgba(217,31,139,0.1)_74%,rgba(0,0,0,0)_100%)';
 const HERO_PENDING_MINIVERSE_SELECTION_KEY = 'gatoencerrado:hero-inline-miniverse-selection';
+const HERO_ROTATING_SUBTITLES = [
+  'La obra que ocurre en tu mente',
+  'Un viaje escénico que se queda contigo',
+  'Teatro inmersivo para sentir, pensar y recordar',
+  'Una historia que cambia cuando tú la miras',
+  'Es un gato encerrado',
+  ' ',
+];
+const HERO_ROTATING_SUBTITLE_PLACEHOLDER =
+  'Un viaje escénico que se queda contigo.';
 
 const resolveHeroInlineTabFromQuery = (search = '') => {
   if (!search) return 'escaparate';
@@ -49,6 +60,8 @@ const resolveHeroInlineTabFromQuery = (search = '') => {
 const Hero = () => {
   const [isTicketModalOpen, setIsTicketModalOpen] = useState(false);
   const [ctaIndex, setCtaIndex] = useState(0);
+  const [heroSubtitleIndex, setHeroSubtitleIndex] = useState(0);
+  const [isHeroHintVisible, setIsHeroHintVisible] = useState(false);
   const [isCtaHovered, setIsCtaHovered] = useState(false);
   const [primaryCtaWidth, setPrimaryCtaWidth] = useState(null);
   const [activeLoggedInCtaIndex, setActiveLoggedInCtaIndex] = useState(0);
@@ -75,6 +88,7 @@ const Hero = () => {
     { label: 'Merch', Icon: ShoppingBag },
   ];
   const currentCta = rotatingCtas[ctaIndex];
+  const currentHeroSubtitle = HERO_ROTATING_SUBTITLES[heroSubtitleIndex];
   const targetWidth = primaryCtaWidth ?? undefined;
   const navigate = useNavigate();
   const location = useLocation();
@@ -84,7 +98,7 @@ const Hero = () => {
     [location.search]
   );
   const primaryCtaLabel = user ? 'Dejar mi huella' : 'Toma un boleto';
-  const canShowHeroAudioToggle = Boolean(user && isHeroInViewport);
+  const canShowHeroAudioToggle = Boolean(isHeroInViewport);
   const heroAudioTogglePlacementClass = isMobileViewport
     ? 'right-[calc(env(safe-area-inset-right)+0.5rem)] top-[calc(env(safe-area-inset-top)+3.2rem)] h-9 w-9'
     : 'right-6 top-24 h-11 w-11';
@@ -188,6 +202,16 @@ const Hero = () => {
     return () => window.clearInterval(intervalId);
   }, [isCtaHovered, rotatingCtas.length]);
 
+  useEffect(() => {
+    if (user) return undefined;
+    const ROTATION_MS = 4400;
+    const intervalId = window.setInterval(() => {
+      setHeroSubtitleIndex((prev) => (prev + 1) % HERO_ROTATING_SUBTITLES.length);
+    }, ROTATION_MS);
+
+    return () => window.clearInterval(intervalId);
+  }, [user]);
+
 
   const loggedInCtaClass = useCallback(
     () =>
@@ -220,6 +244,25 @@ const Hero = () => {
     window.addEventListener('resize', updateWidth);
     return () => window.removeEventListener('resize', updateWidth);
   }, []);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') {
+      return undefined;
+    }
+
+    if (user) {
+      setIsHeroHintVisible(false);
+      return undefined;
+    }
+
+    const syncHintWithScrollPosition = () => {
+      setIsHeroHintVisible(window.scrollY > 8);
+    };
+
+    syncHintWithScrollPosition();
+    window.addEventListener('scroll', syncHintWithScrollPosition, { passive: true });
+    return () => window.removeEventListener('scroll', syncHintWithScrollPosition);
+  }, [user]);
 
   useEffect(() => {
     if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') {
@@ -262,21 +305,9 @@ const Hero = () => {
   }, [isHeroAudioMuted]);
 
   useEffect(() => {
-    if (!user) {
-      heroAudioMutedRef.current = false;
-      setIsHeroAudioMuted(false);
-      setIsHeroAudioReady(false);
-      setIsHeroAudioPlaying(false);
-      const audio = getHeroAmbientAudio();
-      if (audio) {
-        audio.pause();
-        audio.currentTime = 0;
-      }
-      return undefined;
-    }
-
     const preferredEnabled = readHeroAudioEnabledPreference();
-    const nextMuted = preferredEnabled == null ? isMobileViewport : !preferredEnabled;
+    const defaultMuted = user ? isMobileViewport : true;
+    const nextMuted = preferredEnabled == null ? defaultMuted : !preferredEnabled;
     if (preferredEnabled == null) {
       writeHeroAudioEnabledPreference(!nextMuted);
     }
@@ -330,12 +361,8 @@ const Hero = () => {
 
   useEffect(() => {
     const audio = getHeroAmbientAudio();
-    if (!audio || !user) {
+    if (!audio) {
       setIsHeroAudioPlaying(false);
-      if (audio) {
-        audio.pause();
-        audio.currentTime = 0;
-      }
       return undefined;
     }
 
@@ -611,7 +638,7 @@ const Hero = () => {
         className={`min-h-screen relative overflow-hidden ${
           shouldRenderInlineHero
             ? 'flex items-start justify-center'
-            : 'flex items-center justify-center'
+            : 'flex flex-col'
         }`}
       >
         <AnimatePresence initial={false}>
@@ -648,76 +675,165 @@ const Hero = () => {
               transition={{ duration: 0.36, ease: 'easeOut' }}
               className={`mx-auto w-full ${isMobileViewport ? 'max-w-2xl' : 'max-w-[920px]'}`}
             >
-              <Suspense
-                fallback={(
-                  <div className="rounded-3xl border border-white/15 bg-slate-950/70 p-5 backdrop-blur-xl shadow-[0_18px_50px_rgba(0,0,0,0.45)]">
-                    <p className="text-xs uppercase tracking-[0.32em] text-slate-300/70">
-                      Cargando narrativa expandida...
-                    </p>
-                  </div>
-                )}
-              >
-                <MiniverseModal
-                  open
-                  onClose={handleScrollToAbout}
-                  initialTabId={mobileInitialTabId}
-                  onSelectMiniverse={handleMobileInlineMiniverseSelect}
-                  stayOpenOnSelect
-                  displayMode="inline"
-                />
-              </Suspense>
+              <MiniverseModal
+                open
+                onClose={handleScrollToAbout}
+                initialTabId={mobileInitialTabId}
+                onSelectMiniverse={handleMobileInlineMiniverseSelect}
+                stayOpenOnSelect
+                displayMode="inline"
+              />
             </motion.div>
           </div>
         ) : (
-          <div className="container mx-auto px-6 text-center relative z-10">
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 1, ease: "easeOut" }}
-              className="max-w-4xl mx-auto"
-            >
+          <div className="container mx-auto px-6 text-center relative z-10 flex-1 flex flex-col">
+
+              {/* TOP HALF — isotipo flota hasta la línea central */}
+              <div className="flex-1 flex items-end justify-center pb-6">
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.8 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ duration: 1.2, ease: 'easeOut' }}
+                  className="hero-logo w-24 sm:w-28 md:w-32"
+                >
+                  <img
+                    src={isotipoGatoWebp}
+                    alt="Isotipo de Gato Encerrado"
+                    className="hero-logo-img"
+                  />
+                </motion.div>
+              </div>
+
+              {/* LÍNEA CENTRAL — GATOENCERRADO ancla el 50vh */}
+              <div className="max-w-4xl mx-auto w-full">
+                <motion.h1
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ duration: 1.5, delay: 0.2 }}
+                  className="hero-title text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-medium text-center w-full break-words"
+                  style={{ textShadow: '0 0 35px rgba(255, 223, 255, 0.45)' }}
+                >
+                  #GATOENCERRADO
+                </motion.h1>
+                <motion.div
+                  initial={{ opacity: 0, y: 6 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.9, delay: 0.45, ease: 'easeOut' }}
+                  className="mt-2 flex justify-center px-3"
+                >
+                  <span className="relative inline-flex min-h-[2.8rem] max-w-[42rem] items-center justify-center text-center text-sm leading-tight tracking-widest uppercase text-slate-400/60 sm:min-h-[1.8rem]">
+                    <span className="invisible">{HERO_ROTATING_SUBTITLE_PLACEHOLDER}</span>
+                    <AnimatePresence mode="sync" initial={false}>
+                      <motion.span
+                        key={currentHeroSubtitle}
+                        initial={{ opacity: 0, filter: 'blur(14px)' }}
+                        animate={{ opacity: 1, filter: 'blur(0px)' }}
+                        exit={{ opacity: 0, filter: 'blur(14px)' }}
+                        transition={{ duration: 1.8, ease: [0.2, 1, 0.2, 1] }}
+                        className="absolute inset-0 inline-flex items-center justify-center"
+                      >
+                        {currentHeroSubtitle}
+                      </motion.span>
+                    </AnimatePresence>
+                  </span>
+                </motion.div>
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.7, delay: 1.05 }}
+                  className="relative mt-5 inline-flex h-12 w-12 items-center justify-center self-center sm:mt-6"
+                  aria-hidden="true"
+                >
+                  <motion.svg
+                    width="36"
+                    height="36"
+                    viewBox="0 0 34 34"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                    animate={{ y: [0, 3, 0], opacity: [0.72, 0.3, 0.72] }}
+                    transition={{ duration: 2.1, repeat: Infinity, ease: 'easeInOut' }}
+                    className="h-10 w-10 sm:h-[54px] sm:w-[54px]"
+                    style={{
+                      filter: 'drop-shadow(0 0 5px rgba(255,255,255,0.3)) drop-shadow(0 0 10px rgba(189,189,189,0.26))',
+                    }}
+                  >
+                    <defs>
+                      <linearGradient id="heroScrollChevronGradient" x1="3" y1="4" x2="30" y2="30" gradientUnits="userSpaceOnUse">
+                        <stop stopColor="#2d2d2d" />
+                        <stop offset="0.55" stopColor="#bdbdbd" />
+                        <stop offset="1" stopColor="#ffffff" />
+                      </linearGradient>
+                    </defs>
+                    <path
+                      d="M7 9.5L17 15.5L27 9.5"
+                      stroke="url(#heroScrollChevronGradient)"
+                      strokeWidth="2.8"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      opacity="0.58"
+                    />
+                    <path
+                      d="M7 16L17 22L27 16"
+                      stroke="url(#heroScrollChevronGradient)"
+                      strokeWidth="2.9"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      opacity="0.74"
+                    />
+                    <path
+                      d="M7 22.5L17 28.5L27 22.5"
+                      stroke="url(#heroScrollChevronGradient)"
+                      strokeWidth="2.8"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      opacity="0.66"
+                    />
+                  </motion.svg>
+                </motion.div>
+              </div>
+
+              {/* BOTTOM HALF — hashtag y CTAs bajo la línea central */}
+              <div className="flex-1 flex flex-col items-center justify-start pt-2">
+
+              {/* HashtagButton3D — reemplaza los botones en su misma zona */}
               <motion.div
-                initial={{ opacity: 0, scale: 0.8 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ duration: 1.2, ease: 'easeOut' }}
-                className="hero-logo mx-auto mb-6 w-24 sm:w-28 md:w-32"
-              >
-                <img
-                  src={isotipoGatoWebp}
-                  alt="Isotipo de Gato Encerrado"
-                  className="hero-logo-img"
-                />
-              </motion.div>
-              <motion.h1
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ duration: 1.5, delay: 0.2 }}
-                className="hero-title text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-medium mb-3 text-center w-full break-words"
-                style={{ textShadow: '0 0 35px rgba(255, 223, 255, 0.45)' }}
-              >
-                #GATOENCERRADO
-              </motion.h1>
-
-              <motion.p
-                initial={{ opacity: 0, y: 6 }}
+                initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.9, delay: 0.45, ease: 'easeOut' }}
-                className="text-sm italic text-slate-400/70 leading-tight mb-6"
+                transition={{ duration: 1, delay: 0.8 }}
+                className="mt-8 -translate-y-[7vh] flex flex-col items-center gap-2 sm:mt-10 sm:translate-y-0 md:mt-12"
               >
-                La obra que ocurre en tu mente.
-              </motion.p>
-        
+                <Suspense fallback={<div style={{ height: 130 }} />}>
+                  <HashtagButton3D
+                    onClick={() => handleOpenMiniverseList(null, 'Explora los miniversos')}
+                    height="clamp(110px, 17vh, 160px)"
+                    contentScale={isMobileViewport ? 1 : 1.1}
+                    style={{ width: 'clamp(100px, 16vh, 150px)', margin: '0 auto' }}
+                  />
+                </Suspense>
+                <motion.p
+                  initial={false}
+                  animate={
+                    isHeroHintVisible
+                      ? { opacity: 0.95, y: 0, filter: 'blur(0px)' }
+                      : { opacity: 0, y: 6, filter: 'blur(10px)' }
+                  }
+                  transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
+                  className="select-none text-[0.62rem] uppercase tracking-[0.3em] text-zinc-300/45 sm:text-[0.68rem]"
+                >
+                  toca para abrir
+                </motion.p>
+              </motion.div>
 
-              {/* Botones */}
+              {/* — botones originales: se muestran solo si hay usuario — */}
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 1, delay: 0.8 }}
                 className="flex flex-col gap-4 justify-center items-center"
               >
-                {!user ? (
+                {user && (
                   <div className="flex flex-col gap-4 justify-center items-center">
- 
+
                   {/* CTA PRINCIPAL */}
                   <Button
                     ref={primaryCtaRef}
@@ -789,7 +905,8 @@ const Hero = () => {
                   </Button>
             
                 </div>
-              ) : (
+                )}
+                {user && (
                 <div
                   ref={loggedInCtaTrackRef}
                   className="relative flex w-full max-w-[52rem] items-center justify-center gap-3"
@@ -905,61 +1022,7 @@ const Hero = () => {
                 </div>
               )}
               </motion.div>
-            </motion.div>
-
-            <motion.div
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.7, delay: 1.2 }}
-              className="relative mt-8 inline-flex h-12 w-12 items-center justify-center self-center sm:mt-14 sm:h-12 sm:w-12"
-              aria-hidden="true"
-            >
-              <motion.svg
-                width="36"
-                height="36"
-                viewBox="0 0 34 34"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
-                animate={{ y: [0, 3, 0], opacity: [0.72, 0.3, 0.72] }}
-                transition={{ duration: 2.1, repeat: Infinity, ease: 'easeInOut' }}
-                className="h-10 w-10 sm:h-[54px] sm:w-[54px]"
-                style={{
-                  filter: 'drop-shadow(0 0 5px rgba(255,255,255,0.3)) drop-shadow(0 0 10px rgba(189,189,189,0.26))',
-                }}
-              >
-                <defs>
-                  <linearGradient id="heroScrollChevronGradient" x1="3" y1="4" x2="30" y2="30" gradientUnits="userSpaceOnUse">
-                    <stop stopColor="#2d2d2d" />
-                    <stop offset="0.55" stopColor="#bdbdbd" />
-                    <stop offset="1" stopColor="#ffffff" />
-                  </linearGradient>
-                </defs>
-                <path
-                  d="M7 9.5L17 15.5L27 9.5"
-                  stroke="url(#heroScrollChevronGradient)"
-                  strokeWidth="2.8"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  opacity="0.58"
-                />
-                <path
-                  d="M7 16L17 22L27 16"
-                  stroke="url(#heroScrollChevronGradient)"
-                  strokeWidth="2.9"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  opacity="0.74"
-                />
-                <path
-                  d="M7 22.5L17 28.5L27 22.5"
-                  stroke="url(#heroScrollChevronGradient)"
-                  strokeWidth="2.8"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  opacity="0.66"
-                />
-              </motion.svg>
-            </motion.div>
+              </div>{/* /bottom half */}
 
           </div>
         )}

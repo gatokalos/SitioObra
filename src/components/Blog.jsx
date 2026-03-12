@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Calendar, Clock, Compass, Feather, Search, Send } from 'lucide-react';
+import { useSearch } from '@/hooks/useSearch';
 import { Button } from '@/components/ui/button';
 import { toast } from '@/components/ui/use-toast';
 import ReactMarkdown from 'react-markdown';
@@ -582,10 +583,20 @@ const ArticleInteractionPanel = ({ post }) => {
 };
 
 const Blog = ({ posts = [], isLoading = false, error = null }) => {
+  const {
+    query: faqQuery,
+    setQuery: setFaqQuery,
+    answer: faqAnswer,
+    sources: faqSources,
+    status: faqStatus,
+    errorMessage: faqErrorMessage,
+    search: faqSearch,
+    reset: faqReset,
+    isLoading: faqIsLoading,
+  } = useSearch();
   const [activePost, setActivePost] = useState(null);
   const [pendingSlug, setPendingSlug] = useState(null);
   const [activeCategory, setActiveCategory] = useState(BLOG_CATEGORY_ORDER[0]);
-  const [faqQuery, setFaqQuery] = useState('');
   const [showAllPosts, setShowAllPosts] = useState(false);
   const [isMobileViewport, setIsMobileViewport] = useState(() => {
     if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') return false;
@@ -715,8 +726,8 @@ const Blog = ({ posts = [], isLoading = false, error = null }) => {
 
   const handleFaqPromptSelect = useCallback((prompt) => {
     setFaqQuery(prompt);
-    faqInputRef.current?.focus();
-  }, []);
+    faqSearch(prompt);
+  }, [setFaqQuery, faqSearch]);
 
   useEffect(() => {
     if (pendingSlug && categorizedPosts.length > 0) {
@@ -865,12 +876,9 @@ const Blog = ({ posts = [], isLoading = false, error = null }) => {
                   <div className="relative z-10 grid gap-5 lg:grid-cols-[minmax(320px,0.9fr)_minmax(0,1.1fr)] lg:items-center">
                     <div className="flex flex-col gap-3 rounded-[1.4rem] border border-violet-100/18 bg-black/20 p-4 backdrop-blur-sm lg:p-5">
                       <div className="space-y-3">
-                        <div className="inline-flex items-center gap-2 rounded-full border border-violet-200/45 bg-violet-400/12 px-3 py-1">
-                          <Compass size={12} className="text-violet-100/95" aria-hidden="true" />
-                          <p className="text-[10px] uppercase tracking-[0.34em] text-violet-100/90">Empieza aquí</p>
-                        </div>
+                        
                         <p className="text-[1rem] font-semibold leading-snug text-white">
-                          ¿Primera vez en el sitio? Usa el Buscador Backstage para tus preguntas.
+                          ¿Primera vez en el sitio? Este buscador te orientará en pocos minutos.
                         </p>
                       </div>
                       <div className="relative w-full">
@@ -880,12 +888,79 @@ const Blog = ({ posts = [], isLoading = false, error = null }) => {
                           type="search"
                           value={faqQuery}
                           onChange={(event) => setFaqQuery(event.target.value)}
+                          onKeyDown={(event) => {
+                            if (event.key === 'Enter' && faqQuery.trim().length >= 2) faqSearch();
+                          }}
                           placeholder="Pregunta por el sitio, la obra o cómo empezar"
-                          className="form-surface form-surface--pill h-12 w-full border border-violet-100/45 bg-white/90 py-2 pl-11 pr-4 text-sm text-slate-900 placeholder:text-slate-500"
+                          disabled={faqIsLoading}
+                          className="form-surface form-surface--pill h-12 w-full border border-violet-100/45 bg-white/90 py-2 pl-11 pr-12 text-sm text-slate-900 placeholder:text-slate-500 disabled:opacity-60"
                         />
+                        {faqQuery.trim().length >= 2 && !faqIsLoading && (
+                          <button
+                            type="button"
+                            onClick={() => faqSearch()}
+                            aria-label="Buscar"
+                            className="absolute right-3 top-1/2 -translate-y-1/2 rounded-full bg-violet-500/80 p-1.5 text-white hover:bg-violet-500 transition"
+                          >
+                            <Send size={13} />
+                          </button>
+                        )}
+                        {faqIsLoading && (
+                          <span className="absolute right-4 top-1/2 -translate-y-1/2 h-4 w-4 rounded-full border-2 border-violet-400/40 border-t-violet-500 animate-spin" aria-hidden="true" />
+                        )}
                       </div>
+
+                      {/* Panel de respuesta RAG */}
+                      {(faqStatus === 'searching' || faqStatus === 'streaming' || faqStatus === 'done' || faqStatus === 'error') && (
+                        <div className="rounded-xl border border-violet-100/20 bg-black/30 px-4 py-3 text-sm text-violet-50/90 space-y-2">
+                          {faqStatus === 'searching' && (
+                            <p className="text-violet-200/70 animate-pulse">Buscando en el universo GatoEncerrado…</p>
+                          )}
+                          {(faqStatus === 'streaming' || faqStatus === 'done') && faqAnswer && (
+                            <p className="leading-relaxed whitespace-pre-wrap">
+                              {faqAnswer}
+                              {faqStatus === 'streaming' && (
+                                <span className="inline-block w-0.5 h-3.5 ml-0.5 bg-violet-300 animate-pulse align-middle" aria-hidden="true" />
+                              )}
+                            </p>
+                          )}
+                          {faqStatus === 'done' && faqSources.length > 0 && (
+                            <div className="pt-1 border-t border-violet-100/15 space-y-1">
+                              <p className="text-[10px] uppercase tracking-[0.24em] text-violet-200/55">Artículos relacionados</p>
+                              <ul className="space-y-0.5">
+                                {faqSources.map((s) => (
+                                  <li key={s.slug}>
+                                    <button
+                                      type="button"
+                                      onClick={() => {
+                                        const post = posts.find((p) => p.slug === s.slug);
+                                        if (post) handleSelectPost(post);
+                                      }}
+                                      className="text-violet-300 hover:text-violet-100 underline decoration-dotted transition text-left"
+                                    >
+                                      {s.title}
+                                    </button>
+                                  </li>
+                                ))}
+                              </ul>
+                            </div>
+                          )}
+                          {faqStatus === 'error' && (
+                            <p className="text-red-300/80">{faqErrorMessage || 'No se pudo completar la búsqueda.'}</p>
+                          )}
+                          {(faqStatus === 'done' || faqStatus === 'error') && (
+                            <button
+                              type="button"
+                              onClick={faqReset}
+                              className="text-[10px] uppercase tracking-[0.22em] text-violet-200/45 hover:text-violet-200/80 transition"
+                            >
+                              Nueva búsqueda
+                            </button>
+                          )}
+                        </div>
+                      )}
+
                       <div className="flex flex-wrap gap-2 text-[10px] uppercase tracking-[0.24em] text-violet-100/70">
-                  
                         <span className="rounded-full border border-violet-100/20 bg-black/20 px-3 py-1">
                           Sitio + obra
                         </span>
