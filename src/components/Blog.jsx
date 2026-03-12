@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Calendar, Clock, Compass, Feather, Search, Send } from 'lucide-react';
+import { Calendar, Clock, Compass, Feather, Search, Send, X } from 'lucide-react';
 import { useSearch } from '@/hooks/useSearch';
 import { Button } from '@/components/ui/button';
 import { toast } from '@/components/ui/use-toast';
@@ -76,8 +76,18 @@ const MINIVERSE_KEYWORDS = {
 
 const STARTER_FAQ_PROMPTS = [
   '¿Por dónde empiezo para entender el sitio?',
-  '¿Qué relación tiene la obra con sus miniversos?',
-  '¿Dónde encuentro una guía rápida de personajes y contexto?',
+  '¿Qué diferencia hay entre la obra y el sitio?',
+  '¿Tengo que ver la obra primero para entender el sitio?',
+  '¿El sitio continúa la historia o es otra cosa?',
+  '¿Qué pasa si solo quiero curiosear sin registrarme?',
+  '¿Las respuestas que doy cambian algo en la historia?',
+  '¿Cómo participa alguien que nunca vio la obra presencial?',
+  '¿Esto es arte, experimento o estrategia de marketing?',
+  '¿Quién decide qué partes de este universo son canon?',
+  '¿Qué parte de lo que veo aquí fue escrita por una persona y qué parte por una máquina?',
+  'Si la IA desapareciera mañana, ¿seguiría existiendo #GatoEncerrado?',
+  '¿Qué tendría que pasar para que este proyecto florezca?',
+  '¿Qué pasa después de que termina la función?'
 ];
 
 const inferMiniverseFromPost = (post) => {
@@ -596,6 +606,11 @@ const Blog = ({ posts = [], isLoading = false, error = null }) => {
   } = useSearch();
   const [activePost, setActivePost] = useState(null);
   const [pendingSlug, setPendingSlug] = useState(null);
+  const [searchCompletions, setSearchCompletions] = useState(() => {
+    try { return parseInt(localStorage.getItem('gato_faq_count') || '0', 10); } catch { return 0; }
+  });
+  const [nudgeDismissed, setNudgeDismissed] = useState(false);
+  const prevFaqStatus = useRef(null);
   const [activeCategory, setActiveCategory] = useState(BLOG_CATEGORY_ORDER[0]);
   const [showAllPosts, setShowAllPosts] = useState(false);
   const [isMobileViewport, setIsMobileViewport] = useState(() => {
@@ -728,6 +743,17 @@ const Blog = ({ posts = [], isLoading = false, error = null }) => {
     setFaqQuery(prompt);
     faqSearch(prompt);
   }, [setFaqQuery, faqSearch]);
+
+  useEffect(() => {
+    if (prevFaqStatus.current !== 'done' && faqStatus === 'done') {
+      setSearchCompletions((prev) => {
+        const next = prev + 1;
+        try { localStorage.setItem('gato_faq_count', String(next)); } catch {}
+        return next;
+      });
+    }
+    prevFaqStatus.current = faqStatus;
+  }, [faqStatus]);
 
   useEffect(() => {
     if (pendingSlug && categorizedPosts.length > 0) {
@@ -957,6 +983,36 @@ const Blog = ({ posts = [], isLoading = false, error = null }) => {
                               Nueva búsqueda
                             </button>
                           )}
+                          <AnimatePresence>
+                            {faqStatus === 'done' && searchCompletions >= 3 && !nudgeDismissed && (
+                              <motion.div
+                                initial={{ opacity: 0, y: 4 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                exit={{ opacity: 0 }}
+                                transition={{ duration: 0.4, delay: 0.3 }}
+                                className="relative mt-1 rounded-lg border border-violet-300/25 bg-violet-500/10 px-4 py-3"
+                              >
+                                <button
+                                  type="button"
+                                  onClick={() => setNudgeDismissed(true)}
+                                  aria-label="Cerrar"
+                                  className="absolute right-2 top-2 text-violet-200/40 hover:text-violet-200/80 transition"
+                                >
+                                  <X size={12} />
+                                </button>
+                                <p className="text-xs leading-relaxed text-violet-100/80 pr-4">
+                                  Lo que buscás dice algo de vos. ¿Tenés algo que publicar en el sitio?
+                                </p>
+                                <button
+                                  type="button"
+                                  onClick={() => document.querySelector('#contact')?.scrollIntoView({ behavior: 'smooth', block: 'start' })}
+                                  className="mt-2 text-[10px] uppercase tracking-[0.22em] text-violet-300 hover:text-violet-100 transition"
+                                >
+                                  Escribinos →
+                                </button>
+                              </motion.div>
+                            )}
+                          </AnimatePresence>
                         </div>
                       )}
 
@@ -976,7 +1032,7 @@ const Blog = ({ posts = [], isLoading = false, error = null }) => {
                         Pregunta por secciones, personajes, contexto, rutas de lectura o                       cualquier punto de entrada al universo.
                       </p>
                       <div className="grid gap-2">
-                        {STARTER_FAQ_PROMPTS.map((prompt) => (
+                        {STARTER_FAQ_PROMPTS.slice(0, 3).map((prompt) => (
                           <button
                             type="button"
                             key={prompt}
@@ -986,6 +1042,22 @@ const Blog = ({ posts = [], isLoading = false, error = null }) => {
                             {prompt}
                           </button>
                         ))}
+                        <AnimatePresence>
+                          {faqStatus === 'done' && STARTER_FAQ_PROMPTS.slice(3).map((prompt) => (
+                            <motion.button
+                              key={prompt}
+                              type="button"
+                              initial={{ opacity: 0 }}
+                              animate={{ opacity: 1 }}
+                              exit={{ opacity: 0 }}
+                              transition={{ duration: 0.4 }}
+                              onClick={() => handleFaqPromptSelect(prompt)}
+                              className="rounded-2xl border border-violet-100/20 bg-white/8 px-4 py-3 text-left text-sm leading-relaxed text-violet-50 transition hover:border-violet-100/40 hover:bg-white/12"
+                            >
+                              {prompt}
+                            </motion.button>
+                          ))}
+                        </AnimatePresence>
                       </div>
                     </div>
                   </div>

@@ -179,6 +179,8 @@ const Transmedia = ({ allianceOnlyMode = false }) => {
   const [focusAppMetadata, setFocusAppMetadata] = useState(null);
   const [isMovementCreditsOpen, setIsMovementCreditsOpen] = useState(false);
   const [openCollaboratorId, setOpenCollaboratorId] = useState(null);
+  const [detonadoresHintActive, setDetonadoresHintActive] = useState(false);
+  const detonadoresHintFiredRef = useRef(false);
   const { isMobileViewport, canUseInlinePlayback, requestMobileVideoPresentation } = useMobileVideoPresentation();
   const { user } = useAuth();
   const { hasActiveSubscription } = useActiveSubscription(user?.id);
@@ -2033,7 +2035,7 @@ const rendernotaAutoral = () => {
                 
                 </div>
                 <div className="space-y-4 text-lg text-slate-200/85 leading-relaxed font-light">
-                  <p>{activeDefinition.intro}</p>
+                  {activeDefinition.introNode ?? <p>{activeDefinition.intro}</p>}
                   {activeDefinition.narrative?.map((paragraph, index) => (
                     <p key={`tragico-paragraph-${index}`} className="text-sm text-slate-300/90 leading-relaxed">
                       {paragraph}
@@ -2058,26 +2060,19 @@ const rendernotaAutoral = () => {
             <div className="contents lg:block lg:min-w-0 lg:space-y-6">
               <div className="min-w-0 overflow-hidden rounded-3xl border border-white/10 bg-black/35 p-6 shadow-[0_20px_45px_rgba(0,0,0,0.45)] space-y-4">
                 <div className="min-w-0 space-y-2">
-                  <p className="text-xs uppercase tracking-[0.35em] text-slate-400">Entra a la obra</p>
+                  <p className="text-xs uppercase tracking-[0.35em] text-slate-400">Entra a la escena</p>
                   <h2
                     className="font-display text-[clamp(1.3rem,5.6vw,1.55rem)] leading-tight text-white sm:text-2xl break-words"
                     style={{ textWrap: 'balance' }}
                   >
-                    Habita las emociones de Silvestre
+                    Habita los sentimientos de Silvestre
                   </h2>
                   <p className="text-sm text-slate-300/80 break-words">
-                   Di una frase.<br />
-                   La obra te la devuelve distinta.<br />
-                  <br />
-                   No es un chat.<br />
-                   Es un ensayo en vivo.<br />
-                   <br />
-                   Habla como Silvestre —o como tú—<br />
-                   Y escucha como la escena responde desde dentro.<br />
+                     Así como una misma frase no suena igual con otra emoción,<br />
+                     aquí La Voz de la Obra cambia cuando la intención cambia.
                     <br />
-                   A veces juega contigo.<br />
-                   A veces resuena.
-                  </p>
+                    Las emociones son las que reescriben la historia.
+                    </p>
                 </div>
 
                 <div ref={obraModesRef} className="space-y-3">
@@ -2120,13 +2115,26 @@ const rendernotaAutoral = () => {
                                 showSilvestreCoins={showSilvestreCoins}
                                 micError={micError}
                                 transcript={transcript}
-                                secondaryCtaVisible={isMobileViewport}
+                                secondaryCtaVisible
                                 secondaryCtaCopy={mobileSecondaryCtaCopy}
                                 secondaryCtaDisabled={mobileSecondaryCtaDisabled}
                                 secondaryCtaEmphasis={mobileSecondaryCtaEmphasis}
-                                onMicClick={() => handleOpenSilvestreChatCta(activeObraModeId)}
+                                onMicClick={() => {
+                                  if (!detonadoresHintFiredRef.current && !isMobileViewport) {
+                                    detonadoresHintFiredRef.current = true;
+                                    setDetonadoresHintActive(true);
+                                    setTimeout(() => setDetonadoresHintActive(false), 2000);
+                                  }
+                                  handleOpenSilvestreChatCta(activeObraModeId);
+                                }}
                                 onPlayPending={handlePlayPendingAudio}
-                                onSecondaryCtaClick={handleMobileObraSecondaryCta}
+                                onSecondaryCtaClick={() => {
+                                  if (!isMobileViewport) {
+                                    setDetonadoresHintActive(true);
+                                    setTimeout(() => setDetonadoresHintActive(false), 2000);
+                                  }
+                                  handleMobileObraSecondaryCta();
+                                }}
                                 tone={activeObraTint}
                                 className="pt-1"
                               />
@@ -2180,7 +2188,7 @@ const rendernotaAutoral = () => {
             <div className="order-2 min-w-0 space-y-6 lg:order-none">
               <div
                 ref={obraDetonadoresRef}
-                className="relative overflow-hidden rounded-3xl border border-white/10 bg-black/30 p-6"
+                className={`relative overflow-hidden rounded-3xl border border-white/10 bg-black/30 p-6 transition-opacity${detonadoresHintActive ? ' animate-pulse' : ''}`}
                 style={{ borderColor: activeObraTint?.border, boxShadow: activeObraTint?.glow }}
               >
                 <div
@@ -3723,7 +3731,9 @@ const rendernotaAutoral = () => {
                   <div className="flex-1 space-y-6">
                     <p className="text-xs uppercase tracking-[0.4em] text-slate-400/70 mb-2">Vitrina</p>
                     <h3 className="font-display text-3xl text-slate-100 mb-3">{activeDefinition.label}</h3>
-                    <p className="text-slate-300/80 leading-relaxed font-light max-w-3xl">{activeDefinition.intro}</p>
+                    <div className="text-slate-300/80 leading-relaxed font-light max-w-3xl">
+                      {activeDefinition.introNode ?? activeDefinition.intro}
+                    </div>
                     {activeDefinition.iaProfile ? (
                       <div className="max-w-xl">
                         <IAInsightCard {...activeDefinition.iaProfile} compact />

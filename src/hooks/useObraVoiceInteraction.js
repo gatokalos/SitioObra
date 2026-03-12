@@ -240,7 +240,7 @@ const useObraVoiceInteraction = ({
   );
 
   const handleMobileObraSecondaryCta = useCallback(async () => {
-    if (!isMobileViewport || activeDefinition?.type !== 'tragedia') return;
+    if (activeDefinition?.type !== 'tragedia') return;
     if (isObraVoiceBusy) return;
 
     if (mobileObraSecondaryCtaState === MOBILE_OBRA_SECONDARY_CTA_STATES.READ_SCRIPT) {

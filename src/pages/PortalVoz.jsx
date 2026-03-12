@@ -154,11 +154,26 @@ const collectiveNodeLayout = [
   { x: 73, y: 76 },
   { x: 24, y: 80 },
 ];
-const SCENE_PORTAL_INTRO =
-  'La obra no terminó. Lo que viste en escena sigue ocurriendo. Aquí puedes habitar el drama, escuchar la conciencia de la obra en proceso y hablar como si estuvieras en escena.';
+const SCENE_PORTAL_INTRO = (
+  <>
+    <p className="text-base leading-relaxed text-neutral-300">
+      Los estados emocionales de <strong>Silvestre</strong> no son etiquetas.{' '}
+      Son lugares donde la escena ocurre.
+    </p>
+    <p className="text-base leading-relaxed text-neutral-300 mt-3">
+      Di una frase —tuya o del libreto— y escucha cómo la obra responde desde adentro.
+    </p>
+    <p className="text-base leading-relaxed text-neutral-300 mt-3">
+      Luego cambia de emoción y detona la misma frase otra vez.
+    </p>
+    <p className="text-lg leading-relaxed font-medium text-white mt-4">
+      La escena nunca responde igual.
+    </p>
+  </>
+);
 const SCENE_PORTAL_IA_PROFILE = {
   type: 'Una voz que no es personaje ni herramienta: es la conciencia de la obra en proceso.',
-  interaction: 'Elige una emoción de Silvestre. Habla desde ahí. La obra responderá una vez.',
+  interaction: 'Elige una emoción de Silvestre. Habla desde ahí. La obra responderá diferente al cambiar de emoción.',
   tokensRange: 'Lo suficiente para decir algo sin agotarlo.',
   coverage: 'Existe mientras haya quienes la convoquen.',
   footnote: 'No todas las voces quieren durar. Gracias por dejarlas pasar.',
@@ -1005,7 +1020,7 @@ const PortalVoz = () => {
                   </div>
                 </div>
                 <div className="space-y-4 text-lg text-slate-200/85 leading-relaxed font-light">
-                  <p>{SCENE_PORTAL_INTRO}</p>
+                  {SCENE_PORTAL_INTRO}
                 </div>
                 <IAInsightCard {...SCENE_PORTAL_IA_PROFILE} compact />
               </div>
@@ -1036,33 +1051,18 @@ const PortalVoz = () => {
             <div className="contents lg:block lg:min-w-0 lg:space-y-6">
               <div className="min-w-0 overflow-hidden rounded-3xl border border-white/10 bg-black/35 p-6 shadow-[0_20px_45px_rgba(0,0,0,0.45)] space-y-4">
                 <div className="min-w-0 space-y-2">
-                  <p className="text-xs uppercase tracking-[0.35em] text-slate-400">Entra a la obra</p>
+                  <p className="text-xs uppercase tracking-[0.35em] text-slate-400">Entra a la escena</p>
                   <h2
                     className="font-display text-[clamp(1.3rem,5.6vw,1.55rem)] leading-tight text-white sm:text-2xl break-words"
                     style={{ textWrap: 'balance' }}
                   >
-                    Habita las emociones de Silvestre
+                    Habita los sentimeintos de Silvestre
                   </h2>
                   <p className="text-sm text-slate-300/80 break-words">
-                    Di una frase.
+                    Así como una misma frase no suena igual con otra emoción, aquí "La Voz de la Obra" cambia cuando la intención cambia.
                     <br />
-                    La obra te la devuelve distinta.
-                    <br />
-                    <br />
-                    No es un chat.
-                    <br />
-                    Es un ensayo en vivo.
-                    <br />
-                    <br />
-                    Habla como Silvestre —o como tú—
-                    <br />
-                    Y escucha como la escena responde desde dentro.
-                    <br />
-                    <br />
-                    A veces juega contigo.
-                    <br />
-                    A veces resuena.
-                  </p>
+                    Las emociones son las que reescriben la historia.
+                    </p>
                 </div>
 
                 <div ref={obraModesRef} className="space-y-3">

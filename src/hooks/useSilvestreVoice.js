@@ -7,6 +7,7 @@ const SILVESTRE_QUESTIONS_STORAGE_KEY = 'gatoencerrado:silvestre-questions-spent
 const MODES = [
   'confusion-lucida',
   'sospecha-doctora',
+  'rabia',
   'necesidad-orden',
   'humor-negro',
   'cansancio-mental',
@@ -17,7 +18,6 @@ const DEFAULT_MODE = 'confusion-lucida';
 const LEGACY_MODE_ALIASES = {
   'lectura-profunda': 'confusion-lucida',
   artista: 'atraccion-incomoda',
-  rabia: 'atraccion-incomoda',
   'claro-directo': 'necesidad-orden',
   tiktoker: 'humor-negro',
   'util-hoy': 'cansancio-mental',

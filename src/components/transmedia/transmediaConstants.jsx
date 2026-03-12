@@ -6,6 +6,7 @@ import {
   Wrench,
   Heart,
   Layers,
+  Flame,
   Drama,
   Coffee,
   BookOpen,
@@ -422,6 +423,18 @@ export const OBRA_VOICE_MODES = [
     },
   },
   {
+    id: 'rabia',
+    title: 'Rabia',
+    description: 'Cuando el cuerpo habla primero.',
+    accent: 'from-red-200/20 via-orange-300/10 to-transparent',
+    icon: Flame,
+    tint: {
+      border: 'rgba(252,165,165,0.45)',
+      glow: '0 18px 55px rgba(239,68,68,0.2)',
+      dot: 'rgba(252,165,165,0.9)',
+    },
+  },
+  {
     id: 'necesidad-orden',
     title: 'Necesidad de orden',
     description: 'Una versión clara y breve, sin adornos.',
@@ -501,6 +514,7 @@ export const OBRA_EMOTION_MODE_REGIONS = {
   'cansancio-mental': { left: 40, top: 64, spreadX: 11, spreadY: 10, size: 17 },
   'atraccion-incomoda': { left: 46, top: 48, spreadX: 12, spreadY: 10, size: 16 },
   vertigo: { left: 58, top: 70, spreadX: 9, spreadY: 9, size: 16 },
+  rabia: { left: 70, top: 30, spreadX: 13, spreadY: 11, size: 18 },
   default: { left: 50, top: 50, spreadX: 11, spreadY: 11, size: 15 },
 };
 export const clampEmotionValue = (value, min, max) => Math.max(min, Math.min(max, value));
@@ -539,7 +553,18 @@ export const showcaseDefinitions = {
     label: 'Escena',
     type: 'tragedia',
     intro:
-      'La obra no terminó. Lo que viste en escena sigue ocurriendo. Aquí puedes habitar el drama, escuchar la conciencia de la obra en proceso y hablar como si estuvieras en escena.',
+      'Los estados emocionales de Silvestre no son etiquetas. Son lugares donde la escena ocurre. Di una frase —tuya o del libreto— y escucha cómo la obra responde desde adentro. Luego cambia de emoción y detona la misma frase otra vez. La escena nunca responde igual.',
+    introNode: (
+      <>
+        <p className="text-base leading-relaxed text-neutral-300">
+          Los estados emocionales de <strong>Silvestre</strong> no son etiquetas.{' '}
+          Son lugares donde la escena ocurre. Di una frase —tuya o del libreto— y escucha cómo la obra responde desde adentro.
+        </p>
+        <p className="text-lg leading-relaxed font-medium text-white mt-4">
+          La escena nunca responde igual.
+        </p>
+      </>
+    ),
     cartaTitle: '#LaPuertaInvisible',
     notaAutoral: 'Entré sin saber.\nAlgo dijo mi nombre.\nY ya no hubo salida.',
 
@@ -547,7 +572,7 @@ export const showcaseDefinitions = {
     conversationStarters: OBRA_CONVERSATION_STARTERS,
 iaProfile: {
   type: 'Una voz que no es personaje ni herramienta: es la conciencia de la obra en proceso.',
-  interaction: 'Elige una emoción de Silvestre. Habla desde ahí. La obra responderá una vez.',
+  interaction: 'Elige una emoción de Silvestre. Habla desde ahí. La obra responderá diferente al cambiar de emoción.',
   tokensRange: 'Lo suficiente para decir algo sin agotarlo.',
   coverage: 'Existe mientras haya quienes la convoquen.',
   footnote: 'No todas las voces quieren durar. Gracias por dejarlas pasar.',
