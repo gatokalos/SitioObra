@@ -14,6 +14,7 @@ import {
   getHeroAmbientState,
   subscribeHeroAmbient,
   readHeroAudioEnabledPreference,
+  writeHeroAudioEnabledPreference,
   pauseHeroAmbient,
 } from '@/lib/heroAmbientAudio';
 import { createPortalLaunchState } from '@/lib/portalNavigation';

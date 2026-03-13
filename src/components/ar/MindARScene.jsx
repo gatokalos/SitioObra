@@ -7,7 +7,6 @@ import React, {
   useState,
 } from 'react';
 import loadMindAR from '@/lib/loadMindAR';
-import loadThree from '@/lib/loadThree';
 
 const MODEL_URL = '/models/hashtag_black-draco.glb';
 const BASE_ROT = { x: -0.25, y: 0.6, z: -0.12 };
@@ -121,8 +120,10 @@ const MindARScene = forwardRef(
         setError('');
         setHasTarget(false);
         try {
-          const THREE = await loadThree();
+          const THREE = await import('three');
+          if (!isActive) return;
           const MINDAR_IMAGE = await loadMindAR();
+          if (!isActive) return;
 
           if (navigator?.mediaDevices?.enumerateDevices) {
             const devices = await navigator.mediaDevices.enumerateDevices();
@@ -186,8 +187,10 @@ const MindARScene = forwardRef(
           let modelScene = null;
           try {
             const gltf = await loader.loadAsync(MODEL_URL);
+            if (!isActive) return;
             modelScene = gltf.scene;
           } catch (modelError) {
+            if (!isActive) return;
             console.warn(
               `[MindARScene] No se pudo cargar ${MODEL_URL}, usando modelo fallback.`,
               modelError,
@@ -216,6 +219,10 @@ const MindARScene = forwardRef(
 
           // Iniciar MindAR
           await mindarThree.start();
+          if (!isActive) {
+            try { mindarThree.stop?.(); } catch (_) {}
+            return;
+          }
 
           // Video de cámara para poder capturar frames
           const video = mindarThree.video;

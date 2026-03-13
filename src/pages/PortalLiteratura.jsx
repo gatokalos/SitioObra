@@ -17,6 +17,7 @@ import { recordShowcaseLike } from '@/services/showcaseLikeService';
 import { startDirectMerchCheckout } from '@/lib/merchCheckout';
 import { supabase } from '@/lib/supabaseClient';
 import { sanitizeExternalHttpUrl } from '@/lib/urlSafety';
+import { hasEnoughGAT } from '@/lib/gatAccess';
 
 const LITERATURA_INTRO =
   'En este miniverso literario se entiende la escritura como una forma de expansion. No es un complemento de la obra escenica o de la novela, sino un espacio propio donde fragmentos, voces, poemas y apuntes dialogan entre si y amplian el universo de Gato Encerrado.';
@@ -185,8 +186,9 @@ const PortalLiteratura = () => {
     setShowLoginOverlay(false);
   }, []);
 
-  const requireAuth = useCallback(() => {
+  const requireAuth = useCallback((forceAuth = false) => {
     if (isAuthenticated) return true;
+    if (!forceAuth && hasEnoughGAT()) return true;
     setShowLoginOverlay(true);
     setShowLoginHint(true);
     window.setTimeout(() => setShowLoginHint(false), 2200);

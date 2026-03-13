@@ -140,7 +140,7 @@ const BlogContributionPrompt = ({ onRevealTransmedia = null }) => {
         onClick={handleContinue}
         className="px-6 py-3 text-sm sm:text-base font-medium text-slate-100 bg-gradient-to-r from-fuchsia-600 to-pink-500 hover:opacity-90 transition-all duration-300"
       >
-        Continuar
+        Expandir
       </button>
 
       {/* Mitad derecha: contactar */}

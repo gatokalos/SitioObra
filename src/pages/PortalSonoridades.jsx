@@ -15,6 +15,7 @@ import { fetchApprovedContributions } from '@/services/contributionService';
 import { recordShowcaseLike } from '@/services/showcaseLikeService';
 import { supabase } from '@/lib/supabaseClient';
 import { sanitizeExternalHttpUrl } from '@/lib/urlSafety';
+import { hasEnoughGAT } from '@/lib/gatAccess';
 
 const SONORIDADES_INTRO =
   'Sonoridades reune la musica original y el diseno sonoro creados para la obra, junto con piezas que expanden su universo mas alla del escenario.';
@@ -219,8 +220,9 @@ const PortalSonoridades = () => {
     setShowLoginOverlay(false);
   }, []);
 
-  const requireAuth = useCallback(() => {
+  const requireAuth = useCallback((forceAuth = false) => {
     if (isAuthenticated) return true;
+    if (!forceAuth && hasEnoughGAT()) return true;
     setShowLoginOverlay(true);
     setShowLoginHint(true);
     window.setTimeout(() => setShowLoginHint(false), 2200);

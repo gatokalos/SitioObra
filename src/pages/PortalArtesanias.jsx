@@ -17,6 +17,7 @@ import { recordShowcaseLike } from '@/services/showcaseLikeService';
 import { startDirectMerchCheckout } from '@/lib/merchCheckout';
 import { supabase } from '@/lib/supabaseClient';
 import { sanitizeExternalHttpUrl } from '@/lib/urlSafety';
+import { hasEnoughGAT } from '@/lib/gatAccess';
 
 const ARTESANIAS_INTRO =
   'Un objeto cotidiano convertido en simbolo de comunión. Cada taza esta vinculada a un sentimiento. Cada sentimiento, a una historia personal.';
@@ -221,8 +222,9 @@ const PortalArtesanias = () => {
     setShowLoginOverlay(false);
   }, []);
 
-  const requireAuth = useCallback(() => {
+  const requireAuth = useCallback((forceAuth = false) => {
     if (isAuthenticated) return true;
+    if (!forceAuth && hasEnoughGAT()) return true;
     setShowLoginOverlay(true);
     setShowLoginHint(true);
     window.setTimeout(() => setShowLoginHint(false), 2200);
@@ -792,7 +794,6 @@ const PortalArtesanias = () => {
             guideImageSrc="/webar/taza/taza-marker.jpg"
             guideLabel="Alinea la ilustracion de la taza con el contorno. No necesita ser exacto."
             onExit={handleCloseARExperience}
-            initialCameraReady
             onError={handleARError}
           />
         </div>

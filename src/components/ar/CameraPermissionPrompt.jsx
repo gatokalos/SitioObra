@@ -23,9 +23,27 @@ const CameraPermissionPrompt = ({
       setStatus('insecure');
       return;
     }
-    // Saltamos el precheck y dejamos que el motor AR pida la cámara con sus propios constraints.
-    setStatus('granted');
-    onGranted?.();
+    setStatus('requesting');
+    try {
+      // Pre-autorizar dentro del gesto del usuario — el navegador móvil exige
+      // que getUserMedia se llame en el mismo tick que el tap/click.
+      // MindAR reutilizará el permiso ya concedido cuando arranque.
+      const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
+      // Liberar inmediatamente — MindAR pedirá su propio stream.
+      stream.getTracks().forEach((t) => t.stop());
+      setStatus('granted');
+      onGranted?.();
+    } catch (err) {
+      const name = err?.name ?? '';
+      if (name === 'NotAllowedError' || name === 'PermissionDeniedError') {
+        setErrorMessage('Permiso de cámara denegado. Actívalo en la configuración del navegador.');
+      } else if (name === 'NotFoundError' || name === 'DevicesNotFoundError') {
+        setErrorMessage('No encontramos una cámara en este dispositivo.');
+      } else {
+        setErrorMessage(err?.message || 'No pudimos acceder a la cámara.');
+      }
+      setStatus('error');
+    }
   };
 
   const baseClasses =

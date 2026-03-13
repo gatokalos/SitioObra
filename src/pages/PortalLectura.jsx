@@ -6,6 +6,7 @@ import { useAuth } from '@/contexts/SupabaseAuthContext';
 import LoginOverlay from '@/components/ContributionModal/LoginOverlay';
 import PortalAuthButton from '@/components/PortalAuthButton';
 import PortalHeaderActions from '@/components/portal/PortalHeaderActions';
+import { hasEnoughGAT } from '@/lib/gatAccess';
 
 const PortalLectura = () => {
   const { user } = useAuth();
@@ -24,8 +25,9 @@ const PortalLectura = () => {
     setShowLoginOverlay(false);
   }, []);
 
-  const requireAuth = useCallback(() => {
+  const requireAuth = useCallback((forceAuth = false) => {
     if (isAuthenticated) return true;
+    if (!forceAuth && hasEnoughGAT()) return true;
     setShowLoginOverlay(true);
     setShowLoginHint(true);
     window.setTimeout(() => setShowLoginHint(false), 2200);

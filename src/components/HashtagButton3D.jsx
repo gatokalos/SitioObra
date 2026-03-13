@@ -137,12 +137,12 @@ export default function HashtagButton3D({
       >
 
         <Canvas
-          camera={{ position: [0, 0.2, 6.2], fov: 35 }}
+          camera={{ position: [0, 0.2, 4.2], fov: 35 }}
           gl={{ antialias: true, alpha: true }}
           style={{ background: 'transparent', position: 'relative', zIndex: 1, pointerEvents: 'auto' }}
         >
           <ambientLight intensity={0.55} />
-          <directionalLight position={[-1.5, 4, 5]} intensity={6.2} />
+          <directionalLight position={[-1.5, 4, 5]} intensity={3.2} />
           <directionalLight position={[3, 3, 1]} intensity={1.2} />
           <directionalLight position={[-3, 1, -3]} intensity={0.6} />
 

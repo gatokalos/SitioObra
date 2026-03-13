@@ -14,6 +14,7 @@ import { fetchApprovedContributions } from '@/services/contributionService';
 import { recordShowcaseLike } from '@/services/showcaseLikeService';
 import { supabase } from '@/lib/supabaseClient';
 import { sanitizeExternalHttpUrl } from '@/lib/urlSafety';
+import { hasEnoughGAT } from '@/lib/gatAccess';
 
 const GRAFICOS_INTRO =
   'Este mini-verso gráfico explora el universo de #GatoEncerrado desde la imagen. Aquí las escenas se quedan en otro momento: lo que en la obra aparece como pensamiento o diálogo, en el cómic puede convertirse en ensayo, en silencio, en otra voz. No solo la de Silvestre, sino la de cualquiera que se haya sentido como él.';
@@ -162,8 +163,9 @@ const PortalGraficos = () => {
     setShowLoginOverlay(false);
   }, []);
 
-  const requireAuth = useCallback(() => {
+  const requireAuth = useCallback((forceAuth = false) => {
     if (isAuthenticated) return true;
+    if (!forceAuth && hasEnoughGAT()) return true;
     setShowLoginOverlay(true);
     setShowLoginHint(true);
     window.setTimeout(() => setShowLoginHint(false), 2200);

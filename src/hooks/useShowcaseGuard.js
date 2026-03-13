@@ -1,8 +1,5 @@
 import { useCallback, useEffect, useRef } from 'react';
-import {
-  OBRA_VOICE_MIN_GAT,
-  OBRA_VOICE_PRECARE_THRESHOLD_GAT,
-} from '@/components/transmedia/transmediaConstants';
+import { OBRA_VOICE_MIN_GAT } from '@/components/transmedia/transmediaConstants';
 
 /**
  * Manages the guardrail precare flow, showcase auth checks, and Obra voice GAT consumption.
@@ -30,7 +27,7 @@ const useShowcaseGuard = ({
     const safe = Number.isFinite(availableGATokens)
       ? Math.max(Math.trunc(Number(availableGATokens)), 0)
       : 0;
-    if (safe > OBRA_VOICE_PRECARE_THRESHOLD_GAT) {
+    if (safe >= OBRA_VOICE_MIN_GAT) {
       guardrailNoticeShownRef.current = false;
     }
   }, [availableGATokens]);
@@ -53,16 +50,21 @@ const useShowcaseGuard = ({
   const requireShowcaseAuth = useCallback(
     (message = 'Activa tu huella para ampliar tu energía en esta vitrina.', loginPayload = undefined) => {
       if (isAuthenticated) return true;
-      const remaining = Number.isFinite(availableGATokens) ? Math.max(Number(availableGATokens), 0) : 0;
-      showGuardrailPrecareOnce({
-        message,
-        actionLabel: loginPayload?.action || 'esta vitrina',
-        remaining,
-      });
-      toast({ description: 'Puedes seguir explorando. Si te quedas sin GAT, activa tu huella por $50/mes.' });
+      // Si aún no cargó el balance, dejar pasar
+      if (!Number.isFinite(availableGATokens)) return true;
+      const remaining = Math.max(Number(availableGATokens), 0);
+      // Solo bloquear y mostrar guardrail cuando los tokens se agotaron
+      if (remaining < OBRA_VOICE_MIN_GAT) {
+        showGuardrailPrecareOnce({
+          message,
+          actionLabel: loginPayload?.action || 'esta vitrina',
+          remaining,
+        });
+        return false;
+      }
       return true;
     },
-    [availableGATokens, isAuthenticated, showGuardrailPrecareOnce, toast]
+    [availableGATokens, isAuthenticated, showGuardrailPrecareOnce]
   );
 
   const consumeObraVoiceGAT = useCallback(
@@ -71,17 +73,10 @@ const useShowcaseGuard = ({
       const remainingBeforeSpend = Number.isFinite(availableGATokens)
         ? Math.max(Number(availableGATokens), 0)
         : 0;
-      const shouldShowGuardrailPrecare =
-        !isAuthenticated &&
-        remainingBeforeSpend > 0 &&
-        remainingBeforeSpend <= OBRA_VOICE_PRECARE_THRESHOLD_GAT;
-      if (shouldShowGuardrailPrecare) {
-        const turnsLeft = Math.max(1, Math.ceil(remainingBeforeSpend / OBRA_VOICE_MIN_GAT));
+      // Guardrail solo cuando se conoce el balance y no alcanza para un turno más
+      if (!isAuthenticated && Number.isFinite(availableGATokens) && remainingBeforeSpend < OBRA_VOICE_MIN_GAT) {
         showGuardrailPrecareOnce({
-          message:
-            turnsLeft === 1
-              ? 'Te queda 1 pregunta de cortesía en esta vitrina antes de agotar tus GAT.'
-              : `Te quedan ${turnsLeft} preguntas de cortesía en esta vitrina antes de agotar tus GAT.`,
+          message: 'Agotaste tu energía de cortesía en esta vitrina. Activa tu huella para continuar.',
           actionLabel,
           remaining: remainingBeforeSpend,
         });
