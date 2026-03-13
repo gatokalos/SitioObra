@@ -874,7 +874,7 @@ const Blog = ({ posts = [], isLoading = false, error = null }) => {
               Curaduría, comunidad y resonancia
             </h2>
             <p className="text-lg text-slate-300/80 max-w-3xl mx-auto leading-relaxed font-light">
-              Un espacio de pensamiento crítico, creatividad y poética donde convergen curaduría, ficción expandida y
+              Un espacio de pensamiento crítico, creatividad y poética donde convergen pensamiento crítico, ficción expandida y
               noticias detrás de escena. Filtra por interés, busca autorías específicas o explora las líneas editoriales.
             </p>
           </motion.div>
