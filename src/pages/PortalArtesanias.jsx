@@ -21,7 +21,7 @@ import { hasEnoughGAT } from '@/lib/gatAccess';
 
 const ARTESANIAS_INTRO =
   'Un objeto cotidiano convertido en simbolo de comunión. Cada taza esta vinculada a un sentimiento. Cada sentimiento, a una historia personal.';
-const ARTESANIAS_SUBTITLE = 'Esta no es una taza. Es un portal.';
+const ARTESANIAS_SUBTITLE = 'Esta no es una taza. Es un umbral.';
 const ARTESANIAS_NOTE = 'Apunta tu cámara y aparecera tu frase';
 const ARTESANIAS_IMAGE =
   'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Merch/taza_h.png';
