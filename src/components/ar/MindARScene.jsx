@@ -198,13 +198,13 @@ const MindARScene = forwardRef(
             modelScene = buildFallbackPortal(THREE);
           }
 
-          // Material oscuro metálico con emissive violeta (igual que en Hero)
+          // Material con emissive alto para visibilidad en AR (fondo real ≠ fondo negro del Hero)
           mat = new THREE.MeshStandardMaterial({
-            color: new THREE.Color('#080808'),
-            metalness: 0.82,
-            roughness: 0.18,
-            emissive: new THREE.Color('#9966ff'),
-            emissiveIntensity: 0.12,
+            color: new THREE.Color('#1a0a2e'),
+            metalness: 0.5,
+            roughness: 0.3,
+            emissive: new THREE.Color('#9933ff'),
+            emissiveIntensity: 1.2,
           });
           modelScene.traverse((child) => {
             if (child.isMesh) child.material = mat;
@@ -276,9 +276,9 @@ const MindARScene = forwardRef(
                 const p = (elapsed - flashStartT) / 0.55;
                 if (p >= 1) {
                   flashStartT = null;
-                  mat.emissiveIntensity = 0.12;
+                  mat.emissiveIntensity = 1.2;
                 } else {
-                  mat.emissiveIntensity = 0.12 + Math.sin(p * Math.PI) * 0.55;
+                  mat.emissiveIntensity = 1.2 + Math.sin(p * Math.PI) * 1.0;
                 }
               }
             }
