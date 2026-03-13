@@ -25,7 +25,7 @@ const ARTESANIAS_SUBTITLE = 'Esta no es una taza. Es un portal.';
 const ARTESANIAS_NOTE = 'Apunta tu cámara y aparecera tu frase';
 const ARTESANIAS_IMAGE =
   'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Merch/taza_h.png';
-const ARTESANIAS_PHRASES = ['La taza te habla.'];
+const ARTESANIAS_PHRASES = ['Esto no es una taza, es un portal.'];
 const ARTESANIAS_INSTRUCTIONS = [
   'Permite el acceso a tu cámara para iniciar.',
   'Coloca la taza completa en cuadro, con buena iluminación.',
