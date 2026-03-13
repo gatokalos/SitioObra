@@ -112,6 +112,7 @@ const MindARScene = forwardRef(
       let animationLoop = null;
       let attachedVideo = null;
       let catModel = null;
+      let catModel1 = null;
       let mat = null;
       let isActive = true;
 
@@ -139,6 +140,10 @@ const MindARScene = forwardRef(
             uiLoading: 'no',
             uiError: 'no',
             uiScanning: 'no',
+            filterMinCF: 0.0001,
+            filterBeta: 1000,
+            warmupTolerance: 3,
+            missTolerance: 15,
           });
 
           const { renderer: r, scene, camera } = mindarThree;
@@ -167,14 +172,21 @@ const MindARScene = forwardRef(
           dir.position.set(0.5, 1, 0.5);
           scene.add(dir);
 
-          // Anchor principal (marcador 0)
+          // Dos anchors: vista lateral (0) + vista icónica superior (1)
+          let foundCount = 0;
+          const onFound = () => { if (isActive) { foundCount++; setHasTarget(true); } };
+          const onLost = () => {
+            if (isActive) {
+              foundCount = Math.max(0, foundCount - 1);
+              if (foundCount === 0) setHasTarget(false);
+            }
+          };
           const anchor = mindarThree.addAnchor(0);
-          anchor.onTargetFound = () => {
-            if (isActive) setHasTarget(true);
-          };
-          anchor.onTargetLost = () => {
-            if (isActive) setHasTarget(false);
-          };
+          anchor.onTargetFound = onFound;
+          anchor.onTargetLost = onLost;
+          const anchor1 = mindarThree.addAnchor(1);
+          anchor1.onTargetFound = onFound;
+          anchor1.onTargetLost = onLost;
 
           // Loader con soporte Draco para el modelo comprimido
           const { GLTFLoader } = await import('three/examples/jsm/loaders/GLTFLoader.js');
@@ -214,8 +226,14 @@ const MindARScene = forwardRef(
           catModel.scale.set(0.9, 0.9, 0.9);
           catModel.position.set(0, 0.5, 0);
           catModel.rotation.set(BASE_ROT.x, BASE_ROT.y, BASE_ROT.z);
-
           anchor.group.add(catModel);
+
+          // Clonar para el segundo anchor (comparte mat, geometrías independientes)
+          catModel1 = modelScene.clone();
+          catModel1.scale.set(0.9, 0.9, 0.9);
+          catModel1.position.set(0, 0.5, 0);
+          catModel1.rotation.set(BASE_ROT.x, BASE_ROT.y, BASE_ROT.z);
+          anchor1.group.add(catModel1);
 
           // Iniciar MindAR
           await mindarThree.start();
@@ -255,16 +273,14 @@ const MindARScene = forwardRef(
           animationLoop = () => {
             const elapsed = clock.getElapsedTime();
 
-            if (catModel) {
-              // Oscilación sinusoidal (igual que en Hero)
-              catModel.rotation.x = BASE_ROT.x + Math.sin(elapsed * 0.4) * 0.12;
-              catModel.rotation.y = BASE_ROT.y + Math.sin(elapsed * 0.6) * 0.42;
-              catModel.rotation.z = BASE_ROT.z + Math.sin(elapsed * 0.5) * 0.08;
-
-              // Respiración de escala
-              const s = 0.9 + Math.sin(elapsed * 0.8) * 0.025;
-              catModel.scale.set(s, s, s);
-            }
+            const s = 0.9 + Math.sin(elapsed * 0.8) * 0.025;
+            [catModel, catModel1].forEach((m) => {
+              if (!m) return;
+              m.rotation.x = BASE_ROT.x + Math.sin(elapsed * 0.4) * 0.12;
+              m.rotation.y = BASE_ROT.y + Math.sin(elapsed * 0.6) * 0.42;
+              m.rotation.z = BASE_ROT.z + Math.sin(elapsed * 0.5) * 0.08;
+              m.scale.set(s, s, s);
+            });
 
             // Flash periódico en emissiveIntensity (primero a ~2s, luego cada ~9s)
             if (mat) {
