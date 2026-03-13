@@ -247,11 +247,10 @@ const MindARScene = forwardRef(
             setStatus('running');
           }
 
-          // MindAR controla su propio render loop (actualiza matrices de anchors).
-          // Usamos RAF separado solo para animar rotación del modelo.
+          // Render loop: MindAR procesa video/anchors en su propio hilo.
+          // Aquí animamos el modelo y renderizamos la escena.
           const clock = new THREE.Clock();
-
-          const animate = () => {
+          renderer.setAnimationLoop(() => {
             if (!isActive) return;
             const elapsed = clock.getElapsedTime();
             const s = 0.9 + Math.sin(elapsed * 0.8) * 0.025;
@@ -261,9 +260,8 @@ const MindARScene = forwardRef(
               catModel.rotation.z = BASE_ROT.z + Math.sin(elapsed * 0.5) * 0.08;
               catModel.scale.set(s, s, s);
             }
-            animationLoop = requestAnimationFrame(animate);
-          };
-          animationLoop = requestAnimationFrame(animate);
+            renderer.render(scene, camera);
+          });
         } catch (err) {
           console.error('[MindARScene] Error al iniciar AR:', err);
           if (isActive) {
