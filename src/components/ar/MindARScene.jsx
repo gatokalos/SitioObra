@@ -112,7 +112,6 @@ const MindARScene = forwardRef(
       let animationLoop = null;
       let attachedVideo = null;
       let catModel = null;
-      let catModel1 = null;
       let mat = null;
       let isActive = true;
 
@@ -151,42 +150,19 @@ const MindARScene = forwardRef(
           rendererInstanceRef.current = r;
           sceneRef.current = scene;
           cameraRef.current = camera;
-          if (renderer?.domElement) {
-            rendererRef.current = renderer.domElement;
-            renderer.domElement.style.position = 'absolute';
-            renderer.domElement.style.inset = '0';
-            renderer.domElement.style.width = '100%';
-            renderer.domElement.style.height = '100%';
-            renderer.domElement.style.zIndex = '1';
-            renderer.domElement.style.pointerEvents = 'none';
-          }
           if (renderer) {
             renderer.preserveDrawingBuffer = true;
           }
 
-          // Luces simples y limpias
-          const hemi = new THREE.HemisphereLight('#ffffff', '#333344', 1.0);
-          scene.add(hemi);
-
-          const dir = new THREE.DirectionalLight('#ffffff', 0.8);
-          dir.position.set(0.5, 1, 0.5);
-          scene.add(dir);
-
-          // Dos anchors: vista lateral (0) + vista icónica superior (1)
-          let foundCount = 0;
-          const onFound = () => { if (isActive) { foundCount++; setHasTarget(true); } };
-          const onLost = () => {
-            if (isActive) {
-              foundCount = Math.max(0, foundCount - 1);
-              if (foundCount === 0) setHasTarget(false);
-            }
-          };
+          // Anchor único (índice 0)
           const anchor = mindarThree.addAnchor(0);
-          anchor.onTargetFound = onFound;
-          anchor.onTargetLost = onLost;
-          const anchor1 = mindarThree.addAnchor(1);
-          anchor1.onTargetFound = onFound;
-          anchor1.onTargetLost = onLost;
+          anchor.onTargetFound = () => { if (isActive) setHasTarget(true); };
+          anchor.onTargetLost  = () => { if (isActive) setHasTarget(false); };
+
+          // Asegurar que anchor.group está en la escena
+          if (!scene.getObjectById?.(anchor.group.id)) {
+            scene.add(anchor.group);
+          }
 
           // Loader con soporte Draco para el modelo comprimido
           const { GLTFLoader } = await import('three/examples/jsm/loaders/GLTFLoader.js');
@@ -201,45 +177,50 @@ const MindARScene = forwardRef(
             const gltf = await loader.loadAsync(MODEL_URL);
             if (!isActive) return;
             modelScene = gltf.scene;
+            console.log('[MindARScene] GLB cargado OK');
           } catch (modelError) {
             if (!isActive) return;
-            console.warn(
-              `[MindARScene] No se pudo cargar ${MODEL_URL}, usando modelo fallback.`,
-              modelError,
-            );
+            console.warn('[MindARScene] GLB falló, usando fallback:', modelError?.message);
             modelScene = buildFallbackPortal(THREE);
           }
 
-          // Material con emissive alto para visibilidad en AR (fondo real ≠ fondo negro del Hero)
-          mat = new THREE.MeshStandardMaterial({
-            color: new THREE.Color('#1a0a2e'),
-            metalness: 0.5,
-            roughness: 0.3,
-            emissive: new THREE.Color('#9933ff'),
-            emissiveIntensity: 1.2,
-          });
+          // MeshBasicMaterial: visible sin depender de luces
+          mat = new THREE.MeshBasicMaterial({ color: new THREE.Color('#cc44ff') });
           modelScene.traverse((child) => {
             if (child.isMesh) child.material = mat;
           });
 
           catModel = modelScene;
           catModel.scale.set(0.9, 0.9, 0.9);
-          catModel.position.set(0, 0.5, 0);
+          catModel.position.set(0, 0, 0);
           catModel.rotation.set(BASE_ROT.x, BASE_ROT.y, BASE_ROT.z);
           anchor.group.add(catModel);
-
-          // Clonar para el segundo anchor (comparte mat, geometrías independientes)
-          catModel1 = modelScene.clone();
-          catModel1.scale.set(0.9, 0.9, 0.9);
-          catModel1.position.set(0, 0.5, 0);
-          catModel1.rotation.set(BASE_ROT.x, BASE_ROT.y, BASE_ROT.z);
-          anchor1.group.add(catModel1);
 
           // Iniciar MindAR
           await mindarThree.start();
           if (!isActive) {
             try { mindarThree.stop?.(); } catch (_) {}
             return;
+          }
+
+          // Asegurar que el canvas WebGL está en el DOM (MindAR puede no añadirlo)
+          if (renderer?.domElement && containerRef.current) {
+            rendererRef.current = renderer.domElement;
+            if (!containerRef.current.contains(renderer.domElement)) {
+              renderer.domElement.style.position = 'absolute';
+              renderer.domElement.style.inset = '0';
+              renderer.domElement.style.width = '100%';
+              renderer.domElement.style.height = '100%';
+              renderer.domElement.style.objectFit = 'cover';
+              renderer.domElement.style.zIndex = '1';
+              renderer.domElement.style.pointerEvents = 'none';
+              containerRef.current.appendChild(renderer.domElement);
+              console.log('[MindARScene] canvas WebGL añadido al container');
+            } else {
+              renderer.domElement.style.zIndex = '1';
+              renderer.domElement.style.pointerEvents = 'none';
+              console.log('[MindARScene] canvas WebGL ya estaba en el container');
+            }
           }
 
           // Video de cámara para poder capturar frames
@@ -267,36 +248,18 @@ const MindARScene = forwardRef(
           }
 
           // MindAR controla su propio render loop (actualiza matrices de anchors).
-          // Usamos RAF separado para animar el modelo sin romper ese loop.
+          // Usamos RAF separado solo para animar rotación del modelo.
           const clock = new THREE.Clock();
-          let flashStartT = null;
-          let lastFlashT = -999;
 
           const animate = () => {
             if (!isActive) return;
             const elapsed = clock.getElapsedTime();
             const s = 0.9 + Math.sin(elapsed * 0.8) * 0.025;
-            [catModel, catModel1].forEach((m) => {
-              if (!m) return;
-              m.rotation.x = BASE_ROT.x + Math.sin(elapsed * 0.4) * 0.12;
-              m.rotation.y = BASE_ROT.y + Math.sin(elapsed * 0.6) * 0.42;
-              m.rotation.z = BASE_ROT.z + Math.sin(elapsed * 0.5) * 0.08;
-              m.scale.set(s, s, s);
-            });
-            if (mat) {
-              if (flashStartT === null && elapsed > 2 && elapsed - lastFlashT > 9) {
-                flashStartT = elapsed;
-                lastFlashT = elapsed;
-              }
-              if (flashStartT !== null) {
-                const p = (elapsed - flashStartT) / 0.55;
-                if (p >= 1) {
-                  flashStartT = null;
-                  mat.emissiveIntensity = 1.2;
-                } else {
-                  mat.emissiveIntensity = 1.2 + Math.sin(p * Math.PI) * 1.0;
-                }
-              }
+            if (catModel) {
+              catModel.rotation.x = BASE_ROT.x + Math.sin(elapsed * 0.4) * 0.12;
+              catModel.rotation.y = BASE_ROT.y + Math.sin(elapsed * 0.6) * 0.42;
+              catModel.rotation.z = BASE_ROT.z + Math.sin(elapsed * 0.5) * 0.08;
+              catModel.scale.set(s, s, s);
             }
             animationLoop = requestAnimationFrame(animate);
           };
