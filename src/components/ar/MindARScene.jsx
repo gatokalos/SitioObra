@@ -266,13 +266,15 @@ const MindARScene = forwardRef(
             setStatus('running');
           }
 
+          // MindAR controla su propio render loop (actualiza matrices de anchors).
+          // Usamos RAF separado para animar el modelo sin romper ese loop.
           const clock = new THREE.Clock();
           let flashStartT = null;
           let lastFlashT = -999;
 
-          animationLoop = () => {
+          const animate = () => {
+            if (!isActive) return;
             const elapsed = clock.getElapsedTime();
-
             const s = 0.9 + Math.sin(elapsed * 0.8) * 0.025;
             [catModel, catModel1].forEach((m) => {
               if (!m) return;
@@ -281,8 +283,6 @@ const MindARScene = forwardRef(
               m.rotation.z = BASE_ROT.z + Math.sin(elapsed * 0.5) * 0.08;
               m.scale.set(s, s, s);
             });
-
-            // Flash periódico en emissiveIntensity (primero a ~2s, luego cada ~9s)
             if (mat) {
               if (flashStartT === null && elapsed > 2 && elapsed - lastFlashT > 9) {
                 flashStartT = elapsed;
@@ -298,10 +298,9 @@ const MindARScene = forwardRef(
                 }
               }
             }
-
-            renderer.render(scene, camera);
+            animationLoop = requestAnimationFrame(animate);
           };
-          renderer.setAnimationLoop(animationLoop);
+          animationLoop = requestAnimationFrame(animate);
         } catch (err) {
           console.error('[MindARScene] Error al iniciar AR:', err);
           if (isActive) {
@@ -317,7 +316,10 @@ const MindARScene = forwardRef(
       return () => {
         isActive = false;
         try {
-          if (renderer && animationLoop) {
+          if (animationLoop) {
+            cancelAnimationFrame(animationLoop);
+          }
+          if (renderer) {
             renderer.setAnimationLoop(null);
           }
           if (mindarThree) {
