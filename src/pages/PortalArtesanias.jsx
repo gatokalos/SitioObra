@@ -341,12 +341,29 @@ const PortalArtesanias = () => {
     }));
   }, [user]);
 
-  const handleActivateAR = useCallback(() => {
+  const handleActivateAR = useCallback(async () => {
     if (!requireAuth()) return;
     if (isTazaActivating) return;
 
     setIsTazaActivating(true);
     setArError('');
+
+    // Pedir permiso de cámara dentro del gesto del usuario para evitar
+    // el diálogo de confirmación intermedio de CameraPermissionPrompt.
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
+      stream.getTracks().forEach((t) => t.stop());
+    } catch (err) {
+      const name = err?.name ?? '';
+      if (name === 'NotAllowedError' || name === 'PermissionDeniedError') {
+        setArError('Permiso de cámara denegado. Actívalo en la configuración de tu navegador.');
+      } else {
+        setArError('No pudimos acceder a la cámara. Verifica que tu dispositivo tenga una disponible.');
+      }
+      setIsTazaActivating(false);
+      return;
+    }
+
     const next = tazaActivations + 1;
     setTazaActivations(next);
     setIsTazaARActive(true);
@@ -794,6 +811,7 @@ const PortalArtesanias = () => {
             guideImageSrc="/webar/taza/taza-marker.jpg"
             guideLabel="Alinea la ilustracion de la taza con el contorno. No necesita ser exacto."
             onExit={handleCloseARExperience}
+            initialCameraReady
             onError={handleARError}
           />
         </div>
