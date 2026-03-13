@@ -64,6 +64,7 @@ jobs:
           VITE_PRICE_COMBO: ${{ secrets.VITE_PRICE_COMBO }}
           VITE_INSTAGRAM_BUCKET: ${{ secrets.VITE_INSTAGRAM_BUCKET }}
           VITE_INSTAGRAM_TABLE: ${{ secrets.VITE_INSTAGRAM_TABLE }}
+          VITE_SEARCH_API_URL: ${{ secrets.VITE_SEARCH_API_URL }}
           VITE_MINIVERSO_INTERCEPTION: ${{ secrets.VITE_MINIVERSO_INTERCEPTION }}
         run: npm run build
 
