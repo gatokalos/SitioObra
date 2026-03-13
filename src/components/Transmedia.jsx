@@ -4333,7 +4333,7 @@ const rendernotaAutoral = () => {
 
    No repiten la historia: <strong>la continúan.</strong><br /><br />
 
-Aquí no está todo, solo lo suficiente para navegar, intervenir y habitar este universo.
+Aquí te presentamos solo lo suficiente para navegar, intervenir y habitar este universo.
     Te confiamos la energía simbólica de <span className="font-semibold text-purple-200">1350 gatokens</span> para empezar.
   </p>
             </motion.div>
