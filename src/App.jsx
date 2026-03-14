@@ -33,6 +33,7 @@ const ProvocaSection = lazy(() =>
 );
 const loadTransmedia = () => import('@/components/Transmedia');
 const Transmedia = lazy(loadTransmedia);
+const AlianzaSocial = lazy(() => import('@/components/AlianzaSocial'));
 const Team = lazy(() => import('@/components/Team'));
 const Instagram = lazy(() => import('@/components/Instagram'));
 const BlogContributionPrompt = lazy(() => import('@/components/BlogContributionPrompt'));
@@ -526,9 +527,11 @@ function App() {
         });
       }
       if (targetId) {
+        // Si el showcase aún no estaba en el DOM, Suspense necesita más tiempo para montar
+        const delay = targetId === 'transmedia' && !hasGuestUnlockedTransmedia ? 600 : 90;
         window.setTimeout(() => {
           scrollToSection(targetId);
-        }, 90);
+        }, delay);
       }
       return true;
     },
@@ -588,11 +591,35 @@ function App() {
             <div className="relative z-10">
               <Header
                 showAllianceNav={canAccessTransmedia}
-                showTransmediaNav={canAccessTransmedia && !isMobileLoggedInPortalMode}
+                showTransmediaNav={false}
               />
 
               <main className="pt-20 lg:pt-24">
                 <Hero />
+
+                {/* Alianza Social: pública, siempre visible después del Hero */}
+                <SectionErrorBoundary
+                  fallback={(
+                    <section id="apoya" className="py-24 relative">
+                      <div className="container mx-auto px-6">
+                        <div className="glass-effect rounded-2xl p-8 text-center">
+                          <p className="text-xs uppercase tracking-[0.35em] text-slate-400/80">Alianza Social</p>
+                        </div>
+                      </div>
+                    </section>
+                  )}
+                >
+                  <DeferredSection
+                    rootMargin="400px 0px"
+                    idleDelayMs={800}
+                    fallback={<SectionFallback id="apoya" minHeight={700} />}
+                  >
+                    <Suspense fallback={<SectionFallback id="apoya" minHeight={700} />}>
+                      <AlianzaSocial />
+                    </Suspense>
+                  </DeferredSection>
+                </SectionErrorBoundary>
+
                 <DeferredSection fallback={<SectionFallback id="about" minHeight={620} />}>
                   <Suspense fallback={<SectionFallback id="about" minHeight={620} />}>
                     <About />
@@ -623,40 +650,23 @@ function App() {
                     <BlogContributionPrompt onRevealTransmedia={handleRevealTransmedia} />
                   </Suspense>
                 </DeferredSection>
-                {canAccessTransmedia ? (
-                  <SectionErrorBoundary
-                    fallback={(
-                      <section id="transmedia" className="py-24 relative">
-                        <div className="container mx-auto px-6">
-                          <div className="glass-effect rounded-2xl p-8 text-center">
-                            <p className="text-xs uppercase tracking-[0.35em] text-slate-400/80">Narrativa Expandida</p>
-                            <h3 className="font-display text-3xl text-slate-100 mt-3">Vitrinas temporalmente no disponibles</h3>
-                            <p className="text-slate-300/80 mt-4">
-                              Recarga la página para intentar nuevamente.
-                            </p>
-                          </div>
-                        </div>
-                      </section>
-                    )}
-                  >
-                    <DeferredSection
-                      rootMargin="1000px 0px"
-                      idleDelayMs={700}
-                      fallback={<SectionFallback id="transmedia" minHeight={900} />}
-                    >
-                      <Suspense fallback={<SectionFallback id="transmedia" minHeight={900} />}>
-                        <Transmedia allianceOnlyMode={isMobileLoggedInPortalMode} />
-                      </Suspense>
-                    </DeferredSection>
+
+                {/* Showcase Transmedia: sorpresa, se revela al expandir desde el Intermedio */}
+                {canAccessTransmedia && !isMobileLoggedInPortalMode && (
+                  <SectionErrorBoundary fallback={<SectionFallback id="transmedia" minHeight={1600} />}>
+                    <Suspense fallback={<SectionFallback id="transmedia" minHeight={1600} />}>
+                      <Transmedia />
+                    </Suspense>
                   </SectionErrorBoundary>
-                ) : null}
+                )}
+
                 <NextShow onRevealTransmedia={handleRevealTransmedia} />
                 <Contact />
               </main>
 
               <Footer
                 showAllianceNav={canAccessTransmedia}
-                showTransmediaNav={canAccessTransmedia && !isMobileLoggedInPortalMode}
+                showTransmediaNav={false}
               />
               {shouldShowToast && (
                 <LoginToast emailHash={emailHash} onDismiss={dismissToast} />

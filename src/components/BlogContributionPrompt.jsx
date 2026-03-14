@@ -146,7 +146,7 @@ const BlogContributionPrompt = ({ onRevealTransmedia = null }) => {
       {/* Mitad derecha: contactar */}
       <button
         onClick={() => {
-          document.querySelector('#contact')?.scrollIntoView({
+          document.querySelector('#dialogo-critico')?.scrollIntoView({
             behavior: 'smooth',
             block: 'start',
           });

@@ -75,15 +75,15 @@ const MINIVERSE_KEYWORDS = {
 };
 
 const STARTER_FAQ_PROMPTS = [
-  '¿Por dónde empiezo para entender el sitio?',
+  '¿Qué relación tiene la obra con su causa social?',
   '¿Qué diferencia hay entre la obra y el sitio?',
   '¿Tengo que ver la obra primero para entender el sitio?',
   '¿El sitio continúa la historia o es otra cosa?',
   '¿Qué pasa si solo quiero curiosear sin registrarme?',
-  '¿Las respuestas que doy cambian algo en la historia?',
-  '¿Cómo participa alguien que nunca vio la obra presencial?',
+  '¿A alguien más le dio ansiedad esta obra… o solo a mí?',
+  '¿Queda claro qué le pasa a Silvestre al final de la obra?',
+  '¿Lo de las marcianas era literal o se me fue algo?',
   '¿Esto es arte, experimento o estrategia de marketing?',
-  '¿Quién decide qué partes de este universo son canon?',
   '¿Qué parte de lo que veo aquí fue escrita por una persona y qué parte por una máquina?',
   'Si la IA desapareciera mañana, ¿seguiría existiendo #GatoEncerrado?',
   '¿Qué tendría que pasar para que este proyecto florezca?',
@@ -869,13 +869,13 @@ const Blog = ({ posts = [], isLoading = false, error = null }) => {
             viewport={{ once: true }}
             className="text-center mb-16"
           >
-            <p className="text-xs uppercase tracking-[0.4em] text-slate-400/70 mb-4">Diálogo / Contribución</p>
+            <p className="text-xs uppercase tracking-[0.4em] text-slate-400/70 mb-4">Diálogo / Reflexión</p>
             <h2 className="font-display text-4xl md:text-5xl font-medium mb-6 text-gradient italic">
               Curaduría, comunidad y resonancia
             </h2>
             <p className="text-lg text-slate-300/80 max-w-3xl mx-auto leading-relaxed font-light">
-              Un espacio de pensamiento crítico, creatividad y poética donde convergen pensamiento crítico, ficción expandida y
-              noticias detrás de escena. Filtra por interés, busca autorías específicas o explora las líneas editoriales.
+              Un espacio de pensamiento crítico, creatividad y poética donde convergen textos especializados, ficción expandida y
+              noticias detrás de escena. Usa el Buscador Backstage, filtra por interés o explora las líneas editoriales.
             </p>
           </motion.div>
 
@@ -899,12 +899,14 @@ const Blog = ({ posts = [], isLoading = false, error = null }) => {
                   <div className="pointer-events-none absolute -bottom-20 left-12 h-40 w-40 rounded-full bg-cyan-300/10 blur-2xl" />
                   <div className="pointer-events-none absolute inset-x-6 top-0 h-px bg-gradient-to-r from-transparent via-violet-100/75 to-transparent" />
 
-                  <div className="relative z-10 grid gap-5 lg:grid-cols-[minmax(320px,0.9fr)_minmax(0,1.1fr)] lg:items-center">
-                    <div className="flex flex-col gap-3 rounded-[1.4rem] border border-violet-100/18 bg-black/20 p-4 backdrop-blur-sm lg:p-5">
+                  <div className="relative z-10 grid gap-5 lg:grid-cols-[minmax(320px,0.9fr)_minmax(0,1.1fr)] lg:items-start">
+                    <div className="flex flex-col gap-3 p-1 lg:rounded-[1.4rem] lg:border lg:border-violet-100/18 lg:bg-black/20 lg:p-5 lg:backdrop-blur-sm">
                       <div className="space-y-3">
-                        
+                        <span className="inline-flex items-center rounded-full border border-violet-400/35 bg-violet-500/15 px-3 py-0.5 text-[10px] uppercase tracking-[0.2em] text-violet-300">
+                          Buscador Backstage
+                        </span>
                         <p className="text-[1rem] font-semibold leading-snug text-white">
-                          ¿Primera vez en el sitio? Este buscador te orientará en pocos minutos.
+                          ¿Primera vez en el sitio o quieres despejar dudas sobre la obra?
                         </p>
                       </div>
                       <div className="relative w-full">
@@ -917,7 +919,7 @@ const Blog = ({ posts = [], isLoading = false, error = null }) => {
                           onKeyDown={(event) => {
                             if (event.key === 'Enter' && faqQuery.trim().length >= 2) faqSearch();
                           }}
-                          placeholder="Pregunta por el sitio, la obra o cómo empezar"
+                          placeholder="Escríbelo aquí..."
                           disabled={faqIsLoading}
                           className="form-surface form-surface--pill h-12 w-full border border-violet-100/45 bg-white/90 py-2 pl-11 pr-12 text-sm text-slate-900 placeholder:text-slate-500 disabled:opacity-60"
                         />
@@ -938,17 +940,28 @@ const Blog = ({ posts = [], isLoading = false, error = null }) => {
 
                       {/* Panel de respuesta RAG */}
                       {(faqStatus === 'searching' || faqStatus === 'streaming' || faqStatus === 'done' || faqStatus === 'error') && (
-                        <div className="rounded-xl border border-violet-100/20 bg-black/30 px-4 py-3 text-sm text-violet-50/90 space-y-2">
+                        <div className="mt-1 border-t border-violet-100/15 pt-3 text-sm text-violet-50/90 space-y-2">
                           {faqStatus === 'searching' && (
                             <p className="text-violet-200/70 animate-pulse">Buscando en el universo GatoEncerrado…</p>
                           )}
                           {(faqStatus === 'streaming' || faqStatus === 'done') && faqAnswer && (
-                            <p className="leading-relaxed whitespace-pre-wrap">
-                              {faqAnswer}
+                            <div className="leading-relaxed">
+                              <ReactMarkdown
+                                components={{
+                                  p: ({ children }) => <p className="mb-2 last:mb-0">{children}</p>,
+                                  strong: ({ children }) => <strong className="font-semibold text-violet-200">{children}</strong>,
+                                  em: ({ children }) => <em className="italic text-violet-100/90">{children}</em>,
+                                  ul: ({ children }) => <ul className="my-1 ml-4 list-disc space-y-0.5">{children}</ul>,
+                                  ol: ({ children }) => <ol className="my-1 ml-4 list-decimal space-y-0.5">{children}</ol>,
+                                  li: ({ children }) => <li className="text-violet-50/90">{children}</li>,
+                                }}
+                              >
+                                {faqAnswer}
+                              </ReactMarkdown>
                               {faqStatus === 'streaming' && (
                                 <span className="inline-block w-0.5 h-3.5 ml-0.5 bg-violet-300 animate-pulse align-middle" aria-hidden="true" />
                               )}
-                            </p>
+                            </div>
                           )}
                           {faqStatus === 'done' && faqSources.length > 0 && (
                             <div className="pt-1 border-t border-violet-100/15 space-y-1">
@@ -978,9 +991,9 @@ const Blog = ({ posts = [], isLoading = false, error = null }) => {
                             <button
                               type="button"
                               onClick={faqReset}
-                              className="text-[10px] uppercase tracking-[0.22em] text-violet-200/45 hover:text-violet-200/80 transition"
+                              className="text-[20px] uppercase tracking-[0.22em] text-violet-200/45 hover:text-violet-200/80 transition"
                             >
-                              Nueva búsqueda
+                              🔍
                             </button>
                           )}
                           <AnimatePresence>
@@ -990,25 +1003,26 @@ const Blog = ({ posts = [], isLoading = false, error = null }) => {
                                 animate={{ opacity: 1, y: 0 }}
                                 exit={{ opacity: 0 }}
                                 transition={{ duration: 0.4, delay: 0.3 }}
-                                className="relative mt-1 rounded-lg border border-violet-300/25 bg-violet-500/10 px-4 py-3"
+                                className="relative mt-1 rounded-xl border border-violet-300/30 bg-violet-500/10 px-5 py-4"
                               >
                                 <button
                                   type="button"
                                   onClick={() => setNudgeDismissed(true)}
                                   aria-label="Cerrar"
-                                  className="absolute right-2 top-2 text-violet-200/40 hover:text-violet-200/80 transition"
+                                  className="absolute right-2.5 top-2.5 text-violet-200/40 hover:text-violet-200/80 transition"
                                 >
-                                  <X size={12} />
+                                  <X size={13} />
                                 </button>
-                                <p className="text-xs leading-relaxed text-violet-100/80 pr-4">
-                                  Lo que buscás dice algo de vos. ¿Tenés algo que publicar en el sitio?
+                                <p className="font-display text-lg leading-snug text-violet-100 pr-5">
+                                  ¿Tienes curiosidad gatuna?
                                 </p>
+                      
                                 <button
                                   type="button"
                                   onClick={() => document.querySelector('#contact')?.scrollIntoView({ behavior: 'smooth', block: 'start' })}
-                                  className="mt-2 text-[10px] uppercase tracking-[0.22em] text-violet-300 hover:text-violet-100 transition"
+                                  className="mt-3 inline-flex items-center gap-1.5 rounded-full border border-violet-400/40 bg-violet-500/20 px-4 py-1.5 text-xs uppercase tracking-[0.18em] text-violet-200 hover:bg-violet-500/35 hover:text-white transition"
                                 >
-                                  Escribinos →
+                                  Escríbenos algo de tu autoría →
                                 </button>
                               </motion.div>
                             )}
@@ -1016,11 +1030,7 @@ const Blog = ({ posts = [], isLoading = false, error = null }) => {
                         </div>
                       )}
 
-                      <div className="flex flex-wrap gap-2 text-[10px] uppercase tracking-[0.24em] text-violet-100/70">
-                        <span className="rounded-full border border-violet-100/20 bg-black/20 px-3 py-1">
-                          Sitio + obra
-                        </span>
-                      </div>
+      
                     </div>
 
                     <div className="space-y-3 lg:pl-4">

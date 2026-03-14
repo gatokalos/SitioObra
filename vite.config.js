@@ -213,12 +213,6 @@ export default defineConfig({
 			'Cross-Origin-Embedder-Policy': 'credentialless',
 		},
 		allowedHosts: true,
-		...(isDev && fs.existsSync('./192.168.1.69+2.pem') ? {
-			https: {
-				key: fs.readFileSync('./192.168.1.69+2-key.pem'),
-				cert: fs.readFileSync('./192.168.1.69+2.pem'),
-			},
-		} : {}),
 	},
 	resolve: {
 		extensions: ['.jsx', '.js', '.tsx', '.ts', '.json', ],

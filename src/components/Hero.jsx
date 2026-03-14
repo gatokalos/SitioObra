@@ -7,6 +7,7 @@ import MiniverseModal from '@/components/MiniverseModal';
 import isotipoGatoWebp from '@/assets/isotipo-gato.webp';
 const HashtagButton3D = React.lazy(() => import('@/components/HashtagButton3D'));
 import { useNavigate, useLocation } from 'react-router-dom';
+import { useToast } from '@/components/ui/use-toast';
 import { useAuth } from '@/contexts/SupabaseAuthContext';
 import { setBienvenidaReturnPath } from '@/lib/bienvenida';
 import {
@@ -101,6 +102,22 @@ const Hero = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { user } = useAuth();
+  const { toast } = useToast();
+
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    if (params.get('souvenir') !== 'ok') return;
+    toast({
+      title: 'Souvenir descargado',
+      description: 'Tu recuerdo del pozo está listo en tu galería.',
+      duration: 5000,
+    });
+    params.delete('souvenir');
+    const cleanSearch = params.toString();
+    const cleanUrl = location.pathname + (cleanSearch ? `?${cleanSearch}` : '') + location.hash;
+    window.history.replaceState({}, '', cleanUrl);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
   const mobileInitialTabId = useMemo(
     () => resolveHeroInlineTabFromQuery(location.search),
     [location.search]

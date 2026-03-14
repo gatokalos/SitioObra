@@ -142,13 +142,14 @@ const Header = ({ showTransmediaNav = true, showAllianceNav = showTransmediaNav 
   }, []);
 
   const menuItems = [
+    ...(showAllianceNav ? [{ name: 'Alianza', href: '#apoya' }] : []),
+    ...(showTransmediaNav ? [{ name: 'Transmedia', href: '#transmedia' }] : []),
     { name: 'Obra', href: '#about' },
     { name: 'Equipo', href: '#team' },
     { name: 'Galería', href: '#instagram' },
     { name: 'Voces', href: '#provoca' },
     { name: 'Curaduría', href: '#dialogo-critico' },
-    ...(showAllianceNav ? [{ name: 'Alianza', href: '#apoya' }] : []),
-    ...(showTransmediaNav ? [{ name: 'Transmedia', href: '#transmedia' }] : []),
+    
     { name: 'Funciones', href: '#next-show' },
     { name: 'Contacto', href: '#contact' },
   ];

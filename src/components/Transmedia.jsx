@@ -4327,14 +4327,12 @@ const rendernotaAutoral = () => {
               </h2>
               <p className="text-lg text-slate-300/80 max-w-3xl mx-auto leading-relaxed font-light">
     La obra no terminó en el teatro.<br />
-    Desde ahí se abrió en <strong>nueve formas creativas</strong>.<br />
+    Desde ahí se expandió en <strong>nueve formas creativas</strong>.<br />
 
       Cada una con su propio lenguaje y forma de participación.<br /><br />
 
    No repiten la historia: <strong>la continúan.</strong><br /><br />
 
-Aquí te presentamos solo lo suficiente para navegar, intervenir y habitar este universo.
-    Te confiamos la energía simbólica de <span className="font-semibold text-purple-200">1350 gatokens</span> para empezar.
   </p>
             </motion.div>
           ) : null}
@@ -4760,164 +4758,7 @@ Aquí te presentamos solo lo suficiente para navegar, intervenir y habitar este 
               {renderExplorerBadge()}
             </>
           ) : null}
-          {allianceOnlyMode ? imagePreviewOverlay : null}
-
-          <div className={`${allianceOnlyMode ? 'mt-2' : 'mt-16'} grid items-start lg:grid-cols-[3fr_2fr] gap-10`}>
-            <SupportBlockContainer
-              id="apoya"
-              ref={supportSectionRef}
-              {...supportBlockMotionProps}
-              className="glass-effect rounded-2xl p-8 md:p-10 flex flex-col justify-between relative overflow-hidden opacity-100"
-              style={{ opacity: 1 }}
-            >
-            <div
-              aria-hidden="true"
-              className="pointer-events-none absolute inset-0 opacity-5 bg-no-repeat bg-center bg-[length:auto_100%] md:bg-[length:200%]"
-              style={{
-                backgroundImage:
-                  'linear-gradient(rgba(5,5,10,0.85), rgba(5,5,10,0.85)), url(/assets/bg-logo.png)',
-                backgroundBlendMode: 'screen',
-                filter: 'grayscale(0.25)',
-              }}
-            />
-            <div className="space-y-5">
-                <div className="flex items-center justify-between gap-3">
-                  <p className="text-xs uppercase tracking-[0.4em] text-slate-400/80">Crecimiento compartido</p>
-                  <button
-                    type="button"
-                    onClick={handleShareImpactModel}
-                    className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-white/15 bg-white/5 text-slate-200/90 hover:border-purple-300/40 hover:text-white transition"
-                    aria-label="Compartir crecimiento compartido"
-                  >
-                    <Send size={14} className="text-purple-200" />
-                  </button>
-                </div>
-                <h3 className="font-display text-3xl text-slate-100">
-                  Así funciona tu huella
-                </h3>
-                <p className="text-slate-300/80 leading-relaxed font-light">
-                  La taquilla sostiene la puesta en escena. Las huellas sostienen el impacto social del universo #GatoEncerrado.
-                  <span className="font-semibold text-purple-200"> Cada huella activada se distribuye en tres frentes que opera Isabel Ayuda para la Vida, A.C.</span> {' '}
-           
-                </p>
-                <details className="group rounded-2xl border border-emerald-300/25 bg-emerald-500/10 px-5 py-4">
-                  <summary className="flex cursor-pointer list-none items-center justify-between gap-3">
-                    <span className="flex items-center gap-3">
-                      <PawPrint size={18} className="text-emerald-200" />
-                      <span className="text-[0.7rem] uppercase tracking-[0.26em] text-emerald-200/85">
-                        Tu huella: $50 MXN al mes
-                      </span>
-                    </span>
-                    <span className="text-[0.65rem] uppercase tracking-[0.18em] text-emerald-200/80 group-open:text-white">
-                      <span className="group-open:hidden">¿Cómo funciona?</span>
-                      <span className="hidden group-open:inline">Cerrar</span>
-                    </span>
-                  </summary>
-                  <div className="mt-3 space-y-2 pl-8">
-                    <p className="text-sm leading-relaxed text-slate-200/95">
-                      17 huellas completan 102 sesiones individuales al año.<br />
-                      Desde la huella 18 inicia el siguiente tramo.<br />
-                      Tu huella pone en marcha nuestra meta anual.
-                    </p>
-                  </div>
-                </details>
-
-                <CauseImpactAccordion
-                  items={CAUSE_ACCORDION}
-                  onOpenImagePreview={handleOpenImagePreview}
-                />
-                <div className="relative overflow-hidden rounded-xl border border-emerald-200/35 bg-black/35 px-4 py-3.5 text-left">
-                  <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_20%_10%,rgba(52,211,153,0.22),transparent_48%),radial-gradient(circle_at_82%_65%,rgba(45,212,191,0.16),transparent_35%)]" />
-                  <div className="pointer-events-none absolute inset-0 bg-gradient-to-r from-emerald-400/12 via-transparent to-cyan-300/10" />
-                  <div className="relative z-10 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                    <div className="min-w-0">
-                      <p className="text-base font-semibold text-slate-100">
-                        Experiencia interactiva <span className="text-slate-400">|</span> ¿Cómo estás hoy?
-                      </p>
-                      <p className="mt-1 text-sm text-slate-300/90">Un recorrido guiado por la App Causa Social.</p>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={handleOpenInteractiveExperience}
-                      className="inline-flex items-center justify-center gap-2 rounded-xl border border-emerald-300/40 bg-emerald-400/10 px-4 py-2 text-sm font-semibold text-emerald-100 transition hover:border-emerald-200/60 hover:bg-emerald-300/15 hover:text-white whitespace-nowrap"
-                    >
-                      <Smartphone size={15} />
-                      Probar experiencia
-                    </button>
-                  </div>
-                  <p className="relative z-10 mt-2 text-[11px] uppercase tracking-[0.2em] text-emerald-200/75">
-                    Placeholder conectado a flujo Bienvenida
-                  </p>
-                </div>
-                <div className="rounded-xl border border-white/10 bg-black/20 px-4 py-3 text-xs leading-relaxed text-slate-300/85">
-                  <div className="flex flex-col gap-3 md:flex-row md:items-center md:gap-4">
-                    <div className="w-full md:w-auto md:flex-shrink-0">
-                      <img
-                        src="/assets/isabel_banner.png"
-                        alt="Isabel Ayuda para la Vida"
-                        loading="lazy"
-                        className="mx-auto h-14 w-auto object-contain md:mx-0 md:h-16"
-                      />
-                    </div>
-                    <div>
-                      <p className="font-medium text-slate-200">Sin costo para familias</p>
-                      <p className="mt-1">
-                        La asociación atiende a jóvenes cuando se detecta riesgo.
-                        No hay costo obligatorio para las familias.
-                        Su causa se sostiene con apoyos institucionales, donaciones y activación de huellas.
-                      </p>
-                      <a
-                        href="https://www.ayudaparalavida.com/contacto.html"
-                        target="_blank"
-                        rel="noreferrer"
-                        className="mt-2 inline-flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-emerald-200 hover:text-white transition"
-                      >
-                        Contacto directo
-                      </a>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-            </SupportBlockContainer>
-            
-
-            <div className="space-y-5">
-              <motion.div
-                id="cta"
-                initial={{ opacity: 0, x: 50 }}
-                whileInView={{ opacity: 1, x: 0 }}
-                transition={{ duration: 0.8, ease: 'easeOut' }}
-                viewport={{ once: true, amount: 0.25 }}
-                className="relative"
-              >
-                <CallToAction barsIntroDelayMs={900} />
-              </motion.div>
-              <div className="relative overflow-hidden rounded-2xl border border-white/10 bg-black/30 p-6 text-center shadow-[0_12px_36px_rgba(0,0,0,0.35)] md:p-7">
-                <div
-                  aria-hidden="true"
-                  className="pointer-events-none absolute inset-0 z-0 flex items-center justify-center"
-                >
-                  <motion.div
-                    initial={{ opacity: 0.35, scale: 0.9 }}
-                    animate={{ opacity: [0.25, 0.45, 0.25], scale: [0.95, 1.05, 0.95] }}
-                    transition={{ duration: 8, repeat: Infinity, ease: 'easeInOut' }}
-                    className="h-[88%] w-[88%] rounded-full bg-purple-600/25 blur-[90px] md:h-[72%] md:w-[72%]"
-                  />
-                </div>
-
-                <div className="relative z-10">
-                  <p className="text-base italic leading-relaxed text-slate-400 md:text-medium">
-                    "Cuando florezcan estas huellas, su pulso regresará al universo: nuevos juegos, nuevas escenas, nuevas historias por contar."
-                  </p>
-                  <div className="mt-4 text-sm text-slate-400">
-                    <p className="font-semibold text-slate-200">Equipo 💜 #GatoEncerrado</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-  
-          </div>
+          {/* #apoya y CTA extraídos a AlianzaSocial.jsx */}
         </div>
       </section>
 
