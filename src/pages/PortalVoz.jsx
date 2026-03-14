@@ -1031,7 +1031,7 @@ const PortalVoz = () => {
                 <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
                   <div className="space-y-3">
                     <p className="text-xs uppercase tracking-[0.4em] text-purple-300">Vitrina</p>
-                    <h3 className="font-display text-3xl leading-tight text-white md:text-4xl">Escena</h3>
+                    <h3 className="font-display text-3xl leading-tight text-white md:text-4xl">Drama</h3>
                   </div>
                 </div>
                 <div className="space-y-4 text-lg text-slate-200/85 leading-relaxed font-light">

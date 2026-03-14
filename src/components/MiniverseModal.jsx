@@ -2035,7 +2035,7 @@ const MiniverseModal = ({
                           </div>
                           
                           <div>
-                            <p className="font-semibold text-slate-100">Tratamientos emocionales</p>
+                            <p className="font-semibold text-slate-100">Terapias</p>
                             <p className="text-xs text-slate-300/80">6 sesiones promedio por suscriptor</p>
                           </div>
                         </div>

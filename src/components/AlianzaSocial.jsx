@@ -1,23 +1,49 @@
 import { createPortal } from 'react-dom';
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { motion } from 'framer-motion';
+import { AnimatePresence, motion } from 'framer-motion';
 import { PawPrint, Send, Smartphone } from 'lucide-react';
 import CallToAction from '@/components/CallToAction';
 import CauseImpactAccordion from '@/components/transmedia/CauseImpactAccordion';
 import useMiniversoShare from '@/hooks/useMiniversoShare';
+import useExternalPanels from '@/hooks/useExternalPanels';
 import { toast } from '@/components/ui/use-toast';
 import {
   CAUSE_ACCORDION,
+  CAUSE_SITE_URL,
   INTERACTIVE_EXPERIENCE_GOAL,
 } from '@/components/transmedia/transmediaConstants';
 import { setBienvenidaReturnPath } from '@/lib/bienvenida';
 
+const noopAuth = () => true;
+
 const AlianzaSocial = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  const sectionRef = useRef(null);
 
   const [imagePreview, setImagePreview] = useState(null);
+
+  const { isCauseSiteOpen, handleOpenCauseSite, handleCloseCauseSite } = useExternalPanels({
+    requireShowcaseAuth: noopAuth,
+    toast,
+  });
+
+  // Fade del audio de Silvestre cuando la sección entra al viewport
+  useEffect(() => {
+    const section = sectionRef.current;
+    if (!section) return undefined;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting) {
+          window.dispatchEvent(new CustomEvent('gatoencerrado:fade-silvestre'));
+        }
+      },
+      { threshold: 0.15 },
+    );
+    observer.observe(section);
+    return () => observer.disconnect();
+  }, []);
 
   const handleOpenImagePreview = useCallback((payload) => {
     if (!payload?.src) return;
@@ -49,18 +75,19 @@ const AlianzaSocial = () => {
 
   return (
     <>
-      <section id="apoya" className="py-16 relative">
+      <section ref={sectionRef} id="apoya" className="py-16 relative">
         <div className="section-divider mb-12" />
-        <div className="container mx-auto px-6">
-          <div className="grid items-start lg:grid-cols-[3fr_2fr] gap-10">
+        {/* px-0 en móvil: edge-to-edge; sm:px-6 en adelante */}
+        <div className="container mx-auto px-0 sm:px-6">
+          <div className="grid items-start lg:grid-cols-[3fr_2fr] gap-0 sm:gap-10">
 
             {/* Columna izquierda: causa social */}
             <motion.div
-              initial={{ opacity: 0, x: -50 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.8, ease: 'easeOut' }}
-              viewport={{ once: true, amount: 0.25 }}
-              className="glass-effect rounded-2xl p-8 md:p-10 flex flex-col justify-between relative overflow-hidden"
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.7, ease: 'easeOut' }}
+              viewport={{ once: true, amount: 0.15 }}
+              className="glass-effect rounded-none sm:rounded-2xl p-8 md:p-10 flex flex-col justify-between relative overflow-hidden mb-0 sm:mb-0"
             >
               <div
                 aria-hidden="true"
@@ -88,8 +115,8 @@ const AlianzaSocial = () => {
                   Déjanos una huella: $50 MXN al mes
                 </h3>
                 <p className="text-slate-300/80 leading-relaxed font-light">
-                  Nuestra taquilla sostiene la puesta en escena. Tu huella sostiene el impacto social del universo #GatoEncerrado.
-                  <span className="font-semibold text-purple-200"> Cada huella activada se distribuye en tres frentes que opera Isabel Ayuda para la Vida, A.C.</span>{' '}
+                  Nuestra taquilla sostiene la puesta en escena.
+                  <span className="font-semibold text-purple-200"> Tu huella sostiene al Universo #GatoEncerrado.</span> Cada huella activada se distribuye en tres frentes que opera Isabel Ayuda para la Vida, A.C.{' '}
                 </p>
                 <details className="group rounded-2xl border border-emerald-300/25 bg-emerald-500/10 px-5 py-4">
                   <summary className="flex cursor-pointer list-none items-center justify-between gap-3">
@@ -108,7 +135,7 @@ const AlianzaSocial = () => {
                     <p className="text-sm leading-relaxed text-slate-200/95">
                       ✔️ 17 huellas completan 102 sesiones individuales al año.<br /><br />
                       ✔️ Desde la huella 18 inicia el siguiente tramo.<br /><br />
-                      ✔️ Tu huella pone en marcha nuestra meta anual.
+                      ✔️ Tu huella pone en marcha nuestra meta mínima anual de 426.
                     </p>
                   </div>
                 </details>
@@ -159,14 +186,13 @@ const AlianzaSocial = () => {
                         No hay costo obligatorio para las familias.
                         Su causa se sostiene con apoyos institucionales, donaciones y activación de huellas.
                       </p>
-                      <a
-                        href="https://www.ayudaparalavida.com/contacto.html"
-                        target="_blank"
-                        rel="noreferrer"
+                      <button
+                        type="button"
+                        onClick={handleOpenCauseSite}
                         className="mt-2 inline-flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-emerald-200 hover:text-white transition"
                       >
-                        Contacto directo
-                      </a>
+                        Ver sitio de Isabel A.V. →
+                      </button>
                     </div>
                   </div>
                 </div>
@@ -174,18 +200,26 @@ const AlianzaSocial = () => {
             </motion.div>
 
             {/* Columna derecha: CTA + cita */}
-            <div className="space-y-5">
+            <div className="space-y-0 sm:space-y-5">
               <motion.div
                 id="cta"
-                initial={{ opacity: 0, x: 50 }}
-                whileInView={{ opacity: 1, x: 0 }}
-                transition={{ duration: 0.8, ease: 'easeOut' }}
-                viewport={{ once: true, amount: 0.25 }}
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.7, ease: 'easeOut', delay: 0.1 }}
+                viewport={{ once: true, amount: 0.15 }}
                 className="relative"
               >
-                <CallToAction barsIntroDelayMs={900} />
+                <div className="rounded-none sm:rounded-2xl overflow-hidden">
+                  <CallToAction barsIntroDelayMs={900} />
+                </div>
               </motion.div>
-              <div className="relative overflow-hidden rounded-2xl border border-white/10 bg-black/30 p-6 text-center shadow-[0_12px_36px_rgba(0,0,0,0.35)] md:p-7">
+              <motion.div
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.7, ease: 'easeOut', delay: 0.2 }}
+                viewport={{ once: true, amount: 0.15 }}
+                className="relative overflow-hidden rounded-none sm:rounded-2xl border-t sm:border border-white/10 bg-black/30 p-6 text-center shadow-[0_12px_36px_rgba(0,0,0,0.35)] md:p-7"
+              >
                 <div
                   aria-hidden="true"
                   className="pointer-events-none absolute inset-0 z-0 flex items-center justify-center"
@@ -205,12 +239,83 @@ const AlianzaSocial = () => {
                     <p className="font-semibold text-slate-200">Equipo 💜 #GatoEncerrado</p>
                   </div>
                 </div>
-              </div>
+              </motion.div>
             </div>
 
           </div>
         </div>
       </section>
+
+      {/* Iframe Isabel Ayuda para la Vida */}
+      <AnimatePresence>
+        {isCauseSiteOpen ? (
+          <motion.div
+            key="cause-site-iframe"
+            className="fixed inset-0 z-[175] flex items-center justify-center overflow-y-auto overflow-x-hidden overscroll-none"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+          >
+            <motion.div
+              className="absolute inset-0 bg-black/85 backdrop-blur-md"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={handleCloseCauseSite}
+            />
+            <motion.div
+              role="dialog"
+              aria-modal="true"
+              aria-label="Isabel Ayuda para la Vida"
+              className="relative z-10 my-6 w-[calc(100vw-2rem)] max-w-5xl overflow-hidden rounded-3xl border border-white/10 bg-slate-950/90 shadow-[0_35px_120px_rgba(0,0,0,0.65)]"
+              initial={{ scale: 0.96, opacity: 0, y: 18 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.96, opacity: 0, y: 18 }}
+              transition={{ type: 'spring', stiffness: 220, damping: 24 }}
+            >
+              <div className="flex flex-col gap-3 border-b border-white/10 px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                  <p className="text-xs uppercase tracking-[0.35em] text-slate-400/80">Causa social</p>
+                  <h3 className="font-display text-2xl text-slate-100">Isabel Ayuda para la Vida</h3>
+                </div>
+                <div className="flex items-center gap-3 text-sm">
+                  {CAUSE_SITE_URL ? (
+                    <a
+                      href={CAUSE_SITE_URL}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="text-purple-200 underline underline-offset-4 hover:text-white"
+                    >
+                      Abrir en nueva pestaña
+                    </a>
+                  ) : null}
+                  <button
+                    type="button"
+                    onClick={handleCloseCauseSite}
+                    className="text-slate-300 hover:text-white transition"
+                  >
+                    Cerrar ✕
+                  </button>
+                </div>
+              </div>
+              <div className="relative w-full aspect-[16/10] bg-black">
+                {CAUSE_SITE_URL ? (
+                  <iframe
+                    src={CAUSE_SITE_URL}
+                    title="Isabel Ayuda para la Vida"
+                    className="h-full w-full"
+                    loading="lazy"
+                  />
+                ) : (
+                  <div className="flex h-full w-full items-center justify-center text-sm text-slate-300">
+                    No se pudo cargar el sitio.
+                  </div>
+                )}
+              </div>
+            </motion.div>
+          </motion.div>
+        ) : null}
+      </AnimatePresence>
 
       {/* Image preview portal */}
       {typeof document !== 'undefined' && imagePreview

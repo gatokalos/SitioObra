@@ -5,7 +5,7 @@ export const IMPACT_COPY = {
   labels: {
     subs: 'Huella activa',
     sessions: (total, perSub = 6) => `${total * perSub} sesiones (1 huella = ${perSub} sesiones)`,
-    residencies: 'Residencias creativas',
+    residencies: 'Residencias escolares',
     schools: 'Escuelas con app activa',
   },
   hints: {

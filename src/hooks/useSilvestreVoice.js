@@ -289,6 +289,43 @@ export const useSilvestreVoice = () => {
     setPendingSilvestreAudioUrl(null);
   }, []);
 
+  // Fade suave del audio antes de parar — usado cuando AlianzaSocial entra al viewport
+  const fadeSilvestreAudio = useCallback((durationMs = 700) => {
+    const audio = silvestreAudioRef.current;
+    if (!audio || audio.paused) return;
+    const originalVolume = audio.volume;
+    const startTime = Date.now();
+    const step = () => {
+      const elapsed = Date.now() - startTime;
+      const progress = Math.min(elapsed / durationMs, 1);
+      if (!silvestreAudioRef.current) return;
+      silvestreAudioRef.current.volume = originalVolume * (1 - progress);
+      if (progress < 1) {
+        requestAnimationFrame(step);
+      } else {
+        if (silvestreAudioRef.current) {
+          silvestreAudioRef.current.pause();
+          silvestreAudioRef.current.volume = originalVolume;
+          silvestreAudioRef.current.src = '';
+          silvestreAudioRef.current = null;
+        }
+        if (silvestreAudioUrlRef.current) {
+          URL.revokeObjectURL(silvestreAudioUrlRef.current);
+          silvestreAudioUrlRef.current = null;
+        }
+        setIsSilvestrePlaying(false);
+      }
+    };
+    requestAnimationFrame(step);
+  }, []);
+
+  // Escucha el evento global que dispara AlianzaSocial al entrar al viewport
+  useEffect(() => {
+    const handler = () => fadeSilvestreAudio(700);
+    window.addEventListener('gatoencerrado:fade-silvestre', handler);
+    return () => window.removeEventListener('gatoencerrado:fade-silvestre', handler);
+  }, [fadeSilvestreAudio]);
+
   const stopSilvestreResponse = useCallback(() => {
     if (silvestreAbortRef.current) {
       silvestreAbortRef.current.abort();

@@ -550,7 +550,7 @@ export const normalizeStoredEmotionOrbs = (raw) => {
 };
 export const showcaseDefinitions = {
   miniversos: {
-    label: 'Escena',
+    label: 'Drama',
     type: 'tragedia',
     intro:
       'Los estados emocionales de Silvestre no son etiquetas. Son lugares donde la escena ocurre. Di una frase —tuya o del libreto— y escucha cómo la obra responde desde adentro. Luego cambia de emoción y detona la misma frase otra vez. La escena nunca responde igual.',
@@ -997,7 +997,7 @@ Este espacio permite recorrer esas composiciones, explorar sus capas y descubrir
   },
   miniversoMovimiento: {
     label: 'Movimiento',
-     intro:'Movimiento traslada al cuerpo los conflictos mentales del universo #GatoEncerrado. Si en la obra la mente se fragmenta, aquí el cuerpo busca arraigo. Es un laboratorio coreográfico y somático que se activa por ciudad.No se interpretan emociones: se atraviesan.',
+     intro:'Este miniverso creativo traslada al cuerpo los conflictos mentales del Universo #GatoEncerrado. Si en la obra la mente se fragmenta, aquí el cuerpo busca arraigo. Es un laboratorio coreográfico y somático que se activa por ciudad.No se interpretan emociones: se atraviesan.',
 
          type: 'movement-ritual',
     pendingName: 'La Ruta de la Corporeidad',
@@ -1269,7 +1269,7 @@ Este espacio permite recorrer esas composiciones, explorar sus capas y descubrir
 export const formats = [
   {
     id: 'miniversos',
-    title: 'Escena',
+    title: 'Drama',
     icon: Drama,
     iconClass: 'text-purple-300',
 
@@ -1440,9 +1440,10 @@ export const getFocusParamFromLocation = (locationLike) => {
 export const CAUSE_ACCORDION = [
   {
     id: 'tratamientos',
-    title: 'Tratamientos emocionales',
+    title: 'Terapias',
     description:
       'Tan solo una huella asigna hasta 6 sesiones a un joven sin costo para su familia. Isabel Ayuda para la Vida, A.C. activa las sesiones cuando se detecta riesgo emocional.',
+    tramo: '1er tramo',
     icon: HeartHandshake,
     metric: '6 sesiones promedio por suscriptor',
     imageAlt: 'Foto de archivo de acompañamiento emocional.',
@@ -1457,9 +1458,10 @@ export const CAUSE_ACCORDION = [
   },
   {
     id: 'residencias',
-    title: 'Residencias creativas',
+    tramo: '2do tramo',
+    title: 'Talleres',
     description:
-      'Laboratorios de 2 meses en alianza con la asociación, donde artistas ponen su práctica al servicio de programas escolares de acompañamiento emocional. Cada 17 huellas financian una residencia completa.',
+      'Talleres de 2 meses en alianza con la asociación, donde artistas ponen su práctica al servicio de programas escolares de acompañamiento emocional. Cada 17 huellas financian una residencia completa.',
     icon: Palette,
     metric: 'Hasta 3 residencias activas por temporada',
     imageAlt: 'Foto de archivo de residencias creativas.',
@@ -1473,7 +1475,8 @@ export const CAUSE_ACCORDION = [
   },
   {
     id: 'app-escolar',
-  title: 'App Causa Social en escuelas',
+    tramo: '3er tramo',
+    title: 'App Gato Escolar',
   description:
     'Implementación y seguimiento semestral de la app de detección temprana. 75 huellas financian 1 escuela por semestre.',
   icon: Smartphone,

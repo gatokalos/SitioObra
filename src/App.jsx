@@ -590,8 +590,8 @@ function App() {
             <HeroBackground isAuthenticated={isAuthenticated} />
             <div className="relative z-10">
               <Header
-                showAllianceNav={canAccessTransmedia}
-                showTransmediaNav={false}
+                showAllianceNav={true}
+                showTransmediaNav={canAccessTransmedia && !isMobileLoggedInPortalMode}
               />
 
               <main className="pt-20 lg:pt-24">
@@ -665,8 +665,8 @@ function App() {
               </main>
 
               <Footer
-                showAllianceNav={canAccessTransmedia}
-                showTransmediaNav={false}
+                showAllianceNav={true}
+                showTransmediaNav={canAccessTransmedia && !isMobileLoggedInPortalMode}
               />
               {shouldShowToast && (
                 <LoginToast emailHash={emailHash} onDismiss={dismissToast} />

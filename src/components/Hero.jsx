@@ -42,7 +42,6 @@ const HERO_ROTATING_SUBTITLES = [
   'Una historia que cambia cuando la miras',
   'Teatro que no termina cuando sales de la sala',
   'Una experiencia escénica que se queda contigo',
-  ' ',
 ];
 const HERO_GHOST_SUBTITLES = [
   'Tal vez la obra ya empezó en ti',

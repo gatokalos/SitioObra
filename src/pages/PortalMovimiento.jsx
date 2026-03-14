@@ -26,7 +26,7 @@ import { sanitizeExternalHttpUrl } from '@/lib/urlSafety';
 import { hasEnoughGAT } from '@/lib/gatAccess';
 
 const MOVEMENT_INTRO =
-  'Movimiento traslada al cuerpo los conflictos mentales del universo #GatoEncerrado. Si en la obra la mente se fragmenta, aquí el cuerpo busca arraigo. Es un laboratorio coreográfico y somático que se activa por ciudad. No se interpretan emociones: se atraviesan.';
+  'Este miniverso creativo traslada al cuerpo los conflictos mentales del Universo #GatoEncerrado. Si en la obra la mente se fragmenta, aquí el cuerpo busca arraigo. Es un laboratorio coreográfico y somático que se activa por ciudad. No se interpretan emociones: se atraviesan.';
 const MOVEMENT_TAGLINE = 'Talleres de Cuerpo Colectivo';
 const MOVEMENT_BODY =
   'Cuando la obra visita una ciudad, Movimiento activa una semana de exploración corporal abierta a la comunidad. Cada jornada trabaja una fuerza corporal específica, desde arraigo hasta fragmentación, a través de entrenamiento somático y creación coreográfica.\n\nEstas coreografías se registran mediante captura de movimiento (o mocap) y se traducen en presencias digitales que habitan ese territorio. Al finalizar el proceso, la acción escénica no desaparece: queda sembrada en el espacio público como una presencia en realidad aumentada.';

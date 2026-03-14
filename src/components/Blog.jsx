@@ -906,7 +906,7 @@ const Blog = ({ posts = [], isLoading = false, error = null }) => {
                           Buscador Backstage
                         </span>
                         <p className="text-[1rem] font-semibold leading-snug text-white">
-                          ¿Primera vez en el sitio o quieres despejar dudas sobre la obra?
+                          ¿Primera vez en el sitio? ¿Ya viste la obra?<br /> Este es tu espacio para explayarte y encontrar respuestas.
                         </p>
                       </div>
                       <div className="relative w-full">
@@ -919,7 +919,7 @@ const Blog = ({ posts = [], isLoading = false, error = null }) => {
                           onKeyDown={(event) => {
                             if (event.key === 'Enter' && faqQuery.trim().length >= 2) faqSearch();
                           }}
-                          placeholder="Escríbelo aquí..."
+                          placeholder="A tus órdenes... 😸"
                           disabled={faqIsLoading}
                           className="form-surface form-surface--pill h-12 w-full border border-violet-100/45 bg-white/90 py-2 pl-11 pr-12 text-sm text-slate-900 placeholder:text-slate-500 disabled:opacity-60"
                         />
@@ -1038,9 +1038,7 @@ const Blog = ({ posts = [], isLoading = false, error = null }) => {
                         <Compass size={12} className="text-violet-100/95" aria-hidden="true" />
                         <p className="text-[10px] uppercase tracking-[0.34em] text-violet-100/90">Preguntas frecuentes</p>
                       </div>
-                      <p className="max-w-3xl text-sm leading-relaxed text-violet-100/75">
-                        Pregunta por secciones, personajes, contexto, rutas de lectura o                       cualquier punto de entrada al universo.
-                      </p>
+                
                       <div className="grid gap-2">
                         {STARTER_FAQ_PROMPTS.slice(0, 3).map((prompt) => (
                           <button

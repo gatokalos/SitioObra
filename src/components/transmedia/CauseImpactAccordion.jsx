@@ -144,7 +144,7 @@ const CauseImpactAccordion = ({ items, onOpenImagePreview }) => {
                 </div>
               </div>
               <span className="text-xs uppercase tracking-[0.35em] text-slate-500">
-                {isOpen ? (isDesktopViewport ? '...' : 'x') : 'Ver impacto'}
+                {isOpen ? (isDesktopViewport ? '...' : 'x') : (item.tramo ?? '—')}
               </span>
             </button>
             {isOpen ? (

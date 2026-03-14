@@ -81,6 +81,7 @@ import useNovelaAppCTA from '@/hooks/useNovelaAppCTA';
 import useExternalPanels from '@/hooks/useExternalPanels';
 import useBodyScrollLock from '@/hooks/useBodyScrollLock';
 import useObraVoiceInteraction from '@/hooks/useObraVoiceInteraction';
+import useTransmediaSectionAudio from '@/hooks/useTransmediaSectionAudio';
 import useShowcaseGuard from '@/hooks/useShowcaseGuard';
 import MiniVersoCard from '@/components/transmedia/MiniVersoCard';
 import ShowcaseReactionInline from '@/components/transmedia/ShowcaseReactionInline';
@@ -1117,6 +1118,8 @@ const Transmedia = ({ allianceOnlyMode = false }) => {
 
 
   useBodyScrollLock({ isCinematicShowcaseOpen, isMiniverseShelved, handleCloseShowcase });
+
+  const { transmediaSectionRef } = useTransmediaSectionAudio({ isSilvestrePlaying });
 
   const previousActiveShowcaseRef = useRef(null);
   const activeParagraphs = useMemo(() => {
@@ -4290,11 +4293,12 @@ const rendernotaAutoral = () => {
   return (
     <>
       <section
+        ref={transmediaSectionRef}
         id="transmedia"
         className={`relative pb-24 ${
           allianceOnlyMode
             ? 'pt-10 min-h-[900px] md:pt-14 md:min-h-[980px]'
-            : 'pt-[clamp(3.5rem,8vh,6rem)] min-h-[1800px] md:min-h-[1600px] lg:min-h-[1500px]'
+            : 'pt-[clamp(3.5rem,8vh,6rem)]'
         }`}
       >
         {import.meta.env?.DEV ? (
@@ -4321,13 +4325,13 @@ const rendernotaAutoral = () => {
               viewport={{ once: true }}
               className="text-center mb-[clamp(2.5rem,5.5vh,4rem)] space-y-[clamp(1.25rem,2.2vh,1.75rem)] min-h-[clamp(210px,27vh,260px)]"
             >
-              <p className="text-xs uppercase tracking-[0.4em] text-slate-400/70">Vitrinas transmedia</p>
+              <p className="text-xs uppercase tracking-[0.4em] text-slate-400/70">Narrativa Expandida</p>
               <h2 className="font-display text-4xl md:text-5xl font-medium text-gradient italic">
                 Las formas de la Obra
               </h2>
               <p className="text-lg text-slate-300/80 max-w-3xl mx-auto leading-relaxed font-light">
     La obra no terminó en el teatro.<br />
-    Desde ahí se expandió en <strong>nueve formas creativas</strong>.<br />
+    Desde ahí se abrió en <strong>nueve formas creativas</strong>.<br />
 
       Cada una con su propio lenguaje y forma de participación.<br /><br />
 

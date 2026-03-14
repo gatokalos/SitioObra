@@ -21,6 +21,11 @@ const useBodyScrollLock = ({ isCinematicShowcaseOpen, isMiniverseShelved, handle
     if (shouldLockBackgroundScroll) {
       wasCinematicOpenRef.current = true;
       scrollLockYRef.current = window.scrollY;
+      // Marcar showcase como activo ANTES de fijar el body para que cualquier
+      // evento de scroll que dispare el cambio a position:fixed ya vea el flag.
+      if (typeof document !== 'undefined') {
+        document.documentElement.dataset.gatoShowcaseOpen = 'true';
+      }
       body.style.position = 'fixed';
       body.style.top = `-${scrollLockYRef.current}px`;
       body.style.left = '0';
@@ -31,16 +36,20 @@ const useBodyScrollLock = ({ isCinematicShowcaseOpen, isMiniverseShelved, handle
       return;
     }
 
+    // Quitar position:fixed primero; luego restaurar el scroll.
+    // El navegador aplica ambas mutaciones en el mismo frame, así que no hay flash.
+    const savedScrollY = wasCinematicOpenRef.current ? scrollLockYRef.current : null;
     body.style.position = '';
     body.style.top = '';
     body.style.left = '';
     body.style.right = '';
     body.style.width = '';
     body.style.overflow = '';
-    document.documentElement.style.overflow = '';
-
-    if (wasCinematicOpenRef.current) {
-      window.scrollTo(0, scrollLockYRef.current || 0);
+    html.style.overflow = '';
+    if (savedScrollY !== null) {
+      html.style.scrollBehavior = 'auto';
+      window.scrollTo({ top: savedScrollY, behavior: 'instant' });
+      html.style.scrollBehavior = '';
     }
     wasCinematicOpenRef.current = false;
     scrollLockYRef.current = 0;

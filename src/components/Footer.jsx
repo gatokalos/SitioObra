@@ -4,7 +4,7 @@ import { Heart, Instagram, Twitter, Facebook, Mail } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { toast } from '@/components/ui/use-toast';
 
-const Footer = ({ showTransmediaNav = true, showAllianceNav = showTransmediaNav }) => {
+const Footer = ({ showTransmediaNav = true }) => {
   const instagramUrl = 'https://www.instagram.com/esungatoencerrado/?hl=en';
   const twitterUrl = 'https://x.com/SilvestreFilis';
   const facebookUrl = 'https://www.facebook.com/share/16pHNpZjpM/?mibextid=wwXIfr';
@@ -65,12 +65,12 @@ const Footer = ({ showTransmediaNav = true, showAllianceNav = showTransmediaNav 
               <span className="font-semibold text-slate-200 mb-4 block">Navegación</span>
               <ul className="space-y-3">
                 {[
+                  { name: 'Alianza', href: '#apoya' },
                   { name: 'Obra', href: '#about' },
                   { name: 'Equipo', href: '#team' },
                   { name: 'Galería', href: '#instagram' },
                   { name: 'Voces', href: '#provoca' },
                   { name: 'Curaduría', href: '#dialogo-critico' },
-                  ...(showAllianceNav ? [{ name: 'Alianza', href: '#apoya' }] : []),
                   ...(showTransmediaNav ? [{ name: 'Transmedia', href: '#transmedia' }] : []),
                   { name: 'Funciones', href: '#next-show' },
                   { name: 'Contacto', href: '#contact' },

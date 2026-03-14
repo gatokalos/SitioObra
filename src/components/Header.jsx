@@ -14,13 +14,19 @@ import {
   toggleHeroAmbientMuted,
   getHeroAmbientAudio,
 } from '@/lib/heroAmbientAudio';
+import {
+  getTransmediaSectionState,
+  subscribeTransmediaAmbient,
+  toggleTransmediaAmbientMuted,
+  getTransmediaSectionAudio,
+} from '@/lib/transmediaSectionAudio';
 import { createPortalLaunchState } from '@/lib/portalNavigation';
 import isotipoGatoWebp from '@/assets/isotipo-gato.webp';
 
 const MOBILE_FULLSCREEN_MENU_PHASE_A_ENABLED = true;
 const PUBLIC_HEADER_LOGO_SRC = '/assets/header-logo.png';
 
-const Header = ({ showTransmediaNav = true, showAllianceNav = showTransmediaNav }) => {
+const Header = ({ showTransmediaNav = true }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [scrollTier, setScrollTier] = useState(0);
   const [showLoginOverlay, setShowLoginOverlay] = useState(false);
@@ -58,6 +64,20 @@ const Header = ({ showTransmediaNav = true, showAllianceNav = showTransmediaNav 
     return () => observer.disconnect();
   }, []);
 
+  const [transmediaAudioState, setTransmediaAudioState] = useState(() => getTransmediaSectionState());
+  useEffect(() => subscribeTransmediaAmbient(() => setTransmediaAudioState(getTransmediaSectionState())), []);
+  const [isTransmediaVisible, setIsTransmediaVisible] = useState(false);
+  useEffect(() => {
+    const el = document.getElementById('transmedia');
+    if (!el) return undefined;
+    const observer = new IntersectionObserver(
+      ([entry]) => setIsTransmediaVisible(entry.isIntersecting),
+      { threshold: 0.05 }
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
+
   const handleAudioToggle = useCallback(() => {
     const audio = getHeroAmbientAudio();
     if (!audio) return;
@@ -68,6 +88,16 @@ const Header = ({ showTransmediaNav = true, showAllianceNav = showTransmediaNav 
     }
     toggleHeroAmbientMuted();
   }, [audioState.isMuted]);
+
+  const handleTransmediaAudioToggle = useCallback(() => {
+    const audio = getTransmediaSectionAudio();
+    if (!audio) return;
+    if (!transmediaAudioState.isMuted && audio.paused) {
+      void audio.play().catch(() => {});
+      return;
+    }
+    toggleTransmediaAmbientMuted();
+  }, [transmediaAudioState.isMuted]);
 
   const handleCloseOverlay = useCallback(() => setShowLoginOverlay(false), []);
   const handleOpenOverlay = useCallback(() => {
@@ -142,18 +172,26 @@ const Header = ({ showTransmediaNav = true, showAllianceNav = showTransmediaNav 
   }, []);
 
   const menuItems = [
-    ...(showAllianceNav ? [{ name: 'Alianza', href: '#apoya' }] : []),
-    ...(showTransmediaNav ? [{ name: 'Transmedia', href: '#transmedia' }] : []),
+    { name: 'Alianza', href: '#apoya' },
     { name: 'Obra', href: '#about' },
     { name: 'Equipo', href: '#team' },
     { name: 'Galería', href: '#instagram' },
     { name: 'Voces', href: '#provoca' },
     { name: 'Curaduría', href: '#dialogo-critico' },
-    
+    ...(showTransmediaNav ? [{ name: 'Transmedia', href: '#transmedia' }] : []),
     { name: 'Funciones', href: '#next-show' },
     { name: 'Contacto', href: '#contact' },
   ];
   const mobileMenuItems = [
+    {
+      name: 'Alianza',
+      href: '#apoya',
+      description: 'Causa social activa',
+      secondary: [
+        { label: 'Ver modelo de impacto', href: '#apoya' },
+        { label: 'Dejar una huella', href: '#cta' },
+      ],
+    },
     { name: 'Obra', href: '#about' },
     { name: 'Equipo', href: '#team' },
     { name: 'Galería', href: '#instagram' },
@@ -161,10 +199,9 @@ const Header = ({ showTransmediaNav = true, showAllianceNav = showTransmediaNav 
     {
       name: 'Curaduría',
       href: '#dialogo-critico',
-      description: 'Lecturas para orientarte',
+      description: 'Diálogo crítico y educativo',
       secondary: [
-        { label: 'Entrar a Curaduría', href: '#dialogo-critico' },
-        { label: 'Aportar al diálogo', href: '#blog-contribuye' },
+        { label: 'Un espacio para preguntas y respuestas', href: '#dialogo-critico' },
       ],
     },
     ...(showTransmediaNav
@@ -172,41 +209,16 @@ const Header = ({ showTransmediaNav = true, showAllianceNav = showTransmediaNav 
           {
             name: 'Transmedia',
             href: '#transmedia',
-            description: 'Navega los miniversos',
+            description: 'Narrativa Expandida',
             secondary: [
-              { label: 'Abrir vitrinas', href: '#transmedia' },
-              ...(showAllianceNav ? [{ label: 'Impacto social', href: '#apoya' }] : []),
+              { label: 'Vitrinas del universo', href: '#transmedia' },
             ],
           },
         ]
       : []),
     { name: 'Funciones', href: '#next-show' },
     { name: 'Contacto', href: '#contact' },
-    {
-      name: 'FAQ',
-      href: '#faq',
-      description: 'Preguntas rápidas para no perderte',
-      secondary: [
-        {
-          label: '¿Por dónde empiezo?',
-          href: '#faq-q-start',
-          answer:
-            'Recomendamos: Obra → Curaduría → Habitar (Transmedia). Ese recorrido da contexto sin spoilers.',
-        },
-        {
-          label: '¿Necesito iniciar sesión?',
-          href: '#faq-q-login',
-          answer:
-            'Puedes explorar gran parte del sitio sin login. Iniciar sesión desbloquea registro de huella y experiencias extendidas.',
-        },
-        {
-          label: '¿Qué significa Habitar e Impulsar?',
-          href: '#faq-q-habitar',
-          answer:
-            'Habitar es recorrer los portales narrativos. Impulsar es activar impacto y sostener la expansión social del proyecto.',
-        },
-      ],
-    },
+
   ];
 
   const handleNavClick = useCallback((href) => {
@@ -317,6 +329,20 @@ const Header = ({ showTransmediaNav = true, showAllianceNav = showTransmediaNav 
                   }`}
                 >
                   {audioState.isPlaying ? <Volume2 size={14} /> : <VolumeX size={14} />}
+                </button>
+              ) : null}
+              {transmediaAudioState.isReady && isTransmediaVisible ? (
+                <button
+                  type="button"
+                  onClick={handleTransmediaAudioToggle}
+                  aria-label={transmediaAudioState.isMuted ? 'Activar música' : 'Silenciar música'}
+                  className={`inline-flex h-8 w-8 items-center justify-center rounded-full border backdrop-blur-md transition ${
+                    !transmediaAudioState.isMuted
+                      ? 'border-fuchsia-300/40 bg-fuchsia-500/15 text-fuchsia-100 hover:bg-fuchsia-500/25'
+                      : 'border-white/20 bg-black/40 text-slate-300 hover:bg-black/60'
+                  }`}
+                >
+                  {transmediaAudioState.isMuted ? <VolumeX size={14} /> : <Volume2 size={14} />}
                 </button>
               ) : null}
               {user ? (
