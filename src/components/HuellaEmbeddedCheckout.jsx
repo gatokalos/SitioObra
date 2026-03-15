@@ -161,7 +161,7 @@ const PreviewPaymentForm = ({ onDone }) => {
         </span>
       </button>
       <p className="text-[11px] leading-relaxed text-slate-300/80">
-        17 huellas completan 102 sesiones individuales al ano. Desde la huella 18 inicia el siguiente tramo.
+        17 huellas completan 102 sesiones individuales al año. Desde la huella 18 inicia el siguiente tramo.
       </p>
     </form>
   );

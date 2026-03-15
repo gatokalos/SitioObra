@@ -115,8 +115,8 @@ const AlianzaSocial = () => {
                   Déjanos una huella: $50 MXN al mes
                 </h3>
                 <p className="text-slate-300/80 leading-relaxed font-light">
-                  Nuestra taquilla sostiene la puesta en escena.
-                  <span className="font-semibold text-purple-200"> Tu huella sostiene al Universo #GatoEncerrado.</span> Cada huella activada se distribuye en tres frentes que opera Isabel Ayuda para la Vida, A.C.{' '}
+                  La taquilla sostiene a la obra de teatro.
+                  <span className="font-semibold text-purple-200"> Tu huella sostiene a #GatoEncerrado:</span> cada huella activada se distribuye en tres frentes que opera <strong>Isabel Ayuda para la Vida, A.C.</strong> y el excedente se reinvierte en nuevas obras, miniversos y publicaciones ✨{' '}
                 </p>
                 <details className="group rounded-2xl border border-emerald-300/25 bg-emerald-500/10 px-5 py-4">
                   <summary className="flex cursor-pointer list-none items-center justify-between gap-3">
@@ -133,9 +133,9 @@ const AlianzaSocial = () => {
                   </summary>
                   <div className="mt-3 space-y-2 pl-8">
                     <p className="text-sm leading-relaxed text-slate-200/95">
-                      ✔️ 17 huellas completan 102 sesiones individuales al año.<br /><br />
-                      ✔️ Desde la huella 18 inicia el siguiente tramo.<br /><br />
-                      ✔️ Tu huella pone en marcha nuestra meta mínima anual de 426.
+                      ✔️ 17 huellas completan un tramo de 102 sesiones de terapia al año.<br /><br />
+                      ✔️ Desde la huella 18 inicia el siguiente tramo: talleres escolares con artistas.<br /><br />
+                      ✔️ Tu huella es lo que nos pone en marcha.
                     </p>
                   </div>
                 </details>
@@ -191,7 +191,7 @@ const AlianzaSocial = () => {
                         onClick={handleOpenCauseSite}
                         className="mt-2 inline-flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-emerald-200 hover:text-white transition"
                       >
-                        Ver sitio de Isabel A.V. →
+                        Ver sitio de Isabel A.C. →
                       </button>
                     </div>
                   </div>

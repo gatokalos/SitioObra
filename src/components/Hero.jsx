@@ -3,6 +3,7 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { BookOpen, CoffeeIcon, DramaIcon, TicketIcon, HeartHandshake, ShoppingBag, SparkleIcon, DoorOpen } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import TicketPurchaseModal from '@/components/TicketPurchaseModal';
+import GatokensRevealModal from '@/components/GatokensRevealModal';
 import MiniverseModal from '@/components/MiniverseModal';
 import isotipoGatoWebp from '@/assets/isotipo-gato.webp';
 const HashtagButton3D = React.lazy(() => import('@/components/HashtagButton3D'));
@@ -66,6 +67,7 @@ const resolveHeroInlineTabFromQuery = (search = '') => {
 
 const Hero = () => {
   const [isTicketModalOpen, setIsTicketModalOpen] = useState(false);
+  const [isGatokensModalOpen, setIsGatokensModalOpen] = useState(false);
   const [ctaIndex, setCtaIndex] = useState(0);
   const [heroSubtitleIndex, setHeroSubtitleIndex] = useState(0);
   const [heroGhostSubtitle, setHeroGhostSubtitle] = useState(null);
@@ -105,16 +107,29 @@ const Hero = () => {
 
   useEffect(() => {
     const params = new URLSearchParams(location.search);
-    if (params.get('souvenir') !== 'ok') return;
-    toast({
-      title: 'Souvenir descargado',
-      description: 'Tu recuerdo del pozo está listo en tu galería.',
-      duration: 5000,
-    });
-    params.delete('souvenir');
-    const cleanSearch = params.toString();
-    const cleanUrl = location.pathname + (cleanSearch ? `?${cleanSearch}` : '') + location.hash;
-    window.history.replaceState({}, '', cleanUrl);
+    let dirty = false;
+
+    if (params.get('souvenir') === 'ok') {
+      toast({
+        title: 'Souvenir descargado',
+        description: 'Tu recuerdo del pozo está listo en tu galería.',
+        duration: 5000,
+      });
+      params.delete('souvenir');
+      dirty = true;
+    }
+
+    if (params.get('gatokens') === 'reveal') {
+      setIsGatokensModalOpen(true);
+      params.delete('gatokens');
+      dirty = true;
+    }
+
+    if (dirty) {
+      const cleanSearch = params.toString();
+      const cleanUrl = location.pathname + (cleanSearch ? `?${cleanSearch}` : '') + location.hash;
+      window.history.replaceState({}, '', cleanUrl);
+    }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
   const mobileInitialTabId = useMemo(
@@ -1014,6 +1029,7 @@ const Hero = () => {
         )}
       </section>
       <TicketPurchaseModal open={isTicketModalOpen} onClose={handleCloseTicket} />
+      <GatokensRevealModal open={isGatokensModalOpen} onClose={() => setIsGatokensModalOpen(false)} />
     </>
   );
 };

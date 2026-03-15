@@ -1165,7 +1165,7 @@ Si asististe a la obra, puedes convertir ese momento en huella.
           <div className="flex items-center text-[0.92rem] opacity-85">
             <span className="inline-flex items-center gap-2">
               <Palette size={14} className="text-amber-300/90" />
-              {displayStats.residenciasHitosActivos}/3 residencias activas por ciclo escolar.
+              {displayStats.residenciasHitosActivos}/3 talleres creativos por ciclo escolar.
             </span>
           </div>
           <ProgressBar
@@ -1228,7 +1228,7 @@ Si asististe a la obra, puedes convertir ese momento en huella.
             isPreviewing={interactiveSupport !== null}
           />
           <p className="text-xs opacity-65">
-            A partir de la huella {EXPANSION_START_COPY}, cada huella se reinvierte en nuevas obras, miniversos y publicaciones ✨
+            A partir de la huella {EXPANSION_START_COPY}, cada huella se convierte en reinversión. ✨
           </p>
           </div>
         </div>

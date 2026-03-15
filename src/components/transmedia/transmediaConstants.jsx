@@ -1476,7 +1476,7 @@ export const CAUSE_ACCORDION = [
   {
     id: 'app-escolar',
     tramo: '3er tramo',
-    title: 'App Gato Escolar',
+    title: 'App Causa Social',
   description:
     'Implementación y seguimiento semestral de la app de detección temprana. 75 huellas financian 1 escuela por semestre.',
   icon: Smartphone,
