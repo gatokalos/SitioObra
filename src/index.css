@@ -1416,7 +1416,7 @@ body {
   border: 1px solid rgba(120, 140, 255, 0.35);
   background: linear-gradient(
     180deg,
-    rgba(248, 250, 255, 0.96) 0%,
+    rgba(248, 250, 255, 0.57) 0%,
     rgba(235, 240, 255, 0.94) 100%
   );
   color: #1e2433;

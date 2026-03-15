@@ -557,11 +557,11 @@ export const showcaseDefinitions = {
     introNode: (
       <>
         <p className="text-base leading-relaxed text-neutral-300">
-          Los estados emocionales de <strong>Silvestre</strong> no son etiquetas.{' '}
-          Son lugares donde la escena ocurre. Di una frase —tuya o del libreto— y escucha cómo la obra responde desde adentro.
+          Este miniverso existe para habitar los estados emocionales de <strong>Silvestre</strong> desde dentro de la obra.{' '}
+          Aquí puedes escuchar fragmentos dramáticos y recorrer distintos sentimientos mientras la escena se despliega en tu mente.
         </p>
         <p className="text-lg leading-relaxed font-medium text-white mt-4">
-          La escena nunca responde igual.
+          A veces no necesitamos una conversación. A veces sólo necesitamos <strong>escuchar el drama por un rato</strong>.
         </p>
       </>
     ),
@@ -1484,10 +1484,10 @@ export const CAUSE_ACCORDION = [
   imageAlt: 'Captura de la app Causa Social en escuelas (versión beta).',
   imageLabel: 'Capturas beta de la app',
     imageUrls: [
-      'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/causa%20social/causa_social.png',
-      'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/causa%20social/aplicacion_estudiante.png',
-       'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/causa%20social/app_estarbien.png',
-      'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/causa%20social/app_estarbien2.png',
+      'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/causa%20social/app_estarbien1.jpg',
+      'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/causa%20social/app_estarbien2.jpg',
+       'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/causa%20social/app_estarbien3.jpg',
+      'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/causa%20social/app_estarbien.4.jpg',
 
 
     ],

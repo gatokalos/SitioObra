@@ -1940,7 +1940,7 @@ const rendernotaAutoral = () => {
           ? 'Escúchala con otra emoción'
           : mobileObraSecondaryCtaState === MOBILE_OBRA_SECONDARY_CTA_STATES.LAUNCH_PHRASE
             ? 'Lanza la frase'
-            : 'Sacar del guion';
+            : 'Escogere del libreto';
       const mobileSecondaryCtaEmphasis =
         mobileObraSecondaryCtaState === MOBILE_OBRA_SECONDARY_CTA_STATES.TRY_OTHER_EMOTION
           ? 'glow'
@@ -2070,11 +2070,13 @@ const rendernotaAutoral = () => {
                   >
                     Habita los sentimientos de Silvestre
                   </h2>
-                  <p className="text-sm text-slate-300/80 break-words">
-                     Así como una misma frase no suena igual con otra emoción, aquí lo conciencia de la obra cambia cuando tu intención cambia.
-                    <br />
-                  
-                    </p>
+                   <p className="text-base leading-relaxed text-neutral-300">
+          Los estados emocionales de <strong>Silvestre</strong> no son etiquetas.{' '}
+          Son lugares donde la escena ocurre. Di una frase —tuya o del libreto— y escucha cómo la obra responde desde adentro.
+        </p>
+        <p className="text-lg leading-relaxed font-medium text-white mt-4">
+          La escena nunca responde igual.
+        </p>
                 </div>
 
                 <div ref={obraModesRef} className="space-y-3">

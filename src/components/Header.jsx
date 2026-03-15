@@ -186,7 +186,7 @@ const Header = ({ showTransmediaNav = true }) => {
     {
       name: 'Alianza',
       href: '#apoya',
-      description: 'Causa social activa',
+      description: 'Causa social',
       secondary: [
         { label: 'Ver modelo de impacto', href: '#apoya' },
         { label: 'Dejar una huella', href: '#cta' },
@@ -201,7 +201,7 @@ const Header = ({ showTransmediaNav = true }) => {
       href: '#dialogo-critico',
       description: 'Diálogo crítico y educativo',
       secondary: [
-        { label: 'Un espacio para preguntas y respuestas', href: '#dialogo-critico' },
+        { label: 'FAQ', href: '#dialogo-critico' },
       ],
     },
     ...(showTransmediaNav
@@ -211,7 +211,7 @@ const Header = ({ showTransmediaNav = true }) => {
             href: '#transmedia',
             description: 'Narrativa Expandida',
             secondary: [
-              { label: 'Vitrinas del universo', href: '#transmedia' },
+              { label: 'Mini-apps', href: '#transmedia' },
             ],
           },
         ]

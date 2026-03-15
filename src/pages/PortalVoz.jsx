@@ -171,17 +171,14 @@ const collectiveNodeLayout = [
 const SCENE_PORTAL_INTRO = (
   <>
     <p className="text-base leading-relaxed text-neutral-300">
-      Los estados emocionales de <strong>Silvestre</strong> no son etiquetas.{' '}
-      Son lugares donde la escena ocurre.
+      Este miniverso existe para habitar los estados emocionales de <strong>Silvestre</strong> desde dentro de la obra.<br/>
+      
     </p>
     <p className="text-base leading-relaxed text-neutral-300 mt-3">
-      Di una frase —tuya o del libreto— y escucha cómo la obra responde desde adentro.
+      Aquí puedes escuchar fragmentos dramáticos y recorrer distintos sentimientos mientras la escena se despliega en tu mente.
     </p>
     <p className="text-base leading-relaxed text-neutral-300 mt-3">
-      Luego cambia de emoción y detona la misma frase otra vez.
-    </p>
-    <p className="text-lg leading-relaxed font-medium text-white mt-4">
-      La escena nunca responde igual.
+      A veces no necesitamos una conversación. A veces sólo necesitamos <strong>escuchar el drama por un rato</strong>.
     </p>
   </>
 );
@@ -504,7 +501,7 @@ const PortalVoz = () => {
       ? 'Escúchala con otra emoción'
       : mobileObraSecondaryCtaState === MOBILE_OBRA_SECONDARY_CTA_STATES.LAUNCH_PHRASE
         ? 'Lanza la frase'
-        : 'Sacar del guion';
+        : 'Escoger del libreto';
   const mobileSecondaryCtaEmphasis =
     mobileObraSecondaryCtaState === MOBILE_OBRA_SECONDARY_CTA_STATES.TRY_OTHER_EMOTION
       ? 'glow'
@@ -1073,10 +1070,13 @@ const PortalVoz = () => {
                   >
                     Habita los sentimeintos de Silvestre
                   </h2>
-                  <p className="text-sm text-slate-300/80 break-words">
-                    Así como una misma frase no suena igual con otra emoción, aquí lo conciencia de la obra cambia cuando tu intención cambia.
-                    <br />
-                    </p>
+                   <p className="text-base leading-relaxed text-neutral-300">
+          Los estados emocionales de <strong>Silvestre</strong> no son etiquetas. <br /><br />
+          Son lugares donde la escena ocurre. Di una frase —tuya o del libreto— y escucha cómo la obra responde desde adentro.<br /><br />
+        </p>
+        <p className="text-lg leading-relaxed font-medium text-white mt-4">
+          La escena nunca responde igual.
+        </p>
                 </div>
 
                 <div ref={obraModesRef} className="space-y-3">

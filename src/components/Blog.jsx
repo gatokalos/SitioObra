@@ -75,9 +75,9 @@ const MINIVERSE_KEYWORDS = {
 };
 
 const STARTER_FAQ_PROMPTS = [
-  '¿Qué relación tiene la obra con su causa social?',
-  '¿Qué diferencia hay entre la obra y el sitio?',
-  '¿Tengo que ver la obra primero para entender el sitio?',
+  '¿Qué relación tiene Es un gato encerrado con su causa social?',
+  '¿Qué diferencia hay entre la obra de teatro y el sitio?',
+  '¿Tengo que ver la obra primero para entender este universo?',
   '¿El sitio continúa la historia o es otra cosa?',
   '¿Qué pasa si solo quiero curiosear sin registrarme?',
   '¿A alguien más le dio ansiedad esta obra… o solo a mí?',

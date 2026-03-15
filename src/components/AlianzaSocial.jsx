@@ -115,8 +115,8 @@ const AlianzaSocial = () => {
                   Déjanos una huella: $50 MXN al mes
                 </h3>
                 <p className="text-slate-300/80 leading-relaxed font-light">
-                  La taquilla sostiene a la obra de teatro.
-                  <span className="font-semibold text-purple-200"> Tu huella sostiene a #GatoEncerrado:</span> cada huella activada se distribuye en tres frentes que opera <strong>Isabel Ayuda para la Vida, A.C.</strong> y el excedente se reinvierte en nuevas obras, miniversos y publicaciones ✨{' '}
+                  
+                  <span className="font-semibold text-purple-200">La taquilla sostiene a la obra de teatro. Tu huella sostiene a #GatoEncerrado.</span> Cada huella activada se distribuye en tres frentes que opera <strong>Isabel Ayuda para la Vida, A.C.</strong> y el excedente se reinvierte en nuevas apps, objetos y publicaciones ✨{' '}
                 </p>
                 <details className="group rounded-2xl border border-emerald-300/25 bg-emerald-500/10 px-5 py-4">
                   <summary className="flex cursor-pointer list-none items-center justify-between gap-3">
@@ -182,9 +182,8 @@ const AlianzaSocial = () => {
                     <div>
                       <p className="font-medium text-slate-200">Sin costo para familias</p>
                       <p className="mt-1">
-                        La asociación atiende a jóvenes cuando se detecta riesgo.
-                        No hay costo obligatorio para las familias.
-                        Su causa se sostiene con apoyos institucionales, donaciones y activación de huellas.
+                        La asociación detecta y acompaña a tiempo a niños y jóvenes. <br/>
+                        No hay costo obligatorio para las familias. Su causa se sostiene con apoyos institucionales, donaciones y activación de huellas.
                       </p>
                       <button
                         type="button"

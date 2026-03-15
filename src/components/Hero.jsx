@@ -821,7 +821,7 @@ const Hero = () => {
                   transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
                   className="select-none text-[0.62rem] uppercase tracking-[0.3em] text-zinc-300/45 sm:text-[0.68rem]"
                 >
-                  toca para abrir
+                  Pulsa el gato
                 </motion.p>
               </motion.div>
 

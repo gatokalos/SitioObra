@@ -16,6 +16,7 @@ import {
   isBienvenidaQaAlwaysFreshUser,
 } from '@/lib/bienvenida';
 import { extractRecommendedAppId, normalizeBridgeKey } from '@/lib/bienvenidaBridge';
+import { pauseHeroAmbient } from '@/lib/heroAmbientAudio';
 
 const Bienvenida = () => {
   const location = useLocation();
@@ -63,6 +64,7 @@ const Bienvenida = () => {
   useEffect(() => {
     if (typeof document === 'undefined') return;
     delete document.documentElement.dataset.bienvenidaFade;
+    pauseHeroAmbient();
   }, []);
 
   const handleFinish = useCallback(() => {
