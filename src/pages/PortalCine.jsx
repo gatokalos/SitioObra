@@ -99,7 +99,7 @@ const CINE_COLLABORATORS = [
     id: 'tania-fraire',
     name: 'Tania Fraire Vazques',
     role: 'Autoficcion (Quiron) · Interprete natural en pantalla',
-    bio: 'Tania llego al proyecto desde la autoficcion y revelo una presencia genuina, vulnerable y precisa frente a camara. Su participacion en Quiron abrio una grieta luminosa para volver la historia mas humana.',
+    bio: 'Tania llego al proyecto desde la autoficcion y revelo una presencia genuina, vulnerable y precisa frente a camara. Su participación en Quiron abrio una grieta luminosa para volver la historia mas humana.',
     image: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/equipo/tania.jpg',
   },
 ];

@@ -19,9 +19,29 @@ import { supabase } from '@/lib/supabaseClient';
 import { sanitizeExternalHttpUrl } from '@/lib/urlSafety';
 import { hasEnoughGAT } from '@/lib/gatAccess';
 
-const ARTESANIAS_INTRO =
-  'Un objeto cotidiano convertido en simbolo de comunión. Cada taza esta vinculada a un sentimiento. Cada sentimiento, a una historia personal.';
-const ARTESANIAS_SUBTITLE = 'Esta no es una taza. Es un umbral.';
+const ARTESANIAS_INTRO =       (
+<>
+  <p className="text-base leading-relaxed text-slate-300">
+     Cada taza está vinculada a un sentimiento; cada sentimiento, a una historia personal.
+  </p>
+
+  <p className="text-base leading-relaxed text-slate-300 mt-3">
+    En el universo #GatoEncerrado, las artesanías no son simple mercancía ni souvenir. 
+    Son pequeñas piezas narrativas que acompañan conversaciones, silencios y momentos de reflexión compartida.
+  </p>
+
+          <p className="text-lg leading-relaxed font-medium text-white mt-4">
+    A veces las historias aparecen mientras sostenemos algo entre las manos.
+  </p>
+</>
+);
+const ARTESANIAS_SUBTITLE =       (
+<>
+  <p className="text-base leading-relaxed text-slate-300">
+    Un objeto cotidiano convertido en <strong>símbolo de comunión</strong>.<br/>
+  </p>
+</>
+);
 const ARTESANIAS_NOTE = 'Apunta tu cámara y aparecera tu frase';
 const ARTESANIAS_IMAGE =
   'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Merch/taza_h.png';
@@ -63,7 +83,7 @@ const ARTESANIAS_COLLABORATORS = [
 ];
 const ARTESANIAS_NOTA_AUTORAL = {
   title: '#ElSentidoEnLasManos',
-  verse: 'Tomé un objeto.\nSu forma me sostuvo.\nEl sentido calentó mis manos.',
+  verse: 'Tomé un objeto.\nSu forma me sostuvo.\nSu sentido calmó mis manos.',
 };
 const ARTESANIAS_TILE = {
   gradient: 'linear-gradient(135deg, rgba(44,20,30,0.95), rgba(101,45,66,0.85), rgba(196,111,86,0.6))',

@@ -80,7 +80,7 @@ export const MINIVERSE_PORTAL_REGISTRY = [
   },
   {
     id: 'oraculo',
-    label: 'Oraculo',
+    label: 'Oráculo',
     priority: 9,
     formatId: 'oraculo',
     cardId: 'oraculo',

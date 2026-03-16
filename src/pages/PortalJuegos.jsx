@@ -16,9 +16,24 @@ import { supabase } from '@/lib/supabaseClient';
 import { sanitizeExternalHttpUrl } from '@/lib/urlSafety';
 import { hasEnoughGAT } from '@/lib/gatAccess';
 
-const JUEGOS_TAGLINE = 'Juegos como portales • Apps como rituales felinos.';
-const JUEGOS_INTRO =
-  'Demos jugables del tablero TRAZO: eliges avatar (Maestra, Saturnina, Don Polo...) y el gato anfitrion te abre el telon en 3 taps.';
+const JUEGOS_TAGLINE = (
+  <>
+    Aquí el universo explora sus propios <strong>clichés</strong> y los pone en juego.
+    <br />
+  </>
+);
+const JUEGOS_INTRO = (
+  <>
+       Porque las historias se construyen con formas que ya conocemos:
+    <strong> inicio, desarrollo y final</strong>.
+    <br /><br />
+
+    Dicen que <em>no hay nada nuevo bajo el sol</em>. Tal vez.
+    <br /><br />
+    Pero cuando una historia se juega,
+    <strong> podemos contarla a nuestra manera.</strong>
+  </>
+);
 const JUEGOS_NOTA_AUTORAL = {
   title: '#NoHayDesandar',
   verse: 'Elegi un camino pequeno.\nAhora no lo puedo desandar.\nEl juego me jugó.',

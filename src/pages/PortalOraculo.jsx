@@ -16,21 +16,35 @@ import { supabase } from '@/lib/supabaseClient';
 import { sanitizeExternalHttpUrl } from '@/lib/urlSafety';
 import { hasEnoughGAT } from '@/lib/gatAccess';
 
-const ORACULO_TITLE = 'Oraculo';
+const ORACULO_TITLE = 'Oráculo';
 const ORACULO_INTRO =
-  'Alimenta la mente del Gato y gana GATokens por compartir tu pensamiento. El Oraculo no da respuestas, pero si recompensa tu curiosidad.';
-const ORACULO_TAGLINE = 'Interaccion que deja huella. Reflexion que te recompensa.';
+  (
+  <>
+    Este miniverso existe para mirar lo que <strong>#GatoEncerrado</strong> despierta en ti.
+    <br />
+    A través de preguntas breves, el <strong>Oráculo</strong> abre un espacio para observar tus propias respuestas:
+    emociones, intuiciones y pensamientos que aparecen después de la experiencia.
+  
+  </>
+);
+const ORACULO_TAGLINE =  (
+  <>
+    <strong>Aquí no se interpreta la mente.</strong>
+    <br />
+    Se aprende a <em>observar al observador</em>.
+  </>
+);
 const ORACULO_MINING_LOOPS = [
-  'Responde preguntas simbolicas, filosoficas, existenciales, absurdas o personales.',
-  'Cada respuesta se guarda como semilla de conocimiento simbolico para IA, literatura y obra interactiva.',
-  'Mientras mas participas, mas GATokens generas (proof-of-resonance con limites diarios anti-spam).',
+  'Responde preguntas simbólicas, filosóficas, existenciales o absurdas.',
+  'Cada respuesta se guarda como semilla de conocimiento para IA, literatura y obra interactiva.',
+  'Mientras más participas, más GATokens generas: prueba de resonancia con límites diarios.',
 ];
 const ORACULO_REWARDS = [
   {
     id: 'reward-answer',
     title: 'Responder a una pregunta profunda',
     tokens: '+20 GAT',
-    description: 'Comparte una reflexion que vibre en lo simbolico o emocional.',
+    description: 'Comparte una reflexión que vibre en lo simbólico o emocional.',
   },
   {
     id: 'reward-comment',
@@ -46,19 +60,19 @@ const ORACULO_REWARDS = [
   },
   {
     id: 'reward-invite',
-    title: 'Invitar a alguien con su primera reflexion',
+    title: 'Invitar a alguien con su primera reflexión',
     tokens: '+50 GAT',
-    description: 'Trae otra mente al Oraculo. Recompensa unica por invitacion.',
+    description: 'Trae otra mente al Oráculo. Recompensa única por invitación.',
   },
 ];
-const ORACULO_LIMITS_NOTE = 'Limites por dia para evitar spam y mantener el valor simbolico.';
+const ORACULO_LIMITS_NOTE = 'Límites diarios para evitar spam y preservar el valor simbólico de cada respuesta.';
 const ORACULO_SEED_NOTES = [
-  'Las respuestas se almacenan como semillas de conocimiento simbolico.',
+  'Las respuestas se almacenan como semillas de conocimiento simbólico.',
   'Enriquecen una base de datos viviente para literatura, IA personalizada y obra interactiva.',
-  'Cada huella deja senal en la mente del Gato.',
+  'Cada huella deja señal en la mente del Gato.',
 ];
 const ORACULO_CTA_LABEL = 'Pregunta, responde y mintea';
-const ORACULO_CTA_DESCRIPTION = 'Tu pensamiento tambien construye este universo.';
+const ORACULO_CTA_DESCRIPTION = 'Tu pensamiento también construye este universo.';
 const ORACULO_NOTA_AUTORAL = {
   title: '#CambiarSinCambiar',
   verse: 'Mire el espejo.\nNo dijo nada.\nEramos dos... y no.',
@@ -71,11 +85,11 @@ const ORACULO_TILE = {
   background: 'rgba(38,18,56,0.72)',
 };
 const ORACULO_IA_PROFILE = {
-  type: 'GPT-4o + embeddings simbolicos curados por la comunidad.',
+  type: 'GPT-4o + embeddings simbólicos curados por la comunidad.',
   interaction: '1-3 reflexiones cortas por sesion; foro breve guiado.',
   tokensRange: '20-120 tokens por reflexion (promedio ~20 GAT).',
   coverage: 'Cubierto por suscriptores; las recompensas son GATokens internos.',
-  footnote: 'El minado es simbolico y humano: no es financiero, es resonancia.',
+  footnote: 'El minado es simbólico y humano: no es financiero, es resonancia.',
 };
 const ORACULO_FALLBACK_COMMENTS = [
   {
@@ -152,7 +166,7 @@ const ShowcaseReactionInline = ({ status, onReact }) => (
       <div>
         <p className="text-[0.6rem] uppercase tracking-[0.35em] text-slate-500">Resonancia colectiva</p>
         <p className="text-sm text-slate-300 leading-relaxed">
-          Deja un pulso para sostener la mente viva del Oraculo.
+          Deja un pulso para sostener la mente viva del Oráculo.
         </p>
       </div>
       <button
@@ -169,7 +183,7 @@ const ShowcaseReactionInline = ({ status, onReact }) => (
       </button>
     </div>
     <p className="text-xs uppercase tracking-[0.3em] text-purple-300">
-      {status === 'loading' ? 'Enviando...' : 'Hacer latir el Oraculo'}
+      {status === 'loading' ? 'Enviando...' : 'Hacer latir el Oráculo'}
     </p>
   </div>
 );
@@ -316,7 +330,7 @@ const PortalOraculo = () => {
     if (!requireAuth()) return;
     if (!oraculoUrl) {
       toast({
-        description: 'Falta configurar la URL del Oraculo (VITE_BIENVENIDA_URL o VITE_ORACULO_URL).',
+        description: 'Falta configurar la URL del Oráculo (VITE_BIENVENIDA_URL o VITE_ORACULO_URL).',
       });
       return;
     }
@@ -397,7 +411,7 @@ const PortalOraculo = () => {
           <div className="grid gap-6 lg:gap-10 lg:grid-cols-[2fr_1fr]">
             <div className="space-y-6">
               <div className="rounded-3xl border border-white/10 bg-black/30 p-6 space-y-4">
-                <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Minado simbolico</p>
+                <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Minado simbólico</p>
                 <ul className="space-y-2 text-sm text-slate-200/90 leading-relaxed">
                   {ORACULO_MINING_LOOPS.map((step, index) => (
                     <li key={`oraculo-loop-${index}`} className="flex items-start gap-2">
@@ -458,13 +472,13 @@ const PortalOraculo = () => {
               <div className="rounded-3xl border border-white/10 bg-black/30 p-6 space-y-3">
                 <div className="flex items-center gap-3">
                   <Brain size={18} className="text-purple-200" />
-                  <p className="text-sm text-slate-200 font-semibold">Interaccion que deja huella</p>
+                  <p className="text-sm text-slate-200 font-semibold">Interacción que deja huella</p>
                 </div>
                 <p className="text-sm text-slate-300/85 leading-relaxed">
-                  Tus reflexiones afinan la mente del Gato: entrenamiento simbolico, no binario y emocional. Cada
-                  participacion se audita para evitar ruido.
+                  Tus reflexiones afinan la mente del Gato: entrenamiento simbólico, no binario y emocional. Cada
+                  participación se audita para evitar ruido.
                 </p>
-                <p className="text-xs text-slate-500">El Oraculo es un espacio curado; el minado es resonancia, no dinero.</p>
+                <p className="text-xs text-slate-500">El Oráculo es un espacio curado; el minado es resonancia, no dinero.</p>
               </div>
             </div>
           </div>

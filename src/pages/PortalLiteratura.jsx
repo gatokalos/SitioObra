@@ -20,10 +20,10 @@ import { sanitizeExternalHttpUrl } from '@/lib/urlSafety';
 import { hasEnoughGAT } from '@/lib/gatAccess';
 
 const LITERATURA_INTRO =
-  'En este miniverso literario se entiende la escritura como una forma de expansion. No es un complemento de la obra escenica o de la novela, sino un espacio propio donde fragmentos, voces, poemas y apuntes dialogan entre si y amplian el universo de Gato Encerrado.';
+  'En este miniverso literario se entiende la escritura como una forma de expansion. No es un complemento de la obra escénica, sino un espacio propio donde fragmentos, voces, poemas y apuntes dialogan entre si y amplian el universo #Gato Encerrado.';
 const LITERATURA_NOTA_AUTORAL = {
   title: '#LaPreguntaInsiste',
-  verse: 'Escribi para entender\ny la pagina me abrio otra pregunta.',
+  verse: 'Escribí para entender\ny la página me abrió otra pregunta.',
 };
 const LITERATURA_TILE = {
   gradient: 'linear-gradient(135deg, rgba(26,24,60,0.95), rgba(59,43,95,0.85), rgba(108,56,118,0.7))',
@@ -33,9 +33,9 @@ const LITERATURA_TILE = {
   background: 'rgba(26,24,60,0.74)',
 };
 const LITERATURA_IA_PROFILE = {
-  type: 'GPT-4o mini + voz sintetica para fragmentos.',
-  interaction: 'Guia de lectura y acompañamiento breve por capitulo.',
-  tokensRange: '150-320 tokens por fragmento leido.',
+  type: 'GPT-4o mini + voz sintética para fragmentos.',
+  interaction: 'Guía de lectura y acompañamiento breve por capítulo.',
+  tokensRange: '150-320 tokens por fragmento leído.',
   coverage: 'Cubierto por suscriptores; lectura sin costo adicional.',
   footnote: 'La IA susurra; la historia sigue siendo tuya.',
 };
@@ -43,21 +43,21 @@ const LITERATURA_COLLABORATORS = [
   {
     id: 'pepe-rojo',
     name: 'Pepe Rojo',
-    role: 'Escritor y critico cultural',
-    bio: 'Acompano la literatura de este miniverso con una lectura precisa y generosa. Su intervencion dio claridad y ruta al futuro de la obra.',
+    role: 'Escritor y crítico cultural',
+    bio: 'Acompano la literatura de este miniverso con una lectura precisa y generosa. Su intervención dio claridad y ruta al futuro de la obra.',
     image: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/equipo/peperojo.jpeg',
   },
   {
     id: 'groppe-imprenta',
     name: 'Groppe Libros',
-    role: 'Edicion fisica',
-    bio: 'Acompano la primera edicion fisica de Mi Gato Encerrado con oficio paciente y preciso, dando cuerpo de libro a este universo.',
+    role: 'Edición física',
+    bio: 'Acompano la primera edición física de Mi Gato Encerrado con oficio paciente y preciso, dando cuerpo de libro a este universo.',
     image: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/equipo/groppelibros.png',
   },
 ];
 const LITERATURA_ENTRY = {
   title: 'Despierta dentro del libro',
-  description: 'Lectura como acto de conciencia: cruzar sus paginas es recorrer la mente misma.',
+  description: 'Lectura como acto de conciencia: cruzar sus páginas es recorrer la mente misma.',
   image: '/assets/edicion-fisica.png',
   snippetTitle: 'Tu ejemplar como portal',
   snippetText:
@@ -66,12 +66,12 @@ const LITERATURA_ENTRY = {
 const LITERATURA_QUOTES = [
   {
     id: 'comentarios-lectores-1',
-    quote: 'No sabia que un libro podia hablarme a mitad de la pagina.',
+    quote: 'No sabía que un libro podia hablarme a mitad de la página.',
     author: 'Lectora anonima',
   },
   {
     id: 'comentarios-lectores-2',
-    quote: 'Volvi a subrayar y entendi que la obra tambien estaba escribiendo mi propia memoria.',
+    quote: 'Volví a subrayar y entendí que la obra también estaba escribiendo mi propia memoria.',
     author: 'Club de Lectura Frontera',
   },
 ];

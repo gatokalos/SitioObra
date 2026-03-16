@@ -706,9 +706,25 @@ iaProfile: {
     label: 'Artesanías',
     type: 'object-webar',
     slug: 'taza-que-habla',
-    subtitle: 'Esta no es una taza. Es un portal.',
+    subtitle: 'Esta no es una taza. Es un umbral.',
     intro:
-      'Un objeto cotidiano convertido en símbolo de comunión. Cada taza está vinculada a un sentimiento. Cada sentimiento, a una historia personal.',
+      (
+<>
+  <p className="text-base leading-relaxed text-slate-300">
+    Un objeto cotidiano convertido en <strong>símbolo de comunión</strong>.<br/>
+    Cada taza está vinculada a un sentimiento; cada sentimiento, a una historia personal.
+  </p>
+
+  <p className="text-base leading-relaxed text-slate-300 mt-3">
+    En el universo #GatoEncerrado, las artesanías no son simple mercancía ni souvenir. 
+    Son pequeñas piezas narrativas que acompañan conversaciones, silencios y momentos de reflexión compartida.
+  </p>
+
+          <p className="text-lg leading-relaxed font-medium text-white mt-4">
+    A veces las historias aparecen mientras sostenemos algo entre las manos.
+  </p>
+</>
+),
     note: 'Apunta tu cámara y aparecerá tu frase',
     ctaLabel: 'Activa tu taza',
     ctaMessage: 'Cuando liberes la activación WebAR, descubrirás la pista que le corresponde a tu taza.',
@@ -763,7 +779,7 @@ iaProfile: {
       },
     ],
     cartaTitle: '#ElSentidoEnLasManos',
-    notaAutoral: 'Tomé un objeto.\nSu forma me sostuvo.\nEl sentido calentó mis manos.',
+    notaAutoral: 'Tomé un objeto.\nSu forma me sostuvo.\nSu sentido calmó mis manos.',
     iaProfile: {
       type: 'IA ligera para pistas contextuales + WebAR.',
       interaction: '1 activación guiada por objeto (escaneo breve).',
@@ -777,7 +793,7 @@ iaProfile: {
     type: 'blog-series',
     slug: null,
     intro:
-      'En este miniverso literario se entiende la escritura como una forma de expansión. No es un complemento de la obra escénica o de la novela, sino un espacio propio donde fragmentos, voces, poemas y apuntes dialogan entre sí y amplían el universo de Gato Encerrado.',
+      'En este miniverso literario se entiende la escritura como una forma de expansión. No es un complemento de la obra escénica, sino un espacio propio donde fragmentos, voces, poemas y apuntes dialogan entre sí y amplían el universo #GatoEncerrado.',
     cartaTitle: '#LaPreguntaInsiste',
     notaAutoral:
       'Escribí para entender\ny la página me abrió otra pregunta.',
@@ -1178,8 +1194,24 @@ Este espacio permite recorrer esas composiciones, explorar sus capas y descubrir
     label: 'Juegos',
     type: 'apps',
     tagline: 'Juegos como portales • Apps como rituales felinos.',
-    intro:
-      'Demos jugables del tablero TRAZO: eliges avatar (Maestra, Saturnina, Don Polo…) y el gato anfitrión te abre el telón en 3 taps.',
+      intro: (
+  <>
+    <p>
+      Aquí el universo explora sus propios <strong>clichés</strong> y los pone en juego.
+    </p>
+
+    <p>
+      Porque las historias se construyen con formas que ya conocemos:
+      <strong> inicio, desarrollo y final</strong>.
+    </p><br />
+
+    <p>
+      Dicen que <em>no hay nada nuevo bajo el sol</em>. Tal vez.<br />
+      Pero cuando una historia se juega,
+      <strong> podemos contarla a nuestra manera.</strong>
+    </p>
+  </>
+),
     cartaTitle: '#NoHayDesandar',
     notaAutoral:
       'Elegí un camino pequeño.\nAhora no lo puedo desandar.\nEl juego me jugó.',
@@ -1230,25 +1262,35 @@ Este espacio permite recorrer esas composiciones, explorar sus capas y descubrir
   oraculo: {
     label: 'Oráculo',
     type: 'oracle',
-    intro:
-      'Alimenta la mente del Gato y gana GATokens por compartir tu pensamiento. El Oráculo no da respuestas, pero sí te recompensa por mantener tu curiosidad.',
+    intro: (
+  <>
+    Este miniverso existe para mirar lo que <strong>#GatoEncerrado</strong> despierta en ti.
+    <br /><br />
+    A través de preguntas breves, el <strong>Oráculo</strong> abre un espacio para observar tus propias respuestas:
+    emociones, intuiciones y pensamientos que aparecen después de la experiencia.
+    <br /><br />
+    <strong>Aquí no se interpreta la obra.</strong>
+    <br />
+    Se aprende a <em>observar al observador</em>.
+  </>
+),
     loops: [
       'Responde preguntas simbólicas, filosóficas, existenciales, absurdas o personales.',
       'Cada respuesta se guarda como semilla de conocimiento simbólico para IA, literatura y obra interactiva.',
       'Mientras más participas, más GATokens generas (proof-of-resonance con límites diarios anti-spam).',
     ],
     rewards: [
-      { title: 'Responder a una pregunta profunda', tokens: '+20 GAT', description: 'Comparte una reflexión que vibre en lo simbólico o emocional.' },
-      { title: 'Elegir y comentar reflexiones de otrxs', tokens: '+30 GAT', description: 'Modo foro: amplifica ideas y suma tu mirada.' },
-      { title: 'Volver tras una semana', tokens: '+30 GAT', description: 'Retorno que sostiene el hilo y da seguimiento a tu huella.' },
-      { title: 'Invitar a alguien con su primera reflexión', tokens: '+50 GAT', description: 'Trae a otra mente al Oráculo. Recompensa única por invitación.' },
-    ],
-    limitsNote: 'Límites por día para evitar spam y mantener el valor simbólico.',
+  { title: 'Responder una pregunta profunda', tokens: '+20 GAT', description: 'Comparte una reflexión que vibre en lo simbólico o emocional.' },
+  { title: 'Elegir y comentar reflexiones de otrxs', tokens: '+30 GAT', description: 'Modo foro: amplifica ideas y suma tu mirada.' },
+  { title: 'Volver tras una semana', tokens: '+30 GAT', description: 'Regresa al Oráculo y sigue el hilo de tu propia huella.' },
+  { title: 'Invitar a alguien con su primera reflexión', tokens: '+50 GAT', description: 'Trae otra mente al Oráculo. Recompensa única por invitación.' },
+],
+    limitsNote: 'Límites diarios para evitar spam y preservar el valor simbólico de cada respuesta.',
     seedNotes: [
-      'Las respuestas se almacenan como semillas de conocimiento simbólico.',
-      'Enriquecen una base de datos viviente para literatura, IA personalizada y obra interactiva.',
-      'Cada huella deja señal en la mente del Gato.',
-    ],
+  'Las respuestas se almacenan como semillas de conocimiento simbólico.',
+  'Alimentan una base de datos viviente para literatura, IA personalizada y obra interactiva.',
+  'Cada huella deja una señal en la mente del Gato.',
+],
     ctaLabel: 'Pregunta, responde y mintea',
     ctaDescription:
       'Tu pensamiento también construye este universo.',
