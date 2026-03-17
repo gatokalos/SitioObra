@@ -73,9 +73,13 @@ const AppleIcon = ({ className }) => (
   </svg>
 );
 
+const LOGIN_TIGER_ART_URL =
+  'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Merch/loggin_tiger.jpg';
+
 const LoginOverlay = ({ onClose }) => {
   const [email, setEmail] = useState('');
   const [pendingMagic, setPendingMagic] = useState(false);
+  const [pendingProvider, setPendingProvider] = useState(null);
   const [feedback, setFeedback] = useState(null);
   const storageBlocked = safeStorageType === 'memory';
   const isLocalPreviewPort =
@@ -91,18 +95,19 @@ const LoginOverlay = ({ onClose }) => {
     const cleanHash = hash && !hash.includes('access_token') ? hash : '';
     return `${origin}${pathname}${cleanHash}`;
   }, []);
+  const isSubmitting = pendingMagic || Boolean(pendingProvider);
 
   const handleMagicLink = useCallback(
     async (event) => {
       event.preventDefault();
-      if (pendingMagic) {
+      if (pendingMagic || pendingProvider) {
         return;
       }
 
       if (storageBlocked) {
         setFeedback({
           type: 'error',
-          text: 'Tu navegador móvil está bloqueando almacenamiento. Ábrelo en el navegador por defecto o desactiva el modo privado para iniciar sesión.',
+          text: 'Tu navegador está cerrando la puerta. Abre el sitio en Safari o Chrome fuera de modo privado para cruzar.',
         });
         return;
       }
@@ -111,7 +116,7 @@ const LoginOverlay = ({ onClose }) => {
       if (!normalized) {
         setFeedback({
           type: 'error',
-          text: 'Ingresa tu correo para enviarte el enlace mágico.',
+          text: 'Escribe tu correo para enviarte la puerta de acceso.',
         });
         return;
       }
@@ -128,29 +133,33 @@ const LoginOverlay = ({ onClose }) => {
       });
 
       if (error) {
-        setFeedback({ type: 'error', text: error.message || 'No pudimos enviar el enlace.' });
+        setFeedback({ type: 'error', text: error.message || 'No pudimos abrir el acceso por correo.' });
       } else {
         setFeedback({
           type: 'success',
-          text: 'Te enviamos un link con "Supabase Auth". Revisa tu correo para continuar.',
+          text: 'Te mandamos un acceso por correo. Ábrelo y continúas desde donde ibas.',
         });
         setEmail('');
       }
 
       setPendingMagic(false);
     },
-    [email, pendingMagic, redirectTo, storageBlocked]
+    [email, pendingMagic, pendingProvider, redirectTo, storageBlocked]
   );
 
   const handleGoogleLogin = useCallback(async () => {
     setFeedback(null);
+    if (pendingMagic || pendingProvider) {
+      return;
+    }
     if (storageBlocked) {
       setFeedback({
         type: 'error',
-        text: 'No pudimos iniciar sesión porque el navegador bloquea cookies/almacenamiento. Prueba abrir en Safari/Chrome fuera de modo privado.',
+        text: 'No pudimos cruzar con Google porque el navegador bloquea cookies o almacenamiento. Prueba en Safari o Chrome fuera de modo privado.',
       });
       return;
     }
+    setPendingProvider('google');
     safeSetItem('gatoencerrado:resume-contribution', 'true');
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
@@ -160,22 +169,27 @@ const LoginOverlay = ({ onClose }) => {
     });
 
     if (error) {
-      setFeedback({ type: 'error', text: error.message || 'No pudimos iniciar sesión con Google.' });
+      setPendingProvider(null);
+      setFeedback({ type: 'error', text: error.message || 'No pudimos abrir la puerta con Google.' });
       return;
     }
 
     onClose?.();
-  }, [onClose, redirectTo, storageBlocked]);
+  }, [onClose, pendingMagic, pendingProvider, redirectTo, storageBlocked]);
 
   const handleAppleLogin = useCallback(async () => {
     setFeedback(null);
+    if (pendingMagic || pendingProvider) {
+      return;
+    }
     if (storageBlocked) {
       setFeedback({
         type: 'error',
-        text: 'No pudimos iniciar sesión porque el navegador bloquea cookies/almacenamiento. Prueba abrir en Safari/Chrome fuera de modo privado.',
+        text: 'No pudimos cruzar con Apple porque el navegador bloquea cookies o almacenamiento. Prueba en Safari o Chrome fuera de modo privado.',
       });
       return;
     }
+    setPendingProvider('apple');
     safeSetItem('gatoencerrado:resume-contribution', 'true');
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'apple',
@@ -185,12 +199,13 @@ const LoginOverlay = ({ onClose }) => {
     });
 
     if (error) {
-      setFeedback({ type: 'error', text: error.message || 'No pudimos iniciar sesión con Apple.' });
+      setPendingProvider(null);
+      setFeedback({ type: 'error', text: error.message || 'No pudimos abrir la puerta con Apple.' });
       return;
     }
 
     onClose?.();
-  }, [onClose, redirectTo, storageBlocked]);
+  }, [onClose, pendingMagic, pendingProvider, redirectTo, storageBlocked]);
 
   useEffect(() => {
     const handleEsc = (event) => {
@@ -205,7 +220,7 @@ const LoginOverlay = ({ onClose }) => {
 
   const overlay = (
     <motion.div
-      className="fixed inset-0 z-[260] flex items-center justify-center overflow-y-auto overflow-x-hidden overscroll-none"
+      className="fixed inset-0 z-[260] flex items-stretch justify-center overflow-y-auto overflow-x-hidden overscroll-none sm:items-center"
       initial="hidden"
       animate="visible"
       exit="hidden"
@@ -224,7 +239,7 @@ const LoginOverlay = ({ onClose }) => {
         aria-modal="true"
         aria-labelledby="tracking-overlay-title"
         aria-describedby="tracking-overlay-desc"
-        className="relative z-10 my-6 w-[calc(100vw-2rem)] max-w-md transform rounded-3xl border border-white/10 bg-[#0a0019]/90 p-6 shadow-2xl backdrop-blur-xl"
+        className="relative z-10 h-full w-full sm:my-6 sm:h-auto sm:w-[calc(100vw-1.25rem)] sm:max-w-[29rem]"
         initial="hidden"
         animate="visible"
         exit="hidden"
@@ -233,95 +248,146 @@ const LoginOverlay = ({ onClose }) => {
         <button
           type="button"
           onClick={onClose}
-          className="absolute top-3 right-3 rounded-full border border-white/15 px-2 py-1 text-sm text-slate-400 hover:text-slate-100"
+          className="absolute right-4 top-4 z-30 inline-flex h-10 w-10 items-center justify-center rounded-full border border-white/15 bg-black/35 text-base text-slate-300 backdrop-blur-md transition hover:border-white/35 hover:text-white sm:right-3 sm:top-3"
           aria-label="Cerrar overlay"
         >
           ✕
         </button>
 
-        <div className="space-y-4 pt-2">
-          <div>
-            <p className="text-xs uppercase tracking-[0.4em] text-slate-500/80">Seguimiento</p>
-            <h3 id="tracking-overlay-title" className="font-display text-2xl text-slate-50">
-              Inicia sesión para continuar el diálogo
-            </h3>
-          </div>
-          <p
-            id="tracking-overlay-desc"
-            className="text-sm text-slate-300 leading-relaxed"
-          >
-            Queremos asegurarnos de que puedas retomar tu experiencia justo donde la dejaste.
-            
+        <div className="relative h-full bg-[#05030a] shadow-[0_28px_100px_rgba(0,0,0,0.72)] sm:rounded-[2.9rem] sm:border sm:border-white/10 sm:p-2.5">
 
-          Esto no genera ningún cargo ni activación.
-          </p>
-
-          <button
-            type="button"
-            onClick={handleGoogleLogin}
-            className="flex w-full items-center justify-center gap-3 rounded-full border border-white/20 bg-white/10 px-4 py-3 text-sm font-semibold text-white transition hover:border-white/40 hover:bg-white/15"
-          >
-            <GoogleIcon className="h-4 w-4" />
-            Iniciar sesión con Google
-          </button>
-          <button
-            type="button"
-            onClick={handleAppleLogin}
-            className="flex w-full items-center justify-center gap-3 rounded-full border border-white/20 bg-white/10 px-4 py-3 text-sm font-semibold text-white transition hover:border-white/40 hover:bg-white/15"
-          >
-            <AppleIcon className="h-4 w-4" />
-            Iniciar sesión con Apple
-          </button>
-          {storageBlocked ? (
-            <p className="text-xs text-amber-300">
-              Tu navegador está bloqueando almacenamiento; abre el sitio en Safari/Chrome (fuera de modo privado) para completar el login.
-            </p>
-          ) : null}
-          {isLocalPreviewPort ? (
-            <p className="text-xs text-amber-300/95">
-              Estás en `localhost:4173` (preview). Si OAuth falla, usa{' '}
-              <a href="http://localhost:5173" className="underline underline-offset-2 hover:text-white">
-                localhost:5173
-              </a>{' '}
-              o agrega `http://localhost:4173` a los redirects permitidos en Supabase.
-            </p>
-          ) : null}
-
-          <form onSubmit={handleMagicLink} className="space-y-3">
-            <label htmlFor="tracking-email" className="sr-only">
-              Correo electrónico
-            </label>
-            <input
-              id="tracking-email"
-              type="email"
-              value={email}
-              onChange={(event) => setEmail(event.target.value)}
-              placeholder="nombre@correo.com"
-              className="form-surface w-full px-4 py-3 text-sm"
-              required
+          <div className="relative h-full overflow-y-auto bg-[#09060f] sm:max-h-[88vh] sm:rounded-[2.35rem] sm:border sm:border-white/10">
+            <div
+              aria-hidden="true"
+              className="absolute inset-0"
+              style={{
+                backgroundImage:
+                  `linear-gradient(180deg, rgba(7,4,13,0.18) 0%, rgba(9,5,16,0.84) 42%, rgba(7,4,11,0.96) 100%), url(${LOGIN_TIGER_ART_URL})`,
+                backgroundPosition: 'center top',
+                backgroundSize: 'cover',
+              }}
             />
-            <button
-              type="submit"
-              disabled={pendingMagic}
-              className="w-full rounded-full bg-gradient-to-r from-purple-600/80 to-indigo-600/80 px-4 py-3 text-sm font-semibold text-white transition hover:from-purple-500 hover:to-indigo-500 disabled:cursor-not-allowed disabled:opacity-60"
-            >
-              {pendingMagic ? 'Enviando...' : 'Enviar Magic Link'}
-            </button>
-          </form>
+            <div
+              aria-hidden="true"
+              className="absolute inset-0"
+              style={{
+                background:
+                  'radial-gradient(circle at 50% -10%, rgba(255,255,255,0.08), transparent 34%), radial-gradient(circle at 10% 72%, rgba(255,120,40,0.34), transparent 28%), radial-gradient(circle at 85% 62%, rgba(255,135,48,0.26), transparent 24%), linear-gradient(180deg, rgba(20,8,36,0.18) 0%, rgba(16,7,25,0.7) 48%, rgba(8,5,14,0.92) 100%)',
+              }}
+            />
 
-          {feedback ? (
-            <p
-              className={`text-xs ${
-                feedback.type === 'error' ? 'text-rose-300' : 'text-emerald-300'
-              }`}
-            >
-              {feedback.text}
-            </p>
-          ) : null}
+            <div className="relative z-10 px-4 pb-[max(2rem,env(safe-area-inset-bottom))] pt-[max(1rem,env(safe-area-inset-top))] sm:px-6 sm:pb-8 sm:pt-4">
+              <div
+                aria-hidden="true"
+                className="h-[11rem] sm:h-[13rem]"
+              />
+              <div>
+                <div className="space-y-3">
+                  <div className="inline-flex rounded-full border border-white/10 bg-white/5 px-3 py-1 text-[0.62rem] uppercase tracking-[0.32em] text-white/70 backdrop-blur-md">
+                    Login
+                  </div>
+                  <div>
+                    <h3
+                      id="tracking-overlay-title"
+                      className="font-display text-[clamp(2rem,7vw,3rem)] leading-[0.94] tracking-[-0.03em] text-white"
+                    >
+                      Para continuar, <br /> hay que cruzar
+                    </h3>
+                    <p
+                      id="tracking-overlay-desc"
+                      className="mt-3 max-w-[39ch] text-lg leading-relaxed text-white/80"
+                    >
+                      Aquí seguimos. Y más allá, hay algo nuevo por habitar.
+                    </p>
+                  </div>
+                </div>
 
-          <p className="text-xs text-slate-500">
-            Tu experienica no se perderá. Continuarás donde te quedaste.
-          </p>
+                <div className="mt-6 space-y-3">
+                  <button
+                    type="button"
+                    onClick={handleGoogleLogin}
+                    disabled={isSubmitting}
+                    className="flex w-full items-center justify-center gap-3 rounded-full border border-white/18 bg-white/8 px-5 py-4 text-base font-semibold text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.12)] backdrop-blur-md transition hover:border-white/35 hover:bg-white/12 disabled:cursor-not-allowed disabled:opacity-60"
+                  >
+                    <GoogleIcon className="h-5 w-5" />
+                    {pendingProvider === 'google' ? 'Abriendo Google...' : 'Entrar con Google'}
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={handleAppleLogin}
+                    disabled={isSubmitting}
+                    className="flex w-full items-center justify-center gap-3 rounded-full border border-white/18 bg-white/8 px-5 py-4 text-base font-semibold text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.12)] backdrop-blur-md transition hover:border-white/35 hover:bg-white/12 disabled:cursor-not-allowed disabled:opacity-60"
+                  >
+                    <AppleIcon className="h-5 w-5" />
+                    {pendingProvider === 'apple' ? 'Abriendo Apple...' : 'Entrar con Apple'}
+                  </button>
+                </div>
+
+                {(storageBlocked || isLocalPreviewPort) ? (
+                  <div className="mt-4 space-y-2">
+                    {storageBlocked ? (
+                      <div className="rounded-2xl border border-amber-300/20 bg-amber-400/10 px-4 py-3 text-xs leading-relaxed text-amber-100/90 backdrop-blur-md">
+                        Tu navegador esta bloqueando almacenamiento. Abre el sitio en Safari o Chrome fuera de modo privado para completar el acceso.
+                      </div>
+                    ) : null}
+                    {isLocalPreviewPort ? (
+                      <div className="rounded-2xl border border-amber-300/20 bg-black/25 px-4 py-3 text-xs leading-relaxed text-amber-100/90 backdrop-blur-md">
+                        Estas en `localhost:4173`. Si OAuth falla, usa{' '}
+                        <a href="http://localhost:5173" className="underline underline-offset-2 hover:text-white">
+                          localhost:5173
+                        </a>{' '}
+                        o agrega `http://localhost:4173` a los redirects permitidos en Supabase.
+                      </div>
+                    ) : null}
+                  </div>
+                ) : null}
+
+                <form onSubmit={handleMagicLink} className="mt-6 space-y-4">
+                  <label htmlFor="tracking-email" className="sr-only">
+                    Correo electronico
+                  </label>
+                  <input
+                    id="tracking-email"
+                    type="email"
+                    value={email}
+                    onChange={(event) => setEmail(event.target.value)}
+                    placeholder="nombre@correo.com"
+                    className="form-surface form-surface--pill w-full px-6 py-4 text-lg"
+                    required
+                    disabled={isSubmitting}
+                  />
+                  <button
+                    type="submit"
+                    disabled={isSubmitting}
+                    className="w-full rounded-full px-6 py-4 text-lg font-semibold text-white shadow-[0_18px_40px_rgba(255,92,20,0.34)] transition hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-60"
+                    style={{
+                      backgroundImage:
+                        'linear-gradient(90deg, rgba(158,92,255,0.9) 0%, rgba(197,77,150,0.88) 28%, rgba(255,120,33,0.94) 72%, rgba(255,87,24,0.9) 100%)',
+                    }}
+                  >
+                    {pendingMagic ? 'Abriendo el acceso...' : 'Pasar al otro lado'}
+                  </button>
+                </form>
+
+                {feedback ? (
+                  <div
+                    className={`mt-4 rounded-2xl border px-4 py-3 text-sm leading-relaxed backdrop-blur-md ${
+                      feedback.type === 'error'
+                        ? 'border-rose-300/20 bg-rose-500/10 text-rose-100'
+                        : 'border-emerald-300/20 bg-emerald-500/10 text-emerald-100'
+                    }`}
+                  >
+                    {feedback.text}
+                  </div>
+                ) : null}
+
+                <p className="mt-6 text-center text-[1.1rem] text-white/68">
+                  Todo va a estar bien. Nada se pierde.
+                </p>
+              </div>
+            </div>
+          </div>
         </div>
       </motion.div>
     </motion.div>

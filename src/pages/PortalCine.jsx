@@ -16,6 +16,7 @@ import { recordShowcaseLike } from '@/services/showcaseLikeService';
 import { supabase } from '@/lib/supabaseClient';
 import { sanitizeExternalHttpUrl } from '@/lib/urlSafety';
 import { hasEnoughGAT } from '@/lib/gatAccess';
+import { useMobileVideoPresentation } from '@/hooks/useMobileVideoPresentation';
 
 const SUPABASE_STORAGE = `${import.meta.env.VITE_SUPABASE_URL || ''}/storage/v1/object/public`;
 
@@ -48,14 +49,14 @@ const COPYCATS_DATA = {
   description:
     'CopyCats observa el acto de crear mientras ocurre. Un cine-ensayo sobre repetición, desgaste creativo y el extraño momento en que una obra empieza a copiarse a sí misma.',
   microcopy: 'Ensayo abierto (4:27)',
-  url: `${SUPABASE_STORAGE}/Cine%20-%20teasers/ensayos/La%20Cadena%20del%20Gesto.mp4`,
+  url: `${SUPABASE_STORAGE}/Cine%20-%20teasers/Cadena_Gesto_small.mp4`,
   tags: ['teaser', 'Identidad Digital', 'Archivo autoficcional'],
 };
 const QUIRON_DATA = {
   title: 'Quiron',
   description: 'Mira el teaser de un cortometraje que explora la vulnerabilidad donde casi nunca se nombra.',
   teaserLabel: 'Teaser oficial',
-  teaserUrl: `${SUPABASE_STORAGE}/Cine%20-%20teasers/Quiron.mp4`,
+  teaserUrl: `${SUPABASE_STORAGE}/Cine%20-%20teasers/Quiron_small.mp4`,
   fullUrl: `${SUPABASE_STORAGE}/Cine%20-%20teasers/Quiron_10min.mp4`,
   tags: ['Cine-ensayo', 'Identidad Digital', 'Archivo autoficcional'],
 };
@@ -194,6 +195,7 @@ const ShowcaseReactionInline = ({ status, onReact }) => (
 const PortalCine = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { isMobileViewport, canUseInlinePlayback, requestMobileVideoPresentation } = useMobileVideoPresentation();
   const isAuthenticated = Boolean(user);
   const [showLoginOverlay, setShowLoginOverlay] = useState(false);
   const [showLoginHint, setShowLoginHint] = useState(false);
@@ -362,6 +364,102 @@ const PortalCine = () => {
     sanitizeExternalHttpUrl(latestCineReading?.author_avatar_url) ||
     null;
 
+  const handleImmersiveVideoActivate = useCallback(
+    async (event, videoId) => {
+      const target = event.currentTarget;
+      if (!(target instanceof HTMLVideoElement)) return;
+
+      if (isMobileViewport) {
+        await requestMobileVideoPresentation(event, videoId);
+        return;
+      }
+
+      target.controls = true;
+      target.muted = false;
+      target.loop = false;
+
+      try {
+        await target.play();
+      } catch (error) {
+        // Si el navegador bloquea el audio, dejamos visibles los controles.
+      }
+    },
+    [isMobileViewport, requestMobileVideoPresentation]
+  );
+
+  const renderImmersiveCinemaCard = ({
+    title,
+    description,
+    microcopy,
+    videoUrl,
+    poster,
+    tags,
+    accentClassName,
+    icon,
+    cta = null,
+  }) => {
+    const videoId = `${title}-${videoUrl}`;
+
+    return (
+      <div
+        className={`relative overflow-hidden rounded-3xl border border-white/10 p-6 ${accentClassName}`}
+      >
+        <div className="absolute inset-0">
+          <video
+            src={videoUrl}
+            className="h-full w-full cursor-pointer object-cover"
+            autoPlay
+            muted
+            loop
+            playsInline
+            preload="metadata"
+            poster={poster}
+            controls={isMobileViewport ? canUseInlinePlayback(videoId) : false}
+            onClick={(event) => {
+              void handleImmersiveVideoActivate(event, videoId);
+            }}
+          />
+          <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-black/10 via-black/30 to-black/90" />
+          <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(255,255,255,0.08),_transparent_36%),linear-gradient(180deg,rgba(0,0,0,0.02)_0%,rgba(0,0,0,0.14)_35%,rgba(0,0,0,0.72)_100%)]" />
+        </div>
+
+        <div className="relative z-10 flex min-h-[30rem] flex-col">
+          <div className="flex items-center justify-between gap-3">
+            <h4 className="font-display text-2xl text-slate-100">{title}</h4>
+            <span className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-white/20 bg-white/10 text-slate-100 backdrop-blur-md">
+              {icon}
+            </span>
+          </div>
+
+          <div className="pointer-events-none mt-4 flex justify-end">
+            <div className="flex items-center gap-2 rounded-full border border-white/15 bg-black/55 px-3 py-1 text-[0.62rem] font-semibold uppercase tracking-[0.22em] text-white/85 backdrop-blur-md">
+              <Video size={14} />
+              {isMobileViewport ? 'Toca para abrir' : 'Haz clic para activar'}
+            </div>
+          </div>
+
+          <div aria-hidden="true" className="h-[11rem] sm:h-[13rem] lg:h-[14rem]" />
+
+          <div className="mt-auto space-y-4">
+            <p className="text-sm text-slate-200/90 leading-relaxed">{description}</p>
+            <p className="text-xs uppercase tracking-[0.3em] text-slate-300">{microcopy}</p>
+            <div className="flex flex-wrap gap-2">
+              {tags.map((tag) => (
+                <span
+                  key={`${title}-tag-${tag}`}
+                  className="rounded-full border border-white/20 bg-black/30 px-3 py-1 text-[11px] uppercase tracking-[0.2em] text-slate-100 backdrop-blur-sm"
+                >
+                  {tag}
+                </span>
+              ))}
+            </div>
+            {cta}
+          </div>
+        </div>
+      </div>
+    );
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-950 via-black to-slate-900 text-slate-100">
       <div className="mx-auto w-full max-w-6xl px-6 py-10 md:py-14">
@@ -419,73 +517,35 @@ const PortalCine = () => {
           <CollaboratorsPanel collaborators={CINE_COLLABORATORS} accentClassName="text-sky-200/90" />
 
           <div className="grid gap-6 xl:grid-cols-2">
-            <div className="space-y-4 rounded-3xl border border-white/10 bg-gradient-to-br from-slate-950/80 via-black/60 to-indigo-900/30 p-6">
-              <div className="flex items-center justify-between gap-3">
-                <h4 className="font-display text-2xl text-slate-100">{COPYCATS_DATA.title}</h4>
-                <span className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-white/20 bg-white/10 text-slate-100">
-                  <Clapperboard size={16} />
-                </span>
-              </div>
-              <p className="text-sm text-slate-200/90 leading-relaxed">{COPYCATS_DATA.description}</p>
-              <p className="text-xs uppercase tracking-[0.3em] text-slate-400">{COPYCATS_DATA.microcopy}</p>
-              <div className="rounded-2xl overflow-hidden border border-white/10 bg-black/40">
-                <video
-                  src={COPYCATS_DATA.url}
-                  controls
-                  preload="metadata"
-                  playsInline
-                  className="w-full h-full bg-black"
-                />
-              </div>
-              <div className="flex flex-wrap gap-2">
-                {COPYCATS_DATA.tags.map((tag) => (
-                  <span
-                    key={`copycats-tag-${tag}`}
-                    className="rounded-full border border-indigo-200/35 bg-indigo-400/10 px-3 py-1 text-[11px] uppercase tracking-[0.2em] text-indigo-100"
-                  >
-                    {tag}
-                  </span>
-                ))}
-              </div>
-            </div>
+            {renderImmersiveCinemaCard({
+              title: COPYCATS_DATA.title,
+              description: COPYCATS_DATA.description,
+              microcopy: COPYCATS_DATA.microcopy,
+              videoUrl: COPYCATS_DATA.url,
+              tags: COPYCATS_DATA.tags,
+              accentClassName: 'bg-gradient-to-br from-slate-950/80 via-black/60 to-indigo-900/30',
+              icon: <Clapperboard size={16} />,
+            })}
 
-            <div className="space-y-4 rounded-3xl border border-white/10 bg-gradient-to-br from-slate-950/80 via-black/60 to-purple-900/30 p-6">
-              <div className="flex items-center justify-between gap-3">
-                <h4 className="font-display text-2xl text-slate-100">{QUIRON_DATA.title}</h4>
-                <span className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-white/20 bg-white/10 text-slate-100">
-                  <Video size={16} />
-                </span>
-              </div>
-              <p className="text-sm text-slate-300/80 leading-relaxed">{QUIRON_DATA.description}</p>
-              <p className="text-xs uppercase tracking-[0.3em] text-slate-400">{QUIRON_DATA.teaserLabel}</p>
-              <div className="rounded-2xl overflow-hidden border border-white/10 bg-black/40">
-                <video
-                  src={QUIRON_DATA.teaserUrl}
-                  controls
-                  preload="metadata"
-                  playsInline
-                  className="w-full h-full bg-black"
-                />
-              </div>
-              <div className="flex flex-wrap gap-2">
-                {QUIRON_DATA.tags.map((tag) => (
-                  <span
-                    key={`quiron-tag-${tag}`}
-                    className="rounded-full border border-purple-200/35 bg-purple-400/10 px-3 py-1 text-[11px] uppercase tracking-[0.2em] text-purple-100"
-                  >
-                    {tag}
-                  </span>
-                ))}
-              </div>
-              <Button
-                type="button"
-                variant="outline"
-                className="w-full justify-center border-purple-300/40 text-purple-200 hover:bg-purple-500/10"
-                onClick={handleOpenFullFilm}
-              >
-                Ver cortometraje completo
-              </Button>
-            </div>
+            {renderImmersiveCinemaCard({
+              title: QUIRON_DATA.title,
+              description: QUIRON_DATA.description,
+              microcopy: QUIRON_DATA.teaserLabel,
+              videoUrl: QUIRON_DATA.teaserUrl,
+              tags: QUIRON_DATA.tags,
+              accentClassName: 'bg-gradient-to-br from-slate-950/80 via-black/60 to-purple-900/30',
+              icon: <Video size={16} />,
+              cta: (
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="w-full justify-center border-purple-300/40 bg-black/25 text-purple-200 backdrop-blur-sm hover:bg-purple-500/10"
+                  onClick={handleOpenFullFilm}
+                >
+                  Ver cortometraje completo
+                </Button>
+              ),
+            })}
           </div>
 
           <div className="grid gap-6 xl:grid-cols-[1.2fr_1fr] xl:items-start">

@@ -1,7 +1,7 @@
 import React, { useState, useCallback, useEffect, useRef, useMemo } from 'react';
 import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Film, Headphones, Quote, Send, HeartHandshake, RefreshCw, Heart } from 'lucide-react';
+import { Film, Headphones, Quote, Send, HeartHandshake, RefreshCw, Heart, Play } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { ToastAction } from '@/components/ui/toast';
@@ -231,6 +231,8 @@ export const ProvocaSection = () => {
           : micPromptVisible
             ? 'Pulsa para hablar o escoge una frase'
             : 'Escuchar a la obra';
+  const escucharButtonVisualLabel =
+    pendingSilvestreAudioUrl && !isSilvestrePlaying ? 'Reproducir' : escucharStatusLabel;
 
   const markListenTurnConsumed = useCallback(() => {
     if (!listenUsageKey) return;
@@ -878,15 +880,19 @@ export const ProvocaSection = () => {
                           variant="outline"
                           onClick={handleListenToObra}
                           disabled={isEscucharButtonDisabled}
-                          className={`ui-segmented__btn ui-segmented__btn--secondary flex-1 sm:flex-none text-center whitespace-normal ${
+                          className={`ui-segmented__btn ui-segmented__btn--secondary flex-1 sm:flex-none gap-2 text-center whitespace-normal ${
                             isEscucharButtonActive ? 'ui-segmented__btn--active' : ''
                           } ${
                             isSilvestreThinking ? 'thinking-blink' : ''
                           }`}
                           aria-pressed={isEscucharButtonActive}
                           aria-live="polite"
+                          aria-label={escucharStatusLabel}
                         >
-                          {escucharStatusLabel}
+                          {pendingSilvestreAudioUrl && !isSilvestrePlaying ? (
+                            <Play size={16} className="shrink-0" aria-hidden="true" />
+                          ) : null}
+                          <span>{escucharButtonVisualLabel}</span>
                         </Button>
                         <Button
                           type="button"
@@ -899,14 +905,14 @@ export const ProvocaSection = () => {
                       </div>
                       {hasConsumedListenTurn ? (
                         <p className="w-full text-[11px] text-slate-300/80">
-                          Haz{' '}
+                          Si quieres hablar más con la obra,{' '}
                           <Link
                             to="/?miniverso=miniversos#transmedia"
                             className="font-semibold text-violet-200 underline decoration-violet-300/70 underline-offset-2 hover:text-white"
                           >
-                            clic aquí
+                            entra aquí
                           </Link>{' '}
-                          si quieres hablar más con la obra.
+                          .
                         </p>
                       ) : null}
                       {micError && !isListening && !isSilvestreThinking ? (

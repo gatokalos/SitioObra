@@ -24,6 +24,17 @@ import isotipoGatoWebp from '@/assets/isotipo-gato.webp';
 
 const MOBILE_FULLSCREEN_MENU_PHASE_A_ENABLED = true;
 const PUBLIC_HEADER_LOGO_SRC = '/assets/header-logo.png';
+const TRANSMEDIA_SECONDARY_ITEMS = [
+  { label: 'Drama', href: '#transmedia?focus=miniversos' },
+  { label: 'Artesanías', href: '#transmedia?focus=lataza' },
+  { label: 'Literatura', href: '#transmedia?focus=miniversoNovela' },
+  { label: 'Gráficos', href: '#transmedia?focus=miniversoGrafico' },
+  { label: 'Cine', href: '#transmedia?focus=copycats' },
+  { label: 'Sonoridades', href: '#transmedia?focus=miniversoSonoro' },
+  { label: 'Movimiento', href: '#transmedia?focus=miniversoMovimiento' },
+  { label: 'Juegos', href: '#transmedia?focus=apps' },
+  { label: 'Oráculo', href: '#transmedia?focus=oraculo' },
+];
 
 const Header = ({ showTransmediaNav = true }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -202,9 +213,7 @@ const Header = ({ showTransmediaNav = true }) => {
             name: 'Transmedia',
             href: '#transmedia',
             description: 'Narrativa Expandida',
-            secondary: [
-              { label: 'Mini-apps', href: '#transmedia' },
-            ],
+            secondary: TRANSMEDIA_SECONDARY_ITEMS,
           },
         ]
       : []),
@@ -215,11 +224,28 @@ const Header = ({ showTransmediaNav = true }) => {
 
   const handleNavClick = useCallback((href) => {
     setIsMenuOpen(false);
+    if (typeof href !== 'string' || !href) return;
+    if (href.startsWith('#') && href.includes('?')) {
+      const [hashAnchor] = href.split('?');
+      navigate(
+        {
+          pathname: location.pathname,
+          search: location.search,
+          hash: href,
+        },
+        { replace: false }
+      );
+      const anchorEl = document.querySelector(hashAnchor);
+      if (anchorEl) {
+        anchorEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+      return;
+    }
     const element = document.querySelector(href);
     if (element) {
       element.scrollIntoView({ behavior: 'smooth' });
     }
-  }, []);
+  }, [location.pathname, location.search, navigate]);
 
   const handleOpenSupportHub = useCallback(() => {
     if (!user) return;

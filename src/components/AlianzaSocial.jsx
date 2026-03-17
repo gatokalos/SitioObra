@@ -104,12 +104,14 @@ const AlianzaSocial = () => {
                 <h3 className="font-display text-3xl text-slate-100">
                   Déjanos tu huella: $50 MXN al mes
                 </h3>
-                <p className="text-slate-300/80 leading-relaxed font-light">
-                  
-                  <span className="font-semibold text-purple-200">La taquilla sostiene a la obra de teatro. Tu huella sostiene a #GatoEncerrado.</span> <br />Cada huella activada se distribuye en tres frentes que operamos en alianza con <strong>Isabel Ayuda para la Vida, A.C.,</strong>  cuya confianza hizo posible el inicio de este proyecto.
-                  
-                  <p className="text-lg leading-relaxed font-medium text-white mt-4">Cualquier excedente se reinvierte en nuevas formas de la obra ✨{' '}</p> 
-                </p>
+                <div className="space-y-4 text-slate-300/80 leading-relaxed font-light">
+                  <p>
+                    <span className="font-semibold text-purple-200">La taquilla sostiene a la obra de teatro. Tu huella sostiene a #GatoEncerrado.</span>{' '}
+                    Cada huella activada se distribuye en tres frentes que operamos en alianza con <strong>Isabel Ayuda para la Vida, A.C.,</strong>{' '}
+                    cuya confianza hizo posible el inicio de este proyecto.
+                  </p>
+                  <p className="text-lg font-medium text-white">Cualquier excedente se reinvierte en nuevas formas de la obra ✨</p>
+                </div>
                 <details className="group rounded-2xl border border-emerald-300/25 bg-emerald-500/10 px-5 py-4">
                   <summary className="flex cursor-pointer list-none items-center justify-between gap-3">
                     <span className="flex items-center gap-3">

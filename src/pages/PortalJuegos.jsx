@@ -1,8 +1,6 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { BookOpen, Gamepad2, Hand, Heart, Sparkles, User } from 'lucide-react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import { Hand, Heart } from 'lucide-react';
 import { motion } from 'framer-motion';
-import { Button } from '@/components/ui/button';
-import { toast } from '@/components/ui/use-toast';
 import { useAuth } from '@/contexts/SupabaseAuthContext';
 import LoginOverlay from '@/components/ContributionModal/LoginOverlay';
 import ContributionModal from '@/components/ContributionModal';
@@ -15,88 +13,29 @@ import { recordShowcaseLike } from '@/services/showcaseLikeService';
 import { supabase } from '@/lib/supabaseClient';
 import { sanitizeExternalHttpUrl } from '@/lib/urlSafety';
 import { hasEnoughGAT } from '@/lib/gatAccess';
+import {
+  MINIVERSO_TILE_COLORS,
+  MINIVERSO_TILE_GRADIENTS,
+  showcaseDefinitions,
+} from '@/components/transmedia/transmediaConstants';
 
-const JUEGOS_TAGLINE = (
-  <>
-    Aquí el universo explora sus propios <strong>clichés</strong> y los pone en juego.
-    <br />
-  </>
-);
-const JUEGOS_INTRO = (
-  <>
-       Porque las historias se construyen con formas que ya conocemos:
-    <strong> inicio, desarrollo y final</strong>.
-    <br /><br />
-
-    Dicen que <em>no hay nada nuevo bajo el sol</em>. Tal vez.
-    <br /><br />
-    Pero cuando una historia se juega,
-    <strong> podemos contarla a nuestra manera.</strong>
-  </>
-);
-const JUEGOS_NOTA_AUTORAL = {
-  title: '#NoHayDesandar',
-  verse: 'Elegi un camino pequeno.\nAhora no lo puedo desandar.\nEl juego me jugó.',
-};
+const JUEGOS_DEFINITION = showcaseDefinitions.apps ?? {};
 const JUEGOS_TILE = {
-  gradient: 'linear-gradient(135deg, rgba(30,41,59,0.95), rgba(22,163,74,0.75), rgba(34,211,238,0.65))',
-  border: 'rgba(110,231,183,0.35)',
-  text: '#d1fae5',
-  accent: '#a7f3d0',
-  background: 'rgba(30,41,59,0.72)',
+  ...MINIVERSO_TILE_COLORS.apps,
+  gradient: MINIVERSO_TILE_GRADIENTS.apps,
 };
-const JUEGOS_IA_PROFILE = {
-  type: 'IA para misiones y ritmo de juego felino.',
-  interaction: 'Tap / swipe progresivo; sugiere palabras en la voz del personaje.',
-  tokensRange: '90-180 tokens por sesion.',
-  coverage: 'Incluido en la huella transmedia (no gasta tus GAT).',
-  footnote: 'La IA propone el siguiente giro; tu das el tap y decides cuando cerrar el telon.',
-};
-const JUEGOS_STEPS = [
-  {
-    id: 'step-1',
-    title: 'Elige tu avatar',
-    description:
-      'La Maestra afila tiza, Saturnina trae glitch, Don Polo cobra peaje. Cada uno cambia el tono y las casillas.',
-  },
-  {
-    id: 'step-2',
-    title: 'Desbloquea el portal',
-    description: 'Toca para abrir la escena: el gato suelta prefijos, el telon sube y aparece la siguiente casilla.',
-  },
-  {
-    id: 'step-3',
-    title: 'Recompensa',
-    description: 'Guardas la gatologia, desbloqueas la siguiente ronda y sumas +20 GAT para seguir improvisando.',
-  },
-];
-const JUEGOS_ACTIONS = [
-  {
-    id: 'download',
-    label: 'Descargar app',
-    description: 'APK / TestFlight / PWA con tablero, camerino y gatologias offline.',
-    buttonLabel: 'Descargar',
-  },
-  {
-    id: 'watch',
-    label: 'Ver walkthrough',
-    description: 'Video corto: splash -> selector de personaje -> telon -> gatologia guardada.',
-    buttonLabel: 'Ver video',
-  },
-];
 const JUEGOS_FALLBACK_COMMENTS = [
   {
     id: 'apps-comment-1',
-    proposal: 'El tap demo se siente como abrir un telon diminuto cada vez.',
-    name: 'Laboratorio ludico',
+    proposal: 'La app incrustada se siente como abrir un telón desde el celular.',
+    name: 'Laboratorio lúdico',
   },
   {
     id: 'apps-comment-2',
-    proposal: 'Quiero jugar la version completa con mas avatares.',
+    proposal: 'Quiero jugar la versión completa con más avatares.',
     name: 'Comunidad #GatoEncerrado',
   },
 ];
-const JUEGOS_DEMO_STEP_STORAGE_KEY = 'gatoencerrado:portal-juegos-step';
 const JUEGOS_BLOG_KEYS = ['apps', 'juegos', 'miniversoapps', 'miniverso_apps', 'miniverso-apps'];
 const JUEGOS_BLOG_KEY_SET = new Set(JUEGOS_BLOG_KEYS.map((key) => key.trim().toLowerCase()));
 
@@ -185,17 +124,8 @@ const PortalJuegos = () => {
   const [communityLoading, setCommunityLoading] = useState(false);
   const [communityError, setCommunityError] = useState('');
   const [latestJuegosReading, setLatestJuegosReading] = useState(null);
-  const [isReadingTooltipOpen, setIsReadingTooltipOpen] = useState(false);
   const [reactionStatus, setReactionStatus] = useState('idle');
   const [isContributionOpen, setIsContributionOpen] = useState(false);
-  const [tapIndex, setTapIndex] = useState(() => {
-    if (typeof window === 'undefined') return 0;
-    const stored = window.localStorage?.getItem(JUEGOS_DEMO_STEP_STORAGE_KEY);
-    const parsed = stored ? Number.parseInt(stored, 10) : 0;
-    if (Number.isNaN(parsed)) return 0;
-    return Math.max(0, Math.min(parsed, JUEGOS_STEPS.length - 1));
-  });
-  const readingTooltipRef = useRef(null);
 
   const handleOpenLogin = useCallback(() => {
     if (!isAuthenticated) {
@@ -215,11 +145,6 @@ const PortalJuegos = () => {
     window.setTimeout(() => setShowLoginHint(false), 2200);
     return false;
   }, [isAuthenticated]);
-
-  useEffect(() => {
-    if (typeof window === 'undefined') return;
-    window.localStorage?.setItem(JUEGOS_DEMO_STEP_STORAGE_KEY, String(tapIndex));
-  }, [tapIndex]);
 
   useEffect(() => {
     let isCancelled = false;
@@ -291,48 +216,6 @@ const PortalJuegos = () => {
     };
   }, [user?.id]);
 
-  useEffect(() => {
-    if (latestJuegosReading?.slug) return;
-    setIsReadingTooltipOpen(false);
-  }, [latestJuegosReading?.slug]);
-
-  useEffect(() => {
-    if (!isReadingTooltipOpen) return undefined;
-
-    const handlePointerDown = (event) => {
-      if (!readingTooltipRef.current) return;
-      if (!readingTooltipRef.current.contains(event.target)) {
-        setIsReadingTooltipOpen(false);
-      }
-    };
-
-    const handleEscape = (event) => {
-      if (event.key === 'Escape') {
-        setIsReadingTooltipOpen(false);
-      }
-    };
-
-    document.addEventListener('pointerdown', handlePointerDown);
-    document.addEventListener('keydown', handleEscape);
-    return () => {
-      document.removeEventListener('pointerdown', handlePointerDown);
-      document.removeEventListener('keydown', handleEscape);
-    };
-  }, [isReadingTooltipOpen]);
-
-  const handleTapAdvance = useCallback(() => {
-    if (!requireAuth()) return;
-    setTapIndex((prev) => (prev + 1) % JUEGOS_STEPS.length);
-  }, [requireAuth]);
-
-  const handleActionPlaceholder = useCallback(
-    (action) => {
-      if (!requireAuth()) return;
-      toast({ description: `Muy pronto liberaremos: ${action?.label || 'esta accion'}.` });
-    },
-    [requireAuth],
-  );
-
   const handleOpenCommunityComposer = useCallback(() => {
     if (!requireAuth()) return;
     setIsContributionOpen(true);
@@ -360,7 +243,7 @@ const PortalJuegos = () => {
     sanitizeExternalHttpUrl(latestJuegosReading?.image_url) ||
     sanitizeExternalHttpUrl(latestJuegosReading?.author_avatar_url) ||
     null;
-  const currentStep = JUEGOS_STEPS[tapIndex % JUEGOS_STEPS.length];
+  const embeddedAppUrl = sanitizeExternalHttpUrl(JUEGOS_DEFINITION.liveExperience?.url);
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-950 via-black to-slate-900 text-slate-100">
@@ -383,21 +266,22 @@ const PortalJuegos = () => {
               <div className="space-y-6">
                 <div className="space-y-3">
                   <p className="text-xs uppercase tracking-[0.4em] text-emerald-300">Vitrina</p>
-                  <h3 className="font-display text-3xl leading-tight text-white md:text-4xl">Juegos</h3>
+                  <h3 className="font-display text-3xl leading-tight text-white md:text-4xl">
+                    {JUEGOS_DEFINITION.label || 'Juegos'}
+                  </h3>
                 </div>
-                <div className="space-y-3 text-lg text-slate-200/85 leading-relaxed font-light">
-                  <p>{JUEGOS_TAGLINE}</p>
-                  <p>{JUEGOS_INTRO}</p>
+                <div className="space-y-4 text-lg text-slate-200/85 leading-relaxed font-light">
+                  {JUEGOS_DEFINITION.introNode ?? JUEGOS_DEFINITION.intro}
                 </div>
-                <IAInsightCard {...JUEGOS_IA_PROFILE} compact />
+                {JUEGOS_DEFINITION.iaProfile ? <IAInsightCard {...JUEGOS_DEFINITION.iaProfile} compact /> : null}
               </div>
 
               <div className="flex flex-col gap-6">
                 <div className="relative flex flex-col gap-3">
                   <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Mini-verso autoral</p>
                   <MiniVersoCard
-                    title={JUEGOS_NOTA_AUTORAL.title}
-                    verse={JUEGOS_NOTA_AUTORAL.verse}
+                    title={JUEGOS_DEFINITION.cartaTitle}
+                    verse={JUEGOS_DEFINITION.notaAutoral}
                     palette={JUEGOS_TILE}
                   />
                 </div>
@@ -405,72 +289,42 @@ const PortalJuegos = () => {
             </div>
           </div>
 
-          <div className="grid gap-6 lg:grid-cols-[1.6fr_1fr]">
-            <div className="rounded-3xl border border-white/10 bg-black/30 p-6 space-y-5">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Tap-to-advance demo</p>
-                  <h4 className="font-display text-xl text-slate-100">Jugar demo</h4>
+          {embeddedAppUrl ? (
+            <div className="rounded-3xl border border-emerald-200/20 bg-black/30 p-4 sm:p-5 space-y-4 shadow-[0_20px_60px_rgba(0,0,0,0.35)]">
+              <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
+                <div className="space-y-2">
+                  <p className="text-xs uppercase tracking-[0.35em] text-emerald-100/75">Experiencia incrustada</p>
+                  <h4 className="font-display text-xl text-slate-100">
+                    {JUEGOS_DEFINITION.liveExperience?.title || 'App en vivo'}
+                  </h4>
+                  {JUEGOS_DEFINITION.liveExperience?.description ? (
+                    <p className="max-w-2xl text-sm leading-relaxed text-slate-300/85">
+                      {JUEGOS_DEFINITION.liveExperience.description}
+                    </p>
+                  ) : null}
                 </div>
-                <span className="rounded-full border border-emerald-200/40 bg-emerald-500/10 px-3 py-1 text-[0.7rem] uppercase tracking-[0.25em] text-emerald-100">
-                  {tapIndex + 1}/{JUEGOS_STEPS.length}
-                </span>
+                <a
+                  href={embeddedAppUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="inline-flex items-center justify-center rounded-full border border-emerald-300/40 bg-emerald-500/10 px-4 py-2 text-xs font-medium uppercase tracking-[0.22em] text-emerald-100 transition hover:bg-emerald-500/20"
+                >
+                  {JUEGOS_DEFINITION.liveExperience?.ctaLabel || 'Abrir aparte'}
+                </a>
               </div>
 
-              <div className="relative overflow-hidden rounded-2xl border border-emerald-200/30 bg-gradient-to-br from-slate-900/60 via-black/40 to-purple-900/30 p-5 space-y-3 shadow-[0_15px_45px_rgba(0,0,0,0.45)]">
-                <p className="text-[0.7rem] uppercase tracking-[0.35em] text-emerald-100/80">Paso {tapIndex + 1}</p>
-                <h5 className="text-lg font-semibold text-slate-100">{currentStep.title}</h5>
-                <p className="text-sm text-slate-200/85 leading-relaxed">{currentStep.description}</p>
-                <div className="pt-2">
-                  <Button
-                    type="button"
-                    onClick={handleTapAdvance}
-                    className="w-full justify-center bg-gradient-to-r from-emerald-500/80 to-emerald-600/80 hover:from-emerald-400/80 hover:to-emerald-500/80 text-white"
-                  >
-                    Tap siguiente
-                  </Button>
-                </div>
-                <div className="flex items-center justify-center gap-2 pt-1">
-                  {JUEGOS_STEPS.map((step, index) => (
-                    <span
-                      key={step.id}
-                      className={`h-2 w-2 rounded-full transition ${
-                        index === tapIndex ? 'bg-emerald-300 shadow-[0_0_12px_rgba(16,185,129,0.5)]' : 'bg-emerald-300/30'
-                      }`}
-                    />
-                  ))}
-                </div>
+              <div className="overflow-hidden rounded-[1.75rem] border border-emerald-200/20 bg-slate-950/80 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]">
+                <iframe
+                  src={embeddedAppUrl}
+                  title={JUEGOS_DEFINITION.liveExperience?.title || 'App de Juegos'}
+                  className="block h-[72vh] min-h-[520px] w-full bg-white"
+                  loading="lazy"
+                  referrerPolicy="strict-origin-when-cross-origin"
+                  allow="accelerometer; autoplay; camera; clipboard-read; clipboard-write; fullscreen; gamepad; gyroscope; microphone; web-share"
+                />
               </div>
             </div>
-
-            <div className="space-y-5">
-              <div className="rounded-3xl border border-white/10 bg-black/30 p-5 space-y-4">
-                <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Acciones</p>
-                <div className="space-y-3">
-                  {JUEGOS_ACTIONS.map((action) => (
-                    <div
-                      key={action.id}
-                      className="rounded-2xl border border-white/10 bg-white/5 p-4 flex flex-col gap-3"
-                    >
-                      <div>
-                        <p className="text-[0.7rem] uppercase tracking-[0.3em] text-slate-400/70">{action.label}</p>
-                        <p className="text-sm text-slate-200/85 leading-relaxed">{action.description}</p>
-                      </div>
-                      <Button
-                        type="button"
-                        variant="outline"
-                        className="w-full justify-center border-emerald-300/40 text-emerald-100 hover:bg-emerald-500/10"
-                        onClick={() => handleActionPlaceholder(action)}
-                      >
-                        <Gamepad2 size={15} className="mr-2" />
-                        {action.buttonLabel}
-                      </Button>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-          </div>
+          ) : null}
 
           <div className="rounded-3xl border border-white/10 bg-black/30 p-6 space-y-5">
             <div className="mb-1 flex items-start justify-between gap-3">

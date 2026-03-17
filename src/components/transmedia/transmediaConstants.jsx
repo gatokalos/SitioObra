@@ -611,7 +611,7 @@ iaProfile: {
         {
           id: 'copycats-carta',
           label: 'Ensayo abierto (4:27)',
-          url: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Cine%20-%20teasers/ensayos/La%20Cadena%20del%20Gesto.mp4',
+          url: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Cine%20-%20teasers/Cadena_Gesto_small.mp4',
         },
       ],
       tags: ['teaser', 'Identidad Digital', 'Archivo autoficcional'],
@@ -632,7 +632,7 @@ iaProfile: {
       teaser: {
         id: 'quiron-teaser',
         label: 'Teaser oficial',
-        url: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Cine%20-%20teasers/Quiron.mp4',
+        url: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Cine%20-%20teasers/Quiron_small.mp4',
       },
 
     },
@@ -1215,48 +1215,12 @@ Este espacio permite recorrer esas composiciones, explorar sus capas y descubrir
     cartaTitle: '#NoHayDesandar',
     notaAutoral:
       'Elegí un camino pequeño.\nAhora no lo puedo desandar.\nEl juego me jugó.',
-    tapDemo: {
-      title: 'Tap-to-advance demo',
-      steps: [
-        {
-          id: 'step-1',
-          title: 'Elige tu avatar',
-          description:
-            'La Maestra afila tiza, Saturnina trae glitch, Don Polo cobra peaje. Cada uno cambia el tono y las casillas.',
-        },
-        {
-          id: 'step-2',
-          title: 'Desbloquea el portal',
-          description: 'Toca para abrir la escena: el gato suelta prefijos, el telón sube y aparece la siguiente casilla.',
-        },
-        {
-          id: 'step-3',
-          title: 'Recompensa',
-          description: 'Guardas la gatología, desbloqueas la siguiente ronda y sumas +20 GAT para seguir improvisando.',
-        },
-      ],
-      ctaLabel: 'Jugar demo',
-    },
     liveExperience: {
       title: 'App en vivo',
       description: 'Juega la app completa dentro de la vitrina, sin salir del miniverso.',
       url: 'https://main.dg0vxepd2qyf6.amplifyapp.com',
       ctaLabel: 'Abrir en pestaña nueva',
     },
-    actions: [
-      {
-        id: 'download',
-        label: 'Descargar app',
-        description: 'APK / TestFlight / PWA con tablero, camerino y gatologías offline.',
-        buttonLabel: 'Descargar',
-      },
-      {
-        id: 'watch',
-        label: 'Ver walkthrough',
-        description: 'Video corto: splash → selector de personaje → telón → gatología guardada.',
-        buttonLabel: 'Ver video',
-      },
-    ],
     iaProfile: {
       type: 'IA para misiones y ritmo de juego felino.',
       interaction: 'Tap / swipe progresivo; sugiere palabras en la voz del personaje.',

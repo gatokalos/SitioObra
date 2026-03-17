@@ -15,7 +15,7 @@ const SHOW_HISTORY = [
     id: 'camafeo',
     label: 'Camafeo · May',
     title: 'Teatro Camafeo',
-    dateLabel: 'Temporada · mayo',
+    dateLabel: 'Temporada · mayo 2025',
     image: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/cedes/camafeo_mayo.jpg',
     description: [
       'Aquí comenzó la temporada escénica de Es un gato encerrado.',
@@ -27,7 +27,7 @@ const SHOW_HISTORY = [
     id: 'cecut',
     label: 'CECUT · Dic',
     title: 'Centro Cultural Tijuana',
-    dateLabel: 'Presentación · diciembre',
+    dateLabel: 'Presentación · diciembre 2025',
     image: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/cedes/Cecut_diciembre.JPG',
     description: [
       'En diciembre, la obra tuvo una función especial en un momento inédito: por primera vez, en más de 25 años del CECUT, se presentó teatro durante la última semana del año.',
@@ -200,10 +200,10 @@ const NextShow = () => {
                     <DoorOpen size={20} />
                     {isLoggedIn ? 'Entrar al otro lado' : 'Entrar al otro lado'}
                   </Button>
-                  <p className="text-xs text-slate-400/80">
+                  <p className="text-xs text-slate-400/80 italic">
                     {isLoggedIn
                       ? '"Tu sesión ya abrió la siguiente capa"'
-                      : '"El final abre otra puerta"'}
+                      : 'Siempre habrán más puertas'}
                   </p>
                 </div>
                 <div className="flex flex-col items-center gap-2">
@@ -215,7 +215,7 @@ const NextShow = () => {
                     <ShoppingBag size={20} />
                     Merch
                   </Button>
-                  <p className="text-xs text-slate-400/80">"Crea un nuevo recuerdo"</p>
+                  <p className="text-xs text-slate-400/80"><em>Encuentra tu recuerdo</em></p>
                 </div>
               </div>
             </div>

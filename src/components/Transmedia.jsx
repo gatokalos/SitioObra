@@ -237,8 +237,6 @@ const Transmedia = ({ allianceOnlyMode = false }) => {
   } = useTransmediaCredits({ isAuthenticated, userId: user?.id, toast });
   const { isMerchCheckoutLoading, handleOpenNovelaReserve } = useMerchCheckout({ userEmail: user?.email, activeShowcase, toast });
   const [movementPendingAction, setMovementPendingAction] = useState(null);
-  const [isAppsDemoUnlocking, setIsAppsDemoUnlocking] = useState(false);
-  const [tapIndex, setTapIndex] = useState(0);
   const [isContributionOpen, setIsContributionOpen] = useState(false);
   const [hasLoadedContributionModal, setHasLoadedContributionModal] = useState(false);
   const [contributionCategoryId, setContributionCategoryId] = useState(null);
@@ -1256,13 +1254,6 @@ const Transmedia = ({ allianceOnlyMode = false }) => {
     },
     [openCollaboratorId]
   );
-
-  useEffect(() => {
-    if (activeShowcase !== 'apps') {
-      return;
-    }
-    setTapIndex(0);
-  }, [activeShowcase]);
 
   useEffect(() => {
     if (activeShowcase !== 'copycats') {
@@ -2788,16 +2779,7 @@ const rendernotaAutoral = () => {
     }
 
     if (activeDefinition.type === 'apps') {
-      const steps = activeDefinition.tapDemo?.steps ?? [];
-      const tapCount = steps.length || 1;
-      const currentStep = steps[tapIndex % tapCount] ?? {};
-      const handleTapAdvance = () => setTapIndex((prev) => (tapCount ? (prev + 1) % tapCount : 0));
       const embeddedAppUrl = sanitizeExternalHttpUrl(activeDefinition.liveExperience?.url);
-      const isRead = Boolean(showcaseBoosts?.[activeShowcase]);
-      const isAppsDemoUnlocked = Boolean(showcaseBoosts?.apps_demo_unlock);
-      const publicComments = publicContributions[activeShowcase] ?? [];
-      const isLoadingComments = publicContributionsLoading[activeShowcase];
-      const commentsError = publicContributionsError[activeShowcase];
 
       return (
         <div className="space-y-8">
@@ -2838,104 +2820,15 @@ const rendernotaAutoral = () => {
             </div>
           ) : null}
 
-          <div className="grid gap-6 lg:grid-cols-[1.6fr_1fr]">
-            <div className="rounded-3xl border border-white/10 bg-black/30 p-6 space-y-5">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Tap-to-advance demo</p>
-                  <h4 className="font-display text-xl text-slate-100">{activeDefinition.tapDemo?.title}</h4>
-                </div>
-                <span className="rounded-full border border-emerald-200/40 bg-emerald-500/10 px-3 py-1 text-[0.7rem] uppercase tracking-[0.25em] text-emerald-100">
-                  {tapIndex + 1}/{tapCount}
-                </span>
-              </div>
-
-              <div className="relative overflow-hidden rounded-2xl border border-emerald-200/30 bg-gradient-to-br from-slate-900/60 via-black/40 to-purple-900/30 p-5 space-y-3 shadow-[0_15px_45px_rgba(0,0,0,0.45)]">
-                <p className="text-[0.7rem] uppercase tracking-[0.35em] text-emerald-100/80">Paso {tapIndex + 1}</p>
-                <h5 className="text-lg font-semibold text-slate-100">{currentStep.title}</h5>
-                <p className="text-sm text-slate-200/85 leading-relaxed">{currentStep.description}</p>
-                <div className="pt-2">
-                  <Button
-                    type="button"
-                    disabled={isAppsDemoUnlocking}
-                    onClick={async () => {
-                      if (isAppsDemoUnlocking) return;
-                      if (!isAppsDemoUnlocked) {
-                        setIsAppsDemoUnlocking(true);
-                        const unlockResult = await trackTransmediaCreditEvent({
-                          eventKey: 'showcase_boost:apps_demo_unlock',
-                          amount: -SHOWCASE_REQUIRED_GAT.apps,
-                          requiredTokens: SHOWCASE_REQUIRED_GAT.apps,
-                          actionLabel: 'Este demo de Juegos',
-                          oncePerIdentity: true,
-                          metadata: { source: 'transmedia_apps_demo_unlock' },
-                        });
-                        setIsAppsDemoUnlocking(false);
-                        if (!unlockResult.ok) return;
-                      }
-                      handleTapAdvance();
-                      if (!showcaseBoosts?.apps && tapIndex + 1 >= tapCount - 1) {
-                        handleShowcaseRevealBoost('apps');
-                      }
-                    }}
-                    className="w-full justify-center bg-gradient-to-r from-emerald-500/80 to-emerald-600/80 hover:from-emerald-400/80 hover:to-emerald-500/80 text-white"
-                  >
-                    {isAppsDemoUnlocking ? 'Descontando energía...' : 'Tap siguiente'}
-                  </Button>
-                </div>
-                <div className="flex items-center justify-center gap-2 pt-1">
-                  {steps.map((step, idx) => (
-                    <span
-                      key={step.id || `apps-step-${idx}`}
-                      className={`h-2 w-2 rounded-full transition ${
-                        idx === tapIndex ? 'bg-emerald-300 shadow-[0_0_12px_rgba(16,185,129,0.5)]' : 'bg-emerald-300/30'
-                      }`}
-                    />
-                  ))}
-                </div>
-              </div>
-
-             
-            </div>
-
-            <div className="space-y-5">
-              <div className="rounded-3xl border border-white/10 bg-black/30 p-5 space-y-4">
-                <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Acciones</p>
-                <div className="space-y-3">
-                  {activeDefinition.actions?.map((action) => (
-                    <div
-                      key={action.id}
-                      className="rounded-2xl border border-white/10 bg-white/5 p-4 flex flex-col gap-3"
-                    >
-                      <div>
-                        <p className="text-[0.7rem] uppercase tracking-[0.3em] text-slate-400/70">{action.label}</p>
-                        <p className="text-sm text-slate-200/85 leading-relaxed">{action.description}</p>
-                      </div>
-                      <Button
-                        type="button"
-                        variant="outline"
-                        className="w-full justify-center border-emerald-300/40 text-emerald-100 hover:bg-emerald-500/10"
-                        onClick={() => toast({ description: 'Muy pronto liberaremos esta acción.' })}
-                      >
-                        {action.buttonLabel || 'Abrir'}
-                      </Button>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {renderCommunityBlock('apps', {
-                reactionProps: {
-                  showcaseId: 'apps',
-                  title: 'Resonancia lúdica',
-                  description: 'Deja un pulso para que el gato anfitrión abra más telones.',
-                  buttonLabel: 'Hacer vibrar este miniverso',
-                  className: 'mt-0',
-                },
-              })}
-
-            </div>
-          </div>
+          {renderCommunityBlock('apps', {
+            reactionProps: {
+              showcaseId: 'apps',
+              title: 'Resonancia lúdica',
+              description: 'Deja un pulso para que el gato anfitrión abra más telones.',
+              buttonLabel: 'Hacer vibrar este miniverso',
+              className: 'mt-0',
+            },
+          })}
         </div>
       );
     }
@@ -2969,6 +2862,30 @@ const rendernotaAutoral = () => {
       })();
       const toneTags = activeDefinition.tone ?? [];
       const isQuironUnlocked = Boolean(showcaseBoosts?.copycats_full_unlock || quironSpent);
+      const copycatsPrimaryAsset = copycatsAssets[0] ?? null;
+      const copycatsSecondaryAssets = copycatsAssets.slice(1);
+      const quironPrimaryAsset = activeDefinition.quiron?.teaser ?? null;
+      const quironTags = activeDefinition.quiron?.tags ?? activeDefinition.copycats?.tags ?? [];
+
+      const handleBackgroundVideoActivate = async (event, videoId) => {
+        const target = event.currentTarget;
+        if (!(target instanceof HTMLVideoElement)) return;
+
+        if (isMobileViewport) {
+          await requestMobileVideoPresentation(event, videoId);
+          return;
+        }
+
+        target.controls = true;
+        target.muted = false;
+        target.loop = false;
+
+        try {
+          await target.play();
+        } catch (error) {
+          // Si el navegador bloquea la reproducción con sonido, dejamos visibles los controles.
+        }
+      };
 
       const renderMedia = (asset) => {
         if (!asset?.url) return null;
@@ -3014,60 +2931,128 @@ const rendernotaAutoral = () => {
         );
       };
 
-      const copycatsBlock = (
-        <div className="rounded-3xl border border-white/10 bg-black/30 p-6 space-y-4">
-          <div className="flex items-start justify-between gap-3">
-            <div>
-              <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Documental</p>
-              <h4 className="font-display text-xl text-slate-100">{activeDefinition.copycats?.title}</h4>
+      const renderImmersiveCinemaBlock = ({
+        eyebrow,
+        title,
+        description,
+        microcopy,
+        tags = [],
+        asset = null,
+        reserveClassName = 'h-[11rem] sm:h-[14rem]',
+        extraContent = null,
+      }) => {
+        if (!asset?.url) return null;
+        const isVideoFile = /\.mp4($|\?)/i.test(asset.url);
+        const videoId = asset?.id || asset?.url || title;
+
+        return (
+          <div className="relative overflow-hidden rounded-3xl border border-white/10 bg-black/30">
+            <div className="absolute inset-0">
+              {isVideoFile ? (
+                <div className="relative h-full w-full bg-black/60">
+                  <video
+                    src={asset.url}
+                    title={asset.label || title}
+                    className="h-full w-full cursor-pointer object-cover"
+                    autoPlay
+                    muted
+                    loop
+                    playsInline
+                    preload="metadata"
+                    poster={asset.poster}
+                    controls={isMobileViewport ? canUseInlinePlayback(videoId) : false}
+                    onClick={(event) => {
+                      void handleBackgroundVideoActivate(event, videoId);
+                    }}
+                  />
+                </div>
+              ) : (
+                <iframe
+                  src={asset.url}
+                  title={asset.label || title}
+                  className="h-full w-full"
+                  frameBorder="0"
+                  allow="autoplay; fullscreen; picture-in-picture; clipboard-write; encrypted-media; web-share"
+                  loading="lazy"
+                  referrerPolicy="strict-origin-when-cross-origin"
+                />
+              )}
+              <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-black/10 via-black/30 to-black/90" />
+              <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(255,255,255,0.08),_transparent_36%),linear-gradient(180deg,rgba(0,0,0,0.02)_0%,rgba(0,0,0,0.14)_35%,rgba(0,0,0,0.72)_100%)]" />
+              {isVideoFile ? (
+                <div className="pointer-events-none absolute right-5 top-5 z-10">
+                  <div className="flex items-center gap-2 rounded-full border border-white/15 bg-black/55 px-3 py-1 text-[0.62rem] font-semibold uppercase tracking-[0.22em] text-white/85 backdrop-blur-md">
+                    <Video size={14} />
+                    {isMobileViewport ? 'Toca para abrir' : 'Haz clic para activar'}
+                  </div>
+                </div>
+              ) : null}
+            </div>
+
+            <div className="relative z-10 flex min-h-[30rem] flex-col p-6">
+              <div aria-hidden="true" className={reserveClassName} />
+
+              <div className="mt-auto space-y-4">
+                <div className="space-y-2">
+                  <p className="text-xs uppercase tracking-[0.35em] text-slate-300/75">{eyebrow}</p>
+                  <h4 className="font-display text-xl text-slate-100">{title}</h4>
+                </div>
+                {description ? (
+                  <p className="max-w-2xl text-sm leading-relaxed text-slate-300/85">{description}</p>
+                ) : null}
+                {microcopy ? (
+                  <p className="max-w-2xl text-sm leading-relaxed text-slate-100/92">{microcopy}</p>
+                ) : null}
+                {tags.length ? (
+                  <div className="flex flex-wrap gap-2">
+                    {tags.map((tag, index) => (
+                      <span
+                        key={`${title}-tag-${index}`}
+                        className="rounded-full border border-purple-400/30 bg-purple-900/20 px-3 py-1 text-xs text-purple-100"
+                      >
+                        {tag}
+                      </span>
+                    ))}
+                  </div>
+                ) : null}
+                {asset.label ? (
+                  <p className="text-xs uppercase tracking-[0.25em] text-slate-300/75">{asset.label}</p>
+                ) : null}
+              </div>
+
+              {extraContent ? <div className="mt-5">{extraContent}</div> : null}
             </div>
           </div>
-          <p className="text-sm text-slate-300/80 leading-relaxed">
-            {activeDefinition.copycats?.description}
-          </p>
-          <p className="text-sm text-slate-200/90 leading-relaxed">{activeDefinition.copycats?.microcopy}</p>
-          {activeDefinition.copycats?.tags?.length ? (
-            <div className="flex flex-wrap gap-2">
-              {activeDefinition.copycats.tags.map((tag, index) => (
-                <span
-                  key={`copycats-tag-${index}`}
-                  className="px-3 py-1 rounded-full border border-purple-400/30 bg-purple-900/20 text-xs text-purple-100"
-                >
-                  {tag}
-                </span>
-              ))}
-            </div>
-          ) : null}
-          {copycatsAssets.length ? (
+        );
+      };
+
+      const copycatsBlock = (
+        renderImmersiveCinemaBlock({
+          eyebrow: 'Documental',
+          title: activeDefinition.copycats?.title,
+          description: activeDefinition.copycats?.description,
+          microcopy: activeDefinition.copycats?.microcopy,
+          tags: activeDefinition.copycats?.tags ?? [],
+          asset: copycatsPrimaryAsset,
+          extraContent: copycatsSecondaryAssets.length ? (
             <div className="space-y-4">
-              {copycatsAssets.map((asset) => (
-                <div key={asset.id}>{renderMedia(asset)}</div>
+              {copycatsSecondaryAssets.map((asset) => (
+                <div key={asset.id || asset.url}>{renderMedia(asset)}</div>
               ))}
             </div>
-          ) : null}
-        </div>
+          ) : null,
+        })
       );
 
       const quironBlock = (
-        <div className="relative rounded-3xl border border-white/10 bg-black/30 p-6 space-y-4">
-          <div>
-            <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Cortometraje</p>
-            <h4 className="font-display text-xl text-slate-100">{activeDefinition.quiron?.title}</h4>
-          </div>
-          <p className="text-sm text-slate-300/80 leading-relaxed">{activeDefinition.quiron?.description}</p>
-          <p className="text-sm text-slate-200/90 leading-relaxed">{activeDefinition.quiron?.microcopy}</p>
-          {activeDefinition.copycats.tags.map((tag, index) => (
-            <span
-              key={`quiron-tag-${index}`}
-              className="px-3 py-1 rounded-full border border-purple-400/30 bg-purple-900/20 text-xs text-purple-100"
-            >
-              {tag}
-            </span>
-          ))}
-          {activeDefinition.quiron?.teaser ? (
-            <div>{renderMedia(activeDefinition.quiron.teaser)}</div>
-          ) : null}
-          {quironStills.length ? (
+        renderImmersiveCinemaBlock({
+          eyebrow: 'Cortometraje',
+          title: activeDefinition.quiron?.title,
+          description: activeDefinition.quiron?.description,
+          microcopy: activeDefinition.quiron?.microcopy,
+          tags: quironTags,
+          asset: quironPrimaryAsset,
+          extraContent: quironStills.length ? (
             <div className="grid gap-3 sm:grid-cols-2">
               {quironStills.map((still, index) => {
                 const label = typeof still === 'string' ? still : still.label || `Still ${index + 1}`;
@@ -3075,7 +3060,7 @@ const rendernotaAutoral = () => {
                 return url ? (
                   <div
                     key={still.id || `quiron-still-${index}`}
-                    className="overflow-hidden rounded-2xl border border-white/10 bg-black/20"
+                    className="overflow-hidden rounded-2xl border border-white/10 bg-black/30 backdrop-blur-sm"
                   >
                     <div className="aspect-[4/3] bg-black/40">
                       <img
@@ -3090,15 +3075,15 @@ const rendernotaAutoral = () => {
                 ) : (
                   <span
                     key={`quiron-still-pill-${index}`}
-                    className="px-3 py-1 rounded-full border border-white/10 bg-white/5 text-xs text-slate-100"
+                    className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs text-slate-100"
                   >
                     {label}
                   </span>
                 );
               })}
             </div>
-          ) : null}
-        </div>
+          ) : null,
+        })
       );
 
       const proyeccionBlock = (
