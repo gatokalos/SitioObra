@@ -17,7 +17,7 @@ import { sanitizeExternalHttpUrl } from '@/lib/urlSafety';
 import { hasEnoughGAT } from '@/lib/gatAccess';
 
 const GRAFICOS_INTRO =
-  'Este mini-verso gráfico explora el universo de #GatoEncerrado desde la imagen. Aquí las escenas se quedan en otro momento: lo que en la obra aparece como pensamiento o diálogo, en el cómic puede convertirse en ensayo, en silencio, en otra voz. No solo la de Silvestre, sino la de cualquiera que se haya sentido como él.';
+  'Gráficos explora el universo #GatoEncerrado desde la imagen. Aquí las escenas se quedan en otro momento: lo que en la obra aparece como pensamiento o diálogo, en el cómic puede convertirse en ensayo, en silencio, en otra voz. No solo la de Silvestre, sino la de cualquiera que se haya sentido como él.';
 const GRAFICOS_NOTA_AUTORAL = {
   title: '#MirarmeLoQueSoy',
   verse: 'Me quedé dibujando,\ncomo si el papel supiera quién soy\nmejor que yo.',

@@ -101,7 +101,7 @@ const AlianzaSocial = () => {
               />
               <div className="space-y-5">
                 <div className="flex items-center justify-between gap-3">
-                  <p className="text-xs uppercase tracking-[0.4em] text-slate-400/80">Crecimiento compartido</p>
+                  <p className="text-xs uppercase tracking-[0.4em] text-slate-400/80">Impacto Social</p>
                   <button
                     type="button"
                     onClick={handleShareImpactModel}
@@ -112,11 +112,13 @@ const AlianzaSocial = () => {
                   </button>
                 </div>
                 <h3 className="font-display text-3xl text-slate-100">
-                  Déjanos una huella: $50 MXN al mes
+                  Déjanos tu huella: $50 MXN al mes
                 </h3>
                 <p className="text-slate-300/80 leading-relaxed font-light">
                   
-                  <span className="font-semibold text-purple-200">La taquilla sostiene a la obra de teatro. Tu huella sostiene a #GatoEncerrado.</span> Cada huella activada se distribuye en tres frentes que opera <strong>Isabel Ayuda para la Vida, A.C.</strong> y el excedente se reinvierte en nuevas apps, objetos y publicaciones ✨{' '}
+                  <span className="font-semibold text-purple-200">La taquilla sostiene a la obra de teatro. Tu huella sostiene a #GatoEncerrado.</span> <br />Cada huella activada se distribuye en tres frentes que operamos en alianza con <strong>Isabel Ayuda para la Vida, A.C.,</strong>  cuya confianza hizo posible el inicio de este proyecto.
+                  
+                  <p className="text-lg leading-relaxed font-medium text-white mt-4">Cualquier excedente se reinvierte en nuevas formas de la obra ✨{' '}</p> 
                 </p>
                 <details className="group rounded-2xl border border-emerald-300/25 bg-emerald-500/10 px-5 py-4">
                   <summary className="flex cursor-pointer list-none items-center justify-between gap-3">
@@ -135,7 +137,7 @@ const AlianzaSocial = () => {
                     <p className="text-sm leading-relaxed text-slate-200/95">
                       ✔️ 17 huellas completan un tramo de 102 sesiones de terapia al año.<br /><br />
                       ✔️ Desde la huella 18 inicia el siguiente tramo: talleres escolares con artistas.<br /><br />
-                      ✔️ Tu huella es lo que nos pone en marcha.
+                      ✔️ Tu huella es lo que nos pone en marcha y nos reúne.
                     </p>
                   </div>
                 </details>
@@ -149,11 +151,19 @@ const AlianzaSocial = () => {
                   <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_20%_10%,rgba(52,211,153,0.22),transparent_48%),radial-gradient(circle_at_82%_65%,rgba(45,212,191,0.16),transparent_35%)]" />
                   <div className="pointer-events-none absolute inset-0 bg-gradient-to-r from-emerald-400/12 via-transparent to-cyan-300/10" />
                   <div className="relative z-10 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                    <div className="min-w-0">
-                      <p className="text-base font-semibold text-slate-100">
-                        Experiencia interactiva <span className="text-slate-400">|</span> ¿Cómo estás hoy?
-                      </p>
-                      <p className="mt-1 text-sm text-slate-300/90">Un recorrido guiado por la App Causa Social.</p>
+                    <div className="min-w-0 flex items-center gap-3">
+                      <img
+                        src="https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/causa%20social/causa_social.png"
+                        alt="Causa Social"
+                        loading="lazy"
+                        className="h-12 w-12 rounded-xl object-cover flex-shrink-0"
+                      />
+                      <div>
+                        <p className="text-base font-semibold text-slate-100">
+                          Experiencia interactiva <span className="text-slate-400">|</span> ¿Cómo estás hoy?
+                        </p>
+                        <p className="mt-1 text-sm text-slate-300/90">Un recorrido guiado por la App Causa Social.</p>
+                      </div>
                     </div>
                     <button
                       type="button"
@@ -164,9 +174,7 @@ const AlianzaSocial = () => {
                       Probar experiencia
                     </button>
                   </div>
-                  <p className="relative z-10 mt-2 text-[11px] uppercase tracking-[0.2em] text-emerald-200/75">
-                    Placeholder conectado a flujo Bienvenida
-                  </p>
+            
                 </div>
 
                 <div className="rounded-xl border border-white/10 bg-black/20 px-4 py-3 text-xs leading-relaxed text-slate-300/85">
@@ -232,7 +240,7 @@ const AlianzaSocial = () => {
                 </div>
                 <div className="relative z-10">
                   <p className="text-base italic leading-relaxed text-slate-400 md:text-medium">
-                    "Cuando estas huellas florezcan, la obra encontrará nuevas formas de expandirse: entre juegos, preguntas y encuentro."
+                    "Cuando estas huellas florezcan, las nueve formas de la obra se expandirán, impulsadas por lo que la comunidad habite."
                   </p>
                   <div className="mt-4 text-sm text-slate-400">
                     <p className="font-semibold text-slate-200">Equipo 💜 #GatoEncerrado</p>

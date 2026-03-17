@@ -1076,7 +1076,7 @@ Si asististe a la obra, puedes convertir ese momento en huella.
                   ? 'Tu huella ya está activa'
                   : loading
                     ? 'Abriendo confirmación…'
-                    : 'Activar huella mensual'}
+                    : 'Activar mi huella mensual'}
             </button>
           </div>
 

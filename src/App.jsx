@@ -660,7 +660,7 @@ function App() {
                   </SectionErrorBoundary>
                 )}
 
-                <NextShow onRevealTransmedia={handleRevealTransmedia} />
+                <NextShow />
                 <Contact />
               </main>
 

@@ -22,7 +22,7 @@ import { hasEnoughGAT } from '@/lib/gatAccess';
 const ARTESANIAS_INTRO =       (
 <>
   <p className="text-base leading-relaxed text-slate-300">
-     Cada taza está vinculada a un sentimiento; cada sentimiento, a una historia personal.
+     Cada pieza está vinculada a un sentimiento; cada sentimiento, a una historia personal.
   </p>
 
   <p className="text-base leading-relaxed text-slate-300 mt-3">

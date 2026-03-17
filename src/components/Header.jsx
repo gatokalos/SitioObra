@@ -7,7 +7,6 @@ import { useToast } from '@/components/ui/use-toast';
 import { useAuth } from '@/contexts/SupabaseAuthContext';
 import LoginOverlay from '@/components/ContributionModal/LoginOverlay';
 import MobileMenuOverlay from '@/components/MobileMenuOverlay';
-import { setBienvenidaForceOnLogin } from '@/lib/bienvenida';
 import {
   getHeroAmbientState,
   subscribeHeroAmbient,
@@ -100,14 +99,9 @@ const Header = ({ showTransmediaNav = true }) => {
   }, [transmediaAudioState.isMuted]);
 
   const handleCloseOverlay = useCallback(() => setShowLoginOverlay(false), []);
-  const handleOpenOverlay = useCallback(() => {
-    setBienvenidaForceOnLogin();
-    setShowLoginOverlay(true);
-  }, []);
 
   const handleLogout = useCallback(async () => {
     if (!user) {
-      setShowLoginOverlay(true);
       return;
     }
     const { error } = await signOut();
@@ -126,10 +120,8 @@ const Header = ({ showTransmediaNav = true }) => {
     setIsMenuOpen(false);
     if (user) {
       void handleLogout();
-      return;
     }
-    handleOpenOverlay();
-  }, [handleLogout, handleOpenOverlay, user]);
+  }, [handleLogout, user]);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -261,7 +253,7 @@ const Header = ({ showTransmediaNav = true }) => {
                   loading="eager"
                   decoding="async"
                 />
-                <span className={`h-2.5 w-2.5 rounded-full ${statusDotClass}`} />
+                {user ? <span className={`h-2.5 w-2.5 rounded-full ${statusDotClass}`} /> : null}
               </motion.button>
               {user ? (
                 <div className="relative" data-profile-menu>
@@ -291,14 +283,7 @@ const Header = ({ showTransmediaNav = true }) => {
                     </div>
                   ) : null}
                 </div>
-              ) : (
-                <button
-                  onClick={handleOpenOverlay}
-                  className="inline text-xs font-semibold text-slate-100 sm:text-sm"
-                >
-                  Iniciar sesión
-                </button>
-              )}
+              ) : null}
             </div>
 
             <div className="hidden xl:flex items-center space-x-1">
@@ -387,15 +372,17 @@ const Header = ({ showTransmediaNav = true }) => {
                   {item.name}
                 </button>
               ))}
-              <div className="mt-2 border-t border-white/10 pt-3">
-                <button
-                  type="button"
-                  onClick={handleAuthActionFromMenu}
-                  className="block w-full text-left py-2 text-slate-200 hover:text-white transition-colors"
-                >
-                  {authActionLabel}
-                </button>
-              </div>
+              {user ? (
+                <div className="mt-2 border-t border-white/10 pt-3">
+                  <button
+                    type="button"
+                    onClick={handleAuthActionFromMenu}
+                    className="block w-full text-left py-2 text-slate-200 hover:text-white transition-colors"
+                  >
+                    {authActionLabel}
+                  </button>
+                </div>
+              ) : null}
             </motion.div>
           ) : null}
         </nav>
@@ -406,6 +393,7 @@ const Header = ({ showTransmediaNav = true }) => {
           isOpen={isMenuOpen}
           menuItems={mobileMenuItems}
           authActionLabel={authActionLabel}
+          showAuthSection={Boolean(user)}
           onNavigate={handleNavClick}
           onClose={() => setIsMenuOpen(false)}
           onAuthAction={handleAuthActionFromMenu}

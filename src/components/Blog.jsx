@@ -75,8 +75,8 @@ const MINIVERSE_KEYWORDS = {
 };
 
 const STARTER_FAQ_PROMPTS = [
-  '¿Qué relación tiene Es un gato encerrado con su causa social?',
-  '¿Qué diferencia hay entre la obra de teatro y el sitio?',
+  '¿Cuál es la relación entre Es un gato encerrado y una causa social?',
+  '¿Qué diferencia hay entre la obra de teatro y #GatoEncerrado?',
   '¿Tengo que ver la obra primero para entender este universo?',
   '¿El sitio continúa la historia o es otra cosa?',
   '¿Qué pasa si solo quiero curiosear sin registrarme?',
@@ -906,7 +906,7 @@ const Blog = ({ posts = [], isLoading = false, error = null }) => {
                           Buscador Backstage
                         </span>
                         <p className="text-[1rem] font-semibold leading-snug text-white">
-                          ¿Primera vez en el sitio? ¿Ya viste la obra?<br /> Este es tu espacio para explayarte y encontrar respuestas.
+                         <em> ¿Primera vez en el sitio? ¿Ya viste la obra?</em><br /> Este es un espacio para explayarte y encontrar respuestas.
                         </p>
                       </div>
                       <div className="relative w-full">

@@ -7,6 +7,7 @@ const MobileMenuOverlay = ({
   isOpen,
   menuItems,
   authActionLabel,
+  showAuthSection = false,
   onNavigate,
   onClose,
   onAuthAction,
@@ -160,17 +161,19 @@ const MobileMenuOverlay = ({
             ))}
           </section>
 
-          <section className="mt-5 rounded-2xl border border-white/10 bg-black/30 p-4">
-            <p className="text-xs uppercase tracking-[0.24em] text-slate-400/90">Cuenta</p>
-            <Button
-              type="button"
-              variant="outline"
-              className="mt-3 w-full border-white/20 bg-white/[0.04] text-slate-100 hover:bg-white/[0.1]"
-              onClick={onAuthAction}
-            >
-              {authActionLabel}
-            </Button>
-          </section>
+          {showAuthSection ? (
+            <section className="mt-5 rounded-2xl border border-white/10 bg-black/30 p-4">
+              <p className="text-xs uppercase tracking-[0.24em] text-slate-400/90">Cuenta</p>
+              <Button
+                type="button"
+                variant="outline"
+                className="mt-3 w-full border-white/20 bg-white/[0.04] text-slate-100 hover:bg-white/[0.1]"
+                onClick={onAuthAction}
+              >
+                {authActionLabel}
+              </Button>
+            </section>
+          ) : null}
         </div>
       </div>
     </motion.aside>

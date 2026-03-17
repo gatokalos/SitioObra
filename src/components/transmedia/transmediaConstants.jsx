@@ -712,7 +712,7 @@ iaProfile: {
 <>
   <p className="text-base leading-relaxed text-slate-300">
     Un objeto cotidiano convertido en <strong>símbolo de comunión</strong>.<br/>
-    Cada taza está vinculada a un sentimiento; cada sentimiento, a una historia personal.
+    Cada pieza está vinculada a un sentimiento; cada sentimiento, a una historia personal.
   </p>
 
   <p className="text-base leading-relaxed text-slate-300 mt-3">
@@ -949,7 +949,7 @@ Este espacio permite recorrer esas composiciones, explorar sus capas y descubrir
     label: 'Gráficos',
     type: 'graphic-lab',
     intro:
-      <p>Este mini-verso gráfico explora el universo de #GatoEncerrado desde la imagen. <br/><br/> Aquí las escenas se quedan en otro momento: lo que en la obra aparece como pensamiento o diálogo, en el cómic puede convertirse en ensayo, en silencio, en otra voz.<br/><br/> No solo el de Silvestre, sino el de cualquiera que se haya sentido como él. <br/>Dibujar permite mirar lo que no siempre se dice en escena.</p>,
+      <p>Gráficos explora el universo #GatoEncerrado desde la imagen. <br/><br/> Aquí las escenas se quedan en otro momento: lo que en la obra aparece como pensamiento o diálogo, en el cómic puede convertirse en ensayo, en silencio, en otra voz.<br/><br/> No solo el de Silvestre, sino el de cualquiera que se haya sentido como él. <br/>Dibujar permite mirar lo que no siempre se dice en escena.</p>,
     cartaTitle: '#MirarmeLoQueSoy',
     notaAutoral:
       'Me quedé dibujando,\ncomo si el papel supiera quién soy\nmejor que yo.',
@@ -1013,7 +1013,7 @@ Este espacio permite recorrer esas composiciones, explorar sus capas y descubrir
   },
   miniversoMovimiento: {
     label: 'Movimiento',
-     intro:'Este miniverso creativo traslada al cuerpo los conflictos mentales del Universo #GatoEncerrado. Si en la obra la mente se fragmenta, aquí el cuerpo busca arraigo. Es un laboratorio coreográfico y somático que se activa por ciudad.No se interpretan emociones: se atraviesan.',
+     intro:'Este miniverso creativo traslada al cuerpo los conflictos mentales del universo #GatoEncerrado. Si en la obra la mente se fragmenta, aquí el cuerpo busca arraigo. Es un laboratorio coreográfico y somático que se activa por ciudad.No se interpretan emociones: se atraviesan.',
 
          type: 'movement-ritual',
     pendingName: 'La Ruta de la Corporeidad',

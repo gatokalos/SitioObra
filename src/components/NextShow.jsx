@@ -1,9 +1,14 @@
-import React, { useCallback, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
-import { Calendar, HeartHandshake, ShoppingBag } from 'lucide-react';
+import { Calendar, DoorOpen, ShoppingBag } from 'lucide-react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { createPortalLaunchState } from '@/lib/portalNavigation';
+import { useAuth } from '@/contexts/SupabaseAuthContext';
+import { safeGetItem, safeRemoveItem, safeSetItem } from '@/lib/safeStorage';
+
+const LOGIN_RETURN_KEY = 'gatoencerrado:login-return';
+const AUTHENTICATED_HERO_URL = '/?heroTab=experiences#hero';
 
 const SHOW_HISTORY = [
   {
@@ -32,10 +37,12 @@ const SHOW_HISTORY = [
   },
 ];
 
-const NextShow = ({ onRevealTransmedia = null }) => {
+const NextShow = () => {
   const [activeShowId, setActiveShowId] = useState('cecut');
   const navigate = useNavigate();
   const location = useLocation();
+  const { user } = useAuth();
+  const isLoggedIn = Boolean(user?.id);
   const activeShow = useMemo(
     () => SHOW_HISTORY.find((show) => show.id === activeShowId) ?? SHOW_HISTORY[0],
     [activeShowId]
@@ -47,18 +54,57 @@ const NextShow = ({ onRevealTransmedia = null }) => {
     });
   }, [location, navigate]);
 
-  const handleScrollToCause = useCallback(() => {
-    if (typeof onRevealTransmedia === 'function') {
-      onRevealTransmedia({
-        trigger: 'memoria-conocer-causa',
-        targetId: 'apoya',
-        eventKey: 'showcase_boost:landing_memoria_causa',
-      });
+  const handleOpenAuthenticatedHero = useCallback(() => {
+    navigate(AUTHENTICATED_HERO_URL, { replace: true });
+    if (typeof window !== 'undefined') {
+      window.setTimeout(() => {
+        document.getElementById('hero')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }, 80);
+    }
+  }, [navigate]);
+
+  const handlePrimaryAction = useCallback(() => {
+    if (isLoggedIn) {
+      handleOpenAuthenticatedHero();
       return;
     }
-    const supportSection = document.querySelector('#apoya');
-    supportSection?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-  }, [onRevealTransmedia]);
+    if (typeof window === 'undefined') {
+      return;
+    }
+    safeSetItem(
+      LOGIN_RETURN_KEY,
+      JSON.stringify({
+        anchor: '#next-show',
+        action: 'next-show-login',
+        source: 'next-show',
+      })
+    );
+    window.dispatchEvent(new CustomEvent('open-login-modal'));
+  }, [handleOpenAuthenticatedHero, isLoggedIn]);
+
+  useEffect(() => {
+    if (!isLoggedIn || typeof window === 'undefined') {
+      return;
+    }
+    const pending = safeGetItem(LOGIN_RETURN_KEY);
+    if (!pending) {
+      return;
+    }
+    try {
+      const parsed = JSON.parse(pending);
+      const isNextShowLoginFlow =
+        parsed?.anchor === '#next-show' && parsed?.action === 'next-show-login';
+      if (!isNextShowLoginFlow) {
+        return;
+      }
+      safeRemoveItem(LOGIN_RETURN_KEY);
+      window.setTimeout(() => {
+        handleOpenAuthenticatedHero();
+      }, 120);
+    } catch {
+      safeRemoveItem(LOGIN_RETURN_KEY);
+    }
+  }, [handleOpenAuthenticatedHero, isLoggedIn]);
 
   return (
     <>
@@ -148,13 +194,17 @@ const NextShow = ({ onRevealTransmedia = null }) => {
               <div className="mt-10 flex flex-col sm:flex-row gap-6 justify-center items-center">
                 <div className="flex flex-col items-center gap-2">
                   <Button
-                    onClick={handleScrollToCause}
+                    onClick={handlePrimaryAction}
                     className="bg-gradient-to-r from-orange-500/90 via-rose-500/90 to-pink-500/90 hover:from-orange-400 hover:to-pink-400 text-white px-6 py-3 rounded-full font-semibold flex items-center gap-2 shadow-lg shadow-orange-500/40 transition"
                   >
-                    <HeartHandshake size={20} />
-                    Conocer la causa
+                    <DoorOpen size={20} />
+                    {isLoggedIn ? 'Entrar al otro lado' : 'Entrar al otro lado'}
                   </Button>
-                  <p className="text-xs text-slate-400/80">"Arte, salud mental y comunidad"</p>
+                  <p className="text-xs text-slate-400/80">
+                    {isLoggedIn
+                      ? '"Tu sesión ya abrió la siguiente capa"'
+                      : '"El final abre otra puerta"'}
+                  </p>
                 </div>
                 <div className="flex flex-col items-center gap-2">
                   <Button
@@ -165,7 +215,7 @@ const NextShow = ({ onRevealTransmedia = null }) => {
                     <ShoppingBag size={20} />
                     Merch
                   </Button>
-                  <p className="text-xs text-slate-400/80">"Aquí empieza la conversación"</p>
+                  <p className="text-xs text-slate-400/80">"Crea un nuevo recuerdo"</p>
                 </div>
               </div>
             </div>
