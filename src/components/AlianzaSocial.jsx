@@ -1,6 +1,5 @@
 import { createPortal } from 'react-dom';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
 import { PawPrint, Send, Smartphone } from 'lucide-react';
 import CallToAction from '@/components/CallToAction';
@@ -11,15 +10,11 @@ import { toast } from '@/components/ui/use-toast';
 import {
   CAUSE_ACCORDION,
   CAUSE_SITE_URL,
-  INTERACTIVE_EXPERIENCE_GOAL,
 } from '@/components/transmedia/transmediaConstants';
-import { setBienvenidaReturnPath } from '@/lib/bienvenida';
 
 const noopAuth = () => true;
 
 const AlianzaSocial = () => {
-  const navigate = useNavigate();
-  const location = useLocation();
   const sectionRef = useRef(null);
 
   const [imagePreview, setImagePreview] = useState(null);
@@ -61,17 +56,12 @@ const AlianzaSocial = () => {
 
   const { handleShareImpactModel } = useMiniversoShare({ toast });
 
-  const handleOpenInteractiveExperience = useCallback(() => {
-    if (typeof document !== 'undefined') {
-      document.documentElement.dataset.bienvenidaFade = 'true';
-    }
-    setBienvenidaReturnPath(`${location.pathname}${location.search}#apoya`);
-    if (typeof window !== 'undefined') {
-      window.setTimeout(() => {
-        navigate(`/bienvenida?goal=${INTERACTIVE_EXPERIENCE_GOAL}`, { replace: true });
-      }, 450);
-    }
-  }, [location.pathname, location.search, navigate]);
+  const handleOpenInteractiveExperiencePlaceholder = useCallback(() => {
+    toast({
+      title: 'App Causa Social en beta',
+      description: 'La app Causa Social todavía está en pruebas beta. Próximamente la verás aquí.',
+    });
+  }, []);
 
   return (
     <>
@@ -160,18 +150,20 @@ const AlianzaSocial = () => {
                       />
                       <div>
                         <p className="text-base font-semibold text-slate-100">
-                          Experiencia interactiva <span className="text-slate-400">|</span> ¿Cómo estás hoy?
+                          Experiencia interactiva <span className="text-slate-400">|</span> ¿Qué es estar bien?
                         </p>
-                        <p className="mt-1 text-sm text-slate-300/90">Un recorrido guiado por la App Causa Social.</p>
+                        <p className="mt-1 text-sm text-slate-300/90">
+                          La app Causa Social sigue en pruebas beta. Muy pronto podrás verla aquí.
+                        </p>
                       </div>
                     </div>
                     <button
                       type="button"
-                      onClick={handleOpenInteractiveExperience}
+                      onClick={handleOpenInteractiveExperiencePlaceholder}
                       className="inline-flex items-center justify-center gap-2 rounded-xl border border-emerald-300/40 bg-emerald-400/10 px-4 py-2 text-sm font-semibold text-emerald-100 transition hover:border-emerald-200/60 hover:bg-emerald-300/15 hover:text-white whitespace-nowrap"
                     >
                       <Smartphone size={15} />
-                      Probar experiencia
+                      Próximamente
                     </button>
                   </div>
             

@@ -1940,7 +1940,7 @@ const rendernotaAutoral = () => {
           ? 'Escúchala con otra emoción'
           : mobileObraSecondaryCtaState === MOBILE_OBRA_SECONDARY_CTA_STATES.LAUNCH_PHRASE
             ? 'Lanza la frase'
-            : 'Escogere del libreto';
+            : 'Escoger del libreto';
       const mobileSecondaryCtaEmphasis =
         mobileObraSecondaryCtaState === MOBILE_OBRA_SECONDARY_CTA_STATES.TRY_OTHER_EMOTION
           ? 'glow'

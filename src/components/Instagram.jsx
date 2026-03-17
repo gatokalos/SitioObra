@@ -891,12 +891,12 @@ const Instagram = () => {
           className="text-center mb-14"
         >
           <h2 className="font-display text-4xl md:text-5xl font-medium mb-5 text-gradient italic">
-            Memoria Fractal
+            Miradas Fractales
           </h2>
          <p className="text-base md:text-lg text-slate-300/75 max-w-3xl mx-auto leading-relaxed mb-7 font-light">
-  Un homenaje visual a los destellos de <em>Es un gato encerrado</em>.  
+  Un registro de los destellos de <em>Es un gato encerrado</em>.  
   Esto es lo que existe solo cuando alguien decide observar de verdad.  
-  Mira la obra a través de los ojos de nuestros fotógrafos.
+  Mira la obra desde distintas miradas.
 </p>
 
           <div className="flex flex-wrap justify-center gap-2 mb-6">
