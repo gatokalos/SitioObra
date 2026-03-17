@@ -127,7 +127,7 @@ const AlianzaSocial = () => {
                     <p className="text-sm leading-relaxed text-slate-200/95">
                       ✔️ 17 huellas completan un tramo de 102 sesiones de terapia al año.<br /><br />
                       ✔️ Desde la huella 18 inicia el siguiente tramo: talleres escolares con artistas.<br /><br />
-                      ✔️ Tu huella es lo que nos pone en marcha y nos reúne.
+                      ✔️ Tu huella es lo que pone en marcha este proyecto entre arte y comunidad.
                     </p>
                   </div>
                 </details>

@@ -20,7 +20,7 @@ donde crear también sea investigar,
 y cuidar la salud mental
 sea una forma de arte compartido.`,
   author: 'Carlos A. Pérez H.',
-  role: 'Creador de #GatoEncerrado',
+  role: 'Autor de #GatoEncerrado',
   avatar:
     'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/autores/carlos_perez_avatar.png',
 };

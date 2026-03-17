@@ -1237,6 +1237,12 @@ Este espacio permite recorrer esas composiciones, explorar sus capas y descubrir
       ],
       ctaLabel: 'Jugar demo',
     },
+    liveExperience: {
+      title: 'App en vivo',
+      description: 'Juega la app completa dentro de la vitrina, sin salir del miniverso.',
+      url: 'https://main.dg0vxepd2qyf6.amplifyapp.com',
+      ctaLabel: 'Abrir en pestaña nueva',
+    },
     actions: [
       {
         id: 'download',

@@ -2792,6 +2792,7 @@ const rendernotaAutoral = () => {
       const tapCount = steps.length || 1;
       const currentStep = steps[tapIndex % tapCount] ?? {};
       const handleTapAdvance = () => setTapIndex((prev) => (tapCount ? (prev + 1) % tapCount : 0));
+      const embeddedAppUrl = sanitizeExternalHttpUrl(activeDefinition.liveExperience?.url);
       const isRead = Boolean(showcaseBoosts?.[activeShowcase]);
       const isAppsDemoUnlocked = Boolean(showcaseBoosts?.apps_demo_unlock);
       const publicComments = publicContributions[activeShowcase] ?? [];
@@ -2800,7 +2801,42 @@ const rendernotaAutoral = () => {
 
       return (
         <div className="space-y-8">
-          
+          {embeddedAppUrl ? (
+            <div className="rounded-3xl border border-emerald-200/20 bg-black/30 p-4 sm:p-5 space-y-4 shadow-[0_20px_60px_rgba(0,0,0,0.35)]">
+              <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
+                <div className="space-y-2">
+                  <p className="text-xs uppercase tracking-[0.35em] text-emerald-100/75">Experiencia incrustada</p>
+                  <h4 className="font-display text-xl text-slate-100">
+                    {activeDefinition.liveExperience?.title || 'App en vivo'}
+                  </h4>
+                  {activeDefinition.liveExperience?.description ? (
+                    <p className="max-w-2xl text-sm leading-relaxed text-slate-300/85">
+                      {activeDefinition.liveExperience.description}
+                    </p>
+                  ) : null}
+                </div>
+                <a
+                  href={embeddedAppUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="inline-flex items-center justify-center rounded-full border border-emerald-300/40 bg-emerald-500/10 px-4 py-2 text-xs font-medium uppercase tracking-[0.22em] text-emerald-100 transition hover:bg-emerald-500/20"
+                >
+                  {activeDefinition.liveExperience?.ctaLabel || 'Abrir aparte'}
+                </a>
+              </div>
+
+              <div className="overflow-hidden rounded-[1.75rem] border border-emerald-200/20 bg-slate-950/80 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]">
+                <iframe
+                  src={embeddedAppUrl}
+                  title={activeDefinition.liveExperience?.title || 'App de Juegos'}
+                  className="block h-[68vh] min-h-[520px] w-full bg-white"
+                  loading="lazy"
+                  referrerPolicy="strict-origin-when-cross-origin"
+                  allow="accelerometer; autoplay; camera; clipboard-read; clipboard-write; fullscreen; gamepad; gyroscope; microphone; web-share"
+                />
+              </div>
+            </div>
+          ) : null}
 
           <div className="grid gap-6 lg:grid-cols-[1.6fr_1fr]">
             <div className="rounded-3xl border border-white/10 bg-black/30 p-6 space-y-5">
