@@ -139,6 +139,23 @@ window.fetch = function(...args) {
 };
 `;
 
+// Convierte las hojas de estilo generadas en non-blocking (preload + onload).
+// El splash screen tiene CSS crítico inline, así que no hay FOUC.
+const asyncCssPlugin = {
+	name: 'async-css',
+	apply: 'build',
+	transformIndexHtml: {
+		enforce: 'post',
+		transform(html) {
+			return html.replace(
+				/<link rel="stylesheet"([^>]*)>/g,
+				(_, attrs) =>
+					`<link rel="preload"${attrs} as="style" onload="this.onload=null;this.rel='stylesheet'"><noscript><link rel="stylesheet"${attrs}></noscript>`
+			);
+		},
+	},
+};
+
 const addTransformIndexHtml = {
 	name: 'add-transform-index-html',
 	transformIndexHtml(html) {
@@ -205,7 +222,8 @@ export default defineConfig({
 	plugins: [
 		...(isDev ? [inlineEditPlugin(), editModeDevPlugin(), iframeRouteRestorationPlugin()] : []),
 		react(),
-		addTransformIndexHtml
+		addTransformIndexHtml,
+		asyncCssPlugin,
 	],
 	server: {
 		cors: true,

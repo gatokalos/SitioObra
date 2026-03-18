@@ -13,6 +13,10 @@
 		<!-- PRELOADS críticos -->
 		<link rel="preload" href="/fonts/vox-round/VoxRound-Semibold.woff2" as="font" type="font/woff2" crossorigin />
 
+		<!-- PRECONNECT para CDN de three.js -->
+		<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin />
+		<link rel="dns-prefetch" href="https://cdn.jsdelivr.net" />
+
 		<!-- OPEN GRAPH -->
 		<meta property="og:title" content="#GatoEncerrado — Universo transmedia" />
 		<meta property="og:description" content="Explora los miniversos: Cine, Novela, RA, Juegos, Bitácora y más." />
@@ -46,6 +50,14 @@
 			}
 		</script>
 		<style>
+			@font-face {
+				font-family: "Vox Round";
+				src: url("/fonts/vox-round/VoxRound-Semibold.woff2") format("woff2");
+				font-weight: 600;
+				font-style: normal;
+				font-display: swap;
+			}
+
 			html,
 			body {
 				height: 100%;
@@ -106,11 +118,61 @@
 					transform: rotate(360deg);
 				}
 			}
+
+			/* Hero title visible desde el primer paint, antes de que React monte */
+			.splash-hero-title-wrap {
+				position: absolute;
+				top: 50%;
+				left: 0;
+				right: 0;
+				transform: translateY(-50%);
+				text-align: center;
+				padding: 0 clamp(1rem, 5vw, 3rem);
+				pointer-events: none;
+			}
+
+			.splash-hero-title {
+				margin: 0;
+				font-family: "Vox Round", Georgia, "Times New Roman", serif;
+				font-weight: 600;
+				font-size: clamp(2rem, 7.5vw, 5rem);
+				letter-spacing: 0.25em;
+				text-transform: uppercase;
+				line-height: 1.05;
+				background: linear-gradient(125deg, #2d2d2d, #bdbdbd, #ffffff);
+				-webkit-background-clip: text;
+				-webkit-text-fill-color: transparent;
+				background-clip: text;
+			}
+
+			@media (max-width: 480px) {
+				.splash-hero-title {
+					font-size: clamp(1.6rem, 8vw, 2.2rem);
+					letter-spacing: 0.12em;
+				}
+			}
+
+			@media (min-width: 769px) {
+				.splash-hero-title {
+					font-size: clamp(3rem, 4vw, 5rem);
+					letter-spacing: 0.22em;
+				}
+			}
+
+			@media (min-width: 1201px) {
+				.splash-hero-title {
+					font-size: clamp(4rem, 3.5vw, 5rem);
+					letter-spacing: 0.25em;
+				}
+			}
 		</style>
 	</head>
 
 	<body>
 		<div id="app-splash">
+			<div class="splash-hero-title-wrap" aria-hidden="true">
+				<h1 class="splash-hero-title">#GATOENCERRADO</h1>
+			</div>
 			<div class="splash-spinner-wrap">
 				<div class="splash-spinner" aria-hidden="true"></div>
 			</div>

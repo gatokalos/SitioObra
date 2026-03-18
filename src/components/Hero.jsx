@@ -710,15 +710,12 @@ const Hero = () => {
 
               {/* LÍNEA CENTRAL — GATOENCERRADO ancla el 50vh */}
               <div className="max-w-4xl mx-auto w-full">
-                <motion.h1
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  transition={{ duration: 0.8 }}
+                <h1
                   className="hero-title text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-medium text-center w-full break-words"
                   style={{ textShadow: '0 0 35px rgba(255, 223, 255, 0.45)' }}
                 >
                   #GATOENCERRADO
-                </motion.h1>
+                </h1>
                 <motion.div
                   initial={{ opacity: 0, y: 6 }}
                   animate={{ opacity: 1, y: 0 }}
