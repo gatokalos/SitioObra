@@ -2,9 +2,9 @@ import React, { Suspense, useCallback, useEffect, useLayoutEffect, useMemo, useR
 import { AnimatePresence, motion } from 'framer-motion';
 import { BookOpen, CoffeeIcon, DramaIcon, TicketIcon, HeartHandshake, ShoppingBag, SparkleIcon, DoorOpen } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import TicketPurchaseModal from '@/components/TicketPurchaseModal';
-import GatokensRevealModal from '@/components/GatokensRevealModal';
-import MiniverseModal from '@/components/MiniverseModal';
+const TicketPurchaseModal = React.lazy(() => import('@/components/TicketPurchaseModal'));
+const GatokensRevealModal = React.lazy(() => import('@/components/GatokensRevealModal'));
+const MiniverseModal = React.lazy(() => import('@/components/MiniverseModal'));
 import isotipoGatoWebp from '@/assets/isotipo-gato.webp';
 const HashtagButton3D = React.lazy(() => import('@/components/HashtagButton3D'));
 import { useNavigate, useLocation } from 'react-router-dom';
@@ -676,14 +676,16 @@ const Hero = () => {
               transition={{ duration: 0.36, ease: 'easeOut' }}
               className={`mx-auto w-full ${isMobileViewport ? 'max-w-2xl' : 'max-w-[920px]'}`}
             >
-              <MiniverseModal
-                open
-                onClose={handleScrollToAbout}
-                initialTabId={mobileInitialTabId}
-                onSelectMiniverse={handleMobileInlineMiniverseSelect}
-                stayOpenOnSelect
-                displayMode="inline"
-              />
+              <Suspense fallback={null}>
+                <MiniverseModal
+                  open
+                  onClose={handleScrollToAbout}
+                  initialTabId={mobileInitialTabId}
+                  onSelectMiniverse={handleMobileInlineMiniverseSelect}
+                  stayOpenOnSelect
+                  displayMode="inline"
+                />
+              </Suspense>
             </motion.div>
           </div>
         ) : (
@@ -701,6 +703,7 @@ const Hero = () => {
                     src={isotipoGatoWebp}
                     alt="Isotipo de Gato Encerrado"
                     className="hero-logo-img"
+                    fetchpriority="high"
                   />
                 </motion.div>
               </div>
@@ -710,7 +713,7 @@ const Hero = () => {
                 <motion.h1
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
-                  transition={{ duration: 1.5, delay: 0.2 }}
+                  transition={{ duration: 0.8 }}
                   className="hero-title text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-medium text-center w-full break-words"
                   style={{ textShadow: '0 0 35px rgba(255, 223, 255, 0.45)' }}
                 >
@@ -1028,8 +1031,10 @@ const Hero = () => {
           </div>
         )}
       </section>
-      <TicketPurchaseModal open={isTicketModalOpen} onClose={handleCloseTicket} />
-      <GatokensRevealModal open={isGatokensModalOpen} onClose={() => setIsGatokensModalOpen(false)} />
+      <Suspense fallback={null}>
+        <TicketPurchaseModal open={isTicketModalOpen} onClose={handleCloseTicket} />
+        <GatokensRevealModal open={isGatokensModalOpen} onClose={() => setIsGatokensModalOpen(false)} />
+      </Suspense>
     </>
   );
 };
