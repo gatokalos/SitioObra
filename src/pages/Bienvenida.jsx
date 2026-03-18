@@ -129,6 +129,13 @@ const Bienvenida = () => {
           </div>
         )}
       </div>
+      <button
+        type="button"
+        onClick={handleFinish}
+        className="absolute right-6 top-6 z-10 rounded-full border border-white/20 bg-black/60 px-4 py-2 text-xs uppercase tracking-[0.3em] text-white hover:bg-black/80"
+      >
+        Cerrar
+      </button>
     </div>
   );
 };
