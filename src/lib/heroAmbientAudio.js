@@ -31,6 +31,12 @@ const resolveAudioSource = (audio) => {
   return supportsM4a ? HERO_LOGGED_IN_AUDIO_URL : HERO_LOGGED_IN_AUDIO_FALLBACK_URL;
 };
 
+const restorePlaybackState = (audio, { muted, volume }) => {
+  if (!audio) return;
+  audio.muted = Boolean(muted);
+  audio.volume = muted ? 0 : volume;
+};
+
 export const readHeroAudioEnabledPreference = () => {
   if (typeof window === 'undefined') return null;
   try {
@@ -66,7 +72,7 @@ export const getHeroAmbientAudio = () => {
 
   const audio = new Audio();
   audio.loop = true;
-  audio.preload = 'metadata';
+  audio.preload = 'auto';
   audio.playsInline = true;
   audio.src = resolveAudioSource(audio);
   audio.load();
@@ -102,6 +108,49 @@ export const getHeroAmbientAudio = () => {
   return sharedAudio;
 };
 
+export const resumeHeroAmbientPlayback = async (
+  {
+    targetVolume = HERO_AMBIENT_DEFAULT_VOLUME,
+    allowMutedWarmup = true,
+  } = {}
+) => {
+  const audio = getHeroAmbientAudio();
+  if (!audio) return false;
+
+  const previousState = {
+    muted: Boolean(audio.muted),
+    volume: Number.isFinite(audio.volume) ? audio.volume : targetVolume,
+  };
+
+  try {
+    audio.muted = false;
+    audio.volume = targetVolume;
+    await audio.play();
+    emit();
+    return true;
+  } catch {
+    if (!allowMutedWarmup) {
+      restorePlaybackState(audio, previousState);
+      emit();
+      return false;
+    }
+
+    try {
+      audio.muted = true;
+      audio.volume = 0;
+      await audio.play();
+      audio.muted = false;
+      audio.volume = targetVolume;
+      emit();
+      return true;
+    } catch {
+      restorePlaybackState(audio, previousState);
+      emit();
+      return false;
+    }
+  }
+};
+
 export const setHeroAmbientMuted = (
   nextMuted,
   { targetVolume = HERO_AMBIENT_DEFAULT_VOLUME } = {}
@@ -110,6 +159,7 @@ export const setHeroAmbientMuted = (
   if (!audio) return;
   sharedState = { ...sharedState, isMuted: Boolean(nextMuted) };
   writeHeroAudioEnabledPreference(!nextMuted);
+  audio.muted = Boolean(nextMuted);
 
   if (nextMuted) {
     audio.pause();
@@ -120,7 +170,7 @@ export const setHeroAmbientMuted = (
 
   audio.volume = targetVolume;
   if (targetVolume > HERO_AMBIENT_MIN_AUDIBLE_VOLUME && audio.paused) {
-    void audio.play().catch(() => {});
+    void resumeHeroAmbientPlayback({ targetVolume });
   }
   emit();
 };
@@ -135,15 +185,17 @@ export const setHeroAmbientVolume = (targetVolume) => {
   const audio = getHeroAmbientAudio();
   if (!audio) return;
   if (sharedState.isMuted) {
+    audio.muted = true;
     audio.volume = 0;
     emit();
     return;
   }
+  audio.muted = false;
   audio.volume = targetVolume;
   if (targetVolume <= HERO_AMBIENT_MIN_AUDIBLE_VOLUME) {
     if (!audio.paused) audio.pause();
   } else if (audio.paused) {
-    void audio.play().catch(() => {});
+    void resumeHeroAmbientPlayback({ targetVolume });
   }
   emit();
 };
@@ -152,6 +204,7 @@ export const pauseHeroAmbient = ({ resetTime = false } = {}) => {
   const audio = getHeroAmbientAudio();
   if (!audio) return;
   audio.pause();
+  audio.muted = sharedState.isMuted;
   if (resetTime) audio.currentTime = 0;
   emit();
 };

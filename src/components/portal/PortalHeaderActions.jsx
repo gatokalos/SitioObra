@@ -10,6 +10,7 @@ import {
   toggleHeroAmbientMuted,
   HERO_AMBIENT_DEFAULT_VOLUME,
   HERO_AMBIENT_MIN_AUDIBLE_VOLUME,
+  resumeHeroAmbientPlayback,
 } from '@/lib/heroAmbientAudio';
 import { resolvePortalReturnTarget } from '@/lib/portalNavigation';
 
@@ -78,7 +79,7 @@ const PortalHeaderActions = ({ returnUrl = DEFAULT_RETURN_URL }) => {
     if (!ambientState.isMuted && audio.paused) {
       audio.volume = HERO_AMBIENT_DEFAULT_VOLUME;
       if (audio.volume > HERO_AMBIENT_MIN_AUDIBLE_VOLUME) {
-        void audio.play().catch(() => {});
+        void resumeHeroAmbientPlayback({ targetVolume: HERO_AMBIENT_DEFAULT_VOLUME });
       }
       return;
     }

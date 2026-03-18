@@ -37,7 +37,6 @@ const useBodyScrollLock = ({ isCinematicShowcaseOpen, isMiniverseShelved, handle
     }
 
     // Quitar position:fixed primero; luego restaurar el scroll.
-    // El navegador aplica ambas mutaciones en el mismo frame, así que no hay flash.
     const savedScrollY = wasCinematicOpenRef.current ? scrollLockYRef.current : null;
     body.style.position = '';
     body.style.top = '';
@@ -47,9 +46,21 @@ const useBodyScrollLock = ({ isCinematicShowcaseOpen, isMiniverseShelved, handle
     body.style.overflow = '';
     html.style.overflow = '';
     if (savedScrollY !== null) {
+      // Desactivar scroll-behavior en html Y body (el CSS tiene smooth en body,
+      // lo que hace que behavior:'instant' no se respete en iOS Safari).
       html.style.scrollBehavior = 'auto';
-      window.scrollTo({ top: savedScrollY, behavior: 'instant' });
-      html.style.scrollBehavior = '';
+      body.style.scrollBehavior = 'auto';
+      // Forma de dos argumentos: siempre instantánea en todos los browsers.
+      window.scrollTo(0, savedScrollY);
+      // rAF de respaldo para iOS Safari, donde el unfixing puede ocurrir en un
+      // frame separado del scrollTo y mostrar brevemente una posición incorrecta.
+      requestAnimationFrame(() => {
+        if (Math.round(window.scrollY) !== Math.round(savedScrollY)) {
+          window.scrollTo(0, savedScrollY);
+        }
+        html.style.scrollBehavior = '';
+        body.style.scrollBehavior = '';
+      });
     }
     wasCinematicOpenRef.current = false;
     scrollLockYRef.current = 0;

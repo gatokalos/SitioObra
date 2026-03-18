@@ -273,7 +273,7 @@ const CallToAction = ({ barsIntroDelayMs = 0 }) => {
   const [showAftercareOverlay, setShowAftercareOverlay] = useState(false);
   const [aftercareVariant, setAftercareVariant] = useState('expansion');
   const [isTicketSupportVideoAvailable, setIsTicketSupportVideoAvailable] = useState(true);
-  const [isCounterSoundEnabled, setIsCounterSoundEnabled] = useState(false);
+  const [isCounterSoundEnabled, setIsCounterSoundEnabled] = useState(true);
   const [isLoginPulseActive, setIsLoginPulseActive] = useState(false);
   const hasRunBarSequenceRef = useRef(false);
   const aftercareTimeoutRef = useRef(null);
@@ -283,6 +283,7 @@ const CallToAction = ({ barsIntroDelayMs = 0 }) => {
   const loginPulseTimeoutRef = useRef(null);
   const audioContextRef = useRef(null);
   const masterGainRef = useRef(null);
+  const counterAudioPrimedRef = useRef(false);
   const lastSupportForSoundRef = useRef(null);
   const impactPanelRef = useRef(null);
   const isImpactPanelInView = useInView(impactPanelRef, { once: true, amount: 0.35 });
@@ -551,6 +552,14 @@ const CallToAction = ({ barsIntroDelayMs = 0 }) => {
     tailOsc.stop(nowChime + 0.48);
   }, [ensureCounterAudio]);
 
+  const primeCounterAudio = useCallback(() => {
+    if (!isCounterSoundEnabled || counterAudioPrimedRef.current) return;
+    void ensureCounterAudio().then((context) => {
+      if (!context || context.state !== 'running') return;
+      counterAudioPrimedRef.current = true;
+    });
+  }, [ensureCounterAudio, isCounterSoundEnabled]);
+
   function supportFromSlider(tramo, rawValue) {
     const value = Number(rawValue);
     if (Number.isNaN(value)) return 0;
@@ -563,6 +572,7 @@ const CallToAction = ({ barsIntroDelayMs = 0 }) => {
   }
 
   function handleSliderInput(tramo, value) {
+    primeCounterAudio();
     setInteractiveSupport(supportFromSlider(tramo, value));
   }
 
@@ -951,9 +961,12 @@ const CallToAction = ({ barsIntroDelayMs = 0 }) => {
     if (nextValue) {
       ensureCounterAudio().then((context) => {
         if (!context) return;
+        counterAudioPrimedRef.current = context.state === 'running';
         playCounterTick(1);
       });
+      return;
     }
+    counterAudioPrimedRef.current = false;
   }, [ensureCounterAudio, isCounterSoundEnabled, playCounterTick]);
 
   // 4) Renderizado

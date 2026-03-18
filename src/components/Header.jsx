@@ -12,6 +12,7 @@ import {
   subscribeHeroAmbient,
   toggleHeroAmbientMuted,
   getHeroAmbientAudio,
+  resumeHeroAmbientPlayback,
 } from '@/lib/heroAmbientAudio';
 import {
   getTransmediaSectionState,
@@ -93,7 +94,7 @@ const Header = ({ showTransmediaNav = true }) => {
     if (!audio) return;
     // Autoplay bloqueado: primer toque reanuda en vez de mutear
     if (!audioState.isMuted && audio.paused) {
-      void audio.play().catch(() => {});
+      void resumeHeroAmbientPlayback();
       return;
     }
     toggleHeroAmbientMuted();

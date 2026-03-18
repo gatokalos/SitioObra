@@ -161,6 +161,7 @@ export const useSilvestreVoice = () => {
   const micTimeoutRef = useRef(null);
   const silvestreAudioRef = useRef(null);
   const silvestreAudioUrlRef = useRef(null);
+  const silvestreBufferSourceRef = useRef(null);
   const silvestreRequestIdRef = useRef(0);
   const silvestreAbortRef = useRef(null);
   const serviceUnavailableUntilRef = useRef(0);
@@ -275,20 +276,6 @@ export const useSilvestreVoice = () => {
     });
   }, []);
 
-  const stopSilvestreAudio = useCallback(() => {
-    if (silvestreAudioRef.current) {
-      silvestreAudioRef.current.pause();
-      silvestreAudioRef.current.src = '';
-      silvestreAudioRef.current = null;
-    }
-    if (silvestreAudioUrlRef.current) {
-      URL.revokeObjectURL(silvestreAudioUrlRef.current);
-      silvestreAudioUrlRef.current = null;
-    }
-    setIsSilvestrePlaying(false);
-    setPendingSilvestreAudioUrl(null);
-  }, []);
-
   // Fade suave del audio antes de parar — usado cuando AlianzaSocial entra al viewport
   const fadeSilvestreAudio = useCallback((durationMs = 700) => {
     const audio = silvestreAudioRef.current;
@@ -325,17 +312,6 @@ export const useSilvestreVoice = () => {
     window.addEventListener('gatoencerrado:fade-silvestre', handler);
     return () => window.removeEventListener('gatoencerrado:fade-silvestre', handler);
   }, [fadeSilvestreAudio]);
-
-  const stopSilvestreResponse = useCallback(() => {
-    if (silvestreAbortRef.current) {
-      silvestreAbortRef.current.abort();
-      silvestreAbortRef.current = null;
-    }
-    silvestreRequestIdRef.current += 1;
-    stopSilvestreAudio();
-    setIsSilvestreFetching(false);
-    setIsSilvestreResponding(false);
-  }, [stopSilvestreAudio]);
 
   const recordObraChat = useCallback(
     async ({ question, answer, source }) => {
@@ -392,6 +368,152 @@ export const useSilvestreVoice = () => {
       // Silent fail: this feedback should never block voice flow.
     }
   }, []);
+
+  const getOrCreateSilvestreAudioContext = useCallback(() => {
+    if (typeof window === 'undefined') return null;
+    const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+    if (!AudioContextClass) return null;
+    try {
+      if (!thinkingAudioContextRef.current) {
+        thinkingAudioContextRef.current = new AudioContextClass();
+      }
+      return thinkingAudioContextRef.current;
+    } catch (error) {
+      return null;
+    }
+  }, []);
+
+  const primeSilvestreAudioPlayback = useCallback(() => {
+    const context = getOrCreateSilvestreAudioContext();
+    if (!context) return;
+    if (context.state === 'suspended') {
+      void context.resume().catch(() => {});
+    }
+  }, [getOrCreateSilvestreAudioContext]);
+
+  const stopSilvestreBufferSource = useCallback(() => {
+    const source = silvestreBufferSourceRef.current;
+    if (!source) return;
+    silvestreBufferSourceRef.current = null;
+    source.onended = null;
+    try {
+      source.stop(0);
+    } catch (error) {
+      // Silent fail: source may already be stopped.
+    }
+    try {
+      source.disconnect();
+    } catch (error) {
+      // noop
+    }
+  }, []);
+
+  const decodeAudioData = useCallback(async (context, arrayBuffer) => {
+    const bufferCopy = arrayBuffer.slice(0);
+    return await new Promise((resolve, reject) => {
+      let settled = false;
+      const handleResolve = (value) => {
+        if (settled) return;
+        settled = true;
+        resolve(value);
+      };
+      const handleReject = (error) => {
+        if (settled) return;
+        settled = true;
+        reject(error);
+      };
+
+      try {
+        const maybePromise = context.decodeAudioData(bufferCopy, handleResolve, handleReject);
+        if (maybePromise && typeof maybePromise.then === 'function') {
+          maybePromise.then(handleResolve).catch(handleReject);
+        }
+      } catch (error) {
+        handleReject(error);
+      }
+    });
+  }, []);
+
+  const playAudioBlobThroughContext = useCallback(
+    async (audioBlob, audioUrl) => {
+      if (!audioBlob) return false;
+      const context = getOrCreateSilvestreAudioContext();
+      if (!context) return false;
+
+      try {
+        if (context.state === 'suspended') {
+          await context.resume();
+        }
+
+        const arrayBuffer = await audioBlob.arrayBuffer();
+        const decodedAudio = await decodeAudioData(context, arrayBuffer);
+        stopSilvestreBufferSource();
+
+        const source = context.createBufferSource();
+        source.buffer = decodedAudio;
+        source.connect(context.destination);
+        silvestreBufferSourceRef.current = source;
+
+        source.onended = () => {
+          if (silvestreBufferSourceRef.current !== source) return;
+          silvestreBufferSourceRef.current = null;
+          try {
+            source.disconnect();
+          } catch (error) {
+            // noop
+          }
+          if (silvestreAudioUrlRef.current === audioUrl) {
+            URL.revokeObjectURL(audioUrl);
+            silvestreAudioUrlRef.current = null;
+          }
+          silvestreAudioRef.current = null;
+          setIsSilvestreResponding(false);
+          setIsSilvestrePlaying(false);
+          setShowSilvestreCoins(true);
+          setTimeout(() => setShowSilvestreCoins(false), 1200);
+          setPendingSilvestreAudioUrl(null);
+        };
+
+        source.start(0);
+        setIsSilvestrePlaying(true);
+        setIsSilvestreResponding(false);
+        setPendingSilvestreAudioUrl(null);
+        setMicError('');
+        return true;
+      } catch (error) {
+        console.error('[Silvestre Voice] audio context fallback error:', error);
+        stopSilvestreBufferSource();
+        return false;
+      }
+    },
+    [decodeAudioData, getOrCreateSilvestreAudioContext, stopSilvestreBufferSource]
+  );
+
+  const stopSilvestreAudio = useCallback(() => {
+    stopSilvestreBufferSource();
+    if (silvestreAudioRef.current) {
+      silvestreAudioRef.current.pause();
+      silvestreAudioRef.current.src = '';
+      silvestreAudioRef.current = null;
+    }
+    if (silvestreAudioUrlRef.current) {
+      URL.revokeObjectURL(silvestreAudioUrlRef.current);
+      silvestreAudioUrlRef.current = null;
+    }
+    setIsSilvestrePlaying(false);
+    setPendingSilvestreAudioUrl(null);
+  }, [stopSilvestreBufferSource]);
+
+  const stopSilvestreResponse = useCallback(() => {
+    if (silvestreAbortRef.current) {
+      silvestreAbortRef.current.abort();
+      silvestreAbortRef.current = null;
+    }
+    silvestreRequestIdRef.current += 1;
+    stopSilvestreAudio();
+    setIsSilvestreFetching(false);
+    setIsSilvestreResponding(false);
+  }, [stopSilvestreAudio]);
 
   useEffect(() => {
     let wasPlaying = false;
@@ -499,6 +621,7 @@ export const useSilvestreVoice = () => {
         if (silvestreAbortRef.current) {
           silvestreAbortRef.current.abort();
         }
+        primeSilvestreAudioPlayback();
         stopSilvestreAudio();
         const controller = new AbortController();
         silvestreAbortRef.current = controller;
@@ -671,6 +794,25 @@ export const useSilvestreVoice = () => {
           }
         } catch (playError) {
           if (playError?.name === 'NotAllowedError') {
+            audio.pause();
+            audio.src = '';
+            silvestreAudioRef.current = null;
+            const playedThroughContext = await playAudioBlobThroughContext(audioBlob, audioUrl);
+            if (playedThroughContext) {
+              if (debugTimingEnabled) {
+                console.info('[Silvestre Timing]', {
+                  source,
+                  mode_id,
+                  ok: true,
+                  autoplayBlocked: false,
+                  playbackMode: 'audio-context-fallback',
+                  requestToPlayableMs: roundMs(getNowMs() - requestStartedAt),
+                  audioBytes: audioBlob.size ?? null,
+                  candidates: timingCandidates,
+                });
+              }
+              return true;
+            }
             if (debugTimingEnabled) {
               console.info('[Silvestre Timing]', {
                 source,
@@ -744,7 +886,7 @@ export const useSilvestreVoice = () => {
         return false;
       }
     },
-    [recordObraChat, stopSilvestreAudio, user]
+    [playAudioBlobThroughContext, primeSilvestreAudioPlayback, recordObraChat, stopSilvestreAudio, user]
   );
 
   const stopSilvestreListening = useCallback(
@@ -771,6 +913,7 @@ export const useSilvestreVoice = () => {
 
   const handlePlayPendingAudio = useCallback(async () => {
     if (!pendingSilvestreAudioUrl) return;
+    primeSilvestreAudioPlayback();
     let audio = silvestreAudioRef.current;
     if (!audio || silvestreAudioUrlRef.current !== pendingSilvestreAudioUrl) {
       audio = new Audio(pendingSilvestreAudioUrl);
@@ -801,12 +944,13 @@ export const useSilvestreVoice = () => {
       console.error('[Silvestre Voice] play pending error:', err);
       setMicError('No pudimos reproducir el audio. Intenta tocar de nuevo.');
     }
-  }, [pendingSilvestreAudioUrl]);
+  }, [pendingSilvestreAudioUrl, primeSilvestreAudioPlayback]);
 
   const handleOpenSilvestreChat = useCallback((options = {}) => {
     if (typeof window === 'undefined') {
       return;
     }
+    primeSilvestreAudioPlayback();
     if (options && typeof options === 'object') {
       modeRef.current = options.modeId || options.selectedMode || null;
     } else if (typeof options === 'string') {
@@ -906,6 +1050,7 @@ export const useSilvestreVoice = () => {
     isSilvestreFetching,
     micPromptVisible,
     pendingSilvestreAudioUrl,
+    primeSilvestreAudioPlayback,
     sendTranscript,
     stopSilvestreListening,
   ]);
@@ -925,6 +1070,7 @@ export const useSilvestreVoice = () => {
         typeof options.userName === 'string' && options.userName.trim()
           ? options.userName.trim()
           : null;
+      primeSilvestreAudioPlayback();
       setTranscript(starter);
       await sendTranscript(starter, { source: 'preset', modeId, userName });
 
@@ -941,7 +1087,7 @@ export const useSilvestreVoice = () => {
         );
       }
     },
-    [isListening, sendTranscript, stopSilvestreListening]
+    [isListening, primeSilvestreAudioPlayback, sendTranscript, stopSilvestreListening]
   );
 
   const resetSilvestreQuestions = useCallback(() => {

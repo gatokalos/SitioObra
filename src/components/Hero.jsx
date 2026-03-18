@@ -18,6 +18,7 @@ import {
   readHeroAudioEnabledPreference,
   writeHeroAudioEnabledPreference,
   pauseHeroAmbient,
+  resumeHeroAmbientPlayback,
 } from '@/lib/heroAmbientAudio';
 import { createPortalLaunchState } from '@/lib/portalNavigation';
 import { safeSetItem } from '@/lib/safeStorage';
@@ -102,7 +103,7 @@ const Hero = () => {
   const targetWidth = primaryCtaWidth ?? undefined;
   const navigate = useNavigate();
   const location = useLocation();
-  const { user } = useAuth();
+  const { user, loading: isAuthLoading } = useAuth();
   const { toast } = useToast();
 
   useEffect(() => {
@@ -348,12 +349,21 @@ const Hero = () => {
   }, [isHeroAudioMuted]);
 
   useEffect(() => {
+    if (isAuthLoading) {
+      return undefined;
+    }
+
     const preferredEnabled = readHeroAudioEnabledPreference();
-    const defaultMuted = user ? isMobileViewport : true;
-    const nextMuted = preferredEnabled == null ? defaultMuted : !preferredEnabled;
-    if (preferredEnabled == null) {
+    const nextMuted = user
+      ? preferredEnabled == null
+        ? isMobileViewport
+        : !preferredEnabled
+      : true;
+
+    if (user && preferredEnabled == null) {
       writeHeroAudioEnabledPreference(!nextMuted);
     }
+
     heroAudioMutedRef.current = nextMuted;
     setIsHeroAudioMuted(nextMuted);
     setIsHeroAudioReady(false);
@@ -361,15 +371,16 @@ const Hero = () => {
 
     const audio = getHeroAmbientAudio();
     if (audio) {
+      audio.muted = nextMuted;
       audio.volume = nextMuted ? 0 : HERO_LOGGED_IN_AUDIO_VOLUME;
       if (nextMuted && !audio.paused) {
         audio.pause();
       } else if (!nextMuted && audio.paused) {
-        void audio.play().catch(() => {});
+        void resumeHeroAmbientPlayback({ targetVolume: HERO_LOGGED_IN_AUDIO_VOLUME });
       }
     }
     return undefined;
-  }, [isMobileViewport, user]);
+  }, [isAuthLoading, isMobileViewport, user]);
 
   // Sincroniza heroAudioMutedRef con el estado compartido de la lib
   // para que el idle-retry no intente reproducir audio muteado desde Header
@@ -382,6 +393,18 @@ const Hero = () => {
   }, []);
 
   useEffect(() => {
+    if (isAuthLoading || !user) {
+      const audio = getHeroAmbientAudio();
+      if (audio) {
+        audio.pause();
+        audio.muted = true;
+        audio.volume = 0;
+      }
+      setIsHeroAudioReady(Boolean(audio?.readyState >= 2));
+      setIsHeroAudioPlaying(false);
+      return undefined;
+    }
+
     const audio = getHeroAmbientAudio();
     if (!audio) {
       setIsHeroAudioPlaying(false);
@@ -430,12 +453,13 @@ const Hero = () => {
       if (!fromUserGesture && now - lastHeroAudioPlayAttemptRef.current < HERO_AUDIO_PLAY_RETRY_MS) return;
 
       lastHeroAudioPlayAttemptRef.current = now;
-      try {
-        await audio.play();
-        audioGestureUnlockRef.current = true;
-      } catch {
-        audioGestureUnlockRef.current = false;
-      }
+      const playbackStarted = await resumeHeroAmbientPlayback({
+        targetVolume: audio.volume > HERO_AUDIO_MIN_AUDIBLE_VOLUME
+          ? audio.volume
+          : HERO_LOGGED_IN_AUDIO_VOLUME,
+        allowMutedWarmup: !fromUserGesture,
+      });
+      audioGestureUnlockRef.current = playbackStarted;
     };
 
     const updateAudioByScroll = () => {
@@ -450,10 +474,12 @@ const Hero = () => {
         if (!audio.paused) {
           audio.pause();
         }
+        audio.muted = true;
         audio.volume = 0;
         return;
       }
       const targetVolume = getTargetVolumeByHeroPosition();
+      audio.muted = false;
       audio.volume = targetVolume;
 
       if (targetVolume <= HERO_AUDIO_MIN_AUDIBLE_VOLUME) {
@@ -478,6 +504,7 @@ const Hero = () => {
       requiresInteractionAfterBackground = false;
       if (audioGestureUnlockRef.current) return;
       const targetVolume = getTargetVolumeByHeroPosition();
+      audio.muted = false;
       audio.volume = targetVolume;
       if (targetVolume <= HERO_AUDIO_MIN_AUDIBLE_VOLUME) return;
       void attemptPlay({ fromUserGesture: true });
@@ -489,6 +516,7 @@ const Hero = () => {
         requiresInteractionAfterBackground = true;
       }
       audio.pause();
+      audio.muted = heroAudioMutedRef.current;
       audio.volume = HERO_LOGGED_IN_AUDIO_VOLUME;
     };
 
@@ -584,6 +612,7 @@ const Hero = () => {
     };
 
     setIsHeroAudioReady(audio.readyState >= 2);
+    audio.muted = heroAudioMutedRef.current;
     audio.volume = heroAudioMutedRef.current ? 0 : HERO_LOGGED_IN_AUDIO_VOLUME;
     setIsHeroAudioPlaying(!audio.paused && !heroAudioMutedRef.current);
 
@@ -648,7 +677,7 @@ const Hero = () => {
         delete document.documentElement.dataset.gatoHeroAmbientHold;
       }
     };
-  }, [getTargetVolumeByHeroPosition, isHeroInViewport, user]);
+  }, [getTargetVolumeByHeroPosition, isAuthLoading, isHeroInViewport, user]);
 
   const shouldRenderInlineHero = Boolean(user);
 

@@ -1,8 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/SupabaseAuthContext';
-import LoginOverlay from '@/components/ContributionModal/LoginOverlay';
-import PortalAuthButton from '@/components/PortalAuthButton';
 import {
   setBienvenidaTransmediaIntent,
   getBienvenidaFlowGoal,
@@ -22,7 +20,6 @@ const Bienvenida = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const { user } = useAuth();
-  const [showLoginOverlay, setShowLoginOverlay] = useState(false);
   const baseUrl = useMemo(() => {
     const raw = import.meta.env.VITE_BIENVENIDA_URL ?? import.meta.env.VITE_ORACULO_URL ?? '';
     return raw ? raw.replace(/\/+$/, '') : '';
@@ -80,16 +77,6 @@ const Bienvenida = () => {
     navigate(returnPath, { replace: true });
   }, [navigate, user]);
 
-  const handleOpenLogin = useCallback(() => {
-    if (!user) {
-      setShowLoginOverlay(true);
-    }
-  }, [user]);
-
-  const handleCloseLogin = useCallback(() => {
-    setShowLoginOverlay(false);
-  }, []);
-
   useEffect(() => {
     const handleMessage = (event) => {
       if (!event?.data) return;
@@ -142,17 +129,6 @@ const Bienvenida = () => {
           </div>
         )}
       </div>
-      <div className="absolute left-6 top-6 z-10">
-        <PortalAuthButton onOpenLogin={handleOpenLogin} />
-      </div>
-      <button
-        type="button"
-        onClick={handleFinish}
-        className="absolute right-6 top-6 z-10 rounded-full border border-white/20 bg-black/60 px-4 py-2 text-xs uppercase tracking-[0.3em] text-white hover:bg-black/80"
-      >
-        Cerrar
-      </button>
-      {showLoginOverlay ? <LoginOverlay onClose={handleCloseLogin} /> : null}
     </div>
   );
 };
