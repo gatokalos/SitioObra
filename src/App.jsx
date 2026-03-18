@@ -384,7 +384,7 @@ function App() {
     const restoreToken =
       typeof location.state?.portalRestoreToken === 'string' && location.state.portalRestoreToken.trim()
         ? location.state.portalRestoreToken
-        : `${location.pathname}${location.search}${location.hash}:${restoreY}`;
+        : `${location.pathname}${location.search}:${restoreY}`;
 
     if (appliedPortalRestoreTokenRef.current === restoreToken) {
       return undefined;
