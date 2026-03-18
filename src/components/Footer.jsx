@@ -43,7 +43,7 @@ const Footer = ({ showTransmediaNav = true }) => {
                 #GatoEncerrado
               </span>
               <p className="text-slate-400 leading-relaxed mb-6 max-w-md font-light">
-                Un universo narrativo que vive en el teatro y se expande en historias, objetos, encuentros y proyectos de impacto social.
+                Un ecosistema narrativo transmedia que convierte al espectador en participante activo mediante experiencias escénicas, digitales e interactivas, donde cada forma de la obra es una puerta distinta hacia una misma pregunta emocional.
               </p>
               <div className="flex gap-2">
                 <Button variant="ghost" size="icon" onClick={() => handleSocialClick(instagramUrl)} className="text-slate-400 hover:text-white hover:bg-white/10"><Instagram size={20} /></Button>

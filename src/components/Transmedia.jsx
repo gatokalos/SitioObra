@@ -785,24 +785,25 @@ const Transmedia = ({ allianceOnlyMode = false }) => {
     };
   }, [focusShowcaseCard, location, showcaseDefinitions]);
 
+  // Ref para evitar que el efecto reabra la vitrina cuando focusLockShowcaseId
+  // cambia a null al cerrar (el hash sigue igual, solo cambió la var de estado).
+  const lastHashEffectRef = useRef(null);
+
   useEffect(() => {
     if (typeof window === 'undefined') return;
     if (getFocusParamFromLocation(location)) return;
     const hashAnchor = getHashAnchor(location.hash);
     const showcaseId = resolveShowcaseFromHash(hashAnchor, showcaseDefinitions);
-    if (showcaseId === null) {
-      if (normalizeBridgeKey(hashAnchor) === 'transmedia') {
-        document.getElementById('transmedia')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      }
-      return;
-    }
+    // HashAnchorScroller en App.jsx maneja el scroll a #transmedia;
+    // aquí solo gestionamos estado interno (qué vitrina abrir).
+    if (showcaseId === null) return;
     if (!showcaseId) return;
+    // Solo actuar cuando el hash realmente cambió, no cuando focusLockShowcaseId
+    // cambia a null al cerrar (lo que causaría reabrir la vitrina).
+    if (lastHashEffectRef.current === location.hash) return;
+    lastHashEffectRef.current = location.hash;
     if (focusLockShowcaseId) {
       releaseDesktopFocusLock();
-    }
-    const section = document.getElementById('transmedia');
-    if (section) {
-      section.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
     openMiniverseById(showcaseId);
   }, [focusLockShowcaseId, location, openMiniverseById, releaseDesktopFocusLock]);
