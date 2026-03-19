@@ -844,7 +844,7 @@ export const ProvocaSection = () => {
                       onChange={(event) => setVoiceDraft(event.target.value)}
                       rows={3}
                       className="form-surface w-full px-4 py-3 resize-none"
-                      placeholder="Cuéntanos cómo cambió tu forma de mirar, sentir o recordar una obra..."
+                      placeholder="Comparte cómo cambió tu forma de mirar, sentir o recordar…"
                     />
                     <div className="mt-3 grid gap-3 sm:grid-cols-2">
                       <input

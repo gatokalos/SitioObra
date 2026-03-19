@@ -7,6 +7,10 @@ const CAUSE_TO_BAR_KEY = {
 };
 const IMPACT_SYNC_MEDIA_QUERY =
   '(min-width: 1024px), ((min-width: 768px) and (orientation: landscape))';
+const DEFAULT_CAUSE_OPEN_ID = 'residencias';
+
+const resolveDefaultCauseId = (items = []) =>
+  items.find((item) => item?.id === DEFAULT_CAUSE_OPEN_ID)?.id ?? items?.[0]?.id ?? null;
 
 const CauseImpactAccordion = ({ items, onOpenImagePreview }) => {
   const [isDesktopViewport, setIsDesktopViewport] = useState(
@@ -18,7 +22,7 @@ const CauseImpactAccordion = ({ items, onOpenImagePreview }) => {
       typeof window.matchMedia === 'function' &&
       window.matchMedia(IMPACT_SYNC_MEDIA_QUERY).matches
   );
-  const [openCauseId, setOpenCauseId] = useState(() => items?.[0]?.id ?? null);
+  const [openCauseId, setOpenCauseId] = useState(() => resolveDefaultCauseId(items));
   const [activeSlideById, setActiveSlideById] = useState({});
   const hasAutoOpenedOnceRef = useRef(false);
 
@@ -69,10 +73,10 @@ const CauseImpactAccordion = ({ items, onOpenImagePreview }) => {
   }, []);
 
   useEffect(() => {
-    const firstId = items?.[0]?.id;
-    if (!firstId) return;
+    const defaultId = resolveDefaultCauseId(items);
+    if (!defaultId) return;
     if (hasAutoOpenedOnceRef.current) return;
-    setOpenCauseId(firstId);
+    setOpenCauseId(defaultId);
     hasAutoOpenedOnceRef.current = true;
   }, [items]);
 

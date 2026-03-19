@@ -277,6 +277,9 @@ const HashAnchorScroller = () => {
     const anchorId = decodeURIComponent(hashAnchor.slice(1));
     let retries = 0;
     let timerId = null;
+    let userHasScrolled = false;
+
+    const onUserScroll = () => { userHasScrolled = true; };
 
     const scrollToAnchor = () => {
       const target = document.getElementById(anchorId);
@@ -285,17 +288,39 @@ const HashAnchorScroller = () => {
       return true;
     };
 
-    if (scrollToAnchor()) return undefined;
+    const opts = { passive: true, once: true };
+    window.addEventListener('wheel', onUserScroll, opts);
+    window.addEventListener('touchmove', onUserScroll, opts);
 
-    timerId = window.setInterval(() => {
-      retries += 1;
-      if (scrollToAnchor() || retries >= 20) {
-        window.clearInterval(timerId);
-      }
-    }, 100);
+    if (!scrollToAnchor()) {
+      // Element not in DOM yet — retry until found (up to 2s)
+      timerId = window.setInterval(() => {
+        retries += 1;
+        if (scrollToAnchor() || retries >= 20) {
+          window.clearInterval(timerId);
+        }
+      }, 100);
+    } else {
+      // Element found but deferred sections above may shift layout — watch for drift
+      timerId = window.setInterval(() => {
+        retries += 1;
+        if (userHasScrolled || retries >= 50) {
+          window.clearInterval(timerId);
+          return;
+        }
+        const target = document.getElementById(anchorId);
+        if (!target) return;
+        const { top } = target.getBoundingClientRect();
+        if (top < -80) {
+          target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+      }, 100);
+    }
 
     return () => {
       if (timerId) window.clearInterval(timerId);
+      window.removeEventListener('wheel', onUserScroll);
+      window.removeEventListener('touchmove', onUserScroll);
     };
   }, [location.hash, location.pathname, location.state]);
 
