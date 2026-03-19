@@ -311,7 +311,7 @@ const HashAnchorScroller = () => {
         const target = document.getElementById(anchorId);
         if (!target) return;
         const { top } = target.getBoundingClientRect();
-        if (top < -80) {
+        if (Math.abs(top) > 80) {
           target.scrollIntoView({ behavior: 'smooth', block: 'start' });
         }
       }, 100);
