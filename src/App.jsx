@@ -1,4 +1,4 @@
-import React, { Suspense, lazy, useCallback, useEffect, useRef, useState } from 'react';
+import React, { Suspense, lazy, useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { Route, Routes, useLocation } from 'react-router-dom';
 import { Toaster } from '@/components/ui/toaster';
 import Header from '@/components/Header';
@@ -220,7 +220,7 @@ const HeroBackground = ({ isAuthenticated = false }) => {
               className="absolute inset-x-0 top-0 h-[clamp(9rem,28vh,18rem)]"
               style={{
                 background:
-                  'linear-gradient(180deg, rgba(2,3,10,0.98) 0%, rgba(2,3,10,0.94) 26%, rgba(2,3,10,0.78) 52%, rgba(2,3,10,0.42) 78%, rgba(2,3,10,0) 100%)',
+                  'linear-gradient(rgba(2, 3, 10, 0.98) 0%, rgba(2, 3, 10, 0.94) 10%, rgba(2, 3, 10, 0.78) 23%, rgba(2, 3, 10, 0.22) 68%, rgba(2, 3, 10, 0) 100%)',
               }}
             />
             <img
@@ -399,7 +399,7 @@ function App() {
     return () => window.cancelAnimationFrame(rafId);
   }, [location.hash, location.pathname]);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (typeof window === 'undefined') return undefined;
     if (isPortalRoute) return undefined;
 
@@ -415,38 +415,29 @@ function App() {
       return undefined;
     }
     appliedPortalRestoreTokenRef.current = restoreToken;
-    let cancelled = false;
-    let userInteracted = false;
-    const timers = [];
     const safeY = Math.max(0, restoreY);
 
-    const restore = () => {
-      if (cancelled || userInteracted) return;
-      window.scrollTo({
-        top: safeY,
-        left: 0,
-        behavior: 'auto',
-      });
-    };
+    // Snap before first paint — browser never renders the page at Y=0
+    window.scrollTo({ top: safeY, left: 0, behavior: 'auto' });
 
-    const markUserInteracted = () => {
-      userInteracted = true;
-    };
-
-    const kickoffId = window.requestAnimationFrame(restore);
-    const settleDelays = [120, 280, 520, 860, 1200];
-    settleDelays.forEach((delay) => {
-      const id = window.setTimeout(restore, delay);
-      timers.push(id);
-    });
+    // Settle corrections for deferred-section layout shifts (run after paint)
+    let userInteracted = false;
+    const timers = [];
+    const markUserInteracted = () => { userInteracted = true; };
 
     window.addEventListener('touchstart', markUserInteracted, { passive: true });
     window.addEventListener('wheel', markUserInteracted, { passive: true });
     window.addEventListener('keydown', markUserInteracted, { passive: true });
 
+    const settleDelays = [280, 600, 1100];
+    settleDelays.forEach((delay) => {
+      const id = window.setTimeout(() => {
+        if (!userInteracted) window.scrollTo({ top: safeY, left: 0, behavior: 'auto' });
+      }, delay);
+      timers.push(id);
+    });
+
     return () => {
-      cancelled = true;
-      window.cancelAnimationFrame(kickoffId);
       timers.forEach((id) => window.clearTimeout(id));
       window.removeEventListener('touchstart', markUserInteracted);
       window.removeEventListener('wheel', markUserInteracted);

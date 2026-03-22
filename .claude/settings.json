@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(grep -rn \"dataset.miniverseOpen\\\\|dataset.gatoShowcaseOpen\\\\|data-gato-showcase\\\\|data-miniverse\" /Users/gatoenigmatico/gatoencerrado-ai/landing/SitioObra/src --include=*.jsx --include=*.js --include=*.css)",
+      "Bash(sips -s format png \"/Users/gatoenigmatico/Desktop/Postulación EFIARTES/anexos/INDAUTOR Obra.pdf\" --out \"/Users/gatoenigmatico/Desktop/Postulación EFIARTES/anexos/INDAUTOR_Obra.png\")"
+    ],
+    "additionalDirectories": [
+      "/Users/gatoenigmatico/Desktop/Postulación EFIARTES"
+    ]
+  }
+}

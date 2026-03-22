@@ -1496,10 +1496,10 @@ export const CAUSE_ACCORDION = [
   imageAlt: 'Captura de la app Causa Social en escuelas (versión beta).',
   imageLabel: 'Capturas beta de la app',
     imageUrls: [
-      'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/causa%20social/app_estarbien1.jpg',
-      'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/causa%20social/app_estarbien2.jpg',
-       'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/causa%20social/app_estarbien3.jpg',
-      'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/causa%20social/app_estarbien.4.jpg',
+      'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/causa%20social/app%20causa%20social/Sofia1.jpg',
+      'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/causa%20social/app%20causa%20social/Luis.jpg',
+       'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/causa%20social/app%20causa%20social/Andres1.jpg',
+      'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/causa%20social/app%20causa%20social/Ximena.jpg',
 
 
     ],
