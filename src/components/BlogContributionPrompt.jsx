@@ -65,7 +65,6 @@ const BlogContributionPrompt = ({ onRevealTransmedia = null }) => {
       onRevealTransmedia({
         trigger: 'intermedio-continuar',
         targetId: 'transmedia',
-        eventKey: 'showcase_boost:landing_intermedio',
       });
       return;
     }

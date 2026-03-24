@@ -123,6 +123,17 @@ const useTransmediaCredits = ({ isAuthenticated, userId, toast }) => {
         JSON.stringify(buildShowcaseEnergyFromBoosts(baseEnergyByShowcase, boosts))
       );
       safeSetItem('gatoencerrado:gatokens-available', String(safeAvailable));
+
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(
+          new CustomEvent('gatoencerrado:gatokens-balance-update', {
+            detail: {
+              balance: safeAvailable,
+              state,
+            },
+          })
+        );
+      }
     },
     [baseEnergyByShowcase, initialAvailableGATokens]
   );

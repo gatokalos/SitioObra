@@ -102,7 +102,7 @@ const AlianzaSocial = () => {
                   </button>
                 </div>
                 <h3 className="font-display text-3xl text-slate-100">
-                  Déjanos tu huella: $50 MXN al mes
+                  Déjanos tu huella
                 </h3>
                 <div className="space-y-4 text-slate-300/80 leading-relaxed font-light">
                   <p>

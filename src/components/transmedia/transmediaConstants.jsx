@@ -34,7 +34,7 @@ export const GAT_COSTS = {
   tazaActivation: 90,
   movimientoRuta: 280,
 };
-export const INITIAL_GAT_BALANCE = 150;
+export const INITIAL_GAT_BALANCE = 0;
 export const OBRA_VOICE_MIN_GAT = 25;
 export const OBRA_VOICE_PRECARE_TURN_THRESHOLD = 2;
 export const OBRA_VOICE_PRECARE_THRESHOLD_GAT = OBRA_VOICE_MIN_GAT * OBRA_VOICE_PRECARE_TURN_THRESHOLD;
@@ -354,13 +354,6 @@ export const buildShowcaseEnergyState = (availableGAT) => {
       label: 'Energía agotada',
       amount: '0 GAT',
       className: 'text-rose-300/95',
-    };
-  }
-  if (safeAvailable === INITIAL_GAT_BALANCE) {
-    return {
-      label: 'Energía inicial',
-      amount: `${safeAvailable} GAT`,
-      className: 'text-amber-200/90',
     };
   }
   return {

@@ -76,7 +76,7 @@ const useShowcaseGuard = ({
       // Guardrail solo cuando se conoce el balance y no alcanza para un turno más
       if (!isAuthenticated && Number.isFinite(availableGATokens) && remainingBeforeSpend < OBRA_VOICE_MIN_GAT) {
         showGuardrailPrecareOnce({
-          message: 'Agotaste tu energía de cortesía en esta vitrina. Activa tu huella para continuar.',
+          message: 'Agotaste tu energía disponible en esta vitrina. Activa tu huella para continuar.',
           actionLabel,
           remaining: remainingBeforeSpend,
         });

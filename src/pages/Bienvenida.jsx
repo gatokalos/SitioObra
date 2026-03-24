@@ -95,6 +95,20 @@ const Bienvenida = () => {
         setCabinaReached(true);
         return;
       }
+      if (type === 'bienvenida:gatokens-update') {
+        const value = event.data?.gatokens;
+        if (typeof value === 'number' && value > 0) {
+          try {
+            window.localStorage.setItem('gatoencerrado:gatokens-available', String(value));
+            window.dispatchEvent(
+              new CustomEvent('gatoencerrado:gatokens-balance-update', {
+                detail: { balance: value, source: 'bienvenida' },
+              })
+            );
+          } catch {}
+        }
+        return;
+      }
       if (type === 'bienvenida:close' || type === 'bienvenida:done') {
         handleFinish();
         return;
@@ -126,7 +140,7 @@ const Bienvenida = () => {
             title="Bienvenida"
             src={iframeSrc}
             className="h-full w-full border-0"
-            allow="camera; microphone; fullscreen"
+            allow="camera; microphone; fullscreen; web-share; clipboard-write"
           />
         ) : (
           <div className="h-full w-full flex items-center justify-center text-slate-200">

@@ -2,7 +2,7 @@ import { ensureAnonId } from '@/lib/identity';
 import { supabase } from '@/lib/supabaseClient';
 
 const DEFAULT_STATE = {
-  available_tokens: 150,
+  available_tokens: 0,
   sonoro_spent: false,
   graphic_spent: false,
   novela_questions: 0,
@@ -80,4 +80,3 @@ export async function registerTransmediaCreditEvent({
     error: null,
   };
 }
-

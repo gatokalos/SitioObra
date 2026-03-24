@@ -1,7 +1,7 @@
 // SitioObra/src/components/CallToAction.jsx
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useInView, useReducedMotion } from 'framer-motion';
-import { Drama, HeartHandshake, Mail, MessageCircle, Palette, PawPrint, Smartphone, Ticket, Volume2, VolumeX } from 'lucide-react';
+import { Drama, HeartHandshake, Mail, MessageCircle, Palette, PawPrint, Smartphone, Sparkles, Ticket, Volume2, VolumeX } from 'lucide-react';
 import { apiFetch } from '@/lib/apiClient';
 import { supabase } from '@/lib/supabaseClient';
 import { useAuth } from '@/contexts/SupabaseAuthContext';
@@ -10,6 +10,7 @@ import HuellaEmbeddedCheckout from '@/components/HuellaEmbeddedCheckout';
 import { createEmbeddedSubscription, startCheckoutFallback } from '@/lib/huellaCheckout';
 import { clearBienvenidaFlowGoal, clearBienvenidaForceOnLogin } from '@/lib/bienvenida';
 import { safeGetItem, safeRemoveItem, safeSetItem } from '@/lib/safeStorage';
+import { INITIAL_GAT_BALANCE, readStoredInt } from '@/components/transmedia/transmediaConstants';
 
 const SUBSCRIPTION_PRICE_ID = import.meta.env.VITE_STRIPE_SUBSCRIPTION_PRICE_ID;
 const SESSIONS_PER_SUB = 6;
@@ -38,6 +39,7 @@ const SHOULD_PREVIEW_AFTERCARE =
   new URLSearchParams(window.location.search).get('aftercare') === '1';
 const COUNTER_SOUND_MILESTONES = new Set([17, 51, EXPANSION_START]);
 const LOGIN_RETURN_KEY = 'gatoencerrado:login-return';
+const GAT_BALANCE_STORAGE_KEY = 'gatoencerrado:gatokens-available';
 
 function clamp(value, min, max) {
   return Math.max(min, Math.min(max, value));
@@ -57,6 +59,11 @@ function formatFirstHuellaDate(value) {
   } catch {
     return null;
   }
+}
+
+function readCurrentGatBalance() {
+  const balance = readStoredInt(GAT_BALANCE_STORAGE_KEY, INITIAL_GAT_BALANCE);
+  return Number.isFinite(balance) ? Math.max(Math.trunc(balance), 0) : INITIAL_GAT_BALANCE;
 }
 
 function deriveImpactStats(totalSupport) {
@@ -275,6 +282,7 @@ const CallToAction = ({ barsIntroDelayMs = 0 }) => {
   const [isTicketSupportVideoAvailable, setIsTicketSupportVideoAvailable] = useState(true);
   const [isCounterSoundEnabled, setIsCounterSoundEnabled] = useState(true);
   const [isLoginPulseActive, setIsLoginPulseActive] = useState(false);
+  const [gatBalance, setGatBalance] = useState(() => readCurrentGatBalance());
   const hasRunBarSequenceRef = useRef(false);
   const aftercareTimeoutRef = useRef(null);
   const reachedExpansionRef = useRef(false);
@@ -416,6 +424,45 @@ const CallToAction = ({ barsIntroDelayMs = 0 }) => {
       isMounted = false;
     };
   }, [user?.id]);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return undefined;
+
+    const syncGatBalance = () => {
+      setGatBalance(readCurrentGatBalance());
+    };
+
+    const handleStorage = (event) => {
+      if (event?.key && event.key !== GAT_BALANCE_STORAGE_KEY) return;
+      syncGatBalance();
+    };
+
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        syncGatBalance();
+      }
+    };
+
+    syncGatBalance();
+    window.addEventListener('storage', handleStorage);
+    window.addEventListener('focus', syncGatBalance);
+    window.addEventListener('gatoencerrado:external-credit-event', syncGatBalance);
+    window.addEventListener('gatoencerrado:gatokens-balance-update', syncGatBalance);
+
+    if (typeof document !== 'undefined') {
+      document.addEventListener('visibilitychange', handleVisibilityChange);
+    }
+
+    return () => {
+      window.removeEventListener('storage', handleStorage);
+      window.removeEventListener('focus', syncGatBalance);
+      window.removeEventListener('gatoencerrado:external-credit-event', syncGatBalance);
+      window.removeEventListener('gatoencerrado:gatokens-balance-update', syncGatBalance);
+      if (typeof document !== 'undefined') {
+        document.removeEventListener('visibilitychange', handleVisibilityChange);
+      }
+    };
+  }, []);
 
   useEffect(() => {
     if (!user || typeof window === 'undefined') return;
@@ -1024,6 +1071,13 @@ const CallToAction = ({ barsIntroDelayMs = 0 }) => {
 
         <div className="mt-1 space-y-3">
           <div className="space-y-3">
+            <div className="flex flex-wrap items-center gap-2">
+              <div className="inline-flex items-center gap-2 rounded-full border border-cyan-300/25 bg-cyan-400/10 px-3 py-1.5 text-[0.68rem] font-semibold uppercase tracking-[0.24em] text-cyan-100/90 shadow-[0_0_18px_rgba(34,211,238,0.14)]">
+                <Sparkles size={12} className="text-cyan-200" />
+                <span>Saldo actual</span>
+                <span className="tabular-nums text-white">{gatBalance.toLocaleString('es-MX')} GAT</span>
+              </div>
+            </div>
             <button
               type="button"
               onClick={() => setShowTicketSupport((prev) => !prev)}
@@ -1089,7 +1143,7 @@ Si asististe a la obra, puedes convertir ese momento en huella.
                   ? 'Tu huella ya está activa'
                   : loading
                     ? 'Abriendo confirmación…'
-                    : 'Activar mi huella mensual'}
+                    : 'Activar mi huella'}
             </button>
           </div>
 

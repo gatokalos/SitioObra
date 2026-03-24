@@ -12,18 +12,12 @@ import { useEmailRedirect } from '@/hooks/useEmailRedirect';
 import LoginToast from '@/components/LoginToast';
 import { useAuth } from '@/contexts/SupabaseAuthContext';
 import { safeGetItem, safeSetItem } from '@/lib/safeStorage';
-import {
-  createTransmediaIdempotencyKey,
-  registerTransmediaCreditEvent,
-} from '@/services/transmediaCreditsService';
 
 const pageTitle = '#GatoEncerrado - Obra de Teatro transmedia';
 const pageDescription =
   'La historia de alguien que desaparece… y deja una huella emocional. Una experiencia teatral única que explora múltiples formatos transmediaes.';
 const TRANSMEDIA_UNLOCK_STORAGE_KEY = 'gatoencerrado:transmedia-unlocked:v1';
-const TRANSMEDIA_UNLOCK_REWARD_AMOUNT = 7;
 const TRANSMEDIA_FOCUS_KEYS = ['focus', 'appId', 'app_id', 'recommended_app_id'];
-const TRANSMEDIA_DEEPLINK_REWARD_EVENT_KEY = 'showcase_boost:landing_deeplink';
 const IS_UI_LAB_ENABLED =
   import.meta.env.DEV ||
   ['1', 'true', 'yes', 'on'].includes(String(import.meta.env.VITE_UI_LAB || '').toLowerCase());
@@ -39,6 +33,7 @@ const Instagram = lazy(() => import('@/components/Instagram'));
 const BlogContributionPrompt = lazy(() => import('@/components/BlogContributionPrompt'));
 const Blog = lazy(() => import('@/components/Blog'));
 const Bienvenida = lazy(() => import('@/pages/Bienvenida'));
+const Autoficcion = lazy(() => import('@/pages/Autoficcion'));
 const PortalLiteratura = lazy(() => import('@/pages/PortalLiteratura'));
 const PortalArtesanias = lazy(() => import('@/pages/PortalArtesanias'));
 const PortalVoz = lazy(() => import('@/pages/PortalVoz'));
@@ -500,47 +495,11 @@ function App() {
     }, 100);
   }, []);
 
-  const rewardTransmediaReveal = useCallback(async (eventKey, metadata = {}) => {
-    if (!eventKey) return;
-    const { error, state, duplicate } = await registerTransmediaCreditEvent({
-      eventKey,
-      amount: TRANSMEDIA_UNLOCK_REWARD_AMOUNT,
-      oncePerIdentity: true,
-      idempotencyKey: createTransmediaIdempotencyKey(eventKey),
-      metadata: {
-        source: 'landing_transmedia_reveal',
-        ...metadata,
-      },
-    });
-    if (error) {
-      console.warn('[TransmediaReveal] No se pudo registrar premio por detonador:', { eventKey, error });
-      return;
-    }
-    if (typeof window !== 'undefined') {
-      window.dispatchEvent(
-        new CustomEvent('gatoencerrado:external-credit-event', {
-          detail: {
-            eventKey,
-            duplicate: Boolean(duplicate),
-            state: state && typeof state === 'object' ? state : null,
-          },
-        })
-      );
-    }
-  }, []);
-
   const handleRevealTransmedia = useCallback(
-    ({ trigger = 'unknown', targetId = 'transmedia', eventKey = null } = {}) => {
+    ({ targetId = 'transmedia' } = {}) => {
       if (!isAuthenticated && !hasGuestUnlockedTransmedia) {
         safeSetItem(TRANSMEDIA_UNLOCK_STORAGE_KEY, '1');
         setHasGuestUnlockedTransmedia(true);
-      }
-      if (eventKey) {
-        void rewardTransmediaReveal(eventKey, {
-          trigger,
-          target_id: targetId,
-          is_authenticated: isAuthenticated,
-        });
       }
       if (targetId) {
         // Si el showcase aún no estaba en el DOM, Suspense necesita más tiempo para montar
@@ -551,7 +510,7 @@ function App() {
       }
       return true;
     },
-    [hasGuestUnlockedTransmedia, isAuthenticated, rewardTransmediaReveal, scrollToSection]
+    [hasGuestUnlockedTransmedia, isAuthenticated, scrollToSection]
   );
 
   useEffect(() => {
@@ -561,9 +520,7 @@ function App() {
     const hashAnchor = getLocationHashAnchor(location);
     const targetId = hashAnchor === 'apoya' ? 'apoya' : 'transmedia';
     handleRevealTransmedia({
-      trigger: 'deep-link',
       targetId,
-      eventKey: TRANSMEDIA_DEEPLINK_REWARD_EVENT_KEY,
     });
   }, [handleRevealTransmedia, hasGuestUnlockedTransmedia, isAuthenticated, location]);
 
@@ -692,6 +649,7 @@ function App() {
         )}
       />
       <Route path="/bienvenida" element={<Suspense fallback={<RouteFallback />}><Bienvenida /></Suspense>} />
+      <Route path="/autoficcion" element={<Suspense fallback={<RouteFallback />}><Autoficcion /></Suspense>} />
       <Route path="/portal-literatura" element={<SectionErrorBoundary fallback={<PortalErrorFallback />}><Suspense fallback={<RouteFallback />}><PortalLiteratura /></Suspense></SectionErrorBoundary>} />
       <Route path="/portal-artesanias" element={<SectionErrorBoundary fallback={<PortalErrorFallback />}><Suspense fallback={<RouteFallback />}><PortalArtesanias /></Suspense></SectionErrorBoundary>} />
       <Route path="/portal-voz" element={<SectionErrorBoundary fallback={<PortalErrorFallback />}><Suspense fallback={<RouteFallback />}><PortalVoz /></Suspense></SectionErrorBoundary>} />

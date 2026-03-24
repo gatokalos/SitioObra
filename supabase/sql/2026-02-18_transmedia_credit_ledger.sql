@@ -33,7 +33,7 @@ as $$
 declare
   v_user_id uuid := auth.uid();
   v_anon_id text := nullif(trim(coalesce(p_anon_id, '')), '');
-  v_available_tokens integer := 150;
+  v_available_tokens integer := 0;
   v_sonoro_spent boolean := false;
   v_graphic_spent boolean := false;
   v_novela_questions integer := 0;
@@ -42,7 +42,7 @@ declare
 begin
   if v_user_id is null and v_anon_id is null then
     return jsonb_build_object(
-      'available_tokens', 150,
+      'available_tokens', 0,
       'sonoro_spent', false,
       'graphic_spent', false,
       'novela_questions', 0,
@@ -64,7 +64,7 @@ begin
     where event_key like 'showcase_boost:%'
   )
   select
-    greatest(0, 150 + coalesce(sum(e.amount), 0))::integer as available_tokens,
+    greatest(0, 0 + coalesce(sum(e.amount), 0))::integer as available_tokens,
     bool_or(e.event_key = 'sonoro_unlock') as sonoro_spent,
     bool_or(e.event_key = 'graphic_unlock') as graphic_spent,
     count(*) filter (where e.event_key = 'novela_question')::integer as novela_questions,
@@ -80,7 +80,7 @@ begin
   from identity_events e;
 
   return jsonb_build_object(
-    'available_tokens', coalesce(v_available_tokens, 150),
+    'available_tokens', coalesce(v_available_tokens, 0),
     'sonoro_spent', coalesce(v_sonoro_spent, false),
     'graphic_spent', coalesce(v_graphic_spent, false),
     'novela_questions', coalesce(v_novela_questions, 0),
@@ -196,4 +196,3 @@ revoke all on function public.register_transmedia_credit_event(text, integer, te
 
 grant execute on function public.get_transmedia_credit_state(text) to anon, authenticated, service_role;
 grant execute on function public.register_transmedia_credit_event(text, integer, text, text, jsonb, boolean) to anon, authenticated, service_role;
-
