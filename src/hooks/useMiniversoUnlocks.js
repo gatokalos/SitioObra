@@ -38,12 +38,16 @@ const useMiniversoUnlocks = ({
   const [isMobileARFullscreen, setIsMobileARFullscreen] = useState(false);
   const [isProjectionInterestSubmitting, setIsProjectionInterestSubmitting] = useState(false);
   const [isProjectionInterestSent, setIsProjectionInterestSent] = useState(false);
+  const [showProjectionEmailInput, setShowProjectionEmailInput] = useState(false);
+  const [projectionEmailDraft, setProjectionEmailDraft] = useState('');
 
   // Reset projection interest when navigating away from cine
   useEffect(() => {
     if (activeShowcase === 'copycats') return;
     setIsProjectionInterestSubmitting(false);
     setIsProjectionInterestSent(false);
+    setShowProjectionEmailInput(false);
+    setProjectionEmailDraft('');
   }, [activeShowcase]);
 
   // Manage AR fullscreen and body scroll lock
@@ -214,29 +218,55 @@ const useMiniversoUnlocks = ({
     [toast]
   );
 
+  const _submitProjectionInterest = useCallback(
+    async (email) => {
+      setIsProjectionInterestSubmitting(true);
+      try {
+        const { error } = await supabase.rpc('register_cine_projection_interest', {
+          p_showcase_id: 'copycats',
+          p_source: 'transmedia_cine',
+          p_email: email || null,
+          p_metadata: {
+            section: 'proyeccion',
+            path: typeof window !== 'undefined' ? window.location.pathname : null,
+            is_authenticated: isAuthenticated,
+            is_subscriber: isSubscriber,
+          },
+        });
+        if (error) throw error;
+        // Fire-and-forget: send confirmation email (non-blocking)
+        supabase.functions
+          .invoke('send-cine-projection-confirmation', {
+            body: { email: email || null, showcase_id: 'copycats' },
+          })
+          .catch((err) => console.warn('[Transmedia] Confirmation email failed:', err));
+      } catch (error) {
+        console.warn('[Transmedia] No se pudo registrar interés de proyección:', error);
+      } finally {
+        setIsProjectionInterestSubmitting(false);
+        setIsProjectionInterestSent(true);
+        setShowProjectionEmailInput(false);
+        setProjectionEmailDraft('');
+        toast({ description: 'Interés registrado. Espera noticias de la proyección.' });
+      }
+    },
+    [isAuthenticated, isSubscriber, toast]
+  );
+
   const handleProjectionInterest = useCallback(async () => {
     if (isProjectionInterestSubmitting || isProjectionInterestSent) return;
-    setIsProjectionInterestSubmitting(true);
-    try {
-      const { error } = await supabase.rpc('register_cine_projection_interest', {
-        p_showcase_id: 'copycats',
-        p_source: 'transmedia_cine',
-        p_metadata: {
-          section: 'proyeccion',
-          path: typeof window !== 'undefined' ? window.location.pathname : null,
-          is_authenticated: isAuthenticated,
-          is_subscriber: isSubscriber,
-        },
-      });
-      if (error) throw error;
-    } catch (error) {
-      console.warn('[Transmedia] No se pudo registrar interés de proyección:', error);
-    } finally {
-      setIsProjectionInterestSubmitting(false);
-      setIsProjectionInterestSent(true);
-      toast({ description: 'Interés registrado. Espera noticias de la proyección.' });
+    if (!isAuthenticated) {
+      setShowProjectionEmailInput(true);
+      return;
     }
-  }, [isAuthenticated, isProjectionInterestSent, isProjectionInterestSubmitting, isSubscriber, toast]);
+    await _submitProjectionInterest(null);
+  }, [_submitProjectionInterest, isAuthenticated, isProjectionInterestSent, isProjectionInterestSubmitting]);
+
+  const handleProjectionEmailSubmit = useCallback(async () => {
+    const email = projectionEmailDraft.trim().toLowerCase();
+    if (!email || isProjectionInterestSubmitting) return;
+    await _submitProjectionInterest(email);
+  }, [_submitProjectionInterest, isProjectionInterestSubmitting, projectionEmailDraft]);
 
   const resetMiniversoUnlockState = useCallback(() => {
     setShowSonoroCoins(false);
@@ -259,12 +289,17 @@ const useMiniversoUnlocks = ({
     isMobileARFullscreen,
     isProjectionInterestSubmitting,
     isProjectionInterestSent,
+    showProjectionEmailInput,
+    setShowProjectionEmailInput,
+    projectionEmailDraft,
+    setProjectionEmailDraft,
     handleNovelaQuestionSend,
     handleSonoroEnter,
     handleOpenGraphicSwipe,
     handleActivateAR,
     handleCloseARExperience,
     handleProjectionInterest,
+    handleProjectionEmailSubmit,
     handleARError,
     resetMiniversoUnlockState,
   };

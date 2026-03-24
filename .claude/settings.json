@@ -2,10 +2,13 @@
   "permissions": {
     "allow": [
       "Bash(grep -rn \"dataset.miniverseOpen\\\\|dataset.gatoShowcaseOpen\\\\|data-gato-showcase\\\\|data-miniverse\" /Users/gatoenigmatico/gatoencerrado-ai/landing/SitioObra/src --include=*.jsx --include=*.js --include=*.css)",
-      "Bash(sips -s format png \"/Users/gatoenigmatico/Desktop/Postulación EFIARTES/anexos/INDAUTOR Obra.pdf\" --out \"/Users/gatoenigmatico/Desktop/Postulación EFIARTES/anexos/INDAUTOR_Obra.png\")"
+      "Bash(sips -s format png \"/Users/gatoenigmatico/Desktop/Postulación EFIARTES/anexos/INDAUTOR Obra.pdf\" --out \"/Users/gatoenigmatico/Desktop/Postulación EFIARTES/anexos/INDAUTOR_Obra.png\")",
+      "Bash(grep -r \"cine_projection\\\\|send-contact\\\\|Resend\" /Users/gatoenigmatico/gatoencerrado-ai/landing/SitioObra/src --include=*.jsx --include=*.js --include=*.ts)",
+      "Bash(grep -i \"cine\\\\|projection\\\\|email\" /Users/gatoenigmatico/gatoencerrado-ai/supabase/migrations/*.sql)"
     ],
     "additionalDirectories": [
-      "/Users/gatoenigmatico/Desktop/Postulación EFIARTES"
+      "/Users/gatoenigmatico/Desktop/Postulación EFIARTES",
+      "/Users/gatoenigmatico/gatoencerrado-ai/supabase/functions/send-cine-projection-confirmation"
     ]
   }
 }

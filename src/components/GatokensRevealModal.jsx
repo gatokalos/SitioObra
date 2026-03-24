@@ -69,6 +69,15 @@ const GatokensRevealModal = ({ open, onClose }) => {
               style={{ background: 'radial-gradient(circle, rgba(139,92,246,0.28) 0%, transparent 70%)' }}
             />
 
+            {/* moneda */}
+            <div className="mb-4 flex justify-center">
+              <img
+                src="https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/oraculo/gato-moneda.png"
+                alt="GAToken"
+                className="h-16 w-16 animate-[spin_8s_linear_infinite] drop-shadow-[0_0_18px_rgba(139,92,246,0.55)]"
+              />
+            </div>
+
             {/* encabezado */}
             <p className="mb-1 text-center text-[0.65rem] font-semibold uppercase tracking-[0.3em] text-violet-300/60">
               Sistema energético

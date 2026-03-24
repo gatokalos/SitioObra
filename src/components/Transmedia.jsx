@@ -908,12 +908,17 @@ const Transmedia = ({ allianceOnlyMode = false }) => {
     isMobileARFullscreen,
     isProjectionInterestSubmitting,
     isProjectionInterestSent,
+    showProjectionEmailInput,
+    setShowProjectionEmailInput,
+    projectionEmailDraft,
+    setProjectionEmailDraft,
     handleNovelaQuestionSend,
     handleSonoroEnter,
     handleOpenGraphicSwipe,
     handleActivateAR,
     handleCloseARExperience,
     handleProjectionInterest,
+    handleProjectionEmailSubmit,
     handleARError,
     resetMiniversoUnlockState,
   } = useMiniversoUnlocks({
@@ -3096,6 +3101,43 @@ const rendernotaAutoral = () => {
           <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Proyección privada</p>
           <h4 className="font-display text-2xl text-slate-100">{activeDefinition.proyeccion?.title}</h4>
           <p className="text-sm text-slate-200/90 leading-relaxed">{activeDefinition.proyeccion?.description}</p>
+          {showProjectionEmailInput ? (
+            <motion.div
+              initial={{ opacity: 0, y: 6 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="space-y-2"
+            >
+              <p className="text-xs text-slate-300">Ingresa tu correo para recibir confirmación de tu lugar:</p>
+              <div className="flex gap-2">
+                <input
+                  type="email"
+                  placeholder="tu@correo.com"
+                  value={projectionEmailDraft}
+                  onChange={(e) => setProjectionEmailDraft(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') handleProjectionEmailSubmit();
+                    if (e.key === 'Escape') setShowProjectionEmailInput(false);
+                  }}
+                  className="flex-1 min-w-0 rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-500 focus:outline-none focus:ring-1 focus:ring-amber-400/50"
+                  autoFocus
+                />
+                <Button
+                  onClick={handleProjectionEmailSubmit}
+                  disabled={isProjectionInterestSubmitting || !projectionEmailDraft.trim()}
+                  className="shrink-0 bg-gradient-to-r from-amber-500/90 to-orange-500/90 hover:from-amber-400 hover:to-orange-400 text-white"
+                >
+                  {isProjectionInterestSubmitting ? 'Enviando…' : 'Registrarme'}
+                </Button>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowProjectionEmailInput(false)}
+                className="text-xs text-slate-500 hover:text-slate-300 transition-colors"
+              >
+                Cancelar
+              </button>
+            </motion.div>
+          ) : (
           <div className="flex flex-col gap-3 sm:flex-row">
             <Button
               onClick={handleProjectionInterest}
@@ -3150,6 +3192,7 @@ const rendernotaAutoral = () => {
               </div>
             )}
           </div>
+          )}
           {isProjectionInterestSent ? (
             <p className="text-xs text-emerald-200/90">Recibirás un correo para confirmar tu lugar al acercarse la fecha.</p>
           ) : null}

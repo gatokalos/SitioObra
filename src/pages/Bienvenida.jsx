@@ -20,6 +20,7 @@ const Bienvenida = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const { user } = useAuth();
+  const [cabinaReached, setCabinaReached] = useState(false);
   const baseUrl = useMemo(() => {
     const raw = import.meta.env.VITE_BIENVENIDA_URL ?? import.meta.env.VITE_ORACULO_URL ?? '';
     return raw ? raw.replace(/\/+$/, '') : '';
@@ -90,6 +91,10 @@ const Bienvenida = () => {
         origin: event.origin,
         appId: payloadAppId || null,
       });
+      if (type === 'bienvenida:cabina-reached') {
+        setCabinaReached(true);
+        return;
+      }
       if (type === 'bienvenida:close' || type === 'bienvenida:done') {
         handleFinish();
         return;
@@ -111,7 +116,7 @@ const Bienvenida = () => {
     };
     window.addEventListener('message', handleMessage);
     return () => window.removeEventListener('message', handleMessage);
-  }, [bienvenidaOrigin, flowGoal, handleFinish]);
+  }, [bienvenidaOrigin, flowGoal, handleFinish, setCabinaReached]);
 
   return (
     <div className="fixed inset-0 z-50 bg-black">
@@ -132,7 +137,8 @@ const Bienvenida = () => {
       <button
         type="button"
         onClick={handleFinish}
-        className="absolute right-6 top-6 z-10 rounded-full border border-white/20 bg-black/60 px-4 py-2 text-xs uppercase tracking-[0.3em] text-white hover:bg-black/80"
+        disabled={cabinaReached}
+        className="absolute right-6 top-6 z-10 rounded-full border border-white/20 bg-black/60 px-4 py-2 text-xs uppercase tracking-[0.3em] text-white hover:bg-black/80 disabled:pointer-events-none disabled:opacity-0"
       >
         Cerrar
       </button>
