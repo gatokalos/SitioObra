@@ -1,12 +1,14 @@
-import React, { useEffect, useMemo } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/SupabaseAuthContext';
+import LoginOverlay from '@/components/ContributionModal/LoginOverlay';
 
 const AUTOFICCION_URL = import.meta.env.VITE_AUTOFICCION_URL ?? '';
 
 const Autoficcion = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
+  const [showLogin, setShowLogin] = useState(false);
 
   const baseUrl = useMemo(
     () => (AUTOFICCION_URL ? AUTOFICCION_URL.replace(/\/+$/, '') : ''),
@@ -32,13 +34,11 @@ const Autoficcion = () => {
 
       const { type } = event.data ?? {};
 
-      // La app pide abrir el modal de login de SitioObra
       if (type === 'autoficcion:request-login') {
-        window.dispatchEvent(new Event('open-login-modal'));
+        setShowLogin(true);
         return;
       }
 
-      // La app pide cerrar (botón de regreso interno)
       if (type === 'autoficcion:close') {
         navigate('/', { replace: true });
       }
@@ -72,6 +72,8 @@ const Autoficcion = () => {
       >
         Cerrar
       </button>
+
+      {showLogin && <LoginOverlay onClose={() => setShowLogin(false)} />}
     </div>
   );
 };
