@@ -86,3 +86,4 @@ jobs:
           local-dir: dist/
           server-dir: domains/esungatoencerrado.com/public_html/
           log-level: verbose
+          dangerous-clean-slate: true
