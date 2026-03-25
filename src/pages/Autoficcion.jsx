@@ -21,6 +21,17 @@ const Autoficcion = () => {
     return url.toString();
   }, [baseUrl, user?.id]);
 
+  // Abrir modal de login si viene con ?login=true (acceso directo desde literatura.miniversos.ai)
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('login') === 'true') {
+      window.dispatchEvent(new Event('open-login-modal'));
+      params.delete('login');
+      const clean = params.toString() ? `${window.location.pathname}?${params}` : window.location.pathname;
+      window.history.replaceState({}, '', clean);
+    }
+  }, []);
+
   // Escuchar mensajes de la app autoficción (postMessage bridge)
   useEffect(() => {
     const handleMessage = (event) => {
