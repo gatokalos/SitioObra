@@ -25,10 +25,11 @@ const Autoficcion = () => {
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     if (params.get('login') === 'true') {
-      window.dispatchEvent(new Event('open-login-modal'));
       params.delete('login');
       const clean = params.toString() ? `${window.location.pathname}?${params}` : window.location.pathname;
       window.history.replaceState({}, '', clean);
+      // Pequeño delay para que el listener del modal esté registrado antes de disparar el evento
+      setTimeout(() => window.dispatchEvent(new Event('open-login-modal')), 150);
     }
   }, []);
 
