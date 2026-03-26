@@ -27,6 +27,12 @@ const TABS = [
 ];
 const DEFAULT_TAB_ID = 'escaparate';
 const VALID_TAB_IDS = new Set(TABS.map((tab) => tab.id));
+const resolveInitialTabId = (tabId) => (VALID_TAB_IDS.has(tabId) ? tabId : DEFAULT_TAB_ID);
+const getTabHeadingVerb = (tabId) => {
+  if (tabId === 'escaparate') return 'Expande';
+  if (tabId === 'waitlist') return 'Impulsa';
+  return 'Habita';
+};
 const INCENDIO_LOGO_SRC = '/assets/incendiologo.png';
 const INCENDIO_VIDEO_PLACEHOLDER_TITLE = 'VIDEO EN PRODUCCIÓN';
 const INCENDIO_VIDEO_PLACEHOLDER_COPY =
@@ -472,7 +478,8 @@ const MiniverseModal = ({
   const shouldUseSingleLinePortalTitle = (title, { force = false } = {}) =>
     isInlineMode &&
     (force || (isMobileViewport && MINIVERSE_PORTAL_TITLE_PATTERN.test(String(title || ''))));
-  const [activeTab, setActiveTab] = useState(DEFAULT_TAB_ID);
+  const resolvedInitialTabId = useMemo(() => resolveInitialTabId(initialTabId), [initialTabId]);
+  const [activeTab, setActiveTab] = useState(() => resolvedInitialTabId);
   const [formState, setFormState] = useState(initialFormState);
   const [status, setStatus] = useState('idle');
   const [errorMessage, setErrorMessage] = useState('');
@@ -499,7 +506,9 @@ const MiniverseModal = ({
   const [communityTopLikes, setCommunityTopLikes] = useState([]);
   const [isLoadingCommunityLikes, setIsLoadingCommunityLikes] = useState(false);
   const [isCauseSiteOpen, setIsCauseSiteOpen] = useState(false);
-  const [inlineHeadingVerbDisplay, setInlineHeadingVerbDisplay] = useState('Descubre');
+  const [inlineHeadingVerbDisplay, setInlineHeadingVerbDisplay] = useState(() =>
+    getTabHeadingVerb(resolvedInitialTabId)
+  );
   const [inlineActNumberDisplay, setInlineActNumberDisplay] = useState('');
   const metadataSubscriber = Boolean(
     user?.user_metadata?.isSubscriber === true ||
@@ -650,13 +659,12 @@ const MiniverseModal = ({
 
   useEffect(() => {
     if (open) {
-      const resolvedInitialTab = VALID_TAB_IDS.has(initialTabId) ? initialTabId : DEFAULT_TAB_ID;
       if (typeof window !== 'undefined') {
         const mediaQuery = window.matchMedia('(max-width: 639px)');
         const isMobile = mediaQuery.matches;
         setIsMobileViewport(isMobile);
       }
-      setActiveTab(resolvedInitialTab);
+      setActiveTab(resolvedInitialTabId);
       setFormState(initialFormState);
       setStatus('idle');
       setErrorMessage('');
@@ -673,7 +681,7 @@ const MiniverseModal = ({
     }
     stopModalMediaPlayback({ reset: true });
     setIsCauseSiteOpen(false);
-  }, [initialTabId, open, stopModalMediaPlayback]);
+  }, [open, resolvedInitialTabId, stopModalMediaPlayback]);
 
   useEffect(() => {
     if (!open || !shelved) return undefined;
@@ -760,12 +768,12 @@ const MiniverseModal = ({
     const mediaQuery = window.matchMedia('(max-width: 639px)');
     const handleMediaChange = (event) => {
       setIsMobileViewport(event.matches);
-      setActiveTab(DEFAULT_TAB_ID);
+      setActiveTab(resolvedInitialTabId);
     };
     setIsMobileViewport(mediaQuery.matches);
     mediaQuery.addEventListener('change', handleMediaChange);
     return () => mediaQuery.removeEventListener('change', handleMediaChange);
-  }, []);
+  }, [resolvedInitialTabId]);
 
   useEffect(() => {
     if (!open || shelved) {
@@ -790,11 +798,7 @@ const MiniverseModal = ({
     () => TABS.find((tab) => tab.id === activeTab)?.label ?? TABS[0].label,
     [activeTab]
   );
-  const activeTabHeadingVerb = useMemo(() => {
-    if (activeTab === 'escaparate') return 'Expande';
-    if (activeTab === 'waitlist') return 'Impulsa';
-    return 'Habita';
-  }, [activeTab]);
+  const activeTabHeadingVerb = useMemo(() => getTabHeadingVerb(activeTab), [activeTab]);
   const shouldPlaceInlineTabsOnTop = isInlineMode && isMobileViewport;
   const shouldAnimateInlineHeading = isInlineMode;
   const inlineHeadingVerb = shouldAnimateInlineHeading ? inlineHeadingVerbDisplay : activeTabHeadingVerb;

@@ -53,7 +53,7 @@ const HERO_ROTATING_SUBTITLE_PLACEHOLDER =
   'Teatro que no termina cuando sales de la sala';
 
 const resolveHeroInlineTabFromQuery = (search = '') => {
-  if (!search) return 'escaparate';
+  if (!search) return 'experiences';
   const params = new URLSearchParams(search);
   const rawTab = (params.get(HERO_TAB_QUERY_PARAM) || '').trim().toLowerCase();
 
@@ -63,7 +63,7 @@ const resolveHeroInlineTabFromQuery = (search = '') => {
   if (rawTab === 'waitlist' || rawTab === 'impulsar' || rawTab === 'activar') {
     return 'waitlist';
   }
-  return 'escaparate';
+  return 'experiences';
 };
 
 const Hero = () => {
@@ -75,7 +75,7 @@ const Hero = () => {
   const [isHeroHintVisible, setIsHeroHintVisible] = useState(false);
   const [isCtaHovered, setIsCtaHovered] = useState(false);
   const [primaryCtaWidth, setPrimaryCtaWidth] = useState(null);
-  const [activeLoggedInCtaIndex, setActiveLoggedInCtaIndex] = useState(0);
+  const [activeLoggedInCtaIndex, setActiveLoggedInCtaIndex] = useState(1);
   const [loggedInSweepPoint] = useState({ x: 0, y: 0 });
   const primaryCtaRef = useRef(null);
   const loggedInCtaTrackRef = useRef(null);
