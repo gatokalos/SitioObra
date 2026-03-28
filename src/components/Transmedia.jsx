@@ -183,8 +183,8 @@ const Transmedia = ({ allianceOnlyMode = false }) => {
   const [detonadoresHintActive, setDetonadoresHintActive] = useState(false);
   const detonadoresHintFiredRef = useRef(false);
   const { isMobileViewport, canUseInlinePlayback, requestMobileVideoPresentation } = useMobileVideoPresentation();
-  const { user } = useAuth();
-  const { hasActiveSubscription } = useActiveSubscription(user?.id);
+  const { user, session } = useAuth();
+  const { hasActiveSubscription } = useActiveSubscription(user?.id, session);
   const isAuthenticated = Boolean(user);
   const isSubscriber = Boolean(
     user?.user_metadata?.isSubscriber ||

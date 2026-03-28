@@ -10,8 +10,8 @@ import { safeSetItem } from '@/lib/safeStorage';
 const LOGIN_RETURN_KEY = 'gatoencerrado:login-return';
 
 const ShowcaseReactionInline = ({ showcaseId, title, description, buttonLabel, className = '' }) => {
-  const { user } = useAuth();
-  const { hasActiveSubscription } = useActiveSubscription(user?.id);
+  const { user, session } = useAuth();
+  const { hasActiveSubscription } = useActiveSubscription(user?.id, session);
   const isAuthenticated = Boolean(user);
   const metadataSubscriber = Boolean(
     user?.user_metadata?.isSubscriber ||

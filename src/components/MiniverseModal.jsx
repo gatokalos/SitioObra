@@ -15,6 +15,7 @@ import { getTopShowcaseLikes } from '@/services/showcaseLikeService';
 import { isSafariBrowser } from '@/lib/browser';
 import { resolvePortalRoute } from '@/lib/miniversePortalRegistry';
 import { createPortalLaunchState } from '@/lib/portalNavigation';
+import { canQuerySubscriptionTableFromClient, warnUnsupportedClientRole } from '@/lib/supabaseSessionRole';
 import {
   MINIVERSE_HOME_EVENT_TYPES,
   trackMiniverseHomeEvent,
@@ -470,7 +471,7 @@ const MiniverseModal = ({
 }) => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { user } = useAuth();
+  const { user, session } = useAuth();
   const isSafari = isSafariBrowser();
   const isInlineMode = displayMode === 'inline';
   const inlineTitleStyle = isInlineMode ? { fontFamily: 'Vox Round, Inter, sans-serif' } : undefined;
@@ -596,6 +597,12 @@ const MiniverseModal = ({
       return undefined;
     }
 
+    if (!canQuerySubscriptionTableFromClient(session)) {
+      warnUnsupportedClientRole(session, 'MiniverseModal');
+      setIsCheckingSubscription(false);
+      return undefined;
+    }
+
     let isMounted = true;
     setIsCheckingSubscription(true);
 
@@ -622,7 +629,7 @@ const MiniverseModal = ({
     return () => {
       isMounted = false;
     };
-  }, [user?.id]);
+  }, [session, user?.id]);
 
   const playKnockSound = useCallback(() => {
     if (typeof window === 'undefined') {

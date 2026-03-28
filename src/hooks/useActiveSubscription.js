@@ -1,13 +1,20 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabaseClient';
+import { canQuerySubscriptionTableFromClient, warnUnsupportedClientRole } from '@/lib/supabaseSessionRole';
 
-const useActiveSubscription = (userId) => {
+const useActiveSubscription = (userId, session) => {
   const [hasActiveSubscription, setHasActiveSubscription] = useState(false);
   const [isCheckingSubscription, setIsCheckingSubscription] = useState(false);
 
   useEffect(() => {
     if (!userId) {
       setHasActiveSubscription(false);
+      setIsCheckingSubscription(false);
+      return undefined;
+    }
+
+    if (!canQuerySubscriptionTableFromClient(session)) {
+      warnUnsupportedClientRole(session, 'useActiveSubscription');
       setIsCheckingSubscription(false);
       return undefined;
     }
@@ -38,7 +45,7 @@ const useActiveSubscription = (userId) => {
     return () => {
       isMounted = false;
     };
-  }, [userId]);
+  }, [session, userId]);
 
   return { hasActiveSubscription, isCheckingSubscription };
 };

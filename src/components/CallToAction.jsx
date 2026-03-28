@@ -10,6 +10,7 @@ import HuellaEmbeddedCheckout from '@/components/HuellaEmbeddedCheckout';
 import { createEmbeddedSubscription, startCheckoutFallback } from '@/lib/huellaCheckout';
 import { clearBienvenidaFlowGoal, clearBienvenidaForceOnLogin } from '@/lib/bienvenida';
 import { safeGetItem, safeRemoveItem, safeSetItem } from '@/lib/safeStorage';
+import { canQuerySubscriptionTableFromClient, warnUnsupportedClientRole } from '@/lib/supabaseSessionRole';
 import { INITIAL_GAT_BALANCE, readStoredInt } from '@/components/transmedia/transmediaConstants';
 
 const SUBSCRIPTION_PRICE_ID = import.meta.env.VITE_STRIPE_SUBSCRIPTION_PRICE_ID;
@@ -255,7 +256,7 @@ function ProgressBar({
 }
 
 const CallToAction = ({ barsIntroDelayMs = 0 }) => {
-  const { user } = useAuth();
+  const { user, session } = useAuth();
   const embeddedCheckoutRef = useRef(null);
   const [loading, setLoading] = useState(false);
   const [msg, setMsg] = useState('');
@@ -391,6 +392,12 @@ const CallToAction = ({ barsIntroDelayMs = 0 }) => {
       return undefined;
     }
 
+    if (!canQuerySubscriptionTableFromClient(session)) {
+      warnUnsupportedClientRole(session, 'CallToAction');
+      setIsCheckingSubscription(false);
+      return undefined;
+    }
+
     let isMounted = true;
     setIsCheckingSubscription(true);
 
@@ -423,7 +430,7 @@ const CallToAction = ({ barsIntroDelayMs = 0 }) => {
     return () => {
       isMounted = false;
     };
-  }, [user?.id]);
+  }, [session, user?.id]);
 
   useEffect(() => {
     if (typeof window === 'undefined') return undefined;
@@ -1016,297 +1023,321 @@ const CallToAction = ({ barsIntroDelayMs = 0 }) => {
     counterAudioPrimedRef.current = false;
   }, [ensureCounterAudio, isCounterSoundEnabled, playCounterTick]);
 
+  const impactPanelHeading = (
+    <p className="text-[0.85rem] uppercase tracking-[0.18em] text-slate-400/80">
+      Modelo anual por tramos · Q{currentQuarter} {currentYear}
+    </p>
+  );
+
+  const counterToggleButton = (
+    <button
+      type="button"
+      onClick={handleToggleCounterSound}
+      className="absolute right-3 top-3 z-20 inline-flex h-8 w-8 items-center justify-center rounded-full border border-white/15 bg-white/5 text-slate-200/90 transition hover:border-purple-300/40 hover:text-white"
+      aria-label={isCounterSoundEnabled ? 'Silenciar sonidos del simulador' : 'Activar sonidos del simulador'}
+      title={isCounterSoundEnabled ? 'Silenciar simulador' : 'Activar simulador sonoro'}
+    >
+      {isCounterSoundEnabled ? (
+        <Volume2 size={14} className="text-purple-200" />
+      ) : (
+        <VolumeX size={14} className="text-slate-300" />
+      )}
+    </button>
+  );
+
+  const summarySection = (
+    <div className="space-y-3">
+      <div className="flex items-baseline justify-between">
+        <p className="text-[1.05rem] opacity-90 inline-flex items-center gap-2 leading-tight">
+          <PawPrint size={14} className="text-violet-300/90" />
+          Huellas activadas
+        </p>
+        <p className="text-[2.2rem] font-semibold leading-none">{subs}</p>
+      </div>
+      <div className="flex items-baseline justify-between">
+        <p className="text-[1.05rem] opacity-90 inline-flex items-center gap-2 leading-tight">
+          <Ticket size={14} className="text-cyan-300/90" />
+          Boletos voluntarios
+        </p>
+        <p className="text-[2.2rem] font-semibold leading-none">{ticketUnits}</p>
+      </div>
+
+      <div className="space-y-2">
+        <div className="flex items-baseline justify-between">
+          <p className="text-[1.05rem] opacity-90 leading-tight">
+            {interactiveSupport !== null ? 'Modo simulador' : 'Huellas + boletos ='}
+          </p>
+          <p className="text-[2.2rem] font-semibold leading-none">{displayStats.totalSupport}</p>
+        </div>
+      </div>
+    </div>
+  );
+
+  const ctaSection = (
+    <div className="space-y-3">
+      <div className="flex flex-wrap items-center gap-2">
+        <div className="inline-flex items-center gap-2 rounded-full border border-cyan-300/25 bg-cyan-400/10 px-3 py-1.5 text-[0.68rem] font-semibold uppercase tracking-[0.24em] text-cyan-100/90 shadow-[0_0_18px_rgba(34,211,238,0.14)]">
+          <Sparkles size={12} className="text-cyan-200" />
+          <span>Saldo actual</span>
+          <span className="tabular-nums text-white">{gatBalance.toLocaleString('es-MX')} GAT</span>
+        </div>
+      </div>
+
+      <button
+        type="button"
+        onClick={() => setShowTicketSupport((prev) => !prev)}
+        className="block w-full rounded border border-white/20 px-4 py-2 text-white hover:border-purple-300/70 hover:text-purple-100"
+      >
+        {showTicketSupport ? 'Ocultar opciones' : 'Sumar mi boleto'}
+      </button>
+      {showTicketSupport ? (
+        <div className="relative overflow-hidden rounded-2xl border border-white/15 bg-black/35 px-4 py-3 text-left text-slate-100">
+          {isTicketSupportVideoAvailable ? (
+            <video
+              className="pointer-events-none absolute inset-0 h-full w-full scale-[1.03] object-cover opacity-70 saturate-125 contrast-125 brightness-110"
+              autoPlay
+              loop
+              muted
+              playsInline
+              preload="auto"
+              poster={SUPPORT_CTA_POSTER_URL}
+              onError={() => setIsTicketSupportVideoAvailable(false)}
+              aria-hidden="true"
+            >
+              <source src={SUPPORT_CTA_VIDEO_URL} type="video/mp4" />
+            </video>
+          ) : null}
+          <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-slate-950/35 via-slate-950/30 to-slate-950/45" />
+          <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_22%_24%,rgba(125,211,252,0.28),transparent_45%),radial-gradient(circle_at_80%_72%,rgba(147,197,253,0.22),transparent_18%)]" />
+          <p className="relative z-10 mb-2 text-m leading-relaxed text-slate-400">
+            Si asististe a la obra, puedes convertir ese momento en huella.
+            {' '}Si no tienes comprobante, tu palabra es suficiente.
+            {' '}Alguien del equipo te contestará.
+            <br /><br />
+          </p>
+          <div className="relative z-10 grid gap-2">
+            <a
+              href={`mailto:${SUPPORT_EMAIL}?subject=Destinar%20boleto%20a%20la%20causa&body=${SUPPORT_MESSAGE}`}
+              className="flex items-center justify-center gap-2 rounded-lg border border-sky-200/30 bg-white/10 px-4 py-2 text-center text-white backdrop-blur-md transition hover:border-sky-200/60 hover:bg-white/15"
+            >
+              <Mail size={18} />
+              Enviar por correo
+            </a>
+            <a
+              href={`https://wa.me/${SUPPORT_WHATSAPP.replace(/\D/g, '')}?text=${SUPPORT_MESSAGE}`}
+              target="_blank"
+              rel="noreferrer"
+              className="flex items-center justify-center gap-2 rounded-lg border border-sky-200/30 bg-white/10 px-4 py-2 text-center text-white backdrop-blur-md transition hover:border-sky-200/60 hover:bg-white/15"
+            >
+              <MessageCircle size={18} />
+              Enviar por WhatsApp
+            </a>
+          </div>
+        </div>
+      ) : null}
+      <button
+        onClick={handleCheckout}
+        disabled={loading || isSubscriber || isCheckingSubscription}
+        className={`white-glass-btn block w-full px-4 py-2 text-slate-900 disabled:cursor-not-allowed disabled:opacity-50 ${
+          !user ? 'white-glass-btn--idle' : 'white-glass-btn--active'
+        } ${isLoginPulseActive ? 'white-glass-btn--pulse animate-pulse' : ''}`}
+      >
+        {isCheckingSubscription
+          ? 'Validando huella...'
+          : isSubscriber
+            ? 'Tu huella ya está activa'
+            : loading
+              ? 'Abriendo confirmación…'
+              : 'Activar mi huella'}
+      </button>
+
+      {msg ? <p className="text-sm text-red-300">{msg}</p> : null}
+
+      <div ref={embeddedCheckoutRef} className="pt-1">
+        {checkoutStatus ? (
+          !user && checkoutStatus === 'Inicia sesión para activar tu huella aquí mismo.' ? (
+            <p className="text-sm text-slate-200">
+              <button
+                type="button"
+                onClick={handleOpenLoginFromStatus}
+                className="underline underline-offset-2 transition hover:text-white"
+              >
+                Inicia sesión
+              </button>{' '}
+              para activar tu huella aquí mismo.
+            </p>
+          ) : (
+            <p className="text-sm text-slate-200">{checkoutStatus}</p>
+          )
+        ) : null}
+        {pendingFallbackPayload ? (
+          <button
+            type="button"
+            onClick={handleManualFallbackCheckout}
+            disabled={loading}
+            className="mt-2 w-full rounded-lg border border-white/25 px-4 py-2 text-sm text-white hover:border-white/40 disabled:opacity-50"
+          >
+            {loading ? 'Abriendo checkout externo…' : 'Abrir checkout externo'}
+          </button>
+        ) : null}
+        {isSubscriber ? (
+          <div className="mt-3 rounded-xl border border-emerald-300/30 bg-emerald-500/10 p-3 text-left text-emerald-100">
+            <p className="text-sm font-semibold">
+              Primera huella: {firstHuellaDateLabel ?? 'fecha en sincronización'}.
+            </p>
+            <p className="mt-1 text-xs text-emerald-100/90">
+              Tu gesto forma parte del tramo vigente.
+            </p>
+            <p className="mt-1 text-xs text-emerald-100/90">
+              Recibirás actualización trimestral del crecimiento.
+            </p>
+          </div>
+        ) : null}
+        {embeddedClientSecret ? (
+          <HuellaEmbeddedCheckout
+            clientSecret={embeddedClientSecret}
+            onDone={handleEmbeddedCheckoutDone}
+          />
+        ) : null}
+      </div>
+    </div>
+  );
+
+  const simulatorSection = (
+    <>
+      <div className="flex items-baseline justify-between">
+        <p className="text-[1.02rem] opacity-90">Meta mínima anual</p>
+        <p className="text-[1.45rem] font-semibold leading-none">
+          {displayStats.totalSupportClamped}/{ANNUAL_TOTAL_HUELLAS}
+        </p>
+      </div>
+      <div className="space-y-1">
+        <div className="flex items-center text-[0.92rem] opacity-85">
+          <span className="inline-flex items-center gap-2">
+            <HeartHandshake size={14} className="text-emerald-300/90" />
+            Primer tramo: {displayStats.sesiones}/102 sesiones individuales al año.
+          </span>
+        </div>
+        <ProgressBar
+          value={displayBarValues.terapias}
+          barClassName="bg-gradient-to-r from-emerald-300 via-teal-300 to-cyan-300"
+          maxValue={THERAPY_TRAMO_HUELLAS}
+          currentValue={displayStats.terapiasActual}
+          onPreviewChange={(value) => handleSliderInput('terapias', value)}
+          onRelease={() => setInteractiveSupport(null)}
+          isPreviewing={interactiveSupport !== null}
+        />
+        <p className="inline-flex w-full items-center justify-end gap-1 text-[13px] opacity-75">
+          <PawPrint size={13} className="text-violet-300/90" />
+          {displayStats.terapiasActual}/{displayStats.terapiasMeta}
+        </p>
+      </div>
+
+      <div className="space-y-1">
+        <div className="flex items-center text-[0.92rem] opacity-85">
+          <span className="inline-flex items-center gap-2">
+            <Palette size={14} className="text-amber-300/90" />
+            {displayStats.residenciasHitosActivos}/3 talleres creativos por ciclo escolar.
+          </span>
+        </div>
+        <ProgressBar
+          value={displayBarValues.residencias}
+          barClassName="bg-gradient-to-r from-amber-300 via-yellow-300 to-orange-400"
+          maxValue={RESIDENCY_TRAMO_HUELLAS}
+          currentValue={displayStats.residenciasActual}
+          milestones={[17, 34, 51]}
+          onPreviewChange={(value) => handleSliderInput('residencias', value)}
+          onRelease={() => setInteractiveSupport(null)}
+          isPreviewing={interactiveSupport !== null}
+        />
+        <p className="inline-flex w-full items-center justify-end gap-1 text-[13px] opacity-75">
+          <PawPrint size={13} className="text-violet-300/90" />
+          {displayStats.residenciasActual}/{displayStats.residenciasMeta}
+        </p>
+      </div>
+
+      <div className="space-y-1">
+        <div className="flex items-center text-[0.92rem] opacity-85">
+          <span className="inline-flex items-center gap-2">
+            <Smartphone size={14} className="text-cyan-300/90" />
+            {displayStats.appsHitosActivos}/5 escuelas atendidas por ciclo escolar.
+          </span>
+        </div>
+        <ProgressBar
+          value={displayBarValues.implementacionEscuelas}
+          barClassName="bg-gradient-to-r from-indigo-300 via-blue-300 to-cyan-300"
+          maxValue={SCHOOL_IMPLEMENTATION_TRAMO_HUELLAS}
+          currentValue={displayStats.implementacionEscuelasActual}
+          milestones={[75, 150, 225, 300, 375]}
+          showUnlockMarker={displayStats.residenciasActual >= displayStats.residenciasMeta}
+          onPreviewChange={(value) => handleSliderInput('implementacionEscuelas', value)}
+          onRelease={() => setInteractiveSupport(null)}
+          isPreviewing={interactiveSupport !== null}
+        />
+        <p className="inline-flex w-full items-center justify-end gap-1 text-[13px] opacity-75">
+          <PawPrint size={13} className="text-violet-300/90" />
+          {displayStats.implementacionEscuelasActual}/{displayStats.implementacionEscuelasMeta}
+        </p>
+      </div>
+
+      <div className="space-y-1">
+        <div className="flex items-center text-[0.92rem] opacity-85">
+          <span className="inline-flex items-center gap-2">
+            <Drama size={14} className="text-violet-300/90" />
+            Fondo para expansión creativa
+          </span>
+        </div>
+        <ProgressBar
+          value={displayBarValues.universos}
+          barClassName="bg-gradient-to-r from-violet-300 via-fuchsia-300 to-pink-400"
+          maxValue={EXPANSION_START}
+          currentValue={Math.min(displayStats.totalSupport, EXPANSION_START)}
+          milestones={[Math.round(EXPANSION_START / 2), EXPANSION_START]}
+          onPreviewChange={(value) => handleSliderInput('universos', value)}
+          onRelease={() => setInteractiveSupport(null)}
+          isPreviewing={interactiveSupport !== null}
+        />
+        <p className="text-xs opacity-65">
+          A partir de la huella {EXPANSION_START_COPY}, cada huella se convierte en reinversión. ✨
+        </p>
+      </div>
+
+      <div className="space-y-2">
+        <p className="text-md opacity-90">
+          Faltan <strong>{displayStats.annualFaltan}</strong> huellas para completar todos los tramos.
+        </p>
+        <p className="text-sm opacity-80">
+          Reinversión (excedente): <strong>+{displayStats.reinversion}</strong>
+        </p>
+      </div>
+    </>
+  );
+
   // 4) Renderizado
   return (
     <div className="relative mx-auto h-full max-w-xl text-center flex flex-col gap-6">
       {confettiBursts.map((burst) => (
         <ConfettiBurst key={burst} seed={burst} />
       ))}
-      {/* Panel de impacto */}
       <div
         ref={impactPanelRef}
-        className="relative rounded-2xl border border-white/10 bg-white/5 p-5 text-left text-slate-100 flex flex-col gap-4 flex-1"
+        className="relative flex flex-1 flex-col gap-4 rounded-2xl border border-white/10 bg-white/5 p-5 text-left text-slate-100"
       >
-        <button
-          type="button"
-          onClick={handleToggleCounterSound}
-          className="absolute right-3 top-3 z-20 inline-flex h-8 w-8 items-center justify-center rounded-full border border-white/15 bg-white/5 text-slate-200/90 hover:border-purple-300/40 hover:text-white transition"
-          aria-label={isCounterSoundEnabled ? 'Silenciar sonidos del simulador' : 'Activar sonidos del simulador'}
-          title={isCounterSoundEnabled ? 'Silenciar simulador' : 'Activar simulador sonoro'}
-        >
-          {isCounterSoundEnabled ? (
-            <Volume2 size={14} className="text-purple-200" />
-          ) : (
-            <VolumeX size={14} className="text-slate-300" />
-          )}
-        </button>
-        <p className="text-[0.85rem] uppercase tracking-[0.18em] text-slate-400/80">
-          Modelo anual por tramos · Q{currentQuarter} {currentYear}
-        </p>
-        <div className="flex items-baseline justify-between">
-          <p className="text-[1.05rem] opacity-90 inline-flex items-center gap-2 leading-tight">
-            <PawPrint size={14} className="text-violet-300/90" />
-            Huellas activadas
-          </p>
-          <p className="text-[2.2rem] font-semibold leading-none">{subs}</p>
-        </div>
-        <div className="flex items-baseline justify-between">
-          <p className="text-[1.05rem] opacity-90 inline-flex items-center gap-2 leading-tight">
-            <Ticket size={14} className="text-cyan-300/90" />
-            Boletos voluntarios
-          </p>
-          <p className="text-[2.2rem] font-semibold leading-none">{ticketUnits}</p>
+        <div className="relative pr-12">
+          {counterToggleButton}
+          {impactPanelHeading}
         </div>
 
-        <div className="space-y-2">
-          <div className="flex items-baseline justify-between">
-            <p className="text-[1.05rem] opacity-90 leading-tight">
-              {interactiveSupport !== null
-                ? 'Modo simulador'
-                : 'Huellas + boletos ='}
-            </p>
-            <p className="text-[2.2rem] font-semibold leading-none">{displayStats.totalSupport}</p>
-          </div>
+        <div className="order-1">
+          {summarySection}
         </div>
 
-        <div className="mt-1 space-y-3">
-          <div className="space-y-3">
-            <div className="flex flex-wrap items-center gap-2">
-              <div className="inline-flex items-center gap-2 rounded-full border border-cyan-300/25 bg-cyan-400/10 px-3 py-1.5 text-[0.68rem] font-semibold uppercase tracking-[0.24em] text-cyan-100/90 shadow-[0_0_18px_rgba(34,211,238,0.14)]">
-                <Sparkles size={12} className="text-cyan-200" />
-                <span>Saldo actual</span>
-                <span className="tabular-nums text-white">{gatBalance.toLocaleString('es-MX')} GAT</span>
-              </div>
-            </div>
-            <button
-              type="button"
-              onClick={() => setShowTicketSupport((prev) => !prev)}
-              className="block w-full border border-white/20 text-white px-4 py-2 rounded hover:border-purple-300/70 hover:text-purple-100"
-            >
-              {showTicketSupport ? 'Ocultar opciones' : 'Sumar mi boleto'}
-            </button>
-            {showTicketSupport ? (
-              <div className="relative overflow-hidden rounded-2xl border border-white/15 bg-black/35 px-4 py-3 text-left text-slate-100">
-                {isTicketSupportVideoAvailable ? (
-                  <video
-                    className="pointer-events-none absolute inset-0 h-full w-full scale-[1.03] object-cover opacity-70 saturate-125 contrast-125 brightness-110"
-                    autoPlay
-                    loop
-                    muted
-                    playsInline
-                    preload="auto"
-                    poster={SUPPORT_CTA_POSTER_URL}
-                    onError={() => setIsTicketSupportVideoAvailable(false)}
-                    aria-hidden="true"
-                  >
-                    <source src={SUPPORT_CTA_VIDEO_URL} type="video/mp4" />
-                  </video>
-                ) : null}
-                <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-slate-950/35 via-slate-950/30 to-slate-950/45" />
-                <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_22%_24%,rgba(125,211,252,0.28),transparent_45%),radial-gradient(circle_at_80%_72%,rgba(147,197,253,0.22),transparent_18%)]" />
-                <p className="relative z-10 mb-2 text-m leading-relaxed text-slate-400">
-                Si asististe a la obra, puedes convertir ese momento en huella. 
-                  Si no tienes comprobante, tu palabra es suficiente. 
-                  Alguien del equipo te contestará.
-                  <br /><br />
-                </p>
-                <div className="relative z-10 grid gap-2">
-                  <a
-                    href={`mailto:${SUPPORT_EMAIL}?subject=Destinar%20boleto%20a%20la%20causa&body=${SUPPORT_MESSAGE}`}
-                    className="flex items-center justify-center gap-2 text-center rounded-lg border border-sky-200/30 bg-white/10 px-4 py-2 text-white backdrop-blur-md transition hover:border-sky-200/60 hover:bg-white/15"
-                  >
-                    <Mail size={18} />
-                    Enviar por correo
-                  </a>
-                  <a
-                    href={`https://wa.me/${SUPPORT_WHATSAPP.replace(/\D/g, '')}?text=${SUPPORT_MESSAGE}`}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="flex items-center justify-center gap-2 text-center rounded-lg border border-sky-200/30 bg-white/10 px-4 py-2 text-white backdrop-blur-md transition hover:border-sky-200/60 hover:bg-white/15"
-                  >
-                    <MessageCircle size={18} />
-                    Enviar por WhatsApp
-                  </a>
-                </div>
-              </div>
-            ) : null}
-            <button
-              onClick={handleCheckout}
-              disabled={loading || isSubscriber || isCheckingSubscription}
-              className={`white-glass-btn block w-full px-4 py-2 text-slate-900 disabled:cursor-not-allowed disabled:opacity-50 ${
-                !user ? 'white-glass-btn--idle' : 'white-glass-btn--active'
-              } ${isLoginPulseActive ? 'white-glass-btn--pulse animate-pulse' : ''}`}
-            >
-              {isCheckingSubscription
-                ? 'Validando huella...'
-                : isSubscriber
-                  ? 'Tu huella ya está activa'
-                  : loading
-                    ? 'Abriendo confirmación…'
-                    : 'Activar mi huella'}
-            </button>
-          </div>
-
-          {msg ? <p className="text-red-300 text-sm">{msg}</p> : null}
-
-          <div ref={embeddedCheckoutRef} className="pt-1">
-            {checkoutStatus ? (
-              !user && checkoutStatus === 'Inicia sesión para activar tu huella aquí mismo.' ? (
-                <p className="text-slate-200 text-sm">
-                  <button
-                    type="button"
-                    onClick={handleOpenLoginFromStatus}
-                    className="underline underline-offset-2 hover:text-white transition"
-                  >
-                    Inicia sesión
-                  </button>{' '}
-                  para activar tu huella aquí mismo.
-                </p>
-              ) : (
-                <p className="text-slate-200 text-sm">{checkoutStatus}</p>
-              )
-            ) : null}
-            {pendingFallbackPayload ? (
-              <button
-                type="button"
-                onClick={handleManualFallbackCheckout}
-                disabled={loading}
-                className="mt-2 w-full rounded-lg border border-white/25 px-4 py-2 text-sm text-white hover:border-white/40 disabled:opacity-50"
-              >
-                {loading ? 'Abriendo checkout externo…' : 'Abrir checkout externo'}
-              </button>
-            ) : null}
-            {isSubscriber ? (
-              <div className="mt-3 rounded-xl border border-emerald-300/30 bg-emerald-500/10 p-3 text-left text-emerald-100">
-                <p className="text-sm font-semibold"> Primera huella: {firstHuellaDateLabel ?? 'fecha en sincronización'}.
-                </p>
-                <p className="mt-1 text-xs text-emerald-100/90">
-                  Tu gesto forma parte del tramo vigente.
-                </p>
-                <p className="mt-1 text-xs text-emerald-100/90">
-                  Recibirás actualización trimestral del crecimiento.
-                </p>
-              </div>
-            ) : null}
-            {embeddedClientSecret ? (
-              <HuellaEmbeddedCheckout
-                clientSecret={embeddedClientSecret}
-                onDone={handleEmbeddedCheckoutDone}
-              />
-            ) : null}
-          </div>
+        <div className="order-2 space-y-4 sm:order-3">
+          {simulatorSection}
         </div>
 
-        <div className="mt-1 space-y-4">
-          <div className="flex items-baseline justify-between">
-            <p className="text-[1.02rem] opacity-90">Meta mínima anual</p>
-            <p className="text-[1.45rem] font-semibold leading-none">
-              {displayStats.totalSupportClamped}/{ANNUAL_TOTAL_HUELLAS}
-            </p>
-          </div>
-          {/* Terapias */}
-          <div className="space-y-1">
-          <div className="flex items-center text-[0.92rem] opacity-85">
-            <span className="inline-flex items-center gap-2">
-              <HeartHandshake size={14} className="text-emerald-300/90" />
-              Primer tramo: {displayStats.sesiones}/102 sesiones individuales al año.
-            </span>
-          </div>
-          <ProgressBar
-            value={displayBarValues.terapias}
-            barClassName="bg-gradient-to-r from-emerald-300 via-teal-300 to-cyan-300"
-            maxValue={THERAPY_TRAMO_HUELLAS}
-            currentValue={displayStats.terapiasActual}
-            onPreviewChange={(value) => handleSliderInput('terapias', value)}
-            onRelease={() => setInteractiveSupport(null)}
-            isPreviewing={interactiveSupport !== null}
-          />
-          <p className="text-[13px] opacity-75 inline-flex items-center gap-1 justify-end w-full">
-            <PawPrint size={13} className="text-violet-300/90" />
-            {displayStats.terapiasActual}/{displayStats.terapiasMeta}
-          </p>
-          </div>
-
-          {/* Residencias */}
-          <div className="space-y-1">
-          <div className="flex items-center text-[0.92rem] opacity-85">
-            <span className="inline-flex items-center gap-2">
-              <Palette size={14} className="text-amber-300/90" />
-              {displayStats.residenciasHitosActivos}/3 talleres creativos por ciclo escolar.
-            </span>
-          </div>
-          <ProgressBar
-            value={displayBarValues.residencias}
-            barClassName="bg-gradient-to-r from-amber-300 via-yellow-300 to-orange-400"
-            maxValue={RESIDENCY_TRAMO_HUELLAS}
-            currentValue={displayStats.residenciasActual}
-            milestones={[17, 34, 51]}
-            onPreviewChange={(value) => handleSliderInput('residencias', value)}
-            onRelease={() => setInteractiveSupport(null)}
-            isPreviewing={interactiveSupport !== null}
-          />
-          <p className="text-[13px] opacity-75 inline-flex items-center gap-1 justify-end w-full">
-            <PawPrint size={13} className="text-violet-300/90" />
-            {displayStats.residenciasActual}/{displayStats.residenciasMeta}
-          </p>
-          </div>
-
-          {/* Implementación de apps en escuelas */}
-          <div className="space-y-1">
-          <div className="flex items-center text-[0.92rem] opacity-85">
-            <span className="inline-flex items-center gap-2">
-              <Smartphone size={14} className="text-cyan-300/90" />
-              {displayStats.appsHitosActivos}/5 escuelas atendidas por ciclo escolar.
-            </span>
-          </div>
-          <ProgressBar
-            value={displayBarValues.implementacionEscuelas}
-            barClassName="bg-gradient-to-r from-indigo-300 via-blue-300 to-cyan-300"
-            maxValue={SCHOOL_IMPLEMENTATION_TRAMO_HUELLAS}
-            currentValue={displayStats.implementacionEscuelasActual}
-            milestones={[75, 150, 225, 300, 375]}
-            showUnlockMarker={displayStats.residenciasActual >= displayStats.residenciasMeta}
-            onPreviewChange={(value) => handleSliderInput('implementacionEscuelas', value)}
-            onRelease={() => setInteractiveSupport(null)}
-            isPreviewing={interactiveSupport !== null}
-          />
-          <p className="text-[13px] opacity-75 inline-flex items-center gap-1 justify-end w-full">
-            <PawPrint size={13} className="text-violet-300/90" />
-            {displayStats.implementacionEscuelasActual}/{displayStats.implementacionEscuelasMeta}
-          </p>
-          </div>
-
-          {/* Expansión creativa */}
-          <div className="space-y-1">
-          <div className="flex items-center text-[0.92rem] opacity-85">
-            <span className="inline-flex items-center gap-2">
-              <Drama size={14} className="text-violet-300/90" />
-              Fondo para expansión creativa
-            </span>
-          </div>
-          <ProgressBar
-            value={displayBarValues.universos}
-            barClassName="bg-gradient-to-r from-violet-300 via-fuchsia-300 to-pink-400"
-            maxValue={EXPANSION_START}
-            currentValue={Math.min(displayStats.totalSupport, EXPANSION_START)}
-            milestones={[Math.round(EXPANSION_START / 2), EXPANSION_START]}
-            onPreviewChange={(value) => handleSliderInput('universos', value)}
-            onRelease={() => setInteractiveSupport(null)}
-            isPreviewing={interactiveSupport !== null}
-          />
-          <p className="text-xs opacity-65">
-            A partir de la huella {EXPANSION_START_COPY}, cada huella se convierte en reinversión. ✨
-          </p>
-          </div>
-        </div>
-
-        <div className="space-y-2">
-          <p className="text-md opacity-90">
-            Faltan <strong>{displayStats.annualFaltan}</strong> huellas para completar todos los tramos.
-          </p>
-          <p className="text-sm opacity-80">
-            Reinversión (excedente): <strong>+{displayStats.reinversion}</strong>
-          </p>
+        <div className="order-3 sm:order-2">
+          {ctaSection}
         </div>
       </div>
       {showAftercareOverlay ? (
