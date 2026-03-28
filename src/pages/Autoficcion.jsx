@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/SupabaseAuthContext';
 import LoginOverlay from '@/components/ContributionModal/LoginOverlay';
@@ -9,33 +9,67 @@ const Autoficcion = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const [showLogin, setShowLogin] = useState(false);
+  const iframeRef = useRef(null);
 
   const baseUrl = useMemo(
     () => (AUTOFICCION_URL ? AUTOFICCION_URL.replace(/\/+$/, '') : ''),
     []
   );
 
-  // Construir src del iframe con user_id si hay sesión activa
+  const authDisplayName = useMemo(
+    () => user?.user_metadata?.alias || user?.user_metadata?.full_name || (user?.email ? user.email.split('@')[0] : ''),
+    [user]
+  );
+
+  const postUserContext = (targetWindow, appOrigin) => {
+    if (!targetWindow || !appOrigin) return;
+    targetWindow.postMessage(
+      {
+        type: 'autoficcion:user-context',
+        userId: user?.id ?? null,
+        userName: authDisplayName || null,
+        profile: {
+          id: user?.id ?? null,
+          full_name: user?.user_metadata?.full_name ?? null,
+          display_name: user?.user_metadata?.alias ?? null,
+          name: authDisplayName || null,
+          email: user?.email ?? null,
+        },
+      },
+      appOrigin
+    );
+  };
+
+  // Construir src del iframe con contexto básico del usuario autenticado.
   const iframeSrc = useMemo(() => {
     if (!baseUrl) return '';
     const url = new URL(baseUrl);
     if (user?.id) url.searchParams.set('user_id', user.id);
+    if (authDisplayName) url.searchParams.set('user_name', authDisplayName);
     return url.toString();
-  }, [baseUrl, user?.id]);
+  }, [authDisplayName, baseUrl, user?.id]);
 
   // Escuchar mensajes de la app autoficción (postMessage bridge)
   useEffect(() => {
+    let appOrigin = '';
+    try {
+      appOrigin = new URL(baseUrl).origin;
+    } catch {
+      return undefined;
+    }
+
     const handleMessage = (event) => {
-      if (!baseUrl) return;
-      try {
-        const appOrigin = new URL(baseUrl).origin;
-        if (event.origin !== appOrigin) return;
-      } catch { return; }
+      if (event.origin !== appOrigin) return;
 
       const { type } = event.data ?? {};
 
       if (type === 'autoficcion:request-login') {
         setShowLogin(true);
+        return;
+      }
+
+      if (type === 'autoficcion:request-user-context') {
+        postUserContext(event.source, appOrigin);
         return;
       }
 
@@ -46,17 +80,24 @@ const Autoficcion = () => {
 
     window.addEventListener('message', handleMessage);
     return () => window.removeEventListener('message', handleMessage);
-  }, [baseUrl, navigate]);
+  }, [authDisplayName, baseUrl, navigate, user]);
 
   return (
     <div className="fixed inset-0 z-50 bg-black">
       <div className="absolute inset-0">
         {iframeSrc ? (
           <iframe
+            ref={iframeRef}
             title="Mi gato encerrado — autoficción"
             src={iframeSrc}
             className="h-full w-full border-0"
             allow="microphone; fullscreen; clipboard-write"
+            onLoad={() => {
+              if (!baseUrl) return;
+              try {
+                postUserContext(iframeRef.current?.contentWindow, new URL(baseUrl).origin);
+              } catch {}
+            }}
           />
         ) : (
           <div className="h-full w-full flex items-center justify-center text-slate-400 text-sm px-8 text-center">
