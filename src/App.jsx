@@ -4,9 +4,9 @@ import { Toaster } from '@/components/ui/toaster';
 import Header from '@/components/Header';
 import Hero from '@/components/Hero';
 import SectionErrorBoundary from '@/components/SectionErrorBoundary';
-import NextShow from '@/components/NextShow';
-import Contact from '@/components/Contact';
 import Footer from '@/components/Footer';
+const NextShow = lazy(() => import('@/components/NextShow'));
+const Contact = lazy(() => import('@/components/Contact'));
 import { useBlogPosts } from '@/hooks/useBlogPosts';
 import { useEmailRedirect } from '@/hooks/useEmailRedirect';
 import LoginToast from '@/components/LoginToast';
@@ -634,8 +634,16 @@ function App() {
                   </SectionErrorBoundary>
                 )}
 
-                <NextShow />
-                <Contact />
+                <DeferredSection fallback={<SectionFallback id="next-show" minHeight={480} />}>
+                  <Suspense fallback={<SectionFallback id="next-show" minHeight={480} />}>
+                    <NextShow />
+                  </Suspense>
+                </DeferredSection>
+                <DeferredSection fallback={<SectionFallback id="contact" minHeight={560} />}>
+                  <Suspense fallback={<SectionFallback id="contact" minHeight={560} />}>
+                    <Contact />
+                  </Suspense>
+                </DeferredSection>
               </main>
 
               <Footer

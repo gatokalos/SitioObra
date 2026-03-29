@@ -76,8 +76,18 @@ const AppleIcon = ({ className }) => (
 const LOGIN_TIGER_ART_URL =
   'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Merch/loggin_tiger.jpg';
 
+const getMailUrl = (emailAddr) => {
+  const domain = (emailAddr ?? '').split('@')[1]?.toLowerCase() ?? '';
+  if (domain === 'gmail.com' || domain === 'googlemail.com') return 'https://mail.google.com';
+  if (['outlook.com', 'hotmail.com', 'live.com', 'msn.com'].includes(domain)) return 'https://outlook.live.com';
+  if (domain === 'yahoo.com' || domain === 'ymail.com') return 'https://mail.yahoo.com';
+  if (domain === 'icloud.com' || domain === 'me.com' || domain === 'mac.com') return 'https://www.icloud.com/mail';
+  return 'mailto:';
+};
+
 const LoginOverlay = ({ onClose }) => {
   const [email, setEmail] = useState('');
+  const [submittedEmail, setSubmittedEmail] = useState('');
   const [pendingMagic, setPendingMagic] = useState(false);
   const [pendingProvider, setPendingProvider] = useState(null);
   const [feedback, setFeedback] = useState(null);
@@ -135,6 +145,7 @@ const LoginOverlay = ({ onClose }) => {
       if (error) {
         setFeedback({ type: 'error', text: error.message || 'No pudimos abrir el acceso por correo.' });
       } else {
+        setSubmittedEmail(normalized);
         setFeedback({
           type: 'success',
           text: 'Te mandamos un acceso por correo. Ábrelo y continúas desde donde ibas.',
@@ -302,7 +313,71 @@ const LoginOverlay = ({ onClose }) => {
                   </div>
                 </div>
 
-                <div className="mt-6 space-y-3">
+                {/* ── Magic Link form — CTA primario ── */}
+                <form onSubmit={handleMagicLink} className="mt-6 space-y-4">
+                  <label htmlFor="tracking-email" className="sr-only">
+                    Correo electrónico
+                  </label>
+                  <input
+                    id="tracking-email"
+                    type="email"
+                    value={email}
+                    onChange={(event) => setEmail(event.target.value)}
+                    placeholder="nombre@correo.com"
+                    className="form-surface form-surface--pill w-full px-6 py-4 text-lg"
+                    required
+                    disabled={isSubmitting}
+                  />
+                  <button
+                    type="submit"
+                    disabled={isSubmitting}
+                    className="w-full rounded-full px-6 py-4 text-lg font-semibold text-white shadow-[0_18px_40px_rgba(255,92,20,0.34)] transition hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-60"
+                    style={{
+                      backgroundImage:
+                        'linear-gradient(90deg, rgba(158,92,255,0.9) 0%, rgba(197,77,150,0.88) 28%, rgba(255,120,33,0.94) 72%, rgba(255,87,24,0.9) 100%)',
+                    }}
+                  >
+                    {pendingMagic ? 'Abriendo el acceso...' : 'Pasar al otro lado'}
+                  </button>
+                </form>
+
+                {feedback ? (
+                  <div
+                    className={`mt-4 rounded-2xl border px-4 py-3 text-sm leading-relaxed backdrop-blur-md ${
+                      feedback.type === 'error'
+                        ? 'border-rose-300/20 bg-rose-500/10 text-rose-100'
+                        : 'border-emerald-300/20 bg-emerald-500/10 text-emerald-100'
+                    }`}
+                  >
+                    {feedback.text}
+                  </div>
+                ) : null}
+
+                {feedback?.type === 'success' && submittedEmail ? (
+                  <a
+                    href={getMailUrl(submittedEmail)}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="mt-3 flex w-full items-center justify-center gap-2 rounded-full border border-emerald-400/30 bg-emerald-500/10 px-6 py-3.5 text-base font-semibold text-emerald-100 backdrop-blur-md transition hover:bg-emerald-500/20"
+                  >
+                    <svg aria-hidden="true" viewBox="0 0 20 20" className="h-4 w-4 fill-current">
+                      <path d="M2.003 5.884 10 9.882l7.997-3.998A2 2 0 0 0 16 4H4a2 2 0 0 0-1.997 1.884z" />
+                      <path d="m18 8.118-8 4-8-4V14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8.118z" />
+                    </svg>
+                    Abrir mi correo
+                  </a>
+                ) : null}
+
+                {/* ── Divider ── */}
+                <div className="relative my-5">
+                  <div className="border-t border-white/10" />
+                  <span className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 bg-[#09060f] px-3 text-xs text-white/35">
+                    o
+                  </span>
+                </div>
+
+                {/* ── Social — opciones secundarias ── */}
+                <div className="space-y-3">
                   <button
                     type="button"
                     onClick={handleGoogleLogin}
@@ -340,45 +415,6 @@ const LoginOverlay = ({ onClose }) => {
                         o agrega `http://localhost:4173` a los redirects permitidos en Supabase.
                       </div>
                     ) : null}
-                  </div>
-                ) : null}
-
-                <form onSubmit={handleMagicLink} className="mt-6 space-y-4">
-                  <label htmlFor="tracking-email" className="sr-only">
-                    Correo electronico
-                  </label>
-                  <input
-                    id="tracking-email"
-                    type="email"
-                    value={email}
-                    onChange={(event) => setEmail(event.target.value)}
-                    placeholder="nombre@correo.com"
-                    className="form-surface form-surface--pill w-full px-6 py-4 text-lg"
-                    required
-                    disabled={isSubmitting}
-                  />
-                  <button
-                    type="submit"
-                    disabled={isSubmitting}
-                    className="w-full rounded-full px-6 py-4 text-lg font-semibold text-white shadow-[0_18px_40px_rgba(255,92,20,0.34)] transition hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-60"
-                    style={{
-                      backgroundImage:
-                        'linear-gradient(90deg, rgba(158,92,255,0.9) 0%, rgba(197,77,150,0.88) 28%, rgba(255,120,33,0.94) 72%, rgba(255,87,24,0.9) 100%)',
-                    }}
-                  >
-                    {pendingMagic ? 'Abriendo el acceso...' : 'Pasar al otro lado'}
-                  </button>
-                </form>
-
-                {feedback ? (
-                  <div
-                    className={`mt-4 rounded-2xl border px-4 py-3 text-sm leading-relaxed backdrop-blur-md ${
-                      feedback.type === 'error'
-                        ? 'border-rose-300/20 bg-rose-500/10 text-rose-100'
-                        : 'border-emerald-300/20 bg-emerald-500/10 text-emerald-100'
-                    }`}
-                  >
-                    {feedback.text}
                   </div>
                 ) : null}
 

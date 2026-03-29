@@ -11,7 +11,10 @@
       "Bash(find /Users/gatoenigmatico/gatoencerrado-ai/landing/SitioObra/src -type f \\\\\\(-name *.ts -o -name *.tsx -o -name *.js -o -name *.jsx -o -name *.vue \\\\\\))",
       "Bash(supabase functions:*)",
       "Bash(curl -s -X POST \"https://ytubybkoucltwnselbhc.supabase.co/functions/v1/send-auth-email?apikey=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl0dWJ5YmtvdWNsdHduc2VsYmhjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTg1OTAwMDgsImV4cCI6MjA3NDE2NjAwOH0.hJuYwMc_MGgXIiXPC_3gSe3dRlU0SQ26-xDpC5y8QKo\" -H \"Content-Type: application/json\" -d '{:*)",
-      "Bash(ls -la /Users/gatoenigmatico/gatoencerrado-ai/landing/SitioObra/.env*)"
+      "Bash(ls -la /Users/gatoenigmatico/gatoencerrado-ai/landing/SitioObra/.env*)",
+      "Bash(grep -r \"supabase.co\\\\|VITE_SUPABASE_URL\" /Users/gatoenigmatico/gatoencerrado-ai/landing/SitioObra/src/ --include=*.js --include=*.jsx --include=*.ts --include=*.env -l)",
+      "Bash(grep \"SUPABASE_URL\\\\|supabase.co\" /Users/gatoenigmatico/gatoencerrado-ai/landing/SitioObra/.env*)",
+      "Bash(node -e \"console.log\\(require\\(''/Users/gatoenigmatico/gatoencerrado-ai/landing/SitioObra/node_modules/three/package.json''\\).version\\)\")"
     ],
     "additionalDirectories": [
       "/Users/gatoenigmatico/Desktop/Postulación EFIARTES",

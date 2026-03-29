@@ -67,6 +67,7 @@ jobs:
           VITE_SEARCH_API_URL: ${{ secrets.VITE_SEARCH_API_URL }}
           VITE_MINIVERSO_INTERCEPTION: ${{ secrets.VITE_MINIVERSO_INTERCEPTION }}
           VITE_AUTOFICCION_URL: ${{ secrets.VITE_AUTOFICCION_URL }}
+          VITE_SITE_URL: ${{ secrets.VITE_SITE_URL }}
         run: npm run build
 
       - name: Show contents of dist/
