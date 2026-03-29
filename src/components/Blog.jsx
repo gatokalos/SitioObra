@@ -439,7 +439,7 @@ const ArticleInteractionPanel = ({ post }) => {
     if (!post?.slug) {
       return `${origin}${pathname}#dialogo-critico`;
     }
-    return `${origin}${pathname}#blog/${encodeURIComponent(post.slug)}`;
+    return `${origin}/blog/${encodeURIComponent(post.slug)}`;
   }, [post?.slug]);
 
   const handleNotify = async () => {

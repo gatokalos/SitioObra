@@ -45,6 +45,7 @@ const PortalJuegos = lazy(() => import('@/pages/PortalJuegos'));
 const PortalOraculo = lazy(() => import('@/pages/PortalOraculo'));
 const PortalEncuentros = lazy(() => import('./pages/PortalEncuentros.jsx'));
 const LabHuella = lazy(() => import('@/pages/LabHuella'));
+const BlogPostPage = lazy(() => import('@/pages/BlogPostPage'));
 
 const SectionFallback = ({ id, minHeight = 320 }) => (
   <section id={id} className="relative" style={{ minHeight }}>
@@ -660,6 +661,7 @@ function App() {
       <Route path="/portal-juegos" element={<SectionErrorBoundary fallback={<PortalErrorFallback />}><Suspense fallback={<RouteFallback />}><PortalJuegos /></Suspense></SectionErrorBoundary>} />
       <Route path="/portal-oraculo" element={<SectionErrorBoundary fallback={<PortalErrorFallback />}><Suspense fallback={<RouteFallback />}><PortalOraculo /></Suspense></SectionErrorBoundary>} />
       <Route path="/portal-encuentros" element={<SectionErrorBoundary fallback={<PortalErrorFallback />}><Suspense fallback={<RouteFallback />}><PortalEncuentros /></Suspense></SectionErrorBoundary>} />
+      <Route path="/blog/:slug" element={<Suspense fallback={<RouteFallback />}><BlogPostPage /></Suspense>} />
       {IS_UI_LAB_ENABLED ? (
         <Route path="/lab/huella" element={<Suspense fallback={<RouteFallback />}><LabHuella /></Suspense>} />
       ) : null}

@@ -4,11 +4,21 @@
       "Bash(grep -rn \"dataset.miniverseOpen\\\\|dataset.gatoShowcaseOpen\\\\|data-gato-showcase\\\\|data-miniverse\" /Users/gatoenigmatico/gatoencerrado-ai/landing/SitioObra/src --include=*.jsx --include=*.js --include=*.css)",
       "Bash(sips -s format png \"/Users/gatoenigmatico/Desktop/Postulación EFIARTES/anexos/INDAUTOR Obra.pdf\" --out \"/Users/gatoenigmatico/Desktop/Postulación EFIARTES/anexos/INDAUTOR_Obra.png\")",
       "Bash(grep -r \"cine_projection\\\\|send-contact\\\\|Resend\" /Users/gatoenigmatico/gatoencerrado-ai/landing/SitioObra/src --include=*.jsx --include=*.js --include=*.ts)",
-      "Bash(grep -i \"cine\\\\|projection\\\\|email\" /Users/gatoenigmatico/gatoencerrado-ai/supabase/migrations/*.sql)"
+      "Bash(grep -i \"cine\\\\|projection\\\\|email\" /Users/gatoenigmatico/gatoencerrado-ai/supabase/migrations/*.sql)",
+      "Bash(curl -sIL https://literatura.miniversos.ai/)",
+      "Bash(curl -sL https://literatura.miniversos.ai/)",
+      "Bash(ssh -i ~/.ssh/hostinger_literatura -p 65002 u340417395@77.37.114.229 \"head -30 $HOME/domains/miniversos.ai/public_html/default.php\")",
+      "Bash(find /Users/gatoenigmatico/gatoencerrado-ai/landing/SitioObra/src -type f \\\\\\(-name *.ts -o -name *.tsx -o -name *.js -o -name *.jsx -o -name *.vue \\\\\\))",
+      "Bash(supabase functions:*)",
+      "Bash(curl -s -X POST \"https://ytubybkoucltwnselbhc.supabase.co/functions/v1/send-auth-email?apikey=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl0dWJ5YmtvdWNsdHduc2VsYmhjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTg1OTAwMDgsImV4cCI6MjA3NDE2NjAwOH0.hJuYwMc_MGgXIiXPC_3gSe3dRlU0SQ26-xDpC5y8QKo\" -H \"Content-Type: application/json\" -d '{:*)",
+      "Bash(ls -la /Users/gatoenigmatico/gatoencerrado-ai/landing/SitioObra/.env*)"
     ],
     "additionalDirectories": [
       "/Users/gatoenigmatico/Desktop/Postulación EFIARTES",
-      "/Users/gatoenigmatico/gatoencerrado-ai/supabase/functions/send-cine-projection-confirmation"
+      "/Users/gatoenigmatico/gatoencerrado-ai/supabase/functions/send-cine-projection-confirmation",
+      "/Users/gatoenigmatico/gatoencerrado-ai/apps/literatura/autoficcion/src/views",
+      "/Users/gatoenigmatico/gatoencerrado-ai/supabase/functions/send-auth-email",
+      "/Users/gatoenigmatico/gatoencerrado-ai/supabase"
     ]
   }
 }
