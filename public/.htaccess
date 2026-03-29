@@ -2,6 +2,12 @@
   RewriteEngine On
   RewriteBase /
 
+  # Servir páginas de artículos prerendered directamente (evita que mod_dir haga
+  # redirect 301 → directorio sin permisos de listado → 403)
+  RewriteCond %{REQUEST_URI} ^/blog/([^/]+)/?$
+  RewriteCond %{DOCUMENT_ROOT}/blog/%1/index.html -f
+  RewriteRule .* /blog/%1/index.html [L]
+
   # Permitir acceso directo a archivos y directorios
   RewriteCond %{REQUEST_FILENAME} !-f
   RewriteCond %{REQUEST_FILENAME} !-d
