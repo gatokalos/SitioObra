@@ -75,16 +75,15 @@ const MINIVERSE_KEYWORDS = {
 };
 
 const STARTER_FAQ_PROMPTS = [
-  '¿Cuál es la relación entre Es un gato encerrado y una causa social?',
-  '¿Qué diferencia hay entre la obra de teatro y #GatoEncerrado?',
   '¿Tengo que ver la obra primero para entender este universo?',
+  '¿Qué diferencia hay entre la obra de teatro y #GatoEncerrado?',
+  '¿Queda claro qué le pasa a Silvestre al final de la obra?',
   '¿El sitio continúa la historia o es otra cosa?',
   '¿Qué pasa si solo quiero curiosear sin registrarme?',
   '¿A alguien más le dio ansiedad esta obra… o solo a mí?',
-  '¿Queda claro qué le pasa a Silvestre al final de la obra?',
-  '¿Lo de las marcianas era literal o se me fue algo?',
-  '¿Esto es arte, experimento o estrategia de marketing?',
-  '¿Qué parte de lo que veo aquí fue escrita por una persona y qué parte por una máquina?',
+  '¿Por qué no le entiendo a la escena de las marcianas?',
+  '¿Cuál es la relación entre Es un gato encerrado y su causa social?',
+  '¿Payasito Tiste es el alter ego de Silvestre?',
   'Si la IA desapareciera mañana, ¿seguiría existiendo #GatoEncerrado?',
   '¿Qué tendría que pasar para que este proyecto florezca?',
   '¿Qué pasa después de que termina la función?'

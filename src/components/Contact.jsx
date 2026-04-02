@@ -158,9 +158,7 @@ const Contact = () => {
   );
 
   const handleActionClick = () => {
-    toast({
-      description: "🚧 Esta función no está implementada aún—¡pero no te preocupes! Puedes solicitarla en tu próxima visita! 🚀"
-    });
+    window.open('/presskit.html', '_blank', 'noopener,noreferrer');
   };
 
   const handleSocialClick = (url) => {

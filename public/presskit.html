@@ -1,0 +1,645 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Press Kit — #GatoEncerrado</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=DM+Mono:wght@300;400;500&family=Bebas+Neue&display=swap" rel="stylesheet">
+<style>
+:root {
+  --ink: #0f0d0e;
+  --paper: #f5f1ea;
+  --cream: #ede8df;
+  --accent: #7b2d8b;
+  --accent2: #c94f7c;
+  --gold: #b89a5a;
+  --muted: #7a7068;
+  --rule: #d4ccc0;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body { background: var(--paper); color: var(--ink); font-family: 'Cormorant Garamond', Georgia, serif; font-size: 17px; line-height: 1.7; }
+
+/* LANG TOGGLE */
+.lang-toggle { position: fixed; top: 1.5rem; right: 1.5rem; z-index: 100; display: flex; border: 1px solid var(--accent); border-radius: 2px; overflow: hidden; font-family: 'DM Mono', monospace; font-size: 0.7rem; }
+.lang-btn { padding: 0.4rem 0.8rem; cursor: pointer; background: var(--paper); color: var(--accent); border: none; letter-spacing: 0.1em; transition: background 0.2s, color 0.2s; }
+.lang-btn.active { background: var(--accent); color: white; }
+
+/* NAV DOTS */
+.nav-dots { position: fixed; right: 1.5rem; top: 50%; transform: translateY(-50%); display: flex; flex-direction: column; gap: 0.6rem; z-index: 50; }
+.dot { width: 6px; height: 6px; border-radius: 50%; background: var(--rule); cursor: pointer; transition: background 0.2s, transform 0.2s; }
+.dot.active { background: var(--accent); transform: scale(1.4); }
+
+/* COVER */
+.cover { min-height: 100vh; display: grid; grid-template-columns: 1fr 1fr; position: relative; overflow: hidden; }
+.cover-left { background: var(--ink); display: flex; flex-direction: column; justify-content: flex-end; padding: 4rem 3rem; position: relative; overflow: hidden; }
+.cover-left::before { content: '#GATO\AENCER\ARADO'; white-space: pre; position: absolute; top: -1rem; left: -0.5rem; font-family: 'Bebas Neue', sans-serif; font-size: 9rem; line-height: 0.85; color: rgba(123,45,139,0.15); pointer-events: none; letter-spacing: -0.02em; }
+.cover-eyebrow { font-family: 'DM Mono', monospace; font-size: 0.65rem; letter-spacing: 0.2em; color: var(--accent2); text-transform: uppercase; margin-bottom: 1.5rem; }
+.cover-title { font-family: 'Bebas Neue', sans-serif; font-size: clamp(3.5rem, 7vw, 6rem); line-height: 0.9; color: white; letter-spacing: 0.02em; margin-bottom: 0.5rem; }
+.cover-title span { color: var(--accent2); }
+.cover-subtitle { font-family: 'Cormorant Garamond', serif; font-style: italic; font-size: 1.15rem; color: rgba(255,255,255,0.55); margin-bottom: 2.5rem; line-height: 1.4; }
+.cover-rule { width: 3rem; height: 2px; background: var(--accent); margin-bottom: 1.5rem; }
+.cover-meta { font-family: 'DM Mono', monospace; font-size: 0.65rem; color: rgba(255,255,255,0.35); letter-spacing: 0.12em; line-height: 2; }
+.cover-right { background: var(--cream); display: flex; flex-direction: column; justify-content: center; padding: 4rem 3rem; border-left: 1px solid var(--rule); }
+.cover-tagline { font-size: clamp(1.6rem, 3vw, 2.4rem); font-weight: 300; line-height: 1.25; color: var(--ink); margin-bottom: 2rem; }
+.cover-tagline em { font-style: italic; color: var(--accent); }
+.cover-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 2.5rem; }
+.stat { border-top: 2px solid var(--accent); padding-top: 0.75rem; }
+.stat-number { font-family: 'Bebas Neue', sans-serif; font-size: 2.5rem; color: var(--accent); line-height: 1; }
+.stat-label { font-family: 'DM Mono', monospace; font-size: 0.62rem; letter-spacing: 0.1em; color: var(--muted); text-transform: uppercase; margin-top: 0.25rem; line-height: 1.4; }
+.cover-contact { font-family: 'DM Mono', monospace; font-size: 0.7rem; color: var(--muted); letter-spacing: 0.05em; line-height: 2; border-top: 1px solid var(--rule); padding-top: 1.5rem; }
+.cover-contact a { color: var(--accent); text-decoration: none; }
+
+/* SECTIONS */
+.section { max-width: 960px; margin: 0 auto; padding: 4rem 2rem; border-bottom: 1px solid var(--rule); }
+.section:last-child { border-bottom: none; }
+.section-label { font-family: 'DM Mono', monospace; font-size: 0.62rem; letter-spacing: 0.25em; color: var(--accent); text-transform: uppercase; margin-bottom: 0.5rem; }
+.section-title { font-family: 'Bebas Neue', sans-serif; font-size: clamp(2rem, 4vw, 3rem); letter-spacing: 0.03em; color: var(--ink); margin-bottom: 2rem; line-height: 1; }
+.section-title .accent { color: var(--accent); }
+.prose { font-size: 1.05rem; line-height: 1.85; color: #2a2520; }
+.prose p { margin-bottom: 1.2rem; }
+.prose p:last-child { margin-bottom: 0; }
+
+/* LAYOUTS */
+.two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 4rem; align-items: start; }
+
+/* OBRA CARD */
+.obra-card { background: var(--ink); color: white; padding: 2.5rem; margin-bottom: 0; }
+.obra-card .section-label { color: var(--accent2); }
+.obra-card .section-title { color: white; margin-bottom: 1rem; }
+.obra-card .prose { color: rgba(255,255,255,0.78); }
+
+/* ECO GRID */
+.eco-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px; background: var(--rule); margin-top: 2rem; }
+.eco-item { background: var(--paper); padding: 1.3rem; }
+.eco-item-status { font-family: 'DM Mono', monospace; font-size: 0.58rem; letter-spacing: 0.15em; color: var(--muted); text-transform: uppercase; margin-bottom: 0.4rem; }
+.eco-item.active .eco-item-status { color: var(--accent2); }
+.eco-item-name { font-family: 'Bebas Neue', sans-serif; font-size: 1.25rem; letter-spacing: 0.05em; margin-bottom: 0.3rem; }
+.eco-item-desc { font-size: 0.85rem; color: var(--muted); line-height: 1.45; }
+
+/* IMPACT */
+.impact-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 2rem; margin-top: 2rem; }
+.impact-item { border-left: 3px solid var(--accent); padding-left: 1.2rem; }
+.impact-num { font-family: 'Bebas Neue', sans-serif; font-size: 2.8rem; color: var(--accent); line-height: 1; }
+.impact-label { font-size: 0.88rem; color: var(--muted); line-height: 1.4; margin-top: 0.3rem; }
+
+/* TOUR GRID */
+.tour-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1px; background: var(--rule); margin: 1.5rem 0; }
+.tour-item { background: var(--paper); padding: 1.2rem 1.4rem; }
+.tour-item.highlight { background: var(--ink); }
+.tour-date { font-family: 'DM Mono', monospace; font-size: 0.58rem; letter-spacing: 0.15em; color: var(--accent); text-transform: uppercase; margin-bottom: 0.3rem; }
+.tour-item.highlight .tour-date { color: var(--accent2); }
+.tour-venue { font-size: 1rem; font-weight: 600; margin-bottom: 0.2rem; }
+.tour-item.highlight .tour-venue { color: white; }
+.tour-detail { font-family: 'DM Mono', monospace; font-size: 0.62rem; color: var(--muted); }
+.tour-item.highlight .tour-detail { color: rgba(255,255,255,0.45); }
+
+/* PRESS */
+.press-item { border-left: 3px solid var(--accent); padding-left: 1.2rem; margin-bottom: 1.8rem; }
+.press-item.gold { border-left-color: var(--gold); }
+.press-source { font-family: 'DM Mono', monospace; font-size: 0.6rem; letter-spacing: 0.15em; color: var(--muted); text-transform: uppercase; margin-bottom: 0.5rem; }
+.press-item.gold .press-source { color: var(--gold); }
+.press-quote { font-size: 1rem; line-height: 1.7; color: var(--ink); font-style: italic; margin-bottom: 0.5rem; }
+.press-byline { font-family: 'DM Mono', monospace; font-size: 0.65rem; color: var(--muted); }
+.press-note { font-size: 0.88rem; color: var(--muted); margin-top: 0.5rem; line-height: 1.5; }
+
+/* SPONSOR */
+.bg-cream { background: var(--cream); }
+.sponsor-tiers { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; margin-top: 2rem; }
+.tier { border: 1px solid var(--rule); padding: 2rem 1.5rem; background: var(--paper); }
+.tier.featured { border-color: var(--accent); background: var(--ink); color: white; }
+.tier-tag { font-family: 'DM Mono', monospace; font-size: 0.6rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--accent2); margin-bottom: 1rem; }
+.tier-name { font-family: 'Bebas Neue', sans-serif; font-size: 1.6rem; letter-spacing: 0.05em; margin-bottom: 1.2rem; }
+.tier.featured .tier-name { color: white; }
+.tier-benefits { list-style: none; font-size: 0.88rem; line-height: 2.1; color: var(--muted); }
+.tier.featured .tier-benefits { color: rgba(255,255,255,0.6); }
+.tier-benefits li::before { content: '— '; color: var(--accent); font-family: 'DM Mono', monospace; }
+
+/* TEAM */
+.team-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-top: 2rem; }
+.team-item { border-top: 1px solid var(--rule); padding-top: 1rem; }
+.team-name { font-size: 1.05rem; font-weight: 600; margin-bottom: 0.2rem; }
+.team-role { font-family: 'DM Mono', monospace; font-size: 0.62rem; letter-spacing: 0.1em; color: var(--accent); text-transform: uppercase; margin-bottom: 0.5rem; line-height: 1.5; }
+.team-detail { font-size: 0.88rem; color: var(--muted); line-height: 1.55; }
+.team-quote { font-size: 0.92rem; color: var(--ink); font-style: italic; margin-bottom: 0.3rem; line-height: 1.55; }
+
+/* FOOTER */
+footer { background: var(--ink); color: rgba(255,255,255,0.4); padding: 3rem 2rem; text-align: center; font-family: 'DM Mono', monospace; font-size: 0.65rem; letter-spacing: 0.12em; line-height: 2.2; }
+footer a { color: var(--accent2); text-decoration: none; }
+footer strong { color: white; }
+
+/* FADE IN */
+.fade-in { opacity: 0; transform: translateY(20px); transition: opacity 0.6s ease, transform 0.6s ease; }
+.fade-in.visible { opacity: 1; transform: translateY(0); }
+
+/* RESPONSIVE */
+@media (max-width: 768px) {
+  .cover { grid-template-columns: 1fr; }
+  .cover-left { min-height: 60vh; }
+  .two-col, .eco-grid, .impact-row, .sponsor-tiers, .team-grid, .tour-grid { grid-template-columns: 1fr; }
+  .cover-stats { grid-template-columns: 1fr 1fr; }
+  .nav-dots { display: none; }
+}
+@media print {
+  .lang-toggle, .nav-dots { display: none; }
+  .fade-in { opacity: 1; transform: none; }
+}
+</style>
+</head>
+<body>
+
+<div class="lang-toggle">
+  <button class="lang-btn active" onclick="setLang('es')">ES</button>
+  <button class="lang-btn" onclick="setLang('en')">EN</button>
+</div>
+<div class="nav-dots" id="navDots"></div>
+
+<!-- ══ PORTADA ══ -->
+<div class="cover" id="s0">
+  <div class="cover-left">
+    <div class="cover-eyebrow">Press Kit · Gira Nacional 2027</div>
+    <div class="cover-title"><span>#</span>GATO<br>ENCER<br>RADO</div>
+    <div class="cover-subtitle lang-es">Una historia que no termina en el escenario</div>
+    <div class="cover-subtitle lang-en" style="display:none">A story that does not end on stage</div>
+    <div class="cover-rule"></div>
+    <div class="cover-meta">
+      UNIVERSO #GATOENCERRADO<br>
+      universogatoencerrado.com<br>
+      TIJUANA · MEXICALI · HERMOSILLO · CIUDAD DE MÉXICO
+    </div>
+  </div>
+  <div class="cover-right">
+    <div class="cover-tagline lang-es">Un ecosistema artístico que articula teatro, narrativa y tecnología para explorar la <em>salud psicoemocional</em> en jóvenes.</div>
+    <div class="cover-tagline lang-en" style="display:none">An artistic ecosystem bridging theatre, narrative and technology to explore <em>psychoemotional health</em> in young audiences.</div>
+    <div class="cover-stats">
+      <div class="stat">
+        <div class="stat-number">+1,500</div>
+        <div class="stat-label lang-es">Espectadores · 2025</div>
+        <div class="stat-label lang-en" style="display:none">Audience reached · 2025</div>
+      </div>
+      <div class="stat">
+        <div class="stat-number">3</div>
+        <div class="stat-label lang-es">Medios de comunicación</div>
+        <div class="stat-label lang-en" style="display:none">Media outlets</div>
+      </div>
+      <div class="stat">
+        <div class="stat-number">7</div>
+        <div class="stat-label lang-es">Funciones en gira 2027<br>4 ciudades</div>
+        <div class="stat-label lang-en" style="display:none">Tour performances 2027<br>4 cities</div>
+      </div>
+      <div class="stat">
+        <div class="stat-number">9</div>
+        <div class="stat-label lang-es">Miniversos transmedia</div>
+        <div class="stat-label lang-en" style="display:none">Transmedia universes</div>
+      </div>
+    </div>
+    <div class="cover-contact">
+      <strong>Carlos Alberto Pérez Hernández</strong><br>
+      <span class="lang-es">Director Creativo y General</span><span class="lang-en" style="display:none">Creative &amp; General Director</span><br>
+      <a href="mailto:contacto@gatoencerrado.info">contacto@gatoencerrado.info</a><br>
+      +52 331 532 7985
+    </div>
+  </div>
+</div>
+
+<!-- ══ PROYECTO ══ -->
+<div class="section fade-in" id="s1">
+  <div class="section-label lang-es">El proyecto</div>
+  <div class="section-label lang-en" style="display:none">The project</div>
+  <div class="section-title lang-es">¿Qué es <span class="accent">#Gato<br>Encerrado?</span></div>
+  <div class="section-title lang-en" style="display:none">What is <span class="accent">#Gato<br>Encerrado?</span></div>
+  <div class="two-col">
+    <div class="prose lang-es">
+      <p>#GatoEncerrado es un ecosistema transmedia de creación artística y acompañamiento emocional, desarrollado desde Tijuana con vocación de circulación nacional. No es una obra de teatro con redes sociales: es un universo en expansión donde cada pieza —escénica, literaria, audiovisual, digital— existe por sí misma y amplifica a las demás.</p>
+      <p>Su eje temático es la experiencia interior del sujeto contemporáneo: los conflictos de identidad, el peso emocional del mundo digital y la búsqueda de sentido. Audiencia prioritaria: jóvenes de 13 a 35 años.</p>
+      <p>El proyecto cuenta con registros ante el INDAUTOR y marca registrada ante el IMPI en cuatro clases (9, 16, 21, 41), lo que garantiza su solidez como activo cultural y comercial.</p>
+    </div>
+    <div class="prose lang-en" style="display:none">
+      <p>#GatoEncerrado is a transmedia ecosystem of artistic creation and emotional support, developed in Tijuana with a national circulation scope. It is not a theatre production with social media: it is an expanding universe where each piece —scenic, literary, audiovisual, digital— stands on its own and amplifies the others.</p>
+      <p>Its thematic core is the inner experience of the contemporary subject: identity conflicts, the emotional weight of the digital world, and the search for meaning. Primary audience: people aged 13 to 35.</p>
+      <p>The project holds INDAUTOR copyright registrations and trademark protection with IMPI in four classes (9, 16, 21, 41), establishing its strength as both a cultural and commercial asset.</p>
+    </div>
+    <div class="obra-card">
+      <div class="section-label lang-es">Obra teatral · Núcleo del universo</div>
+      <div class="section-label lang-en" style="display:none">Theatre piece · Universe core</div>
+      <div class="section-title lang-es">Es un gato<br>encerrado</div>
+      <div class="section-title lang-en" style="display:none">Es un gato<br>encerrado</div>
+      <div class="prose lang-es">
+        <p>Dramaturgia: Carlos A. Pérez H. · Dirección: Gilberto Corrales</p>
+        <p>Sigue a Silvestre, un joven que atraviesa depresión y ansiedad. El público entra a su mente a través de sueños lúcidos, recuerdos distorsionados y sesiones terapéuticas, en una experiencia visual e inmersiva que combina teatro, proyecciones y diseño lumínico.</p>
+        <p>Teatro CAMAFEO, mayo 2025 · Centro Cultural Tijuana, diciembre 2025<br>Más de 1,500 espectadores · Registrada en INDAUTOR</p>
+      </div>
+      <div class="prose lang-en" style="display:none">
+        <p>Playwright: Carlos A. Pérez H. · Director: Gilberto Corrales</p>
+        <p>Follows Silvestre, a young man navigating depression and anxiety. The audience enters his mind through lucid dreams, distorted memories and therapy sessions, in a visual, immersive experience combining theatre, projections and luminic design.</p>
+        <p>Teatro CAMAFEO, May 2025 · Centro Cultural Tijuana, December 2025<br>Over 1,500 audience members · Registered with INDAUTOR</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ ECOSISTEMA ══ -->
+<div class="section fade-in" id="s2">
+  <div class="section-label lang-es">Ecosistema transmedia</div>
+  <div class="section-label lang-en" style="display:none">Transmedia ecosystem</div>
+  <div class="section-title lang-es">El universo <span class="accent">completo</span></div>
+  <div class="section-title lang-en" style="display:none">The complete <span class="accent">universe</span></div>
+  <div class="prose lang-es"><p>Nueve miniversos interconectados, accesibles desde <strong>universogatoencerrado.com</strong>.</p></div>
+  <div class="prose lang-en" style="display:none"><p>Nine interconnected mini-universes, accessible at <strong>universogatoencerrado.com</strong>.</p></div>
+  <div class="eco-grid">
+    <div class="eco-item active">
+      <div class="eco-item-status">● Activo / Active</div>
+      <div class="eco-item-name lang-es">Teatro</div>
+      <div class="eco-item-name lang-en" style="display:none">Theatre</div>
+      <div class="eco-item-desc lang-es">Es un gato encerrado · Núcleo narrativo · Gira nacional 2027</div>
+      <div class="eco-item-desc lang-en" style="display:none">Es un gato encerrado · Narrative core · National tour 2027</div>
+    </div>
+    <div class="eco-item active">
+      <div class="eco-item-status">● Activo / Active</div>
+      <div class="eco-item-name">Drama</div>
+      <div class="eco-item-desc lang-es">Experiencia interactiva con IA · Extensión digital de la obra</div>
+      <div class="eco-item-desc lang-en" style="display:none">AI-powered interactive experience · Digital extension of the play</div>
+    </div>
+    <div class="eco-item active">
+      <div class="eco-item-status">● Activo / Active</div>
+      <div class="eco-item-name lang-es">Literatura</div>
+      <div class="eco-item-name lang-en" style="display:none">Literature</div>
+      <div class="eco-item-desc lang-es">Novela Mi Gato Encerrado · Prólogo: Pepe Rojo · INDAUTOR 2025</div>
+      <div class="eco-item-desc lang-en" style="display:none">Novel Mi Gato Encerrado · Prologue: Pepe Rojo · INDAUTOR 2025</div>
+    </div>
+    <div class="eco-item active">
+      <div class="eco-item-status">● Activo / Active</div>
+      <div class="eco-item-name lang-es">Cine</div>
+      <div class="eco-item-name lang-en" style="display:none">Film</div>
+      <div class="eco-item-desc lang-es">Quirón (en línea) · CopyCats (postproducción) · Dir: Viviana González</div>
+      <div class="eco-item-desc lang-en" style="display:none">Quiron (online) · CopyCats (post-production) · Dir: Viviana Gonzalez</div>
+    </div>
+    <div class="eco-item">
+      <div class="eco-item-status">◌ En expansión</div>
+      <div class="eco-item-name lang-es">Gráficos</div>
+      <div class="eco-item-name lang-en" style="display:none">Comics</div>
+      <div class="eco-item-desc lang-es">Tres Pies al Gato · Novela gráfica · Illus: Manuel Sarabia, Sadaka</div>
+      <div class="eco-item-desc lang-en" style="display:none">Tres Pies al Gato · Graphic novel · Illus: Manuel Sarabia, Sadaka</div>
+    </div>
+    <div class="eco-item">
+      <div class="eco-item-status">◌ En expansión</div>
+      <div class="eco-item-name lang-es">Sonoridades</div>
+      <div class="eco-item-name lang-en" style="display:none">Soundscapes</div>
+      <div class="eco-item-desc lang-es">Música original y diseño sonoro · Lía Pérez, MPSE</div>
+      <div class="eco-item-desc lang-en" style="display:none">Original music and sound design · Lia Perez, MPSE</div>
+    </div>
+    <div class="eco-item">
+      <div class="eco-item-status">◌ En desarrollo</div>
+      <div class="eco-item-name lang-es">Movimiento</div>
+      <div class="eco-item-name lang-en" style="display:none">Movement</div>
+      <div class="eco-item-desc lang-es">Laboratorio coreográfico + instalaciones de realidad aumentada por ciudad</div>
+      <div class="eco-item-desc lang-en" style="display:none">Choreographic lab + city-based augmented reality public installations</div>
+    </div>
+    <div class="eco-item">
+      <div class="eco-item-status">◌ En desarrollo</div>
+      <div class="eco-item-name lang-es">Artesanías</div>
+      <div class="eco-item-name lang-en" style="display:none">Crafts</div>
+      <div class="eco-item-desc lang-es">Objetos narrativos con realidad aumentada · Paco Padilla, Tlaquepaque</div>
+      <div class="eco-item-desc lang-en" style="display:none">Narrative objects with AR activation · Paco Padilla, Tlaquepaque</div>
+    </div>
+    <div class="eco-item">
+      <div class="eco-item-status">◌ En desarrollo</div>
+      <div class="eco-item-name lang-es">Oráculo + Juegos</div>
+      <div class="eco-item-name lang-en" style="display:none">Oracle + Games</div>
+      <div class="eco-item-desc lang-es">Dispositivo simbólico colectivo · Apps interactivas con IA</div>
+      <div class="eco-item-desc lang-en" style="display:none">Collective symbolic device · AI-powered interactive apps</div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ IMPACTO + GIRA + PRENSA ══ -->
+<div class="section fade-in" id="s3">
+  <div class="section-label lang-es">Impacto, gira y prensa</div>
+  <div class="section-label lang-en" style="display:none">Impact, tour & press</div>
+  <div class="section-title lang-es">Arte con <span class="accent">propósito</span></div>
+  <div class="section-title lang-en" style="display:none">Art with <span class="accent">purpose</span></div>
+
+  <div class="two-col" style="margin-bottom:3rem;">
+    <div class="prose lang-es">
+      <p>#GatoEncerrado opera en tres niveles simultáneos: como experiencia artística, como plataforma de acompañamiento emocional y como modelo de impacto social medible. Su alianza con <strong>Isabel Ayuda para la Vida A.C.</strong> —más de 18 años en prevención del suicidio en jóvenes— garantiza que cada función se traduzca en intervención cultural concreta en escuelas y comunidades.</p>
+      <p>La Secretaría de Cultura del Gobierno de México destacó la obra como "la única producción teatral ofrecida en toda la ciudad para cerrar el año 2025" y como "una experiencia teatral pocas veces vista en la región norte del país".</p>
+    </div>
+    <div class="prose lang-en" style="display:none">
+      <p>#GatoEncerrado operates on three simultaneous levels: as an artistic experience, as an emotional support platform, and as a model of measurable social impact. Its alliance with <strong>Isabel Ayuda para la Vida A.C.</strong> —over 18 years in youth suicide prevention— ensures each performance translates into concrete cultural intervention in schools and communities.</p>
+      <p>Mexico's Secretaria de Cultura highlighted the production as "the only theatrical work offered across the entire city to close 2025" and as "a theatrical experience rarely seen in northern Mexico".</p>
+    </div>
+    <div>
+      <div class="impact-row">
+        <div class="impact-item">
+          <div class="impact-num">+1,500</div>
+          <div class="impact-label lang-es">Espectadores directos en 2025</div>
+          <div class="impact-label lang-en" style="display:none">Direct audience in 2025</div>
+        </div>
+        <div class="impact-item">
+          <div class="impact-num">2</div>
+          <div class="impact-label lang-es">Recintos institucionales (CAMAFEO + CECUT)</div>
+          <div class="impact-label lang-en" style="display:none">Institutional venues (CAMAFEO + CECUT)</div>
+        </div>
+        <div class="impact-item">
+          <div class="impact-num">7</div>
+          <div class="impact-label lang-es">Funciones en 4 ciudades · Gira 2027</div>
+          <div class="impact-label lang-en" style="display:none">Performances in 4 cities · 2027 tour</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- GIRA -->
+  <div class="section-label lang-es" style="margin-bottom:1rem;">Ruta de gira · 2027</div>
+  <div class="section-label lang-en" style="display:none; margin-bottom:1rem;">Tour route · 2027</div>
+  <div class="tour-grid">
+    <div class="tour-item">
+      <div class="tour-date lang-es">Mayo 2027 · Tijuana, Baja California</div>
+      <div class="tour-date lang-en" style="display:none">May 2027 · Tijuana, Baja California</div>
+      <div class="tour-venue lang-es">Centro Cultural Tijuana</div>
+      <div class="tour-venue lang-en" style="display:none">Centro Cultural Tijuana</div>
+      <div class="tour-detail lang-es">Sala de Espectáculos · 2 funciones</div>
+      <div class="tour-detail lang-en" style="display:none">Sala de Espectaculos · 2 performances</div>
+    </div>
+    <div class="tour-item">
+      <div class="tour-date lang-es">Mayo 2027 · Mexicali, Baja California</div>
+      <div class="tour-date lang-en" style="display:none">May 2027 · Mexicali, Baja California</div>
+      <div class="tour-venue lang-es">Teatro de la Ciudad de Mexicali</div>
+      <div class="tour-venue lang-en" style="display:none">Teatro de la Ciudad de Mexicali</div>
+      <div class="tour-detail lang-es">1 función</div>
+      <div class="tour-detail lang-en" style="display:none">1 performance</div>
+    </div>
+    <div class="tour-item">
+      <div class="tour-date lang-es">Mayo 2027 · Hermosillo, Sonora</div>
+      <div class="tour-date lang-en" style="display:none">May 2027 · Hermosillo, Sonora</div>
+      <div class="tour-venue lang-es">Teatro de la Ciudad de Hermosillo</div>
+      <div class="tour-venue lang-en" style="display:none">Teatro de la Ciudad de Hermosillo</div>
+      <div class="tour-detail lang-es">1 función</div>
+      <div class="tour-detail lang-en" style="display:none">1 performance</div>
+    </div>
+    <div class="tour-item highlight">
+      <div class="tour-date lang-es">8–14 Junio 2027 · Ciudad de México</div>
+      <div class="tour-date lang-en" style="display:none">June 8–14, 2027 · Mexico City</div>
+      <div class="tour-venue lang-es">Teatro Julio Castillo</div>
+      <div class="tour-venue lang-en" style="display:none">Teatro Julio Castillo</div>
+      <div class="tour-detail lang-es">3 funciones</div>
+      <div class="tour-detail lang-en" style="display:none">3 performances</div>
+    </div>
+  </div>
+
+  <!-- PRENSA -->
+  <div class="section-label lang-es" style="margin-top:3rem; margin-bottom:1.2rem;">Cobertura de medios</div>
+  <div class="section-label lang-en" style="display:none; margin-top:3rem; margin-bottom:1.2rem;">Media coverage</div>
+
+  <div class="press-item gold">
+    <div class="press-source">Secretaría de Cultura · Gobierno de México · Gob.mx · 17 diciembre 2025 · Comunicado oficial</div>
+    <div class="press-quote lang-es">"Destaca por su fuerza visual y su propuesta escénica de gran rigor técnico; reúne el talento de artistas de trayectoria nacional e internacional y explora la mente humana, la ansiedad y la depresión a través de una experiencia visual y emocional innovadora, usando proyecciones y diseño lumínico para crear un espacio inmersivo."</div>
+    <div class="press-quote lang-en" style="display:none">"It stands out for its visual strength and scenic proposal of great technical rigour; it brings together artists of national and international standing and explores the human mind, anxiety and depression through an innovative visual and emotional experience, using projections and luminic design to create an immersive space."</div>
+    <div class="press-note lang-es">La nota también describe la obra como "la única producción teatral ofrecida en toda la ciudad para cerrar el año 2025" y "una experiencia teatral pocas veces vista en la región norte del país".</div>
+    <div class="press-note lang-en" style="display:none">The release also described the production as "the only theatrical work offered across the entire city to close 2025" and "a theatrical experience rarely seen in northern Mexico".</div>
+  </div>
+
+  <div class="press-item">
+    <div class="press-source">El Imparcial Tijuana · 24 mayo 2025 · Por Víctor A. Delgado</div>
+    <div class="press-quote lang-es">"Humor, poesía y simbolismos que abordan temas sensibles como la soledad, ansiedad y salud mental conforman la experiencia escénica 'Gato Encerrado'. Un proyecto único que celebra al teatro, el talento local y el potencial de la ciudad."</div>
+    <div class="press-quote lang-en" style="display:none">"Humour, poetry and symbolism addressing sensitive subjects — loneliness, anxiety, mental health — make up the scenic experience. A unique project that celebrates theatre, local talent, and the potential of the city."</div>
+  </div>
+
+  <div class="press-item">
+    <div class="press-source">San Diego Red · 16 mayo 2025 · Por Grethell Anguiano Monarrez</div>
+    <div class="press-quote lang-es">"La puesta en escena #GatoEncerrado propone un viaje por la salud mental, el mundo de los sueños, la meditación y el inconsciente. El teatro tiene un enorme potencial para generar conversaciones en torno a la salud mental, algo que pocas formas artísticas logran con la misma profundidad."</div>
+    <div class="press-quote lang-en" style="display:none">"The staging of #GatoEncerrado proposes a journey through mental health, the dream world, meditation and the unconscious. Theatre has enormous potential to generate conversations around mental health — something few art forms achieve with the same depth."</div>
+  </div>
+</div>
+
+<!-- ══ PATROCINIOS ══ -->
+<div class="bg-cream" id="s4">
+  <div class="section">
+    <div class="section-label lang-es">Contribuye al universo</div>
+    <div class="section-label lang-en" style="display:none">Support the universe</div>
+    <div class="section-title lang-es">Por qué apoyar <span class="accent">#Gato<br>Encerrado</span></div>
+    <div class="section-title lang-en" style="display:none">Why support <span class="accent">#Gato<br>Encerrado</span></div>
+    <div class="prose lang-es" style="max-width:640px; margin-bottom:2.5rem;">
+      <p>Asociarte con #GatoEncerrado es posicionarte en el cruce entre cultura, tecnología e impacto social — el territorio de mayor credibilidad ante audiencias jóvenes urbanas. Tu marca no aparece como publicidad: aparece como <strong>parte de algo que importa</strong>.</p>
+      <p>El proyecto ofrece visibilidad en múltiples formatos y plataformas, alcance en cuatro ciudades durante 2027, y la posibilidad de articular acciones de Responsabilidad Social Empresarial concretas a través de la alianza con Isabel Ayuda para la Vida A.C.</p>
+    </div>
+    <div class="prose lang-en" style="display:none; max-width:640px; margin-bottom:2.5rem;">
+      <p>Partnering with #GatoEncerrado positions your brand at the intersection of culture, technology, and social impact — the highest-credibility territory with young urban audiences. Your brand does not appear as advertising: it appears as <strong>part of something that matters</strong>.</p>
+      <p>The project offers visibility across multiple formats and platforms, reach across four cities in 2027, and the opportunity to activate concrete Corporate Social Responsibility initiatives through the alliance with Isabel Ayuda para la Vida A.C.</p>
+    </div>
+    <div class="sponsor-tiers">
+      <div class="tier">
+        <div class="tier-tag lang-es">Nivel 1</div>
+        <div class="tier-tag lang-en" style="display:none">Tier 1</div>
+        <div class="tier-name lang-es">Colaborador</div>
+        <div class="tier-name lang-en" style="display:none">Collaborator</div>
+        <ul class="tier-benefits lang-es">
+          <li>Crédito en material impreso y digital</li>
+          <li>Mención en redes sociales del proyecto</li>
+          <li>Acceso a funciones para equipo</li>
+          <li>Logo en plataforma digital</li>
+        </ul>
+        <ul class="tier-benefits lang-en" style="display:none">
+          <li>Credit in print and digital materials</li>
+          <li>Social media mention</li>
+          <li>Team access to performances</li>
+          <li>Logo on digital platform</li>
+        </ul>
+      </div>
+      <div class="tier featured">
+        <div class="tier-tag lang-es">Nivel 2 · Recomendado</div>
+        <div class="tier-tag lang-en" style="display:none">Tier 2 · Recommended</div>
+        <div class="tier-name lang-es">Patrocinador</div>
+        <div class="tier-name lang-en" style="display:none">Sponsor</div>
+        <ul class="tier-benefits lang-es">
+          <li>Todo lo anterior</li>
+          <li>Presencia en cartelería de gira nacional</li>
+          <li>Activación de marca en funciones</li>
+          <li>Contenido co-producido para redes</li>
+          <li>Informe de impacto social con datos</li>
+        </ul>
+        <ul class="tier-benefits lang-en" style="display:none">
+          <li>Everything in Tier 1</li>
+          <li>Presence on national tour poster</li>
+          <li>Brand activation at performances</li>
+          <li>Co-produced social media content</li>
+          <li>Social impact report with data</li>
+        </ul>
+      </div>
+      <div class="tier">
+        <div class="tier-tag lang-es">Nivel 3</div>
+        <div class="tier-tag lang-en" style="display:none">Tier 3</div>
+        <div class="tier-name lang-es">Aliado Estratégico</div>
+        <div class="tier-name lang-en" style="display:none">Strategic Partner</div>
+        <ul class="tier-benefits lang-es">
+          <li>Todo lo anterior</li>
+          <li>Integración narrativa en plataforma digital</li>
+          <li>Programa RSE con Isabel Ayuda A.C.</li>
+          <li>Presentación institucional exclusiva</li>
+          <li>Derecho de primer refusal en gira 2027</li>
+        </ul>
+        <ul class="tier-benefits lang-en" style="display:none">
+          <li>Everything in Tier 2</li>
+          <li>Narrative integration in digital platform</li>
+          <li>CSR program with Isabel Ayuda A.C.</li>
+          <li>Exclusive institutional presentation</li>
+          <li>Right of first refusal on 2027 tour</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ EQUIPO ══ -->
+<div class="section fade-in" id="s5">
+  <div class="section-label lang-es">Equipo creativo</div>
+  <div class="section-label lang-en" style="display:none">Creative team</div>
+  <div class="section-title lang-es">Las personas<br>detrás del <span class="accent">universo</span></div>
+  <div class="section-title lang-en" style="display:none">The people<br>behind the <span class="accent">universe</span></div>
+  <div class="team-grid">
+
+    <div class="team-item">
+      <div class="team-name">Carlos Alberto Pérez Hernández</div>
+      <div class="team-role lang-es">Director Creativo y General · Autor · Productor</div>
+      <div class="team-role lang-en" style="display:none">Creative &amp; General Director · Author · Producer</div>
+      <div class="team-detail">Lic. Ciencias de la Comunicación (ITESO) · Máster en Escritura Creativa (U. Salamanca) · Arte y Entorno Digital (LABASAD Barcelona). Marca registrada IMPI · Obras registradas INDAUTOR.</div>
+    </div>
+
+    <div class="team-item">
+      <div class="team-name">Gilberto Corrales</div>
+      <div class="team-role lang-es">Dirección de escena · Sistema Nacional de Creadores</div>
+      <div class="team-role lang-en" style="display:none">Stage direction · National System of Art Creators</div>
+      <div class="team-quote lang-es">"Es un proyecto único que celebra al teatro, el talento local y el potencial de la ciudad."</div>
+      <div class="team-quote lang-en" style="display:none">"A unique project that celebrates theatre, local talent and the potential of the city."</div>
+      <div class="team-detail lang-es">Premio Innovación y Juventud en las Artes 2011, Dramaturgia. Director, Teatro en el Incendio. <span style="color:var(--muted);font-size:0.8rem">— El Imparcial</span></div>
+      <div class="team-detail lang-en" style="display:none">Innovation &amp; Youth in the Arts Award 2011, Dramaturgy. Director, Teatro en el Incendio.</div>
+    </div>
+
+    <div class="team-item">
+      <div class="team-name">Miroslava Wilson</div>
+      <div class="team-role lang-es">Productora</div>
+      <div class="team-role lang-en" style="display:none">Producer</div>
+      <div class="team-quote lang-es">"Una inmersión a la ansiedad y la depresión, donde la realidad se quiebra y el mayor misterio es uno mismo."</div>
+      <div class="team-quote lang-en" style="display:none">"An immersion into anxiety and depression, where reality fractures and the greatest mystery is oneself."</div>
+      <div class="team-detail" style="font-size:0.8rem; color:var(--muted)">— El Imparcial, mayo 2025</div>
+    </div>
+
+    <div class="team-item">
+      <div class="team-name">Jorge Ballina</div>
+      <div class="team-role lang-es">Escenografía · Sistema Nacional de Creadores de Arte</div>
+      <div class="team-role lang-en" style="display:none">Set design · National System of Art Creators</div>
+      <div class="team-detail lang-es">+120 obras en teatro, danza y ópera. Mención honorífica Cuadrienal de Diseño Escénico de Praga 2003. Medalla de oro, mejor escenógrafo, World Stage Design Toronto 2005. 2º lugar World Stage Design Calgary 2022. Dos premios Metropolitanos de Teatro.</div>
+      <div class="team-detail lang-en" style="display:none">120+ productions in theatre, dance and opera. Honorary mention, Prague Quadrennial 2003. Gold medal, Best Set Designer, World Stage Design Toronto 2005. 2nd place, World Stage Design Calgary 2022. Two Metropolitan Theatre Awards.</div>
+    </div>
+
+    <div class="team-item">
+      <div class="team-name">Daniel Primo</div>
+      <div class="team-role lang-es">Iluminación y video mapping · Sistema Nacional de Creadores</div>
+      <div class="team-role lang-en" style="display:none">Lighting &amp; video mapping · National System of Creators</div>
+      <div class="team-detail lang-es">Artista visual y diseñador escénico especializado en videoarte y multimedia. Su trabajo convierte el escenario en un espacio vivo, cambiante y emocional. Trabajo presentado en Europa, Asia y América. Cofundador de Engranaje Invertebrado.</div>
+      <div class="team-detail lang-en" style="display:none">Visual artist and scenic designer specialising in video art and multimedia. His work transforms the stage into a living, shifting, emotional space. Work shown in Europe, Asia and the Americas. Co-founder of Engranaje Invertebrado.</div>
+    </div>
+
+    <div class="team-item">
+      <div class="team-name">Lía Pérez</div>
+      <div class="team-role">MPSE · Diseño sonoro / Sound design</div>
+      <div class="team-detail lang-es">Diseño sonoro inmersivo de la obra y música original del universo #GatoEncerrado.</div>
+      <div class="team-detail lang-en" style="display:none">Immersive sound design for the production and original music for the #GatoEncerrado universe.</div>
+    </div>
+
+    <div class="team-item">
+      <div class="team-name">Pepe Rojo</div>
+      <div class="team-role lang-es">Escritor y crítico cultural · Prólogo de la novela</div>
+      <div class="team-role lang-en" style="display:none">Writer &amp; cultural critic · Novel prologue</div>
+      <div class="team-detail lang-es">Escritor y crítico cultural de referencia nacional. Firma el prólogo de Mi Gato Encerrado.</div>
+      <div class="team-detail lang-en" style="display:none">Nationally recognized writer and cultural critic. Author of the prologue to Mi Gato Encerrado.</div>
+    </div>
+
+    <div class="team-item">
+      <div class="team-name">Isabel Ayuda para la Vida A.C.</div>
+      <div class="team-role lang-es">Aliada estratégica · Prevención del suicidio en jóvenes</div>
+      <div class="team-role lang-en" style="display:none">Strategic ally · Youth suicide prevention</div>
+      <div class="team-detail lang-es">+18 años de trayectoria. Las ganancias de las funciones se destinan a talleres gratuitos de gestión emocional en escuelas y comunidades.</div>
+      <div class="team-detail lang-en" style="display:none">18+ years of experience. Performance proceeds fund free emotional management workshops in schools and communities.</div>
+    </div>
+
+    <div class="team-item">
+      <div class="team-name">Incendio Producciones</div>
+      <div class="team-role lang-es">Producción ejecutiva asociada</div>
+      <div class="team-role lang-en" style="display:none">Associate executive production</div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ══ CONTACTO ══ -->
+<div class="section fade-in" id="s6">
+  <div class="section-label lang-es">Contacto</div>
+  <div class="section-label lang-en" style="display:none">Contact</div>
+  <div class="section-title lang-es">Hablemos del <span class="accent">universo</span></div>
+  <div class="section-title lang-en" style="display:none">Let's talk about <span class="accent">the universe</span></div>
+  <div class="two-col">
+    <div class="prose lang-es">
+      <p>Si tu marca, organización o medio quiere ser parte de algo que cambia conversaciones —sobre salud mental, creatividad, tecnología y comunidad— estamos disponibles para una presentación.</p>
+      <p><strong>Carlos Alberto Pérez Hernández</strong><br>Director Creativo y General<br>Universo #GatoEncerrado</p>
+      <p>contacto@gatoencerrado.info<br>+52 331 532 7985<br>universogatoencerrado.com</p>
+    </div>
+    <div class="prose lang-en" style="display:none">
+      <p>If your brand, organization or media outlet wants to be part of something that changes conversations —about mental health, creativity, technology and community— we are available for a presentation.</p>
+      <p><strong>Carlos Alberto Pérez Hernández</strong><br>Creative &amp; General Director<br>Universo #GatoEncerrado</p>
+      <p>contacto@gatoencerrado.info<br>+52 331 532 7985<br>universogatoencerrado.com</p>
+    </div>
+    <div>
+      <div style="background:var(--ink); padding:2rem; height:100%; display:flex; flex-direction:column; justify-content:center; gap:1rem;">
+        <div style="font-family:'DM Mono',monospace; font-size:0.6rem; letter-spacing:0.2em; color:var(--accent2); text-transform:uppercase;">universogatoencerrado.com</div>
+        <div style="font-family:'Bebas Neue',sans-serif; font-size:2rem; color:white; line-height:1;">#GATO<br>ENCERRADO</div>
+        <div style="font-family:'DM Mono',monospace; font-size:0.62rem; color:rgba(255,255,255,0.35); line-height:2;">
+          MARCA REGISTRADA IMPI<br>
+          CLASES 9 · 16 · 21 · 41<br>
+          OBRAS REGISTRADAS INDAUTOR
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ FOOTER ══ -->
+<footer>
+  <strong>#GATOENCERRADO</strong> · UNIVERSO TRANSMEDIA<br>
+  universogatoencerrado.com · <a href="mailto:contacto@gatoencerrado.info">contacto@gatoencerrado.info</a> · +52 331 532 7985<br>
+  TIJUANA · MEXICALI · HERMOSILLO · CIUDAD DE MÉXICO · GIRA 2027<br><br>
+  MARCA REGISTRADA IMPI · CLASES 9, 16, 21, 41 · OBRAS REGISTRADAS INDAUTOR
+</footer>
+
+<script>
+function setLang(lang) {
+  const other = lang === 'es' ? 'en' : 'es';
+  document.querySelectorAll('.lang-' + lang).forEach(el => el.style.display = '');
+  document.querySelectorAll('.lang-' + other).forEach(el => el.style.display = 'none');
+  document.querySelectorAll('.lang-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.textContent.toLowerCase() === lang);
+  });
+}
+
+const sections = ['s0','s1','s2','s3','s4','s5','s6'];
+const dotsContainer = document.getElementById('navDots');
+sections.forEach((id, i) => {
+  const dot = document.createElement('div');
+  dot.className = 'dot' + (i === 0 ? ' active' : '');
+  dot.onclick = () => document.getElementById(id).scrollIntoView({behavior:'smooth'});
+  dotsContainer.appendChild(dot);
+});
+
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      entry.target.classList.add('visible');
+      const idx = sections.indexOf(entry.target.id);
+      if (idx !== -1) document.querySelectorAll('.dot').forEach((d,i) => d.classList.toggle('active', i === idx));
+    }
+  });
+}, { threshold: 0.15 });
+
+document.querySelectorAll('.fade-in, .cover, .bg-cream').forEach(el => observer.observe(el));
+</script>
+</body>
+</html>
