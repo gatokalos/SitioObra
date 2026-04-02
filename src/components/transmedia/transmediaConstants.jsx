@@ -589,6 +589,7 @@ iaProfile: {
   },
   copycats: {
     label: 'Mini-verso cine',
+    shareLabel: 'Cine',
     type: 'cinema',
     intro: 'El cine dentro de #GatoEncerrado es otro modo de entrar al encierro.',
     promise: 'CopyCats (no-ficción) y Quirón (autoficción) dialogan desde extremos distintos del mismo espectro: una filma el desgaste creativo y la fractura del proceso; la otra abre una confesión íntima que decide hablar del suicidio sin rodeos.',

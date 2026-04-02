@@ -22,10 +22,10 @@ const useMiniversoShare = ({ activeShowcase, activeDefinition, toast }) => {
     const url = buildMiniverseShareUrl(activeShowcase);
     if (!url) return;
 
-    const label = activeDefinition.label ?? 'la obra';
+    const label = activeDefinition.shareLabel?.trim() || activeDefinition.label?.trim() || 'este miniverso';
     const sharePayload = {
-      title: activeDefinition.label ?? 'Miniverso',
-      text: `Descubre el ${label} de #GatoEncerrado.`,
+      title: activeDefinition.shareLabel ?? activeDefinition.label ?? 'Miniverso',
+      text: `Descubre ${label} en #GatoEncerrado.`,
       url,
     };
 

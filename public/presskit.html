@@ -32,7 +32,7 @@ body { background: var(--paper); color: var(--ink); font-family: 'Cormorant Gara
 /* COVER */
 .cover { min-height: 100vh; display: grid; grid-template-columns: 1fr 1fr; position: relative; overflow: hidden; }
 .cover-left { background: var(--ink); display: flex; flex-direction: column; justify-content: flex-end; padding: 4rem 3rem; position: relative; overflow: hidden; }
-.cover-left::before { content: '#GATO\AENCER\ARADO'; white-space: pre; position: absolute; top: -1rem; left: -0.5rem; font-family: 'Bebas Neue', sans-serif; font-size: 9rem; line-height: 0.85; color: rgba(123,45,139,0.15); pointer-events: none; letter-spacing: -0.02em; }
+.cover-bg-logo { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; opacity: 0.13; mix-blend-mode: screen; pointer-events: none; }
 .cover-eyebrow { font-family: 'DM Mono', monospace; font-size: 0.65rem; letter-spacing: 0.2em; color: var(--accent2); text-transform: uppercase; margin-bottom: 1.5rem; }
 .cover-title { font-family: 'Bebas Neue', sans-serif; font-size: clamp(3.5rem, 7vw, 6rem); line-height: 0.9; color: white; letter-spacing: 0.02em; margin-bottom: 0.5rem; }
 .cover-title span { color: var(--accent2); }
@@ -156,6 +156,7 @@ footer strong { color: white; }
 <!-- ══ PORTADA ══ -->
 <div class="cover" id="s0">
   <div class="cover-left">
+    <img class="cover-bg-logo" src="bg-logo2.png" alt="">
     <div class="cover-eyebrow">Press Kit · Gira Nacional 2027</div>
     <div class="cover-title"><span>#</span>GATO<br>ENCER<br>RADO</div>
     <div class="cover-subtitle lang-es">Una historia que no termina en el escenario</div>
