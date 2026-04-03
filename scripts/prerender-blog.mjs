@@ -43,7 +43,19 @@ const env = {
 
 const API_URL = (env.VITE_API_URL || '').replace(/\/+$/, '');
 const SITE_URL = (env.VITE_SITE_URL || 'https://universogatoencerrado.com').replace(/\/+$/, '');
-const FALLBACK_IMAGE = `${SITE_URL}/assets/social-card.jpg`;
+const FALLBACK_IMAGE = `${SITE_URL}/assets/logoapp.png`;
+
+function inferImageMimeType(imageUrl) {
+  try {
+    const { pathname } = new URL(imageUrl);
+    if (pathname.match(/\.png$/i)) return 'image/png';
+    if (pathname.match(/\.(jpe?g)$/i)) return 'image/jpeg';
+    if (pathname.match(/\.webp$/i)) return 'image/webp';
+  } catch {
+    return null;
+  }
+  return null;
+}
 
 if (!API_URL) {
   console.warn('[prerender-blog] VITE_API_URL not set — skipping blog prerender.');
@@ -76,6 +88,7 @@ function injectMeta(html, { title, description, image, url }) {
   const t = escapeAttr(title);
   const d = escapeAttr(description);
   const i = escapeAttr(image);
+  const imageType = escapeAttr(inferImageMimeType(image) || 'image/png');
   const u = escapeAttr(url);
 
   const replaceProp = (prop, value) =>
@@ -100,6 +113,11 @@ function injectMeta(html, { title, description, image, url }) {
   html = replaceProp('og:title', t);
   html = replaceProp('og:description', d);
   html = replaceProp('og:image', i);
+  html = replaceProp('og:image:secure_url', i);
+  html = replaceProp('og:image:type', imageType);
+  // Remove homepage fallback dimensions — article image dims are unknown at build time
+  html = html.replace(/\s*<meta\s[^>]*property="og:image:width"[^>]*>/g, '');
+  html = html.replace(/\s*<meta\s[^>]*property="og:image:height"[^>]*>/g, '');
   html = replaceProp('og:url', u);
   html = replaceProp('og:type', 'article');
   html = replaceName('twitter:title', t);

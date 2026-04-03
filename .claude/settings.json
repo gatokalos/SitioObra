@@ -14,7 +14,9 @@
       "Bash(ls -la /Users/gatoenigmatico/gatoencerrado-ai/landing/SitioObra/.env*)",
       "Bash(grep -r \"supabase.co\\\\|VITE_SUPABASE_URL\" /Users/gatoenigmatico/gatoencerrado-ai/landing/SitioObra/src/ --include=*.js --include=*.jsx --include=*.ts --include=*.env -l)",
       "Bash(grep \"SUPABASE_URL\\\\|supabase.co\" /Users/gatoenigmatico/gatoencerrado-ai/landing/SitioObra/.env*)",
-      "Bash(node -e \"console.log\\(require\\(''/Users/gatoenigmatico/gatoencerrado-ai/landing/SitioObra/node_modules/three/package.json''\\).version\\)\")"
+      "Bash(node -e \"console.log\\(require\\(''/Users/gatoenigmatico/gatoencerrado-ai/landing/SitioObra/node_modules/three/package.json''\\).version\\)\")",
+      "Bash(python3 -c \" from PIL import Image import sys try: img = Image.open\\('/Users/gatoenigmatico/gatoencerrado-ai/landing/SitioObra/public/assets/logoapp.png'\\) print\\(f'{img.width}x{img.height}'\\) except: print\\('no PIL'\\) \")",
+      "Bash(sips -g pixelWidth -g pixelHeight /Users/gatoenigmatico/gatoencerrado-ai/landing/SitioObra/public/assets/logoapp.png)"
     ],
     "additionalDirectories": [
       "/Users/gatoenigmatico/Desktop/Postulación EFIARTES",

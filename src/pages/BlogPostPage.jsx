@@ -5,15 +5,29 @@ import { fetchBlogPostBySlug } from '@/services/blogService';
 
 const SITE_ORIGIN =
   typeof window !== 'undefined' ? window.location.origin : 'https://universogatoencerrado.com';
-const FALLBACK_IMAGE = `${SITE_ORIGIN}/assets/social-card.jpg`;
+const FALLBACK_IMAGE = `${SITE_ORIGIN}/assets/logoapp.png`;
 
 const SITE_DEFAULTS = {
   title: '#GatoEncerrado — Universo transmedia',
+  siteName: '#GatoEncerrado',
   description: 'Explora los miniversos: Cine, Novela, RA, Juegos, Bitácora y más.',
   image: FALLBACK_IMAGE,
+  imageType: 'image/png',
   url: SITE_ORIGIN,
   type: 'website',
 };
+
+function inferImageMimeType(imageUrl) {
+  try {
+    const { pathname } = new URL(imageUrl, SITE_ORIGIN);
+    if (pathname.match(/\.png$/i)) return 'image/png';
+    if (pathname.match(/\.(jpe?g)$/i)) return 'image/jpeg';
+    if (pathname.match(/\.webp$/i)) return 'image/webp';
+  } catch {
+    return null;
+  }
+  return null;
+}
 
 function setMetaProp(property, content) {
   let el = document.querySelector(`meta[property="${CSS.escape ? property : property}"]`);
@@ -44,6 +58,7 @@ function useSocialMeta(post) {
     const title = post.title;
     const description = post.excerpt || SITE_DEFAULTS.description;
     const image = post.featured_image_url || FALLBACK_IMAGE;
+    const imageType = inferImageMimeType(image) || SITE_DEFAULTS.imageType;
     const url =
       typeof window !== 'undefined'
         ? `${window.location.origin}${window.location.pathname}`
@@ -52,8 +67,11 @@ function useSocialMeta(post) {
     document.title = `${title} — #GatoEncerrado`;
 
     setMetaProp('og:title', title);
+    setMetaProp('og:site_name', SITE_DEFAULTS.siteName);
     setMetaProp('og:description', description);
     setMetaProp('og:image', image);
+    setMetaProp('og:image:secure_url', image);
+    setMetaProp('og:image:type', imageType);
     setMetaProp('og:url', url);
     setMetaProp('og:type', 'article');
     setMetaName('twitter:card', 'summary_large_image');
@@ -72,8 +90,11 @@ function useSocialMeta(post) {
     return () => {
       document.title = SITE_DEFAULTS.title;
       setMetaProp('og:title', SITE_DEFAULTS.title);
+      setMetaProp('og:site_name', SITE_DEFAULTS.siteName);
       setMetaProp('og:description', SITE_DEFAULTS.description);
       setMetaProp('og:image', SITE_DEFAULTS.image);
+      setMetaProp('og:image:secure_url', SITE_DEFAULTS.image);
+      setMetaProp('og:image:type', SITE_DEFAULTS.imageType);
       setMetaProp('og:url', SITE_ORIGIN);
       setMetaProp('og:type', SITE_DEFAULTS.type);
       setMetaName('twitter:card', 'summary_large_image');
