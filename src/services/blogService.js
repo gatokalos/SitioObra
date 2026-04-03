@@ -65,28 +65,9 @@ export async function fetchBlogPostBySlug(slug) {
   }
 
   try {
-    if (!API_URL) {
-      console.warn('[blogService] VITE_API_URL no está definido, no se puede obtener el post.');
-      return null;
-    }
-
-    const res = await fetch(`${API_URL}/blog-posts/${encodeURIComponent(slug)}`, {
-      method: 'GET',
-      headers: { 'Content-Type': 'application/json' },
-      cache: 'no-store',
-    });
-
-    if (!res.ok) {
-      console.error('[blogService] Error HTTP al obtener post:', res.status);
-      return null;
-    }
-
-    const payload = await res.json().catch(() => null);
-    if (!payload) {
-      return null;
-    }
-
-    return mapDatabasePost(payload);
+    const posts = await fetchPublishedBlogPosts();
+    const match = posts.find((p) => p.slug === slug);
+    return match ?? null;
   } catch (err) {
     console.error('[blogService] Excepción al buscar post por slug:', err);
     return null;
