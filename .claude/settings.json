@@ -18,7 +18,9 @@
       "Bash(python3 -c \" from PIL import Image import sys try: img = Image.open\\('/Users/gatoenigmatico/gatoencerrado-ai/landing/SitioObra/public/assets/logoapp.png'\\) print\\(f'{img.width}x{img.height}'\\) except: print\\('no PIL'\\) \")",
       "Bash(sips -g pixelWidth -g pixelHeight /Users/gatoenigmatico/gatoencerrado-ai/landing/SitioObra/public/assets/logoapp.png)",
       "WebFetch(domain:universogatoencerrado.com)",
-      "WebFetch(domain:ytubybkoucltwnselbhc.supabase.co)"
+      "WebFetch(domain:ytubybkoucltwnselbhc.supabase.co)",
+      "WebFetch(domain:developers.facebook.com)",
+      "Bash(whois -h whois.radb.net -- '-i origin AS32934')"
     ],
     "additionalDirectories": [
       "/Users/gatoenigmatico/Desktop/Postulación EFIARTES",
