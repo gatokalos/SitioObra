@@ -179,9 +179,9 @@ for (const post of posts) {
 
   const html = injectMeta(baseHtml, { title, description, image, url });
 
-  const outDir = join(ROOT, 'dist', 'blog', slug);
+  const outDir = join(ROOT, 'dist', 'blog');
   mkdirSync(outDir, { recursive: true });
-  writeFileSync(join(outDir, 'index.html'), html, 'utf8');
+  writeFileSync(join(outDir, `${slug}.html`), html, 'utf8');
   count++;
 }
 
