@@ -15,6 +15,7 @@ import {
 } from '@/lib/bienvenida';
 import { extractRecommendedAppId, normalizeBridgeKey } from '@/lib/bienvenidaBridge';
 import { pauseHeroAmbient } from '@/lib/heroAmbientAudio';
+import LoginOverlay from '@/components/ContributionModal/LoginOverlay';
 
 const BRIDGE_EVENT_REQUEST_AUTH_MODAL = 'bienvenida:request-auth-modal';
 const BRIDGE_EVENT_AUTH_SUCCESS = 'sitioobra:auth-success';
@@ -25,6 +26,7 @@ const Bienvenida = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const [cabinaReached, setCabinaReached] = useState(false);
+  const [showLoginOverlay, setShowLoginOverlay] = useState(false);
   const iframeRef = useRef(null);
   const pendingBridgeAuthRef = useRef(null);
   const baseUrl = useMemo(() => {
@@ -149,6 +151,12 @@ const Bienvenida = () => {
   }, [flushBridgeAuthSuccess]);
 
   useEffect(() => {
+    if (user && showLoginOverlay) {
+      setShowLoginOverlay(false);
+    }
+  }, [user, showLoginOverlay]);
+
+  useEffect(() => {
     const handleMessage = (event) => {
       if (!event?.data) return;
       if (typeof event.data !== 'object') return;
@@ -173,7 +181,7 @@ const Bienvenida = () => {
           return;
         }
 
-        window.dispatchEvent(new CustomEvent('open-login-modal'));
+        setShowLoginOverlay(true);
         return;
       }
       if (type === 'bienvenida:cabina-reached') {
@@ -245,6 +253,7 @@ const Bienvenida = () => {
       >
         Cerrar
       </button>
+      {showLoginOverlay && <LoginOverlay onClose={() => setShowLoginOverlay(false)} />}
     </div>
   );
 };
