@@ -98,7 +98,9 @@ export const extractRecommendedAppId = (payload) => {
   if (!payload || typeof payload !== 'object') return null;
   const raw =
     payload.appId ??
+    payload.selectedAppId ??
     payload.app_id ??
+    payload.selected_app_id ??
     payload.recommended_app_id ??
     payload.recommendedAppId ??
     payload.recommended_app ??

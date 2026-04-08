@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/SupabaseAuthContext';
 import {
@@ -16,11 +16,17 @@ import {
 import { extractRecommendedAppId, normalizeBridgeKey } from '@/lib/bienvenidaBridge';
 import { pauseHeroAmbient } from '@/lib/heroAmbientAudio';
 
+const BRIDGE_EVENT_REQUEST_AUTH_MODAL = 'bienvenida:request-auth-modal';
+const BRIDGE_EVENT_AUTH_SUCCESS = 'sitioobra:auth-success';
+const BRIDGE_AUTH_STORAGE_KEY = 'gatoencerrado:bienvenida-bridge-auth:v1';
+
 const Bienvenida = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const { user } = useAuth();
   const [cabinaReached, setCabinaReached] = useState(false);
+  const iframeRef = useRef(null);
+  const pendingBridgeAuthRef = useRef(null);
   const baseUrl = useMemo(() => {
     const raw = import.meta.env.VITE_BIENVENIDA_URL ?? import.meta.env.VITE_ORACULO_URL ?? '';
     return raw ? raw.replace(/\/+$/, '') : '';
@@ -65,6 +71,52 @@ const Bienvenida = () => {
     pauseHeroAmbient();
   }, []);
 
+  const clearPendingBridgeAuth = useCallback(() => {
+    pendingBridgeAuthRef.current = null;
+    if (typeof window === 'undefined') return;
+    try {
+      window.sessionStorage.removeItem(BRIDGE_AUTH_STORAGE_KEY);
+    } catch {}
+  }, []);
+
+  const storePendingBridgeAuth = useCallback((payload) => {
+    pendingBridgeAuthRef.current = payload;
+    if (typeof window === 'undefined') return;
+    try {
+      window.sessionStorage.setItem(BRIDGE_AUTH_STORAGE_KEY, JSON.stringify(payload));
+    } catch {}
+  }, []);
+
+  const postBridgeReply = useCallback(
+    (type, payload = {}) => {
+      if (typeof window === 'undefined' || !bienvenidaOrigin) return false;
+      const targetWindow = iframeRef.current?.contentWindow;
+      if (!targetWindow) return false;
+      try {
+        targetWindow.postMessage({ type, payload }, bienvenidaOrigin);
+        return true;
+      } catch (error) {
+        console.warn('[sitioobra-bridge] failed posting reply', { type, error });
+        return false;
+      }
+    },
+    [bienvenidaOrigin]
+  );
+
+  const flushBridgeAuthSuccess = useCallback(() => {
+    if (!user || !pendingBridgeAuthRef.current) return false;
+    const pending = pendingBridgeAuthRef.current;
+    const didPost = postBridgeReply(BRIDGE_EVENT_AUTH_SUCCESS, {
+      appId: pending.appId ?? null,
+      selectedAppId: pending.appId ?? null,
+      source: 'sitioobra-bienvenida',
+    });
+    if (didPost) {
+      clearPendingBridgeAuth();
+    }
+    return didPost;
+  }, [clearPendingBridgeAuth, postBridgeReply, user]);
+
   const handleFinish = useCallback(() => {
     if (!user) {
       setBienvenidaSkip();
@@ -79,6 +131,24 @@ const Bienvenida = () => {
   }, [navigate, user]);
 
   useEffect(() => {
+    if (typeof window === 'undefined') return;
+    try {
+      const raw = window.sessionStorage.getItem(BRIDGE_AUTH_STORAGE_KEY);
+      if (!raw) return;
+      const parsed = JSON.parse(raw);
+      if (!parsed || typeof parsed !== 'object') {
+        window.sessionStorage.removeItem(BRIDGE_AUTH_STORAGE_KEY);
+        return;
+      }
+      pendingBridgeAuthRef.current = parsed;
+    } catch {}
+  }, []);
+
+  useEffect(() => {
+    flushBridgeAuthSuccess();
+  }, [flushBridgeAuthSuccess]);
+
+  useEffect(() => {
     const handleMessage = (event) => {
       if (!event?.data) return;
       if (typeof event.data !== 'object') return;
@@ -91,6 +161,21 @@ const Bienvenida = () => {
         origin: event.origin,
         appId: payloadAppId || null,
       });
+      if (type === BRIDGE_EVENT_REQUEST_AUTH_MODAL) {
+        const pendingPayload = {
+          appId: payloadAppId || null,
+          requestedAt: Date.now(),
+        };
+        storePendingBridgeAuth(pendingPayload);
+
+        if (user) {
+          flushBridgeAuthSuccess();
+          return;
+        }
+
+        window.dispatchEvent(new CustomEvent('open-login-modal'));
+        return;
+      }
       if (type === 'bienvenida:cabina-reached') {
         setCabinaReached(true);
         return;
@@ -130,17 +215,21 @@ const Bienvenida = () => {
     };
     window.addEventListener('message', handleMessage);
     return () => window.removeEventListener('message', handleMessage);
-  }, [bienvenidaOrigin, flowGoal, handleFinish, setCabinaReached]);
+  }, [bienvenidaOrigin, flowGoal, flushBridgeAuthSuccess, handleFinish, storePendingBridgeAuth, user]);
 
   return (
     <div className="fixed inset-0 z-50 bg-black">
       <div className="absolute inset-0">
         {iframeSrc ? (
           <iframe
+            ref={iframeRef}
             title="Bienvenida"
             src={iframeSrc}
             className="h-full w-full border-0"
             allow="camera; microphone; fullscreen; web-share; clipboard-write"
+            onLoad={() => {
+              flushBridgeAuthSuccess();
+            }}
           />
         ) : (
           <div className="h-full w-full flex items-center justify-center text-slate-200">
