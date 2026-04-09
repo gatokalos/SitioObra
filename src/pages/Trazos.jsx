@@ -65,10 +65,27 @@ const Trazos = () => {
   const nombreVisible = meta?.nombre_visible ?? transformacion?.personaje_id ?? personajeId;
   const generoLiterario = meta?.genero_literario ?? '';
 
+  if (!user) {
+    return (
+      <div className="fixed inset-0 flex items-center justify-center bg-[#0a0610]">
+        <div className="text-center text-slate-400 text-sm px-8">
+          <p className="mb-4">Necesitas iniciar sesión para ver esta transformación.</p>
+          <button
+            type="button"
+            onClick={() => navigate('/')}
+            className="rounded-full border border-white/20 bg-black/60 px-5 py-2 text-xs uppercase tracking-[0.3em] text-white hover:bg-black/80"
+          >
+            Ir al sitio
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div
       className="fixed inset-0 flex items-center justify-center bg-[#0a0610] overflow-hidden"
-      style={{ fontFamily: "'Fraunces', 'Georgia', serif" }}
+      style={{ fontFamily: "'Vox Round', 'Georgia', serif" }}
     >
       {/* Fondo atmosférico */}
       <div className="absolute inset-0 pointer-events-none">
