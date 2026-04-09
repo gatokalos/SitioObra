@@ -33,6 +33,7 @@ const Instagram = lazy(() => import('@/components/Instagram'));
 const BlogContributionPrompt = lazy(() => import('@/components/BlogContributionPrompt'));
 const Blog = lazy(() => import('@/components/Blog'));
 const Bienvenida = lazy(() => import('@/pages/Bienvenida'));
+const Trazos = lazy(() => import('@/pages/Trazos'));
 const Autoficcion = lazy(() => import('@/pages/Autoficcion'));
 const PortalLiteratura = lazy(() => import('@/pages/PortalLiteratura'));
 const PortalArtesanias = lazy(() => import('@/pages/PortalArtesanias'));
@@ -658,6 +659,7 @@ function App() {
         )}
       />
       <Route path="/bienvenida" element={<Suspense fallback={<RouteFallback />}><Bienvenida /></Suspense>} />
+      <Route path="/trazos" element={<Suspense fallback={<RouteFallback />}><Trazos /></Suspense>} />
       <Route path="/autoficcion" element={<Suspense fallback={<RouteFallback />}><Autoficcion /></Suspense>} />
       <Route path="/portal-literatura" element={<SectionErrorBoundary fallback={<PortalErrorFallback />}><Suspense fallback={<RouteFallback />}><PortalLiteratura /></Suspense></SectionErrorBoundary>} />
       <Route path="/portal-artesanias" element={<SectionErrorBoundary fallback={<PortalErrorFallback />}><Suspense fallback={<RouteFallback />}><PortalArtesanias /></Suspense></SectionErrorBoundary>} />

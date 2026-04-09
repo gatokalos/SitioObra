@@ -20,6 +20,9 @@ import LoginOverlay from '@/components/ContributionModal/LoginOverlay';
 const BRIDGE_EVENT_REQUEST_AUTH_MODAL = 'bienvenida:request-auth-modal';
 const BRIDGE_EVENT_AUTH_SUCCESS = 'sitioobra:auth-success';
 const BRIDGE_AUTH_STORAGE_KEY = 'gatoencerrado:bienvenida-bridge-auth:v1';
+const BRIDGE_EVENT_REQUEST_TRAZOS = 'bienvenida:request-trazos';
+const BRIDGE_EVENT_TRAZOS_ERROR = 'sitioobra:trazos-error';
+const GATO_API_URL = (import.meta.env.VITE_OBRA_API_URL ?? 'https://api.gatoencerrado.ai').replace(/\/+$/, '');
 
 const Bienvenida = () => {
   const location = useLocation();
@@ -48,7 +51,8 @@ const Bienvenida = () => {
     }
   }, [baseUrl]);
 
-  const iframeSrc = useMemo(() => {
+  // Frozen on mount: user login mid-flow must NOT reload the iframe.
+  const [iframeSrc] = useState(() => {
     if (!baseUrl) return '';
     const url = new URL(baseUrl);
     const isQaAlwaysFreshUser = isBienvenidaQaAlwaysFreshUser(user?.id);
@@ -65,7 +69,7 @@ const Bienvenida = () => {
       url.searchParams.set('qa_fresh', '1');
     }
     return url.toString();
-  }, [baseUrl, flowGoal, user?.email, user?.id]);
+  });
 
   useEffect(() => {
     if (typeof document === 'undefined') return;
@@ -112,6 +116,8 @@ const Bienvenida = () => {
       appId: pending.appId ?? null,
       selectedAppId: pending.appId ?? null,
       source: 'sitioobra-bienvenida',
+      userId: user.id ?? null,
+      userEmail: user.email ?? null,
     });
     if (didPost) {
       clearPendingBridgeAuth();
@@ -220,10 +226,36 @@ const Bienvenida = () => {
         setBienvenidaReturnPath(`${returnPathWithoutHash}#${payloadHashTarget}`);
         handleFinish();
       }
+      if (type === BRIDGE_EVENT_REQUEST_TRAZOS) {
+        const { texto_oracular, personaje_id } = payload ?? {};
+        if (!texto_oracular || !personaje_id) {
+          postBridgeReply(BRIDGE_EVENT_TRAZOS_ERROR, { message: 'Faltan datos para la transformación.' });
+          return;
+        }
+        const userId = user?.id ?? payload?.usuario_id ?? null;
+        fetch(`${GATO_API_URL}/api/transformar`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ texto_oracular, personaje_id, usuario_id: userId }),
+        })
+          .then((res) => res.json().then((data) => ({ ok: res.ok, data })))
+          .then(({ ok, data }) => {
+            if (!ok || !data?.id) {
+              const msg = typeof data?.error === 'string' ? data.error : 'No pudimos transformar tu perfil.';
+              postBridgeReply(BRIDGE_EVENT_TRAZOS_ERROR, { message: msg });
+              return;
+            }
+            navigate(`/trazos?transformacion=${encodeURIComponent(data.id)}&personaje=${encodeURIComponent(personaje_id)}`);
+          })
+          .catch(() => {
+            postBridgeReply(BRIDGE_EVENT_TRAZOS_ERROR, { message: 'Error de red al transformar.' });
+          });
+        return;
+      }
     };
     window.addEventListener('message', handleMessage);
     return () => window.removeEventListener('message', handleMessage);
-  }, [bienvenidaOrigin, flowGoal, flushBridgeAuthSuccess, handleFinish, storePendingBridgeAuth, user]);
+  }, [bienvenidaOrigin, flowGoal, flushBridgeAuthSuccess, handleFinish, navigate, postBridgeReply, storePendingBridgeAuth, user]);
 
   return (
     <div className="fixed inset-0 z-50 bg-black">
