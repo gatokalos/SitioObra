@@ -75,19 +75,17 @@ const MINIVERSE_KEYWORDS = {
 };
 
 const STARTER_FAQ_PROMPTS = [
-  '¿Tengo que ver la obra primero para entender este universo?',
-  '¿Qué diferencia hay entre la obra de teatro y #GatoEncerrado?',
+  '¿Tengo que ver la obra primero para entender este sitio?',
+  '¿Cuál es la pregunta al fondo de este universo narrativo?',
   '¿Queda claro qué le pasa a Silvestre al final de la obra?',
-  '¿El sitio continúa la historia o es otra cosa?',
-  '¿Qué pasa si solo quiero curiosear sin registrarme?',
+  '¿Qué pasa después de que termina la función?',
   '¿A alguien más le dio ansiedad esta obra… o solo a mí?',
-  '¿Por qué no le entiendo a la escena de las marcianas?',
+  '¿Por qué no le entendí a la escena de las marcianas?',
   '¿Cuál es la relación entre Es un gato encerrado y su causa social?',
   '¿Payasito Tiste es el alter ego de Silvestre?',
   'Si la IA desapareciera mañana, ¿seguiría existiendo #GatoEncerrado?',
-  '¿Qué tendría que pasar para que este proyecto florezca?',
-  '¿Qué pasa después de que termina la función?'
-];
+  '¿Qué tendría que pasar para que este proyecto florezca?'
+  ];
 
 const inferMiniverseFromPost = (post) => {
   const haystack = [
