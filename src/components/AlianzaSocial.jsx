@@ -58,12 +58,16 @@ const AlianzaSocial = () => {
   const { handleShareImpactModel } = useMiniversoShare({ toast });
 
   const handleOpenInteractiveExperiencePlaceholder = useCallback(async () => {
-    const { data: { session } } = await supabase.auth.getSession();
     const base = 'https://app.gatoencerrado.org';
-    const url = session?.access_token
-      ? `${base}/?handoff=${encodeURIComponent(session.access_token)}&ref=sitioobra`
-      : `${base}/?ref=sitioobra`;
-    window.open(url, '_blank', 'noopener,noreferrer');
+    // Abrir la ventana sincrónicamente (gesto directo del usuario) para no ser bloqueado en móvil
+    const win = window.open(`${base}/?ref=sitioobra`, '_blank', 'noopener,noreferrer');
+    // Intentar enriquecer con el token si hay sesión activa
+    const { data: { session } } = await supabase.auth.getSession();
+    if (session?.access_token && win && !win.closed) {
+      win.location.replace(
+        `${base}/?handoff=${encodeURIComponent(session.access_token)}&ref=sitioobra`
+      );
+    }
   }, []);
 
   return (
