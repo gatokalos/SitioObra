@@ -162,7 +162,7 @@ const AlianzaSocial = () => {
                           Experiencia interactiva <span className="text-slate-400">|</span> ¿Qué es estar bien?
                         </p>
                         <p className="mt-1 text-sm text-slate-300/90">
-                          La app Causa Social sigue en pruebas beta. Muy pronto podrás verla aquí.
+                          Recorre historias que conectan contigo… y descubre lo que dejan en ti.
                         </p>
                       </div>
                     </div>
@@ -172,7 +172,7 @@ const AlianzaSocial = () => {
                       className="inline-flex items-center justify-center gap-2 rounded-xl border border-emerald-300/40 bg-emerald-400/10 px-4 py-2 text-sm font-semibold text-emerald-100 transition hover:border-emerald-200/60 hover:bg-emerald-300/15 hover:text-white whitespace-nowrap"
                     >
                       <Smartphone size={15} />
-                      Próximamente
+                      Ver experiencia
                     </button>
                   </div>
             
