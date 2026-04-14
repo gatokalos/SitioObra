@@ -11,6 +11,7 @@ import {
   CAUSE_ACCORDION,
   CAUSE_SITE_URL,
 } from '@/components/transmedia/transmediaConstants';
+import { supabase } from '@/lib/supabaseClient';
 
 const noopAuth = () => true;
 
@@ -56,11 +57,13 @@ const AlianzaSocial = () => {
 
   const { handleShareImpactModel } = useMiniversoShare({ toast });
 
-  const handleOpenInteractiveExperiencePlaceholder = useCallback(() => {
-    toast({
-      title: 'App Causa Social en beta',
-      description: 'La app Causa Social todavía está en pruebas beta. Próximamente la verás aquí.',
-    });
+  const handleOpenInteractiveExperiencePlaceholder = useCallback(async () => {
+    const { data: { session } } = await supabase.auth.getSession();
+    const base = 'https://app.gatoencerrado.org';
+    const url = session?.access_token
+      ? `${base}/?handoff=${encodeURIComponent(session.access_token)}&ref=sitioobra`
+      : `${base}/?ref=sitioobra`;
+    window.open(url, '_blank', 'noopener,noreferrer');
   }, []);
 
   return (
