@@ -21,7 +21,9 @@ import {
   resumeHeroAmbientPlayback,
 } from '@/lib/heroAmbientAudio';
 import { createPortalLaunchState } from '@/lib/portalNavigation';
-import { safeSetItem } from '@/lib/safeStorage';
+import { safeGetItem, safeSetItem } from '@/lib/safeStorage';
+
+const POZO_HERO_REVEAL_KEY = 'gatoencerrado:pozo-hero-reveal:v1';
 
 const SUPABASE_STORAGE = `${import.meta.env.VITE_SUPABASE_URL || ''}/storage/v1/object/public`;
 const HERO_LOGGED_IN_AUDIO_URL = `${SUPABASE_STORAGE}/Sonoridades/audio/A2_Melody_MSTR.m4a`;
@@ -69,6 +71,7 @@ const resolveHeroInlineTabFromQuery = (search = '') => {
 const Hero = () => {
   const [isTicketModalOpen, setIsTicketModalOpen] = useState(false);
   const [isGatokensModalOpen, setIsGatokensModalOpen] = useState(false);
+  const [hasPozoRevealed, setHasPozoRevealed] = useState(() => safeGetItem(POZO_HERO_REVEAL_KEY) === '1');
   const [ctaIndex, setCtaIndex] = useState(0);
   const [heroSubtitleIndex, setHeroSubtitleIndex] = useState(0);
   const [heroGhostSubtitle, setHeroGhostSubtitle] = useState(null);
@@ -679,7 +682,7 @@ const Hero = () => {
     };
   }, [getTargetVolumeByHeroPosition, isAuthLoading, isHeroInViewport, user]);
 
-  const shouldRenderInlineHero = Boolean(user);
+  const shouldRenderInlineHero = Boolean(user) || hasPozoRevealed;
 
   return (
     <>
@@ -1059,7 +1062,17 @@ const Hero = () => {
       </section>
       <Suspense fallback={null}>
         <TicketPurchaseModal open={isTicketModalOpen} onClose={handleCloseTicket} />
-        <GatokensRevealModal open={isGatokensModalOpen} onClose={() => setIsGatokensModalOpen(false)} />
+        <GatokensRevealModal
+          open={isGatokensModalOpen}
+          onClose={() => {
+            setIsGatokensModalOpen(false);
+            if (!user) {
+              safeSetItem(POZO_HERO_REVEAL_KEY, '1');
+              setHasPozoRevealed(true);
+              window.dispatchEvent(new CustomEvent('gatoencerrado:pozo-hero-revealed'));
+            }
+          }}
+        />
       </Suspense>
     </>
   );

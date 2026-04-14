@@ -17,6 +17,7 @@ const pageTitle = '#GatoEncerrado - Obra de Teatro transmedia';
 const pageDescription =
   'La historia de alguien que desaparece… y deja una huella emocional. Una experiencia teatral única que explora múltiples formatos transmediaes.';
 const TRANSMEDIA_UNLOCK_STORAGE_KEY = 'gatoencerrado:transmedia-unlocked:v1';
+const POZO_HERO_REVEAL_KEY = 'gatoencerrado:pozo-hero-reveal:v1';
 const TRANSMEDIA_FOCUS_KEYS = ['focus', 'appId', 'app_id', 'recommended_app_id'];
 const IS_UI_LAB_ENABLED =
   import.meta.env.DEV ||
@@ -367,6 +368,9 @@ function App() {
   const [hasGuestUnlockedTransmedia, setHasGuestUnlockedTransmedia] = useState(() => {
     return safeGetItem(TRANSMEDIA_UNLOCK_STORAGE_KEY) === '1';
   });
+  const [hasPozoRevealedHero, setHasPozoRevealedHero] = useState(() => {
+    return safeGetItem(POZO_HERO_REVEAL_KEY) === '1';
+  });
   const isAuthenticated = Boolean(user);
   const canAccessTransmedia = isAuthenticated || hasGuestUnlockedTransmedia;
   const isMobileLoggedInPortalMode = isAuthenticated && isMobileViewport;
@@ -461,6 +465,12 @@ function App() {
     });
     return () => window.cancelAnimationFrame(rafId);
   }, [isPortalRoute, location.pathname]);
+
+  useEffect(() => {
+    const handlePozoRevealed = () => setHasPozoRevealedHero(true);
+    window.addEventListener('gatoencerrado:pozo-hero-revealed', handlePozoRevealed);
+    return () => window.removeEventListener('gatoencerrado:pozo-hero-revealed', handlePozoRevealed);
+  }, []);
 
   useEffect(() => {
     if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') return undefined;
@@ -562,7 +572,7 @@ function App() {
         path="/"
         element={(
           <div className="min-h-screen overflow-x-hidden relative">
-            <HeroBackground isAuthenticated={isAuthenticated} />
+            <HeroBackground isAuthenticated={isAuthenticated || hasPozoRevealedHero} />
             <div className="relative z-10">
               <Header
                 showAllianceNav={true}
