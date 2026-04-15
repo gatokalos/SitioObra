@@ -1212,7 +1212,7 @@ Este espacio permite recorrer esas composiciones, explorar sus capas y descubrir
     liveExperience: {
       title: 'App en vivo',
       description: 'Juega la app completa dentro de la vitrina, sin salir del miniverso.',
-      url: 'https://main.dg0vxepd2qyf6.amplifyapp.com',
+      url: 'https://juegos.miniversos.ai/',
       ctaLabel: 'Abrir en pestaña nueva',
     },
     iaProfile: {
