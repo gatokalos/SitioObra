@@ -328,6 +328,12 @@ const CallToAction = ({ barsIntroDelayMs = 0 }) => {
     null;
   const firstHuellaDateLabel = formatFirstHuellaDate(firstHuellaAt ?? metadataFirstHuellaAt);
   const isSubscriber = metadataSubscriber || hasActiveSubscription || localCheckoutLock;
+  const displayName = (
+    user?.user_metadata?.name ||
+    user?.user_metadata?.full_name ||
+    user?.email?.split('@')[0] ||
+    null
+  )?.split(' ')[0]?.trim() || null;
 
   // 1) Cargar suscriptores en tiempo real
   useEffect(() => {
@@ -1184,11 +1190,14 @@ const CallToAction = ({ barsIntroDelayMs = 0 }) => {
         ) : null}
         {isSubscriber ? (
           <div className="mt-3 rounded-xl border border-emerald-300/30 bg-emerald-500/10 p-3 text-left text-emerald-100">
-            <p className="text-sm font-semibold">
-              Primera huella: {firstHuellaDateLabel ?? 'fecha en sincronización'}.
+            {displayName && (
+              <p className="text-base font-semibold text-white">{displayName}.</p>
+            )}
+            <p className={`text-sm font-semibold${displayName ? ' mt-1' : ''}`}>
+              Ya formas parte fundamental de #GatoEncerrado.
             </p>
-            <p className="mt-2 text-xs font-semibold text-emerald-200">
-              Ahora eres miembro activo de #GatoEncerrado.
+            <p className="mt-2 text-xs text-emerald-200/80">
+              Tu primera huella: {firstHuellaDateLabel ?? 'fecha en sincronización'}.
             </p>
             <a
               href="https://gatoencerrado.org"
@@ -1196,7 +1205,7 @@ const CallToAction = ({ barsIntroDelayMs = 0 }) => {
               rel="noreferrer"
               className="mt-2 inline-flex items-center gap-1.5 rounded-lg border border-emerald-300/40 bg-emerald-400/10 px-3 py-1.5 text-xs font-semibold text-emerald-100 transition hover:border-emerald-200/60 hover:text-white"
             >
-              Te invitamos al Backstage →
+              Ahora conoce el Backstage →
             </a>
           </div>
         ) : null}
