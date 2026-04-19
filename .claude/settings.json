@@ -23,7 +23,8 @@
       "Bash(whois -h whois.radb.net -- '-i origin AS32934')",
       "Bash(grep -l \"stripe_customers\\\\|suscriptores\" /Users/gatoenigmatico/gatoencerrado-ai/supabase/migrations/*.sql)",
       "Bash(supabase secrets:*)",
-      "Read(//Users/gatoenigmatico/gatoencerrado-ai/landing/SitioObra/**)"
+      "Read(//Users/gatoenigmatico/gatoencerrado-ai/landing/SitioObra/**)",
+      "Bash(ssh-keygen -t ed25519 -C \"github-actions-deploy\" -f ~/.ssh/hostinger_deploy -N \"\")"
     ],
     "additionalDirectories": [
       "/Users/gatoenigmatico/Desktop/Postulación EFIARTES",

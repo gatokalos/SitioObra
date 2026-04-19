@@ -949,8 +949,7 @@ const CallToAction = ({ barsIntroDelayMs = 0 }) => {
       console.warn('[CallToAction] Embedded checkout error. Activando fallback.', e);
       setEmbeddedClientSecret('');
       setPendingFallbackPayload(null);
-      // DEBUG TEMPORAL: muestra el error real para diagnóstico. Revertir después.
-      setMsg(`[debug] ${e?.message ?? e?.code ?? 'unknown'} (status: ${e?.status ?? '?'})`);
+      setMsg('No se pudo abrir el formulario. Intenta de nuevo.');
       setCheckoutStatus('No se pudo abrir el formulario embebido. Redirigiendo a checkout externo…');
       try {
         await startCheckoutFallback(fallbackPayload);
@@ -1199,14 +1198,22 @@ const CallToAction = ({ barsIntroDelayMs = 0 }) => {
             <p className="mt-2 text-xs text-emerald-200/80">
               Tu primera huella: {firstHuellaDateLabel ?? 'fecha en sincronización'}.
             </p>
-            <a
-              href="https://gatoencerrado.org"
-              target="_blank"
-              rel="noreferrer"
+            <button
+              type="button"
+              onClick={async () => {
+                const base = 'https://gatoencerrado.org';
+                const win = window.open(`${base}/mi-cuenta/acceso`, '_blank', 'noopener,noreferrer');
+                const { data: { session } } = await supabase.auth.getSession();
+                if (session?.access_token && win && !win.closed) {
+                  const params = new URLSearchParams({ token: session.access_token });
+                  if (session.refresh_token) params.set('refresh', session.refresh_token);
+                  win.location.replace(`${base}/api/auth/handoff?${params}`);
+                }
+              }}
               className="mt-2 inline-flex items-center gap-1.5 rounded-lg border border-emerald-300/40 bg-emerald-400/10 px-3 py-1.5 text-xs font-semibold text-emerald-100 transition hover:border-emerald-200/60 hover:text-white"
             >
               Ahora conoce el Backstage →
-            </a>
+            </button>
           </div>
         ) : null}
         {embeddedClientSecret ? (

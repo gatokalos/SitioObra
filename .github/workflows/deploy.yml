@@ -73,17 +73,16 @@ jobs:
       - name: Show contents of dist/
         run: ls -la dist/
 
-      - name: Deploy via FTP
-        uses: SamKirkland/FTP-Deploy-Action@v4.3.6
-        with:
-          server: ${{ secrets.FTP_SERVER }}
-          username: ${{ secrets.FTP_USERNAME }}
-          password: ${{ secrets.FTP_PASSWORD }}
+      - name: Setup SSH key
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
+          ssh-keyscan -p 65002 ${{ secrets.FTP_SERVER }} >> ~/.ssh/known_hosts
 
-          protocol: ftps
-          port: 21
-          timeout: 600000
-
-          local-dir: dist/
-          server-dir: domains/esungatoencerrado.com/public_html/
-          log-level: verbose
+      - name: Deploy via rsync
+        run: |
+          rsync -avzr --delete \
+            -e "ssh -p 65002 -i ~/.ssh/id_ed25519" \
+            dist/ \
+            ${{ secrets.FTP_USERNAME }}@${{ secrets.FTP_SERVER }}:domains/esungatoencerrado.com/public_html/
