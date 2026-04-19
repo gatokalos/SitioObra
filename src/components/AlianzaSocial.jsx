@@ -19,11 +19,39 @@ const AlianzaSocial = () => {
   const sectionRef = useRef(null);
 
   const [imagePreview, setImagePreview] = useState(null);
+  const [openCauseIds, setOpenCauseIds] = useState(new Set());
+  const [expandAllTrigger, setExpandAllTrigger] = useState(0);
+  const [isMobileViewport, setIsMobileViewport] = useState(
+    () => typeof window !== 'undefined' && !window.matchMedia('(min-width: 1024px)').matches
+  );
+  const detailsRef = useRef(null);
 
   const { isCauseSiteOpen, handleOpenCauseSite, handleCloseCauseSite } = useExternalPanels({
     requireShowcaseAuth: noopAuth,
     toast,
   });
+
+  useEffect(() => {
+    if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') return undefined;
+    const mq = window.matchMedia('(min-width: 1024px)');
+    const handle = (e) => setIsMobileViewport(!e.matches);
+    if (typeof mq.addEventListener === 'function') mq.addEventListener('change', handle);
+    else mq.addListener(handle);
+    return () => {
+      if (typeof mq.removeEventListener === 'function') mq.removeEventListener('change', handle);
+      else mq.removeListener(handle);
+    };
+  }, []);
+
+  useEffect(() => {
+    const el = detailsRef.current;
+    if (!el) return undefined;
+    const handleToggle = () => {
+      if (el.open && isMobileViewport) setExpandAllTrigger((t) => t + 1);
+    };
+    el.addEventListener('toggle', handleToggle);
+    return () => el.removeEventListener('toggle', handleToggle);
+  }, [isMobileViewport]);
 
   // Fade del audio de Silvestre cuando la sección entra al viewport
   useEffect(() => {
@@ -109,7 +137,7 @@ const AlianzaSocial = () => {
                   </button>
                 </div>
                 <h3 className="font-display text-3xl text-slate-100">
-                  Déjanos tu huella
+                  Déjanos una huella
                 </h3>
                 <div className="space-y-4 text-slate-300/80 leading-relaxed font-light">
                   <p>
@@ -119,7 +147,7 @@ const AlianzaSocial = () => {
                   </p>
                   <p className="text-lg font-medium text-white">Cualquier excedente se reinvierte en nuevas formas de la obra ✨</p>
                 </div>
-                <details className="group rounded-2xl border border-emerald-300/25 bg-emerald-500/10 px-5 py-4">
+                <details ref={detailsRef} open={!isMobileViewport} className="group rounded-2xl border border-emerald-300/25 bg-emerald-500/10 px-5 py-4">
                   <summary className="flex cursor-pointer list-none items-center justify-between gap-3">
                     <span className="flex items-center gap-3">
                       <PawPrint size={18} className="text-emerald-200" />
@@ -144,39 +172,39 @@ const AlianzaSocial = () => {
                 <CauseImpactAccordion
                   items={CAUSE_ACCORDION}
                   onOpenImagePreview={handleOpenImagePreview}
+                  onOpenChange={setOpenCauseIds}
+                  expandAllTrigger={expandAllTrigger}
                 />
 
-                <div className="relative overflow-hidden rounded-xl border border-emerald-200/35 bg-black/35 px-4 py-3.5 text-left">
-                  <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_20%_10%,rgba(52,211,153,0.22),transparent_48%),radial-gradient(circle_at_82%_65%,rgba(45,212,191,0.16),transparent_35%)]" />
-                  <div className="pointer-events-none absolute inset-0 bg-gradient-to-r from-emerald-400/12 via-transparent to-cyan-300/10" />
-                  <div className="relative z-10 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                    <div className="min-w-0 flex items-center gap-3">
-                      <img
-                        src="https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/causa%20social/causa_social.png"
-                        alt="Causa Social"
-                        loading="lazy"
-                        className="h-12 w-12 rounded-xl object-cover flex-shrink-0"
-                      />
-                      <div>
-                        <p className="text-base font-semibold text-slate-100">
-                          Experiencia interactiva <span className="text-slate-400">|</span> ¿Qué es estar bien?
-                        </p>
-                        <p className="mt-1 text-sm text-slate-300/90">
-                          Recorre historias que conectan contigo… y descubre lo que dejan en ti.
-                        </p>
+                {openCauseIds.has('app-escolar') && (
+                  <div className="relative overflow-hidden rounded-xl border border-emerald-200/35 bg-black/35 px-4 py-3.5 text-left">
+                    <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_20%_10%,rgba(52,211,153,0.22),transparent_48%),radial-gradient(circle_at_82%_65%,rgba(45,212,191,0.16),transparent_35%)]" />
+                    <div className="pointer-events-none absolute inset-0 bg-gradient-to-r from-emerald-400/12 via-transparent to-cyan-300/10" />
+                    <div className="relative z-10 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                      <div className="min-w-0 flex items-center gap-3">
+                        <img
+                          src="https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/causa%20social/causa_social.png"
+                          alt="Causa Social"
+                          loading="lazy"
+                          className="h-12 w-12 rounded-xl object-cover flex-shrink-0"
+                        />
+                        <div>
+                          <p className="text-base font-semibold text-slate-100">
+                            ¿Quieres explorar la app F.E.L.I.S.?
+                          </p>
+                        </div>
                       </div>
+                      <button
+                        type="button"
+                        onClick={handleOpenInteractiveExperiencePlaceholder}
+                        className="inline-flex items-center justify-center gap-2 rounded-xl border border-emerald-300/40 bg-emerald-400/10 px-4 py-2 text-sm font-semibold text-emerald-100 transition hover:border-emerald-200/60 hover:bg-emerald-300/15 hover:text-white whitespace-nowrap"
+                      >
+                        <Smartphone size={15} />
+                        Descárgala aquí
+                      </button>
                     </div>
-                    <button
-                      type="button"
-                      onClick={handleOpenInteractiveExperiencePlaceholder}
-                      className="inline-flex items-center justify-center gap-2 rounded-xl border border-emerald-300/40 bg-emerald-400/10 px-4 py-2 text-sm font-semibold text-emerald-100 transition hover:border-emerald-200/60 hover:bg-emerald-300/15 hover:text-white whitespace-nowrap"
-                    >
-                      <Smartphone size={15} />
-                      Ver experiencia
-                    </button>
                   </div>
-            
-                </div>
+                )}
 
                 <div className="rounded-xl border border-white/10 bg-black/20 px-4 py-3 text-xs leading-relaxed text-slate-300/85">
                   <div className="flex flex-col gap-3 md:flex-row md:items-center md:gap-4">

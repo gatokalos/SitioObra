@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 
 const CAUSE_TO_BAR_KEY = {
   tratamientos: 'terapias',
@@ -7,12 +7,12 @@ const CAUSE_TO_BAR_KEY = {
 };
 const IMPACT_SYNC_MEDIA_QUERY =
   '(min-width: 1024px), ((min-width: 768px) and (orientation: landscape))';
-const DEFAULT_CAUSE_OPEN_ID = 'residencias';
+const DEFAULT_CAUSE_OPEN_ID = 'tratamientos';
 
 const resolveDefaultCauseId = (items = []) =>
   items.find((item) => item?.id === DEFAULT_CAUSE_OPEN_ID)?.id ?? items?.[0]?.id ?? null;
 
-const CauseImpactAccordion = ({ items, onOpenImagePreview }) => {
+const CauseImpactAccordion = ({ items, onOpenImagePreview, onOpenChange, expandAllTrigger }) => {
   const [isDesktopViewport, setIsDesktopViewport] = useState(
     () => typeof window !== 'undefined' && window.matchMedia('(min-width: 1024px)').matches
   );
@@ -22,9 +22,13 @@ const CauseImpactAccordion = ({ items, onOpenImagePreview }) => {
       typeof window.matchMedia === 'function' &&
       window.matchMedia(IMPACT_SYNC_MEDIA_QUERY).matches
   );
-  const [openCauseId, setOpenCauseId] = useState(() => resolveDefaultCauseId(items));
+  const [openCauseIds, setOpenCauseIds] = useState(() => {
+    const isDesktop = typeof window !== 'undefined' && window.matchMedia('(min-width: 1024px)').matches;
+    if (!isDesktop) return new Set();
+    const defaultId = resolveDefaultCauseId(items);
+    return defaultId ? new Set([defaultId]) : new Set();
+  });
   const [activeSlideById, setActiveSlideById] = useState({});
-  const hasAutoOpenedOnceRef = useRef(false);
 
   useEffect(() => {
     if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') {
@@ -73,12 +77,14 @@ const CauseImpactAccordion = ({ items, onOpenImagePreview }) => {
   }, []);
 
   useEffect(() => {
-    const defaultId = resolveDefaultCauseId(items);
-    if (!defaultId) return;
-    if (hasAutoOpenedOnceRef.current) return;
-    setOpenCauseId(defaultId);
-    hasAutoOpenedOnceRef.current = true;
-  }, [items]);
+    onOpenChange?.(openCauseIds);
+  }, [onOpenChange, openCauseIds]);
+
+  useEffect(() => {
+    if (!expandAllTrigger) return;
+    if (isDesktopViewport) return;
+    setOpenCauseIds(new Set(items.map((item) => item.id)));
+  }, [expandAllTrigger, isDesktopViewport, items]);
 
   const handleCarouselScroll = (itemId, event, total) => {
     const target = event.currentTarget;
@@ -96,30 +102,38 @@ const CauseImpactAccordion = ({ items, onOpenImagePreview }) => {
 
   const handleCauseToggle = useCallback(
     (itemId) => {
-      const nextOpenCauseId = openCauseId === itemId ? (isDesktopViewport ? itemId : null) : itemId;
-      setOpenCauseId(nextOpenCauseId);
+      const isCurrentlyOpen = openCauseIds.has(itemId);
 
-      if (!isImpactSyncViewport || nextOpenCauseId !== itemId || typeof window === 'undefined') {
-        return;
-      }
+      setOpenCauseIds((prev) => {
+        if (isDesktopViewport) {
+          // Desktop: uno a la vez, no se puede cerrar el abierto
+          if (prev.has(itemId)) return prev;
+          return new Set([itemId]);
+        }
+        // Móvil: toggle individual
+        const next = new Set(prev);
+        if (next.has(itemId)) next.delete(itemId);
+        else next.add(itemId);
+        return next;
+      });
 
+      if (isCurrentlyOpen || !isImpactSyncViewport || typeof window === 'undefined') return;
       const barKey = CAUSE_TO_BAR_KEY[itemId];
       if (!barKey) return;
-
       window.dispatchEvent(
         new CustomEvent('gatoencerrado:impact-accordion-toggle', {
           detail: { causeId: itemId, barKey },
         })
       );
     },
-    [isDesktopViewport, isImpactSyncViewport, openCauseId]
+    [isDesktopViewport, isImpactSyncViewport, openCauseIds]
   );
 
   return (
     <div className="mt-4 space-y-3">
       {items.map((item) => {
         const Icon = item.icon;
-        const isOpen = openCauseId === item.id;
+        const isOpen = openCauseIds.has(item.id);
         const images = Array.isArray(item.imageUrls)
           ? item.imageUrls.filter(Boolean)
           : [];
