@@ -1193,7 +1193,7 @@ const CallToAction = ({ barsIntroDelayMs = 0 }) => {
               <p className="text-base font-semibold text-white">{displayName}.</p>
             )}
             <p className={`text-sm font-semibold${displayName ? ' mt-1' : ''}`}>
-              Ya formas parte fundamental de #GatoEncerrado.
+              Ahora formas parte fundamental de #GatoEncerrado.
             </p>
             <p className="mt-2 text-xs text-emerald-200/80">
               Tu primera huella: {firstHuellaDateLabel ?? 'fecha en sincronización'}.
@@ -1212,7 +1212,7 @@ const CallToAction = ({ barsIntroDelayMs = 0 }) => {
               }}
               className="mt-2 inline-flex items-center gap-1.5 rounded-lg border border-emerald-300/40 bg-emerald-400/10 px-3 py-1.5 text-xs font-semibold text-emerald-100 transition hover:border-emerald-200/60 hover:text-white"
             >
-              Ahora conoce el Backstage →
+              Acompáñanos al Backstage →
             </button>
           </div>
         ) : null}

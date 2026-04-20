@@ -924,7 +924,7 @@ const MiniverseModal = ({
         icon: Sparkles,
         thumbLabel: 'P',
         thumbGradient: 'from-violet-300/80 via-fuchsia-400/70 to-cyan-400/60',
-        title: 'Microficción fragmentada',
+        title: 'Autoficción en fragmentos',
         titleShort: 'Prólogo',
         ctaLabel: '🎧 "El arte de no romperse"',
         ctaDuration: '5 min',
@@ -2170,7 +2170,7 @@ const MiniverseModal = ({
                               </div>
                               <div className="min-w-0 flex-1">
                                 <p className="text-xs uppercase tracking-[0.35em] text-slate-300/80">
-                                  {activeShowcaseCard.eyebrow || 'Microficción'}
+                                  {activeShowcaseCard.eyebrow || 'Autoficción en fragmentos'}
                                 </p>
                                 <h3
                                   className={`${isInlineMode
@@ -2316,7 +2316,7 @@ const MiniverseModal = ({
                             </div>
                             <div className="min-w-0 flex-1">
                               <p className="text-xs uppercase tracking-[0.35em] text-slate-300/80">
-                                {activeShowcaseCard.eyebrow || 'Microficción'}
+                                {activeShowcaseCard.eyebrow || 'Autoficción en fragmentos'}
                               </p>
                               <h3
                                 className={`${isInlineMode
