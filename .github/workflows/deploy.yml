@@ -78,11 +78,10 @@ jobs:
           mkdir -p ~/.ssh
           echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_ed25519
           chmod 600 ~/.ssh/id_ed25519
-          ssh-keyscan -p 65002 ${{ secrets.FTP_SERVER }} >> ~/.ssh/known_hosts
 
       - name: Deploy via rsync
         run: |
           rsync -avzr --delete \
-            -e "ssh -p 65002 -i ~/.ssh/id_ed25519" \
+            -e "ssh -p 65002 -i ~/.ssh/id_ed25519 -o StrictHostKeyChecking=no" \
             dist/ \
             ${{ secrets.FTP_USERNAME }}@${{ secrets.FTP_SERVER }}:domains/esungatoencerrado.com/public_html/
