@@ -2105,7 +2105,7 @@ const MiniverseModal = ({
                   <div className="flex items-center justify-between text-xs text-slate-400/80">
              
                     <span>
-                      Tarjeta {Math.min(activeShowcaseIndex + 1, Math.max(showcaseNarrativeCards.length, 1))}/
+                      Microficción {Math.min(activeShowcaseIndex + 1, Math.max(showcaseNarrativeCards.length, 1))}/
                       {Math.max(showcaseNarrativeCards.length, 1)}
                     </span>
                   </div>
@@ -2316,7 +2316,7 @@ const MiniverseModal = ({
                             </div>
                             <div className="min-w-0 flex-1">
                               <p className="text-xs uppercase tracking-[0.35em] text-slate-300/80">
-                                {activeShowcaseCard.eyebrow || 'Autoficción en fragmentos'}
+                                {activeShowcaseCard.eyebrow || 'Autoficción'}
                               </p>
                               <h3
                                 className={`${isInlineMode
