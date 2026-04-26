@@ -24,7 +24,10 @@
       "Bash(grep -l \"stripe_customers\\\\|suscriptores\" /Users/gatoenigmatico/gatoencerrado-ai/supabase/migrations/*.sql)",
       "Bash(supabase secrets:*)",
       "Read(//Users/gatoenigmatico/gatoencerrado-ai/landing/SitioObra/**)",
-      "Bash(ssh-keygen -t ed25519 -C \"github-actions-deploy\" -f ~/.ssh/hostinger_deploy -N \"\")"
+      "Bash(ssh-keygen -t ed25519 -C \"github-actions-deploy\" -f ~/.ssh/hostinger_deploy -N \"\")",
+      "Bash(grep -E \"\\\\.\\(js|jsx|ts|tsx\\)$\")",
+      "Bash(grep -E \"^[0-9]{3,4}:\")",
+      "Bash(python3 -c ' *)"
     ],
     "additionalDirectories": [
       "/Users/gatoenigmatico/Desktop/Postulación EFIARTES",

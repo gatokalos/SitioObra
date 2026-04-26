@@ -87,6 +87,14 @@ import MiniVersoCard from '@/components/transmedia/MiniVersoCard';
 import ShowcaseReactionInline from '@/components/transmedia/ShowcaseReactionInline';
 import CauseImpactAccordion from '@/components/transmedia/CauseImpactAccordion';
 
+const MARIANA_GALLERY = [
+  {
+    type: 'image',
+    url: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Merch/prototito_transmedia.jpeg',
+    caption: '#Cat.in.a.Box',
+  },
+];
+
 const MiniverseModal = lazy(() => import('@/components/MiniverseModal'));
 const ContributionModal = lazy(() => import('@/components/ContributionModal'));
 const ARExperience = lazy(() => import('@/components/ar/ARExperience'));
@@ -148,6 +156,7 @@ const Transmedia = ({ allianceOnlyMode = false }) => {
   const [isMiniversoEditorialModalOpen, setIsMiniversoEditorialModalOpen] = useState(false);
   const [showAutoficcionPreview, setShowAutoficcionPreview] = useState(false);
   const [hasLoadedAutoficcionPreview, setHasLoadedAutoficcionPreview] = useState(false);
+  const [galeriaMarianaIndex, setGaleriaMarianaIndex] = useState(null);
   const {
     micPromptVisible,
     transcript,
@@ -1179,7 +1188,7 @@ const Transmedia = ({ allianceOnlyMode = false }) => {
   );
 
   const renderCollaboratorsSection = useCallback(
-    (collaborators, prefix = 'collab') => {
+    (collaborators, prefix = 'collab', bare = false) => {
       if (!Array.isArray(collaborators) || !collaborators.length) return null;
       const normalized = collaborators.map((collab, idx) => ({
         ...collab,
@@ -1188,8 +1197,8 @@ const Transmedia = ({ allianceOnlyMode = false }) => {
       }));
       const selected = normalized.find((collab) => collab._avatarId === openCollaboratorId);
       const avatarsToShow = normalized.filter((collab) => collab._avatarId !== selected?._avatarId);
-      return (
-        <div className="rounded-3xl border border-white/10 bg-black/30 p-6 space-y-4 md:space-y-3">
+      const inner = (
+        <>
           <div className="flex flex-col md:grid md:grid-cols-[1fr_auto] md:items-center gap-3">
             <motion.div layout className="flex items-center gap-3 flex-wrap justify-center md:justify-start">
               {avatarsToShow.map((collab) => {
@@ -1255,6 +1264,12 @@ const Transmedia = ({ allianceOnlyMode = false }) => {
               </div>
             </div>
           ) : null}
+        </>
+      );
+      if (bare) return <div className="space-y-3">{inner}</div>;
+      return (
+        <div className="rounded-3xl border border-white/10 bg-black/30 p-6 space-y-4 md:space-y-3">
+          {inner}
         </div>
       );
     },
@@ -1591,8 +1606,6 @@ const rendernotaAutoral = () => {
 
       return (
         <div className="space-y-8">
-          {renderCollaboratorsSection(activeDefinition.collaborators, 'object-webar')}
-
           <div className="grid gap-10 lg:grid-cols-[2fr_1fr]">
             <div className="space-y-6">
               <div className="rounded-3xl border border-white/10 overflow-hidden bg-black/30">
@@ -1704,46 +1717,87 @@ const rendernotaAutoral = () => {
 
       </div>
 
-      {/* ───────── Columna derecha: Mapa comunitario (UI mock) ───────── */}
-      <div className="rounded-2xl border border-white/10 bg-white/5 p-5 flex flex-col gap-4">
-        <div className="flex items-center justify-between gap-3">
-          <h4 className="text-xs uppercase tracking-[0.35em] text-slate-300">
-            Mapa comunitario
-          </h4>
-          <span className="inline-flex items-center gap-1 rounded-full border border-cyan-300/30 bg-cyan-400/10 px-2 py-1 text-[10px] uppercase tracking-[0.25em] text-cyan-200">
-            <MapIcon size={12} />
-            Beta
-          </span>
-        </div>
-
-        <div className="relative h-44 overflow-hidden rounded-xl border border-white/10 bg-slate-950/70">
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_25%,rgba(34,211,238,0.14),transparent_35%),radial-gradient(circle_at_70%_70%,rgba(192,132,252,0.16),transparent_40%),linear-gradient(120deg,rgba(15,23,42,0.9),rgba(2,6,23,0.95))]" />
-          <div className="absolute inset-0 opacity-25 [background-size:22px_22px] [background-image:linear-gradient(to_right,rgba(148,163,184,0.22)_1px,transparent_1px),linear-gradient(to_bottom,rgba(148,163,184,0.22)_1px,transparent_1px)]" />
-          <span className="absolute left-[18%] top-[34%] h-3 w-3 rounded-full bg-cyan-300 shadow-[0_0_12px_rgba(34,211,238,0.75)]" />
-          <span className="absolute left-[57%] top-[48%] h-3 w-3 rounded-full bg-fuchsia-300 shadow-[0_0_12px_rgba(217,70,239,0.75)]" />
-          <span className="absolute left-[74%] top-[26%] h-3 w-3 rounded-full bg-emerald-300 shadow-[0_0_12px_rgba(16,185,129,0.75)]" />
-          <p className="absolute bottom-2 left-3 text-[10px] uppercase tracking-[0.25em] text-slate-300/80">
-            Próximamente: cafeterías sugeridas por la comunidad
-          </p>
-        </div>
-
-        <div className="space-y-2 text-xs text-slate-300/90">
-          <p className="uppercase tracking-[0.25em] text-slate-400">Sugerencias destacadas</p>
-          <ul className="space-y-1.5">
-            <li>• Tijuana Centro · Cafetería de la esquina</li>
-            <li>• Zona Río · Punto de lectura nocturna</li>
-            <li>• Playas · Charla con taza y libreta</li>
-          </ul>
-        </div>
-
-        <button
-  type="button"
-  onClick={() => handleOpenContribution(getContributionCategoryForShowcase('lataza'))}
-  className="mt-2 inline-flex items-center gap-2 rounded-full border border-purple-400/40 bg-purple-500/10 px-4 py-2 text-xs font-semibold uppercase tracking-[0.28em] text-purple-100 transition hover:border-purple-300/70 hover:bg-purple-500/15 hover:shadow-[0_12px_30px_rgba(126,34,206,0.28)] focus:outline-none focus:ring-2 focus:ring-purple-400/60 self-start"
->
-  <MapIcon size={14} className="text-purple-200" />
-  Sugerir cafetería
-</button>
+      {/* ───────── Columna derecha: Proceso Mariana Núñez ───────── */}
+      <div className="rounded-2xl border border-white/10 bg-white/5 p-5 flex flex-col gap-5">
+        {galeriaMarianaIndex === null ? (
+          <>
+            <div className="border-l-2 border-amber-400/50 pl-4 space-y-2">
+              <div>
+                <p className="font-display text-base text-slate-100">#CatInABox</p>
+                <p className="text-[11px] uppercase tracking-[0.3em] text-slate-500 mt-1">Cerámica esmaltada · 2026</p>
+              </div>
+              <p className="text-sm text-slate-300/80 leading-relaxed">
+                Este &ldquo;gato&rdquo; —el hashtag que usamos en código y redes para conectar— aquí se vuelve objeto: un volumen que cabe en una caja.
+              </p>
+              <p className="text-sm text-slate-300/80 leading-relaxed">
+                Ya no organiza contenido; se guarda. Un nodo físico dentro del sistema transmedial de #GatoEncerrado.
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={() => setGaleriaMarianaIndex(0)}
+              className="group relative aspect-[4/3] w-full overflow-hidden rounded-xl border border-white/10"
+            >
+              <img
+                src={MARIANA_GALLERY[0].url}
+                alt={MARIANA_GALLERY[0].caption}
+                className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+              />
+              <div className="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 transition-opacity duration-300 group-hover:opacity-100">
+                <p className="text-xs uppercase tracking-[0.35em] text-white">Ver proceso</p>
+              </div>
+            </button>
+          </>
+        ) : (
+          <>
+            <div className="flex items-center justify-between">
+              <button
+                type="button"
+                onClick={() => setGaleriaMarianaIndex(null)}
+                className="text-xs uppercase tracking-[0.3em] text-amber-400/80 hover:text-amber-300 transition-colors"
+              >
+                ← Cédula
+              </button>
+              <p className="text-[10px] uppercase tracking-[0.3em] text-slate-500">
+                {galeriaMarianaIndex + 1} / {MARIANA_GALLERY.length}
+              </p>
+            </div>
+            <div className="overflow-hidden rounded-xl border border-white/10">
+              {MARIANA_GALLERY[galeriaMarianaIndex].type === 'video' ? (
+                <video
+                  src={MARIANA_GALLERY[galeriaMarianaIndex].url}
+                  controls
+                  className="w-full"
+                />
+              ) : (
+                <img
+                  src={MARIANA_GALLERY[galeriaMarianaIndex].url}
+                  alt={MARIANA_GALLERY[galeriaMarianaIndex].caption}
+                  className="w-full object-contain"
+                />
+              )}
+            </div>
+            <p className="text-center text-xs text-slate-400">{MARIANA_GALLERY[galeriaMarianaIndex].caption}</p>
+            {MARIANA_GALLERY.length > 1 && (
+              <div className="flex items-center justify-center gap-4">
+                <button
+                  type="button"
+                  onClick={() => setGaleriaMarianaIndex((i) => (i - 1 + MARIANA_GALLERY.length) % MARIANA_GALLERY.length)}
+                  className="rounded-full border border-white/10 bg-white/5 p-2 text-slate-300 transition-colors hover:bg-white/10"
+                >
+                  ←
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setGaleriaMarianaIndex((i) => (i + 1) % MARIANA_GALLERY.length)}
+                  className="rounded-full border border-white/10 bg-white/5 p-2 text-slate-300 transition-colors hover:bg-white/10"
+                >
+                  →
+                </button>
+              </div>
+            )}
+          </>
+        )}
       </div>
     </div>
   )}
@@ -1779,8 +1833,6 @@ const rendernotaAutoral = () => {
     if (activeDefinition.type === 'audio-dream') {
     return (
       <div className="space-y-8">
-        {renderCollaboratorsSection(activeDefinition.collaborators, 'sonoro')}
-
         <div className="space-y-8">
           <div className="rounded-3xl border border-white/10 bg-black/30 p-0 lg:p-6">
             <MiniversoSonoroPreview
@@ -2044,17 +2096,29 @@ const rendernotaAutoral = () => {
                 </div>
                
                 {activeDefinition.iaProfile ? (
-                  <IAInsightCard {...activeDefinition.iaProfile} compact />
+                  <div className="hidden lg:block">
+                    <IAInsightCard {...activeDefinition.iaProfile} compact />
+                  </div>
                 ) : null}
               </div>
               <div className="flex flex-col gap-6">
+                <div className="lg:hidden">
+                  {renderCollaboratorsSection(activeDefinition.collaborators, 'tragedia')}
+                </div>
                 {rendernotaAutoral()}
               </div>
               
             </div>
           </div>
 
-          {renderCollaboratorsSection(activeDefinition.collaborators, 'tragedia')}
+          <div className="hidden lg:block">
+            {renderCollaboratorsSection(activeDefinition.collaborators, 'tragedia')}
+          </div>
+          {activeDefinition.iaProfile ? (
+            <div className="lg:hidden">
+              <IAInsightCard {...activeDefinition.iaProfile} compact />
+            </div>
+          ) : null}
 
           <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.2fr)]">
             <div className="contents lg:block lg:min-w-0 lg:space-y-6">
@@ -2479,8 +2543,6 @@ const rendernotaAutoral = () => {
 
       return (
         <div className="space-y-8">
-          {renderCollaboratorsSection(activeDefinition.collaborators, 'grafico')}
-
         <div className="grid gap-6 lg:gap-8 lg:grid-cols-[3fr_2fr]">
         <div className="space-y-6">
    
@@ -3228,8 +3290,6 @@ const rendernotaAutoral = () => {
 
       return (
         <div className="space-y-8">
-          {renderCollaboratorsSection(activeDefinition.collaborators, 'cine')}
-
           {isMobileViewport ? (
             <div className="space-y-6">
               {copycatsBlock}
@@ -3361,7 +3421,6 @@ const rendernotaAutoral = () => {
 
       return (
         <div className="space-y-10">
-          {renderCollaboratorsSection(activeDefinition.collaborators, 'novela')}
           <div>{renderPostDetails()}</div>
           {entries.length > 0 ? (
             activeShowcase === 'miniversoNovela' ? (
@@ -3803,19 +3862,30 @@ const rendernotaAutoral = () => {
                     <div className="text-slate-300/80 leading-relaxed font-light max-w-3xl">
                       {activeDefinition.introNode ?? activeDefinition.intro}
                     </div>
+                    <div className="hidden md:block">
+                      {renderCollaboratorsSection(activeDefinition.collaborators, activeShowcase ?? 'hdr', true)}
+                    </div>
+                  </div>
+                  <div className="md:w-[360px] flex-shrink-0 flex flex-col gap-6">
+                    <div className="md:hidden">
+                      {renderCollaboratorsSection(activeDefinition.collaborators, activeShowcase ?? 'hdr')}
+                    </div>
+                    {rendernotaAutoral()}
                     {activeDefinition.iaProfile ? (
-                      <div className="max-w-xl">
+                      <div className="hidden md:block">
                         <IAInsightCard {...activeDefinition.iaProfile} compact />
                       </div>
                     ) : null}
-                  </div>
-                  <div className="md:w-[360px] flex-shrink-0">
-                    {rendernotaAutoral()}
                   </div>
                 </div>
               ) : null}
 
               <div className="mt-2">{renderShowcaseContent()}</div>
+              {activeDefinition.type !== 'tragedia' && activeDefinition.iaProfile ? (
+                <div className="md:hidden mt-4">
+                  <IAInsightCard {...activeDefinition.iaProfile} compact />
+                </div>
+              ) : null}
             </motion.div>
           </motion.div>
         ) : null}

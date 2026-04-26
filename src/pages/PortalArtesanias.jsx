@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { BookOpen, Hand, Heart, MapPin, Sparkles } from 'lucide-react';
+import { BookOpen, Hand, Heart } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { toast } from '@/components/ui/use-toast';
@@ -18,6 +18,14 @@ import { startDirectMerchCheckout } from '@/lib/merchCheckout';
 import { supabase } from '@/lib/supabaseClient';
 import { sanitizeExternalHttpUrl } from '@/lib/urlSafety';
 import { hasEnoughGAT } from '@/lib/gatAccess';
+
+const MARIANA_GALLERY = [
+  {
+    type: 'image',
+    url: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Merch/prototito_transmedia.jpeg',
+    caption: '#Cat.in.a.Box',
+  },
+];
 
 const ARTESANIAS_INTRO =       (
 <>
@@ -79,6 +87,13 @@ const ARTESANIAS_COLLABORATORS = [
     role: 'Coordinación de entregas',
     bio: 'Coordino la entrega de las primeras tazas y las primeras activaciones del objeto artesanal.',
     image: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/equipo/rocio.jpg',
+  },
+  {
+    id: 'mariana-nunez',
+    name: 'Mariana Núñez de León',
+    role: 'Cerámica · Experimentación y objeto narrativo',
+    bio: 'Ceramista tijuanense cuya práctica explora el molde, el volumen y la experimentación material. En #GatoEncerrado articula el paso de lo digital a lo físico, integrando la cerámica como parte del sistema narrativo donde el proceso y sus contingencias forman parte de la obra.',
+    image: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/equipo/mariana-nunez.png',
   },
 ];
 const ARTESANIAS_NOTA_AUTORAL = {
@@ -199,6 +214,95 @@ const ShowcaseReactionInline = ({ status, onReact }) => (
   </div>
 );
 
+const GaleriaMarianaCard = ({ index, setIndex, onCtaClick }) => (
+  <div className="rounded-2xl border border-white/10 bg-white/5 p-5 flex flex-col gap-5">
+    {index === null ? (
+      <>
+        <div className="border-l-2 border-amber-400/50 pl-4 space-y-2">
+          <div>
+            <p className="font-display text-base text-slate-100">#Cat.in.a.Box</p>
+            <p className="text-[11px] uppercase tracking-[0.3em] text-slate-500 mt-1">Cerámica esmaltada · 2026</p>
+          </div>
+          <p className="text-sm text-slate-300/80 leading-relaxed">
+            Este &ldquo;gato&rdquo; —el hashtag que usamos en código y redes para conectar— aquí se vuelve objeto: un volumen que cabe en una caja.
+          </p>
+          <p className="text-sm text-slate-300/80 leading-relaxed">
+            Ya no organiza contenido; se guarda. Un nodo físico dentro del sistema transmedial de #GatoEncerrado.
+          </p>
+        </div>
+        <button
+          type="button"
+          onClick={() => setIndex(0)}
+          className="group relative aspect-[4/3] w-full overflow-hidden rounded-xl border border-white/10"
+        >
+          <img
+            src={MARIANA_GALLERY[0].url}
+            alt={MARIANA_GALLERY[0].caption}
+            className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+          />
+          <div className="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 transition-opacity duration-300 group-hover:opacity-100">
+            <p className="text-xs uppercase tracking-[0.35em] text-white">Ver proceso</p>
+          </div>
+        </button>
+        {onCtaClick && (
+          <button
+            type="button"
+            onClick={onCtaClick}
+            className="w-full rounded-full border border-amber-400/40 py-2 text-xs uppercase tracking-[0.35em] text-amber-300 transition-colors hover:bg-amber-400/10"
+          >
+            Inscríbete al taller
+          </button>
+        )}
+      </>
+    ) : (
+      <>
+        <div className="flex items-center justify-between">
+          <button
+            type="button"
+            onClick={() => setIndex(null)}
+            className="text-xs uppercase tracking-[0.3em] text-amber-400/80 hover:text-amber-300 transition-colors"
+          >
+            ← Cédula
+          </button>
+          <p className="text-[10px] uppercase tracking-[0.3em] text-slate-500">
+            {index + 1} / {MARIANA_GALLERY.length}
+          </p>
+        </div>
+        <div className="overflow-hidden rounded-xl border border-white/10">
+          {MARIANA_GALLERY[index].type === 'video' ? (
+            <video src={MARIANA_GALLERY[index].url} controls className="w-full" />
+          ) : (
+            <img
+              src={MARIANA_GALLERY[index].url}
+              alt={MARIANA_GALLERY[index].caption}
+              className="w-full object-contain"
+            />
+          )}
+        </div>
+        <p className="text-center text-xs text-slate-400">{MARIANA_GALLERY[index].caption}</p>
+        {MARIANA_GALLERY.length > 1 && (
+          <div className="flex items-center justify-center gap-4">
+            <button
+              type="button"
+              onClick={() => setIndex((i) => (i - 1 + MARIANA_GALLERY.length) % MARIANA_GALLERY.length)}
+              className="rounded-full border border-white/10 bg-white/5 p-2 text-slate-300 transition-colors hover:bg-white/10"
+            >
+              ←
+            </button>
+            <button
+              type="button"
+              onClick={() => setIndex((i) => (i + 1) % MARIANA_GALLERY.length)}
+              className="rounded-full border border-white/10 bg-white/5 p-2 text-slate-300 transition-colors hover:bg-white/10"
+            >
+              →
+            </button>
+          </div>
+        )}
+      </>
+    )}
+  </div>
+);
+
 const PortalArtesanias = () => {
   const { user } = useAuth();
   const isAuthenticated = Boolean(user);
@@ -218,18 +322,10 @@ const PortalArtesanias = () => {
   const [communityError, setCommunityError] = useState('');
   const [latestArtesaniasReading, setLatestArtesaniasReading] = useState(null);
   const [isReadingTooltipOpen, setIsReadingTooltipOpen] = useState(false);
+  const [galeriaMarianaIndex, setGaleriaMarianaIndex] = useState(null);
   const [reactionStatus, setReactionStatus] = useState('idle');
   const [isContributionOpen, setIsContributionOpen] = useState(false);
   const [isTazaCheckoutLoading, setIsTazaCheckoutLoading] = useState(false);
-  const [isSupportFormOpen, setIsSupportFormOpen] = useState(false);
-  const [supportFormState, setSupportFormState] = useState({
-    fullName: '',
-    email: '',
-    city: '',
-    notes: '',
-  });
-  const [supportFormStatus, setSupportFormStatus] = useState('idle');
-  const [supportFormError, setSupportFormError] = useState('');
   const readingTooltipRef = useRef(null);
 
   const handleOpenLogin = useCallback(() => {
@@ -421,70 +517,6 @@ const PortalArtesanias = () => {
     };
   }, [isTazaARActive]);
 
-  const handleToggleSupportForm = useCallback(() => {
-    if (!requireAuth()) return;
-    setSupportFormStatus('idle');
-    setSupportFormError('');
-    setIsSupportFormOpen((prev) => !prev);
-  }, [requireAuth]);
-
-  const handleSupportFormInputChange = useCallback((event) => {
-    const { name, value } = event.target;
-    setSupportFormState((prev) => ({ ...prev, [name]: value }));
-    if (supportFormStatus !== 'idle') setSupportFormStatus('idle');
-    if (supportFormError) setSupportFormError('');
-  }, [supportFormError, supportFormStatus]);
-
-  const handleSubmitSupportForm = useCallback(
-    async (event) => {
-      event.preventDefault();
-      if (!requireAuth()) return;
-      if (supportFormStatus === 'loading') return;
-
-      const fullName = supportFormState.fullName.trim();
-      const email = supportFormState.email.trim().toLowerCase();
-      const city = supportFormState.city.trim();
-      const notes = supportFormState.notes.trim();
-      const isValidEmail = /\S+@\S+\.\S+/.test(email);
-
-      if (!fullName || !isValidEmail || !notes) {
-        setSupportFormStatus('error');
-        setSupportFormError('Completa nombre, correo valido e intencion de la propuesta.');
-        return;
-      }
-
-      setSupportFormStatus('loading');
-      setSupportFormError('');
-
-      try {
-        const payload = {
-          fullName,
-          email,
-          city: city || null,
-          notes,
-          packages: ['taza-250'],
-          channel: 'portal-artesanias',
-          event: 'sugerencia-cafeteria',
-        };
-
-        const { error } = await supabase.functions.invoke('send-reserve-confirmation', {
-          body: payload,
-        });
-
-        if (error) throw error;
-
-        setSupportFormStatus('success');
-        toast({ description: 'Gracias. Recibimos tu sugerencia para puntos de encuentro.' });
-        setSupportFormState((prev) => ({ ...prev, city: '', notes: '' }));
-      } catch (error) {
-        console.error('[PortalArtesanias] Suggestion submit error:', error);
-        setSupportFormStatus('error');
-        setSupportFormError('No pudimos enviar tu sugerencia. Intenta nuevamente.');
-      }
-    },
-    [requireAuth, supportFormState, supportFormStatus]
-  );
-
   const handleOpenTazaCheckout = useCallback(async () => {
     if (!requireAuth()) return;
     if (isTazaCheckoutLoading) return;
@@ -562,10 +594,15 @@ const PortalArtesanias = () => {
                   <p>{ARTESANIAS_SUBTITLE}</p>
                   <p>{ARTESANIAS_INTRO}</p>
                 </div>
-                <IAInsightCard {...ARTESANIAS_IA_PROFILE} compact />
+                <div className="hidden lg:block">
+                  <IAInsightCard {...ARTESANIAS_IA_PROFILE} compact />
+                </div>
               </div>
 
               <div className="flex flex-col gap-6">
+                <div className="lg:hidden">
+                  <CollaboratorsPanel collaborators={ARTESANIAS_COLLABORATORS} accentClassName="text-amber-200/90" />
+                </div>
                 <div className="relative flex flex-col gap-3">
                   <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Mini-verso autoral</p>
                   <MiniVersoCard
@@ -578,7 +615,12 @@ const PortalArtesanias = () => {
             </div>
           </div>
 
-          <CollaboratorsPanel collaborators={ARTESANIAS_COLLABORATORS} accentClassName="text-amber-200/90" />
+          <div className="hidden lg:block">
+            <CollaboratorsPanel collaborators={ARTESANIAS_COLLABORATORS} accentClassName="text-amber-200/90" />
+          </div>
+          <div className="lg:hidden">
+            <IAInsightCard {...ARTESANIAS_IA_PROFILE} compact />
+          </div>
 
           <div className="grid gap-10 lg:grid-cols-[2fr_1fr]">
             <div className="space-y-6">
@@ -636,126 +678,14 @@ const PortalArtesanias = () => {
                     ) : null}
                   </div>
 
-                  <div className="rounded-2xl border border-white/10 bg-white/5 p-5 flex flex-col gap-4">
-                    <div className="flex items-center justify-between gap-3">
-                      <h4 className="text-xs uppercase tracking-[0.35em] text-slate-300">Mapa comunitario</h4>
-                      <span className="inline-flex items-center gap-1 rounded-full border border-cyan-300/30 bg-cyan-400/10 px-2 py-1 text-[10px] uppercase tracking-[0.25em] text-cyan-200">
-                        <MapPin size={12} />
-                        Beta
-                      </span>
-                    </div>
-
-                    <div className="relative h-44 overflow-hidden rounded-xl border border-white/10 bg-slate-950/70">
-                      <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_25%,rgba(34,211,238,0.14),transparent_35%),radial-gradient(circle_at_70%_70%,rgba(192,132,252,0.16),transparent_40%),linear-gradient(120deg,rgba(15,23,42,0.9),rgba(2,6,23,0.95))]" />
-                      <div className="absolute inset-0 opacity-25 [background-size:22px_22px] [background-image:linear-gradient(to_right,rgba(148,163,184,0.22)_1px,transparent_1px),linear-gradient(to_bottom,rgba(148,163,184,0.22)_1px,transparent_1px)]" />
-                      <span className="absolute left-[18%] top-[34%] h-3 w-3 rounded-full bg-cyan-300 shadow-[0_0_12px_rgba(34,211,238,0.75)]" />
-                      <span className="absolute left-[57%] top-[48%] h-3 w-3 rounded-full bg-fuchsia-300 shadow-[0_0_12px_rgba(217,70,239,0.75)]" />
-                      <span className="absolute left-[74%] top-[26%] h-3 w-3 rounded-full bg-emerald-300 shadow-[0_0_12px_rgba(16,185,129,0.75)]" />
-                      <p className="absolute bottom-2 left-3 text-[10px] uppercase tracking-[0.25em] text-slate-300/80">
-                        Proximamente: cafeterias sugeridas por la comunidad
-                      </p>
-                    </div>
-
-                    <div className="space-y-2 text-xs text-slate-300/90">
-                      <p className="uppercase tracking-[0.25em] text-slate-400">Sugerencias destacadas</p>
-                      <ul className="space-y-1.5">
-                        <li>• Tijuana Centro · Cafeteria de la esquina</li>
-                        <li>• Zona Rio · Punto de lectura nocturna</li>
-                        <li>• Playas · Charla con taza y libreta</li>
-                      </ul>
-                    </div>
-
-                    <button
-                      type="button"
-                      onClick={handleToggleSupportForm}
-                      className="mt-2 inline-flex items-center gap-2 rounded-full border border-purple-400/40 bg-purple-500/10 px-4 py-2 text-xs font-semibold uppercase tracking-[0.28em] text-purple-100 transition hover:border-purple-300/70 hover:bg-purple-500/15 hover:shadow-[0_12px_30px_rgba(126,34,206,0.28)] focus:outline-none focus:ring-2 focus:ring-purple-400/60 self-start"
-                    >
-                      <Sparkles size={14} className="text-purple-200" />
-                      {isSupportFormOpen ? 'Ocultar formulario' : 'Sugerir cafeteria'}
-                    </button>
-
-                    {isSupportFormOpen ? (
-                      <form
-                        onSubmit={handleSubmitSupportForm}
-                        className="mt-2 w-full rounded-2xl border border-white/10 bg-black/25 p-4 space-y-3"
-                      >
-                        <div className="space-y-1.5">
-                          <label className="text-xs uppercase tracking-[0.24em] text-slate-400/90">Tu nombre</label>
-                          <input
-                            name="fullName"
-                            type="text"
-                            value={supportFormState.fullName}
-                            onChange={handleSupportFormInputChange}
-                            className="form-surface w-full px-3 py-2 text-sm"
-                            placeholder="Como te llamas?"
-                            autoComplete="name"
-                          />
-                        </div>
-
-                        <div className="space-y-1.5">
-                          <label className="text-xs uppercase tracking-[0.24em] text-slate-400/90">
-                            Correo electronico
-                          </label>
-                          <input
-                            name="email"
-                            type="email"
-                            value={supportFormState.email}
-                            onChange={handleSupportFormInputChange}
-                            className="form-surface w-full px-3 py-2 text-sm"
-                            placeholder="nombre@correo.com"
-                            autoComplete="email"
-                            inputMode="email"
-                          />
-                        </div>
-
-                        <div className="space-y-1.5">
-                          <label className="text-xs uppercase tracking-[0.24em] text-slate-400/90">Ciudad</label>
-                          <input
-                            name="city"
-                            type="text"
-                            value={supportFormState.city}
-                            onChange={handleSupportFormInputChange}
-                            className="form-surface w-full px-3 py-2 text-sm"
-                            placeholder="Desde donde nos escribes?"
-                            autoComplete="address-level2"
-                          />
-                        </div>
-
-                        <div className="space-y-1.5">
-                          <label className="text-xs uppercase tracking-[0.24em] text-slate-400/90">
-                            Intencion o propuesta
-                          </label>
-                          <textarea
-                            name="notes"
-                            rows={3}
-                            value={supportFormState.notes}
-                            onChange={handleSupportFormInputChange}
-                            className="form-surface w-full resize-none px-3 py-2 text-sm"
-                            placeholder="Cafe, libreria, charla o colaboracion que propones."
-                          />
-                        </div>
-
-                        {supportFormError ? (
-                          <p className="text-xs text-rose-200/90">{supportFormError}</p>
-                        ) : null}
-                        {supportFormStatus === 'success' ? (
-                          <p className="text-xs text-emerald-200/90">
-                            Sugerencia enviada. Te escribiremos para dar seguimiento.
-                          </p>
-                        ) : null}
-
-                        <button
-                          type="submit"
-                          className="inline-flex items-center justify-center rounded-full border border-purple-400/50 bg-purple-500/20 px-4 py-2 text-xs font-semibold uppercase tracking-[0.22em] text-purple-100 transition hover:border-purple-300/80 hover:bg-purple-500/30 disabled:cursor-not-allowed disabled:opacity-60"
-                          disabled={supportFormStatus === 'loading'}
-                        >
-                          {supportFormStatus === 'loading' ? 'Enviando...' : 'Enviar sugerencia'}
-                        </button>
-                      </form>
-                    ) : null}
+                  <div className="hidden md:block">
+                    <GaleriaMarianaCard index={galeriaMarianaIndex} setIndex={setGaleriaMarianaIndex} onCtaClick={() => setIsContributionOpen(true)} />
                   </div>
                 </div>
               </div>
+            </div>
+            <div className="md:hidden">
+              <GaleriaMarianaCard index={galeriaMarianaIndex} setIndex={setGaleriaMarianaIndex} onCtaClick={() => setIsContributionOpen(true)} />
             </div>
 
             <div className="space-y-5">
@@ -803,7 +733,7 @@ const PortalArtesanias = () => {
                       className="w-full rounded-full border border-purple-500/70 text-purple-100 shadow-[0_15px_45px_rgba(67,56,202,0.45)] hover:bg-purple-500/20 tracking-[0.25em] text-xs uppercase px-4 py-2"
                       onClick={handleOpenCommunityComposer}
                     >
-                      coméntanos algo aqui
+                      coméntanos algo aquí
                     </button>
                   </div>
                 </div>

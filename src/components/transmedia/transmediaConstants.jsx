@@ -588,10 +588,22 @@ iaProfile: {
     ],
   },
   copycats: {
-    label: 'Mini-verso cine',
+    label: 'Cine',
     shareLabel: 'Cine',
     type: 'cinema',
     intro: 'El cine dentro de #GatoEncerrado es otro modo de entrar al encierro.',
+    introNode: (
+      <>
+        <p>El cine dentro de #GatoEncerrado es otro modo de entrar al encierro.</p>
+        <p className="text-slate-100/90">CopyCats (cine de no-ficción) y Quirón (autoficción) dialogan desde extremos distintos del mismo espectro:</p>
+        <p className="text-slate-300/90">Una filma el desgaste creativo y la fractura del proceso; la otra abre una confesión íntima que decide hablar del suicidio sin rodeos.</p>
+        <div className="flex flex-wrap gap-2 mt-2">
+          <span className="rounded-full border border-sky-200/35 bg-sky-400/10 px-3 py-1 text-[11px] uppercase tracking-[0.22em] text-sky-100">Premiere íntima</span>
+          <span className="rounded-full border border-sky-200/35 bg-sky-400/10 px-3 py-1 text-[11px] uppercase tracking-[0.22em] text-sky-100">Laboratorio abierto</span>
+          <span className="rounded-full border border-sky-200/35 bg-sky-400/10 px-3 py-1 text-[11px] uppercase tracking-[0.22em] text-sky-100">Cine con memoria</span>
+        </div>
+      </>
+    ),
     promise: 'CopyCats (no-ficción) y Quirón (autoficción) dialogan desde extremos distintos del mismo espectro: una filma el desgaste creativo y la fractura del proceso; la otra abre una confesión íntima que decide hablar del suicidio sin rodeos.',
     theme:
       'Dos películas, dos vulnerabilidades distintas, un mismo impulso: usar el arte para tocar aquello que no queremos decir en voz alta y encontrar otra manera de contarlo.',
@@ -758,6 +770,13 @@ iaProfile: {
         role: 'Coordinación de entregas',
         bio: 'Rocío coordinó la entrega de las primeras tazas como un gesto de agradecimiento dentro del proceso de Es un gato encerrado, cuidando que llegaran tanto al equipo como a personas cercanas al proyecto. Marcando así las primeras activaciones de nuestro primer objeto artesanal.',
         image: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/equipo/rocio.jpg',
+      },
+      {
+        id: 'mariana-nunez',
+        name: 'Mariana Núñez de León',
+        role: 'Cerámica · Experimentación y objeto narrativo',
+        bio: 'Mariana Núñez de León es una ceramista basada en Tijuana, formada en espacios de taller como La Caja Galería. Su práctica se centra en el molde, el volumen y la experimentación material. En #GatoEncerrado, su trabajo articula el paso de lo digital a lo físico, integrando la cerámica como parte del sistema narrativo del proyecto, donde el proceso y sus contingencias forman parte de la obra.',
+        image: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/equipo/mariana-nunez.png',
       },
     ],
     comments: [

@@ -17,7 +17,7 @@ import { sanitizeExternalHttpUrl } from '@/lib/urlSafety';
 import { hasEnoughGAT } from '@/lib/gatAccess';
 
 const GRAFICOS_INTRO =
-  'Gráficos explora el universo #GatoEncerrado desde la imagen. Aquí las escenas se quedan en otro momento: lo que en la obra aparece como pensamiento o diálogo, en el cómic puede convertirse en ensayo, en silencio, en otra voz. No solo la de Silvestre, sino la de cualquiera que se haya sentido como él.';
+  'Gráficos explora el universo #GatoEncerrado desde la imagen. Aquí las escenas se quedan en otro momento: lo que en la obra aparece como pensamiento o diálogo, en el cómic puede convertirse en ensayo, en silencio, en otra voz. No solo el de Silvestre, sino el de cualquiera que se haya sentido como él. Dibujar permite mirar lo que no siempre se dice en escena.';
 const GRAFICOS_NOTA_AUTORAL = {
   title: '#MirarmeLoQueSoy',
   verse: 'Me quedé dibujando,\ncomo si el papel supiera quién soy\nmejor que yo.',
@@ -338,10 +338,40 @@ const PortalGraficos = () => {
                 <div className="space-y-4 text-lg text-slate-200/85 leading-relaxed font-light">
                   <p>{GRAFICOS_INTRO}</p>
                 </div>
-                <IAInsightCard {...GRAFICOS_IA_PROFILE} compact />
+                <div className="hidden lg:block">
+                  <IAInsightCard {...GRAFICOS_IA_PROFILE} compact />
+                </div>
               </div>
 
               <div className="flex flex-col gap-6">
+                <div className="lg:hidden">
+                  <CollaboratorsPanel
+                    collaborators={[GRAFICOS_COLLABORATOR]}
+                    accentClassName="text-fuchsia-200/90"
+                    extraContent={(
+                      <div>
+                        <p className="text-sm font-semibold text-slate-100">Convocatoria abierta</p>
+                        <ul className="mt-3 space-y-2 text-sm text-slate-300/90">
+                          {GRAFICOS_COLLABORATOR_CALL_ITEMS.map((item) => (
+                            <li key={`grafico-collab-call-${item}`} className="flex items-start gap-2">
+                              <span className="mt-1 text-fuchsia-300">•</span>
+                              <span>{item}</span>
+                            </li>
+                          ))}
+                        </ul>
+                        <div className="flex justify-end mt-4">
+                          <Button
+                            type="button"
+                            onClick={handleOpenCommunityComposer}
+                            className="w-full justify-center bg-gradient-to-r from-fuchsia-500/90 to-purple-600/90 text-white hover:from-fuchsia-400/90 hover:to-purple-500/90 sm:w-auto"
+                          >
+                            Sumarme al laboratorio
+                          </Button>
+                        </div>
+                      </div>
+                    )}
+                  />
+                </div>
                 <div className="relative flex flex-col gap-3">
                   <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Mini-verso autoral</p>
                   <MiniVersoCard
@@ -354,32 +384,37 @@ const PortalGraficos = () => {
             </div>
           </div>
 
-          <CollaboratorsPanel
-            collaborators={[GRAFICOS_COLLABORATOR]}
-            accentClassName="text-fuchsia-200/90"
-            extraContent={(
-              <div>
-                <p className="text-sm font-semibold text-slate-100">Convocatoria abierta</p>
-                <ul className="mt-3 space-y-2 text-sm text-slate-300/90">
-                  {GRAFICOS_COLLABORATOR_CALL_ITEMS.map((item) => (
-                    <li key={`grafico-collab-call-${item}`} className="flex items-start gap-2">
-                      <span className="mt-1 text-fuchsia-300">•</span>
-                      <span>{item}</span>
-                    </li>
-                  ))}
-                </ul>
-                <div className="flex justify-end mt-4">
-                  <Button
-                    type="button"
-                    onClick={handleOpenCommunityComposer}
-                    className="w-full justify-center bg-gradient-to-r from-fuchsia-500/90 to-purple-600/90 text-white hover:from-fuchsia-400/90 hover:to-purple-500/90 sm:w-auto"
-                  >
-                    Sumarme al laboratorio
-                  </Button>
+          <div className="hidden lg:block">
+            <CollaboratorsPanel
+              collaborators={[GRAFICOS_COLLABORATOR]}
+              accentClassName="text-fuchsia-200/90"
+              extraContent={(
+                <div>
+                  <p className="text-sm font-semibold text-slate-100">Convocatoria abierta</p>
+                  <ul className="mt-3 space-y-2 text-sm text-slate-300/90">
+                    {GRAFICOS_COLLABORATOR_CALL_ITEMS.map((item) => (
+                      <li key={`grafico-collab-call-${item}`} className="flex items-start gap-2">
+                        <span className="mt-1 text-fuchsia-300">•</span>
+                        <span>{item}</span>
+                      </li>
+                    ))}
+                  </ul>
+                  <div className="flex justify-end mt-4">
+                    <Button
+                      type="button"
+                      onClick={handleOpenCommunityComposer}
+                      className="w-full justify-center bg-gradient-to-r from-fuchsia-500/90 to-purple-600/90 text-white hover:from-fuchsia-400/90 hover:to-purple-500/90 sm:w-auto"
+                    >
+                      Sumarme al laboratorio
+                    </Button>
+                  </div>
                 </div>
-              </div>
-            )}
-          />
+              )}
+            />
+          </div>
+          <div className="lg:hidden">
+            <IAInsightCard {...GRAFICOS_IA_PROFILE} compact />
+          </div>
 
           <div className="space-y-5 rounded-3xl border border-white/10 bg-gradient-to-br from-slate-950/80 via-black/60 to-fuchsia-900/30 p-6 lg:p-8">
             <p className="text-xs uppercase tracking-[0.35em] text-slate-400/80">Swipe narrativo</p>

@@ -498,10 +498,15 @@ const PortalCine = () => {
                     </span>
                   ))}
                 </div>
-                <IAInsightCard {...CINE_IA_PROFILE} compact />
+                <div className="hidden lg:block">
+                  <IAInsightCard {...CINE_IA_PROFILE} compact />
+                </div>
               </div>
 
               <div className="flex flex-col gap-6">
+                <div className="lg:hidden">
+                  <CollaboratorsPanel collaborators={CINE_COLLABORATORS} accentClassName="text-sky-200/90" />
+                </div>
                 <div className="relative flex flex-col gap-3">
                   <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Mini-verso autoral</p>
                   <MiniVersoCard
@@ -514,7 +519,12 @@ const PortalCine = () => {
             </div>
           </div>
 
-          <CollaboratorsPanel collaborators={CINE_COLLABORATORS} accentClassName="text-sky-200/90" />
+          <div className="hidden lg:block">
+            <CollaboratorsPanel collaborators={CINE_COLLABORATORS} accentClassName="text-sky-200/90" />
+          </div>
+          <div className="lg:hidden">
+            <IAInsightCard {...CINE_IA_PROFILE} compact />
+          </div>
 
           <div className="grid gap-6 xl:grid-cols-2">
             {renderImmersiveCinemaCard({
@@ -606,7 +616,7 @@ const PortalCine = () => {
                       className="w-full rounded-full border border-purple-500/70 text-purple-100 shadow-[0_15px_45px_rgba(67,56,202,0.45)] hover:bg-purple-500/20 tracking-[0.25em] text-xs uppercase px-4 py-2"
                       onClick={handleOpenCommunityComposer}
                     >
-                      coméntanos algo aqui
+                      coméntanos algo aquí
                     </button>
                   </div>
                 </div>

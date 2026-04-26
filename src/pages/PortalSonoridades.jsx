@@ -18,9 +18,9 @@ import { sanitizeExternalHttpUrl } from '@/lib/urlSafety';
 import { hasEnoughGAT } from '@/lib/gatAccess';
 
 const SONORIDADES_INTRO =
-  'Sonoridades reune la musica original y el diseno sonoro creados para la obra, junto con piezas que expanden su universo mas alla del escenario.';
+  'Sonoridades reúne la música original y el diseño sonoro creados para la obra, junto con piezas que expanden su universo más allá del escenario.';
 const SONORIDADES_BODY =
-  'En la puesta, el sonido no acompano la historia: la transformo. Abre una experiencia inmersiva donde la resonancia modifica la percepcion del tiempo, del cuerpo y del espacio.';
+  'En la puesta, el sonido no acompañó la historia: la transformó. Abrió una experiencia inmersiva donde la resonancia modifica la percepción del tiempo, del cuerpo y del espacio. Este espacio permite recorrer esas composiciones, explorar sus capas y descubrir cómo lo audible deja huella incluso cuando la escena ya terminó.';
 const SONORIDADES_CLOSE =
   'Cada visita es una mezcla nueva, un sueño que se reinventa con cada escucha.';
 const SUPABASE_STORAGE = `${import.meta.env.VITE_SUPABASE_URL || ''}/storage/v1/object/public`;
@@ -392,10 +392,15 @@ const PortalSonoridades = () => {
                   <p>{SONORIDADES_BODY}</p>
                   <p className="text-slate-100/90">{SONORIDADES_CLOSE}</p>
                 </div>
-                <IAInsightCard {...SONORIDADES_IA_PROFILE} compact />
+                <div className="hidden lg:block">
+                  <IAInsightCard {...SONORIDADES_IA_PROFILE} compact />
+                </div>
               </div>
 
               <div className="flex flex-col gap-6">
+                <div className="lg:hidden">
+                  <CollaboratorsPanel collaborators={SONORIDADES_COLLABORATORS} accentClassName="text-cyan-200/90" />
+                </div>
                 <div className="relative flex flex-col gap-3">
                   <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Mini-verso autoral</p>
                   <MiniVersoCard
@@ -408,7 +413,12 @@ const PortalSonoridades = () => {
             </div>
           </div>
 
-          <CollaboratorsPanel collaborators={SONORIDADES_COLLABORATORS} accentClassName="text-cyan-200/90" />
+          <div className="hidden lg:block">
+            <CollaboratorsPanel collaborators={SONORIDADES_COLLABORATORS} accentClassName="text-cyan-200/90" />
+          </div>
+          <div className="lg:hidden">
+            <IAInsightCard {...SONORIDADES_IA_PROFILE} compact />
+          </div>
 
           <div className="space-y-5 rounded-3xl border border-white/10 bg-gradient-to-br from-slate-950/80 via-black/60 to-cyan-900/30 p-6 lg:p-8">
             <div className="flex flex-wrap items-center justify-between gap-3">
@@ -510,7 +520,7 @@ const PortalSonoridades = () => {
                       className="w-full rounded-full border border-purple-500/70 text-purple-100 shadow-[0_15px_45px_rgba(67,56,202,0.45)] hover:bg-purple-500/20 tracking-[0.25em] text-xs uppercase px-4 py-2"
                       onClick={handleOpenCommunityComposer}
                     >
-                      coméntanos algo aqui
+                      coméntanos algo aquí
                     </button>
                   </div>
                 </div>

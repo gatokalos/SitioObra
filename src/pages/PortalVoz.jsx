@@ -1034,10 +1034,15 @@ const PortalVoz = () => {
                 <div className="space-y-4 text-lg text-slate-200/85 leading-relaxed font-light">
                   {SCENE_PORTAL_INTRO}
                 </div>
-                <IAInsightCard {...SCENE_PORTAL_IA_PROFILE} compact />
+                <div className="hidden lg:block">
+                  <IAInsightCard {...SCENE_PORTAL_IA_PROFILE} compact />
+                </div>
               </div>
 
               <div className="flex flex-col gap-6">
+                <div className="lg:hidden">
+                  {renderCollaboratorsSection()}
+                </div>
                 <div className="relative flex flex-col gap-3">
                   <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Mini-verso autoral</p>
                   <MiniVersoCard
@@ -1057,7 +1062,12 @@ const PortalVoz = () => {
             </div>
           </div>
 
-          {renderCollaboratorsSection()}
+          <div className="hidden lg:block">
+            {renderCollaboratorsSection()}
+          </div>
+          <div className="lg:hidden">
+            <IAInsightCard {...SCENE_PORTAL_IA_PROFILE} compact />
+          </div>
 
           <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.2fr)]">
             <div className="contents lg:block lg:min-w-0 lg:space-y-6">
