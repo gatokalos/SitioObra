@@ -18,6 +18,7 @@ import { sanitizeExternalHttpUrl } from '@/lib/urlSafety';
 import { hasEnoughGAT } from '@/lib/gatAccess';
 import { useMobileVideoPresentation } from '@/hooks/useMobileVideoPresentation';
 import { usePortalTracking } from '@/hooks/usePortalTracking';
+import { ensureAnonId } from '@/lib/identity';
 
 const SUPABASE_STORAGE = `${import.meta.env.VITE_SUPABASE_URL || ''}/storage/v1/object/public`;
 
@@ -341,8 +342,14 @@ const PortalCine = () => {
 
   const handleProjectionInterest = useCallback(() => {
     if (!requireAuth()) return;
+    supabase.from('miniverso_cine_interactions').insert({
+      interaction_type: 'screening_cta',
+      anon_id: ensureAnonId() ?? null,
+      user_id: user?.id ?? null,
+      metadata: { recorded_at: new Date().toISOString() },
+    }).then(({ error }) => { if (error) console.warn('[cine] screening_cta:', error.message); });
     navigate({ pathname: '/', hash: '#next-show' });
-  }, [requireAuth, navigate]);
+  }, [requireAuth, navigate, user]);
 
   const handleSendPulse = useCallback(async () => {
     if (!requireAuth()) return;

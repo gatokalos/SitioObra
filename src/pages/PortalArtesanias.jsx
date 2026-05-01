@@ -19,6 +19,7 @@ import { supabase } from '@/lib/supabaseClient';
 import { sanitizeExternalHttpUrl } from '@/lib/urlSafety';
 import { hasEnoughGAT } from '@/lib/gatAccess';
 import { usePortalTracking } from '@/hooks/usePortalTracking';
+import { ensureAnonId } from '@/lib/identity';
 
 const MARIANA_GALLERY = [
   {
@@ -448,16 +449,6 @@ const PortalArtesanias = () => {
     };
   }, [isReadingTooltipOpen]);
 
-  useEffect(() => {
-    if (!user) return;
-    const metadata = user.user_metadata || {};
-    const resolvedName = metadata.full_name || metadata.alias || '';
-    setSupportFormState((prev) => ({
-      ...prev,
-      fullName: prev.fullName || resolvedName,
-      email: prev.email || user.email || '',
-    }));
-  }, [user]);
 
   const handleActivateAR = useCallback(async () => {
     if (!requireAuth()) return;
@@ -522,6 +513,14 @@ const PortalArtesanias = () => {
   const handleOpenTazaCheckout = useCallback(async () => {
     if (!requireAuth()) return;
     if (isTazaCheckoutLoading) return;
+
+    supabase.from('miniverso_artesanias_interactions').insert({
+      interaction_type: 'cta_click',
+      cta_id: 'taza-250',
+      anon_id: ensureAnonId() ?? null,
+      user_id: user?.id ?? null,
+      metadata: { recorded_at: new Date().toISOString() },
+    }).then(({ error }) => { if (error) console.warn('[artesanias] cta_click:', error.message); });
 
     setIsTazaCheckoutLoading(true);
     try {

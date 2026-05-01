@@ -25,6 +25,7 @@ import { supabase } from '@/lib/supabaseClient';
 import { sanitizeExternalHttpUrl } from '@/lib/urlSafety';
 import { hasEnoughGAT } from '@/lib/gatAccess';
 import { usePortalTracking } from '@/hooks/usePortalTracking';
+import { ensureAnonId } from '@/lib/identity';
 
 const MOVEMENT_INTRO =
   'Este miniverso creativo traslada al cuerpo los conflictos mentales del universo #GatoEncerrado. Si en la obra la mente se fragmenta, aquí el cuerpo busca arraigo. Es un laboratorio coreográfico y somático que se activa por ciudad. No se interpretan emociones: se atraviesan.';
@@ -380,9 +381,25 @@ const PortalMovimiento = () => {
   const handleMovementAction = useCallback(
     (action) => {
       if (!requireAuth()) return;
+      const ACTION_TYPE_MAP = {
+        ruta: 'route_click',
+        'marcador-ar': 'ar_marker_click',
+        talleres: 'workshop_click',
+        livestream: 'livestream_click',
+      };
+      const interactionType = ACTION_TYPE_MAP[action?.id];
+      if (interactionType) {
+        supabase.from('miniverso_movimiento_interactions').insert({
+          interaction_type: interactionType,
+          action_id: action?.id ?? null,
+          anon_id: ensureAnonId() ?? null,
+          user_id: user?.id ?? null,
+          metadata: { recorded_at: new Date().toISOString() },
+        }).then(({ error }) => { if (error) console.warn('[movimiento]', interactionType, error.message); });
+      }
       setActionFeedback(action?.toastMessage || 'Esta activación se habilitará pronto.');
     },
-    [requireAuth]
+    [requireAuth, user]
   );
 
   const handleSendPulse = useCallback(async () => {
