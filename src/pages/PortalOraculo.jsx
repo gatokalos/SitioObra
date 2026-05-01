@@ -15,6 +15,7 @@ import { recordShowcaseLike } from '@/services/showcaseLikeService';
 import { supabase } from '@/lib/supabaseClient';
 import { sanitizeExternalHttpUrl } from '@/lib/urlSafety';
 import { hasEnoughGAT } from '@/lib/gatAccess';
+import { usePortalTracking } from '@/hooks/usePortalTracking';
 
 const ORACULO_TITLE = 'Oráculo';
 const ORACULO_INTRO =
@@ -190,6 +191,7 @@ const ShowcaseReactionInline = ({ status, onReact }) => (
 
 const PortalOraculo = () => {
   const { user } = useAuth();
+  usePortalTracking('oraculo');
   const isAuthenticated = Boolean(user);
   const [showLoginOverlay, setShowLoginOverlay] = useState(false);
   const [showLoginHint, setShowLoginHint] = useState(false);

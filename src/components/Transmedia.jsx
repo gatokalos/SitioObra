@@ -51,6 +51,7 @@ import {
 } from '@/lib/bienvenidaBridge';
 import { resolvePortalRoute } from '@/lib/miniversePortalRegistry';
 import { createPortalLaunchState } from '@/lib/portalNavigation';
+import { trackVitranaOpen } from '@/services/portalTrackingService';
 import MiniversoSonoroPreview from '@/components/miniversos/sonoro/MiniversoSonoroPreview';
 import { useMobileVideoPresentation } from '@/hooks/useMobileVideoPresentation';
 import IAInsightCard from '@/components/IAInsightCard';
@@ -474,6 +475,7 @@ const Transmedia = ({ allianceOnlyMode = false }) => {
     (formatId) => {
       if (!formatId || !showcaseDefinitions[formatId]) return;
       setActiveShowcase(formatId);
+      trackVitranaOpen(formatId, user);
       const definition = showcaseDefinitions[formatId];
       if (definition.slug && definition.type !== 'blog-series') {
         const entry = showcaseContent[formatId];

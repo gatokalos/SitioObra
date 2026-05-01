@@ -13,6 +13,7 @@ import { recordShowcaseLike } from '@/services/showcaseLikeService';
 import { supabase } from '@/lib/supabaseClient';
 import { sanitizeExternalHttpUrl } from '@/lib/urlSafety';
 import { hasEnoughGAT } from '@/lib/gatAccess';
+import { usePortalTracking } from '@/hooks/usePortalTracking';
 import {
   MINIVERSO_TILE_COLORS,
   MINIVERSO_TILE_GRADIENTS,
@@ -117,6 +118,7 @@ const ShowcaseReactionInline = ({ status, onReact }) => (
 
 const PortalJuegos = () => {
   const { user } = useAuth();
+  usePortalTracking('juegos');
   const isAuthenticated = Boolean(user);
   const [showLoginOverlay, setShowLoginOverlay] = useState(false);
   const [showLoginHint, setShowLoginHint] = useState(false);

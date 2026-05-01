@@ -27,7 +27,17 @@
       "Bash(ssh-keygen -t ed25519 -C \"github-actions-deploy\" -f ~/.ssh/hostinger_deploy -N \"\")",
       "Bash(grep -E \"\\\\.\\(js|jsx|ts|tsx\\)$\")",
       "Bash(grep -E \"^[0-9]{3,4}:\")",
-      "Bash(python3 -c ' *)"
+      "Bash(python3 -c ' *)",
+      "Bash(sed -n '191,195p' /Users/gatoenigmatico/gatoencerrado-ai/landing/SitioObra/src/pages/PortalOraculo.jsx)",
+      "Bash(sed -n '238,242p' /Users/gatoenigmatico/gatoencerrado-ai/landing/SitioObra/src/pages/PortalMovimiento.jsx)",
+      "Bash(sed -n '141,145p' /Users/gatoenigmatico/gatoencerrado-ai/landing/SitioObra/src/pages/PortalGraficos.jsx)",
+      "Bash(sed -n '195,199p' /Users/gatoenigmatico/gatoencerrado-ai/landing/SitioObra/src/pages/PortalCine.jsx)",
+      "Bash(sed -n '199,203p' /Users/gatoenigmatico/gatoencerrado-ai/landing/SitioObra/src/pages/PortalSonoridades.jsx)",
+      "Bash(sed -n '17,18p' /Users/gatoenigmatico/gatoencerrado-ai/landing/SitioObra/src/pages/PortalGraficos.jsx)",
+      "Bash(sed -n '19,20p' /Users/gatoenigmatico/gatoencerrado-ai/landing/SitioObra/src/pages/PortalCine.jsx)",
+      "Bash(sed -n '18,19p' /Users/gatoenigmatico/gatoencerrado-ai/landing/SitioObra/src/pages/PortalSonoridades.jsx)",
+      "Bash(sed -n '20,21p' /Users/gatoenigmatico/gatoencerrado-ai/landing/SitioObra/src/pages/PortalLiteratura.jsx)",
+      "Bash(sed -n '20,21p' /Users/gatoenigmatico/gatoencerrado-ai/landing/SitioObra/src/pages/PortalArtesanias.jsx)"
     ],
     "additionalDirectories": [
       "/Users/gatoenigmatico/Desktop/Postulación EFIARTES",
@@ -36,7 +46,8 @@
       "/Users/gatoenigmatico/gatoencerrado-ai/supabase/functions/send-auth-email",
       "/Users/gatoenigmatico/gatoencerrado-ai/supabase",
       "/Users/gatoenigmatico/gatoencerrado-ai/landing/SitioObra/src/assets",
-      "/Users/gatoenigmatico/gatoencerrado-ai/apps/todxs-mvp"
+      "/Users/gatoenigmatico/gatoencerrado-ai/apps/todxs-mvp",
+      "/Users/gatoenigmatico/gatoencerrado-ai/gato-backstage"
     ]
   }
 }

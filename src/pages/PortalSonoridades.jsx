@@ -16,6 +16,7 @@ import { recordShowcaseLike } from '@/services/showcaseLikeService';
 import { supabase } from '@/lib/supabaseClient';
 import { sanitizeExternalHttpUrl } from '@/lib/urlSafety';
 import { hasEnoughGAT } from '@/lib/gatAccess';
+import { usePortalTracking } from '@/hooks/usePortalTracking';
 
 const SONORIDADES_INTRO =
   'Sonoridades reúne la música original y el diseño sonoro creados para la obra, junto con piezas que expanden su universo más allá del escenario.';
@@ -198,6 +199,7 @@ const ShowcaseReactionInline = ({ status, onReact }) => (
 
 const PortalSonoridades = () => {
   const { user } = useAuth();
+  usePortalTracking('sonoridades');
   const isAuthenticated = Boolean(user);
   const [showLoginOverlay, setShowLoginOverlay] = useState(false);
   const [showLoginHint, setShowLoginHint] = useState(false);

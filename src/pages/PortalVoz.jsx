@@ -28,6 +28,7 @@ import { recordShowcaseLike } from '@/services/showcaseLikeService';
 import { supabase } from '@/lib/supabaseClient';
 import { sanitizeExternalHttpUrl } from '@/lib/urlSafety';
 import { hasEnoughGAT } from '@/lib/gatAccess';
+import { usePortalTracking } from '@/hooks/usePortalTracking';
 
 const VOICE_MODES = [
   {
@@ -385,6 +386,7 @@ const ShowcaseReactionInline = ({
 
 const PortalVoz = () => {
   const { user } = useAuth();
+  usePortalTracking('obra');
   const isAuthenticated = Boolean(user);
   const [showLoginOverlay, setShowLoginOverlay] = useState(false);
   const [showLoginHint, setShowLoginHint] = useState(false);

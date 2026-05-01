@@ -18,6 +18,7 @@ import { startDirectMerchCheckout } from '@/lib/merchCheckout';
 import { supabase } from '@/lib/supabaseClient';
 import { sanitizeExternalHttpUrl } from '@/lib/urlSafety';
 import { hasEnoughGAT } from '@/lib/gatAccess';
+import { usePortalTracking } from '@/hooks/usePortalTracking';
 
 const MARIANA_GALLERY = [
   {
@@ -305,6 +306,7 @@ const GaleriaMarianaCard = ({ index, setIndex, onCtaClick }) => (
 
 const PortalArtesanias = () => {
   const { user } = useAuth();
+  usePortalTracking('artesanias');
   const isAuthenticated = Boolean(user);
   const [showLoginOverlay, setShowLoginOverlay] = useState(false);
   const [showLoginHint, setShowLoginHint] = useState(false);

@@ -17,6 +17,7 @@ import { supabase } from '@/lib/supabaseClient';
 import { sanitizeExternalHttpUrl } from '@/lib/urlSafety';
 import { hasEnoughGAT } from '@/lib/gatAccess';
 import { useMobileVideoPresentation } from '@/hooks/useMobileVideoPresentation';
+import { usePortalTracking } from '@/hooks/usePortalTracking';
 
 const SUPABASE_STORAGE = `${import.meta.env.VITE_SUPABASE_URL || ''}/storage/v1/object/public`;
 
@@ -195,6 +196,7 @@ const ShowcaseReactionInline = ({ status, onReact }) => (
 const PortalCine = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
+  usePortalTracking('cine');
   const { isMobileViewport, canUseInlinePlayback, requestMobileVideoPresentation } = useMobileVideoPresentation();
   const isAuthenticated = Boolean(user);
   const [showLoginOverlay, setShowLoginOverlay] = useState(false);

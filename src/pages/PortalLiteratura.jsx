@@ -18,6 +18,7 @@ import { startDirectMerchCheckout } from '@/lib/merchCheckout';
 import { supabase } from '@/lib/supabaseClient';
 import { sanitizeExternalHttpUrl } from '@/lib/urlSafety';
 import { hasEnoughGAT } from '@/lib/gatAccess';
+import { usePortalTracking } from '@/hooks/usePortalTracking';
 
 const LITERATURA_INTRO =
   'En este miniverso literario se entiende la escritura como una forma de expansion. No es un complemento de la obra escénica, sino un espacio propio donde fragmentos, voces, poemas y apuntes dialogan entre si y amplian el universo #Gato Encerrado.';
@@ -162,6 +163,7 @@ const ShowcaseReactionInline = ({ status, onReact }) => (
 
 const PortalLiteratura = () => {
   const { user } = useAuth();
+  usePortalTracking('literatura');
   const isAuthenticated = Boolean(user);
   const [showLoginOverlay, setShowLoginOverlay] = useState(false);
   const [showLoginHint, setShowLoginHint] = useState(false);
