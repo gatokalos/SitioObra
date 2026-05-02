@@ -470,33 +470,45 @@ const PortalCine = () => {
                     </span>
                   ))}
                 </div>
-                <div className="hidden lg:block">
-                  <IAInsightCard {...CINE_IA_PROFILE} compact />
-                </div>
               </div>
 
-              <div className="flex flex-col gap-6">
-                <div className="lg:hidden">
-                  <CollaboratorsPanel collaborators={CINE_COLLABORATORS} accentClassName="text-sky-200/90" />
-                </div>
-                <div className="relative flex flex-col gap-3">
-                  <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Mini-verso autoral</p>
-                  <MiniVersoCard
-                    title={CINE_NOTA_AUTORAL.title}
-                    verse={CINE_NOTA_AUTORAL.verse}
-                    palette={CINE_TILE}
+              <div className="flex flex-col gap-5">
+                <div className="flex items-start justify-between gap-3">
+                  <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Archivo de experiencia narrativa</p>
+                  <RelatedReadingTooltipButton
+                    slug={latestCineReading?.slug}
+                    authorLabel={cineReadingAuthorLabel}
+                    thumbnailUrl={cineReadingThumbnailUrl}
+                    ariaLabel="Mostrar lectura relacionada de Cine"
+                    tone="cyan"
                   />
                 </div>
+                <div className="form-surface px-6 py-8">
+                  {vitranaQuestion ? (
+                    <p className="text-slate-800 text-base leading-relaxed italic text-center font-light">
+                      {vitranaQuestion}
+                    </p>
+                  ) : (
+                    <p className="text-slate-400/60 text-sm text-center py-2">···</p>
+                  )}
+                </div>
+                <div className="mx-auto w-full max-w-md">
+                  <button
+                    type="button"
+                    className="w-full rounded-full border border-purple-500/70 text-purple-100 shadow-[0_15px_45px_rgba(67,56,202,0.45)] hover:bg-purple-500/20 tracking-[0.25em] text-xs uppercase px-4 py-2"
+                    onClick={handleOpenCommunityComposer}
+                  >
+                    Registra tu experiencia
+                  </button>
+                </div>
+                <p className="text-xs text-slate-400/70 leading-relaxed px-1">
+                  Esta plataforma investiga cómo distintas personas atraviesan experiencias narrativas, emocionales y simbólicas.
+                </p>
+                <ShowcaseReactionInline status={reactionStatus} onReact={handleSendPulse} />
               </div>
             </div>
           </div>
 
-          <div className="hidden lg:block">
-            <CollaboratorsPanel collaborators={CINE_COLLABORATORS} accentClassName="text-sky-200/90" />
-          </div>
-          <div className="lg:hidden">
-            <IAInsightCard {...CINE_IA_PROFILE} compact />
-          </div>
 
           <div className="grid gap-6 xl:grid-cols-2">
             {renderImmersiveCinemaCard({
@@ -530,61 +542,29 @@ const PortalCine = () => {
             })}
           </div>
 
-          <div className="grid gap-6 xl:grid-cols-[1.2fr_1fr] xl:items-start">
-            <div className="space-y-4 rounded-3xl border border-white/10 bg-black/30 p-5">
-              <div className="rounded-2xl border border-cyan-200/25 bg-cyan-500/10 p-4 space-y-3">
-                <p className="text-xs uppercase tracking-[0.3em] text-cyan-100">{CINE_PROYECCION.title}</p>
-                <p className="text-sm text-slate-100/95 leading-relaxed">{CINE_PROYECCION.description}</p>
-                <Button
-                  type="button"
-                  className="w-full sm:w-auto bg-gradient-to-r from-cyan-500/85 to-blue-600/85 hover:from-cyan-400/90 hover:to-blue-500/90 text-white"
-                  onClick={handleProjectionInterest}
-                >
-                  <Ticket size={15} className="mr-2" />
-                  {CINE_PROYECCION.cta}
-                </Button>
-                <p className="text-xs text-cyan-100/80">{CINE_PROYECCION.footnote}</p>
-              </div>
-            </div>
-
-            <div className="space-y-5">
-              <div className="rounded-3xl border border-white/10 bg-black/30 p-6 space-y-5">
-                <div className="mb-1 flex items-start justify-between gap-3">
-                  <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Archivo de experiencia narrativa</p>
-                  <RelatedReadingTooltipButton
-                    slug={latestCineReading?.slug}
-                    authorLabel={cineReadingAuthorLabel}
-                    thumbnailUrl={cineReadingThumbnailUrl}
-                    ariaLabel="Mostrar lectura relacionada de Cine"
-                    tone="cyan"
-                  />
-                </div>
-                <div className="rounded-2xl bg-white/90 px-6 py-8 shadow-[0_4px_24px_rgba(0,0,0,0.10)]">
-                  {vitranaQuestion ? (
-                    <p className="text-slate-800 text-base leading-relaxed italic text-center font-light">
-                      {vitranaQuestion}
-                    </p>
-                  ) : (
-                    <p className="text-slate-400/60 text-sm text-center py-2">···</p>
-                  )}
-                </div>
-                <p className="text-xs text-slate-400/70 leading-relaxed mt-4 px-1">
-                  Esta plataforma investiga cómo distintas personas atraviesan experiencias narrativas, emocionales y simbólicas.
-                </p>
-                <div className="mx-auto w-full max-w-md mt-4">
-                  <button
-                    type="button"
-                    className="w-full rounded-full border border-purple-500/70 text-purple-100 shadow-[0_15px_45px_rgba(67,56,202,0.45)] hover:bg-purple-500/20 tracking-[0.25em] text-xs uppercase px-4 py-2"
-                    onClick={handleOpenCommunityComposer}
-                  >
-                    Registra tu experiencia
-                  </button>
-                </div>
-
-                <ShowcaseReactionInline status={reactionStatus} onReact={handleSendPulse} />
-              </div>
+          <div className="space-y-4 rounded-3xl border border-white/10 bg-black/30 p-5">
+            <div className="rounded-2xl border border-cyan-200/25 bg-cyan-500/10 p-4 space-y-3">
+              <p className="text-xs uppercase tracking-[0.3em] text-cyan-100">{CINE_PROYECCION.title}</p>
+              <p className="text-sm text-slate-100/95 leading-relaxed">{CINE_PROYECCION.description}</p>
+              <Button
+                type="button"
+                className="w-full sm:w-auto bg-gradient-to-r from-cyan-500/85 to-blue-600/85 hover:from-cyan-400/90 hover:to-blue-500/90 text-white"
+                onClick={handleProjectionInterest}
+              >
+                <Ticket size={15} className="mr-2" />
+                {CINE_PROYECCION.cta}
+              </Button>
+              <p className="text-xs text-cyan-100/80">{CINE_PROYECCION.footnote}</p>
             </div>
           </div>
+          <div className="rounded-3xl border border-white/10 bg-black/30 p-6 space-y-6">
+            <CollaboratorsPanel collaborators={CINE_COLLABORATORS} accentClassName="text-sky-200/90" />
+            <div className="flex flex-col gap-3">
+              <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Mini-verso autoral</p>
+              <MiniVersoCard title={CINE_NOTA_AUTORAL.title} verse={CINE_NOTA_AUTORAL.verse} palette={CINE_TILE} />
+            </div>
+          </div>
+          <IAInsightCard {...CINE_IA_PROFILE} compact />
         </div>
 
         {showLoginOverlay ? <LoginOverlay onClose={handleCloseLogin} /> : null}

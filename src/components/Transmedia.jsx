@@ -142,6 +142,18 @@ import {
   CAUSE_ACCORDION,
 } from '@/components/transmedia/transmediaConstants';
 
+const VITRANA_QUESTION_BY_SHOWCASE = {
+  miniversos:          '¿Qué significa habitar una emoción delante de otros?',
+  miniversoSonoro:     '¿Por qué algunos sonidos duran más que las imágenes?',
+  miniversoGrafico:    '¿Qué ocurre cuando alguien más interpreta nuestra apariencia?',
+  miniversoMovimiento: '¿Qué sabe el cuerpo antes que la mente?',
+  apps:                '¿Qué cambia cuando una historia depende de nuestras decisiones?',
+  copycats:            '¿Cuándo un objeto deja de ser solo un objeto?',
+  miniversoNovela:     '¿Qué cambia cuando una experiencia se convierte en relato?',
+  cine:                '¿Qué significa verse fallar desde afuera?',
+  oraculo:             '¿Cuándo una experiencia deja de sentirse individual?',
+};
+
 const Transmedia = ({ allianceOnlyMode = false }) => {
   const [isMiniverseOpen, setIsMiniverseOpen] = useState(false);
   const [hasLoadedMiniverseModal, setHasLoadedMiniverseModal] = useState(false);
@@ -1367,9 +1379,9 @@ const Transmedia = ({ allianceOnlyMode = false }) => {
       } = {}
     ) => {
       if (!showcaseId) return null;
-      const comments = publicContributions[showcaseId] ?? [];
-      const isLoading = publicContributionsLoading[showcaseId];
-      const error = publicContributionsError[showcaseId];
+      // const comments = publicContributions[showcaseId] ?? [];
+      // const isLoading = publicContributionsLoading[showcaseId];
+      // const error = publicContributionsError[showcaseId];
       const categoryId = getContributionCategoryForShowcase(showcaseId);
       const latestBlogPost = latestBlogPostByShowcase[showcaseId];
 
@@ -1442,6 +1454,16 @@ const Transmedia = ({ allianceOnlyMode = false }) => {
                 })()
               : null}
           </div>
+          <div className="form-surface px-6 py-8">
+            {VITRANA_QUESTION_BY_SHOWCASE[showcaseId] ? (
+              <p className="text-slate-800 text-base leading-relaxed italic text-center font-light">
+                {VITRANA_QUESTION_BY_SHOWCASE[showcaseId]}
+              </p>
+            ) : (
+              <p className="text-slate-400/60 text-sm text-center py-2">···</p>
+            )}
+          </div>
+          {/* Listado de comentarios — temporalmente desactivado; pendiente de ubicar en Backstage
           <div className={`${commentsViewportClassName} form-surface relative overflow-y-auto px-3 py-3 pr-2`}>
             {isLoading ? (
               <p className="px-1 py-2 text-sm text-slate-600/85">Cargando comentarios…</p>
@@ -1470,6 +1492,7 @@ const Transmedia = ({ allianceOnlyMode = false }) => {
           <p className="mt-2 px-1 text-[10px] uppercase tracking-[0.24em] text-slate-500/85">
             Desliza para leer más voces
           </p>
+          */}
           <div className="pt-4 mt-1 border-t border-white/10">
             <div className="mx-auto w-full max-w-md">
               <Button

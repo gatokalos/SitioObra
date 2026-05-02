@@ -545,35 +545,46 @@ const PortalArtesanias = () => {
                   <p>{ARTESANIAS_SUBTITLE}</p>
                   <p>{ARTESANIAS_INTRO}</p>
                 </div>
-                <div className="hidden lg:block">
-                  <IAInsightCard {...ARTESANIAS_IA_PROFILE} compact />
-                </div>
               </div>
 
-              <div className="flex flex-col gap-6">
-                <div className="lg:hidden">
-                  <CollaboratorsPanel collaborators={ARTESANIAS_COLLABORATORS} accentClassName="text-amber-200/90" />
-                </div>
-                <div className="relative flex flex-col gap-3">
-                  <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Mini-verso autoral</p>
-                  <MiniVersoCard
-                    title={ARTESANIAS_NOTA_AUTORAL.title}
-                    verse={ARTESANIAS_NOTA_AUTORAL.verse}
-                    palette={ARTESANIAS_TILE}
+              <div className="flex flex-col gap-5">
+                <div className="flex items-start justify-between gap-3">
+                  <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Archivo de experiencia narrativa</p>
+                  <RelatedReadingTooltipButton
+                    slug={latestArtesaniasReading?.slug}
+                    authorLabel={artesaniasReadingAuthorLabel}
+                    thumbnailUrl={artesaniasReadingThumbnailUrl}
+                    ariaLabel="Mostrar lectura relacionada de Artesanías"
+                    tone="cyan"
                   />
                 </div>
+                <div className="form-surface px-6 py-8">
+                  {vitranaQuestion ? (
+                    <p className="text-slate-800 text-base leading-relaxed italic text-center font-light">
+                      {vitranaQuestion}
+                    </p>
+                  ) : (
+                    <p className="text-slate-400/60 text-sm text-center py-2">···</p>
+                  )}
+                </div>
+                <div className="mx-auto w-full max-w-md">
+                  <button
+                    type="button"
+                    className="w-full rounded-full border border-purple-500/70 text-purple-100 shadow-[0_15px_45px_rgba(67,56,202,0.45)] hover:bg-purple-500/20 tracking-[0.25em] text-xs uppercase px-4 py-2"
+                    onClick={handleOpenCommunityComposer}
+                  >
+                    Registra tu experiencia
+                  </button>
+                </div>
+                <p className="text-xs text-slate-400/70 leading-relaxed px-1">
+                  Esta plataforma investiga cómo distintas personas atraviesan experiencias narrativas, emocionales y simbólicas.
+                </p>
+                <ShowcaseReactionInline status={reactionStatus} onReact={handleSendPulse} />
               </div>
             </div>
           </div>
 
-          <div className="hidden lg:block">
-            <CollaboratorsPanel collaborators={ARTESANIAS_COLLABORATORS} accentClassName="text-amber-200/90" />
-          </div>
-          <div className="lg:hidden">
-            <IAInsightCard {...ARTESANIAS_IA_PROFILE} compact />
-          </div>
-
-          <div className="grid gap-10 lg:grid-cols-[2fr_1fr]">
+          <div className="space-y-6">
             <div className="space-y-6">
               <div className="rounded-3xl border border-white/10 overflow-hidden bg-black/30">
                 <div className="flex items-center justify-between gap-3 px-6 pt-4">
@@ -639,44 +650,19 @@ const PortalArtesanias = () => {
               <GaleriaMarianaCard index={galeriaMarianaIndex} setIndex={setGaleriaMarianaIndex} onCtaClick={() => setIsContributionOpen(true)} />
             </div>
 
-            <div className="space-y-5">
-              <div className="rounded-3xl border border-white/10 bg-black/30 p-6 space-y-5">
-                <div className="mb-1 flex items-start justify-between gap-3">
-                  <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Archivo de experiencia narrativa</p>
-                  <RelatedReadingTooltipButton
-                    slug={latestArtesaniasReading?.slug}
-                    authorLabel={artesaniasReadingAuthorLabel}
-                    thumbnailUrl={artesaniasReadingThumbnailUrl}
-                    ariaLabel="Mostrar lectura relacionada de Artesanías"
-                    tone="cyan"
-                  />
-                </div>
-                <div className="rounded-2xl bg-white/90 px-6 py-8 shadow-[0_4px_24px_rgba(0,0,0,0.10)]">
-                  {vitranaQuestion ? (
-                    <p className="text-slate-800 text-base leading-relaxed italic text-center font-light">
-                      {vitranaQuestion}
-                    </p>
-                  ) : (
-                    <p className="text-slate-400/60 text-sm text-center py-2">···</p>
-                  )}
-                </div>
-                <p className="text-xs text-slate-400/70 leading-relaxed mt-4 px-1">
-                  Esta plataforma investiga cómo distintas personas atraviesan experiencias narrativas, emocionales y simbólicas.
-                </p>
-                <div className="mx-auto w-full max-w-md mt-4">
-                  <button
-                    type="button"
-                    className="w-full rounded-full border border-purple-500/70 text-purple-100 shadow-[0_15px_45px_rgba(67,56,202,0.45)] hover:bg-purple-500/20 tracking-[0.25em] text-xs uppercase px-4 py-2"
-                    onClick={handleOpenCommunityComposer}
-                  >
-                    Registra tu experiencia
-                  </button>
-                </div>
-
-                <ShowcaseReactionInline status={reactionStatus} onReact={handleSendPulse} />
-              </div>
+          </div>
+          <div className="rounded-3xl border border-white/10 bg-black/30 p-6 space-y-6">
+            <CollaboratorsPanel collaborators={ARTESANIAS_COLLABORATORS} accentClassName="text-amber-200/90" />
+            <div className="flex flex-col gap-3">
+              <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Mini-verso autoral</p>
+              <MiniVersoCard
+                title={ARTESANIAS_NOTA_AUTORAL.title}
+                verse={ARTESANIAS_NOTA_AUTORAL.verse}
+                palette={ARTESANIAS_TILE}
+              />
             </div>
           </div>
+          <IAInsightCard {...ARTESANIAS_IA_PROFILE} compact />
         </div>
 
         {showLoginOverlay ? <LoginOverlay onClose={handleCloseLogin} /> : null}

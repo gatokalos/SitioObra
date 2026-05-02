@@ -344,33 +344,45 @@ const PortalSonoridades = () => {
                   <p>{SONORIDADES_BODY}</p>
                   <p className="text-slate-100/90">{SONORIDADES_CLOSE}</p>
                 </div>
-                <div className="hidden lg:block">
-                  <IAInsightCard {...SONORIDADES_IA_PROFILE} compact />
-                </div>
               </div>
 
-              <div className="flex flex-col gap-6">
-                <div className="lg:hidden">
-                  <CollaboratorsPanel collaborators={SONORIDADES_COLLABORATORS} accentClassName="text-cyan-200/90" />
-                </div>
-                <div className="relative flex flex-col gap-3">
-                  <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Mini-verso autoral</p>
-                  <MiniVersoCard
-                    title={SONORIDADES_NOTA_AUTORAL.title}
-                    verse={SONORIDADES_NOTA_AUTORAL.verse}
-                    palette={SONORIDADES_TILE}
+              <div className="flex flex-col gap-5">
+                <div className="flex items-start justify-between gap-3">
+                  <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Archivo de experiencia narrativa</p>
+                  <RelatedReadingTooltipButton
+                    slug={latestSonoridadesReading?.slug}
+                    authorLabel={sonoridadesReadingAuthorLabel}
+                    thumbnailUrl={sonoridadesReadingThumbnailUrl}
+                    ariaLabel="Mostrar lectura relacionada de Sonoridades"
+                    tone="cyan"
                   />
                 </div>
+                <div className="form-surface px-6 py-8">
+                  {vitranaQuestion ? (
+                    <p className="text-slate-800 text-base leading-relaxed italic text-center font-light">
+                      {vitranaQuestion}
+                    </p>
+                  ) : (
+                    <p className="text-slate-400/60 text-sm text-center py-2">···</p>
+                  )}
+                </div>
+                <div className="mx-auto w-full max-w-md">
+                  <button
+                    type="button"
+                    className="w-full rounded-full border border-purple-500/70 text-purple-100 shadow-[0_15px_45px_rgba(67,56,202,0.45)] hover:bg-purple-500/20 tracking-[0.25em] text-xs uppercase px-4 py-2"
+                    onClick={handleOpenCommunityComposer}
+                  >
+                    Registra tu experiencia
+                  </button>
+                </div>
+                <p className="text-xs text-slate-400/70 leading-relaxed px-1">
+                  Esta plataforma investiga cómo distintas personas atraviesan experiencias narrativas, emocionales y simbólicas.
+                </p>
+                <ShowcaseReactionInline status={reactionStatus} onReact={handleSendPulse} />
               </div>
             </div>
           </div>
 
-          <div className="hidden lg:block">
-            <CollaboratorsPanel collaborators={SONORIDADES_COLLABORATORS} accentClassName="text-cyan-200/90" />
-          </div>
-          <div className="lg:hidden">
-            <IAInsightCard {...SONORIDADES_IA_PROFILE} compact />
-          </div>
 
           <div className="space-y-5 rounded-3xl border border-white/10 bg-gradient-to-br from-slate-950/80 via-black/60 to-cyan-900/30 p-6 lg:p-8">
             <div className="flex flex-wrap items-center justify-between gap-3">
@@ -414,63 +426,31 @@ const PortalSonoridades = () => {
             </div>
           </div>
 
-          <div className="grid gap-6 xl:grid-cols-[1.2fr_1fr] xl:items-start">
-            <div className="space-y-4 rounded-3xl border border-white/10 bg-black/30 p-5">
-              <div className="rounded-2xl border border-white/10 bg-black/35 p-4 space-y-3">
-                <p className="text-xs uppercase tracking-[0.32em] text-slate-400/80">Como explorar</p>
-                <ol className="list-decimal list-inside space-y-2 text-slate-200 text-sm leading-relaxed">
-                  {SONORIDADES_EXPLORATION.map((step, index) => (
-                    <li key={`sonoro-step-${index}`}>{step}</li>
-                  ))}
-                </ol>
-              </div>
-              <div className="rounded-2xl border border-white/10 bg-black/25 p-4 space-y-2">
-                {SONORIDADES_CLOSING.map((line, index) => (
-                  <p key={`sonoro-closing-${index}`} className="text-sm text-slate-300/90">
-                    {line}
-                  </p>
+          <div className="space-y-4 rounded-3xl border border-white/10 bg-black/30 p-5">
+            <div className="rounded-2xl border border-white/10 bg-black/35 p-4 space-y-3">
+              <p className="text-xs uppercase tracking-[0.32em] text-slate-400/80">Como explorar</p>
+              <ol className="list-decimal list-inside space-y-2 text-slate-200 text-sm leading-relaxed">
+                {SONORIDADES_EXPLORATION.map((step, index) => (
+                  <li key={`sonoro-step-${index}`}>{step}</li>
                 ))}
-              </div>
+              </ol>
             </div>
-
-            <div className="space-y-5">
-              <div className="rounded-3xl border border-white/10 bg-black/30 p-6 space-y-5">
-                <div className="mb-1 flex items-start justify-between gap-3">
-                  <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Archivo de experiencia narrativa</p>
-                  <RelatedReadingTooltipButton
-                    slug={latestSonoridadesReading?.slug}
-                    authorLabel={sonoridadesReadingAuthorLabel}
-                    thumbnailUrl={sonoridadesReadingThumbnailUrl}
-                    ariaLabel="Mostrar lectura relacionada de Sonoridades"
-                    tone="cyan"
-                  />
-                </div>
-                <div className="rounded-2xl bg-white/90 px-6 py-8 shadow-[0_4px_24px_rgba(0,0,0,0.10)]">
-                  {vitranaQuestion ? (
-                    <p className="text-slate-800 text-base leading-relaxed italic text-center font-light">
-                      {vitranaQuestion}
-                    </p>
-                  ) : (
-                    <p className="text-slate-400/60 text-sm text-center py-2">···</p>
-                  )}
-                </div>
-                <p className="text-xs text-slate-400/70 leading-relaxed mt-4 px-1">
-                  Esta plataforma investiga cómo distintas personas atraviesan experiencias narrativas, emocionales y simbólicas.
+            <div className="rounded-2xl border border-white/10 bg-black/25 p-4 space-y-2">
+              {SONORIDADES_CLOSING.map((line, index) => (
+                <p key={`sonoro-closing-${index}`} className="text-sm text-slate-300/90">
+                  {line}
                 </p>
-                <div className="mx-auto w-full max-w-md mt-4">
-                  <button
-                    type="button"
-                    className="w-full rounded-full border border-purple-500/70 text-purple-100 shadow-[0_15px_45px_rgba(67,56,202,0.45)] hover:bg-purple-500/20 tracking-[0.25em] text-xs uppercase px-4 py-2"
-                    onClick={handleOpenCommunityComposer}
-                  >
-                    Registra tu experiencia
-                  </button>
-                </div>
-
-                <ShowcaseReactionInline status={reactionStatus} onReact={handleSendPulse} />
-              </div>
+              ))}
             </div>
           </div>
+          <div className="rounded-3xl border border-white/10 bg-black/30 p-6 space-y-6">
+            <CollaboratorsPanel collaborators={SONORIDADES_COLLABORATORS} accentClassName="text-cyan-200/90" />
+            <div className="flex flex-col gap-3">
+              <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Mini-verso autoral</p>
+              <MiniVersoCard title={SONORIDADES_NOTA_AUTORAL.title} verse={SONORIDADES_NOTA_AUTORAL.verse} palette={SONORIDADES_TILE} />
+            </div>
+          </div>
+          <IAInsightCard {...SONORIDADES_IA_PROFILE} compact />
         </div>
 
         {showLoginOverlay ? <LoginOverlay onClose={handleCloseLogin} /> : null}

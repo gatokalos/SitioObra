@@ -999,39 +999,49 @@ const PortalVoz = () => {
                 <div className="space-y-4 text-lg text-slate-200/85 leading-relaxed font-light">
                   {SCENE_PORTAL_INTRO}
                 </div>
-                <div className="hidden lg:block">
-                  <IAInsightCard {...SCENE_PORTAL_IA_PROFILE} compact />
-                </div>
               </div>
 
-              <div className="flex flex-col gap-6">
-                <div className="lg:hidden">
-                  {renderCollaboratorsSection()}
-                </div>
-                <div className="relative flex flex-col gap-3">
-                  <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Mini-verso autoral</p>
-                  <MiniVersoCard
-                    title={SCENE_PORTAL_NOTA_AUTORAL.title}
-                    verse={SCENE_PORTAL_NOTA_AUTORAL.verse}
-                    palette={{
-                      gradient: sceneTileGradient,
-                      border: sceneTileColors.border,
-                      text: sceneTileColors.text,
-                      accent: sceneTileColors.accent,
-                      background: sceneTileColors.background,
-                    }}
-                    effect="flip"
+              <div className="flex flex-col gap-5">
+                <div className="flex items-start justify-between gap-3">
+                  <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Archivo de experiencia narrativa</p>
+                  <RelatedReadingTooltipButton
+                    slug={latestSceneReading?.slug}
+                    authorLabel={sceneReadingAuthorLabel}
+                    thumbnailUrl={sceneReadingThumbnailUrl}
+                    ariaLabel="Mostrar lectura relacionada de Escena"
+                    tone="cyan"
                   />
                 </div>
+                <div className="form-surface px-6 py-8">
+                  {vitranaQuestion ? (
+                    <p className="text-slate-800 text-base leading-relaxed italic text-center font-light">
+                      {vitranaQuestion}
+                    </p>
+                  ) : (
+                    <p className="text-slate-400/60 text-sm text-center py-2">···</p>
+                  )}
+                </div>
+                <div className="mx-auto w-full max-w-md">
+                  <button
+                    type="button"
+                    className="w-full rounded-full border border-purple-500/70 text-purple-100 shadow-[0_15px_45px_rgba(67,56,202,0.45)] hover:bg-purple-500/20 tracking-[0.25em] text-xs uppercase px-4 py-2"
+                    onClick={handleOpenCommunityComposer}
+                  >
+                    Registra tu experiencia
+                  </button>
+                </div>
+                <p className="text-xs text-slate-400/70 leading-relaxed px-1">
+                  Esta plataforma investiga cómo distintas personas atraviesan experiencias narrativas, emocionales y simbólicas.
+                </p>
+                <ShowcaseReactionInline
+                  title="Resonancia colectiva"
+                  description="Haz clic para dejar un pulso que mantenga viva la conversación."
+                  buttonLabel="Enviar pulsaciones"
+                  status={reactionStatus}
+                  onReact={handleSendPulse}
+                />
               </div>
             </div>
-          </div>
-
-          <div className="hidden lg:block">
-            {renderCollaboratorsSection()}
-          </div>
-          <div className="lg:hidden">
-            <IAInsightCard {...SCENE_PORTAL_IA_PROFILE} compact />
           </div>
 
           <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.2fr)]">
@@ -1140,47 +1150,6 @@ const PortalVoz = () => {
                 </div>
               </div>
 
-              <div className="order-5 min-w-0 lg:order-none rounded-3xl border border-white/10 bg-black/30 p-6 space-y-5">
-                <div className="mb-1 flex items-start justify-between gap-3">
-                  <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Archivo de experiencia narrativa</p>
-                  <RelatedReadingTooltipButton
-                    slug={latestSceneReading?.slug}
-                    authorLabel={sceneReadingAuthorLabel}
-                    thumbnailUrl={sceneReadingThumbnailUrl}
-                    ariaLabel="Mostrar lectura relacionada de Escena"
-                    tone="cyan"
-                  />
-                </div>
-                <div className="rounded-2xl bg-white/90 px-6 py-8 shadow-[0_4px_24px_rgba(0,0,0,0.10)]">
-                  {vitranaQuestion ? (
-                    <p className="text-slate-800 text-base leading-relaxed italic text-center font-light">
-                      {vitranaQuestion}
-                    </p>
-                  ) : (
-                    <p className="text-slate-400/60 text-sm text-center py-2">···</p>
-                  )}
-                </div>
-                <p className="text-xs text-slate-400/70 leading-relaxed mt-4 px-1">
-                  Esta plataforma investiga cómo distintas personas atraviesan experiencias narrativas, emocionales y simbólicas.
-                </p>
-                <div className="mx-auto w-full max-w-md mt-4">
-                  <button
-                    type="button"
-                    className="w-full rounded-full border border-purple-500/70 text-purple-100 shadow-[0_15px_45px_rgba(67,56,202,0.45)] hover:bg-purple-500/20 tracking-[0.25em] text-xs uppercase px-4 py-2"
-                    onClick={handleOpenCommunityComposer}
-                  >
-                    Registra tu experiencia
-                  </button>
-                </div>
-
-                <ShowcaseReactionInline
-                  title="Resonancia colectiva"
-                  description="Haz clic para dejar un pulso que mantenga viva la conversación."
-                  buttonLabel="Enviar pulsaciones"
-                  status={reactionStatus}
-                  onReact={handleSendPulse}
-                />
-              </div>
             </div>
 
             <div className="order-2 min-w-0 space-y-6 lg:order-none">
@@ -1454,6 +1423,25 @@ const PortalVoz = () => {
               </div>
             </div>
           </div>
+          <div className="rounded-3xl border border-white/10 bg-black/30 p-6 space-y-6">
+            {renderCollaboratorsSection()}
+            <div className="flex flex-col gap-3">
+              <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Mini-verso autoral</p>
+              <MiniVersoCard
+                title={SCENE_PORTAL_NOTA_AUTORAL.title}
+                verse={SCENE_PORTAL_NOTA_AUTORAL.verse}
+                palette={{
+                  gradient: sceneTileGradient,
+                  border: sceneTileColors.border,
+                  text: sceneTileColors.text,
+                  accent: sceneTileColors.accent,
+                  background: sceneTileColors.background,
+                }}
+                effect="flip"
+              />
+            </div>
+          </div>
+          <IAInsightCard {...SCENE_PORTAL_IA_PROFILE} compact />
         </div>
 
         {showLoginOverlay ? <LoginOverlay onClose={handleCloseLogin} /> : null}

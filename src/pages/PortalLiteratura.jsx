@@ -339,88 +339,10 @@ const PortalLiteratura = () => {
                 <div className="space-y-4 text-lg text-slate-200/85 leading-relaxed font-light">
                   <p>{LITERATURA_INTRO}</p>
                 </div>
-                <div className="hidden lg:block">
-                  <IAInsightCard {...LITERATURA_IA_PROFILE} compact />
-                </div>
               </div>
 
-              <div className="flex flex-col gap-6">
-                <div className="lg:hidden">
-                  <CollaboratorsPanel collaborators={LITERATURA_COLLABORATORS} accentClassName="text-violet-200/90" />
-                </div>
-                <div className="relative flex flex-col gap-3">
-                  <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Mini-verso autoral</p>
-                  <MiniVersoCard
-                    title={LITERATURA_NOTA_AUTORAL.title}
-                    verse={LITERATURA_NOTA_AUTORAL.verse}
-                    palette={LITERATURA_TILE}
-                  />
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div className="hidden lg:block">
-            <CollaboratorsPanel collaborators={LITERATURA_COLLABORATORS} accentClassName="text-violet-200/90" />
-          </div>
-          <div className="lg:hidden">
-            <IAInsightCard {...LITERATURA_IA_PROFILE} compact />
-          </div>
-
-          <div className="grid gap-6 md:grid-cols-[3fr_2fr]">
-            <div className="space-y-6">
-              <div className="rounded-2xl border border-white/10 p-6 bg-black/30 space-y-4">
-                <div className="rounded-xl overflow-hidden border border-white/5 bg-black/40 h-52 sm:h-64">
-                  <img
-                    src={LITERATURA_ENTRY.image}
-                    alt={LITERATURA_ENTRY.title}
-                    className="w-full h-full object-cover"
-                    loading="lazy"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <h5 className="font-display text-xl text-slate-100">{LITERATURA_ENTRY.title}</h5>
-                  <p className="text-sm text-slate-300/80 leading-relaxed">{LITERATURA_ENTRY.description}</p>
-                </div>
-                <div className="rounded-2xl border border-white/10 bg-slate-900/60 p-4 space-y-2">
-                  <p className="text-xs uppercase tracking-[0.3em] text-purple-300">{LITERATURA_ENTRY.snippetTitle}</p>
-                  <p className="text-sm text-slate-200/90 leading-relaxed">{LITERATURA_ENTRY.snippetText}</p>
-                </div>
-                <div className="flex flex-col gap-3 sm:flex-row">
-                  <button
-                    type="button"
-                    onClick={handleOpenNovelaCheckout}
-                    disabled={isNovelaCheckoutLoading}
-                    className="inline-flex w-full sm:w-auto items-center justify-center rounded-full border border-purple-400/40 text-purple-200 hover:bg-purple-500/10 px-6 py-2 font-semibold transition"
-                  >
-                    {isNovelaCheckoutLoading ? 'Abriendo checkout...' : 'Comprar edicion fisica'}
-                  </button>
-                  <Button
-                    onClick={handleOpenAutoficcionPreview}
-                    className="w-full sm:w-auto justify-center bg-purple-600/80 hover:bg-purple-600 text-white rounded-full"
-                  >
-                    <PenLine size={15} className="mr-2" />
-                    Leer fragmentos
-                  </Button>
-                </div>
-              </div>
-
-              <div className="rounded-2xl border border-white/10 p-6 bg-black/30 space-y-4">
-                <h5 className="font-display text-xl text-slate-100">Ecos del Club de Lectura</h5>
-                <div className="space-y-3">
-                  {LITERATURA_QUOTES.map((entry) => (
-                    <blockquote key={entry.id} className="rounded-xl border border-white/10 bg-black/25 p-4">
-                      <p className="text-sm text-slate-200/90 leading-relaxed">"{entry.quote}"</p>
-                      <p className="mt-2 text-[11px] uppercase tracking-[0.28em] text-slate-400">{entry.author}</p>
-                    </blockquote>
-                  ))}
-                </div>
-              </div>
-            </div>
-
-            <div className="space-y-6">
-              <div className="rounded-3xl border border-white/10 bg-black/30 p-6">
-                <div className="mb-1 flex items-start justify-between gap-3">
+              <div className="flex flex-col gap-5">
+                <div className="flex items-start justify-between gap-3">
                   <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Archivo de experiencia narrativa</p>
                   <RelatedReadingTooltipButton
                     slug={latestLiteraturaReading?.slug}
@@ -430,7 +352,7 @@ const PortalLiteratura = () => {
                     tone="cyan"
                   />
                 </div>
-                <div className="rounded-2xl bg-white/90 px-6 py-8 shadow-[0_4px_24px_rgba(0,0,0,0.10)]">
+                <div className="form-surface px-6 py-8">
                   {vitranaQuestion ? (
                     <p className="text-slate-800 text-base leading-relaxed italic text-center font-light">
                       {vitranaQuestion}
@@ -439,10 +361,7 @@ const PortalLiteratura = () => {
                     <p className="text-slate-400/60 text-sm text-center py-2">···</p>
                   )}
                 </div>
-                <p className="text-xs text-slate-400/70 leading-relaxed mt-4 px-1">
-                  Esta plataforma investiga cómo distintas personas atraviesan experiencias narrativas, emocionales y simbólicas.
-                </p>
-                <div className="mx-auto w-full max-w-md mt-4">
+                <div className="mx-auto w-full max-w-md">
                   <button
                     type="button"
                     className="w-full rounded-full border border-purple-500/70 text-purple-100 shadow-[0_15px_45px_rgba(67,56,202,0.45)] hover:bg-purple-500/20 tracking-[0.25em] text-xs uppercase px-4 py-2"
@@ -451,11 +370,72 @@ const PortalLiteratura = () => {
                     Registra tu experiencia
                   </button>
                 </div>
-
+                <p className="text-xs text-slate-400/70 leading-relaxed px-1">
+                  Esta plataforma investiga cómo distintas personas atraviesan experiencias narrativas, emocionales y simbólicas.
+                </p>
                 <ShowcaseReactionInline status={reactionStatus} onReact={handleSendPulse} />
               </div>
             </div>
           </div>
+
+
+          <div className="space-y-6">
+            <div className="rounded-2xl border border-white/10 p-6 bg-black/30 space-y-4">
+              <div className="rounded-xl overflow-hidden border border-white/5 bg-black/40 h-52 sm:h-64">
+                <img
+                  src={LITERATURA_ENTRY.image}
+                  alt={LITERATURA_ENTRY.title}
+                  className="w-full h-full object-cover"
+                  loading="lazy"
+                />
+              </div>
+              <div className="space-y-2">
+                <h5 className="font-display text-xl text-slate-100">{LITERATURA_ENTRY.title}</h5>
+                <p className="text-sm text-slate-300/80 leading-relaxed">{LITERATURA_ENTRY.description}</p>
+              </div>
+              <div className="rounded-2xl border border-white/10 bg-slate-900/60 p-4 space-y-2">
+                <p className="text-xs uppercase tracking-[0.3em] text-purple-300">{LITERATURA_ENTRY.snippetTitle}</p>
+                <p className="text-sm text-slate-200/90 leading-relaxed">{LITERATURA_ENTRY.snippetText}</p>
+              </div>
+              <div className="flex flex-col gap-3 sm:flex-row">
+                <button
+                  type="button"
+                  onClick={handleOpenNovelaCheckout}
+                  disabled={isNovelaCheckoutLoading}
+                  className="inline-flex w-full sm:w-auto items-center justify-center rounded-full border border-purple-400/40 text-purple-200 hover:bg-purple-500/10 px-6 py-2 font-semibold transition"
+                >
+                  {isNovelaCheckoutLoading ? 'Abriendo checkout...' : 'Comprar edicion fisica'}
+                </button>
+                <Button
+                  onClick={handleOpenAutoficcionPreview}
+                  className="w-full sm:w-auto justify-center bg-purple-600/80 hover:bg-purple-600 text-white rounded-full"
+                >
+                  <PenLine size={15} className="mr-2" />
+                  Leer fragmentos
+                </Button>
+              </div>
+            </div>
+
+            <div className="rounded-2xl border border-white/10 p-6 bg-black/30 space-y-4">
+              <h5 className="font-display text-xl text-slate-100">Ecos del Club de Lectura</h5>
+              <div className="space-y-3">
+                {LITERATURA_QUOTES.map((entry) => (
+                  <blockquote key={entry.id} className="rounded-xl border border-white/10 bg-black/25 p-4">
+                    <p className="text-sm text-slate-200/90 leading-relaxed">"{entry.quote}"</p>
+                    <p className="mt-2 text-[11px] uppercase tracking-[0.28em] text-slate-400">{entry.author}</p>
+                  </blockquote>
+                ))}
+              </div>
+            </div>
+          </div>
+          <div className="rounded-3xl border border-white/10 bg-black/30 p-6 space-y-6">
+            <CollaboratorsPanel collaborators={LITERATURA_COLLABORATORS} accentClassName="text-violet-200/90" />
+            <div className="flex flex-col gap-3">
+              <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Mini-verso autoral</p>
+              <MiniVersoCard title={LITERATURA_NOTA_AUTORAL.title} verse={LITERATURA_NOTA_AUTORAL.verse} palette={LITERATURA_TILE} />
+            </div>
+          </div>
+          <IAInsightCard {...LITERATURA_IA_PROFILE} compact />
         </div>
 
         {showLoginOverlay ? <LoginOverlay onClose={handleCloseLogin} /> : null}

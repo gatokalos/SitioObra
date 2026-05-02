@@ -1,6 +1,5 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
-  BookOpen,
   Hand,
   Heart,
   Map,
@@ -418,60 +417,93 @@ const PortalMovimiento = () => {
                 <div className="space-y-4 text-lg text-slate-200/85 leading-relaxed font-light">
                   <p>{MOVEMENT_INTRO}</p>
                 </div>
-                <IAInsightCard {...MOVEMENT_IA_PROFILE} compact />
               </div>
 
-              <div className="flex flex-col gap-6">
-                <div className="relative flex flex-col gap-3">
-                  <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Mini-verso autoral</p>
-                  <MiniVersoCard
-                    title={MOVEMENT_NOTA_AUTORAL.title}
-                    verse={MOVEMENT_NOTA_AUTORAL.verse}
-                    palette={MOVEMENT_TILE}
+              <div className="flex flex-col gap-5">
+                <div className="flex items-start justify-between gap-3">
+                  <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Archivo de experiencia narrativa</p>
+                  <RelatedReadingTooltipButton
+                    slug={latestMovimientoReading?.slug}
+                    authorLabel={movimientoReadingAuthorLabel}
+                    thumbnailUrl={movimientoReadingThumbnailUrl}
+                    ariaLabel="Mostrar lectura relacionada de Movimiento"
+                    tone="cyan"
                   />
                 </div>
+                <div className="form-surface px-6 py-8">
+                  {vitranaQuestion ? (
+                    <p className="text-slate-800 text-base leading-relaxed italic text-center font-light">
+                      {vitranaQuestion}
+                    </p>
+                  ) : (
+                    <p className="text-slate-400/60 text-sm text-center py-2">···</p>
+                  )}
+                </div>
+                <div className="mx-auto w-full max-w-md">
+                  <button
+                    type="button"
+                    className="w-full rounded-full border border-purple-500/70 text-purple-100 shadow-[0_15px_45px_rgba(67,56,202,0.45)] hover:bg-purple-500/20 tracking-[0.25em] text-xs uppercase px-4 py-2"
+                    onClick={handleOpenCommunityComposer}
+                  >
+                    Registra tu experiencia
+                  </button>
+                </div>
+                <p className="text-xs text-slate-400/70 leading-relaxed px-1">
+                  Esta plataforma investiga cómo distintas personas atraviesan experiencias narrativas, emocionales y simbólicas.
+                </p>
+                <ShowcaseReactionInline status={reactionStatus} onReact={handleSendPulse} />
               </div>
             </div>
           </div>
 
-          <div className="rounded-2xl border border-white/10 bg-black/30 px-5 py-4">
-            <div className="flex items-center justify-between gap-3">
-              <div className="inline-flex items-center gap-3">
-                <span className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-white/20 bg-white/5 text-slate-200 shadow-[0_0_18px_rgba(148,163,184,0.22)]">
-                  <User size={16} />
-                </span>
-                <p className="text-[11px] uppercase tracking-[0.32em] text-slate-300/85">Colaboradores</p>
-              </div>
-              <button
-                type="button"
-                onClick={() => setIsMovementCreditsOpen((prev) => !prev)}
-                className="text-xs uppercase tracking-[0.3em] text-slate-300 hover:text-white transition"
-              >
-                {isMovementCreditsOpen ? 'Ocultar' : 'Abrir'}
-              </button>
-            </div>
-            {isMovementCreditsOpen ? (
-              <div className="mt-4 space-y-4">
-                <p className="text-sm font-semibold text-slate-100">Colaboradores que buscamos</p>
-                <ul className="mt-3 space-y-2 text-sm text-slate-300/90">
-                  {MOVEMENT_COLLABORATOR_CALL_ITEMS.map((item) => (
-                    <li key={`movement-collab-call-${item}`} className="flex items-start gap-2">
-                      <span className="mt-1 text-purple-300">•</span>
-                      <span>{item}</span>
-                    </li>
-                  ))}
-                </ul>
-                <div className="flex justify-end">
-                  <Button
-                    type="button"
-                    onClick={handleOpenCommunityComposer}
-                    className="w-full justify-center bg-gradient-to-r from-emerald-500/90 to-emerald-600/90 text-white hover:from-emerald-400/90 hover:to-emerald-500/90 sm:w-auto"
-                  >
-                    Convocatoria abierta
-                  </Button>
+          <div className="rounded-3xl border border-white/10 bg-black/30 p-6 space-y-6">
+            <div className="rounded-2xl border border-white/10 bg-black/20 px-5 py-4">
+              <div className="flex items-center justify-between gap-3">
+                <div className="inline-flex items-center gap-3">
+                  <span className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-white/20 bg-white/5 text-slate-200 shadow-[0_0_18px_rgba(148,163,184,0.22)]">
+                    <User size={16} />
+                  </span>
+                  <p className="text-[11px] uppercase tracking-[0.32em] text-slate-300/85">Colaboradores</p>
                 </div>
+                <button
+                  type="button"
+                  onClick={() => setIsMovementCreditsOpen((prev) => !prev)}
+                  className="text-xs uppercase tracking-[0.3em] text-slate-300 hover:text-white transition"
+                >
+                  {isMovementCreditsOpen ? 'Ocultar' : 'Abrir'}
+                </button>
               </div>
-            ) : null}
+              {isMovementCreditsOpen ? (
+                <div className="mt-4 space-y-4">
+                  <p className="text-sm font-semibold text-slate-100">Colaboradores que buscamos</p>
+                  <ul className="mt-3 space-y-2 text-sm text-slate-300/90">
+                    {MOVEMENT_COLLABORATOR_CALL_ITEMS.map((item) => (
+                      <li key={`movement-collab-call-${item}`} className="flex items-start gap-2">
+                        <span className="mt-1 text-purple-300">•</span>
+                        <span>{item}</span>
+                      </li>
+                    ))}
+                  </ul>
+                  <div className="flex justify-end">
+                    <Button
+                      type="button"
+                      onClick={handleOpenCommunityComposer}
+                      className="w-full justify-center bg-gradient-to-r from-emerald-500/90 to-emerald-600/90 text-white hover:from-emerald-400/90 hover:to-emerald-500/90 sm:w-auto"
+                    >
+                      Convocatoria abierta
+                    </Button>
+                  </div>
+                </div>
+              ) : null}
+            </div>
+            <div className="flex flex-col gap-3">
+              <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Mini-verso autoral</p>
+              <MiniVersoCard
+                title={MOVEMENT_NOTA_AUTORAL.title}
+                verse={MOVEMENT_NOTA_AUTORAL.verse}
+                palette={MOVEMENT_TILE}
+              />
+            </div>
           </div>
 
           <div className="space-y-5 rounded-3xl border border-white/10 bg-gradient-to-br from-slate-950/80 via-black/60 to-purple-900/30 p-6 lg:p-8">
@@ -557,44 +589,8 @@ const PortalMovimiento = () => {
               </div>
             </div>
 
-            <div className="space-y-5">
-              <div className="rounded-3xl border border-white/10 bg-black/30 p-6 space-y-5">
-                <div className="mb-1 flex items-start justify-between gap-3">
-                  <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Archivo de experiencia narrativa</p>
-                  <RelatedReadingTooltipButton
-                    slug={latestMovimientoReading?.slug}
-                    authorLabel={movimientoReadingAuthorLabel}
-                    thumbnailUrl={movimientoReadingThumbnailUrl}
-                    ariaLabel="Mostrar lectura relacionada de Movimiento"
-                    tone="cyan"
-                  />
-                </div>
-                <div className="rounded-2xl bg-white/90 px-6 py-8 shadow-[0_4px_24px_rgba(0,0,0,0.10)]">
-                  {vitranaQuestion ? (
-                    <p className="text-slate-800 text-base leading-relaxed italic text-center font-light">
-                      {vitranaQuestion}
-                    </p>
-                  ) : (
-                    <p className="text-slate-400/60 text-sm text-center py-2">···</p>
-                  )}
-                </div>
-                <p className="text-xs text-slate-400/70 leading-relaxed mt-4 px-1">
-                  Esta plataforma investiga cómo distintas personas atraviesan experiencias narrativas, emocionales y simbólicas.
-                </p>
-                <div className="mx-auto w-full max-w-md mt-4">
-                  <button
-                    type="button"
-                    className="w-full rounded-full border border-purple-500/70 text-purple-100 shadow-[0_15px_45px_rgba(67,56,202,0.45)] hover:bg-purple-500/20 tracking-[0.25em] text-xs uppercase px-4 py-2"
-                    onClick={handleOpenCommunityComposer}
-                  >
-                    Registra tu experiencia
-                  </button>
-                </div>
-
-                <ShowcaseReactionInline status={reactionStatus} onReact={handleSendPulse} />
-              </div>
-            </div>
           </div>
+          <IAInsightCard {...MOVEMENT_IA_PROFILE} compact />
         </div>
 
         {showLoginOverlay ? <LoginOverlay onClose={handleCloseLogin} /> : null}

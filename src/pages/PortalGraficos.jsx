@@ -303,83 +303,45 @@ const PortalGraficos = () => {
                 <div className="space-y-4 text-lg text-slate-200/85 leading-relaxed font-light">
                   <p>{GRAFICOS_INTRO}</p>
                 </div>
-                <div className="hidden lg:block">
-                  <IAInsightCard {...GRAFICOS_IA_PROFILE} compact />
-                </div>
               </div>
 
-              <div className="flex flex-col gap-6">
-                <div className="lg:hidden">
-                  <CollaboratorsPanel
-                    collaborators={[GRAFICOS_COLLABORATOR]}
-                    accentClassName="text-fuchsia-200/90"
-                    extraContent={(
-                      <div>
-                        <p className="text-sm font-semibold text-slate-100">Convocatoria abierta</p>
-                        <ul className="mt-3 space-y-2 text-sm text-slate-300/90">
-                          {GRAFICOS_COLLABORATOR_CALL_ITEMS.map((item) => (
-                            <li key={`grafico-collab-call-${item}`} className="flex items-start gap-2">
-                              <span className="mt-1 text-fuchsia-300">•</span>
-                              <span>{item}</span>
-                            </li>
-                          ))}
-                        </ul>
-                        <div className="flex justify-end mt-4">
-                          <Button
-                            type="button"
-                            onClick={handleOpenCommunityComposer}
-                            className="w-full justify-center bg-gradient-to-r from-fuchsia-500/90 to-purple-600/90 text-white hover:from-fuchsia-400/90 hover:to-purple-500/90 sm:w-auto"
-                          >
-                            Sumarme al laboratorio
-                          </Button>
-                        </div>
-                      </div>
-                    )}
+              <div className="flex flex-col gap-5">
+                <div className="flex items-start justify-between gap-3">
+                  <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Archivo de experiencia narrativa</p>
+                  <RelatedReadingTooltipButton
+                    slug={latestGraficosReading?.slug}
+                    authorLabel={graficosReadingAuthorLabel}
+                    thumbnailUrl={graficosReadingThumbnailUrl}
+                    ariaLabel="Mostrar lectura relacionada de Gráficos"
+                    tone="cyan"
                   />
                 </div>
-                <div className="relative flex flex-col gap-3">
-                  <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Mini-verso autoral</p>
-                  <MiniVersoCard
-                    title={GRAFICOS_NOTA_AUTORAL.title}
-                    verse={GRAFICOS_NOTA_AUTORAL.verse}
-                    palette={GRAFICOS_TILE}
-                  />
+                <div className="form-surface px-6 py-8">
+                  {vitranaQuestion ? (
+                    <p className="text-slate-800 text-base leading-relaxed italic text-center font-light">
+                      {vitranaQuestion}
+                    </p>
+                  ) : (
+                    <p className="text-slate-400/60 text-sm text-center py-2">···</p>
+                  )}
                 </div>
+                <div className="mx-auto w-full max-w-md">
+                  <button
+                    type="button"
+                    className="w-full rounded-full border border-purple-500/70 text-purple-100 shadow-[0_15px_45px_rgba(67,56,202,0.45)] hover:bg-purple-500/20 tracking-[0.25em] text-xs uppercase px-4 py-2"
+                    onClick={handleOpenCommunityComposer}
+                  >
+                    Registra tu experiencia
+                  </button>
+                </div>
+                <p className="text-xs text-slate-400/70 leading-relaxed px-1">
+                  Esta plataforma investiga cómo distintas personas atraviesan experiencias narrativas, emocionales y simbólicas.
+                </p>
+                <ShowcaseReactionInline status={reactionStatus} onReact={handleSendPulse} />
               </div>
             </div>
           </div>
 
-          <div className="hidden lg:block">
-            <CollaboratorsPanel
-              collaborators={[GRAFICOS_COLLABORATOR]}
-              accentClassName="text-fuchsia-200/90"
-              extraContent={(
-                <div>
-                  <p className="text-sm font-semibold text-slate-100">Convocatoria abierta</p>
-                  <ul className="mt-3 space-y-2 text-sm text-slate-300/90">
-                    {GRAFICOS_COLLABORATOR_CALL_ITEMS.map((item) => (
-                      <li key={`grafico-collab-call-${item}`} className="flex items-start gap-2">
-                        <span className="mt-1 text-fuchsia-300">•</span>
-                        <span>{item}</span>
-                      </li>
-                    ))}
-                  </ul>
-                  <div className="flex justify-end mt-4">
-                    <Button
-                      type="button"
-                      onClick={handleOpenCommunityComposer}
-                      className="w-full justify-center bg-gradient-to-r from-fuchsia-500/90 to-purple-600/90 text-white hover:from-fuchsia-400/90 hover:to-purple-500/90 sm:w-auto"
-                    >
-                      Sumarme al laboratorio
-                    </Button>
-                  </div>
-                </div>
-              )}
-            />
-          </div>
-          <div className="lg:hidden">
-            <IAInsightCard {...GRAFICOS_IA_PROFILE} compact />
-          </div>
 
           <div className="space-y-5 rounded-3xl border border-white/10 bg-gradient-to-br from-slate-950/80 via-black/60 to-fuchsia-900/30 p-6 lg:p-8">
             <p className="text-xs uppercase tracking-[0.35em] text-slate-400/80">Swipe narrativo</p>
@@ -435,65 +397,58 @@ const PortalGraficos = () => {
             </div>
           </div>
 
-          <div className="grid gap-6 xl:grid-cols-[1.2fr_1fr] xl:items-start">
-            <div className="space-y-4 rounded-3xl border border-white/10 bg-black/30 p-5">
-              <p className="text-xs uppercase tracking-[0.35em] text-slate-400/80">Detonadores visuales</p>
-              <div className="grid gap-3 md:grid-cols-2">
-                <div className="rounded-2xl border border-white/10 bg-black/35 p-4">
-                  <p className="text-[0.62rem] uppercase tracking-[0.32em] text-slate-500">Entrada</p>
-                  <p className="font-semibold text-slate-100 mt-2">¿Qué no pudiste decir en escena?</p>
-                  <p className="text-sm text-slate-300/85 mt-2 leading-relaxed">
-                    Convierte una frase en viñeta para explorar cómo cambia su intensidad cuando la dibujas.
-                  </p>
-                </div>
-                <div className="rounded-2xl border border-white/10 bg-black/35 p-4">
-                  <p className="text-[0.62rem] uppercase tracking-[0.32em] text-slate-500">Proceso</p>
-                  <p className="font-semibold text-slate-100 mt-2">Tensión entre trazo y silencio</p>
-                  <p className="text-sm text-slate-300/85 mt-2 leading-relaxed">
-                    Cada panel funciona como una pausa: lo no dicho también se vuelve narrativa.
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            <div className="space-y-5">
-              <div className="rounded-3xl border border-white/10 bg-black/30 p-6 space-y-5">
-                <div className="mb-1 flex items-start justify-between gap-3">
-                  <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Archivo de experiencia narrativa</p>
-                  <RelatedReadingTooltipButton
-                    slug={latestGraficosReading?.slug}
-                    authorLabel={graficosReadingAuthorLabel}
-                    thumbnailUrl={graficosReadingThumbnailUrl}
-                    ariaLabel="Mostrar lectura relacionada de Gráficos"
-                    tone="cyan"
-                  />
-                </div>
-                <div className="rounded-2xl bg-white/90 px-6 py-8 shadow-[0_4px_24px_rgba(0,0,0,0.10)]">
-                  {vitranaQuestion ? (
-                    <p className="text-slate-800 text-base leading-relaxed italic text-center font-light">
-                      {vitranaQuestion}
-                    </p>
-                  ) : (
-                    <p className="text-slate-400/60 text-sm text-center py-2">···</p>
-                  )}
-                </div>
-                <p className="text-xs text-slate-400/70 leading-relaxed mt-4 px-1">
-                  Esta plataforma investiga cómo distintas personas atraviesan experiencias narrativas, emocionales y simbólicas.
+          <div className="space-y-4 rounded-3xl border border-white/10 bg-black/30 p-5">
+            <p className="text-xs uppercase tracking-[0.35em] text-slate-400/80">Detonadores visuales</p>
+            <div className="grid gap-3 md:grid-cols-2">
+              <div className="rounded-2xl border border-white/10 bg-black/35 p-4">
+                <p className="text-[0.62rem] uppercase tracking-[0.32em] text-slate-500">Entrada</p>
+                <p className="font-semibold text-slate-100 mt-2">¿Qué no pudiste decir en escena?</p>
+                <p className="text-sm text-slate-300/85 mt-2 leading-relaxed">
+                  Convierte una frase en viñeta para explorar cómo cambia su intensidad cuando la dibujas.
                 </p>
-                <div className="mx-auto w-full max-w-md mt-4">
-                  <button
-                    type="button"
-                    className="w-full rounded-full border border-purple-500/70 text-purple-100 shadow-[0_15px_45px_rgba(67,56,202,0.45)] hover:bg-purple-500/20 tracking-[0.25em] text-xs uppercase px-4 py-2"
-                    onClick={handleOpenCommunityComposer}
-                  >
-                    Registra tu experiencia
-                  </button>
-                </div>
-
-                <ShowcaseReactionInline status={reactionStatus} onReact={handleSendPulse} />
+              </div>
+              <div className="rounded-2xl border border-white/10 bg-black/35 p-4">
+                <p className="text-[0.62rem] uppercase tracking-[0.32em] text-slate-500">Proceso</p>
+                <p className="font-semibold text-slate-100 mt-2">Tensión entre trazo y silencio</p>
+                <p className="text-sm text-slate-300/85 mt-2 leading-relaxed">
+                  Cada panel funciona como una pausa: lo no dicho también se vuelve narrativa.
+                </p>
               </div>
             </div>
           </div>
+          <div className="rounded-3xl border border-white/10 bg-black/30 p-6 space-y-6">
+            <CollaboratorsPanel
+              collaborators={[GRAFICOS_COLLABORATOR]}
+              accentClassName="text-fuchsia-200/90"
+              extraContent={(
+                <div>
+                  <p className="text-sm font-semibold text-slate-100">Convocatoria abierta</p>
+                  <ul className="mt-3 space-y-2 text-sm text-slate-300/90">
+                    {GRAFICOS_COLLABORATOR_CALL_ITEMS.map((item) => (
+                      <li key={`grafico-collab-call-${item}`} className="flex items-start gap-2">
+                        <span className="mt-1 text-fuchsia-300">•</span>
+                        <span>{item}</span>
+                      </li>
+                    ))}
+                  </ul>
+                  <div className="flex justify-end mt-4">
+                    <Button
+                      type="button"
+                      onClick={handleOpenCommunityComposer}
+                      className="w-full justify-center bg-gradient-to-r from-fuchsia-500/90 to-purple-600/90 text-white hover:from-fuchsia-400/90 hover:to-purple-500/90 sm:w-auto"
+                    >
+                      Sumarme al laboratorio
+                    </Button>
+                  </div>
+                </div>
+              )}
+            />
+            <div className="flex flex-col gap-3">
+              <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Mini-verso autoral</p>
+              <MiniVersoCard title={GRAFICOS_NOTA_AUTORAL.title} verse={GRAFICOS_NOTA_AUTORAL.verse} palette={GRAFICOS_TILE} />
+            </div>
+          </div>
+          <IAInsightCard {...GRAFICOS_IA_PROFILE} compact />
         </div>
 
         {showLoginOverlay ? <LoginOverlay onClose={handleCloseLogin} /> : null}
