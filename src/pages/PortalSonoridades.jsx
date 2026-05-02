@@ -1,5 +1,5 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { BookOpen, Hand, Headphones, Heart, Music2 } from 'lucide-react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { Hand, Headphones, Heart, Music2 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/SupabaseAuthContext';
@@ -11,12 +11,12 @@ import IAInsightCard from '@/components/IAInsightCard';
 import CollaboratorsPanel from '@/components/portal/CollaboratorsPanel';
 import MiniversoSonoroPreview from '@/components/miniversos/sonoro/MiniversoSonoroPreview';
 import RelatedReadingTooltipButton from '@/components/portal/RelatedReadingTooltipButton';
-import { fetchApprovedContributions } from '@/services/contributionService';
 import { recordShowcaseLike } from '@/services/showcaseLikeService';
 import { supabase } from '@/lib/supabaseClient';
 import { sanitizeExternalHttpUrl } from '@/lib/urlSafety';
 import { hasEnoughGAT } from '@/lib/gatAccess';
 import { usePortalTracking } from '@/hooks/usePortalTracking';
+import { useVitranaQuestion } from '@/hooks/useVitranaQuestion';
 
 const SONORIDADES_INTRO =
   'Sonoridades reúne la música original y el diseño sonoro creados para la obra, junto con piezas que expanden su universo más allá del escenario.';
@@ -89,18 +89,6 @@ const SONORIDADES_COLLABORATORS = [
     role: 'Compositor',
     bio: 'Musico y compositor cuyo trabajo explora la tension entre sonido y silencio. Su pieza original acompania los pasajes emocionales de la obra.',
     image: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/equipo/diego.png',
-  },
-];
-const SONORIDADES_FALLBACK_COMMENTS = [
-  {
-    id: 'sonoro-comment-1',
-    proposal: 'La mezcla se sintio como respirar dentro del sueño.',
-    name: 'Escucha anonima',
-  },
-  {
-    id: 'sonoro-comment-2',
-    proposal: 'Elegi la pista incorrecta y termine llorando. Gracias por eso.',
-    name: 'Residencia Sonora',
   },
 ];
 const SONORIDADES_BLOG_KEYS = [
@@ -200,12 +188,10 @@ const ShowcaseReactionInline = ({ status, onReact }) => (
 const PortalSonoridades = () => {
   const { user } = useAuth();
   usePortalTracking('sonoridades');
+  const { question: vitranaQuestion } = useVitranaQuestion('sonoridades');
   const isAuthenticated = Boolean(user);
   const [showLoginOverlay, setShowLoginOverlay] = useState(false);
   const [showLoginHint, setShowLoginHint] = useState(false);
-  const [communityComments, setCommunityComments] = useState([]);
-  const [communityLoading, setCommunityLoading] = useState(false);
-  const [communityError, setCommunityError] = useState('');
   const [latestSonoridadesReading, setLatestSonoridadesReading] = useState(null);
   const [isReadingTooltipOpen, setIsReadingTooltipOpen] = useState(false);
   const [reactionStatus, setReactionStatus] = useState('idle');
@@ -231,40 +217,6 @@ const PortalSonoridades = () => {
     return false;
   }, [isAuthenticated]);
 
-  useEffect(() => {
-    let isCancelled = false;
-    const loadComments = async () => {
-      setCommunityLoading(true);
-      setCommunityError('');
-      const topics = ['miniversoSonoro', 'sonoro', 'sonoridades'];
-      let resolvedData = [];
-      let resolvedError = null;
-      for (const topic of topics) {
-        const { data, error } = await fetchApprovedContributions(topic);
-        if (isCancelled) return;
-        if (error) {
-          resolvedError = error;
-          continue;
-        }
-        if (Array.isArray(data) && data.length) {
-          resolvedData = data;
-          resolvedError = null;
-          break;
-        }
-      }
-      if (isCancelled) return;
-      if (resolvedError && !resolvedData.length) {
-        setCommunityError('No pudimos cargar comentarios.');
-      }
-      setCommunityComments(resolvedData);
-      setCommunityLoading(false);
-    };
-
-    loadComments();
-    return () => {
-      isCancelled = true;
-    };
-  }, []);
 
   useEffect(() => {
     let cancelled = false;
@@ -356,8 +308,6 @@ const PortalSonoridades = () => {
     }
   }, [reactionStatus, requireAuth, user]);
 
-  const hasCommunityComments = useMemo(() => communityComments.length > 0, [communityComments]);
-  const visibleComments = hasCommunityComments ? communityComments : SONORIDADES_FALLBACK_COMMENTS;
   const sonoridadesReadingAuthorLabel = (latestSonoridadesReading?.author || '').trim() || 'autor invitado';
   const sonoridadesReadingThumbnailUrl =
     sanitizeExternalHttpUrl(latestSonoridadesReading?.featured_image_url) ||
@@ -486,7 +436,7 @@ const PortalSonoridades = () => {
             <div className="space-y-5">
               <div className="rounded-3xl border border-white/10 bg-black/30 p-6 space-y-5">
                 <div className="mb-1 flex items-start justify-between gap-3">
-                  <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Voces de la comunidad</p>
+                  <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Archivo de experiencia narrativa</p>
                   <RelatedReadingTooltipButton
                     slug={latestSonoridadesReading?.slug}
                     authorLabel={sonoridadesReadingAuthorLabel}
@@ -495,36 +445,26 @@ const PortalSonoridades = () => {
                     tone="cyan"
                   />
                 </div>
-                <div className="max-h-[240px] form-surface relative overflow-y-auto px-3 py-3 pr-2">
-                  {communityLoading ? (
-                    <p className="px-1 py-2 text-sm text-slate-600/85">Cargando comentarios...</p>
-                  ) : communityError && !hasCommunityComments ? (
-                    <p className="px-1 py-2 text-sm text-rose-700/85">{communityError}</p>
+                <div className="rounded-2xl bg-white/90 px-6 py-8 shadow-[0_4px_24px_rgba(0,0,0,0.10)]">
+                  {vitranaQuestion ? (
+                    <p className="text-slate-800 text-base leading-relaxed italic text-center font-light">
+                      {vitranaQuestion}
+                    </p>
                   ) : (
-                    <div className="space-y-2.5">
-                      {visibleComments.map((comment) => (
-                        <div
-                          key={`portal-sonoridades-comment-${comment.id}`}
-                          className="rounded-xl border border-indigo-200/70 bg-white/72 p-3 shadow-[0_6px_18px_rgba(80,120,255,0.08)]"
-                        >
-                          <p className="mb-1.5 text-[0.96rem] font-light leading-relaxed text-slate-800">{comment.proposal}</p>
-                          <p className="text-[10px] uppercase tracking-[0.28em] text-slate-500/85">{comment.name || 'Anonimo'}</p>
-                        </div>
-                      ))}
-                    </div>
+                    <p className="text-slate-400/60 text-sm text-center py-2">···</p>
                   )}
                 </div>
-                <p className="mt-2 px-1 text-[10px] uppercase tracking-[0.24em] text-slate-500/85">Desliza para leer mas voces</p>
-                <div className="pt-4 mt-1 border-t border-white/10">
-                  <div className="mx-auto w-full max-w-md">
-                    <button
-                      type="button"
-                      className="w-full rounded-full border border-purple-500/70 text-purple-100 shadow-[0_15px_45px_rgba(67,56,202,0.45)] hover:bg-purple-500/20 tracking-[0.25em] text-xs uppercase px-4 py-2"
-                      onClick={handleOpenCommunityComposer}
-                    >
-                      coméntanos algo aquí
-                    </button>
-                  </div>
+                <p className="text-xs text-slate-400/70 leading-relaxed mt-4 px-1">
+                  Esta plataforma investiga cómo distintas personas atraviesan experiencias narrativas, emocionales y simbólicas.
+                </p>
+                <div className="mx-auto w-full max-w-md mt-4">
+                  <button
+                    type="button"
+                    className="w-full rounded-full border border-purple-500/70 text-purple-100 shadow-[0_15px_45px_rgba(67,56,202,0.45)] hover:bg-purple-500/20 tracking-[0.25em] text-xs uppercase px-4 py-2"
+                    onClick={handleOpenCommunityComposer}
+                  >
+                    Registra tu experiencia
+                  </button>
                 </div>
 
                 <ShowcaseReactionInline status={reactionStatus} onReact={handleSendPulse} />

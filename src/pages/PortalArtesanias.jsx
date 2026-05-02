@@ -1,5 +1,5 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { BookOpen, Hand, Heart } from 'lucide-react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { Hand, Heart } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { toast } from '@/components/ui/use-toast';
@@ -12,13 +12,13 @@ import ARExperience from '@/components/ar/ARExperience';
 import IAInsightCard from '@/components/IAInsightCard';
 import CollaboratorsPanel from '@/components/portal/CollaboratorsPanel';
 import RelatedReadingTooltipButton from '@/components/portal/RelatedReadingTooltipButton';
-import { fetchApprovedContributions } from '@/services/contributionService';
 import { recordShowcaseLike } from '@/services/showcaseLikeService';
 import { startDirectMerchCheckout } from '@/lib/merchCheckout';
 import { supabase } from '@/lib/supabaseClient';
 import { sanitizeExternalHttpUrl } from '@/lib/urlSafety';
 import { hasEnoughGAT } from '@/lib/gatAccess';
 import { usePortalTracking } from '@/hooks/usePortalTracking';
+import { useVitranaQuestion } from '@/hooks/useVitranaQuestion';
 import { ensureAnonId } from '@/lib/identity';
 
 const MARIANA_GALLERY = [
@@ -116,18 +116,6 @@ const ARTESANIAS_IA_PROFILE = {
   coverage: 'Cubierto por suscriptores; no hay costo directo por usuario.',
   footnote: 'La IA solo guia la pista; el ritual lo completa quien sostiene la taza.',
 };
-const ARTESANIAS_FALLBACK_COMMENTS = [
-  {
-    id: 'la-taza-comment-1',
-    proposal: 'La taza me mostró una frase que me persiguió toda la semana.',
-    name: 'Usuario anónimo',
-  },
-  {
-    id: 'la-taza-comment-2',
-    proposal: 'No entendí nada... hasta que la tomé en mis manos.',
-    name: 'Sofía B.',
-  },
-];
 const ARTESANIAS_BLOG_KEYS = [
   'lataza',
   'la_taza',
@@ -308,6 +296,7 @@ const GaleriaMarianaCard = ({ index, setIndex, onCtaClick }) => (
 const PortalArtesanias = () => {
   const { user } = useAuth();
   usePortalTracking('artesanias');
+  const { question: vitranaQuestion } = useVitranaQuestion('artesanias');
   const isAuthenticated = Boolean(user);
   const [showLoginOverlay, setShowLoginOverlay] = useState(false);
   const [showLoginHint, setShowLoginHint] = useState(false);
@@ -320,9 +309,6 @@ const PortalArtesanias = () => {
     return Number.isNaN(parsed) ? 0 : parsed;
   });
   const [arError, setArError] = useState('');
-  const [communityComments, setCommunityComments] = useState([]);
-  const [communityLoading, setCommunityLoading] = useState(false);
-  const [communityError, setCommunityError] = useState('');
   const [latestArtesaniasReading, setLatestArtesaniasReading] = useState(null);
   const [isReadingTooltipOpen, setIsReadingTooltipOpen] = useState(false);
   const [galeriaMarianaIndex, setGaleriaMarianaIndex] = useState(null);
@@ -350,40 +336,6 @@ const PortalArtesanias = () => {
     return false;
   }, [isAuthenticated]);
 
-  useEffect(() => {
-    let isCancelled = false;
-    const loadComments = async () => {
-      setCommunityLoading(true);
-      setCommunityError('');
-      const topics = ['lataza', 'artesanias', 'taza'];
-      let resolvedData = [];
-      let resolvedError = null;
-      for (const topic of topics) {
-        const { data, error } = await fetchApprovedContributions(topic);
-        if (isCancelled) return;
-        if (error) {
-          resolvedError = error;
-          continue;
-        }
-        if (Array.isArray(data) && data.length) {
-          resolvedData = data;
-          resolvedError = null;
-          break;
-        }
-      }
-      if (isCancelled) return;
-      if (resolvedError && !resolvedData.length) {
-        setCommunityError('No pudimos cargar comentarios.');
-      }
-      setCommunityComments(resolvedData);
-      setCommunityLoading(false);
-    };
-
-    loadComments();
-    return () => {
-      isCancelled = true;
-    };
-  }, []);
 
   useEffect(() => {
     let cancelled = false;
@@ -558,8 +510,6 @@ const PortalArtesanias = () => {
     }
   }, [reactionStatus, requireAuth, user]);
 
-  const hasCommunityComments = useMemo(() => communityComments.length > 0, [communityComments]);
-  const visibleComments = hasCommunityComments ? communityComments : ARTESANIAS_FALLBACK_COMMENTS;
   const artesaniasReadingAuthorLabel = (latestArtesaniasReading?.author || '').trim() || 'autor invitado';
   const artesaniasReadingThumbnailUrl =
     sanitizeExternalHttpUrl(latestArtesaniasReading?.featured_image_url) ||
@@ -692,7 +642,7 @@ const PortalArtesanias = () => {
             <div className="space-y-5">
               <div className="rounded-3xl border border-white/10 bg-black/30 p-6 space-y-5">
                 <div className="mb-1 flex items-start justify-between gap-3">
-                  <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Voces de la comunidad</p>
+                  <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Archivo de experiencia narrativa</p>
                   <RelatedReadingTooltipButton
                     slug={latestArtesaniasReading?.slug}
                     authorLabel={artesaniasReadingAuthorLabel}
@@ -701,42 +651,26 @@ const PortalArtesanias = () => {
                     tone="cyan"
                   />
                 </div>
-                <div className="max-h-[240px] form-surface relative overflow-y-auto px-3 py-3 pr-2">
-                  {communityLoading ? (
-                    <p className="px-1 py-2 text-sm text-slate-600/85">Cargando comentarios...</p>
-                  ) : communityError && !hasCommunityComments ? (
-                    <p className="px-1 py-2 text-sm text-rose-700/85">{communityError}</p>
+                <div className="rounded-2xl bg-white/90 px-6 py-8 shadow-[0_4px_24px_rgba(0,0,0,0.10)]">
+                  {vitranaQuestion ? (
+                    <p className="text-slate-800 text-base leading-relaxed italic text-center font-light">
+                      {vitranaQuestion}
+                    </p>
                   ) : (
-                    <div className="space-y-2.5">
-                      {visibleComments.map((comment) => (
-                        <div
-                          key={`portal-artesanias-comment-${comment.id}`}
-                          className="rounded-xl border border-indigo-200/70 bg-white/72 p-3 shadow-[0_6px_18px_rgba(80,120,255,0.08)]"
-                        >
-                          <p className="mb-1.5 text-[0.96rem] font-light leading-relaxed text-slate-800">
-                            {comment.proposal}
-                          </p>
-                          <p className="text-[10px] uppercase tracking-[0.28em] text-slate-500/85">
-                            {comment.name || 'Anonimo'}
-                          </p>
-                        </div>
-                      ))}
-                    </div>
+                    <p className="text-slate-400/60 text-sm text-center py-2">···</p>
                   )}
                 </div>
-                <p className="mt-2 px-1 text-[10px] uppercase tracking-[0.24em] text-slate-500/85">
-                  Desliza para leer mas voces
+                <p className="text-xs text-slate-400/70 leading-relaxed mt-4 px-1">
+                  Esta plataforma investiga cómo distintas personas atraviesan experiencias narrativas, emocionales y simbólicas.
                 </p>
-                <div className="pt-4 mt-1 border-t border-white/10">
-                  <div className="mx-auto w-full max-w-md">
-                    <button
-                      type="button"
-                      className="w-full rounded-full border border-purple-500/70 text-purple-100 shadow-[0_15px_45px_rgba(67,56,202,0.45)] hover:bg-purple-500/20 tracking-[0.25em] text-xs uppercase px-4 py-2"
-                      onClick={handleOpenCommunityComposer}
-                    >
-                      coméntanos algo aquí
-                    </button>
-                  </div>
+                <div className="mx-auto w-full max-w-md mt-4">
+                  <button
+                    type="button"
+                    className="w-full rounded-full border border-purple-500/70 text-purple-100 shadow-[0_15px_45px_rgba(67,56,202,0.45)] hover:bg-purple-500/20 tracking-[0.25em] text-xs uppercase px-4 py-2"
+                    onClick={handleOpenCommunityComposer}
+                  >
+                    Registra tu experiencia
+                  </button>
                 </div>
 
                 <ShowcaseReactionInline status={reactionStatus} onReact={handleSendPulse} />

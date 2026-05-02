@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { BookOpen, Brain, Coins, Hand, Heart, Sparkles } from 'lucide-react';
+import { Brain, Coins, Hand, Heart, Sparkles } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { toast } from '@/components/ui/use-toast';
@@ -10,12 +10,12 @@ import PortalAuthButton from '@/components/PortalAuthButton';
 import PortalHeaderActions from '@/components/portal/PortalHeaderActions';
 import IAInsightCard from '@/components/IAInsightCard';
 import RelatedReadingTooltipButton from '@/components/portal/RelatedReadingTooltipButton';
-import { fetchApprovedContributions } from '@/services/contributionService';
 import { recordShowcaseLike } from '@/services/showcaseLikeService';
 import { supabase } from '@/lib/supabaseClient';
 import { sanitizeExternalHttpUrl } from '@/lib/urlSafety';
 import { hasEnoughGAT } from '@/lib/gatAccess';
 import { usePortalTracking } from '@/hooks/usePortalTracking';
+import { useVitranaQuestion } from '@/hooks/useVitranaQuestion';
 
 const ORACULO_TITLE = 'Oráculo';
 const ORACULO_INTRO =
@@ -92,18 +92,6 @@ const ORACULO_IA_PROFILE = {
   coverage: 'Cubierto por suscriptores; las recompensas son GATokens internos.',
   footnote: 'El minado es simbólico y humano: no es financiero, es resonancia.',
 };
-const ORACULO_FALLBACK_COMMENTS = [
-  {
-    id: 'oraculo-comment-1',
-    proposal: 'Una pregunta buena me desarmo mas que un consejo.',
-    name: 'Semilla activa',
-  },
-  {
-    id: 'oraculo-comment-2',
-    proposal: 'Volvi por mis +30 GAT, pero me quede por la conversacion.',
-    name: 'Comunidad #GatoEncerrado',
-  },
-];
 const ORACULO_BLOG_KEYS = [
   'oraculo',
   'oracle',
@@ -192,12 +180,10 @@ const ShowcaseReactionInline = ({ status, onReact }) => (
 const PortalOraculo = () => {
   const { user } = useAuth();
   usePortalTracking('oraculo');
+  const { question: vitranaQuestion } = useVitranaQuestion('oraculo');
   const isAuthenticated = Boolean(user);
   const [showLoginOverlay, setShowLoginOverlay] = useState(false);
   const [showLoginHint, setShowLoginHint] = useState(false);
-  const [communityComments, setCommunityComments] = useState([]);
-  const [communityLoading, setCommunityLoading] = useState(false);
-  const [communityError, setCommunityError] = useState('');
   const [latestOraculoReading, setLatestOraculoReading] = useState(null);
   const [isReadingTooltipOpen, setIsReadingTooltipOpen] = useState(false);
   const [reactionStatus, setReactionStatus] = useState('idle');
@@ -229,40 +215,6 @@ const PortalOraculo = () => {
     return false;
   }, [isAuthenticated]);
 
-  useEffect(() => {
-    let isCancelled = false;
-    const loadComments = async () => {
-      setCommunityLoading(true);
-      setCommunityError('');
-      const topics = ['oraculo', 'oracle', 'miniverso-oraculo'];
-      let resolvedData = [];
-      let resolvedError = null;
-      for (const topic of topics) {
-        const { data, error } = await fetchApprovedContributions(topic);
-        if (isCancelled) return;
-        if (error) {
-          resolvedError = error;
-          continue;
-        }
-        if (Array.isArray(data) && data.length) {
-          resolvedData = data;
-          resolvedError = null;
-          break;
-        }
-      }
-      if (isCancelled) return;
-      if (resolvedError && !resolvedData.length) {
-        setCommunityError('No pudimos cargar comentarios.');
-      }
-      setCommunityComments(resolvedData);
-      setCommunityLoading(false);
-    };
-
-    loadComments();
-    return () => {
-      isCancelled = true;
-    };
-  }, []);
 
   useEffect(() => {
     let cancelled = false;
@@ -357,8 +309,6 @@ const PortalOraculo = () => {
     }
   }, [reactionStatus, requireAuth, user]);
 
-  const hasCommunityComments = useMemo(() => communityComments.length > 0, [communityComments]);
-  const visibleComments = hasCommunityComments ? communityComments : ORACULO_FALLBACK_COMMENTS;
   const oraculoReadingAuthorLabel = (latestOraculoReading?.author || '').trim() || 'autor invitado';
   const oraculoReadingThumbnailUrl =
     sanitizeExternalHttpUrl(latestOraculoReading?.featured_image_url) ||
@@ -487,7 +437,7 @@ const PortalOraculo = () => {
 
           <div className="rounded-3xl border border-white/10 bg-black/30 p-6 space-y-5">
             <div className="mb-1 flex items-start justify-between gap-3">
-              <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Voces de la comunidad</p>
+              <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Archivo de experiencia narrativa</p>
               <RelatedReadingTooltipButton
                 slug={latestOraculoReading?.slug}
                 authorLabel={oraculoReadingAuthorLabel}
@@ -496,36 +446,26 @@ const PortalOraculo = () => {
                 tone="violet"
               />
             </div>
-            <div className="max-h-[240px] form-surface relative overflow-y-auto px-3 py-3 pr-2">
-              {communityLoading ? (
-                <p className="px-1 py-2 text-sm text-slate-600/85">Cargando comentarios...</p>
-              ) : communityError && !hasCommunityComments ? (
-                <p className="px-1 py-2 text-sm text-rose-700/85">{communityError}</p>
+            <div className="rounded-2xl bg-white/90 px-6 py-8 shadow-[0_4px_24px_rgba(0,0,0,0.10)]">
+              {vitranaQuestion ? (
+                <p className="text-slate-800 text-base leading-relaxed italic text-center font-light">
+                  {vitranaQuestion}
+                </p>
               ) : (
-                <div className="space-y-2.5">
-                  {visibleComments.map((comment) => (
-                    <div
-                      key={`portal-oraculo-comment-${comment.id}`}
-                      className="rounded-xl border border-indigo-200/70 bg-white/72 p-3 shadow-[0_6px_18px_rgba(80,120,255,0.08)]"
-                    >
-                      <p className="mb-1.5 text-[0.96rem] font-light leading-relaxed text-slate-800">{comment.proposal}</p>
-                      <p className="text-[10px] uppercase tracking-[0.28em] text-slate-500/85">{comment.name || 'Anonimo'}</p>
-                    </div>
-                  ))}
-                </div>
+                <p className="text-slate-400/60 text-sm text-center py-2">···</p>
               )}
             </div>
-            <p className="mt-2 px-1 text-[10px] uppercase tracking-[0.24em] text-slate-500/85">Desliza para leer mas voces</p>
-            <div className="pt-4 mt-1 border-t border-white/10">
-              <div className="mx-auto w-full max-w-md">
-                <button
-                  type="button"
-                  className="w-full rounded-full border border-purple-500/70 text-purple-100 shadow-[0_15px_45px_rgba(67,56,202,0.45)] hover:bg-purple-500/20 tracking-[0.25em] text-xs uppercase px-4 py-2"
-                  onClick={handleOpenCommunityComposer}
-                >
-                  coméntanos algo aquí
-                </button>
-              </div>
+            <p className="text-xs text-slate-400/70 leading-relaxed mt-4 px-1">
+              Esta plataforma investiga cómo distintas personas atraviesan experiencias narrativas, emocionales y simbólicas.
+            </p>
+            <div className="mx-auto w-full max-w-md mt-4">
+              <button
+                type="button"
+                className="w-full rounded-full border border-purple-500/70 text-purple-100 shadow-[0_15px_45px_rgba(67,56,202,0.45)] hover:bg-purple-500/20 tracking-[0.25em] text-xs uppercase px-4 py-2"
+                onClick={handleOpenCommunityComposer}
+              >
+                Registra tu experiencia
+              </button>
             </div>
 
             <ShowcaseReactionInline status={reactionStatus} onReact={handleSendPulse} />
