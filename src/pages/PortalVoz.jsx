@@ -1032,13 +1032,9 @@ const PortalVoz = () => {
                     registra tu respuesta
                   </button>
                 </div>
-                <p className="text-xs text-slate-400/70 leading-relaxed px-1">
-                  Nos interesa explorar qué ocurre en distintas personas cuando una experiencia transforma su manera de entender el mundo.
-                </p>
                 <ShowcaseReactionInline
-                  title="Resonancia colectiva"
-                  description="Haz clic para dejar un pulso que mantenga viva la conversación."
-                  
+                  description="Estamos explorando qué ocurre cuando una pregunta transforma la manera de entender el mundo."
+                  buttonLabel="¿No tienes una respuesta? Déjanos un pulso"
                   status={reactionStatus}
                   onReact={handleSendPulse}
                 />

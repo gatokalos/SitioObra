@@ -212,9 +212,8 @@ const ShowcaseReactionInline = ({ status, onReact }) => (
   <div className="mt-4 flex flex-col gap-3 rounded-2xl border border-white/10 bg-black/20 p-4">
     <div className="flex items-center justify-between gap-3">
       <div>
-        <p className="text-[0.6rem] uppercase tracking-[0.35em] text-slate-500">Resonancia colectiva</p>
         <p className="text-sm text-slate-300 leading-relaxed">
-          Haz clic y deja un pulso para que la Ruta de la Corporeidad siga viva.
+          Estamos explorando qué ocurre cuando una pregunta transforma la manera de entender el mundo.
         </p>
       </div>
       <button
@@ -231,7 +230,7 @@ const ShowcaseReactionInline = ({ status, onReact }) => (
       </button>
     </div>
     <p className="text-xs uppercase tracking-[0.3em] text-purple-300">
-      {status === 'loading' ? 'Enviando...' : 'Hacer vibrar la ruta'}
+      {status === 'loading' ? 'Enviando...' : '¿NO TIENES RESPUESTA? DÉJANOS UN PULSO'}
     </p>
   </div>
 );
@@ -450,9 +449,6 @@ const PortalMovimiento = () => {
                     registra tu respuesta
                   </button>
                 </div>
-                <p className="text-xs text-slate-400/70 leading-relaxed px-1">
-                  Nos interesa explorar qué ocurre en distintas personas cuando una experiencia transforma su manera de entender el mundo.
-                </p>
                 <ShowcaseReactionInline status={reactionStatus} onReact={handleSendPulse} />
               </div>
             </div>

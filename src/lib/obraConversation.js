@@ -50,7 +50,7 @@ const SOSPECHA_DOCTORA_QUESTIONS = [
   '¿Qué ocurre cuando alguien más interpreta nuestra apariencia?',
   '¿Hasta dónde una imagen puede convertirse en espejo?',
   '¿La imagen captura identidad o la inventa?',
-  '¿Qué parte de nosotros sobrevive en una representación visual?',
+  '¿Qué parte de nosotros sobrevive a la representación visual?',
 ];
 
 const NECESIDAD_ORDEN_QUESTIONS = [
