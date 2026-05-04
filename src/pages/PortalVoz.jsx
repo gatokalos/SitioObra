@@ -500,7 +500,7 @@ const PortalVoz = () => {
       ? 'Escúchala con otra emoción'
       : mobileObraSecondaryCtaState === MOBILE_OBRA_SECONDARY_CTA_STATES.LAUNCH_PHRASE
         ? 'Lanza la frase'
-        : 'Escoger del libreto';
+        : 'Escoger del laboratorio';
   const mobileSecondaryCtaEmphasis =
     mobileObraSecondaryCtaState === MOBILE_OBRA_SECONDARY_CTA_STATES.TRY_OTHER_EMOTION
       ? 'glow'
@@ -987,13 +987,24 @@ const PortalVoz = () => {
         </div>
 
         <div className="mt-6 space-y-6">
-          <div className="rounded-[2.5rem] border border-white/10 bg-gradient-to-br from-slate-900/85 via-black/60 to-rose-900/35 shadow-[0_25px_65px_rgba(15,23,42,0.65)]">
+          <div className="relative rounded-[2.5rem] border border-white/10 bg-gradient-to-br from-slate-900/85 via-black/60 to-rose-900/35 shadow-[0_25px_65px_rgba(15,23,42,0.65)]">
+            {latestSceneReading?.slug ? (
+              <div className="absolute top-4 right-4 z-10">
+                <RelatedReadingTooltipButton
+                  slug={latestSceneReading.slug}
+                  authorLabel={sceneReadingAuthorLabel}
+                  thumbnailUrl={sceneReadingThumbnailUrl}
+                  ariaLabel="Mostrar lectura relacionada de Escena"
+                  tone="cyan"
+                />
+              </div>
+            ) : null}
             <div className="grid gap-10 p-6 sm:p-8 lg:p-10 lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
               <div className="space-y-6">
                 <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
                   <div className="space-y-3">
-                    <p className="text-xs uppercase tracking-[0.4em] text-purple-300">Vitrina</p>
-                    <h3 className="font-display text-3xl leading-tight text-white md:text-4xl">Drama</h3>
+                    <p className="text-xs uppercase tracking-[0.4em] text-purple-300">#Miniversos</p>
+                    <h3 className="font-display text-3xl leading-tight text-white md:text-4xl">El drama</h3>
                   </div>
                 </div>
                 <div className="space-y-4 text-lg text-slate-200/85 leading-relaxed font-light">
@@ -1002,16 +1013,7 @@ const PortalVoz = () => {
               </div>
 
               <div className="flex flex-col gap-5">
-                <div className="flex items-start justify-between gap-3">
-                  <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Archivo de experiencia narrativa</p>
-                  <RelatedReadingTooltipButton
-                    slug={latestSceneReading?.slug}
-                    authorLabel={sceneReadingAuthorLabel}
-                    thumbnailUrl={sceneReadingThumbnailUrl}
-                    ariaLabel="Mostrar lectura relacionada de Escena"
-                    tone="cyan"
-                  />
-                </div>
+                <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Laboratorio de Resonancia</p>
                 <div className="form-surface px-6 py-8">
                   {vitranaQuestion ? (
                     <p className="text-slate-800 text-base leading-relaxed italic text-center font-light">
@@ -1027,16 +1029,16 @@ const PortalVoz = () => {
                     className="w-full rounded-full border border-purple-500/70 text-purple-100 shadow-[0_15px_45px_rgba(67,56,202,0.45)] hover:bg-purple-500/20 tracking-[0.25em] text-xs uppercase px-4 py-2"
                     onClick={handleOpenCommunityComposer}
                   >
-                    Registra tu experiencia
+                    registra tu respuesta
                   </button>
                 </div>
                 <p className="text-xs text-slate-400/70 leading-relaxed px-1">
-                  Esta plataforma investiga cómo distintas personas atraviesan experiencias narrativas, emocionales y simbólicas.
+                  Nos interesa explorar qué ocurre en distintas personas cuando una experiencia transforma su manera de entender el mundo.
                 </p>
                 <ShowcaseReactionInline
                   title="Resonancia colectiva"
                   description="Haz clic para dejar un pulso que mantenga viva la conversación."
-                  buttonLabel="Enviar pulsaciones"
+                  
                   status={reactionStatus}
                   onReact={handleSendPulse}
                 />
@@ -1048,7 +1050,7 @@ const PortalVoz = () => {
             <div className="contents lg:block lg:min-w-0 lg:space-y-6">
               <div className="min-w-0 overflow-hidden rounded-3xl border border-white/10 bg-black/35 p-6 shadow-[0_20px_45px_rgba(0,0,0,0.45)] space-y-4">
                 <div className="min-w-0 space-y-2">
-                  <p className="text-xs uppercase tracking-[0.35em] text-slate-400">Entra a la escena</p>
+                  <p className="text-xs uppercase tracking-[0.35em] text-slate-400">Experiencia Narrativa</p>
                   <h2
                     className="font-display text-[clamp(1.3rem,5.6vw,1.55rem)] leading-tight text-white sm:text-2xl break-words"
                     style={{ textWrap: 'balance' }}
@@ -1192,7 +1194,7 @@ const PortalVoz = () => {
                   ) : (
                     <div className="space-y-2">
                       <p className="text-xs uppercase tracking-[0.35em] text-pink-200" style={{ color: activeTint?.dot }}>
-                        Detonadores escénicos
+                        Tiñe la escena con sentimiento
                       </p>
                       <p className="text-sm text-slate-300/85 leading-relaxed">
                         Ya completaste estas preguntas en todas emociones de Silvestre.

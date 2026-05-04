@@ -18,7 +18,7 @@ import { usePortalTracking } from '@/hooks/usePortalTracking';
 import { useVitranaQuestion } from '@/hooks/useVitranaQuestion';
 
 const GRAFICOS_INTRO =
-  'Gráficos explora el universo #GatoEncerrado desde la imagen. Aquí las escenas se quedan en otro momento: lo que en la obra aparece como pensamiento o diálogo, en el cómic puede convertirse en ensayo, en silencio, en otra voz. No solo el de Silvestre, sino el de cualquiera que se haya sentido como él. Dibujar permite mirar lo que no siempre se dice en escena.';
+  'Este espacio explora el universo #GatoEncerrado desde la imagen. Aquí las escenas se quedan en otro momento: lo que en la obra aparece como pensamiento o diálogo, en el cómic puede convertirse en ensayo, en silencio, en otra voz. No solo el de Silvestre, sino el de cualquiera que se haya sentido como él. Dibujar permite mirar lo que no siempre se dice en escena.';
 const GRAFICOS_NOTA_AUTORAL = {
   title: '#MirarmeLoQueSoy',
   verse: 'Me quedé dibujando,\ncomo si el papel supiera quién soy\nmejor que yo.',
@@ -134,7 +134,7 @@ const ShowcaseReactionInline = ({ status, onReact }) => (
       </button>
     </div>
     <p className="text-xs uppercase tracking-[0.3em] text-purple-300">
-      {status === 'loading' ? 'Enviando...' : 'Hacer vibrar el trazo'}
+      {status === 'loading' ? 'Enviando...' : ''}
     </p>
   </div>
 );
@@ -293,12 +293,23 @@ const PortalGraficos = () => {
         </div>
 
         <div className="mt-6 space-y-6">
-          <div className="rounded-[2.5rem] border border-white/10 bg-gradient-to-br from-slate-900/85 via-black/60 to-fuchsia-900/25 shadow-[0_25px_65px_rgba(15,23,42,0.65)]">
+          <div className="relative rounded-[2.5rem] border border-white/10 bg-gradient-to-br from-slate-900/85 via-black/60 to-fuchsia-900/25 shadow-[0_25px_65px_rgba(15,23,42,0.65)]">
+            {latestGraficosReading?.slug ? (
+              <div className="absolute top-4 right-4 z-10">
+                <RelatedReadingTooltipButton
+                  slug={latestGraficosReading.slug}
+                  authorLabel={graficosReadingAuthorLabel}
+                  thumbnailUrl={graficosReadingThumbnailUrl}
+                  ariaLabel="Mostrar lectura relacionada de Gráficos"
+                  tone="cyan"
+                />
+              </div>
+            ) : null}
             <div className="grid gap-10 p-6 sm:p-8 lg:p-10 lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
               <div className="space-y-6">
                 <div className="space-y-3">
-                  <p className="text-xs uppercase tracking-[0.4em] text-fuchsia-300">Vitrina</p>
-                  <h3 className="font-display text-3xl leading-tight text-white md:text-4xl">Gráficos</h3>
+                  <p className="text-xs uppercase tracking-[0.4em] text-fuchsia-300">#Miniversos</p>
+                  <h3 className="font-display text-3xl leading-tight text-white md:text-4xl">La imagen</h3>
                 </div>
                 <div className="space-y-4 text-lg text-slate-200/85 leading-relaxed font-light">
                   <p>{GRAFICOS_INTRO}</p>
@@ -306,16 +317,7 @@ const PortalGraficos = () => {
               </div>
 
               <div className="flex flex-col gap-5">
-                <div className="flex items-start justify-between gap-3">
-                  <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Archivo de experiencia narrativa</p>
-                  <RelatedReadingTooltipButton
-                    slug={latestGraficosReading?.slug}
-                    authorLabel={graficosReadingAuthorLabel}
-                    thumbnailUrl={graficosReadingThumbnailUrl}
-                    ariaLabel="Mostrar lectura relacionada de Gráficos"
-                    tone="cyan"
-                  />
-                </div>
+                <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Laboratorio de Resonancia</p>
                 <div className="form-surface px-6 py-8">
                   {vitranaQuestion ? (
                     <p className="text-slate-800 text-base leading-relaxed italic text-center font-light">
@@ -331,11 +333,11 @@ const PortalGraficos = () => {
                     className="w-full rounded-full border border-purple-500/70 text-purple-100 shadow-[0_15px_45px_rgba(67,56,202,0.45)] hover:bg-purple-500/20 tracking-[0.25em] text-xs uppercase px-4 py-2"
                     onClick={handleOpenCommunityComposer}
                   >
-                    Registra tu experiencia
+                    registra tu respuesta
                   </button>
                 </div>
                 <p className="text-xs text-slate-400/70 leading-relaxed px-1">
-                  Esta plataforma investiga cómo distintas personas atraviesan experiencias narrativas, emocionales y simbólicas.
+                  Nos interesa explorar qué ocurre en distintas personas cuando una experiencia transforma su manera de entender el mundo.
                 </p>
                 <ShowcaseReactionInline status={reactionStatus} onReact={handleSendPulse} />
               </div>
@@ -344,7 +346,7 @@ const PortalGraficos = () => {
 
 
           <div className="space-y-5 rounded-3xl border border-white/10 bg-gradient-to-br from-slate-950/80 via-black/60 to-fuchsia-900/30 p-6 lg:p-8">
-            <p className="text-xs uppercase tracking-[0.35em] text-slate-400/80">Swipe narrativo</p>
+            <p className="text-xs uppercase tracking-[0.35em] text-slate-400/80">Obra destacada</p>
             <div className="rounded-[32px] border border-white/10 bg-gradient-to-r from-slate-900/80 via-black/60 to-fuchsia-900/40 overflow-hidden shadow-[0_20px_60px_rgba(15,23,42,0.65)]">
               <div className="grid gap-0 lg:grid-cols-[1fr_1.3fr]">
                 <div className="relative h-full min-h-[240px]">
@@ -355,17 +357,12 @@ const PortalGraficos = () => {
                     loading="lazy"
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/45 to-transparent" />
-                  <div className="absolute left-4 top-4 inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.3em] text-white">
-                    <Scan size={14} className="text-fuchsia-200" />
-                    Swipe PDF
-                  </div>
-                  <div className="absolute left-4 bottom-4 text-sm text-white/90">
-                    Lector visual · scroll vertical
-                  </div>
+              
+           
                 </div>
 
                 <div className="flex flex-col space-y-4 p-6">
-                  <p className="text-xs uppercase tracking-[0.35em] text-fuchsia-200/80">Lector visual activo</p>
+                  <p className="text-xs uppercase tracking-[0.35em] text-fuchsia-200/80">Obra destacada</p>
                   <h4 className="font-display text-2xl text-slate-100">{GRAFICOS_SWIPE_SHOWCASE.title}</h4>
                   <p className="text-sm text-slate-200/90 leading-relaxed">{GRAFICOS_SWIPE_SHOWCASE.description}</p>
                   <ul className="space-y-2 text-sm text-slate-100 leading-relaxed">

@@ -35,6 +35,7 @@ import {
   Send,
   X,
   PawPrint,
+  QrCode,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ToastAction } from '@/components/ui/toast';
@@ -142,6 +143,30 @@ import {
   CAUSE_ACCORDION,
 } from '@/components/transmedia/transmediaConstants';
 
+const SHOWCASE_EYEBROW_COLOR = {
+  copycats:            'text-sky-300',
+  lataza:              'text-amber-300',
+  miniversoNovela:     'text-violet-300',
+  miniversoSonoro:     'text-cyan-300',
+  miniversoGrafico:    'text-fuchsia-300',
+  miniversoMovimiento: 'text-emerald-300',
+  apps:                'text-emerald-300',
+  oraculo:             'text-violet-300',
+  miniversos:          'text-purple-300',
+};
+
+const SHOWCASE_CARD_GRADIENT = {
+  copycats:            'to-sky-900/25',
+  lataza:              'to-amber-900/25',
+  miniversoNovela:     'to-violet-900/25',
+  miniversoSonoro:     'to-cyan-900/25',
+  miniversoGrafico:    'to-fuchsia-900/25',
+  miniversoMovimiento: 'to-emerald-900/25',
+  apps:                'to-emerald-900/25',
+  oraculo:             'to-violet-900/25',
+  miniversos:          'to-rose-900/35',
+};
+
 const VITRANA_QUESTION_BY_SHOWCASE = {
   miniversos:          '¿Qué significa habitar una emoción delante de otros?',
   miniversoSonoro:     '¿Por qué algunos sonidos duran más que las imágenes?',
@@ -149,6 +174,7 @@ const VITRANA_QUESTION_BY_SHOWCASE = {
   miniversoMovimiento: '¿Qué sabe el cuerpo antes que la mente?',
   apps:                '¿Qué cambia cuando una historia depende de nuestras decisiones?',
   copycats:            '¿Cuándo un objeto deja de ser solo un objeto?',
+  lataza:              '¿Cuándo un objeto deja de ser solo un objeto?',
   miniversoNovela:     '¿Qué cambia cuando una experiencia se convierte en relato?',
   cine:                '¿Qué significa verse fallar desde afuera?',
   oraculo:             '¿Cuándo una experiencia deja de sentirse individual?',
@@ -1369,8 +1395,9 @@ const Transmedia = ({ allianceOnlyMode = false }) => {
     (
       showcaseId,
       {
-        heading = 'Voces de la comunidad',
-        ctaLabel = 'Pon tu duda o comentario',
+        heading = 'Laboratorio de emociones',
+        ctaLabel = 'Registra tu respuesta',
+        subCopy = 'Nos interesa explorar qué ocurre en distintas personas cuando una experiencia transforma su manera de entender el mundo.',
         emptyMessage = 'Aún no hay comentarios de la comunidad.',
         reactionProps = null,
         className = 'rounded-3xl border border-white/10 bg-black/30 p-6 space-y-5',
@@ -1383,77 +1410,10 @@ const Transmedia = ({ allianceOnlyMode = false }) => {
       // const isLoading = publicContributionsLoading[showcaseId];
       // const error = publicContributionsError[showcaseId];
       const categoryId = getContributionCategoryForShowcase(showcaseId);
-      const latestBlogPost = latestBlogPostByShowcase[showcaseId];
 
       return (
         <div className={className}>
-          <div className="mb-1 flex items-start justify-between gap-3">
-            <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">{heading}</p>
-            {latestBlogPost?.slug
-              ? (() => {
-                  const authorLabel = latestBlogPost.author?.trim() || 'autor invitado';
-                  const mobileMessage = `Toca de nuevo para abrir un texto de ${authorLabel}`;
-                  const thumbnailUrl =
-                    sanitizeExternalHttpUrl(latestBlogPost.featured_image_url) ||
-                    sanitizeExternalHttpUrl(latestBlogPost.cover_image) ||
-                    sanitizeExternalHttpUrl(latestBlogPost.image_url) ||
-                    sanitizeExternalHttpUrl(latestBlogPost.author_avatar_url) ||
-                    null;
-
-                  if (!isMobileViewport) {
-                    return (
-                      <RelatedReadingTooltipButton
-                        slug={latestBlogPost.slug}
-                        authorLabel={authorLabel}
-                        thumbnailUrl={thumbnailUrl}
-                        ariaLabel="Mostrar lectura disponible en Textos"
-                        tone="cyan"
-                      />
-                    );
-                  }
-
-                  return (
-                    <div className="group relative inline-flex">
-                      <button
-                        type="button"
-                        onClick={() => handleReadingBadgeClick(showcaseId)}
-                        className={`inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-cyan-200/40 bg-cyan-300/10 text-cyan-100 hover:bg-cyan-300/20 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-300/50 ${
-                          !readingGlowDismissedByShowcase[showcaseId]
-                            ? 'animate-pulse shadow-[0_0_18px_rgba(34,211,238,0.45)]'
-                            : ''
-                        }`}
-                        aria-label="Abrir lectura disponible en Textos"
-                      >
-                        <BookOpen size={16} />
-                      </button>
-                      <span
-                        className={`pointer-events-none absolute right-0 top-full z-10 mt-2 w-[min(86vw,17rem)] rounded-md border border-cyan-200/30 bg-slate-950/95 px-2 py-2 text-left text-[11px] leading-snug text-cyan-100 shadow-[0_10px_30px_rgba(0,0,0,0.45)] transform-gpu transition-[opacity,transform] duration-180 ease-out ${
-                          readingTooltipForShowcase === showcaseId
-                            ? 'opacity-100 translate-y-0 scale-100'
-                            : 'opacity-0 translate-y-1 scale-[0.985] group-hover:opacity-100 group-hover:translate-y-0 group-hover:scale-100'
-                        }`}
-                      >
-                        <span className="flex flex-col gap-2">
-                          {thumbnailUrl ? (
-                            <img
-                              src={thumbnailUrl}
-                              alt={`Miniatura de lectura de ${authorLabel}`}
-                              className="h-26 w-full shrink-0 rounded-md border border-cyan-200/30 object-cover"
-                              loading="lazy"
-                            />
-                          ) : (
-                            <span className="inline-flex h-16 w-full shrink-0 items-center justify-center rounded-md border border-cyan-200/30 bg-cyan-300/10 text-cyan-100">
-                              <BookOpen size={14} />
-                            </span>
-                          )}
-                          <span className="min-w-0 whitespace-normal break-words">{mobileMessage}</span>
-                        </span>
-                      </span>
-                    </div>
-                  );
-                })()
-              : null}
-          </div>
+          <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70 mb-1">{heading}</p>
           <div className="form-surface px-6 py-8">
             {VITRANA_QUESTION_BY_SHOWCASE[showcaseId] ? (
               <p className="text-slate-800 text-base leading-relaxed italic text-center font-light">
@@ -1503,6 +1463,9 @@ const Transmedia = ({ allianceOnlyMode = false }) => {
                 {ctaLabel}
               </Button>
             </div>
+            <p className="text-xs text-slate-400/70 leading-relaxed px-1 mt-3">
+              {subCopy}
+            </p>
           </div>
           {!hideReaction && reactionProps && activeShowcase === showcaseId ? (
             <ShowcaseReactionInline {...reactionProps} />
@@ -1636,7 +1599,7 @@ const rendernotaAutoral = () => {
               <div className="rounded-3xl border border-white/10 overflow-hidden bg-black/30">
   <div className="flex items-center justify-between gap-3 px-6 pt-4">
     <p className="text-xs uppercase tracking-[0.3em] text-slate-400/70">
-      Activa tu objeto
+      OBRAS DESTACADAS
     </p>
   </div>
 
@@ -1842,10 +1805,9 @@ const rendernotaAutoral = () => {
 
           <div className="space-y-6">
             {renderCommunityBlock('lataza', {
-              ctaLabel: '¿Dudas o comentarios?',
               reactionProps: {
                 showcaseId: 'lataza',
-                description: 'Haz clic para guardar tu like.',
+                description: 'Haz clic en este miniverso para hacerlo resonar contigo.',
                 buttonLabel: 'Resonar con la taza',
               },
             })}
@@ -1896,7 +1858,6 @@ const rendernotaAutoral = () => {
 
             <div className="space-y-6">
               {renderCommunityBlock('miniversoSonoro', {
-                ctaLabel: '¿Dudas o comentarios?',
                 reactionProps: {
                   showcaseId: 'miniversoSonoro',
                   title: 'La voz de quienes escuchan',
@@ -2014,7 +1975,7 @@ const rendernotaAutoral = () => {
           ? 'Escúchala con otra emoción'
           : mobileObraSecondaryCtaState === MOBILE_OBRA_SECONDARY_CTA_STATES.LAUNCH_PHRASE
             ? 'Lanza la frase'
-            : 'Escoger del libreto';
+            : 'Escoger del laboratorio';
       const mobileSecondaryCtaEmphasis =
         mobileObraSecondaryCtaState === MOBILE_OBRA_SECONDARY_CTA_STATES.TRY_OTHER_EMOTION
           ? 'glow'
@@ -2083,73 +2044,12 @@ const rendernotaAutoral = () => {
       const collectiveTopEmotion = collectiveEmotionRows[0] ?? null;
 
       return (
-        <div className="space-y-2">
-          <div className="flex justify-end gap-3">
-            <button
-              onClick={handleShareMiniverse}
-              className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/5 px-4 py-2 text-xs uppercase tracking-[0.25em] text-slate-200/90 hover:border-purple-300/40 hover:text-white transition"
-              aria-label="Compartir miniverso"
-            >
-              <Send size={14} className="text-purple-200" />
-            </button>
-            <button
-              onClick={handleCloseShowcase}
-              className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-white/15 bg-white/5 text-slate-200/90 hover:border-purple-300/40 hover:text-white transition"
-              aria-label="Cerrar vitrina"
-            >
-              <X size={14} />
-            </button>
-          </div>
-          <div className="rounded-[2.5rem] border border-white/10 bg-gradient-to-br from-slate-900/85 via-black/60 to-rose-900/35 shadow-[0_25px_65px_rgba(15,23,42,0.65)]">
-            <div className="grid gap-10 p-6 sm:p-8 lg:p-10 lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
-              <div className="space-y-6">
-     
-                <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
-                  <div className="space-y-3">
-                    <p className="text-xs uppercase tracking-[0.4em] text-purple-300">Vitrina</p>
-                    <h3 className="font-display text-3xl leading-tight text-white md:text-4xl">{activeDefinition.label}</h3>
-                  </div>
-                
-                </div>
-                <div className="space-y-4 text-lg text-slate-200/85 leading-relaxed font-light">
-                  {activeDefinition.introNode ?? <p>{activeDefinition.intro}</p>}
-                  {activeDefinition.narrative?.map((paragraph, index) => (
-                    <p key={`tragico-paragraph-${index}`} className="text-sm text-slate-300/90 leading-relaxed">
-                      {paragraph}
-                    </p>
-                  ))}
-                </div>
-               
-                {activeDefinition.iaProfile ? (
-                  <div className="hidden lg:block">
-                    <IAInsightCard {...activeDefinition.iaProfile} compact />
-                  </div>
-                ) : null}
-              </div>
-              <div className="flex flex-col gap-6">
-                <div className="lg:hidden">
-                  {renderCollaboratorsSection(activeDefinition.collaborators, 'tragedia')}
-                </div>
-                {rendernotaAutoral()}
-              </div>
-              
-            </div>
-          </div>
-
-          <div className="hidden lg:block">
-            {renderCollaboratorsSection(activeDefinition.collaborators, 'tragedia')}
-          </div>
-          {activeDefinition.iaProfile ? (
-            <div className="lg:hidden">
-              <IAInsightCard {...activeDefinition.iaProfile} compact />
-            </div>
-          ) : null}
-
+        <div className="space-y-6">
           <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.2fr)]">
             <div className="contents lg:block lg:min-w-0 lg:space-y-6">
               <div className="min-w-0 overflow-hidden rounded-3xl border border-white/10 bg-black/35 p-6 shadow-[0_20px_45px_rgba(0,0,0,0.45)] space-y-4">
                 <div className="min-w-0 space-y-2">
-                  <p className="text-xs uppercase tracking-[0.35em] text-slate-400">Entra a la escena</p>
+                  <p className="text-xs uppercase tracking-[0.35em] text-slate-400">Experiencia narrativa</p>
                   <h2
                     className="font-display text-[clamp(1.3rem,5.6vw,1.55rem)] leading-tight text-white sm:text-2xl break-words"
                     style={{ textWrap: 'balance' }}
@@ -2266,7 +2166,6 @@ const rendernotaAutoral = () => {
 
               <div className="order-5 min-w-0 lg:order-none">
                 {renderCommunityBlock('miniversos', {
-                  ctaLabel: 'coméntanos algo',
                   emptyMessage: 'Todavía no hay voces en este miniverso.',
                   reactionProps: reactionDetails,
                   className: 'rounded-3xl border border-white/10 bg-black/30 p-6 space-y-5',
@@ -2318,7 +2217,7 @@ const rendernotaAutoral = () => {
                       className="text-xs uppercase tracking-[0.35em] text-pink-200"
                       style={{ color: activeObraTint?.dot }}
                     >
-                      Detonadores escénicos
+                      Tiñe la escena con sentimiento
                     </p>
                     <p className="text-sm text-slate-300/85 leading-relaxed">
                       Ya completaste estas preguntas en todas emociones de Silvestre.
@@ -2603,7 +2502,7 @@ const rendernotaAutoral = () => {
 
                       <div className="flex flex-col space-y-4 p-6">
                         <p className="text-xs uppercase tracking-[0.35em] text-fuchsia-200/80">
-                          Lector visual activo
+                          Obra destacada
                         </p>
                         <h4 className="font-display text-2xl text-slate-100">{entry.title}</h4>
                         {entry.description ? (
@@ -2696,7 +2595,6 @@ const rendernotaAutoral = () => {
           <div className="space-y-6">
             
             {renderCommunityBlock('miniversoGrafico', {
-              ctaLabel: '¿Dudas o comentarios?',
               reactionProps: {
                 showcaseId: 'miniversoGrafico',
                 title: 'Validación gráfica',
@@ -2719,46 +2617,6 @@ const rendernotaAutoral = () => {
 
       return (
         <div className="space-y-8">
-          <div className="rounded-2xl border border-white/10 bg-black/30 px-5 py-4">
-            <div className="flex items-center justify-between gap-3">
-              <div className="inline-flex items-center gap-3">
-                <span className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-white/20 bg-white/5 text-slate-200 shadow-[0_0_18px_rgba(148,163,184,0.22)]">
-                  <User size={16} />
-                </span>
-                <p className="text-[11px] uppercase tracking-[0.32em] text-slate-300/85">Colaboradores</p>
-              </div>
-              <button
-                type="button"
-                onClick={() => setIsMovementCreditsOpen((prev) => !prev)}
-                className="text-xs uppercase tracking-[0.3em] text-slate-300 hover:text-white transition"
-              >
-                {isMovementCreditsOpen ? 'Ocultar' : 'Abrir'}
-              </button>
-            </div>
-            {isMovementCreditsOpen ? (
-              <div className="mt-4 space-y-4">
-                <p className="text-sm font-semibold text-slate-100">Colaboradores que buscamos</p>
-                <ul className="mt-3 space-y-2 text-sm text-slate-300/90">
-                  {MOVEMENT_COLLABORATOR_CALL_ITEMS.map((item) => (
-                    <li key={`movement-collab-call-${item}`} className="flex items-start gap-2">
-                      <span className="mt-1 text-purple-300">•</span>
-                      <span>{item}</span>
-                    </li>
-                  ))}
-                </ul>
-                <div className="flex justify-end">
-                  <Button
-                    type="button"
-                    onClick={() => handleOpenContribution(getContributionCategoryForShowcase('miniversoMovimiento'))}
-                    className="w-full justify-center bg-gradient-to-r from-emerald-500/90 to-emerald-600/90 text-white hover:from-emerald-400/90 hover:to-emerald-500/90 sm:w-auto"
-                  >
-                    Convocatoria abierta
-                  </Button>
-                </div>
-              </div>
-            ) : null}
-          </div>
-
           <div className="space-y-5 rounded-3xl border border-white/10 bg-gradient-to-br from-slate-950/80 via-black/60 to-purple-900/30 p-6 lg:p-8">
             <h3 className="font-display text-3xl text-slate-100">{activeDefinition.tagline}</h3>
             <p className="text-sm leading-relaxed text-slate-100/80 md:text-base">
@@ -2850,8 +2708,6 @@ const rendernotaAutoral = () => {
 
             <div className="space-y-5">
               {renderCommunityBlock('miniversoMovimiento', {
-                heading: 'Voces de la comunidad',
-                ctaLabel: '¿Dudas o comentarios?',
                 emptyMessage: 'Todavía no hay voces en este miniverso.',
                 className: 'rounded-3xl border border-white/10 bg-black/30 p-6 space-y-5',
                 commentsViewportClassName: 'max-h-[240px]',
@@ -3302,7 +3158,6 @@ const rendernotaAutoral = () => {
       );
 
       const comentariosBlock = renderCommunityBlock('copycats', {
-        ctaLabel: '¿Dudas o comentarios?',
         className: 'rounded-3xl border border-white/10 bg-black/25 p-6 space-y-5',
         reactionProps: {
           showcaseId: 'copycats',
@@ -3489,50 +3344,56 @@ const rendernotaAutoral = () => {
                     const action = renderEntryAction(entry);
 
                     return (
-                      <div key={entry.id} className="rounded-2xl border border-white/10 p-6 bg-black/30 space-y-4">
+                      <div key={entry.id} className="rounded-2xl border border-white/10 bg-black/30 overflow-hidden">
                         {imageSrc ? (
-                          <div className="rounded-xl overflow-hidden border border-white/5 bg-black/40 h-52 sm:h-64">
-                            <img
-                              src={imageSrc}
-                              alt={entry.title}
-                              className="w-full h-full object-cover"
-                              loading="lazy"
-                            />
-                          </div>
+                          <img
+                            src={imageSrc}
+                            alt={entry.title}
+                            className="w-full h-52 sm:h-64 object-cover"
+                            loading="lazy"
+                          />
                         ) : null}
-                        <div className="space-y-2">
-                          <h5 className="font-display text-xl text-slate-100">{entry.title}</h5>
-                          {entry.description ? (
-                            <p className="text-sm text-slate-300/80 leading-relaxed">{entry.description}</p>
-                          ) : null}
-                        </div>
-                        {entry.snippet ? (
-                          <div className="rounded-2xl border border-white/10 bg-slate-900/60 p-4 space-y-2">
-                            <p className="text-xs uppercase tracking-[0.3em] text-purple-300">{entry.snippet.tagline}</p>
-                            {entry.snippet.text ? (
-                              <p className="text-sm text-slate-200/90 leading-relaxed">{entry.snippet.text}</p>
+                        <div className={`space-y-4 ${imageSrc ? 'px-6 pt-5 pb-6' : 'p-6'}`}>
+                          <div className="space-y-2">
+                            {entry.eyebrow ? (
+                              <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">{entry.eyebrow}</p>
                             ) : null}
+                            <h5 className="font-display text-xl text-slate-100">{entry.title}</h5>
+                            {entry.descriptionNode ?? (entry.description ? (
+                              <p className="text-sm text-slate-300/80 leading-relaxed whitespace-pre-line">{entry.description}</p>
+                            ) : null)}
                           </div>
-                        ) : null}
-                        {action}
+                          {entry.snippet ? (
+                            <div className="rounded-2xl border border-white/10 bg-slate-900/60 p-4 space-y-3">
+                              <p className="text-xs uppercase tracking-[0.3em] text-purple-300">{entry.snippet.tagline}</p>
+                              <div className="flex items-start gap-4">
+                                <div className="shrink-0 flex h-16 w-16 items-center justify-center rounded-xl border border-purple-400/30 bg-purple-900/20">
+                                  <QrCode size={32} className="text-purple-300/50" />
+                                </div>
+                                {entry.snippet.text ? (
+                                  <p className="text-sm text-slate-200/90 leading-relaxed">{entry.snippet.text}</p>
+                                ) : null}
+                              </div>
+                            </div>
+                          ) : null}
+                          {action}
+                        </div>
                       </div>
                     );
                   })}
                 </div>
                 <div className="space-y-6">
                   {renderCommunityBlock('miniversoNovela', {
-                    ctaLabel: 'coméntanos algo',
                     emptyMessage: 'Todavía no hay voces en este miniverso.',
-                    className: 'rounded-3xl border border-white/10 bg-black/30 p-6',
+                    className: 'rounded-3xl border border-white/10 bg-black/30 p-6 space-y-5',
+                    ctaLabel: 'Registra tu experiencia',
+                    subCopy: 'Estamos investigando cómo distintas personas atraviesan emociones que se reflejan en esta plataforma.',
                   })}
-                  <div className="rounded-3xl border border-white/10 bg-black/30 p-6">
-                    <ShowcaseReactionInline
-                      showcaseId="miniversoNovela"
-                      description="Haz clic para guardar un like y amplificar las conversaciones que la novela susurra."
-                      buttonLabel="Apoyar la novela"
-                      className="bg-gradient-to-br from-purple-900/20 to-black/40"
-                    />
-                  </div>
+                  <ShowcaseReactionInline
+                    showcaseId="miniversoNovela"
+                    title="Resonancia colectiva"
+                    description="Haz clic este miniverso para hacerlo resonar."
+                  />
                 </div>
               </div>
             ) : (
@@ -3861,53 +3722,115 @@ const rendernotaAutoral = () => {
               exit={{ scale: 0.96, opacity: 0, y: 18 }}
               transition={{ type: 'spring', stiffness: 220, damping: 24 }}
             >
-              {activeDefinition.type !== 'tragedia' ? (
-                <div className="flex justify-end gap-3">
-                  <button
-                    onClick={handleShareMiniverse}
-                    className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/5 px-4 py-2 text-xs uppercase tracking-[0.25em] text-slate-200/90 hover:border-purple-300/40 hover:text-white transition"
-                    aria-label="Compartir miniverso"
-                  >
-                    <Send size={14} className="text-purple-200" />
-                  </button>
-                  <button
-                    onClick={handleCloseShowcase}
-                    className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-white/15 bg-white/5 text-slate-200/90 hover:border-purple-300/40 hover:text-white transition"
-                    aria-label="Cerrar vitrina"
-                  >
-                    <X size={14} />
-                  </button>
-                </div>
-              ) : null}
-              {activeDefinition.type !== 'tragedia' ? (
-                <div className="flex flex-col gap-6 md:flex-row md:items-start md:gap-10 pr-0">
-                  <div className="flex-1 space-y-6">
-                    <p className="text-xs uppercase tracking-[0.4em] text-slate-400/70 mb-2">Vitrina</p>
-                    <h3 className="font-display text-3xl text-slate-100 mb-3">{activeDefinition.label}</h3>
-                    <div className="text-slate-300/80 leading-relaxed font-light max-w-3xl">
-                      {activeDefinition.introNode ?? activeDefinition.intro}
+              <div className="flex justify-end gap-3 mb-6">
+                <button
+                  onClick={handleShareMiniverse}
+                  className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/5 px-4 py-2 text-xs uppercase tracking-[0.25em] text-slate-200/90 hover:border-purple-300/40 hover:text-white transition"
+                  aria-label="Compartir miniverso"
+                >
+                  <Send size={14} className="text-purple-200" />
+                </button>
+                <button
+                  onClick={handleCloseShowcase}
+                  className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-white/15 bg-white/5 text-slate-200/90 hover:border-purple-300/40 hover:text-white transition"
+                  aria-label="Cerrar vitrina"
+                >
+                  <X size={14} />
+                </button>
+              </div>
+              <div className={`rounded-[2.5rem] border border-white/10 bg-gradient-to-br from-slate-900/85 via-black/60 ${SHOWCASE_CARD_GRADIENT[activeShowcase] ?? 'to-slate-800/20'} shadow-[0_25px_65px_rgba(15,23,42,0.65)] mb-6`}>
+                <div className="grid gap-10 p-6 sm:p-8 lg:p-10 lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
+                  <div className="space-y-6">
+                    <div className="flex items-start justify-between gap-4">
+                      <div className="space-y-3">
+                        <p className={`text-xs uppercase tracking-[0.4em] ${SHOWCASE_EYEBROW_COLOR[activeShowcase] ?? 'text-slate-400/70'}`}>#Miniversos</p>
+                        <h3 className="font-display text-3xl leading-tight text-white md:text-4xl">{activeDefinition.label}</h3>
+                      </div>
+                      {latestBlogPostByShowcase[activeShowcase]?.slug ? (
+                        <RelatedReadingTooltipButton
+                          slug={latestBlogPostByShowcase[activeShowcase].slug}
+                          authorLabel={latestBlogPostByShowcase[activeShowcase].author?.trim() || 'autor invitado'}
+                          thumbnailUrl={
+                            sanitizeExternalHttpUrl(latestBlogPostByShowcase[activeShowcase].featured_image_url) ||
+                            sanitizeExternalHttpUrl(latestBlogPostByShowcase[activeShowcase].cover_image) ||
+                            sanitizeExternalHttpUrl(latestBlogPostByShowcase[activeShowcase].image_url) ||
+                            sanitizeExternalHttpUrl(latestBlogPostByShowcase[activeShowcase].author_avatar_url) ||
+                            null
+                          }
+                          ariaLabel="Mostrar lectura disponible en Textos"
+                          tone="cyan"
+                        />
+                      ) : null}
                     </div>
-                    <div className="hidden md:block">
-                      {renderCollaboratorsSection(activeDefinition.collaborators, activeShowcase ?? 'hdr', true)}
+                    <div className="space-y-4 text-lg text-slate-200/85 leading-relaxed font-light">
+                      {activeDefinition.introNode ?? <p>{activeDefinition.intro}</p>}
+                      {activeDefinition.narrative?.map((paragraph, index) => (
+                        <p key={`narrative-paragraph-${index}`} className="text-sm text-slate-300/90 leading-relaxed">
+                          {paragraph}
+                        </p>
+                      ))}
+                    </div>
+                    <div className="hidden lg:block">
+                      {activeDefinition.type === 'movement-ritual' ? (
+                        <div className="rounded-2xl border border-white/10 bg-black/20 px-5 py-4 space-y-3">
+                          <div className="flex items-center justify-between gap-3">
+                            <div className="inline-flex items-center gap-3">
+                              <span className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-white/20 bg-white/5 text-slate-200 shadow-[0_0_18px_rgba(148,163,184,0.22)]">
+                                <User size={16} />
+                              </span>
+                              <p className="text-[11px] uppercase tracking-[0.32em] text-slate-300/85">Colaboradores</p>
+                            </div>
+                            <button
+                              type="button"
+                              onClick={() => setIsMovementCreditsOpen((prev) => !prev)}
+                              className="text-xs uppercase tracking-[0.3em] text-slate-300 hover:text-white transition"
+                            >
+                              {isMovementCreditsOpen ? 'Ocultar' : 'Abrir'}
+                            </button>
+                          </div>
+                          {isMovementCreditsOpen ? (
+                            <div className="space-y-4">
+                              <p className="text-sm font-semibold text-slate-100">Colaboradores que buscamos</p>
+                              <ul className="space-y-2 text-sm text-slate-300/90">
+                                {MOVEMENT_COLLABORATOR_CALL_ITEMS.map((item) => (
+                                  <li key={`movement-collab-hdr-${item}`} className="flex items-start gap-2">
+                                    <span className="mt-1 text-purple-300">•</span>
+                                    <span>{item}</span>
+                                  </li>
+                                ))}
+                              </ul>
+                              <div className="flex justify-end">
+                                <Button
+                                  type="button"
+                                  onClick={() => handleOpenContribution(getContributionCategoryForShowcase('miniversoMovimiento'))}
+                                  className="w-full justify-center bg-gradient-to-r from-emerald-500/90 to-emerald-600/90 text-white hover:from-emerald-400/90 hover:to-emerald-500/90 sm:w-auto"
+                                >
+                                  Convocatoria abierta
+                                </Button>
+                              </div>
+                            </div>
+                          ) : null}
+                        </div>
+                      ) : renderCollaboratorsSection(activeDefinition.collaborators, activeShowcase ?? 'hdr')}
                     </div>
                   </div>
-                  <div className="md:w-[360px] flex-shrink-0 flex flex-col gap-6">
-                    <div className="md:hidden">
+                  <div className="flex flex-col gap-6">
+                    <div className="lg:hidden">
                       {renderCollaboratorsSection(activeDefinition.collaborators, activeShowcase ?? 'hdr')}
                     </div>
                     {rendernotaAutoral()}
                     {activeDefinition.iaProfile ? (
-                      <div className="hidden md:block">
+                      <div className="hidden lg:block">
                         <IAInsightCard {...activeDefinition.iaProfile} compact />
                       </div>
                     ) : null}
                   </div>
                 </div>
-              ) : null}
+              </div>
 
-              <div className="mt-2">{renderShowcaseContent()}</div>
-              {activeDefinition.type !== 'tragedia' && activeDefinition.iaProfile ? (
-                <div className="md:hidden mt-4">
+              <div>{renderShowcaseContent()}</div>
+              {activeDefinition.iaProfile ? (
+                <div className="lg:hidden mt-4">
                   <IAInsightCard {...activeDefinition.iaProfile} compact />
                 </div>
               ) : null}
@@ -4489,7 +4412,7 @@ const rendernotaAutoral = () => {
             >
               <p className="text-xs uppercase tracking-[0.4em] text-slate-400/70">Narrativa Transmedia</p>
               <h2 className="font-display text-4xl md:text-5xl font-medium text-gradient italic">
-                Las formas de la Obra
+                La Obra en otras formas
               </h2>
               <p className="text-lg text-slate-300/80 max-w-3xl mx-auto leading-relaxed font-light">
     <em>Es un gato encerrado</em> no se acaba en el teatro.<br />

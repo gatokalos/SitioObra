@@ -55,7 +55,7 @@ const ObraQuestionList = ({
         <div className="flex items-start justify-between gap-3">
           <div className="space-y-1">
             <p className="text-xs uppercase tracking-[0.35em] text-pink-200" style={headingStyle}>
-              Detonadores escénicos
+              Tiñe la escena con sentimiento
             </p>
             {eyebrowChip ? (
               <p className="text-xs text-slate-300/75 font-medium" style={eyebrowStyle}>
@@ -74,7 +74,7 @@ const ObraQuestionList = ({
             </span>
           ) : null}
         </div>
-        <p className="text-sm text-slate-200/80 leading-relaxed">Toma una frase y luego habítala desde una emoción.</p>
+        <p className="text-sm text-slate-200/80 leading-relaxed">La pregunta que escogas puede o no convertirse en... drama.</p>
         {totalPages > 1 ? (
           <div className="mt-1 flex items-center justify-between gap-3 rounded-xl border border-white/10 bg-black/25 px-3 py-2">
             <button

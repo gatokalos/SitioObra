@@ -407,11 +407,22 @@ const PortalMovimiento = () => {
         </div>
 
         <div className="mt-6 space-y-6">
-          <div className="rounded-[2.5rem] border border-white/10 bg-gradient-to-br from-slate-900/85 via-black/60 to-emerald-900/25 shadow-[0_25px_65px_rgba(15,23,42,0.65)]">
+          <div className="relative rounded-[2.5rem] border border-white/10 bg-gradient-to-br from-slate-900/85 via-black/60 to-emerald-900/25 shadow-[0_25px_65px_rgba(15,23,42,0.65)]">
+            {latestMovimientoReading?.slug ? (
+              <div className="absolute top-4 right-4 z-10">
+                <RelatedReadingTooltipButton
+                  slug={latestMovimientoReading.slug}
+                  authorLabel={movimientoReadingAuthorLabel}
+                  thumbnailUrl={movimientoReadingThumbnailUrl}
+                  ariaLabel="Mostrar lectura relacionada de Movimiento"
+                  tone="cyan"
+                />
+              </div>
+            ) : null}
             <div className="grid gap-10 p-6 sm:p-8 lg:p-10 lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
               <div className="space-y-6">
                 <div className="space-y-3">
-                  <p className="text-xs uppercase tracking-[0.4em] text-emerald-300">Vitrina</p>
+                  <p className="text-xs uppercase tracking-[0.4em] text-emerald-300">#Miniversos</p>
                   <h3 className="font-display text-3xl leading-tight text-white md:text-4xl">Movimiento</h3>
                 </div>
                 <div className="space-y-4 text-lg text-slate-200/85 leading-relaxed font-light">
@@ -420,16 +431,7 @@ const PortalMovimiento = () => {
               </div>
 
               <div className="flex flex-col gap-5">
-                <div className="flex items-start justify-between gap-3">
-                  <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Archivo de experiencia narrativa</p>
-                  <RelatedReadingTooltipButton
-                    slug={latestMovimientoReading?.slug}
-                    authorLabel={movimientoReadingAuthorLabel}
-                    thumbnailUrl={movimientoReadingThumbnailUrl}
-                    ariaLabel="Mostrar lectura relacionada de Movimiento"
-                    tone="cyan"
-                  />
-                </div>
+                <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Laboratorio de Resonancia</p>
                 <div className="form-surface px-6 py-8">
                   {vitranaQuestion ? (
                     <p className="text-slate-800 text-base leading-relaxed italic text-center font-light">
@@ -445,11 +447,11 @@ const PortalMovimiento = () => {
                     className="w-full rounded-full border border-purple-500/70 text-purple-100 shadow-[0_15px_45px_rgba(67,56,202,0.45)] hover:bg-purple-500/20 tracking-[0.25em] text-xs uppercase px-4 py-2"
                     onClick={handleOpenCommunityComposer}
                   >
-                    Registra tu experiencia
+                    registra tu respuesta
                   </button>
                 </div>
                 <p className="text-xs text-slate-400/70 leading-relaxed px-1">
-                  Esta plataforma investiga cómo distintas personas atraviesan experiencias narrativas, emocionales y simbólicas.
+                  Nos interesa explorar qué ocurre en distintas personas cuando una experiencia transforma su manera de entender el mundo.
                 </p>
                 <ShowcaseReactionInline status={reactionStatus} onReact={handleSendPulse} />
               </div>

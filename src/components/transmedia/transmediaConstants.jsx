@@ -595,11 +595,11 @@ iaProfile: {
     introNode: (
       <>
         <p>El cine dentro de #GatoEncerrado es otro modo de entrar al encierro.</p>
-        <p className="text-slate-100/90">CopyCats (cine de no-ficción) y Quirón (autoficción) dialogan desde extremos distintos del mismo espectro:</p>
+        <p className="text-slate-100/90">CopyCats (cine de no-ficción) y Quirón (cortometraje de autoficción) dialogan desde extremos distintos del mismo espectro:</p>
         <p className="text-slate-300/90">Una filma el desgaste creativo y la fractura del proceso; la otra abre una confesión íntima que decide hablar del suicidio sin rodeos.</p>
         <div className="flex flex-wrap gap-2 mt-2">
           <span className="rounded-full border border-sky-200/35 bg-sky-400/10 px-3 py-1 text-[11px] uppercase tracking-[0.22em] text-sky-100">Premiere íntima</span>
-          <span className="rounded-full border border-sky-200/35 bg-sky-400/10 px-3 py-1 text-[11px] uppercase tracking-[0.22em] text-sky-100">Laboratorio abierto</span>
+          <span className="rounded-full border border-sky-200/35 bg-sky-400/10 px-3 py-1 text-[11px] uppercase tracking-[0.22em] text-sky-100">Conversatorio abierto</span>
           <span className="rounded-full border border-sky-200/35 bg-sky-400/10 px-3 py-1 text-[11px] uppercase tracking-[0.22em] text-sky-100">Cine con memoria</span>
         </div>
       </>
@@ -607,7 +607,7 @@ iaProfile: {
     promise: 'CopyCats (no-ficción) y Quirón (autoficción) dialogan desde extremos distintos del mismo espectro: una filma el desgaste creativo y la fractura del proceso; la otra abre una confesión íntima que decide hablar del suicidio sin rodeos.',
     theme:
       'Dos películas, dos vulnerabilidades distintas, un mismo impulso: usar el arte para tocar aquello que no queremos decir en voz alta y encontrar otra manera de contarlo.',
-    tone: ['Premiere íntima', 'Laboratorio abierto', 'Cine con memoria'],
+    tone: ['Premiere íntima', 'Conversatorio abierto', 'Cine con memoria'],
     cartaTitle: '#LuzQueEditas',
     copycats: {
       title: 'CopyCats',
@@ -807,6 +807,13 @@ iaProfile: {
     slug: null,
     intro:
       'En este miniverso literario se entiende la escritura como una forma de expansión. No es un complemento de la obra escénica, sino un espacio propio donde fragmentos, voces, poemas y apuntes dialogan entre sí y amplían el universo #GatoEncerrado.',
+    introNode: (
+      <>
+        <p className="text-base leading-relaxed text-slate-300/90">En este miniverso literario se entiende la escritura como <strong>una forma de expansión</strong>.</p>
+        <p className="text-base leading-relaxed text-slate-200/80 mt-3">No es un complemento de la obra escénica, sino un espacio propio donde fragmentos, voces, poemas y apuntes <em>dialogan entre sí</em> y amplían el universo #GatoEncerrado.</p>
+        <p className="text-lg leading-relaxed font-medium text-white mt-4">Hay palabras que no explican: solo acompañan.</p>
+      </>
+    ),
     cartaTitle: '#LaPreguntaInsiste',
     notaAutoral:
       'Escribí para entender\ny la página me abrió otra pregunta.',
@@ -829,16 +836,24 @@ iaProfile: {
     entries: [
       {
         id: 'compra-libro',
-        title: 'Despierta dentro del libro',
+        eyebrow: 'Obra destacada',
+        title: 'Mi Gato Encerrado',
         description:
-          'Lectura como acto de conciencia: cruzar sus páginas es recorrer la mente misma.',
+          'Una experiencia de autoficción expandida donde la escritura continúa lo que el escenario no alcanza a decir.\n\nLeer este libro es algo parecido a despertar dentro de un libro.',
+        descriptionNode: (
+          <>
+            <p className="text-sm text-slate-300/80 leading-relaxed">Una experiencia de autoficción expandida donde la escritura continúa lo que el escenario no alcanza a decir.</p>
+            <p className="mt-3 text-sm italic text-slate-200/85 leading-relaxed">Leer este libro es algo parecido a despertar dentro de un libro.</p>
+            <p className="text-right text-xs text-slate-400/50 mt-0.5 tracking-wide">— C.P.H.</p>
+          </>
+        ),
         image: '/assets/edicion-fisica.png',
         type: 'purchase-link',
         url: '/comprar-novela',
         snippet: {
           tagline: 'Tu ejemplar como portal',
           text:
-            'Escanea el QR de tu libro para acceder a lecturas ocultas y conversaciones con otros lectores del universo #GatoEncerrado.',
+            'Escanea la contraportada para acceder al separador inteligente de #GatoEncerrado y explorar fragmentos, conexiones y expansiones del universo narrativo.',
         },
         app: {
           id: 'autoficcion-app',
@@ -879,6 +894,14 @@ iaProfile: {
       <p>Sonoridades reúne la música original y el diseño sonoro creados para la obra, junto con piezas que expanden su universo más allá del escenario. <br/><br/>En la puesta, el sonido no acompañó la historia: la transformó.
 Abrió una experiencia inmersiva donde la resonancia modifica la percepción del tiempo, del cuerpo y del espacio. <br/><br/>
 Este espacio permite recorrer esas composiciones, explorar sus capas y descubrir cómo lo audible deja huella incluso cuando la escena ya terminó. <br/><br/> Aquí, cada visita es una mezcla nueva, un sueño que se reinventa con cada escucha.</p>,
+    introNode: (
+      <>
+        <p className="text-base leading-relaxed text-slate-100/90">Hay cosas que en <strong>#GatoEncerrado</strong> solo se entienden si antes las habíamos escuchado.</p>
+        <p className="text-base leading-relaxed text-slate-300/90 mt-3">Por eso aparecen como <em>resonancia, música, tensión o silencio</em>.</p>
+        <p className="text-base leading-relaxed text-slate-200/80 mt-3">Este miniverso explora el sonido como <strong>experiencia narrativa y emocional</strong> dentro del universo de #GatoEncerrado.</p>
+        <p className="text-lg leading-relaxed font-medium text-white mt-4">Porque a veces una historia desaparece de la vista…<br/><em>pero permanece vibrando en nuestras mentes</em>.</p>
+      </>
+    ),
     highlights: [
       'Video que fluye solo.',
       'Música que tú eliges.',
@@ -959,10 +982,15 @@ Este espacio permite recorrer esas composiciones, explorar sus capas y descubrir
     ],
   },
   miniversoGrafico: {
-    label: 'Gráficos',
+    label: 'La imagen',
     type: 'graphic-lab',
-    intro:
-      <p>Gráficos explora el universo #GatoEncerrado desde la imagen. <br/><br/> Aquí las escenas se quedan en otro momento: lo que en la obra aparece como pensamiento o diálogo, en el cómic puede convertirse en ensayo, en silencio, en otra voz.<br/><br/> No solo el de Silvestre, sino el de cualquiera que se haya sentido como él. <br/>Dibujar permite mirar lo que no siempre se dice en escena.</p>,
+    introNode: (
+      <>
+        <p className="text-base leading-relaxed text-slate-300/90">Este espacio explora el universo #GatoEncerrado desde <strong>la imagen</strong>.</p>
+        <p className="text-base leading-relaxed text-slate-200/80 mt-3">Aquí las escenas se quedan en otro momento: lo que en la obra aparece como pensamiento o diálogo, en el cómic puede convertirse en <em>ensayo, en silencio, en otra voz</em>.</p>
+        <p className="text-base leading-relaxed text-slate-100/90 mt-3">No solo el de Silvestre, sino el de cualquiera que se haya sentido como él.<br/>Dibujar permite mirar lo que no siempre se dice en escena.</p>
+      </>
+    ),
     cartaTitle: '#MirarmeLoQueSoy',
     notaAutoral:
       'Me quedé dibujando,\ncomo si el papel supiera quién soy\nmejor que yo.',
@@ -1026,9 +1054,15 @@ Este espacio permite recorrer esas composiciones, explorar sus capas y descubrir
   },
   miniversoMovimiento: {
     label: 'Movimiento',
-     intro:'Este miniverso creativo traslada al cuerpo los conflictos mentales del universo #GatoEncerrado. Si en la obra la mente se fragmenta, aquí el cuerpo busca arraigo. Es un laboratorio coreográfico y somático que se activa por ciudad.No se interpretan emociones: se atraviesan.',
-
-         type: 'movement-ritual',
+    intro: 'Este miniverso creativo traslada al cuerpo los conflictos mentales del universo #GatoEncerrado. Si en la obra la mente se fragmenta, aquí el cuerpo busca arraigo. Es un laboratorio coreográfico y somático que se activa por ciudad. No se interpretan emociones: se atraviesan.',
+    introNode: (
+      <>
+        <p className="text-base leading-relaxed text-slate-300/90">Este miniverso creativo traslada al <strong>cuerpo</strong> los conflictos mentales del universo #GatoEncerrado.</p>
+        <p className="text-base leading-relaxed text-slate-200/80 mt-3">Si en la obra la mente se fragmenta, aquí el cuerpo busca <strong>arraigo</strong>. Es un laboratorio coreográfico y somático que se activa por ciudad.</p>
+        <p className="text-lg leading-relaxed font-medium text-white mt-4">No se interpretan emociones: <strong>se atraviesan</strong>.</p>
+      </>
+    ),
+    type: 'movement-ritual',
     pendingName: 'La Ruta de la Corporeidad',
     tagline: 'Talleres de Cuerpo Colectivo',
     overview: [
@@ -1207,24 +1241,20 @@ Este espacio permite recorrer esas composiciones, explorar sus capas y descubrir
     label: 'Juegos',
     type: 'apps',
     tagline: 'Juegos como portales • Apps como rituales felinos.',
-      intro: (
-  <>
-    <p>
-      Aquí el universo explora sus propios <strong>clichés</strong> y los pone en juego.
-    </p>
-
-    <p>
-      Porque las historias se construyen con formas que ya conocemos:
-      <strong> inicio, desarrollo y final</strong>.
-    </p><br />
-
-    <p>
-      Dicen que <em>no hay nada nuevo bajo el sol</em>. Tal vez.<br />
-      Pero cuando una historia se juega,
-      <strong> podemos contarla a nuestra manera.</strong>
-    </p>
-  </>
-),
+    intro: (
+      <>
+        <p>Aquí el universo explora sus propios <strong>clichés</strong> y los pone en juego.</p>
+        <p>Porque las historias se construyen con formas que ya conocemos: <strong>inicio, desarrollo y final</strong>.</p>
+        <p>Dicen que <em>no hay nada nuevo bajo el sol</em>. Tal vez. Pero cuando una historia se juega, <strong>podemos contarla a nuestra manera.</strong></p>
+      </>
+    ),
+    introNode: (
+      <>
+        <p className="text-base leading-relaxed text-slate-300/90">Aquí el universo explora sus propios <strong>clichés</strong> y los pone en juego.</p>
+        <p className="text-base leading-relaxed text-slate-200/80 mt-3">Porque las historias se construyen con formas que ya conocemos: <strong>inicio, desarrollo y final</strong>.</p>
+        <p className="text-lg leading-relaxed font-medium text-white mt-4">Dicen que <em>no hay nada nuevo bajo el sol</em>. Tal vez.<br/>Pero cuando una historia se juega, <strong>podemos contarla a nuestra manera</strong>.</p>
+      </>
+    ),
     cartaTitle: '#NoHayDesandar',
     notaAutoral:
       'Elegí un camino pequeño.\nAhora no lo puedo desandar.\nEl juego me jugó.',
@@ -1246,17 +1276,23 @@ Este espacio permite recorrer esas composiciones, explorar sus capas y descubrir
     label: 'Oráculo',
     type: 'oracle',
     intro: (
-  <>
-    Este miniverso existe para mirar lo que <strong>#GatoEncerrado</strong> despierta en ti.
-    <br /><br />
-    A través de preguntas breves, el <strong>Oráculo</strong> abre un espacio para observar tus propias respuestas:
-    emociones, intuiciones y pensamientos que aparecen después de la experiencia.
-    <br /><br />
-    <strong>Aquí no se interpreta la obra.</strong>
-    <br />
-    Se aprende a <em>observar al observador</em>.
-  </>
-),
+      <>
+        Este miniverso existe para mirar lo que <strong>#GatoEncerrado</strong> despierta en ti.
+        <br /><br />
+        A través de preguntas breves, el <strong>Oráculo</strong> abre un espacio para observar tus propias respuestas: emociones, intuiciones y pensamientos que aparecen después de la experiencia.
+        <br /><br />
+        <strong>Aquí no se interpreta la obra.</strong>
+        <br />
+        Se aprende a <em>observar al observador</em>.
+      </>
+    ),
+    introNode: (
+      <>
+        <p className="text-base leading-relaxed text-slate-300/90">Este miniverso existe para mirar lo que <strong>#GatoEncerrado</strong> despierta en ti.</p>
+        <p className="text-base leading-relaxed text-slate-200/80 mt-3">A través de preguntas breves, el <strong>Oráculo</strong> abre un espacio para observar tus propias respuestas: emociones, intuiciones y pensamientos que aparecen después de la experiencia.</p>
+        <p className="text-lg leading-relaxed font-medium text-white mt-4"><strong>Aquí no se interpreta la obra.</strong><br/>Se aprende a <em>observar al observador</em>.</p>
+      </>
+    ),
     loops: [
       'Responde preguntas simbólicas, filosóficas, existenciales, absurdas o personales.',
       'Cada respuesta se guarda como semilla de conocimiento simbólico para IA, literatura y obra interactiva.',

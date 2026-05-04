@@ -37,7 +37,10 @@
       "Bash(sed -n '19,20p' /Users/gatoenigmatico/gatoencerrado-ai/landing/SitioObra/src/pages/PortalCine.jsx)",
       "Bash(sed -n '18,19p' /Users/gatoenigmatico/gatoencerrado-ai/landing/SitioObra/src/pages/PortalSonoridades.jsx)",
       "Bash(sed -n '20,21p' /Users/gatoenigmatico/gatoencerrado-ai/landing/SitioObra/src/pages/PortalLiteratura.jsx)",
-      "Bash(sed -n '20,21p' /Users/gatoenigmatico/gatoencerrado-ai/landing/SitioObra/src/pages/PortalArtesanias.jsx)"
+      "Bash(sed -n '20,21p' /Users/gatoenigmatico/gatoencerrado-ai/landing/SitioObra/src/pages/PortalArtesanias.jsx)",
+      "Bash(git -C /Users/gatoenigmatico/gatoencerrado-ai/landing/SitioObra log --oneline --since=\"2 days ago\" -- src/pages/PortalLiteratura.jsx src/pages/Portal*.jsx src/components/transmedia/transmediaConstants.jsx)",
+      "Bash(git -C /Users/gatoenigmatico/gatoencerrado-ai/landing/SitioObra diff HEAD~2 HEAD -- src/pages/PortalLiteratura.jsx)",
+      "Bash(node -e \"const l = require\\('/Users/gatoenigmatico/gatoencerrado-ai/landing/SitioObra/node_modules/lucide-react'\\); console.log\\(typeof l.QrCode\\)\")"
     ],
     "additionalDirectories": [
       "/Users/gatoenigmatico/Desktop/Postulación EFIARTES",

@@ -125,7 +125,7 @@ const RelatedReadingTooltipButton = ({
         }`}
       >
         <div className="space-y-2 px-3 py-2 text-center">
-          <p className={`text-[11px] leading-snug ${styles.label}`}>Curaduría de {authorLabel} disponible</p>
+          <p className={`text-[11px] leading-snug ${styles.label}`}>Lectura disponible de {authorLabel} en Curaduría</p>
           <div className="flex justify-center">
             <Link
               to={readingHref}

@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { Hand, Heart, PenLine } from 'lucide-react';
+import { Hand, Heart, PenLine, QrCode } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { toast } from '@/components/ui/use-toast';
@@ -20,8 +20,7 @@ import { hasEnoughGAT } from '@/lib/gatAccess';
 import { usePortalTracking } from '@/hooks/usePortalTracking';
 import { useVitranaQuestion } from '@/hooks/useVitranaQuestion';
 
-const LITERATURA_INTRO =
-  'En este miniverso literario se entiende la escritura como una forma de expansion. No es un complemento de la obra escénica, sino un espacio propio donde fragmentos, voces, poemas y apuntes dialogan entre si y amplian el universo #Gato Encerrado.';
+
 const LITERATURA_NOTA_AUTORAL = {
   title: '#LaPreguntaInsiste',
   verse: 'Escribí para entender\ny la página me abrió otra pregunta.',
@@ -45,37 +44,26 @@ const LITERATURA_COLLABORATORS = [
     id: 'pepe-rojo',
     name: 'Pepe Rojo',
     role: 'Escritor y crítico cultural',
-    bio: 'Acompano la literatura de este miniverso con una lectura precisa y generosa. Su intervención dio claridad y ruta al futuro de la obra.',
+    bio: 'Acompañó la literatura de este miniverso con una lectura precisa y generosa. Su intervención dio claridad y ruta al futuro de la obra.',
     image: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/equipo/peperojo.jpeg',
   },
   {
     id: 'groppe-imprenta',
     name: 'Groppe Libros',
     role: 'Edición física',
-    bio: 'Acompano la primera edición física de Mi Gato Encerrado con oficio paciente y preciso, dando cuerpo de libro a este universo.',
+    bio: 'Acompañó la primera edición física de Mi Gato Encerrado con oficio paciente y preciso, dando cuerpo de libro a este universo.',
     image: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/equipo/groppelibros.png',
   },
 ];
 const LITERATURA_ENTRY = {
-  title: 'Despierta dentro del libro',
-  description: 'Lectura como acto de conciencia: cruzar sus páginas es recorrer la mente misma.',
+  eyebrow: 'OBRA DESTACADA',
+  title: 'Mi Gato Encerrado',
+  description: 'Leer este libro es algo parecido a despertar dentro de un libro.\n\n Una experiencia de autoficción expandida donde la escritura continúa lo que el escenario no alcanza a decir.',
   image: '/assets/edicion-fisica.png',
   snippetTitle: 'Tu ejemplar como portal',
   snippetText:
-    'Escanea el QR de tu libro para acceder a lecturas ocultas y conversaciones con otros lectores del universo #GatoEncerrado.',
+    'Escanea la contraportada para acceder al separador inteligente de #GatoEncerrado y explorar fragmentos, conexiones y expansiones del universo narrativo.',
 };
-const LITERATURA_QUOTES = [
-  {
-    id: 'comentarios-lectores-1',
-    quote: 'No sabía que un libro podia hablarme a mitad de la página.',
-    author: 'Lectora anonima',
-  },
-  {
-    id: 'comentarios-lectores-2',
-    quote: 'Volví a subrayar y entendí que la obra también estaba escribiendo mi propia memoria.',
-    author: 'Club de Lectura Frontera',
-  },
-];
 const LITERATURA_BLOG_KEYS = [
   'miniversonovela',
   'novela',
@@ -139,7 +127,7 @@ const ShowcaseReactionInline = ({ status, onReact }) => (
       <div>
         <p className="text-[0.6rem] uppercase tracking-[0.35em] text-slate-500">Resonancia colectiva</p>
         <p className="text-sm text-slate-300 leading-relaxed">
-          Haz clic para guardar un like y amplificar las conversaciones que la novela susurra.
+          Haz clic este miniverso para hacerlo resonar.
         </p>
       </div>
       <button
@@ -155,9 +143,7 @@ const ShowcaseReactionInline = ({ status, onReact }) => (
         <Heart size={20} />
       </button>
     </div>
-    <p className="text-xs uppercase tracking-[0.3em] text-purple-300">
-      {status === 'loading' ? 'Enviando...' : 'Apoyar la novela'}
-    </p>
+
   </div>
 );
 
@@ -329,29 +315,33 @@ const PortalLiteratura = () => {
         </div>
 
         <div className="mt-6 space-y-6">
-          <div className="rounded-[2.5rem] border border-white/10 bg-gradient-to-br from-slate-900/85 via-black/60 to-violet-900/25 shadow-[0_25px_65px_rgba(15,23,42,0.65)]">
+          <div className="relative rounded-[2.5rem] border border-white/10 bg-gradient-to-br from-slate-900/85 via-black/60 to-violet-900/25 shadow-[0_25px_65px_rgba(15,23,42,0.65)]">
+            {latestLiteraturaReading?.slug ? (
+              <div className="absolute top-4 right-4 z-10">
+                <RelatedReadingTooltipButton
+                  slug={latestLiteraturaReading.slug}
+                  authorLabel={literaturaReadingAuthorLabel}
+                  thumbnailUrl={literaturaReadingThumbnailUrl}
+                  ariaLabel="Mostrar lectura relacionada de Literatura"
+                  tone="cyan"
+                />
+              </div>
+            ) : null}
             <div className="grid gap-10 p-6 sm:p-8 lg:p-10 lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
               <div className="space-y-6">
                 <div className="space-y-3">
-                  <p className="text-xs uppercase tracking-[0.4em] text-violet-300">Vitrina</p>
-                  <h3 className="font-display text-3xl leading-tight text-white md:text-4xl">Literatura</h3>
+                  <p className="text-xs uppercase tracking-[0.4em] text-violet-300">#Miniversos</p>
+                  <h3 className="font-display text-3xl leading-tight text-white md:text-4xl">La Escritura</h3>
                 </div>
-                <div className="space-y-4 text-lg text-slate-200/85 leading-relaxed font-light">
-                  <p>{LITERATURA_INTRO}</p>
+                <div className="space-y-3 leading-relaxed font-light">
+                  <p className="text-base leading-relaxed text-slate-300/90">En este miniverso literario se entiende la escritura como <strong>una forma de expansión</strong>.</p>
+                  <p className="text-base leading-relaxed text-slate-200/80">No es un complemento de la obra escénica, sino un espacio propio donde fragmentos, voces, poemas y apuntes <em>dialogan entre sí</em> y amplían el universo #GatoEncerrado.</p>
+                  <p className="text-lg leading-relaxed font-medium text-white">Hay palabras que no explican: solo acompañan.</p>
                 </div>
               </div>
 
               <div className="flex flex-col gap-5">
-                <div className="flex items-start justify-between gap-3">
-                  <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Archivo de experiencia narrativa</p>
-                  <RelatedReadingTooltipButton
-                    slug={latestLiteraturaReading?.slug}
-                    authorLabel={literaturaReadingAuthorLabel}
-                    thumbnailUrl={literaturaReadingThumbnailUrl}
-                    ariaLabel="Mostrar lectura relacionada de Literatura"
-                    tone="cyan"
-                  />
-                </div>
+                <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Laboratorio de Resonancia</p>
                 <div className="form-surface px-6 py-8">
                   {vitranaQuestion ? (
                     <p className="text-slate-800 text-base leading-relaxed italic text-center font-light">
@@ -380,53 +370,49 @@ const PortalLiteratura = () => {
 
 
           <div className="space-y-6">
-            <div className="rounded-2xl border border-white/10 p-6 bg-black/30 space-y-4">
-              <div className="rounded-xl overflow-hidden border border-white/5 bg-black/40 h-52 sm:h-64">
-                <img
-                  src={LITERATURA_ENTRY.image}
-                  alt={LITERATURA_ENTRY.title}
-                  className="w-full h-full object-cover"
-                  loading="lazy"
-                />
-              </div>
-              <div className="space-y-2">
-                <h5 className="font-display text-xl text-slate-100">{LITERATURA_ENTRY.title}</h5>
-                <p className="text-sm text-slate-300/80 leading-relaxed">{LITERATURA_ENTRY.description}</p>
-              </div>
-              <div className="rounded-2xl border border-white/10 bg-slate-900/60 p-4 space-y-2">
-                <p className="text-xs uppercase tracking-[0.3em] text-purple-300">{LITERATURA_ENTRY.snippetTitle}</p>
-                <p className="text-sm text-slate-200/90 leading-relaxed">{LITERATURA_ENTRY.snippetText}</p>
-              </div>
-              <div className="flex flex-col gap-3 sm:flex-row">
-                <button
-                  type="button"
-                  onClick={handleOpenNovelaCheckout}
-                  disabled={isNovelaCheckoutLoading}
-                  className="inline-flex w-full sm:w-auto items-center justify-center rounded-full border border-purple-400/40 text-purple-200 hover:bg-purple-500/10 px-6 py-2 font-semibold transition"
-                >
-                  {isNovelaCheckoutLoading ? 'Abriendo checkout...' : 'Comprar edicion fisica'}
-                </button>
-                <Button
-                  onClick={handleOpenAutoficcionPreview}
-                  className="w-full sm:w-auto justify-center bg-purple-600/80 hover:bg-purple-600 text-white rounded-full"
-                >
-                  <PenLine size={15} className="mr-2" />
-                  Leer fragmentos
-                </Button>
+            <div className="rounded-2xl border border-white/10 bg-black/30 overflow-hidden">
+              <img
+                src={LITERATURA_ENTRY.image}
+                alt={LITERATURA_ENTRY.title}
+                className="w-full h-52 sm:h-64 object-cover"
+                loading="lazy"
+              />
+              <div className="px-6 pt-5 pb-6 space-y-4">
+                <div className="space-y-2">
+                  <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">{LITERATURA_ENTRY.eyebrow}</p>
+                  <h5 className="font-display text-xl text-slate-100">{LITERATURA_ENTRY.title}</h5>
+                  <p className="text-sm text-slate-300/80 leading-relaxed">Una experiencia de autoficción expandida donde la escritura continúa lo que el escenario no alcanza a decir.</p>
+                  <p className="mt-3 text-sm italic text-slate-200/85 leading-relaxed">Leer este libro es algo parecido a despertar dentro de un libro.</p>
+                  <p className="text-right text-xs text-slate-400/50 mt-0.5 tracking-wide">— C.P.H.</p>
+                </div>
+                <div className="rounded-2xl border border-white/10 bg-slate-900/60 p-4 space-y-2">
+                  <div className="flex items-center justify-between gap-2">
+                    <p className="text-xs uppercase tracking-[0.3em] text-purple-300">{LITERATURA_ENTRY.snippetTitle}</p>
+                    <QrCode size={16} className="shrink-0 text-purple-300/60" />
+                  </div>
+                  <p className="text-sm text-slate-200/90 leading-relaxed">{LITERATURA_ENTRY.snippetText}</p>
+                </div>
+                <div className="flex flex-col gap-3 sm:flex-row">
+                  <button
+                    type="button"
+                    onClick={handleOpenNovelaCheckout}
+                    disabled={isNovelaCheckoutLoading}
+                    className="inline-flex w-full sm:w-auto items-center justify-center rounded-full border border-purple-400/40 text-purple-200 hover:bg-purple-500/10 px-6 py-2 font-semibold transition"
+                  >
+                    {isNovelaCheckoutLoading ? 'Abriendo checkout...' : 'Comprar edición física'}
+                  </button>
+                  <Button
+                    onClick={handleOpenAutoficcionPreview}
+                    className="w-full sm:w-auto justify-center bg-purple-600/80 hover:bg-purple-600 text-white rounded-full"
+                  >
+                    <PenLine size={15} className="mr-2" />
+                    Leer fragmentos
+                  </Button>
+                </div>
               </div>
             </div>
 
-            <div className="rounded-2xl border border-white/10 p-6 bg-black/30 space-y-4">
-              <h5 className="font-display text-xl text-slate-100">Ecos del Club de Lectura</h5>
-              <div className="space-y-3">
-                {LITERATURA_QUOTES.map((entry) => (
-                  <blockquote key={entry.id} className="rounded-xl border border-white/10 bg-black/25 p-4">
-                    <p className="text-sm text-slate-200/90 leading-relaxed">"{entry.quote}"</p>
-                    <p className="mt-2 text-[11px] uppercase tracking-[0.28em] text-slate-400">{entry.author}</p>
-                  </blockquote>
-                ))}
-              </div>
-            </div>
+  
           </div>
           <div className="rounded-3xl border border-white/10 bg-black/30 p-6 space-y-6">
             <CollaboratorsPanel collaborators={LITERATURA_COLLABORATORS} accentClassName="text-violet-200/90" />

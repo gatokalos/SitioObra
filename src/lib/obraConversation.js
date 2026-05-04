@@ -1,70 +1,99 @@
 export const OBRA_CONVERSATION_STARTERS = [
-  'Que en el primer momento del sollozo no sea yo.',
+  '¿Qué sabe el cuerpo antes que la mente?',
+  '¿Cómo expresa el cuerpo lo que no logramos decir?',
+  '¿Qué emociones aparecen físicamente antes de comprenderlas?',
+  '¿Dónde se queda lo que no logramos procesar?',
+  '¿Qué recuerda el cuerpo aunque intentemos olvidarlo?',
+  '¿Puede el cuerpo contar una historia por sí solo?',
+  '¿Qué límites aparecen cuando el cuerpo ya no puede sostener algo?',
+  '¿Qué revela el cansancio sobre nuestra experiencia emocional?',
 ];
 
 export const SILVESTRE_TRIGGER_QUESTIONS = [
-  '…hay una regla con la que aún me enojo: Moriré… Lo demás, me importa un bledo.',
+  '¿Qué ocurre cuando compartimos aquello que intentábamos ocultar?',
+  '¿Cuándo una experiencia deja de sentirse individual?',
+  '¿Qué cambia cuando alguien más reconoce nuestro miedo?',
+  '¿Por qué algunas heridas pesan menos al ser compartidas?',
+  '¿Qué parte de nosotros busca ser comprendida por otros?',
+  '¿Cómo cambia una persona cuando descubre que no está sola?',
+  '¿Qué transforma una experiencia íntima en algo colectivo?',
+  '¿Qué significa reconocerse en la fragilidad ajena?',
 ];
 
 const VERTIGO_MODE_QUESTIONS = [
-  'Ya no veo caras conocidas.',
-  'Esto definitivamente no es real, pero tampoco es un sueño',
-  '…cada vez que alguien me ve a los ojos empiezo a sentir un vacío insoportable…',
-  '…ya no sé si tratar de llenarlo o dejarlo tal y como está…',
-  '…estoy en el mundo como relleno. ¡Qué patético!',
-  '…aunque me tenga solo a mí, necesito pensar en algo para entretenerme ¡Y ya me exasperé!',
-  'Estoy harto, ¡me urge descansar de mí mismo!',
+  '¿Qué cambia cuando algo íntimo ocurre frente a otros?',
+  '¿Qué parte de nosotras aparece cuando somos observadas?',
+  '¿Cuándo una experiencia deja de ser privada?',
+  '¿Qué se vuelve real cuando alguien más lo presencia?',
+  '¿El escenario revela o transforma lo que sentimos?',
+  '¿Qué significa habitar una emoción delante de otros?',
+  '¿Hasta qué punto actuar también es confesarse?',
+  '¿Puede una escena contener algo que en la vida cotidiana no cabe?',
 ];
 
 const CONFUSION_LUCIDA_QUESTIONS = [
-  '[Me siento] con un dolor muy fuerte detrás de mis clavículas… como si las tuviera encajadas a mis pulmones.',
-  'Te percibo algo molesta. ¿Por qué no decirlo así?',
-  'Vamos [dilo]: “me siento molesta”, “estoy enojada”',
-  '…sí estoy molesta, pero no enojada, estoy desesperada.',
-  'Resulta que… mi ex no me deja visitar a Lucky',
+  '¿Escribir ayuda a entender o solo reorganiza el caos?',
+  '¿Qué buscamos realmente cuando escribimos sobre nosotros?',
+  '¿Las palabras cierran heridas o las mantienen abiertas?',
+  '¿Qué cambia cuando una experiencia se convierte en relato?',
+  '¿Hasta dónde puede llegar una persona intentando explicarse?',
+  '¿La escritura aclara lo vivido o lo distorsiona?',
+  '¿Qué cosas solo pueden existir al ser narradas?',
+  '¿Hay experiencias que se vuelven más verdaderas al escribirlas?',
 ];
 
 const SOSPECHA_DOCTORA_QUESTIONS = [
-  'Estoy en un lugar donde tengo que tomar asiento y esperar mi turno.',
-  'En la mano tengo un papelito, un boleto —acaba con 37, aunque no siempre—',
-  'Solo sé que tengo que esperar… esperar a que me llamen o algo así.',
-  '[El "37"] sueña algo muy distinto en contraste a la noche anterior. ¡Sueña a lo bestia!',
-  '…en el fondo, su historia es siempre la misma. Aunque diferente, no sé si me explico.',
+  '¿Qué sentimos al vernos convertidos en imagen?',
+  '¿Cuánto de nosotros permanece en una representación?',
+  '¿Por qué algunas imágenes se sienten más reales que los recuerdos?',
+  '¿Qué revela una imagen que el lenguaje no alcanza?',
+  '¿Qué ocurre cuando alguien más interpreta nuestra apariencia?',
+  '¿Hasta dónde una imagen puede convertirse en espejo?',
+  '¿La imagen captura identidad o la inventa?',
+  '¿Qué parte de nosotros sobrevive en una representación visual?',
 ];
 
 const NECESIDAD_ORDEN_QUESTIONS = [
-  'Falta explayarme… Estoy como en un banco y están llamando a uno por uno por altavoz.',
-  'Después de ahí no sé qué tanto sucede, pero cuando es mi turno de pasar a ventanilla, algo pasa…',
-  '…se me olvida en cuanto abro el ojo. Eso sí, hace que me hierva la sangre de rabia.',
-  '…hay veces que [esa rabia] me dura todo el día.',
-  'De hecho, ella, que no soy yo pero sí soy, también está esperando, o sea… Está encinta.',
-  'Háblame de esa joven, ¿te recuerda a alguien en particular?',
-  'Número once mil ciento treinta y siete, pase a ventanilla por favor.',
+'¿Por qué ciertos objetos logran acompañarnos?',
+'¿Qué sostenemos cuando sostenemos un objeto significativo?',
+'¿Puede un objeto contener una experiencia emocional?',
+'¿Qué cosas depositamos en los objetos sin darnos cuenta?',
+'¿Por qué algunas personas necesitan tocar algo para sentirse presentes?',
+'¿Cuándo un objeto deja de ser solo un objeto?',
+'¿Qué recuerdos necesitan una forma física?',
+'¿Qué tipo de ausencia puede aliviar un objeto?',
 ];
 
 const HUMOR_NEGRO_QUESTIONS = [
-  '¡Pronto serán testigos de la falsedad detrás de nuestra conciencia humana y sabrán cuán artificial es!',
-  'La escritura ha sido un fracaso rotundo, a menos que sepas estructurar códigos genéticos y cuánticos…',
-  '¿Estoy mal… o soy el único que no se queda callado?',
-  'Competimos contra filas interminables de información pura, ¡unos alambres preciosos que tiran la hebra que deshilacha el manto de nuestro entendimiento humano para dejarlo desnudo hasta los huesos!',
-  'Ustedes no lo saben pero el 94% de la población mundial arruina la experiencia directa con la naturaleza porque desea “ponerle palabras”.',
+  '¿Qué cambia cuando una experiencia queda grabada?',
+  '¿La cámara documenta o transforma lo que ocurre?',
+  '¿Qué sentimos al observarnos desde afuera en movimiento?',
+  '¿Qué tipo de verdad aparece frente a una cámara?',
+  '¿Por qué algunas grabaciones incomodan más que los recuerdos?',
+  '¿Puede una cámara registrar fragilidad sin convertirla en espectáculo?',
+  '¿Qué permanece después de ser grabado?',
+  '¿Qué significa verse fallar desde afuera?',
 ];
 
 const CANSANCIO_MENTAL_QUESTIONS = [
-  '¿Estás segura de que quieres meter a alguien más a la conversación?',
-  'Tú, que eres siempre bueno y todo lo ve, dinos: ¿De qué lado masca la iguana?',
-  'Me han contagiando de su locura ¡par de dos! Mejor me voy, ¡a mi nube, adiós!',
-  '[Te lo advertí], ¡por eso no me gusta meter amigos imaginarios a nuestras charlas!',
-  'Mejor invoquemos a aquella quien nunca tuvo favoritismos…',
-  '¿Abuelita…? Soy yo… tu nieto, ¿estás ahí?',
+  '¿Por qué ciertos sonidos permanecen dentro de nosotros?',
+  '¿Qué recuerdos llegan primero como sonido?',
+  '¿Puede una voz hacernos volver a un estado emocional?',
+  '¿Qué escucha una persona cuando se queda sola consigo misma?',
+  '¿Qué emociones aparecen antes de encontrar palabras?',
+  '¿Qué tipo de memoria habita en los sonidos?',
+  '¿Por qué algunos ecos duran más que las imágenes?',
+  '¿Qué parte de nosotros responde al sonido sin explicarse?',
 ];
 
 const ATRACCION_INCOMODA_QUESTIONS = [
-  'No hay un tú ni un yo; a menudo no se sabrá quién le habla a quién y eso está muy bien…',
-  'Yo no quiero hablar solo para mí (…) ¡yo sí quiero que la gente me escuche!',
-  '…si [realmente] quieres observar al observador (…) primero hay que borrar la división imaginaria entre ser y no ser…',
-  '¡Argh, lo hiciste de nuevo, mi reina! (…) acabé hablando para quién sabe quién… otra vez. ',
-  'Es hora de que te tomes más en serio, cabrón.',
+  '¿Por qué algunas personas necesitan participar para comprender?',
+  '¿Qué revela una elección dentro de una experiencia narrativa?',
+  '¿Cuántas formas existen de atravesar una misma historia?',
+  '¿Elegimos realmente cómo interactuar con una experiencia?',
+  '¿Qué tipo de vínculo aparece cuando una obra responde?',
+  '¿Puede el juego abrir preguntas que otros formatos no permiten?',
+  '¿Qué caminos elegimos cuando nadie nos dice cuál es correcto?',
   ];
 
 export const PORTAL_VOZ_MODE_QUESTIONS = {
