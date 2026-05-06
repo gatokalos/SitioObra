@@ -22,12 +22,14 @@ import IAInsightCard from '@/components/IAInsightCard';
 import ObraConversationControls from '@/components/miniversos/obra/ObraConversationControls';
 import ObraQuestionList from '@/components/miniversos/obra/ObraQuestionList';
 import RelatedReadingTooltipButton from '@/components/portal/RelatedReadingTooltipButton';
+import VitranaQuestionReveal from '@/components/portal/VitranaQuestionReveal';
 import { recordShowcaseLike } from '@/services/showcaseLikeService';
 import { supabase } from '@/lib/supabaseClient';
 import { sanitizeExternalHttpUrl } from '@/lib/urlSafety';
 import { hasEnoughGAT } from '@/lib/gatAccess';
 import { usePortalTracking } from '@/hooks/usePortalTracking';
 import { useVitranaQuestion } from '@/hooks/useVitranaQuestion';
+import useScrambleText from '@/hooks/useScrambleText';
 
 const VOICE_MODES = [
   {
@@ -387,6 +389,7 @@ const PortalVoz = () => {
   const { user } = useAuth();
   usePortalTracking('obra');
   const { question: vitranaQuestion } = useVitranaQuestion('obra');
+  const titleDisplay = useScrambleText('El drama');
   const isAuthenticated = Boolean(user);
   const [showLoginOverlay, setShowLoginOverlay] = useState(false);
   const [showLoginHint, setShowLoginHint] = useState(false);
@@ -1004,7 +1007,7 @@ const PortalVoz = () => {
                 <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
                   <div className="space-y-3">
                     <p className="text-xs uppercase tracking-[0.4em] text-purple-300">#Miniversos</p>
-                    <h3 className="font-display text-3xl leading-tight text-white md:text-4xl">El drama</h3>
+                    <h3 className="font-display text-3xl leading-tight text-white md:text-4xl">{titleDisplay}</h3>
                   </div>
                 </div>
                 <div className="space-y-4 text-lg text-slate-200/85 leading-relaxed font-light">
@@ -1013,28 +1016,10 @@ const PortalVoz = () => {
               </div>
 
               <div className="flex flex-col gap-5">
-                <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Laboratorio de Resonancia</p>
-                <div className="form-surface px-6 py-8">
-                  {vitranaQuestion ? (
-                    <p className="text-slate-800 text-base leading-relaxed italic text-center font-light">
-                      {vitranaQuestion}
-                    </p>
-                  ) : (
-                    <p className="text-slate-400/60 text-sm text-center py-2">···</p>
-                  )}
-                </div>
-                <div className="mx-auto w-full max-w-md">
-                  <button
-                    type="button"
-                    className="w-full rounded-full border border-purple-500/70 text-purple-100 shadow-[0_15px_45px_rgba(67,56,202,0.45)] hover:bg-purple-500/20 tracking-[0.25em] text-xs uppercase px-4 py-2"
-                    onClick={handleOpenCommunityComposer}
-                  >
-                    registra tu respuesta
-                  </button>
-                </div>
+                <VitranaQuestionReveal question={vitranaQuestion} onAnswer={handleOpenCommunityComposer} />
                 <ShowcaseReactionInline
-                  description="Estamos explorando qué ocurre cuando una pregunta transforma la manera de entender el mundo."
-                  buttonLabel="¿No tienes una respuesta? Déjanos un pulso"
+                  description="Exploramos las emociones contemporáneas a través de preguntas y experiencias narrativas."
+                  buttonLabel="¿no tienes las palabras? Déjanos un pulso"
                   status={reactionStatus}
                   onReact={handleSendPulse}
                 />

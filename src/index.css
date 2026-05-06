@@ -1681,3 +1681,22 @@ body {
 .vitrina-pozo--oraculo .vitrina-pozo-glass__meta {
   filter: brightness(0.92) saturate(0.98);
 }
+
+/* ── VitranaQuestionReveal — sweep scan ── */
+@keyframes vitrana-sweep {
+  0%   { transform: translateX(-120%); }
+  100% { transform: translateX(220%); }
+}
+
+.vitrana-sweep-beam {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    105deg,
+    transparent 30%,
+    rgba(255, 255, 255, 0.28) 50%,
+    transparent 70%
+  );
+  animation: vitrana-sweep 2.4s ease-in-out infinite;
+  pointer-events: none;
+}

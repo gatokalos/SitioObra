@@ -21,6 +21,19 @@ import {
 } from 'lucide-react';
 import { useAuth } from '@/contexts/SupabaseAuthContext';
 import LoginOverlay from '@/components/ContributionModal/LoginOverlay';
+import { PREGUNTA_MADRE } from '@/hooks/useVitranaQuestion';
+
+const CATEGORY_TO_PORTAL = {
+  obra_escenica:   'obra',
+  miniverso_novela: 'literatura',
+  taza:            'artesanias',
+  grafico:         'grafico',
+  cine:            'cine',
+  sonoro:          'sonoridades',
+  movimiento:      'movimiento',
+  apps:            'juegos',
+  oraculo:         'oraculo',
+};
 
 const CATEGORIES = [
   {
@@ -39,7 +52,7 @@ const CATEGORIES = [
   {
     id: 'taza',
     icon: <Coffee size={20} className="text-amber-300" />,
-    title: 'Artesanías',
+    title: '#GatoEncerrado - El objeto',
     description: 'Una taza que escucha.\nUn marcador que mira.\nLo cotidiano también es ritual.',
   },
   {
@@ -126,46 +139,16 @@ const formTitlesByUniverse = {
   movimiento: 'Cuéntanos qué ruta, coreografía o ritual colectivo quieres activar en tu ciudad.',
 };
 const NARRATIVE_GALLERY_POSTER_BY_CATEGORY = {
-  obra_escenica: {
-    src: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Merch/posters/poster_obra.png',
-    alt: 'Poster del miniverso La Obra',
-  },
-  taza: {
-    src: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Merch/posters/poster_artesanias.png',
-    alt: 'Poster del miniverso Artesanías',
-  },
-  miniverso_novela: {
-    src: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Merch/posters/poster_literatura.png',
-    alt: 'Poster del miniverso Literatura',
-  },
-  grafico: {
-    src: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Merch/posters/poster_graficos.png',
-    alt: 'Poster del miniverso Gráficos',
-  },
-  cine: {
-    src: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Merch/posters/cine.png',
-    alt: 'Poster del miniverso Cine',
-  },
-  sonoro: {
-    src: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Merch/posters/poster_sonoridades.png',
-    alt: 'Poster del miniverso Sonoridades',
-  },
-  movimiento: {
-    src: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Merch/posters/poster_movimiento.png',
-    alt: 'Poster del miniverso Movimiento',
-  },
-  apps: {
-    src: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Merch/posters/poster_juegos.png',
-    alt: 'Poster del miniverso Juegos',
-  },
-  oraculo: {
-    src: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Merch/posters/poster_oraculo.png',
-    alt: 'Poster del miniverso Oráculo',
-  },
-  otro: {
-    src: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Merch/posters/poster_obra.png',
-    alt: 'Poster narrativo del universo Gato Encerrado',
-  },
+  obra_escenica:   { src: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Merch/posters/poster_obra.png',         alt: 'Poster del miniverso La Obra' },
+  taza:            { src: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Merch/posters/poster_artesanias.png',    alt: 'Poster del miniverso Artesanías' },
+  miniverso_novela:{ src: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Merch/posters/poster_literatura.png',    alt: 'Poster del miniverso Literatura' },
+  grafico:         { src: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Merch/posters/poster_graficos.png',      alt: 'Poster del miniverso Gráficos' },
+  cine:            { src: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Merch/posters/cine.png',                 alt: 'Poster del miniverso Cine' },
+  sonoro:          { src: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Merch/posters/poster_sonoridades.png',   alt: 'Poster del miniverso Sonoridades' },
+  movimiento:      { src: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Merch/posters/poster_movimiento.png',    alt: 'Poster del miniverso Movimiento' },
+  apps:            { src: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Merch/posters/poster_juegos.png',        alt: 'Poster del miniverso Juegos' },
+  oraculo:         { src: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Merch/posters/poster_oraculo.png',       alt: 'Poster del miniverso Oráculo' },
+  otro:            { src: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Merch/posters/poster_obra.png',          alt: 'Poster narrativo del universo Gato Encerrado' },
 };
 
 const SUBMIT_TOPIC_BY_CATEGORY = {
@@ -616,6 +599,11 @@ const ContributionModal = ({
     [selectedCategory]
   );
 
+  const vitranaQuestion = useMemo(
+    () => PREGUNTA_MADRE[CATEGORY_TO_PORTAL[selectedCategory?.id]] ?? null,
+    [selectedCategory]
+  );
+
   const handleCloseFormPanel = useCallback(() => {
     if (status === 'loading') {
       return;
@@ -688,9 +676,7 @@ const ContributionModal = ({
               className="form-surface w-full px-4 py-3"
               placeholder="¿Cómo quieres que te nombremos?"
             />
-            <p className="mt-1 text-xs text-slate-500">
-              ¿Así quieres que te llamemos? Dinos cómo te gusta que te nombren.
-            </p>
+    
           </div>
 
           <div>
@@ -810,6 +796,12 @@ const ContributionModal = ({
                     loading="lazy"
                   />
                   <div className="pointer-events-none absolute inset-0 shadow-[inset_0_0_60px_15px_rgba(8,15,38,0.75)]" />
+                  <div className="hero-inline-video-glass-overlay" />
+                  <div className="hero-inline-video-synopsis-layer pointer-events-none">
+                    <p className="hero-inline-video-synopsis mx-auto max-w-[88%] text-center">
+                      {vitranaQuestion ?? formTitle}
+                    </p>
+                  </div>
                 </div>
               </div>
             </section>
@@ -862,13 +854,13 @@ const ContributionModal = ({
                     />
                     <div>
                       <p className="text-[10px] uppercase tracking-[0.35em] text-slate-400/70">
-                        Formulario
+                        Experiencia Narrativa
                       </p>
                       <h2
                         id="contribution-modal-title"
                         className="font-display text-xl sm:text-2xl text-slate-50 leading-snug"
                       >
-                        {formTitle}
+                        {selectedCategory.title}
                       </h2>
                     </div>
                   </div>

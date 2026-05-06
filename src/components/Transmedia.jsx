@@ -85,6 +85,7 @@ import useBodyScrollLock from '@/hooks/useBodyScrollLock';
 import useObraVoiceInteraction from '@/hooks/useObraVoiceInteraction';
 import useTransmediaSectionAudio from '@/hooks/useTransmediaSectionAudio';
 import useShowcaseGuard from '@/hooks/useShowcaseGuard';
+import useScrambleText from '@/hooks/useScrambleText';
 import MiniVersoCard from '@/components/transmedia/MiniVersoCard';
 import ShowcaseReactionInline from '@/components/transmedia/ShowcaseReactionInline';
 import CauseImpactAccordion from '@/components/transmedia/CauseImpactAccordion';
@@ -1174,6 +1175,10 @@ const Transmedia = ({ allianceOnlyMode = false }) => {
 
   const { transmediaSectionRef } = useTransmediaSectionAudio({ isSilvestrePlaying });
 
+  const showcaseTitleDisplay = useScrambleText(activeDefinition?.label ?? '', {
+    active: Boolean(activeShowcase),
+  });
+
   const previousActiveShowcaseRef = useRef(null);
   const activeParagraphs = useMemo(() => {
     if (!activeData?.post?.content) {
@@ -1395,8 +1400,8 @@ const Transmedia = ({ allianceOnlyMode = false }) => {
     (
       showcaseId,
       {
-        heading = 'Laboratorio de emociones',
-        ctaLabel = 'Registra tu respuesta',
+        heading = 'Resonancia Colectiva',
+        ctaLabel = 'Intuye tu respuesta',
         emptyMessage = 'Aún no hay comentarios de la comunidad.',
         reactionProps = null,
         className = 'rounded-3xl border border-white/10 bg-black/30 p-6 space-y-5',
@@ -1803,8 +1808,8 @@ const rendernotaAutoral = () => {
             {renderCommunityBlock('lataza', {
               reactionProps: {
                 showcaseId: 'lataza',
-                description: 'Estamos explorando qué ocurre cuando una pregunta transforma la manera de entender el mundo.',
-                buttonLabel: '¿NO TIENES RESPUESTA? DÉJANOS UN PULSO',
+                description: 'Exploramos las emociones contemporáneas a través de preguntas y experiencias narrativas.',
+                buttonLabel: 'si no tienes palabras, DÉJANOS UN PULSO',
               },
             })}
           </div>
@@ -1856,8 +1861,8 @@ const rendernotaAutoral = () => {
               {renderCommunityBlock('miniversoSonoro', {
                 reactionProps: {
                   showcaseId: 'miniversoSonoro',
-                  description: 'Estamos explorando qué ocurre cuando una pregunta transforma la manera de entender el mundo.',
-                  buttonLabel: '¿NO TIENES RESPUESTA? DÉJANOS UN PULSO',
+                  description: 'Exploramos las emociones contemporáneas a través de preguntas y experiencias narrativas.',
+                  buttonLabel: 'si no tienes palabras, DÉJANOS UN PULSO',
                   className: 'mt-0',
                 },
               })}
@@ -1984,8 +1989,8 @@ const rendernotaAutoral = () => {
 
       const reactionDetails = {
         showcaseId: 'miniversos',
-        description: 'Estamos explorando qué ocurre cuando una pregunta transforma la manera de entender el mundo.',
-        buttonLabel: '¿NO TIENES UNA RESPUESTA? DÉJANOS UN PULSO',
+        description: 'Exploramos las emociones contemporáneas a través de preguntas y experiencias narrativas.',
+        buttonLabel: '¿no tienes las palabras? DÉJANOS UN PULSO',
         className: 'mt-4',
       };
       const emotionUsageEntries = OBRA_VOICE_MODES
@@ -2591,8 +2596,8 @@ const rendernotaAutoral = () => {
             {renderCommunityBlock('miniversoGrafico', {
               reactionProps: {
                 showcaseId: 'miniversoGrafico',
-                description: 'Estamos explorando qué ocurre cuando una pregunta transforma la manera de entender el mundo.',
-                buttonLabel: '¿NO TIENES RESPUESTA? DÉJANOS UN PULSO',
+                description: 'Exploramos las emociones contemporáneas a través de preguntas y experiencias narrativas.',
+                buttonLabel: 'si no tienes palabras, DÉJANOS UN PULSO',
                 className: 'mt-0 bg-gradient-to-r from-fuchsia-900/20 to-black/40',
               },
             })}
@@ -2709,8 +2714,8 @@ const rendernotaAutoral = () => {
 
               <ShowcaseReactionInline
                 showcaseId="miniversoMovimiento"
-                  description="Estamos explorando qué ocurre cuando una pregunta transforma la manera de entender el mundo."
-                  buttonLabel="¿NO TIENES RESPUESTA? DÉJANOS UN PULSO"
+                  description="Exploramos las emociones contemporáneas a través de preguntas y experiencias narrativas."
+                  buttonLabel="si no tienes palabras, DÉJANOS UN PULSO"
                 className="mt-0 rounded-3xl border-white/10 bg-black/30"
               />
             </div>
@@ -2765,8 +2770,8 @@ const rendernotaAutoral = () => {
             reactionProps: {
               showcaseId: 'apps',
               title: 'Resonancia lúdica',
-              description: 'Estamos explorando qué ocurre cuando una pregunta transforma la manera de entender el mundo.',
-              buttonLabel: '¿NO TIENES RESPUESTA? DÉJANOS UN PULSO',
+              description: 'Exploramos las emociones contemporáneas a través de preguntas y experiencias narrativas.',
+              buttonLabel: 'si no tienes palabras, DÉJANOS UN PULSO',
               className: 'mt-0',
             },
           })}
@@ -3153,8 +3158,8 @@ const rendernotaAutoral = () => {
         className: 'rounded-3xl border border-white/10 bg-black/25 p-6 space-y-5',
         reactionProps: {
           showcaseId: 'copycats',
-          description: 'Estamos explorando qué ocurre cuando una pregunta transforma la manera de entender el mundo.',
-          buttonLabel: '¿NO TIENES RESPUESTA? DÉJANOS UN PULSO',
+          description: 'Exploramos las emociones contemporáneas a través de preguntas y experiencias narrativas.',
+          buttonLabel: 'si no tienes palabras, DÉJANOS UN PULSO',
           className: 'mt-2 bg-gradient-to-r from-slate-900/40 to-purple-900/20',
         },
       });
@@ -3377,13 +3382,13 @@ const rendernotaAutoral = () => {
                   {renderCommunityBlock('miniversoNovela', {
                     emptyMessage: 'Todavía no hay voces en este miniverso.',
                     className: 'rounded-3xl border border-white/10 bg-black/30 p-6 space-y-5',
-                    ctaLabel: 'Registra tu experiencia',
+                    ctaLabel: 'Intuye tu respuesta',
                     subCopy: 'Estamos investigando cómo distintas personas atraviesan emociones que se reflejan en esta plataforma.',
                   })}
                   <ShowcaseReactionInline
                     showcaseId="miniversoNovela"
-                    description="Estamos explorando qué ocurre cuando una pregunta transforma la manera de entender el mundo."
-                    buttonLabel="¿No tienes una respuesta? Déjanos un pulso"
+                    description="Exploramos las emociones contemporáneas a través de preguntas y experiencias narrativas."
+                    buttonLabel="¿no tienes las palabras? Déjanos un pulso"
                   />
                 </div>
               </div>
@@ -3735,7 +3740,7 @@ const rendernotaAutoral = () => {
                     <div className="flex items-start justify-between gap-4">
                       <div className="space-y-3">
                         <p className={`text-xs uppercase tracking-[0.4em] ${SHOWCASE_EYEBROW_COLOR[activeShowcase] ?? 'text-slate-400/70'}`}>#Miniversos</p>
-                        <h3 className="font-display text-3xl leading-tight text-white md:text-4xl">{activeDefinition.label}</h3>
+                        <h3 className="font-display text-3xl leading-tight text-white md:text-4xl">{showcaseTitleDisplay}</h3>
                       </div>
                       {latestBlogPostByShowcase[activeShowcase]?.slug ? (
                         <RelatedReadingTooltipButton

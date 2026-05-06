@@ -11,12 +11,14 @@ import IAInsightCard from '@/components/IAInsightCard';
 import CollaboratorsPanel from '@/components/portal/CollaboratorsPanel';
 import MiniversoSonoroPreview from '@/components/miniversos/sonoro/MiniversoSonoroPreview';
 import RelatedReadingTooltipButton from '@/components/portal/RelatedReadingTooltipButton';
+import VitranaQuestionReveal from '@/components/portal/VitranaQuestionReveal';
 import { recordShowcaseLike } from '@/services/showcaseLikeService';
 import { supabase } from '@/lib/supabaseClient';
 import { sanitizeExternalHttpUrl } from '@/lib/urlSafety';
 import { hasEnoughGAT } from '@/lib/gatAccess';
 import { usePortalTracking } from '@/hooks/usePortalTracking';
 import { useVitranaQuestion } from '@/hooks/useVitranaQuestion';
+import useScrambleText from '@/hooks/useScrambleText';
 
 const SONORIDADES_INTRO =
   'Sonoridades reúne la música original y el diseño sonoro creados para la obra, junto con piezas que expanden su universo más allá del escenario.';
@@ -162,7 +164,7 @@ const ShowcaseReactionInline = ({ status, onReact }) => (
     <div className="flex items-center justify-between gap-3">
       <div>
         <p className="text-sm text-slate-300 leading-relaxed">
-          Estamos explorando qué ocurre cuando una pregunta transforma la manera de entender el mundo.
+          Exploramos las emociones contemporáneas a través de preguntas y experiencias narrativas.
         </p>
       </div>
       <button
@@ -179,7 +181,7 @@ const ShowcaseReactionInline = ({ status, onReact }) => (
       </button>
     </div>
     <p className="text-xs uppercase tracking-[0.3em] text-purple-300">
-      {status === 'loading' ? 'Enviando...' : '¿NO TIENES RESPUESTA? DÉJANOS UN PULSO'}
+      {status === 'loading' ? 'Enviando...' : 'si no tienes palabras, DÉJANOS UN PULSO'}
     </p>
   </div>
 );
@@ -188,6 +190,7 @@ const PortalSonoridades = () => {
   const { user } = useAuth();
   usePortalTracking('sonoridades');
   const { question: vitranaQuestion } = useVitranaQuestion('sonoridades');
+  const titleDisplay = useScrambleText('Sonoridades');
   const isAuthenticated = Boolean(user);
   const [showLoginOverlay, setShowLoginOverlay] = useState(false);
   const [showLoginHint, setShowLoginHint] = useState(false);
@@ -347,7 +350,7 @@ const PortalSonoridades = () => {
               <div className="space-y-6">
                 <div className="space-y-3">
                   <p className="text-xs uppercase tracking-[0.4em] text-cyan-300">#Miniversos</p>
-                  <h3 className="font-display text-3xl leading-tight text-white md:text-4xl">Sonoridades</h3>
+                  <h3 className="font-display text-3xl leading-tight text-white md:text-4xl">{titleDisplay}</h3>
                 </div>
                 <div className="space-y-3 text-lg text-slate-200/85 leading-relaxed font-light">
                   <p>{SONORIDADES_INTRO}</p>
@@ -357,25 +360,7 @@ const PortalSonoridades = () => {
               </div>
 
               <div className="flex flex-col gap-5">
-                <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Laboratorio de Resonancia</p>
-                <div className="form-surface px-6 py-8">
-                  {vitranaQuestion ? (
-                    <p className="text-slate-800 text-base leading-relaxed italic text-center font-light">
-                      {vitranaQuestion}
-                    </p>
-                  ) : (
-                    <p className="text-slate-400/60 text-sm text-center py-2">···</p>
-                  )}
-                </div>
-                <div className="mx-auto w-full max-w-md">
-                  <button
-                    type="button"
-                    className="w-full rounded-full border border-purple-500/70 text-purple-100 shadow-[0_15px_45px_rgba(67,56,202,0.45)] hover:bg-purple-500/20 tracking-[0.25em] text-xs uppercase px-4 py-2"
-                    onClick={handleOpenCommunityComposer}
-                  >
-                    registra tu respuesta
-                  </button>
-                </div>
+                <VitranaQuestionReveal question={vitranaQuestion} onAnswer={handleOpenCommunityComposer} />
                 <ShowcaseReactionInline status={reactionStatus} onReact={handleSendPulse} />
               </div>
             </div>

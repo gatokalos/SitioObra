@@ -5,7 +5,7 @@ import { ensureAnonId } from '@/lib/identity';
 const API_BASE = import.meta.env.VITE_API_URL ?? '';
 
 // Pregunta base por portal — fuente: "Nueve intentos de no romperse"
-const PREGUNTA_MADRE = {
+export const PREGUNTA_MADRE = {
   obra:        '¿Qué significa habitar una emoción delante de otros?',
   literatura:  '¿Qué cambia cuando una experiencia se convierte en relato?',
   artesanias:  '¿Cuándo un objeto deja de ser solo un objeto?',

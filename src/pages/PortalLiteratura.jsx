@@ -11,6 +11,7 @@ import PortalHeaderActions from '@/components/portal/PortalHeaderActions';
 import IAInsightCard from '@/components/IAInsightCard';
 import CollaboratorsPanel from '@/components/portal/CollaboratorsPanel';
 import RelatedReadingTooltipButton from '@/components/portal/RelatedReadingTooltipButton';
+import VitranaQuestionReveal from '@/components/portal/VitranaQuestionReveal';
 import AutoficcionPreviewOverlay from '@/components/novela/AutoficcionPreviewOverlay';
 import { recordShowcaseLike } from '@/services/showcaseLikeService';
 import { startDirectMerchCheckout } from '@/lib/merchCheckout';
@@ -19,6 +20,7 @@ import { sanitizeExternalHttpUrl } from '@/lib/urlSafety';
 import { hasEnoughGAT } from '@/lib/gatAccess';
 import { usePortalTracking } from '@/hooks/usePortalTracking';
 import { useVitranaQuestion } from '@/hooks/useVitranaQuestion';
+import useScrambleText from '@/hooks/useScrambleText';
 
 
 const LITERATURA_NOTA_AUTORAL = {
@@ -151,6 +153,7 @@ const PortalLiteratura = () => {
   const { user } = useAuth();
   usePortalTracking('literatura');
   const { question: vitranaQuestion } = useVitranaQuestion('literatura');
+  const titleDisplay = useScrambleText('La Escritura');
   const isAuthenticated = Boolean(user);
   const [showLoginOverlay, setShowLoginOverlay] = useState(false);
   const [showLoginHint, setShowLoginHint] = useState(false);
@@ -331,7 +334,7 @@ const PortalLiteratura = () => {
               <div className="space-y-6">
                 <div className="space-y-3">
                   <p className="text-xs uppercase tracking-[0.4em] text-violet-300">#Miniversos</p>
-                  <h3 className="font-display text-3xl leading-tight text-white md:text-4xl">La Escritura</h3>
+                  <h3 className="font-display text-3xl leading-tight text-white md:text-4xl">{titleDisplay}</h3>
                 </div>
                 <div className="space-y-3 leading-relaxed font-light">
                   <p className="text-base leading-relaxed text-slate-300/90">En este miniverso literario se entiende la escritura como <strong>una forma de expansión</strong>.</p>
@@ -341,25 +344,7 @@ const PortalLiteratura = () => {
               </div>
 
               <div className="flex flex-col gap-5">
-                <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Laboratorio de Resonancia</p>
-                <div className="form-surface px-6 py-8">
-                  {vitranaQuestion ? (
-                    <p className="text-slate-800 text-base leading-relaxed italic text-center font-light">
-                      {vitranaQuestion}
-                    </p>
-                  ) : (
-                    <p className="text-slate-400/60 text-sm text-center py-2">···</p>
-                  )}
-                </div>
-                <div className="mx-auto w-full max-w-md">
-                  <button
-                    type="button"
-                    className="w-full rounded-full border border-purple-500/70 text-purple-100 shadow-[0_15px_45px_rgba(67,56,202,0.45)] hover:bg-purple-500/20 tracking-[0.25em] text-xs uppercase px-4 py-2"
-                    onClick={handleOpenCommunityComposer}
-                  >
-                    Registra tu experiencia
-                  </button>
-                </div>
+                <VitranaQuestionReveal question={vitranaQuestion} onAnswer={handleOpenCommunityComposer} />
                 <p className="text-xs text-slate-400/70 leading-relaxed px-1">
                   Esta plataforma investiga cómo distintas personas atraviesan experiencias narrativas, emocionales y simbólicas.
                 </p>
