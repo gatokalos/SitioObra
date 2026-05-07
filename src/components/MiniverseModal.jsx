@@ -888,13 +888,13 @@ const MiniverseModal = ({
   const activeTabIntro = useMemo(() => {
       if (activeTab === 'escaparate') {
       return {
-      lead: 'Conecta con la obra a través de una microficción en nueve actos. Cada acto dialoga con una forma distinta de sí y abre la misma pregunta:',
-      highlight: '¿por qué esta obra se expande más allá del teatro?',
+      lead: 'Conoce este universo a través de nueve actos. Cada uno explora una forma distinta de contenernos y abre la misma pregunta:',
+      highlight: '¿qué ocurre cuando una emoción se expande para tocar otras vidas?',
       };
     }
     if (activeTab === 'experiences') {
       return {
-        lead: 'Aquí las nueve formas de la obra en un formato más familiar:',
+        lead: 'Aquí las nueve vidas del universo en un formato más familiar:',
         highlight:
           'un ecosistema listo para tocar, intervenir y volver cuando quieras.',
           continuation: 'Con $50 MXN al mes, accedes a la versión completa.'
