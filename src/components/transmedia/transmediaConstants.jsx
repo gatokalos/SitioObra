@@ -546,7 +546,7 @@ export const showcaseDefinitions = {
     label: 'Drama',
     type: 'tragedia',
     intro:
-      'Los estados emocionales de Silvestre no son etiquetas. Son lugares donde la escena ocurre. Di una frase —tuya o del libreto— y escucha cómo la obra responde desde adentro. Luego cambia de emoción y detona la misma frase otra vez. La escena nunca responde igual.',
+      'Los estados emocionales de Silvestre no son etiquetas. Son lugares donde la escena ocurre. Di una frase —tuya o de la lista— y escucha cómo la obra responde desde adentro. Luego cambia de emoción y detona la misma frase otra vez. La escena nunca responde igual.',
     introNode: (
       <>
         <p className="text-base leading-relaxed text-neutral-300">
@@ -859,6 +859,7 @@ iaProfile: {
           id: 'autoficcion-app',
           ctaLabel: 'Leer fragmentos',
           ctaAction: 'openAutoficcionPreview',
+          appUrl: 'https://literatura.miniversos.ai',
         },
       },
       {

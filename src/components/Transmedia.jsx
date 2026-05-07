@@ -102,6 +102,7 @@ const MiniverseModal = lazy(() => import('@/components/MiniverseModal'));
 const ContributionModal = lazy(() => import('@/components/ContributionModal'));
 const ARExperience = lazy(() => import('@/components/ar/ARExperience'));
 const AutoficcionPreviewOverlay = lazy(() => import('@/components/novela/AutoficcionPreviewOverlay'));
+const LiteraturaAppOverlay = lazy(() => import('@/components/novela/LiteraturaAppOverlay'));
 const LoginOverlay = lazy(() => import('@/components/ContributionModal/LoginOverlay'));
 const PdfPreviewDocument = lazy(() => import('@/components/transmedia/PdfPreviewDocument'));
 import {
@@ -196,6 +197,7 @@ const Transmedia = ({ allianceOnlyMode = false }) => {
   const [isMiniversoEditorialModalOpen, setIsMiniversoEditorialModalOpen] = useState(false);
   const [showAutoficcionPreview, setShowAutoficcionPreview] = useState(false);
   const [hasLoadedAutoficcionPreview, setHasLoadedAutoficcionPreview] = useState(false);
+  const [showLiteraturaApp, setShowLiteraturaApp] = useState(false);
   const [galeriaMarianaIndex, setGaleriaMarianaIndex] = useState(null);
   const {
     micPromptVisible,
@@ -2057,7 +2059,7 @@ const rendernotaAutoral = () => {
                   </h2>
                    <p className="text-base leading-relaxed text-neutral-300">
           Los estados emocionales de <strong>Silvestre</strong> no son etiquetas.{' '}
-          Son lugares donde la escena ocurre. Di una frase —tuya o del libreto— y escucha cómo la obra responde desde adentro.
+          Son lugares donde la escena ocurre. Di una frase —tuya o de la lista— y escucha cómo la obra responde desde adentro.
         </p>
         <p className="text-lg leading-relaxed font-medium text-white mt-4">
           La escena nunca responde igual.
@@ -3246,21 +3248,32 @@ const rendernotaAutoral = () => {
           case 'purchase-link':
             if (entry.app) {
               return (
-                <div className="flex flex-col gap-3 sm:flex-row">
-                  <button
-                    type="button"
-                    onClick={handleOpenNovelaReserve}
-                    disabled={isMerchCheckoutLoading}
-                    className="inline-flex w-full sm:w-auto items-center justify-center rounded-full border border-purple-400/40 text-purple-200 hover:bg-purple-500/10 px-6 py-2 font-semibold transition"
-                  >
-                    {isMerchCheckoutLoading ? 'Abriendo checkout...' : 'Comprar edición física'}
-                  </button>
-                  <Button
-                    onClick={() => handleNovelAppCTA(entry.app)}
-                    className="w-full sm:w-auto justify-center bg-purple-600/80 hover:bg-purple-600 text-white rounded-full"
-                  >
-                    {entry.app.ctaLabel || 'Leer fragmentos'}
-                  </Button>
+                <div className="flex flex-col gap-3">
+                  <div className="flex flex-col gap-3 sm:flex-row">
+                    <button
+                      type="button"
+                      onClick={handleOpenNovelaReserve}
+                      disabled={isMerchCheckoutLoading}
+                      className="inline-flex w-full sm:w-auto items-center justify-center rounded-full border border-purple-400/40 text-purple-200 hover:bg-purple-500/10 px-6 py-2 font-semibold transition"
+                    >
+                      {isMerchCheckoutLoading ? 'Abriendo checkout...' : 'Comprar edición física'}
+                    </button>
+                    <Button
+                      onClick={() => handleNovelAppCTA(entry.app)}
+                      className="w-full sm:w-auto justify-center bg-purple-600/80 hover:bg-purple-600 text-white rounded-full"
+                    >
+                      {entry.app.ctaLabel || 'Leer fragmentos'}
+                    </Button>
+                  </div>
+                  {entry.app.appUrl && (
+                    <button
+                      type="button"
+                      onClick={() => setShowLiteraturaApp(true)}
+                      className="inline-flex w-full items-center justify-center gap-2 rounded-full border border-amber-400/50 text-amber-200 hover:bg-amber-500/10 px-6 py-2.5 text-sm font-semibold tracking-wide transition"
+                    >
+                      📖 Abrir separador inteligente
+                    </button>
+                  )}
                 </div>
               );
             }
@@ -4931,6 +4944,14 @@ const rendernotaAutoral = () => {
           <AutoficcionPreviewOverlay
             open={showAutoficcionPreview}
             onClose={() => setShowAutoficcionPreview(false)}
+          />
+        </Suspense>
+      ) : null}
+      {showLiteraturaApp ? (
+        <Suspense fallback={null}>
+          <LiteraturaAppOverlay
+            open={showLiteraturaApp}
+            onClose={() => setShowLiteraturaApp(false)}
           />
         </Suspense>
       ) : null}

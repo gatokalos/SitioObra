@@ -244,7 +244,7 @@ const Hero = () => {
 
   useEffect(() => {
     if (user) return undefined;
-    const ROTATION_MS = 4400;
+    const ROTATION_MS = 3800;
     const GHOST_PROBABILITY = 0.11;
     const intervalId = window.setInterval(() => {
       if (Math.random() < GHOST_PROBABILITY) {

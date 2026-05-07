@@ -1034,7 +1034,7 @@ const PortalVoz = () => {
                   </h2>
                    <p className="text-base leading-relaxed text-neutral-300">
           Los estados emocionales de <strong>Silvestre</strong> no son etiquetas. <br /><br />
-          Son lugares donde la escena ocurre. Di una frase —tuya o del libreto— y escucha cómo la obra responde desde adentro.<br /><br />
+          Son lugares donde la escena ocurre. Di una frase —tuya o de la lista— y escucha cómo la obra responde desde adentro.<br /><br />
         </p>
         <p className="text-lg leading-relaxed font-medium text-white mt-4">
           La escena nunca responde igual.

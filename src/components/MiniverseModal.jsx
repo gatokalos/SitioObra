@@ -2379,6 +2379,9 @@ const MiniverseModal = ({
                             )}
                           </div>
                           <div className="flex flex-col gap-3">
+                               <p className="w-full text-center text-xs uppercase tracking-[0.35em] text-slate-300/70">
+                              {activeShowcaseVideoHint}
+                            </p>
                             <Button
                               type="button"
                               onClick={() => handleShowcasePrimaryCta(activeShowcaseCard)}
@@ -2386,9 +2389,6 @@ const MiniverseModal = ({
                             >
                               <span>{activeShowcaseCard.ctaLabel ?? activeShowcaseCard.titleShort ?? activeShowcaseCard.title}</span>
                             </Button>
-                            <p className="w-full text-center text-xs uppercase tracking-[0.35em] text-slate-300/70">
-                              {activeShowcaseVideoHint}
-                            </p>
                             <Button
                               type="button"
                               onClick={handleExploreMobileShowcase}

@@ -15,6 +15,7 @@ import VitranaQuestionReveal from '@/components/portal/VitranaQuestionReveal';
 import ResonanceModal from '@/components/portal/ResonanceModal';
 import PulseReactionCard from '@/components/portal/PulseReactionCard';
 import AutoficcionPreviewOverlay from '@/components/novela/AutoficcionPreviewOverlay';
+import LiteraturaAppOverlay from '@/components/novela/LiteraturaAppOverlay';
 import { recordShowcaseLike } from '@/services/showcaseLikeService';
 import { startDirectMerchCheckout } from '@/lib/merchCheckout';
 import { supabase } from '@/lib/supabaseClient';
@@ -148,6 +149,7 @@ const PortalLiteratura = () => {
   const [isContributionOpen, setIsContributionOpen] = useState(false);
   const [isResonanceOpen, setIsResonanceOpen] = useState(false);
   const [showAutoficcionPreview, setShowAutoficcionPreview] = useState(false);
+  const [showLiteraturaApp, setShowLiteraturaApp] = useState(false);
   const [isNovelaCheckoutLoading, setIsNovelaCheckoutLoading] = useState(false);
   const readingTooltipRef = useRef(null);
 
@@ -388,6 +390,13 @@ const PortalLiteratura = () => {
                     Leer fragmentos
                   </Button>
                 </div>
+                <button
+                  type="button"
+                  onClick={() => setShowLiteraturaApp(true)}
+                  className="inline-flex w-full items-center justify-center gap-2 rounded-full border border-amber-400/50 text-amber-200 hover:bg-amber-500/10 px-6 py-2.5 text-sm font-semibold tracking-wide transition"
+                >
+                  📖 Abrir separador inteligente
+                </button>
               </div>
             </div>
 
@@ -414,6 +423,10 @@ const PortalLiteratura = () => {
       <AutoficcionPreviewOverlay
         open={showAutoficcionPreview}
         onClose={() => setShowAutoficcionPreview(false)}
+      />
+      <LiteraturaAppOverlay
+        open={showLiteraturaApp}
+        onClose={() => setShowLiteraturaApp(false)}
       />
     </div>
   );
