@@ -889,7 +889,7 @@ const MiniverseModal = ({
       if (activeTab === 'escaparate') {
       return {
       lead: 'Conoce este universo a través de nueve actos. Cada uno explora una forma distinta de contenernos y abre la misma pregunta:',
-      highlight: '¿qué ocurre cuando una emoción se expande para tocar otras vidas?',
+      highlight: '¿qué ocurre cuando un sentimiento se expande y toca otras vidas?',
       };
     }
     if (activeTab === 'experiences') {
@@ -2381,13 +2381,6 @@ const MiniverseModal = ({
                           <div className="flex flex-col gap-3">
                             <Button
                               type="button"
-                              onClick={handleExploreMobileShowcase}
-                              className="bg-white text-slate-900 hover:bg-white/90 py-3 rounded-lg font-semibold flex items-center justify-center gap-2"
-                            >
-                              <span className="w-full truncate text-center">{mobileExploreButtonLabel}</span>
-                            </Button>
-                            <Button
-                              type="button"
                               onClick={() => handleShowcasePrimaryCta(activeShowcaseCard)}
                               className="narrative-cta-btn py-3 rounded-lg font-semibold flex items-center justify-center gap-2"
                             >
@@ -2396,6 +2389,14 @@ const MiniverseModal = ({
                             <p className="w-full text-center text-xs uppercase tracking-[0.35em] text-slate-300/70">
                               {activeShowcaseVideoHint}
                             </p>
+                            <Button
+                              type="button"
+                              onClick={handleExploreMobileShowcase}
+                              className="bg-white text-slate-900 hover:bg-white/90 py-3 rounded-lg font-semibold flex items-center justify-center gap-2"
+                            >
+                              <span className="w-full truncate text-center">{mobileExploreButtonLabel}</span>
+                              <span aria-hidden="true">→</span>
+                            </Button>
                           </div>
                 
                         </div>

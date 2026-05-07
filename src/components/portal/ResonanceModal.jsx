@@ -98,7 +98,7 @@ const ResonanceModal = ({ open, onClose, question, portal }) => {
               <div className="w-full space-y-4">
                 <div className="space-y-1">
                   <div className="inline-flex rounded-full border border-white/10 bg-white/5 px-3 py-1 text-[0.62rem] uppercase tracking-[0.32em] text-white/70 backdrop-blur-md">
-                    Emociones
+                    Archivo
                   </div>
                   <h3
                     id="resonance-modal-title"
