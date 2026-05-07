@@ -1,7 +1,6 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { Hand, PenLine, QrCode } from 'lucide-react';
+import { Hand, QrCode } from 'lucide-react';
 import { motion } from 'framer-motion';
-import { Button } from '@/components/ui/button';
 import { toast } from '@/components/ui/use-toast';
 import { useAuth } from '@/contexts/SupabaseAuthContext';
 import LoginOverlay from '@/components/ContributionModal/LoginOverlay';
@@ -14,7 +13,6 @@ import RelatedReadingTooltipButton from '@/components/portal/RelatedReadingToolt
 import VitranaQuestionReveal from '@/components/portal/VitranaQuestionReveal';
 import ResonanceModal from '@/components/portal/ResonanceModal';
 import PulseReactionCard from '@/components/portal/PulseReactionCard';
-import AutoficcionPreviewOverlay from '@/components/novela/AutoficcionPreviewOverlay';
 import LiteraturaAppOverlay from '@/components/novela/LiteraturaAppOverlay';
 import { recordShowcaseLike } from '@/services/showcaseLikeService';
 import { startDirectMerchCheckout } from '@/lib/merchCheckout';
@@ -67,7 +65,7 @@ const LITERATURA_ENTRY = {
   image: '/assets/edicion-fisica.png',
   snippetTitle: 'Tu ejemplar como portal',
   snippetText:
-    'Escanea la contraportada para acceder al separador inteligente de #GatoEncerrado y explorar fragmentos, conexiones y expansiones del universo narrativo.',
+    'Escanea la contraportada para acceder al separador inteligente de #GatoEncerrado o ingresa desde aquí.',
 };
 const LITERATURA_BLOG_KEYS = [
   'miniversonovela',
@@ -148,7 +146,6 @@ const PortalLiteratura = () => {
   const [reactionStatus, setReactionStatus] = useState('idle');
   const [isContributionOpen, setIsContributionOpen] = useState(false);
   const [isResonanceOpen, setIsResonanceOpen] = useState(false);
-  const [showAutoficcionPreview, setShowAutoficcionPreview] = useState(false);
   const [showLiteraturaApp, setShowLiteraturaApp] = useState(false);
   const [isNovelaCheckoutLoading, setIsNovelaCheckoutLoading] = useState(false);
   const readingTooltipRef = useRef(null);
@@ -259,11 +256,6 @@ const PortalLiteratura = () => {
     }
   }, [isNovelaCheckoutLoading, requireAuth, user?.email]);
 
-  const handleOpenAutoficcionPreview = useCallback(() => {
-    if (!requireAuth()) return;
-    setShowAutoficcionPreview(true);
-  }, [requireAuth]);
-
   const handleOpenCommunityComposer = useCallback(() => {
     if (!requireAuth()) return;
     setIsContributionOpen(true);
@@ -373,30 +365,23 @@ const PortalLiteratura = () => {
                   </div>
                   <p className="text-sm text-slate-200/90 leading-relaxed">{LITERATURA_ENTRY.snippetText}</p>
                 </div>
-                <div className="flex flex-col gap-3 sm:flex-row">
+                <div className="flex flex-col gap-3">
                   <button
                     type="button"
                     onClick={handleOpenNovelaCheckout}
                     disabled={isNovelaCheckoutLoading}
-                    className="inline-flex w-full sm:w-auto items-center justify-center rounded-full border border-purple-400/40 text-purple-200 hover:bg-purple-500/10 px-6 py-2 font-semibold transition"
+                    className="inline-flex w-full items-center justify-center rounded-full border border-purple-400/40 text-purple-200 hover:bg-purple-500/10 px-6 py-2 font-semibold transition"
                   >
                     {isNovelaCheckoutLoading ? 'Abriendo checkout...' : 'Comprar edición física'}
                   </button>
-                  <Button
-                    onClick={handleOpenAutoficcionPreview}
-                    className="w-full sm:w-auto justify-center bg-purple-600/80 hover:bg-purple-600 text-white rounded-full"
+                  <button
+                    type="button"
+                    onClick={() => setShowLiteraturaApp(true)}
+                    className="inline-flex w-full items-center justify-center gap-2 rounded-full border border-amber-400/50 text-amber-200 hover:bg-amber-500/10 px-6 py-2.5 text-sm font-semibold tracking-wide transition"
                   >
-                    <PenLine size={15} className="mr-2" />
-                    Leer fragmentos
-                  </Button>
+                    📖 Abrir separador inteligente
+                  </button>
                 </div>
-                <button
-                  type="button"
-                  onClick={() => setShowLiteraturaApp(true)}
-                  className="inline-flex w-full items-center justify-center gap-2 rounded-full border border-amber-400/50 text-amber-200 hover:bg-amber-500/10 px-6 py-2.5 text-sm font-semibold tracking-wide transition"
-                >
-                  📖 Abrir separador inteligente
-                </button>
               </div>
             </div>
 
@@ -420,10 +405,6 @@ const PortalLiteratura = () => {
         />
       </div>
 
-      <AutoficcionPreviewOverlay
-        open={showAutoficcionPreview}
-        onClose={() => setShowAutoficcionPreview(false)}
-      />
       <LiteraturaAppOverlay
         open={showLiteraturaApp}
         onClose={() => setShowLiteraturaApp(false)}

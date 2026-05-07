@@ -43,7 +43,9 @@
       "Bash(node -e \"const l = require\\('/Users/gatoenigmatico/gatoencerrado-ai/landing/SitioObra/node_modules/lucide-react'\\); console.log\\(typeof l.QrCode\\)\")",
       "Bash(nc -z -w 5 srv797.hstgr.io 65002)",
       "Bash(echo \"exit: $?\")",
-      "Bash(python3)"
+      "Bash(python3)",
+      "Bash(awk 'NR>=3725 && NR<=3760 {print NR\": \"$0}' /Users/gatoenigmatico/gatoencerrado-ai/landing/SitioObra/src/components/Transmedia.jsx)",
+      "Bash(awk 'NR>=3725 && NR<=3935 {print NR\": \"$0}' /Users/gatoenigmatico/gatoencerrado-ai/landing/SitioObra/src/components/Transmedia.jsx)"
     ],
     "additionalDirectories": [
       "/Users/gatoenigmatico/Desktop/Postulación EFIARTES",

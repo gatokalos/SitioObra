@@ -172,9 +172,9 @@ const SHOWCASE_CARD_GRADIENT = {
 const VITRANA_QUESTION_BY_SHOWCASE = {
   miniversos:          '¿Qué significa para ti habitar una emoción delante de otros?',
   miniversoSonoro:     '¿Por qué algunos sonidos duran más que las imágenes?',
-  miniversoGrafico:    '¿Qué ocurre cuando alguien más interpreta nuestra apariencia?',
-  miniversoMovimiento: '¿Qué sabe el cuerpo antes que la mente?',
-  apps:                '¿Qué cambia cuando una historia depende de nuestras decisiones?',
+  miniversoGrafico:    '¿Qué te ocurre cuando alguien más interpreta tu apariencia?',
+  miniversoMovimiento: '¿Qué cosas sabe tu cuerpo antes que tu pensamiento?',
+  apps:                '¿Qué cambia en ti cuando una historia depende de tus decisiones?',
   copycats:            '¿Cuándo un objeto deja de ser solo un objeto?',
   lataza:              '¿Cuándo un objeto deja de ser para ti solo un objeto?',
   miniversoNovela:     '¿Qué cambia en ti cuando una experiencia personal se convierte en relato?',
@@ -1811,7 +1811,7 @@ const rendernotaAutoral = () => {
               reactionProps: {
                 showcaseId: 'lataza',
                 description: 'Estamos explorando las emociones contemporáneas a través de preguntas y experiencias narrativas.',
-                buttonLabel: 'si no tienes palabras, ¡déjanos un pulso!',
+                buttonLabel: '¿No te salen las palabras? ¡déjanos un pulso!',
               },
             })}
           </div>
@@ -1864,7 +1864,7 @@ const rendernotaAutoral = () => {
                 reactionProps: {
                   showcaseId: 'miniversoSonoro',
                   description: 'Estamos explorando las emociones contemporáneas a través de preguntas y experiencias narrativas.',
-                  buttonLabel: 'si no tienes palabras, ¡déjanos un pulso!',
+                  buttonLabel: '¿No te salen las palabras? ¡déjanos un pulso!',
                   className: 'mt-0',
                 },
               })}
@@ -2599,7 +2599,7 @@ const rendernotaAutoral = () => {
               reactionProps: {
                 showcaseId: 'miniversoGrafico',
                 description: 'Estamos explorando las emociones contemporáneas a través de preguntas y experiencias narrativas.',
-                buttonLabel: 'si no tienes palabras, ¡déjanos un pulso!',
+                buttonLabel: '¿No te salen las palabras? ¡déjanos un pulso!',
                 className: 'mt-0 bg-gradient-to-r from-fuchsia-900/20 to-black/40',
               },
             })}
@@ -2717,7 +2717,7 @@ const rendernotaAutoral = () => {
               <ShowcaseReactionInline
                 showcaseId="miniversoMovimiento"
                   description="Estamos explorando las emociones contemporáneas a través de preguntas y experiencias narrativas."
-                  buttonLabel="si no tienes palabras, ¡déjanos un pulso!"
+                  buttonLabel="¿No te salen las palabras? ¡déjanos un pulso!"
                 className="mt-0 rounded-3xl border-white/10 bg-black/30"
               />
             </div>
@@ -2773,7 +2773,7 @@ const rendernotaAutoral = () => {
               showcaseId: 'apps',
               title: 'Resonancia lúdica',
               description: 'Estamos explorando las emociones contemporáneas a través de preguntas y experiencias narrativas.',
-              buttonLabel: 'si no tienes palabras, ¡déjanos un pulso!',
+              buttonLabel: '¿No te salen las palabras? ¡déjanos un pulso!',
               className: 'mt-0',
             },
           })}
@@ -3161,7 +3161,7 @@ const rendernotaAutoral = () => {
         reactionProps: {
           showcaseId: 'copycats',
           description: 'Estamos explorando las emociones contemporáneas a través de preguntas y experiencias narrativas.',
-          buttonLabel: 'si no tienes palabras, ¡déjanos un pulso!',
+          buttonLabel: '¿No te salen las palabras? ¡déjanos un pulso!',
           className: 'mt-2 bg-gradient-to-r from-slate-900/40 to-purple-900/20',
         },
       });
@@ -3249,23 +3249,15 @@ const rendernotaAutoral = () => {
             if (entry.app) {
               return (
                 <div className="flex flex-col gap-3">
-                  <div className="flex flex-col gap-3 sm:flex-row">
-                    <button
-                      type="button"
-                      onClick={handleOpenNovelaReserve}
-                      disabled={isMerchCheckoutLoading}
-                      className="inline-flex w-full sm:w-auto items-center justify-center rounded-full border border-purple-400/40 text-purple-200 hover:bg-purple-500/10 px-6 py-2 font-semibold transition"
-                    >
-                      {isMerchCheckoutLoading ? 'Abriendo checkout...' : 'Comprar edición física'}
-                    </button>
-                    <Button
-                      onClick={() => handleNovelAppCTA(entry.app)}
-                      className="w-full sm:w-auto justify-center bg-purple-600/80 hover:bg-purple-600 text-white rounded-full"
-                    >
-                      {entry.app.ctaLabel || 'Leer fragmentos'}
-                    </Button>
-                  </div>
-                  {entry.app.appUrl && (
+                  <button
+                    type="button"
+                    onClick={handleOpenNovelaReserve}
+                    disabled={isMerchCheckoutLoading}
+                    className="inline-flex w-full items-center justify-center rounded-full border border-purple-400/40 text-purple-200 hover:bg-purple-500/10 px-6 py-2 font-semibold transition"
+                  >
+                    {isMerchCheckoutLoading ? 'Abriendo checkout...' : 'Comprar edición física'}
+                  </button>
+                  {entry.app.appUrl ? (
                     <button
                       type="button"
                       onClick={() => setShowLiteraturaApp(true)}
@@ -3273,6 +3265,13 @@ const rendernotaAutoral = () => {
                     >
                       📖 Abrir separador inteligente
                     </button>
+                  ) : (
+                    <Button
+                      onClick={() => handleNovelAppCTA(entry.app)}
+                      className="w-full justify-center bg-purple-600/80 hover:bg-purple-600 text-white rounded-full"
+                    >
+                      {entry.app.ctaLabel || 'Leer fragmentos'}
+                    </Button>
                   )}
                 </div>
               );
@@ -3725,13 +3724,14 @@ const rendernotaAutoral = () => {
             />
             <motion.div
               ref={showcaseRef}
-              className="relative z-10 my-10 w-[calc(100vw-2.5rem)] max-w-6xl max-h-[88vh] overflow-y-auto rounded-[28px] border border-white/15 bg-slate-950/55 backdrop-blur-2xl p-6 md:p-10 shadow-[0_35px_120px_rgba(0,0,0,0.65)]"
+              className="relative z-10 my-10 w-[calc(100vw-2.5rem)] max-w-6xl lg:max-h-[88vh] rounded-[28px] border border-white/15 bg-slate-950/55 backdrop-blur-2xl shadow-[0_35px_120px_rgba(0,0,0,0.65)] flex flex-col"
               initial={{ scale: 0.96, opacity: 0, y: 18 }}
               animate={{ scale: 1, opacity: 1, y: 0 }}
               exit={{ scale: 0.96, opacity: 0, y: 18 }}
               transition={{ type: 'spring', stiffness: 220, damping: 24 }}
             >
-              <div className="flex justify-end gap-3 mb-6">
+              <div className="flex-1 overflow-y-auto p-6 md:p-10 max-h-[88vh] lg:max-h-none">
+              <div className="flex justify-end gap-3 mb-6 lg:hidden">
                 <button
                   onClick={handleShareMiniverse}
                   className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/5 px-4 py-2 text-xs uppercase tracking-[0.25em] text-slate-200/90 hover:border-purple-300/40 hover:text-white transition"
@@ -3843,6 +3843,23 @@ const rendernotaAutoral = () => {
                   <IAInsightCard {...activeDefinition.iaProfile} compact />
                 </div>
               ) : null}
+              </div>
+              <div className="hidden lg:flex justify-end gap-3 px-6 pb-4">
+                <button
+                  onClick={handleShareMiniverse}
+                  className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/5 px-4 py-2 text-xs uppercase tracking-[0.25em] text-slate-200/90 hover:border-purple-300/40 hover:text-white transition"
+                  aria-label="Compartir miniverso"
+                >
+                  <Send size={14} className="text-purple-200" />
+                </button>
+                <button
+                  onClick={handleCloseShowcase}
+                  className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-white/15 bg-white/5 text-slate-200/90 hover:border-purple-300/40 hover:text-white transition"
+                  aria-label="Cerrar vitrina"
+                >
+                  <X size={14} />
+                </button>
+              </div>
             </motion.div>
           </motion.div>
         ) : null}

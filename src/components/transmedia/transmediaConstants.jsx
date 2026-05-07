@@ -802,7 +802,7 @@ iaProfile: {
     },
   },
   miniversoNovela: {
-    label: 'Literatura',
+    label: 'La escritura',
     type: 'blog-series',
     slug: null,
     intro:
@@ -853,7 +853,7 @@ iaProfile: {
         snippet: {
           tagline: 'Tu ejemplar como portal',
           text:
-            'Escanea la contraportada para acceder al separador inteligente de #GatoEncerrado y explorar fragmentos, conexiones y expansiones del universo narrativo.',
+            'Escanea la contraportada para acceder al separador inteligente de #GatoEncerrado o ingresa desde aquí.',
         },
         app: {
           id: 'autoficcion-app',
