@@ -169,7 +169,7 @@ const SHOWCASE_CARD_GRADIENT = {
 };
 
 const VITRANA_QUESTION_BY_SHOWCASE = {
-  miniversos:          '¿Qué significa habitar una emoción delante de otros?',
+  miniversos:          '¿Qué significa para ti habitar una emoción delante de otros?',
   miniversoSonoro:     '¿Por qué algunos sonidos duran más que las imágenes?',
   miniversoGrafico:    '¿Qué ocurre cuando alguien más interpreta nuestra apariencia?',
   miniversoMovimiento: '¿Qué sabe el cuerpo antes que la mente?',
@@ -177,7 +177,7 @@ const VITRANA_QUESTION_BY_SHOWCASE = {
   copycats:            '¿Cuándo un objeto deja de ser solo un objeto?',
   lataza:              '¿Cuándo un objeto deja de ser para ti solo un objeto?',
   miniversoNovela:     '¿Qué cambia en ti cuando una experiencia personal se convierte en relato?',
-  cine:                '¿Qué significa verse fallar desde afuera?',
+  cine:                '¿Qué significa para ti verse fallar desde afuera?',
   oraculo:             '¿Cuándo una experiencia deja de sentirse individual?',
 };
 
@@ -1808,8 +1808,8 @@ const rendernotaAutoral = () => {
             {renderCommunityBlock('lataza', {
               reactionProps: {
                 showcaseId: 'lataza',
-                description: 'Exploramos las emociones contemporáneas a través de preguntas y experiencias narrativas.',
-                buttonLabel: 'si no tienes palabras, DÉJANOS UN PULSO',
+                description: 'Estamos explorando las emociones contemporáneas a través de preguntas y experiencias narrativas.',
+                buttonLabel: 'si no tienes palabras, ¡déjanos un pulso!',
               },
             })}
           </div>
@@ -1861,8 +1861,8 @@ const rendernotaAutoral = () => {
               {renderCommunityBlock('miniversoSonoro', {
                 reactionProps: {
                   showcaseId: 'miniversoSonoro',
-                  description: 'Exploramos las emociones contemporáneas a través de preguntas y experiencias narrativas.',
-                  buttonLabel: 'si no tienes palabras, DÉJANOS UN PULSO',
+                  description: 'Estamos explorando las emociones contemporáneas a través de preguntas y experiencias narrativas.',
+                  buttonLabel: 'si no tienes palabras, ¡déjanos un pulso!',
                   className: 'mt-0',
                 },
               })}
@@ -1989,8 +1989,8 @@ const rendernotaAutoral = () => {
 
       const reactionDetails = {
         showcaseId: 'miniversos',
-        description: 'Exploramos las emociones contemporáneas a través de preguntas y experiencias narrativas.',
-        buttonLabel: '¿no tienes las palabras? DÉJANOS UN PULSO',
+        description: 'Estamos explorando las emociones contemporáneas a través de preguntas y experiencias narrativas.',
+        buttonLabel: '¿no te salen las palabras? ¡déjanos un pulso!',
         className: 'mt-4',
       };
       const emotionUsageEntries = OBRA_VOICE_MODES
@@ -2596,8 +2596,8 @@ const rendernotaAutoral = () => {
             {renderCommunityBlock('miniversoGrafico', {
               reactionProps: {
                 showcaseId: 'miniversoGrafico',
-                description: 'Exploramos las emociones contemporáneas a través de preguntas y experiencias narrativas.',
-                buttonLabel: 'si no tienes palabras, DÉJANOS UN PULSO',
+                description: 'Estamos explorando las emociones contemporáneas a través de preguntas y experiencias narrativas.',
+                buttonLabel: 'si no tienes palabras, ¡déjanos un pulso!',
                 className: 'mt-0 bg-gradient-to-r from-fuchsia-900/20 to-black/40',
               },
             })}
@@ -2714,8 +2714,8 @@ const rendernotaAutoral = () => {
 
               <ShowcaseReactionInline
                 showcaseId="miniversoMovimiento"
-                  description="Exploramos las emociones contemporáneas a través de preguntas y experiencias narrativas."
-                  buttonLabel="si no tienes palabras, DÉJANOS UN PULSO"
+                  description="Estamos explorando las emociones contemporáneas a través de preguntas y experiencias narrativas."
+                  buttonLabel="si no tienes palabras, ¡déjanos un pulso!"
                 className="mt-0 rounded-3xl border-white/10 bg-black/30"
               />
             </div>
@@ -2770,8 +2770,8 @@ const rendernotaAutoral = () => {
             reactionProps: {
               showcaseId: 'apps',
               title: 'Resonancia lúdica',
-              description: 'Exploramos las emociones contemporáneas a través de preguntas y experiencias narrativas.',
-              buttonLabel: 'si no tienes palabras, DÉJANOS UN PULSO',
+              description: 'Estamos explorando las emociones contemporáneas a través de preguntas y experiencias narrativas.',
+              buttonLabel: 'si no tienes palabras, ¡déjanos un pulso!',
               className: 'mt-0',
             },
           })}
@@ -3158,8 +3158,8 @@ const rendernotaAutoral = () => {
         className: 'rounded-3xl border border-white/10 bg-black/25 p-6 space-y-5',
         reactionProps: {
           showcaseId: 'copycats',
-          description: 'Exploramos las emociones contemporáneas a través de preguntas y experiencias narrativas.',
-          buttonLabel: 'si no tienes palabras, DÉJANOS UN PULSO',
+          description: 'Estamos explorando las emociones contemporáneas a través de preguntas y experiencias narrativas.',
+          buttonLabel: 'si no tienes palabras, ¡déjanos un pulso!',
           className: 'mt-2 bg-gradient-to-r from-slate-900/40 to-purple-900/20',
         },
       });
@@ -3387,8 +3387,8 @@ const rendernotaAutoral = () => {
                   })}
                   <ShowcaseReactionInline
                     showcaseId="miniversoNovela"
-                    description="Exploramos las emociones contemporáneas a través de preguntas y experiencias narrativas."
-                    buttonLabel="¿no tienes las palabras? Déjanos un pulso"
+                    description="Estamos explorando las emociones contemporáneas a través de preguntas y experiencias narrativas."
+                    buttonLabel="¿no te salen las palabras? ¡déjanos un pulso!"
                   />
                 </div>
               </div>

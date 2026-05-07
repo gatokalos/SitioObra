@@ -24,6 +24,7 @@ import ObraQuestionList from '@/components/miniversos/obra/ObraQuestionList';
 import RelatedReadingTooltipButton from '@/components/portal/RelatedReadingTooltipButton';
 import VitranaQuestionReveal from '@/components/portal/VitranaQuestionReveal';
 import ResonanceModal from '@/components/portal/ResonanceModal';
+import PulseReactionCard from '@/components/portal/PulseReactionCard';
 import { recordShowcaseLike } from '@/services/showcaseLikeService';
 import { supabase } from '@/lib/supabaseClient';
 import { sanitizeExternalHttpUrl } from '@/lib/urlSafety';
@@ -359,31 +360,14 @@ const ShowcaseReactionInline = ({
   onReact,
   className = '',
 }) => (
-  <div className={`mt-4 flex flex-col gap-3 rounded-2xl border border-white/10 bg-black/20 p-4 ${className}`}>
-    <div className="flex items-center justify-between gap-3">
-      <div>
-        <p className="text-[0.6rem] uppercase tracking-[0.35em] text-slate-500">{title}</p>
-        <p className="text-sm text-slate-300 leading-relaxed">{description}</p>
-      </div>
-      <button
-        type="button"
-        onClick={onReact}
-        className={`rounded-full p-3 transition ${
-          status === 'success'
-            ? 'bg-gradient-to-r from-pink-500 via-rose-500 to-yellow-500 shadow-[0_0_25px_rgba(244,114,182,0.6)] text-white border border-transparent'
-            : 'bg-gradient-to-r from-purple-600/80 to-indigo-600/80 text-white hover:from-purple-500 hover:to-indigo-500'
-        }`}
-        disabled={status === 'loading'}
-      >
-        <Heart size={20} />
-      </button>
-    </div>
-    {buttonLabel ? (
-      <p className="text-xs uppercase tracking-[0.3em] text-purple-300">
-        {status === 'loading' ? 'Enviando...' : buttonLabel}
-      </p>
-    ) : null}
-  </div>
+  <PulseReactionCard
+    title={title}
+    description={description}
+    buttonLabel={buttonLabel}
+    status={status}
+    onReact={onReact}
+    className={className}
+  />
 );
 
 const PortalVoz = () => {
@@ -1020,8 +1004,8 @@ const PortalVoz = () => {
               <div className="flex flex-col gap-5">
                 <VitranaQuestionReveal question={vitranaQuestion} onAnswer={() => setIsResonanceOpen(true)} />
                 <ShowcaseReactionInline
-                  description="Exploramos las emociones contemporáneas a través de preguntas y experiencias narrativas."
-                  buttonLabel="¿no tienes las palabras? Déjanos un pulso"
+                  description="Estamos explorando las emociones contemporáneas a través de preguntas y experiencias narrativas."
+                  buttonLabel="¿no te salen las palabras? ¡déjanos un pulso!"
                   status={reactionStatus}
                   onReact={handleSendPulse}
                 />

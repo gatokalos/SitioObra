@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { Hand, Headphones, Heart, Music2 } from 'lucide-react';
+import { Hand, Headphones, Music2 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/SupabaseAuthContext';
@@ -13,6 +13,7 @@ import MiniversoSonoroPreview from '@/components/miniversos/sonoro/MiniversoSono
 import RelatedReadingTooltipButton from '@/components/portal/RelatedReadingTooltipButton';
 import VitranaQuestionReveal from '@/components/portal/VitranaQuestionReveal';
 import ResonanceModal from '@/components/portal/ResonanceModal';
+import PulseReactionCard from '@/components/portal/PulseReactionCard';
 import { recordShowcaseLike } from '@/services/showcaseLikeService';
 import { supabase } from '@/lib/supabaseClient';
 import { sanitizeExternalHttpUrl } from '@/lib/urlSafety';
@@ -161,30 +162,12 @@ const MiniVersoCard = ({ title, verse, palette }) => {
 };
 
 const ShowcaseReactionInline = ({ status, onReact }) => (
-  <div className="mt-4 flex flex-col gap-3 rounded-2xl border border-white/10 bg-black/20 p-4">
-    <div className="flex items-center justify-between gap-3">
-      <div>
-        <p className="text-sm text-slate-300 leading-relaxed">
-          Exploramos las emociones contemporáneas a través de preguntas y experiencias narrativas.
-        </p>
-      </div>
-      <button
-        type="button"
-        onClick={onReact}
-        className={`rounded-full p-3 transition ${
-          status === 'success'
-            ? 'bg-gradient-to-r from-pink-500 via-rose-500 to-yellow-500 shadow-[0_0_25px_rgba(244,114,182,0.6)] text-white border border-transparent'
-            : 'bg-gradient-to-r from-purple-600/80 to-indigo-600/80 text-white hover:from-purple-500 hover:to-indigo-500'
-        }`}
-        disabled={status === 'loading'}
-      >
-        <Heart size={20} />
-      </button>
-    </div>
-    <p className="text-xs uppercase tracking-[0.3em] text-purple-300">
-      {status === 'loading' ? 'Enviando...' : 'si no tienes palabras, DÉJANOS UN PULSO'}
-    </p>
-  </div>
+  <PulseReactionCard
+    status={status}
+    onReact={onReact}
+    description="Estamos explorando las emociones contemporáneas a través de preguntas y experiencias narrativas."
+    buttonLabel="¿no te salen las palabras? ¡déjanos un pulso!"
+  />
 );
 
 const PortalSonoridades = () => {

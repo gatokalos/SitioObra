@@ -1,11 +1,11 @@
 import { useState, useCallback } from 'react';
-import { Heart } from 'lucide-react';
 import { ToastAction } from '@/components/ui/toast';
 import { toast } from '@/components/ui/use-toast';
 import { useAuth } from '@/contexts/SupabaseAuthContext';
 import useActiveSubscription from '@/hooks/useActiveSubscription';
 import { recordShowcaseLike } from '@/services/showcaseLikeService';
 import { safeSetItem } from '@/lib/safeStorage';
+import PulseReactionCard from '@/components/portal/PulseReactionCard';
 
 const LOGIN_RETURN_KEY = 'gatoencerrado:login-return';
 
@@ -78,33 +78,14 @@ const ShowcaseReactionInline = ({ showcaseId, title, description, buttonLabel, c
   void isSubscriber;
 
   return (
-    <div
-      className={`mt-4 flex flex-col gap-3 rounded-2xl border border-white/10 bg-black/20 p-4 ${className}`}
-    >
-      <div className="flex items-center justify-between gap-3">
-        <div>
-          <p className="text-[0.6rem] uppercase tracking-[0.35em] text-slate-500">{title}</p>
-          <p className="text-sm text-slate-300 leading-relaxed">{description}</p>
-        </div>
-        <button
-          type="button"
-          onClick={handleReaction}
-          className={`rounded-full p-3 transition ${
-            status === 'success'
-              ? 'bg-gradient-to-r from-pink-500 via-rose-500 to-yellow-500 shadow-[0_0_25px_rgba(244,114,182,0.6)] text-white border border-transparent'
-              : 'bg-gradient-to-r from-purple-600/80 to-indigo-600/80 text-white hover:from-purple-500 hover:to-indigo-500'
-          }`}
-          disabled={status === 'loading'}
-        >
-          <Heart size={20} />
-        </button>
-      </div>
-      {buttonLabel ? (
-        <p className="text-xs uppercase tracking-[0.3em] text-purple-300">
-          {status === 'loading' ? 'Enviando…' : buttonLabel}
-        </p>
-      ) : null}
-    </div>
+    <PulseReactionCard
+      title={title}
+      description={description}
+      buttonLabel={buttonLabel}
+      status={status}
+      onReact={handleReaction}
+      className={className}
+    />
   );
 };
 

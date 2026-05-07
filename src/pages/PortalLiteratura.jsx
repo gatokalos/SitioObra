@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { Hand, Heart, PenLine, QrCode } from 'lucide-react';
+import { Hand, PenLine, QrCode } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { toast } from '@/components/ui/use-toast';
@@ -13,6 +13,7 @@ import CollaboratorsPanel from '@/components/portal/CollaboratorsPanel';
 import RelatedReadingTooltipButton from '@/components/portal/RelatedReadingTooltipButton';
 import VitranaQuestionReveal from '@/components/portal/VitranaQuestionReveal';
 import ResonanceModal from '@/components/portal/ResonanceModal';
+import PulseReactionCard from '@/components/portal/PulseReactionCard';
 import AutoficcionPreviewOverlay from '@/components/novela/AutoficcionPreviewOverlay';
 import { recordShowcaseLike } from '@/services/showcaseLikeService';
 import { startDirectMerchCheckout } from '@/lib/merchCheckout';
@@ -125,29 +126,12 @@ const MiniVersoCard = ({ title, verse, palette }) => {
 };
 
 const ShowcaseReactionInline = ({ status, onReact }) => (
-  <div className="mt-4 flex flex-col gap-3 rounded-2xl border border-white/10 bg-black/20 p-4">
-    <div className="flex items-center justify-between gap-3">
-      <div>
-        <p className="text-[0.6rem] uppercase tracking-[0.35em] text-slate-500">Resonancia colectiva</p>
-        <p className="text-sm text-slate-300 leading-relaxed">
-          Haz clic este miniverso para hacerlo resonar.
-        </p>
-      </div>
-      <button
-        type="button"
-        onClick={onReact}
-        className={`rounded-full p-3 transition ${
-          status === 'success'
-            ? 'bg-gradient-to-r from-pink-500 via-rose-500 to-yellow-500 shadow-[0_0_25px_rgba(244,114,182,0.6)] text-white border border-transparent'
-            : 'bg-gradient-to-r from-purple-600/80 to-indigo-600/80 text-white hover:from-purple-500 hover:to-indigo-500'
-        }`}
-        disabled={status === 'loading'}
-      >
-        <Heart size={20} />
-      </button>
-    </div>
-
-  </div>
+  <PulseReactionCard
+    title="Resonancia colectiva"
+    description="Haz clic este miniverso para hacerlo resonar."
+    status={status}
+    onReact={onReact}
+  />
 );
 
 const PortalLiteratura = () => {
