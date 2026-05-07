@@ -12,6 +12,7 @@ import CollaboratorsPanel from '@/components/portal/CollaboratorsPanel';
 import MiniversoSonoroPreview from '@/components/miniversos/sonoro/MiniversoSonoroPreview';
 import RelatedReadingTooltipButton from '@/components/portal/RelatedReadingTooltipButton';
 import VitranaQuestionReveal from '@/components/portal/VitranaQuestionReveal';
+import ResonanceModal from '@/components/portal/ResonanceModal';
 import { recordShowcaseLike } from '@/services/showcaseLikeService';
 import { supabase } from '@/lib/supabaseClient';
 import { sanitizeExternalHttpUrl } from '@/lib/urlSafety';
@@ -198,6 +199,7 @@ const PortalSonoridades = () => {
   const [isReadingTooltipOpen, setIsReadingTooltipOpen] = useState(false);
   const [reactionStatus, setReactionStatus] = useState('idle');
   const [isContributionOpen, setIsContributionOpen] = useState(false);
+  const [isResonanceOpen, setIsResonanceOpen] = useState(false);
   const readingTooltipRef = useRef(null);
 
   const handleOpenLogin = useCallback(() => {
@@ -334,7 +336,7 @@ const PortalSonoridades = () => {
         </div>
 
         <div className="mt-6 space-y-6">
-          <div className="relative rounded-[2.5rem] border border-white/10 bg-gradient-to-br from-slate-900/85 via-black/60 to-cyan-900/25 shadow-[0_25px_65px_rgba(15,23,42,0.65)]">
+          <div className="relative overflow-hidden rounded-[2.5rem] border border-white/10 [transform:translateZ(0)] bg-gradient-to-br from-slate-900/85 via-black/60 to-cyan-900/25 shadow-[0_25px_65px_rgba(15,23,42,0.65)]">
             {latestSonoridadesReading?.slug ? (
               <div className="absolute top-4 right-4 z-10">
                 <RelatedReadingTooltipButton
@@ -360,10 +362,18 @@ const PortalSonoridades = () => {
               </div>
 
               <div className="flex flex-col gap-5">
-                <VitranaQuestionReveal question={vitranaQuestion} onAnswer={handleOpenCommunityComposer} />
+                <VitranaQuestionReveal question={vitranaQuestion} onAnswer={() => setIsResonanceOpen(true)} />
                 <ShowcaseReactionInline status={reactionStatus} onReact={handleSendPulse} />
               </div>
             </div>
+            {isResonanceOpen && (
+              <ResonanceModal
+                open={isResonanceOpen}
+                onClose={() => setIsResonanceOpen(false)}
+                question={vitranaQuestion}
+                portal="sonoridades"
+              />
+            )}
           </div>
 
 

@@ -175,8 +175,8 @@ const VITRANA_QUESTION_BY_SHOWCASE = {
   miniversoMovimiento: '¿Qué sabe el cuerpo antes que la mente?',
   apps:                '¿Qué cambia cuando una historia depende de nuestras decisiones?',
   copycats:            '¿Cuándo un objeto deja de ser solo un objeto?',
-  lataza:              '¿Cuándo un objeto deja de ser solo un objeto?',
-  miniversoNovela:     '¿Qué cambia cuando una experiencia se convierte en relato?',
+  lataza:              '¿Cuándo un objeto deja de ser para ti solo un objeto?',
+  miniversoNovela:     '¿Qué cambia en ti cuando una experiencia personal se convierte en relato?',
   cine:                '¿Qué significa verse fallar desde afuera?',
   oraculo:             '¿Cuándo una experiencia deja de sentirse individual?',
 };

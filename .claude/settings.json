@@ -42,7 +42,8 @@
       "Bash(git -C /Users/gatoenigmatico/gatoencerrado-ai/landing/SitioObra diff HEAD~2 HEAD -- src/pages/PortalLiteratura.jsx)",
       "Bash(node -e \"const l = require\\('/Users/gatoenigmatico/gatoencerrado-ai/landing/SitioObra/node_modules/lucide-react'\\); console.log\\(typeof l.QrCode\\)\")",
       "Bash(nc -z -w 5 srv797.hstgr.io 65002)",
-      "Bash(echo \"exit: $?\")"
+      "Bash(echo \"exit: $?\")",
+      "Bash(python3)"
     ],
     "additionalDirectories": [
       "/Users/gatoenigmatico/Desktop/Postulación EFIARTES",

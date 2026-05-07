@@ -12,6 +12,7 @@ import IAInsightCard from '@/components/IAInsightCard';
 import CollaboratorsPanel from '@/components/portal/CollaboratorsPanel';
 import RelatedReadingTooltipButton from '@/components/portal/RelatedReadingTooltipButton';
 import VitranaQuestionReveal from '@/components/portal/VitranaQuestionReveal';
+import ResonanceModal from '@/components/portal/ResonanceModal';
 import AutoficcionPreviewOverlay from '@/components/novela/AutoficcionPreviewOverlay';
 import { recordShowcaseLike } from '@/services/showcaseLikeService';
 import { startDirectMerchCheckout } from '@/lib/merchCheckout';
@@ -161,6 +162,7 @@ const PortalLiteratura = () => {
   const [isReadingTooltipOpen, setIsReadingTooltipOpen] = useState(false);
   const [reactionStatus, setReactionStatus] = useState('idle');
   const [isContributionOpen, setIsContributionOpen] = useState(false);
+  const [isResonanceOpen, setIsResonanceOpen] = useState(false);
   const [showAutoficcionPreview, setShowAutoficcionPreview] = useState(false);
   const [isNovelaCheckoutLoading, setIsNovelaCheckoutLoading] = useState(false);
   const readingTooltipRef = useRef(null);
@@ -318,7 +320,7 @@ const PortalLiteratura = () => {
         </div>
 
         <div className="mt-6 space-y-6">
-          <div className="relative rounded-[2.5rem] border border-white/10 bg-gradient-to-br from-slate-900/85 via-black/60 to-violet-900/25 shadow-[0_25px_65px_rgba(15,23,42,0.65)]">
+          <div className="relative overflow-hidden rounded-[2.5rem] border border-white/10 [transform:translateZ(0)] bg-gradient-to-br from-slate-900/85 via-black/60 to-violet-900/25 shadow-[0_25px_65px_rgba(15,23,42,0.65)]">
             {latestLiteraturaReading?.slug ? (
               <div className="absolute top-4 right-4 z-10">
                 <RelatedReadingTooltipButton
@@ -344,13 +346,21 @@ const PortalLiteratura = () => {
               </div>
 
               <div className="flex flex-col gap-5">
-                <VitranaQuestionReveal question={vitranaQuestion} onAnswer={handleOpenCommunityComposer} />
+                <VitranaQuestionReveal question={vitranaQuestion} onAnswer={() => setIsResonanceOpen(true)} />
                 <p className="text-xs text-slate-400/70 leading-relaxed px-1">
                   Esta plataforma investiga cómo distintas personas atraviesan experiencias narrativas, emocionales y simbólicas.
                 </p>
                 <ShowcaseReactionInline status={reactionStatus} onReact={handleSendPulse} />
               </div>
             </div>
+            {isResonanceOpen && (
+              <ResonanceModal
+                open={isResonanceOpen}
+                onClose={() => setIsResonanceOpen(false)}
+                question={vitranaQuestion}
+                portal="literatura"
+              />
+            )}
           </div>
 
 
