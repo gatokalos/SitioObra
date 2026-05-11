@@ -48,18 +48,25 @@ const VitranaQuestionReveal = ({
         {isRevealed && (
           <motion.div
             className="mx-auto w-full max-w-md"
-            initial={{ opacity: 0, y: 8 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.4, delay: 0.15 }}
+            initial={{ opacity: 0, y: 12, scale: 0.94 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.96 }}
+            transition={{ type: 'spring', stiffness: 280, damping: 22, delay: 0.5 }}
           >
-            <button
+            <motion.button
               type="button"
-              className="w-full rounded-full border border-purple-500/70 text-purple-100 shadow-[0_15px_45px_rgba(67,56,202,0.45)] hover:bg-purple-500/20 tracking-[0.25em] text-xs uppercase px-4 py-2"
+              className="w-full rounded-full border border-purple-500/70 text-purple-100 hover:bg-purple-500/20 tracking-[0.25em] text-xs uppercase px-4 py-2.5"
+              initial={{ boxShadow: '0 0 0px rgba(139,92,246,0)' }}
+              animate={{ boxShadow: [
+                '0 0 0px rgba(139,92,246,0)',
+                '0 0 32px rgba(139,92,246,0.55)',
+                '0 15px 45px rgba(67,56,202,0.45)',
+              ]}}
+              transition={{ duration: 1.1, delay: 0.75, ease: 'easeOut' }}
               onClick={onAnswer}
             >
               {buttonLabel}
-            </button>
+            </motion.button>
           </motion.div>
         )}
       </AnimatePresence>

@@ -45,7 +45,11 @@
       "Bash(echo \"exit: $?\")",
       "Bash(python3)",
       "Bash(awk 'NR>=3725 && NR<=3760 {print NR\": \"$0}' /Users/gatoenigmatico/gatoencerrado-ai/landing/SitioObra/src/components/Transmedia.jsx)",
-      "Bash(awk 'NR>=3725 && NR<=3935 {print NR\": \"$0}' /Users/gatoenigmatico/gatoencerrado-ai/landing/SitioObra/src/components/Transmedia.jsx)"
+      "Bash(awk 'NR>=3725 && NR<=3935 {print NR\": \"$0}' /Users/gatoenigmatico/gatoencerrado-ai/landing/SitioObra/src/components/Transmedia.jsx)",
+      "Bash(awk '/if \\\\\\(activeDefinition\\\\.type === .tragedia.\\\\\\)/{found=1} found{print NR\": \"$0} /^    \\\\}$/{if\\(found && NR>1961\\) {exit}}' /Users/gatoenigmatico/gatoencerrado-ai/landing/SitioObra/src/components/Transmedia.jsx)",
+      "Bash(ffprobe -v quiet -print_format json -show_format -show_streams \"/Users/gatoenigmatico/Downloads/#GatoEncerrado - tráiler.mp4\")",
+      "Bash(ffmpeg -i '/Users/gatoenigmatico/Downloads/#GatoEncerrado - tráiler.mp4' -c:v libx264 -crf 28 -preset slow -profile:v main -level 4.0 -movflags +faststart -an -y /Users/gatoenigmatico/Downloads/gatoencerrado-trailer-web.mp4)",
+      "Bash(ffmpeg -i '/Users/gatoenigmatico/Downloads/#GatoEncerrado - tráiler.mp4' -vf scale=854:480 -c:v libx264 -crf 28 -preset slow -profile:v main -level 4.0 -movflags +faststart -an -y /Users/gatoenigmatico/Downloads/gatoencerrado-trailer-web.mp4)"
     ],
     "additionalDirectories": [
       "/Users/gatoenigmatico/Desktop/Postulación EFIARTES",

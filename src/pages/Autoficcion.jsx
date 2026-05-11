@@ -2,6 +2,13 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/SupabaseAuthContext';
 import LoginOverlay from '@/components/ContributionModal/LoginOverlay';
+import {
+  fetchTransmediaCreditState,
+  registerTransmediaCreditEvent,
+  createTransmediaIdempotencyKey,
+} from '@/services/transmediaCreditsService';
+
+const FREE_NOVELA_QUESTIONS = 3;
 
 const AUTOFICCION_URL = import.meta.env.VITE_AUTOFICCION_URL ?? '';
 
@@ -75,6 +82,42 @@ const Autoficcion = () => {
 
       if (type === 'autoficcion:close') {
         navigate('/', { replace: true });
+        return;
+      }
+
+      if (type === 'autoficcion:gat-request') {
+        (async () => {
+          const respond = (payload) => {
+            event.source?.postMessage({ type: 'autoficcion:gat-response', ...payload }, appOrigin);
+          };
+
+          // Authenticated users are never blocked
+          if (user) { respond({ allowed: true, authenticated: true }); return; }
+
+          try {
+            const { state, error: stateError } = await fetchTransmediaCreditState();
+            if (stateError) { respond({ allowed: true }); return; }
+
+            const used = state.novela_questions ?? 0;
+            if (used >= FREE_NOVELA_QUESTIONS) {
+              respond({ allowed: false, used, limit: FREE_NOVELA_QUESTIONS });
+              return;
+            }
+
+            const { state: newState, error: regError } = await registerTransmediaCreditEvent({
+              eventKey: 'novela_question',
+              amount: 0,
+              idempotencyKey: createTransmediaIdempotencyKey('novela_question'),
+            });
+
+            if (regError) { respond({ allowed: true }); return; }
+
+            respond({ allowed: true, used: newState.novela_questions, limit: FREE_NOVELA_QUESTIONS });
+          } catch {
+            respond({ allowed: true }); // fail open
+          }
+        })();
+        return;
       }
     };
 

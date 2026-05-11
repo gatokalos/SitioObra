@@ -58,6 +58,8 @@ import { useMobileVideoPresentation } from '@/hooks/useMobileVideoPresentation';
 import IAInsightCard from '@/components/IAInsightCard';
 import DiosasCarousel from '@/components/DiosasCarousel';
 import RelatedReadingTooltipButton from '@/components/portal/RelatedReadingTooltipButton';
+import VitranaQuestionReveal from '@/components/portal/VitranaQuestionReveal';
+import ResonanceModal from '@/components/portal/ResonanceModal';
 import { useSilvestreVoice } from '@/hooks/useSilvestreVoice';
 import ObraConversationControls from '@/components/miniversos/obra/ObraConversationControls';
 import ObraQuestionList from '@/components/miniversos/obra/ObraQuestionList';
@@ -144,6 +146,8 @@ import {
   getFocusParamFromLocation,
   CAUSE_ACCORDION,
 } from '@/components/transmedia/transmediaConstants';
+
+const OBRA_TRAILER_URL = 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/cedes/gatoencerrado-trailer-web.mp4';
 
 const SHOWCASE_EYEBROW_COLOR = {
   copycats:            'text-sky-300',
@@ -246,6 +250,24 @@ const Transmedia = ({ allianceOnlyMode = false }) => {
   );
   const navigate = useNavigate();
   const location = useLocation();
+  const [isNarrativeDramaOpen, setIsNarrativeDramaOpen] = useState(false);
+  const [isDramaResonanceOpen, setIsDramaResonanceOpen] = useState(false);
+  const [isLiteraturaResonanceOpen, setIsLiteraturaResonanceOpen] = useState(false);
+  const [isArtesaniasResonanceOpen, setIsArtesaniasResonanceOpen] = useState(false);
+  const [isGraficosResonanceOpen, setIsGraficosResonanceOpen] = useState(false);
+  const [isCineResonanceOpen, setIsCineResonanceOpen] = useState(false);
+  const [isSonoroResonanceOpen, setIsSonoroResonanceOpen] = useState(false);
+  const [isMovimientoResonanceOpen, setIsMovimientoResonanceOpen] = useState(false);
+  const [isJuegosResonanceOpen, setIsJuegosResonanceOpen] = useState(false);
+  const [isOraculoResonanceOpen, setIsOraculoResonanceOpen] = useState(false);
+
+  useEffect(() => {
+    if (!isNarrativeDramaOpen) return;
+    const handler = (e) => { if (e.key === 'Escape') setIsNarrativeDramaOpen(false); };
+    document.addEventListener('keydown', handler);
+    return () => document.removeEventListener('keydown', handler);
+  }, [isNarrativeDramaOpen]);
+
   const releaseDesktopFocusLock = useCallback(() => {
     setFocusLockShowcaseId(null);
     setFocusIncomingGAT(null);
@@ -1597,7 +1619,7 @@ const rendernotaAutoral = () => {
 
       return (
         <div className="space-y-8">
-          <div className="grid gap-10 lg:grid-cols-[2fr_1fr]">
+          <div className="grid gap-6 lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
             <div className="space-y-6">
               <div className="rounded-3xl border border-white/10 overflow-hidden bg-black/30">
   <div className="flex items-center justify-between gap-3 px-6 pt-4">
@@ -1806,14 +1828,19 @@ const rendernotaAutoral = () => {
             ) : null}
           </div>
 
-          <div className="space-y-6">
-            {renderCommunityBlock('lataza', {
-              reactionProps: {
-                showcaseId: 'lataza',
-                description: 'Estamos explorando las emociones contemporáneas a través de preguntas y experiencias narrativas.',
-                buttonLabel: '¿No te salen las palabras? ¡déjanos un pulso!',
-              },
-            })}
+          <div className="flex flex-col gap-5">
+            {rendernotaAutoral()}
+            {activeDefinition.iaProfile ? (
+              <IAInsightCard {...activeDefinition.iaProfile} compact />
+            ) : null}
+            <button
+              type="button"
+              onClick={handleActivateAR}
+              disabled={isTazaActivating}
+              className="inline-flex w-full items-center justify-center gap-2 rounded-2xl border border-amber-400/40 bg-amber-500/10 px-6 py-3 text-sm font-semibold text-amber-200 tracking-wide transition hover:bg-amber-500/20"
+            >
+              {isTazaActivating ? 'Procesando...' : '✦ Activa tu taza'}
+            </button>
           </div>
         </div>
         </div>
@@ -1840,7 +1867,7 @@ const rendernotaAutoral = () => {
             />
           </div>
 
-          <div className="grid gap-6 lg:grid-cols-2">
+          <div className="grid gap-6 lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
             <div className="space-y-6">
               <div className="rounded-3xl border border-white/10 bg-black/30 p-6 space-y-4">
                 <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Cómo explorar</p>
@@ -1859,15 +1886,18 @@ const rendernotaAutoral = () => {
               ) : null}
             </div>
 
-            <div className="space-y-6">
-              {renderCommunityBlock('miniversoSonoro', {
-                reactionProps: {
-                  showcaseId: 'miniversoSonoro',
-                  description: 'Estamos explorando las emociones contemporáneas a través de preguntas y experiencias narrativas.',
-                  buttonLabel: '¿No te salen las palabras? ¡déjanos un pulso!',
-                  className: 'mt-0',
-                },
-              })}
+            <div className="flex flex-col gap-5">
+              {rendernotaAutoral()}
+              {activeDefinition.iaProfile ? (
+                <IAInsightCard {...activeDefinition.iaProfile} compact />
+              ) : null}
+              <button
+                type="button"
+                onClick={handleSonoroEnter}
+                className="inline-flex w-full items-center justify-center gap-2 rounded-2xl border border-amber-400/40 bg-amber-500/10 px-6 py-3 text-sm font-semibold text-amber-200 tracking-wide transition hover:bg-amber-500/20"
+              >
+                ✦ Entrar a la experiencia sonora
+              </button>
             </div>
           </div>
         </div>
@@ -1877,7 +1907,7 @@ const rendernotaAutoral = () => {
 
     if (activeDefinition.type === 'oracle') {
       return (
-        <div className="grid gap-6 lg:gap-10 lg:grid-cols-[2fr_1fr]">
+        <div className="grid gap-6 lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)] lg:items-start">
           <div className="space-y-6">
             <div className="rounded-3xl border border-white/10 bg-black/30 p-6 space-y-4">
               <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Minado simbólico</p>
@@ -1927,9 +1957,7 @@ const rendernotaAutoral = () => {
               </div>
               <p className="text-xs text-slate-500">{activeDefinition.limitsNote}</p>
             </div>
-          </div>
 
-          <div className="space-y-4 lg:space-y-6">
             <div className="rounded-3xl border border-white/10 bg-black/30 p-6 space-y-3">
               <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Semillas de conocimiento</p>
               <ul className="space-y-2 text-sm text-slate-300/85 leading-relaxed">
@@ -1953,6 +1981,20 @@ const rendernotaAutoral = () => {
               </p>
               <p className="text-xs text-slate-500">El Oráculo es un espacio curado; el minado es resonancia, no dinero.</p>
             </div>
+          </div>
+
+          <div className="flex flex-col gap-5">
+            {rendernotaAutoral()}
+            {activeDefinition.iaProfile ? (
+              <IAInsightCard {...activeDefinition.iaProfile} compact />
+            ) : null}
+            <button
+              type="button"
+              onClick={handleOpenOraculo}
+              className="inline-flex w-full items-center justify-center gap-2 rounded-2xl border border-amber-400/40 bg-amber-500/10 px-6 py-3 text-sm font-semibold text-amber-200 tracking-wide transition hover:bg-amber-500/20"
+            >
+              ✦ {activeDefinition.ctaLabel}
+            </button>
           </div>
         </div>
       );
@@ -2046,7 +2088,89 @@ const rendernotaAutoral = () => {
 
       return (
         <div className="space-y-6">
-          <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.2fr)]">
+          {/* BLOQUE 2 — Obra destacada · Vitrina Desktop only */}
+          <div className="hidden lg:grid lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)] gap-6">
+            {/* Columna izquierda: card inmersiva estilo cine */}
+            <div className="relative overflow-hidden rounded-2xl border border-white/10 bg-black/30">
+              {/* Fondo: video tráiler */}
+              <video
+                className="absolute inset-0 w-full h-full object-cover"
+                src={OBRA_TRAILER_URL}
+                autoPlay
+                muted
+                loop
+                playsInline
+                preload="metadata"
+              />
+              <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-black/10 via-black/30 to-black/90" />
+              {/* Contenido flotando al fondo */}
+              <div className="relative z-10 flex min-h-[28rem] flex-col p-6">
+                <div aria-hidden="true" className="h-[14rem]" />
+                <div className="mt-auto space-y-4">
+                  <div className="space-y-1">
+                    <p className="text-xs uppercase tracking-[0.35em] text-slate-300/75">Obra destacada</p>
+                    <h4 className="font-display text-xl text-slate-100">Es un gato encerrado</h4>
+                  </div>
+                  <p className="text-sm leading-relaxed text-slate-300/85">
+                    A través de una terapia no convencional, un paciente y su doctora exploran el poder de los sueños lúcidos para confrontar el miedo, la desconexión y la rabia reprimida.
+                  </p>
+                  <div className="flex flex-wrap gap-2">
+                    {['Teatro', 'Sueños lúcidos', 'Drama psicológico'].map((tag, i) => (
+                      <span
+                        key={i}
+                        className="rounded-full border border-purple-400/30 bg-purple-900/20 px-3 py-1 text-xs text-purple-100"
+                      >
+                        {tag}
+                      </span>
+                    ))}
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => navigate('/portal-encuentros', { state: { from: location.pathname } })}
+                    className="inline-flex w-full items-center justify-center rounded-full border border-purple-400/40 text-purple-200 hover:bg-purple-500/10 px-6 py-2.5 text-sm font-semibold transition"
+                  >
+                    Próximas funciones
+                  </button>
+                </div>
+              </div>
+            </div>
+            {/* Columna derecha: mini-verso autoral + IA + CTA experiencia narrativa */}
+            <div className="flex flex-col gap-5">
+              {rendernotaAutoral()}
+              {activeDefinition.iaProfile ? (
+                <IAInsightCard {...activeDefinition.iaProfile} compact />
+              ) : null}
+              <button
+                type="button"
+                onClick={() => setIsNarrativeDramaOpen(true)}
+                className="w-full rounded-2xl border border-amber-400/40 bg-amber-500/10 px-6 py-4 text-sm font-semibold tracking-wide text-amber-200 shadow-[0_8px_32px_rgba(251,191,36,0.15)] transition hover:bg-amber-500/20 hover:shadow-[0_8px_40px_rgba(251,191,36,0.25)]"
+              >
+                Abrir experiencia narrativa
+              </button>
+            </div>
+          </div>
+
+          <AnimatePresence>
+            {isNarrativeDramaOpen && (
+              <motion.div
+                className="fixed inset-0 z-[180] overflow-y-auto bg-slate-950"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.2 }}
+              >
+                <div className="sticky top-0 z-10 flex items-center justify-end px-6 py-3 border-b border-white/10 bg-slate-950/90 backdrop-blur-sm">
+                  <button
+                    type="button"
+                    onClick={() => setIsNarrativeDramaOpen(false)}
+                    aria-label="Cerrar experiencia narrativa"
+                    className="flex h-8 w-8 items-center justify-center rounded-full border border-white/10 text-slate-400 hover:text-white transition"
+                  >
+                    <X size={14} />
+                  </button>
+                </div>
+                <div className="mx-auto w-full max-w-6xl px-6 py-8">
+                  <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.2fr)]">
             <div className="contents lg:block lg:min-w-0 lg:space-y-6">
               <div className="min-w-0 overflow-hidden rounded-3xl border border-white/10 bg-black/35 p-6 shadow-[0_20px_45px_rgba(0,0,0,0.45)] space-y-4">
                 <div className="min-w-0 space-y-2">
@@ -2165,14 +2289,6 @@ const rendernotaAutoral = () => {
                 </div>
               </div>
 
-              <div className="order-5 min-w-0 lg:order-none">
-                {renderCommunityBlock('miniversos', {
-                  emptyMessage: 'Todavía no hay voces en este miniverso.',
-                  reactionProps: reactionDetails,
-                  className: 'rounded-3xl border border-white/10 bg-black/30 p-6 space-y-5',
-                  commentsViewportClassName: 'max-h-[240px]',
-                })}
-              </div>
             </div>
 
             <div className="order-2 min-w-0 space-y-6 lg:order-none">
@@ -2459,6 +2575,10 @@ const rendernotaAutoral = () => {
 
             </div>
           </div>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
       );
     }
@@ -2593,16 +2713,21 @@ const rendernotaAutoral = () => {
             ) : null}
           </div>
 
-          <div className="space-y-6">
-            
-            {renderCommunityBlock('miniversoGrafico', {
-              reactionProps: {
-                showcaseId: 'miniversoGrafico',
-                description: 'Estamos explorando las emociones contemporáneas a través de preguntas y experiencias narrativas.',
-                buttonLabel: '¿No te salen las palabras? ¡déjanos un pulso!',
-                className: 'mt-0 bg-gradient-to-r from-fuchsia-900/20 to-black/40',
-              },
-            })}
+          <div className="flex flex-col gap-5">
+            {rendernotaAutoral()}
+            {activeDefinition.iaProfile ? (
+              <IAInsightCard {...activeDefinition.iaProfile} compact />
+            ) : null}
+            {swipeShowcases[0] ? (
+              <button
+                type="button"
+                onClick={() => handleOpenGraphicSwipe(swipeShowcases[0])}
+                disabled={isGraphicUnlocking}
+                className="inline-flex w-full items-center justify-center gap-2 rounded-2xl border border-amber-400/40 bg-amber-500/10 px-6 py-3 text-sm font-semibold text-amber-200 tracking-wide transition hover:bg-amber-500/20"
+              >
+                {isGraphicUnlocking ? 'Aplicando...' : '✦ Abrir swipe en PDF'}
+              </button>
+            ) : null}
           </div>
         </div>
         </div>
@@ -2638,7 +2763,7 @@ const rendernotaAutoral = () => {
             ) : null}
           </div>
 
-          <div className="grid gap-6 xl:grid-cols-[1.25fr_1fr] xl:items-start">
+          <div className="grid gap-6 lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)] lg:items-start">
             <div className="space-y-6">
               <div className="rounded-3xl border border-white/10 bg-black/30 p-5 space-y-4">
                 <p className="text-xs uppercase tracking-[0.35em] text-slate-400/80">Activaciones de ruta</p>
@@ -2706,20 +2831,18 @@ const rendernotaAutoral = () => {
 
             </div>
 
-            <div className="space-y-5">
-              {renderCommunityBlock('miniversoMovimiento', {
-                emptyMessage: 'Todavía no hay voces en este miniverso.',
-                className: 'rounded-3xl border border-white/10 bg-black/30 p-6 space-y-5',
-                commentsViewportClassName: 'max-h-[240px]',
-                hideReaction: true,
-              })}
-
-              <ShowcaseReactionInline
-                showcaseId="miniversoMovimiento"
-                  description="Estamos explorando las emociones contemporáneas a través de preguntas y experiencias narrativas."
-                  buttonLabel="¿No te salen las palabras? ¡déjanos un pulso!"
-                className="mt-0 rounded-3xl border-white/10 bg-black/30"
-              />
+            <div className="flex flex-col gap-5">
+              {rendernotaAutoral()}
+              {activeDefinition.iaProfile ? (
+                <IAInsightCard {...activeDefinition.iaProfile} compact />
+              ) : null}
+              <button
+                type="button"
+                onClick={() => handleOpenContribution(getContributionCategoryForShowcase('miniversoMovimiento'))}
+                className="inline-flex w-full items-center justify-center gap-2 rounded-2xl border border-amber-400/40 bg-amber-500/10 px-6 py-3 text-sm font-semibold text-amber-200 tracking-wide transition hover:bg-amber-500/20"
+              >
+                ✦ Inscríbete a los talleres coreográficos
+              </button>
             </div>
           </div>
         </div>
@@ -2730,10 +2853,10 @@ const rendernotaAutoral = () => {
       const embeddedAppUrl = sanitizeExternalHttpUrl(activeDefinition.liveExperience?.url);
 
       return (
-        <div className="space-y-8">
-          {embeddedAppUrl ? (
-            <div className="rounded-3xl border border-emerald-200/20 bg-black/30 p-4 sm:p-5 space-y-4 shadow-[0_20px_60px_rgba(0,0,0,0.35)]">
-              <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
+        <div className="grid gap-6 lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)] lg:items-start">
+          <div>
+            {embeddedAppUrl ? (
+              <div className="rounded-3xl border border-emerald-200/20 bg-black/30 p-4 sm:p-5 space-y-4 shadow-[0_20px_60px_rgba(0,0,0,0.35)]">
                 <div className="space-y-2">
                   <p className="text-xs uppercase tracking-[0.35em] text-emerald-100/75">Experiencia incrustada</p>
                   <h4 className="font-display text-xl text-slate-100">
@@ -2745,38 +2868,36 @@ const rendernotaAutoral = () => {
                     </p>
                   ) : null}
                 </div>
-                <a
-                  href={embeddedAppUrl}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="inline-flex items-center justify-center rounded-full border border-emerald-300/40 bg-emerald-500/10 px-4 py-2 text-xs font-medium uppercase tracking-[0.22em] text-emerald-100 transition hover:bg-emerald-500/20"
-                >
-                  {activeDefinition.liveExperience?.ctaLabel || 'Abrir aparte'}
-                </a>
+                <div className="overflow-hidden rounded-[1.75rem] border border-emerald-200/20 bg-slate-950/80 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]">
+                  <iframe
+                    src={embeddedAppUrl}
+                    title={activeDefinition.liveExperience?.title || 'App de Juegos'}
+                    className="block h-[68vh] min-h-[520px] w-full bg-white"
+                    loading="lazy"
+                    referrerPolicy="strict-origin-when-cross-origin"
+                    allow="accelerometer; autoplay; camera; clipboard-read; clipboard-write; fullscreen; gamepad; gyroscope; microphone; web-share"
+                  />
+                </div>
               </div>
+            ) : null}
+          </div>
 
-              <div className="overflow-hidden rounded-[1.75rem] border border-emerald-200/20 bg-slate-950/80 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]">
-                <iframe
-                  src={embeddedAppUrl}
-                  title={activeDefinition.liveExperience?.title || 'App de Juegos'}
-                  className="block h-[68vh] min-h-[520px] w-full bg-white"
-                  loading="lazy"
-                  referrerPolicy="strict-origin-when-cross-origin"
-                  allow="accelerometer; autoplay; camera; clipboard-read; clipboard-write; fullscreen; gamepad; gyroscope; microphone; web-share"
-                />
-              </div>
-            </div>
-          ) : null}
-
-          {renderCommunityBlock('apps', {
-            reactionProps: {
-              showcaseId: 'apps',
-              title: 'Resonancia lúdica',
-              description: 'Estamos explorando las emociones contemporáneas a través de preguntas y experiencias narrativas.',
-              buttonLabel: '¿No te salen las palabras? ¡déjanos un pulso!',
-              className: 'mt-0',
-            },
-          })}
+          <div className="flex flex-col gap-5">
+            {rendernotaAutoral()}
+            {activeDefinition.iaProfile ? (
+              <IAInsightCard {...activeDefinition.iaProfile} compact />
+            ) : null}
+            {embeddedAppUrl ? (
+              <a
+                href={embeddedAppUrl}
+                target="_blank"
+                rel="noreferrer"
+                className="inline-flex w-full items-center justify-center gap-2 rounded-2xl border border-amber-400/40 bg-amber-500/10 px-6 py-3 text-sm font-semibold text-amber-200 tracking-wide transition hover:bg-amber-500/20"
+              >
+                ✦ {activeDefinition.liveExperience?.ctaLabel || 'Abrir app aparte'}
+              </a>
+            ) : null}
+          </div>
         </div>
       );
     }
@@ -2994,7 +3115,7 @@ const rendernotaAutoral = () => {
 
       const quironBlock = (
         renderImmersiveCinemaBlock({
-          eyebrow: 'Cortometraje',
+          eyebrow: 'Obra destacada',
           title: activeDefinition.quiron?.title,
           description: activeDefinition.quiron?.description,
           microcopy: activeDefinition.quiron?.microcopy,
@@ -3170,20 +3291,27 @@ const rendernotaAutoral = () => {
         <div className="space-y-8">
           {isMobileViewport ? (
             <div className="space-y-6">
-              {copycatsBlock}
               {quironBlock}
-              {proyeccionBlock}
               {comentariosBlock}
             </div>
           ) : (
-            <div className="grid gap-6 lg:grid-cols-2">
-              <div className="space-y-6">
-                {copycatsBlock}
-                {proyeccionBlock}
-              </div>
-              <div className="space-y-6">
+            <div className="grid gap-6 lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
+              <div>
                 {quironBlock}
-                {comentariosBlock}
+              </div>
+              <div className="flex flex-col gap-5">
+                {rendernotaAutoral()}
+                {activeDefinition.iaProfile ? (
+                  <IAInsightCard {...activeDefinition.iaProfile} compact />
+                ) : null}
+                <button
+                  type="button"
+                  onClick={isQuironUnlocked ? handleQuironPlayRequest : handleToggleQuironPrompt}
+                  disabled={isQuironUnlocking}
+                  className="inline-flex w-full items-center justify-center gap-2 rounded-2xl border border-amber-400/40 bg-amber-500/10 px-6 py-3 text-sm font-semibold text-amber-200 tracking-wide transition hover:bg-amber-500/20 disabled:opacity-50"
+                >
+                  {isQuironUnlocked ? '▶ Ver Quirón' : isQuironUnlocking ? 'Procesando…' : '✦ Ver cortometraje ahora'}
+                </button>
               </div>
             </div>
           )}
@@ -3257,22 +3385,6 @@ const rendernotaAutoral = () => {
                   >
                     {isMerchCheckoutLoading ? 'Abriendo checkout...' : 'Comprar edición física'}
                   </button>
-                  {entry.app.appUrl ? (
-                    <button
-                      type="button"
-                      onClick={() => setShowLiteraturaApp(true)}
-                      className="inline-flex w-full items-center justify-center gap-2 rounded-full border border-amber-400/50 text-amber-200 hover:bg-amber-500/10 px-6 py-2.5 text-sm font-semibold tracking-wide transition"
-                    >
-                      📖 Abrir separador inteligente
-                    </button>
-                  ) : (
-                    <Button
-                      onClick={() => handleNovelAppCTA(entry.app)}
-                      className="w-full justify-center bg-purple-600/80 hover:bg-purple-600 text-white rounded-full"
-                    >
-                      {entry.app.ctaLabel || 'Leer fragmentos'}
-                    </Button>
-                  )}
                 </div>
               );
             }
@@ -3390,18 +3502,18 @@ const rendernotaAutoral = () => {
                     );
                   })}
                 </div>
-                <div className="space-y-6">
-                  {renderCommunityBlock('miniversoNovela', {
-                    emptyMessage: 'Todavía no hay voces en este miniverso.',
-                    className: 'rounded-3xl border border-white/10 bg-black/30 p-6 space-y-5',
-                    ctaLabel: 'Intuye tu respuesta',
-                    subCopy: 'Estamos investigando cómo distintas personas atraviesan emociones que se reflejan en esta plataforma.',
-                  })}
-                  <ShowcaseReactionInline
-                    showcaseId="miniversoNovela"
-                    description="Estamos explorando las emociones contemporáneas a través de preguntas y experiencias narrativas."
-                    buttonLabel="¿no te salen las palabras? ¡déjanos un pulso!"
-                  />
+                <div className="flex flex-col gap-5">
+                  {rendernotaAutoral()}
+                  {activeDefinition.iaProfile ? (
+                    <IAInsightCard {...activeDefinition.iaProfile} compact />
+                  ) : null}
+                  <button
+                    type="button"
+                    onClick={() => setShowLiteraturaApp(true)}
+                    className="inline-flex w-full items-center justify-center gap-2 rounded-2xl border border-amber-400/40 bg-amber-500/10 px-6 py-3 text-sm font-semibold text-amber-200 tracking-wide transition hover:bg-amber-500/20"
+                  >
+                    📖 Abrir separador inteligente
+                  </button>
                 </div>
               </div>
             ) : (
@@ -3827,12 +3939,189 @@ const rendernotaAutoral = () => {
                     <div className="lg:hidden">
                       {renderCollaboratorsSection(activeDefinition.collaborators, activeShowcase ?? 'hdr')}
                     </div>
-                    {rendernotaAutoral()}
-                    {activeDefinition.iaProfile ? (
-                      <div className="hidden lg:block">
-                        <IAInsightCard {...activeDefinition.iaProfile} compact />
-                      </div>
-                    ) : null}
+                    {activeDefinition.type === 'tragedia' ? (
+                      <>
+                        <VitranaQuestionReveal
+                          question={VITRANA_QUESTION_BY_SHOWCASE['miniversos']}
+                          onAnswer={() => setIsDramaResonanceOpen(true)}
+                        />
+                        {activeShowcase === 'miniversos' ? (
+                          <ShowcaseReactionInline
+                            showcaseId="miniversos"
+                            description="Estamos explorando las emociones contemporáneas a través de preguntas y experiencias narrativas."
+                            buttonLabel="¿no te salen las palabras? ¡déjanos un pulso!"
+                            className="mt-4"
+                          />
+                        ) : null}
+                        <ResonanceModal
+                          open={isDramaResonanceOpen}
+                          onClose={() => setIsDramaResonanceOpen(false)}
+                          question={VITRANA_QUESTION_BY_SHOWCASE['miniversos']}
+                          portal="miniversos"
+                        />
+                      </>
+                    ) : activeShowcase === 'miniversoNovela' ? (
+                      <>
+                        <VitranaQuestionReveal
+                          question={VITRANA_QUESTION_BY_SHOWCASE['miniversoNovela']}
+                          onAnswer={() => setIsLiteraturaResonanceOpen(true)}
+                        />
+                        <ShowcaseReactionInline
+                          showcaseId="miniversoNovela"
+                          description="Estamos explorando las emociones contemporáneas a través de preguntas y experiencias narrativas."
+                          buttonLabel="¿no te salen las palabras? ¡déjanos un pulso!"
+                          className="mt-4"
+                        />
+                        <ResonanceModal
+                          open={isLiteraturaResonanceOpen}
+                          onClose={() => setIsLiteraturaResonanceOpen(false)}
+                          question={VITRANA_QUESTION_BY_SHOWCASE['miniversoNovela']}
+                          portal="miniversoNovela"
+                        />
+                      </>
+                    ) : activeShowcase === 'lataza' ? (
+                      <>
+                        <VitranaQuestionReveal
+                          question={VITRANA_QUESTION_BY_SHOWCASE['lataza']}
+                          onAnswer={() => setIsArtesaniasResonanceOpen(true)}
+                        />
+                        <ShowcaseReactionInline
+                          showcaseId="lataza"
+                          description="Estamos explorando las emociones contemporáneas a través de preguntas y experiencias narrativas."
+                          buttonLabel="¿no te salen las palabras? ¡déjanos un pulso!"
+                          className="mt-4"
+                        />
+                        <ResonanceModal
+                          open={isArtesaniasResonanceOpen}
+                          onClose={() => setIsArtesaniasResonanceOpen(false)}
+                          question={VITRANA_QUESTION_BY_SHOWCASE['lataza']}
+                          portal="lataza"
+                        />
+                      </>
+                    ) : activeShowcase === 'miniversoGrafico' ? (
+                      <>
+                        <VitranaQuestionReveal
+                          question={VITRANA_QUESTION_BY_SHOWCASE['miniversoGrafico']}
+                          onAnswer={() => setIsGraficosResonanceOpen(true)}
+                        />
+                        <ShowcaseReactionInline
+                          showcaseId="miniversoGrafico"
+                          description="Estamos explorando las emociones contemporáneas a través de preguntas y experiencias narrativas."
+                          buttonLabel="¿no te salen las palabras? ¡déjanos un pulso!"
+                          className="mt-4"
+                        />
+                        <ResonanceModal
+                          open={isGraficosResonanceOpen}
+                          onClose={() => setIsGraficosResonanceOpen(false)}
+                          question={VITRANA_QUESTION_BY_SHOWCASE['miniversoGrafico']}
+                          portal="miniversoGrafico"
+                        />
+                      </>
+                    ) : activeShowcase === 'copycats' ? (
+                      <>
+                        <VitranaQuestionReveal
+                          question={VITRANA_QUESTION_BY_SHOWCASE['cine']}
+                          onAnswer={() => setIsCineResonanceOpen(true)}
+                        />
+                        <ShowcaseReactionInline
+                          showcaseId="copycats"
+                          description="Estamos explorando las emociones contemporáneas a través de preguntas y experiencias narrativas."
+                          buttonLabel="¿no te salen las palabras? ¡déjanos un pulso!"
+                          className="mt-4"
+                        />
+                        <ResonanceModal
+                          open={isCineResonanceOpen}
+                          onClose={() => setIsCineResonanceOpen(false)}
+                          question={VITRANA_QUESTION_BY_SHOWCASE['cine']}
+                          portal="copycats"
+                        />
+                      </>
+                    ) : activeShowcase === 'miniversoSonoro' ? (
+                      <>
+                        <VitranaQuestionReveal
+                          question={VITRANA_QUESTION_BY_SHOWCASE['miniversoSonoro']}
+                          onAnswer={() => setIsSonoroResonanceOpen(true)}
+                        />
+                        <ShowcaseReactionInline
+                          showcaseId="miniversoSonoro"
+                          description="Estamos explorando las emociones contemporáneas a través de preguntas y experiencias narrativas."
+                          buttonLabel="¿no te salen las palabras? ¡déjanos un pulso!"
+                          className="mt-4"
+                        />
+                        <ResonanceModal
+                          open={isSonoroResonanceOpen}
+                          onClose={() => setIsSonoroResonanceOpen(false)}
+                          question={VITRANA_QUESTION_BY_SHOWCASE['miniversoSonoro']}
+                          portal="miniversoSonoro"
+                        />
+                      </>
+                    ) : activeShowcase === 'miniversoMovimiento' ? (
+                      <>
+                        <VitranaQuestionReveal
+                          question={VITRANA_QUESTION_BY_SHOWCASE['miniversoMovimiento']}
+                          onAnswer={() => setIsMovimientoResonanceOpen(true)}
+                        />
+                        <ShowcaseReactionInline
+                          showcaseId="miniversoMovimiento"
+                          description="Estamos explorando las emociones contemporáneas a través de preguntas y experiencias narrativas."
+                          buttonLabel="¿no te salen las palabras? ¡déjanos un pulso!"
+                          className="mt-4"
+                        />
+                        <ResonanceModal
+                          open={isMovimientoResonanceOpen}
+                          onClose={() => setIsMovimientoResonanceOpen(false)}
+                          question={VITRANA_QUESTION_BY_SHOWCASE['miniversoMovimiento']}
+                          portal="miniversoMovimiento"
+                        />
+                      </>
+                    ) : activeShowcase === 'apps' ? (
+                      <>
+                        <VitranaQuestionReveal
+                          question={VITRANA_QUESTION_BY_SHOWCASE['apps']}
+                          onAnswer={() => setIsJuegosResonanceOpen(true)}
+                        />
+                        <ShowcaseReactionInline
+                          showcaseId="apps"
+                          description="Estamos explorando las emociones contemporáneas a través de preguntas y experiencias narrativas."
+                          buttonLabel="¿no te salen las palabras? ¡déjanos un pulso!"
+                          className="mt-4"
+                        />
+                        <ResonanceModal
+                          open={isJuegosResonanceOpen}
+                          onClose={() => setIsJuegosResonanceOpen(false)}
+                          question={VITRANA_QUESTION_BY_SHOWCASE['apps']}
+                          portal="apps"
+                        />
+                      </>
+                    ) : activeShowcase === 'oraculo' ? (
+                      <>
+                        <VitranaQuestionReveal
+                          question={VITRANA_QUESTION_BY_SHOWCASE['oraculo']}
+                          onAnswer={() => setIsOraculoResonanceOpen(true)}
+                        />
+                        <ShowcaseReactionInline
+                          showcaseId="oraculo"
+                          description="Estamos explorando las emociones contemporáneas a través de preguntas y experiencias narrativas."
+                          buttonLabel="¿no te salen las palabras? ¡déjanos un pulso!"
+                          className="mt-4"
+                        />
+                        <ResonanceModal
+                          open={isOraculoResonanceOpen}
+                          onClose={() => setIsOraculoResonanceOpen(false)}
+                          question={VITRANA_QUESTION_BY_SHOWCASE['oraculo']}
+                          portal="oraculo"
+                        />
+                      </>
+                    ) : (
+                      <>
+                        {rendernotaAutoral()}
+                        {activeDefinition.iaProfile ? (
+                          <div className="hidden lg:block">
+                            <IAInsightCard {...activeDefinition.iaProfile} compact />
+                          </div>
+                        ) : null}
+                      </>
+                    )}
                   </div>
                 </div>
               </div>

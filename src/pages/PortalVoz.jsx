@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
+import { useNavigate, useLocation } from 'react-router-dom';
 import {
   Feather,
   Flame,
@@ -10,6 +11,7 @@ import {
   Heart,
   Layers,
   Hand,
+  X,
 } from 'lucide-react';
 import { useAuth } from '@/contexts/SupabaseAuthContext';
 import LoginOverlay from '@/components/ContributionModal/LoginOverlay';
@@ -197,6 +199,8 @@ const SCENE_PORTAL_NOTA_AUTORAL = {
   title: '#LaPuertaInvisible',
   verse: 'Entré sin saber.\nAlgo dijo mi nombre.\nY ya no hubo salida.',
 };
+const OBRA_TRAILER_URL = 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/cedes/gatoencerrado-trailer-web.mp4';
+
 const MINIVERSO_TILE_GRADIENTS = {
   miniversos: 'linear-gradient(135deg, rgba(31,21,52,0.95), rgba(64,36,93,0.85), rgba(122,54,127,0.65))',
   default: 'linear-gradient(135deg, rgba(20,14,35,0.95), rgba(47,28,71,0.85), rgba(90,42,100,0.65))',
@@ -428,7 +432,10 @@ const PortalVoz = () => {
   const [reactionStatus, setReactionStatus] = useState('idle');
   const [isContributionOpen, setIsContributionOpen] = useState(false);
   const [isResonanceOpen, setIsResonanceOpen] = useState(false);
+  const [isNarrativeExperienceOpen, setIsNarrativeExperienceOpen] = useState(false);
   const [openCollaboratorId, setOpenCollaboratorId] = useState(null);
+  const navigate = useNavigate();
+  const location = useLocation();
 
   const obraConversationControlsRef = useRef(null);
   const obraModesRef = useRef(null);
@@ -1021,6 +1028,64 @@ const PortalVoz = () => {
             )}
           </div>
 
+          {/* BLOQUE: Obra destacada */}
+          <div className="relative overflow-hidden rounded-2xl border border-white/10 bg-black/30">
+            <video
+              className="absolute inset-0 w-full h-full object-cover"
+              src={OBRA_TRAILER_URL}
+              autoPlay
+              muted
+              loop
+              playsInline
+              preload="metadata"
+            />
+            <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-black/10 via-black/30 to-black/90" />
+            <div className="relative z-10 flex min-h-[22rem] flex-col p-6">
+              <div aria-hidden="true" className="flex-1" />
+              <div className="space-y-4">
+                <div className="space-y-1">
+                  <p className="text-xs uppercase tracking-[0.35em] text-slate-300/75">Obra destacada</p>
+                  <h4 className="font-display text-xl text-slate-100">Es un gato encerrado</h4>
+                </div>
+                <p className="text-sm leading-relaxed text-slate-300/85">
+                  A través de una terapia no convencional, un paciente y su doctora exploran el poder de los sueños lúcidos para confrontar el miedo, la desconexión y la rabia reprimida.
+                </p>
+                <div className="flex flex-wrap gap-2">
+                  {['Teatro', 'Sueños lúcidos', 'Drama psicológico'].map((tag, i) => (
+                    <span key={i} className="rounded-full border border-purple-400/30 bg-purple-900/20 px-3 py-1 text-xs text-purple-100">{tag}</span>
+                  ))}
+                </div>
+                <button
+                  type="button"
+                  onClick={() => navigate('/portal-encuentros', { state: { from: location.pathname } })}
+                  className="inline-flex w-full items-center justify-center rounded-full border border-purple-400/40 text-purple-200 hover:bg-purple-500/10 px-6 py-2.5 text-sm font-semibold transition"
+                >
+                  Próximas funciones
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <AnimatePresence>
+            {isNarrativeExperienceOpen && (
+              <motion.div
+                className="fixed inset-0 z-[180] overflow-y-auto bg-slate-950"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.2 }}
+              >
+                <div className="sticky top-0 z-10 flex items-center justify-end px-6 py-3 border-b border-white/10 bg-slate-950/90 backdrop-blur-sm">
+                  <button
+                    type="button"
+                    onClick={() => setIsNarrativeExperienceOpen(false)}
+                    aria-label="Cerrar experiencia narrativa"
+                    className="flex h-8 w-8 items-center justify-center rounded-full border border-white/10 text-slate-400 hover:text-white transition"
+                  >
+                    <X size={14} />
+                  </button>
+                </div>
+                <div className="mx-auto w-full max-w-6xl px-6 py-8">
           <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.2fr)]">
             <div className="contents lg:block lg:min-w-0 lg:space-y-6">
               <div className="min-w-0 overflow-hidden rounded-3xl border border-white/10 bg-black/35 p-6 shadow-[0_20px_45px_rgba(0,0,0,0.45)] space-y-4">
@@ -1400,6 +1465,10 @@ const PortalVoz = () => {
               </div>
             </div>
           </div>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
           <div className="rounded-3xl border border-white/10 bg-black/30 p-6 space-y-6">
             {renderCollaboratorsSection()}
             <div className="flex flex-col gap-3">
@@ -1419,6 +1488,13 @@ const PortalVoz = () => {
             </div>
           </div>
           <IAInsightCard {...SCENE_PORTAL_IA_PROFILE} compact />
+          <button
+            type="button"
+            onClick={() => setIsNarrativeExperienceOpen(true)}
+            className="w-full rounded-2xl border border-amber-400/40 bg-amber-500/10 px-6 py-4 text-sm font-semibold tracking-wide text-amber-200 shadow-[0_8px_32px_rgba(251,191,36,0.15)] transition hover:bg-amber-500/20 hover:shadow-[0_8px_40px_rgba(251,191,36,0.25)]"
+          >
+            Abrir experiencia narrativa
+          </button>
         </div>
 
         {showLoginOverlay ? <LoginOverlay onClose={handleCloseLogin} /> : null}

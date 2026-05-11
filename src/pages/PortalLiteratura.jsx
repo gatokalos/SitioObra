@@ -126,8 +126,8 @@ const MiniVersoCard = ({ title, verse, palette }) => {
 
 const ShowcaseReactionInline = ({ status, onReact }) => (
   <PulseReactionCard
-    title="Resonancia colectiva"
-    description="Haz clic este miniverso para hacerlo resonar."
+    title="¿No te salen las palabras? ¡Déjanos un pulso!"
+    description="Estamos explorando las emociones contemporáneas a través de preguntas y experiencias narrativas."
     status={status}
     onReact={onReact}
   />
@@ -325,9 +325,7 @@ const PortalLiteratura = () => {
 
               <div className="flex flex-col gap-5">
                 <VitranaQuestionReveal question={vitranaQuestion} onAnswer={() => setIsResonanceOpen(true)} />
-                <p className="text-xs text-slate-400/70 leading-relaxed px-1">
-                  Esta plataforma investiga cómo distintas personas atraviesan experiencias narrativas, emocionales y simbólicas.
-                </p>
+    
                 <ShowcaseReactionInline status={reactionStatus} onReact={handleSendPulse} />
               </div>
             </div>
