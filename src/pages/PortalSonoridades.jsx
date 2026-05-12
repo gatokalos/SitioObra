@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { Hand, Headphones, Music2 } from 'lucide-react';
+import { Hand, Headphones } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/SupabaseAuthContext';
@@ -105,9 +105,15 @@ const SONORIDADES_BLOG_KEYS = [
 const SONORIDADES_BLOG_KEY_SET = new Set(SONORIDADES_BLOG_KEYS.map((key) => key.trim().toLowerCase()));
 
 const MiniVersoCard = ({ title, verse, palette }) => {
-  const [isActive, setIsActive] = useState(false);
+  const [isActive, setIsActive] = useState(() => {
+    try { return window.localStorage.getItem('gatoencerrado:miniverso-verso:' + title) === '1'; } catch { return false; }
+  });
 
-  const toggle = () => setIsActive((prev) => !prev);
+  const toggle = () => setIsActive((prev) => {
+    if (prev) return prev;
+    try { window.localStorage.setItem('gatoencerrado:miniverso-verso:' + title, '1'); } catch {}
+    return true;
+  });
 
   return (
     <div
@@ -342,6 +348,11 @@ const PortalSonoridades = () => {
                   <p>{SONORIDADES_BODY}</p>
                   <p className="text-slate-100/90">{SONORIDADES_CLOSE}</p>
                 </div>
+                <div className="flex flex-wrap gap-2">
+                  <span className="rounded-full border border-cyan-200/35 bg-cyan-400/10 px-3 py-1 text-[11px] uppercase tracking-[0.22em] text-cyan-100">Diseño sonoro</span>
+                  <span className="rounded-full border border-cyan-200/35 bg-cyan-400/10 px-3 py-1 text-[11px] uppercase tracking-[0.22em] text-cyan-100">Sueño en capas</span>
+                  <span className="rounded-full border border-cyan-200/35 bg-cyan-400/10 px-3 py-1 text-[11px] uppercase tracking-[0.22em] text-cyan-100">Mezcla original</span>
+                </div>
               </div>
 
               <div className="flex flex-col gap-5">
@@ -385,14 +396,6 @@ const PortalSonoridades = () => {
             <div className="flex flex-wrap gap-3">
               <Button
                 type="button"
-                onClick={handleOpenTrack}
-                className="w-full sm:w-auto bg-gradient-to-r from-cyan-500/85 to-blue-600/85 hover:from-cyan-400/90 hover:to-blue-500/90 text-white"
-              >
-                <Music2 size={15} className="mr-2" />
-                Escuchar pista base
-              </Button>
-              <Button
-                type="button"
                 variant="outline"
                 className="w-full sm:w-auto border-cyan-300/40 text-cyan-200 hover:bg-cyan-500/10"
                 onClick={handleOpenCommunityComposer}
@@ -427,6 +430,13 @@ const PortalSonoridades = () => {
             </div>
           </div>
           <IAInsightCard {...SONORIDADES_IA_PROFILE} compact />
+          <button
+            type="button"
+            onClick={handleOpenTrack}
+            className="w-full rounded-2xl border border-amber-400/40 bg-amber-500/10 px-6 py-4 text-sm font-semibold tracking-wide text-amber-200 shadow-[0_8px_32px_rgba(251,191,36,0.15)] transition hover:bg-amber-500/20 hover:shadow-[0_8px_40px_rgba(251,191,36,0.25)]"
+          >
+            ✦ Entrar a la experiencia sonora
+          </button>
         </div>
 
         {showLoginOverlay ? <LoginOverlay onClose={handleCloseLogin} /> : null}

@@ -11,15 +11,16 @@ const MiniVersoCard = ({
   onFirstReveal = null,
   celebration = false,
 }) => {
-  const [isActive, setIsActive] = useState(false);
+  const [isActive, setIsActive] = useState(() => {
+    try { return window.localStorage.getItem('gatoencerrado:miniverso-verso:' + title) === '1'; } catch { return false; }
+  });
   const textClass = isTragedia ? 'text-sm' : 'text-sm leading-relaxed';
   const handleCardToggle = () => {
     setIsActive((prev) => {
-      const next = !prev;
-      if (!prev && next && typeof onFirstReveal === 'function') {
-        onFirstReveal();
-      }
-      return next;
+      if (prev) return prev;
+      try { window.localStorage.setItem('gatoencerrado:miniverso-verso:' + title, '1'); } catch {}
+      if (typeof onFirstReveal === 'function') onFirstReveal();
+      return true;
     });
   };
 

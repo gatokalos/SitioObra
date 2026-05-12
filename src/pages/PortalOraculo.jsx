@@ -1,7 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Brain, Coins, Hand, Sparkles } from 'lucide-react';
 import { motion } from 'framer-motion';
-import { Button } from '@/components/ui/button';
 import { toast } from '@/components/ui/use-toast';
 import { useAuth } from '@/contexts/SupabaseAuthContext';
 import LoginOverlay from '@/components/ContributionModal/LoginOverlay';
@@ -76,8 +75,6 @@ const ORACULO_SEED_NOTES = [
   'Enriquecen una base de datos viviente para literatura, IA personalizada y obra interactiva.',
   'Cada huella deja señal en la mente del Gato.',
 ];
-const ORACULO_CTA_LABEL = 'Pregunta, responde y mintea';
-const ORACULO_CTA_DESCRIPTION = 'Tu pensamiento también construye este universo.';
 const ORACULO_NOTA_AUTORAL = {
   title: '#CambiarSinCambiar',
   verse: 'Mire el espejo.\nNo dijo nada.\nEramos dos... y no.',
@@ -106,10 +103,17 @@ const ORACULO_BLOG_KEYS = [
 const ORACULO_BLOG_KEY_SET = new Set(ORACULO_BLOG_KEYS.map((key) => key.trim().toLowerCase()));
 
 const MiniVersoCard = ({ title, verse, palette }) => {
-  const [isActive, setIsActive] = useState(false);
+  const [isActive, setIsActive] = useState(() => {
+    try { return window.localStorage.getItem('gatoencerrado:miniverso-verso:' + title) === '1'; } catch { return false; }
+  });
+  const reveal = () => setIsActive((prev) => {
+    if (prev) return prev;
+    try { window.localStorage.setItem('gatoencerrado:miniverso-verso:' + title, '1'); } catch {}
+    return true;
+  });
 
   return (
-    <div className="relative [perspective:1200px]" onClick={() => setIsActive((prev) => !prev)}>
+    <div className="relative [perspective:1200px]" onClick={reveal}>
       <motion.div
         animate={{ rotateY: isActive ? 180 : 0 }}
         transition={{ duration: 0.7, ease: 'easeInOut' }}
@@ -342,6 +346,11 @@ const PortalOraculo = () => {
                   <p>{ORACULO_INTRO}</p>
                   <p className="text-violet-200/90">{ORACULO_TAGLINE}</p>
                 </div>
+                <div className="flex flex-wrap gap-2">
+                  <span className="rounded-full border border-violet-200/35 bg-violet-400/10 px-3 py-1 text-[11px] uppercase tracking-[0.22em] text-violet-100">Ritual simbólico</span>
+                  <span className="rounded-full border border-violet-200/35 bg-violet-400/10 px-3 py-1 text-[11px] uppercase tracking-[0.22em] text-violet-100">Pregunta abierta</span>
+                  <span className="rounded-full border border-violet-200/35 bg-violet-400/10 px-3 py-1 text-[11px] uppercase tracking-[0.22em] text-violet-100">Huella viviente</span>
+                </div>
               </div>
 
               <div className="flex flex-col gap-5">
@@ -371,17 +380,6 @@ const PortalOraculo = () => {
                     </li>
                   ))}
                 </ul>
-                <div className="space-y-2">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    className="border-purple-400/40 text-purple-200 hover:bg-purple-500/10"
-                    onClick={handleOpenOraculo}
-                  >
-                    {ORACULO_CTA_LABEL}
-                  </Button>
-                  <p className="text-xs text-slate-400 leading-relaxed">{ORACULO_CTA_DESCRIPTION}</p>
-                </div>
               </div>
 
               <div className="rounded-3xl border border-white/10 bg-black/30 p-6 space-y-4">
@@ -445,6 +443,13 @@ const PortalOraculo = () => {
             </div>
           </div>
           <IAInsightCard {...ORACULO_IA_PROFILE} compact />
+          <button
+            type="button"
+            onClick={handleOpenOraculo}
+            className="w-full rounded-2xl border border-amber-400/40 bg-amber-500/10 px-6 py-4 text-sm font-semibold tracking-wide text-amber-200 shadow-[0_8px_32px_rgba(251,191,36,0.15)] transition hover:bg-amber-500/20 hover:shadow-[0_8px_40px_rgba(251,191,36,0.25)]"
+          >
+            ✦ Pregunta, responde y mintea
+          </button>
         </div>
 
         {showLoginOverlay ? <LoginOverlay onClose={handleCloseLogin} /> : null}

@@ -33,10 +33,17 @@ const JUEGOS_BLOG_KEYS = ['apps', 'juegos', 'miniversoapps', 'miniverso_apps', '
 const JUEGOS_BLOG_KEY_SET = new Set(JUEGOS_BLOG_KEYS.map((key) => key.trim().toLowerCase()));
 
 const MiniVersoCard = ({ title, verse, palette }) => {
-  const [isActive, setIsActive] = useState(false);
+  const [isActive, setIsActive] = useState(() => {
+    try { return window.localStorage.getItem('gatoencerrado:miniverso-verso:' + title) === '1'; } catch { return false; }
+  });
+  const reveal = () => setIsActive((prev) => {
+    if (prev) return prev;
+    try { window.localStorage.setItem('gatoencerrado:miniverso-verso:' + title, '1'); } catch {}
+    return true;
+  });
 
   return (
-    <div className="relative [perspective:1200px]" onClick={() => setIsActive((prev) => !prev)}>
+    <div className="relative [perspective:1200px]" onClick={reveal}>
       <motion.div
         animate={{ rotateY: isActive ? 180 : 0 }}
         transition={{ duration: 0.7, ease: 'easeInOut' }}
@@ -221,6 +228,11 @@ const PortalJuegos = () => {
                 <div className="space-y-4 text-lg text-slate-200/85 leading-relaxed font-light">
                   {JUEGOS_DEFINITION.introNode ?? JUEGOS_DEFINITION.intro}
                 </div>
+                <div className="flex flex-wrap gap-2">
+                  <span className="rounded-full border border-emerald-200/35 bg-emerald-400/10 px-3 py-1 text-[11px] uppercase tracking-[0.22em] text-emerald-100">Juego narrativo</span>
+                  <span className="rounded-full border border-emerald-200/35 bg-emerald-400/10 px-3 py-1 text-[11px] uppercase tracking-[0.22em] text-emerald-100">App interactiva</span>
+                  <span className="rounded-full border border-emerald-200/35 bg-emerald-400/10 px-3 py-1 text-[11px] uppercase tracking-[0.22em] text-emerald-100">Miniverso jugable</span>
+                </div>
               </div>
 
               <div className="flex flex-col gap-5">
@@ -252,14 +264,6 @@ const PortalJuegos = () => {
                     </p>
                   ) : null}
                 </div>
-                <a
-                  href={embeddedAppUrl}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="inline-flex items-center justify-center rounded-full border border-emerald-300/40 bg-emerald-500/10 px-4 py-2 text-xs font-medium uppercase tracking-[0.22em] text-emerald-100 transition hover:bg-emerald-500/20"
-                >
-                  {JUEGOS_DEFINITION.liveExperience?.ctaLabel || 'Abrir aparte'}
-                </a>
               </div>
 
               <div className="overflow-hidden rounded-[1.75rem] border border-emerald-200/20 bg-slate-950/80 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]">
@@ -286,6 +290,16 @@ const PortalJuegos = () => {
             </div>
           </div>
           {JUEGOS_DEFINITION.iaProfile ? <IAInsightCard {...JUEGOS_DEFINITION.iaProfile} compact /> : null}
+          {embeddedAppUrl ? (
+            <a
+              href={embeddedAppUrl}
+              target="_blank"
+              rel="noreferrer"
+              className="inline-flex w-full items-center justify-center rounded-2xl border border-amber-400/40 bg-amber-500/10 px-6 py-4 text-sm font-semibold tracking-wide text-amber-200 shadow-[0_8px_32px_rgba(251,191,36,0.15)] transition hover:bg-amber-500/20 hover:shadow-[0_8px_40px_rgba(251,191,36,0.25)]"
+            >
+              ✦ {JUEGOS_DEFINITION.liveExperience?.ctaLabel || 'Abrir app en pestaña nueva'}
+            </a>
+          ) : null}
         </div>
 
         {showLoginOverlay ? <LoginOverlay onClose={handleCloseLogin} /> : null}

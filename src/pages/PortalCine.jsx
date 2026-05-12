@@ -1,8 +1,6 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { Clapperboard, Hand, Ticket, Video } from 'lucide-react';
+import { Hand, Video } from 'lucide-react';
 import { motion } from 'framer-motion';
-import { useNavigate } from 'react-router-dom';
-import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/SupabaseAuthContext';
 import LoginOverlay from '@/components/ContributionModal/LoginOverlay';
 import ContributionModal from '@/components/ContributionModal';
@@ -22,7 +20,6 @@ import { useMobileVideoPresentation } from '@/hooks/useMobileVideoPresentation';
 import { usePortalTracking } from '@/hooks/usePortalTracking';
 import { useVitranaQuestion } from '@/hooks/useVitranaQuestion';
 import useScrambleText from '@/hooks/useScrambleText';
-import { ensureAnonId } from '@/lib/identity';
 
 const SUPABASE_STORAGE = `${import.meta.env.VITE_SUPABASE_URL || ''}/storage/v1/object/public`;
 
@@ -34,7 +31,7 @@ const CINE_THEME =
 const CINE_TONE = ['Premiere íntima', 'Conversatorio abierto', 'Cine con memoria'];
 const CINE_NOTA_AUTORAL = {
   title: '#LuzQueEditas',
-  verse: 'Memoria encendida.\nCamara despierta.\nY el tiempo la vuelve a montar.',
+  verse: 'Memoria encendida.\nCámara despierta.\nY el tiempo la vuelve a montar.',
 };
 const CINE_TILE = {
   gradient: 'linear-gradient(135deg, rgba(16,27,54,0.95), rgba(38,63,109,0.85), rgba(92,47,95,0.7))',
@@ -50,28 +47,12 @@ const CINE_IA_PROFILE = {
   coverage: 'Incluido en la activacion de huellas.',
   footnote: 'La IA acompaña la mirada; la decision sigue siendo humana.',
 };
-const COPYCATS_DATA = {
-  title: 'CopyCats',
-  description:
-    'CopyCats observa el acto de crear mientras ocurre. Un cine-ensayo sobre repetición, desgaste creativo y el extraño momento en que una obra empieza a copiarse a sí misma.',
-  microcopy: 'Ensayo abierto (4:27)',
-  url: `${SUPABASE_STORAGE}/Cine%20-%20teasers/Cadena_Gesto_small.mp4`,
-  tags: ['teaser', 'Identidad Digital', 'Archivo autoficcional'],
-};
 const QUIRON_DATA = {
-  title: 'Quiron',
-  description: 'Mira el teaser de un cortometraje que explora la vulnerabilidad donde casi nunca se nombra.',
-  teaserLabel: 'Teaser oficial',
+  title: 'Quirón',
+  description: 'Quirón es un cortometraje de autoficción que indaga en la herida emocional como punto de partida del conocimiento y la transformación. A través de una narrativa audiovisual original, explora la posibilidad de resignificar el dolor humano.',
   teaserUrl: `${SUPABASE_STORAGE}/Cine%20-%20teasers/Quiron_small.mp4`,
   fullUrl: `${SUPABASE_STORAGE}/Cine%20-%20teasers/Quiron_10min.mp4`,
   tags: ['Cine-ensayo', 'Identidad Digital', 'Archivo autoficcional'],
-};
-const CINE_PROYECCION = {
-  title: 'Mayo 2026 · Cineteca CECUT',
-  description:
-    'Forma parte de la primera proyeccion doble de CopyCats + Quiron, con conversatorio del equipo y sonido Dolby Atmos diseniado por Concrete Sounds.',
-  cta: 'Quiero ser parte de la proyeccion',
-  footnote: 'Registro de interes activo. Espera noticias.',
 };
 const CINE_COLLABORATORS = [
   {
@@ -105,8 +86,8 @@ const CINE_COLLABORATORS = [
   {
     id: 'tania-fraire',
     name: 'Tania Fraire Vazques',
-    role: 'Autoficcion (Quiron) · Interprete natural en pantalla',
-    bio: 'Tania llego al proyecto desde la autoficcion y revelo una presencia genuina, vulnerable y precisa frente a camara. Su participación en Quiron abrio una grieta luminosa para volver la historia mas humana.',
+    role: 'Autoficción (Quirón) · Intérprete natural en pantalla',
+    bio: 'Tania llegó al proyecto desde la autoficción y revelo una presencia genuina, vulnerable y precisa frente a cámara. Su participación en Quirón abrió una grieta luminosa para volver la historia mas humana.',
     image: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/equipo/tania.jpg',
   },
 ];
@@ -114,9 +95,15 @@ const CINE_BLOG_KEYS = ['copycats', 'cine', 'miniversocine'];
 const CINE_BLOG_KEY_SET = new Set(CINE_BLOG_KEYS.map((key) => key.trim().toLowerCase()));
 
 const MiniVersoCard = ({ title, verse, palette }) => {
-  const [isActive, setIsActive] = useState(false);
+  const [isActive, setIsActive] = useState(() => {
+    try { return window.localStorage.getItem('gatoencerrado:miniverso-verso:' + title) === '1'; } catch { return false; }
+  });
 
-  const toggle = () => setIsActive((prev) => !prev);
+  const toggle = () => setIsActive((prev) => {
+    if (prev) return prev;
+    try { window.localStorage.setItem('gatoencerrado:miniverso-verso:' + title, '1'); } catch {}
+    return true;
+  });
 
   return (
     <div
@@ -180,7 +167,6 @@ const ShowcaseReactionInline = ({ status, onReact }) => (
 );
 
 const PortalCine = () => {
-  const navigate = useNavigate();
   const { user } = useAuth();
   usePortalTracking('cine');
   const { question: vitranaQuestion } = useVitranaQuestion('cine');
@@ -291,16 +277,6 @@ const PortalCine = () => {
     window.open(QUIRON_DATA.fullUrl, '_blank', 'noopener,noreferrer');
   }, [requireAuth]);
 
-  const handleProjectionInterest = useCallback(() => {
-    if (!requireAuth()) return;
-    supabase.from('miniverso_cine_interactions').insert({
-      interaction_type: 'screening_cta',
-      anon_id: ensureAnonId() ?? null,
-      user_id: user?.id ?? null,
-      metadata: { recorded_at: new Date().toISOString() },
-    }).then(({ error }) => { if (error) console.warn('[cine] screening_cta:', error.message); });
-    navigate({ pathname: '/', hash: '#next-show' });
-  }, [requireAuth, navigate, user]);
 
   const handleSendPulse = useCallback(async () => {
     if (!requireAuth()) return;
@@ -354,7 +330,7 @@ const PortalCine = () => {
     poster,
     tags,
     accentClassName,
-    icon,
+    eyebrow = null,
     cta = null,
   }) => {
     const videoId = `${title}-${videoUrl}`;
@@ -365,13 +341,14 @@ const PortalCine = () => {
       >
         <div className="absolute inset-0">
           <video
+            ref={(el) => { if (el) { el.play().catch(() => {}); } }}
             src={videoUrl}
             className="h-full w-full cursor-pointer object-cover"
             autoPlay
             muted
             loop
             playsInline
-            preload="metadata"
+            preload="auto"
             poster={poster}
             controls={isMobileViewport ? canUseInlinePlayback(videoId) : false}
             onClick={(event) => {
@@ -383,25 +360,24 @@ const PortalCine = () => {
         </div>
 
         <div className="relative z-10 flex min-h-[30rem] flex-col">
+          {eyebrow ? (
+            <p className="mb-2 text-xs uppercase tracking-[0.35em] text-slate-300/75">{eyebrow}</p>
+          ) : null}
           <div className="flex items-center justify-between gap-3">
             <h4 className="font-display text-2xl text-slate-100">{title}</h4>
             <span className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-white/20 bg-white/10 text-slate-100 backdrop-blur-md">
-              {icon}
+              <Video size={16} />
             </span>
           </div>
 
-          <div className="pointer-events-none mt-4 flex justify-end">
-            <div className="flex items-center gap-2 rounded-full border border-white/15 bg-black/55 px-3 py-1 text-[0.62rem] font-semibold uppercase tracking-[0.22em] text-white/85 backdrop-blur-md">
-              <Video size={14} />
-              {isMobileViewport ? 'Toca para abrir' : 'Haz clic para activar'}
-            </div>
-          </div>
 
           <div aria-hidden="true" className="h-[11rem] sm:h-[13rem] lg:h-[14rem]" />
 
           <div className="mt-auto space-y-4">
             <p className="text-sm text-slate-200/90 leading-relaxed">{description}</p>
-            <p className="text-xs uppercase tracking-[0.3em] text-slate-300">{microcopy}</p>
+            {microcopy ? (
+              <p className="text-xs uppercase tracking-[0.3em] text-slate-300">{microcopy}</p>
+            ) : null}
             <div className="flex flex-wrap gap-2">
               {tags.map((tag) => (
                 <span
@@ -486,53 +462,16 @@ const PortalCine = () => {
           </div>
 
 
-          <div className="grid gap-6 xl:grid-cols-2">
-            {renderImmersiveCinemaCard({
-              title: COPYCATS_DATA.title,
-              description: COPYCATS_DATA.description,
-              microcopy: COPYCATS_DATA.microcopy,
-              videoUrl: COPYCATS_DATA.url,
-              tags: COPYCATS_DATA.tags,
-              accentClassName: 'bg-gradient-to-br from-slate-950/80 via-black/60 to-indigo-900/30',
-              icon: <Clapperboard size={16} />,
-            })}
+          {renderImmersiveCinemaCard({
+            title: QUIRON_DATA.title,
+            eyebrow: 'Obra destacada',
+            description: QUIRON_DATA.description,
+            microcopy: QUIRON_DATA.teaserLabel,
+            videoUrl: QUIRON_DATA.teaserUrl,
+            tags: QUIRON_DATA.tags,
+            accentClassName: 'bg-gradient-to-br from-slate-950/80 via-black/60 to-purple-900/30',
+          })}
 
-            {renderImmersiveCinemaCard({
-              title: QUIRON_DATA.title,
-              description: QUIRON_DATA.description,
-              microcopy: QUIRON_DATA.teaserLabel,
-              videoUrl: QUIRON_DATA.teaserUrl,
-              tags: QUIRON_DATA.tags,
-              accentClassName: 'bg-gradient-to-br from-slate-950/80 via-black/60 to-purple-900/30',
-              icon: <Video size={16} />,
-              cta: (
-                <Button
-                  type="button"
-                  variant="outline"
-                  className="w-full justify-center border-purple-300/40 bg-black/25 text-purple-200 backdrop-blur-sm hover:bg-purple-500/10"
-                  onClick={handleOpenFullFilm}
-                >
-                  Ver cortometraje completo
-                </Button>
-              ),
-            })}
-          </div>
-
-          <div className="space-y-4 rounded-3xl border border-white/10 bg-black/30 p-5">
-            <div className="rounded-2xl border border-cyan-200/25 bg-cyan-500/10 p-4 space-y-3">
-              <p className="text-xs uppercase tracking-[0.3em] text-cyan-100">{CINE_PROYECCION.title}</p>
-              <p className="text-sm text-slate-100/95 leading-relaxed">{CINE_PROYECCION.description}</p>
-              <Button
-                type="button"
-                className="w-full sm:w-auto bg-gradient-to-r from-cyan-500/85 to-blue-600/85 hover:from-cyan-400/90 hover:to-blue-500/90 text-white"
-                onClick={handleProjectionInterest}
-              >
-                <Ticket size={15} className="mr-2" />
-                {CINE_PROYECCION.cta}
-              </Button>
-              <p className="text-xs text-cyan-100/80">{CINE_PROYECCION.footnote}</p>
-            </div>
-          </div>
           <div className="rounded-3xl border border-white/10 bg-black/30 p-6 space-y-6">
             <CollaboratorsPanel collaborators={CINE_COLLABORATORS} accentClassName="text-sky-200/90" />
             <div className="flex flex-col gap-3">
@@ -541,6 +480,13 @@ const PortalCine = () => {
             </div>
           </div>
           <IAInsightCard {...CINE_IA_PROFILE} compact />
+          <button
+            type="button"
+            onClick={handleOpenFullFilm}
+            className="w-full rounded-2xl border border-amber-400/40 bg-amber-500/10 px-6 py-4 text-sm font-semibold tracking-wide text-amber-200 shadow-[0_8px_32px_rgba(251,191,36,0.15)] transition hover:bg-amber-500/20 hover:shadow-[0_8px_40px_rgba(251,191,36,0.25)]"
+          >
+            ✦ Ver cortometraje ahora
+          </button>
         </div>
 
         {showLoginOverlay ? <LoginOverlay onClose={handleCloseLogin} /> : null}

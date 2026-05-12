@@ -300,10 +300,16 @@ const MiniVersoCard = ({
   palette,
   effect = 'flip',
 }) => {
-  const [isActive, setIsActive] = useState(false);
+  const [isActive, setIsActive] = useState(() => {
+    try { return window.localStorage.getItem('gatoencerrado:miniverso-verso:' + title) === '1'; } catch { return false; }
+  });
 
   const handleCardToggle = () => {
-    setIsActive((prev) => !prev);
+    setIsActive((prev) => {
+      if (prev) return prev;
+      try { window.localStorage.setItem('gatoencerrado:miniverso-verso:' + title, '1'); } catch {}
+      return true;
+    });
   };
 
   if (effect === 'flip') {
@@ -1006,6 +1012,11 @@ const PortalVoz = () => {
                 <div className="space-y-4 text-lg text-slate-200/85 leading-relaxed font-light">
                   {SCENE_PORTAL_INTRO}
                 </div>
+                <div className="flex flex-wrap gap-2">
+                  <span className="rounded-full border border-purple-200/35 bg-purple-400/10 px-3 py-1 text-[11px] uppercase tracking-[0.22em] text-purple-100">Teatro íntimo</span>
+                  <span className="rounded-full border border-purple-200/35 bg-purple-400/10 px-3 py-1 text-[11px] uppercase tracking-[0.22em] text-purple-100">Voz activa</span>
+                  <span className="rounded-full border border-purple-200/35 bg-purple-400/10 px-3 py-1 text-[11px] uppercase tracking-[0.22em] text-purple-100">Emoción en escena</span>
+                </div>
               </div>
 
               <div className="flex flex-col gap-5">
@@ -1029,26 +1040,29 @@ const PortalVoz = () => {
           </div>
 
           {/* BLOQUE: Obra destacada */}
-          <div className="relative overflow-hidden rounded-2xl border border-white/10 bg-black/30">
-            <video
-              className="absolute inset-0 w-full h-full object-cover"
-              src={OBRA_TRAILER_URL}
-              autoPlay
-              muted
-              loop
-              playsInline
-              preload="metadata"
-            />
-            <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-black/10 via-black/30 to-black/90" />
-            <div className="relative z-10 flex min-h-[22rem] flex-col p-6">
-              <div aria-hidden="true" className="flex-1" />
-              <div className="space-y-4">
-                <div className="space-y-1">
-                  <p className="text-xs uppercase tracking-[0.35em] text-slate-300/75">Obra destacada</p>
-                  <h4 className="font-display text-xl text-slate-100">Es un gato encerrado</h4>
-                </div>
+          <div className="relative overflow-hidden rounded-2xl border border-white/10 bg-black/30 p-6">
+            <div className="absolute inset-0">
+              <video
+                className="h-full w-full object-cover"
+                src={OBRA_TRAILER_URL}
+                autoPlay
+                muted
+                loop
+                playsInline
+                preload="metadata"
+              />
+              <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-black/10 via-black/30 to-black/90" />
+              <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(255,255,255,0.08),_transparent_36%),linear-gradient(180deg,rgba(0,0,0,0.02)_0%,rgba(0,0,0,0.14)_35%,rgba(0,0,0,0.72)_100%)]" />
+            </div>
+            <div className="relative z-10 flex min-h-[30rem] flex-col">
+              <p className="mb-2 text-xs uppercase tracking-[0.35em] text-slate-300/75">Obra destacada</p>
+              <h4 className="font-display text-2xl text-slate-100">Es un gato encerrado</h4>
+
+              <div aria-hidden="true" className="h-[11rem] sm:h-[13rem]" />
+
+              <div className="mt-auto space-y-4">
                 <p className="text-sm leading-relaxed text-slate-300/85">
-                  A través de una terapia no convencional, un paciente y su doctora exploran el poder de los sueños lúcidos para confrontar el miedo, la desconexión y la rabia reprimida.
+                  Antes de convertirse en un universo transmedial, esta obra existió como un encuentro escénico atravesado por sueños lúcidos, rabia contenida y preguntas difíciles de nombrar.
                 </p>
                 <div className="flex flex-wrap gap-2">
                   {['Teatro', 'Sueños lúcidos', 'Drama psicológico'].map((tag, i) => (

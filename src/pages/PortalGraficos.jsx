@@ -68,10 +68,17 @@ const GRAFICOS_BLOG_KEYS = ['graficos', 'grafico', 'miniversografico', 'minivers
 const GRAFICOS_BLOG_KEY_SET = new Set(GRAFICOS_BLOG_KEYS.map((key) => key.trim().toLowerCase()));
 
 const MiniVersoCard = ({ title, verse, palette }) => {
-  const [isActive, setIsActive] = useState(false);
+  const [isActive, setIsActive] = useState(() => {
+    try { return window.localStorage.getItem('gatoencerrado:miniverso-verso:' + title) === '1'; } catch { return false; }
+  });
+  const reveal = () => setIsActive((prev) => {
+    if (prev) return prev;
+    try { window.localStorage.setItem('gatoencerrado:miniverso-verso:' + title, '1'); } catch {}
+    return true;
+  });
 
   return (
-    <div className="relative [perspective:1200px]" onClick={() => setIsActive((prev) => !prev)}>
+    <div className="relative [perspective:1200px]" onClick={reveal}>
       <motion.div
         animate={{ rotateY: isActive ? 180 : 0 }}
         transition={{ duration: 0.7, ease: 'easeInOut' }}
@@ -301,6 +308,11 @@ const PortalGraficos = () => {
                 <div className="space-y-4 text-lg text-slate-200/85 leading-relaxed font-light">
                   <p>{GRAFICOS_INTRO}</p>
                 </div>
+                <div className="flex flex-wrap gap-2">
+                  <span className="rounded-full border border-fuchsia-200/35 bg-fuchsia-400/10 px-3 py-1 text-[11px] uppercase tracking-[0.22em] text-fuchsia-100">Cómic y trazo</span>
+                  <span className="rounded-full border border-fuchsia-200/35 bg-fuchsia-400/10 px-3 py-1 text-[11px] uppercase tracking-[0.22em] text-fuchsia-100">Imagen como silencio</span>
+                  <span className="rounded-full border border-fuchsia-200/35 bg-fuchsia-400/10 px-3 py-1 text-[11px] uppercase tracking-[0.22em] text-fuchsia-100">Lab visual</span>
+                </div>
               </div>
 
               <div className="flex flex-col gap-5">
@@ -353,13 +365,6 @@ const PortalGraficos = () => {
                       onClick={() => setIsImagePreviewOpen(true)}
                     >
                       Ver portada
-                    </Button>
-                    <Button
-                      variant="outline"
-                      onClick={handleOpenPdf}
-                      className="w-full sm:w-auto justify-center border-fuchsia-300/40 text-fuchsia-200 hover:bg-fuchsia-500/10"
-                    >
-                      Abrir swipe en PDF
                     </Button>
                   </div>
                   <p className="text-[11px] uppercase tracking-[0.3em] text-gray-100/80">Prototipo del Capítulo 1</p>
@@ -420,6 +425,13 @@ const PortalGraficos = () => {
             </div>
           </div>
           <IAInsightCard {...GRAFICOS_IA_PROFILE} compact />
+          <button
+            type="button"
+            onClick={handleOpenPdf}
+            className="w-full rounded-2xl border border-amber-400/40 bg-amber-500/10 px-6 py-4 text-sm font-semibold tracking-wide text-amber-200 shadow-[0_8px_32px_rgba(251,191,36,0.15)] transition hover:bg-amber-500/20 hover:shadow-[0_8px_40px_rgba(251,191,36,0.25)]"
+          >
+            ✦ Abrir swipe en PDF
+          </button>
         </div>
 
         {showLoginOverlay ? <LoginOverlay onClose={handleCloseLogin} /> : null}

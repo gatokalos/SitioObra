@@ -77,10 +77,17 @@ const LITERATURA_BLOG_KEYS = [
 const LITERATURA_BLOG_KEY_SET = new Set(LITERATURA_BLOG_KEYS.map((key) => key.trim().toLowerCase()));
 
 const MiniVersoCard = ({ title, verse, palette }) => {
-  const [isActive, setIsActive] = useState(false);
+  const [isActive, setIsActive] = useState(() => {
+    try { return window.localStorage.getItem('gatoencerrado:miniverso-verso:' + title) === '1'; } catch { return false; }
+  });
+  const reveal = () => setIsActive((prev) => {
+    if (prev) return prev;
+    try { window.localStorage.setItem('gatoencerrado:miniverso-verso:' + title, '1'); } catch {}
+    return true;
+  });
 
   return (
-    <div className="relative [perspective:1200px]" onClick={() => setIsActive((prev) => !prev)}>
+    <div className="relative [perspective:1200px]" onClick={reveal}>
       <motion.div
         animate={{ rotateY: isActive ? 180 : 0 }}
         transition={{ duration: 0.7, ease: 'easeInOut' }}
@@ -321,6 +328,11 @@ const PortalLiteratura = () => {
                   <p className="text-base leading-relaxed text-slate-200/80">No es un complemento de la obra escénica, sino un espacio propio donde fragmentos, voces, poemas y apuntes <em>dialogan entre sí</em> y amplían el universo #GatoEncerrado.</p>
                   <p className="text-lg leading-relaxed font-medium text-white">Hay palabras que no explican: solo acompañan.</p>
                 </div>
+                <div className="flex flex-wrap gap-2">
+                  <span className="rounded-full border border-violet-200/35 bg-violet-400/10 px-3 py-1 text-[11px] uppercase tracking-[0.22em] text-violet-100">Autoficción expandida</span>
+                  <span className="rounded-full border border-violet-200/35 bg-violet-400/10 px-3 py-1 text-[11px] uppercase tracking-[0.22em] text-violet-100">Fragmentos y voces</span>
+                  <span className="rounded-full border border-violet-200/35 bg-violet-400/10 px-3 py-1 text-[11px] uppercase tracking-[0.22em] text-violet-100">Escritura que acompaña</span>
+                </div>
               </div>
 
               <div className="flex flex-col gap-5">
@@ -372,13 +384,6 @@ const PortalLiteratura = () => {
                   >
                     {isNovelaCheckoutLoading ? 'Abriendo checkout...' : 'Comprar edición física'}
                   </button>
-                  <button
-                    type="button"
-                    onClick={() => setShowLiteraturaApp(true)}
-                    className="inline-flex w-full items-center justify-center gap-2 rounded-full border border-amber-400/50 text-amber-200 hover:bg-amber-500/10 px-6 py-2.5 text-sm font-semibold tracking-wide transition"
-                  >
-                    📖 Abrir separador inteligente
-                  </button>
                 </div>
               </div>
             </div>
@@ -393,6 +398,13 @@ const PortalLiteratura = () => {
             </div>
           </div>
           <IAInsightCard {...LITERATURA_IA_PROFILE} compact />
+          <button
+            type="button"
+            onClick={() => setShowLiteraturaApp(true)}
+            className="w-full rounded-2xl border border-amber-400/40 bg-amber-500/10 px-6 py-4 text-sm font-semibold tracking-wide text-amber-200 shadow-[0_8px_32px_rgba(251,191,36,0.15)] transition hover:bg-amber-500/20 hover:shadow-[0_8px_40px_rgba(251,191,36,0.25)]"
+          >
+            📖 Abrir separador inteligente
+          </button>
         </div>
 
         {showLoginOverlay ? <LoginOverlay onClose={handleCloseLogin} /> : null}

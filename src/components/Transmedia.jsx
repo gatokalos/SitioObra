@@ -95,8 +95,8 @@ import CauseImpactAccordion from '@/components/transmedia/CauseImpactAccordion';
 const MARIANA_GALLERY = [
   {
     type: 'image',
-    url: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Merch/prototito_transmedia.jpeg',
-    caption: '#Cat.in.a.Box',
+    url: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Merch/prototito_transmedia.png',
+    caption: 'GATO DESEMPACADO',
   },
 ];
 
@@ -1621,15 +1621,8 @@ const rendernotaAutoral = () => {
         <div className="space-y-8">
           <div className="grid gap-6 lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
             <div className="space-y-6">
-              <div className="rounded-3xl border border-white/10 overflow-hidden bg-black/30">
-  <div className="flex items-center justify-between gap-3 px-6 pt-4">
-    <p className="text-xs uppercase tracking-[0.3em] text-slate-400/70">
-      OBRAS DESTACADAS
-    </p>
-  </div>
-
-  {activeShowcase === 'lataza' && isTazaARActive && !isMobileARFullscreen ? (
-    <div className="p-0 sm:p-4">
+              {activeShowcase === 'lataza' && isTazaARActive && !isMobileARFullscreen ? (
+    <div>
       {useLegacyTazaViewer ? (
         <div className="relative w-full min-h-[75vh] rounded-3xl overflow-hidden border border-white/10 bg-black/50">
           <iframe
@@ -1655,14 +1648,49 @@ const rendernotaAutoral = () => {
       )}
     </div>
   ) : (
-    <div className="p-6 grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
-      {/* ───────── Columna izquierda: taza ───────── */}
-      <div className="flex flex-col gap-4">
-        <div className="relative w-full aspect-[4/3] max-h-[260px] overflow-hidden rounded-2xl bg-black/50">
+    <div className="space-y-4">
+      {/* ───────── Card 1: GATO ───────── */}
+      <div className="overflow-hidden rounded-3xl border border-white/10 bg-slate-950">
+        <div className="relative">
+          <img
+            src={MARIANA_GALLERY[0].url}
+            alt={MARIANA_GALLERY[0].caption}
+            className="h-[18rem] sm:h-[22rem] w-full object-cover"
+            loading="lazy"
+          />
+          <div className="pointer-events-none absolute inset-x-0 bottom-0 h-28 bg-gradient-to-b from-transparent to-slate-950" />
+        </div>
+        <div className="px-6 pb-6 space-y-4">
+          <p className="text-xs uppercase tracking-[0.35em] text-slate-300/75">Obra destacada</p>
+          <h4 className="font-display text-2xl text-white">GATO DESEMPACADO</h4>
+          <p className="text-sm text-slate-300/85 leading-relaxed">
+            Hay símbolos que sobreviven porque nunca terminan de significar una sola cosa. El símbolo # ha sido medida, música, tablero, código y una forma de conectar conversaciones mucho antes de ser conocido como &ldquo;gato&rdquo; en México.
+          </p>
+          <p className="text-sm text-slate-300/85 leading-relaxed">
+            Esta pieza nace de esa transformación constante: no para atrapar el símbolo, sino para dejarlo existir un instante fuera de la pantalla.
+          </p>
+          <div className="flex flex-wrap gap-2">
+            {['Cerámica esmaltada', 'Objeto transmedial', '2026'].map((tag) => (
+              <span key={tag} className="rounded-full border border-amber-400/30 bg-amber-900/20 px-3 py-1 text-[11px] uppercase tracking-[0.2em] text-amber-100">{tag}</span>
+            ))}
+          </div>
+          <button
+            type="button"
+            onClick={() => setGaleriaMarianaIndex(0)}
+            className="inline-flex w-full items-center justify-center rounded-full border border-amber-400/40 text-amber-200 hover:bg-amber-500/10 px-6 py-2.5 text-sm font-semibold transition"
+          >
+            Ver proceso de Mariana Núñez
+          </button>
+        </div>
+      </div>
+
+      {/* ───────── Card 2: La Taza ───────── */}
+      <div className="overflow-hidden rounded-3xl border border-white/10 bg-slate-950">
+        <div className="relative">
           {/\.mp4($|\?)/i.test(activeDefinition.image) ? (
             <video
               src={activeDefinition.image}
-              className="absolute inset-0 h-full w-full object-contain"
+              className="h-[18rem] sm:h-[22rem] w-full object-cover"
               autoPlay
               playsInline
               muted
@@ -1674,147 +1702,83 @@ const rendernotaAutoral = () => {
             <img
               src={activeDefinition.image}
               alt="Ilustración de La Taza"
-              className="absolute inset-0 h-full w-full object-contain"
+              className="h-[18rem] sm:h-[22rem] w-full object-cover"
               loading="lazy"
               decoding="async"
             />
           )}
+          <div className="pointer-events-none absolute inset-x-0 bottom-0 h-28 bg-gradient-to-b from-transparent to-slate-950" />
         </div>
-
-        <p className="text-sm text-slate-400 uppercase tracking-[0.3em]">
-          {activeDefinition.note}
-        </p>
-
-        {activeDefinition.instructions ? (
-          <ul className="text-sm text-slate-300/90 space-y-2">
-            {activeDefinition.instructions.map((step, index) => (
-              <li key={index} className="flex items-start gap-2">
-                <span className="text-purple-300 mt-1">●</span>
-                <span>{step}</span>
-              </li>
-            ))}
-          </ul>
-        ) : null}
-
-        {activeShowcase === 'lataza' ? (
-          <div className="relative inline-flex overflow-visible flex-col gap-2">
-            <Button
-              className="relative border-purple-400/40 text-purple-200 hover:bg-purple-500/10 overflow-visible"
-              variant="outline"
-              onClick={handleActivateAR}
-              disabled={isTazaActivating}
-            >
-              {isTazaActivating ? 'Procesando...' : activeDefinition.ctaLabel}
-            </Button>
-            {LEGACY_TAZA_VIEWER_ENABLED ? (
-              <label className="flex items-center gap-2 text-xs uppercase tracking-[0.25em] text-slate-400">
-                <input
-                  type="checkbox"
-                  className="accent-purple-400"
-                  checked={useLegacyTazaViewer}
-                  onChange={(e) => setUseLegacyTazaViewer(e.target.checked)}
-                />
-                Usar visor estable (A‑Frame)
-              </label>
-            ) : null}
-            <button
-              type="button"
-              onClick={() => handleOpenNovelaReserve(['taza-250'])}
-              disabled={isMerchCheckoutLoading}
-              className="inline-flex w-full sm:w-auto items-center justify-center rounded-full border border-purple-400/40 text-purple-200 hover:bg-purple-500/10 px-6 py-2 font-semibold transition"
-            >
-              {isMerchCheckoutLoading ? 'Abriendo checkout...' : 'Comprar tu taza'}
-            </button>
-          </div>
-        ) : null}
-
-      </div>
-
-      {/* ───────── Columna derecha: Proceso Mariana Núñez ───────── */}
-      <div className="rounded-2xl border border-white/10 bg-white/5 p-5 flex flex-col gap-5">
-        {galeriaMarianaIndex === null ? (
-          <>
-            <div className="border-l-2 border-amber-400/50 pl-4 space-y-2">
-              <div>
-                <p className="font-display text-base text-slate-100">#CatInABox</p>
-                <p className="text-[11px] uppercase tracking-[0.3em] text-slate-500 mt-1">Cerámica esmaltada · 2026</p>
-              </div>
-              <p className="text-sm text-slate-300/80 leading-relaxed">
-                Este &ldquo;gato&rdquo; —el hashtag que usamos en código y redes para conectar— aquí se vuelve objeto: un volumen que cabe en una caja.
-              </p>
-              <p className="text-sm text-slate-300/80 leading-relaxed">
-                Ya no organiza contenido; se guarda. Un nodo físico dentro del sistema transmedial de #GatoEncerrado.
-              </p>
-            </div>
-            <button
-              type="button"
-              onClick={() => setGaleriaMarianaIndex(0)}
-              className="group relative aspect-[4/3] w-full overflow-hidden rounded-xl border border-white/10"
-            >
-              <img
-                src={MARIANA_GALLERY[0].url}
-                alt={MARIANA_GALLERY[0].caption}
-                className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
-              />
-              <div className="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 transition-opacity duration-300 group-hover:opacity-100">
-                <p className="text-xs uppercase tracking-[0.35em] text-white">Ver proceso</p>
-              </div>
-            </button>
-          </>
-        ) : (
-          <>
-            <div className="flex items-center justify-between">
+        <div className="px-6 pb-6 space-y-4">
+          <p className="text-xs uppercase tracking-[0.35em] text-slate-300/75">Obra destacada</p>
+          <h4 className="font-display text-2xl text-white">La Taza</h4>
+          {activeDefinition.note ? (
+            <p className="text-sm text-slate-300/85 uppercase tracking-[0.3em]">{activeDefinition.note}</p>
+          ) : null}
+          {activeDefinition.instructions ? (
+            <ul className="text-sm text-slate-300/90 space-y-1.5">
+              {activeDefinition.instructions.map((step, index) => (
+                <li key={index} className="flex items-start gap-2">
+                  <span className="text-purple-300 mt-0.5">●</span>
+                  <span>{step}</span>
+                </li>
+              ))}
+            </ul>
+          ) : null}
+          {activeShowcase === 'lataza' ? (
+            <div className="flex flex-col gap-2">
+              <Button
+                className="relative border-purple-400/40 text-purple-200 hover:bg-purple-500/10 overflow-visible"
+                variant="outline"
+                onClick={handleActivateAR}
+                disabled={isTazaActivating}
+              >
+                {isTazaActivating ? 'Procesando...' : activeDefinition.ctaLabel}
+              </Button>
+              {LEGACY_TAZA_VIEWER_ENABLED ? (
+                <label className="flex items-center gap-2 text-xs uppercase tracking-[0.25em] text-slate-400">
+                  <input type="checkbox" className="accent-purple-400" checked={useLegacyTazaViewer} onChange={(e) => setUseLegacyTazaViewer(e.target.checked)} />
+                  Usar visor estable (A‑Frame)
+                </label>
+              ) : null}
               <button
                 type="button"
-                onClick={() => setGaleriaMarianaIndex(null)}
-                className="text-xs uppercase tracking-[0.3em] text-amber-400/80 hover:text-amber-300 transition-colors"
+                onClick={() => handleOpenNovelaReserve(['taza-250'])}
+                disabled={isMerchCheckoutLoading}
+                className="inline-flex w-full sm:w-auto items-center justify-center rounded-full border border-purple-400/40 text-purple-200 hover:bg-purple-500/10 px-6 py-2 font-semibold transition"
               >
-                ← Cédula
+                {isMerchCheckoutLoading ? 'Abriendo checkout...' : 'Comprar tu taza'}
               </button>
-              <p className="text-[10px] uppercase tracking-[0.3em] text-slate-500">
-                {galeriaMarianaIndex + 1} / {MARIANA_GALLERY.length}
-              </p>
             </div>
-            <div className="overflow-hidden rounded-xl border border-white/10">
-              {MARIANA_GALLERY[galeriaMarianaIndex].type === 'video' ? (
-                <video
-                  src={MARIANA_GALLERY[galeriaMarianaIndex].url}
-                  controls
-                  className="w-full"
-                />
-              ) : (
-                <img
-                  src={MARIANA_GALLERY[galeriaMarianaIndex].url}
-                  alt={MARIANA_GALLERY[galeriaMarianaIndex].caption}
-                  className="w-full object-contain"
-                />
-              )}
-            </div>
-            <p className="text-center text-xs text-slate-400">{MARIANA_GALLERY[galeriaMarianaIndex].caption}</p>
-            {MARIANA_GALLERY.length > 1 && (
-              <div className="flex items-center justify-center gap-4">
-                <button
-                  type="button"
-                  onClick={() => setGaleriaMarianaIndex((i) => (i - 1 + MARIANA_GALLERY.length) % MARIANA_GALLERY.length)}
-                  className="rounded-full border border-white/10 bg-white/5 p-2 text-slate-300 transition-colors hover:bg-white/10"
-                >
-                  ←
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setGaleriaMarianaIndex((i) => (i + 1) % MARIANA_GALLERY.length)}
-                  className="rounded-full border border-white/10 bg-white/5 p-2 text-slate-300 transition-colors hover:bg-white/10"
-                >
-                  →
-                </button>
-              </div>
-            )}
-          </>
-        )}
+          ) : null}
+        </div>
       </div>
+
+      {/* Galería — se despliega bajo Card 2 cuando está abierta */}
+      {galeriaMarianaIndex !== null ? (
+        <div className="rounded-3xl border border-white/10 bg-white/5 p-5 space-y-4">
+          <div className="flex items-center justify-between">
+            <button type="button" onClick={() => setGaleriaMarianaIndex(null)} className="text-xs uppercase tracking-[0.3em] text-amber-400/80 hover:text-amber-300 transition-colors">← Cédula</button>
+            <p className="text-[10px] uppercase tracking-[0.3em] text-slate-500">{galeriaMarianaIndex + 1} / {MARIANA_GALLERY.length}</p>
+          </div>
+          <div className="overflow-hidden rounded-xl border border-white/10">
+            {MARIANA_GALLERY[galeriaMarianaIndex].type === 'video' ? (
+              <video src={MARIANA_GALLERY[galeriaMarianaIndex].url} controls className="w-full" />
+            ) : (
+              <img src={MARIANA_GALLERY[galeriaMarianaIndex].url} alt={MARIANA_GALLERY[galeriaMarianaIndex].caption} className="w-full object-contain" />
+            )}
+          </div>
+          <p className="text-center text-xs text-slate-400">{MARIANA_GALLERY[galeriaMarianaIndex].caption}</p>
+          {MARIANA_GALLERY.length > 1 && (
+            <div className="flex items-center justify-center gap-4">
+              <button type="button" onClick={() => setGaleriaMarianaIndex((i) => (i - 1 + MARIANA_GALLERY.length) % MARIANA_GALLERY.length)} className="rounded-full border border-white/10 bg-white/5 p-2 text-slate-300 transition-colors hover:bg-white/10">←</button>
+              <button type="button" onClick={() => setGaleriaMarianaIndex((i) => (i + 1) % MARIANA_GALLERY.length)} className="rounded-full border border-white/10 bg-white/5 p-2 text-slate-300 transition-colors hover:bg-white/10">→</button>
+            </div>
+          )}
+        </div>
+      ) : null}
     </div>
   )}
-</div>
 
             {activeDefinition.sentiments ? (
               <div className="rounded-2xl border border-white/10 p-6 bg-black/30">
@@ -2105,14 +2069,12 @@ const rendernotaAutoral = () => {
               <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-black/10 via-black/30 to-black/90" />
               {/* Contenido flotando al fondo */}
               <div className="relative z-10 flex min-h-[28rem] flex-col p-6">
-                <div aria-hidden="true" className="h-[14rem]" />
+                <p className="mb-1 text-xs uppercase tracking-[0.35em] text-slate-300/75 [text-shadow:0_1px_10px_rgba(0,0,0,0.9)]">Obra destacada</p>
+                <h4 className="font-display text-2xl text-slate-100 [text-shadow:0_1px_10px_rgba(0,0,0,0.9)]">Es un gato encerrado</h4>
+                <div aria-hidden="true" className="h-[11rem] sm:h-[13rem]" />
                 <div className="mt-auto space-y-4">
-                  <div className="space-y-1">
-                    <p className="text-xs uppercase tracking-[0.35em] text-slate-300/75">Obra destacada</p>
-                    <h4 className="font-display text-xl text-slate-100">Es un gato encerrado</h4>
-                  </div>
                   <p className="text-sm leading-relaxed text-slate-300/85">
-                    A través de una terapia no convencional, un paciente y su doctora exploran el poder de los sueños lúcidos para confrontar el miedo, la desconexión y la rabia reprimida.
+                    Antes de convertirse en un universo transmedial, esta obra existió como un encuentro escénico atravesado por sueños lúcidos, rabia contenida y preguntas difíciles de nombrar.
                   </p>
                   <div className="flex flex-wrap gap-2">
                     {['Teatro', 'Sueños lúcidos', 'Drama psicológico'].map((tag, i) => (

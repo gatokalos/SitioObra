@@ -543,7 +543,7 @@ export const normalizeStoredEmotionOrbs = (raw) => {
 };
 export const showcaseDefinitions = {
   miniversos: {
-    label: 'Drama',
+    label: 'La tragedia',
     type: 'tragedia',
     intro:
       'Los estados emocionales de Silvestre no son etiquetas. Son lugares donde la escena ocurre. Di una frase —tuya o de la lista— y escucha cómo la obra responde desde adentro. Luego cambia de emoción y detona la misma frase otra vez. La escena nunca responde igual.',
@@ -556,6 +556,11 @@ export const showcaseDefinitions = {
         <p className="text-lg leading-relaxed font-medium text-white mt-4">
           A veces no necesitamos una conversación. A veces sólo necesitamos <strong>escuchar el drama por un rato</strong>.
         </p>
+        <div className="flex flex-wrap gap-2 mt-2">
+          <span className="rounded-full border border-purple-200/35 bg-purple-400/10 px-3 py-1 text-[11px] uppercase tracking-[0.22em] text-purple-100">Teatro íntimo</span>
+          <span className="rounded-full border border-purple-200/35 bg-purple-400/10 px-3 py-1 text-[11px] uppercase tracking-[0.22em] text-purple-100">Voz activa</span>
+          <span className="rounded-full border border-purple-200/35 bg-purple-400/10 px-3 py-1 text-[11px] uppercase tracking-[0.22em] text-purple-100">Emoción en escena</span>
+        </div>
       </>
     ),
     cartaTitle: '#LaPuertaInvisible',
@@ -588,7 +593,7 @@ iaProfile: {
     ],
   },
   copycats: {
-    label: 'Cine',
+    label: 'El lente',
     shareLabel: 'Cine',
     type: 'cinema',
     intro: 'El cine dentro de #GatoEncerrado es otro modo de entrar al encierro.',
@@ -637,7 +642,6 @@ iaProfile: {
       },
       teaser: {
         id: 'quiron-teaser',
-        label: 'Teaser oficial',
         url: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Cine%20-%20teasers/Quiron_small.mp4',
       },
 
@@ -709,7 +713,7 @@ iaProfile: {
     },
   },
   lataza: {
-    label: 'Artesanías',
+    label: 'El Objeto',
     type: 'object-webar',
     slug: 'taza-que-habla',
     subtitle: 'Esta no es una taza. Es un umbral.',
@@ -729,6 +733,11 @@ iaProfile: {
           <p className="text-lg leading-relaxed font-medium text-white mt-4">
     A veces las historias aparecen mientras sostenemos algo entre las manos.
   </p>
+  <div className="flex flex-wrap gap-2 mt-2">
+    <span className="rounded-full border border-amber-200/35 bg-amber-400/10 px-3 py-1 text-[11px] uppercase tracking-[0.22em] text-amber-100">Objeto narrativo</span>
+    <span className="rounded-full border border-amber-200/35 bg-amber-400/10 px-3 py-1 text-[11px] uppercase tracking-[0.22em] text-amber-100">Cerámica de autor</span>
+    <span className="rounded-full border border-amber-200/35 bg-amber-400/10 px-3 py-1 text-[11px] uppercase tracking-[0.22em] text-amber-100">WebAR vivo</span>
+  </div>
 </>
 ),
     note: 'Apunta tu cámara y aparecerá tu frase',
@@ -776,7 +785,7 @@ iaProfile: {
         name: 'Mariana Núñez de León',
         role: 'Cerámica · Experimentación y objeto narrativo',
         bio: 'Mariana Núñez de León es una ceramista basada en Tijuana, formada en espacios de taller como La Caja Galería. Su práctica se centra en el molde, el volumen y la experimentación material. En #GatoEncerrado, su trabajo articula el paso de lo digital a lo físico, integrando la cerámica como parte del sistema narrativo del proyecto, donde el proceso y sus contingencias forman parte de la obra.',
-        image: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/equipo/mariana-nunez.png',
+        image: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/equipo/selloMarianaNL_patch.png',
       },
     ],
     comments: [
@@ -812,6 +821,11 @@ iaProfile: {
         <p className="text-base leading-relaxed text-slate-300/90">En este miniverso literario se entiende la escritura como <strong>una forma de expansión</strong>.</p>
         <p className="text-base leading-relaxed text-slate-200/80 mt-3">No es un complemento de la obra escénica, sino un espacio propio donde fragmentos, voces, poemas y apuntes <em>dialogan entre sí</em> y amplían el universo #GatoEncerrado.</p>
         <p className="text-lg leading-relaxed font-medium text-white mt-4">Hay palabras que no explican: solo acompañan.</p>
+        <div className="flex flex-wrap gap-2 mt-2">
+          <span className="rounded-full border border-violet-200/35 bg-violet-400/10 px-3 py-1 text-[11px] uppercase tracking-[0.22em] text-violet-100">Autoficción expandida</span>
+          <span className="rounded-full border border-violet-200/35 bg-violet-400/10 px-3 py-1 text-[11px] uppercase tracking-[0.22em] text-violet-100">Fragmentos y voces</span>
+          <span className="rounded-full border border-violet-200/35 bg-violet-400/10 px-3 py-1 text-[11px] uppercase tracking-[0.22em] text-violet-100">Escritura que acompaña</span>
+        </div>
       </>
     ),
     cartaTitle: '#LaPreguntaInsiste',
@@ -889,7 +903,7 @@ iaProfile: {
     },
   },
   miniversoSonoro: {
-    label: 'Sonoridades',
+    label: 'El eco',
     type: 'audio-dream',
     intro:
       <p>Sonoridades reúne la música original y el diseño sonoro creados para la obra, junto con piezas que expanden su universo más allá del escenario. <br/><br/>En la puesta, el sonido no acompañó la historia: la transformó.
@@ -901,6 +915,11 @@ Este espacio permite recorrer esas composiciones, explorar sus capas y descubrir
         <p className="text-base leading-relaxed text-slate-300/90 mt-3">Por eso aparecen como <em>resonancia, música, tensión o silencio</em>.</p>
         <p className="text-base leading-relaxed text-slate-200/80 mt-3">Este miniverso explora el sonido como <strong>experiencia narrativa y emocional</strong> dentro del universo de #GatoEncerrado.</p>
         <p className="text-lg leading-relaxed font-medium text-white mt-4">Porque a veces una historia desaparece de la vista…<br/><em>pero permanece vibrando en nuestras mentes</em>.</p>
+        <div className="flex flex-wrap gap-2 mt-2">
+          <span className="rounded-full border border-cyan-200/35 bg-cyan-400/10 px-3 py-1 text-[11px] uppercase tracking-[0.22em] text-cyan-100">Diseño sonoro</span>
+          <span className="rounded-full border border-cyan-200/35 bg-cyan-400/10 px-3 py-1 text-[11px] uppercase tracking-[0.22em] text-cyan-100">Sueño en capas</span>
+          <span className="rounded-full border border-cyan-200/35 bg-cyan-400/10 px-3 py-1 text-[11px] uppercase tracking-[0.22em] text-cyan-100">Mezcla original</span>
+        </div>
       </>
     ),
     highlights: [
@@ -990,6 +1009,11 @@ Este espacio permite recorrer esas composiciones, explorar sus capas y descubrir
         <p className="text-base leading-relaxed text-slate-300/90">Este espacio explora el universo #GatoEncerrado desde <strong>la imagen</strong>.</p>
         <p className="text-base leading-relaxed text-slate-200/80 mt-3">Aquí las escenas se quedan en otro momento: lo que en la obra aparece como pensamiento o diálogo, en el cómic puede convertirse en <em>ensayo, en silencio, en otra voz</em>.</p>
         <p className="text-base leading-relaxed text-slate-100/90 mt-3">No solo el de Silvestre, sino el de cualquiera que se haya sentido como él.<br/>Dibujar permite mirar lo que no siempre se dice en escena.</p>
+        <div className="flex flex-wrap gap-2 mt-2">
+          <span className="rounded-full border border-fuchsia-200/35 bg-fuchsia-400/10 px-3 py-1 text-[11px] uppercase tracking-[0.22em] text-fuchsia-100">Cómic y trazo</span>
+          <span className="rounded-full border border-fuchsia-200/35 bg-fuchsia-400/10 px-3 py-1 text-[11px] uppercase tracking-[0.22em] text-fuchsia-100">Imagen como silencio</span>
+          <span className="rounded-full border border-fuchsia-200/35 bg-fuchsia-400/10 px-3 py-1 text-[11px] uppercase tracking-[0.22em] text-fuchsia-100">Lab visual</span>
+        </div>
       </>
     ),
     cartaTitle: '#MirarmeLoQueSoy',
@@ -1054,13 +1078,18 @@ Este espacio permite recorrer esas composiciones, explorar sus capas y descubrir
     },
   },
   miniversoMovimiento: {
-    label: 'Movimiento',
+    label: 'El cuerpo',
     intro: 'Este miniverso creativo traslada al cuerpo los conflictos mentales del universo #GatoEncerrado. Si en la obra la mente se fragmenta, aquí el cuerpo busca arraigo. Es un laboratorio coreográfico y somático que se activa por ciudad. No se interpretan emociones: se atraviesan.',
     introNode: (
       <>
         <p className="text-base leading-relaxed text-slate-300/90">Este miniverso creativo traslada al <strong>cuerpo</strong> los conflictos mentales del universo #GatoEncerrado.</p>
         <p className="text-base leading-relaxed text-slate-200/80 mt-3">Si en la obra la mente se fragmenta, aquí el cuerpo busca <strong>arraigo</strong>. Es un laboratorio coreográfico y somático que se activa por ciudad.</p>
         <p className="text-lg leading-relaxed font-medium text-white mt-4">No se interpretan emociones: <strong>se atraviesan</strong>.</p>
+        <div className="flex flex-wrap gap-2 mt-2">
+          <span className="rounded-full border border-emerald-200/35 bg-emerald-400/10 px-3 py-1 text-[11px] uppercase tracking-[0.22em] text-emerald-100">Cuerpo en tránsito</span>
+          <span className="rounded-full border border-emerald-200/35 bg-emerald-400/10 px-3 py-1 text-[11px] uppercase tracking-[0.22em] text-emerald-100">Ritual coreográfico</span>
+          <span className="rounded-full border border-emerald-200/35 bg-emerald-400/10 px-3 py-1 text-[11px] uppercase tracking-[0.22em] text-emerald-100">Ruta por ciudad</span>
+        </div>
       </>
     ),
     type: 'movement-ritual',
@@ -1239,7 +1268,7 @@ Este espacio permite recorrer esas composiciones, explorar sus capas y descubrir
   },
   apps: {
     id: 'apps',
-    label: 'Juegos',
+    label: 'El juego',
     type: 'apps',
     tagline: 'Juegos como portales • Apps como rituales felinos.',
     intro: (
@@ -1254,6 +1283,11 @@ Este espacio permite recorrer esas composiciones, explorar sus capas y descubrir
         <p className="text-base leading-relaxed text-slate-300/90">Aquí el universo explora sus propios <strong>clichés</strong> y los pone en juego.</p>
         <p className="text-base leading-relaxed text-slate-200/80 mt-3">Porque las historias se construyen con formas que ya conocemos: <strong>inicio, desarrollo y final</strong>.</p>
         <p className="text-lg leading-relaxed font-medium text-white mt-4">Dicen que <em>no hay nada nuevo bajo el sol</em>. Tal vez.<br/>Pero cuando una historia se juega, <strong>podemos contarla a nuestra manera</strong>.</p>
+        <div className="flex flex-wrap gap-2 mt-2">
+          <span className="rounded-full border border-emerald-200/35 bg-emerald-400/10 px-3 py-1 text-[11px] uppercase tracking-[0.22em] text-emerald-100">Juego narrativo</span>
+          <span className="rounded-full border border-emerald-200/35 bg-emerald-400/10 px-3 py-1 text-[11px] uppercase tracking-[0.22em] text-emerald-100">App interactiva</span>
+          <span className="rounded-full border border-emerald-200/35 bg-emerald-400/10 px-3 py-1 text-[11px] uppercase tracking-[0.22em] text-emerald-100">Miniverso jugable</span>
+        </div>
       </>
     ),
     cartaTitle: '#NoHayDesandar',
@@ -1274,7 +1308,7 @@ Este espacio permite recorrer esas composiciones, explorar sus capas y descubrir
     },
   },
   oraculo: {
-    label: 'Oráculo',
+    label: 'El espejo',
     type: 'oracle',
     intro: (
       <>
@@ -1292,6 +1326,11 @@ Este espacio permite recorrer esas composiciones, explorar sus capas y descubrir
         <p className="text-base leading-relaxed text-slate-300/90">Este miniverso existe para mirar lo que <strong>#GatoEncerrado</strong> despierta en ti.</p>
         <p className="text-base leading-relaxed text-slate-200/80 mt-3">A través de preguntas breves, el <strong>Oráculo</strong> abre un espacio para observar tus propias respuestas: emociones, intuiciones y pensamientos que aparecen después de la experiencia.</p>
         <p className="text-lg leading-relaxed font-medium text-white mt-4"><strong>Aquí no se interpreta la obra.</strong><br/>Se aprende a <em>observar al observador</em>.</p>
+        <div className="flex flex-wrap gap-2 mt-2">
+          <span className="rounded-full border border-violet-200/35 bg-violet-400/10 px-3 py-1 text-[11px] uppercase tracking-[0.22em] text-violet-100">Ritual simbólico</span>
+          <span className="rounded-full border border-violet-200/35 bg-violet-400/10 px-3 py-1 text-[11px] uppercase tracking-[0.22em] text-violet-100">Pregunta abierta</span>
+          <span className="rounded-full border border-violet-200/35 bg-violet-400/10 px-3 py-1 text-[11px] uppercase tracking-[0.22em] text-violet-100">Huella viviente</span>
+        </div>
       </>
     ),
     loops: [
