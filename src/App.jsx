@@ -430,7 +430,7 @@ function App() {
     window.addEventListener('wheel', markUserInteracted, { passive: true });
     window.addEventListener('keydown', markUserInteracted, { passive: true });
 
-    const settleDelays = [280, 600, 1100];
+    const settleDelays = [80, 350, 800];
     settleDelays.forEach((delay) => {
       const id = window.setTimeout(() => {
         if (!userInteracted) window.scrollTo({ top: safeY, left: 0, behavior: 'auto' });

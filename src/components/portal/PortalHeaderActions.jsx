@@ -31,6 +31,11 @@ const PortalHeaderActions = ({ returnUrl = DEFAULT_RETURN_URL }) => {
   );
 
   const handleBackToSite = useCallback(() => {
+    // Reset portal scroll before navigating so it doesn't bleed into the home page.
+    // The App.jsx useLayoutEffect will then snap to portalReturnScrollY correctly.
+    if (typeof window !== 'undefined') {
+      window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
+    }
     const restoreState =
       portalReturnScrollY == null
         ? undefined
