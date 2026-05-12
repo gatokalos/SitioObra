@@ -713,7 +713,7 @@ iaProfile: {
     },
   },
   lataza: {
-    label: 'El Objeto',
+    label: 'El objeto',
     type: 'object-webar',
     slug: 'taza-que-habla',
     subtitle: 'Esta no es una taza. Es un umbral.',
@@ -743,7 +743,7 @@ iaProfile: {
     note: 'Apunta tu cámara y aparecerá tu frase',
     ctaLabel: 'Activa tu taza',
     ctaMessage: 'Cuando liberes la activación WebAR, descubrirás la pista que le corresponde a tu taza.',
-    image: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Merch/taza_h.png',
+    image: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Merch/tazas_pingpong.mp4',
     phrases: ['La taza te habla.'],
     instructions: [
       'Permite el acceso a tu cámara para iniciar.',

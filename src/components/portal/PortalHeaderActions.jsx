@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useSyncExternalStore } from 'react';
+import React, { useCallback, useLayoutEffect, useMemo, useSyncExternalStore } from 'react';
 import { Send, Volume2, VolumeX, X } from 'lucide-react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { toast } from '@/components/ui/use-toast';
@@ -30,12 +30,19 @@ const PortalHeaderActions = ({ returnUrl = DEFAULT_RETURN_URL }) => {
     [location.state, returnUrl]
   );
 
+  // On unmount (portal closing), reset scroll synchronously before the browser
+  // can paint the returning page. This runs in React's commit phase — before
+  // App.jsx's useLayoutEffect restores the correct home-page scroll position,
+  // and crucially before the browser paints anything.
+  useLayoutEffect(() => {
+    return () => {
+      if (typeof window !== 'undefined') {
+        window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
+      }
+    };
+  }, []);
+
   const handleBackToSite = useCallback(() => {
-    // Reset portal scroll before navigating so it doesn't bleed into the home page.
-    // The App.jsx useLayoutEffect will then snap to portalReturnScrollY correctly.
-    if (typeof window !== 'undefined') {
-      window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
-    }
     const restoreState =
       portalReturnScrollY == null
         ? undefined

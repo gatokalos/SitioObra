@@ -180,7 +180,7 @@ const PortalSonoridades = () => {
   const { user } = useAuth();
   usePortalTracking('sonoridades');
   const { question: vitranaQuestion } = useVitranaQuestion('sonoridades');
-  const titleDisplay = useScrambleText('Sonoridades');
+  const titleDisplay = useScrambleText('El eco');
   const isAuthenticated = Boolean(user);
   const [showLoginOverlay, setShowLoginOverlay] = useState(false);
   const [showLoginHint, setShowLoginHint] = useState(false);
