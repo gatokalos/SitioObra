@@ -1,4 +1,4 @@
-import React, { useCallback, useLayoutEffect, useMemo, useSyncExternalStore } from 'react';
+import React, { useCallback, useMemo, useSyncExternalStore } from 'react';
 import { Send, Volume2, VolumeX, X } from 'lucide-react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { toast } from '@/components/ui/use-toast';
@@ -30,19 +30,20 @@ const PortalHeaderActions = ({ returnUrl = DEFAULT_RETURN_URL }) => {
     [location.state, returnUrl]
   );
 
-  // On unmount (portal closing), reset scroll synchronously before the browser
-  // can paint the returning page. This runs in React's commit phase — before
-  // App.jsx's useLayoutEffect restores the correct home-page scroll position,
-  // and crucially before the browser paints anything.
-  useLayoutEffect(() => {
-    return () => {
-      if (typeof window !== 'undefined') {
-        window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
-      }
-    };
-  }, []);
-
   const handleBackToSite = useCallback(() => {
+    const isMobile =
+      typeof window !== 'undefined' && window.matchMedia('(max-width: 768px)').matches;
+
+    if (isMobile) {
+      // Mobile: hash-based navigation so HashAnchorScroller handles scrollIntoView
+      // with retry logic — avoids React 18 concurrent-mode timing issues that
+      // prevent pixel-based scroll restoration from working reliably on mobile.
+      const baseUrl = portalReturnUrl.split('#')[0];
+      navigate(`${baseUrl}#transmedia`, { replace: true });
+      return;
+    }
+
+    // Desktop: pixel-based scroll restoration (works reliably on desktop).
     const restoreState =
       portalReturnScrollY == null
         ? undefined

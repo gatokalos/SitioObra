@@ -144,7 +144,7 @@ const PortalLiteratura = () => {
   const { user } = useAuth();
   usePortalTracking('literatura');
   const { question: vitranaQuestion } = useVitranaQuestion('literatura');
-  const titleDisplay = useScrambleText('La Escritura');
+  const titleDisplay = useScrambleText('La escritura');
   const isAuthenticated = Boolean(user);
   const [showLoginOverlay, setShowLoginOverlay] = useState(false);
   const [showLoginHint, setShowLoginHint] = useState(false);

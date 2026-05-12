@@ -231,7 +231,7 @@ const PortalMovimiento = () => {
   const { user } = useAuth();
   usePortalTracking('movimiento');
   const { question: vitranaQuestion } = useVitranaQuestion('movimiento');
-  const titleDisplay = useScrambleText('Movimiento');
+  const titleDisplay = useScrambleText('El cuerpo');
   const isAuthenticated = Boolean(user);
   const [showLoginOverlay, setShowLoginOverlay] = useState(false);
   const [showLoginHint, setShowLoginHint] = useState(false);
