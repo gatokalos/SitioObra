@@ -50,13 +50,18 @@ const useTransmediaSectionAudio = ({ isSilvestrePlaying }) => {
     const section = sectionRef.current;
     if (!section) return undefined;
 
+    const dispatchHeroHold = (hold) =>
+      window.dispatchEvent(new CustomEvent('gatoencerrado:hero-ambient-hold', { detail: { hold } }));
+
     const observer = new IntersectionObserver(
       (entries) => {
         const isVisible = entries[0].isIntersecting;
         isActiveRef.current = isVisible;
         if (isVisible) {
+          dispatchHeroHold(true);
           if (!isDuckedRef.current) attemptPlay();
         } else {
+          dispatchHeroHold(false);
           fadeTo(0, 600);
         }
       },
@@ -125,6 +130,7 @@ const useTransmediaSectionAudio = ({ isSilvestrePlaying }) => {
   useEffect(() => () => {
     if (fadeRafRef.current) cancelAnimationFrame(fadeRafRef.current);
     fadeTo(0, 400);
+    window.dispatchEvent(new CustomEvent('gatoencerrado:hero-ambient-hold', { detail: { hold: false } }));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 

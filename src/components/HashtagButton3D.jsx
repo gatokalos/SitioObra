@@ -22,7 +22,9 @@ function HashtagModel({ onClick, isPressed }) {
       color: new THREE.Color('#080808'),
       metalness: 0.82,
       roughness: 0.18,
-      envMapIntensity: 0.35, // azul city suave en reposo
+      envMapIntensity: 0.35,
+      emissive: new THREE.Color('#9966ff'),
+      emissiveIntensity: 0,
     });
 
     scene.traverse((child) => {
@@ -54,9 +56,8 @@ function HashtagModel({ onClick, isPressed }) {
 
     // Emissive hover
     matRef.current.emissiveIntensity = THREE.MathUtils.lerp(
-      matRef.current.emissiveIntensity ?? 0, hovered ? 0.06 : 0, delta * 8
+      matRef.current.emissiveIntensity, hovered ? 0.06 : 0, delta * 8
     );
-    matRef.current.emissive.set('#9966ff');
 
     matRef.current.envMapIntensity = THREE.MathUtils.lerp(
       matRef.current.envMapIntensity, 0.35, delta * 4
