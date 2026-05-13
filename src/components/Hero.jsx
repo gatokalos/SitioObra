@@ -397,13 +397,11 @@ const Hero = () => {
     }
 
     const preferredEnabled = readHeroAudioEnabledPreference();
-    const nextMuted = user
-      ? preferredEnabled == null
-        ? isMobileViewport
-        : !preferredEnabled
-      : true;
+    const nextMuted = preferredEnabled == null
+      ? isMobileViewport
+      : !preferredEnabled;
 
-    if (user && preferredEnabled == null) {
+    if (preferredEnabled == null) {
       writeHeroAudioEnabledPreference(!nextMuted);
     }
 
@@ -423,7 +421,7 @@ const Hero = () => {
       }
     }
     return undefined;
-  }, [isAuthLoading, isMobileViewport, user]);
+  }, [isAuthLoading, isMobileViewport]);
 
   // Sincroniza heroAudioMutedRef con el estado compartido de la lib
   // para que el idle-retry no intente reproducir audio muteado desde Header
@@ -436,15 +434,7 @@ const Hero = () => {
   }, []);
 
   useEffect(() => {
-    if (isAuthLoading || !user) {
-      const audio = getHeroAmbientAudio();
-      if (audio) {
-        audio.pause();
-        audio.muted = true;
-        audio.volume = 0;
-      }
-      setIsHeroAudioReady(Boolean(audio?.readyState >= 2));
-      setIsHeroAudioPlaying(false);
+    if (isAuthLoading) {
       return undefined;
     }
 
@@ -491,6 +481,7 @@ const Hero = () => {
     const attemptPlay = async ({ fromUserGesture = false } = {}) => {
       if (!mounted) return;
       if (isInBackground) return;
+      if (!fromUserGesture && (!document.hasFocus() || document.visibilityState !== 'visible')) return;
       if (isShowcaseForegroundActive()) return;
       if (heroAudioMutedRef.current) return;
       if (!fromUserGesture && requiresInteractionAfterBackground) return;
@@ -726,7 +717,7 @@ const Hero = () => {
         delete document.documentElement.dataset.gatoHeroAmbientHold;
       }
     };
-  }, [getTargetVolumeByHeroPosition, isAuthLoading, isHeroInViewport, user]);
+  }, [getTargetVolumeByHeroPosition, isAuthLoading, isHeroInViewport]);
 
   const shouldRenderInlineHero = Boolean(user) || hasPozoRevealed;
 
