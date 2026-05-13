@@ -14,8 +14,6 @@ function HashtagModel({ onClick, isPressed }) {
   const matRef     = useRef(null); // referencia al material para animar envMapIntensity
   const [hovered, setHovered] = useState(false);
   const tRef       = useRef(0);
-  const flashTRef  = useRef(null);
-  const lastFlashT = useRef(-999);
 
   const { scene } = useGLTF('/models/hashtag_black-draco.glb');
 
@@ -60,31 +58,8 @@ function HashtagModel({ onClick, isPressed }) {
     );
     matRef.current.emissive.set('#9966ff');
 
-    // ── Trigger flash: primero a ~2s, luego cada ~9s ─────────────────────────
-    if (flashTRef.current === null && t > 2 && t - lastFlashT.current > 9) {
-      flashTRef.current = 0;
-      lastFlashT.current = t;
-    }
-
-    // ── Animar envMapIntensity con curva en campana ───────────────────────────
-    const DURATION   = 0.55;
-    const PEAK_ENV   = 2.2; // cuánto reflejo aparece en el pico
-
-    let targetEnv = 0.35; // vuelve al azul idle tras el flash
-
-    if (flashTRef.current !== null) {
-      flashTRef.current += delta;
-      if (flashTRef.current >= DURATION) {
-        flashTRef.current = null;
-      } else {
-        const p = flashTRef.current / DURATION;
-        targetEnv = Math.sin(p * Math.PI) * PEAK_ENV;
-      }
-    }
-
-    // Lerp suave hacia el target (sube rápido, baja natural)
     matRef.current.envMapIntensity = THREE.MathUtils.lerp(
-      matRef.current.envMapIntensity, targetEnv, delta * 14
+      matRef.current.envMapIntensity, 0.35, delta * 4
     );
   });
 

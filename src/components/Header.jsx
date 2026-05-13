@@ -64,6 +64,19 @@ const Header = ({ showTransmediaNav = true }) => {
   const [audioState, setAudioState] = useState(() => getHeroAmbientState());
   useEffect(() => subscribeHeroAmbient(() => setAudioState(getHeroAmbientState())), []);
   const [isHeroVisible, setIsHeroVisible] = useState(true);
+  const [showAudioHint, setShowAudioHint] = useState(false);
+  const hasShownHintRef = React.useRef(false);
+  useEffect(() => {
+    if (hasShownHintRef.current || audioState.isPlaying || !audioState.isReady || !isHeroVisible) return;
+    const t = window.setTimeout(() => { setShowAudioHint(true); hasShownHintRef.current = true; }, 1800);
+    return () => window.clearTimeout(t);
+  }, [audioState.isPlaying, audioState.isReady, isHeroVisible]);
+  useEffect(() => {
+    if (!showAudioHint) return;
+    const t = window.setTimeout(() => setShowAudioHint(false), 4500);
+    return () => window.clearTimeout(t);
+  }, [showAudioHint]);
+  useEffect(() => { if (audioState.isPlaying) setShowAudioHint(false); }, [audioState.isPlaying]);
   useEffect(() => {
     const heroEl = document.getElementById('hero');
     if (!heroEl) return;
@@ -330,18 +343,26 @@ const Header = ({ showTransmediaNav = true }) => {
 
             <div className="flex items-center gap-3">
               {audioState.isReady && isHeroVisible ? (
-                <button
-                  type="button"
-                  onClick={handleAudioToggle}
-                  aria-label={audioState.isPlaying ? 'Silenciar sonido' : 'Activar sonido'}
-                  className={`inline-flex h-8 w-8 items-center justify-center rounded-full border backdrop-blur-md transition ${
-                    audioState.isPlaying
-                      ? 'border-violet-300/40 bg-violet-500/15 text-violet-100 hover:bg-violet-500/25'
-                      : 'border-white/20 bg-black/40 text-slate-300 hover:bg-black/60'
-                  }`}
-                >
-                  {audioState.isPlaying ? <Volume2 size={14} /> : <VolumeX size={14} />}
-                </button>
+                <div className="relative flex items-center">
+                  <span
+                    className="pointer-events-none absolute right-full mr-2.5 select-none whitespace-nowrap text-[0.62rem] uppercase tracking-widest text-slate-300/55 transition-opacity duration-700"
+                    style={{ opacity: showAudioHint ? 1 : 0 }}
+                  >
+                    Activa el sonido ›
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => { setShowAudioHint(false); handleAudioToggle(); }}
+                    aria-label={audioState.isPlaying ? 'Silenciar sonido' : 'Activar sonido'}
+                    className={`inline-flex h-8 w-8 items-center justify-center rounded-full border backdrop-blur-md transition ${
+                      audioState.isPlaying
+                        ? 'border-violet-300/40 bg-violet-500/15 text-violet-100 hover:bg-violet-500/25'
+                        : 'border-white/20 bg-black/40 text-slate-300 hover:bg-black/60'
+                    }`}
+                  >
+                    {audioState.isPlaying ? <Volume2 size={14} /> : <VolumeX size={14} />}
+                  </button>
+                </div>
               ) : null}
               {transmediaAudioState.isReady && isTransmediaVisible ? (
                 <button
