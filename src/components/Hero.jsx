@@ -538,11 +538,11 @@ const Hero = () => {
     const onFirstInteraction = () => {
       if (heroAudioMutedRef.current) return;
       requiresInteractionAfterBackground = false;
-      if (audioGestureUnlockRef.current) return;
+      if (!audio.paused) return;
       const targetVolume = getTargetVolumeByHeroPosition();
+      if (targetVolume <= HERO_AUDIO_MIN_AUDIBLE_VOLUME) return;
       audio.muted = false;
       audio.volume = targetVolume;
-      if (targetVolume <= HERO_AUDIO_MIN_AUDIBLE_VOLUME) return;
       void attemptPlay({ fromUserGesture: true });
     };
 
@@ -669,6 +669,7 @@ const Hero = () => {
     }, HERO_AUDIO_IDLE_RETRY_MS);
 
     window.addEventListener('scroll', onScroll, { passive: true });
+    window.addEventListener('scroll', onFirstInteraction, { passive: true });
     window.addEventListener('resize', onScroll);
     window.addEventListener('pointerdown', onFirstInteraction, { passive: true });
     window.addEventListener('click', onFirstInteraction, { passive: true });
@@ -694,6 +695,7 @@ const Hero = () => {
       cancelAnimationFrame(rafId);
       window.clearInterval(idleRetryId);
       window.removeEventListener('scroll', onScroll);
+      window.removeEventListener('scroll', onFirstInteraction);
       window.removeEventListener('resize', onScroll);
       window.removeEventListener('pointerdown', onFirstInteraction);
       window.removeEventListener('click', onFirstInteraction);
