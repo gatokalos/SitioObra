@@ -398,7 +398,7 @@ const Hero = () => {
 
     const preferredEnabled = readHeroAudioEnabledPreference();
     const nextMuted = preferredEnabled == null
-      ? isMobileViewport
+      ? false
       : !preferredEnabled;
 
     if (preferredEnabled == null) {
