@@ -29,21 +29,24 @@ const PortalHeaderActions = ({ returnUrl = DEFAULT_RETURN_URL }) => {
     () => resolvePortalReturnTarget(location.state, returnUrl),
     [location.state, returnUrl]
   );
+  const portalLaunchSource = location.state?.portalLaunchSource ?? '';
 
   const handleBackToSite = useCallback(() => {
     const isMobile =
       typeof window !== 'undefined' && window.matchMedia('(max-width: 768px)').matches;
+    const fromTransmedia = portalLaunchSource === 'transmedia-mobile-portal';
 
-    if (isMobile) {
-      // Mobile: hash-based navigation so HashAnchorScroller handles scrollIntoView
-      // with retry logic — avoids React 18 concurrent-mode timing issues that
-      // prevent pixel-based scroll restoration from working reliably on mobile.
+    if (isMobile && fromTransmedia) {
+      // Mobile + opened from Transmedia section: hash-based navigation so
+      // HashAnchorScroller handles scrollIntoView with retry — avoids React 18
+      // concurrent-mode timing issues that break pixel-based scroll restoration.
       const baseUrl = portalReturnUrl.split('#')[0];
       navigate(`${baseUrl}#transmedia`, { replace: true });
       return;
     }
 
-    // Desktop: pixel-based scroll restoration (works reliably on desktop).
+    // All other cases (desktop, or mobile opened from Hero/MiniverseModal/Header):
+    // pixel-based scroll restoration.
     const restoreState =
       portalReturnScrollY == null
         ? undefined
@@ -53,7 +56,7 @@ const PortalHeaderActions = ({ returnUrl = DEFAULT_RETURN_URL }) => {
             portalRestoreToken: restoreToken,
           };
     navigate(portalReturnUrl, { replace: true, state: restoreState });
-  }, [navigate, portalReturnScrollY, portalReturnShowcaseId, portalReturnUrl, restoreToken]);
+  }, [navigate, portalLaunchSource, portalReturnScrollY, portalReturnShowcaseId, portalReturnUrl, restoreToken]);
 
   const handleSharePortal = useCallback(async () => {
     if (typeof window === 'undefined') return;
