@@ -621,9 +621,7 @@ const Team = () => {
                         : "border-white/10 bg-white/5 hover:border-purple-300/35"
                     }`}
                   >
-                    <span className="pointer-events-none absolute left-4 top-4 text-[10px] font-semibold uppercase tracking-[0.22em] text-slate-200/65 transition-opacity duration-200 group-hover:text-purple-100/90">
-                      Ver perfil
-                    </span>
+             
                     <div className="w-40 h-40 md:w-48 md:h-48 rounded-full overflow-hidden border border-white/10 shadow-xl shadow-black/50 bg-black/30 flex items-center justify-center">
                       <img
                         className="w-full h-full object-cover"

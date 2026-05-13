@@ -4914,7 +4914,7 @@ const rendernotaAutoral = () => {
                           className={`${iconClass} drop-shadow-[0_0_12px_rgba(168,85,247,0.35)] transition-transform duration-300 group-hover:-translate-y-1 group-active:-translate-y-1`}
                         />
                         <div>
-                          <p className="text-xs uppercase tracking-[0.35em] text-slate-400/80">Miniversos</p>
+                          <p className="text-xs uppercase tracking-[0.35em] text-slate-400/80">Formas de la Obra</p>
                           <h3 className="font-display text-2xl text-slate-100">{format.title}</h3>
                         </div>
                       </div>
@@ -4940,7 +4940,7 @@ const rendernotaAutoral = () => {
                           }}
                           className="inline-flex items-center gap-2 rounded-full border border-amber-300/40 bg-amber-500/10 px-4 py-2 text-sm font-semibold text-amber-200 transition hover:bg-amber-500/20"
                         >
-                          Inicia sesión para responder
+                          Inicia sesión para desbloquear
                         </button>
                       ) : (
                         <div className="text-purple-300 flex items-center gap-2 font-semibold transition-all duration-300 group-hover:gap-3 group-active:gap-3">

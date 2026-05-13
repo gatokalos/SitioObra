@@ -121,10 +121,10 @@ const NextShow = () => {
           >
             <div className="relative z-10">
               <h2 className="font-display text-4xl md:text-5xl font-medium mb-4 text-gradient italic">
-                Memoria en escena
+                Funciones pasadas y futuras
               </h2>
               <p className="text-sm text-slate-400/80 mb-8">
-                Funciones que sostuvieron la obra y la conversación.
+                Presentaciones que sostuvieron la obra y la conversación.
               </p>
 
               <div className="flex flex-wrap justify-center gap-2 mb-8">
