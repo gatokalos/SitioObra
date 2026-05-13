@@ -109,6 +109,18 @@ const useTransmediaSectionAudio = ({ isSilvestrePlaying }) => {
     return () => document.removeEventListener('visibilitychange', onVisibility);
   }, [attemptPlay, isSilvestrePlaying]);
 
+  // Pause when OS focus moves to another app (visibilitychange doesn't fire for this)
+  useEffect(() => {
+    const onBlur  = () => pauseTransmediaAmbient();
+    const onFocus = () => { if (isActiveRef.current && !isSilvestrePlaying) attemptPlay(); };
+    window.addEventListener('blur',  onBlur);
+    window.addEventListener('focus', onFocus);
+    return () => {
+      window.removeEventListener('blur',  onBlur);
+      window.removeEventListener('focus', onFocus);
+    };
+  }, [attemptPlay, isSilvestrePlaying]);
+
   // Cleanup on unmount
   useEffect(() => () => {
     if (fadeRafRef.current) cancelAnimationFrame(fadeRafRef.current);

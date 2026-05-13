@@ -176,10 +176,10 @@ const SHOWCASE_CARD_GRADIENT = {
 const VITRANA_QUESTION_BY_SHOWCASE = {
   miniversos:          '¿Qué significa para ti habitar una emoción delante de otros?',
   miniversoSonoro:     '¿Por qué algunos sonidos duran más que las imágenes?',
-  miniversoGrafico:    '¿Qué te ocurre cuando alguien más interpreta tu apariencia?',
+  miniversoGrafico:    '¿Qué ocurre en ti cuando alguien más interpreta tu apariencia?',
   miniversoMovimiento: '¿Qué cosas sabe tu cuerpo antes que tu pensamiento?',
   apps:                '¿Qué cambia en ti cuando una historia depende de tus decisiones?',
-  copycats:            '¿Cuándo un objeto deja de ser solo un objeto?',
+  copycats:            '¿Qué significa para ti verse fallar desde afuera?',
   lataza:              '¿Cuándo un objeto deja de ser para ti solo un objeto?',
   miniversoNovela:     '¿Qué cambia en ti cuando una experiencia personal se convierte en relato?',
   cine:                '¿Qué significa para ti verse fallar desde afuera?',
@@ -203,6 +203,9 @@ const Transmedia = ({ allianceOnlyMode = false }) => {
   const [hasLoadedAutoficcionPreview, setHasLoadedAutoficcionPreview] = useState(false);
   const [showLiteraturaApp, setShowLiteraturaApp] = useState(false);
   const [galeriaMarianaIndex, setGaleriaMarianaIndex] = useState(null);
+  const [mobileVitranaRevealId, setMobileVitranaRevealId] = useState(null);
+  const [showMobilePortalLogin, setShowMobilePortalLogin] = useState(false);
+  const [hasLoadedMobilePortalLogin, setHasLoadedMobilePortalLogin] = useState(false);
   const {
     micPromptVisible,
     transcript,
@@ -414,6 +417,10 @@ const Transmedia = ({ allianceOnlyMode = false }) => {
   useEffect(() => {
     if (showBadgeLoginOverlay) setHasLoadedBadgeLoginOverlay(true);
   }, [showBadgeLoginOverlay]);
+
+  useEffect(() => {
+    if (showMobilePortalLogin) setHasLoadedMobilePortalLogin(true);
+  }, [showMobilePortalLogin]);
 
   useEffect(() => {
     if (isAuthenticated) return;
@@ -674,6 +681,16 @@ const Transmedia = ({ allianceOnlyMode = false }) => {
       if (showcaseOpenTransition.phase !== 'idle') {
         return;
       }
+      // Mobile anonymous: bienvenida-completed users open portal directly.
+      // Everyone else sees the question overlay → login flow.
+      if (isMobileViewport && !isAuthenticated) {
+        const hasBienvenida = safeGetItem('gatoencerrado:bienvenida-completed') === '1';
+        if (hasBienvenida) {
+          if (navigateToMobilePortalIfReady(formatId)) return;
+        }
+        setMobileVitranaRevealId((prev) => (prev === formatId ? null : formatId));
+        return;
+      }
       if (navigateToMobilePortalIfReady(formatId)) {
         return;
       }
@@ -700,6 +717,8 @@ const Transmedia = ({ allianceOnlyMode = false }) => {
     [
       focusLockShowcaseId,
       handleOpenMiniverses,
+      isAuthenticated,
+      isMobileViewport,
       loadShowcaseContent,
       navigateToMobilePortalIfReady,
       releaseDesktopFocusLock,
@@ -4831,6 +4850,24 @@ const rendernotaAutoral = () => {
                       ) : null}
                       <div className="absolute inset-0 bg-gradient-to-br from-white/5 via-transparent to-black/25" />
                       <div className="vitrina-image-overlay" style={mirrorEffect} />
+                      <AnimatePresence>
+                        {mobileVitranaRevealId === format.id && VITRANA_QUESTION_BY_SHOWCASE[format.id] ? (
+                          <motion.div
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            transition={{ duration: 0.35 }}
+                            className="absolute inset-0 z-10 flex items-center justify-center px-7 bg-black/60 backdrop-blur-[3px]"
+                          >
+                            <p
+                              className="font-display text-center leading-snug text-amber-300/90 drop-shadow-[0_0_32px_rgba(251,191,36,0.45)]"
+                              style={{ fontSize: 'clamp(1.15rem, 5vw, 1.65rem)' }}
+                            >
+                              {VITRANA_QUESTION_BY_SHOWCASE[format.id]}
+                            </p>
+                          </motion.div>
+                        ) : null}
+                      </AnimatePresence>
                     </div>
                     <div className="relative vitrina-pozo-glass__meta overflow-hidden">
                       {isRecommendedTile ? (
@@ -4882,24 +4919,35 @@ const rendernotaAutoral = () => {
                         </div>
                       </div>
                   
-                      <div className="space-y-1">
-                        {rewardLabel ? (
-                          <p className="text-xs text-purple-200/90 uppercase tracking-[0.25em]">
-                            {rewardLabel}
-                          </p>
-                        ) : null}
-                        <div className="flex flex-wrap items-center gap-2 text-xs uppercase tracking-[0.25em]">
-                          <Coins size={12} className={energyState.className} />
-                          <span className={energyState.className}>
-                            {energyState.label} {energyState.amount}
-                          </span>
-                          <span className="text-amber-200/90">· {minRequiredCopy}</span>
+                      {showcaseDefinitions[format.id]?.notaAutoral ? (
+                        <p className="text-sm leading-relaxed text-slate-300/70 whitespace-pre-line font-light line-clamp-3">
+                          {showcaseDefinitions[format.id].notaAutoral}
+                        </p>
+                      ) : null}
+                      {mobileVitranaRevealId === format.id ? (
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            try {
+                              localStorage.setItem('gatoencerrado:pending-vitrana-id', format.id);
+                              // Bienvenida-completed users skip PortalInviteModal post-login
+                              if (safeGetItem('gatoencerrado:bienvenida-completed') === '1') {
+                                localStorage.setItem('gatoencerrado:pending-vitrana-skip-modal', '1');
+                              }
+                            } catch {}
+                            setShowMobilePortalLogin(true);
+                          }}
+                          className="inline-flex items-center gap-2 rounded-full border border-amber-300/40 bg-amber-500/10 px-4 py-2 text-sm font-semibold text-amber-200 transition hover:bg-amber-500/20"
+                        >
+                          Inicia sesión para responder
+                        </button>
+                      ) : (
+                        <div className="text-purple-300 flex items-center gap-2 font-semibold transition-all duration-300 group-hover:gap-3 group-active:gap-3">
+                          Explora
+                          <ArrowRight size={18} />
                         </div>
-                      </div>
-                      <div className="text-purple-300 flex items-center gap-2 font-semibold transition-all duration-300 group-hover:gap-3 group-active:gap-3">
-                        Abrir vitrina
-                        <ArrowRight size={18} />
-                      </div>
+                      )}
                       </div>
                     </div>
                     <div
@@ -5159,6 +5207,11 @@ const rendernotaAutoral = () => {
       {showBadgeLoginOverlay && hasLoadedBadgeLoginOverlay ? (
         <Suspense fallback={null}>
           <LoginOverlay onClose={handleCloseBadgeLogin} />
+        </Suspense>
+      ) : null}
+      {showMobilePortalLogin && hasLoadedMobilePortalLogin ? (
+        <Suspense fallback={null}>
+          <LoginOverlay onClose={() => setShowMobilePortalLogin(false)} />
         </Suspense>
       ) : null}
 

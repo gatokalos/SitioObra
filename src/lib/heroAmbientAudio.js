@@ -8,8 +8,12 @@ const HERO_AUDIO_ENABLED_PREF_KEY = 'gatoencerrado:hero-audio-enabled';
 
 let sharedAudio = null;
 let fallbackApplied = false;
+const _initMuted = (() => {
+  if (typeof window === 'undefined') return false;
+  try { return window.localStorage?.getItem(HERO_AUDIO_ENABLED_PREF_KEY) === 'false'; } catch { return false; }
+})();
 let sharedState = {
-  isMuted: false,
+  isMuted: _initMuted,
   isPlaying: false,
   isReady: false,
 };

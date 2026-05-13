@@ -7,7 +7,11 @@ export const TRANSMEDIA_AMBIENT_DUCK_VOLUME = 0.07;
 const PREF_KEY = 'gatoencerrado:transmedia-audio-enabled';
 
 let sharedAudio = null;
-let sharedState = { isMuted: false, isPlaying: false, isReady: false };
+const _initMuted = (() => {
+  if (typeof window === 'undefined') return false;
+  try { return window.localStorage?.getItem(PREF_KEY) === 'false'; } catch { return false; }
+})();
+let sharedState = { isMuted: _initMuted, isPlaying: false, isReady: false };
 const listeners = new Set();
 
 const emit = () => {

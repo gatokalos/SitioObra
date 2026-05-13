@@ -199,6 +199,7 @@ const Bienvenida = () => {
         if (typeof value === 'number' && value > 0) {
           try {
             window.localStorage.setItem('gatoencerrado:gatokens-available', String(value));
+            window.localStorage.setItem('gatoencerrado:bienvenida-completed', '1');
             window.dispatchEvent(
               new CustomEvent('gatoencerrado:gatokens-balance-update', {
                 detail: { balance: value, source: 'bienvenida' },

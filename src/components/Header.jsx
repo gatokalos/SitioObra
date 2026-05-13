@@ -347,14 +347,14 @@ const Header = ({ showTransmediaNav = true }) => {
                 <button
                   type="button"
                   onClick={handleTransmediaAudioToggle}
-                  aria-label={transmediaAudioState.isMuted ? 'Activar música' : 'Silenciar música'}
+                  aria-label={transmediaAudioState.isPlaying ? 'Silenciar música' : 'Activar música'}
                   className={`inline-flex h-8 w-8 items-center justify-center rounded-full border backdrop-blur-md transition ${
-                    !transmediaAudioState.isMuted
+                    transmediaAudioState.isPlaying
                       ? 'border-fuchsia-300/40 bg-fuchsia-500/15 text-fuchsia-100 hover:bg-fuchsia-500/25'
                       : 'border-white/20 bg-black/40 text-slate-300 hover:bg-black/60'
                   }`}
                 >
-                  {transmediaAudioState.isMuted ? <VolumeX size={14} /> : <Volume2 size={14} />}
+                  {transmediaAudioState.isPlaying ? <Volume2 size={14} /> : <VolumeX size={14} />}
                 </button>
               ) : null}
               {user ? (

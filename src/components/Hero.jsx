@@ -4,6 +4,7 @@ import { BookOpen, CoffeeIcon, DramaIcon, TicketIcon, HeartHandshake, ShoppingBa
 import { Button } from '@/components/ui/button';
 const TicketPurchaseModal = React.lazy(() => import('@/components/TicketPurchaseModal'));
 const GatokensRevealModal = React.lazy(() => import('@/components/GatokensRevealModal'));
+const PortalInviteModal = React.lazy(() => import('@/components/PortalInviteModal'));
 const MiniverseModal = React.lazy(() => import('@/components/MiniverseModal'));
 import isotipoGatoWebp from '@/assets/isotipo-gato.webp';
 const HashtagButton3D = React.lazy(() => import('@/components/HashtagButton3D'));
@@ -22,6 +23,9 @@ import {
 } from '@/lib/heroAmbientAudio';
 import { createPortalLaunchState } from '@/lib/portalNavigation';
 import { safeGetItem, safeSetItem } from '@/lib/safeStorage';
+import { resolvePortalRoute } from '@/lib/miniversePortalRegistry';
+import { extractRecommendedAppId, resolveShowcaseFromAppId } from '@/lib/bienvenidaBridge';
+import { showcaseDefinitions } from '@/components/transmedia/transmediaConstants';
 
 const POZO_HERO_REVEAL_KEY = 'gatoencerrado:pozo-hero-reveal:v1';
 
@@ -71,6 +75,9 @@ const resolveHeroInlineTabFromQuery = (search = '') => {
 const Hero = () => {
   const [isTicketModalOpen, setIsTicketModalOpen] = useState(false);
   const [isGatokensModalOpen, setIsGatokensModalOpen] = useState(false);
+  const [pendingVitranaId, setPendingVitranaId] = useState(null);
+  const [isPortalInviteOpen, setIsPortalInviteOpen] = useState(false);
+  const [recommendedVitranaId, setRecommendedVitranaId] = useState(null);
   const [hasPozoRevealed, setHasPozoRevealed] = useState(() => safeGetItem(POZO_HERO_REVEAL_KEY) === '1');
   const [ctaIndex, setCtaIndex] = useState(0);
   const [heroSubtitleIndex, setHeroSubtitleIndex] = useState(0);
@@ -136,6 +143,39 @@ const Hero = () => {
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // Peek at bienvenida recommendation (without consuming — Transmedia does that on mount)
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem('bienvenida:transmedia-intent');
+      if (!raw) return;
+      const intent = JSON.parse(raw);
+      const appId = extractRecommendedAppId(intent);
+      const showcaseId = resolveShowcaseFromAppId(appId, showcaseDefinitions);
+      if (showcaseId) setRecommendedVitranaId(showcaseId);
+    } catch {}
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Detect pending vitrana stored before OAuth redirect
+  useEffect(() => {
+    if (!user) return;
+    try {
+      const vitranaId = localStorage.getItem('gatoencerrado:pending-vitrana-id');
+      if (!vitranaId) return;
+      const skipModal = localStorage.getItem('gatoencerrado:pending-vitrana-skip-modal') === '1';
+      localStorage.removeItem('gatoencerrado:pending-vitrana-id');
+      localStorage.removeItem('gatoencerrado:pending-vitrana-skip-modal');
+      if (skipModal) {
+        const portalRoute = resolvePortalRoute({ formatId: vitranaId });
+        if (portalRoute) { navigate(portalRoute); return; }
+      }
+      setPendingVitranaId(vitranaId);
+      setIsPortalInviteOpen(true);
+    } catch {}
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user?.id]);
+
   const mobileInitialTabId = useMemo(
     () => resolveHeroInlineTabFromQuery(location.search),
     [location.search]
@@ -420,6 +460,7 @@ const Hero = () => {
     let shouldResumeAfterVisibility = false;
     let fallbackApplied = false;
     let requiresInteractionAfterBackground = false;
+    let isInBackground = false;
     let isShowcaseForeground =
       typeof document !== 'undefined' &&
       (document.documentElement.dataset.gatoShowcaseOpen === 'true' ||
@@ -449,6 +490,7 @@ const Hero = () => {
 
     const attemptPlay = async ({ fromUserGesture = false } = {}) => {
       if (!mounted) return;
+      if (isInBackground) return;
       if (isShowcaseForegroundActive()) return;
       if (heroAudioMutedRef.current) return;
       if (!fromUserGesture && requiresInteractionAfterBackground) return;
@@ -525,26 +567,27 @@ const Hero = () => {
 
     const onVisibilityChange = () => {
       if (document.visibilityState === 'hidden') {
-        pauseForBackground({ forceInteractionToResume: true });
+        pauseForBackground();
         return;
       }
 
       updateAudioByScroll();
-      if (shouldResumeAfterVisibility && !requiresInteractionAfterBackground) {
+      if (shouldResumeAfterVisibility) {
         void attemptPlay();
       }
       shouldResumeAfterVisibility = false;
     };
 
     const onWindowBlur = () => {
-      // Desktop tab switch and mobile app switch can both trigger blur.
-      pauseForBackground({ forceInteractionToResume: true });
+      isInBackground = true;
+      pauseForBackground();
     };
 
     const onWindowFocus = () => {
+      isInBackground = false;
       if (document.visibilityState !== 'visible') return;
       updateAudioByScroll();
-      if (shouldResumeAfterVisibility && !requiresInteractionAfterBackground) {
+      if (shouldResumeAfterVisibility) {
         void attemptPlay();
       }
       shouldResumeAfterVisibility = false;
@@ -622,7 +665,10 @@ const Hero = () => {
     void attemptPlay();
     updateAudioByScroll();
     idleRetryId = window.setInterval(() => {
-      if (document.visibilityState !== 'visible') return;
+      if (isInBackground || !document.hasFocus() || document.visibilityState !== 'visible') {
+        if (!audio.paused) audio.pause();
+        return;
+      }
       if (requiresInteractionAfterBackground) return;
       if (!audio.paused) return;
       const targetVolume = getTargetVolumeByHeroPosition();
@@ -1064,6 +1110,7 @@ const Hero = () => {
         <TicketPurchaseModal open={isTicketModalOpen} onClose={handleCloseTicket} />
         <GatokensRevealModal
           open={isGatokensModalOpen}
+          recommendedShowcaseId={recommendedVitranaId}
           onClose={() => {
             setIsGatokensModalOpen(false);
             if (!user) {
@@ -1072,6 +1119,11 @@ const Hero = () => {
               window.dispatchEvent(new CustomEvent('gatoencerrado:pozo-hero-revealed'));
             }
           }}
+        />
+        <PortalInviteModal
+          open={isPortalInviteOpen}
+          onClose={() => setIsPortalInviteOpen(false)}
+          vitranaId={pendingVitranaId}
         />
       </Suspense>
     </>
