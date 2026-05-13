@@ -269,7 +269,17 @@ const Instagram = () => {
   const instagramProfileUrl = 'https://www.instagram.com/esungatoencerrado/?hl=en';
   const BASE_VISIBLE_COUNT = 15;
   const [selectedIndex, setSelectedIndex] = useState(null);
-  const [activePhotographer, setActivePhotographer] = useState('gabriel');
+  const [activePhotographer, setActivePhotographer] = useState(() => {
+    try {
+      const stored = localStorage.getItem('gatoencerrado:gallery-photographer-index');
+      const lastIndex = stored !== null ? parseInt(stored, 10) : -1;
+      const nextIndex = (lastIndex + 1) % PHOTOGRAPHERS.length;
+      localStorage.setItem('gatoencerrado:gallery-photographer-index', String(nextIndex));
+      return PHOTOGRAPHERS[nextIndex]?.id ?? 'gabriel';
+    } catch {
+      return 'gabriel';
+    }
+  });
   const sectionRef = useRef(null);
   const [likeStatusById, setLikeStatusById] = useState({});
   const [likeCountById, setLikeCountById] = useState({});
