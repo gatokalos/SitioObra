@@ -1,5 +1,6 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
+import { useNavigate } from 'react-router-dom';
 
 const backdropVariants = { hidden: { opacity: 0 }, visible: { opacity: 1 } };
 const panelVariants = {
@@ -10,8 +11,9 @@ const panelVariants = {
 
 const GATOKENS_LS_KEY = 'gatoencerrado:gatokens-available';
 
-const GatokensRevealModal = ({ open, onClose }) => {
+const GatokensRevealModal = ({ open, onClose, recommendedShowcaseId }) => {
   const [balance, setBalance] = useState(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
     if (!open) return;
@@ -30,6 +32,16 @@ const GatokensRevealModal = ({ open, onClose }) => {
       setBalance(null);
     }
   }, [open]);
+
+  const handleGoToRecommendation = useCallback(() => {
+    onClose?.();
+    navigate(`/#transmedia?focus=${recommendedShowcaseId}`);
+  }, [navigate, onClose, recommendedShowcaseId]);
+
+  const handleExplore = useCallback(() => {
+    onClose?.();
+    navigate('/#apoya');
+  }, [navigate, onClose]);
 
   return (
     <AnimatePresence>
@@ -91,7 +103,7 @@ const GatokensRevealModal = ({ open, onClose }) => {
 
             {/* balance */}
             {balance != null && (
-              <div className="mb-5 flex items-center justify-center gap-2 rounded-2xl border border-violet-400/20 bg-violet-500/8 px-4 py-3">
+              <div className="mb-5 flex items-center justify-center gap-2 rounded-2xl border border-violet-400/20 bg-violet-500/[0.08] px-4 py-3">
                 <span className="text-2xl font-bold tabular-nums text-violet-200">{balance.toLocaleString('es-MX')}</span>
                 <span className="text-sm font-medium text-violet-300/70">GAT disponibles</span>
               </div>
@@ -99,30 +111,43 @@ const GatokensRevealModal = ({ open, onClose }) => {
 
             {/* descripción */}
             <p className="mb-2 text-center text-sm leading-relaxed text-slate-300/80">
-              Los GATokens son la moneda de energía de la obra. Cada vez que interactúas con el sitio —
-              exploras, compartes o reaccionas — acumulas más.
+              Los GATokens son la energía simbólica del sitio.
             </p>
             <p className="mb-7 text-center text-sm leading-relaxed text-slate-400/60">
-              Úsalos para desbloquear experiencias dentro del universo de{' '}
+              Úsalos para desbloquear experiencias dentro del universo{' '}
               <span className="text-violet-300/80">#GATOENCERRADO</span>.
             </p>
 
-            {/* CTA */}
+            {/* CTAs */}
+            {recommendedShowcaseId ? (
+              <button
+                type="button"
+                onClick={handleGoToRecommendation}
+                className="
+                  mb-3 w-full rounded-full
+                  bg-gradient-to-r from-violet-600 via-purple-600 to-fuchsia-600
+                  px-6 py-3 text-sm font-semibold text-white
+                  shadow-[0_8px_28px_rgba(139,92,246,0.38)]
+                  transition-all duration-200
+                  hover:shadow-[0_10px_36px_rgba(139,92,246,0.52)]
+                  hover:scale-[1.02] active:scale-[0.98]
+                "
+              >
+                Recomendación del gato →
+              </button>
+            ) : null}
             <button
               type="button"
-              onClick={onClose}
-              className="
-                w-full rounded-full
-                bg-gradient-to-r from-violet-600 via-purple-600 to-fuchsia-600
-                px-6 py-3 text-sm font-semibold text-white
-                shadow-[0_8px_28px_rgba(139,92,246,0.38)]
-                transition-all duration-200
-                hover:shadow-[0_10px_36px_rgba(139,92,246,0.52)]
-                hover:scale-[1.02]
-                active:scale-[0.98]
-              "
+              onClick={handleExplore}
+              className={`
+                w-full rounded-full px-6 py-3 text-sm font-semibold transition-all duration-200
+                ${recommendedShowcaseId
+                  ? 'border border-white/10 bg-white/5 text-slate-300/70 hover:text-slate-200'
+                  : 'bg-gradient-to-r from-violet-600 via-purple-600 to-fuchsia-600 text-white shadow-[0_8px_28px_rgba(139,92,246,0.38)] hover:shadow-[0_10px_36px_rgba(139,92,246,0.52)] hover:scale-[1.02] active:scale-[0.98]'
+                }
+              `}
             >
-              Explorar el sitio →
+              {recommendedShowcaseId ? 'Seguir explorando' : 'Explorar el sitio →'}
             </button>
           </motion.div>
         </motion.div>
