@@ -2869,6 +2869,11 @@ const MiniverseModal = ({
                       onClose?.();
                       window.setTimeout(() => {
                         window.dispatchEvent(
+                          new CustomEvent('gatoencerrado:auto-open-resonance', {
+                            detail: { formatId },
+                          })
+                        );
+                        window.dispatchEvent(
                           new CustomEvent('gatoencerrado:select-miniverse-format', {
                             detail: { formatId },
                           })

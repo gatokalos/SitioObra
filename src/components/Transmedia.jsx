@@ -264,6 +264,7 @@ const Transmedia = ({ allianceOnlyMode = false }) => {
   const [isMovimientoResonanceOpen, setIsMovimientoResonanceOpen] = useState(false);
   const [isJuegosResonanceOpen, setIsJuegosResonanceOpen] = useState(false);
   const [isOraculoResonanceOpen, setIsOraculoResonanceOpen] = useState(false);
+  const pendingAutoResonanceRef = useRef(null);
 
   useEffect(() => {
     if (!isNarrativeDramaOpen) return;
@@ -768,6 +769,36 @@ const Transmedia = ({ allianceOnlyMode = false }) => {
         handleSelectMiniverseFromHeroInline,
       );
   }, [handleSelectMiniverse]);
+
+  // Listen for auto-open-resonance event (triggered from MiniverseModal video overlay CTA)
+  useEffect(() => {
+    if (typeof window === 'undefined') return undefined;
+    const handler = (e) => {
+      pendingAutoResonanceRef.current = e.detail?.formatId ?? null;
+    };
+    window.addEventListener('gatoencerrado:auto-open-resonance', handler);
+    return () => window.removeEventListener('gatoencerrado:auto-open-resonance', handler);
+  }, []);
+
+  // When activeShowcase matches a pending auto-resonance formatId, open the resonance form
+  useEffect(() => {
+    if (!activeShowcase || !pendingAutoResonanceRef.current) return;
+    if (activeShowcase !== pendingAutoResonanceRef.current) return;
+    const formatId = pendingAutoResonanceRef.current;
+    pendingAutoResonanceRef.current = null;
+    const openers = {
+      miniversos: () => setIsDramaResonanceOpen(true),
+      miniversoNovela: () => setIsLiteraturaResonanceOpen(true),
+      lataza: () => setIsArtesaniasResonanceOpen(true),
+      miniversoGrafico: () => setIsGraficosResonanceOpen(true),
+      copycats: () => setIsCineResonanceOpen(true),
+      miniversoSonoro: () => setIsSonoroResonanceOpen(true),
+      miniversoMovimiento: () => setIsMovimientoResonanceOpen(true),
+      apps: () => setIsJuegosResonanceOpen(true),
+      oraculo: () => setIsOraculoResonanceOpen(true),
+    };
+    openers[formatId]?.();
+  }, [activeShowcase, setIsDramaResonanceOpen, setIsLiteraturaResonanceOpen, setIsArtesaniasResonanceOpen, setIsGraficosResonanceOpen, setIsCineResonanceOpen, setIsSonoroResonanceOpen, setIsMovimientoResonanceOpen, setIsJuegosResonanceOpen, setIsOraculoResonanceOpen]);
 
   useEffect(() => {
     if (typeof window === 'undefined') return undefined;
