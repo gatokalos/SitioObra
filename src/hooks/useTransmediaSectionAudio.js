@@ -129,17 +129,42 @@ const useTransmediaSectionAudio = ({ isSilvestrePlaying }) => {
     return () => window.removeEventListener('gatoencerrado:showcase-visibility', onShowcaseVisibility);
   }, [attemptPlay]);
 
-  // Pause on tab hidden
+  // Pause on tab hidden / app switch — mirrors Hero's blur+visibilitychange guardrails
   useEffect(() => {
+    let shouldResumeAfterFocus = false;
+
+    const onBlur = () => {
+      const audio = getTransmediaSectionAudio();
+      if (!audio) return;
+      shouldResumeAfterFocus = !audio.paused && audio.volume > TRANSMEDIA_AMBIENT_MIN_AUDIBLE_VOLUME;
+      if (shouldResumeAfterFocus) pauseTransmediaAmbient();
+    };
+
+    const onFocus = () => {
+      if (document.visibilityState !== 'visible') return;
+      if (shouldResumeAfterFocus && isActiveRef.current && !isDuckedRef.current) {
+        attemptPlay();
+      }
+      shouldResumeAfterFocus = false;
+    };
+
     const onVisibility = () => {
       if (document.visibilityState === 'hidden') {
+        shouldResumeAfterFocus = false; // visibilitychange ya lo maneja onBlur no aplica aquí
         pauseTransmediaAmbient();
       } else if (isActiveRef.current && !isSilvestrePlaying) {
         attemptPlay();
       }
     };
+
+    window.addEventListener('blur', onBlur);
+    window.addEventListener('focus', onFocus);
     document.addEventListener('visibilitychange', onVisibility);
-    return () => document.removeEventListener('visibilitychange', onVisibility);
+    return () => {
+      window.removeEventListener('blur', onBlur);
+      window.removeEventListener('focus', onFocus);
+      document.removeEventListener('visibilitychange', onVisibility);
+    };
   }, [attemptPlay, isSilvestrePlaying]);
 
   // Cleanup on unmount
