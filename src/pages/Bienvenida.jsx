@@ -13,7 +13,7 @@ import {
   setBienvenidaSkip,
   isBienvenidaQaAlwaysFreshUser,
 } from '@/lib/bienvenida';
-import { extractRecommendedAppId, normalizeBridgeKey } from '@/lib/bienvenidaBridge';
+import { extractRecommendedAppId } from '@/lib/bienvenidaBridge';
 import { pauseHeroAmbient } from '@/lib/heroAmbientAudio';
 import LoginOverlay from '@/components/ContributionModal/LoginOverlay';
 
@@ -218,13 +218,12 @@ const Bienvenida = () => {
           handleFinish();
           return;
         }
-        const payloadHashTarget = normalizeBridgeKey(payloadAppId) || 'transmedia';
         if (payload && typeof payload === 'object') {
           setBienvenidaTransmediaIntent(payload);
         }
         const returnPath = getBienvenidaReturnPath() || '/';
-        const returnPathWithoutHash = String(returnPath).split('#')[0] || '/';
-        setBienvenidaReturnPath(`${returnPathWithoutHash}#${payloadHashTarget}`);
+        const returnPathClean = String(returnPath).split('#')[0].split('?')[0] || '/';
+        setBienvenidaReturnPath(`${returnPathClean}?gatokens=reveal`);
         handleFinish();
       }
       if (type === BRIDGE_EVENT_REQUEST_TRAZOS) {

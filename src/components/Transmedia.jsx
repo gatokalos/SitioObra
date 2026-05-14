@@ -204,6 +204,7 @@ const Transmedia = ({ allianceOnlyMode = false }) => {
   const [showLiteraturaApp, setShowLiteraturaApp] = useState(false);
   const [galeriaMarianaIndex, setGaleriaMarianaIndex] = useState(null);
   const [mobileVitranaRevealId, setMobileVitranaRevealId] = useState(null);
+  const [desktopVitranaRevealId, setDesktopVitranaRevealId] = useState(null);
   const [showMobilePortalLogin, setShowMobilePortalLogin] = useState(false);
   const [hasLoadedMobilePortalLogin, setHasLoadedMobilePortalLogin] = useState(false);
   const {
@@ -689,6 +690,15 @@ const Transmedia = ({ allianceOnlyMode = false }) => {
           if (navigateToMobilePortalIfReady(formatId)) return;
         }
         setMobileVitranaRevealId((prev) => (prev === formatId ? null : formatId));
+        return;
+      }
+      // Desktop anonymous: misma lógica que mobile — muestra CTA de login en la card.
+      if (!isMobileViewport && !isAuthenticated) {
+        const hasBienvenida = safeGetItem('gatoencerrado:bienvenida-completed') === '1';
+        if (hasBienvenida) {
+          if (navigateToMobilePortalIfReady(formatId)) return;
+        }
+        setDesktopVitranaRevealId((prev) => (prev === formatId ? null : formatId));
         return;
       }
       if (navigateToMobilePortalIfReady(formatId)) {
@@ -1316,7 +1326,7 @@ const Transmedia = ({ allianceOnlyMode = false }) => {
               })}
             </motion.div>
             <p className="text-xs uppercase tracking-[0.35em] text-purple-300 text-center md:text-right">
-              Cómplices
+              ← Cómplices
             </p>
           </div>
           {selected ? (
@@ -5122,7 +5132,25 @@ const rendernotaAutoral = () => {
                           <span className="text-amber-200/90">· {minRequiredCopy}</span>
                         </div>
                       </div>
-             
+                      {desktopVitranaRevealId === format.id ? (
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            try {
+                              localStorage.setItem('gatoencerrado:pending-vitrana-id', format.id);
+                              if (safeGetItem('gatoencerrado:bienvenida-completed') === '1') {
+                                localStorage.setItem('gatoencerrado:pending-vitrana-skip-modal', '1');
+                              }
+                            } catch {}
+                            setShowMobilePortalLogin(true);
+                          }}
+                          className="inline-flex items-center gap-2 rounded-full border border-amber-300/40 bg-amber-500/10 px-4 py-2 text-sm font-semibold text-amber-200 transition hover:bg-amber-500/20"
+                        >
+                          Inicia sesión para desbloquear
+                        </button>
+                      ) : null}
+
                       </div>
                     </div>
                     <div
