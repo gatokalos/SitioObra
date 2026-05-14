@@ -34,6 +34,7 @@ const getTabHeadingVerb = (tabId) => {
   if (tabId === 'waitlist') return 'Impulsa';
   return 'Habita';
 };
+const NARRATIVE_PLACEHOLDER_URL = 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/trailers/fragmento_en_produccion_web.mp4';
 const INCENDIO_LOGO_SRC = '/assets/incendiologo.png';
 const INCENDIO_VIDEO_PLACEHOLDER_TITLE = 'VIDEO EN PRODUCCIÓN';
 const INCENDIO_VIDEO_PLACEHOLDER_COPY =
@@ -931,8 +932,8 @@ const MiniverseModal = ({
         ctaDuration: '5 min',
         description: '¿Qué pasa cuando algo se expande sin pausa y empieza a romperse?',
         videoUrl: prologueVideoUrl,
-        fullscreenVideoUrlDesktop: null,
-        fullscreenVideoUrlMobile: null,
+        fullscreenVideoUrlDesktop: NARRATIVE_PLACEHOLDER_URL,
+        fullscreenVideoUrlMobile: NARRATIVE_PLACEHOLDER_URL,
         eyebrow: 'Prólogo',
         isPrologue: true,
         portalLabel: 'Prólogo',
@@ -944,8 +945,8 @@ const MiniverseModal = ({
           ...card,
           ctaLabel: stripDurationFromLabel(rawCtaLabel),
           ctaDuration: extractDurationFromLabel(rawCtaLabel),
-          fullscreenVideoUrlDesktop: card.fullscreenVideoUrlDesktop ?? card.fullscreenVideoUrl ?? null,
-          fullscreenVideoUrlMobile: card.fullscreenVideoUrlMobile ?? card.fullscreenVideoUrl ?? null,
+          fullscreenVideoUrlDesktop: card.fullscreenVideoUrlDesktop ?? card.fullscreenVideoUrl ?? NARRATIVE_PLACEHOLDER_URL,
+          fullscreenVideoUrlMobile: card.fullscreenVideoUrlMobile ?? card.fullscreenVideoUrl ?? NARRATIVE_PLACEHOLDER_URL,
           portalLabel: getPortalLabelFromTitle(card.title),
         };
       }),
