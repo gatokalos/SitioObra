@@ -77,7 +77,7 @@ const ORACULO_SEED_NOTES = [
 ];
 const ORACULO_NOTA_AUTORAL = {
   title: '#CambiarSinCambiar',
-  verse: 'Mire el espejo.\nNo dijo nada.\nEramos dos... y no.',
+  verse: 'Miré el espejo.\nNo dijo nada.\nÉramos dos... y no.',
 };
 const ORACULO_TILE = {
   gradient: 'linear-gradient(135deg, rgba(38,18,56,0.95), rgba(86,33,115,0.85), rgba(168,68,139,0.65))',
@@ -88,7 +88,7 @@ const ORACULO_TILE = {
 };
 const ORACULO_IA_PROFILE = {
   type: 'GPT-4o + embeddings simbólicos curados por la comunidad.',
-  interaction: '1-3 reflexiones cortas por sesion; foro breve guiado.',
+  interaction: '1-3 reflexiones cortas por sesión; foro breve guiado.',
   tokensRange: '20-120 tokens por reflexion (promedio ~20 GAT).',
   coverage: 'Cubierto por suscriptores; las recompensas son GATokens internos.',
   footnote: 'El minado es simbólico y humano: no es financiero, es resonancia.',

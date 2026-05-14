@@ -89,6 +89,7 @@ export default function HashtagButton3D({
   width = '100%',
   height = '420px',
   contentScale = 1,
+  showGlow = false,
 }) {
   const [isPressed, setIsPressed] = useState(false);
 
@@ -103,15 +104,32 @@ export default function HashtagButton3D({
       className={className}
       style={{ width, height, cursor: 'pointer', position: 'relative', ...style }}
     >
+      {/* Glow de suelo — se revela cuando el audio está activo */}
+      <div
+        style={{
+          position: 'absolute',
+          bottom: '-8%',
+          left: '50%',
+          transform: 'translateX(-50%)',
+          width: '140%',
+          height: '38%',
+          background: 'radial-gradient(ellipse at center, rgba(220,220,255,0.38) 0%, rgba(180,180,255,0.12) 45%, transparent 70%)',
+          filter: 'blur(6px)',
+          pointerEvents: 'none',
+          opacity: showGlow ? 1 : 0,
+          transition: 'opacity 1.1s ease',
+          zIndex: 0,
+        }}
+      />
       <div
         style={{
           position: 'absolute',
           inset: 0,
           transform: `scale(${contentScale})`,
           transformOrigin: 'center center',
+          zIndex: 1,
         }}
       >
-
         <Canvas
           camera={{ position: [0, 0.2, 4.2], fov: 35 }}
           gl={{ antialias: true, alpha: true }}
@@ -122,9 +140,7 @@ export default function HashtagButton3D({
           <directionalLight position={[3, 3, 1]} intensity={1.2} />
           <directionalLight position={[-3, 1, -3]} intensity={0.6} />
 
-          {/* El entorno que el material refleja durante el flash */}
           <Environment preset="city" />
-          
 
           <React.Suspense fallback={null}>
             <HashtagModel onClick={handleClick} isPressed={isPressed} />

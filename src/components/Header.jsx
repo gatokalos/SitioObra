@@ -1,27 +1,21 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { motion } from 'framer-motion';
-import { Coffee, Menu, X, Volume2, VolumeX } from 'lucide-react';
+import { Coffee, Menu, X, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useToast } from '@/components/ui/use-toast';
 import { useAuth } from '@/contexts/SupabaseAuthContext';
 import LoginOverlay from '@/components/ContributionModal/LoginOverlay';
 import MobileMenuOverlay from '@/components/MobileMenuOverlay';
-import {
-  getHeroAmbientState,
-  subscribeHeroAmbient,
-  toggleHeroAmbientMuted,
-  getHeroAmbientAudio,
-  resumeHeroAmbientPlayback,
-} from '@/lib/heroAmbientAudio';
-import {
-  getTransmediaSectionState,
-  subscribeTransmediaAmbient,
-  toggleTransmediaAmbientMuted,
-  getTransmediaSectionAudio,
-} from '@/lib/transmediaSectionAudio';
 import { createPortalLaunchState } from '@/lib/portalNavigation';
 import isotipoGatoWebp from '@/assets/isotipo-gato.webp';
+import { INITIAL_GAT_BALANCE, readStoredInt } from '@/components/transmedia/transmediaConstants';
+
+const GAT_BALANCE_STORAGE_KEY = 'gatoencerrado:gatokens-available';
+const readGatBalance = () => {
+  const v = readStoredInt(GAT_BALANCE_STORAGE_KEY, INITIAL_GAT_BALANCE);
+  return Number.isFinite(v) ? Math.max(Math.trunc(v), 0) : INITIAL_GAT_BALANCE;
+};
 
 const MOBILE_FULLSCREEN_MENU_PHASE_A_ENABLED = true;
 const PUBLIC_HEADER_LOGO_SRC = '/assets/header-logo.png';
@@ -61,35 +55,17 @@ const Header = ({ showTransmediaNav = true }) => {
     ? 'h-9 w-9 rounded-full object-contain'
     : 'h-10 w-10 object-contain drop-shadow-[0_0_10px_rgba(255,255,255,0.08)] sm:h-11 sm:w-11';
 
-  const [audioState, setAudioState] = useState(() => getHeroAmbientState());
-  useEffect(() => subscribeHeroAmbient(() => setAudioState(getHeroAmbientState())), []);
-  const [isHeroVisible, setIsHeroVisible] = useState(true);
-  const [showAudioHint, setShowAudioHint] = useState(false);
-  const hasShownHintRef = React.useRef(false);
-  useEffect(() => {
-    if (hasShownHintRef.current || audioState.isPlaying || !audioState.isReady || !isHeroVisible) return;
-    const t = window.setTimeout(() => { setShowAudioHint(true); hasShownHintRef.current = true; }, 1800);
-    return () => window.clearTimeout(t);
-  }, [audioState.isPlaying, audioState.isReady, isHeroVisible]);
-  useEffect(() => {
-    if (!showAudioHint) return;
-    const t = window.setTimeout(() => setShowAudioHint(false), 4500);
-    return () => window.clearTimeout(t);
-  }, [showAudioHint]);
-  useEffect(() => { if (audioState.isPlaying) setShowAudioHint(false); }, [audioState.isPlaying]);
-  useEffect(() => {
-    const heroEl = document.getElementById('hero');
-    if (!heroEl) return;
-    const observer = new IntersectionObserver(
-      ([entry]) => setIsHeroVisible(entry.isIntersecting),
-      { threshold: 0.05 }
-    );
-    observer.observe(heroEl);
-    return () => observer.disconnect();
-  }, []);
 
-  const [transmediaAudioState, setTransmediaAudioState] = useState(() => getTransmediaSectionState());
-  useEffect(() => subscribeTransmediaAmbient(() => setTransmediaAudioState(getTransmediaSectionState())), []);
+  const [gatBalance, setGatBalance] = useState(readGatBalance);
+  useEffect(() => {
+    const sync = () => setGatBalance(readGatBalance());
+    window.addEventListener('gatoencerrado:gatokens-balance-update', sync);
+    window.addEventListener('storage', sync);
+    return () => {
+      window.removeEventListener('gatoencerrado:gatokens-balance-update', sync);
+      window.removeEventListener('storage', sync);
+    };
+  }, []);
   const [isTransmediaVisible, setIsTransmediaVisible] = useState(false);
   useEffect(() => {
     const el = document.getElementById('transmedia');
@@ -101,27 +77,6 @@ const Header = ({ showTransmediaNav = true }) => {
     observer.observe(el);
     return () => observer.disconnect();
   }, []);
-
-  const handleAudioToggle = useCallback(() => {
-    const audio = getHeroAmbientAudio();
-    if (!audio) return;
-    // Autoplay bloqueado: primer toque reanuda en vez de mutear
-    if (!audioState.isMuted && audio.paused) {
-      void resumeHeroAmbientPlayback();
-      return;
-    }
-    toggleHeroAmbientMuted();
-  }, [audioState.isMuted]);
-
-  const handleTransmediaAudioToggle = useCallback(() => {
-    const audio = getTransmediaSectionAudio();
-    if (!audio) return;
-    if (!transmediaAudioState.isMuted && audio.paused) {
-      void audio.play().catch(() => {});
-      return;
-    }
-    toggleTransmediaAmbientMuted();
-  }, [transmediaAudioState.isMuted]);
 
   const handleCloseOverlay = useCallback(() => setShowLoginOverlay(false), []);
 
@@ -342,42 +297,18 @@ const Header = ({ showTransmediaNav = true }) => {
             </div>
 
             <div className="flex items-center gap-3">
-              {audioState.isReady && isHeroVisible ? (
-                <div className="relative flex items-center">
-                  <span
-                    className="pointer-events-none absolute right-full mr-2.5 select-none whitespace-nowrap text-[0.62rem] uppercase tracking-widest text-slate-300/55 transition-opacity duration-700"
-                    style={{ opacity: showAudioHint ? 1 : 0 }}
-                  >
-                    Activa el sonido ›
-                  </span>
-                  <button
-                    type="button"
-                    onClick={() => { setShowAudioHint(false); handleAudioToggle(); }}
-                    aria-label={audioState.isPlaying ? 'Silenciar sonido' : 'Activar sonido'}
-                    className={`inline-flex h-8 w-8 items-center justify-center rounded-full border backdrop-blur-md transition ${
-                      audioState.isPlaying
-                        ? 'border-violet-300/40 bg-violet-500/15 text-violet-100 hover:bg-violet-500/25'
-                        : 'border-white/20 bg-black/40 text-slate-300 hover:bg-black/60'
-                    }`}
-                  >
-                    {audioState.isPlaying ? <Volume2 size={14} /> : <VolumeX size={14} />}
-                  </button>
-                </div>
-              ) : null}
-              {transmediaAudioState.isReady && isTransmediaVisible ? (
-                <button
-                  type="button"
-                  onClick={handleTransmediaAudioToggle}
-                  aria-label={transmediaAudioState.isPlaying ? 'Silenciar música' : 'Activar música'}
-                  className={`inline-flex h-8 w-8 items-center justify-center rounded-full border backdrop-blur-md transition ${
-                    transmediaAudioState.isPlaying
-                      ? 'border-fuchsia-300/40 bg-fuchsia-500/15 text-fuchsia-100 hover:bg-fuchsia-500/25'
-                      : 'border-white/20 bg-black/40 text-slate-300 hover:bg-black/60'
-                  }`}
-                >
-                  {transmediaAudioState.isPlaying ? <Volume2 size={14} /> : <VolumeX size={14} />}
-                </button>
-              ) : null}
+              <div
+                className="inline-flex items-center gap-2 rounded-full border border-cyan-300/25 bg-cyan-400/10 px-3 py-1.5 text-[0.68rem] font-semibold uppercase tracking-[0.24em] text-cyan-100/90 shadow-[0_0_18px_rgba(34,211,238,0.14)]"
+                style={{
+                  opacity: isTransmediaVisible ? 1 : 0,
+                  pointerEvents: isTransmediaVisible ? 'auto' : 'none',
+                  transition: 'opacity 0.5s ease',
+                }}
+              >
+                <Sparkles size={12} className="text-cyan-200" />
+                <span>Saldo</span>
+                <span className="tabular-nums text-white">{gatBalance.toLocaleString('es-MX')} GAT</span>
+              </div>
               {user ? (
                 <Button
                   type="button"

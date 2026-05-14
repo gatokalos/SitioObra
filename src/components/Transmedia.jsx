@@ -1316,7 +1316,7 @@ const Transmedia = ({ allianceOnlyMode = false }) => {
               })}
             </motion.div>
             <p className="text-xs uppercase tracking-[0.35em] text-purple-300 text-center md:text-right">
-              Colaboradores
+              Cómplices
             </p>
           </div>
           {selected ? (

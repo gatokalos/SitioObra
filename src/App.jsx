@@ -161,6 +161,7 @@ const HERO_GUEST_SOFT_FOCUS_MASK =
 
 const HeroBackground = ({ isAuthenticated = false }) => {
   const [opacity, setOpacity] = useState(1);
+  const [audioDimmed, setAudioDimmed] = useState(false);
   const backgroundVariant = isAuthenticated
     ? HERO_BACKGROUND_VARIANTS.authenticated
     : HERO_BACKGROUND_VARIANTS.guest;
@@ -196,6 +197,12 @@ const HeroBackground = ({ isAuthenticated = false }) => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
+  useEffect(() => {
+    const onActivated = () => setAudioDimmed(true);
+    window.addEventListener('gatoencerrado:audio-activated', onActivated);
+    return () => window.removeEventListener('gatoencerrado:audio-activated', onActivated);
+  }, []);
+
   return (
     <div className="fixed inset-0 z-0 pointer-events-none" style={{ opacity, transition: 'opacity 0.45s ease' }}>
       <div className="absolute inset-0 bg-black">
@@ -205,11 +212,27 @@ const HeroBackground = ({ isAuthenticated = false }) => {
         </div>
         <img
           className={backgroundVariant.className}
-          style={backgroundVariant.style}
+          style={{
+            ...backgroundVariant.style,
+            opacity: audioDimmed
+              ? (backgroundVariant.style.opacity ?? 1) * 0.38
+              : backgroundVariant.style.opacity,
+            transition: 'opacity 1.8s ease',
+          }}
           alt={backgroundVariant.alt}
           src={backgroundVariant.src}
           decoding="async"
           fetchpriority="low"
+        />
+        {/* Velo negro que cae al activar el audio — "bajan las luces de la sala" */}
+        <div
+          aria-hidden="true"
+          className="absolute inset-0"
+          style={{
+            background: 'rgba(0,0,0,0.42)',
+            opacity: audioDimmed ? 1 : 0,
+            transition: 'opacity 2s ease',
+          }}
         />
         {!isAuthenticated ? (
           <>

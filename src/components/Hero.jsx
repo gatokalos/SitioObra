@@ -20,6 +20,7 @@ import {
   writeHeroAudioEnabledPreference,
   pauseHeroAmbient,
   resumeHeroAmbientPlayback,
+  toggleHeroAmbientMuted,
 } from '@/lib/heroAmbientAudio';
 import { createPortalLaunchState } from '@/lib/portalNavigation';
 import { safeGetItem, safeSetItem } from '@/lib/safeStorage';
@@ -95,8 +96,13 @@ const Hero = () => {
   const audioGestureUnlockRef = useRef(false);
   const lastHeroAudioPlayAttemptRef = useRef(0);
   const [isHeroAudioReady, setIsHeroAudioReady] = useState(false);
+  const isHeroAudioReadyRef = useRef(false);
   const [isHeroAudioMuted, setIsHeroAudioMuted] = useState(false);
   const [isHeroAudioPlaying, setIsHeroAudioPlaying] = useState(false);
+  const [hasActivatedAudio, setHasActivatedAudio] = useState(false);
+  const userActivatedRef = useRef(false);
+  const [showAudioHint, setShowAudioHint] = useState(false);
+  const isHeroAudioPlayingRef = useRef(false);
   const [isHeroInViewport, setIsHeroInViewport] = useState(true);
   const [isMobileViewport, setIsMobileViewport] = useState(() => {
     if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') return false;
@@ -392,6 +398,14 @@ const Hero = () => {
   }, [isHeroAudioMuted]);
 
   useEffect(() => {
+    isHeroAudioReadyRef.current = isHeroAudioReady;
+  }, [isHeroAudioReady]);
+
+  useEffect(() => {
+    isHeroAudioPlayingRef.current = isHeroAudioPlaying;
+  }, [isHeroAudioPlaying]);
+
+  useEffect(() => {
     if (isAuthLoading) {
       return undefined;
     }
@@ -432,6 +446,55 @@ const Hero = () => {
       setIsHeroAudioMuted(isMuted);
     });
   }, []);
+
+  // Hint de audio: primera aparición 1.8s, se muestra 4s, descansa 7s.
+  // El timer no depende de isHeroAudioReady para no reiniciarse si el audio tarda en cargar;
+  // en cambio lee el ref en cada tick para mostrar el hint solo cuando el audio ya está listo.
+  useEffect(() => {
+    if (hasActivatedAudio || !isHeroInViewport) return;
+    let showTimer, hideTimer;
+    const cycle = (delay) => {
+      showTimer = window.setTimeout(() => {
+        if (!isHeroAudioReadyRef.current) { cycle(500); return; }
+        if (isHeroAudioPlayingRef.current) { cycle(2000); return; }
+        setShowAudioHint(true);
+        hideTimer = window.setTimeout(() => {
+          setShowAudioHint(false);
+          cycle(7000);
+        }, 4000);
+      }, delay);
+    };
+    cycle(1800);
+    return () => {
+      window.clearTimeout(showTimer);
+      window.clearTimeout(hideTimer);
+      setShowAudioHint(false);
+    };
+  }, [hasActivatedAudio, isHeroInViewport]);
+
+  const handleIsotipoClick = useCallback(() => {
+    const audio = getHeroAmbientAudio();
+    if (!audio) return;
+    setShowAudioHint(false);
+    if (!hasActivatedAudio) {
+      setHasActivatedAudio(true);
+      window.dispatchEvent(new CustomEvent('gatoencerrado:audio-activated'));
+    }
+
+    if (!userActivatedRef.current) {
+      // Primer clic explícito: garantizar que el audio suena, nunca mutear
+      userActivatedRef.current = true;
+      if (isHeroAudioMuted) {
+        toggleHeroAmbientMuted(); // también llama resumeHeroAmbientPlayback internamente
+      } else {
+        void resumeHeroAmbientPlayback({ targetVolume: HERO_LOGGED_IN_AUDIO_VOLUME });
+      }
+      return;
+    }
+
+    // Clics siguientes: toggle mute
+    toggleHeroAmbientMuted();
+  }, [isHeroAudioMuted, hasActivatedAudio]);
 
   useEffect(() => {
     if (isAuthLoading) {
@@ -481,7 +544,7 @@ const Hero = () => {
     const attemptPlay = async ({ fromUserGesture = false } = {}) => {
       if (!mounted) return;
       if (isInBackground) return;
-      if (!fromUserGesture && (!document.hasFocus() || document.visibilityState !== 'visible')) return;
+      if (!fromUserGesture && document.visibilityState !== 'visible') return;
       if (isShowcaseForegroundActive()) return;
       if (heroAudioMutedRef.current) return;
       if (!fromUserGesture && requiresInteractionAfterBackground) return;
@@ -604,6 +667,7 @@ const Hero = () => {
     const onCanPlay = () => {
       setIsHeroAudioReady(true);
     };
+
     const onAudioPlay = () => {
       setIsHeroAudioPlaying(true);
     };
@@ -681,6 +745,7 @@ const Hero = () => {
     window.addEventListener('focus', onWindowFocus);
     window.addEventListener('pagehide', onPageHide);
     document.addEventListener('freeze', onPageFreeze);
+
     audio.addEventListener('canplay', onCanPlay);
     audio.addEventListener('play', onAudioPlay);
     audio.addEventListener('pause', onAudioPause);
@@ -764,19 +829,42 @@ const Hero = () => {
 
               {/* TOP HALF — isotipo flota hasta la línea central */}
               <div className="flex-1 flex items-end justify-center pb-6">
-                <motion.div
-                  initial={{ opacity: 0, scale: 0.8 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  transition={{ duration: 1.2, ease: 'easeOut' }}
-                  className="hero-logo w-24 sm:w-28 md:w-32"
-                >
-                  <img
-                    src={isotipoGatoWebp}
-                    alt="Isotipo de Gato Encerrado"
-                    className="hero-logo-img"
-                    fetchpriority="high"
-                  />
-                </motion.div>
+                <div className="flex flex-col items-center gap-3">
+                  <span
+                    className="pointer-events-none select-none whitespace-nowrap text-[0.62rem] uppercase tracking-widest text-slate-300/70"
+                    style={{
+                      opacity: showAudioHint ? 0.75 : 0,
+                      transform: showAudioHint ? 'translateY(0)' : 'translateY(-4px)',
+                      transition: 'opacity 0.6s ease, transform 0.6s ease',
+                    }}
+                  >
+                    Activa el sonido
+                  </span>
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0.8 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ duration: 1.2, ease: 'easeOut' }}
+                    className="hero-logo w-24 sm:w-28 md:w-32 cursor-pointer"
+                    onClick={handleIsotipoClick}
+                    role="button"
+                    aria-label={isHeroAudioMuted ? 'Activar sonido' : 'Silenciar sonido'}
+                  >
+                    <motion.div
+                      animate={showAudioHint ? { scale: [1, 1.07, 1] } : { scale: 1 }}
+                      transition={showAudioHint
+                        ? { duration: 1.6, ease: 'easeInOut', repeat: 2 }
+                        : { duration: 0.5, ease: 'easeOut' }
+                      }
+                    >
+                      <img
+                        src={isotipoGatoWebp}
+                        alt="Isotipo de Gato Encerrado"
+                        className="hero-logo-img"
+                        fetchpriority="high"
+                      />
+                    </motion.div>
+                  </motion.div>
+                </div>
               </div>
 
               {/* LÍNEA CENTRAL — GATOENCERRADO ancla el 50vh */}
@@ -811,8 +899,8 @@ const Hero = () => {
                 </motion.div>
                 <motion.div
                   initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.7, delay: 1.05 }}
+                  animate={{ opacity: hasActivatedAudio ? 1 : 0.22, y: 0 }}
+                  transition={{ duration: hasActivatedAudio ? 0.9 : 0.7, delay: hasActivatedAudio ? 0 : 1.05 }}
                   className="relative mt-5 inline-flex h-12 w-12 items-center justify-center self-center sm:mt-6"
                   aria-hidden="true"
                 >
@@ -870,8 +958,8 @@ const Hero = () => {
               {/* HashtagButton3D — reemplaza los botones en su misma zona */}
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 1, delay: 0.8 }}
+                animate={{ opacity: hasActivatedAudio ? 1 : 0.22, y: 0 }}
+                transition={{ duration: hasActivatedAudio ? 0.9 : 1, delay: hasActivatedAudio ? 0 : 0.8 }}
                 className="mt-8 -translate-y-[7vh] flex flex-col items-center gap-2 sm:mt-10 sm:translate-y-0 md:mt-12"
               >
                 <Suspense fallback={<div style={{ height: 130 }} />}>
@@ -880,6 +968,7 @@ const Hero = () => {
                     height="clamp(110px, 17vh, 160px)"
                     contentScale={isMobileViewport ? 1 : 1.1}
                     style={{ width: 'clamp(100px, 16vh, 150px)', margin: '0 auto' }}
+                    showGlow={isHeroAudioPlaying}
                   />
                 </Suspense>
                 <motion.p

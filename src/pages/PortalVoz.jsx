@@ -223,7 +223,7 @@ const SCENE_PORTAL_COLLABORATORS = [
   {
     id: 'carlos-perez',
     name: 'Carlos Pérez',
-    role: 'Coordinador de diálogo',
+    role: 'Director Creativo',
     bio: 'Mi trabajo se enfocó en pensar cómo la experiencia escénica podía continuar más allá de la función, no desde la explicación, sino desde preguntas cuidadas y abiertas. Diseñé este espacio que respeta la ambigüedad de la obra y acompaña al espectador sin imponer interpretaciones.',
     image:
       'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/autores/carlos_perez_avatar.png',
@@ -232,7 +232,7 @@ const SCENE_PORTAL_COLLABORATORS = [
     id: 'incendio-producciones',
     name: 'Incendio Producciones',
     role: 'Producción ejecutiva asociada',
-    bio: 'Esta versión del chat fue adaptada para acompañar la puesta en escena de Gilberto Corrales. El trabajo de dirección y producción transformó la obra, y este espacio fue ajustado para dialogar con esa nueva forma.',
+    bio: 'El trabajo de dirección y producción de Gilberto Corrales y su compañía ayudó a expandir la obra hacia nuevas formas escénicas, narrativas y transmediales que hoy forman parte del universo #GatoEncerrado. Su apoyo fue fundamental para que esta experiencia existiera.',
     image: '/assets/incendiologo.png',
   },
 ];
@@ -930,7 +930,7 @@ const PortalVoz = () => {
             })}
           </motion.div>
           <p className="text-xs uppercase tracking-[0.35em] text-purple-300 text-center md:text-right">
-            Colaboradores
+            Cómplices
           </p>
         </div>
         {selected ? (

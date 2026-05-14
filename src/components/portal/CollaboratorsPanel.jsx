@@ -20,7 +20,7 @@ const handleCollaboratorImageError = (event) => {
 
 const CollaboratorsPanel = ({
   collaborators = [],
-  title = 'Colaboradores',
+  title = 'Cómplices',
   accentClassName = 'text-purple-300',
   extraContent = null,
 }) => {

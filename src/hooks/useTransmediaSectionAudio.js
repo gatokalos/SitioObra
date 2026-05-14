@@ -41,8 +41,36 @@ const useTransmediaSectionAudio = ({ isSilvestrePlaying }) => {
     const audio = getTransmediaSectionAudio();
     if (!audio) return;
     if (readTransmediaAudioPreference() === false) return;
+    // Cancelar cualquier fade-to-0 en curso para evitar que pause el audio
+    // justo después de que play() lo haya arrancado (race condition con RAF).
+    if (fadeRafRef.current) {
+      cancelAnimationFrame(fadeRafRef.current);
+      fadeRafRef.current = null;
+    }
     audio.volume = TRANSMEDIA_AMBIENT_DEFAULT_VOLUME;
     void audio.play().catch(() => {});
+  }, []);
+
+  // Pre-unlock del elemento de audio en el primer gesto del usuario (necesario en iOS Safari:
+  // play() desde IntersectionObserver no está en el call stack del gesto y es bloqueado).
+  useEffect(() => {
+    const preUnlock = () => {
+      if (readTransmediaAudioPreference() === false) return;
+      const audio = getTransmediaSectionAudio();
+      if (!audio) return;
+      const wasPaused = audio.paused;
+      audio.muted = true;
+      audio.volume = 0;
+      void audio.play().then(() => {
+        if (wasPaused) audio.pause();
+        audio.muted = false;
+        audio.volume = 0;
+      }).catch(() => {
+        audio.muted = false;
+      });
+    };
+    window.addEventListener('pointerdown', preUnlock, { once: true, passive: true });
+    return () => window.removeEventListener('pointerdown', preUnlock);
   }, []);
 
   // IntersectionObserver: start when section enters, stop when it leaves
@@ -87,7 +115,7 @@ const useTransmediaSectionAudio = ({ isSilvestrePlaying }) => {
   // no siempre re-dispara al restaurar body desde position:fixed)
   useEffect(() => {
     const onShowcaseVisibility = (event) => {
-      if (Boolean(event?.detail?.open)) return; // solo nos importa el cierre
+      if (Boolean(event?.detail?.open)) return;
       const section = sectionRef.current;
       if (!section) return;
       const rect = section.getBoundingClientRect();
@@ -112,18 +140,6 @@ const useTransmediaSectionAudio = ({ isSilvestrePlaying }) => {
     };
     document.addEventListener('visibilitychange', onVisibility);
     return () => document.removeEventListener('visibilitychange', onVisibility);
-  }, [attemptPlay, isSilvestrePlaying]);
-
-  // Pause when OS focus moves to another app (visibilitychange doesn't fire for this)
-  useEffect(() => {
-    const onBlur  = () => pauseTransmediaAmbient();
-    const onFocus = () => { if (isActiveRef.current && !isSilvestrePlaying) attemptPlay(); };
-    window.addEventListener('blur',  onBlur);
-    window.addEventListener('focus', onFocus);
-    return () => {
-      window.removeEventListener('blur',  onBlur);
-      window.removeEventListener('focus', onFocus);
-    };
   }, [attemptPlay, isSilvestrePlaying]);
 
   // Cleanup on unmount
