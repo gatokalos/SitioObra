@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useNavigate, useLocation } from 'react-router-dom';
@@ -10,9 +10,17 @@ const VideoNarrativeAutoplay = ({ open, onClose, formatId, isMobileViewport }) =
   const navigate = useNavigate();
   const location = useLocation();
   const videoRef = useRef(null);
+  const [isPlaying, setIsPlaying] = useState(false);
 
   const card = MINIVERSE_CARDS.find((c) => c.formatId === formatId) ?? null;
   const videoUrl = card?.videoUrl ?? null;
+
+  useEffect(() => {
+    if (!open) {
+      videoRef.current?.pause();
+      setIsPlaying(false);
+    }
+  }, [open]);
 
   useEffect(() => {
     if (!open) return;
@@ -20,6 +28,17 @@ const VideoNarrativeAutoplay = ({ open, onClose, formatId, isMobileViewport }) =
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
   }, [open, onClose]);
+
+  const handleVideoToggle = () => {
+    const v = videoRef.current;
+    if (!v) return;
+    if (v.paused) {
+      v.play().then(() => setIsPlaying(true)).catch(() => {});
+    } else {
+      v.pause();
+      setIsPlaying(false);
+    }
+  };
 
   const handleIntuyeRespuesta = () => {
     onClose?.();
@@ -52,42 +71,60 @@ const VideoNarrativeAutoplay = ({ open, onClose, formatId, isMobileViewport }) =
             role="dialog"
             aria-modal="true"
             aria-label={`Video narrativo: ${card.title}`}
-            className={`relative z-10 my-6 w-[calc(100vw-2rem)] overflow-hidden rounded-3xl border border-white/10 bg-slate-950/92 shadow-[0_35px_120px_rgba(0,0,0,0.7)] ${
-              isMobileViewport ? 'max-w-sm' : 'max-w-5xl'
-            }`}
+            className="relative z-10 my-6 w-[calc(100vw-2rem)] max-w-xl overflow-hidden rounded-3xl border border-white/10 bg-slate-950/92 shadow-[0_35px_120px_rgba(0,0,0,0.7)]"
             initial={{ scale: 0.96, opacity: 0, y: 20 }}
             animate={{ scale: 1, opacity: 1, y: 0 }}
             exit={{ scale: 0.96, opacity: 0, y: 20 }}
             transition={{ type: 'spring', stiffness: 220, damping: 24 }}
           >
-            <div className="flex flex-col gap-3 border-b border-white/10 px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex items-center justify-between border-b border-white/10 px-5 py-4">
               <div>
                 <p className="text-xs uppercase tracking-[0.35em] text-slate-400/80">
-                  Video narrativo completo
+                  Video narrativo
                 </p>
-                <h3 className="font-display text-2xl text-slate-100">{card.title}</h3>
+                <h3 className="font-display text-xl text-slate-100">{card.title}</h3>
               </div>
               <button
                 type="button"
                 onClick={onClose}
-                className="text-slate-300 hover:text-white transition"
+                className="text-sm text-slate-400 hover:text-white transition"
               >
                 Cerrar ✕
               </button>
             </div>
 
-            <div className={`relative w-full bg-black ${isMobileViewport ? 'aspect-[9/16]' : 'aspect-[16/9]'}`}>
+            <div
+              className="relative w-full bg-black aspect-video cursor-pointer select-none"
+              onClick={handleVideoToggle}
+            >
               {videoUrl ? (
                 <video
                   ref={videoRef}
                   src={videoUrl}
                   className="h-full w-full object-contain"
-                  controls
                   playsInline
                   preload="metadata"
+                  onPlay={() => setIsPlaying(true)}
+                  onPause={() => setIsPlaying(false)}
+                  onEnded={() => setIsPlaying(false)}
                 />
               ) : (
                 <IncendioVideoPlaceholder />
+              )}
+
+              {videoUrl && !isPlaying && (
+                <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
+                  <div className="rounded-full bg-black/50 p-5 ring-1 ring-white/20">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      viewBox="0 0 24 24"
+                      fill="white"
+                      className="h-8 w-8 translate-x-0.5"
+                    >
+                      <path d="M8 5v14l11-7z" />
+                    </svg>
+                  </div>
+                </div>
               )}
             </div>
 
