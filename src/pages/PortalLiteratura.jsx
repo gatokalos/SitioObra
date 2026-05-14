@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { useLocation } from 'react-router-dom';
 import { Hand, QrCode } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { toast } from '@/components/ui/use-toast';
@@ -154,6 +155,12 @@ const PortalLiteratura = () => {
   const [isContributionOpen, setIsContributionOpen] = useState(false);
   const [isResonanceOpen, setIsResonanceOpen] = useState(false);
   const [showLiteraturaApp, setShowLiteraturaApp] = useState(false);
+  const location = useLocation();
+  useEffect(() => {
+    if (location.state?.portalLaunchSource !== 'video-narrative-cta') return;
+    const t = window.setTimeout(() => setIsResonanceOpen(true), 150);
+    return () => window.clearTimeout(t);
+  }, []);
   const [isNovelaCheckoutLoading, setIsNovelaCheckoutLoading] = useState(false);
   const readingTooltipRef = useRef(null);
 

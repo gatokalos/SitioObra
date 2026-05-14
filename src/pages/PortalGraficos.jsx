@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { useLocation } from 'react-router-dom';
 import { Hand, Image as ImageIcon, Scan } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
@@ -145,6 +146,12 @@ const PortalGraficos = () => {
   const [isContributionOpen, setIsContributionOpen] = useState(false);
   const [isResonanceOpen, setIsResonanceOpen] = useState(false);
   const [isImagePreviewOpen, setIsImagePreviewOpen] = useState(false);
+  const location = useLocation();
+  useEffect(() => {
+    if (location.state?.portalLaunchSource !== 'video-narrative-cta') return;
+    const t = window.setTimeout(() => setIsResonanceOpen(true), 150);
+    return () => window.clearTimeout(t);
+  }, []);
   const readingTooltipRef = useRef(null);
 
   const handleOpenLogin = useCallback(() => {

@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useLocation } from 'react-router-dom';
 import { Brain, Coins, Hand, Sparkles } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { toast } from '@/components/ui/use-toast';
@@ -179,6 +180,12 @@ const PortalOraculo = () => {
   const [reactionStatus, setReactionStatus] = useState('idle');
   const [isContributionOpen, setIsContributionOpen] = useState(false);
   const [isResonanceOpen, setIsResonanceOpen] = useState(false);
+  const location = useLocation();
+  useEffect(() => {
+    if (location.state?.portalLaunchSource !== 'video-narrative-cta') return;
+    const t = window.setTimeout(() => setIsResonanceOpen(true), 150);
+    return () => window.clearTimeout(t);
+  }, []);
   const readingTooltipRef = useRef(null);
 
   const oraculoUrl = useMemo(() => {

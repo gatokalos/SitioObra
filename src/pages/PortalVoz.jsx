@@ -442,6 +442,11 @@ const PortalVoz = () => {
   const [openCollaboratorId, setOpenCollaboratorId] = useState(null);
   const navigate = useNavigate();
   const location = useLocation();
+  useEffect(() => {
+    if (location.state?.portalLaunchSource !== 'video-narrative-cta') return;
+    const t = window.setTimeout(() => setIsResonanceOpen(true), 150);
+    return () => window.clearTimeout(t);
+  }, []);
 
   const obraConversationControlsRef = useRef(null);
   const obraModesRef = useRef(null);
