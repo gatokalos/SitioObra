@@ -4,7 +4,6 @@ import { BookOpen, CoffeeIcon, DramaIcon, TicketIcon, HeartHandshake, ShoppingBa
 import { Button } from '@/components/ui/button';
 const TicketPurchaseModal = React.lazy(() => import('@/components/TicketPurchaseModal'));
 const GatokensRevealModal = React.lazy(() => import('@/components/GatokensRevealModal'));
-const PortalInviteModal = React.lazy(() => import('@/components/PortalInviteModal'));
 const MiniverseModal = React.lazy(() => import('@/components/MiniverseModal'));
 import isotipoGatoWebp from '@/assets/isotipo-gato.webp';
 const HashtagButton3D = React.lazy(() => import('@/components/HashtagButton3D'));
@@ -24,7 +23,6 @@ import {
 } from '@/lib/heroAmbientAudio';
 import { createPortalLaunchState } from '@/lib/portalNavigation';
 import { safeSetItem } from '@/lib/safeStorage';
-import { resolvePortalRoute } from '@/lib/miniversePortalRegistry';
 import { extractRecommendedAppId, resolveShowcaseFromAppId } from '@/lib/bienvenidaBridge';
 import { showcaseDefinitions } from '@/components/transmedia/transmediaConstants';
 
@@ -76,8 +74,6 @@ const resolveHeroInlineTabFromQuery = (search = '') => {
 const Hero = () => {
   const [isTicketModalOpen, setIsTicketModalOpen] = useState(false);
   const [isGatokensModalOpen, setIsGatokensModalOpen] = useState(false);
-  const [pendingVitranaId, setPendingVitranaId] = useState(null);
-  const [isPortalInviteOpen, setIsPortalInviteOpen] = useState(false);
   const [recommendedVitranaId, setRecommendedVitranaId] = useState(null);
   const [ctaIndex, setCtaIndex] = useState(0);
   const [heroSubtitleIndex, setHeroSubtitleIndex] = useState(0);
@@ -162,21 +158,20 @@ const Hero = () => {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Detect pending vitrana stored before OAuth redirect
+  // Detect pending vitrana stored before OAuth redirect → auto-open video narrative
   useEffect(() => {
     if (!user) return;
     try {
       const vitranaId = localStorage.getItem('gatoencerrado:pending-vitrana-id');
       if (!vitranaId) return;
-      const skipModal = localStorage.getItem('gatoencerrado:pending-vitrana-skip-modal') === '1';
       localStorage.removeItem('gatoencerrado:pending-vitrana-id');
       localStorage.removeItem('gatoencerrado:pending-vitrana-skip-modal');
-      if (skipModal) {
-        const portalRoute = resolvePortalRoute({ formatId: vitranaId });
-        if (portalRoute) { navigate(portalRoute); return; }
-      }
-      setPendingVitranaId(vitranaId);
-      setIsPortalInviteOpen(true);
+      localStorage.setItem('gatoencerrado:auto-open-video-formatId', vitranaId);
+      window.dispatchEvent(
+        new CustomEvent('gatoencerrado:open-miniverse-list', {
+          detail: { tabId: 'escaparate', contextLabel: 'Explora los miniversos' },
+        })
+      );
     } catch {}
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user?.id]);
@@ -1199,11 +1194,6 @@ const Hero = () => {
               window.dispatchEvent(new CustomEvent('gatoencerrado:pozo-hero-revealed'));
             }
           }}
-        />
-        <PortalInviteModal
-          open={isPortalInviteOpen}
-          onClose={() => setIsPortalInviteOpen(false)}
-          vitranaId={pendingVitranaId}
         />
       </Suspense>
     </>

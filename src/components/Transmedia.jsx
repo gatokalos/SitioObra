@@ -4941,10 +4941,6 @@ const rendernotaAutoral = () => {
                             e.stopPropagation();
                             try {
                               localStorage.setItem('gatoencerrado:pending-vitrana-id', format.id);
-                              // Bienvenida-completed users skip PortalInviteModal post-login
-                              if (safeGetItem('gatoencerrado:bienvenida-completed') === '1') {
-                                localStorage.setItem('gatoencerrado:pending-vitrana-skip-modal', '1');
-                              }
                             } catch {}
                             setShowMobilePortalLogin(true);
                           }}
@@ -5149,9 +5145,6 @@ const rendernotaAutoral = () => {
                             e.stopPropagation();
                             try {
                               localStorage.setItem('gatoencerrado:pending-vitrana-id', format.id);
-                              if (safeGetItem('gatoencerrado:bienvenida-completed') === '1') {
-                                localStorage.setItem('gatoencerrado:pending-vitrana-skip-modal', '1');
-                              }
                             } catch {}
                             setShowMobilePortalLogin(true);
                           }}

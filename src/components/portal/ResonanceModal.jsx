@@ -2,19 +2,30 @@ import React, { useEffect, useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '@/lib/supabaseClient';
 import { ensureAnonId } from '@/lib/identity';
+import { useAuth } from '@/contexts/SupabaseAuthContext';
 
 const TIGER_URL =
   'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Merch/loggin_tiger.jpg';
 
 const ResonanceModal = ({ open, onClose, question, portal }) => {
   const modalRef = useRef(null);
+  const { user } = useAuth();
   const [formData, setFormData] = useState({ nombre: '', email: '', respuesta: '' });
   const [status, setStatus] = useState('idle');
 
   useEffect(() => {
     if (!open) return;
     modalRef.current?.parentElement?.scrollIntoView({ block: 'start', behavior: 'smooth' });
-  }, [open]);
+    if (user) {
+      const name = user.user_metadata?.full_name ?? user.user_metadata?.name ?? '';
+      const email = user.email ?? '';
+      setFormData((prev) => ({
+        ...prev,
+        nombre: prev.nombre || name,
+        email: prev.email || email,
+      }));
+    }
+  }, [open, user]);
 
   const handleChange = (e) =>
     setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
