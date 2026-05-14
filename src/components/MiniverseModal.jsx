@@ -232,7 +232,7 @@ const parseActTitle = (title = '') => {
   };
 };
 
-const MINIVERSE_CARDS = [
+export const MINIVERSE_CARDS = [
   {
     id: 'drama',
     formatId: 'miniversos',
@@ -431,7 +431,7 @@ const readStoredJson = (key, fallback) => {
   }
 };
 
-const IncendioVideoPlaceholder = ({ compact = false }) => (
+export const IncendioVideoPlaceholder = ({ compact = false }) => (
   <div
     className={`absolute inset-0 flex flex-col items-center justify-center overflow-hidden px-5 text-center ${
       compact ? 'gap-3' : 'gap-5'
@@ -696,20 +696,6 @@ const MiniverseModal = ({
     return undefined;
   }, [open, shelved, stopModalMediaPlayback]);
 
-  // Auto-open video narrative when triggered by post-login pending-vitrana flow
-  useEffect(() => {
-    if (!open) return;
-    try {
-      const formatId = localStorage.getItem('gatoencerrado:auto-open-video-formatId');
-      if (!formatId) return;
-      localStorage.removeItem('gatoencerrado:auto-open-video-formatId');
-      const card = MINIVERSE_CARDS.find((c) => c.formatId === formatId);
-      if (card) {
-        window.setTimeout(() => handleOpenShowcaseFullscreen(card), 120);
-      }
-    } catch {}
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [open]);
 
   useEffect(() => {
     if (typeof document === 'undefined') {
@@ -2859,33 +2845,6 @@ const MiniverseModal = ({
                   <IncendioVideoPlaceholder />
                 )}
               </div>
-              {showcaseFullscreenCard?.formatId ? (
-                <div className="flex items-center justify-center gap-4 px-5 py-4 border-t border-white/10">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      const formatId = showcaseFullscreenCard.formatId;
-                      handleCloseShowcaseFullscreen();
-                      onClose?.();
-                      window.setTimeout(() => {
-                        window.dispatchEvent(
-                          new CustomEvent('gatoencerrado:auto-open-resonance', {
-                            detail: { formatId },
-                          })
-                        );
-                        window.dispatchEvent(
-                          new CustomEvent('gatoencerrado:select-miniverse-format', {
-                            detail: { formatId },
-                          })
-                        );
-                      }, 80);
-                    }}
-                    className="rounded-full border border-purple-500/70 px-6 py-2.5 text-xs uppercase tracking-[0.25em] text-purple-100 shadow-[0_15px_45px_rgba(67,56,202,0.45)] transition hover:bg-purple-500/20"
-                  >
-                    Intuye tu respuesta →
-                  </button>
-                </div>
-              ) : null}
             </motion.div>
           </motion.div>
         ) : null}

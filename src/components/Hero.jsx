@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 const TicketPurchaseModal = React.lazy(() => import('@/components/TicketPurchaseModal'));
 const GatokensRevealModal = React.lazy(() => import('@/components/GatokensRevealModal'));
 const MiniverseModal = React.lazy(() => import('@/components/MiniverseModal'));
+const VideoNarrativeAutoplay = React.lazy(() => import('@/components/VideoNarrativeAutoplay'));
 import isotipoGatoWebp from '@/assets/isotipo-gato.webp';
 const HashtagButton3D = React.lazy(() => import('@/components/HashtagButton3D'));
 import { useNavigate, useLocation } from 'react-router-dom';
@@ -75,6 +76,8 @@ const Hero = () => {
   const [isTicketModalOpen, setIsTicketModalOpen] = useState(false);
   const [isGatokensModalOpen, setIsGatokensModalOpen] = useState(false);
   const [recommendedVitranaId, setRecommendedVitranaId] = useState(null);
+  const [autoVideoFormatId, setAutoVideoFormatId] = useState(null);
+  const [isAutoVideoOpen, setIsAutoVideoOpen] = useState(false);
   const [ctaIndex, setCtaIndex] = useState(0);
   const [heroSubtitleIndex, setHeroSubtitleIndex] = useState(0);
   const [heroGhostSubtitle, setHeroGhostSubtitle] = useState(null);
@@ -158,7 +161,7 @@ const Hero = () => {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Detect pending vitrana stored before OAuth redirect → auto-open video narrative
+  // Detect pending vitrana stored before OAuth redirect → auto-open standalone video
   useEffect(() => {
     if (!user) return;
     try {
@@ -166,12 +169,8 @@ const Hero = () => {
       if (!vitranaId) return;
       localStorage.removeItem('gatoencerrado:pending-vitrana-id');
       localStorage.removeItem('gatoencerrado:pending-vitrana-skip-modal');
-      localStorage.setItem('gatoencerrado:auto-open-video-formatId', vitranaId);
-      window.dispatchEvent(
-        new CustomEvent('gatoencerrado:open-miniverse-list', {
-          detail: { tabId: 'escaparate', contextLabel: 'Explora los miniversos' },
-        })
-      );
+      setAutoVideoFormatId(vitranaId);
+      setIsAutoVideoOpen(true);
     } catch {}
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user?.id]);
@@ -832,7 +831,7 @@ const Hero = () => {
                       transition: 'opacity 0.6s ease, transform 0.6s ease',
                     }}
                   >
-                    Activa el sonido
+                    Activa la escena
                   </span>
                   <motion.div
                     initial={{ opacity: 0, scale: 0.8 }}
@@ -1184,6 +1183,12 @@ const Hero = () => {
       </section>
       <Suspense fallback={null}>
         <TicketPurchaseModal open={isTicketModalOpen} onClose={handleCloseTicket} />
+        <VideoNarrativeAutoplay
+          open={isAutoVideoOpen}
+          onClose={() => setIsAutoVideoOpen(false)}
+          formatId={autoVideoFormatId}
+          isMobileViewport={isMobileViewport}
+        />
         <GatokensRevealModal
           open={isGatokensModalOpen}
           recommendedShowcaseId={recommendedVitranaId}
