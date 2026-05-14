@@ -5070,6 +5070,24 @@ const rendernotaAutoral = () => {
                       ) : null}
                       <div className="vitrina-image-overlay" style={mirrorEffect} />
                       <div className="absolute inset-x-0 bottom-0 h-px bg-white/10" />
+                      <AnimatePresence>
+                        {desktopVitranaRevealId === format.id && VITRANA_QUESTION_BY_SHOWCASE[format.id] ? (
+                          <motion.div
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            transition={{ duration: 0.35 }}
+                            className="absolute inset-0 z-10 flex items-center justify-center px-7 bg-black/60 backdrop-blur-[3px]"
+                          >
+                            <p
+                              className="font-display text-center leading-snug text-amber-300/90 drop-shadow-[0_0_32px_rgba(251,191,36,0.45)]"
+                              style={{ fontSize: 'clamp(1.15rem, 3.5vw, 1.65rem)' }}
+                            >
+                              {VITRANA_QUESTION_BY_SHOWCASE[format.id]}
+                            </p>
+                          </motion.div>
+                        ) : null}
+                      </AnimatePresence>
                     </div>
                     <div className="relative vitrina-pozo-glass__meta p-6 overflow-hidden min-h-[240px]">
                       {isRecommendedTile ? (
