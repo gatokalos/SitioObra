@@ -12,10 +12,10 @@ const VideoNarrativeAutoplay = ({ open, onClose, formatId, isMobileViewport }) =
   const videoRef = useRef(null);
   const [isPlaying, setIsPlaying] = useState(false);
 
-  const GENERIC_VIDEO_URL = 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/trailers/fragmento_en_produccion_web.mp4';
+  const PLACEHOLDER_VIDEO_URL = 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/trailers/fragmento_en_produccion_web.mp4';
 
   const card = MINIVERSE_CARDS.find((c) => c.formatId === formatId) ?? null;
-  const videoUrl = card?.videoUrl ?? GENERIC_VIDEO_URL;
+  const videoUrl = card?.narrativeVideoUrl ?? PLACEHOLDER_VIDEO_URL;
 
   useEffect(() => {
     if (!open) {

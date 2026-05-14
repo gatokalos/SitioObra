@@ -245,7 +245,7 @@ export const MINIVERSE_CARDS = [
     titleShort: '🎧 "Abre la puerta" (30 seg)',
     description: 'Yo no quería hacer una obra. Solo quería entender algo que me estaba pasando.',
 
-    videoUrl: null,
+    videoUrl: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Merch/Loop_escenico_small.mp4',
     ctaVerb: 'Entra',
     action: 'Explora',
     isPremium: true,
