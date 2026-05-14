@@ -23,7 +23,7 @@ import {
   toggleHeroAmbientMuted,
 } from '@/lib/heroAmbientAudio';
 import { createPortalLaunchState } from '@/lib/portalNavigation';
-import { safeGetItem, safeSetItem } from '@/lib/safeStorage';
+import { safeSetItem } from '@/lib/safeStorage';
 import { resolvePortalRoute } from '@/lib/miniversePortalRegistry';
 import { extractRecommendedAppId, resolveShowcaseFromAppId } from '@/lib/bienvenidaBridge';
 import { showcaseDefinitions } from '@/components/transmedia/transmediaConstants';
@@ -79,7 +79,6 @@ const Hero = () => {
   const [pendingVitranaId, setPendingVitranaId] = useState(null);
   const [isPortalInviteOpen, setIsPortalInviteOpen] = useState(false);
   const [recommendedVitranaId, setRecommendedVitranaId] = useState(null);
-  const [hasPozoRevealed, setHasPozoRevealed] = useState(() => safeGetItem(POZO_HERO_REVEAL_KEY) === '1');
   const [ctaIndex, setCtaIndex] = useState(0);
   const [heroSubtitleIndex, setHeroSubtitleIndex] = useState(0);
   const [heroGhostSubtitle, setHeroGhostSubtitle] = useState(null);
@@ -786,7 +785,7 @@ const Hero = () => {
     };
   }, [getTargetVolumeByHeroPosition, isAuthLoading, isHeroInViewport]);
 
-  const shouldRenderInlineHero = Boolean(user) || hasPozoRevealed;
+  const shouldRenderInlineHero = Boolean(user);
 
   return (
     <>
@@ -1197,7 +1196,6 @@ const Hero = () => {
             setIsGatokensModalOpen(false);
             if (!user) {
               safeSetItem(POZO_HERO_REVEAL_KEY, '1');
-              setHasPozoRevealed(true);
               window.dispatchEvent(new CustomEvent('gatoencerrado:pozo-hero-revealed'));
             }
           }}
