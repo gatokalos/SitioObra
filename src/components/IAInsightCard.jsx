@@ -13,12 +13,14 @@ const IAInsightCard = ({
   coverage,
   footnote,
   compact = false,
+  rewardLabel,
+  minRequired,
 }) => {
   const { user, session } = useAuth();
   const { toast } = useToast();
   const [status, setStatus] = useState('idle'); // idle | loading | success | error | auth
   const [isOpen, setIsOpen] = useState(!compact);
-  const hasBody = type || interaction || tokensRange || coverage;
+  const hasBody = type || interaction || tokensRange || coverage || rewardLabel || minRequired;
   const apiBase = useMemo(() => import.meta.env.VITE_API_URL?.replace(/\/+$/, ''), []);
   const apiPaths = useMemo(() => ['/tokens/me', '/api/tokens/me'], []);
   const canFetchBackendBalance = useMemo(() => {
@@ -215,6 +217,23 @@ const IAInsightCard = ({
               <strong>Costos cubiertos:</strong>{' '}
               <span>{coverage}</span>
             </div>
+            </div>
+          ) : null}
+
+          {rewardLabel ? (
+            <div className="flex items-start gap-2 leading-relaxed">
+              <Sparkles size={16} className="mt-0.5 text-amber-200 shrink-0" />
+              <p>
+                <strong>Energía del mini-verso:</strong> {rewardLabel}
+              </p>
+            </div>
+          ) : null}
+          {minRequired ? (
+            <div className="flex items-start gap-2 leading-relaxed">
+              <ShieldCheck size={16} className="mt-0.5 text-purple-200 shrink-0" />
+              <p>
+                <strong>Mínima requerida:</strong> {minRequired}
+              </p>
             </div>
           ) : null}
 

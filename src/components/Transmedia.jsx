@@ -1824,7 +1824,7 @@ const rendernotaAutoral = () => {
           <div className="flex flex-col gap-5">
             {rendernotaAutoral()}
             {activeDefinition.iaProfile ? (
-              <IAInsightCard {...activeDefinition.iaProfile} compact />
+              <IAInsightCard {...activeDefinition.iaProfile} compact rewardLabel={buildShowcaseRewardLabel(showcaseTokenLedgerById[activeShowcase])} minRequired={buildShowcaseMinRequiredCopy(activeShowcase)} />
             ) : null}
             <button
               type="button"
@@ -1882,7 +1882,7 @@ const rendernotaAutoral = () => {
             <div className="flex flex-col gap-5">
               {rendernotaAutoral()}
               {activeDefinition.iaProfile ? (
-                <IAInsightCard {...activeDefinition.iaProfile} compact />
+                <IAInsightCard {...activeDefinition.iaProfile} compact rewardLabel={buildShowcaseRewardLabel(showcaseTokenLedgerById[activeShowcase])} minRequired={buildShowcaseMinRequiredCopy(activeShowcase)} />
               ) : null}
               <button
                 type="button"
@@ -1979,7 +1979,7 @@ const rendernotaAutoral = () => {
           <div className="flex flex-col gap-5">
             {rendernotaAutoral()}
             {activeDefinition.iaProfile ? (
-              <IAInsightCard {...activeDefinition.iaProfile} compact />
+              <IAInsightCard {...activeDefinition.iaProfile} compact rewardLabel={buildShowcaseRewardLabel(showcaseTokenLedgerById[activeShowcase])} minRequired={buildShowcaseMinRequiredCopy(activeShowcase)} />
             ) : null}
             <button
               type="button"
@@ -2129,7 +2129,7 @@ const rendernotaAutoral = () => {
             <div className="flex flex-col gap-5">
               {rendernotaAutoral()}
               {activeDefinition.iaProfile ? (
-                <IAInsightCard {...activeDefinition.iaProfile} compact />
+                <IAInsightCard {...activeDefinition.iaProfile} compact rewardLabel={buildShowcaseRewardLabel(showcaseTokenLedgerById[activeShowcase])} minRequired={buildShowcaseMinRequiredCopy(activeShowcase)} />
               ) : null}
               <button
                 type="button"
@@ -2707,7 +2707,7 @@ const rendernotaAutoral = () => {
           <div className="flex flex-col gap-5">
             {rendernotaAutoral()}
             {activeDefinition.iaProfile ? (
-              <IAInsightCard {...activeDefinition.iaProfile} compact />
+              <IAInsightCard {...activeDefinition.iaProfile} compact rewardLabel={buildShowcaseRewardLabel(showcaseTokenLedgerById[activeShowcase])} minRequired={buildShowcaseMinRequiredCopy(activeShowcase)} />
             ) : null}
             {swipeShowcases[0] ? (
               <button
@@ -2825,7 +2825,7 @@ const rendernotaAutoral = () => {
             <div className="flex flex-col gap-5">
               {rendernotaAutoral()}
               {activeDefinition.iaProfile ? (
-                <IAInsightCard {...activeDefinition.iaProfile} compact />
+                <IAInsightCard {...activeDefinition.iaProfile} compact rewardLabel={buildShowcaseRewardLabel(showcaseTokenLedgerById[activeShowcase])} minRequired={buildShowcaseMinRequiredCopy(activeShowcase)} />
               ) : null}
               <button
                 type="button"
@@ -2876,7 +2876,7 @@ const rendernotaAutoral = () => {
           <div className="flex flex-col gap-5">
             {rendernotaAutoral()}
             {activeDefinition.iaProfile ? (
-              <IAInsightCard {...activeDefinition.iaProfile} compact />
+              <IAInsightCard {...activeDefinition.iaProfile} compact rewardLabel={buildShowcaseRewardLabel(showcaseTokenLedgerById[activeShowcase])} minRequired={buildShowcaseMinRequiredCopy(activeShowcase)} />
             ) : null}
             {embeddedAppUrl ? (
               <a
@@ -3293,7 +3293,7 @@ const rendernotaAutoral = () => {
               <div className="flex flex-col gap-5">
                 {rendernotaAutoral()}
                 {activeDefinition.iaProfile ? (
-                  <IAInsightCard {...activeDefinition.iaProfile} compact />
+                  <IAInsightCard {...activeDefinition.iaProfile} compact rewardLabel={buildShowcaseRewardLabel(showcaseTokenLedgerById[activeShowcase])} minRequired={buildShowcaseMinRequiredCopy(activeShowcase)} />
                 ) : null}
                 <button
                   type="button"
@@ -3496,7 +3496,7 @@ const rendernotaAutoral = () => {
                 <div className="flex flex-col gap-5">
                   {rendernotaAutoral()}
                   {activeDefinition.iaProfile ? (
-                    <IAInsightCard {...activeDefinition.iaProfile} compact />
+                    <IAInsightCard {...activeDefinition.iaProfile} compact rewardLabel={buildShowcaseRewardLabel(showcaseTokenLedgerById[activeShowcase])} minRequired={buildShowcaseMinRequiredCopy(activeShowcase)} />
                   ) : null}
                   <button
                     type="button"
@@ -4108,7 +4108,7 @@ const rendernotaAutoral = () => {
                         {rendernotaAutoral()}
                         {activeDefinition.iaProfile ? (
                           <div className="hidden lg:block">
-                            <IAInsightCard {...activeDefinition.iaProfile} compact />
+                            <IAInsightCard {...activeDefinition.iaProfile} compact rewardLabel={buildShowcaseRewardLabel(showcaseTokenLedgerById[activeShowcase])} minRequired={buildShowcaseMinRequiredCopy(activeShowcase)} />
                           </div>
                         ) : null}
                       </>
@@ -4120,7 +4120,7 @@ const rendernotaAutoral = () => {
               <div>{renderShowcaseContent()}</div>
               {activeDefinition.iaProfile ? (
                 <div className="lg:hidden mt-4">
-                  <IAInsightCard {...activeDefinition.iaProfile} compact />
+                  <IAInsightCard {...activeDefinition.iaProfile} compact rewardLabel={buildShowcaseRewardLabel(showcaseTokenLedgerById[activeShowcase])} minRequired={buildShowcaseMinRequiredCopy(activeShowcase)} />
                 </div>
               ) : null}
               </div>
@@ -5133,23 +5133,15 @@ const rendernotaAutoral = () => {
                           <h3 className="font-display text-2xl text-slate-100">{format.title}</h3>
                         </div>
                       </div>
-                      <p className="text-sm text-slate-300/85 leading-relaxed min-h-[1.5rem]">
-                        {format.instruccion}
-                      </p>
-                      <div className="space-y-1">
-                        {rewardLabel ? (
-                          <p className="text-xs text-purple-200/90 uppercase tracking-[0.25em]">
-                            {rewardLabel}
-                          </p>
-                        ) : null}
-                        <div className="flex flex-wrap items-center gap-2 text-xs uppercase tracking-[0.25em]">
-                          <Coins size={12} className={energyState.className} />
-                          <span className={energyState.className}>
-                            {energyState.label} {energyState.amount}
-                          </span>
-                          <span className="text-amber-200/90">· {minRequiredCopy}</span>
-                        </div>
-                      </div>
+                      {showcaseDefinitions[format.id]?.notaAutoral ? (
+                        <p className="text-sm leading-relaxed text-slate-300/70 whitespace-pre-line font-light line-clamp-4">
+                          {showcaseDefinitions[format.id].notaAutoral}
+                        </p>
+                      ) : (
+                        <p className="text-sm text-slate-300/85 leading-relaxed min-h-[1.5rem]">
+                          {format.instruccion}
+                        </p>
+                      )}
                       {desktopVitranaRevealId === format.id ? (
                         <button
                           type="button"
