@@ -3979,7 +3979,7 @@ const rendernotaAutoral = () => {
                           open={isDramaResonanceOpen}
                           onClose={() => setIsDramaResonanceOpen(false)}
                           question={VITRANA_QUESTION_BY_SHOWCASE['miniversos']}
-                          portal="miniversos"
+                          portal="obra"
                         />
                       </>
                     ) : activeShowcase === 'miniversoNovela' ? (
@@ -3998,7 +3998,7 @@ const rendernotaAutoral = () => {
                           open={isLiteraturaResonanceOpen}
                           onClose={() => setIsLiteraturaResonanceOpen(false)}
                           question={VITRANA_QUESTION_BY_SHOWCASE['miniversoNovela']}
-                          portal="miniversoNovela"
+                          portal="literatura"
                         />
                       </>
                     ) : activeShowcase === 'lataza' ? (
@@ -4017,7 +4017,7 @@ const rendernotaAutoral = () => {
                           open={isArtesaniasResonanceOpen}
                           onClose={() => setIsArtesaniasResonanceOpen(false)}
                           question={VITRANA_QUESTION_BY_SHOWCASE['lataza']}
-                          portal="lataza"
+                          portal="artesanias"
                         />
                       </>
                     ) : activeShowcase === 'miniversoGrafico' ? (
@@ -4036,7 +4036,7 @@ const rendernotaAutoral = () => {
                           open={isGraficosResonanceOpen}
                           onClose={() => setIsGraficosResonanceOpen(false)}
                           question={VITRANA_QUESTION_BY_SHOWCASE['miniversoGrafico']}
-                          portal="miniversoGrafico"
+                          portal="grafico"
                         />
                       </>
                     ) : activeShowcase === 'copycats' ? (
@@ -4055,7 +4055,7 @@ const rendernotaAutoral = () => {
                           open={isCineResonanceOpen}
                           onClose={() => setIsCineResonanceOpen(false)}
                           question={VITRANA_QUESTION_BY_SHOWCASE['cine']}
-                          portal="copycats"
+                          portal="cine"
                         />
                       </>
                     ) : activeShowcase === 'miniversoSonoro' ? (
@@ -4074,7 +4074,7 @@ const rendernotaAutoral = () => {
                           open={isSonoroResonanceOpen}
                           onClose={() => setIsSonoroResonanceOpen(false)}
                           question={VITRANA_QUESTION_BY_SHOWCASE['miniversoSonoro']}
-                          portal="miniversoSonoro"
+                          portal="sonoridades"
                         />
                       </>
                     ) : activeShowcase === 'miniversoMovimiento' ? (
@@ -4093,7 +4093,7 @@ const rendernotaAutoral = () => {
                           open={isMovimientoResonanceOpen}
                           onClose={() => setIsMovimientoResonanceOpen(false)}
                           question={VITRANA_QUESTION_BY_SHOWCASE['miniversoMovimiento']}
-                          portal="miniversoMovimiento"
+                          portal="movimiento"
                         />
                       </>
                     ) : activeShowcase === 'apps' ? (
@@ -4112,7 +4112,7 @@ const rendernotaAutoral = () => {
                           open={isJuegosResonanceOpen}
                           onClose={() => setIsJuegosResonanceOpen(false)}
                           question={VITRANA_QUESTION_BY_SHOWCASE['apps']}
-                          portal="apps"
+                          portal="juegos"
                         />
                       </>
                     ) : activeShowcase === 'oraculo' ? (
