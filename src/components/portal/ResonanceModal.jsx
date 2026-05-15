@@ -6,9 +6,6 @@ import { ensureAnonId } from '@/lib/identity';
 import { useAuth } from '@/contexts/SupabaseAuthContext';
 import { ConfettiBurst, useConfettiBursts } from '@/components/Confetti';
 
-const TIGER_URL =
-  'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Merch/loggin_tiger.jpg';
-
 const PORTAL_GRADIENT = {
   obra:         'from-purple-400 via-fuchsia-500 to-rose-500',
   literatura:   'from-emerald-400 via-teal-500 to-cyan-500',
@@ -17,8 +14,20 @@ const PORTAL_GRADIENT = {
   cine:         'from-rose-500 via-red-500 to-fuchsia-500',
   sonoridades:  'from-sky-400 via-cyan-500 to-indigo-500',
   movimiento:   'from-sky-400 via-emerald-500 to-cyan-500',
-  juegos:       'from-lime-400 via-emerald-500 to-teal-500',
+  juegos:       'from-amber-400 via-yellow-500 to-orange-500',
   oraculo:      'from-indigo-400 via-violet-500 to-purple-500',
+};
+
+const PORTAL_BLOOM = {
+  obra:         ['rgba(192,132,252,0.65)', 'rgba(244,114,182,0.4)'],
+  literatura:   ['rgba(52,211,153,0.65)',  'rgba(34,211,238,0.4)'],
+  artesanias:   ['rgba(251,191,36,0.65)',  'rgba(244,114,182,0.4)'],
+  grafico:      ['rgba(232,121,249,0.65)', 'rgba(99,102,241,0.4)'],
+  cine:         ['rgba(244,63,94,0.65)',   'rgba(232,121,249,0.4)'],
+  sonoridades:  ['rgba(56,189,248,0.65)',  'rgba(99,102,241,0.4)'],
+  movimiento:   ['rgba(56,189,248,0.65)',  'rgba(52,211,153,0.4)'],
+  juegos:       ['rgba(251,191,36,0.65)',  'rgba(249,115,22,0.4)'],
+  oraculo:      ['rgba(129,140,248,0.65)', 'rgba(168,85,247,0.4)'],
 };
 
 const LEVELS = [
@@ -57,6 +66,7 @@ const ResonanceModal = ({ open, onClose, question, portal }) => {
   const { bursts: confettiBursts, fireConfetti } = useConfettiBursts();
 
   const gradient = PORTAL_GRADIENT[portal] ?? 'from-purple-400 via-fuchsia-500 to-rose-500';
+  const bloom = PORTAL_BLOOM[portal] ?? PORTAL_BLOOM.obra;
 
   useEffect(() => {
     if (!open) return;
@@ -112,24 +122,18 @@ const ResonanceModal = ({ open, onClose, question, portal }) => {
           exit={{ opacity: 0 }}
           transition={{ duration: 0.3 }}
         >
-          {/* Fondo tiger */}
+          {/* Fondo bloom con identidad del miniverso */}
           <div
             aria-hidden="true"
             className="absolute inset-0"
             style={{
-              backgroundImage: `linear-gradient(180deg, rgba(7,4,13,0.18) 0%, rgba(9,5,16,0.84) 42%, rgba(7,4,11,0.96) 100%), url(${TIGER_URL})`,
-              backgroundPosition: 'center top',
-              backgroundSize: 'cover',
+              background: `radial-gradient(ellipse 160% 55% at 50% -5%, ${bloom[0]}, ${bloom[1]} 45%, transparent 70%), linear-gradient(180deg, rgba(7,4,13,0.15) 0%, rgba(7,4,11,0.94) 52%, rgb(5,3,9) 100%)`,
             }}
           />
-          {/* Gradiente de color */}
           <div
             aria-hidden="true"
-            className="absolute inset-0"
-            style={{
-              background:
-                'radial-gradient(circle at 50% -10%, rgba(255,255,255,0.08), transparent 34%), radial-gradient(circle at 10% 72%, rgba(255,120,40,0.34), transparent 28%), radial-gradient(circle at 85% 62%, rgba(255,135,48,0.26), transparent 24%), linear-gradient(180deg, rgba(20,8,36,0.18) 0%, rgba(16,7,25,0.7) 48%, rgba(8,5,14,0.92) 100%)',
-            }}
+            className="absolute inset-0 backdrop-blur-[80px]"
+            style={{ background: 'rgba(5,3,9,0.45)' }}
           />
 
           {/* Confetti */}
@@ -200,45 +204,45 @@ const ResonanceModal = ({ open, onClose, question, portal }) => {
                         </div>
 
                         {/* Card */}
-                        <div className={`flex flex-1 items-center gap-3 rounded-2xl border px-4 py-3.5 ${
-                          isCompleted
-                            ? 'border-white/15 bg-white/5'
-                            : 'border-white/8 bg-white/[0.03]'
+                        <div className={`flex flex-1 flex-col gap-2.5 rounded-2xl border px-4 py-3.5 sm:flex-row sm:items-center sm:gap-3 ${
+                          isCompleted ? 'border-white/15 bg-white/5' : 'border-white/8 bg-white/[0.03]'
                         }`}>
-                          {/* Icono */}
-                          <div className={`shrink-0 rounded-xl p-2 ${
-                            isCompleted ? `bg-gradient-to-br ${gradient} bg-opacity-20` : 'bg-white/5'
-                          }`}>
-                            <Icon size={18} className={isCompleted ? 'text-white' : 'text-white/30'} />
+                          {/* Fila superior: icono + texto */}
+                          <div className="flex items-start gap-3 sm:flex-1 sm:min-w-0">
+                            <div className={`mt-0.5 shrink-0 rounded-xl p-2 ${
+                              isCompleted ? `bg-gradient-to-br ${gradient} bg-opacity-20` : 'bg-white/5'
+                            }`}>
+                              <Icon size={18} className={isCompleted ? 'text-white' : 'text-white/30'} />
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <p className="text-[0.6rem] uppercase tracking-[0.3em] text-slate-400/70">
+                                {level.eyebrow}
+                              </p>
+                              <p className={`font-display text-base leading-tight ${isCompleted ? 'text-white' : 'text-white/50'}`}>
+                                {level.title}
+                              </p>
+                              <p className="mt-0.5 text-xs leading-relaxed text-slate-400/60">
+                                {isCompleted ? level.desc : level.pendingDesc}
+                              </p>
+                            </div>
                           </div>
 
-                          {/* Texto */}
-                          <div className="flex-1 min-w-0">
-                            <p className="text-[0.6rem] uppercase tracking-[0.3em] text-slate-400/70">
-                              {level.eyebrow}
-                            </p>
-                            <p className={`font-display text-base leading-tight ${isCompleted ? 'text-white' : 'text-white/50'}`}>
-                              {level.title}
-                            </p>
-                            <p className="mt-0.5 text-xs leading-relaxed text-slate-400/60">
-                              {isCompleted ? level.desc : level.pendingDesc}
-                            </p>
+                          {/* Estado — fila propia en mobile, columna en desktop */}
+                          <div className="flex justify-end sm:justify-start sm:shrink-0">
+                            {isCompleted ? (
+                              <span className="rounded-full border border-emerald-400/40 bg-emerald-500/10 px-2.5 py-1 text-[0.58rem] uppercase tracking-[0.25em] text-emerald-300">
+                                Completado
+                              </span>
+                            ) : isLocked ? (
+                              <span className="rounded-full border border-white/10 bg-white/5 p-1.5 text-white/25">
+                                <Lock size={12} />
+                              </span>
+                            ) : (
+                              <span className="rounded-full border border-amber-400/30 bg-amber-500/8 px-2.5 py-1 text-[0.58rem] uppercase tracking-[0.25em] text-amber-300/70">
+                                Pendiente
+                              </span>
+                            )}
                           </div>
-
-                          {/* Estado */}
-                          {isCompleted ? (
-                            <span className="shrink-0 rounded-full border border-emerald-400/40 bg-emerald-500/10 px-2.5 py-1 text-[0.58rem] uppercase tracking-[0.25em] text-emerald-300">
-                              Completado
-                            </span>
-                          ) : isLocked ? (
-                            <span className="shrink-0 rounded-full border border-white/10 bg-white/5 p-1.5 text-white/25">
-                              <Lock size={12} />
-                            </span>
-                          ) : (
-                            <span className="shrink-0 rounded-full border border-amber-400/30 bg-amber-500/8 px-2.5 py-1 text-[0.58rem] uppercase tracking-[0.25em] text-amber-300/70">
-                              Pendiente
-                            </span>
-                          )}
                         </div>
                       </motion.div>
                     );
