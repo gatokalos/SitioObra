@@ -156,7 +156,8 @@ const PortalLiteratura = () => {
   const [isResonanceOpen, setIsResonanceOpen] = useState(false);
   const [l1Done, setL1Done] = useState(() => { try { return Boolean(JSON.parse(localStorage.getItem('gatoencerrado:resonance:literatura') || '{}').l1); } catch { return false; } });
   const [experienceDone, setExperienceDone] = useState(() => { try { return Boolean(JSON.parse(localStorage.getItem('gatoencerrado:resonance:literatura') || '{}').experience_ts); } catch { return false; } });
-  const refreshL1 = useCallback(() => { try { const s = JSON.parse(localStorage.getItem('gatoencerrado:resonance:literatura') || '{}'); setL1Done(Boolean(s.l1)); setExperienceDone(Boolean(s.experience_ts)); } catch { /* ignore */ } }, []);
+  const [l2Done, setL2Done] = useState(() => { try { return Boolean(JSON.parse(localStorage.getItem('gatoencerrado:resonance:literatura') || '{}').l2_option); } catch { return false; } });
+  const refreshL1 = useCallback(() => { try { const s = JSON.parse(localStorage.getItem('gatoencerrado:resonance:literatura') || '{}'); setL1Done(Boolean(s.l1)); setExperienceDone(Boolean(s.experience_ts)); setL2Done(Boolean(s.l2_option)); } catch { /* ignore */ } }, []);
   const [showLiteraturaApp, setShowLiteraturaApp] = useState(false);
   const location = useLocation();
   useEffect(() => {
@@ -350,6 +351,8 @@ const PortalLiteratura = () => {
                   question={l1Done ? (LEVEL2_QUESTIONS['literatura']?.question ?? vitranaQuestion) : vitranaQuestion}
                   buttonLabel={l1Done ? 'Tu progreso →' : undefined}
                   autoReveal={l1Done}
+                  portal="literatura"
+                  l2Done={l2Done}
                   onAnswer={() => setIsResonanceOpen(true)}
                 />
     

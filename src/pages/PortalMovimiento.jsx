@@ -244,7 +244,8 @@ const PortalMovimiento = () => {
   const [isResonanceOpen, setIsResonanceOpen] = useState(false);
   const [l1Done, setL1Done] = useState(() => { try { return Boolean(JSON.parse(localStorage.getItem('gatoencerrado:resonance:movimiento') || '{}').l1); } catch { return false; } });
   const [experienceDone, setExperienceDone] = useState(() => { try { return Boolean(JSON.parse(localStorage.getItem('gatoencerrado:resonance:movimiento') || '{}').experience_ts); } catch { return false; } });
-  const refreshL1 = useCallback(() => { try { const s = JSON.parse(localStorage.getItem('gatoencerrado:resonance:movimiento') || '{}'); setL1Done(Boolean(s.l1)); setExperienceDone(Boolean(s.experience_ts)); } catch { /* ignore */ } }, []);
+  const [l2Done, setL2Done] = useState(() => { try { return Boolean(JSON.parse(localStorage.getItem('gatoencerrado:resonance:movimiento') || '{}').l2_option); } catch { return false; } });
+  const refreshL1 = useCallback(() => { try { const s = JSON.parse(localStorage.getItem('gatoencerrado:resonance:movimiento') || '{}'); setL1Done(Boolean(s.l1)); setExperienceDone(Boolean(s.experience_ts)); setL2Done(Boolean(s.l2_option)); } catch { /* ignore */ } }, []);
   const [actionFeedback, setActionFeedback] = useState('');
   const location = useLocation();
   useEffect(() => {
@@ -443,6 +444,8 @@ const PortalMovimiento = () => {
                   question={l1Done ? (LEVEL2_QUESTIONS['movimiento']?.question ?? vitranaQuestion) : vitranaQuestion}
                   buttonLabel={l1Done ? 'Tu progreso →' : undefined}
                   autoReveal={l1Done}
+                  portal="movimiento"
+                  l2Done={l2Done}
                   onAnswer={() => setIsResonanceOpen(true)}
                 />
                 <ShowcaseReactionInline status={reactionStatus} onReact={handleSendPulse} />

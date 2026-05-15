@@ -405,7 +405,12 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, narr
                     </div>
 
                     {/* Niveles */}
-                    <div className="flex flex-col gap-3">
+                    <div className="relative flex flex-col gap-0">
+                      <div
+                        aria-hidden="true"
+                        className="absolute left-[1.6rem] top-10 h-[calc(100%-5rem)] w-px border-l-2 border-dashed border-white/15"
+                      />
+
                       {LEVELS.map((level, i) => {
                         const Icon = level.icon;
                         const isL1 = i === 0;
@@ -419,134 +424,148 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, narr
                         return (
                           <motion.div
                             key={level.num}
-                            className={`rounded-2xl border transition-colors ${
+                            className="flex items-start gap-4 py-3"
+                            initial={{ opacity: 0, x: -12 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            transition={{ delay: 0.15 + i * 0.1, duration: 0.35 }}
+                          >
+                            {/* Número */}
+                            <div className={`relative z-10 flex h-[3.25rem] w-[3.25rem] shrink-0 items-center justify-center rounded-full text-lg font-bold ${
+                              isCompleted
+                                ? `bg-gradient-to-br ${gradient} text-white shadow-[0_0_18px_rgba(0,0,0,0.4)]`
+                                : isAvailable
+                                  ? 'border-2 border-white/30 bg-white/5 text-white/70'
+                                  : 'border-2 border-white/20 bg-black/40 text-white/40'
+                            }`}>
+                              {level.num}
+                            </div>
+
+                            {/* Card con acordeón */}
+                            <div className={`flex flex-1 flex-col rounded-2xl border transition-colors ${
                               isCompleted
                                 ? 'border-white/20 bg-white/[0.08]'
                                 : isAvailable
                                   ? 'border-white/[0.1] bg-white/[0.03]'
                                   : 'border-white/[0.05] bg-white/[0.01]'
-                            }`}
-                            initial={{ opacity: 0, x: -12 }}
-                            animate={{ opacity: 1, x: 0 }}
-                            transition={{ delay: 0.15 + i * 0.1, duration: 0.35 }}
-                          >
-                            {/* Fila cabecera — siempre visible */}
-                            <div
-                              role={canToggle ? 'button' : undefined}
-                              tabIndex={canToggle ? 0 : undefined}
-                              className={`flex items-center gap-3 px-4 py-3 ${canToggle ? 'cursor-pointer select-none' : ''}`}
-                              onClick={canToggle ? () => setL2Open((v) => !v) : undefined}
-                              onKeyDown={canToggle ? (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setL2Open((v) => !v); } } : undefined}
-                            >
-                              {/* Ícono circular */}
-                              <div className={`shrink-0 flex h-8 w-8 items-center justify-center rounded-full ${
-                                isCompleted
-                                  ? `bg-gradient-to-br ${gradient} shadow-[0_0_12px_rgba(0,0,0,0.3)]`
-                                  : isAvailable
-                                    ? 'border border-white/25 bg-white/[0.06]'
-                                    : 'border border-white/8 bg-black/25'
-                              }`}>
-                                {isCompleted || isAvailable
-                                  ? <Icon size={15} className="text-white" />
-                                  : <Lock size={13} className="text-white/20" />
-                                }
-                              </div>
-
-                              {/* Texto */}
-                              <div className="min-w-0 flex-1">
-                                <p className={`truncate text-[0.57rem] uppercase tracking-[0.1em] leading-none mb-0.5 ${
-                                  isCompleted ? 'text-slate-400/75' : 'text-slate-500/45'
+                            }`}>
+                              {/* Fila cabecera — siempre visible */}
+                              <div
+                                role={canToggle ? 'button' : undefined}
+                                tabIndex={canToggle ? 0 : undefined}
+                                className={`flex items-center gap-3 px-4 py-3 ${canToggle ? 'cursor-pointer select-none' : ''}`}
+                                onClick={canToggle ? () => setL2Open((v) => !v) : undefined}
+                                onKeyDown={canToggle ? (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setL2Open((v) => !v); } } : undefined}
+                              >
+                                {/* Ícono */}
+                                <div className={`shrink-0 flex h-7 w-7 items-center justify-center rounded-full ${
+                                  isCompleted
+                                    ? `bg-gradient-to-br ${gradient} shadow-[0_0_10px_rgba(0,0,0,0.25)]`
+                                    : isAvailable
+                                      ? 'border border-white/25 bg-white/[0.06]'
+                                      : 'border border-white/8 bg-black/25'
                                 }`}>
-                                  {level.eyebrow}
-                                </p>
-                                <p className={`font-display text-sm leading-tight ${
-                                  isCompleted || isAvailable ? 'text-white' : 'text-white/30'
-                                }`}>
-                                  {level.title}
-                                </p>
-                              </div>
+                                  {isCompleted || isAvailable
+                                    ? <Icon size={13} className="text-white" />
+                                    : <Lock size={11} className="text-white/20" />
+                                  }
+                                </div>
 
-                              {/* Badge + chevron */}
-                              <div className="shrink-0 flex items-center gap-1.5">
-                                {isCompleted ? (
-                                  <span className="inline-flex items-center gap-1 rounded-full border border-emerald-400/35 bg-emerald-500/10 px-1.5 py-0.5 text-[0.52rem] uppercase tracking-[0.1em] text-emerald-300 leading-none">
-                                    <Check size={8} className="shrink-0" />
-                                    Listo
-                                  </span>
-                                ) : isAvailable ? (
-                                  <>
-                                    <span className="rounded-full border border-sky-400/30 bg-sky-500/10 px-1.5 py-0.5 text-[0.52rem] uppercase tracking-[0.1em] text-sky-300/80 leading-none">
-                                      Activo
+                                {/* Texto */}
+                                <div className="min-w-0 flex-1">
+                                  <p className={`truncate text-[0.57rem] uppercase tracking-[0.1em] leading-none mb-0.5 ${
+                                    isCompleted ? 'text-slate-400/75' : 'text-slate-500/45'
+                                  }`}>
+                                    {level.eyebrow}
+                                  </p>
+                                  <p className={`font-display text-sm leading-tight ${
+                                    isCompleted || isAvailable ? 'text-white' : 'text-white/30'
+                                  }`}>
+                                    {level.title}
+                                  </p>
+                                </div>
+
+                                {/* Badge + chevron */}
+                                <div className="shrink-0 flex items-center gap-1.5">
+                                  {isCompleted ? (
+                                    <span className="inline-flex items-center gap-1 rounded-full border border-emerald-400/35 bg-emerald-500/10 px-1.5 py-0.5 text-[0.52rem] uppercase tracking-[0.1em] text-emerald-300 leading-none">
+                                      <Check size={8} className="shrink-0" />
+                                      Listo
                                     </span>
-                                    <ChevronDown
-                                      size={13}
-                                      className={`text-white/30 transition-transform duration-200 ${l2Open ? 'rotate-180' : ''}`}
-                                    />
-                                  </>
-                                ) : (
-                                  <Lock size={11} className="text-white/[0.18]" />
-                                )}
+                                  ) : isAvailable ? (
+                                    <>
+                                      <span className="rounded-full border border-sky-400/30 bg-sky-500/10 px-1.5 py-0.5 text-[0.52rem] uppercase tracking-[0.1em] text-sky-300/80 leading-none">
+                                        Activo
+                                      </span>
+                                      <ChevronDown
+                                        size={13}
+                                        className={`text-white/30 transition-transform duration-200 ${l2Open ? 'rotate-180' : ''}`}
+                                      />
+                                    </>
+                                  ) : (
+                                    <Lock size={11} className="text-white/[0.18]" />
+                                  )}
+                                </div>
                               </div>
-                            </div>
 
-                            {/* Cuerpo colapsable */}
-                            <AnimatePresence initial={false}>
-                              {isOpen && (
-                                <motion.div
-                                  key="body"
-                                  initial={{ height: 0, opacity: 0 }}
-                                  animate={{ height: 'auto', opacity: 1 }}
-                                  exit={{ height: 0, opacity: 0 }}
-                                  transition={{ duration: 0.25, ease: 'easeInOut' }}
-                                  className="overflow-hidden"
-                                >
-                                  <div className="px-4 pb-4 space-y-3">
-                                    {isL1 && (
-                                      <p className="text-xs leading-relaxed text-slate-400/55">{level.desc}</p>
-                                    )}
-                                    {isL3 && (
-                                      <p className="text-xs leading-relaxed text-slate-400/55">{level.pendingDesc}</p>
-                                    )}
-                                    {isL2 && l2q && !l2Selection && (
-                                      <div className="space-y-2">
-                                        <p className="text-xs leading-relaxed text-slate-300/80">{l2q.question}</p>
-                                        <div className="flex flex-wrap gap-1.5">
-                                          {l2q.options.map((opt) => (
-                                            <button
-                                              key={opt}
-                                              type="button"
-                                              onClick={() => handleLevel2Select(opt)}
-                                              disabled={l2Submitting}
-                                              className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs text-slate-300/75 transition hover:border-white/25 hover:bg-white/10 hover:text-white disabled:opacity-40"
-                                            >
-                                              {opt}
-                                            </button>
-                                          ))}
+                              {/* Cuerpo colapsable */}
+                              <AnimatePresence initial={false}>
+                                {isOpen && (
+                                  <motion.div
+                                    key="body"
+                                    initial={{ height: 0, opacity: 0 }}
+                                    animate={{ height: 'auto', opacity: 1 }}
+                                    exit={{ height: 0, opacity: 0 }}
+                                    transition={{ duration: 0.25, ease: 'easeInOut' }}
+                                    className="overflow-hidden"
+                                  >
+                                    <div className="px-4 pb-4 space-y-3">
+                                      {isL1 && (
+                                        <p className="text-xs leading-relaxed text-slate-400/55">{level.desc}</p>
+                                      )}
+                                      {isL3 && (
+                                        <p className="text-xs leading-relaxed text-slate-400/55">{level.pendingDesc}</p>
+                                      )}
+                                      {isL2 && l2q && !l2Selection && (
+                                        <div className="space-y-2">
+                                          <p className="text-xs leading-relaxed text-slate-300/80">{l2q.question}</p>
+                                          <div className="flex flex-wrap gap-1.5">
+                                            {l2q.options.map((opt) => (
+                                              <button
+                                                key={opt}
+                                                type="button"
+                                                onClick={() => handleLevel2Select(opt)}
+                                                disabled={l2Submitting}
+                                                className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs text-slate-300/75 transition hover:border-white/25 hover:bg-white/10 hover:text-white disabled:opacity-40"
+                                              >
+                                                {opt}
+                                              </button>
+                                            ))}
+                                          </div>
                                         </div>
-                                      </div>
-                                    )}
-                                    {isL2 && l2Selection && (
-                                      <div className="flex items-center gap-2 text-xs text-slate-400/70">
-                                        <Check size={12} className="shrink-0 text-emerald-400/70" />
-                                        <span className="italic">{l2Selection}</span>
-                                      </div>
-                                    )}
-                                    {isL2 && l2Selection && onOpenNarrative && (
-                                      <motion.button
-                                        type="button"
-                                        onClick={handleOpenNarrativeExperience}
-                                        className="w-full rounded-2xl border border-amber-400/40 bg-amber-500/10 px-5 py-3 text-sm font-semibold tracking-wide text-amber-200 transition hover:bg-amber-500/20"
-                                        initial={{ opacity: 0, scale: 0.92, y: 8 }}
-                                        animate={{ opacity: 1, scale: 1, y: 0 }}
-                                        transition={{ type: 'spring', stiffness: 220, damping: 20, delay: 0.2 }}
-                                      >
-                                        {narrativeCTALabel ?? 'Abrir experiencia narrativa'}
-                                      </motion.button>
-                                    )}
-                                  </div>
-                                </motion.div>
-                              )}
-                            </AnimatePresence>
+                                      )}
+                                      {isL2 && l2Selection && (
+                                        <div className="flex items-center gap-2 text-xs text-slate-400/70">
+                                          <Check size={12} className="shrink-0 text-emerald-400/70" />
+                                          <span className="italic">{l2Selection}</span>
+                                        </div>
+                                      )}
+                                      {isL2 && l2Selection && onOpenNarrative && (
+                                        <motion.button
+                                          type="button"
+                                          onClick={handleOpenNarrativeExperience}
+                                          className="w-full rounded-2xl border border-amber-400/40 bg-amber-500/10 px-5 py-3 text-sm font-semibold tracking-wide text-amber-200 transition hover:bg-amber-500/20"
+                                          initial={{ opacity: 0, scale: 0.92, y: 8 }}
+                                          animate={{ opacity: 1, scale: 1, y: 0 }}
+                                          transition={{ type: 'spring', stiffness: 220, damping: 20, delay: 0.2 }}
+                                        >
+                                          {narrativeCTALabel ?? 'Abrir experiencia narrativa'}
+                                        </motion.button>
+                                      )}
+                                    </div>
+                                  </motion.div>
+                                )}
+                              </AnimatePresence>
+                            </div>
                           </motion.div>
                         );
                       })}
