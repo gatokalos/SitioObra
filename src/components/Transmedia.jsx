@@ -59,7 +59,7 @@ import IAInsightCard from '@/components/IAInsightCard';
 import DiosasCarousel from '@/components/DiosasCarousel';
 import RelatedReadingTooltipButton from '@/components/portal/RelatedReadingTooltipButton';
 import VitranaQuestionReveal from '@/components/portal/VitranaQuestionReveal';
-import ResonanceModal from '@/components/portal/ResonanceModal';
+import ResonanceModal, { LEVEL2_QUESTIONS } from '@/components/portal/ResonanceModal';
 import { useSilvestreVoice } from '@/hooks/useSilvestreVoice';
 import ObraConversationControls from '@/components/miniversos/obra/ObraConversationControls';
 import ObraQuestionList from '@/components/miniversos/obra/ObraQuestionList';
@@ -256,6 +256,58 @@ const Transmedia = ({ allianceOnlyMode = false }) => {
   const location = useLocation();
   const [isNarrativeDramaOpen, setIsNarrativeDramaOpen] = useState(false);
   const [isDramaResonanceOpen, setIsDramaResonanceOpen] = useState(false);
+
+  // Mapa showcaseId → clave de portal usada en ResonanceModal / localStorage
+  const SHOWCASE_TO_PORTAL = {
+    miniversos:        'obra',
+    miniversoNovela:   'literatura',
+    lataza:            'artesanias',
+    miniversoGrafico:  'grafico',
+    copycats:          'cine',
+    miniversoSonoro:   'sonoridades',
+    miniversoMovimiento: 'movimiento',
+    apps:              'juegos',
+    oraculo:           'oraculo',
+  };
+
+  // Indica si el usuario ya contestó el Nivel 1 del portal activo
+  const [activePortalL1Done, setActivePortalL1Done] = useState(false);
+
+  // Lee localStorage cada vez que cambia la vitrana activa
+  useEffect(() => {
+    const portal = SHOWCASE_TO_PORTAL[activeShowcase];
+    if (!portal) { setActivePortalL1Done(false); return; }
+    try {
+      const raw = localStorage.getItem(`gatoencerrado:resonance:${portal}`);
+      setActivePortalL1Done(!!(raw && JSON.parse(raw).l1));
+    } catch { setActivePortalL1Done(false); }
+  }, [activeShowcase]);
+
+  // Indica si el usuario completó la experiencia narrativa del portal activo
+  // (siempre false hasta que el trigger de GATokens escriba experience_ts)
+  const [activePortalExperienceDone, setActivePortalExperienceDone] = useState(false);
+
+  // Relee localStorage cuando cambia la vitrana o se cierra cualquier ResonanceModal
+  const refreshActivePortalL1 = useCallback(() => {
+    const portal = SHOWCASE_TO_PORTAL[activeShowcase];
+    if (!portal) return;
+    try {
+      const raw = localStorage.getItem(`gatoencerrado:resonance:${portal}`);
+      const state = raw ? JSON.parse(raw) : {};
+      setActivePortalL1Done(!!state.l1);
+      setActivePortalExperienceDone(!!state.experience_ts);
+    } catch {}
+  }, [activeShowcase]);
+
+  // También lee experience_ts al cambiar vitrana
+  useEffect(() => {
+    const portal = SHOWCASE_TO_PORTAL[activeShowcase];
+    if (!portal) { setActivePortalExperienceDone(false); return; }
+    try {
+      const raw = localStorage.getItem(`gatoencerrado:resonance:${portal}`);
+      setActivePortalExperienceDone(!!(raw && JSON.parse(raw).experience_ts));
+    } catch { setActivePortalExperienceDone(false); }
+  }, [activeShowcase]);
   const [isLiteraturaResonanceOpen, setIsLiteraturaResonanceOpen] = useState(false);
   const [isArtesaniasResonanceOpen, setIsArtesaniasResonanceOpen] = useState(false);
   const [isGraficosResonanceOpen, setIsGraficosResonanceOpen] = useState(false);
@@ -1857,14 +1909,16 @@ const rendernotaAutoral = () => {
             {activeDefinition.iaProfile ? (
               <IAInsightCard {...activeDefinition.iaProfile} compact rewardLabel={buildShowcaseRewardLabel(showcaseTokenLedgerById[activeShowcase])} minRequired={buildShowcaseMinRequiredCopy(activeShowcase)} />
             ) : null}
-            <button
-              type="button"
-              onClick={handleActivateAR}
-              disabled={isTazaActivating}
-              className="inline-flex w-full items-center justify-center gap-2 rounded-2xl border border-amber-400/40 bg-amber-500/10 px-6 py-3 text-sm font-semibold text-amber-200 tracking-wide transition hover:bg-amber-500/20"
-            >
-              {isTazaActivating ? 'Procesando...' : '✦ Activa tu taza'}
-            </button>
+            {activePortalExperienceDone && (
+              <button
+                type="button"
+                onClick={handleActivateAR}
+                disabled={isTazaActivating}
+                className="inline-flex w-full items-center justify-center gap-2 rounded-2xl border border-amber-400/40 bg-amber-500/10 px-6 py-3 text-sm font-semibold text-amber-200 tracking-wide transition hover:bg-amber-500/20"
+              >
+                {isTazaActivating ? 'Procesando...' : '✦ Activa tu taza'}
+              </button>
+            )}
           </div>
         </div>
         </div>
@@ -1915,13 +1969,15 @@ const rendernotaAutoral = () => {
               {activeDefinition.iaProfile ? (
                 <IAInsightCard {...activeDefinition.iaProfile} compact rewardLabel={buildShowcaseRewardLabel(showcaseTokenLedgerById[activeShowcase])} minRequired={buildShowcaseMinRequiredCopy(activeShowcase)} />
               ) : null}
-              <button
-                type="button"
-                onClick={handleSonoroEnter}
-                className="inline-flex w-full items-center justify-center gap-2 rounded-2xl border border-amber-400/40 bg-amber-500/10 px-6 py-3 text-sm font-semibold text-amber-200 tracking-wide transition hover:bg-amber-500/20"
-              >
-                ✦ Entrar a la experiencia sonora
-              </button>
+              {activePortalExperienceDone && (
+                <button
+                  type="button"
+                  onClick={handleSonoroEnter}
+                  className="inline-flex w-full items-center justify-center gap-2 rounded-2xl border border-amber-400/40 bg-amber-500/10 px-6 py-3 text-sm font-semibold text-amber-200 tracking-wide transition hover:bg-amber-500/20"
+                >
+                  ✦ Entrar a la experiencia sonora
+                </button>
+              )}
             </div>
           </div>
         </div>
@@ -2012,13 +2068,15 @@ const rendernotaAutoral = () => {
             {activeDefinition.iaProfile ? (
               <IAInsightCard {...activeDefinition.iaProfile} compact rewardLabel={buildShowcaseRewardLabel(showcaseTokenLedgerById[activeShowcase])} minRequired={buildShowcaseMinRequiredCopy(activeShowcase)} />
             ) : null}
-            <button
-              type="button"
-              onClick={handleOpenOraculo}
-              className="inline-flex w-full items-center justify-center gap-2 rounded-2xl border border-amber-400/40 bg-amber-500/10 px-6 py-3 text-sm font-semibold text-amber-200 tracking-wide transition hover:bg-amber-500/20"
-            >
-              ✦ {activeDefinition.ctaLabel}
-            </button>
+            {activePortalExperienceDone && (
+              <button
+                type="button"
+                onClick={handleOpenOraculo}
+                className="inline-flex w-full items-center justify-center gap-2 rounded-2xl border border-amber-400/40 bg-amber-500/10 px-6 py-3 text-sm font-semibold text-amber-200 tracking-wide transition hover:bg-amber-500/20"
+              >
+                ✦ {activeDefinition.ctaLabel}
+              </button>
+            )}
           </div>
         </div>
       );
@@ -2162,13 +2220,15 @@ const rendernotaAutoral = () => {
               {activeDefinition.iaProfile ? (
                 <IAInsightCard {...activeDefinition.iaProfile} compact rewardLabel={buildShowcaseRewardLabel(showcaseTokenLedgerById[activeShowcase])} minRequired={buildShowcaseMinRequiredCopy(activeShowcase)} />
               ) : null}
-              <button
-                type="button"
-                onClick={() => setIsNarrativeDramaOpen(true)}
-                className="w-full rounded-2xl border border-amber-400/40 bg-amber-500/10 px-6 py-4 text-sm font-semibold tracking-wide text-amber-200 shadow-[0_8px_32px_rgba(251,191,36,0.15)] transition hover:bg-amber-500/20 hover:shadow-[0_8px_40px_rgba(251,191,36,0.25)]"
-              >
-                Abrir experiencia narrativa
-              </button>
+              {activePortalExperienceDone && (
+                <button
+                  type="button"
+                  onClick={() => setIsNarrativeDramaOpen(true)}
+                  className="w-full rounded-2xl border border-amber-400/40 bg-amber-500/10 px-6 py-4 text-sm font-semibold tracking-wide text-amber-200 shadow-[0_8px_32px_rgba(251,191,36,0.15)] transition hover:bg-amber-500/20 hover:shadow-[0_8px_40px_rgba(251,191,36,0.25)]"
+                >
+                  Abrir experiencia narrativa
+                </button>
+              )}
             </div>
           </div>
 
@@ -2740,7 +2800,7 @@ const rendernotaAutoral = () => {
             {activeDefinition.iaProfile ? (
               <IAInsightCard {...activeDefinition.iaProfile} compact rewardLabel={buildShowcaseRewardLabel(showcaseTokenLedgerById[activeShowcase])} minRequired={buildShowcaseMinRequiredCopy(activeShowcase)} />
             ) : null}
-            {swipeShowcases[0] ? (
+            {activePortalExperienceDone && swipeShowcases[0] ? (
               <button
                 type="button"
                 onClick={() => handleOpenGraphicSwipe(swipeShowcases[0])}
@@ -2858,13 +2918,15 @@ const rendernotaAutoral = () => {
               {activeDefinition.iaProfile ? (
                 <IAInsightCard {...activeDefinition.iaProfile} compact rewardLabel={buildShowcaseRewardLabel(showcaseTokenLedgerById[activeShowcase])} minRequired={buildShowcaseMinRequiredCopy(activeShowcase)} />
               ) : null}
-              <button
-                type="button"
-                onClick={() => handleOpenContribution(getContributionCategoryForShowcase('miniversoMovimiento'))}
-                className="inline-flex w-full items-center justify-center gap-2 rounded-2xl border border-amber-400/40 bg-amber-500/10 px-6 py-3 text-sm font-semibold text-amber-200 tracking-wide transition hover:bg-amber-500/20"
-              >
-                ✦ Inscríbete a los talleres coreográficos
-              </button>
+              {activePortalExperienceDone && (
+                <button
+                  type="button"
+                  onClick={() => handleOpenContribution(getContributionCategoryForShowcase('miniversoMovimiento'))}
+                  className="inline-flex w-full items-center justify-center gap-2 rounded-2xl border border-amber-400/40 bg-amber-500/10 px-6 py-3 text-sm font-semibold text-amber-200 tracking-wide transition hover:bg-amber-500/20"
+                >
+                  ✦ Inscríbete a los talleres coreográficos
+                </button>
+              )}
             </div>
           </div>
         </div>
@@ -2909,7 +2971,7 @@ const rendernotaAutoral = () => {
             {activeDefinition.iaProfile ? (
               <IAInsightCard {...activeDefinition.iaProfile} compact rewardLabel={buildShowcaseRewardLabel(showcaseTokenLedgerById[activeShowcase])} minRequired={buildShowcaseMinRequiredCopy(activeShowcase)} />
             ) : null}
-            {embeddedAppUrl ? (
+            {activePortalExperienceDone && embeddedAppUrl ? (
               <a
                 href={embeddedAppUrl}
                 target="_blank"
@@ -3326,14 +3388,16 @@ const rendernotaAutoral = () => {
                 {activeDefinition.iaProfile ? (
                   <IAInsightCard {...activeDefinition.iaProfile} compact rewardLabel={buildShowcaseRewardLabel(showcaseTokenLedgerById[activeShowcase])} minRequired={buildShowcaseMinRequiredCopy(activeShowcase)} />
                 ) : null}
-                <button
-                  type="button"
-                  onClick={isQuironUnlocked ? handleQuironPlayRequest : handleToggleQuironPrompt}
-                  disabled={isQuironUnlocking}
-                  className="inline-flex w-full items-center justify-center gap-2 rounded-2xl border border-amber-400/40 bg-amber-500/10 px-6 py-3 text-sm font-semibold text-amber-200 tracking-wide transition hover:bg-amber-500/20 disabled:opacity-50"
-                >
-                  {isQuironUnlocked ? '▶ Ver Quirón' : isQuironUnlocking ? 'Procesando…' : '✦ Ver cortometraje ahora'}
-                </button>
+                {activePortalExperienceDone && (
+                  <button
+                    type="button"
+                    onClick={isQuironUnlocked ? handleQuironPlayRequest : handleToggleQuironPrompt}
+                    disabled={isQuironUnlocking}
+                    className="inline-flex w-full items-center justify-center gap-2 rounded-2xl border border-amber-400/40 bg-amber-500/10 px-6 py-3 text-sm font-semibold text-amber-200 tracking-wide transition hover:bg-amber-500/20 disabled:opacity-50"
+                  >
+                    {isQuironUnlocked ? '▶ Ver Quirón' : isQuironUnlocking ? 'Procesando…' : '✦ Ver cortometraje ahora'}
+                  </button>
+                )}
               </div>
             </div>
           )}
@@ -3529,13 +3593,15 @@ const rendernotaAutoral = () => {
                   {activeDefinition.iaProfile ? (
                     <IAInsightCard {...activeDefinition.iaProfile} compact rewardLabel={buildShowcaseRewardLabel(showcaseTokenLedgerById[activeShowcase])} minRequired={buildShowcaseMinRequiredCopy(activeShowcase)} />
                   ) : null}
-                  <button
-                    type="button"
-                    onClick={() => setShowLiteraturaApp(true)}
-                    className="inline-flex w-full items-center justify-center gap-2 rounded-2xl border border-amber-400/40 bg-amber-500/10 px-6 py-3 text-sm font-semibold text-amber-200 tracking-wide transition hover:bg-amber-500/20"
-                  >
-                    📖 Abrir separador inteligente
-                  </button>
+                  {activePortalExperienceDone && (
+                    <button
+                      type="button"
+                      onClick={() => setShowLiteraturaApp(true)}
+                      className="inline-flex w-full items-center justify-center gap-2 rounded-2xl border border-amber-400/40 bg-amber-500/10 px-6 py-3 text-sm font-semibold text-amber-200 tracking-wide transition hover:bg-amber-500/20"
+                    >
+                      📖 Abrir separador inteligente
+                    </button>
+                  )}
                 </div>
               </div>
             ) : (
@@ -3964,7 +4030,9 @@ const rendernotaAutoral = () => {
                     {activeDefinition.type === 'tragedia' ? (
                       <>
                         <VitranaQuestionReveal
-                          question={VITRANA_QUESTION_BY_SHOWCASE['miniversos']}
+                          question={activePortalL1Done ? (LEVEL2_QUESTIONS['obra']?.question ?? VITRANA_QUESTION_BY_SHOWCASE['miniversos']) : VITRANA_QUESTION_BY_SHOWCASE['miniversos']}
+                          buttonLabel={activePortalL1Done ? 'Tu progreso →' : undefined}
+                          autoReveal={activePortalL1Done}
                           onAnswer={() => setIsDramaResonanceOpen(true)}
                         />
                         {activeShowcase === 'miniversos' ? (
@@ -3977,15 +4045,19 @@ const rendernotaAutoral = () => {
                         ) : null}
                         <ResonanceModal
                           open={isDramaResonanceOpen}
-                          onClose={() => setIsDramaResonanceOpen(false)}
+                          onClose={() => { setIsDramaResonanceOpen(false); refreshActivePortalL1(); }}
                           question={VITRANA_QUESTION_BY_SHOWCASE['miniversos']}
                           portal="obra"
+                          onOpenNarrative={() => setIsNarrativeDramaOpen(true)}
+                          narrativeCTALabel="Abrir experiencia narrativa"
                         />
                       </>
                     ) : activeShowcase === 'miniversoNovela' ? (
                       <>
                         <VitranaQuestionReveal
-                          question={VITRANA_QUESTION_BY_SHOWCASE['miniversoNovela']}
+                          question={activePortalL1Done ? (LEVEL2_QUESTIONS['literatura']?.question ?? VITRANA_QUESTION_BY_SHOWCASE['miniversoNovela']) : VITRANA_QUESTION_BY_SHOWCASE['miniversoNovela']}
+                          buttonLabel={activePortalL1Done ? 'Tu progreso →' : undefined}
+                          autoReveal={activePortalL1Done}
                           onAnswer={() => setIsLiteraturaResonanceOpen(true)}
                         />
                         <ShowcaseReactionInline
@@ -3996,15 +4068,19 @@ const rendernotaAutoral = () => {
                         />
                         <ResonanceModal
                           open={isLiteraturaResonanceOpen}
-                          onClose={() => setIsLiteraturaResonanceOpen(false)}
+                          onClose={() => { setIsLiteraturaResonanceOpen(false); refreshActivePortalL1(); }}
                           question={VITRANA_QUESTION_BY_SHOWCASE['miniversoNovela']}
                           portal="literatura"
+                          onOpenNarrative={() => setShowLiteraturaApp(true)}
+                          narrativeCTALabel="📖 Abrir separador inteligente"
                         />
                       </>
                     ) : activeShowcase === 'lataza' ? (
                       <>
                         <VitranaQuestionReveal
-                          question={VITRANA_QUESTION_BY_SHOWCASE['lataza']}
+                          question={activePortalL1Done ? (LEVEL2_QUESTIONS['artesanias']?.question ?? VITRANA_QUESTION_BY_SHOWCASE['lataza']) : VITRANA_QUESTION_BY_SHOWCASE['lataza']}
+                          buttonLabel={activePortalL1Done ? 'Tu progreso →' : undefined}
+                          autoReveal={activePortalL1Done}
                           onAnswer={() => setIsArtesaniasResonanceOpen(true)}
                         />
                         <ShowcaseReactionInline
@@ -4015,15 +4091,19 @@ const rendernotaAutoral = () => {
                         />
                         <ResonanceModal
                           open={isArtesaniasResonanceOpen}
-                          onClose={() => setIsArtesaniasResonanceOpen(false)}
+                          onClose={() => { setIsArtesaniasResonanceOpen(false); refreshActivePortalL1(); }}
                           question={VITRANA_QUESTION_BY_SHOWCASE['lataza']}
                           portal="artesanias"
+                          onOpenNarrative={handleActivateAR}
+                          narrativeCTALabel="✦ Activa tu taza"
                         />
                       </>
                     ) : activeShowcase === 'miniversoGrafico' ? (
                       <>
                         <VitranaQuestionReveal
-                          question={VITRANA_QUESTION_BY_SHOWCASE['miniversoGrafico']}
+                          question={activePortalL1Done ? (LEVEL2_QUESTIONS['grafico']?.question ?? VITRANA_QUESTION_BY_SHOWCASE['miniversoGrafico']) : VITRANA_QUESTION_BY_SHOWCASE['miniversoGrafico']}
+                          buttonLabel={activePortalL1Done ? 'Tu progreso →' : undefined}
+                          autoReveal={activePortalL1Done}
                           onAnswer={() => setIsGraficosResonanceOpen(true)}
                         />
                         <ShowcaseReactionInline
@@ -4034,15 +4114,19 @@ const rendernotaAutoral = () => {
                         />
                         <ResonanceModal
                           open={isGraficosResonanceOpen}
-                          onClose={() => setIsGraficosResonanceOpen(false)}
+                          onClose={() => { setIsGraficosResonanceOpen(false); refreshActivePortalL1(); }}
                           question={VITRANA_QUESTION_BY_SHOWCASE['miniversoGrafico']}
                           portal="grafico"
+                          onOpenNarrative={() => { const sw = activeDefinition.swipeShowcases?.[0]; if (sw) handleOpenGraphicSwipe(sw); }}
+                          narrativeCTALabel="✦ Abrir swipe en PDF"
                         />
                       </>
                     ) : activeShowcase === 'copycats' ? (
                       <>
                         <VitranaQuestionReveal
-                          question={VITRANA_QUESTION_BY_SHOWCASE['cine']}
+                          question={activePortalL1Done ? (LEVEL2_QUESTIONS['cine']?.question ?? VITRANA_QUESTION_BY_SHOWCASE['cine']) : VITRANA_QUESTION_BY_SHOWCASE['cine']}
+                          buttonLabel={activePortalL1Done ? 'Tu progreso →' : undefined}
+                          autoReveal={activePortalL1Done}
                           onAnswer={() => setIsCineResonanceOpen(true)}
                         />
                         <ShowcaseReactionInline
@@ -4053,15 +4137,19 @@ const rendernotaAutoral = () => {
                         />
                         <ResonanceModal
                           open={isCineResonanceOpen}
-                          onClose={() => setIsCineResonanceOpen(false)}
+                          onClose={() => { setIsCineResonanceOpen(false); refreshActivePortalL1(); }}
                           question={VITRANA_QUESTION_BY_SHOWCASE['cine']}
                           portal="cine"
+                          onOpenNarrative={Boolean(showcaseBoosts?.copycats_full_unlock || quironSpent) ? handleQuironPlayRequest : handleToggleQuironPrompt}
+                          narrativeCTALabel={Boolean(showcaseBoosts?.copycats_full_unlock || quironSpent) ? '▶ Ver Quirón' : '✦ Ver cortometraje ahora'}
                         />
                       </>
                     ) : activeShowcase === 'miniversoSonoro' ? (
                       <>
                         <VitranaQuestionReveal
-                          question={VITRANA_QUESTION_BY_SHOWCASE['miniversoSonoro']}
+                          question={activePortalL1Done ? (LEVEL2_QUESTIONS['sonoridades']?.question ?? VITRANA_QUESTION_BY_SHOWCASE['miniversoSonoro']) : VITRANA_QUESTION_BY_SHOWCASE['miniversoSonoro']}
+                          buttonLabel={activePortalL1Done ? 'Tu progreso →' : undefined}
+                          autoReveal={activePortalL1Done}
                           onAnswer={() => setIsSonoroResonanceOpen(true)}
                         />
                         <ShowcaseReactionInline
@@ -4072,15 +4160,19 @@ const rendernotaAutoral = () => {
                         />
                         <ResonanceModal
                           open={isSonoroResonanceOpen}
-                          onClose={() => setIsSonoroResonanceOpen(false)}
+                          onClose={() => { setIsSonoroResonanceOpen(false); refreshActivePortalL1(); }}
                           question={VITRANA_QUESTION_BY_SHOWCASE['miniversoSonoro']}
                           portal="sonoridades"
+                          onOpenNarrative={handleSonoroEnter}
+                          narrativeCTALabel="✦ Entrar a la experiencia sonora"
                         />
                       </>
                     ) : activeShowcase === 'miniversoMovimiento' ? (
                       <>
                         <VitranaQuestionReveal
-                          question={VITRANA_QUESTION_BY_SHOWCASE['miniversoMovimiento']}
+                          question={activePortalL1Done ? (LEVEL2_QUESTIONS['movimiento']?.question ?? VITRANA_QUESTION_BY_SHOWCASE['miniversoMovimiento']) : VITRANA_QUESTION_BY_SHOWCASE['miniversoMovimiento']}
+                          buttonLabel={activePortalL1Done ? 'Tu progreso →' : undefined}
+                          autoReveal={activePortalL1Done}
                           onAnswer={() => setIsMovimientoResonanceOpen(true)}
                         />
                         <ShowcaseReactionInline
@@ -4091,15 +4183,19 @@ const rendernotaAutoral = () => {
                         />
                         <ResonanceModal
                           open={isMovimientoResonanceOpen}
-                          onClose={() => setIsMovimientoResonanceOpen(false)}
+                          onClose={() => { setIsMovimientoResonanceOpen(false); refreshActivePortalL1(); }}
                           question={VITRANA_QUESTION_BY_SHOWCASE['miniversoMovimiento']}
                           portal="movimiento"
+                          onOpenNarrative={() => handleOpenContribution(getContributionCategoryForShowcase('miniversoMovimiento'))}
+                          narrativeCTALabel="✦ Inscríbete a los talleres coreográficos"
                         />
                       </>
                     ) : activeShowcase === 'apps' ? (
                       <>
                         <VitranaQuestionReveal
-                          question={VITRANA_QUESTION_BY_SHOWCASE['apps']}
+                          question={activePortalL1Done ? (LEVEL2_QUESTIONS['juegos']?.question ?? VITRANA_QUESTION_BY_SHOWCASE['apps']) : VITRANA_QUESTION_BY_SHOWCASE['apps']}
+                          buttonLabel={activePortalL1Done ? 'Tu progreso →' : undefined}
+                          autoReveal={activePortalL1Done}
                           onAnswer={() => setIsJuegosResonanceOpen(true)}
                         />
                         <ShowcaseReactionInline
@@ -4110,15 +4206,19 @@ const rendernotaAutoral = () => {
                         />
                         <ResonanceModal
                           open={isJuegosResonanceOpen}
-                          onClose={() => setIsJuegosResonanceOpen(false)}
+                          onClose={() => { setIsJuegosResonanceOpen(false); refreshActivePortalL1(); }}
                           question={VITRANA_QUESTION_BY_SHOWCASE['apps']}
                           portal="juegos"
+                          onOpenNarrative={() => { const u = sanitizeExternalHttpUrl(activeDefinition.liveExperience?.url); if (u) window.open(u, '_blank'); }}
+                          narrativeCTALabel={activeDefinition.liveExperience?.ctaLabel || '✦ Abrir app aparte'}
                         />
                       </>
                     ) : activeShowcase === 'oraculo' ? (
                       <>
                         <VitranaQuestionReveal
-                          question={VITRANA_QUESTION_BY_SHOWCASE['oraculo']}
+                          question={activePortalL1Done ? (LEVEL2_QUESTIONS['oraculo']?.question ?? VITRANA_QUESTION_BY_SHOWCASE['oraculo']) : VITRANA_QUESTION_BY_SHOWCASE['oraculo']}
+                          buttonLabel={activePortalL1Done ? 'Tu progreso →' : undefined}
+                          autoReveal={activePortalL1Done}
                           onAnswer={() => setIsOraculoResonanceOpen(true)}
                         />
                         <ShowcaseReactionInline
@@ -4129,9 +4229,11 @@ const rendernotaAutoral = () => {
                         />
                         <ResonanceModal
                           open={isOraculoResonanceOpen}
-                          onClose={() => setIsOraculoResonanceOpen(false)}
+                          onClose={() => { setIsOraculoResonanceOpen(false); refreshActivePortalL1(); }}
                           question={VITRANA_QUESTION_BY_SHOWCASE['oraculo']}
                           portal="oraculo"
+                          onOpenNarrative={handleOpenOraculo}
+                          narrativeCTALabel={activeDefinition.ctaLabel || '✦ Explorar'}
                         />
                       </>
                     ) : (

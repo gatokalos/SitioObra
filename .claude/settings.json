@@ -62,7 +62,9 @@
       "Bash(xargs ls -la)",
       "Bash(sed -n '462,470p' /Users/gatoenigmatico/gatoencerrado-ai/landing/SitioObra/src/pages/PortalCine.jsx)",
       "Bash(sed -n '483,491p' /Users/gatoenigmatico/gatoencerrado-ai/landing/SitioObra/src/pages/PortalArtesanias.jsx)",
-      "Bash(sed -n '352,360p' /Users/gatoenigmatico/gatoencerrado-ai/landing/SitioObra/src/pages/PortalLiteratura.jsx)"
+      "Bash(sed -n '352,360p' /Users/gatoenigmatico/gatoencerrado-ai/landing/SitioObra/src/pages/PortalLiteratura.jsx)",
+      "Bash(grep -v \"className\\\\|disabled\\\\|tracking\\\\|shadow\\\\|hover\\\\|transition\\\\|inline-flex\\\\|^--$\")",
+      "Bash(grep -v \"^$\")"
     ],
     "additionalDirectories": [
       "/Users/gatoenigmatico/Desktop/Postulación EFIARTES",

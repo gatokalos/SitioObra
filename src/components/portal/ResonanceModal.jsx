@@ -47,7 +47,7 @@ const PORTAL_BLOOM = {
 
 /* ─── Preguntas de Nivel 2 por portal ─────────────────────────────────── */
 
-const LEVEL2_QUESTIONS = {
+export const LEVEL2_QUESTIONS = {
   obra: {
     question: '¿Qué parte de Silvestre reconociste sin querer en ti?',
     options: [
@@ -190,7 +190,7 @@ const lsPatch = (portal, patch) => {
 
 /* ─── Componente ──────────────────────────────────────────────────────── */
 
-const ResonanceModal = ({ open, onClose, question, portal }) => {
+const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, narrativeCTALabel }) => {
   const modalRef = useRef(null);
   const submitBtnRef = useRef(null);
   const { user } = useAuth();
@@ -203,10 +203,45 @@ const ResonanceModal = ({ open, onClose, question, portal }) => {
   const poster   = PORTAL_POSTER[portal]   ?? PORTAL_POSTER.obra;
   const l2q      = LEVEL2_QUESTIONS[portal] ?? null;
 
-  // Persistent state — lazy-init from localStorage so it survives remounts
+  // Persistent state — lazy-init desde localStorage; si no hay, se verifica contra Supabase
   const [l1Done, setL1Done] = useState(() => !!lsRead(portal).l1);
   const [l2Selection, setL2Selection] = useState(() => lsRead(portal).l2_option ?? null);
   const [l2Submitting, setL2Submitting] = useState(false);
+  // checking = true mientras consultamos Supabase para respuestas anteriores al deploy de localStorage
+  const [checking, setChecking] = useState(() => !lsRead(portal).l1);
+
+  // Verifica Supabase solo si localStorage no tiene l1 (respuestas pre-deploy)
+  useEffect(() => {
+    if (!open || !checking) return;
+    let cancelled = false;
+    const verify = async () => {
+      try {
+        const { data } = await supabase
+          .from('vitrana_resonances')
+          .select('level, respuesta')
+          .eq('anon_id', ensureAnonId())
+          .eq('portal', portal)
+          .in('level', [1, 2])
+          .order('created_at', { ascending: true });
+        if (cancelled) return;
+        if (data?.length) {
+          const l1Row = data.find((r) => r.level === 1);
+          const l2Row = data.find((r) => r.level === 2);
+          if (l1Row) {
+            lsPatch(portal, { l1: Date.now() });
+            setL1Done(true);
+          }
+          if (l2Row) {
+            lsPatch(portal, { l2_option: l2Row.respuesta, l2_ts: Date.now() });
+            setL2Selection(l2Row.respuesta);
+          }
+        }
+      } catch (_) {}
+      if (!cancelled) setChecking(false);
+    };
+    verify();
+    return () => { cancelled = true; };
+  }, [open, checking, portal]);
 
   useEffect(() => {
     if (!open) return;
@@ -244,6 +279,12 @@ const ResonanceModal = ({ open, onClose, question, portal }) => {
     fireConfetti();
     setL1Done(true);
     setSubmitting(false);
+  };
+
+  /* Experiencia narrativa — abre la experiencia y cierra el modal */
+  const handleOpenNarrativeExperience = () => {
+    onClose?.();
+    onOpenNarrative?.();
   };
 
   /* Nivel 2 — opciones */
@@ -323,7 +364,22 @@ const ResonanceModal = ({ open, onClose, question, portal }) => {
 
             <div className="relative z-10 h-full overflow-y-auto">
               <AnimatePresence mode="wait">
-                {l1Done ? (
+                {checking ? (
+                  /* ── Verificando respuestas anteriores ── */
+                  <motion.div
+                    key="checking"
+                    className="flex h-full items-center justify-center px-8 py-16"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.2 }}
+                  >
+                    <div className="flex flex-col items-center gap-3">
+                      <div className="h-6 w-6 animate-spin rounded-full border-2 border-white/10 border-t-white/50" />
+                      <p className="text-xs uppercase tracking-[0.25em] text-white/30">Cargando tu progreso</p>
+                    </div>
+                  </motion.div>
+                ) : l1Done ? (
                   /* ── Dashboard de viaje ── */
                   <motion.div
                     key="dashboard"
@@ -468,6 +524,21 @@ const ResonanceModal = ({ open, onClose, question, portal }) => {
                                   <span className="italic">{l2Selection}</span>
                                   {/* TODO: textarea con pregunta de IA */}
                                 </div>
+                              )}
+
+                              {/* Nivel 2: botón ámbar de experiencia — recompensa por contestar Nivel 1 */}
+                              {isL2 && onOpenNarrative && (
+                                <motion.button
+                                  type="button"
+                                  onClick={handleOpenNarrativeExperience}
+                                  className="mt-1 w-full rounded-2xl border border-amber-400/40 bg-amber-500/10 px-5 py-3 text-sm font-semibold tracking-wide text-amber-200 transition hover:bg-amber-500/20"
+                                  initial={{ opacity: 0, scale: 0.92, y: 8 }}
+                                  animate={{ opacity: 1, scale: 1, y: 0 }}
+                                  transition={{ type: 'spring', stiffness: 220, damping: 20, delay: 0.45 }}
+                                  whileHover={{ boxShadow: '0 8px_40px_rgba(251,191,36,0.25)' }}
+                                >
+                                  {narrativeCTALabel ?? 'Abrir experiencia narrativa'}
+                                </motion.button>
                               )}
                             </div>
                           </motion.div>
