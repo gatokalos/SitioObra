@@ -683,11 +683,11 @@ const Transmedia = ({ allianceOnlyMode = false }) => {
       if (showcaseOpenTransition.phase !== 'idle') {
         return;
       }
-      // Mobile anonymous: bienvenida-completed users open portal directly.
+      // Mobile anonymous: bienvenida-completed users open portal directly, but only the recommended vitrana.
       // Everyone else sees the question overlay → login flow.
       if (isMobileViewport && !isAuthenticated) {
         const hasBienvenida = safeGetItem('gatoencerrado:bienvenida-completed') === '1';
-        if (hasBienvenida) {
+        if (hasBienvenida && formatId === recommendedShowcaseId) {
           if (navigateToMobilePortalIfReady(formatId)) return;
         }
         setMobileVitranaRevealId((prev) => (prev === formatId ? null : formatId));
@@ -696,7 +696,7 @@ const Transmedia = ({ allianceOnlyMode = false }) => {
       // Desktop anonymous: misma lógica que mobile — muestra CTA de login en la card.
       if (!isMobileViewport && !isAuthenticated) {
         const hasBienvenida = safeGetItem('gatoencerrado:bienvenida-completed') === '1';
-        if (hasBienvenida) {
+        if (hasBienvenida && formatId === recommendedShowcaseId) {
           if (navigateToMobilePortalIfReady(formatId)) return;
         }
         setDesktopVitranaRevealId((prev) => (prev === formatId ? null : formatId));

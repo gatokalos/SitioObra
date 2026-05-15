@@ -488,6 +488,9 @@ const MiniverseModal = ({
   const [selectedMiniverseId, setSelectedMiniverseId] = useState(null);
   const [selectedUpcomingId, setSelectedUpcomingId] = useState(null);
   const [showcaseFullscreenCard, setShowcaseFullscreenCard] = useState(null);
+  const [showcaseFullscreenPlaying, setShowcaseFullscreenPlaying] = useState(false);
+  const [showcaseFullscreenEnded, setShowcaseFullscreenEnded] = useState(false);
+  const showcaseFullscreenVideoRef = useRef(null);
   const [visitedMiniverses, setVisitedMiniverses] = useState(() =>
     readStoredJson(VISITED_MINIVERSES_STORAGE_KEY, {})
   );
@@ -1670,9 +1673,47 @@ const MiniverseModal = ({
   );
 
   const handleCloseShowcaseFullscreen = useCallback(() => {
+    showcaseFullscreenVideoRef.current?.pause();
     setShowcaseFullscreenCard(null);
+    setShowcaseFullscreenPlaying(false);
+    setShowcaseFullscreenEnded(false);
     setHeroAmbientHold(false);
   }, [setHeroAmbientHold]);
+
+  useEffect(() => {
+    if (!showcaseFullscreenCard) return;
+    setShowcaseFullscreenPlaying(false);
+    setShowcaseFullscreenEnded(false);
+  }, [showcaseFullscreenCard]);
+
+  const handleFullscreenVideoToggle = useCallback(() => {
+    const v = showcaseFullscreenVideoRef.current;
+    if (!v || showcaseFullscreenEnded) return;
+    if (v.paused) {
+      v.play().then(() => setShowcaseFullscreenPlaying(true)).catch(() => {});
+    } else {
+      v.pause();
+      setShowcaseFullscreenPlaying(false);
+    }
+  }, [showcaseFullscreenEnded]);
+
+  const handleFullscreenVideoCta = useCallback(() => {
+    if (!showcaseFullscreenCard) return;
+    if (showcaseFullscreenCard.isPrologue) {
+      handleCloseShowcaseFullscreen();
+      setActiveTab('waitlist');
+      return;
+    }
+    handleCloseShowcaseFullscreen();
+    const portalRoute = resolvePortalRoute({ formatId: showcaseFullscreenCard.formatId });
+    if (isMobileViewport && portalRoute) {
+      navigate(portalRoute, {
+        state: createPortalLaunchState(location, 'expande-video-cta', { showcaseId: showcaseFullscreenCard.formatId }),
+      });
+      return;
+    }
+    window.dispatchEvent(new CustomEvent('gatoencerrado:select-miniverse-format', { detail: { formatId: showcaseFullscreenCard.formatId } }));
+  }, [showcaseFullscreenCard, handleCloseShowcaseFullscreen, isMobileViewport, navigate, location]);
 
   const handleExploreMobileShowcase = useCallback(() => {
     if (!activeShowcaseCard || !showcaseNarrativeCards.length) return;
@@ -2794,59 +2835,84 @@ const MiniverseModal = ({
         {showcaseFullscreenCard ? (
           <motion.div
             key="miniverse-showcase-narrative-video"
-            className="fixed inset-0 z-[176] flex items-center justify-center overflow-y-auto overflow-x-hidden overscroll-none"
+            className="fixed inset-0 z-[176] bg-black"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
+            transition={{ duration: 0.3 }}
           >
-            <motion.div
-              className="absolute inset-0 bg-black/90 backdrop-blur-md"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              onClick={handleCloseShowcaseFullscreen}
-            />
-            <motion.div
-              role="dialog"
-              aria-modal="true"
-              aria-label={`Video narrativo: ${showcaseFullscreenCard.title}`}
-              className={`relative z-10 my-6 w-[calc(100vw-2rem)] overflow-hidden rounded-3xl border border-white/10 bg-slate-950/92 shadow-[0_35px_120px_rgba(0,0,0,0.7)] ${
-                isMobileViewport ? 'max-w-sm' : 'max-w-5xl'
-              }`}
-              initial={{ scale: 0.96, opacity: 0, y: 20 }}
-              animate={{ scale: 1, opacity: 1, y: 0 }}
-              exit={{ scale: 0.96, opacity: 0, y: 20 }}
-              transition={{ type: 'spring', stiffness: 220, damping: 24 }}
+            {/* Video edge-to-edge */}
+            <div
+              className="absolute inset-0 cursor-pointer"
+              onClick={handleFullscreenVideoToggle}
             >
-              <div className="flex flex-col gap-3 border-b border-white/10 px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
-                <div>
-                  <p className="text-xs uppercase tracking-[0.35em] text-slate-400/80">
-                    Video narrativo completo
-                  </p>
-                  <h3 className="font-display text-2xl text-slate-100">{showcaseFullscreenCard.title}</h3>
-                </div>
-                <button
-                  type="button"
-                  onClick={handleCloseShowcaseFullscreen}
-                  className="text-slate-300 hover:text-white transition"
+              {activeShowcaseFullscreenVideoUrl ? (
+                <video
+                  ref={showcaseFullscreenVideoRef}
+                  src={activeShowcaseFullscreenVideoUrl}
+                  className="h-full w-full object-cover"
+                  playsInline
+                  preload="metadata"
+                  onPlay={() => setShowcaseFullscreenPlaying(true)}
+                  onPause={() => setShowcaseFullscreenPlaying(false)}
+                  onEnded={() => { setShowcaseFullscreenPlaying(false); setShowcaseFullscreenEnded(true); }}
+                />
+              ) : (
+                <IncendioVideoPlaceholder />
+              )}
+            </div>
+
+            {/* Play overlay */}
+            <AnimatePresence>
+              {!showcaseFullscreenPlaying && !showcaseFullscreenEnded && activeShowcaseFullscreenVideoUrl && (
+                <motion.div
+                  className="pointer-events-none absolute inset-0 flex items-center justify-center"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 0.2 }}
                 >
-                  Cerrar ✕
-                </button>
-              </div>
-              <div className={`relative w-full bg-black ${isMobileViewport ? 'aspect-[9/16]' : 'aspect-[16/9]'}`}>
-                {activeShowcaseFullscreenVideoUrl ? (
-                  <video
-                    src={activeShowcaseFullscreenVideoUrl}
-                    className="h-full w-full object-contain"
-                    controls
-                    playsInline
-                    preload="metadata"
-                  />
-                ) : (
-                  <IncendioVideoPlaceholder />
-                )}
-              </div>
-            </motion.div>
+                  <div className="rounded-full bg-black/50 p-6 ring-1 ring-white/20 backdrop-blur-sm">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="white" className="h-10 w-10 translate-x-0.5">
+                      <path d="M8 5v14l11-7z" />
+                    </svg>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+
+            {/* CTA — aparece solo al terminar */}
+            <AnimatePresence>
+              {showcaseFullscreenEnded && (
+                <motion.div
+                  className="absolute inset-x-0 bottom-0 flex flex-col items-center gap-3 bg-gradient-to-t from-black/90 via-black/60 to-transparent px-6 pb-14 pt-20"
+                  initial={{ opacity: 0, y: 24 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: 24 }}
+                  transition={{ type: 'spring', stiffness: 200, damping: 22 }}
+                >
+                  <button
+                    type="button"
+                    onClick={handleFullscreenVideoCta}
+                    className="w-full max-w-xs rounded-full border border-purple-500/70 bg-purple-600/20 px-6 py-3.5 text-sm uppercase tracking-[0.25em] text-purple-100 shadow-[0_15px_45px_rgba(67,56,202,0.5)] backdrop-blur-sm transition hover:bg-purple-500/30"
+                  >
+                    {showcaseFullscreenCard.isPrologue ? '¿Y tú, nos dejarás una huella? →' : 'Continuar experiencia →'}
+                  </button>
+                </motion.div>
+              )}
+            </AnimatePresence>
+
+            {/* Close button flotante */}
+            <button
+              type="button"
+              onClick={handleCloseShowcaseFullscreen}
+              className="absolute right-4 top-4 z-10 rounded-full bg-black/40 p-2 text-white/70 backdrop-blur-sm transition hover:bg-black/60 hover:text-white"
+              aria-label="Cerrar"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-5 w-5">
+                <path d="M18 6L6 18M6 6l12 12" />
+              </svg>
+            </button>
           </motion.div>
         ) : null}
       </AnimatePresence>,
