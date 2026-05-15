@@ -59,7 +59,10 @@
       "Bash(sed -n '590,615p' /Users/gatoenigmatico/gatoencerrado-ai/landing/SitioObra/src/pages/PortalArtesanias.jsx)",
       "Bash(xargs -I{} bash -c 'echo \"$\\(basename {}\\):\"; grep -o \"text-[a-z]*-300\\\\b\" {} | sort -u | head -3')",
       "Bash(xargs -I{} bash -c 'grep -o \"text-[a-z]*-[0-9]*\" {} | sort -u | head -10')",
-      "Bash(xargs ls -la)"
+      "Bash(xargs ls -la)",
+      "Bash(sed -n '462,470p' /Users/gatoenigmatico/gatoencerrado-ai/landing/SitioObra/src/pages/PortalCine.jsx)",
+      "Bash(sed -n '483,491p' /Users/gatoenigmatico/gatoencerrado-ai/landing/SitioObra/src/pages/PortalArtesanias.jsx)",
+      "Bash(sed -n '352,360p' /Users/gatoenigmatico/gatoencerrado-ai/landing/SitioObra/src/pages/PortalLiteratura.jsx)"
     ],
     "additionalDirectories": [
       "/Users/gatoenigmatico/Desktop/Postulación EFIARTES",
