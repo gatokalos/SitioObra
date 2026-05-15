@@ -13,7 +13,7 @@ import CollaboratorsPanel from '@/components/portal/CollaboratorsPanel';
 import MiniversoSonoroPreview from '@/components/miniversos/sonoro/MiniversoSonoroPreview';
 import RelatedReadingTooltipButton from '@/components/portal/RelatedReadingTooltipButton';
 import VitranaQuestionReveal from '@/components/portal/VitranaQuestionReveal';
-import ResonanceModal from '@/components/portal/ResonanceModal';
+import ResonanceModal, { LEVEL2_QUESTIONS } from '@/components/portal/ResonanceModal';
 import PulseReactionCard from '@/components/portal/PulseReactionCard';
 import { recordShowcaseLike } from '@/services/showcaseLikeService';
 import { supabase } from '@/lib/supabaseClient';
@@ -190,6 +190,9 @@ const PortalSonoridades = () => {
   const [reactionStatus, setReactionStatus] = useState('idle');
   const [isContributionOpen, setIsContributionOpen] = useState(false);
   const [isResonanceOpen, setIsResonanceOpen] = useState(false);
+  const [l1Done, setL1Done] = useState(() => { try { return Boolean(JSON.parse(localStorage.getItem('gatoencerrado:resonance:sonoridades') || '{}').l1); } catch { return false; } });
+  const [experienceDone, setExperienceDone] = useState(() => { try { return Boolean(JSON.parse(localStorage.getItem('gatoencerrado:resonance:sonoridades') || '{}').experience_ts); } catch { return false; } });
+  const refreshL1 = useCallback(() => { try { const s = JSON.parse(localStorage.getItem('gatoencerrado:resonance:sonoridades') || '{}'); setL1Done(Boolean(s.l1)); setExperienceDone(Boolean(s.experience_ts)); } catch { /* ignore */ } }, []);
   const location = useLocation();
   useEffect(() => {
     if (location.state?.portalLaunchSource !== 'video-narrative-cta') return;
@@ -363,16 +366,23 @@ const PortalSonoridades = () => {
               </div>
 
               <div className="flex flex-col gap-5">
-                <VitranaQuestionReveal question={vitranaQuestion} onAnswer={() => setIsResonanceOpen(true)} />
+                <VitranaQuestionReveal
+                  question={l1Done ? (LEVEL2_QUESTIONS['sonoridades']?.question ?? vitranaQuestion) : vitranaQuestion}
+                  buttonLabel={l1Done ? 'Tu progreso →' : undefined}
+                  autoReveal={l1Done}
+                  onAnswer={() => setIsResonanceOpen(true)}
+                />
                 <ShowcaseReactionInline status={reactionStatus} onReact={handleSendPulse} />
               </div>
             </div>
             {isResonanceOpen && (
               <ResonanceModal
                 open={isResonanceOpen}
-                onClose={() => setIsResonanceOpen(false)}
+                onClose={() => { setIsResonanceOpen(false); refreshL1(); }}
                 question={vitranaQuestion}
                 portal="sonoridades"
+                onOpenNarrative={handleOpenTrack}
+                narrativeCTALabel="✦ Entrar a la experiencia sonora"
               />
             )}
           </div>
@@ -437,13 +447,15 @@ const PortalSonoridades = () => {
             </div>
           </div>
           <IAInsightCard {...SONORIDADES_IA_PROFILE} compact />
-          <button
-            type="button"
-            onClick={handleOpenTrack}
-            className="w-full rounded-2xl border border-amber-400/40 bg-amber-500/10 px-6 py-4 text-sm font-semibold tracking-wide text-amber-200 shadow-[0_8px_32px_rgba(251,191,36,0.15)] transition hover:bg-amber-500/20 hover:shadow-[0_8px_40px_rgba(251,191,36,0.25)]"
-          >
-            ✦ Entrar a la experiencia sonora
-          </button>
+          {experienceDone && (
+            <button
+              type="button"
+              onClick={handleOpenTrack}
+              className="w-full rounded-2xl border border-amber-400/40 bg-amber-500/10 px-6 py-4 text-sm font-semibold tracking-wide text-amber-200 shadow-[0_8px_32px_rgba(251,191,36,0.15)] transition hover:bg-amber-500/20 hover:shadow-[0_8px_40px_rgba(251,191,36,0.25)]"
+            >
+              ✦ Entrar a la experiencia sonora
+            </button>
+          )}
         </div>
 
         {showLoginOverlay ? <LoginOverlay onClose={handleCloseLogin} /> : null}

@@ -25,7 +25,7 @@ import ObraConversationControls from '@/components/miniversos/obra/ObraConversat
 import ObraQuestionList from '@/components/miniversos/obra/ObraQuestionList';
 import RelatedReadingTooltipButton from '@/components/portal/RelatedReadingTooltipButton';
 import VitranaQuestionReveal from '@/components/portal/VitranaQuestionReveal';
-import ResonanceModal from '@/components/portal/ResonanceModal';
+import ResonanceModal, { LEVEL2_QUESTIONS } from '@/components/portal/ResonanceModal';
 import PulseReactionCard from '@/components/portal/PulseReactionCard';
 import { recordShowcaseLike } from '@/services/showcaseLikeService';
 import { supabase } from '@/lib/supabaseClient';
@@ -438,6 +438,9 @@ const PortalVoz = () => {
   const [reactionStatus, setReactionStatus] = useState('idle');
   const [isContributionOpen, setIsContributionOpen] = useState(false);
   const [isResonanceOpen, setIsResonanceOpen] = useState(false);
+  const [l1Done, setL1Done] = useState(() => { try { return Boolean(JSON.parse(localStorage.getItem('gatoencerrado:resonance:obra') || '{}').l1); } catch { return false; } });
+  const [experienceDone, setExperienceDone] = useState(() => { try { return Boolean(JSON.parse(localStorage.getItem('gatoencerrado:resonance:obra') || '{}').experience_ts); } catch { return false; } });
+  const refreshL1 = useCallback(() => { try { const s = JSON.parse(localStorage.getItem('gatoencerrado:resonance:obra') || '{}'); setL1Done(Boolean(s.l1)); setExperienceDone(Boolean(s.experience_ts)); } catch { /* ignore */ } }, []);
   const [isNarrativeExperienceOpen, setIsNarrativeExperienceOpen] = useState(false);
   const [openCollaboratorId, setOpenCollaboratorId] = useState(null);
   const navigate = useNavigate();
@@ -1025,7 +1028,12 @@ const PortalVoz = () => {
               </div>
 
               <div className="flex flex-col gap-5">
-                <VitranaQuestionReveal question={vitranaQuestion} onAnswer={() => setIsResonanceOpen(true)} />
+                <VitranaQuestionReveal
+                  question={l1Done ? (LEVEL2_QUESTIONS['obra']?.question ?? vitranaQuestion) : vitranaQuestion}
+                  buttonLabel={l1Done ? 'Tu progreso →' : undefined}
+                  autoReveal={l1Done}
+                  onAnswer={() => setIsResonanceOpen(true)}
+                />
                 <ShowcaseReactionInline
                   description="Estamos explorando las emociones contemporáneas a través de preguntas y experiencias narrativas."
                   buttonLabel="¿no te salen las palabras? ¡déjanos un pulso!"
@@ -1037,9 +1045,11 @@ const PortalVoz = () => {
             {isResonanceOpen && (
               <ResonanceModal
                 open={isResonanceOpen}
-                onClose={() => setIsResonanceOpen(false)}
+                onClose={() => { setIsResonanceOpen(false); refreshL1(); }}
                 question={vitranaQuestion}
                 portal="obra"
+                onOpenNarrative={() => setIsNarrativeExperienceOpen(true)}
+                narrativeCTALabel="Abrir experiencia narrativa"
               />
             )}
           </div>
@@ -1507,13 +1517,15 @@ const PortalVoz = () => {
             </div>
           </div>
           <IAInsightCard {...SCENE_PORTAL_IA_PROFILE} compact />
-          <button
-            type="button"
-            onClick={() => setIsNarrativeExperienceOpen(true)}
-            className="w-full rounded-2xl border border-amber-400/40 bg-amber-500/10 px-6 py-4 text-sm font-semibold tracking-wide text-amber-200 shadow-[0_8px_32px_rgba(251,191,36,0.15)] transition hover:bg-amber-500/20 hover:shadow-[0_8px_40px_rgba(251,191,36,0.25)]"
-          >
-            Abrir experiencia narrativa
-          </button>
+          {experienceDone && (
+            <button
+              type="button"
+              onClick={() => setIsNarrativeExperienceOpen(true)}
+              className="w-full rounded-2xl border border-amber-400/40 bg-amber-500/10 px-6 py-4 text-sm font-semibold tracking-wide text-amber-200 shadow-[0_8px_32px_rgba(251,191,36,0.15)] transition hover:bg-amber-500/20 hover:shadow-[0_8px_40px_rgba(251,191,36,0.25)]"
+            >
+              Abrir experiencia narrativa
+            </button>
+          )}
         </div>
 
         {showLoginOverlay ? <LoginOverlay onClose={handleCloseLogin} /> : null}

@@ -12,7 +12,7 @@ import IAInsightCard from '@/components/IAInsightCard';
 import CollaboratorsPanel from '@/components/portal/CollaboratorsPanel';
 import RelatedReadingTooltipButton from '@/components/portal/RelatedReadingTooltipButton';
 import VitranaQuestionReveal from '@/components/portal/VitranaQuestionReveal';
-import ResonanceModal from '@/components/portal/ResonanceModal';
+import ResonanceModal, { LEVEL2_QUESTIONS } from '@/components/portal/ResonanceModal';
 import PulseReactionCard from '@/components/portal/PulseReactionCard';
 import LiteraturaAppOverlay from '@/components/novela/LiteraturaAppOverlay';
 import { recordShowcaseLike } from '@/services/showcaseLikeService';
@@ -154,6 +154,9 @@ const PortalLiteratura = () => {
   const [reactionStatus, setReactionStatus] = useState('idle');
   const [isContributionOpen, setIsContributionOpen] = useState(false);
   const [isResonanceOpen, setIsResonanceOpen] = useState(false);
+  const [l1Done, setL1Done] = useState(() => { try { return Boolean(JSON.parse(localStorage.getItem('gatoencerrado:resonance:literatura') || '{}').l1); } catch { return false; } });
+  const [experienceDone, setExperienceDone] = useState(() => { try { return Boolean(JSON.parse(localStorage.getItem('gatoencerrado:resonance:literatura') || '{}').experience_ts); } catch { return false; } });
+  const refreshL1 = useCallback(() => { try { const s = JSON.parse(localStorage.getItem('gatoencerrado:resonance:literatura') || '{}'); setL1Done(Boolean(s.l1)); setExperienceDone(Boolean(s.experience_ts)); } catch { /* ignore */ } }, []);
   const [showLiteraturaApp, setShowLiteraturaApp] = useState(false);
   const location = useLocation();
   useEffect(() => {
@@ -343,7 +346,12 @@ const PortalLiteratura = () => {
               </div>
 
               <div className="flex flex-col gap-5">
-                <VitranaQuestionReveal question={vitranaQuestion} onAnswer={() => setIsResonanceOpen(true)} />
+                <VitranaQuestionReveal
+                  question={l1Done ? (LEVEL2_QUESTIONS['literatura']?.question ?? vitranaQuestion) : vitranaQuestion}
+                  buttonLabel={l1Done ? 'Tu progreso →' : undefined}
+                  autoReveal={l1Done}
+                  onAnswer={() => setIsResonanceOpen(true)}
+                />
     
                 <ShowcaseReactionInline status={reactionStatus} onReact={handleSendPulse} />
               </div>
@@ -351,9 +359,11 @@ const PortalLiteratura = () => {
             {isResonanceOpen && (
               <ResonanceModal
                 open={isResonanceOpen}
-                onClose={() => setIsResonanceOpen(false)}
+                onClose={() => { setIsResonanceOpen(false); refreshL1(); }}
                 question={vitranaQuestion}
                 portal="literatura"
+                onOpenNarrative={() => setShowLiteraturaApp(true)}
+                narrativeCTALabel="📖 Abrir separador inteligente"
               />
             )}
           </div>
@@ -405,13 +415,15 @@ const PortalLiteratura = () => {
             </div>
           </div>
           <IAInsightCard {...LITERATURA_IA_PROFILE} compact />
-          <button
-            type="button"
-            onClick={() => setShowLiteraturaApp(true)}
-            className="w-full rounded-2xl border border-amber-400/40 bg-amber-500/10 px-6 py-4 text-sm font-semibold tracking-wide text-amber-200 shadow-[0_8px_32px_rgba(251,191,36,0.15)] transition hover:bg-amber-500/20 hover:shadow-[0_8px_40px_rgba(251,191,36,0.25)]"
-          >
-            📖 Abrir separador inteligente
-          </button>
+          {experienceDone && (
+            <button
+              type="button"
+              onClick={() => setShowLiteraturaApp(true)}
+              className="w-full rounded-2xl border border-amber-400/40 bg-amber-500/10 px-6 py-4 text-sm font-semibold tracking-wide text-amber-200 shadow-[0_8px_32px_rgba(251,191,36,0.15)] transition hover:bg-amber-500/20 hover:shadow-[0_8px_40px_rgba(251,191,36,0.25)]"
+            >
+              📖 Abrir separador inteligente
+            </button>
+          )}
         </div>
 
         {showLoginOverlay ? <LoginOverlay onClose={handleCloseLogin} /> : null}

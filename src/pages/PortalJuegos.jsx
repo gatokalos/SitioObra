@@ -10,7 +10,7 @@ import PortalHeaderActions from '@/components/portal/PortalHeaderActions';
 import IAInsightCard from '@/components/IAInsightCard';
 import RelatedReadingTooltipButton from '@/components/portal/RelatedReadingTooltipButton';
 import VitranaQuestionReveal from '@/components/portal/VitranaQuestionReveal';
-import ResonanceModal from '@/components/portal/ResonanceModal';
+import ResonanceModal, { LEVEL2_QUESTIONS } from '@/components/portal/ResonanceModal';
 import PulseReactionCard from '@/components/portal/PulseReactionCard';
 import { recordShowcaseLike } from '@/services/showcaseLikeService';
 import { supabase } from '@/lib/supabaseClient';
@@ -109,6 +109,9 @@ const PortalJuegos = () => {
   const [reactionStatus, setReactionStatus] = useState('idle');
   const [isContributionOpen, setIsContributionOpen] = useState(false);
   const [isResonanceOpen, setIsResonanceOpen] = useState(false);
+  const [l1Done, setL1Done] = useState(() => { try { return Boolean(JSON.parse(localStorage.getItem('gatoencerrado:resonance:juegos') || '{}').l1); } catch { return false; } });
+  const [experienceDone, setExperienceDone] = useState(() => { try { return Boolean(JSON.parse(localStorage.getItem('gatoencerrado:resonance:juegos') || '{}').experience_ts); } catch { return false; } });
+  const refreshL1 = useCallback(() => { try { const s = JSON.parse(localStorage.getItem('gatoencerrado:resonance:juegos') || '{}'); setL1Done(Boolean(s.l1)); setExperienceDone(Boolean(s.experience_ts)); } catch { /* ignore */ } }, []);
   const location = useLocation();
   useEffect(() => {
     if (location.state?.portalLaunchSource !== 'video-narrative-cta') return;
@@ -238,16 +241,23 @@ const PortalJuegos = () => {
               </div>
 
               <div className="flex flex-col gap-5">
-                <VitranaQuestionReveal question={vitranaQuestion} onAnswer={() => setIsResonanceOpen(true)} />
+                <VitranaQuestionReveal
+                  question={l1Done ? (LEVEL2_QUESTIONS['juegos']?.question ?? vitranaQuestion) : vitranaQuestion}
+                  buttonLabel={l1Done ? 'Tu progreso →' : undefined}
+                  autoReveal={l1Done}
+                  onAnswer={() => setIsResonanceOpen(true)}
+                />
                 <ShowcaseReactionInline status={reactionStatus} onReact={handleSendPulse} />
               </div>
             </div>
             {isResonanceOpen && (
               <ResonanceModal
                 open={isResonanceOpen}
-                onClose={() => setIsResonanceOpen(false)}
+                onClose={() => { setIsResonanceOpen(false); refreshL1(); }}
                 question={vitranaQuestion}
                 portal="juegos"
+                onOpenNarrative={embeddedAppUrl ? () => window.open(embeddedAppUrl, '_blank') : undefined}
+                narrativeCTALabel={JUEGOS_DEFINITION.liveExperience?.ctaLabel || '✦ Abrir app en pestaña nueva'}
               />
             )}
           </div>
@@ -292,7 +302,7 @@ const PortalJuegos = () => {
             </div>
           </div>
           {JUEGOS_DEFINITION.iaProfile ? <IAInsightCard {...JUEGOS_DEFINITION.iaProfile} compact /> : null}
-          {embeddedAppUrl ? (
+          {experienceDone && embeddedAppUrl ? (
             <a
               href={embeddedAppUrl}
               target="_blank"
