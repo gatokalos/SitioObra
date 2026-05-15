@@ -18,6 +18,19 @@ const PORTAL_GRADIENT = {
   oraculo:      'from-indigo-400 via-violet-500 to-purple-500',
 };
 
+const BASE = 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Merch/posters';
+const PORTAL_POSTER = {
+  obra:         `${BASE}/poster_obra.png`,
+  artesanias:   `${BASE}/poster_artesanias.png`,
+  literatura:   `${BASE}/poster_literatura.png`,
+  grafico:      `${BASE}/poster_graficos.png`,
+  cine:         `${BASE}/cine.png`,
+  sonoridades:  `${BASE}/poster_sonoridades.png`,
+  movimiento:   `${BASE}/poster_movimiento.png`,
+  juegos:       `${BASE}/poster_juegos.png`,
+  oraculo:      `${BASE}/poster_oraculo.png`,
+};
+
 const PORTAL_BLOOM = {
   obra:         ['rgba(192,132,252,0.65)', 'rgba(244,114,182,0.4)'],
   literatura:   ['rgba(52,211,153,0.65)',  'rgba(34,211,238,0.4)'],
@@ -67,6 +80,7 @@ const ResonanceModal = ({ open, onClose, question, portal }) => {
 
   const gradient = PORTAL_GRADIENT[portal] ?? 'from-purple-400 via-fuchsia-500 to-rose-500';
   const bloom = PORTAL_BLOOM[portal] ?? PORTAL_BLOOM.obra;
+  const poster = PORTAL_POSTER[portal] ?? PORTAL_POSTER.obra;
 
   useEffect(() => {
     if (!open) return;
@@ -122,18 +136,23 @@ const ResonanceModal = ({ open, onClose, question, portal }) => {
           exit={{ opacity: 0 }}
           transition={{ duration: 0.3 }}
         >
-          {/* Fondo bloom con identidad del miniverso */}
+          {/* Poster de la vitrana */}
           <div
             aria-hidden="true"
             className="absolute inset-0"
             style={{
-              background: `radial-gradient(ellipse 160% 55% at 50% -5%, ${bloom[0]}, ${bloom[1]} 45%, transparent 70%), linear-gradient(180deg, rgba(7,4,13,0.15) 0%, rgba(7,4,11,0.94) 52%, rgb(5,3,9) 100%)`,
+              backgroundImage: `url(${poster})`,
+              backgroundPosition: 'center top',
+              backgroundSize: 'cover',
             }}
           />
+          {/* Overlay: desvanece el poster hacia abajo + bloom de color */}
           <div
             aria-hidden="true"
-            className="absolute inset-0 backdrop-blur-[80px]"
-            style={{ background: 'rgba(5,3,9,0.45)' }}
+            className="absolute inset-0"
+            style={{
+              background: `radial-gradient(ellipse 160% 45% at 50% -5%, ${bloom[0]}, ${bloom[1]} 40%, transparent 65%), linear-gradient(180deg, rgba(7,4,13,0.25) 0%, rgba(7,4,11,0.88) 45%, rgb(5,3,9) 100%)`,
+            }}
           />
 
           {/* Confetti */}
