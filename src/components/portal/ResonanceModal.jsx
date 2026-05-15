@@ -60,13 +60,14 @@ export const LEVEL2_QUESTIONS = {
     ],
   },
   literatura: {
-    question: '¿Qué frase te quedaste cargando — o qué preferiste no retener?',
+    question: '¿Qué esperas encontrar cuando una historia se abre contigo?',
     options: [
-      'una frase sobre pérdida',
-      'algo que me incomodó',
-      'algo que sentí demasiado cercano',
-      'una imagen que regresó después',
-      'no se me quedó nada',
+      'una herida conocida',
+      'una pregunta incómoda',
+      'una forma de compañía',
+      'algo que no sabía nombrar',
+      'otra forma de mirar',
+      'tal vez nada',
     ],
   },
   artesanias: {
