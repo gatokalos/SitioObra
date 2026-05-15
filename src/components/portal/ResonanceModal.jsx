@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Eye, Flame, PawPrint, Lock, ShieldCheck, Check } from 'lucide-react';
+import { Eye, Flame, PawPrint, Lock, ShieldCheck, Check, ChevronDown } from 'lucide-react';
 import { supabase } from '@/lib/supabaseClient';
 import { ensureAnonId } from '@/lib/identity';
 import { useAuth } from '@/contexts/SupabaseAuthContext';
@@ -208,6 +208,7 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, narr
   const [l1Done, setL1Done] = useState(() => !!lsRead(portal).l1);
   const [l2Selection, setL2Selection] = useState(() => lsRead(portal).l2_option ?? null);
   const [l2Submitting, setL2Submitting] = useState(false);
+  const [l2Open, setL2Open] = useState(false);
   // checking = true mientras consultamos Supabase para respuestas anteriores al deploy de localStorage
   const [checking, setChecking] = useState(() => !lsRead(portal).l1);
 
@@ -404,144 +405,148 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, narr
                     </div>
 
                     {/* Niveles */}
-                    <div className="relative flex flex-col gap-0">
-                      <div
-                        aria-hidden="true"
-                        className="absolute left-[1.6rem] top-10 h-[calc(100%-5rem)] w-px border-l-2 border-dashed border-white/15"
-                      />
-
+                    <div className="flex flex-col gap-3">
                       {LEVELS.map((level, i) => {
                         const Icon = level.icon;
-
-                        const isL1 = i === 0; // siempre completado al estar en dashboard
+                        const isL1 = i === 0;
                         const isL2 = i === 1;
                         const isL3 = i === 2;
-
                         const isCompleted = isL1 || (isL2 && !!l2Selection);
                         const isAvailable = isL2 && !l2Selection;
+                        const isOpen = isCompleted || (isAvailable && l2Open);
+                        const canToggle = isAvailable;
 
                         return (
                           <motion.div
                             key={level.num}
-                            className="flex items-start gap-4 py-3"
+                            className={`rounded-2xl border transition-colors ${
+                              isCompleted
+                                ? 'border-white/20 bg-white/[0.08]'
+                                : isAvailable
+                                  ? 'border-white/[0.1] bg-white/[0.03]'
+                                  : 'border-white/[0.05] bg-white/[0.01]'
+                            }`}
                             initial={{ opacity: 0, x: -12 }}
                             animate={{ opacity: 1, x: 0 }}
                             transition={{ delay: 0.15 + i * 0.1, duration: 0.35 }}
                           >
-                            {/* Número */}
-                            <div className={`relative z-10 flex h-[3.25rem] w-[3.25rem] shrink-0 items-center justify-center rounded-full text-lg font-bold ${
-                              isCompleted
-                                ? `bg-gradient-to-br ${gradient} text-white shadow-[0_0_18px_rgba(0,0,0,0.4)]`
-                                : isAvailable
-                                  ? `border-2 border-white/30 bg-white/5 text-white/70`
-                                  : 'border-2 border-white/20 bg-black/40 text-white/40'
-                            }`}>
-                              {level.num}
-                            </div>
-
-                            {/* Card */}
-                            <div className={`flex flex-1 flex-col gap-2.5 rounded-2xl border px-4 py-3.5 ${
-                              isCompleted
-                                ? 'border-white/15 bg-white/5'
-                                : isAvailable
-                                  ? 'border-white/12 bg-white/[0.04]'
-                                  : 'border-white/8 bg-white/[0.03]'
-                            }`}>
-                              {/* Fila: icono + texto + badge */}
-                              <div className="flex items-start gap-3">
-                                <div className={`mt-0.5 shrink-0 rounded-xl p-2 ${
-                                  isCompleted
-                                    ? `bg-gradient-to-br ${gradient} bg-opacity-20`
-                                    : isAvailable
-                                      ? 'bg-white/8'
-                                      : 'bg-white/5'
-                                }`}>
-                                  <Icon size={18} className={isCompleted || isAvailable ? 'text-white' : 'text-white/30'} />
-                                </div>
-
-                                <div className="min-w-0 flex-1">
-                                  <p className="text-[0.6rem] uppercase tracking-[0.3em] text-slate-400/70">
-                                    {level.eyebrow}
-                                  </p>
-                                  <p className={`font-display text-base leading-tight ${isCompleted || isAvailable ? 'text-white' : 'text-white/50'}`}>
-                                    {level.title}
-                                  </p>
-                                  {isL1 && (
-                                    <p className="mt-0.5 text-xs leading-relaxed text-slate-400/60">
-                                      {level.desc}
-                                    </p>
-                                  )}
-                                  {isL3 && (
-                                    <p className="mt-0.5 text-xs leading-relaxed text-slate-400/60">
-                                      {level.pendingDesc}
-                                    </p>
-                                  )}
-                                </div>
-
-                                {/* Badge de estado */}
-                                <div className="shrink-0">
-                                  {isCompleted ? (
-                                    <span className="rounded-full border border-emerald-400/40 bg-emerald-500/10 px-2.5 py-1 text-[0.58rem] uppercase tracking-[0.25em] text-emerald-300">
-                                      Completado
-                                    </span>
-                                  ) : isAvailable ? (
-                                    <span className="rounded-full border border-sky-400/30 bg-sky-500/10 px-2.5 py-1 text-[0.58rem] uppercase tracking-[0.25em] text-sky-300/80">
-                                      Disponible
-                                    </span>
-                                  ) : (
-                                    <span className="rounded-full border border-white/10 bg-white/5 p-1.5 text-white/25">
-                                      <Lock size={12} />
-                                    </span>
-                                  )}
-                                </div>
+                            {/* Fila cabecera — siempre visible */}
+                            <div
+                              role={canToggle ? 'button' : undefined}
+                              tabIndex={canToggle ? 0 : undefined}
+                              className={`flex items-center gap-3 px-4 py-3 ${canToggle ? 'cursor-pointer select-none' : ''}`}
+                              onClick={canToggle ? () => setL2Open((v) => !v) : undefined}
+                              onKeyDown={canToggle ? (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setL2Open((v) => !v); } } : undefined}
+                            >
+                              {/* Ícono circular */}
+                              <div className={`shrink-0 flex h-8 w-8 items-center justify-center rounded-full ${
+                                isCompleted
+                                  ? `bg-gradient-to-br ${gradient} shadow-[0_0_12px_rgba(0,0,0,0.3)]`
+                                  : isAvailable
+                                    ? 'border border-white/25 bg-white/[0.06]'
+                                    : 'border border-white/8 bg-black/25'
+                              }`}>
+                                {isCompleted || isAvailable
+                                  ? <Icon size={15} className="text-white" />
+                                  : <Lock size={13} className="text-white/20" />
+                                }
                               </div>
 
-                              {/* Nivel 2: pregunta + opciones */}
-                              {isL2 && l2q && !l2Selection && (
-                                <div className="space-y-2 pt-1">
-                                  <p className="text-xs leading-relaxed text-slate-300/80">
-                                    {l2q.question}
-                                  </p>
-                                  <div className="flex flex-wrap gap-1.5">
-                                    {l2q.options.map((opt) => (
-                                      <button
-                                        key={opt}
-                                        type="button"
-                                        onClick={() => handleLevel2Select(opt)}
-                                        disabled={l2Submitting}
-                                        className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs text-slate-300/75 transition hover:border-white/25 hover:bg-white/10 hover:text-white disabled:opacity-40"
-                                      >
-                                        {opt}
-                                      </button>
-                                    ))}
-                                  </div>
-                                </div>
-                              )}
+                              {/* Texto */}
+                              <div className="min-w-0 flex-1">
+                                <p className={`truncate text-[0.57rem] uppercase tracking-[0.1em] leading-none mb-0.5 ${
+                                  isCompleted ? 'text-slate-400/75' : 'text-slate-500/45'
+                                }`}>
+                                  {level.eyebrow}
+                                </p>
+                                <p className={`font-display text-sm leading-tight ${
+                                  isCompleted || isAvailable ? 'text-white' : 'text-white/30'
+                                }`}>
+                                  {level.title}
+                                </p>
+                              </div>
 
-                              {/* Nivel 2: opción seleccionada */}
-                              {isL2 && l2Selection && (
-                                <div className="flex items-center gap-2 pt-0.5 text-xs text-slate-400/70">
-                                  <Check size={12} className="shrink-0 text-emerald-400/70" />
-                                  <span className="italic">{l2Selection}</span>
-                                  {/* TODO: textarea con pregunta de IA */}
-                                </div>
-                              )}
-
-                              {/* Nivel 2: botón ámbar de experiencia — recompensa por contestar Nivel 1 */}
-                              {isL2 && onOpenNarrative && (
-                                <motion.button
-                                  type="button"
-                                  onClick={handleOpenNarrativeExperience}
-                                  className="mt-1 w-full rounded-2xl border border-amber-400/40 bg-amber-500/10 px-5 py-3 text-sm font-semibold tracking-wide text-amber-200 transition hover:bg-amber-500/20"
-                                  initial={{ opacity: 0, scale: 0.92, y: 8 }}
-                                  animate={{ opacity: 1, scale: 1, y: 0 }}
-                                  transition={{ type: 'spring', stiffness: 220, damping: 20, delay: 0.45 }}
-                                  whileHover={{ boxShadow: '0 8px_40px_rgba(251,191,36,0.25)' }}
-                                >
-                                  {narrativeCTALabel ?? 'Abrir experiencia narrativa'}
-                                </motion.button>
-                              )}
+                              {/* Badge + chevron */}
+                              <div className="shrink-0 flex items-center gap-1.5">
+                                {isCompleted ? (
+                                  <span className="inline-flex items-center gap-1 rounded-full border border-emerald-400/35 bg-emerald-500/10 px-1.5 py-0.5 text-[0.52rem] uppercase tracking-[0.1em] text-emerald-300 leading-none">
+                                    <Check size={8} className="shrink-0" />
+                                    Listo
+                                  </span>
+                                ) : isAvailable ? (
+                                  <>
+                                    <span className="rounded-full border border-sky-400/30 bg-sky-500/10 px-1.5 py-0.5 text-[0.52rem] uppercase tracking-[0.1em] text-sky-300/80 leading-none">
+                                      Activo
+                                    </span>
+                                    <ChevronDown
+                                      size={13}
+                                      className={`text-white/30 transition-transform duration-200 ${l2Open ? 'rotate-180' : ''}`}
+                                    />
+                                  </>
+                                ) : (
+                                  <Lock size={11} className="text-white/[0.18]" />
+                                )}
+                              </div>
                             </div>
+
+                            {/* Cuerpo colapsable */}
+                            <AnimatePresence initial={false}>
+                              {isOpen && (
+                                <motion.div
+                                  key="body"
+                                  initial={{ height: 0, opacity: 0 }}
+                                  animate={{ height: 'auto', opacity: 1 }}
+                                  exit={{ height: 0, opacity: 0 }}
+                                  transition={{ duration: 0.25, ease: 'easeInOut' }}
+                                  className="overflow-hidden"
+                                >
+                                  <div className="px-4 pb-4 space-y-3">
+                                    {isL1 && (
+                                      <p className="text-xs leading-relaxed text-slate-400/55">{level.desc}</p>
+                                    )}
+                                    {isL3 && (
+                                      <p className="text-xs leading-relaxed text-slate-400/55">{level.pendingDesc}</p>
+                                    )}
+                                    {isL2 && l2q && !l2Selection && (
+                                      <div className="space-y-2">
+                                        <p className="text-xs leading-relaxed text-slate-300/80">{l2q.question}</p>
+                                        <div className="flex flex-wrap gap-1.5">
+                                          {l2q.options.map((opt) => (
+                                            <button
+                                              key={opt}
+                                              type="button"
+                                              onClick={() => handleLevel2Select(opt)}
+                                              disabled={l2Submitting}
+                                              className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs text-slate-300/75 transition hover:border-white/25 hover:bg-white/10 hover:text-white disabled:opacity-40"
+                                            >
+                                              {opt}
+                                            </button>
+                                          ))}
+                                        </div>
+                                      </div>
+                                    )}
+                                    {isL2 && l2Selection && (
+                                      <div className="flex items-center gap-2 text-xs text-slate-400/70">
+                                        <Check size={12} className="shrink-0 text-emerald-400/70" />
+                                        <span className="italic">{l2Selection}</span>
+                                      </div>
+                                    )}
+                                    {isL2 && l2Selection && onOpenNarrative && (
+                                      <motion.button
+                                        type="button"
+                                        onClick={handleOpenNarrativeExperience}
+                                        className="w-full rounded-2xl border border-amber-400/40 bg-amber-500/10 px-5 py-3 text-sm font-semibold tracking-wide text-amber-200 transition hover:bg-amber-500/20"
+                                        initial={{ opacity: 0, scale: 0.92, y: 8 }}
+                                        animate={{ opacity: 1, scale: 1, y: 0 }}
+                                        transition={{ type: 'spring', stiffness: 220, damping: 20, delay: 0.2 }}
+                                      >
+                                        {narrativeCTALabel ?? 'Abrir experiencia narrativa'}
+                                      </motion.button>
+                                    )}
+                                  </div>
+                                </motion.div>
+                              )}
+                            </AnimatePresence>
                           </motion.div>
                         );
                       })}
