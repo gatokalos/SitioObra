@@ -130,28 +130,18 @@ const ResonanceModal = ({ open, onClose, question, portal }) => {
           role="dialog"
           aria-modal="false"
           aria-labelledby="resonance-modal-title"
-          className="absolute inset-0 z-50 rounded-[2.5rem] overflow-hidden"
+          className="absolute inset-0 z-50 overflow-hidden rounded-[2.5rem] flex flex-col lg:flex-row"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           transition={{ duration: 0.3 }}
         >
-          {/* Poster de la vitrana */}
+          {/* Bloom background — fills the entire modal */}
           <div
             aria-hidden="true"
             className="absolute inset-0"
             style={{
-              backgroundImage: `url(${poster})`,
-              backgroundPosition: 'center top',
-              backgroundSize: 'cover',
-            }}
-          />
-          {/* Overlay: desvanece el poster hacia abajo + bloom de color */}
-          <div
-            aria-hidden="true"
-            className="absolute inset-0"
-            style={{
-              background: `radial-gradient(ellipse 160% 45% at 50% -5%, ${bloom[0]}, ${bloom[1]} 40%, transparent 65%), linear-gradient(180deg, rgba(7,4,13,0.25) 0%, rgba(7,4,11,0.88) 45%, rgb(5,3,9) 100%)`,
+              background: `radial-gradient(ellipse 160% 45% at 50% -5%, ${bloom[0]}, ${bloom[1]} 40%, transparent 65%), rgb(5,3,9)`,
             }}
           />
 
@@ -160,7 +150,7 @@ const ResonanceModal = ({ open, onClose, question, portal }) => {
             <ConfettiBurst key={burst.id} x={burst.x} y={burst.y} />
           ))}
 
-          {/* Botón cerrar */}
+          {/* Close button */}
           <button
             type="button"
             onClick={handleClose}
@@ -170,194 +160,272 @@ const ResonanceModal = ({ open, onClose, question, portal }) => {
             ✕
           </button>
 
-          <div className="relative z-10 h-full overflow-y-auto">
-            {status === 'success' ? (
-              /* ── Dashboard de viaje ── */
-              <motion.div
-                className="flex flex-col gap-5 px-5 pb-8 pt-10 sm:px-6 lg:px-8 lg:pt-12"
-                initial={{ opacity: 0, y: 16 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.4 }}
-              >
-                {/* Header */}
-                <div className="space-y-1.5">
-                  <div className="inline-flex rounded-full border border-white/10 bg-white/5 px-3 py-1 text-[0.62rem] uppercase tracking-[0.32em] text-white/70 backdrop-blur-md">
-                    Laboratorio
-                  </div>
-                  <h2 className="font-display text-3xl text-white lg:text-4xl">
-                    Tu viaje personal
-                  </h2>
-                  <p className="text-sm leading-relaxed text-slate-300/75">
-                    Cada etapa aporta datos valiosos para comprender cómo habitamos las emociones delante de otros.
-                  </p>
-                </div>
+          {/* ── LEFT COLUMN: form / dashboard ── */}
+          <div className="relative min-w-0 flex-1 overflow-hidden">
+            {/* Mobile-only: poster as background with fade overlay */}
+            <div
+              aria-hidden="true"
+              className="absolute inset-0 lg:hidden"
+              style={{
+                backgroundImage: `url(${poster})`,
+                backgroundPosition: 'center top',
+                backgroundSize: 'cover',
+              }}
+            />
+            <div
+              aria-hidden="true"
+              className="absolute inset-0 lg:hidden"
+              style={{
+                background:
+                  'linear-gradient(180deg, rgba(7,4,13,0.25) 0%, rgba(7,4,11,0.88) 45%, rgb(5,3,9) 100%)',
+              }}
+            />
 
-                {/* Niveles */}
-                <div className="relative flex flex-col gap-0">
-                  {/* Línea punteada conectora */}
-                  <div
-                    aria-hidden="true"
-                    className="absolute left-[1.6rem] top-10 h-[calc(100%-5rem)] w-px border-l-2 border-dashed border-white/15"
-                  />
-
-                  {LEVELS.map((level, i) => {
-                    const Icon = level.icon;
-                    const isCompleted = i === 0;
-                    const isLocked = i === 2;
-
-                    return (
-                      <motion.div
-                        key={level.num}
-                        className="flex items-start gap-4 py-3"
-                        initial={{ opacity: 0, x: -12 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        transition={{ delay: 0.15 + i * 0.1, duration: 0.35 }}
-                      >
-                        {/* Número */}
-                        <div className={`relative z-10 flex h-[3.25rem] w-[3.25rem] shrink-0 items-center justify-center rounded-full text-lg font-bold ${
-                          isCompleted
-                            ? `bg-gradient-to-br ${gradient} text-white shadow-[0_0_18px_rgba(0,0,0,0.4)]`
-                            : 'border-2 border-white/20 bg-black/40 text-white/40'
-                        }`}>
-                          {level.num}
-                        </div>
-
-                        {/* Card */}
-                        <div className={`flex flex-1 flex-col gap-2.5 rounded-2xl border px-4 py-3.5 sm:flex-row sm:items-center sm:gap-3 ${
-                          isCompleted ? 'border-white/15 bg-white/5' : 'border-white/8 bg-white/[0.03]'
-                        }`}>
-                          {/* Fila superior: icono + texto */}
-                          <div className="flex items-start gap-3 sm:flex-1 sm:min-w-0">
-                            <div className={`mt-0.5 shrink-0 rounded-xl p-2 ${
-                              isCompleted ? `bg-gradient-to-br ${gradient} bg-opacity-20` : 'bg-white/5'
-                            }`}>
-                              <Icon size={18} className={isCompleted ? 'text-white' : 'text-white/30'} />
-                            </div>
-                            <div className="flex-1 min-w-0">
-                              <p className="text-[0.6rem] uppercase tracking-[0.3em] text-slate-400/70">
-                                {level.eyebrow}
-                              </p>
-                              <p className={`font-display text-base leading-tight ${isCompleted ? 'text-white' : 'text-white/50'}`}>
-                                {level.title}
-                              </p>
-                              <p className="mt-0.5 text-xs leading-relaxed text-slate-400/60">
-                                {isCompleted ? level.desc : level.pendingDesc}
-                              </p>
-                            </div>
-                          </div>
-
-                          {/* Estado — fila propia en mobile, columna en desktop */}
-                          <div className="flex justify-end sm:justify-start sm:shrink-0">
-                            {isCompleted ? (
-                              <span className="rounded-full border border-emerald-400/40 bg-emerald-500/10 px-2.5 py-1 text-[0.58rem] uppercase tracking-[0.25em] text-emerald-300">
-                                Completado
-                              </span>
-                            ) : isLocked ? (
-                              <span className="rounded-full border border-white/10 bg-white/5 p-1.5 text-white/25">
-                                <Lock size={12} />
-                              </span>
-                            ) : (
-                              <span className="rounded-full border border-amber-400/30 bg-amber-500/8 px-2.5 py-1 text-[0.58rem] uppercase tracking-[0.25em] text-amber-300/70">
-                                Pendiente
-                              </span>
-                            )}
-                          </div>
-                        </div>
-                      </motion.div>
-                    );
-                  })}
-                </div>
-
-                {/* Footer */}
-                <div className="flex items-start gap-3 rounded-2xl border border-white/8 bg-white/[0.03] px-4 py-3.5">
-                  <ShieldCheck size={16} className="mt-0.5 shrink-0 text-slate-400/60" />
-                  <p className="text-xs leading-relaxed text-slate-400/60">
-                    Tu información es anónima y se usa solo con fines de investigación.{' '}
-                    <span className="text-purple-300/70">Gracias por ser parte de este experimento colectivo.</span>
-                  </p>
-                </div>
-              </motion.div>
-            ) : (
-              /* ── Formulario ── */
-              <div className="lg:flex lg:flex-col lg:h-full lg:overflow-hidden">
-                <div className="lg:flex-1 lg:flex lg:items-center lg:justify-center lg:px-10 lg:py-6">
-                  <div aria-hidden="true" className="h-32 sm:h-40 lg:hidden" />
-                  {question ? (
-                    <p
-                      className="hidden lg:block font-display text-center leading-snug text-amber-300/90 drop-shadow-[0_0_32px_rgba(251,191,36,0.45)]"
-                      style={{ fontSize: 'clamp(1.5rem, 2.6vw, 2.4rem)' }}
-                    >
-                      {question}
-                    </p>
-                  ) : null}
-                </div>
-
-                <div aria-hidden="true" className="hidden lg:block mx-8 mb-4 h-px bg-gradient-to-r from-transparent via-amber-400/35 to-transparent" />
-
-                <div className="px-5 pb-[max(1.25rem,env(safe-area-inset-bottom))] sm:px-6 sm:pb-5 lg:pb-6 lg:px-8">
-                  <div className="w-full space-y-3">
-                    <div className="space-y-0.5">
+            {/* Scrollable content area */}
+            <div className="relative z-10 h-full overflow-y-auto">
+              <AnimatePresence mode="wait">
+                {status === 'success' ? (
+                  /* ── Journey dashboard ── */
+                  <motion.div
+                    key="dashboard"
+                    className="flex flex-col gap-5 px-5 pb-8 pt-10 sm:px-6 lg:px-8 lg:pt-10"
+                    initial={{ opacity: 0, y: 16 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -8 }}
+                    transition={{ duration: 0.4 }}
+                  >
+                    {/* Header */}
+                    <div className="space-y-1.5">
                       <div className="inline-flex rounded-full border border-white/10 bg-white/5 px-3 py-1 text-[0.62rem] uppercase tracking-[0.32em] text-white/70 backdrop-blur-md">
                         Laboratorio
                       </div>
-                      <h3
-                        id="resonance-modal-title"
-                        className="font-display leading-tight tracking-tight text-white"
-                        style={{ fontSize: 'clamp(1.4rem, 5vw, 2rem)' }}
-                      >
-                        Resonancia colectiva
-                      </h3>
+                      <h2 className="font-display text-3xl text-white lg:text-4xl">
+                        Tu viaje personal
+                      </h2>
+                      <p className="text-sm leading-relaxed text-slate-300/75">
+                        Cada etapa aporta datos valiosos para comprender cómo habitamos las emociones delante de otros.
+                      </p>
                     </div>
 
-                    <form onSubmit={handleSubmit} className="space-y-2.5 lg:grid lg:grid-cols-2 lg:gap-2.5 lg:space-y-0">
-                      <div className="space-y-1">
-                        <label className="text-xs font-medium text-slate-200">Tu nombre</label>
-                        <input
-                          name="nombre"
-                          value={formData.nombre}
-                          onChange={handleChange}
-                          required
-                          className="form-surface w-full px-3 py-2 text-sm"
-                          placeholder="¿Cómo te llamas?"
-                        />
+                    {/* Levels */}
+                    <div className="relative flex flex-col gap-0">
+                      <div
+                        aria-hidden="true"
+                        className="absolute left-[1.6rem] top-10 h-[calc(100%-5rem)] w-px border-l-2 border-dashed border-white/15"
+                      />
+
+                      {LEVELS.map((level, i) => {
+                        const Icon = level.icon;
+                        const isCompleted = i === 0;
+                        const isLocked = i === 2;
+
+                        return (
+                          <motion.div
+                            key={level.num}
+                            className="flex items-start gap-4 py-3"
+                            initial={{ opacity: 0, x: -12 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            transition={{ delay: 0.15 + i * 0.1, duration: 0.35 }}
+                          >
+                            <div
+                              className={`relative z-10 flex h-[3.25rem] w-[3.25rem] shrink-0 items-center justify-center rounded-full text-lg font-bold ${
+                                isCompleted
+                                  ? `bg-gradient-to-br ${gradient} text-white shadow-[0_0_18px_rgba(0,0,0,0.4)]`
+                                  : 'border-2 border-white/20 bg-black/40 text-white/40'
+                              }`}
+                            >
+                              {level.num}
+                            </div>
+
+                            <div
+                              className={`flex flex-1 flex-col gap-2.5 rounded-2xl border px-4 py-3.5 sm:flex-row sm:items-center sm:gap-3 ${
+                                isCompleted
+                                  ? 'border-white/15 bg-white/5'
+                                  : 'border-white/8 bg-white/[0.03]'
+                              }`}
+                            >
+                              <div className="flex min-w-0 items-start gap-3 sm:flex-1">
+                                <div
+                                  className={`mt-0.5 shrink-0 rounded-xl p-2 ${
+                                    isCompleted
+                                      ? `bg-gradient-to-br ${gradient} bg-opacity-20`
+                                      : 'bg-white/5'
+                                  }`}
+                                >
+                                  <Icon
+                                    size={18}
+                                    className={isCompleted ? 'text-white' : 'text-white/30'}
+                                  />
+                                </div>
+                                <div className="min-w-0 flex-1">
+                                  <p className="text-[0.6rem] uppercase tracking-[0.3em] text-slate-400/70">
+                                    {level.eyebrow}
+                                  </p>
+                                  <p
+                                    className={`font-display text-base leading-tight ${
+                                      isCompleted ? 'text-white' : 'text-white/50'
+                                    }`}
+                                  >
+                                    {level.title}
+                                  </p>
+                                  <p className="mt-0.5 text-xs leading-relaxed text-slate-400/60">
+                                    {isCompleted ? level.desc : level.pendingDesc}
+                                  </p>
+                                </div>
+                              </div>
+
+                              <div className="flex justify-end sm:shrink-0 sm:justify-start">
+                                {isCompleted ? (
+                                  <span className="rounded-full border border-emerald-400/40 bg-emerald-500/10 px-2.5 py-1 text-[0.58rem] uppercase tracking-[0.25em] text-emerald-300">
+                                    Completado
+                                  </span>
+                                ) : isLocked ? (
+                                  <span className="rounded-full border border-white/10 bg-white/5 p-1.5 text-white/25">
+                                    <Lock size={12} />
+                                  </span>
+                                ) : (
+                                  <span className="rounded-full border border-amber-400/30 bg-amber-500/8 px-2.5 py-1 text-[0.58rem] uppercase tracking-[0.25em] text-amber-300/70">
+                                    Pendiente
+                                  </span>
+                                )}
+                              </div>
+                            </div>
+                          </motion.div>
+                        );
+                      })}
+                    </div>
+
+                    {/* Privacy footer */}
+                    <div className="flex items-start gap-3 rounded-2xl border border-white/8 bg-white/[0.03] px-4 py-3.5">
+                      <ShieldCheck size={16} className="mt-0.5 shrink-0 text-slate-400/60" />
+                      <p className="text-xs leading-relaxed text-slate-400/60">
+                        Tu información es anónima y se usa solo con fines de investigación.{' '}
+                        <span className="text-purple-300/70">
+                          Gracias por ser parte de este experimento colectivo.
+                        </span>
+                      </p>
+                    </div>
+                  </motion.div>
+                ) : (
+                  /* ── Form ── */
+                  <motion.div
+                    key="form"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.25 }}
+                  >
+                    {/* Mobile spacer — poster shows above form content */}
+                    <div aria-hidden="true" className="h-32 sm:h-40 lg:hidden" />
+
+                    {/* Desktop: question displayed at top */}
+                    {question ? (
+                      <div className="hidden lg:block lg:px-10 lg:pb-5 lg:pt-14">
+                        <p
+                          className="font-display leading-snug text-amber-300/90 drop-shadow-[0_0_32px_rgba(251,191,36,0.45)]"
+                          style={{ fontSize: 'clamp(1.5rem, 2.6vw, 2.4rem)' }}
+                        >
+                          {question}
+                        </p>
                       </div>
-                      <div className="space-y-1">
-                        <label className="text-xs font-medium text-slate-200">Correo electrónico</label>
-                        <input
-                          name="email"
-                          type="email"
-                          value={formData.email}
-                          onChange={handleChange}
-                          required
-                          className="form-surface w-full px-3 py-2 text-sm"
-                          placeholder="nombre@correo.com"
-                        />
+                    ) : (
+                      <div aria-hidden="true" className="hidden lg:block lg:h-14" />
+                    )}
+
+                    {/* Separator (desktop) */}
+                    <div
+                      aria-hidden="true"
+                      className="hidden lg:block mx-8 mb-5 h-px bg-gradient-to-r from-transparent via-amber-400/35 to-transparent"
+                    />
+
+                    {/* Form fields */}
+                    <div className="px-5 pb-[max(1.25rem,env(safe-area-inset-bottom))] sm:px-6 sm:pb-5 lg:pb-10 lg:px-10">
+                      <div className="w-full space-y-3">
+                        <div className="space-y-0.5">
+                          <div className="inline-flex rounded-full border border-white/10 bg-white/5 px-3 py-1 text-[0.62rem] uppercase tracking-[0.32em] text-white/70 backdrop-blur-md">
+                            Laboratorio
+                          </div>
+                          <h3
+                            id="resonance-modal-title"
+                            className="font-display leading-tight tracking-tight text-white"
+                            style={{ fontSize: 'clamp(1.4rem, 5vw, 2rem)' }}
+                          >
+                            Resonancia colectiva
+                          </h3>
+                        </div>
+
+                        <form
+                          onSubmit={handleSubmit}
+                          className="space-y-2.5 lg:grid lg:grid-cols-2 lg:gap-2.5 lg:space-y-0"
+                        >
+                          <div className="space-y-1">
+                            <label className="text-xs font-medium text-slate-200">Tu nombre</label>
+                            <input
+                              name="nombre"
+                              value={formData.nombre}
+                              onChange={handleChange}
+                              required
+                              className="form-surface w-full px-3 py-2 text-sm"
+                              placeholder="¿Cómo te llamas?"
+                            />
+                          </div>
+                          <div className="space-y-1">
+                            <label className="text-xs font-medium text-slate-200">
+                              Correo electrónico
+                            </label>
+                            <input
+                              name="email"
+                              type="email"
+                              value={formData.email}
+                              onChange={handleChange}
+                              required
+                              className="form-surface w-full px-3 py-2 text-sm"
+                              placeholder="nombre@correo.com"
+                            />
+                          </div>
+                          <div className="space-y-1 lg:col-span-2">
+                            <label className="text-xs font-medium text-slate-200">Tu intuición</label>
+                            <textarea
+                              name="respuesta"
+                              value={formData.respuesta}
+                              onChange={handleChange}
+                              required
+                              rows={2}
+                              className="form-surface w-full resize-none px-3 py-2 text-sm"
+                              placeholder={question ?? '¿Qué te resuena?'}
+                            />
+                          </div>
+                          <button
+                            ref={submitBtnRef}
+                            type="submit"
+                            disabled={status === 'submitting'}
+                            className="relative w-full rounded-full border border-purple-500/70 px-4 py-2.5 text-xs uppercase tracking-[0.25em] text-purple-100 shadow-[0_15px_45px_rgba(67,56,202,0.45)] transition hover:bg-purple-500/20 disabled:opacity-50 lg:col-span-2"
+                          >
+                            {status === 'submitting' ? 'Enviando…' : 'Enviar'}
+                          </button>
+                        </form>
                       </div>
-                      <div className="space-y-1 lg:col-span-2">
-                        <label className="text-xs font-medium text-slate-200">Tu intuición</label>
-                        <textarea
-                          name="respuesta"
-                          value={formData.respuesta}
-                          onChange={handleChange}
-                          required
-                          rows={2}
-                          className="form-surface w-full resize-none px-3 py-2 text-sm"
-                          placeholder={question ?? '¿Qué te resuena?'}
-                        />
-                      </div>
-                      <button
-                        ref={submitBtnRef}
-                        type="submit"
-                        disabled={status === 'submitting'}
-                        className="relative w-full rounded-full border border-purple-500/70 px-4 py-2.5 text-xs uppercase tracking-[0.25em] text-purple-100 shadow-[0_15px_45px_rgba(67,56,202,0.45)] transition hover:bg-purple-500/20 disabled:opacity-50 lg:col-span-2"
-                      >
-                        {status === 'submitting' ? 'Enviando…' : 'Enviar'}
-                      </button>
-                    </form>
-                  </div>
-                </div>
-              </div>
-            )}
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+          </div>
+
+          {/* ── RIGHT COLUMN: poster — desktop only ── */}
+          <div className="hidden lg:block lg:w-[42%] shrink-0 relative overflow-hidden">
+            <img
+              src={poster}
+              alt=""
+              aria-hidden="true"
+              className="h-full w-full object-cover object-top"
+            />
+            {/* Blend left edge into modal background */}
+            <div
+              aria-hidden="true"
+              className="absolute inset-y-0 left-0 w-24"
+              style={{ background: 'linear-gradient(to right, rgb(5,3,9), transparent)' }}
+            />
           </div>
         </motion.div>
       )}
