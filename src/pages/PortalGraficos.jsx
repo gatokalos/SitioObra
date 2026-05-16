@@ -343,14 +343,7 @@ const PortalGraficos = () => {
                 <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Mini-verso autoral</p>
                 <MiniVersoCard title={GRAFICOS_NOTA_AUTORAL.title} verse={GRAFICOS_NOTA_AUTORAL.verse} palette={GRAFICOS_TILE} />
               </div>
-              <div className="flex flex-col items-center gap-3 pb-2">
-                <div className="flex items-center justify-center gap-3 flex-wrap">
-                  <div className="h-16 w-16 rounded-full border border-white/15 bg-white/5 overflow-hidden shadow-lg shadow-black/30">
-                    <img src={GRAFICOS_COLLABORATOR.image || '/assets/logoapp.webp'} alt={`Retrato de ${GRAFICOS_COLLABORATOR.name}`} className="h-full w-full object-cover" loading="lazy" />
-                  </div>
-                </div>
-                <p className="text-xs uppercase tracking-[0.35em] text-center text-fuchsia-200/90">Cómplices</p>
-              </div>
+              <CollaboratorsPanel collaborators={[GRAFICOS_COLLABORATOR]} accentClassName="text-fuchsia-200/90" bare />
             </div>
             {isResonanceOpen && (
               <ResonanceModal

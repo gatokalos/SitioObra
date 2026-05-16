@@ -18,6 +18,7 @@ import LoginOverlay from '@/components/ContributionModal/LoginOverlay';
 import ContributionModal from '@/components/ContributionModal';
 import PortalAuthButton from '@/components/PortalAuthButton';
 import PortalHeaderActions from '@/components/portal/PortalHeaderActions';
+import CollaboratorsPanel from '@/components/portal/CollaboratorsPanel';
 import { PORTAL_VOZ_MODE_QUESTIONS } from '@/lib/obraConversation';
 import { useSilvestreVoice } from '@/hooks/useSilvestreVoice';
 import IAInsightCard from '@/components/IAInsightCard';
@@ -1061,18 +1062,7 @@ const PortalVoz = () => {
                   effect="flip"
                 />
               </div>
-              {SCENE_PORTAL_COLLABORATORS.length > 0 ? (
-                <div className="flex flex-col items-center gap-3 pb-2">
-                  <div className="flex items-center justify-center gap-3 flex-wrap">
-                    {SCENE_PORTAL_COLLABORATORS.map((c, i) => (
-                      <div key={c.id ?? `voz-collab-mobile-${i}`} className="h-16 w-16 rounded-full border border-white/15 bg-white/5 overflow-hidden shadow-lg shadow-black/30">
-                        <img src={c.image || '/assets/logoapp.webp'} alt={`Retrato de ${c.name}`} className="h-full w-full object-cover" loading="lazy" />
-                      </div>
-                    ))}
-                  </div>
-                  <p className="text-xs uppercase tracking-[0.35em] text-center text-purple-300">Cómplices</p>
-                </div>
-              ) : null}
+              <CollaboratorsPanel collaborators={SCENE_PORTAL_COLLABORATORS} accentClassName="text-purple-300" bare />
             </div>
             {isResonanceOpen && (
               <ResonanceModal

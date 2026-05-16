@@ -495,18 +495,7 @@ const PortalArtesanias = () => {
                 <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Mini-verso autoral</p>
                 <MiniVersoCard title={ARTESANIAS_NOTA_AUTORAL.title} verse={ARTESANIAS_NOTA_AUTORAL.verse} palette={ARTESANIAS_TILE} />
               </div>
-              {ARTESANIAS_COLLABORATORS.length > 0 ? (
-                <div className="flex flex-col items-center gap-3 pb-2">
-                  <div className="flex items-center justify-center gap-3 flex-wrap">
-                    {ARTESANIAS_COLLABORATORS.map((c, i) => (
-                      <div key={c.id ?? `art-collab-mobile-${i}`} className="h-16 w-16 rounded-full border border-white/15 bg-white/5 overflow-hidden shadow-lg shadow-black/30">
-                        <img src={c.image || '/assets/logoapp.webp'} alt={`Retrato de ${c.name}`} className="h-full w-full object-cover" loading="lazy" />
-                      </div>
-                    ))}
-                  </div>
-                  <p className="text-xs uppercase tracking-[0.35em] text-center text-amber-200/90">Cómplices</p>
-                </div>
-              ) : null}
+              <CollaboratorsPanel collaborators={ARTESANIAS_COLLABORATORS} accentClassName="text-amber-200/90" bare />
             </div>
             {isResonanceOpen && (
               <ResonanceModal
