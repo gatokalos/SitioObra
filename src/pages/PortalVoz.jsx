@@ -997,7 +997,7 @@ const PortalVoz = () => {
           <PortalHeaderActions />
         </div>
 
-        <div className="mt-6 space-y-6">
+        <div className="mt-6 flex flex-col gap-6">
           <div className="relative overflow-hidden rounded-[2.5rem] border border-white/10 [transform:translateZ(0)] bg-gradient-to-br from-slate-900/85 via-black/60 to-rose-900/35 shadow-[0_25px_65px_rgba(15,23,42,0.65)]">
             {latestSceneReading?.slug ? (
               <div className="absolute top-4 right-4 z-10">
@@ -1028,7 +1028,7 @@ const PortalVoz = () => {
                 </div>
               </div>
 
-              <div className="flex flex-col gap-5">
+              <div className="hidden lg:flex flex-col gap-5">
                 <VitranaQuestionReveal
                   question={l1Done ? (LEVEL2_QUESTIONS['obra']?.question ?? vitranaQuestion) : vitranaQuestion}
                   buttonLabel={l1Done ? 'Tu progreso →' : undefined}
@@ -1052,13 +1052,13 @@ const PortalVoz = () => {
                 question={vitranaQuestion}
                 portal="obra"
                 onOpenNarrative={() => setIsNarrativeExperienceOpen(true)}
-                narrativeCTALabel="Abrir experiencia narrativa"
+                narrativeCTALabel="✦ Entrar al drama"
               />
             )}
           </div>
 
           {/* BLOQUE: Obra destacada */}
-          <div className="relative overflow-hidden rounded-2xl border border-white/10 bg-black/30 p-6">
+          <div className="order-3 lg:order-2 relative overflow-hidden rounded-2xl border border-white/10 bg-black/30 p-6">
             <div className="absolute inset-0">
               <video
                 className="h-full w-full object-cover"
@@ -1094,6 +1094,23 @@ const PortalVoz = () => {
                 >
                   Próximas funciones
                 </button>
+                <div className="pt-4 border-t border-white/10 lg:hidden space-y-4">
+                  <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Resonancia colectiva</p>
+                  <VitranaQuestionReveal
+                    question={l1Done ? (LEVEL2_QUESTIONS['obra']?.question ?? vitranaQuestion) : vitranaQuestion}
+                    buttonLabel={l1Done ? 'Tu progreso →' : undefined}
+                    autoReveal={l1Done}
+                    portal="obra"
+                    l2Done={l2Done}
+                    onAnswer={() => setIsResonanceOpen(true)}
+                  />
+                  <ShowcaseReactionInline
+                    description="Estamos explorando las emociones contemporáneas a través de preguntas y experiencias narrativas."
+                    buttonLabel="¿no te salen las palabras? ¡déjanos un pulso!"
+                    status={reactionStatus}
+                    onReact={handleSendPulse}
+                  />
+                </div>
               </div>
             </div>
           </div>
@@ -1501,7 +1518,7 @@ const PortalVoz = () => {
               </motion.div>
             )}
           </AnimatePresence>
-          <div className="rounded-3xl border border-white/10 bg-black/30 p-6 space-y-6">
+          <div className="order-2 lg:order-3 rounded-3xl border border-white/10 bg-black/30 p-6 space-y-6">
             {renderCollaboratorsSection()}
             <div className="flex flex-col gap-3">
               <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Mini-verso autoral</p>
@@ -1519,15 +1536,17 @@ const PortalVoz = () => {
               />
             </div>
           </div>
-          <IAInsightCard {...SCENE_PORTAL_IA_PROFILE} compact />
+          <div className="order-4"><IAInsightCard {...SCENE_PORTAL_IA_PROFILE} compact /></div>
           {experienceDone && (
-            <button
-              type="button"
-              onClick={() => setIsNarrativeExperienceOpen(true)}
-              className="w-full rounded-2xl border border-amber-400/40 bg-amber-500/10 px-6 py-4 text-sm font-semibold tracking-wide text-amber-200 shadow-[0_8px_32px_rgba(251,191,36,0.15)] transition hover:bg-amber-500/20 hover:shadow-[0_8px_40px_rgba(251,191,36,0.25)]"
-            >
-              Abrir experiencia narrativa
-            </button>
+            <div className="order-5">
+              <button
+                type="button"
+                onClick={() => setIsNarrativeExperienceOpen(true)}
+                className="w-full rounded-2xl border border-amber-400/40 bg-amber-500/10 px-6 py-4 text-sm font-semibold tracking-wide text-amber-200 shadow-[0_8px_32px_rgba(251,191,36,0.15)] transition hover:bg-amber-500/20 hover:shadow-[0_8px_40px_rgba(251,191,36,0.25)]"
+              >
+                Abrir experiencia narrativa
+              </button>
+            </div>
           )}
         </div>
 

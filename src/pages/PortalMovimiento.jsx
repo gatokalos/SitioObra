@@ -410,7 +410,7 @@ const PortalMovimiento = () => {
           <PortalHeaderActions />
         </div>
 
-        <div className="mt-6 space-y-6">
+        <div className="mt-6 flex flex-col gap-6">
           <div className="relative overflow-hidden rounded-[2.5rem] border border-white/10 [transform:translateZ(0)] bg-gradient-to-br from-slate-900/85 via-black/60 to-emerald-900/25 shadow-[0_25px_65px_rgba(15,23,42,0.65)]">
             {latestMovimientoReading?.slug ? (
               <div className="absolute top-4 right-4 z-10">
@@ -439,7 +439,7 @@ const PortalMovimiento = () => {
                 </div>
               </div>
 
-              <div className="flex flex-col gap-5">
+              <div className="hidden lg:flex flex-col gap-5">
                 <VitranaQuestionReveal
                   question={l1Done ? (LEVEL2_QUESTIONS['movimiento']?.question ?? vitranaQuestion) : vitranaQuestion}
                   buttonLabel={l1Done ? 'Tu progreso →' : undefined}
@@ -458,7 +458,7 @@ const PortalMovimiento = () => {
                 question={vitranaQuestion}
                 portal="movimiento"
                 onOpenNarrative={() => handleMovementAction(MOVEMENT_ACTIONS.find((a) => a.id === 'talleres'))}
-                narrativeCTALabel="✦ Inscríbete a los talleres coreográficos"
+                narrativeCTALabel="✦ Ver los talleres"
               />
             )}
           </div>
@@ -521,6 +521,19 @@ const PortalMovimiento = () => {
               label="Swipe-horizontal"
               caption="Cada clip muestra un giro 360° de las presencias cuenta-cuentos."
             />
+          </div>
+
+          <div className="lg:hidden rounded-3xl border border-white/10 bg-black/30 p-5 space-y-4">
+            <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Resonancia colectiva</p>
+            <VitranaQuestionReveal
+              question={l1Done ? (LEVEL2_QUESTIONS['movimiento']?.question ?? vitranaQuestion) : vitranaQuestion}
+              buttonLabel={l1Done ? 'Tu progreso →' : undefined}
+              autoReveal={l1Done}
+              portal="movimiento"
+              l2Done={l2Done}
+              onAnswer={() => setIsResonanceOpen(true)}
+            />
+            <ShowcaseReactionInline status={reactionStatus} onReact={handleSendPulse} />
           </div>
 
           <div className="grid gap-6 xl:grid-cols-[1.25fr_1fr] xl:items-start">

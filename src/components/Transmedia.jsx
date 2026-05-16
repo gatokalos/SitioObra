@@ -272,15 +272,18 @@ const Transmedia = ({ allianceOnlyMode = false }) => {
 
   // Indica si el usuario ya contestó el Nivel 1 del portal activo
   const [activePortalL1Done, setActivePortalL1Done] = useState(false);
+  const [activePortalL2Done, setActivePortalL2Done] = useState(false);
 
   // Lee localStorage cada vez que cambia la vitrana activa
   useEffect(() => {
     const portal = SHOWCASE_TO_PORTAL[activeShowcase];
-    if (!portal) { setActivePortalL1Done(false); return; }
+    if (!portal) { setActivePortalL1Done(false); setActivePortalL2Done(false); return; }
     try {
       const raw = localStorage.getItem(`gatoencerrado:resonance:${portal}`);
-      setActivePortalL1Done(!!(raw && JSON.parse(raw).l1));
-    } catch { setActivePortalL1Done(false); }
+      const s = raw ? JSON.parse(raw) : {};
+      setActivePortalL1Done(!!s.l1);
+      setActivePortalL2Done(!!s.l2_option);
+    } catch { setActivePortalL1Done(false); setActivePortalL2Done(false); }
   }, [activeShowcase]);
 
   // Indica si el usuario completó la experiencia narrativa del portal activo
@@ -295,6 +298,7 @@ const Transmedia = ({ allianceOnlyMode = false }) => {
       const raw = localStorage.getItem(`gatoencerrado:resonance:${portal}`);
       const state = raw ? JSON.parse(raw) : {};
       setActivePortalL1Done(!!state.l1);
+      setActivePortalL2Done(!!state.l2_option);
       setActivePortalExperienceDone(!!state.experience_ts);
     } catch {}
   }, [activeShowcase]);
@@ -4033,6 +4037,8 @@ const rendernotaAutoral = () => {
                           question={activePortalL1Done ? (LEVEL2_QUESTIONS['obra']?.question ?? VITRANA_QUESTION_BY_SHOWCASE['miniversos']) : VITRANA_QUESTION_BY_SHOWCASE['miniversos']}
                           buttonLabel={activePortalL1Done ? 'Tu progreso →' : undefined}
                           autoReveal={activePortalL1Done}
+                          portal="obra"
+                          l2Done={activePortalL2Done}
                           onAnswer={() => setIsDramaResonanceOpen(true)}
                         />
                         {activeShowcase === 'miniversos' ? (
@@ -4049,7 +4055,7 @@ const rendernotaAutoral = () => {
                           question={VITRANA_QUESTION_BY_SHOWCASE['miniversos']}
                           portal="obra"
                           onOpenNarrative={() => setIsNarrativeDramaOpen(true)}
-                          narrativeCTALabel="Abrir experiencia narrativa"
+                          narrativeCTALabel="✦ Entrar al drama"
                         />
                       </>
                     ) : activeShowcase === 'miniversoNovela' ? (
@@ -4058,6 +4064,8 @@ const rendernotaAutoral = () => {
                           question={activePortalL1Done ? (LEVEL2_QUESTIONS['literatura']?.question ?? VITRANA_QUESTION_BY_SHOWCASE['miniversoNovela']) : VITRANA_QUESTION_BY_SHOWCASE['miniversoNovela']}
                           buttonLabel={activePortalL1Done ? 'Tu progreso →' : undefined}
                           autoReveal={activePortalL1Done}
+                          portal="literatura"
+                          l2Done={activePortalL2Done}
                           onAnswer={() => setIsLiteraturaResonanceOpen(true)}
                         />
                         <ShowcaseReactionInline
@@ -4072,7 +4080,7 @@ const rendernotaAutoral = () => {
                           question={VITRANA_QUESTION_BY_SHOWCASE['miniversoNovela']}
                           portal="literatura"
                           onOpenNarrative={() => setShowLiteraturaApp(true)}
-                          narrativeCTALabel="📖 Abrir separador inteligente"
+                          narrativeCTALabel="📖 Activar artefacto"
                         />
                       </>
                     ) : activeShowcase === 'lataza' ? (
@@ -4081,6 +4089,8 @@ const rendernotaAutoral = () => {
                           question={activePortalL1Done ? (LEVEL2_QUESTIONS['artesanias']?.question ?? VITRANA_QUESTION_BY_SHOWCASE['lataza']) : VITRANA_QUESTION_BY_SHOWCASE['lataza']}
                           buttonLabel={activePortalL1Done ? 'Tu progreso →' : undefined}
                           autoReveal={activePortalL1Done}
+                          portal="artesanias"
+                          l2Done={activePortalL2Done}
                           onAnswer={() => setIsArtesaniasResonanceOpen(true)}
                         />
                         <ShowcaseReactionInline
@@ -4104,6 +4114,8 @@ const rendernotaAutoral = () => {
                           question={activePortalL1Done ? (LEVEL2_QUESTIONS['grafico']?.question ?? VITRANA_QUESTION_BY_SHOWCASE['miniversoGrafico']) : VITRANA_QUESTION_BY_SHOWCASE['miniversoGrafico']}
                           buttonLabel={activePortalL1Done ? 'Tu progreso →' : undefined}
                           autoReveal={activePortalL1Done}
+                          portal="grafico"
+                          l2Done={activePortalL2Done}
                           onAnswer={() => setIsGraficosResonanceOpen(true)}
                         />
                         <ShowcaseReactionInline
@@ -4118,7 +4130,7 @@ const rendernotaAutoral = () => {
                           question={VITRANA_QUESTION_BY_SHOWCASE['miniversoGrafico']}
                           portal="grafico"
                           onOpenNarrative={() => { const sw = activeDefinition.swipeShowcases?.[0]; if (sw) handleOpenGraphicSwipe(sw); }}
-                          narrativeCTALabel="✦ Abrir swipe en PDF"
+                          narrativeCTALabel="✦ Ver el swipe"
                         />
                       </>
                     ) : activeShowcase === 'copycats' ? (
@@ -4127,6 +4139,8 @@ const rendernotaAutoral = () => {
                           question={activePortalL1Done ? (LEVEL2_QUESTIONS['cine']?.question ?? VITRANA_QUESTION_BY_SHOWCASE['cine']) : VITRANA_QUESTION_BY_SHOWCASE['cine']}
                           buttonLabel={activePortalL1Done ? 'Tu progreso →' : undefined}
                           autoReveal={activePortalL1Done}
+                          portal="cine"
+                          l2Done={activePortalL2Done}
                           onAnswer={() => setIsCineResonanceOpen(true)}
                         />
                         <ShowcaseReactionInline
@@ -4141,7 +4155,7 @@ const rendernotaAutoral = () => {
                           question={VITRANA_QUESTION_BY_SHOWCASE['cine']}
                           portal="cine"
                           onOpenNarrative={Boolean(showcaseBoosts?.copycats_full_unlock || quironSpent) ? handleQuironPlayRequest : handleToggleQuironPrompt}
-                          narrativeCTALabel={Boolean(showcaseBoosts?.copycats_full_unlock || quironSpent) ? '▶ Ver Quirón' : '✦ Ver cortometraje ahora'}
+                          narrativeCTALabel={Boolean(showcaseBoosts?.copycats_full_unlock || quironSpent) ? '▶ Ver Quirón' : '✦ Ver el corto'}
                         />
                       </>
                     ) : activeShowcase === 'miniversoSonoro' ? (
@@ -4150,6 +4164,8 @@ const rendernotaAutoral = () => {
                           question={activePortalL1Done ? (LEVEL2_QUESTIONS['sonoridades']?.question ?? VITRANA_QUESTION_BY_SHOWCASE['miniversoSonoro']) : VITRANA_QUESTION_BY_SHOWCASE['miniversoSonoro']}
                           buttonLabel={activePortalL1Done ? 'Tu progreso →' : undefined}
                           autoReveal={activePortalL1Done}
+                          portal="sonoridades"
+                          l2Done={activePortalL2Done}
                           onAnswer={() => setIsSonoroResonanceOpen(true)}
                         />
                         <ShowcaseReactionInline
@@ -4164,7 +4180,7 @@ const rendernotaAutoral = () => {
                           question={VITRANA_QUESTION_BY_SHOWCASE['miniversoSonoro']}
                           portal="sonoridades"
                           onOpenNarrative={handleSonoroEnter}
-                          narrativeCTALabel="✦ Entrar a la experiencia sonora"
+                          narrativeCTALabel="✦ Escuchar ahora"
                         />
                       </>
                     ) : activeShowcase === 'miniversoMovimiento' ? (
@@ -4173,6 +4189,8 @@ const rendernotaAutoral = () => {
                           question={activePortalL1Done ? (LEVEL2_QUESTIONS['movimiento']?.question ?? VITRANA_QUESTION_BY_SHOWCASE['miniversoMovimiento']) : VITRANA_QUESTION_BY_SHOWCASE['miniversoMovimiento']}
                           buttonLabel={activePortalL1Done ? 'Tu progreso →' : undefined}
                           autoReveal={activePortalL1Done}
+                          portal="movimiento"
+                          l2Done={activePortalL2Done}
                           onAnswer={() => setIsMovimientoResonanceOpen(true)}
                         />
                         <ShowcaseReactionInline
@@ -4187,7 +4205,7 @@ const rendernotaAutoral = () => {
                           question={VITRANA_QUESTION_BY_SHOWCASE['miniversoMovimiento']}
                           portal="movimiento"
                           onOpenNarrative={() => handleOpenContribution(getContributionCategoryForShowcase('miniversoMovimiento'))}
-                          narrativeCTALabel="✦ Inscríbete a los talleres coreográficos"
+                          narrativeCTALabel="✦ Ver los talleres"
                         />
                       </>
                     ) : activeShowcase === 'apps' ? (
@@ -4196,6 +4214,8 @@ const rendernotaAutoral = () => {
                           question={activePortalL1Done ? (LEVEL2_QUESTIONS['juegos']?.question ?? VITRANA_QUESTION_BY_SHOWCASE['apps']) : VITRANA_QUESTION_BY_SHOWCASE['apps']}
                           buttonLabel={activePortalL1Done ? 'Tu progreso →' : undefined}
                           autoReveal={activePortalL1Done}
+                          portal="juegos"
+                          l2Done={activePortalL2Done}
                           onAnswer={() => setIsJuegosResonanceOpen(true)}
                         />
                         <ShowcaseReactionInline
@@ -4210,7 +4230,7 @@ const rendernotaAutoral = () => {
                           question={VITRANA_QUESTION_BY_SHOWCASE['apps']}
                           portal="juegos"
                           onOpenNarrative={() => { const u = sanitizeExternalHttpUrl(activeDefinition.liveExperience?.url); if (u) window.open(u, '_blank'); }}
-                          narrativeCTALabel={activeDefinition.liveExperience?.ctaLabel || '✦ Abrir app aparte'}
+                          narrativeCTALabel={activeDefinition.liveExperience?.ctaLabel || '✦ Abrir la app'}
                         />
                       </>
                     ) : activeShowcase === 'oraculo' ? (
@@ -4219,6 +4239,8 @@ const rendernotaAutoral = () => {
                           question={activePortalL1Done ? (LEVEL2_QUESTIONS['oraculo']?.question ?? VITRANA_QUESTION_BY_SHOWCASE['oraculo']) : VITRANA_QUESTION_BY_SHOWCASE['oraculo']}
                           buttonLabel={activePortalL1Done ? 'Tu progreso →' : undefined}
                           autoReveal={activePortalL1Done}
+                          portal="oraculo"
+                          l2Done={activePortalL2Done}
                           onAnswer={() => setIsOraculoResonanceOpen(true)}
                         />
                         <ShowcaseReactionInline

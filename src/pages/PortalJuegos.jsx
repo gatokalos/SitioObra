@@ -217,7 +217,7 @@ const PortalJuegos = () => {
           <PortalHeaderActions />
         </div>
 
-        <div className="mt-6 space-y-6">
+        <div className="mt-6 flex flex-col gap-6">
           <div className="relative overflow-hidden rounded-[2.5rem] border border-white/10 [transform:translateZ(0)] bg-gradient-to-br from-slate-900/85 via-black/60 to-emerald-900/25 shadow-[0_25px_65px_rgba(15,23,42,0.65)]">
             {latestJuegosReading?.slug ? (
               <div className="absolute top-4 right-4 z-10">
@@ -241,7 +241,7 @@ const PortalJuegos = () => {
                 </div>
               </div>
 
-              <div className="flex flex-col gap-5">
+              <div className="hidden lg:flex flex-col gap-5">
                 <VitranaQuestionReveal
                   question={l1Done ? (LEVEL2_QUESTIONS['juegos']?.question ?? vitranaQuestion) : vitranaQuestion}
                   buttonLabel={l1Done ? 'Tu progreso →' : undefined}
@@ -260,13 +260,13 @@ const PortalJuegos = () => {
                 question={vitranaQuestion}
                 portal="juegos"
                 onOpenNarrative={embeddedAppUrl ? () => window.open(embeddedAppUrl, '_blank') : undefined}
-                narrativeCTALabel={JUEGOS_DEFINITION.liveExperience?.ctaLabel || '✦ Abrir app en pestaña nueva'}
+                narrativeCTALabel={JUEGOS_DEFINITION.liveExperience?.ctaLabel || '✦ Abrir la app'}
               />
             )}
           </div>
 
           {embeddedAppUrl ? (
-            <div className="rounded-3xl border border-emerald-200/20 bg-black/30 p-4 sm:p-5 space-y-4 shadow-[0_20px_60px_rgba(0,0,0,0.35)]">
+            <div className="order-3 lg:order-2 rounded-3xl border border-emerald-200/20 bg-black/30 p-4 sm:p-5 space-y-4 shadow-[0_20px_60px_rgba(0,0,0,0.35)]">
               <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
                 <div className="space-y-2">
                   <p className="text-xs uppercase tracking-[0.35em] text-emerald-100/75">Experiencia incrustada</p>
@@ -291,10 +291,22 @@ const PortalJuegos = () => {
                   allow="accelerometer; autoplay; camera; clipboard-read; clipboard-write; fullscreen; gamepad; gyroscope; microphone; web-share"
                 />
               </div>
+              <div className="pt-4 border-t border-emerald-200/20 lg:hidden space-y-4">
+                <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Resonancia colectiva</p>
+                <VitranaQuestionReveal
+                  question={l1Done ? (LEVEL2_QUESTIONS['juegos']?.question ?? vitranaQuestion) : vitranaQuestion}
+                  buttonLabel={l1Done ? 'Tu progreso →' : undefined}
+                  autoReveal={l1Done}
+                  portal="juegos"
+                  l2Done={l2Done}
+                  onAnswer={() => setIsResonanceOpen(true)}
+                />
+                <ShowcaseReactionInline status={reactionStatus} onReact={handleSendPulse} />
+              </div>
             </div>
           ) : null}
 
-          <div className="rounded-3xl border border-white/10 bg-black/30 p-6 space-y-6">
+          <div className="order-2 lg:order-3 rounded-3xl border border-white/10 bg-black/30 p-6 space-y-6">
             <div className="flex flex-col gap-3">
               <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Mini-verso autoral</p>
               <MiniVersoCard
@@ -304,16 +316,18 @@ const PortalJuegos = () => {
               />
             </div>
           </div>
-          {JUEGOS_DEFINITION.iaProfile ? <IAInsightCard {...JUEGOS_DEFINITION.iaProfile} compact /> : null}
+          {JUEGOS_DEFINITION.iaProfile ? <div className="order-4"><IAInsightCard {...JUEGOS_DEFINITION.iaProfile} compact /></div> : null}
           {experienceDone && embeddedAppUrl ? (
-            <a
-              href={embeddedAppUrl}
-              target="_blank"
-              rel="noreferrer"
-              className="inline-flex w-full items-center justify-center rounded-2xl border border-amber-400/40 bg-amber-500/10 px-6 py-4 text-sm font-semibold tracking-wide text-amber-200 shadow-[0_8px_32px_rgba(251,191,36,0.15)] transition hover:bg-amber-500/20 hover:shadow-[0_8px_40px_rgba(251,191,36,0.25)]"
-            >
-              ✦ {JUEGOS_DEFINITION.liveExperience?.ctaLabel || 'Abrir app en pestaña nueva'}
-            </a>
+            <div className="order-5">
+              <a
+                href={embeddedAppUrl}
+                target="_blank"
+                rel="noreferrer"
+                className="inline-flex w-full items-center justify-center rounded-2xl border border-amber-400/40 bg-amber-500/10 px-6 py-4 text-sm font-semibold tracking-wide text-amber-200 shadow-[0_8px_32px_rgba(251,191,36,0.15)] transition hover:bg-amber-500/20 hover:shadow-[0_8px_40px_rgba(251,191,36,0.25)]"
+              >
+                ✦ {JUEGOS_DEFINITION.liveExperience?.ctaLabel || 'Abrir app en pestaña nueva'}
+              </a>
+            </div>
           ) : null}
         </div>
 

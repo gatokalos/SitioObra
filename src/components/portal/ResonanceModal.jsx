@@ -156,7 +156,7 @@ const LEVELS = [
     num: 1,
     eyebrow: 'Antes de entrar',
     title: 'Primera intuición',
-    desc: 'Respondiste antes de saber. Eso tiene valor científico.',
+    desc: '✓ Respondiste antes de saber. Eso tiene valor científico.',
     icon: Eye,
   },
   {
@@ -487,9 +487,8 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, narr
                                 {/* Badge + chevron */}
                                 <div className="shrink-0 flex items-center gap-1.5">
                                   {isCompleted ? (
-                                    <span className="inline-flex items-center gap-1 rounded-full border border-emerald-400/35 bg-emerald-500/10 px-1.5 py-0.5 text-[0.52rem] uppercase tracking-[0.1em] text-emerald-300 leading-none">
-                                      <Check size={8} className="shrink-0" />
-                                      Listo
+                                    <span className="inline-flex h-6 w-6 items-center justify-center rounded-full border border-emerald-400/35 bg-emerald-500/10 text-emerald-300">
+                                      <Check size={11} className="shrink-0" />
                                     </span>
                                   ) : isAvailable ? (
                                     <>

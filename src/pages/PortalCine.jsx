@@ -421,7 +421,7 @@ const PortalCine = () => {
           <PortalHeaderActions />
         </div>
 
-        <div className="mt-6 space-y-6">
+        <div className="mt-6 flex flex-col gap-6">
           <div className="relative overflow-hidden rounded-[2.5rem] border border-white/10 [transform:translateZ(0)] bg-gradient-to-br from-slate-900/85 via-black/60 to-sky-900/25 shadow-[0_25px_65px_rgba(15,23,42,0.65)]">
             {latestCineReading?.slug ? (
               <div className="absolute top-4 right-4 z-10">
@@ -457,7 +457,7 @@ const PortalCine = () => {
                 </div>
               </div>
 
-              <div className="flex flex-col gap-5">
+              <div className="hidden lg:flex flex-col gap-5">
                 <VitranaQuestionReveal
                   question={l1Done ? (LEVEL2_QUESTIONS['cine']?.question ?? vitranaQuestion) : vitranaQuestion}
                   buttonLabel={l1Done ? 'Tu progreso →' : undefined}
@@ -476,12 +476,13 @@ const PortalCine = () => {
                 question={vitranaQuestion}
                 portal="cine"
                 onOpenNarrative={handleOpenFullFilm}
-                narrativeCTALabel="✦ Ver cortometraje ahora"
+                narrativeCTALabel="✦ Ver el corto"
               />
             )}
           </div>
 
 
+          <div className="order-3 lg:order-2 flex flex-col gap-4">
           {renderImmersiveCinemaCard({
             title: QUIRON_DATA.title,
             eyebrow: 'Obra destacada',
@@ -491,23 +492,38 @@ const PortalCine = () => {
             tags: QUIRON_DATA.tags,
             accentClassName: 'bg-gradient-to-br from-slate-950/80 via-black/60 to-purple-900/30',
           })}
+          <div className="rounded-3xl border border-white/10 bg-black/30 p-5 lg:hidden space-y-4">
+            <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Resonancia colectiva</p>
+            <VitranaQuestionReveal
+              question={l1Done ? (LEVEL2_QUESTIONS['cine']?.question ?? vitranaQuestion) : vitranaQuestion}
+              buttonLabel={l1Done ? 'Tu progreso →' : undefined}
+              autoReveal={l1Done}
+              portal="cine"
+              l2Done={l2Done}
+              onAnswer={() => setIsResonanceOpen(true)}
+            />
+            <ShowcaseReactionInline status={reactionStatus} onReact={handleSendPulse} />
+          </div>
+          </div>
 
-          <div className="rounded-3xl border border-white/10 bg-black/30 p-6 space-y-6">
+          <div className="order-2 lg:order-3 rounded-3xl border border-white/10 bg-black/30 p-6 space-y-6">
             <CollaboratorsPanel collaborators={CINE_COLLABORATORS} accentClassName="text-sky-200/90" />
             <div className="flex flex-col gap-3">
               <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Mini-verso autoral</p>
               <MiniVersoCard title={CINE_NOTA_AUTORAL.title} verse={CINE_NOTA_AUTORAL.verse} palette={CINE_TILE} />
             </div>
           </div>
-          <IAInsightCard {...CINE_IA_PROFILE} compact />
+          <div className="order-4"><IAInsightCard {...CINE_IA_PROFILE} compact /></div>
           {experienceDone && (
-            <button
-              type="button"
-              onClick={handleOpenFullFilm}
-              className="w-full rounded-2xl border border-amber-400/40 bg-amber-500/10 px-6 py-4 text-sm font-semibold tracking-wide text-amber-200 shadow-[0_8px_32px_rgba(251,191,36,0.15)] transition hover:bg-amber-500/20 hover:shadow-[0_8px_40px_rgba(251,191,36,0.25)]"
-            >
-              ✦ Ver cortometraje ahora
-            </button>
+            <div className="order-5">
+              <button
+                type="button"
+                onClick={handleOpenFullFilm}
+                className="w-full rounded-2xl border border-amber-400/40 bg-amber-500/10 px-6 py-4 text-sm font-semibold tracking-wide text-amber-200 shadow-[0_8px_32px_rgba(251,191,36,0.15)] transition hover:bg-amber-500/20 hover:shadow-[0_8px_40px_rgba(251,191,36,0.25)]"
+              >
+                ✦ Ver cortometraje ahora
+              </button>
+            </div>
           )}
         </div>
 

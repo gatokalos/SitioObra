@@ -64,7 +64,8 @@
       "Bash(sed -n '483,491p' /Users/gatoenigmatico/gatoencerrado-ai/landing/SitioObra/src/pages/PortalArtesanias.jsx)",
       "Bash(sed -n '352,360p' /Users/gatoenigmatico/gatoencerrado-ai/landing/SitioObra/src/pages/PortalLiteratura.jsx)",
       "Bash(grep -v \"className\\\\|disabled\\\\|tracking\\\\|shadow\\\\|hover\\\\|transition\\\\|inline-flex\\\\|^--$\")",
-      "Bash(grep -v \"^$\")"
+      "Bash(grep -v \"^$\")",
+      "Bash(grep -n \"CollaboratorsPanel\\\\|space-y-6.*$\\\\|rounded-3xl border\\\\|rounded-2xl border\\\\|IAInsightCard\\\\|experienceDone\\\\|Obra destacada\\\\|obra destacada\\\\|space-y-4\\\\|space-y-5\\\\|mt-6 space-y-6\" /Users/gatoenigmatico/gatoencerrado-ai/landing/SitioObra/src/pages/PortalVoz.jsx)"
     ],
     "additionalDirectories": [
       "/Users/gatoenigmatico/Desktop/Postulación EFIARTES",

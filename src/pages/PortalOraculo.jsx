@@ -334,7 +334,7 @@ const PortalOraculo = () => {
           <PortalHeaderActions />
         </div>
 
-        <div className="mt-6 space-y-6">
+        <div className="mt-6 flex flex-col gap-6">
           <div className="relative overflow-hidden rounded-[2.5rem] border border-white/10 [transform:translateZ(0)] bg-gradient-to-br from-slate-900/85 via-black/60 to-violet-900/35 shadow-[0_25px_65px_rgba(15,23,42,0.65)]">
             {latestOraculoReading?.slug ? (
               <div className="absolute top-4 right-4 z-10">
@@ -364,7 +364,7 @@ const PortalOraculo = () => {
                 </div>
               </div>
 
-              <div className="flex flex-col gap-5">
+              <div className="hidden lg:flex flex-col gap-5">
                 <VitranaQuestionReveal
                   question={l1Done ? (LEVEL2_QUESTIONS['oraculo']?.question ?? vitranaQuestion) : vitranaQuestion}
                   buttonLabel={l1Done ? 'Tu progreso →' : undefined}
@@ -383,12 +383,12 @@ const PortalOraculo = () => {
                 question={vitranaQuestion}
                 portal="oraculo"
                 onOpenNarrative={handleOpenOraculo}
-                narrativeCTALabel="✦ Pregunta, responde y mintea"
+                narrativeCTALabel="✦ Mintear ahora"
               />
             )}
           </div>
 
-          <div className="grid gap-6 lg:gap-10 lg:grid-cols-[2fr_1fr]">
+          <div className="order-3 lg:order-2 grid gap-6 lg:gap-10 lg:grid-cols-[2fr_1fr]">
             <div className="space-y-6">
               <div className="rounded-3xl border border-white/10 bg-black/30 p-6 space-y-4">
                 <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Minado simbólico</p>
@@ -452,7 +452,20 @@ const PortalOraculo = () => {
             </div>
           </div>
 
-          <div className="rounded-3xl border border-white/10 bg-black/30 p-6 space-y-6">
+          <div className="order-3 lg:hidden rounded-3xl border border-white/10 bg-black/30 p-5 space-y-4">
+            <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Resonancia colectiva</p>
+            <VitranaQuestionReveal
+              question={l1Done ? (LEVEL2_QUESTIONS['oraculo']?.question ?? vitranaQuestion) : vitranaQuestion}
+              buttonLabel={l1Done ? 'Tu progreso →' : undefined}
+              autoReveal={l1Done}
+              portal="oraculo"
+              l2Done={l2Done}
+              onAnswer={() => setIsResonanceOpen(true)}
+            />
+            <ShowcaseReactionInline status={reactionStatus} onReact={handleSendPulse} />
+          </div>
+
+          <div className="order-2 lg:order-3 rounded-3xl border border-white/10 bg-black/30 p-6 space-y-6">
             <div className="flex flex-col gap-3">
               <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Mini-verso autoral</p>
               <MiniVersoCard
@@ -462,15 +475,17 @@ const PortalOraculo = () => {
               />
             </div>
           </div>
-          <IAInsightCard {...ORACULO_IA_PROFILE} compact />
+          <div className="order-4"><IAInsightCard {...ORACULO_IA_PROFILE} compact /></div>
           {experienceDone && (
-            <button
-              type="button"
-              onClick={handleOpenOraculo}
-              className="w-full rounded-2xl border border-amber-400/40 bg-amber-500/10 px-6 py-4 text-sm font-semibold tracking-wide text-amber-200 shadow-[0_8px_32px_rgba(251,191,36,0.15)] transition hover:bg-amber-500/20 hover:shadow-[0_8px_40px_rgba(251,191,36,0.25)]"
-            >
-              ✦ Pregunta, responde y mintea
-            </button>
+            <div className="order-5">
+              <button
+                type="button"
+                onClick={handleOpenOraculo}
+                className="w-full rounded-2xl border border-amber-400/40 bg-amber-500/10 px-6 py-4 text-sm font-semibold tracking-wide text-amber-200 shadow-[0_8px_32px_rgba(251,191,36,0.15)] transition hover:bg-amber-500/20 hover:shadow-[0_8px_40px_rgba(251,191,36,0.25)]"
+              >
+                ✦ Pregunta, responde y mintea
+              </button>
+            </div>
           )}
         </div>
 

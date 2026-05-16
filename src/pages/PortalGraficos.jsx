@@ -297,7 +297,7 @@ const PortalGraficos = () => {
           <PortalHeaderActions />
         </div>
 
-        <div className="mt-6 space-y-6">
+        <div className="mt-6 flex flex-col gap-6">
           <div className="relative overflow-hidden rounded-[2.5rem] border border-white/10 [transform:translateZ(0)] bg-gradient-to-br from-slate-900/85 via-black/60 to-fuchsia-900/25 shadow-[0_25px_65px_rgba(15,23,42,0.65)]">
             {latestGraficosReading?.slug ? (
               <div className="absolute top-4 right-4 z-10">
@@ -326,7 +326,7 @@ const PortalGraficos = () => {
                 </div>
               </div>
 
-              <div className="flex flex-col gap-5">
+              <div className="hidden lg:flex flex-col gap-5">
                 <VitranaQuestionReveal
                   question={l1Done ? (LEVEL2_QUESTIONS['grafico']?.question ?? vitranaQuestion) : vitranaQuestion}
                   buttonLabel={l1Done ? 'Tu progreso →' : undefined}
@@ -345,13 +345,13 @@ const PortalGraficos = () => {
                 question={vitranaQuestion}
                 portal="grafico"
                 onOpenNarrative={handleOpenPdf}
-                narrativeCTALabel="✦ Abrir swipe en PDF"
+                narrativeCTALabel="✦ Ver el swipe"
               />
             )}
           </div>
 
 
-          <div className="space-y-5 rounded-3xl border border-white/10 bg-gradient-to-br from-slate-950/80 via-black/60 to-fuchsia-900/30 p-6 lg:p-8">
+          <div className="order-3 lg:order-2 space-y-5 rounded-3xl border border-white/10 bg-gradient-to-br from-slate-950/80 via-black/60 to-fuchsia-900/30 p-6 lg:p-8">
             <p className="text-xs uppercase tracking-[0.35em] text-slate-400/80">Obra destacada</p>
             <div className="rounded-[32px] border border-white/10 bg-gradient-to-r from-slate-900/80 via-black/60 to-fuchsia-900/40 overflow-hidden shadow-[0_20px_60px_rgba(15,23,42,0.65)]">
               <div className="grid gap-0 lg:grid-cols-[1fr_1.3fr]">
@@ -393,7 +393,7 @@ const PortalGraficos = () => {
             </div>
           </div>
 
-          <div className="space-y-4 rounded-3xl border border-white/10 bg-black/30 p-5">
+          <div className="order-3 lg:order-2 space-y-4 rounded-3xl border border-white/10 bg-black/30 p-5">
             <p className="text-xs uppercase tracking-[0.35em] text-slate-400/80">Detonadores visuales</p>
             <div className="grid gap-3 md:grid-cols-2">
               <div className="rounded-2xl border border-white/10 bg-black/35 p-4">
@@ -412,7 +412,19 @@ const PortalGraficos = () => {
               </div>
             </div>
           </div>
-          <div className="rounded-3xl border border-white/10 bg-black/30 p-6 space-y-6">
+          <div className="order-3 lg:hidden rounded-3xl border border-white/10 bg-black/30 p-5 space-y-4">
+            <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Resonancia colectiva</p>
+            <VitranaQuestionReveal
+              question={l1Done ? (LEVEL2_QUESTIONS['grafico']?.question ?? vitranaQuestion) : vitranaQuestion}
+              buttonLabel={l1Done ? 'Tu progreso →' : undefined}
+              autoReveal={l1Done}
+              portal="grafico"
+              l2Done={l2Done}
+              onAnswer={() => setIsResonanceOpen(true)}
+            />
+            <ShowcaseReactionInline status={reactionStatus} onReact={handleSendPulse} />
+          </div>
+          <div className="order-2 lg:order-3 rounded-3xl border border-white/10 bg-black/30 p-6 space-y-6">
             <CollaboratorsPanel
               collaborators={[GRAFICOS_COLLABORATOR]}
               accentClassName="text-fuchsia-200/90"
@@ -444,15 +456,17 @@ const PortalGraficos = () => {
               <MiniVersoCard title={GRAFICOS_NOTA_AUTORAL.title} verse={GRAFICOS_NOTA_AUTORAL.verse} palette={GRAFICOS_TILE} />
             </div>
           </div>
-          <IAInsightCard {...GRAFICOS_IA_PROFILE} compact />
+          <div className="order-4"><IAInsightCard {...GRAFICOS_IA_PROFILE} compact /></div>
           {experienceDone && (
-            <button
-              type="button"
-              onClick={handleOpenPdf}
-              className="w-full rounded-2xl border border-amber-400/40 bg-amber-500/10 px-6 py-4 text-sm font-semibold tracking-wide text-amber-200 shadow-[0_8px_32px_rgba(251,191,36,0.15)] transition hover:bg-amber-500/20 hover:shadow-[0_8px_40px_rgba(251,191,36,0.25)]"
-            >
-              ✦ Abrir swipe en PDF
-            </button>
+            <div className="order-5">
+              <button
+                type="button"
+                onClick={handleOpenPdf}
+                className="w-full rounded-2xl border border-amber-400/40 bg-amber-500/10 px-6 py-4 text-sm font-semibold tracking-wide text-amber-200 shadow-[0_8px_32px_rgba(251,191,36,0.15)] transition hover:bg-amber-500/20 hover:shadow-[0_8px_40px_rgba(251,191,36,0.25)]"
+              >
+                ✦ Abrir swipe en PDF
+              </button>
+            </div>
           )}
         </div>
 
