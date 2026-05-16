@@ -263,10 +263,16 @@ const PortalJuegos = () => {
                 narrativeCTALabel={JUEGOS_DEFINITION.liveExperience?.ctaLabel || '✦ Abrir la app'}
               />
             )}
+            <div className="lg:hidden px-6 sm:px-8 pb-6 sm:pb-8 space-y-6">
+              <div className="flex flex-col gap-3">
+                <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Mini-verso autoral</p>
+                <MiniVersoCard title={JUEGOS_DEFINITION.cartaTitle} verse={JUEGOS_DEFINITION.notaAutoral} palette={JUEGOS_TILE} />
+              </div>
+            </div>
           </div>
 
           {embeddedAppUrl ? (
-            <div className="order-3 lg:order-2 rounded-3xl border border-emerald-200/20 bg-black/30 p-4 sm:p-5 space-y-4 shadow-[0_20px_60px_rgba(0,0,0,0.35)]">
+            <div className="lg:order-2 rounded-3xl border border-emerald-200/20 bg-black/30 p-4 sm:p-5 space-y-4 shadow-[0_20px_60px_rgba(0,0,0,0.35)]">
               <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
                 <div className="space-y-2">
                   <p className="text-xs uppercase tracking-[0.35em] text-emerald-100/75">Experiencia incrustada</p>
@@ -306,7 +312,7 @@ const PortalJuegos = () => {
             </div>
           ) : null}
 
-          <div className="order-2 lg:order-3 rounded-3xl border border-white/10 bg-black/30 p-6 space-y-6">
+          <div className="hidden lg:block lg:order-3 rounded-3xl border border-white/10 bg-black/30 p-6 space-y-6">
             <div className="flex flex-col gap-3">
               <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Mini-verso autoral</p>
               <MiniVersoCard

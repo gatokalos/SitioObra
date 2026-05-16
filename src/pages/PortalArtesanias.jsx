@@ -490,6 +490,13 @@ const PortalArtesanias = () => {
                 <ShowcaseReactionInline status={reactionStatus} onReact={handleSendPulse} />
               </div>
             </div>
+            <div className="lg:hidden px-6 sm:px-8 pb-6 sm:pb-8 space-y-6">
+              <CollaboratorsPanel collaborators={ARTESANIAS_COLLABORATORS} accentClassName="text-amber-200/90" />
+              <div className="flex flex-col gap-3">
+                <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Mini-verso autoral</p>
+                <MiniVersoCard title={ARTESANIAS_NOTA_AUTORAL.title} verse={ARTESANIAS_NOTA_AUTORAL.verse} palette={ARTESANIAS_TILE} />
+              </div>
+            </div>
             {isResonanceOpen && (
               <ResonanceModal
                 open={isResonanceOpen}
@@ -502,7 +509,7 @@ const PortalArtesanias = () => {
             )}
           </div>
 
-          <div className="order-3 lg:order-2 space-y-4">
+          <div className="lg:order-2 space-y-4">
             {/* Card 1: GATO */}
             <div className="overflow-hidden rounded-3xl border border-white/10 bg-slate-950">
               <div className="relative">
@@ -616,7 +623,7 @@ const PortalArtesanias = () => {
               </div>
             ) : null}
           </div>
-          <div className="order-2 lg:order-3 rounded-3xl border border-white/10 bg-black/30 p-6 space-y-6">
+          <div className="hidden lg:block lg:order-3 rounded-3xl border border-white/10 bg-black/30 p-6 space-y-6">
             <CollaboratorsPanel collaborators={ARTESANIAS_COLLABORATORS} accentClassName="text-amber-200/90" />
             <div className="flex flex-col gap-3">
               <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Mini-verso autoral</p>

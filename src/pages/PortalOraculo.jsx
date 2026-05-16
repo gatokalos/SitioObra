@@ -386,9 +386,15 @@ const PortalOraculo = () => {
                 narrativeCTALabel="✦ Mintear ahora"
               />
             )}
+            <div className="lg:hidden px-6 sm:px-8 pb-6 sm:pb-8 space-y-6">
+              <div className="flex flex-col gap-3">
+                <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Mini-verso autoral</p>
+                <MiniVersoCard title={ORACULO_NOTA_AUTORAL.title} verse={ORACULO_NOTA_AUTORAL.verse} palette={ORACULO_TILE} />
+              </div>
+            </div>
           </div>
 
-          <div className="order-3 lg:order-2 grid gap-6 lg:gap-10 lg:grid-cols-[2fr_1fr]">
+          <div className="lg:order-2 grid gap-6 lg:gap-10 lg:grid-cols-[2fr_1fr]">
             <div className="space-y-6">
               <div className="rounded-3xl border border-white/10 bg-black/30 p-6 space-y-4">
                 <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Minado simbólico</p>
@@ -452,7 +458,7 @@ const PortalOraculo = () => {
             </div>
           </div>
 
-          <div className="order-3 lg:hidden rounded-3xl border border-white/10 bg-black/30 p-5 space-y-4">
+          <div className="lg:hidden rounded-3xl border border-white/10 bg-black/30 p-5 space-y-4">
             <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Resonancia colectiva</p>
             <VitranaQuestionReveal
               question={l1Done ? (LEVEL2_QUESTIONS['oraculo']?.question ?? vitranaQuestion) : vitranaQuestion}
@@ -465,7 +471,7 @@ const PortalOraculo = () => {
             <ShowcaseReactionInline status={reactionStatus} onReact={handleSendPulse} />
           </div>
 
-          <div className="order-2 lg:order-3 rounded-3xl border border-white/10 bg-black/30 p-6 space-y-6">
+          <div className="hidden lg:block lg:order-3 rounded-3xl border border-white/10 bg-black/30 p-6 space-y-6">
             <div className="flex flex-col gap-3">
               <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Mini-verso autoral</p>
               <MiniVersoCard

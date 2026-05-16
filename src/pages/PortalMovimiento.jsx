@@ -461,9 +461,46 @@ const PortalMovimiento = () => {
                 narrativeCTALabel="✦ Ver los talleres"
               />
             )}
+            <div className="lg:hidden px-6 sm:px-8 pb-6 sm:pb-8 space-y-6">
+              <div className="rounded-2xl border border-white/10 bg-black/20 px-5 py-4">
+                <div className="flex items-center justify-between gap-3">
+                  <div className="inline-flex items-center gap-3">
+                    <span className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-white/20 bg-white/5 text-slate-200 shadow-[0_0_18px_rgba(148,163,184,0.22)]">
+                      <User size={16} />
+                    </span>
+                    <p className="text-[11px] uppercase tracking-[0.32em] text-slate-300/85">Colaboradores</p>
+                  </div>
+                  <button type="button" onClick={() => setIsMovementCreditsOpen((prev) => !prev)} className="text-xs uppercase tracking-[0.3em] text-slate-300 hover:text-white transition">
+                    {isMovementCreditsOpen ? 'Ocultar' : 'Abrir'}
+                  </button>
+                </div>
+                {isMovementCreditsOpen ? (
+                  <div className="mt-4 space-y-4">
+                    <p className="text-sm font-semibold text-slate-100">Colaboradores que buscamos</p>
+                    <ul className="mt-3 space-y-2 text-sm text-slate-300/90">
+                      {MOVEMENT_COLLABORATOR_CALL_ITEMS.map((item) => (
+                        <li key={`movement-collab-call-mobile-${item}`} className="flex items-start gap-2">
+                          <span className="mt-1 text-purple-300">•</span>
+                          <span>{item}</span>
+                        </li>
+                      ))}
+                    </ul>
+                    <div className="flex justify-end">
+                      <Button type="button" onClick={handleOpenCommunityComposer} className="w-full justify-center bg-gradient-to-r from-emerald-500/90 to-emerald-600/90 text-white hover:from-emerald-400/90 hover:to-emerald-500/90 sm:w-auto">
+                        Convocatoria abierta
+                      </Button>
+                    </div>
+                  </div>
+                ) : null}
+              </div>
+              <div className="flex flex-col gap-3">
+                <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Mini-verso autoral</p>
+                <MiniVersoCard title={MOVEMENT_NOTA_AUTORAL.title} verse={MOVEMENT_NOTA_AUTORAL.verse} palette={MOVEMENT_TILE} />
+              </div>
+            </div>
           </div>
 
-          <div className="rounded-3xl border border-white/10 bg-black/30 p-6 space-y-6">
+          <div className="hidden lg:block rounded-3xl border border-white/10 bg-black/30 p-6 space-y-6">
             <div className="rounded-2xl border border-white/10 bg-black/20 px-5 py-4">
               <div className="flex items-center justify-between gap-3">
                 <div className="inline-flex items-center gap-3">

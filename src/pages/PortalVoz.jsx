@@ -1045,6 +1045,24 @@ const PortalVoz = () => {
                 />
               </div>
             </div>
+            <div className="lg:hidden px-6 sm:px-8 pb-6 sm:pb-8 space-y-6">
+              {renderCollaboratorsSection()}
+              <div className="flex flex-col gap-3">
+                <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Mini-verso autoral</p>
+                <MiniVersoCard
+                  title={SCENE_PORTAL_NOTA_AUTORAL.title}
+                  verse={SCENE_PORTAL_NOTA_AUTORAL.verse}
+                  palette={{
+                    gradient: sceneTileGradient,
+                    border: sceneTileColors.border,
+                    text: sceneTileColors.text,
+                    accent: sceneTileColors.accent,
+                    background: sceneTileColors.background,
+                  }}
+                  effect="flip"
+                />
+              </div>
+            </div>
             {isResonanceOpen && (
               <ResonanceModal
                 open={isResonanceOpen}
@@ -1058,7 +1076,7 @@ const PortalVoz = () => {
           </div>
 
           {/* BLOQUE: Obra destacada */}
-          <div className="order-3 lg:order-2 relative overflow-hidden rounded-2xl border border-white/10 bg-black/30 p-6">
+          <div className="lg:order-2 relative overflow-hidden rounded-2xl border border-white/10 bg-black/30 p-6">
             <div className="absolute inset-0">
               <video
                 className="h-full w-full object-cover"
@@ -1518,7 +1536,7 @@ const PortalVoz = () => {
               </motion.div>
             )}
           </AnimatePresence>
-          <div className="order-2 lg:order-3 rounded-3xl border border-white/10 bg-black/30 p-6 space-y-6">
+          <div className="hidden lg:block lg:order-3 rounded-3xl border border-white/10 bg-black/30 p-6 space-y-6">
             {renderCollaboratorsSection()}
             <div className="flex flex-col gap-3">
               <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Mini-verso autoral</p>

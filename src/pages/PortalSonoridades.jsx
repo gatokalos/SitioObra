@@ -378,6 +378,13 @@ const PortalSonoridades = () => {
                 <ShowcaseReactionInline status={reactionStatus} onReact={handleSendPulse} />
               </div>
             </div>
+            <div className="lg:hidden px-6 sm:px-8 pb-6 sm:pb-8 space-y-6">
+              <CollaboratorsPanel collaborators={SONORIDADES_COLLABORATORS} accentClassName="text-cyan-200/90" />
+              <div className="flex flex-col gap-3">
+                <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Mini-verso autoral</p>
+                <MiniVersoCard title={SONORIDADES_NOTA_AUTORAL.title} verse={SONORIDADES_NOTA_AUTORAL.verse} palette={SONORIDADES_TILE} />
+              </div>
+            </div>
             {isResonanceOpen && (
               <ResonanceModal
                 open={isResonanceOpen}
@@ -391,7 +398,7 @@ const PortalSonoridades = () => {
           </div>
 
 
-          <div className="order-3 lg:order-2 space-y-5 rounded-3xl border border-white/10 bg-gradient-to-br from-slate-950/80 via-black/60 to-cyan-900/30 p-6 lg:p-8">
+          <div className="lg:order-2 space-y-5 rounded-3xl border border-white/10 bg-gradient-to-br from-slate-950/80 via-black/60 to-cyan-900/30 p-6 lg:p-8">
             <div className="flex flex-wrap items-center justify-between gap-3">
               <p className="text-xs uppercase tracking-[0.35em] text-slate-400/80">Camara de resonancia</p>
               <div className="inline-flex items-center gap-2 rounded-full border border-cyan-200/35 bg-cyan-400/10 px-3 py-1 text-[11px] uppercase tracking-[0.2em] text-cyan-100">
@@ -425,7 +432,7 @@ const PortalSonoridades = () => {
             </div>
           </div>
 
-          <div className="order-3 lg:order-2 space-y-4 rounded-3xl border border-white/10 bg-black/30 p-5">
+          <div className="lg:order-2 space-y-4 rounded-3xl border border-white/10 bg-black/30 p-5">
             <div className="rounded-2xl border border-white/10 bg-black/35 p-4 space-y-3">
               <p className="text-xs uppercase tracking-[0.32em] text-slate-400/80">Como explorar</p>
               <ol className="list-decimal list-inside space-y-2 text-slate-200 text-sm leading-relaxed">
@@ -442,7 +449,7 @@ const PortalSonoridades = () => {
               ))}
             </div>
           </div>
-          <div className="order-3 lg:hidden rounded-3xl border border-white/10 bg-black/30 p-5 space-y-4">
+          <div className="lg:hidden rounded-3xl border border-white/10 bg-black/30 p-5 space-y-4">
             <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Resonancia colectiva</p>
             <VitranaQuestionReveal
               question={l1Done ? (LEVEL2_QUESTIONS['sonoridades']?.question ?? vitranaQuestion) : vitranaQuestion}
@@ -454,7 +461,7 @@ const PortalSonoridades = () => {
             />
             <ShowcaseReactionInline status={reactionStatus} onReact={handleSendPulse} />
           </div>
-          <div className="order-2 lg:order-3 rounded-3xl border border-white/10 bg-black/30 p-6 space-y-6">
+          <div className="hidden lg:block lg:order-3 rounded-3xl border border-white/10 bg-black/30 p-6 space-y-6">
             <CollaboratorsPanel collaborators={SONORIDADES_COLLABORATORS} accentClassName="text-cyan-200/90" />
             <div className="flex flex-col gap-3">
               <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Mini-verso autoral</p>

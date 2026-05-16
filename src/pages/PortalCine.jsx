@@ -469,6 +469,13 @@ const PortalCine = () => {
                 <ShowcaseReactionInline status={reactionStatus} onReact={handleSendPulse} />
               </div>
             </div>
+            <div className="lg:hidden px-6 sm:px-8 pb-6 sm:pb-8 space-y-6">
+              <CollaboratorsPanel collaborators={CINE_COLLABORATORS} accentClassName="text-sky-200/90" />
+              <div className="flex flex-col gap-3">
+                <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Mini-verso autoral</p>
+                <MiniVersoCard title={CINE_NOTA_AUTORAL.title} verse={CINE_NOTA_AUTORAL.verse} palette={CINE_TILE} />
+              </div>
+            </div>
             {isResonanceOpen && (
               <ResonanceModal
                 open={isResonanceOpen}
@@ -482,7 +489,7 @@ const PortalCine = () => {
           </div>
 
 
-          <div className="order-3 lg:order-2 flex flex-col gap-4">
+          <div className="lg:order-2 flex flex-col gap-4">
           {renderImmersiveCinemaCard({
             title: QUIRON_DATA.title,
             eyebrow: 'Obra destacada',
@@ -506,7 +513,7 @@ const PortalCine = () => {
           </div>
           </div>
 
-          <div className="order-2 lg:order-3 rounded-3xl border border-white/10 bg-black/30 p-6 space-y-6">
+          <div className="hidden lg:block lg:order-3 rounded-3xl border border-white/10 bg-black/30 p-6 space-y-6">
             <CollaboratorsPanel collaborators={CINE_COLLABORATORS} accentClassName="text-sky-200/90" />
             <div className="flex flex-col gap-3">
               <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Mini-verso autoral</p>

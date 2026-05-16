@@ -338,6 +338,38 @@ const PortalGraficos = () => {
                 <ShowcaseReactionInline status={reactionStatus} onReact={handleSendPulse} />
               </div>
             </div>
+            <div className="lg:hidden px-6 sm:px-8 pb-6 sm:pb-8 space-y-6">
+              <CollaboratorsPanel
+                collaborators={[GRAFICOS_COLLABORATOR]}
+                accentClassName="text-fuchsia-200/90"
+                extraContent={(
+                  <div>
+                    <p className="text-sm font-semibold text-slate-100">Convocatoria abierta</p>
+                    <ul className="mt-3 space-y-2 text-sm text-slate-300/90">
+                      {GRAFICOS_COLLABORATOR_CALL_ITEMS.map((item) => (
+                        <li key={`grafico-collab-call-mobile-${item}`} className="flex items-start gap-2">
+                          <span className="mt-1 text-fuchsia-300">•</span>
+                          <span>{item}</span>
+                        </li>
+                      ))}
+                    </ul>
+                    <div className="flex justify-end mt-4">
+                      <Button
+                        type="button"
+                        onClick={handleOpenCommunityComposer}
+                        className="w-full justify-center bg-gradient-to-r from-fuchsia-500/90 to-purple-600/90 text-white hover:from-fuchsia-400/90 hover:to-purple-500/90 sm:w-auto"
+                      >
+                        Sumarme al laboratorio
+                      </Button>
+                    </div>
+                  </div>
+                )}
+              />
+              <div className="flex flex-col gap-3">
+                <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Mini-verso autoral</p>
+                <MiniVersoCard title={GRAFICOS_NOTA_AUTORAL.title} verse={GRAFICOS_NOTA_AUTORAL.verse} palette={GRAFICOS_TILE} />
+              </div>
+            </div>
             {isResonanceOpen && (
               <ResonanceModal
                 open={isResonanceOpen}
@@ -351,7 +383,7 @@ const PortalGraficos = () => {
           </div>
 
 
-          <div className="order-3 lg:order-2 space-y-5 rounded-3xl border border-white/10 bg-gradient-to-br from-slate-950/80 via-black/60 to-fuchsia-900/30 p-6 lg:p-8">
+          <div className="lg:order-2 space-y-5 rounded-3xl border border-white/10 bg-gradient-to-br from-slate-950/80 via-black/60 to-fuchsia-900/30 p-6 lg:p-8">
             <p className="text-xs uppercase tracking-[0.35em] text-slate-400/80">Obra destacada</p>
             <div className="rounded-[32px] border border-white/10 bg-gradient-to-r from-slate-900/80 via-black/60 to-fuchsia-900/40 overflow-hidden shadow-[0_20px_60px_rgba(15,23,42,0.65)]">
               <div className="grid gap-0 lg:grid-cols-[1fr_1.3fr]">
@@ -393,7 +425,7 @@ const PortalGraficos = () => {
             </div>
           </div>
 
-          <div className="order-3 lg:order-2 space-y-4 rounded-3xl border border-white/10 bg-black/30 p-5">
+          <div className="lg:order-2 space-y-4 rounded-3xl border border-white/10 bg-black/30 p-5">
             <p className="text-xs uppercase tracking-[0.35em] text-slate-400/80">Detonadores visuales</p>
             <div className="grid gap-3 md:grid-cols-2">
               <div className="rounded-2xl border border-white/10 bg-black/35 p-4">
@@ -412,7 +444,7 @@ const PortalGraficos = () => {
               </div>
             </div>
           </div>
-          <div className="order-3 lg:hidden rounded-3xl border border-white/10 bg-black/30 p-5 space-y-4">
+          <div className="lg:hidden rounded-3xl border border-white/10 bg-black/30 p-5 space-y-4">
             <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Resonancia colectiva</p>
             <VitranaQuestionReveal
               question={l1Done ? (LEVEL2_QUESTIONS['grafico']?.question ?? vitranaQuestion) : vitranaQuestion}
@@ -424,7 +456,7 @@ const PortalGraficos = () => {
             />
             <ShowcaseReactionInline status={reactionStatus} onReact={handleSendPulse} />
           </div>
-          <div className="order-2 lg:order-3 rounded-3xl border border-white/10 bg-black/30 p-6 space-y-6">
+          <div className="hidden lg:block lg:order-3 rounded-3xl border border-white/10 bg-black/30 p-6 space-y-6">
             <CollaboratorsPanel
               collaborators={[GRAFICOS_COLLABORATOR]}
               accentClassName="text-fuchsia-200/90"
