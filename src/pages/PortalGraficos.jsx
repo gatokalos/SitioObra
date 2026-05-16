@@ -339,35 +339,17 @@ const PortalGraficos = () => {
               </div>
             </div>
             <div className="lg:hidden px-6 sm:px-8 pb-6 sm:pb-8 space-y-6">
-              <CollaboratorsPanel
-                collaborators={[GRAFICOS_COLLABORATOR]}
-                accentClassName="text-fuchsia-200/90"
-                extraContent={(
-                  <div>
-                    <p className="text-sm font-semibold text-slate-100">Convocatoria abierta</p>
-                    <ul className="mt-3 space-y-2 text-sm text-slate-300/90">
-                      {GRAFICOS_COLLABORATOR_CALL_ITEMS.map((item) => (
-                        <li key={`grafico-collab-call-mobile-${item}`} className="flex items-start gap-2">
-                          <span className="mt-1 text-fuchsia-300">•</span>
-                          <span>{item}</span>
-                        </li>
-                      ))}
-                    </ul>
-                    <div className="flex justify-end mt-4">
-                      <Button
-                        type="button"
-                        onClick={handleOpenCommunityComposer}
-                        className="w-full justify-center bg-gradient-to-r from-fuchsia-500/90 to-purple-600/90 text-white hover:from-fuchsia-400/90 hover:to-purple-500/90 sm:w-auto"
-                      >
-                        Sumarme al laboratorio
-                      </Button>
-                    </div>
-                  </div>
-                )}
-              />
               <div className="flex flex-col gap-3">
                 <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Mini-verso autoral</p>
                 <MiniVersoCard title={GRAFICOS_NOTA_AUTORAL.title} verse={GRAFICOS_NOTA_AUTORAL.verse} palette={GRAFICOS_TILE} />
+              </div>
+              <div className="flex flex-col items-center gap-3 pb-2">
+                <div className="flex items-center justify-center gap-3 flex-wrap">
+                  <div className="h-16 w-16 rounded-full border border-white/15 bg-white/5 overflow-hidden shadow-lg shadow-black/30">
+                    <img src={GRAFICOS_COLLABORATOR.image || '/assets/logoapp.webp'} alt={`Retrato de ${GRAFICOS_COLLABORATOR.name}`} className="h-full w-full object-cover" loading="lazy" />
+                  </div>
+                </div>
+                <p className="text-xs uppercase tracking-[0.35em] text-center text-fuchsia-200/90">Cómplices</p>
               </div>
             </div>
             {isResonanceOpen && (

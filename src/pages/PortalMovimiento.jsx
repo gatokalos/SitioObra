@@ -462,6 +462,10 @@ const PortalMovimiento = () => {
               />
             )}
             <div className="lg:hidden px-6 sm:px-8 pb-6 sm:pb-8 space-y-6">
+              <div className="flex flex-col gap-3">
+                <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Mini-verso autoral</p>
+                <MiniVersoCard title={MOVEMENT_NOTA_AUTORAL.title} verse={MOVEMENT_NOTA_AUTORAL.verse} palette={MOVEMENT_TILE} />
+              </div>
               <div className="rounded-2xl border border-white/10 bg-black/20 px-5 py-4">
                 <div className="flex items-center justify-between gap-3">
                   <div className="inline-flex items-center gap-3">
@@ -492,10 +496,6 @@ const PortalMovimiento = () => {
                     </div>
                   </div>
                 ) : null}
-              </div>
-              <div className="flex flex-col gap-3">
-                <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Mini-verso autoral</p>
-                <MiniVersoCard title={MOVEMENT_NOTA_AUTORAL.title} verse={MOVEMENT_NOTA_AUTORAL.verse} palette={MOVEMENT_TILE} />
               </div>
             </div>
           </div>

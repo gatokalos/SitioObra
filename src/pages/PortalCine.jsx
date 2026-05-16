@@ -470,11 +470,22 @@ const PortalCine = () => {
               </div>
             </div>
             <div className="lg:hidden px-6 sm:px-8 pb-6 sm:pb-8 space-y-6">
-              <CollaboratorsPanel collaborators={CINE_COLLABORATORS} accentClassName="text-sky-200/90" />
               <div className="flex flex-col gap-3">
                 <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Mini-verso autoral</p>
                 <MiniVersoCard title={CINE_NOTA_AUTORAL.title} verse={CINE_NOTA_AUTORAL.verse} palette={CINE_TILE} />
               </div>
+              {CINE_COLLABORATORS.length > 0 ? (
+                <div className="flex flex-col items-center gap-3 pb-2">
+                  <div className="flex items-center justify-center gap-3 flex-wrap">
+                    {CINE_COLLABORATORS.map((c, i) => (
+                      <div key={c.id ?? `cine-collab-mobile-${i}`} className="h-16 w-16 rounded-full border border-white/15 bg-white/5 overflow-hidden shadow-lg shadow-black/30">
+                        <img src={c.image || '/assets/logoapp.webp'} alt={`Retrato de ${c.name}`} className="h-full w-full object-cover" loading="lazy" />
+                      </div>
+                    ))}
+                  </div>
+                  <p className="text-xs uppercase tracking-[0.35em] text-center text-sky-200/90">Cómplices</p>
+                </div>
+              ) : null}
             </div>
             {isResonanceOpen && (
               <ResonanceModal
