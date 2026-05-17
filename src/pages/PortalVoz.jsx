@@ -1088,7 +1088,8 @@ const PortalVoz = () => {
                 playsInline
                 preload="metadata"
               />
-              <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(to_bottom,rgba(0,0,0,0.05)_0%,rgba(0,0,0,0.15)_25%,rgba(0,0,0,0.88)_48%,rgba(0,0,0,0.97)_60%,rgba(0,0,0,1)_100%)]" />
+              <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-black/10 via-black/30 to-black/90" />
+              <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(255,255,255,0.06),_transparent_38%),linear-gradient(180deg,rgba(0,0,0,0.02)_0%,rgba(0,0,0,0.12)_35%,rgba(0,0,0,0.78)_100%)]" />
             </div>
             <div className="relative z-10 flex min-h-[30rem] flex-col">
               <p className="mb-2 text-xs uppercase tracking-[0.35em] text-slate-300/75">Obra destacada</p>
@@ -1112,7 +1113,7 @@ const PortalVoz = () => {
                 >
                   Próximas funciones
                 </button>
-                <div className={`pt-4 border-t border-white/10 lg:hidden space-y-4 transition-opacity duration-300${isResonanceOpen ? ' opacity-30 pointer-events-none' : ''}`}>
+                <div className={`pt-5 mt-2 border-t border-white/20 lg:hidden space-y-4 transition-opacity duration-300${isResonanceOpen ? ' opacity-30 pointer-events-none' : ''}`}>
                   <VitranaQuestionReveal
                     question={l1Done ? (LEVEL2_QUESTIONS['obra']?.question ?? vitranaQuestion) : vitranaQuestion}
                     buttonLabel={l1Done ? 'Tu progreso →' : undefined}
