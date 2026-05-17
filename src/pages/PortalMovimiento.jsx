@@ -560,8 +560,7 @@ const PortalMovimiento = () => {
             />
           </div>
 
-          <div className="lg:hidden rounded-3xl border border-white/10 bg-black/30 p-5 space-y-4">
-            <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Resonancia colectiva</p>
+          <div className={`lg:hidden rounded-3xl border border-white/10 bg-black/30 p-5 space-y-4 transition-opacity duration-300${isResonanceOpen ? ' opacity-30 pointer-events-none' : ''}`}>
             <VitranaQuestionReveal
               question={l1Done ? (LEVEL2_QUESTIONS['movimiento']?.question ?? vitranaQuestion) : vitranaQuestion}
               buttonLabel={l1Done ? 'Tu progreso →' : undefined}

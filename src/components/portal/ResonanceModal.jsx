@@ -486,11 +486,7 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, narr
 
                                 {/* Badge + chevron */}
                                 <div className="shrink-0 flex items-center gap-1.5">
-                                  {isCompleted ? (
-                                    <span className="inline-flex h-6 w-6 items-center justify-center rounded-full border border-emerald-400/35 bg-emerald-500/10 text-emerald-300">
-                                      <Check size={11} className="shrink-0" />
-                                    </span>
-                                  ) : isAvailable ? (
+                                  {isAvailable ? (
                                     <>
                                       <span className="rounded-full border border-sky-400/30 bg-sky-500/10 px-1.5 py-0.5 text-[0.52rem] uppercase tracking-[0.1em] text-sky-300/80 leading-none">
                                         Activo
@@ -500,9 +496,9 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, narr
                                         className={`text-white/30 transition-transform duration-200 ${l2Open ? 'rotate-180' : ''}`}
                                       />
                                     </>
-                                  ) : (
+                                  ) : !isCompleted ? (
                                     <Lock size={11} className="text-white/[0.18]" />
-                                  )}
+                                  ) : null}
                                 </div>
                               </div>
 

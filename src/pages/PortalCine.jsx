@@ -499,8 +499,7 @@ const PortalCine = () => {
             tags: QUIRON_DATA.tags,
             accentClassName: 'bg-gradient-to-br from-slate-950/80 via-black/60 to-purple-900/30',
           })}
-          <div className="rounded-3xl border border-white/10 bg-black/30 p-5 lg:hidden space-y-4">
-            <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Resonancia colectiva</p>
+          <div className={`rounded-3xl border border-white/10 bg-black/30 p-5 lg:hidden space-y-4 transition-opacity duration-300${isResonanceOpen ? ' opacity-30 pointer-events-none' : ''}`}>
             <VitranaQuestionReveal
               question={l1Done ? (LEVEL2_QUESTIONS['cine']?.question ?? vitranaQuestion) : vitranaQuestion}
               buttonLabel={l1Done ? 'Tu progreso →' : undefined}

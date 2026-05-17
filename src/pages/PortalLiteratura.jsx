@@ -412,8 +412,7 @@ const PortalLiteratura = () => {
                     {isNovelaCheckoutLoading ? 'Abriendo checkout...' : 'Comprar edición física'}
                   </button>
                 </div>
-                <div className="pt-4 border-t border-white/10 lg:hidden space-y-4">
-                  <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Resonancia colectiva</p>
+                <div className={`pt-4 border-t border-white/10 lg:hidden space-y-4 transition-opacity duration-300${isResonanceOpen ? ' opacity-30 pointer-events-none' : ''}`}>
                   <VitranaQuestionReveal
                     question={l1Done ? (LEVEL2_QUESTIONS['literatura']?.question ?? vitranaQuestion) : vitranaQuestion}
                     buttonLabel={l1Done ? 'Tu progreso →' : undefined}
