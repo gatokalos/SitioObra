@@ -1077,10 +1077,11 @@ const PortalVoz = () => {
           </div>
 
           {/* BLOQUE: Obra destacada */}
-          <div className="lg:order-2 relative overflow-hidden rounded-2xl border border-white/10 bg-black/30 p-6">
-            <div className="absolute inset-0">
+          <div className="lg:order-2 overflow-hidden rounded-2xl border border-white/10 bg-black/40">
+            {/* Video — sección superior, altura acotada, video completo sin recorte vertical */}
+            <div className="relative w-full bg-black overflow-hidden">
               <video
-                className="h-full w-full object-cover"
+                className="w-full object-contain max-h-[22rem]"
                 src={OBRA_TRAILER_URL}
                 autoPlay
                 muted
@@ -1088,47 +1089,44 @@ const PortalVoz = () => {
                 playsInline
                 preload="metadata"
               />
-              <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-black/10 via-black/30 to-black/90" />
-              <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(255,255,255,0.06),_transparent_38%),linear-gradient(180deg,rgba(0,0,0,0.02)_0%,rgba(0,0,0,0.12)_35%,rgba(0,0,0,0.78)_100%)]" />
+              <div className="pointer-events-none absolute inset-x-0 bottom-0 h-24 bg-gradient-to-b from-transparent via-black/60 to-black/95" />
             </div>
-            <div className="relative z-10 flex min-h-[30rem] flex-col">
-              <p className="mb-2 text-xs uppercase tracking-[0.35em] text-slate-300/75">Obra destacada</p>
-              <h4 className="font-display text-2xl text-slate-100">Es un gato encerrado</h4>
-
-              <div aria-hidden="true" className="h-[11rem] sm:h-[13rem]" />
-
-              <div className="mt-auto space-y-4">
-                <p className="text-sm leading-relaxed text-slate-300/85">
-                  Antes de convertirse en un universo transmedial, esta obra existió como un encuentro escénico atravesado por sueños lúcidos, rabia contenida y preguntas difíciles de nombrar.
-                </p>
-                <div className="flex flex-wrap gap-2">
-                  {['Teatro', 'Sueños lúcidos', 'Drama psicológico'].map((tag, i) => (
-                    <span key={i} className="rounded-full border border-purple-400/30 bg-purple-900/20 px-3 py-1 text-xs text-purple-100">{tag}</span>
-                  ))}
-                </div>
-                <button
-                  type="button"
-                  onClick={() => navigate('/portal-encuentros', { state: { from: location.pathname } })}
-                  className="inline-flex w-full items-center justify-center rounded-full border border-purple-400/40 text-purple-200 hover:bg-purple-500/10 px-6 py-2.5 text-sm font-semibold transition"
-                >
-                  Próximas funciones
-                </button>
-                <div className={`pt-5 mt-2 border-t border-white/20 lg:hidden space-y-4 transition-opacity duration-300${isResonanceOpen ? ' opacity-30 pointer-events-none' : ''}`}>
-                  <VitranaQuestionReveal
-                    question={l1Done ? (LEVEL2_QUESTIONS['obra']?.question ?? vitranaQuestion) : vitranaQuestion}
-                    buttonLabel={l1Done ? 'Tu progreso →' : undefined}
-                    autoReveal={l1Done}
-                    portal="obra"
-                    l2Done={l2Done}
-                    onAnswer={() => setIsResonanceOpen(true)}
-                  />
-                  <ShowcaseReactionInline
-                    description="Estamos explorando las emociones contemporáneas a través de experiencias narrativas."
-                    buttonLabel="¿no te salen las palabras? ¡déjanos un pulso!"
-                    status={reactionStatus}
-                    onReact={handleSendPulse}
-                  />
-                </div>
+            {/* Contenido — debajo del video */}
+            <div className="p-6 space-y-4">
+              <div>
+                <p className="mb-1 text-xs uppercase tracking-[0.35em] text-slate-300/75">Obra destacada</p>
+                <h4 className="font-display text-2xl text-slate-100">Es un gato encerrado</h4>
+              </div>
+              <p className="text-sm leading-relaxed text-slate-300/85">
+                Antes de convertirse en un universo transmedial, esta obra existió como un encuentro escénico atravesado por sueños lúcidos, rabia contenida y preguntas difíciles de nombrar.
+              </p>
+              <div className="flex flex-wrap gap-2">
+                {['Teatro', 'Sueños lúcidos', 'Drama psicológico'].map((tag, i) => (
+                  <span key={i} className="rounded-full border border-purple-400/30 bg-purple-900/20 px-3 py-1 text-xs text-purple-100">{tag}</span>
+                ))}
+              </div>
+              <button
+                type="button"
+                onClick={() => navigate('/portal-encuentros', { state: { from: location.pathname } })}
+                className="inline-flex w-full items-center justify-center rounded-full border border-purple-400/40 text-purple-200 hover:bg-purple-500/10 px-6 py-2.5 text-sm font-semibold transition"
+              >
+                Próximas funciones
+              </button>
+              <div className={`pt-5 mt-2 border-t border-white/20 lg:hidden space-y-4 transition-opacity duration-300${isResonanceOpen ? ' opacity-30 pointer-events-none' : ''}`}>
+                <VitranaQuestionReveal
+                  question={l1Done ? (LEVEL2_QUESTIONS['obra']?.question ?? vitranaQuestion) : vitranaQuestion}
+                  buttonLabel={l1Done ? 'Tu progreso →' : undefined}
+                  autoReveal={l1Done}
+                  portal="obra"
+                  l2Done={l2Done}
+                  onAnswer={() => setIsResonanceOpen(true)}
+                />
+                <ShowcaseReactionInline
+                  description="Estamos explorando las emociones contemporáneas a través de experiencias narrativas."
+                  buttonLabel="¿no te salen las palabras? ¡déjanos un pulso!"
+                  status={reactionStatus}
+                  onReact={handleSendPulse}
+                />
               </div>
             </div>
           </div>
