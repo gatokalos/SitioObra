@@ -1090,6 +1090,7 @@ const PortalVoz = () => {
                 preload="metadata"
               />
               <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-black/55 via-transparent to-black/88" />
+              <div className="pointer-events-none absolute inset-x-0 bottom-0 h-20 bg-gradient-to-b from-transparent to-black" />
               {/* Overlay superior: eyebrow + título */}
               <div className="absolute top-0 left-0 p-5">
                 <p className="mb-1 text-xs uppercase tracking-[0.35em] text-slate-300/75">Obra destacada</p>
@@ -1116,6 +1117,10 @@ const PortalVoz = () => {
             </div>
             {/* Pleca + Sección Resonancia — fondo propio, el video no sangra aquí */}
             <div className={`border-t border-white/20 bg-slate-950/80 p-5 lg:hidden space-y-4 transition-opacity duration-300${isResonanceOpen ? ' opacity-30 pointer-events-none' : ''}`}>
+              <div>
+                <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Resonancias contemporáneas</p>
+                <h4 className="font-display text-xl text-amber-300">Formas de sentir</h4>
+              </div>
               <VitranaQuestionReveal
                 question={l1Done ? (LEVEL2_QUESTIONS['obra']?.question ?? vitranaQuestion) : vitranaQuestion}
                 buttonLabel={l1Done ? 'Tu progreso →' : undefined}

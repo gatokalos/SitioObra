@@ -2119,7 +2119,7 @@ const rendernotaAutoral = () => {
 
       const reactionDetails = {
         showcaseId: 'miniversos',
-        description: 'Estamos explorando las emociones contemporáneas a través de preguntas y experiencias narrativas.',
+        description: 'Estamos creando espacios para explorar lo que sentimos y cómo eso nos acerca a otrxs.',
         buttonLabel: '¿no te salen las palabras? ¡déjanos un pulso!',
         className: 'mt-4',
       };
@@ -3369,7 +3369,7 @@ const rendernotaAutoral = () => {
         className: 'rounded-3xl border border-white/10 bg-black/25 p-6 space-y-5',
         reactionProps: {
           showcaseId: 'copycats',
-          description: 'Estamos explorando las emociones contemporáneas a través de preguntas y experiencias narrativas.',
+          description: 'Estamos creando espacios para explorar lo que sentimos y cómo eso nos acerca a otrxs.',
           buttonLabel: '¿No te salen las palabras? ¡déjanos un pulso!',
           className: 'mt-2 bg-gradient-to-r from-slate-900/40 to-purple-900/20',
         },
@@ -4044,7 +4044,7 @@ const rendernotaAutoral = () => {
                         {activeShowcase === 'miniversos' ? (
                           <ShowcaseReactionInline
                             showcaseId="miniversos"
-                            description="Estamos explorando las emociones contemporáneas a través de preguntas y experiencias narrativas."
+                            description="Estamos creando espacios para explorar lo que sentimos y cómo eso nos acerca a otrxs."
                             buttonLabel="¿no te salen las palabras? ¡déjanos un pulso!"
                             className="mt-4"
                           />
@@ -4070,7 +4070,7 @@ const rendernotaAutoral = () => {
                         />
                         <ShowcaseReactionInline
                           showcaseId="miniversoNovela"
-                          description="Estamos explorando las emociones contemporáneas a través de preguntas y experiencias narrativas."
+                          description="Estamos creando espacios para explorar lo que sentimos y cómo eso nos acerca a otrxs."
                           buttonLabel="¿no te salen las palabras? ¡déjanos un pulso!"
                           className="mt-4"
                         />
@@ -4095,7 +4095,7 @@ const rendernotaAutoral = () => {
                         />
                         <ShowcaseReactionInline
                           showcaseId="lataza"
-                          description="Estamos explorando las emociones contemporáneas a través de preguntas y experiencias narrativas."
+                          description="Estamos creando espacios para explorar lo que sentimos y cómo eso nos acerca a otrxs."
                           buttonLabel="¿no te salen las palabras? ¡déjanos un pulso!"
                           className="mt-4"
                         />
@@ -4120,7 +4120,7 @@ const rendernotaAutoral = () => {
                         />
                         <ShowcaseReactionInline
                           showcaseId="miniversoGrafico"
-                          description="Estamos explorando las emociones contemporáneas a través de preguntas y experiencias narrativas."
+                          description="Estamos creando espacios para explorar lo que sentimos y cómo eso nos acerca a otrxs."
                           buttonLabel="¿no te salen las palabras? ¡déjanos un pulso!"
                           className="mt-4"
                         />
@@ -4145,7 +4145,7 @@ const rendernotaAutoral = () => {
                         />
                         <ShowcaseReactionInline
                           showcaseId="copycats"
-                          description="Estamos explorando las emociones contemporáneas a través de preguntas y experiencias narrativas."
+                          description="Estamos creando espacios para explorar lo que sentimos y cómo eso nos acerca a otrxs."
                           buttonLabel="¿no te salen las palabras? ¡déjanos un pulso!"
                           className="mt-4"
                         />
@@ -4170,7 +4170,7 @@ const rendernotaAutoral = () => {
                         />
                         <ShowcaseReactionInline
                           showcaseId="miniversoSonoro"
-                          description="Estamos explorando las emociones contemporáneas a través de preguntas y experiencias narrativas."
+                          description="Estamos creando espacios para explorar lo que sentimos y cómo eso nos acerca a otrxs."
                           buttonLabel="¿no te salen las palabras? ¡déjanos un pulso!"
                           className="mt-4"
                         />
@@ -4195,7 +4195,7 @@ const rendernotaAutoral = () => {
                         />
                         <ShowcaseReactionInline
                           showcaseId="miniversoMovimiento"
-                          description="Estamos explorando las emociones contemporáneas a través de preguntas y experiencias narrativas."
+                          description="Estamos creando espacios para explorar lo que sentimos y cómo eso nos acerca a otrxs."
                           buttonLabel="¿no te salen las palabras? ¡déjanos un pulso!"
                           className="mt-4"
                         />
@@ -4220,7 +4220,7 @@ const rendernotaAutoral = () => {
                         />
                         <ShowcaseReactionInline
                           showcaseId="apps"
-                          description="Estamos explorando las emociones contemporáneas a través de preguntas y experiencias narrativas."
+                          description="Estamos creando espacios para explorar lo que sentimos y cómo eso nos acerca a otrxs."
                           buttonLabel="¿no te salen las palabras? ¡déjanos un pulso!"
                           className="mt-4"
                         />
@@ -4245,7 +4245,7 @@ const rendernotaAutoral = () => {
                         />
                         <ShowcaseReactionInline
                           showcaseId="oraculo"
-                          description="Estamos explorando las emociones contemporáneas a través de preguntas y experiencias narrativas."
+                          description="Estamos creando espacios para explorar lo que sentimos y cómo eso nos acerca a otrxs."
                           buttonLabel="¿no te salen las palabras? ¡déjanos un pulso!"
                           className="mt-4"
                         />

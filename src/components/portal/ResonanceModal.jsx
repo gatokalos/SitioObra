@@ -615,16 +615,16 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, narr
                           </div>
                           <h3
                             id="resonance-modal-title"
-                            className="font-display leading-tight tracking-tight text-white"
+                            className="font-display leading-tight tracking-tight text-amber-300"
                             style={{ fontSize: 'clamp(1.4rem, 5vw, 2rem)' }}
                           >
-                            Resonancia colectiva
+                            {question ?? 'Resonancia colectiva'}
                           </h3>
                         </div>
 
                         <form
                           onSubmit={handleSubmit}
-                          className="space-y-2.5 lg:grid lg:grid-cols-2 lg:gap-2.5 lg:space-y-0"
+                          className="space-y-2.5"
                         >
                           <div className="space-y-1">
                             <label className="text-xs font-medium text-slate-200">Tu nombre</label>
@@ -638,25 +638,13 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, narr
                             />
                           </div>
                           <div className="space-y-1">
-                            <label className="text-xs font-medium text-slate-200">Correo electrónico</label>
-                            <input
-                              name="email"
-                              type="email"
-                              value={formData.email}
-                              onChange={handleChange}
-                              required
-                              className="form-surface w-full px-3 py-2 text-sm"
-                              placeholder="nombre@correo.com"
-                            />
-                          </div>
-                          <div className="space-y-1 lg:col-span-2">
                             <label className="text-xs font-medium text-slate-200">Tu intuición</label>
                             <textarea
                               name="respuesta"
                               value={formData.respuesta}
                               onChange={handleChange}
                               required
-                              rows={2}
+                              rows={4}
                               className="form-surface w-full resize-none px-3 py-2 text-sm"
                               placeholder={question ?? '¿Qué te resuena?'}
                             />
@@ -665,7 +653,7 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, narr
                             ref={submitBtnRef}
                             type="submit"
                             disabled={submitting}
-                            className="relative w-full rounded-full border border-purple-500/70 px-4 py-2.5 text-xs uppercase tracking-[0.25em] text-purple-100 shadow-[0_15px_45px_rgba(67,56,202,0.45)] transition hover:bg-purple-500/20 disabled:opacity-50 lg:col-span-2"
+                            className="relative w-full rounded-full border border-purple-500/70 px-4 py-2.5 text-xs uppercase tracking-[0.25em] text-purple-100 shadow-[0_15px_45px_rgba(67,56,202,0.45)] transition hover:bg-purple-500/20 disabled:opacity-50"
                           >
                             {submitting ? 'Enviando…' : 'Enviar'}
                           </button>
