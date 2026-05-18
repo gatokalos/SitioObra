@@ -902,7 +902,7 @@ const MiniverseModal = ({
         lead: 'Aquí las nueve vidas del universo en un formato más familiar:',
         highlight:
           'un ecosistema listo para tocar, intervenir y volver cuando quieras.',
-          continuation: 'Con $50 MXN al mes, accedes a la versión completa.'
+          continuation: newFunction()
       };
     }
       return {
@@ -910,6 +910,10 @@ const MiniverseModal = ({
       highlight: 'muchos niños y jóvenes tijuanenses las viven cada día en silencio.',
       continuation: 'Tu huella ayuda a detectarlas y acompañarlas a tiempo.'
     };
+
+    function newFunction() {
+      return 'Accede a los registros, procesos y formas que existen detrás del universo.';
+    }
   }, [activeTab]);
   const showcaseMiniverses = useMemo(
     () => MINIVERSE_CARDS.filter((card) => !card.isUpcoming),

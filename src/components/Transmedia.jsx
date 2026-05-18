@@ -4033,6 +4033,10 @@ const rendernotaAutoral = () => {
                     </div>
                     {activeDefinition.type === 'tragedia' ? (
                       <>
+                        <div className="mb-3">
+                          <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Resonancia colectiva</p>
+                          <h4 className="font-display text-xl text-amber-300">Formas de sentir</h4>
+                        </div>
                         <VitranaQuestionReveal
                           question={activePortalL1Done ? (LEVEL2_QUESTIONS['obra']?.question ?? VITRANA_QUESTION_BY_SHOWCASE['miniversos']) : VITRANA_QUESTION_BY_SHOWCASE['miniversos']}
                           buttonLabel={activePortalL1Done ? 'Tu progreso →' : undefined}
@@ -4040,6 +4044,7 @@ const rendernotaAutoral = () => {
                           portal="obra"
                           l2Done={activePortalL2Done}
                           onAnswer={() => setIsDramaResonanceOpen(true)}
+                          label=""
                         />
                         {activeShowcase === 'miniversos' ? (
                           <ShowcaseReactionInline
@@ -4060,6 +4065,10 @@ const rendernotaAutoral = () => {
                       </>
                     ) : activeShowcase === 'miniversoNovela' ? (
                       <>
+                        <div className="mb-3">
+                          <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Resonancia colectiva</p>
+                          <h4 className="font-display text-xl text-amber-300">Formas de sentir</h4>
+                        </div>
                         <VitranaQuestionReveal
                           question={activePortalL1Done ? (LEVEL2_QUESTIONS['literatura']?.question ?? VITRANA_QUESTION_BY_SHOWCASE['miniversoNovela']) : VITRANA_QUESTION_BY_SHOWCASE['miniversoNovela']}
                           buttonLabel={activePortalL1Done ? 'Tu progreso →' : undefined}
@@ -4067,6 +4076,7 @@ const rendernotaAutoral = () => {
                           portal="literatura"
                           l2Done={activePortalL2Done}
                           onAnswer={() => setIsLiteraturaResonanceOpen(true)}
+                          label=""
                         />
                         <ShowcaseReactionInline
                           showcaseId="miniversoNovela"
@@ -4085,6 +4095,10 @@ const rendernotaAutoral = () => {
                       </>
                     ) : activeShowcase === 'lataza' ? (
                       <>
+                        <div className="mb-3">
+                          <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Resonancia colectiva</p>
+                          <h4 className="font-display text-xl text-amber-300">Formas de sentir</h4>
+                        </div>
                         <VitranaQuestionReveal
                           question={activePortalL1Done ? (LEVEL2_QUESTIONS['artesanias']?.question ?? VITRANA_QUESTION_BY_SHOWCASE['lataza']) : VITRANA_QUESTION_BY_SHOWCASE['lataza']}
                           buttonLabel={activePortalL1Done ? 'Tu progreso →' : undefined}
@@ -4092,6 +4106,7 @@ const rendernotaAutoral = () => {
                           portal="artesanias"
                           l2Done={activePortalL2Done}
                           onAnswer={() => setIsArtesaniasResonanceOpen(true)}
+                          label=""
                         />
                         <ShowcaseReactionInline
                           showcaseId="lataza"
@@ -4110,6 +4125,10 @@ const rendernotaAutoral = () => {
                       </>
                     ) : activeShowcase === 'miniversoGrafico' ? (
                       <>
+                        <div className="mb-3">
+                          <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Resonancia colectiva</p>
+                          <h4 className="font-display text-xl text-amber-300">Formas de sentir</h4>
+                        </div>
                         <VitranaQuestionReveal
                           question={activePortalL1Done ? (LEVEL2_QUESTIONS['grafico']?.question ?? VITRANA_QUESTION_BY_SHOWCASE['miniversoGrafico']) : VITRANA_QUESTION_BY_SHOWCASE['miniversoGrafico']}
                           buttonLabel={activePortalL1Done ? 'Tu progreso →' : undefined}
@@ -4117,6 +4136,7 @@ const rendernotaAutoral = () => {
                           portal="grafico"
                           l2Done={activePortalL2Done}
                           onAnswer={() => setIsGraficosResonanceOpen(true)}
+                          label=""
                         />
                         <ShowcaseReactionInline
                           showcaseId="miniversoGrafico"
@@ -4135,6 +4155,10 @@ const rendernotaAutoral = () => {
                       </>
                     ) : activeShowcase === 'copycats' ? (
                       <>
+                        <div className="mb-3">
+                          <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Resonancia colectiva</p>
+                          <h4 className="font-display text-xl text-amber-300">Formas de sentir</h4>
+                        </div>
                         <VitranaQuestionReveal
                           question={activePortalL1Done ? (LEVEL2_QUESTIONS['cine']?.question ?? VITRANA_QUESTION_BY_SHOWCASE['cine']) : VITRANA_QUESTION_BY_SHOWCASE['cine']}
                           buttonLabel={activePortalL1Done ? 'Tu progreso →' : undefined}
@@ -4142,6 +4166,7 @@ const rendernotaAutoral = () => {
                           portal="cine"
                           l2Done={activePortalL2Done}
                           onAnswer={() => setIsCineResonanceOpen(true)}
+                          label=""
                         />
                         <ShowcaseReactionInline
                           showcaseId="copycats"
@@ -4160,6 +4185,10 @@ const rendernotaAutoral = () => {
                       </>
                     ) : activeShowcase === 'miniversoSonoro' ? (
                       <>
+                        <div className="mb-3">
+                          <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Resonancia colectiva</p>
+                          <h4 className="font-display text-xl text-amber-300">Formas de sentir</h4>
+                        </div>
                         <VitranaQuestionReveal
                           question={activePortalL1Done ? (LEVEL2_QUESTIONS['sonoridades']?.question ?? VITRANA_QUESTION_BY_SHOWCASE['miniversoSonoro']) : VITRANA_QUESTION_BY_SHOWCASE['miniversoSonoro']}
                           buttonLabel={activePortalL1Done ? 'Tu progreso →' : undefined}
@@ -4167,6 +4196,7 @@ const rendernotaAutoral = () => {
                           portal="sonoridades"
                           l2Done={activePortalL2Done}
                           onAnswer={() => setIsSonoroResonanceOpen(true)}
+                          label=""
                         />
                         <ShowcaseReactionInline
                           showcaseId="miniversoSonoro"
@@ -4185,6 +4215,10 @@ const rendernotaAutoral = () => {
                       </>
                     ) : activeShowcase === 'miniversoMovimiento' ? (
                       <>
+                        <div className="mb-3">
+                          <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Resonancia colectiva</p>
+                          <h4 className="font-display text-xl text-amber-300">Formas de sentir</h4>
+                        </div>
                         <VitranaQuestionReveal
                           question={activePortalL1Done ? (LEVEL2_QUESTIONS['movimiento']?.question ?? VITRANA_QUESTION_BY_SHOWCASE['miniversoMovimiento']) : VITRANA_QUESTION_BY_SHOWCASE['miniversoMovimiento']}
                           buttonLabel={activePortalL1Done ? 'Tu progreso →' : undefined}
@@ -4192,6 +4226,7 @@ const rendernotaAutoral = () => {
                           portal="movimiento"
                           l2Done={activePortalL2Done}
                           onAnswer={() => setIsMovimientoResonanceOpen(true)}
+                          label=""
                         />
                         <ShowcaseReactionInline
                           showcaseId="miniversoMovimiento"
@@ -4210,6 +4245,10 @@ const rendernotaAutoral = () => {
                       </>
                     ) : activeShowcase === 'apps' ? (
                       <>
+                        <div className="mb-3">
+                          <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Resonancia colectiva</p>
+                          <h4 className="font-display text-xl text-amber-300">Formas de sentir</h4>
+                        </div>
                         <VitranaQuestionReveal
                           question={activePortalL1Done ? (LEVEL2_QUESTIONS['juegos']?.question ?? VITRANA_QUESTION_BY_SHOWCASE['apps']) : VITRANA_QUESTION_BY_SHOWCASE['apps']}
                           buttonLabel={activePortalL1Done ? 'Tu progreso →' : undefined}
@@ -4217,6 +4256,7 @@ const rendernotaAutoral = () => {
                           portal="juegos"
                           l2Done={activePortalL2Done}
                           onAnswer={() => setIsJuegosResonanceOpen(true)}
+                          label=""
                         />
                         <ShowcaseReactionInline
                           showcaseId="apps"
@@ -4235,6 +4275,10 @@ const rendernotaAutoral = () => {
                       </>
                     ) : activeShowcase === 'oraculo' ? (
                       <>
+                        <div className="mb-3">
+                          <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Resonancia colectiva</p>
+                          <h4 className="font-display text-xl text-amber-300">Formas de sentir</h4>
+                        </div>
                         <VitranaQuestionReveal
                           question={activePortalL1Done ? (LEVEL2_QUESTIONS['oraculo']?.question ?? VITRANA_QUESTION_BY_SHOWCASE['oraculo']) : VITRANA_QUESTION_BY_SHOWCASE['oraculo']}
                           buttonLabel={activePortalL1Done ? 'Tu progreso →' : undefined}
@@ -4242,6 +4286,7 @@ const rendernotaAutoral = () => {
                           portal="oraculo"
                           l2Done={activePortalL2Done}
                           onAnswer={() => setIsOraculoResonanceOpen(true)}
+                          label=""
                         />
                         <ShowcaseReactionInline
                           showcaseId="oraculo"

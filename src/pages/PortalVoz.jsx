@@ -1028,26 +1028,28 @@ const PortalVoz = () => {
                 </div>
               </div>
 
-              <div className="hidden lg:flex flex-col gap-5">
-                <div className="mb-1">
+              <div className="hidden lg:block">
+                <div className="mb-3">
                   <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Resonancia colectiva</p>
                   <h4 className="font-display text-xl text-amber-300">Formas de sentir</h4>
                 </div>
-                <VitranaQuestionReveal
-                  question={l1Done ? (LEVEL2_QUESTIONS['obra']?.question ?? vitranaQuestion) : vitranaQuestion}
-                  buttonLabel={l1Done ? 'Tu progreso →' : undefined}
-                  autoReveal={l1Done}
-                  portal="obra"
-                  l2Done={l2Done}
-                  onAnswer={() => setIsResonanceOpen(true)}
-                  label=""
-                />
-                <ShowcaseReactionInline
-                  description="Estamos explorando las emociones contemporáneas a través de experiencias narrativas."
-                  buttonLabel="¿no te salen las palabras? ¡déjanos un pulso!"
-                  status={reactionStatus}
-                  onReact={handleSendPulse}
-                />
+                <div className="flex flex-col gap-5">
+                  <VitranaQuestionReveal
+                    question={l1Done ? (LEVEL2_QUESTIONS['obra']?.question ?? vitranaQuestion) : vitranaQuestion}
+                    buttonLabel={l1Done ? 'Tu progreso →' : undefined}
+                    autoReveal={l1Done}
+                    portal="obra"
+                    l2Done={l2Done}
+                    onAnswer={() => setIsResonanceOpen(true)}
+                    label=""
+                  />
+                  <ShowcaseReactionInline
+                    description="Estamos explorando las emociones contemporáneas a través de experiencias narrativas."
+                    buttonLabel="¿no te salen las palabras? ¡déjanos un pulso!"
+                    status={reactionStatus}
+                    onReact={handleSendPulse}
+                  />
+                </div>
               </div>
             </div>
             <div className="lg:hidden px-6 sm:px-8 pb-6 sm:pb-8 space-y-6">

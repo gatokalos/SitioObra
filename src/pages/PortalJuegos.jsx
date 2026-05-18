@@ -241,21 +241,23 @@ const PortalJuegos = () => {
                 </div>
               </div>
 
-              <div className="hidden lg:flex flex-col gap-5">
-                <div className="mb-1">
+              <div className="hidden lg:block">
+                <div className="mb-3">
                   <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Resonancia colectiva</p>
                   <h4 className="font-display text-xl text-amber-300">Formas de sentir</h4>
                 </div>
-                <VitranaQuestionReveal
-                  question={l1Done ? (LEVEL2_QUESTIONS['juegos']?.question ?? vitranaQuestion) : vitranaQuestion}
-                  buttonLabel={l1Done ? 'Tu progreso →' : undefined}
-                  autoReveal={l1Done}
-                  portal="juegos"
-                  l2Done={l2Done}
-                  onAnswer={() => setIsResonanceOpen(true)}
-                  label=""
-                />
-                <ShowcaseReactionInline status={reactionStatus} onReact={handleSendPulse} />
+                <div className="flex flex-col gap-5">
+                  <VitranaQuestionReveal
+                    question={l1Done ? (LEVEL2_QUESTIONS['juegos']?.question ?? vitranaQuestion) : vitranaQuestion}
+                    buttonLabel={l1Done ? 'Tu progreso →' : undefined}
+                    autoReveal={l1Done}
+                    portal="juegos"
+                    l2Done={l2Done}
+                    onAnswer={() => setIsResonanceOpen(true)}
+                    label=""
+                  />
+                  <ShowcaseReactionInline status={reactionStatus} onReact={handleSendPulse} />
+                </div>
               </div>
             </div>
             {isResonanceOpen && (
