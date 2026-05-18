@@ -2858,7 +2858,11 @@ const MiniverseModal = ({
                   onEnded={() => { setShowcaseFullscreenPlaying(false); setShowcaseFullscreenEnded(true); }}
                 />
               ) : (
-                <IncendioVideoPlaceholder />
+                <div className="flex h-full w-full items-center justify-center">
+                  <div className="relative h-full aspect-[9/16]">
+                    <IncendioVideoPlaceholder />
+                  </div>
+                </div>
               )}
             </div>
 

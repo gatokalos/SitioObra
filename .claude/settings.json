@@ -65,7 +65,11 @@
       "Bash(sed -n '352,360p' /Users/gatoenigmatico/gatoencerrado-ai/landing/SitioObra/src/pages/PortalLiteratura.jsx)",
       "Bash(grep -v \"className\\\\|disabled\\\\|tracking\\\\|shadow\\\\|hover\\\\|transition\\\\|inline-flex\\\\|^--$\")",
       "Bash(grep -v \"^$\")",
-      "Bash(grep -n \"CollaboratorsPanel\\\\|space-y-6.*$\\\\|rounded-3xl border\\\\|rounded-2xl border\\\\|IAInsightCard\\\\|experienceDone\\\\|Obra destacada\\\\|obra destacada\\\\|space-y-4\\\\|space-y-5\\\\|mt-6 space-y-6\" /Users/gatoenigmatico/gatoencerrado-ai/landing/SitioObra/src/pages/PortalVoz.jsx)"
+      "Bash(grep -n \"CollaboratorsPanel\\\\|space-y-6.*$\\\\|rounded-3xl border\\\\|rounded-2xl border\\\\|IAInsightCard\\\\|experienceDone\\\\|Obra destacada\\\\|obra destacada\\\\|space-y-4\\\\|space-y-5\\\\|mt-6 space-y-6\" /Users/gatoenigmatico/gatoencerrado-ai/landing/SitioObra/src/pages/PortalVoz.jsx)",
+      "Bash(git -C /Users/gatoenigmatico/gatoencerrado-ai log --oneline --since=\"3 days ago\" -- supabase/ apps/bienvenida/)",
+      "Bash(git -C /Users/gatoenigmatico/gatoencerrado-ai log --oneline -20 -- supabase/ apps/bienvenida/)",
+      "Bash(git -C /Users/gatoenigmatico/gatoencerrado-ai/supabase log --oneline -15)",
+      "Bash(git -C /Users/gatoenigmatico/gatoencerrado-ai log --oneline -15)"
     ],
     "additionalDirectories": [
       "/Users/gatoenigmatico/Desktop/Postulación EFIARTES",

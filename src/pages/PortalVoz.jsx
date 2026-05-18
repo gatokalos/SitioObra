@@ -1116,9 +1116,9 @@ const PortalVoz = () => {
               </div>
             </div>
             {/* Pleca + Sección Resonancia — fondo propio, el video no sangra aquí */}
-            <div className={`border-t border-white/20 bg-slate-950/80 p-5 lg:hidden space-y-4 transition-opacity duration-300${isResonanceOpen ? ' opacity-30 pointer-events-none' : ''}`}>
+            <div className={`bg-slate-950/80 p-5 lg:hidden space-y-4 transition-opacity duration-300${isResonanceOpen ? ' opacity-30 pointer-events-none' : ''}`}>
               <div>
-                <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Resonancias contemporáneas</p>
+                <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Resonancia colectiva</p>
                 <h4 className="font-display text-xl text-amber-300">Formas de sentir</h4>
               </div>
               <VitranaQuestionReveal
@@ -1128,6 +1128,7 @@ const PortalVoz = () => {
                 portal="obra"
                 l2Done={l2Done}
                 onAnswer={() => setIsResonanceOpen(true)}
+                label=""
               />
               <ShowcaseReactionInline
                 description="Estamos explorando las emociones contemporáneas a través de experiencias narrativas."

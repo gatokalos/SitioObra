@@ -609,14 +609,13 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, narr
                     {/* Campos */}
                     <div className="px-5 pb-[max(1.25rem,env(safe-area-inset-bottom))] sm:px-6 sm:pb-5 lg:pb-10 lg:px-10">
                       <div className="w-full space-y-3">
-                        <div className="space-y-0.5">
+                        <div className="space-y-0.5 lg:hidden">
                           <div className="inline-flex rounded-full border border-white/10 bg-white/5 px-3 py-1 text-[0.62rem] uppercase tracking-[0.32em] text-white/70 backdrop-blur-md">
                             Laboratorio
                           </div>
                           <h3
                             id="resonance-modal-title"
-                            className="font-display leading-tight tracking-tight text-amber-300"
-                            style={{ fontSize: 'clamp(1.4rem, 5vw, 2rem)' }}
+                            className="font-display text-3xl leading-tight tracking-tight text-amber-300"
                           >
                             {question ?? 'Resonancia colectiva'}
                           </h3>
@@ -646,7 +645,7 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, narr
                               required
                               rows={4}
                               className="form-surface w-full resize-none px-3 py-2 text-sm"
-                              placeholder={question ?? '¿Qué te resuena?'}
+                              placeholder=""
                             />
                           </div>
                           <button
