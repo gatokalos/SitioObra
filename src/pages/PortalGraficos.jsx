@@ -327,6 +327,10 @@ const PortalGraficos = () => {
               </div>
 
               <div className="hidden lg:flex flex-col gap-5">
+                <div className="mb-1">
+                  <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Resonancia colectiva</p>
+                  <h4 className="font-display text-xl text-amber-300">Formas de sentir</h4>
+                </div>
                 <VitranaQuestionReveal
                   question={l1Done ? (LEVEL2_QUESTIONS['grafico']?.question ?? vitranaQuestion) : vitranaQuestion}
                   buttonLabel={l1Done ? 'Tu progreso →' : undefined}
@@ -334,6 +338,7 @@ const PortalGraficos = () => {
                   portal="grafico"
                   l2Done={l2Done}
                   onAnswer={() => setIsResonanceOpen(true)}
+                  label=""
                 />
                 <ShowcaseReactionInline status={reactionStatus} onReact={handleSendPulse} />
               </div>
@@ -376,30 +381,32 @@ const PortalGraficos = () => {
               <div className="absolute bottom-0 inset-x-0 p-5 space-y-3">
                 <p className="text-sm text-slate-200/90 leading-relaxed">
                   Antes de convertirse en novela gráfica, Tres pies al gato fue imaginada como una película: escenas fragmentadas, cortes de plano y emociones dirigidas desde el lenguaje cinematográfico.
-                  Su universo visual fue interpretado mediante un proceso híbrido entre artistas visuales e inteligencia artificial. Esta primera edición digital reúne el inicio de una obra que continúa expandiéndose.
+                  Esta primera edición digital reúne el inicio de una obra que continúa expandiéndose.
                 </p>
                 <div className="flex flex-wrap gap-2">
-                  {['Narrativa fragmentada', 'Novela gráfica', 'Pausas ilustradas'].map((tag) => (
+                  {['Narrativa fragmentada', 'Cómic', 'Pausas ilustradas'].map((tag) => (
                     <span key={tag} className="rounded-full border border-white/20 bg-black/30 px-3 py-1 text-[11px] uppercase tracking-[0.2em] text-slate-100 backdrop-blur-sm">{tag}</span>
                   ))}
                 </div>
               </div>
             </div>
-            <div className={`bg-slate-950/80 p-5 lg:hidden space-y-4 transition-opacity duration-300${isResonanceOpen ? ' opacity-30 pointer-events-none' : ''}`}>
-              <div>
-                <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Resonancias contemporáneas</p>
+            <div className={`bg-slate-950/80 p-5 lg:hidden transition-opacity duration-300${isResonanceOpen ? ' opacity-30 pointer-events-none' : ''}`}>
+              <div className="mb-1">
+                <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Resonancia colectiva</p>
                 <h4 className="font-display text-xl text-amber-300">Formas de sentir</h4>
               </div>
-              <VitranaQuestionReveal
-                question={l1Done ? (LEVEL2_QUESTIONS['grafico']?.question ?? vitranaQuestion) : vitranaQuestion}
-                buttonLabel={l1Done ? 'Tu progreso →' : undefined}
-                autoReveal={l1Done}
-                portal="grafico"
-                l2Done={l2Done}
-                onAnswer={() => setIsResonanceOpen(true)}
-                label=""
-              />
-              <ShowcaseReactionInline status={reactionStatus} onReact={handleSendPulse} />
+              <div className="space-y-4">
+                <VitranaQuestionReveal
+                  question={l1Done ? (LEVEL2_QUESTIONS['grafico']?.question ?? vitranaQuestion) : vitranaQuestion}
+                  buttonLabel={l1Done ? 'Tu progreso →' : undefined}
+                  autoReveal={l1Done}
+                  portal="grafico"
+                  l2Done={l2Done}
+                  onAnswer={() => setIsResonanceOpen(true)}
+                  label=""
+                />
+                <ShowcaseReactionInline status={reactionStatus} onReact={handleSendPulse} />
+              </div>
             </div>
           </div>
           <div className="hidden lg:block lg:order-3 rounded-3xl border border-white/10 bg-black/30 p-6 space-y-6">

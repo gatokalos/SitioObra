@@ -386,6 +386,10 @@ const PortalCine = () => {
               </div>
 
               <div className="hidden lg:flex flex-col gap-5">
+                <div className="mb-1">
+                  <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Resonancia colectiva</p>
+                  <h4 className="font-display text-xl text-amber-300">Formas de sentir</h4>
+                </div>
                 <VitranaQuestionReveal
                   question={l1Done ? (LEVEL2_QUESTIONS['cine']?.question ?? vitranaQuestion) : vitranaQuestion}
                   buttonLabel={l1Done ? 'Tu progreso →' : undefined}
@@ -393,6 +397,7 @@ const PortalCine = () => {
                   portal="cine"
                   l2Done={l2Done}
                   onAnswer={() => setIsResonanceOpen(true)}
+                  label=""
                 />
                 <ShowcaseReactionInline status={reactionStatus} onReact={handleSendPulse} />
               </div>
@@ -452,21 +457,23 @@ const PortalCine = () => {
                 </div>
               </div>
             </div>
-            <div className={`bg-slate-950/80 p-5 lg:hidden space-y-4 transition-opacity duration-300${isResonanceOpen ? ' opacity-30 pointer-events-none' : ''}`}>
-              <div>
-                <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Resonancias contemporáneas</p>
+            <div className={`bg-slate-950/80 p-5 lg:hidden transition-opacity duration-300${isResonanceOpen ? ' opacity-30 pointer-events-none' : ''}`}>
+              <div className="mb-1">
+                <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Resonancia colectiva</p>
                 <h4 className="font-display text-xl text-amber-300">Formas de sentir</h4>
               </div>
-              <VitranaQuestionReveal
-                question={l1Done ? (LEVEL2_QUESTIONS['cine']?.question ?? vitranaQuestion) : vitranaQuestion}
-                buttonLabel={l1Done ? 'Tu progreso →' : undefined}
-                autoReveal={l1Done}
-                portal="cine"
-                l2Done={l2Done}
-                onAnswer={() => setIsResonanceOpen(true)}
-                label=""
-              />
-              <ShowcaseReactionInline status={reactionStatus} onReact={handleSendPulse} />
+              <div className="space-y-4">
+                <VitranaQuestionReveal
+                  question={l1Done ? (LEVEL2_QUESTIONS['cine']?.question ?? vitranaQuestion) : vitranaQuestion}
+                  buttonLabel={l1Done ? 'Tu progreso →' : undefined}
+                  autoReveal={l1Done}
+                  portal="cine"
+                  l2Done={l2Done}
+                  onAnswer={() => setIsResonanceOpen(true)}
+                  label=""
+                />
+                <ShowcaseReactionInline status={reactionStatus} onReact={handleSendPulse} />
+              </div>
             </div>
           </div>
 

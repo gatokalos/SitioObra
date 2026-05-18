@@ -367,6 +367,10 @@ const PortalSonoridades = () => {
               </div>
 
               <div className="hidden lg:flex flex-col gap-5">
+                <div className="mb-1">
+                  <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Resonancia colectiva</p>
+                  <h4 className="font-display text-xl text-amber-300">Formas de sentir</h4>
+                </div>
                 <VitranaQuestionReveal
                   question={l1Done ? (LEVEL2_QUESTIONS['sonoridades']?.question ?? vitranaQuestion) : vitranaQuestion}
                   buttonLabel={l1Done ? 'Tu progreso →' : undefined}
@@ -374,6 +378,7 @@ const PortalSonoridades = () => {
                   portal="sonoridades"
                   l2Done={l2Done}
                   onAnswer={() => setIsResonanceOpen(true)}
+                  label=""
                 />
                 <ShowcaseReactionInline status={reactionStatus} onReact={handleSendPulse} />
               </div>
@@ -450,6 +455,10 @@ const PortalSonoridades = () => {
             </div>
           </div>
           <div className={`lg:hidden rounded-3xl border border-white/10 bg-black/30 p-5 space-y-4 transition-opacity duration-300${isResonanceOpen ? ' opacity-30 pointer-events-none' : ''}`}>
+            <div className="mb-1">
+              <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Resonancia colectiva</p>
+              <h4 className="font-display text-xl text-amber-300">Formas de sentir</h4>
+            </div>
             <VitranaQuestionReveal
               question={l1Done ? (LEVEL2_QUESTIONS['sonoridades']?.question ?? vitranaQuestion) : vitranaQuestion}
               buttonLabel={l1Done ? 'Tu progreso →' : undefined}
@@ -457,6 +466,7 @@ const PortalSonoridades = () => {
               portal="sonoridades"
               l2Done={l2Done}
               onAnswer={() => setIsResonanceOpen(true)}
+              label=""
             />
             <ShowcaseReactionInline status={reactionStatus} onReact={handleSendPulse} />
           </div>

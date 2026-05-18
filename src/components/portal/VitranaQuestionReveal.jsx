@@ -35,7 +35,7 @@ const VitranaQuestionReveal = ({
 
   return (
     <div className="flex flex-col gap-5">
-      <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">{label}</p>
+      {label ? <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">{label}</p> : null}
 
       {/* Wrapper para los badges flotantes */}
       <div className="relative">
