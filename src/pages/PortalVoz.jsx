@@ -1079,7 +1079,7 @@ const PortalVoz = () => {
           {/* BLOQUE: Obra destacada + Resonancia — una sola card, pleca como divisor */}
           <div className="lg:order-2 overflow-hidden rounded-2xl border border-white/10">
             {/* Sección Obra Destacada — estilo Reel: object-cover, recorta lados, llena vertical */}
-            <div className="relative min-h-[26rem] overflow-hidden">
+            <div className="relative min-h-[30rem] overflow-hidden">
               <video
                 className="absolute inset-0 h-full w-full object-cover"
                 src={OBRA_TRAILER_URL}
@@ -1103,7 +1103,7 @@ const PortalVoz = () => {
                 </p>
                 <div className="flex flex-wrap gap-2">
                   {['Teatro', 'Sueños lúcidos', 'Drama psicológico'].map((tag, i) => (
-                    <span key={i} className="rounded-full border border-purple-400/30 bg-purple-900/20 px-3 py-1 text-xs text-purple-100">{tag}</span>
+                    <span key={i} className="rounded-full border border-purple-400/30 bg-purple-900/20 px-3 py-1 text-[11px] uppercase tracking-[0.2em] text-purple-100 backdrop-blur-sm">{tag}</span>
                   ))}
                 </div>
                 <button
