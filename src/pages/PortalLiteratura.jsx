@@ -134,8 +134,8 @@ const MiniVersoCard = ({ title, verse, palette }) => {
 
 const ShowcaseReactionInline = ({ status, onReact }) => (
   <PulseReactionCard
-    title="¿No te salen las palabras? ¡Déjanos un pulso!"
-    description="Estamos creando espacios para explorar lo que sentimos y cómo eso nos acerca a otrxs."
+    title="¡Déjanos un pulso!"
+    description="Estamos creando relatos donde una emoción puede reconocerse en otra persona."
     status={status}
     onReact={onReact}
   />

@@ -11,7 +11,7 @@ const PulseReactionCard = ({
 }) => {
   const label = status === 'loading'
     ? 'Enviando...'
-    : buttonLabel || title || '¿no te salen las palabras? ¡déjanos un pulso!';
+    : buttonLabel || title || '¡Déjanos un pulso!';
   const isSuccess = status === 'success';
   const questionBreakIndex = label?.indexOf('?') ?? -1;
   const labelLines =

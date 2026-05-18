@@ -223,8 +223,8 @@ const ShowcaseReactionInline = ({ status, onReact }) => (
   <PulseReactionCard
     status={status}
     onReact={onReact}
-    description="Estamos creando espacios para explorar lo que sentimos y cómo eso nos acerca a otrxs."
-    buttonLabel="¿no te salen las palabras? ¡déjanos un pulso!"
+    description="Estamos creando recorridos donde el cuerpo también participa en lo que sentimos."
+    buttonLabel="¡Déjanos un pulso!"
   />
 );
 

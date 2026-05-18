@@ -2119,8 +2119,8 @@ const rendernotaAutoral = () => {
 
       const reactionDetails = {
         showcaseId: 'miniversos',
-        description: 'Estamos creando espacios para explorar lo que sentimos y cómo eso nos acerca a otrxs.',
-        buttonLabel: '¿no te salen las palabras? ¡déjanos un pulso!',
+        description: 'Estamos creando espacios donde lo que sentimos también puede verse en otros cuerpos.',
+        buttonLabel: '¡Déjanos un pulso!',
         className: 'mt-4',
       };
       const emotionUsageEntries = OBRA_VOICE_MODES
@@ -3369,8 +3369,8 @@ const rendernotaAutoral = () => {
         className: 'rounded-3xl border border-white/10 bg-black/25 p-6 space-y-5',
         reactionProps: {
           showcaseId: 'copycats',
-          description: 'Estamos creando espacios para explorar lo que sentimos y cómo eso nos acerca a otrxs.',
-          buttonLabel: '¿No te salen las palabras? ¡déjanos un pulso!',
+          description: 'Estamos creando imágenes donde lo que sentimos encuentra eco en otras miradas.',
+          buttonLabel: '¡Déjanos un pulso!',
           className: 'mt-2 bg-gradient-to-r from-slate-900/40 to-purple-900/20',
         },
       });
@@ -4049,8 +4049,8 @@ const rendernotaAutoral = () => {
                         {activeShowcase === 'miniversos' ? (
                           <ShowcaseReactionInline
                             showcaseId="miniversos"
-                            description="Estamos creando espacios para explorar lo que sentimos y cómo eso nos acerca a otrxs."
-                            buttonLabel="¿no te salen las palabras? ¡déjanos un pulso!"
+                            description="Estamos creando espacios donde lo que sentimos también puede verse en otros cuerpos."
+                            buttonLabel="¡Déjanos un pulso!"
                             className="mt-4"
                           />
                         ) : null}
@@ -4080,8 +4080,8 @@ const rendernotaAutoral = () => {
                         />
                         <ShowcaseReactionInline
                           showcaseId="miniversoNovela"
-                          description="Estamos creando espacios para explorar lo que sentimos y cómo eso nos acerca a otrxs."
-                          buttonLabel="¿no te salen las palabras? ¡déjanos un pulso!"
+                          description="Estamos creando relatos donde una emoción puede reconocerse en otra persona."
+                          buttonLabel="¡Déjanos un pulso!"
                           className="mt-4"
                         />
                         <ResonanceModal
@@ -4110,8 +4110,8 @@ const rendernotaAutoral = () => {
                         />
                         <ShowcaseReactionInline
                           showcaseId="lataza"
-                          description="Estamos creando espacios para explorar lo que sentimos y cómo eso nos acerca a otrxs."
-                          buttonLabel="¿no te salen las palabras? ¡déjanos un pulso!"
+                          description="Estamos creando objetos que permiten compartir emociones sin tener que explicarlas."
+                          buttonLabel="¡Déjanos un pulso!"
                           className="mt-4"
                         />
                         <ResonanceModal
@@ -4140,8 +4140,8 @@ const rendernotaAutoral = () => {
                         />
                         <ShowcaseReactionInline
                           showcaseId="miniversoGrafico"
-                          description="Estamos creando espacios para explorar lo que sentimos y cómo eso nos acerca a otrxs."
-                          buttonLabel="¿no te salen las palabras? ¡déjanos un pulso!"
+                          description="Estamos creando trazos donde ciertas emociones logran quedarse un poco más."
+                          buttonLabel="¡Déjanos un pulso!"
                           className="mt-4"
                         />
                         <ResonanceModal
@@ -4170,8 +4170,8 @@ const rendernotaAutoral = () => {
                         />
                         <ShowcaseReactionInline
                           showcaseId="copycats"
-                          description="Estamos creando espacios para explorar lo que sentimos y cómo eso nos acerca a otrxs."
-                          buttonLabel="¿no te salen las palabras? ¡déjanos un pulso!"
+                          description="Estamos creando imágenes donde lo que sentimos encuentra eco en otras miradas."
+                          buttonLabel="¡Déjanos un pulso!"
                           className="mt-4"
                         />
                         <ResonanceModal
@@ -4200,8 +4200,8 @@ const rendernotaAutoral = () => {
                         />
                         <ShowcaseReactionInline
                           showcaseId="miniversoSonoro"
-                          description="Estamos creando espacios para explorar lo que sentimos y cómo eso nos acerca a otrxs."
-                          buttonLabel="¿no te salen las palabras? ¡déjanos un pulso!"
+                          description="Estamos creando atmósferas donde las emociones pueden respirarse en colectivo."
+                          buttonLabel="¡Déjanos un pulso!"
                           className="mt-4"
                         />
                         <ResonanceModal
@@ -4230,8 +4230,8 @@ const rendernotaAutoral = () => {
                         />
                         <ShowcaseReactionInline
                           showcaseId="miniversoMovimiento"
-                          description="Estamos creando espacios para explorar lo que sentimos y cómo eso nos acerca a otrxs."
-                          buttonLabel="¿no te salen las palabras? ¡déjanos un pulso!"
+                          description="Estamos creando recorridos donde el cuerpo también participa en lo que sentimos."
+                          buttonLabel="¡Déjanos un pulso!"
                           className="mt-4"
                         />
                         <ResonanceModal
@@ -4260,8 +4260,8 @@ const rendernotaAutoral = () => {
                         />
                         <ShowcaseReactionInline
                           showcaseId="apps"
-                          description="Estamos creando espacios para explorar lo que sentimos y cómo eso nos acerca a otrxs."
-                          buttonLabel="¿no te salen las palabras? ¡déjanos un pulso!"
+                          description="Estamos creando decisiones donde lo que sentimos cambia la forma de avanzar."
+                          buttonLabel="¡Déjanos un pulso!"
                           className="mt-4"
                         />
                         <ResonanceModal
@@ -4290,8 +4290,8 @@ const rendernotaAutoral = () => {
                         />
                         <ShowcaseReactionInline
                           showcaseId="oraculo"
-                          description="Estamos creando espacios para explorar lo que sentimos y cómo eso nos acerca a otrxs."
-                          buttonLabel="¿no te salen las palabras? ¡déjanos un pulso!"
+                          description="Estamos creando símbolos para explorar emociones que a veces no sabemos nombrar."
+                          buttonLabel="¡Déjanos un pulso!"
                           className="mt-4"
                         />
                         <ResonanceModal

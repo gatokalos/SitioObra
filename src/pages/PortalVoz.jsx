@@ -1044,8 +1044,8 @@ const PortalVoz = () => {
                     label=""
                   />
                   <ShowcaseReactionInline
-                    description="Estamos explorando las emociones contemporáneas a través de experiencias narrativas."
-                    buttonLabel="¿no te salen las palabras? ¡déjanos un pulso!"
+                    description="Estamos creando espacios donde lo que sentimos también puede verse en otros cuerpos."
+                    buttonLabel="¡Déjanos un pulso!"
                     status={reactionStatus}
                     onReact={handleSendPulse}
                   />
@@ -1131,8 +1131,8 @@ const PortalVoz = () => {
                   label=""
                 />
                 <ShowcaseReactionInline
-                  description="Estamos explorando las emociones contemporáneas a través de experiencias narrativas."
-                  buttonLabel="¿no te salen las palabras? ¡déjanos un pulso!"
+                  description="Estamos creando espacios donde lo que sentimos también puede verse en otros cuerpos."
+                  buttonLabel="¡Déjanos un pulso!"
                   status={reactionStatus}
                   onReact={handleSendPulse}
                 />
