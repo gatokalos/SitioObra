@@ -396,7 +396,9 @@ const PortalLiteratura = () => {
                 <div className="space-y-2">
                   <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">{LITERATURA_ENTRY.eyebrow}</p>
                   <h5 className="font-display text-xl text-slate-100">{LITERATURA_ENTRY.title}</h5>
-                  <p className="text-sm text-slate-300/80 leading-relaxed">Una experiencia de autoficción expandida donde la escritura continúa lo que el escenario no alcanza a decir.</p>
+                  <p className="text-sm text-slate-300/80 leading-relaxed">Una novela escrita tras bajar el telón.
+
+                  El autor escribe desde la memoria de una puesta en escena fragmentada, lúcida, especulativa. Esta obra atraviesa lo real y lo imaginado sin pretender cerrar nada.</p>
                   <p className="mt-3 text-sm italic text-slate-200/85 leading-relaxed">Leer este libro es algo parecido a despertar dentro de un libro.</p>
                   <p className="text-right text-xs text-slate-400/50 mt-0.5 tracking-wide">— C.P.H.</p>
                 </div>
