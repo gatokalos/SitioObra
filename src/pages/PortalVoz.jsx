@@ -1076,12 +1076,12 @@ const PortalVoz = () => {
             )}
           </div>
 
-          {/* BLOQUE: Obra destacada */}
+          {/* BLOQUE: Obra destacada + Resonancia — una sola card */}
           <div className="lg:order-2 overflow-hidden rounded-2xl border border-white/10 bg-black/40">
-            {/* Video — sección superior, altura acotada, video completo sin recorte vertical */}
-            <div className="relative w-full bg-black overflow-hidden">
+            {/* Sección video — bloque explícito, altura natural del video */}
+            <div className="relative overflow-hidden bg-black">
               <video
-                className="w-full object-contain max-h-[22rem]"
+                className="block w-full h-auto"
                 src={OBRA_TRAILER_URL}
                 autoPlay
                 muted
@@ -1089,45 +1089,48 @@ const PortalVoz = () => {
                 playsInline
                 preload="metadata"
               />
-              <div className="pointer-events-none absolute inset-x-0 bottom-0 h-24 bg-gradient-to-b from-transparent via-black/60 to-black/95" />
-            </div>
-            {/* Contenido — debajo del video */}
-            <div className="p-6 space-y-4">
-              <div>
+              {/* Gradiente: oscurece arriba y abajo para legibilidad del overlay */}
+              <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-black/60 via-transparent to-black/85" />
+              {/* Overlay superior: eyebrow + título */}
+              <div className="absolute top-0 left-0 p-5">
                 <p className="mb-1 text-xs uppercase tracking-[0.35em] text-slate-300/75">Obra destacada</p>
                 <h4 className="font-display text-2xl text-slate-100">Es un gato encerrado</h4>
               </div>
-              <p className="text-sm leading-relaxed text-slate-300/85">
-                Antes de convertirse en un universo transmedial, esta obra existió como un encuentro escénico atravesado por sueños lúcidos, rabia contenida y preguntas difíciles de nombrar.
-              </p>
-              <div className="flex flex-wrap gap-2">
-                {['Teatro', 'Sueños lúcidos', 'Drama psicológico'].map((tag, i) => (
-                  <span key={i} className="rounded-full border border-purple-400/30 bg-purple-900/20 px-3 py-1 text-xs text-purple-100">{tag}</span>
-                ))}
+              {/* Overlay inferior: descripción + tags + CTA */}
+              <div className="absolute bottom-0 inset-x-0 p-5 space-y-3">
+                <p className="text-sm leading-relaxed text-slate-300/85">
+                  Antes de convertirse en un universo transmedial, esta obra existió como un encuentro escénico atravesado por sueños lúcidos, rabia contenida y preguntas difíciles de nombrar.
+                </p>
+                <div className="flex flex-wrap gap-2">
+                  {['Teatro', 'Sueños lúcidos', 'Drama psicológico'].map((tag, i) => (
+                    <span key={i} className="rounded-full border border-purple-400/30 bg-purple-900/20 px-3 py-1 text-xs text-purple-100">{tag}</span>
+                  ))}
+                </div>
+                <button
+                  type="button"
+                  onClick={() => navigate('/portal-encuentros', { state: { from: location.pathname } })}
+                  className="inline-flex w-full items-center justify-center rounded-full border border-purple-400/40 text-purple-200 hover:bg-purple-500/10 px-6 py-2.5 text-sm font-semibold transition"
+                >
+                  Próximas funciones
+                </button>
               </div>
-              <button
-                type="button"
-                onClick={() => navigate('/portal-encuentros', { state: { from: location.pathname } })}
-                className="inline-flex w-full items-center justify-center rounded-full border border-purple-400/40 text-purple-200 hover:bg-purple-500/10 px-6 py-2.5 text-sm font-semibold transition"
-              >
-                Próximas funciones
-              </button>
-              <div className={`pt-5 mt-2 border-t border-white/20 lg:hidden space-y-4 transition-opacity duration-300${isResonanceOpen ? ' opacity-30 pointer-events-none' : ''}`}>
-                <VitranaQuestionReveal
-                  question={l1Done ? (LEVEL2_QUESTIONS['obra']?.question ?? vitranaQuestion) : vitranaQuestion}
-                  buttonLabel={l1Done ? 'Tu progreso →' : undefined}
-                  autoReveal={l1Done}
-                  portal="obra"
-                  l2Done={l2Done}
-                  onAnswer={() => setIsResonanceOpen(true)}
-                />
-                <ShowcaseReactionInline
-                  description="Estamos explorando las emociones contemporáneas a través de experiencias narrativas."
-                  buttonLabel="¿no te salen las palabras? ¡déjanos un pulso!"
-                  status={reactionStatus}
-                  onReact={handleSendPulse}
-                />
-              </div>
+            </div>
+            {/* Sección resonancia — debajo de la pleca, fondo propio, sin video */}
+            <div className={`border-t border-white/20 bg-black/50 p-5 lg:hidden space-y-4 transition-opacity duration-300${isResonanceOpen ? ' opacity-30 pointer-events-none' : ''}`}>
+              <VitranaQuestionReveal
+                question={l1Done ? (LEVEL2_QUESTIONS['obra']?.question ?? vitranaQuestion) : vitranaQuestion}
+                buttonLabel={l1Done ? 'Tu progreso →' : undefined}
+                autoReveal={l1Done}
+                portal="obra"
+                l2Done={l2Done}
+                onAnswer={() => setIsResonanceOpen(true)}
+              />
+              <ShowcaseReactionInline
+                description="Estamos explorando las emociones contemporáneas a través de experiencias narrativas."
+                buttonLabel="¿no te salen las palabras? ¡déjanos un pulso!"
+                status={reactionStatus}
+                onReact={handleSendPulse}
+              />
             </div>
           </div>
 
