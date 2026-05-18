@@ -400,7 +400,7 @@ const PortalLiteratura = () => {
 
                   El autor escribe desde la memoria de una puesta en escena fragmentada, lúcida, especulativa. Esta obra atraviesa lo real y lo imaginado sin pretender cerrar nada.</p>
                   <p className="mt-3 text-sm italic text-slate-200/85 leading-relaxed">Leer este libro es algo parecido a despertar dentro de un libro.</p>
-                  <p className="text-right text-xs text-slate-400/50 mt-0.5 tracking-wide">— C.P.H.</p>
+                  <p className="text-right text-xs text-slate-400/50 mt-0.5 tracking-wide">— Carlos A Pérez H.</p>
                 </div>
                 <div className="rounded-2xl border border-white/10 bg-slate-900/60 p-4 space-y-2">
                   <div className="flex items-center justify-between gap-2">
