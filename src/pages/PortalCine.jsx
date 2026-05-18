@@ -333,78 +333,6 @@ const PortalCine = () => {
     [isMobileViewport, requestMobileVideoPresentation]
   );
 
-  const renderImmersiveCinemaCard = ({
-    title,
-    description,
-    microcopy,
-    videoUrl,
-    poster,
-    tags,
-    accentClassName,
-    eyebrow = null,
-    cta = null,
-  }) => {
-    const videoId = `${title}-${videoUrl}`;
-
-    return (
-      <div
-        className={`relative overflow-hidden rounded-3xl border border-white/10 p-6 ${accentClassName}`}
-      >
-        <div className="absolute inset-0">
-          <video
-            ref={(el) => { if (el) { el.play().catch(() => {}); } }}
-            src={videoUrl}
-            className="h-full w-full cursor-pointer object-cover"
-            autoPlay
-            muted
-            loop
-            playsInline
-            preload="auto"
-            poster={poster}
-            controls={isMobileViewport ? canUseInlinePlayback(videoId) : false}
-            onClick={(event) => {
-              void handleImmersiveVideoActivate(event, videoId);
-            }}
-          />
-          <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-black/10 via-black/30 to-black/90" />
-          <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(255,255,255,0.08),_transparent_36%),linear-gradient(180deg,rgba(0,0,0,0.02)_0%,rgba(0,0,0,0.14)_35%,rgba(0,0,0,0.72)_100%)]" />
-        </div>
-
-        <div className="relative z-10 flex min-h-[30rem] flex-col">
-          {eyebrow ? (
-            <p className="mb-2 text-xs uppercase tracking-[0.35em] text-slate-300/75">{eyebrow}</p>
-          ) : null}
-          <div className="flex items-center justify-between gap-3">
-            <h4 className="font-display text-2xl text-slate-100">{title}</h4>
-            <span className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-white/20 bg-white/10 text-slate-100 backdrop-blur-md">
-              <Video size={16} />
-            </span>
-          </div>
-
-
-          <div aria-hidden="true" className="h-[11rem] sm:h-[13rem] lg:h-[14rem]" />
-
-          <div className="mt-auto space-y-4">
-            <p className="text-sm text-slate-200/90 leading-relaxed">{description}</p>
-            {microcopy ? (
-              <p className="text-xs uppercase tracking-[0.3em] text-slate-300">{microcopy}</p>
-            ) : null}
-            <div className="flex flex-wrap gap-2">
-              {tags.map((tag) => (
-                <span
-                  key={`${title}-tag-${tag}`}
-                  className="rounded-full border border-white/20 bg-black/30 px-3 py-1 text-[11px] uppercase tracking-[0.2em] text-slate-100 backdrop-blur-sm"
-                >
-                  {tag}
-                </span>
-              ))}
-            </div>
-            {cta}
-          </div>
-        </div>
-      </div>
-    );
-  };
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-950 via-black to-slate-900 text-slate-100">
@@ -489,27 +417,57 @@ const PortalCine = () => {
           </div>
 
 
-          <div className="lg:order-2 flex flex-col gap-4">
-          {renderImmersiveCinemaCard({
-            title: QUIRON_DATA.title,
-            eyebrow: 'Obra destacada',
-            description: QUIRON_DATA.description,
-            microcopy: QUIRON_DATA.teaserLabel,
-            videoUrl: QUIRON_DATA.teaserUrl,
-            tags: QUIRON_DATA.tags,
-            accentClassName: 'bg-gradient-to-br from-slate-950/80 via-black/60 to-purple-900/30',
-          })}
-          <div className={`rounded-3xl border border-white/10 bg-black/30 p-5 lg:hidden space-y-4 transition-opacity duration-300${isResonanceOpen ? ' opacity-30 pointer-events-none' : ''}`}>
-            <VitranaQuestionReveal
-              question={l1Done ? (LEVEL2_QUESTIONS['cine']?.question ?? vitranaQuestion) : vitranaQuestion}
-              buttonLabel={l1Done ? 'Tu progreso →' : undefined}
-              autoReveal={l1Done}
-              portal="cine"
-              l2Done={l2Done}
-              onAnswer={() => setIsResonanceOpen(true)}
-            />
-            <ShowcaseReactionInline status={reactionStatus} onReact={handleSendPulse} />
-          </div>
+          {/* Reel Card: Obra destacada + Resonancia */}
+          <div className="lg:order-2 overflow-hidden rounded-2xl border border-white/10">
+            <div className="relative min-h-[30rem] overflow-hidden">
+              <video
+                ref={(el) => { if (el) { el.play().catch(() => {}); } }}
+                src={QUIRON_DATA.teaserUrl}
+                className="absolute inset-0 h-full w-full cursor-pointer object-cover"
+                autoPlay
+                muted
+                loop
+                playsInline
+                preload="auto"
+                controls={isMobileViewport ? canUseInlinePlayback(`${QUIRON_DATA.title}-${QUIRON_DATA.teaserUrl}`) : false}
+                onClick={(event) => { void handleImmersiveVideoActivate(event, `${QUIRON_DATA.title}-${QUIRON_DATA.teaserUrl}`); }}
+              />
+              <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-black/10 via-black/30 to-black/90" />
+              <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(255,255,255,0.08),_transparent_36%),linear-gradient(180deg,rgba(0,0,0,0.02)_0%,rgba(0,0,0,0.14)_35%,rgba(0,0,0,0.72)_100%)]" />
+              <div className="absolute top-0 left-0 right-0 flex items-start justify-between gap-3 p-5">
+                <div>
+                  <p className="mb-1 text-xs uppercase tracking-[0.35em] text-slate-300/75">Obra destacada</p>
+                  <h4 className="font-display text-2xl text-slate-100">{QUIRON_DATA.title}</h4>
+                </div>
+                <span className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-white/20 bg-white/10 text-slate-100 backdrop-blur-md">
+                  <Video size={16} />
+                </span>
+              </div>
+              <div className="absolute bottom-0 inset-x-0 p-5 space-y-3">
+                <p className="text-sm text-slate-200/90 leading-relaxed">{QUIRON_DATA.description}</p>
+                <div className="flex flex-wrap gap-2">
+                  {QUIRON_DATA.tags.map((tag) => (
+                    <span key={tag} className="rounded-full border border-white/20 bg-black/30 px-3 py-1 text-[11px] uppercase tracking-[0.2em] text-slate-100 backdrop-blur-sm">{tag}</span>
+                  ))}
+                </div>
+              </div>
+            </div>
+            <div className={`bg-slate-950/80 p-5 lg:hidden space-y-4 transition-opacity duration-300${isResonanceOpen ? ' opacity-30 pointer-events-none' : ''}`}>
+              <div>
+                <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Resonancias contemporáneas</p>
+                <h4 className="font-display text-xl text-amber-300">Formas de sentir</h4>
+              </div>
+              <VitranaQuestionReveal
+                question={l1Done ? (LEVEL2_QUESTIONS['cine']?.question ?? vitranaQuestion) : vitranaQuestion}
+                buttonLabel={l1Done ? 'Tu progreso →' : undefined}
+                autoReveal={l1Done}
+                portal="cine"
+                l2Done={l2Done}
+                onAnswer={() => setIsResonanceOpen(true)}
+                label=""
+              />
+              <ShowcaseReactionInline status={reactionStatus} onReact={handleSendPulse} />
+            </div>
           </div>
 
           <div className="hidden lg:block lg:order-3 rounded-3xl border border-white/10 bg-black/30 p-6 space-y-6">

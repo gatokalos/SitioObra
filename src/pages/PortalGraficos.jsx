@@ -358,77 +358,49 @@ const PortalGraficos = () => {
           </div>
 
 
-          <div className="lg:order-2 space-y-5 rounded-3xl border border-white/10 bg-gradient-to-br from-slate-950/80 via-black/60 to-fuchsia-900/30 p-6 lg:p-8">
-            <p className="text-xs uppercase tracking-[0.35em] text-slate-400/80">Obra destacada</p>
-            <div className="rounded-[32px] border border-white/10 bg-gradient-to-r from-slate-900/80 via-black/60 to-fuchsia-900/40 overflow-hidden shadow-[0_20px_60px_rgba(15,23,42,0.65)]">
-              <div className="grid gap-0 lg:grid-cols-[1fr_1.3fr]">
-                <div className="relative h-full min-h-[240px]">
-                  <img
-                    src={GRAFICOS_SWIPE_SHOWCASE.previewImage}
-                    alt={GRAFICOS_SWIPE_SHOWCASE.title}
-                    className="h-full w-full object-cover"
-                    loading="lazy"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/45 to-transparent" />
-              
-           
-                </div>
-
-                <div className="flex flex-col space-y-4 p-6">
-                  <p className="text-xs uppercase tracking-[0.35em] text-fuchsia-200/80">Obra destacada</p>
-                  <h4 className="font-display text-2xl text-slate-100">{GRAFICOS_SWIPE_SHOWCASE.title}</h4>
-                  <p className="text-sm text-slate-200/90 leading-relaxed">{GRAFICOS_SWIPE_SHOWCASE.description}</p>
-                  <ul className="space-y-2 text-sm text-slate-100 leading-relaxed">
-                    {GRAFICOS_SWIPE_SHOWCASE.swipeNotes.map((point, index) => (
-                      <li key={`grafico-note-${index}`} className="flex items-start gap-2">
-                        <span className="text-fuchsia-200 mt-1">●</span>
-                        <span>{point}</span>
-                      </li>
-                    ))}
-                  </ul>
-                  <div className="flex flex-wrap gap-3">
-                    <Button
-                      className="sm:flex-none justify-center bg-gradient-to-r from-fuchsia-600/80 to-purple-500/80 hover:from-fuchsia-500 hover:to-purple-400 text-white"
-                      onClick={() => setIsImagePreviewOpen(true)}
-                    >
-                      Ver portada
-                    </Button>
-                  </div>
-                  <p className="text-[11px] uppercase tracking-[0.3em] text-gray-100/80">Prototipo del Capítulo 1</p>
+          {/* Reel Card: Obra destacada + Resonancia */}
+          <div className="lg:order-2 overflow-hidden rounded-2xl border border-white/10">
+            <div className="relative min-h-[30rem] overflow-hidden">
+              <img
+                src={GRAFICOS_SWIPE_SHOWCASE.previewImage}
+                alt={GRAFICOS_SWIPE_SHOWCASE.title}
+                className="absolute inset-0 h-full w-full object-cover"
+                loading="lazy"
+              />
+              <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-black/10 via-black/30 to-black/90" />
+              <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(255,255,255,0.06),_transparent_38%),linear-gradient(180deg,rgba(0,0,0,0.02)_0%,rgba(0,0,0,0.12)_35%,rgba(0,0,0,0.78)_100%)]" />
+              <div className="absolute top-0 left-0 p-5">
+                <p className="mb-1 text-xs uppercase tracking-[0.35em] text-slate-300/75">Obra destacada</p>
+                <h4 className="font-display text-2xl text-slate-100">{GRAFICOS_SWIPE_SHOWCASE.title}</h4>
+              </div>
+              <div className="absolute bottom-0 inset-x-0 p-5 space-y-3">
+                <p className="text-sm text-slate-200/90 leading-relaxed">
+                  Antes de convertirse en novela gráfica, Tres pies al gato fue imaginada como una película: escenas fragmentadas, cortes de plano y emociones dirigidas desde el lenguaje cinematográfico.
+                  Su universo visual fue interpretado mediante un proceso híbrido entre artistas visuales e inteligencia artificial. Esta primera edición digital reúne el inicio de una obra que continúa expandiéndose.
+                </p>
+                <div className="flex flex-wrap gap-2">
+                  {['Narrativa fragmentada', 'Novela gráfica', 'Pausas ilustradas'].map((tag) => (
+                    <span key={tag} className="rounded-full border border-white/20 bg-black/30 px-3 py-1 text-[11px] uppercase tracking-[0.2em] text-slate-100 backdrop-blur-sm">{tag}</span>
+                  ))}
                 </div>
               </div>
             </div>
-          </div>
-
-          <div className="lg:order-2 space-y-4 rounded-3xl border border-white/10 bg-black/30 p-5">
-            <p className="text-xs uppercase tracking-[0.35em] text-slate-400/80">Detonadores visuales</p>
-            <div className="grid gap-3 md:grid-cols-2">
-              <div className="rounded-2xl border border-white/10 bg-black/35 p-4">
-                <p className="text-[0.62rem] uppercase tracking-[0.32em] text-slate-500">Entrada</p>
-                <p className="font-semibold text-slate-100 mt-2">¿Qué no pudiste decir en escena?</p>
-                <p className="text-sm text-slate-300/85 mt-2 leading-relaxed">
-                  Convierte una frase en viñeta para explorar cómo cambia su intensidad cuando la dibujas.
-                </p>
+            <div className={`bg-slate-950/80 p-5 lg:hidden space-y-4 transition-opacity duration-300${isResonanceOpen ? ' opacity-30 pointer-events-none' : ''}`}>
+              <div>
+                <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Resonancias contemporáneas</p>
+                <h4 className="font-display text-xl text-amber-300">Formas de sentir</h4>
               </div>
-              <div className="rounded-2xl border border-white/10 bg-black/35 p-4">
-                <p className="text-[0.62rem] uppercase tracking-[0.32em] text-slate-500">Proceso</p>
-                <p className="font-semibold text-slate-100 mt-2">Tensión entre trazo y silencio</p>
-                <p className="text-sm text-slate-300/85 mt-2 leading-relaxed">
-                  Cada panel funciona como una pausa: lo no dicho también se vuelve narrativa.
-                </p>
-              </div>
+              <VitranaQuestionReveal
+                question={l1Done ? (LEVEL2_QUESTIONS['grafico']?.question ?? vitranaQuestion) : vitranaQuestion}
+                buttonLabel={l1Done ? 'Tu progreso →' : undefined}
+                autoReveal={l1Done}
+                portal="grafico"
+                l2Done={l2Done}
+                onAnswer={() => setIsResonanceOpen(true)}
+                label=""
+              />
+              <ShowcaseReactionInline status={reactionStatus} onReact={handleSendPulse} />
             </div>
-          </div>
-          <div className={`lg:hidden rounded-3xl border border-white/10 bg-black/30 p-5 space-y-4 transition-opacity duration-300${isResonanceOpen ? ' opacity-30 pointer-events-none' : ''}`}>
-            <VitranaQuestionReveal
-              question={l1Done ? (LEVEL2_QUESTIONS['grafico']?.question ?? vitranaQuestion) : vitranaQuestion}
-              buttonLabel={l1Done ? 'Tu progreso →' : undefined}
-              autoReveal={l1Done}
-              portal="grafico"
-              l2Done={l2Done}
-              onAnswer={() => setIsResonanceOpen(true)}
-            />
-            <ShowcaseReactionInline status={reactionStatus} onReact={handleSendPulse} />
           </div>
           <div className="hidden lg:block lg:order-3 rounded-3xl border border-white/10 bg-black/30 p-6 space-y-6">
             <CollaboratorsPanel
