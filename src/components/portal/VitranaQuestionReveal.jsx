@@ -25,6 +25,7 @@ const VitranaQuestionReveal = ({
 }) => {
   const [isRevealed, setIsRevealed] = useState(autoReveal);
   const portalGradient = PORTAL_GRADIENT[portal] ?? 'from-purple-400 via-fuchsia-500 to-rose-500';
+  const hasProgressBadges = autoReveal || l2Done;
 
   // Sincroniza si autoReveal llega tarde (p.ej. tras verificar Supabase)
   useEffect(() => {
@@ -38,9 +39,9 @@ const VitranaQuestionReveal = ({
       {label ? <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">{label}</p> : null}
 
       {/* Wrapper para los badges flotantes */}
-      <div className="relative">
-        {(autoReveal || l2Done) && (
-          <div className="absolute -top-5 right-2 z-10 flex items-center gap-1.5">
+      <div className={`relative ${hasProgressBadges ? 'pt-7' : ''}`}>
+        {hasProgressBadges && (
+          <div className="absolute right-2 top-0 z-10 flex items-center gap-1.5">
             {autoReveal && (
               <motion.div
                 className={`flex h-11 w-11 items-center justify-center rounded-full bg-gradient-to-br ${portalGradient} shadow-[0_4px_18px_rgba(0,0,0,0.4)]`}
