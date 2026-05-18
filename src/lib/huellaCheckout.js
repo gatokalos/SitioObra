@@ -1,5 +1,6 @@
 import { loadStripe } from '@stripe/stripe-js';
 import { supabase } from '@/lib/supabaseClient';
+import { buildCheckoutRedirectUrls } from '@/lib/checkoutRedirectUrls';
 
 const STRIPE_PUBLISHABLE_KEY = import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY;
 
@@ -90,6 +91,7 @@ export async function startCheckoutFallback({ priceId, customerEmail, metadata =
     body: {
       mode: 'subscription',
       line_items: [{ price: priceId, quantity: 1 }],
+      ...buildCheckoutRedirectUrls(),
       customer_email: customerEmail || undefined,
       metadata,
     },

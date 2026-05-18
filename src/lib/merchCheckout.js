@@ -1,4 +1,5 @@
 import { supabase } from '@/lib/supabaseClient';
+import { buildCheckoutRedirectUrls } from '@/lib/checkoutRedirectUrls';
 
 export const MERCH_PACKAGE_PRICE_MAP = {
   'taza-250': import.meta.env.VITE_PRICE_TAZA,
@@ -24,6 +25,7 @@ export async function startDirectMerchCheckout({
   const payload = {
     mode: 'payment',
     line_items: [{ price: priceId, quantity: 1 }],
+    ...buildCheckoutRedirectUrls(),
     metadata,
   };
 

@@ -135,6 +135,17 @@ const Hero = () => {
     }
 
     if (params.get('gatokens') === 'reveal') {
+      // Peek at bienvenida recommendation before opening modal so both state updates
+      // land in the same React batch — avoids a render with recommendedShowcaseId = null.
+      try {
+        const raw = localStorage.getItem('bienvenida:transmedia-intent');
+        if (raw) {
+          const intent = JSON.parse(raw);
+          const appId = extractRecommendedAppId(intent);
+          const showcaseId = resolveShowcaseFromAppId(appId, showcaseDefinitions);
+          if (showcaseId) setRecommendedVitranaId(showcaseId);
+        }
+      } catch {}
       setIsGatokensModalOpen(true);
       params.delete('gatokens');
       dirty = true;
@@ -145,19 +156,6 @@ const Hero = () => {
       const cleanUrl = location.pathname + (cleanSearch ? `?${cleanSearch}` : '') + location.hash;
       window.history.replaceState({}, '', cleanUrl);
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  // Peek at bienvenida recommendation (without consuming — Transmedia does that on mount)
-  useEffect(() => {
-    try {
-      const raw = localStorage.getItem('bienvenida:transmedia-intent');
-      if (!raw) return;
-      const intent = JSON.parse(raw);
-      const appId = extractRecommendedAppId(intent);
-      const showcaseId = resolveShowcaseFromAppId(appId, showcaseDefinitions);
-      if (showcaseId) setRecommendedVitranaId(showcaseId);
-    } catch {}
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 

@@ -8,6 +8,7 @@ import { createPortal } from 'react-dom';
 import { Button } from '@/components/ui/button';
 import { toast } from '@/components/ui/use-toast';
 import { supabase } from '@/lib/supabaseClient';
+import { buildCheckoutRedirectUrls } from '@/lib/checkoutRedirectUrls';
 import { ConfettiBurst, useConfettiBursts } from '@/components/Confetti';
 import { Heart, MapIcon } from 'lucide-react';
 
@@ -368,6 +369,7 @@ const ReserveModal = ({
         const payload = {
           mode: 'payment',
           line_items,
+          ...buildCheckoutRedirectUrls(),
           metadata: {
             channel: 'landing',
             event: 'funcion-2025-12-28',
@@ -375,8 +377,8 @@ const ReserveModal = ({
           },
         };
         const normalizedEmail = formState.email.trim().toLowerCase();
-payload.customer_email = normalizedEmail;
-      
+        payload.customer_email = normalizedEmail;
+
         const { data, error } = await supabase.functions.invoke('create-checkout-session', {
           body: payload,
         });

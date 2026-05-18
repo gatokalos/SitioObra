@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { supabase } from '@/lib/supabaseClient';
+import { buildCheckoutRedirectUrls } from '@/lib/checkoutRedirectUrls';
 
 const PayButton = ({ priceId }) => {
   const [loading, setLoading] = useState(false);
@@ -36,6 +37,7 @@ const PayButton = ({ priceId }) => {
               quantity: 1,
             },
           ],
+          ...buildCheckoutRedirectUrls(),
           metadata: {
             user_id: user.id,
           },

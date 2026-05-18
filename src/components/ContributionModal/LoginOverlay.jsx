@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { createPortal } from 'react-dom';
 import { supabase } from '@/lib/supabaseClient';
 import { safeSetItem, safeStorageType } from '@/lib/safeStorage';
+import { buildCurrentSiteRedirectUrl, normalizeSiteRedirectUrl } from '@/lib/checkoutRedirectUrls';
 
 const overlayBackdropVariants = {
   hidden: { opacity: 0, transition: { duration: 0.18, ease: 'easeInOut' } },
@@ -97,13 +98,9 @@ const LoginOverlay = ({ onClose }) => {
     (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') &&
     window.location.port === '4173';
   const redirectTo = useMemo(() => {
-    const explicitRedirect = import.meta.env.VITE_SUPABASE_AUTH_REDIRECT_TO;
+    const explicitRedirect = normalizeSiteRedirectUrl(import.meta.env.VITE_SUPABASE_AUTH_REDIRECT_TO);
     if (explicitRedirect) return explicitRedirect;
-    if (typeof window === 'undefined') return undefined;
-    const { origin, pathname, hash } = window.location;
-    // Conservamos el hash si no contiene tokens de Supabase.
-    const cleanHash = hash && !hash.includes('access_token') ? hash : '';
-    return `${origin}${pathname}${cleanHash}`;
+    return buildCurrentSiteRedirectUrl();
   }, []);
   const isSubmitting = pendingMagic || Boolean(pendingProvider);
 
