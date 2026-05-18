@@ -4027,7 +4027,7 @@ const rendernotaAutoral = () => {
                       ) : renderCollaboratorsSection(activeDefinition.collaborators, activeShowcase ?? 'hdr')}
                     </div>
                   </div>
-                  <div className="flex flex-col gap-6">
+                  <div className="flex flex-col gap-4">
                     <div className="lg:hidden">
                       {renderCollaboratorsSection(activeDefinition.collaborators, activeShowcase ?? 'hdr')}
                     </div>
@@ -4035,7 +4035,7 @@ const rendernotaAutoral = () => {
                       <>
                         <div className="mb-3">
                           <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Resonancia colectiva</p>
-                          <h4 className="font-display text-xl text-amber-300">Formas de sentir</h4>
+                          <h4 className="font-display text-2xl text-amber-300">Formas de sentir</h4>
                         </div>
                         <VitranaQuestionReveal
                           question={activePortalL1Done ? (LEVEL2_QUESTIONS['obra']?.question ?? VITRANA_QUESTION_BY_SHOWCASE['miniversos']) : VITRANA_QUESTION_BY_SHOWCASE['miniversos']}
@@ -4051,7 +4051,6 @@ const rendernotaAutoral = () => {
                             showcaseId="miniversos"
                             description="Estamos creando espacios donde lo que sentimos también puede verse en otros cuerpos."
                             buttonLabel="¡Déjanos un pulso!"
-                            className="mt-4"
                           />
                         ) : null}
                         <ResonanceModal
@@ -4067,7 +4066,7 @@ const rendernotaAutoral = () => {
                       <>
                         <div className="mb-3">
                           <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Resonancia colectiva</p>
-                          <h4 className="font-display text-xl text-amber-300">Formas de sentir</h4>
+                          <h4 className="font-display text-2xl text-amber-300">Formas de sentir</h4>
                         </div>
                         <VitranaQuestionReveal
                           question={activePortalL1Done ? (LEVEL2_QUESTIONS['literatura']?.question ?? VITRANA_QUESTION_BY_SHOWCASE['miniversoNovela']) : VITRANA_QUESTION_BY_SHOWCASE['miniversoNovela']}
@@ -4082,7 +4081,6 @@ const rendernotaAutoral = () => {
                           showcaseId="miniversoNovela"
                           description="Estamos creando relatos donde una emoción puede reconocerse en otra persona."
                           buttonLabel="¡Déjanos un pulso!"
-                          className="mt-4"
                         />
                         <ResonanceModal
                           open={isLiteraturaResonanceOpen}
@@ -4097,7 +4095,7 @@ const rendernotaAutoral = () => {
                       <>
                         <div className="mb-3">
                           <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Resonancia colectiva</p>
-                          <h4 className="font-display text-xl text-amber-300">Formas de sentir</h4>
+                          <h4 className="font-display text-2xl text-amber-300">Formas de sentir</h4>
                         </div>
                         <VitranaQuestionReveal
                           question={activePortalL1Done ? (LEVEL2_QUESTIONS['artesanias']?.question ?? VITRANA_QUESTION_BY_SHOWCASE['lataza']) : VITRANA_QUESTION_BY_SHOWCASE['lataza']}
@@ -4112,7 +4110,6 @@ const rendernotaAutoral = () => {
                           showcaseId="lataza"
                           description="Estamos creando objetos que permiten compartir emociones sin tener que explicarlas."
                           buttonLabel="¡Déjanos un pulso!"
-                          className="mt-4"
                         />
                         <ResonanceModal
                           open={isArtesaniasResonanceOpen}
@@ -4127,7 +4124,7 @@ const rendernotaAutoral = () => {
                       <>
                         <div className="mb-3">
                           <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Resonancia colectiva</p>
-                          <h4 className="font-display text-xl text-amber-300">Formas de sentir</h4>
+                          <h4 className="font-display text-2xl text-amber-300">Formas de sentir</h4>
                         </div>
                         <VitranaQuestionReveal
                           question={activePortalL1Done ? (LEVEL2_QUESTIONS['grafico']?.question ?? VITRANA_QUESTION_BY_SHOWCASE['miniversoGrafico']) : VITRANA_QUESTION_BY_SHOWCASE['miniversoGrafico']}
@@ -4142,7 +4139,6 @@ const rendernotaAutoral = () => {
                           showcaseId="miniversoGrafico"
                           description="Estamos creando trazos donde ciertas emociones logran quedarse un poco más."
                           buttonLabel="¡Déjanos un pulso!"
-                          className="mt-4"
                         />
                         <ResonanceModal
                           open={isGraficosResonanceOpen}
@@ -4157,7 +4153,7 @@ const rendernotaAutoral = () => {
                       <>
                         <div className="mb-3">
                           <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Resonancia colectiva</p>
-                          <h4 className="font-display text-xl text-amber-300">Formas de sentir</h4>
+                          <h4 className="font-display text-2xl text-amber-300">Formas de sentir</h4>
                         </div>
                         <VitranaQuestionReveal
                           question={activePortalL1Done ? (LEVEL2_QUESTIONS['cine']?.question ?? VITRANA_QUESTION_BY_SHOWCASE['cine']) : VITRANA_QUESTION_BY_SHOWCASE['cine']}
@@ -4172,7 +4168,6 @@ const rendernotaAutoral = () => {
                           showcaseId="copycats"
                           description="Estamos creando imágenes donde lo que sentimos encuentra eco en otras miradas."
                           buttonLabel="¡Déjanos un pulso!"
-                          className="mt-4"
                         />
                         <ResonanceModal
                           open={isCineResonanceOpen}
@@ -4187,7 +4182,7 @@ const rendernotaAutoral = () => {
                       <>
                         <div className="mb-3">
                           <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Resonancia colectiva</p>
-                          <h4 className="font-display text-xl text-amber-300">Formas de sentir</h4>
+                          <h4 className="font-display text-2xl text-amber-300">Formas de sentir</h4>
                         </div>
                         <VitranaQuestionReveal
                           question={activePortalL1Done ? (LEVEL2_QUESTIONS['sonoridades']?.question ?? VITRANA_QUESTION_BY_SHOWCASE['miniversoSonoro']) : VITRANA_QUESTION_BY_SHOWCASE['miniversoSonoro']}
@@ -4202,7 +4197,6 @@ const rendernotaAutoral = () => {
                           showcaseId="miniversoSonoro"
                           description="Estamos creando atmósferas donde las emociones pueden respirarse en colectivo."
                           buttonLabel="¡Déjanos un pulso!"
-                          className="mt-4"
                         />
                         <ResonanceModal
                           open={isSonoroResonanceOpen}
@@ -4217,7 +4211,7 @@ const rendernotaAutoral = () => {
                       <>
                         <div className="mb-3">
                           <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Resonancia colectiva</p>
-                          <h4 className="font-display text-xl text-amber-300">Formas de sentir</h4>
+                          <h4 className="font-display text-2xl text-amber-300">Formas de sentir</h4>
                         </div>
                         <VitranaQuestionReveal
                           question={activePortalL1Done ? (LEVEL2_QUESTIONS['movimiento']?.question ?? VITRANA_QUESTION_BY_SHOWCASE['miniversoMovimiento']) : VITRANA_QUESTION_BY_SHOWCASE['miniversoMovimiento']}
@@ -4232,7 +4226,6 @@ const rendernotaAutoral = () => {
                           showcaseId="miniversoMovimiento"
                           description="Estamos creando recorridos donde el cuerpo también participa en lo que sentimos."
                           buttonLabel="¡Déjanos un pulso!"
-                          className="mt-4"
                         />
                         <ResonanceModal
                           open={isMovimientoResonanceOpen}
@@ -4247,7 +4240,7 @@ const rendernotaAutoral = () => {
                       <>
                         <div className="mb-3">
                           <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Resonancia colectiva</p>
-                          <h4 className="font-display text-xl text-amber-300">Formas de sentir</h4>
+                          <h4 className="font-display text-2xl text-amber-300">Formas de sentir</h4>
                         </div>
                         <VitranaQuestionReveal
                           question={activePortalL1Done ? (LEVEL2_QUESTIONS['juegos']?.question ?? VITRANA_QUESTION_BY_SHOWCASE['apps']) : VITRANA_QUESTION_BY_SHOWCASE['apps']}
@@ -4262,7 +4255,6 @@ const rendernotaAutoral = () => {
                           showcaseId="apps"
                           description="Estamos creando decisiones donde lo que sentimos cambia la forma de avanzar."
                           buttonLabel="¡Déjanos un pulso!"
-                          className="mt-4"
                         />
                         <ResonanceModal
                           open={isJuegosResonanceOpen}
@@ -4277,7 +4269,7 @@ const rendernotaAutoral = () => {
                       <>
                         <div className="mb-3">
                           <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Resonancia colectiva</p>
-                          <h4 className="font-display text-xl text-amber-300">Formas de sentir</h4>
+                          <h4 className="font-display text-2xl text-amber-300">Formas de sentir</h4>
                         </div>
                         <VitranaQuestionReveal
                           question={activePortalL1Done ? (LEVEL2_QUESTIONS['oraculo']?.question ?? VITRANA_QUESTION_BY_SHOWCASE['oraculo']) : VITRANA_QUESTION_BY_SHOWCASE['oraculo']}
@@ -4292,7 +4284,6 @@ const rendernotaAutoral = () => {
                           showcaseId="oraculo"
                           description="Estamos creando símbolos para explorar emociones que a veces no sabemos nombrar."
                           buttonLabel="¡Déjanos un pulso!"
-                          className="mt-4"
                         />
                         <ResonanceModal
                           open={isOraculoResonanceOpen}

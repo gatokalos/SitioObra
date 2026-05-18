@@ -899,7 +899,7 @@ const MiniverseModal = ({
     }
     if (activeTab === 'experiences') {
       return {
-        lead: 'Aquí las nueve vidas del universo en un formato más familiar:',
+        lead: 'Aquí las nueve formas de la obra en un formato más familiar:',
         highlight:
           'un ecosistema listo para tocar, intervenir y volver cuando quieras.',
           continuation: newFunction()
@@ -2904,7 +2904,7 @@ const MiniverseModal = ({
                     onClick={handleFullscreenVideoCta}
                     className="w-full max-w-xs rounded-full border border-purple-500/70 bg-purple-600/20 px-6 py-3.5 text-sm uppercase tracking-[0.25em] text-purple-100 shadow-[0_15px_45px_rgba(67,56,202,0.5)] backdrop-blur-sm transition hover:bg-purple-500/30"
                   >
-                    {showcaseFullscreenCard.isPrologue ? '¿Y tú, nos dejarás una huella? →' : 'Continuar experiencia →'}
+                    {showcaseFullscreenCard.isPrologue ? '¿Nos dejarás tu huella? →' : 'Conectar narrativas →'}
                   </button>
                 </motion.div>
               )}
