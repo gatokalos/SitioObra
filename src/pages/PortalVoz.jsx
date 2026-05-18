@@ -1076,12 +1076,12 @@ const PortalVoz = () => {
             )}
           </div>
 
-          {/* BLOQUE: Obra destacada + Resonancia — una sola card */}
-          <div className="lg:order-2 overflow-hidden rounded-2xl border border-white/10 bg-black/40">
-            {/* Sección video — bloque explícito, altura natural del video */}
-            <div className="relative overflow-hidden bg-black">
+          {/* BLOQUE: Obra destacada + Resonancia — una sola card, pleca como divisor */}
+          <div className="lg:order-2 overflow-hidden rounded-2xl border border-white/10">
+            {/* Sección Obra Destacada — estilo Reel: object-cover, recorta lados, llena vertical */}
+            <div className="relative min-h-[26rem] overflow-hidden">
               <video
-                className="block w-full h-auto"
+                className="absolute inset-0 h-full w-full object-cover"
                 src={OBRA_TRAILER_URL}
                 autoPlay
                 muted
@@ -1089,8 +1089,7 @@ const PortalVoz = () => {
                 playsInline
                 preload="metadata"
               />
-              {/* Gradiente: oscurece arriba y abajo para legibilidad del overlay */}
-              <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-black/60 via-transparent to-black/85" />
+              <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-black/55 via-transparent to-black/88" />
               {/* Overlay superior: eyebrow + título */}
               <div className="absolute top-0 left-0 p-5">
                 <p className="mb-1 text-xs uppercase tracking-[0.35em] text-slate-300/75">Obra destacada</p>
@@ -1115,8 +1114,8 @@ const PortalVoz = () => {
                 </button>
               </div>
             </div>
-            {/* Sección resonancia — debajo de la pleca, fondo propio, sin video */}
-            <div className={`border-t border-white/20 bg-black/50 p-5 lg:hidden space-y-4 transition-opacity duration-300${isResonanceOpen ? ' opacity-30 pointer-events-none' : ''}`}>
+            {/* Pleca + Sección Resonancia — fondo propio, el video no sangra aquí */}
+            <div className={`border-t border-white/20 bg-slate-950/80 p-5 lg:hidden space-y-4 transition-opacity duration-300${isResonanceOpen ? ' opacity-30 pointer-events-none' : ''}`}>
               <VitranaQuestionReveal
                 question={l1Done ? (LEVEL2_QUESTIONS['obra']?.question ?? vitranaQuestion) : vitranaQuestion}
                 buttonLabel={l1Done ? 'Tu progreso →' : undefined}
