@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useLocation } from 'react-router-dom';
 import {
   Feather,
   Flame,
@@ -445,7 +445,6 @@ const PortalVoz = () => {
   const refreshL1 = useCallback(() => { try { const s = JSON.parse(localStorage.getItem('gatoencerrado:resonance:obra') || '{}'); setL1Done(Boolean(s.l1)); setExperienceDone(Boolean(s.experience_ts)); setL2Done(Boolean(s.l2_option)); } catch { /* ignore */ } }, []);
   const [isNarrativeExperienceOpen, setIsNarrativeExperienceOpen] = useState(false);
   const [openCollaboratorId, setOpenCollaboratorId] = useState(null);
-  const navigate = useNavigate();
   const location = useLocation();
   useEffect(() => {
     if (location.state?.portalLaunchSource !== 'video-narrative-cta') return;
@@ -1089,8 +1088,8 @@ const PortalVoz = () => {
                 playsInline
                 preload="metadata"
               />
-              <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-black/55 via-transparent to-black/88" />
-              <div className="pointer-events-none absolute inset-x-0 bottom-0 h-20 bg-gradient-to-b from-transparent to-black" />
+              <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-black/10 via-black/30 to-black/90" />
+              <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(255,255,255,0.06),_transparent_38%),linear-gradient(180deg,rgba(0,0,0,0.02)_0%,rgba(0,0,0,0.12)_35%,rgba(0,0,0,0.78)_100%)]" />
               {/* Overlay superior: eyebrow + título */}
               <div className="absolute top-0 left-0 p-5">
                 <p className="mb-1 text-xs uppercase tracking-[0.35em] text-slate-300/75">Obra destacada</p>
@@ -1098,21 +1097,14 @@ const PortalVoz = () => {
               </div>
               {/* Overlay inferior: descripción + tags + CTA */}
               <div className="absolute bottom-0 inset-x-0 p-5 space-y-3">
-                <p className="text-sm leading-relaxed text-slate-300/85">
+                <p className="text-sm leading-relaxed text-slate-200/90">
                   Antes de convertirse en un universo transmedial, esta obra existió como un encuentro escénico atravesado por sueños lúcidos, rabia contenida y preguntas difíciles de nombrar.
                 </p>
                 <div className="flex flex-wrap gap-2">
                   {['Teatro', 'Sueños lúcidos', 'Drama psicológico'].map((tag, i) => (
-                    <span key={i} className="rounded-full border border-purple-400/30 bg-purple-900/20 px-3 py-1 text-[11px] uppercase tracking-[0.2em] text-purple-100 backdrop-blur-sm">{tag}</span>
+                    <span key={i} className="rounded-full border border-white/20 bg-black/30 px-3 py-1 text-[11px] uppercase tracking-[0.2em] text-slate-100 backdrop-blur-sm">{tag}</span>
                   ))}
                 </div>
-                <button
-                  type="button"
-                  onClick={() => navigate('/portal-encuentros', { state: { from: location.pathname } })}
-                  className="inline-flex w-full items-center justify-center rounded-full border border-purple-400/40 text-purple-200 hover:bg-purple-500/10 px-6 py-2.5 text-sm font-semibold transition"
-                >
-                  Próximas funciones
-                </button>
               </div>
             </div>
             {/* Pleca + Sección Resonancia — fondo propio, el video no sangra aquí */}
