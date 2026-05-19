@@ -185,7 +185,7 @@ const RESERVE_COPY = {
       'Estos productos son edición especial y se entregan únicamente en la mesa de merch el día del evento.',
   },
   offseason: {
-    eyebrow: 'Encontrémonos fuera del teatro',
+    eyebrow: 'Más allá del teatro',
     title: 'Puntos de encuentro',
 
   },
@@ -438,7 +438,7 @@ const ReserveModal = ({
       ))}
 
       {/* HEADER */}
-      <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-6 sm:mb-8">
+      <div className={`${!isPageMode ? 'px-6 sm:px-0' : ''} flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-6 sm:mb-8`}>
         <div className="flex items-center gap-4">
           <img
             src={LOGO_SRC}
@@ -481,7 +481,7 @@ const ReserveModal = ({
         <div className="relative overflow-hidden rounded-2xl border border-white/10 bg-black/30 shadow-[0_20px_45px_rgba(0,0,0,0.35)]">
           <motion.video
             src={RESERVE_BANNER_SRC}
-            className={`w-full object-cover ${isOffseason ? 'h-[168px] sm:h-[208px]' : 'h-[140px] sm:h-[190px]'}`}
+            className={`w-full block md:object-cover ${isOffseason ? 'md:h-[208px]' : 'md:h-[190px]'}`}
             initial={{ scale: 1.03 }}
             animate={{ scale: 1 }}
             transition={{ duration: 0.9, ease: 'easeOut' }}
@@ -531,7 +531,7 @@ const ReserveModal = ({
       ) : null}
 
       {/* GRID */}
-      <div className="grid md:grid-cols-[1.12fr_0.88fr] gap-8">
+      <div className={`${!isPageMode ? 'px-6 sm:px-0' : ''} grid md:grid-cols-[1.12fr_0.88fr] gap-8`}>
 
         {/* LEFT COLUMN */}
         <div className="space-y-5 order-2 md:order-1">
@@ -547,92 +547,120 @@ const ReserveModal = ({
     </p>
   </div>
 
-          <div className="grid sm:grid-cols-2 gap-3">
-{PACKAGE_OPTIONS.map((option) => {
-  const isSelected = formState.packages.includes(option.id);
-  const isCombo = option.id === 'combo-900';
+          <div className="space-y-3">
+            {/* ── Tarjeta combinada: Taza + Novela ── */}
+            <div
+              className={`relative overflow-hidden bg-gradient-to-br from-slate-900/80 to-black/60 transition rounded-none border-y sm:rounded-2xl sm:border ${
+                formState.packages.includes('taza-250') || formState.packages.includes('novela-400')
+                  ? 'border-purple-400/70 shadow-[0_12px_35px_rgba(126,34,206,0.35)]'
+                  : 'border-white/10'
+              }`}
+            >
+              <div className="flex divide-x divide-white/10">
+                {[
+                  {
+                    id: 'taza-250',
+                    title: 'Taza artesanal',
+                    price: '$250 MXN',
+                    src: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Merch/tazas_pingpong.mp4',
+                    poster: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Merch/TazaPreventa.jpg',
+                  },
+                  {
+                    id: 'novela-400',
+                    title: 'Novela Ensayo',
+                    price: '$400 MXN',
+                    src: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Merch/novela_small.mp4',
+                  },
+                ].map((item) => {
+                  const isSelected = formState.packages.includes(item.id);
+                  return (
+                    <label key={item.id} className="group relative flex-1 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={isSelected}
+                        onChange={() => handleTogglePackage(item.id)}
+                        className="sr-only"
+                        aria-hidden="true"
+                      />
+                      <div
+                        aria-hidden="true"
+                        className={`absolute inset-0 z-20 flex items-center justify-center pointer-events-none transition duration-300 ${
+                          isSelected ? 'scale-100 opacity-100' : 'scale-0 opacity-0'
+                        }`}
+                      >
+                        <div className="flex h-14 w-14 items-center justify-center rounded-full bg-white/80 backdrop-blur-2xl shadow-[0_15px_35px_rgba(0,0,0,0.45)]">
+                          <Heart size={30} className="text-purple-500" />
+                        </div>
+                      </div>
+                      <div className="relative h-52 w-full overflow-hidden border-b border-white/5">
+                        <video
+                          src={item.src}
+                          poster={item.poster}
+                          className="h-full w-full object-cover transition duration-500 group-hover:scale-[1.03]"
+                          autoPlay
+                          loop
+                          muted
+                          playsInline
+                          preload="metadata"
+                        />
+                      </div>
+                      <div className="p-3">
+                        <p className="text-sm font-semibold text-slate-100">
+                          {item.title}{' '}
+                          <span className="font-normal text-slate-400">· {item.price}</span>
+                        </p>
+                      </div>
+                    </label>
+                  );
+                })}
+              </div>
+            </div>
 
-  // Mapeo de media por paquete
-  const mediaMap = {
-    'taza-250': {
-      kind: 'video',
-      src: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Merch/tazas_pingpong.mp4',
-      poster:
-        'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Merch/TazaPreventa.jpg',
-    },
-    'novela-400': {
-      kind: 'video',
-      src: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Merch/novela_small.mp4',
-    },
-    'combo-900': {
-      kind: 'image',
-      src: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Merch/NovelaTazaCombo.jpg',
-    },
-  };
-  const media = mediaMap[option.id];
-
-  const imageHeightClass = isCombo ? 'h-48' : 'h-32';
-
-  return (
-    <label
-      key={option.id}
-      className={`group relative block rounded-2xl border ${
-isSelected
-  ? 'border-purple-400/70 shadow-[0_12px_35px_rgba(126,34,206,0.35)]'
-  : 'border-white/10'
-} bg-gradient-to-br from-slate-900/80 to-black/60 p-4 hover:border-purple-400/40 transition hover:-translate-y-[1px] ${isCombo ? 'sm:col-span-2' : ''}`}
-    >
-      <input
-        type="checkbox"
-        checked={isSelected}
-        onChange={() => handleTogglePackage(option.id)}
-        className="sr-only"
-        aria-hidden="true"
-      />
-      <div
-aria-hidden="true"
-className={`absolute inset-0 z-20 flex items-center justify-center pointer-events-none transition duration-300 ${
-  isSelected ? 'scale-100 opacity-100' : 'scale-0 opacity-0'
-}`}
->
-        <div className="flex h-20 w-20 items-center justify-center rounded-full bg-white/80 backdrop-blur-2xl shadow-[0_15px_35px_rgba(0,0,0,0.45)]">
-          <Heart size={48} className="text-purple-500" />
-        </div>
-      </div>
-
-      <div className={`relative z-0 mb-3 w-full ${imageHeightClass} rounded-xl overflow-hidden border border-white/5`}>
-        {media.kind === 'video' ? (
-          <video
-            src={media.src}
-            poster={media.poster}
-            className="w-full h-full object-cover transition duration-500 group-hover:scale-[1.03]"
-            autoPlay
-            loop
-            muted
-            playsInline
-            preload="metadata"
-          />
-        ) : (
-          <img
-            src={media.src}
-            alt={option.title}
-            className="w-full h-full object-cover transition duration-500 group-hover:scale-[1.03]"
-            loading="lazy"
-          />
-        )}
-      </div>
-
-      <div className="space-y-1">
-        <p className="font-semibold text-slate-100">
-          {option.title}{' '}
-          <span className="text-slate-400 font-normal">· {option.price}</span>
-        </p>
-        <p className="text-xs text-slate-400">{option.helper}</p>
-      </div>
-    </label>
-  );
-})}
-</div>
+            {/* ── Combo ── */}
+            {(() => {
+              const option = PACKAGE_OPTIONS.find((o) => o.id === 'combo-900');
+              const isSelected = formState.packages.includes(option.id);
+              return (
+                <label
+                  className={`group relative block p-4 bg-gradient-to-br from-slate-900/80 to-black/60 transition hover:-translate-y-[1px] rounded-none border-y sm:rounded-2xl sm:border hover:border-purple-400/40 ${
+                    isSelected
+                      ? 'border-purple-400/70 shadow-[0_12px_35px_rgba(126,34,206,0.35)]'
+                      : 'border-white/10'
+                  }`}
+                >
+                  <input
+                    type="checkbox"
+                    checked={isSelected}
+                    onChange={() => handleTogglePackage(option.id)}
+                    className="sr-only"
+                    aria-hidden="true"
+                  />
+                  <div
+                    aria-hidden="true"
+                    className={`absolute inset-0 z-20 flex items-center justify-center pointer-events-none transition duration-300 ${
+                      isSelected ? 'scale-100 opacity-100' : 'scale-0 opacity-0'
+                    }`}
+                  >
+                    <div className="flex h-20 w-20 items-center justify-center rounded-full bg-white/80 backdrop-blur-2xl shadow-[0_15px_35px_rgba(0,0,0,0.45)]">
+                      <Heart size={48} className="text-purple-500" />
+                    </div>
+                  </div>
+                  <div className="relative z-0 mb-3 w-full h-48 rounded-xl overflow-hidden border border-white/5">
+                    <img
+                      src="https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Merch/NovelaTazaCombo.jpg"
+                      alt={option.title}
+                      className="w-full h-full object-cover transition duration-500 group-hover:scale-[1.03]"
+                      loading="lazy"
+                    />
+                  </div>
+                  <p className="font-semibold text-slate-100">
+                    {option.title}{' '}
+                    <span className="font-normal text-slate-400">· {option.price}</span>
+                  </p>
+                </label>
+              );
+            })()}
+          </div>
 
           {copy.notice ? (
             <div className="hidden md:block rounded-xl border border-yellow-400/20 bg-yellow-400/10 p-4 text-xs text-yellow-200">
@@ -682,17 +710,30 @@ Próximamente: cafeterías sugeridas por la comunidad
 <button
 type="button"
 onClick={() => setShowProposalForm(true)}
-className="mt-1 text-xs uppercase tracking-[0.3em] text-purple-300 hover:text-purple-200 self-start"
+className="mt-1 inline-flex items-center gap-2 self-start rounded-full border border-purple-400/40 bg-purple-500/10 px-4 py-2 text-xs font-semibold uppercase tracking-[0.25em] text-purple-200 transition hover:border-purple-400/70 hover:bg-purple-500/20 hover:text-white"
 >
-Sugerir cafetería o librería
++ Sugerir punto
 </button>
 </div>
 
 
+{/* Video "Encontrémonos" — solo móvil, llena el espacio del contenedor */}
+<div className="md:hidden mt-4 overflow-hidden rounded-2xl border border-white/10">
+  <video
+    src="https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Merch/Encuentros.mp4"
+    className="w-full object-cover"
+    autoPlay
+    loop
+    muted
+    playsInline
+    preload="metadata"
+  />
+</div>
+
 {!showProposalForm ? (
-<div className="rounded-2xl border border-white/10 bg-black/25 p-4 space-y-2">
+<div className="hidden md:block rounded-2xl border border-white/10 bg-black/25 p-4 space-y-2">
 <label htmlFor="reserve-checkout-email" className="text-sm font-medium text-slate-200">
-Cuando estés listx para hacer tu compra, ingresa una correo electrónico antes de abrir la tienda.
+Cuando estés listx para hacer tu compra, ingresa un correo electrónico antes de abrir la tienda.
 </label>
 <input
 id="reserve-checkout-email"
@@ -798,29 +839,25 @@ placeholder="¿Te interesa un punto de venta, una presentación, un conversatori
 </div>
 ) : null}
 </div>
-          {/* Errors */}
+          {/* Errors — desktop only; mobile version rendered after the grid */}
           {status === 'error' && (
-            <div className="rounded-lg border border-red-500/60 bg-red-500/10 px-4 py-3 text-sm text-red-200">
+            <div className="hidden md:block rounded-lg border border-red-500/60 bg-red-500/10 px-4 py-3 text-sm text-red-200">
               {errorMessage}
             </div>
           )}
-
-          {/* Success */}
           {status === 'success' && (
-            <div className="rounded-lg border border-emerald-500/60 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-200">
+            <div className="hidden md:block rounded-lg border border-emerald-500/60 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-200">
               Te enviamos un correo para que tengas listo tu pago antes del evento.
             </div>
           )}
-
-          {/* Checkout error */}
           {checkoutError && (
-            <div className="rounded-lg border border-red-500/60 bg-red-500/10 px-4 py-3 text-sm text-red-200">
+            <div className="hidden md:block rounded-lg border border-red-500/60 bg-red-500/10 px-4 py-3 text-sm text-red-200">
               {checkoutError}
             </div>
           )}
 
-         {/* Buttons */}
-<div className="flex flex-col gap-3">
+         {/* Buttons — desktop only; mobile version rendered after the grid */}
+<div className="hidden md:flex flex-col gap-3">
 {showProposalForm ? (
 <Button
 type="submit"
@@ -848,6 +885,51 @@ style={isPageMode ? { width: 'fit-content', maxWidth: '100%' } : undefined}
         </form>
       </div>
 
+      {/* Mobile-only: email + CTA al final del modal */}
+      {!showProposalForm ? (
+        <div className={`md:hidden mt-6 space-y-3 ${!isPageMode ? 'px-6 sm:px-0' : ''}`}>
+          <div className="rounded-2xl border border-white/10 bg-black/25 p-4 space-y-2">
+            <label htmlFor="reserve-checkout-email-mobile" className="text-sm font-medium text-slate-200">
+              Cuando estés listx para hacer tu compra, ingresa un correo electrónico antes de abrir la tienda.
+            </label>
+            <input
+              id="reserve-checkout-email-mobile"
+              name="email"
+              type="email"
+              value={formState.email}
+              onChange={handleInputChange}
+              className="form-surface w-full px-4 py-3"
+              placeholder="nombre@correo.com"
+              autoComplete="email"
+              inputMode="email"
+            />
+          </div>
+          {status === 'error' && (
+            <div className="rounded-lg border border-red-500/60 bg-red-500/10 px-4 py-3 text-sm text-red-200">
+              {errorMessage}
+            </div>
+          )}
+          {status === 'success' && (
+            <div className="rounded-lg border border-emerald-500/60 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-200">
+              Te enviamos un correo para que tengas listo tu pago antes del evento.
+            </div>
+          )}
+          {checkoutError && (
+            <div className="rounded-lg border border-red-500/60 bg-red-500/10 px-4 py-3 text-sm text-red-200">
+              {checkoutError}
+            </div>
+          )}
+          <button
+            type="button"
+            onClick={handleCheckout}
+            disabled={isCheckoutLoading}
+            className="reserve-btn reserve-btn--primary disabled:opacity-60 disabled:cursor-not-allowed"
+          >
+            <span>{isCheckoutLoading ? 'Abriendo tienda…' : 'Compra tu Merch'}</span>
+          </button>
+        </div>
+      ) : null}
+
       {copy.notice ? (
         <div className="mt-8 md:hidden rounded-xl border border-yellow-400/20 bg-yellow-400/10 p-4 text-xs text-yellow-200">
           {copy.notice}
@@ -870,7 +952,7 @@ style={isPageMode ? { width: 'fit-content', maxWidth: '100%' } : undefined}
           onClick={handleClose}
         />
         {renderPanel(
-          'relative z-10 my-6 w-[calc(100vw-2rem)] max-w-3xl rounded-3xl border border-white/10 bg-slate-950/95 p-6 sm:my-10 sm:p-10 shadow-2xl max-h-[92vh] overflow-y-auto',
+          'relative z-10 my-6 w-[calc(100vw-2rem)] max-w-3xl rounded-3xl border border-white/10 bg-slate-950/95 py-6 sm:my-10 sm:p-10 shadow-2xl max-h-[92vh] overflow-y-auto',
           { variants: modalVariants }
         )}
       </motion.div>

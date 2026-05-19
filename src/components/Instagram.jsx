@@ -904,9 +904,12 @@ const Instagram = () => {
             Galería Fractal
           </h2>
          <p className="text-base md:text-lg text-slate-300/75 max-w-3xl mx-auto leading-relaxed mb-7 font-light">
-  Un registro de los destellos de nuestra obra más destacada: <em>Es un gato encerrado</em>.  
-  Esto es lo que existe solo cuando alguien decide observar de verdad.  
-  Mira la obra desde distintas miradas.
+  Un registro de los destellos de <em>Es un gato encerrado</em>, donde este universo comenzó a expandirse. 
+  Lo que sigue existe solo cuando alguien decide observar de verdad.
+</p>
+
+<p className="text-base md:text-lg text-slate-300/75 max-w-3xl mx-auto leading-relaxed mb-7 font-light">
+  La obra cambia según los ojos que la atraviesan.
 </p>
 
           <div className="flex flex-wrap justify-center gap-2 mb-6">

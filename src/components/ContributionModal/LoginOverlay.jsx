@@ -183,7 +183,7 @@ const LoginOverlay = ({ onClose }) => {
 
   const handleGoogleLogin = useCallback(async () => {
     setFeedback(null);
-    if (pendingMagic || pendingProvider) {
+    if (pendingSend || pendingProvider) {
       return;
     }
     if (storageBlocked) {
@@ -209,11 +209,11 @@ const LoginOverlay = ({ onClose }) => {
     }
 
     onClose?.();
-  }, [onClose, pendingMagic, pendingProvider, redirectTo, storageBlocked]);
+  }, [onClose, pendingSend, pendingProvider, redirectTo, storageBlocked]);
 
   const handleAppleLogin = useCallback(async () => {
     setFeedback(null);
-    if (pendingMagic || pendingProvider) {
+    if (pendingSend || pendingProvider) {
       return;
     }
     if (storageBlocked) {
@@ -239,7 +239,7 @@ const LoginOverlay = ({ onClose }) => {
     }
 
     onClose?.();
-  }, [onClose, pendingMagic, pendingProvider, redirectTo, storageBlocked]);
+  }, [onClose, pendingSend, pendingProvider, redirectTo, storageBlocked]);
 
   useEffect(() => {
     const handleEsc = (event) => {
