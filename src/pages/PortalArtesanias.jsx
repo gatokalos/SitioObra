@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import { Hand } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { AnimatePresence, motion } from 'framer-motion';
 import { toast } from '@/components/ui/use-toast';
 import { useAuth } from '@/contexts/SupabaseAuthContext';
 import LoginOverlay from '@/components/ContributionModal/LoginOverlay';
@@ -215,7 +215,8 @@ const PortalArtesanias = () => {
   const [arError, setArError] = useState('');
   const [latestArtesaniasReading, setLatestArtesaniasReading] = useState(null);
   const [isReadingTooltipOpen, setIsReadingTooltipOpen] = useState(false);
-  const [galeriaMarianaIndex, setGaleriaMarianaIndex] = useState(null);
+  const [obraCardIndex, setObraCardIndex] = useState(0);
+  const obraCardDirRef = useRef(0);
   const [reactionStatus, setReactionStatus] = useState('idle');
   const [isContributionOpen, setIsContributionOpen] = useState(false);
   const [isResonanceOpen, setIsResonanceOpen] = useState(false);
@@ -516,124 +517,151 @@ const PortalArtesanias = () => {
             )}
           </div>
 
-          <div className="lg:order-2 space-y-4">
-            {/* Card 1: GATO */}
-            <div className="overflow-hidden rounded-3xl border border-white/10 bg-slate-950">
-              <div className="relative">
-                <img
-                  src={MARIANA_GALLERY[0].url}
-                  alt={MARIANA_GALLERY[0].caption}
-                  className="h-[18rem] sm:h-[22rem] w-full object-cover"
-                  loading="lazy"
-                  decoding="async"
-                />
-                <div className="pointer-events-none absolute inset-x-0 bottom-0 h-28 bg-gradient-to-b from-transparent to-slate-950" />
-              </div>
-              <div className="px-6 pb-6 space-y-4">
-                <p className="text-xs uppercase tracking-[0.35em] text-slate-300/75">Obra destacada</p>
-                <h4 className="font-display text-2xl text-white">GATO</h4>
-                <p className="text-sm text-slate-300/85 leading-relaxed">
-                  Hay símbolos que sobreviven porque nunca terminan de significar una sola cosa. El símbolo # ha sido medida, música, tablero, código y una forma de conectar conversaciones mucho antes de ser conocido como &ldquo;gato&rdquo; en México.
-                </p>
-                <p className="text-sm text-slate-300/85 leading-relaxed">
-                  Esta pieza nace de esa transformación constante: no para atrapar el símbolo, sino para dejarlo existir un instante fuera de la pantalla.
-                </p>
-                <div className="flex flex-wrap gap-2">
-                  {['Cerámica', 'Objeto transmedial', '2026'].map((tag) => (
-                    <span key={tag} className="rounded-full border border-amber-400/30 bg-amber-900/20 px-3 py-1 text-[11px] uppercase tracking-[0.2em] text-amber-100">{tag}</span>
-                  ))}
-                </div>
-                <button
-                  type="button"
-                  onClick={() => setGaleriaMarianaIndex(0)}
-                  className="inline-flex w-full items-center justify-center rounded-full border border-amber-400/40 text-amber-200 hover:bg-amber-500/10 px-6 py-2.5 text-sm font-semibold transition"
-                >
-                  Ver proceso de Mariana Núñez
-                </button>
-              </div>
-            </div>
-
-            {/* Card 2: La Taza */}
-            <div className="overflow-hidden rounded-3xl border border-white/10 bg-slate-950">
-              <div className="relative">
-                <img
-                  src={ARTESANIAS_IMAGE}
-                  alt="La taza #GatoEncerrado"
-                  className="h-[18rem] sm:h-[22rem] w-full object-cover"
-                  loading="lazy"
-                  decoding="async"
-                />
-                <div className="pointer-events-none absolute inset-x-0 bottom-0 h-28 bg-gradient-to-b from-transparent to-slate-950" />
-              </div>
-              <div className="px-6 pb-6 space-y-4">
-                <p className="text-xs uppercase tracking-[0.35em] text-slate-300/75">Obra destacada</p>
-                <h4 className="font-display text-2xl text-white">La Taza</h4>
-                <p className="text-sm text-slate-300/85 uppercase tracking-[0.3em]">{ARTESANIAS_NOTE}</p>
-                <ul className="text-sm text-slate-300/90 space-y-1.5">
-                  {ARTESANIAS_INSTRUCTIONS.map((step, index) => (
-                    <li key={`artesanias-step-${index}`} className="flex items-start gap-2">
-                      <span className="text-purple-300 mt-0.5">●</span>
-                      <span>{step}</span>
-                    </li>
-                  ))}
-                </ul>
-                <div className="flex flex-wrap gap-2">
-                  {['Cerámica esmaltada', 'WebAR', 'Objeto narrativo'].map((tag) => (
-                    <span key={tag} className="rounded-full border border-white/20 bg-white/5 px-3 py-1 text-[11px] uppercase tracking-[0.2em] text-slate-300">{tag}</span>
-                  ))}
-                </div>
-                <button
-                  type="button"
-                  onClick={handleOpenTazaCheckout}
-                  disabled={isTazaCheckoutLoading}
-                  className="inline-flex w-full items-center justify-center rounded-full border border-purple-400/40 text-purple-200 hover:bg-purple-500/10 px-6 py-2.5 text-sm font-semibold transition"
-                >
-                  {isTazaCheckoutLoading ? 'Abriendo checkout...' : 'Comprar tu taza'}
-                </button>
-                {arError ? <p className="text-xs text-amber-200/90">{arError}</p> : null}
-                <div className={`pt-4 border-t border-white/10 lg:hidden space-y-4 transition-opacity duration-300${isResonanceOpen ? ' opacity-30 pointer-events-none' : ''}`}>
-                  <div className="mb-1">
-                    <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Resonancia colectiva</p>
-                    <h4 className="font-display text-xl text-amber-300">Formas de sentir</h4>
-                  </div>
-                  <VitranaQuestionReveal
-                    question={l1Done ? (LEVEL2_QUESTIONS['artesanias']?.question ?? vitranaQuestion) : vitranaQuestion}
-                    buttonLabel={l1Done ? 'Tu progreso →' : undefined}
-                    autoReveal={l1Done}
-                    portal="artesanias"
-                    l2Done={l2Done}
-                    onAnswer={() => setIsResonanceOpen(true)}
-                    label=""
+          {(() => {
+            const OBRA_CARD_COUNT = 2;
+            const goToObraCard = (index) => {
+              obraCardDirRef.current = index > obraCardIndex ? 1 : -1;
+              setObraCardIndex(index);
+            };
+            const obraCardVariants = {
+              enter: (dir) => ({ x: dir > 0 ? 64 : -64, opacity: 0 }),
+              center: { x: 0, opacity: 1 },
+              exit: (dir) => ({ x: dir > 0 ? -64 : 64, opacity: 0 }),
+            };
+            const cards = [
+              /* Card 0: GATO */
+              <div key="gato" className="overflow-hidden rounded-3xl border border-white/10 bg-slate-950">
+                <div className="relative">
+                  <img
+                    src={MARIANA_GALLERY[0].url}
+                    alt={MARIANA_GALLERY[0].caption}
+                    className="h-[18rem] sm:h-[22rem] w-full object-cover"
+                    loading="lazy"
+                    decoding="async"
                   />
-                  <ShowcaseReactionInline status={reactionStatus} onReact={handleSendPulse} />
+                  <div className="pointer-events-none absolute inset-x-0 bottom-0 h-28 bg-gradient-to-b from-transparent to-slate-950" />
                 </div>
-              </div>
-            </div>
-
-            {/* Galería — se despliega bajo Card 2 cuando está abierta */}
-            {galeriaMarianaIndex !== null ? (
-              <div className="rounded-3xl border border-white/10 bg-white/5 p-5 space-y-4">
-                <div className="flex items-center justify-between">
-                  <button type="button" onClick={() => setGaleriaMarianaIndex(null)} className="text-xs uppercase tracking-[0.3em] text-amber-400/80 hover:text-amber-300 transition-colors">← Cédula</button>
-                  <p className="text-[10px] uppercase tracking-[0.3em] text-slate-500">{galeriaMarianaIndex + 1} / {MARIANA_GALLERY.length}</p>
-                </div>
-                <div className="overflow-hidden rounded-xl border border-white/10">
-                  {MARIANA_GALLERY[galeriaMarianaIndex].type === 'video' ? (
-                    <video src={MARIANA_GALLERY[galeriaMarianaIndex].url} controls className="w-full" />
-                  ) : (
-                    <img src={MARIANA_GALLERY[galeriaMarianaIndex].url} alt={MARIANA_GALLERY[galeriaMarianaIndex].caption} className="w-full object-contain" />
-                  )}
-                </div>
-                <p className="text-center text-xs text-slate-400">{MARIANA_GALLERY[galeriaMarianaIndex].caption}</p>
-                {MARIANA_GALLERY.length > 1 && (
-                  <div className="flex items-center justify-center gap-4">
-                    <button type="button" onClick={() => setGaleriaMarianaIndex((i) => (i - 1 + MARIANA_GALLERY.length) % MARIANA_GALLERY.length)} className="rounded-full border border-white/10 bg-white/5 p-2 text-slate-300 transition-colors hover:bg-white/10">←</button>
-                    <button type="button" onClick={() => setGaleriaMarianaIndex((i) => (i + 1) % MARIANA_GALLERY.length)} className="rounded-full border border-white/10 bg-white/5 p-2 text-slate-300 transition-colors hover:bg-white/10">→</button>
+                <div className="px-6 pb-6 space-y-4">
+                  <p className="text-xs uppercase tracking-[0.35em] text-slate-300/75">Obra destacada</p>
+                  <h4 className="font-display text-2xl text-white">GATO</h4>
+                  <p className="text-sm text-slate-300/85 leading-relaxed">
+                    Hay símbolos que sobreviven porque nunca terminan de significar una sola cosa. El símbolo # ha sido medida, música, tablero, código y una forma de conectar conversaciones mucho antes de ser conocido como &ldquo;gato&rdquo; en México.
+                  </p>
+                  <p className="text-sm text-slate-300/85 leading-relaxed">
+                    Esta pieza nace de esa transformación constante: no para atrapar el símbolo, sino para dejarlo existir un instante fuera de la pantalla.
+                  </p>
+                  <div className="flex flex-wrap gap-2">
+                    {['Cerámica', 'Objeto transmedial', '2026'].map((tag) => (
+                      <span key={tag} className="rounded-full border border-amber-400/30 bg-amber-900/20 px-3 py-1 text-[11px] uppercase tracking-[0.2em] text-amber-100">{tag}</span>
+                    ))}
                   </div>
-                )}
+                </div>
+              </div>,
+              /* Card 1: La Taza */
+              <div key="taza" className="overflow-hidden rounded-3xl border border-white/10 bg-slate-950">
+                <div className="relative">
+                  <img
+                    src={ARTESANIAS_IMAGE}
+                    alt="La taza #GatoEncerrado"
+                    className="h-[18rem] sm:h-[22rem] w-full object-cover"
+                    loading="lazy"
+                    decoding="async"
+                  />
+                  <div className="pointer-events-none absolute inset-x-0 bottom-0 h-28 bg-gradient-to-b from-transparent to-slate-950" />
+                </div>
+                <div className="px-6 pb-6 space-y-4">
+                  <p className="text-xs uppercase tracking-[0.35em] text-slate-300/75">Obra destacada</p>
+                  <h4 className="font-display text-2xl text-white">La Taza</h4>
+                  <p className="text-sm text-slate-300/85 uppercase tracking-[0.3em]">{ARTESANIAS_NOTE}</p>
+                  <ul className="text-sm text-slate-300/90 space-y-1.5">
+                    {ARTESANIAS_INSTRUCTIONS.map((step, index) => (
+                      <li key={`artesanias-step-${index}`} className="flex items-start gap-2">
+                        <span className="text-purple-300 mt-0.5">●</span>
+                        <span>{step}</span>
+                      </li>
+                    ))}
+                  </ul>
+                  <div className="flex flex-wrap gap-2">
+                    {['Cerámica esmaltada', 'WebAR', 'Objeto narrativo'].map((tag) => (
+                      <span key={tag} className="rounded-full border border-white/20 bg-white/5 px-3 py-1 text-[11px] uppercase tracking-[0.2em] text-slate-300">{tag}</span>
+                    ))}
+                  </div>
+                  <button
+                    type="button"
+                    onClick={handleOpenTazaCheckout}
+                    disabled={isTazaCheckoutLoading}
+                    className="inline-flex w-full items-center justify-center rounded-full border border-purple-400/40 text-purple-200 hover:bg-purple-500/10 px-6 py-2.5 text-sm font-semibold transition"
+                  >
+                    {isTazaCheckoutLoading ? 'Abriendo checkout...' : 'Comprar tu taza'}
+                  </button>
+                  {arError ? <p className="text-xs text-amber-200/90">{arError}</p> : null}
+                  <div className={`pt-4 border-t border-white/10 lg:hidden space-y-4 transition-opacity duration-300${isResonanceOpen ? ' opacity-30 pointer-events-none' : ''}`}>
+                    <div className="mb-1">
+                      <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Resonancia colectiva</p>
+                      <h4 className="font-display text-xl text-amber-300">Formas de sentir</h4>
+                    </div>
+                    <VitranaQuestionReveal
+                      question={l1Done ? (LEVEL2_QUESTIONS['artesanias']?.question ?? vitranaQuestion) : vitranaQuestion}
+                      buttonLabel={l1Done ? 'Tu progreso →' : undefined}
+                      autoReveal={l1Done}
+                      portal="artesanias"
+                      l2Done={l2Done}
+                      onAnswer={() => setIsResonanceOpen(true)}
+                      label=""
+                    />
+                    <ShowcaseReactionInline status={reactionStatus} onReact={handleSendPulse} />
+                  </div>
+                </div>
+              </div>,
+            ];
+            return (
+              <div className="lg:order-2 space-y-3">
+                <div className="flex items-center justify-between px-1">
+                  <p className="text-[10px] uppercase tracking-[0.3em] text-slate-400/70">
+                    Obras · {obraCardIndex + 1} / {OBRA_CARD_COUNT}
+                  </p>
+                  <div className="flex items-center gap-3">
+                    <div className="flex gap-1.5">
+                      {Array.from({ length: OBRA_CARD_COUNT }).map((_, i) => (
+                        <button
+                          key={i}
+                          type="button"
+                          aria-label={`Obra ${i + 1}`}
+                          onClick={() => goToObraCard(i)}
+                          className={`h-1.5 rounded-full transition-all ${i === obraCardIndex ? 'w-4 bg-amber-400' : 'w-1.5 bg-white/30'}`}
+                        />
+                      ))}
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => goToObraCard((obraCardIndex - 1 + OBRA_CARD_COUNT) % OBRA_CARD_COUNT)}
+                      className="rounded-full border border-white/10 bg-white/5 px-2.5 py-1 text-xs text-slate-300 hover:bg-white/10 transition-colors"
+                    >←</button>
+                    <button
+                      type="button"
+                      onClick={() => goToObraCard((obraCardIndex + 1) % OBRA_CARD_COUNT)}
+                      className="rounded-full border border-white/10 bg-white/5 px-2.5 py-1 text-xs text-slate-300 hover:bg-white/10 transition-colors"
+                    >→</button>
+                  </div>
+                </div>
+                <div className="overflow-hidden">
+                  <AnimatePresence mode="wait" custom={obraCardDirRef.current}>
+                    <motion.div
+                      key={obraCardIndex}
+                      custom={obraCardDirRef.current}
+                      variants={obraCardVariants}
+                      initial="enter"
+                      animate="center"
+                      exit="exit"
+                      transition={{ duration: 0.28, ease: 'easeInOut' }}
+                    >
+                      {cards[obraCardIndex]}
+                    </motion.div>
+                  </AnimatePresence>
+                </div>
               </div>
-            ) : null}
-          </div>
+            );
+          })()}
           <div className="hidden lg:block lg:order-3 rounded-3xl border border-white/10 bg-black/30 p-6 space-y-6">
             <CollaboratorsPanel collaborators={ARTESANIAS_COLLABORATORS} accentClassName="text-amber-200/90" />
             <div className="flex flex-col gap-3">
