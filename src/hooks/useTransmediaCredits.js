@@ -54,6 +54,9 @@ const useTransmediaCredits = ({ isAuthenticated, userId, toast }) => {
         case 'miniversoMovimiento':
           baseAmount = GAT_COSTS.movimientoRuta;
           break;
+        case 'miniversos':
+          baseAmount = SHOWCASE_REVEAL_REWARD_GAT.miniversos;
+          break;
         case 'apps':
           baseAmount = SHOWCASE_REVEAL_REWARD_GAT.apps;
           break;

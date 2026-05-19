@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { Eye, Flame } from 'lucide-react';
 
 const PORTAL_GRADIENT = {
@@ -17,6 +17,7 @@ const PORTAL_GRADIENT = {
 const VitranaQuestionReveal = ({
   question,
   onAnswer,
+  onReveal,
   buttonLabel = 'Intuye tu respuesta',
   label = 'Resonancia Colectiva',
   autoReveal = false,
@@ -32,7 +33,12 @@ const VitranaQuestionReveal = ({
     if (autoReveal) setIsRevealed(true);
   }, [autoReveal]);
 
-  const reveal = () => setIsRevealed(true);
+  const reveal = () => {
+    if (!isRevealed) {
+      setIsRevealed(true);
+      onReveal?.();
+    }
+  };
 
   return (
     <div className="flex flex-col gap-5">
@@ -97,32 +103,27 @@ const VitranaQuestionReveal = ({
         </div>
       </div>
 
-      <AnimatePresence>
-        {isRevealed && (
-          <motion.div
-            className="mx-auto w-full max-w-md"
-            initial={{ opacity: 0, y: 12, scale: 0.94 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.96 }}
-            transition={{ type: 'spring', stiffness: 280, damping: 22, delay: autoReveal ? 0.1 : 0.5 }}
-          >
-            <motion.button
-              type="button"
-              className="w-full rounded-full border border-purple-500/70 text-purple-100 hover:bg-purple-500/20 tracking-[0.25em] text-xs uppercase px-4 py-2.5"
-              initial={{ boxShadow: '0 0 0px rgba(139,92,246,0)' }}
-              animate={{ boxShadow: [
-                '0 0 0px rgba(139,92,246,0)',
-                '0 0 32px rgba(139,92,246,0.55)',
-                '0 15px 45px rgba(67,56,202,0.45)',
-              ]}}
-              transition={{ duration: 1.1, delay: autoReveal ? 0.35 : 0.75, ease: 'easeOut' }}
-              onClick={onAnswer}
-            >
-              {buttonLabel}
-            </motion.button>
-          </motion.div>
-        )}
-      </AnimatePresence>
+      <motion.div
+        className={`mx-auto w-full max-w-md ${isRevealed ? '' : 'pointer-events-none'}`}
+        animate={isRevealed
+          ? { opacity: 1, y: 0, scale: 1, filter: 'blur(0px)' }
+          : { opacity: 0, y: 10, scale: 0.93, filter: 'blur(4px)' }}
+        transition={{ type: 'spring', stiffness: 300, damping: 18, delay: isRevealed ? (autoReveal ? 0.1 : 0.45) : 0 }}
+      >
+        <motion.button
+          type="button"
+          className="w-full rounded-full border border-purple-500/70 text-purple-100 hover:bg-purple-500/20 tracking-[0.25em] text-xs uppercase px-4 py-2.5"
+          animate={isRevealed ? { boxShadow: [
+            '0 0 0px rgba(139,92,246,0)',
+            '0 0 32px rgba(139,92,246,0.55)',
+            '0 15px 45px rgba(67,56,202,0.45)',
+          ]} : { boxShadow: '0 0 0px rgba(139,92,246,0)' }}
+          transition={{ duration: 1.1, delay: autoReveal ? 0.35 : 0.75, ease: 'easeOut' }}
+          onClick={onAnswer}
+        >
+          {buttonLabel}
+        </motion.button>
+      </motion.div>
     </div>
   );
 };

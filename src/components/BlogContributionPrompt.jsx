@@ -9,7 +9,7 @@ import { safeGetItem, safeSetItem } from '@/lib/safeStorage';
 
 const BLOG_ONBOARDING_KEY = 'gatoencerrado-blog-onboarding';
 
-const BlogContributionPrompt = ({ onRevealTransmedia = null }) => {
+const BlogContributionPrompt = ({ onRevealTransmedia = null, onAskQuestion = null }) => {
   const [isContributionOpen, setIsContributionOpen] = useState(false);
   const [showOnboardingHint, setShowOnboardingHint] = useState(false);
   const onboardingStoredRef = useRef(false);
@@ -142,14 +142,9 @@ const BlogContributionPrompt = ({ onRevealTransmedia = null }) => {
         Expandir
       </button>
 
-      {/* Mitad derecha: contactar */}
+      {/* Mitad derecha: revelar buscador en Curaduría */}
       <button
-        onClick={() => {
-          document.querySelector('#dialogo-critico')?.scrollIntoView({
-            behavior: 'smooth',
-            block: 'start',
-          });
-        }}
+        onClick={() => onAskQuestion?.()}
         className="px-6 py-3 text-sm sm:text-base font-medium text-slate-100 bg-gradient-to-r from-indigo-500 to-violet-600 hover:opacity-90 transition-all duration-300"
       >
         Preguntar

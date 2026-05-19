@@ -144,26 +144,17 @@ const Header = ({ showTransmediaNav = true }) => {
   }, []);
 
   const menuItems = [
-    { name: 'Alianza', href: '#apoya' },
     { name: 'Obra', href: '#about' },
     { name: 'Equipo', href: '#team' },
     { name: 'Galería', href: '#instagram' },
     { name: 'Voces', href: '#provoca' },
     { name: 'Curaduría', href: '#dialogo-critico' },
     ...(showTransmediaNav ? [{ name: 'Transmedia', href: '#transmedia' }] : []),
+    { name: 'Alianza', href: '#apoya' },
     { name: 'Funciones', href: '#next-show' },
     { name: 'Contacto', href: '#contact' },
   ];
   const mobileMenuItems = [
-    {
-      name: 'Alianza',
-      href: '#apoya',
-      description: 'Causa social',
-      secondary: [
-        { label: 'Ver modelo de impacto', href: '#apoya' },
-        { label: 'Dejar una huella', href: '#cta' },
-      ],
-    },
     { name: 'Obra', href: '#about' },
     { name: 'Equipo', href: '#team' },
     { name: 'Galería', href: '#instagram' },
@@ -173,7 +164,10 @@ const Header = ({ showTransmediaNav = true }) => {
       href: '#dialogo-critico',
       description: 'Diálogo crítico y educativo',
       secondary: [
-        { label: 'FAQ', href: '#dialogo-critico' },
+        { label: 'Curaduría Reflexiva', href: '#dialogo-critico' },
+        { label: 'Expansiones Narrativas', href: '#dialogo-critico' },
+        { label: 'Detrás de Cámaras', href: '#dialogo-critico' },
+        { label: 'Buscador Backstage', href: '#dialogo-critico', action: 'show-buscador' },
       ],
     },
     ...(showTransmediaNav
@@ -186,9 +180,17 @@ const Header = ({ showTransmediaNav = true }) => {
           },
         ]
       : []),
+    {
+      name: 'Alianza',
+      href: '#apoya',
+      description: 'Causa social',
+      secondary: [
+        { label: 'Ver modelo de impacto', href: '#apoya' },
+        { label: 'Dejar una huella', href: '#cta' },
+      ],
+    },
     { name: 'Funciones', href: '#next-show' },
     { name: 'Contacto', href: '#contact' },
-
   ];
 
   const handleNavClick = useCallback((href) => {

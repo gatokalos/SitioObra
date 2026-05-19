@@ -281,8 +281,9 @@ const Hero = () => {
 
   useEffect(() => {
     if (user) return undefined;
+    if (!hasActivatedAudio) return undefined;
     const ROTATION_MS = 3800;
-    const GHOST_PROBABILITY = 0.11;
+    const GHOST_PROBABILITY = 0.28;
     const intervalId = window.setInterval(() => {
       if (Math.random() < GHOST_PROBABILITY) {
         const idx = Math.floor(Math.random() * HERO_GHOST_SUBTITLES.length);
@@ -294,7 +295,7 @@ const Hero = () => {
     }, ROTATION_MS);
 
     return () => window.clearInterval(intervalId);
-  }, [user]);
+  }, [user, hasActivatedAudio]);
 
 
   const loggedInCtaClass = useCallback(
@@ -403,7 +404,7 @@ const Hero = () => {
 
     const preferredEnabled = readHeroAudioEnabledPreference();
     const nextMuted = preferredEnabled == null
-      ? false
+      ? isMobileViewport
       : !preferredEnabled;
 
     if (preferredEnabled == null) {
@@ -438,7 +439,7 @@ const Hero = () => {
     });
   }, []);
 
-  // Hint de audio: primera aparición 1.8s, se muestra 4s, descansa 7s.
+  // Hint de audio: primera aparición 1.2s, se muestra 4s, descansa 3s.
   // El timer no depende de isHeroAudioReady para no reiniciarse si el audio tarda en cargar;
   // en cambio lee el ref en cada tick para mostrar el hint solo cuando el audio ya está listo.
   useEffect(() => {
@@ -451,11 +452,11 @@ const Hero = () => {
         setShowAudioHint(true);
         hideTimer = window.setTimeout(() => {
           setShowAudioHint(false);
-          cycle(7000);
+          cycle(3000);
         }, 4000);
       }, delay);
     };
-    cycle(1800);
+    cycle(1200);
     return () => {
       window.clearTimeout(showTimer);
       window.clearTimeout(hideTimer);
@@ -534,6 +535,8 @@ const Hero = () => {
 
     const attemptPlay = async ({ fromUserGesture = false } = {}) => {
       if (!mounted) return;
+      // Guest users: audio is gated until the isotipo is explicitly clicked.
+      if (!user && !userActivatedRef.current) return;
       if (isInBackground) return;
       if (!fromUserGesture && document.visibilityState !== 'visible') return;
       if (isShowcaseForegroundActive()) return;
@@ -867,9 +870,9 @@ const Hero = () => {
                   #GATOENCERRADO
                 </h1>
                 <motion.div
-                  initial={{ opacity: 0, y: 6 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.9, delay: 0.45, ease: 'easeOut' }}
+                  initial={{ opacity: 0, y: 8 }}
+                  animate={{ opacity: hasActivatedAudio ? 1 : 0, y: hasActivatedAudio ? 0 : 8 }}
+                  transition={{ duration: hasActivatedAudio ? 1.1 : 0, ease: 'easeOut' }}
                   className="mt-2 flex justify-center px-3"
                 >
                   <span className="relative inline-flex min-h-[2.8rem] max-w-[42rem] items-center justify-center text-center text-sm leading-tight tracking-widest uppercase text-slate-400/60 sm:min-h-[1.8rem]">
@@ -953,7 +956,7 @@ const Hero = () => {
                 transition={{ duration: hasActivatedAudio ? 0.9 : 1, delay: hasActivatedAudio ? 0 : 0.8 }}
                 className="mt-8 -translate-y-[7vh] flex flex-col items-center gap-2 sm:mt-10 sm:translate-y-0 md:mt-12"
               >
-                <Suspense fallback={<div style={{ height: 130 }} />}>
+                <Suspense fallback={<div style={{ height: 'clamp(110px, 17vh, 160px)', width: 'clamp(100px, 16vh, 150px)', margin: '0 auto' }} />}>
                   <HashtagButton3D
                     onClick={() => handleOpenMiniverseList(null, 'Explora los miniversos')}
                     height="clamp(110px, 17vh, 160px)"

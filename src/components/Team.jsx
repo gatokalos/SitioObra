@@ -223,15 +223,17 @@ const mobileRoleLabelOverrides = {
 // === COMPONENT ===
 const Team = () => {
   const orderedRoleEntries = [
-    ...["Dirección", "Elenco"]
+    ...["Dramaturgia", "Dirección", "Elenco"]
       .map((role) => [role, teamData[role]])
       .filter(([, data]) => Boolean(data)),
-    ...teamEntries.filter(([role]) => role !== "Dirección" && role !== "Elenco"),
+    ...teamEntries.filter(([role]) => role !== "Dramaturgia" && role !== "Dirección" && role !== "Elenco"),
   ];
   const orderedRoleKeys = orderedRoleEntries.map(([role]) => role);
-  const defaultDesktopRole = teamData.Elenco
-    ? "Elenco"
-    : orderedRoleKeys[0] ?? null;
+  const defaultDesktopRole = teamData.Dramaturgia
+    ? "Dramaturgia"
+    : teamData.Elenco
+      ? "Elenco"
+      : orderedRoleKeys[0] ?? null;
   const [selectedElencoId, setSelectedElencoId] = useState(null);
   const [isMobile, setIsMobile] = useState(
     typeof window !== "undefined" ? window.innerWidth < 768 : false

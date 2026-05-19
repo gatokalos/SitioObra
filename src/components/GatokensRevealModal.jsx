@@ -40,7 +40,7 @@ const GatokensRevealModal = ({ open, onClose, recommendedShowcaseId }) => {
 
   const handleExplore = useCallback(() => {
     onClose?.();
-    navigate('/#apoya');
+    navigate('/#about');
   }, [navigate, onClose]);
 
   return (
@@ -110,10 +110,7 @@ const GatokensRevealModal = ({ open, onClose, recommendedShowcaseId }) => {
             )}
 
             {/* descripción */}
-            <p className="mb-2 text-center text-sm leading-relaxed text-slate-300/80">
-              Los GATokens son la energía simbólica del sitio.
-            </p>
-            <p className="mb-7 text-center text-sm leading-relaxed text-slate-400/60">
+                  <p className="mb-7 text-center text-sm leading-relaxed text-slate-400/60">
               Úsalos para desbloquear experiencias dentro del universo{' '}
               <span className="text-violet-300/80">#GATOENCERRADO</span>.
             </p>
@@ -147,7 +144,7 @@ const GatokensRevealModal = ({ open, onClose, recommendedShowcaseId }) => {
                 }
               `}
             >
-              {recommendedShowcaseId ? 'Seguir explorando' : 'Explorar el sitio →'}
+              {recommendedShowcaseId ? 'Conocer la Obra' : 'Explorar el sitio →'}
             </button>
           </motion.div>
         </motion.div>

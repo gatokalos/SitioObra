@@ -63,6 +63,9 @@ const MobileMenuOverlay = ({
       setActiveFaqKey(secondaryItem.href);
       return;
     }
+    if (secondaryItem.action === 'show-buscador') {
+      window.dispatchEvent(new CustomEvent('gatoencerrado:show-buscador'));
+    }
     onNavigate(secondaryItem.href);
   };
 

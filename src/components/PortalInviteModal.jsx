@@ -114,9 +114,7 @@ const PortalInviteModal = ({ open, onClose, vitranaId }) => {
               </p>
             ) : null}
 
-            <p className="mb-2 text-center text-sm leading-relaxed text-slate-300/80">
-              Los GATokens son la energía simbólica de #GatoEncerrado. Cada interacción con la obra — explorar, compartir, resonar — suma más.
-            </p>
+      
             <p className="mb-6 text-center text-sm leading-relaxed text-slate-400/60">
               Recibe <span className="text-violet-300/80">+{GAT_GIFT} GAT</span> de bienvenida para comenzar tu recorrido por el miniverso.
             </p>

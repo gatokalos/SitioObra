@@ -312,6 +312,7 @@ const Transmedia = ({ allianceOnlyMode = false }) => {
       setActivePortalExperienceDone(!!(raw && JSON.parse(raw).experience_ts));
     } catch { setActivePortalExperienceDone(false); }
   }, [activeShowcase]);
+  useEffect(() => { setHeartBounceKey(0); }, [activeShowcase]);
   const [isLiteraturaResonanceOpen, setIsLiteraturaResonanceOpen] = useState(false);
   const [isArtesaniasResonanceOpen, setIsArtesaniasResonanceOpen] = useState(false);
   const [isGraficosResonanceOpen, setIsGraficosResonanceOpen] = useState(false);
@@ -320,6 +321,7 @@ const Transmedia = ({ allianceOnlyMode = false }) => {
   const [isMovimientoResonanceOpen, setIsMovimientoResonanceOpen] = useState(false);
   const [isJuegosResonanceOpen, setIsJuegosResonanceOpen] = useState(false);
   const [isOraculoResonanceOpen, setIsOraculoResonanceOpen] = useState(false);
+  const [heartBounceKey, setHeartBounceKey] = useState(0);
   const pendingAutoResonanceRef = useRef(null);
 
   useEffect(() => {
@@ -4044,6 +4046,7 @@ const rendernotaAutoral = () => {
                           portal="obra"
                           l2Done={activePortalL2Done}
                           onAnswer={() => setIsDramaResonanceOpen(true)}
+                          onReveal={() => setHeartBounceKey(k => k + 1)}
                           label=""
                         />
                         {activeShowcase === 'miniversos' ? (
@@ -4051,6 +4054,7 @@ const rendernotaAutoral = () => {
                             showcaseId="miniversos"
                             description="Estamos creando espacios donde lo que sentimos también puede verse en otros cuerpos."
                             buttonLabel="¡Déjanos un pulso!"
+                            bounceKey={heartBounceKey}
                           />
                         ) : null}
                         <ResonanceModal
@@ -4075,12 +4079,14 @@ const rendernotaAutoral = () => {
                           portal="literatura"
                           l2Done={activePortalL2Done}
                           onAnswer={() => setIsLiteraturaResonanceOpen(true)}
+                          onReveal={() => setHeartBounceKey(k => k + 1)}
                           label=""
                         />
                         <ShowcaseReactionInline
                           showcaseId="miniversoNovela"
                           description="Estamos creando relatos donde una emoción puede reconocerse en otra persona."
                           buttonLabel="¡Déjanos un pulso!"
+                          bounceKey={heartBounceKey}
                         />
                         <ResonanceModal
                           open={isLiteraturaResonanceOpen}
@@ -4104,12 +4110,14 @@ const rendernotaAutoral = () => {
                           portal="artesanias"
                           l2Done={activePortalL2Done}
                           onAnswer={() => setIsArtesaniasResonanceOpen(true)}
+                          onReveal={() => setHeartBounceKey(k => k + 1)}
                           label=""
                         />
                         <ShowcaseReactionInline
                           showcaseId="lataza"
                           description="Estamos creando objetos que permiten compartir emociones sin tener que explicarlas."
                           buttonLabel="¡Déjanos un pulso!"
+                          bounceKey={heartBounceKey}
                         />
                         <ResonanceModal
                           open={isArtesaniasResonanceOpen}
@@ -4133,12 +4141,14 @@ const rendernotaAutoral = () => {
                           portal="grafico"
                           l2Done={activePortalL2Done}
                           onAnswer={() => setIsGraficosResonanceOpen(true)}
+                          onReveal={() => setHeartBounceKey(k => k + 1)}
                           label=""
                         />
                         <ShowcaseReactionInline
                           showcaseId="miniversoGrafico"
                           description="Estamos creando trazos donde ciertas emociones logran quedarse un poco más."
                           buttonLabel="¡Déjanos un pulso!"
+                          bounceKey={heartBounceKey}
                         />
                         <ResonanceModal
                           open={isGraficosResonanceOpen}
@@ -4162,12 +4172,14 @@ const rendernotaAutoral = () => {
                           portal="cine"
                           l2Done={activePortalL2Done}
                           onAnswer={() => setIsCineResonanceOpen(true)}
+                          onReveal={() => setHeartBounceKey(k => k + 1)}
                           label=""
                         />
                         <ShowcaseReactionInline
                           showcaseId="copycats"
                           description="Estamos creando imágenes donde lo que sentimos encuentra eco en otras miradas."
                           buttonLabel="¡Déjanos un pulso!"
+                          bounceKey={heartBounceKey}
                         />
                         <ResonanceModal
                           open={isCineResonanceOpen}
@@ -4191,12 +4203,14 @@ const rendernotaAutoral = () => {
                           portal="sonoridades"
                           l2Done={activePortalL2Done}
                           onAnswer={() => setIsSonoroResonanceOpen(true)}
+                          onReveal={() => setHeartBounceKey(k => k + 1)}
                           label=""
                         />
                         <ShowcaseReactionInline
                           showcaseId="miniversoSonoro"
                           description="Estamos creando atmósferas donde las emociones pueden respirarse en colectivo."
                           buttonLabel="¡Déjanos un pulso!"
+                          bounceKey={heartBounceKey}
                         />
                         <ResonanceModal
                           open={isSonoroResonanceOpen}
@@ -4220,12 +4234,14 @@ const rendernotaAutoral = () => {
                           portal="movimiento"
                           l2Done={activePortalL2Done}
                           onAnswer={() => setIsMovimientoResonanceOpen(true)}
+                          onReveal={() => setHeartBounceKey(k => k + 1)}
                           label=""
                         />
                         <ShowcaseReactionInline
                           showcaseId="miniversoMovimiento"
                           description="Estamos creando recorridos donde el cuerpo también participa en lo que sentimos."
                           buttonLabel="¡Déjanos un pulso!"
+                          bounceKey={heartBounceKey}
                         />
                         <ResonanceModal
                           open={isMovimientoResonanceOpen}
@@ -4249,12 +4265,14 @@ const rendernotaAutoral = () => {
                           portal="juegos"
                           l2Done={activePortalL2Done}
                           onAnswer={() => setIsJuegosResonanceOpen(true)}
+                          onReveal={() => setHeartBounceKey(k => k + 1)}
                           label=""
                         />
                         <ShowcaseReactionInline
                           showcaseId="apps"
                           description="Estamos creando decisiones donde lo que sentimos cambia la forma de avanzar."
                           buttonLabel="¡Déjanos un pulso!"
+                          bounceKey={heartBounceKey}
                         />
                         <ResonanceModal
                           open={isJuegosResonanceOpen}
@@ -4278,12 +4296,14 @@ const rendernotaAutoral = () => {
                           portal="oraculo"
                           l2Done={activePortalL2Done}
                           onAnswer={() => setIsOraculoResonanceOpen(true)}
+                          onReveal={() => setHeartBounceKey(k => k + 1)}
                           label=""
                         />
                         <ShowcaseReactionInline
                           showcaseId="oraculo"
                           description="Estamos creando símbolos para explorar emociones que a veces no sabemos nombrar."
                           buttonLabel="¡Déjanos un pulso!"
+                          bounceKey={heartBounceKey}
                         />
                         <ResonanceModal
                           open={isOraculoResonanceOpen}

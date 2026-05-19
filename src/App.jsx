@@ -126,10 +126,10 @@ const DeferredSection = ({
   return <div ref={mountRef}>{isReady ? children : fallback}</div>;
 };
 
-const BlogSection = () => {
+const BlogSection = ({ showBuscador = false }) => {
   const blogData = useBlogPosts();
 
-  return <Blog posts={blogData.posts} isLoading={blogData.isLoading} error={blogData.error} />;
+  return <Blog posts={blogData.posts} isLoading={blogData.isLoading} error={blogData.error} showBuscador={showBuscador} />;
 };
 
 const HERO_BACKGROUND_VARIANTS = {
@@ -392,6 +392,7 @@ function App() {
   });
   const isAuthenticated = Boolean(user);
   const canAccessTransmedia = isAuthenticated || hasGuestUnlockedTransmedia;
+  const [showBlogBuscador, setShowBlogBuscador] = useState(false);
   const isMobileLoggedInPortalMode = isAuthenticated && isMobileViewport;
   const isPortalRoute = location.pathname.startsWith('/portal-');
   const hasForcedHomeTopOnBootRef = useRef(false);
@@ -539,6 +540,17 @@ function App() {
     [hasGuestUnlockedTransmedia, isAuthenticated, scrollToSection]
   );
 
+  const handleAskQuestion = useCallback(() => {
+    setShowBlogBuscador(true);
+    scrollToSection('dialogo-critico');
+  }, [scrollToSection]);
+
+  useEffect(() => {
+    const handler = () => handleAskQuestion();
+    window.addEventListener('gatoencerrado:show-buscador', handler);
+    return () => window.removeEventListener('gatoencerrado:show-buscador', handler);
+  }, [handleAskQuestion]);
+
   useEffect(() => {
     if (location.pathname !== '/') return;
     if (isAuthenticated || hasGuestUnlockedTransmedia) return;
@@ -596,29 +608,6 @@ function App() {
               <main className="pt-20 lg:pt-24">
                 <Hero />
 
-                {/* Alianza Social: pública, siempre visible después del Hero */}
-                <SectionErrorBoundary
-                  fallback={(
-                    <section id="apoya" className="py-24 relative">
-                      <div className="container mx-auto px-6">
-                        <div className="glass-effect rounded-2xl p-8 text-center">
-                          <p className="text-xs uppercase tracking-[0.35em] text-slate-400/80">Alianza Social</p>
-                        </div>
-                      </div>
-                    </section>
-                  )}
-                >
-                  <DeferredSection
-                    rootMargin="400px 0px"
-                    idleDelayMs={800}
-                    fallback={<SectionFallback id="apoya" minHeight={700} />}
-                  >
-                    <Suspense fallback={<SectionFallback id="apoya" minHeight={700} />}>
-                      <AlianzaSocial />
-                    </Suspense>
-                  </DeferredSection>
-                </SectionErrorBoundary>
-
                 <DeferredSection fallback={<SectionFallback id="about" minHeight={620} />}>
                   <Suspense fallback={<SectionFallback id="about" minHeight={620} />}>
                     <About />
@@ -639,14 +628,14 @@ function App() {
                     <ProvocaSection />
                   </Suspense>
                 </DeferredSection>
-                <DeferredSection fallback={<SectionFallback id="dialogo-critico" minHeight={900} />}>
-                  <Suspense fallback={<SectionFallback id="dialogo-critico" minHeight={900} />}>
-                    <BlogSection />
-                  </Suspense>
-                </DeferredSection>
                 <DeferredSection fallback={<SectionFallback id="blog-contribuye" minHeight={700} />}>
                   <Suspense fallback={<SectionFallback id="blog-contribuye" minHeight={700} />}>
-                    <BlogContributionPrompt onRevealTransmedia={handleRevealTransmedia} />
+                    <BlogContributionPrompt onRevealTransmedia={handleRevealTransmedia} onAskQuestion={handleAskQuestion} />
+                  </Suspense>
+                </DeferredSection>
+                <DeferredSection fallback={<SectionFallback id="dialogo-critico" minHeight={900} />}>
+                  <Suspense fallback={<SectionFallback id="dialogo-critico" minHeight={900} />}>
+                    <BlogSection showBuscador={showBlogBuscador} />
                   </Suspense>
                 </DeferredSection>
 
@@ -656,6 +645,31 @@ function App() {
                     <Suspense fallback={<SectionFallback id="transmedia" minHeight={1600} />}>
                       <Transmedia />
                     </Suspense>
+                  </SectionErrorBoundary>
+                )}
+
+                {/* Alianza Social: revelada junto con Transmedia */}
+                {canAccessTransmedia && !isMobileLoggedInPortalMode && (
+                  <SectionErrorBoundary
+                    fallback={(
+                      <section id="apoya" className="py-24 relative">
+                        <div className="container mx-auto px-6">
+                          <div className="glass-effect rounded-2xl p-8 text-center">
+                            <p className="text-xs uppercase tracking-[0.35em] text-slate-400/80">Alianza Social</p>
+                          </div>
+                        </div>
+                      </section>
+                    )}
+                  >
+                    <DeferredSection
+                      rootMargin="400px 0px"
+                      idleDelayMs={800}
+                      fallback={<SectionFallback id="apoya" minHeight={700} />}
+                    >
+                      <Suspense fallback={<SectionFallback id="apoya" minHeight={700} />}>
+                        <AlianzaSocial />
+                      </Suspense>
+                    </DeferredSection>
                   </SectionErrorBoundary>
                 )}
 

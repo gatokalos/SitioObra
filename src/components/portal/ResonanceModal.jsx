@@ -1,10 +1,17 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Eye, Flame, PawPrint, Lock, ShieldCheck, Check, ChevronDown } from 'lucide-react';
+import { Eye, Flame, PawPrint, Lock, ShieldCheck, Check, ChevronDown, Sparkles } from 'lucide-react';
 import { supabase } from '@/lib/supabaseClient';
 import { ensureAnonId } from '@/lib/identity';
 import { useAuth } from '@/contexts/SupabaseAuthContext';
 import { ConfettiBurst, useConfettiBursts } from '@/components/Confetti';
+import {
+  registerTransmediaCreditEvent,
+  createTransmediaIdempotencyKey,
+} from '@/services/transmediaCreditsService';
+import { OBRA_VOICE_MIN_GAT } from '@/components/transmedia/transmediaConstants';
+
+const OBRA_API_URL = (import.meta.env.VITE_OBRA_API_URL ?? 'https://api.gatoencerrado.ai').replace(/\/+$/, '');
 
 /* ─── Identidad visual por portal ─────────────────────────────────────── */
 
@@ -209,6 +216,7 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, narr
   const [l2Selection, setL2Selection] = useState(() => lsRead(portal).l2_option ?? null);
   const [l2Submitting, setL2Submitting] = useState(false);
   const [l2Open, setL2Open] = useState(false);
+  const [gatRewarded, setGatRewarded] = useState(() => !!lsRead(portal).gat_ts);
   // checking = true mientras consultamos Supabase para respuestas anteriores al deploy de localStorage
   const [checking, setChecking] = useState(() => !lsRead(portal).l1);
 
@@ -266,9 +274,10 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, narr
   const handleSubmit = async (e) => {
     e.preventDefault();
     setSubmitting(true);
+    const anonId = ensureAnonId();
     try {
       await supabase.from('vitrana_resonances').insert({
-        anon_id:   ensureAnonId(),
+        anon_id:   anonId,
         portal:    portal ?? null,
         question:  question ?? null,
         nombre:    formData.nombre,
@@ -277,6 +286,37 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, narr
         level:     1,
       });
     } catch (_) {}
+
+    // Persiste línea base en resonance_sessions (fire-and-forget)
+    fetch(`${OBRA_API_URL}/api/resonance/baseline`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        anon_id:          anonId,
+        miniverso_id:     portal,
+        intuicion_answer: formData.respuesta,
+      }),
+    }).catch(() => {});
+
+    // Otorga GAT si aún no se han concedido para este portal
+    if (!lsRead(portal).gat_ts) {
+      try {
+        const { state, duplicate } = await registerTransmediaCreditEvent({
+          eventKey:       `resonance:intuicion:${portal}`,
+          amount:         OBRA_VOICE_MIN_GAT,
+          oncePerIdentity: true,
+          idempotencyKey: createTransmediaIdempotencyKey(`resonance:${portal}`),
+        });
+        if (!duplicate && state && typeof window !== 'undefined') {
+          window.dispatchEvent(
+            new CustomEvent('gatoencerrado:external-credit-event', { detail: { state } })
+          );
+          lsPatch(portal, { gat_ts: Date.now() });
+          setGatRewarded(true);
+        }
+      } catch (_) {}
+    }
+
     lsPatch(portal, { l1: Date.now() });
     fireConfetti();
     setL1Done(true);
@@ -294,16 +334,29 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, narr
     if (l2Selection || l2Submitting) return;
     setL2Selection(option); // optimistic
     setL2Submitting(true);
+    const anonId = ensureAnonId();
     lsPatch(portal, { l2_option: option, l2_ts: Date.now() });
     try {
       await supabase.from('vitrana_resonances').insert({
-        anon_id:   ensureAnonId(),
+        anon_id:   anonId,
         portal:    portal ?? null,
         question:  l2q?.question ?? null,
         respuesta: option,
         level:     2,
       });
     } catch (_) {}
+
+    // Persiste evidencia post-experiencia (fire-and-forget)
+    fetch(`${OBRA_API_URL}/api/resonance/evidence`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        anon_id:         anonId,
+        miniverso_id:    portal,
+        cambio_response: option,
+      }),
+    }).catch(() => {});
+
     setL2Submitting(false);
   };
 
@@ -393,8 +446,21 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, narr
                   >
                     {/* Header */}
                     <div className="space-y-1.5">
-                      <div className="inline-flex rounded-full border border-white/10 bg-white/5 px-3 py-1 text-[0.62rem] uppercase tracking-[0.32em] text-white/70 backdrop-blur-md">
-                        Laboratorio
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <div className="inline-flex rounded-full border border-white/10 bg-white/5 px-3 py-1 text-[0.62rem] uppercase tracking-[0.32em] text-white/70 backdrop-blur-md">
+                          Laboratorio
+                        </div>
+                        {gatRewarded && (
+                          <motion.div
+                            initial={{ opacity: 0, scale: 0.8, y: 4 }}
+                            animate={{ opacity: 1, scale: 1, y: 0 }}
+                            transition={{ type: 'spring', stiffness: 260, damping: 18 }}
+                            className="inline-flex items-center gap-1.5 rounded-full border border-cyan-300/30 bg-cyan-400/10 px-2.5 py-1 text-[0.62rem] font-semibold uppercase tracking-[0.2em] text-cyan-200/90"
+                          >
+                            <Sparkles size={10} className="text-cyan-300" />
+                            +{OBRA_VOICE_MIN_GAT} GAT
+                          </motion.div>
+                        )}
                       </div>
                       <h2 className="font-display text-3xl text-white lg:text-4xl">
                         Tu viaje personal

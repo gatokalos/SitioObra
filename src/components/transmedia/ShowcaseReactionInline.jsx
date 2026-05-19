@@ -9,7 +9,7 @@ import PulseReactionCard from '@/components/portal/PulseReactionCard';
 
 const LOGIN_RETURN_KEY = 'gatoencerrado:login-return';
 
-const ShowcaseReactionInline = ({ showcaseId, title, description, buttonLabel, className = '' }) => {
+const ShowcaseReactionInline = ({ showcaseId, title, description, buttonLabel, bounceKey = 0, className = '' }) => {
   const { user, session } = useAuth();
   const { hasActiveSubscription } = useActiveSubscription(user?.id, session);
   const isAuthenticated = Boolean(user);
@@ -84,6 +84,7 @@ const ShowcaseReactionInline = ({ showcaseId, title, description, buttonLabel, c
       buttonLabel={buttonLabel}
       status={status}
       onReact={handleReaction}
+      bounceKey={bounceKey}
       className={className}
     />
   );

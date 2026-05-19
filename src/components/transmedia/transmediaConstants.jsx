@@ -41,6 +41,7 @@ export const OBRA_VOICE_PRECARE_THRESHOLD_GAT = OBRA_VOICE_MIN_GAT * OBRA_VOICE_
 export const SHOWCASE_REVEAL_REWARD_GAT = {
   apps: 20,
   oraculo: 20,
+  miniversos: 25,
 };
 export const SHOWCASE_REQUIRED_GAT = {
   miniversos: OBRA_VOICE_MIN_GAT,

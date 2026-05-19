@@ -36,6 +36,13 @@ const PortalHeaderActions = ({ returnUrl = DEFAULT_RETURN_URL }) => {
       typeof window !== 'undefined' && window.matchMedia('(max-width: 768px)').matches;
     const fromTransmedia = portalLaunchSource === 'transmedia-mobile-portal';
 
+    if (isMobile && !user) {
+      // Anonymous mobile users have a single portal entry point (bienvenida recommendation).
+      // Send them to About so they continue discovering the site naturally.
+      navigate('/#about', { replace: true });
+      return;
+    }
+
     if (isMobile && fromTransmedia) {
       // Mobile + opened from Transmedia section: hash-based navigation so
       // HashAnchorScroller handles scrollIntoView with retry — avoids React 18

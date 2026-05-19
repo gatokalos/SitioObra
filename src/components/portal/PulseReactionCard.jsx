@@ -1,4 +1,5 @@
 import React from 'react';
+import { motion } from 'framer-motion';
 import { Heart } from 'lucide-react';
 
 const PulseReactionCard = ({
@@ -7,6 +8,7 @@ const PulseReactionCard = ({
   buttonLabel,
   status = 'idle',
   onReact,
+  bounceKey = 0,
   className = '',
 }) => {
   const label = status === 'loading'
@@ -56,7 +58,13 @@ const PulseReactionCard = ({
             disabled={status === 'loading'}
             aria-label={isSuccess ? 'Pulso registrado' : label}
           >
-            <Heart size={24} />
+            <motion.div
+              key={bounceKey}
+              animate={bounceKey > 0 ? { scale: [1, 1.38, 0.85, 1.18, 1] } : {}}
+              transition={{ duration: 0.52, times: [0, 0.28, 0.52, 0.74, 1], delay: 0.45 }}
+            >
+              <Heart size={24} />
+            </motion.div>
           </button>
         </div>
       </div>

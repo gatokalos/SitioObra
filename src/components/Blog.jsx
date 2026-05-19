@@ -589,7 +589,7 @@ const ArticleInteractionPanel = ({ post }) => {
   );
 };
 
-const Blog = ({ posts = [], isLoading = false, error = null }) => {
+const Blog = ({ posts = [], isLoading = false, error = null, showBuscador = false }) => {
   const {
     query: faqQuery,
     setQuery: setFaqQuery,
@@ -617,6 +617,12 @@ const Blog = ({ posts = [], isLoading = false, error = null }) => {
   const [isEditorialLineOpen, setIsEditorialLineOpen] = useState(false);
   const articlesRef = useRef(null);
   const faqInputRef = useRef(null);
+
+  useEffect(() => {
+    if (!showBuscador) return undefined;
+    const timer = setTimeout(() => { faqInputRef.current?.focus(); }, 520);
+    return () => clearTimeout(timer);
+  }, [showBuscador]);
 
   const categorizedPosts = useMemo(
     () =>
@@ -884,12 +890,19 @@ const Blog = ({ posts = [], isLoading = false, error = null }) => {
               viewport={{ once: true }}
               className="space-y-5"
             >
-              {featuredEditorialCategory ? (
+              <AnimatePresence>
+              {showBuscador && featuredEditorialCategory ? (
+                <motion.div
+                  key="buscador-reveal"
+                  initial={{ opacity: 0, y: -18 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  transition={{ duration: 0.45, ease: 'easeOut' }}
+                >
                 <motion.div
                   initial={{ opacity: 0, y: 14, scale: 0.99 }}
-                  whileInView={{ opacity: 1, y: 0, scale: 1 }}
-                  transition={{ duration: 0.45, ease: 'easeOut' }}
-                  viewport={{ once: true, amount: 0.6 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  transition={{ duration: 0.45, ease: 'easeOut', delay: 0.08 }}
                   className="relative overflow-hidden rounded-2xl border border-violet-300/40 bg-gradient-to-r from-violet-500/20 via-fuchsia-500/14 to-indigo-500/18 px-5 py-4 shadow-[0_20px_56px_rgba(76,29,149,0.28)]"
                 >
                   <div className="pointer-events-none absolute -right-12 -top-16 h-40 w-40 rounded-full bg-violet-300/20 blur-2xl" />
@@ -1067,7 +1080,9 @@ const Blog = ({ posts = [], isLoading = false, error = null }) => {
                     </div>
                   </div>
                 </motion.div>
+                </motion.div>
               ) : null}
+              </AnimatePresence>
 
               <div className="grid gap-6 md:grid-cols-3">
                 {featuredEditorialCategory ? (
