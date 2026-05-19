@@ -77,19 +77,14 @@ const AppleIcon = ({ className }) => (
 const LOGIN_TIGER_ART_URL =
   'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Merch/loggin_tiger.jpg';
 
-const getMailUrl = (emailAddr) => {
-  const domain = (emailAddr ?? '').split('@')[1]?.toLowerCase() ?? '';
-  if (domain === 'gmail.com' || domain === 'googlemail.com') return 'https://mail.google.com';
-  if (['outlook.com', 'hotmail.com', 'live.com', 'msn.com'].includes(domain)) return 'https://outlook.live.com';
-  if (domain === 'yahoo.com' || domain === 'ymail.com') return 'https://mail.yahoo.com';
-  if (domain === 'icloud.com' || domain === 'me.com' || domain === 'mac.com') return 'https://www.icloud.com/mail';
-  return 'mailto:';
-};
 
 const LoginOverlay = ({ onClose }) => {
   const [email, setEmail] = useState('');
   const [submittedEmail, setSubmittedEmail] = useState('');
-  const [pendingMagic, setPendingMagic] = useState(false);
+  const [step, setStep] = useState('email'); // 'email' | 'otp'
+  const [otpCode, setOtpCode] = useState('');
+  const [pendingSend, setPendingSend] = useState(false);
+  const [pendingVerify, setPendingVerify] = useState(false);
   const [pendingProvider, setPendingProvider] = useState(null);
   const [feedback, setFeedback] = useState(null);
   const storageBlocked = safeStorageType === 'memory';
@@ -102,14 +97,22 @@ const LoginOverlay = ({ onClose }) => {
     if (explicitRedirect) return explicitRedirect;
     return buildCurrentSiteRedirectUrl();
   }, []);
-  const isSubmitting = pendingMagic || Boolean(pendingProvider);
+  const isSubmitting = pendingSend || pendingVerify || Boolean(pendingProvider);
 
-  const handleMagicLink = useCallback(
+  // Detecta sesión iniciada en cualquier pestaña (magic link fallback o OAuth)
+  useEffect(() => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === 'SIGNED_IN' && session) {
+        onClose?.();
+      }
+    });
+    return () => subscription.unsubscribe();
+  }, [onClose]);
+
+  const handleSendOtp = useCallback(
     async (event) => {
       event.preventDefault();
-      if (pendingMagic || pendingProvider) {
-        return;
-      }
+      if (pendingSend || pendingProvider) return;
 
       if (storageBlocked) {
         setFeedback({
@@ -121,39 +124,62 @@ const LoginOverlay = ({ onClose }) => {
 
       const normalized = email.trim();
       if (!normalized) {
-        setFeedback({
-          type: 'error',
-          text: 'Escribe tu correo para enviarte la puerta de acceso.',
-        });
+        setFeedback({ type: 'error', text: 'Escribe tu correo para enviarte el código de acceso.' });
         return;
       }
 
-      setPendingMagic(true);
+      setPendingSend(true);
       setFeedback(null);
       safeSetItem('gatoencerrado:resume-contribution', 'true');
 
       const { error } = await supabase.auth.signInWithOtp({
         email: normalized,
-        options: {
-          emailRedirectTo: redirectTo,
-        },
+        options: { shouldCreateUser: true },
       });
 
       if (error) {
-        setFeedback({ type: 'error', text: error.message || 'No pudimos abrir el acceso por correo.' });
+        setFeedback({ type: 'error', text: error.message || 'No pudimos enviar el código. Intenta de nuevo.' });
       } else {
         setSubmittedEmail(normalized);
-        setFeedback({
-          type: 'success',
-          text: 'Te mandamos un acceso por correo. Ábrelo y continúas desde donde ibas.',
-        });
         setEmail('');
+        setOtpCode('');
+        setStep('otp');
+        setFeedback(null);
       }
 
-      setPendingMagic(false);
+      setPendingSend(false);
     },
-    [email, pendingMagic, pendingProvider, redirectTo, storageBlocked]
+    [email, pendingSend, pendingProvider, storageBlocked]
   );
+
+  const handleVerifyOtp = useCallback(
+    async (event) => {
+      event.preventDefault();
+      if (pendingVerify) return;
+      setPendingVerify(true);
+      setFeedback(null);
+
+      const { error } = await supabase.auth.verifyOtp({
+        email: submittedEmail,
+        token: otpCode.trim(),
+        type: 'email',
+      });
+
+      if (error) {
+        setFeedback({ type: 'error', text: 'Código incorrecto o expirado. Revisa el correo e intenta de nuevo.' });
+      }
+      // onAuthStateChange cierra el modal en caso de éxito
+
+      setPendingVerify(false);
+    },
+    [submittedEmail, otpCode, pendingVerify]
+  );
+
+  const handleResend = useCallback(() => {
+    setStep('email');
+    setOtpCode('');
+    setFeedback(null);
+  }, []);
 
   const handleGoogleLogin = useCallback(async () => {
     setFeedback(null);
@@ -310,33 +336,79 @@ const LoginOverlay = ({ onClose }) => {
                   </div>
                 </div>
 
-                {/* ── Magic Link form — CTA primario ── */}
-                <form onSubmit={handleMagicLink} className="mt-6 space-y-4">
-                  <label htmlFor="tracking-email" className="sr-only">
-                    Correo electrónico
-                  </label>
-                  <input
-                    id="tracking-email"
-                    type="email"
-                    value={email}
-                    onChange={(event) => setEmail(event.target.value)}
-                    placeholder="nombre@correo.com"
-                    className="form-surface form-surface--pill w-full px-6 py-4 text-lg"
-                    required
-                    disabled={isSubmitting}
-                  />
-                  <button
-                    type="submit"
-                    disabled={isSubmitting}
-                    className="w-full rounded-full px-6 py-4 text-lg font-semibold text-white shadow-[0_18px_40px_rgba(255,92,20,0.34)] transition hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-60"
-                    style={{
-                      backgroundImage:
-                        'linear-gradient(90deg, rgba(158,92,255,0.9) 0%, rgba(197,77,150,0.88) 28%, rgba(255,120,33,0.94) 72%, rgba(255,87,24,0.9) 100%)',
-                    }}
-                  >
-                    {pendingMagic ? 'Abriendo el acceso...' : 'Pasar al otro lado'}
-                  </button>
-                </form>
+                {/* ── Paso 1: email ── */}
+                {step === 'email' ? (
+                  <form onSubmit={handleSendOtp} className="mt-6 space-y-4">
+                    <label htmlFor="tracking-email" className="sr-only">
+                      Correo electrónico
+                    </label>
+                    <input
+                      id="tracking-email"
+                      type="email"
+                      value={email}
+                      onChange={(event) => setEmail(event.target.value)}
+                      placeholder="nombre@correo.com"
+                      className="form-surface form-surface--pill w-full px-6 py-4 text-lg"
+                      required
+                      disabled={isSubmitting}
+                    />
+                    <button
+                      type="submit"
+                      disabled={isSubmitting}
+                      className="w-full rounded-full px-6 py-4 text-lg font-semibold text-white shadow-[0_18px_40px_rgba(255,92,20,0.34)] transition hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-60"
+                      style={{
+                        backgroundImage:
+                          'linear-gradient(90deg, rgba(158,92,255,0.9) 0%, rgba(197,77,150,0.88) 28%, rgba(255,120,33,0.94) 72%, rgba(255,87,24,0.9) 100%)',
+                      }}
+                    >
+                      {pendingSend ? 'Enviando código...' : 'Pasar al otro lado'}
+                    </button>
+                  </form>
+                ) : (
+                  /* ── Paso 2: código OTP ── */
+                  <form onSubmit={handleVerifyOtp} className="mt-6 space-y-4">
+                    <p className="text-sm text-white/60">
+                      Enviamos un código de 6 dígitos a{' '}
+                      <span className="font-semibold text-white/90">{submittedEmail}</span>.
+                      Escríbelo aquí — no necesitas salir de esta página.
+                    </p>
+                    <label htmlFor="otp-code" className="sr-only">
+                      Código de verificación
+                    </label>
+                    <input
+                      id="otp-code"
+                      type="text"
+                      inputMode="numeric"
+                      autoComplete="one-time-code"
+                      pattern="\d{6}"
+                      maxLength={6}
+                      value={otpCode}
+                      onChange={(e) => setOtpCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                      placeholder="123456"
+                      className="form-surface form-surface--pill w-full px-6 py-4 text-center text-2xl tracking-[0.5em]"
+                      disabled={pendingVerify}
+                      autoFocus
+                    />
+                    <button
+                      type="submit"
+                      disabled={otpCode.length < 6 || pendingVerify}
+                      className="w-full rounded-full px-6 py-4 text-lg font-semibold text-white shadow-[0_18px_40px_rgba(255,92,20,0.34)] transition hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-60"
+                      style={{
+                        backgroundImage:
+                          'linear-gradient(90deg, rgba(158,92,255,0.9) 0%, rgba(197,77,150,0.88) 28%, rgba(255,120,33,0.94) 72%, rgba(255,87,24,0.9) 100%)',
+                      }}
+                    >
+                      {pendingVerify ? 'Verificando...' : 'Confirmar código'}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={handleResend}
+                      className="w-full text-center text-sm text-white/45 transition hover:text-white/70"
+                    >
+                      ¿No llegó? Reenviar código
+                    </button>
+                  </form>
+                )}
 
                 {feedback ? (
                   <div
@@ -348,21 +420,6 @@ const LoginOverlay = ({ onClose }) => {
                   >
                     {feedback.text}
                   </div>
-                ) : null}
-
-                {feedback?.type === 'success' && submittedEmail ? (
-                  <a
-                    href={getMailUrl(submittedEmail)}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="mt-3 flex w-full items-center justify-center gap-2 rounded-full border border-emerald-400/30 bg-emerald-500/10 px-6 py-3.5 text-base font-semibold text-emerald-100 backdrop-blur-md transition hover:bg-emerald-500/20"
-                  >
-                    <svg aria-hidden="true" viewBox="0 0 20 20" className="h-4 w-4 fill-current">
-                      <path d="M2.003 5.884 10 9.882l7.997-3.998A2 2 0 0 0 16 4H4a2 2 0 0 0-1.997 1.884z" />
-                      <path d="m18 8.118-8 4-8-4V14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8.118z" />
-                    </svg>
-                    Abrir mi correo
-                  </a>
                 ) : null}
 
                 {/* ── Divider ── */}
