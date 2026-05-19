@@ -414,7 +414,7 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, narr
             <div
               aria-hidden="true"
               className="absolute inset-0 lg:hidden"
-              style={{ background: 'linear-gradient(180deg, rgba(7,4,13,0.25) 0%, rgba(7,4,11,0.88) 45%, rgb(5,3,9) 100%)' }}
+              style={{ background: 'linear-gradient(180deg, rgba(5,3,9,0.72) 0%, rgba(5,3,9,0.94) 38%, rgb(5,3,9) 100%)' }}
             />
 
             <div className="relative z-10 h-full overflow-y-auto">
@@ -465,7 +465,7 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, narr
                       <h2 className="font-display text-3xl text-white lg:text-4xl">
                         Tu viaje personal
                       </h2>
-                      <p className="text-sm leading-relaxed text-slate-300/75">
+                      <p className="text-sm leading-relaxed text-slate-200/90">
                         Cada etapa aporta datos valiosos para comprender cómo habitamos las emociones delante de otros.
                       </p>
                     </div>
@@ -500,7 +500,7 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, narr
                               isCompleted
                                 ? `bg-gradient-to-br ${gradient} text-white shadow-[0_0_18px_rgba(0,0,0,0.4)]`
                                 : isAvailable
-                                  ? 'border-2 border-white/30 bg-white/5 text-white/70'
+                                  ? 'border-2 border-white/30 bg-black/55 text-white/70'
                                   : 'border-2 border-white/20 bg-black/40 text-white/40'
                             }`}>
                               {level.num}
@@ -509,10 +509,10 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, narr
                             {/* Card con acordeón */}
                             <div className={`flex flex-1 flex-col rounded-2xl border transition-colors ${
                               isCompleted
-                                ? 'border-white/20 bg-white/[0.08]'
+                                ? 'border-white/20 bg-black/55'
                                 : isAvailable
-                                  ? 'border-white/[0.1] bg-white/[0.03]'
-                                  : 'border-white/[0.05] bg-white/[0.01]'
+                                  ? 'border-white/15 bg-black/50'
+                                  : 'border-white/[0.08] bg-black/35'
                             }`}>
                               {/* Fila cabecera — siempre visible */}
                               <div
@@ -527,7 +527,7 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, narr
                                   isCompleted
                                     ? `bg-gradient-to-br ${gradient} shadow-[0_0_10px_rgba(0,0,0,0.25)]`
                                     : isAvailable
-                                      ? 'border border-white/25 bg-white/[0.06]'
+                                      ? 'border border-white/25 bg-black/40'
                                       : 'border border-white/8 bg-black/25'
                                 }`}>
                                   {isCompleted || isAvailable
@@ -539,7 +539,7 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, narr
                                 {/* Texto */}
                                 <div className="min-w-0 flex-1">
                                   <p className={`truncate text-[0.57rem] uppercase tracking-[0.1em] leading-none mb-0.5 ${
-                                    isCompleted ? 'text-slate-400/75' : 'text-slate-500/45'
+                                    isCompleted ? 'text-slate-300/85' : 'text-slate-400/70'
                                   }`}>
                                     {level.eyebrow}
                                   </p>
@@ -554,7 +554,7 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, narr
                                 <div className="shrink-0 flex items-center gap-1.5">
                                   {isAvailable ? (
                                     <>
-                                      <span className="rounded-full border border-sky-400/30 bg-sky-500/10 px-1.5 py-0.5 text-[0.52rem] uppercase tracking-[0.1em] text-sky-300/80 leading-none">
+                                      <span className="rounded-full border border-sky-400/30 bg-sky-900/50 px-1.5 py-0.5 text-[0.52rem] uppercase tracking-[0.1em] text-sky-200 leading-none">
                                         Activo
                                       </span>
                                       <ChevronDown
@@ -581,14 +581,14 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, narr
                                   >
                                     <div className="px-4 pb-4 space-y-3">
                                       {isL1 && (
-                                        <p className="text-xs leading-relaxed text-slate-400/55">{level.desc}</p>
+                                        <p className="text-xs leading-relaxed text-slate-300/90">{level.desc}</p>
                                       )}
                                       {isL3 && (
-                                        <p className="text-xs leading-relaxed text-slate-400/55">{level.pendingDesc}</p>
+                                        <p className="text-xs leading-relaxed text-slate-300/90">{level.pendingDesc}</p>
                                       )}
                                       {isL2 && l2q && !l2Selection && (
                                         <div className="space-y-2">
-                                          <p className="text-xs leading-relaxed text-slate-300/80">{l2q.question}</p>
+                                          <p className="text-xs leading-relaxed text-slate-200/90">{l2q.question}</p>
                                           <div className="flex flex-wrap gap-1.5">
                                             {l2q.options.map((opt) => (
                                               <button
@@ -596,7 +596,7 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, narr
                                                 type="button"
                                                 onClick={() => handleLevel2Select(opt)}
                                                 disabled={l2Submitting}
-                                                className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs text-slate-300/75 transition hover:border-white/25 hover:bg-white/10 hover:text-white disabled:opacity-40"
+                                                className="rounded-full border border-white/15 bg-black/40 px-3 py-1 text-xs text-slate-200/90 transition hover:border-white/30 hover:bg-black/60 hover:text-white disabled:opacity-40"
                                               >
                                                 {opt}
                                               </button>
@@ -605,7 +605,7 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, narr
                                         </div>
                                       )}
                                       {isL2 && l2Selection && (
-                                        <div className="flex items-center gap-2 text-xs text-slate-400/70">
+                                        <div className="flex items-center gap-2 text-xs text-slate-300">
                                           <Check size={12} className="shrink-0 text-emerald-400/70" />
                                           <span className="italic">{l2Selection}</span>
                                         </div>
@@ -633,11 +633,11 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, narr
                     </div>
 
                     {/* Footer privacidad */}
-                    <div className="flex items-start gap-3 rounded-2xl border border-white/8 bg-white/[0.03] px-4 py-3.5">
-                      <ShieldCheck size={16} className="mt-0.5 shrink-0 text-slate-400/60" />
-                      <p className="text-xs leading-relaxed text-slate-400/60">
+                    <div className="flex items-start gap-3 rounded-2xl border border-white/10 bg-black/40 px-4 py-3.5">
+                      <ShieldCheck size={16} className="mt-0.5 shrink-0 text-slate-300/80" />
+                      <p className="text-xs leading-relaxed text-slate-300/80">
                         Tu información es anónima y se usa solo con fines de investigación.{' '}
-                        <span className="text-purple-300/70">Gracias por ser parte de este experimento colectivo.</span>
+                        <span className="text-purple-300/90">Gracias por ser parte de este experimento colectivo.</span>
                       </p>
                     </div>
                   </motion.div>

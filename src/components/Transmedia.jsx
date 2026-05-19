@@ -650,12 +650,12 @@ const Transmedia = ({ allianceOnlyMode = false }) => {
     return resolveShowcaseFromAppId(rawAppId, showcaseDefinitions);
   }, []);
 
-  const focusShowcaseCard = useCallback((showcaseId) => {
+  const focusShowcaseCard = useCallback((showcaseId, isRecommended = false) => {
     if (!showcaseId) return;
     const targetIndex = formats.findIndex((item) => item.id === showcaseId);
     if (targetIndex < 0) return;
 
-    setRecommendedShowcaseId(showcaseId);
+    setRecommendedShowcaseId(isRecommended ? showcaseId : null);
     setActiveShowcase(null);
     setIsMiniverseShelved(false);
     setMobileShowcaseIndex(targetIndex);
@@ -900,7 +900,7 @@ const Transmedia = ({ allianceOnlyMode = false }) => {
     setFocusLockShowcaseId(showcaseId);
     setFocusIncomingGAT(extractFocusIncomingGAT(pendingIntent));
     setFocusAppMetadata(null);
-    focusShowcaseCard(showcaseId);
+    focusShowcaseCard(showcaseId, true);
   }, [focusShowcaseCard, resolveShowcaseFromBienvenida]);
 
   useEffect(() => {

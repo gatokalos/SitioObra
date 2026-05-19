@@ -53,7 +53,7 @@ const QUIRON_DATA = {
   description: 'Quirón es un cortometraje de autoficción que indaga en la herida emocional como punto de partida del conocimiento y la transformación. A través de una narrativa audiovisual original, explora la posibilidad de resignificar el dolor humano.',
   teaserUrl: `${SUPABASE_STORAGE}/Cine%20-%20teasers/Quiron_small.mp4`,
   fullUrl: `${SUPABASE_STORAGE}/Cine%20-%20teasers/Quiron_10min.mp4`,
-  tags: ['Cine-ensayo', 'Identidad Digital', 'Archivo autoficcional'],
+  tags: ['Cine-ensayo', 'Archivo autoficcional'],
 };
 const CINE_COLLABORATORS = [
   {
