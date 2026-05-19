@@ -176,7 +176,7 @@ const SHOWCASE_CARD_GRADIENT = {
 const VITRANA_QUESTION_BY_SHOWCASE = {
   miniversos:          '¿Qué significa para ti habitar una emoción delante de otros?',
   miniversoSonoro:     '¿Por qué algunos sonidos duran más que las imágenes?',
-  miniversoGrafico:    '¿Qué ocurre en ti cuando alguien más interpreta tu apariencia?',
+  miniversoGrafico:    '¿Qué te ocurre cuando alguien más interpreta tu apariencia?',
   miniversoMovimiento: '¿Qué cosas sabe tu cuerpo antes que tu pensamiento?',
   apps:                '¿Qué cambia en ti cuando una historia depende de tus decisiones?',
   copycats:            '¿Qué significa para ti verse fallar desde afuera?',
@@ -202,7 +202,8 @@ const Transmedia = ({ allianceOnlyMode = false }) => {
   const [showAutoficcionPreview, setShowAutoficcionPreview] = useState(false);
   const [hasLoadedAutoficcionPreview, setHasLoadedAutoficcionPreview] = useState(false);
   const [showLiteraturaApp, setShowLiteraturaApp] = useState(false);
-  const [galeriaMarianaIndex, setGaleriaMarianaIndex] = useState(null);
+  const [obraCardIndex, setObraCardIndex] = useState(0);
+  const obraCardDirRef = useRef(0);
   const [mobileVitranaRevealId, setMobileVitranaRevealId] = useState(null);
   const [desktopVitranaRevealId, setDesktopVitranaRevealId] = useState(null);
   const [showMobilePortalLogin, setShowMobilePortalLogin] = useState(false);
@@ -1766,136 +1767,174 @@ const rendernotaAutoral = () => {
       )}
     </div>
   ) : (
-    <div className="space-y-4">
-      {/* ───────── Card 1: GATO ───────── */}
-      <div className="overflow-hidden rounded-3xl border border-white/10 bg-slate-950">
-        <div className="relative">
-          <img
-            src={MARIANA_GALLERY[0].url}
-            alt={MARIANA_GALLERY[0].caption}
-            className="h-[18rem] sm:h-[22rem] w-full object-cover"
-            loading="lazy"
-          />
-          <div className="pointer-events-none absolute inset-x-0 bottom-0 h-28 bg-gradient-to-b from-transparent to-slate-950" />
-        </div>
-        <div className="px-6 pb-6 space-y-4">
-          <p className="text-xs uppercase tracking-[0.35em] text-slate-300/75">Obra destacada</p>
-          <h4 className="font-display text-2xl text-white">GATO DESEMPACADO</h4>
-          <p className="text-sm text-slate-300/85 leading-relaxed">
-            Hay símbolos que sobreviven porque nunca terminan de significar una sola cosa. El símbolo # ha sido medida, música, tablero, código y una forma de conectar conversaciones mucho antes de ser conocido como &ldquo;gato&rdquo; en México.
-          </p>
-          <p className="text-sm text-slate-300/85 leading-relaxed">
-            Esta pieza nace de esa transformación constante: no para atrapar el símbolo, sino para dejarlo existir un instante fuera de la pantalla.
-          </p>
-          <div className="flex flex-wrap gap-2">
-            {['Cerámica esmaltada', 'Objeto transmedial', '2026'].map((tag) => (
-              <span key={tag} className="rounded-full border border-amber-400/30 bg-amber-900/20 px-3 py-1 text-[11px] uppercase tracking-[0.2em] text-amber-100">{tag}</span>
-            ))}
-          </div>
-          <button
-            type="button"
-            onClick={() => setGaleriaMarianaIndex(0)}
-            className="inline-flex w-full items-center justify-center rounded-full border border-amber-400/40 text-amber-200 hover:bg-amber-500/10 px-6 py-2.5 text-sm font-semibold transition"
-          >
-            Ver proceso de Mariana Núñez
-          </button>
-        </div>
-      </div>
-
-      {/* ───────── Card 2: La Taza ───────── */}
-      <div className="overflow-hidden rounded-3xl border border-white/10 bg-slate-950">
-        <div className="relative">
-          {/\.mp4($|\?)/i.test(activeDefinition.image) ? (
-            <video
-              src={activeDefinition.image}
-              className="h-[18rem] sm:h-[22rem] w-full object-cover"
-              autoPlay
-              playsInline
-              muted
-              loop
-              controls={canUseInlinePlayback(objectWebArVideoId)}
-              poster={activeDefinition.imagePoster}
-            />
-          ) : (
-            <img
-              src={activeDefinition.image}
-              alt="Ilustración de La Taza"
-              className="h-[18rem] sm:h-[22rem] w-full object-cover"
-              loading="lazy"
-              decoding="async"
-            />
-          )}
-          <div className="pointer-events-none absolute inset-x-0 bottom-0 h-28 bg-gradient-to-b from-transparent to-slate-950" />
-        </div>
-        <div className="px-6 pb-6 space-y-4">
-          <p className="text-xs uppercase tracking-[0.35em] text-slate-300/75">Obra destacada</p>
-          <h4 className="font-display text-2xl text-white">La Taza</h4>
-          {activeDefinition.note ? (
-            <p className="text-sm text-slate-300/85 uppercase tracking-[0.3em]">{activeDefinition.note}</p>
-          ) : null}
-          {activeDefinition.instructions ? (
-            <ul className="text-sm text-slate-300/90 space-y-1.5">
-              {activeDefinition.instructions.map((step, index) => (
-                <li key={index} className="flex items-start gap-2">
-                  <span className="text-purple-300 mt-0.5">●</span>
-                  <span>{step}</span>
-                </li>
+    (() => {
+      const OBRA_CARD_COUNT = 2;
+      const goToObraCard = (index) => {
+        obraCardDirRef.current = index > obraCardIndex ? 1 : -1;
+        setObraCardIndex(index);
+      };
+      const obraCardVariants = {
+        enter: (dir) => ({ x: dir > 0 ? 64 : -64, opacity: 0 }),
+        center: { x: 0, opacity: 1 },
+        exit: (dir) => ({ x: dir > 0 ? -64 : 64, opacity: 0 }),
+      };
+      return (
+        <div className="space-y-3">
+          {/* Navegación */}
+          <div className="flex items-center justify-between px-1">
+            <p className="text-[10px] uppercase tracking-[0.35em] text-slate-500">
+              Obras · {obraCardIndex + 1} / {OBRA_CARD_COUNT}
+            </p>
+            <div className="flex items-center gap-2">
+              {Array.from({ length: OBRA_CARD_COUNT }).map((_, i) => (
+                <button
+                  key={i}
+                  type="button"
+                  onClick={() => goToObraCard(i)}
+                  className={`h-1.5 rounded-full transition-all duration-200 ${i === obraCardIndex ? 'w-5 bg-amber-400/80' : 'w-1.5 bg-white/20 hover:bg-white/40'}`}
+                  aria-label={`Obra ${i + 1}`}
+                />
               ))}
-            </ul>
-          ) : null}
-          {activeShowcase === 'lataza' ? (
-            <div className="flex flex-col gap-2">
-              <Button
-                className="relative border-purple-400/40 text-purple-200 hover:bg-purple-500/10 overflow-visible"
-                variant="outline"
-                onClick={handleActivateAR}
-                disabled={isTazaActivating}
-              >
-                {isTazaActivating ? 'Procesando...' : activeDefinition.ctaLabel}
-              </Button>
-              {LEGACY_TAZA_VIEWER_ENABLED ? (
-                <label className="flex items-center gap-2 text-xs uppercase tracking-[0.25em] text-slate-400">
-                  <input type="checkbox" className="accent-purple-400" checked={useLegacyTazaViewer} onChange={(e) => setUseLegacyTazaViewer(e.target.checked)} />
-                  Usar visor estable (A‑Frame)
-                </label>
-              ) : null}
+            </div>
+            <div className="flex items-center gap-1">
               <button
                 type="button"
-                onClick={() => handleOpenNovelaReserve(['taza-250'])}
-                disabled={isMerchCheckoutLoading}
-                className="inline-flex w-full sm:w-auto items-center justify-center rounded-full border border-purple-400/40 text-purple-200 hover:bg-purple-500/10 px-6 py-2 font-semibold transition"
-              >
-                {isMerchCheckoutLoading ? 'Abriendo checkout...' : 'Comprar tu taza'}
-              </button>
+                onClick={() => goToObraCard((obraCardIndex - 1 + OBRA_CARD_COUNT) % OBRA_CARD_COUNT)}
+                className="rounded-full border border-white/10 bg-white/5 px-2.5 py-1 text-xs text-slate-300 hover:bg-white/10 transition-colors"
+                aria-label="Anterior"
+              >←</button>
+              <button
+                type="button"
+                onClick={() => goToObraCard((obraCardIndex + 1) % OBRA_CARD_COUNT)}
+                className="rounded-full border border-white/10 bg-white/5 px-2.5 py-1 text-xs text-slate-300 hover:bg-white/10 transition-colors"
+                aria-label="Siguiente"
+              >→</button>
             </div>
-          ) : null}
-        </div>
-      </div>
+          </div>
 
-      {/* Galería — se despliega bajo Card 2 cuando está abierta */}
-      {galeriaMarianaIndex !== null ? (
-        <div className="rounded-3xl border border-white/10 bg-white/5 p-5 space-y-4">
-          <div className="flex items-center justify-between">
-            <button type="button" onClick={() => setGaleriaMarianaIndex(null)} className="text-xs uppercase tracking-[0.3em] text-amber-400/80 hover:text-amber-300 transition-colors">← Cédula</button>
-            <p className="text-[10px] uppercase tracking-[0.3em] text-slate-500">{galeriaMarianaIndex + 1} / {MARIANA_GALLERY.length}</p>
+          {/* Ventana de cards */}
+          <div className="overflow-hidden">
+            <AnimatePresence custom={obraCardDirRef.current} mode="wait">
+              {obraCardIndex === 0 ? (
+                <motion.div
+                  key="card-gato"
+                  custom={obraCardDirRef.current}
+                  variants={obraCardVariants}
+                  initial="enter"
+                  animate="center"
+                  exit="exit"
+                  transition={{ duration: 0.22, ease: 'easeInOut' }}
+                  className="overflow-hidden rounded-3xl border border-white/10 bg-slate-950"
+                >
+                  <div className="relative">
+                    <img
+                      src={MARIANA_GALLERY[0].url}
+                      alt={MARIANA_GALLERY[0].caption}
+                      className="h-[18rem] sm:h-[22rem] w-full object-cover"
+                      loading="lazy"
+                    />
+                    <div className="pointer-events-none absolute inset-x-0 bottom-0 h-28 bg-gradient-to-b from-transparent to-slate-950" />
+                  </div>
+                  <div className="px-6 pb-6 space-y-4">
+                    <p className="text-xs uppercase tracking-[0.35em] text-slate-300/75">Obra destacada</p>
+                    <h4 className="font-display text-2xl text-white">GATO DESEMPACADO</h4>
+                    <p className="text-sm text-slate-300/85 leading-relaxed">
+                      Hay símbolos que sobreviven porque nunca terminan de significar una sola cosa. El símbolo # ha sido medida, música, tablero, código y una forma de conectar conversaciones mucho antes de ser conocido como &ldquo;gato&rdquo; en México.
+                    </p>
+                    <p className="text-sm text-slate-300/85 leading-relaxed">
+                      Esta pieza nace de esa transformación constante: no para atrapar el símbolo, sino para dejarlo existir un instante fuera de la pantalla.
+                    </p>
+                    <div className="flex flex-wrap gap-2">
+                      {['Cerámica esmaltada', 'Objeto transmedial', '2026'].map((tag) => (
+                        <span key={tag} className="rounded-full border border-amber-400/30 bg-amber-900/20 px-3 py-1 text-[11px] uppercase tracking-[0.2em] text-amber-100">{tag}</span>
+                      ))}
+                    </div>
+                  </div>
+                </motion.div>
+              ) : (
+                <motion.div
+                  key="card-taza"
+                  custom={obraCardDirRef.current}
+                  variants={obraCardVariants}
+                  initial="enter"
+                  animate="center"
+                  exit="exit"
+                  transition={{ duration: 0.22, ease: 'easeInOut' }}
+                  className="overflow-hidden rounded-3xl border border-white/10 bg-slate-950"
+                >
+                  <div className="relative">
+                    {/\.mp4($|\?)/i.test(activeDefinition.image) ? (
+                      <video
+                        src={activeDefinition.image}
+                        className="h-[18rem] sm:h-[22rem] w-full object-cover"
+                        autoPlay
+                        playsInline
+                        muted
+                        loop
+                        controls={canUseInlinePlayback(objectWebArVideoId)}
+                        poster={activeDefinition.imagePoster}
+                      />
+                    ) : (
+                      <img
+                        src={activeDefinition.image}
+                        alt="Ilustración de La Taza"
+                        className="h-[18rem] sm:h-[22rem] w-full object-cover"
+                        loading="lazy"
+                        decoding="async"
+                      />
+                    )}
+                    <div className="pointer-events-none absolute inset-x-0 bottom-0 h-28 bg-gradient-to-b from-transparent to-slate-950" />
+                  </div>
+                  <div className="px-6 pb-6 space-y-4">
+                    <p className="text-xs uppercase tracking-[0.35em] text-slate-300/75">Obra destacada</p>
+                    <h4 className="font-display text-2xl text-white">La Taza</h4>
+                    {activeDefinition.note ? (
+                      <p className="text-sm text-slate-300/85 uppercase tracking-[0.3em]">{activeDefinition.note}</p>
+                    ) : null}
+                    {activeDefinition.instructions ? (
+                      <ul className="text-sm text-slate-300/90 space-y-1.5">
+                        {activeDefinition.instructions.map((step, index) => (
+                          <li key={index} className="flex items-start gap-2">
+                            <span className="text-purple-300 mt-0.5">●</span>
+                            <span>{step}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    ) : null}
+                    {activeShowcase === 'lataza' ? (
+                      <div className="flex flex-col gap-2">
+                        <Button
+                          className="relative border-purple-400/40 text-purple-200 hover:bg-purple-500/10 overflow-visible"
+                          variant="outline"
+                          onClick={handleActivateAR}
+                          disabled={isTazaActivating}
+                        >
+                          {isTazaActivating ? 'Procesando...' : activeDefinition.ctaLabel}
+                        </Button>
+                        {LEGACY_TAZA_VIEWER_ENABLED ? (
+                          <label className="flex items-center gap-2 text-xs uppercase tracking-[0.25em] text-slate-400">
+                            <input type="checkbox" className="accent-purple-400" checked={useLegacyTazaViewer} onChange={(e) => setUseLegacyTazaViewer(e.target.checked)} />
+                            Usar visor estable (A‑Frame)
+                          </label>
+                        ) : null}
+                        <button
+                          type="button"
+                          onClick={() => handleOpenNovelaReserve(['taza-250'])}
+                          disabled={isMerchCheckoutLoading}
+                          className="inline-flex w-full sm:w-auto items-center justify-center rounded-full border border-purple-400/40 text-purple-200 hover:bg-purple-500/10 px-6 py-2 font-semibold transition"
+                        >
+                          {isMerchCheckoutLoading ? 'Abriendo checkout...' : 'Comprar tu taza'}
+                        </button>
+                      </div>
+                    ) : null}
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
-          <div className="overflow-hidden rounded-xl border border-white/10">
-            {MARIANA_GALLERY[galeriaMarianaIndex].type === 'video' ? (
-              <video src={MARIANA_GALLERY[galeriaMarianaIndex].url} controls className="w-full" />
-            ) : (
-              <img src={MARIANA_GALLERY[galeriaMarianaIndex].url} alt={MARIANA_GALLERY[galeriaMarianaIndex].caption} className="w-full object-contain" />
-            )}
-          </div>
-          <p className="text-center text-xs text-slate-400">{MARIANA_GALLERY[galeriaMarianaIndex].caption}</p>
-          {MARIANA_GALLERY.length > 1 && (
-            <div className="flex items-center justify-center gap-4">
-              <button type="button" onClick={() => setGaleriaMarianaIndex((i) => (i - 1 + MARIANA_GALLERY.length) % MARIANA_GALLERY.length)} className="rounded-full border border-white/10 bg-white/5 p-2 text-slate-300 transition-colors hover:bg-white/10">←</button>
-              <button type="button" onClick={() => setGaleriaMarianaIndex((i) => (i + 1) % MARIANA_GALLERY.length)} className="rounded-full border border-white/10 bg-white/5 p-2 text-slate-300 transition-colors hover:bg-white/10">→</button>
-            </div>
-          )}
         </div>
-      ) : null}
-    </div>
+      );
+    })()
   )}
 
             {activeDefinition.sentiments ? (
@@ -2687,50 +2726,41 @@ const rendernotaAutoral = () => {
                 {swipeShowcases.map((entry) => (
                   <div
                     key={entry.id}
-                    className="rounded-[32px] border border-white/10 bg-gradient-to-r from-slate-900/80 via-black/60 to-fuchsia-900/40 overflow-hidden shadow-[0_20px_60px_rgba(15,23,42,0.65)]"
+                    className="overflow-hidden rounded-2xl border border-white/10"
                   >
-                    <div className="grid gap-0 lg:grid-cols-[1fr_1.3fr]">
+                    {/* Imagen full-bleed con texto superpuesto */}
+                    <div className="relative min-h-[30rem]">
                       {entry.previewImage ? (
-                        <div className="relative h-full min-h-[240px]">
-                          <img
-                            src={entry.previewImage}
-                            alt={entry.title}
-                            className="h-full w-full object-cover"
-                            loading="lazy"
-                          />
-                          <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/45 to-transparent" />
-                          <div className="absolute left-4 top-4 inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.3em] text-white">
-                            <Scan size={14} className="text-fuchsia-200" />
-                            Swipe PDF
-                          </div>
-                          <div className="absolute left-4 bottom-4 text-sm text-white/90">
-                            Lector visual · scroll vertical
-                          </div>
-                        </div>
+                        <img
+                          src={entry.previewImage}
+                          alt={entry.title}
+                          className="absolute inset-0 h-full w-full object-cover"
+                          loading="lazy"
+                        />
                       ) : null}
-
-                      <div className="flex flex-col space-y-4 p-6">
-                        <p className="text-xs uppercase tracking-[0.35em] text-fuchsia-200/80">
-                          Obra destacada
-                        </p>
+                      <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-black/10 via-black/30 to-black/90" />
+                      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(255,255,255,0.06),_transparent_38%),linear-gradient(180deg,rgba(0,0,0,0.02)_0%,rgba(0,0,0,0.12)_35%,rgba(0,0,0,0.78)_100%)]" />
+                      {/* Título en la parte superior */}
+                      <div className="absolute left-0 top-0 p-5">
+                        <p className="mb-1 text-xs uppercase tracking-[0.35em] text-slate-300/75">Obra destacada</p>
                         <h4 className="font-display text-2xl text-slate-100">{entry.title}</h4>
-                        {entry.description ? (
-                          <p className="text-sm text-slate-200/90 leading-relaxed">{entry.description}</p>
-                        ) : null}
-                        {entry.swipeNotes?.length ? (
-                          <ul className="space-y-2 text-sm text-slate-100 leading-relaxed">
-                            {entry.swipeNotes.map((point, index) => (
-                              <li key={`${entry.id}-note-${index}`} className="flex items-start gap-2">
-                                <span className="text-fuchsia-200 mt-1">●</span>
-                                <span>{point}</span>
-                              </li>
+                      </div>
+                      {/* Descripción + tags + botones al pie */}
+                      <div className="absolute inset-x-0 bottom-0 p-5 space-y-3">
+                        <p className="text-sm text-slate-200/90 leading-relaxed">
+                          {entry.richDescription ?? entry.description}
+                        </p>
+                        {entry.tags?.length ? (
+                          <div className="flex flex-wrap gap-2">
+                            {entry.tags.map((tag) => (
+                              <span key={tag} className="rounded-full border border-white/20 bg-black/30 px-3 py-1 text-[11px] uppercase tracking-[0.2em] text-slate-100 backdrop-blur-sm">{tag}</span>
                             ))}
-                          </ul>
+                          </div>
                         ) : null}
-                        <div className="flex flex-wrap gap-3">
+                        <div className="flex flex-wrap gap-3 pt-1">
                           {entry.previewImage ? (
                             <Button
-                              className="sm:flex-none justify-center bg-gradient-to-r from-fuchsia-600/80 to-purple-500/80 hover:from-fuchsia-500 hover:to-purple-400 text-white"
+                              className="bg-gradient-to-r from-fuchsia-500/90 to-purple-600/90 text-white hover:from-fuchsia-400/90 hover:to-purple-500/90"
                               onClick={() =>
                                 handleOpenImagePreview({
                                   src: entry.previewImage,
@@ -2758,10 +2788,10 @@ const rendernotaAutoral = () => {
                                 variant="outline"
                                 disabled={isGraphicUnlocking}
                                 onClick={() => handleOpenGraphicSwipe(entry)}
-                                className="w-full sm:w-auto justify-center border-fuchsia-300/40 text-fuchsia-200 hover:bg-fuchsia-500/10 relative overflow-visible"
+                                className="border-fuchsia-300/40 text-fuchsia-200 hover:bg-fuchsia-500/10 relative overflow-visible"
                               >
                                 <span className="relative z-10">
-                                  {graphicSpent ? 'Abrir swipe en PDF' : isGraphicUnlocking ? 'Aplicando...' : 'Abrir swipe en PDF'}
+                                  {isGraphicUnlocking ? 'Aplicando...' : 'Abrir swipe en PDF'}
                                 </span>
                                 {showGraphicCoins ? (
                                   <span className="pointer-events-none absolute inset-0">
@@ -2790,9 +2820,6 @@ const rendernotaAutoral = () => {
                             </div>
                           ) : null}
                         </div>
-                        <p className="text-[11px] uppercase tracking-[0.3em] text-gray-100/80">
-                          Prototipo del Capítulo 1
-                        </p>
                       </div>
                     </div>
                   </div>

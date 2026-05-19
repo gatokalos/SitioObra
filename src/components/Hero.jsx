@@ -99,6 +99,7 @@ const Hero = () => {
   const [isHeroAudioPlaying, setIsHeroAudioPlaying] = useState(false);
   const [hasActivatedAudio, setHasActivatedAudio] = useState(false);
   const userActivatedRef = useRef(false);
+  const audioActivatedOnceRef = useRef(false);
   const [showAudioHint, setShowAudioHint] = useState(false);
   const isHeroAudioPlayingRef = useRef(false);
   const [isHeroInViewport, setIsHeroInViewport] = useState(true);
@@ -443,7 +444,7 @@ const Hero = () => {
   // El timer no depende de isHeroAudioReady para no reiniciarse si el audio tarda en cargar;
   // en cambio lee el ref en cada tick para mostrar el hint solo cuando el audio ya está listo.
   useEffect(() => {
-    if (hasActivatedAudio || !isHeroInViewport) return;
+    if (hasActivatedAudio || userActivatedRef.current || !isHeroInViewport) return;
     let showTimer, hideTimer;
     const cycle = (delay) => {
       showTimer = window.setTimeout(() => {
@@ -468,24 +469,31 @@ const Hero = () => {
     const audio = getHeroAmbientAudio();
     if (!audio) return;
     setShowAudioHint(false);
-    if (!hasActivatedAudio) {
-      setHasActivatedAudio(true);
-      window.dispatchEvent(new CustomEvent('gatoencerrado:audio-activated'));
-    }
 
     if (!userActivatedRef.current) {
-      // Primer clic explícito: garantizar que el audio suena, nunca mutear
+      // Primera activación
       userActivatedRef.current = true;
+      setHasActivatedAudio(true);
+      if (!audioActivatedOnceRef.current) {
+        audioActivatedOnceRef.current = true;
+        window.dispatchEvent(new CustomEvent('gatoencerrado:audio-activated'));
+      }
       if (isHeroAudioMuted) {
-        toggleHeroAmbientMuted(); // también llama resumeHeroAmbientPlayback internamente
+        toggleHeroAmbientMuted();
       } else {
         void resumeHeroAmbientPlayback({ targetVolume: HERO_LOGGED_IN_AUDIO_VOLUME });
       }
       return;
     }
 
-    // Clics siguientes: toggle mute
-    toggleHeroAmbientMuted();
+    // Toggle de escena: ON ↔ OFF
+    if (hasActivatedAudio) {
+      setHasActivatedAudio(false);
+      if (!audio.paused) audio.pause();
+    } else {
+      setHasActivatedAudio(true);
+      void resumeHeroAmbientPlayback({ targetVolume: HERO_LOGGED_IN_AUDIO_VOLUME });
+    }
   }, [isHeroAudioMuted, hasActivatedAudio]);
 
   useEffect(() => {

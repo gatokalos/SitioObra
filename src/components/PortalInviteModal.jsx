@@ -12,7 +12,7 @@ const GAT_GIFT = 100;
 const VITRANA_QUESTION = {
   miniversos:          '¿Qué significa para ti habitar una emoción delante de otros?',
   miniversoSonoro:     '¿Por qué algunos sonidos duran más que las imágenes?',
-  miniversoGrafico:    '¿Qué ocurre en ti cuando alguien más interpreta tu apariencia?',
+  miniversoGrafico:    '¿Qué te ocurre cuando alguien más interpreta tu apariencia?',
   miniversoMovimiento: '¿Qué cosas sabe tu cuerpo antes que tu pensamiento?',
   apps:                '¿Qué cambia en ti cuando una historia depende de tus decisiones?',
   copycats:            '¿Qué significa para ti verse fallar desde afuera?',

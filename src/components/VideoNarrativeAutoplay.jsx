@@ -7,6 +7,7 @@ import { resolvePortalRoute } from '@/lib/miniversePortalRegistry';
 import { createPortalLaunchState } from '@/lib/portalNavigation';
 
 const PLACEHOLDER_VIDEO_URL = 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/trailers/fragmento_en_produccion_web.mp4';
+const PLACEHOLDER_VIDEO_URL_DESKTOP = 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Cine%20-%20teasers/muy_pronto_hzl_web.mp4';
 
 const VideoNarrativeAutoplay = ({ open, onClose, formatId, isMobileViewport }) => {
   const navigate = useNavigate();
@@ -16,7 +17,10 @@ const VideoNarrativeAutoplay = ({ open, onClose, formatId, isMobileViewport }) =
   const [hasEnded, setHasEnded] = useState(false);
 
   const card = MINIVERSE_CARDS.find((c) => c.formatId === formatId) ?? null;
-  const videoUrl = card?.narrativeVideoUrl ?? PLACEHOLDER_VIDEO_URL;
+  const videoUrl = !isMobileViewport
+    ? (card?.narrativeVideoUrlDesktop ?? PLACEHOLDER_VIDEO_URL_DESKTOP)
+    : (card?.narrativeVideoUrl ?? PLACEHOLDER_VIDEO_URL);
+  const ctaLabel = card?.narrativeCtaLabel ?? 'Continuar experiencia';
 
   useEffect(() => {
     if (!open) {
@@ -127,7 +131,7 @@ const VideoNarrativeAutoplay = ({ open, onClose, formatId, isMobileViewport }) =
                   onClick={handleContinuar}
                   className="w-full max-w-xs rounded-full border border-purple-500/70 bg-purple-600/20 px-6 py-3.5 text-sm uppercase tracking-[0.25em] text-purple-100 shadow-[0_15px_45px_rgba(67,56,202,0.5)] backdrop-blur-sm transition hover:bg-purple-500/30"
                 >
-                  Continuar experiencia →
+                  {ctaLabel} →
                 </button>
               </motion.div>
             )}

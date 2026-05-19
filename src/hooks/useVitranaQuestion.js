@@ -9,7 +9,7 @@ export const PREGUNTA_MADRE = {
   obra:        '¿Qué significa para ti habitar una emoción delante de otros?',
   literatura:  '¿Qué cambia en ti cuando una experiencia personal se convierte en relato?',
   artesanias:  '¿Cuándo un objeto deja de ser para ti solo un objeto?',
-  grafico:     '¿Qué ocurre en ti cuando alguien más interpreta tu apariencia?',
+  grafico:     '¿Qué te ocurre cuando alguien más interpreta tu apariencia?',
   cine:        '¿Qué significa para ti verse fallar desde afuera?',
   sonoridades: '¿Por qué algunos sonidos duran más que las imágenes?',
   movimiento:  '¿Qué sabe el cuerpo antes que la mente?',

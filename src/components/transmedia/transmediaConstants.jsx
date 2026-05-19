@@ -1013,7 +1013,7 @@ Este espacio permite recorrer esas composiciones, explorar sus capas y descubrir
         <p className="text-base leading-relaxed text-slate-200/80 mt-3">Aquí las escenas se quedan en otro momento: lo que en la obra aparece como pensamiento o diálogo, en el cómic puede convertirse en <em>ensayo, en silencio, en otra voz</em>.</p>
         <p className="text-base leading-relaxed text-slate-100/90 mt-3">No solo el de Silvestre, sino el de cualquiera que se haya sentido como él.<br/>Dibujar permite mirar lo que no siempre se dice en escena.</p>
         <div className="flex flex-wrap gap-2 mt-2">
-          <span className="rounded-full border border-fuchsia-200/35 bg-fuchsia-400/10 px-3 py-1 text-[11px] uppercase tracking-[0.22em] text-fuchsia-100">Cómic y trazo</span>
+          <span className="rounded-full border border-fuchsia-200/35 bg-fuchsia-400/10 px-3 py-1 text-[11px] uppercase tracking-[0.22em] text-fuchsia-100">Cómic</span>
           <span className="rounded-full border border-fuchsia-200/35 bg-fuchsia-400/10 px-3 py-1 text-[11px] uppercase tracking-[0.22em] text-fuchsia-100">Imagen como silencio</span>
           <span className="rounded-full border border-fuchsia-200/35 bg-fuchsia-400/10 px-3 py-1 text-[11px] uppercase tracking-[0.22em] text-fuchsia-100">Lab visual</span>
         </div>
@@ -1045,6 +1045,8 @@ Este espacio permite recorrer esas composiciones, explorar sus capas y descubrir
         id: 'tres-pies-galeria',
         title: 'Tres Pies al Gato',
         description: 'Exploraciones de la novela gráfica.',
+        richDescription: 'Antes de convertirse en novela gráfica, Tres pies al gato fue imaginada como una película: escenas fragmentadas, cortes de plano y emociones dirigidas desde el lenguaje cinematográfico. Esta primera edición digital reúne el inicio de una obra que continúa expandiéndose.',
+        tags: ['Narrativa fragmentada', 'Pausas ilustradas'],
         previewImage: '/assets/silvestre-comic.jpeg',
         type: 'internal-reading',
         previewMode: 'pdf',

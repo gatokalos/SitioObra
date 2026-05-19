@@ -320,7 +320,7 @@ const PortalGraficos = () => {
                   <p>{GRAFICOS_INTRO}</p>
                 </div>
                 <div className="flex flex-wrap gap-2">
-                  <span className="rounded-full border border-fuchsia-200/35 bg-fuchsia-400/10 px-3 py-1 text-[11px] uppercase tracking-[0.22em] text-fuchsia-100">Cómic y trazo</span>
+                  <span className="rounded-full border border-fuchsia-200/35 bg-fuchsia-400/10 px-3 py-1 text-[11px] uppercase tracking-[0.22em] text-fuchsia-100">Cómic</span>
                   <span className="rounded-full border border-fuchsia-200/35 bg-fuchsia-400/10 px-3 py-1 text-[11px] uppercase tracking-[0.22em] text-fuchsia-100">Imagen como silencio</span>
                   <span className="rounded-full border border-fuchsia-200/35 bg-fuchsia-400/10 px-3 py-1 text-[11px] uppercase tracking-[0.22em] text-fuchsia-100">Lab visual</span>
                 </div>
@@ -386,7 +386,7 @@ const PortalGraficos = () => {
                   Esta primera edición digital reúne el inicio de una obra que continúa expandiéndose.
                 </p>
                 <div className="flex flex-wrap gap-2">
-                  {['Narrativa fragmentada', 'Cómic', 'Pausas ilustradas'].map((tag) => (
+                  {['Narrativa fragmentada', 'Pausas ilustradas'].map((tag) => (
                     <span key={tag} className="rounded-full border border-white/20 bg-black/30 px-3 py-1 text-[11px] uppercase tracking-[0.2em] text-slate-100 backdrop-blur-sm">{tag}</span>
                   ))}
                 </div>
