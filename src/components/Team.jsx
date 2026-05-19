@@ -240,7 +240,7 @@ const Team = () => {
   );
   const [activeMobileRole, setActiveMobileRole] = useState(null);
   const [openMobileRoles, setOpenMobileRoles] = useState(
-    () => (teamData.Elenco ? ["Elenco"] : [])
+    () => (teamData.Dramaturgia ? ["Dramaturgia"] : teamData.Elenco ? ["Elenco"] : [])
   );
   const [activeMobileMemberByRole, setActiveMobileMemberByRole] = useState({});
   const [activeDesktopRole, setActiveDesktopRole] = useState(defaultDesktopRole);

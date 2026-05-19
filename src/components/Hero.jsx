@@ -21,6 +21,7 @@ import {
   pauseHeroAmbient,
   resumeHeroAmbientPlayback,
   toggleHeroAmbientMuted,
+  setHeroAmbientMuted,
 } from '@/lib/heroAmbientAudio';
 import { createPortalLaunchState } from '@/lib/portalNavigation';
 import { safeSetItem } from '@/lib/safeStorage';
@@ -489,10 +490,12 @@ const Hero = () => {
     // Toggle de escena: ON ↔ OFF
     if (hasActivatedAudio) {
       setHasActivatedAudio(false);
-      if (!audio.paused) audio.pause();
+      setHeroAmbientMuted(true);
+      window.dispatchEvent(new CustomEvent('gatoencerrado:audio-deactivated'));
     } else {
       setHasActivatedAudio(true);
-      void resumeHeroAmbientPlayback({ targetVolume: HERO_LOGGED_IN_AUDIO_VOLUME });
+      setHeroAmbientMuted(false, { targetVolume: HERO_LOGGED_IN_AUDIO_VOLUME });
+      window.dispatchEvent(new CustomEvent('gatoencerrado:audio-activated'));
     }
   }, [isHeroAudioMuted, hasActivatedAudio]);
 

@@ -43,7 +43,7 @@ const Footer = ({ showTransmediaNav = true }) => {
                 #GatoEncerrado
               </span>
               <p className="text-slate-400 leading-relaxed mb-6 max-w-md font-light">
-                Un ecosistema narrativo transmedia que convierte al espectador en participante activo mediante experiencias escénicas, digitales e interactivas, donde cada forma de la obra es una puerta distinta hacia una misma pregunta emocional.
+                Una exploración transmedia donde escena, tecnología y narrativa convergen para transformar al espectador en participante activo, mientras cada forma de la obra revela una perspectiva distinta de la misma herida emocional.
               </p>
               <div className="flex gap-2">
                 <Button variant="ghost" size="icon" onClick={() => handleSocialClick(instagramUrl)} className="text-slate-400 hover:text-white hover:bg-white/10"><Instagram size={20} /></Button>
@@ -117,7 +117,7 @@ const Footer = ({ showTransmediaNav = true }) => {
           <div className="flex items-center gap-2 text-slate-500 text-sm">
             <span>Hecho con</span>
             <Heart size={16} className="text-red-500/70" />
-            <span>para el arte teatral</span>
+            <span>para las artes vivas</span>
           </div>
         </motion.div>
       </div>

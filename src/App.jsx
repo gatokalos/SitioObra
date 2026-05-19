@@ -198,8 +198,13 @@ const HeroBackground = ({ isAuthenticated = false }) => {
 
   useEffect(() => {
     const onActivated = () => setAudioDimmed(true);
+    const onDeactivated = () => setAudioDimmed(false);
     window.addEventListener('gatoencerrado:audio-activated', onActivated);
-    return () => window.removeEventListener('gatoencerrado:audio-activated', onActivated);
+    window.addEventListener('gatoencerrado:audio-deactivated', onDeactivated);
+    return () => {
+      window.removeEventListener('gatoencerrado:audio-activated', onActivated);
+      window.removeEventListener('gatoencerrado:audio-deactivated', onDeactivated);
+    };
   }, []);
 
   return (
