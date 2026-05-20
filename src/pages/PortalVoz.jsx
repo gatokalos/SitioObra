@@ -510,7 +510,7 @@ const PortalVoz = () => {
     mobileObraSecondaryCtaState === MOBILE_OBRA_SECONDARY_CTA_STATES.TRY_OTHER_EMOTION
       ? 'Escúchala con otra emoción'
       : mobileObraSecondaryCtaState === MOBILE_OBRA_SECONDARY_CTA_STATES.LAUNCH_PHRASE
-        ? 'Lanza la frase'
+        ? 'Lanza la misma frase'
         : 'Escoger del laboratorio';
   const mobileSecondaryCtaEmphasis =
     mobileObraSecondaryCtaState === MOBILE_OBRA_SECONDARY_CTA_STATES.TRY_OTHER_EMOTION
@@ -1108,7 +1108,7 @@ const PortalVoz = () => {
                   Antes de convertirse en un universo transmedial, esta obra existió como un encuentro escénico atravesado por sueños lúcidos, rabia contenida y preguntas difíciles de nombrar.
                 </p>
                 <div className="flex flex-wrap gap-2">
-                  {['Teatro', 'Sueños lúcidos', 'Drama psicológico'].map((tag, i) => (
+                  {['Sueños lúcidos', 'Drama psicológico'].map((tag, i) => (
                     <span key={i} className="rounded-full border border-white/20 bg-black/30 px-3 py-1 text-[11px] uppercase tracking-[0.2em] text-slate-100 backdrop-blur-sm">{tag}</span>
                   ))}
                 </div>
@@ -1173,7 +1173,7 @@ const PortalVoz = () => {
                   </h2>
                    <p className="text-base leading-relaxed text-neutral-300">
           Los estados emocionales de <strong>Silvestre</strong> no son etiquetas. <br /><br />
-          Son lugares donde la escena ocurre. Di una frase —tuya o de la lista— y escucha cómo la obra responde desde adentro.<br /><br />
+          Son lugares donde la escena ocurre. Deja una frase que traigas encerrada en el pecho —o abre una de las preguntas del laboratorio— y escucha cómo la obra responde desde adentro.<br /><br />
         </p>
         <p className="text-lg leading-relaxed font-medium text-white mt-4">
           La escena nunca responde igual.
@@ -1208,7 +1208,7 @@ const PortalVoz = () => {
 
                             <div ref={obraConversationControlsRef}>
                               <ObraConversationControls
-                                ctaLabel="Pulsa para improvisar"
+                                ctaLabel="Pulsa para sacarlo"
                                 isSilvestrePlaying={isSilvestrePlaying}
                                 pendingSilvestreAudioUrl={pendingSilvestreAudioUrl}
                                 isSilvestreFetching={isSilvestreFetching}
@@ -1308,7 +1308,7 @@ const PortalVoz = () => {
                   ) : (
                     <div className="space-y-2">
                       <p className="text-xs uppercase tracking-[0.35em] text-pink-200" style={{ color: activeTint?.dot }}>
-                        Tiñe la escena con sentimiento
+                        Tiñe la escena con sentimiento:
                       </p>
                       <p className="text-sm text-slate-300/85 leading-relaxed">
                         Ya completaste estas preguntas en todas emociones de Silvestre.

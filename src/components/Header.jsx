@@ -240,7 +240,7 @@ const Header = ({ showTransmediaNav = true }) => {
               <motion.button
                 type="button"
                 whileHover={{ scale: 1.05, textShadow: '0 0 8px rgba(233, 213, 255, 0.5)' }}
-                className="flex items-center gap-3 cursor-pointer"
+                className="flex shrink-0 items-center gap-3 cursor-pointer"
                 onClick={() => handleNavClick('#hero')}
               >
                 <img
@@ -250,14 +250,14 @@ const Header = ({ showTransmediaNav = true }) => {
                   loading="eager"
                   decoding="async"
                 />
-                {user ? <span className={`h-2.5 w-2.5 rounded-full ${statusDotClass}`} /> : null}
+                {user ? <span className={`block h-2.5 w-2.5 shrink-0 rounded-full ${statusDotClass}`} /> : null}
               </motion.button>
               {user ? (
                 <div className="relative" data-profile-menu>
                   <button
                     type="button"
                     onClick={() => setIsProfileMenuOpen((prev) => !prev)}
-                    className="inline-flex items-center text-xs font-semibold text-slate-100 transition sm:text-sm underline underline-offset-4 decoration-slate-400/40 hover:text-white hover:decoration-emerald-300/60"
+                    className="inline-flex items-center whitespace-nowrap text-xs font-semibold text-slate-100 transition sm:text-sm underline underline-offset-4 decoration-slate-400/40 hover:text-white hover:decoration-emerald-300/60"
                   >
                     {greetingLabel}
                   </button>

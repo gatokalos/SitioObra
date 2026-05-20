@@ -9,7 +9,7 @@ import { safeGetItem, safeSetItem } from '@/lib/safeStorage';
 
 const BLOG_ONBOARDING_KEY = 'gatoencerrado-blog-onboarding';
 
-const BlogContributionPrompt = ({ onRevealTransmedia = null, onAskQuestion = null }) => {
+const BlogContributionPrompt = ({ onRevealTransmedia = null, onAskQuestion = null, disableExpand = false }) => {
   const [isContributionOpen, setIsContributionOpen] = useState(false);
   const [showOnboardingHint, setShowOnboardingHint] = useState(false);
   const onboardingStoredRef = useRef(false);
@@ -137,7 +137,8 @@ const BlogContributionPrompt = ({ onRevealTransmedia = null, onAskQuestion = nul
       {/* Mitad izquierda: continuar */}
       <button
         onClick={handleContinue}
-        className="px-6 py-3 text-sm sm:text-base font-medium text-slate-100 bg-gradient-to-r from-fuchsia-600 to-pink-500 hover:opacity-90 transition-all duration-300"
+        disabled={disableExpand}
+        className="px-6 py-3 text-sm sm:text-base font-medium text-slate-100 bg-gradient-to-r from-fuchsia-600 to-pink-500 hover:opacity-90 transition-all duration-300 disabled:opacity-40 disabled:cursor-not-allowed"
       >
         Expandir
       </button>

@@ -543,7 +543,7 @@ const PortalArtesanias = () => {
                 </div>
                 <div className="px-6 pb-6 space-y-4">
                   <p className="text-xs uppercase tracking-[0.35em] text-slate-300/75">Obra destacada</p>
-                  <h4 className="font-display text-2xl text-white">GATO</h4>
+                  <h4 className="font-display text-2xl text-white">GATO DESEMPACADO</h4>
                   <p className="text-sm text-slate-300/85 leading-relaxed">
                     Hay símbolos que sobreviven porque nunca terminan de significar una sola cosa. El símbolo # ha sido medida, música, tablero, código y una forma de conectar conversaciones mucho antes de ser conocido como &ldquo;gato&rdquo; en México.
                   </p>
@@ -551,7 +551,7 @@ const PortalArtesanias = () => {
                     Esta pieza nace de esa transformación constante: no para atrapar el símbolo, sino para dejarlo existir un instante fuera de la pantalla.
                   </p>
                   <div className="flex flex-wrap gap-2">
-                    {['Cerámica', 'Objeto transmedial', '2026'].map((tag) => (
+                    {['Cerámica', 'Objeto transmedial'].map((tag) => (
                       <span key={tag} className="rounded-full border border-amber-400/30 bg-amber-900/20 px-3 py-1 text-[11px] uppercase tracking-[0.2em] text-amber-100">{tag}</span>
                     ))}
                   </div>
@@ -582,7 +582,7 @@ const PortalArtesanias = () => {
                     ))}
                   </ul>
                   <div className="flex flex-wrap gap-2">
-                    {['Cerámica esmaltada', 'WebAR', 'Objeto narrativo'].map((tag) => (
+                    {['Barro', 'WebAR', 'Objeto narrativo'].map((tag) => (
                       <span key={tag} className="rounded-full border border-white/20 bg-white/5 px-3 py-1 text-[11px] uppercase tracking-[0.2em] text-slate-300">{tag}</span>
                     ))}
                   </div>
@@ -595,22 +595,6 @@ const PortalArtesanias = () => {
                     {isTazaCheckoutLoading ? 'Abriendo checkout...' : 'Comprar tu taza'}
                   </button>
                   {arError ? <p className="text-xs text-amber-200/90">{arError}</p> : null}
-                  <div className={`pt-4 border-t border-white/10 lg:hidden space-y-4 transition-opacity duration-300${isResonanceOpen ? ' opacity-30 pointer-events-none' : ''}`}>
-                    <div className="mb-1">
-                      <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Resonancia colectiva</p>
-                      <h4 className="font-display text-xl text-amber-300">Formas de sentir</h4>
-                    </div>
-                    <VitranaQuestionReveal
-                      question={l1Done ? (LEVEL2_QUESTIONS['artesanias']?.question ?? vitranaQuestion) : vitranaQuestion}
-                      buttonLabel={l1Done ? 'Tu progreso →' : undefined}
-                      autoReveal={l1Done}
-                      portal="artesanias"
-                      l2Done={l2Done}
-                      onAnswer={() => setIsResonanceOpen(true)}
-                      label=""
-                    />
-                    <ShowcaseReactionInline status={reactionStatus} onReact={handleSendPulse} />
-                  </div>
                 </div>
               </div>,
             ];
@@ -662,6 +646,22 @@ const PortalArtesanias = () => {
               </div>
             );
           })()}
+          <div className={`lg:hidden rounded-3xl border border-white/10 bg-black/30 px-6 py-5 space-y-4 transition-opacity duration-300${isResonanceOpen ? ' opacity-30 pointer-events-none' : ''}`}>
+            <div>
+              <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Resonancia colectiva</p>
+              <h4 className="font-display text-xl text-amber-300">Formas de sentir</h4>
+            </div>
+            <VitranaQuestionReveal
+              question={l1Done ? (LEVEL2_QUESTIONS['artesanias']?.question ?? vitranaQuestion) : vitranaQuestion}
+              buttonLabel={l1Done ? 'Tu progreso →' : undefined}
+              autoReveal={l1Done}
+              portal="artesanias"
+              l2Done={l2Done}
+              onAnswer={() => setIsResonanceOpen(true)}
+              label=""
+            />
+            <ShowcaseReactionInline status={reactionStatus} onReact={handleSendPulse} />
+          </div>
           <div className="hidden lg:block lg:order-3 rounded-3xl border border-white/10 bg-black/30 p-6 space-y-6">
             <CollaboratorsPanel collaborators={ARTESANIAS_COLLABORATORS} accentClassName="text-amber-200/90" />
             <div className="flex flex-col gap-3">

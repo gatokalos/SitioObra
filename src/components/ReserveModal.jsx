@@ -16,7 +16,7 @@ const LOGO_SRC = '/assets/logoapp.webp';
 const RESERVE_BANNER_SRC =
   'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Merch/banner_cafegato_small.mp4';
 const OFFSEASON_QUOTE = {
-  text: `A largo plazo, imaginamos un centro
+  text: `A largo plazo, imaginamos un lugar
 donde crear también sea investigar,
 y cuidar la salud mental
 sea una forma de arte compartido.`,
@@ -421,7 +421,7 @@ const ReserveModal = ({
   const titleClassName = `font-display text-3xl text-slate-50 ${isPageMode ? 'max-w-[18ch] leading-tight' : ''}`;
   const subtitleClassName = `text-xs text-slate-400/80 mt-1 ${isPageMode ? 'max-w-[64ch] leading-relaxed' : ''}`;
   const introClassName = `mb-4 text-sm text-slate-300/90 leading-relaxed ${isPageMode ? 'max-w-[68ch]' : ''}`;
-  const bannerClassName = `mb-6 sm:mb-8 ${isPageMode ? '-mx-4 sm:-mx-6' : ''}`;
+
 
   if (!open) return null;
 
@@ -437,29 +437,90 @@ const ReserveModal = ({
         <ConfettiBurst key={burst} seed={burst} />
       ))}
 
-      {/* HEADER */}
-      <div className={`${!isPageMode ? 'px-6 sm:px-0' : ''} flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-6 sm:mb-8`}>
-        <div className="flex items-center gap-4">
-          <img
-            src={LOGO_SRC}
-            alt="#GatoEncerrado"
-            className="h-12 w-auto object-contain rounded-full border border-white/20 bg-white/5 p-1 shadow-lg"
-          />
-          <div>
-            {copy.eyebrow ? (
-              <p className="text-sm uppercase tracking-[0.35em] text-slate-400/80 mb-2">
-                {copy.eyebrow}
-              </p>
-            ) : null}
-            <h2 className={titleClassName}>
-              {copy.title}
-            </h2>
-            {copy.subtitle ? (
-              <p className={subtitleClassName}>{copy.subtitle}</p>
-            ) : null}
+      {/* HEADER + BANNER — reversed on mobile: banner first, header second */}
+      <div className="flex flex-col-reverse sm:flex-col gap-4 sm:gap-0 mb-6 sm:mb-0">
+
+        {/* HEADER */}
+        <div className={`${!isPageMode ? 'px-6 sm:px-0' : ''} flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 sm:mb-8`}>
+          <div className="flex items-center gap-4">
+            <img
+              src={LOGO_SRC}
+              alt="#GatoEncerrado"
+              className="h-12 w-auto object-contain rounded-full border border-white/20 bg-white/5 p-1 shadow-lg shrink-0 order-2 sm:order-1"
+            />
+            <div className="flex-1 order-1 sm:order-2 sm:flex-none">
+              {copy.eyebrow ? (
+                <p className="text-sm uppercase tracking-[0.35em] text-slate-400/80 mb-2">
+                  {copy.eyebrow}
+                </p>
+              ) : null}
+              <h2 className={titleClassName}>
+                {copy.title}
+              </h2>
+              {copy.subtitle ? (
+                <p className={subtitleClassName}>{copy.subtitle}</p>
+              ) : null}
+            </div>
           </div>
         </div>
+
+        {/* BANNER */}
+        <motion.div
+          initial={{ opacity: 0, y: 10, scale: 0.99 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          transition={{ duration: 0.45, ease: 'easeOut' }}
+          className={`sm:mb-8 ${isPageMode ? '-mx-4 sm:-mx-6' : ''}`}
+        >
+          <div className="relative overflow-hidden rounded-2xl border border-white/10 bg-black/30 shadow-[0_20px_45px_rgba(0,0,0,0.35)]">
+            <motion.video
+              src={RESERVE_BANNER_SRC}
+              className={`w-full block md:object-cover ${isOffseason ? 'md:h-[208px]' : 'md:h-[190px]'}`}
+              initial={{ scale: 1.03 }}
+              animate={{ scale: 1 }}
+              transition={{ duration: 0.9, ease: 'easeOut' }}
+              autoPlay
+              loop
+              muted
+              playsInline
+              preload="metadata"
+              aria-label="Banner Café Gato"
+            />
+
+            {isOffseason ? (
+              <>
+                <div className="absolute inset-0 bg-gradient-to-br from-slate-950/65 via-slate-900/35 to-slate-950/70" />
+                <div className="absolute inset-0 bg-gradient-to-t from-slate-950/95 via-slate-950/50 to-transparent" />
+                <div className="absolute inset-0 opacity-35 [background:radial-gradient(circle_at_25%_20%,rgba(56,189,248,0.35),transparent_38%),radial-gradient(circle_at_75%_25%,rgba(244,114,182,0.26),transparent_42%),radial-gradient(circle_at_55%_75%,rgba(192,132,252,0.22),transparent_40%)]" />
+                <div className="hidden sm:block absolute right-3 top-3 h-14 w-14 sm:right-5 sm:top-5 sm:h-[74px] sm:w-[74px] overflow-hidden rounded-full border border-white/30 shadow-[0_12px_28px_rgba(0,0,0,0.45)] ring-2 ring-purple-300/35">
+                  <img
+                    src={OFFSEASON_QUOTE.avatar}
+                    alt={OFFSEASON_QUOTE.author}
+                    className="h-full w-full object-cover"
+                    loading="lazy"
+                  />
+                </div>
+                <div className="absolute bottom-0 left-0 right-0 p-4 sm:p-5">
+                  <p className="max-w-[82%] whitespace-pre-line text-xs sm:text-sm text-slate-100/95 leading-relaxed italic">
+                    "{OFFSEASON_QUOTE.text}"
+                  </p>
+                  <div className="mt-2">
+                    <p className="text-sm sm:text-base text-white font-semibold tracking-wide">
+                      {OFFSEASON_QUOTE.author}
+                    </p>
+                    <p className="text-[10px] sm:text-xs uppercase tracking-[0.28em] text-purple-200/85">
+                      {OFFSEASON_QUOTE.role}
+                    </p>
+                  </div>
+                </div>
+              </>
+            ) : (
+              <div className="absolute inset-0 bg-gradient-to-t from-slate-950/85 via-slate-950/20 to-transparent" />
+            )}
+          </div>
+        </motion.div>
+
       </div>
+
       {!isPageMode ? (
         <button
           type="button"
@@ -470,61 +531,6 @@ const ReserveModal = ({
           ✕
         </button>
       ) : null}
-
-      {/* BANNER */}
-      <motion.div
-        initial={{ opacity: 0, y: 10, scale: 0.99 }}
-        animate={{ opacity: 1, y: 0, scale: 1 }}
-        transition={{ duration: 0.45, ease: 'easeOut' }}
-        className={bannerClassName}
-      >
-        <div className="relative overflow-hidden rounded-2xl border border-white/10 bg-black/30 shadow-[0_20px_45px_rgba(0,0,0,0.35)]">
-          <motion.video
-            src={RESERVE_BANNER_SRC}
-            className={`w-full block md:object-cover ${isOffseason ? 'md:h-[208px]' : 'md:h-[190px]'}`}
-            initial={{ scale: 1.03 }}
-            animate={{ scale: 1 }}
-            transition={{ duration: 0.9, ease: 'easeOut' }}
-            autoPlay
-            loop
-            muted
-            playsInline
-            preload="metadata"
-            aria-label="Banner Café Gato"
-          />
-
-          {isOffseason ? (
-            <>
-              <div className="absolute inset-0 bg-gradient-to-br from-slate-950/65 via-slate-900/35 to-slate-950/70" />
-              <div className="absolute inset-0 bg-gradient-to-t from-slate-950/95 via-slate-950/50 to-transparent" />
-              <div className="absolute inset-0 opacity-35 [background:radial-gradient(circle_at_25%_20%,rgba(56,189,248,0.35),transparent_38%),radial-gradient(circle_at_75%_25%,rgba(244,114,182,0.26),transparent_42%),radial-gradient(circle_at_55%_75%,rgba(192,132,252,0.22),transparent_40%)]" />
-              <div className="absolute right-3 top-3 h-14 w-14 sm:right-5 sm:top-5 sm:h-[74px] sm:w-[74px] overflow-hidden rounded-full border border-white/30 shadow-[0_12px_28px_rgba(0,0,0,0.45)] ring-2 ring-purple-300/35">
-                <img
-                  src={OFFSEASON_QUOTE.avatar}
-                  alt={OFFSEASON_QUOTE.author}
-                  className="h-full w-full object-cover"
-                  loading="lazy"
-                />
-              </div>
-              <div className="absolute bottom-0 left-0 right-0 p-4 sm:p-5">
-                <p className="max-w-[82%] whitespace-pre-line text-xs sm:text-sm text-slate-100/95 leading-relaxed italic">
-                  "{OFFSEASON_QUOTE.text}"
-                </p>
-                <div className="mt-2">
-                  <p className="text-sm sm:text-base text-white font-semibold tracking-wide">
-                    {OFFSEASON_QUOTE.author}
-                  </p>
-                  <p className="text-[10px] sm:text-xs uppercase tracking-[0.28em] text-purple-200/85">
-                    {OFFSEASON_QUOTE.role}
-                  </p>
-                </div>
-              </div>
-            </>
-          ) : (
-            <div className="absolute inset-0 bg-gradient-to-t from-slate-950/85 via-slate-950/20 to-transparent" />
-          )}
-        </div>
-      </motion.div>
 
       {copy.intro ? (
         <p className={introClassName}>{copy.intro}</p>
@@ -767,7 +773,7 @@ aria-hidden="true"
 Propuesta
 </p>
 <h4 className="text-base font-semibold text-slate-100">
-Sugerir cafetería
+Sugerir cafetería o librería
 </h4>
 </div>
 

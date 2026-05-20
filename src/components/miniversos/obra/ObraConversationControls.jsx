@@ -37,7 +37,7 @@ const ObraConversationControls = ({
         : isListening
           ? 'Pulsa otra vez para enviar'
           : micPromptVisible
-            ? 'Pulsa para hablar o escoge una frase'
+            ? 'Pulsa para soltar lo que llevas dentro'
             : ctaLabel;
   const hasErrorState = Boolean(micError) && !isListening && !isSilvestreThinking;
   const baseBorder = tone?.border || 'rgba(196,181,253,0.6)';
@@ -130,14 +130,21 @@ const ObraConversationControls = ({
           {statusLabel}
         </span>
         {secondaryCtaVisible ? (
-          <button
-            type="button"
-            onClick={onSecondaryCtaClick}
-            disabled={secondaryCtaDisabled}
-            className={`inline-flex items-center rounded-full border px-3 py-1.5 text-[10px] font-semibold uppercase tracking-[0.16em] transition hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-45 ${secondaryCtaClassName}`}
-          >
-            {secondaryCtaCopy}
-          </button>
+          <>
+            <div className="flex w-full items-center gap-2 px-2">
+              <div className="flex-1 border-t" style={{ borderColor: `color-mix(in srgb, ${baseBorder} 30%, transparent)` }} />
+              <span className="text-[9px] uppercase tracking-[0.25em]" style={{ color: `color-mix(in srgb, ${baseDot} 45%, transparent)` }}>o</span>
+              <div className="flex-1 border-t" style={{ borderColor: `color-mix(in srgb, ${baseBorder} 30%, transparent)` }} />
+            </div>
+            <button
+              type="button"
+              onClick={onSecondaryCtaClick}
+              disabled={secondaryCtaDisabled}
+              className={`inline-flex items-center rounded-full border px-3 py-1.5 text-[10px] font-semibold uppercase tracking-[0.16em] transition hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-45 ${secondaryCtaClassName}`}
+            >
+              {secondaryCtaCopy}
+            </button>
+          </>
         ) : null}
       </div>
 

@@ -1845,7 +1845,7 @@ const rendernotaAutoral = () => {
                       Esta pieza nace de esa transformación constante: no para atrapar el símbolo, sino para dejarlo existir un instante fuera de la pantalla.
                     </p>
                     <div className="flex flex-wrap gap-2">
-                      {['Cerámica esmaltada', 'Objeto transmedial', '2026'].map((tag) => (
+                      {['Objeto transmedial', 'Cerámica esmaltada'].map((tag) => (
                         <span key={tag} className="rounded-full border border-amber-400/30 bg-amber-900/20 px-3 py-1 text-[11px] uppercase tracking-[0.2em] text-amber-100">{tag}</span>
                       ))}
                     </div>
@@ -2145,7 +2145,7 @@ const rendernotaAutoral = () => {
         mobileObraSecondaryCtaState === MOBILE_OBRA_SECONDARY_CTA_STATES.TRY_OTHER_EMOTION
           ? 'Escúchala con otra emoción'
           : mobileObraSecondaryCtaState === MOBILE_OBRA_SECONDARY_CTA_STATES.LAUNCH_PHRASE
-            ? 'Lanza la frase'
+            ? 'Lanza la misma frase'
             : 'Escoger del laboratorio';
       const mobileSecondaryCtaEmphasis =
         mobileObraSecondaryCtaState === MOBILE_OBRA_SECONDARY_CTA_STATES.TRY_OTHER_EMOTION
@@ -2240,7 +2240,7 @@ const rendernotaAutoral = () => {
                     Antes de convertirse en un universo transmedial, esta obra existió como un encuentro escénico atravesado por sueños lúcidos, rabia contenida y preguntas difíciles de nombrar.
                   </p>
                   <div className="flex flex-wrap gap-2">
-                    {['Teatro', 'Sueños lúcidos', 'Drama psicológico'].map((tag, i) => (
+                    {['Sueños lúcidos', 'Drama psicológico'].map((tag, i) => (
                       <span
                         key={i}
                         className="rounded-full border border-purple-400/30 bg-purple-900/20 px-3 py-1 text-xs text-purple-100"
@@ -2310,7 +2310,7 @@ const rendernotaAutoral = () => {
                   </h2>
                    <p className="text-base leading-relaxed text-neutral-300">
           Los estados emocionales de <strong>Silvestre</strong> no son etiquetas.{' '}
-          Son lugares donde la escena ocurre. Di una frase —tuya o de la lista— y escucha cómo la obra responde desde adentro.
+          Son lugares donde la escena ocurre. Deja una frase que traigas encerrada en el pecho —o abre una de las preguntas del laboratorio— y escucha cómo la obra responde desde adentro.
         </p>
         <p className="text-lg leading-relaxed font-medium text-white mt-4">
           La escena nunca responde igual.
@@ -2345,7 +2345,7 @@ const rendernotaAutoral = () => {
 
                             <div ref={obraConversationControlsRef}>
                               <ObraConversationControls
-                                ctaLabel="Pulsa para improvisar"
+                                ctaLabel="Pulsa para sacarlo"
                                 isSilvestrePlaying={isSilvestrePlaying}
                                 pendingSilvestreAudioUrl={pendingSilvestreAudioUrl}
                                 isSilvestreFetching={isSilvestreFetching}
@@ -2461,7 +2461,7 @@ const rendernotaAutoral = () => {
                       className="text-xs uppercase tracking-[0.35em] text-pink-200"
                       style={{ color: activeObraTint?.dot }}
                     >
-                      Tiñe la escena con sentimiento
+                      Tiñe la escena con sentimiento:
                     </p>
                     <p className="text-sm text-slate-300/85 leading-relaxed">
                       Ya completaste estas preguntas en todas emociones de Silvestre.

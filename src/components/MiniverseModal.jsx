@@ -921,7 +921,7 @@ const MiniverseModal = ({
       if (activeTab === 'escaparate') {
       return {
       lead: 'Conoce este universo a través de nueve actos. Cada uno explora una forma distinta de contenernos y abre la misma pregunta:',
-      highlight: '¿qué ocurre cuando un sentimiento se expande y toca otras vidas?',
+      highlight: '¿qué ocurre cuando una herida emocional se expande y toca otras vidas?',
       };
     }
     if (activeTab === 'experiences') {
@@ -939,7 +939,7 @@ const MiniverseModal = ({
     };
 
     function newFunction() {
-      return 'Accede a los registros, procesos y formas que existen detrás del universo.';
+      return 'Accede a los registros y procesos que existen detrás del universo.';
     }
   }, [activeTab]);
   const showcaseMiniverses = useMemo(

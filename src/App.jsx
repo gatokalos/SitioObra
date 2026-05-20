@@ -635,7 +635,7 @@ function App() {
                 </DeferredSection>
                 <DeferredSection fallback={<SectionFallback id="blog-contribuye" minHeight={700} />}>
                   <Suspense fallback={<SectionFallback id="blog-contribuye" minHeight={700} />}>
-                    <BlogContributionPrompt onRevealTransmedia={handleRevealTransmedia} onAskQuestion={handleAskQuestion} />
+                    <BlogContributionPrompt onRevealTransmedia={handleRevealTransmedia} onAskQuestion={handleAskQuestion} disableExpand={isMobileLoggedInPortalMode} />
                   </Suspense>
                 </DeferredSection>
                 <DeferredSection fallback={<SectionFallback id="dialogo-critico" minHeight={900} />}>
@@ -653,8 +653,8 @@ function App() {
                   </SectionErrorBoundary>
                 )}
 
-                {/* Alianza Social: revelada junto con Transmedia */}
-                {canAccessTransmedia && !isMobileLoggedInPortalMode && (
+                {/* Alianza Social: visible para todos cuando hay acceso a Transmedia */}
+                {canAccessTransmedia && (
                   <SectionErrorBoundary
                     fallback={(
                       <section id="apoya" className="py-24 relative">

@@ -229,7 +229,7 @@ export const ProvocaSection = () => {
         : isListening
           ? 'Pulsa otra vez para enviar'
           : micPromptVisible
-            ? 'Pulsa para hablar o escoge una frase'
+            ? 'Pulsa para sacar lo que tienes dentro'
             : 'Escuchar a la obra';
   const escucharButtonVisualLabel =
     pendingSilvestreAudioUrl && !isSilvestrePlaying ? 'Reproducir' : escucharStatusLabel;
