@@ -1,4 +1,7 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { lazy, Suspense, useCallback, useEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
+
+const PdfPreviewDocument = lazy(() => import('@/components/transmedia/PdfPreviewDocument'));
 import { useLocation } from 'react-router-dom';
 import { Hand, Image as ImageIcon, Scan } from 'lucide-react';
 import { motion } from 'framer-motion';
@@ -21,6 +24,7 @@ import { hasEnoughGAT } from '@/lib/gatAccess';
 import { usePortalTracking } from '@/hooks/usePortalTracking';
 import { useVitranaQuestion } from '@/hooks/useVitranaQuestion';
 import useScrambleText from '@/hooks/useScrambleText';
+import { toast } from '@/components/ui/use-toast';
 
 const GRAFICOS_INTRO =
   'Este espacio explora el universo #GatoEncerrado desde la imagen. Aquí las escenas se quedan en otro momento: lo que en la obra aparece como pensamiento o diálogo, en el cómic puede convertirse en ensayo, en silencio, en otra voz. No solo el de Silvestre, sino el de cualquiera que se haya sentido como él. Dibujar permite mirar lo que no siempre se dice en escena.';
@@ -150,6 +154,13 @@ const PortalGraficos = () => {
   const [l2Done, setL2Done] = useState(() => { try { return Boolean(JSON.parse(localStorage.getItem('gatoencerrado:resonance:grafico') || '{}').l2_option); } catch { return false; } });
   const refreshL1 = useCallback(() => { try { const s = JSON.parse(localStorage.getItem('gatoencerrado:resonance:grafico') || '{}'); setL1Done(Boolean(s.l1)); setExperienceDone(Boolean(s.experience_ts)); setL2Done(Boolean(s.l2_option)); } catch { /* ignore */ } }, []);
   const [isImagePreviewOpen, setIsImagePreviewOpen] = useState(false);
+  const [isPdfOpen, setIsPdfOpen] = useState(false);
+  const [pdfNumPages, setPdfNumPages] = useState(null);
+  const [pdfPageWidth, setPdfPageWidth] = useState(600);
+  const [pdfLoadError, setPdfLoadError] = useState('');
+  const pdfContainerRef = useRef(null);
+  const pdfEndSentinelRef = useRef(null);
+  const hasShownPdfEndNoticeRef = useRef(false);
   const location = useLocation();
   useEffect(() => {
     if (location.state?.portalLaunchSource !== 'video-narrative-cta') return;
@@ -250,10 +261,46 @@ const PortalGraficos = () => {
     };
   }, [isImagePreviewOpen]);
 
+  useEffect(() => {
+    if (!isPdfOpen) return undefined;
+    document.body.classList.add('overflow-hidden');
+    const onKey = (e) => { if (e.key === 'Escape') setIsPdfOpen(false); };
+    window.addEventListener('keydown', onKey);
+    return () => {
+      document.body.classList.remove('overflow-hidden');
+      window.removeEventListener('keydown', onKey);
+    };
+  }, [isPdfOpen]);
+
+  useEffect(() => {
+    if (!isPdfOpen || !pdfContainerRef.current) return;
+    setPdfPageWidth(pdfContainerRef.current.clientWidth - 32);
+  }, [isPdfOpen]);
+
+  useEffect(() => {
+    if (!isPdfOpen || pdfLoadError || !pdfNumPages) return undefined;
+    if (typeof window?.IntersectionObserver !== 'function') return undefined;
+    const root = pdfContainerRef.current;
+    const target = pdfEndSentinelRef.current;
+    if (!root || !target) return undefined;
+    const observer = new window.IntersectionObserver(
+      (entries) => {
+        if (!entries.some((e) => e.isIntersecting)) return;
+        if (hasShownPdfEndNoticeRef.current) return;
+        hasShownPdfEndNoticeRef.current = true;
+        toast({ description: 'Llegaste al final del capítulo. Explora el universo para desbloquear más.' });
+      },
+      { root, threshold: 0.9 },
+    );
+    observer.observe(target);
+    return () => observer.disconnect();
+  }, [isPdfOpen, pdfLoadError, pdfNumPages]);
+
   const handleOpenPdf = useCallback(() => {
     if (!requireAuth()) return;
-    if (typeof window === 'undefined') return;
-    window.open(GRAFICOS_SWIPE_SHOWCASE.previewPdfUrl, '_blank', 'noopener,noreferrer');
+    setPdfLoadError('');
+    setPdfNumPages(null);
+    setIsPdfOpen(true);
   }, [requireAuth]);
 
   const handleOpenCommunityComposer = useCallback(() => {
@@ -464,6 +511,48 @@ const PortalGraficos = () => {
           initialCategoryId="grafico"
         />
       </div>
+
+      {isPdfOpen ? createPortal(
+        <div className="fixed inset-0 z-[230] flex items-center justify-center overflow-y-auto overflow-x-hidden overscroll-none">
+          <div className="absolute inset-0 bg-black/80 backdrop-blur-sm" onClick={() => setIsPdfOpen(false)} />
+          <div className="relative z-10 my-10 w-[calc(100vw-2rem)] max-w-4xl space-y-4">
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+              <div>
+                <p className="text-xs uppercase tracking-[0.4em] text-slate-400/70">Lectura en progreso</p>
+                <h4 className="font-display text-2xl text-slate-100">{GRAFICOS_SWIPE_SHOWCASE.title}</h4>
+                <p className="text-sm text-slate-300/80 leading-relaxed max-w-2xl">{GRAFICOS_SWIPE_SHOWCASE.description}</p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsPdfOpen(false)}
+                className="self-start rounded-full border border-white/10 px-4 py-2 text-sm text-slate-300 hover:text-white hover:border-white/30 transition"
+              >
+                Cerrar ✕
+              </button>
+            </div>
+            <div
+              ref={pdfContainerRef}
+              className="rounded-3xl border border-white/10 bg-slate-950/95 shadow-2xl p-4 max-h-[75vh] overflow-auto"
+            >
+              {pdfLoadError ? (
+                <p className="text-sm text-red-300 text-center py-8">{pdfLoadError}</p>
+              ) : (
+                <Suspense fallback={<p className="text-sm text-slate-400 text-center py-8">Preparando visor PDF…</p>}>
+                  <PdfPreviewDocument
+                    file={GRAFICOS_SWIPE_SHOWCASE.previewPdfUrl}
+                    numPages={pdfNumPages}
+                    pageWidth={pdfPageWidth}
+                    onLoadSuccess={({ numPages }) => setPdfNumPages(numPages)}
+                    onLoadError={() => setPdfLoadError('No pudimos cargar el fragmento. Intenta de nuevo más tarde.')}
+                  />
+                  <div ref={pdfEndSentinelRef} className="h-px w-full" aria-hidden="true" />
+                </Suspense>
+              )}
+            </div>
+          </div>
+        </div>,
+        document.body
+      ) : null}
 
       {isImagePreviewOpen ? (
         <div className="fixed inset-0 z-[220] flex items-center justify-center overflow-y-auto overflow-x-hidden overscroll-none">

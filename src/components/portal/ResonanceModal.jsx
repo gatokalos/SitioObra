@@ -89,11 +89,11 @@ export const LEVEL2_QUESTIONS = {
     ],
   },
   grafico: {
-    question: '¿Qué imágenes sientes que siguen mirándote incluso después de cerrar la pantalla?',
+    question: '¿Qué imágenes sientes que todavía te observan cuando vuelves a estar a solas?',
     options: [
       'una mirada',
       'una escena extraña',
-      'algo incompleto',
+      'imágenes incompletas',
       'algo demasiado íntimo',
       'un detalle difícil de explicar',
       'no me suele pasar',
@@ -168,8 +168,8 @@ const LEVELS = [
   },
   {
     num: 2,
-    eyebrow: 'Después de la experiencia',
-    title: 'Resonancia activa',
+    eyebrow: 'Experiencia narrativa',
+    title: 'Artefacto transmedia',
     icon: Flame,
   },
   {
@@ -198,7 +198,7 @@ const lsPatch = (portal, patch) => {
 
 /* ─── Componente ──────────────────────────────────────────────────────── */
 
-const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, narrativeCTALabel }) => {
+const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative }) => {
   const modalRef = useRef(null);
   const submitBtnRef = useRef(null);
   const { user } = useAuth();
@@ -414,7 +414,7 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, narr
             <div
               aria-hidden="true"
               className="absolute inset-0 lg:hidden"
-              style={{ background: 'linear-gradient(180deg, rgba(5,3,9,0.72) 0%, rgba(5,3,9,0.94) 38%, rgb(5,3,9) 100%)' }}
+              style={{ background: 'linear-gradient(180deg, rgba(5,3,9,0.28) 0%, rgba(5,3,9,0.60) 45%, rgba(5,3,9,0.92) 100%)' }}
             />
 
             <div className="relative z-10 h-full overflow-y-auto">
@@ -462,9 +462,32 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, narr
                           </motion.div>
                         )}
                       </div>
-                      <h2 className="font-display text-3xl text-white lg:text-4xl">
-                        Tu viaje personal
-                      </h2>
+                      <AnimatePresence mode="wait">
+                        {l2Open && !l2Selection && l2q ? (
+                          <motion.h2
+                            key="l2-question"
+                            className="font-display text-2xl text-amber-300 lg:text-3xl leading-snug"
+                            initial={{ opacity: 0, y: 8 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: -8 }}
+                            transition={{ duration: 0.28, ease: 'easeInOut' }}
+                          >
+                            {l2q.question}
+                          </motion.h2>
+                        ) : (
+                          <motion.h2
+                            key="title"
+                            id="resonance-modal-title"
+                            className="font-display text-3xl text-white lg:text-4xl"
+                            initial={{ opacity: 0, y: 8 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: -8 }}
+                            transition={{ duration: 0.28, ease: 'easeInOut' }}
+                          >
+                            Tu viaje personal
+                          </motion.h2>
+                        )}
+                      </AnimatePresence>
                       <p className="text-sm leading-relaxed text-slate-200/90">
                         Cada etapa aporta datos valiosos para comprender cómo habitamos las emociones delante de otros.
                       </p>
@@ -507,7 +530,7 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, narr
                             </div>
 
                             {/* Card con acordeón */}
-                            <div className={`flex flex-1 flex-col rounded-2xl border transition-colors ${
+                            <div className={`flex min-w-0 flex-1 flex-col rounded-2xl border transition-colors ${
                               isCompleted
                                 ? 'border-white/20 bg-black/55'
                                 : isAvailable
@@ -588,7 +611,6 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, narr
                                       )}
                                       {isL2 && l2q && !l2Selection && (
                                         <div className="space-y-2">
-                                          <p className="text-xs leading-relaxed text-slate-200/90">{l2q.question}</p>
                                           <div className="flex flex-wrap gap-1.5">
                                             {l2q.options.map((opt) => (
                                               <button
@@ -596,7 +618,7 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, narr
                                                 type="button"
                                                 onClick={() => handleLevel2Select(opt)}
                                                 disabled={l2Submitting}
-                                                className="rounded-full border border-white/15 bg-black/40 px-3 py-1 text-xs text-slate-200/90 transition hover:border-white/30 hover:bg-black/60 hover:text-white disabled:opacity-40"
+                                                className="rounded-full border border-amber-400/30 bg-amber-900/20 px-3 py-1 text-xs text-amber-100/90 transition hover:border-amber-400/55 hover:bg-amber-900/35 hover:text-amber-50 disabled:opacity-40"
                                               >
                                                 {opt}
                                               </button>
@@ -614,12 +636,19 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, narr
                                         <motion.button
                                           type="button"
                                           onClick={handleOpenNarrativeExperience}
-                                          className="w-full rounded-2xl border border-amber-400/40 bg-amber-500/10 px-5 py-3 text-sm font-semibold tracking-wide text-amber-200 transition hover:bg-amber-500/20"
+                                          className="w-full flex flex-col items-center gap-2 rounded-2xl border border-amber-400/35 bg-amber-500/10 px-5 py-4 transition hover:bg-amber-500/18 active:scale-[0.98]"
                                           initial={{ opacity: 0, scale: 0.92, y: 8 }}
                                           animate={{ opacity: 1, scale: 1, y: 0 }}
                                           transition={{ type: 'spring', stiffness: 220, damping: 20, delay: 0.2 }}
                                         >
-                                          {narrativeCTALabel ?? 'Abrir experiencia narrativa'}
+                                          <img
+                                            src="https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/oraculo/gato-moneda.png"
+                                            alt="GAToken"
+                                            className="h-10 w-10 animate-[spin_8s_linear_infinite] drop-shadow-[0_0_14px_rgba(251,191,36,0.5)]"
+                                          />
+                                          <span className="text-sm font-semibold tracking-wide text-amber-200">
+                                            Usar mi energía
+                                          </span>
                                         </motion.button>
                                       )}
                                     </div>
