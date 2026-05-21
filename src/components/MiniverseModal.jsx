@@ -30,6 +30,7 @@ import {
   resumeHeroAmbientPlayback,
 } from '@/lib/heroAmbientAudio';
 import { Volume2, VolumeX } from 'lucide-react';
+import GATChip from '@/components/portal/GATChip';
 const TABS = [
   { id: 'escaparate', label: 'Expande', icon: Sparkles },
   { id: 'experiences', label: 'Habita', icon:  DoorOpen},
@@ -2787,12 +2788,8 @@ const MiniverseModal = ({
             </div>
 
             {!selectedMiniverse && !isInlineMode ? (
-              <div
-                className={`z-30 mt-6 w-full max-w-3xl mx-auto flex items-center justify-between rounded-2xl border border-white/10 bg-slate-950/75 px-3 py-2 text-xs text-slate-400 backdrop-blur-sm ${
-                  isInlineMode ? '' : 'sticky bottom-2'
-                }`}
-              >
-                <span>{activeTabLabel}</span>
+              <div className="sticky bottom-2 z-30 mt-6 w-full max-w-3xl mx-auto flex items-center justify-between rounded-2xl border border-white/15 bg-slate-950/95 px-4 py-2.5 backdrop-blur-md shadow-[0_8px_32px_rgba(0,0,0,0.45)]">
+                <GATChip />
                 <button
                   type="button"
                   onClick={handleClose}

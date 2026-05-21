@@ -24,7 +24,7 @@ import { hasEnoughGAT } from '@/lib/gatAccess';
 import { usePortalTracking } from '@/hooks/usePortalTracking';
 import { useVitranaQuestion } from '@/hooks/useVitranaQuestion';
 import useScrambleText from '@/hooks/useScrambleText';
-import { toast } from '@/components/ui/use-toast';
+
 
 const GRAFICOS_INTRO =
   'Este espacio explora el universo #GatoEncerrado desde la imagen. Aquí las escenas se quedan en otro momento: lo que en la obra aparece como pensamiento o diálogo, en el cómic puede convertirse en ensayo, en silencio, en otra voz. No solo el de Silvestre, sino el de cualquiera que se haya sentido como él. Dibujar permite mirar lo que no siempre se dice en escena.';
@@ -150,10 +150,10 @@ const PortalGraficos = () => {
   const [isContributionOpen, setIsContributionOpen] = useState(false);
   const [isResonanceOpen, setIsResonanceOpen] = useState(false);
   const [l1Done, setL1Done] = useState(() => { try { return Boolean(JSON.parse(localStorage.getItem('gatoencerrado:resonance:grafico') || '{}').l1); } catch { return false; } });
-  const [l2Answer] = useState(() => { try { return JSON.parse(localStorage.getItem('gatoencerrado:resonance:grafico') || '{}').l2_option ?? null; } catch { return null; } });
+  const [l2Answer, setL2Answer] = useState(() => { try { return JSON.parse(localStorage.getItem('gatoencerrado:resonance:grafico') || '{}').l2_option ?? null; } catch { return null; } });
   const [experienceDone, setExperienceDone] = useState(() => { try { return Boolean(JSON.parse(localStorage.getItem('gatoencerrado:resonance:grafico') || '{}').experience_ts); } catch { return false; } });
   const [l2Done, setL2Done] = useState(() => { try { return Boolean(JSON.parse(localStorage.getItem('gatoencerrado:resonance:grafico') || '{}').l2_option); } catch { return false; } });
-  const refreshL1 = useCallback(() => { try { const s = JSON.parse(localStorage.getItem('gatoencerrado:resonance:grafico') || '{}'); setL1Done(Boolean(s.l1)); setExperienceDone(Boolean(s.experience_ts)); setL2Done(Boolean(s.l2_option)); } catch { /* ignore */ } }, []);
+  const refreshL1 = useCallback(() => { try { const s = JSON.parse(localStorage.getItem('gatoencerrado:resonance:grafico') || '{}'); setL1Done(Boolean(s.l1)); setExperienceDone(Boolean(s.experience_ts)); setL2Done(Boolean(s.l2_option)); setL2Answer(s.l2_option ?? null); } catch { /* ignore */ } }, []);
   const [isImagePreviewOpen, setIsImagePreviewOpen] = useState(false);
   const [isPdfOpen, setIsPdfOpen] = useState(false);
   const [pdfNumPages, setPdfNumPages] = useState(null);
@@ -289,7 +289,16 @@ const PortalGraficos = () => {
         if (!entries.some((e) => e.isIntersecting)) return;
         if (hasShownPdfEndNoticeRef.current) return;
         hasShownPdfEndNoticeRef.current = true;
-        toast({ description: 'Llegaste al final del capítulo. Explora el universo para desbloquear más.' });
+        try {
+          const key = 'gatoencerrado:resonance:grafico';
+          const existing = JSON.parse(localStorage.getItem(key) || '{}');
+          if (!existing.experience_ts) {
+            localStorage.setItem(key, JSON.stringify({ ...existing, experience_ts: Date.now() }));
+          }
+        } catch {}
+        setExperienceDone(true);
+        setIsPdfOpen(false);
+        window.setTimeout(() => setIsResonanceOpen(true), 320);
       },
       { root, threshold: 0.9 },
     );

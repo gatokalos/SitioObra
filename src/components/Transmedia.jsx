@@ -61,7 +61,7 @@ import IAInsightCard from '@/components/IAInsightCard';
 import DiosasCarousel from '@/components/DiosasCarousel';
 import RelatedReadingTooltipButton from '@/components/portal/RelatedReadingTooltipButton';
 import VitranaQuestionReveal from '@/components/portal/VitranaQuestionReveal';
-import ResonanceModal, { LEVEL2_QUESTIONS } from '@/components/portal/ResonanceModal';
+import ResonanceModal, { LEVEL2_QUESTIONS, buildL1Acknowledgment } from '@/components/portal/ResonanceModal';
 import { useSilvestreVoice } from '@/hooks/useSilvestreVoice';
 import ObraConversationControls from '@/components/miniversos/obra/ObraConversationControls';
 import ObraQuestionList from '@/components/miniversos/obra/ObraQuestionList';
@@ -299,17 +299,19 @@ const Transmedia = ({ allianceOnlyMode = false }) => {
   // Indica si el usuario ya contestó el Nivel 1 del portal activo
   const [activePortalL1Done, setActivePortalL1Done] = useState(false);
   const [activePortalL2Done, setActivePortalL2Done] = useState(false);
+  const [activePortalL2Answer, setActivePortalL2Answer] = useState(null);
 
   // Lee localStorage cada vez que cambia la vitrana activa
   useEffect(() => {
     const portal = SHOWCASE_TO_PORTAL[activeShowcase];
-    if (!portal) { setActivePortalL1Done(false); setActivePortalL2Done(false); return; }
+    if (!portal) { setActivePortalL1Done(false); setActivePortalL2Done(false); setActivePortalL2Answer(null); return; }
     try {
       const raw = localStorage.getItem(`gatoencerrado:resonance:${portal}`);
       const s = raw ? JSON.parse(raw) : {};
       setActivePortalL1Done(!!s.l1);
       setActivePortalL2Done(!!s.l2_option);
-    } catch { setActivePortalL1Done(false); setActivePortalL2Done(false); }
+      setActivePortalL2Answer(s.l2_option ?? null);
+    } catch { setActivePortalL1Done(false); setActivePortalL2Done(false); setActivePortalL2Answer(null); }
   }, [activeShowcase]);
 
   // Indica si el usuario completó la experiencia narrativa del portal activo
@@ -325,6 +327,7 @@ const Transmedia = ({ allianceOnlyMode = false }) => {
       const state = raw ? JSON.parse(raw) : {};
       setActivePortalL1Done(!!state.l1);
       setActivePortalL2Done(!!state.l2_option);
+      setActivePortalL2Answer(state.l2_option ?? null);
       setActivePortalExperienceDone(!!state.experience_ts);
     } catch {}
   }, [activeShowcase]);
@@ -4085,7 +4088,7 @@ const rendernotaAutoral = () => {
                           <h4 className="font-display text-2xl text-amber-300">Formas de sentir</h4>
                         </div>
                         <VitranaQuestionReveal
-                          question={activePortalL1Done ? (LEVEL2_QUESTIONS['obra']?.question ?? VITRANA_QUESTION_BY_SHOWCASE['miniversos']) : VITRANA_QUESTION_BY_SHOWCASE['miniversos']}
+                          question={activePortalL1Done ? (buildL1Acknowledgment('obra', activePortalL2Answer) ?? LEVEL2_QUESTIONS['obra']?.question ?? VITRANA_QUESTION_BY_SHOWCASE['miniversos']) : VITRANA_QUESTION_BY_SHOWCASE['miniversos']}
                           buttonLabel={activePortalL1Done ? 'Tu progreso →' : undefined}
                           autoReveal={activePortalL1Done}
                           portal="obra"
@@ -4118,7 +4121,7 @@ const rendernotaAutoral = () => {
                           <h4 className="font-display text-2xl text-amber-300">Formas de sentir</h4>
                         </div>
                         <VitranaQuestionReveal
-                          question={activePortalL1Done ? (LEVEL2_QUESTIONS['literatura']?.question ?? VITRANA_QUESTION_BY_SHOWCASE['miniversoNovela']) : VITRANA_QUESTION_BY_SHOWCASE['miniversoNovela']}
+                          question={activePortalL1Done ? (buildL1Acknowledgment('literatura', activePortalL2Answer) ?? LEVEL2_QUESTIONS['literatura']?.question ?? VITRANA_QUESTION_BY_SHOWCASE['miniversoNovela']) : VITRANA_QUESTION_BY_SHOWCASE['miniversoNovela']}
                           buttonLabel={activePortalL1Done ? 'Tu progreso →' : undefined}
                           autoReveal={activePortalL1Done}
                           portal="literatura"
@@ -4149,7 +4152,7 @@ const rendernotaAutoral = () => {
                           <h4 className="font-display text-2xl text-amber-300">Formas de sentir</h4>
                         </div>
                         <VitranaQuestionReveal
-                          question={activePortalL1Done ? (LEVEL2_QUESTIONS['artesanias']?.question ?? VITRANA_QUESTION_BY_SHOWCASE['lataza']) : VITRANA_QUESTION_BY_SHOWCASE['lataza']}
+                          question={activePortalL1Done ? (buildL1Acknowledgment('artesanias', activePortalL2Answer) ?? LEVEL2_QUESTIONS['artesanias']?.question ?? VITRANA_QUESTION_BY_SHOWCASE['lataza']) : VITRANA_QUESTION_BY_SHOWCASE['lataza']}
                           buttonLabel={activePortalL1Done ? 'Tu progreso →' : undefined}
                           autoReveal={activePortalL1Done}
                           portal="artesanias"
@@ -4180,7 +4183,7 @@ const rendernotaAutoral = () => {
                           <h4 className="font-display text-2xl text-amber-300">Formas de sentir</h4>
                         </div>
                         <VitranaQuestionReveal
-                          question={activePortalL1Done ? (LEVEL2_QUESTIONS['grafico']?.question ?? VITRANA_QUESTION_BY_SHOWCASE['miniversoGrafico']) : VITRANA_QUESTION_BY_SHOWCASE['miniversoGrafico']}
+                          question={activePortalL1Done ? (buildL1Acknowledgment('grafico', activePortalL2Answer) ?? LEVEL2_QUESTIONS['grafico']?.question ?? VITRANA_QUESTION_BY_SHOWCASE['miniversoGrafico']) : VITRANA_QUESTION_BY_SHOWCASE['miniversoGrafico']}
                           buttonLabel={activePortalL1Done ? 'Tu progreso →' : undefined}
                           autoReveal={activePortalL1Done}
                           portal="grafico"
@@ -4211,7 +4214,7 @@ const rendernotaAutoral = () => {
                           <h4 className="font-display text-2xl text-amber-300">Formas de sentir</h4>
                         </div>
                         <VitranaQuestionReveal
-                          question={activePortalL1Done ? (LEVEL2_QUESTIONS['cine']?.question ?? VITRANA_QUESTION_BY_SHOWCASE['cine']) : VITRANA_QUESTION_BY_SHOWCASE['cine']}
+                          question={activePortalL1Done ? (buildL1Acknowledgment('cine', activePortalL2Answer) ?? LEVEL2_QUESTIONS['cine']?.question ?? VITRANA_QUESTION_BY_SHOWCASE['cine']) : VITRANA_QUESTION_BY_SHOWCASE['cine']}
                           buttonLabel={activePortalL1Done ? 'Tu progreso →' : undefined}
                           autoReveal={activePortalL1Done}
                           portal="cine"
@@ -4242,7 +4245,7 @@ const rendernotaAutoral = () => {
                           <h4 className="font-display text-2xl text-amber-300">Formas de sentir</h4>
                         </div>
                         <VitranaQuestionReveal
-                          question={activePortalL1Done ? (LEVEL2_QUESTIONS['sonoridades']?.question ?? VITRANA_QUESTION_BY_SHOWCASE['miniversoSonoro']) : VITRANA_QUESTION_BY_SHOWCASE['miniversoSonoro']}
+                          question={activePortalL1Done ? (buildL1Acknowledgment('sonoridades', activePortalL2Answer) ?? LEVEL2_QUESTIONS['sonoridades']?.question ?? VITRANA_QUESTION_BY_SHOWCASE['miniversoSonoro']) : VITRANA_QUESTION_BY_SHOWCASE['miniversoSonoro']}
                           buttonLabel={activePortalL1Done ? 'Tu progreso →' : undefined}
                           autoReveal={activePortalL1Done}
                           portal="sonoridades"
@@ -4273,7 +4276,7 @@ const rendernotaAutoral = () => {
                           <h4 className="font-display text-2xl text-amber-300">Formas de sentir</h4>
                         </div>
                         <VitranaQuestionReveal
-                          question={activePortalL1Done ? (LEVEL2_QUESTIONS['movimiento']?.question ?? VITRANA_QUESTION_BY_SHOWCASE['miniversoMovimiento']) : VITRANA_QUESTION_BY_SHOWCASE['miniversoMovimiento']}
+                          question={activePortalL1Done ? (buildL1Acknowledgment('movimiento', activePortalL2Answer) ?? LEVEL2_QUESTIONS['movimiento']?.question ?? VITRANA_QUESTION_BY_SHOWCASE['miniversoMovimiento']) : VITRANA_QUESTION_BY_SHOWCASE['miniversoMovimiento']}
                           buttonLabel={activePortalL1Done ? 'Tu progreso →' : undefined}
                           autoReveal={activePortalL1Done}
                           portal="movimiento"
@@ -4304,7 +4307,7 @@ const rendernotaAutoral = () => {
                           <h4 className="font-display text-2xl text-amber-300">Formas de sentir</h4>
                         </div>
                         <VitranaQuestionReveal
-                          question={activePortalL1Done ? (LEVEL2_QUESTIONS['juegos']?.question ?? VITRANA_QUESTION_BY_SHOWCASE['apps']) : VITRANA_QUESTION_BY_SHOWCASE['apps']}
+                          question={activePortalL1Done ? (buildL1Acknowledgment('juegos', activePortalL2Answer) ?? LEVEL2_QUESTIONS['juegos']?.question ?? VITRANA_QUESTION_BY_SHOWCASE['apps']) : VITRANA_QUESTION_BY_SHOWCASE['apps']}
                           buttonLabel={activePortalL1Done ? 'Tu progreso →' : undefined}
                           autoReveal={activePortalL1Done}
                           portal="juegos"
@@ -4335,7 +4338,7 @@ const rendernotaAutoral = () => {
                           <h4 className="font-display text-2xl text-amber-300">Formas de sentir</h4>
                         </div>
                         <VitranaQuestionReveal
-                          question={activePortalL1Done ? (LEVEL2_QUESTIONS['oraculo']?.question ?? VITRANA_QUESTION_BY_SHOWCASE['oraculo']) : VITRANA_QUESTION_BY_SHOWCASE['oraculo']}
+                          question={activePortalL1Done ? (buildL1Acknowledgment('oraculo', activePortalL2Answer) ?? LEVEL2_QUESTIONS['oraculo']?.question ?? VITRANA_QUESTION_BY_SHOWCASE['oraculo']) : VITRANA_QUESTION_BY_SHOWCASE['oraculo']}
                           buttonLabel={activePortalL1Done ? 'Tu progreso →' : undefined}
                           autoReveal={activePortalL1Done}
                           portal="oraculo"

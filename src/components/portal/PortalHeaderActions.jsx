@@ -1,5 +1,5 @@
 import React, { useCallback, useMemo, useSyncExternalStore } from 'react';
-import { Send, Volume2, VolumeX, X } from 'lucide-react';
+import { Volume2, VolumeX, X } from 'lucide-react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { toast } from '@/components/ui/use-toast';
 import { useAuth } from '@/contexts/SupabaseAuthContext';
@@ -13,6 +13,7 @@ import {
   resumeHeroAmbientPlayback,
 } from '@/lib/heroAmbientAudio';
 import { resolvePortalReturnTarget } from '@/lib/portalNavigation';
+import GATChip from '@/components/portal/GATChip';
 
 const DEFAULT_RETURN_URL = '/?heroTab=experiences#hero';
 
@@ -112,6 +113,7 @@ const PortalHeaderActions = ({ returnUrl = DEFAULT_RETURN_URL }) => {
 
   return (
     <div className="inline-flex items-center gap-2">
+      <GATChip />
       {user ? (
         <button
           type="button"

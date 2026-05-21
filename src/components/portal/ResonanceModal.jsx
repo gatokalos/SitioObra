@@ -833,7 +833,7 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative }) =>
                                             className="h-20 w-20 animate-[spin_8s_linear_0s_infinite_reverse] drop-shadow-[0_0_22px_rgba(251,191,36,0.6)]"
                                           />
                                           <span className="text-sm font-semibold tracking-wide text-amber-200">
-                                            {l2NarrativeOpened ? 'Volver al artefacto' : 'Usar mi energía'}
+                                            {l2NarrativeOpened ? 'Gastar mi energía' : 'Usar mi energía'}
                                           </span>
                                         </motion.button>
                                       )}

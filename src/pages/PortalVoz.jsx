@@ -25,6 +25,7 @@ import IAInsightCard from '@/components/IAInsightCard';
 import ObraConversationControls from '@/components/miniversos/obra/ObraConversationControls';
 import ObraQuestionList from '@/components/miniversos/obra/ObraQuestionList';
 import RelatedReadingTooltipButton from '@/components/portal/RelatedReadingTooltipButton';
+import GATChip from '@/components/portal/GATChip';
 import VitranaQuestionReveal from '@/components/portal/VitranaQuestionReveal';
 import ResonanceModal, { LEVEL2_QUESTIONS, buildL1Acknowledgment } from '@/components/portal/ResonanceModal';
 import PulseReactionCard from '@/components/portal/PulseReactionCard';
@@ -440,10 +441,10 @@ const PortalVoz = () => {
   const [isContributionOpen, setIsContributionOpen] = useState(false);
   const [isResonanceOpen, setIsResonanceOpen] = useState(false);
   const [l1Done, setL1Done] = useState(() => { try { return Boolean(JSON.parse(localStorage.getItem('gatoencerrado:resonance:obra') || '{}').l1); } catch { return false; } });
-  const [l2Answer] = useState(() => { try { return JSON.parse(localStorage.getItem('gatoencerrado:resonance:obra') || '{}').l2_option ?? null; } catch { return null; } });
+  const [l2Answer, setL2Answer] = useState(() => { try { return JSON.parse(localStorage.getItem('gatoencerrado:resonance:obra') || '{}').l2_option ?? null; } catch { return null; } });
   const [experienceDone, setExperienceDone] = useState(() => { try { return Boolean(JSON.parse(localStorage.getItem('gatoencerrado:resonance:obra') || '{}').experience_ts); } catch { return false; } });
   const [l2Done, setL2Done] = useState(() => { try { return Boolean(JSON.parse(localStorage.getItem('gatoencerrado:resonance:obra') || '{}').l2_option); } catch { return false; } });
-  const refreshL1 = useCallback(() => { try { const s = JSON.parse(localStorage.getItem('gatoencerrado:resonance:obra') || '{}'); setL1Done(Boolean(s.l1)); setExperienceDone(Boolean(s.experience_ts)); setL2Done(Boolean(s.l2_option)); } catch { /* ignore */ } }, []);
+  const refreshL1 = useCallback(() => { try { const s = JSON.parse(localStorage.getItem('gatoencerrado:resonance:obra') || '{}'); setL1Done(Boolean(s.l1)); setExperienceDone(Boolean(s.experience_ts)); setL2Done(Boolean(s.l2_option)); setL2Answer(s.l2_option ?? null); } catch { /* ignore */ } }, []);
   const [isNarrativeExperienceOpen, setIsNarrativeExperienceOpen] = useState(false);
   const [openCollaboratorId, setOpenCollaboratorId] = useState(null);
   const location = useLocation();
@@ -1150,7 +1151,8 @@ const PortalVoz = () => {
                 exit={{ opacity: 0 }}
                 transition={{ duration: 0.2 }}
               >
-                <div className="sticky top-0 z-10 flex items-center justify-end px-6 py-3 border-b border-white/10 bg-slate-950/90 backdrop-blur-sm">
+                <div className="sticky top-0 z-20 flex items-center justify-between px-6 py-3 border-b border-amber-400/15 bg-slate-950 backdrop-blur-md shadow-[0_1px_0_rgba(251,191,36,0.08)]">
+                  <GATChip />
                   <button
                     type="button"
                     onClick={() => setIsNarrativeExperienceOpen(false)}
