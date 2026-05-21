@@ -479,7 +479,7 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative }) =>
             className="absolute right-4 top-4 z-30 inline-flex h-10 w-10 items-center justify-center rounded-full border border-white/15 bg-black/35 text-base text-slate-300 backdrop-blur-md transition hover:border-white/35 hover:text-white"
             aria-label="Cerrar"
           >
-            ✕
+            <Check size={18} />
           </button>
 
           {/* ── Columna izquierda ── */}
@@ -487,8 +487,13 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative }) =>
             {/* Poster en mobile (fondo con fade) */}
             <div
               aria-hidden="true"
-              className="absolute inset-0 lg:hidden"
-              style={{ backgroundImage: `url(${poster})`, backgroundPosition: 'center top', backgroundSize: 'cover' }}
+              className="absolute inset-0 lg:hidden transition-opacity duration-500"
+              style={{
+                backgroundImage: `url(${poster})`,
+                backgroundPosition: 'center top',
+                backgroundSize: 'cover',
+                opacity: (l2NarrativeOpened && convQuestion !== null && !l2ConvDone) ? 0.1 : 0.5,
+              }}
             />
             <div
               aria-hidden="true"
@@ -552,20 +557,22 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative }) =>
                     <div className="px-5 pb-[max(1.25rem,env(safe-area-inset-bottom))] sm:px-6 sm:pb-5 lg:pb-10 lg:px-10">
                       <div className="space-y-3">
                         {/* Mobile: pregunta */}
-                        <div className="lg:hidden space-y-1.5">
-                          <div className="inline-flex rounded-full border border-white/10 bg-white/5 px-3 py-1 text-[0.62rem] uppercase tracking-[0.32em] text-white/70 backdrop-blur-md">
-                            {convTurn > 0 ? `Turno ${convTurn}` : 'Nivel 2'}
-                          </div>
-                          {convLoading && !convQuestion ? (
-                            <div className="flex items-center gap-2 py-4">
-                              <div className="h-4 w-4 animate-spin rounded-full border-2 border-white/10 border-t-white/50" />
-                              <p className="text-sm text-slate-400/70">Procesando…</p>
+                        <div className="lg:hidden">
+                          <div className="space-y-2">
+                            <div className="inline-flex rounded-full border border-white/10 bg-white/5 px-3 py-1 text-[0.62rem] uppercase tracking-[0.32em] text-white/70">
+                              {convTurn > 0 ? `Turno ${convTurn}` : 'Nivel 2'}
                             </div>
-                          ) : (
-                            <h3 className="font-display text-2xl leading-tight tracking-tight text-amber-300">
-                              {convQuestion}
-                            </h3>
-                          )}
+                            {convLoading && !convQuestion ? (
+                              <div className="flex items-center gap-2 py-2">
+                                <div className="h-4 w-4 animate-spin rounded-full border-2 border-white/10 border-t-white/50" />
+                                <p className="text-sm text-slate-400/70">Procesando…</p>
+                              </div>
+                            ) : (
+                              <h3 className="font-display text-2xl leading-tight tracking-tight text-amber-300">
+                                {convQuestion}
+                              </h3>
+                            )}
+                          </div>
                         </div>
 
                         {convError ? (
@@ -605,7 +612,7 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative }) =>
                               type="button"
                               disabled={convLoading || !convAnswer.trim()}
                               onClick={() => void callL2Turn(convAnswer.trim())}
-                              className="relative w-full rounded-full border border-purple-500/70 px-4 py-2.5 text-xs uppercase tracking-[0.25em] text-purple-100 shadow-[0_15px_45px_rgba(67,56,202,0.45)] transition hover:bg-purple-500/20 disabled:opacity-50"
+                              className="relative w-full rounded-full border border-purple-400/80 bg-purple-600/30 px-4 py-3 text-xs uppercase tracking-[0.25em] text-white backdrop-blur-sm shadow-[0_8px_32px_rgba(67,56,202,0.5)] transition hover:bg-purple-500/45 disabled:opacity-40"
                             >
                               {convLoading ? 'Procesando…' : 'Continuar'}
                             </button>
@@ -613,7 +620,7 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative }) =>
                               type="button"
                               disabled={convLoading}
                               onClick={() => void callL2Turn(null, true)}
-                              className="w-full py-1 text-center text-xs text-slate-500/70 transition hover:text-slate-300/70 disabled:opacity-40"
+                              className="w-full py-1.5 text-center text-xs text-slate-400/80 transition hover:text-slate-200 disabled:opacity-40"
                             >
                               Nada de esto se movió esta vez. Continuar →
                             </button>
@@ -650,35 +657,38 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative }) =>
                           </motion.div>
                         )}
                       </div>
-                      <AnimatePresence mode="wait">
-                        {l2Open && !l2Selection && l2q ? (
-                          <motion.h2
-                            key="l2-question"
-                            className="font-display text-2xl text-amber-300 lg:text-3xl leading-snug"
-                            initial={{ opacity: 0, y: 8 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            exit={{ opacity: 0, y: -8 }}
-                            transition={{ duration: 0.28, ease: 'easeInOut' }}
-                          >
-                            {l2q.question}
-                          </motion.h2>
-                        ) : (
-                          <motion.h2
-                            key="title"
-                            id="resonance-modal-title"
-                            className="font-display text-3xl text-white lg:text-4xl"
-                            initial={{ opacity: 0, y: 8 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            exit={{ opacity: 0, y: -8 }}
-                            transition={{ duration: 0.28, ease: 'easeInOut' }}
-                          >
-                            Tu viaje personal
-                          </motion.h2>
-                        )}
-                      </AnimatePresence>
-                      <p className="text-sm leading-relaxed text-slate-200/90">
+                      {/* Título + descripción — se ocultan en móvil cuando el acordeón L2 está abierto */}
+                      <h2
+                        id="resonance-modal-title"
+                        className={`font-display text-3xl text-white lg:text-4xl ${!l2ConvDone && l2q && !l2Selection && l2Open ? 'hidden lg:block' : ''}`}
+                      >
+                        Tu viaje personal
+                      </h2>
+                      <p className={`text-sm leading-relaxed text-slate-200/90 ${!l2ConvDone && l2q && !l2Selection && l2Open ? 'hidden lg:block' : ''}`}>
                         Cada etapa aporta datos valiosos para comprender cómo habitamos las emociones delante de otros.
                       </p>
+
+                      {/* Pregunta L2 + chips — móvil, solo cuando el acordeón está abierto */}
+                      {!l2ConvDone && l2q && !l2Selection && l2Open && (
+                        <>
+                          <h2 className="font-display text-2xl leading-snug text-amber-300 lg:hidden">
+                            {l2q.question}
+                          </h2>
+                          <div className="lg:hidden flex flex-wrap gap-1.5 pt-1">
+                            {l2q.options.map((opt) => (
+                              <button
+                                key={opt}
+                                type="button"
+                                onClick={() => handleLevel2Select(opt)}
+                                disabled={l2Submitting}
+                                className="rounded-full border border-amber-400/30 bg-amber-900/20 px-3 py-1 text-xs text-amber-100/90 transition hover:border-amber-400/55 hover:bg-amber-900/35 hover:text-amber-50 disabled:opacity-40"
+                              >
+                                {opt}
+                              </button>
+                            ))}
+                          </div>
+                        </>
+                      )}
                     </div>
 
                     {/* Niveles */}
@@ -805,18 +815,28 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative }) =>
                                       )}
                                       {isL2 && !l2ConvDone && l2q && !l2Selection && (
                                         <div className="space-y-2">
-                                          <div className="flex flex-wrap gap-1.5">
-                                            {l2q.options.map((opt) => (
-                                              <button
-                                                key={opt}
-                                                type="button"
-                                                onClick={() => handleLevel2Select(opt)}
-                                                disabled={l2Submitting}
-                                                className="rounded-full border border-amber-400/30 bg-amber-900/20 px-3 py-1 text-xs text-amber-100/90 transition hover:border-amber-400/55 hover:bg-amber-900/35 hover:text-amber-50 disabled:opacity-40"
-                                              >
-                                                {opt}
-                                              </button>
-                                            ))}
+                                          {/* Hint móvil — el acordeón no repite los chips del header */}
+                                          <p className="lg:hidden text-xs leading-relaxed text-slate-400/80">
+                                            Elige una opción arriba para continuar hacia la experiencia narrativa.
+                                          </p>
+                                          {/* Desktop: pregunta + chips */}
+                                          <div className="hidden lg:block space-y-2">
+                                            <p className="font-display text-sm leading-snug text-amber-300/90">
+                                              {l2q.question}
+                                            </p>
+                                            <div className="flex flex-wrap gap-1.5">
+                                              {l2q.options.map((opt) => (
+                                                <button
+                                                  key={opt}
+                                                  type="button"
+                                                  onClick={() => handleLevel2Select(opt)}
+                                                  disabled={l2Submitting}
+                                                  className="rounded-full border border-amber-400/30 bg-amber-900/20 px-3 py-1 text-xs text-amber-100/90 transition hover:border-amber-400/55 hover:bg-amber-900/35 hover:text-amber-50 disabled:opacity-40"
+                                                >
+                                                  {opt}
+                                                </button>
+                                              ))}
+                                            </div>
                                           </div>
                                         </div>
                                       )}
@@ -838,7 +858,7 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative }) =>
                                           <img
                                             src="https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/oraculo/gato-moneda.png"
                                             alt="GAToken"
-                                            className="h-20 w-20 animate-[spin_8s_linear_0s_infinite_reverse] drop-shadow-[0_0_22px_rgba(251,191,36,0.6)]"
+                                            className="h-20 w-20 lg:h-32 lg:w-32 animate-[spin_8s_linear_0s_infinite_reverse] drop-shadow-[0_0_22px_rgba(251,191,36,0.6)]"
                                           />
                                           <span className="text-sm font-semibold tracking-wide text-amber-200">
                                             {l2NarrativeOpened ? 'Gastar mi energía' : 'Usar mi energía'}
@@ -878,7 +898,10 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative }) =>
 
                     {/* Desktop: pregunta prominente */}
                     {question ? (
-                      <div className="hidden lg:block lg:px-10 lg:pb-5 lg:pt-14">
+                      <div className="hidden lg:block lg:px-10 lg:pb-5 lg:pt-14 space-y-3">
+                        <div className="inline-flex rounded-full border border-white/10 bg-white/5 px-3 py-1 text-[0.62rem] uppercase tracking-[0.32em] text-white/70 backdrop-blur-md">
+                          Laboratorio
+                        </div>
                         <p
                           className="font-display leading-snug text-amber-300/90 drop-shadow-[0_0_32px_rgba(251,191,36,0.45)]"
                           style={{ fontSize: 'clamp(1.5rem, 2.6vw, 2.4rem)' }}
@@ -960,7 +983,11 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative }) =>
               src={poster}
               alt=""
               aria-hidden="true"
-              className="h-full w-full object-cover object-top"
+              className="h-full w-full object-cover object-top transition-opacity duration-500"
+              style={{
+                mixBlendMode: 'plus-lighter',
+                opacity: (l2NarrativeOpened && convQuestion !== null && !l2ConvDone) ? 0.5 : 1,
+              }}
             />
             <div
               aria-hidden="true"
