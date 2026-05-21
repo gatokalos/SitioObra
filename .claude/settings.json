@@ -74,7 +74,9 @@
       "Bash(node --check routes/resonance.js)",
       "Bash(node --check server.js)",
       "Bash(node --check routes/obraConciencia.js)",
-      "Bash(grep -n \"const { user, session } = useAuth\" /Users/gatoenigmatico/gatoencerrado-ai/landing/SitioObra/src/components/MiniverseModal.jsx)"
+      "Bash(grep -n \"const { user, session } = useAuth\" /Users/gatoenigmatico/gatoencerrado-ai/landing/SitioObra/src/components/MiniverseModal.jsx)",
+      "Bash(grep -A3 \"return \\($\" /Users/gatoenigmatico/gatoencerrado-ai/landing/SitioObra/src/pages/PortalLiteratura.jsx)",
+      "Bash(grep -A3 \"return \\($\" /Users/gatoenigmatico/gatoencerrado-ai/landing/SitioObra/src/pages/PortalCine.jsx)"
     ],
     "additionalDirectories": [
       "/Users/gatoenigmatico/Desktop/Postulación EFIARTES",
