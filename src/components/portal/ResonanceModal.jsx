@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Eye, Flame, PawPrint, Lock, ShieldCheck, Check, ChevronDown, Sparkles } from 'lucide-react';
 import { supabase } from '@/lib/supabaseClient';
@@ -156,6 +156,25 @@ export const LEVEL2_QUESTIONS = {
   },
 };
 
+/* ─── Acknowledgment por portal (tras responder Nivel 1) ─────────────── */
+
+export const buildL1Acknowledgment = (portal, answer) => {
+  if (!answer) return null;
+  const a = answer.trim();
+  const templates = {
+    obra:        `¿Esperas encontrar ${a}, cuando alguien se expone frente a otros?`,
+    literatura:  `¿Esperas que una historia abierta te dé ${a}?`,
+    artesanias:  `¿Te cuesta dejar ir ${a}?`,
+    grafico:     `¿Las imágenes de ${a} todavía te observan cuando estás a solas?`,
+    cine:        `¿Te cuesta mirar ${a} de frente en una historia?`,
+    sonoridades: `¿El sonido que regresa contigo es ${a}?`,
+    movimiento:  `¿Tu cuerpo busca ${a} cuando aún no entiendes lo que sientes?`,
+    juegos:      `¿Lo primero que haces al elegir es ${a}?`,
+    oraculo:     `¿Cuando una pregunta se queda contigo, la ${a}?`,
+  };
+  return templates[portal] ?? null;
+};
+
 /* ─── Estructura de niveles ───────────────────────────────────────────── */
 
 const LEVELS = [
@@ -215,10 +234,21 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative }) =>
   const [l1Done, setL1Done] = useState(() => !!lsRead(portal).l1);
   const [l2Selection, setL2Selection] = useState(() => lsRead(portal).l2_option ?? null);
   const [l2Submitting, setL2Submitting] = useState(false);
-  const [l2Open, setL2Open] = useState(false);
+  const [l2Open, setL2Open] = useState(() => {
+    const s = lsRead(portal);
+    return !!s.l2_option && !s.l2_conv_done;
+  });
   const [gatRewarded, setGatRewarded] = useState(() => !!lsRead(portal).gat_ts);
-  // checking = true mientras consultamos Supabase para respuestas anteriores al deploy de localStorage
   const [checking, setChecking] = useState(() => !lsRead(portal).l1);
+
+  // Nivel 2 — conversación post-experiencia
+  const [l2NarrativeOpened, setL2NarrativeOpened] = useState(() => !!lsRead(portal).l2_narrative_opened);
+  const [l2ConvDone, setL2ConvDone] = useState(() => !!lsRead(portal).l2_conv_done);
+  const [convQuestion, setConvQuestion] = useState(() => lsRead(portal).l2_current_question ?? null);
+  const [convTurn, setConvTurn] = useState(() => lsRead(portal).l2_current_turn ?? 0);
+  const [convAnswer, setConvAnswer] = useState('');
+  const [convLoading, setConvLoading] = useState(false);
+  const [convError, setConvError] = useState(false);
 
   // Verifica Supabase solo si localStorage no tiene l1 (respuestas pre-deploy)
   useEffect(() => {
@@ -238,7 +268,7 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative }) =>
           const l1Row = data.find((r) => r.level === 1);
           const l2Row = data.find((r) => r.level === 2);
           if (l1Row) {
-            lsPatch(portal, { l1: Date.now() });
+            lsPatch(portal, { l1: Date.now(), l1_answer: l1Row.respuesta ?? null });
             setL1Done(true);
           }
           if (l2Row) {
@@ -317,7 +347,7 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative }) =>
       } catch (_) {}
     }
 
-    lsPatch(portal, { l1: Date.now() });
+    lsPatch(portal, { l1: Date.now(), l1_answer: formData.respuesta });
     fireConfetti();
     setL1Done(true);
     setSubmitting(false);
@@ -325,9 +355,50 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative }) =>
 
   /* Experiencia narrativa — abre la experiencia y cierra el modal */
   const handleOpenNarrativeExperience = () => {
+    lsPatch(portal, { l2_narrative_opened: true });
+    setL2NarrativeOpened(true);
     onClose?.();
     onOpenNarrative?.();
   };
+
+  /* Nivel 2 — turno de conversación con IA */
+  const callL2Turn = useCallback(async (respuesta = null, silent = false) => {
+    setConvLoading(true);
+    setConvError(false);
+    try {
+      const res = await fetch(`${OBRA_API_URL}/api/resonance/l2-turn`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          anon_id: ensureAnonId(),
+          miniverso_id: portal,
+          ...(respuesta != null ? { respuesta } : {}),
+          ...(silent ? { silent: true } : {}),
+        }),
+      });
+      if (!res.ok) {
+        console.error('[ResonanceModal] l2-turn HTTP error:', res.status);
+        setConvError(true);
+        setConvLoading(false);
+        return;
+      }
+      const data = await res.json();
+      if (data.done) {
+        lsPatch(portal, { l2_conv_done: true, l2_current_question: null, l2_current_turn: null });
+        setL2ConvDone(true);
+        setConvQuestion(null);
+      } else {
+        lsPatch(portal, { l2_current_question: data.question, l2_current_turn: data.turn });
+        setConvQuestion(data.question);
+        setConvTurn(data.turn ?? 1);
+        setConvAnswer('');
+      }
+    } catch (err) {
+      console.error('[ResonanceModal] l2-turn error:', err);
+      setConvError(true);
+    }
+    setConvLoading(false);
+  }, [portal]);
 
   /* Nivel 2 — opciones */
   const handleLevel2Select = async (option) => {
@@ -434,6 +505,115 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative }) =>
                       <p className="text-xs uppercase tracking-[0.25em] text-white/30">Cargando tu progreso</p>
                     </div>
                   </motion.div>
+                ) : l1Done && l2NarrativeOpened && !l2ConvDone && convQuestion !== null ? (
+                  /* ── Nivel 2: conversación post-experiencia ── */
+                  <motion.div
+                    key="l2-conversation"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.3 }}
+                  >
+                    <div aria-hidden="true" className="h-16 sm:h-24 lg:hidden" />
+
+                    {/* Desktop: pregunta prominente */}
+                    <div className="hidden lg:block lg:px-10 lg:pb-5 lg:pt-14">
+                      <p className="mb-3 text-[0.62rem] uppercase tracking-[0.32em] text-white/50">
+                        Nivel 2 · Contacto con la experiencia
+                      </p>
+                      {convLoading && !convQuestion ? (
+                        <div className="flex items-center gap-3">
+                          <div className="h-5 w-5 animate-spin rounded-full border-2 border-white/10 border-t-white/50" />
+                          <p className="text-sm text-slate-400/70">Procesando tu experiencia…</p>
+                        </div>
+                      ) : (
+                        <p
+                          className="font-display leading-snug text-amber-300/90 drop-shadow-[0_0_32px_rgba(251,191,36,0.45)]"
+                          style={{ fontSize: 'clamp(1.3rem, 2.3vw, 2.1rem)' }}
+                        >
+                          {convQuestion}
+                        </p>
+                      )}
+                    </div>
+
+                    <div
+                      aria-hidden="true"
+                      className="hidden lg:block mx-8 mb-5 h-px bg-gradient-to-r from-transparent via-amber-400/35 to-transparent"
+                    />
+
+                    <div className="px-5 pb-[max(1.25rem,env(safe-area-inset-bottom))] sm:px-6 sm:pb-5 lg:pb-10 lg:px-10">
+                      <div className="space-y-3">
+                        {/* Mobile: pregunta */}
+                        <div className="lg:hidden space-y-1.5">
+                          <div className="inline-flex rounded-full border border-white/10 bg-white/5 px-3 py-1 text-[0.62rem] uppercase tracking-[0.32em] text-white/70 backdrop-blur-md">
+                            {convTurn > 0 ? `Turno ${convTurn}` : 'Nivel 2'}
+                          </div>
+                          {convLoading && !convQuestion ? (
+                            <div className="flex items-center gap-2 py-4">
+                              <div className="h-4 w-4 animate-spin rounded-full border-2 border-white/10 border-t-white/50" />
+                              <p className="text-sm text-slate-400/70">Procesando…</p>
+                            </div>
+                          ) : (
+                            <h3 className="font-display text-2xl leading-tight tracking-tight text-amber-300">
+                              {convQuestion}
+                            </h3>
+                          )}
+                        </div>
+
+                        {convError ? (
+                          <div className="space-y-3 text-center">
+                            <p className="text-xs text-slate-400/80">
+                              No pudimos conectar con el servidor. Intenta de nuevo.
+                            </p>
+                            <button
+                              type="button"
+                              onClick={() => void callL2Turn()}
+                              className="relative w-full rounded-full border border-purple-500/70 px-4 py-2.5 text-xs uppercase tracking-[0.25em] text-purple-100 transition hover:bg-purple-500/20"
+                            >
+                              Reintentar
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                lsPatch(portal, { l2_narrative_opened: false });
+                                setL2NarrativeOpened(false);
+                              }}
+                              className="w-full py-1 text-center text-xs text-slate-500/70 transition hover:text-slate-300/70"
+                            >
+                              Volver al dashboard →
+                            </button>
+                          </div>
+                        ) : convQuestion ? (
+                          <>
+                            <textarea
+                              value={convAnswer}
+                              onChange={(e) => setConvAnswer(e.target.value)}
+                              rows={4}
+                              disabled={convLoading}
+                              className="form-surface w-full resize-none px-3 py-2 text-sm"
+                              placeholder="Escribe lo que puedas, aunque sea poco…"
+                            />
+                            <button
+                              type="button"
+                              disabled={convLoading || !convAnswer.trim()}
+                              onClick={() => void callL2Turn(convAnswer.trim())}
+                              className="relative w-full rounded-full border border-purple-500/70 px-4 py-2.5 text-xs uppercase tracking-[0.25em] text-purple-100 shadow-[0_15px_45px_rgba(67,56,202,0.45)] transition hover:bg-purple-500/20 disabled:opacity-50"
+                            >
+                              {convLoading ? 'Procesando…' : 'Continuar'}
+                            </button>
+                            <button
+                              type="button"
+                              disabled={convLoading}
+                              onClick={() => void callL2Turn(null, true)}
+                              className="w-full py-1 text-center text-xs text-slate-500/70 transition hover:text-slate-300/70 disabled:opacity-40"
+                            >
+                              Nada de esto se movió esta vez. Continuar →
+                            </button>
+                          </>
+                        ) : null}
+                      </div>
+                    </div>
+                  </motion.div>
                 ) : l1Done ? (
                   /* ── Dashboard de viaje ── */
                   <motion.div
@@ -505,8 +685,8 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative }) =>
                         const isL1 = i === 0;
                         const isL2 = i === 1;
                         const isL3 = i === 2;
-                        const isCompleted = isL1 || (isL2 && !!l2Selection);
-                        const isAvailable = isL2 && !l2Selection;
+                        const isCompleted = isL1 || (isL2 && l2ConvDone);
+                        const isAvailable = isL2 && !l2ConvDone;
                         const isOpen = isCompleted || (isAvailable && l2Open);
                         const canToggle = isAvailable;
 
@@ -609,7 +789,13 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative }) =>
                                       {isL3 && (
                                         <p className="text-xs leading-relaxed text-slate-300/90">{level.pendingDesc}</p>
                                       )}
-                                      {isL2 && l2q && !l2Selection && (
+                                      {isL2 && l2ConvDone && (
+                                        <div className="flex items-center gap-2 text-xs text-slate-300">
+                                          <Check size={12} className="shrink-0 text-emerald-400/70" />
+                                          <span className="italic">Conversación completada</span>
+                                        </div>
+                                      )}
+                                      {isL2 && !l2ConvDone && l2q && !l2Selection && (
                                         <div className="space-y-2">
                                           <div className="flex flex-wrap gap-1.5">
                                             {l2q.options.map((opt) => (
@@ -626,17 +812,17 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative }) =>
                                           </div>
                                         </div>
                                       )}
-                                      {isL2 && l2Selection && (
+                                      {isL2 && !l2ConvDone && l2Selection && (
                                         <div className="flex items-center gap-2 text-xs text-slate-300">
                                           <Check size={12} className="shrink-0 text-emerald-400/70" />
                                           <span className="italic">{l2Selection}</span>
                                         </div>
                                       )}
-                                      {isL2 && l2Selection && onOpenNarrative && (
+                                      {isL2 && !l2ConvDone && l2Selection && onOpenNarrative && (
                                         <motion.button
                                           type="button"
                                           onClick={handleOpenNarrativeExperience}
-                                          className="w-full flex flex-col items-center gap-2 rounded-2xl border border-amber-400/35 bg-amber-500/10 px-5 py-4 transition hover:bg-amber-500/18 active:scale-[0.98]"
+                                          className="w-full flex flex-col items-center gap-3 py-2 transition active:scale-[0.98]"
                                           initial={{ opacity: 0, scale: 0.92, y: 8 }}
                                           animate={{ opacity: 1, scale: 1, y: 0 }}
                                           transition={{ type: 'spring', stiffness: 220, damping: 20, delay: 0.2 }}
@@ -644,10 +830,10 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative }) =>
                                           <img
                                             src="https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/oraculo/gato-moneda.png"
                                             alt="GAToken"
-                                            className="h-10 w-10 animate-[spin_8s_linear_infinite] drop-shadow-[0_0_14px_rgba(251,191,36,0.5)]"
+                                            className="h-20 w-20 animate-[spin_8s_linear_0s_infinite_reverse] drop-shadow-[0_0_22px_rgba(251,191,36,0.6)]"
                                           />
                                           <span className="text-sm font-semibold tracking-wide text-amber-200">
-                                            Usar mi energía
+                                            {l2NarrativeOpened ? 'Volver al artefacto' : 'Usar mi energía'}
                                           </span>
                                         </motion.button>
                                       )}

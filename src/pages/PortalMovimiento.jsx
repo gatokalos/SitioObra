@@ -19,7 +19,7 @@ import IAInsightCard from '@/components/IAInsightCard';
 import DiosasCarousel from '@/components/DiosasCarousel';
 import RelatedReadingTooltipButton from '@/components/portal/RelatedReadingTooltipButton';
 import VitranaQuestionReveal from '@/components/portal/VitranaQuestionReveal';
-import ResonanceModal, { LEVEL2_QUESTIONS } from '@/components/portal/ResonanceModal';
+import ResonanceModal, { LEVEL2_QUESTIONS, buildL1Acknowledgment } from '@/components/portal/ResonanceModal';
 import PulseReactionCard from '@/components/portal/PulseReactionCard';
 import { recordShowcaseLike } from '@/services/showcaseLikeService';
 import { supabase } from '@/lib/supabaseClient';
@@ -243,6 +243,7 @@ const PortalMovimiento = () => {
   const [isContributionOpen, setIsContributionOpen] = useState(false);
   const [isResonanceOpen, setIsResonanceOpen] = useState(false);
   const [l1Done, setL1Done] = useState(() => { try { return Boolean(JSON.parse(localStorage.getItem('gatoencerrado:resonance:movimiento') || '{}').l1); } catch { return false; } });
+  const [l2Answer] = useState(() => { try { return JSON.parse(localStorage.getItem('gatoencerrado:resonance:movimiento') || '{}').l2_option ?? null; } catch { return null; } });
   const [experienceDone, setExperienceDone] = useState(() => { try { return Boolean(JSON.parse(localStorage.getItem('gatoencerrado:resonance:movimiento') || '{}').experience_ts); } catch { return false; } });
   const [l2Done, setL2Done] = useState(() => { try { return Boolean(JSON.parse(localStorage.getItem('gatoencerrado:resonance:movimiento') || '{}').l2_option); } catch { return false; } });
   const refreshL1 = useCallback(() => { try { const s = JSON.parse(localStorage.getItem('gatoencerrado:resonance:movimiento') || '{}'); setL1Done(Boolean(s.l1)); setExperienceDone(Boolean(s.experience_ts)); setL2Done(Boolean(s.l2_option)); } catch { /* ignore */ } }, []);
@@ -446,7 +447,7 @@ const PortalMovimiento = () => {
                 </div>
                 <div className="flex flex-col gap-5">
                   <VitranaQuestionReveal
-                    question={l1Done ? (LEVEL2_QUESTIONS['movimiento']?.question ?? vitranaQuestion) : vitranaQuestion}
+                    question={l1Done ? (buildL1Acknowledgment('movimiento', l2Answer) ?? LEVEL2_QUESTIONS['movimiento']?.question ?? vitranaQuestion) : vitranaQuestion}
                     buttonLabel={l1Done ? 'Tu progreso →' : undefined}
                     autoReveal={l1Done}
                     portal="movimiento"
@@ -573,7 +574,7 @@ const PortalMovimiento = () => {
               <h4 className="font-display text-xl text-amber-300">Formas de sentir</h4>
             </div>
             <VitranaQuestionReveal
-              question={l1Done ? (LEVEL2_QUESTIONS['movimiento']?.question ?? vitranaQuestion) : vitranaQuestion}
+              question={l1Done ? (buildL1Acknowledgment('movimiento', l2Answer) ?? LEVEL2_QUESTIONS['movimiento']?.question ?? vitranaQuestion) : vitranaQuestion}
               buttonLabel={l1Done ? 'Tu progreso →' : undefined}
               autoReveal={l1Done}
               portal="movimiento"
