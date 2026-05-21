@@ -400,6 +400,14 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative }) =>
     setConvLoading(false);
   }, [portal]);
 
+  // Auto-arranca la conversación cuando el modal abre después de completar la experiencia
+  useEffect(() => {
+    if (!open) return;
+    if (!l2NarrativeOpened || l2ConvDone || convQuestion !== null || convLoading) return;
+    if (!lsRead(portal).experience_ts) return;
+    void callL2Turn();
+  }, [open, l2NarrativeOpened, l2ConvDone, convQuestion, convLoading, portal, callL2Turn]);
+
   /* Nivel 2 — opciones */
   const handleLevel2Select = async (option) => {
     if (l2Selection || l2Submitting) return;
