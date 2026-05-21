@@ -73,7 +73,8 @@
       "Bash(grep -E \"^\\(db|models|supabase\\)$\")",
       "Bash(node --check routes/resonance.js)",
       "Bash(node --check server.js)",
-      "Bash(node --check routes/obraConciencia.js)"
+      "Bash(node --check routes/obraConciencia.js)",
+      "Bash(grep -n \"const { user, session } = useAuth\" /Users/gatoenigmatico/gatoencerrado-ai/landing/SitioObra/src/components/MiniverseModal.jsx)"
     ],
     "additionalDirectories": [
       "/Users/gatoenigmatico/Desktop/Postulación EFIARTES",

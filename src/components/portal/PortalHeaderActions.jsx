@@ -129,15 +129,6 @@ const PortalHeaderActions = ({ returnUrl = DEFAULT_RETURN_URL }) => {
       ) : null}
       <button
         type="button"
-        onClick={handleSharePortal}
-        aria-label="Compartir portal"
-        title="Compartir portal"
-        className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-white/15 bg-slate-950/70 text-slate-300 transition hover:border-purple-300/50 hover:bg-slate-900/80 hover:text-white"
-      >
-        <Send size={14} />
-      </button>
-      <button
-        type="button"
         onClick={handleBackToSite}
         aria-label="Cerrar portal"
         title="Cerrar portal"

@@ -1,4 +1,4 @@
-import React, { Suspense, lazy, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import React, { Suspense, lazy, useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
 import { createPortal } from 'react-dom';
@@ -36,6 +36,8 @@ import {
   X,
   PawPrint,
   QrCode,
+  Volume2,
+  VolumeX,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ToastAction } from '@/components/ui/toast';
@@ -107,6 +109,15 @@ const AutoficcionPreviewOverlay = lazy(() => import('@/components/novela/Autofic
 const LiteraturaAppOverlay = lazy(() => import('@/components/novela/LiteraturaAppOverlay'));
 const LoginOverlay = lazy(() => import('@/components/ContributionModal/LoginOverlay'));
 const PdfPreviewDocument = lazy(() => import('@/components/transmedia/PdfPreviewDocument'));
+import {
+  getHeroAmbientAudio,
+  getHeroAmbientState,
+  subscribeHeroAmbient,
+  toggleHeroAmbientMuted,
+  HERO_AMBIENT_DEFAULT_VOLUME,
+  HERO_AMBIENT_MIN_AUDIBLE_VOLUME,
+  resumeHeroAmbientPlayback,
+} from '@/lib/heroAmbientAudio';
 import {
   GAT_COSTS,
   SHOWCASE_REQUIRED_GAT,
@@ -244,6 +255,20 @@ const Transmedia = ({ allianceOnlyMode = false }) => {
   const detonadoresHintFiredRef = useRef(false);
   const { isMobileViewport, canUseInlinePlayback, requestMobileVideoPresentation } = useMobileVideoPresentation();
   const { user, session } = useAuth();
+  const ambientState = useSyncExternalStore(subscribeHeroAmbient, getHeroAmbientState, getHeroAmbientState);
+  const handleToggleShowcaseAmbient = useCallback(() => {
+    if (!user) return;
+    const audio = getHeroAmbientAudio();
+    if (!audio) return;
+    if (!ambientState.isMuted && audio.paused) {
+      audio.volume = HERO_AMBIENT_DEFAULT_VOLUME;
+      if (audio.volume > HERO_AMBIENT_MIN_AUDIBLE_VOLUME) {
+        void resumeHeroAmbientPlayback({ targetVolume: HERO_AMBIENT_DEFAULT_VOLUME });
+      }
+      return;
+    }
+    toggleHeroAmbientMuted({ targetVolume: HERO_AMBIENT_DEFAULT_VOLUME });
+  }, [ambientState.isMuted, user]);
   const { hasActiveSubscription } = useActiveSubscription(user?.id, session);
   const isAuthenticated = Boolean(user);
   const isSubscriber = Boolean(
@@ -3966,13 +3991,6 @@ const rendernotaAutoral = () => {
               <div className="flex-1 overflow-y-auto p-6 md:p-10 max-h-[88vh] lg:max-h-none">
               <div className="flex justify-end gap-3 mb-6 lg:hidden">
                 <button
-                  onClick={handleShareMiniverse}
-                  className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/5 px-4 py-2 text-xs uppercase tracking-[0.25em] text-slate-200/90 hover:border-purple-300/40 hover:text-white transition"
-                  aria-label="Compartir miniverso"
-                >
-                  <Send size={14} className="text-purple-200" />
-                </button>
-                <button
                   onClick={handleCloseShowcase}
                   className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-white/15 bg-white/5 text-slate-200/90 hover:border-purple-300/40 hover:text-white transition"
                   aria-label="Cerrar vitrina"
@@ -4363,13 +4381,20 @@ const rendernotaAutoral = () => {
               ) : null}
               </div>
               <div className="hidden lg:flex justify-end gap-3 px-6 pb-4">
-                <button
-                  onClick={handleShareMiniverse}
-                  className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/5 px-4 py-2 text-xs uppercase tracking-[0.25em] text-slate-200/90 hover:border-purple-300/40 hover:text-white transition"
-                  aria-label="Compartir miniverso"
-                >
-                  <Send size={14} className="text-purple-200" />
-                </button>
+                {user ? (
+                  <button
+                    onClick={handleToggleShowcaseAmbient}
+                    aria-label={ambientState.isMuted ? 'Activar sonido ambiente' : 'Silenciar sonido ambiente'}
+                    title={ambientState.isMuted ? 'Activar sonido ambiente' : 'Silenciar sonido ambiente'}
+                    className={`inline-flex h-9 w-9 items-center justify-center rounded-full border transition ${
+                      ambientState.isMuted
+                        ? 'border-white/15 bg-white/5 text-slate-200/90 hover:border-purple-300/40 hover:text-white'
+                        : 'border-emerald-300/35 bg-emerald-500/15 text-emerald-100 hover:bg-emerald-500/25'
+                    }`}
+                  >
+                    {ambientState.isMuted ? <VolumeX size={14} /> : <Volume2 size={14} />}
+                  </button>
+                ) : null}
                 <button
                   onClick={handleCloseShowcase}
                   className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-white/15 bg-white/5 text-slate-200/90 hover:border-purple-300/40 hover:text-white transition"

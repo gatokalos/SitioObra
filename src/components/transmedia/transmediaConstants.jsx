@@ -544,7 +544,7 @@ export const normalizeStoredEmotionOrbs = (raw) => {
 };
 export const showcaseDefinitions = {
   miniversos: {
-    label: 'La tragedia',
+    label: 'El drama',
     type: 'tragedia',
     intro:
       'Los estados emocionales de Silvestre no son etiquetas. Son lugares donde la escena ocurre. Di una frase —tuya o de la lista— y escucha cómo la obra responde desde adentro. Luego cambia de emoción y detona la misma frase otra vez. La escena nunca responde igual.',

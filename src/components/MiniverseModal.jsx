@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { createPortal } from 'react-dom';
 import { BookOpen, Brain, Check, Compass, Coffee, Coins, Dice5, Drama, Film, Filter, Heart, HeartHandshake, HeartPulse, MapIcon, Music, Palette, School, Share2, Sparkles, DoorOpen } from 'lucide-react';
@@ -20,7 +20,16 @@ import {
   MINIVERSE_HOME_EVENT_TYPES,
   trackMiniverseHomeEvent,
 } from '@/services/miniverseHomeAnalyticsService';
-
+import {
+  getHeroAmbientAudio,
+  getHeroAmbientState,
+  subscribeHeroAmbient,
+  toggleHeroAmbientMuted,
+  HERO_AMBIENT_DEFAULT_VOLUME,
+  HERO_AMBIENT_MIN_AUDIBLE_VOLUME,
+  resumeHeroAmbientPlayback,
+} from '@/lib/heroAmbientAudio';
+import { Volume2, VolumeX } from 'lucide-react';
 const TABS = [
   { id: 'escaparate', label: 'Expande', icon: Sparkles },
   { id: 'experiences', label: 'Habita', icon:  DoorOpen},
@@ -242,14 +251,14 @@ export const MINIVERSE_CARDS = [
     thumbLabel: 'D',
     thumbGradient: 'from-purple-400/80 via-fuchsia-500/70 to-rose-500/60',
     glassTint: '284 70% 62%',
-    title: '01 - La escena',
+    title: '01 - El drama',
     titleShort: '🎧 "Abre la puerta" (30 seg)',
-    description: 'Yo no quería hacer una obra. Solo quería entender algo que me estaba pasando.',
+    description: 'Yo no quería una obra. Solo quería entender algo que me estaba pasando.',
 
     videoUrl: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Merch/Loop_escenico_small.mp4',
     narrativeVideoUrl: null,
     narrativeVideoUrlDesktop: null,
-    narrativeCtaLabel: 'Seguir la escena',
+    narrativeCtaLabel: 'Seguir el drama',
     ctaVerb: 'Entra',
     action: 'Explora',
     isPremium: true,
@@ -283,7 +292,7 @@ export const MINIVERSE_CARDS = [
     glassTint: '28 78% 58%',
     title: '03 - El objeto',
     titleShort: '🎧 "Lo que se sostiene" (30 seg)',
-    description: 'Entonces necesité algo pequeño. Quise sostenerla con las manos.',
+    description: 'Entonces empecé con algo pequeño. Necesitaba sostenerlo con las manos.',
     videoUrl: null,
     narrativeVideoUrl: null,
     narrativeVideoUrlDesktop: null,
@@ -301,7 +310,7 @@ export const MINIVERSE_CARDS = [
     glassTint: '304 65% 60%',
     title: '04 - La imagen',
     titleShort: '🎧 "La imagen de sí" (30 seg)',
-    description: 'Un día me vi dibujando y no supe si estaba creando o si algo me estaba dibujando a mí…',
+    description: 'Luego me vi dibujando la obra y no supe si estaba creándola... o si algo dentro me estaba dibujando a mí.',
     videoUrl: null,
     narrativeVideoUrl: null,
     narrativeVideoUrlDesktop: null,
@@ -373,7 +382,7 @@ export const MINIVERSE_CARDS = [
     glassTint: '138 60% 48%',
     title: '08 - El juego',
     titleShort: '🎧 "La elección" (30 seg)',
-    description: 'Convertí la pregunta en recorrido. Dejé que otros eligieran por mí.',
+    description: 'Convertí la pregunta en recorrido. Dejé que otros eligieran también.',
     videoUrl: null,
     narrativeVideoUrl: null,
     narrativeVideoUrlDesktop: null,
@@ -500,6 +509,20 @@ const MiniverseModal = ({
   const navigate = useNavigate();
   const location = useLocation();
   const { user, session } = useAuth();
+  const ambientState = useSyncExternalStore(subscribeHeroAmbient, getHeroAmbientState, getHeroAmbientState);
+  const handleToggleShowcaseVideoAmbient = useCallback(() => {
+    if (!user) return;
+    const audio = getHeroAmbientAudio();
+    if (!audio) return;
+    if (!ambientState.isMuted && audio.paused) {
+      audio.volume = HERO_AMBIENT_DEFAULT_VOLUME;
+      if (audio.volume > HERO_AMBIENT_MIN_AUDIBLE_VOLUME) {
+        void resumeHeroAmbientPlayback({ targetVolume: HERO_AMBIENT_DEFAULT_VOLUME });
+      }
+      return;
+    }
+    toggleHeroAmbientMuted({ targetVolume: HERO_AMBIENT_DEFAULT_VOLUME });
+  }, [ambientState.isMuted, user]);
   const isSafari = isSafariBrowser();
   const isInlineMode = displayMode === 'inline';
   const inlineTitleStyle = isInlineMode ? { fontFamily: 'Vox Round, Inter, sans-serif' } : undefined;
@@ -838,7 +861,7 @@ const MiniverseModal = ({
     [activeTab]
   );
   const activeTabHeadingVerb = useMemo(() => getTabHeadingVerb(activeTab), [activeTab]);
-  const shouldPlaceInlineTabsOnTop = isInlineMode && isMobileViewport;
+  const shouldPlaceInlineTabsOnTop = false;
   const shouldAnimateInlineHeading = isInlineMode;
   const inlineHeadingVerb = shouldAnimateInlineHeading ? inlineHeadingVerbDisplay : activeTabHeadingVerb;
 
@@ -933,9 +956,9 @@ const MiniverseModal = ({
       };
     }
       return {
-      lead: 'La soledad, la confusión o el miedo que esta obra pone en escena,',
+      lead: 'La soledad, la confusión y la ira que este universo decide mirar,',
       highlight: 'muchos niños y jóvenes tijuanenses las viven cada día en silencio.',
-      continuation: 'Tu huella ayuda a detectarlas y acompañarlas a tiempo.'
+      continuation: 'Con $50MXN tu huella ayuda a detectarlas y acompañarlas a tiempo.'
     };
 
     function newFunction() {
@@ -1006,12 +1029,12 @@ const MiniverseModal = ({
   );
   const mobileExploreButtonLabel = useMemo(() => {
     if (!activeShowcaseCard) return 'Navega entre formas';
-    if (activeShowcaseCard.isPrologue) return 'Primera forma: La escena';
+    if (activeShowcaseCard.isPrologue) return 'Primera forma: El drama';
     if (!fictionShowcaseCards.length) return 'Navega entre formas';
     const currentFictionIndex = fictionShowcaseCards.findIndex((card) => card.id === activeShowcaseCard.id);
     const baseIndex = currentFictionIndex >= 0 ? currentFictionIndex : 0;
     const nextCard = fictionShowcaseCards[(baseIndex + 1) % fictionShowcaseCards.length] ?? fictionShowcaseCards[0];
-    return `Siguiente: ${nextCard?.portalLabel ?? 'La escena'}`;
+    return `Siguiente: ${nextCard?.portalLabel ?? 'El drama'}`;
   }, [activeShowcaseCard, fictionShowcaseCards]);
   const activeShowcaseVideoHint = useMemo(() => {
     if (!activeShowcaseCard) return '';
@@ -1644,51 +1667,7 @@ const MiniverseModal = ({
     setEmbeddedCheckoutStatus(`Estado actual del pago: ${message || 'unknown'}.`);
   }, []);
 
-  const resolveVisibleShowcasePreviewVideo = useCallback((cardId) => {
-    if (desktopShowcaseVideoRef.current) {
-      return desktopShowcaseVideoRef.current;
-    }
-    if (typeof document === 'undefined') return null;
-    const videos = Array.from(
-      document.querySelectorAll(`[data-showcase-preview="${cardId}"]`)
-    );
-    if (!videos.length) return null;
-    return videos.find((video) => video.offsetParent !== null) || videos[0] || null;
-  }, []);
 
-  const handleShowcasePreviewHoverStart = useCallback(
-    (card) => {
-      if (!card) return;
-      const target = resolveVisibleShowcasePreviewVideo(card.id ?? 'desktop-shared');
-      if (!target) return;
-      try {
-        target.muted = true;
-        target.loop = true;
-        target.playsInline = true;
-        const playPromise = target.play?.();
-        if (typeof playPromise?.catch === 'function') {
-          playPromise.catch(() => {});
-        }
-      } catch (error) {
-        // noop: preview hover must not block interaction.
-      }
-    },
-    [resolveVisibleShowcasePreviewVideo]
-  );
-
-  const handleShowcasePreviewHoverEnd = useCallback(
-    (card) => {
-      const target = resolveVisibleShowcasePreviewVideo(card?.id ?? 'desktop-shared');
-      if (!target) return;
-      try {
-        target.pause?.();
-        target.currentTime = 0;
-      } catch (error) {
-        // noop
-      }
-    },
-    [resolveVisibleShowcasePreviewVideo]
-  );
 
   const handleOpenShowcaseFullscreen = useCallback(
     (card) => {
@@ -1775,25 +1754,56 @@ const MiniverseModal = ({
     [handleOpenShowcaseFullscreen]
   );
 
-  const handleShowcaseCardMouseEnter = useCallback(
-    (card) => {
-      handleShowcasePreviewHoverStart(card);
-    },
-    [handleShowcasePreviewHoverStart]
-  );
-
-  const handleShowcaseCardMouseLeave = useCallback(
-    (card) => {
-      handleShowcasePreviewHoverEnd(card);
-    },
-    [handleShowcasePreviewHoverEnd]
-  );
 
   useEffect(() => {
     // Deshabilitado intencionalmente durante desarrollo:
     // evita el autoscroll del carrusel para facilitar revisión de UI/UX.
     return undefined;
   }, []);
+
+  useEffect(() => {
+    if (!open || activeTab !== 'escaparate' || isMobileViewport) return undefined;
+    const video = desktopShowcaseVideoRef.current;
+    if (!video || !sharedShowcaseVideoUrl) return undefined;
+    let cancelled = false;
+
+    const attemptPlay = () => {
+      if (cancelled) return;
+      try {
+        video.muted = true;
+        video.loop = true;
+        video.playsInline = true;
+        const maybePromise = video.play?.();
+        if (typeof maybePromise?.catch === 'function') {
+          maybePromise.catch(() => {});
+        }
+      } catch {
+        // noop
+      }
+    };
+
+    const handleVisibility = () => {
+      if (typeof document === 'undefined') return;
+      if (document.visibilityState !== 'visible') return;
+      attemptPlay();
+    };
+
+    attemptPlay();
+    video.addEventListener('loadeddata', attemptPlay);
+    video.addEventListener('canplay', attemptPlay);
+    video.addEventListener('stalled', attemptPlay);
+    video.addEventListener('suspend', attemptPlay);
+    document.addEventListener('visibilitychange', handleVisibility);
+
+    return () => {
+      cancelled = true;
+      video.removeEventListener('loadeddata', attemptPlay);
+      video.removeEventListener('canplay', attemptPlay);
+      video.removeEventListener('stalled', attemptPlay);
+      video.removeEventListener('suspend', attemptPlay);
+      document.removeEventListener('visibilitychange', handleVisibility);
+    };
+  }, [activeTab, isMobileViewport, open, sharedShowcaseVideoUrl, activeShowcaseIndex]);
 
   useEffect(() => {
     if (!open || activeTab !== 'escaparate' || !isMobileViewport) return undefined;
@@ -2043,11 +2053,11 @@ const MiniverseModal = ({
                         <span className="h-px flex-1 bg-white/10" />
                       </div>
                       <div className="mt-5 space-y-3">
-                        <h3 className="font-display text-3xl text-slate-50">
+                        <h3 className="hidden sm:block font-display text-3xl text-slate-50">
                           Tu huella es real
                         </h3>
                         <p className="text-sm text-slate-300/90 leading-relaxed">
-                          Al dejar tu huella, te integras al ecosistema creativo de Gato Encerrado y lo ayudas a florecer.
+                          Al dejar tu huella, te integras al proyecto creativo de #GatoEncerrado y lo ayudas a florecer mes tras mes.
                         </p>
                       </div>
 
@@ -2187,8 +2197,6 @@ const MiniverseModal = ({
                   {activeShowcaseCard ? (
                     <article
                       className="px-1"
-                      onMouseEnter={() => handleShowcaseCardMouseEnter(activeShowcaseCard)}
-                      onMouseLeave={() => handleShowcaseCardMouseLeave(activeShowcaseCard)}
                     >
                       <div
                         className="glass-effect relative overflow-hidden rounded-2xl border bg-white/5 p-5 sm:p-8 mx-auto w-[88vw] max-w-[24rem] sm:max-w-none sm:w-auto"
@@ -2281,7 +2289,7 @@ const MiniverseModal = ({
                               <Button
                                 type="button"
                                 onClick={handleExploreMobileShowcase}
-                                className="bg-white text-slate-900 hover:bg-white/90 py-3 rounded-lg font-semibold flex items-center justify-center gap-2"
+                                className="bg-white text-slate-500 hover:bg-white/90 py-3 rounded-lg font-semibold flex items-center justify-center gap-2"
                               >
                                 <span className="w-full truncate text-center">{mobileExploreButtonLabel}</span>
                               </Button>
@@ -2291,9 +2299,17 @@ const MiniverseModal = ({
                             </p>
                           </div>
                           <div className="w-full">
-                            <div className="relative w-full aspect-[5/4] sm:aspect-[4/5] rounded-3xl border border-white/10 bg-slate-900/60 overflow-hidden shadow-[0_18px_45px_rgba(0,0,0,0.45)]">
+                            <div
+                              className="relative w-full aspect-[5/4] sm:aspect-[4/5] rounded-3xl border border-white/10 bg-slate-900/60 overflow-hidden shadow-[0_18px_45px_rgba(0,0,0,0.45)] cursor-pointer"
+                              onClick={handleToggleShowcaseVideoAmbient}
+                            >
                               {sharedShowcaseVideoUrl ? (
                                 <>
+                                  {user ? (
+                                    <div className="pointer-events-none absolute top-3 right-3 z-20 flex h-7 w-7 items-center justify-center rounded-full bg-black/40 text-white/60 backdrop-blur-sm">
+                                      {ambientState.isMuted ? <VolumeX size={13} /> : <Volume2 size={13} />}
+                                    </div>
+                                  ) : null}
                                   <video
                                     ref={desktopShowcaseVideoRef}
                                     src={sharedShowcaseVideoUrl}
@@ -2416,9 +2432,17 @@ const MiniverseModal = ({
                               </h3>
                             </div>
                           </div>
-                          <div className="relative w-full aspect-[5/4] sm:aspect-[4/5] rounded-3xl border border-white/10 bg-slate-900/60 overflow-hidden shadow-[0_18px_45px_rgba(0,0,0,0.45)] text-left">
+                          <div
+                            className="relative w-full aspect-[5/4] sm:aspect-[4/5] rounded-3xl border border-white/10 bg-slate-900/60 overflow-hidden shadow-[0_18px_45px_rgba(0,0,0,0.45)] text-left cursor-pointer"
+                            onClick={handleToggleShowcaseVideoAmbient}
+                          >
                             {sharedShowcaseVideoUrl ? (
                               <>
+                                {user ? (
+                                  <div className="pointer-events-none absolute top-3 right-3 z-20 flex h-7 w-7 items-center justify-center rounded-full bg-black/40 text-white/60 backdrop-blur-sm">
+                                    {ambientState.isMuted ? <VolumeX size={13} /> : <Volume2 size={13} />}
+                                  </div>
+                                ) : null}
                                 <video
                                   ref={mobileShowcaseVideoRef}
                                   src={sharedShowcaseVideoUrl}
@@ -2466,7 +2490,7 @@ const MiniverseModal = ({
                             <Button
                               type="button"
                               onClick={handleExploreMobileShowcase}
-                              className="bg-white text-slate-900 hover:bg-white/90 py-3 rounded-lg font-semibold flex items-center justify-center gap-2"
+                              className="bg-white text-slate-500 hover:bg-white/90 py-3 rounded-lg font-semibold flex items-center justify-center gap-2"
                             >
                               <span className="w-full truncate text-center">{mobileExploreButtonLabel}</span>
                               <span aria-hidden="true">→</span>
@@ -2931,7 +2955,7 @@ const MiniverseModal = ({
                     onClick={handleFullscreenVideoCta}
                     className="w-full max-w-xs rounded-full border border-purple-500/70 bg-purple-600/20 px-6 py-3.5 text-sm uppercase tracking-[0.25em] text-purple-100 shadow-[0_15px_45px_rgba(67,56,202,0.5)] backdrop-blur-sm transition hover:bg-purple-500/30"
                   >
-                    {showcaseFullscreenCard.isPrologue ? '¿Nos dejarás tu huella? →' : 'Conectar narrativas →'}
+                    {showcaseFullscreenCard.isPrologue ? '¿Nos dejarás tu huella? →' : 'Habitar la forma →'}
                   </button>
                 </motion.div>
               )}
