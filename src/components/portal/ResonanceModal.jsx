@@ -923,6 +923,19 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative }) =>
                                                 Explorar {l3Rec.forma}
                                                 <ArrowRight size={11} />
                                               </button>
+                                              {import.meta.env.DEV && (
+                                                <button
+                                                  type="button"
+                                                  onClick={() => {
+                                                    lsPatch(portal, { l3_recommendation: undefined });
+                                                    setL3Rec(null);
+                                                    setL3Open(false);
+                                                  }}
+                                                  className="mt-1 text-[10px] text-slate-500/60 underline underline-offset-2 hover:text-slate-400/80"
+                                                >
+                                                  [dev] reset recomendación
+                                                </button>
+                                              )}
                                             </>
                                           )}
                                           {!l3Loading && l3Rec?.all_complete && (
