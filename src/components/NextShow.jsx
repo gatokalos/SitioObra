@@ -98,6 +98,11 @@ const NextShow = () => {
         return;
       }
       safeRemoveItem(LOGIN_RETURN_KEY);
+      // Clear stale showcase-unlock intent — user chose a different login path
+      try {
+        localStorage.removeItem('gatoencerrado:pending-vitrana-id');
+        localStorage.removeItem('gatoencerrado:pending-vitrana-skip-modal');
+      } catch {}
       window.setTimeout(() => {
         handleOpenAuthenticatedHero();
       }, 120);
