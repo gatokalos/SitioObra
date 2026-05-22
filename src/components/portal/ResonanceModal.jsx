@@ -464,7 +464,12 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative }) =>
 
   /* Nivel 3 — fetch recomendación */
   const fetchL3Recommendation = useCallback(async () => {
-    if (l3Rec || l3Loading) return;
+    // Caché legacy (formato viejo con .message pero sin .step1) → refetch
+    if (l3Rec && !l3Rec.step1 && !l3Rec.all_complete && !l3Rec.error) {
+      lsPatch(portal, { l3_recommendation: undefined });
+      setL3Rec(null);
+    }
+    if ((l3Rec && l3Rec.step1) || l3Loading) return;
     setL3Loading(true);
     try {
       const completedIds = Object.keys(PORTAL_GRADIENT)
@@ -964,21 +969,23 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative }) =>
                                                 Explorar {l3Rec.forma}
                                                 <ArrowRight size={11} />
                                               </button>
-                                              {import.meta.env.DEV && (
-                                                <button
-                                                  type="button"
-                                                  onClick={() => {
-                                                    lsPatch(portal, { l3_recommendation: undefined });
-                                                    setL3Rec(null);
-                                                    setL3Step(1);
-                                                    setL3Open(false);
-                                                  }}
-                                                  className="mt-1 text-[10px] text-slate-500/60 underline underline-offset-2 hover:text-slate-400/80"
-                                                >
-                                                  [dev] reset recomendación
-                                                </button>
-                                              )}
                                             </>
+                                          )}
+
+                                          {/* Dev reset — siempre visible cuando hay rec */}
+                                          {import.meta.env.DEV && l3Rec && !l3Rec.error && !l3Rec.all_complete && (
+                                            <button
+                                              type="button"
+                                              onClick={() => {
+                                                lsPatch(portal, { l3_recommendation: undefined });
+                                                setL3Rec(null);
+                                                setL3Step(1);
+                                                setL3Open(false);
+                                              }}
+                                              className="text-[10px] text-slate-500/60 underline underline-offset-2 hover:text-slate-400/80"
+                                            >
+                                              [dev] reset recomendación
+                                            </button>
                                           )}
 
                                           {/* Completó todo */}
