@@ -492,6 +492,28 @@ function App() {
   }, [isPortalRoute, location.pathname]);
 
 
+  // iOS PWA pinch-zoom snap-back: after zooming in + out, force the browser
+  // to re-evaluate the viewport fit so the page snaps back to scale 1.
+  useEffect(() => {
+    const vv = typeof window !== 'undefined' ? window.visualViewport : null;
+    if (!vv) return undefined;
+    let wasZoomed = false;
+    const handle = () => {
+      if (vv.scale > 1.02) {
+        wasZoomed = true;
+      } else if (wasZoomed && vv.scale <= 1.02) {
+        wasZoomed = false;
+        const meta = document.querySelector('meta[name="viewport"]');
+        if (!meta) return;
+        const original = meta.getAttribute('content');
+        meta.setAttribute('content', 'width=device-width, initial-scale=1, maximum-scale=1');
+        requestAnimationFrame(() => meta.setAttribute('content', original));
+      }
+    };
+    vv.addEventListener('resize', handle);
+    return () => vv.removeEventListener('resize', handle);
+  }, []);
+
   useEffect(() => {
     if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') return undefined;
     const mediaQuery = window.matchMedia('(max-width: 768px)');

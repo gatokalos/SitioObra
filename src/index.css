@@ -106,7 +106,6 @@
 @layer base {
   html {
     scroll-padding-top: 5rem;
-    overflow-x: hidden;
   }
 
   body {

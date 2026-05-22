@@ -1,22 +1,15 @@
 export const OBRA_CONVERSATION_STARTERS = [
   '¿Qué sabe el cuerpo antes que la mente?',
   '¿Cómo expresa el cuerpo lo que no logramos decir?',
-  '¿Qué emociones aparecen físicamente antes de comprenderlas?',
-  '¿Dónde se queda lo que no logramos procesar?',
   '¿Qué recuerda el cuerpo aunque intentemos olvidarlo?',
   '¿Puede el cuerpo contar una historia por sí solo?',
-  '¿Qué límites aparecen cuando el cuerpo ya no puede sostener algo?',
-  '¿Qué revela el cansancio sobre nuestra experiencia emocional?',
 ];
 
 export const SILVESTRE_TRIGGER_QUESTIONS = [
   '¿Qué ocurre cuando compartimos aquello que intentábamos ocultar?',
-  '¿Cuándo una experiencia deja de sentirse individual?',
   '¿Qué cambia cuando alguien más reconoce nuestro miedo?',
   '¿Por qué algunas heridas pesan menos al ser compartidas?',
-  '¿Qué parte de nosotros busca ser comprendida por otros?',
   '¿Cómo cambia una persona cuando descubre que no está sola?',
-  '¿Qué transforma una experiencia íntima en algo colectivo?',
   '¿Qué significa reconocerse en la fragilidad ajena?',
 ];
 

@@ -171,6 +171,7 @@ export const useSilvestreVoice = () => {
   const thinkingPulseTimerRef = useRef(null);
   const thinkingSoundTimerRef = useRef(null);
   const thinkingAudioContextRef = useRef(null);
+  const conversationHistoryRef = useRef([]);
 
   const spentSilvestreSetsByMode = useMemo(() => {
     const initialSets = MODES.reduce((acc, mode) => {
@@ -636,7 +637,7 @@ export const useSilvestreVoice = () => {
         const candidates = [
           {
             endpoint: '/api/obra-conciencia',
-            payload: { pregunta: message, user_id: userId, mode_id, ...userNamePayload },
+            payload: { pregunta: message, user_id: userId, mode_id, history: conversationHistoryRef.current, ...userNamePayload },
             label: 'conciencia',
           },
         ];
@@ -683,8 +684,9 @@ export const useSilvestreVoice = () => {
               candidateError.noFallback = !shouldAllowFallback;
               throw candidateError;
             }
+            const rawSilvestreText = response.headers.get('x-silvestre-text');
             responseText =
-              response.headers.get('x-silvestre-text') ||
+              (rawSilvestreText ? decodeURIComponent(rawSilvestreText) : null) ||
               response.headers.get('x-silvestre-answer') ||
               null;
             const blob = await response.blob();
@@ -745,6 +747,13 @@ export const useSilvestreVoice = () => {
         serviceUnavailableUntilRef.current = 0;
         if (requestId === silvestreRequestIdRef.current) {
           setIsSilvestreFetching(false);
+        }
+        if (responseText) {
+          conversationHistoryRef.current = [
+            ...conversationHistoryRef.current,
+            { role: 'user', content: message },
+            { role: 'assistant', content: responseText },
+          ].slice(-8);
         }
         await recordObraChat({ question: message, answer: responseText, source });
         const audioUrl = URL.createObjectURL(audioBlob);

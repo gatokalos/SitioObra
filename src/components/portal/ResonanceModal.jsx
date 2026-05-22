@@ -318,13 +318,15 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative }) =>
     } catch (_) {}
 
     // Persiste línea base en resonance_sessions (fire-and-forget)
+    const bienvenidaAnonId = (() => { try { return localStorage.getItem('bienvenida_anon_id') || null; } catch { return null; } })();
     fetch(`${OBRA_API_URL}/api/resonance/baseline`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        anon_id:          anonId,
-        miniverso_id:     portal,
-        intuicion_answer: formData.respuesta,
+        anon_id:             anonId,
+        miniverso_id:        portal,
+        intuicion_answer:    formData.respuesta,
+        ...(bienvenidaAnonId ? { bienvenida_anon_id: bienvenidaAnonId } : {}),
       }),
     }).catch(() => {});
 
