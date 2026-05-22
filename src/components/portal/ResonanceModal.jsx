@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Eye, Flame, PawPrint, Lock, ShieldCheck, Check, ChevronDown, Sparkles } from 'lucide-react';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { Eye, Flame, PawPrint, Lock, ShieldCheck, Check, ChevronDown, Sparkles, ArrowRight } from 'lucide-react';
 import { supabase } from '@/lib/supabaseClient';
 import { ensureAnonId } from '@/lib/identity';
 import { useAuth } from '@/contexts/SupabaseAuthContext';
@@ -10,8 +11,11 @@ import {
   createTransmediaIdempotencyKey,
 } from '@/services/transmediaCreditsService';
 import { OBRA_VOICE_MIN_GAT } from '@/components/transmedia/transmediaConstants';
+import { resolvePortalRoute } from '@/lib/miniversePortalRegistry';
+import { createPortalLaunchState } from '@/lib/portalNavigation';
 
 const OBRA_API_URL = (import.meta.env.VITE_OBRA_API_URL ?? 'https://api.gatoencerrado.ai').replace(/\/+$/, '');
+const CAT_CABINA_URL = 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/oraculo/gato-cabina@1200.webp';
 
 /* ─── Identidad visual por portal ─────────────────────────────────────── */
 
@@ -221,6 +225,8 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative }) =>
   const modalRef = useRef(null);
   const submitBtnRef = useRef(null);
   const { user } = useAuth();
+  const navigate = useNavigate();
+  const location = useLocation();
   const [formData, setFormData] = useState({ nombre: '', email: '', respuesta: '' });
   const [submitting, setSubmitting] = useState(false);
   const { bursts: confettiBursts, fireConfetti } = useConfettiBursts();
@@ -249,6 +255,11 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative }) =>
   const [convAnswer, setConvAnswer] = useState('');
   const [convLoading, setConvLoading] = useState(false);
   const [convError, setConvError] = useState(false);
+
+  // Nivel 3 — recomendación del siguiente miniverso
+  const [l3Open, setL3Open] = useState(false);
+  const [l3Loading, setL3Loading] = useState(false);
+  const [l3Rec, setL3Rec] = useState(() => lsRead(portal).l3_recommendation ?? null);
 
   // Verifica Supabase solo si localStorage no tiene l1 (respuestas pre-deploy)
   useEffect(() => {
@@ -447,6 +458,54 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative }) =>
   };
 
   /* ── render ── */
+  const l3Active = l3Open && !!l3Rec && !l3Rec.error && !l3Rec.all_complete;
+
+  /* Nivel 3 — fetch recomendación */
+  const fetchL3Recommendation = useCallback(async () => {
+    if (l3Rec || l3Loading) return;
+    setL3Loading(true);
+    try {
+      const completedIds = Object.keys(PORTAL_GRADIENT)
+        .filter((p) => p !== portal && !!lsRead(p).l2_conv_done);
+      const res = await fetch(`${OBRA_API_URL}/api/resonance/recommend-next`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          anon_id:       ensureAnonId(),
+          miniverso_id:  portal,
+          completed_ids: completedIds,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error();
+      setL3Rec(data);
+      lsPatch(portal, { l3_recommendation: data });
+    } catch (_) {
+      setL3Rec({ error: true });
+    } finally {
+      setL3Loading(false);
+    }
+  }, [l3Rec, l3Loading, portal]);
+
+  const handleL3Toggle = () => {
+    const opening = !l3Open;
+    setL3Open(opening);
+    if (opening && !l3Rec) fetchL3Recommendation();
+  };
+
+  const handleNavigateToRecommendation = () => {
+    if (!l3Rec?.recommended_format_id) return;
+    onClose?.();
+    const portalRoute = resolvePortalRoute({ formatId: l3Rec.recommended_format_id });
+    if (portalRoute) {
+      navigate(portalRoute, {
+        state: createPortalLaunchState(location, 'l3-recommendation', {
+          showcaseId: l3Rec.recommended_format_id,
+        }),
+      });
+    }
+  };
+
   return (
     <AnimatePresence>
       {open && (
@@ -502,6 +561,42 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative }) =>
               className="absolute inset-0 lg:hidden"
               style={{ background: 'linear-gradient(180deg, rgba(5,3,9,0.28) 0%, rgba(5,3,9,0.60) 45%, rgba(5,3,9,0.92) 100%)' }}
             />
+
+            {/* ── L3 cat overlay — mobile only ── */}
+            <AnimatePresence>
+              {l3Active && (
+                <motion.div
+                  className="absolute inset-0 z-20 lg:hidden"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 0.45 }}
+                >
+                  <img
+                    src={CAT_CABINA_URL}
+                    alt=""
+                    aria-hidden="true"
+                    className="h-full w-full object-cover object-top"
+                  />
+                  <div
+                    aria-hidden="true"
+                    className="absolute inset-0"
+                    style={{ background: 'linear-gradient(180deg, rgba(5,3,9,0.10) 0%, rgba(5,3,9,0.35) 100%)' }}
+                  />
+                  <div className="cabina-bubble">
+                    <p className="cabina-bubble__preludio">El laboratorio te habla</p>
+                    <p className="cabina-bubble__texto">{l3Rec.message}</p>
+                    <button
+                      type="button"
+                      className="cabina-bubble__cta"
+                      onClick={handleNavigateToRecommendation}
+                    >
+                      Explorar {l3Rec.forma}
+                    </button>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
 
             <div className="relative z-10 h-full overflow-y-auto">
               <AnimatePresence mode="wait">
@@ -705,10 +800,11 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative }) =>
                         const isL1 = i === 0;
                         const isL2 = i === 1;
                         const isL3 = i === 2;
-                        const isCompleted = isL1 || (isL2 && l2ConvDone);
-                        const isAvailable = isL2 && !l2ConvDone;
-                        const isOpen = isCompleted || (isAvailable && l2Open);
-                        const canToggle = isAvailable;
+                        const isCompleted  = isL1 || (isL2 && l2ConvDone);
+                        const isAvailable  = (isL2 && !l2ConvDone) || (isL3 && l2ConvDone);
+                        const levelIsOpen  = isCompleted || (isL2 && !l2ConvDone && l2Open) || (isL3 && l2ConvDone && l3Open);
+                        const canToggle    = (isL2 && !l2ConvDone) || (isL3 && l2ConvDone);
+                        const handleToggle = isL3 ? handleL3Toggle : () => setL2Open((v) => !v);
 
                         return (
                           <motion.div
@@ -742,8 +838,8 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative }) =>
                                 role={canToggle ? 'button' : undefined}
                                 tabIndex={canToggle ? 0 : undefined}
                                 className={`flex items-center gap-3 px-4 py-3 ${canToggle ? 'cursor-pointer select-none' : ''}`}
-                                onClick={canToggle ? () => setL2Open((v) => !v) : undefined}
-                                onKeyDown={canToggle ? (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setL2Open((v) => !v); } } : undefined}
+                                onClick={canToggle ? handleToggle : undefined}
+                                onKeyDown={canToggle ? (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleToggle(); } } : undefined}
                               >
                                 {/* Ícono */}
                                 <div className={`shrink-0 flex h-7 w-7 items-center justify-center rounded-full ${
@@ -782,7 +878,7 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative }) =>
                                       </span>
                                       <ChevronDown
                                         size={13}
-                                        className={`text-white/30 transition-transform duration-200 ${l2Open ? 'rotate-180' : ''}`}
+                                        className={`text-white/30 transition-transform duration-200 ${levelIsOpen ? 'rotate-180' : ''}`}
                                       />
                                     </>
                                   ) : !isCompleted ? (
@@ -793,7 +889,7 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative }) =>
 
                               {/* Cuerpo colapsable */}
                               <AnimatePresence initial={false}>
-                                {isOpen && (
+                                {levelIsOpen && (
                                   <motion.div
                                     key="body"
                                     initial={{ height: 0, opacity: 0 }}
@@ -807,7 +903,44 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative }) =>
                                         <p className="text-xs leading-relaxed text-slate-300/90">{level.desc}</p>
                                       )}
                                       {isL3 && (
-                                        <p className="text-xs leading-relaxed text-slate-300/90">{level.pendingDesc}</p>
+                                        <div className="space-y-3">
+                                          {l3Loading && (
+                                            <div className="flex items-center gap-2 text-xs text-slate-400/80">
+                                              <Sparkles size={11} className="animate-pulse text-purple-400/70" />
+                                              <span>Leyendo tu recorrido…</span>
+                                            </div>
+                                          )}
+                                          {!l3Loading && l3Rec && !l3Rec.error && !l3Rec.all_complete && (
+                                            <>
+                                              <p className="text-xs leading-relaxed text-slate-300/90 italic">
+                                                {l3Rec.message}
+                                              </p>
+                                              <button
+                                                type="button"
+                                                onClick={handleNavigateToRecommendation}
+                                                className="inline-flex items-center gap-2 rounded-full border border-purple-400/30 bg-purple-900/20 px-4 py-2 text-xs text-purple-200 transition hover:bg-purple-900/35 hover:border-purple-400/50"
+                                              >
+                                                Explorar {l3Rec.forma}
+                                                <ArrowRight size={11} />
+                                              </button>
+                                            </>
+                                          )}
+                                          {!l3Loading && l3Rec?.all_complete && (
+                                            <p className="text-xs leading-relaxed text-slate-300/70 italic">
+                                              Has recorrido todas las formas. El universo está completo.
+                                            </p>
+                                          )}
+                                          {!l3Loading && l3Rec?.error && (
+                                            <p className="text-xs leading-relaxed text-slate-400/60 italic">
+                                              No pudimos leer tu recorrido ahora. Vuelve pronto.
+                                            </p>
+                                          )}
+                                          {!l3Loading && !l3Rec && (
+                                            <p className="text-xs leading-relaxed text-slate-400/60 italic">
+                                              {level.pendingDesc}
+                                            </p>
+                                          )}
+                                        </div>
                                       )}
                                       {isL2 && l2ConvDone && (
                                         <div className="flex items-center gap-2 text-xs text-slate-300">
@@ -981,6 +1114,7 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative }) =>
 
           {/* ── Columna derecha: poster — solo desktop ── */}
           <div className="hidden lg:block lg:w-[42%] shrink-0 relative overflow-hidden">
+            {/* Poster normal */}
             <img
               src={poster}
               alt=""
@@ -988,9 +1122,41 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative }) =>
               className="h-full w-full object-cover object-top transition-opacity duration-500"
               style={{
                 mixBlendMode: 'plus-lighter',
-                opacity: (l2NarrativeOpened && convQuestion !== null && !l2ConvDone) ? 0.5 : 1,
+                opacity: l3Active ? 0 : (l2NarrativeOpened && convQuestion !== null && !l2ConvDone) ? 0.5 : 1,
               }}
             />
+            {/* Gato de la cabina — aparece cuando L3 está activo */}
+            <img
+              src={CAT_CABINA_URL}
+              alt=""
+              aria-hidden="true"
+              className="absolute inset-0 h-full w-full object-cover object-top transition-opacity duration-500"
+              style={{ opacity: l3Active ? 1 : 0 }}
+            />
+            {/* Burbuja desktop */}
+            <AnimatePresence>
+              {l3Active && (
+                <motion.div
+                  className="absolute inset-0 pointer-events-none"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 0.4, delay: 0.2 }}
+                >
+                  <div className="cabina-bubble" style={{ pointerEvents: 'auto' }}>
+                    <p className="cabina-bubble__preludio">El laboratorio te habla</p>
+                    <p className="cabina-bubble__texto">{l3Rec.message}</p>
+                    <button
+                      type="button"
+                      className="cabina-bubble__cta"
+                      onClick={handleNavigateToRecommendation}
+                    >
+                      Explorar {l3Rec.forma}
+                    </button>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
             <div
               aria-hidden="true"
               className="absolute inset-y-0 left-0 w-24"
