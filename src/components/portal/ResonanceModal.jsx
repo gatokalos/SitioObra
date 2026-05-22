@@ -257,9 +257,10 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative }) =>
   const [convError, setConvError] = useState(false);
 
   // Nivel 3 — recomendación del siguiente miniverso
-  const [l3Open, setL3Open] = useState(false);
+  const [l3Open, setL3Open]       = useState(false);
   const [l3Loading, setL3Loading] = useState(false);
-  const [l3Rec, setL3Rec] = useState(() => lsRead(portal).l3_recommendation ?? null);
+  const [l3Rec, setL3Rec]         = useState(() => lsRead(portal).l3_recommendation ?? null);
+  const [l3Step, setL3Step]       = useState(1);
 
   // Verifica Supabase solo si localStorage no tiene l1 (respuestas pre-deploy)
   useEffect(() => {
@@ -458,7 +459,8 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative }) =>
   };
 
   /* ── render ── */
-  const l3Active = l3Open && !!l3Rec && !l3Rec.error && !l3Rec.all_complete;
+  // l3Active solo en step 3 — es cuando el gato toma protagonismo visual
+  const l3Active = l3Open && !!l3Rec && !l3Rec.error && !l3Rec.all_complete && l3Step === 3;
 
   /* Nivel 3 — fetch recomendación */
   const fetchL3Recommendation = useCallback(async () => {
@@ -490,7 +492,10 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative }) =>
   const handleL3Toggle = () => {
     const opening = !l3Open;
     setL3Open(opening);
-    if (opening && !l3Rec) fetchL3Recommendation();
+    if (opening) {
+      setL3Step(1);
+      if (!l3Rec) fetchL3Recommendation();
+    }
   };
 
   const handleNavigateToRecommendation = () => {
@@ -585,7 +590,7 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative }) =>
                   />
                   <div className="cabina-bubble">
                     <p className="cabina-bubble__preludio">El laboratorio te habla</p>
-                    <p className="cabina-bubble__texto">{l3Rec.message}</p>
+                    <p className="cabina-bubble__texto">{l3Rec.step3 ?? l3Rec.message}</p>
                     <button
                       type="button"
                       className="cabina-bubble__cta"
@@ -904,16 +909,52 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative }) =>
                                       )}
                                       {isL3 && (
                                         <div className="space-y-3">
+
+                                          {/* Cargando */}
                                           {l3Loading && (
                                             <div className="flex items-center gap-2 text-xs text-slate-400/80">
                                               <Sparkles size={11} className="animate-pulse text-purple-400/70" />
                                               <span>Leyendo tu recorrido…</span>
                                             </div>
                                           )}
-                                          {!l3Loading && l3Rec && !l3Rec.error && !l3Rec.all_complete && (
+
+                                          {/* Paso 1 — Orientación */}
+                                          {!l3Loading && l3Rec && !l3Rec.error && !l3Rec.all_complete && l3Step === 1 && (
+                                            <>
+                                              <p className="text-xs leading-relaxed text-slate-300/90">
+                                                {l3Rec.step1}
+                                              </p>
+                                              <button
+                                                type="button"
+                                                onClick={() => setL3Step(2)}
+                                                className="inline-flex items-center gap-2 rounded-full border border-slate-600/40 bg-slate-800/30 px-4 py-2 text-xs text-slate-300 transition hover:bg-slate-700/40"
+                                              >
+                                                Siguiente <ArrowRight size={11} />
+                                              </button>
+                                            </>
+                                          )}
+
+                                          {/* Paso 2 — Impacto */}
+                                          {!l3Loading && l3Rec && !l3Rec.error && !l3Rec.all_complete && l3Step === 2 && (
+                                            <>
+                                              <p className="text-xs leading-relaxed text-slate-300/90">
+                                                {l3Rec.step2}
+                                              </p>
+                                              <button
+                                                type="button"
+                                                onClick={() => setL3Step(3)}
+                                                className="inline-flex items-center gap-2 rounded-full border border-slate-600/40 bg-slate-800/30 px-4 py-2 text-xs text-slate-300 transition hover:bg-slate-700/40"
+                                              >
+                                                Siguiente <ArrowRight size={11} />
+                                              </button>
+                                            </>
+                                          )}
+
+                                          {/* Paso 3 — Oracular + CTA (el gato aparece en overlay) */}
+                                          {!l3Loading && l3Rec && !l3Rec.error && !l3Rec.all_complete && l3Step === 3 && (
                                             <>
                                               <p className="text-xs leading-relaxed text-slate-300/90 italic">
-                                                {l3Rec.message}
+                                                {l3Rec.step3}
                                               </p>
                                               <button
                                                 type="button"
@@ -929,6 +970,7 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative }) =>
                                                   onClick={() => {
                                                     lsPatch(portal, { l3_recommendation: undefined });
                                                     setL3Rec(null);
+                                                    setL3Step(1);
                                                     setL3Open(false);
                                                   }}
                                                   className="mt-1 text-[10px] text-slate-500/60 underline underline-offset-2 hover:text-slate-400/80"
@@ -938,16 +980,22 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative }) =>
                                               )}
                                             </>
                                           )}
+
+                                          {/* Completó todo */}
                                           {!l3Loading && l3Rec?.all_complete && (
                                             <p className="text-xs leading-relaxed text-slate-300/70 italic">
                                               Has recorrido todas las formas. El universo está completo.
                                             </p>
                                           )}
+
+                                          {/* Error */}
                                           {!l3Loading && l3Rec?.error && (
                                             <p className="text-xs leading-relaxed text-slate-400/60 italic">
                                               No pudimos leer tu recorrido ahora. Vuelve pronto.
                                             </p>
                                           )}
+
+                                          {/* Sin rec aún */}
                                           {!l3Loading && !l3Rec && (
                                             <p className="text-xs leading-relaxed text-slate-400/60 italic">
                                               {level.pendingDesc}
@@ -1158,7 +1206,7 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative }) =>
                 >
                   <div className="cabina-bubble" style={{ pointerEvents: 'auto' }}>
                     <p className="cabina-bubble__preludio">El laboratorio te habla</p>
-                    <p className="cabina-bubble__texto">{l3Rec.message}</p>
+                    <p className="cabina-bubble__texto">{l3Rec.step3 ?? l3Rec.message}</p>
                     <button
                       type="button"
                       className="cabina-bubble__cta"
