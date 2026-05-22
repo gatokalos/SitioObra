@@ -574,11 +574,11 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative }) =>
               style={{ background: 'linear-gradient(180deg, rgba(5,3,9,0.28) 0%, rgba(5,3,9,0.60) 45%, rgba(5,3,9,0.92) 100%)' }}
             />
 
-            {/* ── L3 cat overlay — mobile only ── */}
+            {/* ── L3 cat overlay — mobile only, fixed para edge-to-edge ── */}
             <AnimatePresence>
               {l3Active && (
                 <motion.div
-                  className="absolute inset-0 z-20 lg:hidden"
+                  className="fixed inset-0 z-[220] lg:hidden"
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   exit={{ opacity: 0 }}
@@ -595,6 +595,15 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative }) =>
                     className="absolute inset-0"
                     style={{ background: 'linear-gradient(180deg, rgba(5,3,9,0.10) 0%, rgba(5,3,9,0.35) 100%)' }}
                   />
+                  {/* Botón cerrar propio — el ✓ del modal queda tapado con fixed */}
+                  <button
+                    type="button"
+                    onClick={onClose}
+                    className="absolute right-4 top-4 z-10 flex h-9 w-9 items-center justify-center rounded-full bg-black/40 text-white/70 backdrop-blur-sm transition hover:bg-black/60 hover:text-white"
+                    aria-label="Cerrar"
+                  >
+                    <Check size={16} />
+                  </button>
                   <div className="cabina-bubble">
                     <p className="cabina-bubble__preludio">El laboratorio te habla</p>
                     <p className="cabina-bubble__texto">{l3BubbleText}</p>
