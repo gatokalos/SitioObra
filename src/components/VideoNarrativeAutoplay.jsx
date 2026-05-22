@@ -17,7 +17,12 @@ const VideoNarrativeAutoplay = ({ open, onClose, formatId, isMobileViewport }) =
   const [hasEnded, setHasEnded] = useState(false);
 
   const card = MINIVERSE_CARDS.find((c) => c.formatId === formatId) ?? null;
-  const videoUrl = !isMobileViewport
+
+  // Detect viewport internally — don't trust the prop for URL selection because
+  // Hero's isMobileViewport can be stale on first render in some contexts.
+  const isDesktop =
+    typeof window !== 'undefined' && !window.matchMedia('(max-width: 768px)').matches;
+  const videoUrl = isDesktop
     ? (card?.narrativeVideoUrlDesktop ?? PLACEHOLDER_VIDEO_URL_DESKTOP)
     : (card?.narrativeVideoUrl ?? PLACEHOLDER_VIDEO_URL);
   const ctaLabel = card?.narrativeCtaLabel ?? 'Continuar experiencia';
