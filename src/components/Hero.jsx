@@ -26,6 +26,7 @@ import {
 import { createPortalLaunchState } from '@/lib/portalNavigation';
 import { safeSetItem } from '@/lib/safeStorage';
 import { extractRecommendedAppId, resolveShowcaseFromAppId } from '@/lib/bienvenidaBridge';
+import { NARRATIVE_VIDEO_URL_DESKTOP } from '@/lib/narrativeVideo';
 import { showcaseDefinitions } from '@/components/transmedia/transmediaConstants';
 
 const POZO_HERO_REVEAL_KEY = 'gatoencerrado:pozo-hero-reveal:v1';
@@ -121,6 +122,7 @@ const Hero = () => {
   const location = useLocation();
   const { user, loading: isAuthLoading } = useAuth();
   const { toast } = useToast();
+  const narrativeVideoUrl = isMobileViewport ? null : NARRATIVE_VIDEO_URL_DESKTOP;
 
   useEffect(() => {
     const params = new URLSearchParams(location.search);
@@ -1196,10 +1198,12 @@ const Hero = () => {
       <Suspense fallback={null}>
         <TicketPurchaseModal open={isTicketModalOpen} onClose={handleCloseTicket} />
         <VideoNarrativeAutoplay
+          key={`${autoVideoFormatId ?? 'none'}-${isAutoVideoOpen ? 'open' : 'closed'}-${isMobileViewport ? 'mobile' : 'desktop'}`}
           open={isAutoVideoOpen}
           onClose={() => setIsAutoVideoOpen(false)}
           formatId={autoVideoFormatId}
           isMobileViewport={isMobileViewport}
+          videoUrl={narrativeVideoUrl}
         />
         <GatokensRevealModal
           open={isGatokensModalOpen}

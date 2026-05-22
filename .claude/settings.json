@@ -81,7 +81,14 @@
       "Bash(sed -n '1715,1735p' /Users/gatoenigmatico/gatoencerrado-ai/apps/bienvenida/src/App.jsx)",
       "Bash(sed -n '2520,2550p' /Users/gatoenigmatico/gatoencerrado-ai/apps/bienvenida/src/App.jsx)",
       "Bash(python3 -c \"import sys,json; d=json.load\\(sys.stdin\\); [print\\(k,v\\) for k,v in {**d.get\\('dependencies',{}\\),**d.get\\('devDependencies',{}\\)}.items\\(\\) if any\\(x in k.lower\\(\\) for x in ['anthropic','openai','ai','sdk']\\)]\")",
-      "Bash(node -e \"require\\('@anthropic-ai/sdk'\\); console.log\\('ok'\\)\")"
+      "Bash(node -e \"require\\('@anthropic-ai/sdk'\\); console.log\\('ok'\\)\")",
+      "Bash(node --check /Users/gatoenigmatico/gatoencerrado-ai/backend/gato-enigmatico-api/routes/resonance.js)",
+      "Bash(grep -n \"^\\\\s\\\\+[a-z].*{$\" /Users/gatoenigmatico/gatoencerrado-ai/backend/gato-enigmatico-api/routes/resonance.js)",
+      "Bash(git -C /Users/gatoenigmatico/gatoencerrado-ai/landing/SitioObra status)",
+      "Bash(git -C /Users/gatoenigmatico/gatoencerrado-ai/backend/gato-enigmatico-api status)",
+      "Bash(git -C /Users/gatoenigmatico/gatoencerrado-ai/backend/gato-enigmatico-api log --oneline -3)",
+      "Bash(git -C /Users/gatoenigmatico/gatoencerrado-ai/backend/gato-enigmatico-api diff HEAD routes/resonance.js)",
+      "Bash(node -e ' *)"
     ],
     "additionalDirectories": [
       "/Users/gatoenigmatico/Desktop/Postulación EFIARTES",

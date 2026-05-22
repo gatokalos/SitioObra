@@ -21,6 +21,10 @@ import {
   trackMiniverseHomeEvent,
 } from '@/services/miniverseHomeAnalyticsService';
 import {
+  NARRATIVE_VIDEO_URL_DESKTOP,
+  NARRATIVE_VIDEO_URL_MOBILE,
+} from '@/lib/narrativeVideo';
+import {
   getHeroAmbientAudio,
   getHeroAmbientState,
   subscribeHeroAmbient,
@@ -44,7 +48,6 @@ const getTabHeadingVerb = (tabId) => {
   if (tabId === 'waitlist') return 'Impulsa';
   return 'Habita';
 };
-const NARRATIVE_PLACEHOLDER_URL = 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/trailers/fragmento_en_produccion_web.mp4';
 const INCENDIO_LOGO_SRC = '/assets/incendiologo.png';
 const INCENDIO_VIDEO_PLACEHOLDER_TITLE = 'VIDEO EN PRODUCCIÓN';
 const INCENDIO_VIDEO_PLACEHOLDER_COPY =
@@ -990,8 +993,8 @@ const MiniverseModal = ({
         ctaDuration: '5 min',
         description: '¿Qué pasa cuando algo se expande sin pausa y empieza a romperse?',
         videoUrl: prologueVideoUrl,
-        fullscreenVideoUrlDesktop: NARRATIVE_PLACEHOLDER_URL,
-        fullscreenVideoUrlMobile: NARRATIVE_PLACEHOLDER_URL,
+        fullscreenVideoUrlDesktop: dramaShowcaseCard?.narrativeVideoUrlDesktop ?? NARRATIVE_VIDEO_URL_DESKTOP,
+        fullscreenVideoUrlMobile: dramaShowcaseCard?.narrativeVideoUrl ?? NARRATIVE_VIDEO_URL_MOBILE,
         eyebrow: 'Prólogo',
         isPrologue: true,
         portalLabel: 'Prólogo',
@@ -1003,8 +1006,16 @@ const MiniverseModal = ({
           ...card,
           ctaLabel: stripDurationFromLabel(rawCtaLabel),
           ctaDuration: extractDurationFromLabel(rawCtaLabel),
-          fullscreenVideoUrlDesktop: card.fullscreenVideoUrlDesktop ?? card.fullscreenVideoUrl ?? NARRATIVE_PLACEHOLDER_URL,
-          fullscreenVideoUrlMobile: card.fullscreenVideoUrlMobile ?? card.fullscreenVideoUrl ?? NARRATIVE_PLACEHOLDER_URL,
+          fullscreenVideoUrlDesktop:
+            card.fullscreenVideoUrlDesktop ??
+            card.narrativeVideoUrlDesktop ??
+            card.fullscreenVideoUrl ??
+            NARRATIVE_VIDEO_URL_DESKTOP,
+          fullscreenVideoUrlMobile:
+            card.fullscreenVideoUrlMobile ??
+            card.narrativeVideoUrl ??
+            card.fullscreenVideoUrl ??
+            NARRATIVE_VIDEO_URL_MOBILE,
           portalLabel: getPortalLabelFromTitle(card.title),
         };
       }),
@@ -2886,7 +2897,7 @@ const MiniverseModal = ({
       <AnimatePresence>
         {showcaseFullscreenCard ? (
           <motion.div
-            key="miniverse-showcase-narrative-video"
+            key={`miniverse-showcase-narrative-video-${showcaseFullscreenCard.id}-${isMobileViewport ? 'mobile' : 'desktop'}`}
             className="fixed inset-0 z-[176] bg-black"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -2900,6 +2911,7 @@ const MiniverseModal = ({
             >
               {activeShowcaseFullscreenVideoUrl ? (
                 <video
+                  key={activeShowcaseFullscreenVideoUrl}
                   ref={showcaseFullscreenVideoRef}
                   src={activeShowcaseFullscreenVideoUrl}
                   className="h-full w-full object-cover"

@@ -5,11 +5,9 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { MINIVERSE_CARDS } from '@/components/MiniverseModal';
 import { resolvePortalRoute } from '@/lib/miniversePortalRegistry';
 import { createPortalLaunchState } from '@/lib/portalNavigation';
+import { resolveNarrativeVideoUrl } from '@/lib/narrativeVideo';
 
-const PLACEHOLDER_VIDEO_URL = 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/trailers/fragmento_en_produccion_web.mp4';
-const PLACEHOLDER_VIDEO_URL_DESKTOP = 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Cine%20-%20teasers/muy_pronto_hzl_web.mp4';
-
-const VideoNarrativeAutoplay = ({ open, onClose, formatId, isMobileViewport }) => {
+const VideoNarrativeAutoplay = ({ open, onClose, formatId, isMobileViewport, videoUrl: videoUrlProp }) => {
   const navigate = useNavigate();
   const location = useLocation();
   const videoRef = useRef(null);
@@ -18,13 +16,11 @@ const VideoNarrativeAutoplay = ({ open, onClose, formatId, isMobileViewport }) =
 
   const card = MINIVERSE_CARDS.find((c) => c.formatId === formatId) ?? null;
   const ctaLabel = card?.narrativeCtaLabel ?? 'Continuar experiencia';
-
-  // screen.width = physical screen size, never affected by DevTools docking or viewport emulation.
-  // Evaluated inline on every render so HMR and re-renders always get a fresh value.
-  const isDesktop = typeof window !== 'undefined' && window.screen.width >= 1024;
-  const videoUrl = isDesktop
-    ? (card?.narrativeVideoUrlDesktop ?? PLACEHOLDER_VIDEO_URL_DESKTOP)
-    : (card?.narrativeVideoUrl ?? PLACEHOLDER_VIDEO_URL);
+  const videoUrl = resolveNarrativeVideoUrl({
+    card,
+    isMobileViewport,
+    videoUrl: videoUrlProp,
+  });
 
   useEffect(() => {
     if (!open) {
