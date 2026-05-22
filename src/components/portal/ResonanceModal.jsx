@@ -459,8 +459,10 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative }) =>
   };
 
   /* ── render ── */
-  // l3Active solo en step 3 — es cuando el gato toma protagonismo visual
-  const l3Active = l3Open && !!l3Rec && !l3Rec.error && !l3Rec.all_complete && l3Step === 3;
+  const l3Active = l3Open && !!l3Rec && !l3Rec.error && !l3Rec.all_complete;
+  const l3BubbleText = l3Rec
+    ? (l3Step === 1 ? l3Rec.step1 : l3Step === 2 ? l3Rec.step2 : (l3Rec.step3 ?? l3Rec.message))
+    : null;
 
   /* Nivel 3 — fetch recomendación */
   const fetchL3Recommendation = useCallback(async () => {
@@ -595,14 +597,16 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative }) =>
                   />
                   <div className="cabina-bubble">
                     <p className="cabina-bubble__preludio">El laboratorio te habla</p>
-                    <p className="cabina-bubble__texto">{l3Rec.step3 ?? l3Rec.message}</p>
-                    <button
-                      type="button"
-                      className="cabina-bubble__cta"
-                      onClick={handleNavigateToRecommendation}
-                    >
-                      Explorar {l3Rec.forma}
-                    </button>
+                    <p className="cabina-bubble__texto">{l3BubbleText}</p>
+                    {l3Step < 3 ? (
+                      <button type="button" className="cabina-bubble__cta" onClick={() => setL3Step(l3Step + 1)}>
+                        Siguiente
+                      </button>
+                    ) : (
+                      <button type="button" className="cabina-bubble__cta" onClick={handleNavigateToRecommendation}>
+                        Explorar {l3Rec.forma}
+                      </button>
+                    )}
                   </div>
                 </motion.div>
               )}
@@ -1213,14 +1217,16 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative }) =>
                 >
                   <div className="cabina-bubble" style={{ pointerEvents: 'auto' }}>
                     <p className="cabina-bubble__preludio">El laboratorio te habla</p>
-                    <p className="cabina-bubble__texto">{l3Rec.step3 ?? l3Rec.message}</p>
-                    <button
-                      type="button"
-                      className="cabina-bubble__cta"
-                      onClick={handleNavigateToRecommendation}
-                    >
-                      Explorar {l3Rec.forma}
-                    </button>
+                    <p className="cabina-bubble__texto">{l3BubbleText}</p>
+                    {l3Step < 3 ? (
+                      <button type="button" className="cabina-bubble__cta" onClick={() => setL3Step(l3Step + 1)}>
+                        Siguiente
+                      </button>
+                    ) : (
+                      <button type="button" className="cabina-bubble__cta" onClick={handleNavigateToRecommendation}>
+                        Explorar {l3Rec.forma}
+                      </button>
+                    )}
                   </div>
                 </motion.div>
               )}
