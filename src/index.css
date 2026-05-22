@@ -1707,7 +1707,7 @@ body {
   top: 4%;
   left: 50%;
   transform: translateX(-50%);
-  width: min(540px, 88vw);
+  width: min(340px, 88vw);
   padding: 1.2rem 1.6rem 1.1rem;
   border-radius: 28px;
   background: rgba(245, 245, 245, 0.92);
@@ -1741,6 +1741,24 @@ body {
   margin: 0;
   font-size: clamp(0.9rem, 2.2vw, 1.15rem);
   line-height: 1.45;
+}
+.cabina-bubble__siguiente {
+  display: inline-block;
+  margin-top: 0.9rem;
+  padding: 0.6rem 1.2rem;
+  border-radius: 999px;
+  border: 1px solid rgba(30, 30, 40, 0.18);
+  background: rgba(30, 30, 40, 0.07);
+  color: #3a3d4a;
+  font-size: 0.82rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+  transition: background 0.18s, border-color 0.18s;
+}
+.cabina-bubble__siguiente:hover {
+  background: rgba(30, 30, 40, 0.13);
+  border-color: rgba(30, 30, 40, 0.28);
 }
 .cabina-bubble__cta {
   display: inline-block;

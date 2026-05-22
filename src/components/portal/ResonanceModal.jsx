@@ -599,8 +599,8 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative }) =>
                     <p className="cabina-bubble__preludio">El laboratorio te habla</p>
                     <p className="cabina-bubble__texto">{l3BubbleText}</p>
                     {l3Step < 3 ? (
-                      <button type="button" className="cabina-bubble__cta" onClick={() => setL3Step(l3Step + 1)}>
-                        Siguiente
+                      <button type="button" className="cabina-bubble__siguiente" onClick={() => setL3Step(l3Step + 1)}>
+                        Siguiente →
                       </button>
                     ) : (
                       <button type="button" className="cabina-bubble__cta" onClick={handleNavigateToRecommendation}>
@@ -927,8 +927,9 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative }) =>
                                             </div>
                                           )}
 
+                                          {/* Pasos — ocultos en desktop cuando el gato los muestra en el panel */}
                                           {/* Paso 1 — Orientación */}
-                                          {!l3Loading && l3Rec && !l3Rec.error && !l3Rec.all_complete && l3Step === 1 && (
+                                          {!l3Loading && l3Rec && !l3Rec.error && !l3Rec.all_complete && l3Step === 1 && !l3Active && (
                                             <>
                                               <p className="text-xs leading-relaxed text-slate-300/90">
                                                 {l3Rec.step1}
@@ -944,7 +945,7 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative }) =>
                                           )}
 
                                           {/* Paso 2 — Impacto */}
-                                          {!l3Loading && l3Rec && !l3Rec.error && !l3Rec.all_complete && l3Step === 2 && (
+                                          {!l3Loading && l3Rec && !l3Rec.error && !l3Rec.all_complete && l3Step === 2 && !l3Active && (
                                             <>
                                               <p className="text-xs leading-relaxed text-slate-300/90">
                                                 {l3Rec.step2}
@@ -959,8 +960,8 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative }) =>
                                             </>
                                           )}
 
-                                          {/* Paso 3 — Oracular + CTA (el gato aparece en overlay) */}
-                                          {!l3Loading && l3Rec && !l3Rec.error && !l3Rec.all_complete && l3Step === 3 && (
+                                          {/* Paso 3 — Oracular + CTA */}
+                                          {!l3Loading && l3Rec && !l3Rec.error && !l3Rec.all_complete && l3Step === 3 && !l3Active && (
                                             <>
                                               <p className="text-xs leading-relaxed text-slate-300/90 italic">
                                                 {l3Rec.step3}
@@ -1219,8 +1220,8 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative }) =>
                     <p className="cabina-bubble__preludio">El laboratorio te habla</p>
                     <p className="cabina-bubble__texto">{l3BubbleText}</p>
                     {l3Step < 3 ? (
-                      <button type="button" className="cabina-bubble__cta" onClick={() => setL3Step(l3Step + 1)}>
-                        Siguiente
+                      <button type="button" className="cabina-bubble__siguiente" onClick={() => setL3Step(l3Step + 1)}>
+                        Siguiente →
                       </button>
                     ) : (
                       <button type="button" className="cabina-bubble__cta" onClick={handleNavigateToRecommendation}>
