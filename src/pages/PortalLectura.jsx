@@ -36,10 +36,10 @@ const PortalLectura = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-950 via-black to-slate-900 text-slate-100">
-      <div className="mx-auto w-full max-w-5xl px-6 py-10 md:py-14">
+      <div className="mx-auto w-full max-w-5xl px-4 py-4 md:py-8">
         <div className="flex items-start justify-between gap-4">
           <div className="space-y-2">
-            <PortalAuthButton onOpenLogin={handleOpenLogin} />
+            {/* <PortalAuthButton onOpenLogin={handleOpenLogin} /> */}
             {showLoginHint ? (
               <div className="rounded-xl border border-purple-400/50 bg-purple-500/10 px-3 py-2 text-xs text-purple-100 shadow-[0_10px_30px_rgba(124,58,237,0.25)]">
                 Inicia sesión para continuar. Usa el botón de arriba.

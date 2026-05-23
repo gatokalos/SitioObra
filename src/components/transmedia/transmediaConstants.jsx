@@ -1045,7 +1045,7 @@ Este espacio permite recorrer esas composiciones, explorar sus capas y descubrir
         id: 'tres-pies-galeria',
         title: 'Tres Pies al Gato',
         description: 'Exploraciones de la novela gráfica.',
-        richDescription: 'Antes de convertirse en novela gráfica, Tres pies al gato fue imaginada como una película: escenas fragmentadas, cortes de plano y emociones dirigidas desde el lenguaje cinematográfico. Esta primera edición digital reúne el inicio de una obra que continúa expandiéndose.',
+        richDescription: 'Antes de convertirse en un universo transmedial, esta obra existió como un encuentro escénico atravesado por sueños lúcidos, rabia contenida y preguntas difíciles de nombrar. Silvestre, el protagonista, navega sus conflictos internos y su conexión con otros guiado por personajes simbólicos como Lucinda y el Payasito Tiste. La historia invita al público a reflexionar sobre la salud mental, la autenticidad y la lucha por el significado de la vida en un mundo que mezcla humor, surrealismo y vulnerabilidad.',
         tags: ['Narrativa fragmentada', 'Pausas ilustradas'],
         previewImage: '/assets/silvestre-comic.jpeg',
         type: 'internal-reading',

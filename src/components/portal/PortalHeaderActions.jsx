@@ -113,7 +113,7 @@ const PortalHeaderActions = ({ returnUrl = DEFAULT_RETURN_URL }) => {
 
   return (
     <div className="inline-flex items-center gap-2">
-      <GATChip />
+      {/* <GATChip /> */}
       {user ? (
         <button
           type="button"

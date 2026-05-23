@@ -2265,10 +2265,10 @@ const rendernotaAutoral = () => {
                 <div aria-hidden="true" className="h-[11rem] sm:h-[13rem]" />
                 <div className="mt-auto space-y-4">
                   <p className="text-sm leading-relaxed text-slate-300/85">
-                    Antes de convertirse en un universo transmedial, esta obra existió como un encuentro escénico atravesado por sueños lúcidos, rabia contenida y preguntas difíciles de nombrar.
+                    Antes de convertirse en un universo transmedial, esta obra existió como una historia que invita al público a reflexionar sobre la salud mental, la vulnerabilidad y la lucha por el significado de la vida. Silvestre, el protagonista, navega sus conflictos internos y su conexión con otros guiado por personajes simbólicos como La Doctora y el Payasito Tiste.
                   </p>
                   <div className="flex flex-wrap gap-2">
-                    {['Sueños lúcidos', 'Drama psicológico'].map((tag, i) => (
+                    {['Sueños lúcidos', 'Rabia contenida'].map((tag, i) => (
                       <span
                         key={i}
                         className="rounded-full border border-purple-400/30 bg-purple-900/20 px-3 py-1 text-xs text-purple-100"
@@ -4085,7 +4085,7 @@ const rendernotaAutoral = () => {
                       <>
                         <div className="mb-3">
                           <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Resonancia colectiva</p>
-                          <h4 className="font-display text-2xl text-amber-300">Formas de sentir</h4>
+                          <h4 className="font-display text-2xl text-amber-300">9 formas de sentir</h4>
                         </div>
                         <VitranaQuestionReveal
                           question={activePortalL1Done ? (buildL1Acknowledgment('obra', activePortalL2Answer) ?? LEVEL2_QUESTIONS['obra']?.question ?? VITRANA_QUESTION_BY_SHOWCASE['miniversos']) : VITRANA_QUESTION_BY_SHOWCASE['miniversos']}
@@ -4118,7 +4118,7 @@ const rendernotaAutoral = () => {
                       <>
                         <div className="mb-3">
                           <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Resonancia colectiva</p>
-                          <h4 className="font-display text-2xl text-amber-300">Formas de sentir</h4>
+                          <h4 className="font-display text-2xl text-amber-300">9 formas de sentir</h4>
                         </div>
                         <VitranaQuestionReveal
                           question={activePortalL1Done ? (buildL1Acknowledgment('literatura', activePortalL2Answer) ?? LEVEL2_QUESTIONS['literatura']?.question ?? VITRANA_QUESTION_BY_SHOWCASE['miniversoNovela']) : VITRANA_QUESTION_BY_SHOWCASE['miniversoNovela']}
@@ -4149,7 +4149,7 @@ const rendernotaAutoral = () => {
                       <>
                         <div className="mb-3">
                           <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Resonancia colectiva</p>
-                          <h4 className="font-display text-2xl text-amber-300">Formas de sentir</h4>
+                          <h4 className="font-display text-2xl text-amber-300">9 formas de sentir</h4>
                         </div>
                         <VitranaQuestionReveal
                           question={activePortalL1Done ? (buildL1Acknowledgment('artesanias', activePortalL2Answer) ?? LEVEL2_QUESTIONS['artesanias']?.question ?? VITRANA_QUESTION_BY_SHOWCASE['lataza']) : VITRANA_QUESTION_BY_SHOWCASE['lataza']}
@@ -4180,7 +4180,7 @@ const rendernotaAutoral = () => {
                       <>
                         <div className="mb-3">
                           <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Resonancia colectiva</p>
-                          <h4 className="font-display text-2xl text-amber-300">Formas de sentir</h4>
+                          <h4 className="font-display text-2xl text-amber-300">9 formas de sentir</h4>
                         </div>
                         <VitranaQuestionReveal
                           question={activePortalL1Done ? (buildL1Acknowledgment('grafico', activePortalL2Answer) ?? LEVEL2_QUESTIONS['grafico']?.question ?? VITRANA_QUESTION_BY_SHOWCASE['miniversoGrafico']) : VITRANA_QUESTION_BY_SHOWCASE['miniversoGrafico']}
@@ -4211,7 +4211,7 @@ const rendernotaAutoral = () => {
                       <>
                         <div className="mb-3">
                           <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Resonancia colectiva</p>
-                          <h4 className="font-display text-2xl text-amber-300">Formas de sentir</h4>
+                          <h4 className="font-display text-2xl text-amber-300">9 formas de sentir</h4>
                         </div>
                         <VitranaQuestionReveal
                           question={activePortalL1Done ? (buildL1Acknowledgment('cine', activePortalL2Answer) ?? LEVEL2_QUESTIONS['cine']?.question ?? VITRANA_QUESTION_BY_SHOWCASE['cine']) : VITRANA_QUESTION_BY_SHOWCASE['cine']}
@@ -4242,7 +4242,7 @@ const rendernotaAutoral = () => {
                       <>
                         <div className="mb-3">
                           <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Resonancia colectiva</p>
-                          <h4 className="font-display text-2xl text-amber-300">Formas de sentir</h4>
+                          <h4 className="font-display text-2xl text-amber-300">9 formas de sentir</h4>
                         </div>
                         <VitranaQuestionReveal
                           question={activePortalL1Done ? (buildL1Acknowledgment('sonoridades', activePortalL2Answer) ?? LEVEL2_QUESTIONS['sonoridades']?.question ?? VITRANA_QUESTION_BY_SHOWCASE['miniversoSonoro']) : VITRANA_QUESTION_BY_SHOWCASE['miniversoSonoro']}
@@ -4273,7 +4273,7 @@ const rendernotaAutoral = () => {
                       <>
                         <div className="mb-3">
                           <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Resonancia colectiva</p>
-                          <h4 className="font-display text-2xl text-amber-300">Formas de sentir</h4>
+                          <h4 className="font-display text-2xl text-amber-300">9 formas de sentir</h4>
                         </div>
                         <VitranaQuestionReveal
                           question={activePortalL1Done ? (buildL1Acknowledgment('movimiento', activePortalL2Answer) ?? LEVEL2_QUESTIONS['movimiento']?.question ?? VITRANA_QUESTION_BY_SHOWCASE['miniversoMovimiento']) : VITRANA_QUESTION_BY_SHOWCASE['miniversoMovimiento']}
@@ -4304,7 +4304,7 @@ const rendernotaAutoral = () => {
                       <>
                         <div className="mb-3">
                           <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Resonancia colectiva</p>
-                          <h4 className="font-display text-2xl text-amber-300">Formas de sentir</h4>
+                          <h4 className="font-display text-2xl text-amber-300">9 formas de sentir</h4>
                         </div>
                         <VitranaQuestionReveal
                           question={activePortalL1Done ? (buildL1Acknowledgment('juegos', activePortalL2Answer) ?? LEVEL2_QUESTIONS['juegos']?.question ?? VITRANA_QUESTION_BY_SHOWCASE['apps']) : VITRANA_QUESTION_BY_SHOWCASE['apps']}
@@ -4335,7 +4335,7 @@ const rendernotaAutoral = () => {
                       <>
                         <div className="mb-3">
                           <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Resonancia colectiva</p>
-                          <h4 className="font-display text-2xl text-amber-300">Formas de sentir</h4>
+                          <h4 className="font-display text-2xl text-amber-300">9 formas de sentir</h4>
                         </div>
                         <VitranaQuestionReveal
                           question={activePortalL1Done ? (buildL1Acknowledgment('oraculo', activePortalL2Answer) ?? LEVEL2_QUESTIONS['oraculo']?.question ?? VITRANA_QUESTION_BY_SHOWCASE['oraculo']) : VITRANA_QUESTION_BY_SHOWCASE['oraculo']}

@@ -224,6 +224,17 @@ const MINIVERSE_DISCOVER_INTRO_MESH =
   'linear-gradient(135deg, rgba(10,12,28,0.96), rgba(15,23,42,0.92), rgba(17,24,39,0.90))';
 const MINIVERSE_PORTAL_TITLE_PATTERN = /^\d+\s*-\s*/;
 const VISITED_MINIVERSES_STORAGE_KEY = 'gatoencerrado:miniverse-visited';
+const CARD_RESONANCE_KEY = {
+  drama:      'obra',
+  literatura: 'literatura',
+  taza:       'artesanias',
+  graficos:   'grafico',
+  cine:       'cine',
+  sonoro:     'sonoridades',
+  movimiento: 'movimiento',
+  apps:       'juegos',
+  oraculo:    'oraculo',
+};
 const getPortalLabelFromTitle = (title = '') => {
   const normalizedTitle = String(title || '').trim();
   return normalizedTitle.replace(MINIVERSE_PORTAL_TITLE_PATTERN, '').trim() || normalizedTitle;
@@ -548,6 +559,16 @@ const MiniverseModal = ({
   const [visitedMiniverses, setVisitedMiniverses] = useState(() =>
     readStoredJson(VISITED_MINIVERSES_STORAGE_KEY, {})
   );
+  const [l3CompletedMiniverses] = useState(() => {
+    const result = {};
+    MINIVERSE_CARDS.forEach((card) => {
+      const rKey = CARD_RESONANCE_KEY[card.id];
+      if (!rKey) return;
+      const data = readStoredJson(`gatoencerrado:resonance:${rKey}`, {});
+      result[card.id] = Boolean(data.l3_recommendation?.step3);
+    });
+    return result;
+  });
   const [activeShowcaseIndex, setActiveShowcaseIndex] = useState(0);
   const [isMobileViewport, setIsMobileViewport] = useState(false);
   const [isCheckoutLoading, setIsCheckoutLoading] = useState(false);
@@ -2677,7 +2698,7 @@ const MiniverseModal = ({
                     >
                       {visibleMiniverseCards.map((card) => {
                         const isUpcoming = Boolean(card.isUpcoming);
-                        const isVisited = !isUpcoming && Boolean(visitedMiniverses[card.id]);
+                        const isVisited = !isUpcoming && Boolean(l3CompletedMiniverses[card.id]);
                         const communityHearts = communityLikeMap.get(card.formatId) ?? 0;
                         const appLabel = card.appName ?? (card.title ?? '').replace(/^Miniverso\s+/i, '');
                         return (

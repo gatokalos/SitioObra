@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useLocation , useNavigate } from 'react-router-dom';
 import { Hand, Video } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useAuth } from '@/contexts/SupabaseAuthContext';
@@ -21,6 +21,7 @@ import { useMobileVideoPresentation } from '@/hooks/useMobileVideoPresentation';
 import { usePortalTracking } from '@/hooks/usePortalTracking';
 import { useVitranaQuestion } from '@/hooks/useVitranaQuestion';
 import useScrambleText from '@/hooks/useScrambleText';
+import { resolvePortalRoute } from '@/lib/miniversePortalRegistry';
 
 const SUPABASE_STORAGE = `${import.meta.env.VITE_SUPABASE_URL || ''}/storage/v1/object/public`;
 
@@ -185,7 +186,9 @@ const PortalCine = () => {
   const [l2Answer, setL2Answer] = useState(() => { try { return JSON.parse(localStorage.getItem('gatoencerrado:resonance:cine') || '{}').l2_option ?? null; } catch { return null; } });
   const [experienceDone, setExperienceDone] = useState(() => { try { return Boolean(JSON.parse(localStorage.getItem('gatoencerrado:resonance:cine') || '{}').experience_ts); } catch { return false; } });
   const [l2Done, setL2Done] = useState(() => { try { return Boolean(JSON.parse(localStorage.getItem('gatoencerrado:resonance:cine') || '{}').l2_option); } catch { return false; } });
-  const refreshL1 = useCallback(() => { try { const s = JSON.parse(localStorage.getItem('gatoencerrado:resonance:cine') || '{}'); setL1Done(Boolean(s.l1)); setExperienceDone(Boolean(s.experience_ts)); setL2Done(Boolean(s.l2_option)); setL2Answer(s.l2_option ?? null); } catch { /* ignore */ } }, []);
+  const [l3Rec, setL3Rec] = useState(() => { try { return JSON.parse(localStorage.getItem('gatoencerrado:resonance:cine') || '{}').l3_recommendation ?? null; } catch { return null; } });
+  const refreshL1 = useCallback(() => { try { const s = JSON.parse(localStorage.getItem('gatoencerrado:resonance:cine') || '{}'); setL1Done(Boolean(s.l1)); setExperienceDone(Boolean(s.experience_ts)); setL2Done(Boolean(s.l2_option)); setL2Answer(s.l2_option ?? null); setL3Rec(s.l3_recommendation ?? null); } catch { /* ignore */ } }, []);
+  const navigate = useNavigate();
   const location = useLocation();
   useEffect(() => {
     if (location.state?.portalLaunchSource !== 'video-narrative-cta') return;
@@ -337,10 +340,10 @@ const PortalCine = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-950 via-black to-slate-900 text-slate-100">
-      <div className="mx-auto w-full max-w-6xl px-6 py-10 md:py-14">
+      <div className="mx-auto w-full max-w-6xl px-4 py-4 md:py-8">
         <div className="flex items-start justify-between gap-4">
           <div className="space-y-2">
-            <PortalAuthButton onOpenLogin={handleOpenLogin} />
+            {/* <PortalAuthButton onOpenLogin={handleOpenLogin} /> */}
             {showLoginHint ? (
               <div className="rounded-xl border border-sky-300/60 bg-sky-500/10 px-3 py-2 text-xs text-sky-100 shadow-[0_10px_30px_rgba(56,189,248,0.2)]">
                 Inicia sesion para continuar. Usa el boton de arriba.
@@ -363,7 +366,7 @@ const PortalCine = () => {
                 />
               </div>
             ) : null}
-            <div className="grid gap-10 p-6 sm:p-8 lg:p-10 lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
+            <div className="grid gap-6 p-4 sm:p-6 lg:p-8 lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
               <div className="space-y-6">
                 <div className="space-y-3">
                   <p className="text-xs uppercase tracking-[0.4em] text-sky-300">#Miniversos</p>
@@ -389,7 +392,7 @@ const PortalCine = () => {
               <div className="hidden lg:block">
                 <div className="mb-3">
                   <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Resonancia colectiva</p>
-                  <h4 className="font-display text-xl text-amber-300">Formas de sentir</h4>
+                  <h4 className="font-display text-xl text-amber-300">9 formas de sentir</h4>
                 </div>
                 <div className="flex flex-col gap-5">
                   <VitranaQuestionReveal
@@ -398,6 +401,10 @@ const PortalCine = () => {
                     autoReveal={l1Done}
                     portal="cine"
                     l2Done={l2Done}
+                    l3Done={Boolean(l3Rec?.step3)}
+                    l3Step3={l3Rec?.step3 ?? null}
+                    l3FormaLabel={l3Rec?.forma ?? null}
+                    onL3CTA={() => { const r = resolvePortalRoute({ formatId: l3Rec?.recommended_format_id }); if (r) navigate(r); }}
                     onAnswer={() => setIsResonanceOpen(true)}
                     label=""
                   />
@@ -463,7 +470,7 @@ const PortalCine = () => {
             <div className={`bg-slate-950/80 p-5 lg:hidden transition-opacity duration-300${isResonanceOpen ? ' opacity-30 pointer-events-none' : ''}`}>
               <div className="mb-1">
                 <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Resonancia colectiva</p>
-                <h4 className="font-display text-xl text-amber-300">Formas de sentir</h4>
+                <h4 className="font-display text-xl text-amber-300">9 formas de sentir</h4>
               </div>
               <div className="space-y-4">
                 <VitranaQuestionReveal
@@ -472,6 +479,10 @@ const PortalCine = () => {
                   autoReveal={l1Done}
                   portal="cine"
                   l2Done={l2Done}
+                  l3Done={Boolean(l3Rec?.step3)}
+                  l3Step3={l3Rec?.step3 ?? null}
+                  l3FormaLabel={l3Rec?.forma ?? null}
+                  onL3CTA={() => { const r = resolvePortalRoute({ formatId: l3Rec?.recommended_format_id }); if (r) navigate(r); }}
                   onAnswer={() => setIsResonanceOpen(true)}
                   label=""
                 />

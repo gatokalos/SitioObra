@@ -1,6 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
-import { Eye, Flame } from 'lucide-react';
+import { Eye, Flame, Sparkles } from 'lucide-react';
+
+const stripEslabon = (text) => {
+  if (!text) return text;
+  const colonIdx = text.indexOf(': ');
+  return colonIdx !== -1 ? text.slice(colonIdx + 2) : text;
+};
 
 const PORTAL_GRADIENT = {
   obra:        'from-purple-400 via-fuchsia-500 to-rose-500',
@@ -23,10 +29,15 @@ const VitranaQuestionReveal = ({
   autoReveal = false,
   portal = null,
   l2Done = false,
+  l3Done = false,
+  l3Step3 = null,
+  l3FormaLabel = null,
+  onL3CTA = null,
 }) => {
   const [isRevealed, setIsRevealed] = useState(autoReveal);
   const portalGradient = PORTAL_GRADIENT[portal] ?? 'from-purple-400 via-fuchsia-500 to-rose-500';
-  const hasProgressBadges = autoReveal || l2Done;
+  const hasProgressBadges = autoReveal || l2Done || l3Done;
+  const oracularPhrase = l3Done && l3Step3 ? stripEslabon(l3Step3) : null;
 
   // Sincroniza si autoReveal llega tarde (p.ej. tras verificar Supabase)
   useEffect(() => {
@@ -70,32 +81,52 @@ const VitranaQuestionReveal = ({
                 <Flame size={20} className="text-white drop-shadow-sm" />
               </motion.div>
             )}
+            {l3Done && (
+              <motion.div
+                className={`flex h-11 w-11 items-center justify-center rounded-full bg-gradient-to-br ${portalGradient} shadow-[0_4px_18px_rgba(0,0,0,0.4)]`}
+                initial={{ opacity: 0, scale: 0.55, y: 6 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                transition={{ type: 'spring', stiffness: 260, damping: 18, delay: 0.34 }}
+                title="Nivel 3 completado"
+              >
+                <Sparkles size={20} className="text-white drop-shadow-sm" />
+              </motion.div>
+            )}
           </div>
         )}
 
         <div
           className="form-surface relative overflow-hidden px-6 py-8 cursor-pointer"
-          onMouseEnter={reveal}
-          onClick={reveal}
-          role="button"
-          tabIndex={0}
-          onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') reveal(); }}
-          aria-label="Revelar pregunta de resonancia"
+          onMouseEnter={!oracularPhrase ? reveal : undefined}
+          onClick={!oracularPhrase ? reveal : undefined}
+          role={!oracularPhrase ? 'button' : undefined}
+          tabIndex={!oracularPhrase ? 0 : undefined}
+          onKeyDown={!oracularPhrase ? (e) => { if (e.key === 'Enter' || e.key === ' ') reveal(); } : undefined}
+          aria-label={!oracularPhrase ? 'Revelar pregunta de resonancia' : undefined}
         >
-          <motion.div
-            animate={{ filter: isRevealed ? 'blur(0px)' : 'blur(10px)' }}
-            transition={{ duration: 0.55, ease: 'easeOut' }}
-          >
-            {question ? (
+          {oracularPhrase ? (
+            <>
+              <p className="mb-3 text-[0.62rem] uppercase tracking-[0.3em] text-slate-500/70 text-center select-none">Sedimento</p>
               <p className="text-slate-800 text-base leading-relaxed italic text-center font-light select-none">
-                {question}
+                {oracularPhrase}
               </p>
-            ) : (
-              <p className="text-slate-400/60 text-sm text-center py-2 select-none">···</p>
-            )}
-          </motion.div>
+            </>
+          ) : (
+            <motion.div
+              animate={{ filter: isRevealed ? 'blur(0px)' : 'blur(10px)' }}
+              transition={{ duration: 0.55, ease: 'easeOut' }}
+            >
+              {question ? (
+                <p className="text-slate-800 text-base leading-relaxed italic text-center font-light select-none">
+                  {question}
+                </p>
+              ) : (
+                <p className="text-slate-400/60 text-sm text-center py-2 select-none">···</p>
+              )}
+            </motion.div>
+          )}
 
-          {!isRevealed && (
+          {!isRevealed && !oracularPhrase && (
             <div className="pointer-events-none absolute inset-0 overflow-hidden">
               <div className="vitrana-sweep-beam" />
             </div>
@@ -104,24 +135,24 @@ const VitranaQuestionReveal = ({
       </div>
 
       <motion.div
-        className={`mx-auto w-full max-w-md ${isRevealed ? '' : 'pointer-events-none'}`}
-        animate={isRevealed
+        className={`mx-auto w-full max-w-md ${isRevealed || oracularPhrase ? '' : 'pointer-events-none'}`}
+        animate={(isRevealed || oracularPhrase)
           ? { opacity: 1, y: 0, scale: 1, filter: 'blur(0px)' }
           : { opacity: 0, y: 10, scale: 0.93, filter: 'blur(4px)' }}
-        transition={{ type: 'spring', stiffness: 300, damping: 18, delay: isRevealed ? (autoReveal ? 0.1 : 0.45) : 0 }}
+        transition={{ type: 'spring', stiffness: 300, damping: 18, delay: (isRevealed || oracularPhrase) ? (autoReveal ? 0.1 : 0.45) : 0 }}
       >
         <motion.button
           type="button"
           className="w-full rounded-full border border-purple-500/70 text-purple-100 hover:bg-purple-500/20 tracking-[0.25em] text-xs uppercase px-4 py-2.5"
-          animate={isRevealed ? { boxShadow: [
+          animate={(isRevealed || oracularPhrase) ? { boxShadow: [
             '0 0 0px rgba(139,92,246,0)',
             '0 0 32px rgba(139,92,246,0.55)',
             '0 15px 45px rgba(67,56,202,0.45)',
           ]} : { boxShadow: '0 0 0px rgba(139,92,246,0)' }}
           transition={{ duration: 1.1, delay: autoReveal ? 0.35 : 0.75, ease: 'easeOut' }}
-          onClick={onAnswer}
+          onClick={oracularPhrase && onL3CTA ? onL3CTA : onAnswer}
         >
-          {buttonLabel}
+          {oracularPhrase && l3FormaLabel ? `Explorar ${l3FormaLabel}` : buttonLabel}
         </motion.button>
       </motion.div>
     </div>

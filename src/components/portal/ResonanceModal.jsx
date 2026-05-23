@@ -1,7 +1,8 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
+import ReactDOM from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Eye, Flame, PawPrint, Lock, ShieldCheck, Check, ChevronDown, Sparkles, ArrowRight } from 'lucide-react';
+import { Eye, Flame, PawPrint, Lock, ShieldCheck, Check, ChevronDown, ChevronRight, Sparkles, ArrowRight } from 'lucide-react';
 import { supabase } from '@/lib/supabaseClient';
 import { ensureAnonId } from '@/lib/identity';
 import { useAuth } from '@/contexts/SupabaseAuthContext';
@@ -15,7 +16,7 @@ import { resolvePortalRoute } from '@/lib/miniversePortalRegistry';
 import { createPortalLaunchState } from '@/lib/portalNavigation';
 
 const OBRA_API_URL = (import.meta.env.VITE_OBRA_API_URL ?? 'https://api.gatoencerrado.ai').replace(/\/+$/, '');
-const CAT_CABINA_URL = 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/oraculo/gato-cabina@1200.webp';
+const CAT_CABINA_URL = 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/oraculo/gato-cabina.webp';
 
 /* ─── Identidad visual por portal ─────────────────────────────────────── */
 
@@ -505,6 +506,11 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative }) =>
     }
   };
 
+  const handleBackToDashboard = () => {
+    onClose?.();
+    navigate('/#transmedia', { replace: true });
+  };
+
   const handleNavigateToRecommendation = () => {
     if (!l3Rec?.recommended_format_id) return;
     onClose?.();
@@ -574,52 +580,65 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative }) =>
               style={{ background: 'linear-gradient(180deg, rgba(5,3,9,0.28) 0%, rgba(5,3,9,0.60) 45%, rgba(5,3,9,0.92) 100%)' }}
             />
 
-            {/* ── L3 cat overlay — mobile only, fixed para edge-to-edge ── */}
-            <AnimatePresence>
-              {l3Active && (
-                <motion.div
-                  className="fixed inset-0 z-[220] lg:hidden"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                  transition={{ duration: 0.45 }}
-                >
-                  <img
-                    src={CAT_CABINA_URL}
-                    alt=""
-                    aria-hidden="true"
-                    className="h-full w-full object-cover object-top"
-                  />
-                  <div
-                    aria-hidden="true"
-                    className="absolute inset-0"
-                    style={{ background: 'linear-gradient(180deg, rgba(5,3,9,0.10) 0%, rgba(5,3,9,0.35) 100%)' }}
-                  />
-                  {/* Botón cerrar propio — el ✓ del modal queda tapado con fixed */}
-                  <button
-                    type="button"
-                    onClick={onClose}
-                    className="absolute right-4 top-4 z-10 flex h-9 w-9 items-center justify-center rounded-full bg-black/40 text-white/70 backdrop-blur-sm transition hover:bg-black/60 hover:text-white"
-                    aria-label="Cerrar"
+            {/* ── L3 cat overlay — mobile only, portal a document.body ── */}
+            {typeof document !== 'undefined' && ReactDOM.createPortal(
+              <AnimatePresence>
+                {l3Active && (
+                  <motion.div
+                    className="fixed inset-0 z-[490] lg:hidden"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.45 }}
                   >
-                    <Check size={16} />
-                  </button>
-                  <div className="cabina-bubble">
-                    <p className="cabina-bubble__preludio">El laboratorio te habla</p>
-                    <p className="cabina-bubble__texto">{l3BubbleText}</p>
+                    <img
+                      src={CAT_CABINA_URL}
+                      alt=""
+                      aria-hidden="true"
+                      className="h-full w-full object-cover object-top"
+                    />
+                    <div
+                      aria-hidden="true"
+                      className="absolute inset-0"
+                      style={{ background: 'linear-gradient(180deg, rgba(5,3,9,0.10) 0%, rgba(5,3,9,0.35) 100%)' }}
+                    />
+                    <div className="cabina-bubble">
+                      <p className="cabina-bubble__preludio">El laboratorio te habla</p>
+                      <p className="cabina-bubble__texto">{l3BubbleText}</p>
+                      {l3Step === 3 && (
+                        <button
+                          type="button"
+                          className="cabina-bubble__cta"
+                          onClick={handleNavigateToRecommendation}
+                        >
+                          Explorar {l3Rec.forma}
+                        </button>
+                      )}
+                    </div>
                     {l3Step < 3 ? (
-                      <button type="button" className="cabina-bubble__siguiente" onClick={() => setL3Step(l3Step + 1)}>
-                        Siguiente →
+                      <button
+                        type="button"
+                        className="cabina-siguiente-flotante"
+                        onClick={() => setL3Step(l3Step + 1)}
+                        aria-label="Siguiente"
+                      >
+                        <ChevronRight size={20} />
                       </button>
                     ) : (
-                      <button type="button" className="cabina-bubble__cta" onClick={handleNavigateToRecommendation}>
-                        Explorar {l3Rec.forma}
+                      <button
+                        type="button"
+                        className="cabina-siguiente-flotante"
+                        onClick={handleBackToDashboard}
+                        aria-label="Volver al dashboard"
+                      >
+                        <Check size={18} />
                       </button>
                     )}
-                  </div>
-                </motion.div>
-              )}
-            </AnimatePresence>
+                  </motion.div>
+                )}
+              </AnimatePresence>,
+              document.body
+            )}
 
             <div className="relative z-10 h-full overflow-y-auto">
               <AnimatePresence mode="wait">
@@ -823,10 +842,11 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative }) =>
                         const isL1 = i === 0;
                         const isL2 = i === 1;
                         const isL3 = i === 2;
-                        const isCompleted  = isL1 || (isL2 && l2ConvDone);
-                        const isAvailable  = (isL2 && !l2ConvDone) || (isL3 && l2ConvDone);
-                        const levelIsOpen  = isCompleted || (isL2 && !l2ConvDone && l2Open) || (isL3 && l2ConvDone && l3Open);
-                        const canToggle    = (isL2 && !l2ConvDone) || (isL3 && l2ConvDone);
+                        const l3Completed  = isL3 && Boolean(l3Rec?.step3) && !l3Rec?.error;
+                        const isCompleted  = isL1 || (isL2 && l2ConvDone) || l3Completed;
+                        const isAvailable  = (isL2 && !l2ConvDone) || (isL3 && l2ConvDone && !l3Completed);
+                        const levelIsOpen  = isCompleted || (isL2 && !l2ConvDone && l2Open) || (isL3 && l2ConvDone && !l3Completed && l3Open);
+                        const canToggle    = (isL2 && !l2ConvDone) || (isL3 && l2ConvDone && !l3Completed);
                         const handleToggle = isL3 ? handleL3Toggle : () => setL2Open((v) => !v);
 
                         return (
