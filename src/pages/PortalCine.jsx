@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
+import ReactDOM from 'react-dom';
 import { useLocation , useNavigate } from 'react-router-dom';
-import { Hand, Video } from 'lucide-react';
+import { Hand, RotateCcw, Video, X } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useAuth } from '@/contexts/SupabaseAuthContext';
 import LoginOverlay from '@/components/ContributionModal/LoginOverlay';
@@ -187,6 +188,14 @@ const PortalCine = () => {
   const [experienceDone, setExperienceDone] = useState(() => { try { return Boolean(JSON.parse(localStorage.getItem('gatoencerrado:resonance:cine') || '{}').experience_ts); } catch { return false; } });
   const [l2Done, setL2Done] = useState(() => { try { return Boolean(JSON.parse(localStorage.getItem('gatoencerrado:resonance:cine') || '{}').l2_option); } catch { return false; } });
   const [l3Rec, setL3Rec] = useState(() => { try { return JSON.parse(localStorage.getItem('gatoencerrado:resonance:cine') || '{}').l3_recommendation ?? null; } catch { return null; } });
+  const [isPrecareVisible, setIsPrecareVisible] = useState(false);
+  const [isQuironOverlayVisible, setIsQuironOverlayVisible] = useState(false);
+  const [quironSignedUrl, setQuironSignedUrl] = useState('');
+  const [isQuironUnlocking, setIsQuironUnlocking] = useState(false);
+  const [isPortrait, setIsPortrait] = useState(() =>
+    typeof window !== 'undefined' ? window.matchMedia('(orientation: portrait)').matches : false
+  );
+  const quironVideoRef = useRef(null);
   const refreshL1 = useCallback(() => { try { const s = JSON.parse(localStorage.getItem('gatoencerrado:resonance:cine') || '{}'); setL1Done(Boolean(s.l1)); setExperienceDone(Boolean(s.experience_ts)); setL2Done(Boolean(s.l2_option)); setL2Answer(s.l2_option ?? null); setL3Rec(s.l3_recommendation ?? null); } catch { /* ignore */ } }, []);
   const navigate = useNavigate();
   const location = useLocation();
@@ -196,6 +205,26 @@ const PortalCine = () => {
     return () => window.clearTimeout(t);
   }, []);
   const readingTooltipRef = useRef(null);
+
+  useEffect(() => {
+    const mq = window.matchMedia('(orientation: portrait)');
+    const handler = (e) => setIsPortrait(e.matches);
+    mq.addEventListener('change', handler);
+    return () => mq.removeEventListener('change', handler);
+  }, []);
+
+  useEffect(() => {
+    if (!isQuironOverlayVisible) return undefined;
+    const block = (e) => {
+      const key = String(e.key || '').toLowerCase();
+      if (e.key === 'F12' || ((e.ctrlKey || e.metaKey) && ['s', 'u', 'p'].includes(key))) {
+        e.preventDefault();
+        e.stopPropagation();
+      }
+    };
+    window.addEventListener('keydown', block);
+    return () => window.removeEventListener('keydown', block);
+  }, [isQuironOverlayVisible]);
 
   const handleOpenLogin = useCallback(() => {
     if (!isAuthenticated) {
@@ -288,9 +317,26 @@ const PortalCine = () => {
 
   const handleOpenFullFilm = useCallback(() => {
     if (!requireAuth()) return;
-    if (typeof window === 'undefined') return;
-    window.open(QUIRON_DATA.fullUrl, '_blank', 'noopener,noreferrer');
+    setIsPrecareVisible(true);
   }, [requireAuth]);
+
+  const handleConfirmPrecare = useCallback(async () => {
+    setIsPrecareVisible(false);
+    setIsQuironUnlocking(true);
+    try {
+      const { data, error } = await supabase.storage
+        .from('Cine - teasers')
+        .createSignedUrl('Quiron_10min.mp4', 60 * 10);
+      if (error || !data?.signedUrl) throw error || new Error('Sin URL firmada');
+      setQuironSignedUrl(data.signedUrl);
+      setIsQuironOverlayVisible(true);
+    } catch (err) {
+      console.error('[PortalCine] No se pudo firmar el cortometraje:', err);
+      window.open(QUIRON_DATA.fullUrl, '_blank', 'noopener,noreferrer');
+    } finally {
+      setIsQuironUnlocking(false);
+    }
+  }, []);
 
 
   const handleSendPulse = useCallback(async () => {
@@ -513,6 +559,79 @@ const PortalCine = () => {
         </div>
 
         {showLoginOverlay ? <LoginOverlay onClose={handleCloseLogin} /> : null}
+        {isPrecareVisible && typeof document !== 'undefined' && ReactDOM.createPortal(
+          <div className="fixed inset-0 z-[490] flex items-center justify-center overflow-y-auto overflow-x-hidden overscroll-none">
+            <div className="absolute inset-0 bg-black/92 backdrop-blur-md" onClick={() => setIsPrecareVisible(false)} />
+            <div className="relative z-10 my-8 w-[calc(100vw-2rem)] max-w-lg rounded-3xl border border-white/10 bg-slate-950/90 p-8 text-center shadow-[0_35px_120px_rgba(0,0,0,0.7)]">
+              <p className="text-xs uppercase tracking-[0.35em] text-slate-400/80">Antes de continuar</p>
+              <div className="mt-5 flex flex-col items-center gap-2">
+                <div className="flex h-12 w-12 items-center justify-center rounded-full border border-sky-400/30 bg-sky-500/10">
+                  <RotateCcw size={22} className="text-sky-300 animate-spin-slow" style={{ animationDuration: '3s' }} />
+                </div>
+                <p className="text-[0.7rem] uppercase tracking-[0.28em] text-sky-300/80">Mejor en horizontal</p>
+              </div>
+              <p className="mt-4 text-sm text-slate-300/85 leading-relaxed">
+                Una vez desbloqueado, el cortometraje se habilita una vez; con una huella activada puedes volver cuando quieras. ¿Quieres continuar?
+              </p>
+              <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:justify-center">
+                <button
+                  type="button"
+                  onClick={handleConfirmPrecare}
+                  className="inline-flex items-center justify-center rounded-full bg-gradient-to-r from-purple-600/80 to-indigo-500/80 px-6 py-3 text-sm font-semibold text-white hover:from-purple-500 hover:to-indigo-400"
+                >
+                  Continuar
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setIsPrecareVisible(false)}
+                  className="inline-flex items-center justify-center rounded-full border border-white/20 bg-white/5 px-6 py-3 text-sm font-semibold text-slate-100 hover:bg-white/10"
+                >
+                  Cancelar
+                </button>
+              </div>
+            </div>
+          </div>,
+          document.body
+        )}
+
+        {isQuironUnlocking && typeof document !== 'undefined' && ReactDOM.createPortal(
+          <div className="fixed inset-0 z-[492] flex flex-col items-center justify-center bg-black/95">
+            <div className="h-8 w-8 animate-spin rounded-full border-2 border-white/20 border-t-white/80" />
+            <p className="mt-4 text-xs uppercase tracking-[0.3em] text-slate-400">Preparando el cortometraje…</p>
+          </div>,
+          document.body
+        )}
+
+        {isQuironOverlayVisible && quironSignedUrl && typeof document !== 'undefined' && ReactDOM.createPortal(
+          <div className="fixed inset-0 z-[495] bg-black">
+            <video
+              ref={quironVideoRef}
+              src={quironSignedUrl}
+              className="h-full w-full object-contain"
+              controls
+              autoPlay
+              playsInline
+              onContextMenu={(e) => e.preventDefault()}
+              onEnded={() => { setIsQuironOverlayVisible(false); setQuironSignedUrl(''); }}
+            />
+            <button
+              type="button"
+              onClick={() => { setIsQuironOverlayVisible(false); setQuironSignedUrl(''); }}
+              className="absolute right-4 top-4 flex h-9 w-9 items-center justify-center rounded-full bg-black/50 text-white backdrop-blur-sm transition hover:bg-black/70"
+              aria-label="Cerrar cortometraje"
+            >
+              <X size={18} />
+            </button>
+            {isPortrait && (
+              <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center gap-4 bg-black/80 backdrop-blur-sm">
+                <RotateCcw size={40} className="text-white/80 animate-spin-slow" style={{ animationDuration: '3s' }} />
+                <p className="text-sm uppercase tracking-[0.3em] text-slate-300">Gira tu teléfono</p>
+                <p className="text-xs text-slate-500">para ver el cortometraje</p>
+              </div>
+            )}
+          </div>,
+          document.body
+        )}
         <ContributionModal
           open={isContributionOpen}
           onClose={() => setIsContributionOpen(false)}
