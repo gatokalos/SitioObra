@@ -667,6 +667,21 @@ const Transmedia = ({ allianceOnlyMode = false }) => {
     [isMobileViewport, location, navigate]
   );
 
+  const navigateToPortalIfReady = useCallback(
+    (formatId) => {
+      if (!formatId) return false;
+      const portalRoute = resolvePortalRoute({ formatId, isMobileViewport });
+      if (!portalRoute) return false;
+      navigate(portalRoute, {
+        state: createPortalLaunchState(location, 'transmedia-bienvenida-bypass', {
+          showcaseId: formatId,
+        }),
+      });
+      return true;
+    },
+    [isMobileViewport, location, navigate]
+  );
+
   const {
     showcaseOpenTransition,
     clearShowcaseOpenTransitionTimers,
@@ -780,11 +795,11 @@ const Transmedia = ({ allianceOnlyMode = false }) => {
         setMobileVitranaRevealId((prev) => (prev === formatId ? null : formatId));
         return;
       }
-      // Desktop anonymous: misma lógica que mobile — muestra CTA de login en la card.
+      // Desktop anonymous: bienvenida-completed users navigate to portal directly; everyone else sees login CTA.
       if (!isMobileViewport && !isAuthenticated) {
         const hasBienvenida = safeGetItem('gatoencerrado:bienvenida-completed') === '1';
         if (hasBienvenida && formatId === recommendedShowcaseId) {
-          if (navigateToMobilePortalIfReady(formatId)) return;
+          if (navigateToPortalIfReady(formatId)) return;
         }
         setDesktopVitranaRevealId((prev) => (prev === formatId ? null : formatId));
         return;
@@ -819,6 +834,7 @@ const Transmedia = ({ allianceOnlyMode = false }) => {
       isMobileViewport,
       loadShowcaseContent,
       navigateToMobilePortalIfReady,
+      navigateToPortalIfReady,
       recommendedShowcaseId,
       releaseDesktopFocusLock,
       runShowcaseOpenTransition,
