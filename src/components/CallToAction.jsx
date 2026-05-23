@@ -282,6 +282,7 @@ const CallToAction = ({ barsIntroDelayMs = 0 }) => {
   const aftercareAudioRef = useRef(null);
   const accordionPushTimeoutRef = useRef(null);
   const loginPulseTimeoutRef = useRef(null);
+  const pendingAutoCheckout = useRef(false);
   const audioContextRef = useRef(null);
   const masterGainRef = useRef(null);
   const counterAudioPrimedRef = useRef(false);
@@ -444,19 +445,26 @@ const CallToAction = ({ barsIntroDelayMs = 0 }) => {
 
       safeRemoveItem(LOGIN_RETURN_KEY);
       setIsLoginPulseActive(false);
+      pendingAutoCheckout.current = true;
 
       window.setTimeout(() => {
         const target = document.getElementById('cta') || embeddedCheckoutRef.current;
         target?.scrollIntoView?.({ behavior: 'smooth', block: 'start' });
       }, 80);
-
-      if (!isSubscriber) {
-        setCheckoutStatus('Sesión iniciada. Estás listo para activar tu huella aquí mismo.');
-      }
     } catch {
       safeRemoveItem(LOGIN_RETURN_KEY);
     }
-  }, [isSubscriber, user]);
+  }, [user]);
+
+  // Dispara checkout automáticamente después de login desde CTA,
+  // pero solo cuando el check de suscripción ya terminó (evita race condition).
+  useEffect(() => {
+    if (!pendingAutoCheckout.current || isCheckingSubscription || !user) return;
+    pendingAutoCheckout.current = false;
+    if (!isSubscriber) {
+      handleCheckout(); // eslint-disable-line react-hooks/exhaustive-deps
+    }
+  }, [isCheckingSubscription, isSubscriber, user]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // 2) Cálculos de impacto
   const stats = useMemo(() => deriveImpactStats(subs + ticketUnits), [subs, ticketUnits]);

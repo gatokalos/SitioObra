@@ -819,6 +819,7 @@ const Transmedia = ({ allianceOnlyMode = false }) => {
       isMobileViewport,
       loadShowcaseContent,
       navigateToMobilePortalIfReady,
+      recommendedShowcaseId,
       releaseDesktopFocusLock,
       runShowcaseOpenTransition,
       showcaseContent,
