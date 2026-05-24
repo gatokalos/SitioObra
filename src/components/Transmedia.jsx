@@ -172,6 +172,22 @@ const SHOWCASE_EYEBROW_COLOR = {
   miniversos:          'text-purple-300',
 };
 
+const getFocusSourceParamFromLocation = (locationLike) => {
+  if (!locationLike) return null;
+
+  const searchParams = new URLSearchParams(locationLike.search || '');
+  const fromSearch = searchParams.get('from') || searchParams.get('source');
+  if (fromSearch) return normalizeBridgeKey(fromSearch);
+
+  const hashRaw = String(locationLike.hash || '');
+  const [hashAnchor, hashQuery = ''] = hashRaw.split('?');
+  if (normalizeBridgeKey(hashAnchor) !== 'transmedia' || !hashQuery) return null;
+
+  const hashParams = new URLSearchParams(hashQuery);
+  const fromHash = hashParams.get('from') || hashParams.get('source');
+  return fromHash ? normalizeBridgeKey(fromHash) : null;
+};
+
 const SHOWCASE_CARD_GRADIENT = {
   copycats:            'to-sky-900/25',
   lataza:              'to-amber-900/25',
@@ -953,6 +969,9 @@ const Transmedia = ({ allianceOnlyMode = false }) => {
     if (typeof window === 'undefined') return undefined;
     const focusRaw = getFocusParamFromLocation(location);
     if (!focusRaw) return undefined;
+    const isBienvenidaRecommendationFocus =
+      getFocusSourceParamFromLocation(location) === 'bienvenida' &&
+      safeGetItem('gatoencerrado:bienvenida-completed') === '1';
 
     let isCancelled = false;
 
@@ -981,7 +1000,7 @@ const Transmedia = ({ allianceOnlyMode = false }) => {
       setFocusLockShowcaseId(showcaseId);
       setFocusIncomingGAT(null);
       setFocusAppMetadata(metadata);
-      focusShowcaseCard(showcaseId);
+      focusShowcaseCard(showcaseId, isBienvenidaRecommendationFocus);
     };
 
     // Fallback inmediato para evitar latencia perceptible en deep-link.

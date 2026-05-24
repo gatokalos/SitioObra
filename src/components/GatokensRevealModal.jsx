@@ -34,8 +34,11 @@ const GatokensRevealModal = ({ open, onClose, recommendedShowcaseId }) => {
   }, [open]);
 
   const handleGoToRecommendation = useCallback(() => {
+    if (!recommendedShowcaseId) return;
     onClose?.();
-    navigate(`/#transmedia?focus=${recommendedShowcaseId}`);
+    navigate(
+      `/#transmedia?focus=${encodeURIComponent(recommendedShowcaseId)}&from=bienvenida`
+    );
   }, [navigate, onClose, recommendedShowcaseId]);
 
   const handleExplore = useCallback(() => {
