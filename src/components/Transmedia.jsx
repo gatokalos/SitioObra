@@ -683,21 +683,6 @@ const Transmedia = ({ allianceOnlyMode = false }) => {
     [isMobileViewport, location, navigate]
   );
 
-  const navigateToPortalIfReady = useCallback(
-    (formatId) => {
-      if (!formatId) return false;
-      const portalRoute = resolvePortalRoute({ formatId, isMobileViewport });
-      if (!portalRoute) return false;
-      navigate(portalRoute, {
-        state: createPortalLaunchState(location, 'transmedia-bienvenida-bypass', {
-          showcaseId: formatId,
-        }),
-      });
-      return true;
-    },
-    [isMobileViewport, location, navigate]
-  );
-
   const {
     showcaseOpenTransition,
     clearShowcaseOpenTransitionTimers,
@@ -811,14 +796,14 @@ const Transmedia = ({ allianceOnlyMode = false }) => {
         setMobileVitranaRevealId((prev) => (prev === formatId ? null : formatId));
         return;
       }
-      // Desktop anonymous: bienvenida-completed users navigate to portal directly; everyone else sees login CTA.
+      // Desktop anonymous: bienvenida-completed users can open the recommended vitrana.
+      // Everyone else sees the login CTA.
       if (!isMobileViewport && !isAuthenticated) {
         const hasBienvenida = safeGetItem('gatoencerrado:bienvenida-completed') === '1';
-        if (hasBienvenida && formatId === recommendedShowcaseId) {
-          if (navigateToPortalIfReady(formatId)) return;
+        if (!(hasBienvenida && formatId === recommendedShowcaseId)) {
+          setDesktopVitranaRevealId((prev) => (prev === formatId ? null : formatId));
+          return;
         }
-        setDesktopVitranaRevealId((prev) => (prev === formatId ? null : formatId));
-        return;
       }
       if (navigateToMobilePortalIfReady(formatId)) {
         return;
@@ -850,7 +835,6 @@ const Transmedia = ({ allianceOnlyMode = false }) => {
       isMobileViewport,
       loadShowcaseContent,
       navigateToMobilePortalIfReady,
-      navigateToPortalIfReady,
       recommendedShowcaseId,
       releaseDesktopFocusLock,
       runShowcaseOpenTransition,
@@ -5182,11 +5166,6 @@ const rendernotaAutoral = () => {
                       </AnimatePresence>
                     </div>
                     <div className="relative vitrina-pozo-glass__meta overflow-hidden">
-                      {isRecommendedTile ? (
-                        <div className="absolute right-4 top-4 z-20 rounded-full border border-fuchsia-300/50 bg-fuchsia-500/20 px-3 py-1 text-[0.58rem] font-semibold uppercase tracking-[0.24em] text-fuchsia-100">
-                          Recomendada
-                        </div>
-                      ) : null}
                       <div className="absolute inset-0 pointer-events-none">
                         <div
                           aria-hidden="true"
@@ -5208,7 +5187,7 @@ const rendernotaAutoral = () => {
                             'radial-gradient(2px 2px at 36% 28%, rgba(226,232,240,0.6), transparent 70%),' +
                             'radial-gradient(1px 1px at 44% 62%, rgba(255,255,255,0.45), transparent 70%),' +
                             'radial-gradient(1.5px 1.5px at 52% 18%, rgba(241,245,249,0.55), transparent 70%),' +
-                            'radial-gradient(2px 2px at 64% 48%, rgba(226,232,240,0.6), transparent 70%),' +
+                            'radial-gradient(1.5px 1.5px at 64% 48%, rgba(226,232,240,0.6), transparent 70%),' +
                             'radial-gradient(1px 1px at 72% 30%, rgba(255,255,255,0.4), transparent 70%),' +
                             'radial-gradient(1.5px 1.5px at 80% 66%, rgba(241,245,249,0.55), transparent 70%),' +
                             'radial-gradient(2px 2px at 88% 22%, rgba(226,232,240,0.6), transparent 70%),' +
@@ -5230,7 +5209,11 @@ const rendernotaAutoral = () => {
                           <h3 className="font-display text-2xl text-slate-100">{format.title}</h3>
                         </div>
                       </div>
-                  
+                      {isRecommendedTile ? (
+                        <div className="w-full rounded-full border border-fuchsia-300/50 bg-fuchsia-500/15 py-1.5 text-center text-[0.58rem] font-semibold uppercase tracking-[0.24em] text-fuchsia-100">
+                          Tu pase al universo
+                        </div>
+                      ) : null}
                       {showcaseDefinitions[format.id]?.notaAutoral ? (
                         <p className="text-sm leading-relaxed text-slate-300/70 whitespace-pre-line font-light line-clamp-3">
                           {showcaseDefinitions[format.id].notaAutoral}
@@ -5271,36 +5254,29 @@ const rendernotaAutoral = () => {
               </div>
               <div className="hidden lg:block">
             {isDesktopFocusLockActive ? (
-              <div className="relative mx-auto mb-5 w-full max-w-[31rem] rounded-2xl border border-fuchsia-300/40 bg-fuchsia-500/10 px-5 py-4 text-center shadow-[0_10px_30px_rgba(120,39,173,0.25)]">
-                <button
-                  type="button"
-                  onClick={releaseDesktopFocusLock}
-                  className="absolute -right-2 -top-2 inline-flex h-7 w-7 items-center justify-center rounded-full border border-fuchsia-200/45 bg-fuchsia-400/20 text-sm font-semibold text-fuchsia-50 transition hover:bg-fuchsia-400/35"
-                  aria-label="Cerrar enfoque recomendado"
+              <div className="flex justify-center mb-5">
+                <motion.svg
+                  width="36"
+                  height="36"
+                  viewBox="0 0 34 34"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                  animate={{ y: [0, 3, 0], opacity: [0.72, 0.3, 0.72] }}
+                  transition={{ duration: 2.1, repeat: Infinity, ease: 'easeInOut' }}
+                  className="h-10 w-10"
+                  style={{ filter: 'drop-shadow(0 0 5px rgba(255,255,255,0.3)) drop-shadow(0 0 10px rgba(189,189,189,0.26))' }}
                 >
-                  ×
-                </button>
-                <div className="text-center">
-                  {focusMetadataImageUrl ? (
-                    <div className="mx-auto mb-3 h-16 w-16 overflow-hidden rounded-xl border border-fuchsia-200/35 bg-black/25">
-                      <img
-                        src={focusMetadataImageUrl}
-                        alt={focusAppMetadata?.title ? `Imagen recomendada de ${focusAppMetadata.title}` : 'Imagen recomendada'}
-                        className="h-full w-full object-cover"
-                        loading="lazy"
-                        decoding="async"
-                      />
-                    </div>
-                  ) : null}
-                  <p className="text-[0.62rem] uppercase tracking-[0.3em] text-fuchsia-100/90">Vitrina recomendada por el gato de la cabina</p>
-                  <p className="mt-1 text-[1.05rem] font-semibold leading-snug text-slate-100">
-                    Cuentas con{' '} extras de energía
-                    <span className="font-semibold text-amber-200">
-                      {Number.isFinite(focusIncomingGAT) ? `${focusIncomingGAT} GAT` : 'tus GAT'}
-                    </span>
-                    .
-                  </p>
-                </div>
+                  <defs>
+                    <linearGradient id="transmediaFocusChevronGrad" x1="3" y1="4" x2="30" y2="30" gradientUnits="userSpaceOnUse">
+                      <stop stopColor="#2d2d2d" />
+                      <stop offset="0.55" stopColor="#bdbdbd" />
+                      <stop offset="1" stopColor="#ffffff" />
+                    </linearGradient>
+                  </defs>
+                  <path d="M7 9.5L17 15.5L27 9.5" stroke="url(#transmediaFocusChevronGrad)" strokeWidth="2.8" strokeLinecap="round" strokeLinejoin="round" opacity="0.58" />
+                  <path d="M7 16L17 22L27 16" stroke="url(#transmediaFocusChevronGrad)" strokeWidth="2.9" strokeLinecap="round" strokeLinejoin="round" opacity="0.74" />
+                  <path d="M7 22.5L17 28.5L27 22.5" stroke="url(#transmediaFocusChevronGrad)" strokeWidth="2.8" strokeLinecap="round" strokeLinejoin="round" opacity="0.66" />
+                </motion.svg>
               </div>
             ) : null}
             <div className="grid grid-cols-3 gap-8 min-h-[720px]">
@@ -5388,11 +5364,6 @@ const rendernotaAutoral = () => {
                       </AnimatePresence>
                     </div>
                     <div className="relative vitrina-pozo-glass__meta p-6 overflow-hidden min-h-[240px]">
-                      {isRecommendedTile ? (
-                        <div className="absolute right-4 top-4 z-20 rounded-full border border-fuchsia-300/50 bg-fuchsia-500/20 px-3 py-1 text-[0.58rem] font-semibold uppercase tracking-[0.24em] text-fuchsia-100">
-                          Recomendada
-                        </div>
-                      ) : null}
                       <div
                         aria-hidden="true"
                         className="absolute inset-0 opacity-80 pointer-events-none"
@@ -5431,6 +5402,11 @@ const rendernotaAutoral = () => {
                           <h3 className="font-display text-2xl text-slate-100">{format.title}</h3>
                         </div>
                       </div>
+                      {isRecommendedTile ? (
+                        <div className="w-full rounded-full border border-fuchsia-300/50 bg-fuchsia-500/15 py-1.5 text-center text-[0.58rem] font-semibold uppercase tracking-[0.24em] text-fuchsia-100">
+                          Tu pase al universo
+                        </div>
+                      ) : null}
                       {showcaseDefinitions[format.id]?.notaAutoral ? (
                         <p className="text-sm leading-relaxed text-slate-300/70 whitespace-pre-line font-light line-clamp-4">
                           {showcaseDefinitions[format.id].notaAutoral}
