@@ -1,5 +1,4 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { Link } from 'react-router-dom';
 import { BookOpen } from 'lucide-react';
 
 const TONE_STYLES = {
@@ -38,8 +37,8 @@ const RelatedReadingTooltipButton = ({
   const positionClass = placement === 'above' ? 'bottom-full mb-2' : 'top-full mt-2';
 
   const readingHref = useMemo(() => {
-    if (!slug) return '/#blog';
-    return `/#blog/${encodeURIComponent(slug)}`;
+    if (!slug) return '/blog';
+    return `/blog/${encodeURIComponent(slug)}`;
   }, [slug]);
 
   useEffect(() => {
@@ -127,13 +126,15 @@ const RelatedReadingTooltipButton = ({
         <div className="space-y-2 px-3 py-2 text-center">
           <p className={`text-[11px] leading-snug ${styles.label}`}>Tenemos un artículo disponible de {authorLabel} disponible en Curaduría</p>
           <div className="flex justify-center">
-            <Link
-              to={readingHref}
+            <a
+              href={readingHref}
+              target="_blank"
+              rel="noopener noreferrer"
               className={`inline-flex items-center rounded-md border px-2.5 py-1.5 text-[10px] uppercase tracking-[0.24em] transition ${styles.cta}`}
               onClick={() => setIsOpen(false)}
             >
               Ir a leer
-            </Link>
+            </a>
           </div>
         </div>
         {thumbnailUrl ? (

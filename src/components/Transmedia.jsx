@@ -1092,14 +1092,10 @@ const Transmedia = ({ allianceOnlyMode = false }) => {
   );
 
   const handleOpenBlogEntry = useCallback((slug) => {
-    if (!slug) {
-      return;
-    }
-    if (!requireShowcaseAuth('Inicia sesión para leer este fragmento.', { action: 'read-fragment', extras: { slug } })) {
-      return;
-    }
-    navigateToCuratorial(slug);
-  }, [navigateToCuratorial, requireShowcaseAuth]);
+    if (!slug) return;
+    if (!requireShowcaseAuth('Inicia sesión para leer este fragmento.', { action: 'read-fragment', extras: { slug } })) return;
+    window.open(`/blog/${encodeURIComponent(slug)}`, '_blank', 'noopener,noreferrer');
+  }, [requireShowcaseAuth]);
 
   const {
     latestBlogPostByShowcase,
