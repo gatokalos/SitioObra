@@ -88,7 +88,11 @@
       "Bash(git -C /Users/gatoenigmatico/gatoencerrado-ai/backend/gato-enigmatico-api status)",
       "Bash(git -C /Users/gatoenigmatico/gatoencerrado-ai/backend/gato-enigmatico-api log --oneline -3)",
       "Bash(git -C /Users/gatoenigmatico/gatoencerrado-ai/backend/gato-enigmatico-api diff HEAD routes/resonance.js)",
-      "Bash(node -e ' *)"
+      "Bash(node -e ' *)",
+      "Bash(awk 'NR>=4043 && NR<=4294 && /className=\"mb-3\"/{found=1} found{print NR\": \"$0; if\\(/Resonancia colectiva|Formas de habitar/\\){found=0}}' /Users/gatoenigmatico/gatoencerrado-ai/landing/SitioObra/src/components/Transmedia.jsx)",
+      "Bash(curl -sI \"https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Merch/posters/poster_graficos.png\")",
+      "Bash(cp /Users/gatoenigmatico/gatoencerrado-ai/apps/bienvenida/public/images/boleto_vintage.png /Users/gatoenigmatico/gatoencerrado-ai/landing/SitioObra/public/assets/boleto_vintage.png)",
+      "Bash(identify /Users/gatoenigmatico/gatoencerrado-ai/landing/SitioObra/public/assets/boleto_vintage.png)"
     ],
     "additionalDirectories": [
       "/Users/gatoenigmatico/Desktop/Postulación EFIARTES",
@@ -98,7 +102,8 @@
       "/Users/gatoenigmatico/gatoencerrado-ai/supabase",
       "/Users/gatoenigmatico/gatoencerrado-ai/landing/SitioObra/src/assets",
       "/Users/gatoenigmatico/gatoencerrado-ai/apps/todxs-mvp",
-      "/Users/gatoenigmatico/gatoencerrado-ai/gato-backstage"
+      "/Users/gatoenigmatico/gatoencerrado-ai/gato-backstage",
+      "/Users/gatoenigmatico/gatoencerrado-ai/apps/bienvenida/public/images"
     ]
   }
 }

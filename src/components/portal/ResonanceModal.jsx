@@ -14,6 +14,7 @@ import {
 import { OBRA_VOICE_MIN_GAT } from '@/components/transmedia/transmediaConstants';
 import { resolvePortalRoute } from '@/lib/miniversePortalRegistry';
 import { createPortalLaunchState } from '@/lib/portalNavigation';
+import { createMiniverseSouvenirBlob, downloadBlob } from '@/lib/miniverseSouvenirCard';
 
 const OBRA_API_URL = (import.meta.env.VITE_OBRA_API_URL ?? 'https://api.gatoencerrado.ai').replace(/\/+$/, '');
 const CAT_CABINA_URL = 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/oraculo/gato-cabina.webp';
@@ -32,7 +33,21 @@ const PORTAL_GRADIENT = {
   oraculo:     'from-indigo-400 via-violet-500 to-purple-500',
 };
 
-const BASE = 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Merch/posters';
+const MERCH_BASE = 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Merch';
+
+const PORTAL_ICON_URL = {
+  obra:        `${MERCH_BASE}/la_obra.png`,
+  literatura:  `${MERCH_BASE}/literatura.png`,
+  artesanias:  `${MERCH_BASE}/la_taza.png`,
+  grafico:     `${MERCH_BASE}/los_graficos.png`,
+  cine:        `${MERCH_BASE}/cortos.png`,
+  sonoridades: `${MERCH_BASE}/sonoridades.png`,
+  movimiento:  `${MERCH_BASE}/lasdiosas.png`,
+  juegos:      `${MERCH_BASE}/juegos.png`,
+  oraculo:     `${MERCH_BASE}/el_oraculo.png`,
+};
+
+const BASE = `${MERCH_BASE}/posters`;
 const PORTAL_POSTER = {
   obra:        `${BASE}/poster_obra.png`,
   artesanias:  `${BASE}/poster_artesanias.png`,
@@ -222,7 +237,7 @@ const lsPatch = (portal, patch) => {
 
 /* ─── Componente ──────────────────────────────────────────────────────── */
 
-const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative }) => {
+const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNavigateToRecommendation }) => {
   const modalRef = useRef(null);
   const submitBtnRef = useRef(null);
   const { user } = useAuth();
@@ -258,10 +273,11 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative }) =>
   const [convError, setConvError] = useState(false);
 
   // Nivel 3 — recomendación del siguiente miniverso
-  const [l3Open, setL3Open]       = useState(false);
-  const [l3Loading, setL3Loading] = useState(false);
-  const [l3Rec, setL3Rec]         = useState(() => lsRead(portal).l3_recommendation ?? null);
-  const [l3Step, setL3Step]       = useState(1);
+  const [l3Open, setL3Open]             = useState(false);
+  const [l3Loading, setL3Loading]       = useState(false);
+  const [l3Rec, setL3Rec]               = useState(() => lsRead(portal).l3_recommendation ?? null);
+  const [l3Step, setL3Step]             = useState(() => !!lsRead(portal).l3_recommendation?.step3 ? 3 : 1);
+  const [isSouvenirGenerating, setIsSouvenirGenerating] = useState(false);
 
   // Verifica Supabase solo si localStorage no tiene l1 (respuestas pre-deploy)
   useEffect(() => {
@@ -459,6 +475,23 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative }) =>
     onClose?.();
   };
 
+  const handleDownloadSouvenir = useCallback(async () => {
+    if (isSouvenirGenerating || !l3Rec?.step3) return;
+    setIsSouvenirGenerating(true);
+    try {
+      const blob = await createMiniverseSouvenirBlob({
+        portal,
+        step3: l3Rec.step3,
+        backgroundUrl: PORTAL_POSTER[portal],
+      });
+      downloadBlob(blob, `boleto-miniverso-${portal}.png`);
+    } catch (err) {
+      console.error('[ResonanceModal] No se pudo generar el coleccionable:', err);
+    } finally {
+      setIsSouvenirGenerating(false);
+    }
+  }, [isSouvenirGenerating, l3Rec, portal]);
+
   /* ── render ── */
   const l3Active = l3Open && !!l3Rec && !l3Rec.error && !l3Rec.all_complete;
   const l3BubbleText = l3Rec
@@ -502,7 +535,7 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative }) =>
     setL3Open(opening);
     if (opening) {
       setL3Step(1);
-      if (!l3Rec) fetchL3Recommendation();
+      if (!l3Rec || !l3Rec.step1) fetchL3Recommendation();
     }
   };
 
@@ -514,6 +547,10 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative }) =>
   const handleNavigateToRecommendation = () => {
     if (!l3Rec?.recommended_format_id) return;
     onClose?.();
+    if (onNavigateToRecommendation) {
+      onNavigateToRecommendation(l3Rec.recommended_format_id);
+      return;
+    }
     const portalRoute = resolvePortalRoute({ formatId: l3Rec.recommended_format_id });
     if (portalRoute) {
       navigate(portalRoute, {
@@ -604,8 +641,16 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative }) =>
                     />
                     <div className="cabina-bubble">
                       <p className="cabina-bubble__preludio">El laboratorio te habla</p>
-                      <p className="cabina-bubble__texto">{l3BubbleText}</p>
-                      {l3Step === 3 && (
+                      {(l3Loading && !l3BubbleText) ? (
+                        <div className="flex items-center justify-center gap-1.5 py-3">
+                          <span className="h-1.5 w-1.5 rounded-full bg-slate-500 animate-bounce" style={{ animationDelay: '0ms' }} />
+                          <span className="h-1.5 w-1.5 rounded-full bg-slate-500 animate-bounce" style={{ animationDelay: '150ms' }} />
+                          <span className="h-1.5 w-1.5 rounded-full bg-slate-500 animate-bounce" style={{ animationDelay: '300ms' }} />
+                        </div>
+                      ) : (
+                        <p className="cabina-bubble__texto">{l3BubbleText}</p>
+                      )}
+                      {l3Step === 3 && l3BubbleText && (
                         <button
                           type="button"
                           className="cabina-bubble__cta"
@@ -619,8 +664,10 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative }) =>
                       <button
                         type="button"
                         className="cabina-siguiente-flotante"
-                        onClick={() => setL3Step(l3Step + 1)}
+                        onClick={() => { if (l3BubbleText) setL3Step(l3Step + 1); }}
                         aria-label="Siguiente"
+                        disabled={!l3BubbleText}
+                        style={!l3BubbleText ? { opacity: 0.35, cursor: 'not-allowed' } : undefined}
                       >
                         <ChevronRight size={20} />
                       </button>
@@ -989,20 +1036,35 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative }) =>
                                             </>
                                           )}
 
-                                          {/* Paso 3 — Oracular + CTA */}
+                                          {/* Paso 3 — Completado */}
                                           {!l3Loading && l3Rec && !l3Rec.error && !l3Rec.all_complete && l3Step === 3 && !l3Active && (
                                             <>
-                                              <p className="text-xs leading-relaxed text-slate-300/90 italic">
-                                                {l3Rec.step3}
+                                              <p className="text-xs leading-relaxed text-slate-300/90">
+                                                Este recorrido ha concluido.
                                               </p>
-                                              <button
+                                              <p className="text-xs leading-relaxed text-slate-400/80">
+                                                Las respuestas registradas permiten estudiar cómo las experiencias narrativas son interpretadas, recordadas y resignificadas por distintas personas.
+                                              </p>
+                                              <motion.button
                                                 type="button"
-                                                onClick={handleNavigateToRecommendation}
-                                                className="inline-flex items-center gap-2 rounded-full border border-purple-400/30 bg-purple-900/20 px-4 py-2 text-xs text-purple-200 transition hover:bg-purple-900/35 hover:border-purple-400/50"
+                                                onClick={handleDownloadSouvenir}
+                                                disabled={isSouvenirGenerating}
+                                                className="w-full flex flex-col items-center gap-3 py-2 transition active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
+                                                initial={{ opacity: 0, scale: 0.92, y: 8 }}
+                                                animate={{ opacity: 1, scale: 1, y: 0 }}
+                                                transition={{ type: 'spring', stiffness: 220, damping: 20, delay: 0.2 }}
                                               >
-                                                Explorar {l3Rec.forma}
-                                                <ArrowRight size={11} />
-                                              </button>
+                                                {PORTAL_ICON_URL[portal] && (
+                                                  <img
+                                                    src={PORTAL_ICON_URL[portal]}
+                                                    alt={portal}
+                                                    className="h-20 w-20 lg:h-32 lg:w-32 rounded-2xl object-cover shadow-[0_8px_32px_rgba(0,0,0,0.55)] drop-shadow-[0_0_18px_rgba(251,191,36,0.35)]"
+                                                  />
+                                                )}
+                                                <span className="text-sm font-semibold tracking-wide text-amber-200">
+                                                  {isSouvenirGenerating ? 'Generando…' : 'Tu coleccionable'}
+                                                </span>
+                                              </motion.button>
                                             </>
                                           )}
 
@@ -1166,7 +1228,7 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative }) =>
                             id="resonance-modal-title"
                             className="font-display text-3xl leading-tight tracking-tight text-amber-300"
                           >
-                            {question ?? 'Resonancia colectiva'}
+                            {question ?? 'Formas de habitar'}
                           </h3>
                         </div>
 

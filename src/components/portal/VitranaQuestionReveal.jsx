@@ -25,7 +25,7 @@ const VitranaQuestionReveal = ({
   onAnswer,
   onReveal,
   buttonLabel = 'Intuye tu respuesta',
-  label = 'Resonancia Colectiva',
+  label = 'Formas de habitar',
   autoReveal = false,
   portal = null,
   l2Done = false,
@@ -150,9 +150,9 @@ const VitranaQuestionReveal = ({
             '0 15px 45px rgba(67,56,202,0.45)',
           ]} : { boxShadow: '0 0 0px rgba(139,92,246,0)' }}
           transition={{ duration: 1.1, delay: autoReveal ? 0.35 : 0.75, ease: 'easeOut' }}
-          onClick={oracularPhrase && onL3CTA ? onL3CTA : onAnswer}
+          onClick={onAnswer}
         >
-          {oracularPhrase && l3FormaLabel ? `Explorar ${l3FormaLabel}` : buttonLabel}
+          {buttonLabel}
         </motion.button>
       </motion.div>
     </div>

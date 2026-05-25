@@ -132,7 +132,7 @@ const ShowcaseReactionInline = ({ status, onReact }) => (
   <PulseReactionCard
     status={status}
     onReact={onReact}
-    description="Estamos creando trazos donde ciertas emociones logran quedarse un poco más."
+    description="Estamos creando grafismos donde ciertas emociones logran quedarse un poco más."
     buttonLabel="¡Déjanos un pulso!"
   />
 );
@@ -388,8 +388,8 @@ const PortalGraficos = () => {
 
               <div className="hidden lg:block">
                 <div className="mb-3">
-                  <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Resonancia colectiva</p>
-                  <h4 className="font-display text-xl text-amber-300">9 formas de sentir</h4>
+                  <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Formas de habitar</p>
+                  <h4 className="font-display text-xl text-amber-300">Resonancia colectiva</h4>
                 </div>
                 <div className="flex flex-col gap-5">
                   <VitranaQuestionReveal
@@ -458,8 +458,8 @@ const PortalGraficos = () => {
             </div>
             <div className={`bg-slate-950/80 p-5 lg:hidden transition-opacity duration-300${isResonanceOpen ? ' opacity-30 pointer-events-none' : ''}`}>
               <div className="mb-1">
-                <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Resonancia colectiva</p>
-                <h4 className="font-display text-xl text-amber-300">9 formas de sentir</h4>
+                <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Formas de habitar</p>
+                <h4 className="font-display text-xl text-amber-300">Resonancia colectiva</h4>
               </div>
               <div className="space-y-4">
                 <VitranaQuestionReveal

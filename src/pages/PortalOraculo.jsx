@@ -370,8 +370,8 @@ const PortalOraculo = () => {
 
               <div className="hidden lg:block">
                 <div className="mb-3">
-                  <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Resonancia colectiva</p>
-                  <h4 className="font-display text-xl text-amber-300">9 formas de sentir</h4>
+                  <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Formas de habitar</p>
+                  <h4 className="font-display text-xl text-amber-300">Resonancia colectiva</h4>
                 </div>
                 <div className="flex flex-col gap-5">
                   <VitranaQuestionReveal
@@ -475,8 +475,8 @@ const PortalOraculo = () => {
 
           <div className={`lg:hidden rounded-3xl border border-white/10 bg-black/30 p-5 space-y-4 transition-opacity duration-300${isResonanceOpen ? ' opacity-30 pointer-events-none' : ''}`}>
             <div className="mb-1">
-              <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Resonancia colectiva</p>
-              <h4 className="font-display text-xl text-amber-300">9 formas de sentir</h4>
+              <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Formas de habitar</p>
+              <h4 className="font-display text-xl text-amber-300">Resonancia colectiva</h4>
             </div>
             <VitranaQuestionReveal
               question={l1Done ? (buildL1Acknowledgment('oraculo', l2Answer) ?? LEVEL2_QUESTIONS['oraculo']?.question ?? vitranaQuestion) : vitranaQuestion}

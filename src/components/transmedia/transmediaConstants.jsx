@@ -967,7 +967,7 @@ Este espacio permite recorrer esas composiciones, explorar sus capas y descubrir
       },
     ],
     cartaTitle: '#LoQueSuenaAdentro',
-    notaAutoral: 'Abrí los ojos.\nLa resonancia era antigua.\nComo el silencio.',
+    notaAutoral: 'Abrí los ojos.\nLa resonancia era antigua...\ncomo el silencio.',
     iaProfile: {
       type: 'GPT-4o mini para poemas móviles + curaduría sonora.',
       interaction: 'Selección de poema y mezcla guiada.',
@@ -1045,7 +1045,7 @@ Este espacio permite recorrer esas composiciones, explorar sus capas y descubrir
         id: 'tres-pies-galeria',
         title: 'Tres Pies al Gato',
         description: 'Exploraciones de la novela gráfica.',
-        richDescription: 'Antes de convertirse en un universo transmedial, esta obra existió como un encuentro escénico atravesado por sueños lúcidos, rabia contenida y preguntas difíciles de nombrar. Silvestre, el protagonista, navega sus conflictos internos y su conexión con otros guiado por personajes simbólicos como Lucinda y el Payasito Tiste. La historia invita al público a reflexionar sobre la salud mental, la autenticidad y la lucha por el significado de la vida en un mundo que mezcla humor, surrealismo y vulnerabilidad.',
+        richDescription: 'Tres pies al gato nació como una película imaginada: escenas fragmentadas, cortes de plano y emociones desde el lenguaje cinematográfico. Sus primeros dos capítulos ya viven en digital. El sueño es que llegue a la imprenta — una novela gráfica que se pueda sostener entre las manos.',
         tags: ['Narrativa fragmentada', 'Pausas ilustradas'],
         previewImage: '/assets/silvestre-comic.jpeg',
         type: 'internal-reading',

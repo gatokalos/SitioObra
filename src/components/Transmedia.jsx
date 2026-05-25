@@ -316,18 +316,29 @@ const Transmedia = ({ allianceOnlyMode = false }) => {
   const [activePortalL1Done, setActivePortalL1Done] = useState(false);
   const [activePortalL2Done, setActivePortalL2Done] = useState(false);
   const [activePortalL2Answer, setActivePortalL2Answer] = useState(null);
+  const [activePortalL3Done, setActivePortalL3Done] = useState(false);
+  const [activePortalL3Step3, setActivePortalL3Step3] = useState(null);
 
   // Lee localStorage cada vez que cambia la vitrana activa
   useEffect(() => {
     const portal = SHOWCASE_TO_PORTAL[activeShowcase];
-    if (!portal) { setActivePortalL1Done(false); setActivePortalL2Done(false); setActivePortalL2Answer(null); return; }
+    if (!portal) {
+      setActivePortalL1Done(false); setActivePortalL2Done(false);
+      setActivePortalL2Answer(null); setActivePortalL3Done(false); setActivePortalL3Step3(null);
+      return;
+    }
     try {
       const raw = localStorage.getItem(`gatoencerrado:resonance:${portal}`);
       const s = raw ? JSON.parse(raw) : {};
       setActivePortalL1Done(!!s.l1);
       setActivePortalL2Done(!!s.l2_option);
       setActivePortalL2Answer(s.l2_option ?? null);
-    } catch { setActivePortalL1Done(false); setActivePortalL2Done(false); setActivePortalL2Answer(null); }
+      setActivePortalL3Done(!!s.l3_recommendation?.step3);
+      setActivePortalL3Step3(s.l3_recommendation?.step3 ?? null);
+    } catch {
+      setActivePortalL1Done(false); setActivePortalL2Done(false);
+      setActivePortalL2Answer(null); setActivePortalL3Done(false); setActivePortalL3Step3(null);
+    }
   }, [activeShowcase]);
 
   // Indica si el usuario completó la experiencia narrativa del portal activo
@@ -345,6 +356,8 @@ const Transmedia = ({ allianceOnlyMode = false }) => {
       setActivePortalL2Done(!!state.l2_option);
       setActivePortalL2Answer(state.l2_option ?? null);
       setActivePortalExperienceDone(!!state.experience_ts);
+      setActivePortalL3Done(!!state.l3_recommendation?.step3);
+      setActivePortalL3Step3(state.l3_recommendation?.step3 ?? null);
     } catch {}
   }, [activeShowcase]);
 
@@ -1591,7 +1604,7 @@ const Transmedia = ({ allianceOnlyMode = false }) => {
     (
       showcaseId,
       {
-        heading = 'Resonancia Colectiva',
+        heading = 'Formas de habitar',
         ctaLabel = 'Intuye tu respuesta',
         emptyMessage = 'Aún no hay comentarios de la comunidad.',
         reactionProps = null,
@@ -2805,69 +2818,6 @@ const rendernotaAutoral = () => {
                             ))}
                           </div>
                         ) : null}
-                        <div className="flex flex-wrap gap-3 pt-1">
-                          {entry.previewImage ? (
-                            <Button
-                              className="bg-gradient-to-r from-fuchsia-500/90 to-purple-600/90 text-white hover:from-fuchsia-400/90 hover:to-purple-500/90"
-                              onClick={() =>
-                                handleOpenImagePreview({
-                                  src: entry.previewImage,
-                                  title: entry.title,
-                                  description: entry.description,
-                                }, { requiresAuth: false })
-                              }
-                            >
-                              Ver portada
-                            </Button>
-                          ) : null}
-                          {entry.previewPdfUrl ? (
-                            <div className="relative inline-flex overflow-visible">
-                              {showGraphicCoins ? (
-                                <motion.div
-                                  initial={{ opacity: 0, y: 6 }}
-                                  animate={{ opacity: 1, y: -6 }}
-                                  exit={{ opacity: 0, y: -10 }}
-                                  className="absolute -top-7 right-0 rounded-full border border-amber-200/60 bg-amber-500/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.25em] text-amber-100 shadow-[0_0_12px_rgba(250,204,21,0.25)]"
-                                >
-                                  -{GAT_COSTS.graficoSwipe} gat
-                                </motion.div>
-                              ) : null}
-                              <Button
-                                variant="outline"
-                                disabled={isGraphicUnlocking}
-                                onClick={() => handleOpenGraphicSwipe(entry)}
-                                className="border-fuchsia-300/40 text-fuchsia-200 hover:bg-fuchsia-500/10 relative overflow-visible"
-                              >
-                                <span className="relative z-10">
-                                  {isGraphicUnlocking ? 'Aplicando...' : 'Abrir swipe en PDF'}
-                                </span>
-                                {showGraphicCoins ? (
-                                  <span className="pointer-events-none absolute inset-0">
-                                    {Array.from({ length: 6 }).map((_, index) => {
-                                      const endX = 140 + index * 14;
-                                      const endY = -140 - index * 12;
-                                      return (
-                                        <motion.span
-                                          key={`graphic-coin-${index}`}
-                                          className="absolute left-1/2 top-1/2 h-5 w-5 -translate-x-1/2 -translate-y-1/2 rounded-full bg-gradient-to-br from-amber-200 to-yellow-500 shadow-[0_0_12px_rgba(250,204,21,0.5)]"
-                                          initial={{ opacity: 0.9, scale: 0.7, x: 0, y: 0 }}
-                                          animate={{
-                                            opacity: 0,
-                                            scale: 1.05,
-                                            x: endX,
-                                            y: endY,
-                                            rotate: 120 + index * 18,
-                                          }}
-                                          transition={{ duration: 1.1, ease: 'easeOut', delay: 0.05 }}
-                                        />
-                                      );
-                                    })}
-                                  </span>
-                                ) : null}
-                              </Button>
-                            </div>
-                          ) : null}
-                        </div>
                       </div>
                     </div>
                   </div>
@@ -4103,9 +4053,9 @@ const rendernotaAutoral = () => {
                     </div>
                     {activeDefinition.type === 'tragedia' ? (
                       <>
-                        <div className="mb-3">
-                          <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Resonancia colectiva</p>
-                          <h4 className="font-display text-2xl text-amber-300">9 formas de sentir</h4>
+                        <div className="mb-1">
+                          <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Formas de habitar</p>
+                          <h4 className="font-display text-2xl text-amber-300">Resonancia colectiva</h4>
                         </div>
                         <VitranaQuestionReveal
                           question={activePortalL1Done ? (buildL1Acknowledgment('obra', activePortalL2Answer) ?? LEVEL2_QUESTIONS['obra']?.question ?? VITRANA_QUESTION_BY_SHOWCASE['miniversos']) : VITRANA_QUESTION_BY_SHOWCASE['miniversos']}
@@ -4113,6 +4063,8 @@ const rendernotaAutoral = () => {
                           autoReveal={activePortalL1Done}
                           portal="obra"
                           l2Done={activePortalL2Done}
+                          l3Done={activePortalL3Done}
+                          l3Step3={activePortalL3Step3}
                           onAnswer={() => setIsDramaResonanceOpen(true)}
                           onReveal={() => setHeartBounceKey(k => k + 1)}
                           label=""
@@ -4132,13 +4084,14 @@ const rendernotaAutoral = () => {
                           portal="obra"
                           onOpenNarrative={() => setIsNarrativeDramaOpen(true)}
                           narrativeCTALabel="✦ Entrar al drama"
+                          onNavigateToRecommendation={setActiveShowcase}
                         />
                       </>
                     ) : activeShowcase === 'miniversoNovela' ? (
                       <>
-                        <div className="mb-3">
-                          <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Resonancia colectiva</p>
-                          <h4 className="font-display text-2xl text-amber-300">9 formas de sentir</h4>
+                        <div className="mb-1">
+                          <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Formas de habitar</p>
+                          <h4 className="font-display text-2xl text-amber-300">Resonancia colectiva</h4>
                         </div>
                         <VitranaQuestionReveal
                           question={activePortalL1Done ? (buildL1Acknowledgment('literatura', activePortalL2Answer) ?? LEVEL2_QUESTIONS['literatura']?.question ?? VITRANA_QUESTION_BY_SHOWCASE['miniversoNovela']) : VITRANA_QUESTION_BY_SHOWCASE['miniversoNovela']}
@@ -4146,6 +4099,8 @@ const rendernotaAutoral = () => {
                           autoReveal={activePortalL1Done}
                           portal="literatura"
                           l2Done={activePortalL2Done}
+                          l3Done={activePortalL3Done}
+                          l3Step3={activePortalL3Step3}
                           onAnswer={() => setIsLiteraturaResonanceOpen(true)}
                           onReveal={() => setHeartBounceKey(k => k + 1)}
                           label=""
@@ -4163,13 +4118,14 @@ const rendernotaAutoral = () => {
                           portal="literatura"
                           onOpenNarrative={() => setShowLiteraturaApp(true)}
                           narrativeCTALabel="📖 Activar artefacto"
+                          onNavigateToRecommendation={setActiveShowcase}
                         />
                       </>
                     ) : activeShowcase === 'lataza' ? (
                       <>
-                        <div className="mb-3">
-                          <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Resonancia colectiva</p>
-                          <h4 className="font-display text-2xl text-amber-300">9 formas de sentir</h4>
+                        <div className="mb-1">
+                          <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Formas de habitar</p>
+                          <h4 className="font-display text-2xl text-amber-300">Resonancia colectiva</h4>
                         </div>
                         <VitranaQuestionReveal
                           question={activePortalL1Done ? (buildL1Acknowledgment('artesanias', activePortalL2Answer) ?? LEVEL2_QUESTIONS['artesanias']?.question ?? VITRANA_QUESTION_BY_SHOWCASE['lataza']) : VITRANA_QUESTION_BY_SHOWCASE['lataza']}
@@ -4177,6 +4133,8 @@ const rendernotaAutoral = () => {
                           autoReveal={activePortalL1Done}
                           portal="artesanias"
                           l2Done={activePortalL2Done}
+                          l3Done={activePortalL3Done}
+                          l3Step3={activePortalL3Step3}
                           onAnswer={() => setIsArtesaniasResonanceOpen(true)}
                           onReveal={() => setHeartBounceKey(k => k + 1)}
                           label=""
@@ -4194,13 +4152,14 @@ const rendernotaAutoral = () => {
                           portal="artesanias"
                           onOpenNarrative={handleActivateAR}
                           narrativeCTALabel="✦ Activa tu taza"
+                          onNavigateToRecommendation={setActiveShowcase}
                         />
                       </>
                     ) : activeShowcase === 'miniversoGrafico' ? (
                       <>
-                        <div className="mb-3">
-                          <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Resonancia colectiva</p>
-                          <h4 className="font-display text-2xl text-amber-300">9 formas de sentir</h4>
+                        <div className="mb-1">
+                          <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Formas de habitar</p>
+                          <h4 className="font-display text-2xl text-amber-300">Resonancia colectiva</h4>
                         </div>
                         <VitranaQuestionReveal
                           question={activePortalL1Done ? (buildL1Acknowledgment('grafico', activePortalL2Answer) ?? LEVEL2_QUESTIONS['grafico']?.question ?? VITRANA_QUESTION_BY_SHOWCASE['miniversoGrafico']) : VITRANA_QUESTION_BY_SHOWCASE['miniversoGrafico']}
@@ -4208,13 +4167,15 @@ const rendernotaAutoral = () => {
                           autoReveal={activePortalL1Done}
                           portal="grafico"
                           l2Done={activePortalL2Done}
+                          l3Done={activePortalL3Done}
+                          l3Step3={activePortalL3Step3}
                           onAnswer={() => setIsGraficosResonanceOpen(true)}
                           onReveal={() => setHeartBounceKey(k => k + 1)}
                           label=""
                         />
                         <ShowcaseReactionInline
                           showcaseId="miniversoGrafico"
-                          description="Estamos creando trazos donde ciertas emociones logran quedarse un poco más."
+                          description="Estamos creando grafismos donde ciertas emociones logran quedarse un poco más."
                           buttonLabel="¡Déjanos un pulso!"
                           bounceKey={heartBounceKey}
                         />
@@ -4225,13 +4186,14 @@ const rendernotaAutoral = () => {
                           portal="grafico"
                           onOpenNarrative={() => { const sw = activeDefinition.swipeShowcases?.[0]; if (sw) handleOpenGraphicSwipe(sw); }}
                           narrativeCTALabel="✦ Ver el swipe"
+                          onNavigateToRecommendation={setActiveShowcase}
                         />
                       </>
                     ) : activeShowcase === 'copycats' ? (
                       <>
-                        <div className="mb-3">
-                          <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Resonancia colectiva</p>
-                          <h4 className="font-display text-2xl text-amber-300">9 formas de sentir</h4>
+                        <div className="mb-1">
+                          <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Formas de habitar</p>
+                          <h4 className="font-display text-2xl text-amber-300">Resonancia colectiva</h4>
                         </div>
                         <VitranaQuestionReveal
                           question={activePortalL1Done ? (buildL1Acknowledgment('cine', activePortalL2Answer) ?? LEVEL2_QUESTIONS['cine']?.question ?? VITRANA_QUESTION_BY_SHOWCASE['cine']) : VITRANA_QUESTION_BY_SHOWCASE['cine']}
@@ -4239,6 +4201,8 @@ const rendernotaAutoral = () => {
                           autoReveal={activePortalL1Done}
                           portal="cine"
                           l2Done={activePortalL2Done}
+                          l3Done={activePortalL3Done}
+                          l3Step3={activePortalL3Step3}
                           onAnswer={() => setIsCineResonanceOpen(true)}
                           onReveal={() => setHeartBounceKey(k => k + 1)}
                           label=""
@@ -4256,13 +4220,14 @@ const rendernotaAutoral = () => {
                           portal="cine"
                           onOpenNarrative={Boolean(showcaseBoosts?.copycats_full_unlock || quironSpent) ? handleQuironPlayRequest : handleToggleQuironPrompt}
                           narrativeCTALabel={Boolean(showcaseBoosts?.copycats_full_unlock || quironSpent) ? '▶ Ver Quirón' : '✦ Ver el corto'}
+                          onNavigateToRecommendation={setActiveShowcase}
                         />
                       </>
                     ) : activeShowcase === 'miniversoSonoro' ? (
                       <>
-                        <div className="mb-3">
-                          <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Resonancia colectiva</p>
-                          <h4 className="font-display text-2xl text-amber-300">9 formas de sentir</h4>
+                        <div className="mb-1">
+                          <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Formas de habitar</p>
+                          <h4 className="font-display text-2xl text-amber-300">Resonancia colectiva</h4>
                         </div>
                         <VitranaQuestionReveal
                           question={activePortalL1Done ? (buildL1Acknowledgment('sonoridades', activePortalL2Answer) ?? LEVEL2_QUESTIONS['sonoridades']?.question ?? VITRANA_QUESTION_BY_SHOWCASE['miniversoSonoro']) : VITRANA_QUESTION_BY_SHOWCASE['miniversoSonoro']}
@@ -4270,6 +4235,8 @@ const rendernotaAutoral = () => {
                           autoReveal={activePortalL1Done}
                           portal="sonoridades"
                           l2Done={activePortalL2Done}
+                          l3Done={activePortalL3Done}
+                          l3Step3={activePortalL3Step3}
                           onAnswer={() => setIsSonoroResonanceOpen(true)}
                           onReveal={() => setHeartBounceKey(k => k + 1)}
                           label=""
@@ -4287,13 +4254,14 @@ const rendernotaAutoral = () => {
                           portal="sonoridades"
                           onOpenNarrative={handleSonoroEnter}
                           narrativeCTALabel="✦ Escuchar ahora"
+                          onNavigateToRecommendation={setActiveShowcase}
                         />
                       </>
                     ) : activeShowcase === 'miniversoMovimiento' ? (
                       <>
-                        <div className="mb-3">
-                          <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Resonancia colectiva</p>
-                          <h4 className="font-display text-2xl text-amber-300">9 formas de sentir</h4>
+                        <div className="mb-1">
+                          <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Formas de habitar</p>
+                          <h4 className="font-display text-2xl text-amber-300">Resonancia colectiva</h4>
                         </div>
                         <VitranaQuestionReveal
                           question={activePortalL1Done ? (buildL1Acknowledgment('movimiento', activePortalL2Answer) ?? LEVEL2_QUESTIONS['movimiento']?.question ?? VITRANA_QUESTION_BY_SHOWCASE['miniversoMovimiento']) : VITRANA_QUESTION_BY_SHOWCASE['miniversoMovimiento']}
@@ -4301,6 +4269,8 @@ const rendernotaAutoral = () => {
                           autoReveal={activePortalL1Done}
                           portal="movimiento"
                           l2Done={activePortalL2Done}
+                          l3Done={activePortalL3Done}
+                          l3Step3={activePortalL3Step3}
                           onAnswer={() => setIsMovimientoResonanceOpen(true)}
                           onReveal={() => setHeartBounceKey(k => k + 1)}
                           label=""
@@ -4318,13 +4288,14 @@ const rendernotaAutoral = () => {
                           portal="movimiento"
                           onOpenNarrative={() => handleOpenContribution(getContributionCategoryForShowcase('miniversoMovimiento'))}
                           narrativeCTALabel="✦ Ver los talleres"
+                          onNavigateToRecommendation={setActiveShowcase}
                         />
                       </>
                     ) : activeShowcase === 'apps' ? (
                       <>
-                        <div className="mb-3">
-                          <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Resonancia colectiva</p>
-                          <h4 className="font-display text-2xl text-amber-300">9 formas de sentir</h4>
+                        <div className="mb-1">
+                          <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Formas de habitar</p>
+                          <h4 className="font-display text-2xl text-amber-300">Resonancia colectiva</h4>
                         </div>
                         <VitranaQuestionReveal
                           question={activePortalL1Done ? (buildL1Acknowledgment('juegos', activePortalL2Answer) ?? LEVEL2_QUESTIONS['juegos']?.question ?? VITRANA_QUESTION_BY_SHOWCASE['apps']) : VITRANA_QUESTION_BY_SHOWCASE['apps']}
@@ -4332,6 +4303,8 @@ const rendernotaAutoral = () => {
                           autoReveal={activePortalL1Done}
                           portal="juegos"
                           l2Done={activePortalL2Done}
+                          l3Done={activePortalL3Done}
+                          l3Step3={activePortalL3Step3}
                           onAnswer={() => setIsJuegosResonanceOpen(true)}
                           onReveal={() => setHeartBounceKey(k => k + 1)}
                           label=""
@@ -4349,13 +4322,14 @@ const rendernotaAutoral = () => {
                           portal="juegos"
                           onOpenNarrative={() => { const u = sanitizeExternalHttpUrl(activeDefinition.liveExperience?.url); if (u) window.open(u, '_blank'); }}
                           narrativeCTALabel={activeDefinition.liveExperience?.ctaLabel || '✦ Abrir la app'}
+                          onNavigateToRecommendation={setActiveShowcase}
                         />
                       </>
                     ) : activeShowcase === 'oraculo' ? (
                       <>
-                        <div className="mb-3">
-                          <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Resonancia colectiva</p>
-                          <h4 className="font-display text-2xl text-amber-300">9 formas de sentir</h4>
+                        <div className="mb-1">
+                          <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Formas de habitar</p>
+                          <h4 className="font-display text-2xl text-amber-300">Resonancia colectiva</h4>
                         </div>
                         <VitranaQuestionReveal
                           question={activePortalL1Done ? (buildL1Acknowledgment('oraculo', activePortalL2Answer) ?? LEVEL2_QUESTIONS['oraculo']?.question ?? VITRANA_QUESTION_BY_SHOWCASE['oraculo']) : VITRANA_QUESTION_BY_SHOWCASE['oraculo']}
@@ -4363,6 +4337,8 @@ const rendernotaAutoral = () => {
                           autoReveal={activePortalL1Done}
                           portal="oraculo"
                           l2Done={activePortalL2Done}
+                          l3Done={activePortalL3Done}
+                          l3Step3={activePortalL3Step3}
                           onAnswer={() => setIsOraculoResonanceOpen(true)}
                           onReveal={() => setHeartBounceKey(k => k + 1)}
                           label=""
@@ -4380,6 +4356,7 @@ const rendernotaAutoral = () => {
                           portal="oraculo"
                           onOpenNarrative={handleOpenOraculo}
                           narrativeCTALabel={activeDefinition.ctaLabel || '✦ Explorar'}
+                          onNavigateToRecommendation={setActiveShowcase}
                         />
                       </>
                     ) : (
@@ -5057,54 +5034,81 @@ const rendernotaAutoral = () => {
               const minRequiredCopy = buildShowcaseMinRequiredCopy(format.id);
               return (
                 <>
-                  <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-3">
-                    <button
-                      type="button"
-                      disabled={isShowcaseOpenTransitionActive}
-                      onClick={() => setMobileShowcaseIndex(prevIndex)}
-                      className="justify-self-start inline-flex max-w-full items-center gap-1 rounded-full border border-white/15 bg-white/5 px-3 py-1.5 text-xs text-slate-200/90 transition hover:border-purple-300/40 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-400/60 disabled:opacity-45 disabled:pointer-events-none"
-                      aria-label={`Ir a vitrina anterior: ${prevLabel}`}
-                    >
-                      <span aria-hidden="true">←</span>
-                      <span className="truncate">{prevLabel}</span>
-                    </button>
-                    <div className="flex items-center justify-center gap-2 min-w-[88px]">
-                      {visibleDotIndices.map((idx, offset) => {
-                        const item = formats[idx];
-                        const isActiveDot = idx === currentIndex;
-                        const isLeftEdgeDot = offset === 0 && dotWindowStart > 0;
-                        const isRightEdgeDot =
-                          offset === visibleDotIndices.length - 1 && dotWindowEnd < formats.length;
-                        return (
-                          <button
-                            key={`mobile-dot-${item.id}`}
-                            type="button"
-                            disabled={isShowcaseOpenTransitionActive}
-                            onClick={() => setMobileShowcaseIndex(idx)}
-                            className={`h-2 w-2 rounded-full transition ${
-                              isActiveDot
-                                ? 'bg-slate-100 shadow-[0_0_8px_rgba(255,255,255,0.55)]'
-                                : isLeftEdgeDot || isRightEdgeDot
-                                  ? 'bg-slate-500/40 hover:bg-slate-300/65'
-                                  : 'bg-slate-500/70 hover:bg-slate-300/80'
-                            } disabled:opacity-45 disabled:pointer-events-none`}
-                            aria-label={`Ir a vitrina ${item.title}`}
-                            aria-current={isActiveDot ? 'true' : undefined}
-                          />
-                        );
-                      })}
+                  {isRecommendedTile ? (
+                    <div className="flex justify-center py-1">
+                      <motion.svg
+                        width="36"
+                        height="36"
+                        viewBox="0 0 34 34"
+                        fill="none"
+                        xmlns="http://www.w3.org/2000/svg"
+                        animate={{ y: [0, 3, 0], opacity: [0.72, 0.3, 0.72] }}
+                        transition={{ duration: 2.1, repeat: Infinity, ease: 'easeInOut' }}
+                        className="h-10 w-10"
+                        style={{ filter: 'drop-shadow(0 0 5px rgba(255,255,255,0.3)) drop-shadow(0 0 10px rgba(189,189,189,0.26))' }}
+                      >
+                        <defs>
+                          <linearGradient id="transmediaMobileChevronGrad" x1="3" y1="4" x2="30" y2="30" gradientUnits="userSpaceOnUse">
+                            <stop stopColor="#2d2d2d" />
+                            <stop offset="0.55" stopColor="#bdbdbd" />
+                            <stop offset="1" stopColor="#ffffff" />
+                          </linearGradient>
+                        </defs>
+                        <path d="M7 9.5L17 15.5L27 9.5" stroke="url(#transmediaMobileChevronGrad)" strokeWidth="2.8" strokeLinecap="round" strokeLinejoin="round" opacity="0.58" />
+                        <path d="M7 16L17 22L27 16" stroke="url(#transmediaMobileChevronGrad)" strokeWidth="2.9" strokeLinecap="round" strokeLinejoin="round" opacity="0.74" />
+                        <path d="M7 22.5L17 28.5L27 22.5" stroke="url(#transmediaMobileChevronGrad)" strokeWidth="2.8" strokeLinecap="round" strokeLinejoin="round" opacity="0.66" />
+                      </motion.svg>
                     </div>
-                    <button
-                      type="button"
-                      disabled={isShowcaseOpenTransitionActive}
-                      onClick={() => setMobileShowcaseIndex(nextIndex)}
-                      className="justify-self-end inline-flex max-w-full items-center gap-1 rounded-full border border-white/15 bg-white/5 px-3 py-1.5 text-xs text-slate-200/90 transition hover:border-purple-300/40 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-400/60 disabled:opacity-45 disabled:pointer-events-none"
-                      aria-label={`Ir a vitrina siguiente: ${nextLabel}`}
-                    >
-                      <span className="truncate">{nextLabel}</span>
-                      <span aria-hidden="true">→</span>
-                    </button>
-                  </div>
+                  ) : (
+                    <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-3">
+                      <button
+                        type="button"
+                        disabled={isShowcaseOpenTransitionActive}
+                        onClick={() => setMobileShowcaseIndex(prevIndex)}
+                        className="justify-self-start inline-flex max-w-full items-center gap-1 rounded-full border border-white/15 bg-white/5 px-3 py-1.5 text-xs text-slate-200/90 transition hover:border-purple-300/40 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-400/60 disabled:opacity-45 disabled:pointer-events-none"
+                        aria-label={`Ir a vitrina anterior: ${prevLabel}`}
+                      >
+                        <span aria-hidden="true">←</span>
+                        <span className="truncate">{prevLabel}</span>
+                      </button>
+                      <div className="flex items-center justify-center gap-2 min-w-[88px]">
+                        {visibleDotIndices.map((idx, offset) => {
+                          const item = formats[idx];
+                          const isActiveDot = idx === currentIndex;
+                          const isLeftEdgeDot = offset === 0 && dotWindowStart > 0;
+                          const isRightEdgeDot =
+                            offset === visibleDotIndices.length - 1 && dotWindowEnd < formats.length;
+                          return (
+                            <button
+                              key={`mobile-dot-${item.id}`}
+                              type="button"
+                              disabled={isShowcaseOpenTransitionActive}
+                              onClick={() => setMobileShowcaseIndex(idx)}
+                              className={`h-2 w-2 rounded-full transition ${
+                                isActiveDot
+                                  ? 'bg-slate-100 shadow-[0_0_8px_rgba(255,255,255,0.55)]'
+                                  : isLeftEdgeDot || isRightEdgeDot
+                                    ? 'bg-slate-500/40 hover:bg-slate-300/65'
+                                    : 'bg-slate-500/70 hover:bg-slate-300/80'
+                              } disabled:opacity-45 disabled:pointer-events-none`}
+                              aria-label={`Ir a vitrina ${item.title}`}
+                              aria-current={isActiveDot ? 'true' : undefined}
+                            />
+                          );
+                        })}
+                      </div>
+                      <button
+                        type="button"
+                        disabled={isShowcaseOpenTransitionActive}
+                        onClick={() => setMobileShowcaseIndex(nextIndex)}
+                        className="justify-self-end inline-flex max-w-full items-center gap-1 rounded-full border border-white/15 bg-white/5 px-3 py-1.5 text-xs text-slate-200/90 transition hover:border-purple-300/40 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-400/60 disabled:opacity-45 disabled:pointer-events-none"
+                        aria-label={`Ir a vitrina siguiente: ${nextLabel}`}
+                      >
+                        <span className="truncate">{nextLabel}</span>
+                        <span aria-hidden="true">→</span>
+                      </button>
+                    </div>
+                  )}
                   <motion.div
                     key={format.id}
                     initial={isSafari ? false : { opacity: 0, y: 18 }}
