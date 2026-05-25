@@ -41,6 +41,15 @@ const RelatedReadingTooltipButton = ({
     return `/blog/${encodeURIComponent(slug)}`;
   }, [slug]);
 
+  const handleRead = () => {
+    setIsOpen(false);
+    if (window.matchMedia('(max-width: 1023px)').matches) {
+      window.dispatchEvent(new CustomEvent('gatoencerrado:open-article-overlay', { detail: { slug } }));
+    } else {
+      window.open(readingHref, '_blank', 'noopener,noreferrer');
+    }
+  };
+
   useEffect(() => {
     if (!slug) {
       setIsOpen(false);
@@ -126,15 +135,13 @@ const RelatedReadingTooltipButton = ({
         <div className="space-y-2 px-3 py-2 text-center">
           <p className={`text-[11px] leading-snug ${styles.label}`}>Tenemos un artículo disponible de {authorLabel} disponible en Curaduría</p>
           <div className="flex justify-center">
-            <a
-              href={readingHref}
-              target="_blank"
-              rel="noopener noreferrer"
+            <button
+              type="button"
               className={`inline-flex items-center rounded-md border px-2.5 py-1.5 text-[10px] uppercase tracking-[0.24em] transition ${styles.cta}`}
-              onClick={() => setIsOpen(false)}
+              onClick={handleRead}
             >
               Ir a leer
-            </a>
+            </button>
           </div>
         </div>
         {thumbnailUrl ? (

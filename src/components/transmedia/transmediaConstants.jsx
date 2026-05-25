@@ -630,8 +630,8 @@ iaProfile: {
     },
     quiron: {
       title: 'Quirón',
-      description: 'Mira el teaser de un cortometraje que explora la vulnerabilidad donde casi nunca se nombra.',
-            tags: ['Cine-ensayo', 'Identidad Digital', 'Archivo autoficcional'],
+      description: 'Quirón es un cortometraje de autoficción que indaga en la herida emocional como punto de partida del conocimiento y la transformación. A través de una narrativa audiovisual original, explora la posibilidad de resignificar el dolor humano.',
+      tags: ['Cine-ensayo', 'Archivo autoficcional'],
 
 
       fullVideo: {

@@ -1,6 +1,7 @@
 import React, { Suspense, lazy, useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { Route, Routes, useLocation } from 'react-router-dom';
 import { Toaster } from '@/components/ui/toaster';
+import ArticleDrawer from '@/components/ArticleDrawer';
 import Header from '@/components/Header';
 import Hero from '@/components/Hero';
 import SectionErrorBoundary from '@/components/SectionErrorBoundary';
@@ -741,6 +742,7 @@ function App() {
         <Route path="/lab/huella" element={<Suspense fallback={<RouteFallback />}><LabHuella /></Suspense>} />
       ) : null}
       </Routes>
+      <ArticleDrawer />
       <Toaster />
     </>
   );

@@ -3120,6 +3120,7 @@ const rendernotaAutoral = () => {
         asset = null,
         reserveClassName = 'h-[11rem] sm:h-[14rem]',
         extraContent = null,
+        showBadge = true,
       }) => {
         if (!asset?.url) return null;
         const isVideoFile = /\.mp4($|\?)/i.test(asset.url);
@@ -3159,7 +3160,7 @@ const rendernotaAutoral = () => {
               )}
               <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-black/10 via-black/30 to-black/90" />
               <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(255,255,255,0.08),_transparent_36%),linear-gradient(180deg,rgba(0,0,0,0.02)_0%,rgba(0,0,0,0.14)_35%,rgba(0,0,0,0.72)_100%)]" />
-              {isVideoFile ? (
+              {isVideoFile && showBadge ? (
                 <div className="pointer-events-none absolute right-5 top-5 z-10">
                   <div className="flex items-center gap-2 rounded-full border border-white/15 bg-black/55 px-3 py-1 text-[0.62rem] font-semibold uppercase tracking-[0.22em] text-white/85 backdrop-blur-md">
                     <Video size={14} />
@@ -3188,7 +3189,7 @@ const rendernotaAutoral = () => {
                     {tags.map((tag, index) => (
                       <span
                         key={`${title}-tag-${index}`}
-                        className="rounded-full border border-purple-400/30 bg-purple-900/20 px-3 py-1 text-xs text-purple-100"
+                        className="rounded-full border border-white/20 bg-black/30 px-3 py-1 text-[11px] uppercase tracking-[0.2em] text-slate-100 backdrop-blur-sm"
                       >
                         {tag}
                       </span>
@@ -3232,6 +3233,7 @@ const rendernotaAutoral = () => {
           microcopy: activeDefinition.quiron?.microcopy,
           tags: quironTags,
           asset: quironPrimaryAsset,
+          showBadge: false,
           extraContent: quironStills.length ? (
             <div className="grid gap-3 sm:grid-cols-2">
               {quironStills.map((still, index) => {
@@ -3958,7 +3960,21 @@ const rendernotaAutoral = () => {
               transition={{ type: 'spring', stiffness: 220, damping: 24 }}
             >
               <div className="flex-1 overflow-y-auto p-6 md:p-10 max-h-[88vh] lg:max-h-none">
-              <div className="flex justify-end gap-3 mb-6 lg:hidden">
+              <div className="flex justify-end gap-3 mb-6">
+                {user ? (
+                  <button
+                    onClick={handleToggleShowcaseAmbient}
+                    aria-label={ambientState.isMuted ? 'Activar sonido ambiente' : 'Silenciar sonido ambiente'}
+                    title={ambientState.isMuted ? 'Activar sonido ambiente' : 'Silenciar sonido ambiente'}
+                    className={`inline-flex h-9 w-9 items-center justify-center rounded-full border transition ${
+                      ambientState.isMuted
+                        ? 'border-white/15 bg-white/5 text-slate-200/90 hover:border-purple-300/40 hover:text-white'
+                        : 'border-emerald-300/35 bg-emerald-500/15 text-emerald-100 hover:bg-emerald-500/25'
+                    }`}
+                  >
+                    {ambientState.isMuted ? <VolumeX size={14} /> : <Volume2 size={14} />}
+                  </button>
+                ) : null}
                 <button
                   onClick={handleCloseShowcase}
                   className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-white/15 bg-white/5 text-slate-200/90 hover:border-purple-300/40 hover:text-white transition"
@@ -4375,29 +4391,6 @@ const rendernotaAutoral = () => {
                   <IAInsightCard {...activeDefinition.iaProfile} compact rewardLabel={buildShowcaseRewardLabel(showcaseTokenLedgerById[activeShowcase])} minRequired={buildShowcaseMinRequiredCopy(activeShowcase)} />
                 </div>
               ) : null}
-              </div>
-              <div className="hidden lg:flex justify-end gap-3 px-6 pb-4">
-                {user ? (
-                  <button
-                    onClick={handleToggleShowcaseAmbient}
-                    aria-label={ambientState.isMuted ? 'Activar sonido ambiente' : 'Silenciar sonido ambiente'}
-                    title={ambientState.isMuted ? 'Activar sonido ambiente' : 'Silenciar sonido ambiente'}
-                    className={`inline-flex h-9 w-9 items-center justify-center rounded-full border transition ${
-                      ambientState.isMuted
-                        ? 'border-white/15 bg-white/5 text-slate-200/90 hover:border-purple-300/40 hover:text-white'
-                        : 'border-emerald-300/35 bg-emerald-500/15 text-emerald-100 hover:bg-emerald-500/25'
-                    }`}
-                  >
-                    {ambientState.isMuted ? <VolumeX size={14} /> : <Volume2 size={14} />}
-                  </button>
-                ) : null}
-                <button
-                  onClick={handleCloseShowcase}
-                  className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-white/15 bg-white/5 text-slate-200/90 hover:border-purple-300/40 hover:text-white transition"
-                  aria-label="Cerrar vitrina"
-                >
-                  <X size={14} />
-                </button>
               </div>
             </motion.div>
           </motion.div>
