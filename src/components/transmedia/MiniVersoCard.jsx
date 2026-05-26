@@ -1,6 +1,10 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Hand } from 'lucide-react';
+import {
+  registerTransmediaCreditEvent,
+  createTransmediaIdempotencyKey,
+} from '@/services/transmediaCreditsService';
 
 const MiniVersoCard = ({
   title,
@@ -10,22 +14,38 @@ const MiniVersoCard = ({
   isTragedia = false,
   onFirstReveal = null,
   celebration = false,
+  gatEventKey = null,
 }) => {
   const [isActive, setIsActive] = useState(() => {
     try { return window.localStorage.getItem('gatoencerrado:miniverso-verso:' + title) === '1'; } catch { return false; }
   });
+  const [showGatChip, setShowGatChip] = useState(false);
   const textClass = isTragedia ? 'text-sm' : 'text-sm leading-relaxed';
   const handleCardToggle = () => {
     setIsActive((prev) => {
       if (prev) return prev;
       try { window.localStorage.setItem('gatoencerrado:miniverso-verso:' + title, '1'); } catch {}
       if (typeof onFirstReveal === 'function') onFirstReveal();
+      if (gatEventKey) {
+        registerTransmediaCreditEvent({
+          eventKey: gatEventKey,
+          amount: 25,
+          oncePerIdentity: true,
+          idempotencyKey: createTransmediaIdempotencyKey(gatEventKey),
+        }).then(({ state, duplicate }) => {
+          if (!duplicate && state && typeof window !== 'undefined') {
+            window.dispatchEvent(new CustomEvent('gatoencerrado:external-credit-event', { detail: { state } }));
+            setShowGatChip(true);
+            setTimeout(() => setShowGatChip(false), 2800);
+          }
+        }).catch(() => {});
+      }
       return true;
     });
   };
 
   const renderCelebration = () => {
-    if (!celebration) return null;
+    if (!celebration && !showGatChip) return null;
     return (
       <div className="pointer-events-none absolute inset-0 z-20">
         {Array.from({ length: 7 }).map((_, index) => {
@@ -44,6 +64,23 @@ const MiniVersoCard = ({
       </div>
     );
   };
+
+  const gatChip = isActive && gatEventKey ? (
+    <motion.span
+      key="gat-chip"
+      className="inline-flex items-center gap-1.5 rounded-full border border-cyan-300/40 bg-cyan-400/10 px-3 py-1 text-[0.62rem] font-semibold uppercase tracking-[0.2em] text-cyan-200/90 shadow-[0_4px_16px_rgba(0,0,0,0.25)]"
+      initial={{ opacity: 0, scale: 0.8, y: 4 }}
+      animate={{ opacity: 1, scale: 1, y: 0 }}
+      transition={{ type: 'spring', stiffness: 260, damping: 18 }}
+    >
+      <img
+        src="https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/oraculo/gato-moneda.png"
+        alt=""
+        className="h-3.5 w-3.5 animate-[spin_8s_linear_0s_infinite_reverse]"
+      />
+      +25 GAT
+    </motion.span>
+  ) : null;
 
   const baseCard = (
     <motion.div
@@ -131,7 +168,7 @@ const MiniVersoCard = ({
             </span>
           </div>
           <div
-            className={`absolute inset-0 rounded-2xl border px-6 py-5 [backface-visibility:hidden] flex items-center justify-center ${textClass}`}
+            className={`absolute inset-0 rounded-2xl border px-6 py-5 [backface-visibility:hidden] flex flex-col items-center justify-center gap-3 ${textClass}`}
             style={{
               backgroundImage: palette.gradient,
               borderColor: palette.border,
@@ -140,6 +177,7 @@ const MiniVersoCard = ({
             }}
           >
             <p className="leading-relaxed whitespace-pre-line text-center font-light">{verse}</p>
+            {gatChip}
           </div>
         </motion.div>
       </div>

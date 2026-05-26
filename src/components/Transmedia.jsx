@@ -318,6 +318,10 @@ const Transmedia = ({ allianceOnlyMode = false }) => {
   const [activePortalL2Answer, setActivePortalL2Answer] = useState(null);
   const [activePortalL3Done, setActivePortalL3Done] = useState(false);
   const [activePortalL3Step3, setActivePortalL3Step3] = useState(null);
+  const [activePortalL3RecommendedPortal, setActivePortalL3RecommendedPortal] = useState(null);
+  const [activePortalL3RecommendedForma, setActivePortalL3RecommendedForma] = useState(null);
+  const [showL3RewardCoins, setShowL3RewardCoins] = useState(false);
+  const [showL3RewardChip, setShowL3RewardChip] = useState(false);
 
   // Lee localStorage cada vez que cambia la vitrana activa
   useEffect(() => {
@@ -335,9 +339,12 @@ const Transmedia = ({ allianceOnlyMode = false }) => {
       setActivePortalL2Answer(s.l2_option ?? null);
       setActivePortalL3Done(!!s.l3_recommendation?.step3);
       setActivePortalL3Step3(s.l3_recommendation?.step3 ?? null);
+      setActivePortalL3RecommendedPortal(s.l3_recommendation?.recommended_portal ?? null);
+      setActivePortalL3RecommendedForma(s.l3_recommendation?.forma ?? null);
     } catch {
       setActivePortalL1Done(false); setActivePortalL2Done(false);
       setActivePortalL2Answer(null); setActivePortalL3Done(false); setActivePortalL3Step3(null);
+      setActivePortalL3RecommendedPortal(null); setActivePortalL3RecommendedForma(null);
     }
   }, [activeShowcase]);
 
@@ -358,6 +365,8 @@ const Transmedia = ({ allianceOnlyMode = false }) => {
       setActivePortalExperienceDone(!!state.experience_ts);
       setActivePortalL3Done(!!state.l3_recommendation?.step3);
       setActivePortalL3Step3(state.l3_recommendation?.step3 ?? null);
+      setActivePortalL3RecommendedPortal(state.l3_recommendation?.recommended_portal ?? null);
+      setActivePortalL3RecommendedForma(state.l3_recommendation?.forma ?? null);
     } catch {}
   }, [activeShowcase]);
 
@@ -1097,6 +1106,39 @@ const Transmedia = ({ allianceOnlyMode = false }) => {
     window.open(`/blog/${encodeURIComponent(slug)}`, '_blank', 'noopener,noreferrer');
   }, [requireShowcaseAuth]);
 
+  const PORTAL_TO_SHOWCASE = {
+    obra:        'miniversos',
+    literatura:  'miniversoNovela',
+    artesanias:  'lataza',
+    grafico:     'miniversoGrafico',
+    cine:        'copycats',
+    sonoridades: 'miniversoSonoro',
+    movimiento:  'miniversoMovimiento',
+    juegos:      'apps',
+    oraculo:     'oraculo',
+  };
+
+  const handleClaimL3Reward = useCallback(async () => {
+    const portal = SHOWCASE_TO_PORTAL[activeShowcase];
+    if (!portal) return;
+    setShowL3RewardCoins(true);
+    setTimeout(() => setShowL3RewardCoins(false), 1400);
+    setShowL3RewardChip(true);
+    setTimeout(() => setShowL3RewardChip(false), 2500);
+    await trackTransmediaCreditEvent({
+      eventKey: `resonance:l3-reward:${portal}`,
+      amount: 175,
+      oncePerIdentity: true,
+      metadata: { portal, recommended: activePortalL3RecommendedPortal },
+    });
+    if (activePortalL3RecommendedPortal) {
+      const nextShowcase = PORTAL_TO_SHOWCASE[activePortalL3RecommendedPortal];
+      if (nextShowcase) {
+        setTimeout(() => setActiveShowcase(nextShowcase), 900);
+      }
+    }
+  }, [activeShowcase, activePortalL3RecommendedPortal, trackTransmediaCreditEvent]);
+
   const {
     latestBlogPostByShowcase,
     publicContributions,
@@ -1722,6 +1764,7 @@ const rendernotaAutoral = () => {
         isTragedia={isTragedia}
         onFirstReveal={() => handleShowcaseRevealBoost(activeId)}
         celebration={celebratedShowcaseId === activeId}
+        gatEventKey={`flip:nota-autoral:${activeId}`}
       />
     </div>
   );
@@ -2294,7 +2337,7 @@ const rendernotaAutoral = () => {
                 <div aria-hidden="true" className="h-[11rem] sm:h-[13rem]" />
                 <div className="mt-auto space-y-4">
                   <p className="text-sm leading-relaxed text-slate-300/85">
-                    Antes de convertirse en un universo transmedial, esta obra existió como una historia que invita al público a reflexionar sobre la salud mental, la vulnerabilidad y la lucha por el significado de la vida. Silvestre, el protagonista, navega sus conflictos internos y su conexión con otros guiado por personajes simbólicos como La Doctora y el Payasito Tiste.
+                    Antes de convertirse en un universo transmedial, esta obra existió como una historia que invita al público a reflexionar sobre la salud mental, la vulnerabilidad y la lucha por el significado de la vida. Silvestre, el protagonista, atraviesa sus conflictos internos y su desconexión con otros, guiado por personajes simbólicos como La Doctora y el Payasito Tiste.
                   </p>
                   <div className="flex flex-wrap gap-2">
                     {['Sueños lúcidos', 'Rabia contenida'].map((tag, i) => (
@@ -2827,7 +2870,35 @@ const rendernotaAutoral = () => {
             {activeDefinition.iaProfile ? (
               <IAInsightCard {...activeDefinition.iaProfile} compact rewardLabel={buildShowcaseRewardLabel(showcaseTokenLedgerById[activeShowcase])} minRequired={buildShowcaseMinRequiredCopy(activeShowcase)} />
             ) : null}
-            {activePortalExperienceDone && swipeShowcases[0] ? (
+            {activePortalL3Done ? (
+              <div className="relative">
+                <button
+                  type="button"
+                  onClick={handleClaimL3Reward}
+                  className="relative overflow-hidden inline-flex w-full items-center justify-center gap-2.5 rounded-2xl border border-yellow-400/50 bg-gradient-to-r from-yellow-500/15 via-amber-400/10 to-yellow-500/15 px-6 py-3.5 text-sm font-semibold text-yellow-200 tracking-wide transition hover:border-yellow-400/70 hover:bg-yellow-500/20 shadow-[0_0_24px_rgba(234,179,8,0.18)]"
+                >
+                  <span className="text-base">🪙</span>
+                  <span>+175 GAT · Siguiente miniverso{activePortalL3RecommendedForma ? `: ${activePortalL3RecommendedForma}` : ''}</span>
+                  {showL3RewardCoins && (
+                    <span className="pointer-events-none absolute inset-0">
+                      {Array.from({ length: 8 }).map((_, i) => {
+                        const angle = (i / 8) * Math.PI * 2;
+                        const dist = 48 + i * 6;
+                        return (
+                          <motion.span
+                            key={`l3-coin-${i}`}
+                            className="absolute left-1/2 top-1/2 h-3.5 w-3.5 -translate-x-1/2 -translate-y-1/2 rounded-full bg-gradient-to-br from-yellow-200 to-amber-500 shadow-[0_0_10px_rgba(250,204,21,0.5)]"
+                            initial={{ opacity: 1, scale: 0.6, x: 0, y: 0 }}
+                            animate={{ opacity: 0, scale: 1.1, x: Math.cos(angle) * dist, y: Math.sin(angle) * dist }}
+                            transition={{ duration: 1.1, ease: 'easeOut', delay: i * 0.025 }}
+                          />
+                        );
+                      })}
+                    </span>
+                  )}
+                </button>
+              </div>
+            ) : activePortalExperienceDone && swipeShowcases[0] ? (
               <button
                 type="button"
                 onClick={() => handleOpenGraphicSwipe(swipeShowcases[0])}
@@ -3959,8 +4030,22 @@ const rendernotaAutoral = () => {
               exit={{ scale: 0.96, opacity: 0, y: 18 }}
               transition={{ type: 'spring', stiffness: 220, damping: 24 }}
             >
-              <div className="flex-1 overflow-y-auto p-6 md:p-10 max-h-[88vh] lg:max-h-none">
-              <div className="flex justify-end gap-3 mb-6">
+              <div className="flex-1 overflow-y-auto p-6 md:p-10 md:pt-6 max-h-[88vh] lg:max-h-none">
+              <div className="flex items-center justify-end gap-3 mb-6">
+                <AnimatePresence>
+                  {showL3RewardChip && (
+                    <motion.span
+                      key="l3-reward-chip"
+                      className="mr-auto rounded-full border border-amber-300/40 bg-amber-500/10 px-3 py-1 text-xs uppercase tracking-[0.3em] text-amber-200 shadow-[0_4px_16px_rgba(0,0,0,0.3)]"
+                      initial={{ opacity: 0, scale: 0.85, x: -8 }}
+                      animate={{ opacity: 1, scale: 1, x: 0 }}
+                      exit={{ opacity: 0, scale: 0.9, x: -6 }}
+                      transition={{ type: 'spring', stiffness: 280, damping: 22 }}
+                    >
+                      +175 GAT transferidos
+                    </motion.span>
+                  )}
+                </AnimatePresence>
                 {user ? (
                   <button
                     onClick={handleToggleShowcaseAmbient}

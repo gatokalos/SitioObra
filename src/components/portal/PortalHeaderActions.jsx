@@ -1,5 +1,6 @@
-import React, { useCallback, useMemo, useSyncExternalStore } from 'react';
+import React, { useCallback, useEffect, useMemo, useState, useSyncExternalStore } from 'react';
 import { Volume2, VolumeX, X } from 'lucide-react';
+import { AnimatePresence, motion } from 'framer-motion';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { toast } from '@/components/ui/use-toast';
 import { useAuth } from '@/contexts/SupabaseAuthContext';
@@ -21,6 +22,15 @@ const PortalHeaderActions = ({ returnUrl = DEFAULT_RETURN_URL }) => {
   const navigate = useNavigate();
   const location = useLocation();
   const { user } = useAuth();
+  const [showTransferChip, setShowTransferChip] = useState(false);
+
+  useEffect(() => {
+    if (!location.state?.showGatTransferChip) return;
+    setShowTransferChip(true);
+    const t = window.setTimeout(() => setShowTransferChip(false), 2500);
+    return () => window.clearTimeout(t);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
   const ambientState = useSyncExternalStore(
     subscribeHeroAmbient,
     getHeroAmbientState,
@@ -113,7 +123,20 @@ const PortalHeaderActions = ({ returnUrl = DEFAULT_RETURN_URL }) => {
 
   return (
     <div className="inline-flex items-center gap-2">
-      {/* <GATChip /> */}
+      <AnimatePresence>
+        {showTransferChip && (
+          <motion.span
+            key="portal-transfer-chip"
+            className="rounded-full border border-amber-300/40 bg-amber-500/10 px-3 py-1 text-xs uppercase tracking-[0.3em] text-amber-200 whitespace-nowrap shadow-[0_4px_16px_rgba(0,0,0,0.3)]"
+            initial={{ opacity: 0, x: 8 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: 8 }}
+            transition={{ type: 'spring', stiffness: 280, damping: 22 }}
+          >
+            +175 GAT transferidos
+          </motion.span>
+        )}
+      </AnimatePresence>
       {user ? (
         <button
           type="button"

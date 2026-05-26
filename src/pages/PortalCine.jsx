@@ -1,8 +1,8 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import ReactDOM from 'react-dom';
 import { useLocation , useNavigate } from 'react-router-dom';
-import { Hand, RotateCcw, Video, X } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { RotateCcw, Video, X } from 'lucide-react';
+import MiniVersoCard from '@/components/transmedia/MiniVersoCard';
 import { useAuth } from '@/contexts/SupabaseAuthContext';
 import LoginOverlay from '@/components/ContributionModal/LoginOverlay';
 import ContributionModal from '@/components/ContributionModal';
@@ -11,6 +11,7 @@ import PortalHeaderActions from '@/components/portal/PortalHeaderActions';
 import IAInsightCard from '@/components/IAInsightCard';
 import CollaboratorsPanel from '@/components/portal/CollaboratorsPanel';
 import RelatedReadingTooltipButton from '@/components/portal/RelatedReadingTooltipButton';
+import PortalL3RewardCTA from '@/components/portal/PortalL3RewardCTA';
 import VitranaQuestionReveal from '@/components/portal/VitranaQuestionReveal';
 import ResonanceModal, { LEVEL2_QUESTIONS, buildL1Acknowledgment } from '@/components/portal/ResonanceModal';
 import PulseReactionCard from '@/components/portal/PulseReactionCard';
@@ -97,68 +98,7 @@ const CINE_COLLABORATORS = [
 const CINE_BLOG_KEYS = ['copycats', 'cine', 'miniversocine'];
 const CINE_BLOG_KEY_SET = new Set(CINE_BLOG_KEYS.map((key) => key.trim().toLowerCase()));
 
-const MiniVersoCard = ({ title, verse, palette }) => {
-  const [isActive, setIsActive] = useState(() => {
-    try { return window.localStorage.getItem('gatoencerrado:miniverso-verso:' + title) === '1'; } catch { return false; }
-  });
 
-  const toggle = () => setIsActive((prev) => {
-    if (prev) return prev;
-    try { window.localStorage.setItem('gatoencerrado:miniverso-verso:' + title, '1'); } catch {}
-    return true;
-  });
-
-  return (
-    <div
-      role="button"
-      tabIndex={0}
-      aria-pressed={isActive}
-      className="relative [perspective:1200px] cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-white/40 rounded-2xl"
-      onClick={toggle}
-      onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggle(); } }}
-    >
-      <motion.div
-        animate={{ rotateY: isActive ? 180 : 0 }}
-        transition={{ duration: 0.7, ease: 'easeInOut' }}
-        className="relative min-h-[220px] [transform-style:preserve-3d]"
-      >
-        <div
-          className="absolute inset-0 rounded-2xl border flex flex-col items-center justify-center gap-4 text-sm [backface-visibility:hidden]"
-          style={{
-            backgroundImage: palette.gradient,
-            borderColor: palette.border,
-            color: palette.text,
-          }}
-        >
-          <span
-            className="inline-flex items-center gap-2 rounded-full px-4 py-1 text-[0.6rem] uppercase tracking-[0.35em] shadow-lg"
-            style={{
-              color: palette.accent,
-              backgroundColor: `${palette.background}cc`,
-              border: `1px solid ${palette.border}`,
-            }}
-          >
-            {title}
-          </span>
-          <span className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-white/30 bg-black/15 text-white/85 shadow-[0_0_16px_rgba(255,255,255,0.18)]">
-            <Hand size={16} className="animate-pulse" />
-          </span>
-        </div>
-        <div
-          className="absolute inset-0 rounded-2xl border px-6 py-5 [backface-visibility:hidden] flex items-center justify-center text-sm"
-          style={{
-            backgroundImage: palette.gradient,
-            borderColor: palette.border,
-            color: palette.text,
-            transform: 'rotateY(180deg)',
-          }}
-        >
-          <p className="leading-relaxed whitespace-pre-line text-center font-light">{verse}</p>
-        </div>
-      </motion.div>
-    </div>
-  );
-};
 
 const ShowcaseReactionInline = ({ status, onReact }) => (
   <PulseReactionCard
@@ -461,7 +401,7 @@ const PortalCine = () => {
             <div className="lg:hidden px-6 sm:px-8 pb-6 sm:pb-8 space-y-6">
               <div className="flex flex-col gap-3">
                 <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Mini-verso autoral</p>
-                <MiniVersoCard title={CINE_NOTA_AUTORAL.title} verse={CINE_NOTA_AUTORAL.verse} palette={CINE_TILE} />
+                <MiniVersoCard title={CINE_NOTA_AUTORAL.title} verse={CINE_NOTA_AUTORAL.verse} palette={CINE_TILE} effect="flip" gatEventKey="flip:nota-autoral:cine" />
               </div>
               <CollaboratorsPanel collaborators={CINE_COLLABORATORS} accentClassName="text-sky-200/90" bare />
             </div>
@@ -541,11 +481,15 @@ const PortalCine = () => {
             <CollaboratorsPanel collaborators={CINE_COLLABORATORS} accentClassName="text-sky-200/90" />
             <div className="flex flex-col gap-3">
               <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Mini-verso autoral</p>
-              <MiniVersoCard title={CINE_NOTA_AUTORAL.title} verse={CINE_NOTA_AUTORAL.verse} palette={CINE_TILE} />
+              <MiniVersoCard title={CINE_NOTA_AUTORAL.title} verse={CINE_NOTA_AUTORAL.verse} palette={CINE_TILE} effect="flip" gatEventKey="flip:nota-autoral:cine" />
             </div>
           </div>
           <div className="order-4"><IAInsightCard {...CINE_IA_PROFILE} compact /></div>
-          {experienceDone && (
+          {l3Rec?.step3 ? (
+            <div className="order-5">
+              <PortalL3RewardCTA portal="cine" l3Rec={l3Rec} />
+            </div>
+          ) : experienceDone ? (
             <div className="order-5">
               <button
                 type="button"
@@ -555,7 +499,7 @@ const PortalCine = () => {
                 ✦ Ver cortometraje ahora
               </button>
             </div>
-          )}
+          ) : null}
         </div>
 
         {showLoginOverlay ? <LoginOverlay onClose={handleCloseLogin} /> : null}

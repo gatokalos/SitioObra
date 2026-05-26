@@ -23,9 +23,9 @@ const PulseReactionCard = ({
 
   return (
     <div
-      className={`mt-4 rounded-[1.75rem] border border-white/10 bg-[radial-gradient(circle_at_88%_50%,rgba(124,58,237,0.18),transparent_32%),linear-gradient(135deg,rgba(0,0,0,0.42),rgba(12,8,20,0.38)_52%,rgba(88,10,56,0.24))] p-5 shadow-[0_18px_50px_rgba(0,0,0,0.28)] sm:p-6 ${className}`}
+      className={`mt-4 rounded-[1.75rem] border border-white/10 bg-[radial-gradient(circle_at_88%_50%,rgba(124,58,237,0.18),transparent_32%),linear-gradient(135deg,rgba(0,0,0,0.42),rgba(12,8,20,0.38)_52%,rgba(88,10,56,0.24))] p-4 shadow-[0_18px_50px_rgba(0,0,0,0.28)] sm:p-5 ${className}`}
     >
-      <div className="space-y-5">
+      <div className="space-y-3">
         {label ? (
           <p className="max-w-full text-[0.68rem] uppercase leading-[1.45] tracking-[0.24em] text-purple-200/90 [text-shadow:0_0_14px_rgba(216,180,254,0.38)]">
             {labelLines ? (

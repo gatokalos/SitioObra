@@ -7,11 +7,6 @@ import { supabase } from '@/lib/supabaseClient';
 import { ensureAnonId } from '@/lib/identity';
 import { useAuth } from '@/contexts/SupabaseAuthContext';
 import { ConfettiBurst, useConfettiBursts } from '@/components/Confetti';
-import {
-  registerTransmediaCreditEvent,
-  createTransmediaIdempotencyKey,
-} from '@/services/transmediaCreditsService';
-import { OBRA_VOICE_MIN_GAT } from '@/components/transmedia/transmediaConstants';
 import { resolvePortalRoute } from '@/lib/miniversePortalRegistry';
 import { createPortalLaunchState } from '@/lib/portalNavigation';
 import { createMiniverseSouvenirBlob, downloadBlob } from '@/lib/miniverseSouvenirCard';
@@ -260,7 +255,6 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
     const s = lsRead(portal);
     return !!s.l2_option && !s.l2_conv_done;
   });
-  const [gatRewarded, setGatRewarded] = useState(() => !!lsRead(portal).gat_ts);
   const [checking, setChecking] = useState(() => !lsRead(portal).l1);
 
   // Nivel 2 — conversación post-experiencia
@@ -358,25 +352,6 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
         ...(bienvenidaAnonId ? { bienvenida_anon_id: bienvenidaAnonId } : {}),
       }),
     }).catch(() => {});
-
-    // Otorga GAT si aún no se han concedido para este portal
-    if (!lsRead(portal).gat_ts) {
-      try {
-        const { state, duplicate } = await registerTransmediaCreditEvent({
-          eventKey:       `resonance:intuicion:${portal}`,
-          amount:         OBRA_VOICE_MIN_GAT,
-          oncePerIdentity: true,
-          idempotencyKey: createTransmediaIdempotencyKey(`resonance:${portal}`),
-        });
-        if (!duplicate && state && typeof window !== 'undefined') {
-          window.dispatchEvent(
-            new CustomEvent('gatoencerrado:external-credit-event', { detail: { state } })
-          );
-          lsPatch(portal, { gat_ts: Date.now() });
-          setGatRewarded(true);
-        }
-      } catch (_) {}
-    }
 
     lsPatch(portal, { l1: Date.now(), l1_answer: formData.respuesta });
     fireConfetti();
@@ -831,17 +806,6 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
                         <div className="inline-flex rounded-full border border-white/10 bg-white/5 px-3 py-1 text-[0.62rem] uppercase tracking-[0.32em] text-white/70 backdrop-blur-md">
                           Laboratorio
                         </div>
-                        {gatRewarded && (
-                          <motion.div
-                            initial={{ opacity: 0, scale: 0.8, y: 4 }}
-                            animate={{ opacity: 1, scale: 1, y: 0 }}
-                            transition={{ type: 'spring', stiffness: 260, damping: 18 }}
-                            className="inline-flex items-center gap-1.5 rounded-full border border-cyan-300/30 bg-cyan-400/10 px-2.5 py-1 text-[0.62rem] font-semibold uppercase tracking-[0.2em] text-cyan-200/90"
-                          >
-                            <Sparkles size={10} className="text-cyan-300" />
-                            +{OBRA_VOICE_MIN_GAT} GAT
-                          </motion.div>
-                        )}
                       </div>
                       {/* Título + descripción — se ocultan en móvil cuando el acordeón L2 está abierto */}
                       <h2

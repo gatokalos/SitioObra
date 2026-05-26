@@ -10,9 +10,9 @@ import {
   Wrench,
   Heart,
   Layers,
-  Hand,
   X,
 } from 'lucide-react';
+import MiniVersoCard from '@/components/transmedia/MiniVersoCard';
 import { useAuth } from '@/contexts/SupabaseAuthContext';
 import LoginOverlay from '@/components/ContributionModal/LoginOverlay';
 import ContributionModal from '@/components/ContributionModal';
@@ -25,6 +25,7 @@ import IAInsightCard from '@/components/IAInsightCard';
 import ObraConversationControls from '@/components/miniversos/obra/ObraConversationControls';
 import ObraQuestionList from '@/components/miniversos/obra/ObraQuestionList';
 import RelatedReadingTooltipButton from '@/components/portal/RelatedReadingTooltipButton';
+import PortalL3RewardCTA from '@/components/portal/PortalL3RewardCTA';
 import GATChip from '@/components/portal/GATChip';
 import VitranaQuestionReveal from '@/components/portal/VitranaQuestionReveal';
 import ResonanceModal, { LEVEL2_QUESTIONS, buildL1Acknowledgment } from '@/components/portal/ResonanceModal';
@@ -297,73 +298,7 @@ const normalizeStoredEmotionOrbs = (raw) => {
     .slice(-OBRA_EMOTION_MAX_ORBS);
 };
 
-const MiniVersoCard = ({
-  title,
-  verse,
-  palette,
-  effect = 'flip',
-}) => {
-  const [isActive, setIsActive] = useState(() => {
-    try { return window.localStorage.getItem('gatoencerrado:miniverso-verso:' + title) === '1'; } catch { return false; }
-  });
 
-  const handleCardToggle = () => {
-    setIsActive((prev) => {
-      if (prev) return prev;
-      try { window.localStorage.setItem('gatoencerrado:miniverso-verso:' + title, '1'); } catch {}
-      return true;
-    });
-  };
-
-  if (effect === 'flip') {
-    return (
-      <div className="relative [perspective:1200px]" onClick={handleCardToggle}>
-        <motion.div
-          animate={{ rotateY: isActive ? 180 : 0 }}
-          transition={{ duration: 0.7, ease: 'easeInOut' }}
-          className="relative min-h-[220px] [transform-style:preserve-3d]"
-        >
-          <div
-            className="absolute inset-0 rounded-2xl border flex flex-col items-center justify-center gap-4 text-sm [backface-visibility:hidden]"
-            style={{
-              backgroundImage: palette.gradient,
-              borderColor: palette.border,
-              color: palette.text,
-              inset: 0,
-            }}
-          >
-            <span
-              className="inline-flex items-center gap-2 rounded-full px-4 py-1 text-[0.6rem] uppercase tracking-[0.35em] shadow-lg"
-              style={{
-                color: palette.accent,
-                backgroundColor: `${palette.background}cc`,
-                border: `1px solid ${palette.border}`,
-              }}
-            >
-              {title}
-            </span>
-            <span className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-white/30 bg-black/15 text-white/85 shadow-[0_0_16px_rgba(255,255,255,0.18)]">
-              <Hand size={16} className="animate-pulse" />
-            </span>
-          </div>
-          <div
-            className="absolute inset-0 rounded-2xl border px-6 py-5 [backface-visibility:hidden] flex items-center justify-center text-sm"
-            style={{
-              backgroundImage: palette.gradient,
-              borderColor: palette.border,
-              color: palette.text,
-              transform: 'rotateY(180deg)',
-            }}
-          >
-            <p className="leading-relaxed whitespace-pre-line text-center font-light">{verse}</p>
-          </div>
-        </motion.div>
-      </div>
-    );
-  }
-
-  return null;
-};
 
 const ShowcaseReactionInline = ({
   title,
@@ -1075,6 +1010,7 @@ const PortalVoz = () => {
                     background: sceneTileColors.background,
                   }}
                   effect="flip"
+                  gatEventKey="flip:nota-autoral:obra"
                 />
               </div>
               <CollaboratorsPanel collaborators={SCENE_PORTAL_COLLABORATORS} accentClassName="text-purple-300" bare />
@@ -1114,7 +1050,7 @@ const PortalVoz = () => {
               {/* Overlay inferior: descripción + tags + CTA */}
               <div className="absolute bottom-0 inset-x-0 p-5 space-y-3">
                 <p className="text-sm leading-relaxed text-slate-200/90">
-                  Antes de convertirse en un universo transmedial, esta obra existió como una historia que invita al público a reflexionar sobre la salud mental, la vulnerabilidad y la lucha por el significado de la vida. Silvestre, el protagonista, navega sus conflictos internos y su conexión con otros guiado por personajes simbólicos como La Doctora y el Payasito Tiste.
+                  Antes de convertirse en un universo transmedial, esta obra existió como una historia que invita al público a reflexionar sobre la salud mental, la vulnerabilidad y la lucha por el significado de la vida. Silvestre, el protagonista, atraviesa sus conflictos internos y su desconexión con otros, guiado por personajes simbólicos como La Doctora y el Payasito Tiste.
                 </p>
                 <div className="flex flex-wrap gap-2">
                   {['Sueños lúcidos', 'Drama psicológico'].map((tag, i) => (
@@ -1576,7 +1512,11 @@ const PortalVoz = () => {
             </div>
           </div>
           <div className="order-4"><IAInsightCard {...SCENE_PORTAL_IA_PROFILE} compact /></div>
-          {experienceDone && (
+          {l3Rec?.step3 ? (
+            <div className="order-5">
+              <PortalL3RewardCTA portal="obra" l3Rec={l3Rec} />
+            </div>
+          ) : experienceDone ? (
             <div className="order-5">
               <button
                 type="button"
@@ -1586,7 +1526,7 @@ const PortalVoz = () => {
                 Abrir experiencia narrativa
               </button>
             </div>
-          )}
+          ) : null}
         </div>
 
         {showLoginOverlay ? <LoginOverlay onClose={handleCloseLogin} /> : null}
