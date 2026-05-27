@@ -390,7 +390,7 @@ export const MINIVERSE_CARDS = [
   {
     id: 'apps',
     formatId: 'apps',
-    appName: 'Apps',
+    appName: 'Juegos',
     icon: Dice5,
     thumbLabel: 'J',
     thumbGradient: 'from-lime-400/80 via-emerald-500/70 to-teal-500/60',

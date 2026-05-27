@@ -1,6 +1,8 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import React, { Suspense, lazy, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useLocation , useNavigate } from 'react-router-dom';
-import { Brain, Coins, Sparkles } from 'lucide-react';
+import { Sparkles } from 'lucide-react';
 import MiniVersoCard from '@/components/transmedia/MiniVersoCard';
 import { toast } from '@/components/ui/use-toast';
 import { useAuth } from '@/contexts/SupabaseAuthContext';
@@ -23,6 +25,8 @@ import { useVitranaQuestion } from '@/hooks/useVitranaQuestion';
 import useScrambleText from '@/hooks/useScrambleText';
 import { resolvePortalRoute } from '@/lib/miniversePortalRegistry';
 
+const HashtagButton3D = lazy(() => import('@/components/HashtagButton3D'));
+
 const ORACULO_TITLE = 'El espejo';
 const ORACULO_INTRO =
   (
@@ -41,38 +45,6 @@ const ORACULO_TAGLINE =  (
     Se aprende a <em>observar al observador</em>.
   </>
 );
-const ORACULO_MINING_LOOPS = [
-  'Responde preguntas simbólicas, filosóficas, existenciales o absurdas.',
-  'Cada respuesta se guarda como semilla de conocimiento para IA, literatura y obra interactiva.',
-  'Mientras más participas, más GATokens generas: prueba de resonancia con límites diarios.',
-];
-const ORACULO_REWARDS = [
-  {
-    id: 'reward-answer',
-    title: 'Responder a una pregunta profunda',
-    tokens: '+20 GAT',
-    description: 'Comparte una reflexión que vibre en lo simbólico o emocional.',
-  },
-  {
-    id: 'reward-comment',
-    title: 'Elegir y comentar reflexiones de otrxs',
-    tokens: '+30 GAT',
-    description: 'Modo foro: amplifica ideas y suma tu mirada.',
-  },
-  {
-    id: 'reward-return',
-    title: 'Volver tras una semana',
-    tokens: '+30 GAT',
-    description: 'Retorno que sostiene el hilo y da seguimiento a tu huella.',
-  },
-  {
-    id: 'reward-invite',
-    title: 'Invitar a alguien con su primera reflexión',
-    tokens: '+50 GAT',
-    description: 'Trae otra mente al Oráculo. Recompensa única por invitación.',
-  },
-];
-const ORACULO_LIMITS_NOTE = 'Límites diarios para evitar spam y preservar el valor simbólico de cada respuesta.';
 const ORACULO_SEED_NOTES = [
   'Las respuestas se almacenan como semillas de conocimiento simbólico.',
   'Enriquecen una base de datos viviente para literatura, IA personalizada y obra interactiva.',
@@ -234,6 +206,8 @@ const PortalOraculo = () => {
     };
   }, [isReadingTooltipOpen]);
 
+  const [isOraculoIframeOpen, setIsOraculoIframeOpen] = useState(false);
+
   const handleOpenOraculo = useCallback(() => {
     if (!requireAuth()) return;
     if (!oraculoUrl) {
@@ -242,8 +216,10 @@ const PortalOraculo = () => {
       });
       return;
     }
-    window.open(oraculoUrl, '_blank', 'noopener,noreferrer');
+    setIsOraculoIframeOpen(true);
   }, [oraculoUrl, requireAuth]);
+
+  const handleCloseOraculoIframe = useCallback(() => setIsOraculoIframeOpen(false), []);
 
   const handleOpenCommunityComposer = useCallback(() => {
     if (!requireAuth()) return;
@@ -272,6 +248,7 @@ const PortalOraculo = () => {
     null;
 
   return (
+    <>
     <div className="min-h-screen bg-gradient-to-b from-slate-950 via-black to-slate-900 text-slate-100">
       <div className="mx-auto w-full max-w-6xl px-4 py-4 md:py-8">
         <div className="flex items-start justify-between gap-4">
@@ -357,67 +334,24 @@ const PortalOraculo = () => {
             </div>
           </div>
 
-          <div className="lg:order-2 grid gap-6 lg:gap-10 lg:grid-cols-[2fr_1fr]">
-            <div className="space-y-6">
-              <div className="rounded-3xl border border-white/10 bg-black/30 p-6 space-y-4">
-                <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Minado simbólico</p>
-                <ul className="space-y-2 text-sm text-slate-200/90 leading-relaxed">
-                  {ORACULO_MINING_LOOPS.map((step, index) => (
-                    <li key={`oraculo-loop-${index}`} className="flex items-start gap-2">
-                      <span className="text-purple-300 mt-1">●</span>
-                      <span>{step}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-
-              <div className="rounded-3xl border border-white/10 bg-black/30 p-6 space-y-4">
-                <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Sistema de recompensas</p>
-                <div className="grid gap-3 md:grid-cols-2">
-                  {ORACULO_REWARDS.map((reward) => (
-                    <div
-                      key={reward.id}
-                      className="rounded-2xl border border-white/10 bg-white/5 p-4 space-y-2"
-                    >
-                      <div className="flex items-center justify-between gap-3">
-                        <p className="text-sm font-semibold text-slate-100">{reward.title}</p>
-                        <span className="inline-flex items-center gap-1 text-xs font-semibold text-amber-200">
-                          <Coins size={14} className="text-amber-200" />
-                          {reward.tokens}
-                        </span>
-                      </div>
-                      <p className="text-sm text-slate-300/90 leading-relaxed">{reward.description}</p>
-                    </div>
-                  ))}
-                </div>
-                <p className="text-xs text-slate-500">{ORACULO_LIMITS_NOTE}</p>
-              </div>
-            </div>
-
-            <div className="space-y-4 lg:space-y-6">
-              <div className="rounded-3xl border border-white/10 bg-black/30 p-6 space-y-3">
-                <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Semillas de conocimiento</p>
-                <ul className="space-y-2 text-sm text-slate-300/85 leading-relaxed">
-                  {ORACULO_SEED_NOTES.map((seed, index) => (
-                    <li key={`oraculo-seed-${index}`} className="flex items-start gap-2">
-                      <Sparkles size={14} className="mt-1 text-amber-200" />
-                      <span>{seed}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-
-              <div className="rounded-3xl border border-white/10 bg-black/30 p-6 space-y-3">
-                <div className="flex items-center gap-3">
-                  <Brain size={18} className="text-purple-200" />
-                  <p className="text-sm text-slate-200 font-semibold">Interacción que deja huella</p>
-                </div>
-                <p className="text-sm text-slate-300/85 leading-relaxed">
-                  Tus reflexiones afinan la mente del Gato: entrenamiento simbólico, no binario y emocional. Cada
-                  participación se audita para evitar ruido.
-                </p>
-                <p className="text-xs text-slate-500">El Oráculo es un espacio curado; el minado es resonancia, no dinero.</p>
-              </div>
+          <div className="lg:order-2 space-y-6">
+            <div className="rounded-3xl border border-white/10 bg-black/30 p-6 space-y-3">
+              <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Semillas de conocimiento</p>
+              <ul className="space-y-2 text-sm text-slate-300/85 leading-relaxed">
+                {ORACULO_SEED_NOTES.map((seed, index) => (
+                  <li key={`oraculo-seed-${index}`} className="flex items-start gap-2">
+                    <Sparkles size={14} className="mt-1 text-amber-200" />
+                    <span>{seed}</span>
+                  </li>
+                ))}
+              </ul>
+              <Suspense fallback={<div style={{ height: 200 }} />}>
+                <HashtagButton3D
+                  onClick={handleOpenOraculo}
+                  height="200px"
+                  style={{ width: '190px', margin: '0 auto' }}
+                />
+              </Suspense>
             </div>
           </div>
 
@@ -478,6 +412,82 @@ const PortalOraculo = () => {
         />
       </div>
     </div>
+
+    {typeof document !== 'undefined' && createPortal(
+      <AnimatePresence>
+        {isOraculoIframeOpen ? (
+          <motion.div
+            key="oraculo-portal-iframe"
+            className="fixed inset-0 z-[170] flex items-center justify-center overflow-y-auto overflow-x-hidden overscroll-none"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+          >
+            <motion.div
+              className="absolute inset-0 bg-black/85 backdrop-blur-md"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={handleCloseOraculoIframe}
+            />
+            <motion.div
+              role="dialog"
+              aria-modal="true"
+              aria-label="Oráculo interactivo"
+              className="relative z-10 my-6 w-[calc(100vw-2rem)] max-w-5xl overflow-hidden rounded-3xl border border-white/10 bg-slate-950/90 shadow-[0_35px_120px_rgba(0,0,0,0.65)]"
+              initial={{ scale: 0.96, opacity: 0, y: 18 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.96, opacity: 0, y: 18 }}
+              transition={{ type: 'spring', stiffness: 220, damping: 24 }}
+            >
+              <div className="flex flex-col gap-3 border-b border-white/10 px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                  <p className="text-xs uppercase tracking-[0.35em] text-slate-400/80">Oráculo en vivo</p>
+                  <h3 className="font-display text-2xl text-slate-100">Demo completa</h3>
+                </div>
+                <div className="flex items-center gap-3 text-sm">
+                  {oraculoUrl ? (
+                    <a
+                      href={oraculoUrl}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="text-purple-200 underline underline-offset-4 hover:text-white"
+                    >
+                      Abrir en nueva pestaña
+                    </a>
+                  ) : null}
+                  <button
+                    type="button"
+                    onClick={handleCloseOraculoIframe}
+                    className="text-slate-300 hover:text-white transition"
+                  >
+                    Cerrar ✕
+                  </button>
+                </div>
+              </div>
+              <div className="h-[72vh] bg-black">
+                {oraculoUrl ? (
+                  <iframe
+                    title="Oráculo interactivo"
+                    src={oraculoUrl}
+                    className="h-full w-full"
+                    frameBorder="0"
+                    allow="autoplay; fullscreen; picture-in-picture; clipboard-write; accelerometer; gyroscope; magnetometer; microphone; camera"
+                    referrerPolicy="strict-origin-when-cross-origin"
+                  />
+                ) : (
+                  <div className="flex h-full items-center justify-center text-sm text-slate-400">
+                    URL del Oráculo no configurada.
+                  </div>
+                )}
+              </div>
+            </motion.div>
+          </motion.div>
+        ) : null}
+      </AnimatePresence>,
+      document.body,
+    )}
+    </>
   );
 };
 

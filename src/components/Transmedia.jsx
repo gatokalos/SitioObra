@@ -109,6 +109,7 @@ const AutoficcionPreviewOverlay = lazy(() => import('@/components/novela/Autofic
 const LiteraturaAppOverlay = lazy(() => import('@/components/novela/LiteraturaAppOverlay'));
 const LoginOverlay = lazy(() => import('@/components/ContributionModal/LoginOverlay'));
 const PdfPreviewDocument = lazy(() => import('@/components/transmedia/PdfPreviewDocument'));
+const HashtagButton3D = lazy(() => import('@/components/HashtagButton3D'));
 import {
   getHeroAmbientAudio,
   getHeroAmbientState,
@@ -2132,98 +2133,46 @@ const rendernotaAutoral = () => {
 
     if (activeDefinition.type === 'oracle') {
       return (
-        <div className="grid gap-6 lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)] lg:items-start">
-          <div className="space-y-6">
-            <div className="rounded-3xl border border-white/10 bg-black/30 p-6 space-y-4">
-              <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Minado simbólico</p>
-              {activeDefinition.loops ? (
-                <ul className="space-y-2 text-sm text-slate-200/90 leading-relaxed">
-                  {activeDefinition.loops.map((step, index) => (
-                    <li key={`oraculo-loop-${index}`} className="flex items-start gap-2">
-                      <span className="text-purple-300 mt-1">●</span>
-                      <span>{step}</span>
+        <>
+          <div className="grid gap-6 lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)] lg:items-start">
+            <div className="space-y-6">
+              <div className="rounded-3xl border border-white/10 bg-black/30 p-6 space-y-3">
+                <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Semillas de conocimiento</p>
+                <ul className="space-y-2 text-sm text-slate-300/85 leading-relaxed">
+                  {activeDefinition.seedNotes?.map((seed, index) => (
+                    <li key={`oraculo-seed-${index}`} className="flex items-start gap-2">
+                      <Sparkles size={14} className="mt-1 text-amber-200" />
+                      <span>{seed}</span>
                     </li>
                   ))}
                 </ul>
+                <Suspense fallback={<div style={{ height: 200 }} />}>
+                  <HashtagButton3D
+                    onClick={handleOpenOraculo}
+                    height="200px"
+                    style={{ width: '190px', margin: '0 auto' }}
+                  />
+                </Suspense>
+              </div>
+            </div>
+
+            <div className="flex flex-col gap-5">
+              {rendernotaAutoral()}
+              {activeDefinition.iaProfile ? (
+                <IAInsightCard {...activeDefinition.iaProfile} compact rewardLabel={buildShowcaseRewardLabel(showcaseTokenLedgerById[activeShowcase])} minRequired={buildShowcaseMinRequiredCopy(activeShowcase)} />
               ) : null}
-              {activeDefinition.tagline ? (
-                <p className="text-sm text-purple-200/90">{activeDefinition.tagline}</p>
-              ) : null}
-              <div className="space-y-2">
-                <Button
-                  variant="outline"
-                  className="border-purple-400/40 text-purple-200 hover:bg-purple-500/10"
+              {activePortalExperienceDone && (
+                <button
+                  type="button"
                   onClick={handleOpenOraculo}
+                  className="inline-flex w-full items-center justify-center gap-2 rounded-2xl border border-amber-400/40 bg-amber-500/10 px-6 py-3 text-sm font-semibold text-amber-200 tracking-wide transition hover:bg-amber-500/20"
                 >
-                  {activeDefinition.ctaLabel}
-                </Button>
-                <p className="text-xs text-slate-400 leading-relaxed">{activeDefinition.ctaDescription}</p>
-              </div>
-            </div>
-
-            <div className="rounded-3xl border border-white/10 bg-black/30 p-6 space-y-4">
-              <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Sistema de recompensas</p>
-              <div className="grid gap-3 md:grid-cols-2">
-                {activeDefinition.rewards?.map((reward, index) => (
-                  <div
-                    key={`oraculo-reward-${index}`}
-                    className="rounded-2xl border border-white/10 bg-white/5 p-4 space-y-2"
-                  >
-                    <div className="flex items-center justify-between">
-                      <p className="text-sm font-semibold text-slate-100">{reward.title}</p>
-                      <span className="inline-flex items-center gap-1 text-xs font-semibold text-amber-200">
-                        <Coins size={14} className="text-amber-200" />
-                        {reward.tokens}
-                      </span>
-                    </div>
-                    <p className="text-sm text-slate-300/90 leading-relaxed">{reward.description}</p>
-                  </div>
-                ))}
-              </div>
-              <p className="text-xs text-slate-500">{activeDefinition.limitsNote}</p>
-            </div>
-
-            <div className="rounded-3xl border border-white/10 bg-black/30 p-6 space-y-3">
-              <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Semillas de conocimiento</p>
-              <ul className="space-y-2 text-sm text-slate-300/85 leading-relaxed">
-                {activeDefinition.seedNotes?.map((seed, index) => (
-                  <li key={`oraculo-seed-${index}`} className="flex items-start gap-2">
-                    <Sparkles size={14} className="mt-1 text-amber-200" />
-                    <span>{seed}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-
-            <div className="rounded-3xl border border-white/10 bg-black/30 p-6 space-y-3">
-              <div className="flex items-center gap-3">
-                <Brain size={18} className="text-purple-200" />
-                <p className="text-sm text-slate-200 font-semibold">Interacción que deja huella</p>
-              </div>
-              <p className="text-sm text-slate-300/85 leading-relaxed">
-                Tus reflexiones afinan la mente del Gato: entrenamiento simbólico, no binario y emocional. Cada
-                participación se audita para evitar ruido.
-              </p>
-              <p className="text-xs text-slate-500">El Oráculo es un espacio curado; el minado es resonancia, no dinero.</p>
+                  ✦ {activeDefinition.ctaLabel}
+                </button>
+              )}
             </div>
           </div>
-
-          <div className="flex flex-col gap-5">
-            {rendernotaAutoral()}
-            {activeDefinition.iaProfile ? (
-              <IAInsightCard {...activeDefinition.iaProfile} compact rewardLabel={buildShowcaseRewardLabel(showcaseTokenLedgerById[activeShowcase])} minRequired={buildShowcaseMinRequiredCopy(activeShowcase)} />
-            ) : null}
-            {activePortalExperienceDone && (
-              <button
-                type="button"
-                onClick={handleOpenOraculo}
-                className="inline-flex w-full items-center justify-center gap-2 rounded-2xl border border-amber-400/40 bg-amber-500/10 px-6 py-3 text-sm font-semibold text-amber-200 tracking-wide transition hover:bg-amber-500/20"
-              >
-                ✦ {activeDefinition.ctaLabel}
-              </button>
-            )}
-          </div>
-        </div>
+        </>
       );
     }
 
