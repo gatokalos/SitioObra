@@ -91,6 +91,7 @@ import useTransmediaSectionAudio from '@/hooks/useTransmediaSectionAudio';
 import useShowcaseGuard from '@/hooks/useShowcaseGuard';
 import useScrambleText from '@/hooks/useScrambleText';
 import MiniVersoCard from '@/components/transmedia/MiniVersoCard';
+import GATChip from '@/components/portal/GATChip';
 import ShowcaseReactionInline from '@/components/transmedia/ShowcaseReactionInline';
 import CauseImpactAccordion from '@/components/transmedia/CauseImpactAccordion';
 
@@ -1231,7 +1232,6 @@ const Transmedia = ({ allianceOnlyMode = false }) => {
     setNovelaQuestions(0);
     setSonoroSpent(false);
     setGraphicSpent(false);
-    setIsAppsDemoUnlocking(false);
     setTazaActivations(0);
     resetMiniversoUnlockState();
     setShowcaseBoosts({});
@@ -1252,6 +1252,20 @@ const Transmedia = ({ allianceOnlyMode = false }) => {
       safeRemoveItem('gatoencerrado:gatokens-available');
       safeRemoveItem(EXPLORER_BADGE_STORAGE_KEY);
       safeRemoveItem('gx_anon_id');
+      // Nueva economía — bienvenida + progreso resonance por portal
+      try {
+        window.localStorage.removeItem('bienvenida_anon_id');
+        ['obra','cine','artesanias','literatura','grafico','sonoridades','movimiento','juegos','oraculo'].forEach(
+          (p) => window.localStorage.removeItem(`gatoencerrado:resonance:${p}`)
+        );
+      } catch { /* ignore */ }
+      // Flip cards — prefix scan directo en localStorage
+      try {
+        const flipKeys = Object.keys(window.localStorage).filter((k) =>
+          k.startsWith('gatoencerrado:miniverso-verso:')
+        );
+        flipKeys.forEach((k) => window.localStorage.removeItem(k));
+      } catch { /* ignore */ }
       window.dispatchEvent(
         new CustomEvent('gatoencerrado:miniverse-spent', {
           detail: { id: 'novela', spent: false, amount: 0, count: 0 },
@@ -4979,7 +4993,8 @@ const rendernotaAutoral = () => {
         }`}
       >
         {import.meta.env?.DEV ? (
-          <div className="fixed bottom-4 right-4 z-50">
+          <div className="fixed bottom-4 right-4 z-50 flex items-center gap-2">
+            <GATChip />
             <button
               type="button"
               onClick={handleResetCredits}

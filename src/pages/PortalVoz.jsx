@@ -1053,9 +1053,7 @@ const PortalVoz = () => {
                   Antes de convertirse en un universo transmedial, esta obra existió como una historia que invita al público a reflexionar sobre la salud mental, la vulnerabilidad y la lucha por el significado de la vida. Silvestre, el protagonista, atraviesa sus conflictos internos y su desconexión con otros, guiado por personajes simbólicos como La Doctora y el Payasito Tiste.
                 </p>
                 <div className="flex flex-wrap gap-2">
-                  {['Sueños lúcidos', 'Drama psicológico'].map((tag, i) => (
-                    <span key={i} className="rounded-full border border-white/20 bg-black/30 px-3 py-1 text-[11px] uppercase tracking-[0.2em] text-slate-100 backdrop-blur-sm">{tag}</span>
-                  ))}
+                  <span className="rounded-full border border-white/20 bg-black/30 px-3 py-1 text-[11px] uppercase tracking-[0.2em] text-slate-100 backdrop-blur-sm">Incluye dispositivo interactivo</span>
                 </div>
               </div>
             </div>

@@ -507,9 +507,7 @@ const PortalArtesanias = () => {
                     Esta pieza nace de esa transformación constante: no para atrapar el símbolo, sino para dejarlo existir un instante fuera de la pantalla.
                   </p>
                   <div className="flex flex-wrap gap-2">
-                    {['Cerámica', 'Objeto transmedial'].map((tag) => (
-                      <span key={tag} className="rounded-full border border-amber-400/30 bg-amber-900/20 px-3 py-1 text-[11px] uppercase tracking-[0.2em] text-amber-100">{tag}</span>
-                    ))}
+                    <span className="rounded-full border border-amber-400/30 bg-amber-900/20 px-3 py-1 text-[11px] uppercase tracking-[0.2em] text-amber-100">Incluye dispositivo interactivo</span>
                   </div>
                 </div>
               </div>,
@@ -538,9 +536,7 @@ const PortalArtesanias = () => {
                     ))}
                   </ul>
                   <div className="flex flex-wrap gap-2">
-                    {['Barro', 'WebAR', 'Objeto narrativo'].map((tag) => (
-                      <span key={tag} className="rounded-full border border-white/20 bg-white/5 px-3 py-1 text-[11px] uppercase tracking-[0.2em] text-slate-300">{tag}</span>
-                    ))}
+                    <span className="rounded-full border border-white/20 bg-white/5 px-3 py-1 text-[11px] uppercase tracking-[0.2em] text-slate-300">Incluye dispositivo interactivo</span>
                   </div>
                   <button
                     type="button"

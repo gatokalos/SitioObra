@@ -398,9 +398,7 @@ const PortalGraficos = () => {
                   Esta primera edición digital reúne el inicio de una obra que continúa expandiéndose.
                 </p>
                 <div className="flex flex-wrap gap-2">
-                  {['Narrativa fragmentada', 'Pausas ilustradas'].map((tag) => (
-                    <span key={tag} className="rounded-full border border-white/20 bg-black/30 px-3 py-1 text-[11px] uppercase tracking-[0.2em] text-slate-100 backdrop-blur-sm">{tag}</span>
-                  ))}
+                  <span className="rounded-full border border-white/20 bg-black/30 px-3 py-1 text-[11px] uppercase tracking-[0.2em] text-slate-100 backdrop-blur-sm">Incluye dispositivo interactivo</span>
                 </div>
               </div>
             </div>
