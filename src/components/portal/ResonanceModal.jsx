@@ -204,6 +204,7 @@ const LEVELS = [
     num: 2,
     eyebrow: 'Experiencia narrativa',
     title: 'Artefacto transmedia',
+    desc: 'Tu intuición ya está anclada. Lo que el artefacto despierte después de esto es lo que nos interesa comparar.',
     icon: Flame,
   },
   {
@@ -1104,9 +1105,14 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
                                         </div>
                                       )}
                                       {isL2 && !l2ConvDone && l2Selection && (
-                                        <div className="flex items-center gap-2 text-xs text-slate-300">
-                                          <Check size={12} className="shrink-0 text-emerald-400/70" />
-                                          <span className="italic">{l2Selection}</span>
+                                        <div className="space-y-2">
+                                          <div className="flex items-center gap-2 text-xs text-slate-300">
+                                            <Check size={12} className="shrink-0 text-emerald-400/70" />
+                                            <span className="italic">{l2Selection}</span>
+                                          </div>
+                                          <p className="text-xs leading-relaxed text-slate-400/80">
+                                            {l2q?.l2Desc ?? level.desc}
+                                          </p>
                                         </div>
                                       )}
                                       {isL2 && !l2ConvDone && l2Selection && onOpenNarrative && (

@@ -1050,7 +1050,9 @@ const PortalVoz = () => {
               {/* Overlay inferior: descripción + tags + CTA */}
               <div className="absolute bottom-0 inset-x-0 p-5 space-y-3">
                 <p className="text-sm leading-relaxed text-slate-200/90">
-                  Antes de convertirse en un universo transmedial, esta obra existió como una historia que invita al público a reflexionar sobre la salud mental, la vulnerabilidad y la lucha por el significado de la vida. Silvestre, el protagonista, atraviesa sus conflictos internos y su desconexión con otros, guiado por personajes simbólicos como La Doctora y el Payasito Tiste.
+                  A través de una terapia no convencional, un paciente y su doctora exploran el poder de los sueños lúcidos para confrontar el miedo, la desconexión y la rabia reprimida.
+
+Silvestre, un hombre en sus treintas, comienza a perder la frontera entre lo que imagina y lo que siente. En ese desdoblamiento, la mente se convierte en escenario y la escena en espejo.
                 </p>
                 <div className="flex flex-wrap gap-2">
                   <span className="rounded-full border border-white/20 bg-black/30 px-3 py-1 text-[11px] uppercase tracking-[0.2em] text-slate-100 backdrop-blur-sm">Incluye dispositivo interactivo</span>

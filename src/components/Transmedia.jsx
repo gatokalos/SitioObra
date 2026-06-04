@@ -1960,9 +1960,7 @@ const rendernotaAutoral = () => {
                       Esta pieza nace de esa transformación constante: no para atrapar el símbolo, sino para dejarlo existir un instante fuera de la pantalla.
                     </p>
                     <div className="flex flex-wrap gap-2">
-                      {['Objeto transmedial', 'Cerámica esmaltada'].map((tag) => (
-                        <span key={tag} className="rounded-full border border-amber-400/30 bg-amber-900/20 px-3 py-1 text-[11px] uppercase tracking-[0.2em] text-amber-100">{tag}</span>
-                      ))}
+                      <span className="rounded-full border border-amber-400/30 bg-amber-900/20 px-3 py-1 text-[11px] uppercase tracking-[0.2em] text-amber-100">Incluye dispositivo interactivo</span>
                     </div>
                   </div>
                 </motion.div>
@@ -2300,25 +2298,14 @@ const rendernotaAutoral = () => {
                 <div aria-hidden="true" className="h-[11rem] sm:h-[13rem]" />
                 <div className="mt-auto space-y-4">
                   <p className="text-sm leading-relaxed text-slate-300/85">
-                    Antes de convertirse en un universo transmedial, esta obra existió como una historia que invita al público a reflexionar sobre la salud mental, la vulnerabilidad y la lucha por el significado de la vida. Silvestre, el protagonista, atraviesa sus conflictos internos y su desconexión con otros, guiado por personajes simbólicos como La Doctora y el Payasito Tiste.
+                    A través de una terapia no convencional, un paciente y su doctora exploran el poder de los sueños lúcidos para confrontar el miedo, la desconexión y la rabia reprimida.
+
+Silvestre, un hombre en sus treintas, comienza a perder la frontera entre lo que imagina y lo que siente. En ese desdoblamiento, la mente se convierte en escenario y la escena en espejo.
                   </p>
                   <div className="flex flex-wrap gap-2">
-                    {['Sueños lúcidos', 'Rabia contenida'].map((tag, i) => (
-                      <span
-                        key={i}
-                        className="rounded-full border border-purple-400/30 bg-purple-900/20 px-3 py-1 text-xs text-purple-100"
-                      >
-                        {tag}
-                      </span>
-                    ))}
+                    <span className="rounded-full border border-white/20 bg-black/30 px-3 py-1 text-[11px] uppercase tracking-[0.2em] text-slate-100 backdrop-blur-sm">Incluye dispositivo interactivo</span>
                   </div>
-                  <button
-                    type="button"
-                    onClick={() => navigate('/portal-encuentros', { state: { from: location.pathname } })}
-                    className="inline-flex w-full items-center justify-center rounded-full border border-purple-400/40 text-purple-200 hover:bg-purple-500/10 px-6 py-2.5 text-sm font-semibold transition"
-                  >
-                    Próximas funciones
-                  </button>
+       
                 </div>
               </div>
             </div>
@@ -2813,13 +2800,9 @@ const rendernotaAutoral = () => {
                         <p className="text-sm text-slate-200/90 leading-relaxed">
                           {entry.richDescription ?? entry.description}
                         </p>
-                        {entry.tags?.length ? (
-                          <div className="flex flex-wrap gap-2">
-                            {entry.tags.map((tag) => (
-                              <span key={tag} className="rounded-full border border-white/20 bg-black/30 px-3 py-1 text-[11px] uppercase tracking-[0.2em] text-slate-100 backdrop-blur-sm">{tag}</span>
-                            ))}
-                          </div>
-                        ) : null}
+                        <div className="flex flex-wrap gap-2">
+                          <span className="rounded-full border border-white/20 bg-black/30 px-3 py-1 text-[11px] uppercase tracking-[0.2em] text-slate-100 backdrop-blur-sm">Incluye dispositivo interactivo</span>
+                        </div>
                       </div>
                     </div>
                   </div>

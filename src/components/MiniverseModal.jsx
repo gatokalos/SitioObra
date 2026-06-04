@@ -262,7 +262,7 @@ export const MINIVERSE_CARDS = [
   {
     id: 'drama',
     formatId: 'miniversos',
-    appName: 'Obra',
+    appName: 'Teatro',
     icon: Drama,
     thumbLabel: 'D',
     thumbGradient: 'from-purple-400/80 via-fuchsia-500/70 to-rose-500/60',
@@ -2891,6 +2891,18 @@ const MiniverseModal = ({
                 <Sparkles size={16} />
                 Vivir la bienvenida
               </button>
+              {import.meta.env?.DEV ? (
+                <button
+                  type="button"
+                  onClick={() => {
+                    try { localStorage.setItem('gatoencerrado:bienvenida-completed', '1'); } catch {}
+                    setHasBienvenida(true);
+                  }}
+                  className="text-xs text-slate-500 hover:text-slate-300 transition underline underline-offset-2"
+                >
+                  [DEV] Simular bienvenida completada
+                </button>
+              ) : null}
             </div>
           </motion.div>
         ) : null}
