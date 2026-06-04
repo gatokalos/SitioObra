@@ -94,7 +94,8 @@
       "Bash(cp /Users/gatoenigmatico/gatoencerrado-ai/apps/bienvenida/public/images/boleto_vintage.png /Users/gatoenigmatico/gatoencerrado-ai/landing/SitioObra/public/assets/boleto_vintage.png)",
       "Bash(identify /Users/gatoenigmatico/gatoencerrado-ai/landing/SitioObra/public/assets/boleto_vintage.png)",
       "Bash(curl -s http://localhost:5050/health)",
-      "Bash(curl -s -X POST http://localhost:5050/api/obra-conciencia/preguntas -H 'Content-Type: application/json' -d '{ *)"
+      "Bash(curl -s -X POST http://localhost:5050/api/obra-conciencia/preguntas -H 'Content-Type: application/json' -d '{ *)",
+      "Bash(mkdir -p /Users/gatoenigmatico/.claude/gems/gatoencerrado)"
     ],
     "additionalDirectories": [
       "/Users/gatoenigmatico/Desktop/Postulación EFIARTES",
@@ -105,7 +106,8 @@
       "/Users/gatoenigmatico/gatoencerrado-ai/landing/SitioObra/src/assets",
       "/Users/gatoenigmatico/gatoencerrado-ai/apps/todxs-mvp",
       "/Users/gatoenigmatico/gatoencerrado-ai/gato-backstage",
-      "/Users/gatoenigmatico/gatoencerrado-ai/apps/bienvenida/public/images"
+      "/Users/gatoenigmatico/gatoencerrado-ai/apps/bienvenida/public/images",
+      "/Users/gatoenigmatico/.claude/gems"
     ]
   }
 }
