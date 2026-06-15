@@ -76,7 +76,7 @@ const MINIVERSE_KEYWORDS = {
 
 const STARTER_FAQ_PROMPTS = [
   '¿Tengo que ver la obra primero para entender este sitio?',
-  '¿Cuál es la pregunta al fondo de este universo narrativo?',
+  '¿A qué tipo de audiencias le puede gustar Es un gato encerrado?', 
   '¿Queda claro qué le pasa a Silvestre al final de la obra?',
   '¿Qué pasa después de que termina la función?',
   '¿A alguien más le dio ansiedad esta obra… o solo a mí?',
@@ -84,7 +84,8 @@ const STARTER_FAQ_PROMPTS = [
   '¿Cuál es la relación entre Es un gato encerrado y su causa social?',
   '¿Payasito Tiste es el alter ego de Silvestre?',
   'Si la IA desapareciera mañana, ¿seguiría existiendo #GatoEncerrado?',
-  '¿Qué tendría que pasar para que este proyecto florezca?'
+  '¿Qué tendría que pasar para que este proyecto florezca?',
+  '¿Cuál es la pregunta al fondo de este universo narrativo?'
   ];
 
 const inferMiniverseFromPost = (post) => {

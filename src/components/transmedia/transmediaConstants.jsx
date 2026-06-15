@@ -1584,7 +1584,7 @@ export const CAUSE_ACCORDION = [
     tramo: '3er tramo',
     title: 'Licencias',
   description:
-    'Implementación y seguimiento semestral de la app de detección temprana. 75 huellas financian 1 escuela por semestre.',
+    'Implementación y seguimiento semestral de la app de acompañamiento emocional. 75 huellas financian 1 escuela por semestre.',
   icon: Smartphone,
   metric: '5 escuelas atendidas por ciclo escolar',
   imageAlt: 'Captura de la app Causa Social en escuelas (versión beta).',
