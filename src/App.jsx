@@ -641,6 +641,11 @@ function App() {
                     <About />
                   </Suspense>
                 </DeferredSection>
+                <DeferredSection fallback={<SectionFallback id="provoca" minHeight={900} />}>
+                  <Suspense fallback={<SectionFallback id="provoca" minHeight={900} />}>
+                    <ProvocaSection />
+                  </Suspense>
+                </DeferredSection>
                 <DeferredSection fallback={<SectionFallback id="team" minHeight={980} />}>
                   <Suspense fallback={<SectionFallback id="team" minHeight={980} />}>
                     <Team />
@@ -649,11 +654,6 @@ function App() {
                 <DeferredSection fallback={<SectionFallback id="instagram" minHeight={1600} />}>
                   <Suspense fallback={<SectionFallback id="instagram" minHeight={1600} />}>
                     <Instagram />
-                  </Suspense>
-                </DeferredSection>
-                <DeferredSection fallback={<SectionFallback id="provoca" minHeight={900} />}>
-                  <Suspense fallback={<SectionFallback id="provoca" minHeight={900} />}>
-                    <ProvocaSection />
                   </Suspense>
                 </DeferredSection>
                 <DeferredSection fallback={<SectionFallback id="blog-contribuye" minHeight={700} />}>

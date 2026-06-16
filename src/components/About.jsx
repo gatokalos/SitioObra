@@ -26,9 +26,9 @@ import { useSilvestreVoice } from '@/hooks/useSilvestreVoice';
 
 const aboutParagraphs = [
   {
-    text: `La obra que dio origen al universo #GatoEncerrado. A través de la escena, los sueños lúcidos y la autoficción, explora la soledad, la rabia reprimida y la búsqueda de sentido frente a un mundo cada vez más desconectado.
+    text: `A través de la escena, los sueños lúcidos y la autoficción, nuestra obra explora la soledad, la rabia reprimida y la búsqueda de sentido frente a un mundo cada vez más desconectado.
 
-    Un hombre en sus treintas atraviesa sus conflictos internos acompañado por figuras simbólicas como La Doctora y el Payasito Tiste, personajes que habitan el límite entre la imaginación, la memoria y la realidad.`,
+    Silvestre, el protagonista, atraviesa sus conflictos internos acompañado por figuras simbólicas como La Doctora y el Payasito Tiste, personajes que habitan el límite entre la imaginación, la memoria y la realidad.`,
   
   className:
       'text-lg leading-relaxed font-light whitespace-pre-line bg-gradient-to-b from-slate-300/75 via-slate-200/80 to-slate-100/100 text-transparent bg-clip-text',
@@ -1250,7 +1250,7 @@ const About = () => {
           className="text-center mb-16"
         >
           <h2 className="font-display text-4xl md:text-5xl font-medium mb-6 text-gradient italic">
-            Es un gato encerrado
+            Sobre el drama
           </h2>
           <div className="max-w-3xl mx-auto">
             {aboutParagraphs.map((paragraph) => (
@@ -1290,7 +1290,7 @@ const About = () => {
                 Silvestre no está solo
               </h3>
               <p className="text-slate-300/80 leading-relaxed mb-8 font-light">
-                <i>Chivis</i>, el protagonista, <strong>transforma su mente</strong> en escenario. Aquí, lo real y lo imaginario ya no compiten. Y tú —espectador, visitante, cómplice— puedes entrar sin tocar la puerta, porque quizás… tú también tienes <i>un gato encerrado</i> en el pecho.
+                <i>El Chivis</i> transforma su mente <strong>en escenario</strong>. Aquí, lo real y lo imaginario ya no compiten. Y tú —espectador, visitante, cómplice— puedes entrar sin tocar la puerta, porque quizás… tú también tienes <i>un gato encerrado</i> en el pecho.
               </p>
               <div className="flex flex-col lg:flex-row gap-4">
                 <Button

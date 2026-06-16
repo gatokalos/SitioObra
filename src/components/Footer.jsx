@@ -65,9 +65,9 @@ const Footer = ({ showTransmediaNav = true }) => {
               <ul className="space-y-3">
                 {[
                   { name: 'Obra', href: '#about' },
+                  { name: 'Voces', href: '#provoca' },
                   { name: 'Equipo', href: '#team' },
                   { name: 'Galería', href: '#instagram' },
-                  { name: 'Voces', href: '#provoca' },
                   { name: 'Curaduría', href: '#dialogo-critico' },
                   ...(showTransmediaNav ? [{ name: 'Transmedia', href: '#transmedia' }] : []),
                   { name: 'Alianza', href: '#apoya' },
