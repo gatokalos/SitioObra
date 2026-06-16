@@ -806,7 +806,7 @@ export const ProvocaSection = () => {
                 ¿Qué nos provoca esta obra?
               </h3>
               <p className="text-slate-300/80 leading-relaxed mb-6 font-light">
-                Reunimos testimonios, críticas y preguntas abiertas que siguen vibrando después de la función. Puedes leer las voces que ya habitan este espacio o abrir una nueva compartiendo tu experiencia.
+                Reunimos testimonios, críticas y preguntas abiertas que siguen vibrando después de la función.
               </p>
               <div className="flex flex-col sm:flex-row gap-3">
                 <Button
