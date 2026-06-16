@@ -99,15 +99,15 @@ jobs:
           DEPLOY_USER: ${{ secrets.SSH_USERNAME || secrets.FTP_USERNAME }}
           DEPLOY_PORT: ${{ secrets.SSH_PORT || '65002' }}
         run: |
-          mkdir -p ~/.ssh
-          printf '%s\n' "$SSH_PRIVATE_KEY" > ~/.ssh/id_ed25519
-          chmod 600 ~/.ssh/id_ed25519
-          cat > ~/.ssh/config <<EOF
+          mkdir -p "$HOME/.ssh"
+          printf '%s\n' "$SSH_PRIVATE_KEY" > "$HOME/.ssh/id_ed25519"
+          chmod 600 "$HOME/.ssh/id_ed25519"
+          cat > "$HOME/.ssh/config" <<EOF
           Host deploy-target
             HostName ${DEPLOY_HOST}
             User ${DEPLOY_USER}
             Port ${DEPLOY_PORT}
-            IdentityFile ~/.ssh/id_ed25519
+            IdentityFile ${HOME}/.ssh/id_ed25519
             IdentitiesOnly yes
             AddressFamily inet
             StrictHostKeyChecking no
@@ -115,17 +115,17 @@ jobs:
             ServerAliveInterval 30
             ServerAliveCountMax 3
           EOF
-          chmod 600 ~/.ssh/config
+          chmod 600 "$HOME/.ssh/config"
 
       - name: Check SSH connectivity
         run: |
-          ssh -4 -F ~/.ssh/config -o BatchMode=yes -o ConnectTimeout=20 deploy-target "printf 'ssh ok\n'"
+          ssh -4 -F "$HOME/.ssh/config" -o BatchMode=yes -o ConnectTimeout=20 deploy-target "printf 'ssh ok\n'"
 
       - name: Deploy via rsync
         env:
           DEPLOY_PATH: ${{ secrets.DEPLOY_PATH || 'domains/esungatoencerrado.com/public_html/' }}
         run: |
           rsync -avzr --delete \
-            -e "ssh -4 -F ~/.ssh/config" \
+            -e "ssh -4 -F $HOME/.ssh/config" \
             dist/ \
             "deploy-target:${DEPLOY_PATH}"
