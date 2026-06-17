@@ -75,15 +75,14 @@ const MINIVERSE_KEYWORDS = {
 };
 
 const STARTER_FAQ_PROMPTS = [
-  '¿Tengo que ver la obra primero para entender este sitio?',
+  '¿Tengo que ver la obra primero para entender este universo?',
   '¿A qué tipo de audiencias le puede gustar Es un gato encerrado?', 
+  '¿Cuál es la relación entre la obra de teatro y su causa social?',
   '¿Queda claro qué le pasa a Silvestre al final de la obra?',
   '¿Qué pasa después de que termina la función?',
   '¿A alguien más le dio ansiedad esta obra… o solo a mí?',
   '¿Por qué no le entendí a la escena de las marcianas?',
-  '¿Cuál es la relación entre Es un gato encerrado y su causa social?',
   '¿Payasito Tiste es el alter ego de Silvestre?',
-  'Si la IA desapareciera mañana, ¿seguiría existiendo #GatoEncerrado?',
   '¿Qué tendría que pasar para que este proyecto florezca?',
   '¿Cuál es la pregunta al fondo de este universo narrativo?'
   ];
@@ -917,7 +916,7 @@ const Blog = ({ posts = [], isLoading = false, error = null, showBuscador = fals
                           Buscador Backstage
                         </span>
                         <p className="text-[1rem] font-semibold leading-snug text-white">
-                         <em> ¿Primera vez en el sitio? ¿Ya viste la obra?</em><br /> Este es un espacio para explayarte y encontrar respuestas.
+                         <em> ¿Primera vez en #GatoEncerrado? ¿Ya viste su obra?</em><br /> Este es un espacio para explayarte y encontrar respuestas.
                         </p>
                       </div>
                       <div className="relative w-full">

@@ -988,7 +988,7 @@ const MiniverseModal = ({
   const activeTabIntro = useMemo(() => {
       if (activeTab === 'escaparate') {
       return {
-      lead: 'Conoce este universo a través de nueve actos. Cada uno explora una forma distinta de contenernos y abre la misma pregunta:',
+      lead: 'Explora este universo mediante fragmentos. Cada uno muestra una forma distinta de contener la obra y abre la misma pregunta:',
       highlight: '¿qué ocurre cuando una herida emocional se expande y toca otras vidas?',
       };
     }

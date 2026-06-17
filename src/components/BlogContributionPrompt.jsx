@@ -117,17 +117,21 @@ const BlogContributionPrompt = ({ onRevealTransmedia = null, onAskQuestion = nul
   </h3>
 
   <p className="text-slate-300/80 leading-relaxed mb-8 max-w-2xl mx-auto font-light whitespace-pre-line text-center">
-    {`No todo se entiende a la primera. 
-    Y no pasa nada. 
-    
-    Este universo no se recorre en línea recta. Se avanza, se duda, se vuelve atrás. 
-    
-    En #GatoEncerrado la confusión no es un error: es parte del viaje.
+    {`¿Qué obra ocurre en ti?
+Tal vez no lo sepas todavía.
+
+Y no pasa nada.
+
+No necesitas entender dónde estás.
+Solo notar si algo de lo que pasaste
+se quedó moviéndose adentro.
+
+Ese universo tiene más de una entrada.
     
     `}
 
     <span className="block mt-4 text-sm text-slate-150/0 italic">
-      (Y a veces basta con dejar que la mente vuelva a un estado silvestre.)
+      (Y a veces, la confusión es lo que nos devuelve a un estado más <strong>silvestre</strong>.)
     </span>
   </p>
 

@@ -135,6 +135,7 @@ export const ProvocaSection = () => {
   const [voiceName, setVoiceName] = useState('');
   const [voiceRole, setVoiceRole] = useState('');
   const [voiceDraft, setVoiceDraft] = useState('');
+  const voiceTextareaRef = useRef(null);
   const [voiceTrap, setVoiceTrap] = useState('');
   const [isSubmittingVoice, setIsSubmittingVoice] = useState(false);
   const [lastSubmittedQuote, setLastSubmittedQuote] = useState('');
@@ -388,6 +389,7 @@ export const ProvocaSection = () => {
       setIsVoiceInputOpen(true);
       setTimeout(() => {
         document.querySelector('#provoca')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        setTimeout(() => voiceTextareaRef.current?.focus(), 120);
       }, 80);
     };
     window.addEventListener('gatoencerrado:provoca-draft', handleProvocaDraft);
@@ -850,6 +852,7 @@ export const ProvocaSection = () => {
                     className="mt-4"
                   >
                     <textarea
+                      ref={voiceTextareaRef}
                       aria-label="Comparte cómo cambió tu forma de mirar, sentir o recordar"
                       value={voiceDraft}
                       onChange={(event) => setVoiceDraft(event.target.value)}
