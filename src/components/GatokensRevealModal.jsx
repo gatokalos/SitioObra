@@ -11,7 +11,7 @@ const panelVariants = {
 
 const GATOKENS_LS_KEY = 'gatoencerrado:gatokens-available';
 
-const GatokensRevealModal = ({ open, onClose, recommendedShowcaseId }) => {
+const GatokensRevealModal = ({ open, onClose, recommendedShowcaseId, isUmbral = false, onProvoca }) => {
   const [balance, setBalance] = useState(null);
   const navigate = useNavigate();
 
@@ -95,13 +95,13 @@ const GatokensRevealModal = ({ open, onClose, recommendedShowcaseId }) => {
 
             {/* encabezado */}
             <p className="mb-1 text-center text-[0.65rem] font-semibold uppercase tracking-[0.3em] text-violet-300/60">
-              Sistema energético
+              {isUmbral ? 'Pasillo umbral' : 'Sistema energético'}
             </p>
             <h2
               id="gatokens-modal-title"
               className="mb-5 text-center text-xl font-semibold leading-snug text-white"
             >
-              Tu energía se convirtió<br />en GATokens
+              {isUmbral ? <>Ya recorriste el umbral</> : <>Tu energía se convirtió<br />en GATokens</>}
             </h2>
 
             {/* balance */}
@@ -113,42 +113,73 @@ const GatokensRevealModal = ({ open, onClose, recommendedShowcaseId }) => {
             )}
 
             {/* descripción */}
-                  <p className="mb-7 text-center text-sm leading-relaxed text-slate-400/60">
-              Úsalos para desbloquear experiencias dentro del universo{' '}
-              <span className="text-violet-300/80">#GATOENCERRADO</span>.
+            <p className="mb-7 text-center text-sm leading-relaxed text-slate-400/60">
+              {isUmbral
+                ? <>Tu respuesta puede convertirse en parte de{' '}<span className="text-violet-300/80">#GATOENCERRADO</span>.</>
+                : <>Úsalos para desbloquear experiencias dentro del universo{' '}<span className="text-violet-300/80">#GATOENCERRADO</span>.</>
+              }
             </p>
 
             {/* CTAs */}
-            {recommendedShowcaseId ? (
-              <button
-                type="button"
-                onClick={handleGoToRecommendation}
-                className="
-                  mb-3 w-full rounded-full
-                  bg-gradient-to-r from-violet-600 via-purple-600 to-fuchsia-600
-                  px-6 py-3 text-sm font-semibold text-white
-                  shadow-[0_8px_28px_rgba(139,92,246,0.38)]
-                  transition-all duration-200
-                  hover:shadow-[0_10px_36px_rgba(139,92,246,0.52)]
-                  hover:scale-[1.02] active:scale-[0.98]
-                "
-              >
-                Recomendación del gato →
-              </button>
-            ) : null}
-            <button
-              type="button"
-              onClick={handleExplore}
-              className={`
-                w-full rounded-full px-6 py-3 text-sm font-semibold transition-all duration-200
-                ${recommendedShowcaseId
-                  ? 'border border-white/10 bg-white/5 text-slate-300/70 hover:text-slate-200'
-                  : 'bg-gradient-to-r from-violet-600 via-purple-600 to-fuchsia-600 text-white shadow-[0_8px_28px_rgba(139,92,246,0.38)] hover:shadow-[0_10px_36px_rgba(139,92,246,0.52)] hover:scale-[1.02] active:scale-[0.98]'
-                }
-              `}
-            >
-              {recommendedShowcaseId ? 'Conocer la Obra' : 'Explorar el sitio →'}
-            </button>
+            {isUmbral ? (
+              <>
+                <button
+                  type="button"
+                  onClick={onProvoca}
+                  className="
+                    mb-3 w-full rounded-full
+                    bg-gradient-to-r from-violet-600 via-purple-600 to-fuchsia-600
+                    px-6 py-3 text-sm font-semibold text-white
+                    shadow-[0_8px_28px_rgba(139,92,246,0.38)]
+                    transition-all duration-200
+                    hover:shadow-[0_10px_36px_rgba(139,92,246,0.52)]
+                    hover:scale-[1.02] active:scale-[0.98]
+                  "
+                >
+                  ¿Te movió la obra?
+                </button>
+                <button
+                  type="button"
+                  onClick={handleExplore}
+                  className="w-full rounded-full px-6 py-3 text-sm font-semibold transition-all duration-200 border border-white/10 bg-white/5 text-slate-300/70 hover:text-slate-200"
+                >
+                  Explorar el sitio →
+                </button>
+              </>
+            ) : (
+              <>
+                {recommendedShowcaseId ? (
+                  <button
+                    type="button"
+                    onClick={handleGoToRecommendation}
+                    className="
+                      mb-3 w-full rounded-full
+                      bg-gradient-to-r from-violet-600 via-purple-600 to-fuchsia-600
+                      px-6 py-3 text-sm font-semibold text-white
+                      shadow-[0_8px_28px_rgba(139,92,246,0.38)]
+                      transition-all duration-200
+                      hover:shadow-[0_10px_36px_rgba(139,92,246,0.52)]
+                      hover:scale-[1.02] active:scale-[0.98]
+                    "
+                  >
+                    Recomendación del gato →
+                  </button>
+                ) : null}
+                <button
+                  type="button"
+                  onClick={handleExplore}
+                  className={`
+                    w-full rounded-full px-6 py-3 text-sm font-semibold transition-all duration-200
+                    ${recommendedShowcaseId
+                      ? 'border border-white/10 bg-white/5 text-slate-300/70 hover:text-slate-200'
+                      : 'bg-gradient-to-r from-violet-600 via-purple-600 to-fuchsia-600 text-white shadow-[0_8px_28px_rgba(139,92,246,0.38)] hover:shadow-[0_10px_36px_rgba(139,92,246,0.52)] hover:scale-[1.02] active:scale-[0.98]'
+                    }
+                  `}
+                >
+                  {recommendedShowcaseId ? 'Conocer la Obra' : 'Explorar el sitio →'}
+                </button>
+              </>
+            )}
           </motion.div>
         </motion.div>
       )}

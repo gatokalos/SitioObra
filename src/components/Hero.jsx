@@ -78,6 +78,7 @@ const Hero = () => {
   const [isTicketModalOpen, setIsTicketModalOpen] = useState(false);
   const [isGatokensModalOpen, setIsGatokensModalOpen] = useState(false);
   const [recommendedVitranaId, setRecommendedVitranaId] = useState(null);
+  const [isUmbralReveal, setIsUmbralReveal] = useState(false);
   const [autoVideoFormatId, setAutoVideoFormatId] = useState(null);
   const [isAutoVideoOpen, setIsAutoVideoOpen] = useState(false);
   const [ctaIndex, setCtaIndex] = useState(0);
@@ -148,6 +149,7 @@ const Hero = () => {
           const appId = extractRecommendedAppId(intent);
           const showcaseId = resolveShowcaseFromAppId(appId, showcaseDefinitions);
           if (showcaseId) setRecommendedVitranaId(showcaseId);
+          if (intent?.isUmbral) setIsUmbralReveal(true);
         }
       } catch {}
       setIsGatokensModalOpen(true);
@@ -835,18 +837,8 @@ const Hero = () => {
           <div className="container mx-auto px-6 text-center relative z-10 flex-1 flex flex-col">
 
               {/* TOP HALF — isotipo flota hasta la línea central */}
-              <div className="flex-1 flex items-end justify-center pb-6">
-                <div className="flex flex-col items-center gap-3">
-                  <span
-                    className="pointer-events-none select-none whitespace-nowrap text-[0.62rem] uppercase tracking-widest text-slate-300/70"
-                    style={{
-                      opacity: showAudioHint ? 0.75 : 0,
-                      transform: showAudioHint ? 'translateY(0)' : 'translateY(-4px)',
-                      transition: 'opacity 0.6s ease, transform 0.6s ease',
-                    }}
-                  >
-                    Activa la escena
-                  </span>
+              <div className="flex-1 flex items-end justify-center pb-4 sm:pb-5 md:pb-6">
+                <div className="flex flex-col items-center">
                   <motion.div
                     initial={{ opacity: 0, scale: 0.8 }}
                     animate={{ opacity: 1, scale: 1 }}
@@ -871,6 +863,16 @@ const Hero = () => {
                       />
                     </motion.div>
                   </motion.div>
+                  <span
+                    className="pointer-events-none mt-2.5 select-none whitespace-nowrap text-[0.62rem] uppercase tracking-widest text-slate-300/70"
+                    style={{
+                      opacity: showAudioHint ? 0.75 : 0,
+                      transform: showAudioHint ? 'translateY(0)' : 'translateY(-3px)',
+                      transition: 'opacity 0.6s ease, transform 0.6s ease',
+                    }}
+                  >
+                    Activa la escena
+                  </span>
                 </div>
               </div>
 
@@ -1208,8 +1210,21 @@ const Hero = () => {
         <GatokensRevealModal
           open={isGatokensModalOpen}
           recommendedShowcaseId={recommendedVitranaId}
+          isUmbral={isUmbralReveal}
+          onProvoca={() => {
+            setIsGatokensModalOpen(false);
+            try {
+              const raw = localStorage.getItem('gatoencerrado:provoca-draft');
+              const quote = raw ? JSON.parse(raw)?.quote ?? '' : '';
+              window.dispatchEvent(
+                new CustomEvent('gatoencerrado:provoca-draft', { detail: { quote } })
+              );
+            } catch {}
+            scrollToSection('#provoca');
+          }}
           onClose={() => {
             setIsGatokensModalOpen(false);
+            setIsUmbralReveal(false);
             if (!user) {
               safeSetItem(POZO_HERO_REVEAL_KEY, '1');
               window.dispatchEvent(new CustomEvent('gatoencerrado:pozo-hero-revealed'));

@@ -216,6 +216,7 @@ const mobileSingleButtonRoles = new Set([
   "Dramaturgia",
   "Colaboradores y Agradecimientos",
 ]);
+const defaultOpenMobileRoles = ["Dramaturgia", "Dirección", "Producción y asistencia"];
 const mobileRoleLabelOverrides = {
   "Sonido y Tema Musical": "Sonido y Música",
 };
@@ -240,7 +241,14 @@ const Team = () => {
   );
   const [activeMobileRole, setActiveMobileRole] = useState(null);
   const [openMobileRoles, setOpenMobileRoles] = useState(
-    () => (teamData.Dramaturgia ? ["Dramaturgia"] : teamData.Elenco ? ["Elenco"] : [])
+    () => {
+      const availableDefaultRoles = defaultOpenMobileRoles.filter((role) => teamData[role]);
+      return availableDefaultRoles.length > 0
+        ? availableDefaultRoles
+        : teamData.Elenco
+          ? ["Elenco"]
+          : [];
+    }
   );
   const [activeMobileMemberByRole, setActiveMobileMemberByRole] = useState({});
   const [activeDesktopRole, setActiveDesktopRole] = useState(defaultDesktopRole);
@@ -1158,7 +1166,7 @@ const Team = () => {
           className="text-center mb-16"
         >
           <h2 className="font-display text-4xl md:text-5xl font-medium mb-6 text-gradient italic">
-            Equipo
+            Tras Bambalinas
           </h2>
           <p className="text-lg text-slate-300/80 max-w-3xl mx-auto leading-relaxed font-light md:text-base sm:text-sm">
           

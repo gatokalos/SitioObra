@@ -220,6 +220,14 @@ const Bienvenida = () => {
         }
         if (payload && typeof payload === 'object') {
           setBienvenidaTransmediaIntent(payload);
+          if (payload.obraPregunta && typeof payload.obraPregunta === 'string') {
+            try {
+              window.localStorage.setItem(
+                'gatoencerrado:provoca-draft',
+                JSON.stringify({ quote: payload.obraPregunta.trim() })
+              );
+            } catch {}
+          }
         }
         const returnPath = getBienvenidaReturnPath() || '/';
         const returnPathClean = String(returnPath).split('#')[0].split('?')[0] || '/';

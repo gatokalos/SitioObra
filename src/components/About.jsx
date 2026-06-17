@@ -382,6 +382,19 @@ export const ProvocaSection = () => {
   }, []);
 
   useEffect(() => {
+    const handleProvocaDraft = (e) => {
+      const quote = e.detail?.quote ?? '';
+      if (quote) setVoiceDraft(quote);
+      setIsVoiceInputOpen(true);
+      setTimeout(() => {
+        document.querySelector('#provoca')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }, 80);
+    };
+    window.addEventListener('gatoencerrado:provoca-draft', handleProvocaDraft);
+    return () => window.removeEventListener('gatoencerrado:provoca-draft', handleProvocaDraft);
+  }, []);
+
+  useEffect(() => {
     const payload = {
       quote: voiceDraft.trim(),
       name: voiceName.trim(),
