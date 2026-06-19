@@ -80,7 +80,7 @@ const ArticleDrawer = () => {
         <>
           {/* Backdrop */}
           <motion.div
-            className="fixed inset-0 z-[200] bg-black/60 backdrop-blur-sm"
+            className="fixed inset-0 z-[520] bg-black/60 backdrop-blur-sm"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
@@ -89,7 +89,7 @@ const ArticleDrawer = () => {
 
           {/* Sheet */}
           <motion.div
-            className="fixed inset-x-0 bottom-0 z-[201] flex flex-col bg-[#080a12] rounded-t-3xl shadow-[0_-20px_60px_rgba(0,0,0,0.7)]"
+            className="fixed inset-x-0 bottom-0 z-[521] flex flex-col bg-[#080a12] rounded-t-3xl shadow-[0_-20px_60px_rgba(0,0,0,0.7)]"
             style={{ maxHeight: '92dvh' }}
             initial={{ y: '100%' }}
             animate={{ y: 0 }}

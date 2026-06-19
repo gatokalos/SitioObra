@@ -1274,7 +1274,7 @@ const CallToAction = ({ barsIntroDelayMs = 0 }) => {
           isPreviewing={interactiveSupport !== null}
         />
         <p className="text-xs opacity-65">
-          A partir de la huella {EXPANSION_START_COPY}, cada huella se convierte en reinversión. ✨
+          ✨ A partir de la huella {EXPANSION_START_COPY}, cada huella se convierte en reinversión.
         </p>
       </div>
 

@@ -1582,7 +1582,7 @@ export const CAUSE_ACCORDION = [
   {
     id: 'app-escolar',
     tramo: '3er tramo',
-    title: 'Licencias',
+    title: 'Escuelas',
   description:
     'Implementación y seguimiento semestral de la app de acompañamiento emocional. 75 huellas financian 1 escuela por semestre.',
   icon: Smartphone,
@@ -1590,10 +1590,10 @@ export const CAUSE_ACCORDION = [
   imageAlt: 'Captura de la app Causa Social en escuelas (versión beta).',
   imageLabel: 'Capturas beta de la app',
     imageUrls: [
-      'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/causa%20social/app%20causa%20social/Sofia1.jpg',
-      'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/causa%20social/app%20causa%20social/Luis.jpg',
-       'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/causa%20social/app%20causa%20social/Andres1.jpg',
-      'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/causa%20social/app%20causa%20social/Ximena.jpg',
+      'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/causa%20social/appsplash.png',
+      'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/causa%20social/IgualqueSofia.png',
+       'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/causa%20social/contestar.png',
+      'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/causa%20social/Ximena.png',
 
 
     ],

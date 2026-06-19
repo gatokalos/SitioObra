@@ -142,10 +142,10 @@ const AlianzaSocial = () => {
                 <div className="space-y-4 text-slate-300/80 leading-relaxed font-light">
                   <p>
                     <span className="font-semibold text-purple-200">La taquilla sostiene a la obra de teatro. Tu huella sostiene a #GatoEncerrado.</span>{' '}
-                    Cada huella activada se distribuye en tres frentes que operamos en alianza con <strong>Isabel Ayuda para la Vida, A.C.,</strong>{' '}
+                    Cada huella activada recorre tres tramos que operamos en alianza con <strong>Isabel Ayuda para la Vida, A.C.,</strong>{' '}
                     cuya confianza hizo posible el inicio de este proyecto.
                   </p>
-                  <p className="text-lg font-medium text-white">Cualquier excedente se reinvierte en nuevas formas de la obra ✨</p>
+                  <p className="text-lg font-medium text-white">Un modelo en cascada: primero se sostiene la causa social, y cualquier excedente se destina a nueva obra ✨</p>
                 </div>
                 <details ref={detailsRef} open={!isMobileViewport} className="group rounded-2xl border border-emerald-300/25 bg-emerald-500/10 px-5 py-4">
                   <summary className="flex cursor-pointer list-none items-center justify-between gap-3">
@@ -190,7 +190,7 @@ const AlianzaSocial = () => {
                         />
                         <div>
                           <p className="text-base font-semibold text-slate-100">
-                            ¿Quieres explorar la app F.E.L.I.S.?
+                            ¿Quieres explorar la app "Qué es estar bien"?
                           </p>
                         </div>
                       </div>
@@ -269,7 +269,7 @@ const AlianzaSocial = () => {
                 </div>
                 <div className="relative z-10">
                   <p className="text-base italic leading-relaxed text-slate-400 md:text-medium">
-                    "Cuando estas huellas florezcan, las nueve formas de la obra se expandirán, impulsadas por lo que la comunidad habite."
+                    "Cada experiencia alimenta también una investigación sobre cómo las obras transforman a quienes las habitan —conocimiento que el proyecto devuelve, abierto, a la comunidad."
                   </p>
                   <div className="mt-4 text-sm text-slate-400">
                     <p className="font-semibold text-slate-200">Equipo 💜 #GatoEncerrado</p>
