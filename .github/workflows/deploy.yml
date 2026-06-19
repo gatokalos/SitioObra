@@ -73,59 +73,12 @@ jobs:
       - name: Show contents of dist/
         run: ls -la dist/
 
-      - name: Validate deploy env
-        env:
-          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
-          DEPLOY_HOST: ${{ secrets.SSH_HOST || secrets.FTP_SERVER }}
-          DEPLOY_USER: ${{ secrets.SSH_USERNAME || secrets.FTP_USERNAME }}
-          DEPLOY_PORT: ${{ secrets.SSH_PORT || '65002' }}
-          DEPLOY_PATH: ${{ secrets.DEPLOY_PATH || 'domains/esungatoencerrado.com/public_html/' }}
-        run: |
-          missing=0
-          for key in SSH_PRIVATE_KEY DEPLOY_HOST DEPLOY_USER DEPLOY_PORT DEPLOY_PATH; do
-            if [ -z "${!key}" ]; then
-              echo "::error::Missing GitHub secret/env value: ${key}"
-              missing=1
-            fi
-          done
-          if [ "$missing" -ne 0 ]; then
-            exit 1
-          fi
-
-      - name: Setup SSH key
-        env:
-          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
-          DEPLOY_HOST: ${{ secrets.SSH_HOST || secrets.FTP_SERVER }}
-          DEPLOY_USER: ${{ secrets.SSH_USERNAME || secrets.FTP_USERNAME }}
-          DEPLOY_PORT: ${{ secrets.SSH_PORT || '65002' }}
-        run: |
-          mkdir -p "$HOME/.ssh"
-          printf '%s\n' "$SSH_PRIVATE_KEY" > "$HOME/.ssh/id_ed25519"
-          chmod 600 "$HOME/.ssh/id_ed25519"
-          cat > "$HOME/.ssh/config" <<EOF
-          Host deploy-target
-            HostName ${DEPLOY_HOST}
-            User ${DEPLOY_USER}
-            Port ${DEPLOY_PORT}
-            IdentityFile ${HOME}/.ssh/id_ed25519
-            IdentitiesOnly yes
-            AddressFamily inet
-            StrictHostKeyChecking no
-            UserKnownHostsFile /dev/null
-            ServerAliveInterval 30
-            ServerAliveCountMax 3
-          EOF
-          chmod 600 "$HOME/.ssh/config"
-
-      - name: Check SSH connectivity
-        run: |
-          ssh -4 -F "$HOME/.ssh/config" -o BatchMode=yes -o ConnectTimeout=20 deploy-target "printf 'ssh ok\n'"
-
-      - name: Deploy via rsync
-        env:
-          DEPLOY_PATH: ${{ secrets.DEPLOY_PATH || 'domains/esungatoencerrado.com/public_html/' }}
-        run: |
-          rsync -avzr --delete \
-            -e "ssh -4 -F $HOME/.ssh/config" \
-            dist/ \
-            "deploy-target:${DEPLOY_PATH}"
+      - name: Deploy via FTP
+        uses: SamKirkland/FTP-Deploy-Action@4.3.4
+        with:
+          server: ${{ secrets.FTP_SERVER }}
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          local-dir: ./dist/
+          server-dir: /domains/esungatoencerrado.com/public_html/
+          dangerous-clean-slate: false
