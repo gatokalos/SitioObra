@@ -500,6 +500,10 @@ function App() {
     if (!vv) return undefined;
     let wasZoomed = false;
     const handle = () => {
+      if (document.documentElement.dataset.gatoImagePreviewOpen === 'true') {
+        wasZoomed = false;
+        return;
+      }
       if (vv.scale > 1.02) {
         wasZoomed = true;
       } else if (wasZoomed && vv.scale <= 1.02) {

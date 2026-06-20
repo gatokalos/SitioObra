@@ -14,6 +14,7 @@ import {
 import { supabase } from '@/lib/supabaseClient';
 
 const noopAuth = () => true;
+const IMAGE_PREVIEW_DATASET_KEY = 'gatoImagePreviewOpen';
 
 const AlianzaSocial = () => {
   const sectionRef = useRef(null);
@@ -82,6 +83,76 @@ const AlianzaSocial = () => {
   const handleCloseImagePreview = useCallback(() => {
     setImagePreview(null);
   }, []);
+
+  useEffect(() => {
+    if (!imagePreview || typeof document === 'undefined') return undefined;
+
+    const { documentElement, body } = document;
+    const scrollY = window.scrollY || window.pageYOffset || 0;
+    const previousHtmlOverflow = documentElement.style.overflow;
+    const previousHtmlScrollBehavior = documentElement.style.scrollBehavior;
+    const previousBodyOverflow = body.style.overflow;
+    const previousBodyPosition = body.style.position;
+    const previousBodyTop = body.style.top;
+    const previousBodyLeft = body.style.left;
+    const previousBodyRight = body.style.right;
+    const previousBodyWidth = body.style.width;
+    const previousBodyScrollBehavior = body.style.scrollBehavior;
+    const previousOverscrollBehavior = documentElement.style.overscrollBehavior;
+
+    documentElement.dataset[IMAGE_PREVIEW_DATASET_KEY] = 'true';
+    documentElement.style.overflow = 'hidden';
+    documentElement.style.overscrollBehavior = 'none';
+    body.style.position = 'fixed';
+    body.style.top = `-${scrollY}px`;
+    body.style.left = '0';
+    body.style.right = '0';
+    body.style.width = '100%';
+    body.style.overflow = 'hidden';
+
+    const handleKeyDown = (event) => {
+      if (event.key === 'Escape') {
+        handleCloseImagePreview();
+      }
+    };
+    const preventGesture = (event) => event.preventDefault();
+    const preventMultiTouch = (event) => {
+      if (event.touches?.length > 1) {
+        event.preventDefault();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    document.addEventListener('gesturestart', preventGesture, { passive: false });
+    document.addEventListener('gesturechange', preventGesture, { passive: false });
+    document.addEventListener('gestureend', preventGesture, { passive: false });
+    document.addEventListener('touchmove', preventMultiTouch, { passive: false });
+
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+      document.removeEventListener('gesturestart', preventGesture);
+      document.removeEventListener('gesturechange', preventGesture);
+      document.removeEventListener('gestureend', preventGesture);
+      document.removeEventListener('touchmove', preventMultiTouch);
+      documentElement.style.scrollBehavior = 'auto';
+      body.style.scrollBehavior = 'auto';
+      documentElement.style.overflow = previousHtmlOverflow;
+      documentElement.style.overscrollBehavior = previousOverscrollBehavior;
+      body.style.position = previousBodyPosition;
+      body.style.top = previousBodyTop;
+      body.style.left = previousBodyLeft;
+      body.style.right = previousBodyRight;
+      body.style.width = previousBodyWidth;
+      body.style.overflow = previousBodyOverflow;
+      window.scrollTo(0, scrollY);
+      requestAnimationFrame(() => {
+        window.scrollTo(0, scrollY);
+        documentElement.style.scrollBehavior = previousHtmlScrollBehavior;
+        body.style.scrollBehavior = previousBodyScrollBehavior;
+        delete documentElement.dataset[IMAGE_PREVIEW_DATASET_KEY];
+      });
+    };
+  }, [handleCloseImagePreview, imagePreview]);
 
   const { handleShareImpactModel } = useMiniversoShare({ toast });
 
@@ -356,37 +427,80 @@ const AlianzaSocial = () => {
       {/* Image preview portal */}
       {typeof document !== 'undefined' && imagePreview
         ? createPortal(
-            <div className="fixed inset-0 z-[240] flex items-center justify-center overflow-y-auto overflow-x-hidden overscroll-none">
+            <div
+              role="dialog"
+              aria-modal="true"
+              aria-label={imagePreview.title || 'Vista previa de imagen'}
+              className={`fixed inset-0 z-[240] ${
+                isMobileViewport
+                  ? 'flex h-[100dvh] flex-col overflow-hidden overscroll-none bg-black/95'
+                  : 'flex items-center justify-center overflow-y-auto overflow-x-hidden overscroll-none'
+              }`}
+            >
               <div className="absolute inset-0 bg-black/80 backdrop-blur-sm" onClick={handleCloseImagePreview} />
-              <div className="relative z-10 my-10 w-[calc(100vw-2rem)] max-w-3xl">
-                <div className="flex justify-end mb-4">
+              <div
+                className={
+                  isMobileViewport
+                    ? 'relative z-10 flex h-full w-full flex-col pt-[env(safe-area-inset-top)]'
+                    : 'relative z-10 my-10 w-[calc(100vw-2rem)] max-w-3xl'
+                }
+              >
+                <div className={isMobileViewport ? 'flex h-14 shrink-0 justify-end px-4 py-3' : 'flex justify-end mb-4'}>
                   <button
                     type="button"
                     onClick={handleCloseImagePreview}
-                    className="rounded-full border border-white/10 px-4 py-2 text-sm text-slate-300 hover:text-white hover:border-white/30 transition"
+                    className="rounded-full border border-white/10 bg-black/35 px-4 py-2 text-sm text-slate-300 backdrop-blur-md transition hover:border-white/30 hover:text-white"
                   >
                     Cerrar ✕
                   </button>
                 </div>
-                <div className="rounded-3xl border border-white/10 bg-slate-950/95 shadow-2xl overflow-hidden">
-                  <div className="relative w-full aspect-[4/3] bg-black/60">
+                <div
+                  className={
+                    isMobileViewport
+                      ? 'flex min-h-0 flex-1 flex-col overflow-hidden bg-slate-950/95'
+                      : 'rounded-3xl border border-white/10 bg-slate-950/95 shadow-2xl overflow-hidden'
+                  }
+                >
+                  <div
+                    className={
+                      isMobileViewport
+                        ? 'relative flex min-h-0 flex-1 items-center justify-center bg-black/70'
+                        : 'relative w-full aspect-[4/3] bg-black/60'
+                    }
+                    style={isMobileViewport ? { touchAction: 'manipulation' } : undefined}
+                  >
                     <img
                       src={imagePreview.src}
                       alt={imagePreview.title || 'Vista previa'}
-                      className="absolute inset-0 w-full h-full object-contain"
+                      className={
+                        isMobileViewport
+                          ? 'h-full w-full select-none object-contain'
+                          : 'absolute inset-0 w-full h-full object-contain'
+                      }
                       loading="lazy"
                       decoding="async"
+                      draggable={false}
                     />
                   </div>
                   {(imagePreview.title || imagePreview.description) ? (
-                    <div className="p-6 space-y-2">
+                    <div
+                      className={
+                        isMobileViewport
+                          ? 'max-h-[30dvh] shrink-0 space-y-2 overflow-y-auto border-t border-white/10 bg-slate-950/95 px-4 py-3 pb-[max(0.75rem,env(safe-area-inset-bottom))]'
+                          : 'p-6 space-y-2'
+                      }
+                    >
                       {imagePreview.title ? (
-                        <h4 className="font-display text-2xl text-slate-100">{imagePreview.title}</h4>
+                        <h4 className={isMobileViewport ? 'font-display text-xl text-slate-100' : 'font-display text-2xl text-slate-100'}>
+                          {imagePreview.title}
+                        </h4>
                       ) : null}
                       {imagePreview.description ? (
-                        <p className="text-sm text-slate-300/80 leading-relaxed">{imagePreview.description}</p>
+                        <p className={isMobileViewport ? 'text-xs leading-relaxed text-slate-300/80' : 'text-sm text-slate-300/80 leading-relaxed'}>
+                          {imagePreview.description}
+                        </p>
                       ) : null}
-                      <p className="text-xs uppercase tracking-[0.4em] text-slate-500">
+                      <p className="text-[10px] uppercase tracking-[0.34em] text-slate-500 sm:text-xs sm:tracking-[0.4em]">
                         {imagePreview.label || 'Ilustración de la novela'}
                       </p>
                     </div>

@@ -1402,11 +1402,56 @@ body {
   --team-pill-tint-opacity-hover: 0.46;
 }
 
+@media (prefers-reduced-motion: no-preference) {
+  .team-pill-discovery {
+    animation: team-pill-discovery-pulse 7.6s ease-in-out infinite;
+    animation-delay: var(--team-pill-discovery-delay, 0s);
+  }
+
+  .team-pill-tint.team-pill-discovery::after {
+    animation: team-pill-discovery-sheen 7.6s ease-in-out infinite;
+    animation-delay: var(--team-pill-discovery-delay, 0s);
+  }
+}
+
+@keyframes team-pill-discovery-pulse {
+  0%,
+  58%,
+  100% {
+    filter: saturate(1) brightness(1);
+  }
+  67% {
+    filter: saturate(1.2) brightness(1.14) drop-shadow(0 0 10px rgba(216, 180, 254, 0.22));
+  }
+  76% {
+    filter: saturate(1.08) brightness(1.04);
+  }
+}
+
+@keyframes team-pill-discovery-sheen {
+  0%,
+  58%,
+  100% {
+    opacity: var(--team-pill-sheen-opacity);
+    transform: translateX(-8%);
+  }
+  67% {
+    opacity: calc(var(--team-pill-sheen-opacity-hover) + 0.1);
+    transform: translateX(16%);
+  }
+  76% {
+    opacity: var(--team-pill-sheen-opacity);
+    transform: translateX(0);
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .team-pill-tint,
+  .team-pill-discovery,
   .team-pill-tint::before,
   .team-pill-tint::after {
     transition: none !important;
+    animation: none !important;
   }
 }
 

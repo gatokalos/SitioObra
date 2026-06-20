@@ -161,7 +161,7 @@ const teamData = {
             {
         name: "Miroslava Wilson",
         role: "Producción Ejecutiva",
-        bio: "Productora ejecutiva, directora y asesora de movimiento. Originaria de Hermosillo y radicada en Tijuana, es fundadora de Péndulo Cero A.C. y educadora de movimiento somático certificada por Body Mind Movement. Su trabajo interdisciplinario vincula arte, medio ambiente y humanismo. Ha presentado su obra en Asia, América y Europa, y actualmente impulsa proyectos como Casa Viva y SomasSomos.",
+        bio: "Productora ejecutiva, directora y asesora de movimiento. Originaria de Hermosillo y radicada en Tijuana, es fundadora de Péndulo Cero A.C. y educadora de movimiento somático certificada por Body Mind Movement. Su trabajo interdisciplinario vincula arte, medio ambiente y humanismo. Ha presentado su obra en Asia, América y Europa, y actualmente impulsa el proyecto SomasSomos.",
         image: "https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/equipo/Miroslava%20.jpg",
       },
       {
@@ -252,6 +252,7 @@ const Team = () => {
   );
   const [activeMobileMemberByRole, setActiveMobileMemberByRole] = useState({});
   const [activeDesktopRole, setActiveDesktopRole] = useState(defaultDesktopRole);
+  const [isDesktopDiscoveryPaused, setIsDesktopDiscoveryPaused] = useState(false);
   const [activeMemberLink, setActiveMemberLink] = useState(null);
   const [confirmExternalLink, setConfirmExternalLink] = useState(null);
   const activeDesktopData = activeDesktopRole ? teamData[activeDesktopRole] : null;
@@ -1230,15 +1231,21 @@ Cada colaboración forma parte activa del universo que la obra pone en escena.
               role="tablist"
               aria-label="Áreas del equipo creativo"
               className="flex flex-wrap items-stretch justify-center gap-2"
+              onMouseEnter={() => setIsDesktopDiscoveryPaused(true)}
+              onFocusCapture={() => setIsDesktopDiscoveryPaused(true)}
+              onClick={() => setIsDesktopDiscoveryPaused(true)}
             >
               {orderedRoleEntries.map(([role], index) => {
                 const isActive = role === activeDesktopRole;
                 const tintClass =
                   index < 2
-                    ? "team-pill-tint tintTop"
-                    : index >= Math.max(orderedRoleEntries.length - 2, 0)
-                      ? "team-pill-tint tintBottom"
-                      : "";
+                      ? "team-pill-tint tintTop"
+                      : index >= Math.max(orderedRoleEntries.length - 2, 0)
+                        ? "team-pill-tint tintBottom"
+                        : "";
+                const discoveryClass = !isActive && !isDesktopDiscoveryPaused
+                  ? "team-pill-discovery"
+                  : "";
                 return (
                   <button
                     key={role}
@@ -1250,11 +1257,12 @@ Cada colaboración forma parte activa del universo que la obra pone en escena.
                     tabIndex={isActive ? 0 : -1}
                     onClick={() => setActiveDesktopRole(role)}
                     onKeyDown={(event) => handleDesktopRoleKeyDown(event, index)}
-                    className={`${tintClass} whitespace-nowrap rounded-full border px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.24em] transition ${
+                    className={`${tintClass} ${discoveryClass} whitespace-nowrap rounded-full border px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.24em] transition ${
                       isActive
                         ? "border-purple-400/60 bg-purple-500/20 text-purple-100 shadow-[0_0_20px_rgba(168,85,247,0.2)]"
                         : "border-white/15 bg-slate-950/75 text-slate-100/95 shadow-[inset_0_1px_0_rgba(255,255,255,0.08),0_8px_22px_rgba(0,0,0,0.35)] hover:border-purple-300/45 hover:bg-slate-900/85 hover:text-purple-100"
                     }`}
+                    style={{ "--team-pill-discovery-delay": `${index * 0.54}s` }}
                   >
                     {role}
                   </button>

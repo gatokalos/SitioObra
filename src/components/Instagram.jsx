@@ -7,6 +7,8 @@ import { getInstagramPostsFromBucket } from '@/services/instagramService';
 import { recordGalleryLike, getGalleryLikeCount } from '@/services/galleryLikeService';
 import { safeGetItem, safeSetItem } from '@/lib/safeStorage';
 
+const IMAGE_PREVIEW_DATASET_KEY = 'gatoImagePreviewOpen';
+
 const collagePattern = [
   { grid: 'col-span-2 row-span-3 sm:col-span-3 sm:row-span-4 md:col-span-4 md:row-span-3 lg:col-span-3 lg:row-span-4',
     offset: 'lg:-translate-y-3 lg:rotate-[0.8deg]',
@@ -573,7 +575,11 @@ const Instagram = () => {
   const closeModal = useCallback(() => {
     setSelectedIndex(null);
     if (lastFocusedRef.current && typeof lastFocusedRef.current.focus === 'function') {
-      lastFocusedRef.current.focus();
+      try {
+        lastFocusedRef.current.focus({ preventScroll: true });
+      } catch {
+        lastFocusedRef.current.focus();
+      }
     }
   }, []);
 
@@ -601,6 +607,71 @@ const Instagram = () => {
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
   }, [selectedIndex, closeModal, showPrev, showNext]);
+
+  const isGalleryModalOpen = selectedIndex !== null;
+
+  useEffect(() => {
+    if (!isGalleryModalOpen || typeof document === 'undefined') return undefined;
+
+    const { documentElement, body } = document;
+    const scrollY = window.scrollY || window.pageYOffset || 0;
+    const previousHtmlOverflow = documentElement.style.overflow;
+    const previousHtmlScrollBehavior = documentElement.style.scrollBehavior;
+    const previousBodyOverflow = body.style.overflow;
+    const previousBodyPosition = body.style.position;
+    const previousBodyTop = body.style.top;
+    const previousBodyLeft = body.style.left;
+    const previousBodyRight = body.style.right;
+    const previousBodyWidth = body.style.width;
+    const previousBodyScrollBehavior = body.style.scrollBehavior;
+    const previousOverscrollBehavior = documentElement.style.overscrollBehavior;
+
+    documentElement.dataset[IMAGE_PREVIEW_DATASET_KEY] = 'true';
+    documentElement.style.overflow = 'hidden';
+    documentElement.style.overscrollBehavior = 'none';
+    body.style.position = 'fixed';
+    body.style.top = `-${scrollY}px`;
+    body.style.left = '0';
+    body.style.right = '0';
+    body.style.width = '100%';
+    body.style.overflow = 'hidden';
+
+    const preventGesture = (event) => event.preventDefault();
+    const preventMultiTouch = (event) => {
+      if (event.touches?.length > 1) {
+        event.preventDefault();
+      }
+    };
+
+    document.addEventListener('gesturestart', preventGesture, { passive: false });
+    document.addEventListener('gesturechange', preventGesture, { passive: false });
+    document.addEventListener('gestureend', preventGesture, { passive: false });
+    document.addEventListener('touchmove', preventMultiTouch, { passive: false });
+
+    return () => {
+      document.removeEventListener('gesturestart', preventGesture);
+      document.removeEventListener('gesturechange', preventGesture);
+      document.removeEventListener('gestureend', preventGesture);
+      document.removeEventListener('touchmove', preventMultiTouch);
+      documentElement.style.scrollBehavior = 'auto';
+      body.style.scrollBehavior = 'auto';
+      documentElement.style.overflow = previousHtmlOverflow;
+      documentElement.style.overscrollBehavior = previousOverscrollBehavior;
+      body.style.position = previousBodyPosition;
+      body.style.top = previousBodyTop;
+      body.style.left = previousBodyLeft;
+      body.style.right = previousBodyRight;
+      body.style.width = previousBodyWidth;
+      body.style.overflow = previousBodyOverflow;
+      window.scrollTo(0, scrollY);
+      requestAnimationFrame(() => {
+        window.scrollTo(0, scrollY);
+        documentElement.style.scrollBehavior = previousHtmlScrollBehavior;
+        body.style.scrollBehavior = previousBodyScrollBehavior;
+        delete documentElement.dataset[IMAGE_PREVIEW_DATASET_KEY];
+      });
+    };
+  }, [isGalleryModalOpen]);
 
   useEffect(() => {
     if (!isPhotographerLinkOpen) {
@@ -638,7 +709,7 @@ const Instagram = () => {
     return () => window.removeEventListener('keydown', handleKeyDown, true);
   }, [isConfirmPhotographerLinkOpen, handleCloseConfirmPhotographerLink]);
 
-  const isModalOpen = selectedIndex !== null;
+  const isModalOpen = isGalleryModalOpen;
   const activePost = isModalOpen && posts[selectedIndex] ? posts[selectedIndex] : null;
   const activeLikeId = activePost?.id || activePost?.filename || activePost?.imgSrc;
   const likeStatus = activeLikeId ? likeStatusById[activeLikeId] : 'idle';
@@ -1060,14 +1131,18 @@ const Instagram = () => {
                           whileHover={{ scale: 1.06 }}                  // Solo efecto en hover
                           transition={{ duration: 0.35, ease: 'easeOut' }}
                         />
+                          <span
+                            className="pointer-events-none absolute inset-x-0 bottom-0 h-2/3 bg-gradient-to-t from-black/80 via-black/42 to-transparent"
+                            aria-hidden="true"
+                          />
 
                           <div className="relative flex h-full flex-col justify-between p-3 md:p-4">
                             <div className="text-[0.58rem] uppercase tracking-[0.3em] text-slate-200/75 mix-blend-screen">
                               #GatoEncerrado
                             </div>
-                          <div className="flex flex-col gap-2">
-                            <div className="w-8 md:w-10 border-t border-slate-200/30" />
-                            <p className="text-[0.8rem] md:text-sm font-light text-slate-50/90 max-w-[10rem] md:max-w-[10.5rem] leading-relaxed drop-shadow-[0_10px_22px_rgba(15,23,42,0.6)]">
+                          <div className="flex max-w-[12rem] flex-col items-start gap-2 md:max-w-[13rem]">
+                            <div className="w-8 border-t border-white/55 shadow-[0_0_10px_rgba(255,255,255,0.24)] md:w-10" />
+                            <p className="rounded-md border border-white/10 bg-black/42 px-2 py-1 text-left text-[0.86rem] font-medium leading-snug text-white shadow-[0_10px_28px_rgba(0,0,0,0.55)] backdrop-blur-[2px] md:text-sm">
                               {story}
                             </p>
                     
@@ -1113,7 +1188,7 @@ const Instagram = () => {
           {isModalOpen && activePost && (
             <motion.div
               key="gallery-modal"
-              className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto overflow-x-hidden overscroll-none"
+              className="fixed inset-0 z-50 flex h-[100dvh] flex-col overflow-hidden overscroll-none bg-slate-950/95 md:items-center md:justify-center md:overflow-y-auto md:overflow-x-hidden md:bg-transparent"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
@@ -1127,7 +1202,7 @@ const Instagram = () => {
               />
 
               <motion.div
-                className="relative z-10 my-6 w-[calc(100vw-3rem)] max-w-[97rem] overflow-hidden rounded-[28px] bg-slate-900/90 backdrop-blur-xl shadow-2xl"
+                className="relative z-10 flex h-full w-full flex-col overflow-hidden bg-slate-900/95 pt-[env(safe-area-inset-top)] backdrop-blur-xl shadow-2xl md:my-6 md:h-auto md:w-[calc(100vw-3rem)] md:max-w-[97rem] md:rounded-[28px] md:pt-0"
                 role="dialog"
                 aria-modal="true"
                 aria-label="Recuerdo ampliado"
@@ -1136,8 +1211,8 @@ const Instagram = () => {
                 exit={{ scale: 0.92, opacity: 0 }}
                 transition={{ type: 'spring', stiffness: 220, damping: 26 }}
               >
-                <div className="flex flex-col gap-4 p-6 md:flex-row md:items-center md:gap-6">
-                  <div className="flex-1">
+                <div className="flex shrink-0 flex-col gap-3 border-b border-white/10 bg-slate-950/80 px-3 py-3 md:flex-row md:items-center md:gap-6 md:border-b-0 md:bg-transparent md:p-6">
+                  <div className="min-w-0 flex-1">
                     <div className="flex items-center justify-between text-slate-300/90">
                       <p className="text-xs uppercase tracking-[0.35em] text-slate-300/70">#GatoEncerrado</p>
                       <span className="text-xs font-medium tracking-wide">
@@ -1153,12 +1228,12 @@ const Instagram = () => {
                       />
                     </div>
                   </div>
-                  <div className="flex items-center gap-3 self-start md:self-center">
+                  <div className="flex shrink-0 items-center justify-between gap-2 md:justify-start md:gap-3 md:self-center">
                     <div className="relative">
                       <button
                         aria-label="Me gusta"
                         onClick={handleLike}
-                        className={`flex h-11 w-11 items-center justify-center rounded-full border border-white/20 text-white transition ${
+                        className={`flex h-10 w-10 items-center justify-center rounded-full border border-white/20 text-white transition md:h-11 md:w-11 ${
                           isLiked
                             ? 'bg-gradient-to-r from-pink-500 via-rose-500 to-purple-500 border-transparent shadow-[0_0_18px_rgba(244,114,182,0.45)]'
                             : 'hover:bg-white/10'
@@ -1171,14 +1246,14 @@ const Instagram = () => {
                     <button
                       aria-label="Anterior"
                       onClick={showPrev}
-                      className="flex h-11 w-11 items-center justify-center rounded-full border border-white/20 text-white transition hover:bg-white/10"
+                      className="flex h-10 w-10 items-center justify-center rounded-full border border-white/20 text-white transition hover:bg-white/10 md:h-11 md:w-11"
                     >
                       <ChevronLeft size={20} />
                     </button>
                     <button
                       aria-label="Siguiente"
                       onClick={showNext}
-                      className="flex h-11 w-11 items-center justify-center rounded-full border border-white/20 text-white transition hover:bg-white/10"
+                      className="flex h-10 w-10 items-center justify-center rounded-full border border-white/20 text-white transition hover:bg-white/10 md:h-11 md:w-11"
                     >
                       <ChevronRight size={20} />
                     </button>
@@ -1186,18 +1261,22 @@ const Instagram = () => {
                       ref={closeButtonRef}
                       aria-label="Cerrar"
                       onClick={closeModal}
-                      className="flex h-11 w-11 items-center justify-center rounded-full border border-white/20 text-white transition hover:bg-white/10"
+                      className="flex h-10 w-10 items-center justify-center rounded-full border border-white/20 text-white transition hover:bg-white/10 md:h-11 md:w-11"
                     >
                       <X size={18} />
                     </button>
                   </div>
                 </div>
 
-                <div className="relative aspect-[3/2] w-full bg-black">
+                <div
+                  className="relative flex min-h-0 flex-1 items-center justify-center bg-black md:aspect-[3/2] md:flex-none md:w-full"
+                  style={{ touchAction: 'manipulation' }}
+                >
                   <img
                     src={activePost.imgSrc}
                     alt={activePost.alt || 'Recuerdo #GatoEncerrado'}
-                    className="h-full w-full object-contain"
+                    className="h-full w-full select-none object-contain"
+                    draggable={false}
                   />
                   {likeRevealById[activeLikeId] ? (
                     <span
