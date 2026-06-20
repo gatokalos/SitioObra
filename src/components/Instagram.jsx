@@ -299,6 +299,7 @@ const Instagram = () => {
   const lastFocusedRef = useRef(null);
   const closeButtonRef = useRef(null);
   const likeRevealTimeoutRef = useRef(null);
+  const savedScrollYRef = useRef(0);
   const [slots, setSlots] = useState([]);
   const nextIndexRef = useRef(0);
   const orderedSequenceRef = useRef([]);
@@ -615,16 +616,7 @@ const Instagram = () => {
 
     const { documentElement, body } = document;
     const scrollY = window.scrollY || window.pageYOffset || 0;
-    const previousHtmlOverflow = documentElement.style.overflow;
-    const previousHtmlScrollBehavior = documentElement.style.scrollBehavior;
-    const previousBodyOverflow = body.style.overflow;
-    const previousBodyPosition = body.style.position;
-    const previousBodyTop = body.style.top;
-    const previousBodyLeft = body.style.left;
-    const previousBodyRight = body.style.right;
-    const previousBodyWidth = body.style.width;
-    const previousBodyScrollBehavior = body.style.scrollBehavior;
-    const previousOverscrollBehavior = documentElement.style.overscrollBehavior;
+    savedScrollYRef.current = scrollY;
 
     documentElement.dataset[IMAGE_PREVIEW_DATASET_KEY] = 'true';
     documentElement.style.overflow = 'hidden';
@@ -638,9 +630,7 @@ const Instagram = () => {
 
     const preventGesture = (event) => event.preventDefault();
     const preventMultiTouch = (event) => {
-      if (event.touches?.length > 1) {
-        event.preventDefault();
-      }
+      if (event.touches?.length > 1) event.preventDefault();
     };
 
     document.addEventListener('gesturestart', preventGesture, { passive: false });
@@ -653,25 +643,29 @@ const Instagram = () => {
       document.removeEventListener('gesturechange', preventGesture);
       document.removeEventListener('gestureend', preventGesture);
       document.removeEventListener('touchmove', preventMultiTouch);
+      documentElement.style.overflow = '';
+      documentElement.style.overscrollBehavior = '';
       documentElement.style.scrollBehavior = 'auto';
+      body.style.position = '';
+      body.style.top = '';
+      body.style.left = '';
+      body.style.right = '';
+      body.style.width = '';
+      body.style.overflow = '';
       body.style.scrollBehavior = 'auto';
-      documentElement.style.overflow = previousHtmlOverflow;
-      documentElement.style.overscrollBehavior = previousOverscrollBehavior;
-      body.style.position = previousBodyPosition;
-      body.style.top = previousBodyTop;
-      body.style.left = previousBodyLeft;
-      body.style.right = previousBodyRight;
-      body.style.width = previousBodyWidth;
-      body.style.overflow = previousBodyOverflow;
       window.scrollTo(0, scrollY);
       requestAnimationFrame(() => {
-        window.scrollTo(0, scrollY);
-        documentElement.style.scrollBehavior = previousHtmlScrollBehavior;
-        body.style.scrollBehavior = previousBodyScrollBehavior;
-        delete documentElement.dataset[IMAGE_PREVIEW_DATASET_KEY];
+        documentElement.style.scrollBehavior = '';
+        body.style.scrollBehavior = '';
       });
     };
   }, [isGalleryModalOpen]);
+
+  const handleModalExitComplete = useCallback(() => {
+    if (typeof document === 'undefined') return;
+    window.scrollTo(0, savedScrollYRef.current);
+    delete document.documentElement.dataset[IMAGE_PREVIEW_DATASET_KEY];
+  }, []);
 
   useEffect(() => {
     if (!isPhotographerLinkOpen) {
@@ -1184,11 +1178,12 @@ const Instagram = () => {
           ))}
         </div>
 
-        <AnimatePresence>
+        {typeof document !== 'undefined' ? createPortal(
+        <AnimatePresence onExitComplete={handleModalExitComplete}>
           {isModalOpen && activePost && (
             <motion.div
               key="gallery-modal"
-              className="fixed inset-0 z-50 flex h-[100dvh] flex-col overflow-hidden overscroll-none bg-slate-950/95 md:items-center md:justify-center md:overflow-y-auto md:overflow-x-hidden md:bg-transparent"
+              className="fixed inset-0 z-[200] flex h-[100dvh] flex-col overflow-hidden overscroll-none bg-slate-950/95 md:items-center md:justify-center md:overflow-y-auto md:overflow-x-hidden md:bg-transparent"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
@@ -1290,7 +1285,9 @@ const Instagram = () => {
               </motion.div>
             </motion.div>
           )}
-        </AnimatePresence>
+        </AnimatePresence>,
+        document.body
+        ) : null}
       </div>
       {photographerLinkOverlay}
       {confirmPhotographerLinkOverlay}
