@@ -649,18 +649,22 @@ const Instagram = () => {
       document.removeEventListener('touchmove', preventMultiTouch);
       documentElement.style.overflow = '';
       documentElement.style.overscrollBehavior = '';
-      documentElement.style.scrollBehavior = 'auto';
       body.style.position = '';
       body.style.top = '';
       body.style.left = '';
       body.style.right = '';
       body.style.width = '';
       body.style.overflow = '';
-      body.style.scrollBehavior = 'auto';
-      window.scrollTo(0, scrollY);
+      // iOS Safari ignores window.scrollTo called synchronously after removing
+      // position:fixed. Double-rAF lets the layout commit before restoring scroll.
       requestAnimationFrame(() => {
-        documentElement.style.scrollBehavior = '';
-        body.style.scrollBehavior = '';
+        documentElement.style.scrollBehavior = 'auto';
+        body.style.scrollBehavior = 'auto';
+        requestAnimationFrame(() => {
+          window.scrollTo(0, scrollY);
+          documentElement.style.scrollBehavior = '';
+          body.style.scrollBehavior = '';
+        });
       });
     };
   }, [isGalleryModalOpen]);
@@ -1219,6 +1223,7 @@ const Instagram = () => {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
+              style={{ pointerEvents: isModalOpen ? 'auto' : 'none' }}
             >
               <motion.div
                 className="absolute inset-0 bg-slate-950/80"
