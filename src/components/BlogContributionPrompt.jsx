@@ -126,12 +126,12 @@ No necesitas entender dónde estás.
 Solo notar si algo de lo que pasaste
 se quedó moviéndose adentro.
 
-Ese universo tiene más de una entrada.
+#GatoEncerrado tiene más de una entrada.
     
     `}
 
     <span className="block mt-4 text-sm text-slate-150/0 italic">
-      (Y a veces, la confusión es lo que nos devuelve a un estado más <strong>silvestre</strong>.)
+      (Y a veces, la confusión es lo que nos muestra su estado más <strong>silvestre</strong>.)
     </span>
   </p>
 

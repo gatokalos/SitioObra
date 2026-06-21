@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { createPortal } from 'react-dom';
+import { TransformWrapper, TransformComponent } from 'react-zoom-pan-pinch';
 import { Instagram as InstagramIcon, ExternalLink, AlertCircle, ChevronLeft, ChevronRight, X, Heart, Camera } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { getInstagramPostsFromBucket } from '@/services/instagramService';
@@ -300,6 +301,9 @@ const Instagram = () => {
   const closeButtonRef = useRef(null);
   const likeRevealTimeoutRef = useRef(null);
   const savedScrollYRef = useRef(0);
+  const transformRef = useRef(null);
+  const zoomScaleRef = useRef(1);
+  const swipeStartRef = useRef(null);
   const [slots, setSlots] = useState([]);
   const nextIndexRef = useRef(0);
   const orderedSequenceRef = useRef([]);
@@ -666,6 +670,34 @@ const Instagram = () => {
     window.scrollTo(0, savedScrollYRef.current);
     delete document.documentElement.dataset[IMAGE_PREVIEW_DATASET_KEY];
   }, []);
+
+  const handleTransformed = useCallback((_ref, state) => {
+    zoomScaleRef.current = state.scale;
+  }, []);
+
+  const handleImageTouchStart = useCallback((e) => {
+    if (e.touches.length !== 1 || zoomScaleRef.current > 1.05) {
+      swipeStartRef.current = null;
+      return;
+    }
+    swipeStartRef.current = e.touches[0].clientX;
+  }, []);
+
+  const handleImageTouchEnd = useCallback((e) => {
+    if (swipeStartRef.current === null) return;
+    const endX = e.changedTouches[0]?.clientX ?? swipeStartRef.current;
+    const delta = endX - swipeStartRef.current;
+    swipeStartRef.current = null;
+    if (Math.abs(delta) < 50) return;
+    if (delta < 0) showNext();
+    else showPrev();
+  }, [showNext, showPrev]);
+
+  useEffect(() => {
+    if (selectedIndex === null || !transformRef.current) return;
+    transformRef.current.resetTransform(0);
+    zoomScaleRef.current = 1;
+  }, [selectedIndex]);
 
   useEffect(() => {
     if (!isPhotographerLinkOpen) {
@@ -1265,14 +1297,38 @@ const Instagram = () => {
 
                 <div
                   className="relative flex min-h-0 flex-1 items-center justify-center bg-black md:aspect-[3/2] md:flex-none md:w-full"
-                  style={{ touchAction: 'manipulation' }}
+                  style={{ touchAction: 'none' }}
+                  onTouchStart={handleImageTouchStart}
+                  onTouchEnd={handleImageTouchEnd}
                 >
-                  <img
-                    src={activePost.imgSrc}
-                    alt={activePost.alt || 'Recuerdo #GatoEncerrado'}
-                    className="h-full w-full select-none object-contain"
-                    draggable={false}
-                  />
+                  <TransformWrapper
+                    ref={transformRef}
+                    minScale={1}
+                    maxScale={4}
+                    initialScale={1}
+                    centerOnInit
+                    limitToBounds
+                    doubleClick={{ mode: 'toggle', step: 2, animationTime: 200, animationType: 'easeInOutQuad' }}
+                    onTransformed={handleTransformed}
+                    onPinchingStop={(ref) => {
+                      if (ref.state.scale < 1.15) ref.resetTransform(200, 'easeOut');
+                    }}
+                    panning={{ velocityDisabled: false, excluded: ['button'] }}
+                    wheel={{ step: 0.15 }}
+                  >
+                    <TransformComponent
+                      wrapperStyle={{ width: '100%', height: '100%' }}
+                      contentStyle={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                    >
+                      <img
+                        src={activePost.imgSrc}
+                        alt={activePost.alt || 'Recuerdo #GatoEncerrado'}
+                        className="max-h-full max-w-full select-none object-contain"
+                        draggable={false}
+                        style={{ pointerEvents: 'none' }}
+                      />
+                    </TransformComponent>
+                  </TransformWrapper>
                   {likeRevealById[activeLikeId] ? (
                     <span
                       className="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full bg-black/70 px-4 py-2 text-base font-medium uppercase tracking-[0.3em] text-pink-200 shadow-[0_0_24px_rgba(244,114,182,0.45)]"

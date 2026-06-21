@@ -7,8 +7,8 @@ export const BLOG_CATEGORY_CONFIG = {
     id: 'curaduria',
     label: 'Curaduría Reflexiva',
     summary:
-      'Textos críticos y análisis profundos sobre la obra y su universo, escritos por investigadores, curadoras y voces especializadas.',
-    hook: 'Si no has visto la obra, este es el mejor punto de entrada.',
+      'Perspectivas interdisciplinarias escritas por el equipo curatorial y colaboradores invitados.',
+    hook: 'Ensayos que exploran las capas temáticas, estéticas y conceptuales de la obra.',
     ctaLabel: 'Entrar en Curaduría',
     readingTime: 'Tiempo variable',
     keywords: ['curaduria', 'curatorial', 'critica', 'ensayo', 'analisis', 'reflexiva'],
@@ -17,8 +17,8 @@ export const BLOG_CATEGORY_CONFIG = {
     id: 'expansiones',
     label: 'Expansiones Narrativas',
     summary:
-      'Microficciones, comunidad y relatos que acompañan lo que la obra despierta en cada quien: cartas, diarios, audios y relatos colectivos que expanden este espacio transmedia.',
-    hook: 'Lo que la obra sigue diciendo fuera del escenario.',
+      'Lo que la obra despierta en cada quien: cartas, diarios, audios y relatos colectivos que expanden este espacio transmedia.',
+    hook: 'Microficciones, comunidad y relatos quer acompañan',
     ctaLabel: 'Explorar relatos',
     readingTime: 'Tiempo variable',
     keywords: ['miniverso', 'transmedia', 'ficcion', 'comunidad', 'microficcion', 'expansion'],

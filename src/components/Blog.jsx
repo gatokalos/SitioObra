@@ -76,7 +76,7 @@ const MINIVERSE_KEYWORDS = {
 
 const STARTER_FAQ_PROMPTS = [
   '¿Tengo que ver la obra primero para entender este universo?',
-  '¿A qué tipo de audiencias le puede gustar Es un gato encerrado?', 
+  '¿A qué tipo de audiencias le puede gustar Es un gato encerrado?',
   '¿Cuál es la relación entre la obra de teatro y su causa social?',
   '¿Queda claro qué le pasa a Silvestre al final de la obra?',
   '¿Qué pasa después de que termina la función?',
@@ -617,6 +617,14 @@ const Blog = ({ posts = [], isLoading = false, error = null, showBuscador = fals
   const [isEditorialLineOpen, setIsEditorialLineOpen] = useState(false);
   const articlesRef = useRef(null);
   const faqInputRef = useRef(null);
+  const shuffledFaqPrompts = useMemo(() => {
+    const arr = [...STARTER_FAQ_PROMPTS];
+    for (let i = arr.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [arr[i], arr[j]] = [arr[j], arr[i]];
+    }
+    return arr;
+  }, []);
 
   useEffect(() => {
     if (!showBuscador) return undefined;
@@ -910,13 +918,21 @@ const Blog = ({ posts = [], isLoading = false, error = null, showBuscador = fals
                   <div className="pointer-events-none absolute inset-x-6 top-0 h-px bg-gradient-to-r from-transparent via-violet-100/75 to-transparent" />
 
                   <div className="relative z-10 grid gap-5 lg:grid-cols-[minmax(320px,0.9fr)_minmax(0,1.1fr)] lg:items-start">
-                    <div className="flex flex-col gap-3 p-1 lg:rounded-[1.4rem] lg:border lg:border-violet-100/18 lg:bg-black/20 lg:p-5 lg:backdrop-blur-sm">
+                    <div className="flex flex-col gap-4 p-1 lg:rounded-[1.4rem] lg:border lg:border-violet-300/30 lg:bg-black/35 lg:p-5 lg:backdrop-blur-sm">
+                      <div className="flex flex-col items-start gap-1.5 lg:items-center">
+                        <img
+                          src="/assets/header-logo.png"
+                          alt="Es un gato encerrado"
+                          className="h-11 w-11 lg:h-14 lg:w-14 opacity-90 drop-shadow-[0_0_20px_rgba(167,139,250,0.8)]"
+                        />
+                        <p className="text-[10px] tracking-[0.22em] text-violet-300/70 font-light uppercase lg:text-center">
+                          Universo #GatoEncerrado · Buscador Backstage
+                        </p>
+                      </div>
+                      <div className="h-px bg-gradient-to-r from-violet-300/35 via-violet-100/15 to-transparent lg:from-transparent lg:via-violet-300/40 lg:to-transparent" />
                       <div className="space-y-3">
-                        <span className="inline-flex items-center rounded-full border border-violet-400/35 bg-violet-500/15 px-3 py-0.5 text-[10px] uppercase tracking-[0.2em] text-violet-300">
-                          Buscador Backstage
-                        </span>
                         <p className="text-[1rem] font-semibold leading-snug text-white">
-                         <em> ¿Primera vez en #GatoEncerrado? ¿Ya viste su obra?</em><br /> Este es un espacio para explayarte y encontrar respuestas.
+                         <em> ¿Tienes una teoría? ¿Discutimos la obra?</em><br /> Este es un espacio para contrastarla, explorarla y encontrar respuestas.
                         </p>
                       </div>
                       <div className="relative w-full">
@@ -1050,18 +1066,18 @@ const Blog = ({ posts = [], isLoading = false, error = null, showBuscador = fals
                       </div>
                 
                       <div className="grid gap-2">
-                        {STARTER_FAQ_PROMPTS.slice(0, 3).map((prompt) => (
+                        {shuffledFaqPrompts.slice(0, 5).map((prompt, idx) => (
                           <button
                             type="button"
                             key={prompt}
                             onClick={() => handleFaqPromptSelect(prompt)}
-                            className="rounded-2xl border border-violet-100/20 bg-white/8 px-4 py-3 text-left text-sm leading-relaxed text-violet-50 transition hover:border-violet-100/40 hover:bg-white/12"
+                            className={`rounded-2xl border border-violet-100/20 bg-white/8 px-4 py-3 text-left text-sm leading-relaxed text-violet-50 transition hover:border-violet-100/40 hover:bg-white/12${idx >= 3 ? ' hidden lg:block' : ''}`}
                           >
                             {prompt}
                           </button>
                         ))}
                         <AnimatePresence>
-                          {faqStatus === 'done' && STARTER_FAQ_PROMPTS.slice(3).map((prompt) => (
+                          {faqStatus === 'done' && shuffledFaqPrompts.slice(5).map((prompt) => (
                             <motion.button
                               key={prompt}
                               type="button"
