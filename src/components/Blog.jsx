@@ -80,11 +80,14 @@ const STARTER_FAQ_PROMPTS = [
   '¿Cómo sabe una obra de teatro si cambió algo en el público?',
   '¿Qué diferencia hay entre medir cuánta gente vio la obra y saber si les importó?',
   '¿Qué convierte a un espectador en miembro de una comunidad?',
+  '¿Por qué la causa social es parte de la obra y no solo un anexo?',
+  '¿Qué pasa con lo que escribo adentro del universo?',
   '¿Por qué no le entendí a ciertas escenas?',
   '¿Por qué Silvestre sigue soñando la misma historia aunque cada noche sueñe algo diferente?',
   '¿Qué fue exactamente lo que vio la Doctora para decidir que los sueños de Silvestre merecían ser investigados?',
   '¿Quién está contando realmente la historia cuando aparecen el Payasito Tiste, la Reina de Espadas y los demás personajes?',
-  '¿Qué es lo que Silvestre intenta recordar cada vez que despierta furioso?'
+  '¿Qué es lo que Silvestre intenta recordar cada vez que despierta furioso?',
+  '¿Qué parte de nosotros habla cuando creemos estar hablando solos?'
   ];
 
 const inferMiniverseFromPost = (post) => {
@@ -692,7 +695,7 @@ const Blog = ({ posts = [], isLoading = false, error = null, showBuscador = fals
     },
     [editorialReadMetrics]
   );
-  const showEditorialContent = !isMobileViewport || isEditorialLineOpen;
+  const showEditorialContent = true;
   const editorialCategories = useMemo(
     () =>
       BLOG_CATEGORY_ORDER.map((category) => ({
