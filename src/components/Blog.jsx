@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Calendar, Clock, Compass, Feather, Search, Send, X } from 'lucide-react';
+import { Calendar, Clock, Compass, Feather, RefreshCw, Search, Send, X } from 'lucide-react';
 import { useSearch } from '@/hooks/useSearch';
 import { Button } from '@/components/ui/button';
 import { toast } from '@/components/ui/use-toast';
@@ -75,16 +75,16 @@ const MINIVERSE_KEYWORDS = {
 };
 
 const STARTER_FAQ_PROMPTS = [
-  '¿Tengo que ver la obra primero para entender este universo?',
-  '¿A qué tipo de audiencias le puede gustar Es un gato encerrado?',
-  '¿Cuál es la relación entre la obra de teatro y su causa social?',
-  '¿Queda claro qué le pasa a Silvestre al final de la obra?',
-  '¿Qué pasa después de que termina la función?',
-  '¿A alguien más le dio ansiedad esta obra… o solo a mí?',
-  '¿Por qué no le entendí a la escena de las marcianas?',
-  '¿Payasito Tiste es el alter ego de Silvestre?',
-  '¿Qué tendría que pasar para que este proyecto florezca?',
-  '¿Cuál es la pregunta al fondo de este universo narrativo?'
+  '¿Dónde vive una obra: en el escenario, en el libreto o en quien la recuerda?',
+  '¿Qué permanece cuando la emoción del momento desaparece?',
+  '¿Cómo sabe una obra de teatro si cambió algo en el público?',
+  '¿Qué diferencia hay entre medir cuánta gente vio la obra y saber si les importó?',
+  '¿Qué convierte a un espectador en miembro de una comunidad?',
+  '¿Por qué no le entendí a ciertas escenas?',
+  '¿Por qué Silvestre sigue soñando la misma historia aunque cada noche sueñe algo diferente?',
+  '¿Qué fue exactamente lo que vio la Doctora para decidir que los sueños de Silvestre merecían ser investigados?',
+  '¿Quién está contando realmente la historia cuando aparecen el Payasito Tiste, la Reina de Espadas y los demás personajes?',
+  '¿Qué es lo que Silvestre intenta recordar cada vez que despierta furioso?'
   ];
 
 const inferMiniverseFromPost = (post) => {
@@ -617,14 +617,11 @@ const Blog = ({ posts = [], isLoading = false, error = null, showBuscador = fals
   const [isEditorialLineOpen, setIsEditorialLineOpen] = useState(false);
   const articlesRef = useRef(null);
   const faqInputRef = useRef(null);
-  const shuffledFaqPrompts = useMemo(() => {
-    const arr = [...STARTER_FAQ_PROMPTS];
-    for (let i = arr.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [arr[i], arr[j]] = [arr[j], arr[i]];
-    }
-    return arr;
-  }, []);
+  const [faqPage, setFaqPage] = useState(0);
+  const FAQ_PAGE_SIZE = 3;
+  const faqPageCount = Math.ceil(STARTER_FAQ_PROMPTS.length / FAQ_PAGE_SIZE);
+  const faqVisiblePrompts = STARTER_FAQ_PROMPTS.slice(faqPage * FAQ_PAGE_SIZE, (faqPage + 1) * FAQ_PAGE_SIZE);
+  const faqOtherPrompts = STARTER_FAQ_PROMPTS.filter((_, i) => Math.floor(i / FAQ_PAGE_SIZE) !== faqPage);
 
   useEffect(() => {
     if (!showBuscador) return undefined;
@@ -936,7 +933,7 @@ const Blog = ({ posts = [], isLoading = false, error = null, showBuscador = fals
                         </p>
                       </div>
                       <div className="relative w-full">
-                        <Search size={16} className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-violet-100/55" />
+                        <Search size={17} className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-violet-500" />
                         <input
                           ref={faqInputRef}
                           type="search"
@@ -947,20 +944,20 @@ const Blog = ({ posts = [], isLoading = false, error = null, showBuscador = fals
                           }}
                           placeholder="A tus órdenes... 😸"
                           disabled={faqIsLoading}
-                          className="form-surface form-surface--pill h-12 w-full border border-violet-100/45 bg-white/90 py-2 pl-11 pr-12 text-sm text-slate-900 placeholder:text-slate-500 disabled:opacity-60"
+                          className="form-surface form-surface--pill h-12 w-full border border-violet-100/45 bg-white/90 py-2 pl-11 pr-12 text-sm text-slate-900 placeholder:text-slate-400 disabled:opacity-60"
                         />
                         {faqQuery.trim().length >= 2 && !faqIsLoading && (
                           <button
                             type="button"
                             onClick={() => faqSearch()}
                             aria-label="Buscar"
-                            className="absolute right-3 top-1/2 -translate-y-1/2 rounded-full bg-violet-500/80 p-1.5 text-white hover:bg-violet-500 transition"
+                            className="absolute right-3 top-1/2 -translate-y-1/2 rounded-full bg-violet-600 p-1.5 text-white shadow-[0_0_12px_rgba(124,58,237,0.5)] hover:bg-violet-700 transition"
                           >
                             <Send size={13} />
                           </button>
                         )}
                         {faqIsLoading && (
-                          <span className="absolute right-4 top-1/2 -translate-y-1/2 h-4 w-4 rounded-full border-2 border-violet-400/40 border-t-violet-500 animate-spin" aria-hidden="true" />
+                          <span className="absolute right-3.5 top-1/2 -translate-y-1/2 h-5 w-5 rounded-full border-2 border-slate-200 border-t-violet-600 animate-spin" aria-hidden="true" />
                         )}
                       </div>
 
@@ -1060,24 +1057,30 @@ const Blog = ({ posts = [], isLoading = false, error = null, showBuscador = fals
                     </div>
 
                     <div className="space-y-3 lg:pl-4">
-                      <div className="inline-flex items-center gap-2 rounded-full border border-violet-200/45 bg-violet-400/12 px-3 py-1">
-                        <Compass size={12} className="text-violet-100/95" aria-hidden="true" />
-                        <p className="text-[10px] uppercase tracking-[0.34em] text-violet-100/90">Preguntas frecuentes</p>
-                      </div>
-                
-                      <div className="grid gap-2">
-                        {shuffledFaqPrompts.slice(0, 5).map((prompt, idx) => (
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() => setFaqPage((p) => (p + 1) % faqPageCount)}
+                        className="group h-8 rounded-full border-violet-300/55 bg-violet-500/12 px-4 text-[10px] uppercase tracking-[0.3em] text-violet-100 hover:border-violet-300/85 hover:bg-violet-500/22 hover:text-white"
+                      >
+                        <Compass size={12} className="mr-1.5 shrink-0" aria-hidden="true" />
+                        Preguntas frecuentes
+                        <RefreshCw size={11} className="ml-1.5 shrink-0 transition duration-300 group-hover:rotate-180" aria-hidden="true" />
+                      </Button>
+
+                      <div className="flex flex-wrap gap-2">
+                        {faqVisiblePrompts.map((prompt) => (
                           <button
                             type="button"
                             key={prompt}
                             onClick={() => handleFaqPromptSelect(prompt)}
-                            className={`rounded-2xl border border-violet-100/20 bg-white/8 px-4 py-3 text-left text-sm leading-relaxed text-violet-50 transition hover:border-violet-100/40 hover:bg-white/12${idx >= 3 ? ' hidden lg:block' : ''}`}
+                            className="rounded-full border border-violet-100/20 bg-white/8 px-4 py-2 text-left text-sm leading-snug text-violet-50 transition hover:border-violet-100/40 hover:bg-white/12"
                           >
                             {prompt}
                           </button>
                         ))}
                         <AnimatePresence>
-                          {faqStatus === 'done' && shuffledFaqPrompts.slice(5).map((prompt) => (
+                          {faqStatus === 'done' && faqOtherPrompts.map((prompt) => (
                             <motion.button
                               key={prompt}
                               type="button"
@@ -1086,7 +1089,7 @@ const Blog = ({ posts = [], isLoading = false, error = null, showBuscador = fals
                               exit={{ opacity: 0 }}
                               transition={{ duration: 0.4 }}
                               onClick={() => handleFaqPromptSelect(prompt)}
-                              className="rounded-2xl border border-violet-100/20 bg-white/8 px-4 py-3 text-left text-sm leading-relaxed text-violet-50 transition hover:border-violet-100/40 hover:bg-white/12"
+                              className="rounded-full border border-violet-100/20 bg-white/8 px-4 py-2 text-left text-sm leading-snug text-violet-50 transition hover:border-violet-100/40 hover:bg-white/12"
                             >
                               {prompt}
                             </motion.button>
