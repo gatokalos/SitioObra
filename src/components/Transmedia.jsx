@@ -5002,7 +5002,7 @@ Silvestre, un hombre en sus treintas, comienza a perder la frontera entre lo que
             >
               <p className="text-xs uppercase tracking-[0.4em] text-slate-400/70">Narrativa Transmedia</p>
               <h2 className="font-display text-4xl md:text-5xl font-medium text-gradient italic">
-                La Obra en otras formas
+                La Obra en 9 formas
               </h2>
               <p className="text-lg text-slate-300/80 max-w-3xl mx-auto leading-relaxed font-light">
     <em>Es un gato encerrado</em> no se acaba en el teatro.<br />

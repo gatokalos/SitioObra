@@ -18,7 +18,7 @@ export const BLOG_CATEGORY_CONFIG = {
     label: 'Expansiones Narrativas',
     summary:
       'Lo que la obra despierta en cada quien: cartas, diarios, audios y relatos colectivos que expanden este espacio transmedia.',
-    hook: 'Microficciones, comunidad y relatos quer acompañan',
+    hook: 'Microficciones, comunidad y relatos para sentirnos menos solxs.',
     ctaLabel: 'Explorar relatos',
     readingTime: 'Tiempo variable',
     keywords: ['miniverso', 'transmedia', 'ficcion', 'comunidad', 'microficcion', 'expansion'],

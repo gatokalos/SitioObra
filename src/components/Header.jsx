@@ -20,7 +20,7 @@ const readGatBalance = () => {
 const MOBILE_FULLSCREEN_MENU_PHASE_A_ENABLED = true;
 const PUBLIC_HEADER_LOGO_SRC = '/assets/header-logo.png';
 const TRANSMEDIA_SECONDARY_ITEMS = [
-  { label: 'Drama', href: '#transmedia?focus=miniversos' },
+  { label: 'Teatro', href: '#transmedia?focus=miniversos' },
   { label: 'Artesanías', href: '#transmedia?focus=lataza' },
   { label: 'Literatura', href: '#transmedia?focus=miniversoNovela' },
   { label: 'Gráficos', href: '#transmedia?focus=miniversoGrafico' },

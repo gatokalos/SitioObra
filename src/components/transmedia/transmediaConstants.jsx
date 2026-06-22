@@ -1375,7 +1375,7 @@ Este espacio permite recorrer esas composiciones, explorar sus capas y descubrir
 export const formats = [
   {
     id: 'miniversos',
-    title: 'Drama',
+    title: 'Teatro',
     icon: Drama,
     iconClass: 'text-purple-300',
 
