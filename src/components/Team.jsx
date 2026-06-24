@@ -216,7 +216,7 @@ const mobileSingleButtonRoles = new Set([
   "Dramaturgia",
   "Colaboradores y Agradecimientos",
 ]);
-const defaultOpenMobileRoles = ["Dramaturgia", "Dirección", "Producción y asistencia"];
+const defaultOpenMobileRoles = ["Dramaturgia", "Dirección", "Alianza Social"];
 const mobileRoleLabelOverrides = {
   "Sonido y Tema Musical": "Sonido y Música",
 };

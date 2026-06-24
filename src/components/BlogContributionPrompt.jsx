@@ -123,15 +123,15 @@ Tal vez no lo sepas todavía.
 Y no pasa nada.
 
 No necesitas entender dónde estás.
-Solo notar si algo de lo que pasaste
+Solo notar si algo de lo que miraste
 se quedó moviéndose adentro.
 
-#GatoEncerrado tiene más de una entrada.
+#GatoEncerrado tiene más de una ventana.
     
     `}
 
     <span className="block mt-4 text-sm text-slate-150/0 italic">
-      (Y a veces, la confusión es lo que nos muestra su estado más <strong>silvestre</strong>.)
+      (Y a veces, la confusión es lo que nos muestra su lado más <strong>silvestre</strong>.)
     </span>
   </p>
 

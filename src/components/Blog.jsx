@@ -1067,7 +1067,7 @@ const Blog = ({ posts = [], isLoading = false, error = null, showBuscador = fals
                         className="group h-8 rounded-full border-violet-300/55 bg-violet-500/12 px-4 text-[10px] uppercase tracking-[0.3em] text-violet-100 hover:border-violet-300/85 hover:bg-violet-500/22 hover:text-white"
                       >
                         <Compass size={12} className="mr-1.5 shrink-0" aria-hidden="true" />
-                        Preguntas frecuentes
+                        Preguntas de la comunidad
                         <RefreshCw size={11} className="ml-1.5 shrink-0 transition duration-300 group-hover:rotate-180" aria-hidden="true" />
                       </Button>
 

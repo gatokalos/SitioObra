@@ -145,7 +145,7 @@ const Header = ({ showTransmediaNav = true }) => {
 
   const menuItems = [
     { name: 'Obra', href: '#about' },
-    { name: 'Voces', href: '#provoca' },
+    { name: 'Perspectivas', href: '#provoca' },
     { name: 'Equipo', href: '#team' },
     { name: 'Galería', href: '#instagram' },
     { name: 'Curaduría', href: '#dialogo-critico' },
@@ -156,7 +156,7 @@ const Header = ({ showTransmediaNav = true }) => {
   ];
   const mobileMenuItems = [
     { name: 'Obra', href: '#about' },
-    { name: 'Voces', href: '#provoca' },
+    { name: 'Perspectivas', href: '#provoca' },
     { name: 'Equipo', href: '#team' },
     { name: 'Galería', href: '#instagram' },
     {
@@ -308,7 +308,7 @@ const Header = ({ showTransmediaNav = true }) => {
                 }}
               >
                 <Sparkles size={12} className="text-cyan-200" />
-                <span>Saldo</span>
+                <span>Energía</span>
                 <span className="tabular-nums text-white">{gatBalance.toLocaleString('es-MX')} GAT</span>
               </div>
               {user ? (

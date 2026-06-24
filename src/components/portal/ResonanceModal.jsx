@@ -104,7 +104,7 @@ export const LEVEL2_QUESTIONS = {
     ],
   },
   grafico: {
-    question: '¿Qué imágenes sientes que todavía te observan cuando vuelves a estar a solas?',
+    question: '¿Qué imágenes sientes que te observan cuando vuelves a estar a solas?',
     options: [
       'una mirada',
       'una escena extraña',
@@ -210,8 +210,8 @@ const LEVELS = [
   {
     num: 3,
     eyebrow: 'Días después',
-    title: 'Huella real',
-    pendingDesc: 'Vuelve en unos días. Queremos saber si algo cambió.',
+    title: 'Bitácora individual',
+    pendingDesc: 'Vuelve en unos días. Queremos saber si algo resonó en ti.',
     icon: PawPrint,
   },
 ];
@@ -273,6 +273,23 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
   const [l3Rec, setL3Rec]               = useState(() => lsRead(portal).l3_recommendation ?? null);
   const [l3Step, setL3Step]             = useState(() => !!lsRead(portal).l3_recommendation?.step3 ? 3 : 1);
   const [isSouvenirGenerating, setIsSouvenirGenerating] = useState(false);
+
+  // Bitácora individual — seguimiento diferido
+  const [bitacoraConsented, setBitacoraConsented]     = useState(() => !!lsRead(portal).bitacora_consented);
+  const [bitacoraAvailableAt, setBitacoraAvailableAt] = useState(() => lsRead(portal).bitacora_available_at ?? null);
+  const [bitacoraCompleted, setBitacoraCompleted]     = useState(() => !!lsRead(portal).bitacora_completed);
+  const [bitacoraOpen, setBitacoraOpen]               = useState(false);
+  const [bitacoraStep, setBitacoraStep]               = useState('p1');
+  const [bitacoraP1, setBitacoraP1]                   = useState('');
+  const [bitacoraAfirmativa, setBitacoraAfirmativa]   = useState(null);
+  const [bitacoraIntensidad, setBitacoraIntensidad]   = useState(null);
+  const [bitacoraP2, setBitacoraP2]                   = useState('');
+  const [bitacoraP3, setBitacoraP3]                   = useState('');
+  const [bitacoraSubmitting, setBitacoraSubmitting]   = useState(false);
+
+  const bitacoraAvailable = bitacoraAvailableAt
+    ? new Date(bitacoraAvailableAt) <= new Date()
+    : false;
 
   // Verifica Supabase solo si localStorage no tiene l1 (respuestas pre-deploy)
   useEffect(() => {
@@ -467,6 +484,51 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
       setIsSouvenirGenerating(false);
     }
   }, [isSouvenirGenerating, l3Rec, portal]);
+
+  /* Bitácora — registra consentimiento */
+  const handleBitacoraConsent = useCallback(async (canal) => {
+    const anonId = ensureAnonId();
+    const bienvenidaAnonId = (() => { try { return localStorage.getItem('bienvenida_anon_id') || null; } catch { return null; } })();
+    try {
+      const res = await fetch(`${OBRA_API_URL}/api/bitacora/consent`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ anon_id: anonId, miniverso_id: portal, canal, bienvenida_anon_id: bienvenidaAnonId }),
+      });
+      const data = await res.json();
+      if (data.ok) {
+        lsPatch(portal, { bitacora_consented: true, bitacora_available_at: data.available_at });
+        setBitacoraConsented(true);
+        setBitacoraAvailableAt(data.available_at);
+      }
+    } catch (_) {}
+  }, [portal]);
+
+  /* Bitácora — envía respuestas */
+  const handleBitacoraSubmit = useCallback(async () => {
+    setBitacoraSubmitting(true);
+    const anonId = ensureAnonId();
+    try {
+      await fetch(`${OBRA_API_URL}/api/bitacora/respond`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          anon_id:        anonId,
+          miniverso_id:   portal,
+          p1_response:    bitacoraP1,
+          p1_afirmativa:  bitacoraAfirmativa,
+          intensidad:     bitacoraIntensidad,
+          p2_response:    bitacoraP2 || null,
+          p3_response:    bitacoraP3 || null,
+        }),
+      });
+    } catch (_) {}
+    lsPatch(portal, { bitacora_completed: true });
+    setBitacoraCompleted(true);
+    setBitacoraOpen(false);
+    setBitacoraStep('p1');
+    setBitacoraSubmitting(false);
+  }, [portal, bitacoraP1, bitacoraAfirmativa, bitacoraIntensidad, bitacoraP2, bitacoraP3]);
 
   /* ── render ── */
   const l3Active = l3Open && !!l3Rec && !l3Rec.error && !l3Rec.all_complete;
@@ -791,6 +853,168 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
                       </div>
                     </div>
                   </motion.div>
+                ) : bitacoraOpen ? (
+                  /* ── Bitácora individual: preguntas diferidas ── */
+                  <motion.div
+                    key="bitacora-questions"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.3 }}
+                  >
+                    <div aria-hidden="true" className="h-16 sm:h-24 lg:hidden" />
+
+                    <div className="hidden lg:block lg:px-10 lg:pb-5 lg:pt-14">
+                      <p className="mb-3 text-[0.62rem] uppercase tracking-[0.32em] text-white/50">
+                        Bitácora individual · Días después
+                      </p>
+                      <p
+                        className="font-display leading-snug text-amber-300/90 drop-shadow-[0_0_32px_rgba(251,191,36,0.45)]"
+                        style={{ fontSize: 'clamp(1.3rem, 2.3vw, 2.1rem)' }}
+                      >
+                        {bitacoraStep === 'p1' && '¿Hay algo de esta experiencia que haya regresado por su cuenta?'}
+                        {bitacoraStep === 'scale' && '¿Con qué fuerza sigue ahí?'}
+                        {bitacoraStep === 'p2' && 'Si volvió, ¿dónde te encontró?'}
+                        {bitacoraStep === 'p3' && '¿Hay algo que ahora veas de otra manera?'}
+                      </p>
+                    </div>
+
+                    <div aria-hidden="true" className="hidden lg:block mx-8 mb-5 h-px bg-gradient-to-r from-transparent via-amber-400/35 to-transparent" />
+
+                    <div className="px-5 pb-[max(1.25rem,env(safe-area-inset-bottom))] sm:px-6 sm:pb-5 lg:pb-10 lg:px-10">
+                      <div className="space-y-3">
+
+                        {/* Mobile: etiqueta de paso */}
+                        <div className="lg:hidden space-y-2">
+                          <div className="inline-flex rounded-full border border-white/10 bg-white/5 px-3 py-1 text-[0.62rem] uppercase tracking-[0.32em] text-white/70">
+                            Bitácora · Días después
+                          </div>
+                          <h3 className="font-display text-2xl leading-tight tracking-tight text-amber-300">
+                            {bitacoraStep === 'p1' && '¿Hay algo de esta experiencia que haya regresado por su cuenta? Una imagen, una frase, una sensación.'}
+                            {bitacoraStep === 'scale' && '¿Con qué fuerza sigue ahí?'}
+                            {bitacoraStep === 'p2' && 'Si volvió, ¿dónde te encontró? ¿Qué estabas haciendo o con quién estabas?'}
+                            {bitacoraStep === 'p3' && 'Después de esta experiencia, ¿hay algo que ahora veas de otra manera? También puede ser que nada haya cambiado.'}
+                          </h3>
+                        </div>
+
+                        {/* P1 */}
+                        {bitacoraStep === 'p1' && (
+                          <>
+                            <textarea
+                              value={bitacoraP1}
+                              onChange={(e) => setBitacoraP1(e.target.value)}
+                              rows={4}
+                              className="form-surface w-full resize-none px-3 py-2 text-sm"
+                              placeholder="Una imagen, una frase, una sensación…"
+                            />
+                            <p className="text-xs text-slate-400/70">¿Regresó algo?</p>
+                            <div className="flex gap-2">
+                              <button
+                                type="button"
+                                disabled={!bitacoraP1.trim()}
+                                onClick={() => { setBitacoraAfirmativa(true); setBitacoraStep('scale'); }}
+                                className="flex-1 rounded-full border border-amber-400/50 bg-amber-900/20 px-4 py-2.5 text-xs uppercase tracking-[0.2em] text-amber-100/90 transition hover:bg-amber-900/35 disabled:opacity-40"
+                              >
+                                Sí, regresó algo
+                              </button>
+                              <button
+                                type="button"
+                                disabled={!bitacoraP1.trim() || bitacoraSubmitting}
+                                onClick={() => { setBitacoraAfirmativa(false); void handleBitacoraSubmit(); }}
+                                className="flex-1 rounded-full border border-white/15 bg-black/30 px-4 py-2.5 text-xs text-slate-400 transition hover:text-slate-200 disabled:opacity-40"
+                              >
+                                Todavía no
+                              </button>
+                            </div>
+                          </>
+                        )}
+
+                        {/* Escala */}
+                        {bitacoraStep === 'scale' && (
+                          <>
+                            <div className="flex items-end justify-between gap-1 pt-1">
+                              {[1, 2, 3, 4, 5].map((n) => (
+                                <button
+                                  key={n}
+                                  type="button"
+                                  onClick={() => { setBitacoraIntensidad(n); setBitacoraStep('p2'); }}
+                                  className={`flex flex-1 flex-col items-center gap-1.5 rounded-xl border py-3 transition ${
+                                    bitacoraIntensidad === n
+                                      ? 'border-amber-400/60 bg-amber-900/30 text-amber-200'
+                                      : 'border-white/10 bg-black/30 text-slate-300/70 hover:border-white/20 hover:bg-black/45'
+                                  }`}
+                                >
+                                  <span className="text-base font-semibold">{n}</span>
+                                </button>
+                              ))}
+                            </div>
+                            <div className="flex justify-between text-[0.6rem] text-slate-500/80 px-1">
+                              <span>Apenas un roce</span>
+                              <span>No me ha soltado</span>
+                            </div>
+                          </>
+                        )}
+
+                        {/* P2 */}
+                        {bitacoraStep === 'p2' && (
+                          <>
+                            <textarea
+                              value={bitacoraP2}
+                              onChange={(e) => setBitacoraP2(e.target.value)}
+                              rows={4}
+                              className="form-surface w-full resize-none px-3 py-2 text-sm"
+                              placeholder="¿Qué estabas haciendo o con quién estabas?"
+                            />
+                            <button
+                              type="button"
+                              disabled={!bitacoraP2.trim()}
+                              onClick={() => setBitacoraStep('p3')}
+                              className="w-full rounded-full border border-purple-400/80 bg-purple-600/30 px-4 py-3 text-xs uppercase tracking-[0.25em] text-white transition hover:bg-purple-500/45 disabled:opacity-40"
+                            >
+                              Continuar
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => setBitacoraStep('p3')}
+                              className="w-full py-1.5 text-center text-xs text-slate-400/80 transition hover:text-slate-200"
+                            >
+                              Prefiero no decir dónde. Continuar →
+                            </button>
+                          </>
+                        )}
+
+                        {/* P3 */}
+                        {bitacoraStep === 'p3' && (
+                          <>
+                            <textarea
+                              value={bitacoraP3}
+                              onChange={(e) => setBitacoraP3(e.target.value)}
+                              rows={4}
+                              className="form-surface w-full resize-none px-3 py-2 text-sm"
+                              placeholder="También puede ser que nada haya cambiado…"
+                            />
+                            <button
+                              type="button"
+                              disabled={!bitacoraP3.trim() || bitacoraSubmitting}
+                              onClick={() => void handleBitacoraSubmit()}
+                              className="w-full rounded-full border border-purple-400/80 bg-purple-600/30 px-4 py-3 text-xs uppercase tracking-[0.25em] text-white transition hover:bg-purple-500/45 disabled:opacity-40"
+                            >
+                              {bitacoraSubmitting ? 'Guardando…' : 'Cerrar la bitácora'}
+                            </button>
+                            <button
+                              type="button"
+                              disabled={bitacoraSubmitting}
+                              onClick={() => void handleBitacoraSubmit()}
+                              className="w-full py-1.5 text-center text-xs text-slate-400/80 transition hover:text-slate-200 disabled:opacity-40"
+                            >
+                              Nada cambió esta vez. Cerrar →
+                            </button>
+                          </>
+                        )}
+
+                      </div>
+                    </div>
+                  </motion.div>
                 ) : l1Done ? (
                   /* ── Dashboard de viaje ── */
                   <motion.div
@@ -854,7 +1078,7 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
                         const isL1 = i === 0;
                         const isL2 = i === 1;
                         const isL3 = i === 2;
-                        const l3Completed  = isL3 && Boolean(l3Rec?.step3) && !l3Rec?.error;
+                        const l3Completed  = isL3 && bitacoraCompleted;
                         const isCompleted  = isL1 || (isL2 && l2ConvDone) || l3Completed;
                         const isAvailable  = (isL2 && !l2ConvDone) || (isL3 && l2ConvDone && !l3Completed);
                         const levelIsOpen  = isCompleted || (isL2 && !l2ConvDone && l2Open) || (isL3 && l2ConvDone && !l3Completed && l3Open);
@@ -1031,6 +1255,57 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
                                                 </span>
                                               </motion.button>
                                             </>
+                                          )}
+
+                                          {/* Bitácora — Estado A: pedir consentimiento */}
+                                          {!l3Loading && l3Rec && !l3Rec.error && !l3Rec.all_complete && l3Step === 3 && !l3Active && !bitacoraCompleted && !bitacoraConsented && (
+                                            <div className="space-y-2 pt-2 border-t border-white/10">
+                                              <p className="text-xs leading-relaxed text-slate-400/80">
+                                                Tu bitácora se abrirá en unos días. ¿Cómo quieres que te avisemos?
+                                              </p>
+                                              <div className="flex gap-2">
+                                                <button
+                                                  type="button"
+                                                  onClick={() => void handleBitacoraConsent('push')}
+                                                  className="flex-1 rounded-full border border-white/20 bg-black/35 px-3 py-2 text-xs text-slate-200 transition hover:bg-black/50"
+                                                >
+                                                  Notificación
+                                                </button>
+                                                <button
+                                                  type="button"
+                                                  onClick={() => void handleBitacoraConsent('whatsapp')}
+                                                  className="flex-1 rounded-full border border-white/20 bg-black/35 px-3 py-2 text-xs text-slate-200 transition hover:bg-black/50"
+                                                >
+                                                  WhatsApp
+                                                </button>
+                                              </div>
+                                            </div>
+                                          )}
+
+                                          {/* Bitácora — Estado B: disponible */}
+                                          {!bitacoraCompleted && bitacoraConsented && bitacoraAvailable && (
+                                            <button
+                                              type="button"
+                                              onClick={() => setBitacoraOpen(true)}
+                                              className="w-full rounded-full border border-amber-400/60 bg-amber-900/25 px-4 py-2.5 text-xs uppercase tracking-[0.2em] text-amber-100 transition hover:bg-amber-900/40"
+                                            >
+                                              Abrir mi bitácora →
+                                            </button>
+                                          )}
+
+                                          {/* Bitácora — preparándose */}
+                                          {!bitacoraCompleted && bitacoraConsented && !bitacoraAvailable && (
+                                            <p className="text-[0.62rem] italic text-slate-500/70 text-center pt-1">
+                                              Tu bitácora se está preparando…
+                                            </p>
+                                          )}
+
+                                          {/* Bitácora — completada */}
+                                          {bitacoraCompleted && (
+                                            <div className="flex items-center gap-2 text-xs text-slate-300 pt-1">
+                                              <Check size={12} className="shrink-0 text-emerald-400/70" />
+                                              <span className="italic">Bitácora completada</span>
+                                            </div>
                                           )}
 
                                           {/* Dev reset — siempre visible cuando hay rec */}
