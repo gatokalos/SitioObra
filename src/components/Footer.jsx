@@ -64,10 +64,10 @@ const Footer = ({ showTransmediaNav = true }) => {
               <span className="font-semibold text-slate-200 mb-4 block">Navegación</span>
               <ul className="space-y-3">
                 {[
-                  { name: 'Obra', href: '#about' },
+                  { name: 'Drama', href: '#about' },
                   { name: 'Perspectivas', href: '#provoca' },
-                  { name: 'Equipo', href: '#team' },
-                  { name: 'Galería', href: '#instagram' },
+                  { name: 'Tras bambalinas', href: '#team' },
+                  { name: 'Memoria fractal', href: '#instagram' },
                   { name: 'Curaduría', href: '#dialogo-critico' },
                   ...(showTransmediaNav ? [{ name: 'Transmedia', href: '#transmedia' }] : []),
                   { name: 'Alianza', href: '#apoya' },

@@ -1078,11 +1078,13 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
                         const isL1 = i === 0;
                         const isL2 = i === 1;
                         const isL3 = i === 2;
-                        const l3Completed  = isL3 && bitacoraCompleted;
-                        const isCompleted  = isL1 || (isL2 && l2ConvDone) || l3Completed;
-                        const isAvailable  = (isL2 && !l2ConvDone) || (isL3 && l2ConvDone && !l3Completed);
-                        const levelIsOpen  = isCompleted || (isL2 && !l2ConvDone && l2Open) || (isL3 && l2ConvDone && !l3Completed && l3Open);
-                        const canToggle    = (isL2 && !l2ConvDone) || (isL3 && l2ConvDone && !l3Completed);
+                        // l3RecSeen: la recomendación ya fue recibida → congela el acordeón y muestra coleccionable
+                        // bitacoraCompleted: el usuario cerró la bitácora → pone el círculo en verde
+                        const l3RecSeen    = isL3 && Boolean(l3Rec?.step3) && !l3Rec?.error;
+                        const isCompleted  = isL1 || (isL2 && l2ConvDone) || (isL3 && bitacoraCompleted);
+                        const isAvailable  = (isL2 && !l2ConvDone) || (isL3 && l2ConvDone && !bitacoraCompleted);
+                        const levelIsOpen  = isCompleted || (isL2 && !l2ConvDone && l2Open) || (isL3 && l2ConvDone && (l3Open || l3RecSeen));
+                        const canToggle    = (isL2 && !l2ConvDone) || (isL3 && l2ConvDone && !l3RecSeen && !bitacoraCompleted);
                         const handleToggle = isL3 ? handleL3Toggle : () => setL2Open((v) => !v);
 
                         return (
@@ -1225,8 +1227,8 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
                                             </>
                                           )}
 
-                                          {/* Paso 3 — Completado */}
-                                          {!l3Loading && l3Rec && !l3Rec.error && !l3Rec.all_complete && l3Step === 3 && !l3Active && (
+                                          {/* Paso 3 — Coleccionable (muestra cuando la rec fue recibida) */}
+                                          {l3RecSeen && !l3Rec.all_complete && (
                                             <>
                                               <p className="text-xs leading-relaxed text-slate-300/90">
                                                 Este recorrido ha concluido.
@@ -1258,7 +1260,7 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
                                           )}
 
                                           {/* Bitácora — Estado A: pedir consentimiento */}
-                                          {!l3Loading && l3Rec && !l3Rec.error && !l3Rec.all_complete && l3Step === 3 && !l3Active && !bitacoraCompleted && !bitacoraConsented && (
+                                          {l3RecSeen && !l3Rec.all_complete && !bitacoraCompleted && !bitacoraConsented && (
                                             <div className="space-y-2 pt-2 border-t border-white/10">
                                               <p className="text-xs leading-relaxed text-slate-400/80">
                                                 Tu bitácora se abrirá en unos días. ¿Cómo quieres que te avisemos?
