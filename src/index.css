@@ -1894,3 +1894,100 @@ body {
   .cabina-bubble__texto    { font-size: clamp(0.9rem, 0.84rem + 1.2vw, 1.05rem); line-height: 1.33; }
   .cabina-bubble__cta      { margin-top: 0.72rem; padding: 0.66rem 1.08rem; font-size: 0.9rem; width: min(90%, 16rem); }
 }
+
+/* ── Cabina: botón siguiente (desktop, dentro de la burbuja) ── */
+.cabina-bubble__siguiente {
+  display: inline-block;
+  margin-top: 0.85rem;
+  padding: 0.55rem 1.1rem;
+  border-radius: 999px;
+  border: 1.5px solid rgba(255,255,255,0.35);
+  background: rgba(255,255,255,0.08);
+  color: rgba(255,255,255,0.9);
+  font-size: 0.88rem;
+  cursor: pointer;
+  transition: background 0.18s, border-color 0.18s;
+}
+.cabina-bubble__siguiente:hover { background: rgba(255,255,255,0.16); border-color: rgba(255,255,255,0.55); }
+
+/* ── Cabina: texto skip dentro de la burbuja ── */
+.cabina-bubble__skip {
+  display: block;
+  margin-top: 0.6rem;
+  background: none;
+  border: none;
+  color: rgba(255,255,255,0.45);
+  font-size: 0.75rem;
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  transition: color 0.15s;
+}
+.cabina-bubble__skip:hover { color: rgba(255,255,255,0.75); }
+
+/* ── Cabina: CTA secundario (desktop, dentro de burbuja) ── */
+.cabina-bubble__cta-secondary {
+  display: inline-block;
+  margin-top: 0.5rem;
+  padding: 0.55rem 1.1rem;
+  border-radius: 999px;
+  border: 1.5px solid rgba(255,255,255,0.25);
+  background: rgba(255,255,255,0.06);
+  color: rgba(255,255,255,0.75);
+  font-size: 0.82rem;
+  cursor: pointer;
+  transition: background 0.18s, border-color 0.18s;
+}
+.cabina-bubble__cta-secondary:hover { background: rgba(255,255,255,0.13); border-color: rgba(255,255,255,0.4); }
+
+/* ── Cabina: contenedor de CTAs de consentimiento (desktop) ── */
+.cabina-bubble__consent-desktop {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.35rem;
+  margin-top: 0.4rem;
+}
+
+/* ── Cabina: área de consentimiento flotante (mobile, fuera de burbuja) ── */
+.cabina-consent-area {
+  position: absolute;
+  bottom: 22%;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 0.6rem;
+  width: min(88vw, 340px);
+  z-index: 3;
+}
+.cabina-consent-area__primary {
+  flex: 1;
+  padding: 0.78rem 0.8rem;
+  border-radius: 999px;
+  border: 1.5px solid rgba(255,255,255,0.65);
+  background: rgba(255,255,255,0.18);
+  color: rgba(255,255,255,0.95);
+  font-weight: 600;
+  font-size: 0.88rem;
+  cursor: pointer;
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  transition: background 0.18s, border-color 0.18s;
+}
+.cabina-consent-area__primary:hover { background: rgba(255,255,255,0.28); border-color: rgba(255,255,255,0.85); }
+.cabina-consent-area__secondary {
+  flex: 1;
+  padding: 0.65rem 0.8rem;
+  border-radius: 999px;
+  border: 1.5px solid rgba(255,255,255,0.35);
+  background: rgba(255,255,255,0.1);
+  color: rgba(255,255,255,0.85);
+  font-size: 0.8rem;
+  cursor: pointer;
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  transition: background 0.18s, border-color 0.18s;
+}
+.cabina-consent-area__secondary:hover { background: rgba(255,255,255,0.18); border-color: rgba(255,255,255,0.55); }

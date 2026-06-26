@@ -220,6 +220,10 @@ const LEVELS = [
 
 const lsKey = (portal) => `gatoencerrado:resonance:${portal}`;
 
+const GLOBAL_CONSENT_KEY = 'gatoencerrado:bitacora:consented';
+const readGlobalConsent  = () => { try { return !!JSON.parse(localStorage.getItem(GLOBAL_CONSENT_KEY)); } catch { return false; } };
+const writeGlobalConsent = () => { try { localStorage.setItem(GLOBAL_CONSENT_KEY, 'true'); } catch {} };
+
 const lsRead = (portal) => {
   try { return JSON.parse(localStorage.getItem(lsKey(portal))) ?? {}; }
   catch { return {}; }
@@ -271,11 +275,11 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
   const [l3Open, setL3Open]             = useState(false);
   const [l3Loading, setL3Loading]       = useState(false);
   const [l3Rec, setL3Rec]               = useState(() => lsRead(portal).l3_recommendation ?? null);
-  const [l3Step, setL3Step]             = useState(() => !!lsRead(portal).l3_recommendation?.step3 ? 3 : 1);
+  const [l3Step, setL3Step]             = useState(() => !!lsRead(portal).l3_recommendation?.step3 ? 4 : 1);
   const [isSouvenirGenerating, setIsSouvenirGenerating] = useState(false);
 
   // Bitácora individual — seguimiento diferido
-  const [bitacoraConsented, setBitacoraConsented]     = useState(() => !!lsRead(portal).bitacora_consented);
+  const [bitacoraConsented, setBitacoraConsented]     = useState(() => !!lsRead(portal).bitacora_consented || readGlobalConsent());
   const [bitacoraAvailableAt, setBitacoraAvailableAt] = useState(() => lsRead(portal).bitacora_available_at ?? null);
   const [bitacoraCompleted, setBitacoraCompleted]     = useState(() => !!lsRead(portal).bitacora_completed);
   const [bitacoraOpen, setBitacoraOpen]               = useState(false);
@@ -290,6 +294,10 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
   const bitacoraAvailable = bitacoraAvailableAt
     ? new Date(bitacoraAvailableAt) <= new Date()
     : false;
+
+  const [bitacoraP2Question, setBitacoraP2Question]         = useState(null);
+  const [bitacoraP3Question, setBitacoraP3Question]         = useState(null);
+  const [bitacoraQuestionLoading, setBitacoraQuestionLoading] = useState(false);
 
   // Verifica Supabase solo si localStorage no tiene l1 (respuestas pre-deploy)
   useEffect(() => {
@@ -477,13 +485,42 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
         step3: l3Rec.step3,
         backgroundUrl: PORTAL_POSTER[portal],
       });
-      downloadBlob(blob, `boleto-miniverso-${portal}.png`);
+      const filename = `boleto-miniverso-${portal}.png`;
+      // iOS Safari: Web Share API saves directly al álbum de fotos
+      const file = new File([blob], filename, { type: 'image/png' });
+      if (typeof navigator.share === 'function' && typeof navigator.canShare === 'function' && navigator.canShare({ files: [file] })) {
+        try { await navigator.share({ files: [file] }); return; } catch {}
+      }
+      downloadBlob(blob, filename);
     } catch (err) {
       console.error('[ResonanceModal] No se pudo generar el coleccionable:', err);
     } finally {
       setIsSouvenirGenerating(false);
     }
   }, [isSouvenirGenerating, l3Rec, portal]);
+
+  const handleStopAndDownload = useCallback(async () => {
+    void handleDownloadSouvenir();
+    setTimeout(() => { onClose?.(); navigate('/#transmedia', { replace: true }); }, 600);
+  }, [handleDownloadSouvenir, onClose, navigate]);
+
+  /* Bitácora — genera P2 o P3 dinámicamente según lo que ya respondió el usuario */
+  const fetchNextBitacoraQuestion = useCallback(async (step, p1, p2 = null) => {
+    setBitacoraQuestionLoading(true);
+    try {
+      const res = await fetch(`${OBRA_API_URL}/api/bitacora/next-question`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ step, p1_response: p1, ...(p2 ? { p2_response: p2 } : {}) }),
+      });
+      const data = await res.json();
+      if (data.ok && data.question) {
+        if (step === 'p2') setBitacoraP2Question(data.question);
+        else setBitacoraP3Question(data.question);
+      }
+    } catch (_) {}
+    setBitacoraQuestionLoading(false);
+  }, []);
 
   /* Bitácora — registra consentimiento */
   const handleBitacoraConsent = useCallback(async (canal) => {
@@ -498,6 +535,7 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
       const data = await res.json();
       if (data.ok) {
         lsPatch(portal, { bitacora_consented: true, bitacora_available_at: data.available_at });
+        writeGlobalConsent();
         setBitacoraConsented(true);
         setBitacoraAvailableAt(data.available_at);
       }
@@ -532,8 +570,16 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
 
   /* ── render ── */
   const l3Active = l3Open && !!l3Rec && !l3Rec.error && !l3Rec.all_complete;
+
+  const l3ConsentBubbleText = bitacoraConsented
+    ? 'El Cuaderno de campo ya lleva registro de tus recorridos anteriores. Tu nuevo pasaje se sumará.'
+    : 'Hay un Cuaderno de campo que abre después de cada recorrido. Las preguntas van acumulando lo que dejas en cada universo. ¿Puedo avisarte cuando sea el momento de volver?';
+
   const l3BubbleText = l3Rec
-    ? (l3Step === 1 ? l3Rec.step1 : l3Step === 2 ? l3Rec.step2 : (l3Rec.step3 ?? l3Rec.message))
+    ? (l3Step === 1 ? l3Rec.step1
+       : l3Step === 2 ? l3Rec.step2
+       : l3Step === 3 ? l3ConsentBubbleText
+       : (l3Rec.step3 ?? l3Rec.message))
     : null;
 
   /* Nivel 3 — fetch recomendación */
@@ -688,7 +734,7 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
                       ) : (
                         <p className="cabina-bubble__texto">{l3BubbleText}</p>
                       )}
-                      {l3Step === 3 && l3BubbleText && (
+                      {l3Step === 4 && l3BubbleText && (
                         <button
                           type="button"
                           className="cabina-bubble__cta"
@@ -709,6 +755,23 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
                       >
                         <ChevronRight size={20} />
                       </button>
+                    ) : l3Step === 3 ? (
+                      <div className="cabina-consent-area">
+                        <button
+                          type="button"
+                          className="cabina-consent-area__primary"
+                          onClick={() => { setL3Step(4); if (!bitacoraConsented) void handleBitacoraConsent('push'); }}
+                        >
+                          {bitacoraConsented ? 'Siguiente →' : 'Siguiente y avísame →'}
+                        </button>
+                        <button
+                          type="button"
+                          className="cabina-consent-area__secondary"
+                          onClick={() => void handleStopAndDownload()}
+                        >
+                          Parar y descargar recordatorio →
+                        </button>
+                      </div>
                     ) : (
                       <button
                         type="button"
@@ -874,8 +937,8 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
                       >
                         {bitacoraStep === 'p1' && '¿Hay algo de esta experiencia que haya regresado por su cuenta?'}
                         {bitacoraStep === 'scale' && '¿Con qué fuerza sigue ahí?'}
-                        {bitacoraStep === 'p2' && 'Si volvió, ¿dónde te encontró?'}
-                        {bitacoraStep === 'p3' && '¿Hay algo que ahora veas de otra manera?'}
+                        {bitacoraStep === 'p2' && (bitacoraQuestionLoading ? '…' : (bitacoraP2Question || 'Si volvió, ¿dónde te encontró?'))}
+                        {bitacoraStep === 'p3' && (bitacoraQuestionLoading ? '…' : (bitacoraP3Question || '¿Hay algo que ahora veas de otra manera?'))}
                       </p>
                     </div>
 
@@ -892,8 +955,8 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
                           <h3 className="font-display text-2xl leading-tight tracking-tight text-amber-300">
                             {bitacoraStep === 'p1' && '¿Hay algo de esta experiencia que haya regresado por su cuenta? Una imagen, una frase, una sensación.'}
                             {bitacoraStep === 'scale' && '¿Con qué fuerza sigue ahí?'}
-                            {bitacoraStep === 'p2' && 'Si volvió, ¿dónde te encontró? ¿Qué estabas haciendo o con quién estabas?'}
-                            {bitacoraStep === 'p3' && 'Después de esta experiencia, ¿hay algo que ahora veas de otra manera? También puede ser que nada haya cambiado.'}
+                            {bitacoraStep === 'p2' && (bitacoraQuestionLoading ? '…' : (bitacoraP2Question || 'Si volvió, ¿dónde te encontró? ¿Qué estabas haciendo o con quién estabas?'))}
+                            {bitacoraStep === 'p3' && (bitacoraQuestionLoading ? '…' : (bitacoraP3Question || 'Después de esta experiencia, ¿hay algo que ahora veas de otra manera? También puede ser que nada haya cambiado.'))}
                           </h3>
                         </div>
 
@@ -912,7 +975,7 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
                               <button
                                 type="button"
                                 disabled={!bitacoraP1.trim()}
-                                onClick={() => { setBitacoraAfirmativa(true); setBitacoraStep('scale'); }}
+                                onClick={() => { setBitacoraAfirmativa(true); setBitacoraStep('scale'); void fetchNextBitacoraQuestion('p2', bitacoraP1); }}
                                 className="flex-1 rounded-full border border-amber-400/50 bg-amber-900/20 px-4 py-2.5 text-xs uppercase tracking-[0.2em] text-amber-100/90 transition hover:bg-amber-900/35 disabled:opacity-40"
                               >
                                 Sí, regresó algo
@@ -968,14 +1031,14 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
                             <button
                               type="button"
                               disabled={!bitacoraP2.trim()}
-                              onClick={() => setBitacoraStep('p3')}
+                              onClick={() => { setBitacoraStep('p3'); void fetchNextBitacoraQuestion('p3', bitacoraP1, bitacoraP2); }}
                               className="w-full rounded-full border border-purple-400/80 bg-purple-600/30 px-4 py-3 text-xs uppercase tracking-[0.25em] text-white transition hover:bg-purple-500/45 disabled:opacity-40"
                             >
                               Continuar
                             </button>
                             <button
                               type="button"
-                              onClick={() => setBitacoraStep('p3')}
+                              onClick={() => { setBitacoraStep('p3'); void fetchNextBitacoraQuestion('p3', bitacoraP1, bitacoraP2); }}
                               className="w-full py-1.5 text-center text-xs text-slate-400/80 transition hover:text-slate-200"
                             >
                               Prefiero no decir dónde. Continuar →
@@ -1561,6 +1624,28 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
                       <button type="button" className="cabina-bubble__siguiente" onClick={() => setL3Step(l3Step + 1)}>
                         Siguiente →
                       </button>
+                    ) : l3Step === 3 ? (
+                      <div className="cabina-bubble__consent-desktop">
+                        <button
+                          type="button"
+                          className="cabina-bubble__siguiente"
+                          onClick={() => { setL3Step(4); if (!bitacoraConsented) void handleBitacoraConsent('push'); }}
+                        >
+                          {bitacoraConsented ? 'Siguiente →' : 'Siguiente y avísame →'}
+                        </button>
+                        <button
+                          type="button"
+                          className="cabina-bubble__cta-secondary"
+                          onClick={() => void handleStopAndDownload()}
+                        >
+                          Parar y descargar →
+                        </button>
+                        {!bitacoraConsented && (
+                          <button type="button" className="cabina-bubble__skip" onClick={() => setL3Step(4)}>
+                            Continuar sin recordatorio →
+                          </button>
+                        )}
+                      </div>
                     ) : (
                       <button type="button" className="cabina-bubble__cta" onClick={handleNavigateToRecommendation}>
                         Explorar {l3Rec.forma}
