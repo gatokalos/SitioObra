@@ -26,7 +26,7 @@ import { useSilvestreVoice } from '@/hooks/useSilvestreVoice';
 
 const aboutParagraphs = [
   {
-    text: `A través de la escena, los sueños lúcidos y la autoficción, nuestra obra explora la soledad, la rabia reprimida y la búsqueda de sentido frente a un mundo cada vez más desconectado.
+    text: `A través de la escena, los sueños lúcidos y la autoficción, Es un gato encerrado explora la soledad, la rabia reprimida y la búsqueda de sentido frente a un mundo cada vez más desconectado.
 
     Silvestre, el protagonista, atraviesa sus conflictos internos acompañado por figuras simbólicas como La Doctora y el Payasito Tiste, personajes que habitan el límite entre la imaginación, la memoria y la realidad.`,
   
@@ -1266,7 +1266,7 @@ const About = () => {
           className="text-center mb-16"
         >
           <h2 className="font-display text-4xl md:text-5xl font-medium mb-6 text-gradient italic">
-            Sobre el drama
+            Sobre la obra
           </h2>
           <div className="max-w-3xl mx-auto">
             {aboutParagraphs.map((paragraph) => (
@@ -1324,7 +1324,7 @@ const About = () => {
                   className="border-slate-100/20 text-slate-200 hover:bg-slate-100/10 px-6 py-3 rounded-full font-semibold flex items-center gap-2"
                 >
                   <Send size={20} />
-                  Invita a un cómplice
+                  Próximas funciones
                 </Button>
               </div>
             </div>

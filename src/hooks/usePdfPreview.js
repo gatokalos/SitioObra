@@ -24,6 +24,9 @@ const usePdfPreview = ({
   const [pdfNumPages, setPdfNumPages] = useState(null);
   const [pdfLoadError, setPdfLoadError] = useState(null);
   const [pdfContainerWidth, setPdfContainerWidth] = useState(0);
+  const [isPdfPrecareVisible, setIsPdfPrecareVisible] = useState(false);
+  const [isPdfAftercareVisible, setIsPdfAftercareVisible] = useState(false);
+  const pendingPdfPayloadRef = useRef(null);
 
   const pdfContainerRef = useRef(null);
   const pdfEndSentinelRef = useRef(null);
@@ -54,8 +57,7 @@ const usePdfPreview = ({
     setImagePreview(null);
   }, []);
 
-  const handleOpenPdfPreview = useCallback((payload) => {
-    if (!payload?.src) return;
+  const openPdfDirectly = useCallback((payload) => {
     const parsedNextCost = Number(payload.nextChapterCost);
     const nextChapterCost =
       Number.isFinite(parsedNextCost) && parsedNextCost > 0
@@ -67,10 +69,38 @@ const usePdfPreview = ({
       description: payload.description ?? '',
       nextChapterCost,
       nextChapterLabel: payload.nextChapterLabel ?? 'siguiente capítulo',
+      portalKey: payload.portalKey ?? null,
     });
     setPdfNumPages(null);
     setPdfLoadError(null);
     hasShownPdfEndNoticeRef.current = false;
+  }, []);
+
+  const handleOpenPdfPreview = useCallback((payload) => {
+    if (!payload?.src) return;
+    if (payload.showPrecare) {
+      pendingPdfPayloadRef.current = payload;
+      setIsPdfPrecareVisible(true);
+      return;
+    }
+    openPdfDirectly(payload);
+  }, [openPdfDirectly]);
+
+  const handlePdfPrecareConfirm = useCallback(() => {
+    setIsPdfPrecareVisible(false);
+    if (pendingPdfPayloadRef.current) {
+      openPdfDirectly(pendingPdfPayloadRef.current);
+      pendingPdfPayloadRef.current = null;
+    }
+  }, [openPdfDirectly]);
+
+  const handlePdfPrecareClose = useCallback(() => {
+    setIsPdfPrecareVisible(false);
+    pendingPdfPayloadRef.current = null;
+  }, []);
+
+  const handlePdfAftercareClose = useCallback(() => {
+    setIsPdfAftercareVisible(false);
   }, []);
 
   const handleClosePdfPreview = useCallback(() => {
@@ -126,6 +156,19 @@ const usePdfPreview = ({
         if (!reachedEnd || hasShownPdfEndNoticeRef.current) return;
         hasShownPdfEndNoticeRef.current = true;
 
+        // Marca la experiencia y muestra aftercare si hay portalKey
+        if (pdfPreview.portalKey) {
+          try {
+            const lsKey = `gatoencerrado:resonance:${pdfPreview.portalKey}`;
+            const existing = JSON.parse(localStorage.getItem(lsKey) || '{}');
+            if (!existing.experience_ts) {
+              localStorage.setItem(lsKey, JSON.stringify({ ...existing, experience_ts: Date.now() }));
+            }
+          } catch {}
+          setIsPdfAftercareVisible(true);
+          return;
+        }
+
         const required = Number.isFinite(pdfPreview.nextChapterCost)
           ? Number(pdfPreview.nextChapterCost)
           : GAT_COSTS.novelaChapter;
@@ -170,6 +213,11 @@ const usePdfPreview = ({
     handleOpenPdfPreview,
     handleClosePdfPreview,
     handlePdfLoadSuccess,
+    isPdfPrecareVisible,
+    isPdfAftercareVisible,
+    handlePdfPrecareConfirm,
+    handlePdfPrecareClose,
+    handlePdfAftercareClose,
   };
 };
 

@@ -47,15 +47,15 @@ const HERO_LOGGED_IN_SWEEP_GLOW =
   'radial-gradient(circle,rgba(31,47,99,0.3)_0%,rgba(110,48,171,0.22)_44%,rgba(217,31,139,0.1)_74%,rgba(0,0,0,0)_100%)';
 const HERO_PENDING_MINIVERSE_SELECTION_KEY = 'gatoencerrado:hero-inline-miniverse-selection';
 const HERO_ROTATING_SUBTITLES = [
-  'La obra que ocurre en tu mente',
-  'Un viaje inmersivo para sentir, pensar y recordar',
+  'Una experiencia narrativa interactiva',
+  'Basada en "Es un gato encerrado"',
   'Una historia que cambia cuando la miras',
-  'Teatro que no termina cuando sales de la sala',
-  'Una experiencia escénica que se queda contigo',
-];
-const HERO_GHOST_SUBTITLES = [
-  'Tal vez la obra ya empezó en ti',
   'Y si observas bien… la obra te observa a ti',
+  ];
+const HERO_GHOST_SUBTITLES = [
+  'La obra que ocurre en tu mente',
+  'Tal vez ya empezó en ti',
+  
 ];
 const HERO_ROTATING_SUBTITLE_PLACEHOLDER =
   'Teatro que no termina cuando sales de la sala';

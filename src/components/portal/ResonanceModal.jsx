@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import ReactDOM from 'react-dom';
+import CuadernoHolografico from './CuadernoHolografico';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Eye, Flame, PawPrint, Lock, ShieldCheck, Check, ChevronDown, ChevronRight, Sparkles, ArrowRight } from 'lucide-react';
@@ -202,15 +203,15 @@ const LEVELS = [
   },
   {
     num: 2,
-    eyebrow: 'Experiencia narrativa',
-    title: 'Artefacto transmedia',
+    eyebrow: 'Energía simbólica',
+    title: 'Artefacto narrativo',
     desc: 'Tu intuición ya está anclada. Lo que el artefacto despierte después de esto es lo que nos interesa comparar.',
     icon: Flame,
   },
   {
     num: 3,
     eyebrow: 'Días después',
-    title: 'Bitácora individual',
+    title: 'Cuaderno de campo',
     pendingDesc: 'Vuelve en unos días. Queremos saber si algo resonó en ti.',
     icon: PawPrint,
   },
@@ -237,7 +238,7 @@ const lsPatch = (portal, patch) => {
 
 /* ─── Componente ──────────────────────────────────────────────────────── */
 
-const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNavigateToRecommendation }) => {
+const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNavigateToRecommendation, onL2QuestionReady, isMobileViewport }) => {
   const modalRef = useRef(null);
   const submitBtnRef = useRef(null);
   const { user } = useAuth();
@@ -269,19 +270,25 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
   const [convTurn, setConvTurn] = useState(() => lsRead(portal).l2_current_turn ?? 0);
   const [convAnswer, setConvAnswer] = useState('');
   const [convLoading, setConvLoading] = useState(false);
-  const [convError, setConvError] = useState(false);
+  const [convError, setConvError] = useState(() => !!lsRead(portal).l2_conv_error);
 
   // Nivel 3 — recomendación del siguiente miniverso
   const [l3Open, setL3Open]             = useState(false);
   const [l3Loading, setL3Loading]       = useState(false);
   const [l3Rec, setL3Rec]               = useState(() => lsRead(portal).l3_recommendation ?? null);
   const [l3Step, setL3Step]             = useState(() => !!lsRead(portal).l3_recommendation?.step3 ? 4 : 1);
+  const [l3BubbleClosed, setL3BubbleClosed] = useState(false);
   const [isSouvenirGenerating, setIsSouvenirGenerating] = useState(false);
 
   // Bitácora individual — seguimiento diferido
   const [bitacoraConsented, setBitacoraConsented]     = useState(() => !!lsRead(portal).bitacora_consented || readGlobalConsent());
   const [bitacoraAvailableAt, setBitacoraAvailableAt] = useState(() => lsRead(portal).bitacora_available_at ?? null);
   const [bitacoraCompleted, setBitacoraCompleted]     = useState(() => !!lsRead(portal).bitacora_completed);
+  const [showPhoneInput, setShowPhoneInput]           = useState(false);
+  const [phoneInput, setPhoneInput]                   = useState('');
+  const [holograficoOpen, setHolograficoOpen]         = useState(false);
+  const [holograficoPoster, setHolograficoPoster]     = useState(portal);
+  const activeBloom = holograficoOpen ? (PORTAL_BLOOM[holograficoPoster] ?? PORTAL_BLOOM.obra) : bloom;
   const [bitacoraOpen, setBitacoraOpen]               = useState(false);
   const [bitacoraStep, setBitacoraStep]               = useState('p1');
   const [bitacoraP1, setBitacoraP1]                   = useState('');
@@ -397,6 +404,9 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
   const callL2Turn = useCallback(async (respuesta = null, silent = false) => {
     setConvLoading(true);
     setConvError(false);
+    lsPatch(portal, { l2_conv_error: false });
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 8000);
     try {
       const res = await fetch(`${OBRA_API_URL}/api/resonance/l2-turn`, {
         method: 'POST',
@@ -407,38 +417,47 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
           ...(respuesta != null ? { respuesta } : {}),
           ...(silent ? { silent: true } : {}),
         }),
+        signal: controller.signal,
       });
       if (!res.ok) {
         console.error('[ResonanceModal] l2-turn HTTP error:', res.status);
         setConvError(true);
+        lsPatch(portal, { l2_conv_error: true });
         setConvLoading(false);
+        clearTimeout(timeoutId);
+        onL2QuestionReady?.();
         return;
       }
       const data = await res.json();
       if (data.done) {
-        lsPatch(portal, { l2_conv_done: true, l2_current_question: null, l2_current_turn: null });
+        lsPatch(portal, { l2_conv_done: true, l2_current_question: null, l2_current_turn: null, l2_conv_error: false });
         setL2ConvDone(true);
         setConvQuestion(null);
       } else {
-        lsPatch(portal, { l2_current_question: data.question, l2_current_turn: data.turn });
+        lsPatch(portal, { l2_current_question: data.question, l2_current_turn: data.turn, l2_conv_error: false });
         setConvQuestion(data.question);
         setConvTurn(data.turn ?? 1);
         setConvAnswer('');
       }
     } catch (err) {
-      console.error('[ResonanceModal] l2-turn error:', err);
+      const isTimeout = err.name === 'AbortError';
+      console.error('[ResonanceModal] l2-turn error:', isTimeout ? 'timeout (8s)' : err);
       setConvError(true);
+      lsPatch(portal, { l2_conv_error: true });
+    } finally {
+      clearTimeout(timeoutId);
+      setConvLoading(false);
+      onL2QuestionReady?.();
     }
-    setConvLoading(false);
-  }, [portal]);
+  }, [portal, onL2QuestionReady]);
 
   // Auto-arranca la conversación cuando el modal abre después de completar la experiencia
   useEffect(() => {
     if (!open) return;
-    if (!l2NarrativeOpened || l2ConvDone || convQuestion !== null || convLoading) return;
+    if (!l2NarrativeOpened || l2ConvDone || convQuestion !== null || convLoading || convError) return;
     if (!lsRead(portal).experience_ts) return;
     void callL2Turn();
-  }, [open, l2NarrativeOpened, l2ConvDone, convQuestion, convLoading, portal, callL2Turn]);
+  }, [open, l2NarrativeOpened, l2ConvDone, convQuestion, convLoading, convError, portal, callL2Turn]);
 
   /* Nivel 2 — opciones */
   const handleLevel2Select = async (option) => {
@@ -499,10 +518,6 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
     }
   }, [isSouvenirGenerating, l3Rec, portal]);
 
-  const handleStopAndDownload = useCallback(async () => {
-    void handleDownloadSouvenir();
-    setTimeout(() => { onClose?.(); navigate('/#transmedia', { replace: true }); }, 600);
-  }, [handleDownloadSouvenir, onClose, navigate]);
 
   /* Bitácora — genera P2 o P3 dinámicamente según lo que ya respondió el usuario */
   const fetchNextBitacoraQuestion = useCallback(async (step, p1, p2 = null) => {
@@ -523,14 +538,20 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
   }, []);
 
   /* Bitácora — registra consentimiento */
-  const handleBitacoraConsent = useCallback(async (canal) => {
+  const handleBitacoraConsent = useCallback(async (canal, phoneNumber) => {
     const anonId = ensureAnonId();
     const bienvenidaAnonId = (() => { try { return localStorage.getItem('bienvenida_anon_id') || null; } catch { return null; } })();
     try {
       const res = await fetch(`${OBRA_API_URL}/api/bitacora/consent`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ anon_id: anonId, miniverso_id: portal, canal, bienvenida_anon_id: bienvenidaAnonId }),
+        body: JSON.stringify({
+          anon_id: anonId,
+          miniverso_id: portal,
+          canal,
+          bienvenida_anon_id: bienvenidaAnonId,
+          phone_number: phoneNumber ?? null,
+        }),
       });
       const data = await res.json();
       if (data.ok) {
@@ -572,7 +593,7 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
   const l3Active = l3Open && !!l3Rec && !l3Rec.error && !l3Rec.all_complete;
 
   const l3ConsentBubbleText = bitacoraConsented
-    ? 'El Cuaderno de campo ya lleva registro de tus recorridos anteriores. Tu nuevo pasaje se sumará.'
+    ? 'El Cuaderno de campo ahora lleva registro de tu viaje personal. Lo que decidas hacer después también se sumará.'
     : 'Hay un Cuaderno de campo que abre después de cada recorrido. Las preguntas van acumulando lo que dejas en cada universo. ¿Puedo avisarte cuando sea el momento de volver?';
 
   const l3BubbleText = l3Rec
@@ -589,7 +610,7 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
       lsPatch(portal, { l3_recommendation: undefined });
       setL3Rec(null);
     }
-    if ((l3Rec && l3Rec.step1) || l3Loading) return;
+    if ((l3Rec && l3Rec.step1) || l3Rec?.error || l3Loading) return;
     setL3Loading(true);
     try {
       const completedIds = Object.keys(PORTAL_GRADIENT)
@@ -664,7 +685,7 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
             aria-hidden="true"
             className="absolute inset-0"
             style={{
-              background: `radial-gradient(ellipse 160% 45% at 50% -5%, ${bloom[0]}, ${bloom[1]} 40%, transparent 65%), rgb(5,3,9)`,
+              background: `radial-gradient(ellipse 160% 45% at 50% -5%, ${activeBloom[0]}, ${activeBloom[1]} 40%, transparent 65%), rgb(5,3,9)`,
             }}
           />
 
@@ -704,7 +725,7 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
             {/* ── L3 cat overlay — mobile only, portal a document.body ── */}
             {typeof document !== 'undefined' && ReactDOM.createPortal(
               <AnimatePresence>
-                {l3Active && (
+                {l3Active && !l3BubbleClosed && (
                   <motion.div
                     className="fixed inset-0 z-[490] lg:hidden"
                     initial={{ opacity: 0 }}
@@ -760,26 +781,49 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
                         <button
                           type="button"
                           className="cabina-consent-area__primary"
-                          onClick={() => { setL3Step(4); if (!bitacoraConsented) void handleBitacoraConsent('push'); }}
+                          onClick={() => setL3Step(4)}
                         >
-                          {bitacoraConsented ? 'Siguiente →' : 'Siguiente y avísame →'}
+                          Sí, continuemos →
                         </button>
                         <button
                           type="button"
                           className="cabina-consent-area__secondary"
-                          onClick={() => void handleStopAndDownload()}
+                          onClick={() => setL3Step(4)}
                         >
-                          Parar y descargar recordatorio →
+                          Quizás más tarde
                         </button>
                       </div>
                     ) : (
                       <button
                         type="button"
-                        className="cabina-siguiente-flotante"
-                        onClick={handleBackToDashboard}
-                        aria-label="Volver al dashboard"
+                        onClick={handleDownloadSouvenir}
+                        disabled={isSouvenirGenerating}
+                        style={{
+                          position: 'absolute',
+                          bottom: '18%',
+                          left: '50%',
+                          transform: 'translateX(-50%)',
+                          zIndex: 3,
+                          display: 'flex',
+                          flexDirection: 'column',
+                          alignItems: 'center',
+                          gap: '0.5rem',
+                          background: 'none',
+                          border: 'none',
+                          cursor: isSouvenirGenerating ? 'wait' : 'pointer',
+                          opacity: isSouvenirGenerating ? 0.6 : 1,
+                        }}
                       >
-                        <Check size={18} />
+                        {PORTAL_ICON_URL[portal] && (
+                          <img
+                            src={PORTAL_ICON_URL[portal]}
+                            alt={portal}
+                            style={{ width: '4rem', height: '4rem', borderRadius: '1rem', objectFit: 'cover', boxShadow: '0 8px 32px rgba(0,0,0,0.55)' }}
+                          />
+                        )}
+                        <span style={{ fontSize: '0.82rem', fontWeight: 600, color: 'rgba(251,191,36,0.9)', letterSpacing: '0.05em' }}>
+                          {isSouvenirGenerating ? 'Generando…' : 'Agregar recordatorio'}
+                        </span>
                       </button>
                     )}
                   </motion.div>
@@ -869,7 +913,7 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
                             </p>
                             <button
                               type="button"
-                              onClick={() => void callL2Turn()}
+                              onClick={() => { lsPatch(portal, { l2_conv_error: false }); void callL2Turn(); }}
                               className="relative w-full rounded-full border border-purple-500/70 px-4 py-2.5 text-xs uppercase tracking-[0.25em] text-purple-100 transition hover:bg-purple-500/20"
                             >
                               Reintentar
@@ -916,6 +960,24 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
                       </div>
                     </div>
                   </motion.div>
+                ) : holograficoOpen ? (
+                  /* ── Cuaderno holográfico ── */
+                  <motion.div
+                    key="holografico"
+                    className="h-full"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.3 }}
+                  >
+                    <CuadernoHolografico
+                      portal={portal}
+                      isMobileViewport={isMobileViewport}
+                      onStartBitacora={() => { setHolograficoOpen(false); setBitacoraOpen(true); }}
+                      onNavigate={(showcaseId) => { setHolograficoOpen(false); handleClose(); onNavigateToRecommendation?.(showcaseId); }}
+                      onPosterChange={setHolograficoPoster}
+                    />
+                  </motion.div>
                 ) : bitacoraOpen ? (
                   /* ── Bitácora individual: preguntas diferidas ── */
                   <motion.div
@@ -929,7 +991,7 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
 
                     <div className="hidden lg:block lg:px-10 lg:pb-5 lg:pt-14">
                       <p className="mb-3 text-[0.62rem] uppercase tracking-[0.32em] text-white/50">
-                        Bitácora individual · Días después
+                        Cuaderno de campo · Días después
                       </p>
                       <p
                         className="font-display leading-snug text-amber-300/90 drop-shadow-[0_0_32px_rgba(251,191,36,0.45)]"
@@ -950,7 +1012,7 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
                         {/* Mobile: etiqueta de paso */}
                         <div className="lg:hidden space-y-2">
                           <div className="inline-flex rounded-full border border-white/10 bg-white/5 px-3 py-1 text-[0.62rem] uppercase tracking-[0.32em] text-white/70">
-                            Bitácora · Días después
+                            Cuaderno de campo · Días después
                           </div>
                           <h3 className="font-display text-2xl leading-tight tracking-tight text-amber-300">
                             {bitacoraStep === 'p1' && '¿Hay algo de esta experiencia que haya regresado por su cuenta? Una imagen, una frase, una sensación.'}
@@ -1290,8 +1352,8 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
                                             </>
                                           )}
 
-                                          {/* Paso 3 — Coleccionable (muestra cuando la rec fue recibida) */}
-                                          {l3RecSeen && !l3Rec.all_complete && (
+                                          {/* Paso 3 — Coleccionable (muestra después de que el usuario pasa por la cabina) */}
+                                          {l3RecSeen && (l3Step >= 4 || l3BubbleClosed) && !l3Rec.all_complete && (
                                             <>
                                               <p className="text-xs leading-relaxed text-slate-300/90">
                                                 Este recorrido ha concluido.
@@ -1299,77 +1361,83 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
                                               <p className="text-xs leading-relaxed text-slate-400/80">
                                                 Las respuestas registradas permiten estudiar cómo las experiencias narrativas son interpretadas, recordadas y resignificadas por distintas personas.
                                               </p>
-                                              <motion.button
-                                                type="button"
-                                                onClick={handleDownloadSouvenir}
-                                                disabled={isSouvenirGenerating}
-                                                className="w-full flex flex-col items-center gap-3 py-2 transition active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
-                                                initial={{ opacity: 0, scale: 0.92, y: 8 }}
-                                                animate={{ opacity: 1, scale: 1, y: 0 }}
-                                                transition={{ type: 'spring', stiffness: 220, damping: 20, delay: 0.2 }}
-                                              >
-                                                {PORTAL_ICON_URL[portal] && (
-                                                  <img
-                                                    src={PORTAL_ICON_URL[portal]}
-                                                    alt={portal}
-                                                    className="h-20 w-20 lg:h-32 lg:w-32 rounded-2xl object-cover shadow-[0_8px_32px_rgba(0,0,0,0.55)] drop-shadow-[0_0_18px_rgba(251,191,36,0.35)]"
-                                                  />
-                                                )}
-                                                <span className="text-sm font-semibold tracking-wide text-amber-200">
-                                                  {isSouvenirGenerating ? 'Generando…' : 'Tu coleccionable'}
-                                                </span>
-                                              </motion.button>
+
+                                              {/* Consentimiento WhatsApp — aparece si aún no ha dado número */}
+                                              {!bitacoraCompleted && !bitacoraConsented && (
+                                                <div className="space-y-2">
+                                                  {!showPhoneInput ? (
+                                                    <>
+                                                      <p className="text-xs leading-relaxed text-slate-400/80">
+                                                        Tu Cuaderno de campo estará disponible en breve. ¿Te avisamos por WhatsApp?
+                                                      </p>
+                                                      <button
+                                                        type="button"
+                                                        onClick={() => setShowPhoneInput(true)}
+                                                        className="w-full rounded-full border border-white/20 bg-black/35 px-3 py-2 text-xs text-slate-200 transition hover:bg-black/50"
+                                                      >
+                                                        Avísame por WhatsApp →
+                                                      </button>
+                                                    </>
+                                                  ) : (
+                                                    <>
+                                                      <p className="text-xs leading-relaxed text-slate-400/80">
+                                                        ¿A qué número te enviamos el aviso?
+                                                      </p>
+                                                      <div className="flex gap-2">
+                                                        <input
+                                                          type="tel"
+                                                          value={phoneInput}
+                                                          onChange={(e) => setPhoneInput(e.target.value)}
+                                                          placeholder="+52 55 0000 0000"
+                                                          className="min-w-0 flex-1 rounded-full border border-white/20 bg-black/35 px-3 py-2 text-xs text-white placeholder:text-slate-500 outline-none focus:border-white/40"
+                                                        />
+                                                        <button
+                                                          type="button"
+                                                          onClick={() => void handleBitacoraConsent('whatsapp', phoneInput.trim())}
+                                                          disabled={phoneInput.trim().length < 8}
+                                                          className="shrink-0 rounded-full border border-white/20 bg-black/35 px-3 py-2 text-xs text-slate-200 transition hover:bg-black/50 disabled:opacity-40 disabled:cursor-not-allowed"
+                                                        >
+                                                          Enviar →
+                                                        </button>
+                                                      </div>
+                                                    </>
+                                                  )}
+                                                  {import.meta.env.DEV && (
+                                                    <button
+                                                      type="button"
+                                                      onClick={() => {
+                                                        const now = new Date().toISOString();
+                                                        lsPatch(portal, { bitacora_consented: true, bitacora_available_at: now });
+                                                        writeGlobalConsent();
+                                                        setBitacoraConsented(true);
+                                                        setBitacoraAvailableAt(now);
+                                                      }}
+                                                      className="text-[10px] text-slate-500/60 underline underline-offset-2 hover:text-slate-400/80"
+                                                    >
+                                                      [dev] bypass envío de número
+                                                    </button>
+                                                  )}
+                                                </div>
+                                              )}
                                             </>
                                           )}
 
-                                          {/* Bitácora — Estado A: pedir consentimiento */}
-                                          {l3RecSeen && !l3Rec.all_complete && !bitacoraCompleted && !bitacoraConsented && (
-                                            <div className="space-y-2 pt-2 border-t border-white/10">
-                                              <p className="text-xs leading-relaxed text-slate-400/80">
-                                                Tu bitácora se abrirá en unos días. ¿Cómo quieres que te avisemos?
-                                              </p>
-                                              <div className="flex gap-2">
-                                                <button
-                                                  type="button"
-                                                  onClick={() => void handleBitacoraConsent('push')}
-                                                  className="flex-1 rounded-full border border-white/20 bg-black/35 px-3 py-2 text-xs text-slate-200 transition hover:bg-black/50"
-                                                >
-                                                  Notificación
-                                                </button>
-                                                <button
-                                                  type="button"
-                                                  onClick={() => void handleBitacoraConsent('whatsapp')}
-                                                  className="flex-1 rounded-full border border-white/20 bg-black/35 px-3 py-2 text-xs text-slate-200 transition hover:bg-black/50"
-                                                >
-                                                  WhatsApp
-                                                </button>
-                                              </div>
-                                            </div>
-                                          )}
-
-                                          {/* Bitácora — Estado B: disponible */}
-                                          {!bitacoraCompleted && bitacoraConsented && bitacoraAvailable && (
+                                          {/* Cuaderno holográfico — disponible tras dar consent */}
+                                          {!bitacoraCompleted && bitacoraConsented && (
                                             <button
                                               type="button"
-                                              onClick={() => setBitacoraOpen(true)}
+                                              onClick={() => { setHolograficoOpen(true); setHolograficoPoster(portal); }}
                                               className="w-full rounded-full border border-amber-400/60 bg-amber-900/25 px-4 py-2.5 text-xs uppercase tracking-[0.2em] text-amber-100 transition hover:bg-amber-900/40"
                                             >
-                                              Abrir mi bitácora →
+                                              Abrir cuaderno holográfico →
                                             </button>
-                                          )}
-
-                                          {/* Bitácora — preparándose */}
-                                          {!bitacoraCompleted && bitacoraConsented && !bitacoraAvailable && (
-                                            <p className="text-[0.62rem] italic text-slate-500/70 text-center pt-1">
-                                              Tu bitácora se está preparando…
-                                            </p>
                                           )}
 
                                           {/* Bitácora — completada */}
                                           {bitacoraCompleted && (
                                             <div className="flex items-center gap-2 text-xs text-slate-300 pt-1">
                                               <Check size={12} className="shrink-0 text-emerald-400/70" />
-                                              <span className="italic">Bitácora completada</span>
+                                              <span className="italic">Registro completo</span>
                                             </div>
                                           )}
 
@@ -1378,10 +1446,14 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
                                             <button
                                               type="button"
                                               onClick={() => {
-                                                lsPatch(portal, { l3_recommendation: undefined });
+                                                lsPatch(portal, { l3_recommendation: undefined, bitacora_consented: undefined, bitacora_available_at: undefined });
                                                 setL3Rec(null);
                                                 setL3Step(1);
                                                 setL3Open(false);
+                                                setBitacoraConsented(false);
+                                                setBitacoraAvailableAt(null);
+                                                setShowPhoneInput(false);
+                                                setPhoneInput('');
                                               }}
                                               className="text-[10px] text-slate-500/60 underline underline-offset-2 hover:text-slate-400/80"
                                             >
@@ -1588,15 +1660,15 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
 
           {/* ── Columna derecha: poster — solo desktop ── */}
           <div className="hidden lg:block lg:w-[42%] shrink-0 relative overflow-hidden">
-            {/* Poster normal */}
+            {/* Poster — cambia al portal seleccionado en el holográfico */}
             <img
-              src={poster}
+              src={holograficoOpen ? (PORTAL_POSTER[holograficoPoster] ?? poster) : poster}
               alt=""
               aria-hidden="true"
-              className="h-full w-full object-cover object-top transition-opacity duration-500"
+              className="h-full w-full object-cover object-top transition-all duration-500"
               style={{
                 mixBlendMode: 'plus-lighter',
-                opacity: l3Active ? 0 : (l2NarrativeOpened && convQuestion !== null && !l2ConvDone) ? 0.5 : 1,
+                opacity: holograficoOpen ? 1 : l3Active ? 0 : (l2NarrativeOpened && convQuestion !== null && !l2ConvDone) ? 0.5 : 1,
               }}
             />
             {/* Gato de la cabina — aparece cuando L3 está activo */}
@@ -1609,7 +1681,7 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
             />
             {/* Burbuja desktop */}
             <AnimatePresence>
-              {l3Active && (
+              {l3Active && !l3BubbleClosed && (
                 <motion.div
                   className="absolute inset-0 pointer-events-none"
                   initial={{ opacity: 0 }}
@@ -1620,38 +1692,64 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
                   <div className="cabina-bubble" style={{ pointerEvents: 'auto' }}>
                     <p className="cabina-bubble__preludio">El laboratorio te habla</p>
                     <p className="cabina-bubble__texto">{l3BubbleText}</p>
-                    {l3Step < 3 ? (
-                      <button type="button" className="cabina-bubble__siguiente" onClick={() => setL3Step(l3Step + 1)}>
-                        Siguiente →
-                      </button>
-                    ) : l3Step === 3 ? (
-                      <div className="cabina-bubble__consent-desktop">
-                        <button
-                          type="button"
-                          className="cabina-bubble__siguiente"
-                          onClick={() => { setL3Step(4); if (!bitacoraConsented) void handleBitacoraConsent('push'); }}
-                        >
-                          {bitacoraConsented ? 'Siguiente →' : 'Siguiente y avísame →'}
-                        </button>
-                        <button
-                          type="button"
-                          className="cabina-bubble__cta-secondary"
-                          onClick={() => void handleStopAndDownload()}
-                        >
-                          Parar y descargar →
-                        </button>
-                        {!bitacoraConsented && (
-                          <button type="button" className="cabina-bubble__skip" onClick={() => setL3Step(4)}>
-                            Continuar sin recordatorio →
-                          </button>
-                        )}
-                      </div>
-                    ) : (
+                    {l3Step === 4 && (
                       <button type="button" className="cabina-bubble__cta" onClick={handleNavigateToRecommendation}>
                         Explorar {l3Rec.forma}
                       </button>
                     )}
                   </div>
+                  {l3Step < 3 && (
+                    <div className="cabina-consent-desktop-area" style={{ pointerEvents: 'auto' }}>
+                      <button
+                        type="button"
+                        className="cabina-bubble__siguiente"
+                        onClick={() => setL3Step(l3Step + 1)}
+                      >
+                        Siguiente →
+                      </button>
+                    </div>
+                  )}
+                  {l3Step === 3 && (
+                    <div className="cabina-consent-desktop-area" style={{ pointerEvents: 'auto' }}>
+                      <button
+                        type="button"
+                        className="cabina-consent-area__primary"
+                        onClick={() => setL3Step(4)}
+                        style={{ width: '100%' }}
+                      >
+                        Sí, continuemos →
+                      </button>
+                      <button
+                        type="button"
+                        className="cabina-consent-area__secondary"
+                        onClick={() => setL3Step(4)}
+                        style={{ width: '100%' }}
+                      >
+                        Quizás más tarde
+                      </button>
+                    </div>
+                  )}
+                  {l3Step === 4 && (
+                    <div className="cabina-consent-desktop-area" style={{ pointerEvents: 'auto' }}>
+                      <button
+                        type="button"
+                        onClick={handleDownloadSouvenir}
+                        disabled={isSouvenirGenerating}
+                        style={{ background: 'none', border: 'none', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.5rem', cursor: isSouvenirGenerating ? 'wait' : 'pointer', opacity: isSouvenirGenerating ? 0.6 : 1 }}
+                      >
+                        {PORTAL_ICON_URL[portal] && (
+                          <img
+                            src={PORTAL_ICON_URL[portal]}
+                            alt={portal}
+                            style={{ width: '3.5rem', height: '3.5rem', borderRadius: '0.75rem', objectFit: 'cover', boxShadow: '0 8px 32px rgba(0,0,0,0.55)' }}
+                          />
+                        )}
+                        <span style={{ fontSize: '0.82rem', fontWeight: 600, color: 'rgba(251,191,36,0.9)', letterSpacing: '0.05em' }}>
+                          {isSouvenirGenerating ? 'Generando…' : 'Agregar recordatorio'}
+                        </span>
+                      </button>
+                    </div>
+                  )}
                 </motion.div>
               )}
             </AnimatePresence>

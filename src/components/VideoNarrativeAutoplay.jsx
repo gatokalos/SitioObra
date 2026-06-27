@@ -7,7 +7,7 @@ import { resolvePortalRoute } from '@/lib/miniversePortalRegistry';
 import { createPortalLaunchState } from '@/lib/portalNavigation';
 import { resolveNarrativeVideoUrl } from '@/lib/narrativeVideo';
 
-const VideoNarrativeAutoplay = ({ open, onClose, formatId, isMobileViewport, videoUrl: videoUrlProp }) => {
+const VideoNarrativeAutoplay = ({ open, onClose, onNavigate, formatId, isMobileViewport, videoUrl: videoUrlProp }) => {
   const navigate = useNavigate();
   const location = useLocation();
   const videoRef = useRef(null);
@@ -49,7 +49,7 @@ const VideoNarrativeAutoplay = ({ open, onClose, formatId, isMobileViewport, vid
   };
 
   const handleContinuar = () => {
-    onClose?.();
+    (onNavigate ?? onClose)?.();
     const portalRoute = resolvePortalRoute({ formatId });
     if (isMobileViewport && portalRoute) {
       navigate(portalRoute, {

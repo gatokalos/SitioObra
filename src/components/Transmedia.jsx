@@ -1171,7 +1171,19 @@ const Transmedia = ({ allianceOnlyMode = false }) => {
     handleOpenPdfPreview,
     handleClosePdfPreview,
     handlePdfLoadSuccess,
+    isPdfPrecareVisible,
+    isPdfAftercareVisible,
+    handlePdfPrecareConfirm,
+    handlePdfPrecareClose,
+    handlePdfAftercareClose,
   } = usePdfPreview({ requireShowcaseAuth, availableGATokens, isAuthenticated, setTokenPrecareContext, toast });
+
+  const handlePdfAftercareConfirm = useCallback(() => {
+    handleClosePdfPreview();
+    const portalKey = pdfPreview?.portalKey;
+    // Overlay stays visible — onL2QuestionReady closes it when question is ready
+    if (portalKey === 'grafico') setIsGraficosResonanceOpen(true);
+  }, [handleClosePdfPreview, pdfPreview, setIsGraficosResonanceOpen]);
 
   const handleCloseMiniversoEditorialModal = useCallback(() => {
     setIsMiniversoEditorialModalOpen(false);
@@ -2300,7 +2312,7 @@ const rendernotaAutoral = () => {
                   <p className="text-sm leading-relaxed text-slate-300/85">
                     A través de una terapia no convencional, un paciente y su doctora exploran el poder de los sueños lúcidos para confrontar el miedo, la desconexión y la rabia reprimida.
 
-Silvestre, un hombre en sus treintas, comienza a perder la frontera entre lo que imagina y lo que siente. En ese desdoblamiento, la mente se convierte en escenario y la escena en espejo.
+Silvestre, un hombre en sus treintas, comienza a perder la frontera entre lo que imagina y lo que siente.
                   </p>
                   <div className="flex flex-wrap gap-2">
                     <span className="rounded-full border border-white/20 bg-black/30 px-3 py-1 text-[11px] uppercase tracking-[0.2em] text-slate-100 backdrop-blur-sm">Incluye dispositivo interactivo</span>
@@ -4121,6 +4133,7 @@ Silvestre, un hombre en sus treintas, comienza a perder la frontera entre lo que
                           />
                         ) : null}
                         <ResonanceModal
+                          key="obra"
                           open={isDramaResonanceOpen}
                           onClose={() => { setIsDramaResonanceOpen(false); refreshActivePortalL1(); }}
                           question={VITRANA_QUESTION_BY_SHOWCASE['miniversos']}
@@ -4128,6 +4141,7 @@ Silvestre, un hombre en sus treintas, comienza a perder la frontera entre lo que
                           onOpenNarrative={() => setIsNarrativeDramaOpen(true)}
                           narrativeCTALabel="✦ Entrar al drama"
                           onNavigateToRecommendation={setActiveShowcase}
+                          isMobileViewport={isMobileViewport}
                         />
                       </>
                     ) : activeShowcase === 'miniversoNovela' ? (
@@ -4155,6 +4169,7 @@ Silvestre, un hombre en sus treintas, comienza a perder la frontera entre lo que
                           bounceKey={heartBounceKey}
                         />
                         <ResonanceModal
+                          key="literatura"
                           open={isLiteraturaResonanceOpen}
                           onClose={() => { setIsLiteraturaResonanceOpen(false); refreshActivePortalL1(); }}
                           question={VITRANA_QUESTION_BY_SHOWCASE['miniversoNovela']}
@@ -4162,6 +4177,7 @@ Silvestre, un hombre en sus treintas, comienza a perder la frontera entre lo que
                           onOpenNarrative={() => setShowLiteraturaApp(true)}
                           narrativeCTALabel="📖 Activar artefacto"
                           onNavigateToRecommendation={setActiveShowcase}
+                          isMobileViewport={isMobileViewport}
                         />
                       </>
                     ) : activeShowcase === 'lataza' ? (
@@ -4189,6 +4205,7 @@ Silvestre, un hombre en sus treintas, comienza a perder la frontera entre lo que
                           bounceKey={heartBounceKey}
                         />
                         <ResonanceModal
+                          key="artesanias"
                           open={isArtesaniasResonanceOpen}
                           onClose={() => { setIsArtesaniasResonanceOpen(false); refreshActivePortalL1(); }}
                           question={VITRANA_QUESTION_BY_SHOWCASE['lataza']}
@@ -4196,6 +4213,7 @@ Silvestre, un hombre en sus treintas, comienza a perder la frontera entre lo que
                           onOpenNarrative={handleActivateAR}
                           narrativeCTALabel="✦ Activa tu taza"
                           onNavigateToRecommendation={setActiveShowcase}
+                          isMobileViewport={isMobileViewport}
                         />
                       </>
                     ) : activeShowcase === 'miniversoGrafico' ? (
@@ -4223,6 +4241,7 @@ Silvestre, un hombre en sus treintas, comienza a perder la frontera entre lo que
                           bounceKey={heartBounceKey}
                         />
                         <ResonanceModal
+                          key="grafico"
                           open={isGraficosResonanceOpen}
                           onClose={() => { setIsGraficosResonanceOpen(false); refreshActivePortalL1(); }}
                           question={VITRANA_QUESTION_BY_SHOWCASE['miniversoGrafico']}
@@ -4230,6 +4249,8 @@ Silvestre, un hombre en sus treintas, comienza a perder la frontera entre lo que
                           onOpenNarrative={() => { const sw = activeDefinition.swipeShowcases?.[0]; if (sw) handleOpenGraphicSwipe(sw); }}
                           narrativeCTALabel="✦ Ver el swipe"
                           onNavigateToRecommendation={setActiveShowcase}
+                          onL2QuestionReady={handlePdfAftercareClose}
+                          isMobileViewport={isMobileViewport}
                         />
                       </>
                     ) : activeShowcase === 'copycats' ? (
@@ -4257,6 +4278,7 @@ Silvestre, un hombre en sus treintas, comienza a perder la frontera entre lo que
                           bounceKey={heartBounceKey}
                         />
                         <ResonanceModal
+                          key="cine"
                           open={isCineResonanceOpen}
                           onClose={() => { setIsCineResonanceOpen(false); refreshActivePortalL1(); }}
                           question={VITRANA_QUESTION_BY_SHOWCASE['cine']}
@@ -4264,6 +4286,7 @@ Silvestre, un hombre en sus treintas, comienza a perder la frontera entre lo que
                           onOpenNarrative={Boolean(showcaseBoosts?.copycats_full_unlock || quironSpent) ? handleQuironPlayRequest : handleToggleQuironPrompt}
                           narrativeCTALabel={Boolean(showcaseBoosts?.copycats_full_unlock || quironSpent) ? '▶ Ver Quirón' : '✦ Ver el corto'}
                           onNavigateToRecommendation={setActiveShowcase}
+                          isMobileViewport={isMobileViewport}
                         />
                       </>
                     ) : activeShowcase === 'miniversoSonoro' ? (
@@ -4291,6 +4314,7 @@ Silvestre, un hombre en sus treintas, comienza a perder la frontera entre lo que
                           bounceKey={heartBounceKey}
                         />
                         <ResonanceModal
+                          key="sonoridades"
                           open={isSonoroResonanceOpen}
                           onClose={() => { setIsSonoroResonanceOpen(false); refreshActivePortalL1(); }}
                           question={VITRANA_QUESTION_BY_SHOWCASE['miniversoSonoro']}
@@ -4298,6 +4322,7 @@ Silvestre, un hombre en sus treintas, comienza a perder la frontera entre lo que
                           onOpenNarrative={handleSonoroEnter}
                           narrativeCTALabel="✦ Escuchar ahora"
                           onNavigateToRecommendation={setActiveShowcase}
+                          isMobileViewport={isMobileViewport}
                         />
                       </>
                     ) : activeShowcase === 'miniversoMovimiento' ? (
@@ -4325,6 +4350,7 @@ Silvestre, un hombre en sus treintas, comienza a perder la frontera entre lo que
                           bounceKey={heartBounceKey}
                         />
                         <ResonanceModal
+                          key="movimiento"
                           open={isMovimientoResonanceOpen}
                           onClose={() => { setIsMovimientoResonanceOpen(false); refreshActivePortalL1(); }}
                           question={VITRANA_QUESTION_BY_SHOWCASE['miniversoMovimiento']}
@@ -4332,6 +4358,7 @@ Silvestre, un hombre en sus treintas, comienza a perder la frontera entre lo que
                           onOpenNarrative={() => handleOpenContribution(getContributionCategoryForShowcase('miniversoMovimiento'))}
                           narrativeCTALabel="✦ Ver los talleres"
                           onNavigateToRecommendation={setActiveShowcase}
+                          isMobileViewport={isMobileViewport}
                         />
                       </>
                     ) : activeShowcase === 'apps' ? (
@@ -4359,6 +4386,7 @@ Silvestre, un hombre en sus treintas, comienza a perder la frontera entre lo que
                           bounceKey={heartBounceKey}
                         />
                         <ResonanceModal
+                          key="juegos"
                           open={isJuegosResonanceOpen}
                           onClose={() => { setIsJuegosResonanceOpen(false); refreshActivePortalL1(); }}
                           question={VITRANA_QUESTION_BY_SHOWCASE['apps']}
@@ -4366,6 +4394,7 @@ Silvestre, un hombre en sus treintas, comienza a perder la frontera entre lo que
                           onOpenNarrative={() => { const u = sanitizeExternalHttpUrl(activeDefinition.liveExperience?.url); if (u) window.open(u, '_blank'); }}
                           narrativeCTALabel={activeDefinition.liveExperience?.ctaLabel || '✦ Abrir la app'}
                           onNavigateToRecommendation={setActiveShowcase}
+                          isMobileViewport={isMobileViewport}
                         />
                       </>
                     ) : activeShowcase === 'oraculo' ? (
@@ -4393,6 +4422,7 @@ Silvestre, un hombre en sus treintas, comienza a perder la frontera entre lo que
                           bounceKey={heartBounceKey}
                         />
                         <ResonanceModal
+                          key="oraculo"
                           open={isOraculoResonanceOpen}
                           onClose={() => { setIsOraculoResonanceOpen(false); refreshActivePortalL1(); }}
                           question={VITRANA_QUESTION_BY_SHOWCASE['oraculo']}
@@ -4400,6 +4430,7 @@ Silvestre, un hombre en sus treintas, comienza a perder la frontera entre lo que
                           onOpenNarrative={handleOpenOraculo}
                           narrativeCTALabel={activeDefinition.ctaLabel || '✦ Explorar'}
                           onNavigateToRecommendation={setActiveShowcase}
+                          isMobileViewport={isMobileViewport}
                         />
                       </>
                     ) : (
@@ -4695,6 +4726,63 @@ Silvestre, un hombre en sus treintas, comienza a perder la frontera entre lo que
           >
             Cerrar
           </button>
+        </div>
+      </div>,
+      document.body,
+    )
+    : null;
+
+  const pdfPrecareOverlay = typeof document !== 'undefined' && isPdfPrecareVisible
+    ? createPortal(
+      <div className="fixed inset-0 z-[247] flex items-center justify-center overflow-y-auto overflow-x-hidden overscroll-none">
+        <div className="absolute inset-0 bg-black/92 backdrop-blur-md" />
+        <div className="relative z-10 my-8 w-[calc(100vw-2rem)] max-w-2xl rounded-3xl border border-white/10 bg-slate-950/90 p-8 text-center shadow-[0_35px_120px_rgba(0,0,0,0.7)]">
+          <p className="text-xs uppercase tracking-[0.35em] text-slate-400/80">Antes de empezar</p>
+          <h4 className="mt-3 font-display text-2xl text-slate-100">Este cómic se lee.</h4>
+          <p className="mt-3 text-sm text-slate-300/85 leading-relaxed">
+            Cada imagen forma parte de la experiencia. Te pedimos que recorras las páginas con calma antes de continuar al siguiente paso.
+          </p>
+          <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:justify-center">
+            <button
+              type="button"
+              onClick={handlePdfPrecareConfirm}
+              className="inline-flex items-center justify-center rounded-full border border-white/20 bg-white/10 px-6 py-3 text-sm font-semibold text-slate-100 hover:bg-white/15"
+            >
+              Empezar a leer →
+            </button>
+            <button
+              type="button"
+              onClick={handlePdfPrecareClose}
+              className="text-xs uppercase tracking-[0.3em] text-slate-400 hover:text-slate-200 sm:self-center"
+            >
+              Cancelar
+            </button>
+          </div>
+        </div>
+      </div>,
+      document.body,
+    )
+    : null;
+
+  const pdfAftercareOverlay = typeof document !== 'undefined' && isPdfAftercareVisible
+    ? createPortal(
+      <div className="fixed inset-0 z-[247] flex items-center justify-center overflow-y-auto overflow-x-hidden overscroll-none">
+        <div className="absolute inset-0 bg-black/92 backdrop-blur-md" />
+        <div className="relative z-10 my-8 w-[calc(100vw-2rem)] max-w-2xl rounded-3xl border border-white/10 bg-slate-950/90 p-8 text-center shadow-[0_35px_120px_rgba(0,0,0,0.7)]">
+          <p className="text-xs uppercase tracking-[0.35em] text-slate-400/80">Gráfico · Tres Pies al Gato</p>
+          <h4 className="mt-3 font-display text-2xl text-slate-100">Has llegado al final del cómic.</h4>
+          <p className="mt-3 text-sm text-slate-300/85 leading-relaxed">
+            Tu recorrido visual está completo. El siguiente paso es reflexionar sobre lo que encontraste.
+          </p>
+          <div className="mt-6">
+            <button
+              type="button"
+              onClick={handlePdfAftercareConfirm}
+              className="inline-flex items-center justify-center rounded-full border border-white/20 bg-white/10 px-6 py-3 text-sm font-semibold text-slate-100 hover:bg-white/15"
+            >
+              Concluir experiencia →
+            </button>
+          </div>
         </div>
       </div>,
       document.body,
@@ -5498,6 +5586,8 @@ Silvestre, un hombre en sus treintas, comienza a perder la frontera entre lo que
               {quironFullOverlay}
               {quironPrecareOverlay}
               {quironAftercareOverlay}
+              {pdfPrecareOverlay}
+              {pdfAftercareOverlay}
               {tokenPrecareOverlay}
               {movementActionOverlay}
               {imagePreviewOverlay}

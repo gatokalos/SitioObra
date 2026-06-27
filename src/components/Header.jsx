@@ -144,21 +144,21 @@ const Header = ({ showTransmediaNav = true }) => {
   }, []);
 
   const menuItems = [
-    { name: 'Drama', href: '#about' },
+    { name: 'Obra', href: '#about' },
     { name: 'Perspectivas', href: '#provoca' },
     { name: 'Tras bambalinas', href: '#team' },
-    { name: 'Memoria fractal', href: '#instagram' },
+    { name: 'Galería fractal', href: '#instagram' },
     { name: 'Curaduría', href: '#dialogo-critico' },
     ...(showTransmediaNav ? [{ name: 'Transmedia', href: '#transmedia' }] : []),
-    { name: 'Alianza', href: '#apoya' },
+    { name: 'Causa social', href: '#apoya' },
     { name: 'Funciones', href: '#next-show' },
     { name: 'Contacto', href: '#contact' },
   ];
   const mobileMenuItems = [
-    { name: 'Drama', href: '#about' },
+    { name: 'Obra', href: '#about' },
     { name: 'Perspectivas', href: '#provoca' },
     { name: 'Tras bambalinas', href: '#team' },
-    { name: 'Memoria fractal', href: '#instagram' },
+    { name: 'Galería fractal', href: '#instagram' },
     {
       name: 'Curaduría',
       href: '#dialogo-critico',

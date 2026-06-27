@@ -122,6 +122,8 @@ const useMiniversoUnlocks = ({
           description: entry.description
             ? `${entry.description} · Modo swipe vertical.`
             : 'Modo swipe vertical del lector visual interactivo.',
+          portalKey: 'grafico',
+          showPrecare: true,
         });
         setTimeout(() => setIsGraphicUnlocking(false), 150);
       };
