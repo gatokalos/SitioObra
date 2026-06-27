@@ -51,7 +51,10 @@ const VideoNarrativeAutoplay = ({ open, onClose, onNavigate, formatId, isMobileV
   const handleContinuar = () => {
     (onNavigate ?? onClose)?.();
     const portalRoute = resolvePortalRoute({ formatId });
-    if (isMobileViewport && portalRoute) {
+    // When onNavigate is provided (holográfico context), always use events so that
+    // Transmedia's handleSelectMiniverse / navigateToMobilePortalIfReady handles
+    // routing for both mobile and desktop correctly.
+    if (!onNavigate && isMobileViewport && portalRoute) {
       navigate(portalRoute, {
         state: createPortalLaunchState(location, 'video-narrative-cta', { showcaseId: formatId }),
       });

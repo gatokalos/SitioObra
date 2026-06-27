@@ -211,7 +211,7 @@ const LEVELS = [
   {
     num: 3,
     eyebrow: 'Días después',
-    title: 'Cuaderno de campo',
+    title: 'Cuaderno holográfico',
     pendingDesc: 'Vuelve en unos días. Queremos saber si algo resonó en ti.',
     icon: PawPrint,
   },
@@ -593,8 +593,8 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
   const l3Active = l3Open && !!l3Rec && !l3Rec.error && !l3Rec.all_complete;
 
   const l3ConsentBubbleText = bitacoraConsented
-    ? 'El Cuaderno de campo ahora lleva registro de tu viaje personal. Lo que decidas hacer después también se sumará.'
-    : 'Hay un Cuaderno de campo que abre después de cada recorrido. Las preguntas van acumulando lo que dejas en cada universo. ¿Puedo avisarte cuando sea el momento de volver?';
+    ? 'El Cuaderno holográfico ahora lleva registro de tu viaje personal. Lo que decidas hacer después también se sumará.'
+    : 'Hay un Cuaderno holográfico que abre después de cada recorrido. Las preguntas van acumulando lo que dejas en cada universo. ¿Puedo avisarte cuando sea el momento de volver?';
 
   const l3BubbleText = l3Rec
     ? (l3Step === 1 ? l3Rec.step1
@@ -991,7 +991,7 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
 
                     <div className="hidden lg:block lg:px-10 lg:pb-5 lg:pt-14">
                       <p className="mb-3 text-[0.62rem] uppercase tracking-[0.32em] text-white/50">
-                        Cuaderno de campo · Días después
+                        Cuaderno holográfico · Días después
                       </p>
                       <p
                         className="font-display leading-snug text-amber-300/90 drop-shadow-[0_0_32px_rgba(251,191,36,0.45)]"
@@ -1012,7 +1012,7 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
                         {/* Mobile: etiqueta de paso */}
                         <div className="lg:hidden space-y-2">
                           <div className="inline-flex rounded-full border border-white/10 bg-white/5 px-3 py-1 text-[0.62rem] uppercase tracking-[0.32em] text-white/70">
-                            Cuaderno de campo · Días después
+                            Cuaderno holográfico · Días después
                           </div>
                           <h3 className="font-display text-2xl leading-tight tracking-tight text-amber-300">
                             {bitacoraStep === 'p1' && '¿Hay algo de esta experiencia que haya regresado por su cuenta? Una imagen, una frase, una sensación.'}
@@ -1368,7 +1368,7 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
                                                   {!showPhoneInput ? (
                                                     <>
                                                       <p className="text-xs leading-relaxed text-slate-400/80">
-                                                        Tu Cuaderno de campo estará disponible en breve. ¿Te avisamos por WhatsApp?
+                                                        Tu Cuaderno holográfico estará disponible en breve. ¿Te avisamos por WhatsApp?
                                                       </p>
                                                       <button
                                                         type="button"
