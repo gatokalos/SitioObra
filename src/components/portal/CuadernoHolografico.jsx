@@ -1,7 +1,11 @@
 import React, { useState } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import VitranaQuestionReveal from '@/components/portal/VitranaQuestionReveal';
 import VideoNarrativeAutoplay from '@/components/VideoNarrativeAutoplay';
+import { useMobileVideoPresentation } from '@/hooks/useMobileVideoPresentation';
+import { resolvePortalRoute } from '@/lib/miniversePortalRegistry';
+import { createPortalLaunchState } from '@/lib/portalNavigation';
 
 /* ─── Constantes ───────────────────────────────────────────────────────── */
 
@@ -236,7 +240,10 @@ function HolograficoPanel({ centerKey, homeKey, onStartBitacora, onOpenVideo }) 
 
 /* ─── Componente principal ──────────────────────────────────────────────── */
 
-const CuadernoHolografico = ({ portal, isMobileViewport, onStartBitacora, onNavigate, onPosterChange }) => {
+const CuadernoHolografico = ({ portal, onStartBitacora, onNavigate, onPosterChange }) => {
+  const navigate = useNavigate();
+  const location = useLocation();
+  const { isMobileViewport } = useMobileVideoPresentation();
   const [centerKey, setCenterKey] = useState(portal);
   const [videoOpen, setVideoOpen] = useState(false);
   const [videoFormatId, setVideoFormatId] = useState(null);
@@ -249,6 +256,17 @@ const CuadernoHolografico = ({ portal, isMobileViewport, onStartBitacora, onNavi
   const handleOpenVideo = (showcaseId) => {
     setVideoFormatId(showcaseId);
     setVideoOpen(true);
+  };
+
+  const handleVideoNavigate = () => {
+    setVideoOpen(false);
+    onNavigate(videoFormatId);
+    const portalRoute = resolvePortalRoute({ formatId: videoFormatId });
+    if (isMobileViewport && portalRoute) {
+      window.setTimeout(() => navigate(portalRoute, {
+        state: createPortalLaunchState(location, 'video-narrative-cta', { showcaseId: videoFormatId }),
+      }), 80);
+    }
   };
 
   return (
@@ -315,7 +333,7 @@ const CuadernoHolografico = ({ portal, isMobileViewport, onStartBitacora, onNavi
       <VideoNarrativeAutoplay
         open={videoOpen}
         onClose={() => setVideoOpen(false)}
-        onNavigate={() => { setVideoOpen(false); onNavigate(videoFormatId); }}
+        onNavigate={handleVideoNavigate}
         formatId={videoFormatId}
         isMobileViewport={isMobileViewport}
       />
