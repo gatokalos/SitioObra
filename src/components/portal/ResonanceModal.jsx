@@ -198,14 +198,14 @@ const LEVELS = [
     num: 1,
     eyebrow: 'Antes de entrar',
     title: 'Primera intuición',
-    desc: '✓ Respondiste antes de saber. Eso tiene valor científico.',
+    desc: '✓ Respondiste antes de saber algo más. Eso tiene valor científico.',
     icon: Eye,
   },
   {
     num: 2,
-    eyebrow: 'Energía simbólica',
-    title: 'Artefacto narrativo',
-    desc: 'Tu intuición ya está anclada. Lo que el artefacto despierte después de esto es lo que nos interesa comparar.',
+    eyebrow: 'Calibración',
+    title: 'Afina tu mirada',
+    desc: 'Tu intuición y expectativas ya están ancladas. Lo que el artefacto despierte después de esto es oro puro.',
     icon: Flame,
   },
   {
@@ -593,7 +593,7 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
   const l3Active = l3Open && !!l3Rec && !l3Rec.error && !l3Rec.all_complete;
 
   const l3ConsentBubbleText = bitacoraConsented
-    ? 'El Cuaderno holográfico ahora lleva registro de tu viaje personal. Lo que decidas hacer después también se sumará.'
+    ? 'El Cuaderno holográfico ahora lleva registro de tu narrativa personal. Lo que decidas hacer después también se sumará.'
     : 'Hay un Cuaderno holográfico que abre después de cada recorrido. Las preguntas van acumulando lo que dejas en cada universo. ¿Puedo avisarte cuando sea el momento de volver?';
 
   const l3BubbleText = l3Rec
@@ -991,7 +991,7 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
 
                     <div className="hidden lg:block lg:px-10 lg:pb-5 lg:pt-14">
                       <p className="mb-3 text-[0.62rem] uppercase tracking-[0.32em] text-white/50">
-                        Cuaderno holográfico · Días después
+                        Cuaderno holográfico
                       </p>
                       <p
                         className="font-display leading-snug text-amber-300/90 drop-shadow-[0_0_32px_rgba(251,191,36,0.45)]"
@@ -1012,7 +1012,7 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
                         {/* Mobile: etiqueta de paso */}
                         <div className="lg:hidden space-y-2">
                           <div className="inline-flex rounded-full border border-white/10 bg-white/5 px-3 py-1 text-[0.62rem] uppercase tracking-[0.32em] text-white/70">
-                            Cuaderno holográfico · Días después
+                            Cuaderno holográfico
                           </div>
                           <h3 className="font-display text-2xl leading-tight tracking-tight text-amber-300">
                             {bitacoraStep === 'p1' && '¿Hay algo de esta experiencia que haya regresado por su cuenta? Una imagen, una frase, una sensación.'}
@@ -1154,27 +1154,27 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
                     <div className="space-y-1.5">
                       <div className="flex items-center gap-2 flex-wrap">
                         <div className="inline-flex rounded-full border border-white/10 bg-white/5 px-3 py-1 text-[0.62rem] uppercase tracking-[0.32em] text-white/70 backdrop-blur-md">
-                          Laboratorio
+                          Laboratorio #GatoEncerrado
                         </div>
                       </div>
                       {/* Título + descripción — se ocultan en móvil cuando el acordeón L2 está abierto */}
                       <h2
                         id="resonance-modal-title"
-                        className={`font-display text-3xl text-white lg:text-4xl ${!l2ConvDone && l2q && !l2Selection && l2Open ? 'hidden lg:block' : ''}`}
+                        className={`font-display text-3xl text-white lg:text-4xl ${!l2ConvDone && l2q && !l2Selection && l2Open ? 'hidden' : ''}`}
                       >
-                        Tu viaje personal
+                        Tu resonancia
                       </h2>
-                      <p className={`text-sm leading-relaxed text-slate-200/90 ${!l2ConvDone && l2q && !l2Selection && l2Open ? 'hidden lg:block' : ''}`}>
+                      <p className={`text-sm leading-relaxed text-slate-200/90 ${!l2ConvDone && l2q && !l2Selection && l2Open ? 'hidden' : ''}`}>
                         Cada etapa aporta datos valiosos para comprender cómo habitamos las emociones delante de otros.
                       </p>
 
                       {/* Pregunta L2 + chips — móvil, solo cuando el acordeón está abierto */}
                       {!l2ConvDone && l2q && !l2Selection && l2Open && (
                         <>
-                          <h2 className="font-display text-2xl leading-snug text-amber-300 lg:hidden">
+                          <h2 className="font-display text-2xl leading-snug text-amber-300">
                             {l2q.question}
                           </h2>
-                          <div className="lg:hidden flex flex-wrap gap-1.5 pt-1">
+                          <div className="flex flex-wrap gap-1.5 pt-1">
                             {l2q.options.map((opt) => (
                               <button
                                 key={opt}
@@ -1279,7 +1279,11 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
                                 <div className="shrink-0 flex items-center gap-1.5">
                                   {isAvailable ? (
                                     <>
-                                      <span className="rounded-full border border-sky-400/30 bg-sky-900/50 px-1.5 py-0.5 text-[0.52rem] uppercase tracking-[0.1em] text-sky-200 leading-none">
+                                      <span className="relative inline-flex items-center gap-1 rounded-full border border-sky-400/60 bg-sky-500/20 px-2 py-0.5 text-[0.52rem] uppercase tracking-[0.1em] text-sky-100 leading-none shadow-[0_0_10px_rgba(56,189,248,0.35)]">
+                                        <span className="relative flex h-1.5 w-1.5 shrink-0">
+                                          <span className="absolute inline-flex h-full w-full rounded-full bg-sky-400 opacity-75 animate-ping" />
+                                          <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-sky-300" />
+                                        </span>
                                         Activo
                                       </span>
                                       <ChevronDown
@@ -1429,7 +1433,7 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
                                               onClick={() => { setHolograficoOpen(true); setHolograficoPoster(portal); }}
                                               className="w-full rounded-full border border-amber-400/60 bg-amber-900/25 px-4 py-2.5 text-xs uppercase tracking-[0.2em] text-amber-100 transition hover:bg-amber-900/40"
                                             >
-                                              Abrir cuaderno holográfico →
+                                              Abrir cuaderno →
                                             </button>
                                           )}
 
@@ -1490,31 +1494,9 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
                                         </div>
                                       )}
                                       {isL2 && !l2ConvDone && l2q && !l2Selection && (
-                                        <div className="space-y-2">
-                                          {/* Hint móvil — el acordeón no repite los chips del header */}
-                                          <p className="lg:hidden text-xs leading-relaxed text-slate-400/80">
-                                            Elige una opción arriba para continuar hacia la experiencia narrativa.
-                                          </p>
-                                          {/* Desktop: pregunta + chips */}
-                                          <div className="hidden lg:block space-y-2">
-                                            <p className="font-display text-sm leading-snug text-amber-300/90">
-                                              {l2q.question}
-                                            </p>
-                                            <div className="flex flex-wrap gap-1.5">
-                                              {l2q.options.map((opt) => (
-                                                <button
-                                                  key={opt}
-                                                  type="button"
-                                                  onClick={() => handleLevel2Select(opt)}
-                                                  disabled={l2Submitting}
-                                                  className="rounded-full border border-amber-400/30 bg-amber-900/20 px-3 py-1 text-xs text-amber-100/90 transition hover:border-amber-400/55 hover:bg-amber-900/35 hover:text-amber-50 disabled:opacity-40"
-                                                >
-                                                  {opt}
-                                                </button>
-                                              ))}
-                                            </div>
-                                          </div>
-                                        </div>
+                                        <p className="text-xs leading-relaxed text-slate-400/80">
+                                          Elige una opción arriba para continuar hacia la experiencia narrativa.
+                                        </p>
                                       )}
                                       {isL2 && !l2ConvDone && l2Selection && (
                                         <div className="space-y-2">
@@ -1542,7 +1524,7 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
                                             className="h-20 w-20 lg:h-32 lg:w-32 animate-[spin_8s_linear_0s_infinite_reverse] drop-shadow-[0_0_22px_rgba(251,191,36,0.6)]"
                                           />
                                           <span className="text-sm font-semibold tracking-wide text-amber-200">
-                                            {l2NarrativeOpened ? 'Gastar mi energía' : 'Usar mi energía'}
+                                            {l2NarrativeOpened ? 'Activar Artefacto' : 'Activar Artefacto'}
                                           </span>
                                         </motion.button>
                                       )}

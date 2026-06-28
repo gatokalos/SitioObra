@@ -704,7 +704,7 @@ iaProfile: {
       cta: 'Quiero ser parte de la proyección',
       footnote: 'Registro de interés activo. Espera noticias.',
     },
-    notaAutoral: 'Memoria encendida.\nCámara despierta.\nY el tiempo la vuelve a montar.',
+    notaAutoral: 'Memoria encendida.\nCámara despierta.\nY el tiempo se vuelve a editar.',
     iaProfile: {
       type: 'GPT-4o mini + subtítulos vivos y notas críticas asistidas.',
       interaction: 'Notas críticas y captions contextuales por espectador.',

@@ -50,11 +50,11 @@ const VideoNarrativeAutoplay = ({ open, onClose, onNavigate, formatId, isMobileV
 
   const handleContinuar = () => {
     (onNavigate ?? onClose)?.();
+    // When onNavigate is provided (holográfico context), the caller owns navigation —
+    // don't dispatch events that would auto-open ResonanceModal on top of the showcase.
+    if (onNavigate) return;
     const portalRoute = resolvePortalRoute({ formatId });
-    // When onNavigate is provided (holográfico context), always use events so that
-    // Transmedia's handleSelectMiniverse / navigateToMobilePortalIfReady handles
-    // routing for both mobile and desktop correctly.
-    if (!onNavigate && isMobileViewport && portalRoute) {
+    if (isMobileViewport && portalRoute) {
       navigate(portalRoute, {
         state: createPortalLaunchState(location, 'video-narrative-cta', { showcaseId: formatId }),
       });

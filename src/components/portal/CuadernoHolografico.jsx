@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import VitranaQuestionReveal from '@/components/portal/VitranaQuestionReveal';
@@ -183,8 +183,14 @@ function HolograficoPanel({ centerKey, homeKey, onStartBitacora, onOpenVideo }) 
   const entry = CATALOG.find(p => p.key === centerKey);
   const st = lsRead(centerKey);
   const hasL1 = !!st.l1;
-  const hasL2 = !!st.l2_conv_done;
-  const hasDone = !!st.bitacora_completed;
+  const hasL2 = !!st.l2_option;
+  const hasL3 = !!st.l3_recommendation?.step3;
+  const hasBitacora = !!st.bitacora_completed;
+
+  const homeSt = lsRead(homeKey);
+  const homeL2 = !!homeSt.l2_option;
+  const homeL3 = !!homeSt.l3_recommendation?.step3;
+  const homeBitacora = !!homeSt.bitacora_completed;
 
   return (
     <AnimatePresence mode="wait">
@@ -209,8 +215,11 @@ function HolograficoPanel({ centerKey, homeKey, onStartBitacora, onOpenVideo }) 
               question={HOLISTIC_QUESTION}
               portal={homeKey}
               autoReveal
+              l2Done={homeL2}
+              l3Done={homeL3}
+              bitacoraCompleted={homeBitacora}
               label={null}
-              buttonLabel="Concluye tu experiencia"
+              buttonLabel="Concluye tu narrativa personal"
               onAnswer={onStartBitacora}
             />
           </div>
@@ -226,7 +235,8 @@ function HolograficoPanel({ centerKey, homeKey, onStartBitacora, onOpenVideo }) 
               portal={centerKey}
               autoReveal={hasL1}
               l2Done={hasL2}
-              l3Done={hasDone}
+              l3Done={hasL3}
+              bitacoraCompleted={hasBitacora}
               label={null}
               buttonLabel={entry.cta}
               onAnswer={() => onOpenVideo(entry.showcase)}
@@ -247,6 +257,8 @@ const CuadernoHolografico = ({ portal, onStartBitacora, onNavigate, onPosterChan
   const [centerKey, setCenterKey] = useState(portal);
   const [videoOpen, setVideoOpen] = useState(false);
   const [videoFormatId, setVideoFormatId] = useState(null);
+
+  useEffect(() => { onPosterChange?.(portal); }, []);
 
   const handleSelect = (key) => {
     setCenterKey(key);

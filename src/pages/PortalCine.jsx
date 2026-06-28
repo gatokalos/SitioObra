@@ -35,7 +35,7 @@ const CINE_THEME =
 const CINE_TONE = ['Premiere íntima', 'Conversatorio abierto', 'Cine con memoria'];
 const CINE_NOTA_AUTORAL = {
   title: '#LuzQueEditas',
-  verse: 'Memoria encendida.\nCámara despierta.\nY el tiempo la vuelve a montar.',
+  verse: 'Memoria encendida.\nCámara despierta.\nY el tiempo se vuelve a editar.',
 };
 const CINE_TILE = {
   gradient: 'linear-gradient(135deg, rgba(16,27,54,0.95), rgba(38,63,109,0.85), rgba(92,47,95,0.7))',

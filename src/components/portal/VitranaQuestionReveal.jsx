@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
-import { Eye, Flame, Sparkles } from 'lucide-react';
+import { Eye, Flame, Sparkles, BookOpen } from 'lucide-react';
 
 const stripEslabon = (text) => {
   if (!text) return text;
@@ -33,10 +33,11 @@ const VitranaQuestionReveal = ({
   l3Step3 = null,
   l3FormaLabel = null,
   onL3CTA = null,
+  bitacoraCompleted = false,
 }) => {
   const [isRevealed, setIsRevealed] = useState(autoReveal);
   const portalGradient = PORTAL_GRADIENT[portal] ?? 'from-purple-400 via-fuchsia-500 to-rose-500';
-  const hasProgressBadges = autoReveal || l2Done || l3Done;
+  const hasProgressBadges = autoReveal || l2Done || l3Done || bitacoraCompleted;
   const oracularPhrase = l3Done && l3Step3 ? stripEslabon(l3Step3) : null;
 
   // Sincroniza si autoReveal llega tarde (p.ej. tras verificar Supabase)
@@ -90,6 +91,17 @@ const VitranaQuestionReveal = ({
                 title="Nivel 3 completado"
               >
                 <Sparkles size={20} className="text-white drop-shadow-sm" />
+              </motion.div>
+            )}
+            {bitacoraCompleted && (
+              <motion.div
+                className={`flex h-11 w-11 items-center justify-center rounded-full bg-gradient-to-br ${portalGradient} shadow-[0_4px_18px_rgba(0,0,0,0.4)]`}
+                initial={{ opacity: 0, scale: 0.55, y: 6 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                transition={{ type: 'spring', stiffness: 260, damping: 18, delay: 0.46 }}
+                title="Cuaderno holográfico completado"
+              >
+                <BookOpen size={20} className="text-white drop-shadow-sm" />
               </motion.div>
             )}
           </div>

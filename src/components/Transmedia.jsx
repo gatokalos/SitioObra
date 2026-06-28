@@ -322,6 +322,7 @@ const Transmedia = ({ allianceOnlyMode = false }) => {
   const [activePortalL3Step3, setActivePortalL3Step3] = useState(null);
   const [activePortalL3RecommendedPortal, setActivePortalL3RecommendedPortal] = useState(null);
   const [activePortalL3RecommendedForma, setActivePortalL3RecommendedForma] = useState(null);
+  const [activePortalBitacoraDone, setActivePortalBitacoraDone] = useState(false);
   const [showL3RewardCoins, setShowL3RewardCoins] = useState(false);
   const [showL3RewardChip, setShowL3RewardChip] = useState(false);
 
@@ -343,10 +344,12 @@ const Transmedia = ({ allianceOnlyMode = false }) => {
       setActivePortalL3Step3(s.l3_recommendation?.step3 ?? null);
       setActivePortalL3RecommendedPortal(s.l3_recommendation?.recommended_portal ?? null);
       setActivePortalL3RecommendedForma(s.l3_recommendation?.forma ?? null);
+      setActivePortalBitacoraDone(!!s.bitacora_completed);
     } catch {
       setActivePortalL1Done(false); setActivePortalL2Done(false);
       setActivePortalL2Answer(null); setActivePortalL3Done(false); setActivePortalL3Step3(null);
       setActivePortalL3RecommendedPortal(null); setActivePortalL3RecommendedForma(null);
+      setActivePortalBitacoraDone(false);
     }
   }, [activeShowcase]);
 
@@ -369,6 +372,7 @@ const Transmedia = ({ allianceOnlyMode = false }) => {
       setActivePortalL3Step3(state.l3_recommendation?.step3 ?? null);
       setActivePortalL3RecommendedPortal(state.l3_recommendation?.recommended_portal ?? null);
       setActivePortalL3RecommendedForma(state.l3_recommendation?.forma ?? null);
+      setActivePortalBitacoraDone(!!state.bitacora_completed);
     } catch {}
   }, [activeShowcase]);
 
@@ -3927,7 +3931,7 @@ Silvestre, un hombre en sus treintas, comienza a perder la frontera entre lo que
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              onClick={handleCloseShowcase}
+              onClick={isMobileViewport ? handleCloseShowcase : undefined}
             />
             <div
               className="pointer-events-none absolute inset-0 opacity-95 mix-blend-screen"
@@ -4009,7 +4013,7 @@ Silvestre, un hombre en sus treintas, comienza a perder la frontera entre lo que
                     onClick={handleToggleShowcaseAmbient}
                     aria-label={ambientState.isMuted ? 'Activar sonido ambiente' : 'Silenciar sonido ambiente'}
                     title={ambientState.isMuted ? 'Activar sonido ambiente' : 'Silenciar sonido ambiente'}
-                    className={`inline-flex h-9 w-9 items-center justify-center rounded-full border transition ${
+                    className={`lg:hidden inline-flex h-9 w-9 items-center justify-center rounded-full border transition ${
                       ambientState.isMuted
                         ? 'border-white/15 bg-white/5 text-slate-200/90 hover:border-purple-300/40 hover:text-white'
                         : 'border-emerald-300/35 bg-emerald-500/15 text-emerald-100 hover:bg-emerald-500/25'
@@ -4020,7 +4024,7 @@ Silvestre, un hombre en sus treintas, comienza a perder la frontera entre lo que
                 ) : null}
                 <button
                   onClick={handleCloseShowcase}
-                  className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-white/15 bg-white/5 text-slate-200/90 hover:border-purple-300/40 hover:text-white transition"
+                  className="lg:hidden inline-flex h-9 w-9 items-center justify-center rounded-full border border-white/15 bg-white/5 text-slate-200/90 hover:border-purple-300/40 hover:text-white transition"
                   aria-label="Cerrar vitrina"
                 >
                   <X size={14} />
@@ -4120,6 +4124,7 @@ Silvestre, un hombre en sus treintas, comienza a perder la frontera entre lo que
                           l2Done={activePortalL2Done}
                           l3Done={activePortalL3Done}
                           l3Step3={activePortalL3Step3}
+                          bitacoraCompleted={activePortalBitacoraDone}
                           onAnswer={() => setIsDramaResonanceOpen(true)}
                           onReveal={() => setHeartBounceKey(k => k + 1)}
                           label=""
@@ -4158,6 +4163,7 @@ Silvestre, un hombre en sus treintas, comienza a perder la frontera entre lo que
                           l2Done={activePortalL2Done}
                           l3Done={activePortalL3Done}
                           l3Step3={activePortalL3Step3}
+                          bitacoraCompleted={activePortalBitacoraDone}
                           onAnswer={() => setIsLiteraturaResonanceOpen(true)}
                           onReveal={() => setHeartBounceKey(k => k + 1)}
                           label=""
@@ -4194,6 +4200,7 @@ Silvestre, un hombre en sus treintas, comienza a perder la frontera entre lo que
                           l2Done={activePortalL2Done}
                           l3Done={activePortalL3Done}
                           l3Step3={activePortalL3Step3}
+                          bitacoraCompleted={activePortalBitacoraDone}
                           onAnswer={() => setIsArtesaniasResonanceOpen(true)}
                           onReveal={() => setHeartBounceKey(k => k + 1)}
                           label=""
@@ -4230,6 +4237,7 @@ Silvestre, un hombre en sus treintas, comienza a perder la frontera entre lo que
                           l2Done={activePortalL2Done}
                           l3Done={activePortalL3Done}
                           l3Step3={activePortalL3Step3}
+                          bitacoraCompleted={activePortalBitacoraDone}
                           onAnswer={() => setIsGraficosResonanceOpen(true)}
                           onReveal={() => setHeartBounceKey(k => k + 1)}
                           label=""
@@ -4267,6 +4275,7 @@ Silvestre, un hombre en sus treintas, comienza a perder la frontera entre lo que
                           l2Done={activePortalL2Done}
                           l3Done={activePortalL3Done}
                           l3Step3={activePortalL3Step3}
+                          bitacoraCompleted={activePortalBitacoraDone}
                           onAnswer={() => setIsCineResonanceOpen(true)}
                           onReveal={() => setHeartBounceKey(k => k + 1)}
                           label=""
@@ -4303,6 +4312,7 @@ Silvestre, un hombre en sus treintas, comienza a perder la frontera entre lo que
                           l2Done={activePortalL2Done}
                           l3Done={activePortalL3Done}
                           l3Step3={activePortalL3Step3}
+                          bitacoraCompleted={activePortalBitacoraDone}
                           onAnswer={() => setIsSonoroResonanceOpen(true)}
                           onReveal={() => setHeartBounceKey(k => k + 1)}
                           label=""
@@ -4339,6 +4349,7 @@ Silvestre, un hombre en sus treintas, comienza a perder la frontera entre lo que
                           l2Done={activePortalL2Done}
                           l3Done={activePortalL3Done}
                           l3Step3={activePortalL3Step3}
+                          bitacoraCompleted={activePortalBitacoraDone}
                           onAnswer={() => setIsMovimientoResonanceOpen(true)}
                           onReveal={() => setHeartBounceKey(k => k + 1)}
                           label=""
@@ -4375,6 +4386,7 @@ Silvestre, un hombre en sus treintas, comienza a perder la frontera entre lo que
                           l2Done={activePortalL2Done}
                           l3Done={activePortalL3Done}
                           l3Step3={activePortalL3Step3}
+                          bitacoraCompleted={activePortalBitacoraDone}
                           onAnswer={() => setIsJuegosResonanceOpen(true)}
                           onReveal={() => setHeartBounceKey(k => k + 1)}
                           label=""
@@ -4411,6 +4423,7 @@ Silvestre, un hombre en sus treintas, comienza a perder la frontera entre lo que
                           l2Done={activePortalL2Done}
                           l3Done={activePortalL3Done}
                           l3Step3={activePortalL3Step3}
+                          bitacoraCompleted={activePortalBitacoraDone}
                           onAnswer={() => setIsOraculoResonanceOpen(true)}
                           onReveal={() => setHeartBounceKey(k => k + 1)}
                           label=""
@@ -4453,6 +4466,30 @@ Silvestre, un hombre en sus treintas, comienza a perder la frontera entre lo que
                   <IAInsightCard {...activeDefinition.iaProfile} compact rewardLabel={buildShowcaseRewardLabel(showcaseTokenLedgerById[activeShowcase])} minRequired={buildShowcaseMinRequiredCopy(activeShowcase)} />
                 </div>
               ) : null}
+              {/* Botones de control — solo desktop, al fondo del contenido scrollable */}
+              <div className="hidden lg:flex items-center justify-end gap-2 mt-6 pt-3 border-t border-white/8">
+                {user ? (
+                  <button
+                    onClick={handleToggleShowcaseAmbient}
+                    aria-label={ambientState.isMuted ? 'Activar sonido ambiente' : 'Silenciar sonido ambiente'}
+                    title={ambientState.isMuted ? 'Activar sonido ambiente' : 'Silenciar sonido ambiente'}
+                    className={`inline-flex h-9 w-9 items-center justify-center rounded-full border transition ${
+                      ambientState.isMuted
+                        ? 'border-white/15 bg-white/5 text-slate-200/90 hover:border-purple-300/40 hover:text-white'
+                        : 'border-emerald-300/35 bg-emerald-500/15 text-emerald-100 hover:bg-emerald-500/25'
+                    }`}
+                  >
+                    {ambientState.isMuted ? <VolumeX size={14} /> : <Volume2 size={14} />}
+                  </button>
+                ) : null}
+                <button
+                  onClick={handleCloseShowcase}
+                  className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-white/15 bg-white/5 text-slate-200/90 hover:border-purple-300/40 hover:text-white transition"
+                  aria-label="Cerrar vitrina"
+                >
+                  <X size={14} />
+                </button>
+              </div>
               </div>
             </motion.div>
           </motion.div>
