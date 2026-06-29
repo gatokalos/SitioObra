@@ -50,15 +50,15 @@ const HERO_ROTATING_SUBTITLES = [
   'Una experiencia narrativa interactiva',
   'Basada en "Es un gato encerrado"',
   'Una historia que cambia cuando la miras',
-  'Y si observas bien… la obra te observa a ti',
+  'La obra que ocurre en tu mente',
   ];
 const HERO_GHOST_SUBTITLES = [
-  'La obra que ocurre en tu mente',
-  'Tal vez ya empezó en ti',
+  'Tal vez la obra ya empezó en ti',
+  'Teatro que no termina al bajar el telón',
   
 ];
 const HERO_ROTATING_SUBTITLE_PLACEHOLDER =
-  'Teatro que no termina cuando sales de la sala';
+'Una experiencia narrativa interactiva';
 
 const resolveHeroInlineTabFromQuery = (search = '') => {
   if (!search) return 'experiences';
