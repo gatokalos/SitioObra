@@ -54,7 +54,7 @@ const HERO_ROTATING_SUBTITLES = [
   ];
 const HERO_GHOST_SUBTITLES = [
   'Tal vez la obra ya empezó en ti',
-  'Teatro que no termina al bajar el telón',
+  'Teatro que no se mira. Se habita.',
   
 ];
 const HERO_ROTATING_SUBTITLE_PLACEHOLDER =
@@ -289,7 +289,7 @@ const Hero = () => {
     if (user) return undefined;
     if (!hasActivatedAudio) return undefined;
     const ROTATION_MS = 3800;
-    const GHOST_PROBABILITY = 0.28;
+    const GHOST_PROBABILITY = 0.22;
     const intervalId = window.setInterval(() => {
       if (Math.random() < GHOST_PROBABILITY) {
         const idx = Math.floor(Math.random() * HERO_GHOST_SUBTITLES.length);
