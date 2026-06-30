@@ -49,13 +49,13 @@ const HERO_PENDING_MINIVERSE_SELECTION_KEY = 'gatoencerrado:hero-inline-minivers
 const HERO_ROTATING_SUBTITLES = [
   'Una experiencia narrativa interactiva',
   'Basada en "Es un gato encerrado"',
-  'Una historia que cambia cuando la miras',
-  'La obra que ocurre en tu mente',
-  ];
-const HERO_GHOST_SUBTITLES = [
-  'Tal vez la obra ya empezó en ti',
   'Teatro que no se mira. Se habita.',
   
+  ];
+const HERO_GHOST_SUBTITLES = [
+  'La obra que ocurre en tu mente',
+  'Tal vez la obra ya empezó en ti',
+   
 ];
 const HERO_ROTATING_SUBTITLE_PLACEHOLDER =
 'Una experiencia narrativa interactiva';
@@ -118,6 +118,7 @@ const Hero = () => {
   ];
   const currentCta = rotatingCtas[ctaIndex];
   const currentHeroSubtitle = heroGhostSubtitle ?? HERO_ROTATING_SUBTITLES[heroSubtitleIndex];
+  const isHeroGhostSubtitle = heroGhostSubtitle !== null;
   const targetWidth = primaryCtaWidth ?? undefined;
   const navigate = useNavigate();
   const location = useLocation();
@@ -289,7 +290,7 @@ const Hero = () => {
     if (user) return undefined;
     if (!hasActivatedAudio) return undefined;
     const ROTATION_MS = 3800;
-    const GHOST_PROBABILITY = 0.22;
+    const GHOST_PROBABILITY = 0.28;
     const intervalId = window.setInterval(() => {
       if (Math.random() < GHOST_PROBABILITY) {
         const idx = Math.floor(Math.random() * HERO_GHOST_SUBTITLES.length);
@@ -899,7 +900,7 @@ const Hero = () => {
                         animate={{ opacity: 1, filter: 'blur(0px)' }}
                         exit={{ opacity: 0, filter: 'blur(14px)' }}
                         transition={{ duration: 1.8, ease: [0.2, 1, 0.2, 1] }}
-                        className="absolute inset-0 inline-flex items-center justify-center"
+                        className={`absolute inset-0 inline-flex items-center justify-center ${isHeroGhostSubtitle ? 'italic' : 'not-italic'}`}
                       >
                         {currentHeroSubtitle}
                       </motion.span>

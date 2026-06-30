@@ -77,17 +77,16 @@ const MINIVERSE_KEYWORDS = {
 const STARTER_FAQ_PROMPTS = [
   '¿Dónde vive una obra: en el escenario, en el libreto o en quien la recuerda?',
   '¿Qué permanece cuando la emoción del momento desaparece?',
-  '¿Cómo sabe una obra de teatro si cambió algo en el público?',
-  '¿Qué diferencia hay entre medir cuánta gente vio la obra y saber si les importó?',
-  '¿Qué convierte a un espectador en miembro de una comunidad?',
-  '¿Por qué la causa social es parte de la obra y no solo un anexo?',
-  '¿Qué pasa con lo que escribo adentro del universo?',
-  '¿Por qué no le entendí a ciertas escenas?',
+  '¿Qué diferencia hay entre medir cuánta gente vio la obra y saber si cambió algo en el público?',
+  '¿Qué parte de nosotros habla cuando creemos estar hablando solos?',
+  '¿Cuáles son las escenas que menos se entienden?',
   '¿Por qué Silvestre sigue soñando la misma historia aunque cada noche sueñe algo diferente?',
   '¿Qué fue exactamente lo que vio la Doctora para decidir que los sueños de Silvestre merecían ser investigados?',
   '¿Quién está contando realmente la historia cuando aparecen el Payasito Tiste, la Reina de Espadas y los demás personajes?',
-  '¿Qué es lo que Silvestre intenta recordar cada vez que despierta furioso?',
-  '¿Qué parte de nosotros habla cuando creemos estar hablando solos?'
+  '¿Qué es lo que Silvestre intenta recordar cada vez que su ira le hierve la sangre al despertar?',
+  '¿Qué pasa con lo que escribo adentro del universo?',
+  '¿Qué convierte a un espectador en miembro de una comunidad?',
+  '¿Por qué la causa social es parte de la obra y no solo un anexo?'
   ];
 
 const inferMiniverseFromPost = (post) => {
