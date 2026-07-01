@@ -2110,7 +2110,7 @@ const MiniverseModal = ({
                           Tu huella es real
                         </h3>
                         <p className="text-sm text-slate-300/90 leading-relaxed">
-                          Al dejar tu huella, te integras al proyecto creativo de #GatoEncerrado y lo ayudas a florecer mes tras mes.
+                          Tu huella se renueva cada mes. Puedes pausarla o retirarla cuando quieras, sin complicaciones.
                         </p>
                       </div>
 
