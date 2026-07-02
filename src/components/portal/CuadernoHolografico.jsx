@@ -49,7 +49,7 @@ const CATALOG = [
   { key: 'cine',        name: 'Cine',           showcase: 'copycats',            color: 'text-rose-300',    q: '¿Qué significa para ti verse fallar desde afuera?',                      cta: 'Sigue el cine' },
   { key: 'sonoridades', name: 'Sonoridades',    showcase: 'miniversoSonoro',     color: 'text-sky-300',     q: '¿Por qué algunos sonidos duran más que las imágenes?',                  cta: 'Sigue las sonoridades' },
   { key: 'movimiento',  name: 'Movimiento',     showcase: 'miniversoMovimiento', color: 'text-cyan-300',    q: '¿Qué cosas sabe tu cuerpo antes que tu pensamiento?',                   cta: 'Sigue el movimiento' },
-  { key: 'juegos',      name: 'Juegos',         showcase: 'apps',                color: 'text-yellow-300',  q: '¿Qué cambia en ti cuando una historia depende de tus decisiones?',      cta: 'Sigue el juego' },
+  { key: 'juegos',      name: 'Juegos',         showcase: 'apps',                color: 'text-yellow-300',  q: '¿Qué cambia en ti cuando una historia depende de tus decisiones?',      cta: 'Sigue las reglas' },
   { key: 'oraculo',     name: 'Oráculo',        showcase: 'oraculo',             color: 'text-indigo-300',  q: '¿Cuándo una experiencia deja de sentirse individual?',                   cta: 'Sigue el oráculo' },
 ];
 
