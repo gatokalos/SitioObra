@@ -31,7 +31,12 @@ const TRANSMEDIA_SECONDARY_ITEMS = [
   { label: 'Oráculo', href: '#transmedia?focus=oraculo' },
 ];
 
-const Header = ({ showTransmediaNav = true }) => {
+const Header = ({
+  showAllianceNav = true,
+  showCuradoriaNav = true,
+  showIntermedioNav = false,
+  showTransmediaNav = true,
+}) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [scrollTier, setScrollTier] = useState(0);
   const [showLoginOverlay, setShowLoginOverlay] = useState(false);
@@ -68,6 +73,8 @@ const Header = ({ showTransmediaNav = true }) => {
   }, []);
   const [isTransmediaVisible, setIsTransmediaVisible] = useState(false);
   useEffect(() => {
+    setIsTransmediaVisible(false);
+    if (!showTransmediaNav) return undefined;
     const el = document.getElementById('transmedia');
     if (!el) return undefined;
     const observer = new IntersectionObserver(
@@ -76,7 +83,7 @@ const Header = ({ showTransmediaNav = true }) => {
     );
     observer.observe(el);
     return () => observer.disconnect();
-  }, []);
+  }, [showTransmediaNav]);
 
   const handleCloseOverlay = useCallback(() => setShowLoginOverlay(false), []);
 
@@ -137,6 +144,18 @@ const Header = ({ showTransmediaNav = true }) => {
   }, [isProfileMenuOpen]);
 
   useEffect(() => {
+    if (!isMenuOpen) return undefined;
+    const handleClickAway = (event) => {
+      if (event.target?.closest?.('[data-site-index-root]')) {
+        return;
+      }
+      setIsMenuOpen(false);
+    };
+    window.addEventListener('pointerdown', handleClickAway);
+    return () => window.removeEventListener('pointerdown', handleClickAway);
+  }, [isMenuOpen]);
+
+  useEffect(() => {
     if (typeof window === 'undefined') return undefined;
     const handleOpenFromToast = () => setShowLoginOverlay(true);
     window.addEventListener('open-login-modal', handleOpenFromToast);
@@ -144,32 +163,42 @@ const Header = ({ showTransmediaNav = true }) => {
   }, []);
 
   const menuItems = [
+    { name: 'Inicio', href: '#hero' },
     { name: 'Obra', href: '#about' },
     { name: 'Perspectivas', href: '#provoca' },
     { name: 'Tras bambalinas', href: '#team' },
     { name: 'Galería fractal', href: '#instagram' },
-    { name: 'Curaduría', href: '#dialogo-critico' },
+    ...(showIntermedioNav ? [{ name: 'Intermedio', href: '#blog-contribuye' }] : []),
+    ...(showCuradoriaNav ? [{ name: 'Curaduría', href: '#dialogo-critico' }] : []),
     ...(showTransmediaNav ? [{ name: 'Transmedia', href: '#transmedia' }] : []),
-    { name: 'Causa social', href: '#apoya' },
+    ...(showAllianceNav ? [{ name: 'Alianza', href: '#apoya' }] : []),
     { name: 'Funciones', href: '#next-show' },
     { name: 'Contacto', href: '#contact' },
   ];
   const mobileMenuItems = [
+    { name: 'Inicio', href: '#hero', description: 'Bienvenida' },
     { name: 'Obra', href: '#about' },
     { name: 'Perspectivas', href: '#provoca' },
     { name: 'Tras bambalinas', href: '#team' },
     { name: 'Galería fractal', href: '#instagram' },
-    {
-      name: 'Curaduría',
-      href: '#dialogo-critico',
-      description: 'Diálogo crítico y educativo',
-      secondary: [
-        { label: 'Curaduría Reflexiva', href: '#dialogo-critico' },
-        { label: 'Expansiones Narrativas', href: '#dialogo-critico' },
-        { label: 'Detrás de Cámaras', href: '#dialogo-critico' },
-        { label: 'Buscador Backstage', href: '#dialogo-critico', action: 'show-buscador' },
-      ],
-    },
+    ...(showIntermedioNav
+      ? [{ name: 'Intermedio', href: '#blog-contribuye', description: 'Punto de no retorno' }]
+      : []),
+    ...(showCuradoriaNav
+      ? [
+          {
+            name: 'Curaduría',
+            href: '#dialogo-critico',
+            description: 'Diálogo crítico y educativo',
+            secondary: [
+              { label: 'Curaduría Reflexiva', href: '#dialogo-critico' },
+              { label: 'Expansiones Narrativas', href: '#dialogo-critico' },
+              { label: 'Detrás de Cámaras', href: '#dialogo-critico' },
+              { label: 'Buscador Backstage', href: '#dialogo-critico', action: 'show-buscador' },
+            ],
+          },
+        ]
+      : []),
     ...(showTransmediaNav
       ? [
           {
@@ -180,15 +209,19 @@ const Header = ({ showTransmediaNav = true }) => {
           },
         ]
       : []),
-    {
-      name: 'Alianza',
-      href: '#apoya',
-      description: 'Causa social',
-      secondary: [
-        { label: 'Ver modelo de impacto', href: '#apoya' },
-        { label: 'Dejar una huella', href: '#cta' },
-      ],
-    },
+    ...(showAllianceNav
+      ? [
+          {
+            name: 'Alianza',
+            href: '#apoya',
+            description: 'Causa social',
+            secondary: [
+              { label: 'Ver modelo de impacto', href: '#apoya' },
+              { label: 'Dejar una huella', href: '#cta' },
+            ],
+          },
+        ]
+      : []),
     { name: 'Funciones', href: '#next-show' },
     { name: 'Contacto', href: '#contact' },
   ];
@@ -226,6 +259,10 @@ const Header = ({ showTransmediaNav = true }) => {
     });
   }, [location, navigate, user]);
 
+  const handleToggleIndex = useCallback(() => {
+    setIsMenuOpen((prev) => !prev);
+  }, []);
+
   return (
     <>
       <motion.header
@@ -234,14 +271,19 @@ const Header = ({ showTransmediaNav = true }) => {
         transition={{ duration: 0.5, ease: 'easeOut' }}
         className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${headerToneClass}`}
       >
-        <nav className="container mx-auto px-6 py-3 max-[375px]:px-4">
+        <nav className="container mx-auto px-6 py-3 max-[375px]:px-4" data-site-index-root>
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3 text-white">
               <motion.button
                 type="button"
                 whileHover={{ scale: 1.05, textShadow: '0 0 8px rgba(233, 213, 255, 0.5)' }}
-                className="flex shrink-0 items-center gap-3 cursor-pointer"
-                onClick={() => handleNavClick('#hero')}
+                className={`flex shrink-0 cursor-pointer items-center gap-3 rounded-full transition ${
+                  isMenuOpen ? 'drop-shadow-[0_0_14px_rgba(255,255,255,0.22)]' : ''
+                }`}
+                onClick={handleToggleIndex}
+                aria-controls="site-index-menu"
+                aria-expanded={isMenuOpen}
+                aria-label={isMenuOpen ? 'Cerrar índice de navegación' : 'Abrir índice de navegación'}
               >
                 <img
                   src={headerLogoSrc}
@@ -281,21 +323,6 @@ const Header = ({ showTransmediaNav = true }) => {
                   ) : null}
                 </div>
               ) : null}
-            </div>
-
-            <div className="hidden xl:flex items-center space-x-1">
-              {menuItems.map((item) => (
-                <motion.button
-                  key={item.name}
-                  whileHover={{ scale: 1.05, color: '#e9d5ff' }}
-                  onClick={() => handleNavClick(item.href)}
-                  className={`text-slate-300 hover:text-white transition-colors font-medium px-4 py-2 rounded-md ${
-                    item.name === 'Contacto' ? 'border border-purple-300/30 hover:bg-purple-500/20' : ''
-                  }`}
-                >
-                  {item.name}
-                </motion.button>
-              ))}
             </div>
 
             <div className="flex items-center gap-3">

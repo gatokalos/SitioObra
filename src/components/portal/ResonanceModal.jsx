@@ -1563,7 +1563,7 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
                     {question ? (
                       <div className="hidden lg:block lg:px-10 lg:pb-5 lg:pt-14 space-y-3">
                         <div className="inline-flex rounded-full border border-white/10 bg-white/5 px-3 py-1 text-[0.62rem] uppercase tracking-[0.32em] text-white/70 backdrop-blur-md">
-                          Laboratorio
+                          Laboratorio #GatoEncerrado
                         </div>
                         <p
                           className="font-display leading-snug text-amber-300/90 drop-shadow-[0_0_32px_rgba(251,191,36,0.45)]"
@@ -1586,7 +1586,7 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
                       <div className="w-full space-y-3">
                         <div className="space-y-0.5 lg:hidden">
                           <div className="inline-flex rounded-full border border-white/10 bg-white/5 px-3 py-1 text-[0.62rem] uppercase tracking-[0.32em] text-white/70 backdrop-blur-md">
-                            Laboratorio
+                            Laboratorio #GatoEncerrado
                           </div>
                           <h3
                             id="resonance-modal-title"

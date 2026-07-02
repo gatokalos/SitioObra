@@ -1005,11 +1005,11 @@ Este espacio permite recorrer esas composiciones, explorar sus capas y descubrir
     ],
   },
   miniversoGrafico: {
-    label: 'La imagen',
+    label: 'La apariencia',
     type: 'graphic-lab',
     introNode: (
       <>
-        <p className="text-base leading-relaxed text-slate-300/90">Este espacio explora el universo #GatoEncerrado desde <strong>la imagen</strong>.</p>
+        <p className="text-base leading-relaxed text-slate-300/90">Este espacio explora el universo #GatoEncerrado desde <strong>la apariencia</strong>.</p>
         <p className="text-base leading-relaxed text-slate-200/80 mt-3">Aquí las escenas se quedan en otro momento: lo que en la obra aparece como pensamiento o diálogo, en el cómic puede convertirse en <em>ensayo, en silencio, en otra voz</em>.</p>
         <p className="text-base leading-relaxed text-slate-100/90 mt-3">No solo el de Silvestre, sino el de cualquiera que se haya sentido como él.<br/>Dibujar permite mirar lo que no siempre se dice en escena.</p>
         <div className="flex flex-wrap gap-2 mt-2">
@@ -1313,7 +1313,7 @@ Este espacio permite recorrer esas composiciones, explorar sus capas y descubrir
     },
   },
   oraculo: {
-    label: 'El espejo',
+    label: 'El reflejo',
     type: 'oracle',
     intro: (
       <>
@@ -1360,7 +1360,7 @@ Este espacio permite recorrer esas composiciones, explorar sus capas y descubrir
       'Tu pensamiento también construye este universo.',
     tagline: 'Interacción que deja huella. Reflexión que te recompensa.',
     cartaTitle: '#CambiarSinCambiar',
-    notaAutoral: 'Miré el espejo.\nNo dijo nada.\nÉramos dos... y no.',
+    notaAutoral: 'Miré el reflejo.\nNo dijo nada.\nÉramos dos... y no.',
     iaProfile: {
       type: 'GPT-4o + embeddings simbólicos curados por la comunidad.',
       interaction: '1–3 reflexiones cortas por sesión; foro breve guiado.',

@@ -18,6 +18,7 @@ const pageTitle = '#GatoEncerrado - Obra de Teatro transmedia';
 const pageDescription =
   'La historia de alguien que desaparece… y deja una huella emocional. Una experiencia teatral única que explora múltiples formatos transmediaes.';
 const TRANSMEDIA_UNLOCK_STORAGE_KEY = 'gatoencerrado:transmedia-unlocked:v1';
+const CURATORIA_UNLOCK_STORAGE_KEY = 'gatoencerrado:curadoria-unlocked:v1';
 const TRANSMEDIA_FOCUS_KEYS = ['focus', 'appId', 'app_id', 'recommended_app_id'];
 const IS_UI_LAB_ENABLED =
   import.meta.env.DEV ||
@@ -385,6 +386,21 @@ const hasTransmediaDeepLinkIntent = (locationLike) => {
   return hasFocusParams(searchParams) || Boolean(searchParams.get('miniverso'));
 };
 
+const hasCuradoriaDeepLinkIntent = (locationLike) => {
+  const pathname = String(locationLike?.pathname || '');
+  if (pathname.startsWith('/blog/')) {
+    return true;
+  }
+
+  const hashAnchor = getLocationHashAnchor(locationLike);
+  return (
+    hashAnchor === 'dialogo-critico' ||
+    hashAnchor.startsWith('dialogo-critico/') ||
+    hashAnchor === 'blog' ||
+    hashAnchor.startsWith('blog/')
+  );
+};
+
 function App() {
   const location = useLocation();
   const { user } = useAuth();
@@ -396,8 +412,13 @@ function App() {
   const [hasGuestUnlockedTransmedia, setHasGuestUnlockedTransmedia] = useState(() => {
     return safeGetItem(TRANSMEDIA_UNLOCK_STORAGE_KEY) === '1';
   });
+  const [hasGuestUnlockedCuradoria, setHasGuestUnlockedCuradoria] = useState(() => {
+    return safeGetItem(CURATORIA_UNLOCK_STORAGE_KEY) === '1';
+  });
   const isAuthenticated = Boolean(user);
   const canAccessTransmedia = isAuthenticated || hasGuestUnlockedTransmedia;
+  const canAccessCuradoria = isAuthenticated || hasGuestUnlockedCuradoria;
+  const shouldShowIntermedioNav = !canAccessCuradoria || !canAccessTransmedia;
   const [showBlogBuscador, setShowBlogBuscador] = useState(false);
   const isMobileLoggedInPortalMode = isAuthenticated && isMobileViewport;
   const isPortalRoute = location.pathname.startsWith('/portal-');
@@ -573,9 +594,13 @@ function App() {
   );
 
   const handleAskQuestion = useCallback(() => {
+    if (!isAuthenticated && !hasGuestUnlockedCuradoria) {
+      safeSetItem(CURATORIA_UNLOCK_STORAGE_KEY, '1');
+      setHasGuestUnlockedCuradoria(true);
+    }
     setShowBlogBuscador(true);
     scrollToSection('dialogo-critico');
-  }, [scrollToSection]);
+  }, [hasGuestUnlockedCuradoria, isAuthenticated, scrollToSection]);
 
   useEffect(() => {
     const handler = () => handleAskQuestion();
@@ -593,6 +618,14 @@ function App() {
       targetId,
     });
   }, [handleRevealTransmedia, hasGuestUnlockedTransmedia, isAuthenticated, location]);
+
+  useEffect(() => {
+    if (location.pathname !== '/') return;
+    if (isAuthenticated || hasGuestUnlockedCuradoria) return;
+    if (!hasCuradoriaDeepLinkIntent(location)) return;
+    safeSetItem(CURATORIA_UNLOCK_STORAGE_KEY, '1');
+    setHasGuestUnlockedCuradoria(true);
+  }, [hasGuestUnlockedCuradoria, isAuthenticated, location]);
 
   useEffect(() => {
     if (!canAccessTransmedia) return undefined;
@@ -633,7 +666,9 @@ function App() {
             <HeroBackground isAuthenticated={isAuthenticated} />
             <div className="relative z-10">
               <Header
-                showAllianceNav={true}
+                showAllianceNav={canAccessTransmedia}
+                showCuradoriaNav={canAccessCuradoria}
+                showIntermedioNav={shouldShowIntermedioNav}
                 showTransmediaNav={canAccessTransmedia && !isMobileLoggedInPortalMode}
               />
 
@@ -665,11 +700,13 @@ function App() {
                     <BlogContributionPrompt onRevealTransmedia={handleRevealTransmedia} onAskQuestion={handleAskQuestion} disableExpand={isMobileLoggedInPortalMode} />
                   </Suspense>
                 </DeferredSection>
-                <DeferredSection fallback={<SectionFallback id="dialogo-critico" minHeight={900} />}>
-                  <Suspense fallback={<SectionFallback id="dialogo-critico" minHeight={900} />}>
-                    <BlogSection showBuscador={showBlogBuscador} />
-                  </Suspense>
-                </DeferredSection>
+                {canAccessCuradoria && (
+                  <DeferredSection fallback={<SectionFallback id="dialogo-critico" minHeight={900} />}>
+                    <Suspense fallback={<SectionFallback id="dialogo-critico" minHeight={900} />}>
+                      <BlogSection showBuscador={showBlogBuscador} />
+                    </Suspense>
+                  </DeferredSection>
+                )}
 
                 {/* Showcase Transmedia: sorpresa, se revela al expandir desde el Intermedio */}
                 {canAccessTransmedia && !isMobileLoggedInPortalMode && (
@@ -718,7 +755,9 @@ function App() {
               </main>
 
               <Footer
-                showAllianceNav={true}
+                showAllianceNav={canAccessTransmedia}
+                showCuradoriaNav={canAccessCuradoria}
+                showIntermedioNav={shouldShowIntermedioNav}
                 showTransmediaNav={canAccessTransmedia && !isMobileLoggedInPortalMode}
               />
               {shouldShowToast && (

@@ -4,7 +4,12 @@ import { Heart, Instagram, Twitter, Facebook, Mail } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { toast } from '@/components/ui/use-toast';
 
-const Footer = ({ showTransmediaNav = true }) => {
+const Footer = ({
+  showAllianceNav = true,
+  showCuradoriaNav = true,
+  showIntermedioNav = false,
+  showTransmediaNav = true,
+}) => {
   const instagramUrl = 'https://www.instagram.com/esungatoencerrado/?hl=en';
   const twitterUrl = 'https://x.com/SilvestreFilis';
   const facebookUrl = 'https://www.facebook.com/share/16pHNpZjpM/?mibextid=wwXIfr';
@@ -68,9 +73,10 @@ const Footer = ({ showTransmediaNav = true }) => {
                   { name: 'Perspectivas', href: '#provoca' },
                   { name: 'Tras bambalinas', href: '#team' },
                   { name: 'Galería fractal', href: '#instagram' },
-                  { name: 'Curaduría', href: '#dialogo-critico' },
+                  ...(showIntermedioNav ? [{ name: 'Intermedio', href: '#blog-contribuye' }] : []),
+                  ...(showCuradoriaNav ? [{ name: 'Curaduría', href: '#dialogo-critico' }] : []),
                   ...(showTransmediaNav ? [{ name: 'Miniversos', href: '#transmedia' }] : []),
-                  { name: 'Causa social', href: '#apoya' },
+                  ...(showAllianceNav ? [{ name: 'Causa social', href: '#apoya' }] : []),
                   { name: 'Funciones', href: '#next-show' },
                   { name: 'Contacto', href: '#contact' },
                 ].map((item) => (

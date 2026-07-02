@@ -19,6 +19,9 @@ const MobileMenuOverlay = ({
   useEffect(() => {
     if (!isOpen) return undefined;
     if (typeof document === 'undefined') return undefined;
+    if (typeof window !== 'undefined' && window.matchMedia?.('(min-width: 1280px)').matches) {
+      return undefined;
+    }
     const previousOverflow = document.body.style.overflow;
     const previousOverscroll = document.body.style.overscrollBehavior;
     document.body.style.overflow = 'hidden';
@@ -75,20 +78,22 @@ const MobileMenuOverlay = ({
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -12 }}
       transition={{ duration: 0.24, ease: 'easeOut' }}
-      className="fixed inset-0 z-[80] xl:hidden bg-gradient-to-b from-[#030615]/98 via-[#02040e]/98 to-[#02040e]/99 backdrop-blur-xl"
+      id="site-index-menu"
+      data-site-index-root
+      className="fixed inset-0 z-[80] bg-gradient-to-b from-[#030615]/98 via-[#02040e]/98 to-[#02040e]/99 backdrop-blur-xl xl:inset-auto xl:left-6 xl:top-[4.35rem] xl:w-[20rem] xl:max-w-[calc(100vw-2rem)] xl:rounded-2xl xl:border xl:border-white/10 xl:bg-black/45 xl:bg-none xl:shadow-[0_24px_70px_rgba(0,0,0,0.48),inset_0_1px_0_rgba(255,255,255,0.06)] 2xl:left-[calc((100vw-1280px)/2+1.5rem)]"
       aria-modal="true"
       role="dialog"
       aria-label="Índice de navegación principal"
     >
-      <div className="flex h-full flex-col">
-        <div className="border-b border-white/10 px-4 pb-3 pt-[calc(env(safe-area-inset-top)+10px)]">
+      <div className="flex h-full flex-col xl:h-auto">
+        <div className="border-b border-white/10 px-4 pb-3 pt-[calc(env(safe-area-inset-top)+10px)] xl:pt-4">
           <div className="flex items-center justify-between gap-3">
             <p className="text-xs uppercase tracking-[0.34em] text-slate-300/90">Índice</p>
             <Button
               type="button"
               variant="ghost"
               size="icon"
-              className="h-11 w-11 rounded-xl border border-fuchsia-400/40 bg-black/25 text-slate-200 hover:bg-fuchsia-500/15 hover:text-white"
+              className="h-11 w-11 rounded-xl border border-fuchsia-400/40 bg-black/25 text-slate-200 hover:bg-fuchsia-500/15 hover:text-white xl:hidden"
               onClick={onClose}
               aria-label="Cerrar menú"
             >
@@ -97,10 +102,10 @@ const MobileMenuOverlay = ({
           </div>
         </div>
 
-        <div className="flex-1 overflow-y-auto px-4 pb-[calc(env(safe-area-inset-bottom)+24px)] pt-5">
+        <div className="flex-1 overflow-y-auto px-4 pb-[calc(env(safe-area-inset-bottom)+24px)] pt-5 xl:max-h-[calc(100vh-7rem)] xl:px-2 xl:pb-2 xl:pt-2">
 
 
-          <section className="mt-4 rounded-2xl border border-white/10 bg-black/35 p-2">
+          <section className="mt-4 rounded-2xl border border-white/10 bg-black/35 p-2 xl:mt-0">
             {menuItems.map((item) => (
               <div key={item.name} className="rounded-xl transition hover:bg-white/[0.04]">
                 <button

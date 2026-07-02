@@ -29,7 +29,7 @@ import { resolvePortalRoute } from '@/lib/miniversePortalRegistry';
 
 
 const GRAFICOS_INTRO =
-  'Este espacio explora el universo #GatoEncerrado desde la imagen. Aquí las escenas se quedan en otro momento: lo que en la obra aparece como pensamiento o diálogo, en el cómic puede convertirse en ensayo, en silencio, en otra voz. No solo el de Silvestre, sino el de cualquiera que se haya sentido como él. Dibujar permite mirar lo que no siempre se dice en escena.';
+  'Este espacio explora el universo #GatoEncerrado desde la apariencia. Aquí las escenas se quedan en otro momento: lo que en la obra aparece como pensamiento o diálogo, en el cómic puede convertirse en ensayo, en silencio, en otra voz. No solo el de Silvestre, sino el de cualquiera que se haya sentido como él. Dibujar permite mirar lo que no siempre se dice en escena.';
 const GRAFICOS_NOTA_AUTORAL = {
   title: '#MirarmeLoQueSoy',
   verse: 'Me quedé dibujando,\ncomo si el papel supiera quién soy\nmejor que yo.',
@@ -89,7 +89,7 @@ const PortalGraficos = () => {
   const { user } = useAuth();
   usePortalTracking('grafico');
   const { question: vitranaQuestion } = useVitranaQuestion('grafico');
-  const titleDisplay = useScrambleText('La imagen');
+  const titleDisplay = useScrambleText('La apariencia');
   const isAuthenticated = Boolean(user);
   const [showLoginOverlay, setShowLoginOverlay] = useState(false);
   const [showLoginHint, setShowLoginHint] = useState(false);

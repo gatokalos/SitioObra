@@ -49,11 +49,11 @@ const HERO_PENDING_MINIVERSE_SELECTION_KEY = 'gatoencerrado:hero-inline-minivers
 const HERO_ROTATING_SUBTITLES = [
   'Una experiencia narrativa interactiva',
   'Basada en "Es un gato encerrado"',
-  'Teatro que no se mira. Se habita.',
-  
+  'La obra que ocurre en tu mente',
+    
   ];
 const HERO_GHOST_SUBTITLES = [
-  'La obra que ocurre en tu mente',
+  'Teatro que no se mira. Se habita.',
   'Tal vez la obra ya empezó en ti',
    
 ];
