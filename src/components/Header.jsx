@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { motion } from 'framer-motion';
+import { motion, useReducedMotion } from 'framer-motion';
 import { Coffee, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useLocation, useNavigate } from 'react-router-dom';
@@ -13,7 +13,7 @@ import { INITIAL_GAT_BALANCE, readStoredInt } from '@/components/transmedia/tran
 
 const GAT_BALANCE_STORAGE_KEY = 'gatoencerrado:gatokens-available';
 const GATOKENS_REVEAL_PULSE_EVENT = 'gatoencerrado:gatokens-reveal-pulse';
-const GATOKENS_REVEAL_PULSE_DURATION_MS = 3200;
+const GATOKENS_REVEAL_ACK_EVENT = 'gatoencerrado:gatokens-reveal-ack';
 const GATOKEN_COIN_SRC =
   'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/oraculo/gato-moneda.png';
 const readGatBalance = () => {
@@ -49,6 +49,7 @@ const Header = ({
   const location = useLocation();
   const { user, signOut } = useAuth();
   const { toast: showToast } = useToast();
+  const prefersReducedMotion = useReducedMotion();
 
   const profileName =
     user?.user_metadata?.alias ||
@@ -67,6 +68,7 @@ const Header = ({
 
   const [gatBalance, setGatBalance] = useState(readGatBalance);
   const [gatRevealPulse, setGatRevealPulse] = useState(null);
+  const [isGatChipPinned, setIsGatChipPinned] = useState(false);
   useEffect(() => {
     const sync = () => setGatBalance(readGatBalance());
     window.addEventListener('gatoencerrado:gatokens-balance-update', sync);
@@ -79,27 +81,27 @@ const Header = ({
 
   useEffect(() => {
     if (typeof window === 'undefined') return undefined;
-    let timeoutId = null;
 
     const handleRevealPulse = (event) => {
       const nextBalance = Number(event?.detail?.balance);
-      const duration = Number(event?.detail?.durationMs);
-      const safeDuration = Number.isFinite(duration) && duration > 0
-        ? duration
-        : GATOKENS_REVEAL_PULSE_DURATION_MS;
 
       if (Number.isFinite(nextBalance)) {
         setGatBalance(Math.max(Math.trunc(nextBalance), 0));
       }
-      setGatRevealPulse({ id: Date.now(), durationMs: safeDuration });
-      if (timeoutId) window.clearTimeout(timeoutId);
-      timeoutId = window.setTimeout(() => setGatRevealPulse(null), safeDuration);
+      setIsGatChipPinned(true);
+      setGatRevealPulse({ id: Date.now() });
+    };
+
+    const handleRevealAck = () => {
+      setIsGatChipPinned(true);
+      setGatRevealPulse(null);
     };
 
     window.addEventListener(GATOKENS_REVEAL_PULSE_EVENT, handleRevealPulse);
+    window.addEventListener(GATOKENS_REVEAL_ACK_EVENT, handleRevealAck);
     return () => {
       window.removeEventListener(GATOKENS_REVEAL_PULSE_EVENT, handleRevealPulse);
-      if (timeoutId) window.clearTimeout(timeoutId);
+      window.removeEventListener(GATOKENS_REVEAL_ACK_EVENT, handleRevealAck);
     };
   }, []);
 
@@ -295,8 +297,46 @@ const Header = ({
     setIsMenuOpen((prev) => !prev);
   }, []);
 
-  const shouldShowGatChip = isTransmediaVisible || Boolean(gatRevealPulse);
-  const gatPulseDurationSeconds = (gatRevealPulse?.durationMs ?? GATOKENS_REVEAL_PULSE_DURATION_MS) / 1000;
+  const acknowledgeGatRevealPulse = useCallback((source = 'header-chip') => {
+    if (typeof window === 'undefined') return;
+    window.dispatchEvent(
+      new CustomEvent(GATOKENS_REVEAL_ACK_EVENT, {
+        detail: { source },
+      })
+    );
+  }, []);
+
+  const handleGatChipClick = useCallback(() => {
+    if (!gatRevealPulse) return;
+    acknowledgeGatRevealPulse('header-chip');
+  }, [acknowledgeGatRevealPulse, gatRevealPulse]);
+
+  const isGatChipPulsing = Boolean(gatRevealPulse);
+  const shouldShowGatChip = isTransmediaVisible || isGatChipPinned || isGatChipPulsing;
+  const gatChipPulseAnimate = prefersReducedMotion
+    ? { opacity: 1, scale: 1 }
+    : {
+        opacity: 1,
+        scale: [1, 1.08, 1],
+        boxShadow: [
+          '0 0 18px rgba(34,211,238,0.14)',
+          '0 0 34px rgba(251,191,36,0.44)',
+          '0 0 18px rgba(34,211,238,0.14)',
+        ],
+      };
+  const gatChipPulseTransition = prefersReducedMotion
+    ? { duration: 0.2, ease: 'easeOut' }
+    : { duration: 1.25, ease: 'easeInOut', repeat: Infinity };
+  const gatCoinPulseAnimate = prefersReducedMotion
+    ? { scale: 1 }
+    : {
+        scale: [1, 1.18, 1],
+        filter: [
+          'drop-shadow(0 0 6px rgba(251,191,36,0.28))',
+          'drop-shadow(0 0 12px rgba(251,191,36,0.7))',
+          'drop-shadow(0 0 6px rgba(251,191,36,0.28))',
+        ],
+      };
 
   return (
     <>
@@ -361,50 +401,50 @@ const Header = ({
             </div>
 
             <div className="flex items-center gap-3">
-              <motion.div
-                className={`inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-[0.68rem] font-semibold uppercase tracking-[0.24em] backdrop-blur-sm ${
-                  gatRevealPulse
+              <motion.button
+                type="button"
+                onClick={handleGatChipClick}
+                disabled={!isGatChipPulsing}
+                className={`inline-flex items-center gap-1.5 whitespace-nowrap rounded-full border px-2.5 py-1.5 text-[0.62rem] font-semibold uppercase tracking-[0.16em] backdrop-blur-sm transition-colors sm:gap-2 sm:px-3 sm:text-[0.68rem] sm:tracking-[0.24em] ${
+                  isGatChipPulsing
                     ? 'border-amber-300/45 bg-amber-500/15 text-amber-100 shadow-[0_0_22px_rgba(251,191,36,0.28)]'
                     : 'border-cyan-300/25 bg-cyan-400/10 text-cyan-100/90 shadow-[0_0_18px_rgba(34,211,238,0.14)]'
-                }`}
+                } ${isGatChipPulsing ? 'cursor-pointer' : 'cursor-default'}`}
                 animate={
-                  gatRevealPulse
-                    ? {
-                        opacity: 1,
-                        scale: [1, 1.08, 1, 1.05, 1],
-                        boxShadow: [
-                          '0 0 18px rgba(34,211,238,0.14)',
-                          '0 0 34px rgba(251,191,36,0.44)',
-                          '0 0 18px rgba(34,211,238,0.14)',
-                          '0 0 28px rgba(251,191,36,0.34)',
-                          '0 0 18px rgba(34,211,238,0.14)',
-                        ],
-                      }
+                  isGatChipPulsing
+                    ? gatChipPulseAnimate
                     : { opacity: shouldShowGatChip ? 1 : 0, scale: 1 }
                 }
                 transition={
-                  gatRevealPulse
-                    ? { duration: gatPulseDurationSeconds, ease: 'easeInOut' }
+                  isGatChipPulsing
+                    ? gatChipPulseTransition
                     : { duration: 0.5, ease: 'easeOut' }
                 }
                 style={{
                   pointerEvents: shouldShowGatChip ? 'auto' : 'none',
                 }}
+                tabIndex={shouldShowGatChip ? 0 : -1}
+                aria-label={
+                  isGatChipPulsing
+                    ? 'Confirmar GATokens recibidos'
+                    : `${gatBalance.toLocaleString('es-MX')} GAT disponibles`
+                }
+                title={isGatChipPulsing ? 'Confirmar GATokens recibidos' : 'GATokens disponibles'}
               >
-                {gatRevealPulse ? (
+                {isGatChipPulsing ? (
                   <motion.img
                     src={GATOKEN_COIN_SRC}
                     alt=""
-                    className="h-3.5 w-3.5 animate-[spin_8s_linear_infinite]"
-                    animate={{ scale: [1, 1.18, 1, 1.12, 1] }}
-                    transition={{ duration: gatPulseDurationSeconds, ease: 'easeInOut' }}
+                    className="h-3.5 w-3.5"
+                    animate={gatCoinPulseAnimate}
+                    transition={gatChipPulseTransition}
                   />
                 ) : (
                   <Sparkles size={12} className="text-cyan-200" />
                 )}
                 <span>Energía</span>
                 <span className="tabular-nums text-white">{gatBalance.toLocaleString('es-MX')} GAT</span>
-              </motion.div>
+              </motion.button>
               {user ? (
                 <Button
                   type="button"

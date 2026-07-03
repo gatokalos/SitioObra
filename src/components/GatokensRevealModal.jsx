@@ -12,6 +12,7 @@ const panelVariants = {
 const GATOKENS_LS_KEY = 'gatoencerrado:gatokens-available';
 
 const GATOKENS_REVEAL_PULSE_EVENT = 'gatoencerrado:gatokens-reveal-pulse';
+const GATOKENS_REVEAL_ACK_EVENT = 'gatoencerrado:gatokens-reveal-ack';
 
 const GatokensRevealModal = ({ open, onClose, isUmbral = false, onProvoca }) => {
   const [balance, setBalance] = useState(null);
@@ -44,17 +45,31 @@ const GatokensRevealModal = ({ open, onClose, isUmbral = false, onProvoca }) => 
       new CustomEvent(GATOKENS_REVEAL_PULSE_EVENT, {
         detail: {
           balance,
-          durationMs: 3200,
           source: 'gatokens-reveal-modal',
         },
       })
     );
   }, [balance, open]);
 
+  const dispatchRevealAck = useCallback((source) => {
+    if (typeof window === 'undefined') return;
+    window.dispatchEvent(
+      new CustomEvent(GATOKENS_REVEAL_ACK_EVENT, {
+        detail: { source },
+      })
+    );
+  }, []);
+
   const handleExplore = useCallback(() => {
+    dispatchRevealAck('gatokens-modal-explore');
     onClose?.();
     navigate('/#about');
-  }, [navigate, onClose]);
+  }, [dispatchRevealAck, navigate, onClose]);
+
+  const handleProvoca = useCallback(() => {
+    dispatchRevealAck('gatokens-modal-provoca');
+    onProvoca?.();
+  }, [dispatchRevealAck, onProvoca]);
 
   return (
     <AnimatePresence>
@@ -94,26 +109,6 @@ const GatokensRevealModal = ({ open, onClose, isUmbral = false, onProvoca }) => 
               style={{ background: 'radial-gradient(circle, rgba(139,92,246,0.28) 0%, transparent 70%)' }}
             />
 
-            {/* moneda */}
-            <div className="mb-4 flex justify-center">
-              <motion.img
-                src="https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/oraculo/gato-moneda.png"
-                alt="GAToken"
-                className="h-16 w-16 animate-[spin_8s_linear_infinite] drop-shadow-[0_0_18px_rgba(139,92,246,0.55)]"
-                animate={{
-                  scale: [1, 1.12, 1, 1.08, 1],
-                  filter: [
-                    'drop-shadow(0 0 18px rgba(139,92,246,0.55))',
-                    'drop-shadow(0 0 34px rgba(251,191,36,0.7))',
-                    'drop-shadow(0 0 18px rgba(139,92,246,0.55))',
-                    'drop-shadow(0 0 28px rgba(251,191,36,0.55))',
-                    'drop-shadow(0 0 18px rgba(139,92,246,0.55))',
-                  ],
-                }}
-                transition={{ duration: 3.2, ease: 'easeInOut' }}
-              />
-            </div>
-
             {/* encabezado */}
             <p className="mb-1 text-center text-[0.65rem] font-semibold uppercase tracking-[0.3em] text-violet-300/60">
               {isUmbral ? 'Pasillo umbral' : 'Sistema energético'}
@@ -146,7 +141,7 @@ const GatokensRevealModal = ({ open, onClose, isUmbral = false, onProvoca }) => 
               <>
                 <button
                   type="button"
-                  onClick={onProvoca}
+                  onClick={handleProvoca}
                   className="
                     mb-3 w-full rounded-full
                     bg-gradient-to-r from-violet-600 via-purple-600 to-fuchsia-600
