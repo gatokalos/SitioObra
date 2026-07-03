@@ -29,6 +29,7 @@ const Bienvenida = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const [cabinaReached, setCabinaReached] = useState(false);
+  const [journeyStarted, setJourneyStarted] = useState(false);
   const [showLoginOverlay, setShowLoginOverlay] = useState(false);
   const iframeRef = useRef(null);
   const pendingBridgeAuthRef = useRef(null);
@@ -190,6 +191,10 @@ const Bienvenida = () => {
         setShowLoginOverlay(true);
         return;
       }
+      if (type === 'bienvenida:journey-started') {
+        setJourneyStarted(true);
+        return;
+      }
       if (type === 'bienvenida:cabina-reached') {
         setCabinaReached(true);
         return;
@@ -288,8 +293,8 @@ const Bienvenida = () => {
       <button
         type="button"
         onClick={handleFinish}
-        disabled={cabinaReached}
-        className="absolute right-6 top-6 z-10 rounded-full border border-white/20 bg-black/60 px-4 py-2 text-xs uppercase tracking-[0.3em] text-white hover:bg-black/80 disabled:pointer-events-none disabled:opacity-0"
+        disabled={journeyStarted}
+        className="absolute right-6 top-6 z-10 rounded-full border border-white/20 bg-black/60 px-4 py-2 text-xs uppercase tracking-[0.3em] text-white hover:bg-black/80 disabled:pointer-events-none disabled:opacity-0 transition-opacity duration-300"
       >
         Cerrar
       </button>

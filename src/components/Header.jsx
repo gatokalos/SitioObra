@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { motion } from 'framer-motion';
-import { Coffee, Menu, X, Sparkles } from 'lucide-react';
+import { Coffee, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useToast } from '@/components/ui/use-toast';
@@ -12,6 +12,10 @@ import isotipoGatoWebp from '@/assets/isotipo-gato.webp';
 import { INITIAL_GAT_BALANCE, readStoredInt } from '@/components/transmedia/transmediaConstants';
 
 const GAT_BALANCE_STORAGE_KEY = 'gatoencerrado:gatokens-available';
+const GATOKENS_REVEAL_PULSE_EVENT = 'gatoencerrado:gatokens-reveal-pulse';
+const GATOKENS_REVEAL_PULSE_DURATION_MS = 3200;
+const GATOKEN_COIN_SRC =
+  'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/oraculo/gato-moneda.png';
 const readGatBalance = () => {
   const v = readStoredInt(GAT_BALANCE_STORAGE_KEY, INITIAL_GAT_BALANCE);
   return Number.isFinite(v) ? Math.max(Math.trunc(v), 0) : INITIAL_GAT_BALANCE;
@@ -62,6 +66,7 @@ const Header = ({
 
 
   const [gatBalance, setGatBalance] = useState(readGatBalance);
+  const [gatRevealPulse, setGatRevealPulse] = useState(null);
   useEffect(() => {
     const sync = () => setGatBalance(readGatBalance());
     window.addEventListener('gatoencerrado:gatokens-balance-update', sync);
@@ -71,6 +76,33 @@ const Header = ({
       window.removeEventListener('storage', sync);
     };
   }, []);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return undefined;
+    let timeoutId = null;
+
+    const handleRevealPulse = (event) => {
+      const nextBalance = Number(event?.detail?.balance);
+      const duration = Number(event?.detail?.durationMs);
+      const safeDuration = Number.isFinite(duration) && duration > 0
+        ? duration
+        : GATOKENS_REVEAL_PULSE_DURATION_MS;
+
+      if (Number.isFinite(nextBalance)) {
+        setGatBalance(Math.max(Math.trunc(nextBalance), 0));
+      }
+      setGatRevealPulse({ id: Date.now(), durationMs: safeDuration });
+      if (timeoutId) window.clearTimeout(timeoutId);
+      timeoutId = window.setTimeout(() => setGatRevealPulse(null), safeDuration);
+    };
+
+    window.addEventListener(GATOKENS_REVEAL_PULSE_EVENT, handleRevealPulse);
+    return () => {
+      window.removeEventListener(GATOKENS_REVEAL_PULSE_EVENT, handleRevealPulse);
+      if (timeoutId) window.clearTimeout(timeoutId);
+    };
+  }, []);
+
   const [isTransmediaVisible, setIsTransmediaVisible] = useState(false);
   useEffect(() => {
     setIsTransmediaVisible(false);
@@ -164,7 +196,7 @@ const Header = ({
 
   const menuItems = [
     { name: 'Inicio', href: '#hero' },
-    { name: 'Obra', href: '#about' },
+    { name: 'Sobre la obra', href: '#about' },
     { name: 'Perspectivas', href: '#provoca' },
     { name: 'Tras bambalinas', href: '#team' },
     { name: 'Galería fractal', href: '#instagram' },
@@ -177,7 +209,7 @@ const Header = ({
   ];
   const mobileMenuItems = [
     { name: 'Inicio', href: '#hero', description: 'Bienvenida' },
-    { name: 'Obra', href: '#about' },
+    { name: 'Sobre la obra', href: '#about' },
     { name: 'Perspectivas', href: '#provoca' },
     { name: 'Tras bambalinas', href: '#team' },
     { name: 'Galería fractal', href: '#instagram' },
@@ -263,6 +295,9 @@ const Header = ({
     setIsMenuOpen((prev) => !prev);
   }, []);
 
+  const shouldShowGatChip = isTransmediaVisible || Boolean(gatRevealPulse);
+  const gatPulseDurationSeconds = (gatRevealPulse?.durationMs ?? GATOKENS_REVEAL_PULSE_DURATION_MS) / 1000;
+
   return (
     <>
       <motion.header
@@ -326,18 +361,50 @@ const Header = ({
             </div>
 
             <div className="flex items-center gap-3">
-              <div
-                className="inline-flex items-center gap-2 rounded-full border border-cyan-300/25 bg-cyan-400/10 px-3 py-1.5 text-[0.68rem] font-semibold uppercase tracking-[0.24em] text-cyan-100/90 shadow-[0_0_18px_rgba(34,211,238,0.14)]"
+              <motion.div
+                className={`inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-[0.68rem] font-semibold uppercase tracking-[0.24em] backdrop-blur-sm ${
+                  gatRevealPulse
+                    ? 'border-amber-300/45 bg-amber-500/15 text-amber-100 shadow-[0_0_22px_rgba(251,191,36,0.28)]'
+                    : 'border-cyan-300/25 bg-cyan-400/10 text-cyan-100/90 shadow-[0_0_18px_rgba(34,211,238,0.14)]'
+                }`}
+                animate={
+                  gatRevealPulse
+                    ? {
+                        opacity: 1,
+                        scale: [1, 1.08, 1, 1.05, 1],
+                        boxShadow: [
+                          '0 0 18px rgba(34,211,238,0.14)',
+                          '0 0 34px rgba(251,191,36,0.44)',
+                          '0 0 18px rgba(34,211,238,0.14)',
+                          '0 0 28px rgba(251,191,36,0.34)',
+                          '0 0 18px rgba(34,211,238,0.14)',
+                        ],
+                      }
+                    : { opacity: shouldShowGatChip ? 1 : 0, scale: 1 }
+                }
+                transition={
+                  gatRevealPulse
+                    ? { duration: gatPulseDurationSeconds, ease: 'easeInOut' }
+                    : { duration: 0.5, ease: 'easeOut' }
+                }
                 style={{
-                  opacity: isTransmediaVisible ? 1 : 0,
-                  pointerEvents: isTransmediaVisible ? 'auto' : 'none',
-                  transition: 'opacity 0.5s ease',
+                  pointerEvents: shouldShowGatChip ? 'auto' : 'none',
                 }}
               >
-                <Sparkles size={12} className="text-cyan-200" />
+                {gatRevealPulse ? (
+                  <motion.img
+                    src={GATOKEN_COIN_SRC}
+                    alt=""
+                    className="h-3.5 w-3.5 animate-[spin_8s_linear_infinite]"
+                    animate={{ scale: [1, 1.18, 1, 1.12, 1] }}
+                    transition={{ duration: gatPulseDurationSeconds, ease: 'easeInOut' }}
+                  />
+                ) : (
+                  <Sparkles size={12} className="text-cyan-200" />
+                )}
                 <span>Energía</span>
                 <span className="tabular-nums text-white">{gatBalance.toLocaleString('es-MX')} GAT</span>
-              </div>
+              </motion.div>
               {user ? (
                 <Button
                   type="button"
@@ -351,16 +418,6 @@ const Header = ({
                   <Coffee size={20} />
                 </Button>
               ) : null}
-              <Button
-                variant="ghost"
-                size="icon"
-                className="xl:hidden text-slate-200"
-                onClick={() => setIsMenuOpen((prev) => !prev)}
-                aria-expanded={isMenuOpen}
-                aria-label={isMenuOpen ? 'Cerrar menú de navegación' : 'Abrir menú de navegación'}
-              >
-                {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
-              </Button>
             </div>
           </div>
 

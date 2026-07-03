@@ -69,7 +69,7 @@ const Footer = ({
               <span className="font-semibold text-slate-200 mb-4 block">Navegación</span>
               <ul className="space-y-3">
                 {[
-                  { name: 'Obra', href: '#about' },
+                  { name: 'Sobre la obra', href: '#about' },
                   { name: 'Perspectivas', href: '#provoca' },
                   { name: 'Tras bambalinas', href: '#team' },
                   { name: 'Galería fractal', href: '#instagram' },

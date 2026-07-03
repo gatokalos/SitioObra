@@ -11,7 +11,9 @@ const panelVariants = {
 
 const GATOKENS_LS_KEY = 'gatoencerrado:gatokens-available';
 
-const GatokensRevealModal = ({ open, onClose, recommendedShowcaseId, isUmbral = false, onProvoca }) => {
+const GATOKENS_REVEAL_PULSE_EVENT = 'gatoencerrado:gatokens-reveal-pulse';
+
+const GatokensRevealModal = ({ open, onClose, isUmbral = false, onProvoca }) => {
   const [balance, setBalance] = useState(null);
   const navigate = useNavigate();
 
@@ -23,7 +25,10 @@ const GatokensRevealModal = ({ open, onClose, recommendedShowcaseId, isUmbral = 
   }, [open, onClose]);
 
   useEffect(() => {
-    if (!open) return;
+    if (!open) {
+      setBalance(null);
+      return;
+    }
     try {
       const raw = window.localStorage?.getItem(GATOKENS_LS_KEY);
       const parsed = Number.parseInt(raw, 10);
@@ -33,13 +38,18 @@ const GatokensRevealModal = ({ open, onClose, recommendedShowcaseId, isUmbral = 
     }
   }, [open]);
 
-  const handleGoToRecommendation = useCallback(() => {
-    if (!recommendedShowcaseId) return;
-    onClose?.();
-    navigate(
-      `/#transmedia?focus=${encodeURIComponent(recommendedShowcaseId)}&from=bienvenida`
+  useEffect(() => {
+    if (!open || balance == null || typeof window === 'undefined') return;
+    window.dispatchEvent(
+      new CustomEvent(GATOKENS_REVEAL_PULSE_EVENT, {
+        detail: {
+          balance,
+          durationMs: 3200,
+          source: 'gatokens-reveal-modal',
+        },
+      })
     );
-  }, [navigate, onClose, recommendedShowcaseId]);
+  }, [balance, open]);
 
   const handleExplore = useCallback(() => {
     onClose?.();
@@ -86,10 +96,21 @@ const GatokensRevealModal = ({ open, onClose, recommendedShowcaseId, isUmbral = 
 
             {/* moneda */}
             <div className="mb-4 flex justify-center">
-              <img
+              <motion.img
                 src="https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/oraculo/gato-moneda.png"
                 alt="GAToken"
                 className="h-16 w-16 animate-[spin_8s_linear_infinite] drop-shadow-[0_0_18px_rgba(139,92,246,0.55)]"
+                animate={{
+                  scale: [1, 1.12, 1, 1.08, 1],
+                  filter: [
+                    'drop-shadow(0 0 18px rgba(139,92,246,0.55))',
+                    'drop-shadow(0 0 34px rgba(251,191,36,0.7))',
+                    'drop-shadow(0 0 18px rgba(139,92,246,0.55))',
+                    'drop-shadow(0 0 28px rgba(251,191,36,0.55))',
+                    'drop-shadow(0 0 18px rgba(139,92,246,0.55))',
+                  ],
+                }}
+                transition={{ duration: 3.2, ease: 'easeInOut' }}
               />
             </div>
 
@@ -148,35 +169,20 @@ const GatokensRevealModal = ({ open, onClose, recommendedShowcaseId, isUmbral = 
               </>
             ) : (
               <>
-                {recommendedShowcaseId ? (
-                  <button
-                    type="button"
-                    onClick={handleGoToRecommendation}
-                    className="
-                      mb-3 w-full rounded-full
-                      bg-gradient-to-r from-violet-600 via-purple-600 to-fuchsia-600
-                      px-6 py-3 text-sm font-semibold text-white
-                      shadow-[0_8px_28px_rgba(139,92,246,0.38)]
-                      transition-all duration-200
-                      hover:shadow-[0_10px_36px_rgba(139,92,246,0.52)]
-                      hover:scale-[1.02] active:scale-[0.98]
-                    "
-                  >
-                    Recomendación del gato →
-                  </button>
-                ) : null}
                 <button
                   type="button"
                   onClick={handleExplore}
-                  className={`
-                    w-full rounded-full px-6 py-3 text-sm font-semibold transition-all duration-200
-                    ${recommendedShowcaseId
-                      ? 'border border-white/10 bg-white/5 text-slate-300/70 hover:text-slate-200'
-                      : 'bg-gradient-to-r from-violet-600 via-purple-600 to-fuchsia-600 text-white shadow-[0_8px_28px_rgba(139,92,246,0.38)] hover:shadow-[0_10px_36px_rgba(139,92,246,0.52)] hover:scale-[1.02] active:scale-[0.98]'
-                    }
-                  `}
+                  className="
+                    w-full rounded-full
+                    bg-gradient-to-r from-violet-600 via-purple-600 to-fuchsia-600
+                    px-6 py-3 text-sm font-semibold text-white
+                    shadow-[0_8px_28px_rgba(139,92,246,0.38)]
+                    transition-all duration-200
+                    hover:shadow-[0_10px_36px_rgba(139,92,246,0.52)]
+                    hover:scale-[1.02] active:scale-[0.98]
+                  "
                 >
-                  {recommendedShowcaseId ? 'Conocer la Obra' : 'Explorar el sitio →'}
+                  Conocer la Obra
                 </button>
               </>
             )}
