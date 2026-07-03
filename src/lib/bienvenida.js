@@ -7,6 +7,7 @@ const SKIP_KEY = 'bienvenida:skip';
 const FORCE_ON_LOGIN_KEY = 'bienvenida:force-on-login';
 const TRANSMEDIA_INTENT_KEY = 'bienvenida:transmedia-intent';
 const FLOW_GOAL_KEY = 'bienvenida:flow-goal';
+const GATOKENS_REVEAL_PENDING_KEY = 'bienvenida:gatokens-reveal-pending';
 const QA_ALWAYS_FRESH_USER_IDS = new Set([
   '33556201-8564-4e05-8e66-aae149348872',
 ]);
@@ -95,5 +96,35 @@ export const consumeBienvenidaTransmediaIntent = () => {
     return parsed;
   } catch {
     return null;
+  }
+};
+
+export const setBienvenidaGatokensRevealPending = (payload = {}) => {
+  const safePayload = payload && typeof payload === 'object' ? payload : {};
+  try {
+    safeSetItem(
+      GATOKENS_REVEAL_PENDING_KEY,
+      JSON.stringify({
+        ...safePayload,
+        isUmbral: safePayload.isUmbral !== false,
+        source: safePayload.source || 'bienvenida',
+        requestedAt: Date.now(),
+      })
+    );
+  } catch {
+    safeSetItem(GATOKENS_REVEAL_PENDING_KEY, JSON.stringify({ isUmbral: true, source: 'bienvenida' }));
+  }
+};
+
+export const consumeBienvenidaGatokensRevealPending = () => {
+  const raw = safeGetItem(GATOKENS_REVEAL_PENDING_KEY);
+  if (!raw) return null;
+  safeRemoveItem(GATOKENS_REVEAL_PENDING_KEY);
+  try {
+    const parsed = JSON.parse(raw);
+    if (!parsed || typeof parsed !== 'object') return { isUmbral: true, source: 'bienvenida' };
+    return parsed;
+  } catch {
+    return { isUmbral: true, source: 'bienvenida' };
   }
 };

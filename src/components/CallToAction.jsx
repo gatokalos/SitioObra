@@ -823,7 +823,7 @@ const CallToAction = ({ barsIntroDelayMs = 0 }) => {
       // Paso umbral preservado para uso futuro desde otro punto del sitio:
       // setBienvenidaFlowGoal('subscription');
       // setBienvenidaForceOnLogin();
-      setCheckoutStatus('Inicia sesión para activar tu huella aquí mismo.');
+      setCheckoutStatus('Inicia sesión para dar el siguiente paso.');
       clearBienvenidaFlowGoal();
       clearBienvenidaForceOnLogin();
       safeSetItem(
@@ -1115,7 +1115,7 @@ const CallToAction = ({ barsIntroDelayMs = 0 }) => {
 
       <div ref={embeddedCheckoutRef} className="pt-1">
         {checkoutStatus ? (
-          !user && checkoutStatus === 'Inicia sesión para activar tu huella aquí mismo.' ? (
+          !user && checkoutStatus === 'Inicia sesión para dar el siguiente paso.' ? (
             <p className="text-sm text-slate-200">
               <button
                 type="button"
@@ -1124,7 +1124,7 @@ const CallToAction = ({ barsIntroDelayMs = 0 }) => {
               >
                 Inicia sesión
               </button>{' '}
-              para activar tu huella aquí mismo.
+              para dar el siguiente paso.
             </p>
           ) : (
             <p className="text-sm text-slate-200">{checkoutStatus}</p>

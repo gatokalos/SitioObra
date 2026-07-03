@@ -3,6 +3,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/SupabaseAuthContext';
 import {
   setBienvenidaTransmediaIntent,
+  setBienvenidaGatokensRevealPending,
   getBienvenidaFlowGoal,
   clearBienvenidaFlowGoal,
   clearBienvenidaPending,
@@ -23,6 +24,22 @@ const BRIDGE_AUTH_STORAGE_KEY = 'gatoencerrado:bienvenida-bridge-auth:v1';
 const BRIDGE_EVENT_REQUEST_TRAZOS = 'bienvenida:request-trazos';
 const BRIDGE_EVENT_TRAZOS_ERROR = 'sitioobra:trazos-error';
 const GATO_API_URL = (import.meta.env.VITE_OBRA_API_URL ?? 'https://api.gatoencerrado.ai').replace(/\/+$/, '');
+
+const withGatokensRevealParam = (path = '/') => {
+  const rawPath = typeof path === 'string' && path.trim() ? path.trim() : '/';
+  try {
+    const base = typeof window !== 'undefined' ? window.location.origin : 'https://gatoencerrado.local';
+    const url = new URL(rawPath, base);
+    url.searchParams.set('gatokens', 'reveal');
+    return `${url.pathname}${url.search}${url.hash}`;
+  } catch {
+    const [pathAndSearch, hash = ''] = rawPath.split('#');
+    const [pathname = '/', search = ''] = pathAndSearch.split('?');
+    const params = new URLSearchParams(search);
+    params.set('gatokens', 'reveal');
+    return `${pathname || '/'}?${params.toString()}${hash ? `#${hash}` : ''}`;
+  }
+};
 
 const Bienvenida = () => {
   const location = useLocation();
@@ -200,8 +217,8 @@ const Bienvenida = () => {
         return;
       }
       if (type === 'bienvenida:gatokens-update') {
-        const value = event.data?.gatokens;
-        if (typeof value === 'number' && value > 0) {
+        const value = Number(event.data?.gatokens ?? payload?.gatokens ?? event.data?.balance ?? payload?.balance);
+        if (Number.isFinite(value) && value > 0) {
           try {
             window.localStorage.setItem('gatoencerrado:gatokens-available', String(value));
             window.localStorage.setItem('gatoencerrado:bienvenida-completed', '1');
@@ -211,6 +228,13 @@ const Bienvenida = () => {
               })
             );
           } catch {}
+          setBienvenidaGatokensRevealPending({
+            ...((payload && typeof payload === 'object') ? payload : {}),
+            balance: value,
+            isUmbral: true,
+            source: 'bienvenida:gatokens-update',
+          });
+          setBienvenidaReturnPath(withGatokensRevealParam(getBienvenidaReturnPath() || '/'));
         }
         return;
       }
@@ -223,20 +247,27 @@ const Bienvenida = () => {
           handleFinish();
           return;
         }
-        if (payload && typeof payload === 'object') {
-          setBienvenidaTransmediaIntent(payload);
-          if (payload.obraPregunta && typeof payload.obraPregunta === 'string') {
+        const normalizedPayload = payload && typeof payload === 'object'
+          ? { ...payload, isUmbral: payload.isUmbral !== false }
+          : { isUmbral: true };
+        if (normalizedPayload && typeof normalizedPayload === 'object') {
+          setBienvenidaTransmediaIntent(normalizedPayload);
+          setBienvenidaGatokensRevealPending({
+            ...normalizedPayload,
+            source: 'bienvenida:open-transmedia',
+          });
+          if (normalizedPayload.obraPregunta && typeof normalizedPayload.obraPregunta === 'string') {
             try {
               window.localStorage.setItem(
                 'gatoencerrado:provoca-draft',
-                JSON.stringify({ quote: payload.obraPregunta.trim() })
+                JSON.stringify({ quote: normalizedPayload.obraPregunta.trim() })
               );
             } catch {}
           }
         }
         const returnPath = getBienvenidaReturnPath() || '/';
         const returnPathClean = String(returnPath).split('#')[0].split('?')[0] || '/';
-        setBienvenidaReturnPath(`${returnPathClean}?gatokens=reveal`);
+        setBienvenidaReturnPath(withGatokensRevealParam(returnPathClean));
         handleFinish();
       }
       if (type === BRIDGE_EVENT_REQUEST_TRAZOS) {

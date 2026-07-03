@@ -126,7 +126,7 @@ No necesitas entender dónde estás.
 Solo notar si algo de lo que miraste
 se quedó moviéndose adentro.
 
-#GatoEncerrado tiene más de una ventana.
+#GatoEncerrado tiene más de una entrada.
     
     `}
 

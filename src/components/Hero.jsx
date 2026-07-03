@@ -11,7 +11,7 @@ const HashtagButton3D = React.lazy(() => import('@/components/HashtagButton3D'))
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useToast } from '@/components/ui/use-toast';
 import { useAuth } from '@/contexts/SupabaseAuthContext';
-import { setBienvenidaReturnPath } from '@/lib/bienvenida';
+import { consumeBienvenidaGatokensRevealPending, setBienvenidaReturnPath } from '@/lib/bienvenida';
 import {
   getHeroAmbientAudio,
   getHeroAmbientState,
@@ -24,7 +24,7 @@ import {
   setHeroAmbientMuted,
 } from '@/lib/heroAmbientAudio';
 import { createPortalLaunchState } from '@/lib/portalNavigation';
-import { safeSetItem } from '@/lib/safeStorage';
+import { safeGetItem, safeSetItem } from '@/lib/safeStorage';
 import { extractRecommendedAppId, resolveShowcaseFromAppId } from '@/lib/bienvenidaBridge';
 import { NARRATIVE_VIDEO_URL_DESKTOP } from '@/lib/narrativeVideo';
 import { showcaseDefinitions } from '@/components/transmedia/transmediaConstants';
@@ -140,22 +140,33 @@ const Hero = () => {
       dirty = true;
     }
 
-    if (params.get('gatokens') === 'reveal') {
+    const hasGatokensRevealParam = params.get('gatokens') === 'reveal';
+    const pendingGatokensReveal = consumeBienvenidaGatokensRevealPending();
+
+    if (hasGatokensRevealParam || pendingGatokensReveal) {
       // Peek at bienvenida recommendation before opening modal so both state updates
       // land in the same React batch — avoids a render with recommendedShowcaseId = null.
+      let nextIsUmbralReveal = Boolean(hasGatokensRevealParam || pendingGatokensReveal?.isUmbral);
+      let recommendedAppId = extractRecommendedAppId(pendingGatokensReveal);
       try {
-        const raw = localStorage.getItem('bienvenida:transmedia-intent');
+        const raw = safeGetItem('bienvenida:transmedia-intent');
         if (raw) {
           const intent = JSON.parse(raw);
-          const appId = extractRecommendedAppId(intent);
-          const showcaseId = resolveShowcaseFromAppId(appId, showcaseDefinitions);
-          if (showcaseId) setRecommendedVitranaId(showcaseId);
-          if (intent?.isUmbral) setIsUmbralReveal(true);
+          recommendedAppId = extractRecommendedAppId(intent) || recommendedAppId;
+          if (intent?.isUmbral) nextIsUmbralReveal = true;
         }
       } catch {}
+      const showcaseId = resolveShowcaseFromAppId(recommendedAppId, showcaseDefinitions);
+      if (showcaseId) setRecommendedVitranaId(showcaseId);
+      if (pendingGatokensReveal?.source?.startsWith?.('bienvenida')) {
+        nextIsUmbralReveal = true;
+      }
+      setIsUmbralReveal(nextIsUmbralReveal);
       setIsGatokensModalOpen(true);
-      params.delete('gatokens');
-      dirty = true;
+      if (hasGatokensRevealParam) {
+        params.delete('gatokens');
+        dirty = true;
+      }
     }
 
     if (dirty) {
@@ -163,8 +174,7 @@ const Hero = () => {
       const cleanUrl = location.pathname + (cleanSearch ? `?${cleanSearch}` : '') + location.hash;
       window.history.replaceState({}, '', cleanUrl);
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [location.hash, location.pathname, location.search, toast]);
 
   // Detect pending vitrana stored before OAuth redirect → auto-open standalone video
   useEffect(() => {

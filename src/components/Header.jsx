@@ -8,10 +8,12 @@ import { useAuth } from '@/contexts/SupabaseAuthContext';
 import LoginOverlay from '@/components/ContributionModal/LoginOverlay';
 import MobileMenuOverlay from '@/components/MobileMenuOverlay';
 import { createPortalLaunchState } from '@/lib/portalNavigation';
+import { safeGetItem, safeSetItem } from '@/lib/safeStorage';
 import isotipoGatoWebp from '@/assets/isotipo-gato.webp';
 import { INITIAL_GAT_BALANCE, readStoredInt } from '@/components/transmedia/transmediaConstants';
 
 const GAT_BALANCE_STORAGE_KEY = 'gatoencerrado:gatokens-available';
+const GAT_CHIP_PINNED_STORAGE_KEY = 'gatoencerrado:gatokens-chip-pinned:v1';
 const GATOKENS_REVEAL_PULSE_EVENT = 'gatoencerrado:gatokens-reveal-pulse';
 const GATOKENS_REVEAL_ACK_EVENT = 'gatoencerrado:gatokens-reveal-ack';
 const GATOKEN_COIN_SRC =
@@ -20,6 +22,7 @@ const readGatBalance = () => {
   const v = readStoredInt(GAT_BALANCE_STORAGE_KEY, INITIAL_GAT_BALANCE);
   return Number.isFinite(v) ? Math.max(Math.trunc(v), 0) : INITIAL_GAT_BALANCE;
 };
+const readGatChipPinned = () => safeGetItem(GAT_CHIP_PINNED_STORAGE_KEY) === '1';
 
 const MOBILE_FULLSCREEN_MENU_PHASE_A_ENABLED = true;
 const PUBLIC_HEADER_LOGO_SRC = '/assets/header-logo.png';
@@ -68,9 +71,12 @@ const Header = ({
 
   const [gatBalance, setGatBalance] = useState(readGatBalance);
   const [gatRevealPulse, setGatRevealPulse] = useState(null);
-  const [isGatChipPinned, setIsGatChipPinned] = useState(false);
+  const [isGatChipPinned, setIsGatChipPinned] = useState(readGatChipPinned);
   useEffect(() => {
-    const sync = () => setGatBalance(readGatBalance());
+    const sync = () => {
+      setGatBalance(readGatBalance());
+      setIsGatChipPinned(readGatChipPinned());
+    };
     window.addEventListener('gatoencerrado:gatokens-balance-update', sync);
     window.addEventListener('storage', sync);
     return () => {
@@ -88,11 +94,13 @@ const Header = ({
       if (Number.isFinite(nextBalance)) {
         setGatBalance(Math.max(Math.trunc(nextBalance), 0));
       }
+      safeSetItem(GAT_CHIP_PINNED_STORAGE_KEY, '1');
       setIsGatChipPinned(true);
       setGatRevealPulse({ id: Date.now() });
     };
 
     const handleRevealAck = () => {
+      safeSetItem(GAT_CHIP_PINNED_STORAGE_KEY, '1');
       setIsGatChipPinned(true);
       setGatRevealPulse(null);
     };
@@ -109,14 +117,36 @@ const Header = ({
   useEffect(() => {
     setIsTransmediaVisible(false);
     if (!showTransmediaNav) return undefined;
-    const el = document.getElementById('transmedia');
-    if (!el) return undefined;
-    const observer = new IntersectionObserver(
-      ([entry]) => setIsTransmediaVisible(entry.isIntersecting),
-      { threshold: 0.05 }
-    );
-    observer.observe(el);
-    return () => observer.disconnect();
+    if (typeof window === 'undefined') return undefined;
+
+    let observer = null;
+    let retryId = null;
+    let attempts = 0;
+    const maxAttempts = 40;
+
+    const attachObserver = () => {
+      const el = document.getElementById('transmedia');
+      if (el) {
+        observer = new IntersectionObserver(
+          ([entry]) => setIsTransmediaVisible(entry.isIntersecting),
+          { threshold: 0.05 }
+        );
+        observer.observe(el);
+        return;
+      }
+
+      attempts += 1;
+      if (attempts < maxAttempts) {
+        retryId = window.setTimeout(attachObserver, 100);
+      }
+    };
+
+    attachObserver();
+
+    return () => {
+      if (observer) observer.disconnect();
+      if (retryId) window.clearTimeout(retryId);
+    };
   }, [showTransmediaNav]);
 
   const handleCloseOverlay = useCallback(() => setShowLoginOverlay(false), []);

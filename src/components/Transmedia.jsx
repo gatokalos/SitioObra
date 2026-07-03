@@ -1266,6 +1266,7 @@ const Transmedia = ({ allianceOnlyMode = false }) => {
       safeRemoveItem('gatoencerrado:showcase-boosts');
       safeRemoveItem('gatoencerrado:showcase-energy');
       safeRemoveItem('gatoencerrado:gatokens-available');
+      safeRemoveItem('gatoencerrado:gatokens-chip-pinned:v1');
       safeRemoveItem(EXPLORER_BADGE_STORAGE_KEY);
       safeRemoveItem('gx_anon_id');
       // Nueva economía — bienvenida + progreso resonance por portal
@@ -5123,11 +5124,11 @@ Silvestre, un hombre en sus treintas, comienza a perder la frontera entre lo que
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8, ease: 'easeOut' }}
               viewport={{ once: true }}
-              className="text-center mb-[clamp(2.5rem,5.5vh,4rem)] space-y-[clamp(1.25rem,2.2vh,1.75rem)] min-h-[clamp(210px,27vh,260px)]"
+              className="text-center mb-[clamp(2.5rem,5.5vh,4rem)] space-y-[clamp(1.25rem,2.2vh,1.75rem)] min-h-[clamp(210px,27vh,260px)] min-[700px]:max-lg:mb-8 min-[700px]:max-lg:min-h-[180px]"
             >
-              <p className="text-xs uppercase tracking-[0.4em] text-slate-400/70">Narrativa Transmedia</p>
+              <p className="text-xs uppercase tracking-[0.4em] text-slate-400/70">Narrativa Expandida</p>
               <h2 className="font-display text-4xl md:text-5xl font-medium text-gradient italic">
-                La Obra en 9 formas
+                Vitrinas al universo
               </h2>
               <p className="text-lg text-slate-300/80 max-w-3xl mx-auto leading-relaxed font-light">
     <em>Es un gato encerrado</em> no se acaba en el teatro.<br />
@@ -5143,7 +5144,7 @@ Silvestre, un hombre en sus treintas, comienza a perder la frontera entre lo que
 
           {!allianceOnlyMode ? (
             <>
-              <div className="lg:hidden space-y-6">
+              <div className="lg:hidden space-y-6 min-[700px]:max-lg:space-y-5">
             {(() => {
               const format = formats[mobileShowcaseIndex % formats.length];
               const currentIndex = mobileShowcaseIndex % formats.length;
@@ -5206,7 +5207,7 @@ Silvestre, un hombre en sus treintas, comienza a perder la frontera entre lo que
                       </motion.svg>
                     </div>
                   ) : (
-                    <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-3">
+                    <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-3 min-[700px]:max-lg:mx-auto min-[700px]:max-lg:max-w-[520px]">
                       <button
                         type="button"
                         disabled={isShowcaseOpenTransitionActive}
@@ -5265,7 +5266,7 @@ Silvestre, un hombre en sus treintas, comienza a perder la frontera entre lo que
                     }
                     whileTap={isShowcaseOpenTransitionActive ? undefined : { scale: 0.985, y: -2 }}
                     transition={isSafari ? { duration: 0.12, ease: 'linear' } : { duration: 0.28, ease: 'easeOut' }}
-                    className={`safari-stable-layer group vitrina-pozo-glass vitrina-pozo--${format.id} glass-effect hover-glow rounded-2xl border border-white/10 bg-black/30 overflow-hidden text-left shadow-[0_20px_60px_rgba(0,0,0,0.55)] active:border-purple-300/40 active:shadow-[0_24px_70px_rgba(88,28,135,0.45)] ${
+                    className={`safari-stable-layer group vitrina-pozo-glass vitrina-pozo--${format.id} glass-effect hover-glow rounded-2xl border border-white/10 bg-black/30 overflow-hidden text-left shadow-[0_20px_60px_rgba(0,0,0,0.55)] active:border-purple-300/40 active:shadow-[0_24px_70px_rgba(88,28,135,0.45)] min-[700px]:max-lg:mx-auto min-[700px]:max-lg:max-w-[520px] ${
                       isDimmedTile ? 'opacity-70' : ''
                     } ${
                       isRecommendedTile
@@ -5284,7 +5285,7 @@ Silvestre, un hombre en sus treintas, comienza a perder la frontera entre lo que
                     onTouchEnd={isShowcaseOpenTransitionActive ? undefined : handleMobileShowcaseTouchEnd}
                     onTouchCancel={isShowcaseOpenTransitionActive ? undefined : handleMobileShowcaseTouchEnd}
                   >
-                    <div className="relative vitrina-pozo-glass__media h-[500px] max-[375px]:h-[360px] bg-slate-500/20 overflow-hidden">
+                    <div className="relative vitrina-pozo-glass__media h-[500px] max-[375px]:h-[360px] min-[700px]:max-lg:h-[620px] bg-slate-500/20 overflow-hidden">
                       {format.image ? (
                         <img
                           src={format.image}
@@ -5348,7 +5349,7 @@ Silvestre, un hombre en sus treintas, comienza a perder la frontera entre lo que
                       />
                       <div className="absolute inset-0 opacity-30 mix-blend-screen bg-[radial-gradient(circle_at_top,_rgba(255,255,255,0.25),_transparent_55%)]" />
                     </div>
-                    <div className="relative z-10 px-6 pb-6 pt-4 space-y-4">
+                    <div className="relative z-10 px-6 pb-6 pt-4 space-y-4 min-[700px]:max-lg:space-y-3">
                       <div className="flex items-center gap-3">
                         <Icon
                           size={24}
