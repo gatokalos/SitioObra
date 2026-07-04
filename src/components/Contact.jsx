@@ -182,12 +182,6 @@ const Contact = () => {
     window.dispatchEvent(new CustomEvent('open-login-modal'));
   }, [isLoggedIn]);
 
-  const contributionButtonClassName = [
-    'border-slate-100/20 text-slate-200 hover:bg-slate-100/10 px-6 py-3 rounded-full font-semibold flex items-center gap-2 transition',
-    isLoggedIn
-      ? 'bg-gradient-to-r from-emerald-500/90 to-emerald-600/90 hover:from-emerald-400/90 hover:to-emerald-500/90 shadow-[0_0_35px_rgba(16,185,129,0.5)] ring-2 ring-emerald-400/30 text-white border-transparent'
-      : 'bg-black/30 border border-slate-100/20'
-  ].join(' ');
   const causeSiteOverlay = typeof document !== 'undefined'
     ? createPortal(
       <AnimatePresence>
@@ -390,7 +384,7 @@ const Contact = () => {
                   <Button
                     type="submit"
                     disabled={status === 'loading'}
-                    className="flex-1 bg-gradient-to-r from-purple-600/80 to-indigo-600/80 hover:from-purple-600 hover:to-indigo-600 text-white py-3 rounded-lg font-semibold flex items-center justify-center gap-2 hover-glow"
+                    className="ge-chip-action ge-chip-action--primary flex-1"
                   >
                     <Send size={20} />
                     {status === 'loading' ? 'Enviando…' : 'Enviar'}
@@ -399,7 +393,9 @@ const Contact = () => {
                     type="button"
                     onClick={handleOpenLoginOverlay}
                     disabled={isLoggedIn}
-                    className={`flex-1 lg:flex-none ${contributionButtonClassName}`}
+                    className={`ge-chip-action flex-1 lg:flex-none ${
+                      isLoggedIn ? 'ge-chip-action--active' : 'ge-chip-action--secondary'
+                    }`}
                   >
                     <PenLine size={18} />
                     {isLoggedIn ? 'Espera tu respuesta' : 'Recibir notificaciones'}
@@ -435,8 +431,8 @@ const Contact = () => {
             <div className="glass-effect rounded-xl p-6">
               <h3 className="font-display text-xl font-medium text-slate-100 mb-4">Prensa</h3>
               <p className="text-slate-300/70 mb-4 font-light">Material oficial, dossier e información para medios y difusión cultural.</p>
-              <Button onClick={handleActionClick} variant="outline" className="border-purple-400/50 text-purple-300 hover:bg-purple-500/20 hover:border-purple-400">
-                <Download size={18} className="mr-2" />
+              <Button onClick={handleActionClick} variant="outline" className="ge-chip-action ge-chip-action--secondary ge-chip-action--compact">
+                <Download size={18} />
                 Descargar dossier
               </Button>
             </div>

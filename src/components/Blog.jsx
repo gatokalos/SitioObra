@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Calendar, Clock, Compass, Feather, RefreshCw, Search, Send, X } from 'lucide-react';
+import { ArrowRight, Calendar, Clock, Compass, Feather, RefreshCw, Search, Send, X } from 'lucide-react';
 import { useSearch } from '@/hooks/useSearch';
 import { Button } from '@/components/ui/button';
 import { toast } from '@/components/ui/use-toast';
@@ -230,7 +231,7 @@ const ArticleCard = ({ post, onSelect }) => {
           {post.tags.map((tag) => (
             <span
               key={tag}
-              className="text-xs uppercase tracking-wider text-purple-200/80 bg-purple-500/10 border border-purple-400/20 px-3 py-1 rounded-full"
+              className="ge-tag"
             >
               {tag}
             </span>
@@ -272,7 +273,7 @@ const ArticleCard = ({ post, onSelect }) => {
       <Button
         onClick={() => onSelect(post)}
         variant="outline"
-        className="self-start border-purple-400/40 text-purple-200 hover:bg-purple-500/20"
+        className="ge-chip-action ge-chip-action--secondary ge-chip-action--compact self-start"
       >
         Leer artículo completo
       </Button>
@@ -410,7 +411,7 @@ const FullArticle = ({ post, onClose }) => {
         <Button
           onClick={onClose}
           variant="outline"
-          className="border-white/20 text-slate-200 hover:bg-white/10 hover:text-white"
+          className="ge-chip-action ge-chip-action--secondary ge-chip-action--compact"
         >
           Cerrar línea editorial
         </Button>
@@ -558,7 +559,7 @@ const ArticleInteractionPanel = ({ post }) => {
             size="lg"
             onClick={handleShare}
             disabled={status.share === 'loading'}
-            className="border-purple-400/40 text-purple-200 hover:bg-purple-500/20 w-full sm:w-auto whitespace-normal break-words text-center leading-snug inline-flex items-center justify-center gap-2"
+            className="ge-chip-action ge-chip-action--primary ge-chip-action--wrap w-full sm:w-auto"
           >
             <Send size={18} />
             Compartir este artículo
@@ -568,7 +569,7 @@ const ArticleInteractionPanel = ({ post }) => {
             size="lg"
             onClick={handleNotify}
             disabled={status.notify === 'loading'}
-            className="border-slate-400/40 text-purple-200 hover:bg-purple-500/20 w-full sm:w-auto whitespace-normal break-words text-center leading-snug inline-flex items-center gap-3 pl-4"
+            className="ge-chip-action ge-chip-action--secondary ge-chip-action--wrap w-full sm:w-auto"
           >
             <span className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-fuchsia-200/40 bg-purple-500/20 shadow-[0_0_16px_rgba(168,85,247,0.45)] overflow-hidden flex-shrink-0">
               {authorAvatar ? (
@@ -592,6 +593,7 @@ const ArticleInteractionPanel = ({ post }) => {
 };
 
 const Blog = ({ posts = [], isLoading = false, error = null, showBuscador = false }) => {
+  const location = useLocation();
   const {
     query: faqQuery,
     setQuery: setFaqQuery,
@@ -705,7 +707,6 @@ const Blog = ({ posts = [], isLoading = false, error = null, showBuscador = fals
     [getCategoryReadTimeLabel]
   );
   const featuredEditorialCategory = editorialCategories[0] ?? null;
-  const secondaryEditorialCategories = editorialCategories.slice(1);
 
   const handleSelectPost = useCallback(
     (post) => {
@@ -737,6 +738,17 @@ const Blog = ({ posts = [], isLoading = false, error = null, showBuscador = fals
       articlesRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
     });
   }, [isMobileViewport]);
+
+  useEffect(() => {
+    const rawHash = String(location.hash || '');
+    if (!rawHash.startsWith('#dialogo-critico')) return;
+    const [, hashQuery = ''] = rawHash.split('?');
+    if (!hashQuery) return;
+    const focus = new URLSearchParams(hashQuery).get('focus');
+    if (focus && BLOG_CATEGORY_ORDER.includes(focus)) {
+      handleExploreCategory(focus);
+    }
+  }, [location.hash, handleExploreCategory]);
 
   const handleCloseEditorialLine = useCallback(() => {
     setActivePost(null);
@@ -944,7 +956,7 @@ const Blog = ({ posts = [], isLoading = false, error = null, showBuscador = fals
                           onKeyDown={(event) => {
                             if (event.key === 'Enter' && faqQuery.trim().length >= 2) faqSearch();
                           }}
-                          placeholder="A tus órdenes... 😸"
+                          placeholder="A tus órdenes… colegato."
                           disabled={faqIsLoading}
                           className="form-surface form-surface--pill h-12 w-full border border-violet-100/45 bg-white/90 py-2 pl-11 pr-12 text-sm text-slate-900 placeholder:text-slate-400 disabled:opacity-60"
                         />
@@ -1045,7 +1057,7 @@ const Blog = ({ posts = [], isLoading = false, error = null, showBuscador = fals
                                 <button
                                   type="button"
                                   onClick={() => document.querySelector('#contact')?.scrollIntoView({ behavior: 'smooth', block: 'start' })}
-                                  className="mt-3 inline-flex items-center gap-1.5 rounded-full border border-violet-400/40 bg-violet-500/20 px-4 py-1.5 text-xs uppercase tracking-[0.18em] text-violet-200 hover:bg-violet-500/35 hover:text-white transition"
+                                  className="ge-chip-action ge-chip-action--secondary ge-chip-action--compact mt-3"
                                 >
                                   Escríbenos algo de tu autoría →
                                 </button>
@@ -1063,11 +1075,11 @@ const Blog = ({ posts = [], isLoading = false, error = null, showBuscador = fals
                         type="button"
                         variant="outline"
                         onClick={() => setFaqPage((p) => (p + 1) % faqPageCount)}
-                        className="group h-8 rounded-full border-violet-300/55 bg-violet-500/12 px-4 text-[10px] uppercase tracking-[0.3em] text-violet-100 hover:border-violet-300/85 hover:bg-violet-500/22 hover:text-white"
+                        className="group ge-chip-filter ge-chip-filter--active ge-chip-filter--compact"
                       >
-                        <Compass size={12} className="mr-1.5 shrink-0" aria-hidden="true" />
+                        <Compass size={12} className="shrink-0" aria-hidden="true" />
                         Preguntas de la comunidad
-                        <RefreshCw size={11} className="ml-1.5 shrink-0 transition duration-300 group-hover:rotate-180" aria-hidden="true" />
+                        <RefreshCw size={11} className="shrink-0 transition duration-300 group-hover:rotate-180" aria-hidden="true" />
                       </Button>
 
                       <div className="flex flex-wrap gap-2">
@@ -1076,7 +1088,7 @@ const Blog = ({ posts = [], isLoading = false, error = null, showBuscador = fals
                             type="button"
                             key={prompt}
                             onClick={() => handleFaqPromptSelect(prompt)}
-                            className="rounded-full border border-violet-100/20 bg-white/8 px-4 py-2 text-left text-sm leading-snug text-violet-50 transition hover:border-violet-100/40 hover:bg-white/12"
+                            className="ge-chip-action ge-chip-action--secondary ge-chip-action--prompt"
                           >
                             {prompt}
                           </button>
@@ -1091,7 +1103,7 @@ const Blog = ({ posts = [], isLoading = false, error = null, showBuscador = fals
                               exit={{ opacity: 0 }}
                               transition={{ duration: 0.4 }}
                               onClick={() => handleFaqPromptSelect(prompt)}
-                              className="rounded-full border border-violet-100/20 bg-white/8 px-4 py-2 text-left text-sm leading-snug text-violet-50 transition hover:border-violet-100/40 hover:bg-white/12"
+                              className="ge-chip-action ge-chip-action--secondary ge-chip-action--prompt"
                             >
                               {prompt}
                             </motion.button>
@@ -1106,45 +1118,18 @@ const Blog = ({ posts = [], isLoading = false, error = null, showBuscador = fals
               </AnimatePresence>
 
               <div className="grid gap-6 md:grid-cols-3">
-                {featuredEditorialCategory ? (
-                  <article className="glass-effect rounded-2xl border border-violet-300/30 bg-gradient-to-br from-[#0a1127]/90 via-[#111735]/85 to-[#1a1340]/72 p-6 md:p-7">
-                    <div className="flex flex-wrap items-center justify-between gap-3">
-                      <p className="text-xs uppercase tracking-[0.35em] text-violet-200/85">
-                        {featuredEditorialCategory.label}
-                      </p>
-                      <div className="flex flex-wrap items-center gap-2">
-                        <span className="rounded-full border border-white/15 bg-white/5 px-3 py-1 text-[10px] uppercase tracking-[0.26em] text-slate-300/85">
-                          {featuredEditorialCategory.readingTimeLabel}
-                        </span>
-                      </div>
-                    </div>
-                    <p className="mt-3 text-[1.02rem] font-medium leading-relaxed text-slate-100">
-                      {featuredEditorialCategory.hook}
-                    </p>
-                    <p className="mt-2 text-sm leading-relaxed text-slate-300/85">
-                      {featuredEditorialCategory.summary}
-                    </p>
-                    <Button
-                      type="button"
-                      variant="link"
-                      onClick={() => handleExploreCategory(featuredEditorialCategory.key)}
-                      className="mt-3 px-0 text-violet-200 hover:text-white"
-                    >
-                      {featuredEditorialCategory.ctaLabel}
-                    </Button>
-                  </article>
-                ) : null}
-
-                {secondaryEditorialCategories.map((category) => (
+                {editorialCategories.map((category) => (
                   <article
                     key={category.key}
-                    className="glass-effect rounded-2xl border border-white/10 bg-black/25 p-6"
+                    className={`glass-effect hover-glow rounded-2xl border border-white/10 bg-black/25 p-6 ${
+                      activeCategory === category.key ? 'hover-glow--selected' : ''
+                    }`}
                   >
                     <div className="flex flex-wrap items-center justify-between gap-2">
                       <p className="text-xs uppercase tracking-[0.35em] text-slate-300/85">
                         {category.label}
                       </p>
-                      <span className="rounded-full border border-white/15 bg-white/5 px-2.5 py-0.5 text-[10px] uppercase tracking-[0.24em] text-slate-400/90">
+                      <span className="ge-tag ge-tag--meta">
                         {category.readingTimeLabel}
                       </span>
                     </div>
@@ -1158,9 +1143,10 @@ const Blog = ({ posts = [], isLoading = false, error = null, showBuscador = fals
                       type="button"
                       variant="link"
                       onClick={() => handleExploreCategory(category.key)}
-                      className="mt-3 self-start px-0 text-purple-300 hover:text-white"
+                      className="mt-3 self-start px-0 inline-flex items-center gap-1 text-purple-300 hover:text-white"
                     >
                       {category.ctaLabel}
+                      <ArrowRight size={14} />
                     </Button>
                   </article>
                 ))}
@@ -1194,7 +1180,7 @@ const Blog = ({ posts = [], isLoading = false, error = null, showBuscador = fals
                       type="button"
                       variant="outline"
                       onClick={() => setShowAllPosts(true)}
-                      className="border-white/20 text-slate-200 hover:bg-white/10"
+                      className="ge-chip-action ge-chip-action--secondary ge-chip-action--compact"
                     >
                       Mostrar siguientes textos
                     </Button>
@@ -1220,10 +1206,10 @@ const Blog = ({ posts = [], isLoading = false, error = null, showBuscador = fals
                         type="button"
                         key={category}
                         onClick={() => setActiveCategory(category)}
-                        className={`rounded-full border px-4 py-2 text-sm transition ${
+                        className={`ge-chip-filter ${
                           activeCategory === category
-                            ? 'border-purple-400/60 bg-purple-500/20 text-purple-100'
-                            : 'border-white/10 text-slate-300 hover:border-purple-300/40 hover:text-purple-100'
+                            ? 'ge-chip-filter--active'
+                            : 'ge-chip-filter--idle'
                         }`}
                       >
                         {BLOG_CATEGORY_CONFIG[category].label}

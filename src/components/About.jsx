@@ -173,6 +173,8 @@ export const ProvocaSection = () => {
   } = useSilvestreVoice();
   const isSilvestreThinking = isSilvestreFetching || isSilvestreResponding;
   const isSendVoiceDisabled = isSubmittingVoice;
+  const hasVoiceDraftText = voiceDraft.trim().length > 0;
+  const isShareButtonInSendMode = isVoiceInputOpen && hasVoiceDraftText;
   const isEscucharButtonDisabled =
   isSilvestreThinking || hasConsumedListenTurn;
   const voicesPool = approvedTestimonials.length > 0 ? approvedTestimonials : fallbackTestimonials;
@@ -224,12 +226,12 @@ export const ProvocaSection = () => {
       : isSilvestreThinking
         ? silvestreThinkingMessage
         : hasConsumedListenTurn
-          ? 'Escuchar a la obra'
+          ? 'Quiero que me conteste la obra'
         : isListening
           ? 'Pulsa otra vez para enviar'
           : micPromptVisible
             ? 'Pulsa para sacar lo que tienes dentro'
-            : 'Escuchar a la obra';
+            : 'Quiero que me conteste la obra';
   const escucharButtonVisualLabel =
     pendingSilvestreAudioUrl && !isSilvestrePlaying ? 'Reproducir' : escucharStatusLabel;
 
@@ -650,29 +652,6 @@ export const ProvocaSection = () => {
     triggerLoginModal();
   }, [triggerLoginModal]);
 
-  const handleInviteFromProvoca = useCallback(async () => {
-    const shareData = {
-      title: 'Es un gato encerrado',
-      url: PROVOCA_SHARE_URL,
-      text: inviteMessage,
-    };
-
-    if (typeof navigator !== 'undefined' && typeof navigator.share === 'function') {
-      try {
-        await navigator.share(shareData);
-        return;
-      } catch (error) {
-        if (error?.name === 'AbortError') return;
-      }
-    }
-
-    const encodedMessage = encodeURIComponent(inviteMessage);
-    const whatsappUrl = `https://wa.me/?text=${encodedMessage}`;
-    if (typeof window !== 'undefined') {
-      window.open(whatsappUrl, '_blank', 'noopener,noreferrer');
-    }
-  }, []);
-
   const handleListenToObra = useCallback(async () => {
     if (hasConsumedListenTurn) return;
 
@@ -826,20 +805,24 @@ export const ProvocaSection = () => {
               <div className="flex flex-col sm:flex-row gap-3">
                 <Button
                   variant="outline"
-                  onClick={() => setIsVoiceInputOpen((prev) => !prev)}
-                  className={`provoca-soft-glass-btn w-full sm:w-auto whitespace-normal break-words text-center leading-snug ${
-                    isVoiceInputOpen ? 'provoca-soft-glass-btn--active' : ''
+                  onClick={
+                    isShareButtonInSendMode
+                      ? handleSubmitVoice
+                      : () => setIsVoiceInputOpen((prev) => !prev)
+                  }
+                  disabled={isShareButtonInSendMode && isSendVoiceDisabled}
+                  className={`ge-chip-action w-full sm:w-auto gap-2 ${
+                    isVoiceInputOpen ? 'ge-chip-action--active' : 'ge-chip-action--primary'
                   }`}
                 >
-                  Comenta algo aquí
-                </Button>
-                <Button
-                  variant="outline"
-                  onClick={handleInviteFromProvoca}
-                  className="border-slate-100/20 text-slate-200 hover:bg-slate-100/10 px-6 py-3 rounded-full font-semibold flex items-center justify-center gap-2 w-full sm:w-auto"
-                >
-                  <Send size={18} />
-                  Corre la voz
+                  {isShareButtonInSendMode ? (
+                    <>
+                      <Send size={18} />
+                      {isSubmittingVoice ? 'Enviando…' : 'Enviar mi comentario'}
+                    </>
+                  ) : (
+                    'Comparte tu perspectiva'
+                  )}
                 </Button>
               </div>
               <AnimatePresence initial={false}>
@@ -908,23 +891,18 @@ export const ProvocaSection = () => {
                           ) : null}
                           <span>{escucharButtonVisualLabel}</span>
                         </Button>
-                        <Button
-                          type="button"
-                          onClick={handleSubmitVoice}
-                          disabled={isSendVoiceDisabled}
-                          className="ui-segmented__btn ui-segmented__btn--primary flex-1 sm:flex-none"
-                        >
-                          {isSubmittingVoice ? 'Enviando…' : 'Enviar tu voz'}
-                        </Button>
                       </div>
                       {hasConsumedListenTurn ? (
                         <p className="w-full text-[11px] text-slate-300/80">
-                          Si quieres hablar más con la obra,{' '}
+                          Si quieres saber más de la obra,{' '}
                           <Link
-                            to="/?miniverso=miniversos#transmedia"
+                            to="/#dialogo-critico"
+                            onClick={() => {
+                              window.dispatchEvent(new CustomEvent('gatoencerrado:show-buscador'));
+                            }}
                             className="font-semibold text-violet-200 underline decoration-violet-300/70 underline-offset-2 hover:text-white"
                           >
-                            entra aquí
+                            pregunta aquí
                           </Link>{' '}
                           .
                         </p>
@@ -934,7 +912,7 @@ export const ProvocaSection = () => {
                       ) : null}
                 
                       <p className="w-full text-[11px] text-slate-300/70">
-                        Antes de enviar, escucha una respuesta inspirada en lo que compartiste.
+                        Si no quieres publicar, solo escucha su respuesta inspirada en tu voz.
                       </p>
                     </div>
                        <details className="group mt-4 md:mt-5 mb-5 rounded-2xl border border-emerald-300/20 bg-emerald-500/10 px-4 py-3 text-left">
@@ -1043,10 +1021,10 @@ export const ProvocaSection = () => {
                   variant="outline"
                   onClick={handleRefreshVoices}
                   disabled={!canRefreshVoices}
-                  className="h-9 rounded-full border-white/20 bg-black/20 px-4 text-xs uppercase tracking-[0.18em] text-slate-200 hover:bg-white/10 disabled:opacity-45"
+                  className="ge-chip-action ge-chip-action--secondary ge-chip-action--compact"
                 >
-                  <RefreshCw size={14} className="mr-2" />
-                  Refrescar perspectivas
+                  <RefreshCw size={14} />
+                  Refrescar
                 </Button>
             </div>
           </div>
@@ -1312,7 +1290,7 @@ const About = () => {
                 <Button
                   onClick={handleWatchTrailer}
                   disabled={isTrailerLoading}
-                  className="relative bg-purple-500/20 border border-purple-400/30 text-purple-300 hover:bg-purple-500/30 hover:text-purple-200 disabled:opacity-60 disabled:cursor-not-allowed px-6 py-3 rounded-full font-semibold flex items-center gap-2 hover-glow"
+                  className="ge-chip-action ge-chip-action--primary"
                 >
                   <Headphones size={20} />
                   {isTrailerLoading ? 'Cargando…' : 'Escucha el Tráiler'}
@@ -1321,7 +1299,7 @@ const About = () => {
                 <Button
                   variant="outline"
                   onClick={handleInvite}
-                  className="border-slate-100/20 text-slate-200 hover:bg-slate-100/10 px-6 py-3 rounded-full font-semibold flex items-center gap-2"
+                  className="ge-chip-action ge-chip-action--secondary"
                 >
                   <Send size={20} />
                   Próximas funciones

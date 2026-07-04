@@ -138,10 +138,10 @@ const NextShow = () => {
                     key={show.id}
                     type="button"
                     onClick={() => setActiveShowId(show.id)}
-                    className={`rounded-full border px-4 py-2 text-sm transition ${
+                    className={`ge-chip-filter ${
                       activeShowId === show.id
-                        ? 'border-purple-400/60 bg-purple-500/20 text-purple-100'
-                        : 'border-white/10 text-slate-300 hover:border-purple-300/40 hover:text-purple-100'
+                        ? 'ge-chip-filter--active'
+                        : 'ge-chip-filter--idle'
                     }`}
                   >
                     {show.label}
@@ -215,7 +215,7 @@ const NextShow = () => {
                   <Button
                     variant="outline"
                     onClick={handleOpenReserve}
-                    className="border-slate-100/30 text-slate-200 hover:bg-white/5 px-6 py-3 rounded-full font-semibold flex items-center gap-2"
+                    className="ge-chip-action ge-chip-action--secondary"
                   >
                     <ShoppingBag size={20} />
                     Merch

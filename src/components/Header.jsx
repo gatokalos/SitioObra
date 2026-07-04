@@ -255,9 +255,9 @@ const Header = ({
             href: '#dialogo-critico',
             description: 'Diálogo crítico y educativo',
             secondary: [
-              { label: 'Curaduría Reflexiva', href: '#dialogo-critico' },
-              { label: 'Expansiones Narrativas', href: '#dialogo-critico' },
-              { label: 'Detrás de Cámaras', href: '#dialogo-critico' },
+              { label: 'Curaduría Reflexiva', href: '#dialogo-critico?focus=curaduria' },
+              { label: 'Expansiones Narrativas', href: '#dialogo-critico?focus=expansiones' },
+              { label: 'Detrás de Cámaras', href: '#dialogo-critico?focus=backstage' },
               { label: 'Buscador Backstage', href: '#dialogo-critico', action: 'show-buscador' },
             ],
           },
@@ -266,9 +266,9 @@ const Header = ({
     ...(showTransmediaNav
       ? [
           {
-            name: 'Transmedia',
+            name: 'Miniversos',
             href: '#transmedia',
-            description: 'Narrativa Expandida',
+            description: 'Las formas de la obra',
             secondary: TRANSMEDIA_SECONDARY_ITEMS,
           },
         ]

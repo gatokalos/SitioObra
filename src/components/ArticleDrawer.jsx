@@ -132,7 +132,7 @@ const ArticleDrawer = () => {
                   {Array.isArray(post.tags) && post.tags.length > 0 && (
                     <div className="flex flex-wrap gap-2 mb-4">
                       {post.tags.map((tag) => (
-                        <span key={tag} className="text-xs uppercase tracking-widest text-purple-400/80 border border-purple-400/20 rounded-full px-3 py-1">
+                        <span key={tag} className="ge-tag">
                           {tag}
                         </span>
                       ))}

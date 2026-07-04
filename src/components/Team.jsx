@@ -212,11 +212,28 @@ const teamData = {
 };
 
 const teamEntries = Object.entries(teamData);
+const roleDisplayOrder = [
+  "Producción y asistencia",
+  "Alianza Social",
+  "Dramaturgia",
+  "Dirección",
+  "Elenco",
+  "Diseño Escénico",
+  "Realización Técnica",
+  "Sonido y Tema Musical",
+  "Vestuario y Caracterización",
+];
 const mobileSingleButtonRoles = new Set([
   "Dramaturgia",
   "Colaboradores y Agradecimientos",
 ]);
-const defaultOpenMobileRoles = ["Dramaturgia", "Dirección", "Alianza Social"];
+const defaultOpenMobileRoles = [
+  "Producción y asistencia",
+  "Elenco",
+  "Diseño Escénico",
+  "Sonido y Tema Musical",
+  "Colaboradores y Agradecimientos",
+];
 const mobileRoleLabelOverrides = {
   "Sonido y Tema Musical": "Sonido y Música",
 };
@@ -224,22 +241,23 @@ const mobileRoleLabelOverrides = {
 // === COMPONENT ===
 const Team = () => {
   const orderedRoleEntries = [
-    ...["Dramaturgia", "Dirección", "Elenco"]
+    ...roleDisplayOrder
       .map((role) => [role, teamData[role]])
       .filter(([, data]) => Boolean(data)),
-    ...teamEntries.filter(([role]) => role !== "Dramaturgia" && role !== "Dirección" && role !== "Elenco"),
+    ...teamEntries.filter(([role]) => !roleDisplayOrder.includes(role)),
   ];
   const orderedRoleKeys = orderedRoleEntries.map(([role]) => role);
-  const defaultDesktopRole = teamData.Dramaturgia
-    ? "Dramaturgia"
-    : teamData.Elenco
-      ? "Elenco"
-      : orderedRoleKeys[0] ?? null;
+  const getRoleTintClass = (role) => {
+    const roleIndex = orderedRoleKeys.indexOf(role);
+    if (roleIndex < 0) return "";
+    const half = Math.ceil(orderedRoleKeys.length / 2);
+    return roleIndex < half ? "team-pill-tint tintTop" : "team-pill-tint tintBottom";
+  };
+  const defaultDesktopRole = teamData.Elenco ? "Elenco" : orderedRoleKeys[0] ?? null;
   const [selectedElencoId, setSelectedElencoId] = useState(null);
   const [isMobile, setIsMobile] = useState(
     typeof window !== "undefined" ? window.innerWidth < 768 : false
   );
-  const [activeMobileRole, setActiveMobileRole] = useState(null);
   const [openMobileRoles, setOpenMobileRoles] = useState(
     () => {
       const availableDefaultRoles = defaultOpenMobileRoles.filter((role) => teamData[role]);
@@ -353,12 +371,6 @@ const Team = () => {
   }, [activeDesktopRole, defaultDesktopRole]);
 
   useEffect(() => {
-    if (!activeMobileRole) return;
-    if (activeMobileRole in teamData) return;
-    setActiveMobileRole(null);
-  }, [activeMobileRole]);
-
-  useEffect(() => {
     if (!isMemberLinkOpen) {
       return undefined;
     }
@@ -439,10 +451,8 @@ const Team = () => {
     const desktopCircleGroups = [
       "Diseño Escénico",
       "Sonido y Tema Musical",
-      "Música y Sonido",
       "Producción y asistencia",
       "Realización Técnica",
-      "Vestuario y Pelucas",
       "Vestuario y Caracterización",
     ];
     const useDesktopCircleGrid = !isMobile && desktopCircleGroups.includes(roleKey);
@@ -976,20 +986,13 @@ const Team = () => {
   const renderMobileRoleSplitButton = (role, rowRoles) => {
     const isOpen = openMobileRoles.includes(role);
     const label = mobileRoleLabelOverrides[role] ?? role;
-    const roleIndex = orderedRoleKeys.indexOf(role);
-    const tintClass =
-      roleIndex >= 0 && roleIndex < 2
-        ? "team-pill-tint tintTop"
-        : roleIndex >= Math.max(orderedRoleKeys.length - 2, 0)
-          ? "team-pill-tint tintBottom"
-          : "";
+    const tintClass = getRoleTintClass(role);
     return (
       <button
         key={role}
         type="button"
         aria-expanded={isOpen}
         onClick={() => {
-          setActiveMobileRole(role);
           setOpenMobileRoles((prev) => {
             if (prev.includes(role)) {
               return prev.filter((entry) => entry !== role);
@@ -1002,7 +1005,7 @@ const Team = () => {
         }}
         className={`ui-segmented__btn ${tintClass} !min-h-[44px] !w-full !justify-center !px-3 !py-2 !text-center !text-[11px] !font-semibold !uppercase !tracking-[0.18em] !leading-[1.2] ${
           isOpen
-            ? "ui-segmented__btn--primary provoca-soft-glass-btn--active"
+            ? "ui-segmented__btn--primary"
             : "ui-segmented__btn--secondary"
         }`}
       >
@@ -1208,7 +1211,7 @@ Cada colaboración forma parte activa del universo que la obra pone en escena.
                           transition={{ duration: 0.2, ease: "easeOut" }}
                           className="overflow-hidden"
                         >
-                          <div className="glass-effect rounded-2xl border border-white/10 bg-black/20 p-4">
+                          <div className={`glass-effect ${getRoleTintClass(role)} rounded-2xl border border-white/10 bg-black/20 p-4`}>
                             {renderRole(teamData[role], role, { showDescription: false })}
                           </div>
                         </motion.div>
@@ -1237,12 +1240,7 @@ Cada colaboración forma parte activa del universo que la obra pone en escena.
             >
               {orderedRoleEntries.map(([role], index) => {
                 const isActive = role === activeDesktopRole;
-                const tintClass =
-                  index < 2
-                      ? "team-pill-tint tintTop"
-                      : index >= Math.max(orderedRoleEntries.length - 2, 0)
-                        ? "team-pill-tint tintBottom"
-                        : "";
+                const tintClass = getRoleTintClass(role);
                 const discoveryClass = !isActive && !isDesktopDiscoveryPaused
                   ? "team-pill-discovery"
                   : "";
@@ -1257,10 +1255,8 @@ Cada colaboración forma parte activa del universo que la obra pone en escena.
                     tabIndex={isActive ? 0 : -1}
                     onClick={() => setActiveDesktopRole(role)}
                     onKeyDown={(event) => handleDesktopRoleKeyDown(event, index)}
-                    className={`${tintClass} ${discoveryClass} whitespace-nowrap rounded-full border px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.24em] transition ${
-                      isActive
-                        ? "border-purple-400/60 bg-purple-500/20 text-purple-100 shadow-[0_0_20px_rgba(168,85,247,0.2)]"
-                        : "border-white/15 bg-slate-950/75 text-slate-100/95 shadow-[inset_0_1px_0_rgba(255,255,255,0.08),0_8px_22px_rgba(0,0,0,0.35)] hover:border-purple-300/45 hover:bg-slate-900/85 hover:text-purple-100"
+                    className={`${tintClass} ${discoveryClass} ge-chip-filter ${
+                      isActive ? "ge-chip-filter--active" : "ge-chip-filter--idle"
                     }`}
                     style={{ "--team-pill-discovery-delay": `${index * 0.54}s` }}
                   >
@@ -1270,7 +1266,7 @@ Cada colaboración forma parte activa del universo que la obra pone en escena.
               })}
             </div>
 
-            <div className="glass-effect rounded-2xl border border-white/10 bg-black/20 p-6">
+            <div className={`glass-effect ${getRoleTintClass(activeDesktopRole)} rounded-2xl border border-white/10 bg-black/20 p-6`}>
               <AnimatePresence mode="wait" initial={false}>
                 <motion.div
                   key={activeDesktopRole || "team-panel-empty"}

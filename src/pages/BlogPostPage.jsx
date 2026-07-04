@@ -180,7 +180,7 @@ export default function BlogPostPage() {
             {post.tags.map((tag) => (
               <span
                 key={tag}
-                className="text-xs uppercase tracking-widest text-purple-400/80 border border-purple-400/20 rounded-full px-3 py-1"
+                className="ge-tag"
               >
                 {tag}
               </span>

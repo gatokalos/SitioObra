@@ -5126,15 +5126,15 @@ Silvestre, un hombre en sus treintas, comienza a perder la frontera entre lo que
               viewport={{ once: true }}
               className="text-center mb-[clamp(2.5rem,5.5vh,4rem)] space-y-[clamp(1.25rem,2.2vh,1.75rem)] min-h-[clamp(210px,27vh,260px)] min-[700px]:max-lg:mb-8 min-[700px]:max-lg:min-h-[180px]"
             >
-              <p className="text-xs uppercase tracking-[0.4em] text-slate-400/70">Narrativa Expandida</p>
+              <p className="text-xs uppercase tracking-[0.4em] text-slate-400/70">Miniversos</p>
               <h2 className="font-display text-4xl md:text-5xl font-medium text-gradient italic">
-                Vitrinas al universo
+                Las formas de la obra
               </h2>
               <p className="text-lg text-slate-300/80 max-w-3xl mx-auto leading-relaxed font-light">
     <em>Es un gato encerrado</em> no se acaba en el teatro.<br />
-    Desde ahí se abrió en <strong>nueve formas creativas</strong>.<br />
+    Desde ahí se expande hacia <strong>nueve formas creativas</strong>.<br />
 
-      Cada una con su propio lenguaje y forma de participación.<br /><br />
+      Cada una con su propio lenguaje y una manera distinta de participación.<br /><br />
 
    Ninguna repite la historia: <strong>la transforman.</strong><br /><br />
 
@@ -5380,14 +5380,19 @@ Silvestre, un hombre en sus treintas, comienza a perder la frontera entre lo que
                             } catch {}
                             setShowMobilePortalLogin(true);
                           }}
-                          className="inline-flex items-center gap-2 rounded-full border border-amber-300/40 bg-amber-500/10 px-4 py-2 text-sm font-semibold text-amber-200 transition hover:bg-amber-500/20"
+                          className="group inline-flex items-center gap-2 rounded-full border border-amber-300/40 bg-amber-500/10 px-4 py-2 text-sm font-semibold text-amber-200 transition hover:bg-amber-500/20"
                         >
                           Entra a tu cuenta para responder
+                          <ArrowRight
+                            size={16}
+                            className="shrink-0 transition-transform duration-200 group-hover:translate-x-0.5"
+                            aria-hidden="true"
+                          />
                         </button>
                       ) : (
                         <div className="text-purple-300 flex items-center gap-2 font-semibold transition-all duration-300 group-hover:gap-3 group-active:gap-3">
                           Explora
-                          <ArrowRight size={18} />
+                          <Sparkles size={16} />
                         </div>
                       )}
                       </div>
@@ -5577,9 +5582,14 @@ Silvestre, un hombre en sus treintas, comienza a perder la frontera entre lo que
                             } catch {}
                             setShowMobilePortalLogin(true);
                           }}
-                          className="inline-flex items-center gap-2 rounded-full border border-amber-300/40 bg-amber-500/10 px-4 py-2 text-sm font-semibold text-amber-200 transition hover:bg-amber-500/20"
+                          className="group inline-flex items-center gap-2 rounded-full border border-amber-300/40 bg-amber-500/10 px-4 py-2 text-sm font-semibold text-amber-200 transition hover:bg-amber-500/20"
                         >
                           Entra a tu cuenta para responder
+                          <ArrowRight
+                            size={16}
+                            className="shrink-0 transition-transform duration-200 group-hover:translate-x-0.5"
+                            aria-hidden="true"
+                          />
                         </button>
                       ) : null}
 

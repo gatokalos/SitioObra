@@ -1048,7 +1048,7 @@ const CallToAction = ({ barsIntroDelayMs = 0 }) => {
         onClick={() => setShowTicketSupport((prev) => !prev)}
         className="block w-full rounded border border-white/20 px-4 py-2 text-white hover:border-purple-300/70 hover:text-purple-100"
       >
-        {showTicketSupport ? 'Ocultar opciones' : '¿Ya viste nuestra obra?'}
+        {showTicketSupport ? 'Ocultar opciones' : '¿Compraste boletos?'}
       </button>
       {showTicketSupport ? (
         <div className="relative overflow-hidden rounded-2xl border border-white/15 bg-black/35 px-4 py-3 text-left text-slate-100">
