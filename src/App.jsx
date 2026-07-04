@@ -143,7 +143,7 @@ const HERO_BACKGROUND_VARIANTS = {
       opacity: 0.44,
       filter: 'contrast(78%) brightness(72%) saturate(88%)',
       objectPosition: '50% 28%',
-      transform: 'translateY(12%) scale(1.4)',
+      transform: 'translateY(11%) scale(1.4)',
     },
   },
   authenticated: {

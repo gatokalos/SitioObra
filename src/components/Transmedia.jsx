@@ -5362,7 +5362,7 @@ Silvestre, un hombre en sus treintas, comienza a perder la frontera entre lo que
                       </div>
                       {isRecommendedTile ? (
                         <div className="w-full rounded-full border border-fuchsia-300/50 bg-fuchsia-500/15 py-1.5 text-center text-[0.58rem] font-semibold uppercase tracking-[0.24em] text-fuchsia-100">
-                          Tu pase al universo
+                          Recomendada para ti
                         </div>
                       ) : null}
                       {showcaseDefinitions[format.id]?.notaAutoral ? (
@@ -5560,7 +5560,7 @@ Silvestre, un hombre en sus treintas, comienza a perder la frontera entre lo que
                       </div>
                       {isRecommendedTile ? (
                         <div className="w-full rounded-full border border-fuchsia-300/50 bg-fuchsia-500/15 py-1.5 text-center text-[0.58rem] font-semibold uppercase tracking-[0.24em] text-fuchsia-100">
-                          Tu pase al universo
+                          Recomendada para ti
                         </div>
                       ) : null}
                       {showcaseDefinitions[format.id]?.notaAutoral ? (
