@@ -149,7 +149,7 @@ body {
   font-weight: 600;
 
   letter-spacing: 0.25em;
-  background: linear-gradient(233deg, #2d2d2d, #bdbdbd, #ffffff);
+  background: linear-gradient(127deg, #2d2d2d, #bdbdbd, #ffffff);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 
@@ -197,6 +197,30 @@ body {
   filter: drop-shadow(0 12px 45px rgba(233, 213, 255, 0.35));
   transform: translate3d(0, -2%, 0) scale(var(--hero-logo-visual-scale));
   will-change: filter, transform;
+}
+
+.hero-universe-mark {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(0.8rem, 2vw, 1.6rem);
+  margin-bottom: clamp(1.05rem, 2.6vh, 1.7rem);
+  color: rgba(226, 232, 240, 0.7);
+  font-family: "Vox Round", "Inter", sans-serif;
+  font-size: clamp(0.58rem, 1.3vw, 0.76rem);
+  font-weight: 600;
+  letter-spacing: clamp(0.28em, 1.2vw, 0.52em);
+  line-height: 1;
+  text-transform: uppercase;
+  text-shadow: 0 0 14px rgba(226, 232, 240, 0.24);
+}
+
+.hero-universe-mark__line {
+  display: block;
+  width: clamp(2.8rem, 12vw, 6.8rem);
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(226, 232, 240, 0.48), transparent);
+  opacity: 0.62;
 }
 
 /* iOS Safari hardening: prevent font synthesis/fallback on mobile */

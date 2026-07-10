@@ -126,7 +126,7 @@ const NextShow = () => {
           >
             <div className="relative z-10">
               <h2 className="font-display text-4xl md:text-5xl font-medium mb-4 text-gradient italic">
-                Funciones
+                Archivo escénico
               </h2>
               <p className="text-sm text-slate-400/80 mb-8">
                 Presentaciones que sostuvieron la obra y la conversación.

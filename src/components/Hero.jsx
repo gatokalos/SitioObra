@@ -49,18 +49,18 @@ const HERO_LOGGED_IN_SWEEP_GLOW =
 const HERO_PENDING_MINIVERSE_SELECTION_KEY = 'gatoencerrado:hero-inline-miniverse-selection';
 const HERO_TITLE = '#GATOENCERRADO';
 const HERO_ROTATING_SUBTITLES = [
-  'La obra que ocurre en tu mente',
-  'Una experiencia narrativa interactiva',
+  'Una experiencia narrativa transmedial',
   'Basada en Es un gato encerrado',
+  'La obra que ocurre en tu mente',
       
   ];
 const HERO_GHOST_SUBTITLES = [
-  'Teatro que no se mira. Se habita.',
-  'Tal vez la obra ya empezó en ti',
+   'Tal vez la obra ya empezó en ti',
+   'Teatro sin actores. Solo espectadores.',
    
 ];
 const HERO_ROTATING_SUBTITLE_PLACEHOLDER =
-'Una experiencia narrativa interactiva';
+'Una experiencia narrativa transmedial';
 
 const resolveHeroInlineTabFromQuery = (search = '') => {
   if (!search) return 'experiences';
@@ -854,6 +854,17 @@ const Hero = () => {
               <div className="flex-1 flex items-end justify-center pb-4 sm:pb-5 md:pb-6">
                 <div className="flex flex-col items-center">
                   <motion.div
+                    aria-hidden="true"
+                    initial={{ opacity: 0, y: 5 }}
+                    animate={{ opacity: hasActivatedAudio ? 0.62 : 0.48, y: 0 }}
+                    transition={{ duration: 1.2, ease: 'easeOut', delay: 0.2 }}
+                    className="hero-universe-mark"
+                  >
+                    <span className="hero-universe-mark__line" />
+                    <span className="hero-universe-mark__text">Universo</span>
+                    <span className="hero-universe-mark__line" />
+                  </motion.div>
+                  <motion.div
                     initial={{ opacity: 0, scale: 0.8 }}
                     animate={{ opacity: 1, scale: 1 }}
                     transition={{ duration: 1.2, ease: 'easeOut' }}
@@ -878,16 +889,6 @@ const Hero = () => {
                       />
                     </motion.div>
                   </motion.div>
-                  <span
-                    className="pointer-events-none mt-2.5 select-none whitespace-nowrap text-[0.72rem] leading-snug tracking-[0.14em] text-slate-300/75"
-                    style={{
-                      opacity: showAudioHint ? 0.82 : 0,
-                      transform: showAudioHint ? 'translateY(0)' : 'translateY(-3px)',
-                      transition: 'opacity 0.6s ease, transform 0.6s ease',
-                    }}
-                  >
-                    ¿Empezamos?
-                  </span>
                 </div>
               </div>
 

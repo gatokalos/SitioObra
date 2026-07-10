@@ -74,6 +74,15 @@ const PROVOCA_MAX_SMALL_VOICE_CARDS = 2;
 const PROVOCA_LARGE_VOICE_MIN_CHARS = 210;
 const PROVOCA_SCROLLABLE_QUOTE_MIN_CHARS = 610;
 const PROVOCA_LIKED_VOICES_STORAGE_PREFIX = 'gatoencerrado:provoca-liked-voices:v1';
+const PROVOCA_TITLE_ROTATION_MS = 3800;
+const PROVOCA_TITLE_TERMS = [
+  'el drama',
+  'la soledad',
+  'la ira reprimida',
+  'la desconexión',
+  'la búsqueda de sentido',
+];
+const PROVOCA_TITLE_LONGEST_TERM = 'la búsqueda de sentido';
 const inviteMessage = `Hola 🐾
 Quiero invitarte a compartir tu mirada en *Perspectivas del público* de *Es un gato encerrado*.
 Entra aquí: ${PROVOCA_SHARE_URL}
@@ -155,6 +164,7 @@ export const ProvocaSection = () => {
   const [likedVoiceIds, setLikedVoiceIds] = useState([]);
   const [likedVoicesStorageKey, setLikedVoicesStorageKey] = useState(null);
   const [pulseDeltaById, setPulseDeltaById] = useState({});
+  const [provocaTitleTermIndex, setProvocaTitleTermIndex] = useState(0);
   const afterCareTimeoutRef = useRef(null);
   const confettiTimeoutRef = useRef(null);
   const responseCountdownRef = useRef(null);
@@ -175,6 +185,7 @@ export const ProvocaSection = () => {
   const isSendVoiceDisabled = isSubmittingVoice;
   const hasVoiceDraftText = voiceDraft.trim().length > 0;
   const isShareButtonInSendMode = isVoiceInputOpen && hasVoiceDraftText;
+  const currentProvocaTitleTerm = PROVOCA_TITLE_TERMS[provocaTitleTermIndex];
   const isEscucharButtonDisabled =
   isSilvestreThinking || hasConsumedListenTurn;
   const voicesPool = approvedTestimonials.length > 0 ? approvedTestimonials : fallbackTestimonials;
@@ -286,6 +297,19 @@ export const ProvocaSection = () => {
       markListenTurnConsumed();
     }
   }, [hasConsumedListenTurn, isSilvestrePlaying, pendingSilvestreAudioUrl, markListenTurnConsumed]);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return undefined;
+
+    const prefersReducedMotion = window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches;
+    if (prefersReducedMotion) return undefined;
+
+    const intervalId = window.setInterval(() => {
+      setProvocaTitleTermIndex((previous) => (previous + 1) % PROVOCA_TITLE_TERMS.length);
+    }, PROVOCA_TITLE_ROTATION_MS);
+
+    return () => window.clearInterval(intervalId);
+  }, []);
 
   useEffect(() => {
     if (!isSilvestrePlaying) {
@@ -795,12 +819,33 @@ export const ProvocaSection = () => {
           <div className="grid md:grid-cols-[3fr_2fr] gap-8 items-center">
             <div>
            
-              <p className="uppercase tracking-[0.35em] text-xs text-slate-400/80 mb-4">Perspectivas del público</p>
-              <h3 className="font-display text-3xl text-slate-100 mb-6 italic">
-                ¿Qué nos provoca esta obra?
+              <p className="uppercase tracking-[0.35em] text-xs text-slate-400/80 mb-4">Perspectivas del visitante</p>
+              <h3
+                className="font-display text-3xl text-slate-100 mb-6 italic"
+                aria-label={`¿Qué nos provoca ${currentProvocaTitleTerm}?`}
+              >
+                ¿Qué nos provoca{' '}
+                <span className="relative inline-grid min-w-[14.5ch] align-baseline">
+                  <span className="col-start-1 row-start-1 invisible" aria-hidden="true">
+                    {PROVOCA_TITLE_LONGEST_TERM}?
+                  </span>
+                  <AnimatePresence mode="wait" initial={false}>
+                    <motion.span
+                      key={currentProvocaTitleTerm}
+                      aria-hidden="true"
+                      className="col-start-1 row-start-1 inline-block bg-gradient-to-r from-slate-100 via-slate-300 to-slate-500 bg-clip-text text-transparent"
+                      initial={{ opacity: 0, y: 8, filter: 'blur(5px)' }}
+                      animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
+                      exit={{ opacity: 0, y: -7, filter: 'blur(5px)' }}
+                      transition={{ duration: 0.45, ease: 'easeOut' }}
+                    >
+                      {currentProvocaTitleTerm}?
+                    </motion.span>
+                  </AnimatePresence>
+                </span>
               </h3>
               <p className="text-slate-300/80 leading-relaxed mb-6 font-light">
-                Reunimos testimonios, críticas y preguntas abiertas que siguen vibrando después de la función.
+                Reunimos testimonios, críticas y preguntas abiertas que puedan resonar en este universo transmedia.
               </p>
               <div className="flex flex-col sm:flex-row gap-3">
                 <Button
@@ -821,7 +866,7 @@ export const ProvocaSection = () => {
                       {isSubmittingVoice ? 'Enviando…' : 'Enviar mi comentario'}
                     </>
                   ) : (
-                    'Comparte tu perspectiva'
+                    'Comparte la tuya'
                   )}
                 </Button>
               </div>
@@ -1244,7 +1289,7 @@ const About = () => {
           className="text-center mb-16"
         >
           <h2 className="font-display text-4xl md:text-5xl font-medium mb-6 text-gradient italic">
-            Sobre la obra
+            Obra destacada
           </h2>
           <div className="max-w-3xl mx-auto">
             {aboutParagraphs.map((paragraph) => (

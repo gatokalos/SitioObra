@@ -143,7 +143,7 @@ const HERO_BACKGROUND_VARIANTS = {
       opacity: 0.44,
       filter: 'contrast(128%) brightness(72%) saturate(70%)',
       objectPosition: '50% 28%',
-      transform: 'translateY(9.5%) scale(1.4)',
+      transform: 'translateY(9.5%) scale(1.2)',
     },
   },
   authenticated: {
@@ -700,19 +700,14 @@ function App() {
                     <About />
                   </Suspense>
                 </DeferredSection>
-                <DeferredSection fallback={<SectionFallback id="provoca" minHeight={900} />}>
-                  <Suspense fallback={<SectionFallback id="provoca" minHeight={900} />}>
-                    <ProvocaSection />
-                  </Suspense>
-                </DeferredSection>
-                <DeferredSection fallback={<SectionFallback id="team" minHeight={980} />}>
-                  <Suspense fallback={<SectionFallback id="team" minHeight={980} />}>
-                    <Team />
-                  </Suspense>
-                </DeferredSection>
                 <DeferredSection fallback={<SectionFallback id="instagram" minHeight={1600} />}>
                   <Suspense fallback={<SectionFallback id="instagram" minHeight={1600} />}>
                     <Instagram />
+                  </Suspense>
+                </DeferredSection>
+                <DeferredSection fallback={<SectionFallback id="provoca" minHeight={900} />}>
+                  <Suspense fallback={<SectionFallback id="provoca" minHeight={900} />}>
+                    <ProvocaSection />
                   </Suspense>
                 </DeferredSection>
                 <DeferredSection fallback={<SectionFallback id="blog-contribuye" minHeight={700} />}>
@@ -765,6 +760,11 @@ function App() {
                 <DeferredSection fallback={<SectionFallback id="next-show" minHeight={480} />}>
                   <Suspense fallback={<SectionFallback id="next-show" minHeight={480} />}>
                     <NextShow />
+                  </Suspense>
+                </DeferredSection>
+                <DeferredSection fallback={<SectionFallback id="team" minHeight={980} />}>
+                  <Suspense fallback={<SectionFallback id="team" minHeight={980} />}>
+                    <Team />
                   </Suspense>
                 </DeferredSection>
                 <DeferredSection fallback={<SectionFallback id="contact" minHeight={560} />}>

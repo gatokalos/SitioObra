@@ -250,23 +250,22 @@ const Header = ({
 
   const menuItems = [
     { name: 'Inicio', href: '#hero' },
-    { name: 'Sobre la obra', href: '#about' },
-    { name: 'Perspectivas', href: '#provoca' },
-    { name: 'Tras bambalinas', href: '#team' },
+    { name: 'Obra destacada', href: '#about' },
     { name: 'Galería fractal', href: '#instagram' },
+    { name: 'Perspectivas', href: '#provoca' },
     ...(showIntermedioNav ? [{ name: 'Intermedio', href: '#blog-contribuye' }] : []),
     ...(showCuradoriaNav ? [{ name: 'Curaduría', href: '#dialogo-critico' }] : []),
-    ...(showTransmediaNav ? [{ name: 'Transmedia', href: '#transmedia' }] : []),
+    ...(showTransmediaNav ? [{ name: 'Miniversos', href: '#transmedia' }] : []),
     ...(showAllianceNav ? [{ name: 'Alianza', href: '#apoya' }] : []),
-    { name: 'Funciones', href: '#next-show' },
+    { name: 'Archivo escénico', href: '#next-show' },
+    { name: 'Créditos', href: '#team' },
     { name: 'Contacto', href: '#contact' },
   ];
   const mobileMenuItems = [
     { name: 'Inicio', href: '#hero', description: 'Bienvenida' },
-    { name: 'Sobre la obra', href: '#about' },
-    { name: 'Perspectivas', href: '#provoca' },
-    { name: 'Tras bambalinas', href: '#team' },
+    { name: 'Obra destacada', href: '#about', description: 'Teatro · Es un gato encerrado' },
     { name: 'Galería fractal', href: '#instagram' },
+    { name: 'Perspectivas', href: '#provoca' },
     ...(showIntermedioNav
       ? [{ name: 'Intermedio', href: '#blog-contribuye', description: 'Punto de no retorno' }]
       : []),
@@ -308,7 +307,8 @@ const Header = ({
           },
         ]
       : []),
-    { name: 'Funciones', href: '#next-show' },
+    { name: 'Archivo escénico', href: '#next-show' },
+    { name: 'Créditos de la obra', href: '#team' },
     { name: 'Contacto', href: '#contact' },
   ];
 

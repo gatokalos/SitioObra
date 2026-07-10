@@ -1170,12 +1170,12 @@ const Team = () => {
           className="text-center mb-16"
         >
           <h2 className="font-display text-4xl md:text-5xl font-medium mb-6 text-gradient italic">
-            Tras bambalinas
+            Créditos de la obra
           </h2>
           <p className="text-lg text-slate-300/80 max-w-3xl mx-auto leading-relaxed font-light md:text-base sm:text-sm">
           
-            Un colectivo de artistas y alianzas multidisciplinarias reunidas en el cruce entre creación escénica, pensamiento crítico y cuidado emocional.
-Cada colaboración forma parte activa del universo que la obra pone en escena.
+            El equipo escénico de <em>Es un gato encerrado</em>, la obra teatral que dio origen a este universo narrativo.
+Estos créditos pertenecen a esa pieza fundacional y a las colaboraciones que hicieron posible su puesta en escena.
           </p>
         </motion.div>
 

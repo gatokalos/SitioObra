@@ -69,15 +69,15 @@ const Footer = ({
               <span className="font-semibold text-slate-200 mb-4 block">Navegación</span>
               <ul className="space-y-3">
                 {[
-                  { name: 'Sobre la obra', href: '#about' },
-                  { name: 'Perspectivas', href: '#provoca' },
-                  { name: 'Tras bambalinas', href: '#team' },
+                  { name: 'Obra destacada', href: '#about' },
                   { name: 'Galería fractal', href: '#instagram' },
+                  { name: 'Perspectivas', href: '#provoca' },
                   ...(showIntermedioNav ? [{ name: 'Intermedio', href: '#blog-contribuye' }] : []),
                   ...(showCuradoriaNav ? [{ name: 'Curaduría', href: '#dialogo-critico' }] : []),
                   ...(showTransmediaNav ? [{ name: 'Miniversos', href: '#transmedia' }] : []),
                   ...(showAllianceNav ? [{ name: 'Causa social', href: '#apoya' }] : []),
-                  { name: 'Funciones', href: '#next-show' },
+                  { name: 'Archivo escénico', href: '#next-show' },
+                  { name: 'Créditos de la obra', href: '#team' },
                   { name: 'Contacto', href: '#contact' },
                 ].map((item) => (
                   <li key={item.name}>
