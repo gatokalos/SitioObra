@@ -143,7 +143,7 @@ const HERO_BACKGROUND_VARIANTS = {
       opacity: 0.44,
       filter: 'contrast(128%) brightness(72%) saturate(70%)',
       objectPosition: '50% 28%',
-      transform: 'translateY(9%) scale(1.24)',
+      transform: 'translateY(9.5%) scale(1.4)',
     },
   },
   authenticated: {
@@ -159,13 +159,31 @@ const HERO_BACKGROUND_VARIANTS = {
 
 const HERO_GUEST_SOFT_FOCUS_MASK =
   'radial-gradient(ellipse 34% 42% at 50% 43%, rgba(0,0,0,0.98) 0%, rgba(0,0,0,0.94) 42%, rgba(0,0,0,0) 76%)';
+const HERO_GUEST_CABINA_IDLE_OPACITY = 0.12;
+const HERO_GUEST_CABINA_REVEALED_OPACITY = 0.36;
 
 const HeroBackground = ({ isAuthenticated = false }) => {
   const [opacity, setOpacity] = useState(1);
-  const [audioDimmed, setAudioDimmed] = useState(false);
+  const [isHeroSceneRevealed, setIsHeroSceneRevealed] = useState(false);
   const backgroundVariant = isAuthenticated
     ? HERO_BACKGROUND_VARIANTS.authenticated
     : HERO_BACKGROUND_VARIANTS.guest;
+  const isGuestCabina = !isAuthenticated;
+  const guestCabinaOpacity = isHeroSceneRevealed
+    ? HERO_GUEST_CABINA_REVEALED_OPACITY
+    : HERO_GUEST_CABINA_IDLE_OPACITY;
+  const backgroundImageOpacity = isGuestCabina
+    ? guestCabinaOpacity
+    : backgroundVariant.style.opacity;
+  const backgroundImageFilter = isGuestCabina
+    ? isHeroSceneRevealed
+      ? 'contrast(128%) brightness(78%) saturate(74%)'
+      : 'contrast(118%) brightness(46%) saturate(58%) blur(1px)'
+    : backgroundVariant.style.filter;
+  const stageVeilOpacity = isGuestCabina
+    ? isHeroSceneRevealed ? 0.14 : 1
+    : isHeroSceneRevealed ? 1 : 0;
+  const softFocusOpacity = isHeroSceneRevealed ? 0.2 : 0.07;
 
   useEffect(() => {
     const FADE_DISTANCE = 900;
@@ -199,8 +217,8 @@ const HeroBackground = ({ isAuthenticated = false }) => {
   }, []);
 
   useEffect(() => {
-    const onActivated = () => setAudioDimmed(true);
-    const onDeactivated = () => setAudioDimmed(false);
+    const onActivated = () => setIsHeroSceneRevealed(true);
+    const onDeactivated = () => setIsHeroSceneRevealed(false);
     window.addEventListener('gatoencerrado:audio-activated', onActivated);
     window.addEventListener('gatoencerrado:audio-deactivated', onDeactivated);
     return () => {
@@ -220,24 +238,23 @@ const HeroBackground = ({ isAuthenticated = false }) => {
           className={backgroundVariant.className}
           style={{
             ...backgroundVariant.style,
-            opacity: audioDimmed
-              ? (backgroundVariant.style.opacity ?? 1) * 0.38
-              : backgroundVariant.style.opacity,
-            transition: 'opacity 1.8s ease',
+            opacity: backgroundImageOpacity,
+            filter: backgroundImageFilter,
+            transition: 'opacity 2.2s ease, filter 2.2s ease',
           }}
           alt={backgroundVariant.alt}
           src={backgroundVariant.src}
           decoding="async"
           fetchpriority="low"
         />
-        {/* Velo negro que cae al activar el audio — "bajan las luces de la sala" */}
+        {/* Velo escénico: antes del clic oculta la cabina; después se abre la escena. */}
         <div
           aria-hidden="true"
           className="absolute inset-0"
           style={{
             background: 'rgba(0,0,0,0.42)',
-            opacity: audioDimmed ? 1 : 0,
-            transition: 'opacity 2s ease',
+            opacity: stageVeilOpacity,
+            transition: 'opacity 2.2s ease',
           }}
         />
         {!isAuthenticated ? (
@@ -254,10 +271,13 @@ const HeroBackground = ({ isAuthenticated = false }) => {
               className="absolute inset-0 h-full w-full object-cover pointer-events-none"
               style={{
                 ...backgroundVariant.style,
-                opacity: 0.24,
-                filter: 'blur(18px) brightness(28%) saturate(78%)',
+                opacity: softFocusOpacity,
+                filter: isHeroSceneRevealed
+                  ? 'blur(18px) brightness(34%) saturate(82%)'
+                  : 'blur(18px) brightness(22%) saturate(68%)',
                 WebkitMaskImage: HERO_GUEST_SOFT_FOCUS_MASK,
                 maskImage: HERO_GUEST_SOFT_FOCUS_MASK,
+                transition: 'opacity 2.2s ease, filter 2.2s ease',
               }}
               alt=""
               aria-hidden="true"

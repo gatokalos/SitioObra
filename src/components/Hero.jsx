@@ -6,7 +6,7 @@ const TicketPurchaseModal = React.lazy(() => import('@/components/TicketPurchase
 const GatokensRevealModal = React.lazy(() => import('@/components/GatokensRevealModal'));
 const MiniverseModal = React.lazy(() => import('@/components/MiniverseModal'));
 const VideoNarrativeAutoplay = React.lazy(() => import('@/components/VideoNarrativeAutoplay'));
-const isotipoGatoWebp = '/assets/isotipo_hero.png';
+const isotipoGatoWebp = '/assets/isotipo_hero.webp';
 const HashtagButton3D = React.lazy(() => import('@/components/HashtagButton3D'));
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useToast } from '@/components/ui/use-toast';
@@ -49,13 +49,13 @@ const HERO_LOGGED_IN_SWEEP_GLOW =
 const HERO_PENDING_MINIVERSE_SELECTION_KEY = 'gatoencerrado:hero-inline-miniverse-selection';
 const HERO_TITLE = '#GATOENCERRADO';
 const HERO_ROTATING_SUBTITLES = [
+  'La obra que ocurre en tu mente',
   'Una experiencia narrativa interactiva',
   'Basada en Es un gato encerrado',
-  'La obra ocurre en tu mente',
-    
+      
   ];
 const HERO_GHOST_SUBTITLES = [
-  'No es teatro que se mira. Se habita.',
+  'Teatro que no se mira. Se habita.',
   'Tal vez la obra ya empezó en ti',
    
 ];
@@ -886,7 +886,7 @@ const Hero = () => {
                       transition: 'opacity 0.6s ease, transform 0.6s ease',
                     }}
                   >
-                    Conóceme
+                    ¿Empezamos?
                   </span>
                 </div>
               </div>
@@ -924,9 +924,13 @@ const Hero = () => {
                 </motion.div>
                 <motion.div
                   initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: hasActivatedAudio ? 1 : 0.22, y: 0 }}
+                  animate={{ opacity: hasActivatedAudio ? 1 : 0, y: 0 }}
                   transition={{ duration: hasActivatedAudio ? 0.9 : 0.7, delay: hasActivatedAudio ? 0 : 1.05 }}
                   className="relative mt-5 inline-flex h-12 w-12 items-center justify-center self-center sm:mt-6"
+                  style={{
+                    pointerEvents: hasActivatedAudio ? 'auto' : 'none',
+                    visibility: hasActivatedAudio ? 'visible' : 'hidden',
+                  }}
                   aria-hidden="true"
                 >
                   <motion.svg
@@ -983,9 +987,14 @@ const Hero = () => {
               {/* HashtagButton3D — reemplaza los botones en su misma zona */}
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: hasActivatedAudio ? 1 : 0.22, y: 0 }}
+                animate={{ opacity: hasActivatedAudio ? 1 : 0, y: 0 }}
                 transition={{ duration: hasActivatedAudio ? 0.9 : 1, delay: hasActivatedAudio ? 0 : 0.8 }}
                 className="mt-8 -translate-y-[7vh] flex flex-col items-center gap-2 sm:mt-10 sm:translate-y-0 md:mt-12"
+                style={{
+                  pointerEvents: hasActivatedAudio ? 'auto' : 'none',
+                  visibility: hasActivatedAudio ? 'visible' : 'hidden',
+                }}
+                aria-hidden={!hasActivatedAudio}
               >
                 <Suspense fallback={<div style={{ height: 'clamp(110px, 17vh, 160px)', width: 'clamp(100px, 16vh, 150px)', margin: '0 auto' }} />}>
                   <HashtagButton3D

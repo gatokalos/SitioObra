@@ -46,6 +46,7 @@ const Header = ({
 }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [scrollTier, setScrollTier] = useState(0);
+  const [isHeroSceneRevealed, setIsHeroSceneRevealed] = useState(false);
   const [showLoginOverlay, setShowLoginOverlay] = useState(false);
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
   const navigate = useNavigate();
@@ -67,6 +68,7 @@ const Header = ({
   const headerLogoClassName = user
     ? 'h-9 w-9 rounded-full object-contain'
     : 'h-10 w-10 object-contain drop-shadow-[0_0_10px_rgba(255,255,255,0.08)] sm:h-11 sm:w-11';
+  const shouldGateIndexUntilHeroReveal = !user && location.pathname === '/' && !isHeroSceneRevealed;
 
 
   const [gatBalance, setGatBalance] = useState(readGatBalance);
@@ -84,6 +86,26 @@ const Header = ({
       window.removeEventListener('storage', sync);
     };
   }, []);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return undefined;
+
+    const handleActivated = () => setIsHeroSceneRevealed(true);
+    const handleDeactivated = () => setIsHeroSceneRevealed(false);
+
+    window.addEventListener('gatoencerrado:audio-activated', handleActivated);
+    window.addEventListener('gatoencerrado:audio-deactivated', handleDeactivated);
+    return () => {
+      window.removeEventListener('gatoencerrado:audio-activated', handleActivated);
+      window.removeEventListener('gatoencerrado:audio-deactivated', handleDeactivated);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (shouldGateIndexUntilHeroReveal) {
+      setIsMenuOpen(false);
+    }
+  }, [shouldGateIndexUntilHeroReveal]);
 
   useEffect(() => {
     if (typeof window === 'undefined') return undefined;
@@ -324,8 +346,9 @@ const Header = ({
   }, [location, navigate, user]);
 
   const handleToggleIndex = useCallback(() => {
+    if (shouldGateIndexUntilHeroReveal) return;
     setIsMenuOpen((prev) => !prev);
-  }, []);
+  }, [shouldGateIndexUntilHeroReveal]);
 
   const acknowledgeGatRevealPulse = useCallback((source = 'header-chip') => {
     if (typeof window === 'undefined') return;
@@ -385,10 +408,17 @@ const Header = ({
                 className={`flex shrink-0 cursor-pointer items-center gap-3 rounded-full transition ${
                   isMenuOpen ? 'drop-shadow-[0_0_14px_rgba(255,255,255,0.22)]' : ''
                 }`}
+                animate={{ opacity: shouldGateIndexUntilHeroReveal ? 0 : 1 }}
+                transition={{ duration: 0.65, ease: 'easeOut' }}
+                style={{
+                  pointerEvents: shouldGateIndexUntilHeroReveal ? 'none' : 'auto',
+                  visibility: shouldGateIndexUntilHeroReveal ? 'hidden' : 'visible',
+                }}
                 onClick={handleToggleIndex}
                 aria-controls="site-index-menu"
                 aria-expanded={isMenuOpen}
                 aria-label={isMenuOpen ? 'Cerrar índice de navegación' : 'Abrir índice de navegación'}
+                tabIndex={shouldGateIndexUntilHeroReveal ? -1 : 0}
               >
                 <img
                   src={headerLogoSrc}
