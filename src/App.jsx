@@ -141,9 +141,9 @@ const HERO_BACKGROUND_VARIANTS = {
     className: 'absolute inset-0 h-full w-full object-cover',
     style: {
       opacity: 0.44,
-      filter: 'contrast(78%) brightness(72%) saturate(88%)',
+      filter: 'contrast(128%) brightness(72%) saturate(70%)',
       objectPosition: '50% 28%',
-      transform: 'translateY(11%) scale(1.4)',
+      transform: 'translateY(9%) scale(1.24)',
     },
   },
   authenticated: {

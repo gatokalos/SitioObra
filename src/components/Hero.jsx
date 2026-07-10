@@ -6,11 +6,12 @@ const TicketPurchaseModal = React.lazy(() => import('@/components/TicketPurchase
 const GatokensRevealModal = React.lazy(() => import('@/components/GatokensRevealModal'));
 const MiniverseModal = React.lazy(() => import('@/components/MiniverseModal'));
 const VideoNarrativeAutoplay = React.lazy(() => import('@/components/VideoNarrativeAutoplay'));
-import isotipoGatoWebp from '@/assets/isotipo-gato.webp';
+const isotipoGatoWebp = '/assets/isotipo_hero.png';
 const HashtagButton3D = React.lazy(() => import('@/components/HashtagButton3D'));
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useToast } from '@/components/ui/use-toast';
 import { useAuth } from '@/contexts/SupabaseAuthContext';
+import useSignalDriftText from '@/hooks/useSignalDriftText';
 import { consumeBienvenidaGatokensRevealPending, setBienvenidaReturnPath } from '@/lib/bienvenida';
 import {
   getHeroAmbientAudio,
@@ -46,14 +47,15 @@ const HERO_LOGGED_IN_ACTIVE_GLOW =
 const HERO_LOGGED_IN_SWEEP_GLOW =
   'radial-gradient(circle,rgba(31,47,99,0.3)_0%,rgba(110,48,171,0.22)_44%,rgba(217,31,139,0.1)_74%,rgba(0,0,0,0)_100%)';
 const HERO_PENDING_MINIVERSE_SELECTION_KEY = 'gatoencerrado:hero-inline-miniverse-selection';
+const HERO_TITLE = '#GATOENCERRADO';
 const HERO_ROTATING_SUBTITLES = [
   'Una experiencia narrativa interactiva',
-  'Basada en "Es un gato encerrado"',
-  'La obra que ocurre en tu mente',
+  'Basada en Es un gato encerrado',
+  'La obra ocurre en tu mente',
     
   ];
 const HERO_GHOST_SUBTITLES = [
-  'Teatro que no se mira. Se habita.',
+  'No es teatro que se mira. Se habita.',
   'Tal vez la obra ya empezó en ti',
    
 ];
@@ -123,6 +125,7 @@ const Hero = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { user, loading: isAuthLoading } = useAuth();
+  const heroTitleDisplay = useSignalDriftText(HERO_TITLE, { active: !hasActivatedAudio && !user });
   const { toast } = useToast();
   const narrativeVideoUrl = isMobileViewport ? null : NARRATIVE_VIDEO_URL_DESKTOP;
 
@@ -857,9 +860,10 @@ const Hero = () => {
                     className="hero-logo w-24 sm:w-28 md:w-32 cursor-pointer"
                     onClick={handleIsotipoClick}
                     role="button"
-                    aria-label={isHeroAudioMuted ? 'Activar sonido' : 'Silenciar sonido'}
+                    aria-label={!hasActivatedAudio ? 'Conocer la escena' : isHeroAudioMuted ? 'Activar sonido' : 'Silenciar sonido'}
                   >
                     <motion.div
+                      className="hero-logo-visual"
                       animate={showAudioHint ? { scale: [1, 1.07, 1] } : { scale: 1 }}
                       transition={showAudioHint
                         ? { duration: 1.6, ease: 'easeInOut', repeat: 2 }
@@ -875,14 +879,14 @@ const Hero = () => {
                     </motion.div>
                   </motion.div>
                   <span
-                    className="pointer-events-none mt-2.5 select-none whitespace-nowrap text-[0.62rem] uppercase tracking-widest text-slate-300/70"
+                    className="pointer-events-none mt-2.5 select-none whitespace-nowrap text-[0.72rem] leading-snug tracking-[0.14em] text-slate-300/75"
                     style={{
-                      opacity: showAudioHint ? 0.75 : 0,
+                      opacity: showAudioHint ? 0.82 : 0,
                       transform: showAudioHint ? 'translateY(0)' : 'translateY(-3px)',
                       transition: 'opacity 0.6s ease, transform 0.6s ease',
                     }}
                   >
-                    Activa la escena
+                    Conóceme
                   </span>
                 </div>
               </div>
@@ -892,8 +896,9 @@ const Hero = () => {
                 <h1
                   className="hero-title text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-medium text-center w-full break-words"
                   style={{ textShadow: '0 0 35px rgba(255, 223, 255, 0.45)' }}
+                  aria-label={HERO_TITLE}
                 >
-                  #GATOENCERRADO
+                  <span aria-hidden="true">{heroTitleDisplay}</span>
                 </h1>
                 <motion.div
                   initial={{ opacity: 0, y: 8 }}
@@ -901,7 +906,7 @@ const Hero = () => {
                   transition={{ duration: hasActivatedAudio ? 1.1 : 0, ease: 'easeOut' }}
                   className="mt-2 flex justify-center px-3"
                 >
-                  <span className="relative inline-flex min-h-[2.8rem] max-w-[42rem] items-center justify-center text-center text-sm leading-tight tracking-widest uppercase text-slate-400/60 sm:min-h-[1.8rem]">
+                  <span className="relative inline-flex min-h-[2.8rem] max-w-[42rem] items-center justify-center text-center text-[0.78rem] leading-snug tracking-[0.18em] text-slate-300/70 sm:min-h-[1.8rem] sm:text-sm">
                     <span className="invisible">{HERO_ROTATING_SUBTITLE_PLACEHOLDER}</span>
                     <AnimatePresence mode="sync" initial={false}>
                       <motion.span
@@ -999,9 +1004,9 @@ const Hero = () => {
                       : { opacity: 0, y: 6, filter: 'blur(10px)' }
                   }
                   transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
-                  className="select-none text-[0.62rem] uppercase tracking-[0.3em] text-zinc-300/45 sm:text-[0.68rem]"
+                  className="select-none text-[0.72rem] leading-snug tracking-[0.14em] text-slate-300/65 sm:text-[0.78rem]"
                 >
-                  Pulsa el gato
+                  Pulsa este gato
                 </motion.p>
               </motion.div>
 
