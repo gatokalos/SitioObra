@@ -250,7 +250,7 @@ const Header = ({
 
   const menuItems = [
     { name: 'Inicio', href: '#hero' },
-    { name: 'Obra destacada', href: '#about' },
+    { name: 'Obra más destacada', href: '#about' },
     { name: 'Galería fractal', href: '#instagram' },
     { name: 'Perspectivas', href: '#provoca' },
     ...(showIntermedioNav ? [{ name: 'Intermedio', href: '#blog-contribuye' }] : []),
@@ -263,7 +263,7 @@ const Header = ({
   ];
   const mobileMenuItems = [
     { name: 'Inicio', href: '#hero', description: 'Bienvenida' },
-    { name: 'Obra destacada', href: '#about', description: 'Teatro · Es un gato encerrado' },
+    { name: 'Obra más destacada', href: '#about', description: 'Teatro · Es un gato encerrado' },
     { name: 'Galería fractal', href: '#instagram' },
     { name: 'Perspectivas', href: '#provoca' },
     ...(showIntermedioNav

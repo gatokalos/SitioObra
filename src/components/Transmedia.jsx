@@ -5131,7 +5131,7 @@ Silvestre, un hombre en sus treintas, comienza a perder la frontera entre lo que
                 Las formas de la obra
               </h2>
               <p className="text-lg text-slate-300/80 max-w-3xl mx-auto leading-relaxed font-light">
-    <em>Es un gato encerrado</em> no se acaba en el teatro.<br />
+    <em>Es un gato encerrado</em> no muere en el teatro.<br />
     Desde ahí se expande hacia <strong>nueve formas creativas</strong>.<br />
 
       Cada una con su propio lenguaje y una manera distinta de participación.<br /><br />
