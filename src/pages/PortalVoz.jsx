@@ -1029,7 +1029,7 @@ const PortalVoz = () => {
 
           {/* BLOQUE: Obra destacada + Resonancia — una sola card, pleca como divisor */}
           <div className="lg:order-2 overflow-hidden rounded-2xl border border-white/10">
-            {/* Sección Obra Destacada — estilo Reel: object-cover, recorta lados, llena vertical */}
+            {/* Sección Obra destacada — estilo Reel: object-cover, recorta lados, llena vertical */}
             <div className="relative min-h-[30rem] overflow-hidden">
               <video
                 className="absolute inset-0 h-full w-full object-cover"

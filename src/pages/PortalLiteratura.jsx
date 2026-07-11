@@ -62,7 +62,7 @@ const LITERATURA_COLLABORATORS = [
   },
 ];
 const LITERATURA_ENTRY = {
-  eyebrow: 'OBRA DESTACADA',
+  eyebrow: 'Obra destacada',
   title: 'Mi Gato Encerrado',
   description: 'Leer este libro es algo parecido a despertar dentro de un libro.\n\n Una experiencia de autoficción expandida donde la escritura continúa lo que el escenario no alcanza a decir.',
   image: '/assets/edicion-fisica.png',

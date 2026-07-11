@@ -250,22 +250,23 @@ const Header = ({
 
   const menuItems = [
     { name: 'Inicio', href: '#hero' },
-    { name: 'Obra más destacada', href: '#about' },
+    { name: 'Obra destacada', href: '#about' },
     { name: 'Galería fractal', href: '#instagram' },
     { name: 'Perspectivas', href: '#provoca' },
+    { name: 'Archivo escénico', href: '#next-show' },
     ...(showIntermedioNav ? [{ name: 'Intermedio', href: '#blog-contribuye' }] : []),
     ...(showCuradoriaNav ? [{ name: 'Curaduría', href: '#dialogo-critico' }] : []),
     ...(showTransmediaNav ? [{ name: 'Miniversos', href: '#transmedia' }] : []),
     ...(showAllianceNav ? [{ name: 'Alianza', href: '#apoya' }] : []),
-    { name: 'Archivo escénico', href: '#next-show' },
     { name: 'Créditos', href: '#team' },
     { name: 'Contacto', href: '#contact' },
   ];
   const mobileMenuItems = [
     { name: 'Inicio', href: '#hero', description: 'Bienvenida' },
-    { name: 'Obra más destacada', href: '#about', description: 'Teatro · Es un gato encerrado' },
+    { name: 'Obra destacada', href: '#about', description: 'Teatro · Es un gato encerrado' },
     { name: 'Galería fractal', href: '#instagram' },
     { name: 'Perspectivas', href: '#provoca' },
+    { name: 'Archivo escénico', href: '#next-show' },
     ...(showIntermedioNav
       ? [{ name: 'Intermedio', href: '#blog-contribuye', description: 'Punto de no retorno' }]
       : []),
@@ -307,7 +308,6 @@ const Header = ({
           },
         ]
       : []),
-    { name: 'Archivo escénico', href: '#next-show' },
     { name: 'Créditos de la obra', href: '#team' },
     { name: 'Contacto', href: '#contact' },
   ];
@@ -315,6 +315,9 @@ const Header = ({
   const handleNavClick = useCallback((href) => {
     setIsMenuOpen(false);
     if (typeof href !== 'string' || !href) return;
+    const revealFractalGallery = () => {
+      window.dispatchEvent(new CustomEvent('gatoencerrado:reveal-fractal-gallery'));
+    };
     if (href.startsWith('#') && href.includes('?')) {
       const [hashAnchor] = href.split('?');
       navigate(
@@ -334,6 +337,10 @@ const Header = ({
     const element = document.querySelector(href);
     if (element) {
       element.scrollIntoView({ behavior: 'smooth' });
+      return;
+    }
+    if (href === '#instagram') {
+      revealFractalGallery();
     }
   }, [location.pathname, location.search, navigate]);
 

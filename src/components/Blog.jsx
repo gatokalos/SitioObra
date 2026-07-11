@@ -1078,7 +1078,7 @@ const Blog = ({ posts = [], isLoading = false, error = null, showBuscador = fals
                         className="group ge-chip-filter ge-chip-filter--active ge-chip-filter--compact"
                       >
                         <Compass size={12} className="shrink-0" aria-hidden="true" />
-                        Preguntas de la comunidad
+                        Preguntas para la comunidad
                         <RefreshCw size={11} className="shrink-0 transition duration-300 group-hover:rotate-180" aria-hidden="true" />
                       </Button>
 

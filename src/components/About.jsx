@@ -1,7 +1,7 @@
 import React, { useState, useCallback, useEffect, useRef, useMemo } from 'react';
 import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Film, Headphones, Quote, Send, HeartHandshake, RefreshCw, Heart, Play } from 'lucide-react';
+import { Film, Headphones, Quote, Send, HeartHandshake, RefreshCw, Heart, Play, Camera } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { ToastAction } from '@/components/ui/toast';
@@ -26,9 +26,9 @@ import { useSilvestreVoice } from '@/hooks/useSilvestreVoice';
 
 const aboutParagraphs = [
   {
-    text: `A través de la escena, los sueños lúcidos y la autoficción, Es un gato encerrado explora la soledad, la rabia reprimida y la búsqueda de sentido frente a un mundo cada vez más desconectado.
+    text: `A través de la escena, los sueños lúcidos y la autoficción compartida, «Es un gato encerrado» (la obra) explora la soledad, la rabia reprimida y la búsqueda de sentido frente a un mundo cada vez más desconectado.
 
-    Silvestre, el protagonista, atraviesa sus conflictos internos acompañado por figuras simbólicas como La Doctora y el Payasito Tiste, personajes que habitan el límite entre la imaginación, la memoria y la realidad.`,
+    Silvestre, su protagonista, atraviesa los conflictos internos acompañado por figuras simbólicas como La Doctora y el Payasito Tiste, personajes que habitan el límite entre la imaginación, la memoria y la realidad.`,
   
   className:
       'text-lg leading-relaxed font-light whitespace-pre-line bg-gradient-to-b from-slate-300/75 via-slate-200/80 to-slate-100/100 text-transparent bg-clip-text',
@@ -55,7 +55,6 @@ const fallbackTestimonials = [
   },
 ];
 
-const PROVOCA_SHARE_URL = 'https://esungatoencerrado.com/#provoca';
 const PROVOCA_DRAFT_KEY = 'gatoencerrado:provoca-draft';
 const PROVOCA_AFTERCARE_DELAY_MS = 3200;
 const PROVOCA_CONFETTI_VISIBLE_MS = 2400;
@@ -83,10 +82,6 @@ const PROVOCA_TITLE_TERMS = [
   'la búsqueda de sentido',
 ];
 const PROVOCA_TITLE_LONGEST_TERM = 'la búsqueda de sentido';
-const inviteMessage = `Hola 🐾
-Quiero invitarte a compartir tu mirada en *Perspectivas del público* de *Es un gato encerrado*.
-Entra aquí: ${PROVOCA_SHARE_URL}
-Me encantará leer tu opinión. 💜`;
 const getProvocaListenUsageKey = (userId) => {
   if (userId) return `${PROVOCA_LISTEN_USED_STORAGE_PREFIX}:user:${userId}`;
   const anonId = ensureAnonId();
@@ -1085,7 +1080,6 @@ const About = () => {
   const [trailer, setTrailer] = useState(null);
   const [isTrailerOpen, setIsTrailerOpen] = useState(false);
   const [isTrailerLoading, setIsTrailerLoading] = useState(false);
-  const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(
     () => typeof window !== 'undefined' && window.matchMedia('(max-width: 768px)').matches
   );
@@ -1236,43 +1230,14 @@ const About = () => {
     [stopTrailerPlayback]
   );
 
-  const handleInvite = useCallback(async () => {
-    const shareData = {
-      title: 'Es un gato encerrado',
-      url: PROVOCA_SHARE_URL,
-      text: inviteMessage,
-    };
-
-    if (typeof navigator !== 'undefined' && typeof navigator.share === 'function') {
-      try {
-        await navigator.share(shareData);
-        return;
-      } catch (error) {
-        if (error?.name === 'AbortError') {
-          return;
-        }
-        console.error('Error al compartir invitación:', error);
-      }
-    }
-
-    setIsInviteModalOpen(true);
+  const handleOpenCredits = useCallback(() => {
+    if (typeof document === 'undefined') return;
+    document.getElementById('team')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }, []);
 
-  const handleCloseInviteModal = useCallback(() => {
-    setIsInviteModalOpen(false);
-  }, []);
-
-  const handleShareOption = useCallback((type) => {
-    const encodedMessage = encodeURIComponent(inviteMessage);
-    const whatsappUrl = `https://wa.me/?text=${encodedMessage}`;
-    const emailUrl = `mailto:?subject=${encodeURIComponent('Te invito a ver Es un gato encerrado')}&body=${encodedMessage}`;
-    const targetUrl = type === 'whatsapp' ? whatsappUrl : emailUrl;
-
-    if (typeof window !== 'undefined') {
-      window.open(targetUrl, '_blank', 'noopener,noreferrer');
-    }
-
-    setIsInviteModalOpen(false);
+  const handleOpenFractalGallery = useCallback(() => {
+    if (typeof window === 'undefined') return;
+    window.dispatchEvent(new CustomEvent('gatoencerrado:reveal-fractal-gallery'));
   }, []);
 
   return (
@@ -1289,7 +1254,7 @@ const About = () => {
           className="text-center mb-16"
         >
           <h2 className="font-display text-4xl md:text-5xl font-medium mb-6 text-gradient italic">
-            Obra más destacada
+            Sobre el drama
           </h2>
           <div className="max-w-3xl mx-auto">
             {aboutParagraphs.map((paragraph) => (
@@ -1311,10 +1276,16 @@ const About = () => {
           className="glass-effect rounded-2xl p-8 md:p-12"
         >
           <div className="grid lg:grid-cols-2 gap-12 items-center">
-            <div className="relative order-2 md:order-1">
+            <button
+              type="button"
+              onClick={handleWatchTrailer}
+              disabled={isTrailerLoading}
+              className="group relative order-2 block w-full overflow-hidden rounded-xl text-left shadow-2xl shadow-black/50 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-300/70 focus-visible:ring-offset-2 focus-visible:ring-offset-black disabled:cursor-wait disabled:opacity-80 md:order-1"
+              aria-label={isTrailerLoading ? 'Cargando tráiler' : 'Escuchar el tráiler'}
+            >
               <video
-                className="w-full h-96 object-cover rounded-xl shadow-2xl shadow-black/50"
-                aria-label="Escena de la obra #GatoEncerrado, luz tenue y misteriosa"
+                className="h-96 w-full object-cover transition duration-500 group-hover:scale-[1.015] group-focus-visible:scale-[1.015]"
+                aria-hidden="true"
                 src={trailerPreviewSrc}
                 autoPlay
                 loop
@@ -1323,31 +1294,40 @@ const About = () => {
                 preload="metadata"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent rounded-xl" aria-hidden="true" />
-            </div>
+              <span
+                className="absolute bottom-4 left-4 inline-flex h-12 w-12 items-center justify-center rounded-full border border-white/20 bg-black/45 text-slate-100 shadow-[0_0_24px_rgba(168,85,247,0.24)] backdrop-blur-sm transition group-hover:border-violet-300/60 group-hover:bg-violet-500/20 group-focus-visible:border-violet-300/70"
+                aria-hidden="true"
+              >
+                <Headphones size={22} />
+              </span>
+            </button>
             <div className="order-1 md:order-2">
               <h3 className="font-display text-3xl font-medium text-slate-100 mb-6">
-                Silvestre no está solo
+                Chivis no está solo
               </h3>
               <p className="text-slate-300/80 leading-relaxed mb-8 font-light">
-                <i>El Chivis</i> transforma su mente <strong>en escenario</strong>. Aquí, la verdad y la fantasía ya no compiten. Y tú —espectador, visitante, cómplice— puedes entrar sin tocar la puerta, porque quizás… tú también tienes <i>un gato encerrado</i> en el pecho.
+                Silvestre <i>(el Chivis)</i> transforma su mente <strong>en escenario</strong>. Aquí, la verdad y la fantasía ya no compiten. Y tú —espectador, visitante, cómplice— puedes entrar sin tocar la puerta, porque quizás… tú también tienes <i>un gato encerrado</i> en el pecho.
               </p>
               <div className="flex flex-col lg:flex-row gap-4">
                 <Button
-                  onClick={handleWatchTrailer}
-                  disabled={isTrailerLoading}
+                  variant="outline"
+                  type="button"
+                  onClick={handleOpenCredits}
+                  aria-controls="team"
                   className="ge-chip-action ge-chip-action--primary"
                 >
-                  <Headphones size={20} />
-                  {isTrailerLoading ? 'Cargando…' : 'Escucha el Tráiler'}
-                 
+                  <Film size={20} />
+                  Créditos de la obra
                 </Button>
                 <Button
                   variant="outline"
-                  onClick={handleInvite}
+                  type="button"
+                  onClick={handleOpenFractalGallery}
+                  aria-controls="instagram"
                   className="ge-chip-action ge-chip-action--secondary"
                 >
-                  <Send size={20} />
-                  Próximas funciones
+                  <Camera size={20} />
+                  Galería fractal
                 </Button>
               </div>
             </div>
@@ -1418,61 +1398,6 @@ const About = () => {
                     </div>
                   );
                 })()}
-              </div>
-            </motion.div>
-          </motion.div>
-        )}
-        {isInviteModalOpen && (
-          <motion.div
-            className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto overflow-x-hidden overscroll-none"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-          >
-            <motion.div
-              className="absolute inset-0 bg-black/70"
-              onClick={handleCloseInviteModal}
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-            />
-
-            <motion.div
-              className="relative z-10 my-4 w-[calc(100vw-2rem)] max-w-md rounded-3xl border border-white/10 bg-slate-950/90 backdrop-blur-xl p-6 shadow-[0_18px_60px_rgba(0,0,0,0.55)]"
-              initial={{ scale: 0.96, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.96, opacity: 0 }}
-              transition={{ type: 'spring', stiffness: 220, damping: 28 }}
-            >
-              <div className="flex items-start justify-between mb-4">
-                <div>
-                  <p className="text-xs uppercase tracking-[0.35em] text-slate-400/80">Compartir</p>
-                  <h4 className="text-slate-100 font-display text-2xl">Invita a alguien</h4>
-                </div>
-                <button
-                  onClick={handleCloseInviteModal}
-                  className="text-slate-300 hover:text-white transition"
-                  aria-label="Cerrar invitación"
-                >
-                  ✕
-                </button>
-              </div>
-
-              <p className="text-slate-300/80 whitespace-pre-line text-sm mb-6 font-light">{inviteMessage}</p>
-
-              <div className="space-y-3">
-                <button
-                  onClick={() => handleShareOption('whatsapp')}
-                  className="w-full px-5 py-3 rounded-full font-semibold flex items-center justify-center gap-2 bg-emerald-500/15 hover:bg-emerald-500/25 border border-emerald-500/30 text-emerald-200 transition"
-                >
-                  Enviar por WhatsApp
-                </button>
-                <button
-                  onClick={() => handleShareOption('email')}
-                  className="w-full px-5 py-3 rounded-full font-semibold flex items-center justify-center gap-2 border border-slate-100/20 text-slate-200 hover:bg-slate-100/10 transition"
-                >
-                  Enviar por Email
-                </button>
               </div>
             </motion.div>
           </motion.div>

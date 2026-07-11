@@ -896,7 +896,14 @@ const Hero = () => {
               <div className="max-w-4xl mx-auto w-full">
                 <h1
                   className="hero-title text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-medium text-center w-full break-words"
-                  style={{ textShadow: '0 0 35px rgba(255, 223, 255, 0.45)' }}
+                  style={{
+                    opacity: hasActivatedAudio ? 1 : 0.66,
+                    filter: hasActivatedAudio ? 'brightness(1.08) contrast(1.04)' : 'brightness(0.68) contrast(0.92)',
+                    textShadow: hasActivatedAudio
+                      ? '0 0 34px rgba(255, 223, 255, 0.46), 0 0 18px rgba(168, 85, 247, 0.24)'
+                      : '0 0 14px rgba(255, 223, 255, 0.16)',
+                    transition: 'opacity 1.15s ease, filter 1.15s ease, text-shadow 1.15s ease',
+                  }}
                   aria-label={HERO_TITLE}
                 >
                   <span aria-hidden="true">{heroTitleDisplay}</span>

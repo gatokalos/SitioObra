@@ -141,9 +141,9 @@ const HERO_BACKGROUND_VARIANTS = {
     className: 'absolute inset-0 h-full w-full object-cover',
     style: {
       opacity: 0.44,
-      filter: 'contrast(128%) brightness(72%) saturate(70%)',
+      filter: 'contrast(72%) brightness(87%) saturate(70%)',
       objectPosition: '50% 28%',
-      transform: 'translateY(9.5%) scale(1.2)',
+      transform: 'translateY(12.5%) scale(1.2)',
     },
   },
   authenticated: {
@@ -177,8 +177,8 @@ const HeroBackground = ({ isAuthenticated = false }) => {
     : backgroundVariant.style.opacity;
   const backgroundImageFilter = isGuestCabina
     ? isHeroSceneRevealed
-      ? 'contrast(128%) brightness(78%) saturate(74%)'
-      : 'contrast(118%) brightness(46%) saturate(58%) blur(1px)'
+      ? 'contrast(78%) brightness(78%) saturate(74%)'
+      : 'contrast(68%) brightness(46%) saturate(58%) blur(1px)'
     : backgroundVariant.style.filter;
   const stageVeilOpacity = isGuestCabina
     ? isHeroSceneRevealed ? 0.14 : 1
@@ -421,6 +421,8 @@ const hasCuradoriaDeepLinkIntent = (locationLike) => {
   );
 };
 
+const hasFractalGalleryDeepLinkIntent = (locationLike) => getLocationHashAnchor(locationLike) === 'instagram';
+
 function App() {
   const location = useLocation();
   const { user } = useAuth();
@@ -440,6 +442,10 @@ function App() {
   const canAccessCuradoria = isAuthenticated || hasGuestUnlockedCuradoria;
   const shouldShowIntermedioNav = !canAccessCuradoria || !canAccessTransmedia;
   const [showBlogBuscador, setShowBlogBuscador] = useState(false);
+  const [isFractalGalleryVisible, setIsFractalGalleryVisible] = useState(() => {
+    if (typeof window === 'undefined') return false;
+    return hasFractalGalleryDeepLinkIntent({ hash: window.location.hash });
+  });
   const isMobileLoggedInPortalMode = isAuthenticated && isMobileViewport;
   const isPortalRoute = location.pathname.startsWith('/portal-');
   const hasForcedHomeTopOnBootRef = useRef(false);
@@ -613,6 +619,26 @@ function App() {
     [hasGuestUnlockedTransmedia, isAuthenticated, scrollToSection]
   );
 
+  const revealFractalGallery = useCallback(
+    ({ scroll = true } = {}) => {
+      setIsFractalGalleryVisible(true);
+      if (scroll && typeof window !== 'undefined') {
+        window.setTimeout(() => scrollToSection('instagram'), 120);
+      }
+    },
+    [scrollToSection]
+  );
+
+  const toggleFractalGallery = useCallback(() => {
+    setIsFractalGalleryVisible((prev) => {
+      const next = !prev;
+      if (next && typeof window !== 'undefined') {
+        window.setTimeout(() => scrollToSection('instagram'), 120);
+      }
+      return next;
+    });
+  }, [scrollToSection]);
+
   const handleAskQuestion = useCallback(() => {
     if (!isAuthenticated && !hasGuestUnlockedCuradoria) {
       safeSetItem(CURATORIA_UNLOCK_STORAGE_KEY, '1');
@@ -627,6 +653,12 @@ function App() {
     window.addEventListener('gatoencerrado:show-buscador', handler);
     return () => window.removeEventListener('gatoencerrado:show-buscador', handler);
   }, [handleAskQuestion]);
+
+  useEffect(() => {
+    const handler = () => toggleFractalGallery();
+    window.addEventListener('gatoencerrado:reveal-fractal-gallery', handler);
+    return () => window.removeEventListener('gatoencerrado:reveal-fractal-gallery', handler);
+  }, [toggleFractalGallery]);
 
   useEffect(() => {
     if (location.pathname !== '/') return;
@@ -646,6 +678,12 @@ function App() {
     safeSetItem(CURATORIA_UNLOCK_STORAGE_KEY, '1');
     setHasGuestUnlockedCuradoria(true);
   }, [hasGuestUnlockedCuradoria, isAuthenticated, location]);
+
+  useEffect(() => {
+    if (location.pathname !== '/') return;
+    if (!hasFractalGalleryDeepLinkIntent(location)) return;
+    revealFractalGallery({ scroll: false });
+  }, [location, revealFractalGallery]);
 
   useEffect(() => {
     if (!canAccessTransmedia) return undefined;
@@ -700,14 +738,21 @@ function App() {
                     <About />
                   </Suspense>
                 </DeferredSection>
-                <DeferredSection fallback={<SectionFallback id="instagram" minHeight={1600} />}>
-                  <Suspense fallback={<SectionFallback id="instagram" minHeight={1600} />}>
-                    <Instagram />
-                  </Suspense>
-                </DeferredSection>
+                {isFractalGalleryVisible && (
+                  <DeferredSection fallback={<SectionFallback id="instagram" minHeight={1600} />}>
+                    <Suspense fallback={<SectionFallback id="instagram" minHeight={1600} />}>
+                      <Instagram />
+                    </Suspense>
+                  </DeferredSection>
+                )}
                 <DeferredSection fallback={<SectionFallback id="provoca" minHeight={900} />}>
                   <Suspense fallback={<SectionFallback id="provoca" minHeight={900} />}>
                     <ProvocaSection />
+                  </Suspense>
+                </DeferredSection>
+                <DeferredSection fallback={<SectionFallback id="next-show" minHeight={480} />}>
+                  <Suspense fallback={<SectionFallback id="next-show" minHeight={480} />}>
+                    <NextShow />
                   </Suspense>
                 </DeferredSection>
                 <DeferredSection fallback={<SectionFallback id="blog-contribuye" minHeight={700} />}>
@@ -757,11 +802,6 @@ function App() {
                   </SectionErrorBoundary>
                 )}
 
-                <DeferredSection fallback={<SectionFallback id="next-show" minHeight={480} />}>
-                  <Suspense fallback={<SectionFallback id="next-show" minHeight={480} />}>
-                    <NextShow />
-                  </Suspense>
-                </DeferredSection>
                 <DeferredSection fallback={<SectionFallback id="team" minHeight={980} />}>
                   <Suspense fallback={<SectionFallback id="team" minHeight={980} />}>
                     <Team />
