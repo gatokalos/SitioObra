@@ -733,33 +733,18 @@ function App() {
               <main className="pt-20 lg:pt-24">
                 <Hero />
 
-                <DeferredSection fallback={<SectionFallback id="about" minHeight={620} />}>
-                  <Suspense fallback={<SectionFallback id="about" minHeight={620} />}>
-                    <About />
-                  </Suspense>
-                </DeferredSection>
-                {isFractalGalleryVisible && (
-                  <DeferredSection fallback={<SectionFallback id="instagram" minHeight={1600} />}>
-                    <Suspense fallback={<SectionFallback id="instagram" minHeight={1600} />}>
-                      <Instagram />
-                    </Suspense>
-                  </DeferredSection>
-                )}
                 <DeferredSection fallback={<SectionFallback id="provoca" minHeight={900} />}>
                   <Suspense fallback={<SectionFallback id="provoca" minHeight={900} />}>
                     <ProvocaSection />
                   </Suspense>
                 </DeferredSection>
-                <DeferredSection fallback={<SectionFallback id="next-show" minHeight={480} />}>
-                  <Suspense fallback={<SectionFallback id="next-show" minHeight={480} />}>
-                    <NextShow />
-                  </Suspense>
-                </DeferredSection>
+
                 <DeferredSection fallback={<SectionFallback id="blog-contribuye" minHeight={700} />}>
                   <Suspense fallback={<SectionFallback id="blog-contribuye" minHeight={700} />}>
                     <BlogContributionPrompt onRevealTransmedia={handleRevealTransmedia} onAskQuestion={handleAskQuestion} disableExpand={isMobileLoggedInPortalMode} />
                   </Suspense>
                 </DeferredSection>
+
                 {canAccessCuradoria && (
                   <DeferredSection fallback={<SectionFallback id="dialogo-critico" minHeight={900} />}>
                     <Suspense fallback={<SectionFallback id="dialogo-critico" minHeight={900} />}>
@@ -768,7 +753,7 @@ function App() {
                   </DeferredSection>
                 )}
 
-                {/* Showcase Transmedia: sorpresa, se revela al expandir desde el Intermedio */}
+                {/* Showcase Transmedia: sorpresa, se revela al expandir desde Primera llamada */}
                 {canAccessTransmedia && !isMobileLoggedInPortalMode && (
                   <SectionErrorBoundary fallback={<SectionFallback id="transmedia" minHeight={1600} />}>
                     <Suspense fallback={<SectionFallback id="transmedia" minHeight={1600} />}>
@@ -801,6 +786,24 @@ function App() {
                     </DeferredSection>
                   </SectionErrorBoundary>
                 )}
+
+                <DeferredSection fallback={<SectionFallback id="about" minHeight={620} />}>
+                  <Suspense fallback={<SectionFallback id="about" minHeight={620} />}>
+                    <About />
+                  </Suspense>
+                </DeferredSection>
+                {isFractalGalleryVisible && (
+                  <DeferredSection fallback={<SectionFallback id="instagram" minHeight={1600} />}>
+                    <Suspense fallback={<SectionFallback id="instagram" minHeight={1600} />}>
+                      <Instagram />
+                    </Suspense>
+                  </DeferredSection>
+                )}
+                <DeferredSection fallback={<SectionFallback id="next-show" minHeight={480} />}>
+                  <Suspense fallback={<SectionFallback id="next-show" minHeight={480} />}>
+                    <NextShow />
+                  </Suspense>
+                </DeferredSection>
 
                 <DeferredSection fallback={<SectionFallback id="team" minHeight={980} />}>
                   <Suspense fallback={<SectionFallback id="team" minHeight={980} />}>

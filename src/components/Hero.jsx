@@ -47,16 +47,19 @@ const HERO_LOGGED_IN_ACTIVE_GLOW =
 const HERO_LOGGED_IN_SWEEP_GLOW =
   'radial-gradient(circle,rgba(31,47,99,0.3)_0%,rgba(110,48,171,0.22)_44%,rgba(217,31,139,0.1)_74%,rgba(0,0,0,0)_100%)';
 const HERO_PENDING_MINIVERSE_SELECTION_KEY = 'gatoencerrado:hero-inline-miniverse-selection';
-const HERO_TITLE = '#GATOENCERRADO';
+const HERO_TITLE = 'GATOENCERRADO';
+const HERO_BRAND_LABEL = '#GATOENCERRADO';
+const HERO_INACTIVE_HINT = 'Pulsa el gato';
 const HERO_ROTATING_SUBTITLES = [
-  'Una experiencia narrativa transmedial',
-  'Basada en Es un gato encerrado',
-  'La obra que ocurre en tu mente',
+  'Una experiencia narrativa interactiva',
+  'Basada en una narrativa transmedia',
+  'Es la obra que ocurre en tu mente',
       
   ];
 const HERO_GHOST_SUBTITLES = [
-   'Tal vez la obra ya empezó en ti',
+   'Y tal vez la obra ya empezó en ti',
    'Teatro sin actores. Solo espectadores.',
+   'Es hora de observar al observador',
    
 ];
 const HERO_ROTATING_SUBTITLE_PLACEHOLDER =
@@ -86,7 +89,6 @@ const Hero = () => {
   const [ctaIndex, setCtaIndex] = useState(0);
   const [heroSubtitleIndex, setHeroSubtitleIndex] = useState(0);
   const [heroGhostSubtitle, setHeroGhostSubtitle] = useState(null);
-  const [isHeroHintVisible, setIsHeroHintVisible] = useState(false);
   const [isCtaHovered, setIsCtaHovered] = useState(false);
   const [primaryCtaWidth, setPrimaryCtaWidth] = useState(null);
   const [activeLoggedInCtaIndex, setActiveLoggedInCtaIndex] = useState(1);
@@ -98,15 +100,12 @@ const Hero = () => {
   const heroAudioMutedRef = useRef(false);
   const audioGestureUnlockRef = useRef(false);
   const lastHeroAudioPlayAttemptRef = useRef(0);
-  const [isHeroAudioReady, setIsHeroAudioReady] = useState(false);
-  const isHeroAudioReadyRef = useRef(false);
   const [isHeroAudioMuted, setIsHeroAudioMuted] = useState(false);
   const [isHeroAudioPlaying, setIsHeroAudioPlaying] = useState(false);
   const [hasActivatedAudio, setHasActivatedAudio] = useState(false);
   const userActivatedRef = useRef(false);
   const audioActivatedOnceRef = useRef(false);
-  const [showAudioHint, setShowAudioHint] = useState(false);
-  const isHeroAudioPlayingRef = useRef(false);
+  const [isHeroHashReady, setIsHeroHashReady] = useState(false);
   const [isHeroInViewport, setIsHeroInViewport] = useState(true);
   const [isMobileViewport, setIsMobileViewport] = useState(() => {
     if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') return false;
@@ -119,13 +118,19 @@ const Hero = () => {
     { label: 'Merch', Icon: ShoppingBag },
   ];
   const currentCta = rotatingCtas[ctaIndex];
-  const currentHeroSubtitle = heroGhostSubtitle ?? HERO_ROTATING_SUBTITLES[heroSubtitleIndex];
-  const isHeroGhostSubtitle = heroGhostSubtitle !== null;
+  const currentHeroSubtitle = hasActivatedAudio
+    ? heroGhostSubtitle ?? HERO_ROTATING_SUBTITLES[heroSubtitleIndex]
+    : HERO_INACTIVE_HINT;
+  const isHeroGhostSubtitle = hasActivatedAudio && heroGhostSubtitle !== null;
   const targetWidth = primaryCtaWidth ?? undefined;
   const navigate = useNavigate();
   const location = useLocation();
   const { user, loading: isAuthLoading } = useAuth();
-  const heroTitleDisplay = useSignalDriftText(HERO_TITLE, { active: !hasActivatedAudio && !user });
+  const heroTitleSignalDisplay = useSignalDriftText(HERO_BRAND_LABEL, { active: !hasActivatedAudio && !user });
+  const heroTitleDisplay = useMemo(
+    () => heroTitleSignalDisplay.slice(1) || HERO_TITLE,
+    [heroTitleSignalDisplay],
+  );
   const { toast } = useToast();
   const narrativeVideoUrl = isMobileViewport ? null : NARRATIVE_VIDEO_URL_DESKTOP;
 
@@ -246,6 +251,16 @@ const Hero = () => {
     }
   }, [location.hash, location.pathname, location.search, navigate, user]);
 
+  const handleOpenHeroWelcome = useCallback(() => {
+    handleOpenMiniverseList(null, 'Explora los miniversos');
+  }, [handleOpenMiniverseList]);
+
+  const handleHeroWelcomeKeyDown = useCallback((event) => {
+    if (event.key !== 'Enter' && event.key !== ' ') return;
+    event.preventDefault();
+    handleOpenHeroWelcome();
+  }, [handleOpenHeroWelcome]);
+
   const handleLoggedInHeroAction = useCallback(
     (tabId, contextLabel, index) => {
       if (Number.isFinite(index)) {
@@ -351,25 +366,6 @@ const Hero = () => {
   }, []);
 
   useEffect(() => {
-    if (typeof window === 'undefined') {
-      return undefined;
-    }
-
-    if (user) {
-      setIsHeroHintVisible(false);
-      return undefined;
-    }
-
-    const syncHintWithScrollPosition = () => {
-      setIsHeroHintVisible(window.scrollY > 8);
-    };
-
-    syncHintWithScrollPosition();
-    window.addEventListener('scroll', syncHintWithScrollPosition, { passive: true });
-    return () => window.removeEventListener('scroll', syncHintWithScrollPosition);
-  }, [user]);
-
-  useEffect(() => {
     if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') {
       return undefined;
     }
@@ -410,14 +406,6 @@ const Hero = () => {
   }, [isHeroAudioMuted]);
 
   useEffect(() => {
-    isHeroAudioReadyRef.current = isHeroAudioReady;
-  }, [isHeroAudioReady]);
-
-  useEffect(() => {
-    isHeroAudioPlayingRef.current = isHeroAudioPlaying;
-  }, [isHeroAudioPlaying]);
-
-  useEffect(() => {
     if (isAuthLoading) {
       return undefined;
     }
@@ -433,7 +421,6 @@ const Hero = () => {
 
     heroAudioMutedRef.current = nextMuted;
     setIsHeroAudioMuted(nextMuted);
-    setIsHeroAudioReady(false);
     setIsHeroAudioPlaying(false);
 
     const audio = getHeroAmbientAudio();
@@ -459,35 +446,9 @@ const Hero = () => {
     });
   }, []);
 
-  // Hint de audio: primera aparición 1.2s, se muestra 4s, descansa 3s.
-  // El timer no depende de isHeroAudioReady para no reiniciarse si el audio tarda en cargar;
-  // en cambio lee el ref en cada tick para mostrar el hint solo cuando el audio ya está listo.
-  useEffect(() => {
-    if (hasActivatedAudio || userActivatedRef.current || !isHeroInViewport) return;
-    let showTimer, hideTimer;
-    const cycle = (delay) => {
-      showTimer = window.setTimeout(() => {
-        if (!isHeroAudioReadyRef.current) { cycle(500); return; }
-        if (isHeroAudioPlayingRef.current) { cycle(2000); return; }
-        setShowAudioHint(true);
-        hideTimer = window.setTimeout(() => {
-          setShowAudioHint(false);
-          cycle(3000);
-        }, 4000);
-      }, delay);
-    };
-    cycle(1200);
-    return () => {
-      window.clearTimeout(showTimer);
-      window.clearTimeout(hideTimer);
-      setShowAudioHint(false);
-    };
-  }, [hasActivatedAudio, isHeroInViewport]);
-
   const handleIsotipoClick = useCallback(() => {
     const audio = getHeroAmbientAudio();
     if (!audio) return;
-    setShowAudioHint(false);
 
     if (!userActivatedRef.current) {
       // Primera activación
@@ -516,6 +477,16 @@ const Hero = () => {
       window.dispatchEvent(new CustomEvent('gatoencerrado:audio-activated'));
     }
   }, [isHeroAudioMuted, hasActivatedAudio]);
+
+  const handleHeroHashReady = useCallback(() => {
+    setIsHeroHashReady(true);
+  }, []);
+
+  const handleHeroHashKeyDown = useCallback((event) => {
+    if (event.key !== 'Enter' && event.key !== ' ') return;
+    event.preventDefault();
+    handleIsotipoClick();
+  }, [handleIsotipoClick]);
 
   useEffect(() => {
     if (isAuthLoading) {
@@ -681,14 +652,9 @@ const Hero = () => {
     const onAudioError = () => {
       if (fallbackApplied) return;
       fallbackApplied = true;
-      setIsHeroAudioReady(false);
       audio.src = HERO_LOGGED_IN_AUDIO_FALLBACK_URL;
       audio.load();
       void attemptPlay();
-    };
-
-    const onCanPlay = () => {
-      setIsHeroAudioReady(true);
     };
 
     const onAudioPlay = () => {
@@ -735,7 +701,6 @@ const Hero = () => {
       }
     };
 
-    setIsHeroAudioReady(audio.readyState >= 2);
     audio.muted = heroAudioMutedRef.current;
     audio.volume = heroAudioMutedRef.current ? 0 : HERO_LOGGED_IN_AUDIO_VOLUME;
     setIsHeroAudioPlaying(!audio.paused && !heroAudioMutedRef.current);
@@ -769,7 +734,6 @@ const Hero = () => {
     window.addEventListener('pagehide', onPageHide);
     document.addEventListener('freeze', onPageFreeze);
 
-    audio.addEventListener('canplay', onCanPlay);
     audio.addEventListener('play', onAudioPlay);
     audio.addEventListener('pause', onAudioPause);
     audio.addEventListener('ended', onAudioPause);
@@ -795,7 +759,6 @@ const Hero = () => {
       window.removeEventListener('focus', onWindowFocus);
       window.removeEventListener('pagehide', onPageHide);
       document.removeEventListener('freeze', onPageFreeze);
-      audio.removeEventListener('canplay', onCanPlay);
       audio.removeEventListener('play', onAudioPlay);
       audio.removeEventListener('pause', onAudioPause);
       audio.removeEventListener('ended', onAudioPause);
@@ -850,7 +813,7 @@ const Hero = () => {
         ) : (
           <div className="container mx-auto px-6 text-center relative z-10 flex-1 flex flex-col">
 
-              {/* TOP HALF — isotipo flota hasta la línea central */}
+              {/* TOP HALF — hash fijo de marca hasta la línea central */}
               <div className="flex-1 flex items-end justify-center pb-4 sm:pb-5 md:pb-6">
                 <div className="flex flex-col items-center">
                   <motion.div
@@ -865,29 +828,32 @@ const Hero = () => {
                     <span className="hero-universe-mark__line" />
                   </motion.div>
                   <motion.div
-                    initial={{ opacity: 0, scale: 0.8 }}
+                    initial={{ opacity: 0, scale: 0.88 }}
                     animate={{ opacity: 1, scale: 1 }}
-                    transition={{ duration: 1.2, ease: 'easeOut' }}
-                    className="hero-logo w-24 sm:w-28 md:w-32 cursor-pointer"
-                    onClick={handleIsotipoClick}
+                    transition={{ duration: 1, ease: 'easeOut' }}
+                    className="hero-title-mark-slot"
                     role="button"
-                    aria-label={!hasActivatedAudio ? 'Conocer la escena' : isHeroAudioMuted ? 'Activar sonido' : 'Silenciar sonido'}
+                    tabIndex={0}
+                    onKeyDown={handleHeroHashKeyDown}
+                    aria-label={!hasActivatedAudio ? 'Activar escena' : 'Desactivar escena'}
                   >
-                    <motion.div
-                      className="hero-logo-visual"
-                      animate={showAudioHint ? { scale: [1, 1.07, 1] } : { scale: 1 }}
-                      transition={showAudioHint
-                        ? { duration: 1.6, ease: 'easeInOut', repeat: 2 }
-                        : { duration: 0.5, ease: 'easeOut' }
-                      }
+                    <span
+                      className="hero-title-mark-placeholder"
+                      aria-hidden="true"
+                      style={{ opacity: isHeroHashReady ? 0 : 1 }}
                     >
-                      <img
-                        src={isotipoGatoWebp}
-                        alt="Isotipo de Gato Encerrado"
-                        className="hero-logo-img"
-                        fetchpriority="high"
+                      #
+                    </span>
+                    <Suspense fallback={null}>
+                      <HashtagButton3D
+                        onClick={handleIsotipoClick}
+                        onReady={handleHeroHashReady}
+                        height="var(--hero-title-mark-size)"
+                        contentScale={isMobileViewport ? 0.92 : 1}
+                        style={{ width: 'var(--hero-title-mark-size)', margin: '0 auto' }}
+                        showGlow={!hasActivatedAudio}
                       />
-                    </motion.div>
+                    </Suspense>
                   </motion.div>
                 </div>
               </div>
@@ -897,21 +863,18 @@ const Hero = () => {
                 <h1
                   className="hero-title text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-medium text-center w-full break-words"
                   style={{
-                    opacity: hasActivatedAudio ? 1 : 0.66,
-                    filter: hasActivatedAudio ? 'brightness(1.08) contrast(1.04)' : 'brightness(0.68) contrast(0.92)',
-                    textShadow: hasActivatedAudio
-                      ? '0 0 34px rgba(255, 223, 255, 0.46), 0 0 18px rgba(168, 85, 247, 0.24)'
-                      : '0 0 14px rgba(255, 223, 255, 0.16)',
-                    transition: 'opacity 1.15s ease, filter 1.15s ease, text-shadow 1.15s ease',
+                    opacity: hasActivatedAudio ? 0.96 : 0.72,
+                    filter: hasActivatedAudio ? 'brightness(1) contrast(1.05)' : 'brightness(0.82) contrast(0.96)',
+                    transition: 'opacity 1.15s ease, filter 1.15s ease',
                   }}
-                  aria-label={HERO_TITLE}
+                  aria-label={HERO_BRAND_LABEL}
                 >
                   <span aria-hidden="true">{heroTitleDisplay}</span>
                 </h1>
                 <motion.div
                   initial={{ opacity: 0, y: 8 }}
-                  animate={{ opacity: hasActivatedAudio ? 1 : 0, y: hasActivatedAudio ? 0 : 8 }}
-                  transition={{ duration: hasActivatedAudio ? 1.1 : 0, ease: 'easeOut' }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: hasActivatedAudio ? 1.1 : 0.8, ease: 'easeOut', delay: hasActivatedAudio ? 0 : 0.25 }}
                   className="mt-2 flex justify-center px-3"
                 >
                   <span className="relative inline-flex min-h-[2.8rem] max-w-[42rem] items-center justify-center text-center text-[0.78rem] leading-snug tracking-[0.18em] text-slate-300/70 sm:min-h-[1.8rem] sm:text-sm">
@@ -930,101 +893,50 @@ const Hero = () => {
                     </AnimatePresence>
                   </span>
                 </motion.div>
-                <motion.div
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: hasActivatedAudio ? 1 : 0, y: 0 }}
-                  transition={{ duration: hasActivatedAudio ? 0.9 : 0.7, delay: hasActivatedAudio ? 0 : 1.05 }}
+                <div
                   className="relative mt-5 inline-flex h-12 w-12 items-center justify-center self-center sm:mt-6"
-                  style={{
-                    pointerEvents: hasActivatedAudio ? 'auto' : 'none',
-                    visibility: hasActivatedAudio ? 'visible' : 'hidden',
-                  }}
                   aria-hidden="true"
-                >
-                  <motion.svg
-                    width="36"
-                    height="36"
-                    viewBox="0 0 34 34"
-                    fill="none"
-                    xmlns="http://www.w3.org/2000/svg"
-                    animate={{ y: [0, 3, 0], opacity: [0.72, 0.3, 0.72] }}
-                    transition={{ duration: 2.1, repeat: Infinity, ease: 'easeInOut' }}
-                    className="h-10 w-10 sm:h-[54px] sm:w-[54px]"
-                    style={{
-                      filter: 'drop-shadow(0 0 5px rgba(255,255,255,0.3)) drop-shadow(0 0 10px rgba(189,189,189,0.26))',
-                    }}
-                  >
-                    <defs>
-                      <linearGradient id="heroScrollChevronGradient" x1="3" y1="4" x2="30" y2="30" gradientUnits="userSpaceOnUse">
-                        <stop stopColor="#2d2d2d" />
-                        <stop offset="0.55" stopColor="#bdbdbd" />
-                        <stop offset="1" stopColor="#ffffff" />
-                      </linearGradient>
-                    </defs>
-                    <path
-                      d="M7 9.5L17 15.5L27 9.5"
-                      stroke="url(#heroScrollChevronGradient)"
-                      strokeWidth="2.8"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      opacity="0.58"
-                    />
-                    <path
-                      d="M7 16L17 22L27 16"
-                      stroke="url(#heroScrollChevronGradient)"
-                      strokeWidth="2.9"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      opacity="0.74"
-                    />
-                    <path
-                      d="M7 22.5L17 28.5L27 22.5"
-                      stroke="url(#heroScrollChevronGradient)"
-                      strokeWidth="2.8"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      opacity="0.66"
-                    />
-                  </motion.svg>
-                </motion.div>
+                />
               </div>
 
-              {/* BOTTOM HALF — hashtag y CTAs bajo la línea central */}
+              {/* BOTTOM HALF — esfera de Bienvenida y CTAs bajo la línea central */}
               <div className="flex-1 flex flex-col items-center justify-start pt-2">
 
-              {/* HashtagButton3D — reemplaza los botones en su misma zona */}
+              {/* Esfera — reemplaza la antigua entrada inferior a Bienvenida */}
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: hasActivatedAudio ? 1 : 0, y: 0 }}
                 transition={{ duration: hasActivatedAudio ? 0.9 : 1, delay: hasActivatedAudio ? 0 : 0.8 }}
-                className="mt-8 -translate-y-[7vh] flex flex-col items-center gap-2 sm:mt-10 sm:translate-y-0 md:mt-12"
+                className="mt-8 -translate-y-[7vh] flex flex-col items-center sm:mt-10 sm:translate-y-0 md:mt-12"
                 style={{
                   pointerEvents: hasActivatedAudio ? 'auto' : 'none',
                   visibility: hasActivatedAudio ? 'visible' : 'hidden',
                 }}
                 aria-hidden={!hasActivatedAudio}
               >
-                <Suspense fallback={<div style={{ height: 'clamp(110px, 17vh, 160px)', width: 'clamp(100px, 16vh, 150px)', margin: '0 auto' }} />}>
-                  <HashtagButton3D
-                    onClick={() => handleOpenMiniverseList(null, 'Explora los miniversos')}
-                    height="clamp(110px, 17vh, 160px)"
-                    contentScale={isMobileViewport ? 1 : 1.1}
-                    style={{ width: 'clamp(100px, 16vh, 150px)', margin: '0 auto' }}
-                    showGlow={isHeroAudioPlaying}
-                  />
-                </Suspense>
-                <motion.p
-                  initial={false}
-                  animate={
-                    isHeroHintVisible
-                      ? { opacity: 0.95, y: 0, filter: 'blur(0px)' }
-                      : { opacity: 0, y: 6, filter: 'blur(10px)' }
-                  }
-                  transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
-                  className="select-none text-[0.72rem] leading-snug tracking-[0.14em] text-slate-300/65 sm:text-[0.78rem]"
+                <motion.div
+                  className="hero-logo hero-logo--portal cursor-pointer"
+                  style={{ width: 'calc(clamp(129px, 18vh, 175px) * 0.5)' }}
+                  onClick={handleOpenHeroWelcome}
+                  onKeyDown={handleHeroWelcomeKeyDown}
+                  role="button"
+                  tabIndex={hasActivatedAudio ? 0 : -1}
+                  aria-label={user ? 'Explorar miniversos' : 'Abrir bienvenida'}
+                  whileHover={{ scale: 1.03 }}
+                  whileTap={{ scale: 0.98 }}
                 >
-                  Pulsa este gato
-                </motion.p>
+                  <div className="hero-logo-visual">
+                    <img
+                      src={isotipoGatoWebp}
+                      alt="Isotipo de Gato Encerrado"
+                      className="hero-logo-img"
+                      fetchpriority="high"
+                    />
+                  </div>
+                </motion.div>
+                <span className="hero-sphere-hint" aria-hidden="true">
+                  ¿Entramos?
+                </span>
               </motion.div>
 
               {/* — botones originales: se muestran solo si hay usuario — */}

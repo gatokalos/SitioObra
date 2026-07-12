@@ -943,7 +943,7 @@ const Blog = ({ posts = [], isLoading = false, error = null, showBuscador = fals
                       <div className="h-px bg-gradient-to-r from-violet-300/35 via-violet-100/15 to-transparent lg:from-transparent lg:via-violet-300/40 lg:to-transparent" />
                       <div className="space-y-3">
                         <p className="text-[1rem] font-semibold leading-snug text-white">
-                         <em> ¿Tienes una teoría? ¿Discutimos la obra?</em><br /> Este es un espacio para contrastarla, explorarla y encontrar respuestas.
+                         <em> ¿Tienes una teoría de este universo? ¿Discutimos alguna de sus obra?</em><br /> Este es un espacio para contrastarla, explorarla y encontrar respuestas.
                         </p>
                       </div>
                       <div className="relative w-full">

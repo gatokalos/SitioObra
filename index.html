@@ -64,7 +64,6 @@
 				flex-direction: column;
 				align-items: center;
 				justify-content: center;
-				gap: 16px;
 				background-color: #050507;
 				background-image: radial-gradient(circle at top, rgba(76, 29, 149, 0.28), rgba(8, 8, 12, 0.95));
 				color: #e2e8f0;
@@ -85,27 +84,6 @@
 				color: rgba(226, 232, 240, 0.7);
 			}
 
-			.splash-spinner-wrap {
-				transform: translateY(-12vh);
-			}
-
-			.splash-spinner {
-				width: 84px;
-				height: 84px;
-				border-radius: 9999px;
-				border: 2px solid rgba(255, 255, 255, 0.12);
-				border-top-color: rgba(192, 132, 252, 0.8);
-				border-right-color: rgba(248, 113, 113, 0.6);
-				box-shadow: 0 0 28px rgba(168, 85, 247, 0.35);
-				animation: splash-spin 1.6s linear infinite;
-			}
-
-			@keyframes splash-spin {
-				to {
-					transform: rotate(360deg);
-				}
-			}
-
 			/* Hero title visible desde el primer paint, antes de que React monte */
 			.splash-hero-title-wrap {
 				position: absolute;
@@ -122,32 +100,50 @@
 				margin: 0;
 				font-family: "Vox Round", Georgia, "Times New Roman", serif;
 				font-weight: 600;
-				font-size: clamp(2rem, 7.5vw, 5rem);
 				letter-spacing: 0.25em;
 				text-transform: uppercase;
 				line-height: 1.05;
-				background: linear-gradient(125deg, #2d2d2d, #bdbdbd, #ffffff);
+				background: linear-gradient(180deg, rgba(255, 255, 255, 0.36) 0%, rgba(32, 34, 40, 0.9) 34%, #020204 100%);
 				-webkit-background-clip: text;
-				-webkit-text-fill-color: transparent;
 				background-clip: text;
+				-webkit-text-fill-color: rgba(0, 0, 0, 0.76);
+				color: rgba(0, 0, 0, 0.76);
+				-webkit-text-stroke: 0.35px rgba(226, 232, 240, 0.13);
+				text-shadow:
+					0 0 1px rgba(255, 255, 255, 0.24),
+					0 0 14px rgba(226, 232, 240, 0.16),
+					0 0 24px rgba(88, 72, 126, 0.18);
+			}
+
+			.splash-hero-mark {
+				display: block;
+				margin: 0 auto clamp(0.35rem, 1.6vh, 0.8rem);
+				font-size: clamp(4.5rem, 12vh, 7.8rem);
+				letter-spacing: 0;
+				line-height: 0.9;
+			}
+
+			.splash-hero-word {
+				display: block;
+				font-size: clamp(2rem, 7.5vw, 5rem);
 			}
 
 			@media (max-width: 480px) {
-				.splash-hero-title {
+				.splash-hero-word {
 					font-size: clamp(1.6rem, 8vw, 2.2rem);
 					letter-spacing: 0.12em;
 				}
 			}
 
 			@media (min-width: 769px) {
-				.splash-hero-title {
+				.splash-hero-word {
 					font-size: clamp(3rem, 4vw, 5rem);
 					letter-spacing: 0.22em;
 				}
 			}
 
 			@media (min-width: 1201px) {
-				.splash-hero-title {
+				.splash-hero-word {
 					font-size: clamp(4rem, 3.5vw, 5rem);
 					letter-spacing: 0.25em;
 				}
@@ -158,10 +154,10 @@
 	<body>
 		<div id="app-splash">
 			<div class="splash-hero-title-wrap" aria-hidden="true">
-				<h1 class="splash-hero-title">#GATOENCERRADO</h1>
-			</div>
-			<div class="splash-spinner-wrap">
-				<div class="splash-spinner" aria-hidden="true"></div>
+				<h1 class="splash-hero-title">
+					<span class="splash-hero-mark">#</span>
+					<span class="splash-hero-word">GATOENCERRADO</span>
+				</h1>
 			</div>
 		</div>
 		<div id="root"></div>

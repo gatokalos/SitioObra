@@ -1,7 +1,7 @@
 import React, { useState, useCallback, useEffect, useRef, useMemo } from 'react';
 import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Film, Headphones, Quote, Send, HeartHandshake, RefreshCw, Heart, Play, Camera } from 'lucide-react';
+import { Film, Headphones, Quote, Send, HeartHandshake, RefreshCw, Heart, Play, Camera, Drama } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { ToastAction } from '@/components/ui/toast';
@@ -24,9 +24,11 @@ import {
 } from '@/services/trailerService';
 import { useSilvestreVoice } from '@/hooks/useSilvestreVoice';
 
+const FEATURED_WORK_MEDIUM = { Icon: Drama, label: 'Teatro' };
+
 const aboutParagraphs = [
   {
-    text: `A través de la escena, los sueños lúcidos y la autoficción compartida, «Es un gato encerrado» (la obra) explora la soledad, la rabia reprimida y la búsqueda de sentido frente a un mundo cada vez más desconectado.
+    text: `A través de la escena, los sueños lúcidos y la autoficción compartida, «Es un gato encerrado» explora la soledad, la rabia reprimida y la búsqueda de sentido frente a un mundo cada vez más desconectado.
 
     Silvestre, su protagonista, atraviesa los conflictos internos acompañado por figuras simbólicas como La Doctora y el Payasito Tiste, personajes que habitan el límite entre la imaginación, la memoria y la realidad.`,
   
@@ -1253,8 +1255,14 @@ const About = () => {
           viewport={{ once: true }}
           className="text-center mb-16"
         >
+          <div
+            className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-2xl border border-violet-300/25 bg-black/30 shadow-[0_8px_30px_rgba(139,92,246,0.25)]"
+            aria-hidden="true"
+          >
+            <FEATURED_WORK_MEDIUM.Icon size={28} className="text-violet-200" />
+          </div>
           <h2 className="font-display text-4xl md:text-5xl font-medium mb-6 text-gradient italic">
-            Sobre el drama
+            Obra destacada
           </h2>
           <div className="max-w-3xl mx-auto">
             {aboutParagraphs.map((paragraph) => (

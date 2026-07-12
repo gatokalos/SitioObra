@@ -9,7 +9,7 @@ const BASE = { x: -0.25, y: 0.6, z: -0.12 };
 
 // ─── Model ────────────────────────────────────────────────────────────────────
 
-function HashtagModel({ onClick, isPressed }) {
+function HashtagModel({ onClick, isPressed, onReady }) {
   const groupRef   = useRef();
   const matRef     = useRef(null); // referencia al material para animar envMapIntensity
   const [hovered, setHovered] = useState(false);
@@ -35,8 +35,9 @@ function HashtagModel({ onClick, isPressed }) {
     });
 
     matRef.current = mat;
+    onReady?.();
     return () => mat.dispose();
-  }, [scene]);
+  }, [onReady, scene]);
 
   useFrame((_, delta) => {
     if (!groupRef.current || !matRef.current) return;
@@ -84,6 +85,7 @@ function HashtagModel({ onClick, isPressed }) {
 
 export default function HashtagButton3D({
   onClick,
+  onReady,
   className = '',
   style = {},
   width = '100%',
@@ -104,7 +106,7 @@ export default function HashtagButton3D({
       className={className}
       style={{ width, height, cursor: 'pointer', position: 'relative', ...style }}
     >
-      {/* Glow de suelo — se revela cuando el audio está activo */}
+      {/* Glow de suelo controlado por el Hero; no pulsa por sí mismo. */}
       <div
         style={{
           position: 'absolute',
@@ -143,7 +145,7 @@ export default function HashtagButton3D({
           <Environment preset="city" />
 
           <React.Suspense fallback={null}>
-            <HashtagModel onClick={handleClick} isPressed={isPressed} />
+            <HashtagModel onClick={handleClick} isPressed={isPressed} onReady={onReady} />
           </React.Suspense>
         </Canvas>
       </div>

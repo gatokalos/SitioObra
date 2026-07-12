@@ -9,7 +9,6 @@ import LoginOverlay from '@/components/ContributionModal/LoginOverlay';
 import MobileMenuOverlay from '@/components/MobileMenuOverlay';
 import { createPortalLaunchState } from '@/lib/portalNavigation';
 import { safeGetItem, safeSetItem } from '@/lib/safeStorage';
-import isotipoGatoWebp from '@/assets/isotipo-gato.webp';
 import { INITIAL_GAT_BALANCE, readStoredInt } from '@/components/transmedia/transmediaConstants';
 
 const GAT_BALANCE_STORAGE_KEY = 'gatoencerrado:gatokens-available';
@@ -25,7 +24,6 @@ const readGatBalance = () => {
 const readGatChipPinned = () => safeGetItem(GAT_CHIP_PINNED_STORAGE_KEY) === '1';
 
 const MOBILE_FULLSCREEN_MENU_PHASE_A_ENABLED = true;
-const PUBLIC_HEADER_LOGO_SRC = '/assets/header-logo.png';
 const TRANSMEDIA_SECONDARY_ITEMS = [
   { label: 'Teatro', href: '#transmedia?focus=miniversos' },
   { label: 'Artesanías', href: '#transmedia?focus=lataza' },
@@ -63,11 +61,6 @@ const Header = ({
   const greetingLabel = user ? `Hola ${simplifiedName || 'gato'}` : '';
   const authActionLabel = user ? 'Cerrar sesión' : 'Iniciar sesión';
   const statusDotClass = user ? 'bg-emerald-400' : 'bg-slate-600';
-  const headerLogoSrc = user ? isotipoGatoWebp : PUBLIC_HEADER_LOGO_SRC;
-  const headerLogoAlt = user ? 'Logo Gato Encerrado' : 'Isotipo Gato Encerrado';
-  const headerLogoClassName = user
-    ? 'h-9 w-9 rounded-full object-contain'
-    : 'h-10 w-10 object-contain drop-shadow-[0_0_10px_rgba(255,255,255,0.08)] sm:h-11 sm:w-11';
   const shouldGateIndexUntilHeroReveal = !user && location.pathname === '/' && !isHeroSceneRevealed;
 
 
@@ -250,25 +243,22 @@ const Header = ({
 
   const menuItems = [
     { name: 'Inicio', href: '#hero' },
-    { name: 'Obra destacada', href: '#about' },
-    { name: 'Galería fractal', href: '#instagram' },
     { name: 'Perspectivas', href: '#provoca' },
-    { name: 'Archivo escénico', href: '#next-show' },
-    ...(showIntermedioNav ? [{ name: 'Intermedio', href: '#blog-contribuye' }] : []),
+    ...(showIntermedioNav ? [{ name: 'Tercera llamada', href: '#blog-contribuye' }] : []),
     ...(showCuradoriaNav ? [{ name: 'Curaduría', href: '#dialogo-critico' }] : []),
     ...(showTransmediaNav ? [{ name: 'Miniversos', href: '#transmedia' }] : []),
     ...(showAllianceNav ? [{ name: 'Alianza', href: '#apoya' }] : []),
+    { name: 'Obra destacada', href: '#about' },
+    { name: 'Galería fractal', href: '#instagram' },
+    { name: 'Archivo escénico', href: '#next-show' },
     { name: 'Créditos', href: '#team' },
     { name: 'Contacto', href: '#contact' },
   ];
   const mobileMenuItems = [
     { name: 'Inicio', href: '#hero', description: 'Bienvenida' },
-    { name: 'Obra destacada', href: '#about', description: 'Teatro · Es un gato encerrado' },
-    { name: 'Galería fractal', href: '#instagram' },
     { name: 'Perspectivas', href: '#provoca' },
-    { name: 'Archivo escénico', href: '#next-show' },
     ...(showIntermedioNav
-      ? [{ name: 'Intermedio', href: '#blog-contribuye', description: 'Punto de no retorno' }]
+      ? [{ name: 'Tercera llamada', href: '#blog-contribuye', description: 'Punto de no retorno' }]
       : []),
     ...(showCuradoriaNav
       ? [
@@ -308,6 +298,9 @@ const Header = ({
           },
         ]
       : []),
+    { name: 'Obra destacada', href: '#about', description: 'Teatro · Es un gato encerrado' },
+    { name: 'Galería fractal', href: '#instagram' },
+    { name: 'Archivo escénico', href: '#next-show' },
     { name: 'Créditos de la obra', href: '#team' },
     { name: 'Contacto', href: '#contact' },
   ];
@@ -427,13 +420,12 @@ const Header = ({
                 aria-label={isMenuOpen ? 'Cerrar índice de navegación' : 'Abrir índice de navegación'}
                 tabIndex={shouldGateIndexUntilHeroReveal ? -1 : 0}
               >
-                <img
-                  src={headerLogoSrc}
-                  alt={headerLogoAlt}
-                  className={headerLogoClassName}
-                  loading="eager"
-                  decoding="async"
-                />
+                <span
+                  className="header-hashtag-mark h-10 w-10 text-3xl sm:h-11 sm:w-11 sm:text-4xl"
+                  aria-hidden="true"
+                >
+                  #
+                </span>
                 {user ? <span className={`block h-2.5 w-2.5 shrink-0 rounded-full ${statusDotClass}`} /> : null}
               </motion.button>
               {user ? (

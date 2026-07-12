@@ -5382,7 +5382,7 @@ Silvestre, un hombre en sus treintas, comienza a perder la frontera entre lo que
                           }}
                           className="group inline-flex items-center gap-2 rounded-full border border-amber-300/40 bg-amber-500/10 px-4 py-2 text-sm font-semibold text-amber-200 transition hover:bg-amber-500/20"
                         >
-                          Entra a tu cuenta para responder
+                          Entra para responder
                           <ArrowRight
                             size={16}
                             className="shrink-0 transition-transform duration-200 group-hover:translate-x-0.5"
@@ -5584,7 +5584,7 @@ Silvestre, un hombre en sus treintas, comienza a perder la frontera entre lo que
                           }}
                           className="group inline-flex items-center gap-2 rounded-full border border-amber-300/40 bg-amber-500/10 px-4 py-2 text-sm font-semibold text-amber-200 transition hover:bg-amber-500/20"
                         >
-                          Entra a tu cuenta para responder
+                          Entra para responder
                           <ArrowRight
                             size={16}
                             className="shrink-0 transition-transform duration-200 group-hover:translate-x-0.5"

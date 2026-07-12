@@ -113,7 +113,7 @@ const BlogContributionPrompt = ({ onRevealTransmedia = null, onAskQuestion = nul
            {/* CONTENIDO */}
 <div className="relative z-10">
   <h3 className="font-display text-3xl font-medium text-slate-100 mb-6 text-center">
-    INTERMEDIO
+    TERCERA LLAMADA
   </h3>
 
   <p className="text-slate-300/80 leading-relaxed mb-8 max-w-2xl mx-auto font-light whitespace-pre-line text-center">
