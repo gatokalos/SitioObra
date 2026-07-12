@@ -41,6 +41,7 @@ const Header = ({
   showCuradoriaNav = true,
   showIntermedioNav = false,
   showTransmediaNav = true,
+  showPerspectivasNav = false,
 }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [scrollTier, setScrollTier] = useState(0);
@@ -243,8 +244,8 @@ const Header = ({
 
   const menuItems = [
     { name: 'Inicio', href: '#hero' },
-    { name: 'Perspectivas', href: '#provoca' },
-    ...(showIntermedioNav ? [{ name: 'Tercera llamada', href: '#blog-contribuye' }] : []),
+    ...(showPerspectivasNav ? [{ name: 'Perspectivas', href: '#provoca' }] : []),
+    ...(showIntermedioNav ? [{ name: 'Intermedio', href: '#blog-contribuye' }] : []),
     ...(showCuradoriaNav ? [{ name: 'Curaduría', href: '#dialogo-critico' }] : []),
     ...(showTransmediaNav ? [{ name: 'Miniversos', href: '#transmedia' }] : []),
     ...(showAllianceNav ? [{ name: 'Alianza', href: '#apoya' }] : []),
@@ -256,9 +257,9 @@ const Header = ({
   ];
   const mobileMenuItems = [
     { name: 'Inicio', href: '#hero', description: 'Bienvenida' },
-    { name: 'Perspectivas', href: '#provoca' },
+    ...(showPerspectivasNav ? [{ name: 'Perspectivas', href: '#provoca' }] : []),
     ...(showIntermedioNav
-      ? [{ name: 'Tercera llamada', href: '#blog-contribuye', description: 'Punto de no retorno' }]
+      ? [{ name: 'Intermedio', href: '#blog-contribuye', description: 'Punto de no retorno' }]
       : []),
     ...(showCuradoriaNav
       ? [

@@ -51,15 +51,14 @@ const HERO_TITLE = 'GATOENCERRADO';
 const HERO_BRAND_LABEL = '#GATOENCERRADO';
 const HERO_INACTIVE_HINT = 'Pulsa el gato';
 const HERO_ROTATING_SUBTITLES = [
-  'Una experiencia narrativa interactiva',
-  'Basada en una narrativa transmedia',
-  'Es la obra que ocurre en tu mente',
+  'La obra que ocurre en tu mente',
+  'Teatro que ya no necesita escenario',
+  'Una experiencia narrativa transmedia',  
       
   ];
 const HERO_GHOST_SUBTITLES = [
-   'Y tal vez la obra ya empezó en ti',
-   'Teatro sin actores. Solo espectadores.',
-   'Es hora de observar al observador',
+  'Tal vez esta obra empezó contigo', 
+  'Teatro, cine, literatura, sonido: una sola pregunta.',
    
 ];
 const HERO_ROTATING_SUBTITLE_PLACEHOLDER =
@@ -814,12 +813,12 @@ const Hero = () => {
           <div className="container mx-auto px-6 text-center relative z-10 flex-1 flex flex-col">
 
               {/* TOP HALF — hash fijo de marca hasta la línea central */}
-              <div className="flex-1 flex items-end justify-center pb-4 sm:pb-5 md:pb-6">
+              <div className="flex-1 flex items-end justify-center">
                 <div className="flex flex-col items-center">
                   <motion.div
                     aria-hidden="true"
                     initial={{ opacity: 0, y: 5 }}
-                    animate={{ opacity: hasActivatedAudio ? 0.62 : 0.48, y: 0 }}
+                    animate={{ opacity: hasActivatedAudio ? 0.62 : 0, y: 0 }}
                     transition={{ duration: 1.2, ease: 'easeOut', delay: 0.2 }}
                     className="hero-universe-mark"
                   >
@@ -828,32 +827,26 @@ const Hero = () => {
                     <span className="hero-universe-mark__line" />
                   </motion.div>
                   <motion.div
-                    initial={{ opacity: 0, scale: 0.88 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    transition={{ duration: 1, ease: 'easeOut' }}
-                    className="hero-title-mark-slot"
-                    role="button"
-                    tabIndex={0}
-                    onKeyDown={handleHeroHashKeyDown}
-                    aria-label={!hasActivatedAudio ? 'Activar escena' : 'Desactivar escena'}
+                    aria-hidden="true"
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: hasActivatedAudio ? 1 : 0, y: 0 }}
+                    transition={{ duration: hasActivatedAudio ? 0.9 : 1, delay: hasActivatedAudio ? 0 : 0.8 }}
+                    className="hero-logo hero-logo--portal"
+                    style={{
+                      width: 'calc(clamp(129px, 18vh, 175px) * 0.5)',
+                      marginBottom: 'clamp(1.05rem, 2.6vh, 1.7rem)',
+                      pointerEvents: 'none',
+                      visibility: hasActivatedAudio ? 'visible' : 'hidden',
+                    }}
                   >
-                    <span
-                      className="hero-title-mark-placeholder"
-                      aria-hidden="true"
-                      style={{ opacity: isHeroHashReady ? 0 : 1 }}
-                    >
-                      #
-                    </span>
-                    <Suspense fallback={null}>
-                      <HashtagButton3D
-                        onClick={handleIsotipoClick}
-                        onReady={handleHeroHashReady}
-                        height="var(--hero-title-mark-size)"
-                        contentScale={isMobileViewport ? 0.92 : 1}
-                        style={{ width: 'var(--hero-title-mark-size)', margin: '0 auto' }}
-                        showGlow={!hasActivatedAudio}
+                    <div className="hero-logo-visual">
+                      <img
+                        src={isotipoGatoWebp}
+                        alt=""
+                        className="hero-logo-img"
+                        fetchpriority="high"
                       />
-                    </Suspense>
+                    </div>
                   </motion.div>
                 </div>
               </div>
@@ -894,49 +887,101 @@ const Hero = () => {
                   </span>
                 </motion.div>
                 <div
-                  className="relative mt-5 inline-flex h-12 w-12 items-center justify-center self-center sm:mt-6"
+                  className="hero-central-spacer relative mt-5 inline-flex h-12 w-12 items-center justify-center self-center sm:mt-2"
                   aria-hidden="true"
                 />
               </div>
 
-              {/* BOTTOM HALF — esfera de Bienvenida y CTAs bajo la línea central */}
+              {/* BOTTOM HALF — hash 3D (gatillo de activación) y CTAs bajo la línea central */}
               <div className="flex-1 flex flex-col items-center justify-start pt-2">
 
-              {/* Esfera — reemplaza la antigua entrada inferior a Bienvenida */}
+              {/* Hash 3D — gatillo de activación, movido aquí desde arriba del título */}
               <motion.div
-                initial={{ opacity: 0, y: 20 }}
+                initial={{ opacity: 0, scale: 0.88 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 1, ease: 'easeOut' }}
+                className="hero-title-mark-slot mt-8 -translate-y-[7vh] sm:mt-10 sm:translate-y-0 md:mt-12"
+                role="button"
+                tabIndex={0}
+                onKeyDown={handleHeroHashKeyDown}
+                aria-label={!hasActivatedAudio ? 'Activar escena' : 'Desactivar escena'}
+              >
+                <span
+                  className="hero-title-mark-placeholder"
+                  aria-hidden="true"
+                  style={{ opacity: isHeroHashReady ? 0 : 1 }}
+                >
+                  #
+                </span>
+                <Suspense fallback={null}>
+                  <HashtagButton3D
+                    onClick={handleIsotipoClick}
+                    onReady={handleHeroHashReady}
+                    height="var(--hero-title-mark-size)"
+                    contentScale={isMobileViewport ? 0.92 : 1}
+                    style={{ width: 'var(--hero-title-mark-size)', margin: '0 auto' }}
+                    showGlow={!hasActivatedAudio}
+                  />
+                </Suspense>
+              </motion.div>
+
+              {/* Chevron de scroll — bajo el hash 3D, movido desde su posición anterior */}
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: hasActivatedAudio ? 1 : 0, y: 0 }}
-                transition={{ duration: hasActivatedAudio ? 0.9 : 1, delay: hasActivatedAudio ? 0 : 0.8 }}
-                className="mt-8 -translate-y-[7vh] flex flex-col items-center sm:mt-10 sm:translate-y-0 md:mt-12"
+                transition={{ duration: hasActivatedAudio ? 0.9 : 0.7, delay: hasActivatedAudio ? 0 : 1.05 }}
+                className="hero-scroll-chevron relative mt-5 inline-flex h-12 w-12 items-center justify-center self-center sm:mt-6"
                 style={{
                   pointerEvents: hasActivatedAudio ? 'auto' : 'none',
                   visibility: hasActivatedAudio ? 'visible' : 'hidden',
                 }}
-                aria-hidden={!hasActivatedAudio}
+                aria-hidden="true"
               >
-                <motion.div
-                  className="hero-logo hero-logo--portal cursor-pointer"
-                  style={{ width: 'calc(clamp(129px, 18vh, 175px) * 0.5)' }}
-                  onClick={handleOpenHeroWelcome}
-                  onKeyDown={handleHeroWelcomeKeyDown}
-                  role="button"
-                  tabIndex={hasActivatedAudio ? 0 : -1}
-                  aria-label={user ? 'Explorar miniversos' : 'Abrir bienvenida'}
-                  whileHover={{ scale: 1.03 }}
-                  whileTap={{ scale: 0.98 }}
+                <motion.svg
+                  width="36"
+                  height="36"
+                  viewBox="0 0 34 34"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                  animate={{ y: [0, 3, 0], opacity: [0.72, 0.3, 0.72] }}
+                  transition={{ duration: 2.1, repeat: Infinity, ease: 'easeInOut' }}
+                  className="h-10 w-10 sm:h-[54px] sm:w-[54px]"
+                  style={{
+                    filter: 'drop-shadow(0 0 5px rgba(255,255,255,0.3)) drop-shadow(0 0 10px rgba(189,189,189,0.26))',
+                  }}
                 >
-                  <div className="hero-logo-visual">
-                    <img
-                      src={isotipoGatoWebp}
-                      alt="Isotipo de Gato Encerrado"
-                      className="hero-logo-img"
-                      fetchpriority="high"
-                    />
-                  </div>
-                </motion.div>
-                <span className="hero-sphere-hint" aria-hidden="true">
-                  ¿Entramos?
-                </span>
+                  <defs>
+                    <linearGradient id="heroScrollChevronGradient" x1="3" y1="4" x2="30" y2="30" gradientUnits="userSpaceOnUse">
+                      <stop stopColor="#2d2d2d" />
+                      <stop offset="0.55" stopColor="#bdbdbd" />
+                      <stop offset="1" stopColor="#ffffff" />
+                    </linearGradient>
+                  </defs>
+                  <path
+                    d="M7 9.5L17 15.5L27 9.5"
+                    stroke="url(#heroScrollChevronGradient)"
+                    strokeWidth="2.8"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    opacity="0.58"
+                  />
+                  <path
+                    d="M7 16L17 22L27 16"
+                    stroke="url(#heroScrollChevronGradient)"
+                    strokeWidth="2.9"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    opacity="0.74"
+                  />
+                  <path
+                    d="M7 22.5L17 28.5L27 22.5"
+                    stroke="url(#heroScrollChevronGradient)"
+                    strokeWidth="2.8"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    opacity="0.66"
+                  />
+                </motion.svg>
               </motion.div>
 
               {/* — botones originales: se muestran solo si hay usuario — */}

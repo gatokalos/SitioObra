@@ -9,6 +9,7 @@ const Footer = ({
   showCuradoriaNav = true,
   showIntermedioNav = false,
   showTransmediaNav = true,
+  showPerspectivasNav = false,
 }) => {
   const instagramUrl = 'https://www.instagram.com/esungatoencerrado/?hl=en';
   const twitterUrl = 'https://x.com/SilvestreFilis';
@@ -73,8 +74,8 @@ const Footer = ({
               <span className="font-semibold text-slate-200 mb-4 block">Navegación</span>
               <ul className="space-y-3">
                 {[
-                  { name: 'Perspectivas', href: '#provoca' },
-                  ...(showIntermedioNav ? [{ name: 'Tercera llamada', href: '#blog-contribuye' }] : []),
+                  ...(showPerspectivasNav ? [{ name: 'Perspectivas', href: '#provoca' }] : []),
+                  ...(showIntermedioNav ? [{ name: 'Intermedio', href: '#blog-contribuye' }] : []),
                   ...(showCuradoriaNav ? [{ name: 'Curaduría', href: '#dialogo-critico' }] : []),
                   ...(showTransmediaNav ? [{ name: 'Miniversos', href: '#transmedia' }] : []),
                   ...(showAllianceNav ? [{ name: 'Causa social', href: '#apoya' }] : []),

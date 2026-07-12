@@ -168,7 +168,7 @@ body {
 }
 
 .hero-title-mark-slot {
-  --hero-title-mark-size: clamp(129px, 18vh, 175px);
+  --hero-title-mark-size: clamp(160px, 20vh, 175px);
   position: relative;
   display: inline-flex;
   align-items: center;
@@ -300,18 +300,34 @@ body {
   text-shadow: 0 0 10px rgba(139, 92, 246, 0.28);
 }
 
-.hero-sphere-hint {
-  display: block;
-  margin-top: clamp(0.7rem, 1.8vh, 1.1rem);
-  color: rgba(226, 232, 240, 0.7);
-  font-family: "Vox Round", "Inter", sans-serif;
-  font-size: clamp(0.7rem, 1.3vw, 0.76rem);
-  font-weight: 600;
-  letter-spacing: clamp(0.28em, 1.2vw, 0.52em);
-  line-height: 1;
-  text-align: center;
-  text-transform: uppercase;
-  text-shadow: 0 0 14px rgba(226, 232, 240, 0.24);
+/* Hero compacto: pantallas cortas (iPhone SE y similares) para que el chevron
+   de scroll no se salga del viewport */
+@media (max-height: 700px) and (max-width: 430px) {
+  main {
+    padding-top: 4rem !important;
+  }
+
+  #hero .hero-universe-mark {
+    margin-bottom: 0.5rem !important;
+  }
+
+  #hero .hero-logo--portal {
+    margin-bottom: 0.35rem !important;
+  }
+
+  #hero .hero-central-spacer {
+    height: 0 !important;
+    margin-top: 0 !important;
+  }
+
+  #hero .hero-title-mark-slot {
+    margin-top: 0.75rem !important;
+    transform: none !important;
+  }
+
+  #hero .hero-scroll-chevron {
+    margin-top: 0.25rem !important;
+  }
 }
 
 /* iOS Safari hardening: prevent font synthesis/fallback on mobile */
@@ -598,7 +614,7 @@ body {
 
 @media (max-width: 480px) {
   .hero-title {
-    font-size: clamp(1.6rem, 8vw, 2.2rem);
+    font-size: clamp(1.6rem, 9vw, 2.2rem);
     letter-spacing: 0.12em;
     line-height: 1.15;
   }

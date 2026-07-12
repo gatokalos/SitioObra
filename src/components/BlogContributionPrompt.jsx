@@ -113,7 +113,7 @@ const BlogContributionPrompt = ({ onRevealTransmedia = null, onAskQuestion = nul
            {/* CONTENIDO */}
 <div className="relative z-10">
   <h3 className="font-display text-3xl font-medium text-slate-100 mb-6 text-center">
-    TERCERA LLAMADA
+    Intermedio
   </h3>
 
   <p className="text-slate-300/80 leading-relaxed mb-8 max-w-2xl mx-auto font-light whitespace-pre-line text-center">
@@ -144,7 +144,7 @@ se quedó moviéndose adentro.
         disabled={disableExpand}
         className="px-6 py-3 text-sm sm:text-base font-medium text-slate-100 bg-gradient-to-r from-fuchsia-600 to-pink-500 hover:opacity-90 transition-all duration-300 disabled:opacity-40 disabled:cursor-not-allowed"
       >
-        Expandir
+        Explorar
       </button>
 
       {/* Mitad derecha: revelar buscador en Curaduría */}

@@ -27,6 +27,7 @@ const About = lazy(() => import('@/components/About'));
 const ProvocaSection = lazy(() =>
   import('@/components/About').then((module) => ({ default: module.ProvocaSection }))
 );
+const CreatorWelcomeSection = lazy(() => import('@/components/CreatorWelcomeSection'));
 const loadTransmedia = () => import('@/components/Transmedia');
 const Transmedia = lazy(loadTransmedia);
 const AlianzaSocial = lazy(() => import('@/components/AlianzaSocial'));
@@ -446,6 +447,18 @@ function App() {
     if (typeof window === 'undefined') return false;
     return hasFractalGalleryDeepLinkIntent({ hash: window.location.hash });
   });
+  const [isHeroActivated, setIsHeroActivated] = useState(false);
+  useEffect(() => {
+    if (typeof window === 'undefined') return undefined;
+    const handleActivated = () => setIsHeroActivated(true);
+    const handleDeactivated = () => setIsHeroActivated(false);
+    window.addEventListener('gatoencerrado:audio-activated', handleActivated);
+    window.addEventListener('gatoencerrado:audio-deactivated', handleDeactivated);
+    return () => {
+      window.removeEventListener('gatoencerrado:audio-activated', handleActivated);
+      window.removeEventListener('gatoencerrado:audio-deactivated', handleDeactivated);
+    };
+  }, []);
   const isMobileLoggedInPortalMode = isAuthenticated && isMobileViewport;
   const isPortalRoute = location.pathname.startsWith('/portal-');
   const hasForcedHomeTopOnBootRef = useRef(false);
@@ -728,16 +741,27 @@ function App() {
                 showCuradoriaNav={canAccessCuradoria}
                 showIntermedioNav={shouldShowIntermedioNav}
                 showTransmediaNav={canAccessTransmedia && !isMobileLoggedInPortalMode}
+                showPerspectivasNav={isHeroActivated}
               />
 
               <main className="pt-20 lg:pt-24">
                 <Hero />
 
-                <DeferredSection fallback={<SectionFallback id="provoca" minHeight={900} />}>
-                  <Suspense fallback={<SectionFallback id="provoca" minHeight={900} />}>
-                    <ProvocaSection />
-                  </Suspense>
-                </DeferredSection>
+                {isHeroActivated && (
+                  <>
+                    <DeferredSection fallback={<SectionFallback id="bienvenida-creador" minHeight={520} />}>
+                      <Suspense fallback={<SectionFallback id="bienvenida-creador" minHeight={520} />}>
+                        <CreatorWelcomeSection />
+                      </Suspense>
+                    </DeferredSection>
+
+                    <DeferredSection fallback={<SectionFallback id="provoca" minHeight={900} />}>
+                      <Suspense fallback={<SectionFallback id="provoca" minHeight={900} />}>
+                        <ProvocaSection />
+                      </Suspense>
+                    </DeferredSection>
+                  </>
+                )}
 
                 <DeferredSection fallback={<SectionFallback id="blog-contribuye" minHeight={700} />}>
                   <Suspense fallback={<SectionFallback id="blog-contribuye" minHeight={700} />}>
@@ -822,6 +846,7 @@ function App() {
                 showCuradoriaNav={canAccessCuradoria}
                 showIntermedioNav={shouldShowIntermedioNav}
                 showTransmediaNav={canAccessTransmedia && !isMobileLoggedInPortalMode}
+                showPerspectivasNav={isHeroActivated}
               />
               {shouldShowToast && (
                 <LoginToast emailHash={emailHash} onDismiss={dismissToast} />
