@@ -58,7 +58,7 @@ const HERO_ROTATING_SUBTITLES = [
   ];
 const HERO_GHOST_SUBTITLES = [
   'Tal vez esta obra empezó contigo', 
-  'Teatro, cine, literatura, sonido: una sola pregunta.',
+  'Arteasnía, cine, literatura. sonido: una sola pregunta.',
    
 ];
 const HERO_ROTATING_SUBTITLE_PLACEHOLDER =
