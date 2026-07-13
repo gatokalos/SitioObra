@@ -10,6 +10,8 @@ const Footer = ({
   showIntermedioNav = false,
   showTransmediaNav = true,
   showPerspectivasNav = false,
+  showObraDestacadaNav = false,
+  showTerceraLlamadaNav = false,
 }) => {
   const instagramUrl = 'https://www.instagram.com/esungatoencerrado/?hl=en';
   const twitterUrl = 'https://x.com/SilvestreFilis';
@@ -74,15 +76,16 @@ const Footer = ({
               <span className="font-semibold text-slate-200 mb-4 block">Navegación</span>
               <ul className="space-y-3">
                 {[
+                  ...(showTerceraLlamadaNav ? [{ name: 'Tercera llamada', href: '#bienvenida-creador' }] : []),
                   ...(showPerspectivasNav ? [{ name: 'Perspectivas', href: '#provoca' }] : []),
-                  ...(showIntermedioNav ? [{ name: 'Intermedio', href: '#blog-contribuye' }] : []),
-                  ...(showCuradoriaNav ? [{ name: 'Curaduría', href: '#dialogo-critico' }] : []),
                   ...(showTransmediaNav ? [{ name: 'Miniversos', href: '#transmedia' }] : []),
                   ...(showAllianceNav ? [{ name: 'Causa social', href: '#apoya' }] : []),
-                  { name: 'Obra destacada', href: '#about' },
-                  { name: 'Galería fractal', href: '#instagram' },
-                  { name: 'Archivo escénico', href: '#next-show' },
-                  { name: 'Créditos de la obra', href: '#team' },
+                  ...(showIntermedioNav ? [{ name: 'Intermedio', href: '#blog-contribuye' }] : []),
+                  ...(showCuradoriaNav ? [{ name: 'Curaduría', href: '#dialogo-critico' }] : []),
+                  ...(showIntermedioNav ? [{ name: 'Caída del telón', href: '#next-show' }] : []),
+                  ...(showObraDestacadaNav ? [{ name: 'Obra destacada', href: '#about' }] : []),
+                  ...(showObraDestacadaNav ? [{ name: 'Galería fractal', href: '#instagram' }] : []),
+                  ...(showObraDestacadaNav ? [{ name: 'Créditos de la obra', href: '#team' }] : []),
                   { name: 'Contacto', href: '#contact' },
                 ].map((item) => (
                   <li key={item.name}>
@@ -109,7 +112,7 @@ const Footer = ({
               <ul className="space-y-3 text-sm font-light">
                 <li className="text-slate-400">contacto@gatoencerrado.ai</li>
                 <li className="text-slate-400">+52 331 532 7985</li>
-                <li className="text-slate-400">Es un gato encerrado<br />Tijuana, México</li>
+                <li className="text-slate-400">Universo #GatoEncerrado<br />Tijuana, México</li>
               </ul>
             </motion.div>
           </div>

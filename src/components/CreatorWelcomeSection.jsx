@@ -7,7 +7,7 @@ import { setBienvenidaReturnPath } from '@/lib/bienvenida';
 const CREATOR_AVATAR_SRC =
   'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/autores/carlos_perez_avatar.png';
 
-const CreatorWelcomeSection = () => {
+const CreatorWelcomeSection = ({ hasEnteredUniverse = false }) => {
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -32,7 +32,7 @@ const CreatorWelcomeSection = () => {
           whileInView={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, ease: 'easeOut' }}
           viewport={{ once: true }}
-          className="relative glass-effect rounded-2xl p-8 md:p-12 text-center overflow-hidden max-w-3xl mx-auto"
+          className="relative glass-effect rounded-2xl p-8 md:p-12 text-center overflow-hidden"
         >
           <div
             aria-hidden="true"
@@ -74,7 +74,7 @@ const CreatorWelcomeSection = () => {
               onClick={handleEnter}
               className="ge-chip-action ge-chip-action--primary mx-auto"
             >
-              ¿Comenzamos?
+              {hasEnteredUniverse ? 'Revisitar' : '¿Comenzamos?'}
             </Button>
           </div>
         </motion.div>

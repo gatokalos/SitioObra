@@ -10,6 +10,7 @@ import MobileMenuOverlay from '@/components/MobileMenuOverlay';
 import { createPortalLaunchState } from '@/lib/portalNavigation';
 import { safeGetItem, safeSetItem } from '@/lib/safeStorage';
 import { INITIAL_GAT_BALANCE, readStoredInt } from '@/components/transmedia/transmediaConstants';
+import { readHeroActivatedFromSession } from '@/lib/heroActivation';
 
 const GAT_BALANCE_STORAGE_KEY = 'gatoencerrado:gatokens-available';
 const GAT_CHIP_PINNED_STORAGE_KEY = 'gatoencerrado:gatokens-chip-pinned:v1';
@@ -42,10 +43,13 @@ const Header = ({
   showIntermedioNav = false,
   showTransmediaNav = true,
   showPerspectivasNav = false,
+  showObraDestacadaNav = false,
+  showTerceraLlamadaNav = false,
+  terceraLlamadaLabel = 'Comenzamos',
 }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [scrollTier, setScrollTier] = useState(0);
-  const [isHeroSceneRevealed, setIsHeroSceneRevealed] = useState(false);
+  const [isHeroSceneRevealed, setIsHeroSceneRevealed] = useState(readHeroActivatedFromSession);
   const [showLoginOverlay, setShowLoginOverlay] = useState(false);
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
   const navigate = useNavigate();
@@ -99,6 +103,16 @@ const Header = ({
     if (shouldGateIndexUntilHeroReveal) {
       setIsMenuOpen(false);
     }
+  }, [shouldGateIndexUntilHeroReveal]);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return undefined;
+    const handleOpenIndex = () => {
+      if (shouldGateIndexUntilHeroReveal) return;
+      setIsMenuOpen(true);
+    };
+    window.addEventListener('gatoencerrado:open-index', handleOpenIndex);
+    return () => window.removeEventListener('gatoencerrado:open-index', handleOpenIndex);
   }, [shouldGateIndexUntilHeroReveal]);
 
   useEffect(() => {
@@ -244,38 +258,24 @@ const Header = ({
 
   const menuItems = [
     { name: 'Inicio', href: '#hero' },
+    ...(showTerceraLlamadaNav ? [{ name: 'Tercera llamada', href: '#bienvenida-creador' }] : []),
     ...(showPerspectivasNav ? [{ name: 'Perspectivas', href: '#provoca' }] : []),
-    ...(showIntermedioNav ? [{ name: 'Intermedio', href: '#blog-contribuye' }] : []),
-    ...(showCuradoriaNav ? [{ name: 'Curaduría', href: '#dialogo-critico' }] : []),
     ...(showTransmediaNav ? [{ name: 'Miniversos', href: '#transmedia' }] : []),
     ...(showAllianceNav ? [{ name: 'Alianza', href: '#apoya' }] : []),
-    { name: 'Obra destacada', href: '#about' },
-    { name: 'Galería fractal', href: '#instagram' },
-    { name: 'Archivo escénico', href: '#next-show' },
-    { name: 'Créditos', href: '#team' },
+    ...(showIntermedioNav ? [{ name: 'Intermedio', href: '#blog-contribuye' }] : []),
+    ...(showCuradoriaNav ? [{ name: 'Curaduría', href: '#dialogo-critico' }] : []),
+    ...(showIntermedioNav ? [{ name: 'Caída del telón', href: '#next-show' }] : []),
+    ...(showObraDestacadaNav ? [{ name: 'Obra destacada', href: '#about' }] : []),
+    ...(showObraDestacadaNav ? [{ name: 'Galería fractal', href: '#instagram' }] : []),
+    ...(showObraDestacadaNav ? [{ name: 'Créditos', href: '#team' }] : []),
     { name: 'Contacto', href: '#contact' },
   ];
   const mobileMenuItems = [
-    { name: 'Inicio', href: '#hero', description: 'Bienvenida' },
+    { name: 'Inicio', href: '#hero' },
+    ...(showTerceraLlamadaNav
+      ? [{ name: 'Tercera llamada', href: '#bienvenida-creador', description: terceraLlamadaLabel }]
+      : []),
     ...(showPerspectivasNav ? [{ name: 'Perspectivas', href: '#provoca' }] : []),
-    ...(showIntermedioNav
-      ? [{ name: 'Intermedio', href: '#blog-contribuye', description: 'Punto de no retorno' }]
-      : []),
-    ...(showCuradoriaNav
-      ? [
-          {
-            name: 'Curaduría',
-            href: '#dialogo-critico',
-            description: 'Diálogo crítico y educativo',
-            secondary: [
-              { label: 'Curaduría Reflexiva', href: '#dialogo-critico?focus=curaduria' },
-              { label: 'Expansiones Narrativas', href: '#dialogo-critico?focus=expansiones' },
-              { label: 'Detrás de Cámaras', href: '#dialogo-critico?focus=backstage' },
-              { label: 'Buscador Backstage', href: '#dialogo-critico', action: 'show-buscador' },
-            ],
-          },
-        ]
-      : []),
     ...(showTransmediaNav
       ? [
           {
@@ -299,10 +299,32 @@ const Header = ({
           },
         ]
       : []),
-    { name: 'Obra destacada', href: '#about', description: 'Teatro · Es un gato encerrado' },
-    { name: 'Galería fractal', href: '#instagram' },
-    { name: 'Archivo escénico', href: '#next-show' },
-    { name: 'Créditos de la obra', href: '#team' },
+    ...(showIntermedioNav
+      ? [{ name: 'Intermedio', href: '#blog-contribuye', description: 'La Reflexión' }]
+      : []),
+    ...(showCuradoriaNav
+      ? [
+          {
+            name: 'Curaduría',
+            href: '#dialogo-critico',
+            description: 'Diálogo crítico y educativo',
+            secondary: [
+              { label: 'Curaduría Reflexiva', href: '#dialogo-critico?focus=curaduria' },
+              { label: 'Expansiones Narrativas', href: '#dialogo-critico?focus=expansiones' },
+              { label: 'Detrás de Cámaras', href: '#dialogo-critico?focus=backstage' },
+              { label: 'Buscador Backstage', href: '#dialogo-critico', action: 'show-buscador' },
+            ],
+          },
+        ]
+      : []),
+    ...(showIntermedioNav
+      ? [{ name: 'Caída del telón', href: '#next-show', description: 'Obra más destacada' }]
+      : []),
+    ...(showObraDestacadaNav
+      ? [{ name: 'Obra destacada', href: '#about', description: 'Teatro · Es un gato encerrado' }]
+      : []),
+    ...(showObraDestacadaNav ? [{ name: 'Galería fractal', href: '#instagram' }] : []),
+    ...(showObraDestacadaNav ? [{ name: 'Créditos de la obra', href: '#team' }] : []),
     { name: 'Contacto', href: '#contact' },
   ];
 

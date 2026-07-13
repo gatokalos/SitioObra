@@ -13,6 +13,7 @@ import { useEmailRedirect } from '@/hooks/useEmailRedirect';
 import LoginToast from '@/components/LoginToast';
 import { useAuth } from '@/contexts/SupabaseAuthContext';
 import { safeGetItem, safeSetItem } from '@/lib/safeStorage';
+import { readHeroActivatedFromSession } from '@/lib/heroActivation';
 
 const pageTitle = '#GatoEncerrado - Obra de Teatro transmedia';
 const pageDescription =
@@ -165,7 +166,7 @@ const HERO_GUEST_CABINA_REVEALED_OPACITY = 0.36;
 
 const HeroBackground = ({ isAuthenticated = false }) => {
   const [opacity, setOpacity] = useState(1);
-  const [isHeroSceneRevealed, setIsHeroSceneRevealed] = useState(false);
+  const [isHeroSceneRevealed, setIsHeroSceneRevealed] = useState(readHeroActivatedFromSession);
   const backgroundVariant = isAuthenticated
     ? HERO_BACKGROUND_VARIANTS.authenticated
     : HERO_BACKGROUND_VARIANTS.guest;
@@ -440,14 +441,12 @@ function App() {
   });
   const isAuthenticated = Boolean(user);
   const canAccessTransmedia = isAuthenticated || hasGuestUnlockedTransmedia;
-  const canAccessCuradoria = isAuthenticated || hasGuestUnlockedCuradoria;
-  const shouldShowIntermedioNav = !canAccessCuradoria || !canAccessTransmedia;
   const [showBlogBuscador, setShowBlogBuscador] = useState(false);
   const [isFractalGalleryVisible, setIsFractalGalleryVisible] = useState(() => {
     if (typeof window === 'undefined') return false;
     return hasFractalGalleryDeepLinkIntent({ hash: window.location.hash });
   });
-  const [isHeroActivated, setIsHeroActivated] = useState(false);
+  const [isHeroActivated, setIsHeroActivated] = useState(readHeroActivatedFromSession);
   useEffect(() => {
     if (typeof window === 'undefined') return undefined;
     const handleActivated = () => setIsHeroActivated(true);
@@ -780,11 +779,14 @@ function App() {
             <HeroBackground isAuthenticated={isAuthenticated} />
             <div className="relative z-10">
               <Header
-                showAllianceNav={canAccessTransmedia}
-                showCuradoriaNav={canAccessCuradoria}
-                showIntermedioNav={shouldShowIntermedioNav && isHeroActivated}
-                showTransmediaNav={canAccessTransmedia && !isMobileLoggedInPortalMode}
-                showPerspectivasNav={isHeroActivated}
+                showAllianceNav={isAuthenticated}
+                showCuradoriaNav={isCuradoriaVisible}
+                showIntermedioNav={isHeroActivated}
+                showTransmediaNav={hasEnteredUniverse && canAccessTransmedia && !isMobileLoggedInPortalMode}
+                showPerspectivasNav={hasEnteredUniverse}
+                showObraDestacadaNav={isObraDestacadaVisible}
+                showTerceraLlamadaNav={isHeroActivated}
+                terceraLlamadaLabel={hasEnteredUniverse ? 'Revisitar' : 'Comenzamos'}
               />
 
               <main className="pt-20 lg:pt-24">
@@ -792,7 +794,13 @@ function App() {
 
                 {isHeroActivated && (
                   <>
-                    {hasEnteredUniverse ? (
+                    <DeferredSection fallback={<SectionFallback id="bienvenida-creador" minHeight={520} />}>
+                      <Suspense fallback={<SectionFallback id="bienvenida-creador" minHeight={520} />}>
+                        <CreatorWelcomeSection hasEnteredUniverse={hasEnteredUniverse} />
+                      </Suspense>
+                    </DeferredSection>
+
+                    {hasEnteredUniverse && (
                       <>
                         <DeferredSection fallback={<SectionFallback id="provoca" minHeight={900} />}>
                           <Suspense fallback={<SectionFallback id="provoca" minHeight={900} />}>
@@ -808,12 +816,6 @@ function App() {
                           </SectionErrorBoundary>
                         )}
                       </>
-                    ) : (
-                      <DeferredSection fallback={<SectionFallback id="bienvenida-creador" minHeight={520} />}>
-                        <Suspense fallback={<SectionFallback id="bienvenida-creador" minHeight={520} />}>
-                          <CreatorWelcomeSection />
-                        </Suspense>
-                      </DeferredSection>
                     )}
 
                     <DeferredSection fallback={<SectionFallback id="blog-contribuye" minHeight={700} />}>
@@ -895,11 +897,14 @@ function App() {
               </main>
 
               <Footer
-                showAllianceNav={canAccessTransmedia}
-                showCuradoriaNav={canAccessCuradoria}
-                showIntermedioNav={shouldShowIntermedioNav && isHeroActivated}
-                showTransmediaNav={canAccessTransmedia && !isMobileLoggedInPortalMode}
-                showPerspectivasNav={isHeroActivated}
+                showAllianceNav={isAuthenticated}
+                showCuradoriaNav={isCuradoriaVisible}
+                showIntermedioNav={isHeroActivated}
+                showTransmediaNav={hasEnteredUniverse && canAccessTransmedia && !isMobileLoggedInPortalMode}
+                showPerspectivasNav={hasEnteredUniverse}
+                showObraDestacadaNav={isObraDestacadaVisible}
+                showTerceraLlamadaNav={isHeroActivated}
+                terceraLlamadaLabel={hasEnteredUniverse ? 'Revisitar' : 'Comenzamos'}
               />
               {shouldShowToast && (
                 <LoginToast emailHash={emailHash} onDismiss={dismissToast} />

@@ -300,8 +300,8 @@ body {
   text-shadow: 0 0 10px rgba(139, 92, 246, 0.28);
 }
 
-/* Hero compacto: pantallas cortas (iPhone SE y similares) para que el chevron
-   de scroll no se salga del viewport */
+/* Hero compacto: pantallas cortas (iPhone SE y similares) para que el botón
+   de índice no se salga del viewport */
 @media (max-height: 700px) and (max-width: 430px) {
   main {
     padding-top: 4rem !important;
@@ -325,8 +325,34 @@ body {
     transform: none !important;
   }
 
-  #hero .hero-scroll-chevron {
+  #hero .hero-index-cue {
     margin-top: 0.25rem !important;
+  }
+}
+
+/* Botón de índice del Hero: mismo lenguaje visual que el resto (halo violeta),
+   con un pulso que llama la atención unas pocas veces y luego se queda quieto. */
+.hero-index-cue {
+  border: 1px solid rgba(196, 181, 253, 0.4);
+  background: radial-gradient(circle at 50% 38%, rgba(139, 92, 246, 0.28), rgba(10, 10, 16, 0.5));
+  box-shadow: 0 0 14px rgba(139, 92, 246, 0.22);
+  animation: hero-index-cue-ping 1.8s ease-out 3;
+}
+
+.hero-index-cue:focus-visible {
+  outline: 2px solid rgba(196, 181, 253, 0.7);
+  outline-offset: 2px;
+}
+
+@keyframes hero-index-cue-ping {
+  0% {
+    box-shadow: 0 0 0 0 rgba(168, 85, 247, 0.5), 0 0 14px rgba(139, 92, 246, 0.22);
+  }
+  70% {
+    box-shadow: 0 0 0 12px rgba(168, 85, 247, 0), 0 0 14px rgba(139, 92, 246, 0.22);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(168, 85, 247, 0), 0 0 14px rgba(139, 92, 246, 0.22);
   }
 }
 

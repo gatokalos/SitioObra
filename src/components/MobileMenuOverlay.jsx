@@ -88,7 +88,7 @@ const MobileMenuOverlay = ({
       <div className="flex h-full flex-col xl:h-auto">
         <div className="border-b border-white/10 px-4 pb-3 pt-[calc(env(safe-area-inset-top)+10px)] xl:pt-4">
           <div className="flex items-center justify-between gap-3">
-            <p className="text-xs uppercase tracking-[0.34em] text-slate-300/90">Índice</p>
+            <p className="text-xs uppercase tracking-[0.34em] text-slate-300/90">Programa de mano</p>
             <Button
               type="button"
               variant="ghost"

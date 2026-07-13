@@ -76,19 +76,20 @@ const MINIVERSE_KEYWORDS = {
 };
 
 const STARTER_FAQ_PROMPTS = [
-  '¿Dónde vive una obra: en el escenario, en el libreto o en quien la recuerda?',
-  '¿Qué permanece cuando la emoción del momento desaparece?',
-  '¿Qué diferencia hay entre medir cuánta gente vio la obra y saber si cambió algo en el público?',
+  '¿Qué hay realmente detrás de #GatoEncerrado?',
+  '¿Por qué #GatoEncerrado es mucho más que una obra de teatro?',
+  '¿Cómo se conectan el arte, la tecnología y la salud emocional en #GatoEncerrado?',
   '¿Qué parte de nosotros habla cuando creemos estar hablando solos?',
-  '¿Cuáles son las escenas que menos se entienden?',
+  '¿Qué permanece cuando la emoción del momento desaparece?',
+  '¿Qué diferencia hay entre medir cuánta gente ve una obra y saber si cambió algo en el público?',
+  '¿Qué pasa con lo que escribo adentro de este universo?',
+  '¿Cómo se convierte un espectador en miembro de la comunidad #GatoEncerrado?',
+  '¿La obra, el cómic y la novela hablan de lo mismo?',
+  '¿Qué es lo que Silvestre intenta recordar cada vez que su ira le hierve la sangre al despertar?',
   '¿Por qué Silvestre sigue soñando la misma historia aunque cada noche sueñe algo diferente?',
   '¿Qué fue exactamente lo que vio la Doctora para decidir que los sueños de Silvestre merecían ser investigados?',
   '¿Quién está contando realmente la historia cuando aparecen el Payasito Tiste, la Reina de Espadas y los demás personajes?',
-  '¿Qué es lo que Silvestre intenta recordar cada vez que su ira le hierve la sangre al despertar?',
-  '¿Qué pasa con lo que escribo adentro del universo?',
-  '¿Qué convierte a un espectador en miembro de una comunidad?',
-  '¿Por qué la causa social es parte de la obra y no solo un anexo?'
-  ];
+    ];
 
 const inferMiniverseFromPost = (post) => {
   const haystack = [
@@ -128,6 +129,30 @@ const parseReadMinutes = (value) => {
 };
 
 const markdownComponents = {
+  h1: ({ node: _node, ...props }) => (
+    <h1
+      className="mt-12 mb-6 border-b border-white/10 pb-4 font-display text-3xl font-semibold leading-tight text-white md:text-4xl"
+      {...props}
+    />
+  ),
+  h2: ({ node: _node, ...props }) => (
+    <h2
+      className="mt-10 mb-5 border-b border-white/10 pb-3 font-display text-2xl font-semibold leading-tight text-white md:text-3xl"
+      {...props}
+    />
+  ),
+  h3: ({ node: _node, ...props }) => (
+    <h3
+      className="mt-8 mb-3 font-display text-xl font-semibold leading-snug text-slate-50 md:text-2xl"
+      {...props}
+    />
+  ),
+  h4: ({ node: _node, ...props }) => (
+    <h4
+      className="mt-7 mb-3 text-sm font-semibold uppercase leading-snug tracking-[0.22em] text-purple-200"
+      {...props}
+    />
+  ),
   p: ({ node: _node, ...props }) => (
     <p className="text-[1.02rem] md:text-[1.08rem] leading-8 font-light text-slate-200" {...props} />
   ),
@@ -943,7 +968,7 @@ const Blog = ({ posts = [], isLoading = false, error = null, showBuscador = fals
                       <div className="h-px bg-gradient-to-r from-violet-300/35 via-violet-100/15 to-transparent lg:from-transparent lg:via-violet-300/40 lg:to-transparent" />
                       <div className="space-y-3">
                         <p className="text-[1rem] font-semibold leading-snug text-white">
-                         <em> ¿Tienes una teoría de este universo? ¿Discutimos alguna de sus obra?</em><br /> Este es un espacio para contrastarla, explorarla y encontrar respuestas.
+                         Este es un espacio para contrastar, explorar y encontrar respuestas a preguntas que quizá no tengas.
                         </p>
                       </div>
                       <div className="relative w-full">
@@ -1121,7 +1146,7 @@ const Blog = ({ posts = [], isLoading = false, error = null, showBuscador = fals
                 {editorialCategories.map((category) => (
                   <article
                     key={category.key}
-                    className={`glass-effect hover-glow rounded-2xl border border-white/10 bg-black/25 p-6 ${
+                    className={`glass-effect relative overflow-hidden rounded-2xl border border-white/10 bg-black/25 p-6 transition-colors duration-300 ${
                       activeCategory === category.key ? 'hover-glow--selected' : ''
                     }`}
                   >

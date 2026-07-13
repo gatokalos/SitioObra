@@ -1,6 +1,6 @@
 import React, { Suspense, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
-import { BookOpen, CoffeeIcon, DramaIcon, TicketIcon, HeartHandshake, ShoppingBag, SparkleIcon, DoorOpen } from 'lucide-react';
+import { BookOpen, CoffeeIcon, DramaIcon, TicketIcon, HeartHandshake, ShoppingBag, SparkleIcon, DoorOpen, Compass } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 const TicketPurchaseModal = React.lazy(() => import('@/components/TicketPurchaseModal'));
 const GatokensRevealModal = React.lazy(() => import('@/components/GatokensRevealModal'));
@@ -29,8 +29,28 @@ import { safeGetItem, safeSetItem } from '@/lib/safeStorage';
 import { extractRecommendedAppId, resolveShowcaseFromAppId } from '@/lib/bienvenidaBridge';
 import { NARRATIVE_VIDEO_URL_DESKTOP } from '@/lib/narrativeVideo';
 import { showcaseDefinitions } from '@/components/transmedia/transmediaConstants';
+import { readHeroActivatedFromSession, writeHeroActivatedToSession } from '@/lib/heroActivation';
 
 const POZO_HERO_REVEAL_KEY = 'gatoencerrado:pozo-hero-reveal:v1';
+const HERO_INDEX_CUE_USED_SESSION_KEY = 'gatoencerrado:hero-index-cue-used-session';
+
+const readIndexCueUsedFromSession = () => {
+  if (typeof window === 'undefined') return false;
+  try {
+    return window.sessionStorage.getItem(HERO_INDEX_CUE_USED_SESSION_KEY) === 'true';
+  } catch {
+    return false;
+  }
+};
+
+const writeIndexCueUsedToSession = () => {
+  if (typeof window === 'undefined') return;
+  try {
+    window.sessionStorage.setItem(HERO_INDEX_CUE_USED_SESSION_KEY, 'true');
+  } catch {
+    // sessionStorage no disponible (modo privado, etc.) — se ignora
+  }
+};
 
 const SUPABASE_STORAGE = `${import.meta.env.VITE_SUPABASE_URL || ''}/storage/v1/object/public`;
 const HERO_LOGGED_IN_AUDIO_URL = `${SUPABASE_STORAGE}/Sonoridades/audio/A2_Melody_MSTR.m4a`;
@@ -102,9 +122,10 @@ const Hero = () => {
   const lastHeroAudioPlayAttemptRef = useRef(0);
   const [isHeroAudioMuted, setIsHeroAudioMuted] = useState(false);
   const [isHeroAudioPlaying, setIsHeroAudioPlaying] = useState(false);
-  const [hasActivatedAudio, setHasActivatedAudio] = useState(false);
-  const userActivatedRef = useRef(false);
-  const audioActivatedOnceRef = useRef(false);
+  const [hasActivatedAudio, setHasActivatedAudio] = useState(readHeroActivatedFromSession);
+  const [hasUsedIndexCue, setHasUsedIndexCue] = useState(readIndexCueUsedFromSession);
+  const userActivatedRef = useRef(readHeroActivatedFromSession());
+  const audioActivatedOnceRef = useRef(readHeroActivatedFromSession());
   const [isHeroHashReady, setIsHeroHashReady] = useState(false);
   const [isHeroInViewport, setIsHeroInViewport] = useState(true);
   const [isMobileViewport, setIsMobileViewport] = useState(() => {
@@ -133,6 +154,10 @@ const Hero = () => {
   );
   const { toast } = useToast();
   const narrativeVideoUrl = isMobileViewport ? null : NARRATIVE_VIDEO_URL_DESKTOP;
+
+  useEffect(() => {
+    writeHeroActivatedToSession(hasActivatedAudio);
+  }, [hasActivatedAudio]);
 
   useEffect(() => {
     const params = new URLSearchParams(location.search);
@@ -490,6 +515,13 @@ const Hero = () => {
     event.preventDefault();
     handleIsotipoClick();
   }, [handleIsotipoClick]);
+
+  const handleOpenIndexFromHero = useCallback(() => {
+    if (typeof window === 'undefined') return;
+    window.dispatchEvent(new CustomEvent('gatoencerrado:open-index'));
+    setHasUsedIndexCue(true);
+    writeIndexCueUsedToSession();
+  }, []);
 
   useEffect(() => {
     if (isAuthLoading) {
@@ -872,7 +904,7 @@ const Hero = () => {
                   initial={{ opacity: 0, y: 8 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: hasActivatedAudio ? 1.1 : 0.8, ease: 'easeOut', delay: hasActivatedAudio ? 0 : 0.25 }}
-                  className="mt-2 flex justify-center px-3"
+                  className="mt-2 flex justify-center px-8"
                 >
                   <span className="relative inline-flex min-h-[2.8rem] max-w-[42rem] items-center justify-center text-center text-[0.78rem] leading-snug tracking-[0.18em] text-slate-300/70 sm:min-h-[1.8rem] sm:text-sm">
                     <span className="invisible">{HERO_ROTATING_SUBTITLE_PLACEHOLDER}</span>
@@ -914,83 +946,51 @@ const Hero = () => {
                 aria-hidden={hasActivatedAudio}
                 aria-label="Activar escena"
               >
-                <span
-                  className="hero-title-mark-placeholder"
-                  aria-hidden="true"
-                  style={{ opacity: isHeroHashReady ? 0 : 1 }}
-                >
-                  #
-                </span>
-                <Suspense fallback={null}>
-                  <HashtagButton3D
-                    onClick={handleIsotipoClick}
-                    onReady={handleHeroHashReady}
-                    height="var(--hero-title-mark-size)"
-                    contentScale={isMobileViewport ? 0.92 : 1}
-                    style={{ width: 'var(--hero-title-mark-size)', margin: '0 auto' }}
-                    showGlow={!hasActivatedAudio}
-                  />
-                </Suspense>
+                {!hasActivatedAudio && (
+                  <>
+                    <span
+                      className="hero-title-mark-placeholder"
+                      aria-hidden="true"
+                      style={{ opacity: isHeroHashReady ? 0 : 1 }}
+                    >
+                      #
+                    </span>
+                    <Suspense fallback={null}>
+                      <HashtagButton3D
+                        onClick={handleIsotipoClick}
+                        onReady={handleHeroHashReady}
+                        height="var(--hero-title-mark-size)"
+                        contentScale={isMobileViewport ? 0.92 : 1}
+                        style={{ width: 'var(--hero-title-mark-size)', margin: '0 auto' }}
+                        showGlow={!hasActivatedAudio}
+                      />
+                    </Suspense>
+                  </>
+                )}
               </motion.div>
 
-              {/* Chevron de scroll — bajo el hash 3D, movido desde su posición anterior */}
-              <motion.div
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: hasActivatedAudio ? 1 : 0, y: 0 }}
-                transition={{ duration: hasActivatedAudio ? 0.9 : 0.7, delay: hasActivatedAudio ? 0 : 1.05 }}
-                className="hero-scroll-chevron relative mt-5 inline-flex h-12 w-12 items-center justify-center self-center sm:mt-6"
-                style={{
-                  pointerEvents: hasActivatedAudio ? 'auto' : 'none',
-                  visibility: hasActivatedAudio ? 'visible' : 'hidden',
-                }}
-                aria-hidden="true"
-              >
-                <motion.svg
-                  width="36"
-                  height="36"
-                  viewBox="0 0 34 34"
-                  fill="none"
-                  xmlns="http://www.w3.org/2000/svg"
-                  animate={{ y: [0, 3, 0], opacity: [0.72, 0.3, 0.72] }}
-                  transition={{ duration: 2.1, repeat: Infinity, ease: 'easeInOut' }}
-                  className="h-10 w-10 sm:h-[54px] sm:w-[54px]"
+              {/* Botón de índice — reemplaza al chevron; un solo gesto para que
+                  el usuario identifique dónde está la navegación. Se usa una
+                  vez por sesión y luego desaparece (sessionStorage). */}
+              {!hasUsedIndexCue && (
+                <motion.button
+                  type="button"
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: hasActivatedAudio ? 1 : 0, y: 0 }}
+                  transition={{ duration: hasActivatedAudio ? 0.9 : 0.7, delay: hasActivatedAudio ? 0 : 1.05 }}
+                  onClick={handleOpenIndexFromHero}
+                  className="hero-index-cue relative mt-5 inline-flex h-12 w-12 items-center justify-center self-center rounded-full sm:mt-6"
                   style={{
-                    filter: 'drop-shadow(0 0 5px rgba(255,255,255,0.3)) drop-shadow(0 0 10px rgba(189,189,189,0.26))',
+                    pointerEvents: hasActivatedAudio ? 'auto' : 'none',
+                    visibility: hasActivatedAudio ? 'visible' : 'hidden',
                   }}
+                  aria-label="Abrir índice de navegación"
+                  whileHover={{ scale: 1.06 }}
+                  whileTap={{ scale: 0.94 }}
                 >
-                  <defs>
-                    <linearGradient id="heroScrollChevronGradient" x1="3" y1="4" x2="30" y2="30" gradientUnits="userSpaceOnUse">
-                      <stop stopColor="#2d2d2d" />
-                      <stop offset="0.55" stopColor="#bdbdbd" />
-                      <stop offset="1" stopColor="#ffffff" />
-                    </linearGradient>
-                  </defs>
-                  <path
-                    d="M7 9.5L17 15.5L27 9.5"
-                    stroke="url(#heroScrollChevronGradient)"
-                    strokeWidth="2.8"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    opacity="0.58"
-                  />
-                  <path
-                    d="M7 16L17 22L27 16"
-                    stroke="url(#heroScrollChevronGradient)"
-                    strokeWidth="2.9"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    opacity="0.74"
-                  />
-                  <path
-                    d="M7 22.5L17 28.5L27 22.5"
-                    stroke="url(#heroScrollChevronGradient)"
-                    strokeWidth="2.8"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    opacity="0.66"
-                  />
-                </motion.svg>
-              </motion.div>
+                  <Compass size={26} strokeWidth={1.75} className="text-slate-100" />
+                </motion.button>
+              )}
 
               {/* — botones originales: se muestran solo si hay usuario — */}
               <motion.div
