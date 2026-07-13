@@ -213,9 +213,9 @@ const teamData = {
 
 const teamEntries = Object.entries(teamData);
 const roleDisplayOrder = [
+  "Dramaturgia",
   "Producción y asistencia",
   "Alianza Social",
-  "Dramaturgia",
   "Dirección",
   "Elenco",
   "Diseño Escénico",
@@ -227,13 +227,8 @@ const mobileSingleButtonRoles = new Set([
   "Dramaturgia",
   "Colaboradores y Agradecimientos",
 ]);
-const defaultOpenMobileRoles = [
-  "Producción y asistencia",
-  "Elenco",
-  "Diseño Escénico",
-  "Sonido y Tema Musical",
-  "Colaboradores y Agradecimientos",
-];
+// Todas las pestañas de Créditos de la obra inician cerradas, en desktop y en móvil.
+const defaultOpenMobileRoles = [];
 const mobileRoleLabelOverrides = {
   "Sonido y Tema Musical": "Sonido y Música",
 };
@@ -253,23 +248,15 @@ const Team = () => {
     const half = Math.ceil(orderedRoleKeys.length / 2);
     return roleIndex < half ? "team-pill-tint tintTop" : "team-pill-tint tintBottom";
   };
-  const defaultDesktopRole = teamData.Elenco ? "Elenco" : orderedRoleKeys[0] ?? null;
   const [selectedElencoId, setSelectedElencoId] = useState(null);
   const [isMobile, setIsMobile] = useState(
     typeof window !== "undefined" ? window.innerWidth < 768 : false
   );
   const [openMobileRoles, setOpenMobileRoles] = useState(
-    () => {
-      const availableDefaultRoles = defaultOpenMobileRoles.filter((role) => teamData[role]);
-      return availableDefaultRoles.length > 0
-        ? availableDefaultRoles
-        : teamData.Elenco
-          ? ["Elenco"]
-          : [];
-    }
+    () => defaultOpenMobileRoles.filter((role) => teamData[role])
   );
   const [activeMobileMemberByRole, setActiveMobileMemberByRole] = useState({});
-  const [activeDesktopRole, setActiveDesktopRole] = useState(defaultDesktopRole);
+  const [activeDesktopRole, setActiveDesktopRole] = useState(null);
   const [isDesktopDiscoveryPaused, setIsDesktopDiscoveryPaused] = useState(false);
   const [activeMemberLink, setActiveMemberLink] = useState(null);
   const [confirmExternalLink, setConfirmExternalLink] = useState(null);
@@ -365,10 +352,12 @@ const Team = () => {
   }, [isMobile, selectedElencoId]);
 
   useEffect(() => {
-    if (!activeDesktopRole || !(activeDesktopRole in teamData)) {
-      setActiveDesktopRole(defaultDesktopRole);
+    // Solo limpia una selección que quedó apuntando a un rol que ya no existe —
+    // no vuelve a abrir nada por default (las pestañas inician cerradas).
+    if (activeDesktopRole && !(activeDesktopRole in teamData)) {
+      setActiveDesktopRole(null);
     }
-  }, [activeDesktopRole, defaultDesktopRole]);
+  }, [activeDesktopRole]);
 
   useEffect(() => {
     if (!isMemberLinkOpen) {
@@ -1266,26 +1255,24 @@ Estos créditos pertenecen a esa pieza fundacional y a las colaboraciones que hi
               })}
             </div>
 
-            <div className={`glass-effect ${getRoleTintClass(activeDesktopRole)} rounded-2xl border border-white/10 bg-black/20 p-6`}>
-              <AnimatePresence mode="wait" initial={false}>
-                <motion.div
-                  key={activeDesktopRole || "team-panel-empty"}
-                  id="team-desktop-panel"
-                  role="tabpanel"
-                  aria-labelledby={
-                    activeDesktopRole ? `team-tab-${orderedRoleKeys.indexOf(activeDesktopRole)}` : undefined
-                  }
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -8 }}
-                  transition={{ duration: 0.25, ease: "easeOut" }}
-                >
-                  {activeDesktopData && activeDesktopRole
-                    ? renderRole(activeDesktopData, activeDesktopRole)
-                    : null}
-                </motion.div>
-              </AnimatePresence>
-            </div>
+            {activeDesktopRole && activeDesktopData && (
+              <div className={`glass-effect ${getRoleTintClass(activeDesktopRole)} rounded-2xl border border-white/10 bg-black/20 p-6`}>
+                <AnimatePresence mode="wait" initial={false}>
+                  <motion.div
+                    key={activeDesktopRole}
+                    id="team-desktop-panel"
+                    role="tabpanel"
+                    aria-labelledby={`team-tab-${orderedRoleKeys.indexOf(activeDesktopRole)}`}
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -8 }}
+                    transition={{ duration: 0.25, ease: "easeOut" }}
+                  >
+                    {renderRole(activeDesktopData, activeDesktopRole)}
+                  </motion.div>
+                </AnimatePresence>
+              </div>
+            )}
           </motion.div>
         )}
       </div>

@@ -202,7 +202,7 @@ const GatokensRevealModal = ({ open, onClose, isUmbral = false, onProvoca }) => 
                     hover:scale-[1.02] active:scale-[0.98]
                   "
                 >
-                  ¿Te movió la obra?
+                  ¿Te movió de más?
                 </button>
                 <button
                   type="button"

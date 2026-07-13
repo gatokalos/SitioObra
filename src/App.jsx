@@ -459,6 +459,34 @@ function App() {
       window.removeEventListener('gatoencerrado:audio-deactivated', handleDeactivated);
     };
   }, []);
+  // Tercera Llamada (La Bienvenida): al volver de /bienvenida con recomendación,
+  // se reemplaza por Perspectivas + Transmedia y ya no vuelve a mostrarse.
+  const [hasCompletedTerceraLlamada, setHasCompletedTerceraLlamada] = useState(false);
+  useEffect(() => {
+    if (typeof window === 'undefined') return undefined;
+    const handleCompleted = () => {
+      setHasCompletedTerceraLlamada(true);
+      if (!isAuthenticated && !hasGuestUnlockedTransmedia) {
+        safeSetItem(TRANSMEDIA_UNLOCK_STORAGE_KEY, '1');
+        setHasGuestUnlockedTransmedia(true);
+      }
+    };
+    window.addEventListener('gatoencerrado:tercera-llamada-completed', handleCompleted);
+    return () => window.removeEventListener('gatoencerrado:tercera-llamada-completed', handleCompleted);
+  }, [isAuthenticated, hasGuestUnlockedTransmedia]);
+  // Un usuario autenticado ya cruzó el umbral en algún momento — no le mostramos
+  // Tercera Llamada otra vez, va directo a Perspectivas.
+  const hasEnteredUniverse = hasCompletedTerceraLlamada || isAuthenticated;
+  // Curaduría: visibilidad controlada por el botón "Preguntar" (abre/cierra), no por acceso permanente.
+  const [isCuradoriaVisible, setIsCuradoriaVisible] = useState(false);
+  // Obra destacada + Créditos: se revelan juntos desde el CTA de Archivo Escénico (Caída del Telón).
+  const [isObraDestacadaVisible, setIsObraDestacadaVisible] = useState(false);
+  useEffect(() => {
+    if (typeof window === 'undefined') return undefined;
+    const handleReveal = () => setIsObraDestacadaVisible(true);
+    window.addEventListener('gatoencerrado:reveal-obra-destacada', handleReveal);
+    return () => window.removeEventListener('gatoencerrado:reveal-obra-destacada', handleReveal);
+  }, []);
   const isMobileLoggedInPortalMode = isAuthenticated && isMobileViewport;
   const isPortalRoute = location.pathname.startsWith('/portal-');
   const hasForcedHomeTopOnBootRef = useRef(false);
@@ -661,6 +689,21 @@ function App() {
     scrollToSection('dialogo-critico');
   }, [hasGuestUnlockedCuradoria, isAuthenticated, scrollToSection]);
 
+  const toggleCuradoria = useCallback(() => {
+    setIsCuradoriaVisible((prev) => {
+      const next = !prev;
+      if (next) {
+        if (!isAuthenticated && !hasGuestUnlockedCuradoria) {
+          safeSetItem(CURATORIA_UNLOCK_STORAGE_KEY, '1');
+          setHasGuestUnlockedCuradoria(true);
+        }
+        setShowBlogBuscador(true);
+        window.setTimeout(() => scrollToSection('dialogo-critico'), 120);
+      }
+      return next;
+    });
+  }, [hasGuestUnlockedCuradoria, isAuthenticated, scrollToSection]);
+
   useEffect(() => {
     const handler = () => handleAskQuestion();
     window.addEventListener('gatoencerrado:show-buscador', handler);
@@ -739,7 +782,7 @@ function App() {
               <Header
                 showAllianceNav={canAccessTransmedia}
                 showCuradoriaNav={canAccessCuradoria}
-                showIntermedioNav={shouldShowIntermedioNav}
+                showIntermedioNav={shouldShowIntermedioNav && isHeroActivated}
                 showTransmediaNav={canAccessTransmedia && !isMobileLoggedInPortalMode}
                 showPerspectivasNav={isHeroActivated}
               />
@@ -749,91 +792,101 @@ function App() {
 
                 {isHeroActivated && (
                   <>
-                    <DeferredSection fallback={<SectionFallback id="bienvenida-creador" minHeight={520} />}>
-                      <Suspense fallback={<SectionFallback id="bienvenida-creador" minHeight={520} />}>
-                        <CreatorWelcomeSection />
+                    {hasEnteredUniverse ? (
+                      <>
+                        <DeferredSection fallback={<SectionFallback id="provoca" minHeight={900} />}>
+                          <Suspense fallback={<SectionFallback id="provoca" minHeight={900} />}>
+                            <ProvocaSection />
+                          </Suspense>
+                        </DeferredSection>
+
+                        {canAccessTransmedia && !isMobileLoggedInPortalMode && (
+                          <SectionErrorBoundary fallback={<SectionFallback id="transmedia" minHeight={1600} />}>
+                            <Suspense fallback={<SectionFallback id="transmedia" minHeight={1600} />}>
+                              <Transmedia />
+                            </Suspense>
+                          </SectionErrorBoundary>
+                        )}
+                      </>
+                    ) : (
+                      <DeferredSection fallback={<SectionFallback id="bienvenida-creador" minHeight={520} />}>
+                        <Suspense fallback={<SectionFallback id="bienvenida-creador" minHeight={520} />}>
+                          <CreatorWelcomeSection />
+                        </Suspense>
+                      </DeferredSection>
+                    )}
+
+                    <DeferredSection fallback={<SectionFallback id="blog-contribuye" minHeight={700} />}>
+                      <Suspense fallback={<SectionFallback id="blog-contribuye" minHeight={700} />}>
+                        <BlogContributionPrompt onAskQuestion={toggleCuradoria} />
                       </Suspense>
                     </DeferredSection>
 
-                    <DeferredSection fallback={<SectionFallback id="provoca" minHeight={900} />}>
-                      <Suspense fallback={<SectionFallback id="provoca" minHeight={900} />}>
-                        <ProvocaSection />
+                    {isCuradoriaVisible && (
+                      <DeferredSection fallback={<SectionFallback id="dialogo-critico" minHeight={900} />}>
+                        <Suspense fallback={<SectionFallback id="dialogo-critico" minHeight={900} />}>
+                          <BlogSection showBuscador={showBlogBuscador} />
+                        </Suspense>
+                      </DeferredSection>
+                    )}
+
+                    {/* Alianza Social: sin alianza todavía para invitados — solo autenticados, por ahora */}
+                    {isAuthenticated && (
+                      <SectionErrorBoundary
+                        fallback={(
+                          <section id="apoya" className="py-24 relative">
+                            <div className="container mx-auto px-6">
+                              <div className="glass-effect rounded-2xl p-8 text-center">
+                                <p className="text-xs uppercase tracking-[0.35em] text-slate-400/80">Alianza Social</p>
+                              </div>
+                            </div>
+                          </section>
+                        )}
+                      >
+                        <DeferredSection
+                          rootMargin="400px 0px"
+                          idleDelayMs={800}
+                          fallback={<SectionFallback id="apoya" minHeight={700} />}
+                        >
+                          <Suspense fallback={<SectionFallback id="apoya" minHeight={700} />}>
+                            <AlianzaSocial />
+                          </Suspense>
+                        </DeferredSection>
+                      </SectionErrorBoundary>
+                    )}
+
+                    {/* Archivo Escénico / Caída del Telón: siempre visible una vez activada la escena;
+                        su CTA revela Obra Destacada + Créditos */}
+                    <DeferredSection fallback={<SectionFallback id="next-show" minHeight={480} />}>
+                      <Suspense fallback={<SectionFallback id="next-show" minHeight={480} />}>
+                        <NextShow />
                       </Suspense>
                     </DeferredSection>
+
+                    {isObraDestacadaVisible && (
+                      <>
+                        <DeferredSection fallback={<SectionFallback id="about" minHeight={620} />}>
+                          <Suspense fallback={<SectionFallback id="about" minHeight={620} />}>
+                            <About />
+                          </Suspense>
+                        </DeferredSection>
+                        {isFractalGalleryVisible && (
+                          <DeferredSection fallback={<SectionFallback id="instagram" minHeight={1600} />}>
+                            <Suspense fallback={<SectionFallback id="instagram" minHeight={1600} />}>
+                              <Instagram />
+                            </Suspense>
+                          </DeferredSection>
+                        )}
+                        <DeferredSection fallback={<SectionFallback id="team" minHeight={980} />}>
+                          <Suspense fallback={<SectionFallback id="team" minHeight={980} />}>
+                            <Team />
+                          </Suspense>
+                        </DeferredSection>
+                      </>
+                    )}
                   </>
                 )}
 
-                <DeferredSection fallback={<SectionFallback id="blog-contribuye" minHeight={700} />}>
-                  <Suspense fallback={<SectionFallback id="blog-contribuye" minHeight={700} />}>
-                    <BlogContributionPrompt onRevealTransmedia={handleRevealTransmedia} onAskQuestion={handleAskQuestion} disableExpand={isMobileLoggedInPortalMode} />
-                  </Suspense>
-                </DeferredSection>
-
-                {canAccessCuradoria && (
-                  <DeferredSection fallback={<SectionFallback id="dialogo-critico" minHeight={900} />}>
-                    <Suspense fallback={<SectionFallback id="dialogo-critico" minHeight={900} />}>
-                      <BlogSection showBuscador={showBlogBuscador} />
-                    </Suspense>
-                  </DeferredSection>
-                )}
-
-                {/* Showcase Transmedia: sorpresa, se revela al expandir desde Primera llamada */}
-                {canAccessTransmedia && !isMobileLoggedInPortalMode && (
-                  <SectionErrorBoundary fallback={<SectionFallback id="transmedia" minHeight={1600} />}>
-                    <Suspense fallback={<SectionFallback id="transmedia" minHeight={1600} />}>
-                      <Transmedia />
-                    </Suspense>
-                  </SectionErrorBoundary>
-                )}
-
-                {/* Alianza Social: visible para todos cuando hay acceso a Transmedia */}
-                {canAccessTransmedia && (
-                  <SectionErrorBoundary
-                    fallback={(
-                      <section id="apoya" className="py-24 relative">
-                        <div className="container mx-auto px-6">
-                          <div className="glass-effect rounded-2xl p-8 text-center">
-                            <p className="text-xs uppercase tracking-[0.35em] text-slate-400/80">Alianza Social</p>
-                          </div>
-                        </div>
-                      </section>
-                    )}
-                  >
-                    <DeferredSection
-                      rootMargin="400px 0px"
-                      idleDelayMs={800}
-                      fallback={<SectionFallback id="apoya" minHeight={700} />}
-                    >
-                      <Suspense fallback={<SectionFallback id="apoya" minHeight={700} />}>
-                        <AlianzaSocial />
-                      </Suspense>
-                    </DeferredSection>
-                  </SectionErrorBoundary>
-                )}
-
-                <DeferredSection fallback={<SectionFallback id="about" minHeight={620} />}>
-                  <Suspense fallback={<SectionFallback id="about" minHeight={620} />}>
-                    <About />
-                  </Suspense>
-                </DeferredSection>
-                {isFractalGalleryVisible && (
-                  <DeferredSection fallback={<SectionFallback id="instagram" minHeight={1600} />}>
-                    <Suspense fallback={<SectionFallback id="instagram" minHeight={1600} />}>
-                      <Instagram />
-                    </Suspense>
-                  </DeferredSection>
-                )}
-                <DeferredSection fallback={<SectionFallback id="next-show" minHeight={480} />}>
-                  <Suspense fallback={<SectionFallback id="next-show" minHeight={480} />}>
-                    <NextShow />
-                  </Suspense>
-                </DeferredSection>
-
-                <DeferredSection fallback={<SectionFallback id="team" minHeight={980} />}>
-                  <Suspense fallback={<SectionFallback id="team" minHeight={980} />}>
-                    <Team />
-                  </Suspense>
-                </DeferredSection>
                 <DeferredSection fallback={<SectionFallback id="contact" minHeight={560} />}>
                   <Suspense fallback={<SectionFallback id="contact" minHeight={560} />}>
                     <Contact />
@@ -844,7 +897,7 @@ function App() {
               <Footer
                 showAllianceNav={canAccessTransmedia}
                 showCuradoriaNav={canAccessCuradoria}
-                showIntermedioNav={shouldShowIntermedioNav}
+                showIntermedioNav={shouldShowIntermedioNav && isHeroActivated}
                 showTransmediaNav={canAccessTransmedia && !isMobileLoggedInPortalMode}
                 showPerspectivasNav={isHeroActivated}
               />

@@ -9,7 +9,7 @@ import { safeGetItem, safeSetItem } from '@/lib/safeStorage';
 
 const BLOG_ONBOARDING_KEY = 'gatoencerrado-blog-onboarding';
 
-const BlogContributionPrompt = ({ onRevealTransmedia = null, onAskQuestion = null, disableExpand = false }) => {
+const BlogContributionPrompt = ({ onAskQuestion = null }) => {
   const [isContributionOpen, setIsContributionOpen] = useState(false);
   const [showOnboardingHint, setShowOnboardingHint] = useState(false);
   const onboardingStoredRef = useRef(false);
@@ -60,20 +60,6 @@ const BlogContributionPrompt = ({ onRevealTransmedia = null, onAskQuestion = nul
     };
   }, []);
 
-  const handleContinue = useCallback(() => {
-    if (typeof onRevealTransmedia === 'function') {
-      onRevealTransmedia({
-        trigger: 'intermedio-continuar',
-        targetId: 'transmedia',
-      });
-      return;
-    }
-    document.querySelector('#transmedia')?.scrollIntoView({
-      behavior: 'smooth',
-      block: 'start',
-    });
-  }, [onRevealTransmedia]);
-
   return (
     <>
       <section id="blog-contribuye" className="py-24 relative min-h-[700px]">
@@ -113,7 +99,7 @@ const BlogContributionPrompt = ({ onRevealTransmedia = null, onAskQuestion = nul
            {/* CONTENIDO */}
 <div className="relative z-10">
   <h3 className="font-display text-3xl font-medium text-slate-100 mb-6 text-center">
-    Intermedio
+    El Intermedio
   </h3>
 
   <p className="text-slate-300/80 leading-relaxed mb-8 max-w-2xl mx-auto font-light whitespace-pre-line text-center">
@@ -123,8 +109,8 @@ Tal vez no lo sepas todavía.
 Y no pasa nada.
 
 No necesitas entender dónde estás.
-Solo notar si algo de lo que miraste
-se quedó moviéndose adentro.
+Solo notar si algo de lo que miras
+se queda moviéndose adentro.
 
 #GatoEncerrado tiene más de una entrada.
     
@@ -135,26 +121,14 @@ se quedó moviéndose adentro.
     </span>
   </p>
 
-  {/* BOTÓN DIVIDIDO */}
   <div className="flex flex-col items-center">
-    <div className="inline-flex rounded-full overflow-hidden shadow-lg border border-slate-600/50 backdrop-blur-sm">
-      {/* Mitad izquierda: continuar */}
-      <button
-        onClick={handleContinue}
-        disabled={disableExpand}
-        className="px-6 py-3 text-sm sm:text-base font-medium text-slate-100 bg-gradient-to-r from-fuchsia-600 to-pink-500 hover:opacity-90 transition-all duration-300 disabled:opacity-40 disabled:cursor-not-allowed"
-      >
-        Explorar
-      </button>
-
-      {/* Mitad derecha: revelar buscador en Curaduría */}
-      <button
-        onClick={() => onAskQuestion?.()}
-        className="px-6 py-3 text-sm sm:text-base font-medium text-slate-100 bg-gradient-to-r from-indigo-500 to-violet-600 hover:opacity-90 transition-all duration-300"
-      >
-        Preguntar
-      </button>
-    </div>
+    <Button
+      type="button"
+      onClick={() => onAskQuestion?.()}
+      className="ge-chip-action ge-chip-action--primary mx-auto"
+    >
+      Preguntar
+    </Button>
   </div>
 </div>
           </motion.div>

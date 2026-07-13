@@ -1,14 +1,9 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { Calendar, DoorOpen, ShoppingBag } from 'lucide-react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { createPortalLaunchState } from '@/lib/portalNavigation';
-import { useAuth } from '@/contexts/SupabaseAuthContext';
-import { safeGetItem, safeRemoveItem, safeSetItem } from '@/lib/safeStorage';
-
-const LOGIN_RETURN_KEY = 'gatoencerrado:login-return';
-const AUTHENTICATED_HERO_URL = '/?heroTab=experiences#hero';
 
 const SHOW_HISTORY = [
   {
@@ -41,8 +36,6 @@ const NextShow = () => {
   const [activeShowId, setActiveShowId] = useState('cecut');
   const navigate = useNavigate();
   const location = useLocation();
-  const { user } = useAuth();
-  const isLoggedIn = Boolean(user?.id);
   const activeShow = useMemo(
     () => SHOW_HISTORY.find((show) => show.id === activeShowId) ?? SHOW_HISTORY[0],
     [activeShowId]
@@ -54,62 +47,14 @@ const NextShow = () => {
     });
   }, [location, navigate]);
 
-  const handleOpenAuthenticatedHero = useCallback(() => {
-    navigate(AUTHENTICATED_HERO_URL, { replace: true });
-    if (typeof window !== 'undefined') {
-      window.setTimeout(() => {
-        document.getElementById('hero')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      }, 80);
-    }
-  }, [navigate]);
-
+  // Caída del Telón: revela Obra Destacada + Créditos de la obra
   const handlePrimaryAction = useCallback(() => {
-    if (isLoggedIn) {
-      handleOpenAuthenticatedHero();
-      return;
-    }
-    if (typeof window === 'undefined') {
-      return;
-    }
-    safeSetItem(
-      LOGIN_RETURN_KEY,
-      JSON.stringify({
-        anchor: '#next-show',
-        action: 'next-show-login',
-        source: 'next-show',
-      })
-    );
-    window.dispatchEvent(new CustomEvent('open-login-modal'));
-  }, [handleOpenAuthenticatedHero, isLoggedIn]);
-
-  useEffect(() => {
-    if (!isLoggedIn || typeof window === 'undefined') {
-      return;
-    }
-    const pending = safeGetItem(LOGIN_RETURN_KEY);
-    if (!pending) {
-      return;
-    }
-    try {
-      const parsed = JSON.parse(pending);
-      const isNextShowLoginFlow =
-        parsed?.anchor === '#next-show' && parsed?.action === 'next-show-login';
-      if (!isNextShowLoginFlow) {
-        return;
-      }
-      safeRemoveItem(LOGIN_RETURN_KEY);
-      // Clear stale showcase-unlock intent — user chose a different login path
-      try {
-        localStorage.removeItem('gatoencerrado:pending-vitrana-id');
-        localStorage.removeItem('gatoencerrado:pending-vitrana-skip-modal');
-      } catch {}
-      window.setTimeout(() => {
-        handleOpenAuthenticatedHero();
-      }, 120);
-    } catch {
-      safeRemoveItem(LOGIN_RETURN_KEY);
-    }
-  }, [handleOpenAuthenticatedHero, isLoggedIn]);
+    if (typeof window === 'undefined') return;
+    window.dispatchEvent(new CustomEvent('gatoencerrado:reveal-obra-destacada'));
+    window.setTimeout(() => {
+      document.getElementById('about')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 120);
+  }, []);
 
   return (
     <>
@@ -125,12 +70,13 @@ const NextShow = () => {
             className="glass-effect rounded-2xl p-8 md:p-12 text-center overflow-hidden min-h-[520px] md:min-h-[560px]"
           >
             <div className="relative z-10">
-              <h2 className="font-display text-4xl md:text-5xl font-medium mb-4 text-gradient italic">
-                Archivo escénico
-              </h2>
-              <p className="text-sm text-slate-400/80 mb-8">
-                Presentaciones que sostuvieron la obra y la conversación.
-              </p>
+              <h3 className="font-display text-3xl font-medium text-slate-100 mb-6 text-center">
+                La Caída del Telón
+              </h3>
+              <div className="text-slate-300/80 leading-relaxed mb-8 max-w-2xl mx-auto font-light text-center space-y-4">
+                <p>Hay historias que dejan de representarse para empezar a recordarse.</p>
+                <p>Este espacio conserva las huellas de las funciones de Es un gato encerrado: el instante irrepetible en que una obra existió frente a un público y comenzó a transformarse en otra cosa.</p>
+              </div>
 
               <div className="flex flex-wrap justify-center gap-2 mb-8">
                 {SHOW_HISTORY.map((show) => (
@@ -203,13 +149,9 @@ const NextShow = () => {
                     className="bg-gradient-to-r from-orange-500/90 via-rose-500/90 to-pink-500/90 hover:from-orange-400 hover:to-pink-400 text-white px-6 py-3 rounded-full font-semibold flex items-center gap-2 shadow-lg shadow-orange-500/40 transition"
                   >
                     <DoorOpen size={20} />
-                    {isLoggedIn ? 'Entrar al otro lado' : 'Entrar al otro lado'}
+                    Abre nuestro archivo escénico
                   </Button>
-                  <p className="text-xs text-slate-400/80 italic">
-                    {isLoggedIn
-                      ? '"Tu sesión ya abrió la siguiente capa"'
-                      : 'Siempre habrán más puertas'}
-                  </p>
+                  <p className="text-xs text-slate-400/80 italic">Siempre habrán más puertas</p>
                 </div>
                 <div className="flex flex-col items-center gap-2">
                   <Button

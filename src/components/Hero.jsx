@@ -52,12 +52,13 @@ const HERO_BRAND_LABEL = '#GATOENCERRADO';
 const HERO_INACTIVE_HINT = 'Pulsa el gato';
 const HERO_ROTATING_SUBTITLES = [
   'La obra que ocurre en tu mente',
-  'Teatro que ya no necesita escenario',
-  'Una experiencia narrativa transmedia',  
+  'Teatro que no necesita escenario',
+  'Una experiencia narrativa transmedial',
+  'Basada en una herida emocional compartida',
       
   ];
 const HERO_GHOST_SUBTITLES = [
-  'Tal vez esta obra empezó contigo', 
+  'Tal vez esta obra ya empezó en ti', 
   'Artesanía, cine, literatura, sonido: una sola pregunta.',
    
 ];
@@ -170,6 +171,9 @@ const Hero = () => {
       }
       setIsUmbralReveal(nextIsUmbralReveal);
       setIsGatokensModalOpen(true);
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new CustomEvent('gatoencerrado:tercera-llamada-completed'));
+      }
       if (hasGatokensRevealParam) {
         params.delete('gatokens');
         dirty = true;
@@ -895,16 +899,20 @@ const Hero = () => {
               {/* BOTTOM HALF — hash 3D (gatillo de activación) y CTAs bajo la línea central */}
               <div className="flex-1 flex flex-col items-center justify-start pt-2">
 
-              {/* Hash 3D — gatillo de activación, movido aquí desde arriba del título */}
+              {/* Hash 3D — gatillo de activación; una vez activada la escena, ya cumplió su función y se desvanece */}
               <motion.div
                 initial={{ opacity: 0, scale: 0.88 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ duration: 1, ease: 'easeOut' }}
+                animate={{ opacity: hasActivatedAudio ? 0 : 1, scale: 1 }}
+                transition={{ duration: hasActivatedAudio ? 0.7 : 1, ease: 'easeOut' }}
                 className="hero-title-mark-slot mt-8 -translate-y-[7vh] sm:mt-10 sm:translate-y-0 md:mt-12"
+                style={{
+                  pointerEvents: hasActivatedAudio ? 'none' : 'auto',
+                }}
                 role="button"
-                tabIndex={0}
+                tabIndex={hasActivatedAudio ? -1 : 0}
                 onKeyDown={handleHeroHashKeyDown}
-                aria-label={!hasActivatedAudio ? 'Activar escena' : 'Desactivar escena'}
+                aria-hidden={hasActivatedAudio}
+                aria-label="Activar escena"
               >
                 <span
                   className="hero-title-mark-placeholder"

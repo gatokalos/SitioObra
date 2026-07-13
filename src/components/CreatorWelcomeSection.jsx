@@ -48,7 +48,7 @@ const CreatorWelcomeSection = () => {
 
           <div className="relative z-10">
             <h3 className="font-display text-3xl font-medium text-slate-100 mb-6 text-center">
-              La bienvenida
+              La Tercera Llamada
             </h3>
            <div className="text-slate-300/80 leading-relaxed mb-6 max-w-2xl mx-auto font-light text-center space-y-4">
   <p>No sé cómo llegaste hasta aquí.<br />Pero me alegra que lo hayas hecho.</p>
@@ -74,7 +74,7 @@ const CreatorWelcomeSection = () => {
               onClick={handleEnter}
               className="ge-chip-action ge-chip-action--primary mx-auto"
             >
-              Tercera llamada
+              ¿Comenzamos?
             </Button>
           </div>
         </motion.div>
