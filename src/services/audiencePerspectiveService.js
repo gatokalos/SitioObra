@@ -28,7 +28,7 @@ export async function fetchApprovedAudiencePerspectives(limit = 2) {
   } catch (error) {
     return {
       data: [],
-      error: normalizeServiceError(error, 'No pudimos cargar las perspectivas del público.'),
+      error: normalizeServiceError(error, 'No pudimos cargar las perspectivas compartidas.'),
     };
   }
 }

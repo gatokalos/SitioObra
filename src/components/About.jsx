@@ -816,12 +816,12 @@ export const ProvocaSection = () => {
           <div className="grid md:grid-cols-[3fr_2fr] gap-8 items-center">
             <div>
            
-              <p className="uppercase tracking-[0.35em] text-xs text-slate-400/80 mb-4">Perspectivas del visitante</p>
+              <p className="uppercase tracking-[0.35em] text-xs text-slate-400/80 mb-4">Perspectivas compartidas</p>
               <h3
                 className="font-display text-3xl text-slate-100 mb-6 italic"
-                aria-label={`¿Qué te provoca ${currentProvocaTitleTerm}?`}
+                aria-label={`¿Qué nos provoca ${currentProvocaTitleTerm}?`}
               >
-                ¿Qué te provoca{' '}
+                ¿Qué nos provoca{' '}
                 <span className="relative inline-grid min-w-[14.5ch] align-baseline">
                   <span className="col-start-1 row-start-1 invisible" aria-hidden="true">
                     {PROVOCA_TITLE_LONGEST_TERM}?

@@ -272,6 +272,25 @@ const Transmedia = ({ allianceOnlyMode = false }) => {
   const [detonadoresHintActive, setDetonadoresHintActive] = useState(false);
   const detonadoresHintFiredRef = useRef(false);
   const { isMobileViewport, canUseInlinePlayback, requestMobileVideoPresentation } = useMobileVideoPresentation();
+  // El carrusel de vitrinas (mobileVitranaRevealId / navegación a portal) se
+  // muestra vía CSS con "lg:hidden" (breakpoint 1024px) — no con los 768px de
+  // isMobileViewport (ese es de useMobileVideoPresentation, para decisiones de
+  // reproducción de video, otro criterio). Antes del fix, un iPad en portrait
+  // (768-1023px) mostraba la tarjeta del carrusel pero handleFormatClick creía
+  // que era "desktop" y actualizaba el estado que esa tarjeta nunca escucha —
+  // el toque no hacía nada. Este check replica el breakpoint real del CSS.
+  const [isVitrinaCarouselViewport, setIsVitrinaCarouselViewport] = useState(() => {
+    if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') return false;
+    return window.matchMedia('(max-width: 1023px)').matches;
+  });
+  useEffect(() => {
+    if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') return undefined;
+    const query = window.matchMedia('(max-width: 1023px)');
+    const handleChange = () => setIsVitrinaCarouselViewport(query.matches);
+    handleChange();
+    query.addEventListener('change', handleChange);
+    return () => query.removeEventListener('change', handleChange);
+  }, []);
   const { user, session } = useAuth();
   const ambientState = useSyncExternalStore(subscribeHeroAmbient, getHeroAmbientState, getHeroAmbientState);
   const handleToggleShowcaseAmbient = useCallback(() => {
@@ -696,7 +715,7 @@ const Transmedia = ({ allianceOnlyMode = false }) => {
       const portalRoute = resolvePortalRoute({
         formatId,
         mobileOnly: true,
-        isMobileViewport,
+        isMobileViewport: isVitrinaCarouselViewport,
       });
       if (!portalRoute) {
         return false;
@@ -708,7 +727,7 @@ const Transmedia = ({ allianceOnlyMode = false }) => {
       });
       return true;
     },
-    [isMobileViewport, location, navigate]
+    [isVitrinaCarouselViewport, location, navigate]
   );
 
   const {
@@ -818,7 +837,10 @@ const Transmedia = ({ allianceOnlyMode = false }) => {
       // the recommended vitrana OR one they already unlocked spending GAT — un
       // desbloqueo pagado no debe quedar huérfano detrás del login.
       // Everyone else sees the question overlay → login flow.
-      if (isMobileViewport && !isAuthenticated) {
+      // isVitrinaCarouselViewport (no isMobileViewport): tiene que coincidir con
+      // el breakpoint del CSS que decide qué tarjeta está en pantalla (lg:hidden,
+      // 1024px), o el toque actualiza un estado que la tarjeta visible no escucha.
+      if (isVitrinaCarouselViewport && !isAuthenticated) {
         const hasBienvenida = safeGetItem('gatoencerrado:bienvenida-completed') === '1';
         const hasUnlockedAccess = formatId === recommendedShowcaseId || Boolean(showcaseBoosts?.[formatId]);
         if (hasBienvenida && hasUnlockedAccess) {
@@ -829,7 +851,7 @@ const Transmedia = ({ allianceOnlyMode = false }) => {
       }
       // Desktop anonymous: same rule — recommended vitrana OR one already unlocked
       // with GAT. Everyone else sees the login CTA.
-      if (!isMobileViewport && !isAuthenticated) {
+      if (!isVitrinaCarouselViewport && !isAuthenticated) {
         const hasBienvenida = safeGetItem('gatoencerrado:bienvenida-completed') === '1';
         const hasUnlockedAccess = formatId === recommendedShowcaseId || Boolean(showcaseBoosts?.[formatId]);
         if (!(hasBienvenida && hasUnlockedAccess)) {
@@ -864,12 +886,13 @@ const Transmedia = ({ allianceOnlyMode = false }) => {
       focusLockShowcaseId,
       handleOpenMiniverses,
       isAuthenticated,
-      isMobileViewport,
+      isVitrinaCarouselViewport,
       loadShowcaseContent,
       navigateToMobilePortalIfReady,
       recommendedShowcaseId,
       releaseDesktopFocusLock,
       runShowcaseOpenTransition,
+      showcaseBoosts,
       showcaseContent,
       showcaseOpenTransition.phase,
     ]
