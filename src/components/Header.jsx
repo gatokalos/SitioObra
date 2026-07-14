@@ -14,7 +14,11 @@ import { INITIAL_GAT_BALANCE, readStoredInt } from '@/components/transmedia/tran
 import { readIndexCueUsedFromSession } from '@/lib/heroActivation';
 import useActiveSectionHref from '@/hooks/useActiveSectionHref';
 import { fetchTransmediaCreditEvents } from '@/services/transmediaCreditsService';
-import { findLatestRecommendedPortal, readOraculoRecommendedShowcase } from '@/lib/transmediaCreditEventLabels';
+import {
+  findLatestRecommendedPortal,
+  findLatestSpendTarget,
+  readOraculoRecommendedShowcase,
+} from '@/lib/transmediaCreditEventLabels';
 
 const GAT_BALANCE_STORAGE_KEY = 'gatoencerrado:gatokens-available';
 const GAT_CHIP_PINNED_STORAGE_KEY = 'gatoencerrado:gatokens-chip-pinned:v1';
@@ -484,10 +488,13 @@ const Header = ({
     };
   }, [isGatInfoOpen, calcGatInfoPosition]);
 
-  // Al abrir el tooltip: ¿dónde se recomienda gastar los GAT? Prioridad:
-  // 1) el metadata.recommended del resonance:l3-reward más reciente (ya viviste
-  //    algo y el sistema te sugiere el siguiente paso);
-  // 2) si nunca hay historial, la recomendación de primera vez del Oráculo.
+  // Al abrir el tooltip: ¿dónde conviene ir a gastar/seguir gastando los GAT?
+  // Prioridad:
+  // 1) el metadata.recommended del resonance:l3-reward más reciente (ya
+  //    terminaste algo y el sistema sugiere el siguiente paso);
+  // 2) si no hay L3 completado, el evento más reciente de CUALQUIER tipo que
+  //    apunte a una vitrina — "sigues con crédito gastado/en curso ahí";
+  // 3) si nunca hay historial, la recomendación de primera vez del Oráculo.
   useEffect(() => {
     if (!isGatInfoOpen) return undefined;
     let cancelled = false;
@@ -495,8 +502,8 @@ const Header = ({
     (async () => {
       const { events } = await fetchTransmediaCreditEvents(20);
       if (cancelled) return;
-      const fromLedger = findLatestRecommendedPortal(events);
-      const recommendation = fromLedger || readOraculoRecommendedShowcase();
+      const recommendation =
+        findLatestRecommendedPortal(events) || findLatestSpendTarget(events) || readOraculoRecommendedShowcase();
       setGatSpendRecommendation(recommendation);
       setIsGatSpendRecommendationLoading(false);
     })();
@@ -683,10 +690,22 @@ const Header = ({
                     {isGatSpendRecommendationLoading ? (
                       <p className="text-[0.68rem] text-slate-400">Buscando dónde conviene gastarlos…</p>
                     ) : gatSpendRecommendation ? (
-                      <p className="rounded-lg border border-violet-200 bg-violet-50 px-3 py-2 text-xs leading-relaxed text-violet-800">
-                        Te recomendamos gastarlos en{' '}
-                        <span className="font-semibold">{gatSpendRecommendation.title}</span>.
-                      </p>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setIsGatInfoOpen(false);
+                          handleNavClick(`#transmedia?focus=${gatSpendRecommendation.showcaseId}`);
+                        }}
+                        className="group flex w-full items-center justify-between gap-2 rounded-lg border border-violet-200 bg-violet-50 px-3 py-2 text-left text-xs leading-relaxed text-violet-800 transition hover:border-violet-300 hover:bg-violet-100"
+                      >
+                        <span>
+                          Te recomendamos gastarlos en{' '}
+                          <span className="font-semibold">{gatSpendRecommendation.title}</span>.
+                        </span>
+                        <span className="shrink-0 text-violet-500 transition-transform group-hover:translate-x-0.5">
+                          →
+                        </span>
+                      </button>
                     ) : (
                       <p className="text-[0.68rem] text-slate-500">
                         Explora un miniverso para descubrir dónde conviene gastarlos primero.

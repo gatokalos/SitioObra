@@ -814,21 +814,25 @@ const Transmedia = ({ allianceOnlyMode = false }) => {
       if (showcaseOpenTransition.phase !== 'idle') {
         return;
       }
-      // Mobile anonymous: bienvenida-completed users open portal directly, but only the recommended vitrana.
+      // Mobile anonymous: bienvenida-completed users open portal directly if it's
+      // the recommended vitrana OR one they already unlocked spending GAT — un
+      // desbloqueo pagado no debe quedar huérfano detrás del login.
       // Everyone else sees the question overlay → login flow.
       if (isMobileViewport && !isAuthenticated) {
         const hasBienvenida = safeGetItem('gatoencerrado:bienvenida-completed') === '1';
-        if (hasBienvenida && formatId === recommendedShowcaseId) {
+        const hasUnlockedAccess = formatId === recommendedShowcaseId || Boolean(showcaseBoosts?.[formatId]);
+        if (hasBienvenida && hasUnlockedAccess) {
           if (navigateToMobilePortalIfReady(formatId)) return;
         }
         setMobileVitranaRevealId((prev) => (prev === formatId ? null : formatId));
         return;
       }
-      // Desktop anonymous: bienvenida-completed users can open the recommended vitrana.
-      // Everyone else sees the login CTA.
+      // Desktop anonymous: same rule — recommended vitrana OR one already unlocked
+      // with GAT. Everyone else sees the login CTA.
       if (!isMobileViewport && !isAuthenticated) {
         const hasBienvenida = safeGetItem('gatoencerrado:bienvenida-completed') === '1';
-        if (!(hasBienvenida && formatId === recommendedShowcaseId)) {
+        const hasUnlockedAccess = formatId === recommendedShowcaseId || Boolean(showcaseBoosts?.[formatId]);
+        if (!(hasBienvenida && hasUnlockedAccess)) {
           setDesktopVitranaRevealId((prev) => (prev === formatId ? null : formatId));
           return;
         }
@@ -5375,6 +5379,11 @@ Silvestre, un hombre en sus treintas, comienza a perder la frontera entre lo que
                           type="button"
                           onClick={(e) => {
                             e.stopPropagation();
+                            const hasUnlockedAccess =
+                              format.id === recommendedShowcaseId || Boolean(showcaseBoosts?.[format.id]);
+                            if (!isAuthenticated && hasUnlockedAccess && navigateToMobilePortalIfReady(format.id)) {
+                              return;
+                            }
                             try {
                               localStorage.setItem('gatoencerrado:pending-vitrana-id', format.id);
                             } catch {}
@@ -5577,6 +5586,11 @@ Silvestre, un hombre en sus treintas, comienza a perder la frontera entre lo que
                           type="button"
                           onClick={(e) => {
                             e.stopPropagation();
+                            const hasUnlockedAccess =
+                              format.id === recommendedShowcaseId || Boolean(showcaseBoosts?.[format.id]);
+                            if (!isAuthenticated && hasUnlockedAccess && navigateToMobilePortalIfReady(format.id)) {
+                              return;
+                            }
                             try {
                               localStorage.setItem('gatoencerrado:pending-vitrana-id', format.id);
                             } catch {}
