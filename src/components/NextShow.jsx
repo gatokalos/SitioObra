@@ -94,8 +94,8 @@ const NextShow = () => {
                 La Caída del Telón
               </h3>
               <div className="text-slate-300/80 leading-relaxed mb-8 max-w-2xl mx-auto font-light text-center space-y-4">
-                <p>Hay historias que dejan de representarse para empezar a recordarse.</p>
-                <p>Este espacio conserva las huellas de las funciones de Es un gato encerrado: el instante irrepetible en que una obra existió frente a un público y comenzó a transformarse en otra cosa.</p>
+                <p><em>Hay historias que dejan de representarse para empezar a recordarse.</em></p>
+                <p>Este espacio reúne los rastros de las funciones de Es un gato encerrado. Cada fotografía, video y testimonio pertenece a un momento que no volverá a ocurrir de la misma manera, pero que sigue transformándose en la memoria de quienes lo vivieron.</p>
               </div>
 
               <div className="flex flex-wrap justify-center gap-2 mb-8">
@@ -169,7 +169,7 @@ const NextShow = () => {
                     className="bg-gradient-to-r from-orange-500/90 via-rose-500/90 to-pink-500/90 hover:from-orange-400 hover:to-pink-400 text-white px-6 py-3 rounded-full font-semibold flex items-center gap-2 shadow-lg shadow-orange-500/40 transition"
                   >
                     <DoorOpen size={20} />
-                    ¿Cómo estuvo la obra?
+                    Entra a la obra
                   </Button>
 
                 </div>
