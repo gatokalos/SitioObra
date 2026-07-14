@@ -57,16 +57,16 @@ const HERO_TITLE = 'GATOENCERRADO';
 const HERO_BRAND_LABEL = '#GATOENCERRADO';
 const HERO_INACTIVE_HINT = 'Pulsa el gato';
 const HERO_ROTATING_SUBTITLES = [
-  'La obra que ocurre en tu mente',
-  'Teatro que no necesita escenario',
   'Una experiencia narrativa transmedial',
   'Basada en una herida emocional compartida',
+  'Artesanías, cine, literatura, sonido: una sola pregunta.',
+  'Teatro que no necesita escenario',
       
   ];
 const HERO_GHOST_SUBTITLES = [
+  'La obra que ocurre en tu mente',
   'Tal vez esta obra ya empezó en ti', 
-  'Artesanía, cine, literatura, sonido: una sola pregunta.',
-   
+     
 ];
 const HERO_ROTATING_SUBTITLE_PLACEHOLDER =
 'Una experiencia narrativa transmedial';
@@ -534,10 +534,13 @@ const Hero = () => {
 
   const handleOpenIndexFromHero = useCallback(() => {
     if (typeof window === 'undefined') return;
-    window.dispatchEvent(new CustomEvent('gatoencerrado:open-index'));
+    // "hero-index-cue-used" primero: le quita el gateo al toggle # del Header
+    // ANTES de pedirle que abra el índice, para que este mismo clic no se
+    // pierda por la condición de gateo todavía activa (carrera de eventos).
     setHasUsedIndexCue(true);
     writeIndexCueUsedToSession();
     window.dispatchEvent(new CustomEvent('gatoencerrado:hero-index-cue-used'));
+    window.dispatchEvent(new CustomEvent('gatoencerrado:open-index'));
   }, []);
 
   useEffect(() => {
@@ -907,10 +910,12 @@ const Hero = () => {
               {/* LÍNEA CENTRAL — GATOENCERRADO ancla el 50vh */}
               <div className="max-w-4xl mx-auto w-full">
                 <h1
-                  className="hero-title text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-medium text-center w-full break-words"
+                  className={`hero-title ${hasActivatedAudio ? 'hero-title--scene-active' : ''} text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-medium text-center w-full break-words`}
                   style={{
-                    opacity: hasActivatedAudio ? 0.96 : 0.72,
-                    filter: hasActivatedAudio ? 'brightness(1) contrast(1.05)' : 'brightness(0.82) contrast(0.96)',
+                    opacity: isMobileViewport ? (hasActivatedAudio ? 1 : 0.88) : (hasActivatedAudio ? 0.96 : 0.72),
+                    filter: isMobileViewport
+                      ? (hasActivatedAudio ? 'brightness(1.12) contrast(1.08)' : 'brightness(1.05) contrast(1.06)')
+                      : (hasActivatedAudio ? 'brightness(1) contrast(1.05)' : 'brightness(0.82) contrast(0.96)'),
                     transition: 'opacity 1.15s ease, filter 1.15s ease',
                   }}
                   aria-label={HERO_BRAND_LABEL}

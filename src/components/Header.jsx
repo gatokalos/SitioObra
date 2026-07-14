@@ -1,6 +1,7 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useLayoutEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { motion, useReducedMotion } from 'framer-motion';
-import { Coffee, Smartphone, Sparkles } from 'lucide-react';
+import { Coffee, Info, Smartphone, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useToast } from '@/components/ui/use-toast';
@@ -11,6 +12,7 @@ import { createPortalLaunchState } from '@/lib/portalNavigation';
 import { safeGetItem, safeSetItem } from '@/lib/safeStorage';
 import { INITIAL_GAT_BALANCE, readStoredInt } from '@/components/transmedia/transmediaConstants';
 import { readIndexCueUsedFromSession } from '@/lib/heroActivation';
+import useActiveSectionHref from '@/hooks/useActiveSectionHref';
 
 const GAT_BALANCE_STORAGE_KEY = 'gatoencerrado:gatokens-available';
 const GAT_CHIP_PINNED_STORAGE_KEY = 'gatoencerrado:gatokens-chip-pinned:v1';
@@ -62,6 +64,10 @@ const Header = ({
   const [isInstalledPwa, setIsInstalledPwa] = useState(readIsRunningAsInstalledPwa);
   const [showLoginOverlay, setShowLoginOverlay] = useState(false);
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
+  const [isGatInfoOpen, setIsGatInfoOpen] = useState(false);
+  const [gatInfoPanelStyle, setGatInfoPanelStyle] = useState({});
+  const gatChipRootRef = useRef(null);
+  const gatInfoPanelRef = useRef(null);
   const navigate = useNavigate();
   const location = useLocation();
   const { user, signOut } = useAuth();
@@ -108,7 +114,14 @@ const Header = ({
   useEffect(() => {
     if (typeof window === 'undefined') return undefined;
 
-    const handleIndexCueUsed = () => setHasUsedHeroIndexCue(true);
+    // Abre el menú directamente aquí (no delega al listener de "open-index"):
+    // ambos eventos se disparan en el mismo tick desde Hero.jsx, así que ese
+    // otro listener todavía tendría capturado el gateo viejo por el cierre
+    // de React (stale closure) y perdería este primer clic.
+    const handleIndexCueUsed = () => {
+      setHasUsedHeroIndexCue(true);
+      setIsMenuOpen(true);
+    };
 
     window.addEventListener('gatoencerrado:hero-index-cue-used', handleIndexCueUsed);
     return () => {
@@ -345,6 +358,8 @@ const Header = ({
     { name: 'Contacto', href: '#contact' },
   ];
 
+  const activeSectionHref = useActiveSectionHref(mobileMenuItems.map((item) => item.href));
+
   const handleNavClick = useCallback((href) => {
     setIsMenuOpen(false);
     if (typeof href !== 'string' || !href) return;
@@ -431,6 +446,65 @@ const Header = ({
         ],
       };
 
+  // Panel del tooltip de GATokens — mismo cálculo de posición que GATChip.jsx
+  // (portal/GATChip.jsx): fixed, alineado al borde derecho del chip, clamp al
+  // viewport, arriba o abajo según el espacio disponible.
+  const calcGatInfoPosition = useCallback(() => {
+    if (!gatChipRootRef.current || typeof window === 'undefined') return;
+    const rect = gatChipRootRef.current.getBoundingClientRect();
+    const panelW = Math.min(window.innerWidth * 0.88, 272);
+    const panelH = gatInfoPanelRef.current
+      ? Math.max(gatInfoPanelRef.current.scrollHeight, 120)
+      : 160;
+    const gap = 8;
+
+    const spaceBelow = window.innerHeight - rect.bottom;
+    const below = spaceBelow >= panelH + gap || spaceBelow >= rect.top;
+    const rightFromEdge = Math.max(window.innerWidth - rect.right, 8);
+
+    setGatInfoPanelStyle({
+      position: 'fixed',
+      width: panelW,
+      right: rightFromEdge,
+      ...(below
+        ? { top: rect.bottom + gap, bottom: 'auto' }
+        : { bottom: window.innerHeight - rect.top + gap, top: 'auto' }),
+      zIndex: 9999,
+    });
+  }, []);
+
+  useLayoutEffect(() => {
+    if (!isGatInfoOpen) return undefined;
+    calcGatInfoPosition();
+    window.addEventListener('resize', calcGatInfoPosition);
+    document.addEventListener('scroll', calcGatInfoPosition, true);
+    return () => {
+      window.removeEventListener('resize', calcGatInfoPosition);
+      document.removeEventListener('scroll', calcGatInfoPosition, true);
+    };
+  }, [isGatInfoOpen, calcGatInfoPosition]);
+
+  useEffect(() => {
+    if (!isGatInfoOpen) return undefined;
+    const onPointerDown = (event) => {
+      if (
+        gatChipRootRef.current && !gatChipRootRef.current.contains(event.target) &&
+        gatInfoPanelRef.current && !gatInfoPanelRef.current.contains(event.target)
+      ) {
+        setIsGatInfoOpen(false);
+      }
+    };
+    const onEscape = (event) => {
+      if (event.key === 'Escape') setIsGatInfoOpen(false);
+    };
+    document.addEventListener('pointerdown', onPointerDown);
+    document.addEventListener('keydown', onEscape);
+    return () => {
+      document.removeEventListener('pointerdown', onPointerDown);
+      document.removeEventListener('keydown', onEscape);
+    };
+  }, [isGatInfoOpen]);
+
   return (
     <>
       <motion.header
@@ -512,15 +586,13 @@ const Header = ({
                   <Smartphone size={18} />
                 </a>
               )}
-              <motion.button
-                type="button"
-                onClick={handleGatChipClick}
-                disabled={!isGatChipPulsing}
-                className={`inline-flex items-center gap-1.5 whitespace-nowrap rounded-full border px-2.5 py-1.5 text-[0.62rem] font-semibold uppercase tracking-[0.16em] backdrop-blur-sm transition-colors sm:gap-2 sm:px-3 sm:text-[0.68rem] sm:tracking-[0.24em] ${
+              <motion.div
+                ref={gatChipRootRef}
+                className={`inline-flex items-center gap-1 whitespace-nowrap rounded-full border pl-2.5 pr-1 py-1 text-[0.62rem] font-semibold uppercase tracking-[0.16em] backdrop-blur-sm transition-colors sm:gap-1.5 sm:pl-3 sm:pr-1.5 sm:text-[0.68rem] sm:tracking-[0.24em] ${
                   isGatChipPulsing
                     ? 'border-amber-300/45 bg-amber-500/15 text-amber-100 shadow-[0_0_22px_rgba(251,191,36,0.28)]'
                     : 'border-cyan-300/25 bg-cyan-400/10 text-cyan-100/90 shadow-[0_0_18px_rgba(34,211,238,0.14)]'
-                } ${isGatChipPulsing ? 'cursor-pointer' : 'cursor-default'}`}
+                }`}
                 animate={
                   isGatChipPulsing
                     ? gatChipPulseAnimate
@@ -534,28 +606,71 @@ const Header = ({
                 style={{
                   pointerEvents: shouldShowGatChip ? 'auto' : 'none',
                 }}
-                tabIndex={shouldShowGatChip ? 0 : -1}
-                aria-label={
-                  isGatChipPulsing
-                    ? 'Confirmar GATokens recibidos'
-                    : `${gatBalance.toLocaleString('es-MX')} GAT disponibles`
-                }
-                title={isGatChipPulsing ? 'Confirmar GATokens recibidos' : 'GATokens disponibles'}
               >
-                {isGatChipPulsing ? (
-                  <motion.img
-                    src={GATOKEN_COIN_SRC}
-                    alt=""
-                    className="h-3.5 w-3.5"
-                    animate={gatCoinPulseAnimate}
-                    transition={gatChipPulseTransition}
-                  />
-                ) : (
-                  <Sparkles size={12} className="text-cyan-200" />
-                )}
-                <span>Energía</span>
-                <span className="tabular-nums text-white">{gatBalance.toLocaleString('es-MX')} GAT</span>
-              </motion.button>
+                <button
+                  type="button"
+                  onClick={handleGatChipClick}
+                  disabled={!isGatChipPulsing}
+                  className={`inline-flex items-center gap-1.5 sm:gap-2 ${isGatChipPulsing ? 'cursor-pointer' : 'cursor-default'}`}
+                  tabIndex={shouldShowGatChip ? 0 : -1}
+                  aria-label={
+                    isGatChipPulsing
+                      ? 'Confirmar GATokens recibidos'
+                      : `${gatBalance.toLocaleString('es-MX')} GAT disponibles`
+                  }
+                  title={isGatChipPulsing ? 'Confirmar GATokens recibidos' : 'GATokens disponibles'}
+                >
+                  {isGatChipPulsing ? (
+                    <motion.img
+                      src={GATOKEN_COIN_SRC}
+                      alt=""
+                      className="h-3.5 w-3.5"
+                      animate={gatCoinPulseAnimate}
+                      transition={gatChipPulseTransition}
+                    />
+                  ) : (
+                    <Sparkles size={12} className="text-cyan-200" />
+                  )}
+                  <span>Energía</span>
+                  <span className="tabular-nums text-white">{gatBalance.toLocaleString('es-MX')} GAT</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setIsGatInfoOpen((prev) => !prev)}
+                  aria-label="¿Qué son los GATokens?"
+                  aria-expanded={isGatInfoOpen}
+                  tabIndex={shouldShowGatChip ? 0 : -1}
+                  className="flex h-4 w-4 items-center justify-center rounded-full text-current/60 normal-case transition hover:text-white"
+                >
+                  <Info size={11} />
+                </button>
+              </motion.div>
+              {isGatInfoOpen && typeof document !== 'undefined' && createPortal(
+                <div
+                  ref={gatInfoPanelRef}
+                  style={gatInfoPanelStyle}
+                  className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-[0_8px_32px_rgba(0,0,0,0.18)]"
+                >
+                  <div className="space-y-2 px-4 py-3.5">
+                    <p className="text-[0.68rem] font-semibold uppercase tracking-[0.2em] text-amber-600">
+                      GATokens · tu energía
+                    </p>
+                    <p className="text-xs leading-relaxed text-slate-700">
+                      Los GATokens son la moneda simbólica de #GatoEncerrado: se ganan explorando el universo y se
+                      usan para activar experiencias dentro de los miniversos.
+                    </p>
+                  </div>
+                  <div className="border-t border-slate-100 bg-amber-50 px-4 py-2">
+                    <p className="text-[0.68rem] text-slate-500">
+                      Saldo actual:{' '}
+                      <span className="font-semibold text-amber-600">
+                        {gatBalance.toLocaleString('es-MX')} GAT
+                      </span>
+                    </p>
+                  </div>
+                </div>,
+                document.body
+              )}
               {user ? (
                 <Button
                   type="button"
@@ -608,6 +723,7 @@ const Header = ({
         <MobileMenuOverlay
           isOpen={isMenuOpen}
           menuItems={mobileMenuItems}
+          activeSectionHref={activeSectionHref}
           authActionLabel={authActionLabel}
           showAuthSection={Boolean(user)}
           onNavigate={handleNavClick}

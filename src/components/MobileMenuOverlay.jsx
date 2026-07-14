@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 const MobileMenuOverlay = ({
   isOpen,
   menuItems,
+  activeSectionHref = null,
   authActionLabel,
   showAuthSection = false,
   onNavigate,
@@ -121,14 +122,22 @@ const MobileMenuOverlay = ({
                       </p>
                     ) : null}
                   </div>
-                  {item.secondary?.length ? (
-                    <ChevronDown
-                      size={16}
-                      className={`shrink-0 text-slate-400/90 transition-transform ${
-                        expandedSection === item.name ? 'rotate-180 text-slate-200' : ''
-                      }`}
-                    />
-                  ) : null}
+                  <div className="flex shrink-0 items-center gap-2">
+                    {activeSectionHref === item.href ? (
+                      <span
+                        className="h-2 w-2 rounded-full bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.65)]"
+                        aria-hidden="true"
+                      />
+                    ) : null}
+                    {item.secondary?.length ? (
+                      <ChevronDown
+                        size={16}
+                        className={`text-slate-400/90 transition-transform ${
+                          expandedSection === item.name ? 'rotate-180 text-slate-200' : ''
+                        }`}
+                      />
+                    ) : null}
+                  </div>
                 </button>
 
                 {item.secondary?.length && expandedSection === item.name ? (

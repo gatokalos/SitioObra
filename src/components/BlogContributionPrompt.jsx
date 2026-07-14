@@ -99,7 +99,7 @@ const BlogContributionPrompt = ({ onAskQuestion = null }) => {
            {/* CONTENIDO */}
 <div className="relative z-10">
   <h3 className="font-display text-3xl font-medium text-slate-100 mb-6 text-center">
-    El Intermedio
+    El intermedio
   </h3>
 
   <p className="text-slate-300/80 leading-relaxed mb-8 max-w-2xl mx-auto font-light text-center">
@@ -130,7 +130,7 @@ se queda moviéndose adentro.`}
       onClick={() => onAskQuestion?.()}
       className="ge-chip-action ge-chip-action--primary mx-auto"
     >
-      Reflexionemos…
+      Reflexiona conmigo
     </Button>
   </div>
 </div>

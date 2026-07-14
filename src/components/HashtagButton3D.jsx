@@ -115,7 +115,7 @@ export default function HashtagButton3D({
           transform: 'translateX(-50%)',
           width: '140%',
           height: '38%',
-          background: 'radial-gradient(ellipse at center, rgba(220,220,255,0.38) 0%, rgba(180,180,255,0.12) 45%, transparent 70%)',
+          background: 'radial-gradient(ellipse at center, rgba(250,210,210,0.38) 0%, rgba(180,180,255,0.12) 45%, transparent 70%)',
           filter: 'blur(6px)',
           pointerEvents: 'none',
           opacity: showGlow ? 1 : 0,

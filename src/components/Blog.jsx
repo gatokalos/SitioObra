@@ -76,18 +76,11 @@ const MINIVERSE_KEYWORDS = {
 };
 
 const STARTER_FAQ_PROMPTS = [
-  '¿Qué hay realmente detrás de #GatoEncerrado?',
-  '¿Por qué #GatoEncerrado es mucho más que una obra de teatro?',
-  '¿Cómo se conectan el arte, la tecnología y la salud emocional en #GatoEncerrado?',
+  '¿Cómo se conectan el arte, la tecnología y la salud emocional en este universo?',
   '¿Qué parte de nosotros habla cuando creemos estar hablando solos?',
-  '¿Qué permanece cuando la emoción del momento desaparece?',
   '¿Qué diferencia hay entre medir cuánta gente ve una obra y saber si cambió algo en el público?',
   '¿Qué pasa con lo que escribo adentro de este universo?',
-  '¿Cómo se convierte un espectador en miembro de la comunidad #GatoEncerrado?',
-  '¿La obra, el cómic y la novela hablan de lo mismo?',
   '¿Qué es lo que Silvestre intenta recordar cada vez que su ira le hierve la sangre al despertar?',
-  '¿Por qué Silvestre sigue soñando la misma historia aunque cada noche sueñe algo diferente?',
-  '¿Qué fue exactamente lo que vio la Doctora para decidir que los sueños de Silvestre merecían ser investigados?',
   '¿Quién está contando realmente la historia cuando aparecen el Payasito Tiste, la Reina de Espadas y los demás personajes?',
     ];
 

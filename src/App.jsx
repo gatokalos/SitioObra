@@ -20,6 +20,10 @@ const pageDescription =
   'La historia de alguien que desaparece… y deja una huella emocional. Una experiencia teatral única que explora múltiples formatos transmediaes.';
 const TRANSMEDIA_UNLOCK_STORAGE_KEY = 'gatoencerrado:transmedia-unlocked:v1';
 const CURATORIA_UNLOCK_STORAGE_KEY = 'gatoencerrado:curadoria-unlocked:v1';
+// Misma clave que ya escriben Bienvenida.jsx y MiniverseModal.jsx al completar
+// la experiencia — antes App.jsx nunca la leía, así que hasCompletedTerceraLlamada
+// se reseteaba en cada recarga aunque el usuario ya hubiera cruzado el umbral.
+const BIENVENIDA_COMPLETED_STORAGE_KEY = 'gatoencerrado:bienvenida-completed';
 const TRANSMEDIA_FOCUS_KEYS = ['focus', 'appId', 'app_id', 'recommended_app_id'];
 const IS_UI_LAB_ENABLED =
   import.meta.env.DEV ||
@@ -461,7 +465,9 @@ function App() {
   // Tercera Llamada (La Bienvenida): al volver de /bienvenida con recomendación,
   // se desbloquean Perspectivas + Transmedia, que a partir de ahí conviven con
   // Tercera Llamada (no la reemplazan) — su CTA solo cambia a "Revisitar".
-  const [hasCompletedTerceraLlamada, setHasCompletedTerceraLlamada] = useState(false);
+  const [hasCompletedTerceraLlamada, setHasCompletedTerceraLlamada] = useState(() => {
+    return safeGetItem(BIENVENIDA_COMPLETED_STORAGE_KEY) === '1';
+  });
   useEffect(() => {
     if (typeof window === 'undefined') return undefined;
     const handleCompleted = () => {
