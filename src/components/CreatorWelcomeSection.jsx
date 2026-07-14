@@ -52,7 +52,7 @@ const CreatorWelcomeSection = ({ hasEnteredUniverse = false }) => {
             </h3>
            <div className="text-slate-300/80 leading-relaxed mb-6 max-w-2xl mx-auto font-light text-center space-y-4">
   <p>No sé cómo llegaste hasta aquí.<br />Pero me alegra que lo hayas hecho.</p>
-  <p>Esto que ves es un universo hecho de preguntas.<br />No todas tienen respuesta.<br />Algunas solo necesitan que alguien las habite.</p>
+  <p>Esto que ves es un universo hecho de preguntas.<br />No todas buscan una respuesta.<br />Algunas solo necesitan que alguien las habite.</p>
   <p>Yo te estaba esperando.</p>
 </div>
             <div className="flex flex-col items-center gap-2 mb-8">

@@ -1,6 +1,6 @@
 import React, { Suspense, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
-import { BookOpen, CoffeeIcon, DramaIcon, TicketIcon, HeartHandshake, ShoppingBag, SparkleIcon, DoorOpen, Compass } from 'lucide-react';
+import { BookOpen, CoffeeIcon, DramaIcon, TicketIcon, HeartHandshake, ShoppingBag, SparkleIcon, DoorOpen } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 const TicketPurchaseModal = React.lazy(() => import('@/components/TicketPurchaseModal'));
 const GatokensRevealModal = React.lazy(() => import('@/components/GatokensRevealModal'));
@@ -29,28 +29,14 @@ import { safeGetItem, safeSetItem } from '@/lib/safeStorage';
 import { extractRecommendedAppId, resolveShowcaseFromAppId } from '@/lib/bienvenidaBridge';
 import { NARRATIVE_VIDEO_URL_DESKTOP } from '@/lib/narrativeVideo';
 import { showcaseDefinitions } from '@/components/transmedia/transmediaConstants';
-import { readHeroActivatedFromSession, writeHeroActivatedToSession } from '@/lib/heroActivation';
+import {
+  readHeroActivatedFromSession,
+  writeHeroActivatedToSession,
+  readIndexCueUsedFromSession,
+  writeIndexCueUsedToSession,
+} from '@/lib/heroActivation';
 
 const POZO_HERO_REVEAL_KEY = 'gatoencerrado:pozo-hero-reveal:v1';
-const HERO_INDEX_CUE_USED_SESSION_KEY = 'gatoencerrado:hero-index-cue-used-session';
-
-const readIndexCueUsedFromSession = () => {
-  if (typeof window === 'undefined') return false;
-  try {
-    return window.sessionStorage.getItem(HERO_INDEX_CUE_USED_SESSION_KEY) === 'true';
-  } catch {
-    return false;
-  }
-};
-
-const writeIndexCueUsedToSession = () => {
-  if (typeof window === 'undefined') return;
-  try {
-    window.sessionStorage.setItem(HERO_INDEX_CUE_USED_SESSION_KEY, 'true');
-  } catch {
-    // sessionStorage no disponible (modo privado, etc.) — se ignora
-  }
-};
 
 const SUPABASE_STORAGE = `${import.meta.env.VITE_SUPABASE_URL || ''}/storage/v1/object/public`;
 const HERO_LOGGED_IN_AUDIO_URL = `${SUPABASE_STORAGE}/Sonoridades/audio/A2_Melody_MSTR.m4a`;
@@ -124,6 +110,9 @@ const Hero = () => {
   const [isHeroAudioPlaying, setIsHeroAudioPlaying] = useState(false);
   const [hasActivatedAudio, setHasActivatedAudio] = useState(readHeroActivatedFromSession);
   const [hasUsedIndexCue, setHasUsedIndexCue] = useState(readIndexCueUsedFromSession);
+  const [transmigrationOrigin, setTransmigrationOrigin] = useState(null);
+  const hashtagAnchorRef = useRef(null);
+  const indexCueRef = useRef(null);
   const userActivatedRef = useRef(readHeroActivatedFromSession());
   const audioActivatedOnceRef = useRef(readHeroActivatedFromSession());
   const [isHeroHashReady, setIsHeroHashReady] = useState(false);
@@ -474,6 +463,31 @@ const Hero = () => {
     });
   }, []);
 
+  const captureTransmigrationOrigin = useCallback(() => {
+    const sourceEl = hashtagAnchorRef.current;
+    const destEl = indexCueRef.current;
+    if (!sourceEl || !destEl) {
+      setTransmigrationOrigin(null);
+      return;
+    }
+    const sourceRect = sourceEl.getBoundingClientRect();
+    const destRect = destEl.getBoundingClientRect();
+    if (!destRect.width || !destRect.height) {
+      setTransmigrationOrigin(null);
+      return;
+    }
+    const sourceCenterX = sourceRect.left + sourceRect.width / 2;
+    const sourceCenterY = sourceRect.top + sourceRect.height / 2;
+    const destCenterX = destRect.left + destRect.width / 2;
+    const destCenterY = destRect.top + destRect.height / 2;
+    const scaleRatio = sourceRect.height / destRect.height;
+    setTransmigrationOrigin({
+      x: sourceCenterX - destCenterX,
+      y: sourceCenterY - destCenterY,
+      scale: Math.min(Math.max(scaleRatio, 1.6), 3.4),
+    });
+  }, []);
+
   const handleIsotipoClick = useCallback(() => {
     const audio = getHeroAmbientAudio();
     if (!audio) return;
@@ -481,6 +495,7 @@ const Hero = () => {
     if (!userActivatedRef.current) {
       // Primera activación
       userActivatedRef.current = true;
+      captureTransmigrationOrigin();
       setHasActivatedAudio(true);
       if (!audioActivatedOnceRef.current) {
         audioActivatedOnceRef.current = true;
@@ -500,11 +515,12 @@ const Hero = () => {
       setHeroAmbientMuted(true);
       window.dispatchEvent(new CustomEvent('gatoencerrado:audio-deactivated'));
     } else {
+      captureTransmigrationOrigin();
       setHasActivatedAudio(true);
       setHeroAmbientMuted(false, { targetVolume: HERO_LOGGED_IN_AUDIO_VOLUME });
       window.dispatchEvent(new CustomEvent('gatoencerrado:audio-activated'));
     }
-  }, [isHeroAudioMuted, hasActivatedAudio]);
+  }, [isHeroAudioMuted, hasActivatedAudio, captureTransmigrationOrigin]);
 
   const handleHeroHashReady = useCallback(() => {
     setIsHeroHashReady(true);
@@ -521,6 +537,7 @@ const Hero = () => {
     window.dispatchEvent(new CustomEvent('gatoencerrado:open-index'));
     setHasUsedIndexCue(true);
     writeIndexCueUsedToSession();
+    window.dispatchEvent(new CustomEvent('gatoencerrado:hero-index-cue-used'));
   }, []);
 
   useEffect(() => {
@@ -931,11 +948,14 @@ const Hero = () => {
               {/* BOTTOM HALF — hash 3D (gatillo de activación) y CTAs bajo la línea central */}
               <div className="flex-1 flex flex-col items-center justify-start pt-2">
 
-              {/* Hash 3D — gatillo de activación; una vez activada la escena, ya cumplió su función y se desvanece */}
+              {/* Hash 3D — gatillo de activación; al activarse se desvanece rápido para
+                  dar paso al # plano que "transmigra" hacia el botón de índice, sin que
+                  ambos coexistan visiblemente */}
               <motion.div
+                ref={hashtagAnchorRef}
                 initial={{ opacity: 0, scale: 0.88 }}
                 animate={{ opacity: hasActivatedAudio ? 0 : 1, scale: 1 }}
-                transition={{ duration: hasActivatedAudio ? 0.7 : 1, ease: 'easeOut' }}
+                transition={{ duration: hasActivatedAudio ? 0.18 : 1, ease: 'easeOut' }}
                 className="hero-title-mark-slot mt-8 -translate-y-[7vh] sm:mt-10 sm:translate-y-0 md:mt-12"
                 style={{
                   pointerEvents: hasActivatedAudio ? 'none' : 'auto',
@@ -969,28 +989,55 @@ const Hero = () => {
                 )}
               </motion.div>
 
-              {/* Botón de índice — reemplaza al chevron; un solo gesto para que
-                  el usuario identifique dónde está la navegación. Se usa una
-                  vez por sesión y luego desaparece (sessionStorage). */}
-              {!hasUsedIndexCue && (
-                <motion.button
-                  type="button"
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: hasActivatedAudio ? 1 : 0, y: 0 }}
-                  transition={{ duration: hasActivatedAudio ? 0.9 : 0.7, delay: hasActivatedAudio ? 0 : 1.05 }}
-                  onClick={handleOpenIndexFromHero}
-                  className="hero-index-cue relative mt-5 inline-flex h-12 w-12 items-center justify-center self-center rounded-full sm:mt-6"
-                  style={{
-                    pointerEvents: hasActivatedAudio ? 'auto' : 'none',
-                    visibility: hasActivatedAudio ? 'visible' : 'hidden',
-                  }}
-                  aria-label="Abrir índice de navegación"
-                  whileHover={{ scale: 1.06 }}
-                  whileTap={{ scale: 0.94 }}
-                >
-                  <Compass size={26} strokeWidth={1.75} className="text-slate-100" />
+              {/* Botón de índice — el mismo # del gatillo de activación "transmigra"
+                  a su nuevo rol: se desprende de su posición original y desciende
+                  hasta este botón. Un solo gesto para que el usuario identifique
+                  dónde está el Programa de mano. Se usa una vez por sesión y
+                  luego se oculta (sessionStorage) — pero se mantiene montado,
+                  reservando su espacio, para no correr el resto del Hero al
+                  desaparecer. */}
+              <motion.button
+                ref={indexCueRef}
+                type="button"
+                animate={{ opacity: hasActivatedAudio && !hasUsedIndexCue ? 1 : 0 }}
+                transition={{ duration: hasActivatedAudio && !hasUsedIndexCue ? 0.15 : 0.3, ease: 'easeOut' }}
+                onClick={handleOpenIndexFromHero}
+                className="hero-index-cue relative mt-5 inline-flex h-12 w-12 items-center justify-center self-center rounded-full sm:mt-6"
+                style={{
+                  pointerEvents: hasActivatedAudio && !hasUsedIndexCue ? 'auto' : 'none',
+                  visibility: hasActivatedAudio && !hasUsedIndexCue ? 'visible' : 'hidden',
+                }}
+                aria-label="Abrir Programa de mano"
+                whileHover={{ scale: 1.06 }}
+                whileTap={{ scale: 0.94 }}
+              >
+                {hasActivatedAudio && !hasUsedIndexCue && (
+                    <motion.span
+                      key="hero-hashtag-transmigrated"
+                      initial={
+                        transmigrationOrigin
+                          ? {
+                              x: transmigrationOrigin.x,
+                              y: transmigrationOrigin.y,
+                              scale: transmigrationOrigin.scale,
+                              opacity: 0.9,
+                            }
+                          : { x: 0, y: -60, scale: 1.8, opacity: 0 }
+                      }
+                      animate={{ x: 0, y: 0, scale: 1, opacity: 1 }}
+                      transition={{
+                        opacity: { duration: 0.22, ease: 'easeOut' },
+                        x: { duration: 0.85, ease: [0.45, 0, 0.15, 1] },
+                        y: { duration: 0.85, ease: [0.45, 0, 0.15, 1] },
+                        scale: { duration: 0.85, ease: [0.45, 0, 0.15, 1] },
+                      }}
+                      className="header-hashtag-mark text-2xl inline-flex"
+                      aria-hidden="true"
+                    >
+                      #
+                    </motion.span>
+                  )}
                 </motion.button>
-              )}
 
               {/* — botones originales: se muestran solo si hay usuario — */}
               <motion.div

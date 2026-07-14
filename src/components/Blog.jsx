@@ -922,7 +922,7 @@ const Blog = ({ posts = [], isLoading = false, error = null, showBuscador = fals
             </h2>
             <p className="text-lg text-slate-300/80 max-w-3xl mx-auto leading-relaxed font-light">
               Un espacio de pensamiento crítico, creatividad y poética donde convergen textos especializados, ficción expandida y
-              noticias detrás de escena. Usa el Buscador Backstage, filtra por interés o explora las líneas editoriales.
+              noticias detrás de escena.
             </p>
           </motion.div>
 
@@ -968,7 +968,7 @@ const Blog = ({ posts = [], isLoading = false, error = null, showBuscador = fals
                       <div className="h-px bg-gradient-to-r from-violet-300/35 via-violet-100/15 to-transparent lg:from-transparent lg:via-violet-300/40 lg:to-transparent" />
                       <div className="space-y-3">
                         <p className="text-[1rem] font-semibold leading-snug text-white">
-                         Este es un espacio para contrastar, explorar y encontrar respuestas a preguntas que quizá no tengas.
+                         Usa mi asistente para explorar, contrastar y encontrar respuestas a preguntas que quizá aún no te has hecho.
                         </p>
                       </div>
                       <div className="relative w-full">
@@ -981,7 +981,7 @@ const Blog = ({ posts = [], isLoading = false, error = null, showBuscador = fals
                           onKeyDown={(event) => {
                             if (event.key === 'Enter' && faqQuery.trim().length >= 2) faqSearch();
                           }}
-                          placeholder="A tus órdenes… colegato."
+                          placeholder="Pregúntame lo que quieras… colegato."
                           disabled={faqIsLoading}
                           className="form-surface form-surface--pill h-12 w-full border border-violet-100/45 bg-white/90 py-2 pl-11 pr-12 text-sm text-slate-900 placeholder:text-slate-400 disabled:opacity-60"
                         />

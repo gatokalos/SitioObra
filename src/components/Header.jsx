@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { motion, useReducedMotion } from 'framer-motion';
-import { Coffee, Sparkles } from 'lucide-react';
+import { Coffee, Smartphone, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useToast } from '@/components/ui/use-toast';
@@ -10,7 +10,7 @@ import MobileMenuOverlay from '@/components/MobileMenuOverlay';
 import { createPortalLaunchState } from '@/lib/portalNavigation';
 import { safeGetItem, safeSetItem } from '@/lib/safeStorage';
 import { INITIAL_GAT_BALANCE, readStoredInt } from '@/components/transmedia/transmediaConstants';
-import { readHeroActivatedFromSession } from '@/lib/heroActivation';
+import { readIndexCueUsedFromSession } from '@/lib/heroActivation';
 
 const GAT_BALANCE_STORAGE_KEY = 'gatoencerrado:gatokens-available';
 const GAT_CHIP_PINNED_STORAGE_KEY = 'gatoencerrado:gatokens-chip-pinned:v1';
@@ -23,6 +23,15 @@ const readGatBalance = () => {
   return Number.isFinite(v) ? Math.max(Math.trunc(v), 0) : INITIAL_GAT_BALANCE;
 };
 const readGatChipPinned = () => safeGetItem(GAT_CHIP_PINNED_STORAGE_KEY) === '1';
+
+// El navegador ya lo abrió como app instalada (standalone) — iOS Safari usa su
+// propia bandera (navigator.standalone) en vez del media query estándar.
+const readIsRunningAsInstalledPwa = () => {
+  if (typeof window === 'undefined') return false;
+  const isStandaloneDisplay = window.matchMedia?.('(display-mode: standalone)').matches;
+  const isIosStandalone = window.navigator?.standalone === true;
+  return Boolean(isStandaloneDisplay || isIosStandalone);
+};
 
 const MOBILE_FULLSCREEN_MENU_PHASE_A_ENABLED = true;
 const TRANSMEDIA_SECONDARY_ITEMS = [
@@ -49,7 +58,8 @@ const Header = ({
 }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [scrollTier, setScrollTier] = useState(0);
-  const [isHeroSceneRevealed, setIsHeroSceneRevealed] = useState(readHeroActivatedFromSession);
+  const [hasUsedHeroIndexCue, setHasUsedHeroIndexCue] = useState(readIndexCueUsedFromSession);
+  const [isInstalledPwa, setIsInstalledPwa] = useState(readIsRunningAsInstalledPwa);
   const [showLoginOverlay, setShowLoginOverlay] = useState(false);
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
   const navigate = useNavigate();
@@ -66,7 +76,9 @@ const Header = ({
   const greetingLabel = user ? `Hola ${simplifiedName || 'gato'}` : '';
   const authActionLabel = user ? 'Cerrar sesión' : 'Iniciar sesión';
   const statusDotClass = user ? 'bg-emerald-400' : 'bg-slate-600';
-  const shouldGateIndexUntilHeroReveal = !user && location.pathname === '/' && !isHeroSceneRevealed;
+  // Mientras el # del Hero siga presente sin usarse, el toggle # del Header
+  // se mantiene oculto: solo debe haber un # clicable en pantalla a la vez.
+  const shouldGateIndexUntilHeroReveal = !user && location.pathname === '/' && !hasUsedHeroIndexCue;
 
 
   const [gatBalance, setGatBalance] = useState(readGatBalance);
@@ -86,16 +98,21 @@ const Header = ({
   }, []);
 
   useEffect(() => {
+    if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') return undefined;
+    const standaloneQuery = window.matchMedia('(display-mode: standalone)');
+    const handleDisplayModeChange = () => setIsInstalledPwa(readIsRunningAsInstalledPwa());
+    standaloneQuery.addEventListener('change', handleDisplayModeChange);
+    return () => standaloneQuery.removeEventListener('change', handleDisplayModeChange);
+  }, []);
+
+  useEffect(() => {
     if (typeof window === 'undefined') return undefined;
 
-    const handleActivated = () => setIsHeroSceneRevealed(true);
-    const handleDeactivated = () => setIsHeroSceneRevealed(false);
+    const handleIndexCueUsed = () => setHasUsedHeroIndexCue(true);
 
-    window.addEventListener('gatoencerrado:audio-activated', handleActivated);
-    window.addEventListener('gatoencerrado:audio-deactivated', handleDeactivated);
+    window.addEventListener('gatoencerrado:hero-index-cue-used', handleIndexCueUsed);
     return () => {
-      window.removeEventListener('gatoencerrado:audio-activated', handleActivated);
-      window.removeEventListener('gatoencerrado:audio-deactivated', handleDeactivated);
+      window.removeEventListener('gatoencerrado:hero-index-cue-used', handleIndexCueUsed);
     };
   }, []);
 
@@ -257,7 +274,7 @@ const Header = ({
   }, []);
 
   const menuItems = [
-    { name: 'Inicio', href: '#hero' },
+    { name: 'Primera fila', href: '#hero' },
     ...(showTerceraLlamadaNav ? [{ name: 'Tercera llamada', href: '#bienvenida-creador' }] : []),
     ...(showPerspectivasNav ? [{ name: 'Perspectivas', href: '#provoca' }] : []),
     ...(showTransmediaNav ? [{ name: 'Miniversos', href: '#transmedia' }] : []),
@@ -271,7 +288,7 @@ const Header = ({
     { name: 'Contacto', href: '#contact' },
   ];
   const mobileMenuItems = [
-    { name: 'Inicio', href: '#hero' },
+    { name: 'Primera fila', href: '#hero' },
     ...(showTerceraLlamadaNav
       ? [{ name: 'Tercera llamada', href: '#bienvenida-creador', description: terceraLlamadaLabel }]
       : []),
@@ -483,6 +500,18 @@ const Header = ({
             </div>
 
             <div className="flex items-center gap-3">
+              {!isInstalledPwa && (
+                <a
+                  href="/pwa-instructions.html"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex h-8 w-8 items-center justify-center rounded-full text-slate-400 transition-colors hover:text-white"
+                  aria-label="Instalar #GatoEncerrado como app"
+                  title="Instalar como app"
+                >
+                  <Smartphone size={18} />
+                </a>
+              )}
               <motion.button
                 type="button"
                 onClick={handleGatChipClick}

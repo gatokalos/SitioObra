@@ -102,7 +102,8 @@ const BlogContributionPrompt = ({ onAskQuestion = null }) => {
     El Intermedio
   </h3>
 
-  <p className="text-slate-300/80 leading-relaxed mb-8 max-w-2xl mx-auto font-light whitespace-pre-line text-center">
+  <p className="text-slate-300/80 leading-relaxed mb-8 max-w-2xl mx-auto font-light text-center">
+  <span className="whitespace-pre-line">
     {`¿Qué obra ocurre en ti?
 Tal vez no lo sepas todavía.
 
@@ -110,16 +111,18 @@ Y no pasa nada.
 
 No necesitas entender dónde estás.
 Solo notar si algo de lo que miras
-se queda moviéndose adentro.
+se queda moviéndose adentro.`}
+  </span>
 
-#GatoEncerrado tiene más de una entrada.
-    
-    `}
+  <span className="block mt-8">
+    #GatoEncerrado <em>abre</em> más de una ventana…
+  </span>
 
-    <span className="block mt-4 text-sm text-slate-150/0 italic">
-      (Y a veces, la confusión es lo que nos muestra su lado más <strong>silvestre</strong>.)
-    </span>
-  </p>
+  <span className="block mt-10 text-sm text-slate-300/70 italic">
+    (Y a veces, la confusión es lo que nos muestra su lado más{" "}
+    <strong>silvestre</strong>.)
+  </span>
+</p>
 
   <div className="flex flex-col items-center">
     <Button

@@ -459,7 +459,8 @@ function App() {
     };
   }, []);
   // Tercera Llamada (La Bienvenida): al volver de /bienvenida con recomendación,
-  // se reemplaza por Perspectivas + Transmedia y ya no vuelve a mostrarse.
+  // se desbloquean Perspectivas + Transmedia, que a partir de ahí conviven con
+  // Tercera Llamada (no la reemplazan) — su CTA solo cambia a "Revisitar".
   const [hasCompletedTerceraLlamada, setHasCompletedTerceraLlamada] = useState(false);
   useEffect(() => {
     if (typeof window === 'undefined') return undefined;
@@ -473,8 +474,9 @@ function App() {
     window.addEventListener('gatoencerrado:tercera-llamada-completed', handleCompleted);
     return () => window.removeEventListener('gatoencerrado:tercera-llamada-completed', handleCompleted);
   }, [isAuthenticated, hasGuestUnlockedTransmedia]);
-  // Un usuario autenticado ya cruzó el umbral en algún momento — no le mostramos
-  // Tercera Llamada otra vez, va directo a Perspectivas.
+  // Un usuario autenticado ya cruzó el umbral por definición — ve Perspectivas
+  // y Miniversos desde el inicio, sin necesidad de completar Tercera Llamada
+  // (que igual se le sigue mostrando, con el CTA en modo "Revisitar").
   const hasEnteredUniverse = hasCompletedTerceraLlamada || isAuthenticated;
   // Curaduría: visibilidad controlada por el botón "Preguntar" (abre/cierra), no por acceso permanente.
   const [isCuradoriaVisible, setIsCuradoriaVisible] = useState(false);
