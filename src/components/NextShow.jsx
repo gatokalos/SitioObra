@@ -95,7 +95,7 @@ const NextShow = () => {
               </h3>
               <div className="text-slate-300/80 leading-relaxed mb-8 max-w-2xl mx-auto font-light text-center space-y-4">
                 <p><em>Hay historias que dejan de representarse para empezar a recordarse.</em></p>
-                <p>Este espacio reúne los rastros de las funciones de Es un gato encerrado. Cada fotografía, video y testimonio pertenece a un momento que no volverá a ocurrir de la misma manera, pero que sigue transformándose en la memoria de quienes lo vivieron.</p>
+                <p>Cada función desapareció la misma noche en que ocurrió. Este espacio conserva fragmentos de <strong>Es un gato encerrado</strong>: escenas, fotografías, videos y memorias de encuentro único entre quienes la crearon y quienes la presenciaron.</p>
               </div>
 
               <div className="flex flex-wrap justify-center gap-2 mb-8">

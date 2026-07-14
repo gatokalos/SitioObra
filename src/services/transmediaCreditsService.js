@@ -46,6 +46,32 @@ export async function fetchTransmediaCreditState() {
   return { state: normalizeState(data), error: null };
 }
 
+const normalizeEvent = (raw) => ({
+  id: raw?.id ?? null,
+  eventKey: typeof raw?.event_key === 'string' ? raw.event_key : '',
+  amount: Number.isFinite(raw?.amount) ? Number(raw.amount) : 0,
+  metadata: raw?.metadata && typeof raw.metadata === 'object' ? raw.metadata : {},
+  createdAt: typeof raw?.created_at === 'string' ? raw.created_at : null,
+});
+
+// Historial de eventos del ledger (no solo el agregado) — para mostrar de dónde
+// vinieron los GAT y, leyendo metadata.recommended en resonance:l3-reward:%,
+// en qué vitrina se recomienda gastarlos después.
+export async function fetchTransmediaCreditEvents(limit = 20) {
+  const anonId = ensureAnonId();
+  const { data, error } = await supabase.rpc('get_transmedia_credit_events', {
+    p_anon_id: anonId,
+    p_limit: limit,
+  });
+
+  if (error) {
+    return { events: [], error };
+  }
+
+  const events = Array.isArray(data) ? data.map(normalizeEvent) : [];
+  return { events, error: null };
+}
+
 export async function registerTransmediaCreditEvent({
   eventKey,
   amount = 0,

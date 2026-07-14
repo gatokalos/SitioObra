@@ -13,6 +13,8 @@ import { safeGetItem, safeSetItem } from '@/lib/safeStorage';
 import { INITIAL_GAT_BALANCE, readStoredInt } from '@/components/transmedia/transmediaConstants';
 import { readIndexCueUsedFromSession } from '@/lib/heroActivation';
 import useActiveSectionHref from '@/hooks/useActiveSectionHref';
+import { fetchTransmediaCreditEvents } from '@/services/transmediaCreditsService';
+import { findLatestRecommendedPortal, readOraculoRecommendedShowcase } from '@/lib/transmediaCreditEventLabels';
 
 const GAT_BALANCE_STORAGE_KEY = 'gatoencerrado:gatokens-available';
 const GAT_CHIP_PINNED_STORAGE_KEY = 'gatoencerrado:gatokens-chip-pinned:v1';
@@ -66,6 +68,8 @@ const Header = ({
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
   const [isGatInfoOpen, setIsGatInfoOpen] = useState(false);
   const [gatInfoPanelStyle, setGatInfoPanelStyle] = useState({});
+  const [gatSpendRecommendation, setGatSpendRecommendation] = useState(null);
+  const [isGatSpendRecommendationLoading, setIsGatSpendRecommendationLoading] = useState(false);
   const gatChipRootRef = useRef(null);
   const gatInfoPanelRef = useRef(null);
   const navigate = useNavigate();
@@ -344,7 +348,7 @@ const Header = ({
         ]
       : []),
     ...(showIntermedioNav
-      ? [{ name: 'Caída del telón', href: '#next-show', description: 'Obra más destacada' }]
+      ? [{ name: 'Caída del telón', href: '#next-show', description: 'Obra fundacional' }]
       : []),
     ...(showObraDestacadaNav
       ? [{ name: 'Obra destacada', href: '#about', description: 'Teatro · Es un gato encerrado' }]
@@ -479,6 +483,27 @@ const Header = ({
       document.removeEventListener('scroll', calcGatInfoPosition, true);
     };
   }, [isGatInfoOpen, calcGatInfoPosition]);
+
+  // Al abrir el tooltip: ¿dónde se recomienda gastar los GAT? Prioridad:
+  // 1) el metadata.recommended del resonance:l3-reward más reciente (ya viviste
+  //    algo y el sistema te sugiere el siguiente paso);
+  // 2) si nunca hay historial, la recomendación de primera vez del Oráculo.
+  useEffect(() => {
+    if (!isGatInfoOpen) return undefined;
+    let cancelled = false;
+    setIsGatSpendRecommendationLoading(true);
+    (async () => {
+      const { events } = await fetchTransmediaCreditEvents(20);
+      if (cancelled) return;
+      const fromLedger = findLatestRecommendedPortal(events);
+      const recommendation = fromLedger || readOraculoRecommendedShowcase();
+      setGatSpendRecommendation(recommendation);
+      setIsGatSpendRecommendationLoading(false);
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [isGatInfoOpen]);
 
   useEffect(() => {
     if (!isGatInfoOpen) return undefined;
@@ -655,6 +680,18 @@ const Header = ({
                       Los GATokens son la moneda simbólica de #GatoEncerrado: se ganan explorando el universo y se
                       usan para activar experiencias dentro de los miniversos.
                     </p>
+                    {isGatSpendRecommendationLoading ? (
+                      <p className="text-[0.68rem] text-slate-400">Buscando dónde conviene gastarlos…</p>
+                    ) : gatSpendRecommendation ? (
+                      <p className="rounded-lg border border-violet-200 bg-violet-50 px-3 py-2 text-xs leading-relaxed text-violet-800">
+                        Te recomendamos gastarlos en{' '}
+                        <span className="font-semibold">{gatSpendRecommendation.title}</span>.
+                      </p>
+                    ) : (
+                      <p className="text-[0.68rem] text-slate-500">
+                        Explora un miniverso para descubrir dónde conviene gastarlos primero.
+                      </p>
+                    )}
                   </div>
                   <div className="border-t border-slate-100 bg-amber-50 px-4 py-2">
                     <p className="text-[0.68rem] text-slate-500">

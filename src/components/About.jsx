@@ -28,7 +28,7 @@ const FEATURED_WORK_MEDIUM = { Icon: Drama, label: 'Teatro' };
 
 const aboutParagraphs = [
   {
-    text: `A través de la escena, los sueños lúcidos y la autoficción compartida, nuestra obra explora la soledad, la rabia reprimida y la búsqueda de sentido frente a un mundo cada vez más desconectado.
+    text: `A través de la escena, los sueños lúcidos y la autoficción compartida, esta obra explora la soledad, la rabia reprimida y la búsqueda de sentido frente a un mundo cada vez más desconectado.
 
     Silvestre, su protagonista, atraviesa los conflictos internos acompañado por figuras simbólicas como La Doctora y el Payasito Tiste, personajes que habitan el límite entre la imaginación, la memoria y la realidad.`,
   
@@ -1262,7 +1262,7 @@ const About = () => {
             <FEATURED_WORK_MEDIUM.Icon size={28} className="text-violet-200" />
           </div>
                   <p className="text-xs uppercase tracking-[0.4em] text-slate-400/70 mb-4">
-  Obra más destacada
+  Obra fundacional
 </p>
           <h2 className="font-display text-4xl md:text-5xl font-medium mb-6 text-gradient italic">
             Es un gato encerrado
