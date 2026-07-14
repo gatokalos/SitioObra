@@ -2,7 +2,6 @@ import React, { useState, useCallback, useEffect, useRef, useMemo } from 'react'
 import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Film, Headphones, Quote, Send, HeartHandshake, RefreshCw, Heart, Play, Camera, Drama } from 'lucide-react';
-import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { ToastAction } from '@/components/ui/toast';
 import { toast } from '@/components/ui/use-toast';
@@ -227,7 +226,7 @@ export const ProvocaSection = () => {
       : isSilvestreThinking
         ? silvestreThinkingMessage
         : hasConsumedListenTurn
-          ? 'Quiero que me conteste la obra'
+          ? 'Respuesta escuchada'
         : isListening
           ? 'Pulsa otra vez para enviar'
           : micPromptVisible
@@ -916,6 +915,8 @@ export const ProvocaSection = () => {
                             isEscucharButtonActive ? 'ui-segmented__btn--active' : ''
                           } ${
                             isSilvestreThinking ? 'thinking-blink' : ''
+                          } ${
+                            hasConsumedListenTurn ? 'ui-segmented__btn--consumed' : ''
                           }`}
                           aria-pressed={isEscucharButtonActive}
                           aria-live="polite"
@@ -927,21 +928,6 @@ export const ProvocaSection = () => {
                           <span>{escucharButtonVisualLabel}</span>
                         </Button>
                       </div>
-                      {hasConsumedListenTurn ? (
-                        <p className="w-full text-[11px] text-slate-300/80">
-                          Si quieres saber más de la obra,{' '}
-                          <Link
-                            to="/#dialogo-critico"
-                            onClick={() => {
-                              window.dispatchEvent(new CustomEvent('gatoencerrado:show-buscador'));
-                            }}
-                            className="font-semibold text-violet-200 underline decoration-violet-300/70 underline-offset-2 hover:text-white"
-                          >
-                            pregunta aquí
-                          </Link>{' '}
-                          .
-                        </p>
-                      ) : null}
                       {micError && !isListening && !isSilvestreThinking ? (
                         <p className="w-full text-xs text-red-200/90">{micError}</p>
                       ) : null}
@@ -955,7 +941,7 @@ export const ProvocaSection = () => {
                   <span className="flex items-center gap-3">
                     <HeartHandshake size={16} className="text-emerald-200" />
                     <span className="text-[0.66rem] uppercase tracking-[0.23em] text-emerald-200/85">
-                      Y si te movió más de lo esperado...
+                      Y si algo se movió más de lo esperado...
                     </span>
                   </span>
                   <span className="text-[0.62rem] uppercase tracking-[0.16em] text-emerald-200/80 group-open:text-white">
@@ -1061,6 +1047,9 @@ export const ProvocaSection = () => {
                   <RefreshCw size={14} />
                   Otra perspectiva
                 </Button>
+                <p className="w-full text-[11px] text-slate-300/70">
+                  La obra también escucha estas voces.
+                </p>
             </div>
           </div>
           </motion.div>
