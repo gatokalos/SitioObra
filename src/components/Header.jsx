@@ -9,7 +9,6 @@ import { useAuth } from '@/contexts/SupabaseAuthContext';
 import LoginOverlay from '@/components/ContributionModal/LoginOverlay';
 import MobileMenuOverlay from '@/components/MobileMenuOverlay';
 import { createPortalLaunchState } from '@/lib/portalNavigation';
-import { safeGetItem, safeSetItem } from '@/lib/safeStorage';
 import { INITIAL_GAT_BALANCE, readStoredInt } from '@/components/transmedia/transmediaConstants';
 import { readIndexCueUsedFromSession } from '@/lib/heroActivation';
 import useActiveSectionHref from '@/hooks/useActiveSectionHref';
@@ -21,7 +20,6 @@ import {
 } from '@/lib/transmediaCreditEventLabels';
 
 const GAT_BALANCE_STORAGE_KEY = 'gatoencerrado:gatokens-available';
-const GAT_CHIP_PINNED_STORAGE_KEY = 'gatoencerrado:gatokens-chip-pinned:v1';
 const GATOKENS_REVEAL_PULSE_EVENT = 'gatoencerrado:gatokens-reveal-pulse';
 const GATOKENS_REVEAL_ACK_EVENT = 'gatoencerrado:gatokens-reveal-ack';
 const GATOKEN_COIN_SRC =
@@ -30,7 +28,6 @@ const readGatBalance = () => {
   const v = readStoredInt(GAT_BALANCE_STORAGE_KEY, INITIAL_GAT_BALANCE);
   return Number.isFinite(v) ? Math.max(Math.trunc(v), 0) : INITIAL_GAT_BALANCE;
 };
-const readGatChipPinned = () => safeGetItem(GAT_CHIP_PINNED_STORAGE_KEY) === '1';
 
 // El navegador ya lo abrió como app instalada (standalone) — iOS Safari usa su
 // propia bandera (navigator.standalone) en vez del media query estándar.
@@ -97,12 +94,8 @@ const Header = ({
 
   const [gatBalance, setGatBalance] = useState(readGatBalance);
   const [gatRevealPulse, setGatRevealPulse] = useState(null);
-  const [isGatChipPinned, setIsGatChipPinned] = useState(readGatChipPinned);
   useEffect(() => {
-    const sync = () => {
-      setGatBalance(readGatBalance());
-      setIsGatChipPinned(readGatChipPinned());
-    };
+    const sync = () => setGatBalance(readGatBalance());
     window.addEventListener('gatoencerrado:gatokens-balance-update', sync);
     window.addEventListener('storage', sync);
     return () => {
@@ -158,14 +151,10 @@ const Header = ({
       if (Number.isFinite(nextBalance)) {
         setGatBalance(Math.max(Math.trunc(nextBalance), 0));
       }
-      safeSetItem(GAT_CHIP_PINNED_STORAGE_KEY, '1');
-      setIsGatChipPinned(true);
       setGatRevealPulse({ id: Date.now() });
     };
 
     const handleRevealAck = () => {
-      safeSetItem(GAT_CHIP_PINNED_STORAGE_KEY, '1');
-      setIsGatChipPinned(true);
       setGatRevealPulse(null);
     };
 
@@ -176,42 +165,6 @@ const Header = ({
       window.removeEventListener(GATOKENS_REVEAL_ACK_EVENT, handleRevealAck);
     };
   }, []);
-
-  const [isTransmediaVisible, setIsTransmediaVisible] = useState(false);
-  useEffect(() => {
-    setIsTransmediaVisible(false);
-    if (!showTransmediaNav) return undefined;
-    if (typeof window === 'undefined') return undefined;
-
-    let observer = null;
-    let retryId = null;
-    let attempts = 0;
-    const maxAttempts = 40;
-
-    const attachObserver = () => {
-      const el = document.getElementById('transmedia');
-      if (el) {
-        observer = new IntersectionObserver(
-          ([entry]) => setIsTransmediaVisible(entry.isIntersecting),
-          { threshold: 0.05 }
-        );
-        observer.observe(el);
-        return;
-      }
-
-      attempts += 1;
-      if (attempts < maxAttempts) {
-        retryId = window.setTimeout(attachObserver, 100);
-      }
-    };
-
-    attachObserver();
-
-    return () => {
-      if (observer) observer.disconnect();
-      if (retryId) window.clearTimeout(retryId);
-    };
-  }, [showTransmediaNav]);
 
   const handleCloseOverlay = useCallback(() => setShowLoginOverlay(false), []);
 
@@ -424,7 +377,10 @@ const Header = ({
   }, [acknowledgeGatRevealPulse, gatRevealPulse]);
 
   const isGatChipPulsing = Boolean(gatRevealPulse);
-  const shouldShowGatChip = isTransmediaVisible || isGatChipPinned || isGatChipPulsing;
+  // Contrato: el chip vive en el Header siempre que haya saldo — ya no depende
+  // de scroll (isTransmediaVisible) ni de haberlo "fijado" antes al recibir un
+  // pulso (isGatChipPinned). Confirmado 2026-07-14.
+  const shouldShowGatChip = gatBalance > 0 || isGatChipPulsing;
   const gatChipPulseAnimate = prefersReducedMotion
     ? { opacity: 1, scale: 1 }
     : {
