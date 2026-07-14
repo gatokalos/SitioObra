@@ -810,12 +810,6 @@ function App() {
 
                     {hasEnteredUniverse && (
                       <>
-                        <DeferredSection fallback={<SectionFallback id="provoca" minHeight={900} />}>
-                          <Suspense fallback={<SectionFallback id="provoca" minHeight={900} />}>
-                            <ProvocaSection />
-                          </Suspense>
-                        </DeferredSection>
-
                         {canAccessTransmedia && !isMobileLoggedInPortalMode && (
                           <SectionErrorBoundary fallback={<SectionFallback id="transmedia" minHeight={1600} />}>
                             <Suspense fallback={<SectionFallback id="transmedia" minHeight={1600} />}>
@@ -823,6 +817,16 @@ function App() {
                             </Suspense>
                           </SectionErrorBoundary>
                         )}
+
+                        {/* Perspectivas va después de Miniversos a propósito: es un espacio
+                            de respuesta/reflexión (compartir tu voz, ver testimonios) sobre
+                            lo que las 9 vitrinas provocan — funciona mejor después de haberlas
+                            vivido, no antes. */}
+                        <DeferredSection fallback={<SectionFallback id="provoca" minHeight={900} />}>
+                          <Suspense fallback={<SectionFallback id="provoca" minHeight={900} />}>
+                            <ProvocaSection />
+                          </Suspense>
+                        </DeferredSection>
                       </>
                     )}
 

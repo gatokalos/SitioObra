@@ -77,8 +77,8 @@ const Footer = ({
               <ul className="space-y-3">
                 {[
                   ...(showTerceraLlamadaNav ? [{ name: 'Tercera llamada', href: '#bienvenida-creador' }] : []),
-                  ...(showPerspectivasNav ? [{ name: 'Perspectivas', href: '#provoca' }] : []),
                   ...(showTransmediaNav ? [{ name: 'Miniversos', href: '#transmedia' }] : []),
+                  ...(showPerspectivasNav ? [{ name: 'Perspectivas', href: '#provoca' }] : []),
                   ...(showAllianceNav ? [{ name: 'Causa social', href: '#apoya' }] : []),
                   ...(showIntermedioNav ? [{ name: 'Intermedio', href: '#blog-contribuye' }] : []),
                   ...(showCuradoriaNav ? [{ name: 'Curaduría', href: '#dialogo-critico' }] : []),

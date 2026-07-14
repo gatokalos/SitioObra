@@ -819,9 +819,9 @@ export const ProvocaSection = () => {
               <p className="uppercase tracking-[0.35em] text-xs text-slate-400/80 mb-4">Perspectivas del visitante</p>
               <h3
                 className="font-display text-3xl text-slate-100 mb-6 italic"
-                aria-label={`¿Qué nos provoca ${currentProvocaTitleTerm}?`}
+                aria-label={`¿Qué te provoca ${currentProvocaTitleTerm}?`}
               >
-                ¿Qué nos provoca{' '}
+                ¿Qué te provoca{' '}
                 <span className="relative inline-grid min-w-[14.5ch] align-baseline">
                   <span className="col-start-1 row-start-1 invisible" aria-hidden="true">
                     {PROVOCA_TITLE_LONGEST_TERM}?
@@ -842,7 +842,7 @@ export const ProvocaSection = () => {
                 </span>
               </h3>
               <p className="text-slate-300/80 leading-relaxed mb-6 font-light">
-                Reunimos testimonios, críticas y preguntas abiertas que puedan resonar en este universo transmedia.
+                Reunimos testimonios, críticas y preguntas abiertas que puedan resonar contigo en este universo transmedia.
               </p>
               <div className="flex flex-col sm:flex-row gap-3">
                 <Button

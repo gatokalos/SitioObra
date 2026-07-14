@@ -128,9 +128,10 @@ const Hero = () => {
     { label: 'Merch', Icon: ShoppingBag },
   ];
   const currentCta = rotatingCtas[ctaIndex];
+  const shouldShowHeroInactiveHint = !hasActivatedAudio && isHeroHashReady;
   const currentHeroSubtitle = hasActivatedAudio
     ? heroGhostSubtitle ?? HERO_ROTATING_SUBTITLES[heroSubtitleIndex]
-    : HERO_INACTIVE_HINT;
+    : shouldShowHeroInactiveHint ? HERO_INACTIVE_HINT : '';
   const isHeroGhostSubtitle = hasActivatedAudio && heroGhostSubtitle !== null;
   const targetWidth = primaryCtaWidth ?? undefined;
   const navigate = useNavigate();
@@ -534,13 +535,14 @@ const Hero = () => {
 
   const handleOpenIndexFromHero = useCallback(() => {
     if (typeof window === 'undefined') return;
-    // "hero-index-cue-used" primero: le quita el gateo al toggle # del Header
-    // ANTES de pedirle que abra el índice, para que este mismo clic no se
-    // pierda por la condición de gateo todavía activa (carrera de eventos).
+    // Este primer clic NO abre el índice: solo revela el # del Header
+    // (gatoencerrado:hero-index-cue-used). El usuario debe dar un segundo
+    // clic explícito en ese # para abrir el Programa de mano — es el gesto
+    // en dos pasos que ya habíamos logrado, a propósito.
+    window.dispatchEvent(new CustomEvent('gatoencerrado:open-index'));
     setHasUsedIndexCue(true);
     writeIndexCueUsedToSession();
     window.dispatchEvent(new CustomEvent('gatoencerrado:hero-index-cue-used'));
-    window.dispatchEvent(new CustomEvent('gatoencerrado:open-index'));
   }, []);
 
   useEffect(() => {
@@ -972,25 +974,16 @@ const Hero = () => {
                 aria-label="Activar escena"
               >
                 {!hasActivatedAudio && (
-                  <>
-                    <span
-                      className="hero-title-mark-placeholder"
-                      aria-hidden="true"
-                      style={{ opacity: isHeroHashReady ? 0 : 1 }}
-                    >
-                      #
-                    </span>
-                    <Suspense fallback={null}>
-                      <HashtagButton3D
-                        onClick={handleIsotipoClick}
-                        onReady={handleHeroHashReady}
-                        height="var(--hero-title-mark-size)"
-                        contentScale={isMobileViewport ? 0.92 : 1}
-                        style={{ width: 'var(--hero-title-mark-size)', margin: '0 auto' }}
-                        showGlow={!hasActivatedAudio}
-                      />
-                    </Suspense>
-                  </>
+                  <Suspense fallback={null}>
+                    <HashtagButton3D
+                      onClick={handleIsotipoClick}
+                      onReady={handleHeroHashReady}
+                      height="var(--hero-title-mark-size)"
+                      contentScale={isMobileViewport ? 0.92 : 1}
+                      style={{ width: 'var(--hero-title-mark-size)', margin: '0 auto' }}
+                      showGlow={!hasActivatedAudio}
+                    />
+                  </Suspense>
                 )}
               </motion.div>
 

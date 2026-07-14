@@ -239,28 +239,6 @@ body {
   outline-offset: 0.35rem;
 }
 
-.hero-title-mark-placeholder {
-  position: absolute;
-  inset: 0;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  font-family: "Vox Round", "Inter", sans-serif;
-  font-size: clamp(4.5rem, 12vh, 7.8rem);
-  font-weight: 600;
-  line-height: 0.9;
-  letter-spacing: 0;
-  background: linear-gradient(127deg, #2d2d2d, #bdbdbd, #ffffff);
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
-  color: transparent;
-  text-shadow: 0 0 20px rgba(139, 92, 246, 0.28);
-  transition: opacity 420ms ease;
-  pointer-events: none;
-  z-index: 0;
-}
-
 .hero-title-mark-slot > div {
   z-index: 1;
 }

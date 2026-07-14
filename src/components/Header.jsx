@@ -114,14 +114,10 @@ const Header = ({
   useEffect(() => {
     if (typeof window === 'undefined') return undefined;
 
-    // Abre el menú directamente aquí (no delega al listener de "open-index"):
-    // ambos eventos se disparan en el mismo tick desde Hero.jsx, así que ese
-    // otro listener todavía tendría capturado el gateo viejo por el cierre
-    // de React (stale closure) y perdería este primer clic.
-    const handleIndexCueUsed = () => {
-      setHasUsedHeroIndexCue(true);
-      setIsMenuOpen(true);
-    };
+    // Este primer clic en el # del Hero solo revela el # del Header —
+    // a propósito NO abre el menú (eso requiere un segundo clic explícito
+    // en el # ya revelado, ver handleToggleIndex).
+    const handleIndexCueUsed = () => setHasUsedHeroIndexCue(true);
 
     window.addEventListener('gatoencerrado:hero-index-cue-used', handleIndexCueUsed);
     return () => {
@@ -289,8 +285,8 @@ const Header = ({
   const menuItems = [
     { name: 'Primera fila', href: '#hero' },
     ...(showTerceraLlamadaNav ? [{ name: 'Tercera llamada', href: '#bienvenida-creador' }] : []),
-    ...(showPerspectivasNav ? [{ name: 'Perspectivas', href: '#provoca' }] : []),
     ...(showTransmediaNav ? [{ name: 'Miniversos', href: '#transmedia' }] : []),
+    ...(showPerspectivasNav ? [{ name: 'Perspectivas', href: '#provoca' }] : []),
     ...(showAllianceNav ? [{ name: 'Alianza', href: '#apoya' }] : []),
     ...(showIntermedioNav ? [{ name: 'Intermedio', href: '#blog-contribuye' }] : []),
     ...(showCuradoriaNav ? [{ name: 'Curaduría', href: '#dialogo-critico' }] : []),
@@ -305,7 +301,6 @@ const Header = ({
     ...(showTerceraLlamadaNav
       ? [{ name: 'Tercera llamada', href: '#bienvenida-creador', description: terceraLlamadaLabel }]
       : []),
-    ...(showPerspectivasNav ? [{ name: 'Perspectivas', href: '#provoca' }] : []),
     ...(showTransmediaNav
       ? [
           {
@@ -316,6 +311,7 @@ const Header = ({
           },
         ]
       : []),
+    ...(showPerspectivasNav ? [{ name: 'Perspectivas', href: '#provoca' }] : []),
     ...(showAllianceNav
       ? [
           {
@@ -580,7 +576,7 @@ const Header = ({
                   target="_blank"
                   rel="noopener noreferrer"
                   className="inline-flex h-8 w-8 items-center justify-center rounded-full text-slate-400 transition-colors hover:text-white"
-                  aria-label="Instalar #GatoEncerrado como app"
+                  aria-label="¡Instala #GatoEncerrado como app!"
                   title="Instalar como app"
                 >
                   <Smartphone size={18} />
