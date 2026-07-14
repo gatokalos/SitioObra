@@ -1008,8 +1008,13 @@ const Transmedia = ({ allianceOnlyMode = false }) => {
     if (typeof window === 'undefined') return undefined;
     const focusRaw = getFocusParamFromLocation(location);
     if (!focusRaw) return undefined;
-    const isBienvenidaRecommendationFocus =
-      getFocusSourceParamFromLocation(location) === 'bienvenida' &&
+    // 'bienvenida': recomendación tras completar la bienvenida. 'gat-recommendation':
+    // el atajo del tooltip de GATokens en el Header — ambas son recomendaciones
+    // legítimas de a dónde regresar a gastar el saldo, así que otorgan el mismo
+    // acceso de invitado que un showcase_boost real (ver handleFormatClick).
+    const focusSource = getFocusSourceParamFromLocation(location);
+    const isRecommendationFocus =
+      (focusSource === 'bienvenida' || focusSource === 'gat-recommendation') &&
       safeGetItem('gatoencerrado:bienvenida-completed') === '1';
 
     let isCancelled = false;
@@ -1039,7 +1044,7 @@ const Transmedia = ({ allianceOnlyMode = false }) => {
       setFocusLockShowcaseId(showcaseId);
       setFocusIncomingGAT(null);
       setFocusAppMetadata(metadata);
-      focusShowcaseCard(showcaseId, isBienvenidaRecommendationFocus);
+      focusShowcaseCard(showcaseId, isRecommendationFocus);
     };
 
     // Fallback inmediato para evitar latencia perceptible en deep-link.

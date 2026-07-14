@@ -650,7 +650,7 @@ const Header = ({
                         type="button"
                         onClick={() => {
                           setIsGatInfoOpen(false);
-                          handleNavClick(`#transmedia?focus=${gatSpendRecommendation.showcaseId}`);
+                          handleNavClick(`#transmedia?focus=${gatSpendRecommendation.showcaseId}&source=gat-recommendation`);
                         }}
                         className="group flex w-full items-center justify-between gap-2 rounded-lg border border-violet-200 bg-violet-50 px-3 py-2 text-left text-xs leading-relaxed text-violet-800 transition hover:border-violet-300 hover:bg-violet-100"
                       >

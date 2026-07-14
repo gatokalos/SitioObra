@@ -71,7 +71,7 @@ const PROVOCA_QUOTE_MAX_CHARS = 700;
 const PROVOCA_NAME_MAX_CHARS = 60;
 const PROVOCA_ROLE_MAX_CHARS = 80;
 const PROVOCA_APPROVED_FETCH_LIMIT = 20;
-const PROVOCA_MAX_SMALL_VOICE_CARDS = 2;
+const PROVOCA_VISIBLE_VOICE_CARDS = 1;
 const PROVOCA_LARGE_VOICE_MIN_CHARS = 210;
 const PROVOCA_SCROLLABLE_QUOTE_MIN_CHARS = 610;
 const PROVOCA_LIKED_VOICES_STORAGE_PREFIX = 'gatoencerrado:provoca-liked-voices:v1';
@@ -210,16 +210,9 @@ export const ProvocaSection = () => {
       return [{ ...first, displayVariant: 'large' }];
     }
 
-    const second = rankedVoicesPool[(startIndex + 1) % total];
-    if (!second || isLargeVoiceCard(second)) {
-      return [{ ...first, displayVariant: 'small' }];
-    }
-
-    return [
-      { ...first, displayVariant: 'small' },
-      { ...second, displayVariant: 'small' },
-    ].slice(0, PROVOCA_MAX_SMALL_VOICE_CARDS);
+    return [{ ...first, displayVariant: 'small' }].slice(0, PROVOCA_VISIBLE_VOICE_CARDS);
   }, [rankedVoicesPool, visibleVoiceCursor]);
+  const visibleVoiceRefreshStep = Math.max(visibleTestimonials.length, 1);
 
   const isEscucharButtonActive =
     !hasConsumedListenTurn &&
@@ -506,8 +499,8 @@ export const ProvocaSection = () => {
 
   const handleRefreshVoices = useCallback(() => {
     if (!canRefreshVoices) return;
-    setVisibleVoiceCursor((previous) => (previous + 1) % rankedVoicesPool.length);
-  }, [canRefreshVoices, rankedVoicesPool.length]);
+    setVisibleVoiceCursor((previous) => (previous + visibleVoiceRefreshStep) % rankedVoicesPool.length);
+  }, [canRefreshVoices, rankedVoicesPool.length, visibleVoiceRefreshStep]);
 
   const handleVoicePulse = useCallback(async (voice) => {
     const perspectiveId = String(voice?.sourceId || '').trim();
@@ -1066,7 +1059,7 @@ export const ProvocaSection = () => {
                   className="ge-chip-action ge-chip-action--secondary ge-chip-action--compact"
                 >
                   <RefreshCw size={14} />
-                  Refrescar
+                  Otra perspectiva
                 </Button>
             </div>
           </div>
