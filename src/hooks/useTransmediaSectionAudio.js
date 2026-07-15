@@ -9,6 +9,7 @@ import {
 } from '@/lib/transmediaSectionAudio';
 
 const FADE_DURATION_MS = 800;
+const IDLE_RETRY_MS = 6000;
 
 const useTransmediaSectionAudio = ({ isSilvestrePlaying }) => {
   const sectionRef  = useRef(null);
@@ -166,6 +167,23 @@ const useTransmediaSectionAudio = ({ isSilvestrePlaying }) => {
       document.removeEventListener('visibilitychange', onVisibility);
     };
   }, [attemptPlay, isSilvestrePlaying]);
+
+  // Auto-recuperación: si el navegador pausó el audio por su cuenta (sesión de
+  // audio de iOS al entrar un video a fullscreen, IntersectionObserver que no
+  // se re-disparó al restaurar el body desde position:fixed, etc.) sin que el
+  // usuario haya pedido silencio, lo reintenta cada IDLE_RETRY_MS — igual que
+  // el guardrail que ya existe en Hero.jsx para su propia pista ambient.
+  useEffect(() => {
+    const idleRetryId = window.setInterval(() => {
+      if (readTransmediaAudioPreference() === false) return;
+      if (!isActiveRef.current || isDuckedRef.current) return;
+      if (document.visibilityState !== 'visible' || !document.hasFocus()) return;
+      const audio = getTransmediaSectionAudio();
+      if (!audio || !audio.paused) return;
+      attemptPlay();
+    }, IDLE_RETRY_MS);
+    return () => window.clearInterval(idleRetryId);
+  }, [attemptPlay]);
 
   // Cleanup on unmount
   useEffect(() => () => {

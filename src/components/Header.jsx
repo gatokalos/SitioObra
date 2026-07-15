@@ -247,7 +247,7 @@ const Header = ({
     { name: 'Primera fila', href: '#hero' },
     ...(showTerceraLlamadaNav ? [{ name: 'Tercera llamada', href: '#bienvenida-creador' }] : []),
     ...(showTransmediaNav ? [{ name: 'Miniversos', href: '#transmedia' }] : []),
-    ...(showPerspectivasNav ? [{ name: 'Perspectivas', href: '#provoca' }] : []),
+    ...(showPerspectivasNav ? [{ name: 'Voces en la sala', href: '#provoca' }] : []),
     ...(showAllianceNav ? [{ name: 'Alianza', href: '#apoya' }] : []),
     ...(showIntermedioNav ? [{ name: 'Intermedio', href: '#blog-contribuye' }] : []),
     ...(showCuradoriaNav ? [{ name: 'Curaduría', href: '#dialogo-critico' }] : []),
@@ -265,14 +265,14 @@ const Header = ({
     ...(showTransmediaNav
       ? [
           {
-            name: 'Miniversos',
+            name: 'Nueve formas',
             href: '#transmedia',
-            description: 'Las formas de la obra',
+            description: 'Mini-versos expandidos',
             secondary: TRANSMEDIA_SECONDARY_ITEMS,
           },
         ]
       : []),
-    ...(showPerspectivasNav ? [{ name: 'Perspectivas', href: '#provoca' }] : []),
+    ...(showPerspectivasNav ? [{ name: 'Voces en la sala', href: '#provoca' }] : []),
     ...(showAllianceNav
       ? [
           {

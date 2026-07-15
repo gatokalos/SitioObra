@@ -76,6 +76,7 @@ const MINIVERSE_KEYWORDS = {
 };
 
 const STARTER_FAQ_PROMPTS = [
+  '¿De qué trata el Universo #GatoEncerrado?',
   '¿Cómo se conectan el arte, la tecnología y la salud emocional en este universo?',
   '¿Qué parte de nosotros habla cuando creemos estar hablando solos?',
   '¿Qué diferencia hay entre medir cuánta gente ve una obra y saber si cambió algo en el público?',

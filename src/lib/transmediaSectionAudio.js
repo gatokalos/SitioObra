@@ -5,11 +5,20 @@ export const TRANSMEDIA_AMBIENT_DEFAULT_VOLUME = 0.38;
 export const TRANSMEDIA_AMBIENT_MIN_AUDIBLE_VOLUME = 0.012;
 export const TRANSMEDIA_AMBIENT_DUCK_VOLUME = 0.07;
 const PREF_KEY = 'gatoencerrado:transmedia-audio-enabled';
+const HERO_PREF_KEY = 'gatoencerrado:hero-audio-enabled';
 
 let sharedAudio = null;
 const _initMuted = (() => {
   if (typeof window === 'undefined') return false;
-  try { return window.localStorage?.getItem(PREF_KEY) === 'false'; } catch { return false; }
+  try {
+    const raw = window.localStorage?.getItem(PREF_KEY);
+    if (raw === 'true') return false;
+    if (raw === 'false') return true;
+    // Sin preferencia propia todavía (usuario de antes de que el botón de
+    // bocina controlara también esta pista): hereda la de Hero para no
+    // reproducir sonido a alguien que ya había pedido silencio.
+    return window.localStorage?.getItem(HERO_PREF_KEY) === 'false';
+  } catch { return false; }
 })();
 let sharedState = { isMuted: _initMuted, isPlaying: false, isReady: false };
 const listeners = new Set();

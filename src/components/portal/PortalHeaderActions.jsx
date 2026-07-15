@@ -36,6 +36,9 @@ const PortalHeaderActions = ({ returnUrl = DEFAULT_RETURN_URL }) => {
     getHeroAmbientState,
     getHeroAmbientState
   );
+  // Estas páginas de portal no tienen #transmedia en el DOM, así que la pista
+  // de Transmedia nunca suena aquí — solo importa isPlaying de Hero.
+  const isAmbientAudible = !ambientState.isMuted && ambientState.isPlaying;
   const { portalReturnUrl, portalReturnScrollY, portalReturnShowcaseId, restoreToken } = useMemo(
     () => resolvePortalReturnTarget(location.state, returnUrl),
     [location.state, returnUrl]
@@ -106,7 +109,8 @@ const PortalHeaderActions = ({ returnUrl = DEFAULT_RETURN_URL }) => {
   }, []);
 
   const handleToggleAmbientAudio = useCallback(() => {
-    if (!user) return;
+    // El control de audio ambient es una preferencia de UI, no un recurso con
+    // GAT detrás — también debe funcionar para invitados sin cuenta.
     const audio = getHeroAmbientAudio();
     if (!audio) return;
 
@@ -119,7 +123,7 @@ const PortalHeaderActions = ({ returnUrl = DEFAULT_RETURN_URL }) => {
     }
 
     toggleHeroAmbientMuted({ targetVolume: HERO_AMBIENT_DEFAULT_VOLUME });
-  }, [ambientState.isMuted, user]);
+  }, [ambientState.isMuted]);
 
   return (
     <div className="inline-flex items-center gap-2">
@@ -137,21 +141,19 @@ const PortalHeaderActions = ({ returnUrl = DEFAULT_RETURN_URL }) => {
           </motion.span>
         )}
       </AnimatePresence>
-      {user ? (
-        <button
-          type="button"
-          onClick={handleToggleAmbientAudio}
-          aria-label={ambientState.isMuted ? 'Activar sonido ambiente' : 'Silenciar sonido ambiente'}
-          title={ambientState.isMuted ? 'Activar sonido ambiente' : 'Silenciar sonido ambiente'}
-          className={`inline-flex h-9 w-9 items-center justify-center rounded-full border transition ${
-            ambientState.isMuted
-              ? 'border-white/15 bg-slate-950/70 text-slate-300 hover:border-purple-300/50 hover:bg-slate-900/80 hover:text-white'
-              : 'border-emerald-300/35 bg-emerald-500/15 text-emerald-100 hover:bg-emerald-500/25'
-          }`}
-        >
-          {ambientState.isMuted ? <VolumeX size={14} /> : <Volume2 size={14} />}
-        </button>
-      ) : null}
+      <button
+        type="button"
+        onClick={handleToggleAmbientAudio}
+        aria-label={isAmbientAudible ? 'Silenciar sonido ambiente' : 'Activar sonido ambiente'}
+        title={isAmbientAudible ? 'Silenciar sonido ambiente' : 'Activar sonido ambiente'}
+        className={`inline-flex h-9 w-9 items-center justify-center rounded-full border transition ${
+          isAmbientAudible
+            ? 'border-emerald-300/35 bg-emerald-500/15 text-emerald-100 hover:bg-emerald-500/25'
+            : 'border-white/15 bg-slate-950/70 text-slate-300 hover:border-purple-300/50 hover:bg-slate-900/80 hover:text-white'
+        }`}
+      >
+        {isAmbientAudible ? <Volume2 size={14} /> : <VolumeX size={14} />}
+      </button>
       <button
         type="button"
         onClick={handleBackToSite}

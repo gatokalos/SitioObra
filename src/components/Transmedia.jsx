@@ -121,6 +121,13 @@ import {
   resumeHeroAmbientPlayback,
 } from '@/lib/heroAmbientAudio';
 import {
+  getTransmediaSectionAudio,
+  getTransmediaSectionState,
+  subscribeTransmediaAmbient,
+  setTransmediaAmbientMuted,
+  TRANSMEDIA_AMBIENT_DEFAULT_VOLUME,
+} from '@/lib/transmediaSectionAudio';
+import {
   GAT_COSTS,
   SHOWCASE_REQUIRED_GAT,
   MOVEMENT_COLLABORATOR_CALL_ITEMS,
@@ -293,19 +300,46 @@ const Transmedia = ({ allianceOnlyMode = false }) => {
   }, []);
   const { user, session } = useAuth();
   const ambientState = useSyncExternalStore(subscribeHeroAmbient, getHeroAmbientState, getHeroAmbientState);
+  const transmediaAmbientState = useSyncExternalStore(
+    subscribeTransmediaAmbient,
+    getTransmediaSectionState,
+    getTransmediaSectionState
+  );
+  // El ícono de bocina refleja si REALMENTE suena algo (isPlaying), no solo
+  // la preferencia de mute — si el navegador pausó el audio por su cuenta
+  // (ver useTransmediaSectionAudio), el ícono debe mostrarlo como silenciado.
+  const isShowcaseAmbientAudible =
+    !ambientState.isMuted && (ambientState.isPlaying || transmediaAmbientState.isPlaying);
   const handleToggleShowcaseAmbient = useCallback(() => {
-    if (!user) return;
+    // El control de audio ambient es una preferencia de UI, no un recurso con
+    // GAT detrás — también debe funcionar para invitados sin cuenta.
     const audio = getHeroAmbientAudio();
     if (!audio) return;
+    // Este botón vive dentro de #transmedia, donde según el hold puede sonar
+    // la pista Hero o la pista propia de Transmedia (RecurringDream) — el
+    // "silencio" que promete el botón debe cubrir ambas, no solo Hero.
+    const transmediaAudio = getTransmediaSectionAudio();
+    const transmediaState = getTransmediaSectionState();
+    const transmediaDesynced = Boolean(transmediaAudio) && !transmediaState.isMuted && transmediaAudio.paused;
     if (!ambientState.isMuted && audio.paused) {
       audio.volume = HERO_AMBIENT_DEFAULT_VOLUME;
       if (audio.volume > HERO_AMBIENT_MIN_AUDIBLE_VOLUME) {
         void resumeHeroAmbientPlayback({ targetVolume: HERO_AMBIENT_DEFAULT_VOLUME });
       }
+      if (transmediaDesynced) {
+        transmediaAudio.volume = TRANSMEDIA_AMBIENT_DEFAULT_VOLUME;
+        void transmediaAudio.play().catch(() => {});
+      }
       return;
     }
-    toggleHeroAmbientMuted({ targetVolume: HERO_AMBIENT_DEFAULT_VOLUME });
-  }, [ambientState.isMuted, user]);
+    if (transmediaDesynced) {
+      transmediaAudio.volume = TRANSMEDIA_AMBIENT_DEFAULT_VOLUME;
+      void transmediaAudio.play().catch(() => {});
+      return;
+    }
+    const nextMuted = toggleHeroAmbientMuted({ targetVolume: HERO_AMBIENT_DEFAULT_VOLUME });
+    setTransmediaAmbientMuted(nextMuted);
+  }, [ambientState.isMuted]);
   const { hasActiveSubscription } = useActiveSubscription(user?.id, session);
   const isAuthenticated = Boolean(user);
   const isSubscriber = Boolean(
@@ -4041,20 +4075,18 @@ Silvestre, un hombre en sus treintas, comienza a perder la frontera entre lo que
                     </motion.span>
                   )}
                 </AnimatePresence>
-                {user ? (
-                  <button
-                    onClick={handleToggleShowcaseAmbient}
-                    aria-label={ambientState.isMuted ? 'Activar sonido ambiente' : 'Silenciar sonido ambiente'}
-                    title={ambientState.isMuted ? 'Activar sonido ambiente' : 'Silenciar sonido ambiente'}
-                    className={`lg:hidden inline-flex h-9 w-9 items-center justify-center rounded-full border transition ${
-                      ambientState.isMuted
-                        ? 'border-white/15 bg-white/5 text-slate-200/90 hover:border-purple-300/40 hover:text-white'
-                        : 'border-emerald-300/35 bg-emerald-500/15 text-emerald-100 hover:bg-emerald-500/25'
-                    }`}
-                  >
-                    {ambientState.isMuted ? <VolumeX size={14} /> : <Volume2 size={14} />}
-                  </button>
-                ) : null}
+                <button
+                  onClick={handleToggleShowcaseAmbient}
+                  aria-label={isShowcaseAmbientAudible ? 'Silenciar sonido ambiente' : 'Activar sonido ambiente'}
+                  title={isShowcaseAmbientAudible ? 'Silenciar sonido ambiente' : 'Activar sonido ambiente'}
+                  className={`lg:hidden inline-flex h-9 w-9 items-center justify-center rounded-full border transition ${
+                    isShowcaseAmbientAudible
+                      ? 'border-emerald-300/35 bg-emerald-500/15 text-emerald-100 hover:bg-emerald-500/25'
+                      : 'border-white/15 bg-white/5 text-slate-200/90 hover:border-purple-300/40 hover:text-white'
+                  }`}
+                >
+                  {isShowcaseAmbientAudible ? <Volume2 size={14} /> : <VolumeX size={14} />}
+                </button>
                 <button
                   onClick={handleCloseShowcase}
                   className="lg:hidden inline-flex h-9 w-9 items-center justify-center rounded-full border border-white/15 bg-white/5 text-slate-200/90 hover:border-purple-300/40 hover:text-white transition"
@@ -4501,20 +4533,18 @@ Silvestre, un hombre en sus treintas, comienza a perder la frontera entre lo que
               ) : null}
               {/* Botones de control — solo desktop, al fondo del contenido scrollable */}
               <div className="hidden lg:flex items-center justify-end gap-2 mt-6 pt-3 border-t border-white/8">
-                {user ? (
-                  <button
-                    onClick={handleToggleShowcaseAmbient}
-                    aria-label={ambientState.isMuted ? 'Activar sonido ambiente' : 'Silenciar sonido ambiente'}
-                    title={ambientState.isMuted ? 'Activar sonido ambiente' : 'Silenciar sonido ambiente'}
-                    className={`inline-flex h-9 w-9 items-center justify-center rounded-full border transition ${
-                      ambientState.isMuted
-                        ? 'border-white/15 bg-white/5 text-slate-200/90 hover:border-purple-300/40 hover:text-white'
-                        : 'border-emerald-300/35 bg-emerald-500/15 text-emerald-100 hover:bg-emerald-500/25'
-                    }`}
-                  >
-                    {ambientState.isMuted ? <VolumeX size={14} /> : <Volume2 size={14} />}
-                  </button>
-                ) : null}
+                <button
+                  onClick={handleToggleShowcaseAmbient}
+                  aria-label={isShowcaseAmbientAudible ? 'Silenciar sonido ambiente' : 'Activar sonido ambiente'}
+                  title={isShowcaseAmbientAudible ? 'Silenciar sonido ambiente' : 'Activar sonido ambiente'}
+                  className={`inline-flex h-9 w-9 items-center justify-center rounded-full border transition ${
+                    isShowcaseAmbientAudible
+                      ? 'border-emerald-300/35 bg-emerald-500/15 text-emerald-100 hover:bg-emerald-500/25'
+                      : 'border-white/15 bg-white/5 text-slate-200/90 hover:border-purple-300/40 hover:text-white'
+                  }`}
+                >
+                  {isShowcaseAmbientAudible ? <Volume2 size={14} /> : <VolumeX size={14} />}
+                </button>
                 <button
                   onClick={handleCloseShowcase}
                   className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-white/15 bg-white/5 text-slate-200/90 hover:border-purple-300/40 hover:text-white transition"

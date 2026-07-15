@@ -793,14 +793,14 @@ export const ProvocaSection = () => {
 
   return (
     <>
-      <section id="provoca" className="py-24 relative">
+      <section id="provoca" className="provoca-continuum relative pt-10 pb-24 md:pt-12">
         <div className="container mx-auto px-6">
           <motion.div
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 0.3, ease: 'easeOut' }}
           viewport={{ once: true }}
-          className="relative overflow-hidden glass-effect rounded-2xl p-8 md:p-12"
+          className="relative overflow-hidden py-8 md:py-12"
         >
           {confettiBursts.map((burst) => (
             <ConfettiBurst key={burst} seed={burst} />
@@ -808,7 +808,10 @@ export const ProvocaSection = () => {
           <div className="grid md:grid-cols-[3fr_2fr] gap-8 items-center">
             <div>
            
-              <p className="uppercase tracking-[0.35em] text-xs text-slate-400/80 mb-4">Perspectivas compartidas</p>
+              <p className="uppercase tracking-[0.35em] text-xs text-slate-400/80 mb-4">Voces en la sala</p>
+              <p className="max-w-2xl text-sm md:text-base text-slate-300/80 leading-relaxed mb-4 font-light">
+                Aquí la obra conecta lo que sentiste con lo que otras voces también están intentando nombrar.
+              </p>
               <h3
                 className="font-display text-3xl text-slate-100 mb-6 italic"
                 aria-label={`¿Qué nos provoca ${currentProvocaTitleTerm}?`}
@@ -834,7 +837,7 @@ export const ProvocaSection = () => {
                 </span>
               </h3>
               <p className="text-slate-300/80 leading-relaxed mb-6 font-light">
-                Reunimos testimonios, críticas y preguntas abiertas que puedan resonar contigo en este universo transmedia.
+                Lee una voz a la vez o comparte la tuya si algo necesita salir.
               </p>
               <div className="flex flex-col sm:flex-row gap-3">
                 <Button

@@ -33,6 +33,12 @@ import {
   HERO_AMBIENT_MIN_AUDIBLE_VOLUME,
   resumeHeroAmbientPlayback,
 } from '@/lib/heroAmbientAudio';
+import {
+  getTransmediaSectionAudio,
+  getTransmediaSectionState,
+  setTransmediaAmbientMuted,
+  TRANSMEDIA_AMBIENT_DEFAULT_VOLUME,
+} from '@/lib/transmediaSectionAudio';
 import { Volume2, VolumeX } from 'lucide-react';
 import GATChip from '@/components/portal/GATChip';
 import { ORACULO_URL } from '@/components/transmedia/transmediaConstants';
@@ -526,19 +532,43 @@ const MiniverseModal = ({
   const location = useLocation();
   const { user, session } = useAuth();
   const ambientState = useSyncExternalStore(subscribeHeroAmbient, getHeroAmbientState, getHeroAmbientState);
+  const transmediaAmbientState = useSyncExternalStore(
+    subscribeTransmediaAmbient,
+    getTransmediaSectionState,
+    getTransmediaSectionState
+  );
+  const isShowcaseAmbientAudible =
+    !ambientState.isMuted && (ambientState.isPlaying || transmediaAmbientState.isPlaying);
   const handleToggleShowcaseVideoAmbient = useCallback(() => {
-    if (!user) return;
+    // El control de audio ambient es una preferencia de UI, no un recurso con
+    // GAT detrás — también debe funcionar para invitados sin cuenta.
     const audio = getHeroAmbientAudio();
     if (!audio) return;
+    // Este modal convive con #transmedia en el DOM del homepage, donde según
+    // el hold puede sonar la pista Hero o la propia de Transmedia — el
+    // "silencio" debe cubrir ambas, no solo Hero.
+    const transmediaAudio = getTransmediaSectionAudio();
+    const transmediaState = getTransmediaSectionState();
+    const transmediaDesynced = Boolean(transmediaAudio) && !transmediaState.isMuted && transmediaAudio.paused;
     if (!ambientState.isMuted && audio.paused) {
       audio.volume = HERO_AMBIENT_DEFAULT_VOLUME;
       if (audio.volume > HERO_AMBIENT_MIN_AUDIBLE_VOLUME) {
         void resumeHeroAmbientPlayback({ targetVolume: HERO_AMBIENT_DEFAULT_VOLUME });
       }
+      if (transmediaDesynced) {
+        transmediaAudio.volume = TRANSMEDIA_AMBIENT_DEFAULT_VOLUME;
+        void transmediaAudio.play().catch(() => {});
+      }
       return;
     }
-    toggleHeroAmbientMuted({ targetVolume: HERO_AMBIENT_DEFAULT_VOLUME });
-  }, [ambientState.isMuted, user]);
+    if (transmediaDesynced) {
+      transmediaAudio.volume = TRANSMEDIA_AMBIENT_DEFAULT_VOLUME;
+      void transmediaAudio.play().catch(() => {});
+      return;
+    }
+    const nextMuted = toggleHeroAmbientMuted({ targetVolume: HERO_AMBIENT_DEFAULT_VOLUME });
+    setTransmediaAmbientMuted(nextMuted);
+  }, [ambientState.isMuted]);
   const isSafari = isSafariBrowser();
   const isInlineMode = displayMode === 'inline';
   const inlineTitleStyle = isInlineMode ? { fontFamily: 'Vox Round, Inter, sans-serif' } : undefined;
@@ -2358,11 +2388,18 @@ const MiniverseModal = ({
                             >
                               {sharedShowcaseVideoUrl ? (
                                 <>
-                                  {user ? (
-                                    <div className="pointer-events-none absolute top-3 right-3 z-20 flex h-7 w-7 items-center justify-center rounded-full bg-black/40 text-white/60 backdrop-blur-sm">
-                                      {ambientState.isMuted ? <VolumeX size={13} /> : <Volume2 size={13} />}
-                                    </div>
-                                  ) : null}
+                                  <button
+                                    type="button"
+                                    onClick={(event) => {
+                                      event.stopPropagation();
+                                      handleToggleShowcaseVideoAmbient();
+                                    }}
+                                    aria-label={isShowcaseAmbientAudible ? 'Silenciar sonido ambiente' : 'Activar sonido ambiente'}
+                                    title={isShowcaseAmbientAudible ? 'Silenciar sonido ambiente' : 'Activar sonido ambiente'}
+                                    className="absolute top-3 right-3 z-20 flex h-7 w-7 items-center justify-center rounded-full bg-black/40 text-white/60 backdrop-blur-sm transition hover:bg-black/60 hover:text-white"
+                                  >
+                                    {isShowcaseAmbientAudible ? <Volume2 size={13} /> : <VolumeX size={13} />}
+                                  </button>
                                   <video
                                     ref={desktopShowcaseVideoRef}
                                     src={sharedShowcaseVideoUrl}
@@ -2491,11 +2528,18 @@ const MiniverseModal = ({
                           >
                             {sharedShowcaseVideoUrl ? (
                               <>
-                                {user ? (
-                                  <div className="pointer-events-none absolute top-3 right-3 z-20 flex h-7 w-7 items-center justify-center rounded-full bg-black/40 text-white/60 backdrop-blur-sm">
-                                    {ambientState.isMuted ? <VolumeX size={13} /> : <Volume2 size={13} />}
-                                  </div>
-                                ) : null}
+                                <button
+                                  type="button"
+                                  onClick={(event) => {
+                                    event.stopPropagation();
+                                    handleToggleShowcaseVideoAmbient();
+                                  }}
+                                  aria-label={isShowcaseAmbientAudible ? 'Silenciar sonido ambiente' : 'Activar sonido ambiente'}
+                                  title={isShowcaseAmbientAudible ? 'Silenciar sonido ambiente' : 'Activar sonido ambiente'}
+                                  className="absolute top-3 right-3 z-20 flex h-7 w-7 items-center justify-center rounded-full bg-black/40 text-white/60 backdrop-blur-sm transition hover:bg-black/60 hover:text-white"
+                                >
+                                  {isShowcaseAmbientAudible ? <Volume2 size={13} /> : <VolumeX size={13} />}
+                                </button>
                                 <video
                                   ref={mobileShowcaseVideoRef}
                                   src={sharedShowcaseVideoUrl}
