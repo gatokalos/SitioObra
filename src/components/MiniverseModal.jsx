@@ -36,6 +36,7 @@ import {
 import {
   getTransmediaSectionAudio,
   getTransmediaSectionState,
+  subscribeTransmediaAmbient,
   setTransmediaAmbientMuted,
   TRANSMEDIA_AMBIENT_DEFAULT_VOLUME,
 } from '@/lib/transmediaSectionAudio';
