@@ -231,7 +231,7 @@ export const ProvocaSection = () => {
           ? 'Pulsa otra vez para enviar'
           : micPromptVisible
             ? 'Pulsa para sacar lo que tienes dentro'
-            : 'Quiero que me conteste la obra';
+            : 'Quiero escuchar una reacción de la obra';
   const escucharButtonVisualLabel =
     pendingSilvestreAudioUrl && !isSilvestrePlaying ? 'Reproducir' : escucharStatusLabel;
 
@@ -810,7 +810,7 @@ export const ProvocaSection = () => {
            
               <p className="uppercase tracking-[0.35em] text-xs text-slate-400/80 mb-4">Voces en la sala</p>
               <p className="max-w-2xl text-sm md:text-base text-slate-300/80 leading-relaxed mb-4 font-light">
-                Aquí la obra conecta lo que sentiste con lo que otras voces también están intentando nombrar.
+                Aquí, la obra conecta lo que sus preguntas te hicieron sentir con lo que otras voces también intentan nombrar.
               </p>
               <h3
                 className="font-display text-3xl text-slate-100 mb-6 italic"
@@ -837,7 +837,7 @@ export const ProvocaSection = () => {
                 </span>
               </h3>
               <p className="text-slate-300/80 leading-relaxed mb-6 font-light">
-                Lee una voz a la vez o comparte la tuya si algo necesita salir.
+                Lee una perspectiva a la vez o comparte la tuya si algo necesita salir.
               </p>
               <div className="flex flex-col sm:flex-row gap-3">
                 <Button
@@ -936,7 +936,7 @@ export const ProvocaSection = () => {
                       ) : null}
                 
                       <p className="w-full text-[11px] text-slate-300/70">
-                        Si no quieres publicar, solo escucha su respuesta inspirada en tu voz.
+                        Si no quieres publicar, solo escucha una reacción inspirada en tu voz.
                       </p>
                     </div>
                        <details className="group mt-4 md:mt-5 mb-5 rounded-2xl border border-emerald-300/20 bg-emerald-500/10 px-4 py-3 text-left">
@@ -1048,7 +1048,7 @@ export const ProvocaSection = () => {
                   className="ge-chip-action ge-chip-action--secondary ge-chip-action--compact"
                 >
                   <RefreshCw size={14} />
-                  Otra perspectiva
+                  Leer otra
                 </Button>
                 <p className="w-full text-[11px] text-slate-300/70">
                   La obra también escucha estas voces.

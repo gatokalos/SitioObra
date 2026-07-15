@@ -2147,9 +2147,10 @@ const rendernotaAutoral = () => {
 
           <div className="flex flex-col gap-5">
             {rendernotaAutoral()}
-            {activeDefinition.iaProfile ? (
-              <IAInsightCard {...activeDefinition.iaProfile} compact rewardLabel={buildShowcaseRewardLabel(showcaseTokenLedgerById[activeShowcase])} minRequired={buildShowcaseMinRequiredCopy(activeShowcase)} />
-            ) : null}
+            {/* La tarjeta de Información de IA para este formato ya la
+                renderiza el bloque genérico fuera de renderShowcaseContent
+                (desktop: hidden lg:block: / mobile: lg:hidden) — un segundo
+                render aquí duplicaba la tarjeta en viewports <1024px. */}
             {activePortalExperienceDone && (
               <button
                 type="button"
@@ -2207,8 +2208,13 @@ const rendernotaAutoral = () => {
 
             <div className="flex flex-col gap-5">
               {rendernotaAutoral()}
+              {/* hidden lg:block: en mobile/portrait ya la muestra el bloque
+                  genérico lg:hidden fuera de renderShowcaseContent — sin este
+                  gate se duplicaba la tarjeta en viewports <1024px. */}
               {activeDefinition.iaProfile ? (
-                <IAInsightCard {...activeDefinition.iaProfile} compact rewardLabel={buildShowcaseRewardLabel(showcaseTokenLedgerById[activeShowcase])} minRequired={buildShowcaseMinRequiredCopy(activeShowcase)} />
+                <div className="hidden lg:block">
+                  <IAInsightCard {...activeDefinition.iaProfile} compact rewardLabel={buildShowcaseRewardLabel(showcaseTokenLedgerById[activeShowcase])} minRequired={buildShowcaseMinRequiredCopy(activeShowcase)} />
+                </div>
               ) : null}
               {activePortalExperienceDone && (
                 <button
@@ -2253,8 +2259,13 @@ const rendernotaAutoral = () => {
 
             <div className="flex flex-col gap-5">
               {rendernotaAutoral()}
+              {/* hidden lg:block: en mobile/portrait ya la muestra el bloque
+                  genérico lg:hidden fuera de renderShowcaseContent — sin este
+                  gate se duplicaba la tarjeta en viewports <1024px. */}
               {activeDefinition.iaProfile ? (
-                <IAInsightCard {...activeDefinition.iaProfile} compact rewardLabel={buildShowcaseRewardLabel(showcaseTokenLedgerById[activeShowcase])} minRequired={buildShowcaseMinRequiredCopy(activeShowcase)} />
+                <div className="hidden lg:block">
+                  <IAInsightCard {...activeDefinition.iaProfile} compact rewardLabel={buildShowcaseRewardLabel(showcaseTokenLedgerById[activeShowcase])} minRequired={buildShowcaseMinRequiredCopy(activeShowcase)} />
+                </div>
               ) : null}
               {activePortalExperienceDone && (
                 <button
@@ -2395,9 +2406,10 @@ Silvestre, un hombre en sus treintas, comienza a perder la frontera entre lo que
             {/* Columna derecha: mini-verso autoral + IA + CTA experiencia narrativa */}
             <div className="flex flex-col gap-5">
               {rendernotaAutoral()}
-              {activeDefinition.iaProfile ? (
-                <IAInsightCard {...activeDefinition.iaProfile} compact rewardLabel={buildShowcaseRewardLabel(showcaseTokenLedgerById[activeShowcase])} minRequired={buildShowcaseMinRequiredCopy(activeShowcase)} />
-              ) : null}
+              {/* La tarjeta de Información de IA para este formato ya la
+                  renderiza el bloque genérico fuera de renderShowcaseContent
+                  (desktop: hidden lg:block / mobile: lg:hidden) — un segundo
+                  render aquí duplicaba la tarjeta en viewports <1024px. */}
               {activePortalExperienceDone && (
                 <button
                   type="button"
@@ -2896,8 +2908,13 @@ Silvestre, un hombre en sus treintas, comienza a perder la frontera entre lo que
 
           <div className="flex flex-col gap-5">
             {rendernotaAutoral()}
+            {/* hidden lg:block: en mobile/portrait ya la muestra el bloque
+                genérico lg:hidden fuera de renderShowcaseContent — sin este
+                gate se duplicaba la tarjeta en viewports <1024px. */}
             {activeDefinition.iaProfile ? (
-              <IAInsightCard {...activeDefinition.iaProfile} compact rewardLabel={buildShowcaseRewardLabel(showcaseTokenLedgerById[activeShowcase])} minRequired={buildShowcaseMinRequiredCopy(activeShowcase)} />
+              <div className="hidden lg:block">
+                <IAInsightCard {...activeDefinition.iaProfile} compact rewardLabel={buildShowcaseRewardLabel(showcaseTokenLedgerById[activeShowcase])} minRequired={buildShowcaseMinRequiredCopy(activeShowcase)} />
+              </div>
             ) : null}
             {activePortalL3Done ? (
               <div className="relative">
@@ -3042,8 +3059,13 @@ Silvestre, un hombre en sus treintas, comienza a perder la frontera entre lo que
 
             <div className="flex flex-col gap-5">
               {rendernotaAutoral()}
+              {/* hidden lg:block: en mobile/portrait ya la muestra el bloque
+                  genérico lg:hidden fuera de renderShowcaseContent — sin este
+                  gate se duplicaba la tarjeta en viewports <1024px. */}
               {activeDefinition.iaProfile ? (
-                <IAInsightCard {...activeDefinition.iaProfile} compact rewardLabel={buildShowcaseRewardLabel(showcaseTokenLedgerById[activeShowcase])} minRequired={buildShowcaseMinRequiredCopy(activeShowcase)} />
+                <div className="hidden lg:block">
+                  <IAInsightCard {...activeDefinition.iaProfile} compact rewardLabel={buildShowcaseRewardLabel(showcaseTokenLedgerById[activeShowcase])} minRequired={buildShowcaseMinRequiredCopy(activeShowcase)} />
+                </div>
               ) : null}
               {activePortalExperienceDone && (
                 <button
@@ -3095,8 +3117,13 @@ Silvestre, un hombre en sus treintas, comienza a perder la frontera entre lo que
 
           <div className="flex flex-col gap-5">
             {rendernotaAutoral()}
+            {/* hidden lg:block: en mobile/portrait ya la muestra el bloque
+                genérico lg:hidden fuera de renderShowcaseContent — sin este
+                gate se duplicaba la tarjeta en viewports <1024px. */}
             {activeDefinition.iaProfile ? (
-              <IAInsightCard {...activeDefinition.iaProfile} compact rewardLabel={buildShowcaseRewardLabel(showcaseTokenLedgerById[activeShowcase])} minRequired={buildShowcaseMinRequiredCopy(activeShowcase)} />
+              <div className="hidden lg:block">
+                <IAInsightCard {...activeDefinition.iaProfile} compact rewardLabel={buildShowcaseRewardLabel(showcaseTokenLedgerById[activeShowcase])} minRequired={buildShowcaseMinRequiredCopy(activeShowcase)} />
+              </div>
             ) : null}
             {activePortalExperienceDone && embeddedAppUrl ? (
               <a
@@ -3514,8 +3541,13 @@ Silvestre, un hombre en sus treintas, comienza a perder la frontera entre lo que
               </div>
               <div className="flex flex-col gap-5">
                 {rendernotaAutoral()}
+                {/* hidden lg:block: en mobile/portrait ya la muestra el bloque
+                    genérico lg:hidden fuera de renderShowcaseContent — sin este
+                    gate se duplicaba la tarjeta en viewports <1024px. */}
                 {activeDefinition.iaProfile ? (
-                  <IAInsightCard {...activeDefinition.iaProfile} compact rewardLabel={buildShowcaseRewardLabel(showcaseTokenLedgerById[activeShowcase])} minRequired={buildShowcaseMinRequiredCopy(activeShowcase)} />
+                  <div className="hidden lg:block">
+                    <IAInsightCard {...activeDefinition.iaProfile} compact rewardLabel={buildShowcaseRewardLabel(showcaseTokenLedgerById[activeShowcase])} minRequired={buildShowcaseMinRequiredCopy(activeShowcase)} />
+                  </div>
                 ) : null}
                 {activePortalExperienceDone && (
                   <button
@@ -3719,9 +3751,10 @@ Silvestre, un hombre en sus treintas, comienza a perder la frontera entre lo que
                 </div>
                 <div className="flex flex-col gap-5">
                   {rendernotaAutoral()}
-                  {activeDefinition.iaProfile ? (
-                    <IAInsightCard {...activeDefinition.iaProfile} compact rewardLabel={buildShowcaseRewardLabel(showcaseTokenLedgerById[activeShowcase])} minRequired={buildShowcaseMinRequiredCopy(activeShowcase)} />
-                  ) : null}
+                  {/* La tarjeta de Información de IA para este formato ya la
+                      renderiza el bloque genérico fuera de renderShowcaseContent
+                      (desktop: hidden lg:block / mobile: lg:hidden) — un segundo
+                      render aquí duplicaba la tarjeta en viewports <1024px. */}
                   {activePortalExperienceDone && (
                     <button
                       type="button"
@@ -5188,17 +5221,17 @@ Silvestre, un hombre en sus treintas, comienza a perder la frontera entre lo que
               viewport={{ once: true }}
               className="text-center mb-[clamp(2.5rem,5.5vh,4rem)] space-y-[clamp(1.25rem,2.2vh,1.75rem)] min-h-[clamp(210px,27vh,260px)] min-[700px]:max-lg:mb-8 min-[700px]:max-lg:min-h-[180px]"
             >
-              <p className="text-xs uppercase tracking-[0.4em] text-slate-400/70">Miniversos</p>
+              <p className="text-xs uppercase tracking-[0.4em] text-slate-400/70">Miniversos expandidos</p>
               <h2 className="font-display text-4xl md:text-5xl font-medium text-gradient italic">
                 Las formas de la obra
               </h2>
               <p className="text-lg text-slate-300/80 max-w-3xl mx-auto leading-relaxed font-light">
-    <em>Es un gato encerrado</em> no muere en el teatro.<br />
+    <em>La fugacidad de mi obra</em> no muere en el teatro.<br />
     Desde ahí se expande hacia <strong>nueve formas creativas</strong>.<br />
 
-      Cada una con su propio lenguaje y una manera distinta de participación.<br /><br />
+      Cada una con su propia versatilidad y manera de participación.<br /><br />
 
-   Ninguna repite la historia: <strong>la transforman.</strong><br /><br />
+   Ninguna repite la historia: <strong>la desdoblan.</strong><br /><br />
 
   </p>
             </motion.div>

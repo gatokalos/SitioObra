@@ -76,13 +76,11 @@ const MINIVERSE_KEYWORDS = {
 };
 
 const STARTER_FAQ_PROMPTS = [
-  '¿De qué trata el Universo #GatoEncerrado?',
-  '¿Cómo se conectan el arte, la tecnología y la salud emocional en este universo?',
+  '¿Qué hay realmente detrás del Universo #GatoEncerrado?',
+  '¿Cómo se conectan el arte, la tecnología y la salud emocional en ests obra?',
   '¿Qué parte de nosotros habla cuando creemos estar hablando solos?',
   '¿Qué diferencia hay entre medir cuánta gente ve una obra y saber si cambió algo en el público?',
-  '¿Qué pasa con lo que escribo adentro de este universo?',
-  '¿Qué es lo que Silvestre intenta recordar cada vez que su ira le hierve la sangre al despertar?',
-  '¿Quién está contando realmente la historia cuando aparecen el Payasito Tiste, la Reina de Espadas y los demás personajes?',
+  '¿Quién es Silvestre Filis?',
     ];
 
 const inferMiniverseFromPost = (post) => {

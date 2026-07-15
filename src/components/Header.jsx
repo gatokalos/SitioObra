@@ -40,15 +40,15 @@ const readIsRunningAsInstalledPwa = () => {
 
 const MOBILE_FULLSCREEN_MENU_PHASE_A_ENABLED = true;
 const TRANSMEDIA_SECONDARY_ITEMS = [
-  { label: 'Teatro', href: '#transmedia?focus=miniversos' },
-  { label: 'Artesanías', href: '#transmedia?focus=lataza' },
-  { label: 'Literatura', href: '#transmedia?focus=miniversoNovela' },
-  { label: 'Gráficos', href: '#transmedia?focus=miniversoGrafico' },
-  { label: 'Cine', href: '#transmedia?focus=copycats' },
-  { label: 'Sonoridades', href: '#transmedia?focus=miniversoSonoro' },
-  { label: 'Movimiento', href: '#transmedia?focus=miniversoMovimiento' },
-  { label: 'Juegos', href: '#transmedia?focus=apps' },
-  { label: 'Oráculo', href: '#transmedia?focus=oraculo' },
+  { label: 'El drama', href: '#transmedia?focus=miniversos' },
+  { label: 'El objeto', href: '#transmedia?focus=lataza' },
+  { label: 'La palabra', href: '#transmedia?focus=miniversoNovela' },
+  { label: 'La apariencia', href: '#transmedia?focus=miniversoGrafico' },
+  { label: 'El lente', href: '#transmedia?focus=copycats' },
+  { label: 'El eco', href: '#transmedia?focus=miniversoSonoro' },
+  { label: 'El cuerpo', href: '#transmedia?focus=miniversoMovimiento' },
+  { label: 'La ventura', href: '#transmedia?focus=apps' },
+  { label: 'El reflejo', href: '#transmedia?focus=oraculo' },
 ];
 
 const Header = ({

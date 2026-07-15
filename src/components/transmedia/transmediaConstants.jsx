@@ -1375,7 +1375,7 @@ Este espacio permite recorrer esas composiciones, explorar sus capas y descubrir
 export const formats = [
   {
     id: 'miniversos',
-    title: 'Teatro',
+    title: 'El drama',
     icon: Drama,
     iconClass: 'text-purple-300',
 
@@ -1384,7 +1384,7 @@ export const formats = [
   },
   {
     id: 'lataza',
-    title: 'Artesanías',
+    title: 'El objeto',
     icon: Coffee,
     iconClass: 'text-amber-300',
 
@@ -1393,7 +1393,7 @@ export const formats = [
   },
   {
     id: 'miniversoNovela',
-    title: 'Literatura',
+    title: 'La palabra',
     icon: BookOpen,
     iconClass: 'text-emerald-300',
 
@@ -1402,7 +1402,7 @@ export const formats = [
   },
   {
     id: 'miniversoGrafico',
-    title: 'Gráficos',
+    title: 'La apariencia',
     icon: Palette,
     iconClass: 'text-fuchsia-300',
 
@@ -1411,7 +1411,7 @@ export const formats = [
   },
   {
     id: 'copycats',
-    title: 'Cine',
+    title: 'El lente',
     icon: Film,
     iconClass: 'text-rose-300',
 
@@ -1420,7 +1420,7 @@ export const formats = [
   },
   {
     id: 'miniversoSonoro',
-    title: 'Sonoridades',
+    title: 'El eco',
     icon: Music,
     iconClass: 'text-cyan-300',
 
@@ -1429,7 +1429,7 @@ export const formats = [
   },
   {
     id: 'miniversoMovimiento',
-    title: 'Movimiento',
+    title: 'El cuerpo',
     icon: MapIcon,
     iconClass: 'text-sky-300',
 
@@ -1438,7 +1438,7 @@ export const formats = [
   },
   {
     id: 'apps',
-    title: 'Juegos',
+    title: 'La ventura',
     icon: Dice5,
     iconClass: 'text-lime-300',
 
@@ -1447,7 +1447,7 @@ export const formats = [
   },
   {
     id: 'oraculo',
-    title: 'Oráculo',
+    title: 'El reflejo',
     icon: Brain,
     iconClass: 'text-indigo-300',
 
