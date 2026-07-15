@@ -267,7 +267,7 @@ const Header = ({
           {
             name: 'Nueve formas',
             href: '#transmedia',
-            description: 'Mini-versos expandidos',
+            description: 'Obra transmedia',
             secondary: TRANSMEDIA_SECONDARY_ITEMS,
           },
         ]

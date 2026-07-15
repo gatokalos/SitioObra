@@ -76,12 +76,22 @@ const MINIVERSE_KEYWORDS = {
 };
 
 const STARTER_FAQ_PROMPTS = [
-  '¿Qué hay realmente detrás del Universo #GatoEncerrado?',
-  '¿Cómo se conectan el arte, la tecnología y la salud emocional en ests obra?',
+  '¿Qué hay realmente detrás de las nueve formas de esta obra transmedia?',
+  '¿Qué le pasa a #GatoEncerrado cuando por fin alguien lo mira?',
+  '¿Qué han sentido otras personas al habitar este universo?',
+  '¿Qué significa desdoblar una historia que no se cuenta?',
   '¿Qué parte de nosotros habla cuando creemos estar hablando solos?',
   '¿Qué diferencia hay entre medir cuánta gente ve una obra y saber si cambió algo en el público?',
-  '¿Quién es Silvestre Filis?',
-    ];
+  '¿Se puede observar algo sin cambiarlo — incluyéndote a ti mismo?',
+  '¿Fingir puede ser, a veces, la forma más honesta de estar?',
+  '¿Dejarías que algo más inteligente que tú hablara por ti, si lo hiciera mejor?',
+  '¿Ponerle nombre a lo que sientes te libera o te encierra más?',
+  '¿En qué momento cuidar a alguien se vuelve querer controlarlo?',
+  '¿Qué diferencia hay entre quedarte porque no puedes irte y quedarte habiendo podido irte?',
+  '¿Por qué asociamos la profundidad con la solemnidad?',
+  '¿Puede una historia terminar sin que nadie le ponga el punto final?',
+  '¿Qué se pierde cuando algo se cuenta roto, a pedazos, en vez de contarse completo?',
+];
 
 const inferMiniverseFromPost = (post) => {
   const haystack = [

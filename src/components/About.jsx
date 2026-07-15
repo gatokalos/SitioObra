@@ -231,7 +231,7 @@ export const ProvocaSection = () => {
           ? 'Pulsa otra vez para enviar'
           : micPromptVisible
             ? 'Pulsa para sacar lo que tienes dentro'
-            : 'Quiero escuchar una reacción de la obra';
+            : 'Quiero escuchar la reacción de la obra';
   const escucharButtonVisualLabel =
     pendingSilvestreAudioUrl && !isSilvestrePlaying ? 'Reproducir' : escucharStatusLabel;
 
@@ -837,7 +837,7 @@ export const ProvocaSection = () => {
                 </span>
               </h3>
               <p className="text-slate-300/80 leading-relaxed mb-6 font-light">
-                Lee una perspectiva a la vez o comparte la tuya si algo necesita salir.
+                Lee una perspectiva a la vez o comparte la tuya si algo necesita salir — y deja que la obra te responda.
               </p>
               <div className="flex flex-col sm:flex-row gap-3">
                 <Button
@@ -936,7 +936,7 @@ export const ProvocaSection = () => {
                       ) : null}
                 
                       <p className="w-full text-[11px] text-slate-300/70">
-                        Si no quieres publicar, solo escucha una reacción inspirada en tu voz.
+                        Si no quieres publicar, solo escucha una reacción de la obra inspirada en tu voz.
                       </p>
                     </div>
                        <details className="group mt-4 md:mt-5 mb-5 rounded-2xl border border-emerald-300/20 bg-emerald-500/10 px-4 py-3 text-left">

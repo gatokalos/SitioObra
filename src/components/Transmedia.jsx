@@ -5221,17 +5221,17 @@ Silvestre, un hombre en sus treintas, comienza a perder la frontera entre lo que
               viewport={{ once: true }}
               className="text-center mb-[clamp(2.5rem,5.5vh,4rem)] space-y-[clamp(1.25rem,2.2vh,1.75rem)] min-h-[clamp(210px,27vh,260px)] min-[700px]:max-lg:mb-8 min-[700px]:max-lg:min-h-[180px]"
             >
-              <p className="text-xs uppercase tracking-[0.4em] text-slate-400/70">Miniversos expandidos</p>
+              <p className="text-xs uppercase tracking-[0.4em] text-slate-400/70">Nueve Miniversos</p>
               <h2 className="font-display text-4xl md:text-5xl font-medium text-gradient italic">
                 Las formas de la obra
               </h2>
               <p className="text-lg text-slate-300/80 max-w-3xl mx-auto leading-relaxed font-light">
-    <em>La fugacidad de mi obra</em> no muere en el teatro.<br />
-    Desde ahí se expande hacia <strong>nueve formas creativas</strong>.<br />
+    <em>La fugacidad de esta obra nace en el esecenario.</em><br />
+    Desde ahí se expande hacia <strong>otras formas creativas</strong>.<br />
 
       Cada una con su propia versatilidad y manera de participación.<br /><br />
 
-   Ninguna repite la historia: <strong>la desdoblan.</strong><br /><br />
+   Ninguna cuenta una historia: <strong>la desdoblan.</strong><br /><br />
 
   </p>
             </motion.div>
