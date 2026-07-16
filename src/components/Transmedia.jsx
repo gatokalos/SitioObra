@@ -840,7 +840,11 @@ const Transmedia = ({ allianceOnlyMode = false }) => {
   const handleSelectMiniverse = useCallback(
     (formatId) => {
       if (!formatId) return;
-      if (navigateToMobilePortalIfReady(formatId)) {
+      // isMobileViewport (768px), no isVitrinaCarouselViewport (1024px): esta
+      // ruta corre para cualquier usuario, no solo el carrusel de invitados —
+      // un iPad en el rango 768-1023px debe abrir la vitrina normal, como antes
+      // del fix de iPad portrait (ver handleFormatClick más abajo).
+      if (isMobileViewport && navigateToMobilePortalIfReady(formatId)) {
         setIsMiniverseShelved(false);
         return;
       }
@@ -853,7 +857,7 @@ const Transmedia = ({ allianceOnlyMode = false }) => {
       }
       setIsMiniverseShelved(true);
     },
-    [navigateToMobilePortalIfReady, openMiniverseById, setIsMiniversoEditorialModalOpen]
+    [isMobileViewport, navigateToMobilePortalIfReady, openMiniverseById, setIsMiniversoEditorialModalOpen]
   );
 
   useEffect(() => {
@@ -893,7 +897,12 @@ const Transmedia = ({ allianceOnlyMode = false }) => {
           return;
         }
       }
-      if (navigateToMobilePortalIfReady(formatId)) {
+      // isMobileViewport (768px), no isVitrinaCarouselViewport (1024px): esta
+      // rama corre para cualquier usuario (autenticado incluido) — un iPad en
+      // el rango 768-1023px debe abrir la vitrina normal aquí, no la página
+      // móvil dedicada. isVitrinaCarouselViewport solo aplica arriba, al
+      // carrusel de invitados sin cuenta.
+      if (isMobileViewport && navigateToMobilePortalIfReady(formatId)) {
         return;
       }
       if (focusLockShowcaseId) {
@@ -920,6 +929,7 @@ const Transmedia = ({ allianceOnlyMode = false }) => {
       focusLockShowcaseId,
       handleOpenMiniverses,
       isAuthenticated,
+      isMobileViewport,
       isVitrinaCarouselViewport,
       loadShowcaseContent,
       navigateToMobilePortalIfReady,
