@@ -1194,10 +1194,14 @@ const Transmedia = ({ allianceOnlyMode = false }) => {
     if (activePortalL3RecommendedPortal) {
       const nextShowcase = PORTAL_TO_SHOWCASE[activePortalL3RecommendedPortal];
       if (nextShowcase) {
-        setTimeout(() => setActiveShowcase(nextShowcase), 900);
+        // handleFormatClick (no setActiveShowcase crudo): esto puede recomendar
+        // CUALQUIER formato, no solo el que un invitado tenía desbloqueado — sin
+        // pasar por la verificación de acceso, un invitado podía saltar a
+        // cualquier vitrina sin login (ver mismo fix en onNavigateToRecommendation).
+        setTimeout(() => handleFormatClick(nextShowcase), 900);
       }
     }
-  }, [activeShowcase, activePortalL3RecommendedPortal, trackTransmediaCreditEvent]);
+  }, [activeShowcase, activePortalL3RecommendedPortal, handleFormatClick, trackTransmediaCreditEvent]);
 
   const {
     latestBlogPostByShowcase,
@@ -4231,7 +4235,7 @@ Silvestre, un hombre en sus treintas, comienza a perder la frontera entre lo que
                           portal="obra"
                           onOpenNarrative={() => setIsNarrativeDramaOpen(true)}
                           narrativeCTALabel="✦ Entrar al drama"
-                          onNavigateToRecommendation={setActiveShowcase}
+                          onNavigateToRecommendation={handleFormatClick}
                           isMobileViewport={isMobileViewport}
                         />
                       </>
@@ -4268,7 +4272,7 @@ Silvestre, un hombre en sus treintas, comienza a perder la frontera entre lo que
                           portal="literatura"
                           onOpenNarrative={() => setShowLiteraturaApp(true)}
                           narrativeCTALabel="📖 Activar artefacto"
-                          onNavigateToRecommendation={setActiveShowcase}
+                          onNavigateToRecommendation={handleFormatClick}
                           isMobileViewport={isMobileViewport}
                         />
                       </>
@@ -4305,7 +4309,7 @@ Silvestre, un hombre en sus treintas, comienza a perder la frontera entre lo que
                           portal="artesanias"
                           onOpenNarrative={handleActivateAR}
                           narrativeCTALabel="✦ Activa tu taza"
-                          onNavigateToRecommendation={setActiveShowcase}
+                          onNavigateToRecommendation={handleFormatClick}
                           isMobileViewport={isMobileViewport}
                         />
                       </>
@@ -4342,7 +4346,7 @@ Silvestre, un hombre en sus treintas, comienza a perder la frontera entre lo que
                           portal="grafico"
                           onOpenNarrative={() => { const sw = activeDefinition.swipeShowcases?.[0]; if (sw) handleOpenGraphicSwipe(sw); }}
                           narrativeCTALabel="✦ Ver el swipe"
-                          onNavigateToRecommendation={setActiveShowcase}
+                          onNavigateToRecommendation={handleFormatClick}
                           onL2QuestionReady={handlePdfAftercareClose}
                           isMobileViewport={isMobileViewport}
                         />
@@ -4380,7 +4384,7 @@ Silvestre, un hombre en sus treintas, comienza a perder la frontera entre lo que
                           portal="cine"
                           onOpenNarrative={Boolean(showcaseBoosts?.copycats_full_unlock || quironSpent) ? handleQuironPlayRequest : handleToggleQuironPrompt}
                           narrativeCTALabel={Boolean(showcaseBoosts?.copycats_full_unlock || quironSpent) ? '▶ Ver Quirón' : '✦ Ver el corto'}
-                          onNavigateToRecommendation={setActiveShowcase}
+                          onNavigateToRecommendation={handleFormatClick}
                           isMobileViewport={isMobileViewport}
                         />
                       </>
@@ -4417,7 +4421,7 @@ Silvestre, un hombre en sus treintas, comienza a perder la frontera entre lo que
                           portal="sonoridades"
                           onOpenNarrative={handleSonoroEnter}
                           narrativeCTALabel="✦ Escuchar ahora"
-                          onNavigateToRecommendation={setActiveShowcase}
+                          onNavigateToRecommendation={handleFormatClick}
                           isMobileViewport={isMobileViewport}
                         />
                       </>
@@ -4454,7 +4458,7 @@ Silvestre, un hombre en sus treintas, comienza a perder la frontera entre lo que
                           portal="movimiento"
                           onOpenNarrative={() => handleOpenContribution(getContributionCategoryForShowcase('miniversoMovimiento'))}
                           narrativeCTALabel="✦ Ver los talleres"
-                          onNavigateToRecommendation={setActiveShowcase}
+                          onNavigateToRecommendation={handleFormatClick}
                           isMobileViewport={isMobileViewport}
                         />
                       </>
@@ -4491,7 +4495,7 @@ Silvestre, un hombre en sus treintas, comienza a perder la frontera entre lo que
                           portal="juegos"
                           onOpenNarrative={() => { const u = sanitizeExternalHttpUrl(activeDefinition.liveExperience?.url); if (u) window.open(u, '_blank'); }}
                           narrativeCTALabel={activeDefinition.liveExperience?.ctaLabel || '✦ Abrir la app'}
-                          onNavigateToRecommendation={setActiveShowcase}
+                          onNavigateToRecommendation={handleFormatClick}
                           isMobileViewport={isMobileViewport}
                         />
                       </>
@@ -4528,7 +4532,7 @@ Silvestre, un hombre en sus treintas, comienza a perder la frontera entre lo que
                           portal="oraculo"
                           onOpenNarrative={handleOpenOraculo}
                           narrativeCTALabel={activeDefinition.ctaLabel || '✦ Explorar'}
-                          onNavigateToRecommendation={setActiveShowcase}
+                          onNavigateToRecommendation={handleFormatClick}
                           isMobileViewport={isMobileViewport}
                         />
                       </>
