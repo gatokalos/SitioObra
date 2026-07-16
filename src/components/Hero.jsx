@@ -1262,6 +1262,11 @@ const Hero = () => {
           open={isGatokensModalOpen}
           recommendedShowcaseId={recommendedVitranaId}
           isUmbral={isUmbralReveal}
+          onPlayScene={(showcaseId) => {
+            if (!showcaseId) return;
+            setAutoVideoFormatId(showcaseId);
+            setIsAutoVideoOpen(true);
+          }}
           onProvoca={() => {
             setIsGatokensModalOpen(false);
             try {

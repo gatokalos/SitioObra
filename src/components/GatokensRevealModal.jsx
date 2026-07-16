@@ -16,7 +16,14 @@ const GATOKENS_REVEAL_ACK_EVENT = 'gatoencerrado:gatokens-reveal-ack';
 const GATOKEN_COIN_SRC =
   'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/oraculo/gato-moneda.png';
 
-const GatokensRevealModal = ({ open, onClose, isUmbral = false, onProvoca }) => {
+const GatokensRevealModal = ({
+  open,
+  onClose,
+  isUmbral = false,
+  onProvoca,
+  onPlayScene,
+  recommendedShowcaseId,
+}) => {
   const [balance, setBalance] = useState(null);
   const [isRevealAcknowledged, setIsRevealAcknowledged] = useState(false);
   const navigate = useNavigate();
@@ -77,6 +84,13 @@ const GatokensRevealModal = ({ open, onClose, isUmbral = false, onProvoca }) => 
     onProvoca?.();
   }, [dispatchRevealAck, onProvoca]);
 
+  const handlePlayScene = useCallback(() => {
+    if (!recommendedShowcaseId) return;
+    dispatchRevealAck('gatokens-modal-scene');
+    onClose?.();
+    onPlayScene?.(recommendedShowcaseId);
+  }, [dispatchRevealAck, onClose, onPlayScene, recommendedShowcaseId]);
+
   const handleCoinClick = useCallback(() => {
     if (isRevealAcknowledged) return;
     dispatchRevealAck('gatokens-modal-coin');
@@ -117,7 +131,72 @@ const GatokensRevealModal = ({ open, onClose, isUmbral = false, onProvoca }) => 
             onClick={onClose}
           />
 
-          {/* panel */}
+          {isUmbral ? (
+            <motion.div
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="gatokens-modal-title"
+              variants={panelVariants}
+              className="relative z-10 flex w-full max-w-md flex-col items-center px-5 py-10 text-center"
+            >
+              <span
+                aria-hidden="true"
+                className="pointer-events-none absolute left-1/2 top-20 h-64 w-64 -translate-x-1/2 rounded-full blur-[72px]"
+                style={{ background: 'radial-gradient(circle, rgba(109,40,217,0.34) 0%, rgba(217,31,139,0.12) 48%, transparent 72%)' }}
+              />
+
+              <motion.button
+                type="button"
+                onClick={handleCoinClick}
+                className="relative rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-200/70 focus-visible:ring-offset-4 focus-visible:ring-offset-[#04020f]"
+                aria-label="Confirmar GATokens recibidos"
+                title="Confirmar GATokens recibidos"
+                whileTap={isRevealAcknowledged ? undefined : { scale: 0.96 }}
+              >
+                <motion.img
+                  src={GATOKEN_COIN_SRC}
+                  alt=""
+                  className="h-28 w-28 sm:h-32 sm:w-32"
+                  animate={coinPulseAnimate}
+                  transition={coinPulseTransition}
+                  draggable="false"
+                />
+              </motion.button>
+
+              <h2
+                id="gatokens-modal-title"
+                className="relative mt-9 text-3xl font-medium leading-tight tracking-[-0.02em] text-white sm:text-4xl"
+              >
+                La obra ya sabe<br />que estás aquí.
+              </h2>
+
+              <button
+                type="button"
+                onClick={handlePlayScene}
+                disabled={!recommendedShowcaseId}
+                className="
+                  group relative mt-10 inline-flex min-h-14 w-full max-w-sm items-center justify-center gap-3 overflow-hidden rounded-full
+                  border border-violet-200/25 bg-white/[0.06] px-7 py-4 text-base font-semibold text-white
+                  shadow-[0_16px_50px_rgba(109,40,217,0.28)] backdrop-blur-md
+                  transition-all duration-300 hover:border-violet-200/45 hover:bg-white/[0.1]
+                  hover:shadow-[0_18px_58px_rgba(139,92,246,0.4)] hover:scale-[1.015]
+                  active:scale-[0.985] disabled:cursor-not-allowed disabled:opacity-45
+                "
+              >
+                <span
+                  aria-hidden="true"
+                  className="absolute inset-0 bg-gradient-to-r from-[#1f2f63]/55 via-[#6e30ab]/55 to-[#d91f8b]/55 opacity-80 transition-opacity duration-300 group-hover:opacity-100"
+                />
+                <span className="relative flex h-8 w-8 items-center justify-center rounded-full border border-white/20 bg-black/20">
+                  <svg viewBox="0 0 24 24" fill="currentColor" className="h-4 w-4 translate-x-px" focusable="false">
+                    <path d="M8 5v14l11-7z" />
+                  </svg>
+                </span>
+                <span className="relative">Esta escena es para ti</span>
+              </button>
+            </motion.div>
+          ) : (
+          /* panel normal de GATokens */
           <motion.div
             role="dialog"
             aria-modal="true"
@@ -187,51 +266,23 @@ const GatokensRevealModal = ({ open, onClose, isUmbral = false, onProvoca }) => 
             </p>
 
             {/* CTAs */}
-            {isUmbral ? (
-              <>
-                <button
-                  type="button"
-                  onClick={handleProvoca}
-                  className="
-                    mb-3 w-full rounded-full
-                    bg-gradient-to-r from-violet-600 via-purple-600 to-fuchsia-600
-                    px-6 py-3 text-sm font-semibold text-white
-                    shadow-[0_8px_28px_rgba(139,92,246,0.38)]
-                    transition-all duration-200
-                    hover:shadow-[0_10px_36px_rgba(139,92,246,0.52)]
-                    hover:scale-[1.02] active:scale-[0.98]
-                  "
-                >
-                  ¿Te movió de más?
-                </button>
-                <button
-                  type="button"
-                  onClick={handleExplore}
-                  className="w-full rounded-full px-6 py-3 text-sm font-semibold transition-all duration-200 border border-white/10 bg-white/5 text-slate-300/70 hover:text-slate-200"
-                >
-                  Explorar el sitio →
-                </button>
-              </>
-            ) : (
-              <>
-                <button
-                  type="button"
-                  onClick={handleExplore}
-                  className="
-                    w-full rounded-full
-                    bg-gradient-to-r from-violet-600 via-purple-600 to-fuchsia-600
-                    px-6 py-3 text-sm font-semibold text-white
-                    shadow-[0_8px_28px_rgba(139,92,246,0.38)]
-                    transition-all duration-200
-                    hover:shadow-[0_10px_36px_rgba(139,92,246,0.52)]
-                    hover:scale-[1.02] active:scale-[0.98]
-                  "
-                >
-                  Conocer la Obra
-                </button>
-              </>
-            )}
+            <button
+              type="button"
+              onClick={handleExplore}
+              className="
+                w-full rounded-full
+                bg-gradient-to-r from-violet-600 via-purple-600 to-fuchsia-600
+                px-6 py-3 text-sm font-semibold text-white
+                shadow-[0_8px_28px_rgba(139,92,246,0.38)]
+                transition-all duration-200
+                hover:shadow-[0_10px_36px_rgba(139,92,246,0.52)]
+                hover:scale-[1.02] active:scale-[0.98]
+              "
+            >
+              Conocer la Obra
+            </button>
           </motion.div>
+          )}
         </motion.div>
       )}
     </AnimatePresence>

@@ -85,6 +85,25 @@ Uso en Transmedia:
 
 ---
 
+## Escena de retorno del Pasillo Umbral
+
+Cuando el intent de Bienvenida llega con `isUmbral: true`, `GatokensRevealModal` usa una variante escenica sin panel sobre el overlay borroso existente:
+
+- Moneda GAT actual, prominente y ambiental.
+- Texto fijo: `La obra ya sabe que estás aquí.`
+- CTA fijo: `Esta escena es para ti`.
+- El CTA abre `VideoNarrativeAutoplay` con el `showcaseId` resuelto desde la app elegida/recomendada.
+- Todos los showcases pueden usar el mismo video placeholder mientras se producen sus videos definitivos.
+- El nombre/CTA correspondiente no se anticipa en la escena: se revela mediante la UI existente cuando termina el video.
+
+Limites de esta variante:
+- No modifica autenticacion.
+- No modifica preguntas ni vitrinas.
+- No modifica saldo, ledger o eventos GAT.
+- No modifica la presentacion normal de `GatokensRevealModal` cuando `isUmbral` es falso.
+
+---
+
 ## Checklist QA (cross-repo)
 
 1. Usuario anonimo:
