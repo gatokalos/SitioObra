@@ -112,20 +112,15 @@ const LoginOverlay = lazy(() => import('@/components/ContributionModal/LoginOver
 const PdfPreviewDocument = lazy(() => import('@/components/transmedia/PdfPreviewDocument'));
 const HashtagButton3D = lazy(() => import('@/components/HashtagButton3D'));
 import {
-  getHeroAmbientAudio,
   getHeroAmbientState,
   subscribeHeroAmbient,
-  toggleHeroAmbientMuted,
+  setHeroAmbientMuted,
   HERO_AMBIENT_DEFAULT_VOLUME,
-  HERO_AMBIENT_MIN_AUDIBLE_VOLUME,
-  resumeHeroAmbientPlayback,
 } from '@/lib/heroAmbientAudio';
 import {
-  getTransmediaSectionAudio,
   getTransmediaSectionState,
   subscribeTransmediaAmbient,
   setTransmediaAmbientMuted,
-  TRANSMEDIA_AMBIENT_DEFAULT_VOLUME,
 } from '@/lib/transmediaSectionAudio';
 import {
   GAT_COSTS,
@@ -313,33 +308,16 @@ const Transmedia = ({ allianceOnlyMode = false }) => {
   const handleToggleShowcaseAmbient = useCallback(() => {
     // El control de audio ambient es una preferencia de UI, no un recurso con
     // GAT detrás — también debe funcionar para invitados sin cuenta.
-    const audio = getHeroAmbientAudio();
-    if (!audio) return;
-    // Este botón vive dentro de #transmedia, donde según el hold puede sonar
-    // la pista Hero o la pista propia de Transmedia (RecurringDream) — el
-    // "silencio" que promete el botón debe cubrir ambas, no solo Hero.
-    const transmediaAudio = getTransmediaSectionAudio();
-    const transmediaState = getTransmediaSectionState();
-    const transmediaDesynced = Boolean(transmediaAudio) && !transmediaState.isMuted && transmediaAudio.paused;
-    if (!ambientState.isMuted && audio.paused) {
-      audio.volume = HERO_AMBIENT_DEFAULT_VOLUME;
-      if (audio.volume > HERO_AMBIENT_MIN_AUDIBLE_VOLUME) {
-        void resumeHeroAmbientPlayback({ targetVolume: HERO_AMBIENT_DEFAULT_VOLUME });
-      }
-      if (transmediaDesynced) {
-        transmediaAudio.volume = TRANSMEDIA_AMBIENT_DEFAULT_VOLUME;
-        void transmediaAudio.play().catch(() => {});
-      }
-      return;
-    }
-    if (transmediaDesynced) {
-      transmediaAudio.volume = TRANSMEDIA_AMBIENT_DEFAULT_VOLUME;
-      void transmediaAudio.play().catch(() => {});
-      return;
-    }
-    const nextMuted = toggleHeroAmbientMuted({ targetVolume: HERO_AMBIENT_DEFAULT_VOLUME });
+    // Este botón vive dentro de #transmedia, donde el Hero está pausado a
+    // propósito (hold, ver useTransmediaSectionAudio/onExternalAmbientHold en
+    // Hero.jsx) — la pista que debe sonar/callar aquí es la de Transmedia.
+    // La preferencia de Hero se actualiza para cuando el usuario vuelva a su
+    // sección, pero con targetVolume 0 para NO forzar su reproducción ahora:
+    // hacerlo (como antes) traslapaba las dos pistas sonando a la vez.
+    const nextMuted = isShowcaseAmbientAudible;
+    setHeroAmbientMuted(nextMuted, { targetVolume: nextMuted ? HERO_AMBIENT_DEFAULT_VOLUME : 0 });
     setTransmediaAmbientMuted(nextMuted);
-  }, [ambientState.isMuted]);
+  }, [isShowcaseAmbientAudible]);
   const { hasActiveSubscription } = useActiveSubscription(user?.id, session);
   const isAuthenticated = Boolean(user);
   const isSubscriber = Boolean(

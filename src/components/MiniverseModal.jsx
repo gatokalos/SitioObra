@@ -25,20 +25,15 @@ import {
   NARRATIVE_VIDEO_URL_MOBILE,
 } from '@/lib/narrativeVideo';
 import {
-  getHeroAmbientAudio,
   getHeroAmbientState,
   subscribeHeroAmbient,
-  toggleHeroAmbientMuted,
+  setHeroAmbientMuted,
   HERO_AMBIENT_DEFAULT_VOLUME,
-  HERO_AMBIENT_MIN_AUDIBLE_VOLUME,
-  resumeHeroAmbientPlayback,
 } from '@/lib/heroAmbientAudio';
 import {
-  getTransmediaSectionAudio,
   getTransmediaSectionState,
   subscribeTransmediaAmbient,
   setTransmediaAmbientMuted,
-  TRANSMEDIA_AMBIENT_DEFAULT_VOLUME,
 } from '@/lib/transmediaSectionAudio';
 import { Volume2, VolumeX } from 'lucide-react';
 import GATChip from '@/components/portal/GATChip';
@@ -543,33 +538,16 @@ const MiniverseModal = ({
   const handleToggleShowcaseVideoAmbient = useCallback(() => {
     // El control de audio ambient es una preferencia de UI, no un recurso con
     // GAT detrás — también debe funcionar para invitados sin cuenta.
-    const audio = getHeroAmbientAudio();
-    if (!audio) return;
-    // Este modal convive con #transmedia en el DOM del homepage, donde según
-    // el hold puede sonar la pista Hero o la propia de Transmedia — el
-    // "silencio" debe cubrir ambas, no solo Hero.
-    const transmediaAudio = getTransmediaSectionAudio();
-    const transmediaState = getTransmediaSectionState();
-    const transmediaDesynced = Boolean(transmediaAudio) && !transmediaState.isMuted && transmediaAudio.paused;
-    if (!ambientState.isMuted && audio.paused) {
-      audio.volume = HERO_AMBIENT_DEFAULT_VOLUME;
-      if (audio.volume > HERO_AMBIENT_MIN_AUDIBLE_VOLUME) {
-        void resumeHeroAmbientPlayback({ targetVolume: HERO_AMBIENT_DEFAULT_VOLUME });
-      }
-      if (transmediaDesynced) {
-        transmediaAudio.volume = TRANSMEDIA_AMBIENT_DEFAULT_VOLUME;
-        void transmediaAudio.play().catch(() => {});
-      }
-      return;
-    }
-    if (transmediaDesynced) {
-      transmediaAudio.volume = TRANSMEDIA_AMBIENT_DEFAULT_VOLUME;
-      void transmediaAudio.play().catch(() => {});
-      return;
-    }
-    const nextMuted = toggleHeroAmbientMuted({ targetVolume: HERO_AMBIENT_DEFAULT_VOLUME });
+    // Este modal convive con #transmedia en el DOM del homepage, donde el
+    // Hero está pausado a propósito (hold, ver onExternalAmbientHold en
+    // Hero.jsx) — la pista que debe sonar/callar aquí es la de Transmedia.
+    // La preferencia de Hero se actualiza para cuando el usuario vuelva a su
+    // sección, pero con targetVolume 0 para NO forzar su reproducción ahora:
+    // hacerlo (como antes) traslapaba las dos pistas sonando a la vez.
+    const nextMuted = isShowcaseAmbientAudible;
+    setHeroAmbientMuted(nextMuted, { targetVolume: nextMuted ? HERO_AMBIENT_DEFAULT_VOLUME : 0 });
     setTransmediaAmbientMuted(nextMuted);
-  }, [ambientState.isMuted]);
+  }, [isShowcaseAmbientAudible]);
   const isSafari = isSafariBrowser();
   const isInlineMode = displayMode === 'inline';
   const inlineTitleStyle = isInlineMode ? { fontFamily: 'Vox Round, Inter, sans-serif' } : undefined;
