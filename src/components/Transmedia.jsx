@@ -160,6 +160,7 @@ import {
   extractFocusIncomingGAT,
   getFocusParamFromLocation,
   CAUSE_ACCORDION,
+  ORACULO_RECOMMENDED_SHOWCASE_KEY,
 } from '@/components/transmedia/transmediaConstants';
 
 const OBRA_TRAILER_URL = 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/cedes/gatoencerrado-trailer-web.mp4';
@@ -759,7 +760,26 @@ const Transmedia = ({ allianceOnlyMode = false }) => {
     const targetIndex = formats.findIndex((item) => item.id === showcaseId);
     if (targetIndex < 0) return;
 
-    setRecommendedShowcaseId(isRecommended ? showcaseId : null);
+    let nextRecommendedId = null;
+    if (isRecommended) {
+      if (isAuthenticated) {
+        nextRecommendedId = showcaseId;
+      } else {
+        // La vitrina gratis de un invitado se fija en la PRIMERA recomendación
+        // de la sesión y ya no se reemplaza después (chip de GAT del Header,
+        // recomendación L3, etc.) — evita que un invitado termine con acceso a
+        // una vitrina distinta a la prometida, y que la original quede
+        // inaccesible sin aviso (ver handleFormatClick / hasUnlockedAccess).
+        const locked = safeGetItem(ORACULO_RECOMMENDED_SHOWCASE_KEY);
+        if (locked && showcaseDefinitions[locked]) {
+          nextRecommendedId = locked;
+        } else {
+          safeSetItem(ORACULO_RECOMMENDED_SHOWCASE_KEY, showcaseId);
+          nextRecommendedId = showcaseId;
+        }
+      }
+    }
+    setRecommendedShowcaseId(nextRecommendedId);
     setActiveShowcase(null);
     setIsMiniverseShelved(false);
     setMobileShowcaseIndex(targetIndex);
@@ -768,7 +788,7 @@ const Transmedia = ({ allianceOnlyMode = false }) => {
       const desktopStart = (targetIndex - 1 + formats.length) % formats.length;
       setShowcaseCarouselIndex(desktopStart);
     }
-  }, []);
+  }, [isAuthenticated]);
 
   const stopScopedMediaPlayback = useCallback((preserveHeroAmbient = true) => {
     if (typeof document === 'undefined') {

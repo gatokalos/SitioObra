@@ -28,7 +28,10 @@ import { createPortalLaunchState } from '@/lib/portalNavigation';
 import { safeGetItem, safeSetItem } from '@/lib/safeStorage';
 import { extractRecommendedAppId, resolveShowcaseFromAppId } from '@/lib/bienvenidaBridge';
 import { NARRATIVE_VIDEO_URL_DESKTOP } from '@/lib/narrativeVideo';
-import { showcaseDefinitions } from '@/components/transmedia/transmediaConstants';
+import {
+  showcaseDefinitions,
+  ORACULO_RECOMMENDED_SHOWCASE_KEY,
+} from '@/components/transmedia/transmediaConstants';
 import {
   readHeroActivatedFromSession,
   writeHeroActivatedToSession,
@@ -37,11 +40,6 @@ import {
 } from '@/lib/heroActivation';
 
 const POZO_HERO_REVEAL_KEY = 'gatoencerrado:pozo-hero-reveal:v1';
-// Copia durable de la recomendación del Oráculo — distinta de
-// consumeBienvenidaGatokensRevealPending(), que se borra al leerse una vez
-// (solo sirve para el modal inicial). Esta se queda para que el tooltip de
-// GATokens del Header pueda mostrarla más tarde también.
-const ORACULO_RECOMMENDED_SHOWCASE_KEY = 'gatoencerrado:oraculo-recommended-showcase';
 
 const SUPABASE_STORAGE = `${import.meta.env.VITE_SUPABASE_URL || ''}/storage/v1/object/public`;
 const HERO_LOGGED_IN_AUDIO_URL = `${SUPABASE_STORAGE}/Sonoridades/audio/A2_Melody_MSTR.m4a`;

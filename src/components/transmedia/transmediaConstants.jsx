@@ -76,6 +76,11 @@ export const SHOWCASE_BADGE_IDS = [
 export const EXPLORER_BADGE_STORAGE_KEY = 'gatoencerrado:explorer-badge';
 export const HERO_PENDING_MINIVERSE_SELECTION_KEY = 'gatoencerrado:hero-inline-miniverse-selection';
 export const LOGIN_RETURN_KEY = 'gatoencerrado:login-return';
+// La vitrina que se le prometió gratis a un invitado la primera vez (bienvenida/
+// Oráculo). Se fija una sola vez por sesión de invitado — ver focusShowcaseCard
+// en Transmedia.jsx, que la usa para que el chip de GAT o una recomendación L3
+// no puedan reemplazarla por otra vitrina.
+export const ORACULO_RECOMMENDED_SHOWCASE_KEY = 'gatoencerrado:oraculo-recommended-showcase';
 export const getInitialInstallPwaCTAVisibility = () => {
   if (typeof window === 'undefined') return false;
   const userAgent = typeof navigator !== 'undefined' ? navigator.userAgent : '';
