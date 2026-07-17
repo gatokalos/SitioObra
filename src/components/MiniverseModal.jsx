@@ -1016,7 +1016,7 @@ const MiniverseModal = ({
     };
 
     function newFunction() {
-      return 'Accede a los registros y procesos que existen detrás del universo.';
+      return 'Así podrás acceder a los procesos que existen detrás del universo.';
     }
   }, [activeTab]);
   const showcaseMiniverses = useMemo(

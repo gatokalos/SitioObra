@@ -82,7 +82,7 @@ const STARTER_FAQ_PROMPTS = [
   '¿Qué significa desdoblar una historia que no se cuenta?',
   '¿Qué parte de nosotros habla cuando creemos estar hablando solos?',
   '¿Qué diferencia hay entre medir cuánta gente ve una obra y saber si cambió algo en el público?',
-  '¿Se puede observar algo sin cambiarlo — incluyéndote a ti mismo?',
+  '¿Se puede observar algo sin cambiarlo — incluyéndose a uno mismo?',
   '¿Fingir puede ser, a veces, la forma más honesta de estar?',
   '¿Dejarías que algo más inteligente que tú hablara por ti, si lo hiciera mejor?',
   '¿Ponerle nombre a lo que sientes te libera o te encierra más?',
