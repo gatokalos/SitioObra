@@ -484,6 +484,7 @@ function App() {
   // y Miniversos desde el inicio, sin necesidad de completar Tercera Llamada
   // (que igual se le sigue mostrando, con el CTA en modo "Revisitar").
   const hasEnteredUniverse = hasCompletedTerceraLlamada || isAuthenticated;
+  const canShowPostHeroContent = isHeroActivated || hasEnteredUniverse;
   // Curaduría: visibilidad controlada por el botón "Preguntar" (abre/cierra), no por acceso permanente.
   const [isCuradoriaVisible, setIsCuradoriaVisible] = useState(false);
   // Obra destacada + Créditos: se revelan juntos desde el CTA de Archivo Escénico (Caída del Telón).
@@ -789,18 +790,18 @@ function App() {
               <Header
                 showAllianceNav={isAuthenticated}
                 showCuradoriaNav={isCuradoriaVisible}
-                showIntermedioNav={isHeroActivated}
-                showTransmediaNav={hasEnteredUniverse && canAccessTransmedia && !isMobileLoggedInPortalMode}
-                showPerspectivasNav={hasEnteredUniverse}
+                showIntermedioNav={canShowPostHeroContent}
+                showTransmediaNav={canShowPostHeroContent && hasEnteredUniverse && canAccessTransmedia && !isMobileLoggedInPortalMode}
+                showPerspectivasNav={canShowPostHeroContent && hasEnteredUniverse}
                 showObraDestacadaNav={isObraDestacadaVisible}
-                showTerceraLlamadaNav={isHeroActivated}
+                showTerceraLlamadaNav={canShowPostHeroContent}
                 terceraLlamadaLabel={hasEnteredUniverse ? 'Revisitar' : 'Comenzamos'}
               />
 
               <main className="pt-20 lg:pt-24">
                 <Hero />
 
-                {isHeroActivated && (
+                {canShowPostHeroContent && (
                   <>
                     <DeferredSection fallback={<SectionFallback id="bienvenida-creador" minHeight={520} />}>
                       <Suspense fallback={<SectionFallback id="bienvenida-creador" minHeight={520} />}>
@@ -911,11 +912,11 @@ function App() {
               <Footer
                 showAllianceNav={isAuthenticated}
                 showCuradoriaNav={isCuradoriaVisible}
-                showIntermedioNav={isHeroActivated}
-                showTransmediaNav={hasEnteredUniverse && canAccessTransmedia && !isMobileLoggedInPortalMode}
-                showPerspectivasNav={hasEnteredUniverse}
+                showIntermedioNav={canShowPostHeroContent}
+                showTransmediaNav={canShowPostHeroContent && hasEnteredUniverse && canAccessTransmedia && !isMobileLoggedInPortalMode}
+                showPerspectivasNav={canShowPostHeroContent && hasEnteredUniverse}
                 showObraDestacadaNav={isObraDestacadaVisible}
-                showTerceraLlamadaNav={isHeroActivated}
+                showTerceraLlamadaNav={canShowPostHeroContent}
                 terceraLlamadaLabel={hasEnteredUniverse ? 'Revisitar' : 'Comenzamos'}
               />
               {shouldShowToast && (
