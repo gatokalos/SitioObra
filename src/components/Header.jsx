@@ -59,6 +59,7 @@ const Header = ({
   showPerspectivasNav = false,
   showObraDestacadaNav = false,
   showTerceraLlamadaNav = false,
+  showGatChip = true,
   terceraLlamadaLabel = 'Comenzamos',
 }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -377,10 +378,9 @@ const Header = ({
   }, [acknowledgeGatRevealPulse, gatRevealPulse]);
 
   const isGatChipPulsing = Boolean(gatRevealPulse);
-  // Contrato: el chip vive en el Header siempre que haya saldo — ya no depende
-  // de scroll (isTransmediaVisible) ni de haberlo "fijado" antes al recibir un
-  // pulso (isGatChipPinned). Confirmado 2026-07-14.
-  const shouldShowGatChip = gatBalance > 0 || isGatChipPulsing;
+  // El Header decide si existe el chip; el saldo solo define su contenido.
+  // En anónimo no debe adelantarse al ritual de activación del Hero.
+  const shouldShowGatChip = Boolean(showGatChip);
   const gatChipPulseAnimate = prefersReducedMotion
     ? { opacity: 1, scale: 1 }
     : {
@@ -405,6 +405,12 @@ const Header = ({
           'drop-shadow(0 0 6px rgba(251,191,36,0.28))',
         ],
       };
+
+  useEffect(() => {
+    if (!shouldShowGatChip && isGatInfoOpen) {
+      setIsGatInfoOpen(false);
+    }
+  }, [isGatInfoOpen, shouldShowGatChip]);
 
   // Panel del tooltip de GATokens — mismo cálculo de posición que GATChip.jsx
   // (portal/GATChip.jsx): fixed, alineado al borde derecho del chip, clamp al
@@ -570,66 +576,59 @@ const Header = ({
                   <Smartphone size={18} />
                 </a>
               )}
-              <motion.div
-                ref={gatChipRootRef}
-                className={`inline-flex items-center gap-1 whitespace-nowrap rounded-full border pl-2.5 pr-1 py-1 text-[0.62rem] font-semibold uppercase tracking-[0.16em] backdrop-blur-sm transition-colors sm:gap-1.5 sm:pl-3 sm:pr-1.5 sm:text-[0.68rem] sm:tracking-[0.24em] ${
-                  isGatChipPulsing
-                    ? 'border-amber-300/45 bg-amber-500/15 text-amber-100 shadow-[0_0_22px_rgba(251,191,36,0.28)]'
-                    : 'border-cyan-300/25 bg-cyan-400/10 text-cyan-100/90 shadow-[0_0_18px_rgba(34,211,238,0.14)]'
-                }`}
-                animate={
-                  isGatChipPulsing
-                    ? gatChipPulseAnimate
-                    : { opacity: shouldShowGatChip ? 1 : 0, scale: 1 }
-                }
-                transition={
-                  isGatChipPulsing
-                    ? gatChipPulseTransition
-                    : { duration: 0.5, ease: 'easeOut' }
-                }
-                style={{
-                  pointerEvents: shouldShowGatChip ? 'auto' : 'none',
-                }}
-              >
-                <button
-                  type="button"
-                  onClick={handleGatChipClick}
-                  disabled={!isGatChipPulsing}
-                  className={`inline-flex items-center gap-1.5 sm:gap-2 ${isGatChipPulsing ? 'cursor-pointer' : 'cursor-default'}`}
-                  tabIndex={shouldShowGatChip ? 0 : -1}
-                  aria-label={
+              {shouldShowGatChip ? (
+                <motion.div
+                  ref={gatChipRootRef}
+                  className={`inline-flex items-center gap-1 whitespace-nowrap rounded-full border pl-2.5 pr-1 py-1 text-[0.62rem] font-semibold uppercase tracking-[0.16em] backdrop-blur-sm transition-colors sm:gap-1.5 sm:pl-3 sm:pr-1.5 sm:text-[0.68rem] sm:tracking-[0.24em] ${
                     isGatChipPulsing
-                      ? 'Confirmar GATokens recibidos'
-                      : `${gatBalance.toLocaleString('es-MX')} GAT disponibles`
+                      ? 'border-amber-300/45 bg-amber-500/15 text-amber-100 shadow-[0_0_22px_rgba(251,191,36,0.28)]'
+                      : 'border-cyan-300/25 bg-cyan-400/10 text-cyan-100/90 shadow-[0_0_18px_rgba(34,211,238,0.14)]'
+                  }`}
+                  animate={isGatChipPulsing ? gatChipPulseAnimate : { opacity: 1, scale: 1 }}
+                  transition={
+                    isGatChipPulsing
+                      ? gatChipPulseTransition
+                      : { duration: 0.5, ease: 'easeOut' }
                   }
-                  title={isGatChipPulsing ? 'Confirmar GATokens recibidos' : 'GATokens disponibles'}
                 >
-                  {isGatChipPulsing ? (
-                    <motion.img
-                      src={GATOKEN_COIN_SRC}
-                      alt=""
-                      className="h-3.5 w-3.5"
-                      animate={gatCoinPulseAnimate}
-                      transition={gatChipPulseTransition}
-                    />
-                  ) : (
-                    <Sparkles size={12} className="text-cyan-200" />
-                  )}
-                  <span>Energía</span>
-                  <span className="tabular-nums text-white">{gatBalance.toLocaleString('es-MX')} GAT</span>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setIsGatInfoOpen((prev) => !prev)}
-                  aria-label="¿Qué son los GATokens?"
-                  aria-expanded={isGatInfoOpen}
-                  tabIndex={shouldShowGatChip ? 0 : -1}
-                  className="flex h-4 w-4 items-center justify-center rounded-full text-current/60 normal-case transition hover:text-white"
-                >
-                  <Info size={11} />
-                </button>
-              </motion.div>
-              {isGatInfoOpen && typeof document !== 'undefined' && createPortal(
+                  <button
+                    type="button"
+                    onClick={handleGatChipClick}
+                    disabled={!isGatChipPulsing}
+                    className={`inline-flex items-center gap-1.5 sm:gap-2 ${isGatChipPulsing ? 'cursor-pointer' : 'cursor-default'}`}
+                    aria-label={
+                      isGatChipPulsing
+                        ? 'Confirmar GATokens recibidos'
+                        : `${gatBalance.toLocaleString('es-MX')} GAT disponibles`
+                    }
+                    title={isGatChipPulsing ? 'Confirmar GATokens recibidos' : 'GATokens disponibles'}
+                  >
+                    {isGatChipPulsing ? (
+                      <motion.img
+                        src={GATOKEN_COIN_SRC}
+                        alt=""
+                        className="h-3.5 w-3.5"
+                        animate={gatCoinPulseAnimate}
+                        transition={gatChipPulseTransition}
+                      />
+                    ) : (
+                      <Sparkles size={12} className="text-cyan-200" />
+                    )}
+                    <span>Energía</span>
+                    <span className="tabular-nums text-white">{gatBalance.toLocaleString('es-MX')} GAT</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setIsGatInfoOpen((prev) => !prev)}
+                    aria-label="¿Qué son los GATokens?"
+                    aria-expanded={isGatInfoOpen}
+                    className="flex h-4 w-4 items-center justify-center rounded-full text-current/60 normal-case transition hover:text-white"
+                  >
+                    <Info size={11} />
+                  </button>
+                </motion.div>
+              ) : null}
+              {shouldShowGatChip && isGatInfoOpen && typeof document !== 'undefined' && createPortal(
                 <div
                   ref={gatInfoPanelRef}
                   style={gatInfoPanelStyle}
