@@ -147,6 +147,7 @@ body {
   font-feature-settings: "kern" 1, "liga" 0;
   font-family: "Vox Round", 'Inter', sans-serif;
   font-weight: 600;
+  font-size: clamp(2.25rem, 6vw, 4.5rem);
 
   letter-spacing: 0.25em;
   background: linear-gradient(180deg, rgba(255, 255, 255, 0.36) 0%, rgba(32, 34, 40, 0.9) 34%, #020204 100%);
@@ -250,6 +251,8 @@ body {
   aspect-ratio: 1;
   overflow: visible;
   --hero-logo-visual-scale: 1.16;
+  --hero-logo-glow-duration: 2.6s;
+  --hero-portal-logo-size: calc(clamp(129px, 18vh, 200px) * 0.5);
 }
 
 .hero-logo::before {
@@ -262,7 +265,7 @@ body {
   transform: translate3d(0, -2%, 0) scale(var(--hero-logo-visual-scale));
   pointer-events: none;
   z-index: 0;
-  animation: hero-logo-glow-pulse 2.6s ease-in-out infinite;
+  animation: hero-logo-glow-pulse var(--hero-logo-glow-duration) ease-in-out infinite;
 }
 
 @keyframes hero-logo-glow-pulse {
@@ -694,10 +697,66 @@ body {
   }
 }
 
+@media (min-width: 1024px) and (max-width: 1200px) {
+  #hero .hero-title {
+    font-size: clamp(4.25rem, 5vw, 5.15rem);
+    white-space: nowrap;
+    overflow-wrap: normal;
+    word-break: normal;
+  }
+
+  #hero .hero-universe-mark {
+    font-size: clamp(0.78rem, 0.8vw, 0.92rem);
+    gap: clamp(1.15rem, 2.3vw, 2.1rem);
+  }
+
+  #hero .hero-subtitle-track {
+    width: clamp(22rem, 30vw, 28rem);
+    max-width: min(86vw, 28rem);
+    min-height: 3.05rem;
+  }
+
+  #hero .hero-subtitle-copy {
+    font-size: clamp(0.9rem, 0.86vw, 1rem);
+    letter-spacing: 0.22em;
+    line-height: 1.45;
+    text-wrap: balance;
+  }
+
+  .hero-logo--portal {
+    --hero-portal-logo-size: clamp(86px, 8.6vh, 112px);
+  }
+}
+
 @media (min-width: 1201px) {
-  .hero-title {
-    font-size: clamp(4rem, 3.5vw, 5rem);
+  #hero .hero-title {
+    font-size: clamp(4.6rem, 4.15vw, 5.85rem);
     letter-spacing: 0.25em;
+    white-space: nowrap;
+    overflow-wrap: normal;
+    word-break: normal;
+  }
+
+  #hero .hero-universe-mark {
+    font-size: clamp(0.82rem, 0.68vw, 1rem);
+    gap: clamp(1.3rem, 2.2vw, 2.6rem);
+  }
+
+  #hero .hero-subtitle-track {
+    width: clamp(24rem, 24vw, 32rem);
+    max-width: min(82vw, 32rem);
+    min-height: 3.25rem;
+  }
+
+  #hero .hero-subtitle-copy {
+    font-size: clamp(0.98rem, 0.76vw, 1.12rem);
+    letter-spacing: 0.24em;
+    line-height: 1.45;
+    text-wrap: balance;
+  }
+
+  #hero .hero-logo--portal {
+    --hero-portal-logo-size: clamp(96px, 9.2vh, 128px);
   }
 }
 

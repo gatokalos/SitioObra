@@ -268,7 +268,8 @@ const Header = ({
     { name: 'Contacto', href: '#contact' },
   ];
   const mobileMenuItems = [
-    { name: 'Primera fila', href: '#hero' },
+    { name: 'Primera fila', href: '#hero', description: 'El universo',
+ },
     ...(showTerceraLlamadaNav
       ? [{ name: 'Tercera llamada', href: '#bienvenida-creador', description: terceraLlamadaLabel }]
       : []),

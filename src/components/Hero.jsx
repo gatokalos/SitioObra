@@ -60,19 +60,28 @@ const HERO_TITLE = 'GATOENCERRADO';
 const HERO_BRAND_LABEL = '#GATOENCERRADO';
 const HERO_INACTIVE_HINT = 'Pulsa el gato';
 const HERO_ROTATING_SUBTITLES = [
-  'Una experiencia narrativa transmedial',
-  'Basada en una herida emocional compartida',
-  'Artesanías, cine, literatura, sonido: una sola pregunta.',
-  'Teatro que no necesita escenario',
-      
-  ];
-const HERO_GHOST_SUBTITLES = [
-  'La obra que ocurre en tu mente',
-  'Tal vez esta obra ya empezó en ti', 
-     
+  'Una experiencia narrativa interactiva',            // 1 · el cajón (ver decisión A)
+  'Basada en una herida emocional compartida',        // 2 · el origen — intacta, es de tus mejores
+  'Teatro que no necesita escenario',                 // 3 · la expansión escénica
+  'Arte, cuidado y conocimiento: una sola función',  // 4 · la función de la obra
+  'Una obra con nueve vidas',                         // 5 · NUEVA — el gato escondido en el número
+  'Aquí el público también deja huella',              // 6 · NUEVA — la participación
+  'Hay escenas que regresan días después',            // 7 · NUEVA — la resonancia diferida, sembrada
+  'Cada experiencia alimenta una investigación',      // 8 · NUEVA — la dimensión de estudio (frase ya aprobada en Impacto)
+  'Sí: aquí hay gato encerrado',                      // 9 · NUEVA — el premio final del que se quedó
 ];
+
+const HERO_GHOST_SUBTITLES = [
+  'La obra que ocurre en tu mente',                   // canónica, intacta
+  'Tal vez esta obra ya empezó en ti',                // intacta
+  'Lo que resuene, te encontrará',                    // NUEVA — tu gramática de resonancia
+  'El gato ya te vio',                                // NUEVA — el susurro felino (ver decisión C)
+  'Una sola pregunta: ¿qué es «estar bien»?' // NUEVA — la introspección
+];
+
 const HERO_ROTATING_SUBTITLE_PLACEHOLDER =
 'Una experiencia narrativa transmedial';
+const HERO_SUBTITLE_ROTATION_MS = 3800;
 
 const resolveHeroInlineTabFromQuery = (search = '') => {
   if (!search) return 'experiences';
@@ -341,7 +350,6 @@ const Hero = () => {
   useEffect(() => {
     if (user) return undefined;
     if (!hasActivatedAudio) return undefined;
-    const ROTATION_MS = 3800;
     const GHOST_PROBABILITY = 0.28;
     const intervalId = window.setInterval(() => {
       if (Math.random() < GHOST_PROBABILITY) {
@@ -351,7 +359,7 @@ const Hero = () => {
         setHeroGhostSubtitle(null);
         setHeroSubtitleIndex((prev) => (prev + 1) % HERO_ROTATING_SUBTITLES.length);
       }
-    }, ROTATION_MS);
+    }, HERO_SUBTITLE_ROTATION_MS);
 
     return () => window.clearInterval(intervalId);
   }, [user, hasActivatedAudio]);
@@ -897,7 +905,8 @@ const Hero = () => {
                     transition={{ duration: hasActivatedAudio ? 0.9 : 1, delay: hasActivatedAudio ? 0 : 0.8 }}
                     className="hero-logo hero-logo--portal"
                     style={{
-                      width: 'calc(clamp(129px, 18vh, 200px) * 0.5)',
+                      width: 'var(--hero-portal-logo-size)',
+                      '--hero-logo-glow-duration': `${HERO_SUBTITLE_ROTATION_MS}ms`,
                       marginBottom: 'clamp(1.05rem, 2.6vh, 1.7rem)',
                       pointerEvents: 'none',
                       visibility: hasActivatedAudio ? 'visible' : 'hidden',
@@ -916,9 +925,9 @@ const Hero = () => {
               </div>
 
               {/* LÍNEA CENTRAL — GATOENCERRADO ancla el 50vh */}
-              <div className="max-w-4xl mx-auto w-full">
+              <div className="max-w-4xl lg:max-w-[72rem] mx-auto w-full">
                 <h1
-                  className={`hero-title ${hasActivatedAudio ? 'hero-title--scene-active' : ''} text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-medium text-center w-full break-words`}
+                  className={`hero-title ${hasActivatedAudio ? 'hero-title--scene-active' : ''} text-center w-full break-words`}
                   style={{
                     opacity: isMobileViewport ? (hasActivatedAudio ? 1 : 0.88) : (hasActivatedAudio ? 0.96 : 0.72),
                     filter: isMobileViewport
@@ -936,7 +945,7 @@ const Hero = () => {
                   transition={{ duration: hasActivatedAudio ? 1.1 : 0.8, ease: 'easeOut', delay: hasActivatedAudio ? 0 : 0.25 }}
                   className="mt-2 flex justify-center px-8"
                 >
-                  <span className="relative inline-flex min-h-[2.8rem] max-w-[42rem] items-center justify-center text-center text-[0.78rem] leading-snug tracking-[0.18em] text-slate-300/70 sm:min-h-[1.8rem] sm:text-sm">
+                  <span className="hero-subtitle-track relative inline-flex min-h-[2.8rem] max-w-[42rem] items-center justify-center text-center text-[0.78rem] leading-snug tracking-[0.18em] text-slate-300/70 sm:min-h-[1.8rem] sm:text-sm">
                     <span className="invisible">{HERO_ROTATING_SUBTITLE_PLACEHOLDER}</span>
                     <AnimatePresence mode="sync" initial={false}>
                       <motion.span
@@ -945,7 +954,7 @@ const Hero = () => {
                         animate={{ opacity: 1, filter: 'blur(0px)' }}
                         exit={{ opacity: 0, filter: 'blur(14px)' }}
                         transition={{ duration: 1.8, ease: [0.2, 1, 0.2, 1] }}
-                        className={`absolute inset-0 inline-flex items-center justify-center ${isHeroGhostSubtitle ? 'italic' : 'not-italic'}`}
+                        className={`hero-subtitle-copy absolute inset-0 inline-flex items-center justify-center ${isHeroGhostSubtitle ? 'italic' : 'not-italic'}`}
                       >
                         {currentHeroSubtitle}
                       </motion.span>

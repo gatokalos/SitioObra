@@ -29,6 +29,19 @@ const BRIDGE_EVENT_REQUEST_TRAZOS = 'bienvenida:request-trazos';
 const BRIDGE_EVENT_TRAZOS_ERROR = 'sitioobra:trazos-error';
 const GATO_API_URL = (import.meta.env.VITE_OBRA_API_URL ?? 'https://api.gatoencerrado.ai').replace(/\/+$/, '');
 
+const getSiteBridgeOrigin = () => {
+  if (typeof window !== 'undefined' && window.location?.origin) {
+    return window.location.origin;
+  }
+  const configured = import.meta.env.VITE_SITE_URL;
+  if (typeof configured === 'string' && configured.trim()) {
+    try {
+      return new URL(configured).origin;
+    } catch {}
+  }
+  return 'https://universogatoencerrado.com';
+};
+
 const withGatokensRevealParam = (path = '/') => {
   const rawPath = typeof path === 'string' && path.trim() ? path.trim() : '/';
   try {
@@ -89,6 +102,13 @@ const Bienvenida = () => {
     if (flowGoal) {
       url.searchParams.set('goal', flowGoal);
     }
+    const siteOrigin = getSiteBridgeOrigin();
+    url.searchParams.set('site_origin', siteOrigin);
+    url.searchParams.set('siteOrigin', siteOrigin);
+    url.searchParams.set('parent_origin', siteOrigin);
+    url.searchParams.set('parentOrigin', siteOrigin);
+    url.searchParams.set('target_origin', siteOrigin);
+    url.searchParams.set('targetOrigin', siteOrigin);
     if (isQaAlwaysFreshUser) {
       url.searchParams.set('qa_fresh', '1');
     }
@@ -350,6 +370,11 @@ const Bienvenida = () => {
             className="h-full w-full border-0"
             allow="camera; microphone; fullscreen; web-share; clipboard-write"
             onLoad={() => {
+              postBridgeReply('sitioobra:bridge-config', {
+                siteOrigin: getSiteBridgeOrigin(),
+                parentOrigin: getSiteBridgeOrigin(),
+                targetOrigin: getSiteBridgeOrigin(),
+              });
               flushBridgeAuthSuccess();
             }}
           />
