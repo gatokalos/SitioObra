@@ -158,7 +158,7 @@ const RelatedReadingTooltipButton = ({
               className={`inline-flex items-center rounded-md border px-2.5 py-1.5 text-[10px] uppercase tracking-[0.24em] transition ${styles.cta}`}
               onClick={handleRead}
             >
-              Leer artículo
+              Saltar al intermedio
             </button>
           </div>
         </div>

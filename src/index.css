@@ -1148,6 +1148,24 @@ body {
   opacity: calc(var(--mirror-opacity) + 0.1);
 }
 
+.vitrina-seed-question {
+  max-width: 24rem;
+  margin: 0 auto;
+  font-family: "Vox Round", "Inter", sans-serif;
+  font-style: italic;
+  font-weight: 600;
+  line-height: 1.18;
+  text-align: center;
+  color: transparent;
+  background: linear-gradient(95deg, rgba(248, 250, 252, 0.96), rgba(203, 213, 225, 0.88), rgba(148, 163, 184, 0.72));
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  text-shadow:
+    0 0 16px rgba(226, 232, 240, 0.2),
+    0 0 34px rgba(139, 92, 246, 0.22);
+}
+
 @keyframes reflejoBrillo {
   0% {
     transform: translateX(-120%) rotate(var(--mirror-angle));

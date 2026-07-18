@@ -16,6 +16,7 @@
 //     resolveShowcaseFromAppId/showcaseDefinitions (recomendación del Oráculo).
 // No se importan de transmediaConstants.jsx para no arrastrar ese archivo
 // (imágenes, iconos, copy largo) solo para leer un título.
+import { extractRecommendedAppId, resolveShowcaseFromAppId } from '@/lib/bienvenidaBridge';
 
 const PORTAL_KEY_TITLES = {
   obra: 'Teatro',
@@ -142,6 +143,8 @@ export const findLatestSpendTarget = (events = []) => {
 // Copia durable de la recomendación del Oráculo (ver Hero.jsx) — un showcaseId,
 // no una clave de portal.
 const ORACULO_RECOMMENDED_SHOWCASE_STORAGE_KEY = 'gatoencerrado:oraculo-recommended-showcase';
+const BIENVENIDA_TRANSMEDIA_INTENT_STORAGE_KEY = 'bienvenida:transmedia-intent';
+const BIENVENIDA_GATOKENS_REVEAL_PENDING_STORAGE_KEY = 'bienvenida:gatokens-reveal-pending';
 
 export const readOraculoRecommendedShowcase = () => {
   if (typeof window === 'undefined') return null;
@@ -154,3 +157,25 @@ export const readOraculoRecommendedShowcase = () => {
     return null;
   }
 };
+
+const readRecommendedShowcaseFromJsonStorage = (storageKey) => {
+  if (typeof window === 'undefined') return null;
+  try {
+    const raw = window.localStorage.getItem(storageKey);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw);
+    const appId = extractRecommendedAppId(parsed);
+    const showcaseId = resolveShowcaseFromAppId(appId);
+    const title = showcaseIdTitle(showcaseId);
+    return title ? { showcaseId, title } : null;
+  } catch {
+    return null;
+  }
+};
+
+// Recomendación del umbral/bienvenida antes de que el visitante haya gastado
+// GAT. No debe confundirse con el login: aquí solo orientamos a dónde volver.
+export const readBienvenidaRecommendedShowcase = () =>
+  readOraculoRecommendedShowcase() ||
+  readRecommendedShowcaseFromJsonStorage(BIENVENIDA_TRANSMEDIA_INTENT_STORAGE_KEY) ||
+  readRecommendedShowcaseFromJsonStorage(BIENVENIDA_GATOKENS_REVEAL_PENDING_STORAGE_KEY);

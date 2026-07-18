@@ -76,6 +76,11 @@ const CreatorWelcomeSection = ({ hasEnteredUniverse = false }) => {
             >
               {hasEnteredUniverse ? 'Revisitar' : '¿Comenzamos?'}
             </Button>
+            {hasEnteredUniverse ? (
+              <p className="mx-auto mt-3 max-w-sm text-center text-[0.72rem] leading-relaxed text-slate-400/80">
+                Puedes volver las veces que quieras; los GAT de bienvenida no se acumulan al repetir el recorrido.
+              </p>
+            ) : null}
           </div>
         </motion.div>
       </div>

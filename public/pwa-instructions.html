@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>¡Instala #GatoEncerrado como app!</title>
+    <title>#GatoEncerrado como app</title>
     <style>
       body {
         margin: 0;
@@ -24,6 +24,29 @@
       .lead {
         color: #94a3b8;
         margin-bottom: 1.5rem;
+      }
+      .preview {
+        overflow: hidden;
+        border: 1px solid rgba(148, 163, 184, 0.24);
+        border-radius: 28px;
+        background:
+          radial-gradient(circle at 50% 0%, rgba(168, 85, 247, 0.18), transparent 42%),
+          rgba(15, 23, 42, 0.72);
+        box-shadow: 0 24px 60px rgba(2, 6, 23, 0.72);
+        margin-bottom: 20px;
+      }
+      .preview img {
+        display: block;
+        width: 100%;
+        max-height: 420px;
+        height: auto;
+        object-fit: contain;
+      }
+      .preview-caption {
+        margin: 0;
+        padding: 0 18px 18px;
+        color: #c4b5fd;
+        font-size: 0.82rem;
       }
       .card {
         background: rgba(15, 23, 42, 0.85);
@@ -87,11 +110,20 @@
   </head>
   <body>
     <div class="page">
-      <h1>¡Instala #GatoEncerrado en tu pantalla de inicio!</h1>
+      <h1>Todo un universo en tu bolsillo.</h1>
       <p class="lead">
-        Sigue estos pasos para esconder las barras del navegador móvil y abrir la experiencia como una app nativa,
-        sin interrupciones.
+        Instálalo como una app y disfruta una experiencia inmersiva, sin distracciones.
       </p>
+
+      <figure class="preview">
+        <img
+          src="https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Merch/PWA_gato.png"
+          alt="Ejemplo del icono de #GatoEncerrado instalado en la pantalla de inicio de un iPhone"
+        />
+        <figcaption class="preview-caption">
+          Al terminar, busca el gato en tu pantalla.
+        </figcaption>
+      </figure>
 
       <div class="card">
         <h2>1 · Android (Chrome, Edge, Opera)</h2>

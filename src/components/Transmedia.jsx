@@ -5412,7 +5412,7 @@ Silvestre, un hombre en sus treintas, comienza a perder la frontera entre lo que
                             className="absolute inset-0 z-10 flex items-center justify-center px-7 bg-black/60 backdrop-blur-[3px]"
                           >
                             <p
-                              className="font-display text-center leading-snug text-amber-300/90 drop-shadow-[0_0_32px_rgba(251,191,36,0.45)]"
+                              className="vitrina-seed-question"
                               style={{ fontSize: 'clamp(1.15rem, 5vw, 1.65rem)' }}
                             >
                               {VITRANA_QUESTION_BY_SHOWCASE[format.id]}
@@ -5620,7 +5620,7 @@ Silvestre, un hombre en sus treintas, comienza a perder la frontera entre lo que
                             className="absolute inset-0 z-10 flex items-center justify-center px-7 bg-black/60 backdrop-blur-[3px]"
                           >
                             <p
-                              className="font-display text-center leading-snug text-amber-300/90 drop-shadow-[0_0_32px_rgba(251,191,36,0.45)]"
+                              className="vitrina-seed-question"
                               style={{ fontSize: 'clamp(1.15rem, 3.5vw, 1.65rem)' }}
                             >
                               {VITRANA_QUESTION_BY_SHOWCASE[format.id]}
