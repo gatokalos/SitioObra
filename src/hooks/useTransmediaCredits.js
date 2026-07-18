@@ -11,6 +11,7 @@ import {
   buildShowcaseEnergyFromBoosts,
 } from '@/components/transmedia/transmediaConstants';
 import {
+  claimTransmediaAnonCreditEvents,
   createTransmediaIdempotencyKey,
   fetchTransmediaCreditState,
   registerTransmediaCreditEvent,
@@ -151,6 +152,21 @@ const useTransmediaCredits = ({ isAuthenticated, userId, toast }) => {
     return state;
   }, [applyTransmediaCreditState]);
 
+  const claimAnonymousTransmediaCredits = useCallback(async () => {
+    if (!isAuthenticated || !userId) {
+      return syncTransmediaCredits();
+    }
+
+    const { state, error } = await claimTransmediaAnonCreditEvents();
+    if (error) {
+      console.warn('[Transmedia] No se pudieron reclamar GATokens anónimos:', error);
+      return syncTransmediaCredits();
+    }
+
+    applyTransmediaCreditState(state);
+    return state;
+  }, [applyTransmediaCreditState, isAuthenticated, syncTransmediaCredits, userId]);
+
   // Listen for external credit state updates (e.g. from other tabs or components)
   useEffect(() => {
     if (typeof window === 'undefined') return undefined;
@@ -163,10 +179,10 @@ const useTransmediaCredits = ({ isAuthenticated, userId, toast }) => {
     return () => window.removeEventListener('gatoencerrado:external-credit-event', handleExternalCreditEvent);
   }, [applyTransmediaCreditState]);
 
-  // Sync credits when user logs in or out
+  // Sync credits when user logs out; claim local anonymous ledger when user logs in.
   useEffect(() => {
-    void syncTransmediaCredits();
-  }, [syncTransmediaCredits, userId]);
+    void claimAnonymousTransmediaCredits();
+  }, [claimAnonymousTransmediaCredits, userId]);
 
   // Derive quironSpent from showcase boosts
   useEffect(() => {

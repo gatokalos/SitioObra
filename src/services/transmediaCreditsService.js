@@ -46,6 +46,29 @@ export async function fetchTransmediaCreditState() {
   return { state: normalizeState(data), error: null };
 }
 
+export async function claimTransmediaAnonCreditEvents() {
+  const anonId = ensureAnonId();
+  if (!anonId) {
+    return { state: null, migratedCount: 0, error: null };
+  }
+
+  const { data, error } = await supabase.rpc('claim_transmedia_anon_credit_events', {
+    p_anon_id: anonId,
+  });
+
+  if (error) {
+    return { state: null, migratedCount: 0, error };
+  }
+
+  const result = data && typeof data === 'object' ? data : {};
+  const migratedCount = Number.isFinite(result.migrated_count) ? Number(result.migrated_count) : 0;
+  return {
+    state: normalizeState(result.state),
+    migratedCount,
+    error: null,
+  };
+}
+
 const normalizeEvent = (raw) => ({
   id: raw?.id ?? null,
   eventKey: typeof raw?.event_key === 'string' ? raw.event_key : '',
