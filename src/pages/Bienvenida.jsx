@@ -16,6 +16,10 @@ import {
 } from '@/lib/bienvenida';
 import { extractRecommendedAppId } from '@/lib/bienvenidaBridge';
 import { pauseHeroAmbient } from '@/lib/heroAmbientAudio';
+import {
+  createTransmediaIdempotencyKey,
+  registerTransmediaCreditEvent,
+} from '@/services/transmediaCreditsService';
 import LoginOverlay from '@/components/ContributionModal/LoginOverlay';
 
 const BRIDGE_EVENT_REQUEST_AUTH_MODAL = 'bienvenida:request-auth-modal';
@@ -50,6 +54,8 @@ const Bienvenida = () => {
   const [showLoginOverlay, setShowLoginOverlay] = useState(false);
   const iframeRef = useRef(null);
   const pendingBridgeAuthRef = useRef(null);
+  const journeyStartedRef = useRef(false);
+  const cabinaReachedRef = useRef(false);
   const baseUrl = useMemo(() => {
     const raw = import.meta.env.VITE_BIENVENIDA_URL ?? import.meta.env.VITE_ORACULO_URL ?? '';
     return raw ? raw.replace(/\/+$/, '') : '';
@@ -209,32 +215,64 @@ const Bienvenida = () => {
         return;
       }
       if (type === 'bienvenida:journey-started') {
+        journeyStartedRef.current = true;
         setJourneyStarted(true);
         return;
       }
       if (type === 'bienvenida:cabina-reached') {
+        cabinaReachedRef.current = true;
         setCabinaReached(true);
         return;
       }
       if (type === 'bienvenida:gatokens-update') {
         const value = Number(event.data?.gatokens ?? payload?.gatokens ?? event.data?.balance ?? payload?.balance);
         if (Number.isFinite(value) && value > 0) {
-          try {
-            window.localStorage.setItem('gatoencerrado:gatokens-available', String(value));
-            window.localStorage.setItem('gatoencerrado:bienvenida-completed', '1');
-            window.dispatchEvent(
-              new CustomEvent('gatoencerrado:gatokens-balance-update', {
-                detail: { balance: value, source: 'bienvenida' },
-              })
-            );
-          } catch {}
-          setBienvenidaGatokensRevealPending({
-            ...((payload && typeof payload === 'object') ? payload : {}),
-            balance: value,
-            isUmbral: true,
-            source: 'bienvenida:gatokens-update',
-          });
-          setBienvenidaReturnPath(withGatokensRevealParam(getBienvenidaReturnPath() || '/'));
+          if (!journeyStartedRef.current || !cabinaReachedRef.current) {
+            console.warn('[sitioobra-bridge] Ignoramos GATokens de bienvenida sin recorrido confirmado.', {
+              journeyStarted: journeyStartedRef.current,
+              cabinaReached: cabinaReachedRef.current,
+            });
+            return;
+          }
+
+          (async () => {
+            const { state, error } = await registerTransmediaCreditEvent({
+              eventKey: 'bienvenida_reward:umbral',
+              amount: Math.max(Math.trunc(value), 0),
+              oncePerIdentity: true,
+              metadata: {
+                source: 'bienvenida:gatokens-update',
+                journeyStarted: true,
+                cabinaReached: true,
+              },
+              idempotencyKey: createTransmediaIdempotencyKey('bienvenida_reward:umbral'),
+            });
+            if (error) {
+              console.warn('[sitioobra-bridge] No pudimos registrar GATokens de bienvenida:', error);
+              return;
+            }
+
+            const ledgerBalance = Number(state?.available_tokens);
+            const nextBalance = Number.isFinite(ledgerBalance)
+              ? Math.max(Math.trunc(ledgerBalance), 0)
+              : Math.max(Math.trunc(value), 0);
+            try {
+              window.localStorage.setItem('gatoencerrado:gatokens-available', String(nextBalance));
+              window.localStorage.setItem('gatoencerrado:bienvenida-completed', '1');
+              window.dispatchEvent(
+                new CustomEvent('gatoencerrado:gatokens-balance-update', {
+                  detail: { balance: nextBalance, state, source: 'bienvenida' },
+                })
+              );
+            } catch {}
+            setBienvenidaGatokensRevealPending({
+              ...((payload && typeof payload === 'object') ? payload : {}),
+              balance: nextBalance,
+              isUmbral: true,
+              source: 'bienvenida:gatokens-update',
+            });
+            setBienvenidaReturnPath(withGatokensRevealParam(getBienvenidaReturnPath() || '/'));
+          })();
         }
         return;
       }

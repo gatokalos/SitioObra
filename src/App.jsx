@@ -795,7 +795,7 @@ function App() {
                 showPerspectivasNav={canShowPostHeroContent && hasEnteredUniverse}
                 showObraDestacadaNav={isObraDestacadaVisible}
                 showTerceraLlamadaNav={canShowPostHeroContent}
-                showGatChip={isAuthenticated || canShowPostHeroContent}
+                showGatChip={isAuthenticated || isHeroActivated}
                 terceraLlamadaLabel={hasEnteredUniverse ? 'Revisitar' : 'Comenzamos'}
               />
 

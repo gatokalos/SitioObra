@@ -91,7 +91,6 @@ import useTransmediaSectionAudio from '@/hooks/useTransmediaSectionAudio';
 import useShowcaseGuard from '@/hooks/useShowcaseGuard';
 import useScrambleText from '@/hooks/useScrambleText';
 import MiniVersoCard from '@/components/transmedia/MiniVersoCard';
-import GATChip from '@/components/portal/GATChip';
 import ShowcaseReactionInline from '@/components/transmedia/ShowcaseReactionInline';
 import CauseImpactAccordion from '@/components/transmedia/CauseImpactAccordion';
 
@@ -5210,7 +5209,6 @@ Silvestre, un hombre en sus treintas, comienza a perder la frontera entre lo que
       >
         {import.meta.env?.DEV ? (
           <div className="fixed bottom-4 right-4 z-50 flex items-center gap-2">
-            <GATChip />
             <button
               type="button"
               onClick={handleResetCredits}

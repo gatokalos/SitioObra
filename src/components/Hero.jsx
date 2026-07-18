@@ -897,7 +897,7 @@ const Hero = () => {
                     transition={{ duration: hasActivatedAudio ? 0.9 : 1, delay: hasActivatedAudio ? 0 : 0.8 }}
                     className="hero-logo hero-logo--portal"
                     style={{
-                      width: 'calc(clamp(129px, 18vh, 175px) * 0.5)',
+                      width: 'calc(clamp(129px, 18vh, 200px) * 0.5)',
                       marginBottom: 'clamp(1.05rem, 2.6vh, 1.7rem)',
                       pointerEvents: 'none',
                       visibility: hasActivatedAudio ? 'visible' : 'hidden',
@@ -1011,7 +1011,7 @@ const Hero = () => {
                   pointerEvents: hasActivatedAudio && !hasUsedIndexCue ? 'auto' : 'none',
                   visibility: hasActivatedAudio && !hasUsedIndexCue ? 'visible' : 'hidden',
                 }}
-                aria-label="Abrir Programa de mano"
+                aria-label="Abrir Programa de sala"
                 whileHover={{ scale: 1.06 }}
                 whileTap={{ scale: 0.94 }}
               >

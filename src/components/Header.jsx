@@ -148,10 +148,14 @@ const Header = ({
 
     const handleRevealPulse = (event) => {
       const nextBalance = Number(event?.detail?.balance);
+      const safeNextBalance = Number.isFinite(nextBalance) ? Math.max(Math.trunc(nextBalance), 0) : gatBalance;
 
-      if (Number.isFinite(nextBalance)) {
-        setGatBalance(Math.max(Math.trunc(nextBalance), 0));
+      if (safeNextBalance <= 0) {
+        setGatRevealPulse(null);
+        return;
       }
+
+      setGatBalance(safeNextBalance);
       setGatRevealPulse({ id: Date.now() });
     };
 
@@ -165,7 +169,7 @@ const Header = ({
       window.removeEventListener(GATOKENS_REVEAL_PULSE_EVENT, handleRevealPulse);
       window.removeEventListener(GATOKENS_REVEAL_ACK_EVENT, handleRevealAck);
     };
-  }, []);
+  }, [gatBalance]);
 
   const handleCloseOverlay = useCallback(() => setShowLoginOverlay(false), []);
 
@@ -191,6 +195,11 @@ const Header = ({
       void handleLogout();
     }
   }, [handleLogout, user]);
+
+  const handleOpenLoginFromGatTooltip = useCallback(() => {
+    setIsGatInfoOpen(false);
+    setShowLoginOverlay(true);
+  }, []);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -380,7 +389,7 @@ const Header = ({
   const isGatChipPulsing = Boolean(gatRevealPulse);
   // El Header decide si existe el chip; el saldo solo define su contenido.
   // En anónimo no debe adelantarse al ritual de activación del Hero.
-  const shouldShowGatChip = Boolean(showGatChip);
+  const shouldShowGatChip = Boolean(showGatChip && gatBalance > 0);
   const gatChipPulseAnimate = prefersReducedMotion
     ? { opacity: 1, scale: 1 }
     : {
@@ -411,6 +420,12 @@ const Header = ({
       setIsGatInfoOpen(false);
     }
   }, [isGatInfoOpen, shouldShowGatChip]);
+
+  useEffect(() => {
+    if (gatBalance <= 0 && gatRevealPulse) {
+      setGatRevealPulse(null);
+    }
+  }, [gatBalance, gatRevealPulse]);
 
   // Panel del tooltip de GATokens — mismo cálculo de posición que GATChip.jsx
   // (portal/GATChip.jsx): fixed, alineado al borde derecho del chip, clamp al
@@ -666,6 +681,15 @@ const Header = ({
                         Explora un miniverso para descubrir dónde conviene gastarlos primero.
                       </p>
                     )}
+                    {!user ? (
+                      <button
+                        type="button"
+                        onClick={handleOpenLoginFromGatTooltip}
+                        className="w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-left text-xs font-semibold leading-relaxed text-slate-700 transition hover:border-slate-300 hover:bg-white"
+                      >
+                        Inicia sesión para conservar tus GATokens.
+                      </button>
+                    ) : null}
                   </div>
                   <div className="border-t border-slate-100 bg-amber-50 px-4 py-2">
                     <p className="text-[0.68rem] text-slate-500">

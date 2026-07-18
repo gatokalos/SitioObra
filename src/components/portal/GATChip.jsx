@@ -86,6 +86,16 @@ const GATChip = () => {
     };
   }, [isOpen]);
 
+  useEffect(() => {
+    if (balance <= 0 && isOpen) {
+      setIsOpen(false);
+    }
+  }, [balance, isOpen]);
+
+  if (balance <= 0) {
+    return null;
+  }
+
   return (
     <div ref={rootRef} className="relative inline-flex items-center">
       {/* Chip */}
