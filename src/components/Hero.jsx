@@ -60,7 +60,7 @@ const HERO_PENDING_MINIVERSE_SELECTION_KEY = 'gatoencerrado:hero-inline-minivers
 const HERO_TITLE = 'GATOENCERRADO';
 const HERO_BRAND_LABEL = '#GATOENCERRADO';
 const HERO_INACTIVE_HINT = 'Pulsa el gato';
-const HERO_PWA_INSTALL_HINT = 'Agrégalo a tu';
+const HERO_PWA_INSTALL_HINT = 'Agrégame como app';
 const HERO_ROTATING_SUBTITLES = [
   'Una experiencia narrativa interactiva',            // 1 · el cajón (ver decisión A)
   'Basada en una herida emocional compartida',        // 2 · el origen — intacta, es de tus mejores
@@ -84,16 +84,20 @@ const HERO_GHOST_SUBTITLES = [
 const HERO_ROTATING_SUBTITLE_PLACEHOLDER =
 'Una experiencia narrativa transmedial';
 const HERO_SUBTITLE_ROTATION_MS = 3800;
-const HERO_MOBILE_STAR_COUNT = 120;
+const HERO_MOBILE_STAR_COUNT = 165;
 
 const createHeroMobileStars = () =>
-  Array.from({ length: HERO_MOBILE_STAR_COUNT }).map((_, index) => ({
-    id: index,
-    size: Math.random() * 1.8 + 0.35,
-    opacity: Math.random() * 0.46 + 0.14,
-    x: Math.random() * 100,
-    y: Math.random() * 100,
-  }));
+  Array.from({ length: HERO_MOBILE_STAR_COUNT }).map((_, index) => {
+    const isBrightStar = index % 7 === 0;
+    return {
+      id: index,
+      size: isBrightStar ? Math.random() * 1.35 + 1.15 : Math.random() * 0.85 + 0.75,
+      opacity: isBrightStar ? Math.random() * 0.28 + 0.58 : Math.random() * 0.28 + 0.28,
+      x: Math.random() * 100,
+      y: Math.random() * 100,
+      glow: isBrightStar ? 1 : 0,
+    };
+  });
 
 const readIsRunningAsInstalledPwa = () => {
   if (typeof window === 'undefined') return false;
@@ -176,7 +180,7 @@ const Hero = () => {
       : shouldShowHeroInactiveHint ? HERO_INACTIVE_HINT : '';
   const isHeroGhostSubtitle = hasActivatedAudio && heroGhostSubtitle !== null;
   const targetWidth = primaryCtaWidth ?? undefined;
-  const heroTitleSignalDisplay = useSignalDriftText(HERO_BRAND_LABEL, { active: !hasActivatedAudio && !user });
+  const heroTitleSignalDisplay = useSignalDriftText(HERO_BRAND_LABEL, { active: hasActivatedAudio && !user });
   const heroTitleDisplay = useMemo(
     () => heroTitleSignalDisplay.slice(1) || HERO_TITLE,
     [heroTitleSignalDisplay],
@@ -612,17 +616,24 @@ const Hero = () => {
     handleHeroHashClick();
   }, [handleHeroHashClick]);
 
-  const handleOpenIndexFromHero = useCallback(() => {
+  const revealHeaderIndexCueFromHero = useCallback(() => {
     if (typeof window === 'undefined') return;
-    // Este primer clic NO abre el índice: solo revela el # del Header
-    // (gatoencerrado:hero-index-cue-used). El usuario debe dar un segundo
-    // clic explícito en ese # para abrir el Programa de mano — es el gesto
-    // en dos pasos que ya habíamos logrado, a propósito.
-    window.dispatchEvent(new CustomEvent('gatoencerrado:open-index'));
     setHasUsedIndexCue(true);
     writeIndexCueUsedToSession();
     window.dispatchEvent(new CustomEvent('gatoencerrado:hero-index-cue-used'));
   }, []);
+
+  const handleOpenIndexFromHero = useCallback(() => {
+    // Este primer gesto NO abre el índice: solo revela el # del Header.
+    // El usuario debe dar un segundo clic explícito en ese # para abrir
+    // el Programa de mano. El auto-reveal por scroll usa el mismo contrato.
+    revealHeaderIndexCueFromHero();
+  }, [revealHeaderIndexCueFromHero]);
+
+  useEffect(() => {
+    if (!hasActivatedAudio || hasUsedIndexCue || isHeroInViewport) return;
+    revealHeaderIndexCueFromHero();
+  }, [hasActivatedAudio, hasUsedIndexCue, isHeroInViewport, revealHeaderIndexCueFromHero]);
 
   useEffect(() => {
     if (isAuthLoading) {
@@ -939,6 +950,7 @@ const Hero = () => {
                   width: `${star.size}px`,
                   height: `${star.size}px`,
                   opacity: star.opacity,
+                  '--star-glow': star.glow,
                 }}
               />
             ))}
@@ -1015,12 +1027,13 @@ const Hero = () => {
               {/* LÍNEA CENTRAL — GATOENCERRADO ancla el 50vh */}
               <div className="max-w-4xl lg:max-w-[72rem] mx-auto w-full">
                 <h1
-                  className={`hero-title ${shouldShowHeroPwaChoice ? 'hero-title--pwa-choice' : ''} ${hasActivatedAudio ? 'hero-title--scene-active' : ''} text-center w-full break-words`}
+                  className={`hero-title ${!hasActivatedAudio ? 'hero-title--pre-scene' : ''} ${hasActivatedAudio ? 'hero-title--scene-active' : ''} text-center w-full break-words`}
                   style={{
-                    opacity: isMobileViewport ? (hasActivatedAudio ? 1 : 0.88) : (hasActivatedAudio ? 0.96 : 0.72),
+                    opacity: !hasActivatedAudio ? 0 : isMobileViewport ? 1 : 0.96,
+                    visibility: hasActivatedAudio ? 'visible' : 'hidden',
                     filter: isMobileViewport
-                      ? (hasActivatedAudio ? 'brightness(1.12) contrast(1.08)' : 'brightness(1.05) contrast(1.06)')
-                      : (hasActivatedAudio ? 'brightness(1) contrast(1.05)' : 'brightness(0.82) contrast(0.96)'),
+                      ? 'brightness(1.12) contrast(1.08)'
+                      : 'brightness(1) contrast(1.05)',
                     transition: 'opacity 1.15s ease, filter 1.15s ease',
                   }}
                   aria-label={HERO_BRAND_LABEL}

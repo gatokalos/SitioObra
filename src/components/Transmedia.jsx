@@ -5231,7 +5231,7 @@ Silvestre, un hombre en sus treintas, comienza a perder la frontera entre lo que
               viewport={{ once: true }}
               className="text-center mb-[clamp(2.5rem,5.5vh,4rem)] space-y-[clamp(1.25rem,2.2vh,1.75rem)] min-h-[clamp(210px,27vh,260px)] min-[700px]:max-lg:mb-8 min-[700px]:max-lg:min-h-[180px]"
             >
-              <p className="text-xs uppercase tracking-[0.4em] text-slate-400/70">Miniversos de #GatoEncerrado</p>
+              <p className="text-xs uppercase tracking-[0.4em] text-slate-400/70">#obratransmedia</p>
               <h2 className="font-display text-4xl md:text-5xl font-medium text-gradient italic">
                 Las nueve formas de la obra
               </h2>
