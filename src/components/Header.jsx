@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback, useLayoutEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { motion, useReducedMotion } from 'framer-motion';
-import { Coffee, Info, Smartphone, Sparkles, X } from 'lucide-react';
+import { Coffee, Info, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useToast } from '@/components/ui/use-toast';
@@ -28,20 +28,6 @@ const GATOKEN_COIN_SRC =
 const readGatBalance = () => {
   const v = readStoredInt(GAT_BALANCE_STORAGE_KEY, INITIAL_GAT_BALANCE);
   return Number.isFinite(v) ? Math.max(Math.trunc(v), 0) : INITIAL_GAT_BALANCE;
-};
-
-// El navegador ya lo abrió como app instalada (standalone) — iOS Safari usa su
-// propia bandera (navigator.standalone) en vez del media query estándar.
-const readIsRunningAsInstalledPwa = () => {
-  if (typeof window === 'undefined') return false;
-  const isStandaloneDisplay = window.matchMedia?.('(display-mode: standalone)').matches;
-  const isIosStandalone = window.navigator?.standalone === true;
-  return Boolean(isStandaloneDisplay || isIosStandalone);
-};
-
-const readIsMobileViewport = () => {
-  if (typeof window === 'undefined') return false;
-  return window.matchMedia?.('(max-width: 767px)').matches ?? window.innerWidth < 768;
 };
 
 const MOBILE_FULLSCREEN_MENU_PHASE_A_ENABLED = true;
@@ -71,9 +57,6 @@ const Header = ({
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [scrollTier, setScrollTier] = useState(0);
   const [hasUsedHeroIndexCue, setHasUsedHeroIndexCue] = useState(readIndexCueUsedFromSession);
-  const [isInstalledPwa, setIsInstalledPwa] = useState(readIsRunningAsInstalledPwa);
-  const [isMobileViewport, setIsMobileViewport] = useState(readIsMobileViewport);
-  const [isPwaInstructionsOpen, setIsPwaInstructionsOpen] = useState(false);
   const [showLoginOverlay, setShowLoginOverlay] = useState(false);
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
   const [isGatInfoOpen, setIsGatInfoOpen] = useState(false);
@@ -113,32 +96,6 @@ const Header = ({
       window.removeEventListener('storage', sync);
     };
   }, []);
-
-  useEffect(() => {
-    if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') return undefined;
-    const standaloneQuery = window.matchMedia('(display-mode: standalone)');
-    const handleDisplayModeChange = () => setIsInstalledPwa(readIsRunningAsInstalledPwa());
-    standaloneQuery.addEventListener('change', handleDisplayModeChange);
-    return () => standaloneQuery.removeEventListener('change', handleDisplayModeChange);
-  }, []);
-
-  useEffect(() => {
-    if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') return undefined;
-    const mobileQuery = window.matchMedia('(max-width: 767px)');
-    const handleMobileViewportChange = () => setIsMobileViewport(readIsMobileViewport());
-    handleMobileViewportChange();
-    mobileQuery.addEventListener('change', handleMobileViewportChange);
-    return () => mobileQuery.removeEventListener('change', handleMobileViewportChange);
-  }, []);
-
-  useEffect(() => {
-    if (!isPwaInstructionsOpen) return undefined;
-    const onEscape = (event) => {
-      if (event.key === 'Escape') setIsPwaInstructionsOpen(false);
-    };
-    document.addEventListener('keydown', onEscape);
-    return () => document.removeEventListener('keydown', onEscape);
-  }, [isPwaInstructionsOpen]);
 
   useEffect(() => {
     if (typeof window === 'undefined') return undefined;
@@ -289,7 +246,7 @@ const Header = ({
     ...(showIntermedioNav ? [{ name: 'Intermedio', href: '#blog-contribuye' }] : []),
     ...(showCuradoriaNav ? [{ name: 'Curaduría', href: '#dialogo-critico' }] : []),
     ...(showIntermedioNav ? [{ name: 'Caída del telón', href: '#next-show' }] : []),
-    ...(showObraDestacadaNav ? [{ name: 'Obra destacada', href: '#about' }] : []),
+    ...(showObraDestacadaNav ? [{ name: 'Obra fundacional', href: '#about' }] : []),
     ...(showObraDestacadaNav ? [{ name: 'Galería fractal', href: '#instagram' }] : []),
     ...(showObraDestacadaNav ? [{ name: 'Créditos', href: '#team' }] : []),
     { name: 'Contacto', href: '#contact' },
@@ -346,7 +303,7 @@ const Header = ({
       ? [{ name: 'Caída del telón', href: '#next-show', description: 'Obra fundacional' }]
       : []),
     ...(showObraDestacadaNav
-      ? [{ name: 'Obra destacada', href: '#about', description: 'Teatro · Es un gato encerrado' }]
+      ? [{ name: 'Obra fundacional', href: '#about', description: 'Teatro · Es un gato encerrado' }]
       : []),
     ...(showObraDestacadaNav ? [{ name: 'Galería fractal', href: '#instagram' }] : []),
     ...(showObraDestacadaNav ? [{ name: 'Créditos de la obra', href: '#team' }] : []),
@@ -612,23 +569,6 @@ const Header = ({
             </div>
 
             <div className="flex items-center gap-3">
-              {!isInstalledPwa && (
-                <button
-                  type="button"
-                  onClick={() => {
-                    if (isMobileViewport) {
-                      setIsPwaInstructionsOpen(true);
-                      return;
-                    }
-                    window.open('/pwa-instructions.html', '_blank', 'noopener,noreferrer');
-                  }}
-                  className="inline-flex h-8 w-8 items-center justify-center rounded-full text-slate-400 transition-colors hover:text-white"
-                  aria-label="#GatoEncerrado como app web progresiva (PWA)"
-                  title="Instalar como PWA"
-                >
-                  <Smartphone size={18} />
-                </button>
-              )}
               {shouldShowGatChip ? (
                 <motion.div
                   ref={gatChipRootRef}
@@ -802,41 +742,6 @@ const Header = ({
       ) : null}
 
       {showLoginOverlay ? <LoginOverlay onClose={handleCloseOverlay} /> : null}
-      {isPwaInstructionsOpen && typeof document !== 'undefined' ? createPortal(
-        <div
-          className="fixed inset-0 z-[10000] bg-black/82 backdrop-blur-md"
-          role="dialog"
-          aria-modal="true"
-          aria-label="Instrucciones para instalar #GatoEncerrado como app"
-        >
-          <div className="flex h-full flex-col">
-            <div className="flex items-center justify-between border-b border-white/10 bg-slate-950/92 px-4 py-3 text-slate-100">
-              <div>
-                <p className="text-[0.62rem] font-semibold uppercase tracking-[0.22em] text-cyan-200/80">
-                  #GatoEncerrado como app
-                </p>
-                <p className="mt-0.5 text-xs text-slate-400">
-                  Sigue las instrucciones sin salir del sitio.
-                </p>
-              </div>
-              <button
-                type="button"
-                onClick={() => setIsPwaInstructionsOpen(false)}
-                className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-white/10 bg-white/5 text-slate-200 transition hover:bg-white/10 hover:text-white"
-                aria-label="Cerrar instrucciones"
-              >
-                <X size={18} />
-              </button>
-            </div>
-            <iframe
-              title="Instrucciones para instalar #GatoEncerrado como app"
-              src="/pwa-instructions.html"
-              className="min-h-0 flex-1 border-0 bg-slate-950"
-            />
-          </div>
-        </div>,
-        document.body
-      ) : null}
     </>
   );
 };

@@ -1284,14 +1284,14 @@ Este espacio permite recorrer esas composiciones, explorar sus capas y descubrir
     intro: (
       <>
         <p>Aquí el universo explora sus propios <strong>clichés</strong> y los pone en juego.</p>
-        <p>Porque las historias se construyen con formas que ya conocemos: <strong>inicio, desarrollo y final</strong>.</p>
+        <p>Sabemos que las historias se construyen con formas que ya conocemos: <strong>inicio, desarrollo y final</strong>.</p>
         <p>Dicen que <em>no hay nada nuevo bajo el sol</em>. Tal vez. Pero cuando una historia se juega, <strong>podemos contarla a nuestra manera.</strong></p>
       </>
     ),
     introNode: (
       <>
         <p className="text-base leading-relaxed text-slate-300/90">Aquí el universo explora sus propios <strong>clichés</strong> y los pone en juego.</p>
-        <p className="text-base leading-relaxed text-slate-200/80 mt-3">Porque las historias se construyen con formas que ya conocemos: <strong>inicio, desarrollo y final</strong>.</p>
+        <p className="text-base leading-relaxed text-slate-200/80 mt-3">Sabemos que las historias se construyen con formas que ya conocemos: <strong>inicio, desarrollo y final</strong>.</p>
         <p className="text-lg leading-relaxed font-medium text-white mt-4">Dicen que <em>no hay nada nuevo bajo el sol</em>. Tal vez.<br/>Pero cuando una historia se juega, <strong>podemos contarla a nuestra manera</strong>.</p>
         <div className="flex flex-wrap gap-2 mt-2">
           <span className="rounded-full border border-emerald-200/35 bg-emerald-400/10 px-3 py-1 text-[11px] uppercase tracking-[0.22em] text-emerald-100">Juego narrativo</span>

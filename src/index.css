@@ -177,10 +177,7 @@ body {
     color: rgba(0, 0, 0, 0.58);
     -webkit-text-stroke: 0.55px rgba(226, 232, 240, 0.28);
     text-shadow:
-      0 0 1px rgba(255, 255, 255, 0.34),
-      0 0 8px rgba(226, 232, 240, 0.28),
-      0 0 18px rgba(203, 213, 225, 0.2),
-      0 0 28px rgba(139, 92, 246, 0.22);
+      0 0 1px rgba(255, 255, 255, 0.16);
   }
 
   .hero-title::before {
@@ -212,6 +209,14 @@ body {
       0 0 34px rgba(139, 92, 246, 0.26);
   }
 
+  .hero-title--pwa-choice {
+    text-shadow:
+      0 0 1px rgba(255, 255, 255, 0.34),
+      0 0 8px rgba(226, 232, 240, 0.28),
+      0 0 18px rgba(203, 213, 225, 0.2),
+      0 0 28px rgba(139, 92, 246, 0.22);
+  }
+
   .hero-title--scene-active::before {
     opacity: 0.78;
     transform: translate(-50%, -50%) scaleX(1);
@@ -220,6 +225,11 @@ body {
   .hero-title > span {
     position: relative;
     z-index: 1;
+  }
+
+  #hero .hero-central-spacer--pwa-choice {
+    height: 3rem;
+    margin-top: 1.25rem;
   }
 }
 
@@ -242,6 +252,56 @@ body {
 
 .hero-title-mark-slot > div {
   z-index: 1;
+}
+
+.hero-mobile-starfield {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.hero-mobile-star {
+  position: absolute;
+  display: block;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.9);
+  filter: blur(0.5px);
+  box-shadow: 0 0 8px rgba(203, 213, 225, 0.18);
+}
+
+.hero-pwa-choice {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.7rem;
+  font-family: "Vox Round", "Inter", sans-serif;
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.34em;
+  line-height: 1;
+  text-transform: uppercase;
+  color: rgba(226, 232, 240, 0.56);
+  text-shadow: 0 0 14px rgba(196, 181, 253, 0.2);
+}
+
+.hero-pwa-choice button {
+  color: inherit;
+  transition: color 180ms ease, text-shadow 180ms ease, opacity 180ms ease;
+}
+
+.hero-pwa-choice button:hover,
+.hero-pwa-choice button:focus-visible {
+  color: rgba(255, 255, 255, 0.9);
+  text-shadow: 0 0 18px rgba(196, 181, 253, 0.45);
+  outline: none;
+}
+
+.hero-pwa-choice span {
+  color: rgba(148, 163, 184, 0.34);
 }
 
 /* Hero logo halo: stable across Safari + mobile */

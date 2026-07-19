@@ -277,7 +277,7 @@ const Contact = () => {
 </h2>
 
 <p className="text-lg text-slate-300/80 max-w-3xl mx-auto leading-relaxed font-light">
-  Si algo de este sitio te dejó una duda sobre el universo #GatoEncerrado, este es tu espacio para compartirla. 
+  Si algo de este sitio te dejó una duda sobre el universo #GatoEncerrado, este es tu espacio para contactarme. 
   <br /><br />
   También puedes escribirnos para <strong>entrevistas, prensa o colaboraciones.</strong>
 </p>

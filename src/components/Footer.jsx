@@ -83,7 +83,7 @@ const Footer = ({
                   ...(showIntermedioNav ? [{ name: 'Intermedio', href: '#blog-contribuye' }] : []),
                   ...(showCuradoriaNav ? [{ name: 'Curaduría', href: '#dialogo-critico' }] : []),
                   ...(showIntermedioNav ? [{ name: 'Caída del telón', href: '#next-show' }] : []),
-                  ...(showObraDestacadaNav ? [{ name: 'Obra destacada', href: '#about' }] : []),
+                  ...(showObraDestacadaNav ? [{ name: 'Obra fundacional', href: '#about' }] : []),
                   ...(showObraDestacadaNav ? [{ name: 'Galería fractal', href: '#instagram' }] : []),
                   ...(showObraDestacadaNav ? [{ name: 'Créditos de la obra', href: '#team' }] : []),
                   { name: 'Contacto', href: '#contact' },

@@ -1,6 +1,6 @@
 import React, { Suspense, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
-import { BookOpen, CoffeeIcon, DramaIcon, TicketIcon, HeartHandshake, ShoppingBag, SparkleIcon, DoorOpen } from 'lucide-react';
+import { BookOpen, CoffeeIcon, DramaIcon, TicketIcon, HeartHandshake, ShoppingBag, SparkleIcon, DoorOpen, Smartphone } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 const TicketPurchaseModal = React.lazy(() => import('@/components/TicketPurchaseModal'));
 const GatokensRevealModal = React.lazy(() => import('@/components/GatokensRevealModal'));
@@ -8,6 +8,7 @@ const MiniverseModal = React.lazy(() => import('@/components/MiniverseModal'));
 const VideoNarrativeAutoplay = React.lazy(() => import('@/components/VideoNarrativeAutoplay'));
 const isotipoGatoWebp = '/assets/isotipo_hero.webp';
 const HashtagButton3D = React.lazy(() => import('@/components/HashtagButton3D'));
+import PWAInstructionsOverlay from '@/components/PWAInstructionsOverlay';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useToast } from '@/components/ui/use-toast';
 import { useAuth } from '@/contexts/SupabaseAuthContext';
@@ -59,6 +60,7 @@ const HERO_PENDING_MINIVERSE_SELECTION_KEY = 'gatoencerrado:hero-inline-minivers
 const HERO_TITLE = 'GATOENCERRADO';
 const HERO_BRAND_LABEL = '#GATOENCERRADO';
 const HERO_INACTIVE_HINT = 'Pulsa el gato';
+const HERO_PWA_INSTALL_HINT = 'Agrégalo a tu';
 const HERO_ROTATING_SUBTITLES = [
   'Una experiencia narrativa interactiva',            // 1 · el cajón (ver decisión A)
   'Basada en una herida emocional compartida',        // 2 · el origen — intacta, es de tus mejores
@@ -82,6 +84,23 @@ const HERO_GHOST_SUBTITLES = [
 const HERO_ROTATING_SUBTITLE_PLACEHOLDER =
 'Una experiencia narrativa transmedial';
 const HERO_SUBTITLE_ROTATION_MS = 3800;
+const HERO_MOBILE_STAR_COUNT = 120;
+
+const createHeroMobileStars = () =>
+  Array.from({ length: HERO_MOBILE_STAR_COUNT }).map((_, index) => ({
+    id: index,
+    size: Math.random() * 1.8 + 0.35,
+    opacity: Math.random() * 0.46 + 0.14,
+    x: Math.random() * 100,
+    y: Math.random() * 100,
+  }));
+
+const readIsRunningAsInstalledPwa = () => {
+  if (typeof window === 'undefined') return false;
+  const isStandaloneDisplay = window.matchMedia?.('(display-mode: standalone)').matches;
+  const isIosStandalone = window.navigator?.standalone === true;
+  return Boolean(isStandaloneDisplay || isIosStandalone);
+};
 
 const resolveHeroInlineTabFromQuery = (search = '') => {
   if (!search) return 'experiences';
@@ -129,10 +148,17 @@ const Hero = () => {
   const audioActivatedOnceRef = useRef(readHeroActivatedFromSession());
   const [isHeroHashReady, setIsHeroHashReady] = useState(false);
   const [isHeroInViewport, setIsHeroInViewport] = useState(true);
+  const [isHeroPwaPromptVisible, setIsHeroPwaPromptVisible] = useState(false);
+  const [isHeroPwaInstructionsOpen, setIsHeroPwaInstructionsOpen] = useState(false);
+  const [isInstalledPwa, setIsInstalledPwa] = useState(readIsRunningAsInstalledPwa);
   const [isMobileViewport, setIsMobileViewport] = useState(() => {
     if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') return false;
     return window.matchMedia('(max-width: 768px)').matches;
   });
+  const heroMobileStars = useMemo(createHeroMobileStars, []);
+  const navigate = useNavigate();
+  const location = useLocation();
+  const { user, loading: isAuthLoading } = useAuth();
 
   const rotatingCtas = [
     { label: 'Café', Icon: CoffeeIcon },
@@ -140,15 +166,16 @@ const Hero = () => {
     { label: 'Merch', Icon: ShoppingBag },
   ];
   const currentCta = rotatingCtas[ctaIndex];
+  const shouldShowHeroPwaChoice =
+    isMobileViewport && !user && !hasActivatedAudio && isHeroPwaPromptVisible;
   const shouldShowHeroInactiveHint = !hasActivatedAudio && isHeroHashReady;
   const currentHeroSubtitle = hasActivatedAudio
     ? heroGhostSubtitle ?? HERO_ROTATING_SUBTITLES[heroSubtitleIndex]
-    : shouldShowHeroInactiveHint ? HERO_INACTIVE_HINT : '';
+    : shouldShowHeroPwaChoice
+      ? HERO_PWA_INSTALL_HINT
+      : shouldShowHeroInactiveHint ? HERO_INACTIVE_HINT : '';
   const isHeroGhostSubtitle = hasActivatedAudio && heroGhostSubtitle !== null;
   const targetWidth = primaryCtaWidth ?? undefined;
-  const navigate = useNavigate();
-  const location = useLocation();
-  const { user, loading: isAuthLoading } = useAuth();
   const heroTitleSignalDisplay = useSignalDriftText(HERO_BRAND_LABEL, { active: !hasActivatedAudio && !user });
   const heroTitleDisplay = useMemo(
     () => heroTitleSignalDisplay.slice(1) || HERO_TITLE,
@@ -160,6 +187,16 @@ const Hero = () => {
   useEffect(() => {
     writeHeroActivatedToSession(hasActivatedAudio);
   }, [hasActivatedAudio]);
+
+  useEffect(() => {
+    if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') return undefined;
+    const standaloneQuery = window.matchMedia('(display-mode: standalone)');
+    const handleDisplayModeChange = () => setIsInstalledPwa(readIsRunningAsInstalledPwa());
+    standaloneQuery.addEventListener?.('change', handleDisplayModeChange);
+    return () => {
+      standaloneQuery.removeEventListener?.('change', handleDisplayModeChange);
+    };
+  }, []);
 
   useEffect(() => {
     const params = new URLSearchParams(location.search);
@@ -537,6 +574,34 @@ const Hero = () => {
     }
   }, [isHeroAudioMuted, hasActivatedAudio, captureTransmigrationOrigin]);
 
+  const shouldInterceptHeroActivationForPwa = useCallback(() => (
+    isMobileViewport &&
+    !user &&
+    !isInstalledPwa &&
+    !hasActivatedAudio &&
+    !isHeroPwaPromptVisible
+  ), [hasActivatedAudio, isHeroPwaPromptVisible, isInstalledPwa, isMobileViewport, user]);
+
+  const handleHeroHashClick = useCallback(() => {
+    if (shouldInterceptHeroActivationForPwa()) {
+      setIsHeroPwaPromptVisible(true);
+      return;
+    }
+    if (isMobileViewport && !hasActivatedAudio && isHeroPwaPromptVisible) {
+      return;
+    }
+    handleIsotipoClick();
+  }, [handleIsotipoClick, hasActivatedAudio, isHeroPwaPromptVisible, isMobileViewport, shouldInterceptHeroActivationForPwa]);
+
+  const handleDeclineHeroPwaInstall = useCallback(() => {
+    setIsHeroPwaPromptVisible(false);
+    handleIsotipoClick();
+  }, [handleIsotipoClick]);
+
+  const handleAcceptHeroPwaInstall = useCallback(() => {
+    setIsHeroPwaInstructionsOpen(true);
+  }, []);
+
   const handleHeroHashReady = useCallback(() => {
     setIsHeroHashReady(true);
   }, []);
@@ -544,8 +609,8 @@ const Hero = () => {
   const handleHeroHashKeyDown = useCallback((event) => {
     if (event.key !== 'Enter' && event.key !== ' ') return;
     event.preventDefault();
-    handleIsotipoClick();
-  }, [handleIsotipoClick]);
+    handleHeroHashClick();
+  }, [handleHeroHashClick]);
 
   const handleOpenIndexFromHero = useCallback(() => {
     if (typeof window === 'undefined') return;
@@ -856,6 +921,29 @@ const Hero = () => {
             : 'flex flex-col'
         }`}
       >
+        {!shouldRenderInlineHero && isMobileViewport && !hasActivatedAudio ? (
+          <motion.div
+            aria-hidden="true"
+            className="hero-mobile-starfield"
+            initial={false}
+            animate={{ opacity: isHeroPwaPromptVisible ? 0 : 1 }}
+            transition={{ duration: 0.65, ease: 'easeOut' }}
+          >
+            {heroMobileStars.map((star) => (
+              <span
+                key={star.id}
+                className="hero-mobile-star"
+                style={{
+                  top: `${star.y}%`,
+                  left: `${star.x}%`,
+                  width: `${star.size}px`,
+                  height: `${star.size}px`,
+                  opacity: star.opacity,
+                }}
+              />
+            ))}
+          </motion.div>
+        ) : null}
         {/* Contenido */}
         {shouldRenderInlineHero ? (
           <div
@@ -927,7 +1015,7 @@ const Hero = () => {
               {/* LÍNEA CENTRAL — GATOENCERRADO ancla el 50vh */}
               <div className="max-w-4xl lg:max-w-[72rem] mx-auto w-full">
                 <h1
-                  className={`hero-title ${hasActivatedAudio ? 'hero-title--scene-active' : ''} text-center w-full break-words`}
+                  className={`hero-title ${shouldShowHeroPwaChoice ? 'hero-title--pwa-choice' : ''} ${hasActivatedAudio ? 'hero-title--scene-active' : ''} text-center w-full break-words`}
                   style={{
                     opacity: isMobileViewport ? (hasActivatedAudio ? 1 : 0.88) : (hasActivatedAudio ? 0.96 : 0.72),
                     filter: isMobileViewport
@@ -956,15 +1044,41 @@ const Hero = () => {
                         transition={{ duration: 1.8, ease: [0.2, 1, 0.2, 1] }}
                         className={`hero-subtitle-copy absolute inset-0 inline-flex items-center justify-center ${isHeroGhostSubtitle ? 'italic' : 'not-italic'}`}
                       >
-                        {currentHeroSubtitle}
+                        {shouldShowHeroPwaChoice ? (
+                          <span className="inline-flex items-center justify-center gap-2">
+                            <span>{currentHeroSubtitle}</span>
+                            <Smartphone size={15} strokeWidth={1.8} />
+                          </span>
+                        ) : currentHeroSubtitle}
                       </motion.span>
                     </AnimatePresence>
                   </span>
                 </motion.div>
                 <div
-                  className="hero-central-spacer relative mt-5 inline-flex h-12 w-12 items-center justify-center self-center sm:mt-2"
-                  aria-hidden="true"
-                />
+                  className={`hero-central-spacer relative mt-5 inline-flex h-12 w-12 items-center justify-center self-center sm:mt-2 ${shouldShowHeroPwaChoice ? 'hero-central-spacer--pwa-choice' : ''}`}
+                  aria-hidden={shouldShowHeroPwaChoice ? undefined : true}
+                >
+                  <AnimatePresence>
+                    {shouldShowHeroPwaChoice ? (
+                      <motion.div
+                        key="hero-pwa-choice"
+                        initial={{ opacity: 0, y: -4, filter: 'blur(8px)' }}
+                        animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
+                        exit={{ opacity: 0, y: -4, filter: 'blur(8px)' }}
+                        transition={{ duration: 0.45, ease: 'easeOut' }}
+                        className="hero-pwa-choice"
+                      >
+                        <button type="button" onClick={handleAcceptHeroPwaInstall}>
+                          Sí
+                        </button>
+                        <span aria-hidden="true">/</span>
+                        <button type="button" onClick={handleDeclineHeroPwaInstall}>
+                          No
+                        </button>
+                      </motion.div>
+                    ) : null}
+                  </AnimatePresence>
+                </div>
               </div>
 
               {/* BOTTOM HALF — hash 3D (gatillo de activación) y CTAs bajo la línea central */}
@@ -980,23 +1094,23 @@ const Hero = () => {
                 transition={{ duration: hasActivatedAudio ? 0.18 : 1, ease: 'easeOut' }}
                 className="hero-title-mark-slot mt-8 -translate-y-[7vh] sm:mt-10 sm:translate-y-0 md:mt-12"
                 style={{
-                  pointerEvents: hasActivatedAudio ? 'none' : 'auto',
+                  pointerEvents: hasActivatedAudio || shouldShowHeroPwaChoice ? 'none' : 'auto',
                 }}
                 role="button"
-                tabIndex={hasActivatedAudio ? -1 : 0}
+                tabIndex={hasActivatedAudio || shouldShowHeroPwaChoice ? -1 : 0}
                 onKeyDown={handleHeroHashKeyDown}
                 aria-hidden={hasActivatedAudio}
-                aria-label="Activar escena"
+                aria-label={shouldShowHeroPwaChoice ? 'Decidir si instalar #GatoEncerrado como app' : 'Activar escena'}
               >
                 {!hasActivatedAudio && (
                   <Suspense fallback={null}>
                     <HashtagButton3D
-                      onClick={handleIsotipoClick}
+                      onClick={handleHeroHashClick}
                       onReady={handleHeroHashReady}
                       height="var(--hero-title-mark-size)"
                       contentScale={isMobileViewport ? 0.92 : 1}
                       style={{ width: 'var(--hero-title-mark-size)', margin: '0 auto' }}
-                      showGlow={!hasActivatedAudio}
+                      showGlow={shouldShowHeroPwaChoice}
                     />
                   </Suspense>
                 )}
@@ -1295,6 +1409,12 @@ const Hero = () => {
           }}
         />
       </Suspense>
+      <PWAInstructionsOverlay
+        isOpen={isHeroPwaInstructionsOpen}
+        onClose={() => setIsHeroPwaInstructionsOpen(false)}
+        eyebrow="Instala el universo"
+        subtitle="Puedes volver y continuar en navegador si prefieres entrar ahora."
+      />
     </>
   );
 };
