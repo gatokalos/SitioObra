@@ -5233,7 +5233,7 @@ Silvestre, un hombre en sus treintas, comienza a perder la frontera entre lo que
             >
               <p className="text-xs uppercase tracking-[0.4em] text-slate-400/70">#obratransmedia</p>
               <h2 className="font-display text-4xl md:text-5xl font-medium text-gradient italic">
-                Las nueve formas de la obra
+                Las nueve formas<br />de la obra
               </h2>
               <p className="text-lg text-slate-300/80 max-w-3xl mx-auto leading-relaxed font-light">
     <em>La fugacidad de esta obra nace en el esecenario.</em><br />

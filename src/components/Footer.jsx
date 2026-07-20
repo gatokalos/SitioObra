@@ -85,7 +85,7 @@ const Footer = ({
                   ...(showIntermedioNav ? [{ name: 'Caída del telón', href: '#next-show' }] : []),
                   ...(showObraDestacadaNav ? [{ name: 'Obra fundacional', href: '#about' }] : []),
                   ...(showObraDestacadaNav ? [{ name: 'Galería fractal', href: '#instagram' }] : []),
-                  ...(showObraDestacadaNav ? [{ name: 'Créditos de la obra', href: '#team' }] : []),
+                  ...(showObraDestacadaNav ? [{ name: 'Créditos de la función', href: '#team' }] : []),
                   { name: 'Contacto', href: '#contact' },
                 ].map((item) => (
                   <li key={item.name}>

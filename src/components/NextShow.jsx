@@ -67,7 +67,7 @@ const NextShow = () => {
     });
   }, [location, navigate]);
 
-  // Caída del Telón: revela Obra Destacada + Créditos de la obra
+  // Caída del Telón: revela Obra Destacada + Créditos de la función
   const handlePrimaryAction = useCallback(() => {
     if (typeof window === 'undefined') return;
     window.dispatchEvent(new CustomEvent('gatoencerrado:reveal-obra-destacada'));

@@ -227,7 +227,7 @@ const mobileSingleButtonRoles = new Set([
   "Dramaturgia",
   "Colaboradores y Agradecimientos",
 ]);
-// Todas las pestañas de Créditos de la obra inician cerradas, en desktop y en móvil.
+// Todas las pestañas de Créditos de la función inician cerradas, en desktop y en móvil.
 const defaultOpenMobileRoles = [];
 const mobileRoleLabelOverrides = {
   "Sonido y Tema Musical": "Sonido y Música",
@@ -1159,7 +1159,7 @@ const Team = () => {
           className="text-center mb-16"
         >
           <h2 className="font-display text-4xl md:text-5xl font-medium mb-6 text-gradient italic">
-            Créditos de la obra
+            Créditos de la función
           </h2>
           <p className="text-lg text-slate-300/80 max-w-3xl mx-auto leading-relaxed font-light md:text-base sm:text-sm">
           

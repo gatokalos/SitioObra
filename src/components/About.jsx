@@ -1313,7 +1313,7 @@ const About = () => {
                   className="ge-chip-action ge-chip-action--primary"
                 >
                   <Film size={20} />
-                  Créditos de la obra
+                  Créditos de la función
                 </Button>
                 <Button
                   variant="outline"

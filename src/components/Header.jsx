@@ -332,7 +332,7 @@ const Header = ({
       ? [{ name: 'Obra fundacional', href: '#about', description: 'Teatro · Es un gato encerrado' }]
       : []),
     ...(showObraDestacadaNav ? [{ name: 'Galería fractal', href: '#instagram' }] : []),
-    ...(showObraDestacadaNav ? [{ name: 'Créditos de la obra', href: '#team' }] : []),
+    ...(showObraDestacadaNav ? [{ name: 'Créditos de la función', href: '#team' }] : []),
     { name: 'Contacto', href: '#contact' },
   ];
 
