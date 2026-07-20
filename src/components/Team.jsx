@@ -1163,8 +1163,7 @@ const Team = () => {
           </h2>
           <p className="text-lg text-slate-300/80 max-w-3xl mx-auto leading-relaxed font-light md:text-base sm:text-sm">
           
-            El equipo escénico de <em>Es un gato encerrado</em>, la obra teatral que dio origen a este universo narrativo.
-Estos créditos pertenecen a esa pieza fundacional y a las colaboraciones que hicieron posible su puesta en escena.
+            Una obra nunca pertenece a una sola persona. <em>Es un gato encerrado</em> existe gracias a la colaboración de creadoras, creadores, intérpretes, diseñadores, productoras, técnicas e instituciones que, desde distintas disciplinas, construyen una experiencia escénica compartida.
           </p>
         </motion.div>
 

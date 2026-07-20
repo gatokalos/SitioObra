@@ -109,8 +109,8 @@ Tal vez no lo sepas todavía.
 
 Y no pasa nada.
 
-No necesitas entender dónde estás ahora.
-Solo notar si algo de lo que miras aquí
+No necesitas entender dónde estás.
+Solo notar si algo de lo que miras
 se queda moviéndose adentro.`}
   </span>
 

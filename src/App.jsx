@@ -147,9 +147,9 @@ const HERO_BACKGROUND_VARIANTS = {
     className: 'absolute inset-0 h-full w-full object-cover',
     style: {
       opacity: 0.44,
-      filter: 'contrast(72%) brightness(87%) saturate(70%)',
+      filter: 'contrast(72%) brightness(87%) saturate(96%)',
       objectPosition: '50% 28%',
-      transform: 'translateY(12.5%) scale(1.2)',
+      transform: 'translateY(7.5%) scale(1.1)',
     },
   },
   authenticated: {
@@ -464,7 +464,7 @@ function App() {
   }, []);
   // Tercera Llamada (La Bienvenida): al volver de /bienvenida con recomendación,
   // se desbloquean Perspectivas + Transmedia, que a partir de ahí conviven con
-  // Tercera Llamada (no la reemplazan) — su CTA solo cambia a "Revisitar".
+  // Tercera Llamada (no la reemplazan) — su CTA solo cambia a "Reposición".
   const [hasCompletedTerceraLlamada, setHasCompletedTerceraLlamada] = useState(() => {
     return safeGetItem(BIENVENIDA_COMPLETED_STORAGE_KEY) === '1';
   });
@@ -482,7 +482,7 @@ function App() {
   }, [isAuthenticated, hasGuestUnlockedTransmedia]);
   // Un usuario autenticado ya cruzó el umbral por definición — ve Perspectivas
   // y Miniversos desde el inicio, sin necesidad de completar Tercera Llamada
-  // (que igual se le sigue mostrando, con el CTA en modo "Revisitar").
+  // (que igual se le sigue mostrando, con el CTA en modo "Reposición").
   const hasEnteredUniverse = hasCompletedTerceraLlamada || isAuthenticated;
   const canShowPostHeroContent = isHeroActivated || hasEnteredUniverse;
   // Curaduría: visibilidad controlada por el botón "Preguntar" (abre/cierra), no por acceso permanente.
@@ -796,7 +796,7 @@ function App() {
                 showObraDestacadaNav={isObraDestacadaVisible}
                 showTerceraLlamadaNav={canShowPostHeroContent}
                 showGatChip={isAuthenticated || isHeroActivated}
-                terceraLlamadaLabel={hasEnteredUniverse ? 'Revisitar' : 'Comenzamos'}
+                terceraLlamadaLabel={hasEnteredUniverse ? 'Reposición' : 'Comenzamos'}
               />
 
               <main className="pt-20 lg:pt-24">
@@ -918,7 +918,7 @@ function App() {
                 showPerspectivasNav={canShowPostHeroContent && hasEnteredUniverse}
                 showObraDestacadaNav={isObraDestacadaVisible}
                 showTerceraLlamadaNav={canShowPostHeroContent}
-                terceraLlamadaLabel={hasEnteredUniverse ? 'Revisitar' : 'Comenzamos'}
+                terceraLlamadaLabel={hasEnteredUniverse ? 'Reposición' : 'Comenzamos'}
               />
               {shouldShowToast && (
                 <LoginToast emailHash={emailHash} onDismiss={dismissToast} />

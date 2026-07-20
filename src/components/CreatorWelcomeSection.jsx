@@ -52,7 +52,8 @@ const CreatorWelcomeSection = ({ hasEnteredUniverse = false }) => {
             </h3>
            <div className="text-slate-300/80 leading-relaxed mb-6 max-w-2xl mx-auto font-light text-center space-y-4">
   <p>No sé cómo llegaste hasta aquí.<br />Pero me alegra que lo hayas hecho.</p>
-  <p><strong>Esto que ves es una obra hecha de preguntas</strong>.<br />No todas buscan una respuesta.<br />Algunas solo necesitan que alguien las habite.</p>
+  <p><strong>Hay comienzos que nadie anuncia.</strong><br />Y aun así, solo estamos.</p>
+  <p>Este universo está hecho de preguntas.<br />No todas buscan una respuesta.<br />Algunas solo necesitan que alguien las habite.</p>
   <p>Yo te estaba esperando.</p>
 </div>
             <div className="flex flex-col items-center gap-2 mb-8">
@@ -74,7 +75,7 @@ const CreatorWelcomeSection = ({ hasEnteredUniverse = false }) => {
               onClick={handleEnter}
               className="ge-chip-action ge-chip-action--primary mx-auto"
             >
-              {hasEnteredUniverse ? 'Revisitar' : '¿Comenzamos?'}
+              {hasEnteredUniverse ? 'Reposición' : '¿Comenzamos?'}
             </Button>
             {hasEnteredUniverse ? (
               <p className="mx-auto mt-3 max-w-sm text-center text-[0.72rem] leading-relaxed text-slate-400/80">

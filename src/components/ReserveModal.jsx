@@ -16,10 +16,10 @@ const LOGO_SRC = '/assets/logoapp.webp';
 const RESERVE_BANNER_SRC =
   'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Merch/banner_cafegato_small.mp4';
 const OFFSEASON_QUOTE = {
-  text: `A largo plazo, imaginamos un lugar
-donde crear también sea investigar,
-y cuidar la salud mental
-sea una forma de arte compartido.`,
+  text: `Busquemos lugares donde crear 
+  también sea investigar,
+  y cuidar la salud mental 
+  sea una forma de arte compartido.`,
   author: 'Carlos A. Pérez H.',
   role: 'Autor de #GatoEncerrado',
   avatar:
@@ -437,32 +437,34 @@ const ReserveModal = ({
         <ConfettiBurst key={burst} seed={burst} />
       ))}
 
-      {/* HEADER + BANNER — reversed on mobile: banner first, header second */}
-      <div className="flex flex-col-reverse sm:flex-col gap-4 sm:gap-0 mb-6 sm:mb-0">
+      {/* HEADER + BANNER — encuentros/offseason uses one integrated hero banner */}
+      <div className="mb-6 sm:mb-0">
 
         {/* HEADER */}
-        <div className={`${!isPageMode ? 'px-6 sm:px-0' : ''} flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 sm:mb-8`}>
-          <div className="flex items-center gap-4">
-            <img
-              src={LOGO_SRC}
-              alt="#GatoEncerrado"
-              className="h-12 w-auto object-contain rounded-full border border-white/20 bg-white/5 p-1 shadow-lg shrink-0 order-2 sm:order-1"
-            />
-            <div className="flex-1 order-1 sm:order-2 sm:flex-none">
-              {copy.eyebrow ? (
-                <p className="text-sm uppercase tracking-[0.35em] text-slate-400/80 mb-2">
-                  {copy.eyebrow}
-                </p>
-              ) : null}
-              <h2 className={titleClassName}>
-                {copy.title}
-              </h2>
-              {copy.subtitle ? (
-                <p className={subtitleClassName}>{copy.subtitle}</p>
-              ) : null}
+        {!isOffseason ? (
+          <div className={`${!isPageMode ? 'px-6 sm:px-0' : ''} flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 sm:mb-8`}>
+            <div className="flex items-center gap-4">
+              <img
+                src={LOGO_SRC}
+                alt="#GatoEncerrado"
+                className="h-12 w-auto object-contain rounded-full border border-white/20 bg-white/5 p-1 shadow-lg shrink-0 order-2 sm:order-1"
+              />
+              <div className="flex-1 order-1 sm:order-2 sm:flex-none">
+                {copy.eyebrow ? (
+                  <p className="text-sm uppercase tracking-[0.35em] text-slate-400/80 mb-2">
+                    {copy.eyebrow}
+                  </p>
+                ) : null}
+                <h2 className={titleClassName}>
+                  {copy.title}
+                </h2>
+                {copy.subtitle ? (
+                  <p className={subtitleClassName}>{copy.subtitle}</p>
+                ) : null}
+              </div>
             </div>
           </div>
-        </div>
+        ) : null}
 
         {/* BANNER */}
         <motion.div
@@ -474,7 +476,7 @@ const ReserveModal = ({
           <div className="relative overflow-hidden rounded-2xl border border-white/10 bg-black/30 shadow-[0_20px_45px_rgba(0,0,0,0.35)]">
             <motion.video
               src={RESERVE_BANNER_SRC}
-              className={`w-full block md:object-cover ${isOffseason ? 'md:h-[208px]' : 'md:h-[190px]'}`}
+              className={`block w-full object-cover md:object-cover ${isOffseason ? 'h-[292px] sm:h-[286px] md:h-[286px]' : 'h-[218px] sm:h-auto md:h-[190px]'}`}
               initial={{ scale: 1.03 }}
               animate={{ scale: 1 }}
               transition={{ duration: 0.9, ease: 'easeOut' }}
@@ -491,23 +493,31 @@ const ReserveModal = ({
                 <div className="absolute inset-0 bg-gradient-to-br from-slate-950/65 via-slate-900/35 to-slate-950/70" />
                 <div className="absolute inset-0 bg-gradient-to-t from-slate-950/95 via-slate-950/50 to-transparent" />
                 <div className="absolute inset-0 opacity-35 [background:radial-gradient(circle_at_25%_20%,rgba(56,189,248,0.35),transparent_38%),radial-gradient(circle_at_75%_25%,rgba(244,114,182,0.26),transparent_42%),radial-gradient(circle_at_55%_75%,rgba(192,132,252,0.22),transparent_40%)]" />
-                <div className="hidden sm:block absolute right-3 top-3 h-14 w-14 sm:right-5 sm:top-5 sm:h-[74px] sm:w-[74px] overflow-hidden rounded-full border border-white/30 shadow-[0_12px_28px_rgba(0,0,0,0.45)] ring-2 ring-purple-300/35">
-                  <img
-                    src={OFFSEASON_QUOTE.avatar}
-                    alt={OFFSEASON_QUOTE.author}
-                    className="h-full w-full object-cover"
-                    loading="lazy"
-                  />
+                <img
+                  src={LOGO_SRC}
+                  alt="#GatoEncerrado"
+                  className="absolute right-4 top-12 h-12 w-12 rounded-full border border-white/35 bg-white/15 object-contain p-1.5 shadow-[0_12px_28px_rgba(0,0,0,0.45)] ring-1 ring-purple-200/30 sm:right-5 sm:top-5 sm:h-14 sm:w-14"
+                  loading="lazy"
+                />
+                <div className="absolute left-4 right-20 top-5 sm:left-8 sm:right-24 sm:top-9">
+                  {copy.eyebrow ? (
+                    <p className="mb-2 text-[0.72rem] uppercase tracking-[0.42em] text-purple-100/80 sm:text-xs sm:tracking-[0.38em]">
+                      {copy.eyebrow}
+                    </p>
+                  ) : null}
+                  <h2 className="font-display text-[2.15rem] leading-none text-white sm:text-[2.85rem] md:text-[3.1rem]">
+                    {copy.title}
+                  </h2>
                 </div>
-                <div className="absolute bottom-0 left-0 right-0 p-4 sm:p-5">
-                  <p className="max-w-[82%] whitespace-pre-line text-xs sm:text-sm text-slate-100/95 leading-relaxed italic">
+                <div className="absolute bottom-0 left-0 right-0 p-4 sm:p-8 sm:pt-0">
+                  <p className="max-w-[70%] whitespace-pre-line text-[0.74rem] leading-relaxed text-slate-100/95 italic sm:max-w-[58%] sm:text-[0.78rem] sm:leading-snug">
                     "{OFFSEASON_QUOTE.text}"
                   </p>
                   <div className="mt-2">
-                    <p className="text-sm sm:text-base text-white font-semibold tracking-wide">
+                    <p className="text-sm font-semibold tracking-wide text-white sm:text-sm">
                       {OFFSEASON_QUOTE.author}
                     </p>
-                    <p className="text-[10px] sm:text-xs uppercase tracking-[0.28em] text-purple-200/85">
+                    <p className="text-[10px] uppercase tracking-[0.28em] text-purple-200/85 sm:text-[10px]">
                       {OFFSEASON_QUOTE.role}
                     </p>
                   </div>
@@ -549,7 +559,7 @@ const ReserveModal = ({
       Elige lo que quieres activar
     </h3>
     <p className="mt-1 text-sm text-slate-300/80 leading-relaxed">
-      Elige uno o varios. Podrás revisar los detalles antes de finalizar.
+      Elige uno o varios. Podrás revisar los detalles antes de finalizar tu compra.
     </p>
   </div>
 
