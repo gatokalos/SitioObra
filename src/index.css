@@ -240,8 +240,31 @@ body {
   }
 }
 
+/* Cursor parpadeante junto a "Encuentra al gato" — invita a la acción sin
+   decirla, en el mismo tono de terminal/señal que el resto del Hero. */
+.hero-hint-cursor {
+  display: inline-block;
+  width: 1px;
+  height: 0.9em;
+  margin-left: 0.35em;
+  background: currentColor;
+  vertical-align: -0.15em;
+  animation: hero-hint-cursor-blink 1s linear infinite;
+}
+
+@keyframes hero-hint-cursor-blink {
+  0%, 49% { opacity: 1; }
+  50%, 100% { opacity: 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-hint-cursor {
+    animation: none;
+  }
+}
+
 .hero-title-mark-slot {
-  --hero-title-mark-size: clamp(160px, 20vh, 175px);
+  --hero-title-mark-size: clamp(240px, 30vh, 262px);
   position: relative;
   display: inline-flex;
   align-items: center;
@@ -279,6 +302,66 @@ body {
     0 0 calc(3px + (var(--star-glow) * 5px)) rgba(226, 232, 240, calc(0.2 + (var(--star-glow) * 0.28))),
     0 0 calc(var(--star-glow) * 14px) rgba(167, 139, 250, 0.16);
   transform: translateZ(0);
+}
+
+/* Titileo — solo en las estrellas brillantes (hero-star--twinkle), cada una
+   con su propio delay/duración para no parpadear en sincronía. */
+.hero-star--twinkle {
+  animation: hero-star-twinkle var(--twinkle-duration, 4s) ease-in-out infinite;
+  animation-delay: var(--twinkle-delay, 0s);
+}
+
+@keyframes hero-star-twinkle {
+  0%, 100% { opacity: var(--star-opacity, 1); }
+  50% { opacity: calc(var(--star-opacity, 1) * 0.32); }
+}
+
+/* Estrella fugaz — esporádica: la mayor parte del ciclo está invisible en
+   reposo, y solo cruza brevemente cerca del final. */
+.hero-shooting-star {
+  position: absolute;
+  width: 2px;
+  height: 2px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.95);
+  box-shadow: 0 0 6px 1px rgba(226, 232, 240, 0.55);
+  opacity: 0;
+  animation: hero-shooting-star-fly var(--shoot-duration, 28s) linear infinite;
+  animation-delay: var(--shoot-delay, 0s);
+}
+
+/* La estela debe apuntar en sentido contrario al de vuelo (translate en el
+   keyframe de abajo va hacia -x/+y, izquierda-abajo), o se ve "volando de
+   reversa". Se ancla en la cabeza (left:0) y se rota hacia derecha-arriba
+   (-29.55deg = atan(85/150), el ángulo exacto opuesto al desplazamiento). */
+.hero-shooting-star::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 0;
+  width: 90px;
+  height: 1px;
+  background: linear-gradient(90deg, rgba(226, 232, 240, 0.7) 0%, rgba(255, 255, 255, 0) 100%);
+  transform-origin: 0% 50%;
+  transform: translateY(-50%) rotate(-29.55deg);
+}
+
+@keyframes hero-shooting-star-fly {
+  0%, 93% { opacity: 0; transform: translate(0, 0); }
+  94% { opacity: 1; }
+  97% { opacity: 1; transform: translate(-150px, 85px); }
+  100% { opacity: 0; transform: translate(-170px, 96px); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-star--twinkle {
+    animation: none;
+  }
+
+  .hero-shooting-star {
+    animation: none;
+    opacity: 0;
+  }
 }
 
 .hero-pwa-choice {

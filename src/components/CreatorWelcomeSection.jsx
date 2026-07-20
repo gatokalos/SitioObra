@@ -52,7 +52,7 @@ const CreatorWelcomeSection = ({ hasEnteredUniverse = false }) => {
             </h3>
            <div className="text-slate-300/80 leading-relaxed mb-6 max-w-2xl mx-auto font-light text-center space-y-4">
   <p>No sé cómo llegaste hasta aquí.<br />Pero me alegra que lo hayas hecho.</p>
-  <p><strong>Hay comienzos que nadie anuncia.</strong><br />Y aun así, solo estamos.</p>
+  <p><strong>Porque hay inicios que nadie anuncia.</strong><br />Y aun así, estamos lxs presentes.</p>
   <p>Este universo está hecho de preguntas.<br />No todas buscan una respuesta.<br />Algunas solo necesitan que alguien las habite.</p>
   <p>Yo te estaba esperando.</p>
 </div>
@@ -67,7 +67,7 @@ const CreatorWelcomeSection = ({ hasEnteredUniverse = false }) => {
               </div>
               <p className="font-display text-sm text-purple-100">Carlos A. Pérez H.</p>
               <p className="text-[0.65rem] uppercase tracking-[0.3em] text-purple-200/70">
-                Creador de #GatoEncerrado
+                Diseñador y productor de #GatoEncerrado
               </p>
             </div>
             <Button

@@ -62,7 +62,7 @@ const HERO_PENDING_MINIVERSE_SELECTION_KEY = 'gatoencerrado:hero-inline-minivers
 const HEADER_INDEX_HASHTAG_ID = 'header-index-hashtag';
 const HERO_TITLE = 'GATOENCERRADO';
 const HERO_BRAND_LABEL = '#GATOENCERRADO';
-const HERO_INACTIVE_HINT = 'Pulsa el gato';
+const HERO_INACTIVE_HINT = 'Encuentra al gato';
 const HERO_PWA_INSTALL_HINT = 'Agrégame como app';
 const HERO_ROTATING_SUBTITLES = [
   'Una experiencia narrativa interactiva',            // 1 · el cajón (ver decisión A)
@@ -100,8 +100,25 @@ const createHeroStars = (starCount) =>
       x: Math.random() * 100,
       y: Math.random() * 100,
       glow: isBrightStar ? 1 : 0,
+      // Solo las estrellas brillantes titilan — mantiene el manto sutil.
+      twinkle: isBrightStar,
+      twinkleDelay: Math.random() * 7,
+      twinkleDuration: 3.2 + Math.random() * 3.4,
     };
   });
+
+// Estrellas fugaces: pocas, esporádicas (ciclo largo + delay propio) y
+// confinadas a la mitad superior, para no cruzar el título ni el # 3D.
+const HERO_SHOOTING_STAR_COUNT = 2;
+
+const createHeroShootingStars = () =>
+  Array.from({ length: HERO_SHOOTING_STAR_COUNT }).map((_, index) => ({
+    id: index,
+    x: 15 + Math.random() * 60,
+    y: 6 + Math.random() * 30,
+    delay: Math.random() * 22,
+    duration: 24 + Math.random() * 10,
+  }));
 
 const readIsRunningAsInstalledPwa = () => {
   if (typeof window === 'undefined') return false;
@@ -169,6 +186,7 @@ const Hero = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [],
   );
+  const heroShootingStars = useMemo(createHeroShootingStars, []);
   const navigate = useNavigate();
   const location = useLocation();
   const { user, loading: isAuthLoading } = useAuth();
@@ -201,6 +219,18 @@ const Hero = () => {
   useEffect(() => {
     writeHeroActivatedToSession(hasActivatedAudio);
   }, [hasActivatedAudio]);
+
+  // Bloquea el scroll mientras dure el Estado Cero (invitado, escena sin
+  // activar) — antes se podía hacer scroll y asomarse al resto del sitio
+  // por detrás del Hero sin haber activado nada.
+  useLayoutEffect(() => {
+    if (typeof document === 'undefined') return undefined;
+    if (user || hasActivatedAudio) return undefined;
+    document.body.classList.add('overflow-hidden');
+    return () => {
+      document.body.classList.remove('overflow-hidden');
+    };
+  }, [user, hasActivatedAudio]);
 
   useEffect(() => {
     if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') return undefined;
@@ -958,29 +988,49 @@ const Hero = () => {
             : 'flex flex-col'
         }`}
       >
-        {!shouldRenderInlineHero && !hasActivatedAudio ? (
-          <motion.div
-            aria-hidden="true"
-            className="hero-starfield"
-            initial={false}
-            animate={{ opacity: isHeroPwaPromptVisible ? 0 : 1 }}
-            transition={{ duration: 0.65, ease: 'easeOut' }}
-          >
-            {heroStars.map((star) => (
-              <span
-                key={star.id}
-                className="hero-star"
-                style={{
-                  top: `${star.y}%`,
-                  left: `${star.x}%`,
-                  width: `${star.size}px`,
-                  height: `${star.size}px`,
-                  opacity: star.opacity,
-                  '--star-glow': star.glow,
-                }}
-              />
-            ))}
-          </motion.div>
+        {!shouldRenderInlineHero ? (
+          <AnimatePresence>
+            {!hasActivatedAudio && (
+              <motion.div
+                key="hero-starfield"
+                aria-hidden="true"
+                className="hero-starfield"
+                initial={false}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0, transition: { duration: 1.3, ease: 'easeOut' } }}
+              >
+                {heroStars.map((star) => (
+                  <span
+                    key={star.id}
+                    className={`hero-star${star.twinkle ? ' hero-star--twinkle' : ''}`}
+                    style={{
+                      top: `${star.y}%`,
+                      left: `${star.x}%`,
+                      width: `${star.size}px`,
+                      height: `${star.size}px`,
+                      opacity: star.opacity,
+                      '--star-glow': star.glow,
+                      '--star-opacity': star.opacity,
+                      '--twinkle-delay': `${star.twinkleDelay}s`,
+                      '--twinkle-duration': `${star.twinkleDuration}s`,
+                    }}
+                  />
+                ))}
+                {heroShootingStars.map((shootingStar) => (
+                  <span
+                    key={`shooting-${shootingStar.id}`}
+                    className="hero-shooting-star"
+                    style={{
+                      top: `${shootingStar.y}%`,
+                      left: `${shootingStar.x}%`,
+                      '--shoot-delay': `${shootingStar.delay}s`,
+                      '--shoot-duration': `${shootingStar.duration}s`,
+                    }}
+                  />
+                ))}
+              </motion.div>
+            )}
+          </AnimatePresence>
         ) : null}
         {/* Contenido */}
         {shouldRenderInlineHero ? (
@@ -1093,6 +1143,11 @@ const Hero = () => {
                           <span className="inline-flex items-center justify-center gap-2">
                             <span>{currentHeroSubtitle}</span>
                             <Smartphone size={15} strokeWidth={1.8} />
+                          </span>
+                        ) : shouldShowHeroInactiveHint ? (
+                          <span className="inline-flex items-center justify-center">
+                            {currentHeroSubtitle}
+                            <span className="hero-hint-cursor" aria-hidden="true" />
                           </span>
                         ) : currentHeroSubtitle}
                       </motion.span>

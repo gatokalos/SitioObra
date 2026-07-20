@@ -15,7 +15,7 @@ import { useAuth } from '@/contexts/SupabaseAuthContext';
 import { safeGetItem, safeSetItem } from '@/lib/safeStorage';
 import { readHeroActivatedFromSession } from '@/lib/heroActivation';
 
-const pageTitle = '#GatoEncerrado - Obra de Teatro transmedia';
+const pageTitle = '#GatoEncerrado - Una obra transmedia';
 const pageDescription =
   'La historia de alguien que desaparece… y deja una huella emocional. Una experiencia teatral única que explora múltiples formatos transmediaes.';
 const TRANSMEDIA_UNLOCK_STORAGE_KEY = 'gatoencerrado:transmedia-unlocked:v1';
