@@ -1,5 +1,6 @@
 import React, { Suspense, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
-import { AnimatePresence, motion } from 'framer-motion';
+import { createPortal } from 'react-dom';
+import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
 import { BookOpen, CoffeeIcon, DramaIcon, TicketIcon, HeartHandshake, ShoppingBag, SparkleIcon, DoorOpen, Smartphone } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 const TicketPurchaseModal = React.lazy(() => import('@/components/TicketPurchaseModal'));
@@ -57,6 +58,8 @@ const HERO_LOGGED_IN_ACTIVE_GLOW =
 const HERO_LOGGED_IN_SWEEP_GLOW =
   'radial-gradient(circle,rgba(31,47,99,0.3)_0%,rgba(110,48,171,0.22)_44%,rgba(217,31,139,0.1)_74%,rgba(0,0,0,0)_100%)';
 const HERO_PENDING_MINIVERSE_SELECTION_KEY = 'gatoencerrado:hero-inline-miniverse-selection';
+// Id del # real en Header.jsx — destino de la animación de transmigración.
+const HEADER_INDEX_HASHTAG_ID = 'header-index-hashtag';
 const HERO_TITLE = 'GATOENCERRADO';
 const HERO_BRAND_LABEL = '#GATOENCERRADO';
 const HERO_INACTIVE_HINT = 'Pulsa el gato';
@@ -65,7 +68,7 @@ const HERO_ROTATING_SUBTITLES = [
   'Una experiencia narrativa interactiva',            // 1 · el cajón (ver decisión A)
   'Basada en una herida emocional compartida',        // 2 · el origen — intacta, es de tus mejores
   'Teatro que no necesita escenario',                 // 3 · la expansión escénica
-  'Arte, cuidado y conocimiento: una sola función',  // 4 · la función de la obra
+  'Arte, cuidado y cultura: una misma función',  // 4 · la función de la obra
   'Una obra con nueve vidas',                         // 5 · NUEVA — el gato escondido en el número
   'Aquí el público también deja huella',              // 6 · NUEVA — la participación
   'Hay escenas que regresan días después',            // 7 · NUEVA — la resonancia diferida, sembrada
@@ -78,16 +81,17 @@ const HERO_GHOST_SUBTITLES = [
   'Tal vez esta obra ya empezó en ti',                // intacta
   'Lo que resuene, te encontrará',                    // NUEVA — tu gramática de resonancia
   'El gato ya te vio',                                // NUEVA — el susurro felino (ver decisión C)
-  'Una sola pregunta: ¿qué es «estar bien»?' // NUEVA — la introspección
+  'Una sola pregunta: ¿qué es *estar bien*?' // NUEVA — la introspección
 ];
 
 const HERO_ROTATING_SUBTITLE_PLACEHOLDER =
 'Una experiencia narrativa transmedial';
 const HERO_SUBTITLE_ROTATION_MS = 3800;
-const HERO_MOBILE_STAR_COUNT = 165;
+const HERO_STARFIELD_STAR_COUNT_MOBILE = 165;
+const HERO_STARFIELD_STAR_COUNT_DESKTOP = 300;
 
-const createHeroMobileStars = () =>
-  Array.from({ length: HERO_MOBILE_STAR_COUNT }).map((_, index) => {
+const createHeroStars = (starCount) =>
+  Array.from({ length: starCount }).map((_, index) => {
     const isBrightStar = index % 7 === 0;
     return {
       id: index,
@@ -147,7 +151,6 @@ const Hero = () => {
   const [hasUsedIndexCue, setHasUsedIndexCue] = useState(readIndexCueUsedFromSession);
   const [transmigrationOrigin, setTransmigrationOrigin] = useState(null);
   const hashtagAnchorRef = useRef(null);
-  const indexCueRef = useRef(null);
   const userActivatedRef = useRef(readHeroActivatedFromSession());
   const audioActivatedOnceRef = useRef(readHeroActivatedFromSession());
   const [isHeroHashReady, setIsHeroHashReady] = useState(false);
@@ -159,7 +162,13 @@ const Hero = () => {
     if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') return false;
     return window.matchMedia('(max-width: 768px)').matches;
   });
-  const heroMobileStars = useMemo(createHeroMobileStars, []);
+  // Cuenta fija al montar (no reactiva a resize) para que las estrellas no
+  // se rebarajen si el usuario cruza el breakpoint móvil/desktop en vivo.
+  const heroStars = useMemo(
+    () => createHeroStars(isMobileViewport ? HERO_STARFIELD_STAR_COUNT_MOBILE : HERO_STARFIELD_STAR_COUNT_DESKTOP),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [],
+  );
   const navigate = useNavigate();
   const location = useLocation();
   const { user, loading: isAuthLoading } = useAuth();
@@ -187,6 +196,7 @@ const Hero = () => {
   );
   const { toast } = useToast();
   const narrativeVideoUrl = isMobileViewport ? null : NARRATIVE_VIDEO_URL_DESKTOP;
+  const prefersReducedMotion = useReducedMotion();
 
   useEffect(() => {
     writeHeroActivatedToSession(hasActivatedAudio);
@@ -466,7 +476,14 @@ const Hero = () => {
     const observer = new window.IntersectionObserver(
       (entries) => {
         const entry = entries[0];
-        setIsHeroInViewport(Boolean(entry?.isIntersecting));
+        const isIntersecting = Boolean(entry?.isIntersecting);
+        setIsHeroInViewport(isIntersecting);
+        if (!isIntersecting) {
+          // Apaga el aro pulsante del # del Header (ver Header.jsx) — una vez
+          // que el Hero sale de pantalla, ya no hace falta seguir llamando la
+          // atención hacia ese destino.
+          window.dispatchEvent(new CustomEvent('gatoencerrado:hero-left-viewport'));
+        }
       },
       { threshold: 0.2 },
     );
@@ -521,7 +538,9 @@ const Hero = () => {
 
   const captureTransmigrationOrigin = useCallback(() => {
     const sourceEl = hashtagAnchorRef.current;
-    const destEl = indexCueRef.current;
+    const destEl = typeof document !== 'undefined'
+      ? document.getElementById(HEADER_INDEX_HASHTAG_ID)
+      : null;
     if (!sourceEl || !destEl) {
       setTransmigrationOrigin(null);
       return;
@@ -541,7 +560,20 @@ const Hero = () => {
       x: sourceCenterX - destCenterX,
       y: sourceCenterY - destCenterY,
       scale: Math.min(Math.max(scaleRatio, 1.6), 3.4),
+      // Coordenadas fijas del destino real: el clon vuela renderizado en un
+      // portal a document.body, posicionado ahí de reposo (ver JSX abajo).
+      destTop: destRect.top,
+      destLeft: destRect.left,
+      destWidth: destRect.width,
+      destHeight: destRect.height,
     });
+  }, []);
+
+  const revealHeaderIndexCueFromHero = useCallback(() => {
+    if (typeof window === 'undefined') return;
+    setHasUsedIndexCue(true);
+    writeIndexCueUsedToSession();
+    window.dispatchEvent(new CustomEvent('gatoencerrado:hero-index-cue-used'));
   }, []);
 
   const handleIsotipoClick = useCallback(() => {
@@ -551,7 +583,11 @@ const Hero = () => {
     if (!userActivatedRef.current) {
       // Primera activación
       userActivatedRef.current = true;
-      captureTransmigrationOrigin();
+      if (prefersReducedMotion) {
+        revealHeaderIndexCueFromHero();
+      } else {
+        captureTransmigrationOrigin();
+      }
       setHasActivatedAudio(true);
       if (!audioActivatedOnceRef.current) {
         audioActivatedOnceRef.current = true;
@@ -571,12 +607,16 @@ const Hero = () => {
       setHeroAmbientMuted(true);
       window.dispatchEvent(new CustomEvent('gatoencerrado:audio-deactivated'));
     } else {
-      captureTransmigrationOrigin();
+      if (prefersReducedMotion) {
+        revealHeaderIndexCueFromHero();
+      } else {
+        captureTransmigrationOrigin();
+      }
       setHasActivatedAudio(true);
       setHeroAmbientMuted(false, { targetVolume: HERO_LOGGED_IN_AUDIO_VOLUME });
       window.dispatchEvent(new CustomEvent('gatoencerrado:audio-activated'));
     }
-  }, [isHeroAudioMuted, hasActivatedAudio, captureTransmigrationOrigin]);
+  }, [isHeroAudioMuted, hasActivatedAudio, captureTransmigrationOrigin, prefersReducedMotion, revealHeaderIndexCueFromHero]);
 
   const shouldInterceptHeroActivationForPwa = useCallback(() => (
     isMobileViewport &&
@@ -615,20 +655,6 @@ const Hero = () => {
     event.preventDefault();
     handleHeroHashClick();
   }, [handleHeroHashClick]);
-
-  const revealHeaderIndexCueFromHero = useCallback(() => {
-    if (typeof window === 'undefined') return;
-    setHasUsedIndexCue(true);
-    writeIndexCueUsedToSession();
-    window.dispatchEvent(new CustomEvent('gatoencerrado:hero-index-cue-used'));
-  }, []);
-
-  const handleOpenIndexFromHero = useCallback(() => {
-    // Este primer gesto NO abre el índice: solo revela el # del Header.
-    // El usuario debe dar un segundo clic explícito en ese # para abrir
-    // el Programa de mano. El auto-reveal por scroll usa el mismo contrato.
-    revealHeaderIndexCueFromHero();
-  }, [revealHeaderIndexCueFromHero]);
 
   useEffect(() => {
     if (!hasActivatedAudio || hasUsedIndexCue || isHeroInViewport) return;
@@ -932,18 +958,18 @@ const Hero = () => {
             : 'flex flex-col'
         }`}
       >
-        {!shouldRenderInlineHero && isMobileViewport && !hasActivatedAudio ? (
+        {!shouldRenderInlineHero && !hasActivatedAudio ? (
           <motion.div
             aria-hidden="true"
-            className="hero-mobile-starfield"
+            className="hero-starfield"
             initial={false}
             animate={{ opacity: isHeroPwaPromptVisible ? 0 : 1 }}
             transition={{ duration: 0.65, ease: 'easeOut' }}
           >
-            {heroMobileStars.map((star) => (
+            {heroStars.map((star) => (
               <span
                 key={star.id}
-                className="hero-mobile-star"
+                className="hero-star"
                 style={{
                   top: `${star.y}%`,
                   left: `${star.x}%`,
@@ -1000,7 +1026,7 @@ const Hero = () => {
                   </motion.div>
                   <motion.div
                     aria-hidden="true"
-                    initial={{ opacity: 0, y: 20 }}
+                    initial={{ opacity: 0, y: 50 }}
                     animate={{ opacity: hasActivatedAudio ? 1 : 0, y: 0 }}
                     transition={{ duration: hasActivatedAudio ? 0.9 : 1, delay: hasActivatedAudio ? 0 : 0.8 }}
                     className="hero-logo hero-logo--portal"
@@ -1012,6 +1038,12 @@ const Hero = () => {
                       visibility: hasActivatedAudio ? 'visible' : 'hidden',
                     }}
                   >
+                    {hasActivatedAudio ? (
+                      <span
+                        key={`hero-logo-flash-${currentHeroSubtitle}`}
+                        className="hero-logo-subtitle-flash"
+                      />
+                    ) : null}
                     <div className="hero-logo-visual">
                       <img
                         src={isotipoGatoWebp}
@@ -1129,55 +1161,50 @@ const Hero = () => {
                 )}
               </motion.div>
 
-              {/* Botón de índice — el mismo # del gatillo de activación "transmigra"
-                  a su nuevo rol: se desprende de su posición original y desciende
-                  hasta este botón. Un solo gesto para que el usuario identifique
-                  dónde está el Programa de mano. Se usa una vez por sesión y
-                  luego se oculta (sessionStorage) — pero se mantiene montado,
-                  reservando su espacio, para no correr el resto del Hero al
-                  desaparecer. */}
-              <motion.button
-                ref={indexCueRef}
-                type="button"
-                animate={{ opacity: hasActivatedAudio && !hasUsedIndexCue ? 1 : 0 }}
-                transition={{ duration: hasActivatedAudio && !hasUsedIndexCue ? 0.15 : 0.3, ease: 'easeOut' }}
-                onClick={handleOpenIndexFromHero}
-                className="hero-index-cue relative mt-5 inline-flex h-12 w-12 items-center justify-center self-center rounded-full sm:mt-6"
-                style={{
-                  pointerEvents: hasActivatedAudio && !hasUsedIndexCue ? 'auto' : 'none',
-                  visibility: hasActivatedAudio && !hasUsedIndexCue ? 'visible' : 'hidden',
-                }}
-                aria-label="Abrir Programa de sala"
-                whileHover={{ scale: 1.06 }}
-                whileTap={{ scale: 0.94 }}
-              >
-                {hasActivatedAudio && !hasUsedIndexCue && (
-                    <motion.span
-                      key="hero-hashtag-transmigrated"
-                      initial={
-                        transmigrationOrigin
-                          ? {
-                              x: transmigrationOrigin.x,
-                              y: transmigrationOrigin.y,
-                              scale: transmigrationOrigin.scale,
-                              opacity: 0.9,
-                            }
-                          : { x: 0, y: -60, scale: 1.8, opacity: 0 }
-                      }
-                      animate={{ x: 0, y: 0, scale: 1, opacity: 1 }}
-                      transition={{
-                        opacity: { duration: 0.22, ease: 'easeOut' },
-                        x: { duration: 0.85, ease: [0.45, 0, 0.15, 1] },
-                        y: { duration: 0.85, ease: [0.45, 0, 0.15, 1] },
-                        scale: { duration: 0.85, ease: [0.45, 0, 0.15, 1] },
-                      }}
-                      className="header-hashtag-mark text-2xl inline-flex"
-                      aria-hidden="true"
-                    >
-                      #
-                    </motion.span>
-                  )}
-                </motion.button>
+              {/* El mismo # del gatillo de activación "transmigra" directo a su
+                  destino final: el # real del Header (esquina superior
+                  izquierda, ver Header.jsx#header-index-hashtag). Se renderiza
+                  en un portal a document.body porque el Header vive fijo
+                  (position: fixed) fuera del flujo del Hero. Al llegar, revela
+                  ese # real (revealHeaderIndexCueFromHero) y se desvanece. */}
+              {hasActivatedAudio && typeof document !== 'undefined'
+                ? createPortal(
+                    <AnimatePresence>
+                      {!hasUsedIndexCue && transmigrationOrigin ? (
+                        <motion.span
+                          key="hero-hashtag-transmigrated"
+                          initial={{
+                            x: transmigrationOrigin.x,
+                            y: transmigrationOrigin.y,
+                            scale: transmigrationOrigin.scale,
+                            opacity: 0.9,
+                          }}
+                          animate={{ x: 0, y: 0, scale: 1, opacity: 1 }}
+                          exit={{ opacity: 0, transition: { duration: 0.4, ease: 'easeOut' } }}
+                          transition={{
+                            opacity: { duration: 0.22, ease: 'easeOut' },
+                            x: { duration: 0.85, ease: [0.45, 0, 0.15, 1] },
+                            y: { duration: 0.85, ease: [0.45, 0, 0.15, 1] },
+                            scale: { duration: 0.85, ease: [0.45, 0, 0.15, 1] },
+                          }}
+                          onAnimationComplete={() => revealHeaderIndexCueFromHero()}
+                          className="header-hashtag-mark text-2xl inline-flex fixed pointer-events-none"
+                          style={{
+                            top: transmigrationOrigin.destTop,
+                            left: transmigrationOrigin.destLeft,
+                            width: transmigrationOrigin.destWidth,
+                            height: transmigrationOrigin.destHeight,
+                            zIndex: 60,
+                          }}
+                          aria-hidden="true"
+                        >
+                          #
+                        </motion.span>
+                      ) : null}
+                    </AnimatePresence>,
+                    document.body,
+                  )
+                : null}
 
               {/* — botones originales: se muestran solo si hay usuario — */}
               <motion.div

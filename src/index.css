@@ -261,7 +261,7 @@ body {
   z-index: 1;
 }
 
-.hero-mobile-starfield {
+.hero-starfield {
   position: absolute;
   inset: 0;
   z-index: 1;
@@ -269,7 +269,7 @@ body {
   overflow: hidden;
 }
 
-.hero-mobile-star {
+.hero-star {
   position: absolute;
   display: block;
   border-radius: 999px;
@@ -333,6 +333,48 @@ body {
   }
   50% {
     opacity: 1;
+  }
+}
+
+.hero-logo-subtitle-flash {
+  position: absolute;
+  inset: -38%;
+  z-index: 0;
+  display: block;
+  border-radius: 9999px;
+  background:
+    radial-gradient(circle at center,
+      rgba(255, 255, 255, 0.5) 0%,
+      rgba(233, 213, 255, 0.28) 24%,
+      rgba(168, 85, 247, 0.16) 42%,
+      rgba(0, 0, 0, 0) 72%);
+  opacity: 0;
+  transform: scale(0.82);
+  filter: blur(18px);
+  pointer-events: none;
+  animation: hero-logo-subtitle-flash var(--hero-logo-glow-duration, 3800ms) ease-out both;
+}
+
+@keyframes hero-logo-subtitle-flash {
+  0% {
+    opacity: 0;
+    transform: scale(0.8);
+    filter: blur(20px);
+  }
+  11% {
+    opacity: 0.72;
+    transform: scale(1);
+    filter: blur(17px);
+  }
+  34% {
+    opacity: 0.22;
+    transform: scale(1.08);
+    filter: blur(20px);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1.16);
+    filter: blur(24px);
   }
 }
 
@@ -418,27 +460,18 @@ body {
     margin-top: 0.75rem !important;
     transform: none !important;
   }
-
-  #hero .hero-index-cue {
-    margin-top: 0.25rem !important;
-  }
 }
 
-/* Botón de índice del Hero: mismo lenguaje visual que el resto (halo violeta),
-   con un pulso que llama la atención unas pocas veces y luego se queda quieto. */
-.hero-index-cue {
-  border: 1px solid rgba(196, 181, 253, 0.4);
-  background: radial-gradient(circle at 50% 38%, rgba(139, 92, 246, 0.28), rgba(10, 10, 16, 0.5));
-  box-shadow: 0 0 14px rgba(139, 92, 246, 0.22);
-  animation: hero-index-cue-ping 1.8s ease-out 3;
+/* Aro pulsante alrededor del # del Header: mismo lenguaje visual que antes
+   tenía el botón intermedio del Hero (halo violeta), ahora en su destino
+   real — guía la vista unas pocas veces y luego se queda quieto (ver
+   showIndexGuidePulse en Header.jsx). */
+.header-index-cue-pulse {
+  border-radius: 9999px;
+  animation: header-index-cue-ping 1.8s ease-out 3;
 }
 
-.hero-index-cue:focus-visible {
-  outline: 2px solid rgba(196, 181, 253, 0.7);
-  outline-offset: 2px;
-}
-
-@keyframes hero-index-cue-ping {
+@keyframes header-index-cue-ping {
   0% {
     box-shadow: 0 0 0 0 rgba(168, 85, 247, 0.5), 0 0 14px rgba(139, 92, 246, 0.22);
   }
@@ -457,7 +490,7 @@ body {
     font-weight: 600;
     font-style: normal;
   }
-  .hero-logo::before {
+  .hero-logo-subtitle-flash {
     filter: blur(16px);
   }
 }

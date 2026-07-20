@@ -91,7 +91,7 @@ const NextShow = () => {
           >
             <div className="relative z-10">
               <h3 className="font-display text-3xl font-medium text-slate-100 mb-6 text-center">
-                La caída del telón
+                CAÍDA DEL TELÓN
               </h3>
               <div className="text-slate-300/80 leading-relaxed mb-8 max-w-2xl mx-auto font-light text-center space-y-4">
                 <p><em>Hay historias que dejan de representarse para empezar a recordarse.</em></p>

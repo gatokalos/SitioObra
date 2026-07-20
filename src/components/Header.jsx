@@ -57,6 +57,12 @@ const Header = ({
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [scrollTier, setScrollTier] = useState(0);
   const [hasUsedHeroIndexCue, setHasUsedHeroIndexCue] = useState(readIndexCueUsedFromSession);
+  // Referencia para saber si el # ya estaba revelado en un montaje previo de
+  // esta misma sesión — evita repetir el aro pulsante cada vez que Header se
+  // remonta (p. ej. al navegar y volver a "/").
+  const wasIndexCueAlreadyUsedAtMountRef = useRef(readIndexCueUsedFromSession());
+  const [hasOpenedIndexOnce, setHasOpenedIndexOnce] = useState(false);
+  const [hasHeroLeftViewportOnce, setHasHeroLeftViewportOnce] = useState(false);
   const [showLoginOverlay, setShowLoginOverlay] = useState(false);
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
   const [isGatInfoOpen, setIsGatInfoOpen] = useState(false);
@@ -83,6 +89,14 @@ const Header = ({
   // Mientras el # del Hero siga presente sin usarse, el toggle # del Header
   // se mantiene oculto: solo debe haber un # clicable en pantalla a la vez.
   const shouldGateIndexUntilHeroReveal = !user && location.pathname === '/' && !hasUsedHeroIndexCue;
+  // Aro pulsante que guía la vista hacia el # recién revelado — se apaga en
+  // cuanto el usuario lo usa, el Hero sale del viewport, o si ya se había
+  // revelado en un montaje previo de esta sesión (ver wasIndexCueAlreadyUsedAtMountRef).
+  const showIndexGuidePulse =
+    hasUsedHeroIndexCue &&
+    !wasIndexCueAlreadyUsedAtMountRef.current &&
+    !hasOpenedIndexOnce &&
+    !hasHeroLeftViewportOnce;
 
 
   const [gatBalance, setGatBalance] = useState(readGatBalance);
@@ -108,6 +122,18 @@ const Header = ({
     window.addEventListener('gatoencerrado:hero-index-cue-used', handleIndexCueUsed);
     return () => {
       window.removeEventListener('gatoencerrado:hero-index-cue-used', handleIndexCueUsed);
+    };
+  }, []);
+
+  // Apaga el aro pulsante del # (ver showIndexGuidePulse) en cuanto el Hero
+  // sale del viewport — a partir de ahí el # ya es el foco natural de la
+  // pantalla y no necesita seguir llamando la atención.
+  useEffect(() => {
+    if (typeof window === 'undefined') return undefined;
+    const handleHeroLeftViewport = () => setHasHeroLeftViewportOnce(true);
+    window.addEventListener('gatoencerrado:hero-left-viewport', handleHeroLeftViewport);
+    return () => {
+      window.removeEventListener('gatoencerrado:hero-left-viewport', handleHeroLeftViewport);
     };
   }, []);
 
@@ -354,6 +380,7 @@ const Header = ({
 
   const handleToggleIndex = useCallback(() => {
     if (shouldGateIndexUntilHeroReveal) return;
+    setHasOpenedIndexOnce(true);
     setIsMenuOpen((prev) => !prev);
   }, [shouldGateIndexUntilHeroReveal]);
 
@@ -512,11 +539,12 @@ const Header = ({
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3 text-white">
               <motion.button
+                id="header-index-hashtag"
                 type="button"
                 whileHover={{ scale: 1.05, textShadow: '0 0 8px rgba(233, 213, 255, 0.5)' }}
                 className={`flex shrink-0 cursor-pointer items-center gap-3 rounded-full transition ${
                   isMenuOpen ? 'drop-shadow-[0_0_14px_rgba(255,255,255,0.22)]' : ''
-                }`}
+                } ${showIndexGuidePulse ? 'header-index-cue-pulse' : ''}`}
                 animate={{ opacity: shouldGateIndexUntilHeroReveal ? 0 : 1 }}
                 transition={{ duration: 0.65, ease: 'easeOut' }}
                 style={{
