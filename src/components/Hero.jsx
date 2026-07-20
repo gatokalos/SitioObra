@@ -63,7 +63,7 @@ const HEADER_INDEX_HASHTAG_ID = 'header-index-hashtag';
 const HERO_TITLE = 'GATOENCERRADO';
 const HERO_BRAND_LABEL = '#GATOENCERRADO';
 const HERO_INACTIVE_HINT = 'Encuentra al gato';
-const HERO_PWA_INSTALL_HINT = 'Agrégame como app';
+const HERO_PWA_INSTALL_HINT = 'Llévame contigo:';
 const HERO_ROTATING_SUBTITLES = [
   'Una experiencia narrativa interactiva',            // 1 · el cajón (ver decisión A)
   'Basada en una herida emocional compartida',        // 2 · el origen — intacta, es de tus mejores
