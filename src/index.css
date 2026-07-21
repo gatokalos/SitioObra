@@ -353,12 +353,35 @@ body {
   100% { opacity: 0; transform: translate(-170px, 96px); }
 }
 
+/* Variante "a demanda": dispara de inmediato (sin la espera larga del
+   ciclo pasivo) — un swipe/tap/scroll bloqueado responde con esto en vez
+   de fricción. Ver Hero.jsx (gestureShootingStars). */
+.hero-shooting-star--instant {
+  animation-name: hero-shooting-star-instant-fly;
+  animation-duration: 0.9s;
+  animation-timing-function: ease-out;
+  animation-iteration-count: 1;
+  animation-delay: 0s;
+}
+
+@keyframes hero-shooting-star-instant-fly {
+  0% { opacity: 0; transform: translate(0, 0); }
+  10% { opacity: 1; }
+  75% { opacity: 1; transform: translate(-150px, 85px); }
+  100% { opacity: 0; transform: translate(-170px, 96px); }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .hero-star--twinkle {
     animation: none;
   }
 
   .hero-shooting-star {
+    animation: none;
+    opacity: 0;
+  }
+
+  .hero-shooting-star--instant {
     animation: none;
     opacity: 0;
   }

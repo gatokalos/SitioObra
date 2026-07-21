@@ -120,6 +120,11 @@ const createHeroShootingStars = () =>
     duration: 24 + Math.random() * 10,
   }));
 
+// Estrella fugaz "a demanda": una por gesto de swipe/tap/scroll bloqueado,
+// con cooldown para que no se sienta como gimmick si el usuario insiste.
+const GESTURE_SHOOTING_STAR_COOLDOWN_MS = 5000;
+const GESTURE_SHOOTING_STAR_LIFETIME_MS = 1000;
+
 const readIsRunningAsInstalledPwa = () => {
   if (typeof window === 'undefined') return false;
   const isStandaloneDisplay = window.matchMedia?.('(display-mode: standalone)').matches;
@@ -187,6 +192,12 @@ const Hero = () => {
     [],
   );
   const heroShootingStars = useMemo(createHeroShootingStars, []);
+  // Estrellas fugaces "a demanda" — una por gesto de swipe/tap/scroll
+  // mientras el scroll está bloqueado en Estado Cero, para que el usuario
+  // sienta respuesta en vez de fricción cuando el gesto no mueve la página.
+  const [gestureShootingStars, setGestureShootingStars] = useState([]);
+  const lastGestureStarAtRef = useRef(0);
+  const gestureStarIdRef = useRef(0);
   const navigate = useNavigate();
   const location = useLocation();
   const { user, loading: isAuthLoading } = useAuth();
@@ -223,12 +234,49 @@ const Hero = () => {
   // Bloquea el scroll mientras dure el Estado Cero (invitado, escena sin
   // activar) — antes se podía hacer scroll y asomarse al resto del sitio
   // por detrás del Hero sin haber activado nada.
+  //
+  // Se probó position:fixed en body (más robusto contra scroll táctil en
+  // iOS) pero rompía el clic de activación del # 3D — probablemente un
+  // resize/reset del raycaster de R3F al sacar a body del flujo normal. Se
+  // revirtió a overflow-hidden por clase: ya se verificó (incógnito, sesión
+  // limpia) que resuelve el caso real reportado, sin ese efecto colateral.
   useLayoutEffect(() => {
     if (typeof document === 'undefined') return undefined;
     if (user || hasActivatedAudio) return undefined;
     document.body.classList.add('overflow-hidden');
     return () => {
       document.body.classList.remove('overflow-hidden');
+    };
+  }, [user, hasActivatedAudio]);
+
+  // Mientras el scroll está bloqueado, un swipe/tap/scroll que "no hace
+  // nada" se siente como fricción — en vez de eso, dispara una estrella
+  // fugaz como respuesta. Cooldown + un solo listener por gesto (no por
+  // cada tick de touchmove) para que no se sienta como gimmick.
+  useEffect(() => {
+    if (typeof window === 'undefined') return undefined;
+    if (user || hasActivatedAudio) return undefined;
+
+    const spawnGestureShootingStar = (event) => {
+      if (event.target?.closest?.('button, [role="button"], a')) return;
+      const now = Date.now();
+      if (now - lastGestureStarAtRef.current < GESTURE_SHOOTING_STAR_COOLDOWN_MS) return;
+      lastGestureStarAtRef.current = now;
+      const id = gestureStarIdRef.current++;
+      setGestureShootingStars((prev) => [
+        ...prev,
+        { id, x: 12 + Math.random() * 66, y: 8 + Math.random() * 34 },
+      ]);
+      window.setTimeout(() => {
+        setGestureShootingStars((prev) => prev.filter((star) => star.id !== id));
+      }, GESTURE_SHOOTING_STAR_LIFETIME_MS);
+    };
+
+    window.addEventListener('touchstart', spawnGestureShootingStar, { passive: true });
+    window.addEventListener('wheel', spawnGestureShootingStar, { passive: true });
+    return () => {
+      window.removeEventListener('touchstart', spawnGestureShootingStar);
+      window.removeEventListener('wheel', spawnGestureShootingStar);
     };
   }, [user, hasActivatedAudio]);
 
@@ -1026,6 +1074,13 @@ const Hero = () => {
                       '--shoot-delay': `${shootingStar.delay}s`,
                       '--shoot-duration': `${shootingStar.duration}s`,
                     }}
+                  />
+                ))}
+                {gestureShootingStars.map((star) => (
+                  <span
+                    key={`gesture-shooting-${star.id}`}
+                    className="hero-shooting-star hero-shooting-star--instant"
+                    style={{ top: `${star.y}%`, left: `${star.x}%` }}
                   />
                 ))}
               </motion.div>

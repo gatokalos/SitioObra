@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { supabase } from '@/lib/supabaseClient';
 import { GAT_COSTS } from '@/components/transmedia/transmediaConstants';
 
@@ -40,6 +40,11 @@ const useMiniversoUnlocks = ({
   const [isProjectionInterestSent, setIsProjectionInterestSent] = useState(false);
   const [showProjectionEmailInput, setShowProjectionEmailInput] = useState(false);
   const [projectionEmailDraft, setProjectionEmailDraft] = useState('');
+  // Solo este hook debe quitar 'overflow-hidden' si fue él quien lo puso —
+  // antes lo quitaba incondicionalmente en cada montaje/render (incluso sin
+  // haber estado nunca en AR), pisando el bloqueo de scroll del Estado Cero
+  // del Hero (mismo clase compartida, sin dueño único).
+  const wasArScrollLockedRef = useRef(false);
 
   // Reset projection interest when navigating away from cine
   useEffect(() => {
@@ -59,8 +64,10 @@ const useMiniversoUnlocks = ({
     }
     if (isTazaARActive && isMobile) {
       document.body.classList.add('overflow-hidden');
-    } else {
+      wasArScrollLockedRef.current = true;
+    } else if (wasArScrollLockedRef.current) {
       document.body.classList.remove('overflow-hidden');
+      wasArScrollLockedRef.current = false;
     }
     return undefined;
   }, [isTazaARActive, isMobileARFullscreen]);
@@ -201,7 +208,10 @@ const useMiniversoUnlocks = ({
   const handleCloseARExperience = useCallback(() => {
     setIsTazaARActive(false);
     setIsMobileARFullscreen(false);
-    document.body.classList.remove('overflow-hidden');
+    if (wasArScrollLockedRef.current) {
+      document.body.classList.remove('overflow-hidden');
+      wasArScrollLockedRef.current = false;
+    }
     setIsTazaActivating(false);
     setTazaCameraReady(false);
   }, []);
@@ -215,7 +225,10 @@ const useMiniversoUnlocks = ({
       setIsTazaARActive(false);
       setIsMobileARFullscreen(false);
       setTazaCameraReady(false);
-      document.body.classList.remove('overflow-hidden');
+      if (wasArScrollLockedRef.current) {
+        document.body.classList.remove('overflow-hidden');
+        wasArScrollLockedRef.current = false;
+      }
     },
     [toast]
   );
