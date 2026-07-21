@@ -7,15 +7,12 @@ import { Button } from '@/components/ui/button';
 import { toast } from '@/components/ui/use-toast';
 import { ToastAction } from '@/components/ui/toast';
 import { supabase } from '@/lib/supabaseClient';
-import HuellaEmbeddedCheckout from '@/components/HuellaEmbeddedCheckout';
-import { createEmbeddedSubscription, startCheckoutFallback } from '@/lib/huellaCheckout';
 import { useAuth } from '@/contexts/SupabaseAuthContext';
 import { safeSetItem } from '@/lib/safeStorage';
 import { getTopShowcaseLikes } from '@/services/showcaseLikeService';
 import { isSafariBrowser } from '@/lib/browser';
 import { resolvePortalRoute } from '@/lib/miniversePortalRegistry';
 import { createPortalLaunchState } from '@/lib/portalNavigation';
-import { canQuerySubscriptionTableFromClient, warnUnsupportedClientRole } from '@/lib/supabaseSessionRole';
 import {
   MINIVERSE_HOME_EVENT_TYPES,
   trackMiniverseHomeEvent,
@@ -464,7 +461,6 @@ const LOGIN_RETURN_KEY = 'gatoencerrado:login-return';
 const SUPPORT_WHATSAPP = '+523315327985';
 const SUPPORT_MESSAGE =
   'Hola,%0Ami huella está activa pero no aparece ligada a mi cuenta.%0A¿Me ayudan a vincularla?%0A%0AGracias.';
-const SUBSCRIPTION_PRICE_ID = import.meta.env.VITE_STRIPE_SUBSCRIPTION_PRICE_ID;
 const CAUSE_SITE_URL = 'https://www.ayudaparalavida.com/index.html';
 const HERO_VERB_SCRAMBLE_CHARS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
 const HERO_VERB_SCRAMBLE_INTERVAL_MS = 26;
@@ -526,7 +522,7 @@ const MiniverseModal = ({
 }) => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { user, session } = useAuth();
+  const { user } = useAuth();
   const ambientState = useSyncExternalStore(subscribeHeroAmbient, getHeroAmbientState, getHeroAmbientState);
   const transmediaAmbientState = useSyncExternalStore(
     subscribeTransmediaAmbient,
@@ -581,17 +577,12 @@ const MiniverseModal = ({
   });
   const [activeShowcaseIndex, setActiveShowcaseIndex] = useState(0);
   const [isMobileViewport, setIsMobileViewport] = useState(false);
-  const [isCheckoutLoading, setIsCheckoutLoading] = useState(false);
-  const [embeddedClientSecret, setEmbeddedClientSecret] = useState('');
-  const [embeddedCheckoutStatus, setEmbeddedCheckoutStatus] = useState('');
   const [showcaseEnergy, setShowcaseEnergy] = useState(() =>
     readStoredJson('gatoencerrado:showcase-energy', {})
   );
   const [showcaseBoosts, setShowcaseBoosts] = useState(() =>
     readStoredJson('gatoencerrado:showcase-boosts', {})
   );
-  const [hasActiveSubscription, setHasActiveSubscription] = useState(false);
-  const [isCheckingSubscription, setIsCheckingSubscription] = useState(false);
   const [showFavoritesOnly, setShowFavoritesOnly] = useState(false);
   const [communityTopLikes, setCommunityTopLikes] = useState([]);
   const [isLoadingCommunityLikes, setIsLoadingCommunityLikes] = useState(false);
@@ -604,24 +595,6 @@ const MiniverseModal = ({
     getTabHeadingVerb(resolvedInitialTabId)
   );
   const [inlineActNumberDisplay, setInlineActNumberDisplay] = useState('');
-  const metadataSubscriber = Boolean(
-    user?.user_metadata?.isSubscriber === true ||
-      user?.user_metadata?.isSubscriber === 'true' ||
-      user?.user_metadata?.is_subscriber === true ||
-      user?.user_metadata?.is_subscriber === 'true' ||
-      user?.user_metadata?.subscription_status === 'active' ||
-      user?.user_metadata?.subscription_status === 'trialing' ||
-      user?.user_metadata?.stripe_subscription_status === 'active' ||
-      user?.user_metadata?.stripe_subscription_status === 'trialing' ||
-      user?.user_metadata?.plan === 'subscriber' ||
-      user?.user_metadata?.tier === 'subscriber' ||
-      user?.app_metadata?.subscription_status === 'active' ||
-      user?.app_metadata?.subscription_status === 'trialing' ||
-      user?.app_metadata?.stripe_subscription_status === 'active' ||
-      user?.app_metadata?.stripe_subscription_status === 'trialing' ||
-      user?.app_metadata?.roles?.includes?.('subscriber')
-  );
-  const isSubscriber = metadataSubscriber || hasActiveSubscription;
   const desktopShowcaseVideoRef = useRef(null);
   const mobileShowcaseVideoRef = useRef(null);
   const modalContentRef = useRef(null);
@@ -698,47 +671,6 @@ const MiniverseModal = ({
     }
   }, [isSafari]);
 
-  useEffect(() => {
-    if (!user?.id) {
-      setHasActiveSubscription(false);
-      setIsCheckingSubscription(false);
-      return undefined;
-    }
-
-    if (!canQuerySubscriptionTableFromClient(session)) {
-      warnUnsupportedClientRole(session, 'MiniverseModal');
-      setIsCheckingSubscription(false);
-      return undefined;
-    }
-
-    let isMounted = true;
-    setIsCheckingSubscription(true);
-
-    supabase
-      .from('suscriptores')
-      .select('id', { count: 'exact', head: true })
-      .eq('user_id', user.id)
-      .in('status', ['active', 'trialing'])
-      .then(({ count, error }) => {
-        if (!isMounted) return;
-        if (error) {
-          console.warn('[MiniverseModal] No se pudo validar huella:', error);
-          setHasActiveSubscription(false);
-          return;
-        }
-        setHasActiveSubscription((count ?? 0) > 0);
-      })
-      .finally(() => {
-        if (isMounted) {
-          setIsCheckingSubscription(false);
-        }
-      });
-
-    return () => {
-      isMounted = false;
-    };
-  }, [session, user?.id]);
-
   const playKnockSound = useCallback(() => {
     if (typeof window === 'undefined') {
       return;
@@ -788,8 +720,6 @@ const MiniverseModal = ({
       setShowcaseFullscreenCard(null);
       setActiveShowcaseIndex(0);
       setIsCauseSiteOpen(false);
-      setEmbeddedClientSecret('');
-      setEmbeddedCheckoutStatus('');
       setShowcaseEnergy(readStoredJson('gatoencerrado:showcase-energy', {}));
       setShowcaseBoosts(readStoredJson('gatoencerrado:showcase-boosts', {}));
       return;
@@ -1644,92 +1574,6 @@ const MiniverseModal = ({
     setIsCauseSiteOpen(false);
   }, []);
 
-  const handleSubscriptionCheckout = useCallback(async () => {
-    if (!SUBSCRIPTION_PRICE_ID) {
-      toast({ description: 'Configura VITE_STRIPE_SUBSCRIPTION_PRICE_ID antes de continuar.' });
-      return;
-    }
-
-    if (isCheckoutLoading) {
-      return;
-    }
-
-    if (isSubscriber) {
-      toast({ description: 'Tu huella ya está activa en esta cuenta.' });
-      return;
-    }
-
-    const normalizedEmail = user?.email ? user.email.trim().toLowerCase() : '';
-    try {
-      setIsCheckoutLoading(true);
-      setEmbeddedCheckoutStatus('');
-      const metadata = {
-        channel: 'landing',
-        event: 'suscripcion-landing',
-        packages: 'subscription',
-        source: 'miniverse_modal',
-      };
-
-      const data = await createEmbeddedSubscription({
-        priceId: SUBSCRIPTION_PRICE_ID,
-        metadata,
-      });
-
-      if (!data?.ok) {
-        if (data?.error === 'already_subscribed') {
-          toast({ description: 'Tu huella ya está activa en esta cuenta.' });
-          return;
-        }
-        throw new Error(data?.error || 'embedded_unknown_error');
-      }
-
-      if (!data.client_secret) {
-        throw new Error('missing_client_secret');
-      }
-
-      setEmbeddedClientSecret(data.client_secret);
-      setActiveTab('waitlist');
-      setEmbeddedCheckoutStatus('');
-    } catch (err) {
-      console.warn('[MiniverseModal] Embedded checkout error. Activando fallback.', err);
-      setEmbeddedCheckoutStatus('No se pudo abrir el formulario embebido. Redirigiendo al checkout...');
-      try {
-        await startCheckoutFallback({
-          priceId: SUBSCRIPTION_PRICE_ID,
-          customerEmail: normalizedEmail || undefined,
-          metadata: {
-            channel: 'landing',
-            event: 'suscripcion-landing',
-            packages: 'subscription',
-            source: 'miniverse_modal_fallback',
-          },
-        });
-      } catch (fallbackError) {
-        console.error('[MiniverseModal] Fallback checkout error:', fallbackError);
-        toast({ description: fallbackError?.message || 'No se pudo reconocer la huella.' });
-      }
-    } finally {
-      setIsCheckoutLoading(false);
-    }
-  }, [isCheckoutLoading, isSubscriber, user?.email]);
-
-  const handleEmbeddedCheckoutDone = useCallback(({ ok, message }) => {
-    if (!ok) {
-      return;
-    }
-    const normalizedStatus = (message || '').toLowerCase();
-    const isSuccessful = normalizedStatus === 'succeeded' || normalizedStatus === 'processing';
-    if (isSuccessful) {
-      setHasActiveSubscription(true);
-      setEmbeddedCheckoutStatus('Pago confirmado. Tu huella se activará en esta cuenta.');
-      setEmbeddedClientSecret('');
-      toast({ description: 'Pago confirmado. Gracias por dejar tu huella.' });
-      return;
-    }
-    setEmbeddedCheckoutStatus(`Estado actual del pago: ${message || 'unknown'}.`);
-  }, []);
-
-
 
   const handleOpenShowcaseFullscreen = useCallback(
     (card) => {
@@ -2135,32 +1979,11 @@ const MiniverseModal = ({
                           </span>
                           <Button
                             type="button"
-                            onClick={handleSubscriptionCheckout}
+                            onClick={handleScrollToSupport}
                             className="white-glass-btn h-11 min-w-[10.5rem] px-6 text-base font-semibold tracking-[0.2px]"
                           >
-                            Dejar mi huella
+                            ¿Cómo dejar mi huella?
                           </Button>
-                          {embeddedCheckoutStatus ? (
-                            <p className="text-center text-xs leading-relaxed text-slate-300/80">
-                              {embeddedCheckoutStatus}
-                            </p>
-                          ) : null}
-                          {embeddedClientSecret ? (
-                            <HuellaEmbeddedCheckout
-                              clientSecret={embeddedClientSecret}
-                              onDone={handleEmbeddedCheckoutDone}
-                            />
-                          ) : null}
-                          <button
-                            type="button"
-                            onClick={handleScrollToSupport}
-                            className="relative flex w-full items-center justify-center gap-3 text-left group focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-purple-400/60"
-                          >
-                            <div className="h-5 w-5 rounded-full border border-emerald-300/40 bg-emerald-300/70 shadow-[0_0_12px_rgba(52,211,153,0.35)]" />
-                            <span className="text-sm text-slate-300/80 leading-relaxed">
-                              Quiero saber cómo funciona.
-                            </span>
-                          </button>
                         </div>
                       </div>
                     </div>

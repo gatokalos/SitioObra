@@ -1,5 +1,4 @@
 import React, { useState, useCallback, useEffect, useRef, useMemo } from 'react';
-import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Film, Headphones, Quote, Send, HeartHandshake, RefreshCw, Heart, Play, Camera, Drama } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -57,7 +56,6 @@ const fallbackTestimonials = [
 ];
 
 const PROVOCA_DRAFT_KEY = 'gatoencerrado:provoca-draft';
-const PROVOCA_AFTERCARE_DELAY_MS = 3200;
 const PROVOCA_CONFETTI_VISIBLE_MS = 2400;
 const PROVOCA_SILVESTRE_MODE_ID = 'confusion-lucida';
 const PROVOCA_RESPONSE_ESTIMATE_SECONDS = 60;
@@ -145,7 +143,6 @@ export const ProvocaSection = () => {
   const [isSubmittingVoice, setIsSubmittingVoice] = useState(false);
   const [lastSubmittedQuote, setLastSubmittedQuote] = useState('');
   const [hasSubmittedQuote, setHasSubmittedQuote] = useState(false);
-  const [showAfterCareOverlay, setShowAfterCareOverlay] = useState(false);
   const [approvedTestimonials, setApprovedTestimonials] = useState([]);
   const [visibleVoiceCursor, setVisibleVoiceCursor] = useState(0);
   const [responseCountdownSeconds, setResponseCountdownSeconds] = useState(
@@ -161,7 +158,6 @@ export const ProvocaSection = () => {
   const [likedVoicesStorageKey, setLikedVoicesStorageKey] = useState(null);
   const [pulseDeltaById, setPulseDeltaById] = useState({});
   const [provocaTitleTermIndex, setProvocaTitleTermIndex] = useState(0);
-  const afterCareTimeoutRef = useRef(null);
   const confettiTimeoutRef = useRef(null);
   const responseCountdownRef = useRef(null);
   const pulseDeltaTimeoutsRef = useRef({});
@@ -243,9 +239,6 @@ export const ProvocaSection = () => {
 
   useEffect(() => {
     return () => {
-      if (afterCareTimeoutRef.current) {
-        clearTimeout(afterCareTimeoutRef.current);
-      }
       if (confettiTimeoutRef.current) {
         clearTimeout(confettiTimeoutRef.current);
       }
@@ -625,13 +618,6 @@ export const ProvocaSection = () => {
     setVoiceTrap('');
     if (shouldPromptLogin) {
       setVoiceName('');
-      if (afterCareTimeoutRef.current) {
-        clearTimeout(afterCareTimeoutRef.current);
-      }
-      afterCareTimeoutRef.current = setTimeout(() => {
-        setShowAfterCareOverlay(true);
-        afterCareTimeoutRef.current = null;
-      }, PROVOCA_AFTERCARE_DELAY_MS);
     } else {
       setVoiceName(authorName);
     }
@@ -655,15 +641,6 @@ export const ProvocaSection = () => {
       setVoiceName(suggestedName);
     }
   }, [isVoiceInputOpen, user, voiceName]);
-
-  const handleCloseAfterCare = useCallback(() => {
-    setShowAfterCareOverlay(false);
-  }, []);
-
-  const handleOpenLoginFromAfterCare = useCallback(() => {
-    setShowAfterCareOverlay(false);
-    triggerLoginModal();
-  }, [triggerLoginModal]);
 
   const handleListenToObra = useCallback(async () => {
     if (hasConsumedListenTurn) return;
@@ -727,69 +704,6 @@ export const ProvocaSection = () => {
     handleSendSilvestrePreset,
     listenCooldownKey,
   ]);
-
-  const afterCareOverlay = typeof document !== 'undefined'
-    ? createPortal(
-      <AnimatePresence>
-        {showAfterCareOverlay ? (
-          <motion.div
-            key="provoca-after-care"
-            className="fixed inset-0 z-[190] flex items-center justify-center overflow-y-auto overflow-x-hidden overscroll-none"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-          >
-            <motion.button
-              type="button"
-              className="absolute inset-0 bg-black/80 backdrop-blur-md"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              onClick={handleCloseAfterCare}
-              aria-label="Cerrar mensaje post-envío"
-            />
-            <motion.div
-              role="dialog"
-              aria-modal="true"
-              aria-labelledby="provoca-aftercare-title"
-              className="relative z-10 my-6 w-[calc(100vw-2rem)] max-w-2xl overflow-hidden rounded-3xl border border-white/15 bg-[#071514]/95 p-5 sm:p-6 shadow-[0_35px_120px_rgba(0,0,0,0.65)]"
-              initial={{ scale: 0.96, opacity: 0, y: 18 }}
-              animate={{ scale: 1, opacity: 1, y: 0 }}
-              exit={{ scale: 0.97, opacity: 0, y: 10 }}
-              transition={{ type: 'spring', stiffness: 220, damping: 24 }}
-            >
-          
-              <div className="mt-5 space-y-3">
-                <h3 id="provoca-aftercare-title" className="font-display text-2xl text-slate-50">
-                  ¿Te gustaría iniciar sesión en el sitio?
-                </h3>
-                <p className="text-sm leading-relaxed text-slate-200/90">
-                  Tu voz ya forma parte del espacio. Con tu sesión iniciada, podrás seguir el diálogo y recibir avisos cuando publiquemos nuevas respuestas y funciones.
-                </p>
-              </div>
-              <div className="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
-                <button
-                  type="button"
-                  onClick={handleCloseAfterCare}
-                  className="inline-flex items-center justify-center rounded-full border border-white/20 px-5 py-2.5 text-sm font-semibold text-slate-200 transition hover:bg-white/10"
-                >
-                  Ahora no
-                </button>
-                <button
-                  type="button"
-                  onClick={handleOpenLoginFromAfterCare}
-                  className="inline-flex items-center justify-center rounded-full bg-gradient-to-r from-emerald-500/95 to-teal-500/95 px-5 py-2.5 text-sm font-semibold text-white shadow-[0_0_26px_rgba(16,185,129,0.35)] transition hover:from-emerald-400 hover:to-teal-400"
-                >
-                  Iniciar sesión
-                </button>
-              </div>
-            </motion.div>
-          </motion.div>
-        ) : null}
-      </AnimatePresence>,
-      document.body,
-    )
-    : null;
 
   return (
     <>
@@ -1058,7 +972,6 @@ export const ProvocaSection = () => {
           </motion.div>
         </div>
       </section>
-      {afterCareOverlay}
     </>
   );
 };

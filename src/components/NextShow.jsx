@@ -1,15 +1,7 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useMemo, useState, useCallback } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
-import { Calendar, Coffee, BookOpen, DoorOpen, ShoppingBag } from 'lucide-react';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { Calendar, DoorOpen, ShoppingBag } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { createPortalLaunchState } from '@/lib/portalNavigation';
-
-const ROTATING_SUPPORT_CTAS = [
-  { label: 'Café', Icon: Coffee },
-  { label: 'Charla', Icon: BookOpen },
-  { label: 'Merch', Icon: ShoppingBag },
-];
 
 const SHOW_HISTORY = [
   {
@@ -40,32 +32,10 @@ const SHOW_HISTORY = [
 
 const NextShow = () => {
   const [activeShowId, setActiveShowId] = useState('cecut');
-  const [supportCtaIndex, setSupportCtaIndex] = useState(0);
-  const [isSupportCtaHovered, setIsSupportCtaHovered] = useState(false);
-  const navigate = useNavigate();
-  const location = useLocation();
   const activeShow = useMemo(
     () => SHOW_HISTORY.find((show) => show.id === activeShowId) ?? SHOW_HISTORY[0],
     [activeShowId]
   );
-  const currentSupportCta = ROTATING_SUPPORT_CTAS[supportCtaIndex];
-
-  useEffect(() => {
-    const ROTATION_MS = 4000;
-    if (isSupportCtaHovered) return undefined;
-
-    const intervalId = window.setInterval(() => {
-      setSupportCtaIndex((prev) => (prev + 1) % ROTATING_SUPPORT_CTAS.length);
-    }, ROTATION_MS);
-
-    return () => window.clearInterval(intervalId);
-  }, [isSupportCtaHovered]);
-
-  const handleOpenReserve = useCallback(() => {
-    navigate('/portal-encuentros', {
-      state: createPortalLaunchState(location, 'next-show-encuentros'),
-    });
-  }, [location, navigate]);
 
   // Caída del Telón: revela Obra Destacada + Créditos de la función
   const handlePrimaryAction = useCallback(() => {
@@ -73,6 +43,17 @@ const NextShow = () => {
     window.dispatchEvent(new CustomEvent('gatoencerrado:reveal-obra-destacada'));
     window.setTimeout(() => {
       document.getElementById('about')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 120);
+  }, []);
+
+  // "Antes de irte": mismo grupo que revela "Entra a ver", pero apunta
+  // directo a "Venta a la salida" en vez de a Obra Destacada. No requiere
+  // sesión — es descubrimiento, no autenticación.
+  const handleOpenSystemPreview = useCallback(() => {
+    if (typeof window === 'undefined') return;
+    window.dispatchEvent(new CustomEvent('gatoencerrado:reveal-obra-destacada'));
+    window.setTimeout(() => {
+      document.getElementById('conoce-sistema')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }, 120);
   }, []);
 
@@ -162,47 +143,22 @@ const NextShow = () => {
                 </AnimatePresence>
               </div>
 
-              <div className="mt-10 flex flex-col gap-4 justify-center items-center">
-                <div className="flex flex-col items-center gap-2">
-                  <Button
-                    onClick={handlePrimaryAction}
-                    className="bg-gradient-to-r from-orange-500/90 via-rose-500/90 to-pink-500/90 hover:from-orange-400 hover:to-pink-400 text-white px-6 py-3 rounded-full font-semibold flex items-center gap-2 shadow-lg shadow-orange-500/40 transition"
-                  >
-                    <DoorOpen size={20} />
-                    Entra a ver
-                  </Button>
-
-                </div>
-                <div className="flex flex-col items-center gap-2">
-                  <Button
-                    variant="outline"
-                    onClick={handleOpenReserve}
-                    onMouseEnter={() => setIsSupportCtaHovered(true)}
-                    onMouseLeave={() => setIsSupportCtaHovered(false)}
-                    className="ge-chip-action ge-chip-action--secondary"
-                  >
-                    <span className="relative inline-flex items-center">
-                      <span className="invisible inline-flex items-center gap-2" aria-hidden="true">
-                        <currentSupportCta.Icon size={20} />
-                        {currentSupportCta.label}
-                      </span>
-                      <AnimatePresence mode="sync" initial={false}>
-                        <motion.span
-                          key={currentSupportCta.label}
-                          initial={{ opacity: 0, filter: 'blur(14px)' }}
-                          animate={{ opacity: 1, filter: 'blur(0px)' }}
-                          exit={{ opacity: 0, filter: 'blur(14px)' }}
-                          transition={{ duration: 0.6, ease: [0.2, 1, 0.2, 1] }}
-                          className="absolute inset-0 inline-flex items-center gap-2"
-                        >
-                          <currentSupportCta.Icon size={20} />
-                          {currentSupportCta.label}
-                        </motion.span>
-                      </AnimatePresence>
-                    </span>
-                  </Button>
-
-                </div>
+              <div className="mt-10 flex flex-row flex-wrap items-center justify-center gap-4">
+                <Button
+                  onClick={handlePrimaryAction}
+                  className="bg-gradient-to-r from-orange-500/90 via-rose-500/90 to-pink-500/90 hover:from-orange-400 hover:to-pink-400 text-white px-6 py-3 rounded-full font-semibold flex items-center gap-2 shadow-lg shadow-orange-500/40 transition"
+                >
+                  <DoorOpen size={20} />
+                  Entra a ver
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={handleOpenSystemPreview}
+                  className="ge-chip-action ge-chip-action--secondary"
+                >
+                  <ShoppingBag size={18} />
+                  Antes de irte
+                </Button>
               </div>
             </div>
 

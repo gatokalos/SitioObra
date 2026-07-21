@@ -13,7 +13,11 @@ import { useEmailRedirect } from '@/hooks/useEmailRedirect';
 import LoginToast from '@/components/LoginToast';
 import { useAuth } from '@/contexts/SupabaseAuthContext';
 import { safeGetItem, safeSetItem } from '@/lib/safeStorage';
-import { readHeroActivatedFromSession } from '@/lib/heroActivation';
+import {
+  readHeroActivatedFromSession,
+  readObraDestacadaRevealedFromSession,
+  writeObraDestacadaRevealedToSession,
+} from '@/lib/heroActivation';
 
 const pageTitle = '#GatoEncerrado - Una obra transmedia';
 const pageDescription =
@@ -35,7 +39,7 @@ const ProvocaSection = lazy(() =>
 const CreatorWelcomeSection = lazy(() => import('@/components/CreatorWelcomeSection'));
 const loadTransmedia = () => import('@/components/Transmedia');
 const Transmedia = lazy(loadTransmedia);
-const AlianzaSocial = lazy(() => import('@/components/AlianzaSocial'));
+const MiniverseInlineSection = lazy(() => import('@/components/MiniverseInlineSection'));
 const Team = lazy(() => import('@/components/Team'));
 const Instagram = lazy(() => import('@/components/Instagram'));
 const BlogContributionPrompt = lazy(() => import('@/components/BlogContributionPrompt'));
@@ -488,10 +492,16 @@ function App() {
   // Curaduría: visibilidad controlada por el botón "Preguntar" (abre/cierra), no por acceso permanente.
   const [isCuradoriaVisible, setIsCuradoriaVisible] = useState(false);
   // Obra destacada + Créditos: se revelan juntos desde el CTA de Archivo Escénico (Caída del Telón).
-  const [isObraDestacadaVisible, setIsObraDestacadaVisible] = useState(false);
+  // Persistido en sessionStorage: sin esto, volver de un portal (/portal-*)
+  // remonta App.jsx desde cero y este bloque (incluye "Venta a la salida")
+  // se colapsa aunque ya se había revelado.
+  const [isObraDestacadaVisible, setIsObraDestacadaVisible] = useState(readObraDestacadaRevealedFromSession);
   useEffect(() => {
     if (typeof window === 'undefined') return undefined;
-    const handleReveal = () => setIsObraDestacadaVisible(true);
+    const handleReveal = () => {
+      setIsObraDestacadaVisible(true);
+      writeObraDestacadaRevealedToSession();
+    };
     window.addEventListener('gatoencerrado:reveal-obra-destacada', handleReveal);
     return () => window.removeEventListener('gatoencerrado:reveal-obra-destacada', handleReveal);
   }, []);
@@ -846,31 +856,6 @@ function App() {
                       </DeferredSection>
                     )}
 
-                    {/* Alianza Social: sin alianza todavía para invitados — solo autenticados, por ahora */}
-                    {isAuthenticated && (
-                      <SectionErrorBoundary
-                        fallback={(
-                          <section id="apoya" className="py-24 relative">
-                            <div className="container mx-auto px-6">
-                              <div className="glass-effect rounded-2xl p-8 text-center">
-                                <p className="text-xs uppercase tracking-[0.35em] text-slate-400/80">Alianza Social</p>
-                              </div>
-                            </div>
-                          </section>
-                        )}
-                      >
-                        <DeferredSection
-                          rootMargin="400px 0px"
-                          idleDelayMs={800}
-                          fallback={<SectionFallback id="apoya" minHeight={700} />}
-                        >
-                          <Suspense fallback={<SectionFallback id="apoya" minHeight={700} />}>
-                            <AlianzaSocial />
-                          </Suspense>
-                        </DeferredSection>
-                      </SectionErrorBoundary>
-                    )}
-
                     {/* Archivo Escénico / Caída del Telón: siempre visible una vez activada la escena;
                         su CTA revela Obra Destacada + Créditos */}
                     <DeferredSection fallback={<SectionFallback id="next-show" minHeight={480} />}>
@@ -896,6 +881,15 @@ function App() {
                         <DeferredSection fallback={<SectionFallback id="team" minHeight={980} />}>
                           <Suspense fallback={<SectionFallback id="team" minHeight={980} />}>
                             <Team />
+                          </Suspense>
+                        </DeferredSection>
+                        {/* Último espacio antes de Contacto: "Venta a la salida" — no
+                            requiere sesión, el botón es de descubrimiento. Alianza
+                            Social (antes gateada a isAuthenticated) ahora vive DENTRO
+                            de esta sección, no como hermana — ver MiniverseInlineSection. */}
+                        <DeferredSection fallback={<SectionFallback id="conoce-sistema" minHeight={480} />}>
+                          <Suspense fallback={<SectionFallback id="conoce-sistema" minHeight={480} />}>
+                            <MiniverseInlineSection />
                           </Suspense>
                         </DeferredSection>
                       </>

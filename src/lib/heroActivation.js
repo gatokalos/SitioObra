@@ -49,3 +49,28 @@ export const writeIndexCueUsedToSession = () => {
     // sessionStorage no disponible (modo privado, etc.) — se ignora
   }
 };
+
+// "¿Ya se reveló Obra Destacada + Créditos + Venta a la salida?" (CTA de
+// Archivo Escénico). Mismo problema que isHeroActivated: App.jsx vive en la
+// ruta "/" y se desmonta al navegar a un portal (/portal-*) y volver — sin
+// esto, el bloque entero se "colapsa" (vuelve a su estado inicial oculto) en
+// cada ida y vuelta a un portal, aunque el usuario ya lo había revelado.
+export const OBRA_DESTACADA_REVEALED_SESSION_KEY = 'gatoencerrado:obra-destacada-revealed-session';
+
+export const readObraDestacadaRevealedFromSession = () => {
+  if (typeof window === 'undefined') return false;
+  try {
+    return window.sessionStorage.getItem(OBRA_DESTACADA_REVEALED_SESSION_KEY) === '1';
+  } catch {
+    return false;
+  }
+};
+
+export const writeObraDestacadaRevealedToSession = () => {
+  if (typeof window === 'undefined') return;
+  try {
+    window.sessionStorage.setItem(OBRA_DESTACADA_REVEALED_SESSION_KEY, '1');
+  } catch {
+    // ignore
+  }
+};

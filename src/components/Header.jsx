@@ -275,6 +275,7 @@ const Header = ({
     ...(showObraDestacadaNav ? [{ name: 'Obra fundacional', href: '#about' }] : []),
     ...(showObraDestacadaNav ? [{ name: 'Galería fractal', href: '#instagram' }] : []),
     ...(showObraDestacadaNav ? [{ name: 'Créditos', href: '#team' }] : []),
+    ...(showObraDestacadaNav ? [{ name: 'Venta a la salida', href: '#conoce-sistema' }] : []),
     { name: 'Contacto', href: '#contact' },
   ];
   const mobileMenuItems = [
@@ -333,6 +334,9 @@ const Header = ({
       : []),
     ...(showObraDestacadaNav ? [{ name: 'Galería fractal', href: '#instagram' }] : []),
     ...(showObraDestacadaNav ? [{ name: 'Créditos de la función', href: '#team' }] : []),
+    ...(showObraDestacadaNav
+      ? [{ name: 'Venta a la salida', href: '#conoce-sistema', description: 'Nuestro modelo' }]
+      : []),
     { name: 'Contacto', href: '#contact' },
   ];
 

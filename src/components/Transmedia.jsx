@@ -61,6 +61,7 @@ import IAInsightCard from '@/components/IAInsightCard';
 import DiosasCarousel from '@/components/DiosasCarousel';
 import RelatedReadingTooltipButton from '@/components/portal/RelatedReadingTooltipButton';
 import VitranaQuestionReveal from '@/components/portal/VitranaQuestionReveal';
+import LoginNudgeOverlay from '@/components/LoginNudgeOverlay';
 import ResonanceModal, { LEVEL2_QUESTIONS, buildL1Acknowledgment } from '@/components/portal/ResonanceModal';
 import { useSilvestreVoice } from '@/hooks/useSilvestreVoice';
 import ObraConversationControls from '@/components/miniversos/obra/ObraConversationControls';
@@ -585,6 +586,30 @@ const Transmedia = ({ allianceOnlyMode = false }) => {
   useEffect(() => {
     if (showMobilePortalLogin) setHasLoadedMobilePortalLogin(true);
   }, [showMobilePortalLogin]);
+
+  // Salvaguarda de las vitrinas (desktop): leer/explorar no requiere sesión,
+  // responder a la resonancia colectiva sí. Mismo aviso "¿Te gustaría iniciar
+  // sesión?" que ya se usa en los portales móviles — al confirmar, reutiliza
+  // el LoginOverlay genérico que ya carga este archivo (showMobilePortalLogin)
+  // en vez de montar otro más.
+  const [showResonanceLoginNudge, setShowResonanceLoginNudge] = useState(false);
+
+  const handleCloseResonanceLoginNudge = useCallback(() => {
+    setShowResonanceLoginNudge(false);
+  }, []);
+
+  const handleConfirmResonanceLogin = useCallback(() => {
+    setShowResonanceLoginNudge(false);
+    setShowMobilePortalLogin(true);
+  }, []);
+
+  const handleAnswerResonance = useCallback((openResonance) => {
+    if (isAuthenticated) {
+      openResonance(true);
+      return;
+    }
+    setShowResonanceLoginNudge(true);
+  }, [isAuthenticated]);
 
   useEffect(() => {
     if (isAuthenticated) return;
@@ -4234,7 +4259,7 @@ Silvestre, un hombre en sus treintas, comienza a perder la frontera entre lo que
                           l3Done={activePortalL3Done}
                           l3Step3={activePortalL3Step3}
                           bitacoraCompleted={activePortalBitacoraDone}
-                          onAnswer={() => setIsDramaResonanceOpen(true)}
+                          onAnswer={() => handleAnswerResonance(setIsDramaResonanceOpen)}
                           onReveal={() => setHeartBounceKey(k => k + 1)}
                           label=""
                         />
@@ -4273,7 +4298,7 @@ Silvestre, un hombre en sus treintas, comienza a perder la frontera entre lo que
                           l3Done={activePortalL3Done}
                           l3Step3={activePortalL3Step3}
                           bitacoraCompleted={activePortalBitacoraDone}
-                          onAnswer={() => setIsLiteraturaResonanceOpen(true)}
+                          onAnswer={() => handleAnswerResonance(setIsLiteraturaResonanceOpen)}
                           onReveal={() => setHeartBounceKey(k => k + 1)}
                           label=""
                         />
@@ -4310,7 +4335,7 @@ Silvestre, un hombre en sus treintas, comienza a perder la frontera entre lo que
                           l3Done={activePortalL3Done}
                           l3Step3={activePortalL3Step3}
                           bitacoraCompleted={activePortalBitacoraDone}
-                          onAnswer={() => setIsArtesaniasResonanceOpen(true)}
+                          onAnswer={() => handleAnswerResonance(setIsArtesaniasResonanceOpen)}
                           onReveal={() => setHeartBounceKey(k => k + 1)}
                           label=""
                         />
@@ -4347,7 +4372,7 @@ Silvestre, un hombre en sus treintas, comienza a perder la frontera entre lo que
                           l3Done={activePortalL3Done}
                           l3Step3={activePortalL3Step3}
                           bitacoraCompleted={activePortalBitacoraDone}
-                          onAnswer={() => setIsGraficosResonanceOpen(true)}
+                          onAnswer={() => handleAnswerResonance(setIsGraficosResonanceOpen)}
                           onReveal={() => setHeartBounceKey(k => k + 1)}
                           label=""
                         />
@@ -4385,7 +4410,7 @@ Silvestre, un hombre en sus treintas, comienza a perder la frontera entre lo que
                           l3Done={activePortalL3Done}
                           l3Step3={activePortalL3Step3}
                           bitacoraCompleted={activePortalBitacoraDone}
-                          onAnswer={() => setIsCineResonanceOpen(true)}
+                          onAnswer={() => handleAnswerResonance(setIsCineResonanceOpen)}
                           onReveal={() => setHeartBounceKey(k => k + 1)}
                           label=""
                         />
@@ -4422,7 +4447,7 @@ Silvestre, un hombre en sus treintas, comienza a perder la frontera entre lo que
                           l3Done={activePortalL3Done}
                           l3Step3={activePortalL3Step3}
                           bitacoraCompleted={activePortalBitacoraDone}
-                          onAnswer={() => setIsSonoroResonanceOpen(true)}
+                          onAnswer={() => handleAnswerResonance(setIsSonoroResonanceOpen)}
                           onReveal={() => setHeartBounceKey(k => k + 1)}
                           label=""
                         />
@@ -4459,7 +4484,7 @@ Silvestre, un hombre en sus treintas, comienza a perder la frontera entre lo que
                           l3Done={activePortalL3Done}
                           l3Step3={activePortalL3Step3}
                           bitacoraCompleted={activePortalBitacoraDone}
-                          onAnswer={() => setIsMovimientoResonanceOpen(true)}
+                          onAnswer={() => handleAnswerResonance(setIsMovimientoResonanceOpen)}
                           onReveal={() => setHeartBounceKey(k => k + 1)}
                           label=""
                         />
@@ -4496,7 +4521,7 @@ Silvestre, un hombre en sus treintas, comienza a perder la frontera entre lo que
                           l3Done={activePortalL3Done}
                           l3Step3={activePortalL3Step3}
                           bitacoraCompleted={activePortalBitacoraDone}
-                          onAnswer={() => setIsJuegosResonanceOpen(true)}
+                          onAnswer={() => handleAnswerResonance(setIsJuegosResonanceOpen)}
                           onReveal={() => setHeartBounceKey(k => k + 1)}
                           label=""
                         />
@@ -4533,7 +4558,7 @@ Silvestre, un hombre en sus treintas, comienza a perder la frontera entre lo que
                           l3Done={activePortalL3Done}
                           l3Step3={activePortalL3Step3}
                           bitacoraCompleted={activePortalBitacoraDone}
-                          onAnswer={() => setIsOraculoResonanceOpen(true)}
+                          onAnswer={() => handleAnswerResonance(setIsOraculoResonanceOpen)}
                           onReveal={() => setHeartBounceKey(k => k + 1)}
                           label=""
                         />
@@ -5233,15 +5258,13 @@ Silvestre, un hombre en sus treintas, comienza a perder la frontera entre lo que
             >
               <p className="text-xs uppercase tracking-[0.4em] text-slate-400/70">#obratransmedia</p>
               <h2 className="font-display text-4xl md:text-5xl font-medium text-gradient italic">
-                Las nueve formas<br />de la obra
+                La obra toma forma
               </h2>
               <p className="text-lg text-slate-300/80 max-w-3xl mx-auto leading-relaxed font-light">
-    <em>La fugacidad de esta obra nace en el esecenario.</em><br />
-    Desde ahí se expande hacia <strong>otras formas creativas</strong>.<br />
+    <em>Esta obra es una sola narrativa, desplegada en nueve formas.</em><br />
+    Cada miniverso te permite<br />encontrar <strong>tu propia manera de participar</strong>.<br /><br />
 
-      Cada una con su propia versatilidad y manera de participación.<br /><br />
-
-   Ninguna cuenta una historia: <strong>la desdoblan.</strong><br /><br />
+    Cada uno contiene el pulso del universo,<br />como el mundo entero dentro de un verso.<br /><br />
 
   </p>
             </motion.div>
@@ -5801,6 +5824,14 @@ Silvestre, un hombre en sus treintas, comienza a perder la frontera entre lo que
           <LoginOverlay onClose={() => setShowMobilePortalLogin(false)} />
         </Suspense>
       ) : null}
+      <LoginNudgeOverlay
+        open={showResonanceLoginNudge}
+        onClose={handleCloseResonanceLoginNudge}
+        onLogin={handleConfirmResonanceLogin}
+        title="¿Te gustaría iniciar sesión para responder?"
+        description="Puedes seguir explorando este universo libremente. Para dejar tu propia resonancia y que forme parte del diálogo colectivo, necesitas iniciar sesión."
+        titleId="resonance-login-nudge-title"
+      />
 
       {MINIVERSO_EDITORIAL_INTERCEPTION_ENABLED && isMiniversoEditorialModalOpen ? (
         <div className="fixed inset-0 z-[190] flex items-center justify-center overflow-y-auto overflow-x-hidden overscroll-none">

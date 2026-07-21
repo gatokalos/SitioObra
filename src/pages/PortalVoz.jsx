@@ -15,6 +15,7 @@ import {
 import MiniVersoCard from '@/components/transmedia/MiniVersoCard';
 import { useAuth } from '@/contexts/SupabaseAuthContext';
 import LoginOverlay from '@/components/ContributionModal/LoginOverlay';
+import LoginNudgeOverlay from '@/components/LoginNudgeOverlay';
 import ContributionModal from '@/components/ContributionModal';
 import PortalAuthButton from '@/components/PortalAuthButton';
 import PortalHeaderActions from '@/components/portal/PortalHeaderActions';
@@ -704,6 +705,29 @@ const PortalVoz = () => {
     setShowLoginOverlay(false);
   }, []);
 
+  // Salvaguarda: leer/explorar el miniverso no requiere sesión, pero responder
+  // a la resonancia colectiva sí. Antes de abrir directo el formulario de
+  // login (como requireAuth), se muestra el mismo aviso "¿Te gustaría iniciar
+  // sesión?" que usaba Provoca — más amable que un gate duro.
+  const [showResonanceLoginNudge, setShowResonanceLoginNudge] = useState(false);
+
+  const handleCloseResonanceLoginNudge = useCallback(() => {
+    setShowResonanceLoginNudge(false);
+  }, []);
+
+  const handleConfirmResonanceLogin = useCallback(() => {
+    setShowResonanceLoginNudge(false);
+    setShowLoginOverlay(true);
+  }, []);
+
+  const handleAnswerResonance = useCallback(() => {
+    if (isAuthenticated) {
+      setIsResonanceOpen(true);
+      return;
+    }
+    setShowResonanceLoginNudge(true);
+  }, [isAuthenticated]);
+
   const requireAuth = useCallback((forceAuth = false) => {
     if (isAuthenticated) return true;
     if (!forceAuth && hasEnoughGAT()) return true;
@@ -984,7 +1008,7 @@ const PortalVoz = () => {
                     l3Step3={l3Rec?.step3 ?? null}
                     l3FormaLabel={l3Rec?.forma ?? null}
                     onL3CTA={() => { const r = resolvePortalRoute({ formatId: l3Rec?.recommended_format_id }); if (r) navigate(r); }}
-                    onAnswer={() => setIsResonanceOpen(true)}
+                    onAnswer={handleAnswerResonance}
                     label=""
                   />
                   <ShowcaseReactionInline
@@ -1076,7 +1100,7 @@ Silvestre, un hombre en sus treintas, comienza a perder la frontera entre lo que
                   l3Step3={l3Rec?.step3 ?? null}
                   l3FormaLabel={l3Rec?.forma ?? null}
                   onL3CTA={() => { const r = resolvePortalRoute({ formatId: l3Rec?.recommended_format_id }); if (r) navigate(r); }}
-                  onAnswer={() => setIsResonanceOpen(true)}
+                  onAnswer={handleAnswerResonance}
                   label=""
                 />
                 <ShowcaseReactionInline
@@ -1530,6 +1554,14 @@ Silvestre, un hombre en sus treintas, comienza a perder la frontera entre lo que
         </div>
 
         {showLoginOverlay ? <LoginOverlay onClose={handleCloseLogin} /> : null}
+        <LoginNudgeOverlay
+          open={showResonanceLoginNudge}
+          onClose={handleCloseResonanceLoginNudge}
+          onLogin={handleConfirmResonanceLogin}
+          title="¿Te gustaría iniciar sesión para responder?"
+          description="Puedes seguir explorando este universo libremente. Para dejar tu propia resonancia y que forme parte del diálogo colectivo, necesitas iniciar sesión."
+          titleId="resonance-login-nudge-title"
+        />
         <ContributionModal
           open={isContributionOpen}
           onClose={() => setIsContributionOpen(false)}

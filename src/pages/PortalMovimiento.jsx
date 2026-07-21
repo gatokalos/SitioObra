@@ -11,6 +11,7 @@ import MiniVersoCard from '@/components/transmedia/MiniVersoCard';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/SupabaseAuthContext';
 import LoginOverlay from '@/components/ContributionModal/LoginOverlay';
+import LoginNudgeOverlay from '@/components/LoginNudgeOverlay';
 import ContributionModal from '@/components/ContributionModal';
 import PortalAuthButton from '@/components/PortalAuthButton';
 import PortalHeaderActions from '@/components/portal/PortalHeaderActions';
@@ -216,6 +217,28 @@ const PortalMovimiento = () => {
     setShowLoginOverlay(false);
   }, []);
 
+  // Salvaguarda: leer/explorar no requiere sesión, responder a la resonancia
+  // colectiva sí. Se muestra el mismo aviso "¿Te gustaría iniciar sesión?" antes
+  // de abrir el formulario de login real.
+  const [showResonanceLoginNudge, setShowResonanceLoginNudge] = useState(false);
+
+  const handleCloseResonanceLoginNudge = useCallback(() => {
+    setShowResonanceLoginNudge(false);
+  }, []);
+
+  const handleConfirmResonanceLogin = useCallback(() => {
+    setShowResonanceLoginNudge(false);
+    setShowLoginOverlay(true);
+  }, []);
+
+  const handleAnswerResonance = useCallback(() => {
+    if (isAuthenticated) {
+      setIsResonanceOpen(true);
+      return;
+    }
+    setShowResonanceLoginNudge(true);
+  }, [isAuthenticated]);
+
   const requireAuth = useCallback((forceAuth = false) => {
     if (isAuthenticated) return true;
     if (!forceAuth && hasEnoughGAT()) return true;
@@ -406,7 +429,7 @@ const PortalMovimiento = () => {
                     l3Step3={l3Rec?.step3 ?? null}
                     l3FormaLabel={l3Rec?.forma ?? null}
                     onL3CTA={() => { const r = resolvePortalRoute({ formatId: l3Rec?.recommended_format_id }); if (r) navigate(r); }}
-                    onAnswer={() => setIsResonanceOpen(true)}
+                    onAnswer={handleAnswerResonance}
                     label=""
                   />
                   <ShowcaseReactionInline status={reactionStatus} onReact={handleSendPulse} />
@@ -539,7 +562,7 @@ const PortalMovimiento = () => {
               l3Step3={l3Rec?.step3 ?? null}
               l3FormaLabel={l3Rec?.forma ?? null}
               onL3CTA={() => { const r = resolvePortalRoute({ formatId: l3Rec?.recommended_format_id }); if (r) navigate(r); }}
-              onAnswer={() => setIsResonanceOpen(true)}
+              onAnswer={handleAnswerResonance}
               label=""
             />
             <ShowcaseReactionInline status={reactionStatus} onReact={handleSendPulse} />
@@ -634,6 +657,14 @@ const PortalMovimiento = () => {
         </div>
 
         {showLoginOverlay ? <LoginOverlay onClose={handleCloseLogin} /> : null}
+        <LoginNudgeOverlay
+          open={showResonanceLoginNudge}
+          onClose={handleCloseResonanceLoginNudge}
+          onLogin={handleConfirmResonanceLogin}
+          title="¿Te gustaría iniciar sesión para responder?"
+          description="Puedes seguir explorando este universo libremente. Para dejar tu propia resonancia y que forme parte del diálogo colectivo, necesitas iniciar sesión."
+          titleId="resonance-login-nudge-title"
+        />
         <ContributionModal
           open={isContributionOpen}
           onClose={() => setIsContributionOpen(false)}
