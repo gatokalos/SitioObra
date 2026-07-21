@@ -5,7 +5,6 @@ import { BookOpen, CoffeeIcon, DramaIcon, TicketIcon, HeartHandshake, ShoppingBa
 import { Button } from '@/components/ui/button';
 const TicketPurchaseModal = React.lazy(() => import('@/components/TicketPurchaseModal'));
 const GatokensRevealModal = React.lazy(() => import('@/components/GatokensRevealModal'));
-const MiniverseModal = React.lazy(() => import('@/components/MiniverseModal'));
 const VideoNarrativeAutoplay = React.lazy(() => import('@/components/VideoNarrativeAutoplay'));
 const isotipoGatoWebp = '/assets/isotipo_hero.webp';
 const HashtagButton3D = React.lazy(() => import('@/components/HashtagButton3D'));
@@ -50,14 +49,12 @@ const HERO_LOGGED_IN_AUDIO_VOLUME = 0.35;
 const HERO_AUDIO_MIN_AUDIBLE_VOLUME = 0.015;
 const HERO_AUDIO_PLAY_RETRY_MS = 2500;
 const HERO_AUDIO_IDLE_RETRY_MS = 6000;
-const HERO_TAB_QUERY_PARAM = 'heroTab';
 const HERO_LOGGED_IN_ACTIVE_GRADIENT_CLASS =
   'bg-gradient-to-r from-[#1f2f63] via-[#6e30ab] to-[#d91f8b]';
 const HERO_LOGGED_IN_ACTIVE_GLOW =
   'radial-gradient(circle at center, rgba(110,48,171,0.36) 0%, rgba(217,31,139,0.24) 52%, rgba(0,0,0,0) 100%)';
 const HERO_LOGGED_IN_SWEEP_GLOW =
   'radial-gradient(circle,rgba(31,47,99,0.3)_0%,rgba(110,48,171,0.22)_44%,rgba(217,31,139,0.1)_74%,rgba(0,0,0,0)_100%)';
-const HERO_PENDING_MINIVERSE_SELECTION_KEY = 'gatoencerrado:hero-inline-miniverse-selection';
 // Id del # real en Header.jsx — destino de la animación de transmigración.
 const HEADER_INDEX_HASHTAG_ID = 'header-index-hashtag';
 const HERO_TITLE = 'GATOENCERRADO';
@@ -130,20 +127,6 @@ const readIsRunningAsInstalledPwa = () => {
   const isStandaloneDisplay = window.matchMedia?.('(display-mode: standalone)').matches;
   const isIosStandalone = window.navigator?.standalone === true;
   return Boolean(isStandaloneDisplay || isIosStandalone);
-};
-
-const resolveHeroInlineTabFromQuery = (search = '') => {
-  if (!search) return 'experiences';
-  const params = new URLSearchParams(search);
-  const rawTab = (params.get(HERO_TAB_QUERY_PARAM) || '').trim().toLowerCase();
-
-  if (rawTab === 'experiences' || rawTab === 'habitar' || rawTab === 'habita') {
-    return 'experiences';
-  }
-  if (rawTab === 'waitlist' || rawTab === 'impulsar' || rawTab === 'activar') {
-    return 'waitlist';
-  }
-  return 'experiences';
 };
 
 const Hero = () => {
@@ -360,10 +343,6 @@ const Hero = () => {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user?.id]);
 
-  const mobileInitialTabId = useMemo(
-    () => resolveHeroInlineTabFromQuery(location.search),
-    [location.search]
-  );
   const primaryCtaLabel = user ? 'Dejar mi huella' : 'Toma un boleto';
 
 
@@ -380,10 +359,6 @@ const Hero = () => {
     const section = document.querySelector(sectionId);
     section?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }, []);
-
-  const handleScrollToAbout = useCallback(() => {
-    scrollToSection('#about');
-  }, [scrollToSection]);
 
   const handleOpenSupportHub = useCallback(() => {
     navigate('/portal-encuentros', {
@@ -431,34 +406,6 @@ const Hero = () => {
       handleOpenMiniverseList(tabId, contextLabel);
     },
     [handleOpenMiniverseList]
-  );
-
-  const handleMobileInlineMiniverseSelect = useCallback(
-    (formatId) => {
-      if (typeof window === 'undefined' || !formatId) return;
-      const emitSelection = () => {
-        window.dispatchEvent(
-          new CustomEvent('gatoencerrado:select-miniverse-format', {
-            detail: { formatId },
-          }),
-        );
-      };
-
-      if (isMobileViewport) {
-        scrollToSection('#transmedia');
-        window.setTimeout(emitSelection, 420);
-        return;
-      }
-
-      // Desktop inline: conserva al usuario en Hero y reusa vitrina original.
-      // Persistimos la intención por si Transmedia aún no monta cuando se hace clic.
-      safeSetItem(HERO_PENDING_MINIVERSE_SELECTION_KEY, formatId);
-      emitSelection();
-      [120, 280, 560, 980].forEach((delay) => {
-        window.setTimeout(emitSelection, delay);
-      });
-    },
-    [isMobileViewport, scrollToSection]
   );
 
   const handleCloseTicket = useCallback(() => {
@@ -1023,22 +970,15 @@ const Hero = () => {
     };
   }, [getTargetVolumeByHeroPosition, isAuthLoading, isHeroInViewport]);
 
-  const shouldRenderInlineHero = Boolean(user);
-
   return (
     <>
       <section
         id="hero"
         ref={heroSectionRef}
-        className={`min-h-screen relative overflow-hidden ${
-          shouldRenderInlineHero
-            ? 'flex items-start justify-center'
-            : 'flex flex-col'
-        }`}
+        className="min-h-screen relative overflow-hidden flex flex-col"
       >
-        {!shouldRenderInlineHero ? (
-          <AnimatePresence>
-            {!hasActivatedAudio && (
+        <AnimatePresence>
+          {!hasActivatedAudio && (
               <motion.div
                 key="hero-starfield"
                 aria-hidden="true"
@@ -1086,33 +1026,7 @@ const Hero = () => {
               </motion.div>
             )}
           </AnimatePresence>
-        ) : null}
         {/* Contenido */}
-        {shouldRenderInlineHero ? (
-          <div
-            className={`container mx-auto relative z-10 ${
-              isMobileViewport ? 'px-4 pt-0 pb-8' : 'px-6 pt-16 pb-14'
-            }`}
-          >
-            <motion.div
-              initial={{ opacity: 0, y: 14 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.36, ease: 'easeOut' }}
-              className={`mx-auto w-full ${isMobileViewport ? 'max-w-2xl' : 'max-w-[920px]'}`}
-            >
-              <Suspense fallback={null}>
-                <MiniverseModal
-                  open
-                  onClose={handleScrollToAbout}
-                  initialTabId={mobileInitialTabId}
-                  onSelectMiniverse={handleMobileInlineMiniverseSelect}
-                  stayOpenOnSelect
-                  displayMode="inline"
-                />
-              </Suspense>
-            </motion.div>
-          </div>
-        ) : (
           <div className="container mx-auto px-6 text-center relative z-10 flex-1 flex flex-col">
 
               {/* TOP HALF — hash fijo de marca hasta la línea central */}
@@ -1517,7 +1431,6 @@ const Hero = () => {
               </div>{/* /bottom half */}
 
           </div>
-        )}
       </section>
       <Suspense fallback={null}>
         <TicketPurchaseModal open={isTicketModalOpen} onClose={handleCloseTicket} />

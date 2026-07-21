@@ -4,6 +4,7 @@ import MiniVersoCard from '@/components/transmedia/MiniVersoCard';
 import { useAuth } from '@/contexts/SupabaseAuthContext';
 import LoginOverlay from '@/components/ContributionModal/LoginOverlay';
 import LoginNudgeOverlay from '@/components/LoginNudgeOverlay';
+import BienvenidaGuardrail from '@/components/BienvenidaGuardrail';
 import ContributionModal from '@/components/ContributionModal';
 import PortalAuthButton from '@/components/PortalAuthButton';
 import PortalHeaderActions from '@/components/portal/PortalHeaderActions';
@@ -23,8 +24,10 @@ import {
   MINIVERSO_TILE_COLORS,
   MINIVERSO_TILE_GRADIENTS,
   showcaseDefinitions,
+  ORACULO_RECOMMENDED_SHOWCASE_KEY,
 } from '@/components/transmedia/transmediaConstants';
 import { resolvePortalRoute } from '@/lib/miniversePortalRegistry';
+import { safeGetItem } from '@/lib/safeStorage';
 import PortalL3RewardCTA from '@/components/portal/PortalL3RewardCTA';
 
 const JUEGOS_DEFINITION = showcaseDefinitions.apps ?? {};
@@ -86,6 +89,24 @@ const PortalJuegos = () => {
   // colectiva sí. Se muestra el mismo aviso "¿Te gustaría iniciar sesión?" antes
   // de abrir el formulario de login real.
   const [showResonanceLoginNudge, setShowResonanceLoginNudge] = useState(false);
+  // Gate en dos niveles: primero Tercera Llamada, luego login — nunca al
+  // revés. hasBienvenida refleja el mismo localStorage que usa el guardrail
+  // de MiniverseModal.jsx.
+  const [hasBienvenida, setHasBienvenida] = useState(
+    () => { try { return localStorage.getItem('gatoencerrado:bienvenida-completed') === '1'; } catch { return false; } }
+  );
+  const [showBienvenidaGuardrail, setShowBienvenidaGuardrail] = useState(false);
+  // Tras completar el login real, continúa automáticamente al mismo lugar
+  // donde el usuario quería responder — sin esto, quedaba de vuelta en la
+  // página sin el video/narrativa que sigue naturalmente a ResonanceModal.
+  const [pendingResonanceAfterLogin, setPendingResonanceAfterLogin] = useState(false);
+
+  useEffect(() => {
+    if (isAuthenticated && pendingResonanceAfterLogin) {
+      setPendingResonanceAfterLogin(false);
+      setIsResonanceOpen(true);
+    }
+  }, [isAuthenticated, pendingResonanceAfterLogin]);
 
   const handleCloseResonanceLoginNudge = useCallback(() => {
     setShowResonanceLoginNudge(false);
@@ -93,7 +114,20 @@ const PortalJuegos = () => {
 
   const handleConfirmResonanceLogin = useCallback(() => {
     setShowResonanceLoginNudge(false);
+    setPendingResonanceAfterLogin(true);
     setShowLoginOverlay(true);
+  }, []);
+
+  const handleCloseBienvenidaGuardrail = useCallback(() => {
+    setShowBienvenidaGuardrail(false);
+  }, []);
+
+  // Al completar la bienvenida no se encadena nada más: solo se marca y se
+  // cierra. Si el usuario vuelve a intentar responder, handleAnswerResonance
+  // ya lo manda al login nudge con hasBienvenida en true.
+  const handleBienvenidaCompleted = useCallback(() => {
+    setHasBienvenida(true);
+    setShowBienvenidaGuardrail(false);
   }, []);
 
   const handleAnswerResonance = useCallback(() => {
@@ -101,8 +135,19 @@ const PortalJuegos = () => {
       setIsResonanceOpen(true);
       return;
     }
+    // El miniverso que el bridge de Bienvenida recomendó va libre de
+    // salvaguardas — es el único que un invitado puede abrir y completar
+    // sin fricción adicional.
+    if (safeGetItem(ORACULO_RECOMMENDED_SHOWCASE_KEY) === 'apps') {
+      setIsResonanceOpen(true);
+      return;
+    }
+    if (!hasBienvenida) {
+      setShowBienvenidaGuardrail(true);
+      return;
+    }
     setShowResonanceLoginNudge(true);
-  }, [isAuthenticated]);
+  }, [isAuthenticated, hasBienvenida]);
 
   const requireAuth = useCallback((forceAuth = false) => {
     if (isAuthenticated) return true;
@@ -337,6 +382,12 @@ const PortalJuegos = () => {
         </div>
 
         {showLoginOverlay ? <LoginOverlay onClose={handleCloseLogin} /> : null}
+        <BienvenidaGuardrail
+          open={showBienvenidaGuardrail}
+          onClose={handleCloseBienvenidaGuardrail}
+          onCompleted={handleBienvenidaCompleted}
+          description="Para responder esta pregunta y que tu resonancia forme parte del diálogo colectivo, primero cruza la puerta de entrada al universo. Es un vistazo breve — después puedes volver aquí mismo a compartir tu respuesta."
+        />
         <LoginNudgeOverlay
           open={showResonanceLoginNudge}
           onClose={handleCloseResonanceLoginNudge}
