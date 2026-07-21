@@ -295,19 +295,6 @@ const Header = ({
         ]
       : []),
     ...(showPerspectivasNav ? [{ name: 'Voces en la sala', href: '#provoca' }] : []),
-    ...(showAllianceNav
-      ? [
-          {
-            name: 'Alianza',
-            href: '#apoya',
-            description: 'Causa social',
-            secondary: [
-              { label: 'Ver modelo de impacto', href: '#apoya' },
-              { label: 'Dejar una huella', href: '#cta' },
-            ],
-          },
-        ]
-      : []),
     ...(showIntermedioNav
       ? [{ name: 'Intermedio', href: '#blog-contribuye', description: 'La Reflexión' }]
       : []),
@@ -327,13 +314,21 @@ const Header = ({
         ]
       : []),
     ...(showIntermedioNav
-      ? [{ name: 'Caída del telón', href: '#next-show', description: 'Obra fundacional' }]
+      ? [{
+          name: 'Caída del telón',
+          href: '#next-show',
+          description: 'Obra fundacional',
+          ...(showObraDestacadaNav
+            ? {
+                secondary: [
+                  { label: 'Obra fundacional', href: '#about' },
+                  { label: 'Galería fractal', href: '#instagram' },
+                  { label: 'Créditos de la función', href: '#team' },
+                ],
+              }
+            : {}),
+        }]
       : []),
-    ...(showObraDestacadaNav
-      ? [{ name: 'Obra fundacional', href: '#about', description: 'Teatro · Es un gato encerrado' }]
-      : []),
-    ...(showObraDestacadaNav ? [{ name: 'Galería fractal', href: '#instagram' }] : []),
-    ...(showObraDestacadaNav ? [{ name: 'Créditos de la función', href: '#team' }] : []),
     ...(showObraDestacadaNav
       ? [{ name: 'Venta a la salida', href: '#conoce-sistema', description: 'Nuestro modelo' }]
       : []),
