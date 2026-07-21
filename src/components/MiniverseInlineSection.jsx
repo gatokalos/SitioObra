@@ -5,10 +5,6 @@ import { useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { safeSetItem } from '@/lib/safeStorage';
 import SectionErrorBoundary from '@/components/SectionErrorBoundary';
-import {
-  readMiniverseInlineOpenFromSession,
-  writeMiniverseInlineOpenToSession,
-} from '@/lib/heroActivation';
 
 const MiniverseModal = React.lazy(() => import('@/components/MiniverseModal'));
 const AlianzaSocial = React.lazy(() => import('@/components/AlianzaSocial'));
@@ -33,11 +29,7 @@ const resolveInitialTabFromQuery = (search = '') => {
 // mismo despliegue — aparece junto con el contenido de miniversos cuando el
 // usuario abre la sección, no como sección aparte.
 const MiniverseInlineSection = () => {
-  // Persistido en sessionStorage: sin esto, volver de un portal (/portal-*)
-  // remonta esta sección con isOpen=false — el scroll aterriza en el lugar
-  // correcto, pero el contenido (modal + Alianza Social) ya no está, y el
-  // cambio de alto de página se ve como un "ajuste" del scroll.
-  const [isOpen, setIsOpen] = useState(readMiniverseInlineOpenFromSession);
+  const [isOpen, setIsOpen] = useState(false);
   const location = useLocation();
   // Mismo breakpoint/lógica que usaba Hero.jsx para este mismo contenido
   // (MiniverseModal inline). Sin esto, en mobile se quedaba con el padding y
@@ -77,10 +69,7 @@ const MiniverseInlineSection = () => {
     return () => mediaQuery.removeListener(handleChange);
   }, []);
 
-  const handleOpen = useCallback(() => {
-    setIsOpen(true);
-    writeMiniverseInlineOpenToSession();
-  }, []);
+  const handleOpen = useCallback(() => setIsOpen(true), []);
   // No-op a propósito: MiniverseModal llama onClose() ANTES de hacer scroll
   // a #apoya (su propio botón "cómo dejar mi huella"/"cómo funciona"
   // internamente hace onClose()+scroll). Si onClose colapsara esta sección,

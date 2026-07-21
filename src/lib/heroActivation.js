@@ -74,29 +74,3 @@ export const writeObraDestacadaRevealedToSession = () => {
     // ignore
   }
 };
-
-// "¿Ya se abrió 'Venta a la salida' (el modal de miniverso + Alianza Social
-// anidada)?" — mismo problema: MiniverseInlineSection vive en "/" y se
-// desmonta al ir a un portal (/portal-*) y volver. Sin esto, isOpen volvía a
-// false en cada regreso, colapsando el modal y Alianza Social aunque el
-// usuario los había dejado abiertos — el scroll aterrizaba bien, pero el
-// contenido debajo ya no era el mismo (layout más corto, "ajuste" visible).
-export const MINIVERSE_INLINE_OPEN_SESSION_KEY = 'gatoencerrado:miniverse-inline-open-session';
-
-export const readMiniverseInlineOpenFromSession = () => {
-  if (typeof window === 'undefined') return false;
-  try {
-    return window.sessionStorage.getItem(MINIVERSE_INLINE_OPEN_SESSION_KEY) === '1';
-  } catch {
-    return false;
-  }
-};
-
-export const writeMiniverseInlineOpenToSession = () => {
-  if (typeof window === 'undefined') return;
-  try {
-    window.sessionStorage.setItem(MINIVERSE_INLINE_OPEN_SESSION_KEY, '1');
-  } catch {
-    // ignore
-  }
-};
