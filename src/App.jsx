@@ -505,7 +505,6 @@ function App() {
     window.addEventListener('gatoencerrado:reveal-obra-destacada', handleReveal);
     return () => window.removeEventListener('gatoencerrado:reveal-obra-destacada', handleReveal);
   }, []);
-  const isMobileLoggedInPortalMode = isAuthenticated && isMobileViewport;
   const isPortalRoute = location.pathname.startsWith('/portal-');
   const hasForcedHomeTopOnBootRef = useRef(false);
   const appliedPortalRestoreTokenRef = useRef('');
@@ -801,7 +800,7 @@ function App() {
                 showAllianceNav={isAuthenticated}
                 showCuradoriaNav={isCuradoriaVisible}
                 showIntermedioNav={canShowPostHeroContent}
-                showTransmediaNav={canShowPostHeroContent && hasEnteredUniverse && canAccessTransmedia && !isMobileLoggedInPortalMode}
+                showTransmediaNav={canShowPostHeroContent && hasEnteredUniverse && canAccessTransmedia}
                 showPerspectivasNav={canShowPostHeroContent && hasEnteredUniverse}
                 showObraDestacadaNav={isObraDestacadaVisible}
                 showTerceraLlamadaNav={canShowPostHeroContent}
@@ -822,7 +821,7 @@ function App() {
 
                     {hasEnteredUniverse && (
                       <>
-                        {canAccessTransmedia && !isMobileLoggedInPortalMode && (
+                        {canAccessTransmedia && (
                           <SectionErrorBoundary fallback={<SectionFallback id="transmedia" minHeight={1600} />}>
                             <Suspense fallback={<SectionFallback id="transmedia" minHeight={1600} />}>
                               <Transmedia />
@@ -908,7 +907,7 @@ function App() {
                 showAllianceNav={isAuthenticated}
                 showCuradoriaNav={isCuradoriaVisible}
                 showIntermedioNav={canShowPostHeroContent}
-                showTransmediaNav={canShowPostHeroContent && hasEnteredUniverse && canAccessTransmedia && !isMobileLoggedInPortalMode}
+                showTransmediaNav={canShowPostHeroContent && hasEnteredUniverse && canAccessTransmedia}
                 showPerspectivasNav={canShowPostHeroContent && hasEnteredUniverse}
                 showObraDestacadaNav={isObraDestacadaVisible}
                 showTerceraLlamadaNav={canShowPostHeroContent}

@@ -9,7 +9,6 @@ import { useAuth } from '@/contexts/SupabaseAuthContext';
 import LoginOverlay from '@/components/ContributionModal/LoginOverlay';
 import MobileMenuOverlay from '@/components/MobileMenuOverlay';
 import { createPortalLaunchState } from '@/lib/portalNavigation';
-import { resolvePortalRoute } from '@/lib/miniversePortalRegistry';
 import { INITIAL_GAT_BALANCE, readStoredInt } from '@/components/transmedia/transmediaConstants';
 import { readIndexCueUsedFromSession } from '@/lib/heroActivation';
 import useActiveSectionHref from '@/hooks/useActiveSectionHref';
@@ -71,15 +70,6 @@ const Header = ({
   const [gatSpendRecommendation, setGatSpendRecommendation] = useState(null);
   const [isGatLoginEligible, setIsGatLoginEligible] = useState(false);
   const [isGatSpendRecommendationLoading, setIsGatSpendRecommendationLoading] = useState(false);
-  // La sección #transmedia (las vitrinas) no se monta en móvil para usuarios
-  // autenticados (isMobileLoggedInPortalMode en App.jsx — ahí se navega por
-  // portales en vez de la vitrina inline). Sin esto, la recomendación de GAT
-  // intentaba hacer scroll a un elemento que nunca existió en el DOM y no
-  // pasaba nada.
-  const [isMobileViewport, setIsMobileViewport] = useState(() => {
-    if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') return false;
-    return window.matchMedia('(max-width: 768px)').matches;
-  });
   const gatChipRootRef = useRef(null);
   const gatInfoPanelRef = useRef(null);
   const navigate = useNavigate();
@@ -87,18 +77,6 @@ const Header = ({
   const { user, signOut } = useAuth();
   const { toast: showToast } = useToast();
   const prefersReducedMotion = useReducedMotion();
-
-  useEffect(() => {
-    if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') return undefined;
-    const mediaQuery = window.matchMedia('(max-width: 768px)');
-    const handleChange = (event) => setIsMobileViewport(event.matches);
-    if (typeof mediaQuery.addEventListener === 'function') {
-      mediaQuery.addEventListener('change', handleChange);
-      return () => mediaQuery.removeEventListener('change', handleChange);
-    }
-    mediaQuery.addListener(handleChange);
-    return () => mediaQuery.removeListener(handleChange);
-  }, []);
 
   const profileName =
     user?.user_metadata?.alias ||
@@ -696,17 +674,6 @@ const Header = ({
                         type="button"
                         onClick={() => {
                           setIsGatInfoOpen(false);
-                          const mobilePortalRoute = (user && isMobileViewport)
-                            ? resolvePortalRoute({ formatId: gatSpendRecommendation.showcaseId })
-                            : null;
-                          if (mobilePortalRoute) {
-                            navigate(mobilePortalRoute, {
-                              state: createPortalLaunchState(location, 'header-gat-recommendation', {
-                                showcaseId: gatSpendRecommendation.showcaseId,
-                              }),
-                            });
-                            return;
-                          }
                           handleNavClick(`#transmedia?focus=${gatSpendRecommendation.showcaseId}&source=gat-recommendation`);
                         }}
                         className="group flex w-full items-center justify-between gap-2 rounded-lg border border-violet-200 bg-violet-50 px-3 py-2 text-left text-xs leading-relaxed text-violet-800 transition hover:border-violet-300 hover:bg-violet-100"
