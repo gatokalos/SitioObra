@@ -795,7 +795,7 @@ function App() {
         path="/"
         element={(
           <div className="min-h-screen overflow-x-hidden relative">
-            <HeroBackground isAuthenticated={isAuthenticated} />
+            <HeroBackground isAuthenticated={false} />
             <div className="relative z-10">
               <Header
                 showAllianceNav={isAuthenticated}

@@ -178,7 +178,7 @@ const Hero = () => {
       ? HERO_PWA_INSTALL_HINT
       : shouldShowHeroInactiveHint ? HERO_INACTIVE_HINT : '';
   const isHeroGhostSubtitle = hasActivatedAudio && heroGhostSubtitle !== null;
-  const heroTitleSignalDisplay = useSignalDriftText(HERO_BRAND_LABEL, { active: hasActivatedAudio && !user });
+  const heroTitleSignalDisplay = useSignalDriftText(HERO_BRAND_LABEL, { active: hasActivatedAudio });
   const heroTitleDisplay = useMemo(
     () => heroTitleSignalDisplay.slice(1) || HERO_TITLE,
     [heroTitleSignalDisplay],
@@ -371,7 +371,6 @@ const Hero = () => {
   }, []);
 
   useEffect(() => {
-    if (user) return undefined;
     if (!hasActivatedAudio) return undefined;
     const GHOST_PROBABILITY = 0.28;
     const intervalId = window.setInterval(() => {
@@ -385,7 +384,7 @@ const Hero = () => {
     }, HERO_SUBTITLE_ROTATION_MS);
 
     return () => window.clearInterval(intervalId);
-  }, [user, hasActivatedAudio]);
+  }, [hasActivatedAudio]);
 
 
   useEffect(() => {
