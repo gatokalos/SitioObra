@@ -1,8 +1,7 @@
 import React, { Suspense, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
-import { BookOpen, CoffeeIcon, DramaIcon, TicketIcon, HeartHandshake, ShoppingBag, SparkleIcon, DoorOpen, Smartphone } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { Smartphone } from 'lucide-react';
 const TicketPurchaseModal = React.lazy(() => import('@/components/TicketPurchaseModal'));
 const GatokensRevealModal = React.lazy(() => import('@/components/GatokensRevealModal'));
 const VideoNarrativeAutoplay = React.lazy(() => import('@/components/VideoNarrativeAutoplay'));
@@ -25,7 +24,6 @@ import {
   toggleHeroAmbientMuted,
   setHeroAmbientMuted,
 } from '@/lib/heroAmbientAudio';
-import { createPortalLaunchState } from '@/lib/portalNavigation';
 import { safeGetItem, safeSetItem } from '@/lib/safeStorage';
 import { extractRecommendedAppId, resolveShowcaseFromAppId } from '@/lib/bienvenidaBridge';
 import { NARRATIVE_VIDEO_URL_DESKTOP } from '@/lib/narrativeVideo';
@@ -49,12 +47,6 @@ const HERO_LOGGED_IN_AUDIO_VOLUME = 0.35;
 const HERO_AUDIO_MIN_AUDIBLE_VOLUME = 0.015;
 const HERO_AUDIO_PLAY_RETRY_MS = 2500;
 const HERO_AUDIO_IDLE_RETRY_MS = 6000;
-const HERO_LOGGED_IN_ACTIVE_GRADIENT_CLASS =
-  'bg-gradient-to-r from-[#1f2f63] via-[#6e30ab] to-[#d91f8b]';
-const HERO_LOGGED_IN_ACTIVE_GLOW =
-  'radial-gradient(circle at center, rgba(110,48,171,0.36) 0%, rgba(217,31,139,0.24) 52%, rgba(0,0,0,0) 100%)';
-const HERO_LOGGED_IN_SWEEP_GLOW =
-  'radial-gradient(circle,rgba(31,47,99,0.3)_0%,rgba(110,48,171,0.22)_44%,rgba(217,31,139,0.1)_74%,rgba(0,0,0,0)_100%)';
 // Id del # real en Header.jsx — destino de la animación de transmigración.
 const HEADER_INDEX_HASHTAG_ID = 'header-index-hashtag';
 const HERO_TITLE = 'GATOENCERRADO';
@@ -136,16 +128,8 @@ const Hero = () => {
   const [isUmbralReveal, setIsUmbralReveal] = useState(false);
   const [autoVideoFormatId, setAutoVideoFormatId] = useState(null);
   const [isAutoVideoOpen, setIsAutoVideoOpen] = useState(false);
-  const [ctaIndex, setCtaIndex] = useState(0);
   const [heroSubtitleIndex, setHeroSubtitleIndex] = useState(0);
   const [heroGhostSubtitle, setHeroGhostSubtitle] = useState(null);
-  const [isCtaHovered, setIsCtaHovered] = useState(false);
-  const [primaryCtaWidth, setPrimaryCtaWidth] = useState(null);
-  const [activeLoggedInCtaIndex, setActiveLoggedInCtaIndex] = useState(1);
-  const [loggedInSweepPoint] = useState({ x: 0, y: 0 });
-  const primaryCtaRef = useRef(null);
-  const loggedInCtaTrackRef = useRef(null);
-  const loggedInCtaRefs = useRef([]);
   const heroSectionRef = useRef(null);
   const heroAudioMutedRef = useRef(false);
   const audioGestureUnlockRef = useRef(false);
@@ -185,12 +169,6 @@ const Hero = () => {
   const location = useLocation();
   const { user, loading: isAuthLoading } = useAuth();
 
-  const rotatingCtas = [
-    { label: 'Café', Icon: CoffeeIcon },
-    { label: 'Charla', Icon: BookOpen },
-    { label: 'Merch', Icon: ShoppingBag },
-  ];
-  const currentCta = rotatingCtas[ctaIndex];
   const shouldShowHeroPwaChoice =
     isMobileViewport && !user && !hasActivatedAudio && isHeroPwaPromptVisible;
   const shouldShowHeroInactiveHint = !hasActivatedAudio && isHeroHashReady;
@@ -200,7 +178,6 @@ const Hero = () => {
       ? HERO_PWA_INSTALL_HINT
       : shouldShowHeroInactiveHint ? HERO_INACTIVE_HINT : '';
   const isHeroGhostSubtitle = hasActivatedAudio && heroGhostSubtitle !== null;
-  const targetWidth = primaryCtaWidth ?? undefined;
   const heroTitleSignalDisplay = useSignalDriftText(HERO_BRAND_LABEL, { active: hasActivatedAudio && !user });
   const heroTitleDisplay = useMemo(
     () => heroTitleSignalDisplay.slice(1) || HERO_TITLE,
@@ -343,9 +320,6 @@ const Hero = () => {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user?.id]);
 
-  const primaryCtaLabel = user ? 'Dejar mi huella' : 'Toma un boleto';
-
-
   const getTargetVolumeByHeroPosition = useCallback(() => {
     const hero = heroSectionRef.current;
     if (!hero) return 0;
@@ -359,12 +333,6 @@ const Hero = () => {
     const section = document.querySelector(sectionId);
     section?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }, []);
-
-  const handleOpenSupportHub = useCallback(() => {
-    navigate('/portal-encuentros', {
-      state: createPortalLaunchState(location, 'hero-encuentros'),
-    });
-  }, [location, navigate]);
 
   const handleOpenMiniverseList = useCallback((tabId = null, contextLabel = null) => {
     if (typeof window !== 'undefined') {
@@ -398,30 +366,9 @@ const Hero = () => {
     handleOpenHeroWelcome();
   }, [handleOpenHeroWelcome]);
 
-  const handleLoggedInHeroAction = useCallback(
-    (tabId, contextLabel, index) => {
-      if (Number.isFinite(index)) {
-        setActiveLoggedInCtaIndex(index);
-      }
-      handleOpenMiniverseList(tabId, contextLabel);
-    },
-    [handleOpenMiniverseList]
-  );
-
   const handleCloseTicket = useCallback(() => {
     setIsTicketModalOpen(false);
   }, []);
-
-  useEffect(() => {
-    const ROTATION_MS = 4000;
-    if (isCtaHovered) return undefined;
-
-    const intervalId = window.setInterval(() => {
-      setCtaIndex((prev) => (prev + 1) % rotatingCtas.length);
-    }, ROTATION_MS);
-
-    return () => window.clearInterval(intervalId);
-  }, [isCtaHovered, rotatingCtas.length]);
 
   useEffect(() => {
     if (user) return undefined;
@@ -440,38 +387,6 @@ const Hero = () => {
     return () => window.clearInterval(intervalId);
   }, [user, hasActivatedAudio]);
 
-
-  const loggedInCtaClass = useCallback(
-    () =>
-      `
-      relative z-10 isolate overflow-hidden flex-1 min-w-0 h-14 px-7 rounded-full font-semibold
-      flex items-center justify-center gap-2 border transition-all duration-300 ease-out
-      text-slate-100 bg-[#04081f]/80 border-violet-400/35 backdrop-blur-md
-      shadow-[0_8px_26px_rgba(56,20,110,0.35),inset_0_1px_0_rgba(255,255,255,0.08)]
-      hover:border-violet-300/55 hover:shadow-[0_10px_32px_rgba(86,34,168,0.38)]
-    `,
-    []
-  );
-
-  useLayoutEffect(() => {
-    const el = primaryCtaRef.current;
-    if (!el) return undefined;
-
-    const updateWidth = () => {
-      setPrimaryCtaWidth(Math.ceil(el.getBoundingClientRect().width));
-    };
-
-    updateWidth();
-
-    if (typeof ResizeObserver !== 'undefined') {
-      const observer = new ResizeObserver(updateWidth);
-      observer.observe(el);
-      return () => observer.disconnect();
-    }
-
-    window.addEventListener('resize', updateWidth);
-    return () => window.removeEventListener('resize', updateWidth);
-  }, []);
 
   useEffect(() => {
     if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') {
@@ -1230,204 +1145,6 @@ const Hero = () => {
                   )
                 : null}
 
-              {/* — botones originales: se muestran solo si hay usuario — */}
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 1, delay: 0.8 }}
-                className="flex flex-col gap-4 justify-center items-center"
-              >
-                {user && (
-                  <div className="flex flex-col gap-4 justify-center items-center">
-
-                  {/* CTA PRINCIPAL */}
-                  <Button
-                    ref={primaryCtaRef}
-                    onClick={() => handleOpenMiniverseList(null, 'Explora los miniversos')}
-                    className="
-                      px-8 py-4 rounded-full font-semibold
-                      flex items-center gap-2 text-white
-                      bg-gradient-to-r from-orange-400 via-rose-500 to-pink-500
-                      shadow-[0_8px_32px_rgba(255,90,120,0.45)]
-                      hover:shadow-[0_12px_42px_rgba(255,90,120,0.55)]
-                      hover:scale-[1.03]
-                      transition-all duration-300 ease-out
-                      text-base tracking-wide
-                    "
-                  >
-                    <TicketIcon size={22} className="drop-shadow-md" />
-                    {primaryCtaLabel}
-                  </Button>
-              
-
-                  {/* CTA SECUNDARIO — CAFÉ */}
-                  <Button
-                    asChild
-                    variant="outline"
-                    onClick={handleOpenSupportHub}
-                    onMouseEnter={() => setIsCtaHovered(true)}
-                    onMouseLeave={() => setIsCtaHovered(false)}
-                    className="
-                      px-8 py-4 rounded-full font-semibold
-                      flex items-center gap-2
-                      backdrop-blur-xl
-                      bg-white/5
-                      border border-purple-300/30
-                      text-purple-200
-                      hover:bg-purple-950/30
-                      hover:border-purple-300/60
-                      hover:shadow-[0_6px_24px_rgba(150,80,255,0.25)]
-                      hover:scale-[1.02]
-                      transition-all duration-300 ease-out
-                      text-base tracking-wide
-                    "
-                  >
-                    <motion.button
-                      type="button"
-                      animate={targetWidth ? { width: targetWidth } : undefined}
-                      transition={{ width: { duration: 3, ease: [0.2, 1, 0.2, 1] } }}
-                      className="inline-flex items-center justify-center"
-                    >
-                      <span className="relative inline-flex items-center">
-                        <span className="invisible inline-flex items-center gap-2" aria-hidden="true">
-                          <currentCta.Icon size={20} className="text-purple-200/90 drop-shadow-sm" />
-                          {currentCta.label}
-                        </span>
-                        <AnimatePresence mode="sync" initial={false}>
-                          <motion.span
-                            key={currentCta.label}
-                            initial={{ opacity: 0, filter: 'blur(14px)' }}
-                            animate={{ opacity: 1, filter: 'blur(0px)' }}
-                            exit={{ opacity: 0, filter: 'blur(14px)' }}
-                            transition={{ duration: 3, ease: [0.2, 1, 0.2, 1] }}
-                            className="absolute inset-0 inline-flex items-center gap-2"
-                          >
-                            <currentCta.Icon size={20} className="text-purple-200/90 drop-shadow-sm" />
-                            {currentCta.label}
-                          </motion.span>
-                        </AnimatePresence>
-                      </span>
-                    </motion.button>
-                  </Button>
-            
-                </div>
-                )}
-                {user && (
-                <div
-                  ref={loggedInCtaTrackRef}
-                  className="relative flex w-full max-w-[52rem] items-center justify-center gap-3"
-                >
-                  <motion.span
-                    aria-hidden="true"
-                    className="pointer-events-none absolute z-0 h-14 w-44 md:h-16 md:w-56 -translate-x-1/2 -translate-y-1/2 rounded-full blur-[14px]"
-                    style={{ background: HERO_LOGGED_IN_SWEEP_GLOW }}
-                    animate={{ left: loggedInSweepPoint.x, top: loggedInSweepPoint.y, opacity: [0.5, 0.72, 0.5] }}
-                    transition={{
-                      left: { type: 'spring', stiffness: 92, damping: 28, mass: 0.95 },
-                      top: { type: 'spring', stiffness: 92, damping: 28, mass: 0.95 },
-                      opacity: { duration: 1.8, repeat: Infinity, ease: 'easeInOut' },
-                    }}
-                  />
-                  <motion.span
-                    aria-hidden="true"
-                    className="pointer-events-none absolute z-0 h-2.5 w-11 md:h-3 md:w-14 -translate-x-1/2 -translate-y-1/2 rounded-full bg-fuchsia-300/35 blur-[8px]"
-                    animate={{ left: loggedInSweepPoint.x, top: loggedInSweepPoint.y, opacity: [0.35, 0.6, 0.35] }}
-                    transition={{
-                      left: { type: 'spring', stiffness: 120, damping: 30, mass: 0.8 },
-                      top: { type: 'spring', stiffness: 120, damping: 30, mass: 0.8 },
-                      opacity: { duration: 1.6, repeat: Infinity, ease: 'easeInOut' },
-                    }}
-                  />
-                  <Button
-                    ref={(node) => {
-                      loggedInCtaRefs.current[0] = node;
-                    }}
-                    type="button"
-                    onClick={() => handleLoggedInHeroAction('escaparate', 'Entender', 0)}
-                    className={loggedInCtaClass()}
-                  >
-                    <span
-                      aria-hidden="true"
-                      className={`pointer-events-none absolute inset-0 rounded-full ${HERO_LOGGED_IN_ACTIVE_GRADIENT_CLASS} transition-opacity duration-1000 ease-out ${
-                        activeLoggedInCtaIndex === 0 ? 'opacity-62' : 'opacity-0'
-                      }`}
-                    />
-                    <span
-                      aria-hidden="true"
-                      className={`pointer-events-none absolute inset-0 rounded-full blur-[14px] transition-opacity duration-1000 ease-out ${
-                        activeLoggedInCtaIndex === 0 ? 'opacity-36' : 'opacity-0'
-                      }`}
-                      style={{ background: HERO_LOGGED_IN_ACTIVE_GLOW }}
-                    />
-                    <span className={`relative z-10 inline-flex items-center gap-2 transition-transform duration-1000 ${activeLoggedInCtaIndex === 0 ? 'scale-[1.01]' : 'scale-100'}`}>
-                      <SparkleIcon
-                        size={18}
-                        className={`transition-colors duration-1000 ${activeLoggedInCtaIndex === 0 ? 'text-white' : 'text-violet-300/90'}`}
-                      />
-                      Descubrir
-                    </span>
-                  </Button>
-                  <Button
-                    ref={(node) => {
-                      loggedInCtaRefs.current[1] = node;
-                    }}
-                    type="button"
-                    onClick={() => handleLoggedInHeroAction('experiences', 'Habitar', 1)}
-                    className={loggedInCtaClass()}
-                  >
-                    <span
-                      aria-hidden="true"
-                      className={`pointer-events-none absolute inset-0 rounded-full ${HERO_LOGGED_IN_ACTIVE_GRADIENT_CLASS} transition-opacity duration-1000 ease-out ${
-                        activeLoggedInCtaIndex === 1 ? 'opacity-62' : 'opacity-0'
-                      }`}
-                    />
-                    <span
-                      aria-hidden="true"
-                      className={`pointer-events-none absolute inset-0 rounded-full blur-[14px] transition-opacity duration-1000 ease-out ${
-                        activeLoggedInCtaIndex === 1 ? 'opacity-36' : 'opacity-0'
-                      }`}
-                      style={{ background: HERO_LOGGED_IN_ACTIVE_GLOW }}
-                    />
-                    <span className={`relative z-10 inline-flex items-center gap-2 transition-transform duration-1000 ${activeLoggedInCtaIndex === 1 ? 'scale-[1.01]' : 'scale-100'}`}>
-                      <DoorOpen
-                        size={18}
-                        className={`transition-colors duration-1000 ${activeLoggedInCtaIndex === 1 ? 'text-white' : 'text-violet-300/90'}`}
-                      />
-                      Habitar
-                    </span>
-                  </Button>
-                  <Button
-                    ref={(node) => {
-                      loggedInCtaRefs.current[2] = node;
-                    }}
-                    type="button"
-                    onClick={() => handleLoggedInHeroAction('waitlist', 'Impulsar', 2)}
-                    className={loggedInCtaClass()}
-                  >
-                    <span
-                      aria-hidden="true"
-                      className={`pointer-events-none absolute inset-0 rounded-full ${HERO_LOGGED_IN_ACTIVE_GRADIENT_CLASS} transition-opacity duration-1000 ease-out ${
-                        activeLoggedInCtaIndex === 2 ? 'opacity-62' : 'opacity-0'
-                      }`}
-                    />
-                    <span
-                      aria-hidden="true"
-                      className={`pointer-events-none absolute inset-0 rounded-full blur-[14px] transition-opacity duration-1000 ease-out ${
-                        activeLoggedInCtaIndex === 2 ? 'opacity-36' : 'opacity-0'
-                      }`}
-                      style={{ background: HERO_LOGGED_IN_ACTIVE_GLOW }}
-                    />
-                    <span className={`relative z-10 inline-flex items-center gap-2 transition-transform duration-1000 ${activeLoggedInCtaIndex === 2 ? 'scale-[1.01]' : 'scale-100'}`}>
-                      <HeartHandshake
-                        size={18}
-                        className={`transition-colors duration-1000 ${activeLoggedInCtaIndex === 2 ? 'text-white' : 'text-violet-300/90'}`}
-                      />
-                      Impulsar
-                    </span>
-                  </Button>
-                </div>
-              )}
-              </motion.div>
               </div>{/* /bottom half */}
 
           </div>
