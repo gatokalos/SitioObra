@@ -151,7 +151,7 @@ const HERO_BACKGROUND_VARIANTS = {
     className: 'absolute inset-0 h-full w-full object-cover',
     style: {
       opacity: 0.44,
-      filter: 'contrast(72%) brightness(87%) saturate(96%)',
+      filter: 'contrast(80%) brightness(100%) saturate(96%)',
       objectPosition: '50% 28%',
       transform: 'translateY(7.5%) scale(1.1)',
     },
@@ -170,7 +170,7 @@ const HERO_BACKGROUND_VARIANTS = {
 const HERO_GUEST_SOFT_FOCUS_MASK =
   'radial-gradient(ellipse 34% 42% at 50% 43%, rgba(0,0,0,0.98) 0%, rgba(0,0,0,0.94) 42%, rgba(0,0,0,0) 76%)';
 const HERO_GUEST_CABINA_IDLE_OPACITY = 0.12;
-const HERO_GUEST_CABINA_REVEALED_OPACITY = 0.36;
+const HERO_GUEST_CABINA_REVEALED_OPACITY = 0.66;
 
 const HeroBackground = ({ isAuthenticated = false }) => {
   const [opacity, setOpacity] = useState(1);

@@ -279,7 +279,7 @@ const Header = ({
     { name: 'Contacto', href: '#contact' },
   ];
   const mobileMenuItems = [
-    { name: 'Primera fila', href: '#hero', description: 'El subtexto',
+    { name: 'Primera fila', href: '#hero', description: '#Elsubtexto',
  },
     ...(showTerceraLlamadaNav
       ? [{ name: 'Tercera llamada', href: '#bienvenida-creador', description: terceraLlamadaLabel }]
@@ -289,21 +289,21 @@ const Header = ({
           {
             name: 'Las nueve formas',
             href: '#transmedia',
-            description: 'Obra transmedia',
+            description: '#Obratransmedia',
             secondary: TRANSMEDIA_SECONDARY_ITEMS,
           },
         ]
       : []),
     ...(showPerspectivasNav ? [{ name: 'Voces en la sala', href: '#provoca' }] : []),
     ...(showIntermedioNav
-      ? [{ name: 'Intermedio', href: '#blog-contribuye', description: 'La Reflexión' }]
+      ? [{ name: 'Intermedio', href: '#blog-contribuye', description: '#Lareflexion' }]
       : []),
     ...(showCuradoriaNav
       ? [
           {
             name: 'Curaduría',
             href: '#dialogo-critico',
-            description: 'Diálogo crítico y educativo',
+            description: '#pensamientocritico',
             secondary: [
               { label: 'Curaduría Reflexiva', href: '#dialogo-critico?focus=curaduria' },
               { label: 'Expansiones Narrativas', href: '#dialogo-critico?focus=expansiones' },
@@ -317,7 +317,7 @@ const Header = ({
       ? [{
           name: 'Caída del telón',
           href: '#next-show',
-          description: 'Obra fundacional',
+          description: '#Obrafundacional',
           ...(showObraDestacadaNav
             ? {
                 secondary: [
@@ -330,7 +330,7 @@ const Header = ({
         }]
       : []),
     ...(showObraDestacadaNav
-      ? [{ name: 'Antes de irte', href: '#conoce-sistema', description: 'Nuestro modelo' }]
+      ? [{ name: 'Antes de irte', href: '#conoce-sistema', description: '#Nuestromodelo' }]
       : []),
     { name: 'Contacto', href: '#contact' },
   ];
