@@ -5262,9 +5262,9 @@ Silvestre, un hombre en sus treintas, comienza a perder la frontera entre lo que
               </h2>
               <p className="text-lg text-slate-300/80 max-w-3xl mx-auto leading-relaxed font-light">
     <em>Esta obra es una sola narrativa, desplegada en nueve formas.</em><br />
-    Cada miniverso te permite<br />encontrar <strong>tu propia manera de participar</strong>.<br /><br />
+    Sus miniversos permiten abordarla desde distintos lugares y participar a tu manera.<br /><br />
 
-    Cada uno contiene el pulso del universo,<br />como el mundo entero dentro de un verso.<br /><br />
+    <strong>El universo entero cabe en cualquiera de sus formas</strong>,<br />como una obra en un solo verso.<br /><br />
 
   </p>
             </motion.div>
