@@ -273,13 +273,13 @@ const Header = ({
     ...(showCuradoriaNav ? [{ name: 'Curaduría', href: '#dialogo-critico' }] : []),
     ...(showIntermedioNav ? [{ name: 'Caída del telón', href: '#next-show' }] : []),
     ...(showObraDestacadaNav ? [{ name: 'Obra fundacional', href: '#about' }] : []),
-    ...(showObraDestacadaNav ? [{ name: 'Galería fractal', href: '#instagram' }] : []),
     ...(showObraDestacadaNav ? [{ name: 'Créditos', href: '#team' }] : []),
-    ...(showObraDestacadaNav ? [{ name: 'Venta a la salida', href: '#conoce-sistema' }] : []),
+    ...(showObraDestacadaNav ? [{ name: 'Galería fractal', href: '#instagram' }] : []),
+    ...(showObraDestacadaNav ? [{ name: 'Antes de irte', href: '#conoce-sistema' }] : []),
     { name: 'Contacto', href: '#contact' },
   ];
   const mobileMenuItems = [
-    { name: 'Primera fila', href: '#hero', description: 'El universo',
+    { name: 'Primera fila', href: '#hero', description: 'El subtexto',
  },
     ...(showTerceraLlamadaNav
       ? [{ name: 'Tercera llamada', href: '#bienvenida-creador', description: terceraLlamadaLabel }]
@@ -322,15 +322,15 @@ const Header = ({
             ? {
                 secondary: [
                   { label: 'Obra fundacional', href: '#about' },
-                  { label: 'Galería fractal', href: '#instagram' },
                   { label: 'Créditos de la función', href: '#team' },
+                  { label: 'Galería fractal', href: '#instagram' },
                 ],
               }
             : {}),
         }]
       : []),
     ...(showObraDestacadaNav
-      ? [{ name: 'Venta a la salida', href: '#conoce-sistema', description: 'Nuestro modelo' }]
+      ? [{ name: 'Antes de irte', href: '#conoce-sistema', description: 'Nuestro modelo' }]
       : []),
     { name: 'Contacto', href: '#contact' },
   ];

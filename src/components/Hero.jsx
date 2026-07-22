@@ -1,7 +1,7 @@
 import React, { Suspense, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
-import { Smartphone } from 'lucide-react';
+import { ChevronDown, Smartphone } from 'lucide-react';
 const TicketPurchaseModal = React.lazy(() => import('@/components/TicketPurchaseModal'));
 const GatokensRevealModal = React.lazy(() => import('@/components/GatokensRevealModal'));
 const VideoNarrativeAutoplay = React.lazy(() => import('@/components/VideoNarrativeAutoplay'));
@@ -332,6 +332,13 @@ const Hero = () => {
   const scrollToSection = useCallback((sectionId) => {
     const section = document.querySelector(sectionId);
     section?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }, []);
+
+  const scrollToNextHeroSection = useCallback(() => {
+    const target = ['#bienvenida-creador', '#transmedia', '#provoca', '#contact']
+      .map((selector) => document.querySelector(selector))
+      .find(Boolean);
+    target?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }, []);
 
   const handleOpenMiniverseList = useCallback((tabId = null, contextLabel = null) => {
@@ -1059,6 +1066,21 @@ const Hero = () => {
                           No
                         </button>
                       </motion.div>
+                    ) : null}
+                    {hasActivatedAudio && !shouldShowHeroPwaChoice ? (
+                      <motion.button
+                        key="hero-scroll-cue"
+                        type="button"
+                        initial={{ opacity: 0, y: -4, filter: 'blur(8px)' }}
+                        animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
+                        exit={{ opacity: 0, y: -4, filter: 'blur(8px)' }}
+                        transition={{ duration: 0.7, ease: 'easeOut', delay: 0.35 }}
+                        onClick={scrollToNextHeroSection}
+                        className="hero-scroll-cue"
+                        aria-label="Continuar hacia la siguiente sección"
+                      >
+                        <ChevronDown size={25} strokeWidth={1.8} />
+                      </motion.button>
                     ) : null}
                   </AnimatePresence>
                 </div>

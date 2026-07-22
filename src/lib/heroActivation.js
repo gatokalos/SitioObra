@@ -50,7 +50,7 @@ export const writeIndexCueUsedToSession = () => {
   }
 };
 
-// "¿Ya se reveló Obra Destacada + Créditos + Venta a la salida?" (CTA de
+// "¿Ya se reveló Obra Destacada + Créditos + Antes de irte?" (CTA de
 // Archivo Escénico). Mismo problema que isHeroActivated: App.jsx vive en la
 // ruta "/" y se desmonta al navegar a un portal (/portal-*) y volver — sin
 // esto, el bloque entero se "colapsa" (vuelve a su estado inicial oculto) en

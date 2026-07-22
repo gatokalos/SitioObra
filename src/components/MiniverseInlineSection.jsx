@@ -22,7 +22,7 @@ const resolveInitialTabFromQuery = (search = '') => {
   return 'experiences';
 };
 
-// "Venta a la salida" — último espacio antes de Contacto, después de Team
+// "Antes de irte" — último espacio antes de Contacto, después de Team
 // ("Créditos de la función"). No depende de sesión a propósito: el botón es
 // de descubrimiento, no de autenticación. Alianza Social (antes solo para
 // autenticados, como sección hermana en App.jsx) ahora vive DENTRO de este
@@ -100,19 +100,7 @@ const MiniverseInlineSection = () => {
               transition={{ duration: 0.36, ease: 'easeOut' }}
               className={`relative mx-auto w-full ${isMobileViewport ? 'max-w-2xl' : 'max-w-[920px]'}`}
             >
-              {/* Misma imagen y tratamiento (mix-blend-pin-light, opacidad,
-                  filtro) que usaba HeroBackground para el Hero autenticado —
-                  ahora con object-contain en vez de object-cover: se pidió
-                  ver la imagen completa sin recorte, aunque queden barras
-                  tipo letterbox a los lados. */}
-              <div aria-hidden="true" className="pointer-events-none absolute inset-0 overflow-hidden">
-                <img
-                  src="/assets/bg-logo.png"
-                  alt=""
-                  className="absolute inset-0 h-full w-full object-contain"
-                  style={{ opacity: 0.4, filter: 'brightness(65%) contrast(90%)' }}
-                />
-              </div>
+
               <div className="relative z-10">
                 <Suspense fallback={null}>
                   <MiniverseModal
@@ -135,10 +123,11 @@ const MiniverseInlineSection = () => {
               className="glass-effect rounded-2xl p-8 md:p-12 text-center max-w-3xl mx-auto"
             >
               <h3 className="font-display text-3xl font-medium text-slate-100 mb-6 text-center">
-                VENTA A LA SALIDA
+                ANTES DE IRTE
               </h3>
-              <p className="text-slate-300/80 leading-relaxed mb-8 max-w-xl mx-auto font-light">
-                Antes de irte, un vistazo a lo que hace posible todo esto: cómo se expande el universo,
+              <p className="text-slate-100/80 leading-relaxed mb-8 max-w-xl mx-auto font-light">
+                Echa un vistazo a lo que hace posible todo esto: <br></br>
+                cómo se expande el universo,<br></br>
                 qué hay para habitar y de qué forma tu presencia lo impulsa.
               </p>
               <Button
@@ -146,7 +135,7 @@ const MiniverseInlineSection = () => {
                 className="bg-gradient-to-r from-orange-500/90 via-rose-500/90 to-pink-500/90 hover:from-orange-400 hover:to-pink-400 text-white px-6 py-3 rounded-full font-semibold flex items-center gap-2 shadow-lg shadow-orange-500/40 transition mx-auto"
               >
                 <Compass size={20} />
-                Conoce nuestro modelo
+                Modelo de negocio
               </Button>
             </motion.div>
           )}

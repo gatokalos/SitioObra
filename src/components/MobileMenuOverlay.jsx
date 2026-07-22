@@ -46,12 +46,15 @@ const MobileMenuOverlay = ({
 
   if (!isOpen) return null;
 
-  const handlePrimaryClick = (item) => {
-    if (!item.secondary?.length) {
-      onNavigate(item.href);
-      return;
-    }
+  // Título y chevron son zonas de clic independientes cuando el ítem tiene
+  // sub-secciones: el título siempre navega a item.href, el chevron siempre
+  // expande/contrae — antes todo el renglón era un solo botón que solo
+  // expandía, sin forma de navegar directo a la sección padre.
+  const handleTitleClick = (item) => {
+    onNavigate(item.href);
+  };
 
+  const handleToggleExpand = (item) => {
     setExpandedSection((current) => {
       const next = current === item.name ? null : item.name;
       if (item.name === 'FAQ') {
@@ -109,19 +112,19 @@ const MobileMenuOverlay = ({
           <section className="mt-4 rounded-2xl border border-white/10 bg-black/35 p-2 xl:mt-0">
             {menuItems.map((item) => (
               <div key={item.name} className="rounded-xl transition hover:bg-white/[0.04]">
-                <button
-                  type="button"
-                  onClick={() => handlePrimaryClick(item)}
-                  className="group flex w-full items-center justify-between gap-3 rounded-xl px-3 py-3 text-left transition"
-                >
-                  <div className="min-w-0">
+                <div className="group flex w-full items-center justify-between gap-3 rounded-xl px-3 py-3">
+                  <button
+                    type="button"
+                    onClick={() => handleTitleClick(item)}
+                    className="min-w-0 flex-1 text-left"
+                  >
                     <p className="font-display text-[1.08rem] leading-tight text-slate-100">{item.name}</p>
                     {item.description ? (
                       <p className="mt-1 text-[11px] uppercase tracking-[0.2em] text-slate-400/85">
                         {item.description}
                       </p>
                     ) : null}
-                  </div>
+                  </button>
                   <div className="flex shrink-0 items-center gap-2">
                     {activeSectionHref === item.href ? (
                       <span
@@ -130,15 +133,23 @@ const MobileMenuOverlay = ({
                       />
                     ) : null}
                     {item.secondary?.length ? (
-                      <ChevronDown
-                        size={16}
-                        className={`text-slate-400/90 transition-transform ${
-                          expandedSection === item.name ? 'rotate-180 text-slate-200' : ''
-                        }`}
-                      />
+                      <button
+                        type="button"
+                        onClick={() => handleToggleExpand(item)}
+                        aria-label={expandedSection === item.name ? `Contraer ${item.name}` : `Expandir ${item.name}`}
+                        aria-expanded={expandedSection === item.name}
+                        className="-m-1.5 rounded-lg p-1.5 transition hover:bg-white/[0.08]"
+                      >
+                        <ChevronDown
+                          size={16}
+                          className={`text-slate-400/90 transition-transform ${
+                            expandedSection === item.name ? 'rotate-180 text-slate-200' : ''
+                          }`}
+                        />
+                      </button>
                     ) : null}
                   </div>
-                </button>
+                </div>
 
                 {item.secondary?.length && expandedSection === item.name ? (
                   <div className="mb-2 mr-2 ml-3 rounded-xl border border-white/10 bg-black/35 p-2">

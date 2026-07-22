@@ -84,8 +84,8 @@ const Footer = ({
                   ...(showCuradoriaNav ? [{ name: 'Curaduría', href: '#dialogo-critico' }] : []),
                   ...(showIntermedioNav ? [{ name: 'Caída del telón', href: '#next-show' }] : []),
                   ...(showObraDestacadaNav ? [{ name: 'Obra fundacional', href: '#about' }] : []),
-                  ...(showObraDestacadaNav ? [{ name: 'Galería fractal', href: '#instagram' }] : []),
                   ...(showObraDestacadaNav ? [{ name: 'Créditos de la función', href: '#team' }] : []),
+                  ...(showObraDestacadaNav ? [{ name: 'Galería fractal', href: '#instagram' }] : []),
                   { name: 'Contacto', href: '#contact' },
                 ].map((item) => (
                   <li key={item.name}>

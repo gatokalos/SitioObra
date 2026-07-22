@@ -47,7 +47,7 @@ const NextShow = () => {
   }, []);
 
   // "Antes de irte": mismo grupo que revela "Entra a ver", pero apunta
-  // directo a "Venta a la salida" en vez de a Obra Destacada. No requiere
+  // directo a "Antes de irte" en vez de a Obra Destacada. No requiere
   // sesión — es descubrimiento, no autenticación.
   const handleOpenSystemPreview = useCallback(() => {
     if (typeof window === 'undefined') return;

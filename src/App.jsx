@@ -493,7 +493,7 @@ function App() {
   const [isCuradoriaVisible, setIsCuradoriaVisible] = useState(false);
   // Obra destacada + Créditos: se revelan juntos desde el CTA de Archivo Escénico (Caída del Telón).
   // Persistido en sessionStorage: sin esto, volver de un portal (/portal-*)
-  // remonta App.jsx desde cero y este bloque (incluye "Venta a la salida")
+  // remonta App.jsx desde cero y este bloque (incluye "Antes de irte")
   // se colapsa aunque ya se había revelado.
   const [isObraDestacadaVisible, setIsObraDestacadaVisible] = useState(readObraDestacadaRevealedFromSession);
   useEffect(() => {
@@ -870,6 +870,11 @@ function App() {
                             <About />
                           </Suspense>
                         </DeferredSection>
+                        <DeferredSection fallback={<SectionFallback id="team" minHeight={980} />}>
+                          <Suspense fallback={<SectionFallback id="team" minHeight={980} />}>
+                            <Team />
+                          </Suspense>
+                        </DeferredSection>
                         {isFractalGalleryVisible && (
                           <DeferredSection fallback={<SectionFallback id="instagram" minHeight={1600} />}>
                             <Suspense fallback={<SectionFallback id="instagram" minHeight={1600} />}>
@@ -877,12 +882,7 @@ function App() {
                             </Suspense>
                           </DeferredSection>
                         )}
-                        <DeferredSection fallback={<SectionFallback id="team" minHeight={980} />}>
-                          <Suspense fallback={<SectionFallback id="team" minHeight={980} />}>
-                            <Team />
-                          </Suspense>
-                        </DeferredSection>
-                        {/* Último espacio antes de Contacto: "Venta a la salida" — no
+                        {/* Último espacio antes de Contacto: "Antes de irte" — no
                             requiere sesión, el botón es de descubrimiento. Alianza
                             Social (antes gateada a isAuthenticated) ahora vive DENTRO
                             de esta sección, no como hermana — ver MiniverseInlineSection. */}

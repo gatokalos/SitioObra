@@ -55,7 +55,7 @@ const PortalHeaderActions = ({ returnUrl = DEFAULT_RETURN_URL }) => {
       // portal deep link, no scrollY to restore) have nowhere pixel-accurate
       // to return to — send them to About so they continue discovering the
       // site naturally. Guests who opened the portal from a real place on
-      // the page (Venta a la salida, MiniverseModal, etc.) DO have a valid
+      // the page (Antes de irte, MiniverseModal, etc.) DO have a valid
       // portalReturnScrollY and fall through to the pixel restore below —
       // otherwise they'd always land on About regardless of where they came
       // from, collapsing/erratically scrolling past wherever they actually were.

@@ -434,16 +434,18 @@ const Contact = () => {
             </div>
 
             <div className="glass-effect rounded-xl p-6">
-              <h3 className="font-display text-xl font-medium text-slate-100 mb-4">Créditos Finales</h3>
               <p className="text-slate-300/70 text-sm leading-relaxed font-light">
-                Una producción de <span className="text-slate-200">#GatoEncerrado</span>.
+                Universo concebido, escrito, diseñado y desarrollado por{' '}
+                <span className="font-semibold text-slate-100">Carlos A. Pérez H.</span>
                 <br />
-                Compañía asociada: <span className="text-slate-200">Incendio Producciones</span>.
+                Obra fundacional producida junto a{' '}
+                <span className="font-semibold text-slate-100">Incendio Producciones</span>.
                 <br />
-                Con el apoyo de <span className="text-slate-200">Isabel Ayuda para la Vida, A.C.</span>.
+                Con el apoyo de{' '}
+                <span className="font-semibold text-slate-100">Isabel Ayuda para la Vida, A.C.</span>
                 <br />
-                Agradecimientos a todas las personas que hicieron posible esta locura.
-              </p>
+               
+                             </p>
               <div className="mt-4 flex flex-wrap items-center gap-3">
                 <img
                   src="/assets/logoapp.webp"
@@ -471,6 +473,7 @@ const Contact = () => {
                 />
               </div>
             </div>
+
           </motion.div>
         </div>
       </div>

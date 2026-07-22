@@ -213,15 +213,15 @@ const teamData = {
 
 const teamEntries = Object.entries(teamData);
 const roleDisplayOrder = [
-  "Dramaturgia",
-  "Producción y asistencia",
-  "Alianza Social",
   "Dirección",
   "Elenco",
+  "Dramaturgia",
   "Diseño Escénico",
   "Realización Técnica",
   "Sonido y Tema Musical",
   "Vestuario y Caracterización",
+   "Producción y asistencia",
+  "Alianza Social",
 ];
 const mobileSingleButtonRoles = new Set([
   "Dramaturgia",
@@ -257,10 +257,8 @@ const Team = () => {
   );
   const [activeMobileMemberByRole, setActiveMobileMemberByRole] = useState({});
   const [activeDesktopRole, setActiveDesktopRole] = useState(null);
-  const [isDesktopDiscoveryPaused, setIsDesktopDiscoveryPaused] = useState(false);
   const [activeMemberLink, setActiveMemberLink] = useState(null);
   const [confirmExternalLink, setConfirmExternalLink] = useState(null);
-  const activeDesktopData = activeDesktopRole ? teamData[activeDesktopRole] : null;
   const mobileRoleRows = [];
   for (let index = 0; index < orderedRoleEntries.length; ) {
     const role = orderedRoleEntries[index][0];
@@ -432,11 +430,12 @@ const Team = () => {
 
   const renderRole = (data, roleKey, options = {}) => {
     const showDescription = options.showDescription !== false;
+    const useSpotlightLayout = isMobile || options.layout === "spotlight";
     const isElenco = roleKey === "Elenco";
     const isAllianceSocial = roleKey === "Alianza Social";
     const isSingleCreativeLeadRole =
       roleKey === "Dirección" || roleKey === "Dramaturgia" || isAllianceSocial;
-    const useRoundAvatars = isMobile;
+    const useRoundAvatars = useSpotlightLayout;
     const desktopCircleGroups = [
       "Diseño Escénico",
       "Sonido y Tema Musical",
@@ -447,7 +446,7 @@ const Team = () => {
     const useDesktopCircleGrid = !isMobile && desktopCircleGroups.includes(roleKey);
     const useElencoDesktopGrid = !isMobile && isElenco;
     if (Array.isArray(data?.members)) {
-      const isElencoClickable = isElenco && !isMobile;
+      const isElencoClickable = isElenco && !useSpotlightLayout;
       const membersWithId = data.members.map((member, idx) => ({
         member,
         id: member.id || `${member.name}-${idx}`,
@@ -464,7 +463,7 @@ const Team = () => {
         membersWithId[0]?.member ??
         null;
 
-      if (isMobile) {
+      if (useSpotlightLayout) {
         return (
           <div className="space-y-5">
             {showDescription && data.description ? (
@@ -477,8 +476,8 @@ const Team = () => {
 
             {membersWithId.length > 0 ? (
               <>
-                <div className="rounded-2xl border border-white/10 bg-black/25 p-4">
-                  <div className="flex flex-wrap items-center justify-center gap-3">
+                <div className="rounded-2xl border border-white/10 bg-black/25 p-4 sm:p-5">
+                  <div className="flex flex-wrap items-center justify-center gap-3 sm:gap-4">
                     {membersWithId.map(({ member, id: memberId }) => {
                       const isActive = memberId === activeMobileMemberId;
                       return (
@@ -486,7 +485,7 @@ const Team = () => {
                           key={memberId}
                           type="button"
                           onClick={() => setActiveMobileMember(roleKey, memberId)}
-                          className={`h-16 w-16 overflow-hidden rounded-full border transition ${
+                          className={`h-16 w-16 overflow-hidden rounded-full border transition sm:h-[4.25rem] sm:w-[4.25rem] ${
                             isActive
                               ? "border-purple-300/80 ring-2 ring-purple-300/35"
                               : "border-white/15 hover:border-purple-300/55"
@@ -509,7 +508,7 @@ const Team = () => {
                       );
                     })}
                   </div>
-                  <p className="mt-4 text-center text-[11px] uppercase tracking-[0.32em] text-purple-200/85">
+                  <p className="mt-4 text-center text-[11px] uppercase tracking-[0.32em] text-purple-200/85 sm:text-xs">
                     {roleKey}
                   </p>
                 </div>
@@ -520,9 +519,9 @@ const Team = () => {
                     initial={{ opacity: 0, y: 6 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.2, ease: "easeOut" }}
-                    className="glass-effect rounded-xl border border-white/10 bg-black/20 p-5 text-center"
+                    className="glass-effect rounded-xl border border-white/10 bg-black/20 p-5 text-center sm:p-7"
                   >
-                    <div className="mx-auto aspect-[16/10] w-full max-w-[340px] overflow-hidden rounded-md border border-white/15 bg-black/35 shadow-lg shadow-black/40">
+                    <div className="mx-auto aspect-[16/10] w-full max-w-[340px] overflow-hidden rounded-md border border-white/15 bg-black/35 shadow-lg shadow-black/40 sm:max-w-[520px]">
                       <img
                         className="h-full w-full object-cover object-top"
                         src={activeMobileMember.image}
@@ -542,7 +541,7 @@ const Team = () => {
                       </p>
                     ) : null}
                     {activeMobileMember.bio ? (
-                      <p className="mt-4 text-sm leading-relaxed text-slate-200/90">
+                      <p className="mx-auto mt-4 max-w-4xl text-sm leading-relaxed text-slate-200/90 sm:text-base">
                         {activeMobileMember.bio}
                       </p>
                     ) : null}
@@ -840,15 +839,15 @@ const Team = () => {
 
     if (isSingleCreativeLeadRole) {
       const singleLeadAlt = `${isAllianceSocial ? "Imagen" : "Retrato"} de ${data.name}`;
-      if (isMobile) {
+      if (useSpotlightLayout) {
         return (
           <motion.div
             layout
             transition={{ layout: { duration: 0.35, ease: [0.22, 1, 0.36, 1] } }}
-            className="glass-effect rounded-xl border border-white/10 bg-black/20 p-5 text-center"
+            className="glass-effect rounded-xl border border-white/10 bg-black/20 p-5 text-center sm:p-7"
           >
             {isAllianceSocial ? (
-              <div className="mx-auto aspect-[16/10] w-full max-w-[360px] overflow-hidden rounded-md border border-white/15 bg-black/35 shadow-lg shadow-black/40">
+              <div className="mx-auto aspect-[16/10] w-full max-w-[360px] overflow-hidden rounded-md border border-white/15 bg-black/35 shadow-lg shadow-black/40 sm:max-w-[560px]">
                 {renderProfileMedia({
                   src: data.image,
                   alt: singleLeadAlt,
@@ -869,7 +868,7 @@ const Team = () => {
             <p className="mt-1 text-xs uppercase tracking-[0.3em] text-purple-200/75">
               {roleKey}
             </p>
-            <p className="mt-4 text-sm leading-relaxed text-slate-200/90">
+            <p className="mx-auto mt-4 max-w-4xl text-sm leading-relaxed text-slate-200/90 sm:text-base">
               {data.bio}
             </p>
           </motion.div>
@@ -993,6 +992,29 @@ const Team = () => {
           });
         }}
         className={`ui-segmented__btn ${tintClass} !min-h-[44px] !w-full !justify-center !px-3 !py-2 !text-center !text-[11px] !font-semibold !uppercase !tracking-[0.18em] !leading-[1.2] ${
+          isOpen
+            ? "ui-segmented__btn--primary"
+            : "ui-segmented__btn--secondary"
+        }`}
+      >
+        {label}
+      </button>
+    );
+  };
+
+  const renderDesktopRoleSplitButton = (role, rowRoles) => {
+    const isOpen = activeDesktopRole === role;
+    const label = mobileRoleLabelOverrides[role] ?? role;
+    const tintClass = getRoleTintClass(role);
+    return (
+      <button
+        key={role}
+        type="button"
+        aria-expanded={isOpen}
+        onClick={() => {
+          setActiveDesktopRole((prev) => (prev === role ? null : role));
+        }}
+        className={`ui-segmented__btn ${tintClass} !min-h-[48px] !w-full !justify-center !px-4 !py-3 !text-center !text-[11px] !font-semibold !uppercase !tracking-[0.24em] !leading-[1.2] ${
           isOpen
             ? "ui-segmented__btn--primary"
             : "ui-segmented__btn--secondary"
@@ -1216,62 +1238,46 @@ const Team = () => {
             whileInView={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.2, ease: "easeOut" }}
             viewport={{ once: true }}
-            className="max-w-6xl mx-auto space-y-5"
+            className="max-w-5xl mx-auto space-y-3"
           >
-            <div
-              role="tablist"
-              aria-label="Áreas del equipo creativo"
-              className="flex flex-wrap items-stretch justify-center gap-2"
-              onMouseEnter={() => setIsDesktopDiscoveryPaused(true)}
-              onFocusCapture={() => setIsDesktopDiscoveryPaused(true)}
-              onClick={() => setIsDesktopDiscoveryPaused(true)}
-            >
-              {orderedRoleEntries.map(([role], index) => {
-                const isActive = role === activeDesktopRole;
-                const tintClass = getRoleTintClass(role);
-                const discoveryClass = !isActive && !isDesktopDiscoveryPaused
-                  ? "team-pill-discovery"
-                  : "";
-                return (
-                  <button
-                    key={role}
-                    id={`team-tab-${index}`}
-                    type="button"
-                    role="tab"
-                    aria-selected={isActive}
-                    aria-controls="team-desktop-panel"
-                    tabIndex={isActive ? 0 : -1}
-                    onClick={() => setActiveDesktopRole(role)}
-                    onKeyDown={(event) => handleDesktopRoleKeyDown(event, index)}
-                    className={`${tintClass} ${discoveryClass} ge-chip-filter ${
-                      isActive ? "ge-chip-filter--active" : "ge-chip-filter--idle"
+            <div aria-label="Áreas del equipo creativo" className="space-y-3">
+              {mobileRoleRows.map((rowRoles) => (
+                <div key={`desktop-role-row-${rowRoles.join("-")}`} className="space-y-3">
+                  <div
+                    className={`ui-segmented ui-segmented--rect !w-full !overflow-hidden ${
+                      rowRoles.length > 1
+                        ? "![grid-template-columns:1fr_1fr]"
+                        : "![grid-template-columns:1fr]"
                     }`}
-                    style={{ "--team-pill-discovery-delay": `${index * 0.54}s` }}
                   >
-                    {role}
-                  </button>
-                );
-              })}
-            </div>
+                    {rowRoles.map((role) => renderDesktopRoleSplitButton(role, rowRoles))}
+                  </div>
 
-            {activeDesktopRole && activeDesktopData && (
-              <div className={`glass-effect ${getRoleTintClass(activeDesktopRole)} rounded-2xl border border-white/10 bg-black/20 p-6`}>
-                <AnimatePresence mode="wait" initial={false}>
-                  <motion.div
-                    key={activeDesktopRole}
-                    id="team-desktop-panel"
-                    role="tabpanel"
-                    aria-labelledby={`team-tab-${orderedRoleKeys.indexOf(activeDesktopRole)}`}
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -8 }}
-                    transition={{ duration: 0.25, ease: "easeOut" }}
-                  >
-                    {renderRole(activeDesktopData, activeDesktopRole)}
-                  </motion.div>
-                </AnimatePresence>
-              </div>
-            )}
+                  <AnimatePresence initial={false}>
+                    {rowRoles.map((role) =>
+                      activeDesktopRole === role ? (
+                        <motion.div
+                          key={`desktop-role-panel-${role}`}
+                          id="team-desktop-panel"
+                          initial={{ opacity: 0, height: 0, y: -6 }}
+                          animate={{ opacity: 1, height: "auto", y: 0 }}
+                          exit={{ opacity: 0, height: 0, y: -6 }}
+                          transition={{ duration: 0.24, ease: "easeOut" }}
+                          className="overflow-hidden"
+                        >
+                          <div className={`glass-effect ${getRoleTintClass(role)} rounded-2xl border border-white/10 bg-black/20 p-6`}>
+                            {renderRole(teamData[role], role, {
+                              showDescription: false,
+                              layout: "spotlight",
+                            })}
+                          </div>
+                        </motion.div>
+                      ) : null
+                    )}
+                  </AnimatePresence>
+                </div>
+              ))}
+            </div>
           </motion.div>
         )}
       </div>
