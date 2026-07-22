@@ -1,6 +1,6 @@
 import React, { Suspense, useCallback, useEffect, useMemo, useState } from 'react';
 import { motion } from 'framer-motion';
-import { Compass } from 'lucide-react';
+import { Compass, Heart } from 'lucide-react';
 import { useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { safeSetItem } from '@/lib/safeStorage';
@@ -96,8 +96,12 @@ const MiniverseInlineSection = () => {
           About/Blog/Team/Contact/etc. entre secciones) marca el corte con
           Créditos ahora que el título ya no lleva el tratamiento de
           text-gradient que antes lo distinguía visualmente. */}
-      <section id="conoce-sistema" className="pt-2 pb-10 relative overflow-hidden">
-        <div className="section-divider mb-8" />
+      <section id="conoce-sistema" className="pt-0 pb-10 relative overflow-hidden">
+        <div className="miniverse-inline-threshold" aria-hidden="true">
+          <span className="miniverse-inline-threshold__mark">
+            <Heart size={26} strokeWidth={1.6} />
+          </span>
+        </div>
         <div
           className={`container relative z-10 mx-auto ${
             isMobileViewport ? 'px-2' : 'px-4'
@@ -142,7 +146,7 @@ const MiniverseInlineSection = () => {
               </p>
               <Button
                 onClick={handleOpen}
-                className="bg-gradient-to-r from-orange-500/90 via-rose-500/90 to-pink-500/90 hover:from-orange-400 hover:to-pink-400 text-white px-6 py-3 rounded-full font-semibold flex items-center gap-2 shadow-lg shadow-orange-500/40 transition mx-auto"
+                className="ge-mobile-cta-width bg-gradient-to-r from-orange-500/90 via-rose-500/90 to-pink-500/90 hover:from-orange-400 hover:to-pink-400 text-white px-6 py-3 rounded-full font-semibold flex items-center gap-2 shadow-lg shadow-orange-500/40 transition mx-auto"
               >
                 <Compass size={20} />
                 Modelo de negocio

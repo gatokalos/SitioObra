@@ -168,6 +168,33 @@ body {
   line-height: 1.05;
 }
 
+/* Fase Cero en desktop: gradiente propio con más contraste (highlight nítido
+   arriba, cae rápido a casi negro) en vez del gradiente suave de la base
+   .hero-title — así se lee como faceta de obsidiana (como el # 3D: solo el
+   borde superior atrapa luz, el resto queda oscuro), no como texto gris
+   plano. Comparte la base .hero-title con la escena activada, pero solo
+   esta clase --pre-scene la sobreescribe; la activada no la lleva, así que
+   queda intacta. */
+@media (min-width: 769px) {
+  .hero-title--pre-scene {
+    background: linear-gradient(
+      180deg,
+      rgba(120, 124, 138, 0.32) 0%,
+      rgba(31, 33, 40, 0.78) 34%,
+      rgba(8, 9, 12, 0.96) 72%,
+      #030306 100%
+    );
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    color: transparent;
+    -webkit-text-stroke: 0.55px rgba(226, 232, 240, 0.11);
+    text-shadow:
+      0 0 5px rgba(226, 232, 240, 0.06),
+      0 0 18px rgba(88, 72, 126, 0.08);
+  }
+}
+
 @media (max-width: 768px) {
   .hero-title {
     position: relative;
@@ -234,10 +261,6 @@ body {
     z-index: 1;
   }
 
-  #hero .hero-central-spacer--pwa-choice {
-    height: 3rem;
-    margin-top: 1.25rem;
-  }
 }
 
 /* Cursor parpadeante junto a "Encuentra al gato" — invita a la acción sin
@@ -316,6 +339,23 @@ body {
   50% { opacity: calc(var(--star-opacity, 1) * 0.32); }
 }
 
+/* Puntitos decorativos del sheet de instrucciones PWA — versión mínima del
+   starfield del Hero, sin las variables de glow (no hace falta ese detalle
+   en un elemento tan chico). */
+.pwa-instructions-star {
+  position: absolute;
+  width: 2px;
+  height: 2px;
+  border-radius: 50%;
+  background: rgba(226, 232, 240, 0.85);
+  animation: pwa-instructions-star-twinkle 4.5s ease-in-out infinite;
+}
+
+@keyframes pwa-instructions-star-twinkle {
+  0%, 100% { opacity: 0.15; }
+  50% { opacity: 0.9; }
+}
+
 /* Estrella fugaz — esporádica: la mayor parte del ciclo está invisible en
    reposo, y solo cruza brevemente cerca del final. */
 .hero-shooting-star {
@@ -385,39 +425,6 @@ body {
     animation: none;
     opacity: 0;
   }
-}
-
-.hero-pwa-choice {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.7rem;
-  font-family: "Vox Round", "Inter", sans-serif;
-  font-size: 0.68rem;
-  font-weight: 600;
-  letter-spacing: 0.34em;
-  line-height: 1;
-  text-transform: uppercase;
-  color: rgba(226, 232, 240, 0.56);
-  text-shadow: 0 0 14px rgba(196, 181, 253, 0.2);
-}
-
-.hero-pwa-choice button {
-  color: inherit;
-  transition: color 180ms ease, text-shadow 180ms ease, opacity 180ms ease;
-}
-
-.hero-pwa-choice button:hover,
-.hero-pwa-choice button:focus-visible {
-  color: rgba(255, 255, 255, 0.9);
-  text-shadow: 0 0 18px rgba(196, 181, 253, 0.45);
-  outline: none;
-}
-
-.hero-pwa-choice span {
-  color: rgba(148, 163, 184, 0.34);
 }
 
 .hero-scroll-cue {
@@ -1029,6 +1036,60 @@ body {
   background: linear-gradient(90deg, transparent, hsl(290 60% 40% / 0.2), transparent); /* Divider with primary hue */
   height: 1px;
   width: 100%;
+}
+
+.ge-mobile-cta-width {
+  justify-content: center;
+}
+
+@media (max-width: 639px) {
+  .ge-mobile-cta-width {
+    width: min(100%, 23rem) !important;
+    flex: 0 1 auto !important;
+    align-self: center;
+  }
+}
+
+.miniverse-inline-threshold {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: clamp(7rem, 14vw, 12rem);
+  margin-bottom: clamp(1rem, 3vw, 2.5rem);
+  overflow: hidden;
+  pointer-events: none;
+  background:
+    radial-gradient(ellipse at 50% 44%,
+      rgba(168, 85, 247, 0.16) 0%,
+      rgba(217, 31, 139, 0.09) 28%,
+      rgba(15, 23, 42, 0.05) 50%,
+      rgba(0, 0, 0, 0) 72%),
+    linear-gradient(180deg,
+      rgba(0, 0, 0, 0) 0%,
+      rgba(17, 24, 39, 0.32) 42%,
+      rgba(0, 0, 0, 0) 100%);
+}
+
+
+.miniverse-inline-threshold__mark {
+  position: relative;
+  z-index: 1;
+  display: inline-flex;
+  width: 4.1rem;
+  height: 4.1rem;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(196, 181, 253, 0.28);
+  border-radius: 1.25rem;
+  color: rgba(226, 232, 240, 0.78);
+  background:
+    radial-gradient(circle at 50% 35%, rgba(168, 85, 247, 0.18), rgba(15, 23, 42, 0.28) 58%, rgba(0, 0, 0, 0.44)),
+    linear-gradient(180deg, rgba(30, 41, 59, 0.52), rgba(2, 6, 23, 0.48));
+  box-shadow:
+    0 0 0 1px rgba(255, 255, 255, 0.04) inset,
+    0 18px 48px rgba(0, 0, 0, 0.42),
+    0 0 36px rgba(168, 85, 247, 0.16);
 }
 
 .hover-glow {

@@ -384,7 +384,7 @@ const Contact = () => {
                   <Button
                     type="submit"
                     disabled={status === 'loading'}
-                    className="ge-chip-action ge-chip-action--primary flex-1"
+                    className="ge-chip-action ge-mobile-cta-width ge-chip-action--primary flex-1"
                   >
                     <Send size={20} />
                     {status === 'loading' ? 'Enviando…' : 'Enviar'}
@@ -393,7 +393,7 @@ const Contact = () => {
                     type="button"
                     onClick={handleOpenLoginOverlay}
                     disabled={isLoggedIn}
-                    className={`ge-chip-action flex-1 lg:flex-none ${
+                    className={`ge-chip-action ge-mobile-cta-width flex-1 lg:flex-none ${
                       isLoggedIn ? 'ge-chip-action--active' : 'ge-chip-action--secondary'
                     }`}
                   >

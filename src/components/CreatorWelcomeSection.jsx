@@ -73,7 +73,7 @@ const CreatorWelcomeSection = ({ hasEnteredUniverse = false }) => {
             <Button
               type="button"
               onClick={handleEnter}
-              className="ge-chip-action ge-chip-action--primary mx-auto"
+              className="ge-chip-action ge-mobile-cta-width ge-chip-action--primary mx-auto"
             >
               {hasEnteredUniverse ? 'Reposición' : '¿Comenzamos?'}
             </Button>

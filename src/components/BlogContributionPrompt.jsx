@@ -128,7 +128,7 @@ se queda moviéndose adentro.`}
     <Button
       type="button"
       onClick={() => onAskQuestion?.()}
-      className="ge-chip-action ge-chip-action--primary mx-auto"
+      className="ge-chip-action ge-mobile-cta-width ge-chip-action--primary mx-auto"
     >
       Reflexiona conmigo
     </Button>

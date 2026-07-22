@@ -762,7 +762,7 @@ export const ProvocaSection = () => {
                       : () => setIsVoiceInputOpen((prev) => !prev)
                   }
                   disabled={isShareButtonInSendMode && isSendVoiceDisabled}
-                  className={`ge-chip-action w-full sm:w-auto gap-2 ${
+                  className={`ge-chip-action ge-mobile-cta-width w-full sm:w-auto gap-2 ${
                     isVoiceInputOpen ? 'ge-chip-action--active' : 'ge-chip-action--primary'
                   }`}
                 >

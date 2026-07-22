@@ -55,7 +55,7 @@ const Footer = ({
                 #GatoEncerrado
               </span>
               <p className="text-slate-400 leading-relaxed mb-6 max-w-md font-light">
-                Una exploración transmedia donde escena, tecnología y narrativa convergen para transformar al espectador en participante activo, mientras cada forma de la obra revela una perspectiva distinta de la misma herida emocional.
+                Una obra transmedia desplegada en nueve formas creativas. Quien entra deja de ser solo observador: participa y aborda, desde un lugar propio, una herida emocional compartida.
               </p>
               <div className="flex gap-2">
                 <Button variant="ghost" size="icon" onClick={() => handleSocialClick(instagramUrl)} className="text-slate-400 hover:text-white hover:bg-white/10"><Instagram size={20} /></Button>
@@ -110,9 +110,9 @@ const Footer = ({
             >
               <span className="font-semibold text-slate-200 mb-4 block">Contacto</span>
               <ul className="space-y-3 text-sm font-light">
-                <li className="text-slate-400">contacto@gatoencerrado.ai</li>
+                <li className="text-slate-400">contacto@gatoencerrado.org</li>
                 <li className="text-slate-400">+52 331 532 7985</li>
-                <li className="text-slate-400">Universo #GatoEncerrado<br />Tijuana, México</li>
+                <li className="text-slate-400">Carlos A. Pérez H.<br />Tijuana, México</li>
               </ul>
             </motion.div>
           </div>
@@ -131,7 +131,7 @@ const Footer = ({
           <div className="flex items-center gap-2 text-slate-500 text-sm">
             <span>Hecho con</span>
             <Heart size={16} className="text-red-500/70" />
-            <span>para las artes vivas</span>
+            <span>para la comunidad</span>
           </div>
         </motion.div>
       </div>

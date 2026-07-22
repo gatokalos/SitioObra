@@ -212,13 +212,13 @@ const AlianzaSocial = () => {
                 </h3>
                 <div className="space-y-4 text-slate-300/80 leading-relaxed font-light">
                   <p>
-                    <span className="font-semibold text-purple-200">La taquilla sostiene a la obra de teatro. Tu huella sostiene a #GatoEncerrado.</span>{' '}
+                    <span className="font-semibold text-purple-200">Tu huella sostiene al universo #GatoEncerrado.</span>{' '}
                     Cada huella activada recorre tres tramos que operamos en alianza con <strong>Isabel Ayuda para la Vida, A.C.,</strong>{' '}
                     cuya confianza hizo posible el inicio de este proyecto.
                   </p>
                   <p className="text-lg font-medium text-white">Un modelo en cascada: primero se sostiene la causa social, y cualquier excedente se destina a nueva obra ✨</p>
                 </div>
-                <details ref={detailsRef} open={!isMobileViewport} className="group rounded-2xl border border-emerald-300/25 bg-emerald-500/10 px-5 py-4">
+                <details ref={detailsRef} className="group rounded-2xl border border-emerald-300/25 bg-emerald-500/10 px-5 py-4">
                   <summary className="flex cursor-pointer list-none items-center justify-between gap-3">
                     <span className="flex items-center gap-3">
                       <PawPrint size={18} className="text-emerald-200" />

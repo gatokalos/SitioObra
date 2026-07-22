@@ -146,7 +146,7 @@ const NextShow = () => {
               <div className="mt-10 flex flex-row flex-wrap items-center justify-center gap-4">
                 <Button
                   onClick={handlePrimaryAction}
-                  className="bg-gradient-to-r from-orange-500/90 via-rose-500/90 to-pink-500/90 hover:from-orange-400 hover:to-pink-400 text-white px-6 py-3 rounded-full font-semibold flex items-center gap-2 shadow-lg shadow-orange-500/40 transition"
+                  className="ge-mobile-cta-width bg-gradient-to-r from-orange-500/90 via-rose-500/90 to-pink-500/90 hover:from-orange-400 hover:to-pink-400 text-white px-6 py-3 rounded-full font-semibold flex items-center gap-2 shadow-lg shadow-orange-500/40 transition"
                 >
                   <DoorOpen size={20} />
                   Entra a ver
@@ -154,7 +154,7 @@ const NextShow = () => {
                 <Button
                   variant="outline"
                   onClick={handleOpenSystemPreview}
-                  className="ge-chip-action ge-chip-action--secondary"
+                  className="ge-chip-action ge-mobile-cta-width ge-chip-action--secondary"
                 >
                   <ShoppingBag size={18} />
                   Antes de irte
