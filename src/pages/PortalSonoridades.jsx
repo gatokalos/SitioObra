@@ -67,7 +67,7 @@ const SONORIDADES_EXPLORATION = [
 const SONORIDADES_CLOSING = ['Sueño en tres capas', 'Cada combinacion abre un sueño distinto.', 'Entra y crea el tuyo.'];
 const SONORIDADES_NOTA_AUTORAL = {
   title: '#LoQueSuenaAdentro',
-  verse: 'Abri los ojos.\nLa resonancia era antigua...\ncomo el silencio.',
+  verse: 'Abri los ojos.\nLa vibración era antigua\n...como el silencio.',
 };
 const SONORIDADES_TILE = {
   gradient: 'linear-gradient(135deg, rgba(18,29,62,0.95), rgba(32,65,103,0.85), rgba(70,91,146,0.65))',
@@ -123,7 +123,7 @@ const PortalSonoridades = () => {
   const { user } = useAuth();
   usePortalTracking('sonoridades');
   const { question: vitranaQuestion } = useVitranaQuestion('sonoridades');
-  const titleDisplay = useScrambleText('El eco');
+  const titleDisplay = useScrambleText('La vibración');
   const isAuthenticated = Boolean(user);
   const [showLoginOverlay, setShowLoginOverlay] = useState(false);
   const [showLoginHint, setShowLoginHint] = useState(false);

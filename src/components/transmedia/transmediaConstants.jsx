@@ -911,7 +911,7 @@ iaProfile: {
     },
   },
   miniversoSonoro: {
-    label: 'El eco',
+    label: 'La vibración',
     type: 'audio-dream',
     intro:
       <p>Sonoridades reúne la música original y el diseño sonoro creados para la obra, junto con piezas que expanden su universo más allá del escenario. <br/><br/>En la puesta, el sonido no acompañó la historia: la transformó.
@@ -972,7 +972,7 @@ Este espacio permite recorrer esas composiciones, explorar sus capas y descubrir
       },
     ],
     cartaTitle: '#LoQueSuenaAdentro',
-    notaAutoral: 'Abrí los ojos.\nLa resonancia era antigua...\ncomo el silencio.',
+    notaAutoral: 'Abrí los ojos.\nLa vibración era antigua\n...como el silencio.',
     iaProfile: {
       type: 'GPT-4o mini para poemas móviles + curaduría sonora.',
       interaction: 'Selección de poema y mezcla guiada.',
@@ -1425,7 +1425,7 @@ export const formats = [
   },
   {
     id: 'miniversoSonoro',
-    title: 'El eco',
+    title: 'La vibración',
     icon: Music,
     iconClass: 'text-cyan-300',
 

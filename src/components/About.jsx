@@ -1,6 +1,6 @@
 import React, { useState, useCallback, useEffect, useRef, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Film, Headphones, Quote, Send, HeartHandshake, RefreshCw, Heart, Play, Camera, Drama } from 'lucide-react';
+import { Users, Headphones, Quote, Send, HeartHandshake, RefreshCw, Heart, Play, Camera, Drama } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ToastAction } from '@/components/ui/toast';
 import { toast } from '@/components/ui/use-toast';
@@ -1225,7 +1225,7 @@ const About = () => {
                   aria-controls="team"
                   className="ge-chip-action ge-chip-action--primary"
                 >
-                  <Film size={20} />
+                  <Users size={20} />
                   Créditos de la función
                 </Button>
                 <Button

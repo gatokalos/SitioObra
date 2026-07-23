@@ -8,7 +8,8 @@ import { toast } from '@/components/ui/use-toast';
 import { ToastAction } from '@/components/ui/toast';
 import { supabase } from '@/lib/supabaseClient';
 import { useAuth } from '@/contexts/SupabaseAuthContext';
-import { safeSetItem } from '@/lib/safeStorage';
+import { safeGetItem, safeSetItem } from '@/lib/safeStorage';
+import { ORACULO_RECOMMENDED_SHOWCASE_KEY } from '@/components/transmedia/transmediaConstants';
 import { getTopShowcaseLikes } from '@/services/showcaseLikeService';
 import { isSafariBrowser } from '@/lib/browser';
 import { resolvePortalRoute } from '@/lib/miniversePortalRegistry';
@@ -228,15 +229,15 @@ const MINIVERSE_DISCOVER_INTRO_MESH =
 const MINIVERSE_PORTAL_TITLE_PATTERN = /^\d+\s*-\s*/;
 const VISITED_MINIVERSES_STORAGE_KEY = 'gatoencerrado:miniverse-visited';
 const CARD_RESONANCE_KEY = {
-  drama:      'obra',
-  literatura: 'literatura',
-  taza:       'artesanias',
-  graficos:   'grafico',
-  cine:       'cine',
-  sonoro:     'sonoridades',
-  movimiento: 'movimiento',
-  apps:       'juegos',
-  oraculo:    'oraculo',
+  drama:      'El drama',
+  literatura: 'La palabra',
+  taza:       'El objeto',
+  graficos:   'La apariencia',
+  cine:       'El lente',
+  sonoro:     'La vibración',
+  movimiento: 'El cuerpo',
+  apps:       'La ventura',
+  oraculo:    'El reflejo',
 };
 const getPortalLabelFromTitle = (title = '') => {
   const normalizedTitle = String(title || '').trim();
@@ -264,7 +265,7 @@ export const MINIVERSE_CARDS = [
   {
     id: 'drama',
     formatId: 'miniversos',
-    appName: 'Teatro',
+    appName: 'El drama',
     icon: Drama,
     thumbLabel: 'D',
     thumbGradient: 'from-purple-400/80 via-fuchsia-500/70 to-rose-500/60',
@@ -284,7 +285,7 @@ export const MINIVERSE_CARDS = [
   {
     id: 'literatura',
     formatId: 'miniversoNovela',
-    appName: 'Literatura',
+    appName: 'La palabra',
     icon: BookOpen,
     thumbLabel: 'L',
     thumbGradient: 'from-emerald-400/80 via-teal-500/70 to-cyan-500/60',
@@ -303,7 +304,7 @@ export const MINIVERSE_CARDS = [
   {
     id: 'taza',
     formatId: 'lataza',
-    appName: 'Artesanías',
+    appName: 'El objeto',
     icon: Coffee,
     thumbLabel: 'A',
     thumbGradient: 'from-amber-400/80 via-orange-500/70 to-rose-500/60',
@@ -321,7 +322,7 @@ export const MINIVERSE_CARDS = [
   {
     id: 'graficos',
     formatId: 'miniversoGrafico',
-    appName: 'Gráficos',
+    appName: 'La apariencia',
     icon: Palette,
     thumbLabel: 'G',
     thumbGradient: 'from-fuchsia-400/80 via-purple-500/70 to-indigo-500/60',
@@ -339,7 +340,7 @@ export const MINIVERSE_CARDS = [
   {
     id: 'cine',
     formatId: 'copycats',
-    appName: 'Cine',
+    appName: 'El lente',
     icon: Film,
     thumbGradient: 'from-rose-500/80 via-red-500/70 to-fuchsia-500/60',
     glassTint: '352 70% 60%',
@@ -357,25 +358,25 @@ export const MINIVERSE_CARDS = [
   {
     id: 'sonoro',
     formatId: 'miniversoSonoro',
-    appName: 'Sonoridades',
+    appName: 'La vibración',
     icon: Music,
     thumbLabel: 'S',
     thumbGradient: 'from-sky-400/80 via-cyan-500/70 to-indigo-500/60',
     glassTint: '206 80% 58%',
-    title: '06 - El eco',
+    title: '06 - La vibración',
     titleShort: '🎧 "La memoria" (30 seg)',
     description: 'Entonces entendí: todo esto había empezado antes de mí.',
     videoUrl: null,
     narrativeVideoUrl: null,
     narrativeVideoUrlDesktop: null,
-    narrativeCtaLabel: 'Seguir el eco',
+    narrativeCtaLabel: 'Seguir la vibración',
     ctaVerb: 'Escucha',
     action: 'Explora',
   },
   {
     id: 'movimiento',
     formatId: 'miniversoMovimiento',
-    appName: 'Movimiento',
+    appName: 'El cuerpo',
     icon: MapIcon,
     thumbLabel: 'M',
     thumbGradient: 'from-sky-400/80 via-emerald-500/70 to-cyan-500/60',
@@ -393,7 +394,7 @@ export const MINIVERSE_CARDS = [
   {
     id: 'apps',
     formatId: 'apps',
-    appName: 'Juegos',
+    appName: 'La ventura',
     icon: Dice5,
     thumbLabel: 'J',
     thumbGradient: 'from-lime-400/80 via-emerald-500/70 to-teal-500/60',
@@ -411,7 +412,7 @@ export const MINIVERSE_CARDS = [
   {
     id: 'oraculo',
     formatId: 'oraculo',
-    appName: 'Oráculo',
+    appName: 'El reflejo',
     icon: Brain,
     thumbLabel: 'O',
     thumbGradient: 'from-indigo-400/80 via-violet-500/70 to-purple-500/60',
@@ -955,9 +956,9 @@ const MiniverseModal = ({
     }
     if (activeTab === 'experiences') {
       return {
-        lead: 'Aquí las nueve formas de la obra en un formato más familiar:',
+        lead: 'Aquí los nueve miniversos en un contexto más familiar:',
         highlight:
-          'un ecosistema listo para tocar, intervenir y volver cuando quieras.',
+          'un entorno digital listo para tocar, intervenir y volver cuando quieras.',
           continuation: newFunction()
       };
     }
@@ -968,7 +969,7 @@ const MiniverseModal = ({
     };
 
     function newFunction() {
-      return 'Así podrás acceder a los procesos que existen detrás del universo.';
+      return 'Cada ícono revela el artefacto transmedia que habita esa forma de la obra.';
     }
   }, [activeTab]);
   const showcaseMiniverses = useMemo(
@@ -1254,7 +1255,12 @@ const MiniverseModal = ({
       if (card.isUpcoming) {
         return;
       }
-      if (useDeviceDemo) {
+      // El miniverso recomendado (el único que un invitado puede abrir y
+      // completar libre de cualquier salvaguarda — ver handleAnswerResonance
+      // en los 9 Portal*.jsx/Transmedia.jsx) queda exento de este aviso: debe
+      // seguir abriendo de verdad, con o sin demo de dispositivo listo.
+      const isRecommendedForGuest = safeGetItem(ORACULO_RECOMMENDED_SHOWCASE_KEY) === card.formatId;
+      if (useDeviceDemo && !isRecommendedForGuest) {
         const demoUrl = DEMO_URL_BY_FORMAT_ID[card.formatId];
         if (demoUrl) {
           setDeviceDemoUrl(demoUrl);

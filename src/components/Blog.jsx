@@ -1210,7 +1210,7 @@ const Blog = ({ posts = [], isLoading = false, error = null, showBuscador = fals
                       onClick={() => setShowAllPosts(true)}
                       className="ge-chip-action ge-chip-action--secondary ge-chip-action--compact"
                     >
-                      Mostrar siguientes textos
+                      Mostrar el resto de los textos
                     </Button>
                   </div>
                 ) : null}

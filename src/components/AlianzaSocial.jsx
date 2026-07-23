@@ -216,7 +216,7 @@ const AlianzaSocial = () => {
                     Cada huella activada recorre tres tramos que operamos en alianza con <strong>Isabel Ayuda para la Vida, A.C.,</strong>{' '}
                     cuya confianza hizo posible el inicio de este proyecto.
                   </p>
-                  <p className="text-lg font-medium text-white">Un modelo en cascada: primero se sostiene la causa social, y cualquier excedente se destina a nueva obra ✨</p>
+                  <p className="text-lg font-medium text-white">Primero se sostiene la causa social, y cualquier excedente se destina a nueva obra: un modelo en cascada ✨</p>
                 </div>
                 <details ref={detailsRef} className="group rounded-2xl border border-emerald-300/25 bg-emerald-500/10 px-5 py-4">
                   <summary className="flex cursor-pointer list-none items-center justify-between gap-3">

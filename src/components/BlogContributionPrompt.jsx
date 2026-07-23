@@ -107,23 +107,26 @@ const BlogContributionPrompt = ({ onAskQuestion = null }) => {
   </h3>
 
   <p className="text-slate-300/80 leading-relaxed mb-8 max-w-2xl mx-auto font-light text-center">
+    <span className="block mt-8">
+    <em>¿Qué obra ocurre en ti?</em>
+  </span>
   <span className="whitespace-pre-line">
-    {`¿Qué obra ocurre en ti?
-Tal vez no lo sepas todavía.
+    {`Tal vez no lo sepas todavía.
 
 Y no pasa nada.
 
-No necesitas entender dónde estás.
-Solo notar si algo de lo que miras
+Quizá observes una obra que no tiene un principio ni un final. 
+
+Solo nota si algo de lo que miras
 se queda moviéndose adentro.`}
   </span>
 
   <span className="block mt-8">
-    #GatoEncerrado <em>abre</em> más de una ventana…
+    #GatoEncerrado <strong>abre</strong> más de una ventana…
   </span>
 
-  <span className="block mt-10 text-sm text-slate-300/70 italic">
-    (Y a veces, la confusión es lo que nos muestra su lado más{" "}
+  <span className="block mt-10 text-sm text-slate-100/50 italic">
+    (Y a veces, la confusión es lo que nos muestra su forma más{" "}
     <strong>silvestre</strong>.)
   </span>
 </p>

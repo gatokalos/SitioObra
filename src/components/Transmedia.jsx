@@ -207,15 +207,15 @@ const SHOWCASE_CARD_GRADIENT = {
 
 const VITRANA_QUESTION_BY_SHOWCASE = {
   miniversos:          '¿Qué significa para ti habitar una emoción delante de otros?',
-  miniversoSonoro:     '¿Por qué algunos sonidos duran más que las imágenes?',
+  miniversoSonoro:     '¿Qué sigue sonando en ti cuando ya no queda nada que mirar?',
   miniversoGrafico:    '¿Qué te ocurre cuando alguien más interpreta tu apariencia?',
-  miniversoMovimiento: '¿Qué cosas sabe tu cuerpo antes que tu pensamiento?',
-  apps:                '¿Qué cambia en ti cuando una historia depende de tus decisiones?',
-  copycats:            '¿Qué significa para ti verse fallar desde afuera?',
+  miniversoMovimiento: '¿Qué sabe tu cuerpo antes de que el pensamiento alcance a nombrarlo?',
+  apps:                '¿Qué cambia en ti cuando una decisión tuya cambia el rumbo de una historia?',
+  copycats:            '¿Qué descubres de ti al verte fallar desde afuera?',
   lataza:              '¿Cuándo un objeto deja de ser para ti solo un objeto?',
   miniversoNovela:     '¿Qué cambia en ti cuando una experiencia personal se convierte en relato?',
-  cine:                '¿Qué significa para ti verse fallar desde afuera?',
-  oraculo:             '¿Cuándo una experiencia deja de sentirse individual?',
+  cine:                '¿Qué descubres de ti al verte fallar desde afuera?',
+  oraculo:             '¿Cuándo reconoces en otros una experiencia que creías solo tuya?',
 };
 
 const Transmedia = ({ allianceOnlyMode = false }) => {
