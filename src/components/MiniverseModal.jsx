@@ -13,6 +13,7 @@ import { getTopShowcaseLikes } from '@/services/showcaseLikeService';
 import { isSafariBrowser } from '@/lib/browser';
 import { resolvePortalRoute } from '@/lib/miniversePortalRegistry';
 import { createPortalLaunchState } from '@/lib/portalNavigation';
+import TransmediaDeviceOverlay from '@/components/TransmediaDeviceOverlay';
 import HuellaEmbeddedCheckout from '@/components/HuellaEmbeddedCheckout';
 import { createEmbeddedSubscription, startCheckoutFallback } from '@/lib/huellaCheckout';
 import {
@@ -514,6 +515,13 @@ export const IncendioVideoPlaceholder = ({ compact = false }) => (
   </div>
 );
 
+// Dominios reales de "dispositivos transmedia" por miniverso — ver
+// handleSelectCard. Solo Juegos existe hoy; el resto se agrega aquí según se
+// vayan publicando (nunca se adivina un dominio, se agrega cuando exista).
+const DEMO_URL_BY_FORMAT_ID = {
+  apps: 'https://juegos.miniversos.ai/',
+};
+
 const MiniverseModal = ({
   open,
   onClose,
@@ -522,7 +530,13 @@ const MiniverseModal = ({
   shelved = false,
   stayOpenOnSelect = false,
   displayMode = 'modal',
+  // "Antes de irte" es de descubrimiento: todavía no debe abrir portales
+  // reales ni el panel de Transmedia (eso permite generar GAT antes de
+  // tiempo) — en su lugar, muestra el demo del dispositivo transmedia si ya
+  // existe, o un aviso de "todavía no" si no.
+  useDeviceDemo = false,
 }) => {
+  const [deviceDemoUrl, setDeviceDemoUrl] = useState(null);
   const navigate = useNavigate();
   const location = useLocation();
   const { user } = useAuth();
@@ -1240,6 +1254,15 @@ const MiniverseModal = ({
       if (card.isUpcoming) {
         return;
       }
+      if (useDeviceDemo) {
+        const demoUrl = DEMO_URL_BY_FORMAT_ID[card.formatId];
+        if (demoUrl) {
+          setDeviceDemoUrl(demoUrl);
+        } else {
+          toast({ description: 'Este dispositivo transmedia todavía se está diseñando. Vuelve pronto.' });
+        }
+        return;
+      }
       if (!visitedMiniverses[card.id]) {
         playKnockSound();
       }
@@ -1292,6 +1315,7 @@ const MiniverseModal = ({
       setSelectedMiniverseId,
       stayOpenOnSelect,
       trackAppClick,
+      useDeviceDemo,
       visitedMiniverses,
     ]
   );
@@ -3129,6 +3153,9 @@ const MiniverseModal = ({
       {bienvenidaIframeOverlay}
       {causeSiteOverlay}
       {showcaseNarrativeOverlay}
+      {useDeviceDemo ? (
+        <TransmediaDeviceOverlay url={deviceDemoUrl} onClose={() => setDeviceDemoUrl(null)} />
+      ) : null}
     </>
   );
 };

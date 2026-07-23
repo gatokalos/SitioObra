@@ -1215,7 +1215,7 @@ const About = () => {
                 Chivis no está solo
               </h3>
               <p className="text-slate-300/80 leading-relaxed mb-8 font-light">
-                Silvestre <i>(el Chivis)</i> transforma su mente <strong>en escenario</strong>. Aquí, la verdad y la fantasía ya no compiten. Y tú —espectador, visitante, cómplice— puedes entrar sin tocar la puerta, porque quizás… tú también tienes <i>un gato encerrado</i> en el pecho.
+                Silvestre, <i>el Chivis</i>, transforma su mente <strong>en escenario</strong>. Aquí, la verdad y la fantasía ya no compiten. Y tú —espectador, visitante, cómplice— puedes entrar sin tocar la puerta, porque quizás… tú también tienes <i>un gato encerrado</i> en el pecho.
               </p>
               <div className="flex flex-col lg:flex-row gap-4">
                 <Button

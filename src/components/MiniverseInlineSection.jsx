@@ -55,6 +55,13 @@ const MiniverseInlineSection = () => {
   const handleSelectMiniverse = useCallback((formatId) => {
     if (typeof window === 'undefined' || !formatId) return;
     safeSetItem(PENDING_MINIVERSE_SELECTION_KEY, formatId);
+    // "Antes de irte" es de descubrimiento, no de autenticación (ver comentario
+    // arriba) — pero el destino real de select-miniverse-format es un listener
+    // dentro de <Transmedia />, que App.jsx solo monta si canAccessTransmedia es
+    // true. Sin esto, un usuario que nunca pasó por el bridge dispara el evento
+    // al vacío: nadie lo escucha y no pasa nada. Se pide el desbloqueo aquí para
+    // que Transmedia monte a tiempo de capturar uno de los reintentos de abajo.
+    window.dispatchEvent(new CustomEvent('gatoencerrado:request-transmedia-unlock'));
     const emitSelection = () => {
       window.dispatchEvent(
         new CustomEvent('gatoencerrado:select-miniverse-format', { detail: { formatId } }),
@@ -124,6 +131,7 @@ const MiniverseInlineSection = () => {
                     onSelectMiniverse={handleSelectMiniverse}
                     stayOpenOnSelect
                     displayMode="inline"
+                    useDeviceDemo
                   />
                 </Suspense>
               </div>

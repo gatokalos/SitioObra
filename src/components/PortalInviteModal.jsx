@@ -107,7 +107,7 @@ const PortalInviteModal = ({ open, onClose, vitranaId }) => {
 
             {question ? (
               <p
-                className="mb-5 text-center font-display leading-snug text-amber-300/90 drop-shadow-[0_0_32px_rgba(251,191,36,0.45)]"
+                className="mb-5 text-center font-display leading-snug question-voice"
                 style={{ fontSize: 'clamp(0.9rem, 3.5vw, 1.05rem)' }}
               >
                 {question}

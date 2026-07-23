@@ -228,7 +228,7 @@ function HolograficoPanel({ centerKey, homeKey, onStartBitacora, onOpenVideo }) 
           <div className="flex flex-col gap-5">
             <div>
               <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Formas de habitar</p>
-              <h2 className="font-display text-2xl leading-snug text-amber-300 mt-1">Resonancia colectiva</h2>
+              <h2 className="font-display text-2xl leading-snug question-heading-voice mt-1">Resonancia colectiva</h2>
             </div>
             <VitranaQuestionReveal
               question={entry.q}

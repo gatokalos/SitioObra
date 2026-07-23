@@ -872,7 +872,7 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
                         </div>
                       ) : (
                         <p
-                          className="font-display leading-snug text-amber-300/90 drop-shadow-[0_0_32px_rgba(251,191,36,0.45)]"
+                          className="font-display leading-snug question-voice"
                           style={{ fontSize: 'clamp(1.3rem, 2.3vw, 2.1rem)' }}
                         >
                           {convQuestion}
@@ -882,7 +882,7 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
 
                     <div
                       aria-hidden="true"
-                      className="hidden lg:block mx-8 mb-5 h-px bg-gradient-to-r from-transparent via-amber-400/35 to-transparent"
+                      className="hidden lg:block mx-8 mb-5 h-px question-divider-voice"
                     />
 
                     <div className="px-5 pb-[max(1.25rem,env(safe-area-inset-bottom))] sm:px-6 sm:pb-5 lg:pb-10 lg:px-10">
@@ -899,7 +899,7 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
                                 <p className="text-sm text-slate-400/70">Procesando…</p>
                               </div>
                             ) : (
-                              <h3 className="font-display text-2xl leading-tight tracking-tight text-amber-300">
+                              <h3 className="font-display text-2xl leading-tight tracking-tight question-voice">
                                 {convQuestion}
                               </h3>
                             )}
@@ -994,7 +994,7 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
                         Cuaderno holográfico
                       </p>
                       <p
-                        className="font-display leading-snug text-amber-300/90 drop-shadow-[0_0_32px_rgba(251,191,36,0.45)]"
+                        className="font-display leading-snug question-voice"
                         style={{ fontSize: 'clamp(1.3rem, 2.3vw, 2.1rem)' }}
                       >
                         {bitacoraStep === 'p1' && '¿Hay algo de esta experiencia que haya regresado por su cuenta?'}
@@ -1004,7 +1004,7 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
                       </p>
                     </div>
 
-                    <div aria-hidden="true" className="hidden lg:block mx-8 mb-5 h-px bg-gradient-to-r from-transparent via-amber-400/35 to-transparent" />
+                    <div aria-hidden="true" className="hidden lg:block mx-8 mb-5 h-px question-divider-voice" />
 
                     <div className="px-5 pb-[max(1.25rem,env(safe-area-inset-bottom))] sm:px-6 sm:pb-5 lg:pb-10 lg:px-10">
                       <div className="space-y-3">
@@ -1014,7 +1014,7 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
                           <div className="inline-flex rounded-full border border-white/10 bg-white/5 px-3 py-1 text-[0.62rem] uppercase tracking-[0.32em] text-white/70">
                             Cuaderno holográfico
                           </div>
-                          <h3 className="font-display text-2xl leading-tight tracking-tight text-amber-300">
+                          <h3 className="font-display text-2xl leading-tight tracking-tight question-voice">
                             {bitacoraStep === 'p1' && '¿Hay algo de esta experiencia que haya regresado por su cuenta? Una imagen, una frase, una sensación.'}
                             {bitacoraStep === 'scale' && '¿Con qué fuerza sigue ahí?'}
                             {bitacoraStep === 'p2' && (bitacoraQuestionLoading ? '…' : (bitacoraP2Question || 'Si volvió, ¿dónde te encontró? ¿Qué estabas haciendo o con quién estabas?'))}
@@ -1171,7 +1171,7 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
                       {/* Pregunta L2 + chips — móvil, solo cuando el acordeón está abierto */}
                       {!l2ConvDone && l2q && !l2Selection && l2Open && (
                         <>
-                          <h2 className="font-display text-2xl leading-snug text-amber-300">
+                          <h2 className="font-display text-2xl leading-snug question-voice">
                             {l2q.question}
                           </h2>
                           <div className="flex flex-wrap gap-1.5 pt-1">
@@ -1566,7 +1566,7 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
                           Laboratorio #GatoEncerrado
                         </div>
                         <p
-                          className="font-display leading-snug text-amber-300/90 drop-shadow-[0_0_32px_rgba(251,191,36,0.45)]"
+                          className="font-display leading-snug question-voice"
                           style={{ fontSize: 'clamp(1.5rem, 2.6vw, 2.4rem)' }}
                         >
                           {question}
@@ -1578,7 +1578,7 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
 
                     <div
                       aria-hidden="true"
-                      className="hidden lg:block mx-8 mb-5 h-px bg-gradient-to-r from-transparent via-amber-400/35 to-transparent"
+                      className="hidden lg:block mx-8 mb-5 h-px question-divider-voice"
                     />
 
                     {/* Campos */}
@@ -1590,7 +1590,7 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
                           </div>
                           <h3
                             id="resonance-modal-title"
-                            className="font-display text-3xl leading-tight tracking-tight text-amber-300"
+                            className="font-display text-3xl leading-tight tracking-tight question-voice"
                           >
                             {question ?? 'Formas de habitar'}
                           </h3>

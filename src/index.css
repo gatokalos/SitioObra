@@ -68,7 +68,9 @@
     --border: 240 10% 20%; /* Darker border for subtle separation */
     --input: 240 10% 15%; /* Dark input fields */
     --ring: 290 60% 30%; /* Ring color matching primary */
-
+    --question-voice: 226 196 204;
+    --question-voice-muted: 190 168 178;
+ 
     --radius: 0.5rem;
   }
  
@@ -168,31 +170,29 @@ body {
   line-height: 1.05;
 }
 
-/* Fase Cero en desktop: gradiente propio con más contraste (highlight nítido
-   arriba, cae rápido a casi negro) en vez del gradiente suave de la base
-   .hero-title — así se lee como faceta de obsidiana (como el # 3D: solo el
-   borde superior atrapa luz, el resto queda oscuro), no como texto gris
-   plano. Comparte la base .hero-title con la escena activada, pero solo
-   esta clase --pre-scene la sobreescribe; la activada no la lleva, así que
-   queda intacta. */
-@media (min-width: 769px) {
-  .hero-title--pre-scene {
-    background: linear-gradient(
-      180deg,
-      rgba(120, 124, 138, 0.32) 0%,
-      rgba(31, 33, 40, 0.78) 34%,
-      rgba(8, 9, 12, 0.96) 72%,
-      #030306 100%
-    );
-    -webkit-background-clip: text;
-    background-clip: text;
-    -webkit-text-fill-color: transparent;
-    color: transparent;
-    -webkit-text-stroke: 0.55px rgba(226, 232, 240, 0.11);
-    text-shadow:
-      0 0 5px rgba(226, 232, 240, 0.06),
-      0 0 18px rgba(88, 72, 126, 0.08);
-  }
+/* Fase Cero (desktop Y móvil): gradiente propio con más contraste (highlight
+   nítido arriba, cae rápido a casi negro) en vez del gradiente suave de la
+   base .hero-title — así se lee como faceta de obsidiana (como el # 3D:
+   solo el borde superior atrapa luz, el resto queda oscuro), no como texto
+   gris plano. Comparte la base .hero-title con la escena activada, pero
+   solo esta clase --pre-scene la sobreescribe; la activada no la lleva, así
+   que queda intacta. Sin media query a propósito: mismo trato en ambos. */
+.hero-title--pre-scene {
+  background: linear-gradient(
+    180deg,
+    rgba(120, 124, 138, 0.32) 0%,
+    rgba(31, 33, 40, 0.78) 34%,
+    rgba(8, 9, 12, 0.96) 72%,
+    #030306 100%
+  );
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+  -webkit-text-stroke: 0.55px rgba(226, 232, 240, 0.11);
+  text-shadow:
+    0 0 5px rgba(226, 232, 240, 0.06),
+    0 0 18px rgba(88, 72, 126, 0.08);
 }
 
 @media (max-width: 768px) {
@@ -250,9 +250,10 @@ body {
     transform: translate(-50%, -50%) scaleX(1);
   }
 
-  .hero-title--pre-scene,
+  /* El texto en sí ya no se oculta aquí (ver .hero-title--pre-scene arriba,
+     ahora también en móvil) — solo el halo/glow de fondo sigue oculto en
+     Fase Cero, ese sí es exclusivo de la escena activada. */
   .hero-title--pre-scene::before {
-    text-shadow: none;
     opacity: 0;
   }
 
@@ -624,6 +625,72 @@ body {
 .header-index-cue-pulse {
   border-radius: 9999px;
   animation: header-index-cue-ping 1.8s ease-out 3;
+}
+
+.narrative-pause-mark {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 4rem;
+  height: 4rem;
+  margin: 0 auto 1.15rem;
+  border-radius: 999px;
+  border: 1px solid rgba(196, 181, 253, 0.16);
+  background:
+    radial-gradient(circle at 50% 44%, rgba(196, 181, 253, 0.16), transparent 52%),
+    linear-gradient(180deg, rgba(15, 23, 42, 0.72), rgba(7, 5, 14, 0.32));
+  box-shadow:
+    inset 0 0 22px rgba(15, 23, 42, 0.7),
+    0 0 30px rgba(88, 28, 135, 0.16);
+  opacity: 0.82;
+}
+
+.narrative-pause-mark::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  bottom: -0.72rem;
+  width: 5.5rem;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(196, 181, 253, 0.32), transparent);
+  transform: translateX(-50%);
+}
+
+.narrative-pause-mark--third-call {
+  gap: 0.26rem;
+}
+
+.narrative-pause-mark--third-call span {
+  width: 0.32rem;
+  height: 1.55rem;
+  border-radius: 999px;
+  background: linear-gradient(180deg, rgba(248, 250, 252, 0.86), rgba(196, 181, 253, 0.34));
+  box-shadow: 0 0 14px rgba(196, 181, 253, 0.24);
+}
+
+.narrative-pause-mark--third-call span:nth-child(2) {
+  height: 2.05rem;
+}
+
+.narrative-pause-mark--intermission span:first-child {
+  width: 2.35rem;
+  height: 2.35rem;
+  border-radius: 999px;
+  border: 1px solid rgba(226, 232, 240, 0.46);
+  box-shadow:
+    inset 0 0 16px rgba(196, 181, 253, 0.08),
+    0 0 18px rgba(196, 181, 253, 0.18);
+}
+
+.narrative-pause-mark--intermission span:last-child {
+  position: absolute;
+  width: 0.48rem;
+  height: 0.48rem;
+  border-radius: 999px;
+  background: rgba(226, 232, 240, 0.9);
+  box-shadow: 0 0 15px rgba(196, 181, 253, 0.55);
+  transform: translate(1.05rem, -0.72rem);
 }
 
 @keyframes header-index-cue-ping {
@@ -1457,13 +1524,39 @@ body {
   line-height: 1.18;
   text-align: center;
   color: transparent;
-  background: linear-gradient(95deg, rgba(255, 233, 199, 0.96), rgba(203, 213, 225, 0.88), rgba(148, 163, 184, 0.72));
+  background: linear-gradient(
+    95deg,
+    rgb(var(--question-voice) / 0.96),
+    rgba(218, 205, 214, 0.9),
+    rgb(var(--question-voice-muted) / 0.78)
+  );
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
   text-shadow:
-    0 0 16px rgba(226, 232, 240, 0.2),
-    0 0 34px rgba(139, 92, 246, 0.22);
+    0 0 16px rgb(var(--question-voice) / 0.18),
+    0 0 34px rgba(139, 92, 246, 0.18);
+}
+
+.question-voice {
+  color: rgb(var(--question-voice) / 0.92);
+  text-shadow:
+    0 0 18px rgb(var(--question-voice) / 0.16),
+    0 0 30px rgba(139, 92, 246, 0.16);
+}
+
+.question-heading-voice {
+  color: rgb(var(--question-voice) / 0.94);
+  text-shadow: 0 0 18px rgb(var(--question-voice) / 0.14);
+}
+
+.question-divider-voice {
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgb(var(--question-voice-muted) / 0.34),
+    transparent
+  );
 }
 
 @keyframes reflejoBrillo {

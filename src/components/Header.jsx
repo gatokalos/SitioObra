@@ -52,7 +52,7 @@ const Header = ({
   showObraDestacadaNav = false,
   showTerceraLlamadaNav = false,
   showGatChip = true,
-  terceraLlamadaLabel = 'Comenzamos',
+  terceraLlamadaLabel = '#Comenzamos',
 }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [scrollTier, setScrollTier] = useState(0);
@@ -279,7 +279,7 @@ const Header = ({
     { name: 'Contacto', href: '#contact' },
   ];
   const mobileMenuItems = [
-    { name: 'Primera fila', href: '#hero', description: '#Elsubtexto',
+    { name: 'Primera fila', href: '#hero', description: '#esununiverso',
  },
     ...(showTerceraLlamadaNav
       ? [{ name: 'Tercera llamada', href: '#bienvenida-creador', description: terceraLlamadaLabel }]
@@ -294,7 +294,7 @@ const Header = ({
           },
         ]
       : []),
-    ...(showPerspectivasNav ? [{ name: 'Voces en la sala', href: '#provoca' }] : []),
+    ...(showPerspectivasNav ? [{ name: 'Voces en la sala', href: '#provoca', description: '#heridaemocional' }] : []),
     ...(showIntermedioNav
       ? [{ name: 'Intermedio', href: '#blog-contribuye', description: '#Lareflexion' }]
       : []),
@@ -317,7 +317,7 @@ const Header = ({
       ? [{
           name: 'Caída del telón',
           href: '#next-show',
-          description: '#Obrafundacional',
+          description: '#ArchivoEscénico',
           ...(showObraDestacadaNav
             ? {
                 secondary: [

@@ -484,6 +484,24 @@ function App() {
     window.addEventListener('gatoencerrado:tercera-llamada-completed', handleCompleted);
     return () => window.removeEventListener('gatoencerrado:tercera-llamada-completed', handleCompleted);
   }, [isAuthenticated, hasGuestUnlockedTransmedia]);
+  // "Antes de irte" (MiniverseInlineSection) es de descubrimiento, no de
+  // autenticación — un invitado que nunca pasó por /bienvenida debe poder
+  // abrir un miniverso desde ahí igual. Sin este desbloqueo, <Transmedia />
+  // nunca monta y el evento select-miniverse-format que dispara esa sección
+  // no tiene quién lo escuche. A diferencia de tercera-llamada-completed, esto
+  // NO marca hasCompletedTerceraLlamada — el usuario no completó ese flujo,
+  // solo pidió ver un miniverso.
+  useEffect(() => {
+    if (typeof window === 'undefined') return undefined;
+    const handleUnlockRequest = () => {
+      if (!isAuthenticated && !hasGuestUnlockedTransmedia) {
+        safeSetItem(TRANSMEDIA_UNLOCK_STORAGE_KEY, '1');
+        setHasGuestUnlockedTransmedia(true);
+      }
+    };
+    window.addEventListener('gatoencerrado:request-transmedia-unlock', handleUnlockRequest);
+    return () => window.removeEventListener('gatoencerrado:request-transmedia-unlock', handleUnlockRequest);
+  }, [isAuthenticated, hasGuestUnlockedTransmedia]);
   // Un usuario autenticado ya cruzó el umbral por definición — ve Perspectivas
   // y Miniversos desde el inicio, sin necesidad de completar Tercera Llamada
   // (que igual se le sigue mostrando, con el CTA en modo "Reposición").
@@ -805,7 +823,7 @@ function App() {
                 showObraDestacadaNav={isObraDestacadaVisible}
                 showTerceraLlamadaNav={canShowPostHeroContent}
                 showGatChip={isAuthenticated || isHeroActivated}
-                terceraLlamadaLabel={hasEnteredUniverse ? 'Reposición' : 'Comenzamos'}
+                terceraLlamadaLabel={hasEnteredUniverse ? '#Reposición' : '#Comenzamos'}
               />
 
               <main className="pt-20 lg:pt-24">
@@ -911,7 +929,7 @@ function App() {
                 showPerspectivasNav={canShowPostHeroContent && hasEnteredUniverse}
                 showObraDestacadaNav={isObraDestacadaVisible}
                 showTerceraLlamadaNav={canShowPostHeroContent}
-                terceraLlamadaLabel={hasEnteredUniverse ? 'Reposición' : 'Comenzamos'}
+                terceraLlamadaLabel={hasEnteredUniverse ? '#Reposición' : '#Comenzamos'}
               />
               {shouldShowToast && (
                 <LoginToast emailHash={emailHash} onDismiss={dismissToast} />

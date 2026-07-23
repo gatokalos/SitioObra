@@ -1006,13 +1006,16 @@ const Hero = () => {
                 <h1
                   className={`hero-title ${!hasActivatedAudio ? 'hero-title--pre-scene' : ''} ${hasActivatedAudio ? 'hero-title--scene-active' : ''} text-center w-full break-words`}
                   style={{
+                    // Fase Cero: mismo trato en móvil y desktop (antes solo
+                    // desktop, ahora también móvil — la escena activada abajo
+                    // sigue intacta por plataforma, sin tocar esos valores.
                     opacity: !hasActivatedAudio
-                      ? (isMobileViewport ? 0 : 0.28)
+                      ? 0.28
                       : isMobileViewport ? 1 : 0.96,
-                    visibility: (!isMobileViewport || hasActivatedAudio) ? 'visible' : 'hidden',
-                    filter: isMobileViewport
-                      ? 'brightness(1.12) contrast(1.08)'
-                      : hasActivatedAudio ? 'brightness(1) contrast(1.05)' : 'brightness(0.7) contrast(1.08)',
+                    visibility: 'visible',
+                    filter: !hasActivatedAudio
+                      ? 'brightness(0.7) contrast(1.08)'
+                      : isMobileViewport ? 'brightness(1.12) contrast(1.08)' : 'brightness(1) contrast(1.05)',
                     transition: 'opacity 1.15s ease, filter 1.15s ease',
                   }}
                   aria-label={HERO_BRAND_LABEL}

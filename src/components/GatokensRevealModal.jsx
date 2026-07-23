@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
+import { X } from 'lucide-react';
 
 const backdropVariants = { hidden: { opacity: 0 }, visible: { opacity: 1 } };
 const panelVariants = {
@@ -139,6 +140,18 @@ const GatokensRevealModal = ({
               variants={panelVariants}
               className="relative z-10 flex w-full max-w-md flex-col items-center px-5 py-10 text-center"
             >
+              {/* Antes solo se podía cerrar tocando el fondo borroso o con
+                  Escape — en móvil ninguno de los dos es obvio, y si este
+                  modal reaparece tras haber usado ya el CTA, el usuario se
+                  queda sin forma clara de salir. */}
+              <button
+                type="button"
+                onClick={onClose}
+                className="absolute right-2 top-2 z-20 inline-flex h-9 w-9 items-center justify-center rounded-full border border-white/10 bg-white/5 text-slate-200 transition hover:bg-white/10 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-200/70"
+                aria-label="Cerrar"
+              >
+                <X size={18} />
+              </button>
               <span
                 aria-hidden="true"
                 className="pointer-events-none absolute left-1/2 top-20 h-64 w-64 -translate-x-1/2 rounded-full blur-[72px]"
