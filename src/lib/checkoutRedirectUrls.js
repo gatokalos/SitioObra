@@ -1,10 +1,12 @@
-export const CANONICAL_SITE_ORIGIN = 'https://universogatoencerrado.com';
+export const CANONICAL_SITE_ORIGIN = 'https://universo.gatoencerrado.org';
 
 const LEGACY_SITE_HOSTS = new Set([
   'esungatoencerrado.com',
   'www.esungatoencerrado.com',
   'estungatoencerrado.com',
   'www.estungatoencerrado.com',
+  'universogatoencerrado.com',
+  'www.universogatoencerrado.com',
 ]);
 
 const LOCAL_HOSTS = new Set(['localhost', '127.0.0.1']);

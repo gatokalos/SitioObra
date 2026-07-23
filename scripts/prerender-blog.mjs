@@ -42,7 +42,7 @@ const env = {
 // ─── Config ───────────────────────────────────────────────────────────────────
 
 const API_URL = (env.VITE_API_URL || '').replace(/\/+$/, '');
-const SITE_URL = (env.VITE_SITE_URL || 'https://universogatoencerrado.com').replace(/\/+$/, '');
+const SITE_URL = (env.VITE_SITE_URL || 'https://universo.gatoencerrado.org').replace(/\/+$/, '');
 const FALLBACK_IMAGE = `${SITE_URL}/assets/logoapp.png`;
 
 function inferImageMimeType(imageUrl) {

@@ -13,4 +13,4 @@ Allow: /
 User-agent: WhatsApp
 Allow: /
 
-Sitemap: https://universogatoencerrado.com/sitemap.xml
+Sitemap: https://universo.gatoencerrado.org/sitemap.xml

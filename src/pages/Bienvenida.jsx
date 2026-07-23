@@ -39,7 +39,7 @@ const getSiteBridgeOrigin = () => {
       return new URL(configured).origin;
     } catch {}
   }
-  return 'https://universogatoencerrado.com';
+  return 'https://universo.gatoencerrado.org';
 };
 
 const withGatokensRevealParam = (path = '/') => {

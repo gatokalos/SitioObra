@@ -4,7 +4,7 @@ import ReactMarkdown from 'react-markdown';
 import { fetchBlogPostBySlug } from '@/services/blogService';
 
 const SITE_ORIGIN =
-  typeof window !== 'undefined' ? window.location.origin : 'https://universogatoencerrado.com';
+  typeof window !== 'undefined' ? window.location.origin : 'https://universo.gatoencerrado.org';
 const FALLBACK_IMAGE = `${SITE_ORIGIN}/assets/logoapp.png`;
 
 const SITE_DEFAULTS = {
