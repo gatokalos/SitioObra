@@ -659,8 +659,7 @@ const Header = ({
                       GATokens · tu energía
                     </p>
                     <p className="text-xs leading-relaxed text-slate-700">
-                      Los GATokens son la moneda simbólica de #GatoEncerrado: se ganan explorando el universo y se
-                      usan para activar experiencias dentro de los miniversos.
+                      Los GATokens son el valor que le ponemos a tu atención en #GatoEncerrado
                     </p>
                     {isGatSpendRecommendationLoading ? (
                       <p className="text-[0.68rem] text-slate-400">Buscando dónde conviene gastarlos…</p>
@@ -683,7 +682,7 @@ const Header = ({
                       </button>
                     ) : (
                       <p className="text-[0.68rem] text-slate-500">
-                        Explora un miniverso para descubrir dónde conviene gastarlos primero.
+                         Representan la energía simbólica que este universo necesita para activar experiencias dentro de los miniversos.
                       </p>
                     )}
                     {!user && isGatLoginEligible ? (
@@ -698,7 +697,7 @@ const Header = ({
                   </div>
                   <div className="border-t border-slate-100 bg-amber-50 px-4 py-2">
                     <p className="text-[0.68rem] text-slate-500">
-                      Saldo actual:{' '}
+                      Energía disponible:{' '}
                       <span className="font-semibold text-amber-600">
                         {gatBalance.toLocaleString('es-MX')} GAT
                       </span>

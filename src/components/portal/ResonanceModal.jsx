@@ -238,7 +238,7 @@ const lsPatch = (portal, patch) => {
 
 /* ─── Componente ──────────────────────────────────────────────────────── */
 
-const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNavigateToRecommendation, onL2QuestionReady, isMobileViewport }) => {
+const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNavigateToRecommendation, onL2QuestionReady, isMobileViewport, onRequireLogin }) => {
   const modalRef = useRef(null);
   const submitBtnRef = useRef(null);
   const { user } = useAuth();
@@ -651,6 +651,11 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
 
   const handleNavigateToRecommendation = () => {
     if (!l3Rec?.recommended_format_id) return;
+    if (!user) {
+      onClose?.();
+      onRequireLogin?.();
+      return;
+    }
     onClose?.();
     if (onNavigateToRecommendation) {
       onNavigateToRecommendation(l3Rec.recommended_format_id);

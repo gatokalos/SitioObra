@@ -139,7 +139,7 @@ const GATChip = () => {
           </div>
           <div className="border-t border-slate-100 bg-amber-50 px-4 py-2">
             <p className="text-[0.68rem] text-slate-500">
-              Saldo actual:{' '}
+              Energía disponible:{' '}
               <span className="font-semibold text-amber-600">
                 {balance.toLocaleString('es-MX')} GAT
               </span>

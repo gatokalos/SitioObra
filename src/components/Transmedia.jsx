@@ -5261,10 +5261,10 @@ Silvestre, un hombre en sus treintas, comienza a perder la frontera entre lo que
                 La obra toma forma
               </h2>
               <p className="text-lg text-slate-300/80 max-w-3xl mx-auto leading-relaxed font-light">
-    <em>Esta obra es una narrativa en nueve formas</em>, desplegada en nueve "mini-versos".<br />
-    Lo que cambia es desde dónde la abordas y cómo participas.<br />
+    <em>Esta obra es una narrativa transmedia</em> desplegada en nueve formas que aquí llamamos miniversos.<br />
+    Lo que cambia es desde dónde la abordas y cómo participas en ella.<br />
       <span className="block mt-10 text-sm text-slate-100/50 italic">
-    (Cada <strong>miniverso</strong> sostiene al universo entero<br />solo si prestas un minuto de tu atención.)
+    (Cada <strong>miniverso</strong> sostiene al universo entero con solo un minuto de tu valiosa atención.)
   </span>
       </p>
             </motion.div>

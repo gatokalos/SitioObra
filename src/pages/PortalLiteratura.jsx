@@ -146,12 +146,8 @@ const PortalLiteratura = () => {
   }, []);
 
   const handleAnswerResonance = useCallback(() => {
-    if (isAuthenticated) {
-      setIsResonanceOpen(true);
-      return;
-    }
-    setShowResonanceLoginNudge(true);
-  }, [isAuthenticated]);
+    setIsResonanceOpen(true);
+  }, []);
 
   const requireAuth = useCallback((forceAuth = false) => {
     if (isAuthenticated) return true;
@@ -355,6 +351,7 @@ const PortalLiteratura = () => {
               <ResonanceModal
                 open={isResonanceOpen}
                 onClose={() => { setIsResonanceOpen(false); refreshL1(); }}
+                onRequireLogin={() => setShowResonanceLoginNudge(true)}
                 question={vitranaQuestion}
                 portal="literatura"
                 onOpenNarrative={() => setShowLiteraturaApp(true)}
@@ -454,8 +451,8 @@ const PortalLiteratura = () => {
           open={showResonanceLoginNudge}
           onClose={handleCloseResonanceLoginNudge}
           onLogin={handleConfirmResonanceLogin}
-          title="¿Te gustaría iniciar sesión para responder?"
-          description="Puedes seguir explorando este universo libremente. Para dejar tu propia resonancia y que forme parte del diálogo colectivo, necesitas iniciar sesión."
+          title="¿Te gustaría iniciar sesión para continuar?"
+          description="Ya viviste esta experiencia libremente. Para seguir explorando el siguiente miniverso recomendado, necesitas iniciar sesión."
           titleId="resonance-login-nudge-title"
         />
         <ContributionModal
