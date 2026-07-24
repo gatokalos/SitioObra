@@ -290,8 +290,8 @@ const AlianzaSocial = () => {
                     <div>
                       <p className="font-medium text-slate-200">Sin costo para familias</p>
                       <p className="mt-1">
-                        La asociación detecta y acompaña a tiempo a niños y jóvenes. <br/>
-                        No hay costo obligatorio para las familias. Su causa se sostiene con apoyos institucionales, donaciones y activación de huellas.
+                        <strong>La asociación identifica señales de riesgo de autolesión y acompaña oportunamente a niñas, niños y jóvenes.</strong> <br/>
+                        Su causa se sostiene con apoyos institucionales, donaciones y activación de huellas.
                       </p>
                       <button
                         type="button"

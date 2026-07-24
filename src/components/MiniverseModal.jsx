@@ -15,8 +15,6 @@ import { isSafariBrowser } from '@/lib/browser';
 import { resolvePortalRoute } from '@/lib/miniversePortalRegistry';
 import { createPortalLaunchState } from '@/lib/portalNavigation';
 import TransmediaDeviceOverlay from '@/components/TransmediaDeviceOverlay';
-import HuellaEmbeddedCheckout from '@/components/HuellaEmbeddedCheckout';
-import { createEmbeddedSubscription, startCheckoutFallback } from '@/lib/huellaCheckout';
 import {
   MINIVERSE_HOME_EVENT_TYPES,
   trackMiniverseHomeEvent,
@@ -462,7 +460,6 @@ const modalVariants = {
 };
 
 const LOGIN_RETURN_KEY = 'gatoencerrado:login-return';
-const SUBSCRIPTION_PRICE_ID = import.meta.env.VITE_STRIPE_SUBSCRIPTION_PRICE_ID;
 const SUPPORT_WHATSAPP = '+523315327985';
 const SUPPORT_MESSAGE =
   'Hola,%0Ami huella está activa pero no aparece ligada a mi cuenta.%0A¿Me ayudan a vincularla?%0A%0AGracias.';
@@ -605,9 +602,6 @@ const MiniverseModal = ({
   const [communityTopLikes, setCommunityTopLikes] = useState([]);
   const [isLoadingCommunityLikes, setIsLoadingCommunityLikes] = useState(false);
   const [isCauseSiteOpen, setIsCauseSiteOpen] = useState(false);
-  const [embeddedClientSecret, setEmbeddedClientSecret] = useState('');
-  const [embeddedCheckoutStatus, setEmbeddedCheckoutStatus] = useState('');
-  const [isEmbeddedCheckoutLoading, setIsEmbeddedCheckoutLoading] = useState(false);
   const [hasBienvenida, setHasBienvenida] = useState(
     () => { try { return localStorage.getItem('gatoencerrado:bienvenida-completed') === '1'; } catch { return false; } }
   );
@@ -741,8 +735,6 @@ const MiniverseModal = ({
       setShowcaseFullscreenCard(null);
       setActiveShowcaseIndex(0);
       setIsCauseSiteOpen(false);
-      setEmbeddedClientSecret('');
-      setEmbeddedCheckoutStatus('');
       setShowcaseEnergy(readStoredJson('gatoencerrado:showcase-energy', {}));
       setShowcaseBoosts(readStoredJson('gatoencerrado:showcase-boosts', {}));
       return;
@@ -1612,106 +1604,6 @@ const MiniverseModal = ({
     setIsCauseSiteOpen(false);
   }, []);
 
-  const handleSubscriptionCheckout = useCallback(async () => {
-    if (isEmbeddedCheckoutLoading) {
-      return;
-    }
-
-    if (!SUBSCRIPTION_PRICE_ID) {
-      setEmbeddedCheckoutStatus('Configura VITE_STRIPE_SUBSCRIPTION_PRICE_ID antes de continuar.');
-      return;
-    }
-
-    if (!user) {
-      safeSetItem(
-        LOGIN_RETURN_KEY,
-        JSON.stringify({
-          anchor: '#transmedia',
-          action: 'miniverse-huella-login',
-          source: 'miniverse-modal',
-        })
-      );
-      if (typeof window !== 'undefined') {
-        window.dispatchEvent(new CustomEvent('open-login-modal'));
-      }
-      setEmbeddedCheckoutStatus('Inicia sesión para dejar tu huella.');
-      toast({ description: 'Inicia sesión para dejar tu huella.' });
-      return;
-    }
-
-    const normalizedEmail = user?.email ? user.email.trim().toLowerCase() : '';
-    const fallbackPayload = {
-      priceId: SUBSCRIPTION_PRICE_ID,
-      customerEmail: normalizedEmail || undefined,
-      metadata: {
-        channel: 'landing',
-        event: 'suscripcion-landing',
-        packages: 'subscription',
-        source: 'miniverse_modal_fallback',
-      },
-    };
-
-    try {
-      setIsEmbeddedCheckoutLoading(true);
-      setEmbeddedCheckoutStatus('');
-      setEmbeddedClientSecret('');
-
-      const data = await createEmbeddedSubscription({
-        priceId: SUBSCRIPTION_PRICE_ID,
-        metadata: {
-          channel: 'landing',
-          event: 'suscripcion-landing',
-          packages: 'subscription',
-          source: 'miniverse_modal',
-        },
-      });
-
-      if (!data?.ok) {
-        if (data?.error === 'already_subscribed') {
-          setEmbeddedCheckoutStatus('Tu huella ya está activa en esta cuenta.');
-          return;
-        }
-        throw new Error(data?.error || 'embedded_unknown_error');
-      }
-
-      if (!data.client_secret) {
-        throw new Error('missing_client_secret');
-      }
-
-      setEmbeddedClientSecret(data.client_secret);
-    } catch (error) {
-      console.warn('[MiniverseModal] Embedded checkout error. Activando fallback.', error);
-      setEmbeddedClientSecret('');
-      setEmbeddedCheckoutStatus('No se pudo abrir el formulario embebido. Redirigiendo a checkout externo...');
-      try {
-        await startCheckoutFallback(fallbackPayload);
-      } catch (fallbackError) {
-        console.error('[MiniverseModal] Fallback checkout error:', fallbackError);
-        setEmbeddedCheckoutStatus('No se pudo iniciar el checkout. Intenta de nuevo.');
-      }
-    } finally {
-      setIsEmbeddedCheckoutLoading(false);
-    }
-  }, [isEmbeddedCheckoutLoading, user]);
-
-  const handleEmbeddedCheckoutDone = useCallback(({ ok, message } = {}) => {
-    if (!ok) {
-      return;
-    }
-    const normalizedStatus = (message || '').toLowerCase();
-    if (normalizedStatus === 'succeeded' || normalizedStatus === 'processing') {
-      setEmbeddedCheckoutStatus(
-        normalizedStatus === 'processing'
-          ? 'Pago recibido. Estamos verificando tu huella (1-3 minutos).'
-          : 'Pago confirmado. Tu huella se activará en esta cuenta.'
-      );
-      setEmbeddedClientSecret('');
-      return;
-    }
-    setEmbeddedCheckoutStatus(`Estado actual del pago: ${message || 'unknown'}.`);
-  }, []);
-
-
   const handleOpenShowcaseFullscreen = useCallback(
     (card) => {
       if (!card) return;
@@ -2116,23 +2008,11 @@ const MiniverseModal = ({
                           </span>
                           <Button
                             type="button"
-                            onClick={handleSubscriptionCheckout}
-                            disabled={isEmbeddedCheckoutLoading}
+                            onClick={handleScrollToSupport}
                             className="white-glass-btn h-11 min-w-[10.5rem] px-6 text-base font-semibold tracking-[0.2px]"
                           >
-                            {isEmbeddedCheckoutLoading ? 'Abriendo...' : 'Dejar mi huella'}
+                            Dejar mi huella
                           </Button>
-                          {embeddedCheckoutStatus ? (
-                            <p className="text-center text-xs leading-relaxed text-slate-300/80">
-                              {embeddedCheckoutStatus}
-                            </p>
-                          ) : null}
-                          {embeddedClientSecret ? (
-                            <HuellaEmbeddedCheckout
-                              clientSecret={embeddedClientSecret}
-                              onDone={handleEmbeddedCheckoutDone}
-                            />
-                          ) : null}
                           <button
                             type="button"
                             onClick={handleScrollToSupport}

@@ -296,9 +296,17 @@ const PaymentForm = ({ onDone, defaultEmail = '' }) => {
   );
 };
 
-const HuellaEmbeddedCheckout = ({ clientSecret, onDone, previewMode = false }) => {
+const HuellaEmbeddedCheckout = ({
+  clientSecret,
+  onDone,
+  previewMode = false,
+  defaultEmail = '',
+}) => {
   const { user } = useAuth();
-  const normalizedEmail = useMemo(() => (user?.email ? user.email.trim().toLowerCase() : ''), [user?.email]);
+  const normalizedEmail = useMemo(
+    () => (user?.email || defaultEmail || '').trim().toLowerCase(),
+    [defaultEmail, user?.email]
+  );
 
   if (!previewMode && !clientSecret) {
     return null;

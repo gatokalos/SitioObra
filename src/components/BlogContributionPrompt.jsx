@@ -115,10 +115,8 @@ const BlogContributionPrompt = ({ onAskQuestion = null }) => {
 
 Y no pasa nada.
 
-Quizá observes una obra que no tiene un principio ni un final. 
-
-Solo nota si algo de lo que miras
-se queda moviéndose adentro.`}
+Si te encuentras en medio de una obra que aún no tiene un principio ni un final, 
+solo nota si algo de lo que miras se queda moviéndose adentro.`}
   </span>
 
   <span className="block mt-8">

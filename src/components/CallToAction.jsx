@@ -39,6 +39,7 @@ const SHOULD_PREVIEW_AFTERCARE =
   new URLSearchParams(window.location.search).get('aftercare') === '1';
 const COUNTER_SOUND_MILESTONES = new Set([17, 51, EXPANSION_START]);
 const LOGIN_RETURN_KEY = 'gatoencerrado:login-return';
+const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 function clamp(value, min, max) {
   return Math.max(min, Math.min(max, value));
@@ -251,8 +252,10 @@ function ProgressBar({
 const CallToAction = ({ barsIntroDelayMs = 0 }) => {
   const { user, session } = useAuth();
   const embeddedCheckoutRef = useRef(null);
+  const guestEmailInputRef = useRef(null);
   const [loading, setLoading] = useState(false);
   const [msg, setMsg] = useState('');
+  const [guestCheckoutEmail, setGuestCheckoutEmail] = useState('');
   const [embeddedClientSecret, setEmbeddedClientSecret] = useState('');
   const [checkoutStatus, setCheckoutStatus] = useState('');
   const [pendingFallbackPayload, setPendingFallbackPayload] = useState(null);
@@ -819,32 +822,6 @@ const CallToAction = ({ barsIntroDelayMs = 0 }) => {
       return;
     }
 
-    if (!user) {
-      // Paso umbral preservado para uso futuro desde otro punto del sitio:
-      // setBienvenidaFlowGoal('subscription');
-      // setBienvenidaForceOnLogin();
-      setCheckoutStatus('Inicia sesión para dar el siguiente paso.');
-      clearBienvenidaFlowGoal();
-      clearBienvenidaForceOnLogin();
-      safeSetItem(
-        LOGIN_RETURN_KEY,
-        JSON.stringify({
-          anchor: '#cta',
-          action: 'cta-huella-login',
-          source: 'call-to-action',
-        })
-      );
-      setIsLoginPulseActive(true);
-      if (loginPulseTimeoutRef.current) {
-        window.clearTimeout(loginPulseTimeoutRef.current);
-      }
-      loginPulseTimeoutRef.current = window.setTimeout(() => {
-        setIsLoginPulseActive(false);
-        loginPulseTimeoutRef.current = null;
-      }, 3200);
-      return;
-    }
-
     if (isSubscriber) {
       setCheckoutStatus('Tu huella ya está activa en esta cuenta. Gracias por impulsar la causa.');
       setEmbeddedClientSecret('');
@@ -863,14 +840,30 @@ const CallToAction = ({ barsIntroDelayMs = 0 }) => {
       return;
     }
 
-    const normalizedEmail = user?.email ? user.email.trim().toLowerCase() : '';
+    const normalizedEmail = (user?.email || guestCheckoutEmail).trim().toLowerCase();
+    if (!EMAIL_PATTERN.test(normalizedEmail)) {
+      setCheckoutStatus('Escribe un correo válido para proteger y recuperar tu huella.');
+      guestEmailInputRef.current?.focus();
+      return;
+    }
+    const isGuestCheckout = !user;
+    const checkoutMetadata = {
+      channel: 'landing',
+      event: 'suscripcion-landing',
+      packages: 'subscription',
+      source: 'call_to_action',
+      ...(isGuestCheckout
+        ? {
+            claim_status: 'pending',
+            claim_version: '1',
+          }
+        : {}),
+    };
     const fallbackPayload = {
       priceId: SUBSCRIPTION_PRICE_ID,
-      customerEmail: normalizedEmail || undefined,
+      customerEmail: normalizedEmail,
       metadata: {
-        channel: 'landing',
-        event: 'suscripcion-landing',
-        packages: 'subscription',
+        ...checkoutMetadata,
         source: 'call_to_action_fallback',
       },
     };
@@ -879,15 +872,10 @@ const CallToAction = ({ barsIntroDelayMs = 0 }) => {
       setMsg('');
       setCheckoutStatus('');
       setPendingFallbackPayload(null);
-      const metadata = {
-        channel: 'landing',
-        event: 'suscripcion-landing',
-        packages: 'subscription',
-        source: 'call_to_action',
-      };
       const data = await createEmbeddedSubscription({
         priceId: SUBSCRIPTION_PRICE_ID,
-        metadata,
+        customerEmail: normalizedEmail,
+        metadata: checkoutMetadata,
       });
 
       if (!data?.ok) {
@@ -948,7 +936,9 @@ const CallToAction = ({ barsIntroDelayMs = 0 }) => {
       setCheckoutStatus(
         isProcessing
           ? 'Pago recibido. Estamos verificando tu huella (1-3 minutos).'
-          : 'Pago confirmado. Tu huella se activará en esta cuenta.'
+          : user
+            ? 'Pago confirmado. Tu huella se activará en esta cuenta.'
+            : 'Pago confirmado. Tu huella quedó protegida con el correo proporcionado.'
       );
       setEmbeddedClientSecret('');
       setAftercareVariant(isProcessing ? 'payment_processing' : 'payment_success');
@@ -1095,12 +1085,45 @@ const CallToAction = ({ barsIntroDelayMs = 0 }) => {
           </div>
         </div>
       ) : null}
+      {!user && !embeddedClientSecret ? (
+        <div className="space-y-2 text-left">
+          <label
+            htmlFor="huella-checkout-email"
+            className="block text-xs leading-relaxed text-slate-300"
+          >
+            Correo para proteger y recuperar tu huella
+          </label>
+          <input
+            ref={guestEmailInputRef}
+            id="huella-checkout-email"
+            type="email"
+            inputMode="email"
+            autoComplete="email"
+            value={guestCheckoutEmail}
+            onChange={(event) => {
+              setGuestCheckoutEmail(event.target.value);
+              if (checkoutStatus === 'Escribe un correo válido para proteger y recuperar tu huella.') {
+                setCheckoutStatus('');
+              }
+            }}
+            placeholder="nombre@correo.com"
+            className="form-surface w-full px-4 py-3 text-sm"
+          />
+          <button
+            type="button"
+            onClick={handleOpenLoginFromStatus}
+            className="text-xs text-slate-400 underline decoration-white/20 underline-offset-4 transition hover:text-white"
+          >
+            Ya tengo cuenta: entrar con código
+          </button>
+        </div>
+      ) : null}
       <button
         onClick={handleCheckout}
         disabled={loading || isSubscriber || isCheckingSubscription}
-        className={`white-glass-btn block w-full px-4 py-2 text-slate-900 disabled:cursor-not-allowed disabled:opacity-50 ${
-          !user ? 'white-glass-btn--idle' : 'white-glass-btn--active'
-        } ${isLoginPulseActive ? 'white-glass-btn--pulse animate-pulse' : ''}`}
+        className={`white-glass-btn white-glass-btn--active block w-full px-4 py-2 text-slate-900 disabled:cursor-not-allowed disabled:opacity-50 ${
+          isLoginPulseActive ? 'white-glass-btn--pulse animate-pulse' : ''
+        }`}
       >
         {isCheckingSubscription
           ? 'Validando huella...'
@@ -1115,20 +1138,7 @@ const CallToAction = ({ barsIntroDelayMs = 0 }) => {
 
       <div ref={embeddedCheckoutRef} className="pt-1">
         {checkoutStatus ? (
-          !user && checkoutStatus === 'Inicia sesión para dar el siguiente paso.' ? (
-            <p className="text-sm text-slate-200">
-              <button
-                type="button"
-                onClick={handleOpenLoginFromStatus}
-                className="underline underline-offset-2 transition hover:text-white"
-              >
-                Inicia sesión
-              </button>{' '}
-              para dar el siguiente paso.
-            </p>
-          ) : (
-            <p className="text-sm text-slate-200">{checkoutStatus}</p>
-          )
+          <p className="text-sm text-slate-200">{checkoutStatus}</p>
         ) : null}
         {pendingFallbackPayload ? (
           <button
@@ -1173,6 +1183,7 @@ const CallToAction = ({ barsIntroDelayMs = 0 }) => {
           <HuellaEmbeddedCheckout
             clientSecret={embeddedClientSecret}
             onDone={handleEmbeddedCheckoutDone}
+            defaultEmail={guestCheckoutEmail}
           />
         ) : null}
       </div>
@@ -1339,7 +1350,9 @@ const CallToAction = ({ barsIntroDelayMs = 0 }) => {
             </h3>
             <p className="mt-5 text-slate-200 leading-relaxed">
               {aftercareVariant === 'payment_success'
-                ? 'Tu huella quedó registrada. Recibirás tu factura en el correo de esta cuenta. Si no se refleja al instante, se sincroniza en 1-3 minutos 🐾'
+                ? user
+                  ? 'Tu huella quedó registrada. Recibirás tu comprobante en el correo de esta cuenta. Si no se refleja al instante, se sincroniza en 1-3 minutos.'
+                  : 'Tu huella quedó registrada y protegida con el correo que proporcionaste. Recibirás ahí el comprobante del pago.'
                 : aftercareVariant === 'payment_processing'
                   ? 'No necesitas pagar de nuevo. Estamos validando tu aportación y, al confirmarse, recibirás tu factura en tu correo.'
                   : 'La obra respira.\nSola.\nY en comunidad.'}

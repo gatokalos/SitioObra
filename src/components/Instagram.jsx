@@ -194,7 +194,7 @@ const curatedLayoutDiego = [
   { match: 'diegohdz772', story: 'Las patentes' },
   { match: 'diegohdz779', story: 'Venerable Don Polo' },
   { match: 'diegohdz796', story: 'La Salvadora' },
-  { match: 'diegohdz805', story: 'Espacio sideral' },
+  { match: 'diegohdz805', story: 'Primavera sideral' },
   { match: 'diegohdz813', story: 'Huele a gato encerrado' },
   { match: 'diegohdz807', story: 'Incompatibiles' },
   { match: 'diegohdz844', story: '¿Soñando otra vez?' },

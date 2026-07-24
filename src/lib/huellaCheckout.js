@@ -46,12 +46,13 @@ function buildCheckoutError({ error, status, payload, fallbackMessage }) {
   return normalized;
 }
 
-export async function createEmbeddedSubscription({ priceId, metadata = {} }) {
+export async function createEmbeddedSubscription({ priceId, customerEmail, metadata = {} }) {
   const { data, error } = await supabase.functions.invoke(
     'create-subscription-payment-element',
     {
       body: {
         price_id: priceId,
+        customer_email: customerEmail || undefined,
         metadata,
       },
     }

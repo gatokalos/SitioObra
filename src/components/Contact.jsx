@@ -10,6 +10,7 @@ import { safeGetItem, safeRemoveItem, safeSetItem } from '@/lib/safeStorage';
 import { ConfettiBurst, useConfettiBursts } from '@/components/Confetti';
 
 const LOGIN_RETURN_KEY = 'gatoencerrado:login-return';
+const CONTACT_PREFILL_KEY = 'gatoencerrado:contact-prefill';
 const CAUSE_SITE_URL = 'https://www.ayudaparalavida.com/index.html';
 
 const Contact = () => {
@@ -30,6 +31,11 @@ const Contact = () => {
   const { user } = useAuth();
   const isLoggedIn = Boolean(user?.email);
   const { bursts: confettiBursts, fireConfetti } = useConfettiBursts();
+  const userDisplayName =
+    user?.user_metadata?.full_name ||
+    user?.user_metadata?.name ||
+    user?.user_metadata?.alias ||
+    (user?.email ? user.email.split('@')[0] : '');
 
   const handleOpenCauseSite = useCallback(() => {
     if (!CAUSE_SITE_URL) {
@@ -66,6 +72,55 @@ const Contact = () => {
       safeRemoveItem(LOGIN_RETURN_KEY);
     }
   }, [isLoggedIn]);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') {
+      return;
+    }
+
+    const hydrateContactPrefill = () => {
+      const raw = safeGetItem(CONTACT_PREFILL_KEY);
+      const loginReturnRaw = safeGetItem(LOGIN_RETURN_KEY);
+      let pendingLoginReturn = null;
+
+      if (loginReturnRaw) {
+        try {
+          pendingLoginReturn = JSON.parse(loginReturnRaw);
+        } catch {
+          pendingLoginReturn = null;
+        }
+      }
+
+      if (!raw && pendingLoginReturn?.anchor !== '#contact') {
+        return;
+      }
+
+      let parsed = null;
+      if (raw) {
+        try {
+          parsed = JSON.parse(raw);
+        } catch {
+          safeRemoveItem(CONTACT_PREFILL_KEY);
+        }
+      }
+
+      setFormValues((prev) => ({
+        ...prev,
+        name: prev.name || userDisplayName || '',
+        email: prev.email || user?.email || '',
+        role: prev.role || (parsed?.source === 'blog-author-backstage' ? 'Lector / Backstage' : ''),
+        message: prev.message || parsed?.message || '',
+      }));
+
+      if (parsed) {
+        safeRemoveItem(CONTACT_PREFILL_KEY);
+      }
+    };
+
+    hydrateContactPrefill();
+    window.addEventListener('gatoencerrado:contact-prefill', hydrateContactPrefill);
+    return () => window.removeEventListener('gatoencerrado:contact-prefill', hydrateContactPrefill);
+  }, [user?.email, userDisplayName]);
 
   useEffect(() => {
     if (!isCauseSiteOpen) {
@@ -295,7 +350,7 @@ const Contact = () => {
               <ConfettiBurst key={burst} seed={burst} />
             ))}
             <h3 className="font-display text-2xl font-medium text-slate-100 mb-8">
-              Envíanos un Mensaje
+              Envíame un Mensaje
             </h3>
             
             <form onSubmit={handleSubmit} className="space-y-6">
@@ -389,17 +444,7 @@ const Contact = () => {
                     <Send size={20} />
                     {status === 'loading' ? 'Enviando…' : 'Enviar'}
                   </Button>
-                  <Button
-                    type="button"
-                    onClick={handleOpenLoginOverlay}
-                    disabled={isLoggedIn}
-                    className={`ge-chip-action ge-mobile-cta-width flex-1 lg:flex-none ${
-                      isLoggedIn ? 'ge-chip-action--active' : 'ge-chip-action--secondary'
-                    }`}
-                  >
-                    <PenLine size={18} />
-                    {isLoggedIn ? 'Espera tu respuesta' : 'Recibir notificaciones'}
-                  </Button>
+
                 </div>
      
                 

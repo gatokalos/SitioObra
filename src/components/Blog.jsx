@@ -6,7 +6,6 @@ import { useSearch } from '@/hooks/useSearch';
 import { Button } from '@/components/ui/button';
 import { toast } from '@/components/ui/use-toast';
 import ReactMarkdown from 'react-markdown';
-import LoginOverlay from '@/components/ContributionModal/LoginOverlay';
 import { useAuth } from '@/contexts/SupabaseAuthContext';
 import {
   BLOG_CATEGORY_CONFIG,
@@ -15,6 +14,9 @@ import {
 } from '@/lib/blogCategories';
 import { recordArticleInteraction } from '@/services/articleInteractionService';
 import { sanitizeExternalHttpUrl } from '@/lib/urlSafety';
+
+const CONTACT_PREFILL_KEY = 'gatoencerrado:contact-prefill';
+const LOGIN_RETURN_KEY = 'gatoencerrado:login-return';
 
 const containerVariants = {
   hidden: { opacity: 0, y: 40 },
@@ -450,9 +452,6 @@ const FullArticle = ({ post, onClose }) => {
 
 const ArticleInteractionPanel = ({ post }) => {
   const { user } = useAuth();
-  const [showLoginOverlay, setShowLoginOverlay] = useState(false);
-  const openLoginOverlay = useCallback(() => setShowLoginOverlay(true), []);
-  const closeLoginOverlay = useCallback(() => setShowLoginOverlay(false), []);
 
   const inferredMiniverseKey = useMemo(() => inferMiniverseFromPost(post), [post]);
   const miniverseInfo = MINIVERSE_HIERARCHY[inferredMiniverseKey] ?? MINIVERSE_HIERARCHY.curaduria;
@@ -472,39 +471,60 @@ const ArticleInteractionPanel = ({ post }) => {
 
   const handleNotify = async () => {
     const nextNotify = !wantsNotification;
+    const authorName = post?.author?.trim() || 'este autor';
+    const articleTitle = post?.title?.trim() || 'este texto';
+    const message = `Hola, quiero recibir más información sobre ${authorName} en el Backstage.\n\nVengo de leer "${articleTitle}" y me interesa saber cómo seguir su trabajo dentro del universo #GatoEncerrado.`;
 
-    if (!user) {
-      toast({
-        description: 'Inicia sesión para recibir notificaciones y continuar en el Backstage.',
-      });
-      openLoginOverlay();
-      return;
+    if (typeof window !== 'undefined') {
+      window.localStorage?.setItem(
+        CONTACT_PREFILL_KEY,
+        JSON.stringify({
+          source: 'blog-author-backstage',
+          articleSlug: post?.slug ?? null,
+          articleTitle,
+          author: authorName,
+          message,
+          createdAt: Date.now(),
+        })
+      );
+      window.localStorage?.setItem(
+        LOGIN_RETURN_KEY,
+        JSON.stringify({
+          anchor: '#contact',
+          action: 'blog-author-backstage',
+          source: 'blog',
+          articleSlug: post?.slug ?? null,
+        })
+      );
+      window.dispatchEvent(new CustomEvent('gatoencerrado:contact-prefill'));
     }
 
     setStatus((prev) => ({ ...prev, notify: 'loading' }));
 
-    const { success, error } = await recordArticleInteraction({
-      post,
-      action: 'notify',
-      notify: nextNotify,
-      miniverse: inferredMiniverseKey,
-      mostViewedMiniverse: miniverseInfo.label,
-      mostViewedMiniverseCount: miniverseInfo.views ?? null,
-    });
-
-    if (!success) {
-      console.error('[ArticleInteraction] Error guardando interacción:', error);
-      toast({ description: 'No pudimos guardar tu interacción. Intenta nuevamente.' });
-    } else {
-      setWantsNotification(nextNotify);
-      toast({
-        description: nextNotify
-          ? 'Te avisaremos cuando haya novedades sobre este texto.'
-          : 'Ya no recibes notificaciones de este artículo.',
+    if (user) {
+      const { success, error } = await recordArticleInteraction({
+        post,
+        action: 'notify',
+        notify: nextNotify,
+        miniverse: inferredMiniverseKey,
+        mostViewedMiniverse: miniverseInfo.label,
+        mostViewedMiniverseCount: miniverseInfo.views ?? null,
       });
+
+      if (!success) {
+        console.error('[ArticleInteraction] Error guardando interacción:', error);
+        toast({ description: 'No pudimos guardar tu interacción, pero puedes escribir desde contacto.' });
+      } else {
+        setWantsNotification(nextNotify);
+      }
     }
 
     setStatus((prev) => ({ ...prev, notify: 'idle' }));
+
+    if (typeof document !== 'undefined') {
+      document.querySelector('#contact')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+    toast({ description: 'Te llevé a contacto con el mensaje preparado.' });
   };
 
   const handleShare = async () => {
@@ -615,7 +635,6 @@ const ArticleInteractionPanel = ({ post }) => {
           </Button>
         </div>
       </div>
-      {showLoginOverlay ? <LoginOverlay onClose={closeLoginOverlay} /> : null}
     </>
   );
 };
