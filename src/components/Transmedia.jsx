@@ -5256,17 +5256,17 @@ Silvestre, un hombre en sus treintas, comienza a perder la frontera entre lo que
               viewport={{ once: true }}
               className="text-center mb-[clamp(2.5rem,5.5vh,4rem)] space-y-[clamp(1.25rem,2.2vh,1.75rem)] min-h-[clamp(210px,27vh,260px)] min-[700px]:max-lg:mb-8 min-[700px]:max-lg:min-h-[180px]"
             >
-              <p className="text-xs uppercase tracking-[0.4em] text-slate-400/70">#obratransmedia</p>
+              <p className="text-xs uppercase tracking-[0.4em] text-slate-400/70">#narrativaexpandida</p>
               <h2 className="font-display text-4xl md:text-5xl font-medium text-gradient italic">
                 La obra toma forma
               </h2>
               <p className="text-lg text-slate-300/80 max-w-3xl mx-auto leading-relaxed font-light">
-    <em>Esta obra es una sola narrativa, desplegada en nueve formas.</em><br />
-    Sus miniversos permiten abordarla desde distintos lugares y participar a tu manera.<br /><br />
-
-    <strong>El universo entero cabe en cualquiera de sus formas</strong>,<br />como una obra en un solo verso.<br /><br />
-
-  </p>
+    <em>Esta obra es una narrativa en nueve formas</em>, desplegada en nueve "mini-versos".<br />
+    Lo que cambia es desde dónde la abordas y cómo participas.<br />
+      <span className="block mt-10 text-sm text-slate-100/50 italic">
+    (Cada <strong>miniverso</strong> sostiene al universo entero<br />solo si prestas un minuto de tu atención.)
+  </span>
+      </p>
             </motion.div>
           ) : null}
 
@@ -5484,7 +5484,7 @@ Silvestre, un hombre en sus treintas, comienza a perder la frontera entre lo que
                           className={`${iconClass} drop-shadow-[0_0_12px_rgba(168,85,247,0.35)] transition-transform duration-300 group-hover:-translate-y-1 group-active:-translate-y-1`}
                         />
                         <div>
-                          <p className="text-xs uppercase tracking-[0.35em] text-slate-400/80">Formas de la Obra</p>
+                          <p className="text-xs uppercase tracking-[0.35em] text-slate-400/80">Miniversos</p>
                           <h3 className="font-display text-2xl text-slate-100">{format.title}</h3>
                         </div>
                       </div>
@@ -5515,7 +5515,7 @@ Silvestre, un hombre en sus treintas, comienza a perder la frontera entre lo que
                           }}
                           className="group inline-flex items-center gap-2 rounded-full border border-amber-300/40 bg-amber-500/10 px-4 py-2 text-sm font-semibold text-amber-200 transition hover:bg-amber-500/20"
                         >
-                          Entra para responder
+                          Entra para seguir la forma
                           <ArrowRight
                             size={16}
                             className="shrink-0 transition-transform duration-200 group-hover:translate-x-0.5"
@@ -5523,9 +5523,12 @@ Silvestre, un hombre en sus treintas, comienza a perder la frontera entre lo que
                           />
                         </button>
                       ) : (
-                        <div className="text-purple-300 flex items-center gap-2 font-semibold transition-all duration-300 group-hover:gap-3 group-active:gap-3">
-                          Explora
-                          <Sparkles size={16} />
+                        <div
+                          aria-hidden="true"
+                          className="invisible pointer-events-none inline-flex items-center gap-2 rounded-full border border-amber-300/40 px-4 py-2 text-sm font-semibold"
+                        >
+                          Entra para seguir la forma
+                          <ArrowRight size={16} className="shrink-0" aria-hidden="true" />
                         </div>
                       )}
                       </div>
@@ -5687,7 +5690,7 @@ Silvestre, un hombre en sus treintas, comienza a perder la frontera entre lo que
                       <div className="flex items-center gap-3">
                         <Icon size={24} className={`${iconClass} drop-shadow-[0_0_12px_rgba(168,85,247,0.35)] transition-transform duration-300 group-hover:-translate-y-1`} />
                         <div>
-                          <p className="text-xs uppercase tracking-[0.35em] text-slate-400/80">Miniverso</p>
+                          <p className="text-xs uppercase tracking-[0.35em] text-slate-400/80">Miniversos</p>
                           <h3 className="font-display text-2xl text-slate-100">{format.title}</h3>
                         </div>
                       </div>
@@ -5722,7 +5725,7 @@ Silvestre, un hombre en sus treintas, comienza a perder la frontera entre lo que
                           }}
                           className="group inline-flex items-center gap-2 rounded-full border border-amber-300/40 bg-amber-500/10 px-4 py-2 text-sm font-semibold text-amber-200 transition hover:bg-amber-500/20"
                         >
-                          Entra para responder
+                          Entra para seguir la forma
                           <ArrowRight
                             size={16}
                             className="shrink-0 transition-transform duration-200 group-hover:translate-x-0.5"

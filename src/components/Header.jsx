@@ -287,9 +287,9 @@ const Header = ({
     ...(showTransmediaNav
       ? [
           {
-            name: 'Las nueve formas',
+            name: 'La obra toma forma',
             href: '#transmedia',
-            description: '#Obratransmedia',
+            description: '#narrativaexpandida',
             secondary: TRANSMEDIA_SECONDARY_ITEMS,
           },
         ]

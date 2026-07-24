@@ -90,7 +90,7 @@ Uso en Transmedia:
 Cuando el intent de Bienvenida llega con `isUmbral: true`, `GatokensRevealModal` usa una variante escenica sin panel sobre el overlay borroso existente:
 
 - Moneda GAT actual, prominente y ambiental.
-- Texto fijo: `La obra ya sabe que estás aquí.`
+- Texto fijo: `Ahora la obra sabe que estás aquí.`
 - CTA fijo: `Esta escena es para ti`.
 - El CTA abre `VideoNarrativeAutoplay` con el `showcaseId` resuelto desde la app elegida/recomendada.
 - Todos los showcases pueden usar el mismo video placeholder mientras se producen sus videos definitivos.

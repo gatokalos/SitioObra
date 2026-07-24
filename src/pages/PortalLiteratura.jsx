@@ -30,7 +30,7 @@ import { resolvePortalRoute } from '@/lib/miniversePortalRegistry';
 
 const LITERATURA_NOTA_AUTORAL = {
   title: '#LaPreguntaInsiste',
-  verse: 'Escribí para entender\ny la página me abrió otra pregunta.',
+  verse: 'Escribí para entender\ny la página\nme abrió otra pregunta.',
 };
 const LITERATURA_TILE = {
   gradient: 'linear-gradient(135deg, rgba(26,24,60,0.95), rgba(59,43,95,0.85), rgba(108,56,118,0.7))',

@@ -180,7 +180,7 @@ const GatokensRevealModal = ({
                 id="gatokens-modal-title"
                 className="relative mt-9 text-3xl font-medium leading-tight tracking-[-0.02em] text-white sm:text-4xl"
               >
-                La obra ya sabe<br />que estás aquí.
+                Ahora la obra sabe<br />que estás aquí.
               </h2>
 
               <button

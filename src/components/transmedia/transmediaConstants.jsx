@@ -836,7 +836,7 @@ iaProfile: {
     ),
     cartaTitle: '#LaPreguntaInsiste',
     notaAutoral:
-      'Escribí para entender\ny la página me abrió otra pregunta.',
+      'Escribí para entender\ny la página\nme abrió otra pregunta.',
     collaborators: [
       {
         id: 'pepe-rojo',
@@ -1595,7 +1595,7 @@ export const CAUSE_ACCORDION = [
   imageAlt: 'Captura de la app Causa Social en escuelas (versión beta).',
   imageLabel: 'Capturas beta de la app',
     imageUrls: [
-      'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/causa%20social/appsplash.png',
+      'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/causa%20social/appsplash.jpg',
       'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/causa%20social/IgualqueSofia.png',
        'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/causa%20social/contestar.png',
       'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/causa%20social/Ximena.png',
