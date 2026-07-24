@@ -10,11 +10,11 @@ export const PREGUNTA_MADRE = {
   literatura:  '¿Qué cambia en ti cuando una experiencia personal se convierte en relato?',
   artesanias:  '¿Cuándo un objeto deja de ser para ti solo un objeto?',
   grafico:     '¿Qué te ocurre cuando alguien más interpreta tu apariencia?',
-  cine:        '¿Qué significa para ti verse fallar desde afuera?',
-  sonoridades: '¿Por qué algunos sonidos duran más que las imágenes?',
-  movimiento:  '¿Qué sabe el cuerpo antes que la mente?',
-  juegos:      '¿Qué cambia cuando una historia depende de nuestras decisiones?',
-  oraculo:     '¿Cuándo una experiencia deja de sentirse individual?',
+  cine:        '¿Qué descubres de ti al verte fallar desde afuera?',
+  sonoridades: '¿Qué sigue sonando en ti cuando ya no queda nada que mirar?',
+  movimiento:  '¿Qué sabe tu cuerpo antes de que el pensamiento alcance a nombrarlo?',
+  juegos:      '¿Qué cambia en ti cuando una decisión tuya cambia el rumbo de una historia?',
+  oraculo:     '¿Cuándo reconoces en otros una experiencia que creías solo tuya?',
 };
 
 async function fetchOraculoContext(anonId) {
