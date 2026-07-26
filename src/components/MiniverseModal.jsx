@@ -520,9 +520,7 @@ const DEMO_URL_BY_FORMAT_ID = {
   apps: 'https://juegos.miniversos.ai/',
   copycats: 'https://cine.miniversos.ai/',
   oraculo: 'https://oraculo.miniversos.ai/',
-  // miniversoNovela (literatura.miniversos.ai) queda fuera a propósito: su
-  // certificado SSL está roto (handshake falla, confirmado 2026-07-26) — se
-  // agrega en cuanto Hostinger lo repare, no antes.
+  miniversoNovela: 'https://literatura.miniversos.ai/',
 };
 
 const MiniverseModal = ({
