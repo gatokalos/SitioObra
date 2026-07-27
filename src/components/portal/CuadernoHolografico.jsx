@@ -41,7 +41,7 @@ const lsRead = (portal) => {
   catch { return {}; }
 };
 
-const CATALOG = [
+export const CATALOG = [
   { key: 'obra',        name: 'Obra Escénica',  showcase: 'miniversos',          color: 'text-purple-300',  q: '¿Qué significa para ti habitar una emoción delante de otros?',          cta: 'Sigue la obra' },
   { key: 'literatura',  name: 'Literatura',     showcase: 'miniversoNovela',     color: 'text-emerald-300', q: '¿Qué cambia en ti cuando una experiencia personal se convierte en relato?', cta: 'Sigue la literatura' },
   { key: 'artesanias',  name: 'Artesanías',     showcase: 'lataza',              color: 'text-amber-300',   q: '¿Cuándo un objeto deja de ser para ti solo un objeto?',                  cta: 'Sigue las artesanías' },

@@ -3,6 +3,16 @@ import { safeGetItem, safeSetItem } from '@/lib/safeStorage';
 
 const STORAGE_KEY = 'gx_anon_id';
 
+// Override en memoria (no localStorage) para deep-links de Bitácora diferida:
+// el anon_id del link (?t=...) puede no coincidir con el de este navegador —
+// forzarlo a localStorage pisaría la identidad real de quien abre el link en
+// su propio dispositivo. Vive solo mientras dure la pestaña.
+let anonIdOverride = null;
+
+export function setAnonIdOverride(id) {
+  anonIdOverride = typeof id === 'string' && id.trim() ? id.trim() : null;
+}
+
 function canUseLocalStorage() {
   return typeof window !== 'undefined';
 }
@@ -16,6 +26,7 @@ function createAnonId() {
 }
 
 export function getAnonId() {
+  if (anonIdOverride) return anonIdOverride;
   if (!canUseLocalStorage()) {
     return null;
   }
@@ -29,6 +40,7 @@ export function getAnonId() {
 }
 
 export function ensureAnonId() {
+  if (anonIdOverride) return anonIdOverride;
   if (!canUseLocalStorage()) {
     return null;
   }

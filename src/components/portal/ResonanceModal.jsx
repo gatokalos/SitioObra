@@ -11,6 +11,7 @@ import { ConfettiBurst, useConfettiBursts } from '@/components/Confetti';
 import { resolvePortalRoute } from '@/lib/miniversePortalRegistry';
 import { createPortalLaunchState } from '@/lib/portalNavigation';
 import { createMiniverseSouvenirBlob, downloadBlob } from '@/lib/miniverseSouvenirCard';
+import { usePushSubscription } from '@/hooks/usePushSubscription';
 
 const OBRA_API_URL = (import.meta.env.VITE_OBRA_API_URL ?? 'https://api.gatoencerrado.ai').replace(/\/+$/, '');
 const CAT_CABINA_URL = 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/oraculo/gato-cabina.webp';
@@ -238,7 +239,7 @@ const lsPatch = (portal, patch) => {
 
 /* ─── Componente ──────────────────────────────────────────────────────── */
 
-const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNavigateToRecommendation, onL2QuestionReady, isMobileViewport, onRequireLogin }) => {
+const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNavigateToRecommendation, onL2QuestionReady, isMobileViewport, onRequireLogin, startInHolografico = false }) => {
   const modalRef = useRef(null);
   const submitBtnRef = useRef(null);
   const { user } = useAuth();
@@ -281,12 +282,13 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
   const [isSouvenirGenerating, setIsSouvenirGenerating] = useState(false);
 
   // Bitácora individual — seguimiento diferido
+  const { autoSubscribeIfPWA } = usePushSubscription();
   const [bitacoraConsented, setBitacoraConsented]     = useState(() => !!lsRead(portal).bitacora_consented || readGlobalConsent());
   const [bitacoraAvailableAt, setBitacoraAvailableAt] = useState(() => lsRead(portal).bitacora_available_at ?? null);
   const [bitacoraCompleted, setBitacoraCompleted]     = useState(() => !!lsRead(portal).bitacora_completed);
   const [showPhoneInput, setShowPhoneInput]           = useState(false);
   const [phoneInput, setPhoneInput]                   = useState('');
-  const [holograficoOpen, setHolograficoOpen]         = useState(false);
+  const [holograficoOpen, setHolograficoOpen]         = useState(startInHolografico);
   const [holograficoPoster, setHolograficoPoster]     = useState(portal);
   const activeBloom = holograficoOpen ? (PORTAL_BLOOM[holograficoPoster] ?? PORTAL_BLOOM.obra) : bloom;
   const [bitacoraOpen, setBitacoraOpen]               = useState(false);
@@ -562,6 +564,15 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
       }
     } catch (_) {}
   }, [portal]);
+
+  // Si el usuario está en la PWA instalada, suscribe push en silencio
+  // en el momento en que aparece el bloque "Este recorrido ha concluido".
+  useEffect(() => {
+    const l3Done = Boolean(l3Rec?.step3) && !l3Rec?.error && (l3Step >= 4 || l3BubbleClosed);
+    if (!l3Done || bitacoraConsented) return;
+    const bienvenidaAnonId = (() => { try { return localStorage.getItem('bienvenida_anon_id') || null; } catch { return null; } })();
+    autoSubscribeIfPWA({ anonId: ensureAnonId(), miniversoId: portal, bienvenidaAnonId });
+  }, [l3Rec, l3Step, l3BubbleClosed, bitacoraConsented, portal, autoSubscribeIfPWA]);
 
   /* Bitácora — envía respuestas */
   const handleBitacoraSubmit = useCallback(async () => {
@@ -1167,7 +1178,7 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
                         id="resonance-modal-title"
                         className={`font-display text-3xl text-white lg:text-4xl ${!l2ConvDone && l2q && !l2Selection && l2Open ? 'hidden' : ''}`}
                       >
-                        Tu resonancia
+                        Caja de resonancia estética
                       </h2>
                       <p className={`text-sm leading-relaxed text-slate-200/90 ${!l2ConvDone && l2q && !l2Selection && l2Open ? 'hidden' : ''}`}>
                         Cada etapa aporta datos valiosos para comprender cómo habitamos las emociones delante de otros.
