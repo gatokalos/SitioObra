@@ -588,7 +588,7 @@ const Transmedia = ({ allianceOnlyMode = false }) => {
   }, [showMobilePortalLogin]);
 
   // Salvaguarda de las vitrinas (desktop): leer/explorar no requiere sesión,
-  // responder a la resonancia colectiva sí. Mismo aviso "¿Te gustaría iniciar
+  // responder a la e gustaría iniciar
   // sesión?" que ya se usa en los portales móviles — al confirmar, reutiliza
   // el LoginOverlay genérico que ya carga este archivo (showMobilePortalLogin)
   // en vez de montar otro más.
@@ -4247,8 +4247,9 @@ Silvestre, un hombre en sus treintas, comienza a perder la frontera entre lo que
                     {activeDefinition.type === 'tragedia' ? (
                       <>
                         <div className="mb-1">
-                          <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Formas de habitar</p>
-                          <h4 className="font-display text-2xl question-heading-voice">Resonancia colectiva</h4>
+                          <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Resonancia Colectiva</p>
+                          <h4 className="font-display text-2xl question-heading-voice">Tras cada pregunta
+                          </h4>
                         </div>
                         <VitranaQuestionReveal
                           question={activePortalL1Done ? (buildL1Acknowledgment('obra', activePortalL2Answer) ?? LEVEL2_QUESTIONS['obra']?.question ?? VITRANA_QUESTION_BY_SHOWCASE['miniversos']) : VITRANA_QUESTION_BY_SHOWCASE['miniversos']}
@@ -4286,8 +4287,9 @@ Silvestre, un hombre en sus treintas, comienza a perder la frontera entre lo que
                     ) : activeShowcase === 'miniversoNovela' ? (
                       <>
                         <div className="mb-1">
-                          <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Formas de habitar</p>
-                          <h4 className="font-display text-2xl question-heading-voice">Resonancia colectiva</h4>
+                          <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Resonancia Colectiva</p>
+                          <h4 className="font-display text-2xl question-heading-voice">Tras cada pregunta
+                          </h4>
                         </div>
                         <VitranaQuestionReveal
                           question={activePortalL1Done ? (buildL1Acknowledgment('literatura', activePortalL2Answer) ?? LEVEL2_QUESTIONS['literatura']?.question ?? VITRANA_QUESTION_BY_SHOWCASE['miniversoNovela']) : VITRANA_QUESTION_BY_SHOWCASE['miniversoNovela']}
@@ -4323,8 +4325,9 @@ Silvestre, un hombre en sus treintas, comienza a perder la frontera entre lo que
                     ) : activeShowcase === 'lataza' ? (
                       <>
                         <div className="mb-1">
-                          <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Formas de habitar</p>
-                          <h4 className="font-display text-2xl question-heading-voice">Resonancia colectiva</h4>
+                          <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Resonancia Colectiva</p>
+                          <h4 className="font-display text-2xl question-heading-voice">Tras cada pregunta
+                          </h4>
                         </div>
                         <VitranaQuestionReveal
                           question={activePortalL1Done ? (buildL1Acknowledgment('artesanias', activePortalL2Answer) ?? LEVEL2_QUESTIONS['artesanias']?.question ?? VITRANA_QUESTION_BY_SHOWCASE['lataza']) : VITRANA_QUESTION_BY_SHOWCASE['lataza']}
@@ -4360,8 +4363,9 @@ Silvestre, un hombre en sus treintas, comienza a perder la frontera entre lo que
                     ) : activeShowcase === 'miniversoGrafico' ? (
                       <>
                         <div className="mb-1">
-                          <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Formas de habitar</p>
-                          <h4 className="font-display text-2xl question-heading-voice">Resonancia colectiva</h4>
+                          <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Resonancia Colectiva</p>
+                          <h4 className="font-display text-2xl question-heading-voice">Tras cada pregunta
+                          </h4>
                         </div>
                         <VitranaQuestionReveal
                           question={activePortalL1Done ? (buildL1Acknowledgment('grafico', activePortalL2Answer) ?? LEVEL2_QUESTIONS['grafico']?.question ?? VITRANA_QUESTION_BY_SHOWCASE['miniversoGrafico']) : VITRANA_QUESTION_BY_SHOWCASE['miniversoGrafico']}
@@ -4398,8 +4402,9 @@ Silvestre, un hombre en sus treintas, comienza a perder la frontera entre lo que
                     ) : activeShowcase === 'copycats' ? (
                       <>
                         <div className="mb-1">
-                          <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Formas de habitar</p>
-                          <h4 className="font-display text-2xl question-heading-voice">Resonancia colectiva</h4>
+                          <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Resonancia Colectiva</p>
+                          <h4 className="font-display text-2xl question-heading-voice">Tras cada pregunta
+                          </h4>
                         </div>
                         <VitranaQuestionReveal
                           question={activePortalL1Done ? (buildL1Acknowledgment('cine', activePortalL2Answer) ?? LEVEL2_QUESTIONS['cine']?.question ?? VITRANA_QUESTION_BY_SHOWCASE['cine']) : VITRANA_QUESTION_BY_SHOWCASE['cine']}
@@ -4435,8 +4440,9 @@ Silvestre, un hombre en sus treintas, comienza a perder la frontera entre lo que
                     ) : activeShowcase === 'miniversoSonoro' ? (
                       <>
                         <div className="mb-1">
-                          <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Formas de habitar</p>
-                          <h4 className="font-display text-2xl question-heading-voice">Resonancia colectiva</h4>
+                          <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Resonancia Colectiva</p>
+                          <h4 className="font-display text-2xl question-heading-voice">Tras cada pregunta
+                          </h4>
                         </div>
                         <VitranaQuestionReveal
                           question={activePortalL1Done ? (buildL1Acknowledgment('sonoridades', activePortalL2Answer) ?? LEVEL2_QUESTIONS['sonoridades']?.question ?? VITRANA_QUESTION_BY_SHOWCASE['miniversoSonoro']) : VITRANA_QUESTION_BY_SHOWCASE['miniversoSonoro']}
@@ -4472,8 +4478,9 @@ Silvestre, un hombre en sus treintas, comienza a perder la frontera entre lo que
                     ) : activeShowcase === 'miniversoMovimiento' ? (
                       <>
                         <div className="mb-1">
-                          <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Formas de habitar</p>
-                          <h4 className="font-display text-2xl question-heading-voice">Resonancia colectiva</h4>
+                          <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Resonancia Colectiva</p>
+                          <h4 className="font-display text-2xl question-heading-voice">Tras cada pregunta
+                          </h4>
                         </div>
                         <VitranaQuestionReveal
                           question={activePortalL1Done ? (buildL1Acknowledgment('movimiento', activePortalL2Answer) ?? LEVEL2_QUESTIONS['movimiento']?.question ?? VITRANA_QUESTION_BY_SHOWCASE['miniversoMovimiento']) : VITRANA_QUESTION_BY_SHOWCASE['miniversoMovimiento']}
@@ -4509,8 +4516,9 @@ Silvestre, un hombre en sus treintas, comienza a perder la frontera entre lo que
                     ) : activeShowcase === 'apps' ? (
                       <>
                         <div className="mb-1">
-                          <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Formas de habitar</p>
-                          <h4 className="font-display text-2xl question-heading-voice">Resonancia colectiva</h4>
+                          <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Resonancia Colectiva</p>
+                          <h4 className="font-display text-2xl question-heading-voice">Tras cada pregunta
+                          </h4>
                         </div>
                         <VitranaQuestionReveal
                           question={activePortalL1Done ? (buildL1Acknowledgment('juegos', activePortalL2Answer) ?? LEVEL2_QUESTIONS['juegos']?.question ?? VITRANA_QUESTION_BY_SHOWCASE['apps']) : VITRANA_QUESTION_BY_SHOWCASE['apps']}
@@ -4546,8 +4554,9 @@ Silvestre, un hombre en sus treintas, comienza a perder la frontera entre lo que
                     ) : activeShowcase === 'oraculo' ? (
                       <>
                         <div className="mb-1">
-                          <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Formas de habitar</p>
-                          <h4 className="font-display text-2xl question-heading-voice">Resonancia colectiva</h4>
+                          <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Resonancia Colectiva</p>
+                          <h4 className="font-display text-2xl question-heading-voice">Tras cada pregunta
+                          </h4>
                         </div>
                         <VitranaQuestionReveal
                           question={activePortalL1Done ? (buildL1Acknowledgment('oraculo', activePortalL2Answer) ?? LEVEL2_QUESTIONS['oraculo']?.question ?? VITRANA_QUESTION_BY_SHOWCASE['oraculo']) : VITRANA_QUESTION_BY_SHOWCASE['oraculo']}

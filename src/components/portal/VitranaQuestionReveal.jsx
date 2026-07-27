@@ -25,7 +25,7 @@ const VitranaQuestionReveal = ({
   onAnswer,
   onReveal,
   buttonLabel = 'Intuye tu respuesta',
-  label = 'Formas de habitar',
+  label = 'Resonancia Colectiva',
   autoReveal = false,
   portal = null,
   l2Done = false,

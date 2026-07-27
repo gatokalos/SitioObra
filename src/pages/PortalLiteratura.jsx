@@ -319,8 +319,8 @@ const PortalLiteratura = () => {
 
               <div className="hidden lg:block">
                 <div className="mb-3">
-                  <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Formas de habitar</p>
-                  <h4 className="font-display text-xl question-heading-voice">Resonancia colectiva</h4>
+                  <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Resonancia Colectiva</p>
+                  <h4 className="font-display text-xl question-heading-voice">Tras cada pregunta</h4>
                 </div>
                 <div className="flex flex-col gap-5">
                   <VitranaQuestionReveal
@@ -398,8 +398,8 @@ const PortalLiteratura = () => {
                 </div>
                 <div className={`pt-4 border-t border-white/10 lg:hidden space-y-4 transition-opacity duration-300${isResonanceOpen ? ' opacity-30 pointer-events-none' : ''}`}>
                   <div className="mb-1">
-                    <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Formas de habitar</p>
-                    <h4 className="font-display text-xl question-heading-voice">Resonancia colectiva</h4>
+                    <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Resonancia Colectiva</p>
+                    <h4 className="font-display text-xl question-heading-voice">Tras cada pregunta</h4>
                   </div>
                   <VitranaQuestionReveal
                     question={l1Done ? (buildL1Acknowledgment('literatura', l2Answer) ?? LEVEL2_QUESTIONS['literatura']?.question ?? vitranaQuestion) : vitranaQuestion}
