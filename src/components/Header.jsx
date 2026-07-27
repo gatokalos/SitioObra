@@ -19,6 +19,10 @@ import {
   findLatestSpendTarget,
   readOraculoRecommendedShowcase,
 } from '@/lib/transmediaCreditEventLabels';
+import { CATALOG, readGlobalConsent, writeGlobalConsent } from '@/lib/bitacoraShared';
+import { ensureAnonId } from '@/lib/identity';
+
+const BITACORA_API_BASE = (import.meta.env.VITE_OBRA_API_URL ?? 'https://api.gatoencerrado.ai').replace(/\/+$/, '');
 
 const GAT_BALANCE_STORAGE_KEY = 'gatoencerrado:gatokens-available';
 const GATOKENS_REVEAL_PULSE_EVENT = 'gatoencerrado:gatokens-reveal-pulse';
@@ -70,6 +74,10 @@ const Header = ({
   const [gatSpendRecommendation, setGatSpendRecommendation] = useState(null);
   const [isGatLoginEligible, setIsGatLoginEligible] = useState(false);
   const [isGatSpendRecommendationLoading, setIsGatSpendRecommendationLoading] = useState(false);
+  const [showGatWhatsappInput, setShowGatWhatsappInput] = useState(false);
+  const [gatWhatsappPhone, setGatWhatsappPhone] = useState('');
+  const [gatWhatsappSubmitting, setGatWhatsappSubmitting] = useState(false);
+  const [gatWhatsappDone, setGatWhatsappDone] = useState(() => readGlobalConsent());
   const gatChipRootRef = useRef(null);
   const gatInfoPanelRef = useRef(null);
   const navigate = useNavigate();
@@ -210,6 +218,44 @@ const Header = ({
     setIsGatInfoOpen(false);
     setShowLoginOverlay(true);
   }, []);
+
+  // Atajo al cuaderno holográfico desde el tooltip de GAT — reusa la misma
+  // recomendación que ya calcula el bloque de arriba como punto de entrada.
+  // Una vez adentro, cambiar de miniverso es trivial (constelación de
+  // CuadernoHolografico), así que no hace falta que la elección sea perfecta.
+  const handleOpenHolograficoFromGatTooltip = useCallback(() => {
+    const entry = CATALOG.find((c) => c.showcase === gatSpendRecommendation?.showcaseId);
+    const portalKey = entry?.key ?? 'oraculo';
+    setIsGatInfoOpen(false);
+    navigate(`/bitacora?t=${encodeURIComponent(ensureAnonId())}&m=${portalKey}`);
+  }, [gatSpendRecommendation, navigate]);
+
+  // Atajo para dejar el WhatsApp desde el tooltip, para quien dejó pasar la
+  // primera oportunidad en el cierre de L3 (ResonanceModal). El consentimiento
+  // es global por anon_id, no por miniverso — cualquier miniverso_id vale.
+  const handleSubmitGatWhatsapp = useCallback(async () => {
+    if (gatWhatsappPhone.trim().length < 8) return;
+    setGatWhatsappSubmitting(true);
+    try {
+      const entry = CATALOG.find((c) => c.showcase === gatSpendRecommendation?.showcaseId);
+      await fetch(`${BITACORA_API_BASE}/api/bitacora/consent`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          anon_id: ensureAnonId(),
+          miniverso_id: entry?.key ?? 'oraculo',
+          canal: 'whatsapp',
+          phone_number: gatWhatsappPhone.trim(),
+        }),
+      });
+      writeGlobalConsent();
+      setGatWhatsappDone(true);
+    } catch {
+      // Silencioso, mismo criterio que usePushSubscription — no interrumpir.
+    } finally {
+      setGatWhatsappSubmitting(false);
+    }
+  }, [gatWhatsappPhone, gatSpendRecommendation]);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -673,7 +719,7 @@ const Header = ({
                         className="group flex w-full items-center justify-between gap-2 rounded-lg border border-violet-200 bg-violet-50 px-3 py-2 text-left text-xs leading-relaxed text-violet-800 transition hover:border-violet-300 hover:bg-violet-100"
                       >
                         <span>
-                          Te recomendamos gastarlos en{' '}
+                          Te recomendamos explorar{' '}
                           <span className="font-semibold">{gatSpendRecommendation.title}</span>.
                         </span>
                         <span className="shrink-0 text-violet-500 transition-transform group-hover:translate-x-0.5">
@@ -691,8 +737,51 @@ const Header = ({
                         onClick={handleOpenLoginFromGatTooltip}
                         className="w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-left text-xs font-semibold leading-relaxed text-slate-700 transition hover:border-slate-300 hover:bg-white"
                       >
-                        Inicia sesión para conservar tus GATokens.
+                        Inicia sesión para gastar tus GATokens.
                       </button>
+                    ) : null}
+                    <button
+                      type="button"
+                      onClick={handleOpenHolograficoFromGatTooltip}
+                      className="group flex w-full items-center justify-between gap-2 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-left text-xs leading-relaxed text-amber-800 transition hover:border-amber-300 hover:bg-amber-100"
+                    >
+                      <span>Tu cuaderno holográfico te espera.</span>
+                      <span className="shrink-0 text-amber-500 transition-transform group-hover:translate-x-0.5">
+                        →
+                      </span>
+                    </button>
+                    {!gatWhatsappDone ? (
+                      showGatWhatsappInput ? (
+                        <div className="space-y-1.5">
+                          <p className="text-[0.68rem] text-slate-500">¿A qué número te avisamos?</p>
+                          <div className="flex gap-1.5">
+                            <input
+                              type="tel"
+                              value={gatWhatsappPhone}
+                              onChange={(e) => setGatWhatsappPhone(e.target.value)}
+                              placeholder="+52 55 0000 0000"
+                              disabled={gatWhatsappSubmitting}
+                              className="min-w-0 flex-1 rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 text-xs text-slate-700 placeholder:text-slate-400 outline-none focus:border-slate-400"
+                            />
+                            <button
+                              type="button"
+                              onClick={handleSubmitGatWhatsapp}
+                              disabled={gatWhatsappSubmitting || gatWhatsappPhone.trim().length < 8}
+                              className="shrink-0 rounded-lg border border-slate-200 bg-slate-50 px-2.5 py-1.5 text-xs font-semibold text-slate-700 transition hover:bg-white disabled:cursor-not-allowed disabled:opacity-40"
+                            >
+                              {gatWhatsappSubmitting ? '…' : 'Enviar'}
+                            </button>
+                          </div>
+                        </div>
+                      ) : (
+                        <button
+                          type="button"
+                          onClick={() => setShowGatWhatsappInput(true)}
+                          className="w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-left text-[0.68rem] leading-relaxed text-slate-500 transition hover:border-slate-300 hover:bg-white"
+                        >
+                          ¿Dejaste pasar tu bitácora? Avísame por WhatsApp.
+                        </button>
+                      )
                     ) : null}
                   </div>
                   <div className="border-t border-slate-100 bg-amber-50 px-4 py-2">

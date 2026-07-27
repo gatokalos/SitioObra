@@ -12,6 +12,9 @@ import { resolvePortalRoute } from '@/lib/miniversePortalRegistry';
 import { createPortalLaunchState } from '@/lib/portalNavigation';
 import { createMiniverseSouvenirBlob, downloadBlob } from '@/lib/miniverseSouvenirCard';
 import { usePushSubscription } from '@/hooks/usePushSubscription';
+import { readGlobalConsent, writeGlobalConsent } from '@/lib/bitacoraShared';
+
+export { readGlobalConsent, writeGlobalConsent };
 
 const OBRA_API_URL = (import.meta.env.VITE_OBRA_API_URL ?? 'https://api.gatoencerrado.ai').replace(/\/+$/, '');
 const CAT_CABINA_URL = 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/oraculo/gato-cabina.webp';
@@ -222,9 +225,6 @@ const LEVELS = [
 
 const lsKey = (portal) => `gatoencerrado:resonance:${portal}`;
 
-const GLOBAL_CONSENT_KEY = 'gatoencerrado:bitacora:consented';
-const readGlobalConsent  = () => { try { return !!JSON.parse(localStorage.getItem(GLOBAL_CONSENT_KEY)); } catch { return false; } };
-const writeGlobalConsent = () => { try { localStorage.setItem(GLOBAL_CONSENT_KEY, 'true'); } catch {} };
 
 const lsRead = (portal) => {
   try { return JSON.parse(localStorage.getItem(lsKey(portal))) ?? {}; }

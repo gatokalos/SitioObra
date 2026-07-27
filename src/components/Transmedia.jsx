@@ -5832,7 +5832,7 @@ Silvestre, un hombre en sus treintas, comienza a perder la frontera entre lo que
         onClose={handleCloseResonanceLoginNudge}
         onLogin={handleConfirmResonanceLogin}
         title="¿Te gustaría iniciar sesión para responder?"
-        description="Puedes seguir explorando este universo libremente. Para dejar tu propia resonancia y que forme parte del diálogo colectivo, necesitas iniciar sesión."
+        description="Puedes seguir explorando este miniverso, pero para que tu resonancia personal pueda dialogar con la colectiva, hay que iniciar sesión."
         titleId="resonance-login-nudge-title"
       />
 

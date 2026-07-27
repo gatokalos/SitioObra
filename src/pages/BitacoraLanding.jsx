@@ -1,7 +1,7 @@
 import React, { useMemo, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import ResonanceModal from '@/components/portal/ResonanceModal';
-import { CATALOG } from '@/components/portal/CuadernoHolografico';
+import { CATALOG } from '@/lib/bitacoraShared';
 import LoginOverlay from '@/components/ContributionModal/LoginOverlay';
 import { resolvePortalRoute } from '@/lib/miniversePortalRegistry';
 import { setAnonIdOverride } from '@/lib/identity';
