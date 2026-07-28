@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useLayoutEffect, useRef } from 'react';
+import React, { useState, useEffect, useCallback, useLayoutEffect, useMemo, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { motion, useReducedMotion } from 'framer-motion';
 import { Coffee, Info, Sparkles, LogIn, Compass, BookOpen, MessageCircle, UserCircle2, DoorOpen, X, ArrowUpRight } from 'lucide-react';
@@ -23,6 +23,7 @@ import {
 } from '@/lib/transmediaCreditEventLabels';
 import { CATALOG, readGlobalConsent, writeGlobalConsent } from '@/lib/bitacoraShared';
 import { ensureAnonId } from '@/lib/identity';
+import { createHeroStars } from '@/lib/heroStars';
 
 const BITACORA_API_BASE = (import.meta.env.VITE_OBRA_API_URL ?? 'https://api.gatoencerrado.ai').replace(/\/+$/, '');
 
@@ -127,6 +128,7 @@ const Header = ({
   const [gatWhatsappDone, setGatWhatsappDone] = useState(() => readGlobalConsent());
   const gatChipRootRef = useRef(null);
   const gatInfoPanelRef = useRef(null);
+  const gatTrayStars = useMemo(() => createHeroStars(72), []);
   const navigate = useNavigate();
   const location = useLocation();
   const { user, session, signOut } = useAuth();
@@ -155,15 +157,53 @@ const Header = ({
       delete document.body.dataset.gatHubOpen;
     };
   }, [isGatLinktreeOpen]);
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (!isGatLinktreeOpen || typeof document === 'undefined') return undefined;
-    const previousOverflow = document.body.style.overflow;
-    const previousOverscroll = document.body.style.overscrollBehavior;
-    document.body.style.overflow = 'hidden';
-    document.body.style.overscrollBehavior = 'none';
+    const html = document.documentElement;
+    const body = document.body;
+    const lockedScrollY = window.scrollY;
+    const previousStyles = {
+      htmlOverflow: html.style.overflow,
+      htmlOverscroll: html.style.overscrollBehavior,
+      bodyPosition: body.style.position,
+      bodyTop: body.style.top,
+      bodyLeft: body.style.left,
+      bodyRight: body.style.right,
+      bodyWidth: body.style.width,
+      bodyOverflow: body.style.overflow,
+      bodyOverscroll: body.style.overscrollBehavior,
+    };
+
+    html.style.overflow = 'hidden';
+    html.style.overscrollBehavior = 'none';
+    body.style.position = 'fixed';
+    body.style.top = `-${lockedScrollY}px`;
+    body.style.left = '0';
+    body.style.right = '0';
+    body.style.width = '100%';
+    body.style.overflow = 'hidden';
+    body.style.overscrollBehavior = 'none';
+
+    const preventBackgroundGesture = (event) => {
+      if (event.target?.closest?.('[data-gat-hub-scroll]')) return;
+      event.preventDefault();
+    };
+    document.addEventListener('touchmove', preventBackgroundGesture, { passive: false });
+    document.addEventListener('wheel', preventBackgroundGesture, { passive: false });
+
     return () => {
-      document.body.style.overflow = previousOverflow;
-      document.body.style.overscrollBehavior = previousOverscroll;
+      document.removeEventListener('touchmove', preventBackgroundGesture);
+      document.removeEventListener('wheel', preventBackgroundGesture);
+      html.style.overflow = previousStyles.htmlOverflow;
+      html.style.overscrollBehavior = previousStyles.htmlOverscroll;
+      body.style.position = previousStyles.bodyPosition;
+      body.style.top = previousStyles.bodyTop;
+      body.style.left = previousStyles.bodyLeft;
+      body.style.right = previousStyles.bodyRight;
+      body.style.width = previousStyles.bodyWidth;
+      body.style.overflow = previousStyles.bodyOverflow;
+      body.style.overscrollBehavior = previousStyles.bodyOverscroll;
+      window.scrollTo(0, lockedScrollY);
     };
   }, [isGatLinktreeOpen]);
   const [isLinktreeSessionExpanded, setIsLinktreeSessionExpanded] = useState(false);
@@ -917,6 +957,25 @@ const Header = ({
                       aria-hidden="true"
                       className="pointer-events-none absolute right-7 top-0 z-20 h-px w-20 bg-gradient-to-r from-transparent via-cyan-200/45 to-transparent"
                     />
+                    <div className="pointer-events-none absolute inset-0 z-0 overflow-hidden" aria-hidden="true">
+                      {gatTrayStars.map((star) => (
+                        <span
+                          key={`gat-tray-star-${star.id}`}
+                          className={`hero-star${star.twinkle ? ' hero-star--twinkle' : ''}`}
+                          style={{
+                            top: `${star.y}%`,
+                            left: `${star.x}%`,
+                            width: `${star.size}px`,
+                            height: `${star.size}px`,
+                            opacity: star.opacity,
+                            '--star-glow': star.glow,
+                            '--star-opacity': star.opacity,
+                            '--twinkle-delay': `${star.twinkleDelay}s`,
+                            '--twinkle-duration': `${star.twinkleDuration}s`,
+                          }}
+                        />
+                      ))}
+                    </div>
                     <div className="relative z-10 min-h-0 flex-1 overflow-y-auto overscroll-contain">
                       <div className="border-b border-white/[0.075] px-5 pb-4 pt-5 text-center sm:px-6">
                         <p className="text-[0.62rem] font-semibold uppercase tracking-[0.34em] text-amber-300/90">
@@ -956,7 +1015,7 @@ const Header = ({
               initial={prefersReducedMotion ? { opacity: 0 } : { opacity: 0, y: -10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: prefersReducedMotion ? 0.12 : 0.28, ease: 'easeOut' }}
-              className="fixed inset-0 z-[90] overflow-y-auto bg-transparent px-3 py-[calc(env(safe-area-inset-top)+12px)] sm:flex sm:items-center sm:justify-center sm:px-6 sm:py-8"
+              className="fixed inset-0 z-[90] overflow-hidden overscroll-none bg-transparent px-3 py-[calc(env(safe-area-inset-top)+12px)] sm:flex sm:items-center sm:justify-center sm:px-6 sm:py-8"
               role="dialog"
               aria-modal="true"
               aria-label="Hub personal de GATokens"
@@ -985,7 +1044,10 @@ const Header = ({
                   </button>
                 </div>
 
-                <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-3 pb-3 pt-1 sm:px-4">
+                <div
+                  data-gat-hub-scroll
+                  className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-3 pb-3 pt-1 sm:px-4"
+                >
                   {gatAccessGridContent}
                 </div>
               </div>

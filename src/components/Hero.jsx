@@ -26,6 +26,7 @@ import {
 } from '@/lib/heroAmbientAudio';
 import { safeGetItem, safeSetItem } from '@/lib/safeStorage';
 import { isInstalledPWA } from '@/lib/pwaDetection';
+import { createHeroStars } from '@/lib/heroStars';
 import { extractRecommendedAppId, resolveShowcaseFromAppId } from '@/lib/bienvenidaBridge';
 import { NARRATIVE_VIDEO_URL_DESKTOP } from '@/lib/narrativeVideo';
 import {
@@ -83,23 +84,6 @@ const HERO_ROTATING_SUBTITLE_PLACEHOLDER =
 const HERO_SUBTITLE_ROTATION_MS = 3800;
 const HERO_STARFIELD_STAR_COUNT_MOBILE = 165;
 const HERO_STARFIELD_STAR_COUNT_DESKTOP = 300;
-
-const createHeroStars = (starCount) =>
-  Array.from({ length: starCount }).map((_, index) => {
-    const isBrightStar = index % 7 === 0;
-    return {
-      id: index,
-      size: isBrightStar ? Math.random() * 1.35 + 1.15 : Math.random() * 0.85 + 0.75,
-      opacity: isBrightStar ? Math.random() * 0.28 + 0.58 : Math.random() * 0.28 + 0.28,
-      x: Math.random() * 100,
-      y: Math.random() * 100,
-      glow: isBrightStar ? 1 : 0,
-      // Solo las estrellas brillantes titilan — mantiene el manto sutil.
-      twinkle: isBrightStar,
-      twinkleDelay: Math.random() * 7,
-      twinkleDuration: 3.2 + Math.random() * 3.4,
-    };
-  });
 
 // Estrellas fugaces: pocas, esporádicas (ciclo largo + delay propio) y
 // confinadas a la mitad superior, para no cruzar el título ni el # 3D.
@@ -225,14 +209,23 @@ const Hero = () => {
 
   // Mientras el scroll está bloqueado, un swipe/tap/scroll que "no hace
   // nada" se siente como fricción — en vez de eso, dispara una estrella
-  // fugaz como respuesta. Cooldown + un solo listener por gesto (no por
-  // cada tick de touchmove) para que no se sienta como gimmick.
+  // fugaz como respuesta. El mismo contrato aplica cuando el HUB personal
+  // está abierto, incluso para usuarios autenticados.
   useEffect(() => {
     if (typeof window === 'undefined') return undefined;
-    if (user || hasActivatedAudio) return undefined;
 
     const spawnGestureShootingStar = (event) => {
+      const isGatHubOpen = document.body?.dataset.gatHubOpen === 'true';
+      const isZeroStateLocked = !user && !hasActivatedAudio;
+      if (!isZeroStateLocked && !isGatHubOpen) return;
       if (event.target?.closest?.('button, [role="button"], a')) return;
+      const internalScrollRegion = event.target?.closest?.('[data-gat-hub-scroll]');
+      if (
+        internalScrollRegion &&
+        internalScrollRegion.scrollHeight > internalScrollRegion.clientHeight
+      ) {
+        return;
+      }
       const now = Date.now();
       if (now - lastGestureStarAtRef.current < GESTURE_SHOOTING_STAR_COOLDOWN_MS) return;
       lastGestureStarAtRef.current = now;
@@ -246,10 +239,10 @@ const Hero = () => {
       }, GESTURE_SHOOTING_STAR_LIFETIME_MS);
     };
 
-    window.addEventListener('touchstart', spawnGestureShootingStar, { passive: true });
+    window.addEventListener('pointerdown', spawnGestureShootingStar, { passive: true });
     window.addEventListener('wheel', spawnGestureShootingStar, { passive: true });
     return () => {
-      window.removeEventListener('touchstart', spawnGestureShootingStar);
+      window.removeEventListener('pointerdown', spawnGestureShootingStar);
       window.removeEventListener('wheel', spawnGestureShootingStar);
     };
   }, [user, hasActivatedAudio]);

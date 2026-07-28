@@ -18,51 +18,40 @@ export { CATALOG };
 // loophole real (cualquiera podía recorrer las 9 esferas y usar el CTA de
 // cada una para saltar a un portal no ganado). Solo las esferas de progreso,
 // a modo de mapa de dónde quedó cada miniverso.
+const PROGRESS_STAGES = [
+  { key: 'l1', icon: Eye, label: 'Nivel 1' },
+  { key: 'l2', icon: Flame, label: 'Nivel 2' },
+  { key: 'l3', icon: Sparkles, label: 'Nivel 3' },
+  { key: 'bitacora', icon: BookOpen, label: 'Bitácora' },
+];
+
+// Siempre las 4 esferas, completas o no — una etiqueta debajo de cada una
+// (el ícono solo no significaba nada sin memorizarlo), y las que faltan se
+// ven "apagadas" en vez de desaparecer: eso es justo lo que crea la
+// sensación de querer completarlas.
 const ProgressOrbsRow = ({ portal, hasL1, hasL2, hasL3, hasBitacora }) => {
   const gradient = PORTAL_GRADIENT[portal] ?? 'from-purple-400 via-fuchsia-500 to-rose-500';
-  const hasAny = hasL1 || hasL2 || hasL3 || hasBitacora;
+  const doneByKey = { l1: hasL1, l2: hasL2, l3: hasL3, bitacora: hasBitacora };
   return (
-    <div className="flex flex-col items-center gap-3 py-4">
-      {hasAny ? (
-        <div className="flex items-center gap-2.5">
-          {hasL1 ? (
+    <div className="flex items-start justify-center gap-4 py-4">
+      {PROGRESS_STAGES.map((stage) => {
+        const StageIcon = stage.icon;
+        const done = doneByKey[stage.key];
+        return (
+          <div key={stage.key} className="flex flex-col items-center gap-1.5">
             <span
-              className={`flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br ${gradient} shadow-[0_4px_18px_rgba(0,0,0,0.4)]`}
-              title="Nivel 1 completado"
+              className={`flex h-11 w-11 items-center justify-center rounded-full shadow-[0_4px_18px_rgba(0,0,0,0.4)] transition ${
+                done ? `bg-gradient-to-br ${gradient}` : 'border border-dashed border-white/15 bg-white/[0.03]'
+              }`}
             >
-              <Eye size={17} className="text-white drop-shadow-sm" />
+              <StageIcon size={18} className={done ? 'text-white drop-shadow-sm' : 'text-slate-600'} />
             </span>
-          ) : null}
-          {hasL2 ? (
-            <span
-              className={`flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br ${gradient} shadow-[0_4px_18px_rgba(0,0,0,0.4)]`}
-              title="Nivel 2 completado"
-            >
-              <Flame size={17} className="text-white drop-shadow-sm" />
+            <span className={`text-[0.6rem] uppercase tracking-wide ${done ? 'text-slate-300' : 'text-slate-600'}`}>
+              {stage.label}
             </span>
-          ) : null}
-          {hasL3 ? (
-            <span
-              className={`flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br ${gradient} shadow-[0_4px_18px_rgba(0,0,0,0.4)]`}
-              title="Nivel 3 completado"
-            >
-              <Sparkles size={17} className="text-white drop-shadow-sm" />
-            </span>
-          ) : null}
-          {hasBitacora ? (
-            <span
-              className={`flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br ${gradient} shadow-[0_4px_18px_rgba(0,0,0,0.4)]`}
-              title="Cuaderno holográfico completado"
-            >
-              <BookOpen size={17} className="text-white drop-shadow-sm" />
-            </span>
-          ) : null}
-        </div>
-      ) : (
-        <p className="text-center text-xs text-slate-400/70">
-          Todavía no empiezas este miniverso.
-        </p>
-      )}
+          </div>
+        );
+      })}
     </div>
   );
 };
