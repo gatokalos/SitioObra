@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useLayoutEffect, useMemo, useRef } from 'react';
+import React, { useState, useEffect, useCallback, useLayoutEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { motion, useReducedMotion } from 'framer-motion';
 import { Coffee, Info, Sparkles, LogIn, Compass, BookOpen, MessageCircle, UserCircle2, DoorOpen, X, ArrowUpRight } from 'lucide-react';
@@ -127,18 +127,6 @@ const Header = ({
   const [gatWhatsappDone, setGatWhatsappDone] = useState(() => readGlobalConsent());
   const gatChipRootRef = useRef(null);
   const gatInfoPanelRef = useRef(null);
-  // Mismo efecto de estrellas titilantes que PWAInstructionsOverlay — el
-  // tooltip (a diferencia del HUB) es una tarjeta sólida sin el starfield
-  // real del Hero detrás, así que le hace falta su propia textura.
-  const gatTooltipStars = useMemo(
-    () => Array.from({ length: 14 }).map((_, index) => ({
-      id: index,
-      top: Math.random() * 100,
-      left: Math.random() * 100,
-      delay: Math.random() * 4.5,
-    })),
-    []
-  );
   const navigate = useNavigate();
   const location = useLocation();
   const { user, session, signOut } = useAuth();
@@ -912,7 +900,7 @@ const Header = ({
                     type="button"
                     aria-label="Cerrar información de GATokens"
                     onClick={() => setIsGatInfoOpen(false)}
-                    className="fixed inset-0 z-30 cursor-default bg-[#02040b]/50 backdrop-blur-[2px]"
+                    className="hero-scene-glass-overlay fixed inset-0 z-30 cursor-default"
                   />
                   <motion.div
                     ref={gatInfoPanelRef}
@@ -923,25 +911,12 @@ const Header = ({
                     role="dialog"
                     aria-modal="false"
                     aria-label="Tu energía GAT"
-                    className="relative flex max-h-[60dvh] flex-col overflow-hidden rounded-b-[1.4rem] border-x border-b border-white/10 bg-gradient-to-b from-[#080912]/[0.985] via-[#07080d]/[0.985] to-[#0c090b]/[0.985] shadow-[0_22px_60px_rgba(0,0,0,0.62),inset_0_1px_0_rgba(255,255,255,0.045)] backdrop-blur-xl"
+                    className="hero-scene-glass-panel relative flex max-h-[60dvh] flex-col overflow-hidden rounded-b-[1.4rem] border-x border-b border-white/10"
                   >
                     <span
                       aria-hidden="true"
                       className="pointer-events-none absolute right-7 top-0 z-20 h-px w-20 bg-gradient-to-r from-transparent via-cyan-200/45 to-transparent"
                     />
-                    <div className="pointer-events-none absolute inset-0" aria-hidden="true">
-                      {gatTooltipStars.map((star) => (
-                        <span
-                          key={star.id}
-                          className="pwa-instructions-star"
-                          style={{
-                            top: `${star.top}%`,
-                            left: `${star.left}%`,
-                            animationDelay: `${star.delay}s`,
-                          }}
-                        />
-                      ))}
-                    </div>
                     <div className="relative z-10 min-h-0 flex-1 overflow-y-auto overscroll-contain">
                       <div className="border-b border-white/[0.075] px-5 pb-4 pt-5 text-center sm:px-6">
                         <p className="text-[0.62rem] font-semibold uppercase tracking-[0.34em] text-amber-300/90">
@@ -981,30 +956,16 @@ const Header = ({
               initial={prefersReducedMotion ? { opacity: 0 } : { opacity: 0, y: -10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: prefersReducedMotion ? 0.12 : 0.28, ease: 'easeOut' }}
-              className="fixed inset-0 z-[90] overflow-y-auto bg-[radial-gradient(circle_at_50%_18%,rgba(40,25,28,0.3),transparent_38%),linear-gradient(to_bottom,rgba(2,4,14,0.975),rgba(3,4,10,0.99))] px-3 py-[calc(env(safe-area-inset-top)+12px)] backdrop-blur-xl sm:flex sm:items-center sm:justify-center sm:px-6 sm:py-8"
+              className="fixed inset-0 z-[90] overflow-y-auto bg-transparent px-3 py-[calc(env(safe-area-inset-top)+12px)] sm:flex sm:items-center sm:justify-center sm:px-6 sm:py-8"
               role="dialog"
               aria-modal="true"
               aria-label="Hub personal de GATokens"
             >
-              <div className="pointer-events-none fixed inset-0" aria-hidden="true">
-                {gatTooltipStars.map((star) => (
-                  <span
-                    key={`hub-${star.id}`}
-                    className="pwa-instructions-star"
-                    style={{
-                      top: `${star.top}%`,
-                      left: `${star.left}%`,
-                      animationDelay: `${star.delay}s`,
-                    }}
-                  />
-                ))}
-              </div>
-
               <div
-                className="relative mx-auto flex w-full max-w-[28rem] flex-col overflow-hidden rounded-2xl border border-white/10 bg-gradient-to-b from-[#090a12]/95 to-[#0b080a]/95 shadow-[0_30px_90px_rgba(0,0,0,0.7),inset_0_1px_0_rgba(255,255,255,0.055)]"
+                className="relative mx-auto flex w-full max-w-[28rem] flex-col"
                 style={{ maxHeight: 'calc(100dvh - env(safe-area-inset-top) - 24px)' }}
               >
-                <div className="flex shrink-0 items-start justify-between gap-4 border-b border-white/[0.085] px-5 pb-4 pt-5 sm:px-6">
+                <div className="flex shrink-0 items-start justify-between gap-4 px-5 pb-4 pt-5 sm:px-6">
                   <div>
                     <p className="text-[0.62rem] font-semibold uppercase tracking-[0.34em] text-amber-300/90">
                       Hub personal
@@ -1024,17 +985,8 @@ const Header = ({
                   </button>
                 </div>
 
-                <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-3 py-3 sm:px-4">
+                <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-3 pb-3 pt-1 sm:px-4">
                   {gatAccessGridContent}
-                </div>
-
-                <div className="shrink-0 border-t border-white/[0.085] bg-white/[0.025] px-5 py-3">
-                  <div className="flex items-center justify-between gap-3 text-[0.66rem] uppercase tracking-[0.12em] text-slate-500">
-                    <span>Energía disponible</span>
-                    <span className="font-semibold tracking-normal text-amber-300">
-                      {gatBalance.toLocaleString('es-MX')} GAT
-                    </span>
-                  </div>
                 </div>
               </div>
             </motion.aside>,

@@ -1,14 +1,71 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
+import { Eye, Flame, Sparkles, BookOpen } from 'lucide-react';
 import VitranaQuestionReveal from '@/components/portal/VitranaQuestionReveal';
 import VideoNarrativeAutoplay from '@/components/VideoNarrativeAutoplay';
+import IAInsightCard from '@/components/IAInsightCard';
 import { useMobileVideoPresentation } from '@/hooks/useMobileVideoPresentation';
 import { resolvePortalRoute } from '@/lib/miniversePortalRegistry';
 import { createPortalLaunchState } from '@/lib/portalNavigation';
 import { CATALOG } from '@/lib/bitacoraShared';
+import { showcaseDefinitions } from '@/components/transmedia/transmediaConstants';
 
 export { CATALOG };
+
+// Vista reducida para un miniverso cuyo cuaderno holográfico todavía no se
+// activó (bitacora_completed falso): sin pregunta ni CTA — esos exponían un
+// loophole real (cualquiera podía recorrer las 9 esferas y usar el CTA de
+// cada una para saltar a un portal no ganado). Solo las esferas de progreso,
+// a modo de mapa de dónde quedó cada miniverso.
+const ProgressOrbsRow = ({ portal, hasL1, hasL2, hasL3, hasBitacora }) => {
+  const gradient = PORTAL_GRADIENT[portal] ?? 'from-purple-400 via-fuchsia-500 to-rose-500';
+  const hasAny = hasL1 || hasL2 || hasL3 || hasBitacora;
+  return (
+    <div className="flex flex-col items-center gap-3 py-4">
+      {hasAny ? (
+        <div className="flex items-center gap-2.5">
+          {hasL1 ? (
+            <span
+              className={`flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br ${gradient} shadow-[0_4px_18px_rgba(0,0,0,0.4)]`}
+              title="Nivel 1 completado"
+            >
+              <Eye size={17} className="text-white drop-shadow-sm" />
+            </span>
+          ) : null}
+          {hasL2 ? (
+            <span
+              className={`flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br ${gradient} shadow-[0_4px_18px_rgba(0,0,0,0.4)]`}
+              title="Nivel 2 completado"
+            >
+              <Flame size={17} className="text-white drop-shadow-sm" />
+            </span>
+          ) : null}
+          {hasL3 ? (
+            <span
+              className={`flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br ${gradient} shadow-[0_4px_18px_rgba(0,0,0,0.4)]`}
+              title="Nivel 3 completado"
+            >
+              <Sparkles size={17} className="text-white drop-shadow-sm" />
+            </span>
+          ) : null}
+          {hasBitacora ? (
+            <span
+              className={`flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br ${gradient} shadow-[0_4px_18px_rgba(0,0,0,0.4)]`}
+              title="Cuaderno holográfico completado"
+            >
+              <BookOpen size={17} className="text-white drop-shadow-sm" />
+            </span>
+          ) : null}
+        </div>
+      ) : (
+        <p className="text-center text-xs text-slate-400/70">
+          Todavía no empiezas este miniverso.
+        </p>
+      )}
+    </div>
+  );
+};
 
 /* ─── Constantes ───────────────────────────────────────────────────────── */
 
@@ -221,17 +278,24 @@ function HolograficoPanel({ centerKey, homeKey, onStartBitacora, onOpenVideo }) 
               <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Resonancia Colectiva</p>
               <h2 className="font-display text-2xl leading-snug question-heading-voice mt-1">Tras cada pregunta</h2>
             </div>
-            <VitranaQuestionReveal
-              question={entry.q}
-              portal={centerKey}
-              autoReveal={hasL1}
-              l2Done={hasL2}
-              l3Done={hasL3}
-              bitacoraCompleted={hasBitacora}
-              label={null}
-              buttonLabel={entry.cta}
-              onAnswer={() => onOpenVideo(entry.showcase)}
-            />
+            {hasBitacora ? (
+              <VitranaQuestionReveal
+                question={entry.q}
+                portal={centerKey}
+                autoReveal={hasL1}
+                l2Done={hasL2}
+                l3Done={hasL3}
+                bitacoraCompleted={hasBitacora}
+                label={null}
+                buttonLabel={entry.cta}
+                onAnswer={() => onOpenVideo(entry.showcase)}
+              />
+            ) : (
+              <ProgressOrbsRow portal={centerKey} hasL1={hasL1} hasL2={hasL2} hasL3={hasL3} hasBitacora={hasBitacora} />
+            )}
+            {showcaseDefinitions[entry.showcase]?.iaProfile ? (
+              <IAInsightCard {...showcaseDefinitions[entry.showcase].iaProfile} compact />
+            ) : null}
           </div>
         )}
       </motion.div>

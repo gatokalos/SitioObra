@@ -50,7 +50,12 @@ const BitacoraLanding = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-950 via-black to-slate-900">
+    <div className="fixed inset-0 overflow-hidden bg-gradient-to-b from-slate-950 via-black to-slate-900">
+      {/* ResonanceModal se posiciona con "absolute inset-0" — en su uso normal
+          (dentro de Transmedia.jsx) hereda el tamaño de la vitrina que lo
+          contiene. Aquí, como página de aterrizaje independiente, necesita un
+          contenedor con tamaño explícito (viewport completo, no solo ancho de
+          contenido) para llenarlo correctamente en vez de encogerse. */}
       <ResonanceModal
         open
         startInHolografico

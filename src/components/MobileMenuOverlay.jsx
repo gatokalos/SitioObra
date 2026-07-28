@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
-import { ChevronDown, ChevronRight, X } from 'lucide-react';
+import { ChevronDown, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 const MobileMenuOverlay = ({
@@ -77,39 +77,37 @@ const MobileMenuOverlay = ({
   };
 
   return (
-    <motion.aside
-      initial={{ opacity: 0, y: -12 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: -12 }}
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
       transition={{ duration: 0.24, ease: 'easeOut' }}
-      id="site-index-menu"
-      data-site-index-root
-      className="fixed inset-0 z-[80] bg-gradient-to-b from-[#030615]/98 via-[#02040e]/98 to-[#02040e]/99 backdrop-blur-xl xl:inset-auto xl:left-6 xl:top-[4.35rem] xl:w-[20rem] xl:max-w-[calc(100vw-2rem)] xl:rounded-2xl xl:border xl:border-white/10 xl:bg-black/45 xl:bg-none xl:shadow-[0_24px_70px_rgba(0,0,0,0.48),inset_0_1px_0_rgba(255,255,255,0.06)] 2xl:left-[calc((100vw-1280px)/2+1.5rem)]"
-      aria-modal="true"
-      role="dialog"
-      aria-label="Índice de navegación principal"
+      className="pointer-events-none fixed inset-0 z-[80]"
     >
-      <div className="flex h-full flex-col xl:h-auto">
-        <div className="border-b border-white/10 px-4 pb-3 pt-[calc(env(safe-area-inset-top)+10px)] xl:pt-4">
-          <div className="flex items-center justify-between gap-3">
+      <motion.aside
+        initial={{ y: -12 }}
+        animate={{ y: 0 }}
+        exit={{ y: -12 }}
+        transition={{ duration: 0.24, ease: 'easeOut' }}
+        id="site-index-menu"
+        data-site-index-root
+        className="hero-scene-glass-panel pointer-events-auto fixed left-3 right-3 top-[calc(env(safe-area-inset-top)+4.25rem)] z-10 mx-auto flex w-auto max-w-[22rem] flex-col overflow-hidden rounded-2xl border border-white/10 sm:left-6 sm:right-auto sm:mx-0 sm:w-[22rem] xl:w-[20rem] xl:max-w-[calc(100vw-2rem)] 2xl:left-[calc((100vw-1280px)/2+1.5rem)]"
+        style={{ maxHeight: 'calc(100dvh - env(safe-area-inset-top) - 80px)' }}
+        aria-modal="false"
+        role="dialog"
+        aria-label="Índice de navegación principal"
+      >
+        <div className="flex min-h-0 flex-col">
+        <div className="shrink-0 border-b border-white/10 px-4 pb-3 pt-4">
+          <div className="flex items-center">
             <p className="text-xs uppercase tracking-[0.34em] text-slate-300/90">Programa de mano</p>
-            <Button
-              type="button"
-              variant="ghost"
-              size="icon"
-              className="h-11 w-11 rounded-xl border border-fuchsia-400/40 bg-black/25 text-slate-200 hover:bg-fuchsia-500/15 hover:text-white xl:hidden"
-              onClick={onClose}
-              aria-label="Cerrar menú"
-            >
-              <X size={20} />
-            </Button>
           </div>
         </div>
 
-        <div className="flex-1 overflow-y-auto px-4 pb-[calc(env(safe-area-inset-bottom)+24px)] pt-5 xl:max-h-[calc(100vh-7rem)] xl:px-2 xl:pb-2 xl:pt-2">
+        <div className="min-h-0 flex-1 overflow-y-auto px-2 pb-[calc(env(safe-area-inset-bottom)+8px)] pt-2 xl:max-h-[calc(100vh-7rem)] xl:pb-2">
 
 
-          <section className="mt-4 rounded-2xl border border-white/10 bg-black/35 p-2 xl:mt-0">
+          <section className="rounded-2xl border border-white/10 bg-black/35 p-2">
             {menuItems.map((item) => (
               <div key={item.name} className="rounded-xl transition hover:bg-white/[0.04]">
                 <div className="group flex w-full items-center justify-between gap-3 rounded-xl px-3 py-3">
@@ -190,7 +188,7 @@ const MobileMenuOverlay = ({
           </section>
 
           {showAuthSection ? (
-            <section className="mt-5 rounded-2xl border border-white/10 bg-black/30 p-4">
+            <section className="mt-3 rounded-2xl border border-white/10 bg-black/30 p-4">
               <p className="text-xs uppercase tracking-[0.24em] text-slate-400/90">Cuenta</p>
               <Button
                 type="button"
@@ -204,7 +202,8 @@ const MobileMenuOverlay = ({
           ) : null}
         </div>
       </div>
-    </motion.aside>
+      </motion.aside>
+    </motion.div>
   );
 };
 
