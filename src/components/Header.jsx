@@ -10,7 +10,7 @@ import LoginOverlay from '@/components/ContributionModal/LoginOverlay';
 import MobileMenuOverlay from '@/components/MobileMenuOverlay';
 import { createPortalLaunchState } from '@/lib/portalNavigation';
 import { INITIAL_GAT_BALANCE, readStoredInt } from '@/components/transmedia/transmediaConstants';
-import { readIndexCueUsedFromSession } from '@/lib/heroActivation';
+import { readIndexCueUsedFromSession, writeHeroActivatedToSession } from '@/lib/heroActivation';
 import useActiveSectionHref from '@/hooks/useActiveSectionHref';
 import { fetchTransmediaCreditEvents } from '@/services/transmediaCreditsService';
 import useActiveSubscription from '@/hooks/useActiveSubscription';
@@ -38,54 +38,46 @@ const readGatBalance = () => {
 
 const GAT_LINKTREE_DISMISSED_SESSION_KEY = 'gatoencerrado:gat-linktree-dismissed-session';
 
-// Misma técnica visual que PWAInstructionsOverlay: sin tarjeta de fondo (el
-// starfield del Hero se ve directo detrás), ícono dentro de un cuadrado con
-// esquinas redondeadas, etiqueta debajo. A diferencia de esas instrucciones,
-// aquí los accesos son independientes entre sí (no un proceso paso a paso),
-// por eso van en grid de 2 columnas sin flechas conectoras.
-const GAT_TILE_TONES = {
-  neutral: { border: 'border-white/65 group-hover:border-white', icon: 'text-slate-100', arrow: 'text-slate-400', fill: '' },
-  violet: { border: 'border-violet-400/70 group-hover:border-violet-300', icon: 'text-violet-200', arrow: 'text-violet-400', fill: '' },
-  amber: { border: 'border-amber-400/70 group-hover:border-amber-300', icon: 'text-amber-200', arrow: 'text-amber-400', fill: '' },
-  green: { border: 'border-emerald-400/70 group-hover:border-emerald-300', icon: 'text-emerald-200', arrow: 'text-emerald-400', fill: '' },
-  cyan: { border: 'border-cyan-400/80 group-hover:border-cyan-300', icon: 'text-cyan-200', arrow: 'text-cyan-400', fill: 'bg-cyan-500/10' },
-};
-
-// Íconos sin cambiar (los que ya elegimos) — lo que se ajustó aquí, siguiendo
-// el mockup, es el uso de color por tono, el indicador de salida (↗ para lo
-// que navega, · para lo que se despliega inline) y el divisor punteado
-// entre columnas.
+// El HUB y la bandeja comparten el mismo vocabulario visual que el programa de
+// mano: vidrio oscuro, borde fino y color reservado para estados reales.
 const GatLinktreeTile = ({ icon: TileIcon, label, onClick, statusDotClass: dotClass, tone = 'neutral', indicator = 'arrow' }) => {
-  const t = GAT_TILE_TONES[tone] ?? GAT_TILE_TONES.neutral;
+  const isAccountTile = tone === 'cyan';
   return (
     <button
       type="button"
       onClick={onClick}
-      className="group flex flex-col items-center gap-[clamp(5px,0.85vh,8px)] text-center"
+      className={`group relative flex min-h-[6.1rem] flex-col items-center justify-center gap-2 rounded-xl border px-2.5 py-3 text-center transition duration-200 ${
+        isAccountTile
+          ? 'border-cyan-300/25 bg-cyan-300/[0.045] hover:border-cyan-200/40 hover:bg-cyan-300/[0.075]'
+          : 'border-white/[0.085] bg-white/[0.025] hover:border-white/20 hover:bg-white/[0.055]'
+      }`}
     >
-      {/* bg-black/40 (no solo el borde transparente de antes): sin esto, el
-          cuadrado del ícono deja ver lo que sea que haya detrás en el Hero
-          (p. ej. el wordmark GATOENCERRADO), y con 5-6 accesos el grid crece
-          lo suficiente para toparse con él. */}
       <span
-        className={`relative flex h-[clamp(34px,5.4vh,52px)] w-[clamp(34px,5.4vh,52px)] shrink-0 items-center justify-center rounded-[clamp(10px,1.1vh,15px)] border-[1.25px] bg-black/40 backdrop-blur-[2px] transition group-hover:bg-white/10 ${t.border} ${t.fill}`}
+        className={`relative flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border bg-black/25 transition ${
+          isAccountTile
+            ? 'border-cyan-300/35 text-cyan-100'
+            : 'border-white/20 text-slate-200 group-hover:border-white/35 group-hover:text-white'
+        }`}
       >
-        <TileIcon strokeWidth={1.5} className={`h-[clamp(17px,2.7vh,26px)] w-[clamp(17px,2.7vh,26px)] ${t.icon}`} />
+        <TileIcon strokeWidth={1.45} className="h-5 w-5" />
         {dotClass ? (
-          <span className={`absolute -right-0.5 -top-0.5 h-2.5 w-2.5 rounded-full border border-black/40 ${dotClass}`} />
+          <span className={`absolute -right-0.5 -top-0.5 h-2.5 w-2.5 rounded-full border-2 border-[#08090d] ${dotClass}`} />
         ) : null}
       </span>
       <p
-        className="flex max-w-[8.5rem] items-center gap-1 text-[clamp(0.7rem,1.7vh,0.85rem)] leading-tight text-slate-100"
-        style={{ textShadow: '0 1px 6px rgba(0,0,0,0.9), 0 0 12px rgba(0,0,0,0.7)' }}
+        className="font-display max-w-[8.5rem] text-[0.78rem] leading-[1.15] text-slate-100"
       >
         {label}
-        {indicator === 'arrow' ? (
-          <ArrowUpRight size={11} strokeWidth={2} className={`shrink-0 ${t.arrow}`} />
-        ) : indicator === 'dot' ? (
-          <span className={`h-1.5 w-1.5 shrink-0 rounded-full ${dotClass ?? 'bg-emerald-400'}`} />
-        ) : null}
       </p>
+      {indicator === 'arrow' ? (
+        <ArrowUpRight
+          size={11}
+          strokeWidth={1.7}
+          className="absolute right-2.5 top-2.5 text-slate-500 transition group-hover:text-slate-200"
+        />
+      ) : indicator === 'dot' ? (
+        <span className={`absolute right-2.5 top-2.5 h-1.5 w-1.5 rounded-full ${dotClass ?? 'bg-emerald-400'}`} />
+      ) : null}
     </button>
   );
 };
@@ -175,6 +167,17 @@ const Header = ({
       delete document.body.dataset.gatHubOpen;
     };
   }, [isGatLinktreeOpen]);
+  useEffect(() => {
+    if (!isGatLinktreeOpen || typeof document === 'undefined') return undefined;
+    const previousOverflow = document.body.style.overflow;
+    const previousOverscroll = document.body.style.overscrollBehavior;
+    document.body.style.overflow = 'hidden';
+    document.body.style.overscrollBehavior = 'none';
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      document.body.style.overscrollBehavior = previousOverscroll;
+    };
+  }, [isGatLinktreeOpen]);
   const [isLinktreeSessionExpanded, setIsLinktreeSessionExpanded] = useState(false);
   // Cerrar cualquiera de los dos paneles del sistema de GAT (el HUB que abre
   // solo, o el tooltip que abre el chip) — usado por cualquier acceso del
@@ -196,8 +199,26 @@ const Header = ({
     } catch {
       // Silencioso
     }
+    // Cuaderno holográfico y café navegan a OTRA ruta (/bitacora,
+    // /portal-encuentros) — eso desmonta Hero.jsx casi de inmediato. El
+    // evento de abajo sí llega (dispatchEvent es síncrono), pero el efecto
+    // de Hero.jsx que persiste hasActivatedAudio a sessionStorage puede no
+    // alcanzar a correr antes de que la ruta cambie y Hero se desmonte —
+    // por eso solo "Explorar recomendación" (navegación en la misma
+    // página) se veía activar la escena de verdad. Se escribe aquí también,
+    // directo y síncrono, para no depender de que ese efecto alcance a
+    // correr: así, cuando Hero vuelva a montar, ya lee la sesión activada.
+    writeHeroActivatedToSession(true);
     window.dispatchEvent(new CustomEvent('gatoencerrado:activate-scene-request'));
   }, []);
+  useEffect(() => {
+    if (!isGatLinktreeOpen) return undefined;
+    const handleEscape = (event) => {
+      if (event.key === 'Escape') closeGatPanels();
+    };
+    window.addEventListener('keydown', handleEscape);
+    return () => window.removeEventListener('keydown', handleEscape);
+  }, [closeGatPanels, isGatLinktreeOpen]);
   useEffect(() => {
     if (!isGatLinktreeAudience || isGatLinktreeOpen) return;
     try {
@@ -618,7 +639,7 @@ const Header = ({
     const availableWidth = Math.max(window.innerWidth - viewportGutter * 2, 0);
     const panelW = isMobileViewport
       ? availableWidth
-      : Math.min(500, availableWidth);
+      : Math.min(440, availableWidth);
     const desiredRight = window.innerWidth - rect.right;
     const rightFromEdge = Math.min(
       Math.max(desiredRight, viewportGutter),
@@ -704,16 +725,7 @@ const Header = ({
   // mantener dos diseños distintos de lo mismo.
   const gatAccessGridContent = (
     <>
-      <div className="relative mx-auto grid w-full max-w-[19rem] grid-cols-2 gap-x-6 gap-y-5">
-        <div
-          aria-hidden="true"
-          className="pointer-events-none absolute inset-y-1 left-1/2 w-px -translate-x-1/2 opacity-60"
-          style={{
-            backgroundImage: 'radial-gradient(circle, rgba(255,255,255,0.35) 1px, transparent 1px)',
-            backgroundSize: '1px 10px',
-            backgroundRepeat: 'repeat-y',
-          }}
-        />
+      <div className="mx-auto grid w-full max-w-[21rem] grid-cols-2 gap-2">
         {!user && isGatLoginEligible ? (
           <GatLinktreeTile icon={LogIn} label="Iniciar sesión" onClick={handleOpenLoginFromGatTooltip} tone="neutral" />
         ) : null}
@@ -761,7 +773,7 @@ const Header = ({
       </div>
 
       {isLinktreeSessionExpanded && user ? (
-        <div className="mx-auto mt-5 w-full max-w-[19rem] rounded-xl border border-white/10 bg-black/40 p-3 text-center text-slate-100">
+        <div className="mx-auto mt-3 w-full max-w-[21rem] rounded-xl border border-white/10 bg-black/25 p-3 text-center text-slate-100">
           <p className="text-[11px] uppercase tracking-[0.18em] text-slate-400">Sesión activa</p>
           <p className="mt-1 break-all text-xs text-slate-200/90">{user?.email || 'correo no disponible'}</p>
           <button
@@ -775,7 +787,7 @@ const Header = ({
       ) : null}
 
       {showGatWhatsappInput && !gatWhatsappDone ? (
-        <div className="mx-auto mt-5 w-full max-w-[19rem] space-y-1.5">
+        <div className="mx-auto mt-3 w-full max-w-[21rem] space-y-1.5 rounded-xl border border-white/10 bg-black/25 p-3">
           <p className="text-center text-[0.7rem] text-slate-400">¿A qué número te avisamos?</p>
           <div className="flex gap-1.5">
             <input
@@ -900,7 +912,7 @@ const Header = ({
                     type="button"
                     aria-label="Cerrar información de GATokens"
                     onClick={() => setIsGatInfoOpen(false)}
-                    className="fixed inset-0 z-30 cursor-default bg-slate-950/25 backdrop-blur-[1px]"
+                    className="fixed inset-0 z-30 cursor-default bg-[#02040b]/50 backdrop-blur-[2px]"
                   />
                   <motion.div
                     ref={gatInfoPanelRef}
@@ -911,8 +923,12 @@ const Header = ({
                     role="dialog"
                     aria-modal="false"
                     aria-label="Tu energía GAT"
-                    className="relative flex max-h-[60dvh] flex-col overflow-hidden rounded-b-2xl border-x border-b border-white/10 bg-black/90 shadow-[0_18px_42px_rgba(0,0,0,0.5)] backdrop-blur-xl"
+                    className="relative flex max-h-[60dvh] flex-col overflow-hidden rounded-b-[1.4rem] border-x border-b border-white/10 bg-gradient-to-b from-[#080912]/[0.985] via-[#07080d]/[0.985] to-[#0c090b]/[0.985] shadow-[0_22px_60px_rgba(0,0,0,0.62),inset_0_1px_0_rgba(255,255,255,0.045)] backdrop-blur-xl"
                   >
+                    <span
+                      aria-hidden="true"
+                      className="pointer-events-none absolute right-7 top-0 z-20 h-px w-20 bg-gradient-to-r from-transparent via-cyan-200/45 to-transparent"
+                    />
                     <div className="pointer-events-none absolute inset-0" aria-hidden="true">
                       {gatTooltipStars.map((star) => (
                         <span
@@ -927,29 +943,28 @@ const Header = ({
                       ))}
                     </div>
                     <div className="relative z-10 min-h-0 flex-1 overflow-y-auto overscroll-contain">
-                      <div className="flex flex-col items-center gap-2 px-4 py-4 sm:px-6">
-                        <p className="text-center text-[0.62rem] font-semibold uppercase tracking-[0.35em] text-amber-400">
-                          · Tu energía ·
+                      <div className="border-b border-white/[0.075] px-5 pb-4 pt-5 text-center sm:px-6">
+                        <p className="text-[0.62rem] font-semibold uppercase tracking-[0.34em] text-amber-300/90">
+                          Tu energía
                         </p>
-                        <p className="max-w-[18rem] text-center text-[0.68rem] leading-relaxed text-slate-400">
+                        <p className="mx-auto mt-2 max-w-[18rem] text-[0.7rem] leading-relaxed text-slate-400">
                           Los GATokens son el valor que le ponemos a tu atención en #GatoEncerrado
                         </p>
 
                         {isGatSpendRecommendationLoading ? (
-                          <p className="py-1 text-[0.68rem] text-slate-500">Buscando dónde conviene gastarlos…</p>
+                          <p className="mt-2 text-[0.68rem] text-slate-500">Buscando dónde conviene gastarlos…</p>
                         ) : !gatSpendRecommendation ? (
-                          <p className="max-w-[18rem] py-1 text-center text-[0.66rem] text-slate-500">
+                          <p className="mx-auto mt-2 max-w-[18rem] text-center text-[0.66rem] text-slate-500">
                             Representan la energía simbólica que este universo necesita para activar experiencias dentro de los miniversos.
                           </p>
                         ) : null}
-
-                        <div className="mt-1 w-full">{gatAccessGridContent}</div>
                       </div>
+                      <div className="w-full px-3 py-3 sm:px-4">{gatAccessGridContent}</div>
                     </div>
-                    <div className="relative z-10 shrink-0 border-t border-white/10 bg-white/5 px-4 py-2">
-                      <p className="text-center text-[0.68rem] text-slate-400">
+                    <div className="relative z-10 shrink-0 border-t border-white/[0.085] bg-white/[0.025] px-4 py-2.5">
+                      <p className="text-center text-[0.66rem] uppercase tracking-[0.12em] text-slate-500">
                         Energía disponible:{' '}
-                        <span className="font-semibold text-amber-400">
+                        <span className="font-semibold tracking-normal text-amber-300">
                           {gatBalance.toLocaleString('es-MX')} GAT
                         </span>
                       </p>
@@ -962,27 +977,67 @@ const Header = ({
           </div>
 
           {isGatLinktreeOpen && isGatLinktreeAudience && typeof document !== 'undefined' && createPortal(
-            <div
-              className="fixed inset-x-0 top-0 z-[9000] mx-auto flex max-h-[60vh] w-full max-w-md flex-col overflow-hidden"
+            <motion.aside
+              initial={prefersReducedMotion ? { opacity: 0 } : { opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: prefersReducedMotion ? 0.12 : 0.28, ease: 'easeOut' }}
+              className="fixed inset-0 z-[90] overflow-y-auto bg-[radial-gradient(circle_at_50%_18%,rgba(40,25,28,0.3),transparent_38%),linear-gradient(to_bottom,rgba(2,4,14,0.975),rgba(3,4,10,0.99))] px-3 py-[calc(env(safe-area-inset-top)+12px)] backdrop-blur-xl sm:flex sm:items-center sm:justify-center sm:px-6 sm:py-8"
               role="dialog"
-              aria-modal="false"
-              aria-label="Accesos rápidos de #GatoEncerrado"
+              aria-modal="true"
+              aria-label="Hub personal de GATokens"
             >
-              <div className="flex items-center justify-end px-4 py-3">
-                <button
-                  type="button"
-                  onClick={closeGatPanels}
-                  className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-white/10 bg-white/5 text-slate-200 transition hover:bg-white/10 hover:text-white"
-                  aria-label="Cerrar accesos rápidos"
-                >
-                  <X size={16} />
-                </button>
+              <div className="pointer-events-none fixed inset-0" aria-hidden="true">
+                {gatTooltipStars.map((star) => (
+                  <span
+                    key={`hub-${star.id}`}
+                    className="pwa-instructions-star"
+                    style={{
+                      top: `${star.top}%`,
+                      left: `${star.left}%`,
+                      animationDelay: `${star.delay}s`,
+                    }}
+                  />
+                ))}
               </div>
 
-              <div className="min-h-0 flex-1 overflow-y-auto px-6 pb-4 pt-1">
-                {gatAccessGridContent}
+              <div
+                className="relative mx-auto flex w-full max-w-[28rem] flex-col overflow-hidden rounded-2xl border border-white/10 bg-gradient-to-b from-[#090a12]/95 to-[#0b080a]/95 shadow-[0_30px_90px_rgba(0,0,0,0.7),inset_0_1px_0_rgba(255,255,255,0.055)]"
+                style={{ maxHeight: 'calc(100dvh - env(safe-area-inset-top) - 24px)' }}
+              >
+                <div className="flex shrink-0 items-start justify-between gap-4 border-b border-white/[0.085] px-5 pb-4 pt-5 sm:px-6">
+                  <div>
+                    <p className="text-[0.62rem] font-semibold uppercase tracking-[0.34em] text-amber-300/90">
+                      Hub personal
+                    </p>
+                    <h2 className="font-display mt-2 text-xl text-slate-100">Tu energía</h2>
+                    <p className="mt-1 max-w-[17rem] text-xs leading-relaxed text-slate-400">
+                      Cuenta, recursos y accesos personales de #GatoEncerrado.
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={closeGatPanels}
+                    className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-white/10 bg-white/[0.035] text-slate-400 transition hover:border-white/20 hover:bg-white/[0.075] hover:text-white"
+                    aria-label="Cerrar hub personal"
+                  >
+                    <X size={17} />
+                  </button>
+                </div>
+
+                <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-3 py-3 sm:px-4">
+                  {gatAccessGridContent}
+                </div>
+
+                <div className="shrink-0 border-t border-white/[0.085] bg-white/[0.025] px-5 py-3">
+                  <div className="flex items-center justify-between gap-3 text-[0.66rem] uppercase tracking-[0.12em] text-slate-500">
+                    <span>Energía disponible</span>
+                    <span className="font-semibold tracking-normal text-amber-300">
+                      {gatBalance.toLocaleString('es-MX')} GAT
+                    </span>
+                  </div>
+                </div>
               </div>
-            </div>,
+            </motion.aside>,
             document.body
           )}
 
