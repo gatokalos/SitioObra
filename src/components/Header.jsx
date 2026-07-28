@@ -142,7 +142,6 @@ const Header = ({
     () => isGatLinktreeAudience && typeof window !== 'undefined' && !window.sessionStorage.getItem(GAT_LINKTREE_DISMISSED_SESSION_KEY)
   );
   const [isLinktreeSessionExpanded, setIsLinktreeSessionExpanded] = useState(false);
-  const [isLinktreeBackstageHelpExpanded, setIsLinktreeBackstageHelpExpanded] = useState(false);
   // Cerrar cualquiera de los dos paneles del sistema de GAT (el HUB que abre
   // solo, o el tooltip que abre el chip) — usado por cualquier acceso del
   // grid que navegue a otro lado, para que no se quede flotando encima.
@@ -719,18 +718,8 @@ const Header = ({
             onClick={() => setShowGatWhatsappInput((prev) => !prev)}
           />
         ) : null}
-        {user ? (
-          <GatLinktreeTile
-            icon={DoorOpen}
-            label="Ir al Backstage"
-            onClick={() => {
-              if (isSubscriber) {
-                handleOpenBackstage();
-              } else {
-                setIsLinktreeBackstageHelpExpanded((prev) => !prev);
-              }
-            }}
-          />
+        {isSubscriber ? (
+          <GatLinktreeTile icon={DoorOpen} label="Ir al Backstage" onClick={handleOpenBackstage} />
         ) : null}
       </div>
 
@@ -744,24 +733,6 @@ const Header = ({
             className="mt-2 w-full rounded-lg border border-white/15 px-3 py-1.5 text-xs font-semibold text-slate-100 transition hover:bg-white/5"
           >
             Cerrar sesión
-          </button>
-        </div>
-      ) : null}
-
-      {isLinktreeBackstageHelpExpanded && user && !isSubscriber ? (
-        <div className="mx-auto mt-5 w-full max-w-[19rem] rounded-xl border border-white/10 bg-black/40 p-3 text-center text-slate-100">
-          <p className="text-xs leading-relaxed text-slate-300">
-            El Backstage se abre cuando activas tu huella. Esta cuenta todavía no tiene una.
-          </p>
-          <button
-            type="button"
-            onClick={() => {
-              closeGatPanels();
-              handleNavClick('#apoya');
-            }}
-            className="mt-2 w-full rounded-lg border border-white/15 px-3 py-1.5 text-xs font-semibold text-slate-100 transition hover:bg-white/5"
-          >
-            Cómo activarla
           </button>
         </div>
       ) : null}
