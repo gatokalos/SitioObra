@@ -578,6 +578,19 @@ const Hero = () => {
     }
   }, [isHeroAudioMuted, hasActivatedAudio, captureTransmigrationOrigin, prefersReducedMotion, revealHeaderIndexCueFromHero]);
 
+  // Header y Hero son hermanos — cerrar el HUB de accesos rápidos vive en
+  // Header.jsx, pero activar la escena (audio + índice) es lógica de Hero.
+  // Mismo gesto que ya existe al cerrar PWAInstructionsOverlay
+  // (handleDeclineHeroPwaInstall → handleIsotipoClick), coordinado aquí por
+  // evento global en vez de subir todo ese estado de audio a un padre común.
+  useEffect(() => {
+    const handleActivateSceneRequest = () => {
+      if (!hasActivatedAudio) handleIsotipoClick();
+    };
+    window.addEventListener('gatoencerrado:activate-scene-request', handleActivateSceneRequest);
+    return () => window.removeEventListener('gatoencerrado:activate-scene-request', handleActivateSceneRequest);
+  }, [hasActivatedAudio, handleIsotipoClick]);
+
   const shouldInterceptHeroActivationForPwa = useCallback(() => (
     isMobileViewport &&
     !user &&

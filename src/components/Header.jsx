@@ -2,7 +2,6 @@ import React, { useState, useEffect, useCallback, useLayoutEffect, useRef } from
 import { createPortal } from 'react-dom';
 import { motion, useReducedMotion } from 'framer-motion';
 import { Coffee, Info, Sparkles, LogIn, Compass, BookOpen, MessageCircle, UserCircle2, DoorOpen, X } from 'lucide-react';
-import { Button } from '@/components/ui/button';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useToast } from '@/components/ui/use-toast';
 import { useAuth } from '@/contexts/SupabaseAuthContext';
@@ -36,38 +35,6 @@ const readGatBalance = () => {
   const v = readStoredInt(GAT_BALANCE_STORAGE_KEY, INITIAL_GAT_BALANCE);
   return Number.isFinite(v) ? Math.max(Math.trunc(v), 0) : INITIAL_GAT_BALANCE;
 };
-
-const GAT_TOOLTIP_ROW_TONES = {
-  violet: { ring: 'border-violet-200 text-violet-500', label: 'text-violet-800' },
-  amber: { ring: 'border-amber-200 text-amber-500', label: 'text-amber-800' },
-  slate: { ring: 'border-slate-200 text-slate-500', label: 'text-slate-600' },
-};
-
-const GatTooltipLinkRow = ({ icon: RowIcon, label, onClick, tone = 'slate' }) => {
-  const toneStyle = GAT_TOOLTIP_ROW_TONES[tone] ?? GAT_TOOLTIP_ROW_TONES.slate;
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className="group flex flex-col items-center gap-1.5 py-1"
-    >
-      <span
-        className={`flex h-10 w-10 items-center justify-center rounded-full border transition group-hover:scale-105 ${toneStyle.ring}`}
-      >
-        <RowIcon size={17} />
-      </span>
-      <span className={`max-w-[11.5rem] text-center text-[0.7rem] font-medium leading-snug ${toneStyle.label}`}>
-        {label}
-      </span>
-    </button>
-  );
-};
-
-const GatTooltipConnector = () => (
-  <span aria-hidden="true" className="text-slate-300">
-    ↓
-  </span>
-);
 
 const GAT_LINKTREE_DISMISSED_SESSION_KEY = 'gatoencerrado:gat-linktree-dismissed-session';
 
@@ -154,6 +121,13 @@ const Header = ({
     () => isGatLinktreeAudience && typeof window !== 'undefined' && !window.sessionStorage.getItem(GAT_LINKTREE_DISMISSED_SESSION_KEY)
   );
   const [isLinktreeSessionExpanded, setIsLinktreeSessionExpanded] = useState(false);
+  // Cerrar cualquiera de los dos paneles del sistema de GAT (el HUB que abre
+  // solo, o el tooltip que abre el chip) — usado por cualquier acceso del
+  // grid que navegue a otro lado, para que no se quede flotando encima.
+  const closeGatPanels = useCallback(() => {
+    setIsGatInfoOpen(false);
+    setIsGatLinktreeOpen(false);
+  }, []);
   const handleDismissGatLinktree = useCallback(() => {
     setIsGatLinktreeOpen(false);
     try {
@@ -161,6 +135,10 @@ const Header = ({
     } catch {
       // Silencioso
     }
+    // Mismo gesto que cerrar PWAInstructionsOverlay: cerrar el HUB activa la
+    // escena (audio + índice revelado). Header y Hero son hermanos, no
+    // padre-hijo, así que se coordina por evento global en vez de prop drilling.
+    window.dispatchEvent(new CustomEvent('gatoencerrado:activate-scene-request'));
   }, []);
   useEffect(() => {
     if (!isGatLinktreeAudience || isGatLinktreeOpen) return;
@@ -172,6 +150,7 @@ const Header = ({
     setIsGatLinktreeOpen(true);
   }, [isGatLinktreeAudience, isGatLinktreeOpen]);
   const handleOpenBackstage = useCallback(async () => {
+    closeGatPanels();
     const base = 'https://gatoencerrado.org';
     const win = window.open(`${base}/mi-cuenta/acceso`, '_blank', 'noopener,noreferrer');
     const { data: { session: currentSession } } = await supabase.auth.getSession();
@@ -180,7 +159,7 @@ const Header = ({
       if (currentSession.refresh_token) params.set('refresh', currentSession.refresh_token);
       win.location.replace(`${base}/api/auth/handoff?${params}`);
     }
-  }, []);
+  }, [closeGatPanels]);
 
   const profileName =
     user?.user_metadata?.alias ||
@@ -322,9 +301,9 @@ const Header = ({
   const handleOpenHolograficoFromGatTooltip = useCallback(() => {
     const entry = CATALOG.find((c) => c.showcase === gatSpendRecommendation?.showcaseId);
     const portalKey = entry?.key ?? 'oraculo';
-    setIsGatInfoOpen(false);
+    closeGatPanels();
     navigate(`/bitacora?t=${encodeURIComponent(ensureAnonId())}&m=${portalKey}`);
-  }, [gatSpendRecommendation, navigate]);
+  }, [gatSpendRecommendation, navigate, closeGatPanels]);
 
   // Atajo para dejar el WhatsApp desde el tooltip, para quien dejó pasar la
   // primera oportunidad en el cierre de L3 (ResonanceModal). El consentimiento
@@ -514,10 +493,11 @@ const Header = ({
   const handleOpenSupportHub = useCallback(() => {
     if (!user) return;
     setIsMenuOpen(false);
+    closeGatPanels();
     navigate('/portal-encuentros', {
       state: createPortalLaunchState(location, 'header-encuentros'),
     });
-  }, [location, navigate, user]);
+  }, [location, navigate, user, closeGatPanels]);
 
   const handleToggleIndex = useCallback(() => {
     if (shouldGateIndexUntilHeroReveal) return;
@@ -542,7 +522,7 @@ const Header = ({
   const isGatChipPulsing = Boolean(gatRevealPulse);
   // El Header decide si existe el chip; el saldo solo define su contenido.
   // En anónimo no debe adelantarse al ritual de activación del Hero.
-  const shouldShowGatChip = Boolean(showGatChip && gatBalance > 0);
+  const shouldShowGatChip = Boolean(showGatChip && gatBalance > 0 && !isGatLinktreeOpen);
   const gatChipPulseAnimate = prefersReducedMotion
     ? { opacity: 1, scale: 1 }
     : {
@@ -626,7 +606,10 @@ const Header = ({
   //    apunte a una vitrina — "sigues con crédito gastado/en curso ahí";
   // 3) si nunca hay historial, la recomendación de primera vez del Oráculo.
   useEffect(() => {
-    if (!isGatInfoOpen) return undefined;
+    // El HUB (isGatLinktreeOpen) puede abrir solo, sin que nadie haya tocado
+    // el chip todavía — antes esto solo corría con isGatInfoOpen, así que la
+    // recomendación no aparecía hasta que además se abriera el tooltip.
+    if (!isGatInfoOpen && !isGatLinktreeOpen) return undefined;
     let cancelled = false;
     setIsGatSpendRecommendationLoading(true);
     (async () => {
@@ -645,7 +628,7 @@ const Header = ({
     return () => {
       cancelled = true;
     };
-  }, [isGatInfoOpen]);
+  }, [isGatInfoOpen, isGatLinktreeOpen]);
 
   useEffect(() => {
     if (!isGatInfoOpen) return undefined;
@@ -668,6 +651,89 @@ const Header = ({
     };
   }, [isGatInfoOpen]);
 
+  // Contenido compartido por el tooltip (clic en el chip) y el HUB (se abre
+  // solo para autenticados/PWA) — mismos accesos, mismo estilo, para no
+  // mantener dos diseños distintos de lo mismo.
+  const gatAccessGridContent = (
+    <>
+      <div className="mx-auto grid w-full max-w-[19rem] grid-cols-2 gap-x-6 gap-y-5">
+        {!user && isGatLoginEligible ? (
+          <GatLinktreeTile icon={LogIn} label="Iniciar sesión" onClick={handleOpenLoginFromGatTooltip} />
+        ) : null}
+        {gatSpendRecommendation ? (
+          <GatLinktreeTile
+            icon={Compass}
+            label={`Explorar ${gatSpendRecommendation.title}`}
+            onClick={() => {
+              closeGatPanels();
+              handleNavClick(`#transmedia?focus=${gatSpendRecommendation.showcaseId}&source=gat-recommendation`);
+            }}
+          />
+        ) : null}
+        <GatLinktreeTile icon={BookOpen} label="Cuaderno holográfico" onClick={handleOpenHolograficoFromGatTooltip} />
+        {user ? (
+          <GatLinktreeTile icon={Coffee} label="Café, charla y merch" onClick={handleOpenSupportHub} />
+        ) : null}
+        {user ? (
+          <GatLinktreeTile
+            icon={UserCircle2}
+            label={greetingLabel}
+            statusDotClass={statusDotClass}
+            onClick={() => setIsLinktreeSessionExpanded((prev) => !prev)}
+          />
+        ) : null}
+        {!gatWhatsappDone ? (
+          <GatLinktreeTile
+            icon={MessageCircle}
+            label="Avísame por WhatsApp"
+            onClick={() => setShowGatWhatsappInput((prev) => !prev)}
+          />
+        ) : null}
+        {isSubscriber ? (
+          <GatLinktreeTile icon={DoorOpen} label="Ir al Backstage" onClick={handleOpenBackstage} />
+        ) : null}
+      </div>
+
+      {isLinktreeSessionExpanded && user ? (
+        <div className="mx-auto mt-5 w-full max-w-[19rem] rounded-xl border border-white/10 bg-black/40 p-3 text-center text-slate-100">
+          <p className="text-[11px] uppercase tracking-[0.18em] text-slate-400">Sesión activa</p>
+          <p className="mt-1 break-all text-xs text-slate-200/90">{user?.email || 'correo no disponible'}</p>
+          <button
+            type="button"
+            onClick={handleLogout}
+            className="mt-2 w-full rounded-lg border border-white/15 px-3 py-1.5 text-xs font-semibold text-slate-100 transition hover:bg-white/5"
+          >
+            Cerrar sesión
+          </button>
+        </div>
+      ) : null}
+
+      {showGatWhatsappInput && !gatWhatsappDone ? (
+        <div className="mx-auto mt-5 w-full max-w-[19rem] space-y-1.5">
+          <p className="text-center text-[0.7rem] text-slate-400">¿A qué número te avisamos?</p>
+          <div className="flex gap-1.5">
+            <input
+              type="tel"
+              value={gatWhatsappPhone}
+              onChange={(e) => setGatWhatsappPhone(e.target.value)}
+              placeholder="+52 55 0000 0000"
+              disabled={gatWhatsappSubmitting}
+              className="min-w-0 flex-1 rounded-lg border border-white/15 bg-black/40 px-2.5 py-1.5 text-xs text-slate-100 placeholder:text-slate-500 outline-none focus:border-white/40"
+            />
+            <button
+              type="button"
+              onClick={handleSubmitGatWhatsapp}
+              disabled={gatWhatsappSubmitting || gatWhatsappPhone.trim().length < 8}
+              className="shrink-0 rounded-lg border border-white/15 bg-white/5 px-2.5 py-1.5 text-xs font-semibold text-slate-100 transition hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-40"
+            >
+              {gatWhatsappSubmitting ? '…' : 'Enviar'}
+            </button>
+          </div>
+        </div>
+      ) : null}
+    </>
+  );
+
   return (
     <>
       <motion.header
@@ -679,6 +745,7 @@ const Header = ({
         <nav className="container mx-auto px-6 py-3 max-[375px]:px-4" data-site-index-root>
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3 text-white">
+              {!isGatLinktreeOpen ? (
               <motion.button
                 id="header-index-hashtag"
                 type="button"
@@ -706,6 +773,7 @@ const Header = ({
                 </span>
                 {user ? <span className={`block h-2.5 w-2.5 shrink-0 rounded-full ${statusDotClass}`} /> : null}
               </motion.button>
+              ) : null}
               {user && !isGatLinktreeOpen ? (
                 <div className="relative" data-profile-menu>
                   <button
@@ -794,101 +862,30 @@ const Header = ({
                 <div
                   ref={gatInfoPanelRef}
                   style={gatInfoPanelStyle}
-                  className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-[0_8px_32px_rgba(0,0,0,0.18)]"
+                  className="overflow-hidden rounded-2xl border border-white/10 bg-black/90 shadow-[0_8px_32px_rgba(0,0,0,0.45)] backdrop-blur-xl"
                 >
                   <div className="flex flex-col items-center gap-2 px-4 py-4">
-                    <p className="text-center text-[0.62rem] font-semibold uppercase tracking-[0.35em] text-amber-600">
+                    <p className="text-center text-[0.62rem] font-semibold uppercase tracking-[0.35em] text-amber-400">
                       · Tu energía ·
                     </p>
-                    <p className="max-w-[13rem] text-center text-[0.68rem] leading-relaxed text-slate-500">
+                    <p className="max-w-[13rem] text-center text-[0.68rem] leading-relaxed text-slate-400">
                       Los GATokens son el valor que le ponemos a tu atención en #GatoEncerrado
                     </p>
 
-                    <div className="mt-1 flex flex-col items-center">
-                      {!user && isGatLoginEligible ? (
-                        <>
-                          <GatTooltipLinkRow
-                            icon={LogIn}
-                            label="Inicia sesión para gastar tus GATokens"
-                            onClick={handleOpenLoginFromGatTooltip}
-                            tone="slate"
-                          />
-                          <GatTooltipConnector />
-                        </>
-                      ) : null}
+                    {isGatSpendRecommendationLoading ? (
+                      <p className="py-1 text-[0.68rem] text-slate-500">Buscando dónde conviene gastarlos…</p>
+                    ) : !gatSpendRecommendation ? (
+                      <p className="max-w-[13rem] py-1 text-center text-[0.66rem] text-slate-500">
+                        Representan la energía simbólica que este universo necesita para activar experiencias dentro de los miniversos.
+                      </p>
+                    ) : null}
 
-                      {isGatSpendRecommendationLoading ? (
-                        <p className="py-2 text-[0.68rem] text-slate-400">Buscando dónde conviene gastarlos…</p>
-                      ) : gatSpendRecommendation ? (
-                        <>
-                          <GatTooltipLinkRow
-                            icon={Compass}
-                            label={`Explorar ${gatSpendRecommendation.title}`}
-                            onClick={() => {
-                              setIsGatInfoOpen(false);
-                              handleNavClick(`#transmedia?focus=${gatSpendRecommendation.showcaseId}&source=gat-recommendation`);
-                            }}
-                            tone="violet"
-                          />
-                          <GatTooltipConnector />
-                        </>
-                      ) : (
-                        <p className="max-w-[13rem] py-2 text-center text-[0.66rem] text-slate-500">
-                          Representan la energía simbólica que este universo necesita para activar experiencias dentro de los miniversos.
-                        </p>
-                      )}
-
-                      <GatTooltipLinkRow
-                        icon={BookOpen}
-                        label="Tu cuaderno holográfico te espera"
-                        onClick={handleOpenHolograficoFromGatTooltip}
-                        tone="amber"
-                      />
-
-                      {!gatWhatsappDone ? (
-                        showGatWhatsappInput ? (
-                          <>
-                            <GatTooltipConnector />
-                            <div className="w-full space-y-1.5 px-1">
-                              <p className="text-center text-[0.68rem] text-slate-500">¿A qué número te avisamos?</p>
-                              <div className="flex gap-1.5">
-                                <input
-                                  type="tel"
-                                  value={gatWhatsappPhone}
-                                  onChange={(e) => setGatWhatsappPhone(e.target.value)}
-                                  placeholder="+52 55 0000 0000"
-                                  disabled={gatWhatsappSubmitting}
-                                  className="min-w-0 flex-1 rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 text-xs text-slate-700 placeholder:text-slate-400 outline-none focus:border-slate-400"
-                                />
-                                <button
-                                  type="button"
-                                  onClick={handleSubmitGatWhatsapp}
-                                  disabled={gatWhatsappSubmitting || gatWhatsappPhone.trim().length < 8}
-                                  className="shrink-0 rounded-lg border border-slate-200 bg-slate-50 px-2.5 py-1.5 text-xs font-semibold text-slate-700 transition hover:bg-white disabled:cursor-not-allowed disabled:opacity-40"
-                                >
-                                  {gatWhatsappSubmitting ? '…' : 'Enviar'}
-                                </button>
-                              </div>
-                            </div>
-                          </>
-                        ) : (
-                          <>
-                            <GatTooltipConnector />
-                            <GatTooltipLinkRow
-                              icon={MessageCircle}
-                              label="¿Dejaste pasar tu bitácora? Avísame por WhatsApp"
-                              onClick={() => setShowGatWhatsappInput(true)}
-                              tone="slate"
-                            />
-                          </>
-                        )
-                      ) : null}
-                    </div>
+                    <div className="mt-1 w-full">{gatAccessGridContent}</div>
                   </div>
-                  <div className="border-t border-slate-100 bg-amber-50 px-4 py-2">
-                    <p className="text-center text-[0.68rem] text-slate-500">
+                  <div className="border-t border-white/10 bg-white/5 px-4 py-2">
+                    <p className="text-center text-[0.68rem] text-slate-400">
                       Energía disponible:{' '}
-                      <span className="font-semibold text-amber-600">
+                      <span className="font-semibold text-amber-400">
                         {gatBalance.toLocaleString('es-MX')} GAT
                       </span>
                     </p>
@@ -896,19 +893,6 @@ const Header = ({
                 </div>,
                 document.body
               )}
-              {user && !isGatLinktreeOpen ? (
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="icon"
-                  className="xl:hidden h-auto w-auto rounded-none p-0 text-amber-100 hover:bg-transparent hover:text-amber-50"
-                  onClick={handleOpenSupportHub}
-                  aria-label="Abrir café, charla y merch"
-                  title="Café, charla y merch"
-                >
-                  <Coffee size={20} />
-                </Button>
-              ) : null}
             </div>
           </div>
 
@@ -931,78 +915,7 @@ const Header = ({
               </div>
 
               <div className="min-h-0 flex-1 overflow-y-auto px-6 pb-4 pt-1">
-                <div className="mx-auto grid w-full max-w-[19rem] grid-cols-2 gap-x-6 gap-y-5">
-                  {!user && isGatLoginEligible ? (
-                    <GatLinktreeTile icon={LogIn} label="Iniciar sesión" onClick={handleOpenLoginFromGatTooltip} />
-                  ) : null}
-                  {gatSpendRecommendation ? (
-                    <GatLinktreeTile
-                      icon={Compass}
-                      label={`Explorar ${gatSpendRecommendation.title}`}
-                      onClick={() => handleNavClick(`#transmedia?focus=${gatSpendRecommendation.showcaseId}&source=gat-recommendation`)}
-                    />
-                  ) : null}
-                  <GatLinktreeTile icon={BookOpen} label="Cuaderno holográfico" onClick={handleOpenHolograficoFromGatTooltip} />
-                  {user ? (
-                    <GatLinktreeTile icon={Coffee} label="Café, charla y merch" onClick={handleOpenSupportHub} />
-                  ) : null}
-                  {user ? (
-                    <GatLinktreeTile
-                      icon={UserCircle2}
-                      label={greetingLabel}
-                      statusDotClass={statusDotClass}
-                      onClick={() => setIsLinktreeSessionExpanded((prev) => !prev)}
-                    />
-                  ) : null}
-                  {!gatWhatsappDone ? (
-                    <GatLinktreeTile
-                      icon={MessageCircle}
-                      label="Avísame por WhatsApp"
-                      onClick={() => setShowGatWhatsappInput((prev) => !prev)}
-                    />
-                  ) : null}
-                  {isSubscriber ? (
-                    <GatLinktreeTile icon={DoorOpen} label="Ir al Backstage" onClick={handleOpenBackstage} />
-                  ) : null}
-                </div>
-
-                {isLinktreeSessionExpanded && user ? (
-                  <div className="mx-auto mt-5 w-full max-w-[19rem] rounded-xl border border-white/10 bg-black/40 p-3 text-center text-slate-100">
-                    <p className="text-[11px] uppercase tracking-[0.18em] text-slate-400">Sesión activa</p>
-                    <p className="mt-1 break-all text-xs text-slate-200/90">{user?.email || 'correo no disponible'}</p>
-                    <button
-                      type="button"
-                      onClick={handleLogout}
-                      className="mt-2 w-full rounded-lg border border-white/15 px-3 py-1.5 text-xs font-semibold text-slate-100 transition hover:bg-white/5"
-                    >
-                      Cerrar sesión
-                    </button>
-                  </div>
-                ) : null}
-
-                {showGatWhatsappInput && !gatWhatsappDone ? (
-                  <div className="mx-auto mt-5 w-full max-w-[19rem] space-y-1.5">
-                    <p className="text-center text-[0.7rem] text-slate-400">¿A qué número te avisamos?</p>
-                    <div className="flex gap-1.5">
-                      <input
-                        type="tel"
-                        value={gatWhatsappPhone}
-                        onChange={(e) => setGatWhatsappPhone(e.target.value)}
-                        placeholder="+52 55 0000 0000"
-                        disabled={gatWhatsappSubmitting}
-                        className="min-w-0 flex-1 rounded-lg border border-white/15 bg-black/40 px-2.5 py-1.5 text-xs text-slate-100 placeholder:text-slate-500 outline-none focus:border-white/40"
-                      />
-                      <button
-                        type="button"
-                        onClick={handleSubmitGatWhatsapp}
-                        disabled={gatWhatsappSubmitting || gatWhatsappPhone.trim().length < 8}
-                        className="shrink-0 rounded-lg border border-white/15 bg-white/5 px-2.5 py-1.5 text-xs font-semibold text-slate-100 transition hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-40"
-                      >
-                        {gatWhatsappSubmitting ? '…' : 'Enviar'}
-                      </button>
-                    </div>
-                  </div>
-                ) : null}
+                {gatAccessGridContent}
               </div>
             </div>,
             document.body
