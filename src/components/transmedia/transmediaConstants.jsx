@@ -54,6 +54,22 @@ export const SHOWCASE_REQUIRED_GAT = {
   apps: 150,
   oraculo: 0,
 };
+// Umbral parejo para el botón "viajar" del cuaderno holográfico — no es
+// SHOWCASE_REQUIRED_GAT (ese mapa es de un modelo anterior, pendiente de
+// reemplazo con el trabajo doctoral de costos por artefacto). Este es un
+// salvaguardas aparte: solo evita que alguien abra un universo nuevo cuando
+// ya gastó GAT a medias en otro.
+export const CUADERNO_HOLOGRAFICO_TRAVEL_GAT = 175;
+// Demos externas y anónimas — guardrail/motivación pública, no la función
+// completa del artefacto (esa vive en Resonancia Colectiva). Movido aquí
+// desde MiniverseModal.jsx para que este archivo (sin dependencias
+// pesadas) pueda importarlo también desde CuadernoHolografico.jsx.
+export const DEMO_URL_BY_FORMAT_ID = {
+  apps: 'https://juegos.miniversos.ai/',
+  copycats: 'https://cine.miniversos.ai/',
+  oraculo: 'https://oraculo.miniversos.ai/',
+  miniversoNovela: 'https://literatura.miniversos.ai/',
+};
 export const MOVEMENT_COLLABORATOR_CALL_ITEMS = [
   'Intérpretes y bailarines por ciudad',
   'Diseño y desarrollo de skins digitales',

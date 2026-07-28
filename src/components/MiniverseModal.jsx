@@ -9,7 +9,7 @@ import { ToastAction } from '@/components/ui/toast';
 import { supabase } from '@/lib/supabaseClient';
 import { useAuth } from '@/contexts/SupabaseAuthContext';
 import { safeGetItem, safeSetItem } from '@/lib/safeStorage';
-import { ORACULO_RECOMMENDED_SHOWCASE_KEY } from '@/components/transmedia/transmediaConstants';
+import { ORACULO_RECOMMENDED_SHOWCASE_KEY, DEMO_URL_BY_FORMAT_ID } from '@/components/transmedia/transmediaConstants';
 import { getTopShowcaseLikes } from '@/services/showcaseLikeService';
 import { isSafariBrowser } from '@/lib/browser';
 import { resolvePortalRoute } from '@/lib/miniversePortalRegistry';
@@ -516,13 +516,6 @@ export const IncendioVideoPlaceholder = ({ compact = false }) => (
 // Dominios reales de "dispositivos transmedia" por miniverso — ver
 // handleSelectCard. Solo Juegos existe hoy; el resto se agrega aquí según se
 // vayan publicando (nunca se adivina un dominio, se agrega cuando exista).
-const DEMO_URL_BY_FORMAT_ID = {
-  apps: 'https://juegos.miniversos.ai/',
-  copycats: 'https://cine.miniversos.ai/',
-  oraculo: 'https://oraculo.miniversos.ai/',
-  miniversoNovela: 'https://literatura.miniversos.ai/',
-};
-
 const MiniverseModal = ({
   open,
   onClose,

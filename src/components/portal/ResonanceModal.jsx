@@ -992,6 +992,7 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
                       onStartBitacora={() => { setHolograficoOpen(false); setBitacoraOpen(true); }}
                       onNavigate={(showcaseId) => { setHolograficoOpen(false); handleClose(); onNavigateToRecommendation?.(showcaseId); }}
                       onPosterChange={setHolograficoPoster}
+                      onRequireLogin={onRequireLogin}
                     />
                   </motion.div>
                 ) : bitacoraOpen ? (

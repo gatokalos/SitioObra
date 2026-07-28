@@ -15,11 +15,27 @@ const IAInsightCard = ({
   compact = false,
   rewardLabel,
   minRequired,
+  // Modo "viajar" (cuaderno holográfico): cuando travelRequiredGat viene
+  // definido, el botón deja de ser "Migrar mis GATokens" y se convierte en
+  // un salvaguardas — anónimo → pide autenticarse; autenticado con balance
+  // suficiente → onTravel(); autenticado sin balance → avisa y no deja
+  // entrar a un universo nuevo. No descuenta nada: el único lugar donde se
+  // gasta GAT de verdad es dentro de cada artefacto transmedia.
+  travelRequiredGat,
+  travelLabel = 'Viajar al universo',
+  onTravel,
+  // Algunas páginas (p. ej. /bitacora) no montan Header.jsx, así que el
+  // evento global 'open-login-modal' no tiene quién lo escuche ahí. Si el
+  // padre puede darnos un callback real (su propio LoginOverlay), se usa
+  // ese; si no, cae al evento global (funciona en el flujo normal de
+  // Transmedia.jsx, donde Header.jsx sí está montado).
+  onRequireLogin,
 }) => {
   const { user, session } = useAuth();
   const { toast } = useToast();
   const [status, setStatus] = useState('idle'); // idle | loading | success | error | auth
   const [isOpen, setIsOpen] = useState(!compact);
+  const isTravelMode = typeof travelRequiredGat === 'number';
   const hasBody = type || interaction || tokensRange || coverage || rewardLabel || minRequired;
   const apiBase = useMemo(() => import.meta.env.VITE_API_URL?.replace(/\/+$/, ''), []);
   const apiPaths = useMemo(() => ['/tokens/me', '/api/tokens/me'], []);
@@ -114,6 +130,25 @@ const IAInsightCard = ({
       }
       return response.json().catch(() => ({}));
     }
+  };
+
+  const handleTravelClick = () => {
+    if (!user) {
+      if (onRequireLogin) {
+        onRequireLogin();
+      } else {
+        window.dispatchEvent(new CustomEvent('open-login-modal'));
+      }
+      return;
+    }
+    const balance = getLocalBalance();
+    if (balance >= travelRequiredGat) {
+      onTravel?.();
+      return;
+    }
+    toast({
+      description: `Todavía no te alcanza para otro universo (necesitas ${travelRequiredGat} GAT). Sigue donde ya tienes progreso.`,
+    });
   };
 
   const handleMigrateTokens = async () => {
@@ -240,18 +275,29 @@ const IAInsightCard = ({
           <div className="pt-3">
             <button
               type="button"
-              onClick={handleMigrateTokens}
-              disabled={status === 'loading'}
+              onClick={isTravelMode ? handleTravelClick : handleMigrateTokens}
+              disabled={!isTravelMode && status === 'loading'}
               className="inline-flex items-center gap-2 rounded-lg bg-amber-500/90 px-3 py-2 text-sm font-semibold text-black hover:bg-amber-400 disabled:cursor-not-allowed disabled:opacity-60"
             >
-              {status === 'loading' ? <Loader2 size={16} className="animate-spin" /> : <Send size={16} />}
-              {status === 'loading'
-                ? 'Migrando…'
-                : status === 'success'
-                  ? 'Migrado'
-                  : 'Migrar mis GATokens'}
+              {isTravelMode ? (
+                <Send size={16} />
+              ) : status === 'loading' ? (
+                <Loader2 size={16} className="animate-spin" />
+              ) : (
+                <Send size={16} />
+              )}
+              {isTravelMode
+                ? travelLabel
+                : status === 'loading'
+                  ? 'Migrando…'
+                  : status === 'success'
+                    ? 'Migrado'
+                    : 'Migrar mis GATokens'}
             </button>
-            {status === 'auth' ? (
+            {isTravelMode && !user ? (
+              <p className="mt-2 text-xs text-amber-200">Necesitas iniciar sesión para continuar.</p>
+            ) : null}
+            {!isTravelMode && status === 'auth' ? (
               <p className="mt-2 text-xs text-amber-200">Necesitas iniciar sesión para sincronizar tus energías.</p>
             ) : null}
           </div>

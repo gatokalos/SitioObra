@@ -212,3 +212,37 @@ export const pauseHeroAmbient = ({ resetTime = false } = {}) => {
   if (resetTime) audio.currentTime = 0;
   emit();
 };
+
+// Guardrail global de "pestaña fuera de vista" — Hero.jsx ya tiene su propio
+// listener de visibilitychange, pero vive dentro de su propio useEffect y se
+// apaga en cuanto Hero se desmonta (al navegar a /portal-encuentros,
+// /bitacora o cualquier /portal-*). Este audio es un singleton de módulo que
+// sigue sonando entre rutas a propósito, así que necesita su propio
+// guardrail que no dependa de qué página esté montada. Convive sin
+// problema con el de Hero.jsx: pausar/reproducir algo que ya está en ese
+// estado es un no-op seguro en la API de <audio>, y este listener se
+// registra al cargar el módulo (antes de que Hero monte su propio efecto),
+// así que el ajuste más específico de Hero (volumen según scroll) siempre
+// corre después y tiene la última palabra.
+let wasPlayingBeforeHidden = false;
+
+const handleGlobalVisibilityChange = () => {
+  if (!sharedAudio) return;
+  if (document.visibilityState === 'hidden') {
+    wasPlayingBeforeHidden = !sharedAudio.paused;
+    if (wasPlayingBeforeHidden) sharedAudio.pause();
+    return;
+  }
+  if (document.visibilityState === 'visible') {
+    if (wasPlayingBeforeHidden && !sharedState.isMuted) {
+      void resumeHeroAmbientPlayback({
+        targetVolume: sharedAudio.volume > HERO_AMBIENT_MIN_AUDIBLE_VOLUME ? sharedAudio.volume : HERO_AMBIENT_DEFAULT_VOLUME,
+      });
+    }
+    wasPlayingBeforeHidden = false;
+  }
+};
+
+if (typeof document !== 'undefined') {
+  document.addEventListener('visibilitychange', handleGlobalVisibilityChange);
+}

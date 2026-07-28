@@ -979,7 +979,7 @@ const Header = ({
                     <div className="relative z-10 min-h-0 flex-1 overflow-y-auto overscroll-contain">
                       <div className="border-b border-white/[0.075] px-5 pb-4 pt-5 text-center sm:px-6">
                         <p className="text-[0.62rem] font-semibold uppercase tracking-[0.34em] text-amber-300/90">
-                          Tu energía
+                          La obra continúa
                         </p>
                         <p className="mx-auto mt-2 max-w-[18rem] text-[0.7rem] leading-relaxed text-slate-400">
                           Los GATokens son el valor que le ponemos a tu atención en #GatoEncerrado
@@ -1027,11 +1027,11 @@ const Header = ({
                 <div className="flex shrink-0 items-start justify-between gap-4 px-5 pb-4 pt-5 sm:px-6">
                   <div>
                     <p className="text-[0.62rem] font-semibold uppercase tracking-[0.34em] text-amber-300/90">
-                      Hub personal
+                      Vestíbulo Sideral
                     </p>
                     <h2 className="font-display mt-2 text-xl text-slate-100">Tu energía</h2>
                     <p className="mt-1 max-w-[17rem] text-xs leading-relaxed text-slate-400">
-                      Cuenta, recursos y accesos personales de #GatoEncerrado.
+                      La narrativa de #GatoEncerrado sigue tomando forma con tu participación..
                     </p>
                   </div>
                   <button

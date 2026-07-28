@@ -9,7 +9,11 @@ import { useMobileVideoPresentation } from '@/hooks/useMobileVideoPresentation';
 import { resolvePortalRoute } from '@/lib/miniversePortalRegistry';
 import { createPortalLaunchState } from '@/lib/portalNavigation';
 import { CATALOG } from '@/lib/bitacoraShared';
-import { showcaseDefinitions } from '@/components/transmedia/transmediaConstants';
+import {
+  showcaseDefinitions,
+  CUADERNO_HOLOGRAFICO_TRAVEL_GAT,
+  DEMO_URL_BY_FORMAT_ID,
+} from '@/components/transmedia/transmediaConstants';
 
 export { CATALOG };
 
@@ -215,7 +219,7 @@ function Constellation({ centerKey, onSelect }) {
 
 /* ─── Panel inferior ────────────────────────────────────────────────────── */
 
-function HolograficoPanel({ centerKey, homeKey, onStartBitacora, onOpenVideo }) {
+function HolograficoPanel({ centerKey, homeKey, onStartBitacora, onOpenVideo, onRequireLogin }) {
   const isHome = centerKey === homeKey;
   const entry = CATALOG.find(p => p.key === centerKey);
   const st = lsRead(centerKey);
@@ -225,6 +229,7 @@ function HolograficoPanel({ centerKey, homeKey, onStartBitacora, onOpenVideo }) 
   const hasBitacora = !!st.bitacora_completed;
 
   const homeSt = lsRead(homeKey);
+  const homeL1 = !!homeSt.l1;
   const homeL2 = !!homeSt.l2_option;
   const homeL3 = !!homeSt.l3_recommendation?.step3;
   const homeBitacora = !!homeSt.bitacora_completed;
@@ -259,6 +264,26 @@ function HolograficoPanel({ centerKey, homeKey, onStartBitacora, onOpenVideo }) 
               buttonLabel="Concluye tu narrativa personal"
               onAnswer={onStartBitacora}
             />
+            {/* A diferencia de los satélites, aquí el CTA nunca se gatea —
+                es el propio miniverso activo del usuario, no uno ajeno, y es
+                además el único camino para llegar a bitacora_completed.
+                Las esferas van como complemento: dónde quedó su propio
+                progreso, no un reemplazo del botón. */}
+            <ProgressOrbsRow portal={homeKey} hasL1={homeL1} hasL2={homeL2} hasL3={homeL3} hasBitacora={homeBitacora} />
+            {showcaseDefinitions[entry.showcase]?.iaProfile ? (
+              <IAInsightCard
+                {...showcaseDefinitions[entry.showcase].iaProfile}
+                compact
+                onRequireLogin={onRequireLogin}
+                {...(DEMO_URL_BY_FORMAT_ID[entry.showcase]
+                  ? {
+                      travelRequiredGat: CUADERNO_HOLOGRAFICO_TRAVEL_GAT,
+                      travelLabel: 'Ver demo',
+                      onTravel: () => window.open(DEMO_URL_BY_FORMAT_ID[entry.showcase], '_blank', 'noopener,noreferrer'),
+                    }
+                  : {})}
+              />
+            ) : null}
           </div>
         ) : (
           /* Satélite */
@@ -283,7 +308,14 @@ function HolograficoPanel({ centerKey, homeKey, onStartBitacora, onOpenVideo }) 
               <ProgressOrbsRow portal={centerKey} hasL1={hasL1} hasL2={hasL2} hasL3={hasL3} hasBitacora={hasBitacora} />
             )}
             {showcaseDefinitions[entry.showcase]?.iaProfile ? (
-              <IAInsightCard {...showcaseDefinitions[entry.showcase].iaProfile} compact />
+              <IAInsightCard
+                {...showcaseDefinitions[entry.showcase].iaProfile}
+                compact
+                onRequireLogin={onRequireLogin}
+                travelRequiredGat={CUADERNO_HOLOGRAFICO_TRAVEL_GAT}
+                travelLabel={`Viajar a ${entry.name}`}
+                onTravel={() => onOpenVideo(entry.showcase)}
+              />
             ) : null}
           </div>
         )}
@@ -294,7 +326,7 @@ function HolograficoPanel({ centerKey, homeKey, onStartBitacora, onOpenVideo }) 
 
 /* ─── Componente principal ──────────────────────────────────────────────── */
 
-const CuadernoHolografico = ({ portal, onStartBitacora, onNavigate, onPosterChange }) => {
+const CuadernoHolografico = ({ portal, onStartBitacora, onNavigate, onPosterChange, onRequireLogin }) => {
   const navigate = useNavigate();
   const location = useLocation();
   const { isMobileViewport } = useMobileVideoPresentation();
@@ -383,6 +415,7 @@ const CuadernoHolografico = ({ portal, onStartBitacora, onNavigate, onPosterChan
           homeKey={portal}
           onStartBitacora={onStartBitacora}
           onOpenVideo={handleOpenVideo}
+          onRequireLogin={onRequireLogin}
         />
       </div>
 
