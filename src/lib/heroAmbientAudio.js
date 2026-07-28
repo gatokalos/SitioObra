@@ -225,24 +225,48 @@ export const pauseHeroAmbient = ({ resetTime = false } = {}) => {
 // así que el ajuste más específico de Hero (volumen según scroll) siempre
 // corre después y tiene la última palabra.
 let wasPlayingBeforeHidden = false;
+// Cambiar a OTRA APLICACIÓN (no otra pestaña del mismo navegador) no
+// siempre dispara visibilitychange de forma confiable — la señal correcta
+// ahí es window.blur/focus (el mismo motivo por el que Hero.jsx usa AMBAS
+// señales, no solo una). Bandera compartida para que no se pisen entre sí
+// si el navegador llega a disparar las dos casi al mismo tiempo.
+let isGloballyBackgrounded = false;
+
+const pauseGlobalAmbient = () => {
+  if (!sharedAudio || isGloballyBackgrounded) return;
+  isGloballyBackgrounded = true;
+  wasPlayingBeforeHidden = !sharedAudio.paused;
+  if (wasPlayingBeforeHidden) sharedAudio.pause();
+};
+
+const resumeGlobalAmbientIfNeeded = () => {
+  if (!sharedAudio || !isGloballyBackgrounded) return;
+  isGloballyBackgrounded = false;
+  // document.hasFocus() cubre el caso de volver de otra app pero con la
+  // pestaña todavía oculta (p. ej. otra ventana del mismo navegador encima).
+  if (document.visibilityState !== 'visible' || !document.hasFocus()) return;
+  if (wasPlayingBeforeHidden && !sharedState.isMuted) {
+    void resumeHeroAmbientPlayback({
+      targetVolume: sharedAudio.volume > HERO_AMBIENT_MIN_AUDIBLE_VOLUME ? sharedAudio.volume : HERO_AMBIENT_DEFAULT_VOLUME,
+    });
+  }
+  wasPlayingBeforeHidden = false;
+};
 
 const handleGlobalVisibilityChange = () => {
-  if (!sharedAudio) return;
   if (document.visibilityState === 'hidden') {
-    wasPlayingBeforeHidden = !sharedAudio.paused;
-    if (wasPlayingBeforeHidden) sharedAudio.pause();
+    pauseGlobalAmbient();
     return;
   }
   if (document.visibilityState === 'visible') {
-    if (wasPlayingBeforeHidden && !sharedState.isMuted) {
-      void resumeHeroAmbientPlayback({
-        targetVolume: sharedAudio.volume > HERO_AMBIENT_MIN_AUDIBLE_VOLUME ? sharedAudio.volume : HERO_AMBIENT_DEFAULT_VOLUME,
-      });
-    }
-    wasPlayingBeforeHidden = false;
+    resumeGlobalAmbientIfNeeded();
   }
 };
 
 if (typeof document !== 'undefined') {
   document.addEventListener('visibilitychange', handleGlobalVisibilityChange);
+}
+if (typeof window !== 'undefined') {
+  window.addEventListener('blur', pauseGlobalAmbient);
+  window.addEventListener('focus', resumeGlobalAmbientIfNeeded);
 }

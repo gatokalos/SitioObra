@@ -50,22 +50,25 @@ const BitacoraLanding = () => {
   }
 
   return (
-    <div className="fixed inset-0 overflow-hidden bg-gradient-to-b from-slate-950 via-black to-slate-900">
-      {/* ResonanceModal se posiciona con "absolute inset-0" — en su uso normal
-          (dentro de Transmedia.jsx) hereda el tamaño de la vitrina que lo
-          contiene. Aquí, como página de aterrizaje independiente, necesita un
-          contenedor con tamaño explícito (viewport completo, no solo ancho de
-          contenido) para llenarlo correctamente en vez de encogerse. */}
-      <ResonanceModal
-        open
-        startInHolografico
-        portal={portalKey}
-        question={entry.q}
-        onClose={handleClose}
-        onOpenNarrative={handleOpenNarrative}
-        onNavigateToRecommendation={handleNavigateToRecommendation}
-        onRequireLogin={() => setShowLogin(true)}
-      />
+    <div className="fixed inset-0 z-[140] flex items-center justify-center overflow-y-auto overflow-x-hidden overscroll-none bg-gradient-to-b from-slate-950 via-black to-slate-900">
+      {/* El contenedor canónico: las mismas dimensiones que usa la tarjeta de
+          vitrina en Transmedia.jsx (showcaseRef) — acotada a max-w-6xl, NUNCA
+          borde a borde. ResonanceModal se posiciona con "absolute inset-0",
+          así que necesita este "relative" con tamaño real (no el viewport
+          completo) para heredar el tamaño correcto, igual que en su uso
+          normal dentro de una vitrina. */}
+      <div className="relative my-10 h-[calc(100vh-5rem)] w-[calc(100vw-2.5rem)] max-w-6xl overflow-hidden rounded-[28px] border border-white/15 bg-slate-950/55 shadow-[0_35px_120px_rgba(0,0,0,0.65)] backdrop-blur-2xl">
+        <ResonanceModal
+          open
+          startInHolografico
+          portal={portalKey}
+          question={entry.q}
+          onClose={handleClose}
+          onOpenNarrative={handleOpenNarrative}
+          onNavigateToRecommendation={handleNavigateToRecommendation}
+          onRequireLogin={() => setShowLogin(true)}
+        />
+      </div>
       {showLogin ? <LoginOverlay onClose={() => setShowLogin(false)} /> : null}
     </div>
   );

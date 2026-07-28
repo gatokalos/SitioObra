@@ -12,7 +12,6 @@ import { CATALOG } from '@/lib/bitacoraShared';
 import {
   showcaseDefinitions,
   CUADERNO_HOLOGRAFICO_TRAVEL_GAT,
-  DEMO_URL_BY_FORMAT_ID,
 } from '@/components/transmedia/transmediaConstants';
 
 export { CATALOG };
@@ -94,7 +93,7 @@ const lsRead = (portal) => {
   catch { return {}; }
 };
 
-const HOLISTIC_QUESTION = '¿Qué parte de este viaje volvió a ti sin que la buscaras?';
+const HOLISTIC_QUESTION = '¿Qué le responderías, con tus propias palabras, a lo que este miniverso entendió de ti?';
 
 const STARS = Array.from({ length: 28 }, (_, i) => ({
   id: i,
@@ -229,7 +228,6 @@ function HolograficoPanel({ centerKey, homeKey, onStartBitacora, onOpenVideo, on
   const hasBitacora = !!st.bitacora_completed;
 
   const homeSt = lsRead(homeKey);
-  const homeL1 = !!homeSt.l1;
   const homeL2 = !!homeSt.l2_option;
   const homeL3 = !!homeSt.l3_recommendation?.step3;
   const homeBitacora = !!homeSt.bitacora_completed;
@@ -261,36 +259,24 @@ function HolograficoPanel({ centerKey, homeKey, onStartBitacora, onOpenVideo, on
               l3Done={homeL3}
               bitacoraCompleted={homeBitacora}
               label={null}
-              buttonLabel="Concluye tu narrativa personal"
+              buttonLabel="Es tu turno"
               onAnswer={onStartBitacora}
             />
-            {/* A diferencia de los satélites, aquí el CTA nunca se gatea —
-                es el propio miniverso activo del usuario, no uno ajeno, y es
-                además el único camino para llegar a bitacora_completed.
-                Las esferas van como complemento: dónde quedó su propio
-                progreso, no un reemplazo del botón. */}
-            <ProgressOrbsRow portal={homeKey} hasL1={homeL1} hasL2={homeL2} hasL3={homeL3} hasBitacora={homeBitacora} />
-            {showcaseDefinitions[entry.showcase]?.iaProfile ? (
-              <IAInsightCard
-                {...showcaseDefinitions[entry.showcase].iaProfile}
-                compact
-                onRequireLogin={onRequireLogin}
-                {...(DEMO_URL_BY_FORMAT_ID[entry.showcase]
-                  ? {
-                      travelRequiredGat: CUADERNO_HOLOGRAFICO_TRAVEL_GAT,
-                      travelLabel: 'Ver demo',
-                      onTravel: () => window.open(DEMO_URL_BY_FORMAT_ID[entry.showcase], '_blank', 'noopener,noreferrer'),
-                    }
-                  : {})}
-              />
-            ) : null}
+            {/* Sin esferas propias ni Información de IA aquí: VitranaQuestionReveal
+                ya muestra su propio badge de progreso flotante (ojo/llama/destello/
+                libro) sobre la tarjeta de pregunta — duplicarlo abajo era
+                redundante. Ambos bloques se quedan solo en la rama de satélites,
+                donde VitranaQuestionReveal no siempre se renderiza. */}
           </div>
         ) : (
           /* Satélite */
           <div className="flex flex-col gap-5">
             <div>
-              <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Resonancia Colectiva</p>
-              <h2 className="font-display text-2xl leading-snug question-heading-voice mt-1">Tras cada pregunta</h2>
+              <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Una misma obra</p>
+              <h2 className="font-display text-2xl leading-snug question-heading-voice mt-1">No cambia la pregunta</h2>
+              <p className="mt-2 text-sm leading-relaxed text-slate-300/80">
+                Cambia la forma de abordarla. Explora los niveles a tu ritmo y deja que el Cuaderno Holográfico conserve lo que permanezca contigo.
+              </p>
             </div>
             {hasBitacora ? (
               <VitranaQuestionReveal
