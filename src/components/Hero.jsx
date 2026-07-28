@@ -600,6 +600,13 @@ const Hero = () => {
   ), [hasActivatedAudio, isInstalledPwa, isMobileViewport, user]);
 
   const handleHeroHashClick = useCallback(() => {
+    // Mismo trato que PWAInstructionsOverlay: mientras el HUB de accesos
+    // rápidos (Header.jsx) está abierto, el # 3D no activa la escena por su
+    // cuenta — solo la × del HUB lo hace. Lectura síncrona vía dataset
+    // porque este estado vive en un componente hermano, no en un padre.
+    if (typeof document !== 'undefined' && document.body?.dataset.gatHubOpen === 'true') {
+      return;
+    }
     if (shouldInterceptHeroActivationForPwa()) {
       setIsHeroPwaInstructionsOpen(true);
       return;

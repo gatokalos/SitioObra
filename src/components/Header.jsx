@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback, useLayoutEffect, useMemo, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { motion, useReducedMotion } from 'framer-motion';
-import { Coffee, Info, Sparkles, LogIn, Compass, BookOpen, MessageCircle, UserCircle2, DoorOpen, X } from 'lucide-react';
+import { Coffee, Info, Sparkles, LogIn, Compass, BookOpen, MessageCircle, UserCircle2, DoorOpen, X, ArrowUpRight } from 'lucide-react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useToast } from '@/components/ui/use-toast';
 import { useAuth } from '@/contexts/SupabaseAuthContext';
@@ -43,30 +43,52 @@ const GAT_LINKTREE_DISMISSED_SESSION_KEY = 'gatoencerrado:gat-linktree-dismissed
 // esquinas redondeadas, etiqueta debajo. A diferencia de esas instrucciones,
 // aquí los accesos son independientes entre sí (no un proceso paso a paso),
 // por eso van en grid de 2 columnas sin flechas conectoras.
-const GatLinktreeTile = ({ icon: TileIcon, label, onClick, statusDotClass: dotClass }) => (
-  <button
-    type="button"
-    onClick={onClick}
-    className="group flex flex-col items-center gap-[clamp(5px,0.85vh,8px)] text-center"
-  >
-    {/* bg-black/40 (no solo el borde transparente de antes): sin esto, el
-        cuadrado del ícono deja ver lo que sea que haya detrás en el Hero
-        (p. ej. el wordmark GATOENCERRADO), y con 5-6 accesos el grid crece
-        lo suficiente para toparse con él. */}
-    <span className="relative flex h-[clamp(34px,5.4vh,52px)] w-[clamp(34px,5.4vh,52px)] shrink-0 items-center justify-center rounded-[clamp(10px,1.1vh,15px)] border-[1.25px] border-white/65 bg-black/40 text-slate-100 backdrop-blur-[2px] transition group-hover:border-white group-hover:bg-white/10">
-      <TileIcon strokeWidth={1.5} className="h-[clamp(17px,2.7vh,26px)] w-[clamp(17px,2.7vh,26px)]" />
-      {dotClass ? (
-        <span className={`absolute -right-0.5 -top-0.5 h-2.5 w-2.5 rounded-full border border-black/40 ${dotClass}`} />
-      ) : null}
-    </span>
-    <p
-      className="max-w-[7.5rem] text-[clamp(0.7rem,1.7vh,0.85rem)] leading-tight text-slate-100"
-      style={{ textShadow: '0 1px 6px rgba(0,0,0,0.9), 0 0 12px rgba(0,0,0,0.7)' }}
+const GAT_TILE_TONES = {
+  neutral: { border: 'border-white/65 group-hover:border-white', icon: 'text-slate-100', arrow: 'text-slate-400', fill: '' },
+  violet: { border: 'border-violet-400/70 group-hover:border-violet-300', icon: 'text-violet-200', arrow: 'text-violet-400', fill: '' },
+  amber: { border: 'border-amber-400/70 group-hover:border-amber-300', icon: 'text-amber-200', arrow: 'text-amber-400', fill: '' },
+  green: { border: 'border-emerald-400/70 group-hover:border-emerald-300', icon: 'text-emerald-200', arrow: 'text-emerald-400', fill: '' },
+  cyan: { border: 'border-cyan-400/80 group-hover:border-cyan-300', icon: 'text-cyan-200', arrow: 'text-cyan-400', fill: 'bg-cyan-500/10' },
+};
+
+// Íconos sin cambiar (los que ya elegimos) — lo que se ajustó aquí, siguiendo
+// el mockup, es el uso de color por tono, el indicador de salida (↗ para lo
+// que navega, · para lo que se despliega inline) y el divisor punteado
+// entre columnas.
+const GatLinktreeTile = ({ icon: TileIcon, label, onClick, statusDotClass: dotClass, tone = 'neutral', indicator = 'arrow' }) => {
+  const t = GAT_TILE_TONES[tone] ?? GAT_TILE_TONES.neutral;
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className="group flex flex-col items-center gap-[clamp(5px,0.85vh,8px)] text-center"
     >
-      {label}
-    </p>
-  </button>
-);
+      {/* bg-black/40 (no solo el borde transparente de antes): sin esto, el
+          cuadrado del ícono deja ver lo que sea que haya detrás en el Hero
+          (p. ej. el wordmark GATOENCERRADO), y con 5-6 accesos el grid crece
+          lo suficiente para toparse con él. */}
+      <span
+        className={`relative flex h-[clamp(34px,5.4vh,52px)] w-[clamp(34px,5.4vh,52px)] shrink-0 items-center justify-center rounded-[clamp(10px,1.1vh,15px)] border-[1.25px] bg-black/40 backdrop-blur-[2px] transition group-hover:bg-white/10 ${t.border} ${t.fill}`}
+      >
+        <TileIcon strokeWidth={1.5} className={`h-[clamp(17px,2.7vh,26px)] w-[clamp(17px,2.7vh,26px)] ${t.icon}`} />
+        {dotClass ? (
+          <span className={`absolute -right-0.5 -top-0.5 h-2.5 w-2.5 rounded-full border border-black/40 ${dotClass}`} />
+        ) : null}
+      </span>
+      <p
+        className="flex max-w-[8.5rem] items-center gap-1 text-[clamp(0.7rem,1.7vh,0.85rem)] leading-tight text-slate-100"
+        style={{ textShadow: '0 1px 6px rgba(0,0,0,0.9), 0 0 12px rgba(0,0,0,0.7)' }}
+      >
+        {label}
+        {indicator === 'arrow' ? (
+          <ArrowUpRight size={11} strokeWidth={2} className={`shrink-0 ${t.arrow}`} />
+        ) : indicator === 'dot' ? (
+          <span className={`h-1.5 w-1.5 shrink-0 rounded-full ${dotClass ?? 'bg-emerald-400'}`} />
+        ) : null}
+      </p>
+    </button>
+  );
+};
 
 const MOBILE_FULLSCREEN_MENU_PHASE_A_ENABLED = true;
 const TRANSMEDIA_SECONDARY_ITEMS = [
@@ -102,7 +124,6 @@ const Header = ({
   const [hasOpenedIndexOnce, setHasOpenedIndexOnce] = useState(false);
   const [hasHeroLeftViewportOnce, setHasHeroLeftViewportOnce] = useState(false);
   const [showLoginOverlay, setShowLoginOverlay] = useState(false);
-  const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
   const [isGatInfoOpen, setIsGatInfoOpen] = useState(false);
   const [gatInfoPanelStyle, setGatInfoPanelStyle] = useState({});
   const [gatSpendRecommendation, setGatSpendRecommendation] = useState(null);
@@ -141,32 +162,40 @@ const Header = ({
   const [isGatLinktreeOpen, setIsGatLinktreeOpen] = useState(
     () => isGatLinktreeAudience && typeof window !== 'undefined' && !window.sessionStorage.getItem(GAT_LINKTREE_DISMISSED_SESSION_KEY)
   );
+  // Header y Hero son hermanos — Hero necesita saber, de forma síncrona y
+  // dentro de un click handler (no un re-render), si el HUB sigue abierto,
+  // para que el # 3D no active la escena por su cuenta mientras tanto
+  // (mismo comportamiento que ya existe para PWAInstructionsOverlay). Un
+  // dataset en <body> es más simple aquí que subir este estado a un padre
+  // común solo para esta lectura puntual.
+  useEffect(() => {
+    if (typeof document === 'undefined') return undefined;
+    document.body.dataset.gatHubOpen = isGatLinktreeOpen ? 'true' : 'false';
+    return () => {
+      delete document.body.dataset.gatHubOpen;
+    };
+  }, [isGatLinktreeOpen]);
   const [isLinktreeSessionExpanded, setIsLinktreeSessionExpanded] = useState(false);
   // Cerrar cualquiera de los dos paneles del sistema de GAT (el HUB que abre
   // solo, o el tooltip que abre el chip) — usado por cualquier acceso del
   // grid que navegue a otro lado, para que no se quede flotando encima.
+  // Cierra el HUB y/o el tooltip por CUALQUIER camino (la X, o un tile que
+  // navega a otro lado) y siempre activa la escena — el HUB es un puente, no
+  // debe dejar al Hero en un estado "a medias" sin importar cómo se cerró.
+  // Header y Hero son hermanos, no padre-hijo, así que se coordina por
+  // evento global en vez de prop drilling (mismo gesto que cerrar
+  // PWAInstructionsOverlay: X → handleIsotipoClick).
   const closeGatPanels = useCallback(() => {
     setIsGatInfoOpen(false);
     setIsGatLinktreeOpen(false);
-    // Sin esto, el efecto de auto-apertura de abajo ve isGatLinktreeOpen en
-    // false (sin bandera de "ya lo cerraste") y lo vuelve a abrir de
-    // inmediato — por eso el HUB "no cerraba" al navegar desde un tile.
+    // Sin la bandera, el efecto de auto-apertura de abajo ve isGatLinktreeOpen
+    // en false (sin registro de "ya lo cerraste") y lo vuelve a abrir de
+    // inmediato — por eso antes el HUB "no cerraba" al navegar desde un tile.
     try {
       window.sessionStorage.setItem(GAT_LINKTREE_DISMISSED_SESSION_KEY, '1');
     } catch {
       // Silencioso
     }
-  }, []);
-  const handleDismissGatLinktree = useCallback(() => {
-    setIsGatLinktreeOpen(false);
-    try {
-      window.sessionStorage.setItem(GAT_LINKTREE_DISMISSED_SESSION_KEY, '1');
-    } catch {
-      // Silencioso
-    }
-    // Mismo gesto que cerrar PWAInstructionsOverlay: cerrar el HUB activa la
-    // escena (audio + índice revelado). Header y Hero son hermanos, no
-    // padre-hijo, así que se coordina por evento global en vez de prop drilling.
     window.dispatchEvent(new CustomEvent('gatoencerrado:activate-scene-request'));
   }, []);
   useEffect(() => {
@@ -384,17 +413,6 @@ const Header = ({
         : 'bg-transparent';
 
   useEffect(() => {
-    if (!isProfileMenuOpen) return undefined;
-    const handleClickAway = (event) => {
-      if (!event.target.closest('[data-profile-menu]')) {
-        setIsProfileMenuOpen(false);
-      }
-    };
-    window.addEventListener('click', handleClickAway);
-    return () => window.removeEventListener('click', handleClickAway);
-  }, [isProfileMenuOpen]);
-
-  useEffect(() => {
     if (!isMenuOpen) return undefined;
     const handleClickAway = (event) => {
       if (event.target?.closest?.('[data-site-index-root]')) {
@@ -589,30 +607,31 @@ const Header = ({
     }
   }, [gatBalance, gatRevealPulse]);
 
-  // Panel del tooltip de GATokens — mismo cálculo de posición que GATChip.jsx
-  // (portal/GATChip.jsx): fixed, alineado al borde derecho del chip, clamp al
-  // viewport, arriba o abajo según el espacio disponible.
+  // Bandeja del tooltip de GATokens: nace debajo del chip y permanece anclada
+  // al header. En móvil ocupa casi todo el ancho; en desktop conserva un ancho
+  // compacto alineado con el borde derecho del chip.
   const calcGatInfoPosition = useCallback(() => {
     if (!gatChipRootRef.current || typeof window === 'undefined') return;
     const rect = gatChipRootRef.current.getBoundingClientRect();
-    const panelW = Math.min(window.innerWidth * 0.88, 272);
-    const panelH = gatInfoPanelRef.current
-      ? Math.max(gatInfoPanelRef.current.scrollHeight, 120)
-      : 160;
-    const gap = 8;
-
-    const spaceBelow = window.innerHeight - rect.bottom;
-    const below = spaceBelow >= panelH + gap || spaceBelow >= rect.top;
-    const rightFromEdge = Math.max(window.innerWidth - rect.right, 8);
+    const isMobileViewport = window.innerWidth < 640;
+    const viewportGutter = isMobileViewport ? 12 : 24;
+    const availableWidth = Math.max(window.innerWidth - viewportGutter * 2, 0);
+    const panelW = isMobileViewport
+      ? availableWidth
+      : Math.min(500, availableWidth);
+    const desiredRight = window.innerWidth - rect.right;
+    const rightFromEdge = Math.min(
+      Math.max(desiredRight, viewportGutter),
+      Math.max(window.innerWidth - panelW - viewportGutter, viewportGutter)
+    );
 
     setGatInfoPanelStyle({
       position: 'fixed',
       width: panelW,
       right: rightFromEdge,
-      ...(below
-        ? { top: rect.bottom + gap, bottom: 'auto' }
-        : { bottom: window.innerHeight - rect.top + gap, top: 'auto' }),
-      zIndex: 9999,
+      top: rect.bottom,
+      bottom: 'auto',
+      zIndex: 40,
     });
   }, []);
 
@@ -685,9 +704,18 @@ const Header = ({
   // mantener dos diseños distintos de lo mismo.
   const gatAccessGridContent = (
     <>
-      <div className="mx-auto grid w-full max-w-[19rem] grid-cols-2 gap-x-6 gap-y-5">
+      <div className="relative mx-auto grid w-full max-w-[19rem] grid-cols-2 gap-x-6 gap-y-5">
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-y-1 left-1/2 w-px -translate-x-1/2 opacity-60"
+          style={{
+            backgroundImage: 'radial-gradient(circle, rgba(255,255,255,0.35) 1px, transparent 1px)',
+            backgroundSize: '1px 10px',
+            backgroundRepeat: 'repeat-y',
+          }}
+        />
         {!user && isGatLoginEligible ? (
-          <GatLinktreeTile icon={LogIn} label="Iniciar sesión" onClick={handleOpenLoginFromGatTooltip} />
+          <GatLinktreeTile icon={LogIn} label="Iniciar sesión" onClick={handleOpenLoginFromGatTooltip} tone="neutral" />
         ) : null}
         {gatSpendRecommendation ? (
           <GatLinktreeTile
@@ -697,11 +725,17 @@ const Header = ({
               closeGatPanels();
               handleNavClick(`#transmedia?focus=${gatSpendRecommendation.showcaseId}&source=gat-recommendation`);
             }}
+            tone="violet"
           />
         ) : null}
-        <GatLinktreeTile icon={BookOpen} label="Cuaderno holográfico" onClick={handleOpenHolograficoFromGatTooltip} />
+        <GatLinktreeTile
+          icon={BookOpen}
+          label="Cuaderno holográfico"
+          onClick={handleOpenHolograficoFromGatTooltip}
+          tone="amber"
+        />
         {user ? (
-          <GatLinktreeTile icon={Coffee} label="Café, charla y merch" onClick={handleOpenSupportHub} />
+          <GatLinktreeTile icon={Coffee} label="Café, charla y merch" onClick={handleOpenSupportHub} tone="amber" />
         ) : null}
         {user ? (
           <GatLinktreeTile
@@ -709,6 +743,8 @@ const Header = ({
             label={greetingLabel}
             statusDotClass={statusDotClass}
             onClick={() => setIsLinktreeSessionExpanded((prev) => !prev)}
+            tone="cyan"
+            indicator="dot"
           />
         ) : null}
         {!gatWhatsappDone ? (
@@ -716,10 +752,11 @@ const Header = ({
             icon={MessageCircle}
             label="Avísame por WhatsApp"
             onClick={() => setShowGatWhatsappInput((prev) => !prev)}
+            tone="green"
           />
         ) : null}
         {isSubscriber ? (
-          <GatLinktreeTile icon={DoorOpen} label="Ir al Backstage" onClick={handleOpenBackstage} />
+          <GatLinktreeTile icon={DoorOpen} label="Ir al Backstage" onClick={handleOpenBackstage} tone="violet" />
         ) : null}
       </div>
 
@@ -800,37 +837,7 @@ const Header = ({
                 >
                   #
                 </span>
-                {user ? <span className={`block h-2.5 w-2.5 shrink-0 rounded-full ${statusDotClass}`} /> : null}
               </motion.button>
-              ) : null}
-              {user && !isGatLinktreeOpen ? (
-                <div className="relative" data-profile-menu>
-                  <button
-                    type="button"
-                    onClick={() => setIsProfileMenuOpen((prev) => !prev)}
-                    className="inline-flex items-center whitespace-nowrap text-xs font-semibold text-slate-100 transition sm:text-sm underline underline-offset-4 decoration-slate-400/40 hover:text-white hover:decoration-emerald-300/60"
-                  >
-                    {greetingLabel}
-                  </button>
-                  {isProfileMenuOpen ? (
-                    <div className="absolute left-0 mt-2 w-64 rounded-xl border border-white/10 bg-black/90 py-2 text-sm text-slate-100 shadow-xl">
-                      <div className="px-4 pb-2 pt-1">
-                        <p className="text-[11px] uppercase tracking-[0.18em] text-slate-400">Sesión activa</p>
-                        <p className="mt-1 break-all text-xs text-slate-200/90">
-                          {user?.email || 'correo no disponible'}
-                        </p>
-                      </div>
-                      <div className="mx-3 mb-1 h-px bg-white/10" />
-                      <button
-                        type="button"
-                        onClick={handleLogout}
-                        className="block w-full px-4 py-2 text-left hover:bg-white/5"
-                      >
-                        Cerrar sesión
-                      </button>
-                    </div>
-                  ) : null}
-                </div>
               ) : null}
             </div>
 
@@ -888,51 +895,67 @@ const Header = ({
                 </motion.div>
               ) : null}
               {shouldShowGatChip && isGatInfoOpen && typeof document !== 'undefined' && createPortal(
-                <div
-                  ref={gatInfoPanelRef}
-                  style={gatInfoPanelStyle}
-                  className="relative overflow-hidden rounded-2xl border border-white/10 bg-black/90 shadow-[0_8px_32px_rgba(0,0,0,0.45)] backdrop-blur-xl"
-                >
-                  <div className="pointer-events-none absolute inset-0" aria-hidden="true">
-                    {gatTooltipStars.map((star) => (
-                      <span
-                        key={star.id}
-                        className="pwa-instructions-star"
-                        style={{
-                          top: `${star.top}%`,
-                          left: `${star.left}%`,
-                          animationDelay: `${star.delay}s`,
-                        }}
-                      />
-                    ))}
-                  </div>
-                  <div className="relative z-10 flex flex-col items-center gap-2 px-4 py-4">
-                    <p className="text-center text-[0.62rem] font-semibold uppercase tracking-[0.35em] text-amber-400">
-                      · Tu energía ·
-                    </p>
-                    <p className="max-w-[13rem] text-center text-[0.68rem] leading-relaxed text-slate-400">
-                      Los GATokens son el valor que le ponemos a tu atención en #GatoEncerrado
-                    </p>
+                <>
+                  <button
+                    type="button"
+                    aria-label="Cerrar información de GATokens"
+                    onClick={() => setIsGatInfoOpen(false)}
+                    className="fixed inset-0 z-30 cursor-default bg-slate-950/25 backdrop-blur-[1px]"
+                  />
+                  <motion.div
+                    ref={gatInfoPanelRef}
+                    style={gatInfoPanelStyle}
+                    initial={prefersReducedMotion ? { opacity: 0 } : { opacity: 0, y: -18 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: prefersReducedMotion ? 0.12 : 0.24, ease: 'easeOut' }}
+                    role="dialog"
+                    aria-modal="false"
+                    aria-label="Tu energía GAT"
+                    className="relative flex max-h-[60dvh] flex-col overflow-hidden rounded-b-2xl border-x border-b border-white/10 bg-black/90 shadow-[0_18px_42px_rgba(0,0,0,0.5)] backdrop-blur-xl"
+                  >
+                    <div className="pointer-events-none absolute inset-0" aria-hidden="true">
+                      {gatTooltipStars.map((star) => (
+                        <span
+                          key={star.id}
+                          className="pwa-instructions-star"
+                          style={{
+                            top: `${star.top}%`,
+                            left: `${star.left}%`,
+                            animationDelay: `${star.delay}s`,
+                          }}
+                        />
+                      ))}
+                    </div>
+                    <div className="relative z-10 min-h-0 flex-1 overflow-y-auto overscroll-contain">
+                      <div className="flex flex-col items-center gap-2 px-4 py-4 sm:px-6">
+                        <p className="text-center text-[0.62rem] font-semibold uppercase tracking-[0.35em] text-amber-400">
+                          · Tu energía ·
+                        </p>
+                        <p className="max-w-[18rem] text-center text-[0.68rem] leading-relaxed text-slate-400">
+                          Los GATokens son el valor que le ponemos a tu atención en #GatoEncerrado
+                        </p>
 
-                    {isGatSpendRecommendationLoading ? (
-                      <p className="py-1 text-[0.68rem] text-slate-500">Buscando dónde conviene gastarlos…</p>
-                    ) : !gatSpendRecommendation ? (
-                      <p className="max-w-[13rem] py-1 text-center text-[0.66rem] text-slate-500">
-                        Representan la energía simbólica que este universo necesita para activar experiencias dentro de los miniversos.
+                        {isGatSpendRecommendationLoading ? (
+                          <p className="py-1 text-[0.68rem] text-slate-500">Buscando dónde conviene gastarlos…</p>
+                        ) : !gatSpendRecommendation ? (
+                          <p className="max-w-[18rem] py-1 text-center text-[0.66rem] text-slate-500">
+                            Representan la energía simbólica que este universo necesita para activar experiencias dentro de los miniversos.
+                          </p>
+                        ) : null}
+
+                        <div className="mt-1 w-full">{gatAccessGridContent}</div>
+                      </div>
+                    </div>
+                    <div className="relative z-10 shrink-0 border-t border-white/10 bg-white/5 px-4 py-2">
+                      <p className="text-center text-[0.68rem] text-slate-400">
+                        Energía disponible:{' '}
+                        <span className="font-semibold text-amber-400">
+                          {gatBalance.toLocaleString('es-MX')} GAT
+                        </span>
                       </p>
-                    ) : null}
-
-                    <div className="mt-1 w-full">{gatAccessGridContent}</div>
-                  </div>
-                  <div className="relative z-10 border-t border-white/10 bg-white/5 px-4 py-2">
-                    <p className="text-center text-[0.68rem] text-slate-400">
-                      Energía disponible:{' '}
-                      <span className="font-semibold text-amber-400">
-                        {gatBalance.toLocaleString('es-MX')} GAT
-                      </span>
-                    </p>
-                  </div>
-                </div>,
+                    </div>
+                  </motion.div>
+                </>,
                 document.body
               )}
             </div>
@@ -940,15 +963,15 @@ const Header = ({
 
           {isGatLinktreeOpen && isGatLinktreeAudience && typeof document !== 'undefined' && createPortal(
             <div
-              className="fixed inset-x-0 top-20 z-[9000] mx-auto flex max-h-[60vh] w-full max-w-md flex-col overflow-hidden lg:top-24"
+              className="fixed inset-x-0 top-0 z-[9000] mx-auto flex max-h-[60vh] w-full max-w-md flex-col overflow-hidden"
               role="dialog"
               aria-modal="false"
               aria-label="Accesos rápidos de #GatoEncerrado"
             >
-              <div className="flex items-center justify-end px-4 pt-2">
+              <div className="flex items-center justify-end px-4 py-3">
                 <button
                   type="button"
-                  onClick={handleDismissGatLinktree}
+                  onClick={closeGatPanels}
                   className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-white/10 bg-white/5 text-slate-200 transition hover:bg-white/10 hover:text-white"
                   aria-label="Cerrar accesos rápidos"
                 >
