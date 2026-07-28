@@ -2,8 +2,23 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { motion } from 'framer-motion';
 import { createPortal } from 'react-dom';
 import { supabase } from '@/lib/supabaseClient';
-import { safeSetItem, safeStorageType } from '@/lib/safeStorage';
+import { safeGetItem, safeSetItem, safeStorageType } from '@/lib/safeStorage';
 import { buildCurrentSiteRedirectUrl, normalizeSiteRedirectUrl } from '@/lib/checkoutRedirectUrls';
+
+const LOGIN_RETURN_KEY = 'gatoencerrado:login-return';
+
+const readPendingClaimEmail = () => {
+  const pending = safeGetItem(LOGIN_RETURN_KEY);
+  if (!pending) return '';
+  try {
+    const parsed = JSON.parse(pending);
+    return parsed?.action === 'cta-huella-claim' && typeof parsed?.email === 'string'
+      ? parsed.email.trim().toLowerCase()
+      : '';
+  } catch {
+    return '';
+  }
+};
 
 const overlayBackdropVariants = {
   hidden: { opacity: 0, transition: { duration: 0.18, ease: 'easeInOut' } },
@@ -79,7 +94,7 @@ const LOGIN_TIGER_ART_URL =
 
 
 const LoginOverlay = ({ onClose }) => {
-  const [email, setEmail] = useState('');
+  const [email, setEmail] = useState(readPendingClaimEmail);
   const [submittedEmail, setSubmittedEmail] = useState('');
   const [step, setStep] = useState('email'); // 'email' | 'otp'
   const [otpCode, setOtpCode] = useState('');

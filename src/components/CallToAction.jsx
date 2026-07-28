@@ -7,7 +7,11 @@ import { supabase } from '@/lib/supabaseClient';
 import { useAuth } from '@/contexts/SupabaseAuthContext';
 import { ConfettiBurst, useConfettiBursts } from '@/components/Confetti';
 import HuellaEmbeddedCheckout from '@/components/HuellaEmbeddedCheckout';
-import { createEmbeddedSubscription, startCheckoutFallback } from '@/lib/huellaCheckout';
+import {
+  claimPendingSubscription,
+  createEmbeddedSubscription,
+  startCheckoutFallback,
+} from '@/lib/huellaCheckout';
 import { clearBienvenidaFlowGoal, clearBienvenidaForceOnLogin } from '@/lib/bienvenida';
 import { safeGetItem, safeRemoveItem, safeSetItem } from '@/lib/safeStorage';
 import { canQuerySubscriptionTableFromClient, warnUnsupportedClientRole } from '@/lib/supabaseSessionRole';
@@ -39,6 +43,7 @@ const SHOULD_PREVIEW_AFTERCARE =
   new URLSearchParams(window.location.search).get('aftercare') === '1';
 const COUNTER_SOUND_MILESTONES = new Set([17, 51, EXPANSION_START]);
 const LOGIN_RETURN_KEY = 'gatoencerrado:login-return';
+const PENDING_HUELLA_CLAIM_KEY = 'gatoencerrado:pending-huella-claim';
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 function clamp(value, min, max) {
@@ -256,6 +261,8 @@ const CallToAction = ({ barsIntroDelayMs = 0 }) => {
   const [loading, setLoading] = useState(false);
   const [msg, setMsg] = useState('');
   const [guestCheckoutEmail, setGuestCheckoutEmail] = useState('');
+  const [pendingClaimSubscriptionId, setPendingClaimSubscriptionId] = useState('');
+  const [claimRetryTick, setClaimRetryTick] = useState(0);
   const [embeddedClientSecret, setEmbeddedClientSecret] = useState('');
   const [checkoutStatus, setCheckoutStatus] = useState('');
   const [pendingFallbackPayload, setPendingFallbackPayload] = useState(null);
@@ -286,6 +293,9 @@ const CallToAction = ({ barsIntroDelayMs = 0 }) => {
   const accordionPushTimeoutRef = useRef(null);
   const loginPulseTimeoutRef = useRef(null);
   const pendingAutoCheckout = useRef(false);
+  const claimInFlightRef = useRef(false);
+  const claimRetryTimeoutRef = useRef(null);
+  const claimRetryCountRef = useRef(0);
   const audioContextRef = useRef(null);
   const masterGainRef = useRef(null);
   const counterAudioPrimedRef = useRef(false);
@@ -730,6 +740,9 @@ const CallToAction = ({ barsIntroDelayMs = 0 }) => {
       if (loginPulseTimeoutRef.current) {
         window.clearTimeout(loginPulseTimeoutRef.current);
       }
+      if (claimRetryTimeoutRef.current) {
+        window.clearTimeout(claimRetryTimeoutRef.current);
+      }
       if (aftercareAudioRef.current) {
         aftercareAudioRef.current.pause();
         aftercareAudioRef.current.src = '';
@@ -742,6 +755,78 @@ const CallToAction = ({ barsIntroDelayMs = 0 }) => {
       masterGainRef.current = null;
     };
   }, []);
+
+  useEffect(() => {
+    if (!user?.id || claimInFlightRef.current) return undefined;
+    const pendingRaw = safeGetItem(PENDING_HUELLA_CLAIM_KEY);
+    let pendingClaim = null;
+    if (pendingRaw) {
+      try {
+        pendingClaim = JSON.parse(pendingRaw);
+      } catch {
+        safeRemoveItem(PENDING_HUELLA_CLAIM_KEY);
+      }
+    }
+
+    let cancelled = false;
+    claimInFlightRef.current = true;
+    if (pendingClaim) {
+      setCheckoutStatus('Identificando tu huella con el correo verificado…');
+    }
+
+    claimPendingSubscription({
+      subscriptionId: pendingClaim?.subscriptionId || undefined,
+    })
+      .then((result) => {
+        if (cancelled) return;
+        const claimedCount = Number(result?.claimed_count || 0);
+        const alreadyClaimedCount = Number(result?.already_claimed_count || 0);
+        const waitingCount = Number(result?.waiting_count || 0);
+
+        if (claimedCount > 0 || alreadyClaimedCount > 0) {
+          safeRemoveItem(PENDING_HUELLA_CLAIM_KEY);
+          safeRemoveItem(LOGIN_RETURN_KEY);
+          claimRetryCountRef.current = 0;
+          setPendingClaimSubscriptionId('');
+          setHasActiveSubscription(true);
+          setLocalCheckoutLock(true);
+          setCheckoutStatus('Tu huella ya está identificada en esta cuenta.');
+          return;
+        }
+
+        if (waitingCount > 0 && claimRetryCountRef.current < 3) {
+          claimRetryCountRef.current += 1;
+          setCheckoutStatus('El pago sigue verificándose. Volveremos a comprobarlo en unos segundos.');
+          claimRetryTimeoutRef.current = window.setTimeout(() => {
+            claimRetryTimeoutRef.current = null;
+            claimInFlightRef.current = false;
+            setClaimRetryTick((value) => value + 1);
+          }, 4000);
+          return;
+        }
+
+        if (pendingClaim) {
+          setCheckoutStatus('Tu sesión está lista, pero la huella aún no aparece confirmada por Stripe.');
+        }
+      })
+      .catch((error) => {
+        if (cancelled) return;
+        console.error('[CallToAction] No se pudo reclamar la huella:', error);
+        if (pendingClaim) {
+          setCheckoutStatus('No pudimos identificar la huella todavía. El pago permanece protegido.');
+        }
+      })
+      .finally(() => {
+        if (!cancelled && !claimRetryTimeoutRef.current) {
+          claimInFlightRef.current = false;
+        }
+      });
+
+    return () => {
+      cancelled = true;
+      claimInFlightRef.current = false;
+    };
+  }, [claimRetryTick, user?.id]);
 
   useEffect(() => {
     if (!SHOULD_PREVIEW_AFTERCARE) return;
@@ -867,6 +952,16 @@ const CallToAction = ({ barsIntroDelayMs = 0 }) => {
         source: 'call_to_action_fallback',
       },
     };
+    if (isGuestCheckout) {
+      safeSetItem(
+        PENDING_HUELLA_CLAIM_KEY,
+        JSON.stringify({
+          email: normalizedEmail,
+          subscriptionId: null,
+          createdAt: new Date().toISOString(),
+        })
+      );
+    }
     try {
       setLoading(true);
       setMsg('');
@@ -892,6 +987,17 @@ const CallToAction = ({ barsIntroDelayMs = 0 }) => {
         throw new Error('missing_client_secret');
       }
 
+      if (isGuestCheckout && data.subscription_id) {
+        setPendingClaimSubscriptionId(data.subscription_id);
+        safeSetItem(
+          PENDING_HUELLA_CLAIM_KEY,
+          JSON.stringify({
+            email: normalizedEmail,
+            subscriptionId: data.subscription_id,
+            createdAt: new Date().toISOString(),
+          })
+        );
+      }
       setEmbeddedClientSecret(data.client_secret);
       setCheckoutStatus('');
     } catch (e) {
@@ -966,6 +1072,34 @@ const CallToAction = ({ barsIntroDelayMs = 0 }) => {
       window.dispatchEvent(new CustomEvent('open-login-modal'));
     }
   }, []);
+
+  const handleOpenClaimLogin = useCallback(() => {
+    let storedClaim = null;
+    try {
+      storedClaim = JSON.parse(safeGetItem(PENDING_HUELLA_CLAIM_KEY) || 'null');
+    } catch {
+      storedClaim = null;
+    }
+    const normalizedEmail = (
+      guestCheckoutEmail ||
+      storedClaim?.email ||
+      ''
+    ).trim().toLowerCase();
+    safeSetItem(
+      LOGIN_RETURN_KEY,
+      JSON.stringify({
+        anchor: '#cta',
+        action: 'cta-huella-claim',
+        source: 'call-to-action-aftercare',
+        email: normalizedEmail,
+        subscriptionId: pendingClaimSubscriptionId || storedClaim?.subscriptionId || null,
+      })
+    );
+    setShowAftercareOverlay(false);
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent('open-login-modal'));
+    }
+  }, [guestCheckoutEmail, pendingClaimSubscriptionId]);
 
   const handleToggleCounterSound = useCallback(() => {
     const nextValue = !isCounterSoundEnabled;
@@ -1357,22 +1491,41 @@ const CallToAction = ({ barsIntroDelayMs = 0 }) => {
                   ? 'No necesitas pagar de nuevo. Estamos validando tu aportación y, al confirmarse, recibirás tu factura en tu correo.'
                   : 'La obra respira.\nSola.\nY en comunidad.'}
             </p>
-            <button
-              type="button"
-              className="mt-6 w-full rounded-xl bg-white/95 px-4 py-2 font-semibold text-black hover:bg-white"
-              onClick={() => {
-                setShowAftercareOverlay(false);
-                if (aftercareVariant === 'expansion') {
-                  reachedExpansionRef.current = false;
-                }
-                if (aftercareAudioRef.current) {
-                  aftercareAudioRef.current.pause();
-                  aftercareAudioRef.current.currentTime = 0;
-                }
-              }}
-            >
-              Entendido
-            </button>
+            {!user && aftercareVariant !== 'expansion' ? (
+              <div className="mt-6 space-y-3">
+                <button
+                  type="button"
+                  className="w-full rounded-xl bg-white/95 px-4 py-2 font-semibold text-black hover:bg-white"
+                  onClick={handleOpenClaimLogin}
+                >
+                  Identificar mi huella
+                </button>
+                <button
+                  type="button"
+                  className="text-sm text-slate-400 underline decoration-white/20 underline-offset-4 transition hover:text-white"
+                  onClick={() => setShowAftercareOverlay(false)}
+                >
+                  Ahora no
+                </button>
+              </div>
+            ) : (
+              <button
+                type="button"
+                className="mt-6 w-full rounded-xl bg-white/95 px-4 py-2 font-semibold text-black hover:bg-white"
+                onClick={() => {
+                  setShowAftercareOverlay(false);
+                  if (aftercareVariant === 'expansion') {
+                    reachedExpansionRef.current = false;
+                  }
+                  if (aftercareAudioRef.current) {
+                    aftercareAudioRef.current.pause();
+                    aftercareAudioRef.current.currentTime = 0;
+                  }
+                }}
+              >
+                Entendido
+              </button>
+            )}
           </div>
         </div>
       ) : null}

@@ -114,3 +114,23 @@ export async function startCheckoutFallback({ priceId, customerEmail, metadata =
 
   window.location.assign(data.url);
 }
+
+export async function claimPendingSubscription({ subscriptionId } = {}) {
+  const { data, error } = await supabase.functions.invoke('claim-subscription', {
+    body: {
+      subscription_id: subscriptionId || undefined,
+    },
+  });
+
+  if (error) {
+    const { status, payload } = await parseFunctionsError(error);
+    throw buildCheckoutError({
+      error,
+      status,
+      payload,
+      fallbackMessage: 'No se pudo identificar tu huella.',
+    });
+  }
+
+  return data;
+}

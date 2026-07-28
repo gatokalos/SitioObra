@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback, useLayoutEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { motion, useReducedMotion } from 'framer-motion';
-import { Coffee, Info, Sparkles } from 'lucide-react';
+import { Coffee, Info, Sparkles, LogIn, Compass, BookOpen, MessageCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useToast } from '@/components/ui/use-toast';
@@ -33,6 +33,38 @@ const readGatBalance = () => {
   const v = readStoredInt(GAT_BALANCE_STORAGE_KEY, INITIAL_GAT_BALANCE);
   return Number.isFinite(v) ? Math.max(Math.trunc(v), 0) : INITIAL_GAT_BALANCE;
 };
+
+const GAT_TOOLTIP_ROW_TONES = {
+  violet: { ring: 'border-violet-200 text-violet-500', label: 'text-violet-800' },
+  amber: { ring: 'border-amber-200 text-amber-500', label: 'text-amber-800' },
+  slate: { ring: 'border-slate-200 text-slate-500', label: 'text-slate-600' },
+};
+
+const GatTooltipLinkRow = ({ icon: RowIcon, label, onClick, tone = 'slate' }) => {
+  const toneStyle = GAT_TOOLTIP_ROW_TONES[tone] ?? GAT_TOOLTIP_ROW_TONES.slate;
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className="group flex flex-col items-center gap-1.5 py-1"
+    >
+      <span
+        className={`flex h-10 w-10 items-center justify-center rounded-full border transition group-hover:scale-105 ${toneStyle.ring}`}
+      >
+        <RowIcon size={17} />
+      </span>
+      <span className={`max-w-[11.5rem] text-center text-[0.7rem] font-medium leading-snug ${toneStyle.label}`}>
+        {label}
+      </span>
+    </button>
+  );
+};
+
+const GatTooltipConnector = () => (
+  <span aria-hidden="true" className="text-slate-300">
+    ↓
+  </span>
+);
 
 const MOBILE_FULLSCREEN_MENU_PHASE_A_ENABLED = true;
 const TRANSMEDIA_SECONDARY_ITEMS = [
@@ -700,92 +732,97 @@ const Header = ({
                   style={gatInfoPanelStyle}
                   className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-[0_8px_32px_rgba(0,0,0,0.18)]"
                 >
-                  <div className="space-y-2 px-4 py-3.5">
-                    <p className="text-[0.68rem] font-semibold uppercase tracking-[0.2em] text-amber-600">
-                      GATokens · tu energía
+                  <div className="flex flex-col items-center gap-2 px-4 py-4">
+                    <p className="text-center text-[0.62rem] font-semibold uppercase tracking-[0.35em] text-amber-600">
+                      · Tu energía ·
                     </p>
-                    <p className="text-xs leading-relaxed text-slate-700">
+                    <p className="max-w-[13rem] text-center text-[0.68rem] leading-relaxed text-slate-500">
                       Los GATokens son el valor que le ponemos a tu atención en #GatoEncerrado
                     </p>
-                    {isGatSpendRecommendationLoading ? (
-                      <p className="text-[0.68rem] text-slate-400">Buscando dónde conviene gastarlos…</p>
-                    ) : gatSpendRecommendation ? (
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setIsGatInfoOpen(false);
-                          handleNavClick(`#transmedia?focus=${gatSpendRecommendation.showcaseId}&source=gat-recommendation`);
-                        }}
-                        className="group flex w-full items-center justify-between gap-2 rounded-lg border border-violet-200 bg-violet-50 px-3 py-2 text-left text-xs leading-relaxed text-violet-800 transition hover:border-violet-300 hover:bg-violet-100"
-                      >
-                        <span>
-                          Te recomendamos explorar{' '}
-                          <span className="font-semibold">{gatSpendRecommendation.title}</span>.
-                        </span>
-                        <span className="shrink-0 text-violet-500 transition-transform group-hover:translate-x-0.5">
-                          →
-                        </span>
-                      </button>
-                    ) : (
-                      <p className="text-[0.68rem] text-slate-500">
-                         Representan la energía simbólica que este universo necesita para activar experiencias dentro de los miniversos.
-                      </p>
-                    )}
-                    {!user && isGatLoginEligible ? (
-                      <button
-                        type="button"
-                        onClick={handleOpenLoginFromGatTooltip}
-                        className="w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-left text-xs font-semibold leading-relaxed text-slate-700 transition hover:border-slate-300 hover:bg-white"
-                      >
-                        Inicia sesión para gastar tus GATokens.
-                      </button>
-                    ) : null}
-                    <button
-                      type="button"
-                      onClick={handleOpenHolograficoFromGatTooltip}
-                      className="group flex w-full items-center justify-between gap-2 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-left text-xs leading-relaxed text-amber-800 transition hover:border-amber-300 hover:bg-amber-100"
-                    >
-                      <span>Tu cuaderno holográfico te espera.</span>
-                      <span className="shrink-0 text-amber-500 transition-transform group-hover:translate-x-0.5">
-                        →
-                      </span>
-                    </button>
-                    {!gatWhatsappDone ? (
-                      showGatWhatsappInput ? (
-                        <div className="space-y-1.5">
-                          <p className="text-[0.68rem] text-slate-500">¿A qué número te avisamos?</p>
-                          <div className="flex gap-1.5">
-                            <input
-                              type="tel"
-                              value={gatWhatsappPhone}
-                              onChange={(e) => setGatWhatsappPhone(e.target.value)}
-                              placeholder="+52 55 0000 0000"
-                              disabled={gatWhatsappSubmitting}
-                              className="min-w-0 flex-1 rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 text-xs text-slate-700 placeholder:text-slate-400 outline-none focus:border-slate-400"
-                            />
-                            <button
-                              type="button"
-                              onClick={handleSubmitGatWhatsapp}
-                              disabled={gatWhatsappSubmitting || gatWhatsappPhone.trim().length < 8}
-                              className="shrink-0 rounded-lg border border-slate-200 bg-slate-50 px-2.5 py-1.5 text-xs font-semibold text-slate-700 transition hover:bg-white disabled:cursor-not-allowed disabled:opacity-40"
-                            >
-                              {gatWhatsappSubmitting ? '…' : 'Enviar'}
-                            </button>
-                          </div>
-                        </div>
+
+                    <div className="mt-1 flex flex-col items-center">
+                      {!user && isGatLoginEligible ? (
+                        <>
+                          <GatTooltipLinkRow
+                            icon={LogIn}
+                            label="Inicia sesión para gastar tus GATokens"
+                            onClick={handleOpenLoginFromGatTooltip}
+                            tone="slate"
+                          />
+                          <GatTooltipConnector />
+                        </>
+                      ) : null}
+
+                      {isGatSpendRecommendationLoading ? (
+                        <p className="py-2 text-[0.68rem] text-slate-400">Buscando dónde conviene gastarlos…</p>
+                      ) : gatSpendRecommendation ? (
+                        <>
+                          <GatTooltipLinkRow
+                            icon={Compass}
+                            label={`Explorar ${gatSpendRecommendation.title}`}
+                            onClick={() => {
+                              setIsGatInfoOpen(false);
+                              handleNavClick(`#transmedia?focus=${gatSpendRecommendation.showcaseId}&source=gat-recommendation`);
+                            }}
+                            tone="violet"
+                          />
+                          <GatTooltipConnector />
+                        </>
                       ) : (
-                        <button
-                          type="button"
-                          onClick={() => setShowGatWhatsappInput(true)}
-                          className="w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-left text-[0.68rem] leading-relaxed text-slate-500 transition hover:border-slate-300 hover:bg-white"
-                        >
-                          ¿Dejaste pasar tu bitácora? Avísame por WhatsApp.
-                        </button>
-                      )
-                    ) : null}
+                        <p className="max-w-[13rem] py-2 text-center text-[0.66rem] text-slate-500">
+                          Representan la energía simbólica que este universo necesita para activar experiencias dentro de los miniversos.
+                        </p>
+                      )}
+
+                      <GatTooltipLinkRow
+                        icon={BookOpen}
+                        label="Tu cuaderno holográfico te espera"
+                        onClick={handleOpenHolograficoFromGatTooltip}
+                        tone="amber"
+                      />
+
+                      {!gatWhatsappDone ? (
+                        showGatWhatsappInput ? (
+                          <>
+                            <GatTooltipConnector />
+                            <div className="w-full space-y-1.5 px-1">
+                              <p className="text-center text-[0.68rem] text-slate-500">¿A qué número te avisamos?</p>
+                              <div className="flex gap-1.5">
+                                <input
+                                  type="tel"
+                                  value={gatWhatsappPhone}
+                                  onChange={(e) => setGatWhatsappPhone(e.target.value)}
+                                  placeholder="+52 55 0000 0000"
+                                  disabled={gatWhatsappSubmitting}
+                                  className="min-w-0 flex-1 rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 text-xs text-slate-700 placeholder:text-slate-400 outline-none focus:border-slate-400"
+                                />
+                                <button
+                                  type="button"
+                                  onClick={handleSubmitGatWhatsapp}
+                                  disabled={gatWhatsappSubmitting || gatWhatsappPhone.trim().length < 8}
+                                  className="shrink-0 rounded-lg border border-slate-200 bg-slate-50 px-2.5 py-1.5 text-xs font-semibold text-slate-700 transition hover:bg-white disabled:cursor-not-allowed disabled:opacity-40"
+                                >
+                                  {gatWhatsappSubmitting ? '…' : 'Enviar'}
+                                </button>
+                              </div>
+                            </div>
+                          </>
+                        ) : (
+                          <>
+                            <GatTooltipConnector />
+                            <GatTooltipLinkRow
+                              icon={MessageCircle}
+                              label="¿Dejaste pasar tu bitácora? Avísame por WhatsApp"
+                              onClick={() => setShowGatWhatsappInput(true)}
+                              tone="slate"
+                            />
+                          </>
+                        )
+                      ) : null}
+                    </div>
                   </div>
                   <div className="border-t border-slate-100 bg-amber-50 px-4 py-2">
-                    <p className="text-[0.68rem] text-slate-500">
+                    <p className="text-center text-[0.68rem] text-slate-500">
                       Energía disponible:{' '}
                       <span className="font-semibold text-amber-600">
                         {gatBalance.toLocaleString('es-MX')} GAT
