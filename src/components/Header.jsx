@@ -1,11 +1,12 @@
 import React, { useState, useEffect, useCallback, useLayoutEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { motion, useReducedMotion } from 'framer-motion';
-import { Coffee, Info, Sparkles, LogIn, Compass, BookOpen, MessageCircle } from 'lucide-react';
+import { Coffee, Info, Sparkles, LogIn, Compass, BookOpen, MessageCircle, UserCircle2, DoorOpen, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useToast } from '@/components/ui/use-toast';
 import { useAuth } from '@/contexts/SupabaseAuthContext';
+import { supabase } from '@/lib/supabaseClient';
 import LoginOverlay from '@/components/ContributionModal/LoginOverlay';
 import MobileMenuOverlay from '@/components/MobileMenuOverlay';
 import { createPortalLaunchState } from '@/lib/portalNavigation';
@@ -13,6 +14,8 @@ import { INITIAL_GAT_BALANCE, readStoredInt } from '@/components/transmedia/tran
 import { readIndexCueUsedFromSession } from '@/lib/heroActivation';
 import useActiveSectionHref from '@/hooks/useActiveSectionHref';
 import { fetchTransmediaCreditEvents } from '@/services/transmediaCreditsService';
+import useActiveSubscription from '@/hooks/useActiveSubscription';
+import { isInstalledPWA } from '@/lib/pwaDetection';
 import {
   readBienvenidaRecommendedShowcase,
   findLatestRecommendedPortal,
@@ -66,6 +69,29 @@ const GatTooltipConnector = () => (
   </span>
 );
 
+const GAT_LINKTREE_DISMISSED_SESSION_KEY = 'gatoencerrado:gat-linktree-dismissed-session';
+
+// Misma técnica visual que PWAInstructionsOverlay: sin tarjeta de fondo (el
+// starfield del Hero se ve directo detrás), ícono dentro de un cuadrado con
+// esquinas redondeadas, etiqueta debajo. A diferencia de esas instrucciones,
+// aquí los accesos son independientes entre sí (no un proceso paso a paso),
+// por eso van en grid de 2 columnas sin flechas conectoras.
+const GatLinktreeTile = ({ icon: TileIcon, label, onClick, statusDotClass: dotClass }) => (
+  <button
+    type="button"
+    onClick={onClick}
+    className="group flex flex-col items-center gap-[clamp(5px,0.85vh,8px)] text-center"
+  >
+    <span className="relative flex h-[clamp(34px,5.4vh,52px)] w-[clamp(34px,5.4vh,52px)] shrink-0 items-center justify-center rounded-[clamp(10px,1.1vh,15px)] border-[1.25px] border-white/65 text-slate-100 transition group-hover:border-white group-hover:bg-white/5">
+      <TileIcon strokeWidth={1.5} className="h-[clamp(17px,2.7vh,26px)] w-[clamp(17px,2.7vh,26px)]" />
+      {dotClass ? (
+        <span className={`absolute -right-0.5 -top-0.5 h-2.5 w-2.5 rounded-full border border-black/40 ${dotClass}`} />
+      ) : null}
+    </span>
+    <p className="max-w-[7.5rem] text-[clamp(0.7rem,1.7vh,0.85rem)] leading-tight text-slate-100">{label}</p>
+  </button>
+);
+
 const MOBILE_FULLSCREEN_MENU_PHASE_A_ENABLED = true;
 const TRANSMEDIA_SECONDARY_ITEMS = [
   { label: 'El drama', href: '#transmedia?focus=miniversos' },
@@ -114,9 +140,47 @@ const Header = ({
   const gatInfoPanelRef = useRef(null);
   const navigate = useNavigate();
   const location = useLocation();
-  const { user, signOut } = useAuth();
+  const { user, session, signOut } = useAuth();
   const { toast: showToast } = useToast();
   const prefersReducedMotion = useReducedMotion();
+  const { hasActiveSubscription } = useActiveSubscription(user?.id, session);
+  const isSubscriber = Boolean(
+    user?.user_metadata?.isSubscriber === true ||
+      user?.user_metadata?.isSubscriber === 'true' ||
+      hasActiveSubscription
+  );
+  const isGatLinktreeAudience = Boolean(user) || isInstalledPWA();
+  const [isGatLinktreeOpen, setIsGatLinktreeOpen] = useState(
+    () => isGatLinktreeAudience && typeof window !== 'undefined' && !window.sessionStorage.getItem(GAT_LINKTREE_DISMISSED_SESSION_KEY)
+  );
+  const [isLinktreeSessionExpanded, setIsLinktreeSessionExpanded] = useState(false);
+  const handleDismissGatLinktree = useCallback(() => {
+    setIsGatLinktreeOpen(false);
+    try {
+      window.sessionStorage.setItem(GAT_LINKTREE_DISMISSED_SESSION_KEY, '1');
+    } catch {
+      // Silencioso
+    }
+  }, []);
+  useEffect(() => {
+    if (!isGatLinktreeAudience || isGatLinktreeOpen) return;
+    try {
+      if (window.sessionStorage.getItem(GAT_LINKTREE_DISMISSED_SESSION_KEY)) return;
+    } catch {
+      // Silencioso
+    }
+    setIsGatLinktreeOpen(true);
+  }, [isGatLinktreeAudience, isGatLinktreeOpen]);
+  const handleOpenBackstage = useCallback(async () => {
+    const base = 'https://gatoencerrado.org';
+    const win = window.open(`${base}/mi-cuenta/acceso`, '_blank', 'noopener,noreferrer');
+    const { data: { session: currentSession } } = await supabase.auth.getSession();
+    if (currentSession?.access_token && win && !win.closed) {
+      const params = new URLSearchParams({ token: currentSession.access_token });
+      if (currentSession.refresh_token) params.set('refresh', currentSession.refresh_token);
+      win.location.replace(`${base}/api/auth/handoff?${params}`);
+    }
+  }, []);
 
   const profileName =
     user?.user_metadata?.alias ||
@@ -642,7 +706,7 @@ const Header = ({
                 </span>
                 {user ? <span className={`block h-2.5 w-2.5 shrink-0 rounded-full ${statusDotClass}`} /> : null}
               </motion.button>
-              {user ? (
+              {user && !isGatLinktreeOpen ? (
                 <div className="relative" data-profile-menu>
                   <button
                     type="button"
@@ -832,7 +896,7 @@ const Header = ({
                 </div>,
                 document.body
               )}
-              {user ? (
+              {user && !isGatLinktreeOpen ? (
                 <Button
                   type="button"
                   variant="ghost"
@@ -847,6 +911,102 @@ const Header = ({
               ) : null}
             </div>
           </div>
+
+          {isGatLinktreeOpen && isGatLinktreeAudience && typeof document !== 'undefined' && createPortal(
+            <div
+              className="fixed inset-x-0 top-20 z-[9000] mx-auto flex max-h-[60vh] w-full max-w-md flex-col overflow-hidden lg:top-24"
+              role="dialog"
+              aria-modal="false"
+              aria-label="Accesos rápidos de #GatoEncerrado"
+            >
+              <div className="flex items-center justify-end px-4 pt-2">
+                <button
+                  type="button"
+                  onClick={handleDismissGatLinktree}
+                  className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-white/10 bg-white/5 text-slate-200 transition hover:bg-white/10 hover:text-white"
+                  aria-label="Cerrar accesos rápidos"
+                >
+                  <X size={16} />
+                </button>
+              </div>
+
+              <div className="min-h-0 flex-1 overflow-y-auto px-6 pb-4 pt-1">
+                <div className="mx-auto grid w-full max-w-[19rem] grid-cols-2 gap-x-6 gap-y-5">
+                  {!user && isGatLoginEligible ? (
+                    <GatLinktreeTile icon={LogIn} label="Iniciar sesión" onClick={handleOpenLoginFromGatTooltip} />
+                  ) : null}
+                  {gatSpendRecommendation ? (
+                    <GatLinktreeTile
+                      icon={Compass}
+                      label={`Explorar ${gatSpendRecommendation.title}`}
+                      onClick={() => handleNavClick(`#transmedia?focus=${gatSpendRecommendation.showcaseId}&source=gat-recommendation`)}
+                    />
+                  ) : null}
+                  <GatLinktreeTile icon={BookOpen} label="Cuaderno holográfico" onClick={handleOpenHolograficoFromGatTooltip} />
+                  {user ? (
+                    <GatLinktreeTile icon={Coffee} label="Café, charla y merch" onClick={handleOpenSupportHub} />
+                  ) : null}
+                  {user ? (
+                    <GatLinktreeTile
+                      icon={UserCircle2}
+                      label={greetingLabel}
+                      statusDotClass={statusDotClass}
+                      onClick={() => setIsLinktreeSessionExpanded((prev) => !prev)}
+                    />
+                  ) : null}
+                  {!gatWhatsappDone ? (
+                    <GatLinktreeTile
+                      icon={MessageCircle}
+                      label="Avísame por WhatsApp"
+                      onClick={() => setShowGatWhatsappInput((prev) => !prev)}
+                    />
+                  ) : null}
+                  {isSubscriber ? (
+                    <GatLinktreeTile icon={DoorOpen} label="Ir al Backstage" onClick={handleOpenBackstage} />
+                  ) : null}
+                </div>
+
+                {isLinktreeSessionExpanded && user ? (
+                  <div className="mx-auto mt-5 w-full max-w-[19rem] rounded-xl border border-white/10 bg-black/40 p-3 text-center text-slate-100">
+                    <p className="text-[11px] uppercase tracking-[0.18em] text-slate-400">Sesión activa</p>
+                    <p className="mt-1 break-all text-xs text-slate-200/90">{user?.email || 'correo no disponible'}</p>
+                    <button
+                      type="button"
+                      onClick={handleLogout}
+                      className="mt-2 w-full rounded-lg border border-white/15 px-3 py-1.5 text-xs font-semibold text-slate-100 transition hover:bg-white/5"
+                    >
+                      Cerrar sesión
+                    </button>
+                  </div>
+                ) : null}
+
+                {showGatWhatsappInput && !gatWhatsappDone ? (
+                  <div className="mx-auto mt-5 w-full max-w-[19rem] space-y-1.5">
+                    <p className="text-center text-[0.7rem] text-slate-400">¿A qué número te avisamos?</p>
+                    <div className="flex gap-1.5">
+                      <input
+                        type="tel"
+                        value={gatWhatsappPhone}
+                        onChange={(e) => setGatWhatsappPhone(e.target.value)}
+                        placeholder="+52 55 0000 0000"
+                        disabled={gatWhatsappSubmitting}
+                        className="min-w-0 flex-1 rounded-lg border border-white/15 bg-black/40 px-2.5 py-1.5 text-xs text-slate-100 placeholder:text-slate-500 outline-none focus:border-white/40"
+                      />
+                      <button
+                        type="button"
+                        onClick={handleSubmitGatWhatsapp}
+                        disabled={gatWhatsappSubmitting || gatWhatsappPhone.trim().length < 8}
+                        className="shrink-0 rounded-lg border border-white/15 bg-white/5 px-2.5 py-1.5 text-xs font-semibold text-slate-100 transition hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-40"
+                      >
+                        {gatWhatsappSubmitting ? '…' : 'Enviar'}
+                      </button>
+                    </div>
+                  </div>
+                ) : null}
+              </div>
+            </div>,
+            document.body
+          )}
 
           {isMenuOpen && !MOBILE_FULLSCREEN_MENU_PHASE_A_ENABLED ? (
             <motion.div

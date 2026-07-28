@@ -25,6 +25,7 @@ import {
   setHeroAmbientMuted,
 } from '@/lib/heroAmbientAudio';
 import { safeGetItem, safeSetItem } from '@/lib/safeStorage';
+import { isInstalledPWA } from '@/lib/pwaDetection';
 import { extractRecommendedAppId, resolveShowcaseFromAppId } from '@/lib/bienvenidaBridge';
 import { NARRATIVE_VIDEO_URL_DESKTOP } from '@/lib/narrativeVideo';
 import {
@@ -181,7 +182,12 @@ const Hero = () => {
   // Se oculta mientras el sheet de instrucciones PWA está abierto — como ese
   // sheet ya no tiene fondo propio (ver PWAInstructionsOverlay), este texto
   // se vería detrás, mezclado con los pasos.
-  const shouldShowHeroInactiveHint = !hasActivatedAudio && isHeroHashReady && !isHeroPwaInstructionsOpen;
+  // Para usuarios autenticados o con la PWA instalada, este hint no aporta
+  // nada — Header.jsx ya reemplaza este espacio con el grid de accesos
+  // rápidos (recomendación, cuaderno holográfico, etc.), así que aquí solo
+  // hace falta ceder el paso.
+  const isGatLinktreeAudience = Boolean(user) || isInstalledPWA();
+  const shouldShowHeroInactiveHint = !hasActivatedAudio && isHeroHashReady && !isHeroPwaInstructionsOpen && !isGatLinktreeAudience;
   const currentHeroSubtitle = hasActivatedAudio
     ? heroGhostSubtitle ?? HERO_ROTATING_SUBTITLES[heroSubtitleIndex]
     : shouldShowHeroInactiveHint ? HERO_INACTIVE_HINT : '';
