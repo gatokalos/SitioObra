@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useLayoutEffect, useRef } from 'react';
+import React, { useState, useEffect, useCallback, useLayoutEffect, useMemo, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { motion, useReducedMotion } from 'framer-motion';
 import { Coffee, Info, Sparkles, LogIn, Compass, BookOpen, MessageCircle, UserCircle2, DoorOpen, X } from 'lucide-react';
@@ -49,13 +49,22 @@ const GatLinktreeTile = ({ icon: TileIcon, label, onClick, statusDotClass: dotCl
     onClick={onClick}
     className="group flex flex-col items-center gap-[clamp(5px,0.85vh,8px)] text-center"
   >
-    <span className="relative flex h-[clamp(34px,5.4vh,52px)] w-[clamp(34px,5.4vh,52px)] shrink-0 items-center justify-center rounded-[clamp(10px,1.1vh,15px)] border-[1.25px] border-white/65 text-slate-100 transition group-hover:border-white group-hover:bg-white/5">
+    {/* bg-black/40 (no solo el borde transparente de antes): sin esto, el
+        cuadrado del ícono deja ver lo que sea que haya detrás en el Hero
+        (p. ej. el wordmark GATOENCERRADO), y con 5-6 accesos el grid crece
+        lo suficiente para toparse con él. */}
+    <span className="relative flex h-[clamp(34px,5.4vh,52px)] w-[clamp(34px,5.4vh,52px)] shrink-0 items-center justify-center rounded-[clamp(10px,1.1vh,15px)] border-[1.25px] border-white/65 bg-black/40 text-slate-100 backdrop-blur-[2px] transition group-hover:border-white group-hover:bg-white/10">
       <TileIcon strokeWidth={1.5} className="h-[clamp(17px,2.7vh,26px)] w-[clamp(17px,2.7vh,26px)]" />
       {dotClass ? (
         <span className={`absolute -right-0.5 -top-0.5 h-2.5 w-2.5 rounded-full border border-black/40 ${dotClass}`} />
       ) : null}
     </span>
-    <p className="max-w-[7.5rem] text-[clamp(0.7rem,1.7vh,0.85rem)] leading-tight text-slate-100">{label}</p>
+    <p
+      className="max-w-[7.5rem] text-[clamp(0.7rem,1.7vh,0.85rem)] leading-tight text-slate-100"
+      style={{ textShadow: '0 1px 6px rgba(0,0,0,0.9), 0 0 12px rgba(0,0,0,0.7)' }}
+    >
+      {label}
+    </p>
   </button>
 );
 
@@ -105,6 +114,18 @@ const Header = ({
   const [gatWhatsappDone, setGatWhatsappDone] = useState(() => readGlobalConsent());
   const gatChipRootRef = useRef(null);
   const gatInfoPanelRef = useRef(null);
+  // Mismo efecto de estrellas titilantes que PWAInstructionsOverlay — el
+  // tooltip (a diferencia del HUB) es una tarjeta sólida sin el starfield
+  // real del Hero detrás, así que le hace falta su propia textura.
+  const gatTooltipStars = useMemo(
+    () => Array.from({ length: 14 }).map((_, index) => ({
+      id: index,
+      top: Math.random() * 100,
+      left: Math.random() * 100,
+      delay: Math.random() * 4.5,
+    })),
+    []
+  );
   const navigate = useNavigate();
   const location = useLocation();
   const { user, session, signOut } = useAuth();
@@ -121,12 +142,21 @@ const Header = ({
     () => isGatLinktreeAudience && typeof window !== 'undefined' && !window.sessionStorage.getItem(GAT_LINKTREE_DISMISSED_SESSION_KEY)
   );
   const [isLinktreeSessionExpanded, setIsLinktreeSessionExpanded] = useState(false);
+  const [isLinktreeBackstageHelpExpanded, setIsLinktreeBackstageHelpExpanded] = useState(false);
   // Cerrar cualquiera de los dos paneles del sistema de GAT (el HUB que abre
   // solo, o el tooltip que abre el chip) — usado por cualquier acceso del
   // grid que navegue a otro lado, para que no se quede flotando encima.
   const closeGatPanels = useCallback(() => {
     setIsGatInfoOpen(false);
     setIsGatLinktreeOpen(false);
+    // Sin esto, el efecto de auto-apertura de abajo ve isGatLinktreeOpen en
+    // false (sin bandera de "ya lo cerraste") y lo vuelve a abrir de
+    // inmediato — por eso el HUB "no cerraba" al navegar desde un tile.
+    try {
+      window.sessionStorage.setItem(GAT_LINKTREE_DISMISSED_SESSION_KEY, '1');
+    } catch {
+      // Silencioso
+    }
   }, []);
   const handleDismissGatLinktree = useCallback(() => {
     setIsGatLinktreeOpen(false);
@@ -689,8 +719,18 @@ const Header = ({
             onClick={() => setShowGatWhatsappInput((prev) => !prev)}
           />
         ) : null}
-        {isSubscriber ? (
-          <GatLinktreeTile icon={DoorOpen} label="Ir al Backstage" onClick={handleOpenBackstage} />
+        {user ? (
+          <GatLinktreeTile
+            icon={DoorOpen}
+            label="Ir al Backstage"
+            onClick={() => {
+              if (isSubscriber) {
+                handleOpenBackstage();
+              } else {
+                setIsLinktreeBackstageHelpExpanded((prev) => !prev);
+              }
+            }}
+          />
         ) : null}
       </div>
 
@@ -704,6 +744,24 @@ const Header = ({
             className="mt-2 w-full rounded-lg border border-white/15 px-3 py-1.5 text-xs font-semibold text-slate-100 transition hover:bg-white/5"
           >
             Cerrar sesión
+          </button>
+        </div>
+      ) : null}
+
+      {isLinktreeBackstageHelpExpanded && user && !isSubscriber ? (
+        <div className="mx-auto mt-5 w-full max-w-[19rem] rounded-xl border border-white/10 bg-black/40 p-3 text-center text-slate-100">
+          <p className="text-xs leading-relaxed text-slate-300">
+            El Backstage se abre cuando activas tu huella. Esta cuenta todavía no tiene una.
+          </p>
+          <button
+            type="button"
+            onClick={() => {
+              closeGatPanels();
+              handleNavClick('#apoya');
+            }}
+            className="mt-2 w-full rounded-lg border border-white/15 px-3 py-1.5 text-xs font-semibold text-slate-100 transition hover:bg-white/5"
+          >
+            Cómo activarla
           </button>
         </div>
       ) : null}
@@ -862,9 +920,22 @@ const Header = ({
                 <div
                   ref={gatInfoPanelRef}
                   style={gatInfoPanelStyle}
-                  className="overflow-hidden rounded-2xl border border-white/10 bg-black/90 shadow-[0_8px_32px_rgba(0,0,0,0.45)] backdrop-blur-xl"
+                  className="relative overflow-hidden rounded-2xl border border-white/10 bg-black/90 shadow-[0_8px_32px_rgba(0,0,0,0.45)] backdrop-blur-xl"
                 >
-                  <div className="flex flex-col items-center gap-2 px-4 py-4">
+                  <div className="pointer-events-none absolute inset-0" aria-hidden="true">
+                    {gatTooltipStars.map((star) => (
+                      <span
+                        key={star.id}
+                        className="pwa-instructions-star"
+                        style={{
+                          top: `${star.top}%`,
+                          left: `${star.left}%`,
+                          animationDelay: `${star.delay}s`,
+                        }}
+                      />
+                    ))}
+                  </div>
+                  <div className="relative z-10 flex flex-col items-center gap-2 px-4 py-4">
                     <p className="text-center text-[0.62rem] font-semibold uppercase tracking-[0.35em] text-amber-400">
                       · Tu energía ·
                     </p>
@@ -882,7 +953,7 @@ const Header = ({
 
                     <div className="mt-1 w-full">{gatAccessGridContent}</div>
                   </div>
-                  <div className="border-t border-white/10 bg-white/5 px-4 py-2">
+                  <div className="relative z-10 border-t border-white/10 bg-white/5 px-4 py-2">
                     <p className="text-center text-[0.68rem] text-slate-400">
                       Energía disponible:{' '}
                       <span className="font-semibold text-amber-400">
