@@ -678,25 +678,82 @@ body {
   transform: translateX(-50%);
 }
 
-.gat-hub-axis-pleca {
+.gat-hub-orbit-pleca {
   position: absolute;
   left: 50%;
-  top: 1.25rem;
-  bottom: 1.25rem;
+  top: 50%;
   width: 1px;
+  height: clamp(2.75rem, 12vw, 3.25rem);
   pointer-events: none;
   background: linear-gradient(
     180deg,
     transparent 0%,
-    rgba(196, 181, 253, 0.04) 10%,
-    rgba(196, 181, 253, 0.16) 36%,
-    rgba(241, 245, 249, 0.3) 50%,
-    rgba(196, 181, 253, 0.16) 64%,
-    rgba(196, 181, 253, 0.04) 90%,
+    rgba(196, 181, 253, 0.05) 12%,
+    rgba(196, 181, 253, 0.18) 36%,
+    rgba(241, 245, 249, 0.34) 50%,
+    rgba(196, 181, 253, 0.18) 64%,
+    rgba(196, 181, 253, 0.05) 88%,
     transparent 100%
   );
   box-shadow: 0 0 10px rgba(196, 181, 253, 0.08);
-  transform: translateX(-50%);
+  transform: translate(-50%, -50%) scaleY(0.92);
+  transform-origin: center;
+  animation: gat-hub-orbit-breathe 4.2s ease-in-out infinite;
+  animation-delay: var(--gat-orbit-delay, 0s);
+}
+
+.gat-hub-orbit-star {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 0.375rem;
+  height: 0.375rem;
+  pointer-events: none;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.9);
+  box-shadow:
+    0 0 4px rgba(255, 255, 255, 0.85),
+    0 0 12px rgba(196, 181, 253, 0.42);
+  transform: translate(-50%, -50%);
+  animation: gat-hub-orbit-star-breathe 4.2s ease-in-out infinite;
+  animation-delay: var(--gat-orbit-delay, 0s);
+}
+
+@keyframes gat-hub-orbit-breathe {
+  0%,
+  100% {
+    opacity: 0.52;
+    transform: translate(-50%, -50%) scaleY(0.92);
+  }
+
+  50% {
+    opacity: 0.92;
+    transform: translate(-50%, -50%) scaleY(1);
+  }
+}
+
+@keyframes gat-hub-orbit-star-breathe {
+  0%,
+  100% {
+    opacity: 0.78;
+    box-shadow:
+      0 0 4px rgba(255, 255, 255, 0.72),
+      0 0 9px rgba(196, 181, 253, 0.28);
+  }
+
+  50% {
+    opacity: 1;
+    box-shadow:
+      0 0 5px rgba(255, 255, 255, 0.92),
+      0 0 14px rgba(196, 181, 253, 0.48);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .gat-hub-orbit-pleca,
+  .gat-hub-orbit-star {
+    animation: none;
+  }
 }
 
 .narrative-pause-mark--third-call {

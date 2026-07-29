@@ -809,18 +809,19 @@ const Header = ({
   const gatAccessGridContent = (
     <>
       <div className="relative mx-auto flex w-full max-w-[22rem] flex-col gap-4">
-        <div
-          aria-hidden="true"
-          className="gat-hub-axis-pleca z-0"
-        />
         {gatTileRows.map((row, rowIndex) => (
           <div
             key={`gat-row-${rowIndex}`}
             className="relative grid grid-cols-2 items-start gap-x-5"
+            style={{ '--gat-orbit-delay': `${rowIndex * -1.2}s` }}
           >
             <span
               aria-hidden="true"
-              className="pointer-events-none absolute left-1/2 top-1/2 z-[2] h-1.5 w-1.5 -translate-x-1/2 -translate-y-1/2 rounded-full bg-white/90 shadow-[0_0_4px_rgba(255,255,255,0.85),0_0_12px_rgba(196,181,253,0.42)]"
+              className="gat-hub-orbit-pleca z-0"
+            />
+            <span
+              aria-hidden="true"
+              className="gat-hub-orbit-star z-[2]"
             />
             {row.map((tile) => (
               <GatLinktreeTile key={tile.key} {...tile} />
