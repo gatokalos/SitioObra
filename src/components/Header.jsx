@@ -50,13 +50,27 @@ const GatLinktreeTile = ({ icon: TileIcon, label, onClick, statusDotClass: dotCl
       className="group relative z-10 flex min-w-0 flex-col items-center justify-start gap-2 py-1 text-center transition duration-200"
     >
       <span
-        className={`relative flex aspect-square w-[clamp(4.75rem,20vw,5.5rem)] shrink-0 items-center justify-center rounded-xl border p-[21%] transition ${
+        className={`relative flex box-border shrink-0 items-center justify-center rounded-xl border transition ${
           isAccountTile
             ? 'border-cyan-300/35 bg-cyan-300/[0.06] text-cyan-100'
             : 'border-white/20 bg-white/[0.04] text-slate-200 group-hover:border-white/35 group-hover:text-white'
         }`}
+        style={{
+          width: 'clamp(4.75rem, 20vw, 5.5rem)',
+          height: 'clamp(4.75rem, 20vw, 5.5rem)',
+          minWidth: 'clamp(4.75rem, 20vw, 5.5rem)',
+          minHeight: 'clamp(4.75rem, 20vw, 5.5rem)',
+          maxWidth: 'clamp(4.75rem, 20vw, 5.5rem)',
+          maxHeight: 'clamp(4.75rem, 20vw, 5.5rem)',
+        }}
       >
-        <TileIcon strokeWidth={1.55} className="h-full w-full" />
+        <TileIcon
+          strokeWidth={1.55}
+          style={{
+            width: 'clamp(2rem, 8.5vw, 2.5rem)',
+            height: 'clamp(2rem, 8.5vw, 2.5rem)',
+          }}
+        />
         {dotClass ? (
           <span className={`absolute right-1.5 top-1.5 h-2.5 w-2.5 rounded-full border-2 border-[#08090d] ${dotClass}`} />
         ) : null}
@@ -1048,8 +1062,7 @@ const Header = ({
               <div
                 className="relative mx-auto flex w-full max-w-[28rem] flex-col"
                 style={{
-                  minHeight: '62dvh',
-                  maxHeight: 'min(70dvh, calc(100dvh - env(safe-area-inset-top) - 24px))',
+                  maxHeight: 'calc(100dvh - env(safe-area-inset-top) - 24px)',
                 }}
               >
                 <div className="flex shrink-0 items-start justify-between gap-4 px-5 pb-4 pt-5 sm:px-6">
