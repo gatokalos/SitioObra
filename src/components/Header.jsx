@@ -594,6 +594,7 @@ const Header = ({
 
   const handleToggleIndex = useCallback(() => {
     if (shouldGateIndexUntilHeroReveal) return;
+    setIsGatInfoOpen(false);
     setHasOpenedIndexOnce(true);
     setIsMenuOpen((prev) => !prev);
   }, [shouldGateIndexUntilHeroReveal]);
@@ -617,19 +618,18 @@ const Header = ({
       acknowledgeGatRevealPulse('header-chip');
     }
 
-    if (!isGatLinktreeAudience) return;
-    setIsGatInfoOpen(false);
-    setIsGatLinktreeOpen(true);
+    setIsMenuOpen(false);
+    setIsGatInfoOpen((prev) => !prev);
   }, [
     acknowledgeGatRevealPulse,
     closeGatPanels,
     gatRevealPulse,
-    isGatLinktreeAudience,
     isGatLinktreeOpen,
   ]);
 
   const isGatChipPulsing = Boolean(gatRevealPulse);
-  const shouldAnimateGatChipReveal = isGatChipPulsing && !isGatLinktreeOpen;
+  const shouldAnimateGatChipReveal =
+    isGatChipPulsing && !isGatLinktreeOpen && !isGatInfoOpen;
   // El Header decide si existe el chip; el saldo solo define su contenido.
   // En anónimo no debe adelantarse al ritual de activación del Hero.
   const shouldShowGatChip = Boolean(
@@ -1013,10 +1013,28 @@ const Header = ({
 
             <div className="flex items-center gap-3">
               {shouldShowGatChip ? (
-                <motion.div
+                <motion.button
                   ref={gatChipRootRef}
-                  className={`pointer-events-auto inline-flex items-center gap-1 whitespace-nowrap rounded-full border pl-2.5 pr-1 py-1 text-[0.62rem] font-semibold uppercase tracking-[0.16em] backdrop-blur-sm transition-colors sm:gap-1.5 sm:pl-3 sm:pr-1.5 sm:text-[0.68rem] sm:tracking-[0.24em] ${
+                  type="button"
+                  onClick={handleGatChipClick}
+                  aria-controls={isGatLinktreeOpen ? 'gat-personal-hub' : 'gat-energy-info-panel'}
+                  aria-expanded={isGatLinktreeOpen || isGatInfoOpen}
+                  aria-label={
                     isGatLinktreeOpen
+                      ? 'Cerrar HUB de energía'
+                      : isGatInfoOpen
+                        ? 'Cerrar información de energía'
+                        : 'Abrir información de energía'
+                  }
+                  title={
+                    isGatLinktreeOpen
+                      ? 'Cerrar HUB de energía'
+                      : isGatInfoOpen
+                        ? 'Cerrar información de energía'
+                        : 'Abrir información de energía'
+                  }
+                  className={`pointer-events-auto inline-flex items-center gap-1 whitespace-nowrap rounded-full border pl-2.5 pr-1 py-1 text-[0.62rem] font-semibold uppercase tracking-[0.16em] backdrop-blur-sm transition-colors sm:gap-1.5 sm:pl-3 sm:pr-1.5 sm:text-[0.68rem] sm:tracking-[0.24em] ${
+                    isGatLinktreeOpen || isGatInfoOpen
                         ? 'border-cyan-200/45 bg-cyan-300/[0.12] text-cyan-50 shadow-[0_0_24px_rgba(34,211,238,0.24)]'
                       : isGatChipPulsing
                         ? 'border-amber-300/45 bg-amber-500/15 text-amber-100 shadow-[0_0_22px_rgba(251,191,36,0.28)]'
@@ -1029,64 +1047,26 @@ const Header = ({
                       : { duration: 0.5, ease: 'easeOut' }
                   }
                 >
-                  <button
-                    type="button"
-                    onClick={handleGatChipClick}
-                    className={`inline-flex items-center gap-1.5 sm:gap-2 ${
-                      isGatLinktreeAudience || isGatLinktreeOpen || isGatChipPulsing
-                        ? 'cursor-pointer'
-                        : 'cursor-default'
-                    }`}
-                    aria-controls={isGatLinktreeAudience ? 'gat-personal-hub' : undefined}
-                    aria-expanded={isGatLinktreeAudience ? isGatLinktreeOpen : undefined}
-                    aria-label={
-                      isGatLinktreeOpen
-                        ? 'Cerrar HUB de energía'
-                        : isGatLinktreeAudience
-                          ? 'Abrir HUB de energía'
-                          : isGatChipPulsing
-                        ? 'Confirmar GATokens recibidos'
-                        : `${gatBalance.toLocaleString('es-MX')} GAT disponibles`
-                    }
-                    title={
-                      isGatLinktreeOpen
-                        ? 'Cerrar HUB de energía'
-                        : isGatLinktreeAudience
-                          ? 'Abrir HUB de energía'
-                          : isGatChipPulsing
-                            ? 'Confirmar GATokens recibidos'
-                            : 'GATokens disponibles'
-                    }
+                  {shouldAnimateGatChipReveal ? (
+                    <motion.img
+                      src={GATOKEN_COIN_SRC}
+                      alt=""
+                      className="h-3.5 w-3.5"
+                      animate={gatCoinPulseAnimate}
+                      transition={gatChipPulseTransition}
+                    />
+                  ) : (
+                    <Sparkles size={12} className="text-cyan-200" />
+                  )}
+                  <span className="ml-0.5">Energía</span>
+                  <span className="tabular-nums text-white">{gatBalance.toLocaleString('es-MX')} GAT</span>
+                  <span
+                    aria-hidden="true"
+                    className="ml-0.5 flex h-4 w-4 items-center justify-center rounded-full text-current/60 normal-case"
                   >
-                    {shouldAnimateGatChipReveal ? (
-                      <motion.img
-                        src={GATOKEN_COIN_SRC}
-                        alt=""
-                        className="h-3.5 w-3.5"
-                        animate={gatCoinPulseAnimate}
-                        transition={gatChipPulseTransition}
-                      />
-                    ) : (
-                      <Sparkles size={12} className="text-cyan-200" />
-                    )}
-                    <span>Energía</span>
-                    <span className="tabular-nums text-white">{gatBalance.toLocaleString('es-MX')} GAT</span>
-                    {isGatLinktreeOpen ? (
-                      <Info size={11} aria-hidden="true" className="ml-0.5 text-current/70" />
-                    ) : null}
-                  </button>
-                  {!isGatLinktreeOpen ? (
-                    <button
-                      type="button"
-                      onClick={() => setIsGatInfoOpen((prev) => !prev)}
-                      aria-label="¿Qué son los GATokens?"
-                      aria-expanded={isGatInfoOpen}
-                      className="flex h-4 w-4 items-center justify-center rounded-full text-current/60 normal-case transition hover:text-white"
-                    >
-                      <Info size={11} />
-                    </button>
-                  ) : null}
-                </motion.div>
+                    <Info size={11} />
+                  </span>
+                </motion.button>
               ) : null}
               {shouldShowGatChip && isGatInfoOpen && typeof document !== 'undefined' && createPortal(
                 <>
@@ -1097,6 +1077,7 @@ const Header = ({
                     className="hero-scene-glass-overlay fixed inset-0 z-30 cursor-default"
                   />
                   <motion.div
+                    id="gat-energy-info-panel"
                     ref={gatInfoPanelRef}
                     style={gatInfoPanelStyle}
                     initial={prefersReducedMotion ? { opacity: 0 } : { opacity: 0, y: -18 }}
