@@ -279,7 +279,6 @@ const Header = ({
     (user?.email ? user.email.split('@')[0] : '');
   const simplifiedName = profileName ? profileName.trim().split(/\s+/)[0] : '';
   const greetingLabel = user ? `Hola ${simplifiedName || 'gato'}` : '';
-  const authActionLabel = user ? 'Cerrar sesión' : 'Iniciar sesión';
   const statusDotClass = user ? 'bg-emerald-400' : 'bg-slate-600';
   // Mientras el # del Hero siga presente sin usarse, el toggle # del Header
   // se mantiene oculto: solo debe haber un # clicable en pantalla a la vez.
@@ -393,13 +392,6 @@ const Header = ({
       description: 'Sesión cerrada correctamente.',
     });
   }, [signOut, showToast, user]);
-
-  const handleAuthActionFromMenu = useCallback(() => {
-    setIsMenuOpen(false);
-    if (user) {
-      void handleLogout();
-    }
-  }, [handleLogout, user]);
 
   const handleOpenLoginFromGatTooltip = useCallback(() => {
     setIsGatInfoOpen(false);
@@ -1265,17 +1257,6 @@ const Header = ({
                   {item.name}
                 </button>
               ))}
-              {user ? (
-                <div className="mt-2 border-t border-white/10 pt-3">
-                  <button
-                    type="button"
-                    onClick={handleAuthActionFromMenu}
-                    className="block w-full text-left py-2 text-slate-200 hover:text-white transition-colors"
-                  >
-                    {authActionLabel}
-                  </button>
-                </div>
-              ) : null}
             </motion.div>
           ) : null}
         </nav>
@@ -1286,11 +1267,8 @@ const Header = ({
           isOpen={isMenuOpen}
           menuItems={mobileMenuItems}
           activeSectionHref={activeSectionHref}
-          authActionLabel={authActionLabel}
-          showAuthSection={Boolean(user)}
           onNavigate={handleNavClick}
           onClose={() => setIsMenuOpen(false)}
-          onAuthAction={handleAuthActionFromMenu}
         />
       ) : null}
 

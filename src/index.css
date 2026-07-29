@@ -312,16 +312,10 @@ body {
    conserva la escena y sus colores; el blur separa el contenido sin volver el
    fondo una mancha negra opaca. */
 .hero-scene-glass-overlay {
-  background:
-    radial-gradient(circle at 52% 22%, rgba(64, 42, 48, 0.16), transparent 44%),
-    linear-gradient(180deg, rgba(2, 4, 14, 0.58), rgba(3, 4, 11, 0.68));
   -webkit-backdrop-filter: blur(16px) saturate(112%);
-  backdrop-filter: blur(16px) saturate(112%);
 }
 
 .hero-scene-glass-panel {
-  background:
-    linear-gradient(145deg, rgba(8, 9, 17, 0.78), rgba(13, 8, 11, 0.68));
   -webkit-backdrop-filter: blur(24px) saturate(116%);
   backdrop-filter: blur(24px) saturate(116%);
   box-shadow:
