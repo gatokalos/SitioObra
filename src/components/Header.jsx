@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback, useLayoutEffect, useMemo, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { motion, useReducedMotion } from 'framer-motion';
-import { Coffee, Info, Sparkles, LogIn, Compass, BookOpen, MessageCircle, UserCircle2, DoorOpen, X } from 'lucide-react';
+import { Coffee, Info, Sparkles, LogIn, Compass, BookOpen, MessageCircle, UserCircle2, DoorOpen } from 'lucide-react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useToast } from '@/components/ui/use-toast';
 import { useAuth } from '@/contexts/SupabaseAuthContext';
@@ -215,7 +215,7 @@ const Header = ({
   // Cerrar cualquiera de los dos paneles del sistema de GAT (el HUB que abre
   // solo, o el tooltip que abre el chip) — usado por cualquier acceso del
   // grid que navegue a otro lado, para que no se quede flotando encima.
-  // Cierra el HUB y/o el tooltip por CUALQUIER camino (la X, o un tile que
+  // Cierra el HUB y/o el tooltip por CUALQUIER camino (el GatoChip, o un tile que
   // navega a otro lado) y siempre activa la escena — el HUB es un puente, no
   // debe dejar al Hero en un estado "a medias" sin importar cómo se cerró.
   // Header y Hero son hermanos, no padre-hijo, así que se coordina por
@@ -616,14 +616,33 @@ const Header = ({
   }, []);
 
   const handleGatChipClick = useCallback(() => {
-    if (!gatRevealPulse) return;
-    acknowledgeGatRevealPulse('header-chip');
-  }, [acknowledgeGatRevealPulse, gatRevealPulse]);
+    if (isGatLinktreeOpen) {
+      closeGatPanels();
+      return;
+    }
+
+    if (gatRevealPulse) {
+      acknowledgeGatRevealPulse('header-chip');
+    }
+
+    if (!isGatLinktreeAudience) return;
+    setIsGatInfoOpen(false);
+    setIsGatLinktreeOpen(true);
+  }, [
+    acknowledgeGatRevealPulse,
+    closeGatPanels,
+    gatRevealPulse,
+    isGatLinktreeAudience,
+    isGatLinktreeOpen,
+  ]);
 
   const isGatChipPulsing = Boolean(gatRevealPulse);
+  const shouldAnimateGatChipReveal = isGatChipPulsing && !isGatLinktreeOpen;
   // El Header decide si existe el chip; el saldo solo define su contenido.
   // En anónimo no debe adelantarse al ritual de activación del Hero.
-  const shouldShowGatChip = Boolean(showGatChip && gatBalance > 0 && !isGatLinktreeOpen);
+  const shouldShowGatChip = Boolean(
+    isGatLinktreeOpen || (showGatChip && gatBalance > 0)
+  );
   const gatChipPulseAnimate = prefersReducedMotion
     ? { opacity: 1, scale: 1 }
     : {
@@ -862,6 +881,7 @@ const Header = ({
 
     setupFrameId = window.requestAnimationFrame(() => {
       const controlsLayer = document.querySelector('[data-gat-hub-controls="true"]');
+      const panel = controlsLayer?.querySelector('[data-gat-hub-panel]');
       scroller = controlsLayer?.querySelector('[data-gat-hub-scroll]') || null;
       const rowElements = controlsLayer
         ? Array.from(controlsLayer.querySelectorAll('[data-gat-orbit-row]'))
@@ -870,6 +890,7 @@ const Header = ({
       if (typeof ResizeObserver !== 'undefined' && controlsLayer && scroller) {
         resizeObserver = new ResizeObserver(measureOrbitLayer);
         resizeObserver.observe(controlsLayer);
+        if (panel) resizeObserver.observe(panel);
         resizeObserver.observe(scroller);
         rowElements.forEach((rowElement) => resizeObserver.observe(rowElement));
       }
@@ -961,7 +982,9 @@ const Header = ({
         initial={{ y: -100 }}
         animate={{ y: 0 }}
         transition={{ duration: 0.5, ease: 'easeOut' }}
-        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${headerToneClass}`}
+        className={`fixed left-0 right-0 top-0 transition-all duration-500 ${
+          isGatLinktreeOpen ? 'pointer-events-none z-[100]' : 'z-50'
+        } ${headerToneClass}`}
       >
         <nav className="container mx-auto px-6 py-3 max-[375px]:px-4" data-site-index-root>
           <div className="flex items-center justify-between">
@@ -1000,14 +1023,16 @@ const Header = ({
               {shouldShowGatChip ? (
                 <motion.div
                   ref={gatChipRootRef}
-                  className={`inline-flex items-center gap-1 whitespace-nowrap rounded-full border pl-2.5 pr-1 py-1 text-[0.62rem] font-semibold uppercase tracking-[0.16em] backdrop-blur-sm transition-colors sm:gap-1.5 sm:pl-3 sm:pr-1.5 sm:text-[0.68rem] sm:tracking-[0.24em] ${
-                    isGatChipPulsing
-                      ? 'border-amber-300/45 bg-amber-500/15 text-amber-100 shadow-[0_0_22px_rgba(251,191,36,0.28)]'
+                  className={`pointer-events-auto inline-flex items-center gap-1 whitespace-nowrap rounded-full border pl-2.5 pr-1 py-1 text-[0.62rem] font-semibold uppercase tracking-[0.16em] backdrop-blur-sm transition-colors sm:gap-1.5 sm:pl-3 sm:pr-1.5 sm:text-[0.68rem] sm:tracking-[0.24em] ${
+                    isGatLinktreeOpen
+                        ? 'border-cyan-200/45 bg-cyan-300/[0.12] text-cyan-50 shadow-[0_0_24px_rgba(34,211,238,0.24)]'
+                      : isGatChipPulsing
+                        ? 'border-amber-300/45 bg-amber-500/15 text-amber-100 shadow-[0_0_22px_rgba(251,191,36,0.28)]'
                       : 'border-cyan-300/25 bg-cyan-400/10 text-cyan-100/90 shadow-[0_0_18px_rgba(34,211,238,0.14)]'
                   }`}
-                  animate={isGatChipPulsing ? gatChipPulseAnimate : { opacity: 1, scale: 1 }}
+                  animate={shouldAnimateGatChipReveal ? gatChipPulseAnimate : { opacity: 1, scale: 1 }}
                   transition={
-                    isGatChipPulsing
+                    shouldAnimateGatChipReveal
                       ? gatChipPulseTransition
                       : { duration: 0.5, ease: 'easeOut' }
                   }
@@ -1015,16 +1040,33 @@ const Header = ({
                   <button
                     type="button"
                     onClick={handleGatChipClick}
-                    disabled={!isGatChipPulsing}
-                    className={`inline-flex items-center gap-1.5 sm:gap-2 ${isGatChipPulsing ? 'cursor-pointer' : 'cursor-default'}`}
+                    className={`inline-flex items-center gap-1.5 sm:gap-2 ${
+                      isGatLinktreeAudience || isGatLinktreeOpen || isGatChipPulsing
+                        ? 'cursor-pointer'
+                        : 'cursor-default'
+                    }`}
+                    aria-controls={isGatLinktreeAudience ? 'gat-personal-hub' : undefined}
+                    aria-expanded={isGatLinktreeAudience ? isGatLinktreeOpen : undefined}
                     aria-label={
-                      isGatChipPulsing
+                      isGatLinktreeOpen
+                        ? 'Cerrar HUB de energía'
+                        : isGatLinktreeAudience
+                          ? 'Abrir HUB de energía'
+                          : isGatChipPulsing
                         ? 'Confirmar GATokens recibidos'
                         : `${gatBalance.toLocaleString('es-MX')} GAT disponibles`
                     }
-                    title={isGatChipPulsing ? 'Confirmar GATokens recibidos' : 'GATokens disponibles'}
+                    title={
+                      isGatLinktreeOpen
+                        ? 'Cerrar HUB de energía'
+                        : isGatLinktreeAudience
+                          ? 'Abrir HUB de energía'
+                          : isGatChipPulsing
+                            ? 'Confirmar GATokens recibidos'
+                            : 'GATokens disponibles'
+                    }
                   >
-                    {isGatChipPulsing ? (
+                    {shouldAnimateGatChipReveal ? (
                       <motion.img
                         src={GATOKEN_COIN_SRC}
                         alt=""
@@ -1037,16 +1079,21 @@ const Header = ({
                     )}
                     <span>Energía</span>
                     <span className="tabular-nums text-white">{gatBalance.toLocaleString('es-MX')} GAT</span>
+                    {isGatLinktreeOpen ? (
+                      <Info size={11} aria-hidden="true" className="ml-0.5 text-current/70" />
+                    ) : null}
                   </button>
-                  <button
-                    type="button"
-                    onClick={() => setIsGatInfoOpen((prev) => !prev)}
-                    aria-label="¿Qué son los GATokens?"
-                    aria-expanded={isGatInfoOpen}
-                    className="flex h-4 w-4 items-center justify-center rounded-full text-current/60 normal-case transition hover:text-white"
-                  >
-                    <Info size={11} />
-                  </button>
+                  {!isGatLinktreeOpen ? (
+                    <button
+                      type="button"
+                      onClick={() => setIsGatInfoOpen((prev) => !prev)}
+                      aria-label="¿Qué son los GATokens?"
+                      aria-expanded={isGatInfoOpen}
+                      className="flex h-4 w-4 items-center justify-center rounded-full text-current/60 normal-case transition hover:text-white"
+                    >
+                      <Info size={11} />
+                    </button>
+                  ) : null}
                 </motion.div>
               ) : null}
               {shouldShowGatChip && isGatInfoOpen && typeof document !== 'undefined' && createPortal(
@@ -1160,6 +1207,7 @@ const Header = ({
               </div>
 
               <motion.aside
+                id="gat-personal-hub"
                 data-gat-hub-controls="true"
                 initial={prefersReducedMotion ? { opacity: 0 } : { opacity: 0, y: -10 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -1170,29 +1218,23 @@ const Header = ({
                 aria-label="Hub personal de GATokens"
               >
                 <div
+                  data-gat-hub-panel
                   className="relative mx-auto flex w-full max-w-[28rem] flex-col"
                   style={{
                     maxHeight: 'calc(100dvh - env(safe-area-inset-top) - 24px)',
                   }}
                 >
-                  <div className="flex shrink-0 items-start justify-between gap-4 px-5 pb-4 pt-5 sm:px-6">
+                  <div className="flex shrink-0 items-start px-5 pb-4 pt-5 sm:px-6">
                     <div>
                       <p className="text-[0.62rem] font-semibold uppercase tracking-[0.34em] text-amber-300/90">
-                        Vestíbulo Sideral
+                        #EsunVestíbulo
                       </p>
                       <h2 className="font-display mt-2 text-xl text-slate-100">La obra continúa</h2>
-                      <p className="mt-1 max-w-[17rem] text-xs leading-relaxed text-slate-400">
-                        La narrativa de #GatoEncerrado sigue tomando forma con tu participación.
-                      </p>
+                      <div
+                        aria-hidden="true"
+                        className="mt-1 min-h-[2.45rem] w-full max-w-[17rem]"
+                      />
                     </div>
-                    <button
-                      type="button"
-                      onClick={closeGatPanels}
-                      className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-white/10 bg-white/[0.035] text-slate-400 transition hover:border-white/20 hover:bg-white/[0.075] hover:text-white"
-                      aria-label="Cerrar hub personal"
-                    >
-                      <X size={17} />
-                    </button>
                   </div>
 
                   <div
