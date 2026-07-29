@@ -47,11 +47,7 @@ const GatLinktreeTile = ({ icon: TileIcon, label, onClick, statusDotClass: dotCl
     <button
       type="button"
       onClick={onClick}
-      className={`group relative flex min-h-[6.1rem] flex-col items-center justify-center gap-2 rounded-xl border px-2.5 py-3 text-center transition duration-200 ${
-        isAccountTile
-          ? 'border-cyan-300/25 bg-cyan-300/[0.045] hover:border-cyan-200/40 hover:bg-cyan-300/[0.075]'
-          : 'border-white/[0.085] bg-white/[0.025] hover:border-white/20 hover:bg-white/[0.055]'
-      }`}
+      className="group relative flex min-h-[6.1rem] flex-col items-center justify-center gap-2 text-center transition duration-200"
     >
       <span
         className={`relative flex h-20 w-20 shrink-0 items-center justify-center rounded-xl border transition ${
