@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback, useLayoutEffect, useMemo, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { motion, useReducedMotion } from 'framer-motion';
-import { Coffee, Info, Sparkles, LogIn, Compass, BookOpen, MessageCircle, UserCircle2, DoorOpen } from 'lucide-react';
+import { Armchair, Coffee, Info, Sparkles, LogIn, Compass, BookOpen, MessageCircle, UserCircle2, DoorOpen } from 'lucide-react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useToast } from '@/components/ui/use-toast';
 import { useAuth } from '@/contexts/SupabaseAuthContext';
@@ -826,6 +826,20 @@ const Header = ({
     { length: Math.ceil(gatTileConfigs.length / 2) },
     (_, rowIndex) => gatTileConfigs.slice(rowIndex * 2, rowIndex * 2 + 2)
   );
+  const gatHubTileConfigs = [
+    {
+      key: 'first-row',
+      icon: Armchair,
+      label: 'Primera fila',
+      onClick: closeGatPanels,
+      tone: 'neutral',
+    },
+    ...gatTileConfigs,
+  ];
+  const gatHubTileRows = Array.from(
+    { length: Math.ceil(gatHubTileConfigs.length / 2) },
+    (_, rowIndex) => gatHubTileConfigs.slice(rowIndex * 2, rowIndex * 2 + 2)
+  );
 
   useLayoutEffect(() => {
     if (!isGatLinktreeOpen || typeof document === 'undefined') {
@@ -906,16 +920,16 @@ const Header = ({
       window.removeEventListener('resize', measureOrbitLayer);
     };
   }, [
-    gatTileRows.length,
+    gatHubTileRows.length,
     isGatLinktreeOpen,
     isLinktreeSessionExpanded,
     showGatWhatsappInput,
   ]);
 
-  const gatAccessGridContent = (
+  const renderGatAccessGridContent = (tileRows) => (
     <>
       <div className="relative mx-auto flex w-full max-w-[22rem] flex-col gap-4">
-        {gatTileRows.map((row, rowIndex) => (
+        {tileRows.map((row, rowIndex) => (
           <div
             key={`gat-row-${rowIndex}`}
             className="relative grid grid-cols-2 items-start gap-x-5"
@@ -1138,7 +1152,9 @@ const Header = ({
                           </p>
                         ) : null}
                       </div>
-                      <div className="w-full px-3 py-3 sm:px-4">{gatAccessGridContent}</div>
+                      <div className="w-full px-3 py-3 sm:px-4">
+                        {renderGatAccessGridContent(gatTileRows)}
+                      </div>
                     </div>
                     <div className="relative z-10 shrink-0 border-t border-white/[0.085] bg-white/[0.025] px-4 py-2.5">
                       <p className="text-center text-[0.66rem] uppercase tracking-[0.12em] text-slate-500">
@@ -1212,7 +1228,7 @@ const Header = ({
                       <p className="text-[0.62rem] font-semibold uppercase tracking-[0.34em] text-amber-300/90">
                         #EsunVestíbulo
                       </p>
-                      <h2 className="font-display mt-2 text-xl text-slate-100">La obra continúa</h2>
+                      <h2 className="font-display mt-2 text-xl text-slate-100">La obra continúa...</h2>
                       <div
                         aria-hidden="true"
                         className="mt-1 min-h-[2.45rem] w-full max-w-[17rem]"
@@ -1224,7 +1240,7 @@ const Header = ({
                     data-gat-hub-scroll
                     className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-3 pb-3 pt-1 sm:px-4"
                   >
-                    {gatAccessGridContent}
+                    {renderGatAccessGridContent(gatHubTileRows)}
                   </div>
                 </div>
               </motion.aside>

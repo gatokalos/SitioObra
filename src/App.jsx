@@ -814,19 +814,19 @@ function App() {
         element={(
           <div className="min-h-screen overflow-x-hidden relative">
             <HeroBackground isAuthenticated={false} />
-            <div className="relative z-10">
-              <Header
-                showAllianceNav={isAuthenticated}
-                showCuradoriaNav={isCuradoriaVisible}
-                showIntermedioNav={canShowPostHeroContent}
-                showTransmediaNav={canShowPostHeroContent && hasEnteredUniverse && canAccessTransmedia}
-                showPerspectivasNav={canShowPostHeroContent && hasEnteredUniverse}
-                showObraDestacadaNav={isObraDestacadaVisible}
-                showTerceraLlamadaNav={canShowPostHeroContent}
-                showGatChip={isAuthenticated || isHeroActivated}
-                terceraLlamadaLabel={hasEnteredUniverse ? '#Reposición' : '#Comenzamos'}
-              />
+            <Header
+              showAllianceNav={isAuthenticated}
+              showCuradoriaNav={isCuradoriaVisible}
+              showIntermedioNav={canShowPostHeroContent}
+              showTransmediaNav={canShowPostHeroContent && hasEnteredUniverse && canAccessTransmedia}
+              showPerspectivasNav={canShowPostHeroContent && hasEnteredUniverse}
+              showObraDestacadaNav={isObraDestacadaVisible}
+              showTerceraLlamadaNav={canShowPostHeroContent}
+              showGatChip={isAuthenticated || isHeroActivated}
+              terceraLlamadaLabel={hasEnteredUniverse ? '#Reposición' : '#Comenzamos'}
+            />
 
+            <div className="relative z-10">
               <main className="pt-20 lg:pt-24">
                 <Hero />
 
