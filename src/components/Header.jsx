@@ -50,13 +50,13 @@ const GatLinktreeTile = ({ icon: TileIcon, label, onClick, statusDotClass: dotCl
       className="group relative flex min-h-[6.1rem] flex-col items-center justify-center gap-2 text-center transition duration-200"
     >
       <span
-        className={`relative flex h-20 w-20 shrink-0 items-center justify-center rounded-xl border transition ${
+        className={`relative flex aspect-square w-1/2 shrink-0 items-center justify-center rounded-xl border p-[20%] transition ${
           isAccountTile
             ? 'border-cyan-300/35 bg-cyan-300/[0.06] text-cyan-100'
             : 'border-white/20 bg-white/[0.04] text-slate-200 group-hover:border-white/35 group-hover:text-white'
         }`}
       >
-        <TileIcon strokeWidth={1.45} className="h-12 w-12" />
+        <TileIcon strokeWidth={1.45} className="h-full w-full" />
         {dotClass ? (
           <span className={`absolute -right-0.5 -top-0.5 h-2.5 w-2.5 rounded-full border-2 border-[#08090d] ${dotClass}`} />
         ) : null}
@@ -747,53 +747,78 @@ const Header = ({
   // Contenido compartido por el tooltip (clic en el chip) y el HUB (se abre
   // solo para autenticados/PWA) — mismos accesos, mismo estilo, para no
   // mantener dos diseños distintos de lo mismo.
+  const gatTileConfigs = [
+    !user && isGatLoginEligible
+      ? { key: 'login', icon: LogIn, label: 'Iniciar sesión', onClick: handleOpenLoginFromGatTooltip, tone: 'neutral' }
+      : null,
+    gatSpendRecommendation
+      ? {
+          key: 'recommendation',
+          icon: Compass,
+          label: `Explorar ${gatSpendRecommendation.title}`,
+          onClick: () => {
+            closeGatPanels();
+            handleNavClick(`#transmedia?focus=${gatSpendRecommendation.showcaseId}&source=gat-recommendation`);
+          },
+          tone: 'violet',
+        }
+      : null,
+    {
+      key: 'holografico',
+      icon: BookOpen,
+      label: 'Cuaderno holográfico',
+      onClick: handleOpenHolograficoFromGatTooltip,
+      tone: 'amber',
+    },
+    user
+      ? { key: 'merch', icon: Coffee, label: 'Café, charla y merch', onClick: handleOpenSupportHub, tone: 'amber' }
+      : null,
+    user
+      ? {
+          key: 'session',
+          icon: UserCircle2,
+          label: greetingLabel,
+          statusDotClass,
+          onClick: () => setIsLinktreeSessionExpanded((prev) => !prev),
+          tone: 'cyan',
+          indicator: 'dot',
+        }
+      : null,
+    !gatWhatsappDone
+      ? {
+          key: 'whatsapp',
+          icon: MessageCircle,
+          label: 'Avísame por WhatsApp',
+          onClick: () => setShowGatWhatsappInput((prev) => !prev),
+          tone: 'green',
+        }
+      : null,
+    isSubscriber
+      ? { key: 'backstage', icon: DoorOpen, label: 'Ir al Backstage', onClick: handleOpenBackstage, tone: 'violet' }
+      : null,
+  ].filter(Boolean);
+  const gatGridRowCount = Math.ceil(gatTileConfigs.length / 2);
+
   const gatAccessGridContent = (
     <>
-      <div className="mx-auto grid w-full max-w-[21rem] grid-cols-2 gap-2">
-        {!user && isGatLoginEligible ? (
-          <GatLinktreeTile icon={LogIn} label="Iniciar sesión" onClick={handleOpenLoginFromGatTooltip} tone="neutral" />
+      <div className="relative mx-auto grid w-full max-w-[21rem] grid-cols-2 gap-x-5 gap-y-6">
+        {gatGridRowCount > 1 ? (
+          <div
+            aria-hidden="true"
+            className="pointer-events-none absolute inset-y-1 left-1/2 w-px -translate-x-1/2 bg-gradient-to-b from-transparent via-white/15 to-transparent"
+          >
+            {Array.from({ length: gatGridRowCount - 1 }, (_, i) => (
+              <span
+                key={i}
+                className="absolute left-1/2 h-1.5 w-1.5 -translate-x-1/2 -translate-y-1/2 rounded-full bg-white/80 shadow-[0_0_6px_rgba(255,255,255,0.55)]"
+                style={{ top: `${((i + 1) / gatGridRowCount) * 100}%` }}
+              />
+            ))}
+          </div>
         ) : null}
-        {gatSpendRecommendation ? (
-          <GatLinktreeTile
-            icon={Compass}
-            label={`Explorar ${gatSpendRecommendation.title}`}
-            onClick={() => {
-              closeGatPanels();
-              handleNavClick(`#transmedia?focus=${gatSpendRecommendation.showcaseId}&source=gat-recommendation`);
-            }}
-            tone="violet"
-          />
-        ) : null}
-        <GatLinktreeTile
-          icon={BookOpen}
-          label="Cuaderno holográfico"
-          onClick={handleOpenHolograficoFromGatTooltip}
-          tone="amber"
-        />
-        {user ? (
-          <GatLinktreeTile icon={Coffee} label="Café, charla y merch" onClick={handleOpenSupportHub} tone="amber" />
-        ) : null}
-        {user ? (
-          <GatLinktreeTile
-            icon={UserCircle2}
-            label={greetingLabel}
-            statusDotClass={statusDotClass}
-            onClick={() => setIsLinktreeSessionExpanded((prev) => !prev)}
-            tone="cyan"
-            indicator="dot"
-          />
-        ) : null}
-        {!gatWhatsappDone ? (
-          <GatLinktreeTile
-            icon={MessageCircle}
-            label="Avísame por WhatsApp"
-            onClick={() => setShowGatWhatsappInput((prev) => !prev)}
-            tone="green"
-          />
-        ) : null}
-        {isSubscriber ? (
-          <GatLinktreeTile icon={DoorOpen} label="Ir al Backstage" onClick={handleOpenBackstage} tone="violet" />
-        ) : null}
+        {gatTileConfigs.map((tile) => (
+          <GatLinktreeTile key={tile.key} {...tile} />
+        ))}
       </div>
 
       {isLinktreeSessionExpanded && user ? (
