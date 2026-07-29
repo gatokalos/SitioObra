@@ -682,8 +682,8 @@ body {
   position: absolute;
   left: 50%;
   top: 50%;
-  width: 1px;
-  height: clamp(2.75rem, 12vw, 3.25rem);
+  width: 2px;
+  height: clamp(2.75rem, 20vw, 3.25rem);
   pointer-events: none;
   background: linear-gradient(
     180deg,

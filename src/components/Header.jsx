@@ -145,6 +145,10 @@ const Header = ({
   const [isGatLinktreeOpen, setIsGatLinktreeOpen] = useState(
     () => isGatLinktreeAudience && typeof window !== 'undefined' && !window.sessionStorage.getItem(GAT_LINKTREE_DISMISSED_SESSION_KEY)
   );
+  const [gatOrbitLayer, setGatOrbitLayer] = useState({
+    clip: null,
+    points: [],
+  });
   // Header y Hero son hermanos — Hero necesita saber, de forma síncrona y
   // dentro de un click handler (no un re-render), si el HUB sigue abierto,
   // para que el # 3D no active la escena por su cuenta mientras tanto
@@ -806,6 +810,89 @@ const Header = ({
     (_, rowIndex) => gatTileConfigs.slice(rowIndex * 2, rowIndex * 2 + 2)
   );
 
+  useLayoutEffect(() => {
+    if (!isGatLinktreeOpen || typeof document === 'undefined') {
+      setGatOrbitLayer({ clip: null, points: [] });
+      return undefined;
+    }
+
+    let scroller = null;
+    let resizeObserver = null;
+    let introFrameId = null;
+    let setupFrameId = null;
+    const introStartedAt = performance.now();
+
+    const measureOrbitLayer = () => {
+      const controlsLayer = document.querySelector('[data-gat-hub-controls="true"]');
+      const nextScroller = controlsLayer?.querySelector('[data-gat-hub-scroll]');
+      const rowElements = controlsLayer
+        ? Array.from(controlsLayer.querySelectorAll('[data-gat-orbit-row]'))
+        : [];
+
+      if (!nextScroller || rowElements.length === 0) return;
+
+      const clipRect = nextScroller.getBoundingClientRect();
+      const nextLayer = {
+        clip: {
+          left: clipRect.left,
+          top: clipRect.top,
+          width: clipRect.width,
+          height: clipRect.height,
+        },
+        points: rowElements.map((rowElement, rowIndex) => {
+          const rowRect = rowElement.getBoundingClientRect();
+          return {
+            id: rowElement.dataset.gatOrbitRow || String(rowIndex),
+            x: rowRect.left + rowRect.width / 2 - clipRect.left,
+            y: rowRect.top + rowRect.height / 2 - clipRect.top,
+            delay: rowIndex * -1.2,
+          };
+        }),
+      };
+
+      setGatOrbitLayer(nextLayer);
+    };
+
+    const followOpeningMotion = (timestamp) => {
+      measureOrbitLayer();
+      if (timestamp - introStartedAt < 420) {
+        introFrameId = window.requestAnimationFrame(followOpeningMotion);
+      }
+    };
+
+    setupFrameId = window.requestAnimationFrame(() => {
+      const controlsLayer = document.querySelector('[data-gat-hub-controls="true"]');
+      scroller = controlsLayer?.querySelector('[data-gat-hub-scroll]') || null;
+      const rowElements = controlsLayer
+        ? Array.from(controlsLayer.querySelectorAll('[data-gat-orbit-row]'))
+        : [];
+
+      if (typeof ResizeObserver !== 'undefined' && controlsLayer && scroller) {
+        resizeObserver = new ResizeObserver(measureOrbitLayer);
+        resizeObserver.observe(controlsLayer);
+        resizeObserver.observe(scroller);
+        rowElements.forEach((rowElement) => resizeObserver.observe(rowElement));
+      }
+
+      scroller?.addEventListener('scroll', measureOrbitLayer, { passive: true });
+      window.addEventListener('resize', measureOrbitLayer);
+      introFrameId = window.requestAnimationFrame(followOpeningMotion);
+    });
+
+    return () => {
+      if (setupFrameId !== null) window.cancelAnimationFrame(setupFrameId);
+      if (introFrameId !== null) window.cancelAnimationFrame(introFrameId);
+      resizeObserver?.disconnect();
+      scroller?.removeEventListener('scroll', measureOrbitLayer);
+      window.removeEventListener('resize', measureOrbitLayer);
+    };
+  }, [
+    gatTileRows.length,
+    isGatLinktreeOpen,
+    isLinktreeSessionExpanded,
+    showGatWhatsappInput,
+  ]);
+
   const gatAccessGridContent = (
     <>
       <div className="relative mx-auto flex w-full max-w-[22rem] flex-col gap-4">
@@ -813,16 +900,8 @@ const Header = ({
           <div
             key={`gat-row-${rowIndex}`}
             className="relative grid grid-cols-2 items-start gap-x-5"
-            style={{ '--gat-orbit-delay': `${rowIndex * -1.2}s` }}
+            data-gat-orbit-row={rowIndex}
           >
-            <span
-              aria-hidden="true"
-              className="gat-hub-orbit-pleca z-0"
-            />
-            <span
-              aria-hidden="true"
-              className="gat-hub-orbit-star z-[2]"
-            />
             {row.map((tile) => (
               <GatLinktreeTile key={tile.key} {...tile} />
             ))}
@@ -1047,49 +1126,84 @@ const Header = ({
           </div>
 
           {isGatLinktreeOpen && isGatLinktreeAudience && typeof document !== 'undefined' && createPortal(
-            <motion.aside
-              initial={prefersReducedMotion ? { opacity: 0 } : { opacity: 0, y: -10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: prefersReducedMotion ? 0.12 : 0.28, ease: 'easeOut' }}
-              className="fixed inset-0 z-[90] overflow-hidden overscroll-none bg-transparent px-3 py-[calc(env(safe-area-inset-top)+12px)] sm:flex sm:items-start sm:justify-center sm:px-6 sm:py-8"
-              role="dialog"
-              aria-modal="true"
-              aria-label="Hub personal de GATokens"
-            >
+            <>
               <div
-                className="relative mx-auto flex w-full max-w-[28rem] flex-col"
-                style={{
-                  maxHeight: 'calc(100dvh - env(safe-area-inset-top) - 24px)',
-                }}
+                aria-hidden="true"
+                className="pointer-events-none fixed inset-0 z-[5] overflow-hidden"
               >
-                <div className="flex shrink-0 items-start justify-between gap-4 px-5 pb-4 pt-5 sm:px-6">
-                  <div>
-                    <p className="text-[0.62rem] font-semibold uppercase tracking-[0.34em] text-amber-300/90">
-                      Vestíbulo Sideral
-                    </p>
-                    <h2 className="font-display mt-2 text-xl text-slate-100">La obra continúa</h2>
-                    <p className="mt-1 max-w-[17rem] text-xs leading-relaxed text-slate-400">
-                      La narrativa de #GatoEncerrado sigue tomando forma con tu participación.
-                    </p>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={closeGatPanels}
-                    className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-white/10 bg-white/[0.035] text-slate-400 transition hover:border-white/20 hover:bg-white/[0.075] hover:text-white"
-                    aria-label="Cerrar hub personal"
+                {gatOrbitLayer.clip ? (
+                  <div
+                    className="absolute overflow-hidden"
+                    style={{
+                      left: gatOrbitLayer.clip.left,
+                      top: gatOrbitLayer.clip.top,
+                      width: gatOrbitLayer.clip.width,
+                      height: gatOrbitLayer.clip.height,
+                    }}
                   >
-                    <X size={17} />
-                  </button>
-                </div>
-
-                <div
-                  data-gat-hub-scroll
-                  className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-3 pb-3 pt-1 sm:px-4"
-                >
-                  {gatAccessGridContent}
-                </div>
+                    {gatOrbitLayer.points.map((point) => (
+                      <span
+                        key={point.id}
+                        className="absolute h-0 w-0"
+                        style={{
+                          left: point.x,
+                          top: point.y,
+                          '--gat-orbit-delay': `${point.delay}s`,
+                        }}
+                      >
+                        <span className="gat-hub-orbit-pleca" />
+                        <span className="gat-hub-orbit-star" />
+                      </span>
+                    ))}
+                  </div>
+                ) : null}
               </div>
-            </motion.aside>,
+
+              <motion.aside
+                data-gat-hub-controls="true"
+                initial={prefersReducedMotion ? { opacity: 0 } : { opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: prefersReducedMotion ? 0.12 : 0.28, ease: 'easeOut' }}
+                className="fixed inset-0 z-[90] overflow-hidden overscroll-none bg-transparent px-3 py-[calc(env(safe-area-inset-top)+12px)] sm:flex sm:items-start sm:justify-center sm:px-6 sm:py-8"
+                role="dialog"
+                aria-modal="true"
+                aria-label="Hub personal de GATokens"
+              >
+                <div
+                  className="relative mx-auto flex w-full max-w-[28rem] flex-col"
+                  style={{
+                    maxHeight: 'calc(100dvh - env(safe-area-inset-top) - 24px)',
+                  }}
+                >
+                  <div className="flex shrink-0 items-start justify-between gap-4 px-5 pb-4 pt-5 sm:px-6">
+                    <div>
+                      <p className="text-[0.62rem] font-semibold uppercase tracking-[0.34em] text-amber-300/90">
+                        Vestíbulo Sideral
+                      </p>
+                      <h2 className="font-display mt-2 text-xl text-slate-100">La obra continúa</h2>
+                      <p className="mt-1 max-w-[17rem] text-xs leading-relaxed text-slate-400">
+                        La narrativa de #GatoEncerrado sigue tomando forma con tu participación.
+                      </p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={closeGatPanels}
+                      className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-white/10 bg-white/[0.035] text-slate-400 transition hover:border-white/20 hover:bg-white/[0.075] hover:text-white"
+                      aria-label="Cerrar hub personal"
+                    >
+                      <X size={17} />
+                    </button>
+                  </div>
+
+                  <div
+                    data-gat-hub-scroll
+                    className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-3 pb-3 pt-1 sm:px-4"
+                  >
+                    {gatAccessGridContent}
+                  </div>
+                </div>
+              </motion.aside>
+            </>,
             document.body
           )}
 
