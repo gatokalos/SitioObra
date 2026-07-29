@@ -54,13 +54,11 @@ const GatLinktreeTile = ({ icon: TileIcon, label, onClick, statusDotClass: dotCl
       }`}
     >
       <span
-        className={`relative flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border bg-black/25 transition ${
-          isAccountTile
-            ? 'border-cyan-300/35 text-cyan-100'
-            : 'border-white/20 text-slate-200 group-hover:border-white/35 group-hover:text-white'
+        className={`relative flex h-10 w-10 shrink-0 items-center justify-center transition ${
+          isAccountTile ? 'text-cyan-100' : 'text-slate-200 group-hover:text-white'
         }`}
       >
-        <TileIcon strokeWidth={1.45} className="h-5 w-5" />
+        <TileIcon strokeWidth={1.45} className="h-10 w-10" />
         {dotClass ? (
           <span className={`absolute -right-0.5 -top-0.5 h-2.5 w-2.5 rounded-full border-2 border-[#08090d] ${dotClass}`} />
         ) : null}

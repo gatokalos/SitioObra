@@ -93,7 +93,7 @@ const lsRead = (portal) => {
   catch { return {}; }
 };
 
-const HOLISTIC_QUESTION = '¿Qué le responderías, con tus propias palabras, a lo que este miniverso entendió de ti?';
+const HOLISTIC_QUESTION = '¿Qué le responderías, con tus propias palabras, a lo que esta obra cree saber de tus emociones?';
 
 const STARS = Array.from({ length: 28 }, (_, i) => ({
   id: i,
@@ -248,7 +248,7 @@ function HolograficoPanel({ centerKey, homeKey, onStartBitacora, onOpenVideo, on
             <div>
               <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Días después</p>
               <h2 className="font-display text-2xl leading-snug text-amber-300 mt-1">
-                Cuaderno holográfico
+                Tu cuaderno holográfico
               </h2>
             </div>
             <VitranaQuestionReveal
