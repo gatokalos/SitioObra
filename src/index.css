@@ -678,6 +678,27 @@ body {
   transform: translateX(-50%);
 }
 
+.gat-hub-axis-pleca {
+  position: absolute;
+  left: 50%;
+  top: 1.25rem;
+  bottom: 1.25rem;
+  width: 1px;
+  pointer-events: none;
+  background: linear-gradient(
+    180deg,
+    transparent 0%,
+    rgba(196, 181, 253, 0.04) 10%,
+    rgba(196, 181, 253, 0.16) 36%,
+    rgba(241, 245, 249, 0.3) 50%,
+    rgba(196, 181, 253, 0.16) 64%,
+    rgba(196, 181, 253, 0.04) 90%,
+    transparent 100%
+  );
+  box-shadow: 0 0 10px rgba(196, 181, 253, 0.08);
+  transform: translateX(-50%);
+}
+
 .narrative-pause-mark--third-call {
   gap: 0.26rem;
 }

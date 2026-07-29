@@ -811,20 +811,16 @@ const Header = ({
       <div className="relative mx-auto flex w-full max-w-[22rem] flex-col gap-4">
         <div
           aria-hidden="true"
-          className="pointer-events-none absolute inset-y-5 left-1/2 z-0 w-px -translate-x-1/2 bg-gradient-to-b from-transparent via-white/12 to-transparent"
+          className="gat-hub-axis-pleca z-0"
         />
         {gatTileRows.map((row, rowIndex) => (
           <div
             key={`gat-row-${rowIndex}`}
             className="relative grid grid-cols-2 items-start gap-x-5"
           >
-            <div
-              aria-hidden="true"
-              className="pointer-events-none absolute -inset-x-2 top-1/2 z-0 h-[78%] -translate-y-1/2 opacity-70 [background:linear-gradient(90deg,transparent_0%,rgba(7,8,12,0.52)_18%,rgba(10,9,12,0.3)_50%,rgba(7,8,12,0.52)_82%,transparent_100%)] [mask-image:linear-gradient(to_bottom,transparent,black_22%,black_78%,transparent)]"
-            />
             <span
               aria-hidden="true"
-              className="pointer-events-none absolute left-1/2 top-1/2 z-[2] h-1.5 w-1.5 -translate-x-1/2 -translate-y-1/2 rounded-full bg-white/85 shadow-[0_0_7px_rgba(255,255,255,0.62)]"
+              className="pointer-events-none absolute left-1/2 top-1/2 z-[2] h-1.5 w-1.5 -translate-x-1/2 -translate-y-1/2 rounded-full bg-white/90 shadow-[0_0_4px_rgba(255,255,255,0.85),0_0_12px_rgba(196,181,253,0.42)]"
             />
             {row.map((tile) => (
               <GatLinktreeTile key={tile.key} {...tile} />
