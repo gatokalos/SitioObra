@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback, useLayoutEffect, useMemo, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { motion, useReducedMotion } from 'framer-motion';
-import { Coffee, Info, Sparkles, LogIn, Compass, BookOpen, MessageCircle, UserCircle2, DoorOpen, X, ArrowUpRight } from 'lucide-react';
+import { Coffee, Info, Sparkles, LogIn, Compass, BookOpen, MessageCircle, UserCircle2, DoorOpen, X } from 'lucide-react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useToast } from '@/components/ui/use-toast';
 import { useAuth } from '@/contexts/SupabaseAuthContext';
@@ -41,40 +41,31 @@ const GAT_LINKTREE_DISMISSED_SESSION_KEY = 'gatoencerrado:gat-linktree-dismissed
 
 // El HUB y la bandeja comparten el mismo vocabulario visual que el programa de
 // mano: vidrio oscuro, borde fino y color reservado para estados reales.
-const GatLinktreeTile = ({ icon: TileIcon, label, onClick, statusDotClass: dotClass, tone = 'neutral', indicator = 'arrow' }) => {
+const GatLinktreeTile = ({ icon: TileIcon, label, onClick, statusDotClass: dotClass, tone = 'neutral' }) => {
   const isAccountTile = tone === 'cyan';
   return (
     <button
       type="button"
       onClick={onClick}
-      className="group relative flex min-h-[6.1rem] flex-col items-center justify-center gap-2 text-center transition duration-200"
+      className="group relative z-10 flex min-w-0 flex-col items-center justify-start gap-2 py-1 text-center transition duration-200"
     >
       <span
-        className={`relative flex aspect-square w-1/2 shrink-0 items-center justify-center rounded-xl border p-[20%] transition ${
+        className={`relative flex aspect-square w-[clamp(4.75rem,20vw,5.5rem)] shrink-0 items-center justify-center rounded-xl border p-[21%] transition ${
           isAccountTile
             ? 'border-cyan-300/35 bg-cyan-300/[0.06] text-cyan-100'
             : 'border-white/20 bg-white/[0.04] text-slate-200 group-hover:border-white/35 group-hover:text-white'
         }`}
       >
-        <TileIcon strokeWidth={1.45} className="h-full w-full" />
+        <TileIcon strokeWidth={1.55} className="h-full w-full" />
         {dotClass ? (
-          <span className={`absolute -right-0.5 -top-0.5 h-2.5 w-2.5 rounded-full border-2 border-[#08090d] ${dotClass}`} />
+          <span className={`absolute right-1.5 top-1.5 h-2.5 w-2.5 rounded-full border-2 border-[#08090d] ${dotClass}`} />
         ) : null}
       </span>
       <p
-        className="font-display max-w-[8.5rem] text-[0.78rem] leading-[1.15] text-slate-100"
+        className="font-display max-w-[9rem] text-[clamp(0.72rem,3.3vw,0.82rem)] leading-[1.15] text-slate-100"
       >
         {label}
       </p>
-      {indicator === 'arrow' ? (
-        <ArrowUpRight
-          size={11}
-          strokeWidth={1.7}
-          className="absolute right-2.5 top-2.5 text-slate-500 transition group-hover:text-slate-200"
-        />
-      ) : indicator === 'dot' ? (
-        <span className={`absolute right-2.5 top-2.5 h-1.5 w-1.5 rounded-full ${dotClass ?? 'bg-emerald-400'}`} />
-      ) : null}
     </button>
   );
 };
@@ -781,7 +772,6 @@ const Header = ({
           statusDotClass,
           onClick: () => setIsLinktreeSessionExpanded((prev) => !prev),
           tone: 'cyan',
-          indicator: 'dot',
         }
       : null,
     !gatWhatsappDone
@@ -797,27 +787,41 @@ const Header = ({
       ? { key: 'backstage', icon: DoorOpen, label: 'Ir al Backstage', onClick: handleOpenBackstage, tone: 'violet' }
       : null,
   ].filter(Boolean);
-  const gatGridRowCount = Math.ceil(gatTileConfigs.length / 2);
+  const gatTileRows = Array.from(
+    { length: Math.ceil(gatTileConfigs.length / 2) },
+    (_, rowIndex) => gatTileConfigs.slice(rowIndex * 2, rowIndex * 2 + 2)
+  );
 
   const gatAccessGridContent = (
     <>
-      <div className="relative mx-auto grid w-full max-w-[21rem] grid-cols-2 gap-x-5 gap-y-6">
-        {gatGridRowCount > 1 ? (
+      <div className="relative mx-auto flex w-full max-w-[22rem] flex-col gap-4">
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-y-5 left-1/2 z-0 w-px -translate-x-1/2 bg-gradient-to-b from-transparent via-white/12 to-transparent"
+        />
+        {gatTileRows.map((row, rowIndex) => (
           <div
-            aria-hidden="true"
-            className="pointer-events-none absolute inset-y-1 left-1/2 w-px -translate-x-1/2 bg-gradient-to-b from-transparent via-white/15 to-transparent"
+            key={`gat-row-${rowIndex}`}
+            className="relative grid grid-cols-2 items-start gap-x-5"
           >
-            {Array.from({ length: gatGridRowCount - 1 }, (_, i) => (
-              <span
-                key={i}
-                className="absolute left-1/2 h-1.5 w-1.5 -translate-x-1/2 -translate-y-1/2 rounded-full bg-white/80 shadow-[0_0_6px_rgba(255,255,255,0.55)]"
-                style={{ top: `${((i + 1) / gatGridRowCount) * 100}%` }}
-              />
+            <div
+              aria-hidden="true"
+              className="pointer-events-none absolute -inset-x-2 top-1/2 z-0 h-[78%] -translate-y-1/2 opacity-70 [background:linear-gradient(90deg,transparent_0%,rgba(7,8,12,0.52)_18%,rgba(10,9,12,0.3)_50%,rgba(7,8,12,0.52)_82%,transparent_100%)] [mask-image:linear-gradient(to_bottom,transparent,black_22%,black_78%,transparent)]"
+            />
+            <span
+              aria-hidden="true"
+              className="pointer-events-none absolute left-1/2 top-1/2 z-[2] h-1.5 w-1.5 -translate-x-1/2 -translate-y-1/2 rounded-full bg-white/85 shadow-[0_0_7px_rgba(255,255,255,0.62)]"
+            />
+            {row.map((tile) => (
+              <GatLinktreeTile key={tile.key} {...tile} />
             ))}
+            {row.length === 1 ? (
+              <span
+                aria-hidden="true"
+                className="pointer-events-none"
+              />
+            ) : null}
           </div>
-        ) : null}
-        {gatTileConfigs.map((tile) => (
-          <GatLinktreeTile key={tile.key} {...tile} />
         ))}
       </div>
 
@@ -1036,14 +1040,17 @@ const Header = ({
               initial={prefersReducedMotion ? { opacity: 0 } : { opacity: 0, y: -10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: prefersReducedMotion ? 0.12 : 0.28, ease: 'easeOut' }}
-              className="fixed inset-0 z-[90] overflow-hidden overscroll-none bg-transparent px-3 py-[calc(env(safe-area-inset-top)+12px)] sm:flex sm:items-center sm:justify-center sm:px-6 sm:py-8"
+              className="fixed inset-0 z-[90] overflow-hidden overscroll-none bg-transparent px-3 py-[calc(env(safe-area-inset-top)+12px)] sm:flex sm:items-start sm:justify-center sm:px-6 sm:py-8"
               role="dialog"
               aria-modal="true"
               aria-label="Hub personal de GATokens"
             >
               <div
                 className="relative mx-auto flex w-full max-w-[28rem] flex-col"
-                style={{ maxHeight: 'calc(100dvh - env(safe-area-inset-top) - 24px)' }}
+                style={{
+                  minHeight: '62dvh',
+                  maxHeight: 'min(70dvh, calc(100dvh - env(safe-area-inset-top) - 24px))',
+                }}
               >
                 <div className="flex shrink-0 items-start justify-between gap-4 px-5 pb-4 pt-5 sm:px-6">
                   <div>
@@ -1052,7 +1059,7 @@ const Header = ({
                     </p>
                     <h2 className="font-display mt-2 text-xl text-slate-100">La obra continúa</h2>
                     <p className="mt-1 max-w-[17rem] text-xs leading-relaxed text-slate-400">
-                      La narrativa de #GatoEncerrado sigue tomando forma con tu participación..
+                      La narrativa de #GatoEncerrado sigue tomando forma con tu participación.
                     </p>
                   </div>
                   <button
