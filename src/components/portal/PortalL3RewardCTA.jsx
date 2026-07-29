@@ -41,7 +41,12 @@ const PortalL3RewardCTA = ({ portal, l3Rec }) => {
         eventKey: `resonance:l3-reward:${portal}`,
         amount: 175,
         oncePerIdentity: true,
-        metadata: { portal, recommended: recommendedPortal },
+        metadata: {
+          portal,
+          recommended: recommendedPortal,
+          recommended_format_id: l3Rec?.recommended_format_id ?? null,
+          forma: forma ?? null,
+        },
         idempotencyKey: createTransmediaIdempotencyKey(`resonance:l3-reward:${portal}`),
       });
       if (state && typeof window !== 'undefined') {
@@ -55,7 +60,7 @@ const PortalL3RewardCTA = ({ portal, l3Rec }) => {
     if (nextRoute) {
       setTimeout(() => navigate(nextRoute, { state: { showGatTransferChip: true } }), 900);
     }
-  }, [claimed, portal, recommendedPortal, nextRoute, navigate]);
+  }, [claimed, portal, recommendedPortal, l3Rec?.recommended_format_id, forma, nextRoute, navigate]);
 
   if (!l3Rec?.step3) return null;
 

@@ -62,6 +62,7 @@ import DiosasCarousel from '@/components/DiosasCarousel';
 import RelatedReadingTooltipButton from '@/components/portal/RelatedReadingTooltipButton';
 import VitranaQuestionReveal from '@/components/portal/VitranaQuestionReveal';
 import LoginNudgeOverlay from '@/components/LoginNudgeOverlay';
+import { writePendingContinuation } from '@/lib/pendingContinuation';
 import ResonanceModal, { LEVEL2_QUESTIONS, buildL1Acknowledgment } from '@/components/portal/ResonanceModal';
 import { useSilvestreVoice } from '@/hooks/useSilvestreVoice';
 import ObraConversationControls from '@/components/miniversos/obra/ObraConversationControls';
@@ -1233,7 +1234,13 @@ const Transmedia = ({ allianceOnlyMode = false }) => {
       eventKey: `resonance:l3-reward:${portal}`,
       amount: 175,
       oncePerIdentity: true,
-      metadata: { portal, recommended: activePortalL3RecommendedPortal },
+      metadata: {
+        portal,
+        recommended: activePortalL3RecommendedPortal,
+        recommended_format_id:
+          PORTAL_TO_SHOWCASE[activePortalL3RecommendedPortal] ?? null,
+        forma: activePortalL3RecommendedForma ?? null,
+      },
     });
     if (activePortalL3RecommendedPortal) {
       const nextShowcase = PORTAL_TO_SHOWCASE[activePortalL3RecommendedPortal];
@@ -1245,7 +1252,13 @@ const Transmedia = ({ allianceOnlyMode = false }) => {
         setTimeout(() => handleFormatClick(nextShowcase), 900);
       }
     }
-  }, [activeShowcase, activePortalL3RecommendedPortal, handleFormatClick, trackTransmediaCreditEvent]);
+  }, [
+    activeShowcase,
+    activePortalL3RecommendedForma,
+    activePortalL3RecommendedPortal,
+    handleFormatClick,
+    trackTransmediaCreditEvent,
+  ]);
 
   const {
     latestBlogPostByShowcase,
@@ -5517,9 +5530,11 @@ Silvestre, un hombre en sus treintas, comienza a perder la frontera entre lo que
                             if (!isAuthenticated && hasUnlockedAccess && navigateToMobilePortalIfReady(format.id)) {
                               return;
                             }
-                            try {
-                              localStorage.setItem('gatoencerrado:pending-vitrana-id', format.id);
-                            } catch {}
+                            writePendingContinuation({
+                              source: 'transmedia-vitrana',
+                              showcaseId: format.id,
+                              presentation: 'narrative-video',
+                            });
                             setShowMobilePortalLogin(true);
                           }}
                           className="group inline-flex items-center gap-2 rounded-full border border-amber-300/40 bg-amber-500/10 px-4 py-2 text-sm font-semibold text-amber-200 transition hover:bg-amber-500/20"
@@ -5727,9 +5742,11 @@ Silvestre, un hombre en sus treintas, comienza a perder la frontera entre lo que
                             if (!isAuthenticated && hasUnlockedAccess && navigateToMobilePortalIfReady(format.id)) {
                               return;
                             }
-                            try {
-                              localStorage.setItem('gatoencerrado:pending-vitrana-id', format.id);
-                            } catch {}
+                            writePendingContinuation({
+                              source: 'transmedia-vitrana',
+                              showcaseId: format.id,
+                              presentation: 'narrative-video',
+                            });
                             setShowMobilePortalLogin(true);
                           }}
                           className="group inline-flex items-center gap-2 rounded-full border border-amber-300/40 bg-amber-500/10 px-4 py-2 text-sm font-semibold text-amber-200 transition hover:bg-amber-500/20"

@@ -39,6 +39,7 @@ import {
   readIndexCueUsedFromSession,
   writeIndexCueUsedToSession,
 } from '@/lib/heroActivation';
+import { consumePendingContinuation } from '@/lib/pendingContinuation';
 
 const POZO_HERO_REVEAL_KEY = 'gatoencerrado:pozo-hero-reveal:v1';
 
@@ -313,19 +314,38 @@ const Hero = () => {
     }
   }, [location.hash, location.pathname, location.search, toast]);
 
-  // Detect pending vitrana stored before OAuth redirect → auto-open standalone video
+  // Reanuda exactamente la acción que originó el login. La recomendación
+  // durable y esta intención de una sola ejecución son datos distintos: un
+  // login genérico no debe disparar videos inesperados.
   useEffect(() => {
     if (!user) return;
+    const continuation = consumePendingContinuation();
+    if (!continuation?.showcaseId) return;
     try {
-      const vitranaId = localStorage.getItem('gatoencerrado:pending-vitrana-id');
-      if (!vitranaId) return;
-      localStorage.removeItem('gatoencerrado:pending-vitrana-id');
       localStorage.removeItem('gatoencerrado:pending-vitrana-skip-modal');
-      setAutoVideoFormatId(vitranaId);
-      setIsAutoVideoOpen(true);
     } catch {}
+    setAutoVideoFormatId(continuation.showcaseId);
+    setIsAutoVideoOpen(true);
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user?.id]);
+
+  useEffect(() => {
+    const handleOpenNarrativeContinuation = (event) => {
+      const showcaseId = event?.detail?.showcaseId;
+      if (typeof showcaseId !== 'string' || !showcaseId) return;
+      setAutoVideoFormatId(showcaseId);
+      setIsAutoVideoOpen(true);
+    };
+    window.addEventListener(
+      'gatoencerrado:open-narrative-continuation',
+      handleOpenNarrativeContinuation
+    );
+    return () =>
+      window.removeEventListener(
+        'gatoencerrado:open-narrative-continuation',
+        handleOpenNarrativeContinuation
+      );
+  }, []);
 
   const getTargetVolumeByHeroPosition = useCallback(() => {
     const hero = heroSectionRef.current;

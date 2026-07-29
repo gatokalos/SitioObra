@@ -121,7 +121,19 @@ export const findLatestRecommendedPortal = (events = []) => {
     if (typeof recommendedPortalKey === 'string' && recommendedPortalKey) {
       const title = portalKeyTitle(recommendedPortalKey);
       const showcaseId = portalKeyToShowcaseId(recommendedPortalKey);
-      if (title && showcaseId) return { title, showcaseId };
+      if (title && showcaseId) {
+        const forma =
+          typeof event?.metadata?.forma === 'string' && event.metadata.forma.trim()
+            ? event.metadata.forma.trim()
+            : null;
+        return {
+          title,
+          showcaseId,
+          forma,
+          source: 'l3-next-act',
+          kind: 'next-act',
+        };
+      }
     }
   }
   return null;
@@ -135,7 +147,14 @@ export const findLatestRecommendedPortal = (events = []) => {
 export const findLatestSpendTarget = (events = []) => {
   for (const event of events) {
     const { title, showcaseId } = describeTransmediaCreditEvent(event);
-    if (showcaseId && title) return { title, showcaseId };
+    if (showcaseId && title) {
+      return {
+        title,
+        showcaseId,
+        source: 'ledger-progress',
+        kind: 'resume',
+      };
+    }
   }
   return null;
 };
@@ -152,13 +171,20 @@ export const readOraculoRecommendedShowcase = () => {
     const showcaseId = window.localStorage.getItem(ORACULO_RECOMMENDED_SHOWCASE_STORAGE_KEY);
     if (!showcaseId) return null;
     const title = showcaseIdTitle(showcaseId);
-    return title ? { showcaseId, title } : null;
+    return title
+      ? {
+          showcaseId,
+          title,
+          source: 'oracle-welcome',
+          kind: 'welcome-recommendation',
+        }
+      : null;
   } catch {
     return null;
   }
 };
 
-const readRecommendedShowcaseFromJsonStorage = (storageKey) => {
+const readRecommendedShowcaseFromJsonStorage = (storageKey, source) => {
   if (typeof window === 'undefined') return null;
   try {
     const raw = window.localStorage.getItem(storageKey);
@@ -167,7 +193,14 @@ const readRecommendedShowcaseFromJsonStorage = (storageKey) => {
     const appId = extractRecommendedAppId(parsed);
     const showcaseId = resolveShowcaseFromAppId(appId);
     const title = showcaseIdTitle(showcaseId);
-    return title ? { showcaseId, title } : null;
+    return title
+      ? {
+          showcaseId,
+          title,
+          source,
+          kind: 'welcome-recommendation',
+        }
+      : null;
   } catch {
     return null;
   }
@@ -177,5 +210,11 @@ const readRecommendedShowcaseFromJsonStorage = (storageKey) => {
 // GAT. No debe confundirse con el login: aquí solo orientamos a dónde volver.
 export const readBienvenidaRecommendedShowcase = () =>
   readOraculoRecommendedShowcase() ||
-  readRecommendedShowcaseFromJsonStorage(BIENVENIDA_TRANSMEDIA_INTENT_STORAGE_KEY) ||
-  readRecommendedShowcaseFromJsonStorage(BIENVENIDA_GATOKENS_REVEAL_PENDING_STORAGE_KEY);
+  readRecommendedShowcaseFromJsonStorage(
+    BIENVENIDA_TRANSMEDIA_INTENT_STORAGE_KEY,
+    'bienvenida-intent',
+  ) ||
+  readRecommendedShowcaseFromJsonStorage(
+    BIENVENIDA_GATOKENS_REVEAL_PENDING_STORAGE_KEY,
+    'bienvenida-reveal',
+  );

@@ -10,6 +10,7 @@ import { useAuth } from '@/contexts/SupabaseAuthContext';
 import { ConfettiBurst, useConfettiBursts } from '@/components/Confetti';
 import { resolvePortalRoute } from '@/lib/miniversePortalRegistry';
 import { createPortalLaunchState } from '@/lib/portalNavigation';
+import { writePendingContinuation } from '@/lib/pendingContinuation';
 import { createMiniverseSouvenirBlob, downloadBlob } from '@/lib/miniverseSouvenirCard';
 import { usePushSubscription } from '@/hooks/usePushSubscription';
 import { readGlobalConsent, writeGlobalConsent } from '@/lib/bitacoraShared';
@@ -663,6 +664,12 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
   const handleNavigateToRecommendation = () => {
     if (!l3Rec?.recommended_format_id) return;
     if (!user) {
+      writePendingContinuation({
+        source: 'l3-next-act',
+        showcaseId: l3Rec.recommended_format_id,
+        forma: l3Rec.forma,
+        presentation: 'narrative-video',
+      });
       onClose?.();
       onRequireLogin?.();
       return;

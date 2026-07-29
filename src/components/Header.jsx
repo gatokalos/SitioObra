@@ -10,7 +10,7 @@ import LoginOverlay from '@/components/ContributionModal/LoginOverlay';
 import MobileMenuOverlay from '@/components/MobileMenuOverlay';
 import { createPortalLaunchState } from '@/lib/portalNavigation';
 import { INITIAL_GAT_BALANCE, readStoredInt } from '@/components/transmedia/transmediaConstants';
-import { readIndexCueUsedFromSession, writeHeroActivatedToSession } from '@/lib/heroActivation';
+import { readIndexCueUsedFromSession } from '@/lib/heroActivation';
 import useActiveSectionHref from '@/hooks/useActiveSectionHref';
 import { fetchTransmediaCreditEvents } from '@/services/transmediaCreditsService';
 import useActiveSubscription from '@/hooks/useActiveSubscription';
@@ -24,6 +24,7 @@ import {
 import { CATALOG, readGlobalConsent, writeGlobalConsent } from '@/lib/bitacoraShared';
 import { ensureAnonId } from '@/lib/identity';
 import { createHeroStars } from '@/lib/heroStars';
+import { writePendingContinuation } from '@/lib/pendingContinuation';
 
 const BITACORA_API_BASE = (import.meta.env.VITE_OBRA_API_URL ?? 'https://api.gatoencerrado.ai').replace(/\/+$/, '');
 
@@ -121,16 +122,17 @@ const Header = ({
   const [isGatInfoOpen, setIsGatInfoOpen] = useState(false);
   const [gatInfoPanelStyle, setGatInfoPanelStyle] = useState({});
   const [gatSpendRecommendation, setGatSpendRecommendation] = useState(null);
+  const [gatWelcomeRecommendation, setGatWelcomeRecommendation] = useState(null);
   // true solo cuando hay un L3 completado de verdad en algún miniverso (no
-  // una mera sugerencia del Oráculo) — gatea tanto el atajo de login como la
-  // tarjeta de Cuaderno holográfico, para no ofrecer el cierre de la
-  // narrativa antes de que exista algo real que cerrar.
+  // una mera sugerencia del Oráculo). Distingue "Siguiente acto" del acceso
+  // inicial y evita ofrecer el Cuaderno antes de que exista algo que cerrar.
   const [hasCompletedRealProgress, setHasCompletedRealProgress] = useState(false);
   const [isGatSpendRecommendationLoading, setIsGatSpendRecommendationLoading] = useState(false);
   const [showGatWhatsappInput, setShowGatWhatsappInput] = useState(false);
   const [gatWhatsappPhone, setGatWhatsappPhone] = useState('');
   const [gatWhatsappSubmitting, setGatWhatsappSubmitting] = useState(false);
   const [gatWhatsappDone, setGatWhatsappDone] = useState(() => readGlobalConsent());
+  const [gatInlinePrompt, setGatInlinePrompt] = useState(null);
   const gatChipRootRef = useRef(null);
   const gatInfoPanelRef = useRef(null);
   const gatTrayStars = useMemo(() => createHeroStars(72), []);
@@ -216,18 +218,14 @@ const Header = ({
     };
   }, [isGatLinktreeOpen]);
   const [isLinktreeSessionExpanded, setIsLinktreeSessionExpanded] = useState(false);
-  // Cerrar cualquiera de los dos paneles del sistema de GAT (el HUB que abre
-  // solo, o el tooltip que abre el chip) — usado por cualquier acceso del
-  // grid que navegue a otro lado, para que no se quede flotando encima.
-  // Cierra el HUB y/o el tooltip por CUALQUIER camino (el GatoChip, o un tile que
-  // navega a otro lado) y siempre activa la escena — el HUB es un puente, no
-  // debe dejar al Hero en un estado "a medias" sin importar cómo se cerró.
-  // Header y Hero son hermanos, no padre-hijo, así que se coordina por
-  // evento global en vez de prop drilling (mismo gesto que cerrar
-  // PWAInstructionsOverlay: X → handleIsotipoClick).
-  const closeGatPanels = useCallback(() => {
+  // GatoChip/Escape cierran el contenedor. Entrar a la escena es una acción
+  // narrativa distinta y pertenece exclusivamente a "Primera fila".
+  const dismissGatPanels = useCallback(() => {
     setIsGatInfoOpen(false);
     setIsGatLinktreeOpen(false);
+    setGatInlinePrompt(null);
+    setShowGatWhatsappInput(false);
+    setIsLinktreeSessionExpanded(false);
     // Sin la bandera, el efecto de auto-apertura de abajo ve isGatLinktreeOpen
     // en false (sin registro de "ya lo cerraste") y lo vuelve a abrir de
     // inmediato — por eso antes el HUB "no cerraba" al navegar desde un tile.
@@ -236,26 +234,35 @@ const Header = ({
     } catch {
       // Silencioso
     }
-    // Cuaderno holográfico y café navegan a OTRA ruta (/bitacora,
-    // /portal-encuentros) — eso desmonta Hero.jsx casi de inmediato. El
-    // evento de abajo sí llega (dispatchEvent es síncrono), pero el efecto
-    // de Hero.jsx que persiste hasActivatedAudio a sessionStorage puede no
-    // alcanzar a correr antes de que la ruta cambie y Hero se desmonte —
-    // por eso solo "Explorar recomendación" (navegación en la misma
-    // página) se veía activar la escena de verdad. Se escribe aquí también,
-    // directo y síncrono, para no depender de que ese efecto alcance a
-    // correr: así, cuando Hero vuelva a montar, ya lee la sesión activada.
-    writeHeroActivatedToSession(true);
-    window.dispatchEvent(new CustomEvent('gatoencerrado:activate-scene-request'));
   }, []);
+
+  const enterFirstRow = useCallback(() => {
+    dismissGatPanels();
+    // Mientras el HUB está abierto, el # destino del Header no está montado.
+    // Dos frames permiten que React lo restaure antes de que Hero mida los
+    // extremos y ejecute la transmigración desde el #3D.
+    window.requestAnimationFrame(() => {
+      window.requestAnimationFrame(() => {
+        window.dispatchEvent(
+          new CustomEvent('gatoencerrado:activate-scene-request', {
+            detail: {
+              source: 'gat-hub-first-row',
+              preserveIndexTransmigration: true,
+            },
+          })
+        );
+      });
+    });
+  }, [dismissGatPanels]);
+
   useEffect(() => {
     if (!isGatLinktreeOpen) return undefined;
     const handleEscape = (event) => {
-      if (event.key === 'Escape') closeGatPanels();
+      if (event.key === 'Escape') dismissGatPanels();
     };
     window.addEventListener('keydown', handleEscape);
     return () => window.removeEventListener('keydown', handleEscape);
-  }, [closeGatPanels, isGatLinktreeOpen]);
+  }, [dismissGatPanels, isGatLinktreeOpen]);
   useEffect(() => {
     if (!isGatLinktreeAudience || isGatLinktreeOpen) return;
     try {
@@ -266,7 +273,7 @@ const Header = ({
     setIsGatLinktreeOpen(true);
   }, [isGatLinktreeAudience, isGatLinktreeOpen]);
   const handleOpenBackstage = useCallback(async () => {
-    closeGatPanels();
+    dismissGatPanels();
     const base = 'https://gatoencerrado.org';
     const win = window.open(`${base}/mi-cuenta/acceso`, '_blank', 'noopener,noreferrer');
     const { data: { session: currentSession } } = await supabase.auth.getSession();
@@ -275,7 +282,7 @@ const Header = ({
       if (currentSession.refresh_token) params.set('refresh', currentSession.refresh_token);
       win.location.replace(`${base}/api/auth/handoff?${params}`);
     }
-  }, [closeGatPanels]);
+  }, [dismissGatPanels]);
 
   const profileName =
     user?.user_metadata?.alias ||
@@ -398,9 +405,21 @@ const Header = ({
   }, [signOut, showToast, user]);
 
   const handleOpenLoginFromGatTooltip = useCallback(() => {
-    setIsGatInfoOpen(false);
+    if (!hasCompletedRealProgress && gatWelcomeRecommendation?.showcaseId) {
+      writePendingContinuation({
+        source: gatWelcomeRecommendation.source || 'oracle-welcome',
+        showcaseId: gatWelcomeRecommendation.showcaseId,
+        forma: gatWelcomeRecommendation.forma,
+        presentation: 'narrative-video',
+      });
+    }
+    dismissGatPanels();
     setShowLoginOverlay(true);
-  }, []);
+  }, [
+    dismissGatPanels,
+    gatWelcomeRecommendation,
+    hasCompletedRealProgress,
+  ]);
 
   // Atajo al cuaderno holográfico desde el tooltip de GAT — reusa la misma
   // recomendación que ya calcula el bloque de arriba como punto de entrada.
@@ -409,9 +428,9 @@ const Header = ({
   const handleOpenHolograficoFromGatTooltip = useCallback(() => {
     const entry = CATALOG.find((c) => c.showcase === gatSpendRecommendation?.showcaseId);
     const portalKey = entry?.key ?? 'oraculo';
-    closeGatPanels();
+    dismissGatPanels();
     navigate(`/bitacora?t=${encodeURIComponent(ensureAnonId())}&m=${portalKey}`);
-  }, [gatSpendRecommendation, navigate, closeGatPanels]);
+  }, [gatSpendRecommendation, navigate, dismissGatPanels]);
 
   // Atajo para dejar el WhatsApp desde el tooltip, para quien dejó pasar la
   // primera oportunidad en el cierre de L3 (ResonanceModal). El consentimiento
@@ -590,11 +609,11 @@ const Header = ({
   const handleOpenSupportHub = useCallback(() => {
     if (!user) return;
     setIsMenuOpen(false);
-    closeGatPanels();
+    dismissGatPanels();
     navigate('/portal-encuentros', {
       state: createPortalLaunchState(location, 'header-encuentros'),
     });
-  }, [location, navigate, user, closeGatPanels]);
+  }, [location, navigate, user, dismissGatPanels]);
 
   const handleToggleIndex = useCallback(() => {
     if (shouldGateIndexUntilHeroReveal) return;
@@ -614,7 +633,7 @@ const Header = ({
 
   const handleGatChipClick = useCallback(() => {
     if (isGatLinktreeOpen) {
-      closeGatPanels();
+      dismissGatPanels();
       return;
     }
 
@@ -626,7 +645,7 @@ const Header = ({
     setIsGatInfoOpen((prev) => !prev);
   }, [
     acknowledgeGatRevealPulse,
-    closeGatPanels,
+    dismissGatPanels,
     gatRevealPulse,
     isGatLinktreeOpen,
   ]);
@@ -733,12 +752,15 @@ const Header = ({
       const { events } = await fetchTransmediaCreditEvents(20);
       if (cancelled) return;
       const completedRecommendation = findLatestRecommendedPortal(events);
+      const welcomeRecommendation =
+        readBienvenidaRecommendedShowcase() ||
+        readOraculoRecommendedShowcase();
       const recommendation =
         completedRecommendation ||
         findLatestSpendTarget(events) ||
-        readBienvenidaRecommendedShowcase() ||
-        readOraculoRecommendedShowcase();
+        welcomeRecommendation;
       setGatSpendRecommendation(recommendation);
+      setGatWelcomeRecommendation(welcomeRecommendation);
       setHasCompletedRealProgress(Boolean(completedRecommendation));
       setIsGatSpendRecommendationLoading(false);
     })();
@@ -768,25 +790,98 @@ const Header = ({
     };
   }, [isGatInfoOpen]);
 
+  const openNarrativeContinuation = useCallback((recommendation) => {
+    if (!recommendation?.showcaseId) return;
+    dismissGatPanels();
+    window.requestAnimationFrame(() => {
+      window.dispatchEvent(
+        new CustomEvent('gatoencerrado:open-narrative-continuation', {
+          detail: {
+            showcaseId: recommendation.showcaseId,
+            source: recommendation.source,
+            forma: recommendation.forma,
+          },
+        })
+      );
+    });
+  }, [dismissGatPanels]);
+
+  const handleRecommendationTile = useCallback(() => {
+    if (!gatSpendRecommendation?.showcaseId) {
+      setGatInlinePrompt({ kind: 'discover' });
+      return;
+    }
+    if (gatSpendRecommendation.kind === 'next-act') {
+      if (!user) {
+        setGatInlinePrompt({
+          kind: 'next-act',
+          recommendation: gatSpendRecommendation,
+        });
+        return;
+      }
+      openNarrativeContinuation(gatSpendRecommendation);
+      return;
+    }
+    dismissGatPanels();
+    handleNavClick(
+      `#transmedia?focus=${gatSpendRecommendation.showcaseId}&source=gat-recommendation`
+    );
+  }, [
+    dismissGatPanels,
+    gatSpendRecommendation,
+    handleNavClick,
+    openNarrativeContinuation,
+    user,
+  ]);
+
+  const handleContinueNextActWithLogin = useCallback(() => {
+    const recommendation = gatInlinePrompt?.recommendation;
+    if (!recommendation?.showcaseId) return;
+    writePendingContinuation({
+      source: recommendation.source || 'l3-next-act',
+      showcaseId: recommendation.showcaseId,
+      forma: recommendation.forma,
+      presentation: 'narrative-video',
+    });
+    dismissGatPanels();
+    setShowLoginOverlay(true);
+  }, [dismissGatPanels, gatInlinePrompt]);
+
+  const handleOpenMiniverseExplorer = useCallback(() => {
+    dismissGatPanels();
+    window.dispatchEvent(new CustomEvent('gatoencerrado:request-transmedia-unlock'));
+    window.setTimeout(() => {
+      window.dispatchEvent(
+        new CustomEvent('gatoencerrado:open-miniverse-list', {
+          detail: {
+            tabId: 'escaparate',
+            contextLabel: 'Explora los miniversos',
+          },
+        })
+      );
+    }, 80);
+  }, [dismissGatPanels]);
+
   // Contenido compartido por el tooltip (clic en el chip) y el HUB (se abre
   // solo para autenticados/PWA) — mismos accesos, mismo estilo, para no
   // mantener dos diseños distintos de lo mismo.
   const gatTileConfigs = [
-    !user && hasCompletedRealProgress
+    !user
       ? { key: 'login', icon: LogIn, label: 'Iniciar sesión', onClick: handleOpenLoginFromGatTooltip, tone: 'neutral' }
       : null,
-    gatSpendRecommendation
-      ? {
-          key: 'recommendation',
-          icon: Compass,
-          label: `Explorar ${gatSpendRecommendation.title}`,
-          onClick: () => {
-            closeGatPanels();
-            handleNavClick(`#transmedia?focus=${gatSpendRecommendation.showcaseId}&source=gat-recommendation`);
-          },
-          tone: 'violet',
-        }
-      : null,
+    {
+      key: 'recommendation',
+      icon: Compass,
+      label: gatSpendRecommendation
+        ? gatSpendRecommendation.kind === 'next-act'
+          ? `Siguiente acto: ${gatSpendRecommendation.forma || gatSpendRecommendation.title}`
+          : gatSpendRecommendation.kind === 'resume'
+            ? `Retomar ${gatSpendRecommendation.title}`
+            : `Explorar ${gatSpendRecommendation.title}`
+        : 'Explorar miniversos',
+      onClick: handleRecommendationTile,
+      tone: 'violet',
+    },
     hasCompletedRealProgress
       ? {
           key: 'holografico',
@@ -831,7 +926,7 @@ const Header = ({
       key: 'first-row',
       icon: Armchair,
       label: 'Primera fila',
-      onClick: closeGatPanels,
+      onClick: enterFirstRow,
       tone: 'neutral',
     },
     ...gatTileConfigs,
@@ -921,6 +1016,7 @@ const Header = ({
     };
   }, [
     gatHubTileRows.length,
+    gatInlinePrompt,
     isGatLinktreeOpen,
     isLinktreeSessionExpanded,
     showGatWhatsappInput,
@@ -983,6 +1079,55 @@ const Header = ({
               {gatWhatsappSubmitting ? '…' : 'Enviar'}
             </button>
           </div>
+        </div>
+      ) : null}
+
+      {gatInlinePrompt?.kind === 'next-act' ? (
+        <div
+          className="mx-auto mt-3 w-full max-w-[21rem] rounded-xl border border-violet-300/20 bg-violet-300/[0.055] p-3 text-center"
+          role="status"
+        >
+          <p className="font-display text-sm text-slate-100">
+            Tu siguiente acto ya está elegido
+          </p>
+          <p className="mx-auto mt-1.5 max-w-[18rem] text-[0.7rem] leading-relaxed text-slate-400">
+            Esta forma apareció al completar tu recorrido anterior. Inicia sesión para conservarla y continuar con su video.
+          </p>
+          <div className="mt-3 flex gap-2">
+            <button
+              type="button"
+              onClick={() => setGatInlinePrompt(null)}
+              className="flex-1 rounded-lg border border-white/10 px-3 py-2 text-xs text-slate-400 transition hover:bg-white/5 hover:text-slate-200"
+            >
+              Ahora no
+            </button>
+            <button
+              type="button"
+              onClick={handleContinueNextActWithLogin}
+              className="flex-1 rounded-lg border border-violet-300/30 bg-violet-300/10 px-3 py-2 text-xs font-semibold text-violet-100 transition hover:bg-violet-300/15"
+            >
+              Iniciar sesión
+            </button>
+          </div>
+        </div>
+      ) : null}
+
+      {gatInlinePrompt?.kind === 'discover' ? (
+        <div
+          className="mx-auto mt-3 w-full max-w-[21rem] rounded-xl border border-white/10 bg-black/25 p-3 text-center"
+          role="status"
+        >
+          <p className="font-display text-sm text-slate-100">Explora las formas de la obra</p>
+          <p className="mx-auto mt-1.5 max-w-[18rem] text-[0.7rem] leading-relaxed text-slate-400">
+            No necesitas conocer niveles ni instrucciones previas. Entra a los miniversos y el universo irá encontrando tu siguiente acto.
+          </p>
+          <button
+            type="button"
+            onClick={handleOpenMiniverseExplorer}
+            className="mt-3 w-full rounded-lg border border-white/15 bg-white/5 px-3 py-2 text-xs font-semibold text-slate-100 transition hover:bg-white/10"
+          >
+            Abrir Explora
+          </button>
         </div>
       ) : null}
     </>
