@@ -92,10 +92,20 @@ const GatokensRevealModal = ({
     onPlayScene?.(recommendedShowcaseId);
   }, [dispatchRevealAck, onClose, onPlayScene, recommendedShowcaseId]);
 
-  const handleCoinClick = useCallback(() => {
-    if (isRevealAcknowledged) return;
-    dispatchRevealAck('gatokens-modal-coin');
-  }, [dispatchRevealAck, isRevealAcknowledged]);
+  // El pulso es breve a propósito: solo dura lo justo para que el usuario
+  // note que la moneda (aquí) y el chip de energía (arriba, en el header)
+  // laten al mismo tiempo — esa superposición es la que le muestra dónde
+  // "se fueron" los GAT que ganó en bienvenida. No es un gesto que el
+  // usuario tenga que accionar; se apaga solo.
+  useEffect(() => {
+    if (!open || isRevealAcknowledged || prefersReducedMotion || typeof window === 'undefined') {
+      return undefined;
+    }
+    const timer = window.setTimeout(() => {
+      dispatchRevealAck('gatokens-modal-auto-settle');
+    }, 2600);
+    return () => window.clearTimeout(timer);
+  }, [open, isRevealAcknowledged, prefersReducedMotion, dispatchRevealAck]);
 
   const shouldPulseCoin = open && !isRevealAcknowledged && !prefersReducedMotion;
   const coinPulseAnimate = shouldPulseCoin
@@ -158,14 +168,7 @@ const GatokensRevealModal = ({
                 style={{ background: 'radial-gradient(circle, rgba(109,40,217,0.34) 0%, rgba(217,31,139,0.12) 48%, transparent 72%)' }}
               />
 
-              <motion.button
-                type="button"
-                onClick={handleCoinClick}
-                className="relative rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-200/70 focus-visible:ring-offset-4 focus-visible:ring-offset-[#04020f]"
-                aria-label="Confirmar GATokens recibidos"
-                title="Confirmar GATokens recibidos"
-                whileTap={isRevealAcknowledged ? undefined : { scale: 0.96 }}
-              >
+              <div className="relative rounded-full" aria-hidden="true">
                 <motion.img
                   src={GATOKEN_COIN_SRC}
                   alt=""
@@ -174,13 +177,13 @@ const GatokensRevealModal = ({
                   transition={coinPulseTransition}
                   draggable="false"
                 />
-              </motion.button>
+              </div>
 
               <h2
                 id="gatokens-modal-title"
                 className="relative mt-9 text-3xl font-medium leading-tight tracking-[-0.02em] text-white sm:text-4xl"
               >
-                Ahora la obra sabe<br />que estás aquí.
+                La obra ya sabe<br />que estás aquí.
               </h2>
 
               <button
@@ -232,14 +235,7 @@ const GatokensRevealModal = ({
 
             {/* moneda pulsante */}
             <div className="mb-4 flex justify-center">
-              <motion.button
-                type="button"
-                onClick={handleCoinClick}
-                className="rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-200/70 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0d061f]"
-                aria-label="Confirmar GATokens recibidos"
-                title="Confirmar GATokens recibidos"
-                whileTap={isRevealAcknowledged ? undefined : { scale: 0.96 }}
-              >
+              <div className="rounded-full" aria-hidden="true">
                 <motion.img
                   src={GATOKEN_COIN_SRC}
                   alt=""
@@ -248,7 +244,7 @@ const GatokensRevealModal = ({
                   transition={coinPulseTransition}
                   draggable="false"
                 />
-              </motion.button>
+              </div>
             </div>
 
             {/* encabezado */}

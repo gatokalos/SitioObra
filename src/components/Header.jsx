@@ -121,7 +121,11 @@ const Header = ({
   const [isGatInfoOpen, setIsGatInfoOpen] = useState(false);
   const [gatInfoPanelStyle, setGatInfoPanelStyle] = useState({});
   const [gatSpendRecommendation, setGatSpendRecommendation] = useState(null);
-  const [isGatLoginEligible, setIsGatLoginEligible] = useState(false);
+  // true solo cuando hay un L3 completado de verdad en algún miniverso (no
+  // una mera sugerencia del Oráculo) — gatea tanto el atajo de login como la
+  // tarjeta de Cuaderno holográfico, para no ofrecer el cierre de la
+  // narrativa antes de que exista algo real que cerrar.
+  const [hasCompletedRealProgress, setHasCompletedRealProgress] = useState(false);
   const [isGatSpendRecommendationLoading, setIsGatSpendRecommendationLoading] = useState(false);
   const [showGatWhatsappInput, setShowGatWhatsappInput] = useState(false);
   const [gatWhatsappPhone, setGatWhatsappPhone] = useState('');
@@ -735,7 +739,7 @@ const Header = ({
         readBienvenidaRecommendedShowcase() ||
         readOraculoRecommendedShowcase();
       setGatSpendRecommendation(recommendation);
-      setIsGatLoginEligible(Boolean(completedRecommendation));
+      setHasCompletedRealProgress(Boolean(completedRecommendation));
       setIsGatSpendRecommendationLoading(false);
     })();
     return () => {
@@ -768,7 +772,7 @@ const Header = ({
   // solo para autenticados/PWA) — mismos accesos, mismo estilo, para no
   // mantener dos diseños distintos de lo mismo.
   const gatTileConfigs = [
-    !user && isGatLoginEligible
+    !user && hasCompletedRealProgress
       ? { key: 'login', icon: LogIn, label: 'Iniciar sesión', onClick: handleOpenLoginFromGatTooltip, tone: 'neutral' }
       : null,
     gatSpendRecommendation
@@ -783,13 +787,15 @@ const Header = ({
           tone: 'violet',
         }
       : null,
-    {
-      key: 'holografico',
-      icon: BookOpen,
-      label: 'Cuaderno holográfico',
-      onClick: handleOpenHolograficoFromGatTooltip,
-      tone: 'amber',
-    },
+    hasCompletedRealProgress
+      ? {
+          key: 'holografico',
+          icon: BookOpen,
+          label: 'Cuaderno holográfico',
+          onClick: handleOpenHolograficoFromGatTooltip,
+          tone: 'amber',
+        }
+      : null,
     user
       ? { key: 'merch', icon: Coffee, label: 'Café, charla y merch', onClick: handleOpenSupportHub, tone: 'amber' }
       : null,
@@ -803,7 +809,7 @@ const Header = ({
           tone: 'cyan',
         }
       : null,
-    !gatWhatsappDone
+    hasCompletedRealProgress && !gatWhatsappDone
       ? {
           key: 'whatsapp',
           icon: MessageCircle,
@@ -975,7 +981,11 @@ const Header = ({
         animate={{ y: 0 }}
         transition={{ duration: 0.5, ease: 'easeOut' }}
         className={`fixed left-0 right-0 top-0 transition-all duration-500 ${
-          isGatLinktreeOpen ? 'pointer-events-none z-[100]' : 'z-50'
+          isGatLinktreeOpen
+            ? 'pointer-events-none z-[100]'
+            : shouldAnimateGatChipReveal
+              ? 'pointer-events-none z-[650]'
+              : 'z-50'
         } ${headerToneClass}`}
       >
         <nav className="container mx-auto px-6 py-3 max-[375px]:px-4" data-site-index-root>
@@ -1033,7 +1043,7 @@ const Header = ({
                         ? 'Cerrar información de energía'
                         : 'Abrir información de energía'
                   }
-                  className={`pointer-events-auto inline-flex items-center gap-1 whitespace-nowrap rounded-full border pl-2.5 pr-1 py-1 text-[0.62rem] font-semibold uppercase tracking-[0.16em] backdrop-blur-sm transition-colors sm:gap-1.5 sm:pl-3 sm:pr-1.5 sm:text-[0.68rem] sm:tracking-[0.24em] ${
+                  className={`${shouldAnimateGatChipReveal ? 'pointer-events-none' : 'pointer-events-auto'} inline-flex items-center gap-1 whitespace-nowrap rounded-full border pl-2.5 pr-1 py-1 text-[0.62rem] font-semibold uppercase tracking-[0.16em] backdrop-blur-sm transition-colors sm:gap-1.5 sm:pl-3 sm:pr-1.5 sm:text-[0.68rem] sm:tracking-[0.24em] ${
                     isGatLinktreeOpen || isGatInfoOpen
                         ? 'border-cyan-200/45 bg-cyan-300/[0.12] text-cyan-50 shadow-[0_0_24px_rgba(34,211,238,0.24)]'
                       : isGatChipPulsing
