@@ -10,7 +10,10 @@ import LoginOverlay from '@/components/ContributionModal/LoginOverlay';
 import MobileMenuOverlay from '@/components/MobileMenuOverlay';
 import { createPortalLaunchState } from '@/lib/portalNavigation';
 import { INITIAL_GAT_BALANCE, readStoredInt } from '@/components/transmedia/transmediaConstants';
-import { readIndexCueUsedFromSession } from '@/lib/heroActivation';
+import {
+  readIndexCueUsedFromSession,
+  writeMiniverseInlineOpenToSession,
+} from '@/lib/heroActivation';
 import useActiveSectionHref from '@/hooks/useActiveSectionHref';
 import { fetchTransmediaCreditEvents } from '@/services/transmediaCreditsService';
 import useActiveSubscription from '@/hooks/useActiveSubscription';
@@ -142,12 +145,17 @@ const Header = ({
   const { toast: showToast } = useToast();
   const prefersReducedMotion = useReducedMotion();
   const { hasActiveSubscription } = useActiveSubscription(user?.id, session);
+  const [gatBalance, setGatBalance] = useState(readGatBalance);
   const isSubscriber = Boolean(
     user?.user_metadata?.isSubscriber === true ||
       user?.user_metadata?.isSubscriber === 'true' ||
       hasActiveSubscription
   );
-  const isGatLinktreeAudience = Boolean(user) || isInstalledPWA();
+  // La instalación de la PWA o una sesión iniciada no bastan para sustituir
+  // el Estado Cero del Hero. El HUB grande solo pertenece a quien ya tiene
+  // energía disponible; 0 GAT conserva intacto el ritual de entrada.
+  const isGatLinktreeAudience =
+    gatBalance > 0 && (Boolean(user) || isInstalledPWA());
   const [isGatLinktreeOpen, setIsGatLinktreeOpen] = useState(
     () => isGatLinktreeAudience && typeof window !== 'undefined' && !window.sessionStorage.getItem(GAT_LINKTREE_DISMISSED_SESSION_KEY)
   );
@@ -236,7 +244,7 @@ const Header = ({
     }
   }, []);
 
-  const enterFirstRow = useCallback(() => {
+  const activateSceneAfterGatDismiss = useCallback((source) => {
     dismissGatPanels();
     // Mientras el HUB está abierto, el # destino del Header no está montado.
     // Dos frames permiten que React lo restaure antes de que Hero mida los
@@ -246,7 +254,7 @@ const Header = ({
         window.dispatchEvent(
           new CustomEvent('gatoencerrado:activate-scene-request', {
             detail: {
-              source: 'gat-hub-first-row',
+              source,
               preserveIndexTransmigration: true,
             },
           })
@@ -254,6 +262,10 @@ const Header = ({
       });
     });
   }, [dismissGatPanels]);
+
+  const enterFirstRow = useCallback(() => {
+    activateSceneAfterGatDismiss('gat-hub-first-row');
+  }, [activateSceneAfterGatDismiss]);
 
   useEffect(() => {
     if (!isGatLinktreeOpen) return undefined;
@@ -273,7 +285,13 @@ const Header = ({
     setIsGatLinktreeOpen(true);
   }, [isGatLinktreeAudience, isGatLinktreeOpen]);
   const handleOpenBackstage = useCallback(async () => {
-    dismissGatPanels();
+    if (!isSubscriber) {
+      setGatInlinePrompt({ kind: 'backstage' });
+      return;
+    }
+    // Si el usuario vuelve a esta pestaña después del handoff, no debe
+    // encontrar el Hero todavía bloqueado en Estado Cero.
+    activateSceneAfterGatDismiss('gat-hub-backstage');
     const base = 'https://gatoencerrado.org';
     const win = window.open(`${base}/mi-cuenta/acceso`, '_blank', 'noopener,noreferrer');
     const { data: { session: currentSession } } = await supabase.auth.getSession();
@@ -282,7 +300,7 @@ const Header = ({
       if (currentSession.refresh_token) params.set('refresh', currentSession.refresh_token);
       win.location.replace(`${base}/api/auth/handoff?${params}`);
     }
-  }, [dismissGatPanels]);
+  }, [activateSceneAfterGatDismiss, isSubscriber]);
 
   const profileName =
     user?.user_metadata?.alias ||
@@ -304,10 +322,16 @@ const Header = ({
     !hasHeroLeftViewportOnce;
 
 
-  const [gatBalance, setGatBalance] = useState(readGatBalance);
   const [gatRevealPulse, setGatRevealPulse] = useState(null);
   useEffect(() => {
-    const sync = () => setGatBalance(readGatBalance());
+    const sync = (event) => {
+      const eventBalance = Number(event?.detail?.balance);
+      setGatBalance(
+        Number.isFinite(eventBalance)
+          ? Math.max(Math.trunc(eventBalance), 0)
+          : readGatBalance()
+      );
+    };
     window.addEventListener('gatoencerrado:gatokens-balance-update', sync);
     window.addEventListener('storage', sync);
     return () => {
@@ -315,6 +339,18 @@ const Header = ({
       window.removeEventListener('storage', sync);
     };
   }, []);
+
+  useEffect(() => {
+    if (gatBalance > 0) return;
+    // Si la energía se agota mientras una bandeja está abierta, la retiramos
+    // sin marcarla como descartada y sin activar la escena. El Hero decide su
+    // propio Estado Cero a partir del mismo saldo.
+    setIsGatLinktreeOpen(false);
+    setIsGatInfoOpen(false);
+    setGatInlinePrompt(null);
+    setShowGatWhatsappInput(false);
+    setIsLinktreeSessionExpanded(false);
+  }, [gatBalance]);
 
   useEffect(() => {
     if (typeof window === 'undefined') return undefined;
@@ -633,7 +669,10 @@ const Header = ({
 
   const handleGatChipClick = useCallback(() => {
     if (isGatLinktreeOpen) {
-      dismissGatPanels();
+      // El chip visible sobre el HUB es su tirador: cerrar desde ahí también
+      // cruza el umbral narrativo. Así no aparece una fase intermedia que
+      // obligue a volver a pulsar el #3D para desbloquear el sitio.
+      activateSceneAfterGatDismiss('gat-chip-close-hub');
       return;
     }
 
@@ -645,7 +684,7 @@ const Header = ({
     setIsGatInfoOpen((prev) => !prev);
   }, [
     acknowledgeGatRevealPulse,
-    dismissGatPanels,
+    activateSceneAfterGatDismiss,
     gatRevealPulse,
     isGatLinktreeOpen,
   ]);
@@ -703,6 +742,8 @@ const Header = ({
     const rect = gatChipRootRef.current.getBoundingClientRect();
     const isMobileViewport = window.innerWidth < 640;
     const viewportGutter = isMobileViewport ? 12 : 24;
+    const visualViewportHeight = window.visualViewport?.height ?? window.innerHeight;
+    const visualViewportTop = window.visualViewport?.offsetTop ?? 0;
     const availableWidth = Math.max(window.innerWidth - viewportGutter * 2, 0);
     const panelW = isMobileViewport
       ? availableWidth
@@ -719,6 +760,12 @@ const Header = ({
       right: rightFromEdge,
       top: rect.bottom,
       bottom: 'auto',
+      maxHeight: isMobileViewport
+        ? Math.max(
+            visualViewportHeight - (rect.bottom - visualViewportTop) - viewportGutter,
+            240
+          )
+        : '60dvh',
       zIndex: 40,
     });
   }, []);
@@ -728,11 +775,59 @@ const Header = ({
     calcGatInfoPosition();
     window.addEventListener('resize', calcGatInfoPosition);
     document.addEventListener('scroll', calcGatInfoPosition, true);
+    window.visualViewport?.addEventListener('resize', calcGatInfoPosition);
+    window.visualViewport?.addEventListener('scroll', calcGatInfoPosition);
     return () => {
       window.removeEventListener('resize', calcGatInfoPosition);
       document.removeEventListener('scroll', calcGatInfoPosition, true);
+      window.visualViewport?.removeEventListener('resize', calcGatInfoPosition);
+      window.visualViewport?.removeEventListener('scroll', calcGatInfoPosition);
     };
   }, [isGatInfoOpen, calcGatInfoPosition]);
+
+  // El contenido inline nace debajo del grid. En pantallas pequeñas puede
+  // quedar correctamente renderizado pero fuera del recorte visible del
+  // scroller, dando la impresión de que el tap no funcionó. Al expandirse,
+  // lo acercamos suavemente sin mover el header ni la bandeja anclada.
+  useLayoutEffect(() => {
+    if (
+      !isGatInfoOpen ||
+      (!gatInlinePrompt && !showGatWhatsappInput && !isLinktreeSessionExpanded)
+    ) {
+      return undefined;
+    }
+    let secondFrame = null;
+    const firstFrame = window.requestAnimationFrame(() => {
+      secondFrame = window.requestAnimationFrame(() => {
+        const scroller = gatInfoPanelRef.current?.querySelector(
+          '[data-gat-mini-scroll="true"]'
+        );
+        const inlinePanels = gatInfoPanelRef.current?.querySelectorAll(
+          '[data-gat-inline-panel="true"]'
+        );
+        const inlinePanel = inlinePanels?.[inlinePanels.length - 1];
+        if (!scroller || !inlinePanel) return;
+        const scrollerRect = scroller.getBoundingClientRect();
+        const inlineRect = inlinePanel.getBoundingClientRect();
+        const overflowBelow = inlineRect.bottom - scrollerRect.bottom;
+        if (overflowBelow <= 0) return;
+        scroller.scrollTo({
+          top: scroller.scrollTop + overflowBelow + 12,
+          behavior: prefersReducedMotion ? 'auto' : 'smooth',
+        });
+      });
+    });
+    return () => {
+      window.cancelAnimationFrame(firstFrame);
+      if (secondFrame !== null) window.cancelAnimationFrame(secondFrame);
+    };
+  }, [
+    gatInlinePrompt,
+    isGatInfoOpen,
+    isLinktreeSessionExpanded,
+    prefersReducedMotion,
+    showGatWhatsappInput,
+  ]);
 
   // Al abrir el tooltip: ¿dónde conviene ir a gastar/seguir gastando los GAT?
   // Prioridad:
@@ -848,9 +943,9 @@ const Header = ({
   }, [dismissGatPanels, gatInlinePrompt]);
 
   const handleOpenMiniverseExplorer = useCallback(() => {
-    dismissGatPanels();
+    activateSceneAfterGatDismiss('gat-hub-explore-miniverses');
     window.dispatchEvent(new CustomEvent('gatoencerrado:request-transmedia-unlock'));
-    window.setTimeout(() => {
+    const openExplorer = () => {
       window.dispatchEvent(
         new CustomEvent('gatoencerrado:open-miniverse-list', {
           detail: {
@@ -859,8 +954,35 @@ const Header = ({
           },
         })
       );
-    }, 80);
-  }, [dismissGatPanels]);
+    };
+    // El primer evento cubre Transmedia ya montado; los siguientes cubren
+    // Suspense y el montaje diferido después del desbloqueo anónimo.
+    [120, 320, 700, 1200].forEach((delay) => {
+      window.setTimeout(openExplorer, delay);
+    });
+  }, [activateSceneAfterGatDismiss]);
+
+  const handleOpenAllianceFromGatHub = useCallback(() => {
+    writeMiniverseInlineOpenToSession();
+    activateSceneAfterGatDismiss('gat-hub-backstage-alliance');
+    window.dispatchEvent(new CustomEvent('gatoencerrado:reveal-obra-destacada'));
+    window.dispatchEvent(new CustomEvent('gatoencerrado:request-transmedia-unlock'));
+
+    let attempts = 0;
+    const maxAttempts = 40;
+    const scrollWhenReady = () => {
+      attempts += 1;
+      const alliance = document.getElementById('apoya');
+      if (alliance) {
+        alliance.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        window.clearInterval(timerId);
+        return;
+      }
+      if (attempts >= maxAttempts) window.clearInterval(timerId);
+    };
+    const timerId = window.setInterval(scrollWhenReady, 100);
+    scrollWhenReady();
+  }, [activateSceneAfterGatDismiss]);
 
   // Contenido compartido por el tooltip (clic en el chip) y el HUB (se abre
   // solo para autenticados/PWA) — mismos accesos, mismo estilo, para no
@@ -913,9 +1035,13 @@ const Header = ({
           tone: 'green',
         }
       : null,
-    isSubscriber
-      ? { key: 'backstage', icon: DoorOpen, label: 'Ir al Backstage', onClick: handleOpenBackstage, tone: 'violet' }
-      : null,
+    {
+      key: 'backstage',
+      icon: DoorOpen,
+      label: 'Ir al Backstage',
+      onClick: handleOpenBackstage,
+      tone: 'violet',
+    },
   ].filter(Boolean);
   const gatTileRows = Array.from(
     { length: Math.ceil(gatTileConfigs.length / 2) },
@@ -1045,7 +1171,10 @@ const Header = ({
       </div>
 
       {isLinktreeSessionExpanded && user ? (
-        <div className="mx-auto mt-3 w-full max-w-[21rem] rounded-xl border border-white/10 bg-black/25 p-3 text-center text-slate-100">
+        <div
+          data-gat-inline-panel="true"
+          className="mx-auto mt-3 w-full max-w-[21rem] rounded-xl border border-white/10 bg-black/25 p-3 text-center text-slate-100"
+        >
           <p className="text-[11px] uppercase tracking-[0.18em] text-slate-400">Sesión activa</p>
           <p className="mt-1 break-all text-xs text-slate-200/90">{user?.email || 'correo no disponible'}</p>
           <button
@@ -1059,7 +1188,10 @@ const Header = ({
       ) : null}
 
       {showGatWhatsappInput && !gatWhatsappDone ? (
-        <div className="mx-auto mt-3 w-full max-w-[21rem] space-y-1.5 rounded-xl border border-white/10 bg-black/25 p-3">
+        <div
+          data-gat-inline-panel="true"
+          className="mx-auto mt-3 w-full max-w-[21rem] space-y-1.5 rounded-xl border border-white/10 bg-black/25 p-3"
+        >
           <p className="text-center text-[0.7rem] text-slate-400">¿A qué número te avisamos?</p>
           <div className="flex gap-1.5">
             <input
@@ -1084,6 +1216,7 @@ const Header = ({
 
       {gatInlinePrompt?.kind === 'next-act' ? (
         <div
+          data-gat-inline-panel="true"
           className="mx-auto mt-3 w-full max-w-[21rem] rounded-xl border border-violet-300/20 bg-violet-300/[0.055] p-3 text-center"
           role="status"
         >
@@ -1114,6 +1247,7 @@ const Header = ({
 
       {gatInlinePrompt?.kind === 'discover' ? (
         <div
+          data-gat-inline-panel="true"
           className="mx-auto mt-3 w-full max-w-[21rem] rounded-xl border border-white/10 bg-black/25 p-3 text-center"
           role="status"
         >
@@ -1128,6 +1262,37 @@ const Header = ({
           >
             Abrir Explora
           </button>
+        </div>
+      ) : null}
+
+      {gatInlinePrompt?.kind === 'backstage' ? (
+        <div
+          data-gat-inline-panel="true"
+          className="mx-auto mt-3 w-full max-w-[21rem] rounded-xl border border-violet-300/20 bg-violet-300/[0.055] p-3 text-center"
+          role="status"
+        >
+          <p className="font-display text-sm text-slate-100">
+            El Backstage necesita una huella
+          </p>
+          <p className="mx-auto mt-1.5 max-w-[18rem] text-[0.7rem] leading-relaxed text-slate-400">
+            Conoce la alianza que sostiene esta parte de la obra y descubre cómo dejar la tuya.
+          </p>
+          <div className="mt-3 flex gap-2">
+            <button
+              type="button"
+              onClick={() => setGatInlinePrompt(null)}
+              className="flex-1 rounded-lg border border-white/10 px-3 py-2 text-xs text-slate-400 transition hover:bg-white/5 hover:text-slate-200"
+            >
+              Ahora no
+            </button>
+            <button
+              type="button"
+              onClick={handleOpenAllianceFromGatHub}
+              className="flex-1 rounded-lg border border-violet-300/30 bg-violet-300/10 px-3 py-2 text-xs font-semibold text-violet-100 transition hover:bg-violet-300/15"
+            >
+              Ver la alianza
+            </button>
+          </div>
         </div>
       ) : null}
     </>
@@ -1255,7 +1420,7 @@ const Header = ({
                     role="dialog"
                     aria-modal="false"
                     aria-label="Tu energía GAT"
-                    className="hero-scene-glass-panel relative flex max-h-[60dvh] flex-col overflow-hidden rounded-b-[1.4rem] border-x border-b border-white/10"
+                    className="hero-scene-glass-panel relative flex flex-col overflow-hidden rounded-b-[1.4rem] border-x border-b border-white/10"
                   >
                     <span
                       aria-hidden="true"
@@ -1280,7 +1445,10 @@ const Header = ({
                         />
                       ))}
                     </div>
-                    <div className="relative z-10 min-h-0 flex-1 overflow-y-auto overscroll-contain">
+                    <div
+                      data-gat-mini-scroll="true"
+                      className="relative z-10 min-h-0 flex-1 overflow-y-auto overscroll-contain"
+                    >
                       <div className="border-b border-white/[0.075] px-5 pb-4 pt-5 text-center sm:px-6">
                         <p className="text-[0.62rem] font-semibold uppercase tracking-[0.34em] text-amber-300/90">
                           Tu energía

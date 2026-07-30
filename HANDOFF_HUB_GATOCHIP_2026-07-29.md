@@ -245,8 +245,28 @@ Lo confirmado y relacionado:
 
 - El chip ya puede cerrar el HUB en las pruebas recientes.
 - El chip y `Primera fila` ya tienen funciones separadas.
-- Sigue existiendo una debilidad de disponibilidad para usuarios anónimos sin GAT.
-- En PWA sin GAT, cerrar el HUB puede dejar al usuario sin una superficie visible para reabrirlo.
+- La PWA instalada y la autenticación, por sí solas, ya no vuelven elegible al
+  usuario para el HUB grande.
+- Con saldo confirmado de `0 GAT`, el HUB y su bandeja se cierran sin activar la
+  escena, el GatoChip desaparece y prevalece el Estado Cero del Hero.
+- El Hero conserva en ese caso los ecos, el hint `Pulsa al gato cuando lo veas`
+  y el `#3D`; el usuario entra mediante el ritual narrativo normal.
+- Al recibir un saldo positivo, el evento de balance habilita nuevamente el
+  GatoChip y, para las audiencias que ya tenían autoapertura, el HUB.
+- Header y Hero escuchan el mismo evento
+  `gatoencerrado:gatokens-balance-update`, evitando que una superficie crea que
+  existe energía mientras la otra todavía muestra el Estado Cero.
+- Al cerrar el HUB grande mediante el GatoChip se cruza el umbral narrativo en
+  el mismo gesto; ya no queda una fase intermedia que exija volver a pulsar el
+  `#3D`.
+- `Primera fila` conserva esa misma activación y la transmigración hacia el `#`
+  del Header.
+- Las salidas `Explorar miniversos` y `Backstage` liberan tanto el bloqueo del
+  HUB como el bloqueo de Estado Cero del Hero antes de abrir su destino.
+- Backstage está siempre presente: con huella abre el handoff; sin huella
+  despliega una explicación inline cuyo CTA revela y desplaza a `#apoya`.
+- La activación visual y el desbloqueo de scroll ya no se cancelan si el audio
+  ambiental todavía está inicializándose en PWA.
 
 Antes de intervenir de nuevo se necesita registrar:
 
@@ -290,6 +310,27 @@ No modificar este comportamiento incidentalmente durante los siguientes cambios 
 8. Usuario sin recomendación: copy educativo y `Abrir Explora`.
 9. Evento L3 nuevo: conserva `forma` en metadata.
 10. Evento L3 histórico: usa título como fallback sin romper el icono.
+11. PWA anónima con `0 GAT`: no abre HUB, no muestra chip y conserva completo el Hero.
+12. Usuario autenticado con `0 GAT`: tampoco sustituye el Hero por el HUB.
+13. Cambio de saldo positivo a `0`: cierra HUB/bandeja sin disparar Primera fila.
+14. Cambio de `0` a saldo positivo: revela chip y habilita el HUB sin recargar.
+15. GatoChip sobre HUB grande: cierra, transmigra y deja el scroll libre sin un segundo tap.
+16. Explorar desde HUB: libera scroll y abre Explora incluso si Transmedia estaba montándose.
+17. Backstage sin huella: muestra inline y `Ver la alianza` alcanza `#apoya`.
+18. Backstage con huella: abre el handoff y, al regresar, la página local sigue desbloqueada.
+
+## 13. Fase de instrucciones PWA
+
+- Los iconos y sus instrucciones entran una sola vez con una caída amable:
+  `18px`, blur leve, desaceleración suave y stagger de `120ms`.
+- Las flechas únicamente acompañan con un fade; no rebotan.
+- Volver a pulsar el `#3D` mientras el overlay está abierto conserva su rebote,
+  pulsa exclusivamente su propio halo y muestra un microcopy pegado encima.
+- Los iconos no reaccionan a esos taps posteriores.
+- El microcopy usa un pool breve en cian/lavanda, evita repetir inmediatamente,
+  dura `1.65s` y tiene un cooldown de `650ms`.
+- `prefers-reduced-motion` elimina la caída y el pulso expansivo, conservando
+  apariciones cortas por opacidad.
 
 ---
 

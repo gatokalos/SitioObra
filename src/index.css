@@ -273,13 +273,13 @@ body {
   z-index: 2;
   display: flex;
   width: min(100%, 64rem);
-  height: min(46vh, 34rem);
+  height: min(56vh, 40rem);
   margin-inline: auto;
   padding: clamp(0.5rem, 2vh, 1.5rem) 0 clamp(0.85rem, 2.4vh, 1.65rem);
   flex-direction: column;
   align-items: center;
   justify-content: flex-end;
-  gap: clamp(0.12rem, 1.05vh, 0.68rem);
+  gap: clamp(0.18rem, 1.25vh, 0.78rem);
   overflow: visible;
   pointer-events: none;
   perspective: 900px;
@@ -377,6 +377,7 @@ body {
   background: currentColor;
   vertical-align: -0.15em;
   animation: hero-hint-cursor-blink 1s linear infinite;
+  animation-delay: var(--hero-hint-entry-delay, 0s);
 }
 
 @keyframes hero-hint-cursor-blink {
@@ -386,7 +387,7 @@ body {
 
 @media (prefers-reduced-motion: reduce) {
   .hero-inactive-signal {
-    gap: clamp(0.35rem, 1.2vh, 0.7rem);
+    gap: clamp(0.18rem, 1.25vh, 0.78rem);
   }
 
   .hero-inactive-signal__copy,
@@ -402,8 +403,8 @@ body {
 @media (max-width: 640px) {
   .hero-inactive-signal {
     width: calc(100vw - 2rem);
-    height: min(43vh, 25rem);
-    gap: clamp(0.08rem, 0.75vh, 0.36rem);
+    height: min(52vh, 31rem);
+    gap: clamp(0.12rem, 1.05vh, 0.52rem);
     padding-bottom: clamp(0.55rem, 1.5vh, 0.9rem);
   }
 
@@ -432,6 +433,55 @@ body {
 
 .hero-title-mark-slot > div {
   z-index: 1;
+}
+
+.hero-pwa-hash-whisper-anchor {
+  position: absolute;
+  top: 8%;
+  left: 50%;
+  z-index: 3 !important;
+  width: min(82vw, 19rem);
+  transform: translateX(-50%);
+  pointer-events: none;
+}
+
+.hero-pwa-hash-whisper {
+  display: block;
+  color: rgb(165 214 220 / 0.82);
+  font-family: "Inter", sans-serif;
+  font-size: clamp(0.68rem, 1.7vh, 0.82rem);
+  font-weight: 500;
+  line-height: 1.25;
+  letter-spacing: 0.075em;
+  text-align: center;
+  text-shadow:
+    0 0 10px rgb(103 232 249 / 0.12),
+    0 0 24px rgb(167 139 250 / 0.1);
+}
+
+.hero-pwa-hashtag-glow-pulse {
+  animation: hero-pwa-hashtag-glow-pulse 1.1s ease-out both;
+}
+
+@keyframes hero-pwa-hashtag-glow-pulse {
+  0% {
+    transform: scale(0.96);
+    filter: blur(20px) brightness(1);
+  }
+  38% {
+    transform: scale(1.08);
+    filter: blur(22px) brightness(1.48);
+  }
+  100% {
+    transform: scale(1);
+    filter: blur(20px) brightness(1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-pwa-hashtag-glow-pulse {
+    animation: none;
+  }
 }
 
 /* Material compartido por las superficies que flotan sobre el Hero. El tinte

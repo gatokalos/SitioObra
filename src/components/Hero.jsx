@@ -25,7 +25,6 @@ import {
   setHeroAmbientMuted,
 } from '@/lib/heroAmbientAudio';
 import { safeGetItem, safeSetItem } from '@/lib/safeStorage';
-import { isInstalledPWA } from '@/lib/pwaDetection';
 import { createHeroStars } from '@/lib/heroStars';
 import { extractRecommendedAppId, resolveShowcaseFromAppId } from '@/lib/bienvenidaBridge';
 import { NARRATIVE_VIDEO_URL_DESKTOP } from '@/lib/narrativeVideo';
@@ -55,7 +54,22 @@ const HEADER_INDEX_HASHTAG_ID = 'header-index-hashtag';
 const HERO_TITLE = 'GATOENCERRADO';
 const HERO_BRAND_LABEL = '#GATOENCERRADO';
 const HERO_INACTIVE_HINT = 'Pulsa al gato cuando lo veas';
-const HERO_INACTIVE_ECHO_COUNT = 9;
+const HERO_INACTIVE_ECHO_COUNT = 13;
+const HERO_INACTIVE_ECHO_ENTRY_DURATION_S = 0.72;
+const HERO_INACTIVE_ECHO_STAGGER_S = 0.095;
+const PWA_HASH_WHISPERS = [
+  '¿Me llevas contigo?',
+  'Ya me encontraste.',
+  '¿O yo a ti?',
+  'Así no me pierdo.',
+  'Ya, llévame cerca.',
+  'Sigue las instrucciones.',
+];
+const GAT_BALANCE_STORAGE_KEY = 'gatoencerrado:gatokens-available';
+const readHeroGatBalance = () => {
+  const value = Number(safeGetItem(GAT_BALANCE_STORAGE_KEY));
+  return Number.isFinite(value) ? Math.max(Math.trunc(value), 0) : 0;
+};
 // Tras cerrar el sheet de instrucciones, no se vuelve a interceptar el primer
 // tap del hashtag hasta que pase este tiempo — sin esto, cada visita nueva
 // repetía la misma pregunta aunque el usuario ya hubiera contestado.
@@ -82,12 +96,10 @@ const HERO_GHOST_SUBTITLES = [
 ];
 
 const HeroInactiveSignal = ({ prefersReducedMotion = false }) => {
-  const echoes = prefersReducedMotion
-    ? [0.09, 0.2]
-    : Array.from(
-        { length: HERO_INACTIVE_ECHO_COUNT },
-        (_, index) => 0.025 + (index / (HERO_INACTIVE_ECHO_COUNT - 1)) ** 1.55 * 0.28
-      );
+  const echoes = Array.from(
+    { length: HERO_INACTIVE_ECHO_COUNT },
+    (_, index) => 0.035 + (index / (HERO_INACTIVE_ECHO_COUNT - 1)) ** 1.18 * 0.27
+  );
 
   return (
     <motion.div
@@ -126,8 +138,8 @@ const HeroInactiveSignal = ({ prefersReducedMotion = false }) => {
               '--hero-echo-glow-alpha': 0.015 + depth * 0.055,
               '--hero-echo-violet-alpha': 0.01 + depth * 0.035,
               '--hero-echo-mobile-glow-alpha': 0.012 + depth * 0.04,
-              fontSize: `clamp(${0.44 + depth * 0.32}rem, ${0.55 + depth * 0.55}vw, ${0.58 + depth * 0.52}rem)`,
-              letterSpacing: `${0.28 - depth * 0.12}em`,
+              fontSize: `clamp(${0.64 + depth * 0.12}rem, ${0.76 + depth * 0.14}vw, ${0.78 + depth * 0.16}rem)`,
+              letterSpacing: `${0.23 - depth * 0.045}em`,
             }}
             initial={
               prefersReducedMotion
@@ -136,8 +148,8 @@ const HeroInactiveSignal = ({ prefersReducedMotion = false }) => {
             }
             animate={{ opacity: echoOpacity, y: 0, scale: 1 }}
             transition={{
-              duration: prefersReducedMotion ? 0.12 : 0.72,
-              delay: prefersReducedMotion ? 0 : index * 0.095,
+              duration: prefersReducedMotion ? 0.12 : HERO_INACTIVE_ECHO_ENTRY_DURATION_S,
+              delay: prefersReducedMotion ? 0 : index * HERO_INACTIVE_ECHO_STAGGER_S,
               ease: [0.2, 1, 0.2, 1],
             }}
           >
@@ -215,7 +227,12 @@ const Hero = () => {
   const [isHeroHashReady, setIsHeroHashReady] = useState(false);
   const [isHeroInViewport, setIsHeroInViewport] = useState(true);
   const [isHeroPwaInstructionsOpen, setIsHeroPwaInstructionsOpen] = useState(false);
+  const [pwaHashWhisper, setPwaHashWhisper] = useState(null);
+  const lastPwaHashWhisperIndexRef = useRef(-1);
+  const lastPwaHashWhisperAtRef = useRef(0);
+  const pwaHashWhisperTimerRef = useRef(null);
   const [isInstalledPwa, setIsInstalledPwa] = useState(readIsRunningAsInstalledPwa);
+  const [heroGatBalance, setHeroGatBalance] = useState(readHeroGatBalance);
   const [isMobileViewport, setIsMobileViewport] = useState(() => {
     if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') return false;
     return window.matchMedia('(max-width: 768px)').matches;
@@ -241,11 +258,11 @@ const Hero = () => {
   // Se oculta mientras el sheet de instrucciones PWA está abierto — como ese
   // sheet ya no tiene fondo propio (ver PWAInstructionsOverlay), este texto
   // se vería detrás, mezclado con los pasos.
-  // Para usuarios autenticados o con la PWA instalada, este hint no aporta
-  // nada — Header.jsx ya reemplaza este espacio con el grid de accesos
-  // rápidos (recomendación, cuaderno holográfico, etc.), así que aquí solo
-  // hace falta ceder el paso.
-  const isGatLinktreeAudience = Boolean(user) || isInstalledPWA();
+  // El HUB solo reemplaza este espacio cuando hay energía real. Una PWA
+  // instalada o una sesión iniciada con 0 GAT siguen viendo el Estado Cero:
+  // ecos, hint y #3D.
+  const isGatLinktreeAudience =
+    heroGatBalance > 0 && (Boolean(user) || isInstalledPwa);
   const shouldShowHeroInactiveHint = !hasActivatedAudio && isHeroHashReady && !isHeroPwaInstructionsOpen && !isGatLinktreeAudience;
   const currentHeroSubtitle = hasActivatedAudio
     ? heroGhostSubtitle ?? HERO_ROTATING_SUBTITLES[heroSubtitleIndex]
@@ -259,6 +276,27 @@ const Hero = () => {
   const { toast } = useToast();
   const narrativeVideoUrl = isMobileViewport ? null : NARRATIVE_VIDEO_URL_DESKTOP;
   const prefersReducedMotion = useReducedMotion();
+  const heroInactiveHintEntryDelay = prefersReducedMotion
+    ? 0.12
+    : (HERO_INACTIVE_ECHO_COUNT - 1) * HERO_INACTIVE_ECHO_STAGGER_S
+      + HERO_INACTIVE_ECHO_ENTRY_DURATION_S;
+
+  useEffect(() => {
+    const syncGatBalance = (event) => {
+      const eventBalance = Number(event?.detail?.balance);
+      setHeroGatBalance(
+        Number.isFinite(eventBalance)
+          ? Math.max(Math.trunc(eventBalance), 0)
+          : readHeroGatBalance()
+      );
+    };
+    window.addEventListener('gatoencerrado:gatokens-balance-update', syncGatBalance);
+    window.addEventListener('storage', syncGatBalance);
+    return () => {
+      window.removeEventListener('gatoencerrado:gatokens-balance-update', syncGatBalance);
+      window.removeEventListener('storage', syncGatBalance);
+    };
+  }, []);
 
   useEffect(() => {
     writeHeroActivatedToSession(hasActivatedAudio);
@@ -624,9 +662,6 @@ const Hero = () => {
   }, []);
 
   const handleIsotipoClick = useCallback(() => {
-    const audio = getHeroAmbientAudio();
-    if (!audio) return;
-
     if (!userActivatedRef.current) {
       // Primera activación
       userActivatedRef.current = true;
@@ -643,6 +678,10 @@ const Hero = () => {
       if (isHeroAudioMuted) {
         toggleHeroAmbientMuted();
       } else {
+        // La escena y el scroll no dependen de que el elemento de audio ya
+        // exista. En PWA puede inicializarse unas décimas después; la función
+        // compartida reanuda el sonido cuando está disponible sin cancelar la
+        // activación narrativa.
         void resumeHeroAmbientPlayback({ targetVolume: HERO_LOGGED_IN_AUDIO_VOLUME });
       }
       return;
@@ -686,6 +725,37 @@ const Hero = () => {
     !readHeroPwaPromptRecentlyDeclined()
   ), [hasActivatedAudio, isInstalledPwa, isMobileViewport, user]);
 
+  const showNextPwaHashWhisper = useCallback(() => {
+    const now = Date.now();
+    if (now - lastPwaHashWhisperAtRef.current < 650) return;
+    lastPwaHashWhisperAtRef.current = now;
+    let nextIndex = Math.floor(Math.random() * PWA_HASH_WHISPERS.length);
+    if (
+      PWA_HASH_WHISPERS.length > 1 &&
+      nextIndex === lastPwaHashWhisperIndexRef.current
+    ) {
+      nextIndex = (nextIndex + 1) % PWA_HASH_WHISPERS.length;
+    }
+    lastPwaHashWhisperIndexRef.current = nextIndex;
+    setPwaHashWhisper({
+      id: now,
+      text: PWA_HASH_WHISPERS[nextIndex],
+    });
+    if (pwaHashWhisperTimerRef.current) {
+      window.clearTimeout(pwaHashWhisperTimerRef.current);
+    }
+    pwaHashWhisperTimerRef.current = window.setTimeout(() => {
+      setPwaHashWhisper(null);
+      pwaHashWhisperTimerRef.current = null;
+    }, 1650);
+  }, []);
+
+  useEffect(() => () => {
+    if (pwaHashWhisperTimerRef.current) {
+      window.clearTimeout(pwaHashWhisperTimerRef.current);
+    }
+  }, []);
+
   const handleHeroHashClick = useCallback(() => {
     // Mismo trato que PWAInstructionsOverlay: mientras el HUB de accesos
     // rápidos (Header.jsx) está abierto, el # 3D no activa la escena por su
@@ -694,18 +764,28 @@ const Hero = () => {
     if (typeof document !== 'undefined' && document.body?.dataset.gatHubOpen === 'true') {
       return;
     }
+    if (isHeroPwaInstructionsOpen) {
+      showNextPwaHashWhisper();
+      return;
+    }
     if (shouldInterceptHeroActivationForPwa()) {
       setIsHeroPwaInstructionsOpen(true);
       return;
     }
     handleIsotipoClick();
-  }, [handleIsotipoClick, shouldInterceptHeroActivationForPwa]);
+  }, [
+    handleIsotipoClick,
+    isHeroPwaInstructionsOpen,
+    shouldInterceptHeroActivationForPwa,
+    showNextPwaHashWhisper,
+  ]);
 
   // Único punto de salida del sheet de instrucciones (la X) — cerrar
   // siempre continúa a la escena, nunca deja al usuario "varado" con el
   // hashtag inerte.
   const handleDeclineHeroPwaInstall = useCallback(() => {
     safeSetItem(HERO_PWA_PROMPT_DECLINED_KEY, String(Date.now()));
+    setPwaHashWhisper(null);
     setIsHeroPwaInstructionsOpen(false);
     handleIsotipoClick();
   }, [handleIsotipoClick]);
@@ -1155,13 +1235,33 @@ const Hero = () => {
                       <motion.span
                         key={currentHeroSubtitle}
                         initial={{ opacity: 0, filter: 'blur(14px)' }}
-                        animate={{ opacity: 1, filter: 'blur(0px)' }}
-                        exit={{ opacity: 0, filter: 'blur(14px)' }}
-                        transition={{ duration: 1.8, ease: [0.2, 1, 0.2, 1] }}
+                        animate={{
+                          opacity: 1,
+                          filter: 'blur(0px)',
+                          transition: {
+                            duration: 1.8,
+                            ease: [0.2, 1, 0.2, 1],
+                            delay: shouldShowHeroInactiveHint ? heroInactiveHintEntryDelay : 0,
+                          },
+                        }}
+                        exit={{
+                          opacity: 0,
+                          filter: 'blur(14px)',
+                          transition: {
+                            duration: 1.8,
+                            ease: [0.2, 1, 0.2, 1],
+                            delay: 0,
+                          },
+                        }}
                         className={`hero-subtitle-copy absolute inset-0 inline-flex items-center justify-center ${isHeroGhostSubtitle ? 'italic' : 'not-italic'}`}
                       >
                         {shouldShowHeroInactiveHint ? (
-                          <span className="inline-flex items-center justify-center">
+                          <span
+                            className="inline-flex items-center justify-center"
+                            style={{
+                              '--hero-hint-entry-delay': `${heroInactiveHintEntryDelay}s`,
+                            }}
+                          >
                             {currentHeroSubtitle}
                             <span className="hero-hint-cursor" aria-hidden="true" />
                           </span>
@@ -1215,6 +1315,25 @@ const Hero = () => {
                 aria-hidden={hasActivatedAudio}
                 aria-label="Activar escena"
               >
+                <div className="hero-pwa-hash-whisper-anchor" aria-live="polite">
+                  <AnimatePresence mode="wait">
+                    {isHeroPwaInstructionsOpen && pwaHashWhisper ? (
+                      <motion.span
+                        key={pwaHashWhisper.id}
+                        initial={{ opacity: 0, y: 7, scale: 0.98, filter: 'blur(7px)' }}
+                        animate={{ opacity: 1, y: 0, scale: 1, filter: 'blur(0px)' }}
+                        exit={{ opacity: 0, y: -5, scale: 0.99, filter: 'blur(5px)' }}
+                        transition={{
+                          duration: prefersReducedMotion ? 0.14 : 0.34,
+                          ease: [0.22, 1, 0.36, 1],
+                        }}
+                        className="hero-pwa-hash-whisper"
+                      >
+                        {pwaHashWhisper.text}
+                      </motion.span>
+                    ) : null}
+                  </AnimatePresence>
+                </div>
                 {!hasActivatedAudio && (
                   <Suspense fallback={null}>
                     <HashtagButton3D
@@ -1224,6 +1343,7 @@ const Hero = () => {
                       contentScale={isMobileViewport ? 0.92 : 1}
                       style={{ width: 'var(--hero-title-mark-size)', margin: '0 auto' }}
                       showGlow={isHeroPwaInstructionsOpen}
+                      glowPulseKey={pwaHashWhisper?.id ?? 0}
                     />
                   </Suspense>
                 )}

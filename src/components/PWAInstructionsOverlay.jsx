@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { createPortal } from 'react-dom';
+import { motion, useReducedMotion } from 'framer-motion';
 import { X, Share, Plus, Check, MoreVertical, Download, ArrowDown } from 'lucide-react';
 
 const STEPS_IOS = [
@@ -25,6 +26,7 @@ const PWAInstructionsOverlay = ({
   subtitle = '',
 }) => {
   const [isIOS, setIsIOS] = useState(true);
+  const prefersReducedMotion = useReducedMotion();
 
   useEffect(() => {
     if (typeof navigator === 'undefined') return;
@@ -108,7 +110,20 @@ const PWAInstructionsOverlay = ({
         <div className="relative z-10 mx-auto flex w-[clamp(320px,40vh,380px)] flex-col items-center px-5 pb-4 pt-3">
           {steps.map((step, index) => (
             <React.Fragment key={step.label}>
-              <div className="flex flex-col items-center gap-[clamp(5px,0.85vh,8px)] text-center">
+              <motion.div
+                initial={
+                  prefersReducedMotion
+                    ? { opacity: 0 }
+                    : { opacity: 0, y: -18, filter: 'blur(5px)' }
+                }
+                animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
+                transition={{
+                  duration: prefersReducedMotion ? 0.16 : 0.52,
+                  delay: prefersReducedMotion ? 0 : index * 0.12,
+                  ease: [0.22, 1, 0.36, 1],
+                }}
+                className="flex flex-col items-center gap-[clamp(5px,0.85vh,8px)] text-center"
+              >
                 <div className="flex h-[clamp(34px,5.4vh,52px)] w-[clamp(34px,5.4vh,52px)] shrink-0 items-center justify-center rounded-[clamp(10px,1.1vh,15px)] border-[1.25px] border-white/65 text-slate-100">
                   {step.Icon ? (
                     <step.Icon
@@ -124,12 +139,22 @@ const PWAInstructionsOverlay = ({
                   )}
                 </div>
                 <p className="text-[clamp(0.78rem,2vh,1.15rem)] leading-tight text-slate-100">{step.label}</p>
-              </div>
+              </motion.div>
               {index < steps.length - 1 && (
-                <ArrowDown
-                  strokeWidth={1.5}
-                  className="my-[clamp(3px,0.5vh,6px)] h-[clamp(12px,1.9vh,18px)] w-[clamp(12px,1.9vh,18px)] text-white/45"
-                />
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{
+                    duration: prefersReducedMotion ? 0.12 : 0.28,
+                    delay: prefersReducedMotion ? 0 : index * 0.12 + 0.28,
+                    ease: 'easeOut',
+                  }}
+                >
+                  <ArrowDown
+                    strokeWidth={1.5}
+                    className="my-[clamp(3px,0.5vh,6px)] h-[clamp(12px,1.9vh,18px)] w-[clamp(12px,1.9vh,18px)] text-white/45"
+                  />
+                </motion.div>
               )}
             </React.Fragment>
           ))}

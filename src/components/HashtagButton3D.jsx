@@ -98,6 +98,7 @@ export default function HashtagButton3D({
   height = '420px',
   contentScale = 1,
   showGlow = false,
+  glowPulseKey = 0,
 }) {
   const [isPressed, setIsPressed] = useState(false);
 
@@ -116,7 +117,9 @@ export default function HashtagButton3D({
           imita la luz atmosférica difusa del mockup de referencia, como si
           hubiera polvo/niebla captando un spot desde arriba. */}
       <div
+        key={`hero-hashtag-glow-${glowPulseKey}`}
         aria-hidden="true"
+        className={glowPulseKey ? 'hero-pwa-hashtag-glow-pulse' : ''}
         style={{
           position: 'absolute',
           inset: '-22%',
