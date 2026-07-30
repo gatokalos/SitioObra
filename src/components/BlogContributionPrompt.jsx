@@ -103,7 +103,7 @@ const BlogContributionPrompt = ({ onAskQuestion = null }) => {
     <span />
   </div>
   <h3 className="font-display text-3xl font-medium text-slate-100 mb-6 text-center">
-    INTERMEDIO
+    Intermedio y<br />segunda parte
   </h3>
 
   <p className="text-slate-300/80 leading-relaxed mb-8 max-w-2xl mx-auto font-light text-center">

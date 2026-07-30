@@ -264,8 +264,111 @@ body {
 
 }
 
-/* Cursor parpadeante junto a "Encuentra al gato" — invita a la acción sin
-   decirla, en el mismo tono de terminal/señal que el resto del Hero. */
+/* Fase Cero: la instrucción llega desde el fondo como un eco temporal. La
+   frase frontal sigue siendo la única instrucción dominante; las demás
+   construyen profundidad sin competir con el #3D. */
+.hero-inactive-signal {
+  position: absolute;
+  inset: auto 0 0;
+  z-index: 2;
+  display: flex;
+  width: min(100%, 64rem);
+  height: min(46vh, 34rem);
+  margin-inline: auto;
+  padding: clamp(0.5rem, 2vh, 1.5rem) 0 clamp(0.85rem, 2.4vh, 1.65rem);
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  gap: clamp(0.12rem, 1.05vh, 0.68rem);
+  overflow: visible;
+  pointer-events: none;
+  perspective: 900px;
+  transform-origin: 50% 100%;
+  will-change: transform, opacity;
+}
+
+.hero-inactive-signal__line {
+  position: relative;
+  display: block;
+  flex: 0 0 auto;
+  max-width: 100%;
+  color: rgb(203 213 225);
+  font-family: "Inter", sans-serif;
+  font-weight: 400;
+  line-height: 1.08;
+  white-space: nowrap;
+  text-align: center;
+  text-shadow:
+    0 0 8px rgb(203 213 225 / var(--hero-echo-glow-alpha)),
+    0 0 22px rgb(139 92 246 / var(--hero-echo-violet-alpha));
+}
+
+.hero-inactive-signal__copy {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  animation: hero-inactive-signal-drift 13s ease-in-out infinite;
+  animation-delay: var(--hero-echo-delay);
+  will-change: transform;
+}
+
+.hero-inactive-signal__line--near {
+  color: rgb(226 232 240);
+  font-weight: 500;
+  text-shadow:
+    0 0 7px rgb(226 232 240 / 0.2),
+    0 0 24px rgb(148 163 184 / 0.11);
+}
+
+/* Microinterferencia poco frecuente en el eco más próximo. La frase maestra
+   vive debajo del título y conserva intacta su disolución blur original. */
+.hero-inactive-signal__line--near .hero-inactive-signal__copy::before {
+  content: attr(data-text);
+  position: absolute;
+  inset: 0 auto auto 0;
+  color: rgb(203 213 225 / 0.72);
+  clip-path: inset(38% 0 42% 0);
+  opacity: 0;
+  transform: translateX(0);
+  animation: hero-inactive-signal-glitch 9.4s steps(1, end) infinite;
+  pointer-events: none;
+}
+
+@keyframes hero-inactive-signal-drift {
+  0%, 100% {
+    transform: translate3d(0, -1px, 0);
+    filter: brightness(0.86);
+  }
+  48% {
+    transform: translate3d(0, 1.5px, 0);
+    filter: brightness(1.08);
+  }
+  52% {
+    transform: translate3d(0.35px, 1px, 0);
+    filter: brightness(0.94);
+  }
+}
+
+@keyframes hero-inactive-signal-glitch {
+  0%, 86%, 88.5%, 100% {
+    opacity: 0;
+    transform: translateX(0);
+  }
+  86.4% {
+    opacity: 0.5;
+    transform: translateX(-0.16em);
+  }
+  87.1% {
+    opacity: 0.22;
+    transform: translateX(0.1em);
+  }
+  87.7% {
+    opacity: 0.38;
+    transform: translateX(-0.05em);
+  }
+}
+
+/* Cursor parpadeante: solo vive en la frase frontal para mantener jerarquía. */
 .hero-hint-cursor {
   display: inline-block;
   width: 1px;
@@ -282,8 +385,31 @@ body {
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .hero-inactive-signal {
+    gap: clamp(0.35rem, 1.2vh, 0.7rem);
+  }
+
+  .hero-inactive-signal__copy,
+  .hero-inactive-signal__line--near .hero-inactive-signal__copy::before {
+    animation: none;
+  }
+
   .hero-hint-cursor {
     animation: none;
+  }
+}
+
+@media (max-width: 640px) {
+  .hero-inactive-signal {
+    width: calc(100vw - 2rem);
+    height: min(43vh, 25rem);
+    gap: clamp(0.08rem, 0.75vh, 0.36rem);
+    padding-bottom: clamp(0.55rem, 1.5vh, 0.9rem);
+  }
+
+  .hero-inactive-signal__line {
+    text-shadow:
+      0 0 6px rgb(203 213 225 / var(--hero-echo-mobile-glow-alpha));
   }
 }
 

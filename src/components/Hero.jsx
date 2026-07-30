@@ -55,6 +55,7 @@ const HEADER_INDEX_HASHTAG_ID = 'header-index-hashtag';
 const HERO_TITLE = 'GATOENCERRADO';
 const HERO_BRAND_LABEL = '#GATOENCERRADO';
 const HERO_INACTIVE_HINT = 'Pulsa al gato cuando lo veas';
+const HERO_INACTIVE_ECHO_COUNT = 9;
 // Tras cerrar el sheet de instrucciones, no se vuelve a interceptar el primer
 // tap del hashtag hasta que pase este tiempo — sin esto, cada visita nueva
 // repetía la misma pregunta aunque el usuario ya hubiera contestado.
@@ -64,7 +65,7 @@ const HERO_ROTATING_SUBTITLES = [
   'Una experiencia narrativa interactiva',            // 1 · el cajón (ver decisión A)
   'Basada en una herida emocional compartida',        // 2 · el origen — intacta, es de tus mejores
   'Teatro que no necesita escenario',                 // 3 · la expansión escénica
-  'Arte, cuidado y cultura: una misma función',  // 4 · la función de la obra
+  'Arte, tecnología y cultura: una sola función',  // 4 · la función de la obra
   'Una obra con nueve vidas',                         // 5 · NUEVA — el gato escondido en el número
   'Aquí el público también deja huella',              // 6 · NUEVA — la participación
   'Hay escenas que regresan días después',            // 7 · NUEVA — la resonancia diferida, sembrada
@@ -79,6 +80,79 @@ const HERO_GHOST_SUBTITLES = [
   'El gato ya te vio',                                // NUEVA — el susurro felino (ver decisión C)
   'Una sola pregunta: ¿qué es *estar bien*?' // NUEVA — la introspección
 ];
+
+const HeroInactiveSignal = ({ prefersReducedMotion = false }) => {
+  const echoes = prefersReducedMotion
+    ? [0.09, 0.2]
+    : Array.from(
+        { length: HERO_INACTIVE_ECHO_COUNT },
+        (_, index) => 0.025 + (index / (HERO_INACTIVE_ECHO_COUNT - 1)) ** 1.55 * 0.28
+      );
+
+  return (
+    <motion.div
+      className="hero-inactive-signal"
+      aria-hidden="true"
+      initial={{ opacity: 1 }}
+      animate={{ opacity: 1, y: 0, scale: 1 }}
+      exit={
+        prefersReducedMotion
+          ? { opacity: 0 }
+          : {
+              opacity: 0,
+              y: '13vh',
+              scale: 0.74,
+              filter: 'blur(7px)',
+            }
+      }
+      transition={
+        prefersReducedMotion
+          ? { duration: 0.12 }
+          : { duration: 0.42, ease: [0.4, 0, 0.2, 1] }
+      }
+    >
+      {echoes.map((echoOpacity, index) => {
+        const isNear = index === echoes.length - 1;
+        const depth = echoes.length <= 1 ? 1 : index / (echoes.length - 1);
+        return (
+          <motion.span
+            key={`hero-inactive-echo-${index}`}
+            aria-hidden="true"
+            className={`hero-inactive-signal__line${isNear ? ' hero-inactive-signal__line--near' : ''}`}
+            style={{
+              '--hero-echo-depth': depth,
+              '--hero-echo-opacity': echoOpacity,
+              '--hero-echo-delay': `${-(index * 0.83)}s`,
+              '--hero-echo-glow-alpha': 0.015 + depth * 0.055,
+              '--hero-echo-violet-alpha': 0.01 + depth * 0.035,
+              '--hero-echo-mobile-glow-alpha': 0.012 + depth * 0.04,
+              fontSize: `clamp(${0.44 + depth * 0.32}rem, ${0.55 + depth * 0.55}vw, ${0.58 + depth * 0.52}rem)`,
+              letterSpacing: `${0.28 - depth * 0.12}em`,
+            }}
+            initial={
+              prefersReducedMotion
+                ? { opacity: echoOpacity }
+                : { opacity: 0, y: -12, scale: 0.82 }
+            }
+            animate={{ opacity: echoOpacity, y: 0, scale: 1 }}
+            transition={{
+              duration: prefersReducedMotion ? 0.12 : 0.72,
+              delay: prefersReducedMotion ? 0 : index * 0.095,
+              ease: [0.2, 1, 0.2, 1],
+            }}
+          >
+            <span
+              className="hero-inactive-signal__copy"
+              data-text={HERO_INACTIVE_HINT}
+            >
+              {HERO_INACTIVE_HINT}
+            </span>
+          </motion.span>
+        );
+      })}
+    </motion.div>
+  );
+};
 
 const HERO_ROTATING_SUBTITLE_PLACEHOLDER =
 'Una experiencia narrativa transmedial';
@@ -995,7 +1069,15 @@ const Hero = () => {
           <div className="container mx-auto px-6 text-center relative z-10 flex-1 flex flex-col">
 
               {/* TOP HALF — hash fijo de marca hasta la línea central */}
-              <div className="flex-1 flex items-end justify-center">
+              <div className="relative flex flex-1 items-end justify-center">
+                <AnimatePresence>
+                  {shouldShowHeroInactiveHint ? (
+                    <HeroInactiveSignal
+                      key="hero-inactive-signal"
+                      prefersReducedMotion={prefersReducedMotion}
+                    />
+                  ) : null}
+                </AnimatePresence>
                 <div className="flex flex-col items-center">
                   <motion.div
                     aria-hidden="true"

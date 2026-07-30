@@ -53,7 +53,7 @@ const CreatorWelcomeSection = ({ hasEnteredUniverse = false }) => {
               <span />
             </div>
             <h3 className="font-display text-3xl font-medium text-slate-100 mb-6 text-center">
-              TERCERA LLAMADA
+              Tercera llamada,<br />tercera...
             </h3>
            <div className="text-slate-300/80 leading-relaxed mb-6 max-w-2xl mx-auto font-light text-center space-y-4">
   <p>No sé cómo llegaste hasta aquí.<br />Pero me alegra que lo hayas hecho.</p>

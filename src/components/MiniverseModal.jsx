@@ -1032,12 +1032,12 @@ const MiniverseModal = ({
   );
   const mobileExploreButtonLabel = useMemo(() => {
     if (!activeShowcaseCard) return 'Navega entre formas';
-    if (activeShowcaseCard.isPrologue) return 'Primera forma: El drama';
+    if (activeShowcaseCard.isPrologue) return 'Primer acto: El drama';
     if (!fictionShowcaseCards.length) return 'Navega entre formas';
     const currentFictionIndex = fictionShowcaseCards.findIndex((card) => card.id === activeShowcaseCard.id);
     const baseIndex = currentFictionIndex >= 0 ? currentFictionIndex : 0;
     const nextCard = fictionShowcaseCards[(baseIndex + 1) % fictionShowcaseCards.length] ?? fictionShowcaseCards[0];
-    return `Siguiente: ${nextCard?.portalLabel ?? 'El drama'}`;
+    return `Siguiente acto: ${nextCard?.portalLabel ?? 'El drama'}`;
   }, [activeShowcaseCard, fictionShowcaseCards]);
   const activeShowcaseVideoHint = useMemo(() => {
     if (!activeShowcaseCard) return '';

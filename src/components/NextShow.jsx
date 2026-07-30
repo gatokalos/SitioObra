@@ -13,7 +13,7 @@ const SHOW_HISTORY = [
     description: [
       'Aquí comenzó la temporada escénica de Es un gato encerrado.',
       'Camafeo fue el espacio que hizo posible el montaje, las primeras funciones abiertas y privadas, y el encuentro directo con el público.',
-      'La obra tomó forma aquí.',
+      'El drama tomó forma aquí.',
     ],
   },
   {

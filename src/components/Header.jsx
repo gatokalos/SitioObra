@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback, useLayoutEffect, useMemo, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { motion, useReducedMotion } from 'framer-motion';
-import { Armchair, Coffee, Info, Sparkles, LogIn, Compass, BookOpen, MessageCircle, UserCircle2, DoorOpen } from 'lucide-react';
+import { Armchair, Coffee, Info, Sparkles, LogIn, Orbit, BookOpen, MessageCircle, UserCircle2, DoorOpen } from 'lucide-react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useToast } from '@/components/ui/use-toast';
 import { useAuth } from '@/contexts/SupabaseAuthContext';
@@ -289,7 +289,7 @@ const Header = ({
     user?.user_metadata?.full_name ||
     (user?.email ? user.email.split('@')[0] : '');
   const simplifiedName = profileName ? profileName.trim().split(/\s+/)[0] : '';
-  const greetingLabel = user ? `Hola ${simplifiedName || 'gato'}` : '';
+  const greetingLabel = user ? `Protagonista: ${simplifiedName || 'gato'}` : '';
   const statusDotClass = user ? 'bg-emerald-400' : 'bg-slate-600';
   // Mientras el # del Hero siga presente sin usarse, el toggle # del Header
   // se mantiene oculto: solo debe haber un # clicable en pantalla a la vez.
@@ -502,7 +502,7 @@ const Header = ({
 
   const menuItems = [
     { name: 'Primera fila', href: '#hero' },
-    ...(showTerceraLlamadaNav ? [{ name: 'Tercera llamada', href: '#bienvenida-creador' }] : []),
+    ...(showTerceraLlamadaNav ? [{ name: 'Última llamada', href: '#bienvenida-creador' }] : []),
     ...(showTransmediaNav ? [{ name: 'Miniversos', href: '#transmedia' }] : []),
     ...(showPerspectivasNav ? [{ name: 'Voces en la sala', href: '#provoca' }] : []),
     ...(showAllianceNav ? [{ name: 'Alianza', href: '#apoya' }] : []),
@@ -519,7 +519,7 @@ const Header = ({
     { name: 'Primera fila', href: '#hero', description: '#esununiverso',
  },
     ...(showTerceraLlamadaNav
-      ? [{ name: 'Tercera llamada', href: '#bienvenida-creador', description: terceraLlamadaLabel }]
+      ? [{ name: 'Última llamada', href: '#bienvenida-creador', description: terceraLlamadaLabel }]
       : []),
     ...(showTransmediaNav
       ? [
@@ -871,13 +871,13 @@ const Header = ({
       : null,
     {
       key: 'recommendation',
-      icon: Compass,
+      icon: Orbit,
       label: gatSpendRecommendation
         ? gatSpendRecommendation.kind === 'next-act'
-          ? `Siguiente acto: ${gatSpendRecommendation.forma || gatSpendRecommendation.title}`
+          ? `Siguiente acto: ${gatSpendRecommendation.forma || gatSpendRecommendation.narrativeLabel || gatSpendRecommendation.title}`
           : gatSpendRecommendation.kind === 'resume'
-            ? `Retomar ${gatSpendRecommendation.title}`
-            : `Explorar ${gatSpendRecommendation.title}`
+            ? `Retomar ${gatSpendRecommendation.narrativeLabel || gatSpendRecommendation.title}`
+            : `Explorar ${gatSpendRecommendation.narrativeLabel || gatSpendRecommendation.title}`
         : 'Explorar miniversos',
       onClick: handleRecommendationTile,
       tone: 'violet',
@@ -908,7 +908,7 @@ const Header = ({
       ? {
           key: 'whatsapp',
           icon: MessageCircle,
-          label: 'Avísame por WhatsApp',
+          label: 'Recibir avisos',
           onClick: () => setShowGatWhatsappInput((prev) => !prev),
           tone: 'green',
         }

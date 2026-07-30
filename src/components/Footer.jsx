@@ -76,7 +76,7 @@ const Footer = ({
               <span className="font-semibold text-slate-200 mb-4 block">Navegación</span>
               <ul className="space-y-3">
                 {[
-                  ...(showTerceraLlamadaNav ? [{ name: 'Tercera llamada', href: '#bienvenida-creador' }] : []),
+                  ...(showTerceraLlamadaNav ? [{ name: 'Última llamada', href: '#bienvenida-creador' }] : []),
                   ...(showTransmediaNav ? [{ name: 'Las nueve formas', href: '#transmedia' }] : []),
                   ...(showPerspectivasNav ? [{ name: 'Voces en la sala', href: '#provoca' }] : []),
                   ...(showAllianceNav ? [{ name: 'Causa social', href: '#apoya' }] : []),

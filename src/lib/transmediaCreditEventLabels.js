@@ -54,6 +54,21 @@ const SHOWCASE_ID_TITLES = {
   oraculo: 'Oráculo',
 };
 
+// Lenguaje narrativo visible en el HUB. Se mantiene separado de los títulos
+// editoriales/técnicos del ledger para no convertir "Retomar Teatro" en una
+// instrucción ajena a la interfaz que el visitante acaba de recorrer.
+const SHOWCASE_ID_NARRATIVE_LABELS = {
+  miniversos: 'el drama',
+  miniversoNovela: 'la palabra',
+  lataza: 'el objeto',
+  miniversoGrafico: 'la apariencia',
+  copycats: 'el lente',
+  miniversoSonoro: 'la vibración',
+  miniversoMovimiento: 'el cuerpo',
+  apps: 'la ventura',
+  oraculo: 'el reflejo',
+};
+
 // event_key exactos con sufijos que no son un id limpio (no se pueden derivar
 // por prefijo) — se listan tal cual aparecen en el código que los dispara.
 const EXACT_EVENT_KEY = {
@@ -68,6 +83,8 @@ const EXACT_EVENT_KEY = {
 
 export const portalKeyTitle = (portalKey) => PORTAL_KEY_TITLES[portalKey] || null;
 export const showcaseIdTitle = (showcaseId) => SHOWCASE_ID_TITLES[showcaseId] || null;
+export const showcaseIdNarrativeLabel = (showcaseId) =>
+  SHOWCASE_ID_NARRATIVE_LABELS[showcaseId] || null;
 export const portalKeyToShowcaseId = (portalKey) => PORTAL_KEY_TO_SHOWCASE_ID[portalKey] || null;
 
 // { title, showcaseId } — showcaseId listo para usarse en un link
@@ -129,6 +146,7 @@ export const findLatestRecommendedPortal = (events = []) => {
         return {
           title,
           showcaseId,
+          narrativeLabel: showcaseIdNarrativeLabel(showcaseId),
           forma,
           source: 'l3-next-act',
           kind: 'next-act',
@@ -151,6 +169,7 @@ export const findLatestSpendTarget = (events = []) => {
       return {
         title,
         showcaseId,
+        narrativeLabel: showcaseIdNarrativeLabel(showcaseId),
         source: 'ledger-progress',
         kind: 'resume',
       };
@@ -175,6 +194,7 @@ export const readOraculoRecommendedShowcase = () => {
       ? {
           showcaseId,
           title,
+          narrativeLabel: showcaseIdNarrativeLabel(showcaseId),
           source: 'oracle-welcome',
           kind: 'welcome-recommendation',
         }
@@ -197,6 +217,7 @@ const readRecommendedShowcaseFromJsonStorage = (storageKey, source) => {
       ? {
           showcaseId,
           title,
+          narrativeLabel: showcaseIdNarrativeLabel(showcaseId),
           source,
           kind: 'welcome-recommendation',
         }
