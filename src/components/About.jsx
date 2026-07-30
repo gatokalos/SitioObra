@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useEffect, useRef, useMemo } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 import { Users, Headphones, Quote, Send, HeartHandshake, RefreshCw, Heart, Play, Camera, Drama } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ToastAction } from '@/components/ui/toast';
@@ -28,7 +28,7 @@ const aboutParagraphs = [
   {
     text: `A través de la escena, los sueños lúcidos y la autoficción compartida, esta obra explora la soledad, la rabia reprimida y la búsqueda de sentido frente a un mundo cada vez más desconectado.
 
-    Silvestre, su protagonista, atraviesa los conflictos internos acompañado por figuras simbólicas como La Doctora y el Payasito Tiste, personajes que habitan el límite entre la imaginación, la memoria y la realidad.`,
+    Su protagonista, el Chivis, atraviesa sus conflictos internos acompañado por figuras simbólicas como La Doctora y el Payasito Tiste, personajes que habitan el límite entre la imaginación, la memoria y la realidad.`,
   
   className:
       'text-lg leading-relaxed font-light whitespace-pre-line bg-gradient-to-b from-slate-300/75 via-slate-200/80 to-slate-100/100 text-transparent bg-clip-text',
@@ -81,6 +81,8 @@ const PROVOCA_TITLE_TERMS = [
   'la búsqueda de sentido',
 ];
 const PROVOCA_TITLE_LONGEST_TERM = 'la búsqueda de sentido';
+const LESS_ALONE_GLYPHS = ['x', 'a', 'o', '#'];
+const LESS_ALONE_ROTATION_MS = 3200;
 const getProvocaListenUsageKey = (userId) => {
   if (userId) return `${PROVOCA_LISTEN_USED_STORAGE_PREFIX}:user:${userId}`;
   const anonId = ensureAnonId();
@@ -977,9 +979,11 @@ export const ProvocaSection = () => {
 };
 
 const About = () => {
+  const shouldReduceMotion = useReducedMotion();
   const [trailer, setTrailer] = useState(null);
   const [isTrailerOpen, setIsTrailerOpen] = useState(false);
   const [isTrailerLoading, setIsTrailerLoading] = useState(false);
+  const [lessAloneTermIndex, setLessAloneTermIndex] = useState(0);
   const [isMobile, setIsMobile] = useState(
     () => typeof window !== 'undefined' && window.matchMedia('(max-width: 768px)').matches
   );
@@ -994,6 +998,17 @@ const About = () => {
       window.matchMedia('(min-width: 768px) and (max-width: 1024px) and (orientation: portrait)').matches
   );
   const trailerVideoRef = useRef(null);
+  const currentLessAloneGlyph = shouldReduceMotion
+    ? 'x'
+    : LESS_ALONE_GLYPHS[lessAloneTermIndex];
+
+  useEffect(() => {
+    if (shouldReduceMotion) return undefined;
+    const intervalId = window.setInterval(() => {
+      setLessAloneTermIndex((previous) => (previous + 1) % LESS_ALONE_GLYPHS.length);
+    }, LESS_ALONE_ROTATION_MS);
+    return () => window.clearInterval(intervalId);
+  }, [shouldReduceMotion]);
 
   useEffect(() => {
     if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') {
@@ -1160,7 +1175,7 @@ const About = () => {
             <FEATURED_WORK_MEDIUM.Icon size={28} className="text-violet-200" />
           </div>
                   <p className="text-xs uppercase tracking-[0.4em] text-slate-400/70 mb-4">
-  Obra fundacional
+  #Archivoescénico
 </p>
           <h2 className="font-display text-4xl md:text-5xl font-medium mb-6 text-gradient italic">
             Es un gato encerrado
@@ -1211,11 +1226,35 @@ const About = () => {
               </span>
             </button>
             <div className="order-1 md:order-2">
-              <h3 className="font-display text-3xl font-medium text-slate-100 mb-6">
-                Chivis no está solo
+              <h3
+                className="font-display mb-6 text-3xl font-medium text-slate-100"
+                aria-label="Sentirse menos solxs"
+              >
+                <span aria-hidden="true">Sentirse menos </span>
+                <span aria-hidden="true">sol</span>
+                <span aria-hidden="true" className="relative inline-grid min-w-[1ch] text-center align-baseline">
+                  <span className="invisible col-start-1 row-start-1">x</span>
+                  <AnimatePresence initial={false}>
+                    <motion.span
+                      key={currentLessAloneGlyph}
+                      className={`col-start-1 row-start-1 ${
+                        currentLessAloneGlyph === '#'
+                          ? 'text-cyan-200 drop-shadow-[0_0_8px_rgba(103,232,249,0.45)]'
+                          : ''
+                      }`}
+                      initial={{ opacity: 0, filter: 'blur(4px)', scale: 0.94 }}
+                      animate={{ opacity: 1, filter: 'blur(0px)', scale: 1 }}
+                      exit={{ opacity: 0, filter: 'blur(4px)', scale: 1.04 }}
+                      transition={{ duration: 0.32, ease: 'easeOut' }}
+                    >
+                      {currentLessAloneGlyph}
+                    </motion.span>
+                  </AnimatePresence>
+                </span>
+                <span aria-hidden="true">s</span>
               </h3>
               <p className="text-slate-300/80 leading-relaxed mb-8 font-light">
-                Silvestre, <i>el Chivis</i>, transforma su mente <strong>en escenario</strong>. Aquí, la verdad y la fantasía ya no compiten. Y tú —espectador, visitante, cómplice— puedes entrar sin tocar la puerta, porque quizás… tú también tienes <i>un gato encerrado</i> en el pecho.
+                Silvestre, el Chivis, transforma su mente <strong>en escenario</strong>. Allá arriba, la verdad y la fantasía ya no compiten. Y tú —usuario, visitante, cómplice— puedes entrar en directo, porque quizás… tú también tienes <i>un gato encerrado</i> en el pecho.
               </p>
               <div className="flex flex-col lg:flex-row gap-4">
                 <Button

@@ -107,12 +107,22 @@
 
 @layer base {
   html {
-    scroll-padding-top: 5rem;
+    scroll-padding-top: calc(5rem + env(safe-area-inset-top, 0px));
   }
 
   body {
     @apply bg-background text-foreground;
     scroll-behavior: smooth;
+  }
+}
+
+.site-main-with-fixed-header {
+  padding-top: calc(5rem + env(safe-area-inset-top, 0px));
+}
+
+@media (min-width: 1024px) {
+  .site-main-with-fixed-header {
+    padding-top: calc(6rem + env(safe-area-inset-top, 0px));
   }
 }
 

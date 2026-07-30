@@ -32,7 +32,7 @@ const CreatorWelcomeSection = ({ hasEnteredUniverse = false }) => {
           whileInView={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, ease: 'easeOut' }}
           viewport={{ once: true }}
-          className="relative glass-effect rounded-2xl p-8 md:p-12 text-center overflow-hidden"
+          className="relative overflow-visible p-8 text-center md:p-12"
         >
           <div
             aria-hidden="true"
@@ -80,7 +80,7 @@ const CreatorWelcomeSection = ({ hasEnteredUniverse = false }) => {
               onClick={handleEnter}
               className="ge-chip-action ge-mobile-cta-width ge-chip-action--primary mx-auto"
             >
-              {hasEnteredUniverse ? 'Reposición' : '¿Comenzamos?'}
+              {hasEnteredUniverse ? 'Reestreno' : '¿Comenzamos?'}
             </Button>
             {hasEnteredUniverse ? (
               <p className="mx-auto mt-3 max-w-sm text-center text-[0.72rem] leading-relaxed text-slate-400/80">

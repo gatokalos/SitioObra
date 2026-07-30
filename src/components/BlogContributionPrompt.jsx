@@ -70,7 +70,7 @@ const BlogContributionPrompt = ({ onAskQuestion = null }) => {
             whileInView={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.3, ease: 'easeOut' }}
             viewport={{ once: true }}
-            className="relative glass-effect rounded-2xl p-8 md:p-12 text-center overflow-hidden"
+            className="relative overflow-visible p-8 text-center md:p-12"
           >
             {/* HALO VIOLETA DELICADO (DETRÁS) */}
             <div
@@ -115,7 +115,7 @@ const BlogContributionPrompt = ({ onAskQuestion = null }) => {
 
 Y no pasa nada.
 
-Si te encuentras en medio de una obra que aún no tiene un principio ni un final, 
+Si te encuentras en medio de una obra que aún no tiene pies ni cabeza, 
 solo nota si algo de lo que miras se queda moviéndose adentro.`}
   </span>
 

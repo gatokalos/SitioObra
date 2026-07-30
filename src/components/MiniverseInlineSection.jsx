@@ -1,9 +1,9 @@
-import React, { Suspense, useCallback, useEffect, useMemo, useState } from 'react';
+import React, { Suspense, useCallback, useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
-import { Compass, Heart } from 'lucide-react';
+import { Sparkle, Heart } from 'lucide-react';
 import { useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { safeSetItem } from '@/lib/safeStorage';
+import { safeGetItem, safeSetItem } from '@/lib/safeStorage';
 import SectionErrorBoundary from '@/components/SectionErrorBoundary';
 import {
   readMiniverseInlineOpenFromSession,
@@ -15,15 +15,28 @@ const AlianzaSocial = React.lazy(() => import('@/components/AlianzaSocial'));
 
 const PENDING_MINIVERSE_SELECTION_KEY = 'gatoencerrado:hero-inline-miniverse-selection';
 const TAB_QUERY_PARAM = 'heroTab';
+const GAT_BALANCE_STORAGE_KEY = 'gatoencerrado:gatokens-available';
 
-const resolveInitialTabFromQuery = (search = '') => {
-  if (!search) return 'experiences';
+const readAvailableGat = () => {
+  const parsed = Number.parseInt(safeGetItem(GAT_BALANCE_STORAGE_KEY) || '0', 10);
+  return Number.isFinite(parsed) ? Math.max(parsed, 0) : 0;
+};
+
+const resolveInitialTab = (search = '', availableGat = 0) => {
   const params = new URLSearchParams(search);
   const rawTab = (params.get(TAB_QUERY_PARAM) || '').trim().toLowerCase();
   if (rawTab === 'waitlist' || rawTab === 'impulsar' || rawTab === 'activar') {
     return 'waitlist';
   }
-  return 'experiences';
+  if (rawTab === 'escaparate' || rawTab === 'expande') {
+    return 'escaparate';
+  }
+  if (rawTab === 'experiences' || rawTab === 'habita') {
+    return 'experiences';
+  }
+  // Sin GAT todavía se necesita el mapa conceptual; con recorrido previo,
+  // la entrada natural es aquello que ya puede habitarse.
+  return availableGat > 0 ? 'experiences' : 'escaparate';
 };
 
 // "Antes de irte" — último espacio antes de Contacto, después de Team
@@ -38,6 +51,9 @@ const MiniverseInlineSection = () => {
   // correcto, pero el contenido (modal + Alianza Social) ya no está.
   const [isOpen, setIsOpen] = useState(readMiniverseInlineOpenFromSession);
   const location = useLocation();
+  const [initialTabId, setInitialTabId] = useState(() =>
+    resolveInitialTab(location.search, readAvailableGat())
+  );
   // Mismo breakpoint/lógica que usaba Hero.jsx para este mismo contenido
   // (MiniverseModal inline). Sin esto, en mobile se quedaba con el padding y
   // max-width de desktop (px-6 + max-w-[920px] en vez de px-4 + max-w-2xl),
@@ -46,11 +62,6 @@ const MiniverseInlineSection = () => {
     if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') return false;
     return window.matchMedia('(max-width: 768px)').matches;
   });
-
-  const initialTabId = useMemo(
-    () => resolveInitialTabFromQuery(location.search),
-    [location.search],
-  );
 
   const handleSelectMiniverse = useCallback((formatId) => {
     if (typeof window === 'undefined' || !formatId) return;
@@ -84,9 +95,10 @@ const MiniverseInlineSection = () => {
   }, []);
 
   const handleOpen = useCallback(() => {
+    setInitialTabId(resolveInitialTab(location.search, readAvailableGat()));
     setIsOpen(true);
     writeMiniverseInlineOpenToSession();
-  }, []);
+  }, [location.search]);
   // No-op a propósito: MiniverseModal llama onClose() ANTES de hacer scroll
   // a #apoya (su propio botón "cómo dejar mi huella"/"cómo funciona"
   // internamente hace onClose()+scroll). Si onClose colapsara esta sección,
@@ -145,18 +157,17 @@ const MiniverseInlineSection = () => {
               className="glass-effect rounded-2xl p-8 md:p-12 text-center max-w-3xl mx-auto"
             >
               <h3 className="font-display text-3xl font-medium text-slate-100 mb-6 text-center">
-                ANTES DE IRTE
+                Espera, no te vayas todavía
               </h3>
               <p className="text-slate-100/80 leading-relaxed mb-8 max-w-xl mx-auto font-light">
-                Echa un vistazo a lo que hace posible todo esto: <br></br>
-                cómo se expande el universo,<br></br>
-                qué hay para habitar y de qué forma tu presencia lo impulsa.
+                Antes de irte, echa un vistazo a lo que hace posible este universo: <br></br>
+                cómo se expande, qué hay para habitar <br></br>y de qué forma tu presencia lo impulsa.
               </p>
               <Button
                 onClick={handleOpen}
                 className="ge-mobile-cta-width bg-gradient-to-r from-orange-500/90 via-rose-500/90 to-pink-500/90 hover:from-orange-400 hover:to-pink-400 text-white px-6 py-3 rounded-full font-semibold flex items-center gap-2 shadow-lg shadow-orange-500/40 transition mx-auto"
               >
-                <Compass size={20} />
+                <Sparkle size={20} />
                 Modelo de negocio
               </Button>
             </motion.div>

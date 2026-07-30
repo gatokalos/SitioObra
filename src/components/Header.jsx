@@ -766,7 +766,11 @@ const Header = ({
             240
           )
         : '60dvh',
-      zIndex: 40,
+      // Por encima del fondo glass del Header (z-50): así la bandeja conserva
+      // el mismo punto de nacimiento tanto en el Hero negro como al hacer
+      // scroll. Su borde superior sigue debajo del chip, por lo que los
+      // controles del Header permanecen libres.
+      zIndex: 60,
     });
   }, []);
 
@@ -1312,7 +1316,10 @@ const Header = ({
               : 'z-50'
         } ${headerToneClass}`}
       >
-        <nav className="container mx-auto px-6 py-3 max-[375px]:px-4" data-site-index-root>
+        <nav
+          className="container mx-auto px-6 pb-3 pt-[calc(env(safe-area-inset-top)+0.75rem)] max-[375px]:px-4"
+          data-site-index-root
+        >
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3 text-white">
               {!isGatLinktreeOpen ? (

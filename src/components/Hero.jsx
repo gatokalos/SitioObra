@@ -61,8 +61,8 @@ const PWA_HASH_WHISPERS = [
   '¿Me llevas contigo?',
   'Ya me encontraste.',
   '¿O yo a ti?',
-  'Así no me pierdo.',
-  'Ya, llévame cerca.',
+  'Luego no me busques…',
+  'Ya, llévame a casa.',
   'Sigue las instrucciones.',
 ];
 const GAT_BALANCE_STORAGE_KEY = 'gatoencerrado:gatokens-available';
@@ -79,7 +79,7 @@ const HERO_ROTATING_SUBTITLES = [
   'Una experiencia narrativa interactiva',            // 1 · el cajón (ver decisión A)
   'Basada en una herida emocional compartida',        // 2 · el origen — intacta, es de tus mejores
   'Teatro que no necesita escenario',                 // 3 · la expansión escénica
-  'Arte, tecnología y cultura: una sola función',  // 4 · la función de la obra
+  'Arte, tecnología y cuidado: una sola función',  // 4 · la función de la obra
   'Una obra con nueve vidas',                         // 5 · NUEVA — el gato escondido en el número
   'Aquí el público también deja huella',              // 6 · NUEVA — la participación
   'Hay escenas que regresan días después',            // 7 · NUEVA — la resonancia diferida, sembrada
@@ -236,6 +236,18 @@ const Hero = () => {
   const [isMobileViewport, setIsMobileViewport] = useState(() => {
     if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') return false;
     return window.matchMedia('(max-width: 768px)').matches;
+  });
+  const [isTabletLandscape, setIsTabletLandscape] = useState(() => {
+    if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') return false;
+    return window.matchMedia('(min-width: 768px) and (max-width: 1180px) and (orientation: landscape)').matches;
+  });
+  const [isTabletPortrait, setIsTabletPortrait] = useState(() => {
+    if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') return false;
+    return window.matchMedia('(min-width: 768px) and (max-width: 1024px) and (orientation: portrait)').matches;
+  });
+  const [isCoarsePointer, setIsCoarsePointer] = useState(() => {
+    if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') return false;
+    return window.matchMedia('(pointer: coarse) and (hover: none)').matches;
   });
   // Cuenta fija al montar (no reactiva a resize) para que las estrellas no
   // se rebarajen si el usuario cruza el breakpoint móvil/desktop en vivo.
@@ -551,6 +563,54 @@ const Hero = () => {
     return () => mediaQuery.removeListener(handleChange);
   }, []);
 
+  // Elegibilidad para el sheet de instrucciones de PWA: además de móvil,
+  // cubre tablets en cualquier orientación (mismos rangos que ya usa
+  // About.jsx para el tráiler), y exige puntero táctil (pointer: coarse +
+  // hover: none) para que una laptop con la ventana angosta/letterboxed
+  // (Safari con muchas pestañas, p. ej.) no la confunda con una tablet —
+  // ahí el navegador ya ofrece su propio botón nativo de instalación.
+  useEffect(() => {
+    if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') {
+      return undefined;
+    }
+
+    const tabletLandscapeQuery = window.matchMedia(
+      '(min-width: 768px) and (max-width: 1180px) and (orientation: landscape)'
+    );
+    const tabletPortraitQuery = window.matchMedia(
+      '(min-width: 768px) and (max-width: 1024px) and (orientation: portrait)'
+    );
+    const coarsePointerQuery = window.matchMedia('(pointer: coarse) and (hover: none)');
+
+    const handleTabletLandscapeChange = (event) => setIsTabletLandscape(event.matches);
+    const handleTabletPortraitChange = (event) => setIsTabletPortrait(event.matches);
+    const handleCoarsePointerChange = (event) => setIsCoarsePointer(event.matches);
+
+    setIsTabletLandscape(tabletLandscapeQuery.matches);
+    setIsTabletPortrait(tabletPortraitQuery.matches);
+    setIsCoarsePointer(coarsePointerQuery.matches);
+
+    if (typeof tabletLandscapeQuery.addEventListener === 'function') {
+      tabletLandscapeQuery.addEventListener('change', handleTabletLandscapeChange);
+      tabletPortraitQuery.addEventListener('change', handleTabletPortraitChange);
+      coarsePointerQuery.addEventListener('change', handleCoarsePointerChange);
+      return () => {
+        tabletLandscapeQuery.removeEventListener('change', handleTabletLandscapeChange);
+        tabletPortraitQuery.removeEventListener('change', handleTabletPortraitChange);
+        coarsePointerQuery.removeEventListener('change', handleCoarsePointerChange);
+      };
+    }
+
+    tabletLandscapeQuery.addListener(handleTabletLandscapeChange);
+    tabletPortraitQuery.addListener(handleTabletPortraitChange);
+    coarsePointerQuery.addListener(handleCoarsePointerChange);
+    return () => {
+      tabletLandscapeQuery.removeListener(handleTabletLandscapeChange);
+      tabletPortraitQuery.removeListener(handleTabletPortraitChange);
+      coarsePointerQuery.removeListener(handleCoarsePointerChange);
+    };
+  }, []);
+
   useEffect(() => {
     if (typeof window === 'undefined' || typeof window.IntersectionObserver !== 'function') {
       setIsHeroInViewport(true);
@@ -718,12 +778,21 @@ const Hero = () => {
   }, [hasActivatedAudio, handleIsotipoClick]);
 
   const shouldInterceptHeroActivationForPwa = useCallback(() => (
-    isMobileViewport &&
+    (isMobileViewport || isTabletLandscape || isTabletPortrait) &&
+    isCoarsePointer &&
     !user &&
     !isInstalledPwa &&
     !hasActivatedAudio &&
     !readHeroPwaPromptRecentlyDeclined()
-  ), [hasActivatedAudio, isInstalledPwa, isMobileViewport, user]);
+  ), [
+    hasActivatedAudio,
+    isCoarsePointer,
+    isInstalledPwa,
+    isMobileViewport,
+    isTabletLandscape,
+    isTabletPortrait,
+    user,
+  ]);
 
   const showNextPwaHashWhisper = useCallback(() => {
     const now = Date.now();

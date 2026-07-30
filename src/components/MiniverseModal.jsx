@@ -938,7 +938,7 @@ const MiniverseModal = ({
   const activeTabIntro = useMemo(() => {
       if (activeTab === 'escaparate') {
       return {
-      lead: 'Explora este universo mediante fragmentos. Cada uno muestra una forma distinta de contener la obra y abre la misma pregunta:',
+      lead: 'Explora el universo a través de fragmentos. Cada uno muestra una forma distinta de contener la obra y abre la misma pregunta:',
       highlight: '¿qué ocurre cuando una herida emocional se expande y toca otras vidas?',
       };
     }
@@ -952,8 +952,8 @@ const MiniverseModal = ({
     }
       return {
       lead: 'La soledad, la confusión y la ira que este universo decide mirar,',
-      highlight: 'muchos niños y jóvenes tijuanenses las viven cada día en silencio.',
-      continuation: 'Con $50MXN tu huella ayuda a detectarlas y acompañarlas a tiempo.'
+      highlight: 'muchos niños, niñas y jóvenes tijuanenses las transitan en silencio.',
+      continuation: 'Con $50MXN tu huella ayuda a detectarlas y acompañarles a tiempo.'
     };
 
     function newFunction() {

@@ -92,7 +92,6 @@ const STARTER_FAQ_PROMPTS = [
   '¿Ponerle nombre a lo que sientes te libera o te encierra más?',
   '¿En qué momento cuidar a alguien se vuelve querer controlarlo?',
   '¿En qué momento el peso de lo real se vuelve más de lo que puedes sostener?',
-  '¿Por qué asociamos la profundidad con la divinidad?',
   
 ];
 
@@ -938,12 +937,12 @@ const Blog = ({ posts = [], isLoading = false, error = null, showBuscador = fals
             viewport={{ once: true }}
             className="text-center mb-16"
           >
-            <p className="text-xs uppercase tracking-[0.4em] text-slate-400/70 mb-4">Diálogo / Reflexión</p>
+            <p className="text-xs uppercase tracking-[0.4em] text-slate-400/70 mb-4">#PENSAMIENTOCRÍTICO</p>
             <h2 className="font-display text-4xl md:text-5xl font-medium mb-6 text-gradient italic">
               Curaduría, comunidad<br />y resonancia
             </h2>
             <p className="text-lg text-slate-300/80 max-w-3xl mx-auto leading-relaxed font-light">
-              Un espacio de pensamiento crítico, creatividad y poética donde convergen textos especializados, ficción expandida y
+              Un espacio de diálogo reflexivo, creatividad y poética donde convergen textos especializados, ficción expandida y
               noticias detrás de escena.
             </p>
           </motion.div>
