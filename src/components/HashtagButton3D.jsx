@@ -1,4 +1,4 @@
-import React, { useRef, useState, useCallback } from 'react';
+import React, { useRef, useState, useCallback, useEffect } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
 import { useGLTF, Environment } from '@react-three/drei';
 import * as THREE from 'three';
@@ -101,12 +101,28 @@ export default function HashtagButton3D({
   glowPulseKey = 0,
 }) {
   const [isPressed, setIsPressed] = useState(false);
+  const glRef = useRef(null);
 
   const handleClick = useCallback(() => {
     setIsPressed(true);
     setTimeout(() => setIsPressed(false), 160);
     onClick?.();
   }, [onClick]);
+
+  // R3F dispone geometrías/materiales/texturas del árbol de la escena al
+  // desmontar, pero no siempre libera el contexto de WebGL en sí — en iOS
+  // eso se acumula entre montajes hasta que el sistema mata el contexto
+  // ("WebGL: context lost", confirmado con Web Inspector real). Forzar la
+  // pérdida del contexto explícitamente garantiza que el cupo se libera de
+  // verdad, sin depender de adivinar qué recurso específico no se liberó.
+  useEffect(() => () => {
+    const renderer = glRef.current;
+    if (!renderer) return;
+    renderer.dispose();
+    if (!renderer.getContext()?.isContextLost()) {
+      renderer.forceContextLoss();
+    }
+  }, []);
 
   return (
     <div
@@ -158,6 +174,7 @@ export default function HashtagButton3D({
         <Canvas
           camera={{ position: [0, 0.2, 4.2], fov: 35 }}
           gl={{ antialias: true, alpha: true }}
+          onCreated={({ gl }) => { glRef.current = gl; }}
           style={{
             background: 'transparent',
             position: 'relative',
