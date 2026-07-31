@@ -819,7 +819,7 @@ function App() {
               showCuradoriaNav={isCuradoriaVisible}
               showIntermedioNav={canShowPostHeroContent}
               showTransmediaNav={canShowPostHeroContent && hasEnteredUniverse && canAccessTransmedia}
-              showPerspectivasNav={canShowPostHeroContent && hasEnteredUniverse}
+              showPerspectivasNav={isCuradoriaVisible}
               showObraDestacadaNav={isObraDestacadaVisible}
               showTerceraLlamadaNav={canShowPostHeroContent}
               showGatChip={isAuthenticated || isHeroActivated}
@@ -838,26 +838,12 @@ function App() {
                       </Suspense>
                     </DeferredSection>
 
-                    {hasEnteredUniverse && (
-                      <>
-                        {canAccessTransmedia && (
-                          <SectionErrorBoundary fallback={<SectionFallback id="transmedia" minHeight={1600} />}>
-                            <Suspense fallback={<SectionFallback id="transmedia" minHeight={1600} />}>
-                              <Transmedia />
-                            </Suspense>
-                          </SectionErrorBoundary>
-                        )}
-
-                        {/* Perspectivas va después de Miniversos a propósito: es un espacio
-                            de respuesta/reflexión (compartir tu voz, ver testimonios) sobre
-                            lo que las 9 vitrinas provocan — funciona mejor después de haberlas
-                            vivido, no antes. */}
-                        <DeferredSection fallback={<SectionFallback id="provoca" minHeight={900} />}>
-                          <Suspense fallback={<SectionFallback id="provoca" minHeight={900} />}>
-                            <ProvocaSection />
-                          </Suspense>
-                        </DeferredSection>
-                      </>
+                    {hasEnteredUniverse && canAccessTransmedia && (
+                      <SectionErrorBoundary fallback={<SectionFallback id="transmedia" minHeight={1600} />}>
+                        <Suspense fallback={<SectionFallback id="transmedia" minHeight={1600} />}>
+                          <Transmedia />
+                        </Suspense>
+                      </SectionErrorBoundary>
                     )}
 
                     <DeferredSection fallback={<SectionFallback id="blog-contribuye" minHeight={700} />}>
@@ -867,11 +853,22 @@ function App() {
                     </DeferredSection>
 
                     {isCuradoriaVisible && (
-                      <DeferredSection fallback={<SectionFallback id="dialogo-critico" minHeight={900} />}>
-                        <Suspense fallback={<SectionFallback id="dialogo-critico" minHeight={900} />}>
-                          <BlogSection showBuscador={showBlogBuscador} />
-                        </Suspense>
-                      </DeferredSection>
+                      <>
+                        <DeferredSection fallback={<SectionFallback id="dialogo-critico" minHeight={900} />}>
+                          <Suspense fallback={<SectionFallback id="dialogo-critico" minHeight={900} />}>
+                            <BlogSection showBuscador={showBlogBuscador} />
+                          </Suspense>
+                        </DeferredSection>
+
+                        {/* Voces en la sala va pegada a Curaduría a propósito: ambas son el
+                            mismo espacio de reflexión/respuesta sobre la obra — comparten
+                            condición de visibilidad para no separarse. */}
+                        <DeferredSection fallback={<SectionFallback id="provoca" minHeight={900} />}>
+                          <Suspense fallback={<SectionFallback id="provoca" minHeight={900} />}>
+                            <ProvocaSection />
+                          </Suspense>
+                        </DeferredSection>
+                      </>
                     )}
 
                     {/* Archivo Escénico / Caída del Telón: siempre visible una vez activada la escena;
@@ -927,7 +924,7 @@ function App() {
                 showCuradoriaNav={isCuradoriaVisible}
                 showIntermedioNav={canShowPostHeroContent}
                 showTransmediaNav={canShowPostHeroContent && hasEnteredUniverse && canAccessTransmedia}
-                showPerspectivasNav={canShowPostHeroContent && hasEnteredUniverse}
+                showPerspectivasNav={isCuradoriaVisible}
                 showObraDestacadaNav={isObraDestacadaVisible}
                 showTerceraLlamadaNav={canShowPostHeroContent}
                 terceraLlamadaLabel={hasEnteredUniverse ? '#Reestreno' : '#Comenzamos'}

@@ -540,10 +540,10 @@ const Header = ({
     { name: 'Primera fila', href: '#hero' },
     ...(showTerceraLlamadaNav ? [{ name: 'Última llamada', href: '#bienvenida-creador' }] : []),
     ...(showTransmediaNav ? [{ name: 'Miniversos', href: '#transmedia' }] : []),
-    ...(showPerspectivasNav ? [{ name: 'Voces en la sala', href: '#provoca' }] : []),
     ...(showAllianceNav ? [{ name: 'Alianza', href: '#apoya' }] : []),
     ...(showIntermedioNav ? [{ name: 'Intermedio', href: '#blog-contribuye' }] : []),
     ...(showCuradoriaNav ? [{ name: 'Curaduría', href: '#dialogo-critico' }] : []),
+    ...(showPerspectivasNav ? [{ name: 'Voces en la sala', href: '#provoca' }] : []),
     ...(showIntermedioNav ? [{ name: 'Caída del telón', href: '#next-show' }] : []),
     ...(showObraDestacadaNav ? [{ name: 'Obra fundacional', href: '#about' }] : []),
     ...(showObraDestacadaNav ? [{ name: 'Créditos', href: '#team' }] : []),
@@ -567,7 +567,6 @@ const Header = ({
           },
         ]
       : []),
-    ...(showPerspectivasNav ? [{ name: 'Voces en la sala', href: '#provoca', description: '#heridaemocional' }] : []),
     ...(showIntermedioNav
       ? [{ name: 'Intermedio', href: '#blog-contribuye', description: '#Lareflexion' }]
       : []),
@@ -586,6 +585,7 @@ const Header = ({
           },
         ]
       : []),
+    ...(showPerspectivasNav ? [{ name: 'Voces en la sala', href: '#provoca', description: '#heridaemocional' }] : []),
     ...(showIntermedioNav
       ? [{
           name: 'Caída del telón',

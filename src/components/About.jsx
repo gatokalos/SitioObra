@@ -1254,7 +1254,7 @@ const About = () => {
                 <span aria-hidden="true">s</span>
               </h3>
               <p className="text-slate-300/80 leading-relaxed mb-8 font-light">
-                Silvestre, el Chivis, transforma su mente <strong>en escenario</strong>. Allá arriba, la verdad y la fantasía ya no compiten. Y tú —usuario, visitante, cómplice— puedes entrar en directo, porque quizás… tú también tienes <i>un gato encerrado</i> en el pecho.
+                El Chivis —Silvestre Filis— transforma su mente <strong>en escenario</strong>. Allá arriba, la verdad y la fantasía ya no compiten. Y tú —usuario, visitante, cómplice— puedes entrar en directo, porque quizás… tú también tienes <i>un gato encerrado</i> en el pecho.
               </p>
               <div className="flex flex-col lg:flex-row gap-4">
                 <Button

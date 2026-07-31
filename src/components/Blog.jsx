@@ -78,11 +78,11 @@ const MINIVERSE_KEYWORDS = {
 };
 
 const STARTER_FAQ_PROMPTS = [
-  '¿Se puede observar algo sin cambiarlo — incluyéndose a uno mismo?',
+  '¿Se puede observar algo sin cambiarlo — incluyéndome a mí misma?',
   '¿Qué hay realmente detrás de las nueve formas de esta obra transmedia?',
   '¿Cuánta realidad hace falta para que ya no puedas fingir que estás bien?',
   '¿Qué diferencia hay entre medir cuánta gente ve una obra y saber si cambió algo en el público?',
-  '¿Qué le pasa a una obra cuando por fin alguien la mira?',
+  '¿Quién es Silvestre y qué le pasa en la obra?',
   '¿Puede una historia terminar sin que nadie le ponga el punto final?',
   '¿Qué han sentido otras personas al habitar este universo?',
   '¿Qué significa desdoblar una historia que no se cuenta por sí misma?',
