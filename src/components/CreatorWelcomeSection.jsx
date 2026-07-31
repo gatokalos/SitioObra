@@ -52,8 +52,8 @@ const CreatorWelcomeSection = ({ hasEnteredUniverse = false }) => {
               <span />
               <span />
             </div>
-            <h3 className="font-display text-3xl font-medium text-slate-100 mb-6 text-center">
-              Tercera llamada,<br />tercera...
+            <h3 className="font-display text-3xl font-medium italic text-slate-100 mb-6 text-center">
+              "Tercera llamada,<br />tercera..."
             </h3>
            <div className="text-slate-300/80 leading-relaxed mb-6 max-w-2xl mx-auto font-light text-center space-y-4">
   <p>No sé cómo llegaste hasta aquí.<br />Pero me alegra que lo hayas hecho.</p>
@@ -80,7 +80,7 @@ const CreatorWelcomeSection = ({ hasEnteredUniverse = false }) => {
               onClick={handleEnter}
               className="ge-chip-action ge-mobile-cta-width ge-chip-action--primary mx-auto"
             >
-              {hasEnteredUniverse ? 'Reestreno' : '¿Comenzamos?'}
+              {hasEnteredUniverse ? '¿Reestrenamos?' : '¿Comenzamos?'}
             </Button>
             {hasEnteredUniverse ? (
               <p className="mx-auto mt-3 max-w-sm text-center text-[0.72rem] leading-relaxed text-slate-400/80">
