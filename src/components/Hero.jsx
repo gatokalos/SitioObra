@@ -37,6 +37,7 @@ import {
   writeHeroActivatedToSession,
   readIndexCueUsedFromSession,
   writeIndexCueUsedToSession,
+  readGatHubDismissedFromSession,
 } from '@/lib/heroActivation';
 import { consumePendingContinuation } from '@/lib/pendingContinuation';
 
@@ -263,6 +264,23 @@ const Hero = () => {
   // ecos, hint y #3D.
   const isGatLinktreeAudience =
     heroGatBalance > 0 && (Boolean(user) || isInstalledPwa);
+  // El HUB de Header.jsx tapa por completo esta zona del Hero mientras está
+  // abierto — pero el #3D (HashtagButton3D) igual se montaba debajo, gastando
+  // un contexto WebGL real aunque quedara oculto. En iOS eso se acumula hasta
+  // matar el contexto ("WebGL: context lost", confirmado con Web Inspector).
+  // El valor inicial reusa isGatLinktreeAudience (misma fórmula que ya usa
+  // Header.jsx para decidir si el HUB se auto-abre) en vez de duplicarla, así
+  // no hay riesgo de que las dos definiciones se desincronicen si una cambia
+  // sin la otra. El evento cubre los cambios posteriores (p. ej. cerrar el
+  // HUB con Escape, que no activa la escena).
+  const [isGatHubOpen, setIsGatHubOpen] = useState(
+    () => isGatLinktreeAudience && !readGatHubDismissedFromSession()
+  );
+  useEffect(() => {
+    const handleGatHubOpenChanged = (event) => setIsGatHubOpen(Boolean(event?.detail?.open));
+    window.addEventListener('gatoencerrado:gat-hub-open-changed', handleGatHubOpenChanged);
+    return () => window.removeEventListener('gatoencerrado:gat-hub-open-changed', handleGatHubOpenChanged);
+  }, []);
   const shouldShowHeroInactiveHint = !hasActivatedAudio && isHeroHashReady && !isHeroPwaInstructionsOpen && !isGatLinktreeAudience;
   const currentHeroSubtitle = hasActivatedAudio
     ? heroGhostSubtitle ?? HERO_ROTATING_SUBTITLES[heroSubtitleIndex]
@@ -1334,7 +1352,7 @@ const Hero = () => {
                     ) : null}
                   </AnimatePresence>
                 </div>
-                {!hasActivatedAudio && (
+                {!hasActivatedAudio && !isGatHubOpen && (
                   <Suspense fallback={null}>
                     <HashtagButton3D
                       onClick={handleHeroHashClick}

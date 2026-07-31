@@ -13,6 +13,7 @@ import { INITIAL_GAT_BALANCE, readStoredInt } from '@/components/transmedia/tran
 import {
   readIndexCueUsedFromSession,
   writeMiniverseInlineOpenToSession,
+  GAT_LINKTREE_DISMISSED_SESSION_KEY,
 } from '@/lib/heroActivation';
 import useActiveSectionHref from '@/hooks/useActiveSectionHref';
 import { fetchTransmediaCreditEvents } from '@/services/transmediaCreditsService';
@@ -41,7 +42,6 @@ const readGatBalance = () => {
   return Number.isFinite(v) ? Math.max(Math.trunc(v), 0) : INITIAL_GAT_BALANCE;
 };
 
-const GAT_LINKTREE_DISMISSED_SESSION_KEY = 'gatoencerrado:gat-linktree-dismissed-session';
 
 // El HUB y la bandeja comparten el mismo vocabulario visual que el programa de
 // mano: vidrio oscuro, borde fino y color reservado para estados reales.
@@ -172,6 +172,13 @@ const Header = ({
   useEffect(() => {
     if (typeof document === 'undefined') return undefined;
     document.body.dataset.gatHubOpen = isGatLinktreeOpen ? 'true' : 'false';
+    // Además del dataset (lectura puntual dentro de handlers), un evento para
+    // que Hero pueda reaccionar en vivo — lo usa para no montar el #3D
+    // mientras el HUB lo tapa por completo (ver HashtagButton3D, gasta un
+    // contexto WebGL real aunque esté oculto).
+    window.dispatchEvent(
+      new CustomEvent('gatoencerrado:gat-hub-open-changed', { detail: { open: isGatLinktreeOpen } })
+    );
     return () => {
       delete document.body.dataset.gatHubOpen;
     };

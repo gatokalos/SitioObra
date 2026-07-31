@@ -99,3 +99,19 @@ export const writeMiniverseInlineOpenToSession = () => {
     // ignore
   }
 };
+
+// "¿Ya se descartó el HUB personal de GAT esta sesión?" — la misma bandera
+// que usa Header.jsx para decidir si se auto-abre. Hero.jsx la necesita para
+// calcular, en su propio primer render, si el HUB va a tapar la pantalla
+// completa (y por lo tanto no debe montar el #3D debajo) sin esperar a que
+// el efecto de Header corra primero — evita una condición de carrera.
+export const GAT_LINKTREE_DISMISSED_SESSION_KEY = 'gatoencerrado:gat-linktree-dismissed-session';
+
+export const readGatHubDismissedFromSession = () => {
+  if (typeof window === 'undefined') return false;
+  try {
+    return Boolean(window.sessionStorage.getItem(GAT_LINKTREE_DISMISSED_SESSION_KEY));
+  } catch {
+    return false;
+  }
+};
