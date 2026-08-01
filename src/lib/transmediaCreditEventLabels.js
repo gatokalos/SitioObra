@@ -59,7 +59,7 @@ const SHOWCASE_ID_TITLES = {
 // instrucción ajena a la interfaz que el visitante acaba de recorrer.
 const SHOWCASE_ID_NARRATIVE_LABELS = {
   miniversos: 'el drama',
-  miniversoNovela: 'la palabra',
+  miniversoNovela: 'la escritura',
   lataza: 'el objeto',
   miniversoGrafico: 'la apariencia',
   copycats: 'el lente',

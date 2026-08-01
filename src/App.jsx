@@ -469,7 +469,7 @@ function App() {
   }, []);
   // Tercera Llamada (La Bienvenida): al volver de /bienvenida con recomendación,
   // se desbloquean Perspectivas + Transmedia, que a partir de ahí conviven con
-  // Tercera Llamada (no la reemplazan) — su CTA solo cambia a "Reestreno".
+  // Tercera Llamada (no la reemplazan) — su CTA solo cambia a "¿Reestrenamos?".
   const [hasCompletedTerceraLlamada, setHasCompletedTerceraLlamada] = useState(() => {
     return safeGetItem(BIENVENIDA_COMPLETED_STORAGE_KEY) === '1';
   });
@@ -505,7 +505,7 @@ function App() {
   }, [isAuthenticated, hasGuestUnlockedTransmedia]);
   // Un usuario autenticado ya cruzó el umbral por definición — ve Perspectivas
   // y Miniversos desde el inicio, sin necesidad de completar Tercera Llamada
-  // (que igual se le sigue mostrando, con el CTA en modo "Reestreno").
+  // (que igual se le sigue mostrando, con el CTA en modo "¿Reestrenamos?").
   const hasEnteredUniverse = hasCompletedTerceraLlamada || isAuthenticated;
   const canShowPostHeroContent = isHeroActivated || hasEnteredUniverse;
   // Curaduría: visibilidad controlada por el botón "Preguntar" (abre/cierra), no por acceso permanente.
@@ -823,7 +823,7 @@ function App() {
               showObraDestacadaNav={isObraDestacadaVisible}
               showTerceraLlamadaNav={canShowPostHeroContent}
               showGatChip={isAuthenticated || isHeroActivated}
-              terceraLlamadaLabel={hasEnteredUniverse ? '#Reestreno' : '#Comenzamos'}
+              terceraLlamadaLabel={hasEnteredUniverse ? '#Reestrenamos' : '#Comenzamos'}
             />
 
             <div className="relative z-10">
@@ -927,7 +927,7 @@ function App() {
                 showPerspectivasNav={isCuradoriaVisible}
                 showObraDestacadaNav={isObraDestacadaVisible}
                 showTerceraLlamadaNav={canShowPostHeroContent}
-                terceraLlamadaLabel={hasEnteredUniverse ? '#Reestreno' : '#Comenzamos'}
+                terceraLlamadaLabel={hasEnteredUniverse ? '#Reestrenamos' : '#Comenzamos'}
               />
               {shouldShowToast && (
                 <LoginToast emailHash={emailHash} onDismiss={dismissToast} />

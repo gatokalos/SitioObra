@@ -47,7 +47,7 @@ const CATEGORIES = [
     id: 'miniverso_novela',
     icon: <BookOpen size={20} className="text-emerald-300" />,
     title: 'Literatura',
-        description: 'La palabra devolvió lo que el gato se tragó:\nMi Gato Encerrado\n salió de sí para reconocerse.',
+        description: 'La escritura devolvió lo que el gato se tragó:\nMi Gato Encerrado\n salió de sí para reconocerse.',
   },
   {
     id: 'taza',

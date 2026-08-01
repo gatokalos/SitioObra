@@ -60,6 +60,7 @@ import { useMobileVideoPresentation } from '@/hooks/useMobileVideoPresentation';
 import IAInsightCard from '@/components/IAInsightCard';
 import DiosasCarousel from '@/components/DiosasCarousel';
 import RelatedReadingTooltipButton from '@/components/portal/RelatedReadingTooltipButton';
+import MiniverseIconBadge from '@/components/transmedia/MiniverseIconBadge';
 import VitranaQuestionReveal from '@/components/portal/VitranaQuestionReveal';
 import LoginNudgeOverlay from '@/components/LoginNudgeOverlay';
 import { writePendingContinuation } from '@/lib/pendingContinuation';
@@ -2436,14 +2437,16 @@ const rendernotaAutoral = () => {
               <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-black/10 via-black/30 to-black/90" />
               {/* Contenido flotando al fondo */}
               <div className="relative z-10 flex min-h-[28rem] flex-col p-6">
-                <p className="mb-1 text-xs uppercase tracking-[0.35em] text-slate-300/75 [text-shadow:0_1px_10px_rgba(0,0,0,0.9)]">Obra destacada</p>
-                <h4 className="font-display text-2xl text-slate-100 [text-shadow:0_1px_10px_rgba(0,0,0,0.9)]">Es un gato encerrado</h4>
+                <div className="flex items-center gap-3">
+                  <div>
+                    <p className="mb-1 text-xs uppercase tracking-[0.35em] text-slate-300/75 [text-shadow:0_1px_10px_rgba(0,0,0,0.9)]">Obra destacada</p>
+                    <h4 className="font-display text-2xl text-slate-100 [text-shadow:0_1px_10px_rgba(0,0,0,0.9)]">Es un gato encerrado</h4>
+                  </div>
+                </div>
                 <div aria-hidden="true" className="h-[11rem] sm:h-[13rem]" />
                 <div className="mt-auto space-y-4">
                   <p className="text-sm leading-relaxed text-slate-300/85">
                     A través de una terapia no convencional, un paciente y su doctora exploran el poder de los sueños lúcidos para confrontar el miedo, la desconexión y la rabia reprimida.
-
-Silvestre, un hombre en sus treintas, comienza a perder la frontera entre lo que imagina y lo que siente.
                   </p>
                   <div className="flex flex-wrap gap-2">
                     <span className="rounded-full border border-white/20 bg-black/30 px-3 py-1 text-[11px] uppercase tracking-[0.2em] text-slate-100 backdrop-blur-sm">Incluye dispositivo interactivo</span>
@@ -4181,9 +4184,12 @@ Silvestre, un hombre en sus treintas, comienza a perder la frontera entre lo que
                 <div className="grid gap-10 p-6 sm:p-8 lg:p-10 lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
                   <div className="space-y-6">
                     <div className="flex items-start justify-between gap-4">
-                      <div className="space-y-3">
-                        <p className={`text-xs uppercase tracking-[0.4em] ${SHOWCASE_EYEBROW_COLOR[activeShowcase] ?? 'text-slate-400/70'}`}>#Miniversos</p>
-                        <h3 className="font-display text-3xl leading-tight text-white md:text-4xl">{showcaseTitleDisplay}</h3>
+                      <div className="flex min-w-0 items-center gap-4">
+                        <MiniverseIconBadge formatId={activeShowcase} />
+                        <div className="min-w-0 space-y-3">
+                          <p className={`text-xs uppercase tracking-[0.4em] ${SHOWCASE_EYEBROW_COLOR[activeShowcase] ?? 'text-slate-400/70'}`}>#Miniversos</p>
+                          <h3 className="font-display text-3xl leading-tight text-white md:text-4xl">{showcaseTitleDisplay}</h3>
+                        </div>
                       </div>
                       {latestBlogPostByShowcase[activeShowcase]?.slug ? (
                         <RelatedReadingTooltipButton
@@ -4623,7 +4629,7 @@ Silvestre, un hombre en sus treintas, comienza a perder la frontera entre lo que
                 </div>
               ) : null}
               {/* Botones de control — solo desktop, al fondo del contenido scrollable */}
-              <div className="hidden lg:flex items-center justify-end gap-2 mt-6 pt-3 border-t border-white/8">
+              <div className="hidden lg:flex items-center justify-end gap-2 mt-6 pt-3">
                 <button
                   onClick={handleToggleShowcaseAmbient}
                   aria-label={isShowcaseAmbientAudible ? 'Silenciar sonido ambiente' : 'Activar sonido ambiente'}

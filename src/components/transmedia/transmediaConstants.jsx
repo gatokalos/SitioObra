@@ -70,6 +70,23 @@ export const DEMO_URL_BY_FORMAT_ID = {
   oraculo: 'https://oraculo.miniversos.ai/',
   miniversoNovela: 'https://literatura.miniversos.ai/',
 };
+// Ícono propio por miniverso ("app") — ya usado en la puerta de la pestaña
+// Habitar (MiniverseModal.jsx). Movido aquí (sin dependencias pesadas) para
+// reusarlo también junto a "Obra destacada" en Transmedia.jsx/portales, sin
+// duplicar el mapa.
+export const MINIVERSE_ICON_IMAGES = {
+  miniversos: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Merch/la_obra.png',
+  lataza: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Merch/la_taza.png',
+  copycats: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Merch/cortos.png',
+  miniversoMovimiento: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Merch/lasdiosas.png',
+  miniversoNovela: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Merch/literatura.png',
+  miniversoGrafico: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Merch/los_graficos.png',
+  miniversoSonoro: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Merch/sonoridades.png',
+  apps: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Merch/juegos.png',
+  oraculo: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Merch/el_oraculo.png',
+};
+export const MINIVERSE_ICON_PLACEHOLDER = MINIVERSE_ICON_IMAGES.apps;
+
 export const MOVEMENT_COLLABORATOR_CALL_ITEMS = [
   'Intérpretes y bailarines por ciudad',
   'Diseño y desarrollo de skins digitales',
@@ -1414,7 +1431,7 @@ export const formats = [
   },
   {
     id: 'miniversoNovela',
-    title: 'La palabra',
+    title: 'La escritura',
     icon: BookOpen,
     iconClass: 'text-emerald-300',
 

@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useLocation , useNavigate } from 'react-router-dom';
 import { Headphones } from 'lucide-react';
 import MiniVersoCard from '@/components/transmedia/MiniVersoCard';
+import MiniverseIconBadge from '@/components/transmedia/MiniverseIconBadge';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/SupabaseAuthContext';
 import LoginOverlay from '@/components/ContributionModal/LoginOverlay';
@@ -313,9 +314,12 @@ const PortalSonoridades = () => {
             ) : null}
             <div className="grid gap-6 p-4 sm:p-6 lg:p-8 lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
               <div className="space-y-6">
-                <div className="space-y-3">
-                  <p className="text-xs uppercase tracking-[0.4em] text-cyan-300">#Miniversos</p>
-                  <h3 className="font-display text-3xl leading-tight text-white md:text-4xl">{titleDisplay}</h3>
+                <div className="flex min-w-0 items-center gap-4">
+                  <MiniverseIconBadge formatId="miniversoSonoro" />
+                  <div className="min-w-0 space-y-3">
+                    <p className="text-xs uppercase tracking-[0.4em] text-cyan-300">#Miniversos</p>
+                    <h3 className="font-display text-3xl leading-tight text-white md:text-4xl">{titleDisplay}</h3>
+                  </div>
                 </div>
                 <div className="space-y-3 text-lg text-slate-200/85 leading-relaxed font-light">
                   <p>{SONORIDADES_INTRO}</p>

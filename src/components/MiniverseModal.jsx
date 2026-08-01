@@ -9,7 +9,12 @@ import { ToastAction } from '@/components/ui/toast';
 import { supabase } from '@/lib/supabaseClient';
 import { useAuth } from '@/contexts/SupabaseAuthContext';
 import { safeGetItem, safeSetItem } from '@/lib/safeStorage';
-import { ORACULO_RECOMMENDED_SHOWCASE_KEY, DEMO_URL_BY_FORMAT_ID } from '@/components/transmedia/transmediaConstants';
+import {
+  ORACULO_RECOMMENDED_SHOWCASE_KEY,
+  DEMO_URL_BY_FORMAT_ID,
+  MINIVERSE_ICON_IMAGES,
+  MINIVERSE_ICON_PLACEHOLDER,
+} from '@/components/transmedia/transmediaConstants';
 import { getTopShowcaseLikes } from '@/services/showcaseLikeService';
 import { isSafariBrowser } from '@/lib/browser';
 import { resolvePortalRoute } from '@/lib/miniversePortalRegistry';
@@ -228,7 +233,7 @@ const MINIVERSE_PORTAL_TITLE_PATTERN = /^\d+\s*-\s*/;
 const VISITED_MINIVERSES_STORAGE_KEY = 'gatoencerrado:miniverse-visited';
 const CARD_RESONANCE_KEY = {
   drama:      'El drama',
-  literatura: 'La palabra',
+  literatura: 'La escritura',
   taza:       'El objeto',
   graficos:   'La apariencia',
   cine:       'El lente',
@@ -283,7 +288,7 @@ export const MINIVERSE_CARDS = [
   {
     id: 'literatura',
     formatId: 'miniversoNovela',
-    appName: 'La palabra',
+    appName: 'La escritura',
     icon: BookOpen,
     thumbLabel: 'L',
     thumbGradient: 'from-emerald-400/80 via-teal-500/70 to-cyan-500/60',
@@ -427,19 +432,6 @@ export const MINIVERSE_CARDS = [
   },
 
 ];
-
-const MINIVERSE_ICON_IMAGES = {
-  miniversos: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Merch/la_obra.png',
-  lataza: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Merch/la_taza.png',
-  copycats: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Merch/cortos.png',
-  miniversoMovimiento: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Merch/lasdiosas.png',
-  miniversoNovela: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Merch/literatura.png',
-  miniversoGrafico: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Merch/los_graficos.png',
-  miniversoSonoro: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Merch/sonoridades.png',
-  apps: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Merch/juegos.png',
-  oraculo: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Merch/el_oraculo.png',
-};
-const MINIVERSE_ICON_PLACEHOLDER = 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Merch/juegos.png';
 
 const initialFormState = {
   fullName: '',
@@ -938,7 +930,7 @@ const MiniverseModal = ({
   const activeTabIntro = useMemo(() => {
       if (activeTab === 'escaparate') {
       return {
-      lead: 'Explora el universo a través de fragmentos. Cada uno muestra una forma distinta de contener la obra y abre la misma pregunta:',
+      lead: 'Explora el universo a partir de fragmentos. Cada uno muestra una forma distinta de contener la obra y abre la misma pregunta:',
       highlight: '¿qué ocurre cuando una herida emocional se expande y toca otras vidas?',
       };
     }
@@ -953,7 +945,7 @@ const MiniverseModal = ({
       return {
       lead: 'La soledad, la confusión y la ira que este universo decide mirar,',
       highlight: 'muchos niños, niñas y jóvenes tijuanenses las transitan en silencio.',
-      continuation: 'Con $50MXN tu huella ayuda a detectarlas y acompañarles a tiempo.'
+      continuation: 'Con $50MXN ayudas a detectarlas y acompañarles a tiempo.'
     };
 
     function newFunction() {
@@ -2009,16 +2001,7 @@ const MiniverseModal = ({
                           >
                             Dejar mi huella
                           </Button>
-                          <button
-                            type="button"
-                            onClick={handleScrollToSupport}
-                            className="relative flex w-full items-center justify-center gap-3 text-left group focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-purple-400/60"
-                          >
-                            <div className="h-5 w-5 rounded-full border border-emerald-300/40 bg-emerald-300/70 shadow-[0_0_12px_rgba(52,211,153,0.35)]" />
-                            <span className="text-sm text-slate-300/80 leading-relaxed">
-                              Quiero saber cómo funciona.
-                            </span>
-                          </button>
+                        
                         </div>
                       </div>
                     </div>
@@ -2033,16 +2016,7 @@ const MiniverseModal = ({
                         
                         <span className="h-px flex-1 bg-white/10" />
                       </div>
-                      <p className="text-xs text-slate-400/80 leading-relaxed">
-                        En alianza con Isabel Ayuda para la Vida, A.C.{' '}
-                        <button
-                          type="button"
-                          onClick={handleScrollToSupport}
-                          className="text-slate-200 underline underline-offset-4 hover:text-white transition"
-                        >
-                          Conoce más
-                        </button>
-                      </p>
+                    
                       <div className="space-y-3">
                         <div className="flex items-center gap-3 rounded-xl border border-white/10 bg-white/5 px-4 py-3">
                           <div className="h-10 w-10 rounded-full border border-white/10 bg-white/5 flex items-center justify-center">

@@ -13,6 +13,7 @@ import {
   X,
 } from 'lucide-react';
 import MiniVersoCard from '@/components/transmedia/MiniVersoCard';
+import MiniverseIconBadge from '@/components/transmedia/MiniverseIconBadge';
 import { useAuth } from '@/contexts/SupabaseAuthContext';
 import LoginOverlay from '@/components/ContributionModal/LoginOverlay';
 import LoginNudgeOverlay from '@/components/LoginNudgeOverlay';
@@ -973,9 +974,12 @@ const PortalVoz = () => {
             <div className="grid gap-6 p-4 sm:p-6 lg:p-8 lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
               <div className="space-y-6">
                 <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
-                  <div className="space-y-3">
-                    <p className="text-xs uppercase tracking-[0.4em] text-purple-300">#Miniversos</p>
-                    <h3 className="font-display text-3xl leading-tight text-white md:text-4xl">{titleDisplay}</h3>
+                  <div className="flex min-w-0 items-center gap-4">
+                    <MiniverseIconBadge formatId="miniversos" />
+                    <div className="min-w-0 space-y-3">
+                      <p className="text-xs uppercase tracking-[0.4em] text-purple-300">#Miniversos</p>
+                      <h3 className="font-display text-3xl leading-tight text-white md:text-4xl">{titleDisplay}</h3>
+                    </div>
                   </div>
                 </div>
                 <div className="space-y-4 text-lg text-slate-200/85 leading-relaxed font-light">
@@ -1072,8 +1076,6 @@ const PortalVoz = () => {
               <div className="absolute bottom-0 inset-x-0 p-5 space-y-3">
                 <p className="text-sm leading-relaxed text-slate-200/90">
                   A través de una terapia no convencional, un paciente y su doctora exploran el poder de los sueños lúcidos para confrontar el miedo, la desconexión y la rabia reprimida.
-
-Silvestre, un hombre en sus treintas, comienza a perder la frontera entre lo que imagina y lo que siente.
                 </p>
                 <div className="flex flex-wrap gap-2">
                   <span className="rounded-full border border-white/20 bg-black/30 px-3 py-1 text-[11px] uppercase tracking-[0.2em] text-slate-100 backdrop-blur-sm">Incluye dispositivo interactivo</span>
