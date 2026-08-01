@@ -1,8 +1,8 @@
 import React, { useState, useCallback, useEffect, useRef, useMemo } from 'react';
+import { createPortal } from 'react-dom';
 import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
-import { Users, Headphones, Quote, Send, HeartHandshake, RefreshCw, Heart, Play, Camera, Drama } from 'lucide-react';
+import { Users, Headphones, Quote, Send, HeartHandshake, RefreshCw, Heart, Play, Camera, Drama, Info } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { ToastAction } from '@/components/ui/toast';
 import { toast } from '@/components/ui/use-toast';
 import { useAuth } from '@/contexts/SupabaseAuthContext';
 import { ConfettiBurst } from '@/components/Confetti';
@@ -485,12 +485,6 @@ export const ProvocaSection = () => {
     };
   }, [voicesPool]);
 
-  const triggerLoginModal = useCallback(() => {
-    if (typeof window !== 'undefined') {
-      window.dispatchEvent(new CustomEvent('open-login-modal'));
-    }
-  }, []);
-
   const handleRefreshVoices = useCallback(() => {
     if (!canRefreshVoices) return;
     setVisibleVoiceCursor((previous) => (previous + visibleVoiceRefreshStep) % rankedVoicesPool.length);
@@ -500,22 +494,6 @@ export const ProvocaSection = () => {
     const perspectiveId = String(voice?.sourceId || '').trim();
     if (!perspectiveId) {
       toast({ description: 'Este testimonio aún no admite pulso.' });
-      return;
-    }
-
-    if (!user?.id) {
-      toast({
-        description: 'Inicia sesión para detectar tu pulso.',
-        action: (
-          <ToastAction
-            altText="Abrir login"
-            onClick={triggerLoginModal}
-            className="h-auto border-none bg-transparent p-0 text-xs underline underline-offset-2 text-slate-100 hover:bg-transparent hover:text-white"
-          >
-            Iniciar sesión
-          </ToastAction>
-        ),
-      });
       return;
     }
 
@@ -539,7 +517,7 @@ export const ProvocaSection = () => {
     persistLikedVoiceIds([...likedVoiceIds, perspectiveId]);
     showPulseDelta(perspectiveId);
     setVoiceLikeStatusById((previous) => ({ ...previous, [perspectiveId]: 'success' }));
-  }, [likedVoiceIds, persistLikedVoiceIds, showPulseDelta, triggerLoginModal, user, voiceLikeStatusById]);
+  }, [likedVoiceIds, persistLikedVoiceIds, showPulseDelta, user, voiceLikeStatusById]);
 
   const handleSubmitVoice = useCallback(async () => {
     const rawQuote = voiceDraft.trim();
@@ -789,12 +767,12 @@ export const ProvocaSection = () => {
                   >
                     <textarea
                       ref={voiceTextareaRef}
-                      aria-label="Comparte cómo cambió tu forma de mirar, sentir o recordar"
+                      aria-label="Comparte algo que cambió tu forma de mirar, sentir o recordar"
                       value={voiceDraft}
                       onChange={(event) => setVoiceDraft(event.target.value)}
                       rows={3}
                       className="form-surface w-full px-4 py-3 resize-none"
-                      placeholder="Comparte cómo cambió tu forma de mirar, sentir o recordar…"
+                      placeholder="Comparte algo que cambió tu forma de mirar, sentir o recordar…"
                     />
                     <div className="mt-3 grid gap-3 sm:grid-cols-2">
                       <input
@@ -854,13 +832,28 @@ export const ProvocaSection = () => {
                       <p className="w-full text-[11px] text-slate-300/70">
                         Si no quieres publicar, solo escucha una reacción de la obra inspirada en tu voz.
                       </p>
+                      <details className="group w-full text-[11px]">
+                        <summary className="inline-flex cursor-pointer list-none items-center gap-1.5 text-slate-400/80 transition hover:text-slate-200">
+                          <span className="inline-flex h-4 w-4 shrink-0 items-center justify-center rounded-full border border-slate-400/50">
+                            <Info size={10} />
+                          </span>
+                          ¿Quién o qué es la obra que reacciona?
+                        </summary>
+                        <p className="mt-2 leading-relaxed text-slate-300/80">
+                          No es una narradora ni una asistente que resuelve dudas.
+                          <br />
+                          Es la obra reaccionando desde sus propias imágenes y conflictos — solo conoce este universo.
+                          <br />
+                          Lo que recibas no es una respuesta: es una reacción irrepetible, nacida de lo que compartiste.
+                        </p>
+                      </details>
                     </div>
                        <details className="group mt-4 md:mt-5 mb-5 rounded-2xl border border-emerald-300/20 bg-emerald-500/10 px-4 py-3 text-left">
                 <summary className="flex cursor-pointer list-none items-center justify-between gap-3">
                   <span className="flex items-center gap-3">
                     <HeartHandshake size={16} className="text-emerald-200" />
                     <span className="text-[0.66rem] uppercase tracking-[0.23em] text-emerald-200/85">
-                      Y si algo se movió más de lo esperado...
+                      Y si algo te movió más de lo esperado...
                     </span>
                   </span>
                   <span className="text-[0.62rem] uppercase tracking-[0.16em] text-emerald-200/80 group-open:text-white">
@@ -1117,6 +1110,15 @@ const About = () => {
   }, [stopTrailerPlayback]);
 
   useEffect(() => {
+    if (!isTrailerOpen || typeof document === 'undefined') return undefined;
+    const handleEscape = (event) => {
+      if (event.key === 'Escape') handleCloseTrailer();
+    };
+    document.addEventListener('keydown', handleEscape);
+    return () => document.removeEventListener('keydown', handleEscape);
+  }, [isTrailerOpen, handleCloseTrailer]);
+
+  useEffect(() => {
     if (typeof window === 'undefined') return undefined;
     const handleShowcaseVisibility = (event) => {
       if (!event?.detail?.open) return;
@@ -1284,10 +1286,11 @@ const About = () => {
 
       </div>
 
+      {typeof document !== 'undefined' && createPortal(
       <AnimatePresence>
         {isTrailerOpen && trailer?.url && (
           <motion.div
-            className="fixed inset-0 z-50 flex items-center justify-center"
+            className="fixed inset-0 z-[100] flex items-center justify-center"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
@@ -1350,7 +1353,9 @@ const About = () => {
             </motion.div>
           </motion.div>
         )}
-      </AnimatePresence>
+      </AnimatePresence>,
+      document.body
+      )}
     </section>
     </>
   );
