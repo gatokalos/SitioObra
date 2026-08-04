@@ -257,7 +257,10 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
 
   // Persistent state — lazy-init desde localStorage; si no hay, se verifica contra Supabase
   const [l1Done, setL1Done] = useState(() => !!lsRead(portal).l1);
+  // Chip de expectativa — se movió al pre-estímulo (H-LIT-2): se contesta en L1,
+  // inmediatamente después del eco de la intuición y antes de abrir el artefacto.
   const [l2Selection, setL2Selection] = useState(() => lsRead(portal).l2_option ?? null);
+  const [l1ChipDone, setL1ChipDone] = useState(() => !!lsRead(portal).l2_option);
   const [l2Submitting, setL2Submitting] = useState(false);
   const [l2Open, setL2Open] = useState(() => {
     const s = lsRead(portal);
@@ -333,6 +336,7 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
           if (l2Row) {
             lsPatch(portal, { l2_option: l2Row.respuesta, l2_ts: Date.now() });
             setL2Selection(l2Row.respuesta);
+            setL1ChipDone(true);
           }
         }
       } catch (_) {}
@@ -403,8 +407,11 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
     onOpenNarrative?.();
   };
 
-  /* Nivel 2 — turno de conversación con IA */
-  const callL2Turn = useCallback(async (respuesta = null, silent = false) => {
+  /* Nivel 2 — turno de conversación con IA
+     `context` solo se envía en el primer turno (auto-arranque): fragment_id/plano/
+     initiator del párrafo leído en voz alta dentro del artefacto (Marcador
+     Inteligente, Literatura) — ver resonance.js /l2-turn, se guardan una sola vez. */
+  const callL2Turn = useCallback(async (respuesta = null, silent = false, context = null) => {
     setConvLoading(true);
     setConvError(false);
     lsPatch(portal, { l2_conv_error: false });
@@ -419,6 +426,9 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
           miniverso_id: portal,
           ...(respuesta != null ? { respuesta } : {}),
           ...(silent ? { silent: true } : {}),
+          ...(context?.fragment_id ? { fragment_id: context.fragment_id } : {}),
+          ...(context?.plano ? { plano: context.plano } : {}),
+          ...(context?.initiator ? { initiator: context.initiator } : {}),
         }),
         signal: controller.signal,
       });
@@ -454,18 +464,25 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
     }
   }, [portal, onL2QuestionReady]);
 
-  // Auto-arranca la conversación cuando el modal abre después de completar la experiencia
+  // Auto-arranca la conversación cuando el modal abre después de completar la experiencia.
+  // Si el artefacto dejó fragment_id/plano/initiator (Marcador Inteligente, Literatura),
+  // el primer turno los lleva — es la única vez que se envían.
   useEffect(() => {
     if (!open) return;
     if (!l2NarrativeOpened || l2ConvDone || convQuestion !== null || convLoading || convError) return;
-    if (!lsRead(portal).experience_ts) return;
-    void callL2Turn();
+    const s = lsRead(portal);
+    if (!s.experience_ts) return;
+    const context = (s.l2_fragment_id || s.l2_plano || s.l2_initiator)
+      ? { fragment_id: s.l2_fragment_id, plano: s.l2_plano, initiator: s.l2_initiator }
+      : null;
+    void callL2Turn(null, false, context);
   }, [open, l2NarrativeOpened, l2ConvDone, convQuestion, convLoading, convError, portal, callL2Turn]);
 
-  /* Nivel 2 — opciones */
-  const handleLevel2Select = async (option) => {
-    if (l2Selection || l2Submitting) return;
+  /* Nivel 1 — chip de expectativa (pre-estímulo, inmediatamente después del eco) */
+  const handleExpectativaSelect = async (option) => {
+    if (l1ChipDone || l2Submitting) return;
     setL2Selection(option); // optimistic
+    setL1ChipDone(true);
     setL2Submitting(true);
     const anonId = ensureAnonId();
     lsPatch(portal, { l2_option: option, l2_ts: Date.now() });
@@ -479,14 +496,17 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
       });
     } catch (_) {}
 
-    // Persiste evidencia post-experiencia (fire-and-forget)
-    fetch(`${OBRA_API_URL}/api/resonance/evidence`, {
+    // Persiste la expectativa en el pre-estímulo (H-LIT-2): va a /baseline junto
+    // con la intuición, no a /evidence — las dos declaraciones de L1 ocurren sin
+    // nada en medio, antes de abrir el artefacto.
+    fetch(`${OBRA_API_URL}/api/resonance/baseline`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        anon_id:         anonId,
-        miniverso_id:    portal,
-        cambio_response: option,
+        anon_id:              anonId,
+        miniverso_id:         portal,
+        expectativa_chip:     option,
+        expectativa_question: l2q?.question ?? null,
       }),
     }).catch(() => {});
 
@@ -1002,6 +1022,73 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
                       onRequireLogin={onRequireLogin}
                     />
                   </motion.div>
+                ) : l1Done && !l1ChipDone ? (
+                  /* ── Nivel 1: eco de la intuición + chip de expectativa ──
+                     H-LIT-2: nada entre el eco y los chips — la distancia entre
+                     lo que alguien se dice y lo que espera del otro solo es
+                     interpretable si no hay nada en medio. */
+                  <motion.div
+                    key="l1-echo-chips"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.3 }}
+                  >
+                    <div aria-hidden="true" className="h-16 sm:h-24 lg:hidden" />
+
+                    {/* Desktop: eco prominente */}
+                    <div className="hidden lg:block lg:px-10 lg:pb-5 lg:pt-14">
+                      <p className="mb-3 text-[0.62rem] uppercase tracking-[0.32em] text-white/50">
+                        Antes de entrar
+                      </p>
+                      <p
+                        className="font-display leading-snug question-voice"
+                        style={{ fontSize: 'clamp(1.3rem, 2.3vw, 2.1rem)' }}
+                      >
+                        {buildL1Acknowledgment(portal, lsRead(portal).l1_answer) ?? question}
+                      </p>
+                    </div>
+
+                    <div
+                      aria-hidden="true"
+                      className="hidden lg:block mx-8 mb-5 h-px question-divider-voice"
+                    />
+
+                    <div className="px-5 pb-[max(1.25rem,env(safe-area-inset-bottom))] sm:px-6 sm:pb-5 lg:pb-10 lg:px-10">
+                      <div className="space-y-3">
+                        {/* Mobile: eco */}
+                        <div className="lg:hidden space-y-2">
+                          <div className="inline-flex rounded-full border border-white/10 bg-white/5 px-3 py-1 text-[0.62rem] uppercase tracking-[0.32em] text-white/70">
+                            Antes de entrar
+                          </div>
+                          <h3 className="font-display text-2xl leading-tight tracking-tight question-voice">
+                            {buildL1Acknowledgment(portal, lsRead(portal).l1_answer) ?? question}
+                          </h3>
+                        </div>
+
+                        {l2q && (
+                          <>
+                            <p className="pt-1 text-sm leading-relaxed text-slate-300/80">
+                              {l2q.question}
+                            </p>
+                            <div className="flex flex-wrap gap-1.5 pt-1">
+                              {l2q.options.map((opt) => (
+                                <button
+                                  key={opt}
+                                  type="button"
+                                  onClick={() => handleExpectativaSelect(opt)}
+                                  disabled={l2Submitting}
+                                  className="rounded-full border border-amber-400/30 bg-amber-900/20 px-3 py-1 text-xs text-amber-100/90 transition hover:border-amber-400/55 hover:bg-amber-900/35 hover:text-amber-50 disabled:opacity-40"
+                                >
+                                  {opt}
+                                </button>
+                              ))}
+                            </div>
+                          </>
+                        )}
+                      </div>
+                    </div>
+                  </motion.div>
                 ) : bitacoraOpen ? (
                   /* ── Bitácora individual: preguntas diferidas ── */
                   <motion.div
@@ -1181,38 +1268,15 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
                           Laboratorio #GatoEncerrado
                         </div>
                       </div>
-                      {/* Título + descripción — se ocultan en móvil cuando el acordeón L2 está abierto */}
                       <h2
                         id="resonance-modal-title"
-                        className={`font-display text-3xl text-white lg:text-4xl ${!l2ConvDone && l2q && !l2Selection && l2Open ? 'hidden' : ''}`}
+                        className="font-display text-3xl text-white lg:text-4xl"
                       >
                         Caja de resonancia estética
                       </h2>
-                      <p className={`text-sm leading-relaxed text-slate-200/90 ${!l2ConvDone && l2q && !l2Selection && l2Open ? 'hidden' : ''}`}>
+                      <p className="text-sm leading-relaxed text-slate-200/90">
                         Cada etapa aporta datos valiosos para comprender cómo habitamos las emociones delante de otros.
                       </p>
-
-                      {/* Pregunta L2 + chips — móvil, solo cuando el acordeón está abierto */}
-                      {!l2ConvDone && l2q && !l2Selection && l2Open && (
-                        <>
-                          <h2 className="font-display text-2xl leading-snug question-voice">
-                            {l2q.question}
-                          </h2>
-                          <div className="flex flex-wrap gap-1.5 pt-1">
-                            {l2q.options.map((opt) => (
-                              <button
-                                key={opt}
-                                type="button"
-                                onClick={() => handleLevel2Select(opt)}
-                                disabled={l2Submitting}
-                                className="rounded-full border border-amber-400/30 bg-amber-900/20 px-3 py-1 text-xs text-amber-100/90 transition hover:border-amber-400/55 hover:bg-amber-900/35 hover:text-amber-50 disabled:opacity-40"
-                              >
-                                {opt}
-                              </button>
-                            ))}
-                          </div>
-                        </>
-                      )}
                     </div>
 
                     {/* Niveles */}
@@ -1517,23 +1581,20 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
                                           <span className="italic">Conversación completada</span>
                                         </div>
                                       )}
-                                      {isL2 && !l2ConvDone && l2q && !l2Selection && (
-                                        <p className="text-xs leading-relaxed text-slate-400/80">
-                                          Elige una opción arriba para continuar hacia la experiencia narrativa.
-                                        </p>
-                                      )}
-                                      {isL2 && !l2ConvDone && l2Selection && (
+                                      {isL2 && !l2ConvDone && (
                                         <div className="space-y-2">
-                                          <div className="flex items-center gap-2 text-xs text-slate-300">
-                                            <Check size={12} className="shrink-0 text-emerald-400/70" />
-                                            <span className="italic">{l2Selection}</span>
-                                          </div>
+                                          {l2Selection && (
+                                            <div className="flex items-center gap-2 text-xs text-slate-300">
+                                              <Check size={12} className="shrink-0 text-emerald-400/70" />
+                                              <span className="italic">{l2Selection}</span>
+                                            </div>
+                                          )}
                                           <p className="text-xs leading-relaxed text-slate-400/80">
                                             {l2q?.l2Desc ?? level.desc}
                                           </p>
                                         </div>
                                       )}
-                                      {isL2 && !l2ConvDone && l2Selection && onOpenNarrative && (
+                                      {isL2 && !l2ConvDone && onOpenNarrative && (
                                         <motion.button
                                           type="button"
                                           onClick={handleOpenNarrativeExperience}

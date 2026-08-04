@@ -468,7 +468,26 @@ const PortalLiteratura = () => {
 
       <LiteraturaAppOverlay
         open={showLiteraturaApp}
-        onClose={() => setShowLiteraturaApp(false)}
+        onRequireLogin={handleOpenLogin}
+        onClose={(sessionContext) => {
+          setShowLiteraturaApp(false);
+          // Marca la experiencia como vivida (dispara la conversación del
+          // Reseñador en ResonanceModal) y le pasa fragment_id/plano/initiator
+          // si el usuario llegó a "Iniciar debate" dentro del artefacto.
+          try {
+            const key = 'gatoencerrado:resonance:literatura';
+            const existing = JSON.parse(localStorage.getItem(key) || '{}');
+            localStorage.setItem(key, JSON.stringify({
+              ...existing,
+              experience_ts: existing.experience_ts ?? Date.now(),
+              ...(sessionContext?.fragment_id ? { l2_fragment_id: sessionContext.fragment_id } : {}),
+              ...(sessionContext?.plano ? { l2_plano: sessionContext.plano } : {}),
+              ...(sessionContext?.initiator ? { l2_initiator: sessionContext.initiator } : {}),
+            }));
+          } catch { /* ignore */ }
+          refreshL1();
+          setIsResonanceOpen(true);
+        }}
       />
     </div>
   );

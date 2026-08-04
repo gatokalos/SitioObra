@@ -166,6 +166,7 @@ export const useSilvestreVoice = () => {
   const silvestreAbortRef = useRef(null);
   const serviceUnavailableUntilRef = useRef(0);
   const ignoreNextTranscriptRef = useRef(false);
+  const isMicTranscriptSendingRef = useRef(false);
   const modeRef = useRef(null);
   const thinkingMessageTimerRef = useRef(null);
   const thinkingPulseTimerRef = useRef(null);
@@ -898,6 +899,19 @@ export const useSilvestreVoice = () => {
     [playAudioBlobThroughContext, primeSilvestreAudioPlayback, recordObraChat, stopSilvestreAudio, user]
   );
 
+  const submitMicTranscript = useCallback(async (message = null) => {
+    const finalText = (typeof message === 'string' ? message : transcriptRef.current).trim();
+    if (!finalText || isMicTranscriptSendingRef.current) return false;
+
+    isMicTranscriptSendingRef.current = true;
+    transcriptRef.current = '';
+    try {
+      return await sendTranscript(finalText, { source: 'mic', modeId: modeRef.current });
+    } finally {
+      isMicTranscriptSendingRef.current = false;
+    }
+  }, [sendTranscript]);
+
   const stopSilvestreListening = useCallback(
     (options = {}) => {
       if (options.discardTranscript) {
@@ -1020,17 +1034,14 @@ export const useSilvestreVoice = () => {
           ignoreNextTranscriptRef.current = false;
           return;
         }
-        const finalText = transcriptRef.current.trim();
-        if (finalText) {
-          sendTranscript(finalText, { source: 'mic', modeId: modeRef.current });
-          transcriptRef.current = '';
-        }
+        void submitMicTranscript();
       };
       recognitionRef.current = recognition;
     }
 
     if (isListening) {
       stopSilvestreListening();
+      void submitMicTranscript();
       return;
     }
 
@@ -1043,6 +1054,7 @@ export const useSilvestreVoice = () => {
       }
       micTimeoutRef.current = setTimeout(() => {
         stopSilvestreListening();
+        void submitMicTranscript();
       }, 45000);
     } catch (error) {
       console.error('[Silvestre Voice] start error:', error);
@@ -1060,8 +1072,8 @@ export const useSilvestreVoice = () => {
     micPromptVisible,
     pendingSilvestreAudioUrl,
     primeSilvestreAudioPlayback,
-    sendTranscript,
     stopSilvestreListening,
+    submitMicTranscript,
   ]);
 
   const handleSendSilvestrePreset = useCallback(
@@ -1159,6 +1171,8 @@ export const useSilvestreVoice = () => {
     handleSendSilvestrePreset,
     handlePlayPendingAudio,
     resetSilvestreQuestions,
+    submitMicTranscript,
+    stopSilvestreListening,
     stopSilvestreResponse,
   };
 };

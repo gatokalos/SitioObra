@@ -22,6 +22,7 @@ const ObraConversationControls = ({
   secondaryCtaEmphasis = 'soft',
   onMicClick,
   onPlayPending,
+  onTranscriptSubmit,
   onSecondaryCtaClick,
   tone = null,
   className = '',
@@ -148,15 +149,26 @@ const ObraConversationControls = ({
         ) : null}
       </div>
 
-      {micError && !isListening && !transcript ? (
+      {micError && !isListening ? (
         <div className="mt-4 rounded-2xl border border-red-500/30 bg-red-500/10 p-4 text-sm text-red-100">
-          <p className="text-xs uppercase tracking-[0.35em] text-red-300">Sin micrófono</p>
-          <p>Tu navegador no permite activar el micrófono. Puedes escribirle a Silvestre si prefieres.</p>
+          <p className="text-xs uppercase tracking-[0.35em] text-red-300">La Obra no pudo responder</p>
+          <p>{micError}</p>
         </div>
       ) : null}
       {transcript ? (
         <div className="mt-4 rounded-2xl border border-purple-500/40 bg-white/5 p-4 text-sm text-slate-100">
           <p className="break-words">{transcript}</p>
+          {onTranscriptSubmit && !isListening && !isSilvestreThinking && !isSilvestrePlaying ? (
+            <Button
+              type="button"
+              size="sm"
+              variant="outline"
+              onClick={onTranscriptSubmit}
+              className="mt-3 border-purple-300/40 bg-purple-500/10 text-purple-100 hover:bg-purple-500/20"
+            >
+              Enviar esta frase
+            </Button>
+          ) : null}
         </div>
       ) : null}
       {pendingSilvestreAudioUrl ? (

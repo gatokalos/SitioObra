@@ -115,7 +115,7 @@ const BlogContributionPrompt = ({ onAskQuestion = null }) => {
 
 Y no pasa nada.
 
-Si te encuentras en medio de una obra que aún no tiene pies ni cabeza, 
+Si te encuentras en medio de una que aún no tiene pies ni cabeza, 
 solo nota si algo de lo que miras se queda moviéndose adentro.`}
   </span>
 

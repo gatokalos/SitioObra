@@ -20,6 +20,7 @@ import { isSafariBrowser } from '@/lib/browser';
 import { resolvePortalRoute } from '@/lib/miniversePortalRegistry';
 import { createPortalLaunchState } from '@/lib/portalNavigation';
 import TransmediaDeviceOverlay from '@/components/TransmediaDeviceOverlay';
+import ObraTransmediaArtifact from '@/components/miniversos/obra/ObraTransmediaArtifact';
 import {
   MINIVERSE_HOME_EVENT_TYPES,
   trackMiniverseHomeEvent,
@@ -523,6 +524,7 @@ const MiniverseModal = ({
   useDeviceDemo = false,
 }) => {
   const [deviceDemoUrl, setDeviceDemoUrl] = useState(null);
+  const [isDramaArtifactOpen, setIsDramaArtifactOpen] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
   const { user } = useAuth();
@@ -1240,6 +1242,19 @@ const MiniverseModal = ({
       // en los 9 Portal*.jsx/Transmedia.jsx) queda exento de este aviso: debe
       // seguir abriendo de verdad, con o sin demo de dispositivo listo.
       const isRecommendedForGuest = safeGetItem(ORACULO_RECOMMENDED_SHOWCASE_KEY) === card.formatId;
+      // El drama ya tiene una conversación propia dentro de Transmedia. Esta
+      // entrada debe abrirla también desde la puerta inline de Habita, donde
+      // useDeviceDemo enviaba antes al usuario al placeholder genérico.
+      const shouldOpenDramaConversation = card.id === 'drama' && card.formatId === 'miniversos';
+      if (shouldOpenDramaConversation) {
+        if (!visitedMiniverses[card.id]) {
+          playKnockSound();
+        }
+        markMiniverseVisited(card.id);
+        trackAppClick(card, source);
+        setIsDramaArtifactOpen(true);
+        return;
+      }
       if (useDeviceDemo && !isRecommendedForGuest) {
         const demoUrl = DEMO_URL_BY_FORMAT_ID[card.formatId];
         if (demoUrl) {
@@ -3012,6 +3027,10 @@ const MiniverseModal = ({
       {useDeviceDemo ? (
         <TransmediaDeviceOverlay url={deviceDemoUrl} onClose={() => setDeviceDemoUrl(null)} />
       ) : null}
+      <ObraTransmediaArtifact
+        open={isDramaArtifactOpen}
+        onClose={() => setIsDramaArtifactOpen(false)}
+      />
     </>
   );
 };
