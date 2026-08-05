@@ -86,6 +86,13 @@ const useTransmediaCredits = ({ isAuthenticated, userId, toast }) => {
   const [tazaActivations, setTazaActivations] = useState(() => readStoredInt('gatoencerrado:taza-activations', 0));
   const [tokenPrecareContext, setTokenPrecareContext] = useState(null);
   const [availableGATokens, setAvailableGATokens] = useState(initialAvailableGATokens);
+  // False hasta que llega la primera confirmación real del servidor. El
+  // valor inicial de availableGATokens es un caché de localStorage que puede
+  // estar desactualizado (por ejemplo tras sincronizar GAT ganado en otra
+  // pestaña/dispositivo, o tras el reclamo retroactivo de MiniVersoCard) —
+  // sin este flag, el toast de "+X GAT" celebra esa corrección como si fuera
+  // un evento recién ganado.
+  const [hasSyncedOnce, setHasSyncedOnce] = useState(false);
   const [showcaseEnergy, setShowcaseEnergy] = useState(() =>
     storedEnergy ? { ...baseEnergyByShowcase, ...storedEnergy } : baseEnergyByShowcase
   );
@@ -116,6 +123,7 @@ const useTransmediaCredits = ({ isAuthenticated, userId, toast }) => {
       setShowcaseBoosts(boosts);
       setShowcaseEnergy(buildShowcaseEnergyFromBoosts(baseEnergyByShowcase, boosts));
       setAvailableGATokens(safeAvailable);
+      setHasSyncedOnce(true);
 
       safeSetItem('gatoencerrado:sonoro-spent', String(Boolean(state.sonoro_spent)));
       safeSetItem('gatoencerrado:graphic-spent', String(Boolean(state.graphic_spent)));
@@ -313,6 +321,7 @@ const useTransmediaCredits = ({ isAuthenticated, userId, toast }) => {
     setQuironSpent,
     syncTransmediaCredits,
     trackTransmediaCreditEvent,
+    hasSyncedOnce,
   };
 };
 

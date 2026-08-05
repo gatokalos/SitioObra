@@ -78,8 +78,9 @@ const MINIVERSE_KEYWORDS = {
 };
 
 const STARTER_FAQ_PROMPTS = [
-  '¿Se puede observar algo sin cambiarlo — incluyéndome a mí misma?',
+  '¿Se puede cambiar algo con tan solo observarlo — incluyéndome a mí misma?',
   '¿Qué hay realmente detrás de las nueve formas de esta obra transmedia?',
+  '¿En qué momento el peso de lo real se vuelve más de lo que puedes sostener?',
   '¿Por qué a veces es más fácil aislarse que admitir que necesitamos ayuda?',
   '¿Cómo se empieza a sanar una herida que viene de herecia familiar?',
   '¿Qué diferencia hay entre medir cuánta gente ve una obra y saber si cambió algo en el público?',
@@ -89,8 +90,7 @@ const STARTER_FAQ_PROMPTS = [
   '¿Qué se hace con la voz que insiste en que uno no es suficiente?',
   '¿Qué se esconde detrás de la persona que parece estar bien todo el tiempo?',
   '¿En qué momento cuidar a alguien se vuelve querer controlarlo?',
-  '¿En qué momento el peso de lo real se vuelve más de lo que puedes sostener?',
-  
+    
 ];
 
 const inferMiniverseFromPost = (post) => {

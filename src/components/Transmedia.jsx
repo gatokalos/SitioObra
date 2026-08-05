@@ -477,6 +477,7 @@ const Transmedia = ({ allianceOnlyMode = false }) => {
     quironSpent, setQuironSpent,
     syncTransmediaCredits,
     trackTransmediaCreditEvent,
+    hasSyncedOnce,
   } = useTransmediaCredits({ isAuthenticated, userId: user?.id, toast });
   const { isMerchCheckoutLoading, handleOpenNovelaReserve } = useMerchCheckout({ userEmail: user?.email, activeShowcase, toast });
   const [movementPendingAction, setMovementPendingAction] = useState(null);
@@ -1539,7 +1540,7 @@ const Transmedia = ({ allianceOnlyMode = false }) => {
     return index;
   }, [showcaseTokenLedger]);
 
-  const { gatBalanceToast } = useGatBalanceToast(safeAvailableGATokens);
+  const { gatBalanceToast } = useGatBalanceToast(safeAvailableGATokens, hasSyncedOnce);
 
   useEffect(() => {
     if (hasHandledDeepLinkRef.current) return;

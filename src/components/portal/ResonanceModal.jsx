@@ -1269,7 +1269,7 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
                     <div className="space-y-1.5">
                       <div className="flex items-center gap-2 flex-wrap">
                         <div className="inline-flex rounded-full border border-white/10 bg-white/5 px-3 py-1 text-[0.62rem] uppercase tracking-[0.32em] text-white/70 backdrop-blur-md">
-                          Laboratorio #GatoEncerrado
+                          Resonancia colectiva
                         </div>
                       </div>
                       <h2
