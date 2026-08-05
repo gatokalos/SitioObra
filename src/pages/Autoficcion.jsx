@@ -98,9 +98,11 @@ const Autoficcion = () => {
             const { state, error: stateError } = await fetchTransmediaCreditState();
             if (stateError) { respond({ allowed: true }); return; }
 
+            // availableGat: el Marcador Inteligente lo usa para avisar si el GAT
+            // no alcanza para la voz antes de llegar al gate, no solo con el 402.
             const used = state.novela_questions ?? 0;
             if (used >= FREE_NOVELA_QUESTIONS) {
-              respond({ allowed: false, used, limit: FREE_NOVELA_QUESTIONS });
+              respond({ allowed: false, used, limit: FREE_NOVELA_QUESTIONS, availableGat: state.available_tokens });
               return;
             }
 
@@ -110,11 +112,11 @@ const Autoficcion = () => {
               idempotencyKey: createTransmediaIdempotencyKey('novela_question'),
             });
 
-            if (regError) { respond({ allowed: true }); return; }
+            if (regError) { respond({ allowed: true, availableGat: state.available_tokens }); return; }
 
-            respond({ allowed: true, used: newState.novela_questions, limit: FREE_NOVELA_QUESTIONS });
+            respond({ allowed: true, used: newState.novela_questions, limit: FREE_NOVELA_QUESTIONS, availableGat: newState.available_tokens });
           } catch {
-            respond({ allowed: true }); // fail open
+            respond({ allowed: true }); // fail open, sin dato de saldo
           }
         })();
         return;

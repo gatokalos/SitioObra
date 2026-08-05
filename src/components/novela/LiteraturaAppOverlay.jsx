@@ -7,7 +7,7 @@ import {
   createTransmediaIdempotencyKey,
 } from '@/services/transmediaCreditsService';
 
-const APP_URL = 'https://literatura.miniversos.ai';
+const APP_URL = import.meta.env.VITE_LITERATURA_APP_URL ?? 'https://literatura.miniversos.ai';
 const FREE_NOVELA_QUESTIONS = 3;
 
 // Marcador Inteligente — el artefacto necesita anon_id para llamar a
@@ -62,9 +62,13 @@ const LiteraturaAppOverlay = ({ open, onClose, onRequireLogin }) => {
             const { state, error: stateError } = await fetchTransmediaCreditState();
             if (stateError) { respond({ allowed: true }); return; }
 
+            // availableGat viaja siempre que se pudo leer el saldo, aparte del
+            // conteo de preguntas gratis: el Marcador Inteligente lo usa para
+            // avisar si el GAT no alcanza para la voz ANTES de llegar al gate
+            // (VoiceReadGate), no solo cuando el débito real falla con 402.
             const used = state.novela_questions ?? 0;
             if (used >= FREE_NOVELA_QUESTIONS) {
-              respond({ allowed: false, used, limit: FREE_NOVELA_QUESTIONS });
+              respond({ allowed: false, used, limit: FREE_NOVELA_QUESTIONS, availableGat: state.available_tokens });
               return;
             }
 
@@ -74,11 +78,11 @@ const LiteraturaAppOverlay = ({ open, onClose, onRequireLogin }) => {
               idempotencyKey: createTransmediaIdempotencyKey('novela_question'),
             });
 
-            if (regError) { respond({ allowed: true }); return; }
+            if (regError) { respond({ allowed: true, availableGat: state.available_tokens }); return; }
 
-            respond({ allowed: true, used: newState.novela_questions, limit: FREE_NOVELA_QUESTIONS });
+            respond({ allowed: true, used: newState.novela_questions, limit: FREE_NOVELA_QUESTIONS, availableGat: newState.available_tokens });
           } catch {
-            respond({ allowed: true }); // fail open
+            respond({ allowed: true }); // fail open, sin dato de saldo
           }
         })();
         return;

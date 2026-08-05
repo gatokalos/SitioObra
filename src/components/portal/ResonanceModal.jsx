@@ -248,6 +248,10 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
   const location = useLocation();
   const [formData, setFormData] = useState({ nombre: '', email: '', respuesta: '' });
   const [submitting, setSubmitting] = useState(false);
+  // Consentimiento de investigación — Texto 1 de la ficha (§4): único punto
+  // donde debe ser explícito en el tramo anónimo, porque es antes de que se
+  // registre nada. Gatea el envío de la pregunta semilla.
+  const [researchConsent, setResearchConsent] = useState(false);
   const { bursts: confettiBursts, fireConfetti } = useConfettiBursts();
 
   const gradient = PORTAL_GRADIENT[portal] ?? 'from-purple-400 via-fuchsia-500 to-rose-500';
@@ -1708,10 +1712,23 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
                               placeholder=""
                             />
                           </div>
+                          <label className="flex items-start gap-2 pt-1 text-[0.7rem] leading-relaxed text-slate-300/90">
+                            <input
+                              type="checkbox"
+                              checked={researchConsent}
+                              onChange={(e) => setResearchConsent(e.target.checked)}
+                              className="mt-0.5 h-3.5 w-3.5 shrink-0 rounded border-white/30 bg-transparent accent-purple-500"
+                            />
+                            <span>
+                              Tus respuestas forman parte de una investigación doctoral sobre cómo se interpretan y se recuerdan las experiencias narrativas. Se guardan de forma anónima y puedes detenerte cuando quieras. La investigación la realiza Carlos A. Pérez H. en el marco del doctorado en ICONOS.
+                              <br />
+                              Entiendo y acepto participar.
+                            </span>
+                          </label>
                           <button
                             ref={submitBtnRef}
                             type="submit"
-                            disabled={submitting}
+                            disabled={submitting || !researchConsent}
                             className="relative w-full rounded-full border border-purple-500/70 px-4 py-2.5 text-xs uppercase tracking-[0.25em] text-purple-100 shadow-[0_15px_45px_rgba(67,56,202,0.45)] transition hover:bg-purple-500/20 disabled:opacity-50"
                           >
                             {submitting ? 'Enviando…' : 'Enviar'}
