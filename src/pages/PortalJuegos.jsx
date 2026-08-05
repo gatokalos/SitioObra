@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useLocation , useNavigate } from 'react-router-dom';
 import MiniVersoCard from '@/components/transmedia/MiniVersoCard';
 import MiniverseIconBadge from '@/components/transmedia/MiniverseIconBadge';
@@ -27,6 +27,38 @@ import {
 } from '@/components/transmedia/transmediaConstants';
 import { resolvePortalRoute } from '@/lib/miniversePortalRegistry';
 import PortalL3RewardCTA from '@/components/portal/PortalL3RewardCTA';
+import { ensureAnonId } from '@/lib/identity';
+
+const OBRA_API_URL = (import.meta.env.VITE_OBRA_API_URL ?? 'https://api.gatoencerrado.ai').replace(/\/+$/, '');
+const JUEGOS_PROTOCOL_VERSION = 1;
+const JUEGOS_ENTRY_SOURCE = 'portal_iframe';
+const JUEGOS_RESONANCE_KEY = 'gatoencerrado:resonance:juegos';
+
+const compactGameCompletion = (payload) => {
+  const summary = payload?.summary && typeof payload.summary === 'object'
+    ? payload.summary
+    : (payload?.acta?.summary && typeof payload.acta.summary === 'object' ? payload.acta.summary : {});
+  const provenance = payload?.acta?.provenance && typeof payload.acta.provenance === 'object'
+    ? payload.acta.provenance
+    : {};
+  const finiteNumber = (value) => (Number.isFinite(value) ? value : null);
+  const shortString = (value) => (typeof value === 'string' && value ? value.slice(0, 120) : null);
+
+  return Object.fromEntries(Object.entries({
+    outcome: shortString(payload?.outcome),
+    disposition: shortString(payload?.disposition),
+    movement_count: finiteNumber(summary.movement_count),
+    boo_count: finiteNumber(summary.boo_count),
+    replacement_count: finiteNumber(summary.replacement_count),
+    accepted_phrase_count: finiteNumber(summary.accepted_phrase_count),
+    round_count: finiteNumber(summary.round_count),
+    duration_ms: finiteNumber(summary.duration_ms),
+    completed_at: shortString(payload?.completed_at || summary.completed_at),
+    app_version: shortString(payload?.app_version || provenance.app_version),
+    event_count: finiteNumber(provenance.event_count),
+    synced_event_count: finiteNumber(provenance.synced_event_count),
+  }).filter(([, value]) => value !== null));
+};
 
 const JUEGOS_DEFINITION = showcaseDefinitions.apps ?? {};
 const JUEGOS_TILE = {
@@ -48,7 +80,7 @@ const ShowcaseReactionInline = ({ status, onReact }) => (
 );
 
 const PortalJuegos = () => {
-  const { user } = useAuth();
+  const { user, session } = useAuth();
   usePortalTracking('juegos');
   const { question: vitranaQuestion } = useVitranaQuestion('juegos');
   const titleDisplay = useScrambleText(JUEGOS_DEFINITION.label || 'Juegos');
@@ -64,7 +96,49 @@ const PortalJuegos = () => {
   const [experienceDone, setExperienceDone] = useState(() => { try { return Boolean(JSON.parse(localStorage.getItem('gatoencerrado:resonance:juegos') || '{}').experience_ts); } catch { return false; } });
   const [l2Done, setL2Done] = useState(() => { try { return Boolean(JSON.parse(localStorage.getItem('gatoencerrado:resonance:juegos') || '{}').l2_option); } catch { return false; } });
   const [l3Rec, setL3Rec] = useState(() => { try { return JSON.parse(localStorage.getItem('gatoencerrado:resonance:juegos') || '{}').l3_recommendation ?? null; } catch { return null; } });
+  const [gameLaunched, setGameLaunched] = useState(() => {
+    try {
+      const stored = JSON.parse(localStorage.getItem(JUEGOS_RESONANCE_KEY) || '{}');
+      return Boolean(stored.l1 && stored.l2_option && stored.l2_narrative_opened && !stored.experience_ts);
+    } catch {
+      return false;
+    }
+  });
+  const [gameLaunchStatus, setGameLaunchStatus] = useState('idle');
+  const [gameLaunchError, setGameLaunchError] = useState(null);
+  const [iframeReloadKey, setIframeReloadKey] = useState(0);
+  const iframeRef = useRef(null);
+  const launchSessionRef = useRef(null);
+  const launchRequestRef = useRef(null);
+  const launchRequestIdRef = useRef(null);
+  const completedPartidaRef = useRef(null);
   const refreshL1 = useCallback(() => { try { const s = JSON.parse(localStorage.getItem('gatoencerrado:resonance:juegos') || '{}'); setL1Done(Boolean(s.l1)); setExperienceDone(Boolean(s.experience_ts)); setL2Done(Boolean(s.l2_option)); setL2Answer(s.l2_option ?? null); setL3Rec(s.l3_recommendation ?? null); } catch { /* ignore */ } }, []);
+  const handleLaunchEmbeddedGame = useCallback(() => {
+    if (completedPartidaRef.current) {
+      launchSessionRef.current = null;
+      launchRequestIdRef.current = null;
+      completedPartidaRef.current = null;
+      setGameLaunchStatus('idle');
+      setGameLaunchError(null);
+      setIframeReloadKey((value) => value + 1);
+    }
+    try {
+      const stored = JSON.parse(localStorage.getItem(JUEGOS_RESONANCE_KEY) || '{}');
+      if (!stored.l1 || !stored.l2_option) {
+        setIsResonanceOpen(true);
+        return;
+      }
+      localStorage.setItem(JUEGOS_RESONANCE_KEY, JSON.stringify({
+        ...stored,
+        l2_narrative_opened: true,
+      }));
+    } catch {
+      setIsResonanceOpen(true);
+      return;
+    }
+    refreshL1();
+    setGameLaunched(true);
+  }, [refreshL1]);
   const navigate = useNavigate();
   const location = useLocation();
   useEffect(() => {
@@ -172,6 +246,172 @@ const PortalJuegos = () => {
     sanitizeExternalHttpUrl(latestJuegosReading?.author_avatar_url) ||
     null;
   const embeddedAppUrl = sanitizeExternalHttpUrl(JUEGOS_DEFINITION.liveExperience?.url);
+  const embeddedAppOrigin = useMemo(() => {
+    if (!embeddedAppUrl) return null;
+    try {
+      return new URL(embeddedAppUrl).origin;
+    } catch {
+      return null;
+    }
+  }, [embeddedAppUrl]);
+  const requestGameReady = useCallback(() => {
+    if (!embeddedAppOrigin || !iframeRef.current?.contentWindow) return;
+    iframeRef.current.contentWindow.postMessage({
+      type: 'gato:juegos:hello',
+      version: JUEGOS_PROTOCOL_VERSION,
+    }, embeddedAppOrigin);
+  }, [embeddedAppOrigin]);
+
+  const createGameLaunchSession = useCallback(async (reportedAppVersion) => {
+    if (launchSessionRef.current) return launchSessionRef.current;
+    if (launchRequestRef.current) return launchRequestRef.current;
+
+    const anonId = ensureAnonId();
+    if (!anonId) throw new Error('No se pudo crear una identidad anónima para la partida.');
+
+    const appVersion = typeof reportedAppVersion === 'string' && reportedAppVersion.trim()
+      ? reportedAppVersion.trim().slice(0, 120)
+      : (import.meta.env.VITE_JUEGOS_APP_VERSION || 'unknown');
+
+    const request = (async () => {
+      setGameLaunchStatus('connecting');
+      setGameLaunchError(null);
+
+      const headers = {
+        Accept: 'application/json',
+        'Content-Type': 'application/json',
+      };
+      if (!launchRequestIdRef.current) {
+        launchRequestIdRef.current = typeof globalThis.crypto?.randomUUID === 'function'
+          ? globalThis.crypto.randomUUID()
+          : `portal-juegos-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+      }
+      headers['X-Idempotency-Key'] = launchRequestIdRef.current;
+      const accessToken = session?.access_token || (await supabase.auth.getSession()).data?.session?.access_token;
+      if (accessToken) headers.Authorization = `Bearer ${accessToken}`;
+
+      const requestBody = JSON.stringify({
+        anon_id: anonId,
+        entry_source: JUEGOS_ENTRY_SOURCE,
+        app_version: appVersion,
+        protocol_version: String(JUEGOS_PROTOCOL_VERSION),
+      });
+      let response;
+      let data = {};
+      for (let attempt = 0; attempt < 3; attempt += 1) {
+        response = await fetch(`${OBRA_API_URL}/api/juegos/partidas`, {
+          method: 'POST',
+          headers,
+          body: requestBody,
+        });
+        data = await response.json().catch(() => ({}));
+        if (response.status !== 409 || attempt === 2) break;
+        await new Promise((resolve) => window.setTimeout(resolve, 300 * (attempt + 1)));
+      }
+      if (!response.ok) {
+        throw new Error(data?.error || `No se pudo iniciar la partida (${response.status}).`);
+      }
+      if (!data?.partida_id || !data?.session_token || !data?.context_snapshot) {
+        throw new Error('La sesión de juego llegó incompleta.');
+      }
+
+      const launchSession = {
+        partida_id: data.partida_id,
+        session_token: data.session_token,
+        context_snapshot: data.context_snapshot,
+        gat_condition: data.gat_condition ?? null,
+      };
+      launchSessionRef.current = launchSession;
+      setGameLaunchStatus('ready');
+      return launchSession;
+    })();
+
+    launchRequestRef.current = request;
+    try {
+      return await request;
+    } finally {
+      launchRequestRef.current = null;
+    }
+  }, [session?.access_token]);
+
+  useEffect(() => {
+    if (!gameLaunched || !l1Done || !l2Done || !embeddedAppOrigin) return undefined;
+
+    const postLaunch = (targetWindow, launchSession) => {
+      targetWindow?.postMessage({
+        type: 'gato:juegos:launch',
+        version: JUEGOS_PROTOCOL_VERSION,
+        payload: {
+          partida_id: launchSession.partida_id,
+          session_token: launchSession.session_token,
+          context_snapshot: launchSession.context_snapshot,
+          entry_source: JUEGOS_ENTRY_SOURCE,
+          api_base_url: OBRA_API_URL,
+          gat_condition: launchSession.gat_condition,
+        },
+      }, embeddedAppOrigin);
+    };
+
+    const handleGameMessage = async (event) => {
+      if (event.origin !== embeddedAppOrigin) return;
+      if (event.source !== iframeRef.current?.contentWindow) return;
+      if (!event.data || typeof event.data !== 'object') return;
+      if (event.data.version !== JUEGOS_PROTOCOL_VERSION) return;
+
+      if (event.data.type === 'gato:juegos:ready') {
+        try {
+          const launchSession = await createGameLaunchSession(event.data.payload?.app_version);
+          if (event.source !== iframeRef.current?.contentWindow) return;
+          postLaunch(event.source, launchSession);
+        } catch (error) {
+          console.error('[PortalJuegos] No se pudo crear la sesión de juego:', error);
+          setGameLaunchStatus('error');
+          setGameLaunchError(error?.message || 'No pudimos preparar la partida.');
+        }
+        return;
+      }
+
+      if (event.data.type !== 'gato:juegos:completed') return;
+      const payload = event.data.payload;
+      const activeSession = launchSessionRef.current;
+      if (!payload || typeof payload !== 'object') return;
+      if (!activeSession || payload.partida_id !== activeSession.partida_id) return;
+      if (completedPartidaRef.current === payload.partida_id) return;
+
+      completedPartidaRef.current = payload.partida_id;
+      const completedAt = Date.now();
+      const gameSummary = compactGameCompletion(payload);
+      try {
+        const existing = JSON.parse(localStorage.getItem(JUEGOS_RESONANCE_KEY) || '{}');
+        localStorage.setItem(JUEGOS_RESONANCE_KEY, JSON.stringify({
+          ...existing,
+          l2_narrative_opened: true,
+          experience_ts: completedAt,
+          game_partida_id: payload.partida_id,
+          game_summary: gameSummary,
+          game_pending_sync: payload.pending_sync === true,
+        }));
+      } catch (error) {
+        console.warn('[PortalJuegos] No se pudo guardar la finalización local:', error);
+      }
+
+      setGameLaunchStatus('completed');
+      setGameLaunched(false);
+      refreshL1();
+      setIsResonanceOpen(true);
+      window.dispatchEvent(new CustomEvent('gatoencerrado:juegos:completed', {
+        detail: {
+          partidaId: payload.partida_id,
+          outcome: payload.outcome ?? null,
+          pendingSync: payload.pending_sync === true,
+          summary: gameSummary,
+        },
+      }));
+    };
+
+    window.addEventListener('message', handleGameMessage);
+    return () => window.removeEventListener('message', handleGameMessage);
+  }, [createGameLaunchSession, embeddedAppOrigin, gameLaunched, iframeReloadKey, l1Done, l2Done, refreshL1]);
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-950 via-black to-slate-900 text-slate-100">
@@ -245,7 +485,7 @@ const PortalJuegos = () => {
                 onRequireLogin={() => setShowResonanceLoginNudge(true)}
                 question={vitranaQuestion}
                 portal="juegos"
-                onOpenNarrative={embeddedAppUrl ? () => window.open(embeddedAppUrl, '_blank') : undefined}
+                onOpenNarrative={embeddedAppUrl ? handleLaunchEmbeddedGame : undefined}
                 narrativeCTALabel={JUEGOS_DEFINITION.liveExperience?.ctaLabel || '✦ Abrir la app'}
               />
             )}
@@ -274,15 +514,59 @@ const PortalJuegos = () => {
               </div>
 
               <div className="overflow-hidden rounded-[1.75rem] border border-emerald-200/20 bg-slate-950/80 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]">
-                <iframe
-                  src={embeddedAppUrl}
-                  title={JUEGOS_DEFINITION.liveExperience?.title || 'App de Juegos'}
-                  className="block h-[72vh] min-h-[520px] w-full bg-white"
-                  loading="lazy"
-                  referrerPolicy="strict-origin-when-cross-origin"
-                  allow="accelerometer; autoplay; camera; clipboard-read; clipboard-write; fullscreen; gamepad; gyroscope; microphone; web-share"
-                />
+                {gameLaunched && l1Done && l2Done ? (
+                  <iframe
+                    key={iframeReloadKey}
+                    ref={iframeRef}
+                    src={embeddedAppUrl}
+                    title={JUEGOS_DEFINITION.liveExperience?.title || 'App de Juegos'}
+                    className="block h-[72vh] min-h-[520px] w-full bg-white"
+                    loading="lazy"
+                    referrerPolicy="strict-origin-when-cross-origin"
+                    allow="accelerometer; autoplay; camera; clipboard-read; clipboard-write; fullscreen; gamepad; gyroscope; microphone; web-share"
+                    onLoad={requestGameReady}
+                  />
+                ) : (
+                  <div className="flex min-h-[520px] flex-col items-center justify-center gap-5 px-6 py-12 text-center">
+                    <p className="text-xs uppercase tracking-[0.35em] text-emerald-200/70">Antes de entrar</p>
+                    <p className="max-w-xl font-display text-2xl leading-snug text-white">
+                      {l1Done && l2Done
+                        ? (experienceDone
+                            ? 'Tu partida quedó registrada. Puedes volver a entrar y abrir otro recorrido.'
+                            : 'Tu intuición y tu expectativa ya están listas. Ahora sí: entra a decidir.')
+                        : 'Deja primero una intuición y una expectativa. El juego las llevará consigo sin mostrarlas en la URL.'}
+                    </p>
+                    <button
+                      type="button"
+                      onClick={l1Done && l2Done ? handleLaunchEmbeddedGame : handleAnswerResonance}
+                      className="rounded-full border border-emerald-300/50 bg-emerald-500/15 px-6 py-3 text-sm font-semibold tracking-wide text-emerald-100 transition hover:bg-emerald-500/25"
+                    >
+                      {l1Done && l2Done
+                        ? (experienceDone ? 'Jugar otra partida →' : 'Entrar al juego →')
+                        : 'Responder antes de entrar →'}
+                    </button>
+                  </div>
+                )}
               </div>
+              {gameLaunchStatus === 'connecting' ? (
+                <p className="text-xs text-emerald-100/70" role="status">Preparando una partida vinculada a tu recorrido…</p>
+              ) : null}
+              {gameLaunchStatus === 'error' ? (
+                <div className="flex flex-wrap items-center gap-3 rounded-2xl border border-rose-300/25 bg-rose-500/10 px-4 py-3 text-xs text-rose-100" role="alert">
+                  <span>{gameLaunchError || 'No pudimos preparar la partida.'}</span>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setGameLaunchError(null);
+                      setGameLaunchStatus('idle');
+                      setIframeReloadKey((value) => value + 1);
+                    }}
+                    className="rounded-full border border-rose-200/30 px-3 py-1 font-semibold transition hover:bg-rose-200/10"
+                  >
+                    Reintentar
+                  </button>
+                </div>
+              ) : null}
               <div className={`pt-4 border-t border-emerald-200/20 lg:hidden space-y-4 transition-opacity duration-300${isResonanceOpen ? ' opacity-30 pointer-events-none' : ''}`}>
                 <div className="mb-1">
                   <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Resonancia Colectiva</p>

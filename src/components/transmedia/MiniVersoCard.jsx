@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import { Hand } from 'lucide-react';
 import {
@@ -21,25 +21,50 @@ const MiniVersoCard = ({
   });
   const [showGatChip, setShowGatChip] = useState(false);
   const textClass = isTragedia ? 'text-sm' : 'text-sm leading-relaxed';
+  const gatClaimAttemptedRef = useRef(false);
+  const gatClaimStorageKey = gatEventKey ? `gatoencerrado:miniverso-verso-gat:${gatEventKey}` : null;
+
+  // Cobro de GAT separado del flag de "ya vi el verso": mientras
+  // register_transmedia_credit_event rechazaba flip:% en producción
+  // (resuelto 2026-08-04), voltear la tarjeta marcaba isActive=true de forma
+  // permanente sin haber cobrado nada, y un click sobre una tarjeta ya activa
+  // no vuelve a disparar handleCardToggle. Este efecto reintenta el cobro en
+  // cada mount mientras no haya una confirmación local de éxito — cubre
+  // tanto el flip nuevo como el reclamo retroactivo de quien quedó atascado.
+  const claimGat = useCallback(() => {
+    if (!gatEventKey || !gatClaimStorageKey) return;
+    try {
+      if (window.localStorage.getItem(gatClaimStorageKey) === '1') return;
+    } catch {
+      // sin localStorage no hay forma de recordar el cobro; se intenta igual
+    }
+    registerTransmediaCreditEvent({
+      eventKey: gatEventKey,
+      amount: 25,
+      oncePerIdentity: true,
+      idempotencyKey: createTransmediaIdempotencyKey(gatEventKey),
+    }).then(({ state, duplicate, error }) => {
+      if (error) return; // reintenta en el próximo mount; no se marca como cobrado
+      try { window.localStorage.setItem(gatClaimStorageKey, '1'); } catch {}
+      if (!duplicate && state && typeof window !== 'undefined') {
+        window.dispatchEvent(new CustomEvent('gatoencerrado:external-credit-event', { detail: { state } }));
+        setShowGatChip(true);
+        setTimeout(() => setShowGatChip(false), 2800);
+      }
+    });
+  }, [gatEventKey, gatClaimStorageKey]);
+
+  useEffect(() => {
+    if (!isActive || gatClaimAttemptedRef.current) return;
+    gatClaimAttemptedRef.current = true;
+    claimGat();
+  }, [isActive, claimGat]);
+
   const handleCardToggle = () => {
     setIsActive((prev) => {
       if (prev) return prev;
       try { window.localStorage.setItem('gatoencerrado:miniverso-verso:' + title, '1'); } catch {}
       if (typeof onFirstReveal === 'function') onFirstReveal();
-      if (gatEventKey) {
-        registerTransmediaCreditEvent({
-          eventKey: gatEventKey,
-          amount: 25,
-          oncePerIdentity: true,
-          idempotencyKey: createTransmediaIdempotencyKey(gatEventKey),
-        }).then(({ state, duplicate }) => {
-          if (!duplicate && state && typeof window !== 'undefined') {
-            window.dispatchEvent(new CustomEvent('gatoencerrado:external-credit-event', { detail: { state } }));
-            setShowGatChip(true);
-            setTimeout(() => setShowGatChip(false), 2800);
-          }
-        }).catch(() => {});
-      }
       return true;
     });
   };

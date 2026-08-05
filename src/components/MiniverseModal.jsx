@@ -807,6 +807,13 @@ const MiniverseModal = ({
       if (event.key === 'gatoencerrado:showcase-boosts') {
         setShowcaseBoosts(readStoredJson('gatoencerrado:showcase-boosts', {}));
       }
+      // La bienvenida completada en OTRA pestaña/ventana debe destrabar este
+      // guardrail aquí también — antes solo se leía una vez al montar, así
+      // que dos pestañas podían mostrar "490 GAT" y "Primero, vive la
+      // bienvenida" al mismo tiempo (diagnosticado 2026-08-04).
+      if (event.key === 'gatoencerrado:bienvenida-completed') {
+        setHasBienvenida(event.newValue === '1');
+      }
     };
     window.addEventListener('storage', handleStorage);
     return () => window.removeEventListener('storage', handleStorage);
