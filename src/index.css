@@ -274,6 +274,73 @@ body {
 
 }
 
+/* Desktop: replica el acabado WebKit que ya se percibe en móvil sin tocar
+   tamaños, espaciado ni las reglas del breakpoint móvil. */
+@media (min-width: 769px) {
+  .hero-title {
+    position: relative;
+    isolation: isolate;
+    overflow: visible;
+    -webkit-text-fill-color: rgba(0, 0, 0, 0.5);
+    color: rgba(0, 0, 0, 0.5);
+    -webkit-text-stroke: 0.58px rgba(226, 232, 240, 0.32);
+    text-shadow:
+      0 0 1px rgba(255, 255, 255, 0.16);
+  }
+
+  .hero-title::before {
+    content: '';
+    position: absolute;
+    left: 50%;
+    top: 54%;
+    z-index: 0;
+    width: clamp(17rem, 86vw, 30rem);
+    height: clamp(3.2rem, 13vw, 5rem);
+    border-radius: 999px;
+    background:
+      radial-gradient(ellipse at center, rgba(241, 245, 249, 0.3) 0%, rgba(203, 213, 225, 0.16) 34%, rgba(139, 92, 246, 0.14) 58%, rgba(0, 0, 0, 0) 74%);
+    filter: blur(10px);
+    opacity: 0;
+    transform: translate(-50%, -50%) scaleX(0.86);
+    transition: opacity 1.15s ease, transform 1.15s ease;
+    pointer-events: none;
+  }
+
+  .hero-title--scene-active {
+    color: rgba(220, 222, 232, 0.92);
+    background: linear-gradient(
+      180deg,
+      rgba(125, 81, 120, 0.86) 0%,
+      rgba(207, 205, 218, 0.96) 28%,
+      rgba(163, 170, 188, 0.92) 62%,
+      rgba(116, 133, 154, 0.9) 100%
+    );
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: #29142c;
+    -webkit-text-stroke: 1px rgba(225, 221, 236, 0.58);
+    text-shadow:
+      0 -1px 0 rgba(255, 228, 250, 0.32),
+      0 1px 0 rgba(102, 125, 151, 0.42),
+      0 0 4px rgba(216, 200, 229, 0.28),
+      0 0 10px rgba(164, 173, 205, 0.18);
+  }
+
+  .hero-title--scene-active::before {
+    opacity: 0.66;
+    transform: translate(-50%, -50%) scaleX(1);
+  }
+
+  .hero-title--pre-scene::before {
+    opacity: 0;
+  }
+
+  .hero-title > span {
+    position: relative;
+    z-index: 1;
+  }
+}
+
 /* Fase Cero: la instrucción llega desde el fondo como un eco temporal. La
    frase frontal sigue siendo la única instrucción dominante; las demás
    construyen profundidad sin competir con el #3D. */
@@ -680,6 +747,14 @@ body {
   --hero-logo-visual-scale: 1.16;
 
   --hero-portal-logo-size: calc(clamp(129px, 18vh, 200px) * 0.5);
+}
+
+/* Los emblemas narrativos comparten la misma caja de escala que el isotipo
+   del Hero para que ninguno adquiera más jerarquía dentro del recorrido. */
+.narrative-section-logo {
+  display: block;
+  width: calc(clamp(129px, 18vh, 200px) * 0.5);
+  height: calc(clamp(129px, 18vh, 200px) * 0.5);
 }
 
 
@@ -1318,6 +1393,11 @@ body {
   .hero-logo--portal {
     --hero-portal-logo-size: clamp(86px, 8.6vh, 112px);
   }
+
+  .narrative-section-logo {
+    width: clamp(86px, 8.6vh, 112px);
+    height: clamp(86px, 8.6vh, 112px);
+  }
 }
 
 @media (min-width: 1201px) {
@@ -1349,6 +1429,11 @@ body {
 
   #hero .hero-logo--portal {
     --hero-portal-logo-size: clamp(96px, 9.2vh, 128px);
+  }
+
+  .narrative-section-logo {
+    width: clamp(96px, 9.2vh, 128px);
+    height: clamp(96px, 9.2vh, 128px);
   }
 }
 

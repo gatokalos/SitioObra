@@ -2,7 +2,10 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 
 const FRAME_MS = 52;
 const FRAMES_PER_BURST = 4;
-const FIRST_BURST_DELAY_MS = 650;
+// La transición visual del título dura 1.15 s. El primer desplazamiento del
+// # ocurre después, para que el cambio de fase sea continuo y el glitch se
+// perciba como una señal posterior, no como un salto de layout.
+const FIRST_BURST_DELAY_MS = 1600;
 const MIN_IDLE_MS = 1200;
 const MAX_IDLE_MS = 2400;
 

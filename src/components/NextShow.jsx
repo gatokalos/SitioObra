@@ -46,12 +46,11 @@ const NextShow = () => {
     }, 120);
   }, []);
 
-  // "Antes de irte": mismo grupo que revela "Entra a ver", pero apunta
-  // directo a "Antes de irte" en vez de a Obra Destacada. No requiere
-  // sesión — es descubrimiento, no autenticación.
+  // "Antes de irte" revela únicamente su propia sección. No requiere sesión:
+  // es descubrimiento, no autenticación.
   const handleOpenSystemPreview = useCallback(() => {
     if (typeof window === 'undefined') return;
-    window.dispatchEvent(new CustomEvent('gatoencerrado:reveal-obra-destacada'));
+    window.dispatchEvent(new CustomEvent('gatoencerrado:reveal-before-leaving'));
     window.setTimeout(() => {
       document.getElementById('conoce-sistema')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }, 120);

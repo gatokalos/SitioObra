@@ -1008,25 +1008,23 @@ const Transmedia = ({ allianceOnlyMode = false }) => {
     return () => window.removeEventListener('gatoencerrado:auto-open-resonance', handler);
   }, []);
 
-  // When activeShowcase matches a pending auto-resonance formatId, open the resonance form
+  // Resonancia Colectiva ya no se auto-abre al terminar el video narrativo en
+  // desktop (equivalente de escritorio del fix de los 9 portales — decisión
+  // 2026-08-07). Solo se marca "video visto" por miniverso; "Intuye tu
+  // respuesta" decide con esa señal si ofrece el video como puente primero.
   useEffect(() => {
     if (!activeShowcase || !pendingAutoResonanceRef.current) return;
     if (activeShowcase !== pendingAutoResonanceRef.current) return;
     const formatId = pendingAutoResonanceRef.current;
     pendingAutoResonanceRef.current = null;
-    const openers = {
-      miniversos: () => setIsDramaResonanceOpen(true),
-      miniversoNovela: () => setIsLiteraturaResonanceOpen(true),
-      lataza: () => setIsArtesaniasResonanceOpen(true),
-      miniversoGrafico: () => setIsGraficosResonanceOpen(true),
-      copycats: () => setIsCineResonanceOpen(true),
-      miniversoSonoro: () => setIsSonoroResonanceOpen(true),
-      miniversoMovimiento: () => setIsMovimientoResonanceOpen(true),
-      apps: () => setIsJuegosResonanceOpen(true),
-      oraculo: () => setIsOraculoResonanceOpen(true),
-    };
-    openers[formatId]?.();
-  }, [activeShowcase, setIsDramaResonanceOpen, setIsLiteraturaResonanceOpen, setIsArtesaniasResonanceOpen, setIsGraficosResonanceOpen, setIsCineResonanceOpen, setIsSonoroResonanceOpen, setIsMovimientoResonanceOpen, setIsJuegosResonanceOpen, setIsOraculoResonanceOpen]);
+    const portal = SHOWCASE_TO_PORTAL[formatId];
+    if (!portal) return;
+    try {
+      const key = `gatoencerrado:resonance:${portal}`;
+      const existing = JSON.parse(localStorage.getItem(key) || '{}');
+      localStorage.setItem(key, JSON.stringify({ ...existing, video_seen: true }));
+    } catch {}
+  }, [activeShowcase]);
 
   useEffect(() => {
     if (typeof window === 'undefined') return undefined;

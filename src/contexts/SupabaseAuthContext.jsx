@@ -1,16 +1,46 @@
 import React, { createContext, useContext, useEffect, useState, useCallback, useMemo, useRef } from 'react';
 
 import { supabase } from '@/lib/supabaseClient';
-import { safeGetItem, safeRemoveItem, safeStorage } from '@/lib/safeStorage';
+import { safeGetItem, safeRemoveItem, safeSetItem, safeStorage } from '@/lib/safeStorage';
 import { useToast } from '@/components/ui/use-toast';
 
 const AuthContext = createContext(undefined);
+const DEV_AUTH_KEY = 'gatoencerrado:dev-auth';
+
+const readDevUser = () => {
+  if (!import.meta.env.DEV || typeof window === 'undefined') return null;
+
+  const mode = new URL(window.location.href).searchParams.get('devAuth');
+  if (mode === '1') safeSetItem(DEV_AUTH_KEY, '1');
+  if (mode === '0') safeRemoveItem(DEV_AUTH_KEY);
+  if (safeGetItem(DEV_AUTH_KEY) !== '1') return null;
+
+  return {
+    id: 'dev-preview-user',
+    email: 'preview@gatoencerrado.local',
+    role: 'authenticated',
+    app_metadata: { provider: 'dev-preview', providers: ['dev-preview'] },
+    user_metadata: {
+      alias: 'Vista previa',
+      full_name: 'Vista previa DEV',
+      name: 'Vista previa DEV',
+    },
+  };
+};
+
+const disableDevUser = () => {
+  if (!import.meta.env.DEV || typeof window === 'undefined') return;
+  safeRemoveItem(DEV_AUTH_KEY);
+  const url = new URL(window.location.href);
+  url.searchParams.delete('devAuth');
+  window.history.replaceState({}, document.title, `${url.pathname}${url.search}${url.hash}`);
+};
 
 export const AuthProvider = ({ children }) => {
   const { toast } = useToast();
   const redirectLockRef = useRef(false);
 
-  const [user, setUser] = useState(null);
+  const [user, setUser] = useState(readDevUser);
   const [session, setSession] = useState(null);
   const [loading, setLoading] = useState(true);
 
@@ -38,9 +68,16 @@ export const AuthProvider = ({ children }) => {
 
   const handleSession = useCallback(async (session) => {
     setSession(session);
-    setUser(session?.user ?? null);
+    // La identidad simulada solo abre controles visuales en Vite DEV. Se deja
+    // `session` en null para que nunca pueda confundirse con un JWT auténtico.
+    setUser(session?.user ?? readDevUser());
     setLoading(false);
   }, []);
+
+  useEffect(() => {
+    if (user?.app_metadata?.provider !== 'dev-preview') return;
+    console.info('[Auth] Vista previa DEV activa. Usa ?devAuth=0 para desactivarla.');
+  }, [user]);
 
   useEffect(() => {
     if (typeof window === 'undefined') return undefined;
@@ -228,12 +265,15 @@ export const AuthProvider = ({ children }) => {
   }, [toast]);
 
   const signOut = useCallback(async () => {
+    disableDevUser();
     const {
       data: { session: currentSession },
     } = await supabase.auth.getSession();
     if (!currentSession) {
       clearSupabaseAuthStorage();
-      await handleSession(null);
+      setSession(null);
+      setUser(null);
+      setLoading(false);
       return { error: null };
     }
 
@@ -266,6 +306,7 @@ export const AuthProvider = ({ children }) => {
   const value = useMemo(() => ({
     user,
     session,
+    isDevAuth: user?.app_metadata?.provider === 'dev-preview',
     loading,
     signUp,
     signIn,

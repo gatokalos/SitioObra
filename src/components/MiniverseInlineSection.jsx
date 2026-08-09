@@ -154,7 +154,7 @@ const MiniverseInlineSection = () => {
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8, ease: 'easeOut' }}
               viewport={{ once: true }}
-              className="glass-effect rounded-2xl p-8 md:p-12 text-center max-w-3xl mx-auto"
+              className="p-8 md:p-12 text-center max-w-3xl mx-auto"
             >
               <h3 className="font-display text-3xl font-medium text-slate-100 mb-6 text-center">
                 Espera, no te vayas todavía

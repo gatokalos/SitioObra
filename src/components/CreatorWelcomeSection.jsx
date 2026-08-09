@@ -47,11 +47,13 @@ const CreatorWelcomeSection = ({ hasEnteredUniverse = false }) => {
           </div>
 
           <div className="relative z-10">
-            <div className="narrative-pause-mark narrative-pause-mark--third-call" aria-hidden="true">
-              <span />
-              <span />
-              <span />
-            </div>
+            <img
+              src="/assets/TerceraLlamadaLogo.png"
+              alt=""
+              aria-hidden="true"
+              loading="lazy"
+              className="narrative-section-logo mx-auto mb-5 object-contain"
+            />
             <h3 className="font-display text-3xl font-medium italic text-slate-100 mb-6 text-center">
               "Tercera llamada,<br />tercera..."
             </h3>

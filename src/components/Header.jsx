@@ -108,6 +108,7 @@ const Header = ({
   showTransmediaNav = true,
   showPerspectivasNav = false,
   showObraDestacadaNav = false,
+  showBeforeLeavingNav = false,
   showTerceraLlamadaNav = false,
   showGatChip = true,
   terceraLlamadaLabel = '#Comenzamos',
@@ -175,9 +176,17 @@ const Header = ({
     // Además del dataset (lectura puntual dentro de handlers), un evento para
     // que Hero pueda reaccionar en vivo — lo usa para no montar el #3D
     // mientras el HUB lo tapa por completo (ver HashtagButton3D, gasta un
-    // contexto WebGL real aunque esté oculto).
+    // contexto WebGL real aunque esté oculto), y para saber si le toca
+    // revelar GatokensRevealModal al cerrarse (ver gatHubCloseReasonRef: no
+    // le toca si el cierre fue por "Retomar el lente" — ahí la escena ya se
+    // abre directo, sin pasar por el reveal).
     window.dispatchEvent(
-      new CustomEvent('gatoencerrado:gat-hub-open-changed', { detail: { open: isGatLinktreeOpen } })
+      new CustomEvent('gatoencerrado:gat-hub-open-changed', {
+        detail: {
+          open: isGatLinktreeOpen,
+          reason: isGatLinktreeOpen ? null : gatHubCloseReasonRef.current,
+        },
+      })
     );
     return () => {
       delete document.body.dataset.gatHubOpen;
@@ -233,9 +242,15 @@ const Header = ({
     };
   }, [isGatLinktreeOpen]);
   const [isLinktreeSessionExpanded, setIsLinktreeSessionExpanded] = useState(false);
+  // Leído por el efecto de arriba en el mismo tick en que isGatLinktreeOpen
+  // pasa a false, para que el evento gat-hub-open-changed lleve la razón del
+  // cierre — 'dismiss' (X, Escape, click afuera) vs 'scene-activate'
+  // (Retomar el lente / Primera fila / Backstage).
+  const gatHubCloseReasonRef = useRef('dismiss');
   // GatoChip/Escape cierran el contenedor. Entrar a la escena es una acción
   // narrativa distinta y pertenece exclusivamente a "Primera fila".
-  const dismissGatPanels = useCallback(() => {
+  const dismissGatPanels = useCallback((reason = 'dismiss') => {
+    gatHubCloseReasonRef.current = reason;
     setIsGatInfoOpen(false);
     setIsGatLinktreeOpen(false);
     setGatInlinePrompt(null);
@@ -252,7 +267,7 @@ const Header = ({
   }, []);
 
   const activateSceneAfterGatDismiss = useCallback((source) => {
-    dismissGatPanels();
+    dismissGatPanels('scene-activate');
     // Mientras el HUB está abierto, el # destino del Header no está montado.
     // Dos frames permiten que React lo restaure antes de que Hero mida los
     // extremos y ejecute la transmigración desde el #3D.
@@ -456,7 +471,7 @@ const Header = ({
         presentation: 'narrative-video',
       });
     }
-    dismissGatPanels();
+    dismissGatPanels('scene-activate');
     setShowLoginOverlay(true);
   }, [
     dismissGatPanels,
@@ -471,7 +486,7 @@ const Header = ({
   const handleOpenHolograficoFromGatTooltip = useCallback(() => {
     const entry = CATALOG.find((c) => c.showcase === gatSpendRecommendation?.showcaseId);
     const portalKey = entry?.key ?? 'oraculo';
-    dismissGatPanels();
+    dismissGatPanels('scene-activate');
     navigate(`/bitacora?t=${encodeURIComponent(ensureAnonId())}&m=${portalKey}`);
   }, [gatSpendRecommendation, navigate, dismissGatPanels]);
 
@@ -555,7 +570,7 @@ const Header = ({
     ...(showObraDestacadaNav ? [{ name: 'Obra fundacional', href: '#about' }] : []),
     ...(showObraDestacadaNav ? [{ name: 'Créditos', href: '#team' }] : []),
     ...(showObraDestacadaNav ? [{ name: 'Galería fractal', href: '#instagram' }] : []),
-    ...(showObraDestacadaNav ? [{ name: 'Antes de irte', href: '#conoce-sistema' }] : []),
+    ...(showBeforeLeavingNav ? [{ name: 'Antes de irte', href: '#conoce-sistema' }] : []),
     { name: 'Contacto', href: '#contact' },
   ];
   const mobileMenuItems = [
@@ -609,7 +624,7 @@ const Header = ({
             : {}),
         }]
       : []),
-    ...(showObraDestacadaNav
+    ...(showBeforeLeavingNav
       ? [{ name: 'Antes de irte', href: '#conoce-sistema', description: '#Nuestromodelo' }]
       : []),
     { name: 'Contacto', href: '#contact' },
@@ -652,7 +667,7 @@ const Header = ({
   const handleOpenSupportHub = useCallback(() => {
     if (!user) return;
     setIsMenuOpen(false);
-    dismissGatPanels();
+    dismissGatPanels('scene-activate');
     navigate('/portal-encuentros', {
       state: createPortalLaunchState(location, 'header-encuentros'),
     });
@@ -898,7 +913,7 @@ const Header = ({
 
   const openNarrativeContinuation = useCallback((recommendation) => {
     if (!recommendation?.showcaseId) return;
-    dismissGatPanels();
+    dismissGatPanels('scene-activate');
     window.requestAnimationFrame(() => {
       window.dispatchEvent(
         new CustomEvent('gatoencerrado:open-narrative-continuation', {
@@ -928,7 +943,7 @@ const Header = ({
       openNarrativeContinuation(gatSpendRecommendation);
       return;
     }
-    dismissGatPanels();
+    dismissGatPanels('scene-activate');
     handleNavClick(
       `#transmedia?focus=${gatSpendRecommendation.showcaseId}&source=gat-recommendation`
     );
@@ -949,7 +964,7 @@ const Header = ({
       forma: recommendation.forma,
       presentation: 'narrative-video',
     });
-    dismissGatPanels();
+    dismissGatPanels('scene-activate');
     setShowLoginOverlay(true);
   }, [dismissGatPanels, gatInlinePrompt]);
 
@@ -976,7 +991,7 @@ const Header = ({
   const handleOpenAllianceFromGatHub = useCallback(() => {
     writeMiniverseInlineOpenToSession();
     activateSceneAfterGatDismiss('gat-hub-backstage-alliance');
-    window.dispatchEvent(new CustomEvent('gatoencerrado:reveal-obra-destacada'));
+    window.dispatchEvent(new CustomEvent('gatoencerrado:reveal-before-leaving'));
     window.dispatchEvent(new CustomEvent('gatoencerrado:request-transmedia-unlock'));
 
     let attempts = 0;
@@ -1235,7 +1250,7 @@ const Header = ({
             Tu siguiente acto ya está elegido
           </p>
           <p className="mx-auto mt-1.5 max-w-[18rem] text-[0.7rem] leading-relaxed text-slate-400">
-            Esta forma apareció al completar tu recorrido anterior. Inicia sesión para conservarla y continuar con su video.
+            Esta forma apareció al completar tu recorrido anterior. Inicia sesión para conservarla y continuar con la función.
           </p>
           <div className="mt-3 flex gap-2">
             <button
@@ -1553,7 +1568,7 @@ const Header = ({
                   <div className="flex shrink-0 items-start px-5 pb-4 pt-5 sm:px-6">
                     <div>
                       <p className="text-[0.62rem] font-semibold uppercase tracking-[0.34em] text-amber-300/90">
-                        #EsunVestíbulo
+                        #EnElVestíbulo
                       </p>
                       <h2 className="font-display mt-2 text-xl text-slate-100">La obra continúa...</h2>
                       <div

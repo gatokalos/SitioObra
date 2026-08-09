@@ -50,10 +50,10 @@ export const writeIndexCueUsedToSession = () => {
   }
 };
 
-// "¿Ya se reveló Obra Destacada + Créditos + Antes de irte?" (CTA de
+// "¿Ya se reveló Obra Destacada + Créditos?" (CTA de
 // Archivo Escénico). Mismo problema que isHeroActivated: App.jsx vive en la
 // ruta "/" y se desmonta al navegar a un portal (/portal-*) y volver — sin
-// esto, el bloque entero se "colapsa" (vuelve a su estado inicial oculto) en
+// esto, el bloque se "colapsa" (vuelve a su estado inicial oculto) en
 // cada ida y vuelta a un portal, aunque el usuario ya lo había revelado.
 export const OBRA_DESTACADA_REVEALED_SESSION_KEY = 'gatoencerrado:obra-destacada-revealed-session';
 
@@ -70,6 +70,29 @@ export const writeObraDestacadaRevealedToSession = () => {
   if (typeof window === 'undefined') return;
   try {
     window.sessionStorage.setItem(OBRA_DESTACADA_REVEALED_SESSION_KEY, '1');
+  } catch {
+    // ignore
+  }
+};
+
+// La invitación "Antes de irte" se revela de manera independiente a la obra
+// fundacional y sus créditos. Se conserva durante la sesión al navegar entre
+// la portada y los portales.
+export const BEFORE_LEAVING_REVEALED_SESSION_KEY = 'gatoencerrado:before-leaving-revealed-session';
+
+export const readBeforeLeavingRevealedFromSession = () => {
+  if (typeof window === 'undefined') return false;
+  try {
+    return window.sessionStorage.getItem(BEFORE_LEAVING_REVEALED_SESSION_KEY) === '1';
+  } catch {
+    return false;
+  }
+};
+
+export const writeBeforeLeavingRevealedToSession = () => {
+  if (typeof window === 'undefined') return;
+  try {
+    window.sessionStorage.setItem(BEFORE_LEAVING_REVEALED_SESSION_KEY, '1');
   } catch {
     // ignore
   }

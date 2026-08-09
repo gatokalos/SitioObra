@@ -1170,12 +1170,7 @@ const About = () => {
           viewport={{ once: true }}
           className="text-center mb-16"
         >
-          <div
-            className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-2xl border border-violet-300/25 bg-black/30 shadow-[0_8px_30px_rgba(139,92,246,0.25)]"
-            aria-hidden="true"
-          >
-            <FEATURED_WORK_MEDIUM.Icon size={28} className="text-violet-200" />
-          </div>
+
                   <p className="text-xs uppercase tracking-[0.4em] text-slate-400/70 mb-4">
   #Archivoescénico
 </p>

@@ -15,10 +15,11 @@
 
 ## 1. Marco de referencia (canónico, v6)
 
-**Pregunta de investigación (canónica):** ¿Bajo qué condiciones un sistema
-narrativo transmedial puede operar como dispositivo de intervención subjetiva y
-sociocultural, y cómo puede investigarse ese proceso con rigor epistemológico
-desde la propia práctica de diseño del sistema?
+**Pregunta de investigación (canónica):**¿Qué articulación transdisciplinaria 
+de conceptos, métodos y evidencias permite identificar y evaluar las condiciones 
+bajo las cuales un sistema narrativo transmedial puede operar como dispositivo 
+de intervención subjetiva y sociocultural, cuando el propio sistema funciona 
+simultáneamente como obra, laboratorio y práctica de investigación?
 
 > Nota de alineación: la pregunta anterior ("¿cómo pueden... influir en la
 > participación...?") queda superada. Importa para este documento: cada

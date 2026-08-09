@@ -31,6 +31,7 @@ import PortalL3RewardCTA from '@/components/portal/PortalL3RewardCTA';
 import GATChip from '@/components/portal/GATChip';
 import VitranaQuestionReveal from '@/components/portal/VitranaQuestionReveal';
 import ResonanceModal, { LEVEL2_QUESTIONS, buildL1Acknowledgment } from '@/components/portal/ResonanceModal';
+import VideoNarrativeAutoplay from '@/components/VideoNarrativeAutoplay';
 import PulseReactionCard from '@/components/portal/PulseReactionCard';
 import { recordShowcaseLike } from '@/services/showcaseLikeService';
 import { supabase } from '@/lib/supabaseClient';
@@ -388,10 +389,18 @@ const PortalVoz = () => {
   const [openCollaboratorId, setOpenCollaboratorId] = useState(null);
   const navigate = useNavigate();
   const location = useLocation();
+  // Resonancia Colectiva ya no se auto-abre al llegar del video narrativo
+  // (decisión 2026-08-07: se sentía intrusivo — el usuario debe encontrarla
+  // por sí mismo). Lo que sí se conserva es la señal "ya vio el video de
+  // este miniverso" — "Intuye tu respuesta" la usa como puente: si no lo
+  // vio, se lo ofrece antes de abrir la pregunta.
   useEffect(() => {
     if (location.state?.portalLaunchSource !== 'video-narrative-cta') return;
-    const t = window.setTimeout(() => setIsResonanceOpen(true), 150);
-    return () => window.clearTimeout(t);
+    try {
+      const key = 'gatoencerrado:resonance:obra';
+      const existing = JSON.parse(localStorage.getItem(key) || '{}');
+      localStorage.setItem(key, JSON.stringify({ ...existing, video_seen: true }));
+    } catch {}
   }, []);
 
   const obraConversationControlsRef = useRef(null);
@@ -721,7 +730,29 @@ const PortalVoz = () => {
     setShowLoginOverlay(true);
   }, []);
 
+  // Puente: si no ha visto el video narrativo de este miniverso, se lo
+  // ofrece antes de abrir la pregunta (decisión 2026-08-07 — Resonancia
+  // Colectiva ya no se auto-abre sola; ahora "Intuye tu respuesta" decide).
+  const [showResonanceBridgeVideo, setShowResonanceBridgeVideo] = useState(false);
   const handleAnswerResonance = useCallback(() => {
+    let videoSeen = false;
+    try {
+      const s = JSON.parse(localStorage.getItem('gatoencerrado:resonance:obra') || '{}');
+      videoSeen = Boolean(s.video_seen);
+    } catch {}
+    if (videoSeen) {
+      setIsResonanceOpen(true);
+    } else {
+      setShowResonanceBridgeVideo(true);
+    }
+  }, []);
+  const handleBridgeVideoContinue = useCallback(() => {
+    try {
+      const key = 'gatoencerrado:resonance:obra';
+      const existing = JSON.parse(localStorage.getItem(key) || '{}');
+      localStorage.setItem(key, JSON.stringify({ ...existing, video_seen: true }));
+    } catch {}
+    setShowResonanceBridgeVideo(false);
     setIsResonanceOpen(true);
   }, []);
 
@@ -1039,6 +1070,13 @@ const PortalVoz = () => {
               </div>
               <CollaboratorsPanel collaborators={SCENE_PORTAL_COLLABORATORS} accentClassName="text-purple-300" bare />
             </div>
+            <VideoNarrativeAutoplay
+              open={showResonanceBridgeVideo}
+              formatId="miniversos"
+              isMobileViewport={typeof window !== 'undefined' && window.innerWidth < 1024}
+              onClose={() => setShowResonanceBridgeVideo(false)}
+              onNavigate={handleBridgeVideoContinue}
+            />
             {isResonanceOpen && (
               <ResonanceModal
                 open={isResonanceOpen}

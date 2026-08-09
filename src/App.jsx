@@ -14,8 +14,10 @@ import LoginToast from '@/components/LoginToast';
 import { useAuth } from '@/contexts/SupabaseAuthContext';
 import { safeGetItem, safeSetItem } from '@/lib/safeStorage';
 import {
+  readBeforeLeavingRevealedFromSession,
   readHeroActivatedFromSession,
   readObraDestacadaRevealedFromSession,
+  writeBeforeLeavingRevealedToSession,
   writeObraDestacadaRevealedToSession,
 } from '@/lib/heroActivation';
 
@@ -512,9 +514,9 @@ function App() {
   const [isCuradoriaVisible, setIsCuradoriaVisible] = useState(false);
   // Obra destacada + Créditos: se revelan juntos desde el CTA de Archivo Escénico (Caída del Telón).
   // Persistido en sessionStorage: sin esto, volver de un portal (/portal-*)
-  // remonta App.jsx desde cero y este bloque (incluye "Antes de irte")
-  // se colapsa aunque ya se había revelado.
+  // remonta App.jsx desde cero y el bloque se colapsa aunque ya se había revelado.
   const [isObraDestacadaVisible, setIsObraDestacadaVisible] = useState(readObraDestacadaRevealedFromSession);
+  const [isBeforeLeavingVisible, setIsBeforeLeavingVisible] = useState(readBeforeLeavingRevealedFromSession);
   useEffect(() => {
     if (typeof window === 'undefined') return undefined;
     const handleReveal = () => {
@@ -523,6 +525,15 @@ function App() {
     };
     window.addEventListener('gatoencerrado:reveal-obra-destacada', handleReveal);
     return () => window.removeEventListener('gatoencerrado:reveal-obra-destacada', handleReveal);
+  }, []);
+  useEffect(() => {
+    if (typeof window === 'undefined') return undefined;
+    const handleReveal = () => {
+      setIsBeforeLeavingVisible(true);
+      writeBeforeLeavingRevealedToSession();
+    };
+    window.addEventListener('gatoencerrado:reveal-before-leaving', handleReveal);
+    return () => window.removeEventListener('gatoencerrado:reveal-before-leaving', handleReveal);
   }, []);
   const isPortalRoute = location.pathname.startsWith('/portal-');
   const hasForcedHomeTopOnBootRef = useRef(false);
@@ -821,6 +832,7 @@ function App() {
               showTransmediaNav={canShowPostHeroContent && hasEnteredUniverse && canAccessTransmedia}
               showPerspectivasNav={isCuradoriaVisible}
               showObraDestacadaNav={isObraDestacadaVisible}
+              showBeforeLeavingNav={isBeforeLeavingVisible}
               showTerceraLlamadaNav={canShowPostHeroContent}
               showGatChip={isAuthenticated || isHeroActivated}
               terceraLlamadaLabel={hasEnteredUniverse ? '#Reestrenamos' : '#Comenzamos'}
@@ -898,16 +910,17 @@ function App() {
                             </Suspense>
                           </DeferredSection>
                         )}
-                        {/* Último espacio antes de Contacto: "Antes de irte" — no
-                            requiere sesión, el botón es de descubrimiento. Alianza
-                            Social (antes gateada a isAuthenticated) ahora vive DENTRO
-                            de esta sección, no como hermana — ver MiniverseInlineSection. */}
-                        <DeferredSection fallback={<SectionFallback id="conoce-sistema" minHeight={480} />}>
-                          <Suspense fallback={<SectionFallback id="conoce-sistema" minHeight={480} />}>
-                            <MiniverseInlineSection />
-                          </Suspense>
-                        </DeferredSection>
                       </>
+                    )}
+
+                    {/* "Antes de irte" tiene un revelado propio: su CTA no abre
+                        Obra fundacional ni Créditos de la función. */}
+                    {isBeforeLeavingVisible && (
+                      <DeferredSection fallback={<SectionFallback id="conoce-sistema" minHeight={480} />}>
+                        <Suspense fallback={<SectionFallback id="conoce-sistema" minHeight={480} />}>
+                          <MiniverseInlineSection />
+                        </Suspense>
+                      </DeferredSection>
                     )}
                   </>
                 )}

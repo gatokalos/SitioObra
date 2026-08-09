@@ -55,7 +55,7 @@ const Footer = ({
                 #GatoEncerrado
               </span>
               <p className="text-slate-400 leading-relaxed mb-6 max-w-md font-light">
-                Una obra transmedia desplegada en nueve formas creativas. Quien entra deja de ser solo observador: participa y aborda, desde un lugar propio, una herida emocional compartida.
+                Una experiencia narrativa interactiva desplegada en nueve formas creativas. Quien entra deja de ser solo observador: participa y aborda, desde un lugar propio, una herida emocional compartida.
               </p>
               <div className="flex gap-2">
                 <Button variant="ghost" size="icon" onClick={() => handleSocialClick(instagramUrl)} className="text-slate-400 hover:text-white hover:bg-white/10"><Instagram size={20} /></Button>

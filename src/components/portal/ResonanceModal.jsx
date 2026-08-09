@@ -3,7 +3,7 @@ import ReactDOM from 'react-dom';
 import CuadernoHolografico from './CuadernoHolografico';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Eye, Flame, PawPrint, Lock, ShieldCheck, Check, ChevronDown, ChevronRight, Sparkles, ArrowRight } from 'lucide-react';
+import { Eye, Flame, PawPrint, Lock, ShieldCheck, Check, ChevronDown, ChevronRight, Sparkles, ArrowRight, RotateCcw } from 'lucide-react';
 import { supabase } from '@/lib/supabaseClient';
 import { ensureAnonId } from '@/lib/identity';
 import { useAuth } from '@/contexts/SupabaseAuthContext';
@@ -78,6 +78,7 @@ const PORTAL_BLOOM = {
 export const LEVEL2_QUESTIONS = {
   obra: {
     question: '¿Qué esperas encontrar cuando alguien se expone frente a otros?',
+    preview: 'Antes de entrar en escena, ubica hacia quién diriges lo que estás por decir. Esa referencia nos ayudará a comprender desde dónde miras lo que viene.',
     options: [
       'verdad',
       'incomodidad',
@@ -89,6 +90,7 @@ export const LEVEL2_QUESTIONS = {
   },
   literatura: {
     question: '¿Qué esperas encontrar cuando una historia se abre contigo?',
+    preview: 'Antes de abrir la historia, reconoce qué esperas encontrar en ella. Esa expectativa será el punto desde el que comenzarás a leer.',
     options: [
       'una herida conocida',
       'una pregunta incómoda',
@@ -100,6 +102,7 @@ export const LEVEL2_QUESTIONS = {
   },
   artesanias: {
     question: '¿Qué cosas te cuesta dejar ir aunque ya no tengan utilidad?',
+    preview: 'Antes de acercarte a lo que alguien conserva, reconoce qué objetos siguen teniendo un lugar en ti aunque su utilidad haya terminado.',
     options: [
       'cartas o papeles',
       'ropa',
@@ -111,6 +114,7 @@ export const LEVEL2_QUESTIONS = {
   },
   grafico: {
     question: '¿Qué imágenes sientes que te observan cuando vuelves a estar a solas?',
+    preview: 'Antes de mirar de frente, reconoce qué clase de imagen suele quedarse observándote cuando todo lo demás se retira.',
     options: [
       'una mirada',
       'una escena extraña',
@@ -122,6 +126,7 @@ export const LEVEL2_QUESTIONS = {
   },
   cine: {
     question: '¿Qué tipo de momentos te cuesta mirar de frente en una historia?',
+    preview: 'Antes de que comience la escena, reconoce qué momentos suelen hacerte apartar la mirada. Esa será tu posición frente a lo que viene.',
     options: [
       'la vulnerabilidad',
       'la soledad',
@@ -133,6 +138,7 @@ export const LEVEL2_QUESTIONS = {
   },
   sonoridades: {
     question: '¿Qué sonidos sientes que regresan cuando estás solo?',
+    preview: 'Antes de escuchar, reconoce qué sonidos regresan cuando el ruido se apaga. Esa memoria afinará tu manera de entrar.',
     options: [
       'una voz conocida',
       'algo que escuché hace mucho',
@@ -144,6 +150,7 @@ export const LEVEL2_QUESTIONS = {
   },
   movimiento: {
     question: '¿Qué hace tu cuerpo cuando aún no entiendes lo que sientes?',
+    preview: 'Antes de moverte, observa qué hace tu cuerpo cuando todavía no encuentras palabras. Esa reacción también es una forma de mirar.',
     options: [
       'se inmoviliza',
       'se acelera',
@@ -155,6 +162,7 @@ export const LEVEL2_QUESTIONS = {
   },
   juegos: {
     question: 'Cuando una experiencia te obliga a elegir, ¿qué sueles hacer primero?',
+    preview: 'Antes de elegir, reconoce cuál suele ser tu primer impulso. Esa decisión inicial será la coordenada de tu recorrido.',
     options: [
       'seguir mi intuición',
       'evitar equivocarme',
@@ -166,6 +174,7 @@ export const LEVEL2_QUESTIONS = {
   },
   oraculo: {
     question: '¿Qué haces cuando una pregunta sigue contigo más tiempo del esperado?',
+    preview: 'Antes de formular otra pregunta, reconoce qué haces con aquellas que se quedan contigo. Esa disposición orientará la consulta.',
     options: [
       'darle vueltas en silencio',
       'escribirla',
@@ -243,7 +252,7 @@ const lsPatch = (portal, patch) => {
 const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNavigateToRecommendation, onL2QuestionReady, isMobileViewport, onRequireLogin, startInHolografico = false }) => {
   const modalRef = useRef(null);
   const submitBtnRef = useRef(null);
-  const { user } = useAuth();
+  const { user, isDevAuth } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const [formData, setFormData] = useState({ nombre: '', email: '', respuesta: '' });
@@ -266,11 +275,15 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
   const [l2Selection, setL2Selection] = useState(() => lsRead(portal).l2_option ?? null);
   const [l1ChipDone, setL1ChipDone] = useState(() => !!lsRead(portal).l2_option);
   const [l2Submitting, setL2Submitting] = useState(false);
-  const [l2Open, setL2Open] = useState(() => {
+  const [dashboardActiveLevel, setDashboardActiveLevel] = useState(() => {
     const s = lsRead(portal);
-    return !!s.l2_option && !s.l2_conv_done;
+    return [1, 2, 3].includes(s.dashboard_active_level) ? s.dashboard_active_level : 1;
   });
-  const [checking, setChecking] = useState(() => !lsRead(portal).l1);
+  const [calibrationQuestionOpen, setCalibrationQuestionOpen] = useState(() => {
+    const s = lsRead(portal);
+    return !!s.l2_calibration_open && !s.l2_narrative_opened;
+  });
+  const [checking, setChecking] = useState(() => !isDevAuth && !lsRead(portal).l1);
 
   // Nivel 2 — conversación post-experiencia
   const [l2NarrativeOpened, setL2NarrativeOpened] = useState(() => !!lsRead(portal).l2_narrative_opened);
@@ -319,6 +332,12 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
   // Verifica Supabase solo si localStorage no tiene l1 (respuestas pre-deploy)
   useEffect(() => {
     if (!open || !checking) return;
+    // En la vista previa DEV, localStorage es la fuente de verdad. Así un
+    // reinicio visual no vuelve a hidratar respuestas históricas de Supabase.
+    if (isDevAuth) {
+      setChecking(false);
+      return;
+    }
     let cancelled = false;
     const verify = async () => {
       try {
@@ -348,7 +367,7 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
     };
     verify();
     return () => { cancelled = true; };
-  }, [open, checking, portal]);
+  }, [open, checking, portal, isDevAuth]);
 
   useEffect(() => {
     if (!open) return;
@@ -372,41 +391,61 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
     e.preventDefault();
     setSubmitting(true);
     const anonId = ensureAnonId();
-    try {
-      await supabase.from('vitrana_resonances').insert({
-        anon_id:   anonId,
-        portal:    portal ?? null,
-        question:  question ?? null,
-        nombre:    formData.nombre,
-        email:     formData.email,
-        respuesta: formData.respuesta,
-        level:     1,
-      });
-    } catch (_) {}
+    if (!isDevAuth) {
+      try {
+        await supabase.from('vitrana_resonances').insert({
+          anon_id:   anonId,
+          portal:    portal ?? null,
+          question:  question ?? null,
+          nombre:    formData.nombre,
+          email:     formData.email,
+          respuesta: formData.respuesta,
+          level:     1,
+        });
+      } catch (_) {}
 
-    // Persiste línea base en resonance_sessions (fire-and-forget)
-    const bienvenidaAnonId = (() => { try { return localStorage.getItem('bienvenida_anon_id') || null; } catch { return null; } })();
-    fetch(`${OBRA_API_URL}/api/resonance/baseline`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        anon_id:             anonId,
-        miniverso_id:        portal,
-        intuicion_answer:    formData.respuesta,
-        ...(bienvenidaAnonId ? { bienvenida_anon_id: bienvenidaAnonId } : {}),
-      }),
-    }).catch(() => {});
+      // Persiste línea base en resonance_sessions (fire-and-forget)
+      const bienvenidaAnonId = (() => { try { return localStorage.getItem('bienvenida_anon_id') || null; } catch { return null; } })();
+      fetch(`${OBRA_API_URL}/api/resonance/baseline`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          anon_id:             anonId,
+          miniverso_id:        portal,
+          intuicion_answer:    formData.respuesta,
+          ...(bienvenidaAnonId ? { bienvenida_anon_id: bienvenidaAnonId } : {}),
+        }),
+      }).catch(() => {});
+    }
 
-    lsPatch(portal, { l1: Date.now(), l1_answer: formData.respuesta });
+    lsPatch(portal, {
+      l1: Date.now(),
+      l1_answer: formData.respuesta,
+      dashboard_active_level: 1,
+      l2_calibration_open: false,
+    });
     fireConfetti();
     setL1Done(true);
+    setDashboardActiveLevel(1);
+    setCalibrationQuestionOpen(false);
     setSubmitting(false);
+  };
+
+  const selectDashboardLevel = (levelNum) => {
+    setDashboardActiveLevel(levelNum);
+    lsPatch(portal, { dashboard_active_level: levelNum });
+  };
+
+  const handleOpenCalibrationQuestion = () => {
+    setCalibrationQuestionOpen(true);
+    lsPatch(portal, { l2_calibration_open: true, dashboard_active_level: 2 });
   };
 
   /* Experiencia narrativa — abre la experiencia y cierra el modal */
   const handleOpenNarrativeExperience = () => {
-    lsPatch(portal, { l2_narrative_opened: true });
+    lsPatch(portal, { l2_narrative_opened: true, l2_calibration_open: false, dashboard_active_level: 2 });
     setL2NarrativeOpened(true);
+    setCalibrationQuestionOpen(false);
     onClose?.();
     onOpenNarrative?.();
   };
@@ -419,6 +458,27 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
     setConvLoading(true);
     setConvError(false);
     lsPatch(portal, { l2_conv_error: false });
+    if (isDevAuth) {
+      if (silent || (respuesta != null && convTurn >= 2)) {
+        lsPatch(portal, { l2_conv_done: true, l2_current_question: null, l2_current_turn: null, l2_conv_error: false });
+        setL2ConvDone(true);
+        setConvQuestion(null);
+      } else {
+        const nextTurn = respuesta == null ? 1 : convTurn + 1;
+        const devQuestions = [
+          '¿Qué cambió en tu primera impresión después de atravesar la experiencia?',
+          '¿Qué imagen, sensación o pregunta sigue contigo ahora?',
+        ];
+        const nextQuestion = devQuestions[Math.min(nextTurn - 1, devQuestions.length - 1)];
+        lsPatch(portal, { l2_current_question: nextQuestion, l2_current_turn: nextTurn, l2_conv_error: false });
+        setConvQuestion(nextQuestion);
+        setConvTurn(nextTurn);
+        setConvAnswer('');
+      }
+      setConvLoading(false);
+      onL2QuestionReady?.();
+      return;
+    }
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 8000);
     try {
@@ -466,7 +526,7 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
       setConvLoading(false);
       onL2QuestionReady?.();
     }
-  }, [portal, onL2QuestionReady]);
+  }, [portal, onL2QuestionReady, isDevAuth, convTurn]);
 
   // Auto-arranca la conversación cuando el modal abre después de completar la experiencia.
   // Si el artefacto dejó fragment_id/plano/initiator (Marcador Inteligente, Literatura),
@@ -490,29 +550,31 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
     setL2Submitting(true);
     const anonId = ensureAnonId();
     lsPatch(portal, { l2_option: option, l2_ts: Date.now() });
-    try {
-      await supabase.from('vitrana_resonances').insert({
-        anon_id:   anonId,
-        portal:    portal ?? null,
-        question:  l2q?.question ?? null,
-        respuesta: option,
-        level:     2,
-      });
-    } catch (_) {}
+    if (!isDevAuth) {
+      try {
+        await supabase.from('vitrana_resonances').insert({
+          anon_id:   anonId,
+          portal:    portal ?? null,
+          question:  l2q?.question ?? null,
+          respuesta: option,
+          level:     2,
+        });
+      } catch (_) {}
 
-    // Persiste la expectativa en el pre-estímulo (H-LIT-2): va a /baseline junto
-    // con la intuición, no a /evidence — las dos declaraciones de L1 ocurren sin
-    // nada en medio, antes de abrir el artefacto.
-    fetch(`${OBRA_API_URL}/api/resonance/baseline`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        anon_id:              anonId,
-        miniverso_id:         portal,
-        expectativa_chip:     option,
-        expectativa_question: l2q?.question ?? null,
-      }),
-    }).catch(() => {});
+      // Persiste la expectativa en el pre-estímulo (H-LIT-2): va a /baseline junto
+      // con la intuición, no a /evidence — las dos declaraciones de L1 ocurren sin
+      // nada en medio, antes de abrir el artefacto.
+      fetch(`${OBRA_API_URL}/api/resonance/baseline`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          anon_id:              anonId,
+          miniverso_id:         portal,
+          expectativa_chip:     option,
+          expectativa_question: l2q?.question ?? null,
+        }),
+      }).catch(() => {});
+    }
 
     setL2Submitting(false);
   };
@@ -520,6 +582,18 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
   const handleClose = () => {
     setFormData({ nombre: '', email: '', respuesta: '' });
     onClose?.();
+  };
+
+  const handleDevResetJourney = () => {
+    if (!import.meta.env.DEV || !isDevAuth) return;
+    const confirmed = window.confirm(
+      `¿Reiniciar desde cero el recorrido de ${portal}? Solo se borrará su progreso local.`,
+    );
+    if (!confirmed) return;
+    try {
+      localStorage.removeItem(lsKey(portal));
+    } catch {}
+    window.location.reload();
   };
 
   const handleDownloadSouvenir = useCallback(async () => {
@@ -549,6 +623,15 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
   /* Bitácora — genera P2 o P3 dinámicamente según lo que ya respondió el usuario */
   const fetchNextBitacoraQuestion = useCallback(async (step, p1, p2 = null) => {
     setBitacoraQuestionLoading(true);
+    if (isDevAuth) {
+      const question = step === 'p2'
+        ? '¿En qué momento notaste que esa resonancia seguía contigo?'
+        : '¿Qué nombre le darías ahora a lo que permaneció?';
+      if (step === 'p2') setBitacoraP2Question(question);
+      else setBitacoraP3Question(question);
+      setBitacoraQuestionLoading(false);
+      return;
+    }
     try {
       const res = await fetch(`${OBRA_API_URL}/api/bitacora/next-question`, {
         method: 'POST',
@@ -562,12 +645,20 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
       }
     } catch (_) {}
     setBitacoraQuestionLoading(false);
-  }, []);
+  }, [isDevAuth]);
 
   /* Bitácora — registra consentimiento */
   const handleBitacoraConsent = useCallback(async (canal, phoneNumber) => {
     const anonId = ensureAnonId();
     const bienvenidaAnonId = (() => { try { return localStorage.getItem('bienvenida_anon_id') || null; } catch { return null; } })();
+    if (isDevAuth) {
+      const availableAt = new Date().toISOString();
+      lsPatch(portal, { bitacora_consented: true, bitacora_available_at: availableAt });
+      writeGlobalConsent();
+      setBitacoraConsented(true);
+      setBitacoraAvailableAt(availableAt);
+      return;
+    }
     try {
       const res = await fetch(`${OBRA_API_URL}/api/bitacora/consent`, {
         method: 'POST',
@@ -588,42 +679,44 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
         setBitacoraAvailableAt(data.available_at);
       }
     } catch (_) {}
-  }, [portal]);
+  }, [portal, isDevAuth]);
 
   // Si el usuario está en la PWA instalada, suscribe push en silencio
   // en el momento en que aparece el bloque "Este recorrido ha concluido".
   useEffect(() => {
     const l3Done = Boolean(l3Rec?.step3) && !l3Rec?.error && (l3Step >= 4 || l3BubbleClosed);
-    if (!l3Done || bitacoraConsented) return;
+    if (isDevAuth || !l3Done || bitacoraConsented) return;
     const bienvenidaAnonId = (() => { try { return localStorage.getItem('bienvenida_anon_id') || null; } catch { return null; } })();
     autoSubscribeIfPWA({ anonId: ensureAnonId(), miniversoId: portal, bienvenidaAnonId });
-  }, [l3Rec, l3Step, l3BubbleClosed, bitacoraConsented, portal, autoSubscribeIfPWA]);
+  }, [l3Rec, l3Step, l3BubbleClosed, bitacoraConsented, portal, autoSubscribeIfPWA, isDevAuth]);
 
   /* Bitácora — envía respuestas */
   const handleBitacoraSubmit = useCallback(async () => {
     setBitacoraSubmitting(true);
     const anonId = ensureAnonId();
-    try {
-      await fetch(`${OBRA_API_URL}/api/bitacora/respond`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          anon_id:        anonId,
-          miniverso_id:   portal,
-          p1_response:    bitacoraP1,
-          p1_afirmativa:  bitacoraAfirmativa,
-          intensidad:     bitacoraIntensidad,
-          p2_response:    bitacoraP2 || null,
-          p3_response:    bitacoraP3 || null,
-        }),
-      });
-    } catch (_) {}
+    if (!isDevAuth) {
+      try {
+        await fetch(`${OBRA_API_URL}/api/bitacora/respond`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            anon_id:        anonId,
+            miniverso_id:   portal,
+            p1_response:    bitacoraP1,
+            p1_afirmativa:  bitacoraAfirmativa,
+            intensidad:     bitacoraIntensidad,
+            p2_response:    bitacoraP2 || null,
+            p3_response:    bitacoraP3 || null,
+          }),
+        });
+      } catch (_) {}
+    }
     lsPatch(portal, { bitacora_completed: true });
     setBitacoraCompleted(true);
     setBitacoraOpen(false);
     setBitacoraStep('p1');
     setBitacoraSubmitting(false);
-  }, [portal, bitacoraP1, bitacoraAfirmativa, bitacoraIntensidad, bitacoraP2, bitacoraP3]);
+  }, [portal, bitacoraP1, bitacoraAfirmativa, bitacoraIntensidad, bitacoraP2, bitacoraP3, isDevAuth]);
 
   /* ── render ── */
   const l3Active = l3Open && !!l3Rec && !l3Rec.error && !l3Rec.all_complete;
@@ -648,6 +741,19 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
     }
     if ((l3Rec && l3Rec.step1) || l3Rec?.error || l3Loading) return;
     setL3Loading(true);
+    if (isDevAuth) {
+      const devRecommendation = {
+        step1: 'Tu recorrido de prueba ya tiene suficiente información para continuar.',
+        step2: 'La siguiente forma puede ayudarte a contrastar lo que apareció aquí.',
+        step3: 'Vista previa completada. Este resultado solo existe en tu navegador.',
+        forma: 'otro miniverso',
+        recommended_format_id: 'literatura',
+      };
+      setL3Rec(devRecommendation);
+      lsPatch(portal, { l3_recommendation: devRecommendation });
+      setL3Loading(false);
+      return;
+    }
     try {
       const completedIds = Object.keys(PORTAL_GRADIENT)
         .filter((p) => p !== portal && !!lsRead(p).l2_conv_done);
@@ -669,7 +775,7 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
     } finally {
       setL3Loading(false);
     }
-  }, [l3Rec, l3Loading, portal]);
+  }, [l3Rec, l3Loading, portal, isDevAuth]);
 
   const handleL3Toggle = () => {
     const opening = !l3Open;
@@ -679,6 +785,28 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
       if (!l3Rec || !l3Rec.step1) fetchL3Recommendation();
     }
   };
+
+  const dashboardHeader = dashboardActiveLevel === 2
+    ? {
+        eyebrow: LEVELS[1].eyebrow,
+        title: LEVELS[1].title,
+        description: l2ConvDone
+          ? 'La conversación quedó registrada. Lo que apareció después de la experiencia ya forma parte del recorrido.'
+          : (l2q?.preview ?? 'Antes de entrar en escena, reconoce desde dónde miras y hacia quién diriges lo que está por ocurrir.'),
+      }
+    : dashboardActiveLevel === 3
+      ? {
+          eyebrow: LEVELS[2].eyebrow,
+          title: LEVELS[2].title,
+          description: bitacoraCompleted
+            ? 'El registro está completo. Tu recorrido conserva lo que cambió, lo que permaneció y también aquello que no regresó.'
+            : LEVELS[2].pendingDesc,
+        }
+      : {
+          eyebrow: LEVELS[0].eyebrow,
+          title: LEVELS[0].title,
+          description: LEVELS[0].desc.replace(/^✓\s*/, ''),
+        };
 
   const handleBackToDashboard = () => {
     onClose?.();
@@ -749,6 +877,18 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
           >
             <Check size={18} />
           </button>
+
+          {import.meta.env.DEV && isDevAuth && (
+            <button
+              type="button"
+              onClick={handleDevResetJourney}
+              className="absolute left-4 top-4 z-30 inline-flex h-10 items-center gap-2 rounded-full border border-amber-300/35 bg-black/55 px-3 text-[0.62rem] uppercase tracking-[0.14em] text-amber-100/90 backdrop-blur-md transition hover:border-amber-300/60 hover:bg-black/70"
+              aria-label={`Reiniciar recorrido de ${portal}`}
+            >
+              <RotateCcw size={14} />
+              <span className="hidden sm:inline">DEV · Reiniciar</span>
+            </button>
+          )}
 
           {/* ── Columna izquierda ── */}
           <div className="relative min-w-0 flex-1 overflow-hidden">
@@ -1026,11 +1166,10 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
                       onRequireLogin={onRequireLogin}
                     />
                   </motion.div>
-                ) : l1Done && !l1ChipDone ? (
-                  /* ── Nivel 1: eco de la intuición + chip de expectativa ──
-                     H-LIT-2: nada entre el eco y los chips — la distancia entre
-                     lo que alguien se dice y lo que espera del otro solo es
-                     interpretable si no hay nada en medio. */
+                ) : l1Done && calibrationQuestionOpen ? (
+                  /* ── Calibración pre-estímulo ──
+                     Solo se revela cuando la persona elige la fase de la flama
+                     en el dashboard y después activa el enlace de calibración. */
                   <motion.div
                     key="l1-echo-chips"
                     initial={{ opacity: 0 }}
@@ -1081,13 +1220,37 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
                                   key={opt}
                                   type="button"
                                   onClick={() => handleExpectativaSelect(opt)}
-                                  disabled={l2Submitting}
-                                  className="rounded-full border border-amber-400/30 bg-amber-900/20 px-3 py-1 text-xs text-amber-100/90 transition hover:border-amber-400/55 hover:bg-amber-900/35 hover:text-amber-50 disabled:opacity-40"
+                                  disabled={l2Submitting || l1ChipDone}
+                                  className={`rounded-full border px-3 py-1 text-xs transition disabled:cursor-default ${
+                                    l2Selection === opt
+                                      ? 'border-amber-300/80 bg-amber-500/25 text-amber-50 shadow-[0_0_14px_rgba(251,191,36,0.22)]'
+                                      : 'border-amber-400/30 bg-amber-900/20 text-amber-100/90 hover:border-amber-400/55 hover:bg-amber-900/35 hover:text-amber-50 disabled:opacity-40'
+                                  }`}
                                 >
                                   {opt}
                                 </button>
                               ))}
                             </div>
+
+                            {l1ChipDone && onOpenNarrative && (
+                              <motion.button
+                                type="button"
+                                onClick={handleOpenNarrativeExperience}
+                                className="flex w-full flex-col items-center gap-3 pt-5 transition active:scale-[0.98]"
+                                initial={{ opacity: 0, scale: 0.9, y: 10 }}
+                                animate={{ opacity: 1, scale: 1, y: 0 }}
+                                transition={{ type: 'spring', stiffness: 220, damping: 20 }}
+                              >
+                                <img
+                                  src="https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/oraculo/gato-moneda.png"
+                                  alt="GAToken"
+                                  className="h-24 w-24 animate-[spin_8s_linear_0s_infinite_reverse] drop-shadow-[0_0_22px_rgba(251,191,36,0.6)] lg:h-32 lg:w-32"
+                                />
+                                <span className="text-sm font-semibold tracking-wide text-amber-200">
+                                  Habitar la forma
+                                </span>
+                              </motion.button>
+                            )}
                           </>
                         )}
                       </div>
@@ -1259,35 +1422,40 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
                   /* ── Dashboard de viaje ── */
                   <motion.div
                     key="dashboard"
-                    className="flex flex-col gap-5 px-5 pb-8 pt-10 sm:px-6 lg:px-8 lg:pt-10"
+                    className="flex flex-col gap-5 px-6 pb-8 pt-10 lg:px-8 lg:pt-10"
                     initial={{ opacity: 0, y: 16 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -8 }}
                     transition={{ duration: 0.4 }}
                   >
                     {/* Header */}
-                    <div className="space-y-1.5">
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <div className="inline-flex rounded-full border border-white/10 bg-white/5 px-3 py-1 text-[0.62rem] uppercase tracking-[0.32em] text-white/70 backdrop-blur-md">
-                          Resonancia colectiva
-                        </div>
+                    <motion.div
+                      key={`dashboard-header-${dashboardActiveLevel}`}
+                      className="space-y-2"
+                      initial={{ opacity: 0, y: 8 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.25 }}
+                    >
+                      <div className="inline-flex rounded-full border border-white/10 bg-white/5 px-3 py-1 text-[0.62rem] uppercase tracking-[0.32em] text-white/70 backdrop-blur-md">
+                        {dashboardHeader.eyebrow}
                       </div>
                       <h2
                         id="resonance-modal-title"
                         className="font-display text-3xl text-white lg:text-4xl"
                       >
-                        Caja de resonancia estética
+                        {dashboardHeader.title}
                       </h2>
                       <p className="text-sm leading-relaxed text-slate-200/90">
-                        Cada etapa aporta datos valiosos para comprender cómo habitamos las emociones delante de otros.
+                        {dashboardHeader.description}
                       </p>
-                    </div>
+
+                    </motion.div>
 
                     {/* Niveles */}
                     <div className="relative flex flex-col gap-0">
                       <div
                         aria-hidden="true"
-                        className="absolute left-[1.6rem] top-10 h-[calc(100%-5rem)] w-px border-l-2 border-dashed border-white/15"
+                        className="absolute left-[1.6rem] top-10 hidden h-[calc(100%-5rem)] w-px border-l-2 border-dashed border-white/15 lg:block"
                       />
 
                       {LEVELS.map((level, i) => {
@@ -1300,20 +1468,25 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
                         const l3RecSeen    = isL3 && Boolean(l3Rec?.step3) && !l3Rec?.error;
                         const isCompleted  = isL1 || (isL2 && l2ConvDone) || (isL3 && bitacoraCompleted);
                         const isAvailable  = (isL2 && !l2ConvDone) || (isL3 && l2ConvDone && !bitacoraCompleted);
-                        const levelIsOpen  = isCompleted || (isL2 && !l2ConvDone && l2Open) || (isL3 && l2ConvDone && (l3Open || l3RecSeen));
-                        const canToggle    = (isL2 && !l2ConvDone) || (isL3 && l2ConvDone && !l3RecSeen && !bitacoraCompleted);
-                        const handleToggle = isL3 ? handleL3Toggle : () => setL2Open((v) => !v);
+                        const isSelected   = dashboardActiveLevel === level.num;
+                        const levelIsOpen  = (isL2 && l2ConvDone) || (isL3 && l2ConvDone && (l3Open || l3RecSeen));
+                        const canSelect    = isL1 || isL2 || (isL3 && l2ConvDone);
+                        const handleSelect = () => {
+                          if (!canSelect) return;
+                          selectDashboardLevel(level.num);
+                          if (isL3 && !l3RecSeen && !bitacoraCompleted) handleL3Toggle();
+                        };
 
                         return (
                           <motion.div
                             key={level.num}
-                            className="flex items-start gap-4 py-3"
+                            className="flex items-start py-2 lg:gap-4 lg:py-3"
                             initial={{ opacity: 0, x: -12 }}
                             animate={{ opacity: 1, x: 0 }}
                             transition={{ delay: 0.15 + i * 0.1, duration: 0.35 }}
                           >
                             {/* Número */}
-                            <div className={`relative z-10 flex h-[3.25rem] w-[3.25rem] shrink-0 items-center justify-center rounded-full text-lg font-bold ${
+                            <div className={`relative z-10 hidden h-[3.25rem] w-[3.25rem] shrink-0 items-center justify-center rounded-full text-lg font-bold lg:flex ${
                               isCompleted
                                 ? `bg-gradient-to-br ${gradient} text-white shadow-[0_0_18px_rgba(0,0,0,0.4)]`
                                 : isAvailable
@@ -1324,8 +1497,15 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
                             </div>
 
                             {/* Card con acordeón */}
-                            <div className={`flex min-w-0 flex-1 flex-col rounded-2xl border transition-colors ${
-                              isCompleted
+                            <div
+                              role={!isL3 && canSelect ? 'button' : undefined}
+                              tabIndex={!isL3 && canSelect ? 0 : undefined}
+                              onClick={!isL3 && canSelect ? handleSelect : undefined}
+                              onKeyDown={!isL3 && canSelect ? (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleSelect(); } } : undefined}
+                              className={`grid min-w-0 flex-1 grid-cols-[4.5rem_minmax(0,1fr)] gap-x-4 gap-y-2 rounded-2xl border px-4 py-4 transition-colors lg:flex lg:px-0 lg:py-0 ${canSelect ? 'cursor-pointer' : ''} ${
+                              isSelected
+                                ? 'border-purple-300/45 bg-black/60 shadow-[0_0_20px_rgba(168,85,247,0.10)]'
+                                : isCompleted
                                 ? 'border-white/20 bg-black/55'
                                 : isAvailable
                                   ? 'border-white/15 bg-black/50'
@@ -1333,42 +1513,59 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
                             }`}>
                               {/* Fila cabecera — siempre visible */}
                               <div
-                                role={canToggle ? 'button' : undefined}
-                                tabIndex={canToggle ? 0 : undefined}
-                                className={`flex items-center gap-3 px-4 py-3 ${canToggle ? 'cursor-pointer select-none' : ''}`}
-                                onClick={canToggle ? handleToggle : undefined}
-                                onKeyDown={canToggle ? (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleToggle(); } } : undefined}
+                                role={isL3 && canSelect ? 'button' : undefined}
+                                tabIndex={isL3 && canSelect ? 0 : undefined}
+                                className={`contents lg:flex lg:items-center lg:gap-3 lg:px-4 lg:py-3 ${canSelect ? 'select-none' : ''}`}
+                                onClick={isL3 && canSelect ? handleSelect : undefined}
+                                onKeyDown={isL3 && canSelect ? (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleSelect(); } } : undefined}
                               >
                                 {/* Ícono */}
-                                <div className={`shrink-0 flex h-7 w-7 items-center justify-center rounded-full ${
+                                <div className={`row-span-2 flex h-[4.5rem] w-[4.5rem] shrink-0 items-center justify-center rounded-full lg:row-auto lg:h-7 lg:w-7 ${
                                   isCompleted
                                     ? `bg-gradient-to-br ${gradient} shadow-[0_0_10px_rgba(0,0,0,0.25)]`
                                     : isAvailable
                                       ? 'border border-white/25 bg-black/40'
                                       : 'border border-white/8 bg-black/25'
-                                }`}>
+                                  }`}>
                                   {isCompleted || isAvailable
-                                    ? <Icon size={13} className="text-white" />
-                                    : <Lock size={11} className="text-white/20" />
+                                    ? <Icon className="h-8 w-8 text-white lg:h-[13px] lg:w-[13px]" />
+                                    : <Lock className="h-7 w-7 text-white/20 lg:h-[11px] lg:w-[11px]" />
                                   }
                                 </div>
 
                                 {/* Texto */}
-                                <div className="min-w-0 flex-1">
-                                  <p className={`truncate text-[0.57rem] uppercase tracking-[0.1em] leading-none mb-0.5 ${
-                                    isCompleted ? 'text-slate-300/85' : 'text-slate-400/70'
-                                  }`}>
-                                    {level.eyebrow}
-                                  </p>
-                                  <p className={`font-display text-sm leading-tight ${
-                                    isCompleted || isAvailable ? 'text-white' : 'text-white/30'
-                                  }`}>
-                                    {level.title}
-                                  </p>
+                                <div className="min-w-0 flex-1 self-center">
+                                  {isSelected && isL1 ? (
+                                    <p className="text-sm leading-relaxed text-slate-200/90 lg:text-xs">
+                                      {lsRead(portal).l1_answer || 'Respuesta registrada'}
+                                    </p>
+                                  ) : isSelected && isL2 && !l2ConvDone && !l2NarrativeOpened ? (
+                                    <button
+                                      type="button"
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        handleOpenCalibrationQuestion();
+                                      }}
+                                      className="inline-flex items-center gap-2 text-sm font-semibold text-amber-200 underline decoration-amber-300/35 underline-offset-4 transition hover:text-amber-100 hover:decoration-amber-200/70"
+                                    >
+                                      {l1ChipDone ? 'Volver a la calibración' : 'Calibrar mi mirada'}
+                                      <ArrowRight size={14} />
+                                    </button>
+                                  ) : isSelected && isL2 && l2Selection ? (
+                                    <p className="text-sm italic leading-relaxed text-slate-200/90 lg:text-xs">
+                                      {l2Selection}
+                                    </p>
+                                  ) : (
+                                    <p className={`font-display text-base leading-tight lg:text-sm ${
+                                      isCompleted || isAvailable ? 'text-white' : 'text-white/30'
+                                    }`}>
+                                      {level.title}
+                                    </p>
+                                  )}
                                 </div>
 
                                 {/* Badge + chevron */}
-                                <div className="shrink-0 flex items-center gap-1.5">
+                                <div className="hidden shrink-0 items-center gap-1.5 lg:flex">
                                   {isAvailable ? (
                                     <>
                                       <span className="relative inline-flex items-center gap-1 rounded-full border border-sky-400/60 bg-sky-500/20 px-2 py-0.5 text-[0.52rem] uppercase tracking-[0.1em] text-sky-100 leading-none shadow-[0_0_10px_rgba(56,189,248,0.35)]">
@@ -1380,7 +1577,7 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
                                       </span>
                                       <ChevronDown
                                         size={13}
-                                        className={`text-white/30 transition-transform duration-200 ${levelIsOpen ? 'rotate-180' : ''}`}
+                                        className="text-white/30"
                                       />
                                     </>
                                   ) : !isCompleted ? (
@@ -1400,10 +1597,7 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
                                     transition={{ duration: 0.25, ease: 'easeInOut' }}
                                     className="overflow-hidden"
                                   >
-                                    <div className="px-4 pb-4 space-y-3">
-                                      {isL1 && (
-                                        <p className="text-xs leading-relaxed text-slate-300/90">{level.desc}</p>
-                                      )}
+                                    <div className="col-start-2 space-y-3 lg:px-4 lg:pb-4">
                                       {isL3 && (
                                         <div className="space-y-3">
 
@@ -1451,10 +1645,10 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
                                           {/* Paso 3 — Coleccionable (muestra después de que el usuario pasa por la cabina) */}
                                           {l3RecSeen && (l3Step >= 4 || l3BubbleClosed) && !l3Rec.all_complete && (
                                             <>
-                                              <p className="text-xs leading-relaxed text-slate-300/90">
+                                              <p className="text-sm leading-relaxed text-slate-300/90 lg:text-xs">
                                                 Este recorrido ha concluido.
                                               </p>
-                                              <p className="text-xs leading-relaxed text-slate-400/80">
+                                              <p className="text-sm leading-relaxed text-slate-400/80 lg:text-xs">
                                                 Las respuestas registradas permiten estudiar cómo las experiencias narrativas son interpretadas, recordadas y resignificadas por distintas personas.
                                               </p>
 
@@ -1531,7 +1725,7 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
 
                                           {/* Bitácora — completada */}
                                           {bitacoraCompleted && (
-                                            <div className="flex items-center gap-2 text-xs text-slate-300 pt-1">
+                                            <div className="flex items-center gap-2 pt-1 text-sm text-slate-300 lg:text-xs">
                                               <Check size={12} className="shrink-0 text-emerald-400/70" />
                                               <span className="italic">Registro completo</span>
                                             </div>
@@ -1580,42 +1774,10 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
                                         </div>
                                       )}
                                       {isL2 && l2ConvDone && (
-                                        <div className="flex items-center gap-2 text-xs text-slate-300">
+                                        <div className="flex items-center gap-2 text-sm text-slate-300 lg:text-xs">
                                           <Check size={12} className="shrink-0 text-emerald-400/70" />
                                           <span className="italic">Conversación completada</span>
                                         </div>
-                                      )}
-                                      {isL2 && !l2ConvDone && (
-                                        <div className="space-y-2">
-                                          {l2Selection && (
-                                            <div className="flex items-center gap-2 text-xs text-slate-300">
-                                              <Check size={12} className="shrink-0 text-emerald-400/70" />
-                                              <span className="italic">{l2Selection}</span>
-                                            </div>
-                                          )}
-                                          <p className="text-xs leading-relaxed text-slate-400/80">
-                                            {l2q?.l2Desc ?? level.desc}
-                                          </p>
-                                        </div>
-                                      )}
-                                      {isL2 && !l2ConvDone && onOpenNarrative && (
-                                        <motion.button
-                                          type="button"
-                                          onClick={handleOpenNarrativeExperience}
-                                          className="w-full flex flex-col items-center gap-3 py-2 transition active:scale-[0.98]"
-                                          initial={{ opacity: 0, scale: 0.92, y: 8 }}
-                                          animate={{ opacity: 1, scale: 1, y: 0 }}
-                                          transition={{ type: 'spring', stiffness: 220, damping: 20, delay: 0.2 }}
-                                        >
-                                          <img
-                                            src="https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/oraculo/gato-moneda.png"
-                                            alt="GAToken"
-                                            className="h-20 w-20 lg:h-32 lg:w-32 animate-[spin_8s_linear_0s_infinite_reverse] drop-shadow-[0_0_22px_rgba(251,191,36,0.6)]"
-                                          />
-                                          <span className="text-sm font-semibold tracking-wide text-amber-200">
-                                            {l2NarrativeOpened ? 'Activar Artefacto' : 'Activar Artefacto'}
-                                          </span>
-                                        </motion.button>
                                       )}
                                     </div>
                                   </motion.div>

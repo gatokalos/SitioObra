@@ -214,6 +214,14 @@ const Hero = () => {
   const [heroSubtitleIndex, setHeroSubtitleIndex] = useState(0);
   const [heroGhostSubtitle, setHeroGhostSubtitle] = useState(null);
   const heroSectionRef = useRef(null);
+  // GatokensRevealModal y el HUB del Header (isGatLinktreeOpen) pueden
+  // auto-abrirse en el mismo montaje — sin coordinación, se traslapan (ver
+  // gatoencerrado:gat-hub-open-changed). Mientras el HUB esté abierto, el
+  // reveal queda pendiente aquí en vez de abrirse; se abre solo cuando el
+  // HUB se cierra por un dismiss genérico (Escape), no cuando se cierra
+  // porque el usuario ya eligió una acción concreta (razón 'scene-activate'
+  // — Retomar el lente, Ir al Backstage, etc., que van directo a su destino).
+  const pendingGatokensRevealAfterHubRef = useRef(false);
   const heroAudioMutedRef = useRef(false);
   const audioGestureUnlockRef = useRef(false);
   const lastHeroAudioPlayAttemptRef = useRef(0);
@@ -427,7 +435,19 @@ const Hero = () => {
         nextIsUmbralReveal = true;
       }
       setIsUmbralReveal(nextIsUmbralReveal);
-      setIsGatokensModalOpen(true);
+      // Dos frames para que el efecto de auto-apertura del HUB (Header.jsx)
+      // alcance a correr y marcar document.body.dataset.gatHubOpen antes de
+      // decidir — mismo patrón que activateSceneAfterGatDismiss ya usa para
+      // esta misma coordinación entre hermanos.
+      window.requestAnimationFrame(() => {
+        window.requestAnimationFrame(() => {
+          if (document.body?.dataset?.gatHubOpen === 'true') {
+            pendingGatokensRevealAfterHubRef.current = true;
+          } else {
+            setIsGatokensModalOpen(true);
+          }
+        });
+      });
       if (typeof window !== 'undefined') {
         window.dispatchEvent(new CustomEvent('gatoencerrado:tercera-llamada-completed'));
       }
@@ -458,6 +478,22 @@ const Hero = () => {
     setIsAutoVideoOpen(true);
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user?.id]);
+
+  // GatokensRevealModal diferido mientras el HUB estaba abierto (ver
+  // pendingGatokensRevealAfterHubRef arriba): se abre al cerrarse el HUB,
+  // salvo que el cierre haya sido porque el usuario ya eligió una acción
+  // concreta (reason 'scene-activate') — ahí no le toca, va directo a su destino.
+  useEffect(() => {
+    const handleGatHubOpenChanged = (event) => {
+      if (event?.detail?.open) return;
+      if (!pendingGatokensRevealAfterHubRef.current) return;
+      pendingGatokensRevealAfterHubRef.current = false;
+      if (event?.detail?.reason === 'scene-activate') return;
+      setIsGatokensModalOpen(true);
+    };
+    window.addEventListener('gatoencerrado:gat-hub-open-changed', handleGatHubOpenChanged);
+    return () => window.removeEventListener('gatoencerrado:gat-hub-open-changed', handleGatHubOpenChanged);
+  }, []);
 
   useEffect(() => {
     const handleOpenNarrativeContinuation = (event) => {
@@ -1229,7 +1265,7 @@ const Hero = () => {
                     // desktop, ahora también móvil — la escena activada abajo
                     // sigue intacta por plataforma, sin tocar esos valores.
                     opacity: !hasActivatedAudio
-                      ? 0.28
+                      ? 0.58
                       : isMobileViewport ? 1 : 0.96,
                     visibility: 'visible',
                     filter: !hasActivatedAudio
@@ -1452,6 +1488,13 @@ const Hero = () => {
             if (!user) {
               safeSetItem(POZO_HERO_REVEAL_KEY, '1');
               window.dispatchEvent(new CustomEvent('gatoencerrado:pozo-hero-revealed'));
+            }
+            // Continuidad: si había un miniverso recomendado, el viewport
+            // llega a la vitrina en vez de dejar al usuario donde sea que
+            // esté — ORACULO_RECOMMENDED_SHOWCASE_KEY ya se guardó arriba,
+            // así que Transmedia.jsx lo resalta solo al montar/re-renderizar.
+            if (recommendedVitranaId) {
+              window.setTimeout(() => scrollToSection('#transmedia'), 60);
             }
           }}
         />

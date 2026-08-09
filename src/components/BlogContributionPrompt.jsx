@@ -98,10 +98,13 @@ const BlogContributionPrompt = ({ onAskQuestion = null }) => {
 
            {/* CONTENIDO */}
 <div className="relative z-10">
-  <div className="narrative-pause-mark narrative-pause-mark--intermission" aria-hidden="true">
-    <span />
-    <span />
-  </div>
+  <img
+    src="/assets/IntermedioLogo.png"
+    alt=""
+    aria-hidden="true"
+    loading="lazy"
+    className="narrative-section-logo mx-auto mb-5 object-contain"
+  />
   <h3 className="font-display text-3xl font-medium text-slate-100 mb-6 text-center">
     Intermedio y<br />segunda parte
   </h3>
