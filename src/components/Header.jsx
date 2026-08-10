@@ -111,7 +111,6 @@ const Header = ({
   showBeforeLeavingNav = false,
   showTerceraLlamadaNav = false,
   showGatChip = true,
-  terceraLlamadaLabel = '#Comenzamos',
 }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [scrollTier, setScrollTier] = useState(0);
@@ -564,8 +563,8 @@ const Header = ({
     ...(showTransmediaNav ? [{ name: 'Miniversos', href: '#transmedia' }] : []),
     ...(showAllianceNav ? [{ name: 'Alianza', href: '#apoya' }] : []),
     ...(showIntermedioNav ? [{ name: 'Intermedio', href: '#blog-contribuye' }] : []),
-    ...(showCuradoriaNav ? [{ name: 'Curaduría', href: '#dialogo-critico' }] : []),
-    ...(showPerspectivasNav ? [{ name: 'Voces en la sala', href: '#provoca' }] : []),
+    ...(showCuradoriaNav ? [{ name: 'Segundo acto', href: '#dialogo-critico' }] : []),
+    ...(showPerspectivasNav ? [{ name: 'La réplica', href: '#provoca' }] : []),
     ...(showIntermedioNav ? [{ name: 'Caída del telón', href: '#next-show' }] : []),
     ...(showObraDestacadaNav ? [{ name: 'Obra fundacional', href: '#about' }] : []),
     ...(showObraDestacadaNav ? [{ name: 'Créditos', href: '#team' }] : []),
@@ -574,10 +573,10 @@ const Header = ({
     { name: 'Contacto', href: '#contact' },
   ];
   const mobileMenuItems = [
-    { name: 'Primera fila', href: '#hero', description: '#esununiverso',
+    { name: 'Primera fila', href: '#hero', description: '#MiraAlUniverso',
  },
     ...(showTerceraLlamadaNav
-      ? [{ name: 'Última llamada', href: '#bienvenida-creador', description: terceraLlamadaLabel }]
+      ? [{ name: 'Última llamada', href: '#bienvenida-creador', description: '#PreguntasPendientes' }]
       : []),
     ...(showTransmediaNav
       ? [
@@ -590,24 +589,24 @@ const Header = ({
         ]
       : []),
     ...(showIntermedioNav
-      ? [{ name: 'Intermedio', href: '#blog-contribuye', description: '#Lareflexion' }]
+      ? [{ name: 'Intermedio', href: '#blog-contribuye', description: '#PensamientoCrítico' }]
       : []),
     ...(showCuradoriaNav
       ? [
           {
-            name: 'Curaduría',
+            name: 'Segundo acto',
             href: '#dialogo-critico',
-            description: '#pensamientocritico',
+            description: '#LaRéplica',
             secondary: [
+              { label: 'Entra al Camerino', href: '#dialogo-critico', action: 'show-buscador' },
               { label: 'Curaduría Reflexiva', href: '#dialogo-critico?focus=curaduria' },
               { label: 'Expansiones Narrativas', href: '#dialogo-critico?focus=expansiones' },
-              { label: 'Detrás de Cámaras', href: '#dialogo-critico?focus=backstage' },
-              { label: 'Buscador Backstage', href: '#dialogo-critico', action: 'show-buscador' },
+              { label: 'Detrás de Cámaras', href: '#dialogo-critico?focus=backstage' },            
             ],
           },
         ]
       : []),
-    ...(showPerspectivasNav ? [{ name: 'Voces en la sala', href: '#provoca', description: '#heridaemocional' }] : []),
+    ...(showPerspectivasNav ? [{ name: 'La réplica', href: '#provoca', description: '#formasdedecirlo' }] : []),
     ...(showIntermedioNav
       ? [{
           name: 'Caída del telón',
@@ -640,6 +639,8 @@ const Header = ({
     };
     if (href.startsWith('#') && href.includes('?')) {
       const [hashAnchor] = href.split('?');
+      const isEditorialFocusLink = hashAnchor === '#dialogo-critico'
+        && new URLSearchParams(href.split('?')[1] || '').has('focus');
       navigate(
         {
           pathname: location.pathname,
@@ -648,9 +649,14 @@ const Header = ({
         },
         { replace: false }
       );
-      const anchorEl = document.querySelector(hashAnchor);
-      if (anchorEl) {
-        anchorEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      // Las líneas editoriales necesitan esperar a que Blog actualice sus
+      // artículos. Blog es el único dueño de ese desplazamiento para evitar
+      // que el menú y el ancla global compitan en móvil.
+      if (!isEditorialFocusLink) {
+        const anchorEl = document.querySelector(hashAnchor);
+        if (anchorEl) {
+          anchorEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
       }
       return;
     }

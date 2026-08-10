@@ -19,6 +19,7 @@ export function useSearch() {
   const [query, setQuery] = useState('');
   const [answer, setAnswer] = useState('');
   const [sources, setSources] = useState([]);
+  const [archive, setArchive] = useState([]);
   const [status, setStatus] = useState('idle');
   const [errorMessage, setErrorMessage] = useState('');
 
@@ -29,6 +30,7 @@ export function useSearch() {
     abortRef.current?.abort();
     setAnswer('');
     setSources([]);
+    setArchive([]);
     setStatus('idle');
     setErrorMessage('');
   }, []);
@@ -50,6 +52,7 @@ export function useSearch() {
 
     setAnswer('');
     setSources([]);
+    setArchive([]);
     setErrorMessage('');
     setStatus('searching');
 
@@ -99,6 +102,7 @@ export function useSearch() {
             setAnswer((prev) => prev + event.text);
           } else if (event.type === 'done') {
             setSources(event.sources ?? []);
+            setArchive(event.archive ?? []);
             setStatus('done');
           } else if (event.type === 'error') {
             setErrorMessage(event.message ?? 'Error desconocido.');
@@ -124,6 +128,7 @@ export function useSearch() {
     setQuery,
     answer,
     sources,
+    archive,
     status,
     errorMessage,
     search,

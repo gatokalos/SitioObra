@@ -5,6 +5,9 @@ import { Button } from '@/components/ui/button';
 
 const ObraConversationControls = ({
   ctaLabel = 'Habla con la obra',
+  listeningLabel = 'Pulsa otra vez para enviar',
+  promptLabel = 'Pulsa para soltar lo que llevas dentro',
+  errorTitle = 'La Obra no pudo responder',
   isSilvestrePlaying = false,
   pendingSilvestreAudioUrl = null,
   isSilvestreFetching = false,
@@ -36,9 +39,9 @@ const ObraConversationControls = ({
       : isSilvestreThinking
         ? silvestreThinkingMessage
         : isListening
-          ? 'Pulsa otra vez para enviar'
+          ? listeningLabel
           : micPromptVisible
-            ? 'Pulsa para soltar lo que llevas dentro'
+            ? promptLabel
             : ctaLabel;
   const hasErrorState = Boolean(micError) && !isListening && !isSilvestreThinking;
   const baseBorder = tone?.border || 'rgba(196,181,253,0.6)';
@@ -151,7 +154,7 @@ const ObraConversationControls = ({
 
       {micError && !isListening ? (
         <div className="mt-4 rounded-2xl border border-red-500/30 bg-red-500/10 p-4 text-sm text-red-100">
-          <p className="text-xs uppercase tracking-[0.35em] text-red-300">La Obra no pudo responder</p>
+          <p className="text-xs uppercase tracking-[0.35em] text-red-300">{errorTitle}</p>
           <p>{micError}</p>
         </div>
       ) : null}

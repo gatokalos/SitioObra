@@ -58,8 +58,8 @@ const NextShow = () => {
 
   return (
     <>
-      <section id="next-show" className="py-24 relative min-h-[760px] md:min-h-[820px]">
-        <div className="section-divider mb-24"></div>
+      <section id="next-show" className="curtain-fall-section py-24 relative min-h-[760px] md:min-h-[820px]">
+        <div className="curtain-fall-divider section-divider mb-24"></div>
 
         <div className="container mx-auto px-6">
           <motion.div
@@ -67,9 +67,9 @@ const NextShow = () => {
             whileInView={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, ease: 'easeOut' }}
             viewport={{ once: true }}
-            className="glass-effect rounded-2xl p-8 md:p-12 text-center overflow-hidden min-h-[520px] md:min-h-[560px]"
+            className="curtain-fall-card glass-effect rounded-2xl p-8 md:p-12 text-center overflow-hidden min-h-[520px] md:min-h-[560px]"
           >
-            <div className="relative z-10">
+            <div className="curtain-fall-content relative z-10">
               <h3 className="font-display text-3xl font-medium text-slate-100 mb-6 text-center">
                 Caída del telón:<br />decirnos adiós
               </h3>

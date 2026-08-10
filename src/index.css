@@ -205,6 +205,80 @@ body {
     0 0 18px rgba(88, 72, 126, 0.08);
 }
 
+/* La réplica: toma el acabado de obsidiana de Fase Cero sin heredar su
+   composición centrada, su escala de Hero ni sus efectos de transición. */
+.provoca-act-title {
+  display: inline-block;
+  font-family: "Vox Round", 'Inter', sans-serif;
+  font-size: clamp(2.25rem, 4vw, 3rem);
+  font-weight: 600;
+  font-feature-settings: "kern" 1, "liga" 0;
+  line-height: 1.02;
+  letter-spacing: clamp(0.08em, 0.15vw, 0.12em);
+  background: linear-gradient(
+    180deg,
+    rgba(224, 226, 236, 0.9) 0%,
+    rgba(132, 132, 150, 0.76) 28%,
+    rgba(46, 42, 55, 0.94) 68%,
+    rgba(9, 8, 14, 0.98) 100%
+  );
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+  -webkit-text-stroke: 0.55px rgba(226, 232, 240, 0.24);
+  text-shadow:
+    0 0 5px rgba(226, 232, 240, 0.1),
+    0 0 18px rgba(139, 92, 246, 0.13);
+}
+
+.provoca-act-title__accented {
+  position: relative;
+  display: inline-block;
+}
+
+.provoca-act-title__accented::after {
+  content: '';
+  position: absolute;
+  top: -0.07em;
+  left: 56%;
+  width: 0.15em;
+  height: 0.045em;
+  border-radius: 999px;
+  background: linear-gradient(180deg, rgba(232, 234, 243, 0.9), rgba(132, 132, 150, 0.72));
+  box-shadow:
+    0 0 3px rgba(226, 232, 240, 0.16),
+    0 0 8px rgba(139, 92, 246, 0.12);
+  transform: translateX(-50%) rotate(-34deg);
+  pointer-events: none;
+}
+
+/* Camerino: una luz íntima y localizada, distinta de las tarjetas editoriales
+   y de los gradientes más expansivos de los miniversos. */
+.camerino-panel {
+  border-color: rgba(196, 181, 253, 0.28);
+  background:
+    radial-gradient(circle at 12% 10%, rgba(145, 72, 151, 0.27), transparent 31%),
+    radial-gradient(circle at 88% 13%, rgba(39, 100, 121, 0.2), transparent 30%),
+    radial-gradient(ellipse at 50% 112%, rgba(105, 45, 86, 0.17), transparent 43%),
+    linear-gradient(145deg, rgba(22, 11, 31, 0.98) 0%, rgba(13, 10, 24, 0.97) 51%, rgba(6, 18, 26, 0.96) 100%);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.055),
+    0 24px 70px rgba(35, 15, 64, 0.3),
+    0 0 48px rgba(73, 40, 104, 0.08);
+}
+
+/* Acento berenjena para el dispositivo principal del camerino. */
+.camerino-apuntador-panel {
+  border-color: rgba(204, 151, 188, 0.26);
+  background:
+    radial-gradient(circle at 12% 8%, rgba(115, 48, 91, 0.2), transparent 42%),
+    linear-gradient(145deg, rgba(49, 19, 42, 0.72), rgba(24, 12, 28, 0.62) 58%, rgba(12, 10, 20, 0.54));
+  box-shadow:
+    inset 0 1px 0 rgba(255, 232, 248, 0.035),
+    0 14px 34px rgba(34, 10, 29, 0.18);
+}
+
 @media (max-width: 768px) {
   .hero-title {
     position: relative;
@@ -339,6 +413,38 @@ body {
     position: relative;
     z-index: 1;
   }
+}
+
+/* El título conserva una sola caja geométrica durante el cambio de fase.
+   Fase Cero y escena activa son únicamente capas de pintura superpuestas:
+   sus gradientes, strokes y filtros no se interpolan ni recalculan el layout. */
+.hero-title-stage {
+  position: relative;
+  display: block;
+  width: 100%;
+  isolation: isolate;
+}
+
+.hero-title.hero-title--measure {
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.hero-title.hero-title-layer {
+  position: absolute;
+  inset: 0;
+  margin: 0;
+  pointer-events: none;
+  transition: opacity 1.15s ease;
+  will-change: opacity;
+}
+
+.hero-title-layer--pre {
+  z-index: 1;
+}
+
+.hero-title-layer--active {
+  z-index: 2;
 }
 
 /* Fase Cero: la instrucción llega desde el fondo como un eco temporal. La
@@ -746,74 +852,195 @@ body {
   overflow: visible;
   --hero-logo-visual-scale: 1.16;
 
-  --hero-portal-logo-size: calc(clamp(129px, 18vh, 200px) * 0.5);
+  --hero-portal-logo-size: clamp(64.5px, 9vh, 100px);
 }
 
 /* Los emblemas narrativos comparten la misma caja de escala que el isotipo
    del Hero para que ninguno adquiera más jerarquía dentro del recorrido. */
 .narrative-section-logo {
   display: block;
-  width: calc(clamp(129px, 18vh, 200px) * 0.5);
-  height: calc(clamp(129px, 18vh, 200px) * 0.5);
+  width: clamp(64.5px, 9vh, 100px);
+  height: clamp(64.5px, 9vh, 100px);
+}
+
+/* iPhones angostos y de poca altura: conserva todo el contenido narrativo,
+   pero reduce el espacio ornamental que antes desplazaba logos y CTA. */
+@media (max-width: 430px) and (max-height: 740px) {
+  .narrative-transition-section {
+    min-height: 0 !important;
+    padding-bottom: 2.5rem !important;
+  }
+
+  .narrative-transition-card {
+    padding: 0.75rem 0.25rem !important;
+  }
+
+  .narrative-transition-title {
+    margin-bottom: 1rem !important;
+    font-size: 1.625rem !important;
+    line-height: 1.1;
+  }
+
+  .narrative-transition-copy {
+    margin-bottom: 1.25rem !important;
+    line-height: 1.5;
+  }
+
+  .narrative-transition-copy > span {
+    margin-top: 1rem !important;
+  }
+
+  .narrative-transition-copy > :not([hidden]) ~ :not([hidden]) {
+    margin-top: 0.65rem !important;
+  }
+
+  .narrative-transition-author {
+    gap: 0.35rem !important;
+    margin-bottom: 1.25rem !important;
+  }
+
+  .narrative-transition-author-avatar {
+    width: 3rem !important;
+    height: 3rem !important;
+  }
+}
+
+/* Un mismo eje escénico para los tres emblemas del recorrido móvil. El Hero
+   permanece como referencia; las transiciones colocan el centro de su logo
+   en la misma coordenada relativa del viewport sin depender del largo del copy. */
+@media (max-width: 768px) {
+  .narrative-transition-section,
+  .curtain-fall-section {
+    --mobile-narrative-emblem-axis: clamp(12rem, 33svh, 19rem);
+    --mobile-narrative-emblem-radius: clamp(32.25px, 4.5vh, 50px);
+    --mobile-narrative-header-offset: calc(5rem + env(safe-area-inset-top, 0px));
+    padding-top: 0 !important;
+  }
+
+  .narrative-transition-divider,
+  .curtain-fall-divider {
+    margin-bottom: 0 !important;
+  }
+
+  .narrative-transition-card,
+  .curtain-fall-card {
+    padding-top: 0 !important;
+  }
+
+  .narrative-transition-content {
+    padding-top: calc(
+      var(--mobile-narrative-emblem-axis) -
+      var(--mobile-narrative-header-offset) -
+      var(--mobile-narrative-emblem-radius)
+    );
+  }
+
+  /* Caída del telón no tiene emblema: reserva su huella invisible para que el
+     título arranque en el mismo eje tipográfico que las otras dos escenas. */
+  .curtain-fall-content {
+    padding-top: calc(
+      var(--mobile-narrative-emblem-axis) -
+      var(--mobile-narrative-header-offset) +
+      var(--mobile-narrative-emblem-radius) +
+      1.25rem
+    );
+  }
 }
 
 
-
-@keyframes hero-logo-glow-pulse {
-  0%, 100% {
-    opacity: 0.55;
-  }
-  50% {
-    opacity: 1;
-  }
-}
-
-.hero-logo-subtitle-flash {
-  position: absolute;
-  inset: -38%;
-  z-index: 0;
-  display: block;
-  border-radius: 9999px;
-  background:
-    radial-gradient(circle at center,
-      rgba(255, 255, 255, 0.5) 0%,
-      rgba(233, 213, 255, 0.28) 24%,
-      rgba(168, 85, 247, 0.16) 42%,
-      rgba(0, 0, 0, 0) 72%);
-  opacity: 0;
-  transform: scale(0.82);
-  filter: blur(18px);
-  pointer-events: none;
-  animation: hero-logo-subtitle-flash var(--hero-logo-glow-duration, 3800ms) ease-out both;
-}
-
-@keyframes hero-logo-subtitle-flash {
-  0% {
-    opacity: 0;
-    transform: scale(0.8);
-    filter: blur(20px);
-  }
-  11% {
-    opacity: 0.72;
-    transform: scale(1);
-    filter: blur(17px);
-  }
-  34% {
-    opacity: 0.22;
-    transform: scale(1.08);
-    filter: blur(20px);
-  }
-  100% {
-    opacity: 0;
-    transform: scale(1.16);
-    filter: blur(24px);
-  }
-}
 
 .hero-logo-visual {
   position: absolute;
   inset: 0;
   z-index: 1;
+  isolation: isolate;
+}
+
+/* Reflejo orbital: adapta el barrido de las vitrinas a la superficie curva
+   del isotipo. Tiene un tempo propio, separado del ritmo de lectura. */
+.hero-logo-orb-reflection {
+  position: absolute;
+  inset: -8%;
+  z-index: 2;
+  display: block;
+  overflow: hidden;
+  border-radius: 50%;
+  clip-path: circle(48% at 50% 50%);
+  pointer-events: none;
+  transform: translateZ(0);
+  backface-visibility: hidden;
+}
+
+/* Luz fija: da volumen incluso entre pulsaciones sin volver blanco el logo. */
+.hero-logo-orb-reflection::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background:
+    radial-gradient(ellipse at 31% 24%, rgba(255, 255, 255, 0.42) 0%, rgba(231, 224, 255, 0.15) 18%, rgba(255, 255, 255, 0) 42%),
+    radial-gradient(circle at 50% 50%, rgba(255, 255, 255, 0) 57%, rgba(196, 181, 253, 0.13) 70%, rgba(255, 255, 255, 0) 79%);
+  opacity: 0.58;
+  mix-blend-mode: screen;
+}
+
+/* La franja aparece cada tres rotaciones (11.4 s), a mitad del intervalo de
+   lectura (1.9 s): acompaña la escena sin competir con un copy nuevo. */
+.hero-logo-orb-reflection::after {
+  content: '';
+  position: absolute;
+  top: -24%;
+  left: -76%;
+  width: 42%;
+  height: 152%;
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0) 0%,
+    rgba(221, 214, 254, 0.12) 30%,
+    rgba(255, 255, 255, 0.72) 50%,
+    rgba(196, 181, 253, 0.18) 68%,
+    rgba(255, 255, 255, 0) 100%
+  );
+  opacity: 0;
+  filter: blur(0.8px);
+  mix-blend-mode: screen;
+  transform: translate3d(0, 0, 0) rotate(19deg);
+  animation: hero-logo-orb-reflection-cycle 11.4s linear 1.9s infinite both;
+  will-change: transform, opacity;
+}
+
+@keyframes hero-logo-orb-reflection-cycle {
+  0% {
+    opacity: 0;
+    transform: translate3d(0, 0, 0) rotate(19deg);
+  }
+  2.5% {
+    opacity: 0.78;
+    transform: translate3d(55%, 0, 0) rotate(19deg);
+  }
+  6% {
+    opacity: 0.5;
+    transform: translate3d(210%, 0, 0) rotate(19deg);
+  }
+  9.2% {
+    opacity: 0.2;
+    transform: translate3d(330%, 0, 0) rotate(19deg);
+  }
+  12.7% {
+    opacity: 0;
+    transform: translate3d(430%, 0, 0) rotate(19deg);
+  }
+  100% {
+    opacity: 0;
+    transform: translate3d(430%, 0, 0) rotate(19deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-logo-orb-reflection::after {
+    animation: none !important;
+    opacity: 0;
+  }
 }
 
 .hero-logo-img {
@@ -1066,9 +1293,6 @@ body {
     font-weight: 600;
     font-style: normal;
   }
-  .hero-logo-subtitle-flash {
-    filter: blur(16px);
-  }
 }
 
 .hero-title span {
@@ -1134,6 +1358,27 @@ body {
   font-weight: 600;
   line-height: 1.04;
   letter-spacing: -0.012em;
+}
+
+/* Los títulos de las escenas de Expande crecen respecto al espacio que queda
+   junto al icono, no respecto a toda la ventana. Esto conserva una sola línea
+   y evita que los nombres largos rebasen la tarjeta. */
+.hero-inline-card-title-frame {
+  container-type: inline-size;
+}
+
+.hero-inline-card-title-scene {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  font-size: 1.5rem;
+  font-size: clamp(1.25rem, 11cqi, 3rem);
+  font-weight: 600;
+  line-height: 1.02;
+  letter-spacing: -0.018em;
 }
 
 .hero-inline-act-number {

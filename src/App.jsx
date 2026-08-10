@@ -333,8 +333,15 @@ const HashAnchorScroller = () => {
     const rawHash = location.hash || '';
     if (!rawHash.startsWith('#') || rawHash.length < 2) return undefined;
 
-    const [hashAnchor] = rawHash.split('?');
-    const anchorId = decodeURIComponent(hashAnchor.slice(1));
+    const [rawAnchor, rawHashQuery = ''] = rawHash.split('?');
+    const isEditorialFocusLink = rawAnchor === '#dialogo-critico'
+      && new URLSearchParams(rawHashQuery).has('focus');
+    // Blog selecciona la línea y desplaza al comienzo real de los artículos.
+    // Si este observador también corrige el ancla, ambos scrolls se persiguen
+    // y producen el rebote que se percibe sobre todo en móvil.
+    if (isEditorialFocusLink) return undefined;
+
+    const anchorId = decodeURIComponent(rawAnchor.slice(1));
     let retries = 0;
     let timerId = null;
     let userHasScrolled = false;
@@ -835,7 +842,6 @@ function App() {
               showBeforeLeavingNav={isBeforeLeavingVisible}
               showTerceraLlamadaNav={canShowPostHeroContent}
               showGatChip={isAuthenticated || isHeroActivated}
-              terceraLlamadaLabel={hasEnteredUniverse ? '#Reestrenamos' : '#Comenzamos'}
             />
 
             <div className="relative z-10">
@@ -872,7 +878,7 @@ function App() {
                           </Suspense>
                         </DeferredSection>
 
-                        {/* Voces en la sala va pegada a Curaduría a propósito: ambas son el
+                        {/* La réplica va pegada a Curaduría a propósito: ambas son el
                             mismo espacio de reflexión/respuesta sobre la obra — comparten
                             condición de visibilidad para no separarse. */}
                         <DeferredSection fallback={<SectionFallback id="provoca" minHeight={900} />}>
@@ -940,7 +946,6 @@ function App() {
                 showPerspectivasNav={isCuradoriaVisible}
                 showObraDestacadaNav={isObraDestacadaVisible}
                 showTerceraLlamadaNav={canShowPostHeroContent}
-                terceraLlamadaLabel={hasEnteredUniverse ? '#Reestrenamos' : '#Comenzamos'}
               />
               {shouldShowToast && (
                 <LoginToast emailHash={emailHash} onDismiss={dismissToast} />

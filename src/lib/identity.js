@@ -67,16 +67,15 @@ export async function touchAnonSession() {
   }
 
   try {
-    const { error } = await supabase
-      .from('anon_sessions')
-      .upsert(
-        {
-          anon_id: anonId,
-          last_seen_at: new Date().toISOString(),
-          user_agent: typeof navigator === 'undefined' ? null : navigator.userAgent ?? null,
-        },
-        { onConflict: 'anon_id' },
-      );
+    // RPC en vez de upsert directo a la tabla: PostgREST hace el upsert como
+    // INSERT ... ON CONFLICT DO UPDATE, y eso exige bajo RLS poder ver la
+    // fila en conflicto — exponer SELECT filtraría IP/user-agent de
+    // cualquier visitante a quien tenga la anon key (pública). La función
+    // corre con privilegios elevados y la tabla queda sin acceso directo.
+    const { error } = await supabase.rpc('touch_anon_session', {
+      p_anon_id: anonId,
+      p_user_agent: typeof navigator === 'undefined' ? null : navigator.userAgent ?? null,
+    });
 
     if (error) {
       console.error('touchAnonSession upsert failed', error);

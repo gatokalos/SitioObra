@@ -151,7 +151,7 @@ const RelatedReadingTooltipButton = ({
         style={panelStyle || { top: 0, left: 0, visibility: 'hidden' }}
       >
         <div className="space-y-2 px-3 py-2 text-center">
-          <p className={`text-[11px] leading-snug ${styles.label}`}>Lectura relacionada en Curaduría: {authorLabel}</p>
+          <p className={`text-[11px] leading-snug ${styles.label}`}>Lectura relacionada en Camerino: {authorLabel}</p>
           <div className="flex justify-center">
             <button
               type="button"

@@ -59,7 +59,6 @@ const PROVOCA_DRAFT_KEY = 'gatoencerrado:provoca-draft';
 const PROVOCA_CONFETTI_VISIBLE_MS = 2400;
 const PROVOCA_SILVESTRE_MODE_ID = 'confusion-lucida';
 const PROVOCA_RESPONSE_ESTIMATE_SECONDS = 60;
-const PROVOCA_LISTEN_USED_STORAGE_PREFIX = 'gatoencerrado:provoca-listen-used:v1';
 const PROVOCA_SUBMIT_COOLDOWN_MS = 45 * 1000;
 const PROVOCA_SUBMIT_COOLDOWN_PREFIX = 'gatoencerrado:provoca-submit-cooldown:v1';
 const PROVOCA_LISTEN_COOLDOWN_MS = 25 * 1000;
@@ -70,7 +69,6 @@ const PROVOCA_ROLE_MAX_CHARS = 80;
 const PROVOCA_APPROVED_FETCH_LIMIT = 20;
 const PROVOCA_VISIBLE_VOICE_CARDS = 1;
 const PROVOCA_LARGE_VOICE_MIN_CHARS = 210;
-const PROVOCA_SCROLLABLE_QUOTE_MIN_CHARS = 610;
 const PROVOCA_LIKED_VOICES_STORAGE_PREFIX = 'gatoencerrado:provoca-liked-voices:v1';
 const PROVOCA_TITLE_ROTATION_MS = 3800;
 const PROVOCA_TITLE_TERMS = [
@@ -83,11 +81,8 @@ const PROVOCA_TITLE_TERMS = [
 const PROVOCA_TITLE_LONGEST_TERM = 'la búsqueda de sentido';
 const LESS_ALONE_GLYPHS = ['x', 'a', 'o', '#'];
 const LESS_ALONE_ROTATION_MS = 3200;
-const getProvocaListenUsageKey = (userId) => {
-  if (userId) return `${PROVOCA_LISTEN_USED_STORAGE_PREFIX}:user:${userId}`;
-  const anonId = ensureAnonId();
-  return `${PROVOCA_LISTEN_USED_STORAGE_PREFIX}:anon:${anonId || 'guest'}`;
-};
+const isProvocaDesktopViewport = () =>
+  typeof window !== 'undefined' && window.matchMedia('(min-width: 768px)').matches;
 
 const getProvocaSubmitCooldownKey = (userId) => {
   if (userId) return `${PROVOCA_SUBMIT_COOLDOWN_PREFIX}:user:${userId}`;
@@ -131,27 +126,22 @@ const getNormalizedVoiceLength = (quote) =>
     .trim().length;
 
 const isLargeVoiceCard = (item) => getNormalizedVoiceLength(item?.quote) >= PROVOCA_LARGE_VOICE_MIN_CHARS;
-const shouldScrollVoiceQuote = (quote) => String(quote || '').length > PROVOCA_SCROLLABLE_QUOTE_MIN_CHARS;
 
 export const ProvocaSection = () => {
   const { user } = useAuth();
   const [confettiBursts, setConfettiBursts] = useState([]);
-  const [isVoiceInputOpen, setIsVoiceInputOpen] = useState(false);
+  const [isVoiceInputOpen, setIsVoiceInputOpen] = useState(isProvocaDesktopViewport);
   const [voiceName, setVoiceName] = useState('');
   const [voiceRole, setVoiceRole] = useState('');
   const [voiceDraft, setVoiceDraft] = useState('');
   const voiceTextareaRef = useRef(null);
   const [voiceTrap, setVoiceTrap] = useState('');
   const [isSubmittingVoice, setIsSubmittingVoice] = useState(false);
-  const [lastSubmittedQuote, setLastSubmittedQuote] = useState('');
-  const [hasSubmittedQuote, setHasSubmittedQuote] = useState(false);
   const [approvedTestimonials, setApprovedTestimonials] = useState([]);
   const [visibleVoiceCursor, setVisibleVoiceCursor] = useState(0);
   const [responseCountdownSeconds, setResponseCountdownSeconds] = useState(
     PROVOCA_RESPONSE_ESTIMATE_SECONDS
   );
-  const [listenUsageKey, setListenUsageKey] = useState(null);
-  const [hasConsumedListenTurn, setHasConsumedListenTurn] = useState(false);
   const [submitCooldownKey, setSubmitCooldownKey] = useState(null);
   const [listenCooldownKey, setListenCooldownKey] = useState(null);
   const [voiceLikeCountsById, setVoiceLikeCountsById] = useState({});
@@ -164,9 +154,7 @@ export const ProvocaSection = () => {
   const responseCountdownRef = useRef(null);
   const pulseDeltaTimeoutsRef = useRef({});
   const {
-    micPromptVisible,
     micError,
-    isListening,
     isSilvestreResponding,
     isSilvestreFetching,
     isSilvestrePlaying,
@@ -174,14 +162,14 @@ export const ProvocaSection = () => {
     silvestreThinkingMessage,
     handleSendSilvestrePreset,
     handlePlayPendingAudio,
+    stopSilvestreResponse,
   } = useSilvestreVoice();
   const isSilvestreThinking = isSilvestreFetching || isSilvestreResponding;
   const isSendVoiceDisabled = isSubmittingVoice;
   const hasVoiceDraftText = voiceDraft.trim().length > 0;
   const isShareButtonInSendMode = isVoiceInputOpen && hasVoiceDraftText;
   const currentProvocaTitleTerm = PROVOCA_TITLE_TERMS[provocaTitleTermIndex];
-  const isEscucharButtonDisabled =
-  isSilvestreThinking || hasConsumedListenTurn;
+  const isEscucharButtonDisabled = isSilvestreThinking || isSilvestrePlaying;
   const voicesPool = approvedTestimonials.length > 0 ? approvedTestimonials : fallbackTestimonials;
   const rankedVoicesPool = useMemo(() => {
     if (!voicesPool.length) return [];
@@ -212,8 +200,7 @@ export const ProvocaSection = () => {
   const visibleVoiceRefreshStep = Math.max(visibleTestimonials.length, 1);
 
   const isEscucharButtonActive =
-    !hasConsumedListenTurn &&
-    (isSilvestreThinking || isSilvestrePlaying || isListening || Boolean(pendingSilvestreAudioUrl));
+    isSilvestreThinking || isSilvestrePlaying || Boolean(pendingSilvestreAudioUrl);
   const formattedResponseCountdown = `${String(Math.floor(responseCountdownSeconds / 60)).padStart(2, '0')}:${String(
     responseCountdownSeconds % 60
   ).padStart(2, '0')}`;
@@ -223,21 +210,9 @@ export const ProvocaSection = () => {
       ? 'Reproducir respuesta'
       : isSilvestreThinking
         ? silvestreThinkingMessage
-        : hasConsumedListenTurn
-          ? 'Respuesta escuchada'
-        : isListening
-          ? 'Pulsa otra vez para enviar'
-          : micPromptVisible
-            ? 'Pulsa para sacar lo que tienes dentro'
-            : 'Quiero escuchar la reacción de la obra';
+        : 'Quiero drama';
   const escucharButtonVisualLabel =
     pendingSilvestreAudioUrl && !isSilvestrePlaying ? 'Reproducir' : escucharStatusLabel;
-
-  const markListenTurnConsumed = useCallback(() => {
-    if (!listenUsageKey) return;
-    safeSetItem(listenUsageKey, '1');
-    setHasConsumedListenTurn(true);
-  }, [listenUsageKey]);
 
   useEffect(() => {
     return () => {
@@ -256,9 +231,6 @@ export const ProvocaSection = () => {
 
   useEffect(() => {
     const userId = user?.id ?? null;
-    const key = getProvocaListenUsageKey(userId);
-    setListenUsageKey(key);
-    setHasConsumedListenTurn(safeGetItem(key) === '1');
     setSubmitCooldownKey(getProvocaSubmitCooldownKey(userId));
     setListenCooldownKey(getProvocaListenCooldownKey(userId));
     const likedKey = getProvocaLikedVoicesKey(userId);
@@ -274,13 +246,6 @@ export const ProvocaSection = () => {
       setLikedVoiceIds([]);
     }
   }, [user?.id]);
-
-  useEffect(() => {
-    if (hasConsumedListenTurn) return;
-    if (isSilvestrePlaying || pendingSilvestreAudioUrl) {
-      markListenTurnConsumed();
-    }
-  }, [hasConsumedListenTurn, isSilvestrePlaying, pendingSilvestreAudioUrl, markListenTurnConsumed]);
 
   useEffect(() => {
     if (typeof window === 'undefined') return undefined;
@@ -487,8 +452,9 @@ export const ProvocaSection = () => {
 
   const handleRefreshVoices = useCallback(() => {
     if (!canRefreshVoices) return;
+    stopSilvestreResponse();
     setVisibleVoiceCursor((previous) => (previous + visibleVoiceRefreshStep) % rankedVoicesPool.length);
-  }, [canRefreshVoices, rankedVoicesPool.length, visibleVoiceRefreshStep]);
+  }, [canRefreshVoices, rankedVoicesPool.length, stopSilvestreResponse, visibleVoiceRefreshStep]);
 
   const handleVoicePulse = useCallback(async (voice) => {
     const perspectiveId = String(voice?.sourceId || '').trim();
@@ -592,8 +558,6 @@ export const ProvocaSection = () => {
 
     const shouldPromptLogin = !user?.email;
     fireProvocaConfetti();
-    setLastSubmittedQuote(quote);
-    setHasSubmittedQuote(true);
     setVoiceRole('');
     setVoiceTrap('');
     if (shouldPromptLogin) {
@@ -602,7 +566,11 @@ export const ProvocaSection = () => {
       setVoiceName(authorName);
     }
     safeRemoveItem(PROVOCA_DRAFT_KEY);
-    setIsVoiceInputOpen(false);
+    const keepFormOpen = isProvocaDesktopViewport();
+    if (keepFormOpen) {
+      setVoiceDraft('');
+    }
+    setIsVoiceInputOpen(keepFormOpen);
   }, [fireProvocaConfetti, isSubmittingVoice, user, voiceDraft, voiceName, voiceRole, voiceTrap, submitCooldownKey]);
 
   useEffect(() => {
@@ -622,15 +590,28 @@ export const ProvocaSection = () => {
     }
   }, [isVoiceInputOpen, user, voiceName]);
 
-  const handleListenToObra = useCallback(async () => {
-    if (hasConsumedListenTurn) return;
+  const handleShareVoiceAction = useCallback(() => {
+    if (isShareButtonInSendMode) {
+      void handleSubmitVoice();
+      return;
+    }
 
+    if (isProvocaDesktopViewport()) {
+      setIsVoiceInputOpen(true);
+      window.requestAnimationFrame(() => voiceTextareaRef.current?.focus());
+      return;
+    }
+
+    setIsVoiceInputOpen((previous) => !previous);
+  }, [handleSubmitVoice, isShareButtonInSendMode]);
+
+  const handleListenToObra = useCallback(async (voice) => {
     if (pendingSilvestreAudioUrl) {
       await handlePlayPendingAudio();
       return;
     }
 
-    if (isSilvestreThinking) return;
+    if (isSilvestreThinking || isSilvestrePlaying) return;
 
     if (listenCooldownKey) {
       const last = Number(safeGetItem(listenCooldownKey) || '0');
@@ -642,25 +623,17 @@ export const ProvocaSection = () => {
       }
     }
 
-    // ✅ Usa lo ya enviado como prioridad (premio Ruta A)
-    const message = (lastSubmittedQuote || voiceDraft).trim();
+    const message = String(voice?.quote || '')
+      .replace(/^[“\"]+|[”\"]+$/g, '')
+      .trim();
 
     if (!message) {
-      toast({ description: 'Escribe tu texto y luego pulsa “Escuchar a la obra”.' });
+      toast({ description: 'Esta voz no tiene texto suficiente para provocar una reacción.' });
       return;
     }
 
     if (message.length > PROVOCA_QUOTE_MAX_CHARS) {
       toast({ description: `Tu texto es muy largo. Máximo ${PROVOCA_QUOTE_MAX_CHARS} caracteres.` });
-      return;
-    }
-
-    // ✅ Si ya enviaste, NO bloquees por nombre; usa fallback
-    // (si no ha enviado aún, puedes seguir pidiendo nombre)
-    const authorName = voiceName.trim() || (hasSubmittedQuote ? 'Voz del público' : '');
-
-    if (!authorName) {
-      toast({ description: 'Escribe tu nombre antes de escuchar a la obra.' });
       return;
     }
 
@@ -670,17 +643,12 @@ export const ProvocaSection = () => {
 
     await handleSendSilvestrePreset(message, {
       modeId: PROVOCA_SILVESTRE_MODE_ID,
-      userName: authorName,
     });
   }, [
-    hasConsumedListenTurn,
     pendingSilvestreAudioUrl,
     handlePlayPendingAudio,
     isSilvestreThinking,
-    lastSubmittedQuote,
-    voiceDraft,
-    voiceName,
-    hasSubmittedQuote,
+    isSilvestrePlaying,
     handleSendSilvestrePreset,
     listenCooldownKey,
   ]);
@@ -699,18 +667,25 @@ export const ProvocaSection = () => {
           {confettiBursts.map((burst) => (
             <ConfettiBurst key={burst} seed={burst} />
           ))}
-          <div className="grid md:grid-cols-[3fr_2fr] gap-8 items-center">
-            <div>
+          <div className="grid items-start gap-8 md:grid-cols-[3fr_2fr]">
+            <div className="min-w-0">
            
-              <p className="uppercase tracking-[0.35em] text-xs text-slate-400/80 mb-4">Voces en la sala</p>
-              <p className="max-w-2xl text-sm md:text-base text-slate-300/80 leading-relaxed mb-4 font-light">
+              <p className="mb-3 text-xs uppercase tracking-[0.35em] text-slate-400/80">
+                Formas de decirlo
+              </p>
+              <h2 className="provoca-act-title mb-4" aria-label="La réplica">
+                <span aria-hidden="true">
+                  LA R<span className="provoca-act-title__accented">E</span>PLICA
+                </span>
+              </h2>
+              <p className="mb-4 max-w-2xl text-sm font-light leading-relaxed text-slate-300/80 md:hidden">
                 Aquí, la obra conecta lo que sus preguntas te hicieron sentir con lo que otras voces también intentan nombrar.
               </p>
               <h3
                 className="font-display text-3xl text-slate-100 mb-6 italic"
-                aria-label={`¿Qué nos provoca ${currentProvocaTitleTerm}?`}
+                aria-label={`¿Qué te provoca ${currentProvocaTitleTerm}?`}
               >
-                ¿Qué nos provoca{' '}
+                ¿Qué te provoca{' '}
                 <span className="relative inline-grid min-w-[14.5ch] align-baseline">
                   <span className="col-start-1 row-start-1 invisible" aria-hidden="true">
                     {PROVOCA_TITLE_LONGEST_TERM}?
@@ -719,7 +694,7 @@ export const ProvocaSection = () => {
                     <motion.span
                       key={currentProvocaTitleTerm}
                       aria-hidden="true"
-                      className="col-start-1 row-start-1 inline-block bg-gradient-to-r from-slate-100 via-slate-300 to-slate-500 bg-clip-text text-transparent"
+                      className="col-start-1 row-start-1 inline-block bg-gradient-to-r from-slate-100 via-slate-300 to-slate-500 bg-clip-text pr-2 text-transparent"
                       initial={{ opacity: 0, y: 8, filter: 'blur(5px)' }}
                       animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
                       exit={{ opacity: 0, y: -7, filter: 'blur(5px)' }}
@@ -731,16 +706,12 @@ export const ProvocaSection = () => {
                 </span>
               </h3>
               <p className="text-slate-300/80 leading-relaxed mb-6 font-light">
-                Lee una perspectiva a la vez o comparte la tuya si algo necesita salir — y deja que la obra te responda.
+                Lee una réplica a la vez o envíanos la tuya si algo necesita salir — y deja que la obra respire sola.
               </p>
               <div className="flex flex-col sm:flex-row gap-3">
                 <Button
                   variant="outline"
-                  onClick={
-                    isShareButtonInSendMode
-                      ? handleSubmitVoice
-                      : () => setIsVoiceInputOpen((prev) => !prev)
-                  }
+                  onClick={handleShareVoiceAction}
                   disabled={isShareButtonInSendMode && isSendVoiceDisabled}
                   className={`ge-chip-action ge-mobile-cta-width w-full sm:w-auto gap-2 ${
                     isVoiceInputOpen ? 'ge-chip-action--active' : 'ge-chip-action--primary'
@@ -791,63 +762,16 @@ export const ProvocaSection = () => {
                         placeholder="Rol, ciudad o vínculo (opcional)"
                       />
                     </div>
-                    <div className="mt-3 flex flex-wrap items-center gap-3">
-                      <input
-                        tabIndex={-1}
-                        autoComplete="off"
-                        aria-hidden="true"
-                        inputMode="none"
-                        value={voiceTrap}
-                        onChange={(event) => setVoiceTrap(event.target.value)}
-                        className="hidden"
-                        name="website"
-                      />
-                      <div className="ui-segmented ui-segmented--rect w-full sm:w-auto">
-                        <Button
-                          type="button"
-                          variant="outline"
-                          onClick={handleListenToObra}
-                          disabled={isEscucharButtonDisabled}
-                          className={`ui-segmented__btn ui-segmented__btn--secondary flex-1 sm:flex-none gap-2 text-center whitespace-normal ${
-                            isEscucharButtonActive ? 'ui-segmented__btn--active' : ''
-                          } ${
-                            isSilvestreThinking ? 'thinking-blink' : ''
-                          } ${
-                            hasConsumedListenTurn ? 'ui-segmented__btn--consumed' : ''
-                          }`}
-                          aria-pressed={isEscucharButtonActive}
-                          aria-live="polite"
-                          aria-label={escucharStatusLabel}
-                        >
-                          {pendingSilvestreAudioUrl && !isSilvestrePlaying ? (
-                            <Play size={16} className="shrink-0" aria-hidden="true" />
-                          ) : null}
-                          <span>{escucharButtonVisualLabel}</span>
-                        </Button>
-                      </div>
-                      {micError && !isListening && !isSilvestreThinking ? (
-                        <p className="w-full text-xs text-red-200/90">{micError}</p>
-                      ) : null}
-                
-                      <p className="w-full text-[11px] text-slate-300/70">
-                        Si no quieres publicar, solo escucha una reacción de la obra inspirada en tu voz.
-                      </p>
-                      <details className="group w-full text-[11px]">
-                        <summary className="inline-flex cursor-pointer list-none items-center gap-1.5 text-slate-400/80 transition hover:text-slate-200">
-                          <span className="inline-flex h-4 w-4 shrink-0 items-center justify-center rounded-full border border-slate-400/50">
-                            <Info size={10} />
-                          </span>
-                          ¿Quién o qué es la obra que reacciona?
-                        </summary>
-                        <p className="mt-2 leading-relaxed text-slate-300/80">
-                          No es una narradora ni una asistente que resuelve dudas.
-                          <br />
-                          Es la obra reaccionando desde sus propias imágenes y conflictos — solo conoce este universo.
-                          <br />
-                          Lo que recibas no es una respuesta: es una reacción irrepetible, nacida de lo que compartiste.
-                        </p>
-                      </details>
-                    </div>
+                    <input
+                      tabIndex={-1}
+                      autoComplete="off"
+                      aria-hidden="true"
+                      inputMode="none"
+                      value={voiceTrap}
+                      onChange={(event) => setVoiceTrap(event.target.value)}
+                      className="hidden"
+                      name="website"
+                    />
                        <details className="group mt-4 md:mt-5 mb-5 rounded-2xl border border-emerald-300/20 bg-emerald-500/10 px-4 py-3 text-left">
                 <summary className="flex cursor-pointer list-none items-center justify-between gap-3">
                   <span className="flex items-center gap-3">
@@ -879,19 +803,19 @@ export const ProvocaSection = () => {
                 ) : null}
               </AnimatePresence>
             </div>
-            <div className="space-y-4">
+            <div className="min-w-0 space-y-4 md:pt-24 lg:pt-28">
               <div className="flex items-center justify-between gap-3">
                  
               </div>
               {visibleTestimonials.map((item, index) => (
                 <div
                   key={`${item.id}-${index}-${item.displayVariant}`}
-                  className={`rounded-2xl border border-white/10 bg-black/30 ${
+                  className={`flex h-[230px] flex-col rounded-2xl border border-white/10 bg-black/30 md:h-[240px] ${
                     item.displayVariant === 'large' ? 'p-7' : 'p-5'
                   }`}
                 >
                   <Quote className="text-purple-300 mb-4" size={item.displayVariant === 'large' ? 30 : 24} />
-                  <div className={shouldScrollVoiceQuote(item.quote) ? 'mb-4 max-h-52 overflow-y-auto pr-2' : 'mb-4'}>
+                  <div className="mb-4 min-h-0 flex-1 overflow-y-auto pr-2">
                     <p
                       className={`text-slate-200 italic leading-relaxed ${
                         item.displayVariant === 'large' ? 'text-base md:text-[1.05rem]' : 'text-sm md:text-base'
@@ -949,19 +873,56 @@ export const ProvocaSection = () => {
                   </div>
                 </div>
               ))}
-                      <Button
+              <div className="ui-segmented ui-segmented--rect grid-cols-2 w-full">
+                <Button
                   type="button"
                   variant="outline"
                   onClick={handleRefreshVoices}
                   disabled={!canRefreshVoices}
-                  className="ge-chip-action ge-chip-action--secondary ge-chip-action--compact"
+                  className="ui-segmented__btn ui-segmented__btn--primary w-full justify-center gap-2 whitespace-normal text-center"
                 >
                   <RefreshCw size={14} />
                   Leer otra
                 </Button>
-                <p className="w-full text-[11px] text-slate-300/70">
-                  La obra también escucha estas voces.
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => handleListenToObra(visibleTestimonials[0])}
+                  disabled={isEscucharButtonDisabled || visibleTestimonials.length === 0}
+                  className={`ui-segmented__btn ui-segmented__btn--secondary w-full justify-center gap-2 text-center whitespace-normal ${
+                    isEscucharButtonActive ? 'ui-segmented__btn--active' : ''
+                  } ${isSilvestreThinking ? 'thinking-blink' : ''}`}
+                  aria-pressed={isEscucharButtonActive}
+                  aria-live="polite"
+                  aria-label={escucharStatusLabel}
+                >
+                  {pendingSilvestreAudioUrl && !isSilvestrePlaying ? (
+                    <Play size={16} className="shrink-0" aria-hidden="true" />
+                  ) : null}
+                  <span>{escucharButtonVisualLabel}</span>
+                </Button>
+              </div>
+              {micError && !isSilvestreThinking ? (
+                <p className="w-full text-xs text-red-200/90">{micError}</p>
+              ) : null}
+              <p className="w-full text-[11px] text-slate-300/70">
+                Escucha cómo reacciona la obra a la voz que estás leyendo.
+              </p>
+              <details className="group w-full text-[11px]">
+                <summary className="inline-flex cursor-pointer list-none items-center gap-1.5 text-slate-400/80 transition hover:text-slate-200">
+                  <span className="inline-flex h-4 w-4 shrink-0 items-center justify-center rounded-full border border-slate-400/50">
+                    <Info size={10} />
+                  </span>
+                  ¿Quién o qué es la obra que reacciona?
+                </summary>
+                <p className="mt-2 leading-relaxed text-slate-300/80">
+                  No es una narradora ni una asistente que resuelve dudas.
+                  <br />
+                  Es la obra reaccionando desde sus propias imágenes y conflictos — solo conoce este universo.
+                  <br />
+                  Lo que recibas no es una respuesta: es una reacción irrepetible, nacida de la voz que acabas de leer.
                 </p>
+              </details>
             </div>
           </div>
           </motion.div>

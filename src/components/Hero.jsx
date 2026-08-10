@@ -294,7 +294,12 @@ const Hero = () => {
     ? heroGhostSubtitle ?? HERO_ROTATING_SUBTITLES[heroSubtitleIndex]
     : shouldShowHeroInactiveHint ? HERO_INACTIVE_HINT : '';
   const isHeroGhostSubtitle = hasActivatedAudio && heroGhostSubtitle !== null;
-  const heroTitleSignalDisplay = useSignalDriftText(HERO_BRAND_LABEL, { active: hasActivatedAudio });
+  const heroTitleSignalDisplay = useSignalDriftText(HERO_BRAND_LABEL, {
+    active: hasActivatedAudio,
+    // El subtítulo y el glitch pertenecen a un mismo pulso de lectura. El
+    // reflejo de la esfera conserva un tempo propio y no depende de esta llave.
+    triggerKey: currentHeroSubtitle,
+  });
   const heroTitleDisplay = useMemo(
     () => heroTitleSignalDisplay.slice(1) || HERO_TITLE,
     [heroTitleSignalDisplay],
@@ -1232,18 +1237,11 @@ const Hero = () => {
                     className="hero-logo hero-logo--portal"
                     style={{
                       width: 'var(--hero-portal-logo-size)',
-                      '--hero-logo-glow-duration': `${HERO_SUBTITLE_ROTATION_MS}ms`,
                       marginBottom: 'clamp(1.05rem, 2.6vh, 1.7rem)',
                       pointerEvents: 'none',
                       visibility: hasActivatedAudio ? 'visible' : 'hidden',
                     }}
                   >
-                    {hasActivatedAudio ? (
-                      <span
-                        key={`hero-logo-flash-${currentHeroSubtitle}`}
-                        className="hero-logo-subtitle-flash"
-                      />
-                    ) : null}
                     <div className="hero-logo-visual">
                       <img
                         src={isotipoGatoWebp}
@@ -1251,6 +1249,9 @@ const Hero = () => {
                         className="hero-logo-img"
                         fetchpriority="high"
                       />
+                      {hasActivatedAudio ? (
+                        <span className="hero-logo-orb-reflection" />
+                      ) : null}
                     </div>
                   </motion.div>
                 </div>
@@ -1259,23 +1260,38 @@ const Hero = () => {
               {/* LÍNEA CENTRAL — GATOENCERRADO ancla el 50vh */}
               <div className="max-w-4xl lg:max-w-[72rem] mx-auto w-full">
                 <h1
-                  className={`hero-title ${!hasActivatedAudio ? 'hero-title--pre-scene' : ''} ${hasActivatedAudio ? 'hero-title--scene-active' : ''} text-center w-full break-words`}
-                  style={{
-                    // Fase Cero: mismo trato en móvil y desktop (antes solo
-                    // desktop, ahora también móvil — la escena activada abajo
-                    // sigue intacta por plataforma, sin tocar esos valores.
-                    opacity: !hasActivatedAudio
-                      ? 0.58
-                      : isMobileViewport ? 1 : 0.96,
-                    visibility: 'visible',
-                    filter: !hasActivatedAudio
-                      ? 'brightness(0.7) contrast(1.08)'
-                      : isMobileViewport ? 'brightness(1.12) contrast(1.08)' : 'brightness(1) contrast(1.05)',
-                    transition: 'opacity 1.15s ease, filter 1.15s ease',
-                  }}
+                  className="hero-title-stage text-center w-full break-words"
                   aria-label={HERO_BRAND_LABEL}
                 >
-                  <span aria-hidden="true">{heroTitleDisplay}</span>
+                  {/* Esta capa invisible reserva siempre las mismas métricas. Las
+                      dos pinturas visibles se funden encima sin cambiar layout. */}
+                  <span className="hero-title hero-title--measure" aria-hidden="true">
+                    <span>{HERO_TITLE}</span>
+                  </span>
+
+                  <span
+                    className="hero-title hero-title--pre-scene hero-title-layer hero-title-layer--pre"
+                    style={{
+                      opacity: hasActivatedAudio ? 0 : 0.58,
+                      filter: 'brightness(0.7) contrast(1.08)',
+                    }}
+                    aria-hidden="true"
+                  >
+                    <span>{HERO_TITLE}</span>
+                  </span>
+
+                  <span
+                    className="hero-title hero-title--scene-active hero-title-layer hero-title-layer--active"
+                    style={{
+                      opacity: hasActivatedAudio ? (isMobileViewport ? 1 : 0.96) : 0,
+                      filter: isMobileViewport
+                        ? 'brightness(1.12) contrast(1.08)'
+                        : 'brightness(1) contrast(1.05)',
+                    }}
+                    aria-hidden="true"
+                  >
+                    <span>{heroTitleDisplay}</span>
+                  </span>
                 </h1>
                 <motion.div
                   initial={{ opacity: 0, y: 8 }}

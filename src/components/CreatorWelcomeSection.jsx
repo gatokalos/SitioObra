@@ -24,15 +24,15 @@ const CreatorWelcomeSection = ({ hasEnteredUniverse = false }) => {
   }, [location.hash, location.pathname, location.search, navigate]);
 
   return (
-    <section id="bienvenida-creador" className="py-24 relative min-h-[520px]">
-      <div className="section-divider mb-24"></div>
+    <section id="bienvenida-creador" className="narrative-transition-section py-24 relative min-h-[520px]">
+      <div className="narrative-transition-divider section-divider mb-24"></div>
       <div className="container mx-auto px-6">
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, ease: 'easeOut' }}
           viewport={{ once: true }}
-          className="relative overflow-visible p-8 text-center md:p-12"
+          className="narrative-transition-card relative overflow-visible p-8 text-center md:p-12"
         >
           <div
             aria-hidden="true"
@@ -46,7 +46,7 @@ const CreatorWelcomeSection = ({ hasEnteredUniverse = false }) => {
             />
           </div>
 
-          <div className="relative z-10">
+          <div className="narrative-transition-content relative z-10">
             <img
               src="/assets/TerceraLlamadaLogo.png"
               alt=""
@@ -54,17 +54,17 @@ const CreatorWelcomeSection = ({ hasEnteredUniverse = false }) => {
               loading="lazy"
               className="narrative-section-logo mx-auto mb-5 object-contain"
             />
-            <h3 className="font-display text-3xl font-medium italic text-slate-100 mb-6 text-center">
+            <h3 className="narrative-transition-title font-display text-3xl font-medium italic text-slate-100 mb-6 text-center">
               "Tercera llamada,<br />tercera..."
             </h3>
-           <div className="text-slate-300/80 leading-relaxed mb-6 max-w-2xl mx-auto font-light text-center space-y-4">
+           <div className="narrative-transition-copy text-slate-300/80 leading-relaxed mb-6 max-w-2xl mx-auto font-light text-center space-y-4">
   <p>No sé cómo llegaste hasta aquí.<br />Pero me alegra que lo hayas hecho.</p>
   <p><strong>Hay inicios que nadie anuncia </strong>y,<br />aun así, tenemos cuórum.</p>
   <p>Este universo está hecho de preguntas; y no todas buscan una respuesta.<br />Algunas solo necesitan que alguien las habite.</p>
   <p>Yo te estaba esperando.</p>
 </div>
-            <div className="flex flex-col items-center gap-2 mb-8">
-              <div className="w-14 h-14 rounded-full overflow-hidden border border-white/10 shadow-lg shadow-black/40 bg-black/30">
+            <div className="narrative-transition-author flex flex-col items-center gap-2 mb-8">
+              <div className="narrative-transition-author-avatar w-14 h-14 rounded-full overflow-hidden border border-white/10 shadow-lg shadow-black/40 bg-black/30">
                 <img
                   className="w-full h-full object-cover"
                   src={CREATOR_AVATAR_SRC}

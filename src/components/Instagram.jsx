@@ -141,7 +141,7 @@ const curatedLayoutAlejandro = [
   { match: 'chiu_02', patternIndex: 1, story: 'Harold, piso y escena' },
   { match: 'chiu_03', patternIndex: 2, story: 'Ritual previo' },
   { match: 'chiu_06', patternIndex: 3, story: 'Silvestre Felis, en fuga' },
-  { match: 'chiu_05', patternIndex: 4, story: 'Carlos y Cyndi' },
+  { match: 'chiu_05', patternIndex: 4, story: 'Silvestre sueña a lo bestia' },
   { match: 'chiu_04', patternIndex: 5, story: 'Sueño profundo' },
   { match: 'chiu_07', patternIndex: 6, story: 'Aparece el Paysito Tiste' },
   { match: 'chiu_08', patternIndex: 7, story: 'Chivis: el incomprendido' },

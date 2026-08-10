@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowRight, Calendar, Clock, Compass, Feather, RefreshCw, Search, Send, X } from 'lucide-react';
+import { ArrowRight, Calendar, Clock, Feather, FileSearch, RefreshCw, Send } from 'lucide-react';
 import { useSearch } from '@/hooks/useSearch';
 import { Button } from '@/components/ui/button';
 import { toast } from '@/components/ui/use-toast';
@@ -14,6 +14,7 @@ import {
 } from '@/lib/blogCategories';
 import { recordArticleInteraction } from '@/services/articleInteractionService';
 import { sanitizeExternalHttpUrl } from '@/lib/urlSafety';
+import ObraConversationControls from '@/components/miniversos/obra/ObraConversationControls';
 
 const CONTACT_PREFILL_KEY = 'gatoencerrado:contact-prefill';
 const LOGIN_RETURN_KEY = 'gatoencerrado:login-return';
@@ -643,10 +644,10 @@ const Blog = ({ posts = [], isLoading = false, error = null, showBuscador = fals
     setQuery: setFaqQuery,
     answer: faqAnswer,
     sources: faqSources,
+    archive: faqArchive,
     status: faqStatus,
     errorMessage: faqErrorMessage,
     search: faqSearch,
-    reset: faqReset,
     isLoading: faqIsLoading,
   } = useSearch();
   const [activePost, setActivePost] = useState(null);
@@ -654,7 +655,6 @@ const Blog = ({ posts = [], isLoading = false, error = null, showBuscador = fals
   const [searchCompletions, setSearchCompletions] = useState(() => {
     try { return parseInt(localStorage.getItem('gato_faq_count') || '0', 10); } catch { return 0; }
   });
-  const [nudgeDismissed, setNudgeDismissed] = useState(false);
   const prevFaqStatus = useRef(null);
   const [activeCategory, setActiveCategory] = useState(BLOG_CATEGORY_ORDER[0]);
   const [showAllPosts, setShowAllPosts] = useState(false);
@@ -665,17 +665,112 @@ const Blog = ({ posts = [], isLoading = false, error = null, showBuscador = fals
   const [isEditorialLineOpen, setIsEditorialLineOpen] = useState(false);
   const articlesRef = useRef(null);
   const faqInputRef = useRef(null);
+  const faqRecognitionRef = useRef(null);
+  const faqMicTimeoutRef = useRef(null);
+  const faqTranscriptRef = useRef('');
+  const [faqInputMode, setFaqInputMode] = useState('voice');
+  const [faqIsListening, setFaqIsListening] = useState(false);
+  const [faqMicError, setFaqMicError] = useState('');
+  const [faqMicPromptVisible, setFaqMicPromptVisible] = useState(false);
   const [faqPage, setFaqPage] = useState(0);
   const FAQ_PAGE_SIZE = 3;
   const faqPageCount = Math.ceil(STARTER_FAQ_PROMPTS.length / FAQ_PAGE_SIZE);
   const faqVisiblePrompts = STARTER_FAQ_PROMPTS.slice(faqPage * FAQ_PAGE_SIZE, (faqPage + 1) * FAQ_PAGE_SIZE);
-  const faqOtherPrompts = STARTER_FAQ_PROMPTS.filter((_, i) => Math.floor(i / FAQ_PAGE_SIZE) !== faqPage);
 
   useEffect(() => {
-    if (!showBuscador) return undefined;
+    if (!showBuscador || faqInputMode !== 'text') return undefined;
     const timer = setTimeout(() => { faqInputRef.current?.focus(); }, 520);
     return () => clearTimeout(timer);
-  }, [showBuscador]);
+  }, [faqInputMode, showBuscador]);
+
+  const stopFaqListening = useCallback(({ discard = false } = {}) => {
+    if (faqMicTimeoutRef.current) {
+      window.clearTimeout(faqMicTimeoutRef.current);
+      faqMicTimeoutRef.current = null;
+    }
+    if (discard) faqTranscriptRef.current = '';
+    try {
+      faqRecognitionRef.current?.stop?.();
+    } catch {
+      setFaqIsListening(false);
+    }
+  }, []);
+
+  const handleFaqMicClick = useCallback(() => {
+    if (typeof window === 'undefined') return;
+    setFaqMicPromptVisible(true);
+
+    if (faqIsListening) {
+      stopFaqListening();
+      return;
+    }
+
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SpeechRecognition) {
+      setFaqMicError('Tu navegador no permite dictar. Puedes escribirle al apuntador.');
+      setFaqInputMode('text');
+      return;
+    }
+
+    if (!faqRecognitionRef.current) {
+      const recognition = new SpeechRecognition();
+      recognition.continuous = true;
+      recognition.interimResults = true;
+      recognition.lang = 'es-MX';
+      recognition.maxAlternatives = 1;
+      recognition.onresult = (event) => {
+        const text = Array.from(event.results)
+          .map((result) => result[0]?.transcript ?? '')
+          .join(' ')
+          .trim();
+        faqTranscriptRef.current = text;
+        setFaqQuery(text);
+      };
+      recognition.onerror = (event) => {
+        console.error('[Archivo vivo] recognition error:', event);
+        setFaqMicError('El apuntador no pudo escucharte. Intenta otra vez o escribe tu pregunta.');
+        setFaqIsListening(false);
+      };
+      recognition.onend = () => {
+        setFaqIsListening(false);
+        if (faqMicTimeoutRef.current) {
+          window.clearTimeout(faqMicTimeoutRef.current);
+          faqMicTimeoutRef.current = null;
+        }
+        if (faqTranscriptRef.current.trim()) setFaqInputMode('text');
+      };
+      faqRecognitionRef.current = recognition;
+    }
+
+    faqTranscriptRef.current = '';
+    setFaqQuery('');
+    try {
+      faqRecognitionRef.current.start();
+      setFaqIsListening(true);
+      setFaqMicError('');
+      faqMicTimeoutRef.current = window.setTimeout(() => stopFaqListening(), 45000);
+    } catch (error) {
+      console.error('[Archivo vivo] microphone start error:', error);
+      setFaqMicError('No pudimos abrir el micrófono. Intenta otra vez o escribe tu pregunta.');
+      setFaqInputMode('text');
+    }
+  }, [faqIsListening, setFaqQuery, stopFaqListening]);
+
+  const handleFaqInputModeToggle = useCallback(() => {
+    if (faqInputMode === 'voice') {
+      if (faqIsListening) stopFaqListening();
+      setFaqInputMode('text');
+      return;
+    }
+    setFaqMicError('');
+    setFaqInputMode('voice');
+  }, [faqInputMode, faqIsListening, stopFaqListening]);
+
+  useEffect(() => () => {
+    if (faqMicTimeoutRef.current) window.clearTimeout(faqMicTimeoutRef.current);
+    try { faqRecognitionRef.current?.abort?.(); } catch {}
+    faqRecognitionRef.current = null;
+  }, []);
 
   const categorizedPosts = useMemo(
     () =>
@@ -779,7 +874,9 @@ const Blog = ({ posts = [], isLoading = false, error = null, showBuscador = fals
       setIsEditorialLineOpen(true);
     }
     requestAnimationFrame(() => {
-      articlesRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      requestAnimationFrame(() => {
+        articlesRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      });
     });
   }, [isMobileViewport]);
 
@@ -792,7 +889,7 @@ const Blog = ({ posts = [], isLoading = false, error = null, showBuscador = fals
     if (focus && BLOG_CATEGORY_ORDER.includes(focus)) {
       handleExploreCategory(focus);
     }
-  }, [location.hash, handleExploreCategory]);
+  }, [location.hash, location.key, handleExploreCategory]);
 
   const handleCloseEditorialLine = useCallback(() => {
     setActivePost(null);
@@ -806,9 +903,12 @@ const Blog = ({ posts = [], isLoading = false, error = null, showBuscador = fals
   }, [isMobileViewport]);
 
   const handleFaqPromptSelect = useCallback((prompt) => {
+    if (faqIsListening) stopFaqListening({ discard: true });
+    setFaqInputMode('text');
+    setFaqMicError('');
     setFaqQuery(prompt);
     faqSearch(prompt);
-  }, [setFaqQuery, faqSearch]);
+  }, [faqIsListening, setFaqQuery, faqSearch, stopFaqListening]);
 
   useEffect(() => {
     if (prevFaqStatus.current !== 'done' && faqStatus === 'done') {
@@ -962,201 +1062,238 @@ const Blog = ({ posts = [], isLoading = false, error = null, showBuscador = fals
                   exit={{ opacity: 0, y: -10 }}
                   transition={{ duration: 0.45, ease: 'easeOut' }}
                 >
-                <motion.div
-                  initial={{ opacity: 0, y: 14, scale: 0.99 }}
-                  animate={{ opacity: 1, y: 0, scale: 1 }}
-                  transition={{ duration: 0.45, ease: 'easeOut', delay: 0.08 }}
-                  className="relative overflow-hidden rounded-2xl border border-violet-300/40 bg-gradient-to-r from-violet-500/20 via-fuchsia-500/14 to-indigo-500/18 px-5 py-4 shadow-[0_20px_56px_rgba(76,29,149,0.28)]"
-                >
-                  <div className="pointer-events-none absolute -right-12 -top-16 h-40 w-40 rounded-full bg-violet-300/20 blur-2xl" />
-                  <div className="pointer-events-none absolute -bottom-20 left-12 h-40 w-40 rounded-full bg-cyan-300/10 blur-2xl" />
-                  <div className="pointer-events-none absolute inset-x-6 top-0 h-px bg-gradient-to-r from-transparent via-violet-100/75 to-transparent" />
+                  <motion.div
+                    initial={{ opacity: 0, y: 14, scale: 0.99 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    transition={{ duration: 0.45, ease: 'easeOut', delay: 0.08 }}
+                    className="camerino-panel relative overflow-hidden rounded-2xl border p-5 md:p-8"
+                  >
+                    <div className="pointer-events-none absolute inset-x-8 top-0 h-px bg-gradient-to-r from-transparent via-violet-100/60 to-transparent" />
 
-                  <div className="relative z-10 grid gap-5 lg:grid-cols-[minmax(320px,0.9fr)_minmax(0,1.1fr)] lg:items-start">
-                    <div className="flex flex-col gap-4 p-1 lg:rounded-[1.4rem] lg:border lg:border-violet-300/30 lg:bg-black/35 lg:p-5 lg:backdrop-blur-sm">
-                      <div className="flex flex-col items-start gap-1.5 lg:items-center">
-                        <img
-                          src="/assets/header-logo.png"
-                          alt="Es un gato encerrado"
-                          className="h-11 w-11 lg:h-14 lg:w-14 opacity-90 drop-shadow-[0_0_20px_rgba(167,139,250,0.8)]"
-                        />
-                        <p className="text-[10px] tracking-[0.22em] text-violet-300/70 font-light uppercase lg:text-center">
-                          Universo #GatoEncerrado · Buscador Backstage
-                        </p>
-                      </div>
-                      <div className="h-px bg-gradient-to-r from-violet-300/35 via-violet-100/15 to-transparent lg:from-transparent lg:via-violet-300/40 lg:to-transparent" />
-                      <div className="space-y-3">
-                        <p className="text-[1rem] font-semibold leading-snug text-white">
-                         Usa mi asistente para explorar, contrastar y encontrar respuestas a preguntas que quizá aún no te has hecho.
-                        </p>
-                      </div>
-                      <div className="relative w-full">
-                        <Search size={17} className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-violet-500" />
-                        <input
-                          ref={faqInputRef}
-                          type="search"
-                          value={faqQuery}
-                          onChange={(event) => setFaqQuery(event.target.value)}
-                          onKeyDown={(event) => {
-                            if (event.key === 'Enter' && faqQuery.trim().length >= 2) faqSearch();
-                          }}
-                          placeholder="Pregúntame lo que quieras… colegato."
-                          disabled={faqIsLoading}
-                          className="form-surface form-surface--pill h-12 w-full border border-violet-100/45 bg-white/90 py-2 pl-11 pr-12 text-sm text-slate-900 placeholder:text-slate-400 disabled:opacity-60"
-                        />
-                        {faqQuery.trim().length >= 2 && !faqIsLoading && (
-                          <button
-                            type="button"
-                            onClick={() => faqSearch()}
-                            aria-label="Buscar"
-                            className="absolute right-3 top-1/2 -translate-y-1/2 rounded-full bg-violet-600 p-1.5 text-white shadow-[0_0_12px_rgba(124,58,237,0.5)] hover:bg-violet-700 transition"
-                          >
-                            <Send size={13} />
-                          </button>
-                        )}
-                        {faqIsLoading && (
-                          <span className="absolute right-3.5 top-1/2 -translate-y-1/2 h-5 w-5 rounded-full border-2 border-slate-200 border-t-violet-600 animate-spin" aria-hidden="true" />
-                        )}
+                    <div className="relative z-10 space-y-7">
+                      <div className="flex flex-col gap-5 md:flex-row md:items-start md:justify-between">
+                        <div className="flex items-start gap-4">
+                          <img
+                            src="/assets/header-logo.png"
+                            alt="Es un gato encerrado"
+                            className="h-12 w-12 shrink-0 object-contain opacity-90 drop-shadow-[0_0_20px_rgba(167,139,250,0.8)] md:h-14 md:w-14"
+                          />
+                          <div>
+                            <p className="text-[10px] uppercase tracking-[0.32em] text-violet-300/65">
+                              Entre actos
+                            </p>
+                            <h3 className="mt-2 font-display text-2xl text-slate-50 md:text-3xl">
+                              Entra al camerino
+                            </h3>
+                          </div>
+                        </div>
+                        <span className="inline-flex w-fit items-center gap-2 rounded-full border border-emerald-300/20 bg-emerald-400/5 px-3 py-1 text-[9px] uppercase tracking-[0.25em] text-emerald-200/75">
+                          <span className="h-1.5 w-1.5 rounded-full bg-emerald-300 shadow-[0_0_10px_rgba(110,231,183,0.9)]" />
+                          Archivo vivo
+                        </span>
                       </div>
 
-                      {/* Panel de respuesta RAG */}
-                      {(faqStatus === 'searching' || faqStatus === 'streaming' || faqStatus === 'done' || faqStatus === 'error') && (
-                        <div className="mt-1 border-t border-violet-100/15 pt-3 text-sm text-violet-50/90 space-y-2">
-                          {faqStatus === 'searching' && (
-                            <p className="text-violet-200/70 animate-pulse">Buscando en el universo GatoEncerrado…</p>
-                          )}
-                          {(faqStatus === 'streaming' || faqStatus === 'done') && faqAnswer && (
-                            <div className="leading-relaxed">
-                              <ReactMarkdown
-                                components={{
-                                  p: ({ children }) => <p className="mb-2 last:mb-0">{children}</p>,
-                                  strong: ({ children }) => <strong className="font-semibold text-violet-200">{children}</strong>,
-                                  em: ({ children }) => <em className="italic text-violet-100/90">{children}</em>,
-                                  ul: ({ children }) => <ul className="my-1 ml-4 list-disc space-y-0.5">{children}</ul>,
-                                  ol: ({ children }) => <ol className="my-1 ml-4 list-decimal space-y-0.5">{children}</ol>,
-                                  li: ({ children }) => <li className="text-violet-50/90">{children}</li>,
+                      <p className="max-w-3xl text-sm leading-relaxed text-slate-300/80 md:text-base">
+                        Consulta al apuntador para explorar, contrastar y encontrar respuestas a preguntas que quizá aún no te has hecho.
+                      </p>
+
+                      <div className="space-y-2">
+                        <p className="text-[9px] uppercase tracking-[0.3em] text-slate-400/70">Archivos disponibles</p>
+                        <div className="flex flex-wrap gap-2">
+                          {['Curaduría editorial', 'Memoria escénica', 'Obras narrativas', 'Canon del universo'].map((fund) => (
+                            <span key={fund} className="rounded-full border border-violet-200/15 bg-white/[0.035] px-3 py-1.5 text-[10px] tracking-wide text-violet-100/75">
+                              {fund}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+
+                      <div className="grid gap-5 lg:grid-cols-[minmax(300px,0.88fr)_minmax(0,1.12fr)]">
+                        <section className="camerino-apuntador-panel rounded-2xl border p-5 backdrop-blur-sm">
+                          <p className="mb-4 text-[10px] uppercase tracking-[0.3em] text-violet-200/65">
+                            El apuntador
+                          </p>
+
+                          {faqInputMode === 'voice' ? (
+                            <ObraConversationControls
+                              ctaLabel="Pregunta / Comenta"
+                              listeningLabel="Pulsa otra vez para terminar"
+                              promptLabel="Pulsa y habla con el apuntador"
+                              errorTitle="El apuntador no pudo escucharte"
+                              isListening={faqIsListening}
+                              micPromptVisible={faqMicPromptVisible}
+                              micError={faqMicError}
+                              secondaryCtaVisible
+                              secondaryCtaCopy="Prefiero escribir"
+                              onMicClick={handleFaqMicClick}
+                              onSecondaryCtaClick={handleFaqInputModeToggle}
+                              tone={{
+                                border: 'rgba(196,181,253,0.62)',
+                                dot: 'rgba(221,214,254,0.96)',
+                                glow: '0 0 38px rgba(139,92,246,0.5)',
+                              }}
+                            />
+                          ) : (
+                            <div className="space-y-3">
+                              <label htmlFor="archivo-vivo-query" className="text-[10px] uppercase tracking-[0.26em] text-violet-200/55">
+                                {faqQuery.trim() ? 'Esto entendí · puedes editarlo' : 'Escribe una pregunta para el apuntador'}
+                              </label>
+                              <textarea
+                                id="archivo-vivo-query"
+                                ref={faqInputRef}
+                                rows={3}
+                                value={faqQuery}
+                                onChange={(event) => setFaqQuery(event.target.value)}
+                                onKeyDown={(event) => {
+                                  if ((event.metaKey || event.ctrlKey) && event.key === 'Enter' && faqQuery.trim().length >= 2) faqSearch();
                                 }}
+                                placeholder="¿Qué quieres preguntarle al apuntador?"
+                                disabled={faqIsLoading}
+                                className="w-full resize-none rounded-2xl border border-violet-100/30 bg-white/90 px-4 py-3 text-sm leading-relaxed text-slate-900 outline-none placeholder:text-slate-400 focus:border-violet-400 focus:ring-2 focus:ring-violet-400/20 disabled:opacity-60"
+                              />
+                              <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                                <button
+                                  type="button"
+                                  onClick={handleFaqInputModeToggle}
+                                  className="text-xs text-violet-200/65 underline decoration-dotted underline-offset-4 transition hover:text-violet-100"
+                                >
+                                  Prefiero hablar
+                                </button>
+                                <Button
+                                  type="button"
+                                  onClick={() => faqSearch()}
+                                  disabled={faqIsLoading || faqQuery.trim().length < 2}
+                                  className="ge-chip-action ge-chip-action--primary ge-chip-action--compact"
+                                >
+                                  {faqIsLoading ? 'Consultando…' : 'Preguntar al apuntador'}
+                                  {faqIsLoading ? (
+                                    <span className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-white/35 border-t-white" aria-hidden="true" />
+                                  ) : (
+                                    <FileSearch size={14} aria-hidden="true" />
+                                  )}
+                                </Button>
+                              </div>
+                            </div>
+                          )}
+                        </section>
+
+                        <section className="rounded-2xl border border-white/10 bg-black/15 p-5">
+                          <div className="mb-4 flex items-center justify-between gap-3">
+                            <div>
+                              <p className="text-[10px] uppercase tracking-[0.3em] text-violet-200/65">Mesa de notas</p>
+                              <p className="mt-1 text-xs text-slate-400">Preguntas de la comunidad para dialogar, recordar y continuar con la función.</p>
+                            </div>
+                            <button
+                              type="button"
+                              onClick={() => setFaqPage((p) => (p + 1) % faqPageCount)}
+                              aria-label="Mostrar otras rutas"
+                              className="group rounded-full border border-violet-200/20 p-2 text-violet-200/70 transition hover:border-violet-200/45 hover:text-violet-100"
+                            >
+                              <RefreshCw size={14} className="transition duration-300 group-hover:rotate-180" aria-hidden="true" />
+                            </button>
+                          </div>
+                          <div className="space-y-2">
+                            {faqVisiblePrompts.map((prompt, index) => (
+                              <button
+                                type="button"
+                                key={prompt}
+                                onClick={() => handleFaqPromptSelect(prompt)}
+                                className="group flex w-full items-start gap-3 rounded-xl border border-white/10 bg-white/[0.025] px-4 py-3 text-left transition hover:border-violet-300/35 hover:bg-violet-400/[0.07]"
                               >
-                                {faqAnswer}
-                              </ReactMarkdown>
-                              {faqStatus === 'streaming' && (
-                                <span className="inline-block w-0.5 h-3.5 ml-0.5 bg-violet-300 animate-pulse align-middle" aria-hidden="true" />
+                                <span className="pt-0.5 font-mono text-[10px] text-violet-300/55">{String(index + 1).padStart(2, '0')}</span>
+                                <span className="text-sm leading-snug text-slate-200/90 group-hover:text-white">{prompt}</span>
+                              </button>
+                            ))}
+                          </div>
+                        </section>
+                      </div>
+
+                      {(faqStatus === 'searching' || faqStatus === 'streaming' || faqStatus === 'done' || faqStatus === 'error') && (
+                        <section className="overflow-hidden rounded-2xl border border-violet-200/25 bg-black/35">
+                          {faqStatus === 'searching' && (
+                            <div className="flex items-center gap-3 px-5 py-6 text-sm text-violet-100/70 md:px-6">
+                              <span className="h-4 w-4 animate-spin rounded-full border-2 border-violet-200/20 border-t-violet-300" aria-hidden="true" />
+                              Abriendo archivos y contrastando fragmentos…
+                            </div>
+                          )}
+
+                          {(faqStatus === 'streaming' || faqStatus === 'done') && faqAnswer && (
+                            <div className="space-y-5 px-5 py-6 md:px-6">
+                              <div>
+                                <p className="mb-3 text-[10px] uppercase tracking-[0.3em] text-violet-200/65">Nota del apuntador</p>
+                                <div className="max-w-4xl text-sm leading-relaxed text-violet-100/85 md:text-[0.95rem]">
+                                  <ReactMarkdown
+                                    components={{
+                                      p: ({ children }) => <p className="mb-3 last:mb-0">{children}</p>,
+                                      strong: ({ children }) => <strong className="font-semibold text-violet-200">{children}</strong>,
+                                      em: ({ children }) => <em className="italic text-violet-100/90">{children}</em>,
+                                      ul: ({ children }) => <ul className="my-2 ml-4 list-disc space-y-1">{children}</ul>,
+                                      ol: ({ children }) => <ol className="my-2 ml-4 list-decimal space-y-1">{children}</ol>,
+                                      li: ({ children }) => <li className="text-violet-100/85">{children}</li>,
+                                    }}
+                                  >
+                                    {faqAnswer}
+                                  </ReactMarkdown>
+                                  {faqStatus === 'streaming' && <span className="ml-1 inline-block h-4 w-0.5 animate-pulse bg-violet-300 align-middle" aria-hidden="true" />}
+                                </div>
+                              </div>
+
+                              {faqStatus === 'done' && faqArchive.length > 0 && (
+                                <div className="border-t border-white/10 pt-4">
+                                  <p className="mb-2 text-[9px] uppercase tracking-[0.28em] text-slate-400/70">Archivo consultado</p>
+                                  <div className="flex flex-wrap gap-2">
+                                    {faqArchive.map((fund) => (
+                                      <span key={fund.id} className="rounded-full border border-violet-200/15 bg-violet-400/5 px-3 py-1.5 text-[10px] text-violet-100/75">
+                                        {fund.label} · {fund.fragments} {fund.fragments === 1 ? 'fragmento' : 'fragmentos'}
+                                      </span>
+                                    ))}
+                                  </div>
+                                </div>
+                              )}
+
+                              {faqStatus === 'done' && faqSources.length > 0 && (
+                                <div className="border-t border-white/10 pt-4">
+                                  <p className="mb-2 text-[9px] uppercase tracking-[0.28em] text-slate-400/70">Huella documental pública</p>
+                                  <ul className="space-y-1">
+                                    {faqSources.map((source) => (
+                                      <li key={source.slug}>
+                                        <button
+                                          type="button"
+                                          onClick={() => {
+                                            const post = posts.find((item) => item.slug === source.slug);
+                                            if (post) handleSelectPost(post);
+                                          }}
+                                          className="text-left text-sm text-violet-300 underline decoration-dotted underline-offset-4 transition hover:text-violet-100"
+                                        >
+                                          {source.title}
+                                        </button>
+                                      </li>
+                                    ))}
+                                  </ul>
+                                </div>
                               )}
                             </div>
                           )}
-                          {faqStatus === 'done' && faqSources.length > 0 && (
-                            <div className="pt-1 border-t border-violet-100/15 space-y-1">
-                              <p className="text-[10px] uppercase tracking-[0.24em] text-violet-200/55">Artículos relacionados</p>
-                              <ul className="space-y-0.5">
-                                {faqSources.map((s) => (
-                                  <li key={s.slug}>
-                                    <button
-                                      type="button"
-                                      onClick={() => {
-                                        const post = posts.find((p) => p.slug === s.slug);
-                                        if (post) handleSelectPost(post);
-                                      }}
-                                      className="text-violet-300 hover:text-violet-100 underline decoration-dotted transition text-left"
-                                    >
-                                      {s.title}
-                                    </button>
-                                  </li>
-                                ))}
-                              </ul>
+
+                          {faqStatus === 'error' && (
+                            <p className="px-5 py-6 text-sm text-red-300/85 md:px-6">{faqErrorMessage || 'No se pudo completar la consulta.'}</p>
+                          )}
+
+                          {faqStatus === 'done' && searchCompletions >= 1 && (
+                            <div className="flex justify-end border-t border-white/10 px-5 py-4 md:px-6">
+                              <button
+                                type="button"
+                                onClick={() => document.querySelector('#contact')?.scrollIntoView({ behavior: 'smooth', block: 'start' })}
+                                className="ge-chip-action ge-chip-action--secondary ge-chip-action--compact"
+                              >
+                                Compartir algo de tu autoría →
+                              </button>
                             </div>
                           )}
-                          {faqStatus === 'error' && (
-                            <p className="text-red-300/80">{faqErrorMessage || 'No se pudo completar la búsqueda.'}</p>
-                          )}
-                          {(faqStatus === 'done' || faqStatus === 'error') && (
-                            <button
-                              type="button"
-                              onClick={faqReset}
-                              className="text-[20px] uppercase tracking-[0.22em] text-violet-200/45 hover:text-violet-200/80 transition"
-                            >
-                              🔍
-                            </button>
-                          )}
-                          <AnimatePresence>
-                            {faqStatus === 'done' && searchCompletions >= 3 && !nudgeDismissed && (
-                              <motion.div
-                                initial={{ opacity: 0, y: 4 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                exit={{ opacity: 0 }}
-                                transition={{ duration: 0.4, delay: 0.3 }}
-                                className="relative mt-1 rounded-xl border border-violet-300/30 bg-violet-500/10 px-5 py-4"
-                              >
-                                <button
-                                  type="button"
-                                  onClick={() => setNudgeDismissed(true)}
-                                  aria-label="Cerrar"
-                                  className="absolute right-2.5 top-2.5 text-violet-200/40 hover:text-violet-200/80 transition"
-                                >
-                                  <X size={13} />
-                                </button>
-                                <p className="font-display text-lg leading-snug text-violet-100 pr-5">
-                                  ¿Tienes curiosidad gatuna?
-                                </p>
-                      
-                                <button
-                                  type="button"
-                                  onClick={() => document.querySelector('#contact')?.scrollIntoView({ behavior: 'smooth', block: 'start' })}
-                                  className="ge-chip-action ge-chip-action--secondary ge-chip-action--compact mt-3"
-                                >
-                                  Escríbenos algo de tu autoría →
-                                </button>
-                              </motion.div>
-                            )}
-                          </AnimatePresence>
-                        </div>
+                        </section>
                       )}
-
-      
                     </div>
-
-                    <div className="space-y-3 lg:pl-4">
-                      <Button
-                        type="button"
-                        variant="outline"
-                        onClick={() => setFaqPage((p) => (p + 1) % faqPageCount)}
-                        className="group ge-chip-filter ge-chip-filter--active ge-chip-filter--compact"
-                      >
-                        <Compass size={12} className="shrink-0" aria-hidden="true" />
-                        Preguntas para la comunidad
-                        <RefreshCw size={11} className="shrink-0 transition duration-300 group-hover:rotate-180" aria-hidden="true" />
-                      </Button>
-
-                      <div className="flex flex-wrap gap-2">
-                        {faqVisiblePrompts.map((prompt) => (
-                          <button
-                            type="button"
-                            key={prompt}
-                            onClick={() => handleFaqPromptSelect(prompt)}
-                            className="ge-chip-action ge-chip-action--secondary ge-chip-action--prompt"
-                          >
-                            {prompt}
-                          </button>
-                        ))}
-                        <AnimatePresence>
-                          {faqStatus === 'done' && faqOtherPrompts.map((prompt) => (
-                            <motion.button
-                              key={prompt}
-                              type="button"
-                              initial={{ opacity: 0 }}
-                              animate={{ opacity: 1 }}
-                              exit={{ opacity: 0 }}
-                              transition={{ duration: 0.4 }}
-                              onClick={() => handleFaqPromptSelect(prompt)}
-                              className="ge-chip-action ge-chip-action--secondary ge-chip-action--prompt"
-                            >
-                              {prompt}
-                            </motion.button>
-                          ))}
-                        </AnimatePresence>
-                      </div>
-                    </div>
-                  </div>
-                </motion.div>
+                  </motion.div>
                 </motion.div>
               ) : null}
               </AnimatePresence>
@@ -1205,7 +1342,7 @@ const Blog = ({ posts = [], isLoading = false, error = null, showBuscador = fals
                   whileInView="visible"
                   viewport={{ once: true }}
                   variants={{ visible: { transition: { staggerChildren: 0.12 } } }}
-                  className="grid md:grid-cols-2 gap-8"
+                  className="grid scroll-mt-24 gap-8 md:grid-cols-2 md:scroll-mt-28"
                 >
                   {isLoading ? (
                     Array.from({ length: 6 }).map((_, index) => <ArticleCardSkeleton key={`skeleton-${index}`} />)
@@ -1249,7 +1386,7 @@ const Blog = ({ posts = [], isLoading = false, error = null, showBuscador = fals
                       <button
                         type="button"
                         key={category}
-                        onClick={() => setActiveCategory(category)}
+                        onClick={() => handleExploreCategory(category)}
                         className={`ge-chip-filter ${
                           activeCategory === category
                             ? 'ge-chip-filter--active'

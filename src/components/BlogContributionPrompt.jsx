@@ -62,15 +62,15 @@ const BlogContributionPrompt = ({ onAskQuestion = null }) => {
 
   return (
     <>
-      <section id="blog-contribuye" className="py-24 relative min-h-[700px]">
-        <div className="section-divider mb-24"></div>
+      <section id="blog-contribuye" className="narrative-transition-section py-24 relative min-h-[700px]">
+        <div className="narrative-transition-divider section-divider mb-24"></div>
         <div className="container mx-auto px-6">
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.3, ease: 'easeOut' }}
             viewport={{ once: true }}
-            className="relative overflow-visible p-8 text-center md:p-12"
+            className="narrative-transition-card relative overflow-visible p-8 text-center md:p-12"
           >
             {/* HALO VIOLETA DELICADO (DETRÁS) */}
             <div
@@ -97,7 +97,7 @@ const BlogContributionPrompt = ({ onAskQuestion = null }) => {
             </div>
 
            {/* CONTENIDO */}
-<div className="relative z-10">
+<div className="narrative-transition-content relative z-10">
   <img
     src="/assets/IntermedioLogo.png"
     alt=""
@@ -105,11 +105,11 @@ const BlogContributionPrompt = ({ onAskQuestion = null }) => {
     loading="lazy"
     className="narrative-section-logo mx-auto mb-5 object-contain"
   />
-  <h3 className="font-display text-3xl font-medium text-slate-100 mb-6 text-center">
-    Intermedio y<br />segunda parte
+  <h3 className="narrative-transition-title font-display text-3xl font-medium text-slate-100 mb-6 text-center">
+    Intermedio y<br />segundo acto
   </h3>
 
-  <p className="text-slate-300/80 leading-relaxed mb-8 max-w-2xl mx-auto font-light text-center">
+  <p className="narrative-transition-copy text-slate-300/80 leading-relaxed mb-8 max-w-2xl mx-auto font-light text-center">
     <span className="block mt-8">
     <em>¿Qué obra ocurre en ti?</em>
   </span>
@@ -119,7 +119,7 @@ const BlogContributionPrompt = ({ onAskQuestion = null }) => {
 Y no pasa nada.
 
 Si te encuentras en medio de una que aún no tiene pies ni cabeza, 
-solo nota si algo de lo que miras se queda moviéndose adentro.`}
+solo nota si algo de lo que mires aquí se queda moviéndose adentro.`}
   </span>
 
   <span className="block mt-8">
@@ -138,7 +138,7 @@ solo nota si algo de lo que miras se queda moviéndose adentro.`}
       onClick={() => onAskQuestion?.()}
       className="ge-chip-action ge-mobile-cta-width ge-chip-action--primary mx-auto"
     >
-      Reflexiona conmigo
+      Entra al camerino
     </Button>
   </div>
 </div>

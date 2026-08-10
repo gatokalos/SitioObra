@@ -227,7 +227,7 @@ const mobileSingleButtonRoles = new Set([
   "Dramaturgia",
   "Colaboradores y Agradecimientos",
 ]);
-// Todas las pestañas de Créditos de la función inician cerradas, en desktop y en móvil.
+// En móvil todas las pestañas inician cerradas; en desktop abre Elenco.
 const defaultOpenMobileRoles = [];
 const mobileRoleLabelOverrides = {
   "Sonido y Tema Musical": "Sonido y Música",
@@ -256,7 +256,7 @@ const Team = () => {
     () => defaultOpenMobileRoles.filter((role) => teamData[role])
   );
   const [activeMobileMemberByRole, setActiveMobileMemberByRole] = useState({});
-  const [activeDesktopRole, setActiveDesktopRole] = useState(null);
+  const [activeDesktopRole, setActiveDesktopRole] = useState("Elenco");
   const [activeMemberLink, setActiveMemberLink] = useState(null);
   const [confirmExternalLink, setConfirmExternalLink] = useState(null);
   const mobileRoleRows = [];
@@ -350,8 +350,7 @@ const Team = () => {
   }, [isMobile, selectedElencoId]);
 
   useEffect(() => {
-    // Solo limpia una selección que quedó apuntando a un rol que ya no existe —
-    // no vuelve a abrir nada por default (las pestañas inician cerradas).
+    // Solo limpia una selección que quedó apuntando a un rol que ya no existe.
     if (activeDesktopRole && !(activeDesktopRole in teamData)) {
       setActiveDesktopRole(null);
     }

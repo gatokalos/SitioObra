@@ -5,6 +5,26 @@ import { CATALOG } from '@/lib/bitacoraShared';
 import LoginOverlay from '@/components/ContributionModal/LoginOverlay';
 import { resolvePortalRoute } from '@/lib/miniversePortalRegistry';
 import { setAnonIdOverride } from '@/lib/identity';
+import { useAuth } from '@/contexts/SupabaseAuthContext';
+import { ORACULO_RECOMMENDED_SHOWCASE_KEY } from '@/components/transmedia/transmediaConstants';
+
+// Mismo criterio de acceso que handleFormatClick usa en Transmedia.jsx: un
+// invitado sin cuenta solo puede entrar a la vitrina recomendada o a una que
+// ya desbloqueó gastando GAT — cualquier otra requiere login. anon_id no es
+// secreto (vive en el localStorage del propio visitante), así que sin este
+// chequeo cualquiera podía usar su propio anon_id con m=<cualquier portal>
+// para saltarse el desbloqueo (encontrado 2026-07-27).
+function hasUnlockedAccess(formatId, isAuthenticated) {
+  if (isAuthenticated) return true;
+  try {
+    const recommended = window.localStorage.getItem(ORACULO_RECOMMENDED_SHOWCASE_KEY);
+    if (recommended && recommended === formatId) return true;
+    const boosts = JSON.parse(window.localStorage.getItem('gatoencerrado:showcase-boosts') || '{}');
+    return Boolean(boosts?.[formatId]);
+  } catch {
+    return false;
+  }
+}
 
 // Aterrizaje del magic link de Bitácora diferida (WhatsApp/push, días después).
 // URL: /bitacora?t=<anon_id>&m=<portal key, ej. "sonoridades">
@@ -15,6 +35,8 @@ const BitacoraLanding = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const [showLogin, setShowLogin] = useState(false);
+  const { user } = useAuth();
+  const isAuthenticated = Boolean(user);
 
   const anonId = searchParams.get('t');
   const portalKey = searchParams.get('m');
@@ -28,11 +50,19 @@ const BitacoraLanding = () => {
   const handleClose = () => navigate('/', { replace: true });
 
   const handleOpenNarrative = () => {
+    if (!hasUnlockedAccess(entry?.showcase, isAuthenticated)) {
+      setShowLogin(true);
+      return;
+    }
     const route = resolvePortalRoute({ formatId: entry?.showcase });
     if (route) navigate(route);
   };
 
   const handleNavigateToRecommendation = (formatId) => {
+    if (!hasUnlockedAccess(formatId, isAuthenticated)) {
+      setShowLogin(true);
+      return;
+    }
     const route = resolvePortalRoute({ formatId });
     if (route) navigate(route);
   };

@@ -534,6 +534,7 @@ const MiniverseModal = ({
     getTransmediaSectionState,
     getTransmediaSectionState
   );
+  const showcaseAmbientActivatedRef = useRef(false);
   const isShowcaseAmbientAudible =
     !ambientState.isMuted && (ambientState.isPlaying || transmediaAmbientState.isPlaying);
   const handleToggleShowcaseVideoAmbient = useCallback(() => {
@@ -546,9 +547,18 @@ const MiniverseModal = ({
     // sección, pero con targetVolume 0 para NO forzar su reproducción ahora:
     // hacerlo (como antes) traslapaba las dos pistas sonando a la vez.
     const nextMuted = isShowcaseAmbientAudible;
+    showcaseAmbientActivatedRef.current = !nextMuted;
     setHeroAmbientMuted(nextMuted, { targetVolume: nextMuted ? HERO_AMBIENT_DEFAULT_VOLUME : 0 });
     setTransmediaAmbientMuted(nextMuted);
   }, [isShowcaseAmbientAudible]);
+  const stopShowcaseAmbient = useCallback(() => {
+    // Solo detenemos la pista si este modal la encendió. De ese modo un
+    // cambio de pestaña no interrumpe audio iniciado por otra experiencia.
+    if (!showcaseAmbientActivatedRef.current) return;
+    showcaseAmbientActivatedRef.current = false;
+    setHeroAmbientMuted(true);
+    setTransmediaAmbientMuted(true);
+  }, []);
   const isSafari = isSafariBrowser();
   const isInlineMode = displayMode === 'inline';
   const inlineTitleStyle = isInlineMode ? { fontFamily: 'Vox Round, Inter, sans-serif' } : undefined;
@@ -653,6 +663,36 @@ const MiniverseModal = ({
     }
     setHeroAmbientHold(false);
   }, [setHeroAmbientHold]);
+
+  // La música encendida desde el loop pertenece a Expande: al abandonar esa
+  // pestaña, cerrar/guardar el modal o desmontarlo, debe quedar apagada.
+  useEffect(() => {
+    if (!open || shelved || activeTab !== 'escaparate') {
+      stopShowcaseAmbient();
+    }
+  }, [activeTab, open, shelved, stopShowcaseAmbient]);
+
+  // Cambiar de pestaña del navegador, de aplicación o de ventana también
+  // apaga la pista. Al volver no se reactiva: requiere otro gesto en el loop.
+  useEffect(() => {
+    if (!open || typeof window === 'undefined' || typeof document === 'undefined') return undefined;
+
+    const handleVisibilityChange = () => {
+      if (document.visibilityState !== 'visible') stopShowcaseAmbient();
+    };
+    const handleWindowBlur = () => stopShowcaseAmbient();
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    window.addEventListener('blur', handleWindowBlur);
+    window.addEventListener('pagehide', handleWindowBlur);
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      window.removeEventListener('blur', handleWindowBlur);
+      window.removeEventListener('pagehide', handleWindowBlur);
+    };
+  }, [open, stopShowcaseAmbient]);
+
+  useEffect(() => () => stopShowcaseAmbient(), [stopShowcaseAmbient]);
 
   useEffect(() => {
     const handleMessage = (event) => {
@@ -939,7 +979,7 @@ const MiniverseModal = ({
   const activeTabIntro = useMemo(() => {
       if (activeTab === 'escaparate') {
       return {
-      lead: 'Explora el universo a partir de fragmentos. Cada uno muestra una forma distinta de contener la obra y abre la misma pregunta:',
+      lead: 'Este universo también se entiende en fragmentos: cada uno muestra una forma de contener la obra y abre la misma pregunta:',
       highlight: '¿qué ocurre cuando una herida emocional se expande y toca otras vidas?',
       };
     }
@@ -979,15 +1019,15 @@ const MiniverseModal = ({
         icon: Sparkles,
         thumbLabel: 'P',
         thumbGradient: 'from-violet-300/80 via-fuchsia-400/70 to-cyan-400/60',
-        title: 'Autoficción en fragmentos',
+        title: 'El arte de romperse',
         titleShort: 'Prólogo',
-        ctaLabel: '🎧 "El arte de no romperse"',
+        ctaLabel: '🎧 "El arte de romperse"',
         ctaDuration: '5 min',
         description: '¿Qué pasa cuando algo se expande sin pausa y empieza a romperse?',
         videoUrl: prologueVideoUrl,
         fullscreenVideoUrlDesktop: dramaShowcaseCard?.narrativeVideoUrlDesktop ?? NARRATIVE_VIDEO_URL_DESKTOP,
         fullscreenVideoUrlMobile: dramaShowcaseCard?.narrativeVideoUrl ?? NARRATIVE_VIDEO_URL_MOBILE,
-        eyebrow: 'Prólogo',
+        eyebrow: 'Una autoficción en fragmentos',
         isPrologue: true,
         portalLabel: 'Prólogo',
         customGradient: MINIVERSE_DISCOVER_INTRO_MESH,
@@ -1040,16 +1080,6 @@ const MiniverseModal = ({
     const nextCard = fictionShowcaseCards[(baseIndex + 1) % fictionShowcaseCards.length] ?? fictionShowcaseCards[0];
     return `Siguiente acto: ${nextCard?.portalLabel ?? 'El drama'}`;
   }, [activeShowcaseCard, fictionShowcaseCards]);
-  const activeShowcaseVideoHint = useMemo(() => {
-    if (!activeShowcaseCard) return '';
-    const durationToken = String(activeShowcaseCard.ctaDuration || '').trim();
-    if (!durationToken) {
-      return activeShowcaseCard.isPrologue ? 'Video completo' : 'Testimonio en video';
-    }
-    const videoLabel = activeShowcaseCard.isPrologue ? 'Video completo' : 'Fragmento';
-    return `${videoLabel} · ${durationToken.toUpperCase()}`;
-  }, [activeShowcaseCard]);
-
   useEffect(() => {
     if (inlineActNumberScrambleTimerRef.current) {
       window.clearInterval(inlineActNumberScrambleTimerRef.current);
@@ -2166,17 +2196,13 @@ const MiniverseModal = ({
                                   activeShowcaseCard.thumbLabel
                                 )}
                               </div>
-                              <div className="min-w-0 flex-1">
+                              <div className="hero-inline-card-title-frame min-w-0 flex-1">
                                 <p className="text-xs uppercase tracking-[0.35em] text-slate-300/80">
-                                  {activeShowcaseCard.eyebrow || 'Autoficción en fragmentos'}
+                                  {activeShowcaseCard.eyebrow || 'El arte de romperse'}
                                 </p>
                                 <h3
                                   className={`${isInlineMode
-                                    ? shouldUseSingleLinePortalTitle(activeShowcaseCard.title, { force: activeShowcaseCard.isPrologue })
-                                      ? activeShowcaseCard.isPrologue
-                                        ? 'hero-inline-card-title-prologue'
-                                        : 'hero-inline-card-title-singleline'
-                                      : 'text-4xl font-semibold leading-[1.02] tracking-[-0.01em]'
+                                    ? 'hero-inline-card-title-scene'
                                     : 'font-display text-3xl'} text-slate-50`}
                                   style={inlineCardTitleStyle}
                                 >
@@ -2194,25 +2220,18 @@ const MiniverseModal = ({
                                 </h3>
                               </div>
                             </div>
-                            <div className="flex flex-col sm:flex-row gap-3">
-                              <Button
-                                type="button"
-                                onClick={() => handleShowcasePrimaryCta(activeShowcaseCard)}
-                                className="narrative-cta-btn py-3 rounded-lg font-semibold flex items-center justify-center gap-2"
-                              >
-                                <span>{activeShowcaseCard.ctaLabel ?? activeShowcaseCard.titleShort ?? activeShowcaseCard.title}</span>
-                              </Button>
-                              <Button
-                                type="button"
-                                onClick={handleExploreMobileShowcase}
-                                className="bg-white text-slate-500 hover:bg-white/90 py-3 rounded-lg font-semibold flex items-center justify-center gap-2"
-                              >
-                                <span className="w-full truncate text-center">{mobileExploreButtonLabel}</span>
-                              </Button>
+                            <div className="flex min-w-0 items-center gap-3">
+                              <span className="h-px w-12 shrink-0" aria-hidden="true" />
+                              <div className="flex min-w-0 flex-1 justify-center">
+                                <Button
+                                  type="button"
+                                  onClick={handleExploreMobileShowcase}
+                                  className="narrative-cta-btn w-full max-w-[18rem] py-3 rounded-lg font-semibold flex items-center justify-center gap-2"
+                                >
+                                  <span className="w-full truncate text-center">{mobileExploreButtonLabel}</span>
+                                </Button>
+                              </div>
                             </div>
-                            <p className="text-xs uppercase tracking-[0.35em] text-slate-300/70">
-                              {activeShowcaseVideoHint}
-                            </p>
                           </div>
                           <div className="w-full">
                             <div
@@ -2327,17 +2346,13 @@ const MiniverseModal = ({
                                 activeShowcaseCard.thumbLabel
                               )}
                             </div>
-                            <div className="min-w-0 flex-1">
+                            <div className="hero-inline-card-title-frame min-w-0 flex-1">
                               <p className="text-xs uppercase tracking-[0.35em] text-slate-300/80">
-                                {activeShowcaseCard.eyebrow || 'Autoficción'}
+                                Una autoficción
                               </p>
                               <h3
                                 className={`${isInlineMode
-                                  ? shouldUseSingleLinePortalTitle(activeShowcaseCard.title, { force: activeShowcaseCard.isPrologue })
-                                    ? activeShowcaseCard.isPrologue
-                                      ? 'hero-inline-card-title-prologue'
-                                      : 'hero-inline-card-title-singleline'
-                                    : 'text-4xl font-semibold leading-[1.02] tracking-[-0.01em]'
+                                  ? 'hero-inline-card-title-scene'
                                   : 'font-display text-3xl'} text-slate-50`}
                                 style={inlineCardTitleStyle}
                               >
@@ -2407,20 +2422,10 @@ const MiniverseModal = ({
                             )}
                           </div>
                           <div className="flex flex-col gap-3">
-                               <p className="w-full text-center text-xs uppercase tracking-[0.35em] text-slate-300/70">
-                              {activeShowcaseVideoHint}
-                            </p>
-                            <Button
-                              type="button"
-                              onClick={() => handleShowcasePrimaryCta(activeShowcaseCard)}
-                              className="narrative-cta-btn py-3 rounded-lg font-semibold flex items-center justify-center gap-2"
-                            >
-                              <span>{activeShowcaseCard.ctaLabel ?? activeShowcaseCard.titleShort ?? activeShowcaseCard.title}</span>
-                            </Button>
                             <Button
                               type="button"
                               onClick={handleExploreMobileShowcase}
-                              className="bg-white text-slate-500 hover:bg-white/90 py-3 rounded-lg font-semibold flex items-center justify-center gap-2"
+                              className="narrative-cta-btn py-3 rounded-lg font-semibold flex items-center justify-center gap-2"
                             >
                               <span className="w-full truncate text-center">{mobileExploreButtonLabel}</span>
                               <span aria-hidden="true">→</span>

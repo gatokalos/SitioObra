@@ -2,18 +2,12 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 
 const FRAME_MS = 52;
 const FRAMES_PER_BURST = 4;
-// La transición visual del título dura 1.15 s. El primer desplazamiento del
-// # ocurre después, para que el cambio de fase sea continuo y el glitch se
-// perciba como una señal posterior, no como un salto de layout.
-const FIRST_BURST_DELAY_MS = 1600;
-const MIN_IDLE_MS = 1200;
-const MAX_IDLE_MS = 2400;
 
 const pick = (items) => items[Math.floor(Math.random() * items.length)];
 
 const uniqueChars = (value) => [...new Set([...value].filter((char) => char !== ' '))];
 
-const useSignalDriftText = (target, { active = true } = {}) => {
+const useSignalDriftText = (target, { active = true, triggerKey = null } = {}) => {
   const [display, setDisplay] = useState(target);
   const timeoutRef = useRef(null);
 
@@ -45,8 +39,6 @@ const useSignalDriftText = (target, { active = true } = {}) => {
     const nonHashPool = charPool.filter((char) => char !== '#');
     let cancelled = false;
 
-    const randomIdleDelay = () => MIN_IDLE_MS + Math.floor(Math.random() * (MAX_IDLE_MS - MIN_IDLE_MS));
-
     const buildFrame = () => {
       const result = [...chars];
       const shouldMoveHash = hashIndex >= 0 && nonHashPool.length > 0 && Math.random() < 0.52;
@@ -67,10 +59,6 @@ const useSignalDriftText = (target, { active = true } = {}) => {
       return result.join('');
     };
 
-    const schedule = (delay) => {
-      timeoutRef.current = window.setTimeout(runBurst, delay);
-    };
-
     function runBurst() {
       let frame = 0;
 
@@ -78,7 +66,6 @@ const useSignalDriftText = (target, { active = true } = {}) => {
         if (cancelled) return;
         if (frame >= FRAMES_PER_BURST) {
           setDisplay(target);
-          schedule(randomIdleDelay());
           return;
         }
 
@@ -90,7 +77,9 @@ const useSignalDriftText = (target, { active = true } = {}) => {
       step();
     }
 
-    schedule(FIRST_BURST_DELAY_MS);
+    // Un solo burst por señal externa. En el Hero, triggerKey es exactamente
+    // el subtítulo que también remonta el pulso luminoso del emblema.
+    runBurst();
 
     return () => {
       cancelled = true;
@@ -99,7 +88,7 @@ const useSignalDriftText = (target, { active = true } = {}) => {
         timeoutRef.current = null;
       }
     };
-  }, [active, charPool, target]);
+  }, [active, charPool, target, triggerKey]);
 
   return display;
 };

@@ -156,11 +156,11 @@ const MiniverseInlineSection = () => {
               viewport={{ once: true }}
               className="p-8 md:p-12 text-center max-w-3xl mx-auto"
             >
-              <h3 className="font-display text-3xl font-medium text-slate-100 mb-6 text-center">
-                Espera, no te vayas todavía
+              <h3 className="font-display text-3xl font-medium italic text-slate-100 mb-6 text-center">
+                "Espera, no te vayas todavía..."
               </h3>
               <p className="text-slate-100/80 leading-relaxed mb-8 max-w-xl mx-auto font-light">
-                Antes de irte, echa un vistazo a lo que hace posible este universo: <br></br>
+                Echa un vistazo a lo que hace posible este universo: <br></br>
                 cómo se expande, qué hay para habitar <br></br>y de qué forma tu presencia lo impulsa.
               </p>
               <Button
