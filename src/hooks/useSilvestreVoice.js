@@ -969,7 +969,7 @@ export const useSilvestreVoice = () => {
     }
   }, [pendingSilvestreAudioUrl, primeSilvestreAudioPlayback]);
 
-  const handleOpenSilvestreChat = useCallback((options = {}) => {
+  const handleOpenSilvestreChat = useCallback(async (options = {}) => {
     if (typeof window === 'undefined') {
       return;
     }
@@ -1043,6 +1043,20 @@ export const useSilvestreVoice = () => {
       stopSilvestreListening();
       void submitMicTranscript();
       return;
+    }
+
+    // Safari/WebKit exige haber pedido el micrófono explícitamente con
+    // getUserMedia antes de start() — si no, rechaza con "service-not-allowed"
+    // sin mostrarle al usuario ningún diálogo de permiso.
+    if (navigator.mediaDevices?.getUserMedia) {
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        stream.getTracks().forEach((track) => track.stop());
+      } catch (error) {
+        console.error('[Silvestre Voice] getUserMedia error:', error);
+        setMicError('Safari bloqueó el micrófono. Revisa el permiso de este sitio e intenta otra vez.');
+        return;
+      }
     }
 
     try {

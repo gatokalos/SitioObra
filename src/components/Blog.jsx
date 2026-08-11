@@ -81,9 +81,9 @@ const MINIVERSE_KEYWORDS = {
 const STARTER_FAQ_PROMPTS = [
   '¿Se puede cambiar algo con tan solo observarlo — incluyéndome a mí misma?',
   '¿Qué hay realmente detrás de las nueve formas de esta obra transmedia?',
-  '¿En qué momento el peso de lo real se vuelve más de lo que puedes sostener?',
-  '¿Por qué a veces es más fácil aislarse que admitir que necesitamos ayuda?',
-  '¿Cómo se empieza a sanar una herida que viene de herecia familiar?',
+  '¿Cómo se usa la Inteligencia Artificial en este sitio?',
+  '¿Por qué a veces es más fácil aislarse que pedir ayuda?',
+  '¿Qué es la realidad, realmente?',
   '¿Qué diferencia hay entre medir cuánta gente ve una obra y saber si cambió algo en el público?',
   '¿Qué pasa cuando las mismas personas que nos quieren también nos lastiman?',
   '¿Quién es Silvestre y qué le pasa en la obra?',
@@ -700,7 +700,7 @@ const Blog = ({ posts = [], isLoading = false, error = null, showBuscador = fals
     }
   }, []);
 
-  const handleFaqMicClick = useCallback(() => {
+  const handleFaqMicClick = useCallback(async () => {
     if (typeof window === 'undefined') return;
     setFaqMicPromptVisible(true);
 
@@ -714,6 +714,21 @@ const Blog = ({ posts = [], isLoading = false, error = null, showBuscador = fals
       setFaqMicError('Tu navegador no permite dictar. Puedes escribirle al apuntador.');
       setFaqInputMode('text');
       return;
+    }
+
+    // Safari/WebKit exige haber pedido el micrófono explícitamente con
+    // getUserMedia antes de start() — si no, rechaza con "service-not-allowed"
+    // sin mostrarle al usuario ningún diálogo de permiso.
+    if (navigator.mediaDevices?.getUserMedia) {
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        stream.getTracks().forEach((track) => track.stop());
+      } catch (error) {
+        console.error('[Archivo vivo] getUserMedia error:', error);
+        setFaqMicError('Safari bloqueó el micrófono. Revisa el permiso de este sitio e intenta otra vez.');
+        setFaqInputMode('text');
+        return;
+      }
     }
 
     // Cada intento usa una instancia nueva. WebKit puede dejar una sesión de
