@@ -77,6 +77,7 @@ const PROVOCA_TITLE_TERMS = [
   'la ira reprimida',
   'la desconexión',
   'la búsqueda de sentido',
+  'querer estar bien',
 ];
 const PROVOCA_TITLE_LONGEST_TERM = 'la búsqueda de sentido';
 const LESS_ALONE_GLYPHS = ['x', 'a', 'o', '#'];
@@ -210,7 +211,7 @@ export const ProvocaSection = () => {
       ? 'Reproducir respuesta'
       : isSilvestreThinking
         ? silvestreThinkingMessage
-        : 'Quiero drama';
+        : 'Quiero oir drama';
   const escucharButtonVisualLabel =
     pendingSilvestreAudioUrl && !isSilvestrePlaying ? 'Reproducir' : escucharStatusLabel;
 

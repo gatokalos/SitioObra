@@ -59,7 +59,7 @@ const CreatorWelcomeSection = ({ hasEnteredUniverse = false }) => {
             </h3>
            <div className="narrative-transition-copy text-slate-300/80 leading-relaxed mb-6 max-w-2xl mx-auto font-light text-center space-y-4">
   <p>No sé cómo llegaste hasta aquí.<br />Pero me alegra que lo hayas hecho.</p>
-  <p><strong>Hay inicios que nadie anuncia </strong>y,<br />aun así, tenemos cuórum.</p>
+  <p><strong>Hay inicios que nadie anuncia </strong>y,<br />de pronto, tenemos cuórum.</p>
   <p>Este universo está hecho de preguntas; y no todas buscan una respuesta.<br />Algunas solo necesitan que alguien las habite.</p>
   <p>Yo te estaba esperando.</p>
 </div>

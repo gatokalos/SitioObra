@@ -665,7 +665,10 @@ const Blog = ({ posts = [], isLoading = false, error = null, showBuscador = fals
   const [isEditorialLineOpen, setIsEditorialLineOpen] = useState(false);
   const articlesRef = useRef(null);
   const faqInputRef = useRef(null);
+  const faqResponseRef = useRef(null);
+  const shouldScrollToFaqResponseRef = useRef(false);
   const faqRecognitionRef = useRef(null);
+  const faqRecognitionStopRequestedRef = useRef(false);
   const faqMicTimeoutRef = useRef(null);
   const faqTranscriptRef = useRef('');
   const [faqInputMode, setFaqInputMode] = useState('voice');
@@ -689,6 +692,7 @@ const Blog = ({ posts = [], isLoading = false, error = null, showBuscador = fals
       faqMicTimeoutRef.current = null;
     }
     if (discard) faqTranscriptRef.current = '';
+    faqRecognitionStopRequestedRef.current = true;
     try {
       faqRecognitionRef.current?.stop?.();
     } catch {
@@ -712,40 +716,64 @@ const Blog = ({ posts = [], isLoading = false, error = null, showBuscador = fals
       return;
     }
 
-    if (!faqRecognitionRef.current) {
-      const recognition = new SpeechRecognition();
-      recognition.continuous = true;
-      recognition.interimResults = true;
-      recognition.lang = 'es-MX';
-      recognition.maxAlternatives = 1;
-      recognition.onresult = (event) => {
-        const text = Array.from(event.results)
-          .map((result) => result[0]?.transcript ?? '')
-          .join(' ')
-          .trim();
-        faqTranscriptRef.current = text;
-        setFaqQuery(text);
-      };
-      recognition.onerror = (event) => {
-        console.error('[Archivo vivo] recognition error:', event);
-        setFaqMicError('El apuntador no pudo escucharte. Intenta otra vez o escribe tu pregunta.');
-        setFaqIsListening(false);
-      };
-      recognition.onend = () => {
-        setFaqIsListening(false);
-        if (faqMicTimeoutRef.current) {
-          window.clearTimeout(faqMicTimeoutRef.current);
-          faqMicTimeoutRef.current = null;
-        }
-        if (faqTranscriptRef.current.trim()) setFaqInputMode('text');
-      };
-      faqRecognitionRef.current = recognition;
-    }
+    // Cada intento usa una instancia nueva. WebKit puede dejar una sesión de
+    // reconocimiento agotada después de un error y rechazar el siguiente start().
+    const recognition = new SpeechRecognition();
+    const isIOSWebKit = /iPad|iPhone|iPod/i.test(navigator.userAgent)
+      || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+    // En iPhone una pregunta funciona mejor como una sola intervención. El
+    // modo continuo de WebKit puede terminar sin resultados o depender de red.
+    recognition.continuous = !isIOSWebKit;
+    recognition.interimResults = true;
+    recognition.lang = 'es-MX';
+    recognition.maxAlternatives = 1;
+    recognition.onresult = (event) => {
+      const text = Array.from(event.results)
+        .map((result) => result[0]?.transcript ?? '')
+        .join(' ')
+        .trim();
+      faqTranscriptRef.current = text;
+      setFaqQuery(text);
+    };
+    recognition.onnomatch = () => {
+      setFaqMicError('No alcancé a distinguir la pregunta. Toca el micrófono e intenta otra vez.');
+    };
+    recognition.onerror = (event) => {
+      const errorCode = event?.error ?? 'unknown';
+      const wasRequestedStop = faqRecognitionStopRequestedRef.current;
+      console.error('[Archivo vivo] recognition error:', errorCode, event);
+
+      if (!(wasRequestedStop && errorCode === 'aborted')) {
+        const errorMessages = {
+          'no-speech': 'No alcancé a detectar tu voz. Acércate al micrófono e intenta otra vez.',
+          'audio-capture': 'Safari no pudo acceder al micrófono. Revisa el permiso de este sitio e intenta otra vez.',
+          'not-allowed': 'Safari bloqueó el micrófono. Revisa el permiso de este sitio e intenta otra vez.',
+          'service-not-allowed': 'El reconocimiento de voz no está disponible. Revisa que Siri esté activado o escribe tu pregunta.',
+          network: 'El reconocimiento de voz perdió la conexión. Intenta otra vez o escribe tu pregunta.',
+          'language-not-supported': 'El reconocimiento en español no está disponible en este dispositivo.',
+          aborted: 'La escucha se interrumpió. Toca el micrófono para intentarlo de nuevo.',
+        };
+        setFaqMicError(errorMessages[errorCode] ?? 'El apuntador no pudo escucharte. Intenta otra vez o escribe tu pregunta.');
+      }
+      setFaqIsListening(false);
+    };
+    recognition.onend = () => {
+      if (faqRecognitionRef.current === recognition) faqRecognitionRef.current = null;
+      faqRecognitionStopRequestedRef.current = false;
+      setFaqIsListening(false);
+      if (faqMicTimeoutRef.current) {
+        window.clearTimeout(faqMicTimeoutRef.current);
+        faqMicTimeoutRef.current = null;
+      }
+      if (faqTranscriptRef.current.trim()) setFaqInputMode('text');
+    };
+    faqRecognitionRef.current = recognition;
 
     faqTranscriptRef.current = '';
+    faqRecognitionStopRequestedRef.current = false;
     setFaqQuery('');
     try {
-      faqRecognitionRef.current.start();
+      recognition.start();
       setFaqIsListening(true);
       setFaqMicError('');
       faqMicTimeoutRef.current = window.setTimeout(() => stopFaqListening(), 45000);
@@ -902,13 +930,38 @@ const Blog = ({ posts = [], isLoading = false, error = null, showBuscador = fals
     }
   }, [isMobileViewport]);
 
+  const handleFaqSearchSubmit = useCallback((query) => {
+    shouldScrollToFaqResponseRef.current = isMobileViewport;
+    faqSearch(query);
+  }, [faqSearch, isMobileViewport]);
+
   const handleFaqPromptSelect = useCallback((prompt) => {
     if (faqIsListening) stopFaqListening({ discard: true });
     setFaqInputMode('text');
     setFaqMicError('');
     setFaqQuery(prompt);
-    faqSearch(prompt);
-  }, [faqIsListening, setFaqQuery, faqSearch, stopFaqListening]);
+    handleFaqSearchSubmit(prompt);
+  }, [faqIsListening, setFaqQuery, handleFaqSearchSubmit, stopFaqListening]);
+
+  useEffect(() => {
+    const responseIsVisible = ['searching', 'streaming', 'done', 'error'].includes(faqStatus);
+    if (!isMobileViewport || !responseIsVisible || !shouldScrollToFaqResponseRef.current) return;
+
+    shouldScrollToFaqResponseRef.current = false;
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        const responseElement = faqResponseRef.current;
+        if (!responseElement) return;
+        const headerHeight = document.querySelector('header')?.getBoundingClientRect().height ?? 88;
+        const targetTop = responseElement.getBoundingClientRect().top + window.scrollY - headerHeight - 16;
+        const prefersReducedMotion = window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches;
+        window.scrollTo({
+          top: Math.max(0, targetTop),
+          behavior: prefersReducedMotion ? 'auto' : 'smooth',
+        });
+      });
+    });
+  }, [faqStatus, isMobileViewport]);
 
   useEffect(() => {
     if (prevFaqStatus.current !== 'done' && faqStatus === 'done') {
@@ -1109,7 +1162,7 @@ const Blog = ({ posts = [], isLoading = false, error = null, showBuscador = fals
                       </div>
 
                       <div className="grid gap-5 lg:grid-cols-[minmax(300px,0.88fr)_minmax(0,1.12fr)]">
-                        <section className="camerino-apuntador-panel rounded-2xl border p-5 backdrop-blur-sm">
+                        <section className="camerino-apuntador-panel order-1 rounded-2xl border p-5 backdrop-blur-sm lg:order-1">
                           <p className="mb-4 text-[10px] uppercase tracking-[0.3em] text-violet-200/65">
                             El apuntador
                           </p>
@@ -1145,7 +1198,9 @@ const Blog = ({ posts = [], isLoading = false, error = null, showBuscador = fals
                                 value={faqQuery}
                                 onChange={(event) => setFaqQuery(event.target.value)}
                                 onKeyDown={(event) => {
-                                  if ((event.metaKey || event.ctrlKey) && event.key === 'Enter' && faqQuery.trim().length >= 2) faqSearch();
+                                  if ((event.metaKey || event.ctrlKey) && event.key === 'Enter' && faqQuery.trim().length >= 2) {
+                                    handleFaqSearchSubmit();
+                                  }
                                 }}
                                 placeholder="¿Qué quieres preguntarle al apuntador?"
                                 disabled={faqIsLoading}
@@ -1161,7 +1216,7 @@ const Blog = ({ posts = [], isLoading = false, error = null, showBuscador = fals
                                 </button>
                                 <Button
                                   type="button"
-                                  onClick={() => faqSearch()}
+                                  onClick={() => handleFaqSearchSubmit()}
                                   disabled={faqIsLoading || faqQuery.trim().length < 2}
                                   className="ge-chip-action ge-chip-action--primary ge-chip-action--compact"
                                 >
@@ -1177,7 +1232,7 @@ const Blog = ({ posts = [], isLoading = false, error = null, showBuscador = fals
                           )}
                         </section>
 
-                        <section className="rounded-2xl border border-white/10 bg-black/15 p-5">
+                        <section className="order-3 rounded-2xl border border-white/10 bg-black/15 p-5 lg:order-2">
                           <div className="mb-4 flex items-center justify-between gap-3">
                             <div>
                               <p className="text-[10px] uppercase tracking-[0.3em] text-violet-200/65">Mesa de notas</p>
@@ -1206,19 +1261,25 @@ const Blog = ({ posts = [], isLoading = false, error = null, showBuscador = fals
                             ))}
                           </div>
                         </section>
-                      </div>
 
                       {(faqStatus === 'searching' || faqStatus === 'streaming' || faqStatus === 'done' || faqStatus === 'error') && (
-                        <section className="overflow-hidden rounded-2xl border border-violet-200/25 bg-black/35">
+                        <section
+                          ref={faqResponseRef}
+                          aria-live="polite"
+                          className="order-2 -mx-5 overflow-hidden border-y border-violet-200/20 bg-violet-950/10 lg:order-3 lg:col-span-2 lg:mx-0 lg:rounded-2xl lg:border lg:border-violet-200/25 lg:bg-black/35"
+                        >
                           {faqStatus === 'searching' && (
-                            <div className="flex items-center gap-3 px-5 py-6 text-sm text-violet-100/70 md:px-6">
-                              <span className="h-4 w-4 animate-spin rounded-full border-2 border-violet-200/20 border-t-violet-300" aria-hidden="true" />
-                              Abriendo archivos y contrastando fragmentos…
+                            <div className="px-4 py-6 md:px-6">
+                              <p className="mb-3 text-[10px] uppercase tracking-[0.3em] text-violet-200/65">Nota del apuntador</p>
+                              <div className="flex items-center gap-3 text-sm text-violet-100/70">
+                                <span className="h-4 w-4 animate-spin rounded-full border-2 border-violet-200/20 border-t-violet-300" aria-hidden="true" />
+                                Abriendo archivos y contrastando fragmentos…
+                              </div>
                             </div>
                           )}
 
                           {(faqStatus === 'streaming' || faqStatus === 'done') && faqAnswer && (
-                            <div className="space-y-5 px-5 py-6 md:px-6">
+                            <div className="space-y-5 px-4 py-6 md:px-6">
                               <div>
                                 <p className="mb-3 text-[10px] uppercase tracking-[0.3em] text-violet-200/65">Nota del apuntador</p>
                                 <div className="max-w-4xl text-sm leading-relaxed text-violet-100/85 md:text-[0.95rem]">
@@ -1276,11 +1337,11 @@ const Blog = ({ posts = [], isLoading = false, error = null, showBuscador = fals
                           )}
 
                           {faqStatus === 'error' && (
-                            <p className="px-5 py-6 text-sm text-red-300/85 md:px-6">{faqErrorMessage || 'No se pudo completar la consulta.'}</p>
+                            <p className="px-4 py-6 text-sm text-red-300/85 md:px-6">{faqErrorMessage || 'No se pudo completar la consulta.'}</p>
                           )}
 
                           {faqStatus === 'done' && searchCompletions >= 1 && (
-                            <div className="flex justify-end border-t border-white/10 px-5 py-4 md:px-6">
+                            <div className="flex justify-end border-t border-white/10 px-4 py-4 md:px-6">
                               <button
                                 type="button"
                                 onClick={() => document.querySelector('#contact')?.scrollIntoView({ behavior: 'smooth', block: 'start' })}
@@ -1292,6 +1353,7 @@ const Blog = ({ posts = [], isLoading = false, error = null, showBuscador = fals
                           )}
                         </section>
                       )}
+                      </div>
                     </div>
                   </motion.div>
                 </motion.div>

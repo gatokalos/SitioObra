@@ -510,19 +510,25 @@ const PortalLiteratura = () => {
         onClose={(sessionContext) => {
           setShowLiteraturaApp(false);
           // Marca la experiencia como vivida (dispara la conversación del
-          // Reseñador en ResonanceModal) y le pasa fragment_id/plano/initiator
-          // si el usuario llegó a "Iniciar debate" dentro del artefacto.
-          try {
-            const key = 'gatoencerrado:resonance:literatura';
-            const existing = JSON.parse(localStorage.getItem(key) || '{}');
-            localStorage.setItem(key, JSON.stringify({
-              ...existing,
-              experience_ts: existing.experience_ts ?? Date.now(),
-              ...(sessionContext?.fragment_id ? { l2_fragment_id: sessionContext.fragment_id } : {}),
-              ...(sessionContext?.plano ? { l2_plano: sessionContext.plano } : {}),
-              ...(sessionContext?.initiator ? { l2_initiator: sessionContext.initiator } : {}),
-            }));
-          } catch { /* ignore */ }
+          // Reseñador en ResonanceModal) solo si el usuario llegó a "Iniciar
+          // debate" dentro del artefacto — es lo único que produce fragment_id.
+          // Cerrar el overlay sin eso (incluida una carga fallida del iframe)
+          // no cuenta como experiencia: si no, el Reseñador arranca el Turno 1
+          // sin párrafo ni plano y termina citando la intuición de L1 como si
+          // fuera parte de una lectura que nunca ocurrió.
+          if (sessionContext?.fragment_id) {
+            try {
+              const key = 'gatoencerrado:resonance:literatura';
+              const existing = JSON.parse(localStorage.getItem(key) || '{}');
+              localStorage.setItem(key, JSON.stringify({
+                ...existing,
+                experience_ts: existing.experience_ts ?? Date.now(),
+                l2_fragment_id: sessionContext.fragment_id,
+                ...(sessionContext.plano ? { l2_plano: sessionContext.plano } : {}),
+                ...(sessionContext.initiator ? { l2_initiator: sessionContext.initiator } : {}),
+              }));
+            } catch { /* ignore */ }
+          }
           refreshL1();
           setIsResonanceOpen(true);
         }}
