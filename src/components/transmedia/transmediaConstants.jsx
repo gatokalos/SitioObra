@@ -588,12 +588,14 @@ export const showcaseDefinitions = {
       'Los estados emocionales de Silvestre no son etiquetas. Son lugares donde la escena ocurre. Di una frase —tuya o de la lista— y escucha cómo la obra responde desde adentro. Luego cambia de emoción y detona la misma frase otra vez. La escena nunca responde igual.',
     introNode: (
       <>
-        <p className="text-base leading-relaxed text-neutral-300">
-          Este miniverso existe para habitar los estados emocionales de <strong>Silvestre</strong> desde dentro de la obra.{' '}
-          Aquí puedes escuchar fragmentos dramáticos y recorrer distintos sentimientos mientras la escena se despliega en tu mente.
+          <p className="text-lg leading-relaxed font-medium text-white mt-4">
+          Este espacio solo existe mientras alguien más está mirando.<br/>
         </p>
-        <p className="text-lg leading-relaxed font-medium text-white mt-4">
-          A veces no necesitamos una conversación. A veces sólo necesitamos <strong>escuchar el drama por un rato</strong>.
+        <p className="text-base leading-relaxed text-neutral-300">
+          A diferencia del objeto, que se puede <strong>agarrar</strong> y sigue cargando su propio peso, la emoción puesta en escena necesita ser vista para volverse real.
+        </p>
+        <p className="text-base leading-relaxed text-neutral-300">
+          Este miniverso no solo expone lo efímero de una obra: <em>la pone delante de otros y espera a ver qué le responden.</em>
         </p>
         <div className="flex flex-wrap gap-2 mt-2">
           <span className="rounded-full border border-purple-200/35 bg-purple-400/10 px-3 py-1 text-[11px] uppercase tracking-[0.22em] text-purple-100">Teatro íntimo</span>
@@ -602,7 +604,7 @@ export const showcaseDefinitions = {
         </div>
       </>
     ),
-    cartaTitle: '#LaPuertaInvisible',
+    cartaTitle: '#TEATRO',
     notaAutoral: 'Entré sin saber.\nAlgo dijo mi nombre.\nY ya no hubo salida.',
 
     ctaLabel: 'Habla conmigo',
@@ -632,7 +634,7 @@ iaProfile: {
     ],
   },
   copycats: {
-    label: 'El lente',
+    label: 'La proyección',
     shareLabel: 'Cine',
     type: 'cinema',
     intro: 'El cine dentro de #GatoEncerrado es otro modo de entrar al encierro.',
@@ -759,18 +761,17 @@ iaProfile: {
     intro:
       (
 <>
-  <p className="text-base leading-relaxed text-slate-300">
-    Un objeto cotidiano convertido en <strong>símbolo de comunión</strong>.<br/>
-    Cada pieza está vinculada a un sentimiento; cada sentimiento, a una historia personal.
+  <p className="text-lg leading-relaxed font-medium text-white mt-4">
+    Aquí es donde las emociones contemporáneas se pueden contener, heredar, dejar sobre una mesa.<br/>
+
   </p>
 
   <p className="text-base leading-relaxed text-slate-300 mt-3">
-    En el universo #GatoEncerrado, las artesanías no son simple mercancía ni souvenir. 
-    Son pequeñas piezas narrativas que acompañan conversaciones, silencios y momentos de reflexión compartida.
+    A diferencia de la escritura, que necesita decirse o leerse para seguir abriendo sentido, el objeto no necesita ser nombrado para sostener lo que carga — basta con tenerlo cerca.
   </p>
 
-          <p className="text-lg leading-relaxed font-medium text-white mt-4">
-    A veces las historias aparecen mientras sostenemos algo entre las manos.
+  <p className="text-base leading-relaxed text-slate-300 mt-3">
+     Las piezas de este miniverso no explican el sentimiento que las originó: <strong>lo presentan sin tener que contarlo</strong>.
   </p>
   <div className="flex flex-wrap gap-2 mt-2">
     <span className="rounded-full border border-amber-200/35 bg-amber-400/10 px-3 py-1 text-[11px] uppercase tracking-[0.22em] text-amber-100">Objeto narrativo</span>
@@ -839,7 +840,7 @@ iaProfile: {
         author: 'Sofía B.',
       },
     ],
-    cartaTitle: '#ElSentidoEnLasManos',
+    cartaTitle: '#Artesanías',
     notaAutoral: 'Tomé un objeto.\nSu forma me sostuvo.\nSu sentido calmó mis manos.',
     iaProfile: {
       type: 'IA ligera para pistas contextuales + WebAR.',
@@ -857,9 +858,9 @@ iaProfile: {
       'En este miniverso literario se entiende la escritura como una forma de expansión. No es un complemento de la obra escénica, sino un espacio propio donde fragmentos, voces, poemas y apuntes dialogan entre sí y amplían el universo #GatoEncerrado.',
     introNode: (
       <>
-        <p className="text-base leading-relaxed text-slate-300/90">En este miniverso literario se entiende la escritura como <strong>una forma de expansión</strong>.</p>
-        <p className="text-base leading-relaxed text-slate-200/80 mt-3">No es un complemento de la obra escénica, sino un espacio propio donde fragmentos, voces, poemas y apuntes <em>dialogan entre sí</em> y amplían el universo #GatoEncerrado.</p>
-        <p className="text-lg leading-relaxed font-medium text-white mt-4">Hay palabras que no explican: solo acompañan.</p>
+        <p className="text-lg leading-relaxed font-medium text-white mt-4">Aquí te encuentras en un lugar que no termina de decirse.</p>
+         <p className="text-base leading-relaxed text-slate-200/80">A diferencia de <em>la apariencia</em>, que ocurre toda al mismo tiempo, la palabra necesita del tiempo para existir — y sigue abriendo sentido incluso después de leerse.</p>
+        <p className="text-base leading-relaxed text-slate-200/80 mt-3">Este miniverso no busca cerrar lo que se cuenta: <strong>lo deja seguir hablando</strong> solo para acompañar.</p>
         <div className="flex flex-wrap gap-2 mt-2">
           <span className="rounded-full border border-violet-200/35 bg-violet-400/10 px-3 py-1 text-[11px] uppercase tracking-[0.22em] text-violet-100">Autoficción expandida</span>
           <span className="rounded-full border border-violet-200/35 bg-violet-400/10 px-3 py-1 text-[11px] uppercase tracking-[0.22em] text-violet-100">Fragmentos y voces</span>
@@ -867,7 +868,7 @@ iaProfile: {
         </div>
       </>
     ),
-    cartaTitle: '#LaPreguntaInsiste',
+    cartaTitle: '#Literatura',
     notaAutoral:
       'Escribí para entender\ny la página\nme abrió otra pregunta.',
     collaborators: [
@@ -1043,13 +1044,19 @@ Este espacio permite recorrer esas composiciones, explorar sus capas y descubrir
     ],
   },
   miniversoGrafico: {
-    label: 'La apariencia',
+    label: 'La imagen',
     type: 'graphic-lab',
     introNode: (
       <>
-        <p className="text-base leading-relaxed text-slate-300/90">Este espacio explora el universo #GatoEncerrado desde <strong>la apariencia</strong>.</p>
-        <p className="text-base leading-relaxed text-slate-200/80 mt-3">Aquí las escenas se quedan en otro momento: lo que en la obra aparece como pensamiento o diálogo, en el cómic puede convertirse en <em>ensayo, en silencio, en otra voz</em>.</p>
-        <p className="text-base leading-relaxed text-slate-100/90 mt-3">No solo el de Silvestre, sino el de cualquiera que se haya sentido como él.<br/>Dibujar permite mirar lo que no siempre se dice en escena.</p>
+    <p className="mt-4 text-lg font-medium leading-relaxed text-white">
+      Las emociones contemporáneas también se juzgan por <em>su apariencia</em>.
+    </p>
+    <p className="text-base leading-relaxed text-slate-200/80 mt-3">
+      Detrás de la proyección hay alguien que elige qué mostrar. En cambio, la imagen aparece de golpe, y con eso basta para que otros decidan qué ver y qué no.
+    </p>
+    <p className="mt-3 text-base leading-relaxed text-slate-200/80">
+      Este miniverso se nos presenta así: como una superficie que vuelve a aparecer con los ojos cerrados.
+    </p>
         <div className="flex flex-wrap gap-2 mt-2">
           <span className="rounded-full border border-fuchsia-200/35 bg-fuchsia-400/10 px-3 py-1 text-[11px] uppercase tracking-[0.22em] text-fuchsia-100">Cómic</span>
           <span className="rounded-full border border-fuchsia-200/35 bg-fuchsia-400/10 px-3 py-1 text-[11px] uppercase tracking-[0.22em] text-fuchsia-100">Imagen como silencio</span>
@@ -1057,7 +1064,7 @@ Este espacio permite recorrer esas composiciones, explorar sus capas y descubrir
         </div>
       </>
     ),
-    cartaTitle: '#MirarmeLoQueSoy',
+    cartaTitle: '#Imágenes',
     notaAutoral:
       'Me quedé dibujando,\ncomo si el papel supiera quién soy\nmejor que yo.',
     collaborators: [
@@ -1351,7 +1358,7 @@ Este espacio permite recorrer esas composiciones, explorar sus capas y descubrir
     },
   },
   oraculo: {
-    label: 'El reflejo',
+    label: 'La pregunta',
     type: 'oracle',
     intro: (
       <>
@@ -1398,7 +1405,7 @@ Este espacio permite recorrer esas composiciones, explorar sus capas y descubrir
       'Tu pensamiento también construye este universo.',
     tagline: 'Interacción que deja huella. Reflexión que te recompensa.',
     cartaTitle: '#CambiarSinCambiar',
-    notaAutoral: 'Miré el reflejo.\nNo dijo nada.\nÉramos dos... y no.',
+    notaAutoral: 'Miré mi reflejo.\nNo preguntó nada.\nÉramos dos... y no.',
     iaProfile: {
       type: 'GPT-4o + embeddings simbólicos curados por la comunidad.',
       interaction: '1–3 reflexiones cortas por sesión; foro breve guiado.',
@@ -1416,6 +1423,7 @@ export const formats = [
     title: 'El drama',
     icon: Drama,
     iconClass: 'text-purple-300',
+    vitrinaCopy: 'Empieza como una pregunta,\nalgo que nadie contesta solo.\nPero no ocurre sin testigo.',
 
     iaTokensNote: 'Energía confiada: 300 GAT',
     image: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Merch/posters/poster_obra.png',
@@ -1425,6 +1433,7 @@ export const formats = [
     title: 'El objeto',
     icon: Coffee,
     iconClass: 'text-amber-300',
+    vitrinaCopy: 'Sostiene lo mismo que el drama\nuna emoción que alguien dejó ahí.\nPero no se derrama.',
 
     iaTokensNote: 'Mantener ritual: ~90 GAT.',
     image: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Merch/posters/poster_artesanias.png',
@@ -1434,24 +1443,27 @@ export const formats = [
     title: 'La escritura',
     icon: BookOpen,
     iconClass: 'text-emerald-300',
+    vitrinaCopy: 'Casi un objeto,\nse puede volver a abrir.\nPero deja correr el viento.',
 
     iaTokensNote: 'Energía viva: ~150 GAT.',
     image: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Merch/posters/poster_literatura.png',
   },
   {
     id: 'miniversoGrafico',
-    title: 'La apariencia',
+    title: 'La imagen',
     icon: Palette,
     iconClass: 'text-fuchsia-300',
+    vitrinaCopy: 'Como la escritura,\nlo que refleja no está en ella.\nPero adentro no hay nadie.',
 
     iaTokensNote: 'Requiere ~110 GAT.',
     image: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Merch/posters/poster_graficos.png',
   },
   {
     id: 'copycats',
-    title: 'El lente',
+    title: 'La proyección',
     icon: Film,
     iconClass: 'text-rose-300',
+    vitrinaCopy: 'Como la imagen,\nalguien decidió dejarla así.\nPero se sabe soñada.',
 
     iaTokensNote: 'Requiere ~250 confiados.',
     image: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Merch/posters/cine.png',
@@ -1461,6 +1473,7 @@ export const formats = [
     title: 'La vibración',
     icon: Music,
     iconClass: 'text-cyan-300',
+    vitrinaCopy: 'Dura lo que la proyección,\nel tiempo justo y se va.\nPero el eco se queda.',
 
     iaTokensNote: 'Requiere ~130 GAT',
     image: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Merch/posters/poster_sonoridades.png',
@@ -1470,24 +1483,27 @@ export const formats = [
     title: 'El cuerpo',
     icon: MapIcon,
     iconClass: 'text-sky-300',
+    vitrinaCopy: 'Como la vibración,\npasa y no deja rastro que reclamar.\nPero te cambia de estado.',
 
     iaTokensNote: '~280 por mapa.',
     image: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Merch/posters/poster_movimiento.png',
   },
   {
     id: 'apps',
-    title: 'La ventura',
+    title: 'El riesgo',
     icon: Dice5,
     iconClass: 'text-lime-300',
+    vitrinaCopy: 'Pide lo mismo que el cuerpo:\nque hagas algo sin pensarlo mucho.\nPero aquí  alguien más decide contigo.',
 
     iaTokensNote: 'IA marca el ritmo felino.',
     image: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Merch/posters/poster_juegos.png',
   },
   {
     id: 'oraculo',
-    title: 'El reflejo',
+    title: 'La pregunta',
     icon: Brain,
     iconClass: 'text-indigo-300',
+    vitrinaCopy: 'Como el riesgo,\ndevuelve algo que no esperabas.\nPero la jaula estaba abierta.',
 
     iaTokensNote: 'Aquí se minan GATokes',
     image: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Merch/posters/poster_oraculo.png',

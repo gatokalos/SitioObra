@@ -31,10 +31,21 @@ import useScrambleText from '@/hooks/useScrambleText';
 import { resolvePortalRoute } from '@/lib/miniversePortalRegistry';
 
 
-const GRAFICOS_INTRO =
-  'Este espacio explora el universo #GatoEncerrado desde la apariencia. Aquí las escenas se quedan en otro momento: lo que en la obra aparece como pensamiento o diálogo, en el cómic puede convertirse en ensayo, en silencio, en otra voz. No solo el de Silvestre, sino el de cualquiera que se haya sentido como él. Dibujar permite mirar lo que no siempre se dice en escena.';
+const GRAFICOS_INTRO = (
+  <>
+    <p className="mt-4 text-lg font-medium leading-relaxed text-white">
+      Las emociones contemporáneas también se juzgan por <em>su apariencia</em>.
+    </p>
+    <p className="text-base leading-relaxed text-slate-200/80 mt-3">
+      Detrás de la proyección hay alguien que elige qué mostrar. En cambio, la imagen aparece de golpe, y con eso basta para que otros decidan qué ver y qué no.
+    </p>
+    <p className="mt-3 text-base leading-relaxed text-slate-200/80">
+      Este miniverso se nos presenta así: como una superficie que vuelve a aparecer con los ojos cerrados.
+    </p>
+  </>
+);
 const GRAFICOS_NOTA_AUTORAL = {
-  title: '#MirarmeLoQueSoy',
+  title: '#GRÁFICOS',
   verse: 'Me quedé dibujando,\ncomo si el papel supiera quién soy\nmejor que yo.',
 };
 const GRAFICOS_TILE = {
@@ -378,9 +389,7 @@ const PortalGraficos = () => {
                     <h3 className="font-display text-3xl leading-tight text-white md:text-4xl">{titleDisplay}</h3>
                   </div>
                 </div>
-                <div className="space-y-4 text-lg text-slate-200/85 leading-relaxed font-light">
-                  <p>{GRAFICOS_INTRO}</p>
-                </div>
+                <div>{GRAFICOS_INTRO}</div>
                 <div className="flex flex-wrap gap-2">
                   <span className="rounded-full border border-fuchsia-200/35 bg-fuchsia-400/10 px-3 py-1 text-[11px] uppercase tracking-[0.22em] text-fuchsia-100">Cómic</span>
                   <span className="rounded-full border border-fuchsia-200/35 bg-fuchsia-400/10 px-3 py-1 text-[11px] uppercase tracking-[0.22em] text-fuchsia-100">Imagen como silencio</span>

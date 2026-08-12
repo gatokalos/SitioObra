@@ -183,16 +183,15 @@ const collectiveNodeLayout = [
 ];
 const SCENE_PORTAL_INTRO = (
   <>
-    <p className="text-base leading-relaxed text-neutral-300">
-      Este miniverso existe para habitar los estados emocionales de <strong>Silvestre</strong> desde dentro de la obra.<br/>
-      
-    </p>
-    <p className="text-base leading-relaxed text-neutral-300 mt-3">
-      Aquí puedes escuchar fragmentos dramáticos y recorrer distintos sentimientos mientras la escena se despliega en tu mente.
-    </p>
-    <p className="text-base leading-relaxed text-neutral-300 mt-3">
-      A veces no necesitamos una conversación. A veces sólo necesitamos <strong>escuchar el drama por un rato</strong>.
-    </p>
+          <p className="text-lg leading-relaxed font-medium text-white mt-4">
+          Este espacio solo existe mientras alguien más está mirando.<br/>
+        </p>
+        <p className="text-base leading-relaxed text-neutral-300">
+           A diferencia del objeto, que se puede <strong>agarrar</strong> y sigue cargando su propio peso, la emoción puesta en escena necesita ser vista para volverse algo real.
+        </p>
+        <p className="text-base leading-relaxed text-neutral-300">
+          Este miniverso no solo expone lo efímero de una obra: <em>la pone delante de otros y espera a ver qué le responden.</em>
+        </p>
   </>
 );
 const SCENE_PORTAL_IA_PROFILE = {
@@ -203,7 +202,7 @@ const SCENE_PORTAL_IA_PROFILE = {
   footnote: 'No todas las voces quieren durar. Gracias por dejarlas pasar.',
 };
 const SCENE_PORTAL_NOTA_AUTORAL = {
-  title: '#LaPuertaInvisible',
+  title: '#Teatro',
   verse: 'Entré sin saber.\nAlgo dijo mi nombre.\nY ya no hubo salida.',
 };
 const OBRA_TRAILER_URL = 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/cedes/gatoencerrado-trailer-web.mp4';
@@ -1182,12 +1181,14 @@ const PortalVoz = () => {
                   >
                     Habita los sentimeintos de Silvestre
                   </h2>
-                   <p className="text-base leading-relaxed text-neutral-300">
-          Los estados emocionales de <strong>Silvestre</strong> no son etiquetas. <br /><br />
-          Son lugares donde la escena ocurre. Deja una frase que traigas encerrada en el pecho —o abre una de las preguntas del laboratorio— y escucha cómo la obra responde desde adentro.<br /><br />
+          <p className="text-lg leading-relaxed font-medium text-white mt-4">
+          Este espacio solo existe mientras alguien más está mirando.<br/>
         </p>
-        <p className="text-lg leading-relaxed font-medium text-white mt-4">
-          La escena nunca responde igual.
+        <p className="text-base leading-relaxed text-neutral-300">
+           A diferencia del objeto, que se puede agarrar y sigue cargando su propio peso, la emoción puesta en escena necesita ser vista para volverse real.
+        </p>
+        <p className="text-base leading-relaxed text-neutral-300">
+          Este miniverso no solo expone lo efímero de una obra: <em>la pone delante de otros y espera a ver qué le responden.</em>
         </p>
                 </div>
 

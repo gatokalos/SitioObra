@@ -40,24 +40,19 @@ const MARIANA_GALLERY = [
 
 const ARTESANIAS_INTRO =       (
 <>
-  <p className="text-base leading-relaxed text-slate-300">
-     Cada pieza está vinculada a un sentimiento; cada sentimiento, a una historia personal.
-  </p>
-
   <p className="text-base leading-relaxed text-slate-300 mt-3">
-    En el universo #GatoEncerrado, las artesanías no son simple mercancía ni souvenir. 
-    Son pequeñas piezas narrativas que acompañan conversaciones, silencios y momentos de reflexión compartida.
+    A diferencia de la escritura, que necesita decirse o leerse para seguir abriendo sentido, el objeto no necesita ser nombrado para sostener lo que carga — basta con tenerlo cerca.
   </p>
 
-          <p className="text-lg leading-relaxed font-medium text-white mt-4">
-    A veces las historias aparecen mientras sostenemos algo entre las manos.
+          <p className="text-base leading-relaxed text-slate-300 mt-3">
+     Las piezas de este miniverso no explican el sentimiento que las originó: <strong>lo presentan sin tener que contarlo</strong>.
   </p>
 </>
 );
 const ARTESANIAS_SUBTITLE =       (
 <>
-  <p className="text-base leading-relaxed text-slate-300">
-    Un objeto cotidiano convertido en <strong>símbolo de comunión</strong>.<br/>
+  <p className="text-lg leading-relaxed font-medium text-white mt-4">
+    Aquí es donde las emociones contemporáneas se pueden contener, heredar, dejar sobre una mesa.<br/>
   </p>
 </>
 );
@@ -108,7 +103,7 @@ const ARTESANIAS_COLLABORATORS = [
   },
 ];
 const ARTESANIAS_NOTA_AUTORAL = {
-  title: '#ElSentidoEnLasManos',
+  title: '#Artesanías',
   verse: 'Tomé un objeto.\nSu forma me sostuvo.\nSu sentido calmó mis manos.',
 };
 const ARTESANIAS_TILE = {

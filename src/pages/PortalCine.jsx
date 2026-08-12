@@ -116,7 +116,7 @@ const PortalCine = () => {
   const { user } = useAuth();
   usePortalTracking('cine');
   const { question: vitranaQuestion } = useVitranaQuestion('cine');
-  const titleDisplay = useScrambleText('El lente');
+  const titleDisplay = useScrambleText('La proyección');
   const { isMobileViewport, canUseInlinePlayback, requestMobileVideoPresentation } = useMobileVideoPresentation();
   const isAuthenticated = Boolean(user);
   const [showLoginOverlay, setShowLoginOverlay] = useState(false);

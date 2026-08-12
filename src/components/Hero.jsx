@@ -220,7 +220,7 @@ const Hero = () => {
   // reveal queda pendiente aquí en vez de abrirse; se abre solo cuando el
   // HUB se cierra por un dismiss genérico (Escape), no cuando se cierra
   // porque el usuario ya eligió una acción concreta (razón 'scene-activate'
-  // — Retomar el lente, Ir al Backstage, etc., que van directo a su destino).
+  // — Retomar la proyección, Ir al Backstage, etc., que van directo a su destino).
   const pendingGatokensRevealAfterHubRef = useRef(false);
   const heroAudioMutedRef = useRef(false);
   const audioGestureUnlockRef = useRef(false);

@@ -30,7 +30,7 @@ import { resolvePortalRoute } from '@/lib/miniversePortalRegistry';
 
 const HashtagButton3D = lazy(() => import('@/components/HashtagButton3D'));
 
-const ORACULO_TITLE = 'El reflejo';
+const ORACULO_TITLE = 'La pregunta';
 const ORACULO_INTRO =
   (
   <>
@@ -55,7 +55,7 @@ const ORACULO_SEED_NOTES = [
 ];
 const ORACULO_NOTA_AUTORAL = {
   title: '#CambiarSinCambiar',
-  verse: 'Miré el reflejo.\nNo dijo nada.\nÉramos dos... y no.',
+  verse: 'Miré mi reflejo.\nNo preguntó nada.\nÉramos dos... y no.',
 };
 const ORACULO_TILE = {
   gradient: 'linear-gradient(135deg, rgba(38,18,56,0.95), rgba(86,33,115,0.85), rgba(168,68,139,0.65))',

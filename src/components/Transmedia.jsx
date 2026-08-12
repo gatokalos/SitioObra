@@ -5520,9 +5520,9 @@ const rendernotaAutoral = () => {
                           Recomendada para ti
                         </div>
                       ) : null}
-                      {showcaseDefinitions[format.id]?.notaAutoral ? (
-                        <p className="text-sm leading-relaxed text-slate-300/70 whitespace-pre-line font-light line-clamp-3">
-                          {showcaseDefinitions[format.id].notaAutoral}
+                      {format.vitrinaCopy ? (
+                        <p className="whitespace-pre-line text-sm font-light leading-relaxed text-slate-300/70">
+                          {format.vitrinaCopy}
                         </p>
                       ) : null}
                       {mobileVitranaRevealId === format.id ? (
@@ -5728,9 +5728,9 @@ const rendernotaAutoral = () => {
                           Recomendada para ti
                         </div>
                       ) : null}
-                      {showcaseDefinitions[format.id]?.notaAutoral ? (
-                        <p className="text-sm leading-relaxed text-slate-300/70 whitespace-pre-line font-light line-clamp-4">
-                          {showcaseDefinitions[format.id].notaAutoral}
+                      {format.vitrinaCopy ? (
+                        <p className="whitespace-pre-line text-sm font-light leading-relaxed text-slate-300/70">
+                          {format.vitrinaCopy}
                         </p>
                       ) : (
                         <p className="text-sm text-slate-300/85 leading-relaxed min-h-[1.5rem]">

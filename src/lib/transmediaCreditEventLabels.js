@@ -61,12 +61,12 @@ const SHOWCASE_ID_NARRATIVE_LABELS = {
   miniversos: 'el drama',
   miniversoNovela: 'la escritura',
   lataza: 'el objeto',
-  miniversoGrafico: 'la apariencia',
-  copycats: 'el lente',
+  miniversoGrafico: 'la imagen',
+  copycats: 'la proyección',
   miniversoSonoro: 'la vibración',
   miniversoMovimiento: 'el cuerpo',
-  apps: 'la ventura',
-  oraculo: 'el reflejo',
+  apps: 'el riesgo',
+  oraculo: 'la pregunta',
 };
 
 // event_key exactos con sufijos que no son un id limpio (no se pueden derivar

@@ -93,12 +93,12 @@ const TRANSMEDIA_SECONDARY_ITEMS = [
   { label: 'El drama', href: '#transmedia?focus=miniversos' },
   { label: 'El objeto', href: '#transmedia?focus=lataza' },
   { label: 'La escritura', href: '#transmedia?focus=miniversoNovela' },
-  { label: 'La apariencia', href: '#transmedia?focus=miniversoGrafico' },
-  { label: 'El lente', href: '#transmedia?focus=copycats' },
+  { label: 'La imagen', href: '#transmedia?focus=miniversoGrafico' },
+  { label: 'La proyección', href: '#transmedia?focus=copycats' },
   { label: 'La vibración', href: '#transmedia?focus=miniversoSonoro' },
   { label: 'El cuerpo', href: '#transmedia?focus=miniversoMovimiento' },
-  { label: 'La ventura', href: '#transmedia?focus=apps' },
-  { label: 'El reflejo', href: '#transmedia?focus=oraculo' },
+  { label: 'El riesgo', href: '#transmedia?focus=apps' },
+  { label: 'La pregunta', href: '#transmedia?focus=oraculo' },
 ];
 
 const Header = ({
@@ -177,7 +177,7 @@ const Header = ({
     // mientras el HUB lo tapa por completo (ver HashtagButton3D, gasta un
     // contexto WebGL real aunque esté oculto), y para saber si le toca
     // revelar GatokensRevealModal al cerrarse (ver gatHubCloseReasonRef: no
-    // le toca si el cierre fue por "Retomar el lente" — ahí la escena ya se
+    // le toca si el cierre fue por "Retomar la proyección" — ahí la escena ya se
     // abre directo, sin pasar por el reveal).
     window.dispatchEvent(
       new CustomEvent('gatoencerrado:gat-hub-open-changed', {
@@ -244,7 +244,7 @@ const Header = ({
   // Leído por el efecto de arriba en el mismo tick en que isGatLinktreeOpen
   // pasa a false, para que el evento gat-hub-open-changed lleve la razón del
   // cierre — 'dismiss' (X, Escape, click afuera) vs 'scene-activate'
-  // (Retomar el lente / Primera fila / Backstage).
+  // (Retomar la proyección / Primera fila / Backstage).
   const gatHubCloseReasonRef = useRef('dismiss');
   // GatoChip/Escape cierran el contenedor. Entrar a la escena es una acción
   // narrativa distinta y pertenece exclusivamente a "Primera fila".
