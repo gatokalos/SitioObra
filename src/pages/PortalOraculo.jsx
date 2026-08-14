@@ -79,7 +79,7 @@ const ShowcaseReactionInline = ({ status, onReact }) => (
   <PulseReactionCard
     status={status}
     onReact={onReact}
-    description="Estamos creando símbolos para explorar emociones que a veces no sabemos nombrar."
+    description="Alguien está contando cuántos llegaron hasta aquí. Deja tu pulso."
     buttonLabel="¡Déjanos un pulso!"
   />
 );
@@ -327,7 +327,7 @@ const PortalOraculo = () => {
                 <div className="flex min-w-0 items-center gap-4">
                   <MiniverseIconBadge formatId="oraculo" />
                   <div className="min-w-0 space-y-3">
-                    <p className="text-xs uppercase tracking-[0.4em] text-violet-300">#Miniversos</p>
+                    <p className="text-xs uppercase tracking-[0.4em] text-violet-300">Adivinación</p>
                     <h3 className="font-display text-3xl leading-tight text-white md:text-4xl">{titleDisplay}</h3>
                   </div>
                 </div>
@@ -382,11 +382,25 @@ const PortalOraculo = () => {
                 narrativeCTALabel="✦ Mintear ahora"
               />
             )}
-            <div className="lg:hidden px-6 sm:px-8 pb-6 sm:pb-8 space-y-6">
-              <div className="flex flex-col gap-3">
-                <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Mini-verso autoral</p>
-                <MiniVersoCard title={ORACULO_NOTA_AUTORAL.title} verse={ORACULO_NOTA_AUTORAL.verse} palette={ORACULO_TILE} effect="flip" gatEventKey="flip:nota-autoral:oraculo" />
+            <div className={`lg:hidden px-6 sm:px-8 pb-6 sm:pb-8 space-y-6 transition-opacity duration-300${isResonanceOpen ? ' opacity-30 pointer-events-none' : ''}`}>
+              <div className="mb-1">
+                <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Resonancia Colectiva</p>
+                <h4 className="font-display text-xl question-heading-voice">Tras cada pregunta</h4>
               </div>
+              <VitranaQuestionReveal
+                question={l1Done ? (buildL1Acknowledgment('oraculo', l2Answer) ?? LEVEL2_QUESTIONS['oraculo']?.question ?? vitranaQuestion) : vitranaQuestion}
+                buttonLabel={l1Done ? 'Tu progreso →' : undefined}
+                autoReveal={l1Done}
+                portal="oraculo"
+                l2Done={l2Done}
+                l3Done={Boolean(l3Rec?.step3)}
+                l3Step3={l3Rec?.step3 ?? null}
+                l3FormaLabel={l3Rec?.forma ?? null}
+                onL3CTA={() => { const r = resolvePortalRoute({ formatId: l3Rec?.recommended_format_id }); if (r) navigate(r); }}
+                onAnswer={handleAnswerResonance}
+                label=""
+              />
+              <ShowcaseReactionInline status={reactionStatus} onReact={handleSendPulse} />
             </div>
           </div>
 
@@ -418,25 +432,11 @@ const PortalOraculo = () => {
               compact
             />
           </div>
-          <div className={`lg:hidden rounded-3xl border border-white/10 bg-black/30 p-5 space-y-4 transition-opacity duration-300${isResonanceOpen ? ' opacity-30 pointer-events-none' : ''}`}>
-            <div className="mb-1">
-              <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Resonancia Colectiva</p>
-              <h4 className="font-display text-xl question-heading-voice">Tras cada pregunta</h4>
+          <div className="lg:hidden rounded-3xl border border-white/10 bg-black/30 p-5 space-y-4">
+            <div className="flex flex-col gap-3">
+              <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Mini-verso autoral</p>
+              <MiniVersoCard title={ORACULO_NOTA_AUTORAL.title} verse={ORACULO_NOTA_AUTORAL.verse} palette={ORACULO_TILE} effect="flip" gatEventKey="flip:nota-autoral:oraculo" />
             </div>
-            <VitranaQuestionReveal
-              question={l1Done ? (buildL1Acknowledgment('oraculo', l2Answer) ?? LEVEL2_QUESTIONS['oraculo']?.question ?? vitranaQuestion) : vitranaQuestion}
-              buttonLabel={l1Done ? 'Tu progreso →' : undefined}
-              autoReveal={l1Done}
-              portal="oraculo"
-              l2Done={l2Done}
-              l3Done={Boolean(l3Rec?.step3)}
-              l3Step3={l3Rec?.step3 ?? null}
-              l3FormaLabel={l3Rec?.forma ?? null}
-              onL3CTA={() => { const r = resolvePortalRoute({ formatId: l3Rec?.recommended_format_id }); if (r) navigate(r); }}
-              onAnswer={handleAnswerResonance}
-              label=""
-            />
-            <ShowcaseReactionInline status={reactionStatus} onReact={handleSendPulse} />
           </div>
 
           <div className="hidden lg:block lg:order-3 rounded-3xl border border-white/10 bg-black/30 p-6 space-y-6">

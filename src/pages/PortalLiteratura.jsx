@@ -1,9 +1,7 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useLocation , useNavigate } from 'react-router-dom';
-import { QrCode } from 'lucide-react';
 import MiniVersoCard from '@/components/transmedia/MiniVersoCard';
 import MiniverseIconBadge from '@/components/transmedia/MiniverseIconBadge';
-import { toast } from '@/components/ui/use-toast';
 import { useAuth } from '@/contexts/SupabaseAuthContext';
 import LoginOverlay from '@/components/ContributionModal/LoginOverlay';
 import LoginNudgeOverlay from '@/components/LoginNudgeOverlay';
@@ -20,7 +18,6 @@ import VideoNarrativeAutoplay from '@/components/VideoNarrativeAutoplay';
 import PulseReactionCard from '@/components/portal/PulseReactionCard';
 import LiteraturaAppOverlay from '@/components/novela/LiteraturaAppOverlay';
 import { recordShowcaseLike } from '@/services/showcaseLikeService';
-import { startDirectMerchCheckout } from '@/lib/merchCheckout';
 import { supabase } from '@/lib/supabaseClient';
 import { sanitizeExternalHttpUrl } from '@/lib/urlSafety';
 import { hasEnoughGAT } from '@/lib/gatAccess';
@@ -69,9 +66,6 @@ const LITERATURA_ENTRY = {
   title: 'Mi Gato Encerrado',
   description: 'Leer este libro es algo parecido a despertar dentro de un libro.\n\n Una experiencia de autoficción expandida donde la escritura continúa lo que el escenario no alcanza a decir.',
   image: '/assets/edicion-fisica.png',
-  snippetTitle: 'Tu ejemplar como portal',
-  snippetText:
-    'Escanea la contraportada para acceder al separador inteligente de #GatoEncerrado o ingresa desde aquí.',
 };
 const LITERATURA_BLOG_KEYS = [
   'miniversonovela',
@@ -87,7 +81,7 @@ const LITERATURA_BLOG_KEY_SET = new Set(LITERATURA_BLOG_KEYS.map((key) => key.tr
 const ShowcaseReactionInline = ({ status, onReact }) => (
   <PulseReactionCard
     title="¡Déjanos un pulso!"
-    description="Estamos creando relatos donde una emoción puede reconocerse en otra persona."
+    description="Alguien está contando cuántos llegaron hasta aquí. Deja tu pulso."
     status={status}
     onReact={onReact}
   />
@@ -128,7 +122,6 @@ const PortalLiteratura = () => {
       localStorage.setItem(key, JSON.stringify({ ...existing, video_seen: true }));
     } catch {}
   }, []);
-  const [isNovelaCheckoutLoading, setIsNovelaCheckoutLoading] = useState(false);
   const readingTooltipRef = useRef(null);
 
   const handleOpenLogin = useCallback(() => {
@@ -255,27 +248,6 @@ const PortalLiteratura = () => {
     };
   }, [isReadingTooltipOpen]);
 
-  const handleOpenNovelaCheckout = useCallback(async () => {
-    if (!requireAuth()) return;
-    if (isNovelaCheckoutLoading) return;
-
-    setIsNovelaCheckoutLoading(true);
-    try {
-      await startDirectMerchCheckout({
-        packageId: 'novela-400',
-        customerEmail: user?.email ?? '',
-        metadata: {
-          source: 'portal-literatura',
-          package: 'novela-400',
-        },
-      });
-    } catch (error) {
-      console.error('[PortalLiteratura] Checkout error:', error);
-      toast({ description: 'No pudimos abrir el checkout. Intenta nuevamente.' });
-    } finally {
-      setIsNovelaCheckoutLoading(false);
-    }
-  }, [isNovelaCheckoutLoading, requireAuth, user?.email]);
 
   const handleOpenCommunityComposer = useCallback(() => {
     if (!requireAuth()) return;
@@ -338,13 +310,13 @@ const PortalLiteratura = () => {
                 <div className="flex min-w-0 items-center gap-4">
                   <MiniverseIconBadge formatId="miniversoNovela" />
                   <div className="min-w-0 space-y-3">
-                    <p className="text-xs uppercase tracking-[0.4em] text-violet-300">#Miniversos</p>
+                    <p className="text-xs uppercase tracking-[0.4em] text-violet-300">Literatura</p>
                     <h3 className="font-display text-3xl leading-tight text-white md:text-4xl">{titleDisplay}</h3>
                   </div>
                 </div>
                 <div className="space-y-3 leading-relaxed font-light">
                   <p className="text-lg leading-relaxed font-medium text-white mt-4">Aquí te encuentras en un lugar que no termina de decirse.</p>
-                  <p className="text-base leading-relaxed text-slate-200/80">A diferencia de <em>la apariencia</em>, que ocurre toda al mismo tiempo, la palabra necesita del tiempo para existir — y sigue abriendo sentido incluso después de leerse.</p>
+                  <p className="text-base leading-relaxed text-slate-200/80">A diferencia de <em>la apariencia</em>, que ocurre toda al mismo tiempo, la escritura necesita más tiempo para existir detrás de cada palabra — y seguirá exigiendo sentido incluso después del punto final.</p>
                 </div>
                 <div className="flex flex-wrap gap-2">
                   <span className="rounded-full border border-violet-200/35 bg-violet-400/10 px-3 py-1 text-[11px] uppercase tracking-[0.22em] text-violet-100">Autoficción expandida</span>
@@ -376,12 +348,25 @@ const PortalLiteratura = () => {
                 </div>
               </div>
             </div>
-            <div className="lg:hidden px-6 sm:px-8 pb-6 sm:pb-8 space-y-6">
-              <div className="flex flex-col gap-3">
-                <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Mini-verso autoral</p>
-                <MiniVersoCard title={LITERATURA_NOTA_AUTORAL.title} verse={LITERATURA_NOTA_AUTORAL.verse} palette={LITERATURA_TILE} effect="flip" gatEventKey="flip:nota-autoral:literatura" />
+            <div className={`lg:hidden px-6 sm:px-8 pb-6 sm:pb-8 space-y-6 transition-opacity duration-300${isResonanceOpen ? ' opacity-30 pointer-events-none' : ''}`}>
+              <div className="mb-1">
+                <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Resonancia Colectiva</p>
+                <h4 className="font-display text-xl question-heading-voice">Tras cada pregunta</h4>
               </div>
-              <CollaboratorsPanel collaborators={LITERATURA_COLLABORATORS} accentClassName="text-violet-200/90" bare />
+              <VitranaQuestionReveal
+                question={l1Done ? (buildL1Acknowledgment('literatura', l2Answer) ?? LEVEL2_QUESTIONS['literatura']?.question ?? vitranaQuestion) : vitranaQuestion}
+                buttonLabel={l1Done ? 'Tu progreso →' : undefined}
+                autoReveal={l1Done}
+                portal="literatura"
+                l2Done={l2Done}
+                l3Done={Boolean(l3Rec?.step3)}
+                l3Step3={l3Rec?.step3 ?? null}
+                l3FormaLabel={l3Rec?.forma ?? null}
+                onL3CTA={() => { const r = resolvePortalRoute({ formatId: l3Rec?.recommended_format_id }); if (r) navigate(r); }}
+                onAnswer={handleAnswerResonance}
+                label=""
+              />
+              <ShowcaseReactionInline status={reactionStatus} onReact={handleSendPulse} />
             </div>
             <VideoNarrativeAutoplay
               open={showResonanceBridgeVideo}
@@ -422,23 +407,6 @@ const PortalLiteratura = () => {
                   <p className="mt-3 text-sm italic text-slate-200/85 leading-relaxed">Leer este libro es algo parecido a despertar dentro de un libro.</p>
                   <p className="text-right text-xs text-slate-400/50 mt-0.5 tracking-wide">— Carlos A Pérez H.</p>
                 </div>
-                <div className="rounded-2xl border border-white/10 bg-slate-900/60 p-4 space-y-2">
-                  <div className="flex items-center justify-between gap-2">
-                    <p className="text-xs uppercase tracking-[0.3em] text-purple-300">{LITERATURA_ENTRY.snippetTitle}</p>
-                    <QrCode size={16} className="shrink-0 text-purple-300/60" />
-                  </div>
-                  <p className="text-sm text-slate-200/90 leading-relaxed">{LITERATURA_ENTRY.snippetText}</p>
-                </div>
-                <div className="flex flex-col gap-3">
-                  <button
-                    type="button"
-                    onClick={handleOpenNovelaCheckout}
-                    disabled={isNovelaCheckoutLoading}
-                    className="inline-flex w-full items-center justify-center rounded-full border border-purple-400/40 text-purple-200 hover:bg-purple-500/10 px-6 py-2 font-semibold transition"
-                  >
-                    {isNovelaCheckoutLoading ? 'Abriendo checkout...' : 'Comprar edición física'}
-                  </button>
-                </div>
                 <div className="pt-4 lg:hidden">
                   <IAInsightCard
                     {...LITERATURA_IA_PROFILE}
@@ -446,25 +414,12 @@ const PortalLiteratura = () => {
                     compact
                   />
                 </div>
-                <div className={`pt-4 border-t border-white/10 lg:hidden space-y-4 transition-opacity duration-300${isResonanceOpen ? ' opacity-30 pointer-events-none' : ''}`}>
-                  <div className="mb-1">
-                    <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Resonancia Colectiva</p>
-                    <h4 className="font-display text-xl question-heading-voice">Tras cada pregunta</h4>
+                <div className="pt-4 border-t border-white/10 lg:hidden space-y-4">
+                  <div className="flex flex-col gap-3">
+                    <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Mini-verso autoral</p>
+                    <MiniVersoCard title={LITERATURA_NOTA_AUTORAL.title} verse={LITERATURA_NOTA_AUTORAL.verse} palette={LITERATURA_TILE} effect="flip" gatEventKey="flip:nota-autoral:literatura" />
                   </div>
-                  <VitranaQuestionReveal
-                    question={l1Done ? (buildL1Acknowledgment('literatura', l2Answer) ?? LEVEL2_QUESTIONS['literatura']?.question ?? vitranaQuestion) : vitranaQuestion}
-                    buttonLabel={l1Done ? 'Tu progreso →' : undefined}
-                    autoReveal={l1Done}
-                    portal="literatura"
-                    l2Done={l2Done}
-                    l3Done={Boolean(l3Rec?.step3)}
-                    l3Step3={l3Rec?.step3 ?? null}
-                    l3FormaLabel={l3Rec?.forma ?? null}
-                    onL3CTA={() => { const r = resolvePortalRoute({ formatId: l3Rec?.recommended_format_id }); if (r) navigate(r); }}
-                    onAnswer={handleAnswerResonance}
-                    label=""
-                  />
-                  <ShowcaseReactionInline status={reactionStatus} onReact={handleSendPulse} />
+                  <CollaboratorsPanel collaborators={LITERATURA_COLLABORATORS} accentClassName="text-violet-200/90" bare />
                 </div>
               </div>
             </div>

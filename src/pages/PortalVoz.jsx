@@ -1009,7 +1009,7 @@ const PortalVoz = () => {
                   <div className="flex min-w-0 items-center gap-4">
                     <MiniverseIconBadge formatId="miniversos" />
                     <div className="min-w-0 space-y-3">
-                      <p className="text-xs uppercase tracking-[0.4em] text-purple-300">#Miniversos</p>
+                      <p className="text-xs uppercase tracking-[0.4em] text-purple-300">Artes escénicas</p>
                       <h3 className="font-display text-3xl leading-tight text-white md:text-4xl">{titleDisplay}</h3>
                     </div>
                   </div>
@@ -1044,7 +1044,7 @@ const PortalVoz = () => {
                     label=""
                   />
                   <ShowcaseReactionInline
-                    description="Estamos creando espacios donde lo que sentimos también puede verse en otros cuerpos."
+                    description="Alguien está contando cuántos llegaron hasta aquí. Deja tu pulso."
                     buttonLabel="¡Déjanos un pulso!"
                     status={reactionStatus}
                     onReact={handleSendPulse}
@@ -1052,24 +1052,32 @@ const PortalVoz = () => {
                 </div>
               </div>
             </div>
-            <div className="lg:hidden px-6 sm:px-8 pb-6 sm:pb-8 space-y-6">
-              <div className="flex flex-col gap-3">
-                <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Mini-verso autoral</p>
-                <MiniVersoCard
-                  title={SCENE_PORTAL_NOTA_AUTORAL.title}
-                  verse={SCENE_PORTAL_NOTA_AUTORAL.verse}
-                  palette={{
-                    gradient: sceneTileGradient,
-                    border: sceneTileColors.border,
-                    text: sceneTileColors.text,
-                    accent: sceneTileColors.accent,
-                    background: sceneTileColors.background,
-                  }}
-                  effect="flip"
-                  gatEventKey="flip:nota-autoral:obra"
+            <div className={`lg:hidden px-6 sm:px-8 pb-6 sm:pb-8 space-y-6 transition-opacity duration-300${isResonanceOpen ? ' opacity-30 pointer-events-none' : ''}`}>
+              <div className="mb-1">
+                <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Resonancia Colectiva</p>
+                <h4 className="font-display text-xl question-heading-voice">Tras cada pregunta</h4>
+              </div>
+              <div className="space-y-4">
+                <VitranaQuestionReveal
+                  question={l1Done ? (buildL1Acknowledgment('obra', l2Answer) ?? LEVEL2_QUESTIONS['obra']?.question ?? vitranaQuestion) : vitranaQuestion}
+                  buttonLabel={l1Done ? 'Tu progreso →' : undefined}
+                  autoReveal={l1Done}
+                  portal="obra"
+                  l2Done={l2Done}
+                  l3Done={Boolean(l3Rec?.step3)}
+                  l3Step3={l3Rec?.step3 ?? null}
+                  l3FormaLabel={l3Rec?.forma ?? null}
+                  onL3CTA={() => { const r = resolvePortalRoute({ formatId: l3Rec?.recommended_format_id }); if (r) navigate(r); }}
+                  onAnswer={handleAnswerResonance}
+                  label=""
+                />
+                <ShowcaseReactionInline
+                  description="Alguien está contando cuántos llegaron hasta aquí. Deja tu pulso."
+                  buttonLabel="¡Déjanos un pulso!"
+                  status={reactionStatus}
+                  onReact={handleSendPulse}
                 />
               </div>
-              <CollaboratorsPanel collaborators={SCENE_PORTAL_COLLABORATORS} accentClassName="text-purple-300" bare />
             </div>
             <VideoNarrativeAutoplay
               open={showResonanceBridgeVideo}
@@ -1131,32 +1139,24 @@ const PortalVoz = () => {
               />
             </div>
             {/* Pleca + Sección Resonancia — fondo propio, el video no sangra aquí */}
-            <div className={`bg-slate-950/80 p-5 lg:hidden transition-opacity duration-300${isResonanceOpen ? ' opacity-30 pointer-events-none' : ''}`}>
-              <div className="mb-1">
-                <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Resonancia Colectiva</p>
-                <h4 className="font-display text-xl question-heading-voice">Tras cada pregunta</h4>
-              </div>
-              <div className="space-y-4">
-                <VitranaQuestionReveal
-                  question={l1Done ? (buildL1Acknowledgment('obra', l2Answer) ?? LEVEL2_QUESTIONS['obra']?.question ?? vitranaQuestion) : vitranaQuestion}
-                  buttonLabel={l1Done ? 'Tu progreso →' : undefined}
-                  autoReveal={l1Done}
-                  portal="obra"
-                  l2Done={l2Done}
-                  l3Done={Boolean(l3Rec?.step3)}
-                  l3Step3={l3Rec?.step3 ?? null}
-                  l3FormaLabel={l3Rec?.forma ?? null}
-                  onL3CTA={() => { const r = resolvePortalRoute({ formatId: l3Rec?.recommended_format_id }); if (r) navigate(r); }}
-                  onAnswer={handleAnswerResonance}
-                  label=""
-                />
-                <ShowcaseReactionInline
-                  description="Estamos creando espacios donde lo que sentimos también puede verse en otros cuerpos."
-                  buttonLabel="¡Déjanos un pulso!"
-                  status={reactionStatus}
-                  onReact={handleSendPulse}
+            <div className="bg-slate-950/80 p-5 lg:hidden space-y-6">
+              <div className="flex flex-col gap-3">
+                <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Mini-verso autoral</p>
+                <MiniVersoCard
+                  title={SCENE_PORTAL_NOTA_AUTORAL.title}
+                  verse={SCENE_PORTAL_NOTA_AUTORAL.verse}
+                  palette={{
+                    gradient: sceneTileGradient,
+                    border: sceneTileColors.border,
+                    text: sceneTileColors.text,
+                    accent: sceneTileColors.accent,
+                    background: sceneTileColors.background,
+                  }}
+                  effect="flip"
+                  gatEventKey="flip:nota-autoral:obra"
                 />
               </div>
+              <CollaboratorsPanel collaborators={SCENE_PORTAL_COLLABORATORS} accentClassName="text-purple-300" bare />
             </div>
           </div>
 

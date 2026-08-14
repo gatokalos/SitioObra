@@ -1325,7 +1325,6 @@ const Transmedia = ({ allianceOnlyMode = false }) => {
     showSonoroCoins,
     isGraphicUnlocking,
     showGraphicCoins,
-    isTazaActivating,
     tazaCameraReady,
     setTazaCameraReady,
     showTazaCoins,
@@ -1945,7 +1944,7 @@ const renderDramaFeaturedWork = () => (
       preload="metadata"
     />
     <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-black/10 via-black/30 to-black/90" />
-    <div className="relative z-10 flex min-h-[28rem] flex-col p-6">
+    <div className="relative z-10 flex h-full min-h-[28rem] flex-col p-6">
       <div>
         <p className="mb-1 text-xs uppercase tracking-[0.35em] text-slate-300/75 [text-shadow:0_1px_10px_rgba(0,0,0,0.9)]">
           Obra destacada
@@ -2199,30 +2198,12 @@ const renderDramaFeaturedWork = () => (
                         ))}
                       </ul>
                     ) : null}
-                    {activeShowcase === 'lataza' ? (
+                    {activeShowcase === 'lataza' && LEGACY_TAZA_VIEWER_ENABLED ? (
                       <div className="flex flex-col gap-2">
-                        <Button
-                          className="relative border-purple-400/40 text-purple-200 hover:bg-purple-500/10 overflow-visible"
-                          variant="outline"
-                          onClick={handleActivateAR}
-                          disabled={isTazaActivating}
-                        >
-                          {isTazaActivating ? 'Procesando...' : activeDefinition.ctaLabel}
-                        </Button>
-                        {LEGACY_TAZA_VIEWER_ENABLED ? (
-                          <label className="flex items-center gap-2 text-xs uppercase tracking-[0.25em] text-slate-400">
-                            <input type="checkbox" className="accent-purple-400" checked={useLegacyTazaViewer} onChange={(e) => setUseLegacyTazaViewer(e.target.checked)} />
-                            Usar visor estable (A‑Frame)
-                          </label>
-                        ) : null}
-                        <button
-                          type="button"
-                          onClick={() => handleOpenNovelaReserve(['taza-250'])}
-                          disabled={isMerchCheckoutLoading}
-                          className="inline-flex w-full sm:w-auto items-center justify-center rounded-full border border-purple-400/40 text-purple-200 hover:bg-purple-500/10 px-6 py-2 font-semibold transition"
-                        >
-                          {isMerchCheckoutLoading ? 'Abriendo checkout...' : 'Comprar tu taza'}
-                        </button>
+                        <label className="flex items-center gap-2 text-xs uppercase tracking-[0.25em] text-slate-400">
+                          <input type="checkbox" className="accent-purple-400" checked={useLegacyTazaViewer} onChange={(e) => setUseLegacyTazaViewer(e.target.checked)} />
+                          Usar visor estable (A‑Frame)
+                        </label>
                       </div>
                     ) : null}
                   </div>
@@ -2250,16 +2231,6 @@ const renderDramaFeaturedWork = () => (
           <div className="flex flex-col gap-5">
             {renderDeviceInfoDesktop()}
             {rendernotaAutoral()}
-            {activePortalExperienceDone && (
-              <button
-                type="button"
-                onClick={handleActivateAR}
-                disabled={isTazaActivating}
-                className="inline-flex w-full items-center justify-center gap-2 rounded-2xl border border-amber-400/40 bg-amber-500/10 px-6 py-3 text-sm font-semibold text-amber-200 tracking-wide transition hover:bg-amber-500/20"
-              >
-                {isTazaActivating ? 'Procesando...' : '✦ Activa tu taza'}
-              </button>
-            )}
           </div>
         </div>
         </div>
@@ -2400,7 +2371,7 @@ const renderDramaFeaturedWork = () => (
 
       const reactionDetails = {
         showcaseId: 'miniversos',
-        description: 'Estamos creando espacios donde lo que sentimos también puede verse en otros cuerpos.',
+        description: 'Alguien está contando cuántos llegaron hasta aquí. Deja tu pulso.',
         buttonLabel: '¡Déjanos un pulso!',
         className: 'mt-4',
       };
@@ -3286,7 +3257,7 @@ const renderDramaFeaturedWork = () => (
         const videoId = asset?.id || asset?.url || title;
 
         return (
-          <div className="relative overflow-hidden rounded-3xl border border-white/10 bg-black/30">
+          <div className="relative h-full overflow-hidden rounded-3xl border border-white/10 bg-black/30">
             <div className="absolute inset-0">
               {isVideoFile ? (
                 <div className="relative h-full w-full bg-black/60">
@@ -3329,7 +3300,7 @@ const renderDramaFeaturedWork = () => (
               ) : null}
             </div>
 
-            <div className="relative z-10 flex min-h-[30rem] flex-col p-6">
+            <div className="relative z-10 flex h-full min-h-[30rem] flex-col p-6">
               <div aria-hidden="true" className={reserveClassName} />
 
               <div className="mt-auto space-y-4">
@@ -3553,7 +3524,7 @@ const renderDramaFeaturedWork = () => (
         className: 'rounded-3xl border border-white/10 bg-black/25 p-6 space-y-5',
         reactionProps: {
           showcaseId: 'copycats',
-          description: 'Estamos creando imágenes donde lo que sentimos encuentra eco en otras miradas.',
+          description: 'Alguien está contando cuántos llegaron hasta aquí. Deja tu pulso.',
           buttonLabel: '¡Déjanos un pulso!',
           className: 'mt-2 bg-gradient-to-r from-slate-900/40 to-purple-900/20',
         },
@@ -3568,7 +3539,7 @@ const renderDramaFeaturedWork = () => (
             </div>
           ) : (
             <div className="grid gap-6 lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
-              <div>
+              <div className="h-full">
                 {quironBlock}
               </div>
               <div className="flex flex-col gap-5">
@@ -3924,7 +3895,7 @@ const renderDramaFeaturedWork = () => (
         {activeShowcase === 'copycats' ? (
           <ShowcaseReactionInline
             showcaseId="copycats"
-            description="Guarda un like que celebra las miradas que quedarán en escena."
+            description="Alguien está contando cuántos llegaron hasta aquí. Deja tu pulso."
             title="Opiniones después del corte"
           />
         ) : null}
@@ -4256,7 +4227,7 @@ const renderDramaFeaturedWork = () => (
                         {activeShowcase === 'miniversos' ? (
                           <ShowcaseReactionInline
                             showcaseId="miniversos"
-                            description="Estamos creando espacios donde lo que sentimos también puede verse en otros cuerpos."
+                            description="Alguien está contando cuántos llegaron hasta aquí. Deja tu pulso."
                             buttonLabel="¡Déjanos un pulso!"
                             bounceKey={heartBounceKey}
                           />
@@ -4295,7 +4266,7 @@ const renderDramaFeaturedWork = () => (
                         />
                         <ShowcaseReactionInline
                           showcaseId="miniversoNovela"
-                          description="Estamos creando relatos donde una emoción puede reconocerse en otra persona."
+                          description="Alguien está contando cuántos llegaron hasta aquí. Deja tu pulso."
                           buttonLabel="¡Déjanos un pulso!"
                           bounceKey={heartBounceKey}
                         />
@@ -4333,7 +4304,7 @@ const renderDramaFeaturedWork = () => (
                         />
                         <ShowcaseReactionInline
                           showcaseId="lataza"
-                          description="Estamos creando objetos que permiten compartir emociones sin tener que explicarlas."
+                          description="Alguien está contando cuántos llegaron hasta aquí. Deja tu pulso."
                           buttonLabel="¡Déjanos un pulso!"
                           bounceKey={heartBounceKey}
                         />
@@ -4371,7 +4342,7 @@ const renderDramaFeaturedWork = () => (
                         />
                         <ShowcaseReactionInline
                           showcaseId="miniversoGrafico"
-                          description="Estamos creando grafismos donde ciertas emociones logran quedarse un poco más."
+                          description="Alguien está contando cuántos llegaron hasta aquí. Deja tu pulso."
                           buttonLabel="¡Déjanos un pulso!"
                           bounceKey={heartBounceKey}
                         />
@@ -4410,7 +4381,7 @@ const renderDramaFeaturedWork = () => (
                         />
                         <ShowcaseReactionInline
                           showcaseId="copycats"
-                          description="Estamos creando imágenes donde lo que sentimos encuentra eco en otras miradas."
+                          description="Alguien está contando cuántos llegaron hasta aquí. Deja tu pulso."
                           buttonLabel="¡Déjanos un pulso!"
                           bounceKey={heartBounceKey}
                         />
@@ -4448,7 +4419,7 @@ const renderDramaFeaturedWork = () => (
                         />
                         <ShowcaseReactionInline
                           showcaseId="miniversoSonoro"
-                          description="Estamos creando atmósferas donde las emociones pueden respirarse en colectivo."
+                          description="Alguien está contando cuántos llegaron hasta aquí. Deja tu pulso."
                           buttonLabel="¡Déjanos un pulso!"
                           bounceKey={heartBounceKey}
                         />
@@ -4486,7 +4457,7 @@ const renderDramaFeaturedWork = () => (
                         />
                         <ShowcaseReactionInline
                           showcaseId="miniversoMovimiento"
-                          description="Estamos creando recorridos donde el cuerpo también participa en lo que sentimos."
+                          description="Alguien está contando cuántos llegaron hasta aquí. Deja tu pulso."
                           buttonLabel="¡Déjanos un pulso!"
                           bounceKey={heartBounceKey}
                         />
@@ -4524,7 +4495,7 @@ const renderDramaFeaturedWork = () => (
                         />
                         <ShowcaseReactionInline
                           showcaseId="apps"
-                          description="Estamos creando decisiones donde lo que sentimos cambia la forma de avanzar."
+                          description="Alguien está contando cuántos llegaron hasta aquí. Deja tu pulso."
                           buttonLabel="¡Déjanos un pulso!"
                           bounceKey={heartBounceKey}
                         />
@@ -4562,7 +4533,7 @@ const renderDramaFeaturedWork = () => (
                         />
                         <ShowcaseReactionInline
                           showcaseId="oraculo"
-                          description="Estamos creando símbolos para explorar emociones que a veces no sabemos nombrar."
+                          description="Alguien está contando cuántos llegaron hasta aquí. Deja tu pulso."
                           buttonLabel="¡Déjanos un pulso!"
                           bounceKey={heartBounceKey}
                         />

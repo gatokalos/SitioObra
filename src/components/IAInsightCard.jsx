@@ -24,6 +24,9 @@ const IAInsightCard = ({
   travelRequiredGat,
   travelLabel = 'Viajar al universo',
   onTravel,
+  // Variante compacta para el Libreto: conserva exactamente la protección de
+  // autenticación/GAT del modo viajar, pero elimina el acordeón informativo.
+  travelCtaOnly = false,
   // Algunas páginas (p. ej. /bitacora) no montan Header.jsx, así que el
   // evento global 'open-login-modal' no tiene quién lo escuche ahí. Si el
   // padre puede darnos un callback real (su propio LoginOverlay), se usa
@@ -191,6 +194,26 @@ const IAInsightCard = ({
       return null;
     }
   };
+
+  if (travelCtaOnly && isTravelMode) {
+    return (
+      <button
+        type="button"
+        onClick={handleTravelClick}
+        className="group flex w-full items-center justify-between gap-4 rounded-xl border border-purple-700/35 bg-purple-950/30 px-5 py-4 text-left text-purple-100 backdrop-blur-md shadow-[0_10px_35px_rgba(0,0,0,0.4)] transition hover:border-purple-500/55 hover:bg-purple-900/35"
+      >
+        <span>
+          <span className="block text-[0.6rem] uppercase tracking-[0.3em] text-purple-200/55">
+            Continuar el recorrido
+          </span>
+          <span className="mt-1 block font-display text-lg text-purple-100">
+            {travelLabel}
+          </span>
+        </span>
+        <Send size={18} className="shrink-0 text-purple-200/75 transition-transform group-hover:translate-x-1" />
+      </button>
+    );
+  }
 
   if (!hasBody && !footnote) {
     return null;

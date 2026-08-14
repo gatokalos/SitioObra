@@ -3,7 +3,6 @@ import { useLocation , useNavigate } from 'react-router-dom';
 import MiniVersoCard from '@/components/transmedia/MiniVersoCard';
 import MiniverseIconBadge from '@/components/transmedia/MiniverseIconBadge';
 import { AnimatePresence, motion } from 'framer-motion';
-import { toast } from '@/components/ui/use-toast';
 import { useAuth } from '@/contexts/SupabaseAuthContext';
 import LoginOverlay from '@/components/ContributionModal/LoginOverlay';
 import LoginNudgeOverlay from '@/components/LoginNudgeOverlay';
@@ -20,14 +19,12 @@ import ResonanceModal, { LEVEL2_QUESTIONS, buildL1Acknowledgment } from '@/compo
 import VideoNarrativeAutoplay from '@/components/VideoNarrativeAutoplay';
 import PulseReactionCard from '@/components/portal/PulseReactionCard';
 import { recordShowcaseLike } from '@/services/showcaseLikeService';
-import { startDirectMerchCheckout } from '@/lib/merchCheckout';
 import { supabase } from '@/lib/supabaseClient';
 import { sanitizeExternalHttpUrl } from '@/lib/urlSafety';
 import { hasEnoughGAT } from '@/lib/gatAccess';
 import { usePortalTracking } from '@/hooks/usePortalTracking';
 import { useVitranaQuestion } from '@/hooks/useVitranaQuestion';
 import useScrambleText from '@/hooks/useScrambleText';
-import { ensureAnonId } from '@/lib/identity';
 import { resolvePortalRoute } from '@/lib/miniversePortalRegistry';
 
 const MARIANA_GALLERY = [
@@ -134,7 +131,7 @@ const ShowcaseReactionInline = ({ status, onReact }) => (
   <PulseReactionCard
     status={status}
     onReact={onReact}
-    description="Estamos creando objetos que permiten compartir emociones sin tener que explicarlas."
+    description="Alguien está contando cuántos llegaron hasta aquí. Deja tu pulso."
     buttonLabel="¡Déjanos un pulso!"
   />
 );
@@ -165,11 +162,9 @@ const PortalArtesanias = () => {
   const [isResonanceOpen, setIsResonanceOpen] = useState(false);
   const [l1Done, setL1Done] = useState(() => { try { return Boolean(JSON.parse(localStorage.getItem('gatoencerrado:resonance:artesanias') || '{}').l1); } catch { return false; } });
   const [l2Answer, setL2Answer] = useState(() => { try { return JSON.parse(localStorage.getItem('gatoencerrado:resonance:artesanias') || '{}').l2_option ?? null; } catch { return null; } });
-  const [experienceDone, setExperienceDone] = useState(() => { try { return Boolean(JSON.parse(localStorage.getItem('gatoencerrado:resonance:artesanias') || '{}').experience_ts); } catch { return false; } });
   const [l2Done, setL2Done] = useState(() => { try { return Boolean(JSON.parse(localStorage.getItem('gatoencerrado:resonance:artesanias') || '{}').l2_option); } catch { return false; } });
   const [l3Rec, setL3Rec] = useState(() => { try { return JSON.parse(localStorage.getItem('gatoencerrado:resonance:artesanias') || '{}').l3_recommendation ?? null; } catch { return null; } });
-  const refreshL1 = useCallback(() => { try { const s = JSON.parse(localStorage.getItem('gatoencerrado:resonance:artesanias') || '{}'); setL1Done(Boolean(s.l1)); setExperienceDone(Boolean(s.experience_ts)); setL2Done(Boolean(s.l2_option)); setL2Answer(s.l2_option ?? null); setL3Rec(s.l3_recommendation ?? null); } catch { /* ignore */ } }, []);
-  const [isTazaCheckoutLoading, setIsTazaCheckoutLoading] = useState(false);
+  const refreshL1 = useCallback(() => { try { const s = JSON.parse(localStorage.getItem('gatoencerrado:resonance:artesanias') || '{}'); setL1Done(Boolean(s.l1)); setL2Done(Boolean(s.l2_option)); setL2Answer(s.l2_option ?? null); setL3Rec(s.l3_recommendation ?? null); } catch { /* ignore */ } }, []);
   const navigate = useNavigate();
   const location = useLocation();
   // Resonancia Colectiva ya no se auto-abre al llegar del video narrativo
@@ -372,36 +367,6 @@ const PortalArtesanias = () => {
     };
   }, [isTazaARActive]);
 
-  const handleOpenTazaCheckout = useCallback(async () => {
-    if (!requireAuth()) return;
-    if (isTazaCheckoutLoading) return;
-
-    supabase.from('miniverso_artesanias_interactions').insert({
-      interaction_type: 'cta_click',
-      cta_id: 'taza-250',
-      anon_id: ensureAnonId() ?? null,
-      user_id: user?.id ?? null,
-      metadata: { recorded_at: new Date().toISOString() },
-    }).then(({ error }) => { if (error) console.warn('[artesanias] cta_click:', error.message); });
-
-    setIsTazaCheckoutLoading(true);
-    try {
-      await startDirectMerchCheckout({
-        packageId: 'taza-250',
-        customerEmail: user?.email ?? '',
-        metadata: {
-          source: 'portal-artesanias',
-          package: 'taza-250',
-        },
-      });
-    } catch (error) {
-      console.error('[PortalArtesanias] Checkout error:', error);
-      toast({ description: 'No pudimos abrir el checkout. Intenta nuevamente.' });
-    } finally {
-      setIsTazaCheckoutLoading(false);
-    }
-  }, [isTazaCheckoutLoading, requireAuth, user?.email]);
-
   const handleOpenCommunityComposer = useCallback(() => {
     if (!requireAuth()) return;
     setIsContributionOpen(true);
@@ -501,12 +466,25 @@ const PortalArtesanias = () => {
                 </div>
               </div>
             </div>
-            <div className="lg:hidden px-6 sm:px-8 pb-6 sm:pb-8 space-y-6">
-              <div className="flex flex-col gap-3">
-                <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Mini-verso autoral</p>
-                <MiniVersoCard title={ARTESANIAS_NOTA_AUTORAL.title} verse={ARTESANIAS_NOTA_AUTORAL.verse} palette={ARTESANIAS_TILE} effect="flip" gatEventKey="flip:nota-autoral:artesanias" />
+            <div className={`lg:hidden px-6 sm:px-8 pb-6 sm:pb-8 space-y-6 transition-opacity duration-300${isResonanceOpen ? ' opacity-30 pointer-events-none' : ''}`}>
+              <div>
+                <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Resonancia Colectiva</p>
+                <h4 className="font-display text-xl question-heading-voice">Tras cada pregunta</h4>
               </div>
-              <CollaboratorsPanel collaborators={ARTESANIAS_COLLABORATORS} accentClassName="text-amber-200/90" bare />
+              <VitranaQuestionReveal
+                question={l1Done ? (buildL1Acknowledgment('artesanias', l2Answer) ?? LEVEL2_QUESTIONS['artesanias']?.question ?? vitranaQuestion) : vitranaQuestion}
+                buttonLabel={l1Done ? 'Tu progreso →' : undefined}
+                autoReveal={l1Done}
+                portal="artesanias"
+                l2Done={l2Done}
+                l3Done={Boolean(l3Rec?.step3)}
+                l3Step3={l3Rec?.step3 ?? null}
+                l3FormaLabel={l3Rec?.forma ?? null}
+                onL3CTA={() => { const r = resolvePortalRoute({ formatId: l3Rec?.recommended_format_id }); if (r) navigate(r); }}
+                onAnswer={handleAnswerResonance}
+                label=""
+              />
+              <ShowcaseReactionInline status={reactionStatus} onReact={handleSendPulse} />
             </div>
             <VideoNarrativeAutoplay
               open={showResonanceBridgeVideo}
@@ -593,14 +571,6 @@ const PortalArtesanias = () => {
                   <div className="flex flex-wrap gap-2">
                     <span className="rounded-full border border-white/20 bg-white/5 px-3 py-1 text-[11px] uppercase tracking-[0.2em] text-slate-300">Incluye dispositivo interactivo</span>
                   </div>
-                  <button
-                    type="button"
-                    onClick={handleOpenTazaCheckout}
-                    disabled={isTazaCheckoutLoading}
-                    className="inline-flex w-full items-center justify-center rounded-full border border-purple-400/40 text-purple-200 hover:bg-purple-500/10 px-6 py-2.5 text-sm font-semibold transition"
-                  >
-                    {isTazaCheckoutLoading ? 'Abriendo checkout...' : 'Comprar tu taza'}
-                  </button>
                   {arError ? <p className="text-xs text-amber-200/90">{arError}</p> : null}
                 </div>
               </div>,
@@ -660,25 +630,12 @@ const PortalArtesanias = () => {
               compact
             />
           </div>
-          <div className={`lg:hidden rounded-3xl border border-white/10 bg-black/30 px-6 py-5 space-y-4 transition-opacity duration-300${isResonanceOpen ? ' opacity-30 pointer-events-none' : ''}`}>
-            <div>
-              <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Resonancia Colectiva</p>
-              <h4 className="font-display text-xl question-heading-voice">Tras cada pregunta</h4>
+          <div className="lg:hidden rounded-3xl border border-white/10 bg-black/30 px-6 py-5 space-y-4">
+            <div className="flex flex-col gap-3">
+              <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Mini-verso autoral</p>
+              <MiniVersoCard title={ARTESANIAS_NOTA_AUTORAL.title} verse={ARTESANIAS_NOTA_AUTORAL.verse} palette={ARTESANIAS_TILE} effect="flip" gatEventKey="flip:nota-autoral:artesanias" />
             </div>
-            <VitranaQuestionReveal
-              question={l1Done ? (buildL1Acknowledgment('artesanias', l2Answer) ?? LEVEL2_QUESTIONS['artesanias']?.question ?? vitranaQuestion) : vitranaQuestion}
-              buttonLabel={l1Done ? 'Tu progreso →' : undefined}
-              autoReveal={l1Done}
-              portal="artesanias"
-              l2Done={l2Done}
-              l3Done={Boolean(l3Rec?.step3)}
-              l3Step3={l3Rec?.step3 ?? null}
-              l3FormaLabel={l3Rec?.forma ?? null}
-              onL3CTA={() => { const r = resolvePortalRoute({ formatId: l3Rec?.recommended_format_id }); if (r) navigate(r); }}
-              onAnswer={handleAnswerResonance}
-              label=""
-            />
-            <ShowcaseReactionInline status={reactionStatus} onReact={handleSendPulse} />
+            <CollaboratorsPanel collaborators={ARTESANIAS_COLLABORATORS} accentClassName="text-amber-200/90" bare />
           </div>
           <div className="hidden lg:block lg:order-3 rounded-3xl border border-white/10 bg-black/30 p-6 space-y-6">
             <CollaboratorsPanel collaborators={ARTESANIAS_COLLABORATORS} accentClassName="text-amber-200/90" />
@@ -703,16 +660,6 @@ const PortalArtesanias = () => {
           {l3Rec?.step3 ? (
             <div className="order-5">
               <PortalL3RewardCTA portal="artesanias" l3Rec={l3Rec} />
-            </div>
-          ) : experienceDone ? (
-            <div className="order-5">
-              <button
-                type="button"
-                onClick={handleActivateAR}
-                className="w-full rounded-2xl border border-amber-400/40 bg-amber-500/10 px-6 py-4 text-sm font-semibold tracking-wide text-amber-200 shadow-[0_8px_32px_rgba(251,191,36,0.15)] transition hover:bg-amber-500/20 hover:shadow-[0_8px_40px_rgba(251,191,36,0.25)]"
-              >
-                ✦ Activa tu taza
-              </button>
             </div>
           ) : null}
           <div className="order-last flex justify-end pt-2 lg:hidden">

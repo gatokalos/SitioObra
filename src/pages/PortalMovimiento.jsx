@@ -184,7 +184,7 @@ const ShowcaseReactionInline = ({ status, onReact }) => (
   <PulseReactionCard
     status={status}
     onReact={onReact}
-    description="Estamos creando recorridos donde el cuerpo también participa en lo que sentimos."
+    description="Alguien está contando cuántos llegaron hasta aquí. Deja tu pulso."
     buttonLabel="¡Déjanos un pulso!"
   />
 );
@@ -442,7 +442,7 @@ const PortalMovimiento = () => {
                 <div className="flex min-w-0 items-center gap-4">
                   <MiniverseIconBadge formatId="miniversoMovimiento" />
                   <div className="min-w-0 space-y-3">
-                    <p className="text-xs uppercase tracking-[0.4em] text-emerald-300">#Miniversos</p>
+                    <p className="text-xs uppercase tracking-[0.4em] text-emerald-300">Movimiento</p>
                     <h3 className="font-display text-3xl leading-tight text-white md:text-4xl">{titleDisplay}</h3>
                   </div>
                 </div>
@@ -497,42 +497,25 @@ const PortalMovimiento = () => {
                 narrativeCTALabel="✦ Ver los talleres"
               />
             )}
-            <div className="lg:hidden px-6 sm:px-8 pb-6 sm:pb-8 space-y-6">
-              <div className="flex flex-col gap-3">
-                <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Mini-verso autoral</p>
-                <MiniVersoCard title={MOVEMENT_NOTA_AUTORAL.title} verse={MOVEMENT_NOTA_AUTORAL.verse} palette={MOVEMENT_TILE} effect="flip" gatEventKey="flip:nota-autoral:movimiento" />
+            <div className={`lg:hidden px-6 sm:px-8 pb-6 sm:pb-8 space-y-6 transition-opacity duration-300${isResonanceOpen ? ' opacity-30 pointer-events-none' : ''}`}>
+              <div className="mb-1">
+                <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Resonancia Colectiva</p>
+                <h4 className="font-display text-xl question-heading-voice">Tras cada pregunta</h4>
               </div>
-              <div className="rounded-2xl border border-white/10 bg-black/20 px-5 py-4">
-                <div className="flex items-center justify-between gap-3">
-                  <div className="inline-flex items-center gap-3">
-                    <span className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-white/20 bg-white/5 text-slate-200 shadow-[0_0_18px_rgba(148,163,184,0.22)]">
-                      <User size={16} />
-                    </span>
-                    <p className="text-[11px] uppercase tracking-[0.32em] text-slate-300/85">Colaboradores</p>
-                  </div>
-                  <button type="button" onClick={() => setIsMovementCreditsOpen((prev) => !prev)} className="text-xs uppercase tracking-[0.3em] text-slate-300 hover:text-white transition">
-                    {isMovementCreditsOpen ? 'Ocultar' : 'Abrir'}
-                  </button>
-                </div>
-                {isMovementCreditsOpen ? (
-                  <div className="mt-4 space-y-4">
-                    <p className="text-sm font-semibold text-slate-100">Colaboradores que buscamos</p>
-                    <ul className="mt-3 space-y-2 text-sm text-slate-300/90">
-                      {MOVEMENT_COLLABORATOR_CALL_ITEMS.map((item) => (
-                        <li key={`movement-collab-call-mobile-${item}`} className="flex items-start gap-2">
-                          <span className="mt-1 text-purple-300">•</span>
-                          <span>{item}</span>
-                        </li>
-                      ))}
-                    </ul>
-                    <div className="flex justify-end">
-                      <Button type="button" onClick={handleOpenCommunityComposer} className="w-full justify-center bg-gradient-to-r from-emerald-500/90 to-emerald-600/90 text-white hover:from-emerald-400/90 hover:to-emerald-500/90 sm:w-auto">
-                        Convocatoria abierta
-                      </Button>
-                    </div>
-                  </div>
-                ) : null}
-              </div>
+              <VitranaQuestionReveal
+                question={l1Done ? (buildL1Acknowledgment('movimiento', l2Answer) ?? LEVEL2_QUESTIONS['movimiento']?.question ?? vitranaQuestion) : vitranaQuestion}
+                buttonLabel={l1Done ? 'Tu progreso →' : undefined}
+                autoReveal={l1Done}
+                portal="movimiento"
+                l2Done={l2Done}
+                l3Done={Boolean(l3Rec?.step3)}
+                l3Step3={l3Rec?.step3 ?? null}
+                l3FormaLabel={l3Rec?.forma ?? null}
+                onL3CTA={() => { const r = resolvePortalRoute({ formatId: l3Rec?.recommended_format_id }); if (r) navigate(r); }}
+                onAnswer={handleAnswerResonance}
+                label=""
+              />
+              <ShowcaseReactionInline status={reactionStatus} onReact={handleSendPulse} />
             </div>
           </div>
 
@@ -605,25 +588,42 @@ const PortalMovimiento = () => {
               compact
             />
           </div>
-          <div className={`lg:hidden rounded-3xl border border-white/10 bg-black/30 p-5 space-y-4 transition-opacity duration-300${isResonanceOpen ? ' opacity-30 pointer-events-none' : ''}`}>
-            <div className="mb-1">
-              <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Resonancia Colectiva</p>
-              <h4 className="font-display text-xl question-heading-voice">Tras cada pregunta</h4>
+          <div className="lg:hidden rounded-3xl border border-white/10 bg-black/30 p-5 space-y-4">
+            <div className="flex flex-col gap-3">
+              <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Mini-verso autoral</p>
+              <MiniVersoCard title={MOVEMENT_NOTA_AUTORAL.title} verse={MOVEMENT_NOTA_AUTORAL.verse} palette={MOVEMENT_TILE} effect="flip" gatEventKey="flip:nota-autoral:movimiento" />
             </div>
-            <VitranaQuestionReveal
-              question={l1Done ? (buildL1Acknowledgment('movimiento', l2Answer) ?? LEVEL2_QUESTIONS['movimiento']?.question ?? vitranaQuestion) : vitranaQuestion}
-              buttonLabel={l1Done ? 'Tu progreso →' : undefined}
-              autoReveal={l1Done}
-              portal="movimiento"
-              l2Done={l2Done}
-              l3Done={Boolean(l3Rec?.step3)}
-              l3Step3={l3Rec?.step3 ?? null}
-              l3FormaLabel={l3Rec?.forma ?? null}
-              onL3CTA={() => { const r = resolvePortalRoute({ formatId: l3Rec?.recommended_format_id }); if (r) navigate(r); }}
-              onAnswer={handleAnswerResonance}
-              label=""
-            />
-            <ShowcaseReactionInline status={reactionStatus} onReact={handleSendPulse} />
+            <div className="rounded-2xl border border-white/10 bg-black/20 px-5 py-4">
+              <div className="flex items-center justify-between gap-3">
+                <div className="inline-flex items-center gap-3">
+                  <span className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-white/20 bg-white/5 text-slate-200 shadow-[0_0_18px_rgba(148,163,184,0.22)]">
+                    <User size={16} />
+                  </span>
+                  <p className="text-[11px] uppercase tracking-[0.32em] text-slate-300/85">Colaboradores</p>
+                </div>
+                <button type="button" onClick={() => setIsMovementCreditsOpen((prev) => !prev)} className="text-xs uppercase tracking-[0.3em] text-slate-300 hover:text-white transition">
+                  {isMovementCreditsOpen ? 'Ocultar' : 'Abrir'}
+                </button>
+              </div>
+              {isMovementCreditsOpen ? (
+                <div className="mt-4 space-y-4">
+                  <p className="text-sm font-semibold text-slate-100">Colaboradores que buscamos</p>
+                  <ul className="mt-3 space-y-2 text-sm text-slate-300/90">
+                    {MOVEMENT_COLLABORATOR_CALL_ITEMS.map((item) => (
+                      <li key={`movement-collab-call-mobile-${item}`} className="flex items-start gap-2">
+                        <span className="mt-1 text-purple-300">•</span>
+                        <span>{item}</span>
+                      </li>
+                    ))}
+                  </ul>
+                  <div className="flex justify-end">
+                    <Button type="button" onClick={handleOpenCommunityComposer} className="w-full justify-center bg-gradient-to-r from-emerald-500/90 to-emerald-600/90 text-white hover:from-emerald-400/90 hover:to-emerald-500/90 sm:w-auto">
+                      Convocatoria abierta
+                    </Button>
+                  </div>
+                </div>
+              ) : null}
+            </div>
           </div>
 
           <div className="grid gap-6 xl:grid-cols-[1.25fr_1fr] xl:items-start">

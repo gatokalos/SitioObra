@@ -641,7 +641,7 @@ iaProfile: {
     introNode: (
       <>
           <p className="mt-4 text-lg font-medium leading-relaxed text-white">La <em>sobreinterpretación</em> también convierte a los otros en relato: tomar distancia revela cuánto de lo que vemos también lo pusimos nosotros.</p>
-        <p className="text-slate-100/90">Una imagen puede detenerse en una herida abierta. El cine tiene que decidir qué ocurrió antes, qué viene después y cuánto tiempo nos obliga a mirarla.</p>
+        <p className="text-slate-100/90">Una imagen puede detenerse en una herida abierta. El cine decide mostrar qué ocurrió antes, qué viene después y cuánto tiempo nos obliga a mirarla.</p>
         <div className="flex flex-wrap gap-2 mt-2">
           <span className="rounded-full border border-sky-200/35 bg-sky-400/10 px-3 py-1 text-[11px] uppercase tracking-[0.22em] text-sky-100">Premiere íntima</span>
           <span className="rounded-full border border-sky-200/35 bg-sky-400/10 px-3 py-1 text-[11px] uppercase tracking-[0.22em] text-sky-100">Conversatorio abierto</span>
@@ -855,7 +855,7 @@ iaProfile: {
     introNode: (
       <>
         <p className="text-lg leading-relaxed font-medium text-white mt-4">Aquí te encuentras en un lugar que no termina de decirse.</p>
-         <p className="text-base leading-relaxed text-slate-200/80">A diferencia de <em>la apariencia</em>, que ocurre toda al mismo tiempo, la palabra necesita del tiempo para existir — y sigue abriendo sentido incluso después de leerse.</p>
+         <p className="text-base leading-relaxed text-slate-200/80">A diferencia de <em>la apariencia</em>, que ocurre toda al mismo tiempo, la escritura necesita más tiempo para existir detrás de cada palabra — y seguirá exigiendo sentido incluso después del punto final.</p>
         <div className="flex flex-wrap gap-2 mt-2">
           <span className="rounded-full border border-violet-200/35 bg-violet-400/10 px-3 py-1 text-[11px] uppercase tracking-[0.22em] text-violet-100">Autoficción expandida</span>
           <span className="rounded-full border border-violet-200/35 bg-violet-400/10 px-3 py-1 text-[11px] uppercase tracking-[0.22em] text-violet-100">Fragmentos y voces</span>
@@ -899,13 +899,6 @@ iaProfile: {
           </>
         ),
         image: '/assets/edicion-fisica.png',
-        type: 'purchase-link',
-        url: '/comprar-novela',
-        snippet: {
-          tagline: 'Tu ejemplar como portal',
-          text:
-            'Escanea la contraportada para acceder al separador inteligente de #GatoEncerrado o ingresa desde aquí.',
-        },
         app: {
           id: 'autoficcion-app',
           ctaLabel: 'Leer fragmentos',
@@ -1312,7 +1305,7 @@ Este espacio permite recorrer esas composiciones, explorar sus capas y descubrir
   },
   apps: {
     id: 'apps',
-    label: 'El juego',
+    label: 'El riesgo',
     type: 'apps',
     tagline: 'Juegos como portales • Apps como rituales felinos.',
     intro: (
@@ -1334,7 +1327,7 @@ Este espacio permite recorrer esas composiciones, explorar sus capas y descubrir
     ),
     cartaTitle: '#NoHayDesandar',
     notaAutoral:
-      'Elegí un camino pequeño.\nAhora no lo puedo desandar.\nEl juego me jugó.',
+      'Elegí un camino pequeño.\nAhora no lo puedo desandar.\nEl riesgo me juega.',
     liveExperience: {
       title: 'App en vivo',
       description: 'Juega la app completa dentro de la vitrina, sin salir del miniverso.',

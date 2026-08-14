@@ -119,7 +119,7 @@ const ShowcaseReactionInline = ({ status, onReact }) => (
   <PulseReactionCard
     status={status}
     onReact={onReact}
-    description="Estamos creando atmósferas donde las emociones pueden respirarse en colectivo."
+    description="Alguien está contando cuántos llegaron hasta aquí. Deja tu pulso."
     buttonLabel="¡Déjanos un pulso!"
   />
 );
@@ -353,7 +353,7 @@ const PortalSonoridades = () => {
                 <div className="flex min-w-0 items-center gap-4">
                   <MiniverseIconBadge formatId="miniversoSonoro" />
                   <div className="min-w-0 space-y-3">
-                    <p className="text-xs uppercase tracking-[0.4em] text-cyan-300">#Miniversos</p>
+                    <p className="text-xs uppercase tracking-[0.4em] text-cyan-300">Sonoridades</p>
                     <h3 className="font-display text-3xl leading-tight text-white md:text-4xl">{titleDisplay}</h3>
                   </div>
                 </div>
@@ -390,12 +390,25 @@ const PortalSonoridades = () => {
                 </div>
               </div>
             </div>
-            <div className="lg:hidden px-6 sm:px-8 pb-6 sm:pb-8 space-y-6">
-              <div className="flex flex-col gap-3">
-                <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Mini-verso autoral</p>
-                <MiniVersoCard title={SONORIDADES_NOTA_AUTORAL.title} verse={SONORIDADES_NOTA_AUTORAL.verse} palette={SONORIDADES_TILE} effect="flip" gatEventKey="flip:nota-autoral:sonoridades" />
+            <div className={`lg:hidden px-6 sm:px-8 pb-6 sm:pb-8 space-y-6 transition-opacity duration-300${isResonanceOpen ? ' opacity-30 pointer-events-none' : ''}`}>
+              <div className="mb-1">
+                <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Resonancia Colectiva</p>
+                <h4 className="font-display text-xl question-heading-voice">Tras cada pregunta</h4>
               </div>
-              <CollaboratorsPanel collaborators={SONORIDADES_COLLABORATORS} accentClassName="text-cyan-200/90" bare />
+              <VitranaQuestionReveal
+                question={l1Done ? (buildL1Acknowledgment('sonoridades', l2Answer) ?? LEVEL2_QUESTIONS['sonoridades']?.question ?? vitranaQuestion) : vitranaQuestion}
+                buttonLabel={l1Done ? 'Tu progreso →' : undefined}
+                autoReveal={l1Done}
+                portal="sonoridades"
+                l2Done={l2Done}
+                l3Done={Boolean(l3Rec?.step3)}
+                l3Step3={l3Rec?.step3 ?? null}
+                l3FormaLabel={l3Rec?.forma ?? null}
+                onL3CTA={() => { const r = resolvePortalRoute({ formatId: l3Rec?.recommended_format_id }); if (r) navigate(r); }}
+                onAnswer={handleAnswerResonance}
+                label=""
+              />
+              <ShowcaseReactionInline status={reactionStatus} onReact={handleSendPulse} />
             </div>
             <VideoNarrativeAutoplay
               open={showResonanceBridgeVideo}
@@ -476,25 +489,12 @@ const PortalSonoridades = () => {
               compact
             />
           </div>
-          <div className={`lg:hidden rounded-3xl border border-white/10 bg-black/30 p-5 space-y-4 transition-opacity duration-300${isResonanceOpen ? ' opacity-30 pointer-events-none' : ''}`}>
-            <div className="mb-1">
-              <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Resonancia Colectiva</p>
-              <h4 className="font-display text-xl question-heading-voice">Tras cada pregunta</h4>
+          <div className="lg:hidden rounded-3xl border border-white/10 bg-black/30 p-5 space-y-4">
+            <div className="flex flex-col gap-3">
+              <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Mini-verso autoral</p>
+              <MiniVersoCard title={SONORIDADES_NOTA_AUTORAL.title} verse={SONORIDADES_NOTA_AUTORAL.verse} palette={SONORIDADES_TILE} effect="flip" gatEventKey="flip:nota-autoral:sonoridades" />
             </div>
-            <VitranaQuestionReveal
-              question={l1Done ? (buildL1Acknowledgment('sonoridades', l2Answer) ?? LEVEL2_QUESTIONS['sonoridades']?.question ?? vitranaQuestion) : vitranaQuestion}
-              buttonLabel={l1Done ? 'Tu progreso →' : undefined}
-              autoReveal={l1Done}
-              portal="sonoridades"
-              l2Done={l2Done}
-              l3Done={Boolean(l3Rec?.step3)}
-              l3Step3={l3Rec?.step3 ?? null}
-              l3FormaLabel={l3Rec?.forma ?? null}
-              onL3CTA={() => { const r = resolvePortalRoute({ formatId: l3Rec?.recommended_format_id }); if (r) navigate(r); }}
-              onAnswer={handleAnswerResonance}
-              label=""
-            />
-            <ShowcaseReactionInline status={reactionStatus} onReact={handleSendPulse} />
+            <CollaboratorsPanel collaborators={SONORIDADES_COLLABORATORS} accentClassName="text-cyan-200/90" bare />
           </div>
           <div className="hidden lg:block lg:order-3 rounded-3xl border border-white/10 bg-black/30 p-6 space-y-6">
             <CollaboratorsPanel collaborators={SONORIDADES_COLLABORATORS} accentClassName="text-cyan-200/90" />

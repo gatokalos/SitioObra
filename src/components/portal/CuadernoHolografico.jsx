@@ -1,7 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Eye, Flame, Sparkles, BookOpen, ChevronDown, ExternalLink } from 'lucide-react';
+import {
+  Eye,
+  Flame,
+  Sparkles,
+  BookOpen,
+  ChevronDown,
+  ExternalLink,
+} from 'lucide-react';
 import VitranaQuestionReveal from '@/components/portal/VitranaQuestionReveal';
 import VideoNarrativeAutoplay from '@/components/VideoNarrativeAutoplay';
 import IAInsightCard from '@/components/IAInsightCard';
@@ -12,6 +19,7 @@ import { CATALOG } from '@/lib/bitacoraShared';
 import {
   showcaseDefinitions,
   CUADERNO_HOLOGRAFICO_TRAVEL_GAT,
+  formats,
 } from '@/components/transmedia/transmediaConstants';
 
 export { CATALOG };
@@ -113,6 +121,26 @@ const PORTAL_GRADIENT = {
   oraculo:     'from-indigo-400 via-violet-500 to-purple-500',
 };
 
+// Emblemas de app ya presentados en la introducción de cada portal. Se cargan
+// completos con object-contain: la esfera funciona como marco, no como máscara.
+const PORTAL_APP_ICON_URL = {
+  obra:        `${MERCH_BASE}/la_obra.png`,
+  literatura:  `${MERCH_BASE}/literatura.png`,
+  artesanias:  `${MERCH_BASE}/la_taza.png`,
+  grafico:     `${MERCH_BASE}/los_graficos.png`,
+  cine:        `${MERCH_BASE}/cortos.png`,
+  sonoridades: `${MERCH_BASE}/sonoridades.png`,
+  movimiento:  `${MERCH_BASE}/lasdiosas.png`,
+  juegos:      `${MERCH_BASE}/juegos.png`,
+  oraculo:     `${MERCH_BASE}/el_oraculo.png`,
+};
+
+const LIBRETO_REENTRY_COPY =
+  'Solo cambia la forma de abordarla. Explora los niveles a tu ritmo y deja que el Libreto holográfico conserve lo que permanezca contigo.';
+
+const getVitrinaVerse = (showcaseId) =>
+  formats.find((format) => format.id === showcaseId)?.vitrinaCopy ?? LIBRETO_REENTRY_COPY;
+
 const PORTAL_POSTER = {
   obra:        `${BASE_POSTER}/poster_obra.png`,
   artesanias:  `${BASE_POSTER}/poster_artesanias.png`,
@@ -157,6 +185,7 @@ const STARS = Array.from({ length: 28 }, (_, i) => ({
 
 function Constellation({ centerKey, onSelect }) {
   const center = CATALOG.find(p => p.key === centerKey);
+  const centerIconUrl = PORTAL_APP_ICON_URL[centerKey];
   const satellites = CATALOG.filter(p => p.key !== centerKey);
   const N = satellites.length;
 
@@ -199,21 +228,23 @@ function Constellation({ centerKey, onSelect }) {
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.88 }}
             transition={{ duration: 0.25 }}
-            className={`rounded-full bg-gradient-to-br ${PORTAL_GRADIENT[centerKey]} flex flex-col items-center justify-center ring-2 ring-white/20 shadow-[0_0_60px_rgba(0,0,0,0.55)]`}
-            style={{ width: '32%', aspectRatio: '1', padding: '4%' }}
+            className="relative overflow-hidden rounded-full bg-black ring-2 ring-white/25 shadow-[0_0_60px_rgba(0,0,0,0.55)]"
+            style={{ width: '32%', aspectRatio: '1' }}
+            aria-label={center.form ?? center.name}
           >
-            <p
-              className="text-center leading-none text-white/60"
-              style={{ fontSize: 'clamp(0.38rem, 1.2vw, 0.56rem)', letterSpacing: '0.18em', textTransform: 'uppercase' }}
-            >
-              {center.eyebrow}
-            </p>
-            <p
-              className="font-display text-white text-center leading-tight mt-0.5"
-              style={{ fontSize: 'clamp(0.6rem, 1.8vw, 0.95rem)' }}
-            >
-              {center.name}
-            </p>
+            {centerIconUrl ? (
+              <img
+                src={centerIconUrl}
+                alt=""
+                aria-hidden="true"
+                className="absolute inset-0 h-full w-full scale-[1.03] object-cover"
+              />
+            ) : null}
+            <span
+              aria-hidden
+              className="pointer-events-none absolute inset-0 rounded-full shadow-[inset_-16px_-18px_28px_rgba(0,0,0,0.42),inset_10px_9px_18px_rgba(255,255,255,0.14)]"
+              style={{ background: 'radial-gradient(circle at 30% 22%, rgba(255,255,255,0.20), transparent 30%)' }}
+            />
           </motion.div>
         </AnimatePresence>
       </div>
@@ -227,6 +258,7 @@ function Constellation({ centerKey, onSelect }) {
         const st = lsRead(sat.key);
         const hasL1 = !!st.l1;
         const hasL2 = !!st.l2_conv_done;
+        const satelliteIconUrl = PORTAL_APP_ICON_URL[sat.key];
 
         return (
           <button
@@ -243,22 +275,25 @@ function Constellation({ centerKey, onSelect }) {
               zIndex: 3,
               transition: 'left 0.35s ease, top 0.35s ease',
             }}
-            className="rounded-full flex flex-col items-center justify-center border border-white/12 bg-black/55 hover:bg-white/6 hover:border-white/22 transition-colors duration-200"
+            className="group overflow-hidden rounded-full border border-white/25 bg-black shadow-[0_8px_24px_rgba(0,0,0,0.5)] transition duration-200 hover:scale-[1.04] hover:border-white/45"
+            aria-label={`Abrir ${sat.form ?? sat.name}`}
+            title={sat.form ?? sat.name}
           >
-            <p
-              className="text-white/35 leading-none"
-              style={{ fontSize: 'clamp(0.34rem, 0.9vw, 0.44rem)', letterSpacing: '0.08em', textTransform: 'uppercase' }}
-            >
-              Miniverso
-            </p>
-            <p
-              className={`font-bold text-center leading-tight px-1 mt-0.5 ${sat.color}`}
-              style={{ fontSize: 'clamp(0.42rem, 1.1vw, 0.54rem)', letterSpacing: '0.04em', textTransform: 'uppercase' }}
-            >
-              {sat.name}
-            </p>
-            {hasL2 && <span className="mt-0.5 block h-1 w-1 rounded-full bg-emerald-400/75" />}
-            {hasL1 && !hasL2 && <span className="mt-0.5 block h-1 w-1 rounded-full bg-amber-400/60" />}
+            {satelliteIconUrl ? (
+              <img
+                src={satelliteIconUrl}
+                alt=""
+                aria-hidden="true"
+                className="absolute inset-0 h-full w-full scale-[1.04] object-cover transition duration-300 group-hover:scale-[1.09]"
+              />
+            ) : null}
+            <span
+              aria-hidden
+              className="pointer-events-none absolute inset-0 rounded-full shadow-[inset_-10px_-12px_20px_rgba(0,0,0,0.48),inset_7px_7px_13px_rgba(255,255,255,0.12)]"
+              style={{ background: 'radial-gradient(circle at 30% 22%, rgba(255,255,255,0.18), transparent 32%)' }}
+            />
+            {hasL2 && <span className="absolute bottom-[8%] right-[10%] h-2 w-2 rounded-full border border-black/60 bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.8)]" />}
+            {hasL1 && !hasL2 && <span className="absolute bottom-[8%] right-[10%] h-2 w-2 rounded-full border border-black/60 bg-amber-400 shadow-[0_0_8px_rgba(251,191,36,0.7)]" />}
           </button>
         );
       })}
@@ -268,16 +303,18 @@ function Constellation({ centerKey, onSelect }) {
 
 /* ─── Panel inferior ────────────────────────────────────────────────────── */
 
-function CompletedHomePanel({ portal, infoOpen, infoSeen, onToggleInfo }) {
+function CompletedHomePanel({ portal, entry, infoOpen, infoSeen, onToggleInfo }) {
+  const verse = getVitrinaVerse(entry.showcase);
+
   return (
     <div className="flex flex-col gap-5">
       <div>
-        <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Una misma obra</p>
-        <h2 className="font-display text-2xl leading-snug text-amber-300 mt-1">
-          Tu libreto holográfico
+        <p className="text-xs uppercase tracking-[0.3em] text-slate-400/70">{entry.eyebrow}</p>
+        <h2 className={`font-display text-2xl leading-snug mt-1 ${entry.color}`}>
+          {entry.form ?? entry.name}
         </h2>
         <p className="mt-2 text-sm leading-relaxed text-slate-300/80">
-          Tu recorrido está completo. Ahora puedes volver a sus huellas y reconocer cómo dialogan con otras voces.
+          {verse}
         </p>
       </div>
 
@@ -357,6 +394,7 @@ function HolograficoPanel({
   const hasL2 = !!st.l2_option;
   const hasL3 = !!st.l3_recommendation?.step3;
   const hasBitacora = !!st.bitacora_completed;
+  const verse = getVitrinaVerse(entry.showcase);
 
   const homeSt = lsRead(homeKey);
   const homeL2 = !!homeSt.l2_option;
@@ -377,6 +415,7 @@ function HolograficoPanel({
           homeBitacora ? (
             <CompletedHomePanel
               portal={homeKey}
+              entry={entry}
               infoOpen={homeInfoOpen}
               infoSeen={homeInfoSeen}
               onToggleInfo={onToggleHomeInfo}
@@ -385,10 +424,13 @@ function HolograficoPanel({
             /* Compatibilidad con recorridos antiguos que aún no cierran su bitácora. */
             <div className="flex flex-col gap-5">
               <div>
-                <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Días después</p>
-                <h2 className="font-display text-2xl leading-snug text-amber-300 mt-1">
-                  Tu libreto holográfico
+                <p className="text-xs uppercase tracking-[0.3em] text-slate-400/70">{entry.eyebrow}</p>
+                <h2 className={`font-display text-2xl leading-snug mt-1 ${entry.color}`}>
+                  {entry.form ?? entry.name}
                 </h2>
+                <p className="mt-2 text-sm leading-relaxed text-slate-300/80">
+                  {verse}
+                </p>
               </div>
               <VitranaQuestionReveal
                 question={HOLISTIC_QUESTION}
@@ -408,10 +450,10 @@ function HolograficoPanel({
           /* Satélite */
           <div className="flex flex-col gap-5">
             <div>
-              <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Una misma obra</p>
-              <h2 className="font-display text-2xl leading-snug question-heading-voice mt-1">No cambia la pregunta</h2>
+              <p className="text-xs uppercase tracking-[0.3em] text-slate-400/70">{entry.eyebrow}</p>
+              <h2 className={`font-display text-2xl leading-snug mt-1 ${entry.color}`}>{entry.form ?? entry.name}</h2>
               <p className="mt-2 text-sm leading-relaxed text-slate-300/80">
-                Cambia la forma de abordarla. Explora los niveles a tu ritmo y deja que el Libreto holográfico conserve lo que permanezca contigo.
+                {verse}
               </p>
             </div>
             {hasBitacora ? (
@@ -435,8 +477,9 @@ function HolograficoPanel({
                 compact
                 onRequireLogin={onRequireLogin}
                 travelRequiredGat={CUADERNO_HOLOGRAFICO_TRAVEL_GAT}
-                travelLabel={`Viajar a ${entry.name}`}
+                travelLabel="Viajar a esta escena"
                 onTravel={() => onOpenVideo(entry.showcase)}
+                travelCtaOnly={!hasBitacora}
               />
             ) : null}
           </div>

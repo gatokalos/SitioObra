@@ -15,31 +15,12 @@ const PulseReactionCard = ({
     ? 'Enviando...'
     : buttonLabel || title || '¡Déjanos un pulso!';
   const isSuccess = status === 'success';
-  const questionBreakIndex = label?.indexOf('?') ?? -1;
-  const labelLines =
-    questionBreakIndex > 0 && /d[eé]janos/i.test(label)
-      ? [label.slice(0, questionBreakIndex + 1).trim(), label.slice(questionBreakIndex + 1).trim()]
-      : null;
 
   return (
     <div
       className={`mt-4 rounded-[1.75rem] border border-white/10 bg-[radial-gradient(circle_at_88%_50%,rgba(124,58,237,0.18),transparent_32%),linear-gradient(135deg,rgba(0,0,0,0.42),rgba(12,8,20,0.38)_52%,rgba(88,10,56,0.24))] p-4 shadow-[0_18px_50px_rgba(0,0,0,0.28)] sm:p-5 ${className}`}
     >
       <div className="space-y-3">
-        {label ? (
-          <p className="max-w-full text-[0.68rem] uppercase leading-[1.45] tracking-[0.24em] text-purple-200/90 [text-shadow:0_0_14px_rgba(216,180,254,0.38)]">
-            {labelLines ? (
-              <>
-                {labelLines[0]}
-                <br />
-                {labelLines[1]}
-              </>
-            ) : (
-              label
-            )}
-          </p>
-        ) : null}
-
         <div className="flex items-center justify-between gap-5">
           {description ? (
             <p className="min-w-0 flex-1 text-[0.95rem] font-semibold leading-relaxed text-slate-100/90 sm:text-base">
