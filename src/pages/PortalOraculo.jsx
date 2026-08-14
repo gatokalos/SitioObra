@@ -34,20 +34,13 @@ const ORACULO_TITLE = 'La pregunta';
 const ORACULO_INTRO =
   (
   <>
-    Este miniverso existe para mirar lo que <strong>#GatoEncerrado</strong> despierta en ti.
-    <br />
-    A través de preguntas breves, el <strong>Oráculo</strong> abre un espacio para observar tus propias respuestas:
-    emociones, intuiciones y pensamientos que aparecen después de la experiencia.
+           <p className="text-lg leading-relaxed font-medium text-white mt-4">
+Buscar sentido no se apaga cuando encuentra algo. Se vuelve más fino, y empieza a intuir mejor.</p>
+        <p className="text-base leading-relaxed text-slate-200/80 mt-3">El teatro necesita que alguien esté mirando para que algo sea cierto. Aquí no hay público: solo tú y lo que aparece después de la experiencia. No se interpreta nada. Se aprende a observar al observador.</p>
   
   </>
 );
-const ORACULO_TAGLINE =  (
-  <>
-    <strong>Aquí no se interpreta la mente.</strong>
-    <br />
-    Se aprende a <em>observar al observador</em>.
-  </>
-);
+
 const ORACULO_SEED_NOTES = [
   'Las respuestas se almacenan como semillas de conocimiento simbólico.',
   'Enriquecen una base de datos viviente para literatura, IA personalizada y obra interactiva.',
@@ -311,7 +304,9 @@ const PortalOraculo = () => {
               </div>
             ) : null}
           </div>
-          <PortalHeaderActions />
+          <div className="hidden lg:block">
+            <PortalHeaderActions />
+          </div>
         </div>
 
         <div className="mt-6 flex flex-col gap-6">
@@ -337,8 +332,7 @@ const PortalOraculo = () => {
                   </div>
                 </div>
                 <div className="space-y-3 text-lg text-slate-200/85 leading-relaxed font-light">
-                  <p>{ORACULO_INTRO}</p>
-                  <p className="text-violet-200/90">{ORACULO_TAGLINE}</p>
+                  {ORACULO_INTRO}
                 </div>
                 <div className="flex flex-wrap gap-2">
                   <span className="rounded-full border border-violet-200/35 bg-violet-400/10 px-3 py-1 text-[11px] uppercase tracking-[0.22em] text-violet-100">Ritual simbólico</span>
@@ -417,6 +411,13 @@ const PortalOraculo = () => {
             </div>
           </div>
 
+          <div className="lg:hidden">
+            <IAInsightCard
+              {...ORACULO_IA_PROFILE}
+              title="Información del dispositivo"
+              compact
+            />
+          </div>
           <div className={`lg:hidden rounded-3xl border border-white/10 bg-black/30 p-5 space-y-4 transition-opacity duration-300${isResonanceOpen ? ' opacity-30 pointer-events-none' : ''}`}>
             <div className="mb-1">
               <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Resonancia Colectiva</p>
@@ -448,7 +449,13 @@ const PortalOraculo = () => {
               />
             </div>
           </div>
-          <div className="order-4"><IAInsightCard {...ORACULO_IA_PROFILE} compact /></div>
+          <div className="order-4 hidden lg:block">
+            <IAInsightCard
+              {...ORACULO_IA_PROFILE}
+              title="Información del dispositivo"
+              compact
+            />
+          </div>
           {l3Rec?.step3 ? (
             <div className="order-5">
               <PortalL3RewardCTA portal="oraculo" l3Rec={l3Rec} />
@@ -464,6 +471,9 @@ const PortalOraculo = () => {
               </button>
             </div>
           ) : null}
+          <div className="order-last flex justify-end pt-2 lg:hidden">
+            <PortalHeaderActions />
+          </div>
         </div>
 
         {showLoginOverlay ? <LoginOverlay onClose={handleCloseLogin} /> : null}

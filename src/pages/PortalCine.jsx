@@ -30,11 +30,16 @@ import { resolvePortalRoute } from '@/lib/miniversePortalRegistry';
 
 const SUPABASE_STORAGE = `${import.meta.env.VITE_SUPABASE_URL || ''}/storage/v1/object/public`;
 
-const CINE_INTRO =
-  'El cine dentro de #GatoEncerrado es otro modo de entrar al encierro.';
-const CINE_PROMISE = 'CopyCats (cine de no-ficción) y Quirón (cortometraje de autoficción) dialogan desde extremos distintos del mismo espectro:';
-const CINE_THEME =
-  'Una filma el desgaste creativo y la fractura del proceso; la otra abre una confesión íntima que decide hablar del suicidio sin rodeos.';
+const CINE_INTRO = (
+  <>
+    <p className="mt-4 text-lg font-medium leading-relaxed text-white">
+      La <em>sobreinterpretación</em> también convierte a los otros en relato: tomar distancia revela cuánto de lo que vemos también lo pusimos nosotros.
+    </p>
+    <p className="text-slate-100/90">
+      Una imagen puede detenerse en una herida abierta. El cine tiene que decidir qué ocurrió antes, qué viene después y cuánto tiempo nos obliga a mirarla.
+    </p>
+  </>
+);
 const CINE_TONE = ['Premiere íntima', 'Conversatorio abierto', 'Cine con memoria'];
 const CINE_NOTA_AUTORAL = {
   title: '#LuzQueEditas',
@@ -387,7 +392,9 @@ const PortalCine = () => {
               </div>
             ) : null}
           </div>
-          <PortalHeaderActions />
+          <div className="hidden lg:block">
+            <PortalHeaderActions />
+          </div>
         </div>
 
         <div className="mt-6 flex flex-col gap-6">
@@ -412,10 +419,8 @@ const PortalCine = () => {
                     <h3 className="font-display text-3xl leading-tight text-white md:text-4xl">{titleDisplay}</h3>
                   </div>
                 </div>
-                <div className="space-y-3 text-lg text-slate-200/85 leading-relaxed font-light">
-                  <p>{CINE_INTRO}</p>
-                  <p className="text-slate-100/90">{CINE_PROMISE}</p>
-                  <p className="text-slate-300/90">{CINE_THEME}</p>
+                <div className="space-y-3 text-lg font-light leading-relaxed text-slate-200/85">
+                  {CINE_INTRO}
                 </div>
                 <div className="flex flex-wrap gap-2">
                   {CINE_TONE.map((item) => (
@@ -508,6 +513,13 @@ const PortalCine = () => {
                 </div>
               </div>
             </div>
+            <div className="bg-slate-950/80 px-5 pt-5 lg:hidden">
+              <IAInsightCard
+                {...CINE_IA_PROFILE}
+                title="Información del dispositivo"
+                compact
+              />
+            </div>
             <div className={`bg-slate-950/80 p-5 lg:hidden transition-opacity duration-300${isResonanceOpen ? ' opacity-30 pointer-events-none' : ''}`}>
               <div className="mb-1">
                 <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Resonancia Colectiva</p>
@@ -539,7 +551,13 @@ const PortalCine = () => {
               <MiniVersoCard title={CINE_NOTA_AUTORAL.title} verse={CINE_NOTA_AUTORAL.verse} palette={CINE_TILE} effect="flip" gatEventKey="flip:nota-autoral:cine" />
             </div>
           </div>
-          <div className="order-4"><IAInsightCard {...CINE_IA_PROFILE} compact /></div>
+          <div className="order-4 hidden lg:block">
+            <IAInsightCard
+              {...CINE_IA_PROFILE}
+              title="Información del dispositivo"
+              compact
+            />
+          </div>
           {l3Rec?.step3 ? (
             <div className="order-5">
               <PortalL3RewardCTA portal="cine" l3Rec={l3Rec} />
@@ -555,6 +573,9 @@ const PortalCine = () => {
               </button>
             </div>
           ) : null}
+          <div className="order-last flex justify-end pt-2 lg:hidden">
+            <PortalHeaderActions />
+          </div>
         </div>
 
         {showLoginOverlay ? <LoginOverlay onClose={handleCloseLogin} /> : null}

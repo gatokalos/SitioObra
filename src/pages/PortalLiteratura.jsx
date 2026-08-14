@@ -315,7 +315,9 @@ const PortalLiteratura = () => {
               </div>
             ) : null}
           </div>
-          <PortalHeaderActions />
+          <div className="hidden lg:block">
+            <PortalHeaderActions />
+          </div>
         </div>
 
         <div className="mt-6 flex flex-col gap-6">
@@ -343,7 +345,6 @@ const PortalLiteratura = () => {
                 <div className="space-y-3 leading-relaxed font-light">
                   <p className="text-lg leading-relaxed font-medium text-white mt-4">Aquí te encuentras en un lugar que no termina de decirse.</p>
                   <p className="text-base leading-relaxed text-slate-200/80">A diferencia de <em>la apariencia</em>, que ocurre toda al mismo tiempo, la palabra necesita del tiempo para existir — y sigue abriendo sentido incluso después de leerse.</p>
-                  <p className="text-lg leading-relaxed font-medium text-white">Este miniverso no busca cerrar lo que se cuenta: <strong>lo deja seguir hablando</strong> solo para acompañar.</p>
                 </div>
                 <div className="flex flex-wrap gap-2">
                   <span className="rounded-full border border-violet-200/35 bg-violet-400/10 px-3 py-1 text-[11px] uppercase tracking-[0.22em] text-violet-100">Autoficción expandida</span>
@@ -438,6 +439,13 @@ const PortalLiteratura = () => {
                     {isNovelaCheckoutLoading ? 'Abriendo checkout...' : 'Comprar edición física'}
                   </button>
                 </div>
+                <div className="pt-4 lg:hidden">
+                  <IAInsightCard
+                    {...LITERATURA_IA_PROFILE}
+                    title="Información del dispositivo"
+                    compact
+                  />
+                </div>
                 <div className={`pt-4 border-t border-white/10 lg:hidden space-y-4 transition-opacity duration-300${isResonanceOpen ? ' opacity-30 pointer-events-none' : ''}`}>
                   <div className="mb-1">
                     <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Resonancia Colectiva</p>
@@ -470,7 +478,13 @@ const PortalLiteratura = () => {
               <MiniVersoCard title={LITERATURA_NOTA_AUTORAL.title} verse={LITERATURA_NOTA_AUTORAL.verse} palette={LITERATURA_TILE} effect="flip" gatEventKey="flip:nota-autoral:literatura" />
             </div>
           </div>
-          <div className="order-4"><IAInsightCard {...LITERATURA_IA_PROFILE} compact /></div>
+          <div className="order-4 hidden lg:block">
+            <IAInsightCard
+              {...LITERATURA_IA_PROFILE}
+              title="Información del dispositivo"
+              compact
+            />
+          </div>
           {l3Rec?.step3 ? (
             <div className="order-5">
               <PortalL3RewardCTA portal="literatura" l3Rec={l3Rec} />
@@ -486,6 +500,9 @@ const PortalLiteratura = () => {
               </button>
             </div>
           ) : null}
+          <div className="order-last flex justify-end pt-2 lg:hidden">
+            <PortalHeaderActions />
+          </div>
         </div>
 
         {showLoginOverlay ? <LoginOverlay onClose={handleCloseLogin} /> : null}

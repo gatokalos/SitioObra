@@ -1917,6 +1917,59 @@ const rendernotaAutoral = () => {
   );
 };
 
+const renderDeviceInfoDesktop = () => {
+  if (!activeDefinition?.iaProfile) return null;
+
+  return (
+    <div className="hidden lg:block">
+      <IAInsightCard
+        {...activeDefinition.iaProfile}
+        title="Información del dispositivo"
+        compact
+        rewardLabel={buildShowcaseRewardLabel(showcaseTokenLedgerById[activeShowcase])}
+        minRequired={buildShowcaseMinRequiredCopy(activeShowcase)}
+      />
+    </div>
+  );
+};
+
+const renderDramaFeaturedWork = () => (
+  <div className="relative overflow-hidden rounded-2xl border border-white/10 bg-black/30">
+    <video
+      className="absolute inset-0 h-full w-full object-cover"
+      src={OBRA_TRAILER_URL}
+      autoPlay
+      muted
+      loop
+      playsInline
+      preload="metadata"
+    />
+    <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-black/10 via-black/30 to-black/90" />
+    <div className="relative z-10 flex min-h-[28rem] flex-col p-6">
+      <div>
+        <p className="mb-1 text-xs uppercase tracking-[0.35em] text-slate-300/75 [text-shadow:0_1px_10px_rgba(0,0,0,0.9)]">
+          Obra destacada
+        </p>
+        <h4 className="font-display text-2xl text-slate-100 [text-shadow:0_1px_10px_rgba(0,0,0,0.9)]">
+          Es un gato encerrado
+        </h4>
+      </div>
+      <div aria-hidden="true" className="h-[11rem] sm:h-[13rem]" />
+      <div className="mt-auto space-y-4">
+        <p className="text-sm leading-relaxed text-slate-300/85">
+          A través de una terapia no convencional, un paciente y su doctora exploran el poder de los sueños lúcidos
+          para confrontar el miedo, la desconexión y la rabia reprimida.
+        </p>
+        <div className="flex flex-wrap gap-2">
+          <span className="rounded-full border border-white/20 bg-black/30 px-3 py-1 text-[11px] uppercase tracking-[0.2em] text-slate-100 backdrop-blur-sm">
+            Incluye dispositivo interactivo
+          </span>
+        </div>
+      </div>
+    </div>
+  </div>
+);
+
 
   const renderPostDetails = (emptyMessage = 'Pronto liberaremos la carta completa de este miniverso.') => {
     if (!activeDefinition?.slug) {
@@ -2195,11 +2248,8 @@ const rendernotaAutoral = () => {
           </div>
 
           <div className="flex flex-col gap-5">
+            {renderDeviceInfoDesktop()}
             {rendernotaAutoral()}
-            {/* La tarjeta de Información de IA para este formato ya la
-                renderiza el bloque genérico fuera de renderShowcaseContent
-                (desktop: hidden lg:block: / mobile: lg:hidden) — un segundo
-                render aquí duplicaba la tarjeta en viewports <1024px. */}
             {activePortalExperienceDone && (
               <button
                 type="button"
@@ -2256,15 +2306,8 @@ const rendernotaAutoral = () => {
             </div>
 
             <div className="flex flex-col gap-5">
+              {renderDeviceInfoDesktop()}
               {rendernotaAutoral()}
-              {/* hidden lg:block: en mobile/portrait ya la muestra el bloque
-                  genérico lg:hidden fuera de renderShowcaseContent — sin este
-                  gate se duplicaba la tarjeta en viewports <1024px. */}
-              {activeDefinition.iaProfile ? (
-                <div className="hidden lg:block">
-                  <IAInsightCard {...activeDefinition.iaProfile} compact rewardLabel={buildShowcaseRewardLabel(showcaseTokenLedgerById[activeShowcase])} minRequired={buildShowcaseMinRequiredCopy(activeShowcase)} />
-                </div>
-              ) : null}
               {activePortalExperienceDone && (
                 <button
                   type="button"
@@ -2307,15 +2350,8 @@ const rendernotaAutoral = () => {
             </div>
 
             <div className="flex flex-col gap-5">
+              {renderDeviceInfoDesktop()}
               {rendernotaAutoral()}
-              {/* hidden lg:block: en mobile/portrait ya la muestra el bloque
-                  genérico lg:hidden fuera de renderShowcaseContent — sin este
-                  gate se duplicaba la tarjeta en viewports <1024px. */}
-              {activeDefinition.iaProfile ? (
-                <div className="hidden lg:block">
-                  <IAInsightCard {...activeDefinition.iaProfile} compact rewardLabel={buildShowcaseRewardLabel(showcaseTokenLedgerById[activeShowcase])} minRequired={buildShowcaseMinRequiredCopy(activeShowcase)} />
-                </div>
-              ) : null}
               {activePortalExperienceDone && (
                 <button
                   type="button"
@@ -2419,48 +2455,14 @@ const rendernotaAutoral = () => {
 
       return (
         <div className="space-y-6">
-          {/* BLOQUE 2 — Obra destacada · Vitrina Desktop only */}
-          <div className="hidden lg:grid lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)] gap-6">
+          {/* Desktop: obra destacada y columna editorial lateral. */}
+          <div className="hidden gap-6 lg:grid lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
             {/* Columna izquierda: card inmersiva estilo cine */}
-            <div className="relative overflow-hidden rounded-2xl border border-white/10 bg-black/30">
-              {/* Fondo: video tráiler */}
-              <video
-                className="absolute inset-0 w-full h-full object-cover"
-                src={OBRA_TRAILER_URL}
-                autoPlay
-                muted
-                loop
-                playsInline
-                preload="metadata"
-              />
-              <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-black/10 via-black/30 to-black/90" />
-              {/* Contenido flotando al fondo */}
-              <div className="relative z-10 flex min-h-[28rem] flex-col p-6">
-                <div className="flex items-center gap-3">
-                  <div>
-                    <p className="mb-1 text-xs uppercase tracking-[0.35em] text-slate-300/75 [text-shadow:0_1px_10px_rgba(0,0,0,0.9)]">Obra destacada</p>
-                    <h4 className="font-display text-2xl text-slate-100 [text-shadow:0_1px_10px_rgba(0,0,0,0.9)]">Es un gato encerrado</h4>
-                  </div>
-                </div>
-                <div aria-hidden="true" className="h-[11rem] sm:h-[13rem]" />
-                <div className="mt-auto space-y-4">
-                  <p className="text-sm leading-relaxed text-slate-300/85">
-                    A través de una terapia no convencional, un paciente y su doctora exploran el poder de los sueños lúcidos para confrontar el miedo, la desconexión y la rabia reprimida.
-                  </p>
-                  <div className="flex flex-wrap gap-2">
-                    <span className="rounded-full border border-white/20 bg-black/30 px-3 py-1 text-[11px] uppercase tracking-[0.2em] text-slate-100 backdrop-blur-sm">Incluye dispositivo interactivo</span>
-                  </div>
-       
-                </div>
-              </div>
-            </div>
-            {/* Columna derecha: mini-verso autoral + IA + CTA experiencia narrativa */}
-            <div className="flex flex-col gap-5">
+            {renderDramaFeaturedWork()}
+            {/* Columna derecha: información del dispositivo + mini-verso autoral + CTA */}
+            <div className="hidden lg:flex lg:flex-col lg:gap-5">
+              {renderDeviceInfoDesktop()}
               {rendernotaAutoral()}
-              {/* La tarjeta de Información de IA para este formato ya la
-                  renderiza el bloque genérico fuera de renderShowcaseContent
-                  (desktop: hidden lg:block / mobile: lg:hidden) — un segundo
-                  render aquí duplicaba la tarjeta en viewports <1024px. */}
               {activePortalExperienceDone && (
                 <button
                   type="button"
@@ -2958,15 +2960,8 @@ const rendernotaAutoral = () => {
           </div>
 
           <div className="flex flex-col gap-5">
+            {renderDeviceInfoDesktop()}
             {rendernotaAutoral()}
-            {/* hidden lg:block: en mobile/portrait ya la muestra el bloque
-                genérico lg:hidden fuera de renderShowcaseContent — sin este
-                gate se duplicaba la tarjeta en viewports <1024px. */}
-            {activeDefinition.iaProfile ? (
-              <div className="hidden lg:block">
-                <IAInsightCard {...activeDefinition.iaProfile} compact rewardLabel={buildShowcaseRewardLabel(showcaseTokenLedgerById[activeShowcase])} minRequired={buildShowcaseMinRequiredCopy(activeShowcase)} />
-              </div>
-            ) : null}
             {activePortalL3Done ? (
               <div className="relative">
                 <button
@@ -3109,15 +3104,8 @@ const rendernotaAutoral = () => {
             </div>
 
             <div className="flex flex-col gap-5">
+              {renderDeviceInfoDesktop()}
               {rendernotaAutoral()}
-              {/* hidden lg:block: en mobile/portrait ya la muestra el bloque
-                  genérico lg:hidden fuera de renderShowcaseContent — sin este
-                  gate se duplicaba la tarjeta en viewports <1024px. */}
-              {activeDefinition.iaProfile ? (
-                <div className="hidden lg:block">
-                  <IAInsightCard {...activeDefinition.iaProfile} compact rewardLabel={buildShowcaseRewardLabel(showcaseTokenLedgerById[activeShowcase])} minRequired={buildShowcaseMinRequiredCopy(activeShowcase)} />
-                </div>
-              ) : null}
               {activePortalExperienceDone && (
                 <button
                   type="button"
@@ -3167,15 +3155,8 @@ const rendernotaAutoral = () => {
           </div>
 
           <div className="flex flex-col gap-5">
+            {renderDeviceInfoDesktop()}
             {rendernotaAutoral()}
-            {/* hidden lg:block: en mobile/portrait ya la muestra el bloque
-                genérico lg:hidden fuera de renderShowcaseContent — sin este
-                gate se duplicaba la tarjeta en viewports <1024px. */}
-            {activeDefinition.iaProfile ? (
-              <div className="hidden lg:block">
-                <IAInsightCard {...activeDefinition.iaProfile} compact rewardLabel={buildShowcaseRewardLabel(showcaseTokenLedgerById[activeShowcase])} minRequired={buildShowcaseMinRequiredCopy(activeShowcase)} />
-              </div>
-            ) : null}
             {activePortalExperienceDone && embeddedAppUrl ? (
               <a
                 href={embeddedAppUrl}
@@ -3591,15 +3572,8 @@ const rendernotaAutoral = () => {
                 {quironBlock}
               </div>
               <div className="flex flex-col gap-5">
+                {renderDeviceInfoDesktop()}
                 {rendernotaAutoral()}
-                {/* hidden lg:block: en mobile/portrait ya la muestra el bloque
-                    genérico lg:hidden fuera de renderShowcaseContent — sin este
-                    gate se duplicaba la tarjeta en viewports <1024px. */}
-                {activeDefinition.iaProfile ? (
-                  <div className="hidden lg:block">
-                    <IAInsightCard {...activeDefinition.iaProfile} compact rewardLabel={buildShowcaseRewardLabel(showcaseTokenLedgerById[activeShowcase])} minRequired={buildShowcaseMinRequiredCopy(activeShowcase)} />
-                  </div>
-                ) : null}
                 {activePortalExperienceDone && (
                   <button
                     type="button"
@@ -3801,11 +3775,8 @@ const rendernotaAutoral = () => {
                   })}
                 </div>
                 <div className="flex flex-col gap-5">
+                  {renderDeviceInfoDesktop()}
                   {rendernotaAutoral()}
-                  {/* La tarjeta de Información de IA para este formato ya la
-                      renderiza el bloque genérico fuera de renderShowcaseContent
-                      (desktop: hidden lg:block / mobile: lg:hidden) — un segundo
-                      render aquí duplicaba la tarjeta en viewports <1024px. */}
                   {activePortalExperienceDone && (
                     <button
                       type="button"
@@ -4609,12 +4580,8 @@ const rendernotaAutoral = () => {
                       </>
                     ) : (
                       <>
+                        {renderDeviceInfoDesktop()}
                         {rendernotaAutoral()}
-                        {activeDefinition.iaProfile ? (
-                          <div className="hidden lg:block">
-                            <IAInsightCard {...activeDefinition.iaProfile} compact rewardLabel={buildShowcaseRewardLabel(showcaseTokenLedgerById[activeShowcase])} minRequired={buildShowcaseMinRequiredCopy(activeShowcase)} />
-                          </div>
-                        ) : null}
                       </>
                     )}
                   </div>
@@ -5289,7 +5256,7 @@ const rendernotaAutoral = () => {
               </h2>
               <p className="text-lg text-slate-300/80 max-w-3xl mx-auto leading-relaxed font-light">
     <em>Esta obra es una narrativa transmedia</em> desplegada en nueve formas que aquí llamamos miniversos.<br />
-    Lo que cambia es desde dónde la abordas y cómo participas en ella.<br />
+    <strong>Elige por dónde entrar y qué lugar ocupar.</strong><br />
       <span className="block mt-10 text-sm text-slate-100/50 italic">
     (Cada <strong>miniverso</strong> sostiene al universo entero con cada minuto de tu valiosa atención.)
   </span>

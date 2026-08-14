@@ -674,14 +674,18 @@ export const ProvocaSection = () => {
               <p className="mb-3 text-xs uppercase tracking-[0.35em] text-slate-400/80">
                 Formas de decirlo
               </p>
-              <h2 className="provoca-act-title mb-4" aria-label="La réplica">
-                <span aria-hidden="true">
-                  LA R<span className="provoca-act-title__accented">E</span>PLICA
-                </span>
-              </h2>
-              <p className="mb-4 max-w-2xl text-sm font-light leading-relaxed text-slate-300/80 md:hidden">
-                Aquí, la obra conecta lo que sus preguntas te hicieron sentir con lo que otras voces también intentan nombrar.
+<h2 className="provoca-act-title mb-4" aria-label="La réplica">
+  <span aria-hidden="true">
+    EL ACTO
+    <br className="md:hidden" />
+    <span className="hidden md:inline"> </span>
+    DE LA R<span className="provoca-act-title__accented">E</span>PLICA
+  </span>
+</h2>
+ <p className="text-slate-300/80 leading-relaxed mb-6 font-light">
+                Ninguna obra termina en el acto final. Se completa del otro lado, cuando alguien la recibe y responde.
               </p>
+      
               <h3
                 className="font-display text-3xl text-slate-100 mb-6 italic"
                 aria-label={`¿Qué te provoca ${currentProvocaTitleTerm}?`}
@@ -706,9 +710,7 @@ export const ProvocaSection = () => {
                   </AnimatePresence>
                 </span>
               </h3>
-              <p className="text-slate-300/80 leading-relaxed mb-6 font-light">
-                Lee una réplica a la vez o envíanos la tuya si algo necesita salir — y deja que la obra respire sola.
-              </p>
+             
               <div className="flex flex-col sm:flex-row gap-3">
                 <Button
                   variant="outline"
@@ -724,7 +726,7 @@ export const ProvocaSection = () => {
                       {isSubmittingVoice ? 'Enviando…' : 'Enviar mi comentario'}
                     </>
                   ) : (
-                    'Comparte la tuya'
+                    'Comparte tu forma'
                   )}
                 </Button>
               </div>
@@ -744,7 +746,7 @@ export const ProvocaSection = () => {
                       onChange={(event) => setVoiceDraft(event.target.value)}
                       rows={3}
                       className="form-surface w-full px-4 py-3 resize-none"
-                      placeholder="Comparte algo que cambió tu forma de mirar, sentir o recordar…"
+                      placeholder="Comparte lo que sus preguntas te hicieron sentir…"
                     />
                     <div className="mt-3 grid gap-3 sm:grid-cols-2">
                       <input

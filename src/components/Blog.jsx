@@ -83,7 +83,7 @@ const STARTER_FAQ_PROMPTS = [
   '¿Qué hay realmente detrás de las nueve formas de esta obra transmedia?',
   '¿Cómo se usa la Inteligencia Artificial en este sitio?',
   '¿Por qué a veces es más fácil aislarse que pedir ayuda?',
-  '¿Qué es la realidad, realmente?',
+  '¿Qué es la realidad?',
   '¿Qué diferencia hay entre medir cuánta gente ve una obra y saber si cambió algo en el público?',
   '¿Qué pasa cuando las mismas personas que nos quieren también nos lastiman?',
   '¿Quién es Silvestre y qué le pasa en la obra?',
@@ -1148,7 +1148,7 @@ const Blog = ({ posts = [], isLoading = false, error = null, showBuscador = fals
                           />
                           <div>
                             <p className="text-[10px] uppercase tracking-[0.32em] text-violet-300/65">
-                              Entre actos
+                              #GatoEncerrado
                             </p>
                             <h3 className="mt-2 font-display text-2xl text-slate-50 md:text-3xl">
                               Entra al camerino

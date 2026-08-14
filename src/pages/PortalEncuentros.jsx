@@ -67,17 +67,15 @@ const PortalEncuentros = () => {
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-950 via-black to-slate-900 text-slate-100">
       <div className="w-full py-8 md:py-12">
-        <div className="flex items-start justify-between gap-4 px-4 sm:px-6">
-          {/* <PortalAuthButton onOpenLogin={handleOpenLogin} /> */}
-          <PortalHeaderActions />
-        </div>
-
         <ReserveModal
           open
           onClose={handleClose}
           mode="offseason"
           renderMode="page"
         />
+        <div className="flex justify-end px-4 pt-6 sm:px-6">
+          <PortalHeaderActions />
+        </div>
       </div>
       {showLoginOverlay ? <LoginOverlay onClose={handleCloseLogin} /> : null}
     </div>

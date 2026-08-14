@@ -184,13 +184,13 @@ const collectiveNodeLayout = [
 const SCENE_PORTAL_INTRO = (
   <>
           <p className="text-lg leading-relaxed font-medium text-white mt-4">
-          Este espacio solo existe mientras alguien más está mirando.<br/>
+          La vergüenza de ser visto <em>sintiendo</em> aparece antes que cualquier juicio: alguien mira, y lo que sentías cambia de forma.<br/>
         </p>
         <p className="text-base leading-relaxed text-neutral-300">
-           A diferencia del objeto, que se puede <strong>agarrar</strong> y sigue cargando su propio peso, la emoción puesta en escena necesita ser vista para volverse algo real.
+           Hay cosas que se guardan y pueden retomarse después. Esto no. Ocurre una vez, delante de un público, y desaparece con ese momento.
         </p>
         <p className="text-base leading-relaxed text-neutral-300">
-          Este miniverso no solo expone lo efímero de una obra: <em>la pone delante de otros y espera a ver qué le responden.</em>
+          Aquí, <strong>una misma frase</strong>, interpretada desde otra emoción, ya dice otra cosa.
         </p>
   </>
 );
@@ -202,7 +202,7 @@ const SCENE_PORTAL_IA_PROFILE = {
   footnote: 'No todas las voces quieren durar. Gracias por dejarlas pasar.',
 };
 const SCENE_PORTAL_NOTA_AUTORAL = {
-  title: '#Teatro',
+  title: '#Dramaturgia',
   verse: 'Entré sin saber.\nAlgo dijo mi nombre.\nY ya no hubo salida.',
 };
 const OBRA_TRAILER_URL = 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/cedes/gatoencerrado-trailer-web.mp4';
@@ -985,7 +985,9 @@ const PortalVoz = () => {
               </div>
             ) : null}
           </div>
-          <PortalHeaderActions />
+          <div className="hidden lg:block">
+            <PortalHeaderActions />
+          </div>
         </div>
 
         <div className="mt-6 flex flex-col gap-6">
@@ -1016,9 +1018,9 @@ const PortalVoz = () => {
                   {SCENE_PORTAL_INTRO}
                 </div>
                 <div className="flex flex-wrap gap-2">
-                  <span className="rounded-full border border-purple-200/35 bg-purple-400/10 px-3 py-1 text-[11px] uppercase tracking-[0.22em] text-purple-100">Teatro íntimo</span>
-                  <span className="rounded-full border border-purple-200/35 bg-purple-400/10 px-3 py-1 text-[11px] uppercase tracking-[0.22em] text-purple-100">Voz activa</span>
-                  <span className="rounded-full border border-purple-200/35 bg-purple-400/10 px-3 py-1 text-[11px] uppercase tracking-[0.22em] text-purple-100">Emoción en escena</span>
+                  <span className="rounded-full border border-purple-200/35 bg-purple-400/10 px-3 py-1 text-[11px] uppercase tracking-[0.22em] text-purple-100">Obra en vivo</span>
+                  <span className="rounded-full border border-purple-200/35 bg-purple-400/10 px-3 py-1 text-[11px] uppercase tracking-[0.22em] text-purple-100">Emoción expuesta</span>
+                  <span className="rounded-full border border-purple-200/35 bg-purple-400/10 px-3 py-1 text-[11px] uppercase tracking-[0.22em] text-purple-100">Mirada ajena</span>
                 </div>
               </div>
 
@@ -1118,6 +1120,15 @@ const PortalVoz = () => {
                   <span className="rounded-full border border-white/20 bg-black/30 px-3 py-1 text-[11px] uppercase tracking-[0.2em] text-slate-100 backdrop-blur-sm">Incluye dispositivo interactivo</span>
                 </div>
               </div>
+            </div>
+            {/* En móvil, la información del dispositivo funciona como puente
+                entre la obra que acabamos de ver y su resonancia colectiva. */}
+            <div className="bg-slate-950/80 px-5 pt-5 lg:hidden">
+              <IAInsightCard
+                {...SCENE_PORTAL_IA_PROFILE}
+                title="Información del dispositivo"
+                compact
+              />
             </div>
             {/* Pleca + Sección Resonancia — fondo propio, el video no sangra aquí */}
             <div className={`bg-slate-950/80 p-5 lg:hidden transition-opacity duration-300${isResonanceOpen ? ' opacity-30 pointer-events-none' : ''}`}>
@@ -1573,7 +1584,13 @@ const PortalVoz = () => {
               />
             </div>
           </div>
-          <div className="order-4"><IAInsightCard {...SCENE_PORTAL_IA_PROFILE} compact /></div>
+          <div className="order-4 hidden lg:block">
+            <IAInsightCard
+              {...SCENE_PORTAL_IA_PROFILE}
+              title="Información del dispositivo"
+              compact
+            />
+          </div>
           {l3Rec?.step3 ? (
             <div className="order-5">
               <PortalL3RewardCTA portal="obra" l3Rec={l3Rec} />
@@ -1589,6 +1606,9 @@ const PortalVoz = () => {
               </button>
             </div>
           ) : null}
+          <div className="order-last flex justify-end pt-2 lg:hidden">
+            <PortalHeaderActions />
+          </div>
         </div>
 
         {showLoginOverlay ? <LoginOverlay onClose={handleCloseLogin} /> : null}

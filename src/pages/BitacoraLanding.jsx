@@ -90,7 +90,7 @@ const BitacoraLanding = () => {
       <div className="relative my-10 h-[calc(100vh-5rem)] w-[calc(100vw-2.5rem)] max-w-6xl overflow-hidden rounded-[28px] border border-white/15 bg-slate-950/55 shadow-[0_35px_120px_rgba(0,0,0,0.65)] backdrop-blur-2xl">
         <ResonanceModal
           open
-          startInHolografico
+          startInBitacora
           portal={portalKey}
           question={entry.q}
           onClose={handleClose}

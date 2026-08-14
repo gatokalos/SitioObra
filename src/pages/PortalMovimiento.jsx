@@ -34,8 +34,18 @@ import { ensureAnonId } from '@/lib/identity';
 import { resolvePortalRoute } from '@/lib/miniversePortalRegistry';
 import PortalL3RewardCTA from '@/components/portal/PortalL3RewardCTA';
 
-const MOVEMENT_INTRO =
-  'Este miniverso creativo traslada al cuerpo los conflictos mentales del universo #GatoEncerrado. Si en la obra la mente se fragmenta, aquí el cuerpo busca arraigo. Es un laboratorio coreográfico y somático que se activa por ciudad. No se interpretan emociones: se atraviesan.';
+const MOVEMENT_INTRO = (
+  <>
+    <p className="mt-4 text-lg font-medium leading-relaxed text-white">
+      La desconexión es pasar el día entero sin notar que uno tiene cuerpo. No es olvido: es quedarse atrapado
+      entre demasiadas preguntas.
+    </p>
+    <p className="mt-3 text-base leading-relaxed text-slate-200/80">
+      La incertidumbre nos obliga a elegir sin saber del todo qué estamos eligiendo.
+      <strong> En este espacio no se interpretan emociones: se atraviesan.</strong>
+    </p>
+  </>
+);
 const MOVEMENT_TAGLINE = 'Talleres de Cuerpo Colectivo';
 const MOVEMENT_BODY =
   'Cuando la obra visita una ciudad, Movimiento activa una semana de exploración corporal abierta a la comunidad. Cada jornada trabaja una fuerza corporal específica, desde arraigo hasta fragmentación, a través de entrenamiento somático y creación coreográfica.\n\nEstas coreografías se registran mediante captura de movimiento (o mocap) y se traducen en presencias digitales que habitan ese territorio. Al finalizar el proceso, la acción escénica no desaparece: queda sembrada en el espacio público como una presencia en realidad aumentada.';
@@ -409,7 +419,9 @@ const PortalMovimiento = () => {
               </div>
             ) : null}
           </div>
-          <PortalHeaderActions />
+          <div className="hidden lg:block">
+            <PortalHeaderActions />
+          </div>
         </div>
 
         <div className="mt-6 flex flex-col gap-6">
@@ -435,7 +447,7 @@ const PortalMovimiento = () => {
                   </div>
                 </div>
                 <div className="space-y-4 text-lg text-slate-200/85 leading-relaxed font-light">
-                  <p>{MOVEMENT_INTRO}</p>
+                  {MOVEMENT_INTRO}
                 </div>
                 <div className="flex flex-wrap gap-2">
                   <span className="rounded-full border border-emerald-200/35 bg-emerald-400/10 px-3 py-1 text-[11px] uppercase tracking-[0.22em] text-emerald-100">Cuerpo en tránsito</span>
@@ -586,6 +598,13 @@ const PortalMovimiento = () => {
             />
           </div>
 
+          <div className="lg:hidden">
+            <IAInsightCard
+              {...MOVEMENT_IA_PROFILE}
+              title="Información del dispositivo"
+              compact
+            />
+          </div>
           <div className={`lg:hidden rounded-3xl border border-white/10 bg-black/30 p-5 space-y-4 transition-opacity duration-300${isResonanceOpen ? ' opacity-30 pointer-events-none' : ''}`}>
             <div className="mb-1">
               <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Resonancia Colectiva</p>
@@ -681,7 +700,13 @@ const PortalMovimiento = () => {
             </div>
 
           </div>
-          <IAInsightCard {...MOVEMENT_IA_PROFILE} compact />
+          <div className="hidden lg:block">
+            <IAInsightCard
+              {...MOVEMENT_IA_PROFILE}
+              title="Información del dispositivo"
+              compact
+            />
+          </div>
           {l3Rec?.step3 ? (
             <PortalL3RewardCTA portal="movimiento" l3Rec={l3Rec} />
           ) : experienceDone ? (
@@ -693,6 +718,9 @@ const PortalMovimiento = () => {
               ✦ Inscríbete a los talleres coreográficos
             </button>
           ) : null}
+          <div className="order-last flex justify-end pt-2 lg:hidden">
+            <PortalHeaderActions />
+          </div>
         </div>
 
         {showLoginOverlay ? <LoginOverlay onClose={handleCloseLogin} /> : null}

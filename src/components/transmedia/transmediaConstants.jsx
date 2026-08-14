@@ -589,22 +589,22 @@ export const showcaseDefinitions = {
     introNode: (
       <>
           <p className="text-lg leading-relaxed font-medium text-white mt-4">
-          Este espacio solo existe mientras alguien más está mirando.<br/>
+          La vergüenza de ser visto <em>sintiendo</em> aparece antes que cualquier juicio: alguien mira, y lo que sentías cambia de forma.<br/>
         </p>
         <p className="text-base leading-relaxed text-neutral-300">
-          A diferencia del objeto, que se puede <strong>agarrar</strong> y sigue cargando su propio peso, la emoción puesta en escena necesita ser vista para volverse real.
+           Hay cosas que se guardan y pueden retomarse después. Esto no. Ocurre una vez, delante de un público, y desaparece con ese momento.
         </p>
         <p className="text-base leading-relaxed text-neutral-300">
-          Este miniverso no solo expone lo efímero de una obra: <em>la pone delante de otros y espera a ver qué le responden.</em>
+          Aquí, <strong>una misma frase</strong>, interpretada desde otra emoción, ya dice otra cosa.
         </p>
         <div className="flex flex-wrap gap-2 mt-2">
-          <span className="rounded-full border border-purple-200/35 bg-purple-400/10 px-3 py-1 text-[11px] uppercase tracking-[0.22em] text-purple-100">Teatro íntimo</span>
-          <span className="rounded-full border border-purple-200/35 bg-purple-400/10 px-3 py-1 text-[11px] uppercase tracking-[0.22em] text-purple-100">Voz activa</span>
-          <span className="rounded-full border border-purple-200/35 bg-purple-400/10 px-3 py-1 text-[11px] uppercase tracking-[0.22em] text-purple-100">Emoción en escena</span>
+          <span className="rounded-full border border-purple-200/35 bg-purple-400/10 px-3 py-1 text-[11px] uppercase tracking-[0.22em] text-purple-100">Obra en vivo</span>
+          <span className="rounded-full border border-purple-200/35 bg-purple-400/10 px-3 py-1 text-[11px] uppercase tracking-[0.22em] text-purple-100">Emoción expuesta</span>
+          <span className="rounded-full border border-purple-200/35 bg-purple-400/10 px-3 py-1 text-[11px] uppercase tracking-[0.22em] text-purple-100">Mirada ajena</span>
         </div>
       </>
     ),
-    cartaTitle: '#TEATRO',
+    cartaTitle: '#Dramaturgia',
     notaAutoral: 'Entré sin saber.\nAlgo dijo mi nombre.\nY ya no hubo salida.',
 
     ctaLabel: 'Habla conmigo',
@@ -640,9 +640,8 @@ iaProfile: {
     intro: 'El cine dentro de #GatoEncerrado es otro modo de entrar al encierro.',
     introNode: (
       <>
-        <p>El cine dentro de #GatoEncerrado es otro modo de entrar al encierro.</p>
-        <p className="text-slate-100/90">CopyCats (cine de no-ficción) y Quirón (cortometraje de autoficción) dialogan desde extremos distintos del mismo espectro:</p>
-        <p className="text-slate-300/90">Una filma el desgaste creativo y la fractura del proceso; la otra abre una confesión íntima que decide hablar del suicidio sin rodeos.</p>
+          <p className="mt-4 text-lg font-medium leading-relaxed text-white">La <em>sobreinterpretación</em> también convierte a los otros en relato: tomar distancia revela cuánto de lo que vemos también lo pusimos nosotros.</p>
+        <p className="text-slate-100/90">Una imagen puede detenerse en una herida abierta. El cine tiene que decidir qué ocurrió antes, qué viene después y cuánto tiempo nos obliga a mirarla.</p>
         <div className="flex flex-wrap gap-2 mt-2">
           <span className="rounded-full border border-sky-200/35 bg-sky-400/10 px-3 py-1 text-[11px] uppercase tracking-[0.22em] text-sky-100">Premiere íntima</span>
           <span className="rounded-full border border-sky-200/35 bg-sky-400/10 px-3 py-1 text-[11px] uppercase tracking-[0.22em] text-sky-100">Conversatorio abierto</span>
@@ -770,9 +769,6 @@ iaProfile: {
     A diferencia de la escritura, que necesita decirse o leerse para seguir abriendo sentido, el objeto no necesita ser nombrado para sostener lo que carga — basta con tenerlo cerca.
   </p>
 
-  <p className="text-base leading-relaxed text-slate-300 mt-3">
-     Las piezas de este miniverso no explican el sentimiento que las originó: <strong>lo presentan sin tener que contarlo</strong>.
-  </p>
   <div className="flex flex-wrap gap-2 mt-2">
     <span className="rounded-full border border-amber-200/35 bg-amber-400/10 px-3 py-1 text-[11px] uppercase tracking-[0.22em] text-amber-100">Objeto narrativo</span>
     <span className="rounded-full border border-amber-200/35 bg-amber-400/10 px-3 py-1 text-[11px] uppercase tracking-[0.22em] text-amber-100">Cerámica de autor</span>
@@ -860,7 +856,6 @@ iaProfile: {
       <>
         <p className="text-lg leading-relaxed font-medium text-white mt-4">Aquí te encuentras en un lugar que no termina de decirse.</p>
          <p className="text-base leading-relaxed text-slate-200/80">A diferencia de <em>la apariencia</em>, que ocurre toda al mismo tiempo, la palabra necesita del tiempo para existir — y sigue abriendo sentido incluso después de leerse.</p>
-        <p className="text-base leading-relaxed text-slate-200/80 mt-3">Este miniverso no busca cerrar lo que se cuenta: <strong>lo deja seguir hablando</strong> solo para acompañar.</p>
         <div className="flex flex-wrap gap-2 mt-2">
           <span className="rounded-full border border-violet-200/35 bg-violet-400/10 px-3 py-1 text-[11px] uppercase tracking-[0.22em] text-violet-100">Autoficción expandida</span>
           <span className="rounded-full border border-violet-200/35 bg-violet-400/10 px-3 py-1 text-[11px] uppercase tracking-[0.22em] text-violet-100">Fragmentos y voces</span>
@@ -953,10 +948,8 @@ Abrió una experiencia inmersiva donde la resonancia modifica la percepción del
 Este espacio permite recorrer esas composiciones, explorar sus capas y descubrir cómo lo audible deja huella incluso cuando la escena ya terminó. <br/><br/> Aquí, cada visita es una mezcla nueva, un sueño que se reinventa con cada escucha.</p>,
     introNode: (
       <>
-        <p className="text-base leading-relaxed text-slate-100/90">Hay cosas que en <strong>#GatoEncerrado</strong> solo se entienden si antes las habíamos escuchado.</p>
-        <p className="text-base leading-relaxed text-slate-300/90 mt-3">Por eso aparecen como <em>resonancia, música, tensión o silencio</em>.</p>
-        <p className="text-base leading-relaxed text-slate-200/80 mt-3">Este miniverso explora el sonido como <strong>experiencia narrativa y emocional</strong> dentro del universo de #GatoEncerrado.</p>
-        <p className="text-lg leading-relaxed font-medium text-white mt-4">Porque a veces una historia desaparece de la vista…<br/><em>pero permanece vibrando en nuestras mentes</em>.</p>
+        <p className="text-lg leading-relaxed font-medium text-white mt-4">Casi nadie se detiene a escuchar lo que ya estaba sonando.</p>
+        <p className="text-base leading-relaxed text-slate-300/90 mt-3">Hay cosas que el cuerpo solo percibe con vibración: algo entra sin permiso y se queda. Basta con <em>cerrar los ojos</em> para descubrir que la obra continúa en otra parte.</p>
         <div className="flex flex-wrap gap-2 mt-2">
           <span className="rounded-full border border-cyan-200/35 bg-cyan-400/10 px-3 py-1 text-[11px] uppercase tracking-[0.22em] text-cyan-100">Diseño sonoro</span>
           <span className="rounded-full border border-cyan-200/35 bg-cyan-400/10 px-3 py-1 text-[11px] uppercase tracking-[0.22em] text-cyan-100">Sueño en capas</span>
@@ -1049,13 +1042,10 @@ Este espacio permite recorrer esas composiciones, explorar sus capas y descubrir
     introNode: (
       <>
     <p className="mt-4 text-lg font-medium leading-relaxed text-white">
-      Las emociones contemporáneas también se juzgan por <em>su apariencia</em>.
+      Nadie se ve como cree que se ve, y siempre hay alguien decidiendo qué se mira. Las emociones también se juzgan por <em>su apariencia</em>.
     </p>
     <p className="text-base leading-relaxed text-slate-200/80 mt-3">
-      Detrás de la proyección hay alguien que elige qué mostrar. En cambio, la imagen aparece de golpe, y con eso basta para que otros decidan qué ver y qué no.
-    </p>
-    <p className="mt-3 text-base leading-relaxed text-slate-200/80">
-      Este miniverso se nos presenta así: como una superficie que vuelve a aparecer con los ojos cerrados.
+      En el cine alguien elige qué mostrar y en qué orden. La imagen no da esa tregua: llega de golpe, entera, como una superficie que vuelve a aparecer con los ojos cerrados.
     </p>
         <div className="flex flex-wrap gap-2 mt-2">
           <span className="rounded-full border border-fuchsia-200/35 bg-fuchsia-400/10 px-3 py-1 text-[11px] uppercase tracking-[0.22em] text-fuchsia-100">Cómic</span>
@@ -1132,9 +1122,13 @@ Este espacio permite recorrer esas composiciones, explorar sus capas y descubrir
     intro: 'Este miniverso creativo traslada al cuerpo los conflictos mentales del universo #GatoEncerrado. Si en la obra la mente se fragmenta, aquí el cuerpo busca arraigo. Es un laboratorio coreográfico y somático que se activa por ciudad. No se interpretan emociones: se atraviesan.',
     introNode: (
       <>
-        <p className="text-base leading-relaxed text-slate-300/90">Este miniverso creativo traslada al <strong>cuerpo</strong> los conflictos mentales del universo #GatoEncerrado.</p>
-        <p className="text-base leading-relaxed text-slate-200/80 mt-3">Si en la obra la mente se fragmenta, aquí el cuerpo busca <strong>arraigo</strong>. Es un laboratorio coreográfico y somático que se activa por ciudad.</p>
-        <p className="text-lg leading-relaxed font-medium text-white mt-4">No se interpretan emociones: <strong>se atraviesan</strong>.</p>
+            <p className="mt-4 text-lg font-medium leading-relaxed text-white">
+      La desconexión es pasar el día entero sin notar que uno tiene cuerpo. No es olvido: es quedarse atrapado entre demasiadas preguntas.    </p>
+    <p className="text-base leading-relaxed text-slate-200/80 mt-3">
+      La incertidumbre nos obliga a elegir sin saber del todo qué estamos eligiendo. 
+      <strong> En este espacio no se interpretan emociones: se atraviesan.</strong>
+    </p>
+
         <div className="flex flex-wrap gap-2 mt-2">
           <span className="rounded-full border border-emerald-200/35 bg-emerald-400/10 px-3 py-1 text-[11px] uppercase tracking-[0.22em] text-emerald-100">Cuerpo en tránsito</span>
           <span className="rounded-full border border-emerald-200/35 bg-emerald-400/10 px-3 py-1 text-[11px] uppercase tracking-[0.22em] text-emerald-100">Ritual coreográfico</span>
@@ -1323,16 +1317,14 @@ Este espacio permite recorrer esas composiciones, explorar sus capas y descubrir
     tagline: 'Juegos como portales • Apps como rituales felinos.',
     intro: (
       <>
-        <p>Aquí el universo explora sus propios <strong>clichés</strong> y los pone en juego.</p>
-        <p>Sabemos que las historias se construyen con formas que ya conocemos: <strong>inicio, desarrollo y final</strong>.</p>
-        <p>Dicen que <em>no hay nada nuevo bajo el sol</em>. Tal vez. Pero cuando una historia se juega, <strong>podemos contarla a nuestra manera.</strong></p>
+         <p className="text-lg leading-relaxed font-medium text-white mt-4">Hay una inquietud que casi nadie confiesa: la sospecha de no ser necesario en ninguna parte.</p>
+        <p className="text-base leading-relaxed text-slate-200/80 mt-3">A veces una pregunta no pide nada a cambio. <strong>Aquí, en cambio, algo depende de ti y no sabes bien qué.</strong></p>
       </>
     ),
     introNode: (
       <>
-        <p className="text-base leading-relaxed text-slate-300/90">Aquí el universo explora sus propios <strong>clichés</strong> y los pone en juego.</p>
-        <p className="text-base leading-relaxed text-slate-200/80 mt-3">Sabemos que las historias se construyen con formas que ya conocemos: <strong>inicio, desarrollo y final</strong>.</p>
-        <p className="text-lg leading-relaxed font-medium text-white mt-4">Dicen que <em>no hay nada nuevo bajo el sol</em>. Tal vez.<br/>Pero cuando una historia se juega, <strong>podemos contarla a nuestra manera</strong>.</p>
+        <p className="text-lg leading-relaxed font-medium text-white mt-4">Hay una inquietud que casi nadie confiesa: la sospecha de no ser necesario en ninguna parte.</p>
+        <p className="text-base leading-relaxed text-slate-200/80 mt-3">A veces una pregunta no pide nada a cambio. <strong>Aquí, en cambio, algo depende de ti y no sabes bien qué.</strong></p>
         <div className="flex flex-wrap gap-2 mt-2">
           <span className="rounded-full border border-emerald-200/35 bg-emerald-400/10 px-3 py-1 text-[11px] uppercase tracking-[0.22em] text-emerald-100">Juego narrativo</span>
           <span className="rounded-full border border-emerald-200/35 bg-emerald-400/10 px-3 py-1 text-[11px] uppercase tracking-[0.22em] text-emerald-100">App interactiva</span>
@@ -1360,22 +1352,11 @@ Este espacio permite recorrer esas composiciones, explorar sus capas y descubrir
   oraculo: {
     label: 'La pregunta',
     type: 'oracle',
-    intro: (
-      <>
-        Este miniverso existe para mirar lo que <strong>#GatoEncerrado</strong> despierta en ti.
-        <br /><br />
-        A través de preguntas breves, el <strong>Oráculo</strong> abre un espacio para observar tus propias respuestas: emociones, intuiciones y pensamientos que aparecen después de la experiencia.
-        <br /><br />
-        <strong>Aquí no se interpreta la obra.</strong>
-        <br />
-        Se aprende a <em>observar al observador</em>.
-      </>
-    ),
     introNode: (
       <>
-        <p className="text-base leading-relaxed text-slate-300/90">Este miniverso existe para mirar lo que <strong>#GatoEncerrado</strong> despierta en ti.</p>
-        <p className="text-base leading-relaxed text-slate-200/80 mt-3">A través de preguntas breves, el <strong>Oráculo</strong> abre un espacio para observar tus propias respuestas: emociones, intuiciones y pensamientos que aparecen después de la experiencia.</p>
-        <p className="text-lg leading-relaxed font-medium text-white mt-4"><strong>Aquí no se interpreta la obra.</strong><br/>Se aprende a <em>observar al observador</em>.</p>
+                  <p className="text-lg leading-relaxed font-medium text-white mt-4">
+Buscar sentido no se apaga cuando encuentra algo. Se vuelve más fino, y empieza a intuir mejor.</p>
+        <p className="text-base leading-relaxed text-slate-200/80 mt-3">El teatro necesita que alguien esté mirando para que algo sea cierto. Aquí no hay público: solo tú y lo que aparece después de la experiencia. No se interpreta nada. Se aprende a observar al observador.</p>
         <div className="flex flex-wrap gap-2 mt-2">
           <span className="rounded-full border border-violet-200/35 bg-violet-400/10 px-3 py-1 text-[11px] uppercase tracking-[0.22em] text-violet-100">Ritual simbólico</span>
           <span className="rounded-full border border-violet-200/35 bg-violet-400/10 px-3 py-1 text-[11px] uppercase tracking-[0.22em] text-violet-100">Pregunta abierta</span>
@@ -1423,7 +1404,7 @@ export const formats = [
     title: 'El drama',
     icon: Drama,
     iconClass: 'text-purple-300',
-    vitrinaCopy: 'Empieza como una pregunta,\nalgo que nadie contesta solo.\nPero no ocurre sin testigo.',
+    vitrinaCopy: 'Empieza como una pregunta,\nuna que nadie está pensando.\nPero ocurre si hay testigos.',
 
     iaTokensNote: 'Energía confiada: 300 GAT',
     image: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Merch/posters/poster_obra.png',
@@ -1443,7 +1424,7 @@ export const formats = [
     title: 'La escritura',
     icon: BookOpen,
     iconClass: 'text-emerald-300',
-    vitrinaCopy: 'Casi un objeto,\nse puede volver a abrir.\nPero deja correr el viento.',
+    vitrinaCopy: 'Casi un objeto,\nse puede volver a agarrar.\nPero corre con el viento.',
 
     iaTokensNote: 'Energía viva: ~150 GAT.',
     image: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Merch/posters/poster_literatura.png',
@@ -1453,7 +1434,7 @@ export const formats = [
     title: 'La imagen',
     icon: Palette,
     iconClass: 'text-fuchsia-300',
-    vitrinaCopy: 'Como la escritura,\nlo que refleja no está en ella.\nPero adentro no hay nadie.',
+    vitrinaCopy: 'Se parece a la escritura,\nrefleja algo en su superficie.\nPero adentro no hay nadie.',
 
     iaTokensNote: 'Requiere ~110 GAT.',
     image: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Merch/posters/poster_graficos.png',
@@ -1463,7 +1444,7 @@ export const formats = [
     title: 'La proyección',
     icon: Film,
     iconClass: 'text-rose-300',
-    vitrinaCopy: 'Como la imagen,\nalguien decidió dejarla así.\nPero se sabe soñada.',
+    vitrinaCopy: 'Como la imagen,\nalguien decidió exponerla.\nPero revelando la trama.',
 
     iaTokensNote: 'Requiere ~250 confiados.',
     image: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Merch/posters/cine.png',
@@ -1483,7 +1464,7 @@ export const formats = [
     title: 'El cuerpo',
     icon: MapIcon,
     iconClass: 'text-sky-300',
-    vitrinaCopy: 'Como la vibración,\npasa y no deja rastro que reclamar.\nPero te cambia de estado.',
+    vitrinaCopy: 'Como la vibración,\npasa y no deja rastro visible.\nPero te cambia de lugar.',
 
     iaTokensNote: '~280 por mapa.',
     image: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Merch/posters/poster_movimiento.png',
@@ -1493,7 +1474,7 @@ export const formats = [
     title: 'El riesgo',
     icon: Dice5,
     iconClass: 'text-lime-300',
-    vitrinaCopy: 'Pide lo mismo que el cuerpo:\nque hagas algo sin pensarlo mucho.\nPero aquí  alguien más decide contigo.',
+    vitrinaCopy: 'Pide lo mismo que el cuerpo:\nque hagas algo sin pensarlo mucho.\nPero sin decidir tu solo.',
 
     iaTokensNote: 'IA marca el ritmo felino.',
     image: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Merch/posters/poster_juegos.png',
@@ -1503,7 +1484,7 @@ export const formats = [
     title: 'La pregunta',
     icon: Brain,
     iconClass: 'text-indigo-300',
-    vitrinaCopy: 'Como el riesgo,\ndevuelve algo que no esperabas.\nPero la jaula estaba abierta.',
+    vitrinaCopy: 'Como el riesgo,\nte coloca frente a algo.\nPero la jaula queda abierta.',
 
     iaTokensNote: 'Aquí se minan GATokes',
     image: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Merch/posters/poster_oraculo.png',

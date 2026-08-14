@@ -34,6 +34,7 @@ const VitranaQuestionReveal = ({
   l3FormaLabel = null,
   onL3CTA = null,
   bitacoraCompleted = false,
+  showAction = true,
 }) => {
   const [isRevealed, setIsRevealed] = useState(autoReveal);
   const portalGradient = PORTAL_GRADIENT[portal] ?? 'from-purple-400 via-fuchsia-500 to-rose-500';
@@ -99,7 +100,7 @@ const VitranaQuestionReveal = ({
                 initial={{ opacity: 0, scale: 0.55, y: 6 }}
                 animate={{ opacity: 1, scale: 1, y: 0 }}
                 transition={{ type: 'spring', stiffness: 260, damping: 18, delay: 0.46 }}
-                title="Cuaderno holográfico completado"
+                title="Libreto holográfico disponible"
               >
                 <BookOpen size={20} className="text-white drop-shadow-sm" />
               </motion.div>
@@ -146,27 +147,29 @@ const VitranaQuestionReveal = ({
         </div>
       </div>
 
-      <motion.div
-        className={`mx-auto w-full max-w-md ${isRevealed || oracularPhrase ? '' : 'pointer-events-none'}`}
-        animate={(isRevealed || oracularPhrase)
-          ? { opacity: 1, y: 0, scale: 1, filter: 'blur(0px)' }
-          : { opacity: 0, y: 10, scale: 0.93, filter: 'blur(4px)' }}
-        transition={{ type: 'spring', stiffness: 300, damping: 18, delay: (isRevealed || oracularPhrase) ? (autoReveal ? 0.1 : 0.45) : 0 }}
-      >
-        <motion.button
-          type="button"
-          className="w-full rounded-full border border-purple-500/70 text-purple-100 hover:bg-purple-500/20 tracking-[0.25em] text-xs uppercase px-4 py-2.5"
-          animate={(isRevealed || oracularPhrase) ? { boxShadow: [
-            '0 0 0px rgba(139,92,246,0)',
-            '0 0 32px rgba(139,92,246,0.55)',
-            '0 15px 45px rgba(67,56,202,0.45)',
-          ]} : { boxShadow: '0 0 0px rgba(139,92,246,0)' }}
-          transition={{ duration: 1.1, delay: autoReveal ? 0.35 : 0.75, ease: 'easeOut' }}
-          onClick={onAnswer}
+      {showAction && (
+        <motion.div
+          className={`mx-auto w-full max-w-md ${isRevealed || oracularPhrase ? '' : 'pointer-events-none'}`}
+          animate={(isRevealed || oracularPhrase)
+            ? { opacity: 1, y: 0, scale: 1, filter: 'blur(0px)' }
+            : { opacity: 0, y: 10, scale: 0.93, filter: 'blur(4px)' }}
+          transition={{ type: 'spring', stiffness: 300, damping: 18, delay: (isRevealed || oracularPhrase) ? (autoReveal ? 0.1 : 0.45) : 0 }}
         >
-          {buttonLabel}
-        </motion.button>
-      </motion.div>
+          <motion.button
+            type="button"
+            className="w-full rounded-full border border-purple-500/70 text-purple-100 hover:bg-purple-500/20 tracking-[0.25em] text-xs uppercase px-4 py-2.5"
+            animate={(isRevealed || oracularPhrase) ? { boxShadow: [
+              '0 0 0px rgba(139,92,246,0)',
+              '0 0 32px rgba(139,92,246,0.55)',
+              '0 15px 45px rgba(67,56,202,0.45)',
+            ]} : { boxShadow: '0 0 0px rgba(139,92,246,0)' }}
+            transition={{ duration: 1.1, delay: autoReveal ? 0.35 : 0.75, ease: 'easeOut' }}
+            onClick={onAnswer}
+          >
+            {buttonLabel}
+          </motion.button>
+        </motion.div>
+      )}
     </div>
   );
 };

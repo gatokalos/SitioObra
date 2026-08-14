@@ -6,7 +6,7 @@ import { useToast } from '@/components/ui/use-toast';
 import { apiFetch } from '@/lib/apiClient';
 
 const IAInsightCard = ({
-  title = 'Información de IA',
+  title = 'Información del dispositivo',
   type,
   interaction,
   tokensRange,

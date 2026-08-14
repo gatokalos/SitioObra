@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Eye, Flame, Sparkles, BookOpen } from 'lucide-react';
+import { Eye, Flame, Sparkles, BookOpen, ChevronDown, ExternalLink } from 'lucide-react';
 import VitranaQuestionReveal from '@/components/portal/VitranaQuestionReveal';
 import VideoNarrativeAutoplay from '@/components/VideoNarrativeAutoplay';
 import IAInsightCard from '@/components/IAInsightCard';
@@ -59,6 +59,43 @@ const ProgressOrbsRow = ({ portal, hasL1, hasL2, hasL3, hasBitacora }) => {
   );
 };
 
+// El miniverso principal ya recorrió las cuatro etapas. Conservamos el mismo
+// lenguaje visual de los satélites, pero la Bitácora llama la atención hasta
+// que la persona abre la explicación que aparece debajo.
+const CompletedProgressOrbs = ({ portal, bitacoraNeedsAttention }) => {
+  const gradient = PORTAL_GRADIENT[portal] ?? 'from-purple-400 via-fuchsia-500 to-rose-500';
+
+  return (
+    <div className="flex items-start justify-center gap-4 py-3" aria-label="Recorrido completado">
+      {PROGRESS_STAGES.map((stage) => {
+        const StageIcon = stage.icon;
+        const isBitacora = stage.key === 'bitacora';
+
+        return (
+          <div key={stage.key} className="flex flex-col items-center gap-1.5">
+            <span className="relative flex h-11 w-11 items-center justify-center">
+              {isBitacora && bitacoraNeedsAttention ? (
+                <span
+                  aria-hidden
+                  className={`absolute inset-0 rounded-full bg-gradient-to-br ${gradient} animate-ping opacity-30`}
+                />
+              ) : null}
+              <span
+                className={`relative flex h-11 w-11 items-center justify-center rounded-full bg-gradient-to-br ${gradient} shadow-[0_4px_18px_rgba(0,0,0,0.4)]`}
+              >
+                <StageIcon size={18} className="text-white drop-shadow-sm" />
+              </span>
+            </span>
+            <span className="text-[0.6rem] uppercase tracking-wide text-slate-300">
+              {stage.label}
+            </span>
+          </div>
+        );
+      })}
+    </div>
+  );
+};
+
 /* ─── Constantes ───────────────────────────────────────────────────────── */
 
 const MERCH_BASE = 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Merch';
@@ -92,6 +129,19 @@ const lsRead = (portal) => {
   try { return JSON.parse(localStorage.getItem(`gatoencerrado:resonance:${portal}`)) ?? {}; }
   catch { return {}; }
 };
+
+const lsPatch = (portal, patch) => {
+  try {
+    const key = `gatoencerrado:resonance:${portal}`;
+    const current = JSON.parse(localStorage.getItem(key)) ?? {};
+    localStorage.setItem(key, JSON.stringify({ ...current, ...patch }));
+  } catch {
+    // La experiencia sigue funcionando aunque el navegador bloquee storage.
+  }
+};
+
+const GATO_BITACORA_URL =
+  import.meta.env.VITE_GATO_BITACORA_URL || 'https://gatoencerrado.org/mi-cuenta/acceso';
 
 const HOLISTIC_QUESTION = '¿Qué le responderías, con tus propias palabras, a lo que esta obra cree saber de tus emociones?';
 
@@ -218,7 +268,88 @@ function Constellation({ centerKey, onSelect }) {
 
 /* ─── Panel inferior ────────────────────────────────────────────────────── */
 
-function HolograficoPanel({ centerKey, homeKey, onStartBitacora, onOpenVideo, onRequireLogin }) {
+function CompletedHomePanel({ portal, infoOpen, infoSeen, onToggleInfo }) {
+  return (
+    <div className="flex flex-col gap-5">
+      <div>
+        <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Una misma obra</p>
+        <h2 className="font-display text-2xl leading-snug text-amber-300 mt-1">
+          Tu libreto holográfico
+        </h2>
+        <p className="mt-2 text-sm leading-relaxed text-slate-300/80">
+          Tu recorrido está completo. Ahora puedes volver a sus huellas y reconocer cómo dialogan con otras voces.
+        </p>
+      </div>
+
+      <CompletedProgressOrbs portal={portal} bitacoraNeedsAttention={!infoSeen} />
+
+      <section className="overflow-hidden rounded-xl border border-purple-400/25 bg-purple-950/25">
+        <button
+          type="button"
+          onClick={onToggleInfo}
+          aria-expanded={infoOpen}
+          className="flex w-full items-center justify-between gap-4 px-4 py-4 text-left transition hover:bg-purple-400/[0.06]"
+        >
+          <span>
+            <span className="block text-[0.62rem] uppercase tracking-[0.32em] text-purple-200/55">
+              Resonancia colectiva
+            </span>
+            <span className="mt-1 block font-display text-lg text-purple-100">
+              Conoce otras resonancias
+            </span>
+          </span>
+          <ChevronDown
+            size={18}
+            className={`shrink-0 text-purple-200/70 transition-transform duration-200 ${infoOpen ? 'rotate-180' : ''}`}
+          />
+        </button>
+
+        <AnimatePresence initial={false}>
+          {infoOpen ? (
+            <motion.div
+              key="collective-resonance-content"
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: 'auto', opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              transition={{ duration: 0.22, ease: 'easeOut' }}
+              className="overflow-hidden"
+            >
+              <div className="border-t border-purple-300/15 px-4 pb-5 pt-4">
+                <p className="text-sm leading-relaxed text-slate-200/85">
+                  Aquí podrás reconocer, mediante datos colectivos y anónimos, qué permanece en otras personas después de habitar la obra.
+                </p>
+                <p className="mt-3 text-sm leading-relaxed text-slate-300/70">
+                  Al conservar tu Huella podrás volver a tus respuestas, seguir su recorrido y descubrir nuevas relaciones dentro del universo.
+                </p>
+                <a
+                  href={GATO_BITACORA_URL}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="mt-5 inline-flex w-full items-center justify-center gap-2 rounded-full border border-purple-300/35 bg-purple-500/15 px-5 py-2.5 text-xs font-semibold uppercase tracking-[0.18em] text-purple-50 transition hover:border-purple-200/60 hover:bg-purple-500/25"
+                >
+                  Abrir mi bitácora
+                  <ExternalLink size={14} aria-hidden />
+                </a>
+              </div>
+            </motion.div>
+          ) : null}
+        </AnimatePresence>
+      </section>
+    </div>
+  );
+}
+
+function HolograficoPanel({
+  centerKey,
+  homeKey,
+  onStartBitacora,
+  onOpenVideo,
+  onRequireLogin,
+  homeInfoOpen,
+  homeInfoSeen,
+  onToggleHomeInfo,
+  readOnly = false,
+}) {
   const isHome = centerKey === homeKey;
   const entry = CATALOG.find(p => p.key === centerKey);
   const st = lsRead(centerKey);
@@ -243,31 +374,36 @@ function HolograficoPanel({ centerKey, homeKey, onStartBitacora, onOpenVideo, on
         className="px-5 pb-[max(1.25rem,env(safe-area-inset-bottom))] pt-4"
       >
         {isHome ? (
-          /* Estado inicio: pregunta holística con título prominente */
-          <div className="flex flex-col gap-5">
-            <div>
-              <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Días después</p>
-              <h2 className="font-display text-2xl leading-snug text-amber-300 mt-1">
-                Tu cuaderno holográfico
-              </h2>
-            </div>
-            <VitranaQuestionReveal
-              question={HOLISTIC_QUESTION}
+          homeBitacora ? (
+            <CompletedHomePanel
               portal={homeKey}
-              autoReveal
-              l2Done={homeL2}
-              l3Done={homeL3}
-              bitacoraCompleted={homeBitacora}
-              label={null}
-              buttonLabel="Es tu turno"
-              onAnswer={onStartBitacora}
+              infoOpen={homeInfoOpen}
+              infoSeen={homeInfoSeen}
+              onToggleInfo={onToggleHomeInfo}
             />
-            {/* Sin esferas propias ni Información de IA aquí: VitranaQuestionReveal
-                ya muestra su propio badge de progreso flotante (ojo/llama/destello/
-                libro) sobre la tarjeta de pregunta — duplicarlo abajo era
-                redundante. Ambos bloques se quedan solo en la rama de satélites,
-                donde VitranaQuestionReveal no siempre se renderiza. */}
-          </div>
+          ) : (
+            /* Compatibilidad con recorridos antiguos que aún no cierran su bitácora. */
+            <div className="flex flex-col gap-5">
+              <div>
+                <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Días después</p>
+                <h2 className="font-display text-2xl leading-snug text-amber-300 mt-1">
+                  Tu libreto holográfico
+                </h2>
+              </div>
+              <VitranaQuestionReveal
+                question={HOLISTIC_QUESTION}
+                portal={homeKey}
+                autoReveal
+                l2Done={homeL2}
+                l3Done={homeL3}
+                bitacoraCompleted={homeBitacora}
+                label={null}
+                buttonLabel="Es tu turno"
+                onAnswer={onStartBitacora}
+                showAction={!readOnly}
+              />
+            </div>
+          )
         ) : (
           /* Satélite */
           <div className="flex flex-col gap-5">
@@ -275,7 +411,7 @@ function HolograficoPanel({ centerKey, homeKey, onStartBitacora, onOpenVideo, on
               <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Una misma obra</p>
               <h2 className="font-display text-2xl leading-snug question-heading-voice mt-1">No cambia la pregunta</h2>
               <p className="mt-2 text-sm leading-relaxed text-slate-300/80">
-                Cambia la forma de abordarla. Explora los niveles a tu ritmo y deja que el Cuaderno Holográfico conserve lo que permanezca contigo.
+                Cambia la forma de abordarla. Explora los niveles a tu ritmo y deja que el Libreto holográfico conserve lo que permanezca contigo.
               </p>
             </div>
             {hasBitacora ? (
@@ -312,13 +448,17 @@ function HolograficoPanel({ centerKey, homeKey, onStartBitacora, onOpenVideo, on
 
 /* ─── Componente principal ──────────────────────────────────────────────── */
 
-const CuadernoHolografico = ({ portal, onStartBitacora, onNavigate, onPosterChange, onRequireLogin }) => {
+const CuadernoHolografico = ({ portal, onStartBitacora, onNavigate, onPosterChange, onRequireLogin, readOnly = false }) => {
   const navigate = useNavigate();
   const location = useLocation();
   const { isMobileViewport } = useMobileVideoPresentation();
   const [centerKey, setCenterKey] = useState(portal);
   const [videoOpen, setVideoOpen] = useState(false);
   const [videoFormatId, setVideoFormatId] = useState(null);
+  const [homeInfoOpen, setHomeInfoOpen] = useState(false);
+  const [homeInfoSeen, setHomeInfoSeen] = useState(
+    () => !!lsRead(portal).libreto_collective_info_seen,
+  );
 
   useEffect(() => { onPosterChange?.(portal); }, []);
 
@@ -330,6 +470,17 @@ const CuadernoHolografico = ({ portal, onStartBitacora, onNavigate, onPosterChan
   const handleOpenVideo = (showcaseId) => {
     setVideoFormatId(showcaseId);
     setVideoOpen(true);
+  };
+
+  const handleToggleHomeInfo = () => {
+    setHomeInfoOpen((wasOpen) => {
+      const willOpen = !wasOpen;
+      if (willOpen && !homeInfoSeen) {
+        setHomeInfoSeen(true);
+        lsPatch(portal, { libreto_collective_info_seen: true });
+      }
+      return willOpen;
+    });
   };
 
   const handleVideoNavigate = () => {
@@ -402,6 +553,10 @@ const CuadernoHolografico = ({ portal, onStartBitacora, onNavigate, onPosterChan
           onStartBitacora={onStartBitacora}
           onOpenVideo={handleOpenVideo}
           onRequireLogin={onRequireLogin}
+          homeInfoOpen={homeInfoOpen}
+          homeInfoSeen={homeInfoSeen}
+          onToggleHomeInfo={handleToggleHomeInfo}
+          readOnly={readOnly}
         />
       </div>
 

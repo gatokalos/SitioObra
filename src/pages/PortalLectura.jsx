@@ -46,7 +46,9 @@ const PortalLectura = () => {
               </div>
             ) : null}
           </div>
-          <PortalHeaderActions />
+          <div className="hidden lg:block">
+            <PortalHeaderActions />
+          </div>
         </div>
 
       <div className="mt-6 rounded-3xl border border-white/10 bg-black/40 p-6 md:p-10 shadow-[0_35px_120px_rgba(0,0,0,0.65)] space-y-8">
@@ -158,6 +160,9 @@ const PortalLectura = () => {
           Este portal es público. Si tienes el libro físico, el escaneo de página te da acceso directo al fragmento
           correcto.
         </p>
+        <div className="flex justify-end pt-2 lg:hidden">
+          <PortalHeaderActions />
+        </div>
       </div>
       {showLoginOverlay ? <LoginOverlay onClose={handleCloseLogin} /> : null}
       <AutoficcionPreviewOverlay

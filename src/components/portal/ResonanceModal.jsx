@@ -190,19 +190,75 @@ export const LEVEL2_QUESTIONS = {
 
 export const buildL1Acknowledgment = (portal, answer) => {
   if (!answer) return null;
-  const a = answer.trim();
+  const a = answer.trim().replace(/[.!?]+$/, '');
+  const objectAnswer = a
+    .replace(/^lo extraño$/i, 'lo extrañas')
+    .replace(/^la extraño$/i, 'la extrañas')
+    .replace(/^los extraño$/i, 'los extrañas')
+    .replace(/^las extraño$/i, 'las extrañas');
   const templates = {
-    obra:        `¿Esperas encontrar ${a}, cuando alguien se expone frente a otros?`,
-    literatura:  `¿Esperas que una historia abierta te dé ${a}?`,
-    artesanias:  `¿Te cuesta dejar ir ${a}?`,
-    grafico:     `¿Las imágenes de ${a} todavía te observan cuando estás a solas?`,
-    cine:        `¿Te cuesta mirar ${a} de frente en una historia?`,
-    sonoridades: `¿El sonido que regresa contigo es ${a}?`,
-    movimiento:  `¿Tu cuerpo busca ${a} cuando aún no entiendes lo que sientes?`,
-    juegos:      `¿Lo primero que haces al elegir es ${a}?`,
-    oraculo:     `¿Cuando una pregunta se queda contigo, la ${a}?`,
+    obra:        `Para ti, exponerse frente a otros empieza por ${a}.`,
+    literatura:  `Una historia deja de ser ajena cuando te devuelve ${a}.`,
+    artesanias:  `Un objeto deja de ser para ti solo un objeto cuando ${objectAnswer}.`,
+    grafico:     `Una imagen deja de ser superficie cuando en ella reconoces ${a}.`,
+    cine:        `Mirar una historia de frente también significa encontrarte con ${a}.`,
+    sonoridades: `Un sonido permanece cuando vuelve a ti como ${a}.`,
+    movimiento:  `Tu cuerpo empieza a responder antes que las palabras cuando ${a}.`,
+    juegos:      `Una decisión cambia la historia cuando tu primer impulso es ${a}.`,
+    oraculo:     `Una pregunta permanece contigo cuando decides ${a}.`,
   };
   return templates[portal] ?? null;
+};
+
+const ARTESANIAS_L2_ACKNOWLEDGMENTS = {
+  'cartas o papeles': 'Las cartas y los papeles son lo que más te cuesta dejar ir, aunque ya no tengan utilidad.',
+  ropa: 'La ropa es lo que más te cuesta dejar ir, aunque ya no tenga utilidad.',
+  'objetos hechos por alguien': 'Los objetos hechos por alguien son lo que más te cuesta dejar ir, aunque ya no tengan utilidad.',
+  'recuerdos pequeños': 'Los recuerdos pequeños son lo que más te cuesta dejar ir, aunque ya no tengan utilidad.',
+  'cosas que me acompañaron mucho tiempo': 'Las cosas que te acompañaron durante mucho tiempo son lo que más te cuesta dejar ir, aunque ya no tengan utilidad.',
+  'no suelo guardar cosas': 'Cuando algo pierde su utilidad, no sueles necesitar conservarlo.',
+};
+
+export const buildL2Acknowledgment = (portal, option) => {
+  if (!option) return null;
+  if (portal === 'artesanias') {
+    return ARTESANIAS_L2_ACKNOWLEDGMENTS[option]
+      ?? `Eso que reconoces en ${option} todavía ocupa un lugar en ti, aunque su utilidad haya terminado.`;
+  }
+  const o = option.trim().replace(/[.!?]+$/, '');
+  const templates = {
+    obra:        `Antes de entrar en escena, tu mirada busca ${o}.`,
+    literatura:  `Abres la historia esperando encontrar ${o}.`,
+    grafico:     `Cuando vuelves a estar a solas, lo que permanece ante tu mirada es ${o}.`,
+    cine:        `En una historia, apartas la mirada cuando aparece ${o}.`,
+    sonoridades: `Cuando el ruido se apaga, vuelve contigo ${o}.`,
+    movimiento:  `Cuando aún no entiendes lo que sientes, tu cuerpo ${o}.`,
+    juegos:      `Cuando una experiencia te obliga a elegir, primero decides ${o}.`,
+    oraculo:     `Cuando una pregunta permanece contigo, eliges ${o}.`,
+  };
+  return templates[portal] ?? `Tu mirada se afina hacia ${o} antes de habitar la forma.`;
+};
+
+const PORTAL_ARTIFACT_LABEL = {
+  obra: 'El drama',
+  literatura: 'La escritura',
+  artesanias: 'El objeto',
+  grafico: 'La imagen',
+  cine: 'La proyección',
+  sonoridades: 'La vibración',
+  movimiento: 'El cuerpo',
+  juegos: 'El riesgo',
+  oraculo: 'La pregunta',
+};
+
+const persistBaseline = async (payload) => {
+  const response = await fetch(`${OBRA_API_URL}/api/resonance/baseline`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  });
+  if (!response.ok) throw new Error(`baseline ${response.status}`);
+  return response.json();
 };
 
 /* ─── Estructura de niveles ───────────────────────────────────────────── */
@@ -225,8 +281,8 @@ const LEVELS = [
   {
     num: 3,
     eyebrow: 'Días después',
-    title: 'Cuaderno holográfico',
-    pendingDesc: 'Vuelve en unos días. Queremos saber si algo resonó en ti.',
+    title: 'En el foco',
+    pendingDesc: 'La obra continúa fuera de escena. Vuelve en unos días para reconocer qué siguió resonando en ti.',
     icon: PawPrint,
   },
 ];
@@ -249,7 +305,7 @@ const lsPatch = (portal, patch) => {
 
 /* ─── Componente ──────────────────────────────────────────────────────── */
 
-const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNavigateToRecommendation, onL2QuestionReady, isMobileViewport, onRequireLogin, startInHolografico = false }) => {
+const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNavigateToRecommendation, onL2QuestionReady, isMobileViewport, onRequireLogin, startInHolografico = false, startInBitacora = false }) => {
   const modalRef = useRef(null);
   const submitBtnRef = useRef(null);
   const { user, isDevAuth } = useAuth();
@@ -270,9 +326,17 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
 
   // Persistent state — lazy-init desde localStorage; si no hay, se verifica contra Supabase
   const [l1Done, setL1Done] = useState(() => !!lsRead(portal).l1);
+  const [l1Acknowledgment, setL1Acknowledgment] = useState(() => {
+    const saved = lsRead(portal);
+    return saved.l1_acknowledgment ?? buildL1Acknowledgment(portal, saved.l1_answer);
+  });
   // Chip de expectativa — se movió al pre-estímulo (H-LIT-2): se contesta en L1,
   // inmediatamente después del eco de la intuición y antes de abrir el artefacto.
   const [l2Selection, setL2Selection] = useState(() => lsRead(portal).l2_option ?? null);
+  const [l2Acknowledgment, setL2Acknowledgment] = useState(() => {
+    const saved = lsRead(portal);
+    return saved.l2_acknowledgment ?? buildL2Acknowledgment(portal, saved.l2_option);
+  });
   const [l1ChipDone, setL1ChipDone] = useState(() => !!lsRead(portal).l2_option);
   const [l2Submitting, setL2Submitting] = useState(false);
   const [dashboardActiveLevel, setDashboardActiveLevel] = useState(() => {
@@ -306,13 +370,14 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
   const { autoSubscribeIfPWA } = usePushSubscription();
   const [bitacoraConsented, setBitacoraConsented]     = useState(() => !!lsRead(portal).bitacora_consented || readGlobalConsent());
   const [bitacoraAvailableAt, setBitacoraAvailableAt] = useState(() => lsRead(portal).bitacora_available_at ?? null);
+  const [bitacoraAvailabilityTick, setBitacoraAvailabilityTick] = useState(() => Date.now());
   const [bitacoraCompleted, setBitacoraCompleted]     = useState(() => !!lsRead(portal).bitacora_completed);
   const [showPhoneInput, setShowPhoneInput]           = useState(false);
   const [phoneInput, setPhoneInput]                   = useState('');
-  const [holograficoOpen, setHolograficoOpen]         = useState(startInHolografico);
+  const [holograficoOpen, setHolograficoOpen]         = useState(() => startInHolografico || (startInBitacora && !!lsRead(portal).bitacora_completed));
   const [holograficoPoster, setHolograficoPoster]     = useState(portal);
   const activeBloom = holograficoOpen ? (PORTAL_BLOOM[holograficoPoster] ?? PORTAL_BLOOM.obra) : bloom;
-  const [bitacoraOpen, setBitacoraOpen]               = useState(false);
+  const [bitacoraOpen, setBitacoraOpen]               = useState(() => startInBitacora && !lsRead(portal).bitacora_completed);
   const [bitacoraStep, setBitacoraStep]               = useState('p1');
   const [bitacoraP1, setBitacoraP1]                   = useState('');
   const [bitacoraAfirmativa, setBitacoraAfirmativa]   = useState(null);
@@ -322,8 +387,22 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
   const [bitacoraSubmitting, setBitacoraSubmitting]   = useState(false);
 
   const bitacoraAvailable = bitacoraAvailableAt
-    ? new Date(bitacoraAvailableAt) <= new Date()
+    ? new Date(bitacoraAvailableAt).getTime() <= bitacoraAvailabilityTick
     : false;
+
+  useEffect(() => {
+    if (!open || !bitacoraAvailableAt) return undefined;
+    const remaining = new Date(bitacoraAvailableAt).getTime() - Date.now();
+    if (remaining <= 0) {
+      setBitacoraAvailabilityTick(Date.now());
+      return undefined;
+    }
+    const timeoutId = window.setTimeout(
+      () => setBitacoraAvailabilityTick(Date.now()),
+      Math.min(remaining + 100, 2_147_000_000),
+    );
+    return () => window.clearTimeout(timeoutId);
+  }, [open, bitacoraAvailableAt]);
 
   const [bitacoraP2Question, setBitacoraP2Question]         = useState(null);
   const [bitacoraP3Question, setBitacoraP3Question]         = useState(null);
@@ -353,12 +432,16 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
           const l1Row = data.find((r) => r.level === 1);
           const l2Row = data.find((r) => r.level === 2);
           if (l1Row) {
-            lsPatch(portal, { l1: Date.now(), l1_answer: l1Row.respuesta ?? null });
+            const acknowledgment = buildL1Acknowledgment(portal, l1Row.respuesta);
+            lsPatch(portal, { l1: Date.now(), l1_answer: l1Row.respuesta ?? null, l1_acknowledgment: acknowledgment });
+            setL1Acknowledgment(acknowledgment);
             setL1Done(true);
           }
           if (l2Row) {
-            lsPatch(portal, { l2_option: l2Row.respuesta, l2_ts: Date.now() });
+            const acknowledgment = buildL2Acknowledgment(portal, l2Row.respuesta);
+            lsPatch(portal, { l2_option: l2Row.respuesta, l2_acknowledgment: acknowledgment, l2_ts: Date.now() });
             setL2Selection(l2Row.respuesta);
+            setL2Acknowledgment(acknowledgment);
             setL1ChipDone(true);
           }
         }
@@ -391,6 +474,7 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
     e.preventDefault();
     setSubmitting(true);
     const anonId = ensureAnonId();
+    const fallbackAcknowledgment = buildL1Acknowledgment(portal, formData.respuesta);
     if (!isDevAuth) {
       try {
         await supabase.from('vitrana_resonances').insert({
@@ -406,24 +490,29 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
 
       // Persiste línea base en resonance_sessions (fire-and-forget)
       const bienvenidaAnonId = (() => { try { return localStorage.getItem('bienvenida_anon_id') || null; } catch { return null; } })();
-      fetch(`${OBRA_API_URL}/api/resonance/baseline`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
+      persistBaseline({
           anon_id:             anonId,
           miniverso_id:        portal,
           intuicion_answer:    formData.respuesta,
           ...(bienvenidaAnonId ? { bienvenida_anon_id: bienvenidaAnonId } : {}),
-        }),
-      }).catch(() => {});
+        })
+        .then((data) => {
+          const acknowledgment = data?.acknowledgment?.trim();
+          if (!acknowledgment) return;
+          setL1Acknowledgment(acknowledgment);
+          lsPatch(portal, { l1_acknowledgment: acknowledgment });
+        })
+        .catch(() => {});
     }
 
     lsPatch(portal, {
       l1: Date.now(),
       l1_answer: formData.respuesta,
+      l1_acknowledgment: fallbackAcknowledgment,
       dashboard_active_level: 1,
       l2_calibration_open: false,
     });
+    setL1Acknowledgment(fallbackAcknowledgment);
     fireConfetti();
     setL1Done(true);
     setDashboardActiveLevel(1);
@@ -545,11 +634,21 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
   /* Nivel 1 — chip de expectativa (pre-estímulo, inmediatamente después del eco) */
   const handleExpectativaSelect = async (option) => {
     if (l1ChipDone || l2Submitting) return;
+    const fallbackAcknowledgment = buildL2Acknowledgment(portal, option);
     setL2Selection(option); // optimistic
+    setL2Acknowledgment(fallbackAcknowledgment);
     setL1ChipDone(true);
     setL2Submitting(true);
+    setCalibrationQuestionOpen(false);
+    setDashboardActiveLevel(2);
     const anonId = ensureAnonId();
-    lsPatch(portal, { l2_option: option, l2_ts: Date.now() });
+    lsPatch(portal, {
+      l2_option: option,
+      l2_acknowledgment: fallbackAcknowledgment,
+      l2_ts: Date.now(),
+      l2_calibration_open: false,
+      dashboard_active_level: 2,
+    });
     if (!isDevAuth) {
       try {
         await supabase.from('vitrana_resonances').insert({
@@ -564,16 +663,19 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
       // Persiste la expectativa en el pre-estímulo (H-LIT-2): va a /baseline junto
       // con la intuición, no a /evidence — las dos declaraciones de L1 ocurren sin
       // nada en medio, antes de abrir el artefacto.
-      fetch(`${OBRA_API_URL}/api/resonance/baseline`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
+      persistBaseline({
           anon_id:              anonId,
           miniverso_id:         portal,
           expectativa_chip:     option,
           expectativa_question: l2q?.question ?? null,
-        }),
-      }).catch(() => {});
+        })
+        .then((data) => {
+          const acknowledgment = data?.acknowledgment?.trim();
+          if (!acknowledgment) return;
+          setL2Acknowledgment(acknowledgment);
+          lsPatch(portal, { l2_acknowledgment: acknowledgment });
+        })
+        .catch(() => {});
     }
 
     setL2Submitting(false);
@@ -711,9 +813,10 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
         });
       } catch (_) {}
     }
-    lsPatch(portal, { bitacora_completed: true });
+    lsPatch(portal, { bitacora_completed: true, dashboard_active_level: 3 });
     setBitacoraCompleted(true);
     setBitacoraOpen(false);
+    setDashboardActiveLevel(3);
     setBitacoraStep('p1');
     setBitacoraSubmitting(false);
   }, [portal, bitacoraP1, bitacoraAfirmativa, bitacoraIntensidad, bitacoraP2, bitacoraP3, isDevAuth]);
@@ -722,8 +825,8 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
   const l3Active = l3Open && !!l3Rec && !l3Rec.error && !l3Rec.all_complete;
 
   const l3ConsentBubbleText = bitacoraConsented
-    ? 'El Cuaderno holográfico ahora lleva registro de tu narrativa personal. Lo que decidas hacer después también se sumará.'
-    : 'Hay un Cuaderno holográfico que abre después de cada recorrido. Las preguntas van acumulando lo que dejas en cada universo. ¿Puedo avisarte cuando sea el momento de volver?';
+    ? 'La obra continuará contigo fuera de escena. Cuando llegue el momento, podrás registrar qué permaneció y qué cambió.'
+    : 'La obra continúa después de cada recorrido. ¿Puedo avisarte cuando sea el momento de volver y mirar qué permaneció?';
 
   const l3BubbleText = l3Rec
     ? (l3Step === 1 ? l3Rec.step1
@@ -903,10 +1006,28 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
                 opacity: (l2NarrativeOpened && convQuestion !== null && !l2ConvDone) ? 0.1 : 0.5,
               }}
             />
+            {/* Desktop conserva dos columnas: el póster vive detrás del
+                formulario izquierdo, con el mismo oscurecimiento progresivo
+                que protege la lectura en móvil. */}
+            <div
+              aria-hidden="true"
+              className="absolute inset-0 hidden lg:block transition-opacity duration-500"
+              style={{
+                backgroundImage: `url(${holograficoOpen ? (PORTAL_POSTER[holograficoPoster] ?? poster) : poster})`,
+                backgroundPosition: 'center top',
+                backgroundSize: 'cover',
+                opacity: (l2NarrativeOpened && convQuestion !== null && !l2ConvDone) ? 0.08 : 0.42,
+              }}
+            />
             <div
               aria-hidden="true"
               className="absolute inset-0 lg:hidden"
               style={{ background: 'linear-gradient(180deg, rgba(5,3,9,0.28) 0%, rgba(5,3,9,0.60) 45%, rgba(5,3,9,0.92) 100%)' }}
+            />
+            <div
+              aria-hidden="true"
+              className="absolute inset-0 hidden lg:block"
+              style={{ background: 'linear-gradient(180deg, rgba(5,3,9,0.34) 0%, rgba(5,3,9,0.76) 43%, rgba(5,3,9,0.98) 100%)' }}
             />
 
             {/* ── L3 cat overlay — mobile only, portal a document.body ── */}
@@ -1148,7 +1269,7 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
                     </div>
                   </motion.div>
                 ) : holograficoOpen ? (
-                  /* ── Cuaderno holográfico ── */
+                  /* ── Libreto holográfico: visualización posterior al registro ── */
                   <motion.div
                     key="holografico"
                     className="h-full"
@@ -1160,6 +1281,7 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
                     <CuadernoHolografico
                       portal={portal}
                       isMobileViewport={isMobileViewport}
+                      readOnly={bitacoraCompleted}
                       onStartBitacora={() => { setHolograficoOpen(false); setBitacoraOpen(true); }}
                       onNavigate={(showcaseId) => { setHolograficoOpen(false); handleClose(); onNavigateToRecommendation?.(showcaseId); }}
                       onPosterChange={setHolograficoPoster}
@@ -1168,8 +1290,7 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
                   </motion.div>
                 ) : l1Done && calibrationQuestionOpen ? (
                   /* ── Calibración pre-estímulo ──
-                     Solo se revela cuando la persona elige la fase de la flama
-                     en el dashboard y después activa el enlace de calibración. */
+                     Se revela directamente al elegir la fase de la flama. */
                   <motion.div
                     key="l1-echo-chips"
                     initial={{ opacity: 0 }}
@@ -1179,16 +1300,16 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
                   >
                     <div aria-hidden="true" className="h-16 sm:h-24 lg:hidden" />
 
-                    {/* Desktop: eco prominente */}
+                    {/* Desktop: pregunta de calibración */}
                     <div className="hidden lg:block lg:px-10 lg:pb-5 lg:pt-14">
                       <p className="mb-3 text-[0.62rem] uppercase tracking-[0.32em] text-white/50">
-                        Antes de entrar
+                        {LEVELS[1].eyebrow}
                       </p>
                       <p
                         className="font-display leading-snug question-voice"
                         style={{ fontSize: 'clamp(1.3rem, 2.3vw, 2.1rem)' }}
                       >
-                        {buildL1Acknowledgment(portal, lsRead(portal).l1_answer) ?? question}
+                        {l2q?.question}
                       </p>
                     </div>
 
@@ -1199,21 +1320,18 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
 
                     <div className="px-5 pb-[max(1.25rem,env(safe-area-inset-bottom))] sm:px-6 sm:pb-5 lg:pb-10 lg:px-10">
                       <div className="space-y-3">
-                        {/* Mobile: eco */}
+                        {/* Mobile: pregunta de calibración */}
                         <div className="lg:hidden space-y-2">
                           <div className="inline-flex rounded-full border border-white/10 bg-white/5 px-3 py-1 text-[0.62rem] uppercase tracking-[0.32em] text-white/70">
-                            Antes de entrar
+                            {LEVELS[1].eyebrow}
                           </div>
                           <h3 className="font-display text-2xl leading-tight tracking-tight question-voice">
-                            {buildL1Acknowledgment(portal, lsRead(portal).l1_answer) ?? question}
+                            {l2q?.question}
                           </h3>
                         </div>
 
                         {l2q && (
                           <>
-                            <p className="pt-1 text-sm leading-relaxed text-slate-300/80">
-                              {l2q.question}
-                            </p>
                             <div className="flex flex-wrap gap-1.5 pt-1">
                               {l2q.options.map((opt) => (
                                 <button
@@ -1232,25 +1350,6 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
                               ))}
                             </div>
 
-                            {l1ChipDone && onOpenNarrative && (
-                              <motion.button
-                                type="button"
-                                onClick={handleOpenNarrativeExperience}
-                                className="flex w-full flex-col items-center gap-3 pt-5 transition active:scale-[0.98]"
-                                initial={{ opacity: 0, scale: 0.9, y: 10 }}
-                                animate={{ opacity: 1, scale: 1, y: 0 }}
-                                transition={{ type: 'spring', stiffness: 220, damping: 20 }}
-                              >
-                                <img
-                                  src="https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/oraculo/gato-moneda.png"
-                                  alt="GAToken"
-                                  className="h-24 w-24 animate-[spin_8s_linear_0s_infinite_reverse] drop-shadow-[0_0_22px_rgba(251,191,36,0.6)] lg:h-32 lg:w-32"
-                                />
-                                <span className="text-sm font-semibold tracking-wide text-amber-200">
-                                  Habitar la forma
-                                </span>
-                              </motion.button>
-                            )}
                           </>
                         )}
                       </div>
@@ -1269,7 +1368,7 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
 
                     <div className="hidden lg:block lg:px-10 lg:pb-5 lg:pt-14">
                       <p className="mb-3 text-[0.62rem] uppercase tracking-[0.32em] text-white/50">
-                        Cuaderno holográfico
+                        En el foco
                       </p>
                       <p
                         className="font-display leading-snug question-voice"
@@ -1290,7 +1389,7 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
                         {/* Mobile: etiqueta de paso */}
                         <div className="lg:hidden space-y-2">
                           <div className="inline-flex rounded-full border border-white/10 bg-white/5 px-3 py-1 text-[0.62rem] uppercase tracking-[0.32em] text-white/70">
-                            Cuaderno holográfico
+                            En el foco
                           </div>
                           <h3 className="font-display text-2xl leading-tight tracking-tight question-voice">
                             {bitacoraStep === 'p1' && '¿Hay algo de esta experiencia que haya regresado por su cuenta? Una imagen, una frase, una sensación.'}
@@ -1453,10 +1552,6 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
 
                     {/* Niveles */}
                     <div className="relative flex flex-col gap-0">
-                      <div
-                        aria-hidden="true"
-                        className="absolute left-[1.6rem] top-10 hidden h-[calc(100%-5rem)] w-px border-l-2 border-dashed border-white/15 lg:block"
-                      />
 
                       {LEVELS.map((level, i) => {
                         const Icon = level.icon;
@@ -1466,43 +1561,36 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
                         // l3RecSeen: la recomendación ya fue recibida → congela el acordeón y muestra coleccionable
                         // bitacoraCompleted: el usuario cerró la bitácora → pone el círculo en verde
                         const l3RecSeen    = isL3 && Boolean(l3Rec?.step3) && !l3Rec?.error;
-                        const isCompleted  = isL1 || (isL2 && l2ConvDone) || (isL3 && bitacoraCompleted);
-                        const isAvailable  = (isL2 && !l2ConvDone) || (isL3 && l2ConvDone && !bitacoraCompleted);
+                        const isCompleted  = isL1 || (isL2 && (l1ChipDone || l2ConvDone)) || (isL3 && bitacoraCompleted);
+                        const isAvailable  = (isL2 && !l1ChipDone) || (isL3 && l2ConvDone && !bitacoraCompleted);
                         const isSelected   = dashboardActiveLevel === level.num;
                         const levelIsOpen  = (isL2 && l2ConvDone) || (isL3 && l2ConvDone && (l3Open || l3RecSeen));
                         const canSelect    = isL1 || isL2 || (isL3 && l2ConvDone);
                         const handleSelect = () => {
                           if (!canSelect) return;
                           selectDashboardLevel(level.num);
+                          if (isL2 && !l1ChipDone && !l2NarrativeOpened) {
+                            handleOpenCalibrationQuestion();
+                            return;
+                          }
                           if (isL3 && !l3RecSeen && !bitacoraCompleted) handleL3Toggle();
                         };
 
                         return (
                           <motion.div
                             key={level.num}
-                            className="flex items-start py-2 lg:gap-4 lg:py-3"
+                            className="flex items-start py-2"
                             initial={{ opacity: 0, x: -12 }}
                             animate={{ opacity: 1, x: 0 }}
                             transition={{ delay: 0.15 + i * 0.1, duration: 0.35 }}
                           >
-                            {/* Número */}
-                            <div className={`relative z-10 hidden h-[3.25rem] w-[3.25rem] shrink-0 items-center justify-center rounded-full text-lg font-bold lg:flex ${
-                              isCompleted
-                                ? `bg-gradient-to-br ${gradient} text-white shadow-[0_0_18px_rgba(0,0,0,0.4)]`
-                                : isAvailable
-                                  ? 'border-2 border-white/30 bg-black/55 text-white/70'
-                                  : 'border-2 border-white/20 bg-black/40 text-white/40'
-                            }`}>
-                              {level.num}
-                            </div>
-
                             {/* Card con acordeón */}
                             <div
                               role={!isL3 && canSelect ? 'button' : undefined}
                               tabIndex={!isL3 && canSelect ? 0 : undefined}
                               onClick={!isL3 && canSelect ? handleSelect : undefined}
                               onKeyDown={!isL3 && canSelect ? (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleSelect(); } } : undefined}
-                              className={`grid min-w-0 flex-1 grid-cols-[4.5rem_minmax(0,1fr)] gap-x-4 gap-y-2 rounded-2xl border px-4 py-4 transition-colors lg:flex lg:px-0 lg:py-0 ${canSelect ? 'cursor-pointer' : ''} ${
+                              className={`grid min-w-0 flex-1 grid-cols-[4.5rem_minmax(0,1fr)] gap-x-4 gap-y-2 rounded-2xl border px-4 py-4 transition-colors lg:grid-cols-[4.5rem_minmax(0,1fr)_auto] ${canSelect ? 'cursor-pointer' : ''} ${
                               isSelected
                                 ? 'border-purple-300/45 bg-black/60 shadow-[0_0_20px_rgba(168,85,247,0.10)]'
                                 : isCompleted
@@ -1515,12 +1603,12 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
                               <div
                                 role={isL3 && canSelect ? 'button' : undefined}
                                 tabIndex={isL3 && canSelect ? 0 : undefined}
-                                className={`contents lg:flex lg:items-center lg:gap-3 lg:px-4 lg:py-3 ${canSelect ? 'select-none' : ''}`}
+                                className={`contents ${canSelect ? 'select-none' : ''}`}
                                 onClick={isL3 && canSelect ? handleSelect : undefined}
                                 onKeyDown={isL3 && canSelect ? (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleSelect(); } } : undefined}
                               >
                                 {/* Ícono */}
-                                <div className={`row-span-2 flex h-[4.5rem] w-[4.5rem] shrink-0 items-center justify-center rounded-full lg:row-auto lg:h-7 lg:w-7 ${
+                                <div className={`row-span-2 flex h-[4.5rem] w-[4.5rem] shrink-0 items-center justify-center rounded-full ${
                                   isCompleted
                                     ? `bg-gradient-to-br ${gradient} shadow-[0_0_10px_rgba(0,0,0,0.25)]`
                                     : isAvailable
@@ -1528,35 +1616,41 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
                                       : 'border border-white/8 bg-black/25'
                                   }`}>
                                   {isCompleted || isAvailable
-                                    ? <Icon className="h-8 w-8 text-white lg:h-[13px] lg:w-[13px]" />
-                                    : <Lock className="h-7 w-7 text-white/20 lg:h-[11px] lg:w-[11px]" />
+                                    ? <Icon className="h-8 w-8 text-white" />
+                                    : <Lock className="h-7 w-7 text-white/20" />
                                   }
                                 </div>
 
                                 {/* Texto */}
-                                <div className="min-w-0 flex-1 self-center">
+                                <div className="flex min-h-[4.5rem] min-w-0 flex-1 items-center self-center">
                                   {isSelected && isL1 ? (
-                                    <p className="text-sm leading-relaxed text-slate-200/90 lg:text-xs">
-                                      {lsRead(portal).l1_answer || 'Respuesta registrada'}
+                                    <p className="text-sm leading-relaxed text-slate-200/90">
+                                      {l1Acknowledgment || 'Tu primera intuición quedó registrada.'}
                                     </p>
-                                  ) : isSelected && isL2 && !l2ConvDone && !l2NarrativeOpened ? (
-                                    <button
-                                      type="button"
-                                      onClick={(e) => {
-                                        e.stopPropagation();
-                                        handleOpenCalibrationQuestion();
-                                      }}
-                                      className="inline-flex items-center gap-2 text-sm font-semibold text-amber-200 underline decoration-amber-300/35 underline-offset-4 transition hover:text-amber-100 hover:decoration-amber-200/70"
-                                    >
-                                      {l1ChipDone ? 'Volver a la calibración' : 'Calibrar mi mirada'}
-                                      <ArrowRight size={14} />
-                                    </button>
                                   ) : isSelected && isL2 && l2Selection ? (
-                                    <p className="text-sm italic leading-relaxed text-slate-200/90 lg:text-xs">
-                                      {l2Selection}
+                                    <p className="text-sm leading-relaxed text-slate-200/90">
+                                      {l2Acknowledgment || buildL2Acknowledgment(portal, l2Selection)}
                                     </p>
+                                  ) : isL1 ? (
+                                    <div className="space-y-1.5">
+                                      <p className="font-display text-base leading-tight text-white">
+                                        {level.title}
+                                      </p>
+                                      <p className="text-xs leading-relaxed text-slate-300/75">
+                                        {level.desc.replace(/^✓\s*/, '')}
+                                      </p>
+                                    </div>
+                                  ) : isL2 && !l1ChipDone ? (
+                                    <div className="space-y-1.5">
+                                      <p className="font-display text-base leading-tight text-white">
+                                        {level.title}
+                                      </p>
+                                      <p className="text-xs leading-relaxed text-slate-300/75">
+                                        {l2q?.preview}
+                                      </p>
+                                    </div>
                                   ) : (
-                                    <p className={`font-display text-base leading-tight lg:text-sm ${
+                                    <p className={`font-display text-base leading-tight ${
                                       isCompleted || isAvailable ? 'text-white' : 'text-white/30'
                                     }`}>
                                       {level.title}
@@ -1565,7 +1659,7 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
                                 </div>
 
                                 {/* Badge + chevron */}
-                                <div className="hidden shrink-0 items-center gap-1.5 lg:flex">
+                                <div className={`${isAvailable ? 'flex' : 'hidden lg:flex'} col-start-2 row-start-2 shrink-0 items-center gap-1.5 self-start lg:col-start-3 lg:row-start-1 lg:self-center`}>
                                   {isAvailable ? (
                                     <>
                                       <span className="relative inline-flex items-center gap-1 rounded-full border border-sky-400/60 bg-sky-500/20 px-2 py-0.5 text-[0.52rem] uppercase tracking-[0.1em] text-sky-100 leading-none shadow-[0_0_10px_rgba(56,189,248,0.35)]">
@@ -1595,9 +1689,9 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
                                     animate={{ height: 'auto', opacity: 1 }}
                                     exit={{ height: 0, opacity: 0 }}
                                     transition={{ duration: 0.25, ease: 'easeInOut' }}
-                                    className="overflow-hidden"
+                                    className="col-start-2 col-end-[-1] overflow-hidden"
                                   >
-                                    <div className="col-start-2 space-y-3 lg:px-4 lg:pb-4">
+                                    <div className="space-y-3">
                                       {isL3 && (
                                         <div className="space-y-3">
 
@@ -1658,7 +1752,7 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
                                                   {!showPhoneInput ? (
                                                     <>
                                                       <p className="text-xs leading-relaxed text-slate-400/80">
-                                                        Tu Cuaderno holográfico estará disponible en breve. ¿Te avisamos por WhatsApp?
+                                                        La obra continuará dentro de unos días. ¿Te avisamos por WhatsApp cuando sea momento de volver?
                                                       </p>
                                                       <button
                                                         type="button"
@@ -1712,15 +1806,21 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
                                             </>
                                           )}
 
-                                          {/* Cuaderno holográfico — disponible tras dar consent */}
-                                          {!bitacoraCompleted && bitacoraConsented && (
+                                          {/* Seguimiento longitudinal — solo después de la ventana diferida */}
+                                          {!bitacoraCompleted && bitacoraConsented && bitacoraAvailable && (
                                             <button
                                               type="button"
-                                              onClick={() => { setHolograficoOpen(true); setHolograficoPoster(portal); }}
+                                              onClick={() => { setBitacoraStep('p1'); setBitacoraOpen(true); }}
                                               className="w-full rounded-full border border-amber-400/60 bg-amber-900/25 px-4 py-2.5 text-xs uppercase tracking-[0.2em] text-amber-100 transition hover:bg-amber-900/40"
                                             >
-                                              Abrir cuaderno →
+                                              La obra continúa… →
                                             </button>
+                                          )}
+
+                                          {!bitacoraCompleted && bitacoraConsented && !bitacoraAvailable && (
+                                            <p className="text-xs italic leading-relaxed text-slate-400/75">
+                                              La obra sigue fuera de escena. Este foco se abrirá cuando llegue el momento de volver.
+                                            </p>
                                           )}
 
                                           {/* Bitácora — completada */}
@@ -1788,6 +1888,62 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
                         );
                       })}
                     </div>
+
+                    {l1ChipDone && !l2NarrativeOpened && onOpenNarrative && (
+                      <motion.div
+                        className="flex flex-col items-center rounded-2xl border border-amber-300/20 bg-black/45 px-5 py-5 text-center shadow-[0_0_28px_rgba(251,191,36,0.08)]"
+                        initial={{ opacity: 0, scale: 0.96, y: 12 }}
+                        animate={{ opacity: 1, scale: 1, y: 0 }}
+                        transition={{ type: 'spring', stiffness: 210, damping: 22 }}
+                      >
+                        <p className="font-display text-lg leading-tight text-amber-100">
+                          Has desbloqueado el artefacto: {PORTAL_ARTIFACT_LABEL[portal] ?? 'La forma'}
+                        </p>
+                        <motion.button
+                          type="button"
+                          onClick={handleOpenNarrativeExperience}
+                          className="flex w-full flex-col items-center gap-3 pt-4 transition active:scale-[0.98]"
+                          whileHover={{ scale: 1.015 }}
+                        >
+                          <img
+                            src="https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/oraculo/gato-moneda.png"
+                            alt="GAToken"
+                            className="h-24 w-24 animate-[spin_8s_linear_0s_infinite_reverse] drop-shadow-[0_0_22px_rgba(251,191,36,0.6)] lg:h-32 lg:w-32"
+                          />
+                          <span className="text-sm font-semibold tracking-wide text-amber-200">
+                            Habitar la forma
+                          </span>
+                        </motion.button>
+                      </motion.div>
+                    )}
+
+                    {bitacoraCompleted && (
+                      <motion.div
+                        className="flex flex-col items-center rounded-2xl border border-purple-300/25 bg-black/45 px-5 py-5 text-center shadow-[0_0_32px_rgba(168,85,247,0.10)]"
+                        initial={{ opacity: 0, scale: 0.96, y: 12 }}
+                        animate={{ opacity: 1, scale: 1, y: 0 }}
+                        transition={{ type: 'spring', stiffness: 210, damping: 22 }}
+                      >
+                        <p className="font-display text-lg leading-tight text-purple-100">
+                          Tu registro ya tiene una forma para volver a mirarse
+                        </p>
+                        <motion.button
+                          type="button"
+                          onClick={() => { setHolograficoPoster(portal); setHolograficoOpen(true); }}
+                          className="flex w-full flex-col items-center gap-3 pt-4 transition active:scale-[0.98]"
+                          whileHover={{ scale: 1.015 }}
+                        >
+                          <img
+                            src="/assets/header-logo.png"
+                            alt="Emblema de #GatoEncerrado"
+                            className="h-24 w-24 object-contain drop-shadow-[0_0_24px_rgba(168,85,247,0.45)] lg:h-28 lg:w-28"
+                          />
+                          <span className="text-sm font-semibold tracking-wide text-purple-200">
+                            Abrir libreto holográfico
+                          </span>
+                        </motion.button>
+                      </motion.div>
+                    )}
 
                     {/* Footer privacidad */}
                     <div className="flex items-start gap-3 rounded-2xl border border-white/10 bg-black/40 px-4 py-3.5">
@@ -1904,27 +2060,41 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
             </div>
           </div>
 
-          {/* ── Columna derecha: poster — solo desktop ── */}
-          <div className="hidden lg:block lg:w-[42%] shrink-0 relative overflow-hidden">
-            {/* Poster — cambia al portal seleccionado en el holográfico */}
-            <img
-              src={holograficoOpen ? (PORTAL_POSTER[holograficoPoster] ?? poster) : poster}
-              alt=""
-              aria-hidden="true"
-              className="h-full w-full object-cover object-top transition-all duration-500"
-              style={{
-                mixBlendMode: 'plus-lighter',
-                opacity: holograficoOpen ? 1 : l3Active ? 0 : (l2NarrativeOpened && convQuestion !== null && !l2ConvDone) ? 0.5 : 1,
-              }}
-            />
-            {/* Gato de la cabina — aparece cuando L3 está activo */}
+          {/* ── Columna derecha: gato de la cabina — solo desktop ── */}
+          <div className="hidden lg:block lg:w-[42%] shrink-0 relative overflow-hidden bg-[rgb(5,3,9)]">
+            {/* La misma presencia permanece en escena: misteriosa antes de L3
+                y revelada cuando el usuario alcanza el tercer nivel. */}
             <img
               src={CAT_CABINA_URL}
               alt=""
               aria-hidden="true"
-              className="absolute inset-0 h-full w-full object-cover object-top transition-opacity duration-500"
-              style={{ opacity: l3Active ? 1 : 0 }}
+              className="absolute inset-0 h-full w-full object-cover object-top transition-all duration-1000"
+              style={{
+                opacity: l3Active ? 1 : 0.26,
+                filter: l3Active
+                  ? 'brightness(1) saturate(1) contrast(1)'
+                  : 'brightness(0.48) saturate(0.65) contrast(1.08)',
+              }}
             />
+            <div
+              aria-hidden="true"
+              className="absolute inset-0 transition-opacity duration-1000"
+              style={{
+                background: 'radial-gradient(circle at 50% 32%, rgba(82,62,118,0.12), rgba(5,3,9,0.74) 68%, rgba(5,3,9,0.92) 100%)',
+                opacity: l3Active ? 0.08 : 0.4,
+              }}
+            />
+            {/* Campo de estrellas CSS: una capa liviana con screen que deja
+                respirar los negros y acompaña la revelación de L3. */}
+            <div
+              aria-hidden="true"
+              className="pointer-events-none absolute inset-0 mix-blend-screen transition-opacity duration-1000"
+              style={{ opacity: l3Active ? 0.96 : 0.72 }}
+            >
+              <div
+                className="star-pulse absolute inset-0"
+              />
+            </div>
             {/* Burbuja desktop */}
             <AnimatePresence>
               {l3Active && !l3BubbleClosed && (

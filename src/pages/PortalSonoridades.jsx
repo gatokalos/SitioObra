@@ -28,12 +28,15 @@ import { useVitranaQuestion } from '@/hooks/useVitranaQuestion';
 import useScrambleText from '@/hooks/useScrambleText';
 import { resolvePortalRoute } from '@/lib/miniversePortalRegistry';
 
-const SONORIDADES_INTRO =
-  'Sonoridades reúne la música original y el diseño sonoro creados para la obra, junto con piezas que expanden su universo más allá del escenario.';
-const SONORIDADES_BODY =
-  'En la puesta, el sonido no acompañó la historia: la transformó. Abrió una experiencia inmersiva donde la resonancia modifica la percepción del tiempo, del cuerpo y del espacio. Este espacio permite recorrer esas composiciones, explorar sus capas y descubrir cómo lo audible deja huella incluso cuando la escena ya terminó.';
-const SONORIDADES_CLOSE =
-  'Cada visita es una mezcla nueva, un sueño que se reinventa con cada escucha.';
+const SONORIDADES_INTRO = (
+  <>
+    <p className="mt-4 text-lg font-medium leading-relaxed text-white">
+      Casi nadie se detiene a escuchar lo que ya estaba sonando.
+    </p>
+    <p className="mt-3 text-base leading-relaxed text-slate-300/90">
+      Hay cosas que el cuerpo solo percibe con vibración: algo entra sin permiso y se queda. Basta con <em>cerrar los ojos</em> para descubrir que la obra continúa en otra parte.</p>
+  </>
+);
 const SUPABASE_STORAGE = `${import.meta.env.VITE_SUPABASE_URL || ''}/storage/v1/object/public`;
 
 const SONORIDADES_VIDEO_URL = `${SUPABASE_STORAGE}/Sonoridades/videos-v/Vacio.mov`;
@@ -327,7 +330,9 @@ const PortalSonoridades = () => {
               </div>
             ) : null}
           </div>
-          <PortalHeaderActions />
+          <div className="hidden lg:block">
+            <PortalHeaderActions />
+          </div>
         </div>
 
         <div className="mt-6 flex flex-col gap-6">
@@ -353,9 +358,7 @@ const PortalSonoridades = () => {
                   </div>
                 </div>
                 <div className="space-y-3 text-lg text-slate-200/85 leading-relaxed font-light">
-                  <p>{SONORIDADES_INTRO}</p>
-                  <p>{SONORIDADES_BODY}</p>
-                  <p className="text-slate-100/90">{SONORIDADES_CLOSE}</p>
+                  {SONORIDADES_INTRO}
                 </div>
                 <div className="flex flex-wrap gap-2">
                   <span className="rounded-full border border-cyan-200/35 bg-cyan-400/10 px-3 py-1 text-[11px] uppercase tracking-[0.22em] text-cyan-100">Diseño sonoro</span>
@@ -466,6 +469,13 @@ const PortalSonoridades = () => {
               ))}
             </div>
           </div>
+          <div className="lg:hidden">
+            <IAInsightCard
+              {...SONORIDADES_IA_PROFILE}
+              title="Información del dispositivo"
+              compact
+            />
+          </div>
           <div className={`lg:hidden rounded-3xl border border-white/10 bg-black/30 p-5 space-y-4 transition-opacity duration-300${isResonanceOpen ? ' opacity-30 pointer-events-none' : ''}`}>
             <div className="mb-1">
               <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Resonancia Colectiva</p>
@@ -493,7 +503,13 @@ const PortalSonoridades = () => {
               <MiniVersoCard title={SONORIDADES_NOTA_AUTORAL.title} verse={SONORIDADES_NOTA_AUTORAL.verse} palette={SONORIDADES_TILE} effect="flip" gatEventKey="flip:nota-autoral:sonoridades" />
             </div>
           </div>
-          <div className="order-4"><IAInsightCard {...SONORIDADES_IA_PROFILE} compact /></div>
+          <div className="order-4 hidden lg:block">
+            <IAInsightCard
+              {...SONORIDADES_IA_PROFILE}
+              title="Información del dispositivo"
+              compact
+            />
+          </div>
           {l3Rec?.step3 ? (
             <div className="order-5">
               <PortalL3RewardCTA portal="sonoridades" l3Rec={l3Rec} />
@@ -509,6 +525,9 @@ const PortalSonoridades = () => {
               </button>
             </div>
           ) : null}
+          <div className="order-last flex justify-end pt-2 lg:hidden">
+            <PortalHeaderActions />
+          </div>
         </div>
 
         {showLoginOverlay ? <LoginOverlay onClose={handleCloseLogin} /> : null}

@@ -34,13 +34,10 @@ import { resolvePortalRoute } from '@/lib/miniversePortalRegistry';
 const GRAFICOS_INTRO = (
   <>
     <p className="mt-4 text-lg font-medium leading-relaxed text-white">
-      Las emociones contemporáneas también se juzgan por <em>su apariencia</em>.
+      Nadie se ve como cree que se ve, y siempre hay alguien decidiendo qué se mira. Las emociones también se juzgan por <em>su apariencia</em>.
     </p>
     <p className="text-base leading-relaxed text-slate-200/80 mt-3">
-      Detrás de la proyección hay alguien que elige qué mostrar. En cambio, la imagen aparece de golpe, y con eso basta para que otros decidan qué ver y qué no.
-    </p>
-    <p className="mt-3 text-base leading-relaxed text-slate-200/80">
-      Este miniverso se nos presenta así: como una superficie que vuelve a aparecer con los ojos cerrados.
+     En el cine alguien elige qué mostrar y en qué orden. La imagen no da esa tregua: llega de golpe, entera, como una superficie que vuelve a aparecer con los ojos cerrados.
     </p>
   </>
 );
@@ -364,7 +361,9 @@ const PortalGraficos = () => {
               </div>
             ) : null}
           </div>
-          <PortalHeaderActions />
+          <div className="hidden lg:block">
+            <PortalHeaderActions />
+          </div>
         </div>
 
         <div className="mt-6 flex flex-col gap-6">
@@ -473,6 +472,13 @@ const PortalGraficos = () => {
                 </div>
               </div>
             </div>
+            <div className="bg-slate-950/80 px-5 pt-5 lg:hidden">
+              <IAInsightCard
+                {...GRAFICOS_IA_PROFILE}
+                title="Información del dispositivo"
+                compact
+              />
+            </div>
             <div className={`bg-slate-950/80 p-5 lg:hidden transition-opacity duration-300${isResonanceOpen ? ' opacity-30 pointer-events-none' : ''}`}>
               <div className="mb-1">
                 <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Resonancia Colectiva</p>
@@ -528,7 +534,13 @@ const PortalGraficos = () => {
               <MiniVersoCard title={GRAFICOS_NOTA_AUTORAL.title} verse={GRAFICOS_NOTA_AUTORAL.verse} palette={GRAFICOS_TILE} effect="flip" gatEventKey="flip:nota-autoral:grafico" />
             </div>
           </div>
-          <div className="order-4"><IAInsightCard {...GRAFICOS_IA_PROFILE} compact /></div>
+          <div className="order-4 hidden lg:block">
+            <IAInsightCard
+              {...GRAFICOS_IA_PROFILE}
+              title="Información del dispositivo"
+              compact
+            />
+          </div>
           {l3Rec?.step3 ? (
             <div className="order-5">
               <PortalL3RewardCTA portal="grafico" l3Rec={l3Rec} />
@@ -544,6 +556,9 @@ const PortalGraficos = () => {
               </button>
             </div>
           ) : null}
+          <div className="order-last flex justify-end pt-2 lg:hidden">
+            <PortalHeaderActions />
+          </div>
         </div>
 
         {showLoginOverlay ? <LoginOverlay onClose={handleCloseLogin} /> : null}

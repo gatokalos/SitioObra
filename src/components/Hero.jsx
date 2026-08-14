@@ -1299,7 +1299,7 @@ const Hero = () => {
                   transition={{ duration: hasActivatedAudio ? 1.1 : 0.8, ease: 'easeOut', delay: hasActivatedAudio ? 0 : 0.25 }}
                   className="mt-2 flex justify-center px-8"
                 >
-                  <span className="hero-subtitle-track relative inline-flex min-h-[2.8rem] max-w-[42rem] items-center justify-center text-center text-[0.78rem] leading-snug tracking-[0.18em] text-slate-300/70 sm:min-h-[1.8rem] sm:text-sm">
+                  <span className="hero-subtitle-track relative inline-flex min-h-[2.8rem] max-w-[42rem] items-center justify-center text-center text-[0.78rem] leading-snug tracking-[0.18em] text-slate-200/70 sm:min-h-[1.8rem] sm:text-sm">
                     <span className="invisible">{HERO_ROTATING_SUBTITLE_PLACEHOLDER}</span>
                     <AnimatePresence mode="sync" initial={false}>
                       <motion.span

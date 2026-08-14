@@ -456,7 +456,9 @@ const PortalJuegos = () => {
               </div>
             ) : null}
           </div>
-          <PortalHeaderActions />
+          <div className="hidden lg:block">
+            <PortalHeaderActions />
+          </div>
         </div>
 
         <div className="mt-6 flex flex-col gap-6">
@@ -605,6 +607,15 @@ const PortalJuegos = () => {
                   </button>
                 </div>
               ) : null}
+              {JUEGOS_DEFINITION.iaProfile ? (
+                <div className="pt-4 lg:hidden">
+                  <IAInsightCard
+                    {...JUEGOS_DEFINITION.iaProfile}
+                    title="Información del dispositivo"
+                    compact
+                  />
+                </div>
+              ) : null}
               <div className={`pt-4 border-t border-emerald-200/20 lg:hidden space-y-4 transition-opacity duration-300${isResonanceOpen ? ' opacity-30 pointer-events-none' : ''}`}>
                 <div className="mb-1">
                   <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Resonancia Colectiva</p>
@@ -640,7 +651,15 @@ const PortalJuegos = () => {
               />
             </div>
           </div>
-          {JUEGOS_DEFINITION.iaProfile ? <div className="order-4"><IAInsightCard {...JUEGOS_DEFINITION.iaProfile} compact /></div> : null}
+          {JUEGOS_DEFINITION.iaProfile ? (
+            <div className="order-4 hidden lg:block">
+              <IAInsightCard
+                {...JUEGOS_DEFINITION.iaProfile}
+                title="Información del dispositivo"
+                compact
+              />
+            </div>
+          ) : null}
           {l3Rec?.step3 ? (
             <div className="order-5">
               <PortalL3RewardCTA portal="juegos" l3Rec={l3Rec} />
@@ -657,6 +676,9 @@ const PortalJuegos = () => {
               </a>
             </div>
           ) : null}
+          <div className="order-last flex justify-end pt-2 lg:hidden">
+            <PortalHeaderActions />
+          </div>
         </div>
 
         {showLoginOverlay ? <LoginOverlay onClose={handleCloseLogin} /> : null}
