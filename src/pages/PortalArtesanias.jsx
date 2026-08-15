@@ -31,7 +31,7 @@ const MARIANA_GALLERY = [
   {
     type: 'image',
     url: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Merch/prototito_transmedia.png',
-    caption: 'GATO DESEMPACADO',
+    caption: 'Pulsa el gato',
   },
 ];
 
@@ -90,8 +90,8 @@ const ARTESANIAS_COLLABORATORS = [
   {
     id: 'mariana-nunez',
     name: 'Mariana Núñez de León',
-    role: 'Cerámica · Experimentación y objeto narrativo',
-    bio: 'Ceramista tijuanense cuya práctica explora el molde, el volumen y la experimentación material. En #GatoEncerrado articula el paso de lo digital a lo físico, integrando la cerámica como parte del sistema narrativo donde el proceso y sus contingencias forman parte de la obra.',
+    role: 'Artesana ceramista',
+    bio: 'Mariana Núñez de León es una ceramista basada en Tijuana. Su práctica se centra en el molde, el volumen y la experimentación material. En #GatoEncerrado, su trabajo articula el paso de lo digital a lo físico, integrando el sistema narrativo del proyecto.',
     image: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/equipo/selloMarianaNL_patch.png',
   },
 ];
@@ -131,7 +131,8 @@ const ShowcaseReactionInline = ({ status, onReact }) => (
   <PulseReactionCard
     status={status}
     onReact={onReact}
-    description="Alguien está contando cuántos llegaron hasta aquí. Deja tu pulso."
+    description="Alguien está contando cuántos pulsos llegaron hasta aquí…"
+    successMessage="Gracias por tu pulso en este miniverso."
     buttonLabel="¡Déjanos un pulso!"
   />
 );
@@ -532,13 +533,11 @@ const PortalArtesanias = () => {
                 </div>
                 <div className="px-6 pb-6 space-y-4">
                   <p className="text-xs uppercase tracking-[0.35em] text-slate-300/75">Obra destacada</p>
-                  <h4 className="font-display text-2xl text-white">GATO DESEMPACADO</h4>
+                  <h4 className="font-display text-2xl text-white">Pulsa el gato</h4>
                   <p className="text-sm text-slate-300/85 leading-relaxed">
                     Hay símbolos que sobreviven porque nunca terminan de significar una sola cosa. El símbolo # ha sido medida, música, tablero, código y una forma de conectar conversaciones mucho antes de ser conocido como &ldquo;gato&rdquo; en México.
                   </p>
-                  <p className="text-sm text-slate-300/85 leading-relaxed">
-                    Esta pieza nace de esa transformación constante: no para atrapar el símbolo, sino para dejarlo existir un instante fuera de la pantalla.
-                  </p>
+
                   <div className="flex flex-wrap gap-2">
                     <span className="rounded-full border border-amber-400/30 bg-amber-900/20 px-3 py-1 text-[11px] uppercase tracking-[0.2em] text-amber-100">Incluye dispositivo interactivo</span>
                   </div>
@@ -626,13 +625,13 @@ const PortalArtesanias = () => {
           <div className="lg:hidden">
             <IAInsightCard
               {...ARTESANIAS_IA_PROFILE}
-              title="Información del dispositivo"
+              title="Incluye dispositivo interactivo"
               compact
             />
           </div>
           <div className="lg:hidden rounded-3xl border border-white/10 bg-black/30 px-6 py-5 space-y-4">
             <div className="flex flex-col gap-3">
-              <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Mini-verso autoral</p>
+              <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Verso fundacional</p>
               <MiniVersoCard title={ARTESANIAS_NOTA_AUTORAL.title} verse={ARTESANIAS_NOTA_AUTORAL.verse} palette={ARTESANIAS_TILE} effect="flip" gatEventKey="flip:nota-autoral:artesanias" />
             </div>
             <CollaboratorsPanel collaborators={ARTESANIAS_COLLABORATORS} accentClassName="text-amber-200/90" bare />
@@ -640,7 +639,7 @@ const PortalArtesanias = () => {
           <div className="hidden lg:block lg:order-3 rounded-3xl border border-white/10 bg-black/30 p-6 space-y-6">
             <CollaboratorsPanel collaborators={ARTESANIAS_COLLABORATORS} accentClassName="text-amber-200/90" />
             <div className="flex flex-col gap-3">
-              <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Mini-verso autoral</p>
+              <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Verso fundacional</p>
               <MiniVersoCard
                 title={ARTESANIAS_NOTA_AUTORAL.title}
                 verse={ARTESANIAS_NOTA_AUTORAL.verse}
@@ -653,7 +652,7 @@ const PortalArtesanias = () => {
           <div className="order-4 hidden lg:block">
             <IAInsightCard
               {...ARTESANIAS_IA_PROFILE}
-              title="Información del dispositivo"
+              title="Incluye dispositivo interactivo"
               compact
             />
           </div>

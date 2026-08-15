@@ -75,7 +75,8 @@ const ShowcaseReactionInline = ({ status, onReact }) => (
   <PulseReactionCard
     status={status}
     onReact={onReact}
-    description="Alguien está contando cuántos llegaron hasta aquí. Deja tu pulso."
+    description="Alguien está contando cuántos pulsos llegaron hasta aquí…"
+    successMessage="Gracias por tu pulso en este miniverso."
     buttonLabel="¡Déjanos un pulso!"
   />
 );
@@ -625,14 +626,14 @@ const PortalJuegos = () => {
                 <div className="pt-4 lg:hidden">
                   <IAInsightCard
                     {...JUEGOS_DEFINITION.iaProfile}
-                    title="Información del dispositivo"
+                    title="Incluye dispositivo interactivo"
                     compact
                   />
                 </div>
               ) : null}
               <div className="pt-4 border-t border-emerald-200/20 lg:hidden space-y-4">
                 <div className="flex flex-col gap-3">
-                  <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Mini-verso autoral</p>
+                  <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Verso fundacional</p>
                   <MiniVersoCard title={JUEGOS_DEFINITION.cartaTitle} verse={JUEGOS_DEFINITION.notaAutoral} palette={JUEGOS_TILE} effect="flip" gatEventKey="flip:nota-autoral:juegos" />
                 </div>
               </div>
@@ -641,7 +642,7 @@ const PortalJuegos = () => {
 
           <div className="hidden lg:block lg:order-3 rounded-3xl border border-white/10 bg-black/30 p-6 space-y-6">
             <div className="flex flex-col gap-3">
-              <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Mini-verso autoral</p>
+              <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Verso fundacional</p>
               <MiniVersoCard
                 title={JUEGOS_DEFINITION.cartaTitle}
                 verse={JUEGOS_DEFINITION.notaAutoral}
@@ -655,7 +656,7 @@ const PortalJuegos = () => {
             <div className="order-4 hidden lg:block">
               <IAInsightCard
                 {...JUEGOS_DEFINITION.iaProfile}
-                title="Información del dispositivo"
+                title="Incluye dispositivo interactivo"
                 compact
               />
             </div>

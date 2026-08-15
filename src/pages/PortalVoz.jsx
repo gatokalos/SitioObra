@@ -305,6 +305,7 @@ const normalizeStoredEmotionOrbs = (raw) => {
 const ShowcaseReactionInline = ({
   title,
   description,
+  successMessage,
   buttonLabel,
   status,
   onReact,
@@ -313,6 +314,7 @@ const ShowcaseReactionInline = ({
   <PulseReactionCard
     title={title}
     description={description}
+    successMessage={successMessage}
     buttonLabel={buttonLabel}
     status={status}
     onReact={onReact}
@@ -1044,7 +1046,8 @@ const PortalVoz = () => {
                     label=""
                   />
                   <ShowcaseReactionInline
-                    description="Alguien está contando cuántos llegaron hasta aquí. Deja tu pulso."
+                    description="Alguien está contando cuántos pulsos llegaron hasta aquí…"
+                    successMessage="Gracias por tu pulso en este miniverso."
                     buttonLabel="¡Déjanos un pulso!"
                     status={reactionStatus}
                     onReact={handleSendPulse}
@@ -1072,7 +1075,8 @@ const PortalVoz = () => {
                   label=""
                 />
                 <ShowcaseReactionInline
-                  description="Alguien está contando cuántos llegaron hasta aquí. Deja tu pulso."
+                  description="Alguien está contando cuántos pulsos llegaron hasta aquí…"
+                  successMessage="Gracias por tu pulso en este miniverso."
                   buttonLabel="¡Déjanos un pulso!"
                   status={reactionStatus}
                   onReact={handleSendPulse}
@@ -1129,19 +1133,19 @@ const PortalVoz = () => {
                 </div>
               </div>
             </div>
-            {/* En móvil, la información del dispositivo funciona como puente
+            {/* En móvil, la Incluye dispositivo interactivo funciona como puente
                 entre la obra que acabamos de ver y su resonancia colectiva. */}
             <div className="bg-slate-950/80 px-5 pt-5 lg:hidden">
               <IAInsightCard
                 {...SCENE_PORTAL_IA_PROFILE}
-                title="Información del dispositivo"
+                title="Incluye dispositivo interactivo"
                 compact
               />
             </div>
             {/* Pleca + Sección Resonancia — fondo propio, el video no sangra aquí */}
             <div className="bg-slate-950/80 p-5 lg:hidden space-y-6">
               <div className="flex flex-col gap-3">
-                <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Mini-verso autoral</p>
+                <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Verso fundacional</p>
                 <MiniVersoCard
                   title={SCENE_PORTAL_NOTA_AUTORAL.title}
                   verse={SCENE_PORTAL_NOTA_AUTORAL.verse}
@@ -1569,7 +1573,7 @@ const PortalVoz = () => {
           <div className="hidden lg:block lg:order-3 rounded-3xl border border-white/10 bg-black/30 p-6 space-y-6">
             {renderCollaboratorsSection()}
             <div className="flex flex-col gap-3">
-              <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Mini-verso autoral</p>
+              <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Verso fundacional</p>
               <MiniVersoCard
                 title={SCENE_PORTAL_NOTA_AUTORAL.title}
                 verse={SCENE_PORTAL_NOTA_AUTORAL.verse}
@@ -1587,7 +1591,7 @@ const PortalVoz = () => {
           <div className="order-4 hidden lg:block">
             <IAInsightCard
               {...SCENE_PORTAL_IA_PROFILE}
-              title="Información del dispositivo"
+              title="Incluye dispositivo interactivo"
               compact
             />
           </div>

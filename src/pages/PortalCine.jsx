@@ -112,7 +112,8 @@ const ShowcaseReactionInline = ({ status, onReact }) => (
   <PulseReactionCard
     status={status}
     onReact={onReact}
-    description="Alguien está contando cuántos llegaron hasta aquí. Deja tu pulso."
+    description="Alguien está contando cuántos pulsos llegaron hasta aquí…"
+    successMessage="Gracias por tu pulso en este miniverso."
     buttonLabel="¡Déjanos un pulso!"
   />
 );
@@ -523,21 +524,19 @@ const PortalCine = () => {
               </div>
               <div className="absolute bottom-0 inset-x-0 p-5 space-y-3">
                 <p className="text-sm text-slate-200/90 leading-relaxed">{QUIRON_DATA.description}</p>
-                <div className="flex flex-wrap gap-2">
-                  <span className="rounded-full border border-white/20 bg-black/30 px-3 py-1 text-[11px] uppercase tracking-[0.2em] text-slate-100 backdrop-blur-sm">Incluye dispositivo interactivo</span>
-                </div>
+ 
               </div>
             </div>
             <div className="bg-slate-950/80 px-5 pt-5 lg:hidden">
               <IAInsightCard
                 {...CINE_IA_PROFILE}
-                title="Información del dispositivo"
+                title="Incluye dispositivo interactivo"
                 compact
               />
             </div>
             <div className="bg-slate-950/80 p-5 lg:hidden space-y-6">
               <div className="flex flex-col gap-3">
-                <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Mini-verso autoral</p>
+                <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Verso fundacional</p>
                 <MiniVersoCard title={CINE_NOTA_AUTORAL.title} verse={CINE_NOTA_AUTORAL.verse} palette={CINE_TILE} effect="flip" gatEventKey="flip:nota-autoral:cine" />
               </div>
               <CollaboratorsPanel collaborators={CINE_COLLABORATORS} accentClassName="text-sky-200/90" bare />
@@ -547,14 +546,14 @@ const PortalCine = () => {
           <div className="hidden lg:block lg:order-3 rounded-3xl border border-white/10 bg-black/30 p-6 space-y-6">
             <CollaboratorsPanel collaborators={CINE_COLLABORATORS} accentClassName="text-sky-200/90" />
             <div className="flex flex-col gap-3">
-              <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Mini-verso autoral</p>
+              <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Verso fundacional</p>
               <MiniVersoCard title={CINE_NOTA_AUTORAL.title} verse={CINE_NOTA_AUTORAL.verse} palette={CINE_TILE} effect="flip" gatEventKey="flip:nota-autoral:cine" />
             </div>
           </div>
           <div className="order-4 hidden lg:block">
             <IAInsightCard
               {...CINE_IA_PROFILE}
-              title="Información del dispositivo"
+              title="Incluye dispositivo interactivo"
               compact
             />
           </div>

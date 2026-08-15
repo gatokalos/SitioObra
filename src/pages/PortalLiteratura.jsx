@@ -81,7 +81,8 @@ const LITERATURA_BLOG_KEY_SET = new Set(LITERATURA_BLOG_KEYS.map((key) => key.tr
 const ShowcaseReactionInline = ({ status, onReact }) => (
   <PulseReactionCard
     title="¡Déjanos un pulso!"
-    description="Alguien está contando cuántos llegaron hasta aquí. Deja tu pulso."
+    description="Alguien está contando cuántos pulsos llegaron hasta aquí…"
+    successMessage="Gracias por tu pulso en este miniverso."
     status={status}
     onReact={onReact}
   />
@@ -410,13 +411,13 @@ const PortalLiteratura = () => {
                 <div className="pt-4 lg:hidden">
                   <IAInsightCard
                     {...LITERATURA_IA_PROFILE}
-                    title="Información del dispositivo"
+                    title="Incluye dispositivo interactivo"
                     compact
                   />
                 </div>
                 <div className="pt-4 border-t border-white/10 lg:hidden space-y-4">
                   <div className="flex flex-col gap-3">
-                    <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Mini-verso autoral</p>
+                    <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Verso fundacional</p>
                     <MiniVersoCard title={LITERATURA_NOTA_AUTORAL.title} verse={LITERATURA_NOTA_AUTORAL.verse} palette={LITERATURA_TILE} effect="flip" gatEventKey="flip:nota-autoral:literatura" />
                   </div>
                   <CollaboratorsPanel collaborators={LITERATURA_COLLABORATORS} accentClassName="text-violet-200/90" bare />
@@ -429,14 +430,14 @@ const PortalLiteratura = () => {
           <div className="hidden lg:block lg:order-3 rounded-3xl border border-white/10 bg-black/30 p-6 space-y-6">
             <CollaboratorsPanel collaborators={LITERATURA_COLLABORATORS} accentClassName="text-violet-200/90" />
             <div className="flex flex-col gap-3">
-              <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Mini-verso autoral</p>
+              <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Verso fundacional</p>
               <MiniVersoCard title={LITERATURA_NOTA_AUTORAL.title} verse={LITERATURA_NOTA_AUTORAL.verse} palette={LITERATURA_TILE} effect="flip" gatEventKey="flip:nota-autoral:literatura" />
             </div>
           </div>
           <div className="order-4 hidden lg:block">
             <IAInsightCard
               {...LITERATURA_IA_PROFILE}
-              title="Información del dispositivo"
+              title="Incluye dispositivo interactivo"
               compact
             />
           </div>

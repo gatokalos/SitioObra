@@ -1,26 +1,23 @@
-import React, { useMemo, useState } from 'react';
-import { ChevronDown, Cpu, MessageCircle, ShieldCheck, Sparkles, Send, Loader2 } from 'lucide-react';
+import React, { useState } from 'react';
+import { ChevronDown, Cpu, MessageCircle, ShieldCheck, Sparkles, Send } from 'lucide-react';
 import { useAuth } from '@/contexts/SupabaseAuthContext';
-import { supabase } from '@/lib/supabaseClient';
 import { useToast } from '@/components/ui/use-toast';
-import { apiFetch } from '@/lib/apiClient';
 
 const IAInsightCard = ({
-  title = 'Información del dispositivo',
+  title = 'Incluye dispositivo interactivo',
   type,
   interaction,
   tokensRange,
   coverage,
-  footnote,
   compact = false,
   rewardLabel,
   minRequired,
   // Modo "viajar" (cuaderno holográfico): cuando travelRequiredGat viene
-  // definido, el botón deja de ser "Migrar mis GATokens" y se convierte en
-  // un salvaguardas — anónimo → pide autenticarse; autenticado con balance
-  // suficiente → onTravel(); autenticado sin balance → avisa y no deja
-  // entrar a un universo nuevo. No descuenta nada: el único lugar donde se
-  // gasta GAT de verdad es dentro de cada artefacto transmedia.
+  // definido, aparece un botón salvaguarda — anónimo → pide autenticarse;
+  // autenticado con balance suficiente → onTravel(); autenticado sin balance
+  // → avisa y no deja entrar a un universo nuevo. No descuenta nada: el
+  // único lugar donde se gasta GAT de verdad es dentro de cada artefacto
+  // transmedia. Sin travelRequiredGat, la tarjeta no muestra ningún botón.
   travelRequiredGat,
   travelLabel = 'Viajar al universo',
   onTravel,
@@ -33,106 +30,26 @@ const IAInsightCard = ({
   // ese; si no, cae al evento global (funciona en el flujo normal de
   // Transmedia.jsx, donde Header.jsx sí está montado).
   onRequireLogin,
+  // Modo controlado opcional: si el padre pasa isOpen/onToggle (p. ej. para
+  // coordinarlo con otro acordeón, que solo uno esté abierto a la vez), se
+  // usa ese estado en vez del interno. Sin estas props se comporta igual
+  // que siempre (estado propio).
+  isOpen: controlledIsOpen,
+  onToggle,
 }) => {
-  const { user, session } = useAuth();
+  const { user } = useAuth();
   const { toast } = useToast();
-  const [status, setStatus] = useState('idle'); // idle | loading | success | error | auth
-  const [isOpen, setIsOpen] = useState(!compact);
+  const [internalIsOpen, setInternalIsOpen] = useState(!compact);
+  const isOpen = controlledIsOpen ?? internalIsOpen;
+  const toggleOpen = onToggle ?? (() => setInternalIsOpen((prev) => !prev));
   const isTravelMode = typeof travelRequiredGat === 'number';
   const hasBody = type || interaction || tokensRange || coverage || rewardLabel || minRequired;
-  const apiBase = useMemo(() => import.meta.env.VITE_API_URL?.replace(/\/+$/, ''), []);
-  const apiPaths = useMemo(() => ['/tokens/me', '/api/tokens/me'], []);
-  const canFetchBackendBalance = useMemo(() => {
-    if (!apiBase) return false;
-    if (import.meta.env.VITE_ALLOW_CROSS_ORIGIN_API === 'true') return true;
-    if (typeof window === 'undefined') return false;
-    try {
-      return new URL(apiBase).origin === window.location.origin;
-    } catch {
-      return false;
-    }
-  }, [apiBase]);
 
   const getLocalBalance = () => {
     if (typeof window === 'undefined') return 0;
     const raw = window.localStorage?.getItem('gatoencerrado:gatokens-available');
     const parsed = Number.parseInt(raw, 10);
     return Number.isFinite(parsed) ? parsed : 0;
-  };
-
-  const getFunctionsBaseUrl = () => {
-    const explicit = import.meta.env.VITE_SUPABASE_FUNCTIONS_URL;
-    if (explicit) return explicit.replace(/\/+$/, '');
-    const apiUrl = import.meta.env.VITE_API_URL?.replace(/\/+$/, '');
-    if (apiUrl) {
-      return apiUrl.endsWith('/functions/v1') ? apiUrl : `${apiUrl}/functions/v1`;
-    }
-    const supabaseUrl = import.meta.env.VITE_SUPABASE_URL?.replace(/\/+$/, '');
-    return supabaseUrl ? `${supabaseUrl}/functions/v1` : null;
-  };
-
-  const fetchBackendBalance = async () => {
-    if (!session?.access_token || !apiBase || !canFetchBackendBalance) {
-      if (import.meta.env.DEV && apiBase && !canFetchBackendBalance) {
-        console.debug('[IAInsightCard] skipping backend balance fetch (cross-origin)', { apiBase });
-      }
-      return null;
-    }
-    for (const path of apiPaths) {
-      try {
-        const res = await apiFetch(path, {
-          cache: 'no-store',
-          headers: {
-            Authorization: `Bearer ${session.access_token}`,
-          },
-        });
-        if (!res.ok) {
-          continue;
-        }
-        const data = await res.json();
-        if (typeof data?.balance === 'number') {
-          return data.balance;
-        }
-      } catch (error) {
-        console.warn('[IAInsightCard] fetch backend balance fallback', { path, error });
-      }
-    }
-    return null;
-  };
-
-  const invokeMigrateTokens = async (payload) => {
-    // Primer intento: cliente supabase (usa configuración por defecto)
-    try {
-      const { data, error } = await supabase.functions.invoke('migrate-tokens', {
-        body: payload,
-        headers: {
-          Authorization: `Bearer ${session.access_token}`,
-        },
-      });
-      if (error) throw error;
-      return data;
-    } catch (primaryError) {
-      console.warn('[IAInsightCard] primary migrate-tokens failed, trying direct fetch', primaryError);
-      // Fallback directo a la URL de Functions (útil si invoke falla por CORS/rutas)
-      const baseUrl = getFunctionsBaseUrl();
-      if (!baseUrl) throw primaryError;
-      const anonKey =
-        import.meta.env.VITE_SUPABASE_ANON_KEY ?? import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
-      const response = await fetch(`${baseUrl}/migrate-tokens`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          ...(anonKey ? { apikey: anonKey } : {}),
-          Authorization: `Bearer ${session.access_token}`,
-        },
-        body: JSON.stringify(payload),
-      });
-      if (!response.ok) {
-        const errorBody = await response.text().catch(() => 'unknown');
-        throw new Error(`Fallback migrate-tokens failed: ${errorBody}`);
-      }
-      return response.json().catch(() => ({}));
-    }
   };
 
   const handleTravelClick = () => {
@@ -152,47 +69,6 @@ const IAInsightCard = ({
     toast({
       description: `Todavía no te alcanza para otro universo (necesitas ${travelRequiredGat} GAT). Sigue donde ya tienes progreso.`,
     });
-  };
-
-  const handleMigrateTokens = async () => {
-    if (!user || !session?.access_token) {
-      setStatus('auth');
-      toast({ description: 'Inicia sesión para migrar tus GATokens.' });
-      return;
-    }
-
-    setStatus('loading');
-    try {
-      const [backendBalance, localBalance] = await Promise.all([
-        fetchBackendBalance(),
-        Promise.resolve(getLocalBalance()),
-      ]);
-
-      const data = await invokeMigrateTokens({
-        user_id: user.id,
-        source: 'sitio-obra',
-        local_balance: localBalance,
-        backend_balance: backendBalance,
-        requested_at: new Date().toISOString(),
-        origin_meta: {
-          path: typeof window !== 'undefined' ? window.location.pathname : undefined,
-          user_agent: typeof navigator !== 'undefined' ? navigator.userAgent : undefined,
-        },
-      });
-
-      if (typeof window !== 'undefined') {
-        window.localStorage?.setItem('gatokens:last-migrated', new Date().toISOString());
-      }
-
-      toast({ description: 'Migramos tus GATokens al hub principal.' });
-      setStatus('success');
-      return data;
-    } catch (err) {
-      console.error('[IAInsightCard] migrate-tokens', err);
-      toast({ variant: 'destructive', description: 'No pudimos migrar tus GATokens.' });
-      setStatus('error');
-      return null;
-    }
   };
 
   if (travelCtaOnly && isTravelMode) {
@@ -215,7 +91,7 @@ const IAInsightCard = ({
     );
   }
 
-  if (!hasBody && !footnote) {
+  if (!hasBody) {
     return null;
   }
 
@@ -223,7 +99,7 @@ const IAInsightCard = ({
     <div className="rounded-xl border border-purple-700/30 bg-purple-950/25 p-5 text-sm text-purple-100 backdrop-blur-md shadow-[0_10px_35px_rgba(0,0,0,0.4)]">
       <button
         type="button"
-        onClick={() => setIsOpen((prev) => !prev)}
+        onClick={toggleOpen}
         className="flex w-full items-center justify-between gap-3 text-left"
       >
         <div className="flex items-center gap-2">
@@ -295,37 +171,21 @@ const IAInsightCard = ({
             </div>
           ) : null}
 
-          <div className="pt-3">
-            <button
-              type="button"
-              onClick={isTravelMode ? handleTravelClick : handleMigrateTokens}
-              disabled={!isTravelMode && status === 'loading'}
-              className="inline-flex items-center gap-2 rounded-lg bg-amber-500/90 px-3 py-2 text-sm font-semibold text-black hover:bg-amber-400 disabled:cursor-not-allowed disabled:opacity-60"
-            >
-              {isTravelMode ? (
+          {isTravelMode ? (
+            <div className="pt-3">
+              <button
+                type="button"
+                onClick={handleTravelClick}
+                className="inline-flex items-center gap-2 rounded-lg bg-amber-500/90 px-3 py-2 text-sm font-semibold text-black hover:bg-amber-400"
+              >
                 <Send size={16} />
-              ) : status === 'loading' ? (
-                <Loader2 size={16} className="animate-spin" />
-              ) : (
-                <Send size={16} />
-              )}
-              {isTravelMode
-                ? travelLabel
-                : status === 'loading'
-                  ? 'Migrando…'
-                  : status === 'success'
-                    ? 'Migrado'
-                    : 'Migrar mis GATokens'}
-            </button>
-            {isTravelMode && !user ? (
-              <p className="mt-2 text-xs text-amber-200">Necesitas iniciar sesión para continuar.</p>
-            ) : null}
-            {!isTravelMode && status === 'auth' ? (
-              <p className="mt-2 text-xs text-amber-200">Necesitas iniciar sesión para sincronizar tus energías.</p>
-            ) : null}
-          </div>
-
-          {footnote ? <p className="pt-1 text-purple-300/85 italic">{footnote}</p> : null}
+                {travelLabel}
+              </button>
+              {!user ? (
+                <p className="mt-2 text-xs text-amber-200">Necesitas iniciar sesión para continuar.</p>
+              ) : null}
+            </div>
+          ) : null}
         </div>
       ) : null}
     </div>

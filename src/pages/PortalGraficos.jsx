@@ -91,7 +91,8 @@ const ShowcaseReactionInline = ({ status, onReact }) => (
   <PulseReactionCard
     status={status}
     onReact={onReact}
-    description="Alguien está contando cuántos llegaron hasta aquí. Deja tu pulso."
+    description="Alguien está contando cuántos pulsos llegaron hasta aquí…"
+    successMessage="Gracias por tu pulso en este miniverso."
     buttonLabel="¡Déjanos un pulso!"
   />
 );
@@ -100,7 +101,7 @@ const PortalGraficos = () => {
   const { user } = useAuth();
   usePortalTracking('grafico');
   const { question: vitranaQuestion } = useVitranaQuestion('grafico');
-  const titleDisplay = useScrambleText('La apariencia');
+  const titleDisplay = useScrambleText('La imagen');
   const isAuthenticated = Boolean(user);
   const [showLoginOverlay, setShowLoginOverlay] = useState(false);
   const [showLoginHint, setShowLoginHint] = useState(false);
@@ -490,13 +491,13 @@ const PortalGraficos = () => {
             <div className="bg-slate-950/80 px-5 pt-5 lg:hidden">
               <IAInsightCard
                 {...GRAFICOS_IA_PROFILE}
-                title="Información del dispositivo"
+                title="Incluye dispositivo interactivo"
                 compact
               />
             </div>
             <div className="bg-slate-950/80 p-5 lg:hidden space-y-6">
               <div className="flex flex-col gap-3">
-                <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Mini-verso autoral</p>
+                <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Verso fundacional</p>
                 <MiniVersoCard title={GRAFICOS_NOTA_AUTORAL.title} verse={GRAFICOS_NOTA_AUTORAL.verse} palette={GRAFICOS_TILE} effect="flip" gatEventKey="flip:nota-autoral:grafico" />
               </div>
               <CollaboratorsPanel collaborators={[GRAFICOS_COLLABORATOR]} accentClassName="text-fuchsia-200/90" bare />
@@ -530,14 +531,14 @@ const PortalGraficos = () => {
               )}
             />
             <div className="flex flex-col gap-3">
-              <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Mini-verso autoral</p>
+              <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Verso fundacional</p>
               <MiniVersoCard title={GRAFICOS_NOTA_AUTORAL.title} verse={GRAFICOS_NOTA_AUTORAL.verse} palette={GRAFICOS_TILE} effect="flip" gatEventKey="flip:nota-autoral:grafico" />
             </div>
           </div>
           <div className="order-4 hidden lg:block">
             <IAInsightCard
               {...GRAFICOS_IA_PROFILE}
-              title="Información del dispositivo"
+              title="Incluye dispositivo interactivo"
               compact
             />
           </div>

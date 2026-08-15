@@ -196,7 +196,7 @@ Los ajustes generales de satélites incompletos no deben modificar este bloque n
 
 ### Satélites incompletos y salvaguarda
 
-En un satélite incompleto, el acordeón repetido `Información del dispositivo` se sustituye por un CTA compacto:
+En un satélite incompleto, el acordeón repetido `Incluye dispositivo interactivo` se sustituye por un CTA compacto:
 
 `Viajar a esta escena`
 

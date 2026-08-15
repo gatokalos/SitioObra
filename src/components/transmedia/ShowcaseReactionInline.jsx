@@ -71,7 +71,6 @@ const ShowcaseReactionInline = ({ showcaseId, title, description, buttonLabel, b
     }
 
     setStatus('success');
-    toast({ description: 'Gracias por tu apoyo en este escaparate.' });
   }, [isAuthenticated, showcaseId, status, triggerLoginModal, user]);
 
   // Suppress unused variable warning — isSubscriber used for future gating
@@ -81,6 +80,7 @@ const ShowcaseReactionInline = ({ showcaseId, title, description, buttonLabel, b
     <PulseReactionCard
       title={title}
       description={description}
+      successMessage="Gracias por tu pulso en este miniverso."
       buttonLabel={buttonLabel}
       status={status}
       onReact={handleReaction}

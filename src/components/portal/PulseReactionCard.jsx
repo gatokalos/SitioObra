@@ -5,6 +5,9 @@ import { Heart } from 'lucide-react';
 const PulseReactionCard = ({
   title,
   description,
+  // Al detectarse el pulso (status === 'success'), reemplaza description en
+  // el mismo lugar — ya no hace falta un toast aparte para agradecer.
+  successMessage,
   buttonLabel,
   status = 'idle',
   onReact,
@@ -15,6 +18,7 @@ const PulseReactionCard = ({
     ? 'Enviando...'
     : buttonLabel || title || '¡Déjanos un pulso!';
   const isSuccess = status === 'success';
+  const displayedDescription = isSuccess && successMessage ? successMessage : description;
 
   return (
     <div
@@ -22,9 +26,9 @@ const PulseReactionCard = ({
     >
       <div className="space-y-3">
         <div className="flex items-center justify-between gap-5">
-          {description ? (
+          {displayedDescription ? (
             <p className="min-w-0 flex-1 text-[0.95rem] font-semibold leading-relaxed text-slate-100/90 sm:text-base">
-              {description}
+              {displayedDescription}
             </p>
           ) : null}
 

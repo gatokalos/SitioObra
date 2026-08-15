@@ -580,6 +580,48 @@ export const normalizeStoredEmotionOrbs = (raw) => {
     .filter(Boolean)
     .slice(-OBRA_EMOTION_MAX_ORBS);
 };
+// Cómplices de Artesanías — divididos por pieza: Mariana es la única cómplice
+// de "Pulsa el gato"; el resto ayudó con "La Taza". Ver collaboratorsByCard
+// en showcaseDefinitions.lataza, usado para mostrar el subconjunto correcto
+// según qué obra del carrusel está activa.
+const LATAZA_COLLABORATORS = [
+  {
+    id: 'miroslava-wilson',
+    name: 'Miroslava Wilson',
+    role: 'Vinculación y gestión institucional',
+    bio: 'Miroslava acompañó el proceso que permitió integrar la taza al circuito institucional del CECUT, facilitando su presencia como parte de la preventa de la obra. Su gestión ayudó a tender el puente entre el objeto y el espacio escénico.',
+    image: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/equipo/Miroslava%20.jpg',
+  },
+  {
+    id: 'taller-paco-padilla',
+    name: 'Taller Paco Padilla',
+    role: 'Cerámica artesanal de Tlaquepaque',
+    bio: 'Referente de la cerámica artesanal de Tlaquepaque, el Taller Paco Padilla puso sus manos y su fuego en la primera serie de tazas del universo.',
+    image: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/equipo/pacopadilla.jpeg',
+  },
+  {
+    id: 'yeraldin-roman',
+    name: 'Yeraldín Román',
+    role: 'Diseño, fotografía y enlace local',
+    bio: 'Desde su experiencia en diseño gráfico, afinó la estética de la taza. Fue la primera en tenerla en sus manos y fotografiarla. En su trabajo continuo con Isabel Ayuda para la Vida y en este miniverso, se encargó de registrar marcas que hacen de #GatoEncerrado un universo.',
+    image: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/equipo/yeraldin.png',
+  },
+  {
+    id: 'rocio-morgan',
+    name: 'Rocío Morgan',
+    role: 'Coordinación de entregas',
+    bio: 'Rocío coordinó la entrega de las primeras tazas como un gesto de agradecimiento dentro del proceso de Es un gato encerrado, cuidando que llegaran tanto al equipo como a personas cercanas al proyecto. Marcando así las primeras activaciones de nuestro primer objeto artesanal.',
+    image: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/equipo/rocio.jpg',
+  },
+  {
+    id: 'mariana-nunez',
+    name: 'Mariana Núñez',
+    role: 'Artesana ceramista',
+    bio: 'Mariana Núñez de León es una ceramista basada en Tijuana. Su práctica se centra en el molde, el volumen y la experimentación material. En #GatoEncerrado, su trabajo articula el paso de lo digital a lo físico, integrando el sistema narrativo del proyecto.',
+    image: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/equipo/selloMarianaNL_patch.png',
+  },
+];
+
 export const showcaseDefinitions = {
   miniversos: {
     label: 'El drama',
@@ -786,43 +828,12 @@ iaProfile: {
       'Coloca la taza completa en cuadro, con buena iluminación.',
       'Mantén el marcador visible hasta que aparezca una orbe.',
     ],
-    collaborators: [
-       {
-        id: 'miroslava-wilson',
-        name: 'Miroslava Wilson',
-        role: 'Vinculación y gestión institucional',
-        bio: 'Miroslava acompañó el proceso que permitió integrar la taza al circuito institucional del CECUT, facilitando su presencia como parte de la preventa de la obra. Su gestión ayudó a tender el puente entre el objeto y el espacio escénico.',
-        image: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/equipo/Miroslava%20.jpg',
-      },
-      {
-        id: 'taller-paco-padilla',
-        name: 'Taller Paco Padilla',
-        role: 'Cerámica artesanal de Tlaquepaque',
-        bio: 'Referente de la cerámica artesanal de Tlaquepaque.El Taller Paco Padilla puso sus manos y su fuego en la primera serie de tazas del universo. Cada pieza salió de su horno con una vibración artesanal única, sosteniendo en barro el pulso íntimo de Gato Encerrado y regalándole un hogar físico a lo que antes era solo símbolo.',
-        image: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/equipo/pacopadilla.jpeg',
-      },
-
-      {
-        id: 'yeraldin-roman',
-        name: 'Yeraldín Román',
-        role: 'Diseño gráfico, fotografía y enlace local',
-        bio: 'Desde su experiencia en diseño gráfico, afinó la estética de la taza. Fue la primera en tenerla en sus manos y fotografiarla. En su trabajo continuo con Isabel Ayuda para la Vida y en este miniverso, se encargó de registrar marcas que hacen de #GatoEncerrado un universo.',
-        image: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/equipo/yeraldin.png',
-      },
-         {
-        id: 'rocio-morgan',
-        name: 'Rocío Morgan',
-        role: 'Coordinación de entregas',
-        bio: 'Rocío coordinó la entrega de las primeras tazas como un gesto de agradecimiento dentro del proceso de Es un gato encerrado, cuidando que llegaran tanto al equipo como a personas cercanas al proyecto. Marcando así las primeras activaciones de nuestro primer objeto artesanal.',
-        image: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/equipo/rocio.jpg',
-      },
-      {
-        id: 'mariana-nunez',
-        name: 'Mariana Núñez de León',
-        role: 'Cerámica · Experimentación y objeto narrativo',
-        bio: 'Mariana Núñez de León es una ceramista basada en Tijuana, formada en espacios de taller como La Caja Galería. Su práctica se centra en el molde, el volumen y la experimentación material. En #GatoEncerrado, su trabajo articula el paso de lo digital a lo físico, integrando la cerámica como parte del sistema narrativo del proyecto, donde el proceso y sus contingencias forman parte de la obra.',
-        image: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/equipo/selloMarianaNL_patch.png',
-      },
+    collaborators: LATAZA_COLLABORATORS,
+    // Índice 0 = "Pulsa el gato" (card-gato), índice 1 = "La Taza" (card-taza) —
+    // mismo orden que OBRA_CARD_COUNT/obraCardIndex en Transmedia.jsx.
+    collaboratorsByCard: [
+      LATAZA_COLLABORATORS.filter((c) => c.id === 'mariana-nunez'),
+      LATAZA_COLLABORATORS.filter((c) => c.id !== 'mariana-nunez'),
     ],
     comments: [
       {
