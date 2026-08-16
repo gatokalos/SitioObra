@@ -65,8 +65,17 @@ const LITERATURA_ENTRY = {
   eyebrow: 'Obra destacada',
   title: 'Mi Gato Encerrado',
   description: 'Leer este libro es algo parecido a despertar dentro de un libro.\n\n Una experiencia de autoficción expandida donde la escritura continúa lo que el escenario no alcanza a decir.',
-  image: '/assets/edicion-fisica.png',
+  image: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Merch/ObraDestacadaLiteratura_pingpong.mp4',
 };
+
+function LiteraturaEntryCopy() {
+  return (
+    <>
+      <p className="text-sm text-slate-200/90 leading-relaxed"><strong>Una novela de autoficción </strong> que se despliega entre lo real y lo imaginado, dejando que el lector complete la historia desde su propia experiencia en torno a una <em>supuesta</em> puesta en escena.</p>
+    </>
+  );
+}
+
 const LITERATURA_BLOG_KEYS = [
   'miniversonovela',
   'novela',
@@ -81,7 +90,7 @@ const LITERATURA_BLOG_KEY_SET = new Set(LITERATURA_BLOG_KEYS.map((key) => key.tr
 const ShowcaseReactionInline = ({ status, onReact }) => (
   <PulseReactionCard
     title="¡Déjanos un pulso!"
-    description="Alguien está contando cuántos pulsos llegaron hasta aquí…"
+    description="Alguien cuenta cuántas miradas llegaron hasta aquí…"
     successMessage="Gracias por tu pulso en este miniverso."
     status={status}
     onReact={onReact}
@@ -392,23 +401,37 @@ const PortalLiteratura = () => {
 
           <div className="lg:order-2 space-y-6">
             <div className="rounded-2xl border border-white/10 bg-black/30 overflow-hidden">
-              <img
-                src={LITERATURA_ENTRY.image}
-                alt={LITERATURA_ENTRY.title}
-                className="w-full h-52 sm:h-64 object-cover"
-                loading="lazy"
-              />
-              <div className="px-6 pt-5 pb-6 space-y-4">
-                <div className="space-y-2">
-                  <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">{LITERATURA_ENTRY.eyebrow}</p>
+              <div className="relative min-h-[30rem] overflow-hidden">
+                {/\.mp4($|\?)/i.test(LITERATURA_ENTRY.image) ? (
+                  <video
+                    ref={(el) => { if (el) { el.play().catch(() => {}); } }}
+                    className="absolute inset-0 h-full w-full object-cover"
+                    src={LITERATURA_ENTRY.image}
+                    autoPlay
+                    muted
+                    loop
+                    playsInline
+                    preload="metadata"
+                  />
+                ) : (
+                  <img
+                    src={LITERATURA_ENTRY.image}
+                    alt={LITERATURA_ENTRY.title}
+                    className="absolute inset-0 h-full w-full object-cover"
+                    loading="lazy"
+                  />
+                )}
+                <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-black/10 via-black/30 to-black/90" />
+                <div className="absolute top-0 left-0 right-0 p-5">
+                  <p className="mb-1 text-xs uppercase tracking-[0.35em] text-slate-300/75">{LITERATURA_ENTRY.eyebrow}</p>
                   <h5 className="font-display text-xl text-slate-100">{LITERATURA_ENTRY.title}</h5>
-                  <p className="text-sm text-slate-300/80 leading-relaxed">Una novela escrita tras bajar el telón.
-
-                  El autor escribe desde la memoria de una puesta en escena fragmentada, lúcida, especulativa. Esta obra atraviesa lo real y lo imaginado sin pretender cerrar nada.</p>
-                  <p className="mt-3 text-sm italic text-slate-200/85 leading-relaxed">Leer este libro es algo parecido a despertar dentro de un libro.</p>
-                  <p className="text-right text-xs text-slate-400/50 mt-0.5 tracking-wide">— Carlos A Pérez H.</p>
                 </div>
-                <div className="pt-4 lg:hidden">
+                <div className="absolute bottom-0 inset-x-0 p-5 space-y-2">
+                  <LiteraturaEntryCopy />
+                </div>
+              </div>
+              <div className="px-6 pt-5 pb-6 space-y-4">
+                <div className="lg:hidden">
                   <IAInsightCard
                     {...LITERATURA_IA_PROFILE}
                     title="Incluye dispositivo interactivo"

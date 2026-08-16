@@ -56,6 +56,8 @@ import { resolvePortalRoute } from '@/lib/miniversePortalRegistry';
 import { createPortalLaunchState } from '@/lib/portalNavigation';
 import { trackVitranaOpen } from '@/services/portalTrackingService';
 import MiniversoSonoroPreview from '@/components/miniversos/sonoro/MiniversoSonoroPreview';
+import { useSonoroPreview } from '@/hooks/useSonoroPreview';
+import '@/styles/dreamModes.css';
 import { useMobileVideoPresentation } from '@/hooks/useMobileVideoPresentation';
 import IAInsightCard from '@/components/IAInsightCard';
 import DiosasCarousel from '@/components/DiosasCarousel';
@@ -280,6 +282,8 @@ const Transmedia = ({ allianceOnlyMode = false }) => {
   const [isDramaDeviceInfoOpen, setIsDramaDeviceInfoOpen] = useState(false);
   const [isCineDeviceInfoOpen, setIsCineDeviceInfoOpen] = useState(false);
   const [isGraficosDeviceInfoOpen, setIsGraficosDeviceInfoOpen] = useState(false);
+  const [isLiteraturaDeviceInfoOpen, setIsLiteraturaDeviceInfoOpen] = useState(false);
+  const [isSonoridadesDeviceInfoOpen, setIsSonoridadesDeviceInfoOpen] = useState(false);
   const [detonadoresHintActive, setDetonadoresHintActive] = useState(false);
   const detonadoresHintFiredRef = useRef(false);
   const { isMobileViewport, canUseInlinePlayback, requestMobileVideoPresentation } = useMobileVideoPresentation();
@@ -1569,6 +1573,12 @@ const Transmedia = ({ allianceOnlyMode = false }) => {
 
   const { transmediaSectionRef } = useTransmediaSectionAudio({ isSilvestrePlaying });
 
+  const {
+    currentVideo: sonoroFeaturedVideo,
+    videoQueue: sonoroFeaturedVideoQueue,
+    nextVideo: sonoroFeaturedNextVideo,
+  } = useSonoroPreview({ fallbackVideoUrl: showcaseDefinitions?.miniversoSonoro?.videoUrl });
+
   const showcaseTitleDisplay = useScrambleText(activeDefinition?.label ?? '', {
     active: Boolean(activeShowcase),
   });
@@ -1650,7 +1660,7 @@ const Transmedia = ({ allianceOnlyMode = false }) => {
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.96 }}
                     transition={{ duration: 0.15, ease: 'easeOut' }}
-                    onClick={() => { setOpenCollaboratorId(collab._avatarId); setIsArtesaniasDeviceInfoOpen(false); setIsDramaDeviceInfoOpen(false); setIsCineDeviceInfoOpen(false); setIsGraficosDeviceInfoOpen(false); }}
+                    onClick={() => { setOpenCollaboratorId(collab._avatarId); setIsArtesaniasDeviceInfoOpen(false); setIsDramaDeviceInfoOpen(false); setIsCineDeviceInfoOpen(false); setIsGraficosDeviceInfoOpen(false); setIsLiteraturaDeviceInfoOpen(false); setIsSonoridadesDeviceInfoOpen(false); }}
                     className={`h-16 w-16 md:h-12 md:w-12 rounded-full border ${
                       isActive ? 'border-purple-300/80 ring-2 ring-purple-400/50' : 'border-white/15'
                     } bg-white/5 overflow-hidden transition hover:border-purple-300/60 shadow-lg shadow-black/30`}
@@ -1941,7 +1951,11 @@ const renderDeviceInfoDesktop = (title = 'Información del dispositivo', accordi
 };
 
 const renderDramaFeaturedWork = () => (
-  <div className="relative overflow-hidden rounded-2xl border border-white/10 bg-black/30">
+  <motion.div
+    layout
+    transition={{ duration: 0.35, ease: 'easeInOut' }}
+    className="relative overflow-hidden rounded-2xl border border-white/10 bg-black/30"
+  >
     <video
       className="absolute inset-0 h-full w-full object-cover"
       src={OBRA_TRAILER_URL}
@@ -1970,7 +1984,7 @@ const renderDramaFeaturedWork = () => (
 
       </div>
     </div>
-  </div>
+  </motion.div>
 );
 
 
@@ -2121,12 +2135,13 @@ const renderDramaFeaturedWork = () => (
               {obraCardIndex === 0 ? (
                 <motion.div
                   key="card-gato"
+                  layout
                   custom={obraCardDirRef.current}
                   variants={obraCardVariants}
                   initial="enter"
                   animate="center"
                   exit="exit"
-                  transition={{ duration: 0.22, ease: 'easeInOut' }}
+                  transition={{ default: { duration: 0.22, ease: 'easeInOut' }, layout: { duration: 0.35, ease: 'easeInOut' } }}
                   className="relative h-full overflow-hidden rounded-3xl border border-white/10 bg-slate-950"
                 >
                   <img
@@ -2155,12 +2170,13 @@ const renderDramaFeaturedWork = () => (
               ) : (
                 <motion.div
                   key="card-taza"
+                  layout
                   custom={obraCardDirRef.current}
                   variants={obraCardVariants}
                   initial="enter"
                   animate="center"
                   exit="exit"
-                  transition={{ duration: 0.22, ease: 'easeInOut' }}
+                  transition={{ default: { duration: 0.22, ease: 'easeInOut' }, layout: { duration: 0.35, ease: 'easeInOut' } }}
                   className="relative h-full overflow-hidden rounded-3xl border border-white/10 bg-slate-950"
                 >
                   {/\.mp4($|\?)/i.test(activeDefinition.image) ? (
@@ -2239,6 +2255,12 @@ const renderDramaFeaturedWork = () => (
 
           <div className="flex flex-col gap-5">
             {rendernotaAutoral()}
+            {renderCollaboratorsSection(
+              activeDefinition.collaboratorsByCard
+                ? activeDefinition.collaboratorsByCard[obraCardIndex]
+                : activeDefinition.collaborators,
+              activeShowcase ?? 'hdr'
+            )}
             {renderDeviceInfoDesktop('Incluye dispositivo interactivo', {
               isOpen: isArtesaniasDeviceInfoOpen,
               onToggle: () => {
@@ -2246,12 +2268,6 @@ const renderDramaFeaturedWork = () => (
                 setOpenCollaboratorId(null);
               },
             })}
-            {renderCollaboratorsSection(
-              activeDefinition.collaboratorsByCard
-                ? activeDefinition.collaboratorsByCard[obraCardIndex]
-                : activeDefinition.collaborators,
-              activeShowcase ?? 'hdr'
-            )}
           </div>
         </div>
         </div>
@@ -2262,6 +2278,13 @@ const renderDramaFeaturedWork = () => (
     return (
       <div className="space-y-8">
         <div className="space-y-8">
+          {/*
+            Desactivado a propósito (2026-08-16): artefacto interactivo
+            (MiniversoSonoroPreview) escondido en Desktop mientras se aplica
+            el mismo tratamiento de "Obra destacada" + Cómplices que ya
+            tienen el resto de los miniversos. Código intacto por si se
+            retoma más adelante.
+
           <div className="rounded-3xl border border-white/10 bg-black/30 p-0 lg:p-6">
             <MiniversoSonoroPreview
               videoUrl={activeDefinition.videoUrl}
@@ -2277,9 +2300,51 @@ const renderDramaFeaturedWork = () => (
               costLabel="130 gatokens"
             />
           </div>
+          */}
 
           <div className="grid gap-6 lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
-            <div className="space-y-6">
+            <div className="h-full space-y-6">
+              <motion.div
+                layout
+                transition={{ duration: 0.35, ease: 'easeInOut' }}
+                className="relative min-h-[30rem] h-full overflow-hidden rounded-3xl border border-white/10"
+              >
+                <video
+                  key={sonoroFeaturedVideo?.id || sonoroFeaturedVideo?.url_video || activeDefinition.videoUrl}
+                  ref={(el) => { if (el) { el.play().catch(() => {}); } }}
+                  className="absolute inset-0 h-full w-full object-cover"
+                  style={{ opacity: 0.55, filter: 'brightness(0.45) saturate(0.8) contrast(1.35) blur(4px)' }}
+                  src={sonoroFeaturedVideo?.url_video || activeDefinition.videoUrl}
+                  autoPlay
+                  muted
+                  playsInline
+                  preload="metadata"
+                  onEnded={(event) => {
+                    if (sonoroFeaturedVideoQueue.length > 1) {
+                      sonoroFeaturedNextVideo();
+                      return;
+                    }
+                    const el = event.currentTarget;
+                    el.currentTime = 0;
+                    el.play().catch(() => {});
+                  }}
+                />
+                <div className="dream-overlay dream-neblina" aria-hidden="true" />
+                <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-black/10 via-black/30 to-black/90" />
+                <div className="absolute top-0 left-0 right-0 p-5">
+                  <p className="mb-1 text-xs uppercase tracking-[0.35em] text-slate-300/75">Obra destacada</p>
+                  <h5 className="font-display text-xl text-slate-100">Cámara de resonancia</h5>
+                </div>
+                <div className="absolute bottom-0 inset-x-0 p-5">
+                  <p className="text-sm text-slate-200/90 leading-relaxed">Este miniverso mezcla imágenes errantes, pistas sonoras y palabras móviles para que crees tu propia atmósfera.</p>
+                </div>
+              </motion.div>
+              {/*
+                Desactivado a propósito (2026-08-16): bloques "Cómo explorar"
+                y de cierre ("Sueño en tres capas") escondidos en Desktop
+                junto con el artefacto interactivo. Código intacto por si se
+                retoma más adelante.
+
               <div className="rounded-3xl border border-white/10 bg-black/30 p-6 space-y-4">
                 <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Cómo explorar</p>
                 <ol className="list-decimal list-inside space-y-3 text-slate-200 text-sm leading-relaxed md:text-base">
@@ -2295,11 +2360,19 @@ const renderDramaFeaturedWork = () => (
                   ))}
                 </div>
               ) : null}
+              */}
             </div>
 
             <div className="flex flex-col gap-5">
-              {renderDeviceInfoDesktop()}
               {rendernotaAutoral()}
+              {renderCollaboratorsSection(activeDefinition.collaborators, activeShowcase ?? 'hdr')}
+              {renderDeviceInfoDesktop('Incluye dispositivo interactivo', {
+                isOpen: isSonoridadesDeviceInfoOpen,
+                onToggle: () => {
+                  setIsSonoridadesDeviceInfoOpen((prev) => !prev);
+                  setOpenCollaboratorId(null);
+                },
+              })}
               {activePortalExperienceDone && (
                 <button
                   type="button"
@@ -2392,7 +2465,7 @@ const renderDramaFeaturedWork = () => (
 
       const reactionDetails = {
         showcaseId: 'miniversos',
-        description: 'Alguien está contando cuántos pulsos llegaron hasta aquí…',
+        description: 'Alguien cuenta cuántas miradas llegaron hasta aquí…',
         buttonLabel: '¡Déjanos un pulso!',
         className: 'mt-4',
       };
@@ -2454,6 +2527,7 @@ const renderDramaFeaturedWork = () => (
             {/* Columna derecha: verso fundacional + Incluye dispositivo interactivo + Cómplices + CTA */}
             <div className="hidden lg:flex lg:flex-col lg:gap-5">
               {rendernotaAutoral()}
+              {renderCollaboratorsSection(activeDefinition.collaborators, activeShowcase ?? 'hdr')}
               {renderDeviceInfoDesktop('Incluye dispositivo interactivo', {
                 isOpen: isDramaDeviceInfoOpen,
                 onToggle: () => {
@@ -2461,7 +2535,6 @@ const renderDramaFeaturedWork = () => (
                   setOpenCollaboratorId(null);
                 },
               })}
-              {renderCollaboratorsSection(activeDefinition.collaborators, activeShowcase ?? 'hdr')}
               {activePortalExperienceDone && (
                 <button
                   type="button"
@@ -2921,8 +2994,10 @@ const renderDramaFeaturedWork = () => (
             {swipeShowcases.length ? (
               <div className="h-full space-y-4">
                 {swipeShowcases.map((entry) => (
-                  <div
+                  <motion.div
                     key={entry.id}
+                    layout
+                    transition={{ duration: 0.35, ease: 'easeInOut' }}
                     className="h-full overflow-hidden rounded-2xl border border-white/10"
                   >
                     {/* Imagen full-bleed con texto superpuesto */}
@@ -2952,7 +3027,7 @@ const renderDramaFeaturedWork = () => (
                         </div>
                       </div>
                     </div>
-                  </div>
+                  </motion.div>
                 ))}
               </div>
             ) : null}
@@ -2960,6 +3035,7 @@ const renderDramaFeaturedWork = () => (
 
           <div className="flex flex-col gap-5">
             {rendernotaAutoral()}
+            {renderCollaboratorsSection(activeDefinition.collaborators, activeShowcase ?? 'hdr')}
             {renderDeviceInfoDesktop('Incluye dispositivo interactivo', {
               isOpen: isGraficosDeviceInfoOpen,
               onToggle: () => {
@@ -2967,7 +3043,6 @@ const renderDramaFeaturedWork = () => (
                 setOpenCollaboratorId(null);
               },
             })}
-            {renderCollaboratorsSection(activeDefinition.collaborators, activeShowcase ?? 'hdr')}
             {/*
               Desactivado a propósito (2026-08-14): este botón reclamaba el
               premio de Nivel 3 (+175 GAT, handleClaimL3Reward) y empujaba al
@@ -3311,7 +3386,11 @@ const renderDramaFeaturedWork = () => (
         const videoId = asset?.id || asset?.url || title;
 
         return (
-          <div className="relative h-full overflow-hidden rounded-3xl border border-white/10 bg-black/30">
+          <motion.div
+            layout
+            transition={{ duration: 0.35, ease: 'easeInOut' }}
+            className="relative h-full overflow-hidden rounded-3xl border border-white/10 bg-black/30"
+          >
             <div className="absolute inset-0">
               {isVideoFile ? (
                 <div className="relative h-full w-full bg-black/60">
@@ -3387,7 +3466,7 @@ const renderDramaFeaturedWork = () => (
 
               {extraContent ? <div className="mt-5">{extraContent}</div> : null}
             </div>
-          </div>
+          </motion.div>
         );
       };
 
@@ -3578,7 +3657,7 @@ const renderDramaFeaturedWork = () => (
         className: 'rounded-3xl border border-white/10 bg-black/25 p-6 space-y-5',
         reactionProps: {
           showcaseId: 'copycats',
-          description: 'Alguien está contando cuántos pulsos llegaron hasta aquí…',
+          description: 'Alguien cuenta cuántas miradas llegaron hasta aquí…',
           buttonLabel: '¡Déjanos un pulso!',
           className: 'mt-2 bg-gradient-to-r from-slate-900/40 to-purple-900/20',
         },
@@ -3598,6 +3677,7 @@ const renderDramaFeaturedWork = () => (
               </div>
               <div className="flex flex-col gap-5">
                 {rendernotaAutoral()}
+                {renderCollaboratorsSection(activeDefinition.collaborators, activeShowcase ?? 'hdr')}
                 {renderDeviceInfoDesktop('Incluye dispositivo interactivo', {
                   isOpen: isCineDeviceInfoOpen,
                   onToggle: () => {
@@ -3605,7 +3685,6 @@ const renderDramaFeaturedWork = () => (
                     setOpenCollaboratorId(null);
                   },
                 })}
-                {renderCollaboratorsSection(activeDefinition.collaborators, activeShowcase ?? 'hdr')}
                 {activePortalExperienceDone && (
                   <button
                     type="button"
@@ -3729,7 +3808,7 @@ const renderDramaFeaturedWork = () => (
           {entries.length > 0 ? (
             activeShowcase === 'miniversoNovela' ? (
               <div className="grid gap-6 md:grid-cols-[3fr_2fr]">
-                <div className="space-y-6">
+                <div className="h-full space-y-6">
                   {entries.map((entry) => {
                     if (entry.id === 'comentarios-lectores') {
                       return null;
@@ -3768,47 +3847,75 @@ const renderDramaFeaturedWork = () => (
                     const action = renderEntryAction(entry);
 
                     return (
-                      <div key={entry.id} className="rounded-2xl border border-white/10 bg-black/30 overflow-hidden">
+                      <motion.div
+                        key={entry.id}
+                        layout
+                        transition={{ duration: 0.35, ease: 'easeInOut' }}
+                        className="relative h-full overflow-hidden rounded-2xl border border-white/10 bg-black/30"
+                      >
                         {imageSrc ? (
-                          <img
-                            src={imageSrc}
-                            alt={entry.title}
-                            className="w-full h-52 sm:h-64 object-cover"
-                            loading="lazy"
-                          />
+                          /\.mp4($|\?)/i.test(imageSrc) ? (
+                            <video
+                              ref={(el) => { if (el) { el.play().catch(() => {}); } }}
+                              className="absolute inset-0 h-full w-full object-cover"
+                              src={imageSrc}
+                              autoPlay
+                              muted
+                              loop
+                              playsInline
+                              preload="metadata"
+                            />
+                          ) : (
+                            <img
+                              src={imageSrc}
+                              alt={entry.title}
+                              className="absolute inset-0 h-full w-full object-cover"
+                              loading="lazy"
+                            />
+                          )
                         ) : null}
-                        <div className={`space-y-4 ${imageSrc ? 'px-6 pt-5 pb-6' : 'p-6'}`}>
-                          <div className="space-y-2">
+                        <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-black/20 via-black/40 to-black/95" />
+                        <div className="relative z-10 flex h-full min-h-[30rem] flex-col p-6">
+                          <div>
                             {entry.eyebrow ? (
-                              <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">{entry.eyebrow}</p>
+                              <p className="mb-1 text-xs uppercase tracking-[0.35em] text-slate-300/75 [text-shadow:0_1px_10px_rgba(0,0,0,0.9)]">{entry.eyebrow}</p>
                             ) : null}
-                            <h5 className="font-display text-xl text-slate-100">{entry.title}</h5>
-                            {entry.descriptionNode ?? (entry.description ? (
-                              <p className="text-sm text-slate-300/80 leading-relaxed whitespace-pre-line">{entry.description}</p>
-                            ) : null)}
+                            <h5 className="font-display text-2xl text-slate-100 [text-shadow:0_1px_10px_rgba(0,0,0,0.9)]">{entry.title}</h5>
                           </div>
-                          {entry.snippet ? (
-                            <div className="rounded-2xl border border-white/10 bg-slate-900/60 p-4 space-y-3">
-                              <p className="text-xs uppercase tracking-[0.3em] text-purple-300">{entry.snippet.tagline}</p>
-                              <div className="flex items-start gap-4">
-                                <div className="shrink-0 flex h-16 w-16 items-center justify-center rounded-xl border border-purple-400/30 bg-purple-900/20">
-                                  <QrCode size={32} className="text-purple-300/50" />
+                          <div className="mt-auto space-y-4">
+                            {entry.descriptionNode ?? (entry.description ? (
+                              <p className="text-sm text-slate-200/90 leading-relaxed whitespace-pre-line">{entry.description}</p>
+                            ) : null)}
+                            {entry.snippet ? (
+                              <div className="rounded-2xl border border-white/10 bg-slate-900/60 p-4 space-y-3">
+                                <p className="text-xs uppercase tracking-[0.3em] text-purple-300">{entry.snippet.tagline}</p>
+                                <div className="flex items-start gap-4">
+                                  <div className="shrink-0 flex h-16 w-16 items-center justify-center rounded-xl border border-purple-400/30 bg-purple-900/20">
+                                    <QrCode size={32} className="text-purple-300/50" />
+                                  </div>
+                                  {entry.snippet.text ? (
+                                    <p className="text-sm text-slate-200/90 leading-relaxed">{entry.snippet.text}</p>
+                                  ) : null}
                                 </div>
-                                {entry.snippet.text ? (
-                                  <p className="text-sm text-slate-200/90 leading-relaxed">{entry.snippet.text}</p>
-                                ) : null}
                               </div>
-                            </div>
-                          ) : null}
-                          {action}
+                            ) : null}
+                            {action}
+                          </div>
                         </div>
-                      </div>
+                      </motion.div>
                     );
                   })}
                 </div>
                 <div className="flex flex-col gap-5">
-                  {renderDeviceInfoDesktop()}
                   {rendernotaAutoral()}
+                  {renderCollaboratorsSection(activeDefinition.collaborators, activeShowcase ?? 'hdr')}
+                  {renderDeviceInfoDesktop('Incluye dispositivo interactivo', {
+                    isOpen: isLiteraturaDeviceInfoOpen,
+                    onToggle: () => {
+                      setIsLiteraturaDeviceInfoOpen((prev) => !prev);
+                      setOpenCollaboratorId(null);
+                    },
+                  })}
                   {activePortalExperienceDone && (
                     <button
                       type="button"
@@ -3956,7 +4063,7 @@ const renderDramaFeaturedWork = () => (
         {activeShowcase === 'copycats' ? (
           <ShowcaseReactionInline
             showcaseId="copycats"
-            description="Alguien está contando cuántos pulsos llegaron hasta aquí…"
+            description="Alguien cuenta cuántas miradas llegaron hasta aquí…"
             title="Opiniones después del corte"
           />
         ) : null}
@@ -4258,7 +4365,7 @@ const renderDramaFeaturedWork = () => (
                             </div>
                           ) : null}
                         </div>
-                      ) : (activeShowcase === 'lataza' || activeShowcase === 'miniversos' || activeShowcase === 'copycats' || activeShowcase === 'miniversoGrafico') ? null : renderCollaboratorsSection(
+                      ) : (activeShowcase === 'lataza' || activeShowcase === 'miniversos' || activeShowcase === 'copycats' || activeShowcase === 'miniversoGrafico' || activeShowcase === 'miniversoNovela' || activeShowcase === 'miniversoSonoro') ? null : renderCollaboratorsSection(
                           activeDefinition.collaborators,
                           activeShowcase ?? 'hdr'
                         )}
@@ -4296,7 +4403,7 @@ const renderDramaFeaturedWork = () => (
                         {activeShowcase === 'miniversos' ? (
                           <ShowcaseReactionInline
                             showcaseId="miniversos"
-                            description="Alguien está contando cuántos pulsos llegaron hasta aquí…"
+                            description="Alguien cuenta cuántas miradas llegaron hasta aquí…"
                             buttonLabel="¡Déjanos un pulso!"
                             bounceKey={heartBounceKey}
                           />
@@ -4335,7 +4442,7 @@ const renderDramaFeaturedWork = () => (
                         />
                         <ShowcaseReactionInline
                           showcaseId="miniversoNovela"
-                          description="Alguien está contando cuántos pulsos llegaron hasta aquí…"
+                          description="Alguien cuenta cuántas miradas llegaron hasta aquí…"
                           buttonLabel="¡Déjanos un pulso!"
                           bounceKey={heartBounceKey}
                         />
@@ -4373,7 +4480,7 @@ const renderDramaFeaturedWork = () => (
                         />
                         <ShowcaseReactionInline
                           showcaseId="lataza"
-                          description="Alguien está contando cuántos pulsos llegaron hasta aquí…"
+                          description="Alguien cuenta cuántas miradas llegaron hasta aquí…"
                           buttonLabel="¡Déjanos un pulso!"
                           bounceKey={heartBounceKey}
                         />
@@ -4411,7 +4518,7 @@ const renderDramaFeaturedWork = () => (
                         />
                         <ShowcaseReactionInline
                           showcaseId="miniversoGrafico"
-                          description="Alguien está contando cuántos pulsos llegaron hasta aquí…"
+                          description="Alguien cuenta cuántas miradas llegaron hasta aquí…"
                           buttonLabel="¡Déjanos un pulso!"
                           bounceKey={heartBounceKey}
                         />
@@ -4450,7 +4557,7 @@ const renderDramaFeaturedWork = () => (
                         />
                         <ShowcaseReactionInline
                           showcaseId="copycats"
-                          description="Alguien está contando cuántos pulsos llegaron hasta aquí…"
+                          description="Alguien cuenta cuántas miradas llegaron hasta aquí…"
                           buttonLabel="¡Déjanos un pulso!"
                           bounceKey={heartBounceKey}
                         />
@@ -4488,7 +4595,7 @@ const renderDramaFeaturedWork = () => (
                         />
                         <ShowcaseReactionInline
                           showcaseId="miniversoSonoro"
-                          description="Alguien está contando cuántos pulsos llegaron hasta aquí…"
+                          description="Alguien cuenta cuántas miradas llegaron hasta aquí…"
                           buttonLabel="¡Déjanos un pulso!"
                           bounceKey={heartBounceKey}
                         />
@@ -4526,7 +4633,7 @@ const renderDramaFeaturedWork = () => (
                         />
                         <ShowcaseReactionInline
                           showcaseId="miniversoMovimiento"
-                          description="Alguien está contando cuántos pulsos llegaron hasta aquí…"
+                          description="Alguien cuenta cuántas miradas llegaron hasta aquí…"
                           buttonLabel="¡Déjanos un pulso!"
                           bounceKey={heartBounceKey}
                         />
@@ -4564,7 +4671,7 @@ const renderDramaFeaturedWork = () => (
                         />
                         <ShowcaseReactionInline
                           showcaseId="apps"
-                          description="Alguien está contando cuántos pulsos llegaron hasta aquí…"
+                          description="Alguien cuenta cuántas miradas llegaron hasta aquí…"
                           buttonLabel="¡Déjanos un pulso!"
                           bounceKey={heartBounceKey}
                         />
@@ -4602,7 +4709,7 @@ const renderDramaFeaturedWork = () => (
                         />
                         <ShowcaseReactionInline
                           showcaseId="oraculo"
-                          description="Alguien está contando cuántos pulsos llegaron hasta aquí…"
+                          description="Alguien cuenta cuántas miradas llegaron hasta aquí…"
                           buttonLabel="¡Déjanos un pulso!"
                           bounceKey={heartBounceKey}
                         />

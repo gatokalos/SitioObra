@@ -446,7 +446,6 @@ function MiniversoSonoroPreview({
               muted
               autoPlay={!isMobile || isFullExperience}
               playsInline
-              loop={!isMobile || isFullExperience}
               onEnded={handleVideoEnd}
             />
           ) : (

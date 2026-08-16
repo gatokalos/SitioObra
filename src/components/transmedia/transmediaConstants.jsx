@@ -902,14 +902,10 @@ iaProfile: {
           'Una experiencia de autoficción expandida donde la escritura continúa lo que el escenario no alcanza a decir.\n\nLeer este libro es algo parecido a despertar dentro de un libro.',
         descriptionNode: (
           <>
-            <p className="text-sm text-slate-300/80 leading-relaxed">Una novela escrita tras bajar el telón.
-
-            El autor escribe desde la memoria de una puesta en escena fragmentada, lúcida, especulativa. Esta obra atraviesa lo real y lo imaginado sin pretender cerrar nada.</p>
-            <p className="mt-3 text-sm italic text-slate-200/85 leading-relaxed">Leer este libro es algo parecido a despertar dentro de un libro.</p>
-            <p className="text-right text-xs text-slate-400/50 mt-0.5 tracking-wide">— Carlos A Pérez H.</p>
+            <p className="text-sm text-slate-200/90 leading-relaxed"><strong>Una novela de autoficción </strong> que se despliega entre lo real y lo imaginado, dejando que el lector complete la historia desde su propia experiencia en torno a una <em>supuesta</em> puesta en escena.</p>
           </>
         ),
-        image: '/assets/edicion-fisica.png',
+        image: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Merch/ObraDestacadaLiteratura_pingpong.mp4',
         app: {
           id: 'autoficcion-app',
           ctaLabel: 'Leer fragmentos',

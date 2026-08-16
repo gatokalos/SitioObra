@@ -13,6 +13,8 @@ import PortalHeaderActions from '@/components/portal/PortalHeaderActions';
 import IAInsightCard from '@/components/IAInsightCard';
 import CollaboratorsPanel from '@/components/portal/CollaboratorsPanel';
 import MiniversoSonoroPreview from '@/components/miniversos/sonoro/MiniversoSonoroPreview';
+import { useSonoroPreview } from '@/hooks/useSonoroPreview';
+import '@/styles/dreamModes.css';
 import RelatedReadingTooltipButton from '@/components/portal/RelatedReadingTooltipButton';
 import PortalL3RewardCTA from '@/components/portal/PortalL3RewardCTA';
 import VitranaQuestionReveal from '@/components/portal/VitranaQuestionReveal';
@@ -119,7 +121,7 @@ const ShowcaseReactionInline = ({ status, onReact }) => (
   <PulseReactionCard
     status={status}
     onReact={onReact}
-    description="Alguien está contando cuántos pulsos llegaron hasta aquí…"
+    description="Alguien cuenta cuántas miradas llegaron hasta aquí…"
     successMessage="Gracias por tu pulso en este miniverso."
     buttonLabel="¡Déjanos un pulso!"
   />
@@ -130,6 +132,11 @@ const PortalSonoridades = () => {
   usePortalTracking('sonoridades');
   const { question: vitranaQuestion } = useVitranaQuestion('sonoridades');
   const titleDisplay = useScrambleText('La vibración');
+  const {
+    currentVideo: sonoroFeaturedVideo,
+    videoQueue: sonoroFeaturedVideoQueue,
+    nextVideo: sonoroFeaturedNextVideo,
+  } = useSonoroPreview({ fallbackVideoUrl: SONORIDADES_VIDEO_URL });
   const isAuthenticated = Boolean(user);
   const [showLoginOverlay, setShowLoginOverlay] = useState(false);
   const [showLoginHint, setShowLoginHint] = useState(false);
@@ -432,6 +439,15 @@ const PortalSonoridades = () => {
           </div>
 
 
+          {/*
+            Desactivado a propósito (2026-08-16): artefacto interactivo
+            (MiniversoSonoroPreview), bloque "Como explorar" y cierre
+            ("Sueño en tres capas") escondidos mientras este portal recibe
+            el mismo tratamiento de "Obra destacada" + Cómplices que ya
+            tienen el resto (Plantilla A). El botón "Compartir vibracion"
+            se conservó y se movió debajo de la tarjeta nueva. Código
+            intacto por si se retoma más adelante.
+
           <div className="lg:order-2 space-y-5 rounded-3xl border border-white/10 bg-gradient-to-br from-slate-950/80 via-black/60 to-cyan-900/30 p-6 lg:p-8">
             <div className="flex flex-wrap items-center justify-between gap-3">
               <p className="text-xs uppercase tracking-[0.35em] text-slate-400/80">Camara de resonancia</p>
@@ -453,17 +469,6 @@ const PortalSonoridades = () => {
                 isSpent
               />
             </div>
-
-            <div className="flex flex-wrap gap-3">
-              <Button
-                type="button"
-                variant="outline"
-                className="w-full sm:w-auto border-cyan-300/40 text-cyan-200 hover:bg-cyan-500/10"
-                onClick={handleOpenCommunityComposer}
-              >
-                Compartir vibracion
-              </Button>
-            </div>
           </div>
 
           <div className="lg:order-2 space-y-4 rounded-3xl border border-white/10 bg-black/30 p-5">
@@ -483,19 +488,59 @@ const PortalSonoridades = () => {
               ))}
             </div>
           </div>
-          <div className="lg:hidden">
-            <IAInsightCard
-              {...SONORIDADES_IA_PROFILE}
-              title="Incluye dispositivo interactivo"
-              compact
-            />
-          </div>
-          <div className="lg:hidden rounded-3xl border border-white/10 bg-black/30 p-5 space-y-4">
-            <div className="flex flex-col gap-3">
-              <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Verso fundacional</p>
-              <MiniVersoCard title={SONORIDADES_NOTA_AUTORAL.title} verse={SONORIDADES_NOTA_AUTORAL.verse} palette={SONORIDADES_TILE} effect="flip" gatEventKey="flip:nota-autoral:sonoridades" />
+          */}
+
+          <div className="lg:order-2 space-y-6">
+            <div className="rounded-2xl border border-white/10 bg-black/30 overflow-hidden">
+              <div className="relative min-h-[30rem] overflow-hidden">
+                <video
+                  key={sonoroFeaturedVideo?.id || sonoroFeaturedVideo?.url_video || SONORIDADES_VIDEO_URL}
+                  ref={(el) => { if (el) { el.play().catch(() => {}); } }}
+                  className="absolute inset-0 h-full w-full object-cover"
+                  style={{ opacity: 0.55, filter: 'brightness(0.45) saturate(0.8) contrast(1.35) blur(4px)' }}
+                  src={sonoroFeaturedVideo?.url_video || SONORIDADES_VIDEO_URL}
+                  autoPlay
+                  muted
+                  playsInline
+                  preload="metadata"
+                  onEnded={(event) => {
+                    if (sonoroFeaturedVideoQueue.length > 1) {
+                      sonoroFeaturedNextVideo();
+                      return;
+                    }
+                    const el = event.currentTarget;
+                    el.currentTime = 0;
+                    el.play().catch(() => {});
+                  }}
+                />
+                <div className="dream-overlay dream-neblina" aria-hidden="true" />
+                <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-black/10 via-black/30 to-black/90" />
+                <div className="absolute top-0 left-0 right-0 p-5">
+                  <p className="mb-1 text-xs uppercase tracking-[0.35em] text-slate-300/75">Obra destacada</p>
+                  <h5 className="font-display text-xl text-slate-100">Cámara de resonancia</h5>
+                </div>
+                <div className="absolute bottom-0 inset-x-0 p-5">
+                  <p className="text-sm text-slate-200/90 leading-relaxed">Este miniverso mezcla imágenes errantes, pistas sonoras y palabras móviles para que crees tu propia atmósfera.</p>
+                </div>
+              </div>
+              <div className="px-6 pt-5 pb-6 space-y-4">
+               
+                <div className="lg:hidden">
+                  <IAInsightCard
+                    {...SONORIDADES_IA_PROFILE}
+                    title="Incluye dispositivo interactivo"
+                    compact
+                  />
+                </div>
+                <div className="pt-4 border-t border-white/10 lg:hidden space-y-4">
+                  <div className="flex flex-col gap-3">
+                    <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Verso fundacional</p>
+                    <MiniVersoCard title={SONORIDADES_NOTA_AUTORAL.title} verse={SONORIDADES_NOTA_AUTORAL.verse} palette={SONORIDADES_TILE} effect="flip" gatEventKey="flip:nota-autoral:sonoridades" />
+                  </div>
+                  <CollaboratorsPanel collaborators={SONORIDADES_COLLABORATORS} accentClassName="text-cyan-200/90" bare />
+                </div>
+              </div>
             </div>
-            <CollaboratorsPanel collaborators={SONORIDADES_COLLABORATORS} accentClassName="text-cyan-200/90" bare />
           </div>
           <div className="hidden lg:block lg:order-3 rounded-3xl border border-white/10 bg-black/30 p-6 space-y-6">
             <CollaboratorsPanel collaborators={SONORIDADES_COLLABORATORS} accentClassName="text-cyan-200/90" />

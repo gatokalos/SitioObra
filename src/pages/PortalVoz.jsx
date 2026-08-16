@@ -1046,7 +1046,7 @@ const PortalVoz = () => {
                     label=""
                   />
                   <ShowcaseReactionInline
-                    description="Alguien está contando cuántos pulsos llegaron hasta aquí…"
+                    description="Alguien cuenta cuántas miradas llegaron hasta aquí…"
                     successMessage="Gracias por tu pulso en este miniverso."
                     buttonLabel="¡Déjanos un pulso!"
                     status={reactionStatus}
@@ -1075,7 +1075,7 @@ const PortalVoz = () => {
                   label=""
                 />
                 <ShowcaseReactionInline
-                  description="Alguien está contando cuántos pulsos llegaron hasta aquí…"
+                  description="Alguien cuenta cuántas miradas llegaron hasta aquí…"
                   successMessage="Gracias por tu pulso en este miniverso."
                   buttonLabel="¡Déjanos un pulso!"
                   status={reactionStatus}

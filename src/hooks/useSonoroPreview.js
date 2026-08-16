@@ -1,6 +1,12 @@
 import { useEffect, useMemo, useState } from 'react';
 import { supabase } from '@/lib/supabaseClient';
 
+// Referencia estable: un [] literal como default de parámetro se recrea en
+// cada render, lo que invalida la dependencia del useEffect de abajo y
+// dispara un refetch infinito (fetch → setState → render → nuevo [] →
+// deps "cambiadas" → fetch...). Compartir esta misma instancia evita el loop.
+const EMPTY_ARRAY = [];
+
 const shuffleArray = (items = []) => {
   const array = [...items];
   for (let i = array.length - 1; i > 0; i -= 1) {
@@ -65,8 +71,8 @@ export const useSonoroPreview = ({
   fallbackVideoUrl,
   fallbackVideoTitle = 'Video ritual',
   fallbackVideoArtist = 'Residencia #GatoEncerrado',
-  fallbackAudioOptions = [],
-  fallbackPoemOptions = [],
+  fallbackAudioOptions = EMPTY_ARRAY,
+  fallbackPoemOptions = EMPTY_ARRAY,
   videoLimit = null,
   audioLimit = null,
   poemLimit = null,
