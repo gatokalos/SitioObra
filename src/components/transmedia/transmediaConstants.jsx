@@ -634,16 +634,13 @@ export const showcaseDefinitions = {
           La vergüenza de ser visto <em>sintiendo</em> aparece antes que cualquier juicio: alguien mira, y lo que sentías cambia de forma.<br/>
         </p>
         <p className="text-base leading-relaxed text-neutral-300">
-           Hay cosas que se guardan y pueden retomarse después. Esto no. Ocurre una vez, delante de un público, y desaparece con ese momento.
+           Hay cosas que se guardan y pueden retomarse después. Esto no es un objeto. Ocurre una vez y desaparece con ese momento.
         </p>
-        <p className="text-base leading-relaxed text-neutral-300">
-          Aquí, <strong>una misma frase</strong>, interpretada desde otra emoción, ya dice otra cosa.
-        </p>
-        <div className="flex flex-wrap gap-2 mt-2">
-          <span className="rounded-full border border-purple-200/35 bg-purple-400/10 px-3 py-1 text-[11px] uppercase tracking-[0.22em] text-purple-100">Obra en vivo</span>
-          <span className="rounded-full border border-purple-200/35 bg-purple-400/10 px-3 py-1 text-[11px] uppercase tracking-[0.22em] text-purple-100">Emoción expuesta</span>
-          <span className="rounded-full border border-purple-200/35 bg-purple-400/10 px-3 py-1 text-[11px] uppercase tracking-[0.22em] text-purple-100">Mirada ajena</span>
-        </div>
+               <div className="flex flex-wrap gap-2">
+                  <span className="rounded-full border border-purple-200/35 bg-purple-400/10 px-3 py-1 text-[11px] uppercase tracking-[0.22em] text-purple-100">Obra efímera</span>
+                  <span className="rounded-full border border-purple-200/35 bg-purple-400/10 px-3 py-1 text-[11px] uppercase tracking-[0.22em] text-purple-100">Mirada ajena</span>
+                  <span className="rounded-full border border-purple-200/35 bg-purple-400/10 px-3 py-1 text-[11px] uppercase tracking-[0.22em] text-purple-100">Protagonista</span>
+                </div>
       </>
     ),
     cartaTitle: '#Dramaturgia',
@@ -685,16 +682,16 @@ iaProfile: {
           <p className="mt-4 text-lg font-medium leading-relaxed text-white">La <em>sobreinterpretación</em> también convierte a los otros en relato: tomar distancia revela cuánto de lo que vemos también lo pusimos nosotros.</p>
         <p className="text-slate-100/90">Una imagen puede detenerse en una herida abierta. El cine decide mostrar qué ocurrió antes, qué viene después y cuánto tiempo nos obliga a mirarla.</p>
         <div className="flex flex-wrap gap-2 mt-2">
-          <span className="rounded-full border border-sky-200/35 bg-sky-400/10 px-3 py-1 text-[11px] uppercase tracking-[0.22em] text-sky-100">Premiere íntima</span>
-          <span className="rounded-full border border-sky-200/35 bg-sky-400/10 px-3 py-1 text-[11px] uppercase tracking-[0.22em] text-sky-100">Conversatorio abierto</span>
-          <span className="rounded-full border border-sky-200/35 bg-sky-400/10 px-3 py-1 text-[11px] uppercase tracking-[0.22em] text-sky-100">Cine con memoria</span>
+          <span className="rounded-full border border-sky-200/35 bg-sky-400/10 px-3 py-1 text-[11px] uppercase tracking-[0.22em] text-sky-100">Cine-ensayo</span>
+          <span className="rounded-full border border-sky-200/35 bg-sky-400/10 px-3 py-1 text-[11px] uppercase tracking-[0.22em] text-sky-100">Archivo autoficcional</span>
+          <span className="rounded-full border border-sky-200/35 bg-sky-400/10 px-3 py-1 text-[11px] uppercase tracking-[0.22em] text-sky-100">Cortometraje</span>
         </div>
       </>
     ),
     promise: 'CopyCats (no-ficción) y Quirón (autoficción) dialogan desde extremos distintos del mismo espectro: una filma el desgaste creativo y la fractura del proceso; la otra abre una confesión íntima que decide hablar del suicidio sin rodeos.',
     theme:
       'Dos películas, dos vulnerabilidades distintas, un mismo impulso: usar el arte para tocar aquello que no queremos decir en voz alta y encontrar otra manera de contarlo.',
-    tone: ['Premiere íntima', 'Conversatorio abierto', 'Cine con memoria'],
+    tone: ['cine-ensayo', 'archivo autoficcional', 'nombrar el tabú'],
     cartaTitle: '#LuzQueEditas',
     copycats: {
       title: 'CopyCats',
@@ -707,14 +704,12 @@ iaProfile: {
           url: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Cine%20-%20teasers/Cadena_Gesto_small.mp4',
         },
       ],
-      tags: ['teaser', 'Identidad Digital', 'Archivo autoficcional'],
+     
     },
     quiron: {
       title: 'Quirón',
       description: 'Quirón es un cortometraje de autoficción que indaga en la herida emocional como punto de partida del conocimiento y la transformación. A través de una narrativa audiovisual original, explora la posibilidad de resignificar el dolor humano.',
-      tags: ['Cine-ensayo', 'Archivo autoficcional'],
-
-
+      
       fullVideo: {
         id: 'quiron-full',
         label: 'Cortometraje completo',
@@ -866,7 +861,7 @@ iaProfile: {
     introNode: (
       <>
         <p className="text-lg leading-relaxed font-medium text-white mt-4">Aquí te encuentras en un lugar que no termina de decirse.</p>
-         <p className="text-base leading-relaxed text-slate-200/80">A diferencia de <em>la apariencia</em>, que ocurre toda al mismo tiempo, la escritura necesita más tiempo para existir detrás de cada palabra — y seguirá exigiendo sentido incluso después del punto final.</p>
+         <p className="text-base leading-relaxed text-slate-200/80">A diferencia de <em>la apariencia</em>, que ocurre toda al mismo tiempo, la escritura necesita más tiempo para existir detrás de cada palabra — y seguirá exigiéndolo incluso después del punto final.</p>
         <div className="flex flex-wrap gap-2 mt-2">
           <span className="rounded-full border border-violet-200/35 bg-violet-400/10 px-3 py-1 text-[11px] uppercase tracking-[0.22em] text-violet-100">Autoficción expandida</span>
           <span className="rounded-full border border-violet-200/35 bg-violet-400/10 px-3 py-1 text-[11px] uppercase tracking-[0.22em] text-violet-100">Fragmentos y voces</span>
@@ -1335,6 +1330,9 @@ Este espacio permite recorrer esas composiciones, explorar sus capas y descubrir
     cartaTitle: '#NoHayDesandar',
     notaAutoral:
       'Elegí un camino pequeño.\nAhora no lo puedo desandar.\nEl riesgo me juega.',
+    // Pendiente: demo grabado de "El riesgo" para la tarjeta "Obra destacada"
+    // de la vitrina. Mientras esté null, la tarjeta muestra un placeholder.
+    videoUrl: null,
     liveExperience: {
       title: 'App en vivo',
       description: 'Juega la app completa dentro de la vitrina, sin salir del miniverso.',
@@ -1352,6 +1350,9 @@ Este espacio permite recorrer esas composiciones, explorar sus capas y descubrir
   oraculo: {
     label: 'La pregunta',
     type: 'oracle',
+    // Pendiente: demo grabado para la tarjeta "Obra destacada" de la
+    // vitrina. Mientras esté null, la tarjeta muestra un placeholder.
+    videoUrl: null,
     introNode: (
       <>
                   <p className="text-lg leading-relaxed font-medium text-white mt-4">

@@ -72,6 +72,9 @@ function LiteraturaEntryCopy() {
   return (
     <>
       <p className="text-sm text-slate-200/90 leading-relaxed"><strong>Una novela de autoficción </strong> que se despliega entre lo real y lo imaginado, dejando que el lector complete la historia desde su propia experiencia en torno a una <em>supuesta</em> puesta en escena.</p>
+      <div className="flex flex-wrap gap-2">
+        <span className="rounded-full border border-violet-400/30 bg-violet-900/20 px-3 py-1 text-[11px] uppercase tracking-[0.2em] text-violet-100">Incluye artefacto interactivo</span>
+      </div>
     </>
   );
 }
@@ -304,17 +307,16 @@ const PortalLiteratura = () => {
 
         <div className="mt-6 flex flex-col gap-6">
           <div className="relative overflow-hidden rounded-[2.5rem] border border-white/10 [transform:translateZ(0)] bg-gradient-to-br from-slate-900/85 via-black/60 to-violet-900/25 shadow-[0_25px_65px_rgba(15,23,42,0.65)]">
-            {latestLiteraturaReading?.slug ? (
-              <div className="absolute top-4 right-4 z-10">
-                <RelatedReadingTooltipButton
-                  slug={latestLiteraturaReading.slug}
-                  authorLabel={literaturaReadingAuthorLabel}
-                  thumbnailUrl={literaturaReadingThumbnailUrl}
-                  ariaLabel="Mostrar lectura relacionada de Literatura"
-                  tone="cyan"
-                />
-              </div>
-            ) : null}
+            <div className="absolute top-4 right-4 z-10">
+              <RelatedReadingTooltipButton
+                slug={latestLiteraturaReading?.slug}
+                authorLabel={literaturaReadingAuthorLabel}
+                thumbnailUrl={literaturaReadingThumbnailUrl}
+                ariaLabel="Mostrar lectura relacionada de Literatura"
+                tone="cyan"
+                miniversoLabel="La escritura"
+              />
+            </div>
             <div className="grid gap-6 p-4 sm:p-6 lg:p-8 lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
               <div className="space-y-6">
                 <div className="flex min-w-0 items-center gap-4">
@@ -326,7 +328,7 @@ const PortalLiteratura = () => {
                 </div>
                 <div className="space-y-3 leading-relaxed font-light">
                   <p className="text-lg leading-relaxed font-medium text-white mt-4">Aquí te encuentras en un lugar que no termina de decirse.</p>
-                  <p className="text-base leading-relaxed text-slate-200/80">A diferencia de <em>la apariencia</em>, que ocurre toda al mismo tiempo, la escritura necesita más tiempo para existir detrás de cada palabra — y seguirá exigiendo sentido incluso después del punto final.</p>
+                  <p className="text-base leading-relaxed text-slate-200/80">A diferencia de <em>la apariencia</em>, que ocurre toda al mismo tiempo, la escritura necesita más tiempo para existir detrás de cada palabra — y seguirá exigiéndolo incluso después del punto final.</p>
                 </div>
                 <div className="flex flex-wrap gap-2">
                   <span className="rounded-full border border-violet-200/35 bg-violet-400/10 px-3 py-1 text-[11px] uppercase tracking-[0.22em] text-violet-100">Autoficción expandida</span>
@@ -434,7 +436,7 @@ const PortalLiteratura = () => {
                 <div className="lg:hidden">
                   <IAInsightCard
                     {...LITERATURA_IA_PROFILE}
-                    title="Incluye dispositivo interactivo"
+                    title="Información del artefacto"
                     compact
                   />
                 </div>
@@ -460,7 +462,7 @@ const PortalLiteratura = () => {
           <div className="order-4 hidden lg:block">
             <IAInsightCard
               {...LITERATURA_IA_PROFILE}
-              title="Incluye dispositivo interactivo"
+              title="Información del artefacto"
               compact
             />
           </div>

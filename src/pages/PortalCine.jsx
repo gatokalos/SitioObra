@@ -40,7 +40,7 @@ const CINE_INTRO = (
     </p>
   </>
 );
-const CINE_TONE = ['Premiere íntima', 'Conversatorio abierto', 'Cine con memoria'];
+const CINE_TONE = ['cine-ensayo', 'archivo autoficcional', 'nombrar el tabú'];
 const CINE_NOTA_AUTORAL = {
   title: '#LuzQueEditas',
   verse: 'Memoria encendida.\nCámara despierta.\nY el tiempo se vuelve a editar.',
@@ -64,8 +64,7 @@ const QUIRON_DATA = {
   description: 'Quirón es un cortometraje de autoficción que indaga en la herida emocional como punto de partida del conocimiento y la transformación. A través de una narrativa audiovisual original, explora la posibilidad de resignificar el dolor humano.',
   teaserUrl: `${SUPABASE_STORAGE}/Cine%20-%20teasers/Quiron_small.mp4`,
   fullUrl: `${SUPABASE_STORAGE}/Cine%20-%20teasers/Quiron_10min.mp4`,
-  tags: ['Cine-ensayo', 'Archivo autoficcional'],
-};
+  };
 const CINE_COLLABORATORS = [
   {
     id: 'viviana-gonzalez',
@@ -400,17 +399,16 @@ const PortalCine = () => {
 
         <div className="mt-6 flex flex-col gap-6">
           <div className="relative overflow-hidden rounded-[2.5rem] border border-white/10 [transform:translateZ(0)] bg-gradient-to-br from-slate-900/85 via-black/60 to-sky-900/25 shadow-[0_25px_65px_rgba(15,23,42,0.65)]">
-            {latestCineReading?.slug ? (
-              <div className="absolute top-4 right-4 z-10">
-                <RelatedReadingTooltipButton
-                  slug={latestCineReading.slug}
-                  authorLabel={cineReadingAuthorLabel}
-                  thumbnailUrl={cineReadingThumbnailUrl}
-                  ariaLabel="Mostrar lectura relacionada de Cine"
-                  tone="cyan"
-                />
-              </div>
-            ) : null}
+            <div className="absolute top-4 right-4 z-10">
+              <RelatedReadingTooltipButton
+                slug={latestCineReading?.slug}
+                authorLabel={cineReadingAuthorLabel}
+                thumbnailUrl={cineReadingThumbnailUrl}
+                ariaLabel="Mostrar lectura relacionada de Cine"
+                tone="cyan"
+                miniversoLabel="La proyección"
+              />
+            </div>
             <div className="grid gap-6 p-4 sm:p-6 lg:p-8 lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
               <div className="space-y-6">
                 <div className="flex min-w-0 items-center gap-4">
@@ -524,13 +522,15 @@ const PortalCine = () => {
               </div>
               <div className="absolute bottom-0 inset-x-0 p-5 space-y-3">
                 <p className="text-sm text-slate-200/90 leading-relaxed">{QUIRON_DATA.description}</p>
- 
+                <div className="flex flex-wrap gap-2">
+                  <span className="rounded-full border border-sky-400/30 bg-sky-900/20 px-3 py-1 text-[11px] uppercase tracking-[0.2em] text-sky-100">Incluye artefacto interactivo</span>
+                </div>
               </div>
             </div>
             <div className="bg-slate-950/80 px-5 pt-5 lg:hidden">
               <IAInsightCard
                 {...CINE_IA_PROFILE}
-                title="Incluye dispositivo interactivo"
+                title="Información del artefacto"
                 compact
               />
             </div>
@@ -553,7 +553,7 @@ const PortalCine = () => {
           <div className="order-4 hidden lg:block">
             <IAInsightCard
               {...CINE_IA_PROFILE}
-              title="Incluye dispositivo interactivo"
+              title="Información del artefacto"
               compact
             />
           </div>

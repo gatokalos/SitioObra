@@ -345,17 +345,16 @@ const PortalSonoridades = () => {
 
         <div className="mt-6 flex flex-col gap-6">
           <div className="relative overflow-hidden rounded-[2.5rem] border border-white/10 [transform:translateZ(0)] bg-gradient-to-br from-slate-900/85 via-black/60 to-cyan-900/25 shadow-[0_25px_65px_rgba(15,23,42,0.65)]">
-            {latestSonoridadesReading?.slug ? (
-              <div className="absolute top-4 right-4 z-10">
-                <RelatedReadingTooltipButton
-                  slug={latestSonoridadesReading.slug}
-                  authorLabel={sonoridadesReadingAuthorLabel}
-                  thumbnailUrl={sonoridadesReadingThumbnailUrl}
-                  ariaLabel="Mostrar lectura relacionada de Sonoridades"
-                  tone="cyan"
-                />
-              </div>
-            ) : null}
+            <div className="absolute top-4 right-4 z-10">
+              <RelatedReadingTooltipButton
+                slug={latestSonoridadesReading?.slug}
+                authorLabel={sonoridadesReadingAuthorLabel}
+                thumbnailUrl={sonoridadesReadingThumbnailUrl}
+                ariaLabel="Mostrar lectura relacionada de Sonoridades"
+                tone="cyan"
+                miniversoLabel="La vibración"
+              />
+            </div>
             <div className="grid gap-6 p-4 sm:p-6 lg:p-8 lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
               <div className="space-y-6">
                 <div className="flex min-w-0 items-center gap-4">
@@ -521,6 +520,9 @@ const PortalSonoridades = () => {
                 </div>
                 <div className="absolute bottom-0 inset-x-0 p-5">
                   <p className="text-sm text-slate-200/90 leading-relaxed">Este miniverso mezcla imágenes errantes, pistas sonoras y palabras móviles para que crees tu propia atmósfera.</p>
+                  <div className="mt-2 flex flex-wrap gap-2">
+                    <span className="rounded-full border border-cyan-400/30 bg-cyan-900/20 px-3 py-1 text-[11px] uppercase tracking-[0.2em] text-cyan-100">Incluye artefacto interactivo</span>
+                  </div>
                 </div>
               </div>
               <div className="px-6 pt-5 pb-6 space-y-4">
@@ -528,7 +530,7 @@ const PortalSonoridades = () => {
                 <div className="lg:hidden">
                   <IAInsightCard
                     {...SONORIDADES_IA_PROFILE}
-                    title="Incluye dispositivo interactivo"
+                    title="Información del artefacto"
                     compact
                   />
                 </div>
@@ -552,7 +554,7 @@ const PortalSonoridades = () => {
           <div className="order-4 hidden lg:block">
             <IAInsightCard
               {...SONORIDADES_IA_PROFILE}
-              title="Incluye dispositivo interactivo"
+              title="Información del artefacto"
               compact
             />
           </div>

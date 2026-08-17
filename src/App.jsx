@@ -783,11 +783,26 @@ function App() {
 
   useEffect(() => {
     if (location.pathname !== '/') return;
-    if (isAuthenticated || hasGuestUnlockedCuradoria) return;
     if (!hasCuradoriaDeepLinkIntent(location)) return;
-    safeSetItem(CURATORIA_UNLOCK_STORAGE_KEY, '1');
-    setHasGuestUnlockedCuradoria(true);
-  }, [hasGuestUnlockedCuradoria, isAuthenticated, location]);
+    // #dialogo-critico vive detrás de DOS gates independientes:
+    // (1) canShowPostHeroContent — nada post-hero existe en el DOM hasta
+    //     que la persona activa el hero (gesto de audio requerido por el
+    //     navegador, no se puede saltar). Este efecto debe volver a correr
+    //     cuando esa activación ocurra, por eso depende de ella.
+    // (2) isCuradoriaVisible — un estado aparte que arranca en false y que
+    //     toggleCuradoria/handleAskQuestion sí activaban, pero que este
+    //     desbloqueo por deep-link nunca tocaba, así que la sección nunca
+    //     llegaba a montarse aunque la bandera de "desbloqueado" ya
+    //     estuviera en true. Replica lo que hace toggleCuradoria completo.
+    if (!isAuthenticated && !hasGuestUnlockedCuradoria) {
+      safeSetItem(CURATORIA_UNLOCK_STORAGE_KEY, '1');
+      setHasGuestUnlockedCuradoria(true);
+    }
+    if (!canShowPostHeroContent) return;
+    setIsCuradoriaVisible(true);
+    setShowBlogBuscador(true);
+    window.setTimeout(() => scrollToSection('dialogo-critico'), 120);
+  }, [canShowPostHeroContent, hasGuestUnlockedCuradoria, isAuthenticated, location, scrollToSection]);
 
   useEffect(() => {
     if (location.pathname !== '/') return;

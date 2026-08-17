@@ -413,17 +413,16 @@ const PortalArtesanias = () => {
 
         <div className="mt-6 flex flex-col gap-6">
           <div className="relative overflow-hidden rounded-[2.5rem] border border-white/10 [transform:translateZ(0)] bg-gradient-to-br from-slate-900/85 via-black/60 to-amber-900/25 shadow-[0_25px_65px_rgba(15,23,42,0.65)]">
-            {latestArtesaniasReading?.slug ? (
-              <div className="absolute top-4 right-4 z-10">
-                <RelatedReadingTooltipButton
-                  slug={latestArtesaniasReading.slug}
-                  authorLabel={artesaniasReadingAuthorLabel}
-                  thumbnailUrl={artesaniasReadingThumbnailUrl}
-                  ariaLabel="Mostrar lectura relacionada de Artesanías"
-                  tone="cyan"
-                />
-              </div>
-            ) : null}
+            <div className="absolute top-4 right-4 z-10">
+              <RelatedReadingTooltipButton
+                slug={latestArtesaniasReading?.slug}
+                authorLabel={artesaniasReadingAuthorLabel}
+                thumbnailUrl={artesaniasReadingThumbnailUrl}
+                ariaLabel="Mostrar lectura relacionada de Artesanías"
+                tone="cyan"
+                miniversoLabel="El objeto"
+              />
+            </div>
             <div className="grid gap-6 p-4 sm:p-6 lg:p-8 lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
               <div className="space-y-6">
                 <div className="flex min-w-0 items-center gap-4">
@@ -539,7 +538,7 @@ const PortalArtesanias = () => {
                   </p>
 
                   <div className="flex flex-wrap gap-2">
-                    <span className="rounded-full border border-amber-400/30 bg-amber-900/20 px-3 py-1 text-[11px] uppercase tracking-[0.2em] text-amber-100">Incluye dispositivo interactivo</span>
+                    <span className="rounded-full border border-amber-400/30 bg-amber-900/20 px-3 py-1 text-[11px] uppercase tracking-[0.2em] text-amber-100">Incluye artefacto interactivo</span>
                   </div>
                 </div>
               </div>,
@@ -568,7 +567,7 @@ const PortalArtesanias = () => {
                     ))}
                   </ul>
                   <div className="flex flex-wrap gap-2">
-                    <span className="rounded-full border border-white/20 bg-white/5 px-3 py-1 text-[11px] uppercase tracking-[0.2em] text-slate-300">Incluye dispositivo interactivo</span>
+                    <span className="rounded-full border border-amber-400/30 bg-amber-900/20 px-3 py-1 text-[11px] uppercase tracking-[0.2em] text-amber-100">Incluye artefacto interactivo</span>
                   </div>
                   {arError ? <p className="text-xs text-amber-200/90">{arError}</p> : null}
                 </div>
@@ -625,7 +624,7 @@ const PortalArtesanias = () => {
           <div className="lg:hidden">
             <IAInsightCard
               {...ARTESANIAS_IA_PROFILE}
-              title="Incluye dispositivo interactivo"
+              title="Información del artefacto"
               compact
             />
           </div>
@@ -652,7 +651,7 @@ const PortalArtesanias = () => {
           <div className="order-4 hidden lg:block">
             <IAInsightCard
               {...ARTESANIAS_IA_PROFILE}
-              title="Incluye dispositivo interactivo"
+              title="Información del artefacto"
               compact
             />
           </div>

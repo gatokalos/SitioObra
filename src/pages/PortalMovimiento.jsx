@@ -150,7 +150,88 @@ const MOVEMENT_DIOSAS_GALLERY = [
     gradient:
       'linear-gradient(180deg, rgba(129,140,248,0.58), rgba(14,165,233,0.45), rgba(30,41,59,0.7))',
   },
+  {
+    id: 'cihuacoatl-360',
+    title: 'Cihuacóatl',
+    description: 'Guía. Resguardo. Lo que sostiene lo vulnerable.',
+    badge: 'Portal AR',
+    location: 'Cuello / Sostén de identidad',
+    videoUrl:
+      'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Presencias/web/Cihuacoatl/Chuhuacoatl_web.mp4',
+    poster:
+      'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Presencias/posters/Cihuacoatl/Chuhuacoatl_web.jpg',
+    gradient:
+      'linear-gradient(178deg, rgba(71,85,105,0.62), rgba(59,130,246,0.45), rgba(99,102,241,0.5))',
+  },
+  {
+    id: 'itztli-360',
+    title: 'Itztli',
+    description: 'Corte. Filo. Verdad que atraviesa.',
+    badge: 'Portal AR',
+    location: 'Mandíbula / Voz retenida',
+    videoUrl:
+      'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Presencias/web/Itztli/Itztli_web.mp4',
+    poster:
+      'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Presencias/posters/Itztli/Itztli_web.jpg',
+    gradient:
+      'linear-gradient(175deg, rgba(2,6,23,0.75), rgba(29,78,216,0.48), rgba(148,163,184,0.42))',
+  },
+  {
+    id: 'tlazohteotl-360',
+    title: 'Tlazohteotl',
+    description: 'Purga, deseo y ambivalencia.',
+    badge: 'Portal AR',
+    location: 'Vientre / Deseo / Culpa',
+    videoUrl:
+      'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Presencias/web/Tlazohteotl/Tlazohteotl_web.mp4',
+    poster:
+      'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Presencias/posters/Tlazohteotl/Tlazohteotl_web.jpg',
+    gradient:
+      'linear-gradient(172deg, rgba(244,114,182,0.5), rgba(251,191,36,0.45), rgba(109,40,217,0.52))',
+  },
+  {
+    id: 'xochiquetzal-360',
+    title: 'Xochiquetzal',
+    description: 'Movimiento, arte, vitalidad.',
+    badge: 'Portal AR',
+    location: 'Piernas / Impulso',
+    videoUrl:
+      'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Presencias/web/Xochiquetzal/Xochiquetzal_web.mp4',
+    poster:
+      'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Presencias/posters/Xochiquetzal/Xochiquetzal_web.jpg',
+    gradient:
+      'linear-gradient(170deg, rgba(244,114,182,0.55), rgba(59,130,246,0.45), rgba(16,185,129,0.5))',
+  },
+  {
+    id: 'tzitzimime-360',
+    title: 'Tzitzimime',
+    description: 'Presencias estelares. Observadoras del cosmos.',
+    badge: 'Portal AR',
+    location: 'Ojos / Mirada / Percepción',
+    videoUrl:
+      'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Presencias/web/Tzitzimime/tzitzime_web.mp4',
+    poster:
+      'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Presencias/posters/Tzitzimime/tzitzime_web.jpg',
+    gradient:
+      'linear-gradient(180deg, rgba(99,102,241,0.6), rgba(168,85,247,0.5), rgba(14,165,233,0.45))',
+  },
+  {
+    id: 'ixchel-360',
+    title: 'Ixchel',
+    description: 'Agua, ciclos, lunaridad.',
+    badge: 'Portal AR',
+    location: 'Tobillos / Suelo',
+    videoUrl:
+      'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Presencias/web/Ixchel/Ixchel_web.mp4',
+    poster:
+      'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Presencias/posters/Ixchel/Ixchel_web.jpg',
+    gradient:
+      'linear-gradient(170deg, rgba(56,189,248,0.55), rgba(34,211,238,0.5), rgba(59,130,246,0.45))',
+  },
 ];
+const MOVEMENT_FEATURED_NAME = 'Trasuntos divinos';
+const MOVEMENT_FEATURED_SHARED_COPY =
+  'Todavía es un taller que busca cómplices — bailarines, diseñadoras de presencias digitales, ciudades que abran su espacio público. Cada residencia convierte el cuerpo en territorio y lo siembra, en realidad aumentada, donde ocurrió.';
 const MOVEMENT_IA_PROFILE = {
   type: 'Actualmente no usa IA en producción.',
   interaction:
@@ -199,6 +280,7 @@ const PortalMovimiento = () => {
   const [showLoginOverlay, setShowLoginOverlay] = useState(false);
   const [showLoginHint, setShowLoginHint] = useState(false);
   const [isMovementCreditsOpen, setIsMovementCreditsOpen] = useState(false);
+  const [movementFeaturedIndex, setMovementFeaturedIndex] = useState(0);
   const [latestMovimientoReading, setLatestMovimientoReading] = useState(null);
   const [isReadingTooltipOpen, setIsReadingTooltipOpen] = useState(false);
   const [reactionStatus, setReactionStatus] = useState('idle');
@@ -427,17 +509,16 @@ const PortalMovimiento = () => {
 
         <div className="mt-6 flex flex-col gap-6">
           <div className="relative overflow-hidden rounded-[2.5rem] border border-white/10 [transform:translateZ(0)] bg-gradient-to-br from-slate-900/85 via-black/60 to-emerald-900/25 shadow-[0_25px_65px_rgba(15,23,42,0.65)]">
-            {latestMovimientoReading?.slug ? (
-              <div className="absolute top-4 right-4 z-10">
-                <RelatedReadingTooltipButton
-                  slug={latestMovimientoReading.slug}
-                  authorLabel={movimientoReadingAuthorLabel}
-                  thumbnailUrl={movimientoReadingThumbnailUrl}
-                  ariaLabel="Mostrar lectura relacionada de Movimiento"
-                  tone="cyan"
-                />
-              </div>
-            ) : null}
+            <div className="absolute top-4 right-4 z-10">
+              <RelatedReadingTooltipButton
+                slug={latestMovimientoReading?.slug}
+                authorLabel={movimientoReadingAuthorLabel}
+                thumbnailUrl={movimientoReadingThumbnailUrl}
+                ariaLabel="Mostrar lectura relacionada de Movimiento"
+                tone="cyan"
+                miniversoLabel="El cuerpo"
+              />
+            </div>
             <div className="grid gap-6 p-4 sm:p-6 lg:p-8 lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
               <div className="space-y-6">
                 <div className="flex min-w-0 items-center gap-4">
@@ -520,6 +601,83 @@ const PortalMovimiento = () => {
             </div>
           </div>
 
+          {(() => {
+            const total = MOVEMENT_DIOSAS_GALLERY.length;
+            if (!total) return null;
+            const currentDiosa = MOVEMENT_DIOSAS_GALLERY[movementFeaturedIndex % total];
+            return (
+              <div className="overflow-hidden rounded-3xl border border-white/10 bg-black">
+                <div className="relative min-h-[32rem] overflow-hidden">
+                  <video
+                    key={`${currentDiosa.id}-bg`}
+                    className="absolute inset-0 h-full w-full scale-110 object-cover opacity-50 blur-2xl"
+                    src={currentDiosa.videoUrl}
+                    autoPlay
+                    muted
+                    loop
+                    playsInline
+                    preload="metadata"
+                    aria-hidden="true"
+                  />
+                  <video
+                    key={currentDiosa.id}
+                    ref={(el) => { if (el) { el.play().catch(() => {}); } }}
+                    className="absolute inset-0 h-full w-full object-contain"
+                    src={currentDiosa.videoUrl}
+                    autoPlay
+                    muted
+                    playsInline
+                    preload="metadata"
+                    onEnded={(event) => {
+                      if (total > 1) {
+                        setMovementFeaturedIndex((prev) => (prev + 1) % total);
+                        return;
+                      }
+                      const el = event.currentTarget;
+                      el.currentTime = 0;
+                      el.play().catch(() => {});
+                    }}
+                  />
+                  <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-black/10 via-black/5 to-transparent" />
+                  <div className="absolute top-0 left-0 right-0 p-5">
+                    <p className="mb-1 text-xs uppercase tracking-[0.35em] text-slate-300/75">Obra destacada</p>
+                    <h5 className="font-display text-xl text-slate-100">{MOVEMENT_FEATURED_NAME}</h5>
+                  </div>
+                  {/* El degradado sube desde abajo (donde están los pies de
+                      la presencia) para que la sinopsis y el párrafo
+                      compartido se lean sin necesitar un bloque sólido
+                      aparte — video y copy se sienten como una sola pieza. */}
+                  <div className="absolute bottom-0 inset-x-0 pt-32 p-5 bg-gradient-to-t from-black via-black/85 to-transparent">
+                    <p className="text-sm text-slate-200/90 leading-relaxed">{currentDiosa.description}</p>
+                    {currentDiosa.location ? (
+                      <p className="mt-2 text-xs uppercase tracking-[0.3em] text-purple-200/60">{currentDiosa.location}</p>
+                    ) : null}
+                    <p className="mt-2 text-sm text-slate-300/80 leading-relaxed">{MOVEMENT_FEATURED_SHARED_COPY}</p>
+                  </div>
+                </div>
+                {/* Zona de chips: fondo sólido igual al punto final del
+                    degradado de arriba, así no se percibe como un bloque
+                    distinto — solo la continuación natural del mismo negro. */}
+                <div className="bg-black p-5 pt-3">
+                  <div className="flex flex-wrap gap-1.5">
+                    {MOVEMENT_DIOSAS_GALLERY.map((diosa, idx) => (
+                      <span
+                        key={diosa.id}
+                        className={`rounded-full border px-2.5 py-1 text-[10px] uppercase tracking-[0.15em] transition ${
+                          idx === movementFeaturedIndex % total
+                            ? 'border-purple-200/60 bg-purple-500/20 text-purple-100'
+                            : 'border-white/10 bg-white/5 text-slate-400/50'
+                        }`}
+                      >
+                        {diosa.title}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            );
+          })()}
+
           <div className="hidden lg:block rounded-3xl border border-white/10 bg-black/30 p-6 space-y-6">
             <div className="rounded-2xl border border-white/10 bg-black/20 px-5 py-4">
               <div className="flex items-center justify-between gap-3">
@@ -572,6 +730,12 @@ const PortalMovimiento = () => {
             </div>
           </div>
 
+          {/*
+            Desactivado a propósito (2026-08-16): fuera del tríptico
+            canónico (intro → obra destacada → columna) — la tarjeta "Obra
+            destacada" de arriba ya cicla los mismos avatares. Código
+            intacto por si se retoma más adelante.
+
           <div className="space-y-5 rounded-3xl border border-white/10 bg-gradient-to-br from-slate-950/80 via-black/60 to-purple-900/30 p-6 lg:p-8">
             <h3 className="font-display text-3xl text-slate-100">{MOVEMENT_TAGLINE}</h3>
             <p className="text-sm leading-relaxed text-slate-100/80 md:text-base whitespace-pre-line">{MOVEMENT_BODY}</p>
@@ -581,11 +745,12 @@ const PortalMovimiento = () => {
               caption="Cada clip muestra un giro 360° de las presencias cuenta-cuentos."
             />
           </div>
+          */}
 
           <div className="lg:hidden">
             <IAInsightCard
               {...MOVEMENT_IA_PROFILE}
-              title="Incluye dispositivo interactivo"
+              title="Información del artefacto"
               compact
             />
           </div>
@@ -629,6 +794,13 @@ const PortalMovimiento = () => {
 
           <div className="grid gap-6 xl:grid-cols-[1.25fr_1fr] xl:items-start">
             <div className="space-y-6">
+              {/*
+                Desactivado a propósito (2026-08-16): "Activaciones de ruta"
+                escondido (mismo criterio que en la vitrina de Transmedia.jsx)
+                porque Carlos las va a necesitar más adelante para armar la
+                app de Movimiento, posiblemente exportadas a otro repo — no
+                se borra, solo se apaga.
+
               <div className="rounded-3xl border border-white/10 bg-black/30 p-5 space-y-4">
                 <p className="text-xs uppercase tracking-[0.35em] text-slate-400/80">Activaciones de ruta</p>
                 <div className="space-y-3">
@@ -673,52 +845,34 @@ const PortalMovimiento = () => {
                   </p>
                 ) : null}
               </div>
+              */}
 
-              <div className="grid gap-4 md:grid-cols-2">
-                <div className="rounded-3xl border border-white/10 bg-black/30 p-6 space-y-3 text-sm leading-relaxed">
-                  <p className="text-xs uppercase tracking-[0.35em] text-slate-400/80">Ritual digital</p>
-                  <ul className="space-y-2 text-slate-200/85">
-                    {MOVEMENT_HIGHLIGHTS.slice(0, 2).map((item) => (
-                      <li key={`movement-highlight-a-${item}`} className="flex items-start gap-2">
-                        <span className="text-purple-300 mt-1">●</span>
-                        <span>{item}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-                <div className="rounded-3xl border border-white/10 bg-black/30 p-6 space-y-3 text-sm leading-relaxed">
-                  <p className="text-xs uppercase tracking-[0.35em] text-slate-400/80">Noche de activación</p>
-                  <ul className="space-y-2 text-slate-200/85">
-                    {MOVEMENT_HIGHLIGHTS.slice(2).map((item) => (
-                      <li key={`movement-highlight-b-${item}`} className="flex items-start gap-2">
-                        <span className="text-purple-300 mt-1">●</span>
-                        <span>{item}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              </div>
+              
             </div>
 
           </div>
           <div className="hidden lg:block">
             <IAInsightCard
               {...MOVEMENT_IA_PROFILE}
-              title="Incluye dispositivo interactivo"
+              title="Información del artefacto"
               compact
             />
           </div>
           {l3Rec?.step3 ? (
             <PortalL3RewardCTA portal="movimiento" l3Rec={l3Rec} />
-          ) : experienceDone ? (
-            <button
-              type="button"
-              onClick={() => handleMovementAction(MOVEMENT_ACTIONS.find((a) => a.id === 'talleres'))}
-              className="w-full rounded-2xl border border-amber-400/40 bg-amber-500/10 px-6 py-4 text-sm font-semibold tracking-wide text-amber-200 shadow-[0_8px_32px_rgba(251,191,36,0.15)] transition hover:bg-amber-500/20 hover:shadow-[0_8px_40px_rgba(251,191,36,0.25)]"
-            >
-              ✦ Inscríbete a los talleres coreográficos
-            </button>
-          ) : null}
+          ) : null /*
+            Desactivado a propósito (2026-08-16): CTA de talleres escondido
+            junto con "Activaciones de ruta", misma razón.
+            experienceDone ? (
+              <button
+                type="button"
+                onClick={() => handleMovementAction(MOVEMENT_ACTIONS.find((a) => a.id === 'talleres'))}
+                className="w-full rounded-2xl border border-amber-400/40 bg-amber-500/10 px-6 py-4 text-sm font-semibold tracking-wide text-amber-200 shadow-[0_8px_32px_rgba(251,191,36,0.15)] transition hover:bg-amber-500/20 hover:shadow-[0_8px_40px_rgba(251,191,36,0.25)]"
+              >
+                ✦ Inscríbete a los talleres coreográficos
+              </button>
+            ) : null
+          */}
           <div className="order-last flex justify-end pt-2 lg:hidden">
             <PortalHeaderActions />
           </div>

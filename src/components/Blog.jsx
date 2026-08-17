@@ -686,6 +686,21 @@ const Blog = ({ posts = [], isLoading = false, error = null, showBuscador = fals
     return () => clearTimeout(timer);
   }, [faqInputMode, showBuscador]);
 
+  // Handoff de pregunta prellenada: los botones "Preguntar al Apuntador" de
+  // los portales (cuando un miniverso aún no tiene artículo propio) navegan
+  // a /?apuntador_q=<pregunta>#dialogo-critico. Se toma una sola vez al
+  // montar para no pisar lo que la persona ya esté escribiendo.
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const prefill = params.get('apuntador_q');
+    if (!prefill) return;
+    setFaqQuery(prefill);
+    setFaqInputMode('text');
+    const timer = setTimeout(() => { faqInputRef.current?.focus(); }, 600);
+    return () => clearTimeout(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   const stopFaqListening = useCallback(({ discard = false } = {}) => {
     if (faqMicTimeoutRef.current) {
       window.clearTimeout(faqMicTimeoutRef.current);
@@ -959,8 +974,13 @@ const Blog = ({ posts = [], isLoading = false, error = null, showBuscador = fals
   }, [faqIsListening, setFaqQuery, handleFaqSearchSubmit, stopFaqListening]);
 
   useEffect(() => {
-    const responseIsVisible = ['searching', 'streaming', 'done', 'error'].includes(faqStatus);
-    if (!isMobileViewport || !responseIsVisible || !shouldScrollToFaqResponseRef.current) return;
+    // Antes disparaba con 'searching'/'streaming': en ese momento la respuesta
+    // solo tiene el placeholder de un par de líneas ("Abriendo archivos..."),
+    // así que el scroll se anclaba ahí y nunca se corregía cuando el
+    // contenido real (más largo) terminaba de montarse — dejaba el textarea
+    // fuera de vista y la respuesta cortada a la mitad en móvil.
+    const responseIsSettled = faqStatus === 'done' || faqStatus === 'error';
+    if (!isMobileViewport || !responseIsSettled || !shouldScrollToFaqResponseRef.current) return;
 
     shouldScrollToFaqResponseRef.current = false;
     requestAnimationFrame(() => {
@@ -1281,8 +1301,23 @@ const Blog = ({ posts = [], isLoading = false, error = null, showBuscador = fals
                         <section
                           ref={faqResponseRef}
                           aria-live="polite"
-                          className="order-2 -mx-5 overflow-hidden border-y border-violet-200/20 bg-violet-950/10 lg:order-3 lg:col-span-2 lg:mx-0 lg:rounded-2xl lg:border lg:border-violet-200/25 lg:bg-black/35"
+                          className="relative order-2 -mx-5 overflow-hidden border-y border-violet-200/20 bg-violet-950/10 lg:order-3 lg:col-span-2 lg:mx-0 lg:rounded-2xl lg:border lg:border-violet-200/25 lg:bg-black/35"
                         >
+                          <div
+                            aria-hidden="true"
+                            className="pointer-events-none absolute inset-0 opacity-5 bg-no-repeat bg-center"
+                            style={{
+                              backgroundImage:
+                                'linear-gradient(rgba(5,5,10,0.85), rgba(5,5,10,0.85)), url(/assets/bg-logo.png)',
+                              backgroundBlendMode: 'screen',
+                              filter: 'grayscale(0.25)',
+                              // Tamaño fijo (no atado a bg-[length:auto_100%] como en
+                              // AlianzaSocial): esta tarjeta crece con el largo de la
+                              // respuesta del RAG, y ese patrón estira el logo hasta
+                              // volverlo irreconocible en respuestas largas.
+                              backgroundSize: '420px',
+                            }}
+                          />
                           {faqStatus === 'searching' && (
                             <div className="px-4 py-6 md:px-6">
                               <p className="mb-3 text-[10px] uppercase tracking-[0.3em] text-violet-200/65">Nota del apuntador</p>

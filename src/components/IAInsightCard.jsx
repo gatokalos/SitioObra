@@ -4,7 +4,7 @@ import { useAuth } from '@/contexts/SupabaseAuthContext';
 import { useToast } from '@/components/ui/use-toast';
 
 const IAInsightCard = ({
-  title = 'Incluye dispositivo interactivo',
+  title = 'Información del artefacto',
   type,
   interaction,
   tokensRange,

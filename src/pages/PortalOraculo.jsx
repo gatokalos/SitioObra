@@ -31,6 +31,9 @@ import { resolvePortalRoute } from '@/lib/miniversePortalRegistry';
 const HashtagButton3D = lazy(() => import('@/components/HashtagButton3D'));
 
 const ORACULO_TITLE = 'La pregunta';
+// Pendiente: demo grabado para la tarjeta "Obra destacada". Mientras esté
+// null, la tarjeta muestra un placeholder.
+const ORACULO_VIDEO_URL = null;
 const ORACULO_INTRO =
   (
   <>
@@ -312,23 +315,22 @@ const PortalOraculo = () => {
 
         <div className="mt-6 flex flex-col gap-6">
           <div className="relative overflow-hidden rounded-[2.5rem] border border-white/10 [transform:translateZ(0)] bg-gradient-to-br from-slate-900/85 via-black/60 to-violet-900/35 shadow-[0_25px_65px_rgba(15,23,42,0.65)]">
-            {latestOraculoReading?.slug ? (
-              <div className="absolute top-4 right-4 z-10">
-                <RelatedReadingTooltipButton
-                  slug={latestOraculoReading.slug}
-                  authorLabel={oraculoReadingAuthorLabel}
-                  thumbnailUrl={oraculoReadingThumbnailUrl}
-                  ariaLabel="Mostrar lectura relacionada de Oráculo"
-                  tone="violet"
-                />
-              </div>
-            ) : null}
+            <div className="absolute top-4 right-4 z-10">
+              <RelatedReadingTooltipButton
+                slug={latestOraculoReading?.slug}
+                authorLabel={oraculoReadingAuthorLabel}
+                thumbnailUrl={oraculoReadingThumbnailUrl}
+                ariaLabel="Mostrar lectura relacionada de Oráculo"
+                tone="cyan"
+                miniversoLabel="La pregunta"
+              />
+            </div>
             <div className="grid gap-6 p-4 sm:p-6 lg:p-8 lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
               <div className="space-y-6">
                 <div className="flex min-w-0 items-center gap-4">
                   <MiniverseIconBadge formatId="oraculo" />
                   <div className="min-w-0 space-y-3">
-                    <p className="text-xs uppercase tracking-[0.4em] text-violet-300">Adivinación</p>
+                    <p className="text-xs uppercase tracking-[0.4em] text-violet-300">Divinación</p>
                     <h3 className="font-display text-3xl leading-tight text-white md:text-4xl">{titleDisplay}</h3>
                   </div>
                 </div>
@@ -405,6 +407,62 @@ const PortalOraculo = () => {
             </div>
           </div>
 
+          <div className="lg:order-2 rounded-3xl border border-violet-200/20 overflow-hidden">
+            <div className="relative min-h-[26rem] overflow-hidden sm:min-h-[30rem]">
+              {ORACULO_VIDEO_URL ? (
+                <video
+                  ref={(el) => { if (el) { el.play().catch(() => {}); } }}
+                  className="absolute inset-0 h-full w-full object-cover"
+                  src={ORACULO_VIDEO_URL}
+                  autoPlay
+                  muted
+                  loop
+                  playsInline
+                  preload="metadata"
+                />
+              ) : (
+                <div className="absolute inset-0 bg-gradient-to-br from-violet-950/80 via-black/80 to-black" />
+              )}
+              <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-black/10 via-black/30 to-black/90" />
+              <div className="absolute top-0 left-0 right-0 p-5">
+                <p className="mb-1 text-xs uppercase tracking-[0.35em] text-slate-300/75">Obra destacada</p>
+                <h5 className="font-display text-xl text-slate-100">Meta-Obra</h5>
+              </div>
+              <div className="absolute bottom-0 inset-x-0 p-5">
+                <p className="text-sm text-slate-200/90 leading-relaxed">El teatro necesita público para ser cierto. Aquí no hay nadie mirando más que tú: aprendes a observar al observador.</p>
+                <div className="mt-2 flex flex-wrap gap-2">
+                  <span className="rounded-full border border-violet-400/30 bg-violet-900/20 px-3 py-1 text-[11px] uppercase tracking-[0.2em] text-violet-100">Incluye artefacto interactivo</span>
+                </div>
+                {!ORACULO_VIDEO_URL ? (
+                  <p className="mt-2 text-xs uppercase tracking-[0.3em] text-violet-200/60">Video pendiente</p>
+                ) : null}
+              </div>
+            </div>
+            <div className="px-5 pt-4 pb-5 space-y-4">
+              <div className="lg:hidden space-y-4">
+                <div className="flex flex-col gap-3">
+                  <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Verso fundacional</p>
+                  <MiniVersoCard title={ORACULO_NOTA_AUTORAL.title} verse={ORACULO_NOTA_AUTORAL.verse} palette={ORACULO_TILE} effect="flip" gatEventKey="flip:nota-autoral:oraculo" />
+                </div>
+              </div>
+              <div className="pt-4 border-t border-violet-200/20 lg:hidden">
+                <IAInsightCard
+                  {...ORACULO_IA_PROFILE}
+                  title="Información del artefacto"
+                  compact
+                />
+              </div>
+            </div>
+          </div>
+
+          {/*
+            Desactivado a propósito (2026-08-16): "Semillas de conocimiento"
+            (lista + botón #3D) queda fuera del tríptico canónico (intro →
+            obra destacada → columna) — se reemplaza por el placeholder
+            "Meta-Obra". El Verso fundacional y "Incluye dispositivo
+            interactivo" de móvil se movieron dentro de esa tarjeta nueva.
+            Código intacto por si se retoma más adelante.
+
           <div className="lg:order-2 space-y-6">
             <div className="rounded-3xl border border-white/10 bg-black/30 p-6 space-y-3">
               <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Semillas de conocimiento</p>
@@ -429,7 +487,7 @@ const PortalOraculo = () => {
           <div className="lg:hidden">
             <IAInsightCard
               {...ORACULO_IA_PROFILE}
-              title="Incluye dispositivo interactivo"
+              title="Información del artefacto"
               compact
             />
           </div>
@@ -439,6 +497,7 @@ const PortalOraculo = () => {
               <MiniVersoCard title={ORACULO_NOTA_AUTORAL.title} verse={ORACULO_NOTA_AUTORAL.verse} palette={ORACULO_TILE} effect="flip" gatEventKey="flip:nota-autoral:oraculo" />
             </div>
           </div>
+          */}
 
           <div className="hidden lg:block lg:order-3 rounded-3xl border border-white/10 bg-black/30 p-6 space-y-6">
             <div className="flex flex-col gap-3">
@@ -453,7 +512,7 @@ const PortalOraculo = () => {
           <div className="order-4 hidden lg:block">
             <IAInsightCard
               {...ORACULO_IA_PROFILE}
-              title="Incluye dispositivo interactivo"
+              title="Información del artefacto"
               compact
             />
           </div>

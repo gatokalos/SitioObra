@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
+import { useNavigate } from 'react-router-dom';
 import { BookOpen } from 'lucide-react';
 
 const TONE_STYLES = {
@@ -28,12 +29,16 @@ const RelatedReadingTooltipButton = ({
   thumbnailUrl = null,
   ariaLabel = 'Mostrar lectura relacionada',
   tone = 'cyan',
+  miniversoLabel = null,
+  onBeforeNavigate = null,
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [placement, setPlacement] = useState('above');
   const rootRef = useRef(null);
   const panelRef = useRef(null);
+  const navigate = useNavigate();
   const styles = TONE_STYLES[tone] || TONE_STYLES.cyan;
+  const hasArticle = Boolean(slug);
 
   const hiddenTranslateClass = placement === 'above' ? 'translate-y-1' : '-translate-y-1';
   const [panelStyle, setPanelStyle] = useState(null);
@@ -42,6 +47,17 @@ const RelatedReadingTooltipButton = ({
     if (!slug) return '/blog';
     return `/blog/${encodeURIComponent(slug)}`;
   }, [slug]);
+
+  const apuntadorHref = useMemo(() => {
+    const lowerLabel = miniversoLabel
+      ? miniversoLabel.charAt(0).toLowerCase() + miniversoLabel.slice(1)
+      : '';
+    const question = lowerLabel
+      ? `¿Qué ocurre cuando ${lowerLabel} intenta sostener todo un universo?`
+      : '';
+    const params = question ? `?apuntador_q=${encodeURIComponent(question)}` : '';
+    return `/${params}#dialogo-critico`;
+  }, [miniversoLabel]);
 
   const handleRead = () => {
     setIsOpen(false);
@@ -52,11 +68,15 @@ const RelatedReadingTooltipButton = ({
     }
   };
 
-  useEffect(() => {
-    if (!slug) {
-      setIsOpen(false);
-    }
-  }, [slug]);
+  const handleAskApuntador = () => {
+    setIsOpen(false);
+    // En Desktop este botón vive dentro de MiniverseModal: si no se cierra
+    // primero, la vitrina se queda abierta con el scroll del body bloqueado
+    // (overflow-hidden) y el salto a #dialogo-critico no se ve. onBeforeNavigate
+    // (handleCloseShowcase) libera ese lock antes de navegar.
+    onBeforeNavigate?.();
+    navigate(apuntadorHref);
+  };
 
   useEffect(() => {
     if (!isOpen) {
@@ -138,40 +158,68 @@ const RelatedReadingTooltipButton = ({
     };
   }, [isOpen]);
 
-  if (!slug) return null;
-
   const tooltipPanel = typeof document === 'undefined'
     ? null
     : createPortal(
       <div
         ref={panelRef}
-        className={`fixed z-[510] w-[min(88vw,18rem)] sm:w-[min(76vw,18.5rem)] md:w-[19rem] lg:w-[20rem] xl:w-[21rem] overflow-hidden rounded-lg border shadow-[0_16px_36px_rgba(0,0,0,0.5)] transition duration-200 ${styles.panel} ${
+        className={`fixed z-[510] w-[min(88vw,18rem)] sm:w-[min(76vw,18.5rem)] md:w-[19rem] lg:w-[20rem] xl:w-[21rem] h-44 md:h-48 overflow-hidden rounded-2xl border shadow-[0_16px_36px_rgba(0,0,0,0.5)] transition duration-200 ${
+          hasArticle ? styles.panel : 'camerino-apuntador-panel'
+        } ${
           isOpen ? 'pointer-events-auto opacity-100 translate-y-0' : `pointer-events-none opacity-0 ${hiddenTranslateClass}`
         }`}
-        style={panelStyle || { top: 0, left: 0, visibility: 'hidden' }}
+        style={
+          hasArticle
+            ? (panelStyle || { top: 0, left: 0, visibility: 'hidden' })
+            : {
+                ...(panelStyle || { top: 0, left: 0, visibility: 'hidden' }),
+                // El tooltip flota por encima de otro contenido (createPortal a
+                // document.body): el degradado translúcido de .camerino-apuntador-panel
+                // deja que ese fondo se cuele y afecta la lectura. Aquí sube la
+                // opacidad casi al máximo para que quede sólido.
+                background:
+                  'radial-gradient(circle at 12% 8%, rgba(115, 48, 91, 0.35), transparent 42%), linear-gradient(145deg, rgba(49, 19, 42, 0.98), rgba(24, 12, 28, 0.97) 58%, rgba(12, 10, 20, 0.97))',
+              }
+        }
       >
-        <div className="space-y-2 px-3 py-2 text-center">
-          <p className={`text-[11px] leading-snug ${styles.label}`}>Lectura relacionada en Camerino: {authorLabel}</p>
-          <div className="flex justify-center">
+        {hasArticle ? (
+          <div className="relative h-full w-full">
+            {thumbnailUrl ? (
+              <img
+                src={thumbnailUrl}
+                alt={`Miniatura de lectura de ${authorLabel}`}
+                className="absolute inset-0 h-full w-full object-cover"
+                loading="lazy"
+              />
+            ) : (
+              <div className={`absolute inset-0 flex items-center justify-center ${styles.placeholder}`}>
+                <BookOpen size={20} />
+              </div>
+            )}
+            <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/95 via-black/50 to-black/10" />
+            <div className="absolute inset-x-0 bottom-0 space-y-2 px-3 py-3 text-center">
+              <div className="flex justify-center">
+                <button
+                  type="button"
+                  className={`inline-flex items-center rounded-md border px-2.5 py-1.5 text-[10px] uppercase tracking-[0.24em] transition ${styles.cta}`}
+                  onClick={handleRead}
+                >
+                  Leer ahora
+                </button>
+              </div>
+              <p className={`text-[11px] leading-snug ${styles.label}`}>Lectura relacionada en Camerino: {authorLabel}</p>
+            </div>
+          </div>
+        ) : (
+          <div className="flex h-full w-full flex-col items-center justify-center gap-3 px-4 text-center">
+            <p className="text-[11px] leading-snug text-violet-100/90">Consulta más sobre este miniverso en el Camerino.</p>
             <button
               type="button"
-              className={`inline-flex items-center rounded-md border px-2.5 py-1.5 text-[10px] uppercase tracking-[0.24em] transition ${styles.cta}`}
-              onClick={handleRead}
+              className="inline-flex items-center rounded-md border border-violet-200/40 bg-violet-300/10 px-2.5 py-1.5 text-[10px] uppercase tracking-[0.24em] text-violet-100 transition hover:bg-violet-300/20"
+              onClick={handleAskApuntador}
             >
-              Leer ahora
+              Preguntar al Apuntador →
             </button>
-          </div>
-        </div>
-        {thumbnailUrl ? (
-          <img
-            src={thumbnailUrl}
-            alt={`Miniatura de lectura de ${authorLabel}`}
-            className="h-28 w-full object-cover md:h-32"
-            loading="lazy"
-          />
-        ) : (
-          <div className={`inline-flex h-24 w-full items-center justify-center ${styles.placeholder}`}>
-            <BookOpen size={16} />
           </div>
         )}
       </div>,

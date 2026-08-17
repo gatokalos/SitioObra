@@ -187,10 +187,7 @@ const SCENE_PORTAL_INTRO = (
           La vergüenza de ser visto <em>sintiendo</em> aparece antes que cualquier juicio: alguien mira, y lo que sentías cambia de forma.<br/>
         </p>
         <p className="text-base leading-relaxed text-neutral-300">
-           Hay cosas que se guardan y pueden retomarse después. Esto no. Ocurre una vez, delante de un público, y desaparece con ese momento.
-        </p>
-        <p className="text-base leading-relaxed text-neutral-300">
-          Aquí, <strong>una misma frase</strong>, interpretada desde otra emoción, ya dice otra cosa.
+           Hay cosas que se guardan y pueden retomarse después. Esto no es un objeto. Ocurre una vez y desaparece con ese momento.
         </p>
   </>
 );
@@ -994,17 +991,16 @@ const PortalVoz = () => {
 
         <div className="mt-6 flex flex-col gap-6">
           <div className="relative overflow-hidden rounded-[2.5rem] border border-white/10 [transform:translateZ(0)] bg-gradient-to-br from-slate-900/85 via-black/60 to-rose-900/35 shadow-[0_25px_65px_rgba(15,23,42,0.65)]">
-            {latestSceneReading?.slug ? (
-              <div className="absolute top-4 right-4 z-10">
-                <RelatedReadingTooltipButton
-                  slug={latestSceneReading.slug}
-                  authorLabel={sceneReadingAuthorLabel}
-                  thumbnailUrl={sceneReadingThumbnailUrl}
-                  ariaLabel="Mostrar lectura relacionada de Escena"
-                  tone="cyan"
-                />
-              </div>
-            ) : null}
+            <div className="absolute top-4 right-4 z-10">
+              <RelatedReadingTooltipButton
+                slug={latestSceneReading?.slug}
+                authorLabel={sceneReadingAuthorLabel}
+                thumbnailUrl={sceneReadingThumbnailUrl}
+                ariaLabel="Mostrar lectura relacionada de Escena"
+                tone="cyan"
+                miniversoLabel="El drama"
+              />
+            </div>
             <div className="grid gap-6 p-4 sm:p-6 lg:p-8 lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
               <div className="space-y-6">
                 <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
@@ -1020,9 +1016,9 @@ const PortalVoz = () => {
                   {SCENE_PORTAL_INTRO}
                 </div>
                 <div className="flex flex-wrap gap-2">
-                  <span className="rounded-full border border-purple-200/35 bg-purple-400/10 px-3 py-1 text-[11px] uppercase tracking-[0.22em] text-purple-100">Obra en vivo</span>
-                  <span className="rounded-full border border-purple-200/35 bg-purple-400/10 px-3 py-1 text-[11px] uppercase tracking-[0.22em] text-purple-100">Emoción expuesta</span>
+                  <span className="rounded-full border border-purple-200/35 bg-purple-400/10 px-3 py-1 text-[11px] uppercase tracking-[0.22em] text-purple-100">Obra efímera</span>
                   <span className="rounded-full border border-purple-200/35 bg-purple-400/10 px-3 py-1 text-[11px] uppercase tracking-[0.22em] text-purple-100">Mirada ajena</span>
+                  <span className="rounded-full border border-purple-200/35 bg-purple-400/10 px-3 py-1 text-[11px] uppercase tracking-[0.22em] text-purple-100">Protagonista</span>
                 </div>
               </div>
 
@@ -1129,16 +1125,16 @@ const PortalVoz = () => {
                   A través de una terapia no convencional, un paciente y su doctora exploran el poder de los sueños lúcidos para confrontar el miedo, la desconexión y la rabia reprimida.
                 </p>
                 <div className="flex flex-wrap gap-2">
-                  <span className="rounded-full border border-white/20 bg-black/30 px-3 py-1 text-[11px] uppercase tracking-[0.2em] text-slate-100 backdrop-blur-sm">Incluye dispositivo interactivo</span>
+                  <span className="rounded-full border border-purple-400/30 bg-purple-900/20 px-3 py-1 text-[11px] uppercase tracking-[0.2em] text-purple-100">Incluye artefacto interactivo</span>
                 </div>
               </div>
             </div>
-            {/* En móvil, la Incluye dispositivo interactivo funciona como puente
+            {/* En móvil, la "Información del artefacto" funciona como puente
                 entre la obra que acabamos de ver y su resonancia colectiva. */}
             <div className="bg-slate-950/80 px-5 pt-5 lg:hidden">
               <IAInsightCard
                 {...SCENE_PORTAL_IA_PROFILE}
-                title="Incluye dispositivo interactivo"
+                title="Información del artefacto"
                 compact
               />
             </div>
@@ -1591,7 +1587,7 @@ const PortalVoz = () => {
           <div className="order-4 hidden lg:block">
             <IAInsightCard
               {...SCENE_PORTAL_IA_PROFILE}
-              title="Incluye dispositivo interactivo"
+              title="Información del artefacto"
               compact
             />
           </div>

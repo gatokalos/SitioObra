@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import ReactMarkdown from 'react-markdown';
 import { fetchBlogPostBySlug } from '@/services/blogService';
@@ -134,6 +134,12 @@ export default function BlogPostPage() {
     return () => { cancelled = true; };
   }, [slug]);
 
+  const apuntadorHref = useMemo(() => {
+    if (!post?.title) return '/#dialogo-critico';
+    const question = `¿Qué hay detrás de "${post.title}"?`;
+    return `/?apuntador_q=${encodeURIComponent(question)}#dialogo-critico`;
+  }, [post?.title]);
+
   if (loading) {
     return (
       <div className="min-h-screen bg-[#050507] flex items-center justify-center">
@@ -251,6 +257,18 @@ export default function BlogPostPage() {
             </ReactMarkdown>
           </div>
         )}
+
+        <div className="camerino-apuntador-panel mt-14 rounded-2xl border p-6 text-center backdrop-blur-sm sm:p-8">
+          <p className="text-sm leading-relaxed text-violet-100/90 sm:text-base">
+            Si quieres saber algo más… consulta con el Apuntador de #GatoEncerrado.
+          </p>
+          <Link
+            to={apuntadorHref}
+            className="ge-chip-action ge-chip-action--secondary ge-chip-action--compact mt-5 inline-flex"
+          >
+            Preguntar al Apuntador →
+          </Link>
+        </div>
       </div>
     </div>
   );

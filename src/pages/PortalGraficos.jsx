@@ -369,17 +369,16 @@ const PortalGraficos = () => {
 
         <div className="mt-6 flex flex-col gap-6">
           <div className="relative overflow-hidden rounded-[2.5rem] border border-white/10 [transform:translateZ(0)] bg-gradient-to-br from-slate-900/85 via-black/60 to-fuchsia-900/25 shadow-[0_25px_65px_rgba(15,23,42,0.65)]">
-            {latestGraficosReading?.slug ? (
-              <div className="absolute top-4 right-4 z-10">
-                <RelatedReadingTooltipButton
-                  slug={latestGraficosReading.slug}
-                  authorLabel={graficosReadingAuthorLabel}
-                  thumbnailUrl={graficosReadingThumbnailUrl}
-                  ariaLabel="Mostrar lectura relacionada de Gráficos"
-                  tone="cyan"
-                />
-              </div>
-            ) : null}
+            <div className="absolute top-4 right-4 z-10">
+              <RelatedReadingTooltipButton
+                slug={latestGraficosReading?.slug}
+                authorLabel={graficosReadingAuthorLabel}
+                thumbnailUrl={graficosReadingThumbnailUrl}
+                ariaLabel="Mostrar lectura relacionada de Gráficos"
+                tone="cyan"
+                miniversoLabel="La imagen"
+              />
+            </div>
             <div className="grid gap-6 p-4 sm:p-6 lg:p-8 lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
               <div className="space-y-6">
                 <div className="flex min-w-0 items-center gap-4">
@@ -484,14 +483,14 @@ const PortalGraficos = () => {
                   Esta primera edición digital reúne el inicio de una obra que continúa expandiéndose.
                 </p>
                 <div className="flex flex-wrap gap-2">
-                  <span className="rounded-full border border-white/20 bg-black/30 px-3 py-1 text-[11px] uppercase tracking-[0.2em] text-slate-100 backdrop-blur-sm">Incluye dispositivo interactivo</span>
+                  <span className="rounded-full border border-fuchsia-400/30 bg-fuchsia-900/20 px-3 py-1 text-[11px] uppercase tracking-[0.2em] text-fuchsia-100">Incluye artefacto interactivo</span>
                 </div>
               </div>
             </div>
             <div className="bg-slate-950/80 px-5 pt-5 lg:hidden">
               <IAInsightCard
                 {...GRAFICOS_IA_PROFILE}
-                title="Incluye dispositivo interactivo"
+                title="Información del artefacto"
                 compact
               />
             </div>
@@ -538,7 +537,7 @@ const PortalGraficos = () => {
           <div className="order-4 hidden lg:block">
             <IAInsightCard
               {...GRAFICOS_IA_PROFILE}
-              title="Incluye dispositivo interactivo"
+              title="Información del artefacto"
               compact
             />
           </div>

@@ -276,7 +276,7 @@ const Transmedia = ({ allianceOnlyMode = false }) => {
   const [focusAppMetadata, setFocusAppMetadata] = useState(null);
   const [isMovementCreditsOpen, setIsMovementCreditsOpen] = useState(false);
   const [openCollaboratorId, setOpenCollaboratorId] = useState(null);
-  // "Incluye dispositivo interactivo" y Cómplices comparten columna en cada
+  // "Información del artefacto" y Cómplices comparten columna en cada
   // miniverso — solo uno de los dos acordeones puede estar abierto a la vez.
   const [isArtesaniasDeviceInfoOpen, setIsArtesaniasDeviceInfoOpen] = useState(false);
   const [isDramaDeviceInfoOpen, setIsDramaDeviceInfoOpen] = useState(false);
@@ -284,6 +284,7 @@ const Transmedia = ({ allianceOnlyMode = false }) => {
   const [isGraficosDeviceInfoOpen, setIsGraficosDeviceInfoOpen] = useState(false);
   const [isLiteraturaDeviceInfoOpen, setIsLiteraturaDeviceInfoOpen] = useState(false);
   const [isSonoridadesDeviceInfoOpen, setIsSonoridadesDeviceInfoOpen] = useState(false);
+  const [movementFeaturedIndex, setMovementFeaturedIndex] = useState(0);
   const [detonadoresHintActive, setDetonadoresHintActive] = useState(false);
   const detonadoresHintFiredRef = useRef(false);
   const { isMobileViewport, canUseInlinePlayback, requestMobileVideoPresentation } = useMobileVideoPresentation();
@@ -1932,7 +1933,7 @@ const rendernotaAutoral = () => {
   );
 };
 
-const renderDeviceInfoDesktop = (title = 'Información del dispositivo', accordionControl = null) => {
+const renderDeviceInfoDesktop = (title = 'Información del artefacto', accordionControl = null) => {
   if (!activeDefinition?.iaProfile) return null;
 
   return (
@@ -1981,7 +1982,9 @@ const renderDramaFeaturedWork = () => (
           A través de una terapia no convencional, un paciente y su doctora exploran el poder de los sueños lúcidos
           para confrontar el miedo, la desconexión y la rabia reprimida.
         </p>
-
+        <div className="flex flex-wrap gap-2">
+          <span className="rounded-full border border-purple-400/30 bg-purple-900/20 px-3 py-1 text-[11px] uppercase tracking-[0.2em] text-purple-100">Incluye artefacto interactivo</span>
+        </div>
       </div>
     </div>
   </motion.div>
@@ -2162,7 +2165,7 @@ const renderDramaFeaturedWork = () => (
                         Hay símbolos que sobreviven porque nunca terminan de significar una sola cosa. El símbolo # ha sido medida, música, tablero, código y una forma de conectar conversaciones mucho antes de ser conocido como &ldquo;gato&rdquo; en México.
                       </p>
                       <div className="flex flex-wrap gap-2">
-                        <span className="rounded-full border border-amber-400/30 bg-amber-900/20 px-3 py-1 text-[11px] uppercase tracking-[0.2em] text-amber-100">Incluye dispositivo interactivo</span>
+                        <span className="rounded-full border border-amber-400/30 bg-amber-900/20 px-3 py-1 text-[11px] uppercase tracking-[0.2em] text-amber-100">Incluye artefacto interactivo</span>
                       </div>
                     </div>
                   </div>
@@ -2261,7 +2264,7 @@ const renderDramaFeaturedWork = () => (
                 : activeDefinition.collaborators,
               activeShowcase ?? 'hdr'
             )}
-            {renderDeviceInfoDesktop('Incluye dispositivo interactivo', {
+            {renderDeviceInfoDesktop('Información del artefacto', {
               isOpen: isArtesaniasDeviceInfoOpen,
               onToggle: () => {
                 setIsArtesaniasDeviceInfoOpen((prev) => !prev);
@@ -2337,6 +2340,9 @@ const renderDramaFeaturedWork = () => (
                 </div>
                 <div className="absolute bottom-0 inset-x-0 p-5">
                   <p className="text-sm text-slate-200/90 leading-relaxed">Este miniverso mezcla imágenes errantes, pistas sonoras y palabras móviles para que crees tu propia atmósfera.</p>
+                  <div className="mt-2 flex flex-wrap gap-2">
+                    <span className="rounded-full border border-cyan-400/30 bg-cyan-900/20 px-3 py-1 text-[11px] uppercase tracking-[0.2em] text-cyan-100">Incluye artefacto interactivo</span>
+                  </div>
                 </div>
               </motion.div>
               {/*
@@ -2366,7 +2372,7 @@ const renderDramaFeaturedWork = () => (
             <div className="flex flex-col gap-5">
               {rendernotaAutoral()}
               {renderCollaboratorsSection(activeDefinition.collaborators, activeShowcase ?? 'hdr')}
-              {renderDeviceInfoDesktop('Incluye dispositivo interactivo', {
+              {renderDeviceInfoDesktop('Información del artefacto', {
                 isOpen: isSonoridadesDeviceInfoOpen,
                 onToggle: () => {
                   setIsSonoridadesDeviceInfoOpen((prev) => !prev);
@@ -2392,8 +2398,49 @@ const renderDramaFeaturedWork = () => (
     if (activeDefinition.type === 'oracle') {
       return (
         <>
-          <div className="grid gap-6 lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)] lg:items-start">
-            <div className="space-y-6">
+          <div className="grid gap-6 lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
+            <div className="h-full space-y-6">
+              <motion.div
+                layout
+                transition={{ duration: 0.35, ease: 'easeInOut' }}
+                className="relative min-h-[30rem] h-full overflow-hidden rounded-3xl border border-violet-200/20"
+              >
+                {activeDefinition.videoUrl ? (
+                  <video
+                    ref={(el) => { if (el) { el.play().catch(() => {}); } }}
+                    className="absolute inset-0 h-full w-full object-cover"
+                    src={activeDefinition.videoUrl}
+                    autoPlay
+                    muted
+                    loop
+                    playsInline
+                    preload="metadata"
+                  />
+                ) : (
+                  <div className="absolute inset-0 bg-gradient-to-br from-violet-950/80 via-black/80 to-black" />
+                )}
+                <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-black/10 via-black/30 to-black/90" />
+                <div className="absolute top-0 left-0 right-0 p-5">
+                  <p className="mb-1 text-xs uppercase tracking-[0.35em] text-slate-300/75">Obra destacada</p>
+                  <h5 className="font-display text-xl text-slate-100">Meta-Obra</h5>
+                </div>
+                <div className="absolute bottom-0 inset-x-0 p-5">
+                  <p className="text-sm text-slate-200/90 leading-relaxed">El teatro necesita público para ser cierto. Aquí no hay nadie mirando más que tú: aprendes a observar al observador.</p>
+                  <div className="mt-2 flex flex-wrap gap-2">
+                    <span className="rounded-full border border-violet-400/30 bg-violet-900/20 px-3 py-1 text-[11px] uppercase tracking-[0.2em] text-violet-100">Incluye artefacto interactivo</span>
+                  </div>
+                  {!activeDefinition.videoUrl ? (
+                    <p className="mt-2 text-xs uppercase tracking-[0.3em] text-violet-200/60">Video pendiente</p>
+                  ) : null}
+                </div>
+              </motion.div>
+              {/*
+                Desactivado a propósito (2026-08-16): "Semillas de
+                conocimiento" (lista + botón #3D) queda fuera del tríptico
+                canónico (intro → obra destacada → columna) — se reemplaza
+                por el placeholder "Meta-Obra". Código intacto por si se
+                retoma más adelante.
+
               <div className="rounded-3xl border border-white/10 bg-black/30 p-6 space-y-3">
                 <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Semillas de conocimiento</p>
                 <ul className="space-y-2 text-sm text-slate-300/85 leading-relaxed">
@@ -2412,11 +2459,12 @@ const renderDramaFeaturedWork = () => (
                   />
                 </Suspense>
               </div>
+              */}
             </div>
 
             <div className="flex flex-col gap-5">
-              {renderDeviceInfoDesktop()}
               {rendernotaAutoral()}
+              {renderDeviceInfoDesktop()}
               {activePortalExperienceDone && (
                 <button
                   type="button"
@@ -2524,11 +2572,11 @@ const renderDramaFeaturedWork = () => (
           <div className="hidden gap-6 lg:grid lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
             {/* Columna izquierda: card inmersiva estilo cine */}
             {renderDramaFeaturedWork()}
-            {/* Columna derecha: verso fundacional + Incluye dispositivo interactivo + Cómplices + CTA */}
+            {/* Columna derecha: verso fundacional + Información del artefacto + Cómplices + CTA */}
             <div className="hidden lg:flex lg:flex-col lg:gap-5">
               {rendernotaAutoral()}
               {renderCollaboratorsSection(activeDefinition.collaborators, activeShowcase ?? 'hdr')}
-              {renderDeviceInfoDesktop('Incluye dispositivo interactivo', {
+              {renderDeviceInfoDesktop('Información del artefacto', {
                 isOpen: isDramaDeviceInfoOpen,
                 onToggle: () => {
                   setIsDramaDeviceInfoOpen((prev) => !prev);
@@ -3023,7 +3071,7 @@ const renderDramaFeaturedWork = () => (
                           {entry.richDescription ?? entry.description}
                         </p>
                         <div className="flex flex-wrap gap-2">
-                          <span className="rounded-full border border-white/20 bg-black/30 px-3 py-1 text-[11px] uppercase tracking-[0.2em] text-slate-100 backdrop-blur-sm">Incluye dispositivo interactivo</span>
+                          <span className="rounded-full border border-fuchsia-400/30 bg-fuchsia-900/20 px-3 py-1 text-[11px] uppercase tracking-[0.2em] text-fuchsia-100">Incluye artefacto interactivo</span>
                         </div>
                       </div>
                     </div>
@@ -3036,7 +3084,7 @@ const renderDramaFeaturedWork = () => (
           <div className="flex flex-col gap-5">
             {rendernotaAutoral()}
             {renderCollaboratorsSection(activeDefinition.collaborators, activeShowcase ?? 'hdr')}
-            {renderDeviceInfoDesktop('Incluye dispositivo interactivo', {
+            {renderDeviceInfoDesktop('Información del artefacto', {
               isOpen: isGraficosDeviceInfoOpen,
               onToggle: () => {
                 setIsGraficosDeviceInfoOpen((prev) => !prev);
@@ -3111,9 +3159,20 @@ const renderDramaFeaturedWork = () => (
         Array.isArray(activeDefinition.diosasGallery) && activeDefinition.diosasGallery.length > 0;
       const hasMovementMicrointeractions =
         Array.isArray(activeDefinition.microinteractions) && activeDefinition.microinteractions.length > 0;
+      const movementFeaturedName = 'Trasuntos divinos';
+      const movementFeaturedSharedCopy =
+        'Todavía es un taller que busca cómplices — bailarines, diseñadoras de presencias digitales, ciudades que abran su espacio público. Cada residencia convierte el cuerpo en territorio y lo siembra, en realidad aumentada, donde ocurrió.';
 
       return (
         <div className="space-y-8">
+          {/*
+            Desactivado a propósito (2026-08-16): este bloque (tagline,
+            texto largo y el DiosasCarousel de swipe) queda fuera del
+            tríptico canónico (intro → obra destacada → columna de
+            Verso/Cómplices/dispositivo) — la nueva tarjeta "Obra destacada"
+            ya cicla los mismos avatares. Se apaga para no romper la
+            coherencia visual del tríptico; código intacto.
+
           <div className="space-y-5 rounded-3xl border border-white/10 bg-gradient-to-br from-slate-950/80 via-black/60 to-purple-900/30 p-6 lg:p-8">
             <h3 className="font-display text-3xl text-slate-100">{activeDefinition.tagline}</h3>
             <p className="text-sm leading-relaxed text-slate-100/80 md:text-base">
@@ -3134,9 +3193,85 @@ const renderDramaFeaturedWork = () => (
               />
             ) : null}
           </div>
+          */}
 
-          <div className="grid gap-6 lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)] lg:items-start">
-            <div className="space-y-6">
+          <div className="grid gap-6 lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
+            <div className="h-full space-y-6">
+              {hasDiosasGallery ? (() => {
+                const total = activeDefinition.diosasGallery.length;
+                const currentDiosa = activeDefinition.diosasGallery[movementFeaturedIndex % total];
+                return (
+                  <motion.div
+                    layout
+                    transition={{ duration: 0.35, ease: 'easeInOut' }}
+                    className="relative min-h-[30rem] h-full overflow-hidden rounded-3xl border border-white/10 bg-black"
+                  >
+                    <video
+                      key={`${currentDiosa.id}-bg`}
+                      className="absolute inset-0 h-full w-full scale-110 object-cover opacity-50 blur-2xl"
+                      src={currentDiosa.videoUrl}
+                      autoPlay
+                      muted
+                      loop
+                      playsInline
+                      preload="metadata"
+                      aria-hidden="true"
+                    />
+                    <video
+                      key={currentDiosa.id}
+                      ref={(el) => { if (el) { el.play().catch(() => {}); } }}
+                      className="absolute inset-0 h-full w-full object-contain"
+                      src={currentDiosa.videoUrl}
+                      autoPlay
+                      muted
+                      playsInline
+                      preload="metadata"
+                      onEnded={(event) => {
+                        if (total > 1) {
+                          setMovementFeaturedIndex((prev) => (prev + 1) % total);
+                          return;
+                        }
+                        const el = event.currentTarget;
+                        el.currentTime = 0;
+                        el.play().catch(() => {});
+                      }}
+                    />
+                    <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-black/10 via-black/20 to-black/80" />
+                    <div className="absolute top-0 left-0 right-0 p-5">
+                      <p className="mb-1 text-xs uppercase tracking-[0.35em] text-slate-300/75">Obra destacada</p>
+                      <h5 className="font-display text-xl text-slate-100">{movementFeaturedName}</h5>
+                    </div>
+                    <div className="absolute bottom-0 inset-x-0 p-5">
+                      <p className="text-sm text-slate-200/90 leading-relaxed">{currentDiosa.description}</p>
+                      {currentDiosa.location ? (
+                        <p className="mt-2 text-xs uppercase tracking-[0.3em] text-purple-200/60">{currentDiosa.location}</p>
+                      ) : null}
+                      <p className="mt-2 text-sm text-slate-300/80 leading-relaxed">{movementFeaturedSharedCopy}</p>
+                      <div className="mt-3 flex flex-wrap gap-1.5">
+                        {activeDefinition.diosasGallery.map((diosa, idx) => (
+                          <span
+                            key={diosa.id}
+                            className={`rounded-full border px-2.5 py-1 text-[10px] uppercase tracking-[0.15em] transition ${
+                              idx === movementFeaturedIndex % total
+                                ? 'border-purple-200/60 bg-purple-500/20 text-purple-100'
+                                : 'border-white/10 bg-white/5 text-slate-400/50'
+                            }`}
+                          >
+                            {diosa.title}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  </motion.div>
+                );
+              })() : null}
+
+              {/*
+                Desactivado a propósito (2026-08-16): "Activaciones de ruta"
+                (mapa/AR/talleres, todas marcadas "próximamente") escondido
+                porque Carlos las va a necesitar más adelante para armar la
+                app de Movimiento — no se borra, solo se apaga.
+
               <div className="rounded-3xl border border-white/10 bg-black/30 p-5 space-y-4">
                 <p className="text-xs uppercase tracking-[0.35em] text-slate-400/80">Activaciones de ruta</p>
                 <div className="space-y-3">
@@ -3176,6 +3311,7 @@ const renderDramaFeaturedWork = () => (
                   })}
                 </div>
               </div>
+              */}
 
               {hasMovementMicrointeractions ? (
                 <div className="grid gap-4 md:grid-cols-2">
@@ -3204,8 +3340,13 @@ const renderDramaFeaturedWork = () => (
             </div>
 
             <div className="flex flex-col gap-5">
-              {renderDeviceInfoDesktop()}
               {rendernotaAutoral()}
+              {renderDeviceInfoDesktop()}
+              {/*
+                Desactivado a propósito (2026-08-16): CTA de talleres
+                escondido junto con "Activaciones de ruta" — misma razón,
+                se reusará más adelante para la app de Movimiento.
+
               {activePortalExperienceDone && (
                 <button
                   type="button"
@@ -3215,6 +3356,7 @@ const renderDramaFeaturedWork = () => (
                   ✦ Inscríbete a los talleres coreográficos
                 </button>
               )}
+              */}
             </div>
           </div>
         </div>
@@ -3225,8 +3367,51 @@ const renderDramaFeaturedWork = () => (
       const embeddedAppUrl = sanitizeExternalHttpUrl(activeDefinition.liveExperience?.url);
 
       return (
-        <div className="grid gap-6 lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)] lg:items-start">
-          <div>
+        <div className="grid gap-6 lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
+          <div className="h-full space-y-6">
+            <motion.div
+              layout
+              transition={{ duration: 0.35, ease: 'easeInOut' }}
+              className="relative min-h-[30rem] h-full overflow-hidden rounded-3xl border border-emerald-200/20"
+            >
+              {activeDefinition.videoUrl ? (
+                <video
+                  ref={(el) => { if (el) { el.play().catch(() => {}); } }}
+                  className="absolute inset-0 h-full w-full object-cover"
+                  src={activeDefinition.videoUrl}
+                  autoPlay
+                  muted
+                  loop
+                  playsInline
+                  preload="metadata"
+                />
+              ) : (
+                <div className="absolute inset-0 bg-gradient-to-br from-emerald-950/80 via-black/80 to-black" />
+              )}
+              <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-black/10 via-black/30 to-black/90" />
+              <div className="absolute top-0 left-0 right-0 p-5">
+                <p className="mb-1 text-xs uppercase tracking-[0.35em] text-slate-300/75">Obra destacada</p>
+                <h5 className="font-display text-xl text-slate-100">El riesgo</h5>
+              </div>
+              <div className="absolute bottom-0 inset-x-0 p-5">
+                <p className="text-sm text-slate-200/90 leading-relaxed">Aquí, en cambio, algo depende de ti y no sabes bien qué.</p>
+                <div className="mt-2 flex flex-wrap gap-2">
+                  <span className="rounded-full border border-emerald-400/30 bg-emerald-900/20 px-3 py-1 text-[11px] uppercase tracking-[0.2em] text-emerald-100">Incluye artefacto interactivo</span>
+                </div>
+                {!activeDefinition.videoUrl ? (
+                  <p className="mt-2 text-xs uppercase tracking-[0.3em] text-emerald-200/60">Video pendiente</p>
+                ) : null}
+              </div>
+            </motion.div>
+            {/*
+              Desactivado a propósito (2026-08-16): el iframe de "El riesgo"
+              se mostraba sin ninguna condición apenas se abría la vitrina.
+              Le corresponde ser el artefacto de Fase 2 (se abre en pestaña
+              nueva vía onOpenNarrative una vez completada la calibración,
+              igual que en el resto de miniversos) — no algo visible desde
+              el primer vistazo, donde ahora vive el placeholder de "Obra
+              destacada". Código intacto por si se retoma más adelante.
+
             {embeddedAppUrl ? (
               <div className="rounded-3xl border border-emerald-200/20 bg-black/30 p-4 sm:p-5 space-y-4 shadow-[0_20px_60px_rgba(0,0,0,0.35)]">
                 <div className="space-y-2">
@@ -3252,11 +3437,12 @@ const renderDramaFeaturedWork = () => (
                 </div>
               </div>
             ) : null}
+            */}
           </div>
 
           <div className="flex flex-col gap-5">
-            {renderDeviceInfoDesktop()}
             {rendernotaAutoral()}
+            {renderDeviceInfoDesktop()}
             {activePortalExperienceDone && embeddedAppUrl ? (
               <a
                 href={embeddedAppUrl}
@@ -3380,6 +3566,8 @@ const renderDramaFeaturedWork = () => (
         reserveClassName = 'h-[11rem] sm:h-[14rem]',
         extraContent = null,
         showBadge = true,
+        showArtefactoChip = false,
+        titleAtTop = false,
       }) => {
         if (!asset?.url) return null;
         const isVideoFile = /\.mp4($|\?)/i.test(asset.url);
@@ -3421,8 +3609,8 @@ const renderDramaFeaturedWork = () => (
                   referrerPolicy="strict-origin-when-cross-origin"
                 />
               )}
-              <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-black/10 via-black/30 to-black/90" />
-              <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(255,255,255,0.08),_transparent_36%),linear-gradient(180deg,rgba(0,0,0,0.02)_0%,rgba(0,0,0,0.14)_35%,rgba(0,0,0,0.72)_100%)]" />
+              <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-black/10 via-black/30 to-black" />
+              <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(255,255,255,0.08),_transparent_36%),linear-gradient(180deg,rgba(0,0,0,0.02)_0%,rgba(0,0,0,0.14)_35%,rgba(0,0,0,0.9)_100%)]" />
               {isVideoFile && showBadge ? (
                 <div className="pointer-events-none absolute right-5 top-5 z-10">
                   <div className="flex items-center gap-2 rounded-full border border-white/15 bg-black/55 px-3 py-1 text-[0.62rem] font-semibold uppercase tracking-[0.22em] text-white/85 backdrop-blur-md">
@@ -3433,19 +3621,33 @@ const renderDramaFeaturedWork = () => (
               ) : null}
             </div>
 
+            {titleAtTop ? (
+              <div className="absolute top-0 left-0 right-0 z-10 p-6">
+                <p className="mb-1 text-xs uppercase tracking-[0.35em] text-slate-300/75">{eyebrow}</p>
+                <h4 className="font-display text-xl text-slate-100">{title}</h4>
+              </div>
+            ) : null}
+
             <div className="relative z-10 flex h-full min-h-[30rem] flex-col p-6">
-              <div aria-hidden="true" className={reserveClassName} />
+              {!titleAtTop ? <div aria-hidden="true" className={reserveClassName} /> : null}
 
               <div className="mt-auto space-y-4">
-                <div className="space-y-2">
-                  <p className="text-xs uppercase tracking-[0.35em] text-slate-300/75">{eyebrow}</p>
-                  <h4 className="font-display text-xl text-slate-100">{title}</h4>
-                </div>
+                {!titleAtTop ? (
+                  <div className="space-y-2">
+                    <p className="text-xs uppercase tracking-[0.35em] text-slate-300/75">{eyebrow}</p>
+                    <h4 className="font-display text-xl text-slate-100">{title}</h4>
+                  </div>
+                ) : null}
                 {description ? (
                   <p className="max-w-2xl text-sm leading-relaxed text-slate-300/85">{description}</p>
                 ) : null}
                 {microcopy ? (
                   <p className="max-w-2xl text-sm leading-relaxed text-slate-100/92">{microcopy}</p>
+                ) : null}
+                {showArtefactoChip ? (
+                  <div className="flex flex-wrap gap-2">
+                    <span className="rounded-full border border-sky-400/30 bg-sky-900/20 px-3 py-1 text-[11px] uppercase tracking-[0.2em] text-sky-100">Incluye artefacto interactivo</span>
+                  </div>
                 ) : null}
                 {tags.length ? (
                   <div className="flex flex-wrap gap-2">
@@ -3497,6 +3699,8 @@ const renderDramaFeaturedWork = () => (
           tags: quironTags,
           asset: quironPrimaryAsset,
           showBadge: false,
+          showArtefactoChip: true,
+          titleAtTop: true,
           extraContent: quironStills.length ? (
             <div className="grid gap-3 sm:grid-cols-2">
               {quironStills.map((still, index) => {
@@ -3678,7 +3882,7 @@ const renderDramaFeaturedWork = () => (
               <div className="flex flex-col gap-5">
                 {rendernotaAutoral()}
                 {renderCollaboratorsSection(activeDefinition.collaborators, activeShowcase ?? 'hdr')}
-                {renderDeviceInfoDesktop('Incluye dispositivo interactivo', {
+                {renderDeviceInfoDesktop('Información del artefacto', {
                   isOpen: isCineDeviceInfoOpen,
                   onToggle: () => {
                     setIsCineDeviceInfoOpen((prev) => !prev);
@@ -3886,6 +4090,11 @@ const renderDramaFeaturedWork = () => (
                             {entry.descriptionNode ?? (entry.description ? (
                               <p className="text-sm text-slate-200/90 leading-relaxed whitespace-pre-line">{entry.description}</p>
                             ) : null)}
+                            {entry.eyebrow === 'Obra destacada' ? (
+                              <div className="flex flex-wrap gap-2">
+                                <span className="rounded-full border border-violet-400/30 bg-violet-900/20 px-3 py-1 text-[11px] uppercase tracking-[0.2em] text-violet-100">Incluye artefacto interactivo</span>
+                              </div>
+                            ) : null}
                             {entry.snippet ? (
                               <div className="rounded-2xl border border-white/10 bg-slate-900/60 p-4 space-y-3">
                                 <p className="text-xs uppercase tracking-[0.3em] text-purple-300">{entry.snippet.tagline}</p>
@@ -3909,7 +4118,7 @@ const renderDramaFeaturedWork = () => (
                 <div className="flex flex-col gap-5">
                   {rendernotaAutoral()}
                   {renderCollaboratorsSection(activeDefinition.collaborators, activeShowcase ?? 'hdr')}
-                  {renderDeviceInfoDesktop('Incluye dispositivo interactivo', {
+                  {renderDeviceInfoDesktop('Información del artefacto', {
                     isOpen: isLiteraturaDeviceInfoOpen,
                     onToggle: () => {
                       setIsLiteraturaDeviceInfoOpen((prev) => !prev);
@@ -4300,21 +4509,21 @@ const renderDramaFeaturedWork = () => (
                           <h3 className="font-display text-3xl leading-tight text-white md:text-4xl">{showcaseTitleDisplay}</h3>
                         </div>
                       </div>
-                      {latestBlogPostByShowcase[activeShowcase]?.slug ? (
-                        <RelatedReadingTooltipButton
-                          slug={latestBlogPostByShowcase[activeShowcase].slug}
-                          authorLabel={latestBlogPostByShowcase[activeShowcase].author?.trim() || 'autor invitado'}
-                          thumbnailUrl={
-                            sanitizeExternalHttpUrl(latestBlogPostByShowcase[activeShowcase].featured_image_url) ||
-                            sanitizeExternalHttpUrl(latestBlogPostByShowcase[activeShowcase].cover_image) ||
-                            sanitizeExternalHttpUrl(latestBlogPostByShowcase[activeShowcase].image_url) ||
-                            sanitizeExternalHttpUrl(latestBlogPostByShowcase[activeShowcase].author_avatar_url) ||
-                            null
-                          }
-                          ariaLabel="Mostrar lectura disponible en Textos"
-                          tone="cyan"
-                        />
-                      ) : null}
+                      <RelatedReadingTooltipButton
+                        slug={latestBlogPostByShowcase[activeShowcase]?.slug}
+                        authorLabel={latestBlogPostByShowcase[activeShowcase]?.author?.trim() || 'autor invitado'}
+                        thumbnailUrl={
+                          sanitizeExternalHttpUrl(latestBlogPostByShowcase[activeShowcase]?.featured_image_url) ||
+                          sanitizeExternalHttpUrl(latestBlogPostByShowcase[activeShowcase]?.cover_image) ||
+                          sanitizeExternalHttpUrl(latestBlogPostByShowcase[activeShowcase]?.image_url) ||
+                          sanitizeExternalHttpUrl(latestBlogPostByShowcase[activeShowcase]?.author_avatar_url) ||
+                          null
+                        }
+                        ariaLabel="Mostrar lectura disponible en Textos"
+                        tone="cyan"
+                        miniversoLabel={activeDefinition.label}
+                        onBeforeNavigate={handleCloseShowcase}
+                      />
                     </div>
                     <div className="space-y-4 text-lg text-slate-200/85 leading-relaxed font-light">
                       {activeDefinition.introNode ?? <p>{activeDefinition.intro}</p>}

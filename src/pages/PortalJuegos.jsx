@@ -464,17 +464,16 @@ const PortalJuegos = () => {
 
         <div className="mt-6 flex flex-col gap-6">
           <div className="relative overflow-hidden rounded-[2.5rem] border border-white/10 [transform:translateZ(0)] bg-gradient-to-br from-slate-900/85 via-black/60 to-emerald-900/25 shadow-[0_25px_65px_rgba(15,23,42,0.65)]">
-            {latestJuegosReading?.slug ? (
-              <div className="absolute top-4 right-4 z-10">
-                <RelatedReadingTooltipButton
-                  slug={latestJuegosReading.slug}
-                  authorLabel={juegosReadingAuthorLabel}
-                  thumbnailUrl={juegosReadingThumbnailUrl}
-                  ariaLabel="Mostrar lectura relacionada de Juegos"
-                  tone="cyan"
-                />
-              </div>
-            ) : null}
+            <div className="absolute top-4 right-4 z-10">
+              <RelatedReadingTooltipButton
+                slug={latestJuegosReading?.slug}
+                authorLabel={juegosReadingAuthorLabel}
+                thumbnailUrl={juegosReadingThumbnailUrl}
+                ariaLabel="Mostrar lectura relacionada de Juegos"
+                tone="cyan"
+                miniversoLabel="El riesgo"
+              />
+            </div>
             <div className="grid gap-6 p-4 sm:p-6 lg:p-8 lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
               <div className="space-y-6">
                 <div className="flex min-w-0 items-center gap-4">
@@ -552,6 +551,64 @@ const PortalJuegos = () => {
             </div>
           </div>
 
+          <div className="lg:order-2 rounded-3xl border border-emerald-200/20 overflow-hidden">
+            <div className="relative min-h-[26rem] overflow-hidden sm:min-h-[30rem]">
+              {JUEGOS_DEFINITION.videoUrl ? (
+                <video
+                  ref={(el) => { if (el) { el.play().catch(() => {}); } }}
+                  className="absolute inset-0 h-full w-full object-cover"
+                  src={JUEGOS_DEFINITION.videoUrl}
+                  autoPlay
+                  muted
+                  loop
+                  playsInline
+                  preload="metadata"
+                />
+              ) : (
+                <div className="absolute inset-0 bg-gradient-to-br from-emerald-950/80 via-black/80 to-black" />
+              )}
+              <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-black/10 via-black/30 to-black/90" />
+              <div className="absolute top-0 left-0 right-0 p-5">
+                <p className="mb-1 text-xs uppercase tracking-[0.35em] text-slate-300/75">Obra destacada</p>
+                <h5 className="font-display text-xl text-slate-100">El riesgo</h5>
+              </div>
+              <div className="absolute bottom-0 inset-x-0 p-5">
+                <p className="text-sm text-slate-200/90 leading-relaxed">Aquí, en cambio, algo depende de ti y no sabes bien qué.</p>
+                <div className="mt-2 flex flex-wrap gap-2">
+                  <span className="rounded-full border border-emerald-400/30 bg-emerald-900/20 px-3 py-1 text-[11px] uppercase tracking-[0.2em] text-emerald-100">Incluye artefacto interactivo</span>
+                </div>
+                {!JUEGOS_DEFINITION.videoUrl ? (
+                  <p className="mt-2 text-xs uppercase tracking-[0.3em] text-emerald-200/60">Video pendiente</p>
+                ) : null}
+              </div>
+            </div>
+            <div className="px-5 pt-4 pb-5 space-y-4">
+              <div className="lg:hidden space-y-4">
+                <div className="flex flex-col gap-3">
+                  <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Verso fundacional</p>
+                  <MiniVersoCard title={JUEGOS_DEFINITION.cartaTitle} verse={JUEGOS_DEFINITION.notaAutoral} palette={JUEGOS_TILE} effect="flip" gatEventKey="flip:nota-autoral:juegos" />
+                </div>
+              </div>
+              {JUEGOS_DEFINITION.iaProfile ? (
+                <div className="pt-4 border-t border-emerald-200/20 lg:hidden">
+                  <IAInsightCard
+                    {...JUEGOS_DEFINITION.iaProfile}
+                    title="Información del artefacto"
+                    compact
+                  />
+                </div>
+              ) : null}
+            </div>
+          </div>
+
+          {/*
+            Desactivado a propósito (2026-08-16): "Experiencia incrustada"
+            (el gate "Antes de entrar" + iframe del juego) queda fuera del
+            tríptico canónico (intro → obra destacada → columna). El Verso
+            fundacional y "Información del artefacto" que vivían aquí
+            en móvil se movieron dentro de la tarjeta "Obra destacada" de
+            arriba. Código intacto por si se retoma más adelante.
+
           {embeddedAppUrl ? (
             <div className="lg:order-2 rounded-3xl border border-emerald-200/20 bg-black/30 p-4 sm:p-5 space-y-4 shadow-[0_20px_60px_rgba(0,0,0,0.35)]">
               <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
@@ -626,7 +683,7 @@ const PortalJuegos = () => {
                 <div className="pt-4 lg:hidden">
                   <IAInsightCard
                     {...JUEGOS_DEFINITION.iaProfile}
-                    title="Incluye dispositivo interactivo"
+                    title="Información del artefacto"
                     compact
                   />
                 </div>
@@ -639,6 +696,7 @@ const PortalJuegos = () => {
               </div>
             </div>
           ) : null}
+          */}
 
           <div className="hidden lg:block lg:order-3 rounded-3xl border border-white/10 bg-black/30 p-6 space-y-6">
             <div className="flex flex-col gap-3">
@@ -656,7 +714,7 @@ const PortalJuegos = () => {
             <div className="order-4 hidden lg:block">
               <IAInsightCard
                 {...JUEGOS_DEFINITION.iaProfile}
-                title="Incluye dispositivo interactivo"
+                title="Información del artefacto"
                 compact
               />
             </div>
