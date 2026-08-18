@@ -328,7 +328,7 @@ const Header = ({
     user?.user_metadata?.full_name ||
     (user?.email ? user.email.split('@')[0] : '');
   const simplifiedName = profileName ? profileName.trim().split(/\s+/)[0] : '';
-  const greetingLabel = user ? `Protagonista: ${simplifiedName || 'gato'}` : '';
+  const greetingLabel = user ? `Bajo el foco: ${simplifiedName || 'gato'}` : '';
   const statusDotClass = user ? 'bg-emerald-400' : 'bg-slate-600';
   // Mientras el # del Hero siga presente sin usarse, el toggle # del Header
   // se mantiene oculto: solo debe haber un # clicable en pantalla a la vez.
@@ -1035,13 +1035,7 @@ const Header = ({
     {
       key: 'recommendation',
       icon: Orbit,
-      label: gatSpendRecommendation
-        ? gatSpendRecommendation.kind === 'next-act'
-          ? `Siguiente acto: ${gatSpendRecommendation.forma || gatSpendRecommendation.narrativeLabel || gatSpendRecommendation.title}`
-          : gatSpendRecommendation.kind === 'resume'
-            ? `Retomar ${gatSpendRecommendation.narrativeLabel || gatSpendRecommendation.title}`
-            : `Explorar ${gatSpendRecommendation.narrativeLabel || gatSpendRecommendation.title}`
-        : 'Explorar miniversos',
+      label: 'Gastar energía',
       onClick: handleRecommendationTile,
       tone: 'violet',
     },
@@ -1049,7 +1043,7 @@ const Header = ({
       ? {
           key: 'holografico',
           icon: BookOpen,
-          label: 'Cuaderno holográfico',
+          label: 'Libreto holográfico',
           onClick: handleOpenHolograficoFromGatTooltip,
           tone: 'amber',
         }
@@ -1079,7 +1073,7 @@ const Header = ({
     {
       key: 'backstage',
       icon: DoorOpen,
-      label: 'Ir al Backstage',
+      label: 'Ir tras bambalinas',
       onClick: handleOpenBackstage,
       tone: 'violet',
     },
@@ -1436,14 +1430,20 @@ const Header = ({
                   ) : (
                     <Sparkles size={12} className="text-cyan-200" />
                   )}
-                  <span className="ml-0.5">Energía</span>
-                  <span className="tabular-nums text-white">{gatBalance.toLocaleString('es-MX')} GAT</span>
-                  <span
-                    aria-hidden="true"
-                    className="ml-0.5 flex h-4 w-4 items-center justify-center rounded-full text-current/60 normal-case"
-                  >
-                    <Info size={11} />
-                  </span>
+                  {isGatLinktreeOpen ? (
+                    <span className="ml-0.5">Vestíbulo Sideral</span>
+                  ) : (
+                    <>
+                      <span className="ml-0.5">Energía</span>
+                      <span className="tabular-nums text-white">{gatBalance.toLocaleString('es-MX')} GAT</span>
+                      <span
+                        aria-hidden="true"
+                        className="ml-0.5 flex h-4 w-4 items-center justify-center rounded-full text-current/60 normal-case"
+                      >
+                        <Info size={11} />
+                      </span>
+                    </>
+                  )}
                 </motion.button>
               ) : null}
               {shouldShowGatChip && isGatInfoOpen && typeof document !== 'undefined' && createPortal(
@@ -1583,9 +1583,8 @@ const Header = ({
                   <div className="flex shrink-0 items-start px-5 pb-4 pt-5 sm:px-6">
                     <div>
                       <p className="text-[0.62rem] font-semibold uppercase tracking-[0.34em] text-amber-300/90">
-                        #EnElVestíbulo
+                        #LaObraContinúa
                       </p>
-                      <h2 className="font-display mt-2 text-xl text-slate-100">La obra continúa...</h2>
                       <div
                         aria-hidden="true"
                         className="mt-1 min-h-[2.45rem] w-full max-w-[17rem]"

@@ -1183,7 +1183,7 @@ const Blog = ({ posts = [], isLoading = false, error = null, showBuscador = fals
                       </div>
 
                       <p className="max-w-3xl text-sm leading-relaxed text-slate-300/80 md:text-base">
-                        Consulta al apuntador para explorar, contrastar y encontrar respuestas a preguntas que quizá aún no te has hecho.
+                        Consulta al apuntador y sigue una pregunta hasta donde te lleve. También puedes tomar una pregunta de la comunidad o dejar la tuya para los demás.
                       </p>
 
                       <div className="space-y-2">

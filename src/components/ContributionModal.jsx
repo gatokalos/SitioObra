@@ -760,11 +760,11 @@ const ContributionModal = ({
             <section className="rounded-2xl border border-purple-300/25 bg-gradient-to-b from-purple-500/12 via-indigo-500/5 to-black/20 px-4 py-4 text-slate-200 sm:px-5">
               <p className="text-xs uppercase tracking-[0.35em] text-purple-200/75">Convocatoria abierta</p>
               <p className="mt-3 text-[1.05rem] font-medium leading-snug text-slate-100">
-                La Ruta de la Corporeidad es una iniciativa coreográfica transmedial que se desarrolla en
+                <em>Trasuntos Divinos</em> es una iniciativa coreográfica transmedial que se desarrolla en
                 plazas, parques y espacios públicos.
               </p>
               <p className="mt-2 text-sm text-slate-300/95 leading-relaxed">
-                El proyecto articula una experiencia contemporánea con avatares, realidad aumentada y
+                El proyecto articula una experiencia contemporánea con talleres, realidad aumentada y
                 activación de movimiento colectivo.
               </p>
               <div className="mt-4 h-px w-full bg-gradient-to-r from-transparent via-purple-300/35 to-transparent" />

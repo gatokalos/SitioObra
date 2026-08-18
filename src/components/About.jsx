@@ -686,7 +686,7 @@ export const ProvocaSection = () => {
 	    {isSafari ? (
 	      <>LA RÉPLICA</>
 	    ) : (
-	      <>LA R<span className="provoca-act-title__accented">E</span>PLICA •</>
+	      <>LA R<span className="provoca-act-title__accented">E</span>PLICA</>
 	    )}
 	  </span>
 </h2>
