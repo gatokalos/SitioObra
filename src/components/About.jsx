@@ -21,6 +21,7 @@ import {
   TRAILER_FALLBACK_URL_SQUARE,
 } from '@/services/trailerService';
 import { useSilvestreVoice } from '@/hooks/useSilvestreVoice';
+import { isSafariBrowser } from '@/lib/browser';
 
 const FEATURED_WORK_MEDIUM = { Icon: Drama, label: 'Teatro' };
 
@@ -135,6 +136,7 @@ const isLargeVoiceCard = (item) => getNormalizedVoiceLength(item?.quote) >= PROV
 
 export const ProvocaSection = () => {
   const { user } = useAuth();
+  const isSafari = isSafariBrowser();
   const [confettiBursts, setConfettiBursts] = useState([]);
   const [isVoiceInputOpen, setIsVoiceInputOpen] = useState(isProvocaDesktopViewport);
   const [voiceName, setVoiceName] = useState('');
@@ -677,16 +679,16 @@ export const ProvocaSection = () => {
             <div className="min-w-0">
            
               <p className="mb-3 text-xs uppercase tracking-[0.35em] text-slate-400/80">
-                Formas de decirlo
+                SEGUNDO ACTO
               </p>
-<h2 className="provoca-act-title mb-4" aria-label="La réplica">
-  <span aria-hidden="true">
-    LA R<span className="provoca-act-title__accented">E</span>PLICA •
-    SEGUNDO ACTO
-    <br className="md:hidden" />
-    <span className="hidden md:inline"> </span>
-    
-  </span>
+<h2 className={`provoca-act-title mb-4 ${isSafari ? 'provoca-act-title--safari' : ''}`} aria-label="La réplica">
+	  <span aria-hidden="true">
+	    {isSafari ? (
+	      <>LA RÉPLICA</>
+	    ) : (
+	      <>LA R<span className="provoca-act-title__accented">E</span>PLICA •</>
+	    )}
+	  </span>
 </h2>
  <p className="text-slate-300/80 leading-relaxed mb-6 font-light">
                 Ninguna obra termina en el acto final. Se completa del otro lado, cuando alguien la recibe y responde.
@@ -732,7 +734,7 @@ export const ProvocaSection = () => {
                       {isSubmittingVoice ? 'Enviando…' : 'Enviar mi comentario'}
                     </>
                   ) : (
-                    'Comparte tu forma'
+                    'Comparte tu forma de decirlo'
                   )}
                 </Button>
               </div>

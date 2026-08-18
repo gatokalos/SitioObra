@@ -243,14 +243,30 @@ body {
   top: -0.07em;
   left: 56%;
   width: 0.15em;
-  height: 0.045em;
+  height: max(2px, 0.045em);
   border-radius: 999px;
-  background: linear-gradient(180deg, rgba(232, 234, 243, 0.9), rgba(132, 132, 150, 0.72));
+  background: rgba(210, 211, 222, 0.92);
   box-shadow:
     0 0 3px rgba(226, 232, 240, 0.16),
     0 0 8px rgba(139, 92, 246, 0.12);
   transform: translateX(-50%) rotate(-34deg);
   pointer-events: none;
+}
+
+/* Safari rasteriza de forma irregular los acentos que sobresalen cuando
+   combina background-clip:text, text-fill transparente y text-stroke. Allí
+   usamos el glifo É real con un relleno uniforme; Blink conserva el acabado
+   degradado y el acento construido que ya funciona correctamente. */
+.provoca-act-title--safari {
+  background: none;
+  -webkit-background-clip: border-box;
+  background-clip: border-box;
+  -webkit-text-fill-color: currentColor;
+  -webkit-text-stroke: 0;
+  color: rgba(184, 184, 199, 0.94);
+  text-shadow:
+    0 0 5px rgba(226, 232, 240, 0.1),
+    0 0 18px rgba(139, 92, 246, 0.13);
 }
 
 /* Camerino: una luz íntima y localizada, distinta de las tarjetas editoriales

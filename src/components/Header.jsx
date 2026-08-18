@@ -563,8 +563,7 @@ const Header = ({
     ...(showTransmediaNav ? [{ name: 'Miniversos', href: '#transmedia' }] : []),
     ...(showAllianceNav ? [{ name: 'Alianza', href: '#apoya' }] : []),
     ...(showIntermedioNav ? [{ name: 'Intermedio', href: '#blog-contribuye' }] : []),
-    ...(showCuradoriaNav ? [{ name: 'Segundo acto', href: '#dialogo-critico' }] : []),
-    ...(showPerspectivasNav ? [{ name: 'La réplica', href: '#provoca' }] : []),
+    ...(showPerspectivasNav ? [{ name: 'Segundo acto', href: '#provoca' }] : []),
     ...(showIntermedioNav ? [{ name: 'Caída del telón', href: '#next-show' }] : []),
     ...(showObraDestacadaNav ? [{ name: 'Obra fundacional', href: '#about' }] : []),
     ...(showObraDestacadaNav ? [{ name: 'Créditos', href: '#team' }] : []),
@@ -589,24 +588,34 @@ const Header = ({
         ]
       : []),
     ...(showIntermedioNav
-      ? [{ name: 'Intermedio', href: '#blog-contribuye', description: '#PensamientoCrítico' }]
-      : []),
-    ...(showCuradoriaNav
       ? [
           {
-            name: 'Segundo acto',
-            href: '#dialogo-critico',
-            description: '#LaRéplica',
-            secondary: [
-              { label: 'Entra al Camerino', href: '#dialogo-critico', action: 'show-buscador' },
-              { label: 'Curaduría Reflexiva', href: '#dialogo-critico?focus=curaduria' },
-              { label: 'Expansiones Narrativas', href: '#dialogo-critico?focus=expansiones' },
-              { label: 'Detrás de Cámaras', href: '#dialogo-critico?focus=backstage' },            
-            ],
+            name: 'Intermedio',
+            href: '#blog-contribuye',
+            description: '#PensamientoCrítico',
+            ...(showCuradoriaNav
+              ? {
+                  secondary: [
+                    { label: 'Entra al Camerino', href: '#dialogo-critico', action: 'show-buscador' },
+                    { label: 'Curaduría Reflexiva', href: '#dialogo-critico?focus=curaduria' },
+                    { label: 'Expansiones Narrativas', href: '#dialogo-critico?focus=expansiones' },
+                    { label: 'Detrás de Cámaras', href: '#dialogo-critico?focus=backstage' },
+                  ],
+                }
+              : {}),
           },
         ]
       : []),
-    ...(showPerspectivasNav ? [{ name: 'La réplica', href: '#provoca', description: '#formasdedecirlo' }] : []),
+    ...(showPerspectivasNav
+      ? [
+          {
+            name: 'Segundo acto',
+            href: '#provoca',
+            description: '#LaRéplica',
+            secondary: [{ label: 'Formas de decirlo', href: '#provoca' }],
+          },
+        ]
+      : []),
     ...(showIntermedioNav
       ? [{
           name: 'Caída del telón',
@@ -1523,7 +1532,7 @@ const Header = ({
             <>
               <div
                 aria-hidden="true"
-                className="pointer-events-none fixed inset-0 z-[5] overflow-hidden"
+                className="pointer-events-none fixed inset-0 z-[5] overflow-hidden bg-[#04020f]/92 backdrop-blur-xl"
               >
                 {gatOrbitLayer.clip ? (
                   <div
@@ -1559,7 +1568,7 @@ const Header = ({
                 initial={prefersReducedMotion ? { opacity: 0 } : { opacity: 0, y: -10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: prefersReducedMotion ? 0.12 : 0.28, ease: 'easeOut' }}
-                className="fixed inset-0 z-[90] overflow-hidden overscroll-none bg-[#04020f]/92 backdrop-blur-xl px-3 py-[calc(env(safe-area-inset-top)+12px)] sm:flex sm:items-start sm:justify-center sm:px-6 sm:py-8"
+                className="fixed inset-0 z-[90] overflow-hidden overscroll-none bg-transparent px-3 py-[calc(env(safe-area-inset-top)+12px)] sm:flex sm:items-start sm:justify-center sm:px-6 sm:py-8"
                 role="dialog"
                 aria-modal="true"
                 aria-label="Hub personal de GATokens"

@@ -132,7 +132,11 @@ const MobileMenuOverlay = ({
                         onClick={() => handleToggleExpand(item)}
                         aria-label={expandedSection === item.name ? `Contraer ${item.name}` : `Expandir ${item.name}`}
                         aria-expanded={expandedSection === item.name}
-                        className="-m-1.5 rounded-lg p-1.5 transition hover:bg-white/[0.08]"
+                        className={`inline-flex h-8 w-8 items-center justify-center rounded-lg border text-slate-400 shadow-[inset_0_1px_0_rgba(255,255,255,0.05)] transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/35 ${
+                          expandedSection === item.name
+                            ? 'border-white/25 bg-white/[0.09] text-slate-100'
+                            : 'border-white/15 bg-white/[0.035] hover:border-white/30 hover:bg-white/[0.08] hover:text-white'
+                        }`}
                       >
                         <ChevronDown
                           size={16}

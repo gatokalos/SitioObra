@@ -59,12 +59,11 @@ const HERO_INACTIVE_ECHO_COUNT = 13;
 const HERO_INACTIVE_ECHO_ENTRY_DURATION_S = 0.72;
 const HERO_INACTIVE_ECHO_STAGGER_S = 0.095;
 const PWA_HASH_WHISPERS = [
-  '¿Me llevas contigo?',
-  'Ya me encontraste.',
-  '¿O yo a ti?',
-  'Luego no me busques…',
+  '¿Me voy contigo?',
+  '(Soy la obra)',
   'Ya, llévame a casa.',
-  'Sigue las instrucciones.',
+  'Luego no me busques…',
+  'Instálame como aplicación.',
 ];
 const GAT_BALANCE_STORAGE_KEY = 'gatoencerrado:gatokens-available';
 const readHeroGatBalance = () => {
@@ -77,21 +76,20 @@ const readHeroGatBalance = () => {
 const HERO_PWA_PROMPT_DECLINED_KEY = 'gatoencerrado:pwa-install-declined-at';
 const HERO_PWA_PROMPT_COOLDOWN_MS = 30 * 24 * 60 * 60 * 1000;
 const HERO_ROTATING_SUBTITLES = [
+  'La obra que ocurre en tu mente',                   // 0 · el slogan canónico
   'Una experiencia narrativa interactiva',            // 1 · el cajón (ver decisión A)
   'Basada en una herida emocional compartida',        // 2 · el origen — intacta, es de tus mejores
   'Teatro que no necesita escenario',                 // 3 · la expansión escénica
   'Arte, tecnología y cuidado: una sola función',  // 4 · la función de la obra
   'Una obra con nueve vidas',                         // 5 · NUEVA — el gato escondido en el número
   'Aquí el público también deja huella',              // 6 · NUEVA — la participación
-  'Hay escenas que regresan días después',            // 7 · NUEVA — la resonancia diferida, sembrada
-  'Cada experiencia alimenta una investigación',      // 8 · NUEVA — la dimensión de estudio (frase ya aprobada en Impacto)
-  'Sí: aquí hay gato encerrado',                      // 9 · NUEVA — el premio final del que se quedó
+  'Sí: aquí hay gato encerrado',                      // 7 · NUEVA — el premio final del que se quedó
 ];
 
 const HERO_GHOST_SUBTITLES = [
-  'La obra que ocurre en tu mente',                   // canónica, intacta
   'Tal vez esta obra ya empezó en ti',                // intacta
   'Lo que resuene, te encontrará',                    // NUEVA — tu gramática de resonancia
+  'Hay escenas que regresan días después',            // NUEVA — la resonancia diferida, sembrada
   'El gato ya te vio',                                // NUEVA — el susurro felino (ver decisión C)
   'Una sola pregunta: ¿qué es *estar bien*?' // NUEVA — la introspección
 ];
@@ -170,6 +168,10 @@ const HeroInactiveSignal = ({ prefersReducedMotion = false }) => {
 const HERO_ROTATING_SUBTITLE_PLACEHOLDER =
 'Una experiencia narrativa transmedial';
 const HERO_SUBTITLE_ROTATION_MS = 3800;
+// El eslogan canónico (primer subtítulo) compite visualmente con el
+// movimiento del # al activarse la escena — le damos un poco más de tiempo
+// de lectura solo esa primera vez, antes de entrar al ritmo normal.
+const HERO_SUBTITLE_FIRST_ROTATION_EXTRA_MS = 1200;
 const HERO_STARFIELD_STAR_COUNT_MOBILE = 165;
 const HERO_STARFIELD_STAR_COUNT_DESKTOP = 300;
 
@@ -578,7 +580,7 @@ const Hero = () => {
   useEffect(() => {
     if (!hasActivatedAudio) return undefined;
     const GHOST_PROBABILITY = 0.28;
-    const intervalId = window.setInterval(() => {
+    const rotate = () => {
       if (Math.random() < GHOST_PROBABILITY) {
         const idx = Math.floor(Math.random() * HERO_GHOST_SUBTITLES.length);
         setHeroGhostSubtitle(HERO_GHOST_SUBTITLES[idx]);
@@ -586,9 +588,18 @@ const Hero = () => {
         setHeroGhostSubtitle(null);
         setHeroSubtitleIndex((prev) => (prev + 1) % HERO_ROTATING_SUBTITLES.length);
       }
-    }, HERO_SUBTITLE_ROTATION_MS);
+    };
 
-    return () => window.clearInterval(intervalId);
+    let intervalId;
+    const firstTimeoutId = window.setTimeout(() => {
+      rotate();
+      intervalId = window.setInterval(rotate, HERO_SUBTITLE_ROTATION_MS);
+    }, HERO_SUBTITLE_ROTATION_MS + HERO_SUBTITLE_FIRST_ROTATION_EXTRA_MS);
+
+    return () => {
+      window.clearTimeout(firstTimeoutId);
+      if (intervalId) window.clearInterval(intervalId);
+    };
   }, [hasActivatedAudio]);
 
 
@@ -788,13 +799,10 @@ const Hero = () => {
     const now = Date.now();
     if (now - lastPwaHashWhisperAtRef.current < 650) return;
     lastPwaHashWhisperAtRef.current = now;
-    let nextIndex = Math.floor(Math.random() * PWA_HASH_WHISPERS.length);
-    if (
-      PWA_HASH_WHISPERS.length > 1 &&
-      nextIndex === lastPwaHashWhisperIndexRef.current
-    ) {
-      nextIndex = (nextIndex + 1) % PWA_HASH_WHISPERS.length;
-    }
+    // Los whispers arman una secuencia narrativa deliberada (de "¿me voy
+    // contigo?" a "instálame como aplicación") — al azar podían salir fuera
+    // de orden. Ahora avanzan uno por uno y dan la vuelta al llegar al final.
+    const nextIndex = (lastPwaHashWhisperIndexRef.current + 1) % PWA_HASH_WHISPERS.length;
     lastPwaHashWhisperIndexRef.current = nextIndex;
     setPwaHashWhisper({
       id: now,
@@ -1374,7 +1382,14 @@ const Hero = () => {
                 ref={hashtagAnchorRef}
                 initial={{ opacity: 0, scale: 0.88 }}
                 animate={{ opacity: hasActivatedAudio ? 0 : 1, scale: 1 }}
-                transition={{ duration: hasActivatedAudio ? 0.18 : 1, ease: 'easeOut' }}
+                transition={{
+                  duration: hasActivatedAudio ? 0.18 : 1,
+                  ease: 'easeOut',
+                  // El # no debe verse antes ni junto con "Pulsa al gato cuando lo
+                  // veas" — entra hasta que ese subtítulo termina de aparecer
+                  // (cascada de ecos + fade del texto sólido).
+                  delay: hasActivatedAudio ? 0 : heroInactiveHintEntryDelay + 1.8,
+                }}
                 className="hero-title-mark-slot mt-8 -translate-y-[7vh] sm:mt-10 sm:translate-y-0 md:mt-12"
                 style={{
                   pointerEvents: hasActivatedAudio ? 'none' : 'auto',
