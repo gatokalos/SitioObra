@@ -99,6 +99,7 @@ export default function HashtagButton3D({
   contentScale = 1,
   showGlow = false,
   glowPulseKey = 0,
+  hidden = false,
 }) {
   const [isPressed, setIsPressed] = useState(false);
   const glRef = useRef(null);
@@ -127,7 +128,21 @@ export default function HashtagButton3D({
   return (
     <div
       className={className}
-      style={{ width, height, cursor: 'pointer', position: 'relative', ...style }}
+      aria-hidden={hidden || undefined}
+      style={{
+        width,
+        height,
+        cursor: 'pointer',
+        position: 'relative',
+        ...style,
+        // "hidden" nunca desmonta este árbol (ver el efecto de arriba: solo
+        // dispone el WebGLRenderer al desmontar DE VERDAD). Montar/desmontar
+        // el Canvas en cada apertura/cierre del HUB es justo lo que agota el
+        // límite de contextos WebGL simultáneos de iOS — ocultarlo con CSS
+        // deja el mismo contexto vivo y reutilizado en vez de recrearlo.
+        display: hidden ? 'none' : style.display,
+        pointerEvents: hidden ? 'none' : style.pointerEvents,
+      }}
     >
       {/* Halo ambiental que envuelve el objeto entero (no solo el piso) —
           imita la luz atmosférica difusa del mockup de referencia, como si
@@ -174,6 +189,7 @@ export default function HashtagButton3D({
         <Canvas
           camera={{ position: [0, 0.2, 4.2], fov: 35 }}
           gl={{ antialias: true, alpha: true }}
+          frameloop={hidden ? 'never' : 'always'}
           onCreated={({ gl }) => { glRef.current = gl; }}
           style={{
             background: 'transparent',

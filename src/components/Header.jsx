@@ -718,11 +718,24 @@ const Header = ({
     }
 
     setIsMenuOpen(false);
+
+    // Para quien ya califica para el HUB completo (isGatLinktreeAudience),
+    // el chip siempre debe llevar ahí directo, con su transición de pantalla
+    // completa — antes, si el HUB ya se había cerrado una vez en la sesión,
+    // el chip caía al mini-tooltip en su lugar, dando una experiencia
+    // inconsistente del mismo botón. El mini-tooltip queda solo para quien
+    // no califica (0 GAT: "conserva intacto el ritual de entrada").
+    if (isGatLinktreeAudience) {
+      setIsGatLinktreeOpen(true);
+      return;
+    }
+
     setIsGatInfoOpen((prev) => !prev);
   }, [
     acknowledgeGatRevealPulse,
     activateSceneAfterGatDismiss,
     gatRevealPulse,
+    isGatLinktreeAudience,
     isGatLinktreeOpen,
   ]);
 

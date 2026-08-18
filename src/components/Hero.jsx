@@ -1419,19 +1419,24 @@ const Hero = () => {
                     ) : null}
                   </AnimatePresence>
                 </div>
-                {!hasActivatedAudio && !isGatHubOpen && (
-                  <Suspense fallback={null}>
-                    <HashtagButton3D
-                      onClick={handleHeroHashClick}
-                      onReady={handleHeroHashReady}
-                      height="var(--hero-title-mark-size)"
-                      contentScale={isMobileViewport ? 0.92 : 1}
-                      style={{ width: 'var(--hero-title-mark-size)', margin: '0 auto' }}
-                      showGlow={isHeroPwaInstructionsOpen}
-                      glowPulseKey={pwaHashWhisper?.id ?? 0}
-                    />
-                  </Suspense>
-                )}
+                {/* Siempre montado (antes era {!hasActivatedAudio && !isGatHubOpen &&
+                    ...}): montar/desmontar el Canvas en cada activación del Hero o
+                    apertura/cierre del HUB era lo que agotaba el límite de contextos
+                    WebGL simultáneos de iOS — ver memory/project_pwa_safari_standalone_crash_20260730.md.
+                    "hidden" solo oculta con CSS y pausa el frameloop, nunca destruye
+                    el contexto; ese dispose real solo pasa al desmontar de verdad. */}
+                <Suspense fallback={null}>
+                  <HashtagButton3D
+                    onClick={handleHeroHashClick}
+                    onReady={handleHeroHashReady}
+                    height="var(--hero-title-mark-size)"
+                    contentScale={isMobileViewport ? 0.92 : 1}
+                    style={{ width: 'var(--hero-title-mark-size)', margin: '0 auto' }}
+                    showGlow={isHeroPwaInstructionsOpen}
+                    glowPulseKey={pwaHashWhisper?.id ?? 0}
+                    hidden={hasActivatedAudio || isGatHubOpen}
+                  />
+                </Suspense>
               </motion.div>
 
               {/* El mismo # del gatillo de activación "transmigra" directo a su
