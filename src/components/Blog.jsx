@@ -18,6 +18,7 @@ import ObraConversationControls from '@/components/miniversos/obra/ObraConversat
 
 const CONTACT_PREFILL_KEY = 'gatoencerrado:contact-prefill';
 const LOGIN_RETURN_KEY = 'gatoencerrado:login-return';
+const INITIAL_VISIBLE_POSTS = 5;
 
 const containerVariants = {
   hidden: { opacity: 0, y: 40 },
@@ -856,10 +857,10 @@ const Blog = ({ posts = [], isLoading = false, error = null, showBuscador = fals
     });
   }, [sortedPosts, activeCategory]);
   const visiblePosts = useMemo(
-    () => (showAllPosts ? filteredPosts : filteredPosts.slice(0, 2)),
+    () => (showAllPosts ? filteredPosts : filteredPosts.slice(0, INITIAL_VISIBLE_POSTS)),
     [filteredPosts, showAllPosts]
   );
-  const canShowAllPosts = !isLoading && !showAllPosts && filteredPosts.length > 2;
+  const canShowAllPosts = !isLoading && !showAllPosts && filteredPosts.length > INITIAL_VISIBLE_POSTS;
   const editorialReadMetrics = useMemo(() => {
     const metrics = BLOG_CATEGORY_ORDER.reduce((accumulator, category) => {
       accumulator[category] = { totalMinutes: 0, postCount: 0 };

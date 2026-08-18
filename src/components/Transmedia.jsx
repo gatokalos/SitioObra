@@ -3161,7 +3161,7 @@ const renderDramaFeaturedWork = () => (
         Array.isArray(activeDefinition.microinteractions) && activeDefinition.microinteractions.length > 0;
       const movementFeaturedName = 'Trasuntos divinos';
       const movementFeaturedSharedCopy =
-        'Todavía es un taller que busca cómplices — bailarines, diseñadoras de presencias digitales, ciudades que abran su espacio público. Cada residencia convierte el cuerpo en territorio y lo siembra, en realidad aumentada, donde ocurrió.';
+        'Trasuntos divinos es una obra que también funciona como taller — requiere bailarines, diseñadoras de avatares digitales, ciudades que abran su espacio público. Cada residencia convierte el cuerpo en territorio y lo siembra, en realidad aumentada, donde ocurrió.';
 
       return (
         <div className="space-y-8">
@@ -5612,7 +5612,7 @@ const renderDramaFeaturedWork = () => (
               </h2>
               <p className="text-lg text-slate-300/80 max-w-3xl mx-auto leading-relaxed font-light">
     <em>Esta obra es una narrativa transmedia</em> desplegada en nueve formas que aquí llamamos miniversos.<br />
-    <strong>Elige por dónde entrar y qué lugar ocupar.</strong><br />
+    <strong>Elige por dónde continuar y qué lugar ocupar.</strong><br />
       <span className="block mt-10 text-sm text-slate-100/50 italic">
     (Cada <strong>miniverso</strong> sostiene al universo entero con cada minuto de tu valiosa atención.)
   </span>
@@ -5867,7 +5867,7 @@ const renderDramaFeaturedWork = () => (
                           }}
                           className="group inline-flex items-center gap-2 rounded-full border border-amber-300/40 bg-amber-500/10 px-4 py-2 text-sm font-semibold text-amber-200 transition hover:bg-amber-500/20"
                         >
-                          Entra para seguir la forma
+                          Entra y sigue la forma
                           <ArrowRight
                             size={16}
                             className="shrink-0 transition-transform duration-200 group-hover:translate-x-0.5"
@@ -5879,7 +5879,7 @@ const renderDramaFeaturedWork = () => (
                           aria-hidden="true"
                           className="invisible pointer-events-none inline-flex items-center gap-2 rounded-full border border-amber-300/40 px-4 py-2 text-sm font-semibold"
                         >
-                          Entra para seguir la forma
+                          Entra y sigue la forma
                           <ArrowRight size={16} className="shrink-0" aria-hidden="true" />
                         </div>
                       )}
@@ -6079,7 +6079,7 @@ const renderDramaFeaturedWork = () => (
                           }}
                           className="group inline-flex items-center gap-2 rounded-full border border-amber-300/40 bg-amber-500/10 px-4 py-2 text-sm font-semibold text-amber-200 transition hover:bg-amber-500/20"
                         >
-                          Entra para seguir la forma
+                          Entra y sigue la forma
                           <ArrowRight
                             size={16}
                             className="shrink-0 transition-transform duration-200 group-hover:translate-x-0.5"

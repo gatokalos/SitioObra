@@ -231,7 +231,7 @@ const MOVEMENT_DIOSAS_GALLERY = [
 ];
 const MOVEMENT_FEATURED_NAME = 'Trasuntos divinos';
 const MOVEMENT_FEATURED_SHARED_COPY =
-  'Todavía es un taller que busca cómplices — bailarines, diseñadoras de presencias digitales, ciudades que abran su espacio público. Cada residencia convierte el cuerpo en territorio y lo siembra, en realidad aumentada, donde ocurrió.';
+  'Trasuntos divinos es una obra que también funciona como taller — requiere bailarines, diseñadoras de avatares digitales, ciudades que abran su espacio público. Cada residencia convierte el cuerpo en territorio y lo siembra, en realidad aumentada, donde ocurrió.';
 const MOVEMENT_IA_PROFILE = {
   type: 'Actualmente no usa IA en producción.',
   interaction:

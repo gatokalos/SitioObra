@@ -26,14 +26,19 @@ const FEATURED_WORK_MEDIUM = { Icon: Drama, label: 'Teatro' };
 
 const aboutParagraphs = [
   {
-    text: `A través de la escena, los sueños lúcidos y la autoficción compartida, esta obra explora la soledad, la rabia reprimida y la búsqueda de sentido frente a un mundo cada vez más desconectado.
-
-    Su protagonista, el Chivis, atraviesa sus conflictos internos acompañado por figuras simbólicas como La Doctora y el Payasito Tiste, personajes que habitan el límite entre la imaginación, la memoria y la realidad.`,
-  
-  className:
+    key: 'sinopsis-obra',
+    text: (
+      <>
+        A través de la escena, los sueños lúcidos y la autoficción compartida, la obra{' '}
+        <em className="italic">Es un gato encerrado</em> explora la soledad, la rabia reprimida y la búsqueda de sentido frente a un mundo cada vez más desconectado.
+        <br />
+        <br />
+        Su protagonista, el Chivis, atraviesa sus conflictos internos acompañado por figuras simbólicas como La Doctora y el Payasito Tiste, personajes que habitan el límite entre la imaginación, la memoria y la realidad.
+      </>
+    ),
+    className:
       'text-lg leading-relaxed font-light whitespace-pre-line bg-gradient-to-b from-slate-300/75 via-slate-200/80 to-slate-100/100 text-transparent bg-clip-text',
   },
-
 ];
 
 const fallbackTestimonials = [
@@ -676,10 +681,11 @@ export const ProvocaSection = () => {
               </p>
 <h2 className="provoca-act-title mb-4" aria-label="La réplica">
   <span aria-hidden="true">
-    EL ACTO
+    LA R<span className="provoca-act-title__accented">E</span>PLICA •
+    SEGUNDO ACTO
     <br className="md:hidden" />
     <span className="hidden md:inline"> </span>
-    DE LA R<span className="provoca-act-title__accented">E</span>PLICA
+    
   </span>
 </h2>
  <p className="text-slate-300/80 leading-relaxed mb-6 font-light">
@@ -1144,7 +1150,7 @@ const About = () => {
           <div className="max-w-3xl mx-auto">
             {aboutParagraphs.map((paragraph) => (
               <p
-                key={paragraph.text.slice(0, 40)}
+                key={paragraph.key}
                 className={`${paragraph.className} ${paragraph.extraClass ?? ''}`}
               >
                 {paragraph.text}
