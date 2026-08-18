@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback, useLayoutEffect, useMemo, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { motion, useReducedMotion } from 'framer-motion';
-import { Armchair, Coffee, Info, Sparkles, LogIn, Orbit, BookOpen, MessageCircle, UserCircle2, DoorOpen } from 'lucide-react';
+import { Armchair, ArrowLeft, Coffee, Info, Sparkles, LogIn, Orbit, BookOpen, MessageCircle, UserCircle2, DoorOpen } from 'lucide-react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useToast } from '@/components/ui/use-toast';
 import { useAuth } from '@/contexts/SupabaseAuthContext';
@@ -485,9 +485,12 @@ const Header = ({
   const handleOpenHolograficoFromGatTooltip = useCallback(() => {
     const entry = CATALOG.find((c) => c.showcase === gatSpendRecommendation?.showcaseId);
     const portalKey = entry?.key ?? 'oraculo';
-    dismissGatPanels('scene-activate');
+    // dismissGatPanels solo cierra el HUB — sin activateSceneAfterGatDismiss,
+    // al cerrar el libreto y volver a "/" el Hero nunca se activó, dejando al
+    // usuario en limbo (ver conversación 2026-08-18).
+    activateSceneAfterGatDismiss('gat-hub-libreto');
     navigate(`/bitacora?t=${encodeURIComponent(ensureAnonId())}&m=${portalKey}`);
-  }, [gatSpendRecommendation, navigate, dismissGatPanels]);
+  }, [gatSpendRecommendation, navigate, activateSceneAfterGatDismiss]);
 
   // Atajo para dejar el WhatsApp desde el tooltip, para quien dejó pasar la
   // primera oportunidad en el cierre de L3 (ResonanceModal). El consentimiento
@@ -682,11 +685,11 @@ const Header = ({
   const handleOpenSupportHub = useCallback(() => {
     if (!user) return;
     setIsMenuOpen(false);
-    dismissGatPanels('scene-activate');
+    activateSceneAfterGatDismiss('gat-hub-merch');
     navigate('/portal-encuentros', {
       state: createPortalLaunchState(location, 'header-encuentros'),
     });
-  }, [location, navigate, user, dismissGatPanels]);
+  }, [location, navigate, user, activateSceneAfterGatDismiss]);
 
   const handleToggleIndex = useCallback(() => {
     if (shouldGateIndexUntilHeroReveal) return;
@@ -941,7 +944,7 @@ const Header = ({
 
   const openNarrativeContinuation = useCallback((recommendation) => {
     if (!recommendation?.showcaseId) return;
-    dismissGatPanels('scene-activate');
+    activateSceneAfterGatDismiss('gat-hub-next-act');
     window.requestAnimationFrame(() => {
       window.dispatchEvent(
         new CustomEvent('gatoencerrado:open-narrative-continuation', {
@@ -953,7 +956,7 @@ const Header = ({
         })
       );
     });
-  }, [dismissGatPanels]);
+  }, [activateSceneAfterGatDismiss]);
 
   const handleRecommendationTile = useCallback(() => {
     if (!gatSpendRecommendation?.showcaseId) {
@@ -971,12 +974,12 @@ const Header = ({
       openNarrativeContinuation(gatSpendRecommendation);
       return;
     }
-    dismissGatPanels('scene-activate');
+    activateSceneAfterGatDismiss('gat-hub-resume');
     handleNavClick(
       `#transmedia?focus=${gatSpendRecommendation.showcaseId}&source=gat-recommendation`
     );
   }, [
-    dismissGatPanels,
+    activateSceneAfterGatDismiss,
     gatSpendRecommendation,
     handleNavClick,
     openNarrativeContinuation,
@@ -1397,29 +1400,35 @@ const Header = ({
             </div>
 
             <div className="flex items-center gap-3">
-              {shouldShowGatChip ? (
+              {/* Oculto por completo mientras isGatLinktreeOpen: dentro del HUB ya
+                  estás en el Vestíbulo Sideral (y su saldo vive en el footer del
+                  propio panel) — el chip aquí arriba era un botón redundante
+                  flotando sobre su propio destino. Afuera, el chip pasa a ser
+                  invitación de regreso ("← Vestíbulo Sideral"), no un indicador
+                  de saldo. */}
+              {shouldShowGatChip && !isGatLinktreeOpen ? (
                 <motion.button
                   ref={gatChipRootRef}
                   type="button"
                   onClick={handleGatChipClick}
-                  aria-controls={isGatLinktreeOpen ? 'gat-personal-hub' : 'gat-energy-info-panel'}
-                  aria-expanded={isGatLinktreeOpen || isGatInfoOpen}
+                  aria-controls={isGatLinktreeAudience ? 'gat-personal-hub' : 'gat-energy-info-panel'}
+                  aria-expanded={isGatInfoOpen}
                   aria-label={
-                    isGatLinktreeOpen
-                      ? 'Cerrar HUB de energía'
+                    isGatLinktreeAudience
+                      ? 'Ir al Vestíbulo Sideral'
                       : isGatInfoOpen
                         ? 'Cerrar información de energía'
                         : 'Abrir información de energía'
                   }
                   title={
-                    isGatLinktreeOpen
-                      ? 'Cerrar HUB de energía'
+                    isGatLinktreeAudience
+                      ? 'Ir al Vestíbulo Sideral'
                       : isGatInfoOpen
                         ? 'Cerrar información de energía'
                         : 'Abrir información de energía'
                   }
                   className={`${shouldAnimateGatChipReveal ? 'pointer-events-none' : 'pointer-events-auto'} inline-flex items-center gap-1 whitespace-nowrap rounded-full border pl-2.5 pr-1 py-1 text-[0.62rem] font-semibold uppercase tracking-[0.16em] backdrop-blur-sm transition-colors sm:gap-1.5 sm:pl-3 sm:pr-1.5 sm:text-[0.68rem] sm:tracking-[0.24em] ${
-                    isGatLinktreeOpen || isGatInfoOpen
+                    isGatInfoOpen
                         ? 'border-cyan-200/45 bg-cyan-300/[0.12] text-cyan-50 shadow-[0_0_24px_rgba(34,211,238,0.24)]'
                       : isGatChipPulsing
                         ? 'border-amber-300/45 bg-amber-500/15 text-amber-100 shadow-[0_0_22px_rgba(251,191,36,0.28)]'
@@ -1432,21 +1441,32 @@ const Header = ({
                       : { duration: 0.5, ease: 'easeOut' }
                   }
                 >
-                  {shouldAnimateGatChipReveal ? (
-                    <motion.img
-                      src={GATOKEN_COIN_SRC}
-                      alt=""
-                      className="h-3.5 w-3.5"
-                      animate={gatCoinPulseAnimate}
-                      transition={gatChipPulseTransition}
-                    />
-                  ) : (
-                    <Sparkles size={12} className="text-cyan-200" />
-                  )}
-                  {isGatLinktreeOpen ? (
-                    <span className="ml-0.5">Vestíbulo Sideral</span>
+                  {isGatLinktreeAudience ? (
+                    <>
+                      <ArrowLeft size={12} className="text-cyan-200" />
+                      <span className="ml-0.5">Vestíbulo Sideral</span>
+                    </>
+                  ) : shouldAnimateGatChipReveal ? (
+                    <>
+                      <motion.img
+                        src={GATOKEN_COIN_SRC}
+                        alt=""
+                        className="h-3.5 w-3.5"
+                        animate={gatCoinPulseAnimate}
+                        transition={gatChipPulseTransition}
+                      />
+                      <span className="ml-0.5">Energía</span>
+                      <span className="tabular-nums text-white">{gatBalance.toLocaleString('es-MX')} GAT</span>
+                      <span
+                        aria-hidden="true"
+                        className="ml-0.5 flex h-4 w-4 items-center justify-center rounded-full text-current/60 normal-case"
+                      >
+                        <Info size={11} />
+                      </span>
+                    </>
                   ) : (
                     <>
+                      <Sparkles size={12} className="text-cyan-200" />
                       <span className="ml-0.5">Energía</span>
                       <span className="tabular-nums text-white">{gatBalance.toLocaleString('es-MX')} GAT</span>
                       <span
@@ -1545,7 +1565,7 @@ const Header = ({
             <>
               <div
                 aria-hidden="true"
-                className="pointer-events-none fixed inset-0 z-[5] overflow-hidden bg-[#04020f]/92 backdrop-blur-xl"
+                className="pointer-events-none fixed inset-0 z-[5] overflow-hidden"
               >
                 {gatOrbitLayer.clip ? (
                   <div
@@ -1581,7 +1601,7 @@ const Header = ({
                 initial={prefersReducedMotion ? { opacity: 0 } : { opacity: 0, y: -10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: prefersReducedMotion ? 0.12 : 0.28, ease: 'easeOut' }}
-                className="fixed inset-0 z-[90] overflow-hidden overscroll-none bg-transparent px-3 py-[calc(env(safe-area-inset-top)+12px)] sm:flex sm:items-start sm:justify-center sm:px-6 sm:py-8"
+                className="fixed inset-0 z-[90] overflow-hidden overscroll-none bg-[#04020f]/92 backdrop-blur-xl px-3 py-[calc(env(safe-area-inset-top)+12px)] sm:flex sm:items-start sm:justify-center sm:px-6 sm:py-8"
                 role="dialog"
                 aria-modal="true"
                 aria-label="Hub personal de GATokens"
