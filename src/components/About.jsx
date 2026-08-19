@@ -83,6 +83,7 @@ const PROVOCA_TITLE_TERMS = [
   'la ira reprimida',
   'la desconexión',
   'la búsqueda de sentido',
+  'una emoción que no entiendes del todo',
   'querer estar bien',
 ];
 const PROVOCA_TITLE_LONGEST_TERM = 'la búsqueda de sentido';
@@ -690,12 +691,12 @@ export const ProvocaSection = () => {
 	    )}
 	  </span>
 </h2>
- <p className="text-slate-300/80 leading-relaxed mb-6 font-light">
+ <p className="mb-10 font-light leading-relaxed text-slate-300/80 xl:mb-6">
                 Ninguna obra termina en el acto final. Se completa del otro lado, cuando alguien la recibe y responde.
               </p>
       
               <h3
-                className="font-display text-3xl text-slate-100 mb-6 italic"
+                className="font-display mb-6 min-h-[6.75rem] text-3xl italic text-slate-100 xl:min-h-[2.25rem]"
                 aria-label={`¿Qué te provoca ${currentProvocaTitleTerm}?`}
               >
                 ¿Qué te provoca{' '}

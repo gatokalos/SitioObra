@@ -13,6 +13,7 @@ import { useEmailRedirect } from '@/hooks/useEmailRedirect';
 import LoginToast from '@/components/LoginToast';
 import { useAuth } from '@/contexts/SupabaseAuthContext';
 import { safeGetItem, safeSetItem } from '@/lib/safeStorage';
+import { isInstalledPWA } from '@/lib/pwaDetection';
 import {
   readBeforeLeavingRevealedFromSession,
   readHeroActivatedFromSession,
@@ -177,7 +178,11 @@ const HERO_GUEST_CABINA_REVEALED_OPACITY = 0.66;
 
 const HeroBackground = ({ isAuthenticated = false }) => {
   const [opacity, setOpacity] = useState(1);
-  const [isHeroSceneRevealed, setIsHeroSceneRevealed] = useState(readHeroActivatedFromSession);
+  // Misma regla que Hero.jsx: la PWA instalada arranca con la escena
+  // revelada, sin la ceremonia de activación (Carlos, 2026-08-19).
+  const [isHeroSceneRevealed, setIsHeroSceneRevealed] = useState(
+    () => readHeroActivatedFromSession() || isInstalledPWA()
+  );
   const backgroundVariant = isAuthenticated
     ? HERO_BACKGROUND_VARIANTS.authenticated
     : HERO_BACKGROUND_VARIANTS.guest;
@@ -464,7 +469,9 @@ function App() {
     if (typeof window === 'undefined') return false;
     return hasFractalGalleryDeepLinkIntent({ hash: window.location.hash });
   });
-  const [isHeroActivated, setIsHeroActivated] = useState(readHeroActivatedFromSession);
+  const [isHeroActivated, setIsHeroActivated] = useState(
+    () => readHeroActivatedFromSession() || isInstalledPWA()
+  );
   useEffect(() => {
     if (typeof window === 'undefined') return undefined;
     const handleActivated = () => setIsHeroActivated(true);

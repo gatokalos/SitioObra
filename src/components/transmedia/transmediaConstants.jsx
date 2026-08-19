@@ -1623,7 +1623,7 @@ export const CAUSE_ACCORDION = [
     'Implementación y seguimiento semestral de la app de acompañamiento emocional. 75 huellas financian 1 escuela por semestre.',
   icon: Smartphone,
   metric: '5 escuelas atendidas por ciclo escolar',
-  imageAlt: 'Captura de la app Causa Social en escuelas (versión beta).',
+  imageAlt: 'Captura de la app con causa en escuelas (versión beta).',
   imageLabel: 'Capturas beta de la app',
     imageUrls: [
       'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/causa%20social/appsplash.jpg',

@@ -221,12 +221,22 @@ const Hero = () => {
   const lastHeroAudioPlayAttemptRef = useRef(0);
   const [isHeroAudioMuted, setIsHeroAudioMuted] = useState(false);
   const [isHeroAudioPlaying, setIsHeroAudioPlaying] = useState(false);
-  const [hasActivatedAudio, setHasActivatedAudio] = useState(readHeroActivatedFromSession);
-  const [hasUsedIndexCue, setHasUsedIndexCue] = useState(readIndexCueUsedFromSession);
+  // La PWA instalada arranca con la escena ya activada — sin el clic ritual
+  // y, por lo tanto, sin depender de que el #3D termine de cargar por red
+  // (ver readIsRunningAsInstalledPwa abajo: es la misma lectura que usa
+  // isInstalledPwa, pero se necesita aquí antes de que ese estado exista,
+  // en el initializer de useState). Carlos, 2026-08-19: "me gustaría
+  // empezar con la escena activada automáticamente cuando se abra la PWA."
+  const [hasActivatedAudio, setHasActivatedAudio] = useState(
+    () => readHeroActivatedFromSession() || readIsRunningAsInstalledPwa()
+  );
+  const [hasUsedIndexCue, setHasUsedIndexCue] = useState(
+    () => readIndexCueUsedFromSession() || readIsRunningAsInstalledPwa()
+  );
   const [transmigrationOrigin, setTransmigrationOrigin] = useState(null);
   const hashtagAnchorRef = useRef(null);
-  const userActivatedRef = useRef(readHeroActivatedFromSession());
-  const audioActivatedOnceRef = useRef(readHeroActivatedFromSession());
+  const userActivatedRef = useRef(readHeroActivatedFromSession() || readIsRunningAsInstalledPwa());
+  const audioActivatedOnceRef = useRef(readHeroActivatedFromSession() || readIsRunningAsInstalledPwa());
   const [isHeroHashReady, setIsHeroHashReady] = useState(false);
   const [isHeroInViewport, setIsHeroInViewport] = useState(true);
   const [isHeroPwaInstructionsOpen, setIsHeroPwaInstructionsOpen] = useState(false);
@@ -261,9 +271,10 @@ const Hero = () => {
   // Se oculta mientras el sheet de instrucciones PWA está abierto — como ese
   // sheet ya no tiene fondo propio (ver PWAInstructionsOverlay), este texto
   // se vería detrás, mezclado con los pasos.
-  // El HUB solo reemplaza este espacio cuando hay energía real. Una PWA
-  // instalada o una sesión iniciada con 0 GAT siguen viendo el Estado Cero:
-  // ecos, hint y #3D.
+  // El HUB solo reemplaza este espacio cuando hay energía real. Una sesión
+  // iniciada con 0 GAT (pero no instalada como PWA) sigue viendo el Estado
+  // Cero: ecos, hint y #3D. La PWA instalada ya no pasa por ahí — arranca
+  // con la escena activada (ver hasActivatedAudio arriba).
   const isGatLinktreeAudience =
     heroGatBalance > 0 && (Boolean(user) || isInstalledPwa);
   // El HUB de Header.jsx tapa por completo esta zona del Hero mientras está

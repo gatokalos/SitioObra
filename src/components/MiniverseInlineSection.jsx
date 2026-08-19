@@ -165,7 +165,7 @@ const MiniverseInlineSection = () => {
               </p>
               <Button
                 onClick={handleOpen}
-                className="ge-mobile-cta-width bg-gradient-to-r from-orange-500/90 via-rose-500/90 to-pink-500/90 hover:from-orange-400 hover:to-pink-400 text-white px-6 py-3 rounded-full font-semibold flex items-center gap-2 shadow-lg shadow-orange-500/40 transition mx-auto"
+                className="white-glass-btn white-glass-btn--active ge-mobile-cta-width mx-auto flex items-center gap-2 px-6 py-3 font-semibold"
               >
                 <Sparkle size={20} />
                 Modelo de negocio

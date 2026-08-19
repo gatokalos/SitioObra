@@ -2193,7 +2193,7 @@ const MiniverseModal = ({
                                   <School size={17} className="text-sky-200" />
                                 </div>
                                 <div className="min-w-0 flex-1">
-                                  <p className="font-semibold text-slate-100">App Causa Social en escuelas</p>
+                                  <p className="font-semibold text-slate-100">App con causa en escuelas</p>
                                   <p className="text-xs text-slate-300/80">5 escuelas atendidas por ciclo escolar</p>
                                 </div>
                                 <ChevronRight size={18} className="shrink-0 text-slate-500 transition group-hover:translate-x-0.5 group-hover:text-sky-200" />
@@ -2309,7 +2309,7 @@ const MiniverseModal = ({
                             <School size={18} className="text-sky-200" />
                           </div>
                           <div>
-                            <p className="font-semibold text-slate-100">App Causa Social en escuelas</p>
+                            <p className="font-semibold text-slate-100">App con causa en escuelas</p>
                             <p className="text-xs text-slate-300/80">5 escuelas atendidas por ciclo escolar</p>
                           </div>
                         </div>

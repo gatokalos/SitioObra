@@ -145,9 +145,13 @@ const GatokensRevealModal = ({
           animate="visible"
           exit="hidden"
         >
-          {/* backdrop */}
+          {/* backdrop — el umbral (# dorado) va sin ninguna tregua a la
+              transparencia (Carlos): opaco de verdad, no solo un blur alto
+              que sigue dejando pasar los blobs del fondo del Hero. */}
           <motion.div
-            className="absolute inset-0 bg-[#04020f]/88 backdrop-blur-[18px]"
+            className={`absolute inset-0 backdrop-blur-[18px] ${
+              isUmbral ? 'bg-[#04020f]' : 'bg-[#04020f]/88'
+            }`}
             variants={backdropVariants}
             aria-hidden="true"
             onClick={onClose}

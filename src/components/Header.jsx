@@ -144,7 +144,12 @@ const Header = ({
   const [isHeaderHidden, setIsHeaderHidden] = useState(false);
   const lastHeaderScrollYRef = useRef(0);
   const headerIdleTimerRef = useRef(null);
-  const [hasUsedHeroIndexCue, setHasUsedHeroIndexCue] = useState(readIndexCueUsedFromSession);
+  // La PWA instalada arranca con la escena ya activada (ver Hero.jsx) — el #
+  // del Header debe estar disponible desde el primer render, no oculto
+  // esperando un clic ritual que en esa entrada nunca va a ocurrir.
+  const [hasUsedHeroIndexCue, setHasUsedHeroIndexCue] = useState(
+    () => readIndexCueUsedFromSession() || isInstalledPWA()
+  );
   // Referencia para saber si el # ya estaba revelado en un montaje previo de
   // esta misma sesión — evita repetir el aro pulsante cada vez que Header se
   // remonta (p. ej. al navegar y volver a "/").
@@ -594,8 +599,8 @@ const Header = ({
   }, []);
 
   useEffect(() => {
-    const SCROLL_DIRECTION_THRESHOLD = 6;
-    const HEADER_IDLE_REVEAL_DELAY = 700;
+    const SCROLL_DIRECTION_THRESHOLD = 10;
+    const HEADER_IDLE_REVEAL_DELAY = 1050;
 
     const revealAfterScrollPause = () => {
       window.clearTimeout(headerIdleTimerRef.current);
@@ -644,7 +649,7 @@ const Header = ({
 
   const headerToneClass = isCompactHeaderViewport
     ? scrollTier === 2
-      ? 'bg-gradient-to-b from-slate-950/90 via-slate-950/55 to-transparent'
+      ? 'bg-gradient-to-b from-slate-950/90 via-slate-950/40 to-transparent'
       : scrollTier === 1
         ? 'bg-gradient-to-b from-slate-950/70 via-slate-950/35 to-transparent'
         : 'bg-transparent'
@@ -1516,7 +1521,10 @@ const Header = ({
         transition={
           prefersReducedMotion
             ? { duration: 0 }
-            : { duration: isHeaderHidden ? 0.28 : 0.38, ease: [0.22, 1, 0.36, 1] }
+            : {
+                duration: isHeaderHidden ? 0.28 : 0.55,
+                ease: isHeaderHidden ? [0.22, 1, 0.36, 1] : [0.4, 0, 0.2, 1],
+              }
         }
         className={`fixed left-0 right-0 top-0 transition-colors duration-500 ${
           isGatLinktreeOpen
