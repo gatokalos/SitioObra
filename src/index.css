@@ -126,6 +126,19 @@
   }
 }
 
+/* La PWA usa apple-mobile-web-app-status-bar-style: black-translucent
+   (index.html) a propósito, para que el fondo estelar llegue edge-to-edge —
+   pero eso significa que la barra de estado del iPhone (reloj/señal/batería)
+   flota TRANSPARENTE sobre el contenido en vez de reservar su propio
+   espacio. Cualquier control fijo/absoluto cerca del borde superior debe
+   usar esta clase en vez de top-N directo de Tailwind, o choca visualmente
+   con la barra de estado (encontrado en salvaguarda de bienvenida, iPhone
+   real, 2026-08-18). --pwa-safe-top-gap ajusta la separación extra sobre el
+   safe-area (default 0.5rem, equivalente a top-2). */
+.pwa-safe-top {
+  top: calc(env(safe-area-inset-top, 0px) + var(--pwa-safe-top-gap, 0.5rem));
+}
+
 body {
   font-family: 'Inter', sans-serif;
   /* Adjusted background gradient to match new theatrical palette */
@@ -1143,7 +1156,7 @@ body {
    showIndexGuidePulse en Header.jsx). */
 .header-index-cue-pulse {
   border-radius: 9999px;
-  animation: header-index-cue-ping 1.8s ease-out 3;
+  animation: header-index-cue-ping 1.8s ease-out 2;
 }
 
 .narrative-pause-mark {

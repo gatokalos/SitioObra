@@ -176,10 +176,15 @@ const Header = ({
       hasActiveSubscription
   );
   // La instalación de la PWA o una sesión iniciada no bastan para sustituir
-  // el Estado Cero del Hero. El HUB grande solo pertenece a quien ya tiene
-  // energía disponible; 0 GAT conserva intacto el ritual de entrada.
+  // el Estado Cero del Hero, y tampoco basta tener saldo — mostrar el saldo
+  // todo el tiempo es justo la mecánica de enganche que no queremos usar sin
+  // elegir el momento (Carlos, 2026-08-18). El HUB grande solo pertenece a
+  // quien YA fue premiado de nuevo con GAT al completar la fase 3 de
+  // Resonancia Colectiva (hasCompletedRealProgress) — antes de eso, el
+  // ritual de entrada + el # dorado transformado en # plano ya cumplen la
+  // misión narrativa del chip, sin necesidad de mostrar cifras.
   const isGatLinktreeAudience =
-    gatBalance > 0 && (Boolean(user) || isInstalledPWA());
+    hasCompletedRealProgress && (Boolean(user) || isInstalledPWA());
   const [isGatLinktreeOpen, setIsGatLinktreeOpen] = useState(
     () => isGatLinktreeAudience && typeof window !== 'undefined' && !window.sessionStorage.getItem(GAT_LINKTREE_DISMISSED_SESSION_KEY)
   );
@@ -403,16 +408,18 @@ const Header = ({
   }, []);
 
   useEffect(() => {
-    if (gatBalance > 0) return;
-    // Si la energía se agota mientras una bandeja está abierta, la retiramos
-    // sin marcarla como descartada y sin activar la escena. El Hero decide su
-    // propio Estado Cero a partir del mismo saldo.
+    if (isGatLinktreeAudience) return;
+    // Antes se retiraba con solo gastar el saldo a 0 — pero quien ya
+    // calificó (completó fase 3 de Resonancia Colectiva) conserva su acceso
+    // aunque gaste todo su GAT; gastarlo es el punto, no un castigo
+    // (Carlos, 2026-08-18). Esto ya solo protege el caso real: alguien que
+    // nunca calificó y de algún modo tiene una bandeja abierta.
     setIsGatLinktreeOpen(false);
     setIsGatInfoOpen(false);
     setGatInlinePrompt(null);
     setShowGatWhatsappInput(false);
     setIsLinktreeSessionExpanded(false);
-  }, [gatBalance]);
+  }, [isGatLinktreeAudience]);
 
   useEffect(() => {
     if (typeof window === 'undefined') return undefined;
@@ -794,10 +801,12 @@ const Header = ({
   const isGatChipPulsing = Boolean(gatRevealPulse);
   const shouldAnimateGatChipReveal =
     isGatChipPulsing && !isGatLinktreeOpen && !isGatInfoOpen;
-  // El Header decide si existe el chip; el saldo solo define su contenido.
-  // En anónimo no debe adelantarse al ritual de activación del Hero.
+  // El chip (y el HUB) solo existen para quien ya calificó como
+  // isGatLinktreeAudience (progreso real de L3 + user/PWA) — mismo criterio
+  // en los dos lugares, para no tener dos reglas distintas de "cuándo
+  // aparece esto" flotando en el archivo.
   const shouldShowGatChip = Boolean(
-    isGatLinktreeOpen || (showGatChip && gatBalance > 0)
+    isGatLinktreeOpen || (showGatChip && isGatLinktreeAudience)
   );
   const gatChipPulseAnimate = prefersReducedMotion
     ? { opacity: 1, scale: 1 }
@@ -943,10 +952,13 @@ const Header = ({
   //    apunte a una vitrina — "sigues con crédito gastado/en curso ahí";
   // 3) si nunca hay historial, la recomendación de primera vez del Oráculo.
   useEffect(() => {
-    // El HUB (isGatLinktreeOpen) puede abrir solo, sin que nadie haya tocado
-    // el chip todavía — antes esto solo corría con isGatInfoOpen, así que la
-    // recomendación no aparecía hasta que además se abriera el tooltip.
-    if (!isGatInfoOpen && !isGatLinktreeOpen) return undefined;
+    // Antes solo corría si isGatInfoOpen/isGatLinktreeOpen ya estaban
+    // abiertos — pero ahora hasCompletedRealProgress (el resultado de este
+    // fetch) decide si el HUB y el chip EXISTEN siquiera (ver
+    // isGatLinktreeAudience abajo), así que esperar a que algo ya visible se
+    // abra es circular: nada se abriría nunca. Corre proactivo desde el
+    // montaje; sigue re-corriendo cuando los paneles abren, para refrescar
+    // si hubo progreso nuevo durante la sesión.
     let cancelled = false;
     setIsGatSpendRecommendationLoading(true);
     (async () => {

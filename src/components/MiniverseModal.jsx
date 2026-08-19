@@ -3015,7 +3015,8 @@ const MiniverseModal = ({
             <button
               type="button"
               onClick={handleCloseShowcaseFullscreen}
-              className="absolute right-4 top-4 z-10 rounded-full bg-black/40 p-2 text-white/70 backdrop-blur-sm transition hover:bg-black/60 hover:text-white"
+              className="absolute right-4 pwa-safe-top z-10 rounded-full bg-black/40 p-2 text-white/70 backdrop-blur-sm transition hover:bg-black/60 hover:text-white"
+              style={{ '--pwa-safe-top-gap': '1rem' }}
               aria-label="Cerrar"
             >
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-5 w-5">

@@ -283,6 +283,21 @@ const Hero = () => {
     window.addEventListener('gatoencerrado:gat-hub-open-changed', handleGatHubOpenChanged);
     return () => window.removeEventListener('gatoencerrado:gat-hub-open-changed', handleGatHubOpenChanged);
   }, []);
+  // El #3D solo existe para establecer, UNA vez, la relación gato↔símbolo
+  // antes de transmigrar al # plano — no tiene que volver a aparecer nunca
+  // en la sesión (Carlos, 2026-08-18). Antes se ocultaba/mostraba con cada
+  // toggle de hasActivatedAudio/isGatHubOpen (CSS, contexto WebGL siempre
+  // vivo); ahora, en cuanto cualquiera de las dos se vuelve true POR PRIMERA
+  // VEZ, se apaga para siempre — un solo mount y un solo unmount real por
+  // sesión, no un ciclo. Eso también libera su contexto WebGL de verdad
+  // antes de que algo más (p.ej. el iframe de Juegos en la pestaña Habitar)
+  // lo necesite, en vez de acapararlo indefinidamente.
+  const [isHashtag3DRetired, setIsHashtag3DRetired] = useState(
+    () => hasActivatedAudio || isGatHubOpen
+  );
+  useEffect(() => {
+    if (hasActivatedAudio || isGatHubOpen) setIsHashtag3DRetired(true);
+  }, [hasActivatedAudio, isGatHubOpen]);
   const shouldShowHeroInactiveHint = !hasActivatedAudio && isHeroHashReady && !isHeroPwaInstructionsOpen && !isGatLinktreeAudience;
   const currentHeroSubtitle = hasActivatedAudio
     ? heroGhostSubtitle ?? HERO_ROTATING_SUBTITLES[heroSubtitleIndex]
@@ -454,9 +469,19 @@ const Hero = () => {
     if (dirty) {
       const cleanSearch = params.toString();
       const cleanUrl = location.pathname + (cleanSearch ? `?${cleanSearch}` : '') + location.hash;
-      window.history.replaceState({}, '', cleanUrl);
+      // navigate(..., {replace:true}) en vez de window.history.replaceState
+      // directo: la API cruda del navegador no siempre sincroniza el
+      // location interno de React Router con lo que muestra la barra de
+      // direcciones. Si no sincroniza, este mismo efecto (que reacciona a
+      // location.hash) puede volver a leer location.search con
+      // ?gatokens=reveal "fantasma" la próxima vez que el hash cambie —
+      // p.ej. al tocar "Gastar energía", que navega a #transmedia?focus=... —
+      // reabriendo el salvaguarda entero. Sospecha fuerte del bug "se
+      // reabre bienvenida al gastar GAT en datos celulares" reportado
+      // 2026-08-18, sin confirmar en dispositivo real todavía.
+      navigate(cleanUrl, { replace: true });
     }
-  }, [location.hash, location.pathname, location.search, toast]);
+  }, [location.hash, location.pathname, location.search, navigate, toast]);
 
   // Reanuda exactamente la acción que originó el login. La recomendación
   // durable y esta intención de una sola ejecución son datos distintos: un
@@ -1135,7 +1160,12 @@ const Hero = () => {
         className="min-h-screen relative overflow-hidden flex flex-col"
       >
         <AnimatePresence>
-          {!hasActivatedAudio && (
+          {/* Mismo criterio que isHashtag3DRetired: si el HUB ya abrió solo
+              (usuario que regresa con GAT>0), la escena ya cuenta como
+              activada aunque hasActivatedAudio nunca se haya puesto true a
+              mano — el entorno del ritual (estrellas) no debe seguir
+              montado detrás del HUB. */}
+          {!isHashtag3DRetired && (
               <motion.div
                 key="hero-starfield"
                 aria-hidden="true"
@@ -1390,24 +1420,23 @@ const Hero = () => {
                     ) : null}
                   </AnimatePresence>
                 </div>
-                {/* Siempre montado (antes era {!hasActivatedAudio && !isGatHubOpen &&
-                    ...}): montar/desmontar el Canvas en cada activación del Hero o
-                    apertura/cierre del HUB era lo que agotaba el límite de contextos
-                    WebGL simultáneos de iOS — ver memory/project_pwa_safari_standalone_crash_20260730.md.
-                    "hidden" solo oculta con CSS y pausa el frameloop, nunca destruye
-                    el contexto; ese dispose real solo pasa al desmontar de verdad. */}
-                <Suspense fallback={null}>
-                  <HashtagButton3D
-                    onClick={handleHeroHashClick}
-                    onReady={handleHeroHashReady}
-                    height="var(--hero-title-mark-size)"
-                    contentScale={isMobileViewport ? 0.92 : 1}
-                    style={{ width: 'var(--hero-title-mark-size)', margin: '0 auto' }}
-                    showGlow={isHeroPwaInstructionsOpen}
-                    glowPulseKey={pwaHashWhisper?.id ?? 0}
-                    hidden={hasActivatedAudio || isGatHubOpen}
-                  />
-                </Suspense>
+                {/* Se ve una vez, y listo (ver isHashtag3DRetired arriba): un solo
+                    mount, un solo unmount real por sesión — no un ciclo de
+                    ocultar/mostrar. El dispose real del contexto WebGL ya pasa
+                    solo, en el efecto de cleanup dentro de HashtagButton3D.jsx. */}
+                {!isHashtag3DRetired && (
+                  <Suspense fallback={null}>
+                    <HashtagButton3D
+                      onClick={handleHeroHashClick}
+                      onReady={handleHeroHashReady}
+                      height="var(--hero-title-mark-size)"
+                      contentScale={isMobileViewport ? 0.92 : 1}
+                      style={{ width: 'var(--hero-title-mark-size)', margin: '0 auto' }}
+                      showGlow={isHeroPwaInstructionsOpen}
+                      glowPulseKey={pwaHashWhisper?.id ?? 0}
+                    />
+                  </Suspense>
+                )}
               </motion.div>
 
               {/* El mismo # del gatillo de activación "transmigra" directo a su

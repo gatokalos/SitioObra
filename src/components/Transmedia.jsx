@@ -5576,7 +5576,7 @@ const renderDramaFeaturedWork = () => (
       <section
         ref={transmediaSectionRef}
         id="transmedia"
-        className={`relative pb-24 ${
+        className={`relative pb-24 outline-none ${
           allianceOnlyMode
             ? 'pt-10 min-h-[900px] md:pt-14 md:min-h-[980px]'
             : 'pt-[clamp(3.5rem,8vh,6rem)]'

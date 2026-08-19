@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { X } from 'lucide-react';
@@ -128,7 +129,14 @@ const GatokensRevealModal = ({
     ? { duration: 1.25, repeat: Infinity, ease: 'easeInOut' }
     : { duration: 0.2, ease: 'easeOut' };
 
-  return (
+  // Portal directo a document.body: sin esto, este modal solo compite en
+  // z-index DENTRO del stacking context local de Hero.jsx — el HUB del
+  // Header (Header.jsx) SÍ se porta a document.body, así que aunque z-[600]
+  // > z-[90] en el papel, el HUB podía terminar pintándose encima de todos
+  // modos (confirmado en iPhone real 2026-08-18: el salvaguarda no ganaba).
+  if (typeof document === 'undefined') return null;
+
+  return createPortal(
     <AnimatePresence>
       {open && (
         <motion.div
@@ -160,7 +168,7 @@ const GatokensRevealModal = ({
               <button
                 type="button"
                 onClick={onClose}
-                className="absolute right-2 top-2 z-20 inline-flex h-9 w-9 items-center justify-center rounded-full border border-white/10 bg-white/5 text-slate-200 transition hover:bg-white/10 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-200/70"
+                className="absolute right-2 pwa-safe-top z-20 inline-flex h-9 w-9 items-center justify-center rounded-full border border-white/10 bg-white/5 text-slate-200 transition hover:bg-white/10 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-200/70"
                 aria-label="Cerrar"
               >
                 <X size={18} />
@@ -171,11 +179,11 @@ const GatokensRevealModal = ({
                 style={{ background: 'radial-gradient(circle, rgba(109,40,217,0.34) 0%, rgba(217,31,139,0.12) 48%, transparent 72%)' }}
               />
 
-              <div className="relative rounded-full" aria-hidden="true">
+              <div className="relative" aria-hidden="true">
                 <motion.img
-                  src={GATOKEN_COIN_SRC}
+                  src="/assets/laObraDorada.png"
                   alt=""
-                  className="h-28 w-28 sm:h-32 sm:w-32"
+                  className="h-28 w-28 sm:h-32 sm:w-32 object-contain"
                   animate={coinPulseAnimate}
                   transition={coinPulseTransition}
                   draggable="false"
@@ -297,7 +305,8 @@ const GatokensRevealModal = ({
           )}
         </motion.div>
       )}
-    </AnimatePresence>
+    </AnimatePresence>,
+    document.body
   );
 };
 

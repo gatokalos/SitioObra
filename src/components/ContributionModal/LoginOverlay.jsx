@@ -297,7 +297,8 @@ const LoginOverlay = ({ onClose }) => {
         <button
           type="button"
           onClick={onClose}
-          className="absolute right-4 top-4 z-30 inline-flex h-10 w-10 items-center justify-center rounded-full border border-white/15 bg-black/35 text-base text-slate-300 backdrop-blur-md transition hover:border-white/35 hover:text-white sm:right-3 sm:top-3"
+          className="absolute right-4 pwa-safe-top z-30 inline-flex h-10 w-10 items-center justify-center rounded-full border border-white/15 bg-black/35 text-base text-slate-300 backdrop-blur-md transition hover:border-white/35 hover:text-white sm:right-3 sm:top-3"
+          style={{ '--pwa-safe-top-gap': '1rem' }}
           aria-label="Cerrar overlay"
         >
           ✕

@@ -536,7 +536,8 @@ const ReserveModal = ({
           type="button"
           onClick={handleClose}
           aria-label="Cerrar modal"
-          className="absolute right-5 top-5 text-slate-400 hover:text-white transition"
+          className="absolute right-5 pwa-safe-top text-slate-400 hover:text-white transition"
+          style={{ '--pwa-safe-top-gap': '1.25rem' }}
         >
           ✕
         </button>

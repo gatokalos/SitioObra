@@ -155,7 +155,8 @@ const Autoficcion = () => {
         <button
           type="button"
           onClick={() => navigate('/', { replace: true })}
-          className="absolute right-6 top-6 z-10 rounded-full border border-white/20 bg-black/60 px-4 py-2 text-xs uppercase tracking-[0.3em] text-white hover:bg-black/80"
+          className="absolute right-6 pwa-safe-top z-10 rounded-full border border-white/20 bg-black/60 px-4 py-2 text-xs uppercase tracking-[0.3em] text-white hover:bg-black/80"
+          style={{ '--pwa-safe-top-gap': '1.5rem' }}
         >
           IR AL SITIO
         </button>

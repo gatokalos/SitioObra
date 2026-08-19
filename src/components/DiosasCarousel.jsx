@@ -340,7 +340,8 @@ const DiosasCarousel = ({ items = [], label = 'Swipe horizontal', caption = 'Gal
                   <button
                     type="button"
                     onClick={handleCloseDiosasVideo}
-                    className="absolute right-4 top-4 z-20 rounded-full border border-emerald-200/50 bg-emerald-900/70 p-2 text-emerald-50 hover:bg-emerald-800/70"
+                    className="absolute right-4 pwa-safe-top z-20 rounded-full border border-emerald-200/50 bg-emerald-900/70 p-2 text-emerald-50 hover:bg-emerald-800/70"
+                    style={{ '--pwa-safe-top-gap': '1rem' }}
                     aria-label="Cerrar video"
                   >
                     <X size={16} />
