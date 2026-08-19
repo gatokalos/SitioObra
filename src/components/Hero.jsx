@@ -216,14 +216,6 @@ const Hero = () => {
   const [heroSubtitleIndex, setHeroSubtitleIndex] = useState(0);
   const [heroGhostSubtitle, setHeroGhostSubtitle] = useState(null);
   const heroSectionRef = useRef(null);
-  // GatokensRevealModal y el HUB del Header (isGatLinktreeOpen) pueden
-  // auto-abrirse en el mismo montaje — sin coordinación, se traslapan (ver
-  // gatoencerrado:gat-hub-open-changed). Mientras el HUB esté abierto, el
-  // reveal queda pendiente aquí en vez de abrirse; se abre solo cuando el
-  // HUB se cierra por un dismiss genérico (Escape), no cuando se cierra
-  // porque el usuario ya eligió una acción concreta (razón 'scene-activate'
-  // — Retomar la proyección, Ir al Backstage, etc., que van directo a su destino).
-  const pendingGatokensRevealAfterHubRef = useRef(false);
   const heroAudioMutedRef = useRef(false);
   const audioGestureUnlockRef = useRef(false);
   const lastHeroAudioPlayAttemptRef = useRef(0);
@@ -442,19 +434,14 @@ const Hero = () => {
         nextIsUmbralReveal = true;
       }
       setIsUmbralReveal(nextIsUmbralReveal);
-      // Dos frames para que el efecto de auto-apertura del HUB (Header.jsx)
-      // alcance a correr y marcar document.body.dataset.gatHubOpen antes de
-      // decidir — mismo patrón que activateSceneAfterGatDismiss ya usa para
-      // esta misma coordinación entre hermanos.
-      window.requestAnimationFrame(() => {
-        window.requestAnimationFrame(() => {
-          if (document.body?.dataset?.gatHubOpen === 'true') {
-            pendingGatokensRevealAfterHubRef.current = true;
-          } else {
-            setIsGatokensModalOpen(true);
-          }
-        });
-      });
+      // Este salvaguarda solo ocurre UNA VEZ en toda la experiencia del
+      // usuario (el Handshake bienvenida→sitio) — no hay "próxima vez" para
+      // corregirlo, así que debe ganar siempre, sin esperar a ver si el HUB
+      // también quiere abrirse. Antes se posponía el reveal si el HUB ya
+      // estaba abierto (ver git blame); ya no hace falta: su z-index (600)
+      // ya está por encima del HUB (90), así que igual queda visible arriba
+      // aunque el HUB también esté montado detrás.
+      setIsGatokensModalOpen(true);
       if (typeof window !== 'undefined') {
         window.dispatchEvent(new CustomEvent('gatoencerrado:tercera-llamada-completed'));
       }
@@ -485,22 +472,6 @@ const Hero = () => {
     setIsAutoVideoOpen(true);
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user?.id]);
-
-  // GatokensRevealModal diferido mientras el HUB estaba abierto (ver
-  // pendingGatokensRevealAfterHubRef arriba): se abre al cerrarse el HUB,
-  // salvo que el cierre haya sido porque el usuario ya eligió una acción
-  // concreta (reason 'scene-activate') — ahí no le toca, va directo a su destino.
-  useEffect(() => {
-    const handleGatHubOpenChanged = (event) => {
-      if (event?.detail?.open) return;
-      if (!pendingGatokensRevealAfterHubRef.current) return;
-      pendingGatokensRevealAfterHubRef.current = false;
-      if (event?.detail?.reason === 'scene-activate') return;
-      setIsGatokensModalOpen(true);
-    };
-    window.addEventListener('gatoencerrado:gat-hub-open-changed', handleGatHubOpenChanged);
-    return () => window.removeEventListener('gatoencerrado:gat-hub-open-changed', handleGatHubOpenChanged);
-  }, []);
 
   useEffect(() => {
     const handleOpenNarrativeContinuation = (event) => {

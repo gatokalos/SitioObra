@@ -42,6 +42,30 @@ const readGatBalance = () => {
   return Number.isFinite(v) ? Math.max(Math.trunc(v), 0) : INITIAL_GAT_BALANCE;
 };
 
+// hasCompletedRealProgress decide si la tile "Libreto holográfico" existe en
+// el HUB — antes arrancaba en false y solo se sabía la verdad después de un
+// fetch async (fetchTransmediaCreditEvents), así que el HUB siempre nacía
+// con 5 tiles y saltaba a 6 en cuanto la red respondía (visible en CUALQUIER
+// apertura, no solo hard refresh). Cachear el último valor conocido en
+// localStorage elimina el salto para quien ya abrió el HUB antes — el fetch
+// sigue corriendo para mantenerlo actualizado, solo ya no parte de cero.
+const GAT_REAL_PROGRESS_STORAGE_KEY = 'gatoencerrado:gat-hub-has-real-progress';
+const readHasCompletedRealProgress = () => {
+  try {
+    return typeof window !== 'undefined' && window.localStorage.getItem(GAT_REAL_PROGRESS_STORAGE_KEY) === '1';
+  } catch {
+    return false;
+  }
+};
+const writeHasCompletedRealProgress = (value) => {
+  try {
+    if (typeof window === 'undefined') return;
+    window.localStorage.setItem(GAT_REAL_PROGRESS_STORAGE_KEY, value ? '1' : '0');
+  } catch {
+    // Silencioso
+  }
+};
+
 
 // El HUB y la bandeja comparten el mismo vocabulario visual que el programa de
 // mano: vidrio oscuro, borde fino y color reservado para estados reales.
@@ -129,7 +153,7 @@ const Header = ({
   // true solo cuando hay un L3 completado de verdad en algún miniverso (no
   // una mera sugerencia del Oráculo). Distingue "Siguiente acto" del acceso
   // inicial y evita ofrecer el Cuaderno antes de que exista algo que cerrar.
-  const [hasCompletedRealProgress, setHasCompletedRealProgress] = useState(false);
+  const [hasCompletedRealProgress, setHasCompletedRealProgress] = useState(readHasCompletedRealProgress);
   const [isGatSpendRecommendationLoading, setIsGatSpendRecommendationLoading] = useState(false);
   const [showGatWhatsappInput, setShowGatWhatsappInput] = useState(false);
   const [gatWhatsappPhone, setGatWhatsappPhone] = useState('');
@@ -246,8 +270,12 @@ const Header = ({
   // cierre — 'dismiss' (X, Escape, click afuera) vs 'scene-activate'
   // (Retomar la proyección / Primera fila / Backstage).
   const gatHubCloseReasonRef = useRef('dismiss');
-  // GatoChip/Escape cierran el contenedor. Entrar a la escena es una acción
-  // narrativa distinta y pertenece exclusivamente a "Primera fila".
+  // Escape cierra el contenedor sin activar la escena (dismiss puro).
+  // Cualquier tile que navegue a otra vista (Primera fila, Backstage, Libreto
+  // holográfico, Gastar energía, Café/merch, Iniciar sesión) debe pasar por
+  // activateSceneAfterGatDismiss, no por esta función directo — si no, al
+  // volver de esa vista el usuario se encuentra un Hero nunca activado
+  // ("limbo", encontrado 2026-08-18).
   const dismissGatPanels = useCallback((reason = 'dismiss') => {
     gatHubCloseReasonRef.current = reason;
     setIsGatInfoOpen(false);
@@ -265,8 +293,21 @@ const Header = ({
     }
   }, []);
 
-  const activateSceneAfterGatDismiss = useCallback((source) => {
+  const activateSceneAfterGatDismiss = useCallback((source, { allowHubReopen = false } = {}) => {
     dismissGatPanels('scene-activate');
+    if (allowHubReopen) {
+      // dismissGatPanels marca GAT_LINKTREE_DISMISSED_SESSION_KEY para que el
+      // HUB no se reabra solo al cerrarse por cualquier motivo — pero irse a
+      // loguear es distinto: si el login funciona, isGatLinktreeAudience pasa
+      // a true y el HUB debe reaparecer solo al regresar ("lo congruente
+      // sería que vea el HUB", Carlos 2026-08-18). Limpiar la bandera aquí
+      // deja que el efecto de auto-apertura reaccione normal.
+      try {
+        window.sessionStorage.removeItem(GAT_LINKTREE_DISMISSED_SESSION_KEY);
+      } catch {
+        // Silencioso
+      }
+    }
     // Mientras el HUB está abierto, el # destino del Header no está montado.
     // Dos frames permiten que React lo restaure antes de que Hero mida los
     // extremos y ejecute la transmigración desde el #3D.
@@ -470,10 +511,10 @@ const Header = ({
         presentation: 'narrative-video',
       });
     }
-    dismissGatPanels('scene-activate');
+    activateSceneAfterGatDismiss('gat-hub-login', { allowHubReopen: true });
     setShowLoginOverlay(true);
   }, [
-    dismissGatPanels,
+    activateSceneAfterGatDismiss,
     gatWelcomeRecommendation,
     hasCompletedRealProgress,
   ]);
@@ -483,6 +524,14 @@ const Header = ({
   // Una vez adentro, cambiar de miniverso es trivial (constelación de
   // CuadernoHolografico), así que no hace falta que la elección sea perfecta.
   const handleOpenHolograficoFromGatTooltip = useCallback(() => {
+    // La tile ahora es siempre visible (ver gatTileConfigs) para no saltar de
+    // 5 a 6 tiles mientras hasCompletedRealProgress sigue cargando — el gate
+    // real vive aquí: sin progreso real todavía no hay nada que mostrar en el
+    // cuaderno, así que se explica en vez de navegar a una vista vacía.
+    if (!hasCompletedRealProgress) {
+      setGatInlinePrompt({ kind: 'holografico' });
+      return;
+    }
     const entry = CATALOG.find((c) => c.showcase === gatSpendRecommendation?.showcaseId);
     const portalKey = entry?.key ?? 'oraculo';
     // dismissGatPanels solo cierra el HUB — sin activateSceneAfterGatDismiss,
@@ -490,7 +539,7 @@ const Header = ({
     // usuario en limbo (ver conversación 2026-08-18).
     activateSceneAfterGatDismiss('gat-hub-libreto');
     navigate(`/bitacora?t=${encodeURIComponent(ensureAnonId())}&m=${portalKey}`);
-  }, [gatSpendRecommendation, navigate, activateSceneAfterGatDismiss]);
+  }, [hasCompletedRealProgress, gatSpendRecommendation, navigate, activateSceneAfterGatDismiss]);
 
   // Atajo para dejar el WhatsApp desde el tooltip, para quien dejó pasar la
   // primera oportunidad en el cierre de L3 (ResonanceModal). El consentimiento
@@ -914,6 +963,7 @@ const Header = ({
       setGatSpendRecommendation(recommendation);
       setGatWelcomeRecommendation(welcomeRecommendation);
       setHasCompletedRealProgress(Boolean(completedRecommendation));
+      writeHasCompletedRealProgress(Boolean(completedRecommendation));
       setIsGatSpendRecommendationLoading(false);
     })();
     return () => {
@@ -995,9 +1045,9 @@ const Header = ({
       forma: recommendation.forma,
       presentation: 'narrative-video',
     });
-    dismissGatPanels('scene-activate');
+    activateSceneAfterGatDismiss('gat-hub-continue-next-act-login', { allowHubReopen: true });
     setShowLoginOverlay(true);
-  }, [dismissGatPanels, gatInlinePrompt]);
+  }, [activateSceneAfterGatDismiss, gatInlinePrompt]);
 
   const handleOpenMiniverseExplorer = useCallback(() => {
     activateSceneAfterGatDismiss('gat-hub-explore-miniverses');
@@ -1055,15 +1105,19 @@ const Header = ({
       onClick: handleRecommendationTile,
       tone: 'violet',
     },
-    hasCompletedRealProgress
-      ? {
-          key: 'holografico',
-          icon: BookOpen,
-          label: 'Libreto holográfico',
-          onClick: handleOpenHolograficoFromGatTooltip,
-          tone: 'amber',
-        }
-      : null,
+    {
+      // Siempre visible (antes: hasCompletedRealProgress ? {...} : null) —
+      // eso era justo la tile que aparecía/desaparecía mientras el fetch de
+      // progreso seguía en curso. Ahora el gate vive en el onClick: si aún
+      // no aplica, muestra el prompt inline "holografico" en vez de navegar
+      // (mismo patrón que 'discover'/'backstage' más abajo) — seis tiles
+      // desde el primer render, sin salto de layout.
+      key: 'holografico',
+      icon: BookOpen,
+      label: 'Libreto holográfico',
+      onClick: handleOpenHolograficoFromGatTooltip,
+      tone: 'amber',
+    },
     user
       ? { key: 'merch', icon: Coffee, label: 'Café, charla y merch', onClick: handleOpenSupportHub, tone: 'amber' }
       : null,
@@ -1316,6 +1370,37 @@ const Header = ({
         </div>
       ) : null}
 
+      {gatInlinePrompt?.kind === 'holografico' ? (
+        <div
+          data-gat-inline-panel="true"
+          className="mx-auto mt-3 w-full max-w-[21rem] rounded-xl border border-amber-300/20 bg-amber-300/[0.055] p-3 text-center"
+          role="status"
+        >
+          <p className="font-display text-sm text-slate-100">
+            El cuaderno todavía está en blanco
+          </p>
+          <p className="mx-auto mt-1.5 max-w-[18rem] text-[0.7rem] leading-relaxed text-slate-400">
+            Se llena solo cuando completas un miniverso. Gasta tu energía en uno y el cuaderno empezará a tener algo que mostrar.
+          </p>
+          <div className="mt-3 flex gap-2">
+            <button
+              type="button"
+              onClick={() => setGatInlinePrompt(null)}
+              className="flex-1 rounded-lg border border-white/10 px-3 py-2 text-xs text-slate-400 transition hover:bg-white/5 hover:text-slate-200"
+            >
+              Ahora no
+            </button>
+            <button
+              type="button"
+              onClick={handleRecommendationTile}
+              className="flex-1 rounded-lg border border-amber-300/30 bg-amber-300/10 px-3 py-2 text-xs font-semibold text-amber-100 transition hover:bg-amber-300/15"
+            >
+              Gastar energía
+            </button>
+          </div>
+        </div>
+      ) : null}
+
       {gatInlinePrompt?.kind === 'backstage' ? (
         <div
           data-gat-inline-panel="true"
@@ -1563,38 +1648,6 @@ const Header = ({
 
           {isGatLinktreeOpen && isGatLinktreeAudience && typeof document !== 'undefined' && createPortal(
             <>
-              <div
-                aria-hidden="true"
-                className="pointer-events-none fixed inset-0 z-[5] overflow-hidden"
-              >
-                {gatOrbitLayer.clip ? (
-                  <div
-                    className="absolute overflow-hidden"
-                    style={{
-                      left: gatOrbitLayer.clip.left,
-                      top: gatOrbitLayer.clip.top,
-                      width: gatOrbitLayer.clip.width,
-                      height: gatOrbitLayer.clip.height,
-                    }}
-                  >
-                    {gatOrbitLayer.points.map((point) => (
-                      <span
-                        key={point.id}
-                        className="absolute h-0 w-0"
-                        style={{
-                          left: point.x,
-                          top: point.y,
-                          '--gat-orbit-delay': `${point.delay}s`,
-                        }}
-                      >
-                        <span className="gat-hub-orbit-pleca" />
-                        <span className="gat-hub-orbit-star" />
-                      </span>
-                    ))}
-                  </div>
-                ) : null}
-              </div>
-
               <motion.aside
                 id="gat-personal-hub"
                 data-gat-hub-controls="true"
@@ -1606,6 +1659,43 @@ const Header = ({
                 aria-modal="true"
                 aria-label="Hub personal de GATokens"
               >
+                {/* Antes vivía en una capa aparte detrás del panel (z-[5], el
+                    panel z-[90] la tapaba por completo) — ahora es el primer
+                    hijo DENTRO del panel: encima del fondo sólido (por eso ya
+                    no hay bleed-through del contenido de la página), debajo
+                    de las tarjetas por orden natural del DOM (sin necesitar
+                    z-index propio). Así las estrellas quedan visibles todo el
+                    tiempo, no solo en el instante antes de que el fondo
+                    opaco termine de pintar. */}
+                <div aria-hidden="true" className="pointer-events-none absolute inset-0 overflow-hidden">
+                  {gatOrbitLayer.clip ? (
+                    <div
+                      className="absolute overflow-hidden"
+                      style={{
+                        left: gatOrbitLayer.clip.left,
+                        top: gatOrbitLayer.clip.top,
+                        width: gatOrbitLayer.clip.width,
+                        height: gatOrbitLayer.clip.height,
+                      }}
+                    >
+                      {gatOrbitLayer.points.map((point) => (
+                        <span
+                          key={point.id}
+                          className="absolute h-0 w-0"
+                          style={{
+                            left: point.x,
+                            top: point.y,
+                            '--gat-orbit-delay': `${point.delay}s`,
+                          }}
+                        >
+                          <span className="gat-hub-orbit-pleca" />
+                          <span className="gat-hub-orbit-star" />
+                        </span>
+                      ))}
+                    </div>
+                  ) : null}
+                </div>
+
                 <div
                   data-gat-hub-panel
                   className="relative mx-auto flex w-full max-w-[28rem] flex-col"

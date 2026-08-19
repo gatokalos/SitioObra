@@ -118,8 +118,11 @@ const GatokensRevealModal = ({
         ],
       }
     : {
+        // Sin el pulso activo, este drop-shadow se queda estático y en
+        // algunos renderers se ve como un cuadro/halo feo en vez de seguir
+        // la forma circular de la moneda — se quita del todo en reposo.
         scale: 1,
-        filter: 'drop-shadow(0 0 16px rgba(139,92,246,0.45))',
+        filter: 'none',
       };
   const coinPulseTransition = shouldPulseCoin
     ? { duration: 1.25, repeat: Infinity, ease: 'easeInOut' }
@@ -183,7 +186,7 @@ const GatokensRevealModal = ({
                 id="gatokens-modal-title"
                 className="relative mt-9 text-3xl font-medium leading-tight tracking-[-0.02em] text-white sm:text-4xl"
               >
-                La obra ya sabe<br />que estás aquí.
+                La obra ahora sabe<br />que estás aquí.
               </h2>
 
               <button
@@ -208,7 +211,7 @@ const GatokensRevealModal = ({
                     <path d="M8 5v14l11-7z" />
                   </svg>
                 </span>
-                <span className="relative">Esta escena es para ti</span>
+                <span className="relative">Esta escena es tuya</span>
               </button>
             </motion.div>
           ) : (
