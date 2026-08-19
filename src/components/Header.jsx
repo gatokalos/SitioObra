@@ -138,6 +138,12 @@ const Header = ({
 }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [scrollTier, setScrollTier] = useState(0);
+  const [isCompactHeaderViewport, setIsCompactHeaderViewport] = useState(
+    () => typeof window !== 'undefined' && window.matchMedia('(max-width: 768px)').matches
+  );
+  const [isHeaderHidden, setIsHeaderHidden] = useState(false);
+  const lastHeaderScrollYRef = useRef(0);
+  const headerIdleTimerRef = useRef(null);
   const [hasUsedHeroIndexCue, setHasUsedHeroIndexCue] = useState(readIndexCueUsedFromSession);
   // Referencia para saber si el # ya estaba revelado en un montaje previo de
   // esta misma sesión — evita repetir el aro pulsante cada vez que Header se
@@ -576,8 +582,33 @@ const Header = ({
   }, [gatWhatsappPhone, gatSpendRecommendation]);
 
   useEffect(() => {
+    const mobileHeaderQuery = window.matchMedia('(max-width: 768px)');
+    const handleViewportChange = (event) => {
+      setIsCompactHeaderViewport(event.matches);
+      if (!event.matches) setIsHeaderHidden(false);
+    };
+
+    handleViewportChange(mobileHeaderQuery);
+    mobileHeaderQuery.addEventListener('change', handleViewportChange);
+    return () => mobileHeaderQuery.removeEventListener('change', handleViewportChange);
+  }, []);
+
+  useEffect(() => {
+    const SCROLL_DIRECTION_THRESHOLD = 6;
+    const HEADER_IDLE_REVEAL_DELAY = 700;
+
+    const revealAfterScrollPause = () => {
+      window.clearTimeout(headerIdleTimerRef.current);
+      headerIdleTimerRef.current = window.setTimeout(() => {
+        setIsHeaderHidden(false);
+      }, HEADER_IDLE_REVEAL_DELAY);
+    };
+
     const handleScroll = () => {
-      const y = window.scrollY;
+      // iOS puede reportar valores negativos durante el rubber-band del borde.
+      const y = Math.max(0, window.scrollY || window.pageYOffset || 0);
+      const delta = y - lastHeaderScrollYRef.current;
+
       if (y > 180) {
         setScrollTier(2);
       } else if (y > 20) {
@@ -585,17 +616,48 @@ const Header = ({
       } else {
         setScrollTier(0);
       }
-    };
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
 
-  const headerToneClass =
-    scrollTier === 2
+      if (!isCompactHeaderViewport || isMenuOpen || y <= 20) {
+        setIsHeaderHidden(false);
+      } else if (delta > SCROLL_DIRECTION_THRESHOLD) {
+        setIsHeaderHidden(true);
+      } else if (delta < -SCROLL_DIRECTION_THRESHOLD) {
+        setIsHeaderHidden(false);
+      }
+
+      lastHeaderScrollYRef.current = y;
+      if (isCompactHeaderViewport) revealAfterScrollPause();
+    };
+
+    lastHeaderScrollYRef.current = Math.max(0, window.scrollY || window.pageYOffset || 0);
+    handleScroll();
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+      window.clearTimeout(headerIdleTimerRef.current);
+    };
+  }, [isCompactHeaderViewport, isMenuOpen]);
+
+  useEffect(() => {
+    if (isMenuOpen) setIsHeaderHidden(false);
+  }, [isMenuOpen]);
+
+  const headerToneClass = isCompactHeaderViewport
+    ? scrollTier === 2
+      ? 'bg-gradient-to-b from-slate-950/90 via-slate-950/55 to-transparent'
+      : scrollTier === 1
+        ? 'bg-gradient-to-b from-slate-950/70 via-slate-950/35 to-transparent'
+        : 'bg-transparent'
+    : scrollTier === 2
       ? 'bg-gradient-to-b from-slate-900/90 to-slate-950/88 backdrop-blur-xl border-b border-white/15 shadow-[0_14px_36px_rgba(2,6,23,0.5),inset_0_1px_0_rgba(255,255,255,0.08)]'
       : scrollTier === 1
         ? 'bg-gradient-to-b from-slate-900/72 to-slate-950/68 backdrop-blur-lg border-b border-white/10 shadow-[0_10px_26px_rgba(2,6,23,0.38),inset_0_1px_0_rgba(255,255,255,0.06)]'
         : 'bg-transparent';
+
+  const indexSurfaceClass =
+    isCompactHeaderViewport && scrollTier > 0
+      ? 'border border-white/15 bg-slate-950/55 shadow-[0_8px_24px_rgba(2,6,23,0.38)] backdrop-blur-md'
+      : 'border border-transparent bg-transparent';
 
   useEffect(() => {
     if (!isMenuOpen) return undefined;
@@ -1450,9 +1512,13 @@ const Header = ({
     <>
       <motion.header
         initial={{ y: -100 }}
-        animate={{ y: 0 }}
-        transition={{ duration: 0.5, ease: 'easeOut' }}
-        className={`fixed left-0 right-0 top-0 transition-all duration-500 ${
+        animate={{ y: isCompactHeaderViewport && isHeaderHidden && !isMenuOpen ? '-100%' : 0 }}
+        transition={
+          prefersReducedMotion
+            ? { duration: 0 }
+            : { duration: isHeaderHidden ? 0.28 : 0.38, ease: [0.22, 1, 0.36, 1] }
+        }
+        className={`fixed left-0 right-0 top-0 transition-colors duration-500 ${
           isGatLinktreeOpen
             ? 'pointer-events-none z-[100]'
             : shouldAnimateGatChipReveal
@@ -1471,7 +1537,7 @@ const Header = ({
                 id="header-index-hashtag"
                 type="button"
                 whileHover={{ scale: 1.05, textShadow: '0 0 8px rgba(233, 213, 255, 0.5)' }}
-                className={`flex shrink-0 cursor-pointer items-center gap-3 rounded-full transition ${
+                className={`flex shrink-0 cursor-pointer items-center gap-3 rounded-full p-1 transition ${indexSurfaceClass} ${
                   isMenuOpen ? 'drop-shadow-[0_0_14px_rgba(255,255,255,0.22)]' : ''
                 } ${showIndexGuidePulse ? 'header-index-cue-pulse' : ''}`}
                 animate={{ opacity: shouldGateIndexUntilHeroReveal ? 0 : 1 }}

@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react';
-import { AnimatePresence, motion } from 'framer-motion';
+import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
 import { createPortal } from 'react-dom';
-import { BookOpen, Brain, Check, Compass, Coffee, Coins, Dice5, Drama, Film, Filter, Heart, HeartHandshake, HeartPulse, MapIcon, Music, Palette, School, Share2, Sparkles, DoorOpen } from 'lucide-react';
+import { BookOpen, Brain, Check, ChevronRight, Compass, Coffee, Coins, Dice5, Drama, Film, Filter, Heart, HeartHandshake, HeartPulse, MapIcon, Music, Palette, School, Share2, Sparkles, DoorOpen } from 'lucide-react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { toast } from '@/components/ui/use-toast';
@@ -602,6 +602,8 @@ const MiniverseModal = ({
   const [communityTopLikes, setCommunityTopLikes] = useState([]);
   const [isLoadingCommunityLikes, setIsLoadingCommunityLikes] = useState(false);
   const [isCauseSiteOpen, setIsCauseSiteOpen] = useState(false);
+  const [isHuellaImpactFlipped, setIsHuellaImpactFlipped] = useState(false);
+  const prefersReducedMotion = useReducedMotion();
   const [hasBienvenida, setHasBienvenida] = useState(
     () => { try { return localStorage.getItem('gatoencerrado:bienvenida-completed') === '1'; } catch { return false; } }
   );
@@ -765,6 +767,7 @@ const MiniverseModal = ({
       setShowcaseFullscreenCard(null);
       setActiveShowcaseIndex(0);
       setIsCauseSiteOpen(false);
+      setIsHuellaImpactFlipped(false);
       setShowcaseEnergy(readStoredJson('gatoencerrado:showcase-energy', {}));
       setShowcaseBoosts(readStoredJson('gatoencerrado:showcase-boosts', {}));
       return;
@@ -866,6 +869,7 @@ const MiniverseModal = ({
     const mediaQuery = window.matchMedia('(max-width: 639px)');
     const handleMediaChange = (event) => {
       setIsMobileViewport(event.matches);
+      setIsHuellaImpactFlipped(false);
       setActiveTab(resolvedInitialTabId);
     };
     setIsMobileViewport(mediaQuery.matches);
@@ -1253,6 +1257,7 @@ const MiniverseModal = ({
       setSelectedMiniverseId(null);
       setSelectedUpcomingId(null);
       setActiveShowcaseIndex(0);
+      setIsHuellaImpactFlipped(false);
     },
     [markMiniverseVisited, selectedMiniverseId, stopModalMediaPlayback]
   );
@@ -1634,6 +1639,52 @@ const MiniverseModal = ({
     setTimeout(() => {
       document.querySelector('#apoya')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }, 140);
+  }, [onClose, stopModalMediaPlayback]);
+
+  const handleOpenHuellaActivation = useCallback(() => {
+    stopModalMediaPlayback({ reset: true });
+    onClose?.();
+    window.setTimeout(() => {
+      window.dispatchEvent(new CustomEvent('gatoencerrado:open-huella-activation'));
+    }, 180);
+  }, [onClose, stopModalMediaPlayback]);
+
+  const handleScrollToImpactBar = useCallback((barKey) => {
+    if (!barKey || typeof document === 'undefined') return;
+    stopModalMediaPlayback({ reset: true });
+    onClose?.();
+
+    window.setTimeout(() => {
+      const target = document.getElementById(`impact-bar-${barKey}`);
+      target?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+      // Espera a que el desplazamiento deje visible la barra antes de lanzar
+      // el mismo impulso temporal que usan los tramos del acordeón en desktop.
+      window.setTimeout(() => {
+        window.dispatchEvent(
+          new CustomEvent('gatoencerrado:impact-accordion-toggle', {
+            detail: { barKey, source: 'mobile-huella-flip' },
+          })
+        );
+        toast({
+          description: 'Arrastra las barras para explorar cómo cada huella activa los distintos tramos.',
+        });
+      }, 700);
+    }, 140);
+  }, [onClose, stopModalMediaPlayback]);
+
+  const handleOpenCauseImpact = useCallback((causeId) => {
+    if (!causeId || typeof window === 'undefined') return;
+    stopModalMediaPlayback({ reset: true });
+    onClose?.();
+
+    window.setTimeout(() => {
+      window.dispatchEvent(
+        new CustomEvent('gatoencerrado:open-cause-impact', {
+          detail: { causeId, source: 'mobile-huella-flip' },
+        })
+      );
+    }, 180);
   }, [onClose, stopModalMediaPlayback]);
 
   const handleOpenCauseSite = useCallback(() => {
@@ -2019,6 +2070,170 @@ const MiniverseModal = ({
             <div className="grid md:grid-cols-2 gap-8">
               {activeTab === 'waitlist' ? (
                 <>
+                  {isMobileViewport ? (
+                    <div className="[perspective:1200px]">
+                      <motion.div
+                        animate={{ rotateY: isHuellaImpactFlipped ? 180 : 0 }}
+                        transition={
+                          prefersReducedMotion
+                            ? { duration: 0 }
+                            : { duration: 0.65, ease: [0.22, 1, 0.36, 1] }
+                        }
+                        className="relative grid [transform-style:preserve-3d]"
+                        style={{ transformStyle: 'preserve-3d', WebkitTransformStyle: 'preserve-3d' }}
+                      >
+                        <div
+                          aria-hidden={isHuellaImpactFlipped}
+                          className={`[grid-area:1/1] glass-effect relative overflow-hidden rounded-2xl border border-white/10 p-6 text-slate-200/90 [backface-visibility:hidden] ${
+                            isHuellaImpactFlipped ? 'pointer-events-none' : ''
+                          }`}
+                          style={{ backfaceVisibility: 'hidden', WebkitBackfaceVisibility: 'hidden' }}
+                        >
+                          <div className="relative z-10 flex h-full flex-col">
+                            <div className="flex items-center gap-3">
+                              <span className="text-[0.65rem] uppercase tracking-[0.35em] text-slate-400/80">
+                                Súmate al proyecto
+                              </span>
+                              <span className="h-px flex-1 bg-white/10" />
+                            </div>
+                            <div className="mt-5 space-y-3">
+                              <h3 className="font-display text-3xl text-slate-50">
+                                Tu huella es real
+                              </h3>
+                              <p className="text-sm leading-relaxed text-slate-300/90">
+                                Tu huella se renueva cada mes. Puedes pausarla o retirarla cuando quieras, sin complicaciones.
+                              </p>
+                            </div>
+
+                            <div className="mt-7 rounded-2xl border border-white/10 bg-white/5 px-5 py-5">
+                              <div className="flex flex-col items-center gap-4">
+                                <span className="h-36 w-36 overflow-hidden rounded-[1.35rem] bg-transparent">
+                                  <img
+                                    src="https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/causa%20social/causa_social.png"
+                                    alt="Causa social Isabel Ayuda para la Vida"
+                                    loading="lazy"
+                                    className="h-full w-full object-cover drop-shadow-[0_10px_24px_rgba(0,0,0,0.4)]"
+                                  />
+                                </span>
+                                <Button
+                                  type="button"
+                                  onClick={() => setIsHuellaImpactFlipped(true)}
+                                  tabIndex={isHuellaImpactFlipped ? -1 : 0}
+                                  aria-label="Ver el impacto de dejar una huella"
+                                  className="white-glass-btn h-11 min-w-[10.5rem] px-6 text-base font-semibold tracking-[0.2px]"
+                                >
+                                  ¿Cómo se apoya?
+                                </Button>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+
+                        <div
+                          aria-hidden={!isHuellaImpactFlipped}
+                          className={`[grid-area:1/1] glass-effect relative overflow-hidden rounded-2xl border border-white/10 p-6 text-slate-200/90 [backface-visibility:hidden] ${
+                            isHuellaImpactFlipped ? '' : 'pointer-events-none'
+                          }`}
+                          style={{
+                            transform: 'rotateY(180deg)',
+                            backfaceVisibility: 'hidden',
+                            WebkitBackfaceVisibility: 'hidden',
+                          }}
+                        >
+                          <div className="relative z-10 flex h-full flex-col gap-5">
+                            <div className="flex items-center gap-3">
+                              <span className="text-[0.65rem] uppercase tracking-[0.35em] text-slate-400/80">
+                                Impacto en cadena
+                              </span>
+                              <span className="h-px flex-1 bg-white/10" />
+                            </div>
+
+                            <h3 className="font-display text-2xl text-slate-50">
+                              Esto activa tu huella
+                            </h3>
+
+                            <div className="space-y-2.5">
+                              <button
+                                type="button"
+                                onClick={() => handleOpenCauseImpact('tratamientos')}
+                                tabIndex={isHuellaImpactFlipped ? 0 : -1}
+                                className="group flex w-full items-center gap-3 rounded-xl border border-white/10 bg-white/5 px-3 py-2.5 text-left transition hover:border-rose-200/30 hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-300/50"
+                              >
+                                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-white/10 bg-white/5">
+                                  <HeartPulse size={17} className="text-rose-200" />
+                                </div>
+                                <div className="min-w-0 flex-1">
+                                  <p className="font-semibold text-slate-100">Terapias</p>
+                                  <p className="text-xs text-slate-300/80">6 sesiones promedio por suscriptor</p>
+                                </div>
+                                <ChevronRight size={18} className="shrink-0 text-slate-500 transition group-hover:translate-x-0.5 group-hover:text-rose-200" />
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => handleOpenCauseImpact('residencias')}
+                                tabIndex={isHuellaImpactFlipped ? 0 : -1}
+                                className="group flex w-full items-center gap-3 rounded-xl border border-white/10 bg-white/5 px-3 py-2.5 text-left transition hover:border-purple-200/30 hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-300/50"
+                              >
+                                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-white/10 bg-white/5">
+                                  <Sparkles size={17} className="text-purple-200" />
+                                </div>
+                                <div className="min-w-0 flex-1">
+                                  <p className="font-semibold text-slate-100">Residencias creativas</p>
+                                  <p className="text-xs text-slate-300/80">3 residencias activas por temporada</p>
+                                </div>
+                                <ChevronRight size={18} className="shrink-0 text-slate-500 transition group-hover:translate-x-0.5 group-hover:text-purple-200" />
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => handleOpenCauseImpact('app-escolar')}
+                                tabIndex={isHuellaImpactFlipped ? 0 : -1}
+                                className="group flex w-full items-center gap-3 rounded-xl border border-white/10 bg-white/5 px-3 py-2.5 text-left transition hover:border-sky-200/30 hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-300/50"
+                              >
+                                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-white/10 bg-white/5">
+                                  <School size={17} className="text-sky-200" />
+                                </div>
+                                <div className="min-w-0 flex-1">
+                                  <p className="font-semibold text-slate-100">App Causa Social en escuelas</p>
+                                  <p className="text-xs text-slate-300/80">5 escuelas atendidas por ciclo escolar</p>
+                                </div>
+                                <ChevronRight size={18} className="shrink-0 text-slate-500 transition group-hover:translate-x-0.5 group-hover:text-sky-200" />
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => handleScrollToImpactBar('universos')}
+                                tabIndex={isHuellaImpactFlipped ? 0 : -1}
+                                className="group flex w-full items-center gap-3 rounded-xl border border-white/10 bg-white/5 px-3 py-2.5 text-left transition hover:border-amber-200/30 hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-300/50"
+                              >
+                                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-white/10 bg-white/5">
+                                  <Coins size={17} className="text-amber-200" />
+                                </div>
+                                <div className="min-w-0 flex-1">
+                                  <p className="font-semibold text-slate-100">Expansión creativa del universo</p>
+                                  <p className="text-xs text-slate-300/80">Nuevas escenas, juegos e historias</p>
+                                </div>
+                                <ChevronRight size={18} className="shrink-0 text-slate-500 transition group-hover:translate-x-0.5 group-hover:text-amber-200" />
+                              </button>
+                            </div>
+
+                            <div className="mt-auto space-y-2.5">
+                              <div className="flex items-center justify-between gap-3">
+                                <button
+                                  type="button"
+                                  onClick={() => setIsHuellaImpactFlipped(false)}
+                                  tabIndex={isHuellaImpactFlipped ? 0 : -1}
+                                  className="rounded-xl border border-white/15 bg-white/5 px-3 py-2 text-sm text-slate-300 transition hover:bg-white/10 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-400/60"
+                                >
+                                  Volver
+                                </button>
+          
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </motion.div>
+                    </div>
+                  ) : (
+                    <>
                   <div className="order-2 md:order-1 glass-effect relative overflow-hidden rounded-2xl border border-white/10 p-6 sm:p-7 text-slate-200/90">
                     <div className="relative z-10 flex h-full flex-col">
                       <div className="flex items-center gap-3">
@@ -2028,7 +2243,7 @@ const MiniverseModal = ({
                         <span className="h-px flex-1 bg-white/10" />
                       </div>
                       <div className="mt-5 space-y-3">
-                        <h3 className="hidden sm:block font-display text-3xl text-slate-50">
+                        <h3 className="font-display text-3xl text-slate-50">
                           Tu huella es real
                         </h3>
                         <p className="text-sm text-slate-300/90 leading-relaxed">
@@ -2048,10 +2263,10 @@ const MiniverseModal = ({
                           </span>
                           <Button
                             type="button"
-                            onClick={handleScrollToSupport}
+                            onClick={handleOpenHuellaActivation}
                             className="white-glass-btn h-11 min-w-[10.5rem] px-6 text-base font-semibold tracking-[0.2px]"
                           >
-                            Dejar mi huella
+                            Dejar huella
                           </Button>
                         
                         </div>
@@ -2113,22 +2328,29 @@ const MiniverseModal = ({
                         <button
                           type="button"
                           onClick={handleOpenCauseSite}
-                          className="inline-flex items-center gap-2 rounded-xl border border-white/15 bg-white/5 px-3 py-2 text-sm font-medium text-slate-200 transition hover:border-white/30 hover:bg-white/10 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-400/60"
+                       
                         >
-                          <span className="h-1.5 w-1.5 rounded-full bg-emerald-300/80" />
-                          Visitar sitio
+                        En alianza con:
                         </button>
-                        <div className="rounded-xl border border-white/10 bg-white/5 px-3 py-2 shadow-[0_10px_28px_rgba(0,0,0,0.35)]">
+                        <button
+                          type="button"
+                          onClick={handleScrollToSupport}
+                          aria-label="Ir a la sección de alianza con Isabel Ayuda para la Vida"
+                          className="inline-flex cursor-pointer items-center gap-2 rounded-xl border border-emerald-300/35 bg-emerald-400/[0.08] px-3 py-2 text-emerald-100 shadow-[0_10px_28px_rgba(0,0,0,0.35),0_0_18px_rgba(52,211,153,0.1),inset_0_1px_0_rgba(255,255,255,0.1)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-300/60 focus-visible:ring-offset-2 focus-visible:ring-offset-black"
+                        >
                           <img
                             src="/assets/isabel_banner.png"
                             alt="Isabel Ayuda para la Vida"
                             loading="lazy"
                             className="h-10 w-auto object-contain sm:h-12"
                           />
-                        </div>
+                          <ChevronRight size={18} aria-hidden="true" className="shrink-0 text-emerald-200/80" />
+                        </button>
                       </div>
                     </div>
                   </div>
+                    </>
+                  )}
                 </>
               ) : activeTab === 'escaparate' && !isMobileViewport ? (
                 <div className="md:col-span-2 space-y-4">

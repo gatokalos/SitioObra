@@ -86,6 +86,31 @@ const CauseImpactAccordion = ({ items, onOpenImagePreview, onOpenChange, expandA
     setOpenCauseIds(new Set(items.map((item) => item.id)));
   }, [expandAllTrigger, isDesktopViewport, items]);
 
+  useEffect(() => {
+    if (typeof window === 'undefined') return undefined;
+
+    const handleOpenRequestedCause = (event) => {
+      const causeId = event?.detail?.causeId;
+      if (!items.some((item) => item.id === causeId)) return;
+
+      // Esta entrada viene desde la Flip Card: abre únicamente el contenido
+      // solicitado. No altera la cascada intencional de "Así funciona…",
+      // que sigue usando expandAllTrigger arriba.
+      setOpenCauseIds(new Set([causeId]));
+      window.requestAnimationFrame(() => {
+        window.requestAnimationFrame(() => {
+          document.getElementById(`cause-impact-${causeId}`)?.scrollIntoView({
+            behavior: 'smooth',
+            block: 'start',
+          });
+        });
+      });
+    };
+
+    window.addEventListener('gatoencerrado:open-cause-impact', handleOpenRequestedCause);
+    return () => window.removeEventListener('gatoencerrado:open-cause-impact', handleOpenRequestedCause);
+  }, [items]);
+
   const handleCarouselScroll = (itemId, event, total) => {
     const target = event.currentTarget;
     if (!target || !total) {
@@ -145,7 +170,9 @@ const CauseImpactAccordion = ({ items, onOpenImagePreview, onOpenChange, expandA
         return (
           <div
             key={item.id}
+            id={`cause-impact-${item.id}`}
             className="border border-white/10 rounded-2xl bg-black/20 overflow-hidden transition"
+            style={{ scrollMarginTop: 'calc(5rem + env(safe-area-inset-top, 0px))' }}
           >
             <button
               type="button"

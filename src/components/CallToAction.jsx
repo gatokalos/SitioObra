@@ -1,7 +1,7 @@
 // SitioObra/src/components/CallToAction.jsx
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useInView, useReducedMotion } from 'framer-motion';
-import { Drama, HeartHandshake, Mail, MessageCircle, Palette, PawPrint, Smartphone, Ticket, Volume2, VolumeX } from 'lucide-react';
+import { Drama, HeartHandshake, Info, Palette, PawPrint, Smartphone, Volume2, VolumeX } from 'lucide-react';
 import { apiFetch } from '@/lib/apiClient';
 import { supabase } from '@/lib/supabaseClient';
 import { useAuth } from '@/contexts/SupabaseAuthContext';
@@ -26,17 +26,7 @@ const EXPANSION_START_COPY = EXPANSION_START + 1; // 427
 const ANNUAL_TOTAL_HUELLAS = EXPANSION_START;
 const AFTERCARE_AUDIO_URL =
   'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Sonoridades/FX_folleys/wah_Payasito_HITS.cm-St.m4a';
-const IMPACT_SYNC_MEDIA_QUERY =
-  '(min-width: 1024px), ((min-width: 768px) and (orientation: landscape))';
-const SYNCABLE_BAR_KEYS = new Set(['terapias', 'residencias', 'implementacionEscuelas']);
-const SUPPORT_EMAIL = 'contacto@gatoencerrado.ai';
-const SUPPORT_WHATSAPP = '+523315327985';
-const SUPPORT_MESSAGE =
-  'Hola,%20asistí%20a%20la%20obra%20y%20quiero%20sumar%20mi%20boleto%20como%20huella.%20Adjunto%20comprobante%20(o%20selfie)%20y%20cuántas%20personas%20fuimos.%20Gracias.';
-const SUPPORT_CTA_VIDEO_URL =
-  'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/trailers/CTAs/CTA_boleto_pingpong_blur.mp4';
-const SUPPORT_CTA_POSTER_URL =
-  'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/trailers/CTAs/cta-boleto-poster.jpg';
+const SYNCABLE_BAR_KEYS = new Set(['terapias', 'residencias', 'implementacionEscuelas', 'universos']);
 const SHOULD_PREVIEW_AFTERCARE =
   import.meta.env.DEV &&
   typeof window !== 'undefined' &&
@@ -270,7 +260,8 @@ const CallToAction = ({ barsIntroDelayMs = 0 }) => {
   const [isCheckingSubscription, setIsCheckingSubscription] = useState(false);
   const [localCheckoutLock, setLocalCheckoutLock] = useState(false);
   const [firstHuellaAt, setFirstHuellaAt] = useState(null);
-  const [showTicketSupport, setShowTicketSupport] = useState(false);
+  const [showOtherHuellaInfo, setShowOtherHuellaInfo] = useState(false);
+  const [showGuestCheckoutIdentity, setShowGuestCheckoutIdentity] = useState(false);
   const [subs, setSubs] = useState(0);
   const [ticketUnits, setTicketUnits] = useState(0);
   const [canFetchStats, setCanFetchStats] = useState(Boolean(import.meta.env.VITE_API_URL));
@@ -283,7 +274,6 @@ const CallToAction = ({ barsIntroDelayMs = 0 }) => {
   const [interactiveSupport, setInteractiveSupport] = useState(null);
   const [showAftercareOverlay, setShowAftercareOverlay] = useState(false);
   const [aftercareVariant, setAftercareVariant] = useState('expansion');
-  const [isTicketSupportVideoAvailable, setIsTicketSupportVideoAvailable] = useState(true);
   const [isCounterSoundEnabled, setIsCounterSoundEnabled] = useState(true);
   const [isLoginPulseActive, setIsLoginPulseActive] = useState(false);
   const hasRunBarSequenceRef = useRef(false);
@@ -851,9 +841,7 @@ const CallToAction = ({ barsIntroDelayMs = 0 }) => {
     if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') {
       return undefined;
     }
-    const mediaQuery = window.matchMedia(IMPACT_SYNC_MEDIA_QUERY);
     const handleAccordionToggle = (event) => {
-      if (!mediaQuery.matches) return;
       if (interactiveSupport !== null) return;
 
       const barKey = event?.detail?.barKey;
@@ -865,6 +853,10 @@ const CallToAction = ({ barsIntroDelayMs = 0 }) => {
         implementacionEscuelas: stats.implementacionEscuelasProg,
         universos: stats.universosProg,
       };
+      if (prefersReducedMotion) {
+        setBarValues(realValues);
+        return;
+      }
       const baseValue = realValues[barKey] ?? 0;
       const peakValue = Math.min(100, Math.max(baseValue + 16, baseValue < 70 ? 74 : baseValue + 9));
 
@@ -890,11 +882,26 @@ const CallToAction = ({ barsIntroDelayMs = 0 }) => {
     };
   }, [
     interactiveSupport,
+    prefersReducedMotion,
     stats.implementacionEscuelasProg,
     stats.residenciasProg,
     stats.terapiasProg,
     stats.universosProg,
   ]);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return undefined;
+
+    const handleOpenHuellaActivation = () => {
+      document.getElementById('cta')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      if (!user && !embeddedClientSecret) {
+        setShowGuestCheckoutIdentity(true);
+      }
+    };
+
+    window.addEventListener('gatoencerrado:open-huella-activation', handleOpenHuellaActivation);
+    return () => window.removeEventListener('gatoencerrado:open-huella-activation', handleOpenHuellaActivation);
+  }, [embeddedClientSecret, user]);
 
   // 3) Checkout
   async function handleCheckout() {
@@ -1033,6 +1040,15 @@ const CallToAction = ({ barsIntroDelayMs = 0 }) => {
     }
   }
 
+  function handlePrimaryHuellaClick() {
+    if (!user && !embeddedClientSecret && !showGuestCheckoutIdentity) {
+      setShowGuestCheckoutIdentity(true);
+      window.requestAnimationFrame(() => guestEmailInputRef.current?.focus());
+      return;
+    }
+    handleCheckout();
+  }
+
   function handleEmbeddedCheckoutDone({ ok, message }) {
     if (!ok) return;
     const normalizedStatus = (message || '').toLowerCase();
@@ -1148,16 +1164,31 @@ const CallToAction = ({ barsIntroDelayMs = 0 }) => {
       </div>
       <div className="flex items-baseline justify-between">
         <p className="text-[1.05rem] opacity-90 inline-flex items-center gap-2 leading-tight">
-          <Ticket size={14} className="text-cyan-300/90" />
-          Boletos voluntarios
+          <PawPrint size={14} className="text-cyan-300/90" />
+          Otras huellas
+          <button
+            type="button"
+            onClick={() => setShowOtherHuellaInfo((prev) => !prev)}
+            className="inline-flex h-7 w-7 items-center justify-center rounded-full border border-white/15 bg-white/5 text-slate-300 transition hover:border-cyan-200/40 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-300/50"
+            aria-label="Explicar otras huellas"
+            aria-expanded={showOtherHuellaInfo}
+          >
+            <Info size={13} />
+          </button>
         </p>
         <p className="text-[2.2rem] font-semibold leading-none">{ticketUnits}</p>
       </div>
 
+      {showOtherHuellaInfo ? (
+        <div className="rounded-xl border border-cyan-200/20 bg-cyan-300/[0.06] px-3 py-2.5 text-xs leading-relaxed text-slate-300">
+          Próximamente, algunas compras —como una taza, una novela u otros objetos de la obra— podrán convertirse en huellas. Este espacio queda preparado mientras definimos cómo registrarlas.
+        </div>
+      ) : null}
+
       <div className="space-y-2">
         <div className="flex items-baseline justify-between">
           <p className="text-[1.05rem] opacity-90 leading-tight">
-            {interactiveSupport !== null ? 'Modo simulador' : 'Huellas + boletos ='}
+            {interactiveSupport !== null ? 'Modo simulador' : 'Total de huellas ='}
           </p>
           <p className="text-[2.2rem] font-semibold leading-none">{displayStats.totalSupport}</p>
         </div>
@@ -1168,65 +1199,29 @@ const CallToAction = ({ barsIntroDelayMs = 0 }) => {
   const ctaSection = (
     <div className="space-y-3">
       <button
-        type="button"
-        onClick={() => setShowTicketSupport((prev) => !prev)}
-        className="block w-full rounded border border-white/20 px-4 py-2 text-white hover:border-purple-300/70 hover:text-purple-100"
+        onClick={handlePrimaryHuellaClick}
+        disabled={loading || isSubscriber || isCheckingSubscription}
+        className={`white-glass-btn white-glass-btn--active block w-full px-4 py-2 text-slate-900 disabled:cursor-not-allowed disabled:opacity-50 ${
+          isLoginPulseActive ? 'white-glass-btn--pulse animate-pulse' : ''
+        }`}
       >
-        {showTicketSupport ? 'Ocultar opciones' : '¿Compraste boletos?'}
+        {isCheckingSubscription
+          ? 'Validando huella...'
+          : isSubscriber
+            ? 'Tu huella ya está activa'
+            : loading
+              ? 'Abriendo confirmación…'
+              : showGuestCheckoutIdentity && !user
+                ? 'Continuar al pago'
+                : 'Activa tu huella con 50MXN al mes'}
       </button>
-      {showTicketSupport ? (
-        <div className="relative overflow-hidden rounded-2xl border border-white/15 bg-black/35 px-4 py-3 text-left text-slate-100">
-          {isTicketSupportVideoAvailable ? (
-            <video
-              className="pointer-events-none absolute inset-0 h-full w-full scale-[1.03] object-cover opacity-70 saturate-125 contrast-125 brightness-110"
-              autoPlay
-              loop
-              muted
-              playsInline
-              preload="auto"
-              poster={SUPPORT_CTA_POSTER_URL}
-              onError={() => setIsTicketSupportVideoAvailable(false)}
-              aria-hidden="true"
-            >
-              <source src={SUPPORT_CTA_VIDEO_URL} type="video/mp4" />
-            </video>
-          ) : null}
-          <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-slate-950/35 via-slate-950/30 to-slate-950/45" />
-          <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_22%_24%,rgba(125,211,252,0.28),transparent_45%),radial-gradient(circle_at_80%_72%,rgba(147,197,253,0.22),transparent_18%)]" />
-          <p className="relative z-10 mb-2 text-m leading-relaxed text-slate-400">
-            Si asististe a la obra, puedes convertir ese momento en huella.
-            {' '}Si no tienes comprobante, tu palabra es suficiente.
-            {' '}Alguien del equipo te contestará.
-            <br /><br />
-          </p>
-          <div className="relative z-10 grid gap-2">
-            <a
-              href={`mailto:${SUPPORT_EMAIL}?subject=Destinar%20boleto%20a%20la%20causa&body=${SUPPORT_MESSAGE}`}
-              className="flex items-center justify-center gap-2 rounded-lg border border-sky-200/30 bg-white/10 px-4 py-2 text-center text-white backdrop-blur-md transition hover:border-sky-200/60 hover:bg-white/15"
-            >
-              <Mail size={18} />
-              Enviar por correo
-            </a>
-            <a
-              href={`https://wa.me/${SUPPORT_WHATSAPP.replace(/\D/g, '')}?text=${SUPPORT_MESSAGE}`}
-              target="_blank"
-              rel="noreferrer"
-              className="flex items-center justify-center gap-2 rounded-lg border border-sky-200/30 bg-white/10 px-4 py-2 text-center text-white backdrop-blur-md transition hover:border-sky-200/60 hover:bg-white/15"
-            >
-              <MessageCircle size={18} />
-              Enviar por WhatsApp
-            </a>
-          </div>
-        </div>
-      ) : null}
-      {!user && !embeddedClientSecret ? (
+
+      {!user && !embeddedClientSecret && showGuestCheckoutIdentity ? (
         <div className="space-y-2 text-left">
-          <label
-            htmlFor="huella-checkout-email"
-            className="block text-xs leading-relaxed text-slate-300"
-          >
-            Correo para proteger y recuperar tu huella
-          </label>
+          <p className="rounded-xl border border-white/10 bg-white/5 px-3 py-2.5 text-xs leading-relaxed text-slate-300">
+            Primero protege tu huella con un correo. No se realizará ningún cargo hasta que confirmes dentro del formulario de pago.
+          </p>
+
           <input
             ref={guestEmailInputRef}
             id="huella-checkout-email"
@@ -1240,6 +1235,9 @@ const CallToAction = ({ barsIntroDelayMs = 0 }) => {
                 setCheckoutStatus('');
               }
             }}
+            onKeyDown={(event) => {
+              if (event.key === 'Enter') handleCheckout();
+            }}
             placeholder="nombre@correo.com"
             className="form-surface w-full px-4 py-3 text-sm"
           />
@@ -1252,21 +1250,6 @@ const CallToAction = ({ barsIntroDelayMs = 0 }) => {
           </button>
         </div>
       ) : null}
-      <button
-        onClick={handleCheckout}
-        disabled={loading || isSubscriber || isCheckingSubscription}
-        className={`white-glass-btn white-glass-btn--active block w-full px-4 py-2 text-slate-900 disabled:cursor-not-allowed disabled:opacity-50 ${
-          isLoginPulseActive ? 'white-glass-btn--pulse animate-pulse' : ''
-        }`}
-      >
-        {isCheckingSubscription
-          ? 'Validando huella...'
-          : isSubscriber
-            ? 'Tu huella ya está activa'
-            : loading
-              ? 'Abriendo confirmación…'
-              : 'Activa tu huella con 50MXN al mes'}
-      </button>
 
       {msg ? <p className="text-sm text-red-300">{msg}</p> : null}
 
@@ -1314,6 +1297,9 @@ const CallToAction = ({ barsIntroDelayMs = 0 }) => {
           </div>
         ) : null}
         {embeddedClientSecret ? (
+          /* TINTERO: revisar con Stripe cómo priorizar Link y evitar pedir el
+             correo aquí y otra vez dentro del Payment Element. No se fuerza en
+             esta pasada porque cambia el contrato del checkout, no sólo la UI. */
           <HuellaEmbeddedCheckout
             clientSecret={embeddedClientSecret}
             onDone={handleEmbeddedCheckoutDone}
@@ -1332,7 +1318,7 @@ const CallToAction = ({ barsIntroDelayMs = 0 }) => {
           {displayStats.totalSupportClamped}/{ANNUAL_TOTAL_HUELLAS}
         </p>
       </div>
-      <div className="space-y-1">
+      <div id="impact-bar-terapias" className="scroll-mt-28 space-y-1">
         <div className="flex items-center text-[0.92rem] opacity-85">
           <span className="inline-flex items-center gap-2">
             <HeartHandshake size={14} className="text-emerald-300/90" />
@@ -1354,7 +1340,7 @@ const CallToAction = ({ barsIntroDelayMs = 0 }) => {
         </p>
       </div>
 
-      <div className="space-y-1">
+      <div id="impact-bar-residencias" className="scroll-mt-28 space-y-1">
         <div className="flex items-center text-[0.92rem] opacity-85">
           <span className="inline-flex items-center gap-2">
             <Palette size={14} className="text-amber-300/90" />
@@ -1377,7 +1363,7 @@ const CallToAction = ({ barsIntroDelayMs = 0 }) => {
         </p>
       </div>
 
-      <div className="space-y-1">
+      <div id="impact-bar-implementacionEscuelas" className="scroll-mt-28 space-y-1">
         <div className="flex items-center text-[0.92rem] opacity-85">
           <span className="inline-flex items-center gap-2">
             <Smartphone size={14} className="text-cyan-300/90" />
@@ -1401,7 +1387,7 @@ const CallToAction = ({ barsIntroDelayMs = 0 }) => {
         </p>
       </div>
 
-      <div className="space-y-1">
+      <div id="impact-bar-universos" className="scroll-mt-28 space-y-1">
         <div className="flex items-center text-[0.92rem] opacity-85">
           <span className="inline-flex items-center gap-2">
             <Drama size={14} className="text-violet-300/90" />
