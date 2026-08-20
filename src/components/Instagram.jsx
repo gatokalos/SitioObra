@@ -1168,7 +1168,7 @@ const Instagram = () => {
 
                           <div className="relative flex h-full flex-col justify-between p-3 md:p-4">
                             <div className="text-[0.58rem] uppercase tracking-[0.3em] text-slate-200/75 mix-blend-screen">
-                              #GatoEncerrado
+                              Es un gato encerrado
                             </div>
                           <div className="flex max-w-[12rem] flex-col items-start gap-2 md:max-w-[13rem]">
                             <div className="w-8 border-t border-white/55 shadow-[0_0_10px_rgba(255,255,255,0.24)] md:w-10" />

@@ -91,7 +91,7 @@ const HERO_GHOST_SUBTITLES = [
   'Lo que resuene, te encontrará',                    // NUEVA — tu gramática de resonancia
   'Hay escenas que regresan días después',            // NUEVA — la resonancia diferida, sembrada
   'El gato ya te vio',                                // NUEVA — el susurro felino (ver decisión C)
-  'Una sola pregunta: ¿qué es *estar bien*?' // NUEVA — la introspección
+  'Una sola pregunta: ¿qué es estar bien?' // NUEVA — la introspección
 ];
 
 const HeroInactiveSignal = ({ prefersReducedMotion = false }) => {

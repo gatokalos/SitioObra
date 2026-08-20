@@ -921,19 +921,19 @@ export const ProvocaSection = () => {
                 Escucha cómo reacciona la obra a la voz que estás leyendo.
               </p>
               <details className="group w-full text-[11px]">
-                <summary className="inline-flex cursor-pointer list-none items-center gap-1.5 text-slate-400/80 transition hover:text-slate-200">
-                  <span className="inline-flex h-4 w-4 shrink-0 items-center justify-center rounded-full border border-slate-400/50">
-                    <Info size={10} />
-                  </span>
+                <summary className="group/info inline-flex cursor-pointer list-none items-center gap-2 text-slate-300 transition hover:text-white focus-visible:outline-none">
                   ¿Quién o qué es la obra que reacciona?
+                  <span className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-white/15 bg-white/5 text-slate-300 transition group-hover/info:border-cyan-200/40 group-hover/info:text-white group-focus-visible/info:ring-2 group-focus-visible/info:ring-cyan-300/50">
+                    <Info size={13} />
+                  </span>
                 </summary>
-                <p className="mt-2 leading-relaxed text-slate-300/80">
-                  No es una narradora ni una asistente que resuelve dudas.
+                <div className="mt-2 rounded-xl border border-cyan-200/20 bg-cyan-300/[0.06] px-3 py-2.5 leading-relaxed text-slate-300">
+                  Es una voz generada con IA a partir del archivo interno de la obra.
                   <br />
-                  Es la obra reaccionando desde sus propias imágenes y conflictos — solo conoce este universo.
+                  Consulta escenas, símbolos y emociones de este universo, guiada por instrucciones creadas para reaccionar —no para resolver dudas—.
                   <br />
-                  Lo que recibas no es una respuesta: es una reacción irrepetible, nacida de la voz que acabas de leer.
-                </p>
+                  Cada reacción se compone al momento a partir de la voz que acabas de leer.
+                </div>
               </details>
             </div>
           </div>
@@ -1223,8 +1223,8 @@ const About = () => {
                 </span>
                 <span aria-hidden="true">s</span>
               </h3>
-              <p className="text-slate-300/80 leading-relaxed mb-8 font-light">
-                El Chivis —Silvestre Filis— transforma su mente <strong>en escenario</strong>. Allá arriba, la verdad y la fantasía ya no compiten. Y tú —usuario, visitante, cómplice— puedes entrar en directo, porque quizás… tú también tienes <i>un gato encerrado</i> en el pecho.
+              <p className="text-slate-50/50 leading-relaxed mb-8 font-light">
+                El Chivis —Silvestre Filis— despliega su mente como <strong>escenario</strong>. Allá arriba, un tigre de fuego encarna por un instante su devenir. Tú puedes entra en directo <strong>a ese estado emocional</strong>, porque quizás… tú también tienes <i>un gato encerrado</i>.
               </p>
               <div className="flex flex-col lg:flex-row gap-4">
                 <Button

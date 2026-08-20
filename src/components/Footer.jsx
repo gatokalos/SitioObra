@@ -4,15 +4,10 @@ import { Heart, Instagram, Twitter, Facebook, Mail } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { toast } from '@/components/ui/use-toast';
 
-const Footer = ({
-  showAllianceNav = true,
-  showCuradoriaNav = true,
-  showIntermedioNav = false,
-  showTransmediaNav = true,
-  showPerspectivasNav = false,
-  showObraDestacadaNav = false,
-  showTerceraLlamadaNav = false,
-}) => {
+// Pieza editorial con el resplandor integrado en la propia imagen.
+const esferaFinalPng = '/assets/esfera_final.png';
+
+const Footer = () => {
   const instagramUrl = 'https://www.instagram.com/esungatoencerrado/?hl=en';
   const twitterUrl = 'https://x.com/SilvestreFilis';
   const facebookUrl = 'https://www.facebook.com/share/16pHNpZjpM/?mibextid=wwXIfr';
@@ -43,8 +38,21 @@ const Footer = ({
       <div className="section-divider mb-16"></div>
       
       <div className="container mx-auto px-6">
-        <div className="grid md:grid-cols-4 gap-8 mb-12">
-          <div className="md:col-span-2">
+        <div className="mb-12 grid gap-8 md:grid-cols-[minmax(0,1.45fr)_minmax(0,0.8fr)_minmax(180px,0.75fr)] lg:gap-12">
+          <div className="flex justify-center md:hidden">
+            <motion.img
+              src={esferaFinalPng}
+              alt=""
+              aria-hidden="true"
+              initial={{ opacity: 0, y: 20, scale: 0.96 }}
+              whileInView={{ opacity: 1, y: 0, scale: 1 }}
+              transition={{ duration: 0.7, ease: "easeOut" }}
+              viewport={{ once: true }}
+              className="h-auto w-[145px] select-none"
+            />
+          </div>
+
+          <div>
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
@@ -55,7 +63,7 @@ const Footer = ({
                 #GatoEncerrado
               </span>
               <p className="text-slate-400 leading-relaxed mb-6 max-w-md font-light">
-                Una experiencia narrativa interactiva desplegada en nueve formas creativas. Quien entra deja de ser solo observador: participa y aborda, desde un lugar propio, una herida emocional compartida.
+                Una experiencia narrativa interactiva desplegada en nueve formas creativas. Quien entra deja de ser solo observadxr: aborda y transforma, desde un lugar propio, una herida emocional compartida.
               </p>
               <div className="flex gap-2">
                 <Button variant="ghost" size="icon" onClick={() => handleSocialClick(instagramUrl)} className="text-slate-400 hover:text-white hover:bg-white/10"><Instagram size={20} /></Button>
@@ -63,41 +71,6 @@ const Footer = ({
                 <Button variant="ghost" size="icon" onClick={() => handleSocialClick(facebookUrl)} className="text-slate-400 hover:text-white hover:bg-white/10"><Facebook size={20} /></Button>
                 <Button variant="ghost" size="icon" onClick={() => handleLinkClick('#contact')} className="text-slate-400 hover:text-white hover:bg-white/10"><Mail size={20} /></Button>
               </div>
-            </motion.div>
-          </div>
-
-          <div>
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.1, ease: "easeOut" }}
-              viewport={{ once: true }}
-            >
-              <span className="font-semibold text-slate-200 mb-4 block">Navegación</span>
-              <ul className="space-y-3">
-                {[
-                  ...(showTerceraLlamadaNav ? [{ name: 'Última llamada', href: '#bienvenida-creador' }] : []),
-                  ...(showTransmediaNav ? [{ name: 'Las nueve formas', href: '#transmedia' }] : []),
-                  ...(showAllianceNav ? [{ name: 'Causa social', href: '#apoya' }] : []),
-                  ...(showIntermedioNav ? [{ name: 'Intermedio', href: '#blog-contribuye' }] : []),
-                  ...(showCuradoriaNav ? [{ name: 'Segundo acto', href: '#dialogo-critico' }] : []),
-                  ...(showPerspectivasNav ? [{ name: 'La réplica', href: '#provoca' }] : []),
-                  ...(showIntermedioNav ? [{ name: 'Caída del telón', href: '#next-show' }] : []),
-                  ...(showObraDestacadaNav ? [{ name: 'Archivo escénico', href: '#about' }] : []),
-                  ...(showObraDestacadaNav ? [{ name: 'Créditos de la función', href: '#team' }] : []),
-                  ...(showObraDestacadaNav ? [{ name: 'Galería fractal', href: '#instagram' }] : []),
-                  { name: 'Contacto', href: '#contact' },
-                ].map((item) => (
-                  <li key={item.name}>
-                    <button
-                      onClick={() => handleLinkClick(item.href)}
-                      className="text-slate-400 hover:text-white transition-colors text-sm font-light"
-                    >
-                      {item.name}
-                    </button>
-                  </li>
-                ))}
-              </ul>
             </motion.div>
           </div>
 
@@ -115,6 +88,19 @@ const Footer = ({
                 <li className="text-slate-400">Carlos A. Pérez H.<br />Tijuana, México</li>
               </ul>
             </motion.div>
+          </div>
+
+          <div className="hidden items-start justify-end md:flex">
+            <motion.img
+              src={esferaFinalPng}
+              alt=""
+              aria-hidden="true"
+              initial={{ opacity: 0, y: 20, scale: 0.96 }}
+              whileInView={{ opacity: 1, y: 0, scale: 1 }}
+              transition={{ duration: 0.7, delay: 0.25, ease: "easeOut" }}
+              viewport={{ once: true }}
+              className="h-auto w-[190px] select-none lg:w-[220px]"
+            />
           </div>
         </div>
 

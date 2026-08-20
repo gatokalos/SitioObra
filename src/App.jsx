@@ -960,15 +960,7 @@ function App() {
                 </DeferredSection>
               </main>
 
-              <Footer
-                showAllianceNav={isAuthenticated}
-                showCuradoriaNav={isCuradoriaVisible}
-                showIntermedioNav={canShowPostHeroContent}
-                showTransmediaNav={canShowPostHeroContent && hasEnteredUniverse && canAccessTransmedia}
-                showPerspectivasNav={isCuradoriaVisible}
-                showObraDestacadaNav={isObraDestacadaVisible}
-                showTerceraLlamadaNav={canShowPostHeroContent}
-              />
+              <Footer />
               {shouldShowToast && (
                 <LoginToast emailHash={emailHash} onDismiss={dismissToast} />
               )}
