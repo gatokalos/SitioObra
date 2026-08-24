@@ -261,7 +261,7 @@ const AlianzaSocial = () => {
                         />
                         <div>
                           <p className="text-base font-semibold text-slate-100">
-                            ¿Quieres explorar la app "Qué es estar bien"?
+                            ¿Quieres explorar la app "#Estarbien"?
                           </p>
                         </div>
                       </div>

@@ -48,6 +48,23 @@ const PORTAL_ICON_URL = {
   oraculo:     `${MERCH_BASE}/el_oraculo.png`,
 };
 
+// formatId (miniversePortalRegistry.js) -> clave corta de este archivo. No son
+// intercambiables: Teatro es formatId 'miniversos' pero clave 'obra' (su ruta
+// es /portal-voz), y Gráficos es 'miniversoGrafico' pero clave 'grafico', sin
+// la "s" de su ruta /portal-graficos. Los otros siete sí coinciden con el
+// segmento final de su ruta.
+const FORMAT_ID_TO_PORTAL = {
+  miniversos: 'obra',
+  miniversoNovela: 'literatura',
+  lataza: 'artesanias',
+  copycats: 'cine',
+  miniversoGrafico: 'grafico',
+  miniversoSonoro: 'sonoridades',
+  miniversoMovimiento: 'movimiento',
+  apps: 'juegos',
+  oraculo: 'oraculo',
+};
+
 const BASE = `${MERCH_BASE}/posters`;
 const PORTAL_POSTER = {
   obra:        `${BASE}/poster_obra.png`,
@@ -698,16 +715,23 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
     window.location.reload();
   };
 
+  // El boleto testifica hacia dónde sigue el recorrido, no de dónde viene —
+  // por eso usa el miniverso RECOMENDADO (l3Rec.recommended_format_id), no el
+  // portal actual. Sin el recomendado resuelto, cae al actual como último
+  // recurso en vez de romper la descarga.
+  const recommendedSouvenirPortal =
+    FORMAT_ID_TO_PORTAL[l3Rec?.recommended_format_id] ?? portal;
+
   const handleDownloadSouvenir = useCallback(async () => {
     if (isSouvenirGenerating || !l3Rec?.step3) return;
     setIsSouvenirGenerating(true);
     try {
       const blob = await createMiniverseSouvenirBlob({
-        portal,
+        portal: recommendedSouvenirPortal,
         step3: l3Rec.step3,
-        backgroundUrl: PORTAL_POSTER[portal],
+        backgroundUrl: PORTAL_POSTER[recommendedSouvenirPortal],
       });
-      const filename = `boleto-miniverso-${portal}.png`;
+      const filename = `boleto-miniverso-${recommendedSouvenirPortal}.png`;
       // iOS Safari: Web Share API saves directly al álbum de fotos
       const file = new File([blob], filename, { type: 'image/png' });
       if (typeof navigator.share === 'function' && typeof navigator.canShare === 'function' && navigator.canShare({ files: [file] })) {
@@ -719,7 +743,7 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
     } finally {
       setIsSouvenirGenerating(false);
     }
-  }, [isSouvenirGenerating, l3Rec, portal]);
+  }, [isSouvenirGenerating, l3Rec, recommendedSouvenirPortal]);
 
 
   /* Bitácora — genera P2 o P3 dinámicamente según lo que ya respondió el usuario */
@@ -1122,10 +1146,10 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
                           opacity: isSouvenirGenerating ? 0.6 : 1,
                         }}
                       >
-                        {PORTAL_ICON_URL[portal] && (
+                        {PORTAL_ICON_URL[recommendedSouvenirPortal] && (
                           <img
-                            src={PORTAL_ICON_URL[portal]}
-                            alt={portal}
+                            src={PORTAL_ICON_URL[recommendedSouvenirPortal]}
+                            alt={recommendedSouvenirPortal}
                             style={{ width: '4rem', height: '4rem', borderRadius: '1rem', objectFit: 'cover', boxShadow: '0 8px 32px rgba(0,0,0,0.55)' }}
                           />
                         )}
@@ -2153,10 +2177,10 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
                         disabled={isSouvenirGenerating}
                         style={{ background: 'none', border: 'none', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.5rem', cursor: isSouvenirGenerating ? 'wait' : 'pointer', opacity: isSouvenirGenerating ? 0.6 : 1 }}
                       >
-                        {PORTAL_ICON_URL[portal] && (
+                        {PORTAL_ICON_URL[recommendedSouvenirPortal] && (
                           <img
-                            src={PORTAL_ICON_URL[portal]}
-                            alt={portal}
+                            src={PORTAL_ICON_URL[recommendedSouvenirPortal]}
+                            alt={recommendedSouvenirPortal}
                             style={{ width: '3.5rem', height: '3.5rem', borderRadius: '0.75rem', objectFit: 'cover', boxShadow: '0 8px 32px rgba(0,0,0,0.55)' }}
                           />
                         )}

@@ -692,7 +692,7 @@ export const ProvocaSection = () => {
 	  </span>
 </h2>
  <p className="mb-10 font-light leading-relaxed text-slate-300/80 xl:mb-6">
-                Ninguna obra termina en el acto final. Se completa del otro lado, cuando alguien la recibe y responde.
+                Ninguna obra termina en el <em>acto final</em>. Se completa cuando alguien la recibe y responde.
               </p>
       
               <h3

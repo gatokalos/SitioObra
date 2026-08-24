@@ -19,8 +19,8 @@ flowchart TB
     ULTIMA[ÚLTIMA LLAMADA<br/><small>Entrada narrativa al universo</small>]:::acto
     MINI[LA OBRA TOMA FORMA<br/><small>Miniversos · nueve formas creativas</small>]:::escena
     INTER[INTERMEDIO<br/><small>¿Qué obra ocurre en ti?</small>]:::acto
-    CURA[CURADURÍA<br/><small>Buscador Backstage + contenidos editoriales</small>]:::escena
-    REPLICA[LA RÉPLICA<br/><small>Voces del público + reacción sonora de la obra</small>]:::respuesta
+    CURA[CURADURÍA<br/><small>El Camerino (Apuntador) + contenidos editoriales</small>]:::escena
+    REPLICA[LA RÉPLICA<br/><small>Voces del público + una presencia que refleja sin nombrarse</small>]:::respuesta
     TELON[CAÍDA DEL TELÓN<br/><small>Dos maneras de continuar</small>]:::cierre
 
     HERO -->|Activa el recorrido| ULTIMA
@@ -95,7 +95,7 @@ flowchart LR
   VOZ[Voz elegida del público] --> MODO[Modo<br/>confusion-lucida]
   MODO --> API[POST<br/>/api/obra-conciencia]
   API --> RAG[RAG interno<br/>escenas · símbolos · emociones]
-  RAG --> PROMPT[Conciencia de la obra<br/>reacciona, no resuelve]
+  RAG --> PROMPT[Presencia que refleja<br/>reacciona, no resuelve]
   PROMPT --> TEXTO[Reacción textual]
   TEXTO --> TTS[Síntesis de voz]
   TTS --> AUDIO[Reacción sonora irrepetible]

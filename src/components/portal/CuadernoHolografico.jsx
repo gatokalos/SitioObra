@@ -356,7 +356,7 @@ function CompletedHomePanel({ portal, entry, infoOpen, infoSeen, onToggleInfo })
                   Aquí podrás reconocer, mediante datos colectivos y anónimos, qué permanece en otras personas después de habitar la obra.
                 </p>
                 <p className="mt-3 text-sm leading-relaxed text-slate-300/70">
-                  Al conservar tu Huella podrás volver a tus respuestas, seguir su recorrido y descubrir nuevas relaciones dentro del universo.
+                  También podrás volver a tus respuestas, seguir su recorrido y descubrir nuevas relaciones dentro del universo.
                 </p>
                 <a
                   href={GATO_BITACORA_URL}
