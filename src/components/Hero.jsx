@@ -54,7 +54,19 @@ const HERO_AUDIO_IDLE_RETRY_MS = 6000;
 const HEADER_INDEX_HASHTAG_ID = 'header-index-hashtag';
 const HERO_TITLE = 'GATOENCERRADO';
 const HERO_BRAND_LABEL = '#GATOENCERRADO';
-const HERO_INACTIVE_HINT = 'Pulsa al gato cuando lo veas';
+// Acortada (Carlos, 2026-08-19): "cuando lo veas" salía sobrando una vez que
+// el refuerzo "Sí, el #" se escribe en la misma línea — sin eso, el texto
+// combinado no cabía en un renglón en ningún ancho probado.
+const HERO_INACTIVE_HINT = 'Pulsa el gato';
+// Mismas piezas que arman HERO_INACTIVE_HINT, separadas para poder
+// glitchear solo la palabra "gato" (ver HERO_GATO_GLITCH_DELAY_MS abajo) sin
+// tocar el resto de la frase.
+const HERO_INACTIVE_HINT_PREFIX = 'Pulsa el ';
+const HERO_INACTIVE_HINT_GATO_WORD = 'gato';
+const HERO_INACTIVE_HINT_SUFFIX = '';
+const HERO_GATO_GLITCH_EXTRA_CHARS = ['#'];
+const HERO_SI_EL_HASH_TEXT = '. Sí: el #';
+const HERO_SI_EL_HASH_TYPE_SPEED_MS = 45;
 const HERO_INACTIVE_ECHO_COUNT = 13;
 const HERO_INACTIVE_ECHO_ENTRY_DURATION_S = 0.72;
 const HERO_INACTIVE_ECHO_STAGGER_S = 0.095;
@@ -65,6 +77,13 @@ const PWA_HASH_WHISPERS = [
   'Luego no me busques…',
   'Instálame como aplicación.',
 ];
+// Feedback real de un visitante (agosto 2026): no relacionó el # con "el
+// gato" del hint estático y no supo qué tocar. Refuerzo de una sola vez — la
+// palabra "gato" del hint se revuelve brevemente con # en el pool y se
+// asienta de vuelta en "gato", mismo motivo visual que ya usa el emblema
+// activado (heroTitleSignalDisplay / useSignalDriftText). Dispara después de
+// que el hint estático ya lleva un rato visible sin interacción.
+const HERO_GATO_GLITCH_DELAY_MS = 6500;
 const GAT_BALANCE_STORAGE_KEY = 'gatoencerrado:gatokens-available';
 const readHeroGatBalance = () => {
   const value = Number(safeGetItem(GAT_BALANCE_STORAGE_KEY));
@@ -93,6 +112,12 @@ const HERO_GHOST_SUBTITLES = [
   'El gato ya te vio',                                // NUEVA — el susurro felino (ver decisión C)
   'Una sola pregunta: ¿qué es estar bien?' // NUEVA — la introspección
 ];
+
+// Se probó variar cada capa del eco con una frase distinta (déjà vu con los
+// subtítulos rotativos) y se revirtió el mismo día — vuelve a ser una sola
+// frase repetida 13 veces, como el diseño original, pero con esta pregunta
+// introspectiva en vez del hint de activación (Carlos, 2026-08-19).
+const HERO_INACTIVE_ECHO_TEXT = 'Una sola pregunta: ¿qué es estar bien?';
 
 const HeroInactiveSignal = ({ prefersReducedMotion = false }) => {
   const echoes = Array.from(
@@ -154,9 +179,9 @@ const HeroInactiveSignal = ({ prefersReducedMotion = false }) => {
           >
             <span
               className="hero-inactive-signal__copy"
-              data-text={HERO_INACTIVE_HINT}
+              data-text={HERO_INACTIVE_ECHO_TEXT}
             >
-              {HERO_INACTIVE_HINT}
+              {HERO_INACTIVE_ECHO_TEXT}
             </span>
           </motion.span>
         );
@@ -244,6 +269,15 @@ const Hero = () => {
   const lastPwaHashWhisperIndexRef = useRef(-1);
   const lastPwaHashWhisperAtRef = useRef(0);
   const pwaHashWhisperTimerRef = useRef(null);
+  // Un solo glitch de "gato" -> # por sesión, no un bucle (ver el efecto que
+  // lo dispara más abajo, junto a shouldShowHeroInactiveHint).
+  const [gatoGlitchTriggerKey, setGatoGlitchTriggerKey] = useState(0);
+  const hasTriggeredGatoGlitchRef = useRef(false);
+  // Tecleo real del segundo renglón — se revela letra por letra para que se
+  // sienta continuación de la escritura, no un aditamento aparte (Carlos,
+  // 2026-08-19). Arranca en 0; el efecto de abajo lo hace avanzar.
+  const [siElHashTypedLength, setSiElHashTypedLength] = useState(0);
+  const prefersReducedMotion = useReducedMotion();
   const [isInstalledPwa, setIsInstalledPwa] = useState(readIsRunningAsInstalledPwa);
   const [heroGatBalance, setHeroGatBalance] = useState(readHeroGatBalance);
   const [isMobileViewport, setIsMobileViewport] = useState(() => {
@@ -310,6 +344,45 @@ const Hero = () => {
     if (hasActivatedAudio || isGatHubOpen) setIsHashtag3DRetired(true);
   }, [hasActivatedAudio, isGatHubOpen]);
   const shouldShowHeroInactiveHint = !hasActivatedAudio && isHeroHashReady && !isHeroPwaInstructionsOpen && !isGatLinktreeAudience;
+
+  useEffect(() => {
+    if (!shouldShowHeroInactiveHint || hasTriggeredGatoGlitchRef.current) return undefined;
+    const timerId = window.setTimeout(() => {
+      hasTriggeredGatoGlitchRef.current = true;
+      setGatoGlitchTriggerKey((prev) => prev + 1);
+    }, HERO_GATO_GLITCH_DELAY_MS);
+    return () => window.clearTimeout(timerId);
+  }, [shouldShowHeroInactiveHint]);
+
+  useEffect(() => {
+    if (gatoGlitchTriggerKey === 0) return undefined;
+    if (prefersReducedMotion) {
+      setSiElHashTypedLength(HERO_SI_EL_HASH_TEXT.length);
+      return undefined;
+    }
+    let cancelled = false;
+    let charIndex = 0;
+    const typeNextChar = () => {
+      if (cancelled) return;
+      charIndex += 1;
+      setSiElHashTypedLength(charIndex);
+      if (charIndex < HERO_SI_EL_HASH_TEXT.length) {
+        window.setTimeout(typeNextChar, HERO_SI_EL_HASH_TYPE_SPEED_MS);
+      }
+    };
+    const startId = window.setTimeout(typeNextChar, HERO_SI_EL_HASH_TYPE_SPEED_MS);
+    return () => {
+      cancelled = true;
+      window.clearTimeout(startId);
+    };
+  }, [gatoGlitchTriggerKey, prefersReducedMotion]);
+
+  const hintGatoWordDisplay = useSignalDriftText(HERO_INACTIVE_HINT_GATO_WORD, {
+    active: shouldShowHeroInactiveHint,
+    triggerKey: gatoGlitchTriggerKey,
+    extraChars: HERO_GATO_GLITCH_EXTRA_CHARS,
+  });
+
   const currentHeroSubtitle = hasActivatedAudio
     ? heroGhostSubtitle ?? HERO_ROTATING_SUBTITLES[heroSubtitleIndex]
     : shouldShowHeroInactiveHint ? HERO_INACTIVE_HINT : '';
@@ -326,7 +399,6 @@ const Hero = () => {
   );
   const { toast } = useToast();
   const narrativeVideoUrl = isMobileViewport ? null : NARRATIVE_VIDEO_URL_DESKTOP;
-  const prefersReducedMotion = useReducedMotion();
   const heroInactiveHintEntryDelay = prefersReducedMotion
     ? 0.12
     : (HERO_INACTIVE_ECHO_COUNT - 1) * HERO_INACTIVE_ECHO_STAGGER_S
@@ -1351,8 +1423,14 @@ const Hero = () => {
                             style={{
                               '--hero-hint-entry-delay': `${heroInactiveHintEntryDelay}s`,
                             }}
+                            aria-label={`${HERO_INACTIVE_HINT}${HERO_SI_EL_HASH_TEXT}`}
                           >
-                            {currentHeroSubtitle}
+                            <span aria-hidden="true">
+                              {HERO_INACTIVE_HINT_PREFIX}
+                              {hintGatoWordDisplay}
+                              {HERO_INACTIVE_HINT_SUFFIX}
+                              {HERO_SI_EL_HASH_TEXT.slice(0, siElHashTypedLength)}
+                            </span>
                             <span className="hero-hint-cursor" aria-hidden="true" />
                           </span>
                         ) : currentHeroSubtitle}

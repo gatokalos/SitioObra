@@ -85,6 +85,16 @@ La conversación posterior sigue siendo una fase distinta de la calibración pre
 
 La deuda técnica aceptada es que algunas variables conservan nombres históricos de L2 aunque hoy representan momentos diferentes del flujo. No deben renombrarse durante ajustes visuales; su refactor deberá hacerse por separado y con pruebas de persistencia.
 
+### El boleto — recordatorio del miniverso recomendado
+
+Al llegar al último paso de la conversación posterior (tras el consentimiento "¿Seguimos?"), aparece un botón — `Agregar recordatorio` — bajo el ícono del miniverso que el sistema propone para continuar. Genera al vuelo, con `<canvas>`, un boleto vertical estilo vintage (1080×1920, proporción de historia): marco de boleto de teatro real, "Resonancia Colectiva" como encabezado, número y nombre del miniverso recomendado, y bajo la etiqueta "TU CONSIGNA" el mensaje oracular que el sistema de recomendación generó para esa persona a partir de su propio recorrido — no un texto genérico. Cierra con una advertencia deliberada: *"Este registro es único. No garantiza continuidad. Solo testifica que estuviste."*
+
+No es un enlace ni una notificación: es un PNG real que se guarda directo al carrete en iOS vía Web Share API, o se descarga como archivo en cualquier otro contexto — un objeto que la persona se lleva consigo, sin depender de que recuerde volver al sitio por su cuenta o de que le llegue un aviso.
+
+**Corrección aplicada (19 de agosto de 2026).** El boleto mostraba el miniverso ACTUAL (`portal`), no el recomendado (`l3Rec.recommended_format_id`), pese a que el dato recomendado ya estaba disponible y en uso en otras partes del mismo componente. Antes de la corrección era un espejo redundante de dónde ya se había estado, sin función alguna en la ventana longitudinal. Corregido en la descarga y en ambos íconos de vista previa (móvil y desktop), con una tabla de conversión de `formatId` a clave de portal — Teatro y Gráficos son los dos casos donde el `formatId` no coincide con el segmento final de su propia ruta — y con reserva al portal actual si la recomendación no resuelve.
+
+**Función distinta a la moneda GAT / "Habitar la forma".** Esa moneda resuelve una transición inmediata dentro del mismo miniverso: reclamarla es entrar al artefacto ahí mismo. El boleto no lleva a ningún lado de inmediato — es lo único del sistema que acompaña al participante durante el vacío entre sesiones, mientras se juega la resonancia diferida (ver sección 4, regreso longitudinal de 72 horas). No compiten por el mismo lugar del recorrido.
+
 ### Fase 3 — Días después / En el foco
 
 `Cuaderno holográfico` dejó de ser el nombre de la tercera fase. La fase ahora se llama:

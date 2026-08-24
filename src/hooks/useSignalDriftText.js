@@ -7,11 +7,18 @@ const pick = (items) => items[Math.floor(Math.random() * items.length)];
 
 const uniqueChars = (value) => [...new Set([...value].filter((char) => char !== ' '))];
 
-const useSignalDriftText = (target, { active = true, triggerKey = null } = {}) => {
+const EMPTY_EXTRA_CHARS = [];
+
+// extraChars: caracteres permitidos en la mutación aunque no vivan en target
+// (p. ej. glitchear "gato" -> "#" sin que target ya contenga un #).
+const useSignalDriftText = (target, { active = true, triggerKey = null, extraChars = EMPTY_EXTRA_CHARS } = {}) => {
   const [display, setDisplay] = useState(target);
   const timeoutRef = useRef(null);
 
-  const charPool = useMemo(() => uniqueChars(target), [target]);
+  const charPool = useMemo(
+    () => [...uniqueChars(target), ...extraChars],
+    [target, extraChars],
+  );
 
   useEffect(() => {
     if (timeoutRef.current) {
