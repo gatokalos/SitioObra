@@ -61,14 +61,14 @@ const PWAInstructionsOverlay = ({
   // grandes) y solo se topa con el límite en las pantallas más chicas, donde
   // el scroll interno entra como respaldo.
   return createPortal(
-    <div
-      className="fixed inset-x-0 top-0 z-[10000] mx-auto flex max-h-[60vh] w-full max-w-md flex-col overflow-hidden"
-      role="dialog"
-      aria-modal="true"
-      aria-label="Instrucciones para instalar #GatoEncerrado como app"
-    >
-      <div className="flex items-center justify-between px-4 py-3 text-slate-100">
-        <div>
+    <>
+      <div
+        className="fixed inset-x-0 top-0 z-[10000] mx-auto flex max-h-[60vh] w-full max-w-md flex-col overflow-hidden"
+        role="dialog"
+        aria-modal="true"
+        aria-label="Instrucciones para instalar #GatoEncerrado como app"
+      >
+        <div className="px-4 py-3 text-slate-100">
           <p className="text-[0.62rem] font-semibold uppercase tracking-[0.22em] text-cyan-200/80">
             {eyebrow}
           </p>
@@ -76,17 +76,8 @@ const PWAInstructionsOverlay = ({
             {subtitle}
           </p>
         </div>
-        <button
-          type="button"
-          onClick={onClose}
-          className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-white/10 bg-white/5 text-slate-200 transition hover:bg-white/10 hover:text-white"
-          aria-label="Cerrar instrucciones"
-        >
-          <X size={18} />
-        </button>
-      </div>
 
-      <div className="relative min-h-0 flex-1 overflow-y-auto">
+        <div className="relative min-h-0 flex-1 overflow-y-auto">
         <div className="pointer-events-none absolute inset-0" aria-hidden="true">
           {stars.map((star) => (
             <span
@@ -160,7 +151,21 @@ const PWAInstructionsOverlay = ({
           ))}
         </div>
       </div>
-    </div>,
+      </div>
+
+      {/* Cerrar vive junto al # 3D (que sigue en su lugar debajo del sheet),
+          no arriba con el copy — la cruz que cierra está donde está la cosa
+          que se está explicando, no separada de ella (Carlos, 2026-08-25). */}
+      <button
+        type="button"
+        onClick={onClose}
+        className="fixed right-4 z-[10000] inline-flex h-9 w-9 items-center justify-center rounded-full border border-white/10 bg-white/5 text-slate-200 transition hover:bg-white/10 hover:text-white"
+        style={{ bottom: 'calc(env(safe-area-inset-bottom, 0px) + 1.25rem)' }}
+        aria-label="Cerrar instrucciones"
+      >
+        <X size={18} />
+      </button>
+    </>,
     document.body
   );
 };

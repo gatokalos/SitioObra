@@ -698,7 +698,7 @@ const Header = ({
     { name: 'Contacto', href: '#contact' },
   ];
   const mobileMenuItems = [
-    { name: 'Primera fila', href: '#hero', description: '#MiraAlUniverso',
+    { name: 'Primera fila', href: '#hero', description: '#FrenteAlUniverso',
  },
     ...(showTerceraLlamadaNav
       ? [{ name: 'Última llamada', href: '#bienvenida-creador', description: '#PreguntasPendientes' }]
@@ -708,7 +708,7 @@ const Header = ({
           {
             name: 'La obra toma forma',
             href: '#transmedia',
-            description: '#narrativaexpandida',
+            description: '#narrativatransmedia',
             secondary: TRANSMEDIA_SECONDARY_ITEMS,
           },
         ]

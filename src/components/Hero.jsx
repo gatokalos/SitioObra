@@ -61,28 +61,26 @@ const HERO_INACTIVE_HINT = 'Pulsa el gato';
 // Mismas piezas que arman HERO_INACTIVE_HINT, separadas para poder
 // glitchear solo la palabra "gato" (ver HERO_GATO_GLITCH_DELAY_MS abajo) sin
 // tocar el resto de la frase.
-const HERO_INACTIVE_HINT_PREFIX = 'Si crees saberlo…';
-const HERO_INACTIVE_HINT_GATO_WORD = '';
+const HERO_INACTIVE_HINT_PREFIX = 'Pulsa el ';
+const HERO_INACTIVE_HINT_GATO_WORD = 'gato';
 const HERO_INACTIVE_HINT_SUFFIX = '';
 const HERO_GATO_GLITCH_EXTRA_CHARS = ['#'];
-const HERO_SI_EL_HASH_TEXT = ' pulsa el gato';
+const HERO_SI_EL_HASH_TEXT = '… sí, el # de abajo';
 const HERO_SI_EL_HASH_TYPE_SPEED_MS = 45;
 const HERO_INACTIVE_ECHO_COUNT = 13;
 const HERO_INACTIVE_ECHO_ENTRY_DURATION_S = 0.72;
 const HERO_INACTIVE_ECHO_STAGGER_S = 0.095;
 const PWA_HASH_WHISPERS = [
-  '¿Me voy contigo?',
-  '(Soy la obra)',
-  'Ya, llévame a casa.',
-  'Luego no me busques…',
-  'Instálame como aplicación.',
+  'Llévame contigo',
+  'Soy toda una obra',
+  'No solo otro sitio web',
 ];
 // Puente entre el tono introspectivo del Estado Cero (el eco, "Pulsa el
 // gato, si crees saberlo…") y los pasos prácticos de instalación — misma voz
 // en primera persona que ya usan los whispers de arriba, no tono de soporte
 // técnico (Carlos, 2026-08-19).
-const PWA_INSTRUCTIONS_EYEBROW = 'ANTES DE RESPONDER';
-const PWA_INSTRUCTIONS_SUBTITLE = 'Llévame contigo, así no tienes que recordar el camino de regreso.';
+const PWA_INSTRUCTIONS_EYEBROW = '';
+const PWA_INSTRUCTIONS_SUBTITLE = 'Este sitio está diseñado para funcionar como app:';
 // Feedback real de un visitante (agosto 2026): no relacionó el # con "el
 // gato" del hint estático y no supo qué tocar. Refuerzo de una sola vez — la
 // palabra "gato" del hint se revuelve brevemente con # en el pool y se
@@ -102,21 +100,21 @@ const HERO_PWA_PROMPT_DECLINED_KEY = 'gatoencerrado:pwa-install-declined-at';
 const HERO_PWA_PROMPT_COOLDOWN_MS = 30 * 24 * 60 * 60 * 1000;
 const HERO_ROTATING_SUBTITLES = [
   'La obra que ocurre en tu mente',                   // 0 · el slogan canónico
-  'Una experiencia narrativa interactiva',            // 1 · el cajón (ver decisión A)
+  'Una pregunta que cambia de forma',            // 1 · el cajón (ver decisión A)
   'Basada en una herida emocional compartida',        // 2 · el origen — intacta, es de tus mejores
-  'Teatro que no necesita escenario',                 // 3 · la expansión escénica
+  'Cada forma sostiene la misma pregunta',                 // 3 · la expansión escénica
   'Arte, tecnología y cuidado: una sola función',  // 4 · la función de la obra
-  'Una obra con nueve vidas',                         // 5 · NUEVA — el gato escondido en el número
+  'El gato ya te vio',                                // NUEVA — el susurro felino (ver decisión C)
   'Aquí el público también deja huella',              // 6 · NUEVA — la participación
   'Sí: aquí hay gato encerrado',                      // 7 · NUEVA — el premio final del que se quedó
 ];
 
 const HERO_GHOST_SUBTITLES = [
   'Tal vez esta obra ya empezó en ti',                // intacta
-  'Lo que resuene, te encontrará',                    // NUEVA — tu gramática de resonancia
+  'Lo que resuena no siempre ocurre al instante',                    // NUEVA — tu gramática de resonancia
   'Hay obras que regresan días después',            // NUEVA — la resonancia diferida, sembrada
-  'El gato ya te vio',                                // NUEVA — el susurro felino (ver decisión C)
-  'Una sola pregunta: ¿qué es estar bien?' // NUEVA — la introspección
+  'Una obra con nueve vidas',                         // 5 · NUEVA — el gato escondido en el número
+  'Lo que deja una obra no siempre ocurre al final', // NUEVA — la resonancia diferida, sembrada
 ];
 
 // Se probó variar cada capa del eco con una frase distinta (déjà vu con los
@@ -197,7 +195,7 @@ const HeroInactiveSignal = ({ prefersReducedMotion = false }) => {
 };
 
 const HERO_ROTATING_SUBTITLE_PLACEHOLDER =
-'Una experiencia narrativa transmedial';
+'Un sistema narrativo transmedial';
 const HERO_SUBTITLE_ROTATION_MS = 3800;
 // El eslogan canónico (primer subtítulo) compite visualmente con el
 // movimiento del # al activarse la escena — le damos un poco más de tiempo

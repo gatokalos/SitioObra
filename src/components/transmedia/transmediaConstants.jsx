@@ -1405,7 +1405,7 @@ export const formats = [
     title: 'El drama',
     icon: Drama,
     iconClass: 'text-purple-300',
-    vitrinaCopy: 'Empieza como una pregunta,\nuna que nadie está pensando.\nPero ocurre si hay testigos.',
+    vitrinaCopy: 'Empieza como una pregunta,\nuna que nadie está pensando.\nSolo ocurre si hay testigos.',
 
     iaTokensNote: 'Energía confiada: 300 GAT',
     image: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Merch/posters/poster_obra.png',
@@ -1415,7 +1415,7 @@ export const formats = [
     title: 'El objeto',
     icon: Coffee,
     iconClass: 'text-amber-300',
-    vitrinaCopy: 'Sostiene lo mismo que el drama\nuna emoción que alguien dejó ahí.\nPero no se derrama.',
+    vitrinaCopy: 'Sostiene lo mismo que el drama\nuna emoción que alguien puso ahí.\nAunque sin derramarse.',
 
     iaTokensNote: 'Mantener ritual: ~90 GAT.',
     image: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Merch/posters/poster_artesanias.png',
@@ -1425,7 +1425,7 @@ export const formats = [
     title: 'La escritura',
     icon: BookOpen,
     iconClass: 'text-emerald-300',
-    vitrinaCopy: 'Casi un objeto,\nse puede volver a agarrar.\nPero corre con el viento.',
+    vitrinaCopy: 'Casi un objeto,\nse puede volver a agarrar.\nPero viaja con el viento.',
 
     iaTokensNote: 'Energía viva: ~150 GAT.',
     image: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Merch/posters/poster_literatura.png',
@@ -1435,7 +1435,7 @@ export const formats = [
     title: 'La imagen',
     icon: Palette,
     iconClass: 'text-fuchsia-300',
-    vitrinaCopy: 'Se parece a la escritura,\nrefleja algo en su superficie.\nPero adentro no hay nadie.',
+    vitrinaCopy: 'Se parece a la escritura.\nRefleja algo en la superficie.\nPues adentro, no hay nadie.',
 
     iaTokensNote: 'Requiere ~110 GAT.',
     image: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Merch/posters/poster_graficos.png',
@@ -1455,7 +1455,7 @@ export const formats = [
     title: 'La vibración',
     icon: Music,
     iconClass: 'text-cyan-300',
-    vitrinaCopy: 'Dura lo que la proyección,\nel tiempo justo y se va.\nPero el eco se queda.',
+    vitrinaCopy: 'Dura lo que la proyección,\nel tiempo justo y se va.\nPero el eco, este sigue y sigue.',
 
     iaTokensNote: 'Requiere ~130 GAT',
     image: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Merch/posters/poster_sonoridades.png',
@@ -1485,7 +1485,7 @@ export const formats = [
     title: 'La pregunta',
     icon: Brain,
     iconClass: 'text-indigo-300',
-    vitrinaCopy: 'Como el riesgo,\nte coloca frente a algo.\nPero la jaula queda abierta.',
+    vitrinaCopy: 'Como el riesgo,\nte coloca frente a algo.\nAunque la jaula queda abierta.',
 
     iaTokensNote: 'Aquí se minan GATokes',
     image: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Merch/posters/poster_oraculo.png',

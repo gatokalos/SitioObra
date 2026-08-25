@@ -5606,15 +5606,15 @@ const renderDramaFeaturedWork = () => (
               viewport={{ once: true }}
               className="text-center mb-[clamp(2.5rem,5.5vh,4rem)] space-y-[clamp(1.25rem,2.2vh,1.75rem)] min-h-[clamp(210px,27vh,260px)] min-[700px]:max-lg:mb-8 min-[700px]:max-lg:min-h-[180px]"
             >
-              <p className="text-xs uppercase tracking-[0.4em] text-slate-400/70">#narrativaexpandida</p>
+              <p className="text-xs uppercase tracking-[0.4em] text-slate-400/70">#narrativatransmedia</p>
               <h2 className="font-display text-4xl md:text-5xl font-medium text-gradient italic">
                 La obra toma forma
               </h2>
               <p className="text-lg text-slate-300/80 max-w-3xl mx-auto leading-relaxed font-light">
-    <em>Esta obra es una narrativa transmedia</em> desplegada en nueve formas que aquí llamamos miniversos.<br />
+    <em>Esta obra es un sistema narrativo transmedia</em> que se despliega en nueve formas que aquí llamamos miniversos.<br />
     <strong>Elige por dónde continuar y qué lugar ocupar.</strong><br />
       <span className="block mt-10 text-sm text-slate-100/50 italic">
-    (Cada <strong>miniverso</strong> sostiene al universo entero con cada minuto de tu valiosa atención.)
+    (Mi universo entero se sostiene en cada minuto de tu atención dentro de estos <strong>miniversos</strong>.)
   </span>
       </p>
             </motion.div>
