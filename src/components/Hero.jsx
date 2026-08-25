@@ -61,11 +61,11 @@ const HERO_INACTIVE_HINT = 'Pulsa el gato';
 // Mismas piezas que arman HERO_INACTIVE_HINT, separadas para poder
 // glitchear solo la palabra "gato" (ver HERO_GATO_GLITCH_DELAY_MS abajo) sin
 // tocar el resto de la frase.
-const HERO_INACTIVE_HINT_PREFIX = 'Pulsa el ';
-const HERO_INACTIVE_HINT_GATO_WORD = 'gato';
+const HERO_INACTIVE_HINT_PREFIX = 'Si crees saberlo…';
+const HERO_INACTIVE_HINT_GATO_WORD = '';
 const HERO_INACTIVE_HINT_SUFFIX = '';
 const HERO_GATO_GLITCH_EXTRA_CHARS = ['#'];
-const HERO_SI_EL_HASH_TEXT = '. Sí: el #';
+const HERO_SI_EL_HASH_TEXT = ' pulsa el gato';
 const HERO_SI_EL_HASH_TYPE_SPEED_MS = 45;
 const HERO_INACTIVE_ECHO_COUNT = 13;
 const HERO_INACTIVE_ECHO_ENTRY_DURATION_S = 0.72;
@@ -77,6 +77,12 @@ const PWA_HASH_WHISPERS = [
   'Luego no me busques…',
   'Instálame como aplicación.',
 ];
+// Puente entre el tono introspectivo del Estado Cero (el eco, "Pulsa el
+// gato, si crees saberlo…") y los pasos prácticos de instalación — misma voz
+// en primera persona que ya usan los whispers de arriba, no tono de soporte
+// técnico (Carlos, 2026-08-19).
+const PWA_INSTRUCTIONS_EYEBROW = 'ANTES DE RESPONDER';
+const PWA_INSTRUCTIONS_SUBTITLE = 'Llévame contigo, así no tienes que recordar el camino de regreso.';
 // Feedback real de un visitante (agosto 2026): no relacionó el # con "el
 // gato" del hint estático y no supo qué tocar. Refuerzo de una sola vez — la
 // palabra "gato" del hint se revuelve brevemente con # en el pool y se
@@ -108,7 +114,7 @@ const HERO_ROTATING_SUBTITLES = [
 const HERO_GHOST_SUBTITLES = [
   'Tal vez esta obra ya empezó en ti',                // intacta
   'Lo que resuene, te encontrará',                    // NUEVA — tu gramática de resonancia
-  'Hay escenas que regresan días después',            // NUEVA — la resonancia diferida, sembrada
+  'Hay obras que regresan días después',            // NUEVA — la resonancia diferida, sembrada
   'El gato ya te vio',                                // NUEVA — el susurro felino (ver decisión C)
   'Una sola pregunta: ¿qué es estar bien?' // NUEVA — la introspección
 ];
@@ -1364,7 +1370,7 @@ const Hero = () => {
                   <span
                     className="hero-title hero-title--pre-scene hero-title-layer hero-title-layer--pre"
                     style={{
-                      opacity: hasActivatedAudio ? 0 : 0.58,
+                      opacity: hasActivatedAudio ? 0 : 0.98,
                       filter: 'brightness(0.7) contrast(1.08)',
                     }}
                     aria-hidden="true"
@@ -1627,7 +1633,8 @@ const Hero = () => {
       <PWAInstructionsOverlay
         isOpen={isHeroPwaInstructionsOpen}
         onClose={handleDeclineHeroPwaInstall}
-       
+        eyebrow={PWA_INSTRUCTIONS_EYEBROW}
+        subtitle={PWA_INSTRUCTIONS_SUBTITLE}
       />
     </>
   );
