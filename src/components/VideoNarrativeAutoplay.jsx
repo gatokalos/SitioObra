@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useNavigate, useLocation } from 'react-router-dom';
@@ -7,7 +7,24 @@ import { resolvePortalRoute } from '@/lib/miniversePortalRegistry';
 import { createPortalLaunchState } from '@/lib/portalNavigation';
 import { resolveNarrativeVideoUrl } from '@/lib/narrativeVideo';
 
-const VideoNarrativeAutoplay = ({ open, onClose, onNavigate, formatId, isMobileViewport, videoUrl: videoUrlProp }) => {
+const VideoNarrativeAutoplay = ({
+  open,
+  onClose,
+  onNavigate,
+  formatId,
+  isMobileViewport,
+  videoUrl: videoUrlProp,
+  // La mayoría de los llamadores ya deciden si conviene abrir este
+  // componente ANTES de pasar open=true (ResonanceModal.jsx,
+  // CuadernoHolografico.jsx, los 9 Portal*.jsx) — para ellos, `enabled` no
+  // aplica, se deja en su default `true` y este componente confía en `open`
+  // tal cual. Hero.jsx es la excepción: reanuda un video pendiente tras
+  // login sin ese pre-chequeo propio, así que le pasa su propia bandera
+  // aquí para que este componente decida saltarse el video sin pintar ni un
+  // cuadro (Carlos, 2026-08-25 — ver RESONANCE_BRIDGE_VIDEO_ENABLED /
+  // RESONANCE_FAREWELL_VIDEO_ENABLED en transmediaConstants.jsx).
+  enabled = true,
+}) => {
   const navigate = useNavigate();
   const location = useLocation();
   const videoRef = useRef(null);
@@ -65,6 +82,17 @@ const VideoNarrativeAutoplay = ({ open, onClose, onNavigate, formatId, isMobileV
       window.dispatchEvent(new CustomEvent('gatoencerrado:select-miniverse-format', { detail: { formatId } }));
     }, 80);
   };
+
+  // Red de seguridad para llamadores que no pre-chequean su propia bandera
+  // antes de pasar open=true (hoy, solo Hero.jsx — ver el prop `enabled`
+  // arriba). useLayoutEffect, no useEffect, para que no alcance a pintar ni
+  // un cuadro del video antes de seguir — "sin costura" (Carlos, 2026-08-25).
+  useLayoutEffect(() => {
+    if (open && !enabled) {
+      handleContinuar();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open, enabled]);
 
   if (typeof document === 'undefined') return null;
 

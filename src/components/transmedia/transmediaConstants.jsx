@@ -324,6 +324,53 @@ export const TOPIC_BY_SHOWCASE = {
 // Enable the editorial shield only when explicitly requested.
 export const MINIVERSO_EDITORIAL_INTERCEPTION_ENABLED =
   import.meta.env?.VITE_MINIVERSO_INTERCEPTION === 'true';
+// Ubicación ORIGINAL/retirada del umbral narrativo — video puente antes de
+// "Intuye tu respuesta" en los 9 portales, antes de "Viajar a esta escena"
+// en el Libreto holográfico, y antes del video de reanudación tras login en
+// Hero.jsx ("Entra y sigue la forma" en Transmedia). Las tres viven como
+// entrada/umbral. Reubicado (Carlos, 2026-08-25): el mejor lugar resultó ser
+// la despedida tras dar consentimiento a la Bitácora, no la entrada — ver
+// RESONANCE_FAREWELL_VIDEO_ENABLED abajo, que es la bandera que de verdad se
+// va a encender cuando existan las piezas. Esta se queda apagada a
+// propósito, probablemente para siempre: no se borra el código porque
+// reversar es más barato que reconstruir si algún día alguien lo pide, pero
+// no es el plan. NO se borra ni se reescribe el campo `video_seen` en
+// `gatoencerrado:resonance:{portal}` con la bandera apagada — para no perder
+// comparabilidad con sesiones ya capturadas.
+export const RESONANCE_BRIDGE_VIDEO_ENABLED =
+  import.meta.env?.VITE_RESONANCE_BRIDGE_VIDEO === 'true';
+// Ubicación NUEVA y vigente: el video corto se dispara justo al dar
+// consentimiento para la Bitácora (handleBitacoraConsent en
+// ResonanceModal.jsx) — L1/L2/L3 de ese miniverso ya se contestaron sin
+// haber visto nada, así que no hay riesgo de contaminar la intuición de Fase
+// 1. Es un gesto de despedida antes de la espera de 72 horas, no un umbral
+// de entrada. Reactivar = poner VITE_RESONANCE_FAREWELL_VIDEO=true en el
+// entorno, y cargar las piezas reales en `resolveNarrativeVideoUrl` — no
+// requiere tocar este código de nuevo.
+export const RESONANCE_FAREWELL_VIDEO_ENABLED =
+  import.meta.env?.VITE_RESONANCE_FAREWELL_VIDEO === 'true';
+// formatId (miniversePortalRegistry.js) <-> clave corta de "portal" que usan
+// ResonanceModal.jsx, Hero.jsx y miniverseSouvenirCard.js
+// (gatoencerrado:resonance:{portal}). No son intercambiables: Teatro es
+// formatId 'miniversos' pero portal 'obra' (ruta /portal-voz), y Gráficos es
+// 'miniversoGrafico' pero portal 'grafico', sin la "s" de /portal-graficos.
+// Fuente única — antes vivía duplicado, casi idéntico, en Hero.jsx y en
+// Transmedia.jsx (SHOWCASE_TO_PORTAL); ambos se quedan como están, esto es
+// solo para no triplicarlo con el uso nuevo en ResonanceModal.jsx.
+export const FORMAT_ID_TO_PORTAL = {
+  miniversos: 'obra',
+  miniversoNovela: 'literatura',
+  lataza: 'artesanias',
+  copycats: 'cine',
+  miniversoGrafico: 'grafico',
+  miniversoSonoro: 'sonoridades',
+  miniversoMovimiento: 'movimiento',
+  apps: 'juegos',
+  oraculo: 'oraculo',
+};
+export const PORTAL_TO_FORMAT_ID = Object.fromEntries(
+  Object.entries(FORMAT_ID_TO_PORTAL).map(([formatId, portal]) => [portal, formatId]),
+);
 export const CONTRIBUTION_CATEGORY_BY_SHOWCASE = {
   miniversos: 'obra_escenica',
   copycats: 'cine',
@@ -1405,7 +1452,7 @@ export const formats = [
     title: 'El drama',
     icon: Drama,
     iconClass: 'text-purple-300',
-    vitrinaCopy: 'Empieza como una pregunta,\nuna que nadie está pensando.\nSolo ocurre si hay testigos.',
+    vitrinaCopy: 'Es como una pregunta,\nuna que nadie está pensando.\nPero si alguien mira, ocurre.',
 
     iaTokensNote: 'Energía confiada: 300 GAT',
     image: 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Merch/posters/poster_obra.png',

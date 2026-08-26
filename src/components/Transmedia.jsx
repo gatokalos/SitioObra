@@ -1164,6 +1164,24 @@ const Transmedia = ({ allianceOnlyMode = false }) => {
     };
   }, [focusShowcaseCard, location, showcaseDefinitions]);
 
+  // Un invitado que regresa sin `?focus=` en la URL (cerró la pestaña, volvió
+  // después) no dispara ninguno de los dos efectos de arriba, así que
+  // recommendedShowcaseId se queda en null y la vitrina que sí tiene
+  // desbloqueada pierde la etiqueta "Recomendada para ti" — se pierde entre
+  // las demás aunque el candado siga vivo en ORACULO_RECOMMENDED_SHOWCASE_KEY.
+  // Rehidrata desde ahí. Solo aplica a invitados: para un usuario autenticado
+  // la recomendación es un empujón de esa visita, no un candado permanente
+  // (ver focusShowcaseCard). (Carlos, 2026-08-25)
+  useEffect(() => {
+    if (isAuthenticated) return;
+    if (recommendedShowcaseId) return;
+    if (safeGetItem('gatoencerrado:bienvenida-completed') !== '1') return;
+    const locked = safeGetItem(ORACULO_RECOMMENDED_SHOWCASE_KEY);
+    if (locked && showcaseDefinitions[locked]) {
+      setRecommendedShowcaseId(locked);
+    }
+  }, [isAuthenticated, recommendedShowcaseId]);
+
   // Ref para evitar que el efecto reabra la vitrina cuando focusLockShowcaseId
   // cambia a null al cerrar (el hash sigue igual, solo cambió la var de estado).
   const lastHashEffectRef = useRef(null);

@@ -721,25 +721,40 @@ function App() {
     [hasGuestUnlockedTransmedia, isAuthenticated, scrollToSection]
   );
 
+  // La galería (Instagram) se revela desde varias bifurcaciones sueltas por
+  // el sitio (Header, Footer, About) que no se coordinan entre sí. Quien la
+  // abre en móvil y la recorre hasta el final (créditos de fotografía) ya no
+  // recuerda por cuál entró, así que "Antes de irte" se ancla aquí como coda
+  // por default en vez de depender de que cada bifurcación la revele también
+  // (Carlos, 2026-08-25).
+  const revealBeforeLeavingWithGallery = useCallback(() => {
+    setIsBeforeLeavingVisible(true);
+    writeBeforeLeavingRevealedToSession();
+  }, []);
+
   const revealFractalGallery = useCallback(
     ({ scroll = true } = {}) => {
       setIsFractalGalleryVisible(true);
+      revealBeforeLeavingWithGallery();
       if (scroll && typeof window !== 'undefined') {
         window.setTimeout(() => scrollToSection('instagram'), 120);
       }
     },
-    [scrollToSection]
+    [revealBeforeLeavingWithGallery, scrollToSection]
   );
 
   const toggleFractalGallery = useCallback(() => {
     setIsFractalGalleryVisible((prev) => {
       const next = !prev;
-      if (next && typeof window !== 'undefined') {
-        window.setTimeout(() => scrollToSection('instagram'), 120);
+      if (next) {
+        revealBeforeLeavingWithGallery();
+        if (typeof window !== 'undefined') {
+          window.setTimeout(() => scrollToSection('instagram'), 120);
+        }
       }
       return next;
     });
-  }, [scrollToSection]);
+  }, [revealBeforeLeavingWithGallery, scrollToSection]);
 
   const handleAskQuestion = useCallback(() => {
     if (!isAuthenticated && !hasGuestUnlockedCuradoria) {

@@ -25,6 +25,7 @@ import {
   MINIVERSO_TILE_COLORS,
   MINIVERSO_TILE_GRADIENTS,
   showcaseDefinitions,
+  RESONANCE_BRIDGE_VIDEO_ENABLED,
 } from '@/components/transmedia/transmediaConstants';
 import { resolvePortalRoute } from '@/lib/miniversePortalRegistry';
 import PortalL3RewardCTA from '@/components/portal/PortalL3RewardCTA';
@@ -191,7 +192,7 @@ const PortalJuegos = () => {
       const s = JSON.parse(localStorage.getItem('gatoencerrado:resonance:juegos') || '{}');
       videoSeen = Boolean(s.video_seen);
     } catch {}
-    if (videoSeen) {
+    if (!RESONANCE_BRIDGE_VIDEO_ENABLED || videoSeen) {
       setIsResonanceOpen(true);
     } else {
       setShowResonanceBridgeVideo(true);

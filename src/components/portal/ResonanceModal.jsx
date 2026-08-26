@@ -14,6 +14,11 @@ import { writePendingContinuation } from '@/lib/pendingContinuation';
 import { createMiniverseSouvenirBlob, downloadBlob } from '@/lib/miniverseSouvenirCard';
 import { usePushSubscription } from '@/hooks/usePushSubscription';
 import { readGlobalConsent, writeGlobalConsent } from '@/lib/bitacoraShared';
+import VideoNarrativeAutoplay from '@/components/VideoNarrativeAutoplay';
+import {
+  RESONANCE_FAREWELL_VIDEO_ENABLED,
+  PORTAL_TO_FORMAT_ID,
+} from '@/components/transmedia/transmediaConstants';
 
 export { readGlobalConsent, writeGlobalConsent };
 
@@ -390,6 +395,11 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
   const [bitacoraAvailabilityTick, setBitacoraAvailabilityTick] = useState(() => Date.now());
   const [bitacoraCompleted, setBitacoraCompleted]     = useState(() => !!lsRead(portal).bitacora_completed);
   const [showPhoneInput, setShowPhoneInput]           = useState(false);
+  // Video corto de despedida, justo al dar consentimiento — no un umbral de
+  // entrada. L1/L2/L3 de este miniverso ya se contestaron sin haberlo visto,
+  // así que no contamina la intuición de Fase 1 (Carlos, 2026-08-25). Ver
+  // RESONANCE_FAREWELL_VIDEO_ENABLED en transmediaConstants.jsx.
+  const [showFarewellVideo, setShowFarewellVideo]     = useState(false);
   const [phoneInput, setPhoneInput]                   = useState('');
   const [holograficoOpen, setHolograficoOpen]         = useState(() => startInHolografico || (startInBitacora && !!lsRead(portal).bitacora_completed));
   const [holograficoPoster, setHolograficoPoster]     = useState(portal);
@@ -783,6 +793,7 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
       writeGlobalConsent();
       setBitacoraConsented(true);
       setBitacoraAvailableAt(availableAt);
+      if (RESONANCE_FAREWELL_VIDEO_ENABLED) setShowFarewellVideo(true);
       return;
     }
     try {
@@ -803,6 +814,7 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
         writeGlobalConsent();
         setBitacoraConsented(true);
         setBitacoraAvailableAt(data.available_at);
+        if (RESONANCE_FAREWELL_VIDEO_ENABLED) setShowFarewellVideo(true);
       }
     } catch (_) {}
   }, [portal, isDevAuth]);
@@ -969,6 +981,7 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
   };
 
   return (
+    <>
     <AnimatePresence>
       {open && (
         <motion.div
@@ -2202,6 +2215,14 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
         </motion.div>
       )}
     </AnimatePresence>
+    <VideoNarrativeAutoplay
+      open={showFarewellVideo}
+      onClose={() => setShowFarewellVideo(false)}
+      onNavigate={() => setShowFarewellVideo(false)}
+      formatId={PORTAL_TO_FORMAT_ID[portal]}
+      isMobileViewport={isMobileViewport}
+    />
+    </>
   );
 };
 

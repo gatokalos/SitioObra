@@ -20,6 +20,7 @@ import {
   showcaseDefinitions,
   CUADERNO_HOLOGRAFICO_TRAVEL_GAT,
   formats,
+  RESONANCE_BRIDGE_VIDEO_ENABLED,
 } from '@/components/transmedia/transmediaConstants';
 
 export { CATALOG };
@@ -510,7 +511,25 @@ const CuadernoHolografico = ({ portal, onStartBitacora, onNavigate, onPosterChan
     onPosterChange?.(key);
   };
 
+  // Compartido entre "vi el video, continúa" y el caso de bandera apagada
+  // (RESONANCE_BRIDGE_VIDEO_ENABLED) — mismo destino, con o sin video de por
+  // medio.
+  const proceedToShowcase = (formatId) => {
+    setVideoOpen(false);
+    onNavigate(formatId);
+    const portalRoute = resolvePortalRoute({ formatId });
+    if (isMobileViewport && portalRoute) {
+      window.setTimeout(() => navigate(portalRoute, {
+        state: createPortalLaunchState(location, 'video-narrative-cta', { showcaseId: formatId }),
+      }), 80);
+    }
+  };
+
   const handleOpenVideo = (showcaseId) => {
+    if (!RESONANCE_BRIDGE_VIDEO_ENABLED) {
+      proceedToShowcase(showcaseId);
+      return;
+    }
     setVideoFormatId(showcaseId);
     setVideoOpen(true);
   };
@@ -526,16 +545,7 @@ const CuadernoHolografico = ({ portal, onStartBitacora, onNavigate, onPosterChan
     });
   };
 
-  const handleVideoNavigate = () => {
-    setVideoOpen(false);
-    onNavigate(videoFormatId);
-    const portalRoute = resolvePortalRoute({ formatId: videoFormatId });
-    if (isMobileViewport && portalRoute) {
-      window.setTimeout(() => navigate(portalRoute, {
-        state: createPortalLaunchState(location, 'video-narrative-cta', { showcaseId: videoFormatId }),
-      }), 80);
-    }
-  };
+  const handleVideoNavigate = () => proceedToShowcase(videoFormatId);
 
   return (
     <div className="relative flex h-full flex-col overflow-hidden">

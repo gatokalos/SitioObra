@@ -256,7 +256,7 @@ const Team = () => {
     () => defaultOpenMobileRoles.filter((role) => teamData[role])
   );
   const [activeMobileMemberByRole, setActiveMobileMemberByRole] = useState({});
-  const [activeDesktopRole, setActiveDesktopRole] = useState("Elenco");
+  const [activeDesktopRole, setActiveDesktopRole] = useState(null);
   const [activeMemberLink, setActiveMemberLink] = useState(null);
   const [confirmExternalLink, setConfirmExternalLink] = useState(null);
   const mobileRoleRows = [];

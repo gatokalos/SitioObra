@@ -8,6 +8,7 @@ const VideoNarrativeAutoplay = React.lazy(() => import('@/components/VideoNarrat
 const isotipoGatoWebp = '/assets/isotipo_hero.webp';
 const HashtagButton3D = React.lazy(() => import('@/components/HashtagButton3D'));
 import PWAInstructionsOverlay from '@/components/PWAInstructionsOverlay';
+import { RESONANCE_BRIDGE_VIDEO_ENABLED } from '@/components/transmedia/transmediaConstants';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useToast } from '@/components/ui/use-toast';
 import { useAuth } from '@/contexts/SupabaseAuthContext';
@@ -65,7 +66,7 @@ const HERO_INACTIVE_HINT_PREFIX = 'Pulsa el ';
 const HERO_INACTIVE_HINT_GATO_WORD = 'gato';
 const HERO_INACTIVE_HINT_SUFFIX = '';
 const HERO_GATO_GLITCH_EXTRA_CHARS = ['#'];
-const HERO_SI_EL_HASH_TEXT = '… sí, el # de abajo';
+const HERO_SI_EL_HASH_TEXT = '… sí, el #';
 const HERO_SI_EL_HASH_TYPE_SPEED_MS = 45;
 const HERO_INACTIVE_ECHO_COUNT = 13;
 const HERO_INACTIVE_ECHO_ENTRY_DURATION_S = 0.72;
@@ -1590,6 +1591,7 @@ const Hero = () => {
           formatId={autoVideoFormatId}
           isMobileViewport={isMobileViewport}
           videoUrl={narrativeVideoUrl}
+          enabled={RESONANCE_BRIDGE_VIDEO_ENABLED}
         />
         <GatokensRevealModal
           open={isGatokensModalOpen}

@@ -17,6 +17,7 @@ import PortalL3RewardCTA from '@/components/portal/PortalL3RewardCTA';
 import VitranaQuestionReveal from '@/components/portal/VitranaQuestionReveal';
 import ResonanceModal, { LEVEL2_QUESTIONS, buildL1Acknowledgment } from '@/components/portal/ResonanceModal';
 import VideoNarrativeAutoplay from '@/components/VideoNarrativeAutoplay';
+import { RESONANCE_BRIDGE_VIDEO_ENABLED } from '@/components/transmedia/transmediaConstants';
 import PulseReactionCard from '@/components/portal/PulseReactionCard';
 import { recordShowcaseLike } from '@/services/showcaseLikeService';
 import { supabase } from '@/lib/supabaseClient';
@@ -217,7 +218,7 @@ const PortalArtesanias = () => {
       const s = JSON.parse(localStorage.getItem('gatoencerrado:resonance:artesanias') || '{}');
       videoSeen = Boolean(s.video_seen);
     } catch {}
-    if (videoSeen) {
+    if (!RESONANCE_BRIDGE_VIDEO_ENABLED || videoSeen) {
       setIsResonanceOpen(true);
     } else {
       setShowResonanceBridgeVideo(true);
