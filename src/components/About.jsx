@@ -63,7 +63,17 @@ const fallbackTestimonials = [
 
 const PROVOCA_DRAFT_KEY = 'gatoencerrado:provoca-draft';
 const PROVOCA_CONFETTI_VISIBLE_MS = 2400;
-const PROVOCA_SILVESTRE_MODE_ID = 'confusion-lucida';
+const PROVOCA_SILVESTRE_MODE_ID = 'confusion-lucida'; // fallback para otros contextos
+
+const PROVOCA_TERM_TO_MODE = {
+  'el drama':                            'drama',
+  'la soledad':                          'soledad',
+  'la ira reprimida':                    'ira-reprimida',
+  'la desconexión':                      'desconexion',
+  'la búsqueda de sentido':              'busqueda-sentido',
+  'una emoción que no entiendes del todo': 'emocion-sin-nombre',
+  'querer estar bien':                   'querer-estar-bien',
+};
 const PROVOCA_RESPONSE_ESTIMATE_SECONDS = 60;
 const PROVOCA_SUBMIT_COOLDOWN_MS = 45 * 1000;
 const PROVOCA_SUBMIT_COOLDOWN_PREFIX = 'gatoencerrado:provoca-submit-cooldown:v1';
@@ -651,7 +661,8 @@ export const ProvocaSection = () => {
     }
 
     await handleSendSilvestrePreset(message, {
-      modeId: PROVOCA_SILVESTRE_MODE_ID,
+      modeId: PROVOCA_TERM_TO_MODE[currentProvocaTitleTerm] ?? 'emocion-sin-nombre',
+      context: 'provoca',
     });
   }, [
     pendingSilvestreAudioUrl,

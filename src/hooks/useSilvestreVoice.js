@@ -611,6 +611,7 @@ export const useSilvestreVoice = () => {
       }
       const source = options.source || null;
       const mode_id = normalizeMode(options.modeId || options.selectedMode);
+      const apiContext = options.context || null;
       const userName =
         typeof options.userName === 'string' && options.userName.trim()
           ? options.userName.trim()
@@ -638,7 +639,7 @@ export const useSilvestreVoice = () => {
         const candidates = [
           {
             endpoint: '/api/obra-conciencia',
-            payload: { pregunta: message, user_id: userId, mode_id, history: conversationHistoryRef.current, ...userNamePayload },
+            payload: { pregunta: message, user_id: userId, mode_id, history: conversationHistoryRef.current, ...(apiContext ? { context: apiContext } : {}), ...userNamePayload },
             label: 'conciencia',
           },
         ];
