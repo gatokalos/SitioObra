@@ -207,12 +207,8 @@ const ArticleCard = ({ post, onSelect }) => {
   const hasPreview = Boolean(previewImage);
 
   return (
-    <motion.article
-      initial={{ opacity: 0, y: 30 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, amount: 0.2 }}
-      transition={{ duration: 0.5, ease: 'easeOut' }}
-      className="glass-effect rounded-2xl p-8 md:p-10 flex flex-col hover-glow transition-shadow"
+    <article
+      className="blog-scroll-surface glass-effect rounded-2xl p-8 md:p-10 flex flex-col hover-glow transition-shadow"
     >
       <div className="flex flex-wrap items-center gap-4 mb-6 text-sm text-slate-400">
         {publishedDate && (
@@ -279,7 +275,7 @@ const ArticleCard = ({ post, onSelect }) => {
             />
             <div className="absolute inset-0 bg-gradient-to-br from-fuchsia-500/12 via-purple-500/18 to-indigo-500/14 mix-blend-screen" />
             <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_30%,rgba(255,255,255,0.08),transparent_45%),radial-gradient(circle_at_80%_70%,rgba(0,0,0,0.65),transparent_55%)] opacity-50" />
-            <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-black/30 to-black/75 backdrop-blur-sm" />
+            <div className="absolute inset-0 bg-gradient-to-b from-black/75 via-black/40 to-black/80" />
           </div>
         </div>
       ) : null}
@@ -294,7 +290,7 @@ const ArticleCard = ({ post, onSelect }) => {
             />
             <div className="absolute inset-0 bg-gradient-to-br from-fuchsia-500/12 via-purple-500/18 to-indigo-500/14 mix-blend-screen" />
             <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_30%,rgba(255,255,255,0.08),transparent_45%),radial-gradient(circle_at_80%_70%,rgba(0,0,0,0.65),transparent_55%)] opacity-50" />
-            <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-black/30 to-black/75 backdrop-blur-sm" />
+            <div className="absolute inset-0 bg-gradient-to-b from-black/75 via-black/40 to-black/80" />
           </div>
         </div>
       ) : null}
@@ -306,7 +302,7 @@ const ArticleCard = ({ post, onSelect }) => {
       >
         Leer artículo completo
       </Button>
-    </motion.article>
+    </article>
   );
 };
 
@@ -339,7 +335,7 @@ const FullArticle = ({ post, onClose }) => {
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: 20 }}
       transition={{ duration: 0.4, ease: 'easeOut' }}
-      className="min-h-[560px] glass-effect rounded-3xl border border-white/10 p-5 sm:p-7 md:p-10 shadow-2xl backdrop-blur-xl"
+      className="blog-scroll-surface min-h-[560px] glass-effect rounded-3xl border border-white/10 p-5 sm:p-7 md:p-10 shadow-2xl"
     >
       <div className="mb-6 flex flex-wrap items-center justify-between gap-4 md:mb-8">
         <div className="flex flex-col gap-2 text-sm text-slate-400">
@@ -394,7 +390,7 @@ const FullArticle = ({ post, onClose }) => {
           />
           {articleCaption ? (
             <div
-              className={`absolute inset-x-0 bottom-0 px-4 py-3 text-xs text-slate-100 bg-black/60 backdrop-blur-sm transition-opacity ${
+              className={`absolute inset-x-0 bottom-0 px-4 py-3 text-xs text-slate-100 bg-black/80 transition-opacity ${
                 showMobileCaption ? 'opacity-100' : 'opacity-0'
               }`}
             >
@@ -414,7 +410,7 @@ const FullArticle = ({ post, onClose }) => {
             />
             <div className="absolute inset-0 bg-gradient-to-b from-transparent via-black/10 to-black/35 pointer-events-none" />
             {articleCaption ? (
-              <div className="absolute inset-x-0 bottom-0 px-4 py-3 text-xs text-slate-100 bg-black/55 backdrop-blur-sm">
+              <div className="absolute inset-x-0 bottom-0 px-4 py-3 text-xs text-slate-100 bg-black/80">
                 {articleCaption}
               </div>
             ) : null}
@@ -1126,11 +1122,10 @@ const Blog = ({ posts = [], isLoading = false, error = null, showBuscador = fals
           >
             <p className="text-xs uppercase tracking-[0.4em] text-slate-400/70 mb-4">#PENSAMIENTOCRÍTICO</p>
             <h2 className="font-display text-4xl md:text-5xl font-medium mb-6 text-gradient italic">
-              Curaduría, comunidad<br />y resonancia
+              Transforma tu mente<br />en escenario
             </h2>
             <p className="text-lg text-slate-300/80 max-w-3xl mx-auto leading-relaxed font-light">
-              Un espacio de diálogo reflexivo, creatividad y poética donde convergen textos especializados, ficción expandida y
-              noticias detrás de escena.
+              Un espacio de diálogo reflexivo, comunidad y poética donde la mirada cambia de dirección. Aquí, quien parecía ocupar la butaca se descubre bajo el reflector de sus propias preguntas.
             </p>
           </motion.div>
 

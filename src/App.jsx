@@ -22,9 +22,9 @@ import {
   writeObraDestacadaRevealedToSession,
 } from '@/lib/heroActivation';
 
-const pageTitle = '#GatoEncerrado - Una obra transmedia';
+const pageTitle = '#GatoEncerrado — La obra que ocurre en tu mente';
 const pageDescription =
-  'La historia de alguien que desaparece… y deja una huella emocional. Una experiencia teatral única que explora múltiples formatos transmediaes.';
+  'Una experiencia narrativa interactiva sobre el encierro mental. Nueve formas —teatro, novela, cine, cerámica, sonido— y una misma pregunta que las atraviesa.';
 const TRANSMEDIA_UNLOCK_STORAGE_KEY = 'gatoencerrado:transmedia-unlocked:v1';
 const CURATORIA_UNLOCK_STORAGE_KEY = 'gatoencerrado:curadoria-unlocked:v1';
 // Misma clave que ya escriben Bienvenida.jsx y MiniverseModal.jsx al completar

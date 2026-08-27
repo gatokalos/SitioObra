@@ -1,7 +1,7 @@
 {
-  "name": "#GatoEncerrado — Universo transmedia",
+  "name": "#GatoEncerrado — La obra que ocurre en tu mente",
   "short_name": "GatoEncerrado",
-  "description": "Explora los miniversos: Cine, Novela, RA, Juegos, Bitácora y más.",
+  "description": "Una experiencia narrativa interactiva sobre el encierro mental. Nueve formas —teatro, novela, cine, cerámica, sonido— y una misma pregunta que las atraviesa.",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",

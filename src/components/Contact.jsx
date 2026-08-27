@@ -460,14 +460,7 @@ const Contact = () => {
             viewport={{ once: true }}
             className="space-y-8"
           >
-            <div className="glass-effect rounded-xl p-6">
-              <h3 className="font-display text-xl font-medium text-slate-100 mb-4">Redes Sociales</h3>
-              <div className="flex gap-2">
-                <Button onClick={() => handleSocialClick(instagramUrl)} variant="ghost" size="icon" className="text-slate-400 hover:text-white"><Instagram size={24} /></Button>
-                <Button onClick={() => handleSocialClick(twitterUrl)} variant="ghost" size="icon" className="text-slate-400 hover:text-white"><Twitter size={24} /></Button>
-                <Button onClick={() => handleSocialClick(facebookUrl)} variant="ghost" size="icon" className="text-slate-400 hover:text-white"><Facebook size={24} /></Button>
-              </div>
-            </div>
+
 
             <div className="glass-effect rounded-xl p-6">
               <h3 className="font-display text-xl font-medium text-slate-100 mb-4">Prensa</h3>

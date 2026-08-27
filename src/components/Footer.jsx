@@ -1,38 +1,11 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Heart, Instagram, Twitter, Facebook, Mail } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { toast } from '@/components/ui/use-toast';
+import { Heart } from 'lucide-react';
 
 // Pieza editorial con el resplandor integrado en la propia imagen.
 const esferaFinalPng = '/assets/esfera_final.png';
 
 const Footer = () => {
-  const instagramUrl = 'https://www.instagram.com/esungatoencerrado/?hl=en';
-  const twitterUrl = 'https://x.com/SilvestreFilis';
-  const facebookUrl = 'https://www.facebook.com/share/16pHNpZjpM/?mibextid=wwXIfr';
-
-  const handleSocialClick = (url) => {
-    if (url) {
-      window.open(url, '_blank', 'noopener,noreferrer');
-    } else {
-      toast({
-        description: "🚧 Esta función no está implementada aún—¡pero no te preocupes! Puedes solicitarla en tu próxima visita! 🚀"
-      });
-    }
-  };
-
-  const handleLinkClick = (href) => {
-    const element = document.querySelector(href);
-    if (element) {
-      element.scrollIntoView({ behavior: 'smooth' });
-      return;
-    }
-    if (href === '#instagram') {
-      window.dispatchEvent(new CustomEvent('gatoencerrado:reveal-fractal-gallery'));
-    }
-  };
-
   return (
     <footer className="relative py-16 mt-24 min-h-[560px]">
       <div className="section-divider mb-16"></div>
@@ -63,14 +36,8 @@ const Footer = () => {
                 #GatoEncerrado
               </span>
               <p className="text-slate-400 leading-relaxed mb-6 max-w-md font-light">
-                Una experiencia narrativa interactiva desplegada en nueve formas creativas. Quien entra deja de ser solo observadxr: aborda y transforma, desde un lugar propio, una herida emocional compartida.
+                Una experiencia narrativa interactiva desplegada en nueve formas creativas. Quien entra deja de ser quien solo observa: aborda y transforma, desde un lugar propio, una herida emocional compartida.
               </p>
-              <div className="flex gap-2">
-                <Button variant="ghost" size="icon" onClick={() => handleSocialClick(instagramUrl)} className="text-slate-400 hover:text-white hover:bg-white/10"><Instagram size={20} /></Button>
-                <Button variant="ghost" size="icon" onClick={() => handleSocialClick(twitterUrl)} className="text-slate-400 hover:text-white hover:bg-white/10"><Twitter size={20} /></Button>
-                <Button variant="ghost" size="icon" onClick={() => handleSocialClick(facebookUrl)} className="text-slate-400 hover:text-white hover:bg-white/10"><Facebook size={20} /></Button>
-                <Button variant="ghost" size="icon" onClick={() => handleLinkClick('#contact')} className="text-slate-400 hover:text-white hover:bg-white/10"><Mail size={20} /></Button>
-              </div>
             </motion.div>
           </div>
 
@@ -83,7 +50,7 @@ const Footer = () => {
             >
               <span className="font-semibold text-slate-200 mb-4 block">Contacto</span>
               <ul className="space-y-3 text-sm font-light">
-                <li className="text-slate-400">contacto@gatoencerrado.org</li>
+                <li className="text-slate-400">dramaturgo@gatoencerrado.org</li>
                 <li className="text-slate-400">+52 331 532 7985</li>
                 <li className="text-slate-400">Carlos A. Pérez H.<br />Tijuana, México</li>
               </ul>

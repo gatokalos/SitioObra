@@ -105,8 +105,8 @@ const BlogContributionPrompt = ({ onAskQuestion = null }) => {
     loading="lazy"
     className="narrative-section-logo mx-auto mb-5 object-contain"
   />
-  <h3 className="narrative-transition-title font-display text-3xl font-medium text-slate-100 mb-6 text-center">
-    Intermedio y<br />segundo acto
+            <h3 className="narrative-transition-title font-display text-3xl font-medium italic text-slate-100 mb-6 text-center">
+    "Hacemos una pausa… <br />y continuamos"
   </h3>
 
   <p className="narrative-transition-copy text-slate-300/80 leading-relaxed mb-8 max-w-2xl mx-auto font-light text-center">

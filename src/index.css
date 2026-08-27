@@ -282,6 +282,61 @@ body {
     0 0 18px rgba(139, 92, 246, 0.13);
 }
 
+.provoca-stage-intro {
+  max-width: 58rem;
+  margin: 0 auto clamp(3rem, 6vw, 5rem);
+  text-align: center;
+}
+
+.provoca-stage-eyebrow {
+  margin-bottom: 0.9rem;
+  font-size: 0.72rem;
+  line-height: 1;
+  letter-spacing: 0.38em;
+  text-transform: uppercase;
+  color: rgba(148, 163, 184, 0.72);
+}
+
+.provoca-act-title--section {
+  margin-bottom: 1.35rem;
+  font-size: clamp(2.75rem, 6vw, 4.8rem);
+  letter-spacing: clamp(0.08em, 0.22vw, 0.14em);
+  background: linear-gradient(
+    180deg,
+    rgba(238, 235, 246, 0.98) 0%,
+    rgba(179, 170, 197, 0.9) 30%,
+    rgba(82, 69, 100, 0.94) 68%,
+    rgba(17, 12, 24, 0.98) 100%
+  );
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  text-shadow:
+    0 0 8px rgba(226, 232, 240, 0.13),
+    0 0 28px rgba(168, 85, 247, 0.16);
+}
+
+.provoca-act-title--section.provoca-act-title--safari {
+  background: none;
+  -webkit-background-clip: border-box;
+  background-clip: border-box;
+  -webkit-text-fill-color: currentColor;
+  color: rgba(205, 199, 216, 0.96);
+}
+
+.provoca-stage-description {
+  max-width: 52rem;
+  margin-inline: auto;
+  font-size: clamp(1rem, 1.35vw, 1.12rem);
+  font-weight: 300;
+  line-height: 1.75;
+  color: rgba(203, 213, 225, 0.78);
+}
+
+.provoca-stage-description em {
+  color: rgba(226, 232, 240, 0.92);
+}
+
 /* Camerino: una luz íntima y localizada, distinta de las tarjetas editoriales
    y de los gradientes más expansivos de los miniversos. */
 .camerino-panel {
@@ -1104,7 +1159,7 @@ body {
   width: clamp(2.8rem, 12vw, 6.8rem);
   height: 1px;
   background: linear-gradient(90deg, transparent, rgba(226, 232, 240, 0.48), transparent);
-  opacity: 0.62;
+  opacity: 0.99;
 }
 
 /* Header index icon: flat # glyph, same typographic treatment as the Hero title mark */
@@ -1716,6 +1771,30 @@ body {
   backdrop-filter: blur(12px);
   border: 1px solid hsl(0 0% 100% / 0.08); /* Using foreground color with transparency */
   box-shadow: 0 8px 32px 0 hsl(240 10% 3.9% / 0.37); /* Using background color for shadow */
+}
+
+/* Los artículos son superficies largas que atraviesan gran parte del
+   viewport. Safari recompone backdrop-filter durante el scroll y puede
+   alternar brevemente entre la capa filtrada y la capa base (flicker). Aquí
+   se conserva el tono del vidrio con una superficie opaca equivalente, sin
+   mantener un filtro vivo ni transformar la tarjeta al entrar en pantalla. */
+.blog-scroll-surface {
+  background: rgba(8, 8, 14, 0.94) !important;
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+  isolation: isolate;
+  contain: paint;
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+}
+
+.blog-scroll-surface.hover-glow::before {
+  display: none;
+}
+
+.blog-scroll-surface.hover-glow:hover,
+.blog-scroll-surface.hover-glow:active {
+  transform: none;
 }
 
 .glass-effect-card {
@@ -2582,13 +2661,40 @@ body {
 }
 
 .provoca-continuum {
-  margin-top: clamp(-4.5rem, -6vh, -2.5rem);
   overflow: hidden;
+  background: transparent;
+}
+
+/* Marco escénico de La Réplica. Se expande hacia fuera del container y
+   devuelve el mismo espacio como padding: el ancho editorial interior queda
+   exactamente igual al original, incluidas las reservas de la pregunta. */
+.provoca-stage-shell {
+  --provoca-stage-gutter: clamp(1.25rem, 4vw, 4rem);
+  position: relative;
+  overflow: hidden;
+  margin-inline: calc(0px - var(--provoca-stage-gutter));
+  padding-inline: var(--provoca-stage-gutter);
+  padding-block: clamp(2rem, 4vw, 3.5rem);
+  border: 1px solid rgba(196, 181, 253, 0.12);
+  border-radius: 0.85rem;
   background:
-    radial-gradient(105% 64% at 50% 0%, rgba(122, 54, 127, 0.16), transparent 62%),
-    radial-gradient(80% 52% at 16% 8%, rgba(186, 131, 255, 0.1), transparent 60%),
-    radial-gradient(76% 56% at 86% 16%, rgba(255, 161, 97, 0.055), transparent 64%),
-    linear-gradient(180deg, rgba(31, 21, 52, 0.1), rgba(2, 6, 23, 0) 46%);
+    radial-gradient(92% 68% at 12% 0%, rgba(126, 63, 151, 0.13), transparent 58%),
+    radial-gradient(72% 74% at 100% 18%, rgba(63, 54, 113, 0.08), transparent 64%),
+    linear-gradient(145deg, rgba(10, 7, 15, 0.86), rgba(3, 3, 8, 0.92) 48%, rgba(5, 5, 11, 0.9));
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.045),
+    inset 0 -1px 0 rgba(139, 92, 246, 0.055);
+}
+
+.provoca-stage-shell::before {
+  content: '';
+  position: absolute;
+  inset: 0 auto auto 7%;
+  width: 42%;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(216, 180, 254, 0.46), transparent);
+  opacity: 0.72;
+  pointer-events: none;
 }
 
 .ge-chip-action,

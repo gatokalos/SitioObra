@@ -1,7 +1,22 @@
 import React, { useRef, useState, useCallback, useEffect } from 'react';
-import { Canvas, useFrame } from '@react-three/fiber';
+import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import { useGLTF, Environment } from '@react-three/drei';
 import * as THREE from 'three';
+
+const RENDER_FPS = 30;
+
+// frameloop="demand" no renderiza solo — hay que pedirle un frame nuevo cada
+// vez. Este intervalo es el único reloj (no hay otro requestAnimationFrame
+// corriendo en paralelo), así que el # sigue girando de forma continua pero
+// a la mitad de los renders de un frameloop="always" a 60fps.
+function InvalidateLoop({ fps = RENDER_FPS }) {
+  const invalidate = useThree((state) => state.invalidate);
+  useEffect(() => {
+    const id = window.setInterval(invalidate, 1000 / fps);
+    return () => window.clearInterval(id);
+  }, [invalidate, fps]);
+  return null;
+}
 
 useGLTF.setDecoderPath('https://www.gstatic.com/draco/versioned/decoders/1.5.6/');
 
@@ -99,6 +114,7 @@ export default function HashtagButton3D({
   contentScale = 1,
   showGlow = false,
   glowPulseKey = 0,
+  active = true,
 }) {
   const [isPressed, setIsPressed] = useState(false);
   const glRef = useRef(null);
@@ -163,7 +179,7 @@ export default function HashtagButton3D({
       <div
         style={{
           position: 'absolute',
-          top: '50%',
+          top: '40%',
           left: '50%',
           width: `${contentScale * 100}%`,
           height: `${contentScale * 100}%`,
@@ -174,6 +190,7 @@ export default function HashtagButton3D({
         <Canvas
           camera={{ position: [0, 0.2, 4.2], fov: 35 }}
           gl={{ antialias: true, alpha: true }}
+          frameloop={active ? 'demand' : 'never'}
           onCreated={({ gl }) => { glRef.current = gl; }}
           style={{
             background: 'transparent',
@@ -191,6 +208,8 @@ export default function HashtagButton3D({
           <directionalLight position={[-3, 1, -3]} intensity={0.6} />
 
           <Environment files="/textures/starfield-env.hdr" background={false} />
+
+          {active && <InvalidateLoop />}
 
           <React.Suspense fallback={null}>
             <HashtagModel onClick={handleClick} isPressed={isPressed} onReady={onReady} />

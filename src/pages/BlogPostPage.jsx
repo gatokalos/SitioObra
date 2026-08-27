@@ -8,9 +8,10 @@ const SITE_ORIGIN =
 const FALLBACK_IMAGE = `${SITE_ORIGIN}/assets/logoapp.png`;
 
 const SITE_DEFAULTS = {
-  title: '#GatoEncerrado — Universo transmedia',
+  title: '#GatoEncerrado — La obra que ocurre en tu mente',
   siteName: '#GatoEncerrado',
-  description: 'Explora los miniversos: Cine, Novela, RA, Juegos, Bitácora y más.',
+  description:
+    'Una experiencia narrativa interactiva sobre el encierro mental. Nueve formas —teatro, novela, cine, cerámica, sonido— y una misma pregunta que las atraviesa.',
   image: FALLBACK_IMAGE,
   imageType: 'image/png',
   url: SITE_ORIGIN,
