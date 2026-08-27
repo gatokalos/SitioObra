@@ -3,7 +3,7 @@ import ReactDOM from 'react-dom';
 import CuadernoHolografico from './CuadernoHolografico';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Eye, Flame, PawPrint, Lock, ShieldCheck, Check, ChevronDown, ChevronRight, Sparkles, ArrowRight, RotateCcw } from 'lucide-react';
+import { Eye, Flame, PawPrint, Lock, ShieldCheck, Check, ChevronDown, ChevronRight, Sparkles, ArrowRight, RotateCcw, FastForward } from 'lucide-react';
 import { supabase } from '@/lib/supabaseClient';
 import { ensureAnonId } from '@/lib/identity';
 import { useAuth } from '@/contexts/SupabaseAuthContext';
@@ -14,11 +14,8 @@ import { writePendingContinuation } from '@/lib/pendingContinuation';
 import { createMiniverseSouvenirBlob, downloadBlob } from '@/lib/miniverseSouvenirCard';
 import { usePushSubscription } from '@/hooks/usePushSubscription';
 import { readGlobalConsent, writeGlobalConsent, readResonanceProgress } from '@/lib/bitacoraShared';
-import VideoNarrativeAutoplay from '@/components/VideoNarrativeAutoplay';
-import {
-  RESONANCE_FAREWELL_VIDEO_ENABLED,
-  PORTAL_TO_FORMAT_ID,
-} from '@/components/transmedia/transmediaConstants';
+import FarewellVideoPanel from './FarewellVideoPanel';
+import { RESONANCE_FAREWELL_VIDEO_ENABLED } from '@/components/transmedia/transmediaConstants';
 
 export { readGlobalConsent, writeGlobalConsent };
 
@@ -399,11 +396,13 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
   const [bitacoraAvailabilityTick, setBitacoraAvailabilityTick] = useState(() => Date.now());
   const [bitacoraCompleted, setBitacoraCompleted]     = useState(() => !!lsRead(portal).bitacora_completed);
   const [showPhoneInput, setShowPhoneInput]           = useState(false);
-  // Video corto de despedida, justo al dar consentimiento — no un umbral de
-  // entrada. L1/L2/L3 de este miniverso ya se contestaron sin haberlo visto,
-  // así que no contamina la intuición de Fase 1 (Carlos, 2026-08-25). Ver
+  // Video corto de despedida — panel embebido (no pantalla completa) que
+  // aparece en cuanto el recorrido se da por concluido, sin depender de si
+  // dio o no su WhatsApp (Carlos, 2026-08-27: debe verse "aceptado o
+  // declinado" por igual). L1/L2/L3 de este miniverso ya se contestaron sin
+  // haberlo visto, así que no contamina la intuición de Fase 1. Ver
   // RESONANCE_FAREWELL_VIDEO_ENABLED en transmediaConstants.jsx.
-  const [showFarewellVideo, setShowFarewellVideo]     = useState(false);
+  const [farewellVideoSeen, setFarewellVideoSeen]     = useState(() => !!lsRead(portal).farewell_video_seen);
   const [phoneInput, setPhoneInput]                   = useState('');
   const [holograficoOpen, setHolograficoOpen]         = useState(() => startInHolografico || (startInBitacora && !!lsRead(portal).bitacora_completed));
   const [holograficoPoster, setHolograficoPoster]     = useState(portal);
@@ -718,7 +717,7 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
   };
 
   const handleDevResetJourney = () => {
-    if (!import.meta.env.DEV || !isDevAuth) return;
+    if (!import.meta.env.DEV) return;
     const confirmed = window.confirm(
       `¿Reiniciar desde cero el recorrido de ${portal}? Solo se borrará su progreso local.`,
     );
@@ -726,6 +725,25 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
     try {
       localStorage.removeItem(lsKey(portal));
     } catch {}
+    window.location.reload();
+  };
+
+  // Salta L1 + dispositivo narrativo + L2 + espera de la bitácora de un
+  // click, solo con localStorage (nada de Supabase) — la escalera
+  // l1Done/l2Done/l3Done de readResonanceProgress() en bitacoraShared.js
+  // hace que con l2_conv_done baste para dar las tres primeras etapas por
+  // completas. bitacora_available_at = ahora imita que ya pasaron las 72h.
+  const handleDevSkipToL3 = () => {
+    if (!import.meta.env.DEV) return;
+    const now = new Date().toISOString();
+    lsPatch(portal, {
+      l1: Date.now(),
+      l2_narrative_opened: true,
+      l2_conv_done: true,
+      bitacora_consented: true,
+      bitacora_available_at: now,
+    });
+    writeGlobalConsent();
     window.location.reload();
   };
 
@@ -797,7 +815,6 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
       writeGlobalConsent();
       setBitacoraConsented(true);
       setBitacoraAvailableAt(availableAt);
-      if (RESONANCE_FAREWELL_VIDEO_ENABLED) setShowFarewellVideo(true);
       return;
     }
     try {
@@ -818,10 +835,17 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
         writeGlobalConsent();
         setBitacoraConsented(true);
         setBitacoraAvailableAt(data.available_at);
-        if (RESONANCE_FAREWELL_VIDEO_ENABLED) setShowFarewellVideo(true);
       }
     } catch (_) {}
   }, [portal, isDevAuth]);
+
+  // Marca el video de despedida como visto — al arrancar la reproducción o
+  // al saltarlo, cualquiera de los dos cuenta. Independiente de si dio o no
+  // su WhatsApp: debe verse una sola vez sin importar esa decisión.
+  const handleFarewellVideoSeen = useCallback(() => {
+    lsPatch(portal, { farewell_video_seen: true, farewell_video_seen_at: new Date().toISOString() });
+    setFarewellVideoSeen(true);
+  }, [portal]);
 
   // Si el usuario está en la PWA instalada, suscribe push en silencio
   // en el momento en que aparece el bloque "Este recorrido ha concluido".
@@ -956,6 +980,9 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
     navigate('/#transmedia', { replace: true });
   };
 
+  // Sin llamador desde que se quitó el CTA "Explorar {forma}" (dinámica de
+  // recomendación algorítmica, obsoleta — Carlos, 2026-08-27). Se deja sin
+  // borrar por si el reemplazo de orden canónico la reutiliza.
   const handleNavigateToRecommendation = () => {
     if (!l3Rec?.recommended_format_id) return;
     if (!user) {
@@ -1022,16 +1049,27 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
             <Check size={18} />
           </button>
 
-          {import.meta.env.DEV && isDevAuth && (
-            <button
-              type="button"
-              onClick={handleDevResetJourney}
-              className="absolute left-4 top-4 z-30 inline-flex h-10 items-center gap-2 rounded-full border border-amber-300/35 bg-black/55 px-3 text-[0.62rem] uppercase tracking-[0.14em] text-amber-100/90 backdrop-blur-md transition hover:border-amber-300/60 hover:bg-black/70"
-              aria-label={`Reiniciar recorrido de ${portal}`}
-            >
-              <RotateCcw size={14} />
-              <span className="hidden sm:inline">DEV · Reiniciar</span>
-            </button>
+          {import.meta.env.DEV && (
+            <div className="absolute left-4 top-4 z-30 flex items-center gap-2">
+              <button
+                type="button"
+                onClick={handleDevResetJourney}
+                className="inline-flex h-10 items-center gap-2 rounded-full border border-amber-300/35 bg-black/55 px-3 text-[0.62rem] uppercase tracking-[0.14em] text-amber-100/90 backdrop-blur-md transition hover:border-amber-300/60 hover:bg-black/70"
+                aria-label={`Reiniciar recorrido de ${portal}`}
+              >
+                <RotateCcw size={14} />
+                <span className="hidden sm:inline">DEV · Reiniciar</span>
+              </button>
+              <button
+                type="button"
+                onClick={handleDevSkipToL3}
+                className="inline-flex h-10 items-center gap-2 rounded-full border border-cyan-300/35 bg-black/55 px-3 text-[0.62rem] uppercase tracking-[0.14em] text-cyan-100/90 backdrop-blur-md transition hover:border-cyan-300/60 hover:bg-black/70"
+                aria-label={`Saltar L1, dispositivo y L2 en ${portal}`}
+              >
+                <FastForward size={14} />
+                <span className="hidden sm:inline">DEV · Saltar a L3</span>
+              </button>
+            </div>
           )}
 
           {/* ── Columna izquierda ── */}
@@ -1071,10 +1109,16 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
               style={{ background: 'linear-gradient(180deg, rgba(5,3,9,0.34) 0%, rgba(5,3,9,0.76) 43%, rgba(5,3,9,0.98) 100%)' }}
             />
 
-            {/* ── L3 cat overlay — mobile only, portal a document.body ── */}
+            {/* ── L3 cat overlay — mobile only, portal a document.body ──
+                 Se retira en el paso 4 (l3Step < 4): ya guió la
+                 recomendación, y "Agregar recordatorio" vive ahora en el
+                 dashboard compartido — no tiene sentido que el gato siga
+                 tapando toda la pantalla sin nada más que mostrar (Carlos,
+                 2026-08-27, arregla el bug real de que nunca se cerraba
+                 solo). */}
             {typeof document !== 'undefined' && ReactDOM.createPortal(
               <AnimatePresence>
-                {l3Active && !l3BubbleClosed && (
+                {l3Active && !l3BubbleClosed && l3Step < 4 && (
                   <motion.div
                     className="fixed inset-0 z-[490] lg:hidden"
                     initial={{ opacity: 0 }}
@@ -1104,15 +1148,6 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
                       ) : (
                         <p className="cabina-bubble__texto">{l3BubbleText}</p>
                       )}
-                      {l3Step === 4 && l3BubbleText && (
-                        <button
-                          type="button"
-                          className="cabina-bubble__cta"
-                          onClick={handleNavigateToRecommendation}
-                        >
-                          Explorar {l3Rec.forma}
-                        </button>
-                      )}
                     </div>
                     {l3Step < 3 ? (
                       <button
@@ -1125,7 +1160,7 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
                       >
                         <ChevronRight size={20} />
                       </button>
-                    ) : l3Step === 3 ? (
+                    ) : (
                       <div className="cabina-consent-area">
                         <button
                           type="button"
@@ -1142,38 +1177,6 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
                           Quizás más tarde
                         </button>
                       </div>
-                    ) : (
-                      <button
-                        type="button"
-                        onClick={handleDownloadSouvenir}
-                        disabled={isSouvenirGenerating}
-                        style={{
-                          position: 'absolute',
-                          bottom: '18%',
-                          left: '50%',
-                          transform: 'translateX(-50%)',
-                          zIndex: 3,
-                          display: 'flex',
-                          flexDirection: 'column',
-                          alignItems: 'center',
-                          gap: '0.5rem',
-                          background: 'none',
-                          border: 'none',
-                          cursor: isSouvenirGenerating ? 'wait' : 'pointer',
-                          opacity: isSouvenirGenerating ? 0.6 : 1,
-                        }}
-                      >
-                        {PORTAL_ICON_URL[recommendedSouvenirPortal] && (
-                          <img
-                            src={PORTAL_ICON_URL[recommendedSouvenirPortal]}
-                            alt={recommendedSouvenirPortal}
-                            style={{ width: '4rem', height: '4rem', borderRadius: '1rem', objectFit: 'cover', boxShadow: '0 8px 32px rgba(0,0,0,0.55)' }}
-                          />
-                        )}
-                        <span style={{ fontSize: '0.82rem', fontWeight: 600, color: 'rgba(251,191,36,0.9)', letterSpacing: '0.05em' }}>
-                          {isSouvenirGenerating ? 'Generando…' : 'Agregar recordatorio'}
-                        </span>
-                      </button>
                     )}
                   </motion.div>
                 )}
@@ -1708,7 +1711,7 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
                                           <span className="absolute inline-flex h-full w-full rounded-full bg-sky-400 opacity-75 animate-ping" />
                                           <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-sky-300" />
                                         </span>
-                                        Activo
+                                        Siguiente nivel
                                       </span>
                                       <ChevronDown
                                         size={13}
@@ -1786,6 +1789,37 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
                                               <p className="text-sm leading-relaxed text-slate-400/80 lg:text-xs">
                                                 Las respuestas registradas permiten estudiar cómo las experiencias narrativas son interpretadas, recordadas y resignificadas por distintas personas.
                                               </p>
+
+                                              {/* Mudado aquí desde el overlay del gato — vivía atrapado ahí
+                                                  dentro y desaparecía con él en el paso 4 (Carlos, 2026-08-27). */}
+                                              <button
+                                                type="button"
+                                                onClick={handleDownloadSouvenir}
+                                                disabled={isSouvenirGenerating}
+                                                className="flex w-full items-center gap-3 rounded-2xl border border-white/15 bg-black/35 px-3 py-2.5 text-left transition hover:bg-black/50 disabled:cursor-wait disabled:opacity-60"
+                                              >
+                                                {PORTAL_ICON_URL[recommendedSouvenirPortal] && (
+                                                  <img
+                                                    src={PORTAL_ICON_URL[recommendedSouvenirPortal]}
+                                                    alt=""
+                                                    aria-hidden="true"
+                                                    className="h-10 w-10 shrink-0 rounded-xl object-cover shadow-[0_8px_32px_rgba(0,0,0,0.55)]"
+                                                  />
+                                                )}
+                                                <span className="text-xs font-semibold tracking-[0.05em] text-amber-300/90">
+                                                  {isSouvenirGenerating ? 'Generando…' : 'Agregar recordatorio'}
+                                                </span>
+                                              </button>
+
+                                              {/* Video de despedida del autor — panel embebido, no pantalla
+                                                  completa; independiente de si dio WhatsApp o no. Ver
+                                                  handleFarewellVideoSeen y authorVideo.js. */}
+                                              {RESONANCE_FAREWELL_VIDEO_ENABLED && !farewellVideoSeen && (
+                                                <FarewellVideoPanel
+                                                  portal={portal}
+                                                  onSeen={handleFarewellVideoSeen}
+                                                />
+                                              )}
 
                                               {/* Consentimiento WhatsApp — aparece si aún no ha dado número */}
                                               {!bitacoraCompleted && !bitacoraConsented && (
@@ -2136,9 +2170,9 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
                 className="star-pulse absolute inset-0"
               />
             </div>
-            {/* Burbuja desktop */}
+            {/* Burbuja desktop — mismo retiro en el paso 4 que en móvil */}
             <AnimatePresence>
-              {l3Active && !l3BubbleClosed && (
+              {l3Active && !l3BubbleClosed && l3Step < 4 && (
                 <motion.div
                   className="absolute inset-0 pointer-events-none"
                   initial={{ opacity: 0 }}
@@ -2149,11 +2183,6 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
                   <div className="cabina-bubble" style={{ pointerEvents: 'auto' }}>
                     <p className="cabina-bubble__preludio">El laboratorio te habla</p>
                     <p className="cabina-bubble__texto">{l3BubbleText}</p>
-                    {l3Step === 4 && (
-                      <button type="button" className="cabina-bubble__cta" onClick={handleNavigateToRecommendation}>
-                        Explorar {l3Rec.forma}
-                      </button>
-                    )}
                   </div>
                   {l3Step < 3 && (
                     <div className="cabina-consent-desktop-area" style={{ pointerEvents: 'auto' }}>
@@ -2186,27 +2215,6 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
                       </button>
                     </div>
                   )}
-                  {l3Step === 4 && (
-                    <div className="cabina-consent-desktop-area" style={{ pointerEvents: 'auto' }}>
-                      <button
-                        type="button"
-                        onClick={handleDownloadSouvenir}
-                        disabled={isSouvenirGenerating}
-                        style={{ background: 'none', border: 'none', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.5rem', cursor: isSouvenirGenerating ? 'wait' : 'pointer', opacity: isSouvenirGenerating ? 0.6 : 1 }}
-                      >
-                        {PORTAL_ICON_URL[recommendedSouvenirPortal] && (
-                          <img
-                            src={PORTAL_ICON_URL[recommendedSouvenirPortal]}
-                            alt={recommendedSouvenirPortal}
-                            style={{ width: '3.5rem', height: '3.5rem', borderRadius: '0.75rem', objectFit: 'cover', boxShadow: '0 8px 32px rgba(0,0,0,0.55)' }}
-                          />
-                        )}
-                        <span style={{ fontSize: '0.82rem', fontWeight: 600, color: 'rgba(251,191,36,0.9)', letterSpacing: '0.05em' }}>
-                          {isSouvenirGenerating ? 'Generando…' : 'Agregar recordatorio'}
-                        </span>
-                      </button>
-                    </div>
-                  )}
                 </motion.div>
               )}
             </AnimatePresence>
@@ -2219,13 +2227,6 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
         </motion.div>
       )}
     </AnimatePresence>
-    <VideoNarrativeAutoplay
-      open={showFarewellVideo}
-      onClose={() => setShowFarewellVideo(false)}
-      onNavigate={() => setShowFarewellVideo(false)}
-      formatId={PORTAL_TO_FORMAT_ID[portal]}
-      isMobileViewport={isMobileViewport}
-    />
     </>
   );
 };

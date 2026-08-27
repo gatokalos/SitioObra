@@ -70,14 +70,12 @@ export const AuthProvider = ({ children }) => {
     setSession(session);
     // La identidad simulada solo abre controles visuales en Vite DEV. Se deja
     // `session` en null para que nunca pueda confundirse con un JWT auténtico.
-    setUser(session?.user ?? readDevUser());
+    // Con ?devAuth=1 activo, gana incluso sobre una sesión real guardada en
+    // este navegador — si no, probar como DEV se rompe en cuanto hay una
+    // cuenta real logueada en localhost.
+    setUser(readDevUser() ?? session?.user ?? null);
     setLoading(false);
   }, []);
-
-  useEffect(() => {
-    if (user?.app_metadata?.provider !== 'dev-preview') return;
-    console.info('[Auth] Vista previa DEV activa. Usa ?devAuth=0 para desactivarla.');
-  }, [user]);
 
   useEffect(() => {
     if (typeof window === 'undefined') return undefined;
