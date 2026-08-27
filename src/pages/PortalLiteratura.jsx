@@ -14,6 +14,7 @@ import RelatedReadingTooltipButton from '@/components/portal/RelatedReadingToolt
 import PortalL3RewardCTA from '@/components/portal/PortalL3RewardCTA';
 import VitranaQuestionReveal from '@/components/portal/VitranaQuestionReveal';
 import ResonanceModal, { LEVEL2_QUESTIONS, buildL1Acknowledgment } from '@/components/portal/ResonanceModal';
+import { readResonanceProgress } from '@/lib/bitacoraShared';
 import VideoNarrativeAutoplay from '@/components/VideoNarrativeAutoplay';
 import { RESONANCE_BRIDGE_VIDEO_ENABLED } from '@/components/transmedia/transmediaConstants';
 import PulseReactionCard from '@/components/portal/PulseReactionCard';
@@ -114,12 +115,15 @@ const PortalLiteratura = () => {
   const [reactionStatus, setReactionStatus] = useState('idle');
   const [isContributionOpen, setIsContributionOpen] = useState(false);
   const [isResonanceOpen, setIsResonanceOpen] = useState(false);
-  const [l1Done, setL1Done] = useState(() => { try { return Boolean(JSON.parse(localStorage.getItem('gatoencerrado:resonance:literatura') || '{}').l1); } catch { return false; } });
-  const [l2Answer, setL2Answer] = useState(() => { try { return JSON.parse(localStorage.getItem('gatoencerrado:resonance:literatura') || '{}').l2_option ?? null; } catch { return null; } });
-  const [experienceDone, setExperienceDone] = useState(() => { try { return Boolean(JSON.parse(localStorage.getItem('gatoencerrado:resonance:literatura') || '{}').experience_ts); } catch { return false; } });
-  const [l2Done, setL2Done] = useState(() => { try { return Boolean(JSON.parse(localStorage.getItem('gatoencerrado:resonance:literatura') || '{}').l2_option); } catch { return false; } });
-  const [l3Rec, setL3Rec] = useState(() => { try { return JSON.parse(localStorage.getItem('gatoencerrado:resonance:literatura') || '{}').l3_recommendation ?? null; } catch { return null; } });
-  const refreshL1 = useCallback(() => { try { const s = JSON.parse(localStorage.getItem('gatoencerrado:resonance:literatura') || '{}'); setL1Done(Boolean(s.l1)); setExperienceDone(Boolean(s.experience_ts)); setL2Done(Boolean(s.l2_option)); setL2Answer(s.l2_option ?? null); setL3Rec(s.l3_recommendation ?? null); } catch { /* ignore */ } }, []);
+  const [l1Done, setL1Done] = useState(() => readResonanceProgress('literatura').l1Done);
+  const [l2Answer, setL2Answer] = useState(() => readResonanceProgress('literatura').l2Answer);
+  const [experienceDone, setExperienceDone] = useState(() => readResonanceProgress('literatura').experienceDone);
+  const [l2Done, setL2Done] = useState(() => readResonanceProgress('literatura').l2Done);
+  const [l3Rec, setL3Rec] = useState(() => readResonanceProgress('literatura').l3Recommendation);
+  const refreshL1 = useCallback(() => {
+    const p = readResonanceProgress('literatura');
+    setL1Done(p.l1Done); setExperienceDone(p.experienceDone); setL2Done(p.l2Done); setL2Answer(p.l2Answer); setL3Rec(p.l3Recommendation);
+  }, []);
   const [showLiteraturaApp, setShowLiteraturaApp] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();

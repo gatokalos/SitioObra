@@ -15,7 +15,7 @@ import IAInsightCard from '@/components/IAInsightCard';
 import { useMobileVideoPresentation } from '@/hooks/useMobileVideoPresentation';
 import { resolvePortalRoute } from '@/lib/miniversePortalRegistry';
 import { createPortalLaunchState } from '@/lib/portalNavigation';
-import { CATALOG } from '@/lib/bitacoraShared';
+import { CATALOG, readResonanceProgress } from '@/lib/bitacoraShared';
 import {
   showcaseDefinitions,
   CUADERNO_HOLOGRAFICO_TRAVEL_GAT,
@@ -256,9 +256,9 @@ function Constellation({ centerKey, onSelect }) {
         const r = 38;
         const x = 50 + r * Math.cos(angle);
         const y = 50 + r * Math.sin(angle);
-        const st = lsRead(sat.key);
-        const hasL1 = !!st.l1;
-        const hasL2 = !!st.l2_conv_done;
+        const satProgress = readResonanceProgress(sat.key);
+        const hasL1 = satProgress.l1Done;
+        const hasL2 = satProgress.l2Done;
         const satelliteIconUrl = PORTAL_APP_ICON_URL[sat.key];
 
         return (
@@ -390,17 +390,17 @@ function HolograficoPanel({
 }) {
   const isHome = centerKey === homeKey;
   const entry = CATALOG.find(p => p.key === centerKey);
-  const st = lsRead(centerKey);
-  const hasL1 = !!st.l1;
-  const hasL2 = !!st.l2_option;
-  const hasL3 = !!st.l3_recommendation?.step3;
-  const hasBitacora = !!st.bitacora_completed;
+  const progress = readResonanceProgress(centerKey);
+  const hasL1 = progress.l1Done;
+  const hasL2 = progress.l2Done;
+  const hasL3 = progress.l3Done;
+  const hasBitacora = progress.bitacoraDone;
   const verse = getVitrinaVerse(entry.showcase);
 
-  const homeSt = lsRead(homeKey);
-  const homeL2 = !!homeSt.l2_option;
-  const homeL3 = !!homeSt.l3_recommendation?.step3;
-  const homeBitacora = !!homeSt.bitacora_completed;
+  const homeProgress = readResonanceProgress(homeKey);
+  const homeL2 = homeProgress.l2Done;
+  const homeL3 = homeProgress.l3Done;
+  const homeBitacora = homeProgress.bitacoraDone;
 
   return (
     <AnimatePresence mode="wait">

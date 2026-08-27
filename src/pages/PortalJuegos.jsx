@@ -12,6 +12,7 @@ import IAInsightCard from '@/components/IAInsightCard';
 import RelatedReadingTooltipButton from '@/components/portal/RelatedReadingTooltipButton';
 import VitranaQuestionReveal from '@/components/portal/VitranaQuestionReveal';
 import ResonanceModal, { LEVEL2_QUESTIONS, buildL1Acknowledgment } from '@/components/portal/ResonanceModal';
+import { readResonanceProgress } from '@/lib/bitacoraShared';
 import VideoNarrativeAutoplay from '@/components/VideoNarrativeAutoplay';
 import PulseReactionCard from '@/components/portal/PulseReactionCard';
 import { recordShowcaseLike } from '@/services/showcaseLikeService';
@@ -94,11 +95,11 @@ const PortalJuegos = () => {
   const [reactionStatus, setReactionStatus] = useState('idle');
   const [isContributionOpen, setIsContributionOpen] = useState(false);
   const [isResonanceOpen, setIsResonanceOpen] = useState(false);
-  const [l1Done, setL1Done] = useState(() => { try { return Boolean(JSON.parse(localStorage.getItem('gatoencerrado:resonance:juegos') || '{}').l1); } catch { return false; } });
-  const [l2Answer, setL2Answer] = useState(() => { try { return JSON.parse(localStorage.getItem('gatoencerrado:resonance:juegos') || '{}').l2_option ?? null; } catch { return null; } });
-  const [experienceDone, setExperienceDone] = useState(() => { try { return Boolean(JSON.parse(localStorage.getItem('gatoencerrado:resonance:juegos') || '{}').experience_ts); } catch { return false; } });
-  const [l2Done, setL2Done] = useState(() => { try { return Boolean(JSON.parse(localStorage.getItem('gatoencerrado:resonance:juegos') || '{}').l2_option); } catch { return false; } });
-  const [l3Rec, setL3Rec] = useState(() => { try { return JSON.parse(localStorage.getItem('gatoencerrado:resonance:juegos') || '{}').l3_recommendation ?? null; } catch { return null; } });
+  const [l1Done, setL1Done] = useState(() => readResonanceProgress('juegos').l1Done);
+  const [l2Answer, setL2Answer] = useState(() => readResonanceProgress('juegos').l2Answer);
+  const [experienceDone, setExperienceDone] = useState(() => readResonanceProgress('juegos').experienceDone);
+  const [l2Done, setL2Done] = useState(() => readResonanceProgress('juegos').l2Done);
+  const [l3Rec, setL3Rec] = useState(() => readResonanceProgress('juegos').l3Recommendation);
   const [gameLaunched, setGameLaunched] = useState(() => {
     try {
       const stored = JSON.parse(localStorage.getItem(JUEGOS_RESONANCE_KEY) || '{}');
@@ -115,7 +116,10 @@ const PortalJuegos = () => {
   const launchRequestRef = useRef(null);
   const launchRequestIdRef = useRef(null);
   const completedPartidaRef = useRef(null);
-  const refreshL1 = useCallback(() => { try { const s = JSON.parse(localStorage.getItem('gatoencerrado:resonance:juegos') || '{}'); setL1Done(Boolean(s.l1)); setExperienceDone(Boolean(s.experience_ts)); setL2Done(Boolean(s.l2_option)); setL2Answer(s.l2_option ?? null); setL3Rec(s.l3_recommendation ?? null); } catch { /* ignore */ } }, []);
+  const refreshL1 = useCallback(() => {
+    const p = readResonanceProgress('juegos');
+    setL1Done(p.l1Done); setExperienceDone(p.experienceDone); setL2Done(p.l2Done); setL2Answer(p.l2Answer); setL3Rec(p.l3Recommendation);
+  }, []);
   const handleLaunchEmbeddedGame = useCallback(() => {
     if (completedPartidaRef.current) {
       launchSessionRef.current = null;

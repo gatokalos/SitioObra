@@ -98,6 +98,7 @@ import useScrambleText from '@/hooks/useScrambleText';
 import MiniVersoCard from '@/components/transmedia/MiniVersoCard';
 import ShowcaseReactionInline from '@/components/transmedia/ShowcaseReactionInline';
 import CauseImpactAccordion from '@/components/transmedia/CauseImpactAccordion';
+import { readResonanceProgress } from '@/lib/bitacoraShared';
 
 const MARIANA_GALLERY = [
   {
@@ -379,23 +380,15 @@ const Transmedia = ({ allianceOnlyMode = false }) => {
       setActivePortalL2Answer(null); setActivePortalL3Done(false); setActivePortalL3Step3(null);
       return;
     }
-    try {
-      const raw = localStorage.getItem(`gatoencerrado:resonance:${portal}`);
-      const s = raw ? JSON.parse(raw) : {};
-      setActivePortalL1Done(!!s.l1);
-      setActivePortalL2Done(!!s.l2_option);
-      setActivePortalL2Answer(s.l2_option ?? null);
-      setActivePortalL3Done(!!s.l3_recommendation?.step3);
-      setActivePortalL3Step3(s.l3_recommendation?.step3 ?? null);
-      setActivePortalL3RecommendedPortal(s.l3_recommendation?.recommended_portal ?? null);
-      setActivePortalL3RecommendedForma(s.l3_recommendation?.forma ?? null);
-      setActivePortalBitacoraDone(!!s.bitacora_completed);
-    } catch {
-      setActivePortalL1Done(false); setActivePortalL2Done(false);
-      setActivePortalL2Answer(null); setActivePortalL3Done(false); setActivePortalL3Step3(null);
-      setActivePortalL3RecommendedPortal(null); setActivePortalL3RecommendedForma(null);
-      setActivePortalBitacoraDone(false);
-    }
+    const progress = readResonanceProgress(portal);
+    setActivePortalL1Done(progress.l1Done);
+    setActivePortalL2Done(progress.l2Done);
+    setActivePortalL2Answer(progress.l2Answer);
+    setActivePortalL3Done(progress.l3Done);
+    setActivePortalL3Step3(progress.l3Step3);
+    setActivePortalL3RecommendedPortal(progress.l3RecommendedPortal);
+    setActivePortalL3RecommendedForma(progress.l3RecommendedForma);
+    setActivePortalBitacoraDone(progress.bitacoraDone);
   }, [activeShowcase]);
 
   // Indica si el usuario completó la experiencia narrativa del portal activo
@@ -406,19 +399,16 @@ const Transmedia = ({ allianceOnlyMode = false }) => {
   const refreshActivePortalL1 = useCallback(() => {
     const portal = SHOWCASE_TO_PORTAL[activeShowcase];
     if (!portal) return;
-    try {
-      const raw = localStorage.getItem(`gatoencerrado:resonance:${portal}`);
-      const state = raw ? JSON.parse(raw) : {};
-      setActivePortalL1Done(!!state.l1);
-      setActivePortalL2Done(!!state.l2_option);
-      setActivePortalL2Answer(state.l2_option ?? null);
-      setActivePortalExperienceDone(!!state.experience_ts);
-      setActivePortalL3Done(!!state.l3_recommendation?.step3);
-      setActivePortalL3Step3(state.l3_recommendation?.step3 ?? null);
-      setActivePortalL3RecommendedPortal(state.l3_recommendation?.recommended_portal ?? null);
-      setActivePortalL3RecommendedForma(state.l3_recommendation?.forma ?? null);
-      setActivePortalBitacoraDone(!!state.bitacora_completed);
-    } catch {}
+    const progress = readResonanceProgress(portal);
+    setActivePortalL1Done(progress.l1Done);
+    setActivePortalL2Done(progress.l2Done);
+    setActivePortalL2Answer(progress.l2Answer);
+    setActivePortalExperienceDone(progress.experienceDone);
+    setActivePortalL3Done(progress.l3Done);
+    setActivePortalL3Step3(progress.l3Step3);
+    setActivePortalL3RecommendedPortal(progress.l3RecommendedPortal);
+    setActivePortalL3RecommendedForma(progress.l3RecommendedForma);
+    setActivePortalBitacoraDone(progress.bitacoraDone);
   }, [activeShowcase]);
 
   // También lee experience_ts al cambiar vitrana

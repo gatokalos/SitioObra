@@ -13,7 +13,7 @@ import { createPortalLaunchState } from '@/lib/portalNavigation';
 import { writePendingContinuation } from '@/lib/pendingContinuation';
 import { createMiniverseSouvenirBlob, downloadBlob } from '@/lib/miniverseSouvenirCard';
 import { usePushSubscription } from '@/hooks/usePushSubscription';
-import { readGlobalConsent, writeGlobalConsent } from '@/lib/bitacoraShared';
+import { readGlobalConsent, writeGlobalConsent, readResonanceProgress } from '@/lib/bitacoraShared';
 import VideoNarrativeAutoplay from '@/components/VideoNarrativeAutoplay';
 import {
   RESONANCE_FAREWELL_VIDEO_ENABLED,
@@ -347,7 +347,11 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
   const l2q      = LEVEL2_QUESTIONS[portal] ?? null;
 
   // Persistent state — lazy-init desde localStorage; si no hay, se verifica contra Supabase
-  const [l1Done, setL1Done] = useState(() => !!lsRead(portal).l1);
+  // readResonanceProgress (no lsRead crudo) para l1Done/l1ChipDone/checking/l3Step:
+  // Bitácora → L3 → L2 → L1 es una escalera estricta, así que un registro con
+  // bitacora_completed=true pero l1 vacío/perdido no debe mostrar el formulario
+  // de L1 como si nada se hubiera contestado (Carlos, 2026-08-26).
+  const [l1Done, setL1Done] = useState(() => readResonanceProgress(portal).l1Done);
   const [l1Acknowledgment, setL1Acknowledgment] = useState(() => {
     const saved = lsRead(portal);
     return saved.l1_acknowledgment ?? buildL1Acknowledgment(portal, saved.l1_answer);
@@ -359,7 +363,7 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
     const saved = lsRead(portal);
     return saved.l2_acknowledgment ?? buildL2Acknowledgment(portal, saved.l2_option);
   });
-  const [l1ChipDone, setL1ChipDone] = useState(() => !!lsRead(portal).l2_option);
+  const [l1ChipDone, setL1ChipDone] = useState(() => readResonanceProgress(portal).l2Done);
   const [l2Submitting, setL2Submitting] = useState(false);
   const [dashboardActiveLevel, setDashboardActiveLevel] = useState(() => {
     const s = lsRead(portal);
@@ -369,7 +373,7 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
     const s = lsRead(portal);
     return !!s.l2_calibration_open && !s.l2_narrative_opened;
   });
-  const [checking, setChecking] = useState(() => !isDevAuth && !lsRead(portal).l1);
+  const [checking, setChecking] = useState(() => !isDevAuth && !readResonanceProgress(portal).l1Done);
 
   // Nivel 2 — conversación post-experiencia
   const [l2NarrativeOpened, setL2NarrativeOpened] = useState(() => !!lsRead(portal).l2_narrative_opened);
@@ -384,7 +388,7 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
   const [l3Open, setL3Open]             = useState(false);
   const [l3Loading, setL3Loading]       = useState(false);
   const [l3Rec, setL3Rec]               = useState(() => lsRead(portal).l3_recommendation ?? null);
-  const [l3Step, setL3Step]             = useState(() => !!lsRead(portal).l3_recommendation?.step3 ? 4 : 1);
+  const [l3Step, setL3Step]             = useState(() => readResonanceProgress(portal).l3Done ? 4 : 1);
   const [l3BubbleClosed, setL3BubbleClosed] = useState(false);
   const [isSouvenirGenerating, setIsSouvenirGenerating] = useState(false);
 

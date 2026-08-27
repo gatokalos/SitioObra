@@ -25,3 +25,44 @@ export const readGlobalConsent = () => {
 export const writeGlobalConsent = () => {
   try { localStorage.setItem(GLOBAL_CONSENT_KEY, 'true'); } catch {}
 };
+
+export const readResonanceRecord = (portal) => {
+  try {
+    return JSON.parse(localStorage.getItem(`gatoencerrado:resonance:${portal}`)) ?? {};
+  } catch {
+    return {};
+  }
+};
+
+// Bitácora → L3 → L2 → L1 es una escalera estricta en el flujo real: no se
+// llega a una etapa sin haber pasado por las anteriores. Antes cada pantalla
+// (Transmedia.jsx, los 9 Portal*.jsx, CuadernoHolografico.jsx, ResonanceModal.jsx)
+// leía su propio campo del registro por separado (l1, l2_option,
+// l3_recommendation, bitacora_completed) sin esa garantía — así que un
+// registro real con bitacora_completed=true pero l1 vacío/perdido mostraba
+// "sin empezar" en una pantalla y "terminado" en otra para el mismo
+// miniverso. Esta función es la única fuente de "¿en qué etapa va?": una
+// etapa avanzada siempre implica las anteriores, sin importar qué campo
+// puntual falte en el registro (Carlos, 2026-08-26).
+export const readResonanceProgress = (portal) => {
+  const record = readResonanceRecord(portal);
+  const bitacoraDone = !!record.bitacora_completed;
+  const l3Done = bitacoraDone || !!record.l3_recommendation?.step3;
+  // l2_option (modo de opción rápida) y l2_conv_done (modo conversacional) son
+  // dos formas distintas de completar L2 — cualquiera de las dos cuenta.
+  const l2Done = l3Done || !!record.l2_option || !!record.l2_conv_done;
+  const l1Done = l2Done || !!record.l1;
+  return {
+    record,
+    l1Done,
+    l2Done,
+    l2Answer: record.l2_option ?? null,
+    l3Done,
+    l3Recommendation: record.l3_recommendation ?? null,
+    l3Step3: record.l3_recommendation?.step3 ?? null,
+    l3RecommendedPortal: record.l3_recommendation?.recommended_portal ?? null,
+    l3RecommendedForma: record.l3_recommendation?.forma ?? null,
+    bitacoraDone,
+    experienceDone: !!record.experience_ts,
+  };
+};

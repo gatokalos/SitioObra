@@ -19,6 +19,7 @@ import RelatedReadingTooltipButton from '@/components/portal/RelatedReadingToolt
 import PortalL3RewardCTA from '@/components/portal/PortalL3RewardCTA';
 import VitranaQuestionReveal from '@/components/portal/VitranaQuestionReveal';
 import ResonanceModal, { LEVEL2_QUESTIONS, buildL1Acknowledgment } from '@/components/portal/ResonanceModal';
+import { readResonanceProgress } from '@/lib/bitacoraShared';
 import VideoNarrativeAutoplay from '@/components/VideoNarrativeAutoplay';
 import { RESONANCE_BRIDGE_VIDEO_ENABLED } from '@/components/transmedia/transmediaConstants';
 import PulseReactionCard from '@/components/portal/PulseReactionCard';
@@ -111,12 +112,15 @@ const PortalGraficos = () => {
   const [reactionStatus, setReactionStatus] = useState('idle');
   const [isContributionOpen, setIsContributionOpen] = useState(false);
   const [isResonanceOpen, setIsResonanceOpen] = useState(false);
-  const [l1Done, setL1Done] = useState(() => { try { return Boolean(JSON.parse(localStorage.getItem('gatoencerrado:resonance:grafico') || '{}').l1); } catch { return false; } });
-  const [l2Answer, setL2Answer] = useState(() => { try { return JSON.parse(localStorage.getItem('gatoencerrado:resonance:grafico') || '{}').l2_option ?? null; } catch { return null; } });
-  const [experienceDone, setExperienceDone] = useState(() => { try { return Boolean(JSON.parse(localStorage.getItem('gatoencerrado:resonance:grafico') || '{}').experience_ts); } catch { return false; } });
-  const [l2Done, setL2Done] = useState(() => { try { return Boolean(JSON.parse(localStorage.getItem('gatoencerrado:resonance:grafico') || '{}').l2_option); } catch { return false; } });
-  const [l3Rec, setL3Rec] = useState(() => { try { return JSON.parse(localStorage.getItem('gatoencerrado:resonance:grafico') || '{}').l3_recommendation ?? null; } catch { return null; } });
-  const refreshL1 = useCallback(() => { try { const s = JSON.parse(localStorage.getItem('gatoencerrado:resonance:grafico') || '{}'); setL1Done(Boolean(s.l1)); setExperienceDone(Boolean(s.experience_ts)); setL2Done(Boolean(s.l2_option)); setL2Answer(s.l2_option ?? null); setL3Rec(s.l3_recommendation ?? null); } catch { /* ignore */ } }, []);
+  const [l1Done, setL1Done] = useState(() => readResonanceProgress('grafico').l1Done);
+  const [l2Answer, setL2Answer] = useState(() => readResonanceProgress('grafico').l2Answer);
+  const [experienceDone, setExperienceDone] = useState(() => readResonanceProgress('grafico').experienceDone);
+  const [l2Done, setL2Done] = useState(() => readResonanceProgress('grafico').l2Done);
+  const [l3Rec, setL3Rec] = useState(() => readResonanceProgress('grafico').l3Recommendation);
+  const refreshL1 = useCallback(() => {
+    const p = readResonanceProgress('grafico');
+    setL1Done(p.l1Done); setExperienceDone(p.experienceDone); setL2Done(p.l2Done); setL2Answer(p.l2Answer); setL3Rec(p.l3Recommendation);
+  }, []);
   const [isImagePreviewOpen, setIsImagePreviewOpen] = useState(false);
   const [isPdfOpen, setIsPdfOpen] = useState(false);
   const [pdfNumPages, setPdfNumPages] = useState(null);

@@ -16,6 +16,7 @@ import RelatedReadingTooltipButton from '@/components/portal/RelatedReadingToolt
 import PortalL3RewardCTA from '@/components/portal/PortalL3RewardCTA';
 import VitranaQuestionReveal from '@/components/portal/VitranaQuestionReveal';
 import ResonanceModal, { LEVEL2_QUESTIONS, buildL1Acknowledgment } from '@/components/portal/ResonanceModal';
+import { readResonanceProgress } from '@/lib/bitacoraShared';
 import VideoNarrativeAutoplay from '@/components/VideoNarrativeAutoplay';
 import { RESONANCE_BRIDGE_VIDEO_ENABLED } from '@/components/transmedia/transmediaConstants';
 import PulseReactionCard from '@/components/portal/PulseReactionCard';
@@ -162,11 +163,14 @@ const PortalArtesanias = () => {
   const [reactionStatus, setReactionStatus] = useState('idle');
   const [isContributionOpen, setIsContributionOpen] = useState(false);
   const [isResonanceOpen, setIsResonanceOpen] = useState(false);
-  const [l1Done, setL1Done] = useState(() => { try { return Boolean(JSON.parse(localStorage.getItem('gatoencerrado:resonance:artesanias') || '{}').l1); } catch { return false; } });
-  const [l2Answer, setL2Answer] = useState(() => { try { return JSON.parse(localStorage.getItem('gatoencerrado:resonance:artesanias') || '{}').l2_option ?? null; } catch { return null; } });
-  const [l2Done, setL2Done] = useState(() => { try { return Boolean(JSON.parse(localStorage.getItem('gatoencerrado:resonance:artesanias') || '{}').l2_option); } catch { return false; } });
-  const [l3Rec, setL3Rec] = useState(() => { try { return JSON.parse(localStorage.getItem('gatoencerrado:resonance:artesanias') || '{}').l3_recommendation ?? null; } catch { return null; } });
-  const refreshL1 = useCallback(() => { try { const s = JSON.parse(localStorage.getItem('gatoencerrado:resonance:artesanias') || '{}'); setL1Done(Boolean(s.l1)); setL2Done(Boolean(s.l2_option)); setL2Answer(s.l2_option ?? null); setL3Rec(s.l3_recommendation ?? null); } catch { /* ignore */ } }, []);
+  const [l1Done, setL1Done] = useState(() => readResonanceProgress('artesanias').l1Done);
+  const [l2Answer, setL2Answer] = useState(() => readResonanceProgress('artesanias').l2Answer);
+  const [l2Done, setL2Done] = useState(() => readResonanceProgress('artesanias').l2Done);
+  const [l3Rec, setL3Rec] = useState(() => readResonanceProgress('artesanias').l3Recommendation);
+  const refreshL1 = useCallback(() => {
+    const p = readResonanceProgress('artesanias');
+    setL1Done(p.l1Done); setL2Done(p.l2Done); setL2Answer(p.l2Answer); setL3Rec(p.l3Recommendation);
+  }, []);
   const navigate = useNavigate();
   const location = useLocation();
   // Resonancia Colectiva ya no se auto-abre al llegar del video narrativo
