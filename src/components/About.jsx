@@ -1042,13 +1042,13 @@ export const ProvocaSection = () => {
                   id="provoca-obra-info-title"
                   className="relative mt-3 text-3xl font-medium leading-tight tracking-[-0.02em] text-white sm:text-4xl"
                 >
-                  ¿Quién o qué es la obra<br className="hidden sm:block" /> que reacciona?
+                  ¿Qué es la voz que responde?
                 </h2>
 
                 <div className="relative mt-7 max-w-md space-y-3 text-left text-sm leading-relaxed text-slate-300 sm:text-base">
-                  <p>Es una voz generada con IA a partir del archivo interno de la obra.</p>
-                  <p>Consulta escenas, símbolos y emociones de este universo, guiada por instrucciones creadas para reaccionar —no para resolver dudas—.</p>
-                  <p>Cada reacción se compone al momento a partir de la voz que acabas de leer.</p>
+                  <p>La obra tiene un archivo interno: escenas, capas dramáticas, símbolos, estructura emocional. Esta voz lo consulta en tiempo real cuando alguien escribe.</p>
+                  <p>No interpreta lo que viste. No aconseja. Encuentra en ese archivo lo que resuena con lo que trajiste —y lo devuelve en voz alta.</p>
+                  <p>Cada reacción se genera en el momento. No se repite.</p>
                 </div>
 
                 <button
