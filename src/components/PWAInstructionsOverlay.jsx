@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { motion, useReducedMotion } from 'framer-motion';
 import { X, Share, Plus, Check, MoreVertical, Download, ArrowDown } from 'lucide-react';
+import { isAppleTouchDevice } from '@/lib/platformDetection';
 
 const STEPS_IOS = [
   { Icon: Share, label: '1. Toca el botón Compartir' },
@@ -29,8 +30,7 @@ const PWAInstructionsOverlay = ({
   const prefersReducedMotion = useReducedMotion();
 
   useEffect(() => {
-    if (typeof navigator === 'undefined') return;
-    setIsIOS(/iphone|ipad|ipod/i.test(navigator.userAgent));
+    setIsIOS(isAppleTouchDevice());
   }, []);
 
   // Estable mientras el sheet está abierto — sin esto, las estrellas
@@ -123,7 +123,7 @@ const PWAInstructionsOverlay = ({
                     />
                   ) : (
                     <img
-                      src="/assets/icon-180.png"
+                      src="/assets/icon-180.png?v=20260827"
                       alt="Ícono de #GatoEncerrado"
                       className="h-full w-full rounded-[clamp(9px,1vh,13px)] object-cover"
                     />

@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
+import { isAppleTouchDevice } from '@/lib/platformDetection';
 
 const once = (fn) => {
   let called = false;
@@ -16,8 +17,8 @@ const InstallPWACTA = () => {
   const [isStandalone, setIsStandalone] = useState(false);
 
   const userAgent = typeof navigator !== 'undefined' ? navigator.userAgent : '';
-  const isMobile = /iphone|ipad|ipod|android/i.test(userAgent);
-  const isiOS = /iphone|ipad|ipod/i.test(userAgent);
+  const isiOS = isAppleTouchDevice();
+  const isMobile = isiOS || /android/i.test(userAgent);
 
   const handleInstallAttempt = async () => {
     if (!promptEvent) {
