@@ -66,11 +66,11 @@ const HERO_INACTIVE_HINT = 'Cuando lo veas, toca el gato';
 // Mismas piezas que arman HERO_INACTIVE_HINT, separadas para poder
 // glitchear solo la palabra "gato" (ver HERO_GATO_GLITCH_DELAY_MS abajo) sin
 // tocar el resto de la frase.
-const HERO_INACTIVE_HINT_PREFIX = 'Si no lo sabes';
+const HERO_INACTIVE_HINT_PREFIX = 'Ante la duda…';
 const HERO_INACTIVE_HINT_GATO_WORD = 'gato';
 const HERO_INACTIVE_HINT_SUFFIX = '';
 const HERO_GATO_GLITCH_EXTRA_CHARS = ['#'];
-const HERO_SI_EL_HASH_TEXT = '… pulsa el ';
+const HERO_SI_EL_HASH_TEXT = ' pulsa el #';
 const HERO_SI_EL_HASH_TYPE_SPEED_MS = 45;
 const HERO_INACTIVE_ECHO_COUNT = 13;
 const HERO_INACTIVE_ECHO_ENTRY_DURATION_S = 0.72;
