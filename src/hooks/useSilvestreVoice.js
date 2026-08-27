@@ -1106,9 +1106,10 @@ export const useSilvestreVoice = () => {
         typeof options.userName === 'string' && options.userName.trim()
           ? options.userName.trim()
           : null;
+      const apiContext = options.context || null;
       primeSilvestreAudioPlayback();
       setTranscript(starter);
-      await sendTranscript(starter, { source: 'preset', modeId, userName });
+      await sendTranscript(starter, { source: 'preset', modeId, userName, ...(apiContext ? { context: apiContext } : {}) });
 
       if (typeof window !== 'undefined') {
         window.dispatchEvent(
