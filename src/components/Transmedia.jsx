@@ -5632,7 +5632,7 @@ const renderDramaFeaturedWork = () => (
     <em>Esta obra es un sistema narrativo transmedia</em> que se despliega en nueve formas que aquí llamamos miniversos.<br />
     <strong>Elige por dónde continuar y qué lugar ocupar.</strong><br />
       <span className="block mt-10 text-sm text-slate-100/50 italic">
-    (Mi universo entero se sostiene en cada minuto de tu atención dentro de estos <strong>miniversos</strong>.)
+    (Mi universo se sostiene en cada minuto de tu atención dentro de estos <strong>miniversos</strong>.)
   </span>
       </p>
             </motion.div>

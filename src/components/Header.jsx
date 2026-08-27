@@ -737,7 +737,7 @@ const Header = ({
           {
             name: 'Segundo acto',
             href: '#provoca',
-            description: '#LaRéplica',
+            description: '#FORMASDEDECIRLO',
             secondary: [{ label: 'Formas de decirlo', href: '#provoca' }],
           },
         ]

@@ -765,7 +765,7 @@ export const ProvocaSection = () => {
                   variant="outline"
                   onClick={handleShareVoiceAction}
                   disabled={isShareButtonInSendMode && isSendVoiceDisabled}
-                  className={`ge-chip-action ge-mobile-cta-width w-full sm:w-auto gap-2 ${
+                  className={`ge-chip-action ge-mobile-cta-width provoca-share-cta w-full sm:w-auto gap-2 ${
                     isVoiceInputOpen ? 'ge-chip-action--active' : 'ge-chip-action--primary'
                   }`}
                 >
@@ -957,20 +957,20 @@ export const ProvocaSection = () => {
               {micError && !isSilvestreThinking ? (
                 <p className="w-full text-xs text-red-200/90">{micError}</p>
               ) : null}
-              <p className="w-full text-[11px] text-slate-300/70">
-                Escucha cómo reacciona la obra a la voz que estás leyendo.
-              </p>
+   
               <button
+              
                 type="button"
                 onClick={() => setIsObraInfoOpen(true)}
-                className="group/info inline-flex w-fit items-center gap-2 text-left text-[11px] text-slate-300 transition hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-300/50"
+                className="group/info inline-flex w-fit items-center gap-2 text-left text-[14px] text-slate-300 transition hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-300/50"
                 aria-haspopup="dialog"
                 aria-expanded={isObraInfoOpen}
               >
-                ¿Quién o qué es la obra que reacciona?
-                <span className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-white/15 bg-white/5 text-slate-300 transition group-hover/info:border-cyan-200/40 group-hover/info:text-white">
+                     <span className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-white/15 bg-white/5 text-slate-300 transition group-hover/info:border-cyan-200/40 group-hover/info:text-white">
                   <Info size={13} />
                 </span>
+                ¿Qué es la voz que responde?
+           
               </button>
             </div>
           </div>
@@ -1036,7 +1036,7 @@ export const ProvocaSection = () => {
                 </div>
 
                 <p className="relative mt-8 text-[0.68rem] uppercase tracking-[0.32em] text-amber-100/55">
-                  Segundo acto · La Réplica
+                  LA VOZ DE LA OBRA
                 </p>
                 <h2
                   id="provoca-obra-info-title"

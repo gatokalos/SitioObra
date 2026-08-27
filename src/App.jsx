@@ -874,7 +874,7 @@ function App() {
               showCuradoriaNav={isCuradoriaVisible}
               showIntermedioNav={canShowPostHeroContent}
               showTransmediaNav={canShowPostHeroContent && hasEnteredUniverse && canAccessTransmedia}
-              showPerspectivasNav={isCuradoriaVisible}
+              showPerspectivasNav={canShowPostHeroContent}
               showObraDestacadaNav={isObraDestacadaVisible}
               showBeforeLeavingNav={isBeforeLeavingVisible}
               showTerceraLlamadaNav={canShowPostHeroContent}
@@ -908,23 +908,21 @@ function App() {
                     </DeferredSection>
 
                     {isCuradoriaVisible && (
-                      <>
-                        <DeferredSection fallback={<SectionFallback id="dialogo-critico" minHeight={900} />}>
-                          <Suspense fallback={<SectionFallback id="dialogo-critico" minHeight={900} />}>
-                            <BlogSection showBuscador={showBlogBuscador} />
-                          </Suspense>
-                        </DeferredSection>
-
-                        {/* La réplica va pegada a Curaduría a propósito: ambas son el
-                            mismo espacio de reflexión/respuesta sobre la obra — comparten
-                            condición de visibilidad para no separarse. */}
-                        <DeferredSection fallback={<SectionFallback id="provoca" minHeight={900} />}>
-                          <Suspense fallback={<SectionFallback id="provoca" minHeight={900} />}>
-                            <ProvocaSection />
-                          </Suspense>
-                        </DeferredSection>
-                      </>
+                      <DeferredSection fallback={<SectionFallback id="dialogo-critico" minHeight={900} />}>
+                        <Suspense fallback={<SectionFallback id="dialogo-critico" minHeight={900} />}>
+                          <BlogSection showBuscador={showBlogBuscador} />
+                        </Suspense>
+                      </DeferredSection>
                     )}
+
+                    {/* Segundo acto / La réplica: una sección propia del recorrido,
+                        entre Intermedio y Caída del Telón. No depende de que el archivo
+                        de Curaduría esté desplegado. */}
+                    <DeferredSection fallback={<SectionFallback id="provoca" minHeight={900} />}>
+                      <Suspense fallback={<SectionFallback id="provoca" minHeight={900} />}>
+                        <ProvocaSection />
+                      </Suspense>
+                    </DeferredSection>
 
                     {/* Archivo Escénico / Caída del Telón: siempre visible una vez activada la escena;
                         su CTA revela Obra Destacada + Créditos */}

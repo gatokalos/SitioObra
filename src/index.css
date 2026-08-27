@@ -1832,6 +1832,13 @@ body {
     flex: 0 1 auto !important;
     align-self: center;
   }
+
+  /* La Réplica usa un marco más abierto que las transiciones narrativas.
+     Esta resta reproduce en su CTA el mismo ancho editorial de
+     “¿Comenzamos?” y “Entra al camerino”, sin alterar tablet o desktop. */
+  .provoca-share-cta {
+    width: min(calc(100% - 4rem), 23rem) !important;
+  }
 }
 
 .miniverse-inline-threshold {
