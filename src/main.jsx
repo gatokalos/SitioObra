@@ -5,6 +5,7 @@ import App from '@/App';
 import '@/index.css';
 import { AuthProvider } from '@/contexts/SupabaseAuthContext';
 import HashtagDoradoLab from '@/components/lab/HashtagDoradoLab';
+import ResonanceAccordionLab from '@/components/lab/ResonanceAccordionLab';
 
 // Gate de un solo uso para vistas de "Lab" (piezas visuales sueltas que no
 // vale la pena cablear dentro del árbol real de App.jsx, con todo su estado
@@ -16,6 +17,8 @@ ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
     {labParam === 'HashtagDorado' ? (
       <HashtagDoradoLab />
+    ) : labParam === 'ResonanceAccordion' ? (
+      <ResonanceAccordionLab />
     ) : (
       <BrowserRouter>
         <AuthProvider>

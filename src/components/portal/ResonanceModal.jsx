@@ -1,9 +1,8 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import ReactDOM from 'react-dom';
 import CuadernoHolografico from './CuadernoHolografico';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Eye, Flame, PawPrint, Lock, ShieldCheck, Check, ChevronDown, ChevronRight, Sparkles, ArrowRight, RotateCcw, FastForward } from 'lucide-react';
+import { Eye, Flame, PawPrint, Lock, ShieldCheck, Check, ChevronDown, Sparkles, RotateCcw, FastForward } from 'lucide-react';
 import { supabase } from '@/lib/supabaseClient';
 import { ensureAnonId } from '@/lib/identity';
 import { useAuth } from '@/contexts/SupabaseAuthContext';
@@ -382,11 +381,8 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
   const [convError, setConvError] = useState(() => !!lsRead(portal).l2_conv_error);
 
   // Nivel 3 — recomendación del siguiente miniverso
-  const [l3Open, setL3Open]             = useState(false);
   const [l3Loading, setL3Loading]       = useState(false);
   const [l3Rec, setL3Rec]               = useState(() => lsRead(portal).l3_recommendation ?? null);
-  const [l3Step, setL3Step]             = useState(() => readResonanceProgress(portal).l3Done ? 4 : 1);
-  const [l3BubbleClosed, setL3BubbleClosed] = useState(false);
   const [isSouvenirGenerating, setIsSouvenirGenerating] = useState(false);
 
   // Bitácora individual — seguimiento diferido
@@ -850,11 +846,11 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
   // Si el usuario está en la PWA instalada, suscribe push en silencio
   // en el momento en que aparece el bloque "Este recorrido ha concluido".
   useEffect(() => {
-    const l3Done = Boolean(l3Rec?.step3) && !l3Rec?.error && (l3Step >= 4 || l3BubbleClosed);
+    const l3Done = Boolean(l3Rec?.step3) && !l3Rec?.error;
     if (isDevAuth || !l3Done || bitacoraConsented) return;
     const bienvenidaAnonId = (() => { try { return localStorage.getItem('bienvenida_anon_id') || null; } catch { return null; } })();
     autoSubscribeIfPWA({ anonId: ensureAnonId(), miniversoId: portal, bienvenidaAnonId });
-  }, [l3Rec, l3Step, l3BubbleClosed, bitacoraConsented, portal, autoSubscribeIfPWA, isDevAuth]);
+  }, [l3Rec, bitacoraConsented, portal, autoSubscribeIfPWA, isDevAuth]);
 
   /* Bitácora — envía respuestas */
   const handleBitacoraSubmit = useCallback(async () => {
@@ -886,18 +882,10 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
   }, [portal, bitacoraP1, bitacoraAfirmativa, bitacoraIntensidad, bitacoraP2, bitacoraP3, isDevAuth]);
 
   /* ── render ── */
-  const l3Active = l3Open && !!l3Rec && !l3Rec.error && !l3Rec.all_complete;
-
-  const l3ConsentBubbleText = bitacoraConsented
-    ? 'La obra continuará contigo fuera de escena. Cuando llegue el momento, podrás registrar qué permaneció y qué cambió.'
-    : 'La obra continúa después de cada recorrido. ¿Puedo avisarte cuando sea el momento de volver y mirar qué permaneció?';
-
-  const l3BubbleText = l3Rec
-    ? (l3Step === 1 ? l3Rec.step1
-       : l3Step === 2 ? l3Rec.step2
-       : l3Step === 3 ? l3ConsentBubbleText
-       : (l3Rec.step3 ?? l3Rec.message))
-    : null;
+  // Gatea la revelación ambiental del gato en la columna derecha (ver más
+  // abajo) — ya no gatea ningún modal ni burbuja narrada, esa función la
+  // absorbió el video del autor (Carlos, 2026-08-27).
+  const l3Active = dashboardActiveLevel === 3 && !!l3Rec && !l3Rec.error && !l3Rec.all_complete;
 
   /* Nivel 3 — fetch recomendación */
   const fetchL3Recommendation = useCallback(async () => {
@@ -944,36 +932,6 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
     }
   }, [l3Rec, l3Loading, portal, isDevAuth]);
 
-  const handleL3Toggle = () => {
-    const opening = !l3Open;
-    setL3Open(opening);
-    if (opening) {
-      setL3Step(1);
-      if (!l3Rec || !l3Rec.step1) fetchL3Recommendation();
-    }
-  };
-
-  const dashboardHeader = dashboardActiveLevel === 2
-    ? {
-        eyebrow: LEVELS[1].eyebrow,
-        title: LEVELS[1].title,
-        description: l2ConvDone
-          ? 'La conversación quedó registrada. Lo que apareció después de la experiencia ya forma parte del recorrido.'
-          : (l2q?.preview ?? 'Antes de entrar en escena, reconoce desde dónde miras y hacia quién diriges lo que está por ocurrir.'),
-      }
-    : dashboardActiveLevel === 3
-      ? {
-          eyebrow: LEVELS[2].eyebrow,
-          title: LEVELS[2].title,
-          description: bitacoraCompleted
-            ? 'El registro está completo. Tu recorrido conserva lo que cambió, lo que permaneció y también aquello que no regresó.'
-            : LEVELS[2].pendingDesc,
-        }
-      : {
-          eyebrow: LEVELS[0].eyebrow,
-          title: LEVELS[0].title,
-          description: LEVELS[0].desc.replace(/^✓\s*/, ''),
-        };
 
   const handleBackToDashboard = () => {
     onClose?.();
@@ -1108,81 +1066,6 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
               className="absolute inset-0 hidden lg:block"
               style={{ background: 'linear-gradient(180deg, rgba(5,3,9,0.34) 0%, rgba(5,3,9,0.76) 43%, rgba(5,3,9,0.98) 100%)' }}
             />
-
-            {/* ── L3 cat overlay — mobile only, portal a document.body ──
-                 Se retira en el paso 4 (l3Step < 4): ya guió la
-                 recomendación, y "Agregar recordatorio" vive ahora en el
-                 dashboard compartido — no tiene sentido que el gato siga
-                 tapando toda la pantalla sin nada más que mostrar (Carlos,
-                 2026-08-27, arregla el bug real de que nunca se cerraba
-                 solo). */}
-            {typeof document !== 'undefined' && ReactDOM.createPortal(
-              <AnimatePresence>
-                {l3Active && !l3BubbleClosed && l3Step < 4 && (
-                  <motion.div
-                    className="fixed inset-0 z-[490] lg:hidden"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                    transition={{ duration: 0.45 }}
-                  >
-                    <img
-                      src={CAT_CABINA_URL}
-                      alt=""
-                      aria-hidden="true"
-                      className="h-full w-full object-cover object-top"
-                    />
-                    <div
-                      aria-hidden="true"
-                      className="absolute inset-0"
-                      style={{ background: 'linear-gradient(180deg, rgba(5,3,9,0.10) 0%, rgba(5,3,9,0.35) 100%)' }}
-                    />
-                    <div className="cabina-bubble">
-                      <p className="cabina-bubble__preludio">El laboratorio te habla</p>
-                      {(l3Loading && !l3BubbleText) ? (
-                        <div className="flex items-center justify-center gap-1.5 py-3">
-                          <span className="h-1.5 w-1.5 rounded-full bg-slate-500 animate-bounce" style={{ animationDelay: '0ms' }} />
-                          <span className="h-1.5 w-1.5 rounded-full bg-slate-500 animate-bounce" style={{ animationDelay: '150ms' }} />
-                          <span className="h-1.5 w-1.5 rounded-full bg-slate-500 animate-bounce" style={{ animationDelay: '300ms' }} />
-                        </div>
-                      ) : (
-                        <p className="cabina-bubble__texto">{l3BubbleText}</p>
-                      )}
-                    </div>
-                    {l3Step < 3 ? (
-                      <button
-                        type="button"
-                        className="cabina-siguiente-flotante"
-                        onClick={() => { if (l3BubbleText) setL3Step(l3Step + 1); }}
-                        aria-label="Siguiente"
-                        disabled={!l3BubbleText}
-                        style={!l3BubbleText ? { opacity: 0.35, cursor: 'not-allowed' } : undefined}
-                      >
-                        <ChevronRight size={20} />
-                      </button>
-                    ) : (
-                      <div className="cabina-consent-area">
-                        <button
-                          type="button"
-                          className="cabina-consent-area__primary"
-                          onClick={() => setL3Step(4)}
-                        >
-                          Sí, continuemos →
-                        </button>
-                        <button
-                          type="button"
-                          className="cabina-consent-area__secondary"
-                          onClick={() => setL3Step(4)}
-                        >
-                          Quizás más tarde
-                        </button>
-                      </div>
-                    )}
-                  </motion.div>
-                )}
-              </AnimatePresence>,
-              document.body
-            )}
 
             <div className="relative z-10 h-full overflow-y-auto">
               <AnimatePresence mode="wait">
@@ -1571,28 +1454,12 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
                     exit={{ opacity: 0, y: -8 }}
                     transition={{ duration: 0.4 }}
                   >
-                    {/* Header */}
-                    <motion.div
-                      key={`dashboard-header-${dashboardActiveLevel}`}
-                      className="space-y-2"
-                      initial={{ opacity: 0, y: 8 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ duration: 0.25 }}
-                    >
-                      <div className="inline-flex rounded-full border border-white/10 bg-white/5 px-3 py-1 text-[0.62rem] uppercase tracking-[0.32em] text-white/70 backdrop-blur-md">
-                        {dashboardHeader.eyebrow}
-                      </div>
-                      <h2
-                        id="resonance-modal-title"
-                        className="font-display text-3xl text-white lg:text-4xl"
-                      >
-                        {dashboardHeader.title}
-                      </h2>
-                      <p className="text-sm leading-relaxed text-slate-200/90">
-                        {dashboardHeader.description}
-                      </p>
-
-                    </motion.div>
+                    {/* Título accesible del diálogo — el copy visual ya vive
+                        fusionado dentro de la tarjeta activa de cada nivel,
+                        no duplicado aquí arriba (Carlos, 2026-08-27). */}
+                    <h2 id="resonance-modal-title" className="sr-only">
+                      Resonancia Colectiva — {LEVELS.find((lvl) => lvl.num === dashboardActiveLevel)?.title}
+                    </h2>
 
                     {/* Niveles */}
                     <div className="relative flex flex-col gap-0">
@@ -1608,7 +1475,7 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
                         const isCompleted  = isL1 || (isL2 && (l1ChipDone || l2ConvDone)) || (isL3 && bitacoraCompleted);
                         const isAvailable  = (isL2 && !l1ChipDone) || (isL3 && l2ConvDone && !bitacoraCompleted);
                         const isSelected   = dashboardActiveLevel === level.num;
-                        const levelIsOpen  = (isL2 && l2ConvDone) || (isL3 && l2ConvDone && (l3Open || l3RecSeen));
+                        const levelIsOpen  = (isL2 && l2ConvDone) || (isL3 && l2ConvDone);
                         const canSelect    = isL1 || isL2 || (isL3 && l2ConvDone);
                         const handleSelect = () => {
                           if (!canSelect) return;
@@ -1617,7 +1484,7 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
                             handleOpenCalibrationQuestion();
                             return;
                           }
-                          if (isL3 && !l3RecSeen && !bitacoraCompleted) handleL3Toggle();
+                          if (isL3 && !l3RecSeen && !bitacoraCompleted) fetchL3Recommendation();
                         };
 
                         return (
@@ -1630,10 +1497,10 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
                           >
                             {/* Card con acordeón */}
                             <div
-                              role={!isL3 && canSelect ? 'button' : undefined}
-                              tabIndex={!isL3 && canSelect ? 0 : undefined}
-                              onClick={!isL3 && canSelect ? handleSelect : undefined}
-                              onKeyDown={!isL3 && canSelect ? (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleSelect(); } } : undefined}
+                              role={canSelect ? 'button' : undefined}
+                              tabIndex={canSelect ? 0 : undefined}
+                              onClick={canSelect ? handleSelect : undefined}
+                              onKeyDown={canSelect ? (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleSelect(); } } : undefined}
                               className={`grid min-w-0 flex-1 grid-cols-[4.5rem_minmax(0,1fr)] gap-x-4 gap-y-2 rounded-2xl border px-4 py-4 transition-colors lg:grid-cols-[4.5rem_minmax(0,1fr)_auto] ${canSelect ? 'cursor-pointer' : ''} ${
                               isSelected
                                 ? 'border-purple-300/45 bg-black/60 shadow-[0_0_20px_rgba(168,85,247,0.10)]'
@@ -1644,13 +1511,7 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
                                   : 'border-white/[0.08] bg-black/35'
                             }`}>
                               {/* Fila cabecera — siempre visible */}
-                              <div
-                                role={isL3 && canSelect ? 'button' : undefined}
-                                tabIndex={isL3 && canSelect ? 0 : undefined}
-                                className={`contents ${canSelect ? 'select-none' : ''}`}
-                                onClick={isL3 && canSelect ? handleSelect : undefined}
-                                onKeyDown={isL3 && canSelect ? (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleSelect(); } } : undefined}
-                              >
+                              <div className="contents">
                                 {/* Ícono */}
                                 <div className={`row-span-2 flex h-[4.5rem] w-[4.5rem] shrink-0 items-center justify-center rounded-full ${
                                   isCompleted
@@ -1747,41 +1608,10 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
                                             </div>
                                           )}
 
-                                          {/* Pasos — ocultos en desktop cuando el gato los muestra en el panel */}
-                                          {/* Paso 1 — Orientación */}
-                                          {!l3Loading && l3Rec && !l3Rec.error && !l3Rec.all_complete && l3Step === 1 && !l3Active && (
-                                            <>
-                                              <p className="text-xs leading-relaxed text-slate-300/90">
-                                                {l3Rec.step1}
-                                              </p>
-                                              <button
-                                                type="button"
-                                                onClick={() => setL3Step(2)}
-                                                className="inline-flex items-center gap-2 rounded-full border border-slate-600/40 bg-slate-800/30 px-4 py-2 text-xs text-slate-300 transition hover:bg-slate-700/40"
-                                              >
-                                                Siguiente <ArrowRight size={11} />
-                                              </button>
-                                            </>
-                                          )}
-
-                                          {/* Paso 2 — Impacto */}
-                                          {!l3Loading && l3Rec && !l3Rec.error && !l3Rec.all_complete && l3Step === 2 && !l3Active && (
-                                            <>
-                                              <p className="text-xs leading-relaxed text-slate-300/90">
-                                                {l3Rec.step2}
-                                              </p>
-                                              <button
-                                                type="button"
-                                                onClick={() => setL3Step(3)}
-                                                className="inline-flex items-center gap-2 rounded-full border border-slate-600/40 bg-slate-800/30 px-4 py-2 text-xs text-slate-300 transition hover:bg-slate-700/40"
-                                              >
-                                                Siguiente <ArrowRight size={11} />
-                                              </button>
-                                            </>
-                                          )}
-
-                                          {/* Paso 3 — Coleccionable (muestra después de que el usuario pasa por la cabina) */}
-                                          {l3RecSeen && (l3Step >= 4 || l3BubbleClosed) && !l3Rec.all_complete && (
+                                          {/* Cierre — el video del autor absorbe la narración que antes
+                                              daban los pasos 1/2 del gato (Carlos, 2026-08-27: simplificar,
+                                              sin pasos intermedios). */}
+                                          {l3RecSeen && !l3Rec.all_complete && (
                                             <>
                                               <p className="text-sm leading-relaxed text-slate-300/90 lg:text-xs">
                                                 Este recorrido ha concluido.
@@ -1913,8 +1743,6 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
                                               onClick={() => {
                                                 lsPatch(portal, { l3_recommendation: undefined, bitacora_consented: undefined, bitacora_available_at: undefined });
                                                 setL3Rec(null);
-                                                setL3Step(1);
-                                                setL3Open(false);
                                                 setBitacoraConsented(false);
                                                 setBitacoraAvailableAt(null);
                                                 setShowPhoneInput(false);
@@ -2170,54 +1998,6 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
                 className="star-pulse absolute inset-0"
               />
             </div>
-            {/* Burbuja desktop — mismo retiro en el paso 4 que en móvil */}
-            <AnimatePresence>
-              {l3Active && !l3BubbleClosed && l3Step < 4 && (
-                <motion.div
-                  className="absolute inset-0 pointer-events-none"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                  transition={{ duration: 0.4, delay: 0.2 }}
-                >
-                  <div className="cabina-bubble" style={{ pointerEvents: 'auto' }}>
-                    <p className="cabina-bubble__preludio">El laboratorio te habla</p>
-                    <p className="cabina-bubble__texto">{l3BubbleText}</p>
-                  </div>
-                  {l3Step < 3 && (
-                    <div className="cabina-consent-desktop-area" style={{ pointerEvents: 'auto' }}>
-                      <button
-                        type="button"
-                        className="cabina-bubble__siguiente"
-                        onClick={() => setL3Step(l3Step + 1)}
-                      >
-                        Siguiente →
-                      </button>
-                    </div>
-                  )}
-                  {l3Step === 3 && (
-                    <div className="cabina-consent-desktop-area" style={{ pointerEvents: 'auto' }}>
-                      <button
-                        type="button"
-                        className="cabina-consent-area__primary"
-                        onClick={() => setL3Step(4)}
-                        style={{ width: '100%' }}
-                      >
-                        Sí, continuemos →
-                      </button>
-                      <button
-                        type="button"
-                        className="cabina-consent-area__secondary"
-                        onClick={() => setL3Step(4)}
-                        style={{ width: '100%' }}
-                      >
-                        Quizás más tarde
-                      </button>
-                    </div>
-                  )}
-                </motion.div>
-              )}
-            </AnimatePresence>
             <div
               aria-hidden="true"
               className="absolute inset-y-0 left-0 w-24"
