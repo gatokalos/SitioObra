@@ -390,7 +390,7 @@ const Header = ({
   // Mientras el # del Hero siga presente sin usarse, el toggle # del Header
   // se mantiene oculto: solo debe haber un # clicable en pantalla a la vez.
   const shouldGateIndexUntilHeroReveal = !user && location.pathname === '/' && !hasUsedHeroIndexCue;
-  // Aro pulsante que guía la vista hacia el # recién revelado — se apaga en
+  // Resplandor que guía la vista hacia el [#] recién revelado — se apaga en
   // cuanto el usuario lo usa, el Hero sale del viewport, o si ya se había
   // revelado en un montaje previo de esta sesión (ver wasIndexCueAlreadyUsedAtMountRef).
   const showIndexGuidePulse =
@@ -446,7 +446,7 @@ const Header = ({
     };
   }, []);
 
-  // Apaga el aro pulsante del # (ver showIndexGuidePulse) en cuanto el Hero
+  // Apaga el resplandor pulsante del [#] (ver showIndexGuidePulse) en cuanto el Hero
   // sale del viewport — a partir de ahí el # ya es el foco natural de la
   // pantalla y no necesita seguir llamando la atención.
   useEffect(() => {
@@ -661,7 +661,7 @@ const Header = ({
 
   const indexSurfaceClass =
     isCompactHeaderViewport && scrollTier > 0
-      ? 'border border-white/15 bg-slate-950/55 shadow-[0_8px_24px_rgba(2,6,23,0.38)] backdrop-blur-md'
+      ? 'border border-transparent bg-transparent'
       : 'border border-transparent bg-transparent';
 
   useEffect(() => {
@@ -1545,9 +1545,9 @@ const Header = ({
                 id="header-index-hashtag"
                 type="button"
                 whileHover={{ scale: 1.05, textShadow: '0 0 8px rgba(233, 213, 255, 0.5)' }}
-                className={`flex shrink-0 cursor-pointer items-center gap-3 rounded-full p-1 transition ${indexSurfaceClass} ${
+                className={`flex shrink-0 cursor-pointer items-center gap-3 p-1 transition ${indexSurfaceClass} ${
                   isMenuOpen ? 'drop-shadow-[0_0_14px_rgba(255,255,255,0.22)]' : ''
-                } ${showIndexGuidePulse ? 'header-index-cue-pulse' : ''}`}
+                }`}
                 animate={{ opacity: shouldGateIndexUntilHeroReveal ? 0 : 1 }}
                 transition={{ duration: 0.65, ease: 'easeOut' }}
                 style={{
@@ -1561,10 +1561,10 @@ const Header = ({
                 tabIndex={shouldGateIndexUntilHeroReveal ? -1 : 0}
               >
                 <span
-                  className="header-hashtag-mark h-10 w-10 text-3xl sm:h-11 sm:w-11 sm:text-4xl"
+                  className={`header-hashtag-mark h-10 w-10 text-3xl sm:h-11 sm:w-11 sm:text-4xl ${showIndexGuidePulse ? 'header-index-cue-pulse' : ''}`}
                   aria-hidden="true"
                 >
-                  #
+                  [#]
                 </span>
               </motion.button>
               ) : null}

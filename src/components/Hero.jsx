@@ -1,7 +1,6 @@
 import React, { Suspense, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
-import { ChevronDown } from 'lucide-react';
 const TicketPurchaseModal = React.lazy(() => import('@/components/TicketPurchaseModal'));
 const GatokensRevealModal = React.lazy(() => import('@/components/GatokensRevealModal'));
 const VideoNarrativeAutoplay = React.lazy(() => import('@/components/VideoNarrativeAutoplay'));
@@ -63,14 +62,12 @@ const HERO_BRAND_LABEL = '#GATOENCERRADO';
 // el refuerzo "Sí, el #" se escribe en la misma línea — sin eso, el texto
 // combinado no cabía en un renglón en ningún ancho probado.
 const HERO_INACTIVE_HINT = 'Cuando lo veas, toca el gato';
-// Mismas piezas que arman HERO_INACTIVE_HINT, separadas para poder
-// glitchear solo la palabra "gato" (ver HERO_GATO_GLITCH_DELAY_MS abajo) sin
-// tocar el resto de la frase.
-const HERO_INACTIVE_HINT_PREFIX = 'Ante la duda…';
+// Mismas piezas que arman HERO_INACTIVE_HINT, separadas para revelar la
+// continuación con el tecleo editorial sin alterar la palabra "gato".
+const HERO_INACTIVE_HINT_PREFIX = 'Ante la duda';
 const HERO_INACTIVE_HINT_GATO_WORD = 'gato';
 const HERO_INACTIVE_HINT_SUFFIX = '';
-const HERO_GATO_GLITCH_EXTRA_CHARS = ['#'];
-const HERO_SI_EL_HASH_TEXT = ' pulsa el #';
+const HERO_SI_EL_HASH_TEXT = ', pulsa el ';
 const HERO_SI_EL_HASH_TYPE_SPEED_MS = 45;
 const HERO_INACTIVE_ECHO_COUNT = 13;
 const HERO_INACTIVE_ECHO_ENTRY_DURATION_S = 0.72;
@@ -92,7 +89,7 @@ const PWA_INSTRUCTIONS_SUBTITLE = 'Este sitio está diseñado para funcionar com
 // asienta de vuelta en "gato", mismo motivo visual que ya usa el emblema
 // activado (heroTitleSignalDisplay / useSignalDriftText). Dispara después de
 // que el hint estático ya lleva un rato visible sin interacción.
-const HERO_GATO_GLITCH_DELAY_MS = 6500;
+const HERO_HINT_CONTINUATION_DELAY_MS = 6500;
 const GAT_BALANCE_STORAGE_KEY = 'gatoencerrado:gatokens-available';
 const readHeroGatBalance = () => {
   const value = Number(safeGetItem(GAT_BALANCE_STORAGE_KEY));
@@ -198,7 +195,7 @@ const HERO_SUBTITLE_ROTATION_MS = 3800;
 // El eslogan canónico (primer subtítulo) compite visualmente con el
 // movimiento del # al activarse la escena — le damos un poco más de tiempo
 // de lectura solo esa primera vez, antes de entrar al ritmo normal.
-const HERO_SUBTITLE_FIRST_ROTATION_EXTRA_MS = 1200;
+const HERO_SUBTITLE_FIRST_ROTATION_EXTRA_MS = 0;
 const HERO_STARFIELD_STAR_COUNT_MOBILE = 165;
 const HERO_STARFIELD_STAR_COUNT_DESKTOP = 300;
 
@@ -271,11 +268,10 @@ const Hero = () => {
   const lastPwaHashWhisperIndexRef = useRef(-1);
   const lastPwaHashWhisperAtRef = useRef(0);
   const pwaHashWhisperTimerRef = useRef(null);
-  // Un solo glitch de "gato" -> # por sesión, no un bucle (ver el efecto que
-  // lo dispara más abajo, junto a shouldShowHeroInactiveHint).
-  const [gatoGlitchTriggerKey, setGatoGlitchTriggerKey] = useState(0);
-  const [gatoWordGlitchTriggerKey, setGatoWordGlitchTriggerKey] = useState(0);
-  const hasTriggeredGatoGlitchRef = useRef(false);
+  // La continuación se revela una sola vez por sesión.
+  const [hintContinuationTriggerKey, setHintContinuationTriggerKey] = useState(0);
+  const [hasHintGlowRevealed, setHasHintGlowRevealed] = useState(false);
+  const hasTriggeredHintContinuationRef = useRef(false);
   // Tecleo real del segundo renglón — se revela letra por letra para que se
   // sienta continuación de la escritura, no un aditamento aparte (Carlos,
   // 2026-08-19). Arranca en 0; el efecto de abajo lo hace avanzar.
@@ -346,22 +342,22 @@ const Hero = () => {
   useEffect(() => {
     if (hasActivatedAudio || isGatHubOpen) setIsHashtag3DRetired(true);
   }, [hasActivatedAudio, isGatHubOpen]);
-  const shouldShowHeroInactiveHint = !hasActivatedAudio && isHeroHashReady && !isHeroPwaInstructionsOpen && !isGatLinktreeAudience;
+  const shouldShowHeroInactiveHint = !hasActivatedAudio && !isHeroPwaInstructionsOpen && !isGatLinktreeAudience;
 
   useEffect(() => {
-    if (!shouldShowHeroInactiveHint || hasTriggeredGatoGlitchRef.current) return undefined;
+    if (!shouldShowHeroInactiveHint || hasTriggeredHintContinuationRef.current) return undefined;
     const timerId = window.setTimeout(() => {
-      hasTriggeredGatoGlitchRef.current = true;
-      setGatoGlitchTriggerKey((prev) => prev + 1);
-    }, HERO_GATO_GLITCH_DELAY_MS);
+      hasTriggeredHintContinuationRef.current = true;
+      setHintContinuationTriggerKey((prev) => prev + 1);
+    }, HERO_HINT_CONTINUATION_DELAY_MS);
     return () => window.clearTimeout(timerId);
   }, [shouldShowHeroInactiveHint]);
 
   useEffect(() => {
-    if (gatoGlitchTriggerKey === 0) return undefined;
+    if (hintContinuationTriggerKey === 0) return undefined;
     if (prefersReducedMotion) {
       setSiElHashTypedLength(HERO_SI_EL_HASH_TEXT.length);
-      setGatoWordGlitchTriggerKey((prev) => prev + 1);
+      setHasHintGlowRevealed(true);
       return undefined;
     }
     let cancelled = false;
@@ -373,7 +369,7 @@ const Hero = () => {
       if (charIndex < HERO_SI_EL_HASH_TEXT.length) {
         window.setTimeout(typeNextChar, HERO_SI_EL_HASH_TYPE_SPEED_MS);
       } else {
-        setGatoWordGlitchTriggerKey((prev) => prev + 1);
+        setHasHintGlowRevealed(true);
       }
     };
     const startId = window.setTimeout(typeNextChar, HERO_SI_EL_HASH_TYPE_SPEED_MS);
@@ -381,13 +377,7 @@ const Hero = () => {
       cancelled = true;
       window.clearTimeout(startId);
     };
-  }, [gatoGlitchTriggerKey, prefersReducedMotion]);
-
-  const hintGatoWordDisplay = useSignalDriftText(HERO_INACTIVE_HINT_GATO_WORD, {
-    active: shouldShowHeroInactiveHint,
-    triggerKey: gatoWordGlitchTriggerKey,
-    extraChars: HERO_GATO_GLITCH_EXTRA_CHARS,
-  });
+  }, [hintContinuationTriggerKey, prefersReducedMotion]);
 
   const currentHeroSubtitle = hasActivatedAudio
     ? heroGhostSubtitle ?? HERO_ROTATING_SUBTITLES[heroSubtitleIndex]
@@ -633,7 +623,7 @@ const Hero = () => {
         setBienvenidaReturnPath(`${location.pathname}${location.search}${location.hash}`);
         pauseHeroAmbient();
         window.setTimeout(() => {
-          navigate('/bienvenida', { replace: true });
+          navigate('/primeracto', { replace: true });
         }, 450);
         return;
       }
@@ -1266,12 +1256,12 @@ const Hero = () => {
                 {heroStars.map((star) => (
                   <span
                     key={star.id}
-                    className={`hero-star${star.twinkle ? ' hero-star--twinkle' : ''}`}
+                    className={`hero-star hero-star--${star.tier}${star.twinkle ? ' hero-star--twinkle' : ''}`}
                     style={{
                       top: `${star.y}%`,
                       left: `${star.x}%`,
-                      width: `${star.size}px`,
-                      height: `${star.size}px`,
+                      width: `calc(${star.size}px * var(--hero-star-size-scale, 1))`,
+                      height: `calc(${star.size}px * var(--hero-star-size-scale, 1))`,
                       opacity: star.opacity,
                       '--star-glow': star.glow,
                       '--star-opacity': star.opacity,
@@ -1371,7 +1361,7 @@ const Hero = () => {
                     className="hero-title hero-title--pre-scene hero-title-layer hero-title-layer--pre"
                     style={{
                       opacity: hasActivatedAudio ? 0 : 0.98,
-                      filter: 'brightness(0.7) contrast(1.08)',
+                      filter: 'brightness(0.84) contrast(1.08)',
                     }}
                     aria-hidden="true"
                   >
@@ -1436,7 +1426,7 @@ const Hero = () => {
                               {HERO_INACTIVE_HINT_SUFFIX}
                               {HERO_SI_EL_HASH_TEXT.slice(0, siElHashTypedLength)}
                               {siElHashTypedLength === HERO_SI_EL_HASH_TEXT.length
-                                ? hintGatoWordDisplay
+                                ? HERO_INACTIVE_HINT_GATO_WORD
                                 : null}
                             </span>
                             <span className="hero-hint-cursor" aria-hidden="true" />
@@ -1446,28 +1436,7 @@ const Hero = () => {
                     </AnimatePresence>
                   </span>
                 </motion.div>
-                <div
-                  className="hero-central-spacer relative mt-5 inline-flex h-12 w-12 items-center justify-center self-center sm:mt-2"
-                  aria-hidden={true}
-                >
-                  <AnimatePresence>
-                    {hasActivatedAudio ? (
-                      <motion.button
-                        key="hero-scroll-cue"
-                        type="button"
-                        initial={{ opacity: 0, y: -4, filter: 'blur(8px)' }}
-                        animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
-                        exit={{ opacity: 0, y: -4, filter: 'blur(8px)' }}
-                        transition={{ duration: 0.7, ease: 'easeOut', delay: 0.35 }}
-                        onClick={scrollToNextHeroSection}
-                        className="hero-scroll-cue"
-                        aria-label="Continuar hacia la siguiente sección"
-                      >
-                        <ChevronDown size={25} strokeWidth={1.8} />
-                      </motion.button>
-                    ) : null}
-                  </AnimatePresence>
-                </div>
+                <div className="hero-central-spacer relative mt-5 h-12 sm:mt-2" aria-hidden="true" />
               </div>
 
               {/* BOTTOM HALF — hash 3D (gatillo de activación) y CTAs bajo la línea central */}
@@ -1478,14 +1447,13 @@ const Hero = () => {
                   ambos coexistan visiblemente */}
               <motion.div
                 ref={hashtagAnchorRef}
-                initial={{ opacity: 0, scale: 0.88 }}
+                initial={{ opacity: 0.28, scale: 0.94 }}
                 animate={{ opacity: hasActivatedAudio ? 0 : 1, scale: 1 }}
                 transition={{
                   duration: hasActivatedAudio ? 0.18 : 1,
                   ease: 'easeOut',
-                  // El # no debe verse antes ni junto con "Pulsa al gato cuando lo
-                  // veas" — entra hasta que ese subtítulo termina de aparecer
-                  // (cascada de ecos + fade del texto sólido).
+                  // El respaldo queda insinuado desde el primer frame; la entrada
+                  // completa espera a que la cascada de ecos termine de aparecer.
                   delay: hasActivatedAudio ? 0 : heroInactiveHintEntryDelay + 1.8,
                 }}
                 className="hero-title-mark-slot mt-8 -translate-y-[7vh] sm:mt-10 sm:translate-y-0 md:mt-12"
@@ -1497,6 +1465,7 @@ const Hero = () => {
                 onKeyDown={handleHeroHashKeyDown}
                 aria-hidden={hasActivatedAudio}
                 aria-label="Activar escena"
+                onClick={!isHeroHashReady ? handleHeroHashClick : undefined}
               >
                 <div className="hero-pwa-hash-whisper-anchor" aria-live="polite">
                   <AnimatePresence mode="wait">
@@ -1517,6 +1486,12 @@ const Hero = () => {
                     ) : null}
                   </AnimatePresence>
                 </div>
+                <span
+                  aria-hidden="true"
+                  className={`hero-hashtag-fallback ${isHeroHashReady ? 'hero-hashtag-fallback--ready' : ''}`}
+                >
+                  #
+                </span>
                 {/* Se ve una vez, y listo (ver isHashtag3DRetired arriba): un solo
                     mount, un solo unmount real por sesión — no un ciclo de
                     ocultar/mostrar. El dispose real del contexto WebGL ya pasa
@@ -1529,7 +1504,7 @@ const Hero = () => {
                       height="var(--hero-title-mark-size)"
                       contentScale={isMobileViewport ? 0.92 : 1}
                       style={{ width: 'var(--hero-title-mark-size)', margin: '0 auto' }}
-                      showGlow={isHeroPwaInstructionsOpen}
+                      showGlow={hasHintGlowRevealed || isHeroPwaInstructionsOpen}
                       glowPulseKey={pwaHashWhisper?.id ?? 0}
                       active={isHeroInViewport}
                     />
@@ -1585,6 +1560,32 @@ const Hero = () => {
               </div>{/* /bottom half */}
 
           </div>
+          <AnimatePresence>
+            {hasActivatedAudio ? (
+              <motion.button
+                key="hero-scroll-cue"
+                type="button"
+                initial={{ opacity: 0, y: -4, filter: 'blur(8px)' }}
+                animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
+                exit={{ opacity: 0, y: -4, filter: 'blur(8px)' }}
+                transition={{ duration: 0.7, ease: 'easeOut', delay: 0.35 }}
+                onClick={scrollToNextHeroSection}
+                className="hero-scroll-cue hero-scroll-cue--hero-bottom"
+                aria-label="Continuar hacia la siguiente sección"
+              >
+                <svg
+                  className="hero-scroll-cue__glyph"
+                  viewBox="0 0 32 34"
+                  fill="none"
+                  aria-hidden="true"
+                >
+                  <path className="hero-scroll-cue__echo hero-scroll-cue__echo--far" d="M8 6.5 16 14l8-7.5" />
+                  <path className="hero-scroll-cue__echo hero-scroll-cue__echo--near" d="M8 13.5 16 21l8-7.5" />
+                  <path className="hero-scroll-cue__echo hero-scroll-cue__echo--primary" d="M8 20.5 16 28l8-7.5" />
+                </svg>
+              </motion.button>
+            ) : null}
+          </AnimatePresence>
       </section>
       <Suspense fallback={null}>
         <TicketPurchaseModal open={isTicketModalOpen} onClose={handleCloseTicket} />

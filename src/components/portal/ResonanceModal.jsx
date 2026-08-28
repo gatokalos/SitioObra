@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useRef, useState } from 'react';
 import CuadernoHolografico from './CuadernoHolografico';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Eye, Flame, PawPrint, Lock, ShieldCheck, Check, ChevronDown, Sparkles, RotateCcw, FastForward } from 'lucide-react';
+import { Eye, Flame, Lock, ShieldCheck, Check, ChevronDown, Sparkles, RotateCcw, FastForward } from 'lucide-react';
 import { supabase } from '@/lib/supabaseClient';
 import { ensureAnonId } from '@/lib/identity';
 import { useAuth } from '@/contexts/SupabaseAuthContext';
@@ -12,14 +12,16 @@ import { createPortalLaunchState } from '@/lib/portalNavigation';
 import { writePendingContinuation } from '@/lib/pendingContinuation';
 import { createMiniverseSouvenirBlob, downloadBlob } from '@/lib/miniverseSouvenirCard';
 import { usePushSubscription } from '@/hooks/usePushSubscription';
-import { readGlobalConsent, writeGlobalConsent, readResonanceProgress } from '@/lib/bitacoraShared';
+import { clearGlobalConsent, readGlobalConsent, writeGlobalConsent, readResonanceProgress } from '@/lib/bitacoraShared';
 import FarewellVideoPanel from './FarewellVideoPanel';
 import { RESONANCE_FAREWELL_VIDEO_ENABLED } from '@/components/transmedia/transmediaConstants';
+import { getResonanceDramaturgy } from '@/lib/resonanceDramaturgy';
 
 export { readGlobalConsent, writeGlobalConsent };
 
 const OBRA_API_URL = (import.meta.env.VITE_OBRA_API_URL ?? 'https://api.gatoencerrado.ai').replace(/\/+$/, '');
 const CAT_CABINA_URL = 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/oraculo/gato-cabina.webp';
+const BITACORA_DELAY_MS = 72 * 60 * 60 * 1000;
 
 /* ─── Identidad visual por portal ─────────────────────────────────────── */
 
@@ -257,18 +259,6 @@ export const buildL2Acknowledgment = (portal, option) => {
   return templates[portal] ?? `Tu mirada se afina hacia ${o} antes de habitar la forma.`;
 };
 
-const PORTAL_ARTIFACT_LABEL = {
-  obra: 'El drama',
-  literatura: 'La escritura',
-  artesanias: 'El objeto',
-  grafico: 'La imagen',
-  cine: 'La proyección',
-  sonoridades: 'La vibración',
-  movimiento: 'El cuerpo',
-  juegos: 'El riesgo',
-  oraculo: 'La pregunta',
-};
-
 const persistBaseline = async (payload) => {
   const response = await fetch(`${OBRA_API_URL}/api/resonance/baseline`, {
     method: 'POST',
@@ -301,7 +291,7 @@ const LEVELS = [
     eyebrow: 'Días después',
     title: 'En el foco',
     pendingDesc: 'La obra continúa fuera de escena. Vuelve en unos días para reconocer qué siguió resonando en ti.',
-    icon: PawPrint,
+    icon: Sparkles,
   },
 ];
 
@@ -341,6 +331,16 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
   const bloom    = PORTAL_BLOOM[portal]    ?? PORTAL_BLOOM.obra;
   const poster   = PORTAL_POSTER[portal]   ?? PORTAL_POSTER.obra;
   const l2q      = LEVEL2_QUESTIONS[portal] ?? null;
+  const dramaturgy = getResonanceDramaturgy(portal);
+  const dashboardLevels = LEVELS.map((level) => {
+    if (level.num === 2) {
+      return { ...level, eyebrow: dramaturgy.phase2Eyebrow, title: dramaturgy.phase2Title };
+    }
+    if (level.num === 3) {
+      return { ...level, eyebrow: dramaturgy.phase3Eyebrow, title: dramaturgy.phase3Title };
+    }
+    return level;
+  });
 
   // Persistent state — lazy-init desde localStorage; si no hay, se verifica contra Supabase
   // readResonanceProgress (no lsRead crudo) para l1Done/l1ChipDone/checking/l3Step:
@@ -365,6 +365,13 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
     const s = lsRead(portal);
     return [1, 2, 3].includes(s.dashboard_active_level) ? s.dashboard_active_level : 1;
   });
+  // La fase activa ocupa siempre la primera posición, como en el prototipo
+  // aprobado. Las demás conservan su orden canónico debajo.
+  const orderedDashboardLevels = [...dashboardLevels].sort((a, b) => {
+    if (a.num === dashboardActiveLevel) return -1;
+    if (b.num === dashboardActiveLevel) return 1;
+    return a.num - b.num;
+  });
   const [calibrationQuestionOpen, setCalibrationQuestionOpen] = useState(() => {
     const s = lsRead(portal);
     return !!s.l2_calibration_open && !s.l2_narrative_opened;
@@ -384,6 +391,7 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
   const [l3Loading, setL3Loading]       = useState(false);
   const [l3Rec, setL3Rec]               = useState(() => lsRead(portal).l3_recommendation ?? null);
   const [isSouvenirGenerating, setIsSouvenirGenerating] = useState(false);
+  const [souvenirDeliveredAt, setSouvenirDeliveredAt] = useState(() => lsRead(portal).souvenir_delivered_at ?? null);
 
   // Bitácora individual — seguimiento diferido
   const { autoSubscribeIfPWA } = usePushSubscription();
@@ -400,10 +408,19 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
   // RESONANCE_FAREWELL_VIDEO_ENABLED en transmediaConstants.jsx.
   const [farewellVideoSeen, setFarewellVideoSeen]     = useState(() => !!lsRead(portal).farewell_video_seen);
   const [phoneInput, setPhoneInput]                   = useState('');
-  const [holograficoOpen, setHolograficoOpen]         = useState(() => startInHolografico || (startInBitacora && !!lsRead(portal).bitacora_completed));
+  // Después de cerrar la Bitácora, el Libreto sustituye al Dashboard. Si la
+  // ventana de 72 h ya venció, cualquier entrada abre directamente las
+  // reflexiones finales, incluso cuando la persona volvió por su cuenta.
+  const [holograficoOpen, setHolograficoOpen]         = useState(() => startInHolografico || !!lsRead(portal).bitacora_completed);
   const [holograficoPoster, setHolograficoPoster]     = useState(portal);
   const activeBloom = holograficoOpen ? (PORTAL_BLOOM[holograficoPoster] ?? PORTAL_BLOOM.obra) : bloom;
-  const [bitacoraOpen, setBitacoraOpen]               = useState(() => startInBitacora && !lsRead(portal).bitacora_completed);
+  const [bitacoraOpen, setBitacoraOpen]               = useState(() => {
+    const stored = lsRead(portal);
+    const available = stored.bitacora_available_at
+      ? new Date(stored.bitacora_available_at).getTime() <= Date.now()
+      : false;
+    return !stored.bitacora_completed && (startInBitacora || available);
+  });
   const [bitacoraStep, setBitacoraStep]               = useState('p1');
   const [bitacoraP1, setBitacoraP1]                   = useState('');
   const [bitacoraAfirmativa, setBitacoraAfirmativa]   = useState(null);
@@ -715,31 +732,36 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
   const handleDevResetJourney = () => {
     if (!import.meta.env.DEV) return;
     const confirmed = window.confirm(
-      `¿Reiniciar desde cero el recorrido de ${portal}? Solo se borrará su progreso local.`,
+      `¿Reiniciar desde cero el recorrido de ${portal}? Se borrará su progreso y el consentimiento de prueba guardados en este navegador.`,
     );
     if (!confirmed) return;
     try {
       localStorage.removeItem(lsKey(portal));
     } catch {}
+    clearGlobalConsent();
     window.location.reload();
   };
 
-  // Salta L1 + dispositivo narrativo + L2 + espera de la bitácora de un
-  // click, solo con localStorage (nada de Supabase) — la escalera
+  // Salta L1 + dispositivo narrativo + L2 y aterriza al inicio de L3,
+  // antes del consentimiento, solo con localStorage (nada de Supabase). La escalera
   // l1Done/l2Done/l3Done de readResonanceProgress() en bitacoraShared.js
   // hace que con l2_conv_done baste para dar las tres primeras etapas por
-  // completas. bitacora_available_at = ahora imita que ya pasaron las 72h.
+  // completas. Limpiamos el consentimiento global para que el atajo sirva
+  // también para revisar el clímax y su promesa narrativa.
   const handleDevSkipToL3 = () => {
     if (!import.meta.env.DEV) return;
-    const now = new Date().toISOString();
     lsPatch(portal, {
       l1: Date.now(),
       l2_narrative_opened: true,
       l2_conv_done: true,
-      bitacora_consented: true,
-      bitacora_available_at: now,
+      bitacora_consented: undefined,
+      bitacora_available_at: undefined,
+      bitacora_completed: undefined,
+      farewell_video_seen: undefined,
+      farewell_video_seen_at: undefined,
+      souvenir_delivered_at: undefined,
     });
-    writeGlobalConsent();
+    clearGlobalConsent();
     window.location.reload();
   };
 
@@ -751,7 +773,7 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
     FORMAT_ID_TO_PORTAL[l3Rec?.recommended_format_id] ?? portal;
 
   const handleDownloadSouvenir = useCallback(async () => {
-    if (isSouvenirGenerating || !l3Rec?.step3) return;
+    if (isSouvenirGenerating || souvenirDeliveredAt || !l3Rec?.step3) return;
     setIsSouvenirGenerating(true);
     try {
       const blob = await createMiniverseSouvenirBlob({
@@ -763,15 +785,24 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
       // iOS Safari: Web Share API saves directly al álbum de fotos
       const file = new File([blob], filename, { type: 'image/png' });
       if (typeof navigator.share === 'function' && typeof navigator.canShare === 'function' && navigator.canShare({ files: [file] })) {
-        try { await navigator.share({ files: [file] }); return; } catch {}
+        try {
+          await navigator.share({ files: [file] });
+          const deliveredAt = new Date().toISOString();
+          lsPatch(portal, { souvenir_delivered_at: deliveredAt });
+          setSouvenirDeliveredAt(deliveredAt);
+          return;
+        } catch {}
       }
       downloadBlob(blob, filename);
+      const deliveredAt = new Date().toISOString();
+      lsPatch(portal, { souvenir_delivered_at: deliveredAt });
+      setSouvenirDeliveredAt(deliveredAt);
     } catch (err) {
       console.error('[ResonanceModal] No se pudo generar el coleccionable:', err);
     } finally {
       setIsSouvenirGenerating(false);
     }
-  }, [isSouvenirGenerating, l3Rec, recommendedSouvenirPortal]);
+  }, [isSouvenirGenerating, souvenirDeliveredAt, l3Rec, portal, recommendedSouvenirPortal]);
 
 
   /* Bitácora — genera P2 o P3 dinámicamente según lo que ya respondió el usuario */
@@ -806,7 +837,7 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
     const anonId = ensureAnonId();
     const bienvenidaAnonId = (() => { try { return localStorage.getItem('bienvenida_anon_id') || null; } catch { return null; } })();
     if (isDevAuth) {
-      const availableAt = new Date().toISOString();
+      const availableAt = new Date(Date.now() + BITACORA_DELAY_MS).toISOString();
       lsPatch(portal, { bitacora_consented: true, bitacora_available_at: availableAt });
       writeGlobalConsent();
       setBitacoraConsented(true);
@@ -853,7 +884,10 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
   }, [l3Rec, bitacoraConsented, portal, autoSubscribeIfPWA, isDevAuth]);
 
   /* Bitácora — envía respuestas */
-  const handleBitacoraSubmit = useCallback(async () => {
+  const handleBitacoraSubmit = useCallback(async ({
+    p1Response = bitacoraP1,
+    p1Afirmativa = bitacoraAfirmativa,
+  } = {}) => {
     setBitacoraSubmitting(true);
     const anonId = ensureAnonId();
     if (!isDevAuth) {
@@ -864,8 +898,8 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
           body: JSON.stringify({
             anon_id:        anonId,
             miniverso_id:   portal,
-            p1_response:    bitacoraP1,
-            p1_afirmativa:  bitacoraAfirmativa,
+            p1_response:    p1Response,
+            p1_afirmativa:  p1Afirmativa,
             intensidad:     bitacoraIntensidad,
             p2_response:    bitacoraP2 || null,
             p3_response:    bitacoraP3 || null,
@@ -936,6 +970,23 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
   const handleBackToDashboard = () => {
     onClose?.();
     navigate('/#transmedia', { replace: true });
+  };
+
+  const handleGoldenHashtag = () => {
+    onClose?.();
+    if (!user) {
+      onRequireLogin?.();
+      return;
+    }
+    navigate('/#transmedia');
+  };
+
+  const handleGoToCamerino = () => {
+    onClose?.();
+    navigate('/#dialogo-critico');
+    window.setTimeout(() => {
+      document.getElementById('dialogo-critico')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 160);
   };
 
   // Sin llamador desde que se quitó el CTA "Explorar {forma}" (dinámica de
@@ -1215,73 +1266,6 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
                       onRequireLogin={onRequireLogin}
                     />
                   </motion.div>
-                ) : l1Done && calibrationQuestionOpen ? (
-                  /* ── Calibración pre-estímulo ──
-                     Se revela directamente al elegir la fase de la flama. */
-                  <motion.div
-                    key="l1-echo-chips"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                    transition={{ duration: 0.3 }}
-                  >
-                    <div aria-hidden="true" className="h-16 sm:h-24 lg:hidden" />
-
-                    {/* Desktop: pregunta de calibración */}
-                    <div className="hidden lg:block lg:px-10 lg:pb-5 lg:pt-14">
-                      <p className="mb-3 text-[0.62rem] uppercase tracking-[0.32em] text-white/50">
-                        {LEVELS[1].eyebrow}
-                      </p>
-                      <p
-                        className="font-display leading-snug question-voice"
-                        style={{ fontSize: 'clamp(1.3rem, 2.3vw, 2.1rem)' }}
-                      >
-                        {l2q?.question}
-                      </p>
-                    </div>
-
-                    <div
-                      aria-hidden="true"
-                      className="hidden lg:block mx-8 mb-5 h-px question-divider-voice"
-                    />
-
-                    <div className="px-5 pb-[max(1.25rem,env(safe-area-inset-bottom))] sm:px-6 sm:pb-5 lg:pb-10 lg:px-10">
-                      <div className="space-y-3">
-                        {/* Mobile: pregunta de calibración */}
-                        <div className="lg:hidden space-y-2">
-                          <div className="inline-flex rounded-full border border-white/10 bg-white/5 px-3 py-1 text-[0.62rem] uppercase tracking-[0.32em] text-white/70">
-                            {LEVELS[1].eyebrow}
-                          </div>
-                          <h3 className="font-display text-2xl leading-tight tracking-tight question-voice">
-                            {l2q?.question}
-                          </h3>
-                        </div>
-
-                        {l2q && (
-                          <>
-                            <div className="flex flex-wrap gap-1.5 pt-1">
-                              {l2q.options.map((opt) => (
-                                <button
-                                  key={opt}
-                                  type="button"
-                                  onClick={() => handleExpectativaSelect(opt)}
-                                  disabled={l2Submitting || l1ChipDone}
-                                  className={`rounded-full border px-3 py-1 text-xs transition disabled:cursor-default ${
-                                    l2Selection === opt
-                                      ? 'border-amber-300/80 bg-amber-500/25 text-amber-50 shadow-[0_0_14px_rgba(251,191,36,0.22)]'
-                                      : 'border-amber-400/30 bg-amber-900/20 text-amber-100/90 hover:border-amber-400/55 hover:bg-amber-900/35 hover:text-amber-50 disabled:opacity-40'
-                                  }`}
-                                >
-                                  {opt}
-                                </button>
-                              ))}
-                            </div>
-
-                          </>
-                        )}
-                      </div>
-                    </div>
-                  </motion.div>
                 ) : bitacoraOpen ? (
                   /* ── Bitácora individual: preguntas diferidas ── */
                   <motion.div
@@ -1328,34 +1312,34 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
 
                         {/* P1 */}
                         {bitacoraStep === 'p1' && (
-                          <>
-                            <textarea
-                              value={bitacoraP1}
-                              onChange={(e) => setBitacoraP1(e.target.value)}
-                              rows={4}
-                              className="form-surface w-full resize-none px-3 py-2 text-sm"
-                              placeholder="Una imagen, una frase, una sensación…"
-                            />
-                            <p className="text-xs text-slate-400/70">¿Regresó algo?</p>
-                            <div className="flex gap-2">
+                          <div className="flex gap-2">
                               <button
                                 type="button"
-                                disabled={!bitacoraP1.trim()}
-                                onClick={() => { setBitacoraAfirmativa(true); setBitacoraStep('scale'); void fetchNextBitacoraQuestion('p2', bitacoraP1); }}
+                                onClick={() => {
+                                  const response = 'Sí, regresó algo';
+                                  setBitacoraP1(response);
+                                  setBitacoraAfirmativa(true);
+                                  setBitacoraStep('scale');
+                                  void fetchNextBitacoraQuestion('p2', response);
+                                }}
                                 className="flex-1 rounded-full border border-amber-400/50 bg-amber-900/20 px-4 py-2.5 text-xs uppercase tracking-[0.2em] text-amber-100/90 transition hover:bg-amber-900/35 disabled:opacity-40"
                               >
                                 Sí, regresó algo
                               </button>
                               <button
                                 type="button"
-                                disabled={!bitacoraP1.trim() || bitacoraSubmitting}
-                                onClick={() => { setBitacoraAfirmativa(false); void handleBitacoraSubmit(); }}
+                                disabled={bitacoraSubmitting}
+                                onClick={() => {
+                                  const response = 'Todavía no';
+                                  setBitacoraP1(response);
+                                  setBitacoraAfirmativa(false);
+                                  void handleBitacoraSubmit({ p1Response: response, p1Afirmativa: false });
+                                }}
                                 className="flex-1 rounded-full border border-white/15 bg-black/30 px-4 py-2.5 text-xs text-slate-400 transition hover:text-slate-200 disabled:opacity-40"
                               >
                                 Todavía no
                               </button>
-                            </div>
-                          </>
+                          </div>
                         )}
 
                         {/* Escala */}
@@ -1428,7 +1412,7 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
                               onClick={() => void handleBitacoraSubmit()}
                               className="w-full rounded-full border border-purple-400/80 bg-purple-600/30 px-4 py-3 text-xs uppercase tracking-[0.25em] text-white transition hover:bg-purple-500/45 disabled:opacity-40"
                             >
-                              {bitacoraSubmitting ? 'Guardando…' : 'Cerrar la bitácora'}
+                              {bitacoraSubmitting ? 'Guardando…' : 'Guardar mis apuntes'}
                             </button>
                             <button
                               type="button"
@@ -1458,24 +1442,28 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
                         fusionado dentro de la tarjeta activa de cada nivel,
                         no duplicado aquí arriba (Carlos, 2026-08-27). */}
                     <h2 id="resonance-modal-title" className="sr-only">
-                      Resonancia Colectiva — {LEVELS.find((lvl) => lvl.num === dashboardActiveLevel)?.title}
+                      Resonancia Colectiva — {dashboardLevels.find((lvl) => lvl.num === dashboardActiveLevel)?.title}
                     </h2>
 
                     {/* Niveles */}
                     <div className="relative flex flex-col gap-0">
 
-                      {LEVELS.map((level, i) => {
+                      {orderedDashboardLevels.map((level, i) => {
                         const Icon = level.icon;
-                        const isL1 = i === 0;
-                        const isL2 = i === 1;
-                        const isL3 = i === 2;
+                        const isL1 = level.num === 1;
+                        const isL2 = level.num === 2;
+                        const isL3 = level.num === 3;
                         // l3RecSeen: la recomendación ya fue recibida → congela el acordeón y muestra coleccionable
                         // bitacoraCompleted: el usuario cerró la bitácora → pone el círculo en verde
                         const l3RecSeen    = isL3 && Boolean(l3Rec?.step3) && !l3Rec?.error;
                         const isCompleted  = isL1 || (isL2 && (l1ChipDone || l2ConvDone)) || (isL3 && bitacoraCompleted);
                         const isAvailable  = (isL2 && !l1ChipDone) || (isL3 && l2ConvDone && !bitacoraCompleted);
                         const isSelected   = dashboardActiveLevel === level.num;
-                        const levelIsOpen  = (isL2 && l2ConvDone) || (isL3 && l2ConvDone);
+                        const levelIsOpen  = isSelected && (
+                          isL1 ||
+                          isL2 ||
+                          (isL3 && l2ConvDone)
+                        );
                         const canSelect    = isL1 || isL2 || (isL3 && l2ConvDone);
                         const handleSelect = () => {
                           if (!canSelect) return;
@@ -1490,10 +1478,15 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
                         return (
                           <motion.div
                             key={level.num}
+                            layout
                             className="flex items-start py-2"
                             initial={{ opacity: 0, x: -12 }}
                             animate={{ opacity: 1, x: 0 }}
-                            transition={{ delay: 0.15 + i * 0.1, duration: 0.35 }}
+                            transition={{
+                              layout: { type: 'spring', stiffness: 300, damping: 30 },
+                              opacity: { delay: 0.08 + i * 0.06, duration: 0.25 },
+                              x: { delay: 0.08 + i * 0.06, duration: 0.25 },
+                            }}
                           >
                             {/* Card con acordeón */}
                             <div
@@ -1501,7 +1494,7 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
                               tabIndex={canSelect ? 0 : undefined}
                               onClick={canSelect ? handleSelect : undefined}
                               onKeyDown={canSelect ? (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleSelect(); } } : undefined}
-                              className={`grid min-w-0 flex-1 grid-cols-[4.5rem_minmax(0,1fr)] gap-x-4 gap-y-2 rounded-2xl border px-4 py-4 transition-colors lg:grid-cols-[4.5rem_minmax(0,1fr)_auto] ${canSelect ? 'cursor-pointer' : ''} ${
+                              className={`grid min-w-0 flex-1 grid-cols-[3.5rem_minmax(0,1fr)] gap-x-3 gap-y-2 rounded-2xl border px-4 py-4 transition-colors lg:grid-cols-[4.5rem_minmax(0,1fr)_auto] lg:gap-x-4 ${canSelect ? 'cursor-pointer' : ''} ${
                               isSelected
                                 ? 'border-purple-300/45 bg-black/60 shadow-[0_0_20px_rgba(168,85,247,0.10)]'
                                 : isCompleted
@@ -1513,7 +1506,7 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
                               {/* Fila cabecera — siempre visible */}
                               <div className="contents">
                                 {/* Ícono */}
-                                <div className={`row-span-2 flex h-[4.5rem] w-[4.5rem] shrink-0 items-center justify-center rounded-full ${
+                                <div className={`row-span-2 flex h-14 w-14 shrink-0 items-center justify-center rounded-full lg:h-[4.5rem] lg:w-[4.5rem] ${
                                   isCompleted
                                     ? `bg-gradient-to-br ${gradient} shadow-[0_0_10px_rgba(0,0,0,0.25)]`
                                     : isAvailable
@@ -1521,46 +1514,35 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
                                       : 'border border-white/8 bg-black/25'
                                   }`}>
                                   {isCompleted || isAvailable
-                                    ? <Icon className="h-8 w-8 text-white" />
-                                    : <Lock className="h-7 w-7 text-white/20" />
+                                    ? <Icon className="h-6 w-6 text-white lg:h-8 lg:w-8" />
+                                    : <Lock className="h-5 w-5 text-white/20 lg:h-7 lg:w-7" />
                                   }
                                 </div>
 
                                 {/* Texto */}
-                                <div className="flex min-h-[4.5rem] min-w-0 flex-1 items-center self-center">
-                                  {isSelected && isL1 ? (
-                                    <p className="text-sm leading-relaxed text-slate-200/90">
-                                      {l1Acknowledgment || 'Tu primera intuición quedó registrada.'}
+                                <div className="flex min-h-14 min-w-0 flex-1 items-center self-center lg:min-h-[4.5rem]">
+                                  <div className="min-w-0 space-y-1">
+                                    <p className={`text-[0.56rem] uppercase tracking-[0.18em] ${
+                                      isCompleted || isAvailable ? 'text-slate-400/70' : 'text-white/20'
+                                    }`}>
+                                      {level.eyebrow}
                                     </p>
-                                  ) : isSelected && isL2 && l2Selection ? (
-                                    <p className="text-sm leading-relaxed text-slate-200/90">
-                                      {l2Acknowledgment || buildL2Acknowledgment(portal, l2Selection)}
-                                    </p>
-                                  ) : isL1 ? (
-                                    <div className="space-y-1.5">
-                                      <p className="font-display text-base leading-tight text-white">
-                                        {level.title}
-                                      </p>
-                                      <p className="text-xs leading-relaxed text-slate-300/75">
-                                        {level.desc.replace(/^✓\s*/, '')}
-                                      </p>
-                                    </div>
-                                  ) : isL2 && !l1ChipDone ? (
-                                    <div className="space-y-1.5">
-                                      <p className="font-display text-base leading-tight text-white">
-                                        {level.title}
-                                      </p>
-                                      <p className="text-xs leading-relaxed text-slate-300/75">
-                                        {l2q?.preview}
-                                      </p>
-                                    </div>
-                                  ) : (
                                     <p className={`font-display text-base leading-tight ${
                                       isCompleted || isAvailable ? 'text-white' : 'text-white/30'
                                     }`}>
                                       {level.title}
                                     </p>
-                                  )}
+                                    {isL1 && (
+                                      <p className="text-xs leading-relaxed text-slate-300/75">
+                                        {level.desc.replace(/^✓\s*/, '')}
+                                      </p>
+                                    )}
+                                    {isL2 && !l1ChipDone && (
+                                      <p className="text-xs leading-relaxed text-slate-300/75">
+                                        {l2q?.preview}
+                                      </p>
+                                    )}
+                                  </div>
                                 </div>
 
                                 {/* Badge + chevron */}
@@ -1572,7 +1554,7 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
                                           <span className="absolute inline-flex h-full w-full rounded-full bg-sky-400 opacity-75 animate-ping" />
                                           <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-sky-300" />
                                         </span>
-                                        Siguiente nivel
+                                        Escena en vivo
                                       </span>
                                       <ChevronDown
                                         size={13}
@@ -1594,9 +1576,83 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
                                     animate={{ height: 'auto', opacity: 1 }}
                                     exit={{ height: 0, opacity: 0 }}
                                     transition={{ duration: 0.25, ease: 'easeInOut' }}
-                                    className="col-start-2 col-end-[-1] overflow-hidden"
+                                    className="col-span-full overflow-hidden lg:col-start-2 lg:col-end-[-1]"
                                   >
-                                    <div className="space-y-3">
+                                    <div className="space-y-3 pt-1 lg:pt-0">
+                                      {isL1 && (
+                                        <p className="rounded-xl border border-white/10 bg-white/[0.03] px-3 py-2 text-sm leading-relaxed text-slate-200/90">
+                                          {l1Acknowledgment || 'Tu primera intuición quedó registrada.'}
+                                        </p>
+                                      )}
+
+                                      {isL2 && !l1ChipDone && l2q && (
+                                        <div className="space-y-3 pt-1">
+                                          <p className="font-display text-xl leading-snug question-voice">
+                                            {l2q.question}
+                                          </p>
+                                          <div className="flex flex-wrap gap-1.5">
+                                            {l2q.options.map((opt) => (
+                                              <button
+                                                key={opt}
+                                                type="button"
+                                                onClick={(event) => {
+                                                  event.stopPropagation();
+                                                  void handleExpectativaSelect(opt);
+                                                }}
+                                                disabled={l2Submitting}
+                                                className={`rounded-full border px-3 py-1.5 text-xs transition disabled:cursor-default ${
+                                                  l2Selection === opt
+                                                    ? 'border-amber-300/80 bg-amber-500/25 text-amber-50 shadow-[0_0_14px_rgba(251,191,36,0.22)]'
+                                                    : 'border-amber-400/30 bg-amber-900/20 text-amber-100/90 hover:border-amber-400/55 hover:bg-amber-900/35 hover:text-amber-50 disabled:opacity-40'
+                                                }`}
+                                              >
+                                                {opt}
+                                              </button>
+                                            ))}
+                                          </div>
+                                        </div>
+                                      )}
+
+                                      {isL2 && l2Selection && (
+                                        <p className="rounded-xl border border-white/10 bg-white/[0.03] px-3 py-2 text-sm leading-relaxed text-slate-200/90">
+                                          {l2Acknowledgment || buildL2Acknowledgment(portal, l2Selection)}
+                                        </p>
+                                      )}
+
+                                      {isL2 && l1ChipDone && !l2NarrativeOpened && onOpenNarrative && (
+                                        <motion.div
+                                          className="flex flex-col items-center px-2 pb-1 pt-2 text-center"
+                                          initial={{ opacity: 0, scale: 0.97, y: 8 }}
+                                          animate={{ opacity: 1, scale: 1, y: 0 }}
+                                          transition={{ type: 'spring', stiffness: 210, damping: 22 }}
+                                        >
+                                          <p className="font-display text-lg uppercase leading-tight tracking-[0.1em] text-amber-100">
+                                            {dramaturgy.form} entra en escena
+                                          </p>
+                                          <p className="mt-1 text-xs leading-relaxed text-slate-300/75">
+                                            {dramaturgy.entranceCoda}
+                                          </p>
+                                          <motion.button
+                                            type="button"
+                                            onClick={(event) => {
+                                              event.stopPropagation();
+                                              handleOpenNarrativeExperience();
+                                            }}
+                                            className="flex w-full flex-col items-center gap-3 pt-4 transition active:scale-[0.98]"
+                                            whileHover={{ scale: 1.015 }}
+                                          >
+                                            <img
+                                              src="https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/oraculo/gato-moneda.png"
+                                              alt="GAToken"
+                                              className="h-24 w-24 animate-[spin_8s_linear_0s_infinite_reverse] drop-shadow-[0_0_22px_rgba(251,191,36,0.6)] lg:h-32 lg:w-32"
+                                            />
+                                            <span className="text-sm font-semibold tracking-wide text-amber-200">
+                                              Habitar la forma
+                                            </span>
+                                          </motion.button>
+                                        </motion.div>
+                                      )}
+
                                       {isL3 && (
                                         <div className="space-y-3">
 
@@ -1613,6 +1669,55 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
                                               sin pasos intermedios). */}
                                           {l3RecSeen && !l3Rec.all_complete && (
                                             <>
+                                              {/* Clímax: el autor entra a cuadro. El recuerdo vive pegado a
+                                                  la despedida, no después del cierre académico — son un
+                                                  mismo momento (Carlos, 2026-08-27, congruencia). */}
+                                              {RESONANCE_FAREWELL_VIDEO_ENABLED && !farewellVideoSeen && (
+                                                <FarewellVideoPanel
+                                                  portal={portal}
+                                                  onSeen={handleFarewellVideoSeen}
+                                                  mediaAspectClassName="aspect-square"
+                                                  caption="El autor toma la palabra"
+                                                  unavailableLabel="El autor toma la palabra"
+                                                  intro={dramaturgy.appearanceCue}
+                                                  showUnavailablePlaceholder={import.meta.env.DEV}
+                                                />
+                                              )}
+
+                                              <button
+                                                type="button"
+                                                onClick={handleDownloadSouvenir}
+                                                disabled={isSouvenirGenerating || Boolean(souvenirDeliveredAt)}
+                                                className="flex w-full items-center gap-3 rounded-2xl border border-white/15 bg-black/35 px-3 py-2.5 text-left transition hover:bg-black/50 disabled:cursor-default disabled:opacity-75"
+                                              >
+                                                {souvenirDeliveredAt ? (
+                                                  <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-emerald-300/20 bg-emerald-300/[0.06] text-emerald-300/80">
+                                                    <Check size={18} aria-hidden="true" />
+                                                  </span>
+                                                ) : PORTAL_ICON_URL[recommendedSouvenirPortal] ? (
+                                                  <img
+                                                    src={PORTAL_ICON_URL[recommendedSouvenirPortal]}
+                                                    alt=""
+                                                    aria-hidden="true"
+                                                    className="h-10 w-10 shrink-0 rounded-xl object-cover shadow-[0_8px_32px_rgba(0,0,0,0.55)]"
+                                                  />
+                                                ) : null}
+                                                <span className="flex flex-col gap-0.5">
+                                                  <span className={`text-xs font-semibold tracking-[0.05em] ${souvenirDeliveredAt ? 'text-emerald-200/85' : 'text-amber-300/90'}`}>
+                                                    {isSouvenirGenerating
+                                                      ? 'Preparando el recuerdo…'
+                                                      : souvenirDeliveredAt
+                                                        ? 'Recuerdo entregado'
+                                                        : dramaturgy.souvenirCta}
+                                                  </span>
+                                                  {souvenirDeliveredAt && (
+                                                    <span className="text-[0.65rem] font-normal tracking-normal text-slate-400/75">
+                                                      Busca la imagen en tus descargas.
+                                                    </span>
+                                                  )}
+                                                </span>
+                                              </button>
+
                                               <p className="text-sm leading-relaxed text-slate-300/90 lg:text-xs">
                                                 Este recorrido ha concluido.
                                               </p>
@@ -1620,94 +1725,136 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
                                                 Las respuestas registradas permiten estudiar cómo las experiencias narrativas son interpretadas, recordadas y resignificadas por distintas personas.
                                               </p>
 
-                                              {/* Mudado aquí desde el overlay del gato — vivía atrapado ahí
-                                                  dentro y desaparecía con él en el paso 4 (Carlos, 2026-08-27). */}
-                                              <button
-                                                type="button"
-                                                onClick={handleDownloadSouvenir}
-                                                disabled={isSouvenirGenerating}
-                                                className="flex w-full items-center gap-3 rounded-2xl border border-white/15 bg-black/35 px-3 py-2.5 text-left transition hover:bg-black/50 disabled:cursor-wait disabled:opacity-60"
-                                              >
-                                                {PORTAL_ICON_URL[recommendedSouvenirPortal] && (
-                                                  <img
-                                                    src={PORTAL_ICON_URL[recommendedSouvenirPortal]}
-                                                    alt=""
-                                                    aria-hidden="true"
-                                                    className="h-10 w-10 shrink-0 rounded-xl object-cover shadow-[0_8px_32px_rgba(0,0,0,0.55)]"
-                                                  />
-                                                )}
-                                                <span className="text-xs font-semibold tracking-[0.05em] text-amber-300/90">
-                                                  {isSouvenirGenerating ? 'Generando…' : 'Agregar recordatorio'}
-                                                </span>
-                                              </button>
+                                              {/* La promesa narrativa permanece; solo cambia la acción según
+                                                  el consentimiento y la disponibilidad real. */}
+                                              {!bitacoraCompleted && (
+                                                <div className="space-y-2 rounded-2xl border border-purple-300/15 bg-purple-950/10 px-4 py-4">
+                                                  <p className="font-display text-base text-white">
+                                                    {dramaturgy.returnLead}
+                                                  </p>
 
-                                              {/* Video de despedida del autor — panel embebido, no pantalla
-                                                  completa; independiente de si dio WhatsApp o no. Ver
-                                                  handleFarewellVideoSeen y authorVideo.js. */}
-                                              {RESONANCE_FAREWELL_VIDEO_ENABLED && !farewellVideoSeen && (
-                                                <FarewellVideoPanel
-                                                  portal={portal}
-                                                  onSeen={handleFarewellVideoSeen}
-                                                />
-                                              )}
-
-                                              {/* Consentimiento WhatsApp — aparece si aún no ha dado número */}
-                                              {!bitacoraCompleted && !bitacoraConsented && (
-                                                <div className="space-y-2">
-                                                  {!showPhoneInput ? (
-                                                    <>
+                                                  {!bitacoraConsented ? (
+                                                    !showPhoneInput ? (
+                                                      <>
                                                       <p className="text-xs leading-relaxed text-slate-400/80">
-                                                        La obra continuará dentro de unos días. ¿Te avisamos por WhatsApp cuando sea momento de volver?
+                                                        {dramaturgy.returnBody}
                                                       </p>
                                                       <button
                                                         type="button"
                                                         onClick={() => setShowPhoneInput(true)}
-                                                        className="w-full rounded-full border border-white/20 bg-black/35 px-3 py-2 text-xs text-slate-200 transition hover:bg-black/50"
+                                                        className="w-full rounded-full border border-purple-200/25 bg-purple-400/10 px-3 py-2.5 text-xs font-semibold text-purple-100 transition hover:bg-purple-400/20"
                                                       >
-                                                        Avísame por WhatsApp →
+                                                        {dramaturgy.returnCta}
                                                       </button>
-                                                    </>
+                                                      </>
+                                                    ) : (
+                                                      <>
+                                                        <p className="text-xs leading-relaxed text-slate-400/80">
+                                                          ¿A qué número te enviamos el aviso?
+                                                        </p>
+                                                        <div className="flex gap-2">
+                                                          <input
+                                                            type="tel"
+                                                            value={phoneInput}
+                                                            onChange={(e) => setPhoneInput(e.target.value)}
+                                                            placeholder="+52 55 0000 0000"
+                                                            className="min-w-0 flex-1 rounded-full border border-white/20 bg-black/35 px-3 py-2 text-xs text-white placeholder:text-slate-500 outline-none focus:border-white/40"
+                                                          />
+                                                          <button
+                                                            type="button"
+                                                            onClick={() => void handleBitacoraConsent('whatsapp', phoneInput.trim())}
+                                                            disabled={phoneInput.trim().length < 8}
+                                                            className="shrink-0 rounded-full border border-white/20 bg-black/35 px-3 py-2 text-xs text-slate-200 transition hover:bg-black/50 disabled:opacity-40 disabled:cursor-not-allowed"
+                                                          >
+                                                            Confirmar el llamado →
+                                                          </button>
+                                                        </div>
+                                                      </>
+                                                    )
                                                   ) : (
-                                                    <>
-                                                      <p className="text-xs leading-relaxed text-slate-400/80">
-                                                        ¿A qué número te enviamos el aviso?
+                                                    <div className="flex items-start gap-2 rounded-xl border border-emerald-300/15 bg-emerald-300/[0.04] px-3 py-2.5">
+                                                      <Check size={13} className="mt-0.5 shrink-0 text-emerald-300/80" />
+                                                      <p className="text-xs leading-relaxed text-slate-300/80">
+                                                        {bitacoraAvailable
+                                                          ? 'Las reflexiones finales ya están disponibles.'
+                                                          : 'Tu próximo llamado ya está preparado. Volveremos a buscarte por WhatsApp cuando llegue el momento.'}
                                                       </p>
-                                                      <div className="flex gap-2">
-                                                        <input
-                                                          type="tel"
-                                                          value={phoneInput}
-                                                          onChange={(e) => setPhoneInput(e.target.value)}
-                                                          placeholder="+52 55 0000 0000"
-                                                          className="min-w-0 flex-1 rounded-full border border-white/20 bg-black/35 px-3 py-2 text-xs text-white placeholder:text-slate-500 outline-none focus:border-white/40"
-                                                        />
-                                                        <button
-                                                          type="button"
-                                                          onClick={() => void handleBitacoraConsent('whatsapp', phoneInput.trim())}
-                                                          disabled={phoneInput.trim().length < 8}
-                                                          className="shrink-0 rounded-full border border-white/20 bg-black/35 px-3 py-2 text-xs text-slate-200 transition hover:bg-black/50 disabled:opacity-40 disabled:cursor-not-allowed"
-                                                        >
-                                                          Enviar →
-                                                        </button>
-                                                      </div>
-                                                    </>
+                                                    </div>
                                                   )}
-                                                  {import.meta.env.DEV && (
+
+                                                  {import.meta.env.DEV && !bitacoraConsented && (
                                                     <button
                                                       type="button"
                                                       onClick={() => {
-                                                        const now = new Date().toISOString();
-                                                        lsPatch(portal, { bitacora_consented: true, bitacora_available_at: now });
+                                                        const availableAt = new Date(Date.now() + BITACORA_DELAY_MS).toISOString();
+                                                        lsPatch(portal, { bitacora_consented: true, bitacora_available_at: availableAt });
                                                         writeGlobalConsent();
                                                         setBitacoraConsented(true);
-                                                        setBitacoraAvailableAt(now);
+                                                        setBitacoraAvailableAt(availableAt);
                                                       }}
                                                       className="text-[10px] text-slate-500/60 underline underline-offset-2 hover:text-slate-400/80"
                                                     >
                                                       [dev] bypass envío de número
                                                     </button>
                                                   )}
+
+                                                  {import.meta.env.DEV && bitacoraConsented && !bitacoraAvailable && (
+                                                    <button
+                                                      type="button"
+                                                      onClick={() => {
+                                                        const now = new Date().toISOString();
+                                                        lsPatch(portal, { bitacora_available_at: now });
+                                                        setBitacoraAvailableAt(now);
+                                                        setBitacoraAvailabilityTick(Date.now());
+                                                      }}
+                                                      className="text-[10px] text-slate-500/60 underline underline-offset-2 hover:text-slate-400/80"
+                                                    >
+                                                      [dev] simular regreso después de 72 h
+                                                    </button>
+                                                  )}
                                                 </div>
                                               )}
+
+                                              {/* Continuación inmediata — el # dorado invita a loguearse para
+                                                  que el GAT ganado en esta sesión quede conservado en la
+                                                  cuenta, no solo en el localStorage anónimo. Va después del
+                                                  bloque de WhatsApp, no antes (Carlos, 2026-08-27). Solo la
+                                                  imagen como CTA, no el GatokensRevealModal completo. */}
+                                              {(!user || import.meta.env.DEV) && (
+                                                <button
+                                                  type="button"
+                                                  onClick={() => onRequireLogin?.()}
+                                                  className="flex w-full items-center gap-3 rounded-2xl border border-violet-300/20 bg-violet-950/15 px-3 py-2.5 text-left transition hover:bg-violet-900/25"
+                                                >
+                                                  <img
+                                                    src="/assets/laObraDorada.png"
+                                                    alt=""
+                                                    aria-hidden="true"
+                                                    className="h-10 w-10 shrink-0 object-contain"
+                                                  />
+                                                  <span className="text-xs font-semibold tracking-[0.05em] text-violet-200/90">
+                                                    Inicia sesión para conservar tu GAT
+                                                  </span>
+                                                </button>
+                                              )}
+
+                                              {/* Marca inequívoca de cierre antes de la espera longitudinal. */}
+                                              <div className="px-2 pb-1 pt-4 text-center">
+                                                <div className="flex items-center gap-3" aria-hidden="true">
+                                                  <span className="h-px flex-1 bg-gradient-to-r from-transparent to-white/20" />
+                                                  <span className="h-1 w-1 rotate-45 bg-purple-200/50" />
+                                                  <span className="h-px flex-1 bg-gradient-to-l from-transparent to-white/20" />
+                                                </div>
+                                                <p className="mt-4 text-[0.6rem] font-semibold uppercase tracking-[0.32em] text-purple-200/65">
+                                                  Fin del primer acto
+                                                </p>
+                                                <p className="mt-1 font-display text-xl tracking-[0.14em] text-white">
+                                                  Intermedio
+                                                </p>
+                                                <p className="mt-1.5 text-[0.68rem] leading-relaxed text-slate-400/75">
+                                                  {dramaturgy.closingLine}
+                                                </p>
+                                              </div>
                                             </>
                                           )}
 
@@ -1718,21 +1865,52 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
                                               onClick={() => { setBitacoraStep('p1'); setBitacoraOpen(true); }}
                                               className="w-full rounded-full border border-amber-400/60 bg-amber-900/25 px-4 py-2.5 text-xs uppercase tracking-[0.2em] text-amber-100 transition hover:bg-amber-900/40"
                                             >
-                                              La obra continúa… →
+                                              Reflexiones finales →
                                             </button>
                                           )}
 
+                                          {/* Mientras las Reflexiones finales no están disponibles (antes
+                                              de las 72h), no dejamos al usuario sin nada que hacer — el CTA
+                                              lo manda al camerino en vez de un texto pasivo. El regreso a
+                                              Reflexiones finales, mientras tanto, llega por WhatsApp
+                                              (Carlos, 2026-08-27). */}
                                           {!bitacoraCompleted && bitacoraConsented && !bitacoraAvailable && (
-                                            <p className="text-xs italic leading-relaxed text-slate-400/75">
-                                              La obra sigue fuera de escena. Este foco se abrirá cuando llegue el momento de volver.
-                                            </p>
+                                            <button
+                                              type="button"
+                                              onClick={handleGoToCamerino}
+                                              className="w-full rounded-full border border-white/20 bg-black/35 px-4 py-2.5 text-xs uppercase tracking-[0.2em] text-slate-200 transition hover:bg-black/50"
+                                            >
+                                              Ir al camerino →
+                                            </button>
                                           )}
 
                                           {/* Bitácora — completada */}
                                           {bitacoraCompleted && (
-                                            <div className="flex items-center gap-2 pt-1 text-sm text-slate-300 lg:text-xs">
-                                              <Check size={12} className="shrink-0 text-emerald-400/70" />
-                                              <span className="italic">Registro completo</span>
+                                            <div className="flex flex-col items-center pt-1 text-center">
+                                              <div className="flex items-center gap-2 text-sm text-slate-300 lg:text-xs">
+                                                <Check size={12} className="shrink-0 text-emerald-400/70" />
+                                                <span className="italic">Registro completo</span>
+                                              </div>
+
+                                              <motion.button
+                                                type="button"
+                                                onClick={(event) => {
+                                                  event.stopPropagation();
+                                                  setHolograficoPoster(portal);
+                                                  setHolograficoOpen(true);
+                                                }}
+                                                className="flex w-full flex-col items-center gap-3 pt-4 transition active:scale-[0.98]"
+                                                whileHover={{ scale: 1.015 }}
+                                              >
+                                                <img
+                                                  src="/assets/header-logo.png"
+                                                  alt="Emblema de #GatoEncerrado"
+                                                  className="h-24 w-24 object-contain drop-shadow-[0_0_24px_rgba(168,85,247,0.45)] lg:h-28 lg:w-28"
+                                                />
+                                                <span className="text-sm font-semibold tracking-wide text-purple-200">
+                                                  Abrir mi registro
+                                                </span>
+                                              </motion.button>
                                             </div>
                                           )}
 
@@ -1741,12 +1919,25 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
                                             <button
                                               type="button"
                                               onClick={() => {
-                                                lsPatch(portal, { l3_recommendation: undefined, bitacora_consented: undefined, bitacora_available_at: undefined });
+                                                lsPatch(portal, {
+                                                  l3_recommendation: undefined,
+                                                  bitacora_consented: undefined,
+                                                  bitacora_available_at: undefined,
+                                                  bitacora_completed: undefined,
+                                                  farewell_video_seen: undefined,
+                                                  farewell_video_seen_at: undefined,
+                                                  souvenir_delivered_at: undefined,
+                                                });
+                                                clearGlobalConsent();
                                                 setL3Rec(null);
                                                 setBitacoraConsented(false);
                                                 setBitacoraAvailableAt(null);
+                                                setBitacoraAvailabilityTick(Date.now());
+                                                setBitacoraCompleted(false);
+                                                setFarewellVideoSeen(false);
                                                 setShowPhoneInput(false);
                                                 setPhoneInput('');
+                                                setSouvenirDeliveredAt(null);
                                               }}
                                               className="text-[10px] text-slate-500/60 underline underline-offset-2 hover:text-slate-400/80"
                                             >
@@ -1791,62 +1982,6 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
                         );
                       })}
                     </div>
-
-                    {l1ChipDone && !l2NarrativeOpened && onOpenNarrative && (
-                      <motion.div
-                        className="flex flex-col items-center rounded-2xl border border-amber-300/20 bg-black/45 px-5 py-5 text-center shadow-[0_0_28px_rgba(251,191,36,0.08)]"
-                        initial={{ opacity: 0, scale: 0.96, y: 12 }}
-                        animate={{ opacity: 1, scale: 1, y: 0 }}
-                        transition={{ type: 'spring', stiffness: 210, damping: 22 }}
-                      >
-                        <p className="font-display text-lg leading-tight text-amber-100">
-                          Has desbloqueado el artefacto: {PORTAL_ARTIFACT_LABEL[portal] ?? 'La forma'}
-                        </p>
-                        <motion.button
-                          type="button"
-                          onClick={handleOpenNarrativeExperience}
-                          className="flex w-full flex-col items-center gap-3 pt-4 transition active:scale-[0.98]"
-                          whileHover={{ scale: 1.015 }}
-                        >
-                          <img
-                            src="https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/oraculo/gato-moneda.png"
-                            alt="GAToken"
-                            className="h-24 w-24 animate-[spin_8s_linear_0s_infinite_reverse] drop-shadow-[0_0_22px_rgba(251,191,36,0.6)] lg:h-32 lg:w-32"
-                          />
-                          <span className="text-sm font-semibold tracking-wide text-amber-200">
-                            Habitar la forma
-                          </span>
-                        </motion.button>
-                      </motion.div>
-                    )}
-
-                    {bitacoraCompleted && (
-                      <motion.div
-                        className="flex flex-col items-center rounded-2xl border border-purple-300/25 bg-black/45 px-5 py-5 text-center shadow-[0_0_32px_rgba(168,85,247,0.10)]"
-                        initial={{ opacity: 0, scale: 0.96, y: 12 }}
-                        animate={{ opacity: 1, scale: 1, y: 0 }}
-                        transition={{ type: 'spring', stiffness: 210, damping: 22 }}
-                      >
-                        <p className="font-display text-lg leading-tight text-purple-100">
-                          Tu registro ya tiene una forma para volver a mirarse
-                        </p>
-                        <motion.button
-                          type="button"
-                          onClick={() => { setHolograficoPoster(portal); setHolograficoOpen(true); }}
-                          className="flex w-full flex-col items-center gap-3 pt-4 transition active:scale-[0.98]"
-                          whileHover={{ scale: 1.015 }}
-                        >
-                          <img
-                            src="/assets/header-logo.png"
-                            alt="Emblema de #GatoEncerrado"
-                            className="h-24 w-24 object-contain drop-shadow-[0_0_24px_rgba(168,85,247,0.45)] lg:h-28 lg:w-28"
-                          />
-                          <span className="text-sm font-semibold tracking-wide text-purple-200">
-                            Abrir libreto holográfico
-                          </span>
-                        </motion.button>
-                      </motion.div>
-                    )}
 
                     {/* Footer privacidad */}
                     <div className="flex items-start gap-3 rounded-2xl border border-white/10 bg-black/40 px-4 py-3.5">

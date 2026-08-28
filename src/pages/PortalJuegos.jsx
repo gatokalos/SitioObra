@@ -29,7 +29,6 @@ import {
   RESONANCE_BRIDGE_VIDEO_ENABLED,
 } from '@/components/transmedia/transmediaConstants';
 import { resolvePortalRoute } from '@/lib/miniversePortalRegistry';
-import PortalL3RewardCTA from '@/components/portal/PortalL3RewardCTA';
 import { ensureAnonId } from '@/lib/identity';
 
 const OBRA_API_URL = (import.meta.env.VITE_OBRA_API_URL ?? 'https://api.gatoencerrado.ai').replace(/\/+$/, '');
@@ -100,6 +99,7 @@ const PortalJuegos = () => {
   const [experienceDone, setExperienceDone] = useState(() => readResonanceProgress('juegos').experienceDone);
   const [l2Done, setL2Done] = useState(() => readResonanceProgress('juegos').l2Done);
   const [l3Rec, setL3Rec] = useState(() => readResonanceProgress('juegos').l3Recommendation);
+  const [bitacoraDone, setBitacoraDone] = useState(() => readResonanceProgress('juegos').bitacoraDone);
   const [gameLaunched, setGameLaunched] = useState(() => {
     try {
       const stored = JSON.parse(localStorage.getItem(JUEGOS_RESONANCE_KEY) || '{}');
@@ -118,7 +118,7 @@ const PortalJuegos = () => {
   const completedPartidaRef = useRef(null);
   const refreshL1 = useCallback(() => {
     const p = readResonanceProgress('juegos');
-    setL1Done(p.l1Done); setExperienceDone(p.experienceDone); setL2Done(p.l2Done); setL2Answer(p.l2Answer); setL3Rec(p.l3Recommendation);
+    setL1Done(p.l1Done); setExperienceDone(p.experienceDone); setL2Done(p.l2Done); setL2Answer(p.l2Answer); setL3Rec(p.l3Recommendation); setBitacoraDone(p.bitacoraDone);
   }, []);
   const handleLaunchEmbeddedGame = useCallback(() => {
     if (completedPartidaRef.current) {
@@ -505,8 +505,9 @@ const PortalJuegos = () => {
                     autoReveal={l1Done}
                     portal="juegos"
                     l2Done={l2Done}
-                    l3Done={Boolean(l3Rec?.step3)}
+                    l3Done={Boolean(l3Rec?.step3) || bitacoraDone}
                     l3Step3={l3Rec?.step3 ?? null}
+                    bitacoraCompleted={bitacoraDone}
                     l3FormaLabel={l3Rec?.forma ?? null}
                     onL3CTA={() => { const r = resolvePortalRoute({ formatId: l3Rec?.recommended_format_id }); if (r) navigate(r); }}
                     onAnswer={handleAnswerResonance}
@@ -545,8 +546,9 @@ const PortalJuegos = () => {
                 autoReveal={l1Done}
                 portal="juegos"
                 l2Done={l2Done}
-                l3Done={Boolean(l3Rec?.step3)}
+                l3Done={Boolean(l3Rec?.step3) || bitacoraDone}
                 l3Step3={l3Rec?.step3 ?? null}
+                bitacoraCompleted={bitacoraDone}
                 l3FormaLabel={l3Rec?.forma ?? null}
                 onL3CTA={() => { const r = resolvePortalRoute({ formatId: l3Rec?.recommended_format_id }); if (r) navigate(r); }}
                 onAnswer={handleAnswerResonance}
@@ -724,11 +726,7 @@ const PortalJuegos = () => {
               />
             </div>
           ) : null}
-          {l3Rec?.step3 ? (
-            <div className="order-5">
-              <PortalL3RewardCTA portal="juegos" l3Rec={l3Rec} />
-            </div>
-          ) : experienceDone && embeddedAppUrl ? (
+          {l3Rec?.step3 ? null : experienceDone && embeddedAppUrl ? (
             <div className="order-5">
               <a
                 href={embeddedAppUrl}

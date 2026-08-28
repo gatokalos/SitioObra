@@ -30,7 +30,7 @@ const GRAIN_SVG_URL = `data:image/svg+xml;utf8,${encodeURIComponent(
 
 // ─── Model ────────────────────────────────────────────────────────────────────
 
-function HashtagModel({ onClick, isPressed, onReady }) {
+function HashtagModel({ onClick, isPressed, onReady, emphasized = false }) {
   const groupRef   = useRef();
   const matRef     = useRef(null); // referencia al material para animar envMapIntensity
   const [hovered, setHovered] = useState(false);
@@ -40,10 +40,10 @@ function HashtagModel({ onClick, isPressed, onReady }) {
 
   React.useLayoutEffect(() => {
     const mat = new THREE.MeshStandardMaterial({
-      color: new THREE.Color('#080808'),
+      color: new THREE.Color('#0b0b0e'),
       metalness: 0.92,
-      roughness: 0.09,
-      envMapIntensity: 0.35,
+      roughness: 0.12,
+      envMapIntensity: 0.46,
       emissive: new THREE.Color('#9966ff'),
       emissiveIntensity: 0,
     });
@@ -78,11 +78,11 @@ function HashtagModel({ onClick, isPressed, onReady }) {
 
     // Emissive hover
     matRef.current.emissiveIntensity = THREE.MathUtils.lerp(
-      matRef.current.emissiveIntensity, hovered ? 0.06 : 0, delta * 8
+      matRef.current.emissiveIntensity, hovered ? 0.06 : emphasized ? 0.015 : 0, delta * 8
     );
 
     matRef.current.envMapIntensity = THREE.MathUtils.lerp(
-      matRef.current.envMapIntensity, 0.35, delta * 4
+      matRef.current.envMapIntensity, 0.46, delta * 4
     );
   });
 
@@ -119,7 +119,8 @@ export default function HashtagButton3D({
   const [isPressed, setIsPressed] = useState(false);
   const glRef = useRef(null);
 
-  const handleClick = useCallback(() => {
+  const handleClick = useCallback((event) => {
+    event?.stopPropagation?.();
     setIsPressed(true);
     setTimeout(() => setIsPressed(false), 160);
     onClick?.();
@@ -212,7 +213,12 @@ export default function HashtagButton3D({
           {active && <InvalidateLoop />}
 
           <React.Suspense fallback={null}>
-            <HashtagModel onClick={handleClick} isPressed={isPressed} onReady={onReady} />
+            <HashtagModel
+              onClick={handleClick}
+              isPressed={isPressed}
+              onReady={onReady}
+              emphasized={showGlow}
+            />
           </React.Suspense>
         </Canvas>
       </div>

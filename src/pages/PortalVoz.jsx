@@ -27,7 +27,6 @@ import IAInsightCard from '@/components/IAInsightCard';
 import ObraConversationControls from '@/components/miniversos/obra/ObraConversationControls';
 import ObraQuestionList from '@/components/miniversos/obra/ObraQuestionList';
 import RelatedReadingTooltipButton from '@/components/portal/RelatedReadingTooltipButton';
-import PortalL3RewardCTA from '@/components/portal/PortalL3RewardCTA';
 import GATChip from '@/components/portal/GATChip';
 import VitranaQuestionReveal from '@/components/portal/VitranaQuestionReveal';
 import ResonanceModal, { LEVEL2_QUESTIONS, buildL1Acknowledgment } from '@/components/portal/ResonanceModal';
@@ -384,9 +383,10 @@ const PortalVoz = () => {
   const [experienceDone, setExperienceDone] = useState(() => readResonanceProgress('obra').experienceDone);
   const [l2Done, setL2Done] = useState(() => readResonanceProgress('obra').l2Done);
   const [l3Rec, setL3Rec] = useState(() => readResonanceProgress('obra').l3Recommendation);
+  const [bitacoraDone, setBitacoraDone] = useState(() => readResonanceProgress('obra').bitacoraDone);
   const refreshL1 = useCallback(() => {
     const p = readResonanceProgress('obra');
-    setL1Done(p.l1Done); setExperienceDone(p.experienceDone); setL2Done(p.l2Done); setL2Answer(p.l2Answer); setL3Rec(p.l3Recommendation);
+    setL1Done(p.l1Done); setExperienceDone(p.experienceDone); setL2Done(p.l2Done); setL2Answer(p.l2Answer); setL3Rec(p.l3Recommendation); setBitacoraDone(p.bitacoraDone);
   }, []);
   const [isNarrativeExperienceOpen, setIsNarrativeExperienceOpen] = useState(false);
   const [openCollaboratorId, setOpenCollaboratorId] = useState(null);
@@ -1039,8 +1039,9 @@ const PortalVoz = () => {
                     autoReveal={l1Done}
                     portal="obra"
                     l2Done={l2Done}
-                    l3Done={Boolean(l3Rec?.step3)}
+                    l3Done={Boolean(l3Rec?.step3) || bitacoraDone}
                     l3Step3={l3Rec?.step3 ?? null}
+                    bitacoraCompleted={bitacoraDone}
                     l3FormaLabel={l3Rec?.forma ?? null}
                     onL3CTA={() => { const r = resolvePortalRoute({ formatId: l3Rec?.recommended_format_id }); if (r) navigate(r); }}
                     onAnswer={handleAnswerResonance}
@@ -1068,8 +1069,9 @@ const PortalVoz = () => {
                   autoReveal={l1Done}
                   portal="obra"
                   l2Done={l2Done}
-                  l3Done={Boolean(l3Rec?.step3)}
+                  l3Done={Boolean(l3Rec?.step3) || bitacoraDone}
                   l3Step3={l3Rec?.step3 ?? null}
+                  bitacoraCompleted={bitacoraDone}
                   l3FormaLabel={l3Rec?.forma ?? null}
                   onL3CTA={() => { const r = resolvePortalRoute({ formatId: l3Rec?.recommended_format_id }); if (r) navigate(r); }}
                   onAnswer={handleAnswerResonance}
@@ -1596,11 +1598,7 @@ const PortalVoz = () => {
               compact
             />
           </div>
-          {l3Rec?.step3 ? (
-            <div className="order-5">
-              <PortalL3RewardCTA portal="obra" l3Rec={l3Rec} />
-            </div>
-          ) : experienceDone ? (
+          {l3Rec?.step3 ? null : experienceDone ? (
             <div className="order-5">
               <button
                 type="button"

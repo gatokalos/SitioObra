@@ -19,6 +19,7 @@ const useTransmediaSectionAudio = ({ isSilvestrePlaying }) => {
 
   const fadeTo = useCallback((targetVolume, durationMs = FADE_DURATION_MS) => {
     const audio = getTransmediaSectionAudio();
+    console.log('[TransmediaAudio] fadeTo()', { targetVolume, durationMs, fromVolume: audio?.volume, paused: audio?.paused });
     if (!audio) return;
     if (fadeRafRef.current) cancelAnimationFrame(fadeRafRef.current);
     const startVolume = audio.volume;
@@ -40,6 +41,7 @@ const useTransmediaSectionAudio = ({ isSilvestrePlaying }) => {
 
   const attemptPlay = useCallback(() => {
     const audio = getTransmediaSectionAudio();
+    console.log('[TransmediaAudio] attemptPlay()', { hasAudio: !!audio, pref: readTransmediaAudioPreference(), paused: audio?.paused, volume: audio?.volume, src: audio?.src, readyState: audio?.readyState });
     if (!audio) return;
     if (readTransmediaAudioPreference() === false) return;
     // Cancelar cualquier fade-to-0 en curso para evitar que pause el audio
@@ -49,7 +51,11 @@ const useTransmediaSectionAudio = ({ isSilvestrePlaying }) => {
       fadeRafRef.current = null;
     }
     audio.volume = TRANSMEDIA_AMBIENT_DEFAULT_VOLUME;
-    void audio.play().catch(() => {});
+    void audio.play().then(() => {
+      console.log('[TransmediaAudio] play() resolved OK', { paused: audio.paused, volume: audio.volume });
+    }).catch((err) => {
+      console.log('[TransmediaAudio] play() REJECTED', err?.name, err?.message);
+    });
   }, []);
 
   // Pre-unlock del elemento de audio en el primer gesto del usuario (necesario en iOS Safari:
@@ -85,6 +91,7 @@ const useTransmediaSectionAudio = ({ isSilvestrePlaying }) => {
     const observer = new IntersectionObserver(
       (entries) => {
         const isVisible = entries[0].isIntersecting;
+        console.log('[TransmediaAudio] IntersectionObserver', { isVisible, ratio: entries[0].intersectionRatio, isDucked: isDuckedRef.current });
         isActiveRef.current = isVisible;
         if (isVisible) {
           dispatchHeroHold(true);
@@ -97,12 +104,14 @@ const useTransmediaSectionAudio = ({ isSilvestrePlaying }) => {
       { threshold: 0.08 },
     );
 
+    console.log('[TransmediaAudio] observer.observe() attached to section', section);
     observer.observe(section);
     return () => observer.disconnect();
   }, [attemptPlay, fadeTo]);
 
   // Duck / unduck when Silvestre speaks
   useEffect(() => {
+    console.log('[TransmediaAudio] isSilvestrePlaying changed ->', isSilvestrePlaying, { wasDucked: isDuckedRef.current, isActive: isActiveRef.current });
     if (isSilvestrePlaying) {
       isDuckedRef.current = true;
       fadeTo(TRANSMEDIA_AMBIENT_DUCK_VOLUME, 500);

@@ -1,5 +1,5 @@
 import React, { Suspense, lazy, useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
-import { Route, Routes, useLocation } from 'react-router-dom';
+import { Navigate, Route, Routes, useLocation } from 'react-router-dom';
 import { Toaster } from '@/components/ui/toaster';
 import ArticleDrawer from '@/components/ArticleDrawer';
 import Header from '@/components/Header';
@@ -63,6 +63,16 @@ const PortalEncuentros = lazy(() => import('./pages/PortalEncuentros.jsx'));
 const BitacoraLanding = lazy(() => import('./pages/BitacoraLanding.jsx'));
 const LabHuella = lazy(() => import('@/pages/LabHuella'));
 const BlogPostPage = lazy(() => import('@/pages/BlogPostPage'));
+
+const LegacyBienvenidaRedirect = () => {
+  const location = useLocation();
+  return (
+    <Navigate
+      to={{ pathname: '/primeracto', search: location.search, hash: location.hash }}
+      replace
+    />
+  );
+};
 
 const SectionFallback = ({ id, minHeight = 320 }) => (
   <section id={id} className="relative" style={{ minHeight }}>
@@ -157,7 +167,7 @@ const HERO_BACKGROUND_VARIANTS = {
       opacity: 0.44,
       filter: 'contrast(80%) brightness(100%) saturate(96%)',
       objectPosition: '50% 28%',
-      transform: 'translateY(7.5%) scale(1.1)',
+      transform: 'translateY(var(--hero-cabina-shift, 7.5%)) scale(1.1)',
     },
   },
   authenticated: {
@@ -253,7 +263,7 @@ const HeroBackground = ({ isAuthenticated = false }) => {
           <div className="absolute bottom-0 right-0 w-1/2 h-1/2 bg-gradient-to-tl from-purple-700/60 via-transparent to-transparent blur-3xl"></div>
         </div>
         <img
-          className={backgroundVariant.className}
+          className={`${backgroundVariant.className} ${isGuestCabina ? 'hero-guest-cabina' : ''}`}
           style={{
             ...backgroundVariant.style,
             opacity: backgroundImageOpacity,
@@ -286,7 +296,7 @@ const HeroBackground = ({ isAuthenticated = false }) => {
               }}
             />
             <img
-              className="absolute inset-0 h-full w-full object-cover pointer-events-none"
+              className="hero-guest-cabina absolute inset-0 h-full w-full object-cover pointer-events-none"
               style={{
                 ...backgroundVariant.style,
                 opacity: softFocusOpacity,
@@ -483,7 +493,7 @@ function App() {
       window.removeEventListener('gatoencerrado:audio-deactivated', handleDeactivated);
     };
   }, []);
-  // Tercera Llamada (La Bienvenida): al volver de /bienvenida con recomendación,
+  // Tercera Llamada (La Bienvenida): al volver de /primeracto con recomendación,
   // se desbloquean Perspectivas + Transmedia, que a partir de ahí conviven con
   // Tercera Llamada (no la reemplazan) — su CTA solo cambia a "¿Reestrenamos?".
   const [hasCompletedTerceraLlamada, setHasCompletedTerceraLlamada] = useState(() => {
@@ -502,7 +512,7 @@ function App() {
     return () => window.removeEventListener('gatoencerrado:tercera-llamada-completed', handleCompleted);
   }, [isAuthenticated, hasGuestUnlockedTransmedia]);
   // "Antes de irte" (MiniverseInlineSection) es de descubrimiento, no de
-  // autenticación — un invitado que nunca pasó por /bienvenida debe poder
+  // autenticación — un invitado que nunca pasó por /primeracto debe poder
   // abrir un miniverso desde ahí igual. Sin este desbloqueo, <Transmedia />
   // nunca monta y el evento select-miniverse-format que dispara esa sección
   // no tiene quién lo escuche. A diferencia de tercera-llamada-completed, esto
@@ -981,7 +991,8 @@ function App() {
           </div>
         )}
       />
-      <Route path="/bienvenida" element={<Suspense fallback={<RouteFallback />}><Bienvenida /></Suspense>} />
+      <Route path="/primeracto" element={<Suspense fallback={<RouteFallback />}><Bienvenida /></Suspense>} />
+      <Route path="/bienvenida" element={<LegacyBienvenidaRedirect />} />
       <Route path="/trazos" element={<Suspense fallback={<RouteFallback />}><Trazos /></Suspense>} />
       <Route path="/autoficcion" element={<Suspense fallback={<RouteFallback />}><Autoficcion /></Suspense>} />
       <Route path="/portal-literatura" element={<SectionErrorBoundary fallback={<PortalErrorFallback />}><Suspense fallback={<RouteFallback />}><PortalLiteratura /></Suspense></SectionErrorBoundary>} />

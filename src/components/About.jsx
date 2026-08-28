@@ -242,7 +242,7 @@ export const ProvocaSection = () => {
       ? 'Reproducir respuesta'
       : isSilvestreThinking
         ? silvestreThinkingMessage
-        : 'Quiero oir drama';
+        : 'Dilo con drama';
   const escucharButtonVisualLabel =
     pendingSilvestreAudioUrl && !isSilvestrePlaying ? 'Reproducir' : escucharStatusLabel;
 

@@ -33,7 +33,7 @@ npm run preview  # previsualizar build
 
 ## Bienvenida (integración rápida)
 
-- Ruta: `/bienvenida`
+- Ruta canónica: `/primeracto` (`/bienvenida` redirige para conservar enlaces anteriores)
 - Se muestra una sola vez por usuario autenticado.
 - Configura `VITE_BIENVENIDA_URL` con la URL de la app externa (si no existe, no se activa).
 - Persistencia: se guarda en storage local por usuario (`bienvenida:seen:<user_id>`).

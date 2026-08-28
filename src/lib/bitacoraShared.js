@@ -26,6 +26,10 @@ export const writeGlobalConsent = () => {
   try { localStorage.setItem(GLOBAL_CONSENT_KEY, 'true'); } catch {}
 };
 
+export const clearGlobalConsent = () => {
+  try { localStorage.removeItem(GLOBAL_CONSENT_KEY); } catch {}
+};
+
 export const readResonanceRecord = (portal) => {
   try {
     return JSON.parse(localStorage.getItem(`gatoencerrado:resonance:${portal}`)) ?? {};

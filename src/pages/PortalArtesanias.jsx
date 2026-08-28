@@ -13,7 +13,6 @@ import ARExperience from '@/components/ar/ARExperience';
 import IAInsightCard from '@/components/IAInsightCard';
 import CollaboratorsPanel from '@/components/portal/CollaboratorsPanel';
 import RelatedReadingTooltipButton from '@/components/portal/RelatedReadingTooltipButton';
-import PortalL3RewardCTA from '@/components/portal/PortalL3RewardCTA';
 import VitranaQuestionReveal from '@/components/portal/VitranaQuestionReveal';
 import ResonanceModal, { LEVEL2_QUESTIONS, buildL1Acknowledgment } from '@/components/portal/ResonanceModal';
 import { readResonanceProgress } from '@/lib/bitacoraShared';
@@ -167,9 +166,10 @@ const PortalArtesanias = () => {
   const [l2Answer, setL2Answer] = useState(() => readResonanceProgress('artesanias').l2Answer);
   const [l2Done, setL2Done] = useState(() => readResonanceProgress('artesanias').l2Done);
   const [l3Rec, setL3Rec] = useState(() => readResonanceProgress('artesanias').l3Recommendation);
+  const [bitacoraDone, setBitacoraDone] = useState(() => readResonanceProgress('artesanias').bitacoraDone);
   const refreshL1 = useCallback(() => {
     const p = readResonanceProgress('artesanias');
-    setL1Done(p.l1Done); setL2Done(p.l2Done); setL2Answer(p.l2Answer); setL3Rec(p.l3Recommendation);
+    setL1Done(p.l1Done); setL2Done(p.l2Done); setL2Answer(p.l2Answer); setL3Rec(p.l3Recommendation); setBitacoraDone(p.bitacoraDone);
   }, []);
   const navigate = useNavigate();
   const location = useLocation();
@@ -460,8 +460,9 @@ const PortalArtesanias = () => {
                     autoReveal={l1Done}
                     portal="artesanias"
                     l2Done={l2Done}
-                    l3Done={Boolean(l3Rec?.step3)}
+                    l3Done={Boolean(l3Rec?.step3) || bitacoraDone}
                     l3Step3={l3Rec?.step3 ?? null}
+                    bitacoraCompleted={bitacoraDone}
                     l3FormaLabel={l3Rec?.forma ?? null}
                     onL3CTA={() => { const r = resolvePortalRoute({ formatId: l3Rec?.recommended_format_id }); if (r) navigate(r); }}
                     onAnswer={handleAnswerResonance}
@@ -482,8 +483,9 @@ const PortalArtesanias = () => {
                 autoReveal={l1Done}
                 portal="artesanias"
                 l2Done={l2Done}
-                l3Done={Boolean(l3Rec?.step3)}
+                l3Done={Boolean(l3Rec?.step3) || bitacoraDone}
                 l3Step3={l3Rec?.step3 ?? null}
+                bitacoraCompleted={bitacoraDone}
                 l3FormaLabel={l3Rec?.forma ?? null}
                 onL3CTA={() => { const r = resolvePortalRoute({ formatId: l3Rec?.recommended_format_id }); if (r) navigate(r); }}
                 onAnswer={handleAnswerResonance}
@@ -660,11 +662,6 @@ const PortalArtesanias = () => {
               compact
             />
           </div>
-          {l3Rec?.step3 ? (
-            <div className="order-5">
-              <PortalL3RewardCTA portal="artesanias" l3Rec={l3Rec} />
-            </div>
-          ) : null}
           <div className="order-last flex justify-end pt-2 lg:hidden">
             <PortalHeaderActions />
           </div>

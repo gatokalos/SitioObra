@@ -18,7 +18,7 @@ const CreatorWelcomeSection = ({ hasEnteredUniverse = false }) => {
     setBienvenidaReturnPath(`${location.pathname}${location.search}${location.hash}`);
     if (typeof window !== 'undefined') {
       window.setTimeout(() => {
-        navigate('/bienvenida', { replace: true });
+        navigate('/primeracto', { replace: true });
       }, 450);
     }
   }, [location.hash, location.pathname, location.search, navigate]);

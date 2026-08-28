@@ -328,8 +328,8 @@ export const MINIVERSO_EDITORIAL_INTERCEPTION_ENABLED =
 // "Intuye tu respuesta" en los 9 portales, antes de "Viajar a esta escena"
 // en el Libreto holográfico, y antes del video de reanudación tras login en
 // Hero.jsx ("Entra y sigue la forma" en Transmedia). Las tres viven como
-// entrada/umbral. Reubicado (Carlos, 2026-08-25): el mejor lugar resultó ser
-// la despedida tras dar consentimiento a la Bitácora, no la entrada — ver
+// entrada/umbral. Reubicado: el mejor lugar resultó ser el clímax previo al
+// intermedio, después de L3 y antes del consentimiento diferido — ver
 // RESONANCE_FAREWELL_VIDEO_ENABLED abajo, que es la bandera que de verdad se
 // va a encender cuando existan las piezas. Esta se queda apagada a
 // propósito, probablemente para siempre: no se borra el código porque
@@ -339,14 +339,12 @@ export const MINIVERSO_EDITORIAL_INTERCEPTION_ENABLED =
 // comparabilidad con sesiones ya capturadas.
 export const RESONANCE_BRIDGE_VIDEO_ENABLED =
   import.meta.env?.VITE_RESONANCE_BRIDGE_VIDEO === 'true';
-// Ubicación NUEVA y vigente: el video corto se dispara justo al dar
-// consentimiento para la Bitácora (handleBitacoraConsent en
-// ResonanceModal.jsx) — L1/L2/L3 de ese miniverso ya se contestaron sin
-// haber visto nada, así que no hay riesgo de contaminar la intuición de Fase
-// 1. Es un gesto de despedida antes de la espera de 72 horas, no un umbral
-// de entrada. Reactivar = poner VITE_RESONANCE_FAREWELL_VIDEO=true en el
-// entorno, y cargar las piezas reales en `resolveNarrativeVideoUrl` — no
-// requiere tocar este código de nuevo.
+// Ubicación NUEVA y vigente: el video corto aparece como clímax cuando L3
+// concluye, antes del consentimiento diferido y de la marca de intermedio en
+// ResonanceModal.jsx. L1/L2/L3 ya se contestaron, así que no contamina la
+// intuición de Fase 1. Reactivar = poner
+// VITE_RESONANCE_FAREWELL_VIDEO=true y cargar las piezas en
+// `public/videos/autor/` siguiendo authorVideo.js.
 export const RESONANCE_FAREWELL_VIDEO_ENABLED =
   import.meta.env?.VITE_RESONANCE_FAREWELL_VIDEO === 'true';
 // formatId (miniversePortalRegistry.js) <-> clave corta de "portal" que usan

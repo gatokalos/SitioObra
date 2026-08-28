@@ -678,7 +678,7 @@ const Transmedia = ({ allianceOnlyMode = false }) => {
       setBienvenidaReturnPath(`${location.pathname}${location.search}${location.hash}`);
       if (typeof window !== 'undefined') {
         window.setTimeout(() => {
-          navigate('/bienvenida', { replace: true });
+          navigate('/primeracto', { replace: true });
         }, 450);
       }
       return;
@@ -1453,7 +1453,7 @@ const Transmedia = ({ allianceOnlyMode = false }) => {
     setBienvenidaReturnPath(`${location.pathname}${location.search}#apoya`);
     if (typeof window !== 'undefined') {
       window.setTimeout(() => {
-        navigate(`/bienvenida?goal=${INTERACTIVE_EXPERIENCE_GOAL}`, { replace: true });
+        navigate(`/primeracto?goal=${INTERACTIVE_EXPERIENCE_GOAL}`, { replace: true });
       }, 450);
     }
   }, [location.pathname, location.search, navigate]);
@@ -5622,7 +5622,7 @@ const renderDramaFeaturedWork = () => (
     <em>Esta obra es un sistema narrativo transmedia</em> que se despliega en nueve formas que aquí llamamos miniversos.<br />
     <strong>Elige por dónde continuar y qué lugar ocupar.</strong><br />
       <span className="block mt-10 text-sm text-slate-100/50 italic">
-    (Mi universo se sostiene en cada minuto de tu atención dentro de estos <strong>miniversos</strong>.)
+    (El universo #GatoEncerrado se <strong>expande</strong> con cada minuto de tu atención.)
   </span>
       </p>
             </motion.div>

@@ -34,7 +34,6 @@ import { useVitranaQuestion } from '@/hooks/useVitranaQuestion';
 import useScrambleText from '@/hooks/useScrambleText';
 import { ensureAnonId } from '@/lib/identity';
 import { resolvePortalRoute } from '@/lib/miniversePortalRegistry';
-import PortalL3RewardCTA from '@/components/portal/PortalL3RewardCTA';
 
 const MOVEMENT_INTRO = (
   <>
@@ -293,9 +292,10 @@ const PortalMovimiento = () => {
   const [experienceDone, setExperienceDone] = useState(() => readResonanceProgress('movimiento').experienceDone);
   const [l2Done, setL2Done] = useState(() => readResonanceProgress('movimiento').l2Done);
   const [l3Rec, setL3Rec] = useState(() => readResonanceProgress('movimiento').l3Recommendation);
+  const [bitacoraDone, setBitacoraDone] = useState(() => readResonanceProgress('movimiento').bitacoraDone);
   const refreshL1 = useCallback(() => {
     const p = readResonanceProgress('movimiento');
-    setL1Done(p.l1Done); setExperienceDone(p.experienceDone); setL2Done(p.l2Done); setL2Answer(p.l2Answer); setL3Rec(p.l3Recommendation);
+    setL1Done(p.l1Done); setExperienceDone(p.experienceDone); setL2Done(p.l2Done); setL2Answer(p.l2Answer); setL3Rec(p.l3Recommendation); setBitacoraDone(p.bitacoraDone);
   }, []);
   const [actionFeedback, setActionFeedback] = useState('');
   const navigate = useNavigate();
@@ -555,8 +555,9 @@ const PortalMovimiento = () => {
                     autoReveal={l1Done}
                     portal="movimiento"
                     l2Done={l2Done}
-                    l3Done={Boolean(l3Rec?.step3)}
+                    l3Done={Boolean(l3Rec?.step3) || bitacoraDone}
                     l3Step3={l3Rec?.step3 ?? null}
+                    bitacoraCompleted={bitacoraDone}
                     l3FormaLabel={l3Rec?.forma ?? null}
                     onL3CTA={() => { const r = resolvePortalRoute({ formatId: l3Rec?.recommended_format_id }); if (r) navigate(r); }}
                     onAnswer={handleAnswerResonance}
@@ -595,8 +596,9 @@ const PortalMovimiento = () => {
                 autoReveal={l1Done}
                 portal="movimiento"
                 l2Done={l2Done}
-                l3Done={Boolean(l3Rec?.step3)}
+                l3Done={Boolean(l3Rec?.step3) || bitacoraDone}
                 l3Step3={l3Rec?.step3 ?? null}
+                bitacoraCompleted={bitacoraDone}
                 l3FormaLabel={l3Rec?.forma ?? null}
                 onL3CTA={() => { const r = resolvePortalRoute({ formatId: l3Rec?.recommended_format_id }); if (r) navigate(r); }}
                 onAnswer={handleAnswerResonance}
@@ -863,9 +865,7 @@ const PortalMovimiento = () => {
               compact
             />
           </div>
-          {l3Rec?.step3 ? (
-            <PortalL3RewardCTA portal="movimiento" l3Rec={l3Rec} />
-          ) : null /*
+          {/*
             Desactivado a propósito (2026-08-16): CTA de talleres escondido
             junto con "Activaciones de ruta", misma razón.
             experienceDone ? (
