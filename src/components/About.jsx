@@ -74,7 +74,7 @@ const PROVOCA_TERM_TO_MODE = {
   'una emoción que no entiendes del todo': 'emocion-sin-nombre',
   'querer estar bien':                   'querer-estar-bien',
 };
-const PROVOCA_RESPONSE_ESTIMATE_SECONDS = 60;
+const PROVOCA_RESPONSE_ESTIMATE_SECONDS = 20;
 const PROVOCA_SUBMIT_COOLDOWN_MS = 45 * 1000;
 const PROVOCA_SUBMIT_COOLDOWN_PREFIX = 'gatoencerrado:provoca-submit-cooldown:v1';
 const PROVOCA_LISTEN_COOLDOWN_MS = 25 * 1000;
