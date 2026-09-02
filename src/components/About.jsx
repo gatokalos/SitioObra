@@ -74,7 +74,8 @@ const PROVOCA_TERM_TO_MODE = {
   'una emoción que no entiendes del todo': 'emocion-sin-nombre',
   'querer estar bien':                   'querer-estar-bien',
 };
-const PROVOCA_RESPONSE_ESTIMATE_SECONDS = 20;
+// Fallback: solo se usa si el navegador no reporta la duración del audio.
+const PROVOCA_RESPONSE_ESTIMATE_SECONDS = 35;
 const PROVOCA_SUBMIT_COOLDOWN_MS = 45 * 1000;
 const PROVOCA_SUBMIT_COOLDOWN_PREFIX = 'gatoencerrado:provoca-submit-cooldown:v1';
 const PROVOCA_LISTEN_COOLDOWN_MS = 25 * 1000;
@@ -190,6 +191,7 @@ export const ProvocaSection = () => {
     isSilvestreResponding,
     isSilvestreFetching,
     isSilvestrePlaying,
+    silvestreAudioDuration,
     pendingSilvestreAudioUrl,
     silvestreThinkingMessage,
     handleSendSilvestrePreset,
@@ -304,16 +306,24 @@ export const ProvocaSection = () => {
   }, []);
 
   useEffect(() => {
+    // El contador refleja el tiempo restante de reproducción, no la espera del API.
+    // Usa la duración real del audio; el estimado solo cubre el instante previo a
+    // que el navegador reporte los metadatos.
+    const totalSeconds =
+      Number.isFinite(silvestreAudioDuration) && silvestreAudioDuration > 0
+        ? Math.ceil(silvestreAudioDuration)
+        : PROVOCA_RESPONSE_ESTIMATE_SECONDS;
+
     if (!isSilvestrePlaying) {
       if (responseCountdownRef.current) {
         clearInterval(responseCountdownRef.current);
         responseCountdownRef.current = null;
       }
-      setResponseCountdownSeconds(PROVOCA_RESPONSE_ESTIMATE_SECONDS);
+      setResponseCountdownSeconds(totalSeconds);
       return;
     }
 
-    setResponseCountdownSeconds(PROVOCA_RESPONSE_ESTIMATE_SECONDS);
+    setResponseCountdownSeconds(totalSeconds);
     if (responseCountdownRef.current) {
       clearInterval(responseCountdownRef.current);
     }
@@ -337,7 +347,7 @@ export const ProvocaSection = () => {
         responseCountdownRef.current = null;
       }
     };
-  }, [isSilvestrePlaying]);
+  }, [isSilvestrePlaying, silvestreAudioDuration]);
 
   const fireProvocaConfetti = useCallback(() => {
     const id = Date.now();
@@ -710,7 +720,7 @@ export const ProvocaSection = () => {
         >
           <header className="provoca-stage-intro">
             <p className="provoca-stage-eyebrow">
-              SEGUNDO ACTO
+              TERCER ACTO
             </p>
             <h2
               className={`provoca-act-title provoca-act-title--section ${isSafari ? 'provoca-act-title--safari' : ''}`}

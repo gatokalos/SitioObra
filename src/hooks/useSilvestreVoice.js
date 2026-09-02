@@ -149,6 +149,8 @@ export const useSilvestreVoice = () => {
   const [isSilvestreResponding, setIsSilvestreResponding] = useState(false);
   const [isSilvestreFetching, setIsSilvestreFetching] = useState(false);
   const [isSilvestrePlaying, setIsSilvestrePlaying] = useState(false);
+  // Duración real del audio en segundos; null mientras no se conozca.
+  const [silvestreAudioDuration, setSilvestreAudioDuration] = useState(null);
   const [pendingSilvestreAudioUrl, setPendingSilvestreAudioUrl] = useState(null);
   const [silvestreThinkingMessage, setSilvestreThinkingMessage] = useState(DEFAULT_THINKING_MESSAGE);
   const [isSilvestreThinkingPulse, setIsSilvestreThinkingPulse] = useState(false);
@@ -471,12 +473,16 @@ export const useSilvestreVoice = () => {
           silvestreAudioRef.current = null;
           setIsSilvestreResponding(false);
           setIsSilvestrePlaying(false);
+          setSilvestreAudioDuration(null);
           setShowSilvestreCoins(true);
           setTimeout(() => setShowSilvestreCoins(false), 1200);
           setPendingSilvestreAudioUrl(null);
         };
 
         source.start(0);
+        setSilvestreAudioDuration(
+          Number.isFinite(decodedAudio.duration) ? decodedAudio.duration : null
+        );
         setIsSilvestrePlaying(true);
         setIsSilvestreResponding(false);
         setPendingSilvestreAudioUrl(null);
@@ -503,6 +509,7 @@ export const useSilvestreVoice = () => {
       silvestreAudioUrlRef.current = null;
     }
     setIsSilvestrePlaying(false);
+    setSilvestreAudioDuration(null);
     setPendingSilvestreAudioUrl(null);
   }, [stopSilvestreBufferSource]);
 
@@ -764,6 +771,13 @@ export const useSilvestreVoice = () => {
         silvestreAudioRef.current = audio;
         silvestreAudioUrlRef.current = audioUrl;
         audio.addEventListener(
+          'loadedmetadata',
+          () => {
+            setSilvestreAudioDuration(Number.isFinite(audio.duration) ? audio.duration : null);
+          },
+          { once: true }
+        );
+        audio.addEventListener(
           'play',
           () => {
             setIsSilvestrePlaying(true);
@@ -779,6 +793,7 @@ export const useSilvestreVoice = () => {
               silvestreAudioRef.current = null;
               setIsSilvestreResponding(false);
               setIsSilvestrePlaying(false);
+              setSilvestreAudioDuration(null);
               setShowSilvestreCoins(true);
               setTimeout(() => setShowSilvestreCoins(false), 1200);
               setPendingSilvestreAudioUrl(null);
@@ -944,6 +959,13 @@ export const useSilvestreVoice = () => {
       silvestreAudioRef.current = audio;
       silvestreAudioUrlRef.current = pendingSilvestreAudioUrl;
       audio.addEventListener(
+        'loadedmetadata',
+        () => {
+          setSilvestreAudioDuration(Number.isFinite(audio.duration) ? audio.duration : null);
+        },
+        { once: true }
+      );
+      audio.addEventListener(
         'ended',
         () => {
           if (silvestreAudioUrlRef.current === pendingSilvestreAudioUrl) {
@@ -952,6 +974,7 @@ export const useSilvestreVoice = () => {
             silvestreAudioRef.current = null;
             setIsSilvestreResponding(false);
             setIsSilvestrePlaying(false);
+            setSilvestreAudioDuration(null);
             setPendingSilvestreAudioUrl(null);
           }
         },
@@ -960,6 +983,7 @@ export const useSilvestreVoice = () => {
     }
     try {
       await audio.play();
+      setSilvestreAudioDuration(Number.isFinite(audio.duration) ? audio.duration : null);
       setIsSilvestrePlaying(true);
       setIsSilvestreResponding(false);
       setPendingSilvestreAudioUrl(null);
@@ -1174,6 +1198,7 @@ export const useSilvestreVoice = () => {
     isSilvestreResponding,
     isSilvestreFetching,
     isSilvestrePlaying,
+    silvestreAudioDuration,
     pendingSilvestreAudioUrl,
     silvestreThinkingMessage,
     isSilvestreThinkingPulse,
