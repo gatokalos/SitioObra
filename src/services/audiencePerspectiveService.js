@@ -33,6 +33,25 @@ export async function fetchApprovedAudiencePerspectives(limit = 2) {
   }
 }
 
+// Devuelve solo las perspectivas propias aún sin moderar. Al aprobarse dejan de
+// venir por aquí y llegan por fetchApprovedAudiencePerspectives, así que no hay
+// duplicados ni estado local que reconciliar.
+export async function fetchMyPendingPerspectives(limit = 5) {
+  try {
+    const anonId = ensureAnonId();
+    const { data, error } = await supabase.rpc('get_my_pending_perspectives', {
+      p_anon_id: anonId ?? null,
+      p_limit: clampLimit(limit, 5),
+    });
+    return { data: data ?? [], error: error ?? null };
+  } catch (error) {
+    return {
+      data: [],
+      error: normalizeServiceError(error, 'No pudimos cargar tus perspectivas en revisión.'),
+    };
+  }
+}
+
 export async function submitAudiencePerspective({
   quote,
   authorName,

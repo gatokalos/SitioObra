@@ -10,6 +10,7 @@ import { safeGetItem, safeRemoveItem, safeSetItem } from '@/lib/safeStorage';
 import { ensureAnonId } from '@/lib/identity';
 import {
   fetchApprovedAudiencePerspectives,
+  fetchMyPendingPerspectives,
   submitAudiencePerspective,
   recordAudiencePerspectiveLike,
   getAudiencePerspectiveLikeCounts,
@@ -171,6 +172,8 @@ export const ProvocaSection = () => {
   const [voiceTrap, setVoiceTrap] = useState('');
   const [isSubmittingVoice, setIsSubmittingVoice] = useState(false);
   const [approvedTestimonials, setApprovedTestimonials] = useState([]);
+  // Perspectivas propias en revisión: solo las ve su autor.
+  const [pendingTestimonials, setPendingTestimonials] = useState([]);
   const [visibleVoiceCursor, setVisibleVoiceCursor] = useState(0);
   const [responseCountdownSeconds, setResponseCountdownSeconds] = useState(
     PROVOCA_RESPONSE_ESTIMATE_SECONDS
@@ -206,16 +209,21 @@ export const ProvocaSection = () => {
   const isEscucharButtonDisabled = isSilvestreThinking || isSilvestrePlaying;
   const voicesPool = approvedTestimonials.length > 0 ? approvedTestimonials : fallbackTestimonials;
   const rankedVoicesPool = useMemo(() => {
-    if (!voicesPool.length) return [];
-    return [...voicesPool]
-      .map((voice, index) => ({
-        voice,
-        index,
-        pulseCount: Number(voiceLikeCountsById[String(voice?.sourceId || '')] ?? 0),
-      }))
-      .sort((a, b) => (b.pulseCount - a.pulseCount) || (a.index - b.index))
-      .map((entry) => entry.voice);
-  }, [voiceLikeCountsById, voicesPool]);
+    const rankedPublic = voicesPool.length
+      ? [...voicesPool]
+          .map((voice, index) => ({
+            voice,
+            index,
+            pulseCount: Number(voiceLikeCountsById[String(voice?.sourceId || '')] ?? 0),
+          }))
+          .sort((a, b) => (b.pulseCount - a.pulseCount) || (a.index - b.index))
+          .map((entry) => entry.voice)
+      : [];
+
+    // Las propias en revisión van al frente: aún no tienen pulsos y el ranking
+    // las hundiría justo cuando su autor quiere escucharlas.
+    return [...pendingTestimonials, ...rankedPublic];
+  }, [pendingTestimonials, voiceLikeCountsById, voicesPool]);
   const canRefreshVoices = rankedVoicesPool.length > 1;
   const visibleTestimonials = useMemo(() => {
     if (!rankedVoicesPool.length) return [];
@@ -475,6 +483,40 @@ export const ProvocaSection = () => {
     };
   }, []);
 
+  const loadPendingPerspectives = useCallback(async () => {
+    try {
+      const { data, error } = await fetchMyPendingPerspectives(5);
+      if (error || !Array.isArray(data)) {
+        setPendingTestimonials([]);
+        return;
+      }
+
+      const mapped = data
+        .map((item, index) => {
+          const normalizedQuote = typeof item?.quote === 'string' ? item.quote.trim() : '';
+          if (!normalizedQuote) return null;
+          return {
+            id: item?.id ? `pending-${item.id}` : `pending-fallback-${index}`,
+            sourceId: item?.id ? String(item.id) : null,
+            quote: normalizedQuote.startsWith('“') ? normalizedQuote : `“${normalizedQuote}”`,
+            author: item?.author_name || 'Tu voz',
+            role: item?.author_role || 'Perspectiva compartida',
+            isPending: true,
+          };
+        })
+        .filter(Boolean);
+
+      setPendingTestimonials(mapped);
+    } catch (error) {
+      console.error('[Provoca] No se pudieron cargar perspectivas en revisión:', error);
+      setPendingTestimonials([]);
+    }
+  }, []);
+
+  useEffect(() => {
+    void loadPendingPerspectives();
+  }, [loadPendingPerspectives, user?.id]);
+
   useEffect(() => {
     let cancelled = false;
     const perspectiveIds = voicesPool
@@ -609,6 +651,11 @@ export const ProvocaSection = () => {
       safeSetItem(submitCooldownKey, String(Date.now()));
     }
 
+    // La voz recién enviada queda en revisión: recargarla la coloca al frente del
+    // pool para que su autor pueda pedirle la réplica de inmediato.
+    await loadPendingPerspectives();
+    setVisibleVoiceCursor(0);
+
     const shouldPromptLogin = !user?.email;
     fireProvocaConfetti();
     setVoiceRole('');
@@ -624,7 +671,17 @@ export const ProvocaSection = () => {
       setVoiceDraft('');
     }
     setIsVoiceInputOpen(keepFormOpen);
-  }, [fireProvocaConfetti, isSubmittingVoice, user, voiceDraft, voiceName, voiceRole, voiceTrap, submitCooldownKey]);
+  }, [
+    fireProvocaConfetti,
+    isSubmittingVoice,
+    loadPendingPerspectives,
+    user,
+    voiceDraft,
+    voiceName,
+    voiceRole,
+    voiceTrap,
+    submitCooldownKey,
+  ]);
 
   useEffect(() => {
     if (!isVoiceInputOpen) {
@@ -805,7 +862,7 @@ export const ProvocaSection = () => {
                       onChange={(event) => setVoiceDraft(event.target.value)}
                       rows={3}
                       className="form-surface w-full px-4 py-3 resize-none"
-                      placeholder="Comparte lo que sus preguntas te hicieron sentir…"
+                      placeholder="Comparte lo que las preguntas te hicieron sentir…"
                     />
                     <div className="mt-3 grid gap-3 sm:grid-cols-2">
                       <input
@@ -872,11 +929,20 @@ export const ProvocaSection = () => {
               {visibleTestimonials.map((item, index) => (
                 <div
                   key={`${item.id}-${index}-${item.displayVariant}`}
-                  className={`flex h-[230px] flex-col rounded-2xl border border-white/10 bg-black/30 md:h-[240px] ${
-                    item.displayVariant === 'large' ? 'p-7' : 'p-5'
-                  }`}
+                  className={`flex h-[230px] flex-col rounded-2xl bg-black/30 md:h-[240px] ${
+                    item.isPending
+                      ? 'border border-dashed border-amber-200/35'
+                      : 'border border-white/10'
+                  } ${item.displayVariant === 'large' ? 'p-7' : 'p-5'}`}
                 >
-                  <Quote className="text-purple-300 mb-4" size={item.displayVariant === 'large' ? 30 : 24} />
+                  <div className="mb-4 flex items-start justify-between gap-3">
+                    <Quote className="text-purple-300" size={item.displayVariant === 'large' ? 30 : 24} />
+                    {item.isPending ? (
+                      <span className="shrink-0 rounded-full border border-amber-200/30 px-2.5 py-1 text-[10px] uppercase tracking-[0.14em] text-amber-100/75">
+                        Solo tú ves esto · en revisión
+                      </span>
+                    ) : null}
+                  </div>
                   <div className="mb-4 min-h-0 flex-1 overflow-y-auto pr-2">
                     <p
                       className={`text-slate-200 italic leading-relaxed ${
@@ -891,7 +957,7 @@ export const ProvocaSection = () => {
                       <p className="text-slate-200 font-semibold">{item.author}</p>
                       <p>{item.role}</p>
                     </div>
-                    {(() => {
+                    {item.isPending ? null : (() => {
                       const perspectiveId = String(item?.sourceId || '').trim();
                       const hasLiked = likedVoiceIds.includes(perspectiveId);
                       const pulseStatus = voiceLikeStatusById[perspectiveId] || 'idle';
