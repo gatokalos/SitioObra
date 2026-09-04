@@ -617,8 +617,16 @@ export const useSilvestreVoice = () => {
         return false;
       }
       const source = options.source || null;
-      const mode_id = normalizeMode(options.modeId || options.selectedMode);
       const apiContext = options.context || null;
+      // Provoca tiene su propio catálogo de modos (drama, soledad, ira-reprimida…)
+      // que vive en el backend. normalizeMode solo conoce los modos del Portal Voz
+      // y aplasta cualquier otro a 'confusion-lucida', así que pasarlo por ahí
+      // colapsaba los siete modos de Provoca en uno solo.
+      const rawMode = options.modeId || options.selectedMode;
+      const mode_id =
+        apiContext === 'provoca'
+          ? (rawMode || '').toString().toLowerCase().trim()
+          : normalizeMode(rawMode);
       const userName =
         typeof options.userName === 'string' && options.userName.trim()
           ? options.userName.trim()
