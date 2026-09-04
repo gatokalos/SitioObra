@@ -82,7 +82,7 @@ const PWA_HASH_WHISPERS = [
 // en primera persona que ya usan los whispers de arriba, no tono de soporte
 // técnico (Carlos, 2026-08-19).
 const PWA_INSTRUCTIONS_EYEBROW = '';
-const PWA_INSTRUCTIONS_SUBTITLE = 'Este sitio está diseñado para funcionar como app:';
+const PWA_INSTRUCTIONS_SUBTITLE = 'Lleva este universo contigo. Instala la app.';
 // Feedback real de un visitante (agosto 2026): no relacionó el # con "el
 // gato" del hint estático y no supo qué tocar. Refuerzo de una sola vez — la
 // palabra "gato" del hint se revuelve brevemente con # en el pool y se
@@ -109,7 +109,7 @@ const HERO_ROTATING_SUBTITLES = [
 const HERO_GHOST_SUBTITLES = [
   'Sí: aquí hay gato encerrado',                      // 7 · NUEVA — el premio final del que se quedó
   'Una obra con nueve vidas',                         // 5 · NUEVA — el gato escondido en el número
-  'Tal vez esta obra empieza contigo',                // 7 · NUEVA — el premio final del que se quedó
+  '(Tal vez esto empieza al revés)',                // 7 · NUEVA — el premio final del que se quedó
 ];
 
 // Se probó variar cada capa del eco con una frase distinta (déjà vu con los

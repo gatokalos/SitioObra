@@ -1642,7 +1642,7 @@ const Transmedia = ({ allianceOnlyMode = false }) => {
   );
 
   const renderCollaboratorsSection = useCallback(
-    (collaborators, prefix = 'collab', bare = false) => {
+    (collaborators, prefix = 'collab', bare = false, desktopEditorial = false) => {
       if (!Array.isArray(collaborators) || !collaborators.length) return null;
       const normalized = collaborators.map((collab, idx) => ({
         ...collab,
@@ -1666,7 +1666,7 @@ const Transmedia = ({ allianceOnlyMode = false }) => {
                     whileTap={{ scale: 0.96 }}
                     transition={{ duration: 0.15, ease: 'easeOut' }}
                     onClick={() => { setOpenCollaboratorId(collab._avatarId); setIsArtesaniasDeviceInfoOpen(false); setIsDramaDeviceInfoOpen(false); setIsCineDeviceInfoOpen(false); setIsGraficosDeviceInfoOpen(false); setIsLiteraturaDeviceInfoOpen(false); setIsSonoridadesDeviceInfoOpen(false); }}
-                    className={`h-10 w-10 rounded-full border ${
+                    className={`${desktopEditorial ? 'h-16 w-16' : 'h-10 w-10'} rounded-full border ${
                       isActive ? 'border-purple-300/80 ring-2 ring-purple-400/50' : 'border-white/15'
                     } bg-white/5 overflow-hidden transition hover:border-purple-300/60 shadow-lg shadow-black/30`}
                     title={collab.name}
@@ -1681,16 +1681,18 @@ const Transmedia = ({ allianceOnlyMode = false }) => {
                 );
               })}
             </motion.div>
-            <p className="text-xs uppercase tracking-[0.35em] text-purple-300 text-center">
-              Cómplices
-            </p>
+            {!desktopEditorial || !selected ? (
+              <p className="text-xs uppercase tracking-[0.35em] text-purple-300 text-center">
+                Cómplices
+              </p>
+            ) : null}
           </div>
           {selected ? (
-            <div className="border border-white/10 rounded-2xl bg-black/20 p-4 flex flex-col md:h-[17rem] md:flex-row gap-4 items-center md:items-start text-center md:text-left">
+            <div className="relative border border-white/10 rounded-2xl bg-black/20 p-4 flex flex-col md:h-[17rem] md:flex-row gap-4 items-center md:items-start text-center md:text-left">
               <img
                 src={selected._image}
                 alt={`Retrato de ${selected.name}`}
-                className="h-24 w-24 md:h-18 md:w-18 rounded-full object-cover border border-white/10 flex-shrink-0 shadow-lg shadow-black/30"
+                className={`${desktopEditorial ? 'h-20 w-20' : 'h-24 w-24 md:h-18 md:w-18'} rounded-full object-cover border border-white/10 flex-shrink-0 shadow-lg shadow-black/30`}
                 loading="lazy"
               />
               <div className="space-y-2 flex-1 min-w-0 text-center md:text-left md:h-full md:overflow-y-auto md:pr-1">
@@ -1706,10 +1708,12 @@ const Transmedia = ({ allianceOnlyMode = false }) => {
                   <button
                     type="button"
                     onClick={() => setOpenCollaboratorId(null)}
-                    className="text-xs uppercase tracking-[0.3em] text-slate-400 hover:text-white transition self-center md:self-start"
+                    className={desktopEditorial
+                      ? 'absolute right-4 top-3 flex h-8 w-8 items-center justify-center text-xl leading-none text-slate-400 transition hover:text-white'
+                      : 'text-xs uppercase tracking-[0.3em] text-slate-400 hover:text-white transition self-center md:self-start'}
                     aria-label="Cerrar ficha de colaborador"
                   >
-                    Cerrar ✕
+                    {desktopEditorial ? '×' : 'Cerrar ✕'}
                   </button>
                 </div>
                 {selected.bio ? (
@@ -1720,7 +1724,7 @@ const Transmedia = ({ allianceOnlyMode = false }) => {
           ) : null}
         </>
       );
-      if (bare) return <div className="space-y-3">{inner}</div>;
+      if (bare) return <div className={desktopEditorial ? 'space-y-4 py-1' : 'space-y-3'}>{inner}</div>;
       return (
         <div className="rounded-2xl border border-white/10 bg-black/30 px-5 py-5 space-y-4 md:space-y-3">
           {inner}
@@ -2264,7 +2268,9 @@ const renderDramaFeaturedWork = () => (
               activeDefinition.collaboratorsByCard
                 ? activeDefinition.collaboratorsByCard[obraCardIndex]
                 : activeDefinition.collaborators,
-              activeShowcase ?? 'hdr'
+              activeShowcase ?? 'hdr',
+              !isVitrinaCarouselViewport,
+              !isVitrinaCarouselViewport
             )}
           </div>
         </div>
@@ -2366,7 +2372,12 @@ const renderDramaFeaturedWork = () => (
 
             <div className="flex flex-col gap-5">
               {rendernotaAutoral()}
-              {renderCollaboratorsSection(activeDefinition.collaborators, activeShowcase ?? 'hdr')}
+              {renderCollaboratorsSection(
+                activeDefinition.collaborators,
+                activeShowcase ?? 'hdr',
+                !isVitrinaCarouselViewport,
+                !isVitrinaCarouselViewport
+              )}
               {activePortalExperienceDone && (
                 <button
                   type="button"
@@ -2562,7 +2573,7 @@ const renderDramaFeaturedWork = () => (
             {/* Columna derecha: verso fundacional + Interacción esperada + Cómplices + CTA */}
             <div className="hidden lg:flex lg:flex-col lg:gap-5">
               {rendernotaAutoral()}
-              {renderCollaboratorsSection(activeDefinition.collaborators, activeShowcase ?? 'hdr')}
+              {renderCollaboratorsSection(activeDefinition.collaborators, activeShowcase ?? 'hdr', true, true)}
               {activePortalExperienceDone && (
                 <button
                   type="button"
@@ -3063,7 +3074,12 @@ const renderDramaFeaturedWork = () => (
 
           <div className="flex flex-col gap-5">
             {rendernotaAutoral()}
-            {renderCollaboratorsSection(activeDefinition.collaborators, activeShowcase ?? 'hdr')}
+            {renderCollaboratorsSection(
+              activeDefinition.collaborators,
+              activeShowcase ?? 'hdr',
+              !isVitrinaCarouselViewport,
+              !isVitrinaCarouselViewport
+            )}
             {/*
               Desactivado a propósito (2026-08-14): este botón reclamaba el
               premio de Nivel 3 (+175 GAT, handleClaimL3Reward) y empujaba al
@@ -3852,7 +3868,7 @@ const renderDramaFeaturedWork = () => (
               </div>
               <div className="flex flex-col gap-5">
                 {rendernotaAutoral()}
-                {renderCollaboratorsSection(activeDefinition.collaborators, activeShowcase ?? 'hdr')}
+                {renderCollaboratorsSection(activeDefinition.collaborators, activeShowcase ?? 'hdr', true, true)}
                 {activePortalExperienceDone && (
                   <button
                     type="button"
@@ -4081,7 +4097,12 @@ const renderDramaFeaturedWork = () => (
                 </div>
                 <div className="flex flex-col gap-5">
                   {rendernotaAutoral()}
-                  {renderCollaboratorsSection(activeDefinition.collaborators, activeShowcase ?? 'hdr')}
+                  {renderCollaboratorsSection(
+                    activeDefinition.collaborators,
+                    activeShowcase ?? 'hdr',
+                    !isVitrinaCarouselViewport,
+                    !isVitrinaCarouselViewport
+                  )}
                   {activePortalExperienceDone && (
                     <button
                       type="button"
@@ -4534,7 +4555,9 @@ const renderDramaFeaturedWork = () => (
                         </div>
                       ) : (activeShowcase === 'lataza' || activeShowcase === 'miniversos' || activeShowcase === 'copycats' || activeShowcase === 'miniversoGrafico' || activeShowcase === 'miniversoNovela' || activeShowcase === 'miniversoSonoro') ? null : renderCollaboratorsSection(
                           activeDefinition.collaborators,
-                          activeShowcase ?? 'hdr'
+                          activeShowcase ?? 'hdr',
+                          true,
+                          true
                         )}
                     </div>
                   </div>

@@ -612,8 +612,8 @@ body {
     );
     -webkit-background-clip: text;
     background-clip: text;
-    -webkit-text-fill-color: #29142c;
-    -webkit-text-stroke: 1px rgba(225, 221, 236, 0.58);
+    -webkit-text-fill-color: #321819;
+    -webkit-text-stroke: 1px rgba(57, 85, 85, 0.58);
     text-shadow:
       0 -1px 0 rgba(255, 228, 250, 0.32),
       0 1px 0 rgba(102, 125, 151, 0.42),

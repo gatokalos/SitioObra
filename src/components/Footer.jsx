@@ -48,7 +48,7 @@ const Footer = () => {
               transition={{ duration: 0.6, delay: 0.2, ease: "easeOut" }}
               viewport={{ once: true }}
             >
-              <span className="font-semibold text-slate-200 mb-4 block">Contacto</span>
+              <span className="font-semibold text-slate-200 mb-4 block">Salida</span>
               <ul className="space-y-3 text-sm font-light">
                 <li className="text-slate-400">dramaturgo@gatoencerrado.org</li>
                 <li className="text-slate-400">+52 331 532 7985</li>

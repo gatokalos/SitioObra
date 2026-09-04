@@ -80,18 +80,12 @@ const MINIVERSE_KEYWORDS = {
 };
 
 const STARTER_FAQ_PROMPTS = [
-  '¿Se puede cambiar algo con tan solo observarlo — incluyéndome a mí misma?',
-  '¿Qué hay realmente detrás de las nueve formas de esta obra transmedia?',
-  '¿Cómo se usa la Inteligencia Artificial en este sitio?',
-  '¿Por qué a veces es más fácil aislarse que pedir ayuda?',
-  '¿Qué es la realidad?',
-  '¿Qué diferencia hay entre medir cuánta gente ve una obra y saber si cambió algo en el público?',
-  '¿Qué pasa cuando las mismas personas que nos quieren también nos lastiman?',
-  '¿Quién es Silvestre y qué le pasa en la obra?',
-  '¿Se puede vivir con depresión durante años sin darse cuenta?',
-  '¿Qué se hace con la voz que insiste en que uno no es suficiente?',
-  '¿Qué se esconde detrás de la persona que parece estar bien todo el tiempo?',
-  '¿En qué momento cuidar a alguien se vuelve querer controlarlo?',
+  '¿Por qué una obra tendría que ser una sola cosa?',
+  '¿Qué cambia en una obra cuando la persona que la mira también puede modificarla?',
+  '¿Qué hay realmente detrás de las nueve formas de #GatoEncerrado?',
+  '¿Una persona puede vivir la misma experiencia desde varios lugares a la vez?',
+  '¿Y si lo importante de una obra no estuviera completamente dentro de ella?',
+  'Cuando decimos que “hay gato encerrado”, ¿qué estamos esperando exactamente?',
     
 ];
 

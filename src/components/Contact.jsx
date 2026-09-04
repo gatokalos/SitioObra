@@ -324,7 +324,7 @@ const Contact = () => {
           className="text-center mb-16"
         >
           <p className="text-xs uppercase tracking-[0.4em] text-slate-400/70 mb-4">
-  Contacto, Prensa & Créditos
+  Salida
 </p>
 
 <h2 className="font-display text-4xl md:text-5xl font-medium mb-6 text-gradient italic">

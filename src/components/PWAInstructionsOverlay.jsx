@@ -68,12 +68,9 @@ const PWAInstructionsOverlay = ({
         aria-modal="true"
         aria-label="Instrucciones para instalar #GatoEncerrado como app"
       >
-        <div className="px-4 py-3 text-slate-100">
+        <div className="min-h-10 px-4 py-3 text-center text-slate-100">
           <p className="text-[0.62rem] font-semibold uppercase tracking-[0.22em] text-cyan-200/80">
             {eyebrow}
-          </p>
-          <p className="mt-0.5 text-xs text-slate-400">
-            {subtitle}
           </p>
         </div>
 
@@ -153,18 +150,21 @@ const PWAInstructionsOverlay = ({
       </div>
       </div>
 
-      {/* Cerrar vive junto al # 3D (que sigue en su lugar debajo del sheet),
-          no arriba con el copy — la cruz que cierra está donde está la cosa
-          que se está explicando, no separada de ella (Carlos, 2026-08-25). */}
+      {/* Cierre editorial bajo el hashtag, sobre el mismo eje que los pasos. */}
+      <div
+        className="pointer-events-none fixed inset-x-0 z-[10000] mx-auto flex w-full max-w-md flex-col items-center gap-2 px-4 text-center"
+        style={{ bottom: 'calc(env(safe-area-inset-bottom, 0px) + 0.5rem)' }}
+      >
+        <p className="text-xs leading-relaxed text-slate-400">{subtitle}</p>
       <button
         type="button"
         onClick={onClose}
-        className="fixed right-4 z-[10000] inline-flex h-9 w-9 items-center justify-center rounded-full border border-white/10 bg-white/5 text-slate-200 transition hover:bg-white/10 hover:text-white"
-        style={{ bottom: 'calc(env(safe-area-inset-bottom, 0px) + 1.25rem)' }}
+        className="pointer-events-auto inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-white/10 bg-white/5 text-slate-200 transition hover:bg-white/10 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/60"
         aria-label="Cerrar instrucciones"
       >
         <X size={18} />
       </button>
+      </div>
     </>,
     document.body
   );

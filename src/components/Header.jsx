@@ -695,7 +695,7 @@ const Header = ({
     ...(showObraDestacadaNav ? [{ name: 'Créditos', href: '#team' }] : []),
     ...(showObraDestacadaNav ? [{ name: 'Galería fractal', href: '#instagram' }] : []),
     ...(showBeforeLeavingNav ? [{ name: 'Antes de irte', href: '#conoce-sistema' }] : []),
-    { name: 'Contacto', href: '#contact' },
+    { name: 'Salida', href: '#contact' },
   ];
   const mobileMenuItems = [
     { name: 'Primera fila', href: '#hero', description: '#UniversoGatoEncerrado',
@@ -761,7 +761,7 @@ const Header = ({
     ...(showBeforeLeavingNav
       ? [{ name: 'Antes de irte', href: '#conoce-sistema', description: '#NuestroModelo' }]
       : []),
-    { name: 'Contacto', href: '#contact', description: '#CuriosidadGatuna' },
+    { name: 'Salida', href: '#contact', description: '#CuriosidadGatuna' },
   ];
 
   const activeSectionHref = useActiveSectionHref(mobileMenuItems.map((item) => item.href));

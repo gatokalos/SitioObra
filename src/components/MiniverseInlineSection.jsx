@@ -39,7 +39,7 @@ const resolveInitialTab = (search = '', availableGat = 0) => {
   return availableGat > 0 ? 'experiences' : 'escaparate';
 };
 
-// "Antes de irte" — último espacio antes de Contacto, después de Team
+// "Antes de irte" — último espacio antes de Salida, después de Team
 // ("Créditos de la función"). No depende de sesión a propósito: el botón es
 // de descubrimiento, no de autenticación. Alianza Social (antes solo para
 // autenticados, como sección hermana en App.jsx) ahora vive DENTRO de este
