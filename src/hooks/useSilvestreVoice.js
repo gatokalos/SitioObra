@@ -890,9 +890,15 @@ export const useSilvestreVoice = () => {
         const backendMessage =
           typeof error?.apiError?.message === 'string' ? error.apiError.message : '';
         if (error?.status === 429) {
+          // Un 429 puede venir del rate limit por IP (que responde { error })
+          // o de la cuota agotada de OpenAI (que responde { message }). Decir
+          // "sin cuota" cuando solo hubo demasiadas peticiones asusta sin razón.
+          const rateLimitMessage =
+            typeof error?.apiError?.error === 'string' ? error.apiError.error : '';
           setMicError(
             backendMessage ||
-              'La IA alcanzó su límite de cuota. Intenta más tarde mientras se restablece el servicio.'
+              rateLimitMessage ||
+              'Demasiadas peticiones en poco tiempo. Espera un momento e intenta de nuevo.'
           );
         } else if (error?.status >= 500) {
           serviceUnavailableUntilRef.current = Date.now() + SERVICE_UNAVAILABLE_COOLDOWN_MS;
