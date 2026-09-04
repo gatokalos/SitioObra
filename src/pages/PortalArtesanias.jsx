@@ -17,7 +17,7 @@ import VitranaQuestionReveal from '@/components/portal/VitranaQuestionReveal';
 import ResonanceModal, { LEVEL2_QUESTIONS, buildL1Acknowledgment } from '@/components/portal/ResonanceModal';
 import { readResonanceProgress } from '@/lib/bitacoraShared';
 import VideoNarrativeAutoplay from '@/components/VideoNarrativeAutoplay';
-import { RESONANCE_BRIDGE_VIDEO_ENABLED } from '@/components/transmedia/transmediaConstants';
+import { RESONANCE_BRIDGE_VIDEO_ENABLED, showcaseDefinitions } from '@/components/transmedia/transmediaConstants';
 import PulseReactionCard from '@/components/portal/PulseReactionCard';
 import { recordShowcaseLike } from '@/services/showcaseLikeService';
 import { supabase } from '@/lib/supabaseClient';
@@ -97,7 +97,7 @@ const ARTESANIAS_COLLABORATORS = [
   },
 ];
 const ARTESANIAS_NOTA_AUTORAL = {
-  title: '#Artesanías',
+  title: '#ElSentidoEnLasManos',
   verse: 'Tomé un objeto.\nSu forma me sostuvo.\nSu sentido calmó mis manos.',
 };
 const ARTESANIAS_TILE = {
@@ -106,13 +106,6 @@ const ARTESANIAS_TILE = {
   text: '#fef3c7',
   accent: '#fde68a',
   background: 'rgba(44,20,30,0.72)',
-};
-const ARTESANIAS_IA_PROFILE = {
-  type: 'IA ligera para pistas contextuales + WebAR.',
-  interaction: '1 activación guiada por objeto (escaneo breve).',
-  tokensRange: '90-140 tokens por activación.',
-  coverage: 'Cubierto por suscriptores; no hay costo directo por usuario.',
-  footnote: 'La IA solo guia la pista; el ritual lo completa quien sostiene la taza.',
 };
 const ARTESANIAS_BLOG_KEYS = [
   'lataza',
@@ -630,8 +623,8 @@ const PortalArtesanias = () => {
           })()}
           <div className="lg:hidden">
             <IAInsightCard
-              {...ARTESANIAS_IA_PROFILE}
-              title="Información del artefacto"
+              {...showcaseDefinitions.lataza.iaProfile}
+              title="Interacción esperada"
               compact
             />
           </div>
@@ -657,8 +650,8 @@ const PortalArtesanias = () => {
           </div>
           <div className="order-4 hidden lg:block">
             <IAInsightCard
-              {...ARTESANIAS_IA_PROFILE}
-              title="Información del artefacto"
+              {...showcaseDefinitions.lataza.iaProfile}
+              title="Interacción esperada"
               compact
             />
           </div>

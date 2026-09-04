@@ -17,7 +17,7 @@ import VitranaQuestionReveal from '@/components/portal/VitranaQuestionReveal';
 import ResonanceModal, { LEVEL2_QUESTIONS, buildL1Acknowledgment } from '@/components/portal/ResonanceModal';
 import { readResonanceProgress } from '@/lib/bitacoraShared';
 import VideoNarrativeAutoplay from '@/components/VideoNarrativeAutoplay';
-import { RESONANCE_BRIDGE_VIDEO_ENABLED } from '@/components/transmedia/transmediaConstants';
+import { RESONANCE_BRIDGE_VIDEO_ENABLED, showcaseDefinitions } from '@/components/transmedia/transmediaConstants';
 import PulseReactionCard from '@/components/portal/PulseReactionCard';
 import { recordShowcaseLike } from '@/services/showcaseLikeService';
 import { supabase } from '@/lib/supabaseClient';
@@ -52,13 +52,6 @@ const CINE_TILE = {
   text: '#dbeafe',
   accent: '#bfdbfe',
   background: 'rgba(16,27,54,0.75)',
-};
-const CINE_IA_PROFILE = {
-  type: 'GPT-4o mini + subtitulos vivos y notas criticas asistidas.',
-  interaction: 'Notas criticas y captions contextuales por espectador.',
-  tokensRange: '200-450 tokens por visita.',
-  coverage: 'Incluido en la activacion de huellas.',
-  footnote: 'La IA acompaña la mirada; la decision sigue siendo humana.',
 };
 const QUIRON_DATA = {
   title: 'Quirón',
@@ -536,8 +529,8 @@ const PortalCine = () => {
             </div>
             <div className="bg-slate-950/80 px-5 pt-5 lg:hidden">
               <IAInsightCard
-                {...CINE_IA_PROFILE}
-                title="Información del artefacto"
+                {...showcaseDefinitions.copycats.iaProfile}
+                title="Interacción esperada"
                 compact
               />
             </div>
@@ -559,8 +552,8 @@ const PortalCine = () => {
           </div>
           <div className="order-4 hidden lg:block">
             <IAInsightCard
-              {...CINE_IA_PROFILE}
-              title="Información del artefacto"
+              {...showcaseDefinitions.copycats.iaProfile}
+              title="Interacción esperada"
               compact
             />
           </div>

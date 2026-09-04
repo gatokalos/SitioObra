@@ -23,7 +23,7 @@ import VitranaQuestionReveal from '@/components/portal/VitranaQuestionReveal';
 import ResonanceModal, { LEVEL2_QUESTIONS, buildL1Acknowledgment } from '@/components/portal/ResonanceModal';
 import { readResonanceProgress } from '@/lib/bitacoraShared';
 import VideoNarrativeAutoplay from '@/components/VideoNarrativeAutoplay';
-import { RESONANCE_BRIDGE_VIDEO_ENABLED } from '@/components/transmedia/transmediaConstants';
+import { RESONANCE_BRIDGE_VIDEO_ENABLED, showcaseDefinitions } from '@/components/transmedia/transmediaConstants';
 import PulseReactionCard from '@/components/portal/PulseReactionCard';
 import { recordShowcaseLike } from '@/services/showcaseLikeService';
 import { supabase } from '@/lib/supabaseClient';
@@ -233,14 +233,6 @@ const MOVEMENT_DIOSAS_GALLERY = [
 const MOVEMENT_FEATURED_NAME = 'Trasuntos divinos';
 const MOVEMENT_FEATURED_SHARED_COPY =
   'Trasuntos divinos es una obra que también funciona como taller — requiere bailarines, diseñadoras de avatares digitales, ciudades que abran su espacio público. Cada residencia convierte el cuerpo en territorio y lo siembra, en realidad aumentada, donde ocurrió.';
-const MOVEMENT_IA_PROFILE = {
-  type: 'Actualmente no usa IA en producción.',
-  interaction:
-    'Registro en motion capture (mocap), traducción a avatar digital y activación en sitio mediante realidad aumentada.',
-  tokensRange: 'Sin consumo de IA por visitante en esta etapa.',
-  coverage: 'Producción técnica y activación territorial gestionadas por el equipo de Movimiento.',
-  footnote: 'Cuando integremos módulos de IA reales, esta ficha se actualizará con métricas verificables.',
-};
 const MOVEMENT_NOTA_AUTORAL = {
   title: '#CaerEsDanzar',
   verse: 'Mi cuerpo colapsará;\nno sin danza\nni dolor bonito.',
@@ -756,8 +748,8 @@ const PortalMovimiento = () => {
 
           <div className="lg:hidden">
             <IAInsightCard
-              {...MOVEMENT_IA_PROFILE}
-              title="Información del artefacto"
+              {...showcaseDefinitions.miniversoMovimiento.iaProfile}
+              title="Interacción esperada"
               compact
             />
           </div>
@@ -860,8 +852,8 @@ const PortalMovimiento = () => {
           </div>
           <div className="hidden lg:block">
             <IAInsightCard
-              {...MOVEMENT_IA_PROFILE}
-              title="Información del artefacto"
+              {...showcaseDefinitions.miniversoMovimiento.iaProfile}
+              title="Interacción esperada"
               compact
             />
           </div>

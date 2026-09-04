@@ -82,7 +82,7 @@ const CreatorWelcomeSection = ({ hasEnteredUniverse = false }) => {
               onClick={handleEnter}
               className="ge-chip-action ge-mobile-cta-width ge-chip-action--primary mx-auto"
             >
-              {hasEnteredUniverse ? '¿Reestrenamos?' : '¿Comenzamos?'}
+              {hasEnteredUniverse ? '¿Reestrenamos el primer acto?' : '¿Comenzamos?'}
             </Button>
             {hasEnteredUniverse ? (
               <p className="mx-auto mt-3 max-w-sm text-center text-[0.72rem] leading-relaxed text-slate-400/80">

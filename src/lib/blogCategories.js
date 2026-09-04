@@ -7,7 +7,7 @@ export const BLOG_CATEGORY_CONFIG = {
     id: 'curaduria',
     label: 'Curaduría Reflexiva',
     summary:
-      'Perspectivas interdisciplinarias escritas por el equipo curatorial y colaboradores invitados.',
+      'Perspectivas diversas escritas por el equipo curatorial y colaboradores invitados.',
     ctaLabel: 'Entrar en Curaduría',
     readingTime: 'Tiempo variable',
     keywords: ['curaduria', 'curatorial', 'critica', 'ensayo', 'analisis', 'reflexiva'],
@@ -23,7 +23,7 @@ export const BLOG_CATEGORY_CONFIG = {
   },
   backstage: {
     id: 'backstage',
-    label: 'Detrás de Cámaras',
+    label: 'Procesos Creativos',
     summary:
       'Noticias, avances y crónicas del proceso creativo: apps, novela, ensayo técnico, producción y archivos del montaje.',
     ctaLabel: 'Ver proceso',

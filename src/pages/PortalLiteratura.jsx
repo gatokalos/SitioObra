@@ -15,7 +15,7 @@ import VitranaQuestionReveal from '@/components/portal/VitranaQuestionReveal';
 import ResonanceModal, { LEVEL2_QUESTIONS, buildL1Acknowledgment } from '@/components/portal/ResonanceModal';
 import { readResonanceProgress } from '@/lib/bitacoraShared';
 import VideoNarrativeAutoplay from '@/components/VideoNarrativeAutoplay';
-import { RESONANCE_BRIDGE_VIDEO_ENABLED } from '@/components/transmedia/transmediaConstants';
+import { RESONANCE_BRIDGE_VIDEO_ENABLED, showcaseDefinitions } from '@/components/transmedia/transmediaConstants';
 import PulseReactionCard from '@/components/portal/PulseReactionCard';
 import LiteraturaAppOverlay from '@/components/novela/LiteraturaAppOverlay';
 import { recordShowcaseLike } from '@/services/showcaseLikeService';
@@ -29,7 +29,7 @@ import { resolvePortalRoute } from '@/lib/miniversePortalRegistry';
 
 
 const LITERATURA_NOTA_AUTORAL = {
-  title: '#Literatura',
+  title: '#LaPreguntaInsiste',
   verse: 'Escribí para entender\ny la página\nme abrió otra pregunta.',
 };
 const LITERATURA_TILE = {
@@ -38,13 +38,6 @@ const LITERATURA_TILE = {
   text: '#ede9fe',
   accent: '#ddd6fe',
   background: 'rgba(26,24,60,0.74)',
-};
-const LITERATURA_IA_PROFILE = {
-  type: 'GPT-4o mini + voz sintética para fragmentos.',
-  interaction: 'Guía de lectura y acompañamiento breve por capítulo.',
-  tokensRange: '150-320 tokens por fragmento leído.',
-  coverage: 'Cubierto por suscriptores; lectura sin costo adicional.',
-  footnote: 'La IA susurra; la historia sigue siendo tuya.',
 };
 const LITERATURA_COLLABORATORS = [
   {
@@ -442,8 +435,8 @@ const PortalLiteratura = () => {
               <div className="px-6 pt-5 pb-6 space-y-4">
                 <div className="lg:hidden">
                   <IAInsightCard
-                    {...LITERATURA_IA_PROFILE}
-                    title="Información del artefacto"
+                    {...showcaseDefinitions.miniversoNovela.iaProfile}
+                    title="Interacción esperada"
                     compact
                   />
                 </div>
@@ -468,8 +461,8 @@ const PortalLiteratura = () => {
           </div>
           <div className="order-4 hidden lg:block">
             <IAInsightCard
-              {...LITERATURA_IA_PROFILE}
-              title="Información del artefacto"
+              {...showcaseDefinitions.miniversoNovela.iaProfile}
+              title="Interacción esperada"
               compact
             />
           </div>

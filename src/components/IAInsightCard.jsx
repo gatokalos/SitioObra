@@ -4,14 +4,22 @@ import { useAuth } from '@/contexts/SupabaseAuthContext';
 import { useToast } from '@/components/ui/use-toast';
 
 const IAInsightCard = ({
-  title = 'Información del artefacto',
+  title = 'Interacción esperada',
   type,
   interaction,
   tokensRange,
   coverage,
+  // Avisos reales de uso del artefacto, en vez de las 4 props de arriba —
+  // reemplazo miniverso por miniverso de la ficha de artefacto real, en vez
+  // del perfil de "tipo de IA / tokens / costos" que resultó ser alucinación
+  // de un GPT viejo. Son avisos sueltos ("necesitas tu cámara"), no
+  // instrucciones numeradas — contar el mecanismo paso a paso hace spoiler
+  // de lo que se supone que cada quien descubre al vivirlo (Carlos,
+  // 2026-08-27). Convive con type/interaction/etc. mientras dura la
+  // migración: los miniversos ya migrados pasan `notes`, los que faltan
+  // siguen con las props de siempre.
+  notes,
   compact = false,
-  rewardLabel,
-  minRequired,
   // Modo "viajar" (cuaderno holográfico): cuando travelRequiredGat viene
   // definido, aparece un botón salvaguarda — anónimo → pide autenticarse;
   // autenticado con balance suficiente → onTravel(); autenticado sin balance
@@ -43,7 +51,8 @@ const IAInsightCard = ({
   const isOpen = controlledIsOpen ?? internalIsOpen;
   const toggleOpen = onToggle ?? (() => setInternalIsOpen((prev) => !prev));
   const isTravelMode = typeof travelRequiredGat === 'number';
-  const hasBody = type || interaction || tokensRange || coverage || rewardLabel || minRequired;
+  const hasNotes = Array.isArray(notes) && notes.length > 0;
+  const hasBody = hasNotes || type || interaction || tokensRange || coverage;
 
   const getLocalBalance = () => {
     if (typeof window === 'undefined') return 0;
@@ -115,6 +124,15 @@ const IAInsightCard = ({
 
       {isOpen ? (
         <div className="mt-4 space-y-2 text-purple-100/90">
+          {hasNotes ? (
+            <ul className="space-y-2">
+              {notes.map((note, index) => (
+                <li key={index} className="leading-relaxed">
+                  {note}
+                </li>
+              ))}
+            </ul>
+          ) : null}
           {type ? (
             <div className="flex items-start gap-2 leading-relaxed">
               <Cpu size={16} className="mt-0.5 text-purple-200" />
@@ -151,23 +169,6 @@ const IAInsightCard = ({
               <strong>Costos cubiertos:</strong>{' '}
               <span>{coverage}</span>
             </div>
-            </div>
-          ) : null}
-
-          {rewardLabel ? (
-            <div className="flex items-start gap-2 leading-relaxed">
-              <Sparkles size={16} className="mt-0.5 text-amber-200 shrink-0" />
-              <p>
-                <strong>Energía del mini-verso:</strong> {rewardLabel}
-              </p>
-            </div>
-          ) : null}
-          {minRequired ? (
-            <div className="flex items-start gap-2 leading-relaxed">
-              <ShieldCheck size={16} className="mt-0.5 text-purple-200 shrink-0" />
-              <p>
-                <strong>Mínima requerida:</strong> {minRequired}
-              </p>
             </div>
           ) : null}
 

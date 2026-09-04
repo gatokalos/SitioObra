@@ -23,8 +23,6 @@ const GatokensRevealModal = ({
   onClose,
   isUmbral = false,
   onProvoca,
-  onPlayScene,
-  recommendedShowcaseId,
 }) => {
   const [balance, setBalance] = useState(null);
   const [isRevealAcknowledged, setIsRevealAcknowledged] = useState(false);
@@ -85,13 +83,6 @@ const GatokensRevealModal = ({
     dispatchRevealAck('gatokens-modal-provoca');
     onProvoca?.();
   }, [dispatchRevealAck, onProvoca]);
-
-  const handlePlayScene = useCallback(() => {
-    if (!recommendedShowcaseId) return;
-    dispatchRevealAck('gatokens-modal-scene');
-    onClose?.();
-    onPlayScene?.(recommendedShowcaseId);
-  }, [dispatchRevealAck, onClose, onPlayScene, recommendedShowcaseId]);
 
   // El pulso es breve a propósito: solo dura lo justo para que el usuario
   // note que la moneda (aquí) y el chip de energía (arriba, en el header)
@@ -163,12 +154,10 @@ const GatokensRevealModal = ({
               aria-modal="true"
               aria-labelledby="gatokens-modal-title"
               variants={panelVariants}
-              className="relative z-10 flex w-full max-w-md flex-col items-center px-5 py-10 text-center"
+              className="font-display relative z-10 flex w-full max-w-md flex-col items-center px-5 py-10 text-center"
             >
-              {/* Antes solo se podía cerrar tocando el fondo borroso o con
-                  Escape — en móvil ninguno de los dos es obvio, y si este
-                  modal reaparece tras haber usado ya el CTA, el usuario se
-                  queda sin forma clara de salir. */}
+              {/* En móvil, tocar el fondo o usar Escape no es una salida
+                  evidente; el cierre explícito evita atrapar al usuario. */}
               <button
                 type="button"
                 onClick={onClose}
@@ -198,33 +187,9 @@ const GatokensRevealModal = ({
                 id="gatokens-modal-title"
                 className="relative mt-9 text-3xl font-medium leading-tight tracking-[-0.02em] text-white sm:text-4xl"
               >
-                La obra ahora sabe<br />que estás aquí.
+                La obra sabe<br />que estás aquí.
               </h2>
 
-              <button
-                type="button"
-                onClick={handlePlayScene}
-                disabled={!recommendedShowcaseId}
-                className="
-                  group relative mt-10 inline-flex min-h-14 w-full max-w-sm items-center justify-center gap-3 overflow-hidden rounded-full
-                  border border-violet-200/25 bg-white/[0.06] px-7 py-4 text-base font-semibold text-white
-                  shadow-[0_16px_50px_rgba(109,40,217,0.28)] backdrop-blur-md
-                  transition-all duration-300 hover:border-violet-200/45 hover:bg-white/[0.1]
-                  hover:shadow-[0_18px_58px_rgba(139,92,246,0.4)] hover:scale-[1.015]
-                  active:scale-[0.985] disabled:cursor-not-allowed disabled:opacity-45
-                "
-              >
-                <span
-                  aria-hidden="true"
-                  className="absolute inset-0 bg-gradient-to-r from-[#1f2f63]/55 via-[#6e30ab]/55 to-[#d91f8b]/55 opacity-80 transition-opacity duration-300 group-hover:opacity-100"
-                />
-                <span className="relative flex h-8 w-8 items-center justify-center rounded-full border border-white/20 bg-black/20">
-                  <svg viewBox="0 0 24 24" fill="currentColor" className="h-4 w-4 translate-x-px" focusable="false">
-                    <path d="M8 5v14l11-7z" />
-                  </svg>
-                </span>
-                <span className="relative">Esta escena es tuya</span>
-              </button>
             </motion.div>
           ) : (
           /* panel normal de GATokens */

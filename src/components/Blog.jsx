@@ -676,6 +676,15 @@ const Blog = ({ posts = [], isLoading = false, error = null, showBuscador = fals
   const FAQ_PAGE_SIZE = 3;
   const faqPageCount = Math.ceil(STARTER_FAQ_PROMPTS.length / FAQ_PAGE_SIZE);
   const faqVisiblePrompts = STARTER_FAQ_PROMPTS.slice(faqPage * FAQ_PAGE_SIZE, (faqPage + 1) * FAQ_PAGE_SIZE);
+  const camerinoLightState = faqIsListening
+    ? 'listening'
+    : faqStatus === 'searching' || faqStatus === 'streaming'
+      ? 'working'
+      : faqStatus === 'done'
+        ? 'complete'
+        : faqStatus === 'error'
+          ? 'error'
+          : 'idle';
 
   useEffect(() => {
     if (!showBuscador || faqInputMode !== 'text') return undefined;
@@ -683,20 +692,24 @@ const Blog = ({ posts = [], isLoading = false, error = null, showBuscador = fals
     return () => clearTimeout(timer);
   }, [faqInputMode, showBuscador]);
 
-  // Handoff de pregunta prellenada: los botones "Preguntar al Apuntador" de
-  // los portales (cuando un miniverso aún no tiene artículo propio) navegan
-  // a /?apuntador_q=<pregunta>#dialogo-critico. Se toma una sola vez al
-  // montar para no pisar lo que la persona ya esté escribiendo.
+  // Handoff de pregunta prellenada: los botones "Preguntar al Apuntador" navegan
+  // a /?apuntador_q=<pregunta>#dialogo-critico.
+  //
+  // Reacciona al cambio de query, no solo al montaje: Provoca vive en la misma
+  // ruta que el buscador, así que al navegar desde ahí este componente nunca se
+  // remonta y un efecto con deps [] no volvería a correr. El ref evita pisar lo
+  // que la persona esté escribiendo — solo aplica cuando la pregunta cambia.
+  const lastAppliedPrefillRef = useRef(null);
   useEffect(() => {
     const params = new URLSearchParams(location.search);
     const prefill = params.get('apuntador_q');
-    if (!prefill) return;
+    if (!prefill || prefill === lastAppliedPrefillRef.current) return;
+    lastAppliedPrefillRef.current = prefill;
     setFaqQuery(prefill);
     setFaqInputMode('text');
     const timer = setTimeout(() => { faqInputRef.current?.focus(); }, 600);
     return () => clearTimeout(timer);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [location.search]);
 
   const stopFaqListening = useCallback(({ discard = false } = {}) => {
     if (faqMicTimeoutRef.current) {
@@ -1120,12 +1133,12 @@ const Blog = ({ posts = [], isLoading = false, error = null, showBuscador = fals
             viewport={{ once: true }}
             className="text-center mb-16"
           >
-            <p className="text-xs uppercase tracking-[0.4em] text-slate-400/70 mb-4">#PENSAMIENTOCRÍTICO</p>
+            <p className="text-xs uppercase tracking-[0.4em] text-slate-400/70 mb-4">#INTROSPECCIÓN</p>
             <h2 className="font-display text-4xl md:text-5xl font-medium mb-6 text-gradient italic">
-              Transforma tu mente<br />en escenario
+              Cambia de lugar<br />en la obra
             </h2>
             <p className="text-lg text-slate-300/80 max-w-3xl mx-auto leading-relaxed font-light">
-              Un espacio de diálogo reflexivo, comunidad y poética donde la mirada cambia de dirección. Aquí, quien parecía ocupar la butaca se descubre bajo el reflector de sus propias preguntas.
+              Un espacio de curaduría reflexiva, expansiones narrativas y procesos creativos donde la mirada cambia de dirección. Aquí, quien parecía ocupar la butaca se descubre frente al espejo de sus propias preguntas.
             </p>
           </motion.div>
 
@@ -1178,7 +1191,7 @@ const Blog = ({ posts = [], isLoading = false, error = null, showBuscador = fals
                       </div>
 
                       <p className="max-w-3xl text-sm leading-relaxed text-slate-300/80 md:text-base">
-                        Consulta al apuntador y sigue una pregunta hasta donde te lleve. Puedes tomar una de la comunidad o dejar la tuya para los demás.
+                        Haz del camerino tu intermedio: consulta al apuntador, toma una pregunta del vestíbulo o deja la tuya para quien venga después.
                       </p>
 
                       <div className="space-y-2">
@@ -1193,14 +1206,30 @@ const Blog = ({ posts = [], isLoading = false, error = null, showBuscador = fals
                       </div>
 
                       <div className="grid gap-5 lg:grid-cols-[minmax(300px,0.88fr)_minmax(0,1.12fr)]">
-                        <section className="camerino-apuntador-panel order-1 rounded-2xl border p-5 backdrop-blur-sm lg:order-1">
+                        <section className="camerino-apuntador-panel relative order-1 overflow-hidden rounded-2xl border p-5 backdrop-blur-sm lg:order-1">
+                          <div
+                            className={`camerino-mirror-lights camerino-mirror-lights--${camerinoLightState}`}
+                            aria-hidden="true"
+                          >
+                            {['left', 'right'].map((side) => (
+                              <span key={side} className={`camerino-mirror-rail camerino-mirror-rail--${side}`}>
+                                {Array.from({ length: 4 }, (_, index) => (
+                                  <i
+                                    key={index}
+                                    className="camerino-mirror-bulb"
+                                    style={{ '--bulb-index': index }}
+                                  />
+                                ))}
+                              </span>
+                            ))}
+                          </div>
                           <p className="mb-4 text-[10px] uppercase tracking-[0.3em] text-violet-200/65">
                             El apuntador
                           </p>
 
                           {faqInputMode === 'voice' ? (
                             <ObraConversationControls
-                              ctaLabel="Pregunta / Comenta"
+                              ctaLabel="Pregunta algo"
                               listeningLabel="Pulsa otra vez para terminar"
                               promptLabel="Pulsa y habla con el apuntador"
                               errorTitle="El apuntador no pudo escucharte"
@@ -1266,7 +1295,7 @@ const Blog = ({ posts = [], isLoading = false, error = null, showBuscador = fals
                         <section className="order-3 rounded-2xl border border-white/10 bg-black/15 p-5 lg:order-2">
                           <div className="mb-4 flex items-center justify-between gap-3">
                             <div>
-                              <p className="text-[10px] uppercase tracking-[0.3em] text-violet-200/65">Mesa de notas</p>
+                              <p className="text-[10px] uppercase tracking-[0.3em] text-violet-200/65">Voces del vestíbulo</p>
                               <p className="mt-1 text-xs text-slate-400">Preguntas de la comunidad para dialogar, recordar y continuar con la función.</p>
                             </div>
                             <button
@@ -1299,21 +1328,6 @@ const Blog = ({ posts = [], isLoading = false, error = null, showBuscador = fals
                           aria-live="polite"
                           className="relative order-2 -mx-5 overflow-hidden border-y border-violet-200/20 bg-violet-950/10 lg:order-3 lg:col-span-2 lg:mx-0 lg:rounded-2xl lg:border lg:border-violet-200/25 lg:bg-black/35"
                         >
-                          <div
-                            aria-hidden="true"
-                            className="pointer-events-none absolute inset-0 opacity-5 bg-no-repeat bg-center"
-                            style={{
-                              backgroundImage:
-                                'linear-gradient(rgba(5,5,10,0.85), rgba(5,5,10,0.85)), url(/assets/bg-logo.png)',
-                              backgroundBlendMode: 'screen',
-                              filter: 'grayscale(0.25)',
-                              // Tamaño fijo (no atado a bg-[length:auto_100%] como en
-                              // AlianzaSocial): esta tarjeta crece con el largo de la
-                              // respuesta del RAG, y ese patrón estira el logo hasta
-                              // volverlo irreconocible en respuestas largas.
-                              backgroundSize: '420px',
-                            }}
-                          />
                           {faqStatus === 'searching' && (
                             <div className="px-4 py-6 md:px-6">
                               <p className="mb-3 text-[10px] uppercase tracking-[0.3em] text-violet-200/65">Nota del apuntador</p>
@@ -1393,7 +1407,7 @@ const Blog = ({ posts = [], isLoading = false, error = null, showBuscador = fals
                                 onClick={() => document.querySelector('#contact')?.scrollIntoView({ behavior: 'smooth', block: 'start' })}
                                 className="ge-chip-action ge-chip-action--secondary ge-chip-action--compact"
                               >
-                                Compartir algo de tu autoría →
+                                ¿Nos compartes algo de tu autoría? →
                               </button>
                             </div>
                           )}

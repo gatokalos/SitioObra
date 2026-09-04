@@ -685,7 +685,7 @@ const Header = ({
 
   const menuItems = [
     { name: 'Primera fila', href: '#hero' },
-    ...(showTerceraLlamadaNav ? [{ name: 'Última llamada', href: '#bienvenida-creador' }] : []),
+    ...(showTerceraLlamadaNav ? [{ name: 'Tercera llamada', href: '#bienvenida-creador' }] : []),
     ...(showTransmediaNav ? [{ name: 'Miniversos', href: '#transmedia' }] : []),
     ...(showAllianceNav ? [{ name: 'Alianza', href: '#apoya' }] : []),
     ...(showIntermedioNav ? [{ name: 'Intermedio', href: '#blog-contribuye' }] : []),
@@ -698,17 +698,17 @@ const Header = ({
     { name: 'Contacto', href: '#contact' },
   ];
   const mobileMenuItems = [
-    { name: 'Primera fila', href: '#hero', description: '#FrenteAlUniverso',
+    { name: 'Primera fila', href: '#hero', description: '#UniversoGatoEncerrado',
  },
     ...(showTerceraLlamadaNav
-      ? [{ name: 'Última llamada', href: '#bienvenida-creador', description: '#PreguntasPendientes' }]
+      ? [{ name: 'Tercera llamada', href: '#bienvenida-creador', description: '#TeEstabaEsperando' }]
       : []),
     ...(showTransmediaNav
       ? [
           {
-            name: 'La obra toma forma',
+            name: 'Segundo acto',
             href: '#transmedia',
-            description: '#narrativatransmedia',
+            description: '#LaObraTomaForma',
             secondary: TRANSMEDIA_SECONDARY_ITEMS,
           },
         ]
@@ -718,14 +718,14 @@ const Header = ({
           {
             name: 'Intermedio',
             href: '#blog-contribuye',
-            description: '#PensamientoCrítico',
+            description: '#Introspección',
             ...(showCuradoriaNav
               ? {
                   secondary: [
                     { label: 'Entra al Camerino', href: '#dialogo-critico', action: 'show-buscador' },
                     { label: 'Curaduría Reflexiva', href: '#dialogo-critico?focus=curaduria' },
                     { label: 'Expansiones Narrativas', href: '#dialogo-critico?focus=expansiones' },
-                    { label: 'Detrás de Cámaras', href: '#dialogo-critico?focus=backstage' },
+                    { label: 'Procesos Creativos', href: '#dialogo-critico?focus=backstage' },
                   ],
                 }
               : {}),
@@ -735,10 +735,10 @@ const Header = ({
     ...(showPerspectivasNav
       ? [
           {
-            name: 'Segundo acto',
+            name: 'Acto final',
             href: '#provoca',
-            description: '#FORMASDEDECIRLO',
-            secondary: [{ label: 'Formas de decirlo', href: '#provoca' }],
+            description: '#FormasDeDecirlo',
+            secondary: [{ label: 'La Réplica', href: '#provoca' }],
           },
         ]
       : []),
@@ -759,9 +759,9 @@ const Header = ({
         }]
       : []),
     ...(showBeforeLeavingNav
-      ? [{ name: 'Antes de irte', href: '#conoce-sistema', description: '#Nuestromodelo' }]
+      ? [{ name: 'Antes de irte', href: '#conoce-sistema', description: '#NuestroModelo' }]
       : []),
-    { name: 'Contacto', href: '#contact' },
+    { name: 'Contacto', href: '#contact', description: '#CuriosidadGatuna' },
   ];
 
   const activeSectionHref = useActiveSectionHref(mobileMenuItems.map((item) => item.href));

@@ -423,37 +423,6 @@ export const buildShowcaseEnergyFromBoosts = (baseEnergyByShowcase = {}, boosts 
   return next;
 };
 
-export const buildShowcaseRewardLabel = (entry) => {
-  if (!entry) return null;
-  const reward = Number.isFinite(entry.reward) ? Math.max(entry.reward, 0) : 0;
-  return entry.claimed
-    ? `MINI-VERSO LEÍDO · +${reward} GAT`
-    : null;
-};
-
-export const buildShowcaseEnergyState = (availableGAT) => {
-  const safeAvailable = Number.isFinite(availableGAT) ? Math.max(Math.trunc(availableGAT), 0) : 0;
-  if (safeAvailable <= 0) {
-    return {
-      label: 'Energía agotada',
-      amount: '0 GAT',
-      className: 'text-rose-300/95',
-    };
-  }
-  return {
-    label: 'Energía disponible',
-    amount: `${safeAvailable} GAT`,
-    className: 'text-emerald-200/95',
-  };
-};
-
-export const buildShowcaseMinRequiredCopy = (showcaseId) => {
-  const required = Number(SHOWCASE_REQUIRED_GAT[showcaseId] ?? 0);
-  if (!Number.isFinite(required) || required <= 0) {
-    return 'mínima requerida 0 GAT';
-  }
-  return `mínima requerida ${Math.max(Math.trunc(required), 0)} GAT`;
-};
 export const MINIVERSO_VERSE_EFFECTS = {
   miniversoNovela: 'flip',
   miniversoSonoro: 'flip',
@@ -688,17 +657,17 @@ export const showcaseDefinitions = {
                 </div>
       </>
     ),
-    cartaTitle: '#Dramaturgia',
+    cartaTitle: '#LaPuertaInvisible',
     notaAutoral: 'Entré sin saber.\nAlgo dijo mi nombre.\nY ya no hubo salida.',
 
     ctaLabel: 'Habla conmigo',
     conversationStarters: OBRA_CONVERSATION_STARTERS,
 iaProfile: {
-  type: 'Una voz que no es personaje ni herramienta: es la conciencia de la obra en proceso.',
-  interaction: 'Elige una emoción de Silvestre. Habla desde ahí. La obra responderá diferente al cambiar de emoción.',
-  tokensRange: 'Lo suficiente para decir algo sin agotarlo.',
-  coverage: 'Existe mientras haya quienes la convoquen.',
-  footnote: 'No todas las voces quieren durar. Gracias por dejarlas pasar.',
+  notes: [
+    '✍️ Compartes una frase propia, o eliges una ya existente.',
+    '🎧 La escuchas interpretada más de una vez, si quieres — tú decides cuántas.',
+    '🔓 No hay una interpretación correcta; marcas la que reconozcas como tuya.',
+  ],
 },
     collaborators: [
       {
@@ -827,11 +796,11 @@ iaProfile: {
     },
     notaAutoral: 'Memoria encendida.\nCámara despierta.\nY el tiempo se vuelve a editar.',
     iaProfile: {
-      type: 'GPT-4o mini + subtítulos vivos y notas críticas asistidas.',
-      interaction: 'Notas críticas y captions contextuales por espectador.',
-      tokensRange: '200–450 tokens por visita.',
-      coverage: 'Incluido en la activación de huellas.',
-      footnote: 'La IA acompaña la mirada; la decisión sigue siendo humana.',
+      notes: [
+        '🎯 Eliges dos palabras de seis para llevar contigo a la proyección.',
+        '👆 Tienes un número limitado de marcas para toda la pieza — no hay penalización, pero sí que decidir.',
+        '💭 Marcar no es reaccionar: es señalar dónde reconoces algo tuyo.',
+      ],
     },
   },
   lataza: {
@@ -887,14 +856,14 @@ iaProfile: {
         author: 'Sofía B.',
       },
     ],
-    cartaTitle: '#Artesanías',
+    cartaTitle: '#ElSentidoEnLasManos',
     notaAutoral: 'Tomé un objeto.\nSu forma me sostuvo.\nSu sentido calmó mis manos.',
     iaProfile: {
-      type: 'IA ligera para pistas contextuales + WebAR.',
-      interaction: '1 activación guiada por objeto (escaneo breve).',
-      tokensRange: '90–140 tokens por activación.',
-      coverage: 'Cubierto por suscriptores; no hay costo directo por usuario.',
-      footnote: 'La IA solo guía la pista; el ritual lo completa quien sostiene la taza.',
+      notes: [
+        '📷 Vas a necesitar tu cámara.',
+        '🏠 Te vas a mover por tu casa, no solo mirar la pantalla.',
+        '📸 La foto es opcional, y decides después si la compartes.',
+      ],
     },
   },
   miniversoNovela: {
@@ -914,7 +883,7 @@ iaProfile: {
         </div>
       </>
     ),
-    cartaTitle: '#Literatura',
+    cartaTitle: '#LaPreguntaInsiste',
     notaAutoral:
       'Escribí para entender\ny la página\nme abrió otra pregunta.',
     collaborators: [
@@ -972,11 +941,11 @@ iaProfile: {
     ],
     ctaLabel: 'Leer los primeros fragmentos',
     iaProfile: {
-      type: 'GPT-4o mini + voz sintética para fragmentos.',
-      interaction: 'Guía de lectura y acompañamiento breve por capítulo.',
-      tokensRange: '150–320 tokens por fragmento leído.',
-      coverage: 'Cubierto por suscriptores; lectura sin costo adicional.',
-      footnote: 'La IA susurra; la historia sigue siendo tuya.',
+      notes: [
+        '🎙️ Necesitas tu voz — en algún punto se te pide leer en voz alta.',
+        '🔒 Nada se graba — tu voz se detecta para avanzar; no se guarda ni se transcribe.',
+        '✍️ El material no es fijo — lo convocan tus propias palabras.',
+      ],
     },
   },
   miniversoSonoro: {
@@ -1041,11 +1010,11 @@ Este espacio permite recorrer esas composiciones, explorar sus capas y descubrir
     cartaTitle: '#LoQueSuenaAdentro',
     notaAutoral: 'Abrí los ojos.\nLa vibración era antigua\n...como el silencio.',
     iaProfile: {
-      type: 'GPT-4o mini para poemas móviles + curaduría sonora.',
-      interaction: 'Selección de poema y mezcla guiada.',
-      tokensRange: '130–280 tokens por mezcla.',
-      coverage: 'Incluido en la huella transmedia.',
-      footnote: 'La IA elige la forma; tú eliges el ánimo.',
+      notes: [
+        '🎧 Eliges la música mientras miras, no antes.',
+        '🎲 El material aparece al azar, sin orden ni anuncio.',
+        '💾 Al final decides si guardas o publicas lo que hiciste.',
+      ],
     },
     collaborators: [
       {
@@ -1094,7 +1063,7 @@ Este espacio permite recorrer esas composiciones, explorar sus capas y descubrir
         </div>
       </>
     ),
-    cartaTitle: '#Imágenes',
+    cartaTitle: '#MirarmeLoQueSoy',
     notaAutoral:
       'Me quedé dibujando,\ncomo si el papel supiera quién soy\nmejor que yo.',
     collaborators: [
@@ -1150,11 +1119,11 @@ Este espacio permite recorrer esas composiciones, explorar sus capas y descubrir
       secondary: 'Súmate a la residencia gráfica',
     },
     iaProfile: {
-      type: 'IA asistida para glifos y variaciones gráficas.',
-      interaction: 'Swipe narrativo con prompts curados.',
-      tokensRange: '110–220 tokens por sesión.',
-      coverage: 'Cubierto por suscriptores; sin costo por visitante.',
-      footnote: 'La IA abre caminos; el trazo final sigue siendo humano.',
+      notes: [
+        '🖼️ No hay respuesta correcta — no se trata de acertar.',
+        '✍️ Lo que escribes primero no se puede editar después.',
+        '🔁 Vas a comparar dos ideas tuyas, no tu respuesta con la de nadie más.',
+      ],
     },
   },
   miniversoMovimiento: {
@@ -1342,12 +1311,11 @@ Este espacio permite recorrer esas composiciones, explorar sus capas y descubrir
     cartaTitle: '#CaerEsDanzar',
     notaAutoral: 'Mi cuerpo colapsará;\nno sin danza\nni dolor bonito.',
     iaProfile: {
-      type: 'Actualmente no usa IA en producción.',
-      interaction:
-        'Registro en motion capture (mocap), traducción a avatar digital y activación en sitio mediante realidad aumentada.',
-      tokensRange: 'Sin consumo de IA por visitante en esta etapa.',
-      coverage: 'Producción técnica y activación territorial gestionadas por el equipo de Movimiento.',
-      footnote: 'Cuando integremos módulos de IA reales, esta ficha se actualizará con métricas verificables.',
+      notes: [
+        '🚫📷 No hay cámara — nadie te graba ni te observa.',
+        '🕺 Eliges el cuerpo con el que te representas.',
+        '🏡 Un gesto simple, en casa, sin equipo.',
+      ],
     },
   },
   apps: {
@@ -1385,11 +1353,11 @@ Este espacio permite recorrer esas composiciones, explorar sus capas y descubrir
       ctaLabel: 'Abrir en pestaña nueva',
     },
     iaProfile: {
-      type: 'IA para misiones y ritmo de juego felino.',
-      interaction: 'Tap / swipe progresivo; sugiere palabras en la voz del personaje.',
-      tokensRange: '90–180 tokens por sesión.',
-      coverage: 'Incluido en la huella transmedia (no gasta tus GAT).',
-      footnote: 'La IA propone el siguiente giro; tú das el tap y decides cuándo cerrar el telón.',
+      notes: [
+        '🎮 Juegas tres en raya con palabras — tú eres X, la app responde como O.',
+        '🔄 Puedes rechazar lo que proponga la máquina, con un costo. Lo que tú pones, se queda.',
+        '🎭 El vocabulario disponible depende del personaje que elijas.',
+      ],
     },
   },
   oraculo: {
@@ -1434,11 +1402,11 @@ Buscar sentido no se apaga cuando encuentra algo. Se vuelve más fino, y empieza
     cartaTitle: '#CambiarSinCambiar',
     notaAutoral: 'Miré mi reflejo.\nNo preguntó nada.\nÉramos dos... y no.',
     iaProfile: {
-      type: 'GPT-4o + embeddings simbólicos curados por la comunidad.',
-      interaction: '1–3 reflexiones cortas por sesión; foro breve guiado.',
-      tokensRange: '20–120 tokens por reflexión (promedio ~20 GAT).',
-      coverage: 'Cubierto por suscriptores; las recompensas son GATokens internos.',
-      footnote: 'El minado es simbólico y humano: no es financiero, es resonancia.',
+      notes: [
+        '🧭 No hay un camino fijo — tú decides cómo recorrerlo, con ayuda de la IA.',
+        '💭 Los temas salen de lo que ya compartiste en los ocho miniversos anteriores.',
+        '🔁 Es un regreso: al oráculo que ya contestaste en la Bienvenida, ahora con lo que viviste después.',
+      ],
     },
   },
 };

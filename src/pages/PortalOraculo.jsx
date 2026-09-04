@@ -18,7 +18,7 @@ import VitranaQuestionReveal from '@/components/portal/VitranaQuestionReveal';
 import ResonanceModal, { LEVEL2_QUESTIONS, buildL1Acknowledgment } from '@/components/portal/ResonanceModal';
 import { readResonanceProgress } from '@/lib/bitacoraShared';
 import VideoNarrativeAutoplay from '@/components/VideoNarrativeAutoplay';
-import { RESONANCE_BRIDGE_VIDEO_ENABLED } from '@/components/transmedia/transmediaConstants';
+import { RESONANCE_BRIDGE_VIDEO_ENABLED, showcaseDefinitions } from '@/components/transmedia/transmediaConstants';
 import PulseReactionCard from '@/components/portal/PulseReactionCard';
 import { recordShowcaseLike } from '@/services/showcaseLikeService';
 import { supabase } from '@/lib/supabaseClient';
@@ -60,13 +60,6 @@ const ORACULO_TILE = {
   text: '#f5e8ff',
   accent: '#e9d5ff',
   background: 'rgba(38,18,56,0.72)',
-};
-const ORACULO_IA_PROFILE = {
-  type: 'GPT-4o + embeddings simbólicos curados por la comunidad.',
-  interaction: '1-3 reflexiones cortas por sesión; foro breve guiado.',
-  tokensRange: '20-120 tokens por reflexion (promedio ~20 GAT).',
-  coverage: 'Cubierto por suscriptores; las recompensas son GATokens internos.',
-  footnote: 'El minado es simbólico y humano: no es financiero, es resonancia.',
 };
 const ORACULO_BLOG_KEYS = [
   'oraculo',
@@ -454,8 +447,8 @@ const PortalOraculo = () => {
               </div>
               <div className="pt-4 border-t border-violet-200/20 lg:hidden">
                 <IAInsightCard
-                  {...ORACULO_IA_PROFILE}
-                  title="Información del artefacto"
+                  {...showcaseDefinitions.oraculo.iaProfile}
+                  title="Interacción esperada"
                   compact
                 />
               </div>
@@ -493,8 +486,8 @@ const PortalOraculo = () => {
 
           <div className="lg:hidden">
             <IAInsightCard
-              {...ORACULO_IA_PROFILE}
-              title="Información del artefacto"
+              {...showcaseDefinitions.oraculo.iaProfile}
+              title="Interacción esperada"
               compact
             />
           </div>
@@ -518,8 +511,8 @@ const PortalOraculo = () => {
           </div>
           <div className="order-4 hidden lg:block">
             <IAInsightCard
-              {...ORACULO_IA_PROFILE}
-              title="Información del artefacto"
+              {...showcaseDefinitions.oraculo.iaProfile}
+              title="Interacción esperada"
               compact
             />
           </div>

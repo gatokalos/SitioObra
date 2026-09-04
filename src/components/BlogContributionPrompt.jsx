@@ -126,10 +126,7 @@ solo nota si algo de lo que mires aquí se queda moviéndose adentro.`}
     #GatoEncerrado <strong>abre</strong> más de una ventana…
   </span>
 
-  <span className="block mt-10 text-sm text-slate-100/50 italic">
-    (Y a veces, la confusión es lo que nos muestra su forma más{" "}
-    <strong>silvestre</strong>.)
-  </span>
+
 </p>
 
   <div className="flex flex-col items-center">
@@ -141,6 +138,10 @@ solo nota si algo de lo que mires aquí se queda moviéndose adentro.`}
       Entra al camerino
     </Button>
   </div>
+    <span className="block mt-10 text-sm text-slate-100/50 italic">
+    (Y a veces, la confusión es lo que nos muestra su forma más{" "}
+    <strong>silvestre</strong>.)
+  </span>
 </div>
           </motion.div>
         </div>

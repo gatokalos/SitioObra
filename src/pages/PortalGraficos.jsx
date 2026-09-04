@@ -20,7 +20,7 @@ import VitranaQuestionReveal from '@/components/portal/VitranaQuestionReveal';
 import ResonanceModal, { LEVEL2_QUESTIONS, buildL1Acknowledgment } from '@/components/portal/ResonanceModal';
 import { readResonanceProgress } from '@/lib/bitacoraShared';
 import VideoNarrativeAutoplay from '@/components/VideoNarrativeAutoplay';
-import { RESONANCE_BRIDGE_VIDEO_ENABLED } from '@/components/transmedia/transmediaConstants';
+import { RESONANCE_BRIDGE_VIDEO_ENABLED, showcaseDefinitions } from '@/components/transmedia/transmediaConstants';
 import PulseReactionCard from '@/components/portal/PulseReactionCard';
 import { recordShowcaseLike } from '@/services/showcaseLikeService';
 import { supabase } from '@/lib/supabaseClient';
@@ -43,7 +43,7 @@ const GRAFICOS_INTRO = (
   </>
 );
 const GRAFICOS_NOTA_AUTORAL = {
-  title: '#GRÁFICOS',
+  title: '#MirarmeLoQueSoy',
   verse: 'Me quedé dibujando,\ncomo si el papel supiera quién soy\nmejor que yo.',
 };
 const GRAFICOS_TILE = {
@@ -52,13 +52,6 @@ const GRAFICOS_TILE = {
   text: '#fdf2f8',
   accent: '#fbcfe8',
   background: 'rgba(39,16,51,0.7)',
-};
-const GRAFICOS_IA_PROFILE = {
-  type: 'IA asistida para glifos y variaciones gráficas.',
-  interaction: 'Swipe narrativo con prompts curados.',
-  tokensRange: '110-220 tokens por sesión.',
-  coverage: 'Cubierto por suscriptores; sin costo por visitante.',
-  footnote: 'La IA abre caminos; el trazo final sigue siendo humano.',
 };
 const GRAFICOS_COLLABORATOR = {
   name: 'Manuel Sarabia',
@@ -496,8 +489,8 @@ const PortalGraficos = () => {
             </div>
             <div className="bg-slate-950/80 px-5 pt-5 lg:hidden">
               <IAInsightCard
-                {...GRAFICOS_IA_PROFILE}
-                title="Información del artefacto"
+                {...showcaseDefinitions.miniversoGrafico.iaProfile}
+                title="Interacción esperada"
                 compact
               />
             </div>
@@ -543,8 +536,8 @@ const PortalGraficos = () => {
           </div>
           <div className="order-4 hidden lg:block">
             <IAInsightCard
-              {...GRAFICOS_IA_PROFILE}
-              title="Información del artefacto"
+              {...showcaseDefinitions.miniversoGrafico.iaProfile}
+              title="Interacción esperada"
               compact
             />
           </div>

@@ -20,7 +20,7 @@ import VitranaQuestionReveal from '@/components/portal/VitranaQuestionReveal';
 import ResonanceModal, { LEVEL2_QUESTIONS, buildL1Acknowledgment } from '@/components/portal/ResonanceModal';
 import { readResonanceProgress } from '@/lib/bitacoraShared';
 import VideoNarrativeAutoplay from '@/components/VideoNarrativeAutoplay';
-import { RESONANCE_BRIDGE_VIDEO_ENABLED } from '@/components/transmedia/transmediaConstants';
+import { RESONANCE_BRIDGE_VIDEO_ENABLED, showcaseDefinitions } from '@/components/transmedia/transmediaConstants';
 import PulseReactionCard from '@/components/portal/PulseReactionCard';
 import { recordShowcaseLike } from '@/services/showcaseLikeService';
 import { supabase } from '@/lib/supabaseClient';
@@ -83,13 +83,6 @@ const SONORIDADES_TILE = {
   text: '#e0f2fe',
   accent: '#bae6fd',
   background: 'rgba(18,29,62,0.75)',
-};
-const SONORIDADES_IA_PROFILE = {
-  type: 'GPT-4o mini para poemas moviles + curaduria sonora.',
-  interaction: 'Seleccion de poema y mezcla guiada.',
-  tokensRange: '130-280 tokens por mezcla.',
-  coverage: 'Incluido en la huella transmedia.',
-  footnote: 'La IA elige la forma; tu eliges el animo.',
 };
 const SONORIDADES_COLLABORATORS = [
   {
@@ -536,8 +529,8 @@ const PortalSonoridades = () => {
                
                 <div className="lg:hidden">
                   <IAInsightCard
-                    {...SONORIDADES_IA_PROFILE}
-                    title="Información del artefacto"
+                    {...showcaseDefinitions.miniversoSonoro.iaProfile}
+                    title="Interacción esperada"
                     compact
                   />
                 </div>
@@ -560,8 +553,8 @@ const PortalSonoridades = () => {
           </div>
           <div className="order-4 hidden lg:block">
             <IAInsightCard
-              {...SONORIDADES_IA_PROFILE}
-              title="Información del artefacto"
+              {...showcaseDefinitions.miniversoSonoro.iaProfile}
+              title="Interacción esperada"
               compact
             />
           </div>

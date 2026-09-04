@@ -33,7 +33,7 @@ Antes de abrir Stripe, el flujo de Huella ya solicita y valida el correo para pr
 
 ### Estado actual
 
-- “Mesa de notas” muestra preguntas estáticas desde `STARTER_FAQ_PROMPTS`.
+- “Voces del vestíbulo” muestra preguntas estáticas desde `STARTER_FAQ_PROMPTS`.
 - El copy promete que una persona puede “dejar la suya para los demás”, pero todavía no existe el flujo completo para hacerlo.
 - `POST /api/search` sí responde las consultas del Apuntador mediante RAG y streaming, pero no guarda ni distribuye preguntas comunitarias.
 
@@ -79,30 +79,37 @@ Definir si la aprobación se hará mediante endpoint administrativo o directamen
 
 ### Ubicación actual
 
-- Preguntas estáticas y Mesa de notas: `src/components/Blog.jsx`.
+- Preguntas estáticas y Voces del vestíbulo: `src/components/Blog.jsx`.
 - Consulta RAG: `src/hooks/useSearch.js`.
 - Endpoint actual del Apuntador: `backend/gato-enigmatico-api/routes/search.js`.
 
 ---
 
-## 3. Sincronizar el copy del sitio al conocimiento del Apuntador
+## 3. Sincronizar el conocimiento canónico del universo al Apuntador
 
 **Prioridad:** alta — siguiente tras esta auditoría
+**Actualizado:** 2 de septiembre de 2026 (handoff v2)
 
 ### Qué resuelve
 
-El Apuntador no puede consultar el copy editorial que ya vive en el frontend (bienvenida del autor, descripciones de cada miniverso, Cómplices, versos). Ese contenido está duplicado y desincronizado entre `transmediaConstants.jsx` y 8 de los 9 `Portal*.jsx` — hay drift real ya detectado (colaboradores, diosas, wording).
+Son dos corpus, no uno.
+
+1. **El copy del sitio.** El Apuntador sigue sin poder consultar lo que ya está en pantalla: bienvenida del autor, introducciones de cada miniverso, Cómplices, versos fundacionales. Los nueve portales ya importan de `transmediaConstants.jsx`, pero los seis que tienen Cómplices siguen declarando su propio `*_COLLABORATORS` local — la migración quedó a medias y el drift sigue vivo (Briseida en Cine, `rewards`/`loops` en Oráculo).
+2. **Las fichas de artefacto.** El canon narrativo y de diseño, una por miniverso. Sólo 5 de 9 están en disco y son material interno: traen hipótesis doctorales, marcas `INFIERO` y tensiones sin resolver. No pueden ingerirse crudas.
 
 ### Arquitectura propuesta
 
-- Adoptar `transmediaConstants.jsx` como fuente única; migrar los 8 portales que hoy duplican copy.
-- Tabla nueva en Supabase: `sitio_conocimiento`, con flag de visibilidad en vivo.
-- Script de sync idempotente (`content_hash` + upsert), mismo patrón que `ingest-personajes-knowledge.mjs`.
+- Consolidar las 9 fichas en `docs/` (2 siguen en `~/Downloads/`, 4 por recuperar).
+- Pasada editorial de visibilidad ficha por ficha: qué puede decir el Apuntador en voz alta. Es el cuello de botella, y no se resuelve cortando por secciones — la premisa articuladora es interna por decisión explícita.
+- Tabla nueva en Supabase: `sitio_conocimiento`, con `fuente`, `visibilidad` (default `interno`) y `en_vivo`.
+- Adoptar `MINIVERSO_FORMAS` (`routes/resonance.js:16-80`) como mapa canónico de `miniverso_id`, y los `*_BLOG_KEYS` de cada portal como tabla de alias.
+- Decidir qué migra del `SYSTEM_PROMPT` de `search.js`, que hoy ya carga a mano buena parte de este conocimiento.
+- Script de sync idempotente (`content_hash` + upsert), patrón de `routes/rag.js` `/ingest` — no de `ingest-personajes-knowledge.mjs`, que no hashea.
 - Fase futura: automatizar con GitHub Actions.
 
 ### Documento completo
 
-`backend/gato-enigmatico-api/docs/handoff-sitio-conocimiento-sync.md` — inventario completo de los 9 miniversos, decisiones de arquitectura ya confirmadas, y las 4 decisiones que faltan por confirmar antes de escribir código.
+`backend/gato-enigmatico-api/docs/handoff-sitio-conocimiento-sync.md` (v2) — estado verificado del Apuntador, el corpus de fichas y su problema de estatuto, mapa canónico de IDs, drift reconciliado y las 7 decisiones que faltan por confirmar.
 
 ---
 

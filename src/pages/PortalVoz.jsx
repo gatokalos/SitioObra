@@ -32,7 +32,7 @@ import VitranaQuestionReveal from '@/components/portal/VitranaQuestionReveal';
 import ResonanceModal, { LEVEL2_QUESTIONS, buildL1Acknowledgment } from '@/components/portal/ResonanceModal';
 import { readResonanceProgress } from '@/lib/bitacoraShared';
 import VideoNarrativeAutoplay from '@/components/VideoNarrativeAutoplay';
-import { RESONANCE_BRIDGE_VIDEO_ENABLED } from '@/components/transmedia/transmediaConstants';
+import { RESONANCE_BRIDGE_VIDEO_ENABLED, showcaseDefinitions } from '@/components/transmedia/transmediaConstants';
 import PulseReactionCard from '@/components/portal/PulseReactionCard';
 import { recordShowcaseLike } from '@/services/showcaseLikeService';
 import { supabase } from '@/lib/supabaseClient';
@@ -192,15 +192,8 @@ const SCENE_PORTAL_INTRO = (
         </p>
   </>
 );
-const SCENE_PORTAL_IA_PROFILE = {
-  type: 'Una voz que no es personaje ni herramienta: es la conciencia de la obra en proceso.',
-  interaction: 'Elige una emoción de Silvestre. Habla desde ahí. La obra responderá diferente al cambiar de emoción.',
-  tokensRange: 'Lo suficiente para decir algo sin agotarlo.',
-  coverage: 'Existe mientras haya quienes la convoquen.',
-  footnote: 'No todas las voces quieren durar. Gracias por dejarlas pasar.',
-};
 const SCENE_PORTAL_NOTA_AUTORAL = {
-  title: '#Dramaturgia',
+  title: '#LaPuertaInvisible',
   verse: 'Entré sin saber.\nAlgo dijo mi nombre.\nY ya no hubo salida.',
 };
 const OBRA_TRAILER_URL = 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/cedes/gatoencerrado-trailer-web.mp4';
@@ -1136,12 +1129,12 @@ const PortalVoz = () => {
                 </div>
               </div>
             </div>
-            {/* En móvil, la "Información del artefacto" funciona como puente
+            {/* En móvil, la "Interacción esperada" funciona como puente
                 entre la obra que acabamos de ver y su resonancia colectiva. */}
             <div className="bg-slate-950/80 px-5 pt-5 lg:hidden">
               <IAInsightCard
-                {...SCENE_PORTAL_IA_PROFILE}
-                title="Información del artefacto"
+                {...showcaseDefinitions.miniversos.iaProfile}
+                title="Interacción esperada"
                 compact
               />
             </div>
@@ -1593,8 +1586,8 @@ const PortalVoz = () => {
           </div>
           <div className="order-4 hidden lg:block">
             <IAInsightCard
-              {...SCENE_PORTAL_IA_PROFILE}
-              title="Información del artefacto"
+              {...showcaseDefinitions.miniversos.iaProfile}
+              title="Interacción esperada"
               compact
             />
           </div>

@@ -1,7 +1,8 @@
 import React, { useState, useCallback, useEffect, useRef, useMemo } from 'react';
 import { createPortal } from 'react-dom';
+import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
-import { Users, Headphones, Quote, Send, HeartHandshake, RefreshCw, Heart, Play, Camera, Drama, Info, X } from 'lucide-react';
+import { Users, Headphones, Quote, Send, HeartHandshake, RefreshCw, Heart, Play, Camera, Drama, Info, X, ArrowUpRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { toast } from '@/components/ui/use-toast';
 import { useAuth } from '@/contexts/SupabaseAuthContext';
@@ -81,6 +82,18 @@ const PROVOCA_SUBMIT_COOLDOWN_MS = 45 * 1000;
 const PROVOCA_SUBMIT_COOLDOWN_PREFIX = 'gatoencerrado:provoca-submit-cooldown:v1';
 const PROVOCA_LISTEN_COOLDOWN_MS = 25 * 1000;
 const PROVOCA_LISTEN_COOLDOWN_PREFIX = 'gatoencerrado:provoca-listen-cooldown:v1';
+// Tope por persona (no por IP: el rate limit del servidor es por IP y castigaría
+// a quien comparte wifi en un foro). Corta la generación antes de que salga, así
+// que también contiene el gasto real de OpenAI.
+const PROVOCA_LISTEN_MAX_PER_WINDOW = 5;
+const PROVOCA_LISTEN_COUNT_WINDOW_MS = 24 * 60 * 60 * 1000;
+const PROVOCA_LISTEN_COUNT_PREFIX = 'gatoencerrado:provoca-listen-count:v1';
+// Bypass de desarrollo. Deliberadamente NO es un parámetro de URL: eso sería una
+// puerta pública y descubrible. Quien puede ponerlo ya está en la consola, donde
+// de todos modos podría borrar el contador — así que no abre superficie nueva.
+// No exime del rate limit por IP del servidor, que es la protección real del gasto.
+const PROVOCA_DEV_BYPASS_KEY = 'gatoencerrado:provoca-dev';
+const PROVOCA_APUNTADOR_QUESTION = '¿Qué hace la obra con lo que la gente le cuenta?';
 const PROVOCA_QUOTE_MAX_CHARS = 700;
 const PROVOCA_NAME_MAX_CHARS = 60;
 const PROVOCA_ROLE_MAX_CHARS = 80;
@@ -127,6 +140,39 @@ const getProvocaListenCooldownKey = (userId) => {
   return `${PROVOCA_LISTEN_COOLDOWN_PREFIX}:anon:${anonId || 'guest'}`;
 };
 
+const hasProvocaDevBypass = () => {
+  try {
+    return safeGetItem(PROVOCA_DEV_BYPASS_KEY) === 'true';
+  } catch {
+    return false;
+  }
+};
+
+const getProvocaListenCountKey = (userId) => {
+  if (userId) return `${PROVOCA_LISTEN_COUNT_PREFIX}:user:${userId}`;
+  const anonId = ensureAnonId();
+  return `${PROVOCA_LISTEN_COUNT_PREFIX}:anon:${anonId || 'guest'}`;
+};
+
+// La ventana se ancla a la primera escucha, no a medianoche: quien empieza a las
+// 23:50 no debería recuperar sus cinco diez minutos después.
+const readProvocaListenCount = (key) => {
+  const empty = { count: 0, windowStart: 0 };
+  if (!key) return empty;
+  try {
+    const raw = safeGetItem(key);
+    if (!raw) return empty;
+    const parsed = JSON.parse(raw);
+    const windowStart = Number(parsed?.windowStart) || 0;
+    if (!windowStart || Date.now() - windowStart >= PROVOCA_LISTEN_COUNT_WINDOW_MS) {
+      return empty;
+    }
+    return { count: Number(parsed?.count) || 0, windowStart };
+  } catch {
+    return empty;
+  }
+};
+
 const getProvocaLikedVoicesKey = (userId) => {
   if (!userId) return null;
   return `${PROVOCA_LIKED_VOICES_STORAGE_PREFIX}:user:${userId}`;
@@ -160,6 +206,7 @@ const isLargeVoiceCard = (item) => getNormalizedVoiceLength(item?.quote) >= PROV
 
 export const ProvocaSection = () => {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const isSafari = isSafariBrowser();
   const prefersReducedMotion = useReducedMotion();
   const [confettiBursts, setConfettiBursts] = useState([]);
@@ -180,6 +227,11 @@ export const ProvocaSection = () => {
   );
   const [submitCooldownKey, setSubmitCooldownKey] = useState(null);
   const [listenCooldownKey, setListenCooldownKey] = useState(null);
+  const [listenCountKey, setListenCountKey] = useState(null);
+  const [isListenLimitOpen, setIsListenLimitOpen] = useState(false);
+  // Espeja silvestreAudioDuration para que el efecto del contador pueda leerla
+  // sin tenerla como dependencia (ver comentario en ese efecto).
+  const audioDurationRef = useRef(null);
   const [voiceLikeCountsById, setVoiceLikeCountsById] = useState({});
   const [voiceLikeStatusById, setVoiceLikeStatusById] = useState({});
   const [likedVoiceIds, setLikedVoiceIds] = useState([]);
@@ -252,7 +304,7 @@ export const ProvocaSection = () => {
       ? 'Reproducir respuesta'
       : isSilvestreThinking
         ? silvestreThinkingMessage
-        : 'Dilo con drama';
+        : 'Quiero drama';
   const escucharButtonVisualLabel =
     pendingSilvestreAudioUrl && !isSilvestrePlaying ? 'Reproducir' : escucharStatusLabel;
 
@@ -272,6 +324,14 @@ export const ProvocaSection = () => {
   }, []);
 
   const handleCloseObraInfo = useCallback(() => setIsObraInfoOpen(false), []);
+  const handleCloseListenLimit = useCallback(() => setIsListenLimitOpen(false), []);
+
+  // Misma ruta que el buscador: navegar no lo remonta, por eso Blog.jsx escucha
+  // el cambio de query en vez de leer el parámetro solo al montar.
+  const handleAskApuntador = useCallback(() => {
+    setIsListenLimitOpen(false);
+    navigate(`/?apuntador_q=${encodeURIComponent(PROVOCA_APUNTADOR_QUESTION)}#dialogo-critico`);
+  }, [navigate]);
 
   useEffect(() => {
     if (!isObraInfoOpen) return undefined;
@@ -286,6 +346,7 @@ export const ProvocaSection = () => {
     const userId = user?.id ?? null;
     setSubmitCooldownKey(getProvocaSubmitCooldownKey(userId));
     setListenCooldownKey(getProvocaListenCooldownKey(userId));
+    setListenCountKey(getProvocaListenCountKey(userId));
     const likedKey = getProvocaLikedVoicesKey(userId);
     setLikedVoicesStorageKey(likedKey);
     if (!likedKey) {
@@ -314,12 +375,18 @@ export const ProvocaSection = () => {
   }, []);
 
   useEffect(() => {
+    audioDurationRef.current = silvestreAudioDuration;
+  }, [silvestreAudioDuration]);
+
+  useEffect(() => {
     // El contador refleja el tiempo restante de reproducción, no la espera del API.
-    // Usa la duración real del audio; el estimado solo cubre el instante previo a
-    // que el navegador reporte los metadatos.
+    // La duración se lee de un ref, no de la dependencia: si viniera en las deps,
+    // el metadato que llega DESPUÉS de arrancar el audio volvería a ejecutar este
+    // efecto y reiniciaría la cuenta a mitad de la reproducción.
+    const measured = audioDurationRef.current;
     const totalSeconds =
-      Number.isFinite(silvestreAudioDuration) && silvestreAudioDuration > 0
-        ? Math.ceil(silvestreAudioDuration)
+      Number.isFinite(measured) && measured > 0
+        ? Math.ceil(measured)
         : PROVOCA_RESPONSE_ESTIMATE_SECONDS;
 
     if (!isSilvestrePlaying) {
@@ -355,7 +422,7 @@ export const ProvocaSection = () => {
         responseCountdownRef.current = null;
       }
     };
-  }, [isSilvestrePlaying, silvestreAudioDuration]);
+  }, [isSilvestrePlaying]);
 
   const fireProvocaConfetti = useCallback(() => {
     const id = Date.now();
@@ -723,6 +790,16 @@ export const ProvocaSection = () => {
 
     if (isSilvestreThinking || isSilvestrePlaying) return;
 
+    // El tope se revisa antes que el cooldown: a quien ya llegó al límite no le
+    // sirve saber cuántos segundos faltan, le sirve la puerta al Apuntador.
+    if (
+      !hasProvocaDevBypass() &&
+      readProvocaListenCount(listenCountKey).count >= PROVOCA_LISTEN_MAX_PER_WINDOW
+    ) {
+      setIsListenLimitOpen(true);
+      return;
+    }
+
     if (listenCooldownKey) {
       const last = Number(safeGetItem(listenCooldownKey) || '0');
       const now = Date.now();
@@ -751,6 +828,17 @@ export const ProvocaSection = () => {
       safeSetItem(listenCooldownKey, String(Date.now()));
     }
 
+    if (listenCountKey) {
+      const current = readProvocaListenCount(listenCountKey);
+      safeSetItem(
+        listenCountKey,
+        JSON.stringify({
+          count: current.count + 1,
+          windowStart: current.windowStart || Date.now(),
+        })
+      );
+    }
+
     await handleSendSilvestrePreset(message, {
       modeId: PROVOCA_TERM_TO_MODE[currentProvocaTitleTerm] ?? 'emocion-sin-nombre',
       context: 'provoca',
@@ -762,6 +850,8 @@ export const ProvocaSection = () => {
     isSilvestrePlaying,
     handleSendSilvestrePreset,
     listenCooldownKey,
+    listenCountKey,
+    currentProvocaTitleTerm,
   ]);
 
   return (
@@ -777,7 +867,7 @@ export const ProvocaSection = () => {
         >
           <header className="provoca-stage-intro">
             <p className="provoca-stage-eyebrow">
-              TERCER ACTO
+              ACTO FINAL
             </p>
             <h2
               className={`provoca-act-title provoca-act-title--section ${isSafari ? 'provoca-act-title--safari' : ''}`}
@@ -792,7 +882,7 @@ export const ProvocaSection = () => {
               </span>
             </h2>
             <p className="provoca-stage-description">
-              Ninguna obra termina en el <em>acto final</em>. Se completa cuando alguien la recibe y responde.
+              Ninguna obra termina en el acto final. Se completa cuando alguien la recibe <br /><em>y le da forma con sus palabras</em>.
             </p>
           </header>
 
@@ -862,7 +952,7 @@ export const ProvocaSection = () => {
                       onChange={(event) => setVoiceDraft(event.target.value)}
                       rows={3}
                       className="form-surface w-full px-4 py-3 resize-none"
-                      placeholder="Comparte lo que las preguntas te hicieron sentir…"
+                      placeholder="Escribe lo que estas preguntas te hacen sentir…"
                     />
                     <div className="mt-3 grid gap-3 sm:grid-cols-2">
                       <input
@@ -896,7 +986,7 @@ export const ProvocaSection = () => {
                   <span className="flex items-center gap-3">
                     <HeartHandshake size={16} className="text-emerald-200" />
                     <span className="text-[0.66rem] uppercase tracking-[0.23em] text-emerald-200/85">
-                      Y si algo te movió más de lo esperado...
+                      Y si alguna te movió más de lo esperado...
                     </span>
                   </span>
                   <span className="text-[0.62rem] uppercase tracking-[0.16em] text-emerald-200/80 group-open:text-white">
@@ -904,17 +994,32 @@ export const ProvocaSection = () => {
                     <span className="hidden group-open:inline">Cerrar</span>
                   </span>
                 </summary>
-                <div className="mt-3 space-y-2 pl-7">
-                  <p className="text-sm text-slate-200/95 leading-relaxed">
-                    El equipo de Isabel Ayuda para la Vida, A.C. te ofrece acompañamiento confidencial y puede orientarte.
+                <div className="mt-4 grid gap-4 pl-7 lg:grid-cols-[minmax(0,1fr)_17rem] lg:items-center">
+                  <p className="text-sm leading-relaxed text-slate-200/95">
+                    El equipo de Isabel A.C. te ofrece acompañamiento confidencial y puede orientarte.
                   </p>
                   <a
                     href="https://www.ayudaparalavida.com/contacto.html"
                     target="_blank"
                     rel="noreferrer"
-                    className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.18em] text-emerald-200 hover:text-white transition"
+                    aria-label="Contacto directo con Isabel Ayuda para la Vida, A.C."
+                    className="group/isabel inline-flex min-h-16 w-full items-center gap-3 rounded-xl border border-emerald-300/30 bg-black/25 px-3 py-2.5 text-emerald-100 shadow-[inset_0_1px_0_rgba(255,255,255,0.06),0_8px_24px_rgba(0,0,0,0.2)] transition duration-300 hover:-translate-y-0.5 hover:border-emerald-200/55 hover:bg-emerald-300/[0.08] hover:shadow-[inset_0_1px_0_rgba(255,255,255,0.09),0_10px_28px_rgba(0,0,0,0.26),0_0_18px_rgba(52,211,153,0.1)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-300/60"
                   >
-                    Contacto directo
+                    <img
+                      src="/assets/isabel_banner.png"
+                      alt="Isabel Ayuda para la Vida, A.C."
+                      loading="lazy"
+                      className="h-9 w-auto max-w-[8.5rem] shrink-0 rounded-md object-contain sm:h-10"
+                    />
+                    <span className="h-9 w-px shrink-0 bg-emerald-200/15" aria-hidden="true" />
+                    <span className="min-w-0 flex-1 text-[0.65rem] font-semibold uppercase leading-relaxed tracking-[0.14em]">
+                      Contacto directo
+                    </span>
+                    <ArrowUpRight
+                      size={16}
+                      aria-hidden="true"
+                      className="shrink-0 text-emerald-200/75 transition-transform duration-300 group-hover/isabel:-translate-y-0.5 group-hover/isabel:translate-x-0.5 group-hover/isabel:text-white"
+                    />
                   </a>
                 </div>
               </details>
@@ -1144,6 +1249,91 @@ export const ProvocaSection = () => {
         </AnimatePresence>,
         document.body,
       )}
+
+      {typeof document !== 'undefined' && createPortal(
+        <AnimatePresence>
+          {isListenLimitOpen ? (
+            <motion.div
+              className="fixed inset-0 z-[600] flex items-center justify-center px-4"
+              initial="hidden"
+              animate="visible"
+              exit="hidden"
+            >
+              <motion.div
+                className="absolute inset-0 bg-[#04020f] backdrop-blur-[18px]"
+                variants={PROVOCA_INFO_BACKDROP_VARIANTS}
+                aria-hidden="true"
+                onClick={handleCloseListenLimit}
+              />
+
+              <motion.div
+                role="dialog"
+                aria-modal="true"
+                aria-labelledby="provoca-listen-limit-title"
+                variants={PROVOCA_INFO_PANEL_VARIANTS}
+                className="relative z-10 flex max-h-[100dvh] w-full max-w-lg flex-col items-center overflow-y-auto px-5 py-10 text-center"
+              >
+                <button
+                  type="button"
+                  onClick={handleCloseListenLimit}
+                  className="absolute right-2 pwa-safe-top z-20 inline-flex h-9 w-9 items-center justify-center rounded-full border border-white/10 bg-white/5 text-slate-200 transition hover:bg-white/10 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-200/70"
+                  aria-label="Cerrar"
+                >
+                  <X size={18} />
+                </button>
+
+                <span
+                  aria-hidden="true"
+                  className="pointer-events-none absolute left-1/2 top-20 h-64 w-64 -translate-x-1/2 rounded-full blur-[72px]"
+                  style={{ background: 'radial-gradient(circle, rgba(217,160,54,0.3) 0%, rgba(109,40,217,0.18) 48%, transparent 72%)' }}
+                />
+
+                <div className="relative" aria-hidden="true">
+                  <motion.img
+                    src="/assets/laObraDorada.png"
+                    alt=""
+                    className="h-28 w-28 object-contain sm:h-32 sm:w-32"
+                    animate={prefersReducedMotion ? undefined : {
+                      scale: [1, 1.08, 1],
+                      filter: [
+                        'drop-shadow(0 0 12px rgba(139,92,246,0.4))',
+                        'drop-shadow(0 0 28px rgba(251,191,36,0.62))',
+                        'drop-shadow(0 0 12px rgba(139,92,246,0.4))',
+                      ],
+                    }}
+                    transition={{ duration: 1.4, ease: 'easeInOut' }}
+                    draggable="false"
+                  />
+                </div>
+
+                <h2
+                  id="provoca-listen-limit-title"
+                  className="relative mt-8 text-3xl font-medium leading-tight tracking-[-0.02em] text-white sm:text-4xl"
+                >
+                  ¿Te gustó el drama?
+                </h2>
+
+                <div className="relative mt-6 max-w-md text-sm leading-relaxed text-slate-300 sm:text-base">
+                  <p>Si quieres saber qué hace cada réplica, hay alguien más adentro con quien puedes hablar.</p>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={handleAskApuntador}
+                  className="group relative mt-9 inline-flex min-h-14 w-full max-w-sm items-center justify-center overflow-hidden rounded-full border border-violet-200/25 bg-white/[0.06] px-7 py-4 text-base font-semibold text-white shadow-[0_16px_50px_rgba(109,40,217,0.28)] backdrop-blur-md transition-all duration-300 hover:scale-[1.015] hover:border-violet-200/45 hover:bg-white/[0.1] hover:shadow-[0_18px_58px_rgba(139,92,246,0.4)] active:scale-[0.985]"
+                >
+                  <span
+                    aria-hidden="true"
+                    className="absolute inset-0 bg-gradient-to-r from-[#1f2f63]/55 via-[#6e30ab]/55 to-[#d91f8b]/55 opacity-80 transition-opacity duration-300 group-hover:opacity-100"
+                  />
+                  <span className="relative">Preguntar al Apuntador →</span>
+                </button>
+              </motion.div>
+            </motion.div>
+          ) : null}
+        </AnimatePresence>,
+        document.body,
+      )}
     </>
   );
 };
@@ -1349,7 +1539,7 @@ const About = () => {
         >
 
                   <p className="text-xs uppercase tracking-[0.4em] text-slate-400/70 mb-4">
-  #Archivoescénico
+  Archivo Escénico
 </p>
           <h2 className="font-display text-4xl md:text-5xl font-medium mb-6 text-gradient italic">
             Es un gato encerrado

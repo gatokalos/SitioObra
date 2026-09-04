@@ -22,7 +22,6 @@ import {
   Brain,
   Map,
   Scan,
-  Users,
   RadioTower,
   Sparkles,
   Layers,
@@ -149,9 +148,6 @@ import {
   CAUSE_SITE_URL,
   MINIVERSO_EDITORIAL_INTERCEPTION_ENABLED,
   readStoredJson,
-  buildShowcaseRewardLabel,
-  buildShowcaseEnergyState,
-  buildShowcaseMinRequiredCopy,
   MINIVERSO_VERSE_EFFECTS,
   shuffleArray,
   OBRA_VOICE_MODES,
@@ -277,7 +273,7 @@ const Transmedia = ({ allianceOnlyMode = false }) => {
   const [focusAppMetadata, setFocusAppMetadata] = useState(null);
   const [isMovementCreditsOpen, setIsMovementCreditsOpen] = useState(false);
   const [openCollaboratorId, setOpenCollaboratorId] = useState(null);
-  // "Información del artefacto" y Cómplices comparten columna en cada
+  // "Interacción esperada" y Cómplices comparten columna en cada
   // miniverso — solo uno de los dos acordeones puede estar abierto a la vez.
   const [isArtesaniasDeviceInfoOpen, setIsArtesaniasDeviceInfoOpen] = useState(false);
   const [isDramaDeviceInfoOpen, setIsDramaDeviceInfoOpen] = useState(false);
@@ -1657,8 +1653,8 @@ const Transmedia = ({ allianceOnlyMode = false }) => {
       const avatarsToShow = normalized.filter((collab) => collab._avatarId !== selected?._avatarId);
       const inner = (
         <>
-          <div className="flex flex-col md:grid md:grid-cols-[1fr_auto] md:items-center gap-3">
-            <motion.div layout className="flex items-center gap-3 flex-wrap justify-center md:justify-start">
+          <div className="flex flex-col items-center gap-3">
+            <motion.div layout className="flex items-center gap-3 flex-wrap justify-center">
               {avatarsToShow.map((collab) => {
                 const isActive = selected?._avatarId === collab._avatarId;
                 return (
@@ -1670,7 +1666,7 @@ const Transmedia = ({ allianceOnlyMode = false }) => {
                     whileTap={{ scale: 0.96 }}
                     transition={{ duration: 0.15, ease: 'easeOut' }}
                     onClick={() => { setOpenCollaboratorId(collab._avatarId); setIsArtesaniasDeviceInfoOpen(false); setIsDramaDeviceInfoOpen(false); setIsCineDeviceInfoOpen(false); setIsGraficosDeviceInfoOpen(false); setIsLiteraturaDeviceInfoOpen(false); setIsSonoridadesDeviceInfoOpen(false); }}
-                    className={`h-16 w-16 md:h-12 md:w-12 rounded-full border ${
+                    className={`h-10 w-10 rounded-full border ${
                       isActive ? 'border-purple-300/80 ring-2 ring-purple-400/50' : 'border-white/15'
                     } bg-white/5 overflow-hidden transition hover:border-purple-300/60 shadow-lg shadow-black/30`}
                     title={collab.name}
@@ -1685,8 +1681,8 @@ const Transmedia = ({ allianceOnlyMode = false }) => {
                 );
               })}
             </motion.div>
-            <p className="text-xs uppercase tracking-[0.35em] text-purple-300 text-center md:text-right">
-              ← Cómplices
+            <p className="text-xs uppercase tracking-[0.35em] text-purple-300 text-center">
+              Cómplices
             </p>
           </div>
           {selected ? (
@@ -1726,7 +1722,7 @@ const Transmedia = ({ allianceOnlyMode = false }) => {
       );
       if (bare) return <div className="space-y-3">{inner}</div>;
       return (
-        <div className="rounded-3xl border border-white/10 bg-black/30 p-6 space-y-4 md:space-y-3">
+        <div className="rounded-2xl border border-white/10 bg-black/30 px-5 py-5 space-y-4 md:space-y-3">
           {inner}
         </div>
       );
@@ -1941,7 +1937,7 @@ const rendernotaAutoral = () => {
   );
 };
 
-const renderDeviceInfoDesktop = (title = 'Información del artefacto', accordionControl = null) => {
+const renderDeviceInfoDesktop = (title = 'Interacción esperada', accordionControl = null) => {
   if (!activeDefinition?.iaProfile) return null;
 
   return (
@@ -1950,8 +1946,6 @@ const renderDeviceInfoDesktop = (title = 'Información del artefacto', accordion
         {...activeDefinition.iaProfile}
         title={title}
         compact
-        rewardLabel={buildShowcaseRewardLabel(showcaseTokenLedgerById[activeShowcase])}
-        minRequired={buildShowcaseMinRequiredCopy(activeShowcase)}
         isOpen={accordionControl?.isOpen}
         onToggle={accordionControl?.onToggle}
       />
@@ -2272,13 +2266,6 @@ const renderDramaFeaturedWork = () => (
                 : activeDefinition.collaborators,
               activeShowcase ?? 'hdr'
             )}
-            {renderDeviceInfoDesktop('Información del artefacto', {
-              isOpen: isArtesaniasDeviceInfoOpen,
-              onToggle: () => {
-                setIsArtesaniasDeviceInfoOpen((prev) => !prev);
-                setOpenCollaboratorId(null);
-              },
-            })}
           </div>
         </div>
         </div>
@@ -2380,13 +2367,6 @@ const renderDramaFeaturedWork = () => (
             <div className="flex flex-col gap-5">
               {rendernotaAutoral()}
               {renderCollaboratorsSection(activeDefinition.collaborators, activeShowcase ?? 'hdr')}
-              {renderDeviceInfoDesktop('Información del artefacto', {
-                isOpen: isSonoridadesDeviceInfoOpen,
-                onToggle: () => {
-                  setIsSonoridadesDeviceInfoOpen((prev) => !prev);
-                  setOpenCollaboratorId(null);
-                },
-              })}
               {activePortalExperienceDone && (
                 <button
                   type="button"
@@ -2472,7 +2452,6 @@ const renderDramaFeaturedWork = () => (
 
             <div className="flex flex-col gap-5">
               {rendernotaAutoral()}
-              {renderDeviceInfoDesktop()}
               {activePortalExperienceDone && (
                 <button
                   type="button"
@@ -2580,17 +2559,10 @@ const renderDramaFeaturedWork = () => (
           <div className="hidden gap-6 lg:grid lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
             {/* Columna izquierda: card inmersiva estilo cine */}
             {renderDramaFeaturedWork()}
-            {/* Columna derecha: verso fundacional + Información del artefacto + Cómplices + CTA */}
+            {/* Columna derecha: verso fundacional + Interacción esperada + Cómplices + CTA */}
             <div className="hidden lg:flex lg:flex-col lg:gap-5">
               {rendernotaAutoral()}
               {renderCollaboratorsSection(activeDefinition.collaborators, activeShowcase ?? 'hdr')}
-              {renderDeviceInfoDesktop('Información del artefacto', {
-                isOpen: isDramaDeviceInfoOpen,
-                onToggle: () => {
-                  setIsDramaDeviceInfoOpen((prev) => !prev);
-                  setOpenCollaboratorId(null);
-                },
-              })}
               {activePortalExperienceDone && (
                 <button
                   type="button"
@@ -3092,13 +3064,6 @@ const renderDramaFeaturedWork = () => (
           <div className="flex flex-col gap-5">
             {rendernotaAutoral()}
             {renderCollaboratorsSection(activeDefinition.collaborators, activeShowcase ?? 'hdr')}
-            {renderDeviceInfoDesktop('Información del artefacto', {
-              isOpen: isGraficosDeviceInfoOpen,
-              onToggle: () => {
-                setIsGraficosDeviceInfoOpen((prev) => !prev);
-                setOpenCollaboratorId(null);
-              },
-            })}
             {/*
               Desactivado a propósito (2026-08-14): este botón reclamaba el
               premio de Nivel 3 (+175 GAT, handleClaimL3Reward) y empujaba al
@@ -3349,7 +3314,6 @@ const renderDramaFeaturedWork = () => (
 
             <div className="flex flex-col gap-5">
               {rendernotaAutoral()}
-              {renderDeviceInfoDesktop()}
               {/*
                 Desactivado a propósito (2026-08-16): CTA de talleres
                 escondido junto con "Activaciones de ruta" — misma razón,
@@ -3450,7 +3414,6 @@ const renderDramaFeaturedWork = () => (
 
           <div className="flex flex-col gap-5">
             {rendernotaAutoral()}
-            {renderDeviceInfoDesktop()}
             {activePortalExperienceDone && embeddedAppUrl ? (
               <a
                 href={embeddedAppUrl}
@@ -3890,13 +3853,6 @@ const renderDramaFeaturedWork = () => (
               <div className="flex flex-col gap-5">
                 {rendernotaAutoral()}
                 {renderCollaboratorsSection(activeDefinition.collaborators, activeShowcase ?? 'hdr')}
-                {renderDeviceInfoDesktop('Información del artefacto', {
-                  isOpen: isCineDeviceInfoOpen,
-                  onToggle: () => {
-                    setIsCineDeviceInfoOpen((prev) => !prev);
-                    setOpenCollaboratorId(null);
-                  },
-                })}
                 {activePortalExperienceDone && (
                   <button
                     type="button"
@@ -4126,13 +4082,6 @@ const renderDramaFeaturedWork = () => (
                 <div className="flex flex-col gap-5">
                   {rendernotaAutoral()}
                   {renderCollaboratorsSection(activeDefinition.collaborators, activeShowcase ?? 'hdr')}
-                  {renderDeviceInfoDesktop('Información del artefacto', {
-                    isOpen: isLiteraturaDeviceInfoOpen,
-                    onToggle: () => {
-                      setIsLiteraturaDeviceInfoOpen((prev) => !prev);
-                      setOpenCollaboratorId(null);
-                    },
-                  })}
                   {activePortalExperienceDone && (
                     <button
                       type="button"
@@ -4541,6 +4490,7 @@ const renderDramaFeaturedWork = () => (
                         </p>
                       ))}
                     </div>
+                    {renderDeviceInfoDesktop('Interacción esperada')}
                     <div className="hidden lg:block">
                       {activeDefinition.type === 'movement-ritual' ? (
                         <div className="rounded-2xl border border-white/10 bg-black/20 px-5 py-4 space-y-3">
@@ -4955,7 +4905,7 @@ const renderDramaFeaturedWork = () => (
               <div>{renderShowcaseContent()}</div>
               {activeDefinition.iaProfile ? (
                 <div className="lg:hidden mt-4">
-                  <IAInsightCard {...activeDefinition.iaProfile} compact rewardLabel={buildShowcaseRewardLabel(showcaseTokenLedgerById[activeShowcase])} minRequired={buildShowcaseMinRequiredCopy(activeShowcase)} />
+                  <IAInsightCard {...activeDefinition.iaProfile} compact />
                 </div>
               ) : null}
               {/* Botones de control — solo desktop, al fondo del contenido scrollable */}
@@ -5614,7 +5564,7 @@ const renderDramaFeaturedWork = () => (
               viewport={{ once: true }}
               className="text-center mb-[clamp(2.5rem,5.5vh,4rem)] space-y-[clamp(1.25rem,2.2vh,1.75rem)] min-h-[clamp(210px,27vh,260px)] min-[700px]:max-lg:mb-8 min-[700px]:max-lg:min-h-[180px]"
             >
-              <p className="text-xs uppercase tracking-[0.4em] text-slate-400/70">#narrativatransmedia</p>
+              <p className="text-xs uppercase tracking-[0.4em] text-slate-400/70">Segundo acto</p>
               <h2 className="font-display text-4xl md:text-5xl font-medium text-gradient italic">
                 La obra toma forma
               </h2>
@@ -5661,10 +5611,6 @@ const renderDramaFeaturedWork = () => (
               const isTransitionDimTile = isShowcaseOpenTransitionActive && !isTransitionTargetTile;
               const isDimmedTile = (isCinematicShowcaseOpen && !isActiveTile) || isTransitionDimTile;
               const isRecommendedTile = recommendedShowcaseId === format.id;
-              const tokenEntry = showcaseTokenLedgerById[format.id];
-              const rewardLabel = buildShowcaseRewardLabel(tokenEntry);
-              const energyState = buildShowcaseEnergyState(safeAvailableGATokens);
-              const minRequiredCopy = buildShowcaseMinRequiredCopy(format.id);
               return (
                 <>
                   {isRecommendedTile ? (
@@ -5947,10 +5893,6 @@ const renderDramaFeaturedWork = () => (
                 const isTransitionDimTile =
                   isShowcaseOpenTransitionActive &&
                   showcaseTransitionTargetId !== format.id;
-                const tokenEntry = showcaseTokenLedgerById[format.id];
-                const rewardLabel = buildShowcaseRewardLabel(tokenEntry);
-                const energyState = buildShowcaseEnergyState(safeAvailableGATokens);
-                const minRequiredCopy = buildShowcaseMinRequiredCopy(format.id);
                 return (
                   <motion.button
                     key={format.id}

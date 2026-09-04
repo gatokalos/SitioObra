@@ -366,13 +366,138 @@ body {
 
 /* Acento berenjena para el dispositivo principal del camerino. */
 .camerino-apuntador-panel {
-  border-color: rgba(204, 151, 188, 0.26);
+  border-color: rgba(204, 121, 239, 0.74);
   background:
     radial-gradient(circle at 12% 8%, rgba(115, 48, 91, 0.2), transparent 42%),
     linear-gradient(145deg, rgba(49, 19, 42, 0.72), rgba(24, 12, 28, 0.62) 58%, rgba(12, 10, 20, 0.54));
   box-shadow:
-    inset 0 1px 0 rgba(255, 232, 248, 0.035),
+    inset 0 0 0 1px rgba(232, 183, 255, 0.12),
+    inset 0 1px 0 rgba(255, 232, 248, 0.08),
+    0 0 18px rgba(167, 79, 212, 0.2),
     0 14px 34px rgba(34, 10, 29, 0.18);
+  padding-inline: clamp(3.65rem, 8vw, 4.8rem);
+}
+
+/* El dispositivo del apuntador funciona como el espejo del mockup: dos
+   bandas laterales y cuatro discos luminosos por lado. */
+.camerino-mirror-lights {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  overflow: hidden;
+  border-radius: inherit;
+  pointer-events: none;
+}
+
+.camerino-mirror-rail {
+  position: absolute;
+  display: flex;
+  justify-content: space-between;
+}
+
+.camerino-mirror-rail--left,
+.camerino-mirror-rail--right {
+  top: 0;
+  bottom: 0;
+  width: 44px;
+  padding-block: 28px;
+  align-items: center;
+  flex-direction: column;
+  background: linear-gradient(
+    180deg,
+    rgba(122, 55, 126, 0.36) 0%,
+    rgba(92, 39, 103, 0.2) 48%,
+    rgba(68, 28, 85, 0.34) 100%
+  );
+  box-shadow: inset 0 0 18px rgba(216, 135, 244, 0.09);
+}
+
+.camerino-mirror-rail--left {
+  left: 0;
+  border-radius: 15px 0 28px 15px;
+}
+
+.camerino-mirror-rail--right {
+  right: 0;
+  border-radius: 0 15px 15px 28px;
+}
+
+.camerino-mirror-bulb {
+  display: block;
+  width: 19px;
+  height: 19px;
+  flex: 0 0 auto;
+  border: 2px solid rgba(255, 231, 211, 0.88);
+  border-radius: 999px;
+  background: radial-gradient(
+    circle,
+    rgba(255, 255, 246, 1) 0 42%,
+    rgba(255, 239, 210, 1) 55%,
+    rgba(246, 192, 157, 0.98) 76%,
+    rgba(195, 118, 137, 0.92) 100%
+  );
+  box-shadow:
+    0 0 4px rgba(255, 250, 231, 0.92),
+    0 0 11px rgba(246, 186, 144, 0.72),
+    0 0 22px rgba(196, 98, 190, 0.34);
+  opacity: 0.88;
+  transform: scale(1);
+  will-change: opacity, box-shadow, transform;
+}
+
+.camerino-mirror-lights--listening .camerino-mirror-bulb {
+  animation: camerino-mirror-breathe 2.8s ease-in-out infinite;
+  animation-delay: calc(var(--bulb-index) * 90ms);
+}
+
+.camerino-mirror-lights--working .camerino-mirror-bulb {
+  animation: camerino-mirror-working 2.6s ease-in-out infinite;
+  animation-delay: calc(var(--bulb-index) * 150ms);
+}
+
+.camerino-mirror-lights--complete .camerino-mirror-bulb {
+  animation: camerino-mirror-complete 1.2s ease-out both;
+  animation-delay: calc(var(--bulb-index) * 55ms);
+}
+
+.camerino-mirror-lights--error .camerino-mirror-bulb {
+  opacity: 0.3;
+  filter: saturate(0.6);
+}
+
+@keyframes camerino-mirror-breathe {
+  0%, 100% { opacity: 0.74; transform: scale(1); box-shadow: 0 0 4px rgba(255, 250, 231, 0.72), 0 0 10px rgba(246, 186, 144, 0.52), 0 0 18px rgba(196, 98, 190, 0.24); }
+  50% { opacity: 1; transform: scale(1.08); box-shadow: 0 0 6px rgba(255, 250, 231, 1), 0 0 15px rgba(246, 186, 144, 0.88), 0 0 28px rgba(196, 98, 190, 0.46); }
+}
+
+@keyframes camerino-mirror-working {
+  0%, 52%, 100% { opacity: 0.62; transform: scale(0.98); box-shadow: 0 0 4px rgba(255, 250, 231, 0.68), 0 0 9px rgba(246, 186, 144, 0.48), 0 0 17px rgba(196, 98, 190, 0.2); }
+  22% { opacity: 1; transform: scale(1.1); box-shadow: 0 0 7px rgba(255, 250, 231, 1), 0 0 16px rgba(246, 186, 144, 0.92), 0 0 30px rgba(196, 98, 190, 0.48); }
+}
+
+@keyframes camerino-mirror-complete {
+  0% { opacity: 0.64; transform: scale(0.98); box-shadow: 0 0 4px rgba(255, 250, 231, 0.7), 0 0 9px rgba(246, 186, 144, 0.48); }
+  55% { opacity: 1; transform: scale(1.1); box-shadow: 0 0 7px rgba(255, 250, 231, 1), 0 0 17px rgba(246, 186, 144, 0.94), 0 0 30px rgba(196, 98, 190, 0.5); }
+  100% { opacity: 0.9; transform: scale(1); box-shadow: 0 0 4px rgba(255, 250, 231, 0.9), 0 0 12px rgba(246, 186, 144, 0.68), 0 0 22px rgba(196, 98, 190, 0.32); }
+}
+
+@media (max-width: 640px) {
+  .camerino-mirror-rail--left,
+  .camerino-mirror-rail--right {
+    width: 36px;
+    padding-block: 24px;
+  }
+
+  .camerino-mirror-bulb {
+    width: 17px;
+    height: 17px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .camerino-mirror-lights .camerino-mirror-bulb {
+    animation: none;
+  }
 }
 
 @media (max-width: 768px) {

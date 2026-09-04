@@ -600,7 +600,7 @@ const PortalJuegos = () => {
                 <div className="pt-4 border-t border-emerald-200/20 lg:hidden">
                   <IAInsightCard
                     {...JUEGOS_DEFINITION.iaProfile}
-                    title="Información del artefacto"
+                    title="Interacción esperada"
                     compact
                   />
                 </div>
@@ -612,7 +612,7 @@ const PortalJuegos = () => {
             Desactivado a propósito (2026-08-16): "Experiencia incrustada"
             (el gate "Antes de entrar" + iframe del juego) queda fuera del
             tríptico canónico (intro → obra destacada → columna). El Verso
-            fundacional y "Información del artefacto" que vivían aquí
+            fundacional y "Interacción esperada" que vivían aquí
             en móvil se movieron dentro de la tarjeta "Obra destacada" de
             arriba. Código intacto por si se retoma más adelante.
 
@@ -690,7 +690,7 @@ const PortalJuegos = () => {
                 <div className="pt-4 lg:hidden">
                   <IAInsightCard
                     {...JUEGOS_DEFINITION.iaProfile}
-                    title="Información del artefacto"
+                    title="Interacción esperada"
                     compact
                   />
                 </div>
@@ -721,7 +721,7 @@ const PortalJuegos = () => {
             <div className="order-4 hidden lg:block">
               <IAInsightCard
                 {...JUEGOS_DEFINITION.iaProfile}
-                title="Información del artefacto"
+                title="Interacción esperada"
                 compact
               />
             </div>
