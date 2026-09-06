@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
-import { X } from 'lucide-react';
+import UmbralWelcomeContent from '@/components/UmbralWelcomeContent';
 
 const backdropVariants = { hidden: { opacity: 0 }, visible: { opacity: 1 } };
 const panelVariants = {
@@ -156,39 +156,7 @@ const GatokensRevealModal = ({
               variants={panelVariants}
               className="font-display relative z-10 flex w-full max-w-md flex-col items-center px-5 py-10 text-center"
             >
-              {/* En móvil, tocar el fondo o usar Escape no es una salida
-                  evidente; el cierre explícito evita atrapar al usuario. */}
-              <button
-                type="button"
-                onClick={onClose}
-                className="absolute right-2 pwa-safe-top z-20 inline-flex h-9 w-9 items-center justify-center rounded-full border border-white/10 bg-white/5 text-slate-200 transition hover:bg-white/10 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-200/70"
-                aria-label="Cerrar"
-              >
-                <X size={18} />
-              </button>
-              <span
-                aria-hidden="true"
-                className="pointer-events-none absolute left-1/2 top-20 h-64 w-64 -translate-x-1/2 rounded-full blur-[72px]"
-                style={{ background: 'radial-gradient(circle, rgba(109,40,217,0.34) 0%, rgba(217,31,139,0.12) 48%, transparent 72%)' }}
-              />
-
-              <div className="relative" aria-hidden="true">
-                <motion.img
-                  src="/assets/laObraDorada.png"
-                  alt=""
-                  className="h-28 w-28 sm:h-32 sm:w-32 object-contain"
-                  animate={coinPulseAnimate}
-                  transition={coinPulseTransition}
-                  draggable="false"
-                />
-              </div>
-
-              <h2
-                id="gatokens-modal-title"
-                className="relative mt-9 text-3xl font-medium leading-tight tracking-[-0.02em] text-white sm:text-4xl"
-              >
-                La obra sabe<br />que estás aquí.
-              </h2>
+              <UmbralWelcomeContent titleFirst onContinue={onClose} />
 
             </motion.div>
           ) : (
