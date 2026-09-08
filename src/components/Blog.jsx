@@ -1185,7 +1185,7 @@ const Blog = ({ posts = [], isLoading = false, error = null, showBuscador = fals
                       </div>
 
                       <p className="max-w-3xl text-sm leading-relaxed text-slate-300/80 md:text-base">
-                        Haz del camerino tu intermedio: consulta al apuntador, toma una pregunta del vestíbulo o deja la tuya para quien venga después.
+                        Consulta al apuntador, toma una pregunta del vestíbulo o deja la tuya para quien venga después.
                       </p>
 
                       <div className="space-y-2">
@@ -1243,7 +1243,7 @@ const Blog = ({ posts = [], isLoading = false, error = null, showBuscador = fals
                           ) : (
                             <div className="space-y-3">
                               <label htmlFor="archivo-vivo-query" className="text-[10px] uppercase tracking-[0.26em] text-violet-200/55">
-                                {faqQuery.trim() ? 'Esto entendí · puedes editarlo' : 'Escribe una pregunta para el apuntador'}
+                                {faqQuery.trim() ? 'Esto entendí · puedes editarlo' : 'Escríbele una pregunta'}
                               </label>
                               <textarea
                                 id="archivo-vivo-query"

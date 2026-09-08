@@ -167,10 +167,15 @@ Diagnóstico verificado contra disco, árbol de los doce repos y comparación de
 - Diseñar la forma de acreditar una compra sin crear un proceso manual difícil de sostener.
 - Mantener el bloque actual como placeholder informativo hasta definir fuente de datos, reglas y copy.
 
-### Homologar “Última llamada”
+### ~~Homologar “Última llamada”~~ — RESUELTO al revés, 7 de septiembre de 2026
 
-- Usar **Última llamada** en toda interfaz y documentación nueva.
-- No renombrar automáticamente claves históricas de almacenamiento o eventos como `tercera-llamada-completed`; requieren una migración compatible para no perder estados existentes.
+Decisión del autor: **el nombre es «Tercera llamada» y «Última llamada» queda retirado.**
+Revierte lo que este tintero había decidido el 19 de agosto. Manda la regla de
+`vigencias-y-precedencia.md` §1 — la nomenclatura transversal la fija lo que está en
+pantalla —, y en pantalla siempre dijo *Tercera llamada*: es la fórmula del teatro
+mexicano antes de que suba el telón. Retirado de los siete documentos donde aparecía.
+
+- Las claves históricas como `tercera-llamada-completed` **ya eran correctas** y no se tocan.
 
 ### Matriz mínima de regresión responsive
 

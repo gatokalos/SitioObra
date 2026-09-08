@@ -1031,7 +1031,7 @@ const PortalVoz = () => {
                 <div className="space-y-4 lg:flex lg:flex-col lg:gap-5 lg:space-y-0">
                   <VitranaQuestionReveal
                     question={l1Done ? (buildL1Acknowledgment('obra', l2Answer) ?? LEVEL2_QUESTIONS['obra']?.question ?? vitranaQuestion) : vitranaQuestion}
-                    buttonLabel={l1Done ? 'Tu progreso →' : undefined}
+                    buttonLabel={l1Done ? 'Sigue tu huella →' : undefined}
                     autoReveal={l1Done}
                     portal="obra"
                     l2Done={l2Done}

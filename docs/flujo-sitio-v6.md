@@ -16,7 +16,7 @@ flowchart TB
     direction TB
 
     HERO[PRIMERA FILA<br/><small>Hero · activar la escena</small>]:::acto
-    ULTIMA[ÚLTIMA LLAMADA<br/><small>Entrada narrativa al universo</small>]:::acto
+    ULTIMA[TERCERA LLAMADA<br/><small>Entrada narrativa al universo</small>]:::acto
     MINI[LA OBRA TOMA FORMA<br/><small>Miniversos · nueve formas creativas</small>]:::escena
     INTER[INTERMEDIO<br/><small>¿Qué obra ocurre en ti?</small>]:::acto
     CURA[CURADURÍA<br/><small>El Camerino (Apuntador) + contenidos editoriales</small>]:::escena
