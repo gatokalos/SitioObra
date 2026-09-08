@@ -113,7 +113,47 @@ Son dos corpus, no uno.
 
 ---
 
-## 4. Otros pendientes que conviene conservar visibles
+## 4. Poner bajo control de versiones lo que hoy no lo está
+
+**Prioridad:** alta — es el único pendiente del tintero con riesgo de pérdida irreversible
+**Anotado:** 7 de septiembre de 2026
+
+### El riesgo
+
+Lo que llamamos monorepo no lo es todavía. `gatoencerrado-ai/` es una carpeta **sin control de versiones** que contiene **doce repositorios independientes**, cada uno con su historia y su rama —cuatro de ellos fuera de `main`—, más siete carpetas de primer nivel que no están en ninguno.
+
+Dos de esas carpetas no deberían pasar otra semana así:
+
+- **`supabase/`** — 94 migraciones y 38 edge functions. Es el esquema de la base de datos de producción, y no tiene historial. Si algo se borra o se sobrescribe, no hay de dónde recuperarlo.
+- **`docs/`** — 61 archivos: las nueve fichas de artefacto, el registro de decisiones (D-01 a D-30), la plantilla, `vigencias-y-precedencia.md`. Todo el corpus canónico de la tesis.
+
+No es hipotético: el 2 de septiembre no se eliminó un duplicado exacto (`consigna_quinta_cartografia_1.md`) precisamente porque no había cómo deshacerlo. Y desde entonces ya se escribió una migración nueva sobre esa misma carpeta sin red.
+
+### Lo que se hace primero — veinte minutos, no compromete ninguna arquitectura
+
+Dos repositorios privados, separados, sin tocar los doce que ya existen ni ningún despliegue:
+
+```bash
+cd ~/gatoencerrado-ai/supabase && git init && git add . && git commit -m "Estado inicial"
+cd ~/gatoencerrado-ai/docs     && git init && git add . && git commit -m "Estado inicial"
+```
+
+**Antes del primer commit:** revisar el `.gitignore`. Hay un `.env` en `tools/local/ge-send-test/`, y conviene excluir `node_modules` y `.DS_Store`.
+
+### Lo que viene después, y no antes
+
+- **Recoger lo que está fuera.** Quedan archivos del proyecto en `~/Downloads`. Y hay carpetas vacías con nombre reservado —`shared/`, `auth/`, `deploy/`— que prometen algo que no existe: o se llenan o se van.
+- **La raíz como monorepo real**, con `git subtree add` repo por repo para conservar cada historia. Empezar por los que casi no despliegan —`cerebrito`, `sonoridades`, `dashboard`— y dejar SitioObra y el backend para el final. **No hacerlo con prisa:** cada repo es hoy una unidad de despliegue y varios apuntan a FTP o subdominios concretos.
+- **`shared/` con el canon adentro.** Es lo que de verdad resuelve que las cosas "no se conecten": las nueve formas con sus ids, clusters, preguntas madre, versos fundacionales y la tabla de alias, importadas por front y backend en vez de copiadas. Hoy `PREGUNTA_MADRE` (`useVitranaQuestion.js`) y `pregunta_madre` de `MINIVERSO_FORMAS` (`resonance.js`) son idénticas palabra por palabra, pero porque alguien las copió bien — nada lo garantiza. Lo mismo con los nueve `cartaTitle`/`NOTA_AUTORAL.title`, que ya se sincronizaron a mano dos veces. Esa misma fuente es la que necesita el sync del pendiente 3.
+
+### Documento completo
+
+Diagnóstico verificado contra disco, árbol de los doce repos y comparación de los tres caminos con sus pros y contras:
+`https://claude.ai/code/artifact/29e88116-1004-4bd0-8295-3179528d3e5f`
+
+---
+
+## 5. Otros pendientes que conviene conservar visibles
 
 ### Modernizar la reacción de La Réplica
 

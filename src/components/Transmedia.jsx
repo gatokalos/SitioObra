@@ -273,7 +273,7 @@ const Transmedia = ({ allianceOnlyMode = false }) => {
   const [focusAppMetadata, setFocusAppMetadata] = useState(null);
   const [isMovementCreditsOpen, setIsMovementCreditsOpen] = useState(false);
   const [openCollaboratorId, setOpenCollaboratorId] = useState(null);
-  // "Interacción esperada" y Cómplices comparten columna en cada
+  // "AL ENTRAR EN ESCENA…" y Cómplices comparten columna en cada
   // miniverso — solo uno de los dos acordeones puede estar abierto a la vez.
   const [isArtesaniasDeviceInfoOpen, setIsArtesaniasDeviceInfoOpen] = useState(false);
   const [isDramaDeviceInfoOpen, setIsDramaDeviceInfoOpen] = useState(false);
@@ -1814,7 +1814,7 @@ const Transmedia = ({ allianceOnlyMode = false }) => {
       showcaseId,
       {
         heading = 'Formas de habitar',
-        ctaLabel = 'Intuye tu respuesta',
+        ctaLabel = 'Improvisa una respuesta',
         emptyMessage = 'Aún no hay comentarios de la comunidad.',
         reactionProps = null,
         className = 'rounded-3xl border border-white/10 bg-black/30 p-6 space-y-5',
@@ -1941,7 +1941,7 @@ const rendernotaAutoral = () => {
   );
 };
 
-const renderDeviceInfoDesktop = (title = 'Interacción esperada', accordionControl = null) => {
+const renderDeviceInfoDesktop = (title = 'AL ENTRAR EN ESCENA…', accordionControl = null) => {
   if (!activeDefinition?.iaProfile) return null;
 
   return (
@@ -2570,7 +2570,7 @@ const renderDramaFeaturedWork = () => (
           <div className="hidden gap-6 lg:grid lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
             {/* Columna izquierda: card inmersiva estilo cine */}
             {renderDramaFeaturedWork()}
-            {/* Columna derecha: verso fundacional + Interacción esperada + Cómplices + CTA */}
+            {/* Columna derecha: verso fundacional + AL ENTRAR EN ESCENA… + Cómplices + CTA */}
             <div className="hidden lg:flex lg:flex-col lg:gap-5">
               {rendernotaAutoral()}
               {renderCollaboratorsSection(activeDefinition.collaborators, activeShowcase ?? 'hdr', true, true)}
@@ -4511,7 +4511,7 @@ const renderDramaFeaturedWork = () => (
                         </p>
                       ))}
                     </div>
-                    {renderDeviceInfoDesktop('Interacción esperada')}
+                    {renderDeviceInfoDesktop('AL ENTRAR EN ESCENA…')}
                     <div className="hidden lg:block">
                       {activeDefinition.type === 'movement-ritual' ? (
                         <div className="rounded-2xl border border-white/10 bg-black/20 px-5 py-4 space-y-3">
@@ -4573,7 +4573,7 @@ const renderDramaFeaturedWork = () => (
                     {activeDefinition.type === 'tragedia' ? (
                       <>
                         <div className="mb-1">
-                          <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Resonancia Colectiva</p>
+
                           <h4 className="font-display text-2xl question-heading-voice">Tras cada pregunta
                           </h4>
                         </div>
@@ -4613,7 +4613,7 @@ const renderDramaFeaturedWork = () => (
                     ) : activeShowcase === 'miniversoNovela' ? (
                       <>
                         <div className="mb-1">
-                          <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Resonancia Colectiva</p>
+                      
                           <h4 className="font-display text-2xl question-heading-voice">Tras cada pregunta
                           </h4>
                         </div>
@@ -4651,7 +4651,7 @@ const renderDramaFeaturedWork = () => (
                     ) : activeShowcase === 'lataza' ? (
                       <>
                         <div className="mb-1">
-                          <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Resonancia Colectiva</p>
+                         
                           <h4 className="font-display text-2xl question-heading-voice">Tras cada pregunta
                           </h4>
                         </div>
@@ -4689,7 +4689,7 @@ const renderDramaFeaturedWork = () => (
                     ) : activeShowcase === 'miniversoGrafico' ? (
                       <>
                         <div className="mb-1">
-                          <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Resonancia Colectiva</p>
+                          
                           <h4 className="font-display text-2xl question-heading-voice">Tras cada pregunta
                           </h4>
                         </div>
@@ -4728,7 +4728,7 @@ const renderDramaFeaturedWork = () => (
                     ) : activeShowcase === 'copycats' ? (
                       <>
                         <div className="mb-1">
-                          <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Resonancia Colectiva</p>
+                         
                           <h4 className="font-display text-2xl question-heading-voice">Tras cada pregunta
                           </h4>
                         </div>
@@ -4766,7 +4766,6 @@ const renderDramaFeaturedWork = () => (
                     ) : activeShowcase === 'miniversoSonoro' ? (
                       <>
                         <div className="mb-1">
-                          <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Resonancia Colectiva</p>
                           <h4 className="font-display text-2xl question-heading-voice">Tras cada pregunta
                           </h4>
                         </div>
@@ -4804,7 +4803,6 @@ const renderDramaFeaturedWork = () => (
                     ) : activeShowcase === 'miniversoMovimiento' ? (
                       <>
                         <div className="mb-1">
-                          <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Resonancia Colectiva</p>
                           <h4 className="font-display text-2xl question-heading-voice">Tras cada pregunta
                           </h4>
                         </div>
@@ -4842,7 +4840,7 @@ const renderDramaFeaturedWork = () => (
                     ) : activeShowcase === 'apps' ? (
                       <>
                         <div className="mb-1">
-                          <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Resonancia Colectiva</p>
+                          
                           <h4 className="font-display text-2xl question-heading-voice">Tras cada pregunta
                           </h4>
                         </div>
@@ -4880,7 +4878,6 @@ const renderDramaFeaturedWork = () => (
                     ) : activeShowcase === 'oraculo' ? (
                       <>
                         <div className="mb-1">
-                          <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Resonancia Colectiva</p>
                           <h4 className="font-display text-2xl question-heading-voice">Tras cada pregunta
                           </h4>
                         </div>
@@ -5592,12 +5589,9 @@ const renderDramaFeaturedWork = () => (
                 La obra toma forma
               </h2>
               <p className="text-lg text-slate-300/80 max-w-3xl mx-auto leading-relaxed font-light">
-    <em>Esta obra es un sistema narrativo transmedia</em> que se despliega en nueve formas que aquí llamamos miniversos.<br />
-    <strong>Elige por dónde continuar y qué lugar ocupar.</strong><br />
-      <span className="block mt-10 text-sm text-slate-100/50 italic">
-    (El universo #GatoEncerrado se <strong>expande</strong> con cada minuto de tu atención.)
-  </span>
-      </p>
+    <em>Este universo se despliega en nueve miniversos</em>.<br />
+    <strong>Elige uno. Toda entrada puede ser un principio.</strong>
+           </p>
             </motion.div>
           ) : null}
 

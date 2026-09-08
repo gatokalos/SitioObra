@@ -4,7 +4,7 @@ import { useAuth } from '@/contexts/SupabaseAuthContext';
 import { useToast } from '@/components/ui/use-toast';
 
 const IAInsightCard = ({
-  title = 'Interacción esperada',
+  title = 'AL ENTRAR EN ESCENA…',
   type,
   interaction,
   tokensRange,
@@ -145,7 +145,7 @@ const IAInsightCard = ({
             <div className="flex items-start gap-2 leading-relaxed">
               <MessageCircle size={16} className="mt-0.5 text-purple-200" />
               <div>
-        <strong>Interacción esperada:</strong>{' '}
+        <strong>AL ENTRAR EN ESCENA…:</strong>{' '}
         <span>{interaction}</span>
       </div>
             </div>

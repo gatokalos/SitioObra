@@ -24,7 +24,7 @@ const VitranaQuestionReveal = ({
   question,
   onAnswer,
   onReveal,
-  buttonLabel = 'Intuye tu respuesta',
+  buttonLabel = 'Improvisa una respuesta',
   label = 'Resonancia Colectiva',
   autoReveal = false,
   portal = null,

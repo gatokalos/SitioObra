@@ -325,7 +325,7 @@ export const TOPIC_BY_SHOWCASE = {
 export const MINIVERSO_EDITORIAL_INTERCEPTION_ENABLED =
   import.meta.env?.VITE_MINIVERSO_INTERCEPTION === 'true';
 // Ubicación ORIGINAL/retirada del umbral narrativo — video puente antes de
-// "Intuye tu respuesta" en los 9 portales, antes de "Viajar a esta escena"
+// "Improvisa una respuesta" en los 9 portales, antes de "Viajar a esta escena"
 // en el Libreto holográfico, y antes del video de reanudación tras login en
 // Hero.jsx ("Entra y sigue la forma" en Transmedia). Las tres viven como
 // entrada/umbral. Reubicado: el mejor lugar resultó ser el clímax previo al

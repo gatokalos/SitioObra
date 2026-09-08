@@ -1,5 +1,5 @@
 export const RESONANCE_SHARED_DRAMATURGY = {
-  phase3Eyebrow: 'Clímax del primer acto',
+  phase3Eyebrow: 'Clímax del segundo acto',
   phase3Title: 'En el foco',
   appearanceCue: 'Antes del intermedio, el autor entra a cuadro.',
   phase3Description: 'Este recorrido ha concluido. Las respuestas registradas permiten estudiar cómo las experiencias narrativas son interpretadas, recordadas y resignificadas por distintas personas.',

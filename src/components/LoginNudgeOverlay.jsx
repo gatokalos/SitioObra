@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 
 // Extraído de About.jsx (overlay post-envío de Provoca) para reutilizarlo
 // donde se necesite pedir login sin bloquear la lectura/exploración previa —
-// ej. el gate de "Intuye tu respuesta" en los portales de miniverso.
+// ej. el gate de "Improvisa una respuesta" en los portales de miniverso.
 const LoginNudgeOverlay = ({
   open,
   onClose,

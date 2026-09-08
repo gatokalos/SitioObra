@@ -151,11 +151,6 @@ const PortalSonoridades = () => {
   }, []);
   const navigate = useNavigate();
   const location = useLocation();
-  // Resonancia Colectiva ya no se auto-abre al llegar del video narrativo
-  // (decisión 2026-08-07: se sentía intrusivo — el usuario debe encontrarla
-  // por sí mismo). Lo que sí se conserva es la señal "ya vio el video de
-  // este miniverso" — "Intuye tu respuesta" la usa como puente: si no lo
-  // vio, se lo ofrece antes de abrir la pregunta.
   useEffect(() => {
     if (location.state?.portalLaunchSource !== 'video-narrative-cta') return;
     try {
@@ -192,7 +187,7 @@ const PortalSonoridades = () => {
 
   // Puente: si no ha visto el video narrativo de este miniverso, se lo
   // ofrece antes de abrir la pregunta (decisión 2026-08-07 — Resonancia
-  // Colectiva ya no se auto-abre sola; ahora "Intuye tu respuesta" decide).
+  // Colectiva ya no se auto-abre sola; ahora "Improvisa una respuesta" decide).
   const [showResonanceBridgeVideo, setShowResonanceBridgeVideo] = useState(false);
   const handleAnswerResonance = useCallback(() => {
     let videoSeen = false;
@@ -353,8 +348,8 @@ const PortalSonoridades = () => {
                 miniversoLabel="La vibración"
               />
             </div>
-            <div className="grid gap-6 p-4 sm:p-6 lg:p-8 lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
-              <div className="space-y-6">
+            <div className="grid lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
+              <div className="space-y-6 p-4 sm:p-6 lg:py-8 lg:pl-8 lg:pr-3">
                 <div className="flex min-w-0 items-center gap-4">
                   <MiniverseIconBadge formatId="miniversoSonoro" />
                   <div className="min-w-0 space-y-3">
@@ -372,12 +367,20 @@ const PortalSonoridades = () => {
                 </div>
               </div>
 
-              <div className="hidden lg:block">
-                <div className="mb-3">
-                  <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Resonancia Colectiva</p>
+              <div className="lg:hidden px-6 sm:px-8 pb-6">
+                <IAInsightCard
+                  {...showcaseDefinitions.miniversoSonoro.iaProfile}
+                  title="AL ENTRAR EN ESCENA…"
+                  compact
+                />
+              </div>
+
+              <div className={`px-6 sm:px-8 pb-6 sm:pb-8 lg:py-8 lg:pl-3 lg:pr-8 transition-opacity duration-300${isResonanceOpen ? ' opacity-30 pointer-events-none lg:opacity-100 lg:pointer-events-auto' : ''}`}>
+                <div className="mb-1 lg:mb-3">
+                  <p className="hidden lg:block text-xs uppercase tracking-[0.35em] text-slate-400/70">Resonancia Colectiva</p>
                   <h4 className="font-display text-xl question-heading-voice">Tras cada pregunta</h4>
                 </div>
-                <div className="flex flex-col gap-5">
+                <div className="space-y-6 lg:flex lg:flex-col lg:gap-5 lg:space-y-0">
                   <VitranaQuestionReveal
                     question={l1Done ? (buildL1Acknowledgment('sonoridades', l2Answer) ?? LEVEL2_QUESTIONS['sonoridades']?.question ?? vitranaQuestion) : vitranaQuestion}
                     buttonLabel={l1Done ? 'Tu progreso →' : undefined}
@@ -395,27 +398,6 @@ const PortalSonoridades = () => {
                   <ShowcaseReactionInline status={reactionStatus} onReact={handleSendPulse} />
                 </div>
               </div>
-            </div>
-            <div className={`lg:hidden px-6 sm:px-8 pb-6 sm:pb-8 space-y-6 transition-opacity duration-300${isResonanceOpen ? ' opacity-30 pointer-events-none' : ''}`}>
-              <div className="mb-1">
-                <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Resonancia Colectiva</p>
-                <h4 className="font-display text-xl question-heading-voice">Tras cada pregunta</h4>
-              </div>
-              <VitranaQuestionReveal
-                question={l1Done ? (buildL1Acknowledgment('sonoridades', l2Answer) ?? LEVEL2_QUESTIONS['sonoridades']?.question ?? vitranaQuestion) : vitranaQuestion}
-                buttonLabel={l1Done ? 'Tu progreso →' : undefined}
-                autoReveal={l1Done}
-                portal="sonoridades"
-                l2Done={l2Done}
-                l3Done={Boolean(l3Rec?.step3) || bitacoraDone}
-                l3Step3={l3Rec?.step3 ?? null}
-                bitacoraCompleted={bitacoraDone}
-                l3FormaLabel={l3Rec?.forma ?? null}
-                onL3CTA={() => { const r = resolvePortalRoute({ formatId: l3Rec?.recommended_format_id }); if (r) navigate(r); }}
-                onAnswer={handleAnswerResonance}
-                label=""
-              />
-              <ShowcaseReactionInline status={reactionStatus} onReact={handleSendPulse} />
             </div>
             <VideoNarrativeAutoplay
               open={showResonanceBridgeVideo}
@@ -527,13 +509,6 @@ const PortalSonoridades = () => {
               </div>
               <div className="px-6 pt-5 pb-6 space-y-4">
                
-                <div className="lg:hidden">
-                  <IAInsightCard
-                    {...showcaseDefinitions.miniversoSonoro.iaProfile}
-                    title="Interacción esperada"
-                    compact
-                  />
-                </div>
                 <div className="pt-4 border-t border-white/10 lg:hidden space-y-4">
                   <div className="flex flex-col gap-3">
                     <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Verso fundacional</p>
@@ -554,7 +529,7 @@ const PortalSonoridades = () => {
           <div className="order-4 hidden lg:block">
             <IAInsightCard
               {...showcaseDefinitions.miniversoSonoro.iaProfile}
-              title="Interacción esperada"
+              title="AL ENTRAR EN ESCENA…"
               compact
             />
           </div>

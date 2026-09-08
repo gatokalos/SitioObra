@@ -1554,7 +1554,7 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
                                           <span className="absolute inline-flex h-full w-full rounded-full bg-sky-400 opacity-75 animate-ping" />
                                           <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-sky-300" />
                                         </span>
-                                        Escena en vivo
+                                        Escena activa
                                       </span>
                                       <ChevronDown
                                         size={13}
@@ -1846,7 +1846,7 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
                                                   <span className="h-px flex-1 bg-gradient-to-l from-transparent to-white/20" />
                                                 </div>
                                                 <p className="mt-4 text-[0.6rem] font-semibold uppercase tracking-[0.32em] text-purple-200/65">
-                                                  Fin del primer acto
+                                                  ¿Fin del segundo acto?
                                                 </p>
                                                 <p className="mt-1 font-display text-xl tracking-[0.14em] text-white">
                                                   Intermedio
