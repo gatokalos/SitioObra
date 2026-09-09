@@ -9,18 +9,18 @@ import { useAuth } from '@/contexts/SupabaseAuthContext';
 import { ORACULO_RECOMMENDED_SHOWCASE_KEY } from '@/components/transmedia/transmediaConstants';
 
 // Mismo criterio de acceso que handleFormatClick usa en Transmedia.jsx: un
-// invitado sin cuenta solo puede entrar a la vitrina recomendada o a una que
-// ya desbloqueó gastando GAT — cualquier otra requiere login. anon_id no es
-// secreto (vive en el localStorage del propio visitante), así que sin este
-// chequeo cualquiera podía usar su propio anon_id con m=<cualquier portal>
-// para saltarse el desbloqueo (encontrado 2026-07-27).
+// Un invitado sin cuenta solo puede entrar a la vitrina recomendada — cualquier
+// otra requiere login. anon_id no es secreto (vive en el localStorage del propio
+// visitante), así que sin este chequeo cualquiera podía usar su propio anon_id
+// con m=<cualquier portal> para saltarse el desbloqueo (encontrado 2026-07-27).
+// El 9 sep 2026 se retiró la segunda vía —una vitrina desbloqueada gastando
+// GAT—: era residuo, y aquí tenía que caer igual que en Transmedia.jsx para que
+// la regla no dependa de por dónde se entre.
 function hasUnlockedAccess(formatId, isAuthenticated) {
   if (isAuthenticated) return true;
   try {
     const recommended = window.localStorage.getItem(ORACULO_RECOMMENDED_SHOWCASE_KEY);
-    if (recommended && recommended === formatId) return true;
-    const boosts = JSON.parse(window.localStorage.getItem('gatoencerrado:showcase-boosts') || '{}');
-    return Boolean(boosts?.[formatId]);
+    return Boolean(recommended && recommended === formatId);
   } catch {
     return false;
   }

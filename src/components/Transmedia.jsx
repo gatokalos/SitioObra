@@ -789,6 +789,14 @@ const Transmedia = ({ allianceOnlyMode = false }) => {
       if (isAuthenticated) {
         nextRecommendedId = showcaseId;
       } else {
+        // Un invitado tiene UNA sola vitrina abierta: la recomendada. Hasta el
+        // 9 sep 2026 la regla era "la recomendada O una desbloqueada con GAT"
+        // (showcaseBoosts) — residuo, según Carlos: el GAT no abre puertas de
+        // acceso (D-15, el GAT no es parte del instrumento). Los boosts siguen
+        // vivos para lo suyo, que es la energía por vitrina. Eran cinco puntos
+        // de decisión: los dos de handleFormatClick y los dos botones de la
+        // vitrina revelada (móvil y escritorio), más BitacoraLanding.jsx.
+        //
         // La vitrina gratis de un invitado se fija en la PRIMERA recomendación
         // de la sesión y ya no se reemplaza después (chip de GAT del Header,
         // recomendación L3, etc.) — evita que un invitado termine con acceso a
@@ -902,7 +910,7 @@ const Transmedia = ({ allianceOnlyMode = false }) => {
       // 1024px), o el toque actualiza un estado que la tarjeta visible no escucha.
       if (isVitrinaCarouselViewport && !isAuthenticated) {
         const hasBienvenida = safeGetItem('gatoencerrado:bienvenida-completed') === '1';
-        const hasUnlockedAccess = formatId === recommendedShowcaseId || Boolean(showcaseBoosts?.[formatId]);
+        const hasUnlockedAccess = formatId === recommendedShowcaseId;
         if (hasBienvenida && hasUnlockedAccess) {
           if (navigateToMobilePortalIfReady(formatId)) return;
         }
@@ -913,7 +921,7 @@ const Transmedia = ({ allianceOnlyMode = false }) => {
       // with GAT. Everyone else sees the login CTA.
       if (!isVitrinaCarouselViewport && !isAuthenticated) {
         const hasBienvenida = safeGetItem('gatoencerrado:bienvenida-completed') === '1';
-        const hasUnlockedAccess = formatId === recommendedShowcaseId || Boolean(showcaseBoosts?.[formatId]);
+        const hasUnlockedAccess = formatId === recommendedShowcaseId;
         if (!(hasBienvenida && hasUnlockedAccess)) {
           setDesktopVitranaRevealId((prev) => (prev === formatId ? null : formatId));
           return;
@@ -5824,8 +5832,7 @@ const renderDramaFeaturedWork = () => (
                           type="button"
                           onClick={(e) => {
                             e.stopPropagation();
-                            const hasUnlockedAccess =
-                              format.id === recommendedShowcaseId || Boolean(showcaseBoosts?.[format.id]);
+                            const hasUnlockedAccess = format.id === recommendedShowcaseId;
                             if (!isAuthenticated && hasUnlockedAccess && navigateToMobilePortalIfReady(format.id)) {
                               return;
                             }
@@ -6032,8 +6039,7 @@ const renderDramaFeaturedWork = () => (
                           type="button"
                           onClick={(e) => {
                             e.stopPropagation();
-                            const hasUnlockedAccess =
-                              format.id === recommendedShowcaseId || Boolean(showcaseBoosts?.[format.id]);
+                            const hasUnlockedAccess = format.id === recommendedShowcaseId;
                             if (!isAuthenticated && hasUnlockedAccess && navigateToMobilePortalIfReady(format.id)) {
                               return;
                             }
