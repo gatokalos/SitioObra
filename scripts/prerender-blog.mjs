@@ -186,3 +186,41 @@ for (const post of posts) {
 }
 
 console.log(`[prerender-blog] ✓ Prerendered ${count} article page${count !== 1 ? 's' : ''} → dist/blog/`);
+
+// ─── Sitemap ──────────────────────────────────────────────────────────────────
+// robots.txt anunciaba /sitemap.xml pero el archivo no existía: el servidor
+// respondía con index.html —comportamiento normal de una SPA— y Google recibía
+// HTML donde esperaba XML. Se genera aquí porque es donde ya están los posts.
+
+const today = new Date().toISOString().slice(0, 10);
+const entries = [
+  { loc: `${SITE_URL}/`, priority: '1.0', changefreq: 'weekly' },
+  ...posts
+    .map((post) => (post.slug ?? '').trim())
+    .filter(Boolean)
+    .map((slug) => ({
+      loc: `${SITE_URL}/blog/${slug}`,
+      priority: '0.8',
+      changefreq: 'monthly',
+    })),
+];
+
+const sitemap = [
+  '<?xml version="1.0" encoding="UTF-8"?>',
+  '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">',
+  ...entries.map(({ loc, priority, changefreq }) =>
+    [
+      '  <url>',
+      `    <loc>${loc}</loc>`,
+      `    <lastmod>${today}</lastmod>`,
+      `    <changefreq>${changefreq}</changefreq>`,
+      `    <priority>${priority}</priority>`,
+      '  </url>',
+    ].join('\n')
+  ),
+  '</urlset>',
+  '',
+].join('\n');
+
+writeFileSync(join(ROOT, 'dist', 'sitemap.xml'), sitemap, 'utf8');
+console.log(`[prerender-blog] ✓ sitemap.xml con ${entries.length} URLs → dist/`);

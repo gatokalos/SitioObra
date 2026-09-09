@@ -2,6 +2,14 @@
   RewriteEngine On
   RewriteBase /
 
+  # Dominio canónico. esungatoencerrado.com apunta al mismo docroot y servía una
+  # copia idéntica del sitio con HTTP 200: dos sitios iguales, sin redirect ni
+  # canonical, repartiéndose la autoridad de búsqueda. Este 301 los consolida en
+  # universo.gatoencerrado.org. Cuando esungatoencerrado.com pase a ser la
+  # boletería de temporada, esta regla se retira.
+  RewriteCond %{HTTP_HOST} ^(www\.)?esungatoencerrado\.com$ [NC]
+  RewriteRule ^(.*)$ https://universo.gatoencerrado.org/$1 [R=301,L]
+
   # Servir artículos prerendered: /blog/slug → /blog/slug.html
   RewriteCond %{REQUEST_URI} ^/blog/[^/]+$
   RewriteCond %{DOCUMENT_ROOT}%{REQUEST_URI}.html -f
