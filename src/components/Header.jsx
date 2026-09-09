@@ -686,10 +686,10 @@ const Header = ({
   const menuItems = [
     { name: 'Primera fila', href: '#hero' },
     ...(showTerceraLlamadaNav ? [{ name: 'Tercera llamada', href: '#bienvenida-creador' }] : []),
-    ...(showTransmediaNav ? [{ name: 'Miniversos', href: '#transmedia' }] : []),
+    ...(showTransmediaNav ? [{ name: 'Segundo acto', href: '#transmedia' }] : []),
     ...(showAllianceNav ? [{ name: 'Alianza', href: '#apoya' }] : []),
     ...(showIntermedioNav ? [{ name: 'Intermedio', href: '#blog-contribuye' }] : []),
-    ...(showPerspectivasNav ? [{ name: 'Segundo acto', href: '#provoca' }] : []),
+    ...(showPerspectivasNav ? [{ name: 'Acto final', href: '#provoca' }] : []),
     ...(showIntermedioNav ? [{ name: 'Caída del telón', href: '#next-show' }] : []),
     ...(showObraDestacadaNav ? [{ name: 'Obra fundacional', href: '#about' }] : []),
     ...(showObraDestacadaNav ? [{ name: 'Créditos', href: '#team' }] : []),
@@ -697,67 +697,66 @@ const Header = ({
     ...(showBeforeLeavingNav ? [{ name: 'Antes de irte', href: '#conoce-sistema' }] : []),
     { name: 'Salida', href: '#contact' },
   ];
+  // Un programa de mano anuncia la función completa, incluidos los actos que
+  // todavía no ocurren. Antes, las estaciones no disponibles simplemente no se
+  // dibujaban, así que al activar la escena el programa prometía un intermedio
+  // sin nada en medio y un acto final sin acto previo (Carlos, 9 sep 2026).
+  // Ahora se listan siempre; las que aún no están abiertas van bloqueadas, y
+  // una estación bloqueada no despliega sus sub-secciones.
+  const station = (isOpen, item) => (
+    isOpen ? item : { ...item, locked: true, secondary: undefined }
+  );
+
   const mobileMenuItems = [
-    { name: 'Primera fila', href: '#hero', description: '#UniversoGatoEncerrado',
- },
-    ...(showTerceraLlamadaNav
-      ? [{ name: 'Tercera llamada', href: '#bienvenida-creador', description: '#TeEstabaEsperando' }]
-      : []),
-    ...(showTransmediaNav
-      ? [
-          {
-            name: 'Segundo acto',
-            href: '#transmedia',
-            description: '#LaObraTomaForma',
-            secondary: TRANSMEDIA_SECONDARY_ITEMS,
-          },
-        ]
-      : []),
-    ...(showIntermedioNav
-      ? [
-          {
-            name: 'Intermedio',
-            href: '#blog-contribuye',
-            description: '#Introspección',
-            ...(showCuradoriaNav
-              ? {
-                  secondary: [
-                    { label: 'Entra al Camerino', href: '#dialogo-critico', action: 'show-buscador' },
-                    { label: 'Curaduría Reflexiva', href: '#dialogo-critico?focus=curaduria' },
-                    { label: 'Expansiones Narrativas', href: '#dialogo-critico?focus=expansiones' },
-                    { label: 'Procesos Creativos', href: '#dialogo-critico?focus=backstage' },
-                  ],
-                }
-              : {}),
-          },
-        ]
-      : []),
-    ...(showPerspectivasNav
-      ? [
-          {
-            name: 'Acto final',
-            href: '#provoca',
-            description: '#FormasDeDecirlo',
-            secondary: [{ label: 'La Réplica', href: '#provoca' }],
-          },
-        ]
-      : []),
-    ...(showIntermedioNav
-      ? [{
-          name: 'Caída del telón',
-          href: '#next-show',
-          description: '#ArchivoEscénico',
-          ...(showObraDestacadaNav
-            ? {
-                secondary: [
-                  { label: 'Obra fundacional', href: '#about' },
-                  { label: 'Créditos de la función', href: '#team' },
-                  { label: 'Galería fractal', href: '#instagram' },
-                ],
-              }
-            : {}),
-        }]
-      : []),
+    { name: 'Primera fila', href: '#hero', description: '#UniversoGatoEncerrado' },
+    station(showTerceraLlamadaNav, {
+      name: 'Tercera llamada',
+      href: '#bienvenida-creador',
+      description: '#TeEstabaEsperando',
+    }),
+    station(showTransmediaNav, {
+      name: 'Segundo acto',
+      href: '#transmedia',
+      description: '#LaObraTomaForma',
+      secondary: TRANSMEDIA_SECONDARY_ITEMS,
+    }),
+    station(showIntermedioNav, {
+      name: 'Intermedio',
+      href: '#blog-contribuye',
+      description: '#Introspección',
+      ...(showCuradoriaNav
+        ? {
+            secondary: [
+              { label: 'Entra al Camerino', href: '#dialogo-critico', action: 'show-buscador' },
+              { label: 'Curaduría Reflexiva', href: '#dialogo-critico?focus=curaduria' },
+              { label: 'Expansiones Narrativas', href: '#dialogo-critico?focus=expansiones' },
+              { label: 'Procesos Creativos', href: '#dialogo-critico?focus=backstage' },
+            ],
+          }
+        : {}),
+    }),
+    station(showPerspectivasNav, {
+      name: 'Acto final',
+      href: '#provoca',
+      description: '#FormasDeDecirlo',
+      secondary: [{ label: 'La Réplica', href: '#provoca' }],
+    }),
+    station(showIntermedioNav, {
+      name: 'Caída del telón',
+      href: '#next-show',
+      description: '#ArchivoEscénico',
+      ...(showObraDestacadaNav
+        ? {
+            secondary: [
+              { label: 'Obra fundacional', href: '#about' },
+              { label: 'Créditos de la función', href: '#team' },
+              { label: 'Galería fractal', href: '#instagram' },
+            ],
+          }
+        : {}),
+    }),
+    // "Antes de irte" no es una estación de la función, es un apéndice: se
+    // mantiene condicional en vez de aparecer bloqueado para todos.
     ...(showBeforeLeavingNav
       ? [{ name: 'Antes de irte', href: '#conoce-sistema', description: '#NuestroModelo' }]
       : []),

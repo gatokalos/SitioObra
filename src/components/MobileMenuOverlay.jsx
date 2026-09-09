@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
-import { ChevronDown, ChevronRight } from 'lucide-react';
+import { ChevronDown, ChevronRight, Lock } from 'lucide-react';
 
 const MobileMenuOverlay = ({
   isOpen,
@@ -107,19 +107,40 @@ const MobileMenuOverlay = ({
             {menuItems.map((item) => (
               <div key={item.name} className="rounded-xl transition hover:bg-white/[0.04]">
                 <div className="group flex w-full items-center justify-between gap-3 rounded-xl px-3 py-3">
-                  <button
-                    type="button"
-                    onClick={() => handleTitleClick(item)}
-                    className="min-w-0 flex-1 text-left"
-                  >
-                    <p className="font-display text-[1.08rem] leading-tight text-slate-100">{item.name}</p>
-                    {item.description ? (
-                      <p className="mt-1 text-[11px] uppercase tracking-[0.2em] text-slate-400/85">
-                        {item.description}
-                      </p>
-                    ) : null}
-                  </button>
+                  {/* Estación anunciada pero todavía cerrada: se lee, no se
+                      navega. Va como texto y no como botón para que no reciba
+                      foco ni prometa una acción que no existe. */}
+                  {item.locked ? (
+                    <div className="min-w-0 flex-1 text-left" aria-disabled="true">
+                      <p className="font-display text-[1.08rem] leading-tight text-slate-100/45">{item.name}</p>
+                      {item.description ? (
+                        <p className="mt-1 text-[11px] uppercase tracking-[0.2em] text-slate-400/40">
+                          {item.description}
+                        </p>
+                      ) : null}
+                    </div>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() => handleTitleClick(item)}
+                      className="min-w-0 flex-1 text-left"
+                    >
+                      <p className="font-display text-[1.08rem] leading-tight text-slate-100">{item.name}</p>
+                      {item.description ? (
+                        <p className="mt-1 text-[11px] uppercase tracking-[0.2em] text-slate-400/85">
+                          {item.description}
+                        </p>
+                      ) : null}
+                    </button>
+                  )}
                   <div className="flex shrink-0 items-center gap-2">
+                    {item.locked ? (
+                      <Lock
+                        size={14}
+                        className="text-slate-400/45"
+                        aria-label="Todavía no disponible"
+                      />
+                    ) : null}
                     {activeSectionHref === item.href ? (
                       <span
                         className="h-2 w-2 rounded-full bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.65)]"

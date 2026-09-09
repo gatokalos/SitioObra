@@ -160,7 +160,7 @@ const BlogSection = ({ showBuscador = false }) => {
 
 const HERO_BACKGROUND_VARIANTS = {
   guest: {
-    alt: 'Cabina teatral con cortinas rojas y un gato al centro',
+    alt: 'Cabina de adivinación con cortinas rojas y un gato dentro',
     src: '/assets/gato-cabina.webp',
     className: 'absolute inset-0 h-full w-full object-cover',
     style: {

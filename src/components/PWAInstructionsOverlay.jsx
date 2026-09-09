@@ -1,11 +1,27 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { motion, useReducedMotion } from 'framer-motion';
-import { X, Share, Plus, Check, MoreVertical, Download, ArrowDown } from 'lucide-react';
-import { isAppleTouchDevice } from '@/lib/platformDetection';
+import { X, Share, Plus, Check, MoreVertical, MoreHorizontal, Download, ArrowDown } from 'lucide-react';
+import { isAppleTouchDevice, isIosSafari } from '@/lib/platformDetection';
 
-const STEPS_IOS = [
-  { Icon: Share, label: '1. Toca el botón Compartir' },
+// Safari y Chrome comparten motor en iOS pero no interfaz, y el paso 1 es
+// justo donde difieren: Safari, en su disposición compacta, no muestra un
+// botón Compartir — está dentro del menú ⋯ (verificado en capturas, 9 sep
+// 2026). Chrome en iOS sí lo expone en la barra de arriba.
+//
+// COPY PROVISIONAL (no es de Carlos). El paso 1 de Safari está redactado para
+// cubrir sus DOS disposiciones —barra clásica, donde Compartir sí se ve, y
+// compacta, donde vive en ⋯— porque ese ajuste es del usuario y no se puede
+// detectar desde JS. Si se prefiere nombrar solo el ⋯, es una línea.
+const STEPS_IOS_SAFARI = [
+  { Icon: MoreHorizontal, label: '1. Toca Compartir, o el menú ⋯' },
+  { Icon: Plus, label: '2. Selecciona "Añadir a pantalla de inicio"' },
+  { Icon: Check, label: '3. Toca "Añadir"' },
+  { Icon: null, label: '4. Listo, un universo en tu bolsillo' },
+];
+
+const STEPS_IOS_OTHER = [
+  { Icon: Share, label: '1. Toca Compartir, arriba a la derecha' },
   { Icon: Plus, label: '2. Selecciona "Añadir a pantalla de inicio"' },
   { Icon: Check, label: '3. Toca "Añadir"' },
   { Icon: null, label: '4. Listo, un universo en tu bolsillo' },
@@ -27,11 +43,33 @@ const PWAInstructionsOverlay = ({
   subtitle = '',
 }) => {
   const [isIOS, setIsIOS] = useState(true);
+  const [isSafari, setIsSafari] = useState(true);
+  // Alto REAL visible, no el del viewport ideal. En iOS `vh` mide la ventana
+  // con la barra del navegador oculta, así que en pantallas chicas el sheet
+  // se dimensionaba contra un alto que el usuario no tiene y se cortaba por
+  // arriba (Carlos, capturas del 9 sep 2026). visualViewport sí descuenta la
+  // barra de direcciones y la de herramientas.
+  const [visibleHeight, setVisibleHeight] = useState(null);
   const prefersReducedMotion = useReducedMotion();
 
   useEffect(() => {
     setIsIOS(isAppleTouchDevice());
+    setIsSafari(isIosSafari());
   }, []);
+
+  useEffect(() => {
+    if (!isOpen || typeof window === 'undefined') return undefined;
+    const readVisibleHeight = () => {
+      setVisibleHeight(window.visualViewport?.height ?? window.innerHeight);
+    };
+    readVisibleHeight();
+    window.visualViewport?.addEventListener('resize', readVisibleHeight);
+    window.addEventListener('resize', readVisibleHeight);
+    return () => {
+      window.visualViewport?.removeEventListener('resize', readVisibleHeight);
+      window.removeEventListener('resize', readVisibleHeight);
+    };
+  }, [isOpen]);
 
   // Estable mientras el sheet está abierto — sin esto, las estrellas
   // se rebarajarían en cada re-render.
@@ -47,7 +85,16 @@ const PWAInstructionsOverlay = ({
 
   if (!isOpen || typeof document === 'undefined') return null;
 
-  const steps = isIOS ? STEPS_IOS : STEPS_ANDROID;
+  const steps = isIOS
+    ? (isSafari ? STEPS_IOS_SAFARI : STEPS_IOS_OTHER)
+    : STEPS_ANDROID;
+
+  // Mientras no se haya medido, `1vh` deja el comportamiento anterior en pie.
+  const sheetStyle = {
+    '--pwa-vh': visibleHeight ? `${visibleHeight / 100}px` : '1vh',
+    maxHeight: 'calc(60 * var(--pwa-vh))',
+    paddingTop: 'env(safe-area-inset-top, 0px)',
+  };
 
   // Sheet parcial, no pantalla completa: se detiene bien arriba del # 3D del
   // Hero (que sigue en su lugar) para que quede claro que las instrucciones
@@ -63,7 +110,8 @@ const PWAInstructionsOverlay = ({
   return createPortal(
     <>
       <div
-        className="fixed inset-x-0 top-0 z-[10000] mx-auto flex max-h-[60vh] w-full max-w-md flex-col overflow-hidden"
+        className="fixed inset-x-0 top-0 z-[10000] mx-auto flex w-full max-w-md flex-col overflow-hidden"
+        style={sheetStyle}
         role="dialog"
         aria-modal="true"
         aria-label="Instrucciones para instalar #GatoEncerrado como app"
@@ -89,13 +137,14 @@ const PWAInstructionsOverlay = ({
           ))}
         </div>
 
-        {/* Tamaños en clamp(min, Nvh, max): escalan con el alto de pantalla
-            disponible (no con el ancho — la restricción real siempre fue
-            vertical, por el # de abajo), así en pantallas grandes el
-            contenido crece y llena el aire en vez de quedar chico con mucho
-            espacio vacío, y en las chicas se queda en el mínimo ya
-            verificado como seguro. */}
-        <div className="relative z-10 mx-auto flex w-[clamp(320px,40vh,380px)] flex-col items-center px-5 pb-4 pt-3">
+        {/* Tamaños en clamp(min, N×--pwa-vh, max): escalan con el alto de
+            pantalla REALMENTE disponible (no con el ancho — la restricción
+            siempre fue vertical, por el # de abajo), así en pantallas grandes
+            el contenido crece y llena el aire, y en las chicas se queda en el
+            mínimo ya verificado como seguro. Antes eran `vh` a secas y en iOS
+            eso mide la ventana sin la barra del navegador: en pantallas
+            chicas el sheet se pasaba de largo y se cortaba. */}
+        <div className="relative z-10 mx-auto flex w-[clamp(320px,calc(40*var(--pwa-vh)),380px)] flex-col items-center px-5 pb-4 pt-3">
           {steps.map((step, index) => (
             <React.Fragment key={step.label}>
               <motion.div
@@ -110,23 +159,23 @@ const PWAInstructionsOverlay = ({
                   delay: prefersReducedMotion ? 0 : index * 0.12,
                   ease: [0.22, 1, 0.36, 1],
                 }}
-                className="flex flex-col items-center gap-[clamp(5px,0.85vh,8px)] text-center"
+                className="flex flex-col items-center gap-[clamp(5px,calc(0.85*var(--pwa-vh)),8px)] text-center"
               >
-                <div className="flex h-[clamp(34px,5.4vh,52px)] w-[clamp(34px,5.4vh,52px)] shrink-0 items-center justify-center rounded-[clamp(10px,1.1vh,15px)] border-[1.25px] border-white/65 text-slate-100">
+                <div className="flex h-[clamp(34px,calc(5.4*var(--pwa-vh)),52px)] w-[clamp(34px,calc(5.4*var(--pwa-vh)),52px)] shrink-0 items-center justify-center rounded-[clamp(10px,calc(1.1*var(--pwa-vh)),15px)] border-[1.25px] border-white/65 text-slate-100">
                   {step.Icon ? (
                     <step.Icon
                       strokeWidth={1.5}
-                      className="h-[clamp(17px,2.7vh,26px)] w-[clamp(17px,2.7vh,26px)]"
+                      className="h-[clamp(17px,calc(2.7*var(--pwa-vh)),26px)] w-[clamp(17px,calc(2.7*var(--pwa-vh)),26px)]"
                     />
                   ) : (
                     <img
                       src="/assets/icon-180.png?v=20260827"
                       alt="Ícono de #GatoEncerrado"
-                      className="h-full w-full rounded-[clamp(9px,1vh,13px)] object-cover"
+                      className="h-full w-full rounded-[clamp(9px,calc(1*var(--pwa-vh)),13px)] object-cover"
                     />
                   )}
                 </div>
-                <p className="text-[clamp(0.78rem,2vh,1.15rem)] leading-tight text-slate-100">{step.label}</p>
+                <p className="text-[clamp(0.78rem,calc(2*var(--pwa-vh)),1.15rem)] leading-tight text-slate-100">{step.label}</p>
               </motion.div>
               {index < steps.length - 1 && (
                 <motion.div
@@ -140,7 +189,7 @@ const PWAInstructionsOverlay = ({
                 >
                   <ArrowDown
                     strokeWidth={1.5}
-                    className="my-[clamp(3px,0.5vh,6px)] h-[clamp(12px,1.9vh,18px)] w-[clamp(12px,1.9vh,18px)] text-white/45"
+                    className="my-[clamp(3px,calc(0.5*var(--pwa-vh)),6px)] h-[clamp(12px,calc(1.9*var(--pwa-vh)),18px)] w-[clamp(12px,calc(1.9*var(--pwa-vh)),18px)] text-white/45"
                   />
                 </motion.div>
               )}

@@ -58,17 +58,26 @@ const HERO_AUDIO_IDLE_RETRY_MS = 6000;
 const HEADER_INDEX_HASHTAG_ID = 'header-index-hashtag';
 const HERO_TITLE = 'GATOENCERRADO';
 const HERO_BRAND_LABEL = '#GATOENCERRADO';
-// Acortada (Carlos, 2026-08-19): "cuando lo veas" salía sobrando una vez que
-// el refuerzo "Sí, el #" se escribe en la misma línea — sin eso, el texto
-// combinado no cabía en un renglón en ningún ancho probado.
-const HERO_INACTIVE_HINT = 'Cuando lo veas, toca el gato';
-// Mismas piezas que arman HERO_INACTIVE_HINT, separadas para revelar la
-// continuación con el tecleo editorial sin alterar la palabra "gato".
+// Piezas separadas para poder revelar la continuación con el tecleo editorial
+// sin alterar la palabra "gato".
 const HERO_INACTIVE_HINT_PREFIX = 'Ante la duda';
 const HERO_INACTIVE_HINT_GATO_WORD = 'gato';
 const HERO_INACTIVE_HINT_SUFFIX = '';
 const HERO_SI_EL_HASH_TEXT = ', pulsa el ';
+// La frase completa se ARMA de esas mismas piezas en vez de escribirse aparte.
+// Hasta el 9 sep 2026 era una constante suelta que todavía decía "Cuando lo
+// veas, toca el gato" —redacción retirada el 19 ago 2026— y como solo se usa
+// de aria-label, quien navega con lector de pantalla oía una frase distinta de
+// la que estaba escrita. Derivándola, no puede volver a desfasarse.
+const HERO_INACTIVE_HINT =
+  `${HERO_INACTIVE_HINT_PREFIX}${HERO_INACTIVE_HINT_SUFFIX}${HERO_SI_EL_HASH_TEXT}${HERO_INACTIVE_HINT_GATO_WORD}`;
 const HERO_SI_EL_HASH_TYPE_SPEED_MS = 45;
+// El # se queda insinuado —presente pero no plenamente— hasta que el hint
+// termina de escribirse. La invitación a tocarlo no puede llegar antes que la
+// instrucción que dice que es el gato (Carlos, 9 sep 2026): antes el # subía a
+// opacidad plena ~2.3 s antes de que el subtítulo lo nombrara, y ese tramo
+// invitaba a un clic sin instrucción.
+const HERO_HASH_INSINUATED_OPACITY = 0.28;
 const HERO_INACTIVE_ECHO_COUNT = 13;
 const HERO_INACTIVE_ECHO_ENTRY_DURATION_S = 0.72;
 const HERO_INACTIVE_ECHO_STAGGER_S = 0.095;
@@ -77,18 +86,24 @@ const PWA_HASH_WHISPERS = [
   'Soy toda una obra',
   'No solo otro sitio web',
 ];
-// Puente entre el tono introspectivo del Estado Cero (el eco, "Pulsa el
-// gato, si crees saberlo…") y los pasos prácticos de instalación — misma voz
-// en primera persona que ya usan los whispers de arriba, no tono de soporte
-// técnico (Carlos, 2026-08-19).
+// RANURA DE COPY VACÍA A PROPÓSITO, pendiente del autor. El espacio que
+// reserva (~40 px) ya forma parte de la composición del sheet, así que
+// llenarla o quitarla cambia lo que se ve: no tocar sin decisión de Carlos.
+// Su intención declarada (2026-08-19): puente entre el tono introspectivo del
+// Estado Cero y los pasos prácticos de instalación — misma voz en primera
+// persona que usan los whispers del #, no tono de soporte técnico.
 const PWA_INSTRUCTIONS_EYEBROW = '';
 const PWA_INSTRUCTIONS_SUBTITLE = 'Lleva este universo contigo. Instala la app.';
 // Feedback real de un visitante (agosto 2026): no relacionó el # con "el
-// gato" del hint estático y no supo qué tocar. Refuerzo de una sola vez — la
-// palabra "gato" del hint se revuelve brevemente con # en el pool y se
-// asienta de vuelta en "gato", mismo motivo visual que ya usa el emblema
-// activado (heroTitleSignalDisplay / useSignalDriftText). Dispara después de
-// que el hint estático ya lleva un rato visible sin interacción.
+// gato" del hint estático y no supo qué tocar. Refuerzo de una sola vez:
+// pasado este tiempo se teclea ", pulsa el gato" y, en el mismo instante, el #
+// se enciende y llega a opacidad plena. Dispara después de que el hint
+// estático ya lleva un rato visible sin interacción.
+// [CORREGIDO 9 sep 2026] Este comentario describía que la palabra "gato" se
+// revolvía con # y se asentaba de vuelta; eso no ocurre — useSignalDriftText
+// solo se aplica al emblema del título, nunca al hint.
+// [ABIERTO] El temporizador arranca al montar, no cuando el hint es legible
+// (entra a los ~1.86 s), así que la duda real dura ~4 s, no 6.5.
 const HERO_HINT_CONTINUATION_DELAY_MS = 6500;
 const GAT_BALANCE_STORAGE_KEY = 'gatoencerrado:gatokens-available';
 const readHeroGatBalance = () => {
@@ -119,15 +134,24 @@ const HERO_GHOST_SUBTITLES = [
 const HERO_INACTIVE_ECHO_TEXT = 'Una sola pregunta: ¿qué es estar bien?';
 
 const HeroInactiveSignal = ({ prefersReducedMotion = false }) => {
-  const echoes = Array.from(
-    { length: HERO_INACTIVE_ECHO_COUNT },
-    (_, index) => 0.035 + (index / (HERO_INACTIVE_ECHO_COUNT - 1)) ** 1.18 * 0.27
-  );
+  // El eco nace en el título —abajo, visible— y asciende perdiendo opacidad
+  // hasta casi desaparecer arriba. El gradiente es el original; lo que se
+  // invirtió el 9 sep 2026 (Carlos) es la DIRECCIÓN del movimiento, abajo
+  // más adelante: la pregunta emana de la obra y se aleja, no cae sobre ella.
+  const echoes = Array.from({ length: HERO_INACTIVE_ECHO_COUNT }, (_, index) => {
+    const depth = index / (HERO_INACTIVE_ECHO_COUNT - 1);
+    return 0.035 + depth ** 1.18 * 0.27;
+  });
 
   return (
     <motion.div
       className="hero-inactive-signal"
-      aria-hidden="true"
+      // Las 13 capas son una sola frase repetida en perspectiva: se anuncia
+      // una vez como imagen de texto en vez de trece veces seguidas (que sería
+      // ilegible) o ninguna (como estaba hasta el 9 sep 2026, cuando el bloque
+      // entero iba aria-hidden y quien no ve entraba sin la pregunta).
+      role="img"
+      aria-label={HERO_INACTIVE_ECHO_TEXT}
       initial={{ opacity: 1 }}
       animate={{ opacity: 1, y: 0, scale: 1 }}
       exit={
@@ -147,8 +171,13 @@ const HeroInactiveSignal = ({ prefersReducedMotion = false }) => {
       }
     >
       {echoes.map((echoOpacity, index) => {
+        // depth 1 = la instancia más próxima, la de abajo, pegada al título.
         const isNear = index === echoes.length - 1;
         const depth = echoes.length <= 1 ? 1 : index / (echoes.length - 1);
+        // Los dos movimientos —la entrada escalonada y la deriva continua— se
+        // indexan desde abajo para que asciendan con el gradiente en vez de
+        // caer contra él.
+        const riseIndex = echoes.length - 1 - index;
         return (
           <motion.span
             key={`hero-inactive-echo-${index}`}
@@ -157,7 +186,7 @@ const HeroInactiveSignal = ({ prefersReducedMotion = false }) => {
             style={{
               '--hero-echo-depth': depth,
               '--hero-echo-opacity': echoOpacity,
-              '--hero-echo-delay': `${-(index * 0.83)}s`,
+              '--hero-echo-delay': `${-(riseIndex * 0.83)}s`,
               '--hero-echo-glow-alpha': 0.015 + depth * 0.055,
               '--hero-echo-violet-alpha': 0.01 + depth * 0.035,
               '--hero-echo-mobile-glow-alpha': 0.012 + depth * 0.04,
@@ -172,7 +201,7 @@ const HeroInactiveSignal = ({ prefersReducedMotion = false }) => {
             animate={{ opacity: echoOpacity, y: 0, scale: 1 }}
             transition={{
               duration: prefersReducedMotion ? 0.12 : HERO_INACTIVE_ECHO_ENTRY_DURATION_S,
-              delay: prefersReducedMotion ? 0 : index * HERO_INACTIVE_ECHO_STAGGER_S,
+              delay: prefersReducedMotion ? 0 : riseIndex * HERO_INACTIVE_ECHO_STAGGER_S,
               ease: [0.2, 1, 0.2, 1],
             }}
           >
@@ -343,6 +372,10 @@ const Hero = () => {
     if (hasActivatedAudio || isGatHubOpen) setIsHashtag3DRetired(true);
   }, [hasActivatedAudio, isGatHubOpen]);
   const shouldShowHeroInactiveHint = !hasActivatedAudio && !isHeroPwaInstructionsOpen && !isGatLinktreeAudience;
+  // Solo se retiene mientras el hint está corriendo. Si nunca se muestra
+  // (audiencia de linktree, sheet de PWA abierto, escena ya activada), el #
+  // conserva su entrada completa de siempre.
+  const shouldHoldHashtagInsinuated = shouldShowHeroInactiveHint && !hasHintGlowRevealed;
 
   useEffect(() => {
     if (!shouldShowHeroInactiveHint || hasTriggeredHintContinuationRef.current) return undefined;
@@ -1447,14 +1480,34 @@ const Hero = () => {
                   ambos coexistan visiblemente */}
               <motion.div
                 ref={hashtagAnchorRef}
-                initial={{ opacity: 0.28, scale: 0.94 }}
-                animate={{ opacity: hasActivatedAudio ? 0 : 1, scale: 1 }}
+                initial={{ opacity: HERO_HASH_INSINUATED_OPACITY, scale: 0.94 }}
+                animate={{
+                  opacity: hasActivatedAudio
+                    ? 0
+                    : shouldHoldHashtagInsinuated
+                      ? HERO_HASH_INSINUATED_OPACITY
+                      : 1,
+                  scale: 1,
+                }}
                 transition={{
-                  duration: hasActivatedAudio ? 0.18 : 1,
                   ease: 'easeOut',
-                  // El respaldo queda insinuado desde el primer frame; la entrada
-                  // completa espera a que la cascada de ecos termine de aparecer.
-                  delay: hasActivatedAudio ? 0 : heroInactiveHintEntryDelay + 1.8,
+                  // La escala se asienta tras la cascada de ecos, como siempre:
+                  // el # se acomoda en el espacio sin encenderse.
+                  scale: {
+                    duration: hasActivatedAudio ? 0.18 : 1,
+                    delay: hasActivatedAudio ? 0 : heroInactiveHintEntryDelay + 1.8,
+                  },
+                  // La opacidad plena florece cuando cae la palabra "gato", sin
+                  // retardo propio: si el hint corre, este cambio ya viene
+                  // disparado por hasHintGlowRevealed y llegar 1.8 s tarde
+                  // rompería la simultaneidad con el encendido del glow.
+                  opacity: {
+                    duration: hasActivatedAudio ? 0.18 : 1,
+                    delay:
+                      hasActivatedAudio || shouldShowHeroInactiveHint
+                        ? 0
+                        : heroInactiveHintEntryDelay + 1.8,
+                  },
                 }}
                 className="hero-title-mark-slot mt-8 -translate-y-[7vh] sm:mt-10 sm:translate-y-0 md:mt-12"
                 style={{
