@@ -21,7 +21,8 @@ export { readGlobalConsent, writeGlobalConsent };
 
 const OBRA_API_URL = (import.meta.env.VITE_OBRA_API_URL ?? 'https://api.gatoencerrado.ai').replace(/\/+$/, '');
 const CAT_CABINA_URL = 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/oraculo/gato-cabina.webp';
-const BITACORA_DELAY_MS = 72 * 60 * 60 * 1000;
+// El plazo de la bitácora (72 h) vive sólo en el backend (routes/bitacora.js) y
+// llega como `available_at` en la respuesta de /consent. Aquí no se calcula.
 
 /* ─── Identidad visual por portal ─────────────────────────────────────── */
 
@@ -424,7 +425,6 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
   const [bitacoraStep, setBitacoraStep]               = useState('p1');
   const [bitacoraP1, setBitacoraP1]                   = useState('');
   const [bitacoraAfirmativa, setBitacoraAfirmativa]   = useState(null);
-  const [bitacoraIntensidad, setBitacoraIntensidad]   = useState(null);
   const [bitacoraP2, setBitacoraP2]                   = useState('');
   const [bitacoraP3, setBitacoraP3]                   = useState('');
   const [bitacoraSubmitting, setBitacoraSubmitting]   = useState(false);
@@ -837,11 +837,12 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
     const anonId = ensureAnonId();
     const bienvenidaAnonId = (() => { try { return localStorage.getItem('bienvenida_anon_id') || null; } catch { return null; } })();
     if (isDevAuth) {
-      const availableAt = new Date(Date.now() + BITACORA_DELAY_MS).toISOString();
-      lsPatch(portal, { bitacora_consented: true, bitacora_available_at: availableAt });
+      // Sin servidor no hay plazo: queda consentida y no disponible hasta que
+      // el atajo «[dev] simular regreso» la abra.
+      lsPatch(portal, { bitacora_consented: true, bitacora_available_at: null });
       writeGlobalConsent();
       setBitacoraConsented(true);
-      setBitacoraAvailableAt(availableAt);
+      setBitacoraAvailableAt(null);
       return;
     }
     try {
@@ -900,7 +901,6 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
             miniverso_id:   portal,
             p1_response:    p1Response,
             p1_afirmativa:  p1Afirmativa,
-            intensidad:     bitacoraIntensidad,
             p2_response:    bitacoraP2 || null,
             p3_response:    bitacoraP3 || null,
           }),
@@ -913,7 +913,7 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
     setDashboardActiveLevel(3);
     setBitacoraStep('p1');
     setBitacoraSubmitting(false);
-  }, [portal, bitacoraP1, bitacoraAfirmativa, bitacoraIntensidad, bitacoraP2, bitacoraP3, isDevAuth]);
+  }, [portal, bitacoraP1, bitacoraAfirmativa, bitacoraP2, bitacoraP3, isDevAuth]);
 
   /* ── render ── */
   // Gatea la revelación ambiental del gato en la columna derecha (ver más
@@ -1286,7 +1286,6 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
                         style={{ fontSize: 'clamp(1.3rem, 2.3vw, 2.1rem)' }}
                       >
                         {bitacoraStep === 'p1' && '¿Hay algo de esta experiencia que haya regresado por su cuenta?'}
-                        {bitacoraStep === 'scale' && '¿Con qué fuerza sigue ahí?'}
                         {bitacoraStep === 'p2' && (bitacoraQuestionLoading ? '…' : (bitacoraP2Question || 'Si volvió, ¿dónde te encontró?'))}
                         {bitacoraStep === 'p3' && (bitacoraQuestionLoading ? '…' : (bitacoraP3Question || '¿Hay algo que ahora veas de otra manera?'))}
                       </p>
@@ -1304,7 +1303,6 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
                           </div>
                           <h3 className="font-display text-2xl leading-tight tracking-tight question-voice">
                             {bitacoraStep === 'p1' && '¿Hay algo de esta experiencia que haya regresado por su cuenta? Una imagen, una frase, una sensación.'}
-                            {bitacoraStep === 'scale' && '¿Con qué fuerza sigue ahí?'}
                             {bitacoraStep === 'p2' && (bitacoraQuestionLoading ? '…' : (bitacoraP2Question || 'Si volvió, ¿dónde te encontró? ¿Qué estabas haciendo o con quién estabas?'))}
                             {bitacoraStep === 'p3' && (bitacoraQuestionLoading ? '…' : (bitacoraP3Question || 'Después de esta experiencia, ¿hay algo que ahora veas de otra manera? También puede ser que nada haya cambiado.'))}
                           </h3>
@@ -1319,7 +1317,7 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
                                   const response = 'Sí, regresó algo';
                                   setBitacoraP1(response);
                                   setBitacoraAfirmativa(true);
-                                  setBitacoraStep('scale');
+                                  setBitacoraStep('p2');
                                   void fetchNextBitacoraQuestion('p2', response);
                                 }}
                                 className="flex-1 rounded-full border border-amber-400/50 bg-amber-900/20 px-4 py-2.5 text-xs uppercase tracking-[0.2em] text-amber-100/90 transition hover:bg-amber-900/35 disabled:opacity-40"
@@ -1330,42 +1328,17 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
                                 type="button"
                                 disabled={bitacoraSubmitting}
                                 onClick={() => {
-                                  const response = 'Todavía no';
-                                  setBitacoraP1(response);
+                                  // §1.5: «no» es respuesta completa. No se manda texto
+                                  // inventado; p1_afirmativa=false es el dato.
+                                  setBitacoraP1('');
                                   setBitacoraAfirmativa(false);
-                                  void handleBitacoraSubmit({ p1Response: response, p1Afirmativa: false });
+                                  void handleBitacoraSubmit({ p1Response: null, p1Afirmativa: false });
                                 }}
                                 className="flex-1 rounded-full border border-white/15 bg-black/30 px-4 py-2.5 text-xs text-slate-400 transition hover:text-slate-200 disabled:opacity-40"
                               >
                                 Todavía no
                               </button>
                           </div>
-                        )}
-
-                        {/* Escala */}
-                        {bitacoraStep === 'scale' && (
-                          <>
-                            <div className="flex items-end justify-between gap-1 pt-1">
-                              {[1, 2, 3, 4, 5].map((n) => (
-                                <button
-                                  key={n}
-                                  type="button"
-                                  onClick={() => { setBitacoraIntensidad(n); setBitacoraStep('p2'); }}
-                                  className={`flex flex-1 flex-col items-center gap-1.5 rounded-xl border py-3 transition ${
-                                    bitacoraIntensidad === n
-                                      ? 'border-amber-400/60 bg-amber-900/30 text-amber-200'
-                                      : 'border-white/10 bg-black/30 text-slate-300/70 hover:border-white/20 hover:bg-black/45'
-                                  }`}
-                                >
-                                  <span className="text-base font-semibold">{n}</span>
-                                </button>
-                              ))}
-                            </div>
-                            <div className="flex justify-between text-[0.6rem] text-slate-500/80 px-1">
-                              <span>Apenas un roce</span>
-                              <span>No me ha soltado</span>
-                            </div>
-                          </>
                         )}
 
                         {/* P2 */}
@@ -1786,11 +1759,10 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
                                                     <button
                                                       type="button"
                                                       onClick={() => {
-                                                        const availableAt = new Date(Date.now() + BITACORA_DELAY_MS).toISOString();
-                                                        lsPatch(portal, { bitacora_consented: true, bitacora_available_at: availableAt });
+                                                        lsPatch(portal, { bitacora_consented: true, bitacora_available_at: null });
                                                         writeGlobalConsent();
                                                         setBitacoraConsented(true);
-                                                        setBitacoraAvailableAt(availableAt);
+                                                        setBitacoraAvailableAt(null);
                                                       }}
                                                       className="text-[10px] text-slate-500/60 underline underline-offset-2 hover:text-slate-400/80"
                                                     >
