@@ -910,6 +910,13 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
     lsPatch(portal, { bitacora_completed: true, dashboard_active_level: 3 });
     setBitacoraCompleted(true);
     setBitacoraOpen(false);
+    // Al cerrar el formulario, el Libreto — no el clímax. Sin esto el dashboard
+    // quedaba debajo y la persona aterrizaba de vuelta en "En el foco" después
+    // de haber respondido tres días más tarde, como si el recorrido no hubiera
+    // avanzado. Es el mismo estado con el que ya abre en una sesión posterior
+    // (ver holograficoOpen), adelantado al momento del envío. Provisional hasta
+    // que exista la vista de huella del §2 del handoff (Carlos, 10 sep 2026).
+    setHolograficoOpen(true);
     setDashboardActiveLevel(3);
     setBitacoraStep('p1');
     setBitacoraSubmitting(false);
@@ -1739,7 +1746,7 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
                                                             disabled={phoneInput.trim().length < 8}
                                                             className="shrink-0 rounded-full border border-white/20 bg-black/35 px-3 py-2 text-xs text-slate-200 transition hover:bg-black/50 disabled:opacity-40 disabled:cursor-not-allowed"
                                                           >
-                                                            Confirmar el llamado →
+                                                            Confirmar →
                                                           </button>
                                                         </div>
                                                       </>
@@ -1750,7 +1757,7 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
                                                       <p className="text-xs leading-relaxed text-slate-300/80">
                                                         {bitacoraAvailable
                                                           ? 'Las reflexiones finales ya están disponibles.'
-                                                          : 'Tu próximo llamado ya está preparado. Volveremos a buscarte por WhatsApp cuando llegue el momento.'}
+                                                          : 'La próxima pregunta ya está preparada. Te buscará por WhatsApp cuando llegue el momento.'}
                                                       </p>
                                                     </div>
                                                   )}
@@ -1820,8 +1827,16 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
                                                 <p className="mt-4 text-[0.6rem] font-semibold uppercase tracking-[0.32em] text-purple-200/65">
                                                   ¿Fin del segundo acto?
                                                 </p>
+                                                {/* "Entreacto", no "Intermedio": esta tarjeta es el
+                                                    telón que baja antes de la espera longitudinal, no la
+                                                    estación #blog-contribuye del programa de mano. Al
+                                                    cerrar el modal la persona vuelve a las vitrinas, no
+                                                    llega al Intermedio — anunciarlo con ese nombre
+                                                    prometía un lugar al que no iba (Carlos, 10 sep 2026).
+                                                    La puerta deliberada al Intermedio durante la espera
+                                                    es "Ir al camerino →", más abajo. */}
                                                 <p className="mt-1 font-display text-xl tracking-[0.14em] text-white">
-                                                  Intermedio
+                                                  Entreacto
                                                 </p>
                                                 <p className="mt-1.5 text-[0.68rem] leading-relaxed text-slate-400/75">
                                                   {dramaturgy.closingLine}

@@ -4,8 +4,13 @@ export const RESONANCE_SHARED_DRAMATURGY = {
   appearanceCue: 'Antes del intermedio, el autor entra a cuadro.',
   phase3Description: 'Este recorrido ha concluido. Las respuestas registradas permiten estudiar cómo las experiencias narrativas son interpretadas, recordadas y resignificadas por distintas personas.',
   returnLead: 'Esto no termina aquí.',
-  returnBody: 'Dentro de unos días, una nueva pregunta volverá a buscarte. Si quieres recibir ese llamado, danos permiso para enviarte un único aviso por WhatsApp.',
-  returnCta: 'Quiero recibir el próximo llamado →',
+  // "Llamado" convertía al protagonista en aspirante: las llamadas de teatro son
+  // previas a la función (ahí está la Tercera llamada), y una después del clímax
+  // se lee como casting. Contradecía además la regla canónica del regreso
+  // diferido: la agencia es de lo que vuelve, no del usuario. El resto del copy
+  // ya lo tenía bien — "una nueva pregunta volverá a buscarte" (Carlos, 10 sep 2026).
+  returnBody: 'Dentro de unos días, una nueva pregunta volverá a buscarte. Si quieres que te encuentre, danos permiso para enviarte un único aviso por WhatsApp.',
+  returnCta: 'Quiero que la pregunta vuelva →',
   souvenirCta: 'Quiero recordar este acto',
   entranceCoda: 'Ya forma parte de tu obra.',
   closingLine: 'Has llegado hasta aquí. La obra queda en pausa.',
