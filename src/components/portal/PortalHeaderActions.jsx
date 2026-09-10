@@ -143,7 +143,7 @@ const PortalHeaderActions = ({ returnUrl = DEFAULT_RETURN_URL }) => {
             exit={{ opacity: 0, x: 8 }}
             transition={{ type: 'spring', stiffness: 280, damping: 22 }}
           >
-            +175 GAT transferidos
+            GAT transferido
           </motion.span>
         )}
       </AnimatePresence>

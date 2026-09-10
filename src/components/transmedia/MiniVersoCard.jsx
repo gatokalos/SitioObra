@@ -100,10 +100,9 @@ const MiniVersoCard = ({
     >
       <img
         src="https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/oraculo/gato-moneda.png"
-        alt=""
+        alt="GAT"
         className="h-3.5 w-3.5 animate-[spin_8s_linear_0s_infinite_reverse]"
       />
-      +25 GAT
     </motion.span>
   ) : null;
 

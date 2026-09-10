@@ -76,7 +76,7 @@ const PortalL3RewardCTA = ({ portal, l3Rec }) => {
             exit={{ opacity: 0, y: -4 }}
             transition={{ type: 'spring', stiffness: 280, damping: 22 }}
           >
-            +175 GAT transferidos
+            GAT transferido
           </motion.span>
         )}
       </AnimatePresence>
@@ -87,7 +87,7 @@ const PortalL3RewardCTA = ({ portal, l3Rec }) => {
       >
         <span className="flex items-center justify-center gap-2.5">
           <span className="text-base">🪙</span>
-          <span>+175 GAT · Siguiente miniverso{forma ? `: ${forma}` : ''}</span>
+          <span>GAT · Siguiente miniverso{forma ? `: ${forma}` : ''}</span>
         </span>
         {showCoins && (
           <span className="pointer-events-none absolute inset-0">

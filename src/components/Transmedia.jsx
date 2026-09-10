@@ -3104,7 +3104,7 @@ const renderDramaFeaturedWork = () => (
                     className="relative overflow-hidden inline-flex w-full items-center justify-center gap-2.5 rounded-2xl border border-yellow-400/50 bg-gradient-to-r from-yellow-500/15 via-amber-400/10 to-yellow-500/15 px-6 py-3.5 text-sm font-semibold text-yellow-200 tracking-wide transition hover:border-yellow-400/70 hover:bg-yellow-500/20 shadow-[0_0_24px_rgba(234,179,8,0.18)]"
                   >
                     <span className="text-base">🪙</span>
-                    <span>+175 GAT · Siguiente miniverso{activePortalL3RecommendedForma ? `: ${activePortalL3RecommendedForma}` : ''}</span>
+                    <span>GAT · Siguiente miniverso{activePortalL3RecommendedForma ? `: ${activePortalL3RecommendedForma}` : ''}</span>
                     {showL3RewardCoins && (
                       <span className="pointer-events-none absolute inset-0">
                         {Array.from({ length: 8 }).map((_, i) => {
@@ -4460,7 +4460,7 @@ const renderDramaFeaturedWork = () => (
                       exit={{ opacity: 0, scale: 0.9, x: -6 }}
                       transition={{ type: 'spring', stiffness: 280, damping: 22 }}
                     >
-                      +175 GAT transferidos
+                      GAT transferido
                     </motion.span>
                   )}
                 </AnimatePresence>
