@@ -1959,7 +1959,12 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
                     <div className="flex items-start gap-3 rounded-2xl border border-white/10 bg-black/40 px-4 py-3.5">
                       <ShieldCheck size={16} className="mt-0.5 shrink-0 text-slate-300/80" />
                       <p className="text-xs leading-relaxed text-slate-300/80">
-                        Tu información es anónima y se usa solo con fines de investigación.{' '}
+                        {/* La línea del procesamiento externo la decidió Carlos el 8 sep
+                            2026 (handoff §3.1): el aviso anterior no cubría que lo escrito
+                            sale del sitio para poder devolverse. Sin nombrar tecnología ni
+                            proveedores, según la regla de copy del proyecto. */}
+                        Lo que escribes se procesa fuera de este sitio para poder devolvértelo.
+                        Es anónimo y se usa solo con fines de investigación.{' '}
                         <span className="text-purple-300/90">Gracias por ser parte de este experimento colectivo.</span>
                       </p>
                     </div>
@@ -2048,7 +2053,7 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
                               className="mt-0.5 h-3.5 w-3.5 shrink-0 rounded border-white/30 bg-transparent accent-purple-500"
                             />
                             <span>
-                              Tus respuestas forman parte de una investigación doctoral sobre cómo se interpretan y se recuerdan las experiencias narrativas. Se guardan de forma anónima y puedes detenerte cuando quieras. La investigación la realiza Carlos A. Pérez H. en el marco del doctorado en ICONOS.
+                              Tus respuestas forman parte de una investigación doctoral sobre cómo se interpretan y se recuerdan las experiencias narrativas. Se guardan de forma anónima y puedes detenerte cuando quieras. Lo que escribes se procesa fuera de este sitio para poder devolvértelo. La investigación la realiza Carlos A. Pérez H. en el marco del doctorado en ICONOS.
                               <br />
                               Entiendo y acepto participar.
                             </span>
