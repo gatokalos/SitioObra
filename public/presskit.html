@@ -19,8 +19,16 @@
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 body { background: var(--paper); color: var(--ink); font-family: 'Cormorant Garamond', Georgia, serif; font-size: 17px; line-height: 1.7; }
 
+/* ARCHIVO — franja delgada arriba (Carlos, 11 sep 2026). El kit conserva la
+   gira de 2027 tal como se planeó; la obra salió de cartelera ("Decirnos adiós",
+   esungatoencerrado.com), así que el documento se presenta como archivo en vez de
+   corregirlo a medias. Franja y no marca de agua diagonal: una diagonal se lee
+   como "anulado". Estática, no fija: se lee primero y se va con el scroll. */
+.archive-ribbon { background: var(--ink); color: rgba(255,255,255,0.72); border-bottom: 1px solid rgba(184,154,90,0.4); text-align: center; padding: 0.7rem 1rem; font-family: 'DM Mono', monospace; font-size: 0.62rem; letter-spacing: 0.22em; text-transform: uppercase; line-height: 1.4; }
+.archive-ribbon b { color: var(--gold); font-weight: 400; }
+
 /* LANG TOGGLE */
-.lang-toggle { position: fixed; top: 1.5rem; right: 1.5rem; z-index: 100; display: flex; border: 1px solid var(--accent); border-radius: 2px; overflow: hidden; font-family: 'DM Mono', monospace; font-size: 0.7rem; }
+.lang-toggle { position: fixed; top: 3.25rem; right: 1.5rem; z-index: 100; display: flex; border: 1px solid var(--accent); border-radius: 2px; overflow: hidden; font-family: 'DM Mono', monospace; font-size: 0.7rem; }
 .lang-btn { padding: 0.4rem 0.8rem; cursor: pointer; background: var(--paper); color: var(--accent); border: none; letter-spacing: 0.1em; transition: background 0.2s, color 0.2s; }
 .lang-btn.active { background: var(--accent); color: white; }
 
@@ -146,6 +154,11 @@ footer strong { color: white; }
 </style>
 </head>
 <body>
+
+<div class="archive-ribbon" role="note">
+  <span class="lang-es"><b>Archivo</b> · así la imaginamos</span>
+  <span class="lang-en" style="display:none"><b>Archive</b> · as we imagined it</span>
+</div>
 
 <div class="lang-toggle">
   <button class="lang-btn active" onclick="setLang('es')">ES</button>
