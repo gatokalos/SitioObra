@@ -23,8 +23,10 @@ body { background: var(--paper); color: var(--ink); font-family: 'Cormorant Gara
    gira de 2027 tal como se planeó; la obra salió de cartelera ("Decirnos adiós",
    esungatoencerrado.com), así que el documento se presenta como archivo en vez de
    corregirlo a medias. Franja y no marca de agua diagonal: una diagonal se lee
-   como "anulado". Estática, no fija: se lee primero y se va con el scroll. */
-.archive-ribbon { background: var(--ink); color: rgba(255,255,255,0.72); border-bottom: 1px solid rgba(184,154,90,0.4); text-align: center; padding: 0.7rem 1rem; font-family: 'DM Mono', monospace; font-size: 0.62rem; letter-spacing: 0.22em; text-transform: uppercase; line-height: 1.4; }
+   como "anulado". Pegajosa (sticky), igual que el interruptor ES/EN: acompaña
+   toda la lectura, así ninguna sección se lee como vigente (Carlos, 11 sep 2026).
+   Sticky y no fixed: al abrir ocupa su propio espacio y no tapa la portada. */
+.archive-ribbon { position: sticky; top: 0; z-index: 90; background: var(--ink); color: rgba(255,255,255,0.72); border-bottom: 1px solid rgba(184,154,90,0.4); text-align: center; padding: 0.7rem 1rem; font-family: 'DM Mono', monospace; font-size: 0.62rem; letter-spacing: 0.22em; text-transform: uppercase; line-height: 1.4; }
 .archive-ribbon b { color: var(--gold); font-weight: 400; }
 
 /* LANG TOGGLE */
