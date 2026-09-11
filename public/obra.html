@@ -70,17 +70,7 @@
   @keyframes arrive { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
   @media (prefers-reduced-motion: reduce) { main { animation: none; } }
 
-  /* Isotipo de la obra de teatro (no el del universo). La imagen no es cuadrada:
-     aspect-ratio + object-fit la recortan al círculo sin deformarla. */
-  .mark {
-    display: block;
-    width: 4rem;
-    aspect-ratio: 1;
-    margin: 0 auto 2.25rem;
-    border-radius: 50%;
-    object-fit: cover;
-    border: 1px solid rgba(184, 154, 90, 0.35);
-  }
+  .mark { width: 3.25rem; height: 3.25rem; margin: 0 auto 2.25rem; border-radius: 0.8rem; opacity: 0.9; }
   .eyebrow {
     font-family: 'DM Mono', ui-monospace, monospace;
     font-size: 0.66rem;
@@ -167,7 +157,7 @@
 </head>
 <body>
   <main>
-    <img class="mark" src="https://universo.gatoencerrado.org/assets/teatro-logo.png" alt="" width="64" height="64">
+    <img class="mark" src="https://universo.gatoencerrado.org/assets/icon-512.png" alt="" width="52" height="52">
     <p class="eyebrow">Es un gato encerrado · obra de teatro</p>
     <h1>Decirnos adiós</h1>
     <hr class="rule">
