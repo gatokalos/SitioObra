@@ -876,7 +876,7 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
   }, [portal]);
 
   // Si el usuario está en la PWA instalada, suscribe push en silencio
-  // en el momento en que aparece el bloque "Este recorrido ha concluido".
+  // en cuanto se completa el Nivel 3 (el momento en que aparece En el foco).
   useEffect(() => {
     const l3Done = Boolean(l3Rec?.step3) && !l3Rec?.error;
     if (isDevAuth || !l3Done || bitacoraConsented) return;
@@ -1698,12 +1698,10 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
                                                 </span>
                                               </button>
 
-                                              <p className="text-sm leading-relaxed text-slate-300/90 lg:text-xs">
-                                                Este recorrido ha concluido.
-                                              </p>
-                                              <p className="text-sm leading-relaxed text-slate-400/80 lg:text-xs">
-                                                Las respuestas registradas permiten estudiar cómo las experiencias narrativas son interpretadas, recordadas y resignificadas por distintas personas.
-                                              </p>
+                                              {/* Aquí iba "Este recorrido ha concluido" y la descripción
+                                                  académica. Se quitó el 10 sep 2026: competía con el video
+                                                  del autor y podía leerse como "ya no sigas viendo". Eso lo
+                                                  dice Carlos en cámara, con guion, en nueve videos distintos. */}
 
                                               {/* La promesa narrativa permanece; solo cambia la acción según
                                                   el consentimiento y la disponibilidad real. */}
@@ -1752,7 +1750,9 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
                                                       </>
                                                     )
                                                   ) : (
-                                                    <div className="flex items-start gap-2 rounded-xl border border-emerald-300/15 bg-emerald-300/[0.04] px-3 py-2.5">
+                                                    <div className="flex items-start gap-2 px-1 py-1">
+                                                      {/* Sin borde ni fondo propio: era una tarjeta dentro de la
+                                                          tarjeta "Esto no termina aquí" (Carlos, 10 sep 2026). */}
                                                       <Check size={13} className="mt-0.5 shrink-0 text-emerald-300/80" />
                                                       <p className="text-xs leading-relaxed text-slate-300/80">
                                                         {bitacoraAvailable
