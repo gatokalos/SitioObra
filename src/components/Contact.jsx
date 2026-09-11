@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { createPortal } from 'react-dom';
-import { Download, Send, Instagram, Twitter, Facebook, PenLine } from 'lucide-react';
+import { Send, Instagram, Twitter, Facebook, PenLine } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { toast } from '@/components/ui/use-toast';
 import { supabase } from '@/lib/supabaseClient';
@@ -212,10 +212,6 @@ const Contact = () => {
     [formValues, status]
   );
 
-  const handleActionClick = () => {
-    window.open('/presskit.html', '_blank', 'noopener,noreferrer');
-  };
-
   const handleSocialClick = (url) => {
     if (url) {
       window.open(url, '_blank', 'noopener,noreferrer');
@@ -338,10 +334,15 @@ const Contact = () => {
 </p>
         </motion.div>
 
-        <div className="grid lg:grid-cols-2 gap-12">
+        {/* Dos hileras, no dos columnas (Carlos, 11 sep 2026). Al retirarse el
+            bloque de Prensa, la columna derecha se quedaba solo con los créditos
+            junto a un formulario largo. Ahora: el formulario arriba, con sus
+            campos cortos en pares en escritorio, y los créditos abajo como una
+            franja. */}
+        <div className="mx-auto max-w-4xl space-y-8">
           <motion.div
-            initial={{ opacity: 0, x: -50 }}
-            whileInView={{ opacity: 1, x: 0 }}
+            initial={{ opacity: 0, y: 40 }}
+            whileInView={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, ease: "easeOut" }}
             viewport={{ once: true }}
             className="glass-effect rounded-2xl p-8 relative overflow-hidden"
@@ -352,8 +353,8 @@ const Contact = () => {
             <h3 className="font-display text-2xl font-medium text-slate-100 mb-8">
               Envíame un Mensaje
             </h3>
-            
-            <form onSubmit={handleSubmit} className="space-y-6">
+
+            <form onSubmit={handleSubmit} className="grid gap-6 lg:grid-cols-2">
               <div>
                 <label className="block text-slate-300/80 text-sm font-medium mb-2">Nombre *</label>
                 <input
@@ -399,7 +400,7 @@ const Contact = () => {
                 />
               </div>
         
-              <div>
+              <div className="lg:col-span-2">
                 <label className="block text-slate-300/80 text-sm font-medium mb-2">Mensaje *</label>
                 <textarea
                   name="message"
@@ -410,7 +411,7 @@ const Contact = () => {
                   placeholder="Cuéntanos todo..."
                 ></textarea>
               </div>
-              <div>
+              <div className="lg:col-span-2">
                 <label className="block text-slate-300/80 text-sm font-medium mb-2">Material</label>
                 <input
                   name="attachmentUrl"
@@ -421,7 +422,7 @@ const Contact = () => {
                   placeholder="Drive, portfolio, video..."
                 />
               </div>
-              <div className="min-h-[52px]">
+              <div className="min-h-[52px] lg:col-span-2">
                 {status === 'error' ? (
                   <div className="rounded-lg border border-red-500/60 bg-red-500/10 px-4 py-3 text-sm text-red-200">
                     {errorMessage}
@@ -434,7 +435,7 @@ const Contact = () => {
                   </div>
                 ) : null}
               </div>
-              <div className="mt-4 space-y-3">
+              <div className="mt-4 space-y-3 lg:col-span-2">
                 <div className="flex flex-col gap-3 lg:flex-row lg:items-center">
                   <Button
                     type="submit"
@@ -453,26 +454,17 @@ const Contact = () => {
             </form>
           </motion.div>
 
+          {/* Aquí estaba el bloque "Prensa · Descargar dossier": retirado el 11
+              sep 2026. El kit sigue en línea como archivo y se enlaza desde la
+              despedida de la obra en esungatoencerrado.com. */}
           <motion.div
-            initial={{ opacity: 0, x: 50 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.8, ease: "easeOut" }}
+            initial={{ opacity: 0, y: 40 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, ease: "easeOut", delay: 0.1 }}
             viewport={{ once: true }}
-            className="space-y-8"
+            className="glass-effect rounded-xl p-6 lg:flex lg:items-center lg:justify-between lg:gap-8"
           >
-
-
-            <div className="glass-effect rounded-xl p-6">
-              <h3 className="font-display text-xl font-medium text-slate-100 mb-4">Prensa</h3>
-              <p className="text-slate-300/70 mb-4 font-light">Material oficial, dossier e información para medios y difusión cultural.</p>
-              <Button onClick={handleActionClick} variant="outline" className="ge-chip-action ge-chip-action--secondary ge-chip-action--compact">
-                <Download size={18} />
-                Descargar dossier
-              </Button>
-            </div>
-
-            <div className="glass-effect rounded-xl p-6">
-              <p className="text-slate-300/70 text-sm leading-relaxed font-light">
+            <p className="text-slate-300/70 text-sm leading-relaxed font-light">
                 Universo concebido, escrito, diseñado y desarrollado por{' '}
                 <span className="font-semibold text-slate-100">Carlos A. Pérez H.</span>
                 <br />
@@ -481,10 +473,8 @@ const Contact = () => {
                 <br />
                 Con el apoyo de{' '}
                 <span className="font-semibold text-slate-100">Isabel Ayuda para la Vida, A.C.</span>
-                <br />
-               
-                             </p>
-              <div className="mt-4 flex flex-wrap items-center gap-3">
+                </p>
+            <div className="mt-4 flex flex-wrap items-center gap-3 lg:mt-0 lg:shrink-0">
                 <img
                   src="/assets/logoapp.webp"
                   alt="Logo #GatoEncerrado"
@@ -510,11 +500,8 @@ const Contact = () => {
                   loading="lazy"
                 />
               </div>
-            </div>
-
           </motion.div>
         </div>
-      </div>
       {causeSiteOverlay}
     </section>
   );
