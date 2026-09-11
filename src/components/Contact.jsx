@@ -502,6 +502,7 @@ const Contact = () => {
               </div>
           </motion.div>
         </div>
+      </div>
       {causeSiteOverlay}
     </section>
   );
