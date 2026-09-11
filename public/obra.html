@@ -70,7 +70,17 @@
   @keyframes arrive { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
   @media (prefers-reduced-motion: reduce) { main { animation: none; } }
 
-  .mark { width: 3.25rem; height: 3.25rem; margin: 0 auto 2.25rem; border-radius: 0.8rem; opacity: 0.9; }
+  /* Isotipo de la obra de teatro (no el del universo). La imagen no es cuadrada:
+     aspect-ratio + object-fit la recortan al círculo sin deformarla. */
+  .mark {
+    display: block;
+    width: 4rem;
+    aspect-ratio: 1;
+    margin: 0 auto 2.25rem;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 1px solid rgba(184, 154, 90, 0.35);
+  }
   .eyebrow {
     font-family: 'DM Mono', ui-monospace, monospace;
     font-size: 0.66rem;
@@ -120,12 +130,44 @@
   }
   .memory a { color: var(--muted); text-decoration: none; border-bottom: 1px solid transparent; transition: color 0.2s ease, border-color 0.2s ease; }
   .memory a:hover { color: var(--ink); border-color: var(--accent); }
+
+  /* Lee la historia: cada artículo como un resultado de búsqueda —medio y fecha
+     arriba, título como enlace— tal como lo pidió Carlos. */
+  .history { margin-top: 3rem; text-align: left; }
+  .history-label {
+    font-family: 'DM Mono', ui-monospace, monospace;
+    font-size: 0.64rem;
+    letter-spacing: 0.24em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 1.1rem;
+    text-align: center;
+  }
+  .history ol { list-style: none; }
+  .history li + li { margin-top: 1.4rem; padding-top: 1.4rem; border-top: 1px solid rgba(236, 230, 220, 0.1); }
+  .result-meta {
+    font-family: 'DM Mono', ui-monospace, monospace;
+    font-size: 0.66rem;
+    letter-spacing: 0.08em;
+    color: var(--muted);
+  }
+  .result-title {
+    display: inline-block;
+    margin-top: 0.3rem;
+    font-size: 1.12rem;
+    line-height: 1.4;
+    color: var(--ink);
+    text-decoration: none;
+    border-bottom: 1px solid transparent;
+    transition: border-color 0.2s ease;
+  }
+  .result-title:hover { border-color: var(--accent); }
   a:focus-visible { outline: 1px solid var(--accent); outline-offset: 4px; }
 </style>
 </head>
 <body>
   <main>
-    <img class="mark" src="https://universo.gatoencerrado.org/assets/icon-512.png" alt="" width="52" height="52">
+    <img class="mark" src="https://universo.gatoencerrado.org/assets/teatro-logo.png" alt="" width="64" height="64">
     <p class="eyebrow">Es un gato encerrado · obra de teatro</p>
     <h1>Decirnos adiós</h1>
     <hr class="rule">
@@ -140,14 +182,24 @@
       <a class="cta" href="https://universo.gatoencerrado.org/">Explorar el universo</a>
     </div>
 
-    <!--
-      Memoria. Pendiente: "Lee la historia" — Carlos quiere una lista de artículos
-      al estilo de un resultado de búsqueda (título, medio, fecha, extracto). Se
-      agrega cuando estén las URLs; no se publica un enlace sin destino.
-    -->
     <p class="memory">
       <a href="https://universo.gatoencerrado.org/presskit.html">Ver press kit</a>
     </p>
+
+    <!--
+      Memoria. Sin extractos a propósito: gob.mx no se deja leer automáticamente
+      y un extracto inventado sería peor que ninguno. Se agregan artículos
+      conforme Carlos pase las URLs.
+    -->
+    <section class="history" aria-labelledby="history-label">
+      <p class="history-label" id="history-label">Lee la historia</p>
+      <ol>
+        <li>
+          <p class="result-meta">Secretaría de Cultura · gob.mx · 17 de diciembre de 2025</p>
+          <a class="result-title" href="https://www.gob.mx/cultura/prensa/es-un-gato-encerrado-obra-de-teatro-que-aborda-la-salud-mental-y-el-apoyo-famliar-sera-ofrecida-en-cecut" rel="noopener">Es un gato encerrado, obra de teatro que aborda la salud mental y el apoyo familiar, será ofrecida en CECUT</a>
+        </li>
+      </ol>
+    </section>
   </main>
 </body>
 </html>
