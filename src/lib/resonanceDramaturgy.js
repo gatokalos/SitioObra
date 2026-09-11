@@ -1,5 +1,8 @@
 export const RESONANCE_SHARED_DRAMATURGY = {
-  phase3Eyebrow: 'Clímax del segundo acto',
+  // D-42 (11 sep 2026): el clímax de la forma no está aquí, está en la
+  // respuesta a los tres días. En el foco es el detonante: el autor entra a
+  // cuadro y ya no hay vuelta atrás.
+  phase3Eyebrow: 'El detonante',
   phase3Title: 'En el foco',
   appearanceCue: 'Antes del intermedio, el autor entra a cuadro.',
   phase3Description: 'Este recorrido ha concluido. Las respuestas registradas permiten estudiar cómo las experiencias narrativas son interpretadas, recordadas y resignificadas por distintas personas.',
@@ -13,7 +16,9 @@ export const RESONANCE_SHARED_DRAMATURGY = {
   returnCta: 'Quiero que la pregunta vuelva →',
   souvenirCta: 'Quiero recordar este acto',
   entranceCoda: 'Ya forma parte de tu obra.',
-  closingLine: 'Has llegado hasta aquí. La obra queda en pausa.',
+  // Línea de la retención. "Pausa" detenía; la retención sostiene.
+  // Placeholder aprobado por Carlos (11 sep 2026), no copy final.
+  closingLine: 'La obra sigue en ti.',
 };
 
 export const RESONANCE_DRAMATURGY_BY_PORTAL = {

@@ -142,8 +142,8 @@ const L3Extras = ({ copy }) => (
         <span className="h-1 w-1 rotate-45 bg-purple-200/50" />
         <span className="h-px flex-1 bg-gradient-to-l from-transparent to-white/20" />
       </div>
-      <p className="mt-4 text-[0.6rem] font-semibold uppercase tracking-[0.32em] text-purple-200/65">¿Fin del segundo acto?</p>
-      <p className="mt-1 font-display text-xl tracking-[0.14em] text-white">Intermedio</p>
+      <p className="mt-4 text-[0.6rem] font-semibold uppercase tracking-[0.32em] text-purple-200/65">Retención</p>
+      <p className="mt-1 font-display text-xl tracking-[0.14em] text-white">Entre bambalinas</p>
       <p className="mt-1.5 text-[0.68rem] leading-relaxed text-slate-400/75">{copy.closingLine}</p>
     </div>
   </div>

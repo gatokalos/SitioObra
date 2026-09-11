@@ -70,7 +70,7 @@ const BitacoraLanding = () => {
   if (!anonId || !entry) {
     return (
       <div className="flex min-h-screen flex-col items-center justify-center gap-3 bg-gradient-to-b from-slate-950 via-black to-slate-900 px-6 text-center text-slate-100">
-        <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Bitácora</p>
+        <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">En escena</p>
         <h1 className="font-display text-2xl">Este enlace ya no es válido.</h1>
         <p className="max-w-sm text-sm text-slate-400/80">
           Vuelve a #GatoEncerrado y retoma tu recorrido desde ahí.

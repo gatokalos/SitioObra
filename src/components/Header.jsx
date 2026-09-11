@@ -42,7 +42,7 @@ const readGatBalance = () => {
   return Number.isFinite(v) ? Math.max(Math.trunc(v), 0) : INITIAL_GAT_BALANCE;
 };
 
-// hasCompletedRealProgress decide si la tile "Libreto holográfico" existe en
+// hasCompletedRealProgress decide si la tile "Memoria holográfica" existe en
 // el HUB — antes arrancaba en false y solo se sabía la verdad después de un
 // fetch async (fetchTransmediaCreditEvents), así que el HUB siempre nacía
 // con 5 tiles y saltaba a 6 en cuanto la red respondía (visible en CUALQUIER
@@ -287,7 +287,7 @@ const Header = ({
   // (Retomar la proyección / Primera fila / Backstage).
   const gatHubCloseReasonRef = useRef('dismiss');
   // Escape cierra el contenedor sin activar la escena (dismiss puro).
-  // Cualquier tile que navegue a otra vista (Primera fila, Backstage, Libreto
+  // Cualquier tile que navegue a otra vista (Primera fila, Backstage, Memoria
   // holográfico, Gastar energía, Café/merch, Iniciar sesión) debe pasar por
   // activateSceneAfterGatDismiss, no por esta función directo — si no, al
   // volver de esa vista el usuario se encuentra un Hero nunca activado
@@ -553,7 +553,7 @@ const Header = ({
     const entry = CATALOG.find((c) => c.showcase === gatSpendRecommendation?.showcaseId);
     const portalKey = entry?.key ?? 'oraculo';
     // dismissGatPanels solo cierra el HUB — sin activateSceneAfterGatDismiss,
-    // al cerrar el libreto y volver a "/" el Hero nunca se activó, dejando al
+    // al cerrar la Memoria y volver a "/" el Hero nunca se activó, dejando al
     // usuario en limbo (ver conversación 2026-08-18).
     activateSceneAfterGatDismiss('gat-hub-libreto');
     navigate(`/bitacora?t=${encodeURIComponent(ensureAnonId())}&m=${portalKey}`);
@@ -1192,7 +1192,7 @@ const Header = ({
       // desde el primer render, sin salto de layout.
       key: 'holografico',
       icon: BookOpen,
-      label: 'Libreto holográfico',
+      label: 'Memoria holográfica',
       onClick: handleOpenHolograficoFromGatTooltip,
       tone: 'amber',
     },

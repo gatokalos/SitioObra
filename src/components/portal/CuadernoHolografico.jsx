@@ -34,7 +34,7 @@ const PROGRESS_STAGES = [
   { key: 'l1', icon: Eye, label: 'Nivel 1' },
   { key: 'l2', icon: Flame, label: 'Nivel 2' },
   { key: 'l3', icon: Sparkles, label: 'Nivel 3' },
-  { key: 'bitacora', icon: BookOpen, label: 'Bitácora' },
+  { key: 'bitacora', icon: BookOpen, label: 'En escena' },
 ];
 
 // Siempre las 4 esferas, completas o no — una etiqueta debajo de cada una
@@ -137,7 +137,7 @@ const PORTAL_APP_ICON_URL = {
 };
 
 const LIBRETO_REENTRY_COPY =
-  'Solo cambia la forma de abordarla. Explora los niveles a tu ritmo y deja que el Libreto holográfico conserve lo que permanezca contigo.';
+  'Solo cambia la forma de abordarla. Explora los niveles a tu ritmo y deja que la Memoria holográfica conserve lo que permanezca contigo.';
 
 const getVitrinaVerse = (showcaseId) =>
   formats.find((format) => format.id === showcaseId)?.vitrinaCopy ?? LIBRETO_REENTRY_COPY;
@@ -365,7 +365,7 @@ function CompletedHomePanel({ portal, entry, infoOpen, infoSeen, onToggleInfo })
                   rel="noreferrer"
                   className="mt-5 inline-flex w-full items-center justify-center gap-2 rounded-full border border-purple-300/35 bg-purple-500/15 px-5 py-2.5 text-xs font-semibold uppercase tracking-[0.18em] text-purple-50 transition hover:border-purple-200/60 hover:bg-purple-500/25"
                 >
-                  Abrir mi bitácora
+                  Abrir mi memoria
                   <ExternalLink size={14} aria-hidden />
                 </a>
               </div>

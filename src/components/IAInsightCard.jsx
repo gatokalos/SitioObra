@@ -29,7 +29,7 @@ const IAInsightCard = ({
   travelRequiredGat,
   travelLabel = 'Viajar al universo',
   onTravel,
-  // Variante compacta para el Libreto: conserva exactamente la protección de
+  // Variante compacta para la Memoria: conserva exactamente la protección de
   // autenticación/GAT del modo viajar, pero elimina el acordeón informativo.
   travelCtaOnly = false,
   // Algunas páginas (p. ej. /bitacora) no montan Header.jsx, así que el

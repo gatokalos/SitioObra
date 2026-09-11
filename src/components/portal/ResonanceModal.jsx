@@ -409,9 +409,9 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
   // RESONANCE_FAREWELL_VIDEO_ENABLED en transmediaConstants.jsx.
   const [farewellVideoSeen, setFarewellVideoSeen]     = useState(() => !!lsRead(portal).farewell_video_seen);
   const [phoneInput, setPhoneInput]                   = useState('');
-  // Después de cerrar la Bitácora, el Libreto sustituye al Dashboard. Si la
-  // ventana de 72 h ya venció, cualquier entrada abre directamente las
-  // reflexiones finales, incluso cuando la persona volvió por su cuenta.
+  // Después de responder En escena, la Memoria sustituye al Dashboard. Si la
+  // ventana de 72 h ya venció, cualquier entrada abre directamente En escena,
+  // incluso cuando la persona volvió por su cuenta.
   const [holograficoOpen, setHolograficoOpen]         = useState(() => startInHolografico || !!lsRead(portal).bitacora_completed);
   const [holograficoPoster, setHolograficoPoster]     = useState(portal);
   const activeBloom = holograficoOpen ? (PORTAL_BLOOM[holograficoPoster] ?? PORTAL_BLOOM.obra) : bloom;
@@ -910,7 +910,7 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
     lsPatch(portal, { bitacora_completed: true, dashboard_active_level: 3 });
     setBitacoraCompleted(true);
     setBitacoraOpen(false);
-    // Al cerrar el formulario, el Libreto — no el clímax. Sin esto el dashboard
+    // Al cerrar el formulario, la Memoria — no el detonante. Sin esto el dashboard
     // quedaba debajo y la persona aterrizaba de vuelta en "En el foco" después
     // de haber respondido tres días más tarde, como si el recorrido no hubiera
     // avanzado. Es el mismo estado con el que ya abre en una sesión posterior
@@ -986,14 +986,6 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
       return;
     }
     navigate('/#transmedia');
-  };
-
-  const handleGoToCamerino = () => {
-    onClose?.();
-    navigate('/#dialogo-critico');
-    window.setTimeout(() => {
-      document.getElementById('dialogo-critico')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }, 160);
   };
 
   // Sin llamador desde que se quitó el CTA "Explorar {forma}" (dinámica de
@@ -1254,7 +1246,7 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
                     </div>
                   </motion.div>
                 ) : holograficoOpen ? (
-                  /* ── Libreto holográfico: visualización posterior al registro ── */
+                  /* ── Memoria holográfica: lo que queda después de En escena ── */
                   <motion.div
                     key="holografico"
                     className="h-full"
@@ -1286,7 +1278,7 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
 
                     <div className="hidden lg:block lg:px-10 lg:pb-5 lg:pt-14">
                       <p className="mb-3 text-[0.62rem] uppercase tracking-[0.32em] text-white/50">
-                        En el foco
+                        En escena
                       </p>
                       <p
                         className="font-display leading-snug question-voice"
@@ -1756,7 +1748,7 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
                                                       <Check size={13} className="mt-0.5 shrink-0 text-emerald-300/80" />
                                                       <p className="text-xs leading-relaxed text-slate-300/80">
                                                         {bitacoraAvailable
-                                                          ? 'Las reflexiones finales ya están disponibles.'
+                                                          ? 'La pregunta ya volvió. Puedes entrar a escena.'
                                                           : 'La próxima pregunta ya está preparada. Te buscará por WhatsApp cuando llegue el momento.'}
                                                       </p>
                                                     </div>
@@ -1825,18 +1817,18 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
                                                   <span className="h-px flex-1 bg-gradient-to-l from-transparent to-white/20" />
                                                 </div>
                                                 <p className="mt-4 text-[0.6rem] font-semibold uppercase tracking-[0.32em] text-purple-200/65">
-                                                  ¿Fin del segundo acto?
+                                                  Retención
                                                 </p>
-                                                {/* "Entreacto", no "Intermedio": esta tarjeta es el
-                                                    telón que baja antes de la espera longitudinal, no la
-                                                    estación #blog-contribuye del programa de mano. Al
-                                                    cerrar el modal la persona vuelve a las vitrinas, no
-                                                    llega al Intermedio — anunciarlo con ese nombre
-                                                    prometía un lugar al que no iba (Carlos, 10 sep 2026).
-                                                    La puerta deliberada al Intermedio durante la espera
-                                                    es "Ir al camerino →", más abajo. */}
+                                                {/* D-42 (11 sep 2026): el clímax de la forma es la respuesta a
+                                                    los tres días, así que el segundo acto NO termina aquí y esta
+                                                    tarjeta no es un telón ("Entreacto" duró un día). Es el
+                                                    umbral de la retención: el actor entre bambalinas, con la
+                                                    energía sostenida antes de soltarla. Por eso no ofrece nada
+                                                    — ni "Ir al camerino": mandar a alguien al archivo a media
+                                                    ventana es estímulo antes de las preguntas diferidas
+                                                    (handoff §1.3). Se cierra el modal y ya. */}
                                                 <p className="mt-1 font-display text-xl tracking-[0.14em] text-white">
-                                                  Entreacto
+                                                  Entre bambalinas
                                                 </p>
                                                 <p className="mt-1.5 text-[0.68rem] leading-relaxed text-slate-400/75">
                                                   {dramaturgy.closingLine}
@@ -1852,24 +1844,13 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
                                               onClick={() => { setBitacoraStep('p1'); setBitacoraOpen(true); }}
                                               className="w-full rounded-full border border-amber-400/60 bg-amber-900/25 px-4 py-2.5 text-xs uppercase tracking-[0.2em] text-amber-100 transition hover:bg-amber-900/40"
                                             >
-                                              Reflexiones finales →
+                                              En escena →
                                             </button>
                                           )}
 
-                                          {/* Mientras las Reflexiones finales no están disponibles (antes
-                                              de las 72h), no dejamos al usuario sin nada que hacer — el CTA
-                                              lo manda al camerino en vez de un texto pasivo. El regreso a
-                                              Reflexiones finales, mientras tanto, llega por WhatsApp
-                                              (Carlos, 2026-08-27). */}
-                                          {!bitacoraCompleted && bitacoraConsented && !bitacoraAvailable && (
-                                            <button
-                                              type="button"
-                                              onClick={handleGoToCamerino}
-                                              className="w-full rounded-full border border-white/20 bg-black/35 px-4 py-2.5 text-xs uppercase tracking-[0.2em] text-slate-200 transition hover:bg-black/50"
-                                            >
-                                              Ir al camerino →
-                                            </button>
-                                          )}
+                                          {/* Aquí hubo "Ir al camerino →" durante la espera (Carlos,
+                                              2026-08-27). Retirado por D-42 (11 sep 2026): la retención
+                                              está vacía. */}
 
                                           {/* Bitácora — completada */}
                                           {bitacoraCompleted && (
@@ -1895,7 +1876,7 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
                                                   className="h-24 w-24 object-contain drop-shadow-[0_0_24px_rgba(168,85,247,0.45)] lg:h-28 lg:w-28"
                                                 />
                                                 <span className="text-sm font-semibold tracking-wide text-purple-200">
-                                                  Abrir mi registro
+                                                  Abrir mi memoria
                                                 </span>
                                               </motion.button>
                                             </div>

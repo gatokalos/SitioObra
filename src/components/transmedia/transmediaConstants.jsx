@@ -326,7 +326,7 @@ export const MINIVERSO_EDITORIAL_INTERCEPTION_ENABLED =
   import.meta.env?.VITE_MINIVERSO_INTERCEPTION === 'true';
 // Ubicación ORIGINAL/retirada del umbral narrativo — video puente antes de
 // "Improvisa una respuesta" en los 9 portales, antes de "Viajar a esta escena"
-// en el Libreto holográfico, y antes del video de reanudación tras login en
+// en la Memoria holográfica, y antes del video de reanudación tras login en
 // Hero.jsx ("Entra y sigue la forma" en Transmedia). Las tres viven como
 // entrada/umbral. Reubicado: el mejor lugar resultó ser el clímax previo al
 // intermedio, después de L3 y antes del consentimiento diferido — ver
@@ -1403,9 +1403,9 @@ Buscar sentido no se apaga cuando encuentra algo. Se vuelve más fino, y empieza
     notaAutoral: 'Miré mi reflejo.\nNo preguntó nada.\nÉramos dos... y no.',
     iaProfile: {
       notes: [
-        '🧭 No hay un camino fijo — tú decides cómo recorrerlo, con ayuda de la IA.',
-        '💭 Los temas salen de lo que ya compartiste en los ocho miniversos anteriores.',
-        '🔁 Es un regreso: al oráculo que ya contestaste en la Bienvenida, ahora con lo que viviste después.',
+        '🧭 No hay un camino fijo: tú decides cómo recorrerlo.',
+        '💭 Puedes tomar una pregunta que dejó otro visitante, o dejar la tuya y ser el primero en contestarla.',
+        '🔁 Si ésta es tu primera escena del primer acto, es porque el oráculo no adivina: pregunta.',
       ],
     },
   },
