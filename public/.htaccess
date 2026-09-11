@@ -2,12 +2,23 @@
   RewriteEngine On
   RewriteBase /
 
-  # Dominio canónico. esungatoencerrado.com apunta al mismo docroot y servía una
-  # copia idéntica del sitio con HTTP 200: dos sitios iguales, sin redirect ni
-  # canonical, repartiéndose la autoridad de búsqueda. Este 301 los consolida en
-  # universo.gatoencerrado.org. Cuando esungatoencerrado.com pase a ser la
-  # boletería de temporada, esta regla se retira.
+  # esungatoencerrado.com es el dominio de la obra de teatro. Comparte docroot con
+  # universo.gatoencerrado.org, así que los dos sitios se separan aquí.
+  #
+  # 1) La raíz sirve la página de la obra (obra.html) — hoy, la despedida
+  #    "Decirnos adiós" (Carlos, 11 sep 2026). Reescritura interna, no redirect:
+  #    la URL se queda en esungatoencerrado.com y Google la indexa como la obra,
+  #    con canonical propio. Es lo que reemplaza el snippet viejo que Google
+  #    guardaba de este dominio. Si vuelve una temporada, la boletería va aquí.
   RewriteCond %{HTTP_HOST} ^(www\.)?esungatoencerrado\.com$ [NC]
+  RewriteRule ^$ obra.html [L]
+
+  # 2) Todo lo demás en ese dominio sigue al universo con 301 (antes era la regla
+  #    completa, commit 80b7949c): los enlaces viejos no se rompen y la autoridad
+  #    de búsqueda del proyecto no se reparte. obra.html se excluye para que la
+  #    reescritura de arriba no rebote aquí.
+  RewriteCond %{HTTP_HOST} ^(www\.)?esungatoencerrado\.com$ [NC]
+  RewriteCond %{REQUEST_URI} !^/obra\.html$
   RewriteRule ^(.*)$ https://universo.gatoencerrado.org/$1 [R=301,L]
 
   # Servir artículos prerendered: /blog/slug → /blog/slug.html

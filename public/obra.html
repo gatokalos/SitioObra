@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<!--
+  Página de la obra de teatro, servida en la raíz de esungatoencerrado.com por
+  public/.htaccess (reescritura interna, no redirect). Hoy es la despedida
+  "Decirnos adiós" — copy de Carlos A. Pérez H., 11 sep 2026.
+
+  HTML estático a propósito, como presskit.html: sin JavaScript, Google la lee
+  directo y es lo que reemplaza el snippet viejo que guardaba de este dominio.
+
+  Todas las imágenes y enlaces van con URL absoluta a universo.gatoencerrado.org:
+  en este dominio cualquier ruta que no sea obra.html se redirige con 301, así
+  que una ruta relativa daría un salto de más.
+-->
+<title>Es un gato encerrado · Decirnos adiós</title>
+<meta name="description" content="Hay obras que dejan de representarse sin terminar de irse. Es un gato encerrado salió de cartelera y encontró nuevas formas, otros lenguajes y nueve vidas.">
+<link rel="canonical" href="https://www.esungatoencerrado.com/">
+
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Es un gato encerrado">
+<meta property="og:url" content="https://www.esungatoencerrado.com/">
+<meta property="og:title" content="Es un gato encerrado · Decirnos adiós">
+<meta property="og:description" content="Hay obras que dejan de representarse sin terminar de irse. La obra encontró nuevas formas, otros lenguajes y nueve vidas.">
+<meta property="og:image" content="https://universo.gatoencerrado.org/assets/logoapp.png">
+<meta name="twitter:card" content="summary">
+
+<link rel="icon" href="https://universo.gatoencerrado.org/assets/favicon.ico?v=20260827" sizes="any">
+<link rel="icon" type="image/png" sizes="32x32" href="https://universo.gatoencerrado.org/assets/favicon-32.png?v=20260827">
+<link rel="apple-touch-icon" href="https://universo.gatoencerrado.org/assets/icon-180.png?v=20260827">
+<meta name="theme-color" content="#08070b">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+<style>
+  :root {
+    --ground: #08070b;
+    --ink: #ece6dc;
+    --ink-soft: rgba(236, 230, 220, 0.78);
+    --muted: rgba(236, 230, 220, 0.5);
+    --rule: rgba(184, 154, 90, 0.55);
+    --accent: #c94f7c;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { background: var(--ground); }
+  body {
+    min-height: 100vh;
+    min-height: 100svh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 4rem 1.5rem;
+    background:
+      radial-gradient(ellipse 70% 55% at 50% 38%, rgba(123, 45, 139, 0.16), transparent 70%),
+      var(--ground);
+    color: var(--ink);
+    font-family: 'Cormorant Garamond', Georgia, 'Times New Roman', serif;
+    -webkit-font-smoothing: antialiased;
+  }
+  main {
+    width: 100%;
+    max-width: 34rem;
+    text-align: center;
+    animation: arrive 1.6s ease-out both;
+  }
+  @keyframes arrive { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+  @media (prefers-reduced-motion: reduce) { main { animation: none; } }
+
+  .mark { width: 3.25rem; height: 3.25rem; margin: 0 auto 2.25rem; border-radius: 0.8rem; opacity: 0.9; }
+  .eyebrow {
+    font-family: 'DM Mono', ui-monospace, monospace;
+    font-size: 0.66rem;
+    letter-spacing: 0.26em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  h1 {
+    margin-top: 1rem;
+    font-weight: 300;
+    font-size: clamp(2.6rem, 9vw, 3.6rem);
+    line-height: 1.05;
+    letter-spacing: 0.01em;
+  }
+  .rule { width: 2.5rem; height: 1px; margin: 2rem auto; background: var(--rule); border: 0; }
+  .prose p {
+    font-size: clamp(1.14rem, 3.6vw, 1.3rem);
+    line-height: 1.7;
+    color: var(--ink-soft);
+  }
+  .prose p + p { margin-top: 1.15rem; }
+  .prose em { font-style: italic; color: var(--ink); }
+
+  /* Continuidad primero, memoria después: un solo botón y, debajo, enlaces
+     discretos. Tres botones iguales aplanarían la distinción. */
+  .continuity { margin-top: 2.75rem; }
+  .cta {
+    display: inline-block;
+    padding: 0.95rem 2rem;
+    border: 1px solid rgba(236, 230, 220, 0.38);
+    border-radius: 999px;
+    font-family: 'DM Mono', ui-monospace, monospace;
+    font-size: 0.74rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--ink);
+    text-decoration: none;
+    transition: background-color 0.25s ease, border-color 0.25s ease;
+  }
+  .cta:hover { background: rgba(236, 230, 220, 0.07); border-color: rgba(236, 230, 220, 0.62); }
+  .memory {
+    margin-top: 1.6rem;
+    font-family: 'DM Mono', ui-monospace, monospace;
+    font-size: 0.68rem;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+  }
+  .memory a { color: var(--muted); text-decoration: none; border-bottom: 1px solid transparent; transition: color 0.2s ease, border-color 0.2s ease; }
+  .memory a:hover { color: var(--ink); border-color: var(--accent); }
+  a:focus-visible { outline: 1px solid var(--accent); outline-offset: 4px; }
+</style>
+</head>
+<body>
+  <main>
+    <img class="mark" src="https://universo.gatoencerrado.org/assets/icon-512.png" alt="" width="52" height="52">
+    <p class="eyebrow">Es un gato encerrado · obra de teatro</p>
+    <h1>Decirnos adiós</h1>
+    <hr class="rule">
+
+    <div class="prose">
+      <p>Hay obras que dejan de representarse sin terminar de irse.</p>
+      <p><em>Es un gato encerrado</em> salió de cartelera cuando ya no encontramos el apoyo necesario para sostenerla en escena.</p>
+      <p>Pero aquello que parecía un final terminó por abrir otras posibilidades: la obra encontró nuevas formas, otros lenguajes y, con ellos, nueve vidas.</p>
+    </div>
+
+    <div class="continuity">
+      <a class="cta" href="https://universo.gatoencerrado.org/">Explorar el universo</a>
+    </div>
+
+    <!--
+      Memoria. Pendiente: "Lee la historia" — Carlos quiere una lista de artículos
+      al estilo de un resultado de búsqueda (título, medio, fecha, extracto). Se
+      agrega cuando estén las URLs; no se publica un enlace sin destino.
+    -->
+    <p class="memory">
+      <a href="https://universo.gatoencerrado.org/presskit.html">Ver press kit</a>
+    </p>
+  </main>
+</body>
+</html>
