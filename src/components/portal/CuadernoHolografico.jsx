@@ -304,7 +304,7 @@ function Constellation({ centerKey, onSelect }) {
 
 /* ─── Panel inferior ────────────────────────────────────────────────────── */
 
-function CompletedHomePanel({ portal, entry, infoOpen, infoSeen, onToggleInfo }) {
+function CompletedHomePanel({ portal, entry, infoOpen, infoSeen, onToggleInfo, onOpenHuella }) {
   const verse = getVitrinaVerse(entry.showcase);
 
   return (
@@ -320,6 +320,18 @@ function CompletedHomePanel({ portal, entry, infoOpen, infoSeen, onToggleInfo })
       </div>
 
       <CompletedProgressOrbs portal={portal} bitacoraNeedsAttention={!infoSeen} />
+
+      {/* D-38: dondequiera que se vea la huella la acompañan corregir y
+          retirar. La Memoria es la puerta de regreso a ella. */}
+      {onOpenHuella ? (
+        <button
+          type="button"
+          onClick={onOpenHuella}
+          className="inline-flex w-full items-center justify-center gap-2 rounded-full border border-white/15 bg-white/5 px-5 py-2.5 text-xs font-semibold uppercase tracking-[0.18em] text-slate-100 transition hover:bg-white/10"
+        >
+          Ver mi huella
+        </button>
+      ) : null}
 
       <section className="overflow-hidden rounded-xl border border-purple-400/25 bg-purple-950/25">
         <button
@@ -381,6 +393,7 @@ function HolograficoPanel({
   centerKey,
   homeKey,
   onStartBitacora,
+  onOpenHuella,
   onOpenVideo,
   onRequireLogin,
   homeInfoOpen,
@@ -420,6 +433,7 @@ function HolograficoPanel({
               infoOpen={homeInfoOpen}
               infoSeen={homeInfoSeen}
               onToggleInfo={onToggleHomeInfo}
+              onOpenHuella={onOpenHuella}
             />
           ) : (
             /* Compatibilidad con recorridos antiguos que aún no cierran su bitácora. */
@@ -492,7 +506,7 @@ function HolograficoPanel({
 
 /* ─── Componente principal ──────────────────────────────────────────────── */
 
-const CuadernoHolografico = ({ portal, onStartBitacora, onNavigate, onPosterChange, onRequireLogin, readOnly = false }) => {
+const CuadernoHolografico = ({ portal, onStartBitacora, onOpenHuella, onNavigate, onPosterChange, onRequireLogin, readOnly = false }) => {
   const navigate = useNavigate();
   const location = useLocation();
   const { isMobileViewport } = useMobileVideoPresentation();
@@ -604,6 +618,7 @@ const CuadernoHolografico = ({ portal, onStartBitacora, onNavigate, onPosterChan
           centerKey={centerKey}
           homeKey={portal}
           onStartBitacora={onStartBitacora}
+          onOpenHuella={onOpenHuella}
           onOpenVideo={handleOpenVideo}
           onRequireLogin={onRequireLogin}
           homeInfoOpen={homeInfoOpen}

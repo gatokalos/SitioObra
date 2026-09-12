@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import CuadernoHolografico from './CuadernoHolografico';
+import HuellaView from './HuellaView';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Eye, Flame, Lock, ShieldCheck, Check, ChevronDown, Sparkles, RotateCcw, FastForward } from 'lucide-react';
@@ -314,7 +315,7 @@ const lsPatch = (portal, patch) => {
 
 /* ─── Componente ──────────────────────────────────────────────────────── */
 
-const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNavigateToRecommendation, onL2QuestionReady, isMobileViewport, onRequireLogin, startInHolografico = false, startInBitacora = false }) => {
+const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNavigateToRecommendation, onL2QuestionReady, isMobileViewport, onRequireLogin, startInHolografico = false, startInBitacora = false, bitacoraVentana = null }) => {
   const modalRef = useRef(null);
   const submitBtnRef = useRef(null);
   const { user, isDevAuth } = useAuth();
@@ -414,6 +415,9 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
   // incluso cuando la persona volvió por su cuenta.
   const [holograficoOpen, setHolograficoOpen]         = useState(() => startInHolografico || !!lsRead(portal).bitacora_completed);
   const [holograficoPoster, setHolograficoPoster]     = useState(portal);
+  // La huella (D-34): se abre al terminar En escena, y desde la Memoria
+  // cuando la persona quiera volver a verla, corregirla o retirarla (D-38).
+  const [huellaOpen, setHuellaOpen]                   = useState(false);
   const activeBloom = holograficoOpen ? (PORTAL_BLOOM[holograficoPoster] ?? PORTAL_BLOOM.obra) : bloom;
   const [bitacoraOpen, setBitacoraOpen]               = useState(() => {
     const stored = lsRead(portal);
@@ -537,6 +541,9 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
           anon_id:             anonId,
           miniverso_id:        portal,
           intuicion_answer:    formData.respuesta,
+          // Pendiente 4 del registro (11 sep 2026): sin este campo la columna
+          // user_id de resonance_sessions nunca se poblaba desde el sitio.
+          ...(user?.id ? { user_id: user.id } : {}),
           ...(bienvenidaAnonId ? { bienvenida_anon_id: bienvenidaAnonId } : {}),
         })
         .then((data) => {
@@ -620,6 +627,7 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
         body: JSON.stringify({
           anon_id: ensureAnonId(),
           miniverso_id: portal,
+          ...(user?.id ? { user_id: user.id } : {}),
           ...(respuesta != null ? { respuesta } : {}),
           ...(silent ? { silent: true } : {}),
           ...(context?.fragment_id ? { fragment_id: context.fragment_id } : {}),
@@ -855,6 +863,7 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
           canal,
           bienvenida_anon_id: bienvenidaAnonId,
           phone_number: phoneNumber ?? null,
+          ...(user?.id ? { user_id: user.id } : {}),
         }),
       });
       const data = await res.json();
@@ -865,7 +874,7 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
         setBitacoraAvailableAt(data.available_at);
       }
     } catch (_) {}
-  }, [portal, isDevAuth]);
+  }, [portal, isDevAuth, user?.id]);
 
   // Marca el video de despedida como visto — al arrancar la reproducción o
   // al saltarlo, cualquiera de los dos cuenta. Independiente de si dio o no
@@ -898,7 +907,11 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             anon_id:        anonId,
-            miniverso_id:   portal,
+            // D-35: cuando se llega por el aviso (un enlace por persona), la
+            // respuesta cubre toda la ventana y el servidor decide a qué formas
+            // aplica. Sin ventana, sigue siendo por esta forma.
+            ...(bitacoraVentana ? {} : { miniverso_id: portal }),
+            ...(user?.id ? { user_id: user.id } : {}),
             p1_response:    p1Response,
             p1_afirmativa:  p1Afirmativa,
             p2_response:    bitacoraP2 || null,
@@ -907,20 +920,20 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
         });
       } catch (_) {}
     }
-    lsPatch(portal, { bitacora_completed: true, dashboard_active_level: 3 });
+    const portalsDone = bitacoraVentana?.length ? [...new Set([...bitacoraVentana, portal])] : [portal];
+    portalsDone.forEach((p) => lsPatch(p, { bitacora_completed: true, dashboard_active_level: 3 }));
     setBitacoraCompleted(true);
     setBitacoraOpen(false);
-    // Al cerrar el formulario, la Memoria — no el detonante. Sin esto el dashboard
-    // quedaba debajo y la persona aterrizaba de vuelta en "En el foco" después
-    // de haber respondido tres días más tarde, como si el recorrido no hubiera
-    // avanzado. Es el mismo estado con el que ya abre en una sesión posterior
-    // (ver holograficoOpen), adelantado al momento del envío. Provisional hasta
-    // que exista la vista de huella del §2 del handoff (Carlos, 10 sep 2026).
+    // Al cerrar el formulario, la huella (D-34): la persona ve lo que escribió
+    // antes de entrar junto a lo que acaba de responder, y hace ella el
+    // contraste. Detrás queda la Memoria, que es el estado con el que ya abre
+    // en una sesión posterior (ver holograficoOpen).
     setHolograficoOpen(true);
+    setHuellaOpen(true);
     setDashboardActiveLevel(3);
     setBitacoraStep('p1');
     setBitacoraSubmitting(false);
-  }, [portal, bitacoraP1, bitacoraAfirmativa, bitacoraP2, bitacoraP3, isDevAuth]);
+  }, [portal, bitacoraP1, bitacoraAfirmativa, bitacoraP2, bitacoraP3, isDevAuth, user?.id, bitacoraVentana]);
 
   /* ── render ── */
   // Gatea la revelación ambiental del gato en la columna derecha (ver más
@@ -960,18 +973,25 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
           anon_id:       ensureAnonId(),
           miniverso_id:  portal,
           completed_ids: completedIds,
+          ...(user?.id ? { user_id: user.id } : {}),
         }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error();
       setL3Rec(data);
       lsPatch(portal, { l3_recommendation: data });
+      // D-35: completar esta forma desplazó la ventana del regreso (si ya
+      // había consentimiento). El plazo lo manda el servidor; aquí no se calcula.
+      if (data?.bitacora_available_at) {
+        lsPatch(portal, { bitacora_available_at: data.bitacora_available_at });
+        setBitacoraAvailableAt(data.bitacora_available_at);
+      }
     } catch (_) {
       setL3Rec({ error: true });
     } finally {
       setL3Loading(false);
     }
-  }, [l3Rec, l3Loading, portal, isDevAuth]);
+  }, [l3Rec, l3Loading, portal, isDevAuth, user?.id]);
 
 
   const handleBackToDashboard = () => {
@@ -1245,6 +1265,16 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
                       </div>
                     </div>
                   </motion.div>
+                ) : huellaOpen ? (
+                  /* ── La huella: lo que la persona dejó, con corregir y retirar (D-34, D-38) ── */
+                  <HuellaView
+                    key="huella"
+                    recommendedFormatId={l3Rec?.recommended_format_id ?? null}
+                    onContinue={() => setHuellaOpen(false)}
+                    onNavigateToRecommendation={(showcaseId) => { setHuellaOpen(false); setHolograficoOpen(false); handleClose(); onNavigateToRecommendation?.(showcaseId); }}
+                    onGoToSite={(hash) => { setHuellaOpen(false); handleClose(); navigate(hash ? { pathname: '/', hash } : '/'); }}
+                    onRetired={() => { setHuellaOpen(false); setHolograficoOpen(false); handleClose(); }}
+                  />
                 ) : holograficoOpen ? (
                   /* ── Memoria holográfica: lo que queda después de En escena ── */
                   <motion.div
@@ -1260,6 +1290,7 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
                       isMobileViewport={isMobileViewport}
                       readOnly={bitacoraCompleted}
                       onStartBitacora={() => { setHolograficoOpen(false); setBitacoraOpen(true); }}
+                      onOpenHuella={() => setHuellaOpen(true)}
                       onNavigate={(showcaseId) => { setHolograficoOpen(false); handleClose(); onNavigateToRecommendation?.(showcaseId); }}
                       onPosterChange={setHolograficoPoster}
                       onRequireLogin={onRequireLogin}
@@ -1298,7 +1329,7 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
                         {/* Mobile: etiqueta de paso */}
                         <div className="lg:hidden space-y-2">
                           <div className="inline-flex rounded-full border border-white/10 bg-white/5 px-3 py-1 text-[0.62rem] uppercase tracking-[0.32em] text-white/70">
-                            En el foco
+                            En escena
                           </div>
                           <h3 className="font-display text-2xl leading-tight tracking-tight question-voice">
                             {bitacoraStep === 'p1' && '¿Hay algo de esta experiencia que haya regresado por su cuenta? Una imagen, una frase, una sensación.'}

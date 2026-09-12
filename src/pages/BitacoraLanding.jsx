@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import ResonanceModal from '@/components/portal/ResonanceModal';
 import { CATALOG } from '@/lib/bitacoraShared';
@@ -26,8 +26,12 @@ function hasUnlockedAccess(formatId, isAuthenticated) {
   }
 }
 
-// Aterrizaje del magic link de Bitácora diferida (WhatsApp/push, días después).
-// URL: /bitacora?t=<anon_id>&m=<portal key, ej. "sonoridades">
+const OBRA_API_URL = (import.meta.env.VITE_OBRA_API_URL ?? 'https://api.gatoencerrado.ai').replace(/\/+$/, '');
+
+// Aterrizaje del aviso del regreso diferido (WhatsApp/push, días después).
+// URL: /bitacora?t=<anon_id>            → D-35: un enlace por persona; las
+//                                          formas pendientes las dice el servidor
+//      /bitacora?t=<anon_id>&m=<portal>  → enlaces anteriores, por forma
 // El anon_id del link puede no coincidir con el de este navegador (el link
 // puede abrirse en otro dispositivo) — se fuerza como identidad activa para
 // esta pestaña, ver setAnonIdOverride en lib/identity.js.
@@ -39,7 +43,28 @@ const BitacoraLanding = () => {
   const isAuthenticated = Boolean(user);
 
   const anonId = searchParams.get('t');
-  const portalKey = searchParams.get('m');
+  const linkedPortal = searchParams.get('m');
+  // null = todavía consultando; [] = nada pendiente
+  const [ventana, setVentana] = useState(() => (linkedPortal ? [linkedPortal] : null));
+
+  useEffect(() => {
+    if (linkedPortal || !anonId) return undefined;
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await fetch(`${OBRA_API_URL}/api/bitacora/pending?anon_id=${encodeURIComponent(anonId)}`);
+        const data = await res.json();
+        if (!cancelled) setVentana(Array.isArray(data?.miniversos) ? data.miniversos : []);
+      } catch {
+        if (!cancelled) setVentana([]);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [anonId, linkedPortal]);
+
+  // La forma más reciente de la ventana hospeda la pantalla; la respuesta
+  // cubre todas (ver bitacoraVentana en ResonanceModal).
+  const portalKey = linkedPortal ?? ventana?.[0] ?? null;
 
   // Efecto de módulo, no de React: debe correr antes de que ResonanceModal
   // monte y dispare sus propias llamadas (que leen ensureAnonId()).
@@ -67,6 +92,14 @@ const BitacoraLanding = () => {
     if (route) navigate(route);
   };
 
+  if (anonId && !linkedPortal && ventana === null) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-gradient-to-b from-slate-950 via-black to-slate-900 text-slate-400/70">
+        <p className="text-xs uppercase tracking-[0.35em]">En escena</p>
+      </div>
+    );
+  }
+
   if (!anonId || !entry) {
     return (
       <div className="flex min-h-screen flex-col items-center justify-center gap-3 bg-gradient-to-b from-slate-950 via-black to-slate-900 px-6 text-center text-slate-100">
@@ -91,6 +124,7 @@ const BitacoraLanding = () => {
         <ResonanceModal
           open
           startInBitacora
+          bitacoraVentana={linkedPortal ? null : ventana}
           portal={portalKey}
           question={entry.q}
           onClose={handleClose}
