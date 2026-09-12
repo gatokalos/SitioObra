@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import ReactMarkdown from 'react-markdown';
 import { fetchBlogPostBySlug } from '@/services/blogService';
+import { markIntermedioVisto } from '@/lib/intermedio';
 
 const SITE_ORIGIN =
   typeof window !== 'undefined' ? window.location.origin : 'https://universo.gatoencerrado.org';
@@ -127,6 +128,7 @@ export default function BlogPostPage() {
       if (!data) {
         setNotFound(true);
       } else {
+        markIntermedioVisto();
         setPost(data);
       }
       setLoading(false);

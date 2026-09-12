@@ -2,7 +2,7 @@ import { useState, useRef, useCallback } from 'react';
 
 // Variable dedicada para el backend Express (puerto 5050).
 // No usa VITE_API_URL para no interferir con las Supabase Edge Functions.
-const RAW_API_URL = (import.meta.env.VITE_SEARCH_API_URL ?? import.meta.env.VITE_API_URL ?? '').replace(/\/+$/, '');
+export const RAW_API_URL = (import.meta.env.VITE_SEARCH_API_URL ?? import.meta.env.VITE_API_URL ?? '').replace(/\/+$/, '');
 
 /**
  * Hook de búsqueda inteligente RAG para GatoEncerrado.

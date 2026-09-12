@@ -16,6 +16,7 @@ import { usePushSubscription } from '@/hooks/usePushSubscription';
 import { clearGlobalConsent, readGlobalConsent, writeGlobalConsent, readResonanceProgress } from '@/lib/bitacoraShared';
 import FarewellVideoPanel from './FarewellVideoPanel';
 import { RESONANCE_FAREWELL_VIDEO_ENABLED } from '@/components/transmedia/transmediaConstants';
+import { readIntermedioVistoAt } from '@/lib/intermedio';
 import { getResonanceDramaturgy } from '@/lib/resonanceDramaturgy';
 
 export { readGlobalConsent, writeGlobalConsent };
@@ -541,6 +542,9 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
           anon_id:             anonId,
           miniverso_id:        portal,
           intuicion_answer:    formData.respuesta,
+          // Bloque 7 (12 sep 2026): si pasó por el Intermedio antes de
+          // responder, se anota. No se le cierra la puerta a nadie.
+          ...(readIntermedioVistoAt() ? { intermedio_visto_at: readIntermedioVistoAt() } : {}),
           // Pendiente 4 del registro (11 sep 2026): sin este campo la columna
           // user_id de resonance_sessions nunca se poblaba desde el sitio.
           ...(user?.id ? { user_id: user.id } : {}),
@@ -718,6 +722,7 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
           anon_id:              anonId,
           miniverso_id:         portal,
           expectativa_chip:     option,
+          ...(readIntermedioVistoAt() ? { intermedio_visto_at: readIntermedioVistoAt() } : {}),
           expectativa_question: l2q?.question ?? null,
         })
         .then((data) => {
@@ -907,6 +912,9 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             anon_id:        anonId,
+            // Bloque 7: la misma marca, leída ahora; contra baseline_at dice si
+            // el paso por el Intermedio fue durante la retención.
+            ...(readIntermedioVistoAt() ? { intermedio_visto_at: readIntermedioVistoAt() } : {}),
             // D-35: cuando se llega por el aviso (un enlace por persona), la
             // respuesta cubre toda la ventana y el servidor decide a qué formas
             // aplica. Sin ventana, sigue siendo por esta forma.

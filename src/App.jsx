@@ -13,6 +13,7 @@ import { useEmailRedirect } from '@/hooks/useEmailRedirect';
 import LoginToast from '@/components/LoginToast';
 import { useAuth } from '@/contexts/SupabaseAuthContext';
 import { safeGetItem, safeSetItem } from '@/lib/safeStorage';
+import { markIntermedioVisto } from '@/lib/intermedio';
 import { isInstalledPWA } from '@/lib/pwaDetection';
 import {
   readBeforeLeavingRevealedFromSession,
@@ -767,6 +768,7 @@ function App() {
   }, [revealBeforeLeavingWithGallery, scrollToSection]);
 
   const handleAskQuestion = useCallback(() => {
+    markIntermedioVisto();
     if (!isAuthenticated && !hasGuestUnlockedCuradoria) {
       safeSetItem(CURATORIA_UNLOCK_STORAGE_KEY, '1');
       setHasGuestUnlockedCuradoria(true);
@@ -779,6 +781,7 @@ function App() {
     setIsCuradoriaVisible((prev) => {
       const next = !prev;
       if (next) {
+        markIntermedioVisto();
         if (!isAuthenticated && !hasGuestUnlockedCuradoria) {
           safeSetItem(CURATORIA_UNLOCK_STORAGE_KEY, '1');
           setHasGuestUnlockedCuradoria(true);

@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowRight, Calendar, Clock, Feather, FileSearch, RefreshCw, Send } from 'lucide-react';
-import { useSearch } from '@/hooks/useSearch';
+import { useSearch, RAW_API_URL } from '@/hooks/useSearch';
 import { Button } from '@/components/ui/button';
 import { toast } from '@/components/ui/use-toast';
 import ReactMarkdown from 'react-markdown';
@@ -667,9 +667,34 @@ const Blog = ({ posts = [], isLoading = false, error = null, showBuscador = fals
   const [faqMicError, setFaqMicError] = useState('');
   const [faqMicPromptVisible, setFaqMicPromptVisible] = useState(false);
   const [faqPage, setFaqPage] = useState(0);
+  // Voces del vestíbulo (12 sep 2026): antes eran las seis preguntas fijas de
+  // arriba. Ahora vienen del backend —las de Carlos y las de visitantes que él
+  // aprobó, sin distinguirlas ni firmarlas— ordenadas por cuántas veces se han
+  // elegido, así que las tres más escogidas van primero. Las seis fijas quedan
+  // como respaldo si el backend no responde.
+  const [vestibuloPrompts, setVestibuloPrompts] = useState(() =>
+    STARTER_FAQ_PROMPTS.map((texto) => ({ id: null, texto }))
+  );
+  useEffect(() => {
+    if (!RAW_API_URL) return undefined;
+    const controller = new AbortController();
+    fetch(`${RAW_API_URL}/api/vestibulo`, { signal: controller.signal })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((data) => {
+        const list = Array.isArray(data?.preguntas)
+          ? data.preguntas.filter((p) => p && typeof p.texto === 'string' && p.texto.trim())
+          : [];
+        if (list.length) {
+          setVestibuloPrompts(list);
+          setFaqPage(0);
+        }
+      })
+      .catch(() => {});
+    return () => controller.abort();
+  }, []);
   const FAQ_PAGE_SIZE = 3;
-  const faqPageCount = Math.ceil(STARTER_FAQ_PROMPTS.length / FAQ_PAGE_SIZE);
-  const faqVisiblePrompts = STARTER_FAQ_PROMPTS.slice(faqPage * FAQ_PAGE_SIZE, (faqPage + 1) * FAQ_PAGE_SIZE);
+  const faqPageCount = Math.max(1, Math.ceil(vestibuloPrompts.length / FAQ_PAGE_SIZE));
+  const faqVisiblePrompts = vestibuloPrompts.slice(faqPage * FAQ_PAGE_SIZE, (faqPage + 1) * FAQ_PAGE_SIZE);
   const camerinoLightState = faqIsListening
     ? 'listening'
     : faqStatus === 'searching' || faqStatus === 'streaming'
@@ -970,11 +995,18 @@ const Blog = ({ posts = [], isLoading = false, error = null, showBuscador = fals
   }, [faqSearch, isMobileViewport]);
 
   const handleFaqPromptSelect = useCallback((prompt) => {
+    const texto = typeof prompt === 'string' ? prompt : prompt?.texto;
+    if (!texto) return;
+    // Elegirla de la lista es lo que cuenta para el orden del vestíbulo
+    // (escribirla otra vez no). Fire-and-forget: no bloquea la búsqueda.
+    if (prompt?.id && RAW_API_URL) {
+      fetch(`${RAW_API_URL}/api/vestibulo/${prompt.id}/elegir`, { method: 'POST', keepalive: true }).catch(() => {});
+    }
     if (faqIsListening) stopFaqListening({ discard: true });
     setFaqInputMode('text');
     setFaqMicError('');
-    setFaqQuery(prompt);
-    handleFaqSearchSubmit(prompt);
+    setFaqQuery(texto);
+    handleFaqSearchSubmit(texto);
   }, [faqIsListening, setFaqQuery, handleFaqSearchSubmit, stopFaqListening]);
 
   useEffect(() => {
@@ -1305,12 +1337,12 @@ const Blog = ({ posts = [], isLoading = false, error = null, showBuscador = fals
                             {faqVisiblePrompts.map((prompt, index) => (
                               <button
                                 type="button"
-                                key={prompt}
+                                key={prompt.id ?? prompt.texto}
                                 onClick={() => handleFaqPromptSelect(prompt)}
                                 className="group flex w-full items-start gap-3 rounded-xl border border-white/10 bg-white/[0.025] px-4 py-3 text-left transition hover:border-violet-300/35 hover:bg-violet-400/[0.07]"
                               >
                                 <span className="pt-0.5 font-mono text-[10px] text-violet-300/55">{String(index + 1).padStart(2, '0')}</span>
-                                <span className="text-sm leading-snug text-slate-200/90 group-hover:text-white">{prompt}</span>
+                                <span className="text-sm leading-snug text-slate-200/90 group-hover:text-white">{prompt.texto}</span>
                               </button>
                             ))}
                           </div>
