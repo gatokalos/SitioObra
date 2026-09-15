@@ -20,6 +20,10 @@ export function useSearch() {
   const [answer, setAnswer] = useState('');
   const [sources, setSources] = useState([]);
   const [archive, setArchive] = useState([]);
+  // D-39: la coda del apuntador — lo que otros participantes escribieron sobre
+  // la misma pregunta madre. Llega en su propio evento, después de la
+  // respuesta, y viene textual: el modelo no la reescribe.
+  const [coda, setCoda] = useState(null);
   const [status, setStatus] = useState('idle');
   const [errorMessage, setErrorMessage] = useState('');
 
@@ -31,6 +35,7 @@ export function useSearch() {
     setAnswer('');
     setSources([]);
     setArchive([]);
+    setCoda(null);
     setStatus('idle');
     setErrorMessage('');
   }, []);
@@ -53,6 +58,7 @@ export function useSearch() {
     setAnswer('');
     setSources([]);
     setArchive([]);
+    setCoda(null);
     setErrorMessage('');
     setStatus('searching');
 
@@ -100,6 +106,12 @@ export function useSearch() {
 
           if (event.type === 'delta') {
             setAnswer((prev) => prev + event.text);
+          } else if (event.type === 'coda') {
+            setCoda({
+              forma: event.forma,
+              huellas: event.huellas ?? [],
+              pregunta: event.pregunta ?? null,
+            });
           } else if (event.type === 'done') {
             setSources(event.sources ?? []);
             setArchive(event.archive ?? []);
@@ -129,6 +141,7 @@ export function useSearch() {
     answer,
     sources,
     archive,
+    coda,
     status,
     errorMessage,
     search,

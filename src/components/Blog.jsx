@@ -636,6 +636,7 @@ const Blog = ({ posts = [], isLoading = false, error = null, showBuscador = fals
     answer: faqAnswer,
     sources: faqSources,
     archive: faqArchive,
+    coda: faqCoda,
     status: faqStatus,
     errorMessage: faqErrorMessage,
     search: faqSearch,
@@ -1384,6 +1385,36 @@ const Blog = ({ posts = [], isLoading = false, error = null, showBuscador = fals
                                   {faqStatus === 'streaming' && <span className="ml-1 inline-block h-4 w-0.5 animate-pulse bg-violet-300 align-middle" aria-hidden="true" />}
                                 </div>
                               </div>
+
+                              {/* ── Coda (D-39) ──
+                                  Segundo movimiento: primero habló el archivo del
+                                  autor, aquí hablan quienes recorrieron la misma
+                                  forma. Textuales, breves y sin nombre; sólo de
+                                  quienes lo autorizaron (D-37 §3.2). Se eligen por
+                                  divergencia entre sí, no por parecido con la
+                                  pregunta, y cierran preguntando, no dictaminando. */}
+                              {faqCoda && faqCoda.huellas.length > 0 && (
+                                <div className="border-t border-white/10 pt-4">
+                                  <p className="mb-3 text-[9px] uppercase tracking-[0.28em] text-slate-400/70">
+                                    Otros que recorrieron {faqCoda.forma}
+                                  </p>
+                                  <ul className="space-y-3">
+                                    {faqCoda.huellas.map((huella, i) => (
+                                      <li
+                                        key={i}
+                                        className="border-l-2 border-violet-300/30 pl-3 text-sm italic leading-relaxed text-violet-100/80"
+                                      >
+                                        {huella.texto}
+                                      </li>
+                                    ))}
+                                  </ul>
+                                  {faqCoda.pregunta && (
+                                    <p className="mt-4 text-sm leading-relaxed text-violet-200/90">
+                                      {faqCoda.pregunta}
+                                    </p>
+                                  )}
+                                </div>
+                              )}
 
                               {faqStatus === 'done' && faqArchive.length > 0 && (
                                 <div className="border-t border-white/10 pt-4">
