@@ -459,15 +459,6 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
   // formulario debajo de una ilustración: hay alguien preguntando.
   const [bitacoraEscribiendo, setBitacoraEscribiendo] = useState(false);
 
-  // Una sola fuente para la pregunta en curso: la cabina (móvil) y la columna
-  // de escritorio deben decir exactamente lo mismo.
-  const preguntaDelPaso =
-    bitacoraStep === 'p1'
-      ? '¿Hay algo de esta experiencia que haya regresado por su cuenta?'
-      : bitacoraStep === 'p2'
-        ? (bitacoraQuestionLoading ? '…' : (bitacoraP2Question || 'Si volvió, ¿dónde te encontró?'))
-        : (bitacoraQuestionLoading ? '…' : (bitacoraP3Question || '¿Hay algo que ahora veas de otra manera?'));
-
   const bitacoraAvailable = bitacoraAvailableAt
     ? new Date(bitacoraAvailableAt).getTime() <= bitacoraAvailabilityTick
     : false;
@@ -489,6 +480,15 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
   const [bitacoraP2Question, setBitacoraP2Question]         = useState(null);
   const [bitacoraP3Question, setBitacoraP3Question]         = useState(null);
   const [bitacoraQuestionLoading, setBitacoraQuestionLoading] = useState(false);
+
+  // Una sola fuente para la pregunta en curso: la cabina (móvil) y la columna
+  // de escritorio deben decir exactamente lo mismo.
+  const preguntaDelPaso =
+    bitacoraStep === 'p1'
+      ? '¿Hay algo de esta experiencia que haya regresado por su cuenta?'
+      : bitacoraStep === 'p2'
+        ? (bitacoraQuestionLoading ? '…' : (bitacoraP2Question || 'Si volvió, ¿dónde te encontró?'))
+        : (bitacoraQuestionLoading ? '…' : (bitacoraP3Question || '¿Hay algo que ahora veas de otra manera?'));
 
   // Verifica Supabase solo si localStorage no tiene l1 (respuestas pre-deploy)
   useEffect(() => {
