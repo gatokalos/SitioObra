@@ -1537,23 +1537,40 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
                               tabIndex={canSelect ? 0 : undefined}
                               onClick={canSelect ? handleSelect : undefined}
                               onKeyDown={canSelect ? (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleSelect(); } } : undefined}
-                              className={`grid min-w-0 flex-1 grid-cols-[3.5rem_minmax(0,1fr)] gap-x-3 gap-y-2 rounded-2xl border px-4 py-4 transition-colors lg:grid-cols-[4.5rem_minmax(0,1fr)_auto] lg:gap-x-4 ${canSelect ? 'cursor-pointer' : ''} ${
-                              isSelected
+                              className={`relative grid min-w-0 flex-1 grid-cols-[3.5rem_minmax(0,1fr)] gap-x-3 gap-y-2 rounded-2xl border px-4 py-4 pb-7 transition-colors lg:grid-cols-[4.5rem_minmax(0,1fr)_auto] lg:gap-x-4 ${canSelect ? 'cursor-pointer' : ''} ${
+                              /* La escena activa ya no se anuncia con una etiqueta en la
+                                 esquina: la lleva el bloque entero (Carlos, 18 sep 2026).
+                                 Está contenida, no señalada. */
+                              isAvailable
+                                ? 'border-sky-400/50 bg-sky-500/[0.07] shadow-[0_0_28px_rgba(56,189,248,0.18)]'
+                                : isSelected
                                 ? 'border-purple-300/45 bg-black/60 shadow-[0_0_20px_rgba(168,85,247,0.10)]'
                                 : isCompleted
                                 ? 'border-white/20 bg-black/55'
-                                : isAvailable
-                                  ? 'border-white/15 bg-black/50'
-                                  : 'border-white/[0.08] bg-black/35'
+                                : 'border-white/[0.08] bg-black/35'
                             }`}>
+                              {/* La pastilla ya no anuncia el estado —eso lo hace el bloque—,
+                                  así que baja a la esquina y pierde el latido, que se fue al
+                                  icono. Se queda para nombrar lo que se ve. */}
+                              {isAvailable && (
+                                <span className="pointer-events-none absolute bottom-2 right-3 text-[0.52rem] uppercase tracking-[0.16em] text-sky-200/70">
+                                  Escena activa
+                                </span>
+                              )}
+
                               {/* Fila cabecera — siempre visible */}
                               <div className="contents">
                                 {/* Ícono */}
+                                {/* El icono es lo que late. Antes latía el puntito de la
+                                    pastilla, que además era lo único que decía "aquí vas":
+                                    ahora el pulso está en lo que representa la fase. */}
                                 <div className={`row-span-2 flex h-14 w-14 shrink-0 items-center justify-center rounded-full lg:h-[4.5rem] lg:w-[4.5rem] ${
+                                  isAvailable ? 'animate-pulse ' : ''
+                                }${
                                   isCompleted
                                     ? `bg-gradient-to-br ${gradient} shadow-[0_0_10px_rgba(0,0,0,0.25)]`
                                     : isAvailable
-                                      ? 'border border-white/25 bg-black/40'
+                                      ? 'border border-sky-300/50 bg-sky-500/10 shadow-[0_0_18px_rgba(56,189,248,0.35)]'
                                       : 'border border-white/8 bg-black/25'
                                   }`}>
                                   {isCompleted || isAvailable
@@ -1591,19 +1608,10 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
                                 {/* Badge + chevron */}
                                 <div className={`${isAvailable ? 'flex' : 'hidden lg:flex'} col-start-2 row-start-2 shrink-0 items-center gap-1.5 self-start lg:col-start-3 lg:row-start-1 lg:self-center`}>
                                   {isAvailable ? (
-                                    <>
-                                      <span className="relative inline-flex items-center gap-1 rounded-full border border-sky-400/60 bg-sky-500/20 px-2 py-0.5 text-[0.52rem] uppercase tracking-[0.1em] text-sky-100 leading-none shadow-[0_0_10px_rgba(56,189,248,0.35)]">
-                                        <span className="relative flex h-1.5 w-1.5 shrink-0">
-                                          <span className="absolute inline-flex h-full w-full rounded-full bg-sky-400 opacity-75 animate-ping" />
-                                          <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-sky-300" />
-                                        </span>
-                                        Escena activa
-                                      </span>
-                                      <ChevronDown
-                                        size={13}
-                                        className="text-white/30"
-                                      />
-                                    </>
+                                    <ChevronDown
+                                      size={13}
+                                      className="text-white/30"
+                                    />
                                   ) : !isCompleted ? (
                                     <Lock size={11} className="text-white/[0.18]" />
                                   ) : null}
