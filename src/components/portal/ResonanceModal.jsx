@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import CuadernoHolografico from './CuadernoHolografico';
 import HuellaView from './HuellaView';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -1192,13 +1193,7 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
               style={{ background: 'linear-gradient(180deg, rgba(5,3,9,0.34) 0%, rgba(5,3,9,0.76) 43%, rgba(5,3,9,0.98) 100%)' }}
             />
 
-            <div className={`relative z-10 h-full ${
-              /* La cabina reparte el alto exacto de la tarjeta y no debe
-                 desplazarse: con scroll, los botones caían bajo el pliegue y
-                 la pregunta dejaba de verse junto a quien la hace. En
-                 escritorio la columna sigue desplazándose como siempre. */
-              bitacoraOpen ? 'overflow-hidden lg:overflow-y-auto' : 'overflow-y-auto'
-            }`}>
+            <div className="relative z-10 h-full overflow-y-auto">
               <AnimatePresence mode="wait">
                 {checking ? (
                   /* ── Verificando respuestas anteriores ── */
@@ -1367,132 +1362,9 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
                     exit={{ opacity: 0 }}
                     transition={{ duration: 0.3 }}
                   >
-                    {/* ── Móvil: la cabina ──
-                        El gato al fondo y la pregunta en su burbuja. Antes esto
-                        era un formulario sobre un póster: tres preguntas sin
-                        nadie que las hiciera. La burbuja, su pico y su flotación
-                        ya existían en index.css, portadas de la Bienvenida y sin
-                        usar desde entonces (Carlos, 18 sep 2026). */}
-                    <div className="relative flex h-full flex-col overflow-hidden lg:hidden">
-                      <img
-                        src={CAT_CABINA_URL}
-                        alt=""
-                        aria-hidden="true"
-                        className="absolute inset-0 h-full w-full object-cover object-top"
-                      />
-                      <div
-                        aria-hidden="true"
-                        className="absolute inset-0"
-                        style={{ background: 'linear-gradient(to bottom, rgba(5,3,9,0.55) 0%, rgba(5,3,9,0.12) 38%, rgba(5,3,9,0.88) 100%)' }}
-                      />
-
-                      <div className="cabina-bubble cabina-bubble--en-flujo relative z-10 mt-3 shrink-0">
-                        {bitacoraEscribiendo ? (
-                          <>
-                            {/* La pregunta ocupa el lugar del preludio: ya se leyó,
-                                y así el cuerpo queda libre para escribir. */}
-                            <p className="cabina-bubble__preludio line-clamp-2 normal-case tracking-[0.06em]">
-                              {preguntaDelPaso}
-                            </p>
-                            <textarea
-                              autoFocus
-                              value={bitacoraStep === 'p2' ? bitacoraP2 : bitacoraP3}
-                              onChange={(e) => (bitacoraStep === 'p2' ? setBitacoraP2 : setBitacoraP3)(e.target.value)}
-                              rows={4}
-                              placeholder={bitacoraStep === 'p2' ? '¿Qué estabas haciendo o con quién estabas?' : 'También puede ser que nada haya cambiado…'}
-                              className="w-full resize-none border-0 bg-transparent p-0 text-[0.95rem] leading-relaxed text-[#1b1d22] outline-none placeholder:text-[#1b1d22]/45"
-                            />
-                          </>
-                        ) : (
-                          <>
-                            <p className="cabina-bubble__preludio">La cabina te escucha</p>
-                            <p className="cabina-bubble__texto">{preguntaDelPaso}</p>
-                          </>
-                        )}
-                      </div>
-
-                      {/* El gato ocupa lo que sobre entre la burbuja y las
-                          respuestas: así manda el alto real y no un porcentaje. */}
-                      <div aria-hidden="true" className="min-h-0 flex-1" />
-
-                      {/* Donde estaba el chevron: aquí se responde. */}
-                      <div className="relative z-10 mx-auto w-[min(340px,88vw)] shrink-0 space-y-2 pb-[max(1.5rem,env(safe-area-inset-bottom))]">
-                        {bitacoraStep === 'p1' ? (
-                          <div className="flex gap-2">
-                            <button
-                              type="button"
-                              onClick={() => {
-                                const response = 'Sí, regresó algo';
-                                setBitacoraP1(response);
-                                setBitacoraAfirmativa(true);
-                                setBitacoraStep('p2');
-                                setBitacoraEscribiendo(false);
-                                void fetchNextBitacoraQuestion('p2', response);
-                              }}
-                              className="flex-1 rounded-full border border-amber-400/50 bg-amber-900/30 px-4 py-2.5 text-xs uppercase tracking-[0.2em] text-amber-100/90 backdrop-blur-sm transition hover:bg-amber-900/45"
-                            >
-                              Sí, regresó algo
-                            </button>
-                            <button
-                              type="button"
-                              disabled={bitacoraSubmitting}
-                              onClick={() => {
-                                setBitacoraP1('');
-                                setBitacoraAfirmativa(false);
-                                void handleBitacoraSubmit({ p1Response: null, p1Afirmativa: false });
-                              }}
-                              className="flex-1 rounded-full border border-white/20 bg-black/40 px-4 py-2.5 text-xs text-slate-300 backdrop-blur-sm transition hover:text-white disabled:opacity-40"
-                            >
-                              Todavía no
-                            </button>
-                          </div>
-                        ) : !bitacoraEscribiendo ? (
-                          <button
-                            type="button"
-                            onClick={() => setBitacoraEscribiendo(true)}
-                            className="w-full rounded-full border border-white/25 bg-white/15 px-4 py-2.5 text-xs uppercase tracking-[0.2em] text-white backdrop-blur-sm transition hover:bg-white/25"
-                          >
-                            Responder
-                          </button>
-                        ) : (
-                          <>
-                            <button
-                              type="button"
-                              disabled={bitacoraSubmitting || !(bitacoraStep === 'p2' ? bitacoraP2 : bitacoraP3).trim()}
-                              onClick={() => {
-                                if (bitacoraStep === 'p2') {
-                                  setBitacoraStep('p3');
-                                  setBitacoraEscribiendo(false);
-                                  void fetchNextBitacoraQuestion('p3', bitacoraP1, bitacoraP2);
-                                  return;
-                                }
-                                void handleBitacoraSubmit();
-                              }}
-                              className="w-full rounded-full border border-amber-400/50 bg-amber-900/30 px-4 py-2.5 text-xs uppercase tracking-[0.2em] text-amber-100/90 backdrop-blur-sm transition hover:bg-amber-900/45 disabled:opacity-40"
-                            >
-                              Continuar
-                            </button>
-                            <button
-                              type="button"
-                              disabled={bitacoraSubmitting}
-                              onClick={() => {
-                                if (bitacoraStep === 'p2') {
-                                  setBitacoraStep('p3');
-                                  setBitacoraEscribiendo(false);
-                                  void fetchNextBitacoraQuestion('p3', bitacoraP1, bitacoraP2);
-                                  return;
-                                }
-                                void handleBitacoraSubmit();
-                              }}
-                              className="w-full text-center text-[0.7rem] text-white/60 underline underline-offset-4 transition hover:text-white/90"
-                            >
-                              {bitacoraStep === 'p2' ? 'Prefiero no decir dónde. Continuar →' : 'Nada de esto se movió esta vez. Continuar →'}
-                            </button>
-                          </>
-                        )}
-                      </div>
-                    </div>
-
+                    {/* En móvil esta vista se dibuja aparte, en su propia capa
+                        anclada al viewport (ver el final del componente). Aquí
+                        queda la versión de escritorio. */}
                     <div className="hidden lg:block lg:px-10 lg:pb-5 lg:pt-14">
                       <p className="mb-3 text-[0.62rem] uppercase tracking-[0.32em] text-white/50">
                         En escena
@@ -2359,6 +2231,199 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
         </motion.div>
       )}
     </AnimatePresence>
+      {/* ── La cabina, en capa propia ───────────────────────────────────────
+          Las preguntas del regreso no caben en la tarjeta: en móvil la tarjeta
+          no tiene tope de alto —su `max-h` sólo aplica en escritorio—, así que
+          crece con su contenido y la pantalla deja de ser la medida. Ninguna
+          altura calculada adentro puede arreglar eso.
+          Por eso esta vista se dibuja aparte, anclada al viewport: mide
+          exactamente la pantalla, sin adivinar el modelo de teléfono. Es lo
+          que daba la ruta separada de la versión anterior, pero sin cambiar de
+          ruta: no se pierde el estado ni se recarga nada (Carlos, 18 sep 2026). */}
+      {open && bitacoraOpen && typeof document !== 'undefined'
+        ? createPortal(
+            <div
+              className="fixed inset-0 z-[300] overscroll-contain bg-[rgb(5,3,9)] lg:hidden"
+              style={{ height: '100dvh' }}
+              role="dialog"
+              aria-modal="true"
+            >
+      >
+        {/* ── Móvil: la cabina ──
+            El gato al fondo y la pregunta en su burbuja. Antes esto
+            era un formulario sobre un póster: tres preguntas sin
+            nadie que las hiciera. La burbuja, su pico y su flotación
+            ya existían en index.css, portadas de la Bienvenida y sin
+            usar desde entonces (Carlos, 18 sep 2026). */}
+        <div className="relative flex h-full flex-col overflow-hidden">
+          <img
+            src={CAT_CABINA_URL}
+            alt=""
+            aria-hidden="true"
+            className="absolute inset-0 h-full w-full object-cover object-top"
+          />
+          <div
+            aria-hidden="true"
+            className="absolute inset-0"
+            style={{ background: 'linear-gradient(to bottom, rgba(5,3,9,0.55) 0%, rgba(5,3,9,0.12) 38%, rgba(5,3,9,0.88) 100%)' }}
+          />
+
+          <div className="cabina-bubble cabina-bubble--en-flujo relative z-10 mt-3 shrink-0">
+            {bitacoraEscribiendo ? (
+              <>
+                {/* La pregunta ocupa el lugar del preludio: ya se leyó,
+                    y así el cuerpo queda libre para escribir. */}
+                <p className="cabina-bubble__preludio line-clamp-2 normal-case tracking-[0.06em]">
+                  {preguntaDelPaso}
+                </p>
+                <textarea
+                  autoFocus
+                  value={bitacoraStep === 'p2' ? bitacoraP2 : bitacoraP3}
+                  onChange={(e) => (bitacoraStep === 'p2' ? setBitacoraP2 : setBitacoraP3)(e.target.value)}
+                  rows={4}
+                  placeholder={bitacoraStep === 'p2' ? '¿Qué estabas haciendo o con quién estabas?' : 'También puede ser que nada haya cambiado…'}
+                  className="w-full resize-none border-0 bg-transparent p-0 text-[0.95rem] leading-relaxed text-[#1b1d22] outline-none placeholder:text-[#1b1d22]/45"
+                />
+              </>
+            ) : (
+              <>
+                <p className="cabina-bubble__preludio">La cabina te escucha</p>
+                <p className="cabina-bubble__texto">{preguntaDelPaso}</p>
+              </>
+            )}
+          </div>
+
+          {/* El gato ocupa lo que sobre entre la burbuja y las
+              respuestas: así manda el alto real y no un porcentaje. */}
+          <div aria-hidden="true" className="min-h-0 flex-1" />
+
+          {/* Donde estaba el chevron: aquí se responde. */}
+          <div className="relative z-10 mx-auto w-[min(340px,88vw)] shrink-0 space-y-2 pb-[max(1.5rem,env(safe-area-inset-bottom))]">
+            {bitacoraStep === 'p1' ? (
+              <div className="flex gap-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    const response = 'Sí, regresó algo';
+                    setBitacoraP1(response);
+                    setBitacoraAfirmativa(true);
+                    setBitacoraStep('p2');
+                    setBitacoraEscribiendo(false);
+                    void fetchNextBitacoraQuestion('p2', response);
+                  }}
+                  className="flex-1 rounded-full border border-amber-400/50 bg-amber-900/30 px-4 py-2.5 text-xs uppercase tracking-[0.2em] text-amber-100/90 backdrop-blur-sm transition hover:bg-amber-900/45"
+                >
+                  Sí, regresó algo
+                </button>
+                <button
+                  type="button"
+                  disabled={bitacoraSubmitting}
+                  onClick={() => {
+                    setBitacoraP1('');
+                    setBitacoraAfirmativa(false);
+                    void handleBitacoraSubmit({ p1Response: null, p1Afirmativa: false });
+                  }}
+                  className="flex-1 rounded-full border border-white/20 bg-black/40 px-4 py-2.5 text-xs text-slate-300 backdrop-blur-sm transition hover:text-white disabled:opacity-40"
+                >
+                  Todavía no
+                </button>
+              </div>
+            ) : !bitacoraEscribiendo ? (
+              <button
+                type="button"
+                onClick={() => setBitacoraEscribiendo(true)}
+                className="w-full rounded-full border border-white/25 bg-white/15 px-4 py-2.5 text-xs uppercase tracking-[0.2em] text-white backdrop-blur-sm transition hover:bg-white/25"
+              >
+                Responder
+              </button>
+            ) : (
+              <>
+                <button
+                  type="button"
+                  disabled={bitacoraSubmitting || !(bitacoraStep === 'p2' ? bitacoraP2 : bitacoraP3).trim()}
+                  onClick={() => {
+                    if (bitacoraStep === 'p2') {
+                      setBitacoraStep('p3');
+                      setBitacoraEscribiendo(false);
+                      void fetchNextBitacoraQuestion('p3', bitacoraP1, bitacoraP2);
+                      return;
+                    }
+                    void handleBitacoraSubmit();
+                  }}
+                  className="w-full rounded-full border border-amber-400/50 bg-amber-900/30 px-4 py-2.5 text-xs uppercase tracking-[0.2em] text-amber-100/90 backdrop-blur-sm transition hover:bg-amber-900/45 disabled:opacity-40"
+                >
+                  Continuar
+                </button>
+                <button
+                  type="button"
+                  disabled={bitacoraSubmitting}
+                  onClick={() => {
+                    if (bitacoraStep === 'p2') {
+                      setBitacoraStep('p3');
+                      setBitacoraEscribiendo(false);
+                      void fetchNextBitacoraQuestion('p3', bitacoraP1, bitacoraP2);
+                      return;
+                    }
+                    void handleBitacoraSubmit();
+                  }}
+                  className="w-full text-center text-[0.7rem] text-white/60 underline underline-offset-4 transition hover:text-white/90"
+                >
+                  {bitacoraStep === 'p2' ? 'Prefiero no decir dónde. Continuar →' : 'Nada de esto se movió esta vez. Continuar →'}
+                </button>
+              </>
+            )}
+          </div>
+        </div>
+
+        <div className="hidden lg:block lg:px-10 lg:pb-5 lg:pt-14">
+          <p className="mb-3 text-[0.62rem] uppercase tracking-[0.32em] text-white/50">
+            En escena
+          </p>
+          <p
+            className="font-display leading-snug question-voice"
+            style={{ fontSize: 'clamp(1.3rem, 2.3vw, 2.1rem)' }}
+          >
+            {preguntaDelPaso}
+          </p>
+        </div>
+
+        <div aria-hidden="true" className="hidden lg:block mx-8 mb-5 h-px question-divider-voice" />
+              {/* Los controles de la tarjeta quedan debajo de esta capa, así que
+                  la cabina lleva los suyos. */}
+              <button
+                type="button"
+                onClick={handleClose}
+                aria-label="Cerrar"
+                className="absolute right-4 top-4 z-20 inline-flex h-10 w-10 items-center justify-center rounded-full border border-white/15 bg-black/45 text-slate-200 backdrop-blur-md transition hover:border-white/35 hover:text-white"
+              >
+                <Check size={18} />
+              </button>
+
+              {import.meta.env.DEV && (
+                <div className="absolute left-4 top-4 z-20 flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={handleDevResetJourney}
+                    aria-label={`Reiniciar recorrido de ${portal}`}
+                    className="inline-flex h-10 items-center gap-2 rounded-full border border-amber-300/35 bg-black/55 px-3 text-[0.62rem] uppercase tracking-[0.14em] text-amber-100/90 backdrop-blur-md"
+                  >
+                    <RotateCcw size={14} />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleDevSkipToL3}
+                    aria-label={`Saltar a L3 en ${portal}`}
+                    className="inline-flex h-10 items-center gap-2 rounded-full border border-cyan-300/35 bg-black/55 px-3 text-[0.62rem] uppercase tracking-[0.14em] text-cyan-100/90 backdrop-blur-md"
+                  >
+                    <FastForward size={14} />
+                  </button>
+                </div>
+              )}
+            </div>,
+            document.body,
+          )
+        : null}
+
     </>
   );
 };

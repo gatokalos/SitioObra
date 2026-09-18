@@ -3688,7 +3688,22 @@ body {
   width: 100%;
   max-width: min(340px, 88vw);
   margin: 0 auto;
-  animation: cabina-bubble-in 0.6s ease-out;
+  /* Sus propias animaciones: las originales llevan translateX(-50%) porque allá
+     la burbuja se centra con posición absoluta. Aquí la centra el layout, así
+     que la X sobra — y la flotación se conserva, que es lo que la hace parecer
+     un globo y no una tarjeta. Al ser transform, flota sin mover nada. */
+  animation: cabina-bubble-en-flujo-in 0.6s ease-out,
+    cabina-bubble-en-flujo-float 4.2s ease-in-out 0.6s infinite;
+}
+
+@keyframes cabina-bubble-en-flujo-in {
+  0%   { opacity: 0; transform: translateY(10px) scale(0.96); }
+  100% { opacity: 1; transform: translateY(0)    scale(1);    }
+}
+
+@keyframes cabina-bubble-en-flujo-float {
+  0%, 100% { transform: translateY(0);    }
+  50%      { transform: translateY(-6px); }
 }
 
 .cabina-siguiente-flotante {
