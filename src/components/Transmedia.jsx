@@ -63,7 +63,6 @@ import DiosasCarousel from '@/components/DiosasCarousel';
 import RelatedReadingTooltipButton from '@/components/portal/RelatedReadingTooltipButton';
 import MiniverseIconBadge from '@/components/transmedia/MiniverseIconBadge';
 import VitranaQuestionReveal from '@/components/portal/VitranaQuestionReveal';
-import LoginNudgeOverlay from '@/components/LoginNudgeOverlay';
 import { writePendingContinuation } from '@/lib/pendingContinuation';
 import ResonanceModal, { LEVEL2_QUESTIONS, buildL1Acknowledgment } from '@/components/portal/ResonanceModal';
 import { useSilvestreVoice } from '@/hooks/useSilvestreVoice';
@@ -592,16 +591,8 @@ const Transmedia = ({ allianceOnlyMode = false }) => {
   // sesión?" que ya se usa en los portales móviles — al confirmar, reutiliza
   // el LoginOverlay genérico que ya carga este archivo (showMobilePortalLogin)
   // en vez de montar otro más.
-  const [showResonanceLoginNudge, setShowResonanceLoginNudge] = useState(false);
 
-  const handleCloseResonanceLoginNudge = useCallback(() => {
-    setShowResonanceLoginNudge(false);
-  }, []);
 
-  const handleConfirmResonanceLogin = useCallback(() => {
-    setShowResonanceLoginNudge(false);
-    setShowMobilePortalLogin(true);
-  }, []);
 
   const handleAnswerResonance = useCallback((openResonance) => {
     // La resonancia colectiva es del invitado también: dentro de su vitrina
@@ -6155,14 +6146,6 @@ const renderDramaFeaturedWork = () => (
           <LoginOverlay onClose={() => setShowMobilePortalLogin(false)} />
         </Suspense>
       ) : null}
-      <LoginNudgeOverlay
-        open={showResonanceLoginNudge}
-        onClose={handleCloseResonanceLoginNudge}
-        onLogin={handleConfirmResonanceLogin}
-        title="¿Te gustaría iniciar sesión para responder?"
-        description="Puedes seguir explorando este miniverso, pero para que tu resonancia personal pueda dialogar con la colectiva, hay que iniciar sesión."
-        titleId="resonance-login-nudge-title"
-      />
 
       {MINIVERSO_EDITORIAL_INTERCEPTION_ENABLED && isMiniversoEditorialModalOpen ? (
         <div className="fixed inset-0 z-[190] flex items-center justify-center overflow-y-auto overflow-x-hidden overscroll-none">
@@ -6221,7 +6204,7 @@ const renderDramaFeaturedWork = () => (
         <Suspense fallback={null}>
           <LiteraturaAppOverlay
             open={showLiteraturaApp}
-            onRequireLogin={() => setShowResonanceLoginNudge(true)}
+            onRequireLogin={() => setShowMobilePortalLogin(true)}
             onClose={(sessionContext) => {
               setShowLiteraturaApp(false);
               // Marca la experiencia como vivida (dispara la conversación del
