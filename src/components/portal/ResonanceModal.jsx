@@ -1597,7 +1597,10 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
                                         {level.desc.replace(/^✓\s*/, '')}
                                       </p>
                                     )}
-                                    {isL2 && !l1ChipDone && (
+                                    {/* La descripción es el anzuelo de la fase cerrada. Al
+                                        abrirla estorba: la pregunta, que va abajo y en grande,
+                                        dice lo mismo mejor (Carlos, 18 sep 2026). */}
+                                    {isL2 && !l1ChipDone && !levelIsOpen && (
                                       <p className="text-xs leading-relaxed text-slate-300/75">
                                         {l2q?.preview}
                                       </p>
@@ -1638,7 +1641,7 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
 
                                       {isL2 && !l1ChipDone && l2q && (
                                         <div className="space-y-3 pt-1">
-                                          <p className="font-display text-xl leading-snug question-voice">
+                                          <p className="font-display text-2xl leading-snug question-voice lg:text-[1.75rem]">
                                             {l2q.question}
                                           </p>
                                           <div className="flex flex-wrap gap-1.5">
@@ -1780,7 +1783,7 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
                                                       {/* Mismo gesto que "Recuerdo entregado": la fila no se va,
                                                           cambia de estado (Carlos, 18 sep 2026). */}
                                                       {bitacoraConsented ? (
-                                                        <div className="flex w-full items-center gap-3 rounded-2xl border border-white/15 bg-black/35 px-3 py-2.5 text-left">
+                                                        <div className="flex w-full items-center gap-3 rounded-2xl border border-amber-200/15 bg-[#0c0a16] px-3 py-2.5 text-left">
                                                           <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-emerald-300/20 bg-emerald-300/[0.06] text-emerald-300/80">
                                                             <Check size={18} aria-hidden="true" />
                                                           </span>
@@ -1797,7 +1800,7 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
                                                         <button
                                                           type="button"
                                                           onClick={() => setShowPhoneInput(true)}
-                                                          className="flex w-full items-center gap-3 rounded-2xl border border-purple-300/20 bg-purple-950/15 px-3 py-2.5 text-left transition hover:bg-purple-900/25"
+                                                          className="flex w-full items-center gap-3 rounded-2xl border border-amber-200/15 bg-[#0c0a16] px-3 py-2.5 text-left transition hover:bg-[#151124]"
                                                         >
                                                           {/* El # dorado: dejar el número no es un depósito, es la promesa de que
                                                               algo vuelve. La talega —con los # adentro— se fue a la fila de
@@ -1808,12 +1811,12 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
                                                             aria-hidden="true"
                                                             className="h-10 w-10 shrink-0 object-contain"
                                                           />
-                                                          <span className="text-xs font-semibold tracking-[0.05em] text-purple-100/90">
+                                                          <span className="text-xs font-semibold tracking-[0.05em] text-amber-200/90">
                                                             {dramaturgy.returnCta}
                                                           </span>
                                                         </button>
                                                       ) : (
-                                                        <div className="space-y-2 rounded-2xl border border-purple-300/20 bg-purple-950/15 px-3 py-2.5">
+                                                        <div className="space-y-2 rounded-2xl border border-amber-200/15 bg-[#0c0a16] px-3 py-2.5">
                                                           <p className="text-xs leading-relaxed text-slate-400/80">
                                                             ¿A qué número te enviamos el aviso?
                                                           </p>
@@ -1844,7 +1847,7 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
                                                   type="button"
                                                   onClick={handleDownloadSouvenir}
                                                   disabled={isSouvenirGenerating || Boolean(souvenirDeliveredAt)}
-                                                  className="flex w-full items-center gap-3 rounded-2xl border border-white/15 bg-black/35 px-3 py-2.5 text-left transition hover:bg-black/50 disabled:cursor-default disabled:opacity-75"
+                                                  className="flex w-full items-center gap-3 rounded-2xl border border-amber-200/15 bg-[#0c0a16] px-3 py-2.5 text-left transition hover:bg-[#151124] disabled:cursor-default disabled:opacity-75"
                                                 >
                                                   {souvenirDeliveredAt ? (
                                                     <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-emerald-300/20 bg-emerald-300/[0.06] text-emerald-300/80">
@@ -1859,7 +1862,7 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
                                                     />
                                                   ) : null}
                                                   <span className="flex flex-col gap-0.5">
-                                                    <span className={`text-xs font-semibold tracking-[0.05em] ${souvenirDeliveredAt ? 'text-emerald-200/85' : 'text-amber-300/90'}`}>
+                                                    <span className="text-xs font-semibold tracking-[0.05em] text-amber-200/90">
                                                       {isSouvenirGenerating
                                                         ? 'Preparando el recuerdo…'
                                                         : souvenirDeliveredAt
@@ -1880,24 +1883,17 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
                                                   <button
                                                     type="button"
                                                     onClick={() => onRequireLogin?.()}
-                                                    className="flex w-full items-center gap-3 rounded-2xl border border-violet-300/20 bg-violet-950/15 px-3 py-2.5 text-left transition hover:bg-violet-900/25"
+                                                    className="flex w-full items-center gap-3 rounded-2xl border border-amber-200/15 bg-[#0c0a16] px-3 py-2.5 text-left transition hover:bg-[#151124]"
                                                   >
                                                     <img
-                                                      src="/assets/gato_enbolsa.png"
+                                                      src="/assets/logoapp.png"
                                                       alt=""
                                                       aria-hidden="true"
                                                       className="h-10 w-10 shrink-0 object-contain"
                                                     />
-                                                    <span className="flex flex-col gap-0.5">
-                                                        <span className="text-xs font-semibold tracking-[0.05em] text-violet-200/90">
-                                                          Quiero seguir otra forma
-                                                        </span>
-                                                        {/* El rótulo dice la intención; esta línea dice qué abre, para
-                                                            que el toque no sorprenda con un login. */}
-                                                        <span className="text-[0.65rem] font-normal tracking-normal text-slate-400/75">
-                                                          Inicia sesión y tu recorrido te sigue.
-                                                        </span>
-                                                      </span>
+                                                    <span className="text-xs font-semibold tracking-[0.05em] text-amber-200/90">
+                                                      Inicia sesión y sigue otra forma
+                                                    </span>
                                                   </button>
                                                 )}
                                                   </motion.div>
