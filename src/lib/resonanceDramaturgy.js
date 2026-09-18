@@ -12,9 +12,19 @@ export const RESONANCE_SHARED_DRAMATURGY = {
   // se lee como casting. Contradecía además la regla canónica del regreso
   // diferido: la agencia es de lo que vuelve, no del usuario. El resto del copy
   // ya lo tenía bien — "una nueva pregunta volverá a buscarte" (Carlos, 10 sep 2026).
-  returnBody: 'Dentro de unos días, una nueva pregunta volverá a buscarte. Si quieres que te encuentre, danos permiso para enviarte un único aviso por WhatsApp.',
+  // Encabeza las tres filas del stack, así que habla de las tres continuidades
+  // —la pregunta que vuelve, la imagen que se lleva, el recorrido que sigue— y
+  // no sólo del aviso por WhatsApp, como cuando era la tarjeta de un solo CTA
+  // (Carlos, 18 sep 2026).
+  returnBody: 'Dentro de unos días, una nueva pregunta volverá a buscarte. Puedes dejar que te encuentre, llevarte una imagen de lo que ocurrió aquí, y guardar tu recorrido para seguir en otra forma.',
   returnCta: 'Quiero que la pregunta vuelva →',
-  souvenirCta: 'Quiero recordar este acto',
+  // El aviso ya concedido no desaparece: se queda con el mismo gesto de
+  // confirmación que el recuerdo entregado (Carlos, 18 sep 2026).
+  returnDone: 'La pregunta volverá',
+  returnDoneHint: 'Te buscará por WhatsApp cuando llegue el momento.',
+  returnBackNow: 'La pregunta ya volvió',
+  returnBackNowHint: 'Puedes entrar a escena.',
+  souvenirCta: 'Necesito un recordatorio',
   entranceCoda: 'Ya forma parte de tu obra.',
   // Línea de la retención. "Pausa" detenía; la retención sostiene.
   // Placeholder aprobado por Carlos (11 sep 2026), no copy final.

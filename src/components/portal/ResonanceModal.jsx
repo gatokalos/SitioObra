@@ -1760,20 +1760,32 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
                                                         {dramaturgy.closingLine}
                                                       </p>
                                                       <p className="mx-auto mt-2 max-w-sm text-[0.7rem] leading-relaxed text-slate-400/80">
-                                                        {!bitacoraConsented
-                                                          ? dramaturgy.returnBody
-                                                          : bitacoraAvailable
-                                                            ? 'La pregunta ya volvió. Puedes entrar a escena.'
-                                                            : 'La próxima pregunta ya está preparada. Te buscará por WhatsApp cuando llegue el momento.'}
+                                                          {dramaturgy.returnBody}
                                                       </p>
                                                     </div>
                                                   </motion.div>
 
                                                   {/* El aviso es la primera fila del stack, con la misma caja que las otras
                                                       dos. El atril es provisional, hasta que exista el icono definitivo. */}
-                                                  {!bitacoraCompleted && !bitacoraConsented && (
+                                                  {!bitacoraCompleted && (
                                                     <motion.div variants={PIEZA_DE_CASCADA} custom={1} className="space-y-2">
-                                                      {!showPhoneInput ? (
+                                                      {/* Mismo gesto que "Recuerdo entregado": la fila no se va,
+                                                          cambia de estado (Carlos, 18 sep 2026). */}
+                                                      {bitacoraConsented ? (
+                                                        <div className="flex w-full items-center gap-3 rounded-2xl border border-white/15 bg-black/35 px-3 py-2.5 text-left">
+                                                          <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-emerald-300/20 bg-emerald-300/[0.06] text-emerald-300/80">
+                                                            <Check size={18} aria-hidden="true" />
+                                                          </span>
+                                                          <span className="flex flex-col gap-0.5">
+                                                            <span className="text-xs font-semibold tracking-[0.05em] text-emerald-200/85">
+                                                              {bitacoraAvailable ? dramaturgy.returnBackNow : dramaturgy.returnDone}
+                                                            </span>
+                                                            <span className="text-[0.65rem] font-normal tracking-normal text-slate-400/75">
+                                                              {bitacoraAvailable ? dramaturgy.returnBackNowHint : dramaturgy.returnDoneHint}
+                                                            </span>
+                                                          </span>
+                                                        </div>
+                                                      ) : !showPhoneInput ? (
                                                         <button
                                                           type="button"
                                                           onClick={() => setShowPhoneInput(true)}
@@ -1865,9 +1877,16 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
                                                       aria-hidden="true"
                                                       className="h-10 w-10 shrink-0 object-contain"
                                                     />
-                                                    <span className="text-xs font-semibold tracking-[0.05em] text-violet-200/90">
-                                                      Inicia sesión para conservar tu GAT
-                                                    </span>
+                                                    <span className="flex flex-col gap-0.5">
+                                                        <span className="text-xs font-semibold tracking-[0.05em] text-violet-200/90">
+                                                          Quiero seguir otra forma
+                                                        </span>
+                                                        {/* El rótulo dice la intención; esta línea dice qué abre, para
+                                                            que el toque no sorprenda con un login. */}
+                                                        <span className="text-[0.65rem] font-normal tracking-normal text-slate-400/75">
+                                                          Inicia sesión y tu recorrido te sigue.
+                                                        </span>
+                                                      </span>
                                                   </button>
                                                 )}
                                                   </motion.div>
