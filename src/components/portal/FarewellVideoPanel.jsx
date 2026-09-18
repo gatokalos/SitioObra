@@ -1,5 +1,10 @@
 import React, { useRef, useState } from 'react';
-import { resolveAuthorVideoUrl, AUTHOR_VIDEO_GENERAL_URL } from '@/lib/authorVideo';
+import {
+  resolveAuthorVideoUrl,
+  AUTHOR_VIDEO_GENERAL_URL,
+  AUTHOR_VIDEO_PLACEHOLDER_URL,
+  AUTHOR_VIDEO_PLACEHOLDER_ENABLED,
+} from '@/lib/authorVideo';
 
 // Panel embebido (no pantalla completa) para el video casero de despedida.
 // Sin autoplay a propósito: arranca solo con un tap explícito. Si el archivo
@@ -17,13 +22,21 @@ const FarewellVideoPanel = ({
   intro = '',
 }) => {
   const videoRef = useRef(null);
-  const [stage, setStage] = useState(0); // 0: video del portal, 1: general, 2: sin video disponible
+  // 0: video del portal · 1: general · 2: relleno, sólo si está encendido ·
+  // 3 (o 2 con el relleno apagado): sin video disponible.
+  const [stage, setStage] = useState(0);
   const [playing, setPlaying] = useState(false);
 
-  if (stage >= 2 && !showUnavailablePlaceholder) return null;
+  const etapaSinVideo = AUTHOR_VIDEO_PLACEHOLDER_ENABLED ? 3 : 2;
+  const usandoRelleno = AUTHOR_VIDEO_PLACEHOLDER_ENABLED && stage === 2;
 
-  const src = stage === 0 ? resolveAuthorVideoUrl(portal) : AUTHOR_VIDEO_GENERAL_URL;
-  const isUnavailable = stage >= 2;
+  if (stage >= etapaSinVideo && !showUnavailablePlaceholder) return null;
+
+  const src =
+    stage === 0 ? resolveAuthorVideoUrl(portal)
+    : stage === 1 ? AUTHOR_VIDEO_GENERAL_URL
+    : AUTHOR_VIDEO_PLACEHOLDER_URL;
+  const isUnavailable = stage >= etapaSinVideo;
 
   const handlePlay = () => {
     setPlaying(true);
@@ -83,7 +96,15 @@ const FarewellVideoPanel = ({
         </div>
         {!playing && !isUnavailable && (
           <div className="flex items-center justify-between px-3 py-1.5">
-            <span className="text-[0.65rem] text-slate-400/80">{caption}</span>
+            <span className="text-[0.65rem] text-slate-400/80">
+              {caption}
+              {/* El relleno se anuncia como lo que es. Ver lib/authorVideo.js. */}
+              {usandoRelleno && (
+                <span className="ml-2 rounded-full bg-amber-400/15 px-2 py-0.5 text-[0.58rem] uppercase tracking-[0.14em] text-amber-200/90">
+                  video de prueba
+                </span>
+              )}
+            </span>
             <button
               type="button"
               onClick={handleSkip}
