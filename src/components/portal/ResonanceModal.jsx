@@ -1727,11 +1727,12 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
                                                 />
                                               )}
 
-                                              {/* Cascada (Carlos, bloque 6): mientras el video corre, nada compite con
-                                                  él. Al terminar —o al saltarlo— el resto aparece escalonado y el scroll
-                                                  lleva el stack a donde están los ojos. Con la bandera del video apagada
-                                                  (producción, hasta que existan las piezas) se muestra todo de una vez,
-                                                  como siempre. */}
+                                              {/* Cascada del clímax (Carlos, bloque 6 + mockup del 18 sep): mientras el
+                                                  video corre, nada compite con él. Al terminar —o al saltarlo— entra la
+                                                  cabecera de la retención y debajo el stack, escalonados, y el scroll los
+                                                  lleva a donde están los ojos. Con la bandera del video apagada
+                                                  (producción, hasta que existan las nueve piezas) se muestra todo de una
+                                                  vez, como siempre. */}
                                               {revelarStack && (
                                                 <motion.div
                                                   ref={stackClimaxRef}
@@ -1739,71 +1740,140 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
                                                   initial={huboCascada ? "oculto" : false}
                                                   animate="visible"
                                                 >
-                                              <motion.div variants={PIEZA_DE_CASCADA} custom={0}>
-                                              {/* Aquí iba "Este recorrido ha concluido" y la descripción
-                                                  académica. Se quitó el 10 sep 2026: competía con el video
-                                                  del autor y podía leerse como "ya no sigas viendo". Eso lo
-                                                  dice Carlos en cámara, con guion, en nueve videos distintos. */}
-
-                                              {/* La promesa narrativa permanece; solo cambia la acción según
-                                                  el consentimiento y la disponibilidad real. */}
-                                              {!bitacoraCompleted && (
-                                                <div className="space-y-2 rounded-2xl border border-purple-300/15 bg-purple-950/10 px-4 py-4">
-                                                  <p className="font-display text-base text-white">
-                                                    {dramaturgy.returnLead}
-                                                  </p>
-
-                                                  {!bitacoraConsented ? (
-                                                    !showPhoneInput ? (
-                                                      <>
-                                                      <p className="text-xs leading-relaxed text-slate-400/80">
-                                                        {dramaturgy.returnBody}
+                                                  {/* La retención encabeza lo que sigue, no lo contiene: es la marca de
+                                                      cierre del detonante y el anuncio de la espera. D-42 se sostiene —la
+                                                      espera no ofrece nada— porque lo que hay debajo cierra En el foco, no
+                                                      ocupa los tres días. */}
+                                                  <motion.div variants={PIEZA_DE_CASCADA} custom={0}>
+                                                    <div className="px-2 pb-1 pt-4 text-center">
+                                                      <div className="flex items-center gap-3" aria-hidden="true">
+                                                        <span className="h-px flex-1 bg-gradient-to-r from-transparent to-white/20" />
+                                                        <span className="h-1 w-1 rotate-45 bg-purple-200/50" />
+                                                        <span className="h-px flex-1 bg-gradient-to-l from-transparent to-white/20" />
+                                                      </div>
+                                                      <p className="mt-4 text-[0.6rem] font-semibold uppercase tracking-[0.32em] text-purple-200/65">
+                                                        Entre bambalinas
                                                       </p>
-                                                      <button
-                                                        type="button"
-                                                        onClick={() => setShowPhoneInput(true)}
-                                                        className="w-full rounded-full border border-purple-200/25 bg-purple-400/10 px-3 py-2.5 text-xs font-semibold text-purple-100 transition hover:bg-purple-400/20"
-                                                      >
-                                                        {dramaturgy.returnCta}
-                                                      </button>
-                                                      </>
-                                                    ) : (
-                                                      <>
-                                                        <p className="text-xs leading-relaxed text-slate-400/80">
-                                                          ¿A qué número te enviamos el aviso?
-                                                        </p>
-                                                        <div className="flex gap-2">
-                                                          <input
-                                                            type="tel"
-                                                            value={phoneInput}
-                                                            onChange={(e) => setPhoneInput(e.target.value)}
-                                                            placeholder="+52 55 0000 0000"
-                                                            className="min-w-0 flex-1 rounded-full border border-white/20 bg-black/35 px-3 py-2 text-xs text-white placeholder:text-slate-500 outline-none focus:border-white/40"
-                                                          />
-                                                          <button
-                                                            type="button"
-                                                            onClick={() => void handleBitacoraConsent('whatsapp', phoneInput.trim())}
-                                                            disabled={phoneInput.trim().length < 8}
-                                                            className="shrink-0 rounded-full border border-white/20 bg-black/35 px-3 py-2 text-xs text-slate-200 transition hover:bg-black/50 disabled:opacity-40 disabled:cursor-not-allowed"
-                                                          >
-                                                            Confirmar →
-                                                          </button>
-                                                        </div>
-                                                      </>
-                                                    )
-                                                  ) : (
-                                                    <div className="flex items-start gap-2 px-1 py-1">
-                                                      {/* Sin borde ni fondo propio: era una tarjeta dentro de la
-                                                          tarjeta "Esto no termina aquí" (Carlos, 10 sep 2026). */}
-                                                      <Check size={13} className="mt-0.5 shrink-0 text-emerald-300/80" />
-                                                      <p className="text-xs leading-relaxed text-slate-300/80">
-                                                        {bitacoraAvailable
-                                                          ? 'La pregunta ya volvió. Puedes entrar a escena.'
-                                                          : 'La próxima pregunta ya está preparada. Te buscará por WhatsApp cuando llegue el momento.'}
+                                                      {/* Placeholder aprobado (11 sep 2026), no copy final — y ahora carga
+                                                          más peso que antes, como título. */}
+                                                      <p className="mt-1 font-display text-xl tracking-[0.14em] text-white">
+                                                        {dramaturgy.closingLine}
+                                                      </p>
+                                                      <p className="mx-auto mt-2 max-w-sm text-[0.7rem] leading-relaxed text-slate-400/80">
+                                                        {!bitacoraConsented
+                                                          ? dramaturgy.returnBody
+                                                          : bitacoraAvailable
+                                                            ? 'La pregunta ya volvió. Puedes entrar a escena.'
+                                                            : 'La próxima pregunta ya está preparada. Te buscará por WhatsApp cuando llegue el momento.'}
                                                       </p>
                                                     </div>
+                                                  </motion.div>
+
+                                                  {/* El aviso es la primera fila del stack, con la misma caja que las otras
+                                                      dos. El atril es provisional, hasta que exista el icono definitivo. */}
+                                                  {!bitacoraCompleted && !bitacoraConsented && (
+                                                    <motion.div variants={PIEZA_DE_CASCADA} custom={1} className="space-y-2">
+                                                      {!showPhoneInput ? (
+                                                        <button
+                                                          type="button"
+                                                          onClick={() => setShowPhoneInput(true)}
+                                                          className="flex w-full items-center gap-3 rounded-2xl border border-purple-300/20 bg-purple-950/15 px-3 py-2.5 text-left transition hover:bg-purple-900/25"
+                                                        >
+                                                          <img
+                                                            src="/assets/atril.png"
+                                                            alt=""
+                                                            aria-hidden="true"
+                                                            className="h-10 w-10 shrink-0 object-contain"
+                                                          />
+                                                          <span className="text-xs font-semibold tracking-[0.05em] text-purple-100/90">
+                                                            {dramaturgy.returnCta}
+                                                          </span>
+                                                        </button>
+                                                      ) : (
+                                                        <div className="space-y-2 rounded-2xl border border-purple-300/20 bg-purple-950/15 px-3 py-2.5">
+                                                          <p className="text-xs leading-relaxed text-slate-400/80">
+                                                            ¿A qué número te enviamos el aviso?
+                                                          </p>
+                                                          <div className="flex gap-2">
+                                                            <input
+                                                              type="tel"
+                                                              value={phoneInput}
+                                                              onChange={(e) => setPhoneInput(e.target.value)}
+                                                              placeholder="+52 55 0000 0000"
+                                                              className="min-w-0 flex-1 rounded-full border border-white/20 bg-black/35 px-3 py-2 text-xs text-white placeholder:text-slate-500 outline-none focus:border-white/40"
+                                                            />
+                                                            <button
+                                                              type="button"
+                                                              onClick={() => void handleBitacoraConsent('whatsapp', phoneInput.trim())}
+                                                              disabled={phoneInput.trim().length < 8}
+                                                              className="shrink-0 rounded-full border border-white/20 bg-black/35 px-3 py-2 text-xs text-slate-200 transition hover:bg-black/50 disabled:opacity-40 disabled:cursor-not-allowed"
+                                                            >
+                                                              Confirmar →
+                                                            </button>
+                                                          </div>
+                                                        </div>
+                                                      )}
+                                                    </motion.div>
                                                   )}
 
+                                                  <motion.div variants={PIEZA_DE_CASCADA} custom={2}>
+                                                <button
+                                                  type="button"
+                                                  onClick={handleDownloadSouvenir}
+                                                  disabled={isSouvenirGenerating || Boolean(souvenirDeliveredAt)}
+                                                  className="flex w-full items-center gap-3 rounded-2xl border border-white/15 bg-black/35 px-3 py-2.5 text-left transition hover:bg-black/50 disabled:cursor-default disabled:opacity-75"
+                                                >
+                                                  {souvenirDeliveredAt ? (
+                                                    <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-emerald-300/20 bg-emerald-300/[0.06] text-emerald-300/80">
+                                                      <Check size={18} aria-hidden="true" />
+                                                    </span>
+                                                  ) : PORTAL_ICON_URL[recommendedSouvenirPortal] ? (
+                                                    <img
+                                                      src={PORTAL_ICON_URL[recommendedSouvenirPortal]}
+                                                      alt=""
+                                                      aria-hidden="true"
+                                                      className="h-10 w-10 shrink-0 rounded-xl object-cover shadow-[0_8px_32px_rgba(0,0,0,0.55)]"
+                                                    />
+                                                  ) : null}
+                                                  <span className="flex flex-col gap-0.5">
+                                                    <span className={`text-xs font-semibold tracking-[0.05em] ${souvenirDeliveredAt ? 'text-emerald-200/85' : 'text-amber-300/90'}`}>
+                                                      {isSouvenirGenerating
+                                                        ? 'Preparando el recuerdo…'
+                                                        : souvenirDeliveredAt
+                                                          ? 'Recuerdo entregado'
+                                                          : dramaturgy.souvenirCta}
+                                                    </span>
+                                                    {souvenirDeliveredAt && (
+                                                      <span className="text-[0.65rem] font-normal tracking-normal text-slate-400/75">
+                                                        Busca la imagen en tus descargas.
+                                                      </span>
+                                                    )}
+                                                  </span>
+                                                </button>
+                                                  </motion.div>
+
+                                                  <motion.div variants={PIEZA_DE_CASCADA} custom={3}>
+                                                {(!user || import.meta.env.DEV) && (
+                                                  <button
+                                                    type="button"
+                                                    onClick={() => onRequireLogin?.()}
+                                                    className="flex w-full items-center gap-3 rounded-2xl border border-violet-300/20 bg-violet-950/15 px-3 py-2.5 text-left transition hover:bg-violet-900/25"
+                                                  >
+                                                    <img
+                                                      src="/assets/laObraDorada.png"
+                                                      alt=""
+                                                      aria-hidden="true"
+                                                      className="h-10 w-10 shrink-0 object-contain"
+                                                    />
+                                                    <span className="text-xs font-semibold tracking-[0.05em] text-violet-200/90">
+                                                      Inicia sesión para conservar tu GAT
+                                                    </span>
+                                                  </button>
+                                                )}
+                                                  </motion.div>
+
+                                                  {!bitacoraCompleted && (
+                                                    <div className="space-y-2 px-1">
                                                   {import.meta.env.DEV && !bitacoraConsented && (
                                                     <button
                                                       type="button"
@@ -1833,101 +1903,8 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
                                                       [dev] simular regreso después de 72 h
                                                     </button>
                                                   )}
-                                                </div>
-                                              )}
-
-                                              {/* Continuación inmediata — el # dorado invita a loguearse para
-                                                  que el GAT ganado en esta sesión quede conservado en la
-                                                  cuenta, no solo en el localStorage anónimo. Va después del
-                                                  bloque de WhatsApp, no antes (Carlos, 2026-08-27). Solo la
-                                                  imagen como CTA, no el GatokensRevealModal completo. */}
-                                              </motion.div>
-
-                                              {/* Los dos botones con PNG al fondo, juntos: un stack ordenado
-                                                  (Carlos, bloque 6). El recuerdo estaba arriba, pegado al video. */}
-                                              <motion.div variants={PIEZA_DE_CASCADA} custom={1} className="space-y-3">
-
-                                              <button
-                                                type="button"
-                                                onClick={handleDownloadSouvenir}
-                                                disabled={isSouvenirGenerating || Boolean(souvenirDeliveredAt)}
-                                                className="flex w-full items-center gap-3 rounded-2xl border border-white/15 bg-black/35 px-3 py-2.5 text-left transition hover:bg-black/50 disabled:cursor-default disabled:opacity-75"
-                                              >
-                                                {souvenirDeliveredAt ? (
-                                                  <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-emerald-300/20 bg-emerald-300/[0.06] text-emerald-300/80">
-                                                    <Check size={18} aria-hidden="true" />
-                                                  </span>
-                                                ) : PORTAL_ICON_URL[recommendedSouvenirPortal] ? (
-                                                  <img
-                                                    src={PORTAL_ICON_URL[recommendedSouvenirPortal]}
-                                                    alt=""
-                                                    aria-hidden="true"
-                                                    className="h-10 w-10 shrink-0 rounded-xl object-cover shadow-[0_8px_32px_rgba(0,0,0,0.55)]"
-                                                  />
-                                                ) : null}
-                                                <span className="flex flex-col gap-0.5">
-                                                  <span className={`text-xs font-semibold tracking-[0.05em] ${souvenirDeliveredAt ? 'text-emerald-200/85' : 'text-amber-300/90'}`}>
-                                                    {isSouvenirGenerating
-                                                      ? 'Preparando el recuerdo…'
-                                                      : souvenirDeliveredAt
-                                                        ? 'Recuerdo entregado'
-                                                        : dramaturgy.souvenirCta}
-                                                  </span>
-                                                  {souvenirDeliveredAt && (
-                                                    <span className="text-[0.65rem] font-normal tracking-normal text-slate-400/75">
-                                                      Busca la imagen en tus descargas.
-                                                    </span>
+                                                    </div>
                                                   )}
-                                                </span>
-                                              </button>
-
-
-                                              {(!user || import.meta.env.DEV) && (
-                                                <button
-                                                  type="button"
-                                                  onClick={() => onRequireLogin?.()}
-                                                  className="flex w-full items-center gap-3 rounded-2xl border border-violet-300/20 bg-violet-950/15 px-3 py-2.5 text-left transition hover:bg-violet-900/25"
-                                                >
-                                                  <img
-                                                    src="/assets/laObraDorada.png"
-                                                    alt=""
-                                                    aria-hidden="true"
-                                                    className="h-10 w-10 shrink-0 object-contain"
-                                                  />
-                                                  <span className="text-xs font-semibold tracking-[0.05em] text-violet-200/90">
-                                                    Inicia sesión para conservar tu GAT
-                                                  </span>
-                                                </button>
-                                              )}
-
-                                              </motion.div>
-                                              <motion.div variants={PIEZA_DE_CASCADA} custom={2}>
-                                              {/* Marca inequívoca de cierre antes de la espera longitudinal. */}
-                                              <div className="px-2 pb-1 pt-4 text-center">
-                                                <div className="flex items-center gap-3" aria-hidden="true">
-                                                  <span className="h-px flex-1 bg-gradient-to-r from-transparent to-white/20" />
-                                                  <span className="h-1 w-1 rotate-45 bg-purple-200/50" />
-                                                  <span className="h-px flex-1 bg-gradient-to-l from-transparent to-white/20" />
-                                                </div>
-                                                <p className="mt-4 text-[0.6rem] font-semibold uppercase tracking-[0.32em] text-purple-200/65">
-                                                  Retención
-                                                </p>
-                                                {/* D-42 (11 sep 2026): el clímax de la forma es la respuesta a
-                                                    los tres días, así que el segundo acto NO termina aquí y esta
-                                                    tarjeta no es un telón ("Entreacto" duró un día). Es el
-                                                    umbral de la retención: el actor entre bambalinas, con la
-                                                    energía sostenida antes de soltarla. Por eso no ofrece nada
-                                                    — ni "Ir al camerino": mandar a alguien al archivo a media
-                                                    ventana es estímulo antes de las preguntas diferidas
-                                                    (handoff §1.3). Se cierra el modal y ya. */}
-                                                <p className="mt-1 font-display text-xl tracking-[0.14em] text-white">
-                                                  Entre bambalinas
-                                                </p>
-                                                <p className="mt-1.5 text-[0.68rem] leading-relaxed text-slate-400/75">
-                                                  {dramaturgy.closingLine}
-                                                </p>
-                                              </div>
-                                              </motion.div>
                                                 </motion.div>
                                               )}
                                             </>
