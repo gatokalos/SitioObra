@@ -460,6 +460,34 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
   // formulario debajo de una ilustración: hay alguien preguntando.
   const [bitacoraEscribiendo, setBitacoraEscribiendo] = useState(false);
 
+  // En móvil el modal se dibuja anclado a la pantalla, no dentro de la tarjeta.
+  // La tarjeta que lo hospeda no tiene tope de alto ahí —su `max-h` sólo aplica
+  // en escritorio—, así que su altura la decide el contenido que hay detrás: por
+  // eso unas vistas cabían y otras se cortaban, como la Memoria holográfica.
+  // Tiene que ser un portal y no un `position: fixed` a secas, porque el
+  // contenedor de la vitrina lleva un `transform`, y un transform convierte a
+  // cualquier hijo fijo en relativo a él.
+  const [enPantallaChica, setEnPantallaChica] = useState(() => {
+    if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') return false;
+    return window.matchMedia('(max-width: 1023px)').matches;
+  });
+  useEffect(() => {
+    if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') return undefined;
+    const query = window.matchMedia('(max-width: 1023px)');
+    const alCambiar = (e) => setEnPantallaChica(e.matches);
+    query.addEventListener('change', alCambiar);
+    return () => query.removeEventListener('change', alCambiar);
+  }, []);
+
+  // Con el modal anclado a la pantalla, el fondo no debe seguir desplazándose
+  // detrás: en un teléfono eso se siente como si la página se escapara.
+  useEffect(() => {
+    if (!open || !enPantallaChica || typeof document === 'undefined') return undefined;
+    const previo = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => { document.body.style.overflow = previo; };
+  }, [open, enPantallaChica]);
+
   const bitacoraAvailable = bitacoraAvailableAt
     ? new Date(bitacoraAvailableAt).getTime() <= bitacoraAvailabilityTick
     : false;
@@ -1095,8 +1123,7 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
     }
   };
 
-  return (
-    <>
+  const modal = (
     <AnimatePresence>
       {open && (
         <motion.div
@@ -1104,7 +1131,10 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
           role="dialog"
           aria-modal="false"
           aria-labelledby="resonance-modal-title"
-          className="absolute inset-0 z-50 overflow-hidden rounded-[2.5rem] flex flex-col lg:flex-row"
+          className={`z-50 flex flex-col overflow-hidden lg:absolute lg:inset-0 lg:flex-row lg:rounded-[2.5rem] ${
+            enPantallaChica ? 'fixed inset-0' : 'absolute inset-0 rounded-[2.5rem]'
+          }`}
+          style={enPantallaChica ? { height: '100dvh' } : undefined}
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
@@ -2231,6 +2261,13 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
         </motion.div>
       )}
     </AnimatePresence>
+  );
+
+  return (
+    <>
+      {enPantallaChica && typeof document !== 'undefined'
+        ? createPortal(modal, document.body)
+        : modal}
       {/* ── La cabina, en capa propia ───────────────────────────────────────
           Las preguntas del regreso no caben en la tarjeta: en móvil la tarjeta
           no tiene tope de alto —su `max-h` sólo aplica en escritorio—, así que
