@@ -2248,19 +2248,18 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
               role="dialog"
               aria-modal="true"
             >
-      >
         {/* ── Móvil: la cabina ──
             El gato al fondo y la pregunta en su burbuja. Antes esto
             era un formulario sobre un póster: tres preguntas sin
             nadie que las hiciera. La burbuja, su pico y su flotación
             ya existían en index.css, portadas de la Bienvenida y sin
             usar desde entonces (Carlos, 18 sep 2026). */}
-        <div className="relative flex h-full flex-col overflow-hidden">
+        <div className="relative flex h-full flex-col overflow-hidden pt-[max(4.5rem,calc(env(safe-area-inset-top)+3.5rem))] pb-[max(2rem,calc(env(safe-area-inset-bottom)+1rem))]">
           <img
             src={CAT_CABINA_URL}
             alt=""
             aria-hidden="true"
-            className="absolute inset-0 h-full w-full object-cover object-top"
+            className="pointer-events-none absolute -inset-y-[6rem] inset-x-0 h-[calc(100%+12rem)] w-full object-cover object-top"
           />
           <div
             aria-hidden="true"
@@ -2298,7 +2297,7 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
           <div aria-hidden="true" className="min-h-0 flex-1" />
 
           {/* Donde estaba el chevron: aquí se responde. */}
-          <div className="relative z-10 mx-auto w-[min(340px,88vw)] shrink-0 space-y-2 pb-[max(1.5rem,env(safe-area-inset-bottom))]">
+          <div className="relative z-10 mx-auto w-[min(340px,88vw)] shrink-0 space-y-2">
             {bitacoraStep === 'p1' ? (
               <div className="flex gap-2">
                 <button
