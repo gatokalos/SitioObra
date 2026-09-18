@@ -1404,7 +1404,7 @@ Buscar sentido no se apaga cuando encuentra algo. Se vuelve más fino, y empieza
     iaProfile: {
       notes: [
         '🧭 No hay un camino fijo: tú decides cómo recorrerlo.',
-        '💭 Puedes tomar una pregunta que dejó otro visitante, o dejar la tuya y ser el primero en contestarla.',
+        '💭 Puedes tomar una pregunta que dejó otra persona, o dejar la tuya y ser la primera en contestarla.',
         '🔁 Si ésta es tu primera escena del primer acto, es porque el oráculo no adivina: pregunta.',
       ],
     },
