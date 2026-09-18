@@ -300,6 +300,18 @@ const LEVELS = [
 
 /* ─── localStorage helpers ────────────────────────────────────────────── */
 
+// Cascada del clímax (Carlos, bloque 6 del recorrido comentado): cuando el
+// video del autor termina, el resto del stack entra escalonado en vez de
+// aparecer de golpe. El orden lo fija `custom`.
+const PIEZA_DE_CASCADA = {
+  oculto: { opacity: 0, y: 14 },
+  visible: (orden = 0) => ({
+    opacity: 1,
+    y: 0,
+    transition: { duration: 0.45, ease: 'easeOut', delay: 0.12 + orden * 0.16 },
+  }),
+};
+
 const lsKey = (portal) => `gatoencerrado:resonance:${portal}`;
 
 
@@ -410,6 +422,14 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
   // haberlo visto, así que no contamina la intuición de Fase 1. Ver
   // RESONANCE_FAREWELL_VIDEO_ENABLED en transmediaConstants.jsx.
   const [farewellVideoSeen, setFarewellVideoSeen]     = useState(() => !!lsRead(portal).farewell_video_seen);
+  // El stack del clímax espera al video sólo cuando hay video que esperar. Con
+  // la bandera apagada —producción, hasta que existan las nueve piezas— todo
+  // se muestra como siempre, sin animación ni scroll.
+  const stackClimaxRef = useRef(null);
+  const revelarStack = !RESONANCE_FAREWELL_VIDEO_ENABLED || farewellVideoSeen;
+  // Sólo hay cascada si el stack apareció DESPUÉS del video. Quien vuelve a
+  // abrir la vitrina con el video ya visto lo encuentra puesto, sin repetirla.
+  const [huboCascada, setHuboCascada] = useState(false);
   const [phoneInput, setPhoneInput]                   = useState('');
   // Después de responder En escena, la Memoria sustituye al Dashboard. Si la
   // ventana de 72 h ya venció, cualquier entrada abre directamente En escena,
@@ -886,8 +906,20 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
   // su WhatsApp: debe verse una sola vez sin importar esa decisión.
   const handleFarewellVideoSeen = useCallback(() => {
     lsPatch(portal, { farewell_video_seen: true, farewell_video_seen_at: new Date().toISOString() });
+    setHuboCascada(true);
     setFarewellVideoSeen(true);
   }, [portal]);
+
+  // Scroll automático, no chevron: lo que aparece llega donde están los ojos
+  // (Carlos, bloque 6). Se espera a que la primera pieza haya entrado para no
+  // perseguir un elemento que todavía se está animando.
+  useEffect(() => {
+    if (!huboCascada || !stackClimaxRef.current) return undefined;
+    const id = window.setTimeout(() => {
+      stackClimaxRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }, 220);
+    return () => window.clearTimeout(id);
+  }, [huboCascada]);
 
   // Si el usuario está en la PWA instalada, suscribe push en silencio
   // en cuanto se completa el Nivel 3 (el momento en que aparece En el foco).
@@ -1683,7 +1715,7 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
                                               {/* Clímax: el autor entra a cuadro. El recuerdo vive pegado a
                                                   la despedida, no después del cierre académico — son un
                                                   mismo momento (Carlos, 2026-08-27, congruencia). */}
-                                              {RESONANCE_FAREWELL_VIDEO_ENABLED && !farewellVideoSeen && (
+                                              {RESONANCE_FAREWELL_VIDEO_ENABLED && (
                                                 <FarewellVideoPanel
                                                   portal={portal}
                                                   onSeen={handleFarewellVideoSeen}
@@ -1695,40 +1727,19 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
                                                 />
                                               )}
 
-                                              <button
-                                                type="button"
-                                                onClick={handleDownloadSouvenir}
-                                                disabled={isSouvenirGenerating || Boolean(souvenirDeliveredAt)}
-                                                className="flex w-full items-center gap-3 rounded-2xl border border-white/15 bg-black/35 px-3 py-2.5 text-left transition hover:bg-black/50 disabled:cursor-default disabled:opacity-75"
-                                              >
-                                                {souvenirDeliveredAt ? (
-                                                  <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-emerald-300/20 bg-emerald-300/[0.06] text-emerald-300/80">
-                                                    <Check size={18} aria-hidden="true" />
-                                                  </span>
-                                                ) : PORTAL_ICON_URL[recommendedSouvenirPortal] ? (
-                                                  <img
-                                                    src={PORTAL_ICON_URL[recommendedSouvenirPortal]}
-                                                    alt=""
-                                                    aria-hidden="true"
-                                                    className="h-10 w-10 shrink-0 rounded-xl object-cover shadow-[0_8px_32px_rgba(0,0,0,0.55)]"
-                                                  />
-                                                ) : null}
-                                                <span className="flex flex-col gap-0.5">
-                                                  <span className={`text-xs font-semibold tracking-[0.05em] ${souvenirDeliveredAt ? 'text-emerald-200/85' : 'text-amber-300/90'}`}>
-                                                    {isSouvenirGenerating
-                                                      ? 'Preparando el recuerdo…'
-                                                      : souvenirDeliveredAt
-                                                        ? 'Recuerdo entregado'
-                                                        : dramaturgy.souvenirCta}
-                                                  </span>
-                                                  {souvenirDeliveredAt && (
-                                                    <span className="text-[0.65rem] font-normal tracking-normal text-slate-400/75">
-                                                      Busca la imagen en tus descargas.
-                                                    </span>
-                                                  )}
-                                                </span>
-                                              </button>
-
+                                              {/* Cascada (Carlos, bloque 6): mientras el video corre, nada compite con
+                                                  él. Al terminar —o al saltarlo— el resto aparece escalonado y el scroll
+                                                  lleva el stack a donde están los ojos. Con la bandera del video apagada
+                                                  (producción, hasta que existan las piezas) se muestra todo de una vez,
+                                                  como siempre. */}
+                                              {revelarStack && (
+                                                <motion.div
+                                                  ref={stackClimaxRef}
+                                                  className="space-y-3"
+                                                  initial={huboCascada ? "oculto" : false}
+                                                  animate="visible"
+                                                >
+                                              <motion.div variants={PIEZA_DE_CASCADA} custom={0}>
                                               {/* Aquí iba "Este recorrido ha concluido" y la descripción
                                                   académica. Se quitó el 10 sep 2026: competía con el video
                                                   del autor y podía leerse como "ya no sigas viendo". Eso lo
@@ -1830,6 +1841,47 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
                                                   cuenta, no solo en el localStorage anónimo. Va después del
                                                   bloque de WhatsApp, no antes (Carlos, 2026-08-27). Solo la
                                                   imagen como CTA, no el GatokensRevealModal completo. */}
+                                              </motion.div>
+
+                                              {/* Los dos botones con PNG al fondo, juntos: un stack ordenado
+                                                  (Carlos, bloque 6). El recuerdo estaba arriba, pegado al video. */}
+                                              <motion.div variants={PIEZA_DE_CASCADA} custom={1} className="space-y-3">
+
+                                              <button
+                                                type="button"
+                                                onClick={handleDownloadSouvenir}
+                                                disabled={isSouvenirGenerating || Boolean(souvenirDeliveredAt)}
+                                                className="flex w-full items-center gap-3 rounded-2xl border border-white/15 bg-black/35 px-3 py-2.5 text-left transition hover:bg-black/50 disabled:cursor-default disabled:opacity-75"
+                                              >
+                                                {souvenirDeliveredAt ? (
+                                                  <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-emerald-300/20 bg-emerald-300/[0.06] text-emerald-300/80">
+                                                    <Check size={18} aria-hidden="true" />
+                                                  </span>
+                                                ) : PORTAL_ICON_URL[recommendedSouvenirPortal] ? (
+                                                  <img
+                                                    src={PORTAL_ICON_URL[recommendedSouvenirPortal]}
+                                                    alt=""
+                                                    aria-hidden="true"
+                                                    className="h-10 w-10 shrink-0 rounded-xl object-cover shadow-[0_8px_32px_rgba(0,0,0,0.55)]"
+                                                  />
+                                                ) : null}
+                                                <span className="flex flex-col gap-0.5">
+                                                  <span className={`text-xs font-semibold tracking-[0.05em] ${souvenirDeliveredAt ? 'text-emerald-200/85' : 'text-amber-300/90'}`}>
+                                                    {isSouvenirGenerating
+                                                      ? 'Preparando el recuerdo…'
+                                                      : souvenirDeliveredAt
+                                                        ? 'Recuerdo entregado'
+                                                        : dramaturgy.souvenirCta}
+                                                  </span>
+                                                  {souvenirDeliveredAt && (
+                                                    <span className="text-[0.65rem] font-normal tracking-normal text-slate-400/75">
+                                                      Busca la imagen en tus descargas.
+                                                    </span>
+                                                  )}
+                                                </span>
+                                              </button>
+
+
                                               {(!user || import.meta.env.DEV) && (
                                                 <button
                                                   type="button"
@@ -1848,6 +1900,8 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
                                                 </button>
                                               )}
 
+                                              </motion.div>
+                                              <motion.div variants={PIEZA_DE_CASCADA} custom={2}>
                                               {/* Marca inequívoca de cierre antes de la espera longitudinal. */}
                                               <div className="px-2 pb-1 pt-4 text-center">
                                                 <div className="flex items-center gap-3" aria-hidden="true">
@@ -1873,6 +1927,9 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
                                                   {dramaturgy.closingLine}
                                                 </p>
                                               </div>
+                                              </motion.div>
+                                                </motion.div>
+                                              )}
                                             </>
                                           )}
 

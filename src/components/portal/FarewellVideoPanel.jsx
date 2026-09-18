@@ -11,6 +11,17 @@ import {
 // del portal no existe todavía, cae al general; si tampoco existe, no pinta
 // nada roto — se oculta entero (Carlos va soltando los 9 videos + el general
 // sin que este componente necesite cambios).
+//
+// El "visto" se dispara al TERMINAR, no al arrancar (Carlos, bloque 6 del
+// recorrido comentado). Antes salía en `onPlay`, y como quien lo monta
+// desmontaba el panel en cuanto estaba visto, el primer video real habría
+// desaparecido en su primer cuadro. Ahora:
+//   · mientras corre, el video está solo — nada compite con él;
+//   · al terminar, avisa (`onSeen`) y se queda congelado en su último cuadro,
+//     sin controles: el recuerdo puede irse al fondo del stack y seguir
+//     pegado a una despedida que sigue en pantalla;
+//   · si alguien lo salta, no hay último cuadro y queda el primero, el autor
+//     esperando. Decidido así.
 const FarewellVideoPanel = ({
   portal,
   onSeen,
@@ -22,6 +33,7 @@ const FarewellVideoPanel = ({
   intro = '',
 }) => {
   const videoRef = useRef(null);
+  const [ended, setEnded] = useState(false);
   // 0: video del portal · 1: general · 2: relleno, sólo si está encendido ·
   // 3 (o 2 con el relleno apagado): sin video disponible.
   const [stage, setStage] = useState(0);
@@ -38,14 +50,21 @@ const FarewellVideoPanel = ({
     : AUTHOR_VIDEO_PLACEHOLDER_URL;
   const isUnavailable = stage >= etapaSinVideo;
 
-  const handlePlay = () => {
-    setPlaying(true);
+  const handlePlay = () => setPlaying(true);
+
+  // Aquí, y sólo aquí, el recorrido continúa.
+  const handleEnded = () => {
+    setEnded(true);
+    setPlaying(false);
     onSeen?.();
   };
 
   const handleError = () => setStage((s) => s + 1);
 
-  const handleSkip = () => onSeen?.();
+  const handleSkip = () => {
+    setEnded(true);
+    onSeen?.();
+  };
 
   return (
     <div className={`space-y-2 ${className}`}>
@@ -61,15 +80,16 @@ const FarewellVideoPanel = ({
               ref={videoRef}
               key={src}
               src={src}
-              controls={playing}
+              controls={playing && !ended}
               playsInline
               preload="metadata"
               className="h-full w-full object-cover"
               onPlay={handlePlay}
+              onEnded={handleEnded}
               onError={handleError}
             />
           )}
-          {!playing && !isUnavailable && (
+          {!playing && !ended && !isUnavailable && (
             <button
               type="button"
               onClick={() => videoRef.current?.play?.().catch(() => {})}
@@ -94,7 +114,7 @@ const FarewellVideoPanel = ({
             </div>
           )}
         </div>
-        {!playing && !isUnavailable && (
+        {!playing && !ended && !isUnavailable && (
           <div className="flex items-center justify-between px-3 py-1.5">
             <span className="text-[0.65rem] text-slate-400/80">
               {caption}
