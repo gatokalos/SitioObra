@@ -1192,7 +1192,13 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
               style={{ background: 'linear-gradient(180deg, rgba(5,3,9,0.34) 0%, rgba(5,3,9,0.76) 43%, rgba(5,3,9,0.98) 100%)' }}
             />
 
-            <div className="relative z-10 h-full overflow-y-auto">
+            <div className={`relative z-10 h-full ${
+              /* La cabina reparte el alto exacto de la tarjeta y no debe
+                 desplazarse: con scroll, los botones caían bajo el pliegue y
+                 la pregunta dejaba de verse junto a quien la hace. En
+                 escritorio la columna sigue desplazándose como siempre. */
+              bitacoraOpen ? 'overflow-hidden lg:overflow-y-auto' : 'overflow-y-auto'
+            }`}>
               <AnimatePresence mode="wait">
                 {checking ? (
                   /* ── Verificando respuestas anteriores ── */
@@ -1367,7 +1373,7 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
                         nadie que las hiciera. La burbuja, su pico y su flotación
                         ya existían en index.css, portadas de la Bienvenida y sin
                         usar desde entonces (Carlos, 18 sep 2026). */}
-                    <div className="relative h-full min-h-[32rem] overflow-hidden lg:hidden">
+                    <div className="relative flex h-full flex-col overflow-hidden lg:hidden">
                       <img
                         src={CAT_CABINA_URL}
                         alt=""
@@ -1380,7 +1386,7 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
                         style={{ background: 'linear-gradient(to bottom, rgba(5,3,9,0.55) 0%, rgba(5,3,9,0.12) 38%, rgba(5,3,9,0.88) 100%)' }}
                       />
 
-                      <div className="cabina-bubble">
+                      <div className="cabina-bubble cabina-bubble--en-flujo relative z-10 mt-3 shrink-0">
                         {bitacoraEscribiendo ? (
                           <>
                             {/* La pregunta ocupa el lugar del preludio: ya se leyó,
@@ -1405,8 +1411,12 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
                         )}
                       </div>
 
+                      {/* El gato ocupa lo que sobre entre la burbuja y las
+                          respuestas: así manda el alto real y no un porcentaje. */}
+                      <div aria-hidden="true" className="min-h-0 flex-1" />
+
                       {/* Donde estaba el chevron: aquí se responde. */}
-                      <div className="absolute inset-x-0 bottom-[14%] mx-auto w-[min(340px,88vw)] space-y-2">
+                      <div className="relative z-10 mx-auto w-[min(340px,88vw)] shrink-0 space-y-2 pb-[max(1.5rem,env(safe-area-inset-bottom))]">
                         {bitacoraStep === 'p1' ? (
                           <div className="flex gap-2">
                             <button

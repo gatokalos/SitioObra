@@ -3678,6 +3678,19 @@ body {
   font-size: clamp(0.9rem, 2.2vw, 1.15rem);
   line-height: 1.45;
 }
+/* La misma burbuja, pero colocada por el layout y no por porcentajes: en la
+   cabina de las preguntas diferidas el alto lo reparte un flex que llena la
+   tarjeta, así que la burbuja va en el flujo y conserva su pico y su flotación
+   (Carlos, 18 sep 2026: "un ajuste verdadero que no dependa del scroll"). */
+.cabina-bubble--en-flujo {
+  position: static;
+  transform: none;
+  width: 100%;
+  max-width: min(340px, 88vw);
+  margin: 0 auto;
+  animation: cabina-bubble-in 0.6s ease-out;
+}
+
 .cabina-siguiente-flotante {
   position: absolute;
   bottom: 22%;
