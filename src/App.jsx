@@ -15,6 +15,7 @@ import { useAuth } from '@/contexts/SupabaseAuthContext';
 import { safeGetItem, safeSetItem } from '@/lib/safeStorage';
 import { markIntermedioVisto } from '@/lib/intermedio';
 import { isInstalledPWA } from '@/lib/pwaDetection';
+import PortalGuard from '@/components/PortalGuard';
 import {
   readBeforeLeavingRevealedFromSession,
   readHeroActivatedFromSession,
@@ -998,15 +999,15 @@ function App() {
       <Route path="/bienvenida" element={<LegacyBienvenidaRedirect />} />
       <Route path="/trazos" element={<Suspense fallback={<RouteFallback />}><Trazos /></Suspense>} />
       <Route path="/autoficcion" element={<Suspense fallback={<RouteFallback />}><Autoficcion /></Suspense>} />
-      <Route path="/portal-literatura" element={<SectionErrorBoundary fallback={<PortalErrorFallback />}><Suspense fallback={<RouteFallback />}><PortalLiteratura /></Suspense></SectionErrorBoundary>} />
-      <Route path="/portal-artesanias" element={<SectionErrorBoundary fallback={<PortalErrorFallback />}><Suspense fallback={<RouteFallback />}><PortalArtesanias /></Suspense></SectionErrorBoundary>} />
-      <Route path="/portal-voz" element={<SectionErrorBoundary fallback={<PortalErrorFallback />}><Suspense fallback={<RouteFallback />}><PortalVoz /></Suspense></SectionErrorBoundary>} />
-      <Route path="/portal-movimiento" element={<SectionErrorBoundary fallback={<PortalErrorFallback />}><Suspense fallback={<RouteFallback />}><PortalMovimiento /></Suspense></SectionErrorBoundary>} />
-      <Route path="/portal-graficos" element={<SectionErrorBoundary fallback={<PortalErrorFallback />}><Suspense fallback={<RouteFallback />}><PortalGraficos /></Suspense></SectionErrorBoundary>} />
-      <Route path="/portal-cine" element={<SectionErrorBoundary fallback={<PortalErrorFallback />}><Suspense fallback={<RouteFallback />}><PortalCine /></Suspense></SectionErrorBoundary>} />
-      <Route path="/portal-sonoridades" element={<SectionErrorBoundary fallback={<PortalErrorFallback />}><Suspense fallback={<RouteFallback />}><PortalSonoridades /></Suspense></SectionErrorBoundary>} />
-      <Route path="/portal-juegos" element={<SectionErrorBoundary fallback={<PortalErrorFallback />}><Suspense fallback={<RouteFallback />}><PortalJuegos /></Suspense></SectionErrorBoundary>} />
-      <Route path="/portal-oraculo" element={<SectionErrorBoundary fallback={<PortalErrorFallback />}><Suspense fallback={<RouteFallback />}><PortalOraculo /></Suspense></SectionErrorBoundary>} />
+      <Route path="/portal-literatura" element={<PortalGuard><SectionErrorBoundary fallback={<PortalErrorFallback />}><Suspense fallback={<RouteFallback />}><PortalLiteratura /></Suspense></SectionErrorBoundary></PortalGuard>} />
+      <Route path="/portal-artesanias" element={<PortalGuard><SectionErrorBoundary fallback={<PortalErrorFallback />}><Suspense fallback={<RouteFallback />}><PortalArtesanias /></Suspense></SectionErrorBoundary></PortalGuard>} />
+      <Route path="/portal-voz" element={<PortalGuard><SectionErrorBoundary fallback={<PortalErrorFallback />}><Suspense fallback={<RouteFallback />}><PortalVoz /></Suspense></SectionErrorBoundary></PortalGuard>} />
+      <Route path="/portal-movimiento" element={<PortalGuard><SectionErrorBoundary fallback={<PortalErrorFallback />}><Suspense fallback={<RouteFallback />}><PortalMovimiento /></Suspense></SectionErrorBoundary></PortalGuard>} />
+      <Route path="/portal-graficos" element={<PortalGuard><SectionErrorBoundary fallback={<PortalErrorFallback />}><Suspense fallback={<RouteFallback />}><PortalGraficos /></Suspense></SectionErrorBoundary></PortalGuard>} />
+      <Route path="/portal-cine" element={<PortalGuard><SectionErrorBoundary fallback={<PortalErrorFallback />}><Suspense fallback={<RouteFallback />}><PortalCine /></Suspense></SectionErrorBoundary></PortalGuard>} />
+      <Route path="/portal-sonoridades" element={<PortalGuard><SectionErrorBoundary fallback={<PortalErrorFallback />}><Suspense fallback={<RouteFallback />}><PortalSonoridades /></Suspense></SectionErrorBoundary></PortalGuard>} />
+      <Route path="/portal-juegos" element={<PortalGuard><SectionErrorBoundary fallback={<PortalErrorFallback />}><Suspense fallback={<RouteFallback />}><PortalJuegos /></Suspense></SectionErrorBoundary></PortalGuard>} />
+      <Route path="/portal-oraculo" element={<PortalGuard><SectionErrorBoundary fallback={<PortalErrorFallback />}><Suspense fallback={<RouteFallback />}><PortalOraculo /></Suspense></SectionErrorBoundary></PortalGuard>} />
       <Route path="/portal-encuentros" element={<SectionErrorBoundary fallback={<PortalErrorFallback />}><Suspense fallback={<RouteFallback />}><PortalEncuentros /></Suspense></SectionErrorBoundary>} />
       <Route path="/bitacora" element={<SectionErrorBoundary fallback={<PortalErrorFallback />}><Suspense fallback={<RouteFallback />}><BitacoraLanding /></Suspense></SectionErrorBoundary>} />
       <Route path="/blog/:slug" element={<Suspense fallback={<RouteFallback />}><BlogPostPage /></Suspense>} />

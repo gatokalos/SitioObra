@@ -8,7 +8,6 @@ import MiniverseIconBadge from '@/components/transmedia/MiniverseIconBadge';
 import { toast } from '@/components/ui/use-toast';
 import { useAuth } from '@/contexts/SupabaseAuthContext';
 import LoginOverlay from '@/components/ContributionModal/LoginOverlay';
-import LoginNudgeOverlay from '@/components/LoginNudgeOverlay';
 import ContributionModal from '@/components/ContributionModal';
 import PortalAuthButton from '@/components/PortalAuthButton';
 import PortalHeaderActions from '@/components/portal/PortalHeaderActions';
@@ -133,19 +132,8 @@ const PortalOraculo = () => {
     setShowLoginOverlay(false);
   }, []);
 
-  // Salvaguarda: leer/explorar no requiere sesión, responder a la resonancia
-  // colectiva sí. Se muestra el mismo aviso "¿Te gustaría iniciar sesión?" antes
-  // de abrir el formulario de login real.
-  const [showResonanceLoginNudge, setShowResonanceLoginNudge] = useState(false);
 
-  const handleCloseResonanceLoginNudge = useCallback(() => {
-    setShowResonanceLoginNudge(false);
-  }, []);
 
-  const handleConfirmResonanceLogin = useCallback(() => {
-    setShowResonanceLoginNudge(false);
-    setShowLoginOverlay(true);
-  }, []);
 
   // Puente: si no ha visto el video narrativo de este miniverso, se lo
   // ofrece antes de abrir la pregunta (decisión 2026-08-07 — Resonancia
@@ -380,7 +368,8 @@ const PortalOraculo = () => {
               <ResonanceModal
                 open={isResonanceOpen}
                 onClose={() => { setIsResonanceOpen(false); refreshL1(); }}
-                onRequireLogin={() => setShowResonanceLoginNudge(true)}
+                onRequireLogin={() => setShowLoginOverlay(true)}  /* El aviso intermedio
+                  sobraba: quien toca "iniciar sesión" ya lo pidió (18 sep 2026). */
                 question={vitranaQuestion}
                 portal="oraculo"
                 onOpenNarrative={handleOpenOraculo}
@@ -501,14 +490,6 @@ const PortalOraculo = () => {
         </div>
 
         {showLoginOverlay ? <LoginOverlay onClose={handleCloseLogin} /> : null}
-        <LoginNudgeOverlay
-          open={showResonanceLoginNudge}
-          onClose={handleCloseResonanceLoginNudge}
-          onLogin={handleConfirmResonanceLogin}
-          title="¿Te gustaría iniciar sesión para continuar?"
-          description="Ya viviste esta experiencia libremente. Para seguir explorando el siguiente miniverso recomendado, necesitas iniciar sesión."
-          titleId="resonance-login-nudge-title"
-        />
         <ContributionModal
           open={isContributionOpen}
           onClose={() => setIsContributionOpen(false)}

@@ -604,11 +604,12 @@ const Transmedia = ({ allianceOnlyMode = false }) => {
   }, []);
 
   const handleAnswerResonance = useCallback((openResonance) => {
-    if (isAuthenticated) {
-      openResonance(true);
-      return;
-    }
-    setShowResonanceLoginNudge(true);
+    // La resonancia colectiva es del invitado también: dentro de su vitrina
+    // recomendada responde sin cuenta, y el regreso a los tres días igual. La
+    // sesión no es la puerta de la obra; es la puerta para cruzar a las otras
+    // formas (Carlos, 18 sep 2026). Antes aquí aparecía el aviso de login y el
+    // recorrido se cortaba justo donde el instrumento recoge su dato.
+    openResonance(true);
   }, [isAuthenticated]);
 
   useEffect(() => {
