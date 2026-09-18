@@ -1355,6 +1355,7 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
                   /* ── Bitácora individual: preguntas diferidas ── */
                   <motion.div
                     key="bitacora-questions"
+                    className="h-full"
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
@@ -1366,7 +1367,7 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
                         nadie que las hiciera. La burbuja, su pico y su flotación
                         ya existían en index.css, portadas de la Bienvenida y sin
                         usar desde entonces (Carlos, 18 sep 2026). */}
-                    <div className="relative min-h-[calc(100dvh-7rem)] overflow-hidden lg:hidden">
+                    <div className="relative h-full min-h-[32rem] overflow-hidden lg:hidden">
                       <img
                         src={CAT_CABINA_URL}
                         alt=""
