@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { ChevronDown, Cpu, MessageCircle, ShieldCheck, Sparkles, Send } from 'lucide-react';
 import { useAuth } from '@/contexts/SupabaseAuthContext';
 import { useToast } from '@/components/ui/use-toast';
+import { ToastAction } from '@/components/ui/toast';
 
 const IAInsightCard = ({
   title = 'AL ENTRAR EN ESCENA…',
@@ -20,14 +21,15 @@ const IAInsightCard = ({
   // siguen con las props de siempre.
   notes,
   compact = false,
-  // Modo "viajar" (cuaderno holográfico): cuando travelRequiredGat viene
-  // definido, aparece un botón salvaguarda — anónimo → pide autenticarse;
-  // autenticado con balance suficiente → onTravel(); autenticado sin balance
-  // → avisa y no deja entrar a un universo nuevo. No descuenta nada: el
-  // único lugar donde se gasta GAT de verdad es dentro de cada artefacto
-  // transmedia. Sin travelRequiredGat, la tarjeta no muestra ningún botón.
-  travelRequiredGat,
+  // Modo "viajar" (Memoria holográfica): con `onTravel` aparece el botón para
+  // cruzar a otra forma. Sin sesión no se cruza —el visitante tiene una sola
+  // forma, incluso después del regreso a los tres días— y el aviso ofrece la
+  // puerta. Ya no hay umbral de GAT: la estafeta que juntó se migra cuando
+  // inicia sesión, no se cobra para entrar (Carlos, 18 sep 2026).
   travelLabel = 'Viajar al universo',
+  // Nombre de la forma a la que se cruzaría, para que el aviso diga a dónde
+  // iba la persona y no hable de "otro universo" en abstracto.
+  travelFormLabel = null,
   onTravel,
   // Variante compacta para la Memoria: conserva exactamente la protección de
   // autenticación/GAT del modo viajar, pero elimina el acordeón informativo.
@@ -50,33 +52,38 @@ const IAInsightCard = ({
   const [internalIsOpen, setInternalIsOpen] = useState(!compact);
   const isOpen = controlledIsOpen ?? internalIsOpen;
   const toggleOpen = onToggle ?? (() => setInternalIsOpen((prev) => !prev));
-  const isTravelMode = typeof travelRequiredGat === 'number';
+  // Viajar entre formas lo decide la sesión, no un saldo. Antes este modo se
+  // encendía con `travelRequiredGat` y cobraba 175 GAT: economía retirada del
+  // instrumento (D-15), y regla equivocada — el visitante sin cuenta tiene una
+  // sola forma, y el GAT que juntó se migra cuando inicia sesión.
+  const isTravelMode = typeof onTravel === 'function';
   const hasNotes = Array.isArray(notes) && notes.length > 0;
   const hasBody = hasNotes || type || interaction || tokensRange || coverage;
 
-  const getLocalBalance = () => {
-    if (typeof window === 'undefined') return 0;
-    const raw = window.localStorage?.getItem('gatoencerrado:gatokens-available');
-    const parsed = Number.parseInt(raw, 10);
-    return Number.isFinite(parsed) ? parsed : 0;
+  const pedirSesion = () => {
+    if (onRequireLogin) {
+      onRequireLogin();
+    } else {
+      window.dispatchEvent(new CustomEvent('open-login-modal'));
+    }
   };
 
   const handleTravelClick = () => {
-    if (!user) {
-      if (onRequireLogin) {
-        onRequireLogin();
-      } else {
-        window.dispatchEvent(new CustomEvent('open-login-modal'));
-      }
-      return;
-    }
-    const balance = getLocalBalance();
-    if (balance >= travelRequiredGat) {
+    if (user) {
       onTravel?.();
       return;
     }
+    // Sin sesión no se cruza: el aviso dice a dónde iba y ofrece la puerta ahí
+    // mismo, en vez de mandar a buscarla (Carlos, 18 sep 2026).
     toast({
-      description: `Todavía no te alcanza para otro universo (necesitas ${travelRequiredGat} GAT). Sigue donde ya tienes progreso.`,
+      description: travelFormLabel
+        ? `Para cruzar a ${travelFormLabel} necesitas iniciar sesión. Tu recorrido y tu GAT se guardan contigo.`
+        : 'Para cruzar a otra forma necesitas iniciar sesión. Tu recorrido y tu GAT se guardan contigo.',
+      action: (
+        <ToastAction altText="Iniciar sesión" onClick={pedirSesion}>
+          Iniciar sesión
+        </ToastAction>
+      ),
     });
   };
 

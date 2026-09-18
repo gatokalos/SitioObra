@@ -54,12 +54,6 @@ export const SHOWCASE_REQUIRED_GAT = {
   apps: 150,
   oraculo: 0,
 };
-// Umbral parejo para el botón "viajar" del cuaderno holográfico — no es
-// SHOWCASE_REQUIRED_GAT (ese mapa es de un modelo anterior, pendiente de
-// reemplazo con el trabajo doctoral de costos por artefacto). Este es un
-// salvaguardas aparte: solo evita que alguien abra un universo nuevo cuando
-// ya gastó GAT a medias en otro.
-export const CUADERNO_HOLOGRAFICO_TRAVEL_GAT = 175;
 // Demos externas y anónimas — guardrail/motivación pública, no la función
 // completa del artefacto (esa vive en Resonancia Colectiva). Movido aquí
 // desde MiniverseModal.jsx para que este archivo (sin dependencias

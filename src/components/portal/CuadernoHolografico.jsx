@@ -18,7 +18,6 @@ import { createPortalLaunchState } from '@/lib/portalNavigation';
 import { CATALOG, readResonanceProgress } from '@/lib/bitacoraShared';
 import {
   showcaseDefinitions,
-  CUADERNO_HOLOGRAFICO_TRAVEL_GAT,
   formats,
   RESONANCE_BRIDGE_VIDEO_ENABLED,
 } from '@/components/transmedia/transmediaConstants';
@@ -491,8 +490,8 @@ function HolograficoPanel({
                 {...showcaseDefinitions[entry.showcase].iaProfile}
                 compact
                 onRequireLogin={onRequireLogin}
-                travelRequiredGat={CUADERNO_HOLOGRAFICO_TRAVEL_GAT}
                 travelLabel="Viajar a esta escena"
+                travelFormLabel={entry.form ?? entry.name}
                 onTravel={() => onOpenVideo(entry.showcase)}
                 travelCtaOnly={!hasBitacora}
               />
