@@ -1791,8 +1791,11 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
                                                           onClick={() => setShowPhoneInput(true)}
                                                           className="flex w-full items-center gap-3 rounded-2xl border border-purple-300/20 bg-purple-950/15 px-3 py-2.5 text-left transition hover:bg-purple-900/25"
                                                         >
+                                                          {/* El # dorado: dejar el número no es un depósito, es la promesa de que
+                                                              algo vuelve. La talega —con los # adentro— se fue a la fila de
+                                                              seguir otra forma, que es donde se siguen revelando (Carlos, 18 sep). */}
                                                           <img
-                                                            src="/assets/atril.png"
+                                                            src="/assets/laObraDorada.png"
                                                             alt=""
                                                             aria-hidden="true"
                                                             className="h-10 w-10 shrink-0 object-contain"
@@ -1872,7 +1875,7 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
                                                     className="flex w-full items-center gap-3 rounded-2xl border border-violet-300/20 bg-violet-950/15 px-3 py-2.5 text-left transition hover:bg-violet-900/25"
                                                   >
                                                     <img
-                                                      src="/assets/laObraDorada.png"
+                                                      src="/assets/gato_enbolsa.png"
                                                       alt=""
                                                       aria-hidden="true"
                                                       className="h-10 w-10 shrink-0 object-contain"

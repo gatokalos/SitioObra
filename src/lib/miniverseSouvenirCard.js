@@ -121,10 +121,24 @@ const toBlob = (canvas) =>
 
 /* ── Main export ─────────────────────────────────────────────────────────── */
 
+// La fecha del regreso la manda el servidor (D-35: el plazo vive en una sola
+// fuente y el frontend no lo calcula). Llega como ISO y aquí sólo se da forma.
+const formatearRegreso = (iso) => {
+  if (!iso) return null;
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return null;
+  try {
+    return new Intl.DateTimeFormat('es-MX', { day: 'numeric', month: 'long' }).format(d);
+  } catch {
+    return null;
+  }
+};
+
 export const createMiniverseSouvenirBlob = async ({
   portal = 'grafico',
   step3  = '',
   backgroundUrl = null,
+  regresoAt = null,
 } = {}) => {
   if (typeof document === 'undefined') throw new Error('Requires browser context');
 
@@ -235,15 +249,18 @@ export const createMiniverseSouvenirBlob = async ({
     ctx.fillText(`${prefix}${line}${suffix}`, cx, y + i * lineH);
   });
 
-  // ── 6. Flavor text — anclado al safe bottom ──────────────────────────────
+  // ── 6. El recordatorio del regreso ───────────────────────────────────────
+  // Aquí vivía un pie que decía "No garantiza continuidad. Solo testifica que
+  // estuviste." Se retiró el 18 sep 2026: la ficha pasó a ser justamente la
+  // continuidad de quien no deja su WhatsApp, y ese pie la contradecía.
+  //
+  // El texto va al costado del icono, no debajo: es el espacio que quedaba
+  // vacío, y ahí el recordatorio se lee como parte del boleto y no como letra
+  // chica. Enuncia el hecho del instrumento —la pregunta vuelve— sin prometerle
+  // nada a nadie.
+  const regreso = formatearRegreso(regresoAt);
   const ftY = safeBottom - 36;
   drawOrnateRule(ctx, safeLeft, safeRight, ftY - 52);
-
-  glow(6);
-  ctx.fillStyle = palette.minor;
-  ctx.font = '500 28px “Times New Roman”, Georgia, serif';
-  ctx.fillText('Este registro es único. No garantiza continuidad.', cx, ftY - 2);
-  ctx.fillText('Solo testifica que estuviste.', cx, ftY + 36);
 
   ctx.shadowColor = 'transparent';
   ctx.shadowBlur  = 0;
@@ -282,6 +299,30 @@ export const createMiniverseSouvenirBlob = async ({
     ctx.clip();
     ctx.drawImage(iconImg, iconX, iconY, iconSize, iconSize);
     ctx.restore();
+
+    // El recordatorio, a la izquierda del icono y alineado con él.
+    if (regreso) {
+      ctx.save();
+      ctx.textAlign = 'left';
+      glow(6);
+      const textoX = safeLeft;
+      const anchoDisponible = iconX - Math.round(panelW * 0.05) - textoX;
+
+      ctx.fillStyle = palette.minor;
+      ctx.font = '500 26px “Times New Roman”, Georgia, serif';
+      letterSpace(ctx, '2px');
+      ctx.fillText('LA PREGUNTA VUELVE', textoX, iconY + 72);
+      letterSpace(ctx, '0px');
+
+      ctx.fillStyle = palette.label;
+      ctx.font = '600 38px “Times New Roman”, Georgia, serif';
+      const lineasFecha = wrapText(ctx, `a partir del ${regreso}`, anchoDisponible).slice(0, 2);
+      lineasFecha.forEach((linea, i) => ctx.fillText(linea, textoX, iconY + 126 + i * 44));
+
+      ctx.restore();
+      ctx.shadowColor = 'transparent';
+      ctx.shadowBlur  = 0;
+    }
   }
 
   return toBlob(canvas);

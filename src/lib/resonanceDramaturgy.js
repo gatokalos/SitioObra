@@ -24,7 +24,7 @@ export const RESONANCE_SHARED_DRAMATURGY = {
   returnDoneHint: 'Te buscará por WhatsApp cuando llegue el momento.',
   returnBackNow: 'La pregunta ya volvió',
   returnBackNowHint: 'Puedes entrar a escena.',
-  souvenirCta: 'Necesito un recordatorio',
+  souvenirCta: 'Prefiero llevarme un recuerdo',
   entranceCoda: 'Ya forma parte de tu obra.',
   // Línea de la retención. "Pausa" detenía; la retención sostiene.
   // Placeholder aprobado por Carlos (11 sep 2026), no copy final.
