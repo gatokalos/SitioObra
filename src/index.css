@@ -3696,6 +3696,17 @@ body {
     cabina-bubble-en-flujo-float 4.2s ease-in-out 0.6s infinite;
 }
 
+/* Al escribir, la burbuja deja de ser globo: se queda quieta, pierde la colita
+   y el preludio. Un texto que se escribe dentro de algo que flota marea, y el
+   pico apuntando al gato sobra cuando ya no habla él (Carlos, 18 sep 2026). */
+.cabina-bubble--escribiendo {
+  animation: none;
+  transform: none;
+}
+.cabina-bubble--escribiendo::after {
+  display: none;
+}
+
 @keyframes cabina-bubble-en-flujo-in {
   0%   { opacity: 0; transform: translateY(10px) scale(0.96); }
   100% { opacity: 1; transform: translateY(0)    scale(1);    }
