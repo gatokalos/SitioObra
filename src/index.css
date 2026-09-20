@@ -4014,7 +4014,7 @@ body {
   gap: 1rem;
   width: 100%;
   overflow: hidden;
-  padding: 0.82rem 1rem;
+  padding: 1rem 1.25rem;
   border: 1px solid rgba(194, 152, 211, 0.38);
   border-radius: 17px;
   text-align: left;
@@ -4075,6 +4075,12 @@ body {
   color: rgba(220, 180, 236, 0.72);
   transform: rotate(0deg);
   transition: transform 0.26s ease;
+}
+
+/* La misma puerta cuando no despliega sino que lleva a otra forma. */
+.huella-puerta:hover .huella-puerta__flecha--avanza,
+.huella-puerta:focus-visible .huella-puerta__flecha--avanza {
+  transform: translateX(4px);
 }
 
 .huella-acordeon--abierto .huella-puerta {

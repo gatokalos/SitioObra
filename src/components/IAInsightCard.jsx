@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ChevronDown, Cpu, MessageCircle, ShieldCheck, Sparkles, Send } from 'lucide-react';
+import { ArrowRight, ChevronDown, Cpu, MessageCircle, ShieldCheck, Sparkles, Send } from 'lucide-react';
 import { useAuth } from '@/contexts/SupabaseAuthContext';
 import { useToast } from '@/components/ui/use-toast';
 import { ToastAction } from '@/components/ui/toast';
@@ -34,6 +34,7 @@ const IAInsightCard = ({
   // Variante compacta para la Memoria: conserva exactamente la protección de
   // autenticación/GAT del modo viajar, pero elimina el acordeón informativo.
   travelCtaOnly = false,
+  travelEyebrow = 'Continuar el recorrido',
   // Algunas páginas (p. ej. /bitacora) no montan Header.jsx, así que el
   // evento global 'open-login-modal' no tiene quién lo escuche ahí. Si el
   // padre puede darnos un callback real (su propio LoginOverlay), se usa
@@ -89,20 +90,12 @@ const IAInsightCard = ({
 
   if (travelCtaOnly && isTravelMode) {
     return (
-      <button
-        type="button"
-        onClick={handleTravelClick}
-        className="group flex w-full items-center justify-between gap-4 rounded-xl border border-purple-700/35 bg-purple-950/30 px-5 py-4 text-left text-purple-100 backdrop-blur-md shadow-[0_10px_35px_rgba(0,0,0,0.4)] transition hover:border-purple-500/55 hover:bg-purple-900/35"
-      >
-        <span>
-          <span className="block text-[0.6rem] uppercase tracking-[0.3em] text-purple-200/55">
-            Continuar el recorrido
-          </span>
-          <span className="mt-1 block font-display text-lg text-purple-100">
-            {travelLabel}
-          </span>
+      <button type="button" onClick={handleTravelClick} className="huella-puerta">
+        <span className="huella-puerta__texto">
+          <span className="huella-puerta__eyebrow">{travelEyebrow}</span>
+          <span className="huella-puerta__titulo">{travelLabel}</span>
         </span>
-        <Send size={18} className="shrink-0 text-purple-200/75 transition-transform group-hover:translate-x-1" />
+        <ArrowRight size={17} className="huella-puerta__flecha huella-puerta__flecha--avanza" aria-hidden="true" />
       </button>
     );
   }
