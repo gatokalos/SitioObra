@@ -545,7 +545,7 @@ function HolograficoPanel({
                 compact
                 onRequireLogin={onRequireLogin}
                 travelEyebrow={hasL1 ? 'Sigue donde quedaste' : 'Otra forma de la obra'}
-                travelLabel={`${hasL1 ? 'Volver a' : 'Entrar a'} ${entry.form ?? entry.name}`}
+                travelLabel={`${hasL1 ? 'Volver a' : 'Interpretar'} ${entry.form ?? entry.name}`}
                 travelFormLabel={entry.form ?? entry.name}
                 onTravel={() => onOpenVideo(entry.showcase)}
                 travelCtaOnly={!hasBitacora}
