@@ -706,6 +706,8 @@ export const ProvocaSection = () => {
 
   // La devolución: sólo la ve quien acaba de publicar en esta visita. No es una
   // invitación a conocer la causa; es decirle qué falta para que su palabra llegue.
+  // Guarda además de dónde vino: 'recorrido' si la réplica traía huella (la persona
+  // dio dos veces: al entrar y al volver), 'directo' si escribió en frío.
   const [acabaDePublicar, setAcabaDePublicar] = useState(false);
 
   // "Antes de irte" puede no estar montada todavía: se deja la petición en
@@ -799,7 +801,7 @@ export const ProvocaSection = () => {
 
     const shouldPromptLogin = !user?.email;
     fireProvocaConfetti();
-    setAcabaDePublicar(true);
+    setAcabaDePublicar(huellaDeOrigen ? 'recorrido' : 'directo');
     setVoiceRole('');
     setVoiceTrap('');
     if (shouldPromptLogin) {
@@ -820,6 +822,7 @@ export const ProvocaSection = () => {
   }, [
     corregirHuellaGuardada,
     fireProvocaConfetti,
+    huellaDeOrigen,
     isSubmittingVoice,
     loadPendingPerspectives,
     user,
@@ -1280,8 +1283,9 @@ export const ProvocaSection = () => {
                       variants={{ oculto: { opacity: 0, y: 10 }, visible: { opacity: 1, y: 0, transition: { duration: 0.6 } } }}
                       className="text-[15px] leading-relaxed text-slate-100"
                     >
-                      Ya dejaste tu palabra. Para que llegue a quien acompaña a jóvenes,
-                      hace falta sostener a quien la lee.
+                      {acabaDePublicar === 'recorrido'
+                        ? 'Entraste con una intuición, volviste días después y ahora la dejas dicha. Para que ese camino llegue a quien acompaña a jóvenes, hace falta sostener a quien lo lee.'
+                        : 'Ya dejaste tu palabra. Para que llegue a quien acompaña a jóvenes, hace falta sostener a quien la lee.'}
                     </motion.p>
                     <motion.div
                       variants={{ oculto: { opacity: 0, y: 10 }, visible: { opacity: 1, y: 0, transition: { duration: 0.6 } } }}
