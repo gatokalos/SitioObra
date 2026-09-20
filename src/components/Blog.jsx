@@ -1396,7 +1396,11 @@ const Blog = ({ posts = [], isLoading = false, error = null, showBuscador = fals
                               {faqCoda && faqCoda.huellas.length > 0 && (
                                 <div className="border-t border-white/10 pt-4">
                                   <p className="mb-3 text-[9px] uppercase tracking-[0.28em] text-slate-400/70">
-                                    Otros que recorrieron {faqCoda.forma}
+                                    {/* Las réplicas aprobadas no salen de una forma: no se
+                                        puede decir que su autor "recorrió" nada. */}
+                                    {faqCoda.origen === 'replicas'
+                                      ? 'Otras voces, desde el acto final'
+                                      : `Otros que recorrieron ${faqCoda.forma}`}
                                   </p>
                                   <ul className="space-y-3">
                                     {faqCoda.huellas.map((huella, i) => (

@@ -108,6 +108,7 @@ export function useSearch() {
             setAnswer((prev) => prev + event.text);
           } else if (event.type === 'coda') {
             setCoda({
+              origen: event.origen ?? 'huellas',
               forma: event.forma,
               huellas: event.huellas ?? [],
               pregunta: event.pregunta ?? null,
