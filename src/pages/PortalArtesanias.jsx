@@ -440,7 +440,7 @@ const PortalArtesanias = () => {
                 <div className="space-y-6 lg:flex lg:flex-col lg:gap-5 lg:space-y-0">
                   <VitranaQuestionReveal
                     question={l1Done ? (buildL1Acknowledgment('artesanias', l2Answer) ?? LEVEL2_QUESTIONS['artesanias']?.question ?? vitranaQuestion) : vitranaQuestion}
-                    buttonLabel={l1Done ? 'Sigue tu huella →' : undefined}
+                    buttonLabel={l1Done ? 'Sigue donde quedaste →' : undefined}
                     autoReveal={l1Done}
                     portal="artesanias"
                     l2Done={l2Done}
@@ -505,7 +505,7 @@ const PortalArtesanias = () => {
                   <p className="text-xs uppercase tracking-[0.35em] text-slate-300/75">Obra destacada</p>
                   <h4 className="font-display text-2xl text-white">Pulsa el gato</h4>
                   <p className="text-sm text-slate-300/85 leading-relaxed">
-                    Hay símbolos que sobreviven porque nunca terminan de significar una sola cosa. El símbolo # ha sido medida, música, tablero, código y una forma de conectar conversaciones mucho antes de ser conocido como &ldquo;gato&rdquo; en México.
+                    Hay símbolos que sobreviven porque nunca terminan de significar una sola cosa. El # ha sido medida, número,tecla y código; en México también fue gato mucho antes de convertirse en una forma de conectar conversaciones por todo el mundo.
                   </p>
 
                   <div className="flex flex-wrap gap-2">

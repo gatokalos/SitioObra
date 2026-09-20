@@ -47,7 +47,7 @@ Buscar sentido no se apaga cuando encuentra algo. Se vuelve más fino, y empieza
 const ORACULO_SEED_NOTES = [
   'Las respuestas se almacenan como semillas de conocimiento simbólico.',
   'Enriquecen una base de datos viviente para literatura, IA personalizada y obra interactiva.',
-  'Cada huella deja señal en la mente del Gato.',
+  'Cada respuesta deja señal en la mente del Gato.',
 ];
 const ORACULO_NOTA_AUTORAL = {
   title: '#CambiarSinCambiar',
@@ -341,7 +341,7 @@ const PortalOraculo = () => {
                 <div className="space-y-6 lg:flex lg:flex-col lg:gap-5 lg:space-y-0">
                   <VitranaQuestionReveal
                     question={l1Done ? (buildL1Acknowledgment('oraculo', l2Answer) ?? LEVEL2_QUESTIONS['oraculo']?.question ?? vitranaQuestion) : vitranaQuestion}
-                    buttonLabel={l1Done ? 'Sigue tu huella →' : undefined}
+                    buttonLabel={l1Done ? 'Sigue donde quedaste →' : undefined}
                     autoReveal={l1Done}
                     portal="oraculo"
                     l2Done={l2Done}

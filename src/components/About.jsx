@@ -698,9 +698,9 @@ export const ProvocaSection = () => {
         }
         claves.forEach((k) => localStorage.removeItem(k));
       } catch {}
-      toast({ description: 'Tu huella se retiró. Ya no está en la investigación ni en ningún corpus.' });
+      toast({ description: 'Lo que escribiste se retiró. Ya no está en la investigación ni en ningún corpus.' });
     } catch {
-      toast({ description: 'No se pudo retirar tu huella ahora. Inténtalo de nuevo más tarde.' });
+      toast({ description: 'No se pudo retirar lo que escribiste ahora. Inténtalo de nuevo más tarde.' });
     }
   }, [huellaDeOrigen, toast]);
 
@@ -1057,7 +1057,7 @@ export const ProvocaSection = () => {
                           }}
                           className="text-[0.7rem] text-slate-500/80 underline underline-offset-4 transition hover:text-rose-200"
                         >
-                          Retirar mi huella
+                          Retirar lo que escribí
                         </button>
                       </div>
                     ) : null}

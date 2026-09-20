@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
@@ -7,15 +7,17 @@ import {
   Sparkles,
   BookOpen,
   ChevronDown,
-  ExternalLink,
 } from 'lucide-react';
 import VitranaQuestionReveal from '@/components/portal/VitranaQuestionReveal';
+import HuellaView from '@/components/portal/HuellaView';
 import VideoNarrativeAutoplay from '@/components/VideoNarrativeAutoplay';
 import IAInsightCard from '@/components/IAInsightCard';
 import { useMobileVideoPresentation } from '@/hooks/useMobileVideoPresentation';
 import { resolvePortalRoute } from '@/lib/miniversePortalRegistry';
 import { createPortalLaunchState } from '@/lib/portalNavigation';
 import { CATALOG, readResonanceProgress } from '@/lib/bitacoraShared';
+import { ensureAnonId } from '@/lib/identity';
+import { useAuth } from '@/contexts/SupabaseAuthContext';
 import {
   showcaseDefinitions,
   formats,
@@ -29,78 +31,167 @@ export { CATALOG };
 // loophole real (cualquiera podía recorrer las 9 esferas y usar el CTA de
 // cada una para saltar a un portal no ganado). Solo las esferas de progreso,
 // a modo de mapa de dónde quedó cada miniverso.
-const PROGRESS_STAGES = [
-  { key: 'l1', icon: Eye, label: 'Nivel 1' },
-  { key: 'l2', icon: Flame, label: 'Nivel 2' },
-  { key: 'l3', icon: Sparkles, label: 'Nivel 3' },
-  { key: 'bitacora', icon: BookOpen, label: 'En escena' },
-];
-
-// Siempre las 4 esferas, completas o no — una etiqueta debajo de cada una
-// (el ícono solo no significaba nada sin memorizarlo), y las que faltan se
-// ven "apagadas" en vez de desaparecer: eso es justo lo que crea la
-// sensación de querer completarlas.
-const ProgressOrbsRow = ({ portal, hasL1, hasL2, hasL3, hasBitacora }) => {
+// La línea de la forma (D-42). Antes eran cuatro esferas iguales rotuladas
+// "Nivel 1 · Nivel 2 · Nivel 3 · En escena": tres nombres de arquitectura
+// interna y uno de la convención, sin que ninguno pesara más. Ahora se dibuja
+// lo que a la persona le ocurrió: entró (En el foco), esperó (Entre bambalinas,
+// tres días: un tramo punteado, vacío a propósito), respondió (En escena, el
+// clímax: la única esfera que pesa) y lo que queda (Memoria, abierta porque de
+// aquí se sale al acto final). Los tres niveles quedan plegados en el foco:
+// para quien recorre fueron una sola cosa.
+const LineaDeLaForma = ({ portal, enFoco, focoCompleto, enEscena }) => {
   const gradient = PORTAL_GRADIENT[portal] ?? 'from-purple-400 via-fuchsia-500 to-rose-500';
-  const doneByKey = { l1: hasL1, l2: hasL2, l3: hasL3, bitacora: hasBitacora };
+  const rotulo = (activo) => `text-[0.6rem] uppercase tracking-wide ${activo ? 'text-slate-300' : 'text-slate-600'}`;
   return (
-    <div className="flex items-start justify-center gap-4 py-4">
-      {PROGRESS_STAGES.map((stage) => {
-        const StageIcon = stage.icon;
-        const done = doneByKey[stage.key];
-        return (
-          <div key={stage.key} className="flex flex-col items-center gap-1.5">
-            <span
-              className={`flex h-11 w-11 items-center justify-center rounded-full shadow-[0_4px_18px_rgba(0,0,0,0.4)] transition ${
-                done ? `bg-gradient-to-br ${gradient}` : 'border border-dashed border-white/15 bg-white/[0.03]'
-              }`}
-            >
-              <StageIcon size={18} className={done ? 'text-white drop-shadow-sm' : 'text-slate-600'} />
-            </span>
-            <span className={`text-[0.6rem] uppercase tracking-wide ${done ? 'text-slate-300' : 'text-slate-600'}`}>
-              {stage.label}
-            </span>
-          </div>
-        );
-      })}
+    <div
+      className="flex items-start justify-between gap-1 py-3"
+      role="img"
+      aria-label={
+        enEscena
+          ? 'En el foco, tres días entre bambalinas, En escena y Memoria: completo'
+          : focoCompleto
+            ? 'En el foco completo. En escena sigue abierta'
+            : enFoco ? 'En el foco, en curso' : 'Sin empezar'
+      }
+    >
+      {/* En el foco — el detonante */}
+      <div className="flex w-14 shrink-0 flex-col items-center gap-1.5">
+        <span className="flex h-12 items-center">
+          <span
+            className={`flex h-8 w-8 items-center justify-center rounded-full transition ${
+              focoCompleto
+                ? `bg-gradient-to-br ${gradient} shadow-[0_4px_14px_rgba(0,0,0,0.4)]`
+                : enFoco
+                  ? 'border border-white/40 bg-white/[0.06]'
+                  : 'border border-dashed border-white/15 bg-white/[0.03]'
+            }`}
+          >
+            <Eye size={14} className={focoCompleto ? 'text-white' : enFoco ? 'text-slate-300' : 'text-slate-600'} />
+          </span>
+        </span>
+        <span className={rotulo(enFoco)}>En el foco</span>
+      </div>
+
+      {/* Entre bambalinas — la retención: tres días en los que no pasa nada */}
+      <div className="flex min-w-0 flex-1 flex-col items-center gap-1.5">
+        <span className="flex h-12 w-full items-center">
+          <span className={`w-full border-t-2 border-dotted ${focoCompleto ? 'border-white/35' : 'border-white/10'}`} />
+        </span>
+        <span className={`${rotulo(focoCompleto)} text-center leading-tight`}>
+          Entre bambalinas
+          <span className="block normal-case tracking-normal opacity-70">3 días</span>
+        </span>
+      </div>
+
+      {/* En escena — el clímax. Si no ocurrió queda vacía, no apagada. */}
+      <div className="flex w-16 shrink-0 flex-col items-center gap-1.5">
+        <span className="relative flex h-12 w-12 items-center justify-center">
+          {enEscena ? (
+            <span aria-hidden className={`absolute -inset-1 rounded-full bg-gradient-to-br ${gradient} opacity-30 blur-md`} />
+          ) : null}
+          <span
+            className={`relative flex h-12 w-12 items-center justify-center rounded-full transition ${
+              enEscena
+                ? `bg-gradient-to-br ${gradient} shadow-[0_6px_22px_rgba(0,0,0,0.45)]`
+                : focoCompleto
+                  ? 'border-2 border-white/40 bg-transparent'
+                  : 'border border-dashed border-white/15 bg-white/[0.03]'
+            }`}
+          >
+            <Flame size={20} className={enEscena ? 'text-white drop-shadow-sm' : focoCompleto ? 'text-slate-300' : 'text-slate-600'} />
+          </span>
+        </span>
+        <span className={`${rotulo(enEscena || focoCompleto)} font-semibold`}>En escena</span>
+      </div>
+
+      <span className="flex h-12 w-5 shrink-0 items-center">
+        <span className={`w-full border-t ${enEscena ? 'border-white/35' : 'border-white/10'}`} />
+      </span>
+
+      {/* Memoria — abierta: es donde la persona está parada ahora */}
+      <div className="flex w-14 shrink-0 flex-col items-center gap-1.5">
+        <span className="flex h-12 items-center">
+          <span
+            className={`flex h-8 w-8 items-center justify-center rounded-full ${
+              enEscena ? 'border-2 border-white/70' : 'border border-dashed border-white/15'
+            }`}
+          >
+            <BookOpen size={13} className={enEscena ? 'text-white' : 'text-slate-600'} />
+          </span>
+        </span>
+        <span className={rotulo(enEscena)}>Memoria</span>
+      </div>
     </div>
   );
 };
 
-// El miniverso principal ya recorrió las cuatro etapas. Conservamos el mismo
-// lenguaje visual de los satélites, pero la Bitácora llama la atención hasta
-// que la persona abre la explicación que aparece debajo.
-const CompletedProgressOrbs = ({ portal, bitacoraNeedsAttention }) => {
-  const gradient = PORTAL_GRADIENT[portal] ?? 'from-purple-400 via-fuchsia-500 to-rose-500';
+// ── La frase de memoria ─────────────────────────────────────────────────────
+// Sustituye al verso de la vitrina en la forma ya recorrida: el verso invita,
+// y aquí ya no hay a qué invitar. La memoria dice qué le pasó a la persona, con
+// sus fechas. Las fechas vienen del servidor (el registro local no guarda
+// cuándo se respondió); si no llegan, la frase se dice sin ellas. Nunca se
+// vuelve al verso.
+const OBRA_API_URL = (import.meta.env.VITE_OBRA_API_URL ?? 'https://api.gatoencerrado.ai').replace(/\/+$/, '');
+const VENTANA_MAXIMA_DIAS = 7;
 
+const fechaCorta = (iso) => {
+  const d = iso ? new Date(iso) : null;
+  if (!d || Number.isNaN(d.getTime())) return null;
+  return d.toLocaleDateString('es-MX', { day: 'numeric', month: 'long' });
+};
+
+const useFechasDeLaForma = (portal, activo) => {
+  const { isDevAuth } = useAuth();
+  const [fechas, setFechas] = useState(null);
+  useEffect(() => {
+    if (!activo || !portal || isDevAuth) { setFechas(null); return undefined; }
+    let vigente = true;
+    (async () => {
+      try {
+        const res = await fetch(`${OBRA_API_URL}/api/huella?anon_id=${encodeURIComponent(ensureAnonId())}`);
+        const data = await res.json();
+        if (!vigente || !res.ok || !data.ok) return;
+        const deEstaForma = (data.sesiones ?? []).filter((sesion) => sesion.miniverso_id === portal);
+        const ultima = deEstaForma[deEstaForma.length - 1];
+        if (!ultima) return;
+        setFechas({
+          entrada: ultima.created_at ?? null,
+          regreso: ultima.bitacora_completed_at ?? null,
+          disponible: ultima.bitacora_available_at ?? null,
+        });
+      } catch {}
+    })();
+    return () => { vigente = false; };
+  }, [portal, activo, isDevAuth]);
+  return fechas;
+};
+
+const diasEntre = (a, b) => Math.max(1, Math.round((new Date(b) - new Date(a)) / 86400000));
+const enPalabras = (n) => (['', 'un día', 'dos días', 'tres días', 'cuatro días', 'cinco días', 'seis días', 'siete días'][n] ?? `${n} días`);
+
+const FraseDeMemoria = ({ portal, enEscena }) => {
+  const fechas = useFechasDeLaForma(portal, true);
+  const entrada = fechaCorta(fechas?.entrada);
+  let lineas;
+  if (enEscena) {
+    const espera = fechas?.entrada && fechas?.regreso ? enPalabras(diasEntre(fechas.entrada, fechas.regreso)) : null;
+    lineas = [
+      entrada ? `Entraste el ${entrada} con una intuición.` : 'Entraste con una intuición.',
+      espera ? `Volviste ${espera} después y la respondiste.` : 'Volviste días después y la respondiste.',
+      'Esto es lo que quedó.',
+    ];
+  } else {
+    const cerrada = fechas?.disponible
+      && Date.now() > new Date(fechas.disponible).getTime() + VENTANA_MAXIMA_DIAS * 86400000;
+    lineas = [
+      entrada ? `Entraste el ${entrada}.` : 'Entraste con una intuición.',
+      cerrada ? 'La escena quedó abierta.' : 'La escena sigue abierta.',
+    ];
+  }
   return (
-    <div className="flex items-start justify-center gap-4 py-3" aria-label="Recorrido completado">
-      {PROGRESS_STAGES.map((stage) => {
-        const StageIcon = stage.icon;
-        const isBitacora = stage.key === 'bitacora';
-
-        return (
-          <div key={stage.key} className="flex flex-col items-center gap-1.5">
-            <span className="relative flex h-11 w-11 items-center justify-center">
-              {isBitacora && bitacoraNeedsAttention ? (
-                <span
-                  aria-hidden
-                  className={`absolute inset-0 rounded-full bg-gradient-to-br ${gradient} animate-ping opacity-30`}
-                />
-              ) : null}
-              <span
-                className={`relative flex h-11 w-11 items-center justify-center rounded-full bg-gradient-to-br ${gradient} shadow-[0_4px_18px_rgba(0,0,0,0.4)]`}
-              >
-                <StageIcon size={18} className="text-white drop-shadow-sm" />
-              </span>
-            </span>
-            <span className="text-[0.6rem] uppercase tracking-wide text-slate-300">
-              {stage.label}
-            </span>
-          </div>
-        );
-      })}
-    </div>
+    <p className="mt-2 text-sm leading-relaxed text-slate-300/80">
+      {lineas.map((linea) => <span key={linea} className="block">{linea}</span>)}
+    </p>
   );
 };
 
@@ -152,24 +243,6 @@ const PORTAL_POSTER = {
   juegos:      `${BASE_POSTER}/poster_juegos.png`,
   oraculo:     `${BASE_POSTER}/poster_oraculo.png`,
 };
-
-const lsRead = (portal) => {
-  try { return JSON.parse(localStorage.getItem(`gatoencerrado:resonance:${portal}`)) ?? {}; }
-  catch { return {}; }
-};
-
-const lsPatch = (portal, patch) => {
-  try {
-    const key = `gatoencerrado:resonance:${portal}`;
-    const current = JSON.parse(localStorage.getItem(key)) ?? {};
-    localStorage.setItem(key, JSON.stringify({ ...current, ...patch }));
-  } catch {
-    // La experiencia sigue funcionando aunque el navegador bloquee storage.
-  }
-};
-
-const GATO_BITACORA_URL =
-  import.meta.env.VITE_GATO_BITACORA_URL || 'https://gatoencerrado.org/mi-cuenta/acceso';
 
 const HOLISTIC_QUESTION = '¿Qué le responderías, con tus propias palabras, a lo que esta obra cree saber de tus emociones?';
 
@@ -303,9 +376,17 @@ function Constellation({ centerKey, onSelect }) {
 
 /* ─── Panel inferior ────────────────────────────────────────────────────── */
 
-function CompletedHomePanel({ portal, entry, infoOpen, infoSeen, onToggleInfo, onOpenHuella }) {
-  const verse = getVitrinaVerse(entry.showcase);
-
+function CompletedScenePanel({
+  portal,
+  entry,
+  huellaOpen,
+  huellaMounted,
+  onToggleHuella,
+  recommendedFormatId,
+  onNavigateToRecommendation,
+  onGoToSite,
+  accordionRef,
+}) {
   return (
     <div className="flex flex-col gap-5">
       <div>
@@ -313,77 +394,47 @@ function CompletedHomePanel({ portal, entry, infoOpen, infoSeen, onToggleInfo, o
         <h2 className={`font-display text-2xl leading-snug mt-1 ${entry.color}`}>
           {entry.form ?? entry.name}
         </h2>
-        <p className="mt-2 text-sm leading-relaxed text-slate-300/80">
-          {verse}
-        </p>
+        <FraseDeMemoria portal={portal} enEscena />
       </div>
 
-      <CompletedProgressOrbs portal={portal} bitacoraNeedsAttention={!infoSeen} />
+      <LineaDeLaForma portal={portal} enFoco focoCompleto enEscena />
 
-      {/* D-38: dondequiera que se vea la huella la acompañan corregir y
-          retirar. La Memoria es la puerta de regreso a ella. */}
-      {onOpenHuella ? (
+      {/* La huella ya no abre otra plantilla: explica el siguiente paso dentro
+          del mapa y reserva el texto recuperado para La Réplica. */}
+      {onToggleHuella ? (
+        <section ref={accordionRef} className={`huella-acordeon${huellaOpen ? ' huella-acordeon--abierto' : ''}`}>
         <button
           type="button"
-          onClick={onOpenHuella}
-          className="inline-flex w-full items-center justify-center gap-2 rounded-full border border-white/15 bg-white/5 px-5 py-2.5 text-xs font-semibold uppercase tracking-[0.18em] text-slate-100 transition hover:bg-white/10"
+          onClick={onToggleHuella}
+          aria-expanded={huellaOpen}
+          aria-controls="huella-acordeon-contenido"
+          className="huella-puerta"
         >
-          Ver mi huella
+          <span className="huella-puerta__texto">
+            <span className="huella-puerta__eyebrow">Lo que dijiste al volver</span>
+            <span className="huella-puerta__titulo">Llevarlo al acto final</span>
+          </span>
+          <ChevronDown size={17} className="huella-puerta__flecha" aria-hidden="true" />
         </button>
+        <div
+          id="huella-acordeon-contenido"
+          className="huella-acordeon__cuerpo"
+          aria-hidden={!huellaOpen}
+        >
+          <div className="huella-acordeon__interior">
+            {huellaMounted ? (
+              <HuellaView
+                portal={portal}
+                recommendedFormatId={recommendedFormatId}
+                onNavigateToRecommendation={onNavigateToRecommendation}
+                onGoToSite={onGoToSite}
+              />
+            ) : null}
+          </div>
+        </div>
+        </section>
       ) : null}
 
-      <section className="overflow-hidden rounded-xl border border-purple-400/25 bg-purple-950/25">
-        <button
-          type="button"
-          onClick={onToggleInfo}
-          aria-expanded={infoOpen}
-          className="flex w-full items-center justify-between gap-4 px-4 py-4 text-left transition hover:bg-purple-400/[0.06]"
-        >
-          <span>
-            <span className="block text-[0.62rem] uppercase tracking-[0.32em] text-purple-200/55">
-              Resonancia colectiva
-            </span>
-            <span className="mt-1 block font-display text-lg text-purple-100">
-              Conoce otras resonancias
-            </span>
-          </span>
-          <ChevronDown
-            size={18}
-            className={`shrink-0 text-purple-200/70 transition-transform duration-200 ${infoOpen ? 'rotate-180' : ''}`}
-          />
-        </button>
-
-        <AnimatePresence initial={false}>
-          {infoOpen ? (
-            <motion.div
-              key="collective-resonance-content"
-              initial={{ height: 0, opacity: 0 }}
-              animate={{ height: 'auto', opacity: 1 }}
-              exit={{ height: 0, opacity: 0 }}
-              transition={{ duration: 0.22, ease: 'easeOut' }}
-              className="overflow-hidden"
-            >
-              <div className="border-t border-purple-300/15 px-4 pb-5 pt-4">
-                <p className="text-sm leading-relaxed text-slate-200/85">
-                  Aquí podrás reconocer, mediante datos colectivos y anónimos, qué permanece en otras personas después de habitar la obra.
-                </p>
-                <p className="mt-3 text-sm leading-relaxed text-slate-300/70">
-                  También podrás volver a tus respuestas, seguir su recorrido y descubrir nuevas relaciones dentro del universo.
-                </p>
-                <a
-                  href={GATO_BITACORA_URL}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="mt-5 inline-flex w-full items-center justify-center gap-2 rounded-full border border-purple-300/35 bg-purple-500/15 px-5 py-2.5 text-xs font-semibold uppercase tracking-[0.18em] text-purple-50 transition hover:border-purple-200/60 hover:bg-purple-500/25"
-                >
-                  Abrir mi memoria
-                  <ExternalLink size={14} aria-hidden />
-                </a>
-              </div>
-            </motion.div>
-          ) : null}
-        </AnimatePresence>
-      </section>
     </div>
   );
 }
@@ -392,12 +443,15 @@ function HolograficoPanel({
   centerKey,
   homeKey,
   onStartBitacora,
-  onOpenHuella,
+  huellaOpen,
+  huellaMounted,
+  onToggleHuella,
+  recommendedFormatId,
+  onNavigateToRecommendation,
+  onGoToSite,
+  accordionRef,
   onOpenVideo,
   onRequireLogin,
-  homeInfoOpen,
-  homeInfoSeen,
-  onToggleHomeInfo,
   readOnly = false,
 }) {
   const isHome = centerKey === homeKey;
@@ -426,13 +480,16 @@ function HolograficoPanel({
       >
         {isHome ? (
           homeBitacora ? (
-            <CompletedHomePanel
+            <CompletedScenePanel
               portal={homeKey}
               entry={entry}
-              infoOpen={homeInfoOpen}
-              infoSeen={homeInfoSeen}
-              onToggleInfo={onToggleHomeInfo}
-              onOpenHuella={onOpenHuella}
+              huellaOpen={huellaOpen}
+              huellaMounted={huellaMounted}
+              onToggleHuella={onToggleHuella}
+              recommendedFormatId={recommendedFormatId}
+              onNavigateToRecommendation={onNavigateToRecommendation}
+              onGoToSite={onGoToSite}
+              accordionRef={accordionRef}
             />
           ) : (
             /* Compatibilidad con recorridos antiguos que aún no cierran su bitácora. */
@@ -442,10 +499,9 @@ function HolograficoPanel({
                 <h2 className={`font-display text-2xl leading-snug mt-1 ${entry.color}`}>
                   {entry.form ?? entry.name}
                 </h2>
-                <p className="mt-2 text-sm leading-relaxed text-slate-300/80">
-                  {verse}
-                </p>
+                <FraseDeMemoria portal={homeKey} enEscena={false} />
               </div>
+              <LineaDeLaForma portal={homeKey} enFoco focoCompleto={homeL3} enEscena={false} />
               <VitranaQuestionReveal
                 question={HOLISTIC_QUESTION}
                 portal={homeKey}
@@ -460,6 +516,18 @@ function HolograficoPanel({
               />
             </div>
           )
+        ) : hasBitacora ? (
+          <CompletedScenePanel
+            portal={centerKey}
+            entry={entry}
+            huellaOpen={huellaOpen}
+            huellaMounted={huellaMounted}
+            onToggleHuella={onToggleHuella}
+            recommendedFormatId={progress.l3Recommendation?.recommended_format_id ?? null}
+            onNavigateToRecommendation={onNavigateToRecommendation}
+            onGoToSite={onGoToSite}
+            accordionRef={accordionRef}
+          />
         ) : (
           /* Satélite */
           <div className="flex flex-col gap-5">
@@ -470,21 +538,7 @@ function HolograficoPanel({
                 {verse}
               </p>
             </div>
-            {hasBitacora ? (
-              <VitranaQuestionReveal
-                question={entry.q}
-                portal={centerKey}
-                autoReveal={hasL1}
-                l2Done={hasL2}
-                l3Done={hasL3}
-                bitacoraCompleted={hasBitacora}
-                label={null}
-                buttonLabel={entry.cta}
-                onAnswer={() => onOpenVideo(entry.showcase)}
-              />
-            ) : (
-              <ProgressOrbsRow portal={centerKey} hasL1={hasL1} hasL2={hasL2} hasL3={hasL3} hasBitacora={hasBitacora} />
-            )}
+            <LineaDeLaForma portal={centerKey} enFoco={hasL1} focoCompleto={hasL3} enEscena={hasBitacora} />
             {showcaseDefinitions[entry.showcase]?.iaProfile ? (
               <IAInsightCard
                 {...showcaseDefinitions[entry.showcase].iaProfile}
@@ -505,21 +559,41 @@ function HolograficoPanel({
 
 /* ─── Componente principal ──────────────────────────────────────────────── */
 
-const CuadernoHolografico = ({ portal, onStartBitacora, onOpenHuella, onNavigate, onPosterChange, onRequireLogin, readOnly = false }) => {
+const CuadernoHolografico = ({
+  portal,
+  onStartBitacora,
+  huellaOpen = false,
+  onHuellaOpenChange,
+  recommendedFormatId,
+  onNavigate,
+  onGoToSite,
+  onPosterChange,
+  onRequireLogin,
+  readOnly = false,
+}) => {
   const navigate = useNavigate();
   const location = useLocation();
   const { isMobileViewport } = useMobileVideoPresentation();
   const [centerKey, setCenterKey] = useState(portal);
   const [videoOpen, setVideoOpen] = useState(false);
   const [videoFormatId, setVideoFormatId] = useState(null);
-  const [homeInfoOpen, setHomeInfoOpen] = useState(false);
-  const [homeInfoSeen, setHomeInfoSeen] = useState(
-    () => !!lsRead(portal).libreto_collective_info_seen,
-  );
+  // Después de abrirse una vez conservamos montada la huella para no perder
+  // una corrección sin guardar si la persona pliega el acordeón por accidente.
+  const [huellaMounted, setHuellaMounted] = useState(huellaOpen);
+  const scrollContainerRef = useRef(null);
+  const huellaAccordionRef = useRef(null);
+  const huellaScrollTimersRef = useRef([]);
 
   useEffect(() => { onPosterChange?.(portal); }, []);
+  useEffect(() => {
+    if (huellaOpen) setHuellaMounted(true);
+  }, [huellaOpen]);
+  useEffect(() => () => {
+    huellaScrollTimersRef.current.forEach((timer) => window.clearTimeout(timer));
+  }, []);
 
   const handleSelect = (key) => {
+    if (key !== centerKey && huellaOpen) onHuellaOpenChange?.(false);
     setCenterKey(key);
     onPosterChange?.(key);
   };
@@ -547,21 +621,41 @@ const CuadernoHolografico = ({ portal, onStartBitacora, onOpenHuella, onNavigate
     setVideoOpen(true);
   };
 
-  const handleToggleHomeInfo = () => {
-    setHomeInfoOpen((wasOpen) => {
-      const willOpen = !wasOpen;
-      if (willOpen && !homeInfoSeen) {
-        setHomeInfoSeen(true);
-        lsPatch(portal, { libreto_collective_info_seen: true });
-      }
-      return willOpen;
-    });
-  };
-
   const handleVideoNavigate = () => proceedToShowcase(videoFormatId);
 
+  const anchorHuellaInViewport = (behavior = 'smooth') => {
+    const container = scrollContainerRef.current;
+    const accordion = huellaAccordionRef.current;
+    if (!container || !accordion) return;
+    const containerRect = container.getBoundingClientRect();
+    const accordionRect = accordion.getBoundingClientRect();
+    const top = Math.max(0, container.scrollTop + accordionRect.top - containerRect.top - 72);
+    container.scrollTo({ top, behavior });
+  };
+
+  const handleToggleHuella = () => {
+    const next = !huellaOpen;
+    huellaScrollTimersRef.current.forEach((timer) => window.clearTimeout(timer));
+    huellaScrollTimersRef.current = [];
+    if (next) {
+      setHuellaMounted(true);
+      // El layout cambia de flex fijo a contenido desplazable al abrirse. Un
+      // primer anclaje acompaña el inicio y el segundo corrige la posición al
+      // terminar la expansión, sin sacar el toggle del viewport.
+      huellaScrollTimersRef.current.push(window.setTimeout(() => anchorHuellaInViewport(), 60));
+      huellaScrollTimersRef.current.push(window.setTimeout(() => anchorHuellaInViewport(), 430));
+    } else {
+      // El cierre vuelve al mapa; el navegador recupera su encuadre natural
+      // cuando desaparece el excedente vertical.
+      huellaScrollTimersRef.current.push(window.setTimeout(() => {
+        scrollContainerRef.current?.scrollTo({ top: 0, behavior: 'smooth' });
+      }, 360));
+    }
+    onHuellaOpenChange?.(next);
+  };
+
   return (
-    <div className="relative flex h-full flex-col overflow-hidden">
+    <div ref={scrollContainerRef} className={`relative flex h-full flex-col ${huellaOpen ? 'overflow-y-auto' : 'overflow-hidden'}`}>
 
       {/* Poster como fondo — mobile: visible, desktop: oculto (el modal ya lo muestra) */}
       <AnimatePresence>
@@ -601,7 +695,10 @@ const CuadernoHolografico = ({ portal, onStartBitacora, onOpenHuella, onNavigate
       </div>
 
       {/* Constelación */}
-      <div className="relative min-h-0 flex-1 p-4 lg:p-6" style={{ zIndex: 3 }}>
+      <div
+        className={`relative p-4 lg:p-6 ${huellaOpen ? 'min-h-[28rem] flex-none lg:min-h-[24rem]' : 'min-h-0 flex-1'}`}
+        style={{ zIndex: 3 }}
+      >
         <Constellation
           centerKey={centerKey}
           onSelect={handleSelect}
@@ -617,12 +714,15 @@ const CuadernoHolografico = ({ portal, onStartBitacora, onOpenHuella, onNavigate
           centerKey={centerKey}
           homeKey={portal}
           onStartBitacora={onStartBitacora}
-          onOpenHuella={onOpenHuella}
+          huellaOpen={huellaOpen}
+          huellaMounted={huellaMounted}
+          onToggleHuella={handleToggleHuella}
+          recommendedFormatId={recommendedFormatId}
+          onNavigateToRecommendation={onNavigate}
+          onGoToSite={onGoToSite}
+          accordionRef={huellaAccordionRef}
           onOpenVideo={handleOpenVideo}
           onRequireLogin={onRequireLogin}
-          homeInfoOpen={homeInfoOpen}
-          homeInfoSeen={homeInfoSeen}
-          onToggleHomeInfo={handleToggleHomeInfo}
           readOnly={readOnly}
         />
       </div>
