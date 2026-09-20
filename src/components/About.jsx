@@ -64,6 +64,7 @@ const fallbackTestimonials = [
 ];
 
 const PROVOCA_DRAFT_KEY = 'gatoencerrado:provoca-draft';
+const OBRA_API_URL = (import.meta.env.VITE_OBRA_API_URL ?? 'https://api.gatoencerrado.ai').replace(/\/+$/, '');
 const PROVOCA_CONFETTI_VISIBLE_MS = 2400;
 const PROVOCA_SILVESTRE_MODE_ID = 'confusion-lucida'; // fallback para otros contextos
 
@@ -215,6 +216,11 @@ export const ProvocaSection = () => {
   const [voiceName, setVoiceName] = useState('');
   const [voiceRole, setVoiceRole] = useState('');
   const [voiceDraft, setVoiceDraft] = useState('');
+  // Si el borrador vino de la Memoria, aquí queda de dónde salió: con eso, lo
+  // que se edita aquí corrige la huella guardada y no sólo lo que se publica.
+  // La promesa de la Memoria —"puedes corregirlo o retirarlo"— se cumple aquí
+  // (D-38, 19 sep 2026).
+  const [huellaDeOrigen, setHuellaDeOrigen] = useState(null);
   const voiceTextareaRef = useRef(null);
   const [voiceTrap, setVoiceTrap] = useState('');
   const [isSubmittingVoice, setIsSubmittingVoice] = useState(false);
@@ -472,6 +478,7 @@ export const ProvocaSection = () => {
     try {
       const parsed = JSON.parse(stored);
       if (parsed?.quote) setVoiceDraft(parsed.quote);
+      if (parsed?.huella) setHuellaDeOrigen(parsed.huella);
       if (parsed?.name) setVoiceName(parsed.name);
       if (parsed?.role) setVoiceRole(parsed.role);
       const hasDraft = parsed?.quote || parsed?.name || parsed?.role;
@@ -489,6 +496,7 @@ export const ProvocaSection = () => {
     const handleProvocaDraft = (e) => {
       const quote = e.detail?.quote ?? '';
       if (quote) setVoiceDraft(quote);
+      if (e.detail?.huella) setHuellaDeOrigen(e.detail.huella);
       setIsVoiceInputOpen(true);
       setTimeout(() => {
         document.querySelector('#provoca')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -504,6 +512,7 @@ export const ProvocaSection = () => {
       quote: voiceDraft.trim(),
       name: voiceName.trim(),
       role: voiceRole.trim(),
+      ...(huellaDeOrigen ? { huella: huellaDeOrigen } : {}),
       updatedAt: new Date().toISOString(),
     };
     if (!payload.quote && !payload.name && !payload.role) {
@@ -511,7 +520,7 @@ export const ProvocaSection = () => {
       return;
     }
     safeSetItem(PROVOCA_DRAFT_KEY, JSON.stringify(payload));
-  }, [voiceDraft, voiceName, voiceRole]);
+  }, [voiceDraft, voiceName, voiceRole, huellaDeOrigen]);
 
   useEffect(() => {
     let cancelled = false;
@@ -647,6 +656,54 @@ export const ProvocaSection = () => {
     setVoiceLikeStatusById((previous) => ({ ...previous, [perspectiveId]: 'success' }));
   }, [likedVoiceIds, persistLikedVoiceIds, showPulseDelta, user, voiceLikeStatusById]);
 
+  // Corregir la huella guardada con lo que la persona dejó en el editor. Sólo
+  // cuando el texto cambió: publicar sin tocar nada no es corregir.
+  const corregirHuellaGuardada = useCallback(async (textoPublicado) => {
+    if (!huellaDeOrigen?.sessionId || !huellaDeOrigen?.anonId) return;
+    if (!textoPublicado || textoPublicado === huellaDeOrigen.original) return;
+    try {
+      await fetch(`${OBRA_API_URL}/api/huella/${encodeURIComponent(huellaDeOrigen.sessionId)}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          anon_id: huellaDeOrigen.anonId,
+          [huellaDeOrigen.campo]: textoPublicado,
+        }),
+      });
+      setHuellaDeOrigen((previo) => (previo ? { ...previo, original: textoPublicado } : previo));
+    } catch {
+      // Si falla, lo publicado sigue en pie y la huella queda como estaba: no
+      // se pierde nada, sólo no se corrigió.
+    }
+  }, [huellaDeOrigen]);
+
+  const retirarHuellaGuardada = useCallback(async () => {
+    if (!huellaDeOrigen?.anonId) return;
+    try {
+      const res = await fetch(`${OBRA_API_URL}/api/huella`, {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ anon_id: huellaDeOrigen.anonId }),
+      });
+      if (!res.ok) throw new Error();
+      // Lo retirado tampoco puede seguir esperando en el editor.
+      setVoiceDraft('');
+      setHuellaDeOrigen(null);
+      safeRemoveItem(PROVOCA_DRAFT_KEY);
+      try {
+        const claves = [];
+        for (let i = 0; i < localStorage.length; i += 1) {
+          const k = localStorage.key(i);
+          if (k && k.startsWith('gatoencerrado:resonance:')) claves.push(k);
+        }
+        claves.forEach((k) => localStorage.removeItem(k));
+      } catch {}
+      toast({ description: 'Tu huella se retiró. Ya no está en la investigación ni en ningún corpus.' });
+    } catch {
+      toast({ description: 'No se pudo retirar tu huella ahora. Inténtalo de nuevo más tarde.' });
+    }
+  }, [huellaDeOrigen, toast]);
+
   const handleSubmitVoice = useCallback(async () => {
     const rawQuote = voiceDraft.trim();
     const rawName = voiceName.trim();
@@ -732,6 +789,10 @@ export const ProvocaSection = () => {
     } else {
       setVoiceName(authorName);
     }
+    // Lo que se publicó es también la versión corregida de la huella: editar
+    // aquí ya no cambia sólo lo que se publica (D-38).
+    void corregirHuellaGuardada(quote);
+    setHuellaDeOrigen(null);
     safeRemoveItem(PROVOCA_DRAFT_KEY);
     const keepFormOpen = isProvocaDesktopViewport();
     if (keepFormOpen) {
@@ -739,6 +800,7 @@ export const ProvocaSection = () => {
     }
     setIsVoiceInputOpen(keepFormOpen);
   }, [
+    corregirHuellaGuardada,
     fireProvocaConfetti,
     isSubmittingVoice,
     loadPendingPerspectives,
@@ -954,6 +1016,31 @@ export const ProvocaSection = () => {
                       className="form-surface w-full px-4 py-3 resize-none"
                       placeholder="Escribe lo que estas preguntas te hacen sentir…"
                     />
+
+                    {/* Cuando el texto vino de la Memoria, aquí se cumplen las dos
+                        cosas que ella promete: corregir —lo que se publique
+                        reemplaza lo guardado— y retirar, que lo saca de todos los
+                        corpus (D-38). Sin esto, editar aquí sólo cambiaba lo que se
+                        iba a publicar y la huella seguía intacta. */}
+                    {huellaDeOrigen ? (
+                      <div className="mt-2 flex flex-wrap items-center justify-between gap-2">
+                        <p className="text-[0.7rem] leading-relaxed text-slate-400/80">
+                          Esto volvió de tu recorrido. Al publicarlo, también corriges lo que quedó guardado.
+                        </p>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            if (typeof window !== 'undefined'
+                              && !window.confirm('Se borra todo lo que escribiste en tu recorrido, aquí y en la investigación. No se puede deshacer.')) return;
+                            void retirarHuellaGuardada();
+                          }}
+                          className="text-[0.7rem] text-slate-500/80 underline underline-offset-4 transition hover:text-rose-200"
+                        >
+                          Retirar mi huella
+                        </button>
+                      </div>
+                    ) : null}
+
                     <div className="mt-3 grid gap-3 sm:grid-cols-2">
                       <input
                         aria-label="Tu nombre"
