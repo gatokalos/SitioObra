@@ -2168,7 +2168,7 @@ const renderDramaFeaturedWork = () => (
                     <div aria-hidden="true" className="h-[11rem] sm:h-[13rem]" />
                     <div className="mt-auto space-y-4">
                       <p className="text-sm text-slate-300/85 leading-relaxed">
-                        Hay símbolos que sobreviven porque nunca terminan de significar una sola cosa. El símbolo # ha sido medida, música, tablero, código y una forma de conectar conversaciones mucho antes de ser conocido como &ldquo;gato&rdquo; en México.
+                        Hay símbolos que sobreviven porque nunca terminan de significar una sola cosa. El # ha sido medida, número,tecla y código; en México también fue gato mucho antes de convertirse en una forma de conectar conversaciones por todo el mundo.
                       </p>
                       <div className="flex flex-wrap gap-2">
                         <span className="rounded-full border border-amber-400/30 bg-amber-900/20 px-3 py-1 text-[11px] uppercase tracking-[0.2em] text-amber-100">Incluye artefacto interactivo</span>

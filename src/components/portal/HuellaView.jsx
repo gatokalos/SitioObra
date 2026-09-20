@@ -16,8 +16,11 @@ const HUELLA_DESCRIPTION = 'Aquí volvió lo que escribiste antes de entrar y lo
 // Devuelve el texto y de dónde salió. El origen es lo que permite que editar en
 // La Réplica corrija la huella guardada, y no sólo el borrador (D-38: corregir y
 // retirar acompañan a la huella dondequiera que se muestre).
-const selectReplicaText = (sessions = []) => {
-  const conHuella = sessions.filter((session) => session.intuicion_answer || session.bitacora_completed_at);
+const selectReplicaText = (sessions = [], portal = null) => {
+  const conHuella = sessions.filter((session) => (
+    (!portal || session.miniverso_id === portal)
+    && (session.intuicion_answer || session.bitacora_completed_at)
+  ));
   const latest = conHuella[conHuella.length - 1] ?? null;
   if (!latest) return null;
   const campos = [
@@ -31,7 +34,7 @@ const selectReplicaText = (sessions = []) => {
   return { texto: elegido[1].trim(), sessionId: latest.id, campo: elegido[0] };
 };
 
-const HuellaView = ({ onNavigateToRecommendation, recommendedFormatId, onGoToSite }) => {
+const HuellaView = ({ portal, onNavigateToRecommendation, recommendedFormatId, onGoToSite }) => {
   const { isDevAuth } = useAuth();
   const anonId = useMemo(() => ensureAnonId(), []);
   const [sessions, setSessions] = useState(null);
@@ -62,7 +65,7 @@ const HuellaView = ({ onNavigateToRecommendation, recommendedFormatId, onGoToSit
 
   const handleIrAlActoFinal = async () => {
     const availableSessions = sessions ?? await fetchHuella();
-    const origen = selectReplicaText(availableSessions);
+    const origen = selectReplicaText(availableSessions, portal);
     const quote = origen ? origen.texto.slice(0, PROVOCA_QUOTE_MAX_CHARS) : '';
     if (quote) {
       // `huella` viaja con el borrador para que el acto final pueda corregir o
@@ -97,11 +100,6 @@ const HuellaView = ({ onNavigateToRecommendation, recommendedFormatId, onGoToSit
       className="huella-view huella-view--embedded"
     >
       <div className="huella-view__contenido huella-view__contenido--embedded">
-        <header className="huella-view__intro huella-view__intro--sin-bajada">
-          <div className="huella-view__eyebrow">Tu huella</div>
-          <h3 className="huella-view__titulo">Esto fue lo que dejaste.</h3>
-        </header>
-
         <div className="huella-view__revelacion">
           <VitranaQuestionReveal
             question={HUELLA_DESCRIPTION}

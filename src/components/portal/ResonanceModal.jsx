@@ -1,10 +1,9 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import CuadernoHolografico from './CuadernoHolografico';
-import HuellaView from './HuellaView';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Eye, Flame, Lock, ShieldCheck, Check, ChevronDown, Sparkles, RotateCcw, FastForward } from 'lucide-react';
+import { Eye, Flame, Lock, ShieldCheck, Check, ChevronDown, Sparkles, RotateCcw, FastForward, X } from 'lucide-react';
 import { supabase } from '@/lib/supabaseClient';
 import { ensureAnonId } from '@/lib/identity';
 import { useAuth } from '@/contexts/SupabaseAuthContext';
@@ -1007,12 +1006,11 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
     portalsDone.forEach((p) => lsPatch(p, { bitacora_completed: true, dashboard_active_level: 3 }));
     setBitacoraCompleted(true);
     setBitacoraOpen(false);
-    // Al cerrar el formulario, la huella (D-34): la persona ve lo que escribió
-    // antes de entrar junto a lo que acaba de responder, y hace ella el
-    // contraste. Detrás queda la Memoria, que es el estado con el que ya abre
-    // en una sesión posterior (ver holograficoOpen).
+    // Al cerrar el formulario vuelve primero a la Memoria. La huella queda
+    // disponible dentro de ese mapa, pero la persona decide cuándo abrirla;
+    // no interrumpimos el reencuentro con su recorrido con otra pantalla.
     setHolograficoOpen(true);
-    setHuellaOpen(true);
+    setHuellaOpen(false);
     setDashboardActiveLevel(3);
     setBitacoraStep('p1');
     setBitacoraEscribiendo(false);
@@ -1365,16 +1363,6 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
                       </div>
                     </div>
                   </motion.div>
-                ) : huellaOpen ? (
-                  /* ── La huella: lo que la persona dejó, con corregir y retirar (D-34, D-38) ── */
-                  <HuellaView
-                    key="huella"
-                    recommendedFormatId={l3Rec?.recommended_format_id ?? null}
-                    onContinue={() => setHuellaOpen(false)}
-                    onNavigateToRecommendation={(showcaseId) => { setHuellaOpen(false); setHolograficoOpen(false); handleClose(); onNavigateToRecommendation?.(showcaseId); }}
-                    onGoToSite={(hash) => { setHuellaOpen(false); handleClose(); navigate(hash ? { pathname: '/', hash } : '/'); }}
-                    onRetired={() => { setHuellaOpen(false); setHolograficoOpen(false); handleClose(); }}
-                  />
                 ) : holograficoOpen ? (
                   /* ── Memoria holográfica: lo que queda después de En escena ── */
                   <motion.div
@@ -1390,8 +1378,11 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
                       isMobileViewport={isMobileViewport}
                       readOnly={bitacoraCompleted}
                       onStartBitacora={() => { setHolograficoOpen(false); setBitacoraOpen(true); }}
-                      onOpenHuella={() => setHuellaOpen(true)}
+                      huellaOpen={huellaOpen}
+                      onHuellaOpenChange={setHuellaOpen}
+                      recommendedFormatId={l3Rec?.recommended_format_id ?? null}
                       onNavigate={(showcaseId) => { setHolograficoOpen(false); handleClose(); onNavigateToRecommendation?.(showcaseId); }}
+                      onGoToSite={(hash) => { setHuellaOpen(false); handleClose(); navigate(hash ? { pathname: '/', hash } : '/'); }}
                       onPosterChange={setHolograficoPoster}
                       onRequireLogin={onRequireLogin}
                     />
@@ -1837,22 +1828,23 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
                                                     </div>
                                                   </motion.div>
 
+                                                  <div className="cabina-antesala-stack">
                                                   {/* El aviso es la primera fila del stack, con la misma caja que las otras
                                                       dos. El atril es provisional, hasta que exista el icono definitivo. */}
                                                   {!bitacoraCompleted && (
-                                                    <motion.div variants={PIEZA_DE_CASCADA} custom={1} className="space-y-2">
+                                                    <motion.div variants={PIEZA_DE_CASCADA} custom={1} className="cabina-antesala-stack__fila space-y-2">
                                                       {/* Mismo gesto que "Recuerdo entregado": la fila no se va,
                                                           cambia de estado (Carlos, 18 sep 2026). */}
                                                       {bitacoraConsented ? (
-                                                        <div className="flex w-full items-center gap-3 rounded-2xl border border-amber-200/15 bg-[#0c0a16] px-3 py-2.5 text-left">
-                                                          <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-emerald-300/20 bg-emerald-300/[0.06] text-emerald-300/80">
+                                                        <div className="cabina-antesala-opcion cabina-antesala-opcion--completa">
+                                                          <span className="cabina-antesala-opcion__mirilla cabina-antesala-opcion__mirilla--completa">
                                                             <Check size={18} aria-hidden="true" />
                                                           </span>
-                                                          <span className="flex flex-col gap-0.5">
-                                                            <span className="text-xs font-semibold tracking-[0.05em] text-emerald-200/85">
+                                                          <span className="cabina-antesala-opcion__texto">
+                                                            <span className="cabina-antesala-opcion__titulo cabina-antesala-opcion__titulo--completa">
                                                               {bitacoraAvailable ? dramaturgy.returnBackNow : dramaturgy.returnDone}
                                                             </span>
-                                                            <span className="text-[0.65rem] font-normal tracking-normal text-slate-400/75">
+                                                            <span className="cabina-antesala-opcion__detalle">
                                                               {bitacoraAvailable ? dramaturgy.returnBackNowHint : dramaturgy.returnDoneHint}
                                                             </span>
                                                           </span>
@@ -1861,24 +1853,26 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
                                                         <button
                                                           type="button"
                                                           onClick={() => setShowPhoneInput(true)}
-                                                          className="flex w-full items-center gap-3 rounded-2xl border border-amber-200/15 bg-[#0c0a16] px-3 py-2.5 text-left transition hover:bg-[#151124]"
+                                                          className="cabina-antesala-opcion cabina-antesala-opcion--regreso"
                                                         >
                                                           {/* El # dorado: dejar el número no es un depósito, es la promesa de que
                                                               algo vuelve. La talega —con los # adentro— se fue a la fila de
                                                               seguir otra forma, que es donde se siguen revelando (Carlos, 18 sep). */}
-                                                          <img
-                                                            src="/assets/laObraDorada.png"
-                                                            alt=""
-                                                            aria-hidden="true"
-                                                            className="h-10 w-10 shrink-0 object-contain"
-                                                          />
-                                                          <span className="text-xs font-semibold tracking-[0.05em] text-amber-200/90">
+                                                          <span className="cabina-antesala-opcion__mirilla">
+                                                            <img
+                                                              src="/assets/laObraDorada.png"
+                                                              alt=""
+                                                              aria-hidden="true"
+                                                              className="cabina-antesala-opcion__imagen object-contain"
+                                                            />
+                                                          </span>
+                                                          <span className="cabina-antesala-opcion__titulo">
                                                             {dramaturgy.returnCta}
                                                           </span>
                                                         </button>
                                                       ) : (
-                                                        <div className="space-y-2 rounded-2xl border border-amber-200/15 bg-[#0c0a16] px-3 py-2.5">
-                                                          <p className="text-xs leading-relaxed text-slate-400/80">
+                                                        <div className="cabina-antesala-form space-y-2">
+                                                          <p className="cabina-antesala-form__pregunta">
                                                             ¿A qué número te enviamos el aviso?
                                                           </p>
                                                           <div className="flex gap-2">
@@ -1887,13 +1881,13 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
                                                               value={phoneInput}
                                                               onChange={(e) => setPhoneInput(e.target.value)}
                                                               placeholder="+52 55 0000 0000"
-                                                              className="min-w-0 flex-1 rounded-full border border-white/20 bg-black/35 px-3 py-2 text-xs text-white placeholder:text-slate-500 outline-none focus:border-white/40"
+                                                              className="cabina-antesala-form__input min-w-0 flex-1"
                                                             />
                                                             <button
                                                               type="button"
                                                               onClick={() => void handleBitacoraConsent('whatsapp', phoneInput.trim())}
                                                               disabled={phoneInput.trim().length < 8}
-                                                              className="shrink-0 rounded-full border border-white/20 bg-black/35 px-3 py-2 text-xs text-slate-200 transition hover:bg-black/50 disabled:opacity-40 disabled:cursor-not-allowed"
+                                                              className="cabina-antesala-form__confirmar shrink-0 disabled:cursor-not-allowed disabled:opacity-40"
                                                             >
                                                               Confirmar →
                                                             </button>
@@ -1903,27 +1897,29 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
                                                     </motion.div>
                                                   )}
 
-                                                  <motion.div variants={PIEZA_DE_CASCADA} custom={2}>
+                                                  <motion.div variants={PIEZA_DE_CASCADA} custom={2} className="cabina-antesala-stack__fila">
                                                 <button
                                                   type="button"
                                                   onClick={handleDownloadSouvenir}
                                                   disabled={isSouvenirGenerating || Boolean(souvenirDeliveredAt)}
-                                                  className="flex w-full items-center gap-3 rounded-2xl border border-amber-200/15 bg-[#0c0a16] px-3 py-2.5 text-left transition hover:bg-[#151124] disabled:cursor-default disabled:opacity-75"
+                                                  className="cabina-antesala-opcion cabina-antesala-opcion--recuerdo disabled:cursor-default disabled:opacity-75"
                                                 >
                                                   {souvenirDeliveredAt ? (
-                                                    <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-emerald-300/20 bg-emerald-300/[0.06] text-emerald-300/80">
+                                                    <span className="cabina-antesala-opcion__mirilla cabina-antesala-opcion__mirilla--completa">
                                                       <Check size={18} aria-hidden="true" />
                                                     </span>
                                                   ) : PORTAL_ICON_URL[recommendedSouvenirPortal] ? (
-                                                    <img
-                                                      src={PORTAL_ICON_URL[recommendedSouvenirPortal]}
-                                                      alt=""
-                                                      aria-hidden="true"
-                                                      className="h-10 w-10 shrink-0 rounded-xl object-cover shadow-[0_8px_32px_rgba(0,0,0,0.55)]"
-                                                    />
+                                                    <span className="cabina-antesala-opcion__mirilla">
+                                                      <img
+                                                        src={PORTAL_ICON_URL[recommendedSouvenirPortal]}
+                                                        alt=""
+                                                        aria-hidden="true"
+                                                        className="cabina-antesala-opcion__imagen cabina-antesala-opcion__imagen--portal object-cover"
+                                                      />
+                                                    </span>
                                                   ) : null}
-                                                  <span className="flex flex-col gap-0.5">
-                                                    <span className="text-xs font-semibold tracking-[0.05em] text-amber-200/90">
+                                                  <span className="cabina-antesala-opcion__texto">
+                                                    <span className={`cabina-antesala-opcion__titulo${souvenirDeliveredAt ? ' cabina-antesala-opcion__titulo--completa' : ''}`}>
                                                       {isSouvenirGenerating
                                                         ? 'Preparando el recuerdo…'
                                                         : souvenirDeliveredAt
@@ -1931,7 +1927,7 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
                                                           : dramaturgy.souvenirCta}
                                                     </span>
                                                     {souvenirDeliveredAt && (
-                                                      <span className="text-[0.65rem] font-normal tracking-normal text-slate-400/75">
+                                                      <span className="cabina-antesala-opcion__detalle">
                                                         Busca la imagen en tus descargas.
                                                       </span>
                                                     )}
@@ -1939,25 +1935,28 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
                                                 </button>
                                                   </motion.div>
 
-                                                  <motion.div variants={PIEZA_DE_CASCADA} custom={3}>
+                                                  <motion.div variants={PIEZA_DE_CASCADA} custom={3} className="cabina-antesala-stack__fila">
                                                 {(!user || import.meta.env.DEV) && (
                                                   <button
                                                     type="button"
                                                     onClick={() => onRequireLogin?.()}
-                                                    className="flex w-full items-center gap-3 rounded-2xl border border-amber-200/15 bg-[#0c0a16] px-3 py-2.5 text-left transition hover:bg-[#151124]"
+                                                    className="cabina-antesala-opcion cabina-antesala-opcion--continuar"
                                                   >
-                                                    <img
-                                                      src="/assets/logoapp.png"
-                                                      alt=""
-                                                      aria-hidden="true"
-                                                      className="h-10 w-10 shrink-0 object-contain"
-                                                    />
-                                                    <span className="text-xs font-semibold tracking-[0.05em] text-amber-200/90">
+                                                    <span className="cabina-antesala-opcion__mirilla">
+                                                      <img
+                                                        src="/assets/logoapp.png"
+                                                        alt=""
+                                                        aria-hidden="true"
+                                                        className="cabina-antesala-opcion__imagen object-contain"
+                                                      />
+                                                    </span>
+                                                    <span className="cabina-antesala-opcion__titulo">
                                                       Inicia sesión y sigue otra forma
                                                     </span>
                                                   </button>
                                                 )}
                                                   </motion.div>
+                                                  </div>
 
                                                   {!bitacoraCompleted && (
                                                     <div className="space-y-2 px-1">
@@ -2305,7 +2304,7 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
             nadie que las hiciera. La burbuja, su pico y su flotación
             ya existían en index.css, portadas de la Bienvenida y sin
             usar desde entonces (Carlos, 18 sep 2026). */}
-        <div className="relative flex h-full flex-col overflow-hidden pt-[max(4.5rem,calc(env(safe-area-inset-top)+3.5rem))] pb-[max(2rem,calc(env(safe-area-inset-bottom)+1rem))]">
+        <div className="relative flex h-full flex-col overflow-hidden pt-[max(4.5rem,calc(env(safe-area-inset-top)+3.5rem))] pb-[max(5rem,calc(env(safe-area-inset-bottom)+4rem))]">
           <img
             src={CAT_CABINA_URL}
             alt=""
@@ -2338,7 +2337,7 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
                     type="button"
                     disabled={bitacoraSubmitting || !(bitacoraStep === 'p2' ? bitacoraP2 : bitacoraP3).trim()}
                     onClick={() => avanzarDesdePregunta()}
-                    className="inline-flex items-center gap-2 rounded-full bg-[#1b1d22] px-4 py-2 text-[0.7rem] uppercase tracking-[0.18em] text-[#f5f5f5] transition disabled:opacity-30"
+                    className="cabina-escritura-accion"
                   >
                     {bitacoraStep === 'p2' ? 'Continuar' : 'Terminar'}
                     <span aria-hidden="true">→</span>
@@ -2358,9 +2357,9 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
           <div aria-hidden="true" className="min-h-0 flex-1" />
 
           {/* Donde estaba el chevron: aquí se responde. */}
-          <div className="relative z-10 mx-auto w-[min(340px,88vw)] shrink-0 space-y-2">
+          <div className="cabina-respuestas-zona relative z-10 mx-auto w-[min(340px,88vw)] shrink-0 space-y-2">
             {bitacoraStep === 'p1' ? (
-              <div className="flex gap-2">
+              <div className="cabina-respuesta-panel" role="group" aria-label="¿Regresó algo de esta experiencia?">
                 <button
                   type="button"
                   onClick={() => {
@@ -2371,9 +2370,10 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
                     setBitacoraEscribiendo(false);
                     void fetchNextBitacoraQuestion('p2', response);
                   }}
-                  className="flex-1 rounded-full border border-amber-400/50 bg-amber-900/30 px-4 py-2.5 text-xs uppercase tracking-[0.2em] text-amber-100/90 backdrop-blur-sm transition hover:bg-amber-900/45"
+                  className="cabina-respuesta-clave cabina-respuesta-clave--afirmativa"
                 >
-                  Sí, regresó algo
+                  <span className="cabina-respuesta-clave__sigilo" aria-hidden="true" />
+                  <span>Algo regresó</span>
                 </button>
                 <button
                   type="button"
@@ -2383,9 +2383,10 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
                     setBitacoraAfirmativa(false);
                     void handleBitacoraSubmit({ p1Response: null, p1Afirmativa: false });
                   }}
-                  className="flex-1 rounded-full border border-white/20 bg-black/40 px-4 py-2.5 text-xs text-slate-300 backdrop-blur-sm transition hover:text-white disabled:opacity-40"
+                  className="cabina-respuesta-clave cabina-respuesta-clave--silencio"
                 >
-                  Todavía no
+                  <span className="cabina-respuesta-clave__sigilo" aria-hidden="true" />
+                  <span>Aún no</span>
                 </button>
               </div>
             ) : !bitacoraEscribiendo ? (
@@ -2393,18 +2394,21 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
                  tocar "Responder" para enterarse de que se podía no responder,
                  y eso obligaba a confirmar dos veces (Carlos, 18 sep 2026). */
               <>
-                <button
-                  type="button"
-                  onClick={() => setBitacoraEscribiendo(true)}
-                  className="w-full rounded-full border border-amber-400/50 bg-amber-900/30 px-4 py-2.5 text-xs uppercase tracking-[0.2em] text-amber-100/90 backdrop-blur-sm transition hover:bg-amber-900/45"
-                >
-                  Responder
-                </button>
+                <div className="cabina-respuesta-panel cabina-respuesta-panel--una">
+                  <button
+                    type="button"
+                    onClick={() => setBitacoraEscribiendo(true)}
+                    className="cabina-respuesta-clave cabina-respuesta-clave--afirmativa"
+                  >
+                    <span className="cabina-respuesta-clave__sigilo" aria-hidden="true" />
+                    <span>Responder</span>
+                  </button>
+                </div>
                 <button
                   type="button"
                   disabled={bitacoraSubmitting}
                   onClick={() => avanzarDesdePregunta({ saltando: true })}
-                  className="w-full text-center text-[0.72rem] text-white/60 underline underline-offset-4 transition hover:text-white/90 disabled:opacity-40"
+                  className="cabina-respuesta-salida"
                 >
                   {bitacoraStep === 'p2' ? 'Prefiero no decir dónde' : 'Nada de esto se movió esta vez'}
                 </button>
@@ -2434,7 +2438,7 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
                 aria-label="Cerrar"
                 className="absolute right-4 top-4 z-20 inline-flex h-10 w-10 items-center justify-center rounded-full border border-white/15 bg-black/45 text-slate-200 backdrop-blur-md transition hover:border-white/35 hover:text-white"
               >
-                <Check size={18} />
+                <X size={18} />
               </button>
 
               {import.meta.env.DEV && (
