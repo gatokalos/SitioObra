@@ -1398,9 +1398,14 @@ const Blog = ({ posts = [], isLoading = false, error = null, showBuscador = fals
                                   <p className="mb-3 text-[9px] uppercase tracking-[0.28em] text-slate-400/70">
                                     {/* Las réplicas aprobadas no salen de una forma: no se
                                         puede decir que su autor "recorrió" nada. */}
-                                    {faqCoda.origen === 'replicas'
-                                      ? 'Otras voces, desde el acto final'
-                                      : `Otros que recorrieron ${faqCoda.forma}`}
+                                    {/* Las voces de ensayo las escribió el Laboratorio para
+                                        sembrar el acto final mientras llega el público. Se
+                                        dicen como lo que son. */}
+                                    {faqCoda.origen === 'ensayo'
+                                      ? 'Voces de ensayo, del Laboratorio transmedia'
+                                      : faqCoda.origen === 'replicas'
+                                        ? 'Otras voces, desde el acto final'
+                                        : `Otros que recorrieron ${faqCoda.forma}`}
                                   </p>
                                   <ul className="space-y-3">
                                     {faqCoda.huellas.map((huella, i) => (
