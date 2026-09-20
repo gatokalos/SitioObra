@@ -4079,7 +4079,6 @@ body {
 
 .huella-acordeon--abierto .huella-puerta {
   border: 0;
-  border-bottom: 1px solid rgba(194, 152, 211, 0.2);
   border-radius: 0;
   background:
     radial-gradient(circle at 14% 35%, rgba(174, 103, 204, 0.13), transparent 36%),
@@ -4552,30 +4551,9 @@ body {
   color: rgba(221, 224, 232, 0.88);
 }
 
-.huella-rutas-dev {
-  margin-top: 0.85rem;
-  font-size: 0.59rem;
-  color: rgba(100, 109, 128, 0.64);
-}
 
-.huella-rutas-dev summary {
-  cursor: pointer;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
-}
 
-.huella-rutas-dev__acciones {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 0.4rem;
-  margin-top: 0.55rem;
-}
 
-.huella-rutas-dev__acciones button {
-  padding: 0.45rem;
-  border: 1px dashed rgba(148, 163, 184, 0.2);
-  border-radius: 999px;
-}
 
 @media (min-width: 640px) {
   .huella-pieza {

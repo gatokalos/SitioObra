@@ -34,7 +34,7 @@ const selectReplicaText = (sessions = [], portal = null) => {
   return { texto: elegido[1].trim(), sessionId: latest.id, campo: elegido[0] };
 };
 
-const HuellaView = ({ portal, onNavigateToRecommendation, recommendedFormatId, onGoToSite }) => {
+const HuellaView = ({ portal, onGoToSite }) => {
   const { isDevAuth } = useAuth();
   const anonId = useMemo(() => ensureAnonId(), []);
   const [sessions, setSessions] = useState(null);
@@ -108,20 +108,6 @@ const HuellaView = ({ portal, onNavigateToRecommendation, recommendedFormatId, o
             onAnswer={() => void handleIrAlActoFinal()}
           />
         </div>
-
-        {import.meta.env.DEV ? (
-          <details className="huella-rutas-dev">
-            <summary>Rutas de desarrollo</summary>
-            <div className="huella-rutas-dev__acciones">
-              <button type="button" onClick={() => void handleIrAlActoFinal()}>Acto final</button>
-              <button type="button" onClick={() => onGoToSite?.('#blog-contribuye')}>Intermedio</button>
-              {recommendedFormatId ? (
-                <button type="button" onClick={() => onNavigateToRecommendation?.(recommendedFormatId)}>Otra forma</button>
-              ) : null}
-              <button type="button" onClick={() => onGoToSite?.(null)}>El resto del sitio</button>
-            </div>
-          </details>
-        ) : null}
       </div>
     </motion.div>
   );
