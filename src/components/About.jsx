@@ -708,6 +708,19 @@ export const ProvocaSection = () => {
   // invitación a conocer la causa; es decirle qué falta para que su palabra llegue.
   const [acabaDePublicar, setAcabaDePublicar] = useState(false);
 
+  // "Antes de irte" puede no estar montada todavía: se deja la petición en
+  // sessionStorage, se pide el revelado y se avisa por si ya está a la escucha.
+  const irAImpulsa = useCallback(() => {
+    try { window.sessionStorage.setItem('gatoencerrado:abrir-impulsa', '1'); } catch {}
+    window.dispatchEvent(new CustomEvent('gatoencerrado:reveal-before-leaving'));
+    window.dispatchEvent(new CustomEvent('gatoencerrado:abrir-impulsa'));
+    // La sección se monta en diferido, al acercarse: este primer scroll la alcanza
+    // (su marcador de espera ya lleva el id) y al montar ella misma se acomoda.
+    window.setTimeout(() => {
+      document.getElementById('conoce-sistema')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 150);
+  }, []);
+
   const handleSubmitVoice = useCallback(async () => {
     const rawQuote = voiceDraft.trim();
     const rawName = voiceName.trim();
@@ -1275,7 +1288,7 @@ export const ProvocaSection = () => {
                     >
                       <Button
                         type="button"
-                        onClick={() => document.getElementById('cta')?.scrollIntoView({ behavior: 'smooth', block: 'start' })}
+                        onClick={irAImpulsa}
                         className="w-full rounded-full border border-emerald-300/40 bg-emerald-400/15 text-emerald-50 hover:bg-emerald-400/25"
                       >
                         <HeartHandshake size={16} className="mr-2" />

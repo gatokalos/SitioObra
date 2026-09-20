@@ -22,6 +22,8 @@ const readAvailableGat = () => {
   return Number.isFinite(parsed) ? Math.max(parsed, 0) : 0;
 };
 
+const ABRIR_IMPULSA_KEY = 'gatoencerrado:abrir-impulsa';
+
 const resolveInitialTab = (search = '', availableGat = 0) => {
   const params = new URLSearchParams(search);
   const rawTab = (params.get(TAB_QUERY_PARAM) || '').trim().toLowerCase();
@@ -92,6 +94,27 @@ const MiniverseInlineSection = () => {
     }
     mediaQuery.addListener(handleChange);
     return () => mediaQuery.removeListener(handleChange);
+  }, []);
+
+  // La devolución de La Réplica ("Sostener con mi huella") llega aquí: revela
+  // esta sección, la abre y elige Impulsa. Si la sección aún no estaba montada
+  // cuando se pidió, la petición espera en sessionStorage y se atiende al montar.
+  useEffect(() => {
+    if (typeof window === 'undefined') return undefined;
+    const abrirImpulsa = () => {
+      try { window.sessionStorage.removeItem(ABRIR_IMPULSA_KEY); } catch {}
+      setInitialTabId('waitlist');
+      setIsOpen(true);
+      writeMiniverseInlineOpenToSession();
+      window.setTimeout(() => {
+        document.getElementById('conoce-sistema')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }, 350);
+    };
+    let pendiente = false;
+    try { pendiente = window.sessionStorage.getItem(ABRIR_IMPULSA_KEY) === '1'; } catch {}
+    if (pendiente) abrirImpulsa();
+    window.addEventListener('gatoencerrado:abrir-impulsa', abrirImpulsa);
+    return () => window.removeEventListener('gatoencerrado:abrir-impulsa', abrirImpulsa);
   }, []);
 
   const handleOpen = useCallback(() => {
