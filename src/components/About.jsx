@@ -704,6 +704,10 @@ export const ProvocaSection = () => {
     }
   }, [huellaDeOrigen, toast]);
 
+  // La devolución: sólo la ve quien acaba de publicar en esta visita. No es una
+  // invitación a conocer la causa; es decirle qué falta para que su palabra llegue.
+  const [acabaDePublicar, setAcabaDePublicar] = useState(false);
+
   const handleSubmitVoice = useCallback(async () => {
     const rawQuote = voiceDraft.trim();
     const rawName = voiceName.trim();
@@ -782,6 +786,7 @@ export const ProvocaSection = () => {
 
     const shouldPromptLogin = !user?.email;
     fireProvocaConfetti();
+    setAcabaDePublicar(true);
     setVoiceRole('');
     setVoiceTrap('');
     if (shouldPromptLogin) {
@@ -1240,6 +1245,55 @@ export const ProvocaSection = () => {
                 ¿Qué es la voz que responde?
            
               </button>
+
+              {/* La devolución. Entra en cascada un segundo después del confeti,
+                  en el punto que la persona ya está mirando: su propia cita. No
+                  compite con la réplica de la voz; espera debajo. Copy provisional:
+                  el definitivo lo escribe Carlos. */}
+              <AnimatePresence>
+                {acabaDePublicar ? (
+                  <motion.div
+                    key="devolucion"
+                    initial="oculto"
+                    animate="visible"
+                    exit="oculto"
+                    variants={{
+                      oculto: {},
+                      visible: { transition: { delayChildren: 1, staggerChildren: 0.35 } },
+                    }}
+                    className="mt-4 w-full space-y-4 border-t border-emerald-200/15 pt-5"
+                  >
+                    <motion.p
+                      variants={{ oculto: { opacity: 0, y: 10 }, visible: { opacity: 1, y: 0, transition: { duration: 0.6 } } }}
+                      className="text-[15px] leading-relaxed text-slate-100"
+                    >
+                      Ya dejaste tu palabra. Para que llegue a quien acompaña a jóvenes,
+                      hace falta sostener a quien la lee.
+                    </motion.p>
+                    <motion.div
+                      variants={{ oculto: { opacity: 0, y: 10 }, visible: { opacity: 1, y: 0, transition: { duration: 0.6 } } }}
+                    >
+                      <Button
+                        type="button"
+                        onClick={() => document.getElementById('cta')?.scrollIntoView({ behavior: 'smooth', block: 'start' })}
+                        className="w-full rounded-full border border-emerald-300/40 bg-emerald-400/15 text-emerald-50 hover:bg-emerald-400/25"
+                      >
+                        <HeartHandshake size={16} className="mr-2" />
+                        Sostener con mi huella
+                      </Button>
+                    </motion.div>
+                    <motion.button
+                      type="button"
+                      variants={{ oculto: { opacity: 0 }, visible: { opacity: 1, transition: { duration: 0.6 } } }}
+                      onClick={() => document.getElementById('apoya')?.scrollIntoView({ behavior: 'smooth', block: 'start' })}
+                      className="inline-flex items-center gap-1 text-[13px] text-slate-400 transition hover:text-white"
+                    >
+                      Ver cómo funciona todo esto
+                      <ArrowUpRight size={13} />
+                    </motion.button>
+                  </motion.div>
+                ) : null}
+              </AnimatePresence>
             </div>
           </div>
           </div>
