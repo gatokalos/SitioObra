@@ -676,6 +676,9 @@ const Blog = ({ posts = [], isLoading = false, error = null, showBuscador = fals
   const [vestibuloPrompts, setVestibuloPrompts] = useState(() =>
     STARTER_FAQ_PROMPTS.map((texto) => ({ id: null, texto }))
   );
+  // Mientras ninguna pregunta aprobada venga de un visitante, el vestíbulo no
+  // dice "de la comunidad": son del Laboratorio, y se dice.
+  const [vestibuloDeVisitantes, setVestibuloDeVisitantes] = useState(0);
   useEffect(() => {
     if (!RAW_API_URL) return undefined;
     const controller = new AbortController();
@@ -685,6 +688,7 @@ const Blog = ({ posts = [], isLoading = false, error = null, showBuscador = fals
         const list = Array.isArray(data?.preguntas)
           ? data.preguntas.filter((p) => p && typeof p.texto === 'string' && p.texto.trim())
           : [];
+        setVestibuloDeVisitantes(Number(data?.de_visitantes) || 0);
         if (list.length) {
           setVestibuloPrompts(list);
           setFaqPage(0);
@@ -1323,7 +1327,9 @@ const Blog = ({ posts = [], isLoading = false, error = null, showBuscador = fals
                           <div className="mb-4 flex items-center justify-between gap-3">
                             <div>
                               <p className="text-[10px] uppercase tracking-[0.3em] text-violet-200/65">Voces del vestíbulo</p>
-                              <p className="mt-1 text-xs text-slate-400">Preguntas de la comunidad para dialogar, recordar y continuar con la función.</p>
+                              <p className="mt-1 text-xs text-slate-400">{vestibuloDeVisitantes > 0
+                                  ? 'Preguntas del Laboratorio y de quienes pasaron antes, para dialogar, recordar y continuar con la función.'
+                                  : 'Preguntas que deja el Laboratorio para dialogar, recordar y continuar con la función. Las de la comunidad llegarán aquí.'}</p>
                             </div>
                             <button
                               type="button"
