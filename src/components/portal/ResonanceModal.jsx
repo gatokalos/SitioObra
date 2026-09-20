@@ -340,6 +340,10 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
   // donde debe ser explícito en el tramo anónimo, porque es antes de que se
   // registre nada. Gatea el envío de la pregunta semilla.
   const [researchConsent, setResearchConsent] = useState(false);
+  // Anónimo por defecto (20 sep 2026, pendiente 10). El nombre se pedía
+  // obligatorio al lado de un aviso que promete anonimato: las dos cosas no
+  // podían ser ciertas. Firmar pasa a ser un acto de quien quiere firmar.
+  const [firmando, setFirmando] = useState(false);
   const { bursts: confettiBursts, fireConfetti } = useConfettiBursts();
 
   const gradient = PORTAL_GRADIENT[portal] ?? 'from-purple-400 via-fuchsia-500 to-rose-500';
@@ -591,7 +595,7 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
           anon_id:   anonId,
           portal:    portal ?? null,
           question:  question ?? null,
-          nombre:    formData.nombre,
+          nombre:    formData.nombre.trim() || 'Anónimo',
           email:     formData.email,
           respuesta: formData.respuesta,
           level:     1,
@@ -2178,15 +2182,28 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
                           className="space-y-2.5"
                         >
                           <div className="space-y-1">
-                            <label className="text-xs font-medium text-slate-200">Tu nombre</label>
-                            <input
-                              name="nombre"
-                              value={formData.nombre}
-                              onChange={handleChange}
-                              required
-                              className="form-surface w-full px-3 py-2 text-sm"
-                              placeholder="¿Cómo te llamas?"
-                            />
+                            <label className="text-xs font-medium text-slate-200">Cómo firmas</label>
+                            {firmando || formData.nombre.trim() ? (
+                              <input
+                                name="nombre"
+                                value={formData.nombre}
+                                onChange={handleChange}
+                                autoFocus={firmando}
+                                className="form-surface w-full px-3 py-2 text-sm"
+                                placeholder="Tu nombre o seudónimo"
+                              />
+                            ) : (
+                              <div className="flex items-center justify-between gap-3 rounded-xl border border-white/10 bg-white/[0.03] px-3 py-2">
+                                <span className="text-sm text-slate-300">Anónimo</span>
+                                <button
+                                  type="button"
+                                  onClick={() => setFirmando(true)}
+                                  className="shrink-0 text-[0.7rem] text-purple-200/85 underline underline-offset-4 transition hover:text-white"
+                                >
+                                  Firmar con mi nombre o seudónimo
+                                </button>
+                              </div>
+                            )}
                           </div>
                           <div className="space-y-1">
                             <label className="text-xs font-medium text-slate-200">Tu intuición</label>
@@ -2208,7 +2225,7 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
                               className="mt-0.5 h-3.5 w-3.5 shrink-0 rounded border-white/30 bg-transparent accent-purple-500"
                             />
                             <span>
-                              Tus respuestas forman parte de una investigación doctoral sobre cómo se interpretan y se recuerdan las experiencias narrativas. Se guardan de forma anónima y puedes detenerte cuando quieras. Lo que escribes se procesa fuera de este sitio para poder devolvértelo. La investigación la realiza Carlos A. Pérez H. en el marco del doctorado en ICONOS.
+                              Tus respuestas forman parte de una investigación doctoral sobre cómo se interpretan y se recuerdan las experiencias narrativas. Se guardan sin tu nombre —salvo que decidas firmarlas— y puedes detenerte cuando quieras. Lo que escribes se procesa fuera de este sitio para poder devolvértelo. La investigación la realiza Carlos A. Pérez H. en el marco del doctorado en ICONOS.
                               <br />
                               Entiendo y acepto participar.
                             </span>
