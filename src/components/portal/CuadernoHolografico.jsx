@@ -563,7 +563,7 @@ function HolograficoPanel({
             <div>
               <p className="text-xs uppercase tracking-[0.3em] text-slate-400/70">{entry.eyebrow}</p>
               <h2 className={`font-display text-2xl leading-snug mt-1 ${entry.color}`}>{entry.form ?? entry.name}</h2>
-              <p className="memoria-descripcion mt-2 text-sm leading-relaxed text-slate-300/80">
+              <p className="memoria-descripcion mt-2 whitespace-pre-line text-sm leading-relaxed text-slate-300/80">
                 {verse}
               </p>
             </div>
