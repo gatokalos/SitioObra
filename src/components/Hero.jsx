@@ -1570,6 +1570,9 @@ const Hero = () => {
                   className={[
                     'hero-hashtag-fallback',
                     isHeroHashReady ? 'hero-hashtag-fallback--ready' : '',
+                    isHashtag3DRetired && !hasActivatedAudio
+                      ? 'hero-hashtag-fallback--solo'
+                      : '',
                     isHashtag3DRetired && !hasActivatedAudio && hasHintGlowRevealed
                       ? 'hero-hashtag-fallback--revealed'
                       : '',
