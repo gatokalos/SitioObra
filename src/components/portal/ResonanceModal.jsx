@@ -604,6 +604,10 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
 
       // Persiste línea base en resonance_sessions (fire-and-forget)
       const bienvenidaAnonId = (() => { try { return localStorage.getItem('bienvenida_anon_id') || null; } catch { return null; } })();
+      // Pendiente 3, cerrado por Carlos el 20 sep 2026: la firma NO viaja al
+      // instrumento. Lo que se analiza es lo que la persona escribió; la unidad
+      // de identidad es el anon_id, con puente al user_id cuando se autentica.
+      // El nombre, si alguien decidió firmar, se queda en vitrana_resonances.
       persistBaseline({
           anon_id:             anonId,
           miniverso_id:        portal,
