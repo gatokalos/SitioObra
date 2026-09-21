@@ -481,6 +481,27 @@ body {
   100% { opacity: 0.9; transform: scale(1); box-shadow: 0 0 4px rgba(255, 250, 231, 0.9), 0 0 12px rgba(246, 186, 144, 0.68), 0 0 22px rgba(196, 98, 190, 0.32); }
 }
 
+/* Versión chica para el librito de las vitrinas: mismo espejo, a escala. */
+.camerino-mirror-lights--compact .camerino-mirror-rail--left,
+.camerino-mirror-lights--compact .camerino-mirror-rail--right {
+  width: 30px;
+  padding-block: 18px;
+}
+
+.camerino-mirror-lights--compact .camerino-mirror-rail--left {
+  border-radius: 15px 0 0 15px;
+}
+
+.camerino-mirror-lights--compact .camerino-mirror-rail--right {
+  border-radius: 0 15px 15px 0;
+}
+
+.camerino-mirror-lights--compact .camerino-mirror-bulb {
+  width: 13px;
+  height: 13px;
+  border-width: 1.5px;
+}
+
 @media (max-width: 640px) {
   .camerino-mirror-rail--left,
   .camerino-mirror-rail--right {

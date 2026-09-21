@@ -158,6 +158,9 @@ const RelatedReadingTooltipButton = ({
           // document.body): el degradado translúcido de .camerino-apuntador-panel
           // deja que ese fondo se cuele y afecta la lectura. Aquí sube la
           // opacidad casi al máximo para que quede sólido.
+          // Las bandas de foquitos aquí son angostas: el texto no necesita el
+          // margen ancho que el panel trae para el espejo del Camerino.
+          paddingInline: '2.9rem',
           background:
             'radial-gradient(circle at 12% 8%, rgba(115, 48, 91, 0.35), transparent 42%), linear-gradient(145deg, rgba(49, 19, 42, 0.98), rgba(24, 12, 28, 0.97) 58%, rgba(12, 10, 20, 0.97))',
         }}
@@ -166,7 +169,21 @@ const RelatedReadingTooltipButton = ({
             reales de Carlos cuando aplica dentro de su propia respuesta, así
             que la rama "Leer ahora" (artículo directo) dejó de tener razón
             de ser — confirmado con Carlos 2026-08-19. */}
-        <div className="flex h-full w-full flex-col items-center justify-center gap-3 px-4 text-center">
+        {/* Los mismos foquitos del espejo del Apuntador en el Camerino: el
+            librito anuncia a dónde lleva. Sólo respiran con el panel abierto. */}
+        <div
+          className={`camerino-mirror-lights camerino-mirror-lights--compact ${isOpen ? 'camerino-mirror-lights--listening' : ''}`}
+          aria-hidden="true"
+        >
+          {['left', 'right'].map((side) => (
+            <span key={side} className={`camerino-mirror-rail camerino-mirror-rail--${side}`}>
+              {Array.from({ length: 4 }, (_, index) => (
+                <i key={index} className="camerino-mirror-bulb" style={{ '--bulb-index': index }} />
+              ))}
+            </span>
+          ))}
+        </div>
+        <div className="relative z-[3] flex h-full w-full flex-col items-center justify-center gap-3 text-center">
           <p className="text-[11px] leading-snug text-violet-100/90">Consulta más sobre este miniverso en el Camerino.</p>
           <button
             type="button"
