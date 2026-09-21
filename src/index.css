@@ -888,6 +888,15 @@ body {
   opacity: 0;
 }
 
+/* En la PWA instalada el # tipográfico ES el gato: se queda insinuado como
+   siempre y florece en el mismo evento que lo nombra («pulsa el gato»), que es
+   lo que hace el #3D en el navegador. */
+.hero-hashtag-fallback--revealed {
+  opacity: 1;
+  -webkit-text-stroke-color: rgba(226, 232, 240, 0.44);
+  filter: drop-shadow(0 0 26px rgba(139, 92, 246, 0.42));
+}
+
 .hero-pwa-hash-whisper-anchor {
   position: absolute;
   top: 8%;

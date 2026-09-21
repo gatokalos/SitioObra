@@ -144,11 +144,10 @@ const Header = ({
   const [isHeaderHidden, setIsHeaderHidden] = useState(false);
   const lastHeaderScrollYRef = useRef(0);
   const headerIdleTimerRef = useRef(null);
-  // La PWA instalada arranca con la escena ya activada (ver Hero.jsx) — el #
-  // del Header debe estar disponible desde el primer render, no oculto
-  // esperando un clic ritual que en esa entrada nunca va a ocurrir.
+  // La PWA instalada también hace el clic ritual (ver Hero.jsx, 21 sep 2026),
+  // así que el # del Header espera su transmigración como en el navegador.
   const [hasUsedHeroIndexCue, setHasUsedHeroIndexCue] = useState(
-    () => readIndexCueUsedFromSession() || isInstalledPWA()
+    () => readIndexCueUsedFromSession()
   );
   // Referencia para saber si el # ya estaba revelado en un montaje previo de
   // esta misma sesión — evita repetir el aro pulsante cada vez que Header se
