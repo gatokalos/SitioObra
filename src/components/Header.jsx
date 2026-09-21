@@ -114,15 +114,15 @@ const GatLinktreeTile = ({ icon: TileIcon, label, onClick, statusDotClass: dotCl
 
 const MOBILE_FULLSCREEN_MENU_PHASE_A_ENABLED = true;
 const TRANSMEDIA_SECONDARY_ITEMS = [
-  { label: 'El drama', href: '#transmedia?focus=miniversos' },
-  { label: 'El objeto', href: '#transmedia?focus=lataza' },
-  { label: 'La escritura', href: '#transmedia?focus=miniversoNovela' },
-  { label: 'La imagen', href: '#transmedia?focus=miniversoGrafico' },
-  { label: 'La proyección', href: '#transmedia?focus=copycats' },
-  { label: 'La vibración', href: '#transmedia?focus=miniversoSonoro' },
-  { label: 'El cuerpo', href: '#transmedia?focus=miniversoMovimiento' },
-  { label: 'El riesgo', href: '#transmedia?focus=apps' },
-  { label: 'La pregunta', href: '#transmedia?focus=oraculo' },
+  { label: 'El drama', href: '#transmedia?focus=miniversos', showcaseId: 'miniversos' },
+  { label: 'El objeto', href: '#transmedia?focus=lataza', showcaseId: 'lataza' },
+  { label: 'La escritura', href: '#transmedia?focus=miniversoNovela', showcaseId: 'miniversoNovela' },
+  { label: 'La imagen', href: '#transmedia?focus=miniversoGrafico', showcaseId: 'miniversoGrafico' },
+  { label: 'La proyección', href: '#transmedia?focus=copycats', showcaseId: 'copycats' },
+  { label: 'La vibración', href: '#transmedia?focus=miniversoSonoro', showcaseId: 'miniversoSonoro' },
+  { label: 'El cuerpo', href: '#transmedia?focus=miniversoMovimiento', showcaseId: 'miniversoMovimiento' },
+  { label: 'El riesgo', href: '#transmedia?focus=apps', showcaseId: 'apps' },
+  { label: 'La pregunta', href: '#transmedia?focus=oraculo', showcaseId: 'oraculo' },
 ];
 
 const Header = ({
@@ -160,7 +160,9 @@ const Header = ({
   const [isGatInfoOpen, setIsGatInfoOpen] = useState(false);
   const [gatInfoPanelStyle, setGatInfoPanelStyle] = useState({});
   const [gatSpendRecommendation, setGatSpendRecommendation] = useState(null);
-  const [gatWelcomeRecommendation, setGatWelcomeRecommendation] = useState(null);
+  const [gatWelcomeRecommendation, setGatWelcomeRecommendation] = useState(
+    () => readBienvenidaRecommendedShowcase() || readOraculoRecommendedShowcase(),
+  );
   // true solo cuando hay un L3 completado de verdad en algún miniverso (no
   // una mera sugerencia del Oráculo). Distingue "Siguiente acto" del acceso
   // inicial y evita ofrecer el Cuaderno antes de que exista algo que cerrar.
@@ -1049,6 +1051,22 @@ const Header = ({
     };
   }, [isGatInfoOpen, isGatLinktreeOpen]);
 
+  // La recomendación inicial puede nacer después de montar el Header, al
+  // terminar la bienvenida. Sólo refresca el indicador del Programa de mano.
+  useEffect(() => {
+    const refreshWelcomeRecommendation = () => {
+      setGatWelcomeRecommendation(
+        readBienvenidaRecommendedShowcase() || readOraculoRecommendedShowcase(),
+      );
+    };
+    window.addEventListener('storage', refreshWelcomeRecommendation);
+    window.addEventListener('gatoencerrado:tercera-llamada-completed', refreshWelcomeRecommendation);
+    return () => {
+      window.removeEventListener('storage', refreshWelcomeRecommendation);
+      window.removeEventListener('gatoencerrado:tercera-llamada-completed', refreshWelcomeRecommendation);
+    };
+  }, []);
+
   useEffect(() => {
     if (!isGatInfoOpen) return undefined;
     const onPointerDown = (event) => {
@@ -1837,6 +1855,7 @@ const Header = ({
         <MobileMenuOverlay
           isOpen={isMenuOpen}
           menuItems={mobileMenuItems}
+          recommendedShowcaseId={gatWelcomeRecommendation?.showcaseId ?? null}
           activeSectionHref={activeSectionHref}
           onNavigate={handleNavClick}
           onClose={() => setIsMenuOpen(false)}

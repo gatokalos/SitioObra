@@ -5,6 +5,7 @@ import { ChevronDown, ChevronRight, Lock } from 'lucide-react';
 const MobileMenuOverlay = ({
   isOpen,
   menuItems,
+  recommendedShowcaseId = null,
   activeSectionHref = null,
   onNavigate,
   onClose,
@@ -172,21 +173,33 @@ const MobileMenuOverlay = ({
 
                 {item.secondary?.length && expandedSection === item.name ? (
                   <div className="mb-2 mr-2 ml-3 rounded-xl border border-white/10 bg-black/35 p-2">
-                    {item.secondary.map((secondaryItem) => (
-                      <button
-                        key={`${item.name}-${secondaryItem.label}`}
-                        type="button"
-                        onClick={() => handleSecondaryClick(item, secondaryItem)}
-                        className={`flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm transition ${
-                          item.name === 'FAQ' && activeFaqKey === secondaryItem.href
-                            ? 'bg-white/[0.08] text-white'
-                            : 'text-slate-200 hover:bg-white/[0.06] hover:text-white'
-                        }`}
-                      >
-                        <span>{secondaryItem.label}</span>
-                        <ChevronRight size={14} className="text-slate-400/90" />
-                      </button>
-                    ))}
+                    {item.secondary.map((secondaryItem) => {
+                      const isOracleRecommendation =
+                        item.name === 'Segundo acto'
+                        && secondaryItem.showcaseId === recommendedShowcaseId;
+                      return (
+                        <button
+                          key={`${item.name}-${secondaryItem.label}`}
+                          type="button"
+                          onClick={() => handleSecondaryClick(item, secondaryItem)}
+                          className={`flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm transition ${
+                            item.name === 'FAQ' && activeFaqKey === secondaryItem.href
+                              ? 'bg-white/[0.08] text-white'
+                              : 'text-slate-200 hover:bg-white/[0.06] hover:text-white'
+                          }`}
+                        >
+                          <span>{secondaryItem.label}</span>
+                          <span className="flex shrink-0 items-center gap-2">
+                            {isOracleRecommendation ? (
+                              <span className="rounded-full border border-violet-300/35 bg-violet-300/[0.1] px-2 py-0.5 text-[0.48rem] font-semibold uppercase tracking-[0.14em] text-violet-100">
+                                Recomendada
+                              </span>
+                            ) : null}
+                            <ChevronRight size={14} className="text-slate-400/90" />
+                          </span>
+                        </button>
+                      );
+                    })}
 
                     {item.name === 'FAQ' && activeFaqKey ? (
                       <AnimatePresence mode="wait" initial={false}>
