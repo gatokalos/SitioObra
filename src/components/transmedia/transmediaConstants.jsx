@@ -1202,7 +1202,7 @@ Este espacio permite recorrer esas composiciones, explorar sus capas y descubrir
       },
       {
         id: 'chanico-360',
-        title: 'Chanico',
+        title: 'Chantico',
         description: 'Fuego doméstico. Centro del hogar.',
         badge: 'Portal AR',
         location: 'Plexo / Centro de voluntad',

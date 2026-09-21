@@ -113,7 +113,7 @@ const MOVEMENT_DIOSAS_GALLERY = [
   },
   {
     id: 'chanico-360',
-    title: 'Chanico',
+    title: 'Chantico',
     description: 'Fuego doméstico. Centro del hogar.',
     badge: 'Portal AR',
     location: 'Plexo / Centro de voluntad',

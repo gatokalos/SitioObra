@@ -9,7 +9,7 @@ import { BookOpen } from 'lucide-react';
 // cómo sentir y no le daban nada; Carlos las descartó. El modelo es la suya:
 // «¿Por qué el objeto se considera una forma de la obra?».
 const PREGUNTA_POR_FORMA = {
-  'El drama':      '¿Por qué el drama es la forma de la que nacen las otras ocho?',
+  'El drama':      '¿Por qué el drama es la forma de la que nace esta narrativa transmedia?',
   'La escritura':  '¿Qué cuenta la escritura que el escenario no alcanzó a decir?',
   'El objeto':     '¿Por qué el objeto se considera una forma de la obra?',
   'La imagen':     '¿Qué hace la imagen con la obra que las palabras no pueden?',
