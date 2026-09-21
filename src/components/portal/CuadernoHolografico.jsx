@@ -387,6 +387,8 @@ function CompletedScenePanel({
   onGoToSite,
   accordionRef,
 }) {
+  const [replicaPublicada, setReplicaPublicada] = useState(false);
+
   return (
     <div className="flex flex-col gap-5">
       <div>
@@ -411,8 +413,8 @@ function CompletedScenePanel({
           className="huella-puerta"
         >
           <span className="huella-puerta__texto">
-            <span className="huella-puerta__eyebrow">Lo que dijiste al volver</span>
-            <span className="huella-puerta__titulo">Llevarlo al acto final</span>
+            <span className="huella-puerta__eyebrow">{replicaPublicada ? 'Tu réplica' : 'Lo que dijiste al volver'}</span>
+            <span className="huella-puerta__titulo">{replicaPublicada ? 'Ya está en el acto final' : 'Llevarlo al acto final'}</span>
           </span>
           <ChevronDown size={17} className="huella-puerta__flecha" aria-hidden="true" />
         </button>
@@ -425,6 +427,7 @@ function CompletedScenePanel({
             {huellaMounted ? (
               <HuellaView
                 portal={portal}
+                onReplicaPublicada={setReplicaPublicada}
                 recommendedFormatId={recommendedFormatId}
                 onNavigateToRecommendation={onNavigateToRecommendation}
                 onGoToSite={onGoToSite}

@@ -13,6 +13,14 @@ const PROVOCA_DRAFT_KEY = 'gatoencerrado:provoca-draft';
 const PROVOCA_QUOTE_MAX_CHARS = 700;
 const HUELLA_DESCRIPTION = 'Aquí volvió lo que escribiste antes de entrar y lo que respondiste días después. Puedes corregirlo, conservarlo como regresó o retirarlo.';
 
+// Segundo estado (20 sep 2026). Hasta hoy este bloque decía lo mismo antes y
+// después de publicar, y volver a pulsar el botón recargaba el texto en el
+// editor: se podía publicar dos veces la misma réplica. Ahora, si ya publicó,
+// lo que ofrece es retirarla. La réplica se retira sola: no arrastra la huella
+// del recorrido, igual que retirar la huella no borraba la réplica.
+const REPLICA_DESCRIPTION = 'Ya publicaste tu réplica. Está en el acto final, firmada como la dejaste. Si no estás a gusto con ella, puedes retirarla.';
+const CONFIRMA_RETIRO = 'Se retira tu réplica del acto final. Lo que escribiste en tu recorrido se queda. No se puede deshacer.';
+
 // Devuelve el texto y de dónde salió. El origen es lo que permite que editar en
 // La Réplica corrija la huella guardada, y no sólo el borrador (D-38: corregir y
 // retirar acompañan a la huella dondequiera que se muestre).
@@ -34,10 +42,11 @@ const selectReplicaText = (sessions = [], portal = null) => {
   return { texto: elegido[1].trim(), sessionId: latest.id, campo: elegido[0] };
 };
 
-const HuellaView = ({ portal, onGoToSite }) => {
+const HuellaView = ({ portal, onGoToSite, onReplicaPublicada }) => {
   const { isDevAuth } = useAuth();
   const anonId = useMemo(() => ensureAnonId(), []);
   const [sessions, setSessions] = useState(null);
+  const [replicas, setReplicas] = useState([]);
 
   const fetchHuella = useCallback(async () => {
     if (isDevAuth) {
@@ -56,6 +65,37 @@ const HuellaView = ({ portal, onGoToSite }) => {
       return [];
     }
   }, [anonId, isDevAuth]);
+
+  const fetchReplicas = useCallback(async () => {
+    if (isDevAuth) return;
+    try {
+      const response = await fetch(`${OBRA_API_URL}/api/replica?anon_id=${encodeURIComponent(anonId)}`);
+      const data = await response.json();
+      if (response.ok && data.ok) setReplicas(data.replicas ?? []);
+    } catch {}
+  }, [anonId, isDevAuth]);
+
+  useEffect(() => { void fetchReplicas(); }, [fetchReplicas]);
+
+  // Lo sabe también la puerta del acordeón: si ya publicó, no puede seguir
+  // diciendo "llevarlo al acto final".
+  useEffect(() => { onReplicaPublicada?.(replicas.length > 0); }, [replicas.length, onReplicaPublicada]);
+
+  const retirarReplica = async () => {
+    if (typeof window !== 'undefined' && !window.confirm(CONFIRMA_RETIRO)) return;
+    try {
+      const response = await fetch(`${OBRA_API_URL}/api/replica`, {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ anonId, anon_id: anonId }),
+      });
+      const data = await response.json();
+      if (!response.ok || !data.ok) throw new Error();
+      setReplicas([]);
+    } catch {
+      await fetchReplicas();
+    }
+  };
 
   // La consulta ocurre en segundo plano al abrir el acordeón. No mostramos el
   // resultado aquí: sólo lo preparamos para el textarea de La Réplica.
@@ -102,10 +142,11 @@ const HuellaView = ({ portal, onGoToSite }) => {
       <div className="huella-view__contenido huella-view__contenido--embedded">
         <div className="huella-view__revelacion">
           <VitranaQuestionReveal
-            question={HUELLA_DESCRIPTION}
+            key={replicas.length > 0 ? 'publicada' : 'pendiente'}
+            question={replicas.length > 0 ? REPLICA_DESCRIPTION : HUELLA_DESCRIPTION}
             label={null}
-            buttonLabel="Continuar al acto final"
-            onAnswer={() => void handleIrAlActoFinal()}
+            buttonLabel={replicas.length > 0 ? 'Retirar mi réplica' : 'Continuar al acto final'}
+            onAnswer={() => void (replicas.length > 0 ? retirarReplica() : handleIrAlActoFinal())}
           />
         </div>
       </div>
