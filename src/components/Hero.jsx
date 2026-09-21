@@ -93,7 +93,9 @@ const PWA_HASH_WHISPERS = [
 // Estado Cero y los pasos prácticos de instalación — misma voz en primera
 // persona que usan los whispers del #, no tono de soporte técnico.
 const PWA_INSTRUCTIONS_EYEBROW = '';
-const PWA_INSTRUCTIONS_SUBTITLE = 'Lleva este universo contigo. Instala la app.';
+// Aviso suave al pie de las instrucciones, en el registro de «se recomienda el
+// uso de audífonos» (Carlos, 21 sep 2026). Un aviso, no una orden.
+const PWA_INSTRUCTIONS_SUBTITLE = 'Esta obra se disfruta más con la app instalada';
 // Feedback real de un visitante (agosto 2026): no relacionó el # con "el
 // gato" del hint estático y no supo qué tocar. Refuerzo de una sola vez:
 // pasado este tiempo se teclea ", pulsa el gato" y, en el mismo instante, el #

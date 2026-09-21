@@ -204,7 +204,21 @@ const PWAInstructionsOverlay = ({
         className="pointer-events-none fixed inset-x-0 z-[10000] mx-auto flex w-full max-w-md flex-col items-center gap-2 px-4 text-center"
         style={{ bottom: 'calc(env(safe-area-inset-bottom, 0px) + 0.5rem)' }}
       >
-        <p className="text-xs leading-relaxed text-slate-400">{subtitle}</p>
+        {/* Aviso suave, como las tarjetas de antes de que empiece la película
+            («se recomienda el uso de audífonos»): llega solo, después de los
+            pasos, en letra chica y con aire, y se queda. */}
+        <motion.p
+          className="text-[11px] font-light uppercase leading-relaxed tracking-[0.28em] text-slate-300/80"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{
+            duration: prefersReducedMotion ? 0.16 : 2.4,
+            delay: prefersReducedMotion ? 0 : steps.length * 0.12 + 1.6,
+            ease: 'easeOut',
+          }}
+        >
+          {subtitle}
+        </motion.p>
       <button
         type="button"
         onClick={onClose}
