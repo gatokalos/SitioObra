@@ -3,24 +3,21 @@ import { createPortal } from 'react-dom';
 import { useNavigate } from 'react-router-dom';
 import { BookOpen } from 'lucide-react';
 
-// La pregunta con la que cada forma llama al apuntador (Carlos, 20 sep 2026).
-// Antes era una sola plantilla —«¿Qué ocurre cuando el drama intenta sostener
-// todo un universo sin que se rompa?»— que preguntaba por la arquitectura de
-// la obra. Ese registro no le abre nada a quien está adentro, y además las
-// preguntas de estructura no convocan voces: la coda sólo acompaña preguntas
-// de experiencia. Éstas hablan en la voz del vestíbulo, y están medidas contra
-// las preguntas madre y el corpus: las nueve caen en su propia forma y las
-// nueve traen coda.
+// La pregunta con la que cada forma llama al apuntador (Carlos, 21 sep 2026).
+// Son preguntas de información: quien abre el librito quiere saber qué es esta
+// forma y por qué pertenece a la obra. Las del 20 sep le decían al visitante
+// cómo sentir y no le daban nada; Carlos las descartó. El modelo es la suya:
+// «¿Por qué el objeto se considera una forma de la obra?».
 const PREGUNTA_POR_FORMA = {
-  'El drama':      '¿Cómo se siente algo cuando hay gente delante?',
-  'La escritura':  '¿Qué cambia cuando por fin lo escribo?',
-  'El objeto':     '¿Por qué le tengo cariño a algo que ya no sirve?',
-  'La imagen':     '¿Qué ve la gente en mi cara que yo no estoy sintiendo?',
-  'La proyección': '¿Qué entendería de mí si me viera desde afuera?',
-  'La vibración':  '¿Qué se me queda sonando cuando apago todo?',
-  'El cuerpo':     '¿Dónde se me nota en el cuerpo lo que no digo?',
-  'El riesgo':     '¿Cuándo fue la última vez que decidí algo sin estar seguro?',
-  'La pregunta':   '¿Qué creía mío y resulta que le pasa a cualquiera?',
+  'El drama':      '¿Por qué el drama es la forma de la que nacen las otras ocho?',
+  'La escritura':  '¿Qué cuenta la escritura que el escenario no alcanzó a decir?',
+  'El objeto':     '¿Por qué el objeto se considera una forma de la obra?',
+  'La imagen':     '¿Qué hace la imagen con la obra que las palabras no pueden?',
+  'La proyección': '¿Cómo se vuelve cine una obra que nació en el teatro?',
+  'La vibración':  '¿Qué lugar ocupa el sonido dentro de la obra?',
+  'El cuerpo':     '¿Quiénes son las presencias que acompañan al cuerpo en esta forma?',
+  'El riesgo':     '¿Por qué un juego de gato es una forma de la obra?',
+  'La pregunta':   '¿Qué se le pregunta al oráculo y qué hace la obra con eso?',
 };
 
 const TONE_STYLES = {
