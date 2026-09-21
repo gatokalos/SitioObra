@@ -697,7 +697,10 @@ const Blog = ({ posts = [], isLoading = false, error = null, showBuscador = fals
       .catch(() => {});
     return () => controller.abort();
   }, []);
-  const FAQ_PAGE_SIZE = 3;
+  // El vestíbulo mostraba 3 de 15: doce preguntas escondidas tras un botón que
+  // casi nadie pulsa. En escritorio hay columna de sobra (mockup de Carlos,
+  // 20 sep); en móvil la columna es todo lo que hay, así que ahí siguen tres.
+  const FAQ_PAGE_SIZE = isMobileViewport ? 3 : 7;
   const faqPageCount = Math.max(1, Math.ceil(vestibuloPrompts.length / FAQ_PAGE_SIZE));
   const faqVisiblePrompts = vestibuloPrompts.slice(faqPage * FAQ_PAGE_SIZE, (faqPage + 1) * FAQ_PAGE_SIZE);
   const camerinoLightState = faqIsListening
@@ -1225,17 +1228,6 @@ const Blog = ({ posts = [], isLoading = false, error = null, showBuscador = fals
                         Consulta al apuntador, toma una pregunta del vestíbulo o deja la tuya para quien venga después.
                       </p>
 
-                      <div className="space-y-2">
-                        <p className="text-[9px] uppercase tracking-[0.3em] text-slate-400/70">Archivos disponibles</p>
-                        <div className="flex flex-wrap gap-2">
-                          {['Curaduría editorial', 'Memoria escénica', 'Obras narrativas', 'Canon del universo'].map((fund) => (
-                            <span key={fund} className="rounded-full border border-violet-200/15 bg-white/[0.035] px-3 py-1.5 text-[10px] tracking-wide text-violet-100/75">
-                              {fund}
-                            </span>
-                          ))}
-                        </div>
-                      </div>
-
                       <div className="grid gap-5 lg:grid-cols-[minmax(300px,0.88fr)_minmax(0,1.12fr)]">
                         <section className="camerino-apuntador-panel relative order-1 overflow-hidden rounded-2xl border p-5 backdrop-blur-sm lg:order-1">
                           <div
@@ -1341,14 +1333,13 @@ const Blog = ({ posts = [], isLoading = false, error = null, showBuscador = fals
                             </button>
                           </div>
                           <div className="space-y-2">
-                            {faqVisiblePrompts.map((prompt, index) => (
+                            {faqVisiblePrompts.map((prompt) => (
                               <button
                                 type="button"
                                 key={prompt.id ?? prompt.texto}
                                 onClick={() => handleFaqPromptSelect(prompt)}
                                 className="group flex w-full items-start gap-3 rounded-xl border border-white/10 bg-white/[0.025] px-4 py-3 text-left transition hover:border-violet-300/35 hover:bg-violet-400/[0.07]"
                               >
-                                <span className="pt-0.5 font-mono text-[10px] text-violet-300/55">{String(index + 1).padStart(2, '0')}</span>
                                 <span className="text-sm leading-snug text-slate-200/90 group-hover:text-white">{prompt.texto}</span>
                               </button>
                             ))}
