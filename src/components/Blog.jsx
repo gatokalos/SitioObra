@@ -1203,7 +1203,7 @@ const Blog = ({ posts = [], isLoading = false, error = null, showBuscador = fals
 
                     <div className="relative z-10 space-y-7">
                       <div className="grid gap-5 lg:grid-cols-[minmax(300px,0.88fr)_minmax(0,1.12fr)]">
-                        <div className="order-1 space-y-6 lg:order-1">
+                        <div className="order-1 flex flex-col gap-6 lg:order-1">
                           <div className="flex flex-col gap-5 md:flex-row md:items-start md:justify-between">
                             <div className="flex items-start gap-4">
                               <img
@@ -1230,7 +1230,7 @@ const Blog = ({ posts = [], isLoading = false, error = null, showBuscador = fals
                             Consulta al apuntador, toma una pregunta del vestíbulo o deja la tuya para quien venga después.
                           </p>
 
-                          <section className="camerino-apuntador-panel relative overflow-hidden rounded-2xl border p-5 backdrop-blur-sm">
+                          <section className="camerino-apuntador-panel relative overflow-hidden rounded-2xl border p-5 backdrop-blur-sm lg:flex lg:flex-1 lg:flex-col">
                           <div
                             className={`camerino-mirror-lights camerino-mirror-lights--${camerinoLightState}`}
                             aria-hidden="true"
@@ -1250,70 +1250,72 @@ const Blog = ({ posts = [], isLoading = false, error = null, showBuscador = fals
                           <p className="mb-4 text-[10px] uppercase tracking-[0.3em] text-violet-200/65">
                             El apuntador
                           </p>
+                            <div className="lg:flex lg:flex-1 lg:flex-col lg:justify-center">
 
-                          {faqInputMode === 'voice' ? (
-                            <ObraConversationControls
-                              ctaLabel="Pregunta algo"
-                              listeningLabel="Pulsa otra vez para terminar"
-                              promptLabel="Pulsa y habla con el apuntador"
-                              errorTitle="El apuntador no pudo escucharte"
-                              isListening={faqIsListening}
-                              micPromptVisible={faqMicPromptVisible}
-                              micError={faqMicError}
-                              secondaryCtaVisible
-                              secondaryCtaCopy="Prefiero escribir"
-                              onMicClick={handleFaqMicClick}
-                              onSecondaryCtaClick={handleFaqInputModeToggle}
-                              tone={{
-                                border: 'rgba(196,181,253,0.62)',
-                                dot: 'rgba(221,214,254,0.96)',
-                                glow: '0 0 38px rgba(139,92,246,0.5)',
-                              }}
-                            />
-                          ) : (
-                            <div className="space-y-3">
-                              <label htmlFor="archivo-vivo-query" className="text-[10px] uppercase tracking-[0.26em] text-violet-200/55">
-                                {faqQuery.trim() ? 'Esto entendí · puedes editarlo' : 'Escríbele una pregunta'}
-                              </label>
-                              <textarea
-                                id="archivo-vivo-query"
-                                ref={faqInputRef}
-                                rows={3}
-                                value={faqQuery}
-                                onChange={(event) => setFaqQuery(event.target.value)}
-                                onKeyDown={(event) => {
-                                  if ((event.metaKey || event.ctrlKey) && event.key === 'Enter' && faqQuery.trim().length >= 2) {
-                                    handleFaqSearchSubmit();
-                                  }
+                            {faqInputMode === 'voice' ? (
+                              <ObraConversationControls
+                                ctaLabel="Pregunta algo"
+                                listeningLabel="Pulsa otra vez para terminar"
+                                promptLabel="Pulsa y habla con el apuntador"
+                                errorTitle="El apuntador no pudo escucharte"
+                                isListening={faqIsListening}
+                                micPromptVisible={faqMicPromptVisible}
+                                micError={faqMicError}
+                                secondaryCtaVisible
+                                secondaryCtaCopy="Prefiero escribir"
+                                onMicClick={handleFaqMicClick}
+                                onSecondaryCtaClick={handleFaqInputModeToggle}
+                                tone={{
+                                  border: 'rgba(196,181,253,0.62)',
+                                  dot: 'rgba(221,214,254,0.96)',
+                                  glow: '0 0 38px rgba(139,92,246,0.5)',
                                 }}
-                                placeholder="¿Qué quieres preguntarle al apuntador?"
-                                disabled={faqIsLoading}
-                                className="w-full resize-none rounded-2xl border border-violet-100/30 bg-white/90 px-4 py-3 text-sm leading-relaxed text-slate-900 outline-none placeholder:text-slate-400 focus:border-violet-400 focus:ring-2 focus:ring-violet-400/20 disabled:opacity-60"
                               />
-                              <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-                                <button
-                                  type="button"
-                                  onClick={handleFaqInputModeToggle}
-                                  className="text-xs text-violet-200/65 underline decoration-dotted underline-offset-4 transition hover:text-violet-100"
-                                >
-                                  Prefiero hablar
-                                </button>
-                                <Button
-                                  type="button"
-                                  onClick={() => handleFaqSearchSubmit()}
-                                  disabled={faqIsLoading || faqQuery.trim().length < 2}
-                                  className="ge-chip-action ge-chip-action--primary ge-chip-action--compact"
-                                >
-                                  {faqIsLoading ? 'Consultando…' : 'Preguntar al apuntador'}
-                                  {faqIsLoading ? (
-                                    <span className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-white/35 border-t-white" aria-hidden="true" />
-                                  ) : (
-                                    <FileSearch size={14} aria-hidden="true" />
-                                  )}
-                                </Button>
+                            ) : (
+                              <div className="space-y-3">
+                                <label htmlFor="archivo-vivo-query" className="text-[10px] uppercase tracking-[0.26em] text-violet-200/55">
+                                  {faqQuery.trim() ? 'Esto entendí · puedes editarlo' : 'Escríbele una pregunta'}
+                                </label>
+                                <textarea
+                                  id="archivo-vivo-query"
+                                  ref={faqInputRef}
+                                  rows={3}
+                                  value={faqQuery}
+                                  onChange={(event) => setFaqQuery(event.target.value)}
+                                  onKeyDown={(event) => {
+                                    if ((event.metaKey || event.ctrlKey) && event.key === 'Enter' && faqQuery.trim().length >= 2) {
+                                      handleFaqSearchSubmit();
+                                    }
+                                  }}
+                                  placeholder="¿Qué quieres preguntarle al apuntador?"
+                                  disabled={faqIsLoading}
+                                  className="w-full resize-none rounded-2xl border border-violet-100/30 bg-white/90 px-4 py-3 text-sm leading-relaxed text-slate-900 outline-none placeholder:text-slate-400 focus:border-violet-400 focus:ring-2 focus:ring-violet-400/20 disabled:opacity-60"
+                                />
+                                <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                                  <button
+                                    type="button"
+                                    onClick={handleFaqInputModeToggle}
+                                    className="text-xs text-violet-200/65 underline decoration-dotted underline-offset-4 transition hover:text-violet-100"
+                                  >
+                                    Prefiero hablar
+                                  </button>
+                                  <Button
+                                    type="button"
+                                    onClick={() => handleFaqSearchSubmit()}
+                                    disabled={faqIsLoading || faqQuery.trim().length < 2}
+                                    className="ge-chip-action ge-chip-action--primary ge-chip-action--compact"
+                                  >
+                                    {faqIsLoading ? 'Consultando…' : 'Preguntar al apuntador'}
+                                    {faqIsLoading ? (
+                                      <span className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-white/35 border-t-white" aria-hidden="true" />
+                                    ) : (
+                                      <FileSearch size={14} aria-hidden="true" />
+                                    )}
+                                  </Button>
+                                </div>
                               </div>
+                            )}
                             </div>
-                          )}
                         </section>
 
                         </div>
