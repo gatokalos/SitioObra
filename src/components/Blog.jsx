@@ -1202,34 +1202,35 @@ const Blog = ({ posts = [], isLoading = false, error = null, showBuscador = fals
                     <div className="pointer-events-none absolute inset-x-8 top-0 h-px bg-gradient-to-r from-transparent via-violet-100/60 to-transparent" />
 
                     <div className="relative z-10 space-y-7">
-                      <div className="flex flex-col gap-5 md:flex-row md:items-start md:justify-between">
-                        <div className="flex items-start gap-4">
-                          <img
-                            src="/assets/header-logo.png"
-                            alt="Es un gato encerrado"
-                            className="h-12 w-12 shrink-0 object-contain opacity-90 drop-shadow-[0_0_20px_rgba(167,139,250,0.8)] md:h-14 md:w-14"
-                          />
-                          <div>
-                            <p className="text-[10px] uppercase tracking-[0.32em] text-violet-300/65">
-                              #GatoEncerrado
-                            </p>
-                            <h3 className="mt-2 font-display text-2xl text-slate-50 md:text-3xl">
-                              Entra al camerino
-                            </h3>
-                          </div>
-                        </div>
-                        <span className="inline-flex w-fit items-center gap-2 rounded-full border border-emerald-300/20 bg-emerald-400/5 px-3 py-1 text-[9px] uppercase tracking-[0.25em] text-emerald-200/75">
-                          <span className="h-1.5 w-1.5 rounded-full bg-emerald-300 shadow-[0_0_10px_rgba(110,231,183,0.9)]" />
-                          Archivo vivo
-                        </span>
-                      </div>
-
-                      <p className="max-w-3xl text-sm leading-relaxed text-slate-300/80 md:text-base">
-                        Consulta al apuntador, toma una pregunta del vestíbulo o deja la tuya para quien venga después.
-                      </p>
-
                       <div className="grid gap-5 lg:grid-cols-[minmax(300px,0.88fr)_minmax(0,1.12fr)]">
-                        <section className="camerino-apuntador-panel relative order-1 overflow-hidden rounded-2xl border p-5 backdrop-blur-sm lg:order-1">
+                        <div className="order-1 space-y-6 lg:order-1">
+                          <div className="flex flex-col gap-5 md:flex-row md:items-start md:justify-between">
+                            <div className="flex items-start gap-4">
+                              <img
+                                src="/assets/header-logo.png"
+                                alt="Es un gato encerrado"
+                                className="h-12 w-12 shrink-0 object-contain opacity-90 drop-shadow-[0_0_20px_rgba(167,139,250,0.8)] md:h-14 md:w-14"
+                              />
+                              <div>
+                                <p className="text-[10px] uppercase tracking-[0.32em] text-violet-300/65">
+                                  #GatoEncerrado
+                                </p>
+                                <h3 className="mt-2 font-display text-2xl text-slate-50 md:text-3xl">
+                                  Entra al camerino
+                                </h3>
+                              </div>
+                            </div>
+                            <span className="inline-flex w-fit items-center gap-2 rounded-full border border-emerald-300/20 bg-emerald-400/5 px-3 py-1 text-[9px] uppercase tracking-[0.25em] text-emerald-200/75">
+                              <span className="h-1.5 w-1.5 rounded-full bg-emerald-300 shadow-[0_0_10px_rgba(110,231,183,0.9)]" />
+                              Archivo vivo
+                            </span>
+                          </div>
+
+                          <p className="max-w-3xl text-sm leading-relaxed text-slate-300/80 md:text-base">
+                            Consulta al apuntador, toma una pregunta del vestíbulo o deja la tuya para quien venga después.
+                          </p>
+
+                          <section className="camerino-apuntador-panel relative overflow-hidden rounded-2xl border p-5 backdrop-blur-sm">
                           <div
                             className={`camerino-mirror-lights camerino-mirror-lights--${camerinoLightState}`}
                             aria-hidden="true"
@@ -1314,6 +1315,8 @@ const Blog = ({ posts = [], isLoading = false, error = null, showBuscador = fals
                             </div>
                           )}
                         </section>
+
+                        </div>
 
                         <section className="order-3 rounded-2xl border border-white/10 bg-black/15 p-5 lg:order-2">
                           <div className="mb-4 flex items-center justify-between gap-3">
