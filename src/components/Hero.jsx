@@ -384,6 +384,17 @@ const Hero = () => {
   useEffect(() => {
     if (hasActivatedAudio || isGatHubOpen || isInstalledPwa) setIsHashtag3DRetired(true);
   }, [hasActivatedAudio, isGatHubOpen, isInstalledPwa]);
+  // El entorno del ritual —las estrellas— se retira con la escena, NO con el
+  // #3D. Las dos cosas fueron la misma bandera hasta que la PWA empezó a
+  // hacer la ceremonia sin gato en 3D (21 sep 2026): ahí el cielo desapareció
+  // de la app instalada sin que nadie lo decidiera. Se retira cuando la
+  // escena se activa o cuando el HUB abre solo (usuario que regresa con GAT).
+  const [isRitualStageRetired, setIsRitualStageRetired] = useState(
+    () => hasActivatedAudio || isGatHubOpen
+  );
+  useEffect(() => {
+    if (hasActivatedAudio || isGatHubOpen) setIsRitualStageRetired(true);
+  }, [hasActivatedAudio, isGatHubOpen]);
   const shouldShowHeroInactiveHint = !hasActivatedAudio && !isHeroPwaInstructionsOpen && !isGatLinktreeAudience;
   // Solo se retiene mientras el hint está corriendo. Si nunca se muestra
   // (audiencia de linktree, sheet de PWA abierto, escena ya activada), el #
@@ -1285,12 +1296,11 @@ const Hero = () => {
         className="min-h-screen relative overflow-hidden flex flex-col"
       >
         <AnimatePresence>
-          {/* Mismo criterio que isHashtag3DRetired: si el HUB ya abrió solo
-              (usuario que regresa con GAT>0), la escena ya cuenta como
-              activada aunque hasActivatedAudio nunca se haya puesto true a
-              mano — el entorno del ritual (estrellas) no debe seguir
-              montado detrás del HUB. */}
-          {!isHashtag3DRetired && (
+          {/* Si el HUB ya abrió solo (usuario que regresa con GAT>0), la
+              escena ya cuenta como activada aunque hasActivatedAudio nunca se
+              haya puesto true a mano — el entorno del ritual (estrellas) no
+              debe seguir montado detrás del HUB. */}
+          {!isRitualStageRetired && (
               <motion.div
                 key="hero-starfield"
                 aria-hidden="true"
