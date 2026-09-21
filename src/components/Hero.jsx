@@ -131,7 +131,10 @@ const HERO_GHOST_SUBTITLES = [
 // subtítulos rotativos) y se revirtió el mismo día — vuelve a ser una sola
 // frase repetida 13 veces, como el diseño original, pero con esta pregunta
 // introspectiva en vez del hint de activación (Carlos, 2026-08-19).
-const HERO_INACTIVE_ECHO_TEXT = 'Una sola pregunta: ¿qué es estar bien?';
+// La pregunta del eco (Carlos, 21 sep 2026). Antes era «¿qué es estar bien?»,
+// que remite sólo a la app de la causa social; ésta pregunta por la obra.
+// Tiene que ser igual de corta: es un solo renglón repetido trece veces.
+const HERO_INACTIVE_ECHO_TEXT = 'Una sola pregunta: ¿qué queda de una obra?';
 
 const HeroInactiveSignal = ({ prefersReducedMotion = false }) => {
   // El eco nace en el título —abajo, visible— y asciende perdiendo opacidad
