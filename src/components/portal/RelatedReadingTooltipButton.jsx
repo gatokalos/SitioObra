@@ -3,6 +3,26 @@ import { createPortal } from 'react-dom';
 import { useNavigate } from 'react-router-dom';
 import { BookOpen } from 'lucide-react';
 
+// La pregunta con la que cada forma llama al apuntador (Carlos, 20 sep 2026).
+// Antes era una sola plantilla —«¿Qué ocurre cuando el drama intenta sostener
+// todo un universo sin que se rompa?»— que preguntaba por la arquitectura de
+// la obra. Ese registro no le abre nada a quien está adentro, y además las
+// preguntas de estructura no convocan voces: la coda sólo acompaña preguntas
+// de experiencia. Éstas hablan en la voz del vestíbulo, y están medidas contra
+// las preguntas madre y el corpus: las nueve caen en su propia forma y las
+// nueve traen coda.
+const PREGUNTA_POR_FORMA = {
+  'El drama':      '¿Cómo se siente algo cuando hay gente delante?',
+  'La escritura':  '¿Qué cambia cuando por fin lo escribo?',
+  'El objeto':     '¿Por qué le tengo cariño a algo que ya no sirve?',
+  'La imagen':     '¿Qué ve la gente en mi cara que yo no estoy sintiendo?',
+  'La proyección': '¿Qué entendería de mí si me viera desde afuera?',
+  'La vibración':  '¿Qué se me queda sonando cuando apago todo?',
+  'El cuerpo':     '¿Dónde se me nota en el cuerpo lo que no digo?',
+  'El riesgo':     '¿Cuándo fue la última vez que decidí algo sin estar seguro?',
+  'La pregunta':   '¿Qué creía mío y resulta que le pasa a cualquiera?',
+};
+
 const TONE_STYLES = {
   cyan: {
     button: 'border-cyan-200/40 bg-cyan-300/10 text-cyan-100 hover:bg-cyan-300/20 focus-visible:ring-cyan-300/50',
@@ -32,12 +52,7 @@ const RelatedReadingTooltipButton = ({
   const [panelStyle, setPanelStyle] = useState(null);
 
   const apuntadorHref = useMemo(() => {
-    const lowerLabel = miniversoLabel
-      ? miniversoLabel.charAt(0).toLowerCase() + miniversoLabel.slice(1)
-      : '';
-    const question = lowerLabel
-      ? `¿Qué ocurre cuando ${lowerLabel} intenta sostener todo un universo sin que se rompa?`
-      : '';
+    const question = PREGUNTA_POR_FORMA[miniversoLabel ?? ''] ?? '';
     const params = question ? `?apuntador_q=${encodeURIComponent(question)}` : '';
     return `/${params}#dialogo-critico`;
   }, [miniversoLabel]);
