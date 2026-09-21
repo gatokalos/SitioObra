@@ -516,7 +516,9 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
   // Una sola fuente para la pregunta en curso: la cabina (móvil) y la columna
   // de escritorio deben decir exactamente lo mismo.
   const preguntaDelPaso =
-    bitacoraStep === 'p1'
+    bitacoraStep === 'compartir'
+      ? 'Lo que escribiste puede acompañar a alguien que se lo esté preguntando. ¿Dejas que lo encuentre, sin tu nombre?'
+      : bitacoraStep === 'p1'
       ? '¿Hay algo de esta experiencia que haya regresado por su cuenta?'
       : bitacoraStep === 'p2'
         ? (bitacoraQuestionLoading ? '…' : (bitacoraP2Question || 'Si volvió, ¿dónde te encontró?'))
@@ -1013,17 +1015,47 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
     const portalsDone = bitacoraVentana?.length ? [...new Set([...bitacoraVentana, portal])] : [portal];
     portalsDone.forEach((p) => lsPatch(p, { bitacora_completed: true, dashboard_active_level: 3 }));
     setBitacoraCompleted(true);
-    setBitacoraOpen(false);
-    // Al cerrar el formulario vuelve primero a la Memoria. La huella queda
-    // disponible dentro de ese mapa, pero la persona decide cuándo abrirla;
-    // no interrumpimos el reencuentro con su recorrido con otra pantalla.
-    setHolograficoOpen(true);
-    setHuellaOpen(false);
     setDashboardActiveLevel(3);
-    setBitacoraStep('p1');
     setBitacoraEscribiendo(false);
     setBitacoraSubmitting(false);
+    // D-37 §3.2 · el permiso de compartir vuelve a existir (20 sep 2026).
+    // Perdió su casilla con el rediseño del 19 y, sin él, nadie podía
+    // autorizar nada: la coda del apuntador sólo tenía voces del Laboratorio.
+    // No vuelve como casilla de preferencias sino como la última pregunta del
+    // acto, en la misma cabina que hizo las otras tres. Es el único momento en
+    // que todo el mundo está y acaba de escribir lo que se va a compartir.
+    setBitacoraStep('compartir');
   }, [portal, bitacoraP1, bitacoraAfirmativa, bitacoraP2, bitacoraP3, isDevAuth, user?.id, bitacoraVentana]);
+
+  // El cierre que antes ocurría al guardar: vuelve primero a la Memoria, y la
+  // huella queda disponible dentro de ese mapa para cuando ella quiera abrirla.
+  const cerrarElActo = useCallback(() => {
+    setBitacoraOpen(false);
+    setHolograficoOpen(true);
+    setHuellaOpen(false);
+    setBitacoraStep('p1');
+  }, []);
+
+  // Las dos respuestas pasan por aquí: autorizar y no autorizar se guardan
+  // igual, porque un "no" también es una decisión que hay que poder revocar.
+  const responderCompartir = useCallback(async (autorizado) => {
+    setBitacoraSubmitting(true);
+    if (!isDevAuth) {
+      try {
+        await fetch(`${OBRA_API_URL}/api/huella/compartir`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            anon_id: ensureAnonId(),
+            autorizado,
+            ...(user?.id ? { user_id: user.id } : {}),
+          }),
+        });
+      } catch (_) {}
+    }
+    setBitacoraSubmitting(false);
+    cerrarElActo();
+  }, [isDevAuth, user?.id, cerrarElActo]);
 
   // Avanzar desde P2 o P3: lo llama el botón dentro del campo y el de saltar.
   // Saltar no manda texto: no hay respuesta inventada (§1.5 del handoff).
@@ -1435,6 +1467,7 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
                             {bitacoraStep === 'p1' && '¿Hay algo de esta experiencia que haya regresado por su cuenta? Una imagen, una frase, una sensación.'}
                             {bitacoraStep === 'p2' && (bitacoraQuestionLoading ? '…' : (bitacoraP2Question || 'Si volvió, ¿dónde te encontró? ¿Qué estabas haciendo o con quién estabas?'))}
                             {bitacoraStep === 'p3' && (bitacoraQuestionLoading ? '…' : (bitacoraP3Question || 'Después de esta experiencia, ¿hay algo que ahora veas de otra manera? También puede ser que nada haya cambiado.'))}
+                            {bitacoraStep === 'compartir' && preguntaDelPaso}
                           </h3>
                         </div>
 
@@ -1526,6 +1559,31 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
                               Nada cambió esta vez. Cerrar →
                             </button>
                           </>
+                        )}
+
+                        {/* El permiso de compartir (D-37 §3.2) */}
+                        {bitacoraStep === 'compartir' && (
+                          <div className="space-y-2">
+                            <button
+                              type="button"
+                              disabled={bitacoraSubmitting}
+                              onClick={() => void responderCompartir(true)}
+                              className="w-full rounded-full border border-purple-400/80 bg-purple-600/30 px-4 py-3 text-xs uppercase tracking-[0.25em] text-purple-50 transition hover:bg-purple-600/45 disabled:opacity-50"
+                            >
+                              Que lo encuentre
+                            </button>
+                            <button
+                              type="button"
+                              disabled={bitacoraSubmitting}
+                              onClick={() => void responderCompartir(false)}
+                              className="w-full rounded-full border border-white/15 px-4 py-2.5 text-[0.7rem] text-slate-300 transition hover:border-white/30 hover:text-white disabled:opacity-50"
+                            >
+                              Prefiero que no
+                            </button>
+                            <p className="pt-1 text-[0.66rem] leading-relaxed text-slate-400/80">
+                              Sin tu nombre, y sólo lo que escribiste. Si algún día retiras lo que dejaste, esto se retira contigo.
+                            </p>
+                          </div>
                         )}
 
                       </div>
@@ -2379,7 +2437,33 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
 
           {/* Donde estaba el chevron: aquí se responde. */}
           <div className="cabina-respuestas-zona relative z-10 mx-auto w-[min(340px,88vw)] shrink-0 space-y-2">
-            {bitacoraStep === 'p1' ? (
+            {bitacoraStep === 'compartir' ? (
+              <>
+                <div className="cabina-respuesta-panel" role="group" aria-label="¿Dejas que otros lo encuentren?">
+                  <button
+                    type="button"
+                    disabled={bitacoraSubmitting}
+                    onClick={() => void responderCompartir(true)}
+                    className="cabina-respuesta-clave cabina-respuesta-clave--afirmativa"
+                  >
+                    <span className="cabina-respuesta-clave__sigilo" aria-hidden="true" />
+                    <span>Que lo encuentre</span>
+                  </button>
+                  <button
+                    type="button"
+                    disabled={bitacoraSubmitting}
+                    onClick={() => void responderCompartir(false)}
+                    className="cabina-respuesta-clave cabina-respuesta-clave--silencio"
+                  >
+                    <span className="cabina-respuesta-clave__sigilo" aria-hidden="true" />
+                    <span>Prefiero que no</span>
+                  </button>
+                </div>
+                <p className="px-1 text-center text-[0.62rem] leading-relaxed text-white/55">
+                  Sin tu nombre, y sólo lo que escribiste. Si algún día retiras lo que dejaste, esto se retira contigo.
+                </p>
+              </>
+            ) : bitacoraStep === 'p1' ? (
               <div className="cabina-respuesta-panel" role="group" aria-label="¿Regresó algo de esta experiencia?">
                 <button
                   type="button"
