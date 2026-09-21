@@ -4005,6 +4005,14 @@ body {
     visibility 0s;
 }
 
+/* La ficha de la forma en la Memoria reserva siempre tres renglones: la forma
+   recorrida cuenta lo que pasó en tres líneas, y el verso de un satélite suele
+   ocupar dos. Sin esta reserva el bloque entero salta al cambiar de miniverso
+   —y con él la línea de la forma y el acordeón— (Carlos, 20 sep 2026). */
+.memoria-descripcion {
+  min-height: calc(3 * 1.625 * 0.875rem);
+}
+
 .huella-puerta {
   position: relative;
   isolation: isolate;
