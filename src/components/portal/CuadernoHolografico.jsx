@@ -7,6 +7,7 @@ import {
   Sparkles,
   BookOpen,
   ChevronDown,
+  Download,
 } from 'lucide-react';
 import VitranaQuestionReveal from '@/components/portal/VitranaQuestionReveal';
 import HuellaView from '@/components/portal/HuellaView';
@@ -379,6 +380,8 @@ function Constellation({ centerKey, onSelect }) {
 function CompletedScenePanel({
   portal,
   entry,
+  onDownloadSouvenir,
+  souvenirGenerando,
   huellaOpen,
   huellaMounted,
   onToggleHuella,
@@ -397,6 +400,19 @@ function CompletedScenePanel({
           {entry.form ?? entry.name}
         </h2>
         <FraseDeMemoria portal={portal} enEscena />
+        {/* En móvil el recuerdo no cabe como zócalo (en escritorio vive al pie
+            de la cabina): aquí basta un chip que no atiborre la pantalla. */}
+        {onDownloadSouvenir ? (
+          <button
+            type="button"
+            onClick={() => void onDownloadSouvenir()}
+            disabled={souvenirGenerando}
+            className="mt-3 inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/[0.04] px-3 py-1.5 text-[0.68rem] text-slate-200/90 transition hover:border-white/30 hover:text-white disabled:opacity-50 lg:hidden"
+          >
+            <Download size={13} aria-hidden="true" />
+            {souvenirGenerando ? 'Preparando…' : 'Llevarme el recuerdo'}
+          </button>
+        ) : null}
       </div>
 
       <LineaDeLaForma portal={portal} enFoco focoCompleto enEscena />
@@ -456,6 +472,8 @@ function HolograficoPanel({
   onOpenVideo,
   onRequireLogin,
   readOnly = false,
+  onDownloadSouvenir = null,
+  souvenirGenerando = false,
 }) {
   const isHome = centerKey === homeKey;
   const entry = CATALOG.find(p => p.key === centerKey);
@@ -485,6 +503,8 @@ function HolograficoPanel({
           homeBitacora ? (
             <CompletedScenePanel
               portal={homeKey}
+              onDownloadSouvenir={onDownloadSouvenir}
+              souvenirGenerando={souvenirGenerando}
               entry={entry}
               huellaOpen={huellaOpen}
               huellaMounted={huellaMounted}
@@ -522,6 +542,8 @@ function HolograficoPanel({
         ) : hasBitacora ? (
           <CompletedScenePanel
             portal={centerKey}
+            onDownloadSouvenir={onDownloadSouvenir}
+            souvenirGenerando={souvenirGenerando}
             entry={entry}
             huellaOpen={huellaOpen}
             huellaMounted={huellaMounted}
@@ -565,6 +587,8 @@ function HolograficoPanel({
 
 const CuadernoHolografico = ({
   portal,
+  onDownloadSouvenir = null,
+  souvenirGenerando = false,
   onStartBitacora,
   huellaOpen = false,
   onHuellaOpenChange,
@@ -717,6 +741,8 @@ const CuadernoHolografico = ({
         <HolograficoPanel
           centerKey={centerKey}
           homeKey={portal}
+          onDownloadSouvenir={onDownloadSouvenir}
+          souvenirGenerando={souvenirGenerando}
           onStartBitacora={onStartBitacora}
           huellaOpen={huellaOpen}
           huellaMounted={huellaMounted}

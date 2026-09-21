@@ -3,7 +3,7 @@ import { createPortal } from 'react-dom';
 import CuadernoHolografico from './CuadernoHolografico';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Eye, Flame, Lock, ShieldCheck, Check, ChevronDown, Sparkles, RotateCcw, FastForward, X } from 'lucide-react';
+import { Check, ChevronDown, Download, Eye, FastForward, Flame, Lock, RotateCcw, ShieldCheck, Sparkles, X } from 'lucide-react';
 import { supabase } from '@/lib/supabaseClient';
 import { ensureAnonId } from '@/lib/identity';
 import { useAuth } from '@/contexts/SupabaseAuthContext';
@@ -858,7 +858,11 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
     FORMAT_ID_TO_PORTAL[l3Rec?.recommended_format_id] ?? portal;
 
   const handleDownloadSouvenir = useCallback(async () => {
-    if (isSouvenirGenerating || souvenirDeliveredAt || !l3Rec?.step3) return;
+    // Se puede volver a pedir (20 sep 2026). El candado de una sola descarga
+    // dejaba sin recuerdo a quien perdiera el archivo, y este objeto va a
+    // llevar la llave para volver a lo suyo. El stack del clímax conserva su
+    // propio "ya lo tienes"; aquí no hay por qué negarlo.
+    if (isSouvenirGenerating || !l3Rec?.step3) return;
     setIsSouvenirGenerating(true);
     try {
       const blob = await createMiniverseSouvenirBlob({
@@ -1415,6 +1419,8 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
                   >
                     <CuadernoHolografico
                       portal={portal}
+                      onDownloadSouvenir={l3Rec?.step3 ? handleDownloadSouvenir : null}
+                      souvenirGenerando={isSouvenirGenerating}
                       isMobileViewport={isMobileViewport}
                       readOnly={bitacoraCompleted}
                       onStartBitacora={() => { setHolograficoOpen(false); setBitacoraOpen(true); }}
@@ -2311,6 +2317,33 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
 
           {/* ── Columna derecha: gato de la cabina — solo desktop ── */}
           <div className="hidden lg:block lg:w-[42%] shrink-0 relative overflow-hidden bg-[rgb(5,3,9)]">
+            {/* El recuerdo, otra vez al alcance (Carlos, 20 sep 2026). Sólo se
+                podía descargar dentro de la cascada del clímax y una única vez;
+                quien no lo tomara ahí se quedaba sin él para siempre. Aquí, al
+                pie de la cabina y con el mismo zócalo del stack, está siempre
+                que la Memoria esté abierta. */}
+            {holograficoOpen && l3Rec?.step3 ? (
+              <div className="absolute inset-x-5 bottom-5 z-20">
+                <button
+                  type="button"
+                  onClick={() => void handleDownloadSouvenir()}
+                  disabled={isSouvenirGenerating}
+                  className="cabina-antesala-opcion cabina-antesala-opcion--recuerdo"
+                >
+                  <span className="cabina-antesala-opcion__mirilla">
+                    <Download size={17} aria-hidden="true" />
+                  </span>
+                  <span className="cabina-antesala-opcion__texto">
+                    <span className="cabina-antesala-opcion__titulo">
+                      {isSouvenirGenerating ? 'Preparando tu recuerdo…' : 'Llevarme el recuerdo'}
+                    </span>
+                    <span className="cabina-antesala-opcion__detalle">
+                      Tu consigna y la fecha en que la pregunta vuelve
+                    </span>
+                  </span>
+                </button>
+              </div>
+            ) : null}
             {/* La misma presencia permanece en escena: misteriosa antes de L3
                 y revelada cuando el usuario alcanza el tercer nivel. */}
             <img
