@@ -394,25 +394,29 @@ function CompletedScenePanel({
 
   return (
     <div className="flex flex-col gap-5">
+      {/* En móvil el recuerdo no cabe como zócalo (en escritorio vive al pie de
+          la cabina): un chip en la esquina, encima de la ficha de la forma, que
+          no se mete entre el nombre y lo que quedó (Carlos, 20 sep 2026). */}
+      {onDownloadSouvenir ? (
+        <div className="flex justify-end lg:hidden">
+          <button
+            type="button"
+            onClick={() => void onDownloadSouvenir()}
+            disabled={souvenirGenerando}
+            className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/[0.04] px-3 py-1.5 text-[0.68rem] text-slate-200/90 transition hover:border-white/30 hover:text-white disabled:opacity-50"
+          >
+            <Download size={13} aria-hidden="true" />
+            {souvenirGenerando ? 'Preparando…' : 'Llevarme el recuerdo'}
+          </button>
+        </div>
+      ) : null}
+
       <div>
         <p className="text-xs uppercase tracking-[0.3em] text-slate-400/70">{entry.eyebrow}</p>
         <h2 className={`font-display text-2xl leading-snug mt-1 ${entry.color}`}>
           {entry.form ?? entry.name}
         </h2>
         <FraseDeMemoria portal={portal} enEscena />
-        {/* En móvil el recuerdo no cabe como zócalo (en escritorio vive al pie
-            de la cabina): aquí basta un chip que no atiborre la pantalla. */}
-        {onDownloadSouvenir ? (
-          <button
-            type="button"
-            onClick={() => void onDownloadSouvenir()}
-            disabled={souvenirGenerando}
-            className="mt-3 inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/[0.04] px-3 py-1.5 text-[0.68rem] text-slate-200/90 transition hover:border-white/30 hover:text-white disabled:opacity-50 lg:hidden"
-          >
-            <Download size={13} aria-hidden="true" />
-            {souvenirGenerando ? 'Preparando…' : 'Llevarme el recuerdo'}
-          </button>
-        ) : null}
       </div>
 
       <LineaDeLaForma portal={portal} enFoco focoCompleto enEscena />
