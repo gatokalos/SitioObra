@@ -1518,6 +1518,13 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
                                 <span aria-hidden="true" className="bitacora-escritorio-instrumento__marca" />
                               </div>
 
+                            {/* PENDIENTE DE DISEÑO (Carlos, 22 sep 2026): los
+                                botones tipo zócalo ya no terminan de funcionar
+                                en esta columna izquierda. Explorar controles
+                                con más vida —quizá esféricos— que anticipen y
+                                dialoguen con los satélites de la pantalla
+                                siguiente, la Memoria holográfica. No alterar
+                                todavía su comportamiento ni el flujo. */}
                             {/* P1 — un solo tablero, no dos botones flotantes. */}
                             {bitacoraStep === 'p1' && (
                               <div className="cabina-respuesta-panel" role="group" aria-label="¿Regresó algo de esta experiencia?">
