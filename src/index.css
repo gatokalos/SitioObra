@@ -759,18 +759,34 @@ body {
   pointer-events: none;
 }
 
+/* La cola del gato (Carlos, 21 sep 2026). La deriva ya era una onda viajera
+   —cada capa entra desfasada 0.83 s de la siguiente sobre un ciclo de 13 s—,
+   pero se movía en vertical y ±1.5 px: nadie podía verla. Ahora la onda es
+   lateral, que es como se mueve una cola, y su amplitud la pone cada capa en
+   --hero-echo-sway: casi nula en la de abajo, que está anclada al título y hay
+   que poder leerla, y máxima en las de arriba, la punta que se pierde. Los
+   tiempos son irregulares a propósito: una cola en reposo no oscila como un
+   péndulo, va a la deriva y de vez en cuando da un tirón. */
 @keyframes hero-inactive-signal-drift {
   0%, 100% {
-    transform: translate3d(0, -1px, 0);
+    transform: translate3d(calc(var(--hero-echo-sway, 0px) * -1), -1px, 0);
     filter: brightness(0.86);
   }
+  27% {
+    transform: translate3d(calc(var(--hero-echo-sway, 0px) * 0.52), 0.4px, 0);
+    filter: brightness(1.02);
+  }
   48% {
-    transform: translate3d(0, 1.5px, 0);
+    transform: translate3d(var(--hero-echo-sway, 0px), 1.5px, 0);
     filter: brightness(1.08);
   }
   52% {
-    transform: translate3d(0.35px, 1px, 0);
+    transform: translate3d(calc(var(--hero-echo-sway, 0px) * 0.86), 1px, 0);
     filter: brightness(0.94);
+  }
+  76% {
+    transform: translate3d(calc(var(--hero-echo-sway, 0px) * -0.44), 0.6px, 0);
+    filter: brightness(0.95);
   }
 }
 

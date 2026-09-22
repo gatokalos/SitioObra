@@ -202,8 +202,18 @@ const HeroInactiveSignal = ({ prefersReducedMotion = false }) => {
               '--hero-echo-glow-alpha': 0.015 + depth * 0.055,
               '--hero-echo-violet-alpha': 0.01 + depth * 0.035,
               '--hero-echo-mobile-glow-alpha': 0.012 + depth * 0.04,
-              fontSize: `clamp(${0.64 + depth * 0.12}rem, ${0.76 + depth * 0.14}vw, ${0.78 + depth * 0.16}rem)`,
-              letterSpacing: `${0.23 - depth * 0.045}em`,
+              // Amplitud de la cola: la capa de abajo está anclada al título y
+              // hay que poder leerla; la punta que se aleja es la que se mueve.
+              '--hero-echo-sway': `${(1 - depth) ** 1.3 * 9 + 0.8}px`,
+              // Punto de fuga. Antes las trece capas medían casi lo mismo (0.64
+              // → 0.76 rem, un 19 %) y las lejanas llevaban MÁS interletraje
+              // que las cercanas, así que nada convergía: no era un túnel, era
+              // una pila de copias desvaneciéndose. Ahora la lejana mide poco
+              // más de la mitad que la próxima y el interletraje se cierra con
+              // la distancia, que es lo que hace que las líneas apunten a un
+              // punto (Carlos, 21 sep 2026).
+              fontSize: `clamp(${0.44 + depth ** 0.82 * 0.34}rem, ${0.5 + depth ** 0.82 * 0.4}vw, ${0.52 + depth ** 0.82 * 0.42}rem)`,
+              letterSpacing: `${0.15 + depth * 0.05}em`,
             }}
             initial={
               prefersReducedMotion
