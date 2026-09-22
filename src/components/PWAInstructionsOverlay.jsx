@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { motion, useReducedMotion } from 'framer-motion';
-import { X, Share, Plus, Check, MoreVertical, MoreHorizontal, Download, ArrowDown } from 'lucide-react';
+import { Share, Plus, Check, MoreVertical, MoreHorizontal, Download, ArrowDown } from 'lucide-react';
 import { isAppleTouchDevice, isIosSafari } from '@/lib/platformDetection';
 
 // Safari y Chrome comparten motor en iOS pero no interfaz, y el paso 1 es
@@ -219,13 +219,16 @@ const PWAInstructionsOverlay = ({
         >
           {subtitle}
         </motion.p>
+      {/* La × era el único acceso a la obra y mentía sobre lo que hace: no
+          cancela nada, levanta el telón. Aquí el aviso de arriba pregunta y
+          esto responde —una respuesta, no un descarte (Carlos, 21 sep 2026). */}
       <button
         type="button"
         onClick={onClose}
-        className="pointer-events-auto inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-white/10 bg-white/5 text-slate-200 transition hover:bg-white/10 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/60"
-        aria-label="Cerrar instrucciones"
+        className="pointer-events-auto mt-1 inline-flex shrink-0 items-center justify-center rounded-full px-5 py-2 text-[0.72rem] font-light text-slate-300 underline decoration-slate-500/50 underline-offset-[6px] transition hover:text-white hover:decoration-slate-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/60"
+        aria-label="Quizá más tarde: continuar a la obra sin instalar la app"
       >
-        <X size={18} />
+        Quizá más tarde
       </button>
       </div>
     </>,

@@ -1386,8 +1386,14 @@ const Hero = () => {
 
               {/* LÍNEA CENTRAL — GATOENCERRADO ancla el 50vh */}
               <div className="max-w-4xl lg:max-w-[72rem] mx-auto w-full">
+                {/* Mientras el sheet de instalación está abierto, el título se
+                    retira casi del todo: es el único elemento del Hero que
+                    compite de verdad con los pasos —el ícono del paso 4 aterriza
+                    justo encima de sus letras—. Las estrellas y el # se quedan,
+                    porque son textura y no se leen (Carlos, 21 sep 2026). */}
                 <h1
-                  className="hero-title-stage text-center w-full break-words"
+                  className="hero-title-stage text-center w-full break-words transition-opacity duration-700"
+                  style={{ opacity: isHeroPwaInstructionsOpen ? 0.12 : 1 }}
                   aria-label={HERO_BRAND_LABEL}
                 >
                   {/* Esta capa invisible reserva siempre las mismas métricas. Las
