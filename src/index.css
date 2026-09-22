@@ -895,7 +895,12 @@ body {
    lo insinuado: al 28 % se percibe sin encenderse, como el gato en 3D. */
 .hero-hashtag-fallback--solo {
   opacity: 1;
-  background: linear-gradient(145deg, rgba(232, 236, 246, 0.92), rgba(148, 156, 178, 0.78) 52%, rgba(86, 92, 112, 0.7));
+  /* background-image, NO el atajo `background`: el atajo resetea
+     background-clip a border-box y el degradado pinta la caja entera en vez
+     del glifo — un rectángulo claro en mitad del negro. */
+  background-image: linear-gradient(145deg, rgba(232, 236, 246, 0.92), rgba(148, 156, 178, 0.78) 52%, rgba(86, 92, 112, 0.7));
+  background-clip: text;
+  -webkit-background-clip: text;
   -webkit-text-stroke-color: rgba(226, 232, 240, 0.3);
   filter: drop-shadow(0 0 18px rgba(139, 92, 246, 0.24));
 }
