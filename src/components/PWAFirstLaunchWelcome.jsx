@@ -77,7 +77,7 @@ const PWAFirstLaunchWelcome = () => {
             animate={{ opacity: 1 }}
             transition={{ duration: prefersReducedMotion ? 0.12 : 1.1, delay: prefersReducedMotion ? 0 : 0.9, ease: 'easeOut' }}
           >
-            Toca donde quieras para levantar el telón
+            Toca donde quieras para tomar tu lugar
           </motion.p>
         </motion.div>
       ) : null}

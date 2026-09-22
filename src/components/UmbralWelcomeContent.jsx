@@ -8,7 +8,7 @@ const UmbralWelcomeContent = ({ onContinue, onDecline, titleFirst = false }) => 
       id="gatokens-modal-title"
       className={`font-display relative ${titleFirst ? '' : 'mt-9'} text-2xl font-medium leading-tight tracking-[-0.02em] text-slate-100 sm:text-3xl`}
     >
-      Hay un gato encerrado también en ti.
+      ¿Hay un gato encerrado también en ti?
     </h2>
     {titleFirst && (
       <div className="relative mt-9 flex shrink-0 items-center justify-center">

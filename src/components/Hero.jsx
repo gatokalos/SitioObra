@@ -83,9 +83,9 @@ const HERO_INACTIVE_ECHO_COUNT = 13;
 const HERO_INACTIVE_ECHO_ENTRY_DURATION_S = 0.72;
 const HERO_INACTIVE_ECHO_STAGGER_S = 0.095;
 const PWA_HASH_WHISPERS = [
-  'Llévame contigo',
-  'Soy toda una obra',
-  'No solo otro sitio web',
+  '¿Me voy contigo?',
+  'Soy una obra diferente',
+  '¿Miau?',
 ];
 // RANURA DE COPY VACÍA A PROPÓSITO, pendiente del autor. El espacio que
 // reserva (~40 px) ya forma parte de la composición del sheet, así que
