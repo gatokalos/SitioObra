@@ -728,7 +728,7 @@ const CuadernoHolografico = ({
 
       {/* Constelación */}
       <div
-        className={`relative p-4 lg:p-6 ${huellaOpen ? 'min-h-[28rem] flex-none lg:min-h-[24rem]' : 'min-h-0 flex-1'}`}
+        className={`relative p-4 lg:p-6 ${huellaOpen ? 'min-h-[28rem] flex-none lg:min-h-[24rem] lg:flex-1' : 'min-h-0 flex-1'}`}
         style={{ zIndex: 3 }}
       >
         <Constellation
