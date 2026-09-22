@@ -888,30 +888,6 @@ body {
   opacity: 0;
 }
 
-/* En la PWA instalada el # tipográfico ES el gato, y entonces no puede seguir
-   pintado como respaldo: su relleno va de un gris tenue a casi negro porque
-   está hecho para esperar debajo del #3D, no para verse solo. Aquí toma cuerpo
-   propio —relleno claro, contorno y un halo— y deja que el slot de arriba haga
-   lo insinuado: al 28 % se percibe sin encenderse, como el gato en 3D. */
-.hero-hashtag-fallback--solo {
-  opacity: 1;
-  /* background-image, NO el atajo `background`: el atajo resetea
-     background-clip a border-box y el degradado pinta la caja entera en vez
-     del glifo — un rectángulo claro en mitad del negro. */
-  background-image: linear-gradient(145deg, rgba(232, 236, 246, 0.92), rgba(148, 156, 178, 0.78) 52%, rgba(86, 92, 112, 0.7));
-  background-clip: text;
-  -webkit-background-clip: text;
-  -webkit-text-stroke-color: rgba(226, 232, 240, 0.3);
-  filter: drop-shadow(0 0 18px rgba(139, 92, 246, 0.24));
-}
-
-/* Florece en el mismo evento que lo nombra («pulsa el gato»), que es lo que
-   hace el #3D en el navegador. */
-.hero-hashtag-fallback--revealed {
-  -webkit-text-stroke-color: rgba(226, 232, 240, 0.5);
-  filter: drop-shadow(0 0 30px rgba(139, 92, 246, 0.5));
-}
-
 .hero-pwa-hash-whisper-anchor {
   position: absolute;
   top: 8%;

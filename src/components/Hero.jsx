@@ -279,25 +279,22 @@ const Hero = () => {
   const lastHeroAudioPlayAttemptRef = useRef(0);
   const [isHeroAudioMuted, setIsHeroAudioMuted] = useState(false);
   const [isHeroAudioPlaying, setIsHeroAudioPlaying] = useState(false);
-  // La PWA instalada también pasa por el Estado Cero (Carlos, 21 sep 2026).
-  // Del 19 ago al 21 sep arrancaba con la escena ya activada, para no depender
-  // de que el #3D cargara por red; el precio era que quien abría la app
-  // instalada se perdía la ceremonia entera y, sobre todo, que la música no
-  // podía sonar: sin un gesto, el navegador no deja reproducir audio, así que
-  // la ambientación terminaba colgada del primer toque que cayera —un scroll,
-  // una vitrina— en vez de del clic que la nombra. Ahora la PWA hace el mismo
-  // recorrido con el # tipográfico en lugar del #3D (ver isHashtag3DRetired),
-  // que además nunca llegó a montarse en esa entrada.
+  // La PWA instalada arranca con la escena ya activada — sin el clic ritual
+  // y, por lo tanto, sin depender de que el #3D termine de cargar por red
+  // (ver readIsRunningAsInstalledPwa abajo: es la misma lectura que usa
+  // isInstalledPwa, pero se necesita aquí antes de que ese estado exista,
+  // en el initializer de useState). Carlos, 2026-08-19: "me gustaría
+  // empezar con la escena activada automáticamente cuando se abra la PWA."
   const [hasActivatedAudio, setHasActivatedAudio] = useState(
-    () => readHeroActivatedFromSession()
+    () => readHeroActivatedFromSession() || readIsRunningAsInstalledPwa()
   );
   const [hasUsedIndexCue, setHasUsedIndexCue] = useState(
-    () => readIndexCueUsedFromSession()
+    () => readIndexCueUsedFromSession() || readIsRunningAsInstalledPwa()
   );
   const [transmigrationOrigin, setTransmigrationOrigin] = useState(null);
   const hashtagAnchorRef = useRef(null);
-  const userActivatedRef = useRef(readHeroActivatedFromSession());
-  const audioActivatedOnceRef = useRef(readHeroActivatedFromSession());
+  const userActivatedRef = useRef(readHeroActivatedFromSession() || readIsRunningAsInstalledPwa());
+  const audioActivatedOnceRef = useRef(readHeroActivatedFromSession() || readIsRunningAsInstalledPwa());
   const [isHeroHashReady, setIsHeroHashReady] = useState(false);
   const [isHeroInViewport, setIsHeroInViewport] = useState(true);
   const [isHeroPwaInstructionsOpen, setIsHeroPwaInstructionsOpen] = useState(false);
@@ -373,27 +370,11 @@ const Hero = () => {
   // sesión, no un ciclo. Eso también libera su contexto WebGL de verdad
   // antes de que algo más (p.ej. el iframe de Juegos en la pestaña Habitar)
   // lo necesite, en vez de acapararlo indefinidamente.
-  // En la PWA instalada no se monta nunca: el gato en 3D pide un contexto
-  // WebGL que en Safari standalone es justo el que se pierde, y quien instaló
-  // la app ya conoció al gato en el navegador —fue ahí donde se la ofrecieron.
-  // Dentro de la app el # tipográfico basta: recuerda algo ya visto, no lo
-  // presenta, y es el mismo signo que después vive en la esquina.
   const [isHashtag3DRetired, setIsHashtag3DRetired] = useState(
-    () => hasActivatedAudio || isGatHubOpen || readIsRunningAsInstalledPwa()
-  );
-  useEffect(() => {
-    if (hasActivatedAudio || isGatHubOpen || isInstalledPwa) setIsHashtag3DRetired(true);
-  }, [hasActivatedAudio, isGatHubOpen, isInstalledPwa]);
-  // El entorno del ritual —las estrellas— se retira con la escena, NO con el
-  // #3D. Las dos cosas fueron la misma bandera hasta que la PWA empezó a
-  // hacer la ceremonia sin gato en 3D (21 sep 2026): ahí el cielo desapareció
-  // de la app instalada sin que nadie lo decidiera. Se retira cuando la
-  // escena se activa o cuando el HUB abre solo (usuario que regresa con GAT).
-  const [isRitualStageRetired, setIsRitualStageRetired] = useState(
     () => hasActivatedAudio || isGatHubOpen
   );
   useEffect(() => {
-    if (hasActivatedAudio || isGatHubOpen) setIsRitualStageRetired(true);
+    if (hasActivatedAudio || isGatHubOpen) setIsHashtag3DRetired(true);
   }, [hasActivatedAudio, isGatHubOpen]);
   const shouldShowHeroInactiveHint = !hasActivatedAudio && !isHeroPwaInstructionsOpen && !isGatLinktreeAudience;
   // Solo se retiene mientras el hint está corriendo. Si nunca se muestra
@@ -1296,11 +1277,12 @@ const Hero = () => {
         className="min-h-screen relative overflow-hidden flex flex-col"
       >
         <AnimatePresence>
-          {/* Si el HUB ya abrió solo (usuario que regresa con GAT>0), la
-              escena ya cuenta como activada aunque hasActivatedAudio nunca se
-              haya puesto true a mano — el entorno del ritual (estrellas) no
-              debe seguir montado detrás del HUB. */}
-          {!isRitualStageRetired && (
+          {/* Mismo criterio que isHashtag3DRetired: si el HUB ya abrió solo
+              (usuario que regresa con GAT>0), la escena ya cuenta como
+              activada aunque hasActivatedAudio nunca se haya puesto true a
+              mano — el entorno del ritual (estrellas) no debe seguir
+              montado detrás del HUB. */}
+          {!isHashtag3DRetired && (
               <motion.div
                 key="hero-starfield"
                 aria-hidden="true"
@@ -1562,21 +1544,9 @@ const Hero = () => {
                     ) : null}
                   </AnimatePresence>
                 </div>
-                {/* Respaldo del #3D mientras carga y, en la PWA instalada,
-                    el gato mismo: ahí florece en el momento en que el
-                    subtítulo lo nombra, igual que lo haría el de 3D. */}
                 <span
                   aria-hidden="true"
-                  className={[
-                    'hero-hashtag-fallback',
-                    isHeroHashReady ? 'hero-hashtag-fallback--ready' : '',
-                    isHashtag3DRetired && !hasActivatedAudio
-                      ? 'hero-hashtag-fallback--solo'
-                      : '',
-                    isHashtag3DRetired && !hasActivatedAudio && hasHintGlowRevealed
-                      ? 'hero-hashtag-fallback--revealed'
-                      : '',
-                  ].filter(Boolean).join(' ')}
+                  className={`hero-hashtag-fallback ${isHeroHashReady ? 'hero-hashtag-fallback--ready' : ''}`}
                 >
                   #
                 </span>

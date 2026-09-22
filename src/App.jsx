@@ -14,6 +14,7 @@ import LoginToast from '@/components/LoginToast';
 import { useAuth } from '@/contexts/SupabaseAuthContext';
 import { safeGetItem, safeSetItem } from '@/lib/safeStorage';
 import { markIntermedioVisto } from '@/lib/intermedio';
+import { isInstalledPWA } from '@/lib/pwaDetection';
 import PortalGuard from '@/components/PortalGuard';
 import {
   readBeforeLeavingRevealedFromSession,
@@ -189,11 +190,10 @@ const HERO_GUEST_CABINA_REVEALED_OPACITY = 0.66;
 
 const HeroBackground = ({ isAuthenticated = false }) => {
   const [opacity, setOpacity] = useState(1);
-  // Misma regla que Hero.jsx: desde el 21 sep 2026 la PWA instalada también
-  // pasa por el Estado Cero, así que el fondo se revela con el clic y no
-  // desde el arranque.
+  // Misma regla que Hero.jsx: la PWA instalada arranca con la escena
+  // revelada, sin la ceremonia de activación (Carlos, 2026-08-19).
   const [isHeroSceneRevealed, setIsHeroSceneRevealed] = useState(
-    () => readHeroActivatedFromSession()
+    () => readHeroActivatedFromSession() || isInstalledPWA()
   );
   const backgroundVariant = isAuthenticated
     ? HERO_BACKGROUND_VARIANTS.authenticated
@@ -481,10 +481,8 @@ function App() {
     if (typeof window === 'undefined') return false;
     return hasFractalGalleryDeepLinkIntent({ hash: window.location.hash });
   });
-  // La PWA instalada también hace el clic ritual (ver Hero.jsx, 21 sep 2026):
-  // este estado espera el evento de activación como en el navegador.
   const [isHeroActivated, setIsHeroActivated] = useState(
-    () => readHeroActivatedFromSession()
+    () => readHeroActivatedFromSession() || isInstalledPWA()
   );
   useEffect(() => {
     if (typeof window === 'undefined') return undefined;
