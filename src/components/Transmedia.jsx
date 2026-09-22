@@ -4579,7 +4579,7 @@ const renderDramaFeaturedWork = () => (
                         </div>
                         <VitranaQuestionReveal
                           question={activePortalL1Done ? (buildL1Acknowledgment('obra', activePortalL2Answer) ?? LEVEL2_QUESTIONS['obra']?.question ?? VITRANA_QUESTION_BY_SHOWCASE['miniversos']) : VITRANA_QUESTION_BY_SHOWCASE['miniversos']}
-                          buttonLabel={activePortalL1Done ? 'Sigue tu huella →' : undefined}
+                          buttonLabel={activePortalL1Done ? 'Sigue donde quedaste →' : undefined}
                           autoReveal={activePortalL1Done}
                           portal="obra"
                           l2Done={activePortalL2Done}
@@ -4620,7 +4620,7 @@ const renderDramaFeaturedWork = () => (
                         </div>
                         <VitranaQuestionReveal
                           question={activePortalL1Done ? (buildL1Acknowledgment('literatura', activePortalL2Answer) ?? LEVEL2_QUESTIONS['literatura']?.question ?? VITRANA_QUESTION_BY_SHOWCASE['miniversoNovela']) : VITRANA_QUESTION_BY_SHOWCASE['miniversoNovela']}
-                          buttonLabel={activePortalL1Done ? 'Sigue tu huella →' : undefined}
+                          buttonLabel={activePortalL1Done ? 'Sigue donde quedaste →' : undefined}
                           autoReveal={activePortalL1Done}
                           portal="literatura"
                           l2Done={activePortalL2Done}
@@ -4659,7 +4659,7 @@ const renderDramaFeaturedWork = () => (
                         </div>
                         <VitranaQuestionReveal
                           question={activePortalL1Done ? (buildL1Acknowledgment('artesanias', activePortalL2Answer) ?? LEVEL2_QUESTIONS['artesanias']?.question ?? VITRANA_QUESTION_BY_SHOWCASE['lataza']) : VITRANA_QUESTION_BY_SHOWCASE['lataza']}
-                          buttonLabel={activePortalL1Done ? 'Sigue tu huella →' : undefined}
+                          buttonLabel={activePortalL1Done ? 'Sigue donde quedaste →' : undefined}
                           autoReveal={activePortalL1Done}
                           portal="artesanias"
                           l2Done={activePortalL2Done}
@@ -4698,7 +4698,7 @@ const renderDramaFeaturedWork = () => (
                         </div>
                         <VitranaQuestionReveal
                           question={activePortalL1Done ? (buildL1Acknowledgment('grafico', activePortalL2Answer) ?? LEVEL2_QUESTIONS['grafico']?.question ?? VITRANA_QUESTION_BY_SHOWCASE['miniversoGrafico']) : VITRANA_QUESTION_BY_SHOWCASE['miniversoGrafico']}
-                          buttonLabel={activePortalL1Done ? 'Sigue tu huella →' : undefined}
+                          buttonLabel={activePortalL1Done ? 'Sigue donde quedaste →' : undefined}
                           autoReveal={activePortalL1Done}
                           portal="grafico"
                           l2Done={activePortalL2Done}
@@ -4738,7 +4738,7 @@ const renderDramaFeaturedWork = () => (
                         </div>
                         <VitranaQuestionReveal
                           question={activePortalL1Done ? (buildL1Acknowledgment('cine', activePortalL2Answer) ?? LEVEL2_QUESTIONS['cine']?.question ?? VITRANA_QUESTION_BY_SHOWCASE['cine']) : VITRANA_QUESTION_BY_SHOWCASE['cine']}
-                          buttonLabel={activePortalL1Done ? 'Sigue tu huella →' : undefined}
+                          buttonLabel={activePortalL1Done ? 'Sigue donde quedaste →' : undefined}
                           autoReveal={activePortalL1Done}
                           portal="cine"
                           l2Done={activePortalL2Done}
@@ -4776,7 +4776,7 @@ const renderDramaFeaturedWork = () => (
                         </div>
                         <VitranaQuestionReveal
                           question={activePortalL1Done ? (buildL1Acknowledgment('sonoridades', activePortalL2Answer) ?? LEVEL2_QUESTIONS['sonoridades']?.question ?? VITRANA_QUESTION_BY_SHOWCASE['miniversoSonoro']) : VITRANA_QUESTION_BY_SHOWCASE['miniversoSonoro']}
-                          buttonLabel={activePortalL1Done ? 'Sigue tu huella →' : undefined}
+                          buttonLabel={activePortalL1Done ? 'Sigue donde quedaste →' : undefined}
                           autoReveal={activePortalL1Done}
                           portal="sonoridades"
                           l2Done={activePortalL2Done}
@@ -4814,7 +4814,7 @@ const renderDramaFeaturedWork = () => (
                         </div>
                         <VitranaQuestionReveal
                           question={activePortalL1Done ? (buildL1Acknowledgment('movimiento', activePortalL2Answer) ?? LEVEL2_QUESTIONS['movimiento']?.question ?? VITRANA_QUESTION_BY_SHOWCASE['miniversoMovimiento']) : VITRANA_QUESTION_BY_SHOWCASE['miniversoMovimiento']}
-                          buttonLabel={activePortalL1Done ? 'Sigue tu huella →' : undefined}
+                          buttonLabel={activePortalL1Done ? 'Sigue donde quedaste →' : undefined}
                           autoReveal={activePortalL1Done}
                           portal="movimiento"
                           l2Done={activePortalL2Done}
@@ -4853,7 +4853,7 @@ const renderDramaFeaturedWork = () => (
                         </div>
                         <VitranaQuestionReveal
                           question={activePortalL1Done ? (buildL1Acknowledgment('juegos', activePortalL2Answer) ?? LEVEL2_QUESTIONS['juegos']?.question ?? VITRANA_QUESTION_BY_SHOWCASE['apps']) : VITRANA_QUESTION_BY_SHOWCASE['apps']}
-                          buttonLabel={activePortalL1Done ? 'Sigue tu huella →' : undefined}
+                          buttonLabel={activePortalL1Done ? 'Sigue donde quedaste →' : undefined}
                           autoReveal={activePortalL1Done}
                           portal="juegos"
                           l2Done={activePortalL2Done}
@@ -4891,7 +4891,7 @@ const renderDramaFeaturedWork = () => (
                         </div>
                         <VitranaQuestionReveal
                           question={activePortalL1Done ? (buildL1Acknowledgment('oraculo', activePortalL2Answer) ?? LEVEL2_QUESTIONS['oraculo']?.question ?? VITRANA_QUESTION_BY_SHOWCASE['oraculo']) : VITRANA_QUESTION_BY_SHOWCASE['oraculo']}
-                          buttonLabel={activePortalL1Done ? 'Sigue tu huella →' : undefined}
+                          buttonLabel={activePortalL1Done ? 'Sigue donde quedaste →' : undefined}
                           autoReveal={activePortalL1Done}
                           portal="oraculo"
                           l2Done={activePortalL2Done}
