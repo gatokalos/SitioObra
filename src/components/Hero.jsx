@@ -1660,6 +1660,14 @@ const Hero = () => {
         <GatokensRevealModal
           open={isGatokensModalOpen}
           isUmbral={isUmbralReveal}
+          onDecline={() => {
+            setIsGatokensModalOpen(false);
+            setIsUmbralReveal(false);
+            if (!user) {
+              safeSetItem(POZO_HERO_REVEAL_KEY, '1');
+              window.dispatchEvent(new CustomEvent('gatoencerrado:pozo-hero-revealed'));
+            }
+          }}
           onProvoca={() => {
             setIsGatokensModalOpen(false);
             try {

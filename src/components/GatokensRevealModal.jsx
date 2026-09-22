@@ -21,6 +21,7 @@ const GATOKEN_COIN_SRC =
 const GatokensRevealModal = ({
   open,
   onClose,
+  onDecline,
   isUmbral = false,
   onProvoca,
 }) => {
@@ -31,10 +32,11 @@ const GatokensRevealModal = ({
 
   useEffect(() => {
     if (!open) return;
-    const onKey = (e) => e.key === 'Escape' && onClose?.();
+    const handleDismiss = isUmbral ? (onDecline ?? onClose) : onClose;
+    const onKey = (e) => e.key === 'Escape' && handleDismiss?.();
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [open, onClose]);
+  }, [isUmbral, onClose, onDecline, open]);
 
   useEffect(() => {
     if (!open) {
@@ -145,7 +147,7 @@ const GatokensRevealModal = ({
             }`}
             variants={backdropVariants}
             aria-hidden="true"
-            onClick={onClose}
+            onClick={isUmbral ? (onDecline ?? onClose) : onClose}
           />
 
           {isUmbral ? (
@@ -156,7 +158,11 @@ const GatokensRevealModal = ({
               variants={panelVariants}
               className="font-display relative z-10 flex w-full max-w-md flex-col items-center px-5 py-10 text-center"
             >
-              <UmbralWelcomeContent titleFirst onContinue={onClose} />
+              <UmbralWelcomeContent
+                titleFirst
+                onContinue={onClose}
+                onDecline={onDecline ?? onClose}
+              />
 
             </motion.div>
           ) : (
