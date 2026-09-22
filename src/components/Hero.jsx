@@ -105,9 +105,15 @@ const PWA_INSTRUCTIONS_SUBTITLE = 'Esta obra se disfruta más con la app instala
 // [CORREGIDO 9 sep 2026] Este comentario describía que la palabra "gato" se
 // revolvía con # y se asentaba de vuelta; eso no ocurre — useSignalDriftText
 // solo se aplica al emblema del título, nunca al hint.
-// [ABIERTO] El temporizador arranca al montar, no cuando el hint es legible
-// (entra a los ~1.86 s), así que la duda real dura ~4 s, no 6.5.
-const HERO_HINT_CONTINUATION_DELAY_MS = 6500;
+// [RESUELTO 21 sep 2026] El temporizador arranca al montar, no cuando el hint
+// es legible (entra a los ~1.86 s). Con 6500 el silencio real duraba ~4.6 s y
+// el gato no florecía hasta el segundo 7: demasiado para una pantalla que dice
+// "Ante la duda" y nada más, con un blanco que apenas se ve. Carlos, 21 sep
+// 2026: "muchas veces quiero picar el # antes de que se complete la frase."
+// Con 4000, el silencio queda en ~2.1 s y el gato florece cerca del 4.5 — un
+// aire contenido, no una espera. El toque, eso sí, nunca estuvo bloqueado:
+// funciona desde el primer instante, aunque el # esté insinuado.
+const HERO_HINT_CONTINUATION_DELAY_MS = 4000;
 const GAT_BALANCE_STORAGE_KEY = 'gatoencerrado:gatokens-available';
 const readHeroGatBalance = () => {
   const value = Number(safeGetItem(GAT_BALANCE_STORAGE_KEY));
