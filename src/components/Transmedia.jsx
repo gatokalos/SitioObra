@@ -4608,6 +4608,7 @@ const renderDramaFeaturedWork = () => (
                           narrativeCTALabel="✦ Entrar al drama"
                           onNavigateToRecommendation={handleFormatClick}
                           isMobileViewport={isMobileViewport}
+                          onBeforeNavigate={handleCloseShowcase}
                         />
                       </>
                     ) : activeShowcase === 'miniversoNovela' ? (
@@ -4646,6 +4647,7 @@ const renderDramaFeaturedWork = () => (
                           narrativeCTALabel="📖 Activar artefacto"
                           onNavigateToRecommendation={handleFormatClick}
                           isMobileViewport={isMobileViewport}
+                          onBeforeNavigate={handleCloseShowcase}
                         />
                       </>
                     ) : activeShowcase === 'lataza' ? (
@@ -4684,6 +4686,7 @@ const renderDramaFeaturedWork = () => (
                           narrativeCTALabel="✦ Activa tu taza"
                           onNavigateToRecommendation={handleFormatClick}
                           isMobileViewport={isMobileViewport}
+                          onBeforeNavigate={handleCloseShowcase}
                         />
                       </>
                     ) : activeShowcase === 'miniversoGrafico' ? (
@@ -4723,6 +4726,7 @@ const renderDramaFeaturedWork = () => (
                           onNavigateToRecommendation={handleFormatClick}
                           onL2QuestionReady={handlePdfAftercareClose}
                           isMobileViewport={isMobileViewport}
+                          onBeforeNavigate={handleCloseShowcase}
                         />
                       </>
                     ) : activeShowcase === 'copycats' ? (
@@ -4761,6 +4765,7 @@ const renderDramaFeaturedWork = () => (
                           narrativeCTALabel={Boolean(showcaseBoosts?.copycats_full_unlock || quironSpent) ? '▶ Ver Quirón' : '✦ Ver el corto'}
                           onNavigateToRecommendation={handleFormatClick}
                           isMobileViewport={isMobileViewport}
+                          onBeforeNavigate={handleCloseShowcase}
                         />
                       </>
                     ) : activeShowcase === 'miniversoSonoro' ? (
@@ -4798,6 +4803,7 @@ const renderDramaFeaturedWork = () => (
                           narrativeCTALabel="✦ Escuchar ahora"
                           onNavigateToRecommendation={handleFormatClick}
                           isMobileViewport={isMobileViewport}
+                          onBeforeNavigate={handleCloseShowcase}
                         />
                       </>
                     ) : activeShowcase === 'miniversoMovimiento' ? (
@@ -4835,6 +4841,7 @@ const renderDramaFeaturedWork = () => (
                           narrativeCTALabel="✦ Ver los talleres"
                           onNavigateToRecommendation={handleFormatClick}
                           isMobileViewport={isMobileViewport}
+                          onBeforeNavigate={handleCloseShowcase}
                         />
                       </>
                     ) : activeShowcase === 'apps' ? (
@@ -4873,6 +4880,7 @@ const renderDramaFeaturedWork = () => (
                           narrativeCTALabel={activeDefinition.liveExperience?.ctaLabel || '✦ Abrir la app'}
                           onNavigateToRecommendation={handleFormatClick}
                           isMobileViewport={isMobileViewport}
+                          onBeforeNavigate={handleCloseShowcase}
                         />
                       </>
                     ) : activeShowcase === 'oraculo' ? (
@@ -4910,6 +4918,7 @@ const renderDramaFeaturedWork = () => (
                           narrativeCTALabel={activeDefinition.ctaLabel || '✦ Explorar'}
                           onNavigateToRecommendation={handleFormatClick}
                           isMobileViewport={isMobileViewport}
+                          onBeforeNavigate={handleCloseShowcase}
                         />
                       </>
                     ) : (

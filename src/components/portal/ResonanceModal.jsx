@@ -328,7 +328,7 @@ const lsPatch = (portal, patch) => {
 
 /* ─── Componente ──────────────────────────────────────────────────────── */
 
-const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNavigateToRecommendation, onL2QuestionReady, isMobileViewport, onRequireLogin, startInHolografico = false, startInBitacora = false, bitacoraVentana = null }) => {
+const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNavigateToRecommendation, onL2QuestionReady, isMobileViewport, onRequireLogin, onBeforeNavigate, startInHolografico = false, startInBitacora = false, bitacoraVentana = null }) => {
   const modalRef = useRef(null);
   const submitBtnRef = useRef(null);
   const { user, isDevAuth } = useAuth();
@@ -1428,7 +1428,19 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
                       onHuellaOpenChange={setHuellaOpen}
                       recommendedFormatId={l3Rec?.recommended_format_id ?? null}
                       onNavigate={(showcaseId) => { setHolograficoOpen(false); handleClose(); onNavigateToRecommendation?.(showcaseId); }}
-                      onGoToSite={(hash) => { setHuellaOpen(false); handleClose(); navigate(hash ? { pathname: '/', hash } : '/'); }}
+                      /* En Desktop este modal vive DENTRO de la vitrina de
+                         Transmedia.jsx: cerrarlo a él no cierra la vitrina, que
+                         se queda encima con el `overflow-hidden` puesto en el
+                         body, así que el salto al acto final ocurre pero no se
+                         ve. onBeforeNavigate (handleCloseShowcase) libera las
+                         dos cosas. Mismo patrón que el CTA del Apuntador en
+                         RelatedReadingTooltipButton (Carlos, 21 sep 2026). */
+                      onGoToSite={(hash) => {
+                        setHuellaOpen(false);
+                        handleClose();
+                        onBeforeNavigate?.();
+                        navigate(hash ? { pathname: '/', hash } : '/');
+                      }}
                       onPosterChange={setHolograficoPoster}
                       onRequireLogin={onRequireLogin}
                     />
