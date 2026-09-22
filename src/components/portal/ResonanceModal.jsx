@@ -1762,7 +1762,15 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
                                     animate={{ height: 'auto', opacity: 1 }}
                                     exit={{ height: 0, opacity: 0 }}
                                     transition={{ duration: 0.25, ease: 'easeInOut' }}
-                                    className="col-span-full overflow-hidden lg:col-start-2 lg:col-end-[-1]"
+                                    /* El cuerpo ocupa la tarjeta entera, como ya hacía en
+                                       móvil. En escritorio arrancaba en la segunda columna
+                                       para alinearse con el título, y eso dejaba muertos los
+                                       4.5 rem del icono más su gap: con texto casi no se
+                                       nota, pero el video —que mide el ancho de lo que lo
+                                       contiene— quedaba empujado unos 44 px a la derecha y
+                                       descentrado respecto de su propia tarjeta (Carlos, 21
+                                       sep 2026). La cabecera conserva sus columnas. */
+                                    className="col-span-full overflow-hidden"
                                   >
                                     <div className="space-y-3 pt-1 lg:pt-0">
                                       {isL1 && (
