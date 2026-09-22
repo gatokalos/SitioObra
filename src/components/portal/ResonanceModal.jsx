@@ -391,6 +391,14 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
     if (b.num === dashboardActiveLevel) return 1;
     return a.num - b.num;
   });
+  // Al entrar en la respuesta diferida, En el foco es la última escena que
+  // acaba de cerrarse. Conserva por eso el primer lugar de la pila, seguido de
+  // las dos fichas anteriores, tal como estaban debajo de ella en el dashboard.
+  const bitacoraMemoryLevels = [...dashboardLevels].sort((a, b) => {
+    if (a.num === 3) return -1;
+    if (b.num === 3) return 1;
+    return a.num - b.num;
+  });
   const [calibrationQuestionOpen, setCalibrationQuestionOpen] = useState(() => {
     const s = lsRead(portal);
     return !!s.l2_calibration_open && !s.l2_narrative_opened;
@@ -523,6 +531,18 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
       : bitacoraStep === 'p2'
         ? (bitacoraQuestionLoading ? '…' : (bitacoraP2Question || 'Si volvió, ¿dónde te encontró?'))
         : (bitacoraQuestionLoading ? '…' : (bitacoraP3Question || '¿Hay algo que ahora veas de otra manera?'));
+
+  // En escritorio la cabina conserva la voz y la columna izquierda recibe la
+  // respuesta. Estas líneas sacan la orientación del placeholder para que no
+  // desaparezca en cuanto la persona empieza a escribir.
+  const instruccionDelPaso =
+    bitacoraStep === 'p2'
+      ? 'Puede ser un lugar, una persona o lo que estabas haciendo.'
+      : bitacoraStep === 'p3'
+        ? 'También puede ser que nada haya cambiado.'
+        : bitacoraStep === 'compartir'
+          ? 'Sin tu nombre, y sólo lo que escribiste. Si algún día retiras lo que dejaste, esto se retira contigo.'
+          : null;
 
   // Verifica Supabase solo si localStorage no tiene l1 (respuestas pre-deploy)
   useEffect(() => {
@@ -1473,133 +1493,178 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
                         globo se convierte en el campo y la pregunta desaparece
                         al escribir, aquí se queda a la vista. Este lado conserva
                         el rótulo del paso, el campo y los botones. */}
-                    <div className="hidden lg:block lg:px-10 lg:pb-3 lg:pt-14">
-                      <p className="text-[0.62rem] uppercase tracking-[0.32em] text-white/50">
-                        En escena
-                      </p>
-                    </div>
+                    <div className="hidden min-h-full lg:flex lg:items-center">
+                      {/* Respuesta y escenas forman un solo bloque en flujo. Así
+                          se centran como conjunto y nunca se abre un vacío entre
+                          el instrumento y las fichas. */}
+                      <div className="w-full px-8 py-14">
+                        <div className="mx-auto w-full max-w-[38rem]">
+                          <p className="mb-3 text-[0.62rem] uppercase tracking-[0.32em] text-white/50">
+                            En escena
+                          </p>
+                          <div aria-hidden="true" className="mb-6 h-px question-divider-voice" />
 
-                    <div aria-hidden="true" className="hidden lg:block mx-8 mb-5 h-px question-divider-voice" />
+                          <AnimatePresence mode="wait">
+                            <motion.div
+                              key={`bitacora-escritorio-${bitacoraStep}`}
+                              className="bitacora-escritorio-instrumento w-full"
+                              initial={{ opacity: 0, y: 8 }}
+                              animate={{ opacity: 1, y: 0 }}
+                              exit={{ opacity: 0, y: -6 }}
+                              transition={{ duration: 0.24, ease: 'easeOut' }}
+                            >
+                              <div className="bitacora-escritorio-instrumento__cabecera">
+                                <span>Tu respuesta</span>
+                                <span aria-hidden="true" className="bitacora-escritorio-instrumento__marca" />
+                              </div>
 
-                    <div className="hidden px-5 pb-[max(1.25rem,env(safe-area-inset-bottom))] sm:px-6 sm:pb-5 lg:block lg:pb-10 lg:px-10">
-                      <div className="space-y-3">
+                            {/* P1 — un solo tablero, no dos botones flotantes. */}
+                            {bitacoraStep === 'p1' && (
+                              <div className="cabina-respuesta-panel" role="group" aria-label="¿Regresó algo de esta experiencia?">
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    const response = 'Sí, regresó algo';
+                                    setBitacoraP1(response);
+                                    setBitacoraAfirmativa(true);
+                                    setBitacoraStep('p2');
+                                    void fetchNextBitacoraQuestion('p2', response);
+                                  }}
+                                  className="cabina-respuesta-clave cabina-respuesta-clave--afirmativa"
+                                >
+                                  <span className="cabina-respuesta-clave__sigilo" aria-hidden="true" />
+                                  <span>Sí, regresó algo</span>
+                                </button>
+                                <button
+                                  type="button"
+                                  disabled={bitacoraSubmitting}
+                                  onClick={() => {
+                                    setBitacoraP1('');
+                                    setBitacoraAfirmativa(false);
+                                    void handleBitacoraSubmit({ p1Response: null, p1Afirmativa: false });
+                                  }}
+                                  className="cabina-respuesta-clave cabina-respuesta-clave--silencio"
+                                >
+                                  <span className="cabina-respuesta-clave__sigilo" aria-hidden="true" />
+                                  <span>Todavía no</span>
+                                </button>
+                              </div>
+                            )}
 
+                            {/* P2 y P3 — la escritura y sus acciones forman una sola pieza. */}
+                            {(bitacoraStep === 'p2' || bitacoraStep === 'p3') && (
+                              <div className="bitacora-escritorio-escritura">
+                                <textarea
+                                  autoFocus
+                                  value={bitacoraStep === 'p2' ? bitacoraP2 : bitacoraP3}
+                                  onChange={(e) => (bitacoraStep === 'p2' ? setBitacoraP2 : setBitacoraP3)(e.target.value)}
+                                  rows={5}
+                                  className="bitacora-escritorio-escritura__campo"
+                                  placeholder="Escribe aquí…"
+                                />
+                                <div className="bitacora-escritorio-escritura__zocalo">
+                                  <button
+                                    type="button"
+                                    disabled={bitacoraSubmitting}
+                                    onClick={() => avanzarDesdePregunta({ saltando: true })}
+                                    className="bitacora-escritorio-escritura__salida"
+                                  >
+                                    {bitacoraStep === 'p2' ? 'Prefiero no decir dónde' : 'Nada de esto se movió esta vez'}
+                                  </button>
+                                  <button
+                                    type="button"
+                                    disabled={bitacoraSubmitting || !(bitacoraStep === 'p2' ? bitacoraP2 : bitacoraP3).trim()}
+                                    onClick={() => avanzarDesdePregunta()}
+                                    className="cabina-escritura-accion"
+                                  >
+                                    {bitacoraSubmitting ? 'Guardando…' : bitacoraStep === 'p2' ? 'Continuar' : 'Terminar'}
+                                    <span aria-hidden="true">→</span>
+                                  </button>
+                                </div>
+                              </div>
+                            )}
 
-                        {/* P1 */}
-                        {bitacoraStep === 'p1' && (
-                          <div className="flex gap-2">
-                              <button
-                                type="button"
-                                onClick={() => {
-                                  const response = 'Sí, regresó algo';
-                                  setBitacoraP1(response);
-                                  setBitacoraAfirmativa(true);
-                                  setBitacoraStep('p2');
-                                  void fetchNextBitacoraQuestion('p2', response);
+                            {/* El permiso final usa el mismo tablero de decisiones. */}
+                            {bitacoraStep === 'compartir' && (
+                              <div className="cabina-respuesta-panel" role="group" aria-label="¿Dejas que otros lo encuentren?">
+                                <button
+                                  type="button"
+                                  disabled={bitacoraSubmitting}
+                                  onClick={() => void responderCompartir(true)}
+                                  className="cabina-respuesta-clave cabina-respuesta-clave--afirmativa"
+                                >
+                                  <span className="cabina-respuesta-clave__sigilo" aria-hidden="true" />
+                                  <span>Que lo encuentre</span>
+                                </button>
+                                <button
+                                  type="button"
+                                  disabled={bitacoraSubmitting}
+                                  onClick={() => void responderCompartir(false)}
+                                  className="cabina-respuesta-clave cabina-respuesta-clave--silencio"
+                                >
+                                  <span className="cabina-respuesta-clave__sigilo" aria-hidden="true" />
+                                  <span>Prefiero que no</span>
+                                </button>
+                              </div>
+                            )}
+                            </motion.div>
+                          </AnimatePresence>
+                        </div>
+
+                        {/* No es una variante nueva: son las mismas fichas del
+                            dashboard, con las mismas dimensiones, tipografía,
+                            borde e icono, sólo colapsadas y sin interacción. */}
+                        <motion.ol
+                          className="mx-auto mt-8 flex w-full max-w-[38rem] flex-col gap-0"
+                          aria-label="Escenas cerradas"
+                          initial="oculta"
+                          animate="visible"
+                          variants={{
+                            oculta: {},
+                            visible: { transition: { staggerChildren: 0.07, delayChildren: 0.12 } },
+                          }}
+                        >
+                          {bitacoraMemoryLevels.map((level) => {
+                            const MemoryIcon = level.icon;
+                            const isFirstScene = level.num === 1;
+                            return (
+                              <motion.li
+                                key={`memoria-${level.num}`}
+                                className="flex items-start py-2"
+                                variants={{
+                                  oculta: { opacity: 0, y: -18 },
+                                  visible: {
+                                    opacity: 1,
+                                    y: 0,
+                                    transition: { duration: 0.32, ease: 'easeOut' },
+                                  },
                                 }}
-                                className="flex-1 rounded-full border border-amber-400/50 bg-amber-900/20 px-4 py-2.5 text-xs uppercase tracking-[0.2em] text-amber-100/90 transition hover:bg-amber-900/35 disabled:opacity-40"
                               >
-                                Sí, regresó algo
-                              </button>
-                              <button
-                                type="button"
-                                disabled={bitacoraSubmitting}
-                                onClick={() => {
-                                  // §1.5: «no» es respuesta completa. No se manda texto
-                                  // inventado; p1_afirmativa=false es el dato.
-                                  setBitacoraP1('');
-                                  setBitacoraAfirmativa(false);
-                                  void handleBitacoraSubmit({ p1Response: null, p1Afirmativa: false });
-                                }}
-                                className="flex-1 rounded-full border border-white/15 bg-black/30 px-4 py-2.5 text-xs text-slate-400 transition hover:text-slate-200 disabled:opacity-40"
-                              >
-                                Todavía no
-                              </button>
-                          </div>
-                        )}
+                                <div className="relative grid min-w-0 flex-1 grid-cols-[4.5rem_minmax(0,1fr)_auto] gap-x-4 gap-y-2 rounded-2xl border border-white/20 bg-black/55 px-4 py-4 pb-7 shadow-[0_0_20px_rgba(168,85,247,0.06)]">
+                                  <div className={`row-span-2 flex h-[4.5rem] w-[4.5rem] shrink-0 items-center justify-center rounded-full bg-gradient-to-br ${gradient} shadow-[0_0_10px_rgba(0,0,0,0.25)]`}>
+                                    <MemoryIcon className="h-8 w-8 text-white" aria-hidden="true" />
+                                  </div>
 
-                        {/* P2 */}
-                        {bitacoraStep === 'p2' && (
-                          <>
-                            <textarea
-                              value={bitacoraP2}
-                              onChange={(e) => setBitacoraP2(e.target.value)}
-                              rows={4}
-                              className="form-surface w-full resize-none px-3 py-2 text-sm"
-                              placeholder="¿Qué estabas haciendo o con quién estabas?"
-                            />
-                            <button
-                              type="button"
-                              disabled={!bitacoraP2.trim()}
-                              onClick={() => { setBitacoraStep('p3'); void fetchNextBitacoraQuestion('p3', bitacoraP1, bitacoraP2); }}
-                              className="w-full rounded-full border border-purple-400/80 bg-purple-600/30 px-4 py-3 text-xs uppercase tracking-[0.25em] text-white transition hover:bg-purple-500/45 disabled:opacity-40"
-                            >
-                              Continuar
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() => { setBitacoraStep('p3'); void fetchNextBitacoraQuestion('p3', bitacoraP1, bitacoraP2); }}
-                              className="w-full py-1.5 text-center text-xs text-slate-400/80 transition hover:text-slate-200"
-                            >
-                              Prefiero no decir dónde. Continuar →
-                            </button>
-                          </>
-                        )}
-
-                        {/* P3 */}
-                        {bitacoraStep === 'p3' && (
-                          <>
-                            <textarea
-                              value={bitacoraP3}
-                              onChange={(e) => setBitacoraP3(e.target.value)}
-                              rows={4}
-                              className="form-surface w-full resize-none px-3 py-2 text-sm"
-                              placeholder="También puede ser que nada haya cambiado…"
-                            />
-                            <button
-                              type="button"
-                              disabled={!bitacoraP3.trim() || bitacoraSubmitting}
-                              onClick={() => void handleBitacoraSubmit()}
-                              className="w-full rounded-full border border-purple-400/80 bg-purple-600/30 px-4 py-3 text-xs uppercase tracking-[0.25em] text-white transition hover:bg-purple-500/45 disabled:opacity-40"
-                            >
-                              {bitacoraSubmitting ? 'Guardando…' : 'Guardar mis apuntes'}
-                            </button>
-                            <button
-                              type="button"
-                              disabled={bitacoraSubmitting}
-                              onClick={() => void handleBitacoraSubmit()}
-                              className="w-full py-1.5 text-center text-xs text-slate-400/80 transition hover:text-slate-200 disabled:opacity-40"
-                            >
-                              Nada cambió esta vez. Cerrar →
-                            </button>
-                          </>
-                        )}
-
-                        {/* El permiso de compartir (D-37 §3.2) */}
-                        {bitacoraStep === 'compartir' && (
-                          <div className="space-y-2">
-                            <button
-                              type="button"
-                              disabled={bitacoraSubmitting}
-                              onClick={() => void responderCompartir(true)}
-                              className="w-full rounded-full border border-purple-400/80 bg-purple-600/30 px-4 py-3 text-xs uppercase tracking-[0.25em] text-purple-50 transition hover:bg-purple-600/45 disabled:opacity-50"
-                            >
-                              Que lo encuentre
-                            </button>
-                            <button
-                              type="button"
-                              disabled={bitacoraSubmitting}
-                              onClick={() => void responderCompartir(false)}
-                              className="w-full rounded-full border border-white/15 px-4 py-2.5 text-[0.7rem] text-slate-300 transition hover:border-white/30 hover:text-white disabled:opacity-50"
-                            >
-                              Prefiero que no
-                            </button>
-                            <p className="pt-1 text-[0.66rem] leading-relaxed text-slate-400/80">
-                              Sin tu nombre, y sólo lo que escribiste. Si algún día retiras lo que dejaste, esto se retira contigo.
-                            </p>
-                          </div>
-                        )}
-
+                                  <div className="flex min-h-[4.5rem] min-w-0 flex-1 items-center self-center">
+                                    <div className="min-w-0 space-y-1">
+                                      <p className="text-[0.56rem] uppercase tracking-[0.18em] text-slate-400/70">
+                                        {level.eyebrow}
+                                      </p>
+                                      <p className="font-display text-base leading-tight text-white">
+                                        {level.title}
+                                      </p>
+                                      {isFirstScene && (
+                                        <p className="text-xs leading-relaxed text-slate-300/75">
+                                          {level.desc.replace(/^✓\s*/, '')}
+                                        </p>
+                                      )}
+                                    </div>
+                                  </div>
+                                </div>
+                              </motion.li>
+                            );
+                          })}
+                        </motion.ol>
                       </div>
                     </div>
                   </motion.div>
@@ -2405,7 +2470,11 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
                 mientras se escribe. */}
             {bitacoraOpen && (
               <div className="cabina-bubble cabina-bubble--escritorio">
-                {preguntaDelPaso}
+                <p className="cabina-bubble__preludio">La cabina te escucha</p>
+                <p className="cabina-bubble__texto">{preguntaDelPaso}</p>
+                {instruccionDelPaso ? (
+                  <p className="cabina-bubble__instruccion">{instruccionDelPaso}</p>
+                ) : null}
               </div>
             )}
           </div>

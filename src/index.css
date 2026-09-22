@@ -3721,6 +3721,16 @@ body {
   font-size: clamp(0.9rem, 2.2vw, 1.15rem);
   line-height: 1.45;
 }
+
+.cabina-bubble__instruccion {
+  margin: 0.75rem auto 0;
+  padding-top: 0.65rem;
+  border-top: 1px solid rgba(27, 29, 34, 0.13);
+  font-size: 0.7rem;
+  font-weight: 400;
+  line-height: 1.45;
+  color: rgba(27, 29, 34, 0.62);
+}
 /* La misma burbuja, pero colocada por el layout y no por porcentajes: en la
    cabina de las preguntas diferidas el alto lo reparte un flex que llena la
    tarjeta, así que la burbuja va en el flujo y conserva su pico y su flotación
@@ -3729,13 +3739,47 @@ body {
    se mide contra ella y no contra el viewport, y el texto crece porque aquí es
    la pregunta principal, no un rótulo. */
 .cabina-bubble--escritorio {
-  top: 9%;
-  width: min(84%, 21rem);
-  padding: 1.15rem 1.35rem 1.05rem;
+  /* Se ancla desde la cabeza del gato hacia arriba. `bottom` mantiene el pico
+     en el mismo lugar aunque la pregunta o la instrucción ocupen dos líneas. */
+  top: auto;
+  bottom: 67%;
+  width: min(92%, 27rem);
+  padding: 1.45rem 1.7rem 1.35rem;
+  border: 1px solid rgba(255, 255, 255, 0.72);
+  border-radius: 34px;
+  background: rgba(248, 247, 245, 0.96);
   font-family: "Inter", sans-serif;
-  font-size: clamp(0.92rem, 1.15vw, 1.08rem);
-  line-height: 1.38;
-  font-weight: 500;
+  box-shadow:
+    0 24px 62px rgba(2, 3, 9, 0.5),
+    0 0 0 1px rgba(24, 27, 34, 0.05),
+    inset 0 1px 0 rgba(255, 255, 255, 0.92);
+}
+
+.cabina-bubble--escritorio::after {
+  bottom: -25px;
+  border-width: 25px 22px 0 22px;
+  border-color: rgba(248, 247, 245, 0.96) transparent transparent transparent;
+}
+
+.cabina-bubble--escritorio .cabina-bubble__preludio {
+  margin-bottom: 0.58rem;
+  font-size: 0.64rem;
+  font-weight: 600;
+  letter-spacing: 0.26em;
+}
+
+.cabina-bubble--escritorio .cabina-bubble__texto {
+  font-size: clamp(1.08rem, 1.45vw, 1.32rem);
+  line-height: 1.34;
+  font-weight: 600;
+  letter-spacing: -0.012em;
+}
+
+.cabina-bubble--escritorio .cabina-bubble__instruccion {
+  margin-top: 0.9rem;
+  padding-top: 0.8rem;
+  font-size: 0.76rem;
+  line-height: 1.5;
 }
 
 .cabina-bubble--en-flujo {
@@ -4635,6 +4679,142 @@ body {
     margin-right: auto;
     margin-left: auto;
   }
+}
+
+/* ── Respuesta diferida en escritorio ───────────────────────────────────
+   La ilustración del miniverso sigue siendo el escenario. Estos controles
+   ocupan sólo la franja necesaria y dejan ver el fondo alrededor: la cabina
+   habla a la derecha y esta pieza recibe la respuesta a la izquierda. */
+.bitacora-escritorio-instrumento {
+  position: relative;
+  isolation: isolate;
+}
+
+.bitacora-escritorio-instrumento::before {
+  content: "";
+  position: absolute;
+  inset: -3.5rem -4rem -4.5rem;
+  z-index: -1;
+  pointer-events: none;
+  background: radial-gradient(
+    ellipse at 50% 42%,
+    rgba(4, 3, 9, 0.68) 0%,
+    rgba(4, 3, 9, 0.38) 42%,
+    transparent 76%
+  );
+  filter: blur(10px);
+}
+
+.bitacora-escritorio-instrumento__cabecera {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  margin-bottom: 0.7rem;
+  color: rgba(224, 216, 231, 0.68);
+  font-family: "Inter", sans-serif;
+  font-size: 0.58rem;
+  font-weight: 600;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+}
+
+.bitacora-escritorio-instrumento__marca {
+  height: 1px;
+  flex: 1;
+  background: linear-gradient(90deg, rgba(205, 161, 77, 0.48), transparent);
+}
+
+.bitacora-escritorio-escritura {
+  position: relative;
+  overflow: hidden;
+  border: 1px solid rgba(202, 155, 62, 0.52);
+  border-radius: 20px;
+  background:
+    radial-gradient(circle at 12% -20%, rgba(136, 76, 42, 0.2), transparent 48%),
+    linear-gradient(145deg, rgba(16, 10, 18, 0.82), rgba(3, 4, 10, 0.9));
+  box-shadow:
+    0 22px 48px rgba(0, 0, 0, 0.48),
+    inset 0 1px 0 rgba(255, 226, 171, 0.1),
+    inset 0 0 0 3px rgba(2, 2, 7, 0.56);
+  backdrop-filter: blur(12px);
+}
+
+.bitacora-escritorio-escritura::after {
+  content: "";
+  position: absolute;
+  inset: 4px;
+  border: 1px solid rgba(255, 219, 150, 0.06);
+  border-radius: 15px;
+  pointer-events: none;
+}
+
+.bitacora-escritorio-escritura__campo {
+  position: relative;
+  z-index: 1;
+  display: block;
+  width: 100%;
+  min-height: 10.5rem;
+  resize: none;
+  border: 0;
+  background: transparent;
+  padding: 1.35rem 1.45rem 1rem;
+  color: rgba(245, 241, 248, 0.94);
+  font-family: "Inter", sans-serif;
+  font-size: 0.92rem;
+  line-height: 1.65;
+  outline: none;
+  caret-color: rgba(239, 192, 100, 0.95);
+}
+
+.bitacora-escritorio-escritura__campo::placeholder {
+  color: rgba(207, 199, 213, 0.38);
+}
+
+.bitacora-escritorio-escritura:focus-within {
+  border-color: rgba(224, 176, 82, 0.7);
+  box-shadow:
+    0 24px 54px rgba(0, 0, 0, 0.52),
+    0 0 30px rgba(174, 100, 37, 0.09),
+    inset 0 1px 0 rgba(255, 226, 171, 0.14),
+    inset 0 0 0 3px rgba(2, 2, 7, 0.62);
+}
+
+.bitacora-escritorio-escritura__zocalo {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  min-height: 4.2rem;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.7rem 0.85rem 0.7rem 1.3rem;
+  border-top: 1px solid rgba(212, 166, 77, 0.2);
+  background: rgba(2, 3, 8, 0.54);
+}
+
+.bitacora-escritorio-escritura__salida {
+  min-width: 0;
+  border: 0;
+  background: transparent;
+  padding: 0.55rem 0;
+  color: rgba(212, 208, 217, 0.58);
+  font-family: "Inter", sans-serif;
+  font-size: 0.68rem;
+  line-height: 1.35;
+  text-align: left;
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+
+.bitacora-escritorio-escritura__salida:hover:not(:disabled),
+.bitacora-escritorio-escritura__salida:focus-visible:not(:disabled) {
+  outline: none;
+  color: rgba(255, 239, 208, 0.9);
+}
+
+.bitacora-escritorio-escritura__salida:disabled {
+  cursor: wait;
+  opacity: 0.35;
 }
 
 .cabina-respuesta-panel {
