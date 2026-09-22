@@ -4573,7 +4573,7 @@ const renderDramaFeaturedWork = () => (
                     {activeDefinition.type === 'tragedia' ? (
                       <>
                         <div className="mb-1">
-
+                          <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Resonancia Colectiva</p>
                           <h4 className="font-display text-2xl question-heading-voice">Tras cada pregunta
                           </h4>
                         </div>
@@ -4614,7 +4614,7 @@ const renderDramaFeaturedWork = () => (
                     ) : activeShowcase === 'miniversoNovela' ? (
                       <>
                         <div className="mb-1">
-                      
+                          <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Resonancia Colectiva</p>
                           <h4 className="font-display text-2xl question-heading-voice">Tras cada pregunta
                           </h4>
                         </div>
@@ -4653,7 +4653,7 @@ const renderDramaFeaturedWork = () => (
                     ) : activeShowcase === 'lataza' ? (
                       <>
                         <div className="mb-1">
-                         
+                          <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Resonancia Colectiva</p>
                           <h4 className="font-display text-2xl question-heading-voice">Tras cada pregunta
                           </h4>
                         </div>
@@ -4692,7 +4692,7 @@ const renderDramaFeaturedWork = () => (
                     ) : activeShowcase === 'miniversoGrafico' ? (
                       <>
                         <div className="mb-1">
-                          
+                          <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Resonancia Colectiva</p>
                           <h4 className="font-display text-2xl question-heading-voice">Tras cada pregunta
                           </h4>
                         </div>
@@ -4732,7 +4732,7 @@ const renderDramaFeaturedWork = () => (
                     ) : activeShowcase === 'copycats' ? (
                       <>
                         <div className="mb-1">
-                         
+                          <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Resonancia Colectiva</p>
                           <h4 className="font-display text-2xl question-heading-voice">Tras cada pregunta
                           </h4>
                         </div>
@@ -4771,6 +4771,7 @@ const renderDramaFeaturedWork = () => (
                     ) : activeShowcase === 'miniversoSonoro' ? (
                       <>
                         <div className="mb-1">
+                          <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Resonancia Colectiva</p>
                           <h4 className="font-display text-2xl question-heading-voice">Tras cada pregunta
                           </h4>
                         </div>
@@ -4809,6 +4810,7 @@ const renderDramaFeaturedWork = () => (
                     ) : activeShowcase === 'miniversoMovimiento' ? (
                       <>
                         <div className="mb-1">
+                          <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Resonancia Colectiva</p>
                           <h4 className="font-display text-2xl question-heading-voice">Tras cada pregunta
                           </h4>
                         </div>
@@ -4847,7 +4849,7 @@ const renderDramaFeaturedWork = () => (
                     ) : activeShowcase === 'apps' ? (
                       <>
                         <div className="mb-1">
-                          
+                          <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Resonancia Colectiva</p>
                           <h4 className="font-display text-2xl question-heading-voice">Tras cada pregunta
                           </h4>
                         </div>
@@ -4886,6 +4888,7 @@ const renderDramaFeaturedWork = () => (
                     ) : activeShowcase === 'oraculo' ? (
                       <>
                         <div className="mb-1">
+                          <p className="text-xs uppercase tracking-[0.35em] text-slate-400/70">Resonancia Colectiva</p>
                           <h4 className="font-display text-2xl question-heading-voice">Tras cada pregunta
                           </h4>
                         </div>
