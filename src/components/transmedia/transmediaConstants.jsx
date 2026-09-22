@@ -1377,17 +1377,14 @@ Buscar sentido no se apaga cuando encuentra algo. Se vuelve más fino, y empieza
       'Cada respuesta se guarda como semilla de conocimiento simbólico para IA, literatura y obra interactiva.',
       'Mientras más participas, más GATokens generas (proof-of-resonance con límites diarios anti-spam).',
     ],
-    rewards: [
-  { title: 'Responder una pregunta profunda', tokens: '+20 GAT', description: 'Comparte una reflexión que vibre en lo simbólico o emocional.' },
-  { title: 'Elegir y comentar reflexiones de otrxs', tokens: '+30 GAT', description: 'Modo foro: amplifica ideas y suma tu mirada.' },
-  { title: 'Volver tras una semana', tokens: '+30 GAT', description: 'Regresa al Oráculo y sigue el hilo de tu propia huella.' },
-  { title: 'Invitar a alguien con su primera reflexión', tokens: '+50 GAT', description: 'Trae otra mente al Oráculo. Recompensa única por invitación.' },
-],
-    limitsNote: 'Límites diarios para evitar spam y preservar el valor simbólico de cada respuesta.',
+    // La tabla de recompensas (+20/+30/+50 GAT) y su nota de límites diarios se
+    // retiran: eran la economía de la arquitectura inicial —el GAT se ganaba y
+    // se gastaba— y el GAT es una estafeta (Carlos, 21 sep 2026). No se
+    // pintaban en ninguna parte; quedaban como plano de algo que ya no existe.
     seedNotes: [
   'Las respuestas se almacenan como semillas de conocimiento simbólico.',
   'Alimentan una base de datos viviente para literatura, IA personalizada y obra interactiva.',
-  'Cada huella deja una señal en la mente del Gato.',
+  'Cada respuesta deja una señal en la mente del Gato.',
 ],
     ctaLabel: 'Pregunta y responde',
     ctaDescription:
