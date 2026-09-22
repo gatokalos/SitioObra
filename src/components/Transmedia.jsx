@@ -5589,8 +5589,8 @@ const renderDramaFeaturedWork = () => (
                 La obra toma forma
               </h2>
               <p className="text-lg text-slate-300/80 max-w-3xl mx-auto leading-relaxed font-light">
-    <em>Este universo se despliega en nueve miniversos</em>.<br />
-    <strong>Elige uno. Toda entrada puede ser un principio.</strong>
+    <em>#GatoEncerrado es un universo </em>que cambia de forma.<br />
+    De cada una nace un miniverso. <strong>Elige el tuyo.</strong>
            </p>
             </motion.div>
           ) : null}
