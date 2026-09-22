@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
+import { Headphones } from 'lucide-react';
 
 import { safeGetItem, safeSetItem } from '@/lib/safeStorage';
 
@@ -78,6 +79,21 @@ const PWAFirstLaunchWelcome = () => {
             transition={{ duration: prefersReducedMotion ? 0.12 : 1.1, delay: prefersReducedMotion ? 0 : 0.9, ease: 'easeOut' }}
           >
             Toca donde quieras para tomar tu lugar
+          </motion.p>
+          {/* El aviso de los audífonos vive aquí y no en el sheet de
+              instalación: instalar la app no cambia el sonido —la promesa de
+              audio es la misma— y ahí quedaría argumentando algo que la app no
+              da, con un «Quizá más tarde» debajo que acabaría rechazando
+              también los audífonos. Aquí llega un toque antes de que empiece la
+              música, que es cuando sirve (Carlos, 21 sep 2026). */}
+          <motion.p
+            className="mt-6 flex items-center gap-2 text-[11px] font-light text-slate-500"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: prefersReducedMotion ? 0.12 : 1.2, delay: prefersReducedMotion ? 0 : 1.7, ease: 'easeOut' }}
+          >
+            <Headphones strokeWidth={1.25} size={15} aria-hidden="true" />
+            Se disfruta mejor con audífonos
           </motion.p>
         </motion.div>
       ) : null}
