@@ -888,9 +888,12 @@ body {
   opacity: 0;
 }
 
+/* Arriba del #, no encima: el susurro caía sobre los brazos del gato y había
+   que descifrarlo contra su propio relleno. Se queda pegado a él —sale de ahí,
+   no flota suelto— pero sobre negro (Carlos, 21 sep 2026). */
 .hero-pwa-hash-whisper-anchor {
   position: absolute;
-  top: 8%;
+  bottom: calc(100% + 0.25rem);
   left: 50%;
   z-index: 3 !important;
   width: min(82vw, 19rem);
@@ -898,9 +901,12 @@ body {
   pointer-events: none;
 }
 
+/* Ámbar, no cian: el cian es la voz de la interfaz —el rótulo del sheet, los
+   acentos del Hero—, y el susurro no es la interfaz instruyendo: es el gato
+   hablando. Con los dos del mismo color, el gato sonaba a sistema. */
 .hero-pwa-hash-whisper {
   display: block;
-  color: rgb(165 214 220 / 0.82);
+  color: rgb(252 211 77 / 0.88);
   font-family: "Inter", sans-serif;
   font-size: clamp(0.68rem, 1.7vh, 0.82rem);
   font-weight: 500;
@@ -908,8 +914,8 @@ body {
   letter-spacing: 0.075em;
   text-align: center;
   text-shadow:
-    0 0 10px rgb(103 232 249 / 0.12),
-    0 0 24px rgb(167 139 250 / 0.1);
+    0 0 10px rgb(251 191 36 / 0.22),
+    0 0 26px rgb(245 158 11 / 0.14);
 }
 
 .hero-pwa-hashtag-glow-pulse {
