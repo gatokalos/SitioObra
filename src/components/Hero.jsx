@@ -11,6 +11,7 @@ const HashtagButton3D = React.lazy(() => import('@/components/HashtagButton3D'))
 const DIAG_HIDE_3D = typeof window !== 'undefined'
   && new URLSearchParams(window.location.search).has('diag-no-3d');
 import PWAInstructionsOverlay from '@/components/PWAInstructionsOverlay';
+import PWAFirstLaunchWelcome from '@/components/PWAFirstLaunchWelcome';
 import { RESONANCE_BRIDGE_VIDEO_ENABLED } from '@/components/transmedia/transmediaConstants';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useToast } from '@/components/ui/use-toast';
@@ -1693,6 +1694,10 @@ const Hero = () => {
         eyebrow={PWA_INSTRUCTIONS_EYEBROW}
         subtitle={PWA_INSTRUCTIONS_SUBTITLE}
       />
+      {/* La app instalada entra directo a la escena; esto sólo se ve la
+          primera vez que se abre desde la pantalla de inicio, y el toque que
+          lo cierra es el que deja sonar la música. */}
+      <PWAFirstLaunchWelcome />
     </>
   );
 };
