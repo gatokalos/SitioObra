@@ -3725,6 +3725,19 @@ body {
    cabina de las preguntas diferidas el alto lo reparte un flex que llena la
    tarjeta, así que la burbuja va en el flujo y conserva su pico y su flotación
    (Carlos, 18 sep 2026: "un ajuste verdadero que no dependa del scroll"). */
+/* El globo en el panel de escritorio: la columna mide 42 % del modal, así que
+   se mide contra ella y no contra el viewport, y el texto crece porque aquí es
+   la pregunta principal, no un rótulo. */
+.cabina-bubble--escritorio {
+  top: 9%;
+  width: min(84%, 21rem);
+  padding: 1.15rem 1.35rem 1.05rem;
+  font-family: "Inter", sans-serif;
+  font-size: clamp(0.92rem, 1.15vw, 1.08rem);
+  line-height: 1.38;
+  font-weight: 500;
+}
+
 .cabina-bubble--en-flujo {
   position: static;
   transform: none;

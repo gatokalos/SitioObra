@@ -1080,6 +1080,13 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
   // abajo) — ya no gatea ningún modal ni burbuja narrada, esa función la
   // absorbió el video del autor (Carlos, 2026-08-27).
   const l3Active = dashboardActiveLevel === 3 && !!l3Rec && !l3Rec.error && !l3Rec.all_complete;
+  // El gato se enciende cuando toma la palabra, no cuando el usuario llega al
+  // tercer nivel (Carlos, 21 sep 2026). Con la regla anterior la cabina ya
+  // estaba encendida durante «En el foco», que es el momento del autor: el
+  // escenario es suyo y el gato mira desde la penumbra. Encenderlo sólo cuando
+  // vuelven las preguntas de los tres días hace que el encendido signifique
+  // algo — anuncia el relevo.
+  const cabinaEncendida = bitacoraOpen;
 
   /* Nivel 3 — fetch recomendación */
   const fetchL3Recommendation = useCallback(async () => {
@@ -1458,15 +1465,17 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
                     {/* En móvil esta vista se dibuja aparte, en su propia capa
                         anclada al viewport (ver el final del componente). Aquí
                         queda la versión de escritorio. */}
-                    <div className="hidden lg:block lg:px-10 lg:pb-5 lg:pt-14">
-                      <p className="mb-3 text-[0.62rem] uppercase tracking-[0.32em] text-white/50">
+                    {/* La pregunta ya no vive aquí: la hace el gato, en su globo,
+                        del otro lado (Carlos, 21 sep 2026). Las dos columnas de
+                        escritorio ya tenían un significado —a la derecha quien
+                        pregunta, a la izquierda quien responde— y repetirla de
+                        este lado lo borraba. A diferencia del móvil, donde el
+                        globo se convierte en el campo y la pregunta desaparece
+                        al escribir, aquí se queda a la vista. Este lado conserva
+                        el rótulo del paso, el campo y los botones. */}
+                    <div className="hidden lg:block lg:px-10 lg:pb-3 lg:pt-14">
+                      <p className="text-[0.62rem] uppercase tracking-[0.32em] text-white/50">
                         En escena
-                      </p>
-                      <p
-                        className="font-display leading-snug question-voice"
-                        style={{ fontSize: 'clamp(1.3rem, 2.3vw, 2.1rem)' }}
-                      >
-                        {preguntaDelPaso}
                       </p>
                     </div>
 
@@ -1475,19 +1484,6 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
                     <div className="hidden px-5 pb-[max(1.25rem,env(safe-area-inset-bottom))] sm:px-6 sm:pb-5 lg:block lg:pb-10 lg:px-10">
                       <div className="space-y-3">
 
-                        {/* Etiqueta de paso — sobrevive para pantallas angostas de
-                            escritorio; en móvil la sustituyó la cabina. */}
-                        <div className="lg:hidden space-y-2">
-                          <div className="inline-flex rounded-full border border-white/10 bg-white/5 px-3 py-1 text-[0.62rem] uppercase tracking-[0.32em] text-white/70">
-                            En escena
-                          </div>
-                          <h3 className="font-display text-2xl leading-tight tracking-tight question-voice">
-                            {bitacoraStep === 'p1' && '¿Hay algo de esta experiencia que haya regresado por su cuenta? Una imagen, una frase, una sensación.'}
-                            {bitacoraStep === 'p2' && (bitacoraQuestionLoading ? '…' : (bitacoraP2Question || 'Si volvió, ¿dónde te encontró? ¿Qué estabas haciendo o con quién estabas?'))}
-                            {bitacoraStep === 'p3' && (bitacoraQuestionLoading ? '…' : (bitacoraP3Question || 'Después de esta experiencia, ¿hay algo que ahora veas de otra manera? También puede ser que nada haya cambiado.'))}
-                            {bitacoraStep === 'compartir' && preguntaDelPaso}
-                          </h3>
-                        </div>
 
                         {/* P1 */}
                         {bitacoraStep === 'p1' && (
@@ -2356,16 +2352,16 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
                 </button>
               </div>
             ) : null}
-            {/* La misma presencia permanece en escena: misteriosa antes de L3
-                y revelada cuando el usuario alcanza el tercer nivel. */}
+            {/* La misma presencia permanece en escena: en penumbra mientras
+                habla el autor, revelada cuando toma la palabra. */}
             <img
               src={CAT_CABINA_URL}
               alt=""
               aria-hidden="true"
               className="absolute inset-0 h-full w-full object-cover object-top transition-all duration-1000"
               style={{
-                opacity: l3Active ? 1 : 0.26,
-                filter: l3Active
+                opacity: cabinaEncendida ? 1 : 0.26,
+                filter: cabinaEncendida
                   ? 'brightness(1) saturate(1) contrast(1)'
                   : 'brightness(0.48) saturate(0.65) contrast(1.08)',
               }}
@@ -2375,7 +2371,7 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
               className="absolute inset-0 transition-opacity duration-1000"
               style={{
                 background: 'radial-gradient(circle at 50% 32%, rgba(82,62,118,0.12), rgba(5,3,9,0.74) 68%, rgba(5,3,9,0.92) 100%)',
-                opacity: l3Active ? 0.08 : 0.4,
+                opacity: cabinaEncendida ? 0.08 : 0.4,
               }}
             />
             {/* Campo de estrellas CSS: una capa liviana con screen que deja
@@ -2383,7 +2379,7 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
             <div
               aria-hidden="true"
               className="pointer-events-none absolute inset-0 mix-blend-screen transition-opacity duration-1000"
-              style={{ opacity: l3Active ? 0.96 : 0.72 }}
+              style={{ opacity: cabinaEncendida ? 0.96 : 0.72 }}
             >
               <div
                 className="star-pulse absolute inset-0"
@@ -2394,6 +2390,16 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
               className="absolute inset-y-0 left-0 w-24"
               style={{ background: 'linear-gradient(to right, rgb(5,3,9), transparent)' }}
             />
+            {/* El globo, el mismo de la cabina de móvil y con la misma fuente de
+                texto (preguntaDelPaso), para que las dos versiones digan
+                exactamente lo mismo. Aquí no se transforma en campo —el campo
+                vive del otro lado—, así que la pregunta sigue a la vista
+                mientras se escribe. */}
+            {bitacoraOpen && (
+              <div className="cabina-bubble cabina-bubble--escritorio">
+                {preguntaDelPaso}
+              </div>
+            )}
           </div>
         </motion.div>
       )}
