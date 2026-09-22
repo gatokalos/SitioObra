@@ -89,7 +89,7 @@ const CATEGORIES = [
     id: 'oraculo',
     icon: <Brain size={20} className="text-indigo-300" />,
     title: 'Oráculo',
-    description: 'Preguntas que no buscan respuestas, sino resonancia. Mintea GATokens por cada huella.',
+    description: 'Preguntas que no buscan respuestas, sino resonancia.',
   },
   {
     id: 'otro',
@@ -133,7 +133,7 @@ const formTitlesByUniverse = {
   cine: '¿Qué imagen te persiguió después? Cuéntanos qué viste más allá de la pantalla.',
   grafico: '¿Qué símbolo, trazo o glitch quieres sumar a este laboratorio visual?',
   apps: '¿Cómo cambió tu forma de jugar o explorar este universo?',
-  oraculo: 'Pregunta, responde y mintea: cada reflexión deja una huella y gana GATokens.',
+  oraculo: 'Pregunta y responde: tu palabra se queda en el universo.',
   otro: 'Si no cabe en un miniverso… es porque aún no lo hemos nombrado.',
   sonoro: 'Comparte qué mezcla soñaste: qué viste, qué escuchaste, qué palabras eligieron.',
   movimiento: 'Cuéntanos qué ruta, coreografía o ritual colectivo quieres activar en tu ciudad.',

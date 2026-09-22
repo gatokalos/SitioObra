@@ -1389,7 +1389,7 @@ Buscar sentido no se apaga cuando encuentra algo. Se vuelve más fino, y empieza
   'Alimentan una base de datos viviente para literatura, IA personalizada y obra interactiva.',
   'Cada huella deja una señal en la mente del Gato.',
 ],
-    ctaLabel: 'Pregunta, responde y mintea',
+    ctaLabel: 'Pregunta y responde',
     ctaDescription:
       'Tu pensamiento también construye este universo.',
     tagline: 'Interacción que deja huella. Reflexión que te recompensa.',

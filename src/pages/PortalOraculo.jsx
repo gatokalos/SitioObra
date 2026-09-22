@@ -373,7 +373,7 @@ const PortalOraculo = () => {
                 question={vitranaQuestion}
                 portal="oraculo"
                 onOpenNarrative={handleOpenOraculo}
-                narrativeCTALabel="✦ Mintear ahora"
+                narrativeCTALabel="✦ Pregunta y responde"
               />
             )}
           </div>
@@ -480,7 +480,7 @@ const PortalOraculo = () => {
                 onClick={handleOpenOraculo}
                 className="w-full rounded-2xl border border-amber-400/40 bg-amber-500/10 px-6 py-4 text-sm font-semibold tracking-wide text-amber-200 shadow-[0_8px_32px_rgba(251,191,36,0.15)] transition hover:bg-amber-500/20 hover:shadow-[0_8px_40px_rgba(251,191,36,0.25)]"
               >
-                ✦ Pregunta, responde y mintea
+                ✦ Pregunta y responde
               </button>
             </div>
           ) : null}

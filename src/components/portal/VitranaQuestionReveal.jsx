@@ -20,6 +20,10 @@ const PORTAL_GRADIENT = {
   oraculo:     'from-indigo-400 via-violet-500 to-purple-500',
 };
 
+// Las insignias nombran lo que la persona ya hizo con los rótulos que ve en
+// pantalla. Decían "Nivel 1/2/3 completado" y "Bitácora completada": los
+// niveles dejaron de mostrarse (línea de D-42) y "bitácora" es palabra de
+// tesis y de backend, no de pantalla (Carlos, 21 sep 2026).
 const VitranaQuestionReveal = ({
   question,
   onAnswer,
@@ -67,7 +71,7 @@ const VitranaQuestionReveal = ({
                 initial={{ opacity: 0, scale: 0.55, y: 6 }}
                 animate={{ opacity: 1, scale: 1, y: 0 }}
                 transition={{ type: 'spring', stiffness: 260, damping: 18, delay: 0.1 }}
-                title="Nivel 1 completado"
+                title="Primera intuición, respondida"
               >
                 <Eye size={20} className="text-white drop-shadow-sm" />
               </motion.div>
@@ -78,7 +82,7 @@ const VitranaQuestionReveal = ({
                 initial={{ opacity: 0, scale: 0.55, y: 6 }}
                 animate={{ opacity: 1, scale: 1, y: 0 }}
                 transition={{ type: 'spring', stiffness: 260, damping: 18, delay: 0.22 }}
-                title="Nivel 2 completado"
+                title="Afina tu mirada, hecho"
               >
                 <Flame size={20} className="text-white drop-shadow-sm" />
               </motion.div>
@@ -89,7 +93,7 @@ const VitranaQuestionReveal = ({
                 initial={{ opacity: 0, scale: 0.55, y: 6 }}
                 animate={{ opacity: 1, scale: 1, y: 0 }}
                 transition={{ type: 'spring', stiffness: 260, damping: 18, delay: 0.34 }}
-                title="Nivel 3 completado"
+                title="En el foco, visto"
               >
                 <Sparkles size={20} className="text-white drop-shadow-sm" />
               </motion.div>
@@ -100,7 +104,7 @@ const VitranaQuestionReveal = ({
                 initial={{ opacity: 0, scale: 0.55, y: 6 }}
                 animate={{ opacity: 1, scale: 1, y: 0 }}
                 transition={{ type: 'spring', stiffness: 260, damping: 18, delay: 0.46 }}
-                title="Bitácora completada"
+                title="En escena, respondida"
               >
                 <BookOpen size={20} className="text-white drop-shadow-sm" />
               </motion.div>
