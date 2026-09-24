@@ -459,7 +459,13 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
       : false;
     return !stored.bitacora_completed && (startInBitacora || available);
   });
-  const [bitacoraStep, setBitacoraStep]               = useState('p1');
+  // D-50 (23 sep 2026): antes de P1, un recordatorio opcional de la pregunta
+  // madre. Excepción opcional y registrada a D-34, con el patrón de D-30. Solo
+  // la pregunta: nunca la intuición, el chip ni la conversación.
+  const [bitacoraStep, setBitacoraStep]               = useState('recordatorio');
+  const [preguntasMadre, setPreguntasMadre]           = useState(null); // null = cargando
+  const [recordatorioVisto, setRecordatorioVisto]     = useState(null); // null = no ofrecido
+  const [recordatorioAt, setRecordatorioAt]           = useState(null);
   const [bitacoraP1, setBitacoraP1]                   = useState('');
   const [bitacoraAfirmativa, setBitacoraAfirmativa]   = useState(null);
   const [bitacoraP2, setBitacoraP2]                   = useState('');
@@ -521,10 +527,58 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
   const [bitacoraP3Question, setBitacoraP3Question]         = useState(null);
   const [bitacoraQuestionLoading, setBitacoraQuestionLoading] = useState(false);
 
+  // La pregunta madre sale del servidor (MINIVERSO_FORMAS, D-19), una por cada
+  // forma de la ventana. Si no llega, no se ofrece nada y se entra como antes.
+  useEffect(() => {
+    if (!open || !bitacoraOpen || preguntasMadre !== null) return undefined;
+    let vigente = true;
+    const formas = bitacoraVentana?.length ? [...new Set([...bitacoraVentana, portal])] : [portal];
+    (async () => {
+      try {
+        const res = await fetch(`${OBRA_API_URL}/api/bitacora/preguntas-madre?miniversos=${encodeURIComponent(formas.filter(Boolean).join(','))}`);
+        const data = await res.json();
+        if (vigente) setPreguntasMadre(res.ok && Array.isArray(data?.preguntas) ? data.preguntas : []);
+      } catch {
+        if (vigente) setPreguntasMadre([]);
+      }
+    })();
+    return () => { vigente = false; };
+  }, [open, bitacoraOpen, preguntasMadre, bitacoraVentana, portal]);
+
+  useEffect(() => {
+    if (bitacoraStep === 'recordatorio' && preguntasMadre?.length === 0) setBitacoraStep('p1');
+  }, [bitacoraStep, preguntasMadre]);
+
+  const variasPreguntas = (preguntasMadre?.length ?? 0) > 1;
+  const textoPreguntasMadre = (preguntasMadre ?? [])
+    .map(({ forma, pregunta }) => (variasPreguntas ? `${forma.charAt(0).toUpperCase()}${forma.slice(1)}: ${pregunta}` : pregunta))
+    .join('\n');
+
+  const verRecordatorio = () => {
+    setRecordatorioVisto(true);
+    setRecordatorioAt(new Date().toISOString());
+    setBitacoraStep('recordatorio-pregunta');
+  };
+  const seguirSinRecordatorio = () => {
+    setRecordatorioVisto(false);
+    setRecordatorioAt(null);
+    setBitacoraStep('p1');
+  };
+  const recordatorioCopy = {
+    invitacion: variasPreguntas ? '¿Quieres volver a leer las preguntas?' : '¿Quieres volver a leer la pregunta?',
+    ver: variasPreguntas ? 'Ver las preguntas' : 'Ver la pregunta',
+    seguirSin: variasPreguntas ? 'Seguir sin verlas' : 'Seguir sin verla',
+    seguir: 'Seguir',
+  };
+
   // Una sola fuente para la pregunta en curso: la cabina (móvil) y la columna
   // de escritorio deben decir exactamente lo mismo.
   const preguntaDelPaso =
-    bitacoraStep === 'compartir'
+    bitacoraStep === 'recordatorio'
+      ? recordatorioCopy.invitacion
+      : bitacoraStep === 'recordatorio-pregunta'
+      ? textoPreguntasMadre
+      : bitacoraStep === 'compartir'
       ? 'Lo que escribiste puede acompañar a alguien que se lo esté preguntando. ¿Dejas que lo encuentre, sin tu nombre?'
       : bitacoraStep === 'p1'
       ? '¿Hay algo de esta experiencia que haya regresado por su cuenta?'
@@ -1033,6 +1087,10 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
             p1_afirmativa:  p1Afirmativa,
             p2_response:    bitacoraP2 || null,
             p3_response:    bitacoraP3 || null,
+            // D-50: si se le ofreció el recordatorio, se registra lo que eligió.
+            ...(recordatorioVisto !== null
+              ? { recordatorio_visto: recordatorioVisto, ...(recordatorioAt ? { recordatorio_at: recordatorioAt } : {}) }
+              : {}),
           }),
         });
       } catch (_) {}
@@ -1050,7 +1108,7 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
     // acto, en la misma cabina que hizo las otras tres. Es el único momento en
     // que todo el mundo está y acaba de escribir lo que se va a compartir.
     setBitacoraStep('compartir');
-  }, [portal, bitacoraP1, bitacoraAfirmativa, bitacoraP2, bitacoraP3, isDevAuth, user?.id, bitacoraVentana]);
+  }, [portal, bitacoraP1, bitacoraAfirmativa, bitacoraP2, bitacoraP3, isDevAuth, user?.id, bitacoraVentana, recordatorioVisto, recordatorioAt]);
 
   // El cierre que antes ocurría al guardar: vuelve primero a la Memoria, y la
   // huella queda disponible dentro de ese mapa para cuando ella quiera abrirla.
@@ -1058,7 +1116,7 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
     setBitacoraOpen(false);
     setHolograficoOpen(true);
     setHuellaOpen(false);
-    setBitacoraStep('p1');
+    setBitacoraStep('recordatorio');
   }, []);
 
   // Las dos respuestas pasan por aquí: autorizar y no autorizar se guardan
@@ -1526,6 +1584,41 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
                                 dialoguen con los satélites de la pantalla
                                 siguiente, la Memoria holográfica. No alterar
                                 todavía su comportamiento ni el flujo. */}
+                            {/* D-50 — recordatorio opcional: mismo tablero y mismo copy que en móvil. */}
+                            {bitacoraStep === 'recordatorio' && (
+                              <div className="cabina-respuesta-panel" role="group" aria-label={recordatorioCopy.invitacion}>
+                                <button
+                                  type="button"
+                                  disabled={preguntasMadre === null}
+                                  onClick={verRecordatorio}
+                                  className="cabina-respuesta-clave cabina-respuesta-clave--afirmativa"
+                                >
+                                  <span className="cabina-respuesta-clave__sigilo" aria-hidden="true" />
+                                  <span>{recordatorioCopy.ver}</span>
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={seguirSinRecordatorio}
+                                  className="cabina-respuesta-clave cabina-respuesta-clave--silencio"
+                                >
+                                  <span className="cabina-respuesta-clave__sigilo" aria-hidden="true" />
+                                  <span>{recordatorioCopy.seguirSin}</span>
+                                </button>
+                              </div>
+                            )}
+                            {bitacoraStep === 'recordatorio-pregunta' && (
+                              <div className="cabina-respuesta-panel cabina-respuesta-panel--una">
+                                <button
+                                  type="button"
+                                  onClick={() => setBitacoraStep('p1')}
+                                  className="cabina-respuesta-clave cabina-respuesta-clave--afirmativa"
+                                >
+                                  <span className="cabina-respuesta-clave__sigilo" aria-hidden="true" />
+                                  <span>{recordatorioCopy.seguir}</span>
+                                </button>
+                              </div>
+                            )}
+
                             {/* P1 — un solo tablero, no dos botones flotantes. */}
                             {bitacoraStep === 'p1' && (
                               <div className="cabina-respuesta-panel" role="group" aria-label="¿Regresó algo de esta experiencia?">
@@ -2161,7 +2254,7 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
                                           {!bitacoraCompleted && bitacoraConsented && bitacoraAvailable && (
                                             <button
                                               type="button"
-                                              onClick={() => { setBitacoraStep('p1'); setBitacoraOpen(true); }}
+                                              onClick={() => { setBitacoraStep('recordatorio'); setBitacoraOpen(true); }}
                                               className="w-full rounded-full border border-amber-400/60 bg-amber-900/25 px-4 py-2.5 text-xs uppercase tracking-[0.2em] text-amber-100 transition hover:bg-amber-900/40"
                                             >
                                               En escena →
@@ -2479,7 +2572,7 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
             {bitacoraOpen && (
               <div className="cabina-bubble cabina-bubble--escritorio">
                 <p className="cabina-bubble__preludio">La cabina te escucha</p>
-                <p className="cabina-bubble__texto">{preguntaDelPaso}</p>
+                <p className="cabina-bubble__texto" style={{ whiteSpace: 'pre-line' }}>{preguntaDelPaso}</p>
                 {instruccionDelPaso ? (
                   <p className="cabina-bubble__instruccion">{instruccionDelPaso}</p>
                 ) : null}
@@ -2562,7 +2655,7 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
             ) : (
               <>
                 <p className="cabina-bubble__preludio">La cabina te escucha</p>
-                <p className="cabina-bubble__texto">{preguntaDelPaso}</p>
+                <p className="cabina-bubble__texto" style={{ whiteSpace: 'pre-line' }}>{preguntaDelPaso}</p>
               </>
             )}
           </div>
@@ -2599,6 +2692,37 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
                   Sin tu nombre, y sólo lo que escribiste. Si algún día retiras lo que dejaste, esto se retira contigo.
                 </p>
               </>
+            ) : bitacoraStep === 'recordatorio' ? (
+              <div className="cabina-respuesta-panel" role="group" aria-label={recordatorioCopy.invitacion}>
+                <button
+                  type="button"
+                  disabled={preguntasMadre === null}
+                  onClick={verRecordatorio}
+                  className="cabina-respuesta-clave cabina-respuesta-clave--afirmativa"
+                >
+                  <span className="cabina-respuesta-clave__sigilo" aria-hidden="true" />
+                  <span>{recordatorioCopy.ver}</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={seguirSinRecordatorio}
+                  className="cabina-respuesta-clave cabina-respuesta-clave--silencio"
+                >
+                  <span className="cabina-respuesta-clave__sigilo" aria-hidden="true" />
+                  <span>{recordatorioCopy.seguirSin}</span>
+                </button>
+              </div>
+            ) : bitacoraStep === 'recordatorio-pregunta' ? (
+              <div className="cabina-respuesta-panel cabina-respuesta-panel--una">
+                <button
+                  type="button"
+                  onClick={() => setBitacoraStep('p1')}
+                  className="cabina-respuesta-clave cabina-respuesta-clave--afirmativa"
+                >
+                  <span className="cabina-respuesta-clave__sigilo" aria-hidden="true" />
+                  <span>{recordatorioCopy.seguir}</span>
+                </button>
+              </div>
             ) : bitacoraStep === 'p1' ? (
               <div className="cabina-respuesta-panel" role="group" aria-label="¿Regresó algo de esta experiencia?">
                 <button
