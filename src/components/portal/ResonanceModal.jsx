@@ -556,13 +556,14 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
     let cancelled = false;
     const verify = async () => {
       try {
-        const { data } = await supabase
-          .from('vitrana_resonances')
-          .select('level, respuesta')
-          .eq('anon_id', ensureAnonId())
-          .eq('portal', portal)
-          .in('level', [1, 2])
-          .order('created_at', { ascending: true });
+        // Pasa por el backend, no directo a Supabase (auditoría del 23 sep
+        // 2026): la tabla permitía leer las filas de todas las personas con la
+        // llave pública del navegador, nombre y correo incluidos. Ahora el
+        // filtro por anon_id lo impone el servidor, no el cliente.
+        const respuestasPropias = await fetch(
+          `${OBRA_API_URL}/api/resonance/vitrana-propias?anon_id=${encodeURIComponent(ensureAnonId())}&portal=${encodeURIComponent(portal ?? '')}`
+        );
+        const data = respuestasPropias.ok ? (await respuestasPropias.json()).rows : null;
         if (cancelled) return;
         if (data?.length) {
           const l1Row = data.find((r) => r.level === 1);
