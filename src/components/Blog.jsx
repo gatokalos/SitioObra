@@ -1274,7 +1274,7 @@ const Blog = ({ posts = [], isLoading = false, error = null, showBuscador = fals
                             ) : (
                               <div className="space-y-3">
                                 <label htmlFor="archivo-vivo-query" className="text-[10px] uppercase tracking-[0.26em] text-violet-200/55">
-                                  {faqQuery.trim() ? 'Esto entendí · puedes editarlo' : 'Escríbele una pregunta'}
+                                  {faqQuery.trim() ? 'Esto podría interesarte · puedes editarlo' : 'Escríbele una pregunta'}
                                 </label>
                                 <textarea
                                   id="archivo-vivo-query"

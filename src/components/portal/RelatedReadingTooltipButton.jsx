@@ -9,14 +9,14 @@ import { BookOpen } from 'lucide-react';
 // cómo sentir y no le daban nada; Carlos las descartó. El modelo es la suya:
 // «¿Por qué el objeto se considera una forma de la obra?».
 const PREGUNTA_POR_FORMA = {
-  'El drama':      '¿Por qué el drama es la forma de la que nace esta narrativa transmedia?',
-  'La escritura':  '¿Qué cuenta la escritura que el escenario no alcanzó a decir?',
-  'El objeto':     '¿Por qué el objeto se considera una forma de la obra?',
-  'La imagen':     '¿Qué hace la imagen con la obra que las palabras no pueden?',
+  'El drama':      '¿Por qué el drama es la forma de la que emerge #GatoEncerrado?',
+  'La escritura':  '¿Qué cuenta la escritura que el escenario no alcanza a decir?',
+  'El objeto':     '¿Por qué el objeto se considera una forma de este universo?',
+  'La imagen':     '¿Qué provoca la imagen en este universo que las palabras no pueden?',
   'La proyección': '¿Cómo se vuelve cine una obra que nació en el teatro?',
-  'La vibración':  '¿Qué lugar ocupa el sonido dentro de la obra?',
-  'El cuerpo':     '¿Quiénes son las presencias que acompañan al cuerpo en esta forma?',
-  'El riesgo':     '¿Por qué un juego de gato es una forma de la obra?',
+  'La vibración':  '¿Qué lugar ocupa el sonido dentro de esta obra interactiva?',
+  'El cuerpo':     '¿Quiénes son los trasuntos divinos que acompañan al cuerpo en esta forma?',
+  'El riesgo':     '¿Por qué el juego es una forma de la obra?',
   'La pregunta':   '¿Qué se le pregunta al oráculo y qué hace la obra con eso?',
 };
 
@@ -184,7 +184,7 @@ const RelatedReadingTooltipButton = ({
           ))}
         </div>
         <div className="relative z-[3] flex h-full w-full flex-col items-center justify-center gap-3 text-center">
-          <p className="text-[11px] leading-snug text-violet-100/90">Consulta más sobre este miniverso en el Camerino.</p>
+          <p className="text-[11px] leading-snug text-violet-100/90">Averigua más sobre este #Miniverso en El Camerino.</p>
           <button
             type="button"
             className="inline-flex items-center rounded-md border border-violet-200/40 bg-violet-300/10 px-2.5 py-1.5 text-[10px] uppercase tracking-[0.24em] text-violet-100 transition hover:bg-violet-300/20"
