@@ -262,6 +262,20 @@ export const buildL2Acknowledgment = (portal, option) => {
   return templates[portal] ?? `Tu mirada se afina hacia ${o} antes de habitar la forma.`;
 };
 
+// El eco ajustado de la primera intuición llega en la respuesta de /baseline.
+// Carlos, 25 sep 2026: la versión cruda —la frase pegada tal cual en la
+// plantilla— no debe asomarse antes que la ajustada. El botón sigue en
+// «Enviando…» hasta que llega el eco o se agota este plazo; lo que haya en ese
+// momento es lo que la persona ve, y ya no cambia después.
+const ESPERA_ECO_MS = 4000;
+
+const esperarConPlazo = (promesa, ms) => new Promise((resolve) => {
+  const plazo = setTimeout(() => resolve(null), ms);
+  promesa
+    .then((valor) => { clearTimeout(plazo); resolve(valor); })
+    .catch(() => { clearTimeout(plazo); resolve(null); });
+});
+
 const persistBaseline = async (payload) => {
   const response = await fetch(`${OBRA_API_URL}/api/resonance/baseline`, {
     method: 'POST',
@@ -665,7 +679,9 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
     e.preventDefault();
     setSubmitting(true);
     const anonId = ensureAnonId();
-    const fallbackAcknowledgment = buildL1Acknowledgment(portal, formData.respuesta);
+    // El eco crudo solo queda si el ajustado no llega a tiempo o no pasa la
+    // verificación del servidor.
+    let acknowledgment = buildL1Acknowledgment(portal, formData.respuesta);
     if (!isDevAuth) {
       try {
         await supabase.from('vitrana_resonances').insert({
@@ -679,13 +695,16 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
         });
       } catch (_) {}
 
-      // Persiste línea base en resonance_sessions (fire-and-forget)
+      // Persiste la línea base en resonance_sessions. La respuesta trae el eco
+      // ajustado; se espera con plazo (ESPERA_ECO_MS). Si el plazo se agota, la
+      // petición sigue su curso y la línea base se guarda igual: el servidor
+      // escribe antes de generar el eco.
       const bienvenidaAnonId = (() => { try { return localStorage.getItem('bienvenida_anon_id') || null; } catch { return null; } })();
       // Pendiente 3, cerrado por Carlos el 20 sep 2026: la firma NO viaja al
       // instrumento. Lo que se analiza es lo que la persona escribió; la unidad
       // de identidad es el anon_id, con puente al user_id cuando se autentica.
       // El nombre, si alguien decidió firmar, se queda en vitrana_resonances.
-      persistBaseline({
+      const ecoAjustado = await esperarConPlazo(persistBaseline({
           anon_id:             anonId,
           miniverso_id:        portal,
           intuicion_answer:    formData.respuesta,
@@ -696,24 +715,18 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
           // user_id de resonance_sessions nunca se poblaba desde el sitio.
           ...(user?.id ? { user_id: user.id } : {}),
           ...(bienvenidaAnonId ? { bienvenida_anon_id: bienvenidaAnonId } : {}),
-        })
-        .then((data) => {
-          const acknowledgment = data?.acknowledgment?.trim();
-          if (!acknowledgment) return;
-          setL1Acknowledgment(acknowledgment);
-          lsPatch(portal, { l1_acknowledgment: acknowledgment });
-        })
-        .catch(() => {});
+        }).then((data) => data?.acknowledgment?.trim() || null), ESPERA_ECO_MS);
+      if (ecoAjustado) acknowledgment = ecoAjustado;
     }
 
     lsPatch(portal, {
       l1: Date.now(),
       l1_answer: formData.respuesta,
-      l1_acknowledgment: fallbackAcknowledgment,
+      l1_acknowledgment: acknowledgment,
       dashboard_active_level: 1,
       l2_calibration_open: false,
     });
-    setL1Acknowledgment(fallbackAcknowledgment);
+    setL1Acknowledgment(acknowledgment);
     fireConfetti();
     setL1Done(true);
     setDashboardActiveLevel(1);
