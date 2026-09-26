@@ -549,7 +549,10 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
     const formas = bitacoraVentana?.length ? [...new Set([...bitacoraVentana, portal])] : [portal];
     (async () => {
       try {
-        const res = await fetch(`${OBRA_API_URL}/api/bitacora/preguntas-madre?miniversos=${encodeURIComponent(formas.filter(Boolean).join(','))}`);
+        // D-67: con anon_id, el servidor devuelve la pregunta que la persona
+        // contestó en cada forma; solo si no la hay, la pregunta madre vigente.
+        const anon = ensureAnonId();
+        const res = await fetch(`${OBRA_API_URL}/api/bitacora/preguntas-madre?miniversos=${encodeURIComponent(formas.filter(Boolean).join(','))}${anon ? `&anon_id=${encodeURIComponent(anon)}` : ''}`);
         const data = await res.json();
         if (vigente) setPreguntasMadre(res.ok && Array.isArray(data?.preguntas) ? data.preguntas : []);
       } catch {
@@ -708,6 +711,8 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
           anon_id:             anonId,
           miniverso_id:        portal,
           intuicion_answer:    formData.respuesta,
+          // D-67: la pregunta que de verdad se contestó, tal como se mostró.
+          ...(question ? { intuicion_question: question } : {}),
           // Bloque 7 (12 sep 2026): si pasó por el Intermedio antes de
           // responder, se anota. No se le cierra la puerta a nadie.
           ...(readIntermedioVistoAt() ? { intermedio_visto_at: readIntermedioVistoAt() } : {}),
@@ -717,6 +722,22 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
           ...(bienvenidaAnonId ? { bienvenida_anon_id: bienvenidaAnonId } : {}),
         }).then((data) => data?.acknowledgment?.trim() || null), ESPERA_ECO_MS);
       if (ecoAjustado) acknowledgment = ecoAjustado;
+
+      // D-66: registra el eco que quedó en pantalla y si fue el ajustado o el
+      // crudo. Sin espera: no detiene nada si falla.
+      if (acknowledgment) {
+        fetch(`${OBRA_API_URL}/api/resonance/eco`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            anon_id: anonId,
+            miniverso_id: portal,
+            intuicion_answer: formData.respuesta,
+            eco: acknowledgment,
+            ajustado: Boolean(ecoAjustado),
+          }),
+        }).catch(() => {});
+      }
     }
 
     lsPatch(portal, {
