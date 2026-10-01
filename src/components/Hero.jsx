@@ -124,10 +124,14 @@ const readHeroGatBalance = () => {
 // repetía la misma pregunta aunque el usuario ya hubiera contestado.
 const HERO_PWA_PROMPT_DECLINED_KEY = 'gatoencerrado:pwa-install-declined-at';
 const HERO_PWA_PROMPT_COOLDOWN_MS = 30 * 24 * 60 * 60 * 1000;
+// La cuarta (30 sep 2026) invita sin preguntar: el eco ya promete «una sola
+// pregunta» antes de activar. Va al final del ciclo para pasarle el turno a
+// quien visita; como fantasma tardaría casi un minuto en salir.
 const HERO_ROTATING_SUBTITLES = [
   'La obra que ocurre en tu mente',                   // 0 · el slogan canónico
   'Basada en una herida emocional compartida',        // 2 · el origen — intacta, es de tus mejores
   'Arte, tecnología y cuidado: una sola función',  // 4 · la función de la obra
+  'Tú sabes hasta dónde indagar',                     // la invitación — le pasa el turno a quien visita
   ];
 
 const HERO_GHOST_SUBTITLES = [
