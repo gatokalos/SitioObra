@@ -15,6 +15,7 @@ import {
   isBienvenidaQaAlwaysFreshUser,
 } from '@/lib/bienvenida';
 import { extractRecommendedAppId } from '@/lib/bienvenidaBridge';
+import { ensureAnonId } from '@/lib/identity';
 import { pauseHeroAmbient } from '@/lib/heroAmbientAudio';
 import {
   createTransmediaIdempotencyKey,
@@ -101,6 +102,13 @@ const Bienvenida = () => {
     }
     if (flowGoal) {
       url.searchParams.set('goal', flowGoal);
+    }
+    // El identificador de este navegador en el sitio. La Bienvenida vive en
+    // otro dominio y no puede leerlo; lo anota en lo que registra para seguir
+    // a la misma persona hasta sus recorridos (Carlos, 1 oct 2026).
+    const sitioAnonId = ensureAnonId();
+    if (sitioAnonId) {
+      url.searchParams.set('sitio_anon_id', sitioAnonId);
     }
     const siteOrigin = getSiteBridgeOrigin();
     url.searchParams.set('site_origin', siteOrigin);

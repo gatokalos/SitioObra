@@ -15,6 +15,7 @@ import { useAuth } from '@/contexts/SupabaseAuthContext';
 import { safeGetItem, safeSetItem } from '@/lib/safeStorage';
 import { markIntermedioVisto } from '@/lib/intermedio';
 import { isInstalledPWA } from '@/lib/pwaDetection';
+import { vigilarAppInstalada } from '@/lib/registroSitio';
 import PortalGuard from '@/components/PortalGuard';
 import {
   readBeforeLeavingRevealedFromSession,
@@ -484,6 +485,10 @@ function App() {
   const [isHeroActivated, setIsHeroActivated] = useState(
     () => readHeroActivatedFromSession() || isInstalledPWA()
   );
+  // Si la app está instalada, se registra una vez por navegador (Carlos, 1 oct
+  // 2026): Primer Contacto lo cuenta. Va aquí, en la raíz, porque el aviso de
+  // instalación solo llega mientras la página está abierta.
+  useEffect(() => vigilarAppInstalada(), []);
   useEffect(() => {
     if (typeof window === 'undefined') return undefined;
     const handleActivated = () => setIsHeroActivated(true);

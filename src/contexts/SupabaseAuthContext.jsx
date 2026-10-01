@@ -3,6 +3,7 @@ import React, { createContext, useContext, useEffect, useState, useCallback, use
 import { supabase } from '@/lib/supabaseClient';
 import { safeGetItem, safeRemoveItem, safeSetItem, safeStorage } from '@/lib/safeStorage';
 import { useToast } from '@/components/ui/use-toast';
+import { registrarCuenta } from '@/lib/registroSitio';
 
 const AuthContext = createContext(undefined);
 const DEV_AUTH_KEY = 'gatoencerrado:dev-auth';
@@ -221,6 +222,12 @@ export const AuthProvider = ({ children }) => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
         handleSession(session);
+        // Quien entra con cuenta queda ligado a este navegador, una vez por
+        // cuenta (Carlos, 1 oct 2026). Fuera del aviso, con setTimeout: llamar
+        // a Supabase dentro de onAuthStateChange puede bloquear la sesión.
+        if (session?.user && (event === 'SIGNED_IN' || event === 'INITIAL_SESSION')) {
+          setTimeout(() => registrarCuenta(session.user), 0);
+        }
       }
     );
 
