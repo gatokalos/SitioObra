@@ -21,7 +21,7 @@ const UmbralWelcomeContent = ({ onContinue, onDecline, titleFirst = false }) => 
       className="relative mt-10 inline-flex min-h-11 items-center justify-center rounded-full border border-violet-200/25 bg-white/5 px-8 py-3 text-sm font-medium text-slate-100 transition hover:border-violet-200/50 hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-200/70"
       style={{ fontFamily: 'Inter, sans-serif' }}
     >
-      Seguir con la obra
+      Libera su energía
     </button>
     {onDecline ? (
       <button
