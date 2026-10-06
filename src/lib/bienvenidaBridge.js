@@ -9,6 +9,11 @@ export const BIENVENIDA_APP_TO_SHOWCASE = {
   'miniverso-movimiento': 'miniversoMovimiento',
   'miniverso-oraculo': 'oraculo',
   'miniverso-juegos': 'apps',
+  // El nombre de El riesgo en el catálogo de recomendaciones (oraculo_apps).
+  // Sin esta línea, cuando «primer contacto» recomendaba El riesgo, el sitio no
+  // encontraba la vitrina: ni bajaba a ella ni la marcaba (Carlos, 6 oct 2026).
+  'miniverso-juegos-apps': 'apps',
+  'juegos-apps': 'apps',
 
   // Historical aliases
   apps: 'apps',
