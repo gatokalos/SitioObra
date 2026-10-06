@@ -64,6 +64,7 @@ import RelatedReadingTooltipButton from '@/components/portal/RelatedReadingToolt
 import MiniverseIconBadge from '@/components/transmedia/MiniverseIconBadge';
 import VitranaQuestionReveal from '@/components/portal/VitranaQuestionReveal';
 import { writePendingContinuation } from '@/lib/pendingContinuation';
+import { registrarVitrinaBloqueada } from '@/lib/registroSitio';
 import ResonanceModal, { LEVEL2_QUESTIONS, buildL1Acknowledgment } from '@/components/portal/ResonanceModal';
 import { useSilvestreVoice } from '@/hooks/useSilvestreVoice';
 import ObraConversationControls from '@/components/miniversos/obra/ObraConversationControls';
@@ -906,6 +907,7 @@ const Transmedia = ({ allianceOnlyMode = false }) => {
         if (hasBienvenida && hasUnlockedAccess) {
           if (navigateToMobilePortalIfReady(formatId)) return;
         }
+        registrarVitrinaBloqueada(formatId, { recomendada: recommendedShowcaseId, pantalla: 'movil' });
         setMobileVitranaRevealId((prev) => (prev === formatId ? null : formatId));
         return;
       }
@@ -915,6 +917,7 @@ const Transmedia = ({ allianceOnlyMode = false }) => {
         const hasBienvenida = safeGetItem('gatoencerrado:bienvenida-completed') === '1';
         const hasUnlockedAccess = formatId === recommendedShowcaseId;
         if (!(hasBienvenida && hasUnlockedAccess)) {
+          registrarVitrinaBloqueada(formatId, { recomendada: recommendedShowcaseId, pantalla: 'escritorio' });
           setDesktopVitranaRevealId((prev) => (prev === formatId ? null : formatId));
           return;
         }

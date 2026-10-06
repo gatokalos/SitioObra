@@ -2,6 +2,11 @@ import { safeGetItem, safeRemoveItem, safeSetItem } from '@/lib/safeStorage';
 
 export const PENDING_CONTINUATION_STORAGE_KEY = 'gatoencerrado:pending-continuation:v1';
 export const LEGACY_PENDING_VITRANA_STORAGE_KEY = 'gatoencerrado:pending-vitrana-id';
+// Copia del origen para el registro de la cuenta (Carlos, 6 oct 2026): saber
+// desde qué botón —por ejemplo, qué vitrina bloqueada— llegó alguien a iniciar
+// sesión. La continuación se borra en cuanto se usa; esta copia la consume
+// registrarCuenta (lib/registroSitio.js) cuando la base acepta el registro.
+export const ORIGEN_ACCESO_STORAGE_KEY = 'gatoencerrado:origen-acceso:v1';
 
 const normalizeContinuation = (value) => {
   if (!value || typeof value !== 'object') return null;
@@ -20,8 +25,22 @@ export const writePendingContinuation = (continuation) => {
   const normalized = normalizeContinuation(continuation);
   if (!normalized) return null;
   safeSetItem(PENDING_CONTINUATION_STORAGE_KEY, JSON.stringify(normalized));
+  safeSetItem(ORIGEN_ACCESO_STORAGE_KEY, JSON.stringify(normalized));
   return normalized;
 };
+
+export const readOrigenAcceso = () => {
+  const raw = safeGetItem(ORIGEN_ACCESO_STORAGE_KEY);
+  if (!raw) return null;
+  try {
+    return normalizeContinuation(JSON.parse(raw));
+  } catch {
+    safeRemoveItem(ORIGEN_ACCESO_STORAGE_KEY);
+    return null;
+  }
+};
+
+export const clearOrigenAcceso = () => safeRemoveItem(ORIGEN_ACCESO_STORAGE_KEY);
 
 export const readPendingContinuation = () => {
   const raw = safeGetItem(PENDING_CONTINUATION_STORAGE_KEY);
