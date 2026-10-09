@@ -1172,7 +1172,7 @@ const Blog = ({ posts = [], isLoading = false, error = null, showBuscador = fals
               Cambia de lugar<br />en la obra
             </h2>
             <p className="text-lg text-slate-300/80 max-w-3xl mx-auto leading-relaxed font-light">
-              Un espacio de curaduría reflexiva, expansiones narrativas y procesos creativos donde la mirada cambia de dirección. Aquí, quien parecía ocupar la butaca se descubre frente al espejo de sus propias preguntas.
+              Este es un espacio de curaduría reflexiva, expansiones narrativas y procesos creativos. Aquí, la mirada cambia de dirección: quien parecía ocupar la butaca se descubre frente al espejo de sus propias preguntas.
             </p>
           </motion.div>
 
