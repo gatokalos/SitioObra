@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { ensureAnonId } from '@/lib/identity';
+import { normalizarGesto, sellarForma, reintentarSellosPendientes } from '@/lib/sello';
 import {
   fetchTransmediaCreditState,
   registerTransmediaCreditEvent,
@@ -16,6 +17,10 @@ const FREE_NOVELA_QUESTIONS = 3;
 // contexto ni puente postMessage; ambos son necesarios para el flujo nuevo.
 const LiteraturaAppOverlay = ({ open, onClose, onRequireLogin }) => {
   const sessionContextRef = useRef(null); // { fragment_id, plano, initiator } — capturado desde ThreadOverlay
+  // D-69 (9 oct 2026): el sello lo da el gesto, no la ventana. Cuando la app
+  // anuncia que el gesto terminó (enunciado o declinado), aquí se sella en el
+  // momento —espejo local y servidor— sin esperar a que la persona cierre.
+  const gestoRef = useRef(null);
 
   const iframeSrc = useMemo(() => {
     try {
@@ -38,9 +43,22 @@ const LiteraturaAppOverlay = ({ open, onClose, onRequireLogin }) => {
       return undefined;
     }
 
+    // Sellos que no llegaron al servidor en una visita anterior.
+    void reintentarSellosPendientes();
+
     const handleMessage = (event) => {
       if (event.origin !== appOrigin) return;
       const { type } = event.data ?? {};
+
+      if (type === 'autoficcion:gesto') {
+        const { forma, resultado, fragment_id, plano, match_id, duration_ms, ts } = event.data ?? {};
+        if (forma && forma !== 'literatura') return;
+        const gesto = normalizarGesto({ resultado, fragment_id, plano, match_id, duration_ms, ts });
+        if (!gesto) return;
+        gestoRef.current = gesto;
+        void sellarForma('literatura', gesto);
+        return;
+      }
 
       if (type === 'autoficcion:request-login') {
         onRequireLogin?.();
@@ -97,8 +115,12 @@ const LiteraturaAppOverlay = ({ open, onClose, onRequireLogin }) => {
 
   const handleClose = () => {
     const sessionContext = sessionContextRef.current;
+    const gesto = gestoRef.current;
     sessionContextRef.current = null;
-    onClose?.(sessionContext);
+    gestoRef.current = null;
+    // El contexto del debate (si llegó) y el gesto (si se anunció). El sello ya
+    // está escrito; quien recibe esto no debe volver a sellar.
+    onClose?.(sessionContext || gesto ? { ...(sessionContext ?? {}), gesto } : null);
   };
 
   return createPortal(

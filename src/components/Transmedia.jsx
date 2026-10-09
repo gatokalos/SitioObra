@@ -6222,20 +6222,23 @@ const renderDramaFeaturedWork = () => (
             onRequireLogin={() => setShowMobilePortalLogin(true)}
             onClose={(sessionContext) => {
               setShowLiteraturaApp(false);
-              // Marca la experiencia como vivida (dispara la conversación del
-              // Reseñador en ResonanceModal) y le pasa fragment_id/plano/initiator
-              // si el usuario llegó a "Iniciar debate" dentro del artefacto.
-              try {
-                const key = 'gatoencerrado:resonance:literatura';
-                const existing = JSON.parse(localStorage.getItem(key) || '{}');
-                localStorage.setItem(key, JSON.stringify({
-                  ...existing,
-                  experience_ts: existing.experience_ts ?? Date.now(),
-                  ...(sessionContext?.fragment_id ? { l2_fragment_id: sessionContext.fragment_id } : {}),
-                  ...(sessionContext?.plano ? { l2_plano: sessionContext.plano } : {}),
-                  ...(sessionContext?.initiator ? { l2_initiator: sessionContext.initiator } : {}),
-                }));
-              } catch { /* ignore */ }
+              // D-69 (9 oct 2026): el sello lo da el gesto, no la ventana.
+              // experience_ts lo escribe lib/sello.js cuando la app anuncia el
+              // gesto (enunciado o declinado). Cerrar sin gesto no sella: el
+              // artefacto queda a cuestas (D-49). Aquí solo se guarda el
+              // contexto del debate si la persona llegó a "Iniciar debate".
+              if (sessionContext?.fragment_id || sessionContext?.plano || sessionContext?.initiator) {
+                try {
+                  const key = 'gatoencerrado:resonance:literatura';
+                  const existing = JSON.parse(localStorage.getItem(key) || '{}');
+                  localStorage.setItem(key, JSON.stringify({
+                    ...existing,
+                    ...(sessionContext?.fragment_id ? { l2_fragment_id: sessionContext.fragment_id } : {}),
+                    ...(sessionContext?.plano ? { l2_plano: sessionContext.plano } : {}),
+                    ...(sessionContext?.initiator ? { l2_initiator: sessionContext.initiator } : {}),
+                  }));
+                } catch { /* ignore */ }
+              }
               refreshActivePortalL1();
               setIsLiteraturaResonanceOpen(true);
             }}
