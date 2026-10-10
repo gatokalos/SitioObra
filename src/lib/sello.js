@@ -34,17 +34,25 @@ export const normalizarGesto = (data = {}) => {
   };
 };
 
-/** El espejo local del sello: experience_ts y el gesto, sin borrar lo que ya había. */
+/**
+ * El espejo local del sello: experience_ts y el gesto, sin borrar lo que ya
+ * había. El primer sello se queda: si la persona vuelve al artefacto y lo
+ * cierra otra vez (otro plano, o declina después de leer), ese gesto va a
+ * `gestos_posteriores` y no cambia el resultado con que se selló.
+ */
 export const sellarLocal = (portal, gesto) => {
   try {
     const existing = readResonanceRecord(portal);
+    const yaSellado = !!existing.gesto_resultado;
+    const posteriores = Array.isArray(existing.gestos_posteriores) ? existing.gestos_posteriores : [];
     localStorage.setItem(recordKey(portal), JSON.stringify({
       ...existing,
       experience_ts: existing.experience_ts ?? gesto.ts,
-      gesto_resultado: gesto.resultado,
-      gesto_ts: gesto.ts,
-      ...(gesto.fragment_id ? { l2_fragment_id: gesto.fragment_id } : {}),
-      ...(gesto.plano ? { l2_plano: gesto.plano } : {}),
+      ...(yaSellado
+        ? { gestos_posteriores: [...posteriores, gesto] }
+        : { gesto_resultado: gesto.resultado, gesto_ts: gesto.ts }),
+      ...(!existing.l2_fragment_id && gesto.fragment_id ? { l2_fragment_id: gesto.fragment_id } : {}),
+      ...(!existing.l2_plano && gesto.plano ? { l2_plano: gesto.plano } : {}),
     }));
   } catch { /* sin almacenamiento local: el servidor sigue siendo el sello */ }
 };
