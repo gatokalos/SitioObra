@@ -5235,3 +5235,9 @@ body {
   transition: background 0.18s, border-color 0.18s;
 }
 .cabina-consent-area__secondary:hover { background: rgba(255,255,255,0.18); border-color: rgba(255,255,255,0.55); }
+
+/* El emblema de la forma late bajo «Habitar la forma» (Carlos, 11 oct 2026): late, no gira. */
+@keyframes latido {
+  0%, 100% { box-shadow: 0 0 40px rgba(240, 224, 160, 0.10); }
+  50%      { box-shadow: 0 0 70px rgba(240, 224, 160, 0.22); }
+}

@@ -2,6 +2,9 @@ import React, { useEffect, useMemo, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { ensureAnonId } from '@/lib/identity';
 import { normalizarGesto, sellarForma, reintentarSellosPendientes } from '@/lib/sello';
+import { readResonanceRecord } from '@/lib/bitacoraShared';
+import { buildEscenaFrase } from '@/lib/resonanceDramaturgy';
+import { showcaseDefinitions } from '@/components/transmedia/transmediaConstants';
 import {
   fetchTransmediaCreditState,
   registerTransmediaCreditEvent,
@@ -9,6 +12,15 @@ import {
 } from '@/services/transmediaCreditsService';
 
 const APP_URL = import.meta.env.VITE_LITERATURA_APP_URL ?? 'https://literatura.miniversos.ai';
+
+// Los avisos de «Al entrar en escena…» son la única fuente del copy que el
+// dispositivo dice en su transición (punto 6, Carlos, 11 oct 2026): el sitio se
+// los manda, sin emojis, y el Marcador solo los pone en escena.
+const quitarEmoji = (texto) => String(texto ?? '').replace(/^[^\p{L}\p{N}«¿¡"']+/u, '').trim();
+const avisosDeLaEscena = () => {
+  const notes = showcaseDefinitions?.miniversoNovela?.iaProfile?.notes;
+  return Array.isArray(notes) ? notes.map(quitarEmoji).filter(Boolean) : [];
+};
 const FREE_NOVELA_QUESTIONS = 3;
 
 // Marcador Inteligente — el artefacto necesita anon_id para llamar a
@@ -21,6 +33,7 @@ const LiteraturaAppOverlay = ({ open, onClose, onRequireLogin }) => {
   // anuncia que el gesto terminó (enunciado o declinado), aquí se sella en el
   // momento —espejo local y servidor— sin esperar a que la persona cierre.
   const gestoRef = useRef(null);
+  const cerrarRef = useRef(null);
 
   const iframeSrc = useMemo(() => {
     try {
@@ -28,6 +41,8 @@ const LiteraturaAppOverlay = ({ open, onClose, onRequireLogin }) => {
       const anonId = ensureAnonId();
       if (anonId) url.searchParams.set('anon_id', anonId);
       url.searchParams.set('miniverso_id', 'literatura');
+      // La entrada por el sitio (D-52): el Marcador en modo gesto.
+      url.searchParams.set('modo', 'gesto');
       return url.toString();
     } catch {
       return APP_URL;
@@ -62,6 +77,22 @@ const LiteraturaAppOverlay = ({ open, onClose, onRequireLogin }) => {
 
       if (type === 'autoficcion:request-login') {
         onRequireLogin?.();
+        return;
+      }
+
+      // El Marcador pide contexto al arrancar: se le manda la frase de la escena
+      // (la misma plantilla de la tarjeta, en pasado, con el chip elegido) y los avisos.
+      if (type === 'autoficcion:request-user-context') {
+        const record = readResonanceRecord('literatura');
+        const frase = buildEscenaFrase('literatura', record?.l2_option);
+        event.source?.postMessage({ type: 'autoficcion:escena-context', frase, avisos: avisosDeLaEscena() }, appOrigin);
+        return;
+      }
+
+      // La escena terminó (gesto hecho, o salida sin gesto): el Marcador pide
+      // cerrarse; quien recibe el cierre abre la conversación si hubo gesto.
+      if (type === 'autoficcion:cerrar-escena') {
+        cerrarRef.current?.();
         return;
       }
 
@@ -122,6 +153,7 @@ const LiteraturaAppOverlay = ({ open, onClose, onRequireLogin }) => {
     // está escrito; quien recibe esto no debe volver a sellar.
     onClose?.(sessionContext || gesto ? { ...(sessionContext ?? {}), gesto } : null);
   };
+  cerrarRef.current = handleClose;
 
   return createPortal(
     <div className="fixed inset-0 z-[200] flex flex-col items-center justify-center bg-black/85 backdrop-blur-xl">
@@ -130,7 +162,7 @@ const LiteraturaAppOverlay = ({ open, onClose, onRequireLogin }) => {
         onClick={handleClose}
         className="mb-4 self-center text-slate-300 hover:text-white text-sm"
       >
-        Cerrar ✕
+        Salir de la escena ✕
       </button>
 
       <div className="w-full max-w-sm flex-1 sm:flex-none sm:aspect-[9/16] sm:max-h-[88dvh] overflow-hidden rounded-3xl shadow-[0_32px_80px_rgba(0,0,0,0.7)] border border-white/10">

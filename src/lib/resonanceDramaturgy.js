@@ -43,6 +43,10 @@ export const RESONANCE_DRAMATURGY_BY_PORTAL = {
     form: 'La escritura',
     phase2Eyebrow: 'Preparación de escena',
     phase2Title: 'Reconoce lo que buscas',
+    // Modo gesto (Carlos, 11 oct 2026): sustituye a «Ya forma parte de tu obra».
+    // Sin número y en futuro: la convocatoria ocurre al abrir el Marcador y el
+    // modelo elige de tres a cinco párrafos.
+    entranceDesc: 'Lo que escribiste va a convocar unos párrafos de una historia. Uno de ellos va a ser tuyo por un momento.',
   },
   artesanias: {
     label: 'Artesanías',
@@ -86,6 +90,36 @@ export const RESONANCE_DRAMATURGY_BY_PORTAL = {
     phase2Eyebrow: 'Preparación de escena',
     phase2Title: 'Sostén la pregunta',
   },
+};
+
+// El emblema redondo de cada forma, el mismo del libreto holográfico. Sustituye
+// a la moneda que giraba bajo «Habitar la forma»: el GAToken dejó de ser moneda
+// (22 sep 2026) y la moneda como botón de entrada volvía a leerse como rally
+// (Carlos, 11 oct 2026). Late, no gira.
+const MERCH_BASE = 'https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/Merch';
+export const PORTAL_EMBLEM_URL = {
+  obra:        `${MERCH_BASE}/la_obra.png`,
+  literatura:  `${MERCH_BASE}/literatura.png`,
+  artesanias:  `${MERCH_BASE}/la_taza.png`,
+  grafico:     `${MERCH_BASE}/los_graficos.png`,
+  cine:        `${MERCH_BASE}/cortos.png`,
+  sonoridades: `${MERCH_BASE}/sonoridades.png`,
+  movimiento:  `${MERCH_BASE}/lasdiosas.png`,
+  juegos:      `${MERCH_BASE}/juegos.png`,
+  oraculo:     `${MERCH_BASE}/el_oraculo.png`,
+};
+
+// La costura entre el sitio y el dispositivo (Carlos, 11 oct 2026): la última
+// frase que la persona lee en el sitio, en pasado, es la primera que ve en el
+// dispositivo. Sale de la misma plantilla que la tarjeta; el dispositivo no
+// tiene copia propia. Por ahora solo La escritura tiene modo gesto.
+export const buildEscenaFrase = (portal, option) => {
+  const o = typeof option === 'string' ? option.trim().replace(/[.!?]+$/, '') : '';
+  if (!o) return null;
+  const templates = {
+    literatura: `Abriste la historia esperando encontrar ${o}.`,
+  };
+  return templates[portal] ?? null;
 };
 
 export const getResonanceDramaturgy = (portal) => ({

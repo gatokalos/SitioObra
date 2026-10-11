@@ -17,7 +17,7 @@ import { clearGlobalConsent, readGlobalConsent, writeGlobalConsent, readResonanc
 import FarewellVideoPanel from './FarewellVideoPanel';
 import { RESONANCE_FAREWELL_VIDEO_ENABLED } from '@/components/transmedia/transmediaConstants';
 import { readIntermedioVistoAt } from '@/lib/intermedio';
-import { getResonanceDramaturgy } from '@/lib/resonanceDramaturgy';
+import { getResonanceDramaturgy, PORTAL_EMBLEM_URL } from '@/lib/resonanceDramaturgy';
 
 export { readGlobalConsent, writeGlobalConsent };
 
@@ -2023,9 +2023,12 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
                                           <p className="font-display text-lg uppercase leading-tight tracking-[0.1em] text-amber-100">
                                             {dramaturgy.form} entra en escena
                                           </p>
-                                          <p className="mt-1 text-xs leading-relaxed text-slate-300/75">
-                                            {dramaturgy.entranceCoda}
+                                          <p className="mt-1 max-w-[30ch] text-xs leading-relaxed text-slate-300/75">
+                                            {dramaturgy.entranceDesc ?? dramaturgy.entranceCoda}
                                           </p>
+                                          {/* La esfera es el botón y el texto su pista (Carlos, 11 oct 2026).
+                                              El emblema redondo de la forma, el del libreto holográfico, late;
+                                              sustituye a la moneda del GAToken, que giraba. */}
                                           <motion.button
                                             type="button"
                                             onClick={(event) => {
@@ -2033,13 +2036,21 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
                                               handleOpenNarrativeExperience();
                                             }}
                                             className="flex w-full flex-col items-center gap-3 pt-4 transition active:scale-[0.98]"
-                                            whileHover={{ scale: 1.015 }}
+                                            whileHover={{ scale: 1.03 }}
+                                            aria-label="Habitar la forma"
                                           >
-                                            <img
-                                              src="https://ytubybkoucltwnselbhc.supabase.co/storage/v1/object/public/oraculo/gato-moneda.png"
-                                              alt="GAToken"
-                                              className="h-24 w-24 animate-[spin_8s_linear_0s_infinite_reverse] drop-shadow-[0_0_22px_rgba(251,191,36,0.6)] lg:h-32 lg:w-32"
-                                            />
+                                            <span
+                                              className="relative block h-24 w-24 overflow-hidden rounded-full bg-black ring-2 ring-white/25 lg:h-28 lg:w-28 motion-safe:animate-[latido_3.2s_ease-in-out_infinite]"
+                                              style={{ boxShadow: '0 0 60px rgba(0,0,0,0.55)' }}
+                                            >
+                                              <img
+                                                src={PORTAL_EMBLEM_URL[portal] ?? PORTAL_EMBLEM_URL.obra}
+                                                alt=""
+                                                className="absolute h-[104%] w-[104%] object-cover"
+                                                style={{ left: '-2%', top: '-2%' }}
+                                              />
+                                              <span aria-hidden="true" className="pointer-events-none absolute inset-0 rounded-full shadow-[inset_-16px_-18px_28px_rgba(0,0,0,0.42),inset_10px_9px_18px_rgba(255,255,255,0.14)]" />
+                                            </span>
                                             <span className="text-sm font-semibold tracking-wide text-amber-200">
                                               Habitar la forma
                                             </span>
@@ -2383,9 +2394,25 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
                                         </div>
                                       )}
                                       {isL2 && l2ConvDone && (
-                                        <div className="flex items-center gap-2 text-sm text-slate-300 lg:text-xs">
-                                          <Check size={12} className="shrink-0 text-emerald-400/70" />
-                                          <span className="italic">Conversación completada</span>
+                                        <div className="flex flex-col gap-4">
+                                          <div className="flex items-center gap-2 text-sm text-slate-300 lg:text-xs">
+                                            <Check size={12} className="shrink-0 text-emerald-400/70" />
+                                            <span className="italic">Conversación completada</span>
+                                          </div>
+                                          {/* El emblema es siempre lo último: regresa a donde la persona
+                                              estaba (Carlos, 11 oct 2026). Nunca en un momento intermedio. */}
+                                          <button
+                                            type="button"
+                                            onClick={(event) => { event.stopPropagation(); onClose?.(); }}
+                                            className="flex w-full flex-col items-center gap-2 pt-1 transition active:scale-[0.98]"
+                                            aria-label="Terminar la escena"
+                                          >
+                                            <span className="relative block h-16 w-16 overflow-hidden rounded-full bg-black ring-2 ring-white/25" style={{ boxShadow: '0 0 40px rgba(0,0,0,0.5)' }}>
+                                              <img src={PORTAL_EMBLEM_URL[portal] ?? PORTAL_EMBLEM_URL.obra} alt="" className="absolute h-[104%] w-[104%] object-cover" style={{ left: '-2%', top: '-2%' }} />
+                                              <span aria-hidden="true" className="pointer-events-none absolute inset-0 rounded-full shadow-[inset_-10px_-12px_20px_rgba(0,0,0,0.48),inset_7px_7px_13px_rgba(255,255,255,0.12)]" />
+                                            </span>
+                                            <span className="text-sm font-semibold tracking-wide text-amber-200">Terminar la escena</span>
+                                          </button>
                                         </div>
                                       )}
                                     </div>
