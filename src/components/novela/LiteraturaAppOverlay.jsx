@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { ensureAnonId } from '@/lib/identity';
 import { normalizarGesto, sellarForma, reintentarSellosPendientes } from '@/lib/sello';
@@ -12,6 +12,8 @@ import {
 } from '@/services/transmediaCreditsService';
 
 const APP_URL = import.meta.env.VITE_LITERATURA_APP_URL ?? 'https://literatura.miniversos.ai';
+// Marca del historial mientras la escena está abierta (ver el efecto de abajo).
+const ESCENA_STATE = 'gatoencerrado:escena:literatura';
 
 // Los avisos de «Al entrar en escena…» son la única fuente del copy que el
 // dispositivo dice en su transición (punto 6, Carlos, 11 oct 2026): el sitio se
@@ -34,6 +36,9 @@ const LiteraturaAppOverlay = ({ open, onClose, onRequireLogin }) => {
   // momento —espejo local y servidor— sin esperar a que la persona cierre.
   const gestoRef = useRef(null);
   const cerrarRef = useRef(null);
+  // El «atrás» del navegador con la escena abierta: se pregunta, no se sale.
+  const [confirmarSalida, setConfirmarSalida] = useState(false);
+  const trampaRef = useRef(false);
 
   const iframeSrc = useMemo(() => {
     try {
@@ -48,6 +53,46 @@ const LiteraturaAppOverlay = ({ open, onClose, onRequireLogin }) => {
       return APP_URL;
     }
   }, []);
+
+  // El botón «atrás» (o el deslizar hacia atrás del trackpad) no saca de la
+  // escena ni borra lo andado (Carlos, 11 oct 2026, primera prueba): mientras
+  // la ventana está abierta hay una entrada propia en el historial; si la
+  // persona retrocede, la entrada se repone y se le pregunta si de verdad
+  // quiere salir. Recargar o cerrar la pestaña también pide confirmación.
+  useEffect(() => {
+    if (!open || typeof window === 'undefined') return undefined;
+    const marcar = () => {
+      try {
+        const previo = window.history.state && typeof window.history.state === 'object' ? window.history.state : {};
+        // idx se conserva para que el enrutador del sitio siga contando bien.
+        window.history.pushState({ ...previo, idx: (Number(previo.idx) || 0) + 1, [ESCENA_STATE]: true }, '', window.location.href);
+        trampaRef.current = true;
+      } catch { /* sin historial manipulable: no hay trampa, pero la escena sigue */ }
+    };
+    marcar();
+    const onPop = () => {
+      marcar();
+      setConfirmarSalida(true);
+    };
+    const onBeforeUnload = (event) => {
+      event.preventDefault();
+      event.returnValue = '';
+    };
+    window.addEventListener('popstate', onPop);
+    window.addEventListener('beforeunload', onBeforeUnload);
+    return () => {
+      window.removeEventListener('popstate', onPop);
+      window.removeEventListener('beforeunload', onBeforeUnload);
+      // Al cerrar por la vía normal se retira la entrada propia, para que el
+      // siguiente «atrás» de la persona haga lo de siempre.
+      if (trampaRef.current && window.history.state?.[ESCENA_STATE]) {
+        trampaRef.current = false;
+        try { window.history.back(); } catch { /* ignore */ }
+      } else {
+        trampaRef.current = false;
+      }
+    };
+  }, [open]);
 
   useEffect(() => {
     if (!open) return undefined;
@@ -149,6 +194,7 @@ const LiteraturaAppOverlay = ({ open, onClose, onRequireLogin }) => {
     const gesto = gestoRef.current;
     sessionContextRef.current = null;
     gestoRef.current = null;
+    setConfirmarSalida(false);
     // El contexto del debate (si llegó) y el gesto (si se anunció). El sello ya
     // está escrito; quien recibe esto no debe volver a sellar.
     onClose?.(sessionContext || gesto ? { ...(sessionContext ?? {}), gesto } : null);
@@ -165,7 +211,10 @@ const LiteraturaAppOverlay = ({ open, onClose, onRequireLogin }) => {
         Salir de la escena ✕
       </button>
 
-      <div className="w-full max-w-sm flex-1 sm:flex-none sm:aspect-[9/16] sm:max-h-[88dvh] overflow-hidden rounded-3xl shadow-[0_32px_80px_rgba(0,0,0,0.7)] border border-white/10">
+      {/* En teléfono, la ventana entera; en tableta, un marco 9:16; en
+          escritorio, un marco ancho (Carlos, 11 oct 2026: en escritorio se
+          veía la tarjeta de teléfono). */}
+      <div className="w-full max-w-sm flex-1 sm:flex-none sm:aspect-[9/16] sm:max-h-[88dvh] lg:max-w-[820px] lg:aspect-auto lg:h-[86dvh] overflow-hidden rounded-3xl shadow-[0_32px_80px_rgba(0,0,0,0.7)] border border-white/10">
         <iframe
           src={iframeSrc}
           title="Separador inteligente · Literatura"
@@ -174,6 +223,38 @@ const LiteraturaAppOverlay = ({ open, onClose, onRequireLogin }) => {
           loading="lazy"
         />
       </div>
+
+      {confirmarSalida && (
+        <div
+          className="absolute inset-0 z-10 flex items-center justify-center bg-black/70 px-6"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="salir-escena-titulo"
+        >
+          <div className="w-full max-w-sm rounded-2xl border border-white/10 bg-[#0b0a08] p-6 text-center shadow-2xl">
+            <p id="salir-escena-titulo" className="font-display text-xl text-amber-100">¿Salir de la escena?</p>
+            <p className="mt-2 text-sm leading-relaxed text-slate-300/80">
+              Todavía no hiciste el gesto. Si sales, la forma queda abierta y puedes volver a entrar.
+            </p>
+            <div className="mt-5 flex flex-col gap-2">
+              <button
+                type="button"
+                onClick={() => setConfirmarSalida(false)}
+                className="rounded-full border border-amber-300/50 bg-amber-300/10 px-5 py-3 text-xs uppercase tracking-[0.2em] text-amber-200"
+              >
+                Seguir en la escena
+              </button>
+              <button
+                type="button"
+                onClick={handleClose}
+                className="rounded-full border border-white/10 px-5 py-3 text-xs uppercase tracking-[0.2em] text-slate-300"
+              >
+                Salir
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>,
     document.body,
   );

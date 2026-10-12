@@ -421,6 +421,12 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
 
   // Nivel 2 — conversación post-experiencia
   const [l2NarrativeOpened, setL2NarrativeOpened] = useState(() => !!lsRead(portal).l2_narrative_opened);
+  // El sello (D-69): experience_ts lo escribe lib/sello.js cuando el artefacto
+  // anuncia el gesto. Mientras no esté, la escena sigue abierta aunque la
+  // persona ya haya entrado una vez: salir sin gesto no cierra nada (11 oct
+  // 2026, primera prueba de Carlos: el «atrás» del navegador lo sacó y el
+  // botón de entrada había desaparecido).
+  const [sellado, setSellado] = useState(() => !!lsRead(portal).experience_ts);
   const [l2ConvDone, setL2ConvDone] = useState(() => !!lsRead(portal).l2_conv_done);
   const [convQuestion, setConvQuestion] = useState(() => lsRead(portal).l2_current_question ?? null);
   const [convTurn, setConvTurn] = useState(() => lsRead(portal).l2_current_turn ?? 0);
@@ -852,6 +858,13 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
       onL2QuestionReady?.();
     }
   }, [portal, onL2QuestionReady, isDevAuth, convTurn]);
+
+  // Al abrir, se relee el sello: el modal queda montado mientras la escena
+  // ocurre en otra ventana, y al volver tiene que saber si hubo gesto o no.
+  useEffect(() => {
+    if (!open) return;
+    setSellado(!!lsRead(portal).experience_ts);
+  }, [open, portal]);
 
   // Auto-arranca la conversación cuando el modal abre después de completar la experiencia.
   // Si el artefacto dejó fragment_id/plano/initiator (Marcador Inteligente, Literatura),
@@ -2013,7 +2026,9 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
                                         </p>
                                       )}
 
-                                      {isL2 && l1ChipDone && !l2NarrativeOpened && onOpenNarrative && (
+                                      {/* La entrada se ofrece mientras no haya sello (D-69): quien
+                                          salió antes del gesto vuelve a la escena, no se queda fuera. */}
+                                      {isL2 && l1ChipDone && !sellado && onOpenNarrative && (
                                         <motion.div
                                           className="flex flex-col items-center px-2 pb-1 pt-2 text-center"
                                           initial={{ opacity: 0, scale: 0.97, y: 8 }}
@@ -2021,10 +2036,12 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
                                           transition={{ type: 'spring', stiffness: 210, damping: 22 }}
                                         >
                                           <p className="font-display text-lg uppercase leading-tight tracking-[0.1em] text-amber-100">
-                                            {dramaturgy.form} entra en escena
+                                            {l2NarrativeOpened ? `${dramaturgy.form} sigue en escena` : `${dramaturgy.form} entra en escena`}
                                           </p>
                                           <p className="mt-1 max-w-[30ch] text-xs leading-relaxed text-slate-300/75">
-                                            {dramaturgy.entranceDesc ?? dramaturgy.entranceCoda}
+                                            {l2NarrativeOpened
+                                              ? 'Saliste antes del gesto. La forma queda abierta donde la dejaste.'
+                                              : (dramaturgy.entranceDesc ?? dramaturgy.entranceCoda)}
                                           </p>
                                           {/* La esfera es el botón y el texto su pista (Carlos, 11 oct 2026).
                                               El emblema redondo de la forma, el del libreto holográfico, late;
@@ -2037,7 +2054,7 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
                                             }}
                                             className="flex w-full flex-col items-center gap-3 pt-4 transition active:scale-[0.98]"
                                             whileHover={{ scale: 1.03 }}
-                                            aria-label="Habitar la forma"
+                                            aria-label={l2NarrativeOpened ? 'Volver a la escena' : 'Habitar la forma'}
                                           >
                                             <span
                                               className="relative block h-24 w-24 overflow-hidden rounded-full bg-black ring-2 ring-white/25 lg:h-28 lg:w-28 motion-safe:animate-[latido_3.2s_ease-in-out_infinite]"
@@ -2052,7 +2069,7 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
                                               <span aria-hidden="true" className="pointer-events-none absolute inset-0 rounded-full shadow-[inset_-16px_-18px_28px_rgba(0,0,0,0.42),inset_10px_9px_18px_rgba(255,255,255,0.14)]" />
                                             </span>
                                             <span className="text-sm font-semibold tracking-wide text-amber-200">
-                                              Habitar la forma
+                                              {l2NarrativeOpened ? 'Volver a la escena' : 'Habitar la forma'}
                                             </span>
                                           </motion.button>
                                         </motion.div>
