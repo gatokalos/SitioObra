@@ -202,27 +202,24 @@ const LiteraturaAppOverlay = ({ open, onClose, onRequireLogin }) => {
   cerrarRef.current = handleClose;
 
   return createPortal(
-    <div className="fixed inset-0 z-[200] flex flex-col items-center justify-center bg-black/85 backdrop-blur-xl">
+    <div className="fixed inset-0 z-[200] bg-[#080806]">
+      {/* La escena ocupa la ventana entera, sin marco, en cualquier pantalla
+          (Carlos, 12 oct 2026: el marco no le gustó). La salida flota encima. */}
+      <iframe
+        src={iframeSrc}
+        title="Separador inteligente · Literatura"
+        className="absolute inset-0 h-full w-full border-0"
+        allow="microphone; camera"
+        loading="lazy"
+      />
       <button
         type="button"
         onClick={handleClose}
-        className="mb-4 self-center text-slate-300 hover:text-white text-sm"
+        className="absolute right-4 z-10 rounded-full bg-black/45 px-3 py-1.5 text-sm text-slate-300 backdrop-blur-sm transition hover:text-white"
+        style={{ top: 'calc(12px + env(safe-area-inset-top, 0px))' }}
       >
         Salir de la escena ✕
       </button>
-
-      {/* En teléfono, la ventana entera; en tableta, un marco 9:16; en
-          escritorio, un marco ancho (Carlos, 11 oct 2026: en escritorio se
-          veía la tarjeta de teléfono). */}
-      <div className="w-full max-w-sm flex-1 sm:flex-none sm:aspect-[9/16] sm:max-h-[88dvh] lg:max-w-[820px] lg:aspect-auto lg:h-[86dvh] overflow-hidden rounded-3xl shadow-[0_32px_80px_rgba(0,0,0,0.7)] border border-white/10">
-        <iframe
-          src={iframeSrc}
-          title="Separador inteligente · Literatura"
-          className="w-full h-full"
-          allow="microphone; camera"
-          loading="lazy"
-        />
-      </div>
 
       {confirmarSalida && (
         <div
