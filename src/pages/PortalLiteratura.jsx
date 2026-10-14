@@ -477,6 +477,24 @@ const PortalLiteratura = () => {
               }));
             } catch { /* ignore */ }
           }
+          // La conversación ocurrió dentro del Marcador (14 oct 2026): si terminó,
+          // el sitio la da por hecha y sigue con En el foco; si quedó a medias,
+          // la entrada vuelve a ofrecer la escena.
+          if (sessionContext?.conversacion === 'terminada') {
+            try {
+              const key = 'gatoencerrado:resonance:literatura';
+              const existing = JSON.parse(localStorage.getItem(key) || '{}');
+              localStorage.setItem(key, JSON.stringify({
+                ...existing,
+                l2_conv_done: true,
+                l2_escena_terminada: true,
+                l2_current_question: null,
+                l2_current_turn: null,
+                l2_conv_error: false,
+                dashboard_active_level: 3,
+              }));
+            } catch { /* ignore */ }
+          }
           refreshL1();
           setIsResonanceOpen(true);
         }}

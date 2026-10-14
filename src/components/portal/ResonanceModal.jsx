@@ -314,6 +314,11 @@ const LEVELS = [
 
 /* ─── localStorage helpers ────────────────────────────────────────────── */
 
+// Formas cuya conversación (los turnos del Reseñador) ocurre dentro del
+// dispositivo, no en esta plantilla (Carlos, 14 oct 2026: la persona no deja
+// el dispositivo hasta que contesta; la esfera «Terminar la escena» vive allá).
+const CONVERSACION_EN_EL_DISPOSITIVO = new Set(['literatura']);
+
 // Cascada del clímax (Carlos, bloque 6 del recorrido comentado): cuando el
 // video del autor termina, el resto del stack entra escalonado en vez de
 // aparecer de golpe. El orden lo fija `custom`.
@@ -427,6 +432,9 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
   // 2026, primera prueba de Carlos: el «atrás» del navegador lo sacó y el
   // botón de entrada había desaparecido).
   const [sellado, setSellado] = useState(() => !!lsRead(portal).experience_ts);
+  // «Terminar la escena» se hace una sola vez y lleva a En el foco; sin esto,
+  // el modal se cerraba y al volver ofrecía el mismo botón (bucle, Carlos, 14 oct).
+  const [escenaTerminada, setEscenaTerminada] = useState(() => !!lsRead(portal).l2_escena_terminada);
   const [l2ConvDone, setL2ConvDone] = useState(() => !!lsRead(portal).l2_conv_done);
   const [convQuestion, setConvQuestion] = useState(() => lsRead(portal).l2_current_question ?? null);
   const [convTurn, setConvTurn] = useState(() => lsRead(portal).l2_current_turn ?? 0);
@@ -863,7 +871,12 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
   // ocurre en otra ventana, y al volver tiene que saber si hubo gesto o no.
   useEffect(() => {
     if (!open) return;
-    setSellado(!!lsRead(portal).experience_ts);
+    const s = lsRead(portal);
+    setSellado(!!s.experience_ts);
+    setEscenaTerminada(!!s.l2_escena_terminada);
+    if (s.l2_narrative_opened) setL2NarrativeOpened(true);
+    if (s.l2_conv_done) { setL2ConvDone(true); setConvQuestion(null); }
+    if ([1, 2, 3].includes(s.dashboard_active_level)) setDashboardActiveLevel(s.dashboard_active_level);
   }, [open, portal]);
 
   // Auto-arranca la conversación cuando el modal abre después de completar la experiencia.
@@ -871,6 +884,7 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
   // el primer turno los lleva — es la única vez que se envían.
   useEffect(() => {
     if (!open) return;
+    if (CONVERSACION_EN_EL_DISPOSITIVO.has(portal)) return;
     if (!l2NarrativeOpened || l2ConvDone || convQuestion !== null || convLoading || convError) return;
     const s = lsRead(portal);
     if (!s.experience_ts) return;
@@ -1265,6 +1279,25 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
       setL3Loading(false);
     }
   }, [l3Rec, l3Loading, portal, isDevAuth, user?.id]);
+
+  // «Terminar la escena» (el emblema, lo último de la conversación): una sola
+  // vez, y lleva a En el foco; no cierra el modal. Para las formas con la
+  // conversación en el dispositivo, el dispositivo lo hace y el sitio solo lo
+  // recibe (l2_escena_terminada ya viene escrito).
+  const terminarEscena = useCallback(() => {
+    lsPatch(portal, { l2_escena_terminada: true, dashboard_active_level: 3 });
+    setEscenaTerminada(true);
+    setDashboardActiveLevel(3);
+    fetchL3Recommendation();
+  }, [portal, fetchL3Recommendation]);
+
+  // Con la escena terminada y En el foco al frente, la recomendación se pide sola.
+  useEffect(() => {
+    if (!open || !escenaTerminada || !l2ConvDone || dashboardActiveLevel !== 3) return;
+    if (bitacoraCompleted || l3Loading) return;
+    if (l3Rec && (l3Rec.step1 || l3Rec.error || l3Rec.all_complete)) return;
+    fetchL3Recommendation();
+  }, [open, escenaTerminada, l2ConvDone, dashboardActiveLevel, bitacoraCompleted, l3Loading, l3Rec, fetchL3Recommendation]);
 
 
   const handleBackToDashboard = () => {
@@ -2028,7 +2061,7 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
 
                                       {/* La entrada se ofrece mientras no haya sello (D-69): quien
                                           salió antes del gesto vuelve a la escena, no se queda fuera. */}
-                                      {isL2 && l1ChipDone && !sellado && onOpenNarrative && (
+                                      {isL2 && l1ChipDone && onOpenNarrative && (!sellado || (CONVERSACION_EN_EL_DISPOSITIVO.has(portal) && !l2ConvDone)) && (
                                         <motion.div
                                           className="flex flex-col items-center px-2 pb-1 pt-2 text-center"
                                           initial={{ opacity: 0, scale: 0.97, y: 8 }}
@@ -2036,12 +2069,14 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
                                           transition={{ type: 'spring', stiffness: 210, damping: 22 }}
                                         >
                                           <p className="font-display text-lg uppercase leading-tight tracking-[0.1em] text-amber-100">
-                                            {l2NarrativeOpened ? `${dramaturgy.form} sigue en escena` : `${dramaturgy.form} entra en escena`}
+                                            {(l2NarrativeOpened || sellado) ? `${dramaturgy.form} sigue en escena` : `${dramaturgy.form} entra en escena`}
                                           </p>
                                           <p className="mt-1 max-w-[30ch] text-xs leading-relaxed text-slate-300/75">
-                                            {l2NarrativeOpened
-                                              ? 'Saliste antes del gesto. La forma queda abierta donde la dejaste.'
-                                              : (dramaturgy.entranceDesc ?? dramaturgy.entranceCoda)}
+                                            {sellado
+                                              ? 'La conversación quedó abierta en la escena. Vuelve para terminarla.'
+                                              : l2NarrativeOpened
+                                                ? 'Saliste antes del gesto. La forma queda abierta donde la dejaste.'
+                                                : (dramaturgy.entranceDesc ?? dramaturgy.entranceCoda)}
                                           </p>
                                           {/* La esfera es el botón y el texto su pista (Carlos, 11 oct 2026).
                                               El emblema redondo de la forma, el del libreto holográfico, late;
@@ -2054,7 +2089,7 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
                                             }}
                                             className="flex w-full flex-col items-center gap-3 pt-4 transition active:scale-[0.98]"
                                             whileHover={{ scale: 1.03 }}
-                                            aria-label={l2NarrativeOpened ? 'Volver a la escena' : 'Habitar la forma'}
+                                            aria-label={(l2NarrativeOpened || sellado) ? 'Volver a la escena' : 'Habitar la forma'}
                                           >
                                             <span
                                               className="relative block h-24 w-24 overflow-hidden rounded-full bg-black ring-2 ring-white/25 lg:h-28 lg:w-28 motion-safe:animate-[latido_3.2s_ease-in-out_infinite]"
@@ -2069,7 +2104,7 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
                                               <span aria-hidden="true" className="pointer-events-none absolute inset-0 rounded-full shadow-[inset_-16px_-18px_28px_rgba(0,0,0,0.42),inset_10px_9px_18px_rgba(255,255,255,0.14)]" />
                                             </span>
                                             <span className="text-sm font-semibold tracking-wide text-amber-200">
-                                              {l2NarrativeOpened ? 'Volver a la escena' : 'Habitar la forma'}
+                                              {(l2NarrativeOpened || sellado) ? 'Volver a la escena' : 'Habitar la forma'}
                                             </span>
                                           </motion.button>
                                         </motion.div>
@@ -2410,7 +2445,7 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
                                           )}
                                         </div>
                                       )}
-                                      {isL2 && l2ConvDone && (
+                                      {isL2 && l2ConvDone && !escenaTerminada && (
                                         <div className="flex flex-col gap-4">
                                           <div className="flex items-center gap-2 text-sm text-slate-300 lg:text-xs">
                                             <Check size={12} className="shrink-0 text-emerald-400/70" />
@@ -2420,7 +2455,7 @@ const ResonanceModal = ({ open, onClose, question, portal, onOpenNarrative, onNa
                                               estaba (Carlos, 11 oct 2026). Nunca en un momento intermedio. */}
                                           <button
                                             type="button"
-                                            onClick={(event) => { event.stopPropagation(); onClose?.(); }}
+                                            onClick={(event) => { event.stopPropagation(); terminarEscena(); }}
                                             className="flex w-full flex-col items-center gap-2 pt-1 transition active:scale-[0.98]"
                                             aria-label="Terminar la escena"
                                           >

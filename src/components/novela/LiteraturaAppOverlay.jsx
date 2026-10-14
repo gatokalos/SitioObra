@@ -3,7 +3,7 @@ import { createPortal } from 'react-dom';
 import { ensureAnonId } from '@/lib/identity';
 import { normalizarGesto, sellarForma, reintentarSellosPendientes } from '@/lib/sello';
 import { readResonanceRecord } from '@/lib/bitacoraShared';
-import { buildEscenaFrase } from '@/lib/resonanceDramaturgy';
+import { buildEscenaFrase, PORTAL_EMBLEM_URL } from '@/lib/resonanceDramaturgy';
 import { showcaseDefinitions } from '@/components/transmedia/transmediaConstants';
 import {
   fetchTransmediaCreditState,
@@ -130,14 +130,25 @@ const LiteraturaAppOverlay = ({ open, onClose, onRequireLogin }) => {
       if (type === 'autoficcion:request-user-context') {
         const record = readResonanceRecord('literatura');
         const frase = buildEscenaFrase('literatura', record?.l2_option);
-        event.source?.postMessage({ type: 'autoficcion:escena-context', frase, avisos: avisosDeLaEscena() }, appOrigin);
+        // Desde el 14 oct 2026 la conversación ocurre dentro del Marcador: viaja
+        // el emblema (para la esfera «Terminar la escena») y, si la forma ya
+        // quedó sellada sin terminar la conversación, el gesto, para entrar ahí.
+        const conversacionPendiente = !!record?.experience_ts && !record?.l2_conv_done;
+        event.source?.postMessage({
+          type: 'autoficcion:escena-context',
+          frase,
+          avisos: avisosDeLaEscena(),
+          emblema: PORTAL_EMBLEM_URL.literatura,
+          gesto_resultado: conversacionPendiente ? (record?.gesto_resultado ?? 'enunciado') : null,
+        }, appOrigin);
         return;
       }
 
       // La escena terminó (gesto hecho, o salida sin gesto): el Marcador pide
       // cerrarse; quien recibe el cierre abre la conversación si hubo gesto.
       if (type === 'autoficcion:cerrar-escena') {
-        cerrarRef.current?.();
+        const { conversacion } = event.data ?? {};
+        cerrarRef.current?.(conversacion === 'terminada' || conversacion === 'pendiente' ? conversacion : null);
         return;
       }
 
@@ -189,15 +200,17 @@ const LiteraturaAppOverlay = ({ open, onClose, onRequireLogin }) => {
 
   if (!open || typeof document === 'undefined') return null;
 
-  const handleClose = () => {
+  const handleClose = (conversacion = null) => {
     const sessionContext = sessionContextRef.current;
     const gesto = gestoRef.current;
     sessionContextRef.current = null;
     gestoRef.current = null;
     setConfirmarSalida(false);
-    // El contexto del debate (si llegó) y el gesto (si se anunció). El sello ya
-    // está escrito; quien recibe esto no debe volver a sellar.
-    onClose?.(sessionContext || gesto ? { ...(sessionContext ?? {}), gesto } : null);
+    // El contexto del debate (si llegó), el gesto (si se anunció) y en qué
+    // quedó la conversación. El sello ya está escrito; quien recibe esto no
+    // debe volver a sellar.
+    const conv = typeof conversacion === 'string' ? conversacion : null;
+    onClose?.(sessionContext || gesto || conv ? { ...(sessionContext ?? {}), gesto, conversacion: conv } : null);
   };
   cerrarRef.current = handleClose;
 
@@ -214,7 +227,7 @@ const LiteraturaAppOverlay = ({ open, onClose, onRequireLogin }) => {
       />
       <button
         type="button"
-        onClick={handleClose}
+        onClick={() => handleClose()}
         className="absolute right-4 z-10 rounded-full bg-black/45 px-3 py-1.5 text-sm text-slate-300 backdrop-blur-sm transition hover:text-white"
         style={{ top: 'calc(12px + env(safe-area-inset-top, 0px))' }}
       >
@@ -243,7 +256,7 @@ const LiteraturaAppOverlay = ({ open, onClose, onRequireLogin }) => {
               </button>
               <button
                 type="button"
-                onClick={handleClose}
+                onClick={() => handleClose()}
                 className="rounded-full border border-white/10 px-5 py-3 text-xs uppercase tracking-[0.2em] text-slate-300"
               >
                 Salir

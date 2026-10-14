@@ -59,6 +59,12 @@ jobs:
           VITE_ORACULO_URL: ${{ secrets.VITE_ORACULO_URL }}
           VITE_STRIPE_PUBLISHABLE_KEY: ${{ secrets.VITE_STRIPE_PUBLISHABLE_KEY }}
           VITE_STRIPE_SUBSCRIPTION_PRICE_ID: ${{ secrets.VITE_STRIPE_SUBSCRIPTION_PRICE_ID }}
+          # El clímax con el video del autor y su relleno de siete segundos (14 oct
+          # 2026, a pedido de Carlos, para recorrer el flujo completo en producción
+          # antes del campo). Apagar VITE_AUTHOR_VIDEO_PLACEHOLDER antes de abrir el
+          # campo, o cuando estén las nueve piezas en public/videos/autor/.
+          VITE_RESONANCE_FAREWELL_VIDEO: 'true'
+          VITE_AUTHOR_VIDEO_PLACEHOLDER: 'true'
           VITE_PRICE_TAZA: ${{ secrets.VITE_PRICE_TAZA }}
           VITE_PRICE_NOVELA: ${{ secrets.VITE_PRICE_NOVELA }}
           VITE_PRICE_COMBO: ${{ secrets.VITE_PRICE_COMBO }}

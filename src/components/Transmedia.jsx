@@ -1156,7 +1156,7 @@ const Transmedia = ({ allianceOnlyMode = false }) => {
   // Un invitado que regresa sin `?focus=` en la URL (cerró la pestaña, volvió
   // después) no dispara ninguno de los dos efectos de arriba, así que
   // recommendedShowcaseId se queda en null y la vitrina que sí tiene
-  // desbloqueada pierde la etiqueta "Recomendada para ti" — se pierde entre
+  // desbloqueada pierde la etiqueta "Te recomiendo este" — se pierde entre
   // las demás aunque el candado siga vivo en ORACULO_RECOMMENDED_SHOWCASE_KEY.
   // Rehidrata desde ahí. Solo aplica a invitados: para un usuario autenticado
   // la recomendación es un empujón de esa visita, no un candado permanente
@@ -5826,7 +5826,7 @@ const renderDramaFeaturedWork = () => (
                       </div>
                       {isRecommendedTile ? (
                         <div className="w-full rounded-full border border-fuchsia-300/50 bg-fuchsia-500/15 py-1.5 text-center text-[0.58rem] font-semibold uppercase tracking-[0.24em] text-fuchsia-100">
-                          Recomendada para ti
+                          Te recomiendo este
                         </div>
                       ) : null}
                       {format.vitrinaCopy ? (
@@ -6029,7 +6029,7 @@ const renderDramaFeaturedWork = () => (
                       </div>
                       {isRecommendedTile ? (
                         <div className="w-full rounded-full border border-fuchsia-300/50 bg-fuchsia-500/15 py-1.5 text-center text-[0.58rem] font-semibold uppercase tracking-[0.24em] text-fuchsia-100">
-                          Recomendada para ti
+                          Te recomiendo este
                         </div>
                       ) : null}
                       {format.vitrinaCopy ? (
@@ -6236,6 +6236,24 @@ const renderDramaFeaturedWork = () => (
                     ...(sessionContext?.fragment_id ? { l2_fragment_id: sessionContext.fragment_id } : {}),
                     ...(sessionContext?.plano ? { l2_plano: sessionContext.plano } : {}),
                     ...(sessionContext?.initiator ? { l2_initiator: sessionContext.initiator } : {}),
+                  }));
+                } catch { /* ignore */ }
+              }
+              // La conversación ocurrió dentro del Marcador (14 oct 2026): si terminó,
+              // el sitio la da por hecha y sigue con En el foco; si quedó a medias,
+              // la entrada vuelve a ofrecer la escena.
+              if (sessionContext?.conversacion === 'terminada') {
+                try {
+                  const key = 'gatoencerrado:resonance:literatura';
+                  const existing = JSON.parse(localStorage.getItem(key) || '{}');
+                  localStorage.setItem(key, JSON.stringify({
+                    ...existing,
+                    l2_conv_done: true,
+                    l2_escena_terminada: true,
+                    l2_current_question: null,
+                    l2_current_turn: null,
+                    l2_conv_error: false,
+                    dashboard_active_level: 3,
                   }));
                 } catch { /* ignore */ }
               }
