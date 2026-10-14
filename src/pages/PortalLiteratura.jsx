@@ -430,17 +430,8 @@ const PortalLiteratura = () => {
               compact
             />
           </div>
-          {l3Rec?.step3 ? null : experienceDone ? (
-            <div className="order-5">
-              <button
-                type="button"
-                onClick={() => setShowLiteraturaApp(true)}
-                className="w-full rounded-2xl border border-amber-400/40 bg-amber-500/10 px-6 py-4 text-sm font-semibold tracking-wide text-amber-200 shadow-[0_8px_32px_rgba(251,191,36,0.15)] transition hover:bg-amber-500/20 hover:shadow-[0_8px_40px_rgba(251,191,36,0.25)]"
-              >
-                📖 Abrir separador inteligente
-              </button>
-            </div>
-          ) : null}
+          {/* «Abrir separador inteligente» (arquitectura vieja) se retiró el 14 oct
+              2026 a pedido de Carlos: la única entrada al dispositivo es la escena. */}
           <div className="order-last flex justify-end pt-2 lg:hidden">
             <PortalHeaderActions />
           </div>

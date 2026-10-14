@@ -4106,15 +4106,9 @@ const renderDramaFeaturedWork = () => (
                     !isVitrinaCarouselViewport,
                     !isVitrinaCarouselViewport
                   )}
-                  {activePortalExperienceDone && (
-                    <button
-                      type="button"
-                      onClick={() => setShowLiteraturaApp(true)}
-                      className="inline-flex w-full items-center justify-center gap-2 rounded-2xl border border-amber-400/40 bg-amber-500/10 px-6 py-3 text-sm font-semibold text-amber-200 tracking-wide transition hover:bg-amber-500/20"
-                    >
-                      📖 Abrir separador inteligente
-                    </button>
-                  )}
+                  {/* El botón «Abrir separador inteligente» (arquitectura vieja: el
+                      dispositivo se abría aparte una vez «desbloqueado») se retiró el
+                      14 oct 2026 a pedido de Carlos: la única entrada es la escena. */}
                 </div>
               </div>
             ) : (
