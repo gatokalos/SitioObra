@@ -111,9 +111,9 @@ const LiteraturaAppOverlay = ({ open, onClose, onRequireLogin }) => {
       const { type } = event.data ?? {};
 
       if (type === 'autoficcion:gesto') {
-        const { forma, resultado, fragment_id, plano, match_id, duration_ms, ts } = event.data ?? {};
+        const { forma, resultado, fragment_id, plano, match_id, duration_ms, explorados, voz, ts } = event.data ?? {};
         if (forma && forma !== 'literatura') return;
-        const gesto = normalizarGesto({ resultado, fragment_id, plano, match_id, duration_ms, ts });
+        const gesto = normalizarGesto({ resultado, fragment_id, plano, match_id, duration_ms, explorados, voz, ts });
         if (!gesto) return;
         gestoRef.current = gesto;
         void sellarForma('literatura', gesto);

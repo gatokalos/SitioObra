@@ -30,6 +30,15 @@ export const normalizarGesto = (data = {}) => {
     plano: texto(data.plano),
     match_id: texto(data.match_id),
     duration_ms: Number.isFinite(data.duration_ms) ? Math.max(0, Math.trunc(data.duration_ms)) : null,
+    // Etapa 2 de D-69 (15 oct 2026): la medida de voz del micrófono, sin transcribir.
+    voz: data.voz && typeof data.voz === 'object'
+      ? {
+          voz_ms: Number.isFinite(data.voz.voz_ms) ? Math.max(0, Math.trunc(data.voz.voz_ms)) : null,
+          objetivo_ms: Number.isFinite(data.voz.objetivo_ms) ? Math.max(0, Math.trunc(data.voz.objetivo_ms)) : null,
+          medicion: ['microfono', 'no_disponible'].includes(data.voz.medicion) ? data.voz.medicion : null,
+        }
+      : null,
+    explorados: Array.isArray(data.explorados) ? data.explorados.slice(0, 10) : null,
     ts: Number.isFinite(data.ts) ? data.ts : Date.now(),
   };
 };
